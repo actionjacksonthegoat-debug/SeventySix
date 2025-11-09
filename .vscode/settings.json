@@ -1,0 +1,49 @@
+{
+	// Format on save for all file types
+	"editor.formatOnSave": true,
+
+	// EditorConfig support
+	"editorconfig.enabled": true,
+
+	// Respect .editorconfig settings for indentation
+	"editor.insertSpaces": false,
+	"editor.tabSize": 4,
+	"editor.detectIndentation": false,
+
+	// TypeScript/JavaScript settings
+	"typescript.preferences.quoteStyle": "double",
+	"javascript.preferences.quoteStyle": "double",
+
+	// Prettier settings - respect EditorConfig
+	"prettier.useEditorConfig": true,
+	"prettier.useTabs": true,
+	"prettier.tabWidth": 4,
+	"prettier.singleQuote": false,
+
+	// Default formatters
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[scss]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[html]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+
+	// C# settings (OmniSharp)
+	"omnisharp.enableEditorConfigSupport": true,
+
+	// File settings
+	"files.trimTrailingWhitespace": true,
+	"files.insertFinalNewline": false,
+
+	// Ensure consistent line endings
+	"files.eol": "\n"
+}

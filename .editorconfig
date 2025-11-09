@@ -1,17 +1,362 @@
 # Editor configuration, see https://editorconfig.org
 root = true
 
+# ========================================
+# ALL FILES - Base Settings
+# ========================================
 [*]
+# Character encoding for all files
 charset = utf-8
+
+# Use tab characters for indentation
 indent_style = tab
+
+# Set tab width to 4 spaces
 indent_size = 4
+
+# Do not insert a newline at the end of files
 insert_final_newline = false
+
+# Remove whitespace at the end of lines
 trim_trailing_whitespace = true
 
+# ========================================
+# MARKDOWN FILES
+# ========================================
+[*.md]
+# Disable line length restrictions for markdown
+max_line_length = off
+
+# Preserve trailing whitespace in markdown (significant for formatting)
+trim_trailing_whitespace = false
+
+# ========================================
+# JSON AND XML FILES
+# ========================================
+[*.{json,xml}]
+# Use 4-space indentation for structured data files
+indent_size = 4
+
+# ========================================
+# SCSS FILES
+# ========================================
+[*.scss]
+# Use 4-space indentation for stylesheets
+indent_size = 4
+
+# ========================================
+# TYPESCRIPT FILES
+# ========================================
 [*.ts]
+# Use double quotes for strings
 quote_type = double
+
+# IntelliJ-specific: enforce double quotes
 ij_typescript_use_double_quotes = true
 
-[*.md]
-max_line_length = off
-trim_trailing_whitespace = false
+# Use tab characters for indentation
+indent_style = tab
+
+# Set tab width to 4 spaces
+indent_size = 4
+
+# --- Method Parameter Formatting ---
+# Wrap parameters when they don't fit on one line
+ij_typescript_method_parameters_wrap = on_every_item
+
+# Place left parenthesis on the same line as method name
+ij_typescript_method_parameters_lparen_on_next_line = false
+
+# Place right parenthesis on the same line as last parameter
+ij_typescript_method_parameters_rparen_on_next_line = false
+
+# --- Method Call Formatting ---
+# Wrap call arguments when they don't fit on one line
+ij_typescript_call_parameters_wrap = on_every_item
+
+# Place left parenthesis on the same line as method call
+ij_typescript_call_parameters_lparen_on_next_line = false
+
+# Place right parenthesis on the same line as last argument
+ij_typescript_call_parameters_rparen_on_next_line = false
+
+# --- Documentation Requirements ---
+# Require JSDoc comments on public methods
+ij_typescript_force_quote_style = true
+
+# --- Code Quality Standards ---
+# Require semicolons at the end of statements
+ij_typescript_use_semicolon_after_statement = true
+
+# Add space before function parenthesis
+ij_typescript_space_before_function_left_parens = false
+
+# Add space before method parenthesis
+ij_typescript_space_before_method_parentheses = false
+
+# Enforce spaces around operators
+ij_typescript_spaces_around_assignment_operators = true
+ij_typescript_spaces_around_equality_operators = true
+ij_typescript_spaces_around_relational_operators = true
+ij_typescript_spaces_around_additive_operators = true
+ij_typescript_spaces_around_multiplicative_operators = true
+
+# Place opening brace on new line
+ij_typescript_brace_style = next_line
+
+# ========================================
+# C# FILES
+# ========================================
+[*.cs]
+# Use tab characters for indentation
+indent_style = tab
+
+# Set tab width to 4 spaces
+indent_size = 4
+
+# --- New Line Settings ---
+# Place opening braces on new lines (Allman style)
+csharp_new_line_before_open_brace = all
+
+# Place else on new line
+csharp_new_line_before_else = true
+
+# Place catch on new line
+csharp_new_line_before_catch = true
+
+# Place finally on new line
+csharp_new_line_before_finally = true
+
+# Place members in object initializers on new lines
+csharp_new_line_before_members_in_object_initializers = true
+
+# Place members in anonymous types on new lines
+csharp_new_line_before_members_in_anonymous_types = true
+
+# Place query expression clauses on new lines
+csharp_new_line_between_query_expression_clauses = true
+
+# --- Indentation Settings ---
+# Indent case contents in switch statements
+csharp_indent_case_contents = true
+
+# Indent switch labels
+csharp_indent_switch_labels = true
+
+# Indent block contents
+csharp_indent_block_contents = true
+
+# Indent braces
+csharp_indent_braces = false
+
+# Indent case contents when they are blocks
+csharp_indent_case_contents_when_block = false
+
+# --- Spacing Settings ---
+# Remove space after cast
+csharp_space_after_cast = false
+
+# Add space after keywords in control flow statements (if, for, foreach, etc.)
+csharp_space_after_keywords_in_control_flow_statements = true
+
+# Add space before colon in inheritance clause
+csharp_space_before_colon_in_inheritance_clause = true
+
+# Add space after colon in inheritance clause
+csharp_space_after_colon_in_inheritance_clause = true
+
+# Add space around binary operators
+csharp_space_around_binary_operators = before_and_after
+
+# Remove space between method call name and opening parenthesis
+csharp_space_between_method_call_name_and_opening_parenthesis = false
+
+# Remove space between method declaration name and opening parenthesis
+csharp_space_between_method_declaration_name_and_open_parenthesis = false
+
+# Add space after comma
+csharp_space_after_comma = true
+
+# Remove space before comma
+csharp_space_before_comma = false
+
+# Add space after semicolon in for statement
+csharp_space_after_semicolon_in_for_statement = true
+
+# Remove space before semicolon in for statement
+csharp_space_before_semicolon_in_for_statement = false
+
+# --- Wrapping Settings ---
+# Keep parameters on separate lines when wrapped
+csharp_preserve_single_line_blocks = false
+
+# Wrap parameters in method declarations to new lines
+csharp_wrap_parameters_style = chop_if_long
+
+# Wrap arguments in method calls to new lines
+csharp_wrap_arguments_style = chop_if_long
+
+# --- Expression Preferences ---
+# Prefer expression bodies for methods when possible
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+
+# Prefer expression bodies for constructors when possible
+csharp_style_expression_bodied_constructors = when_on_single_line:suggestion
+
+# Prefer expression bodies for properties when possible
+csharp_style_expression_bodied_properties = true:suggestion
+
+# Prefer expression bodies for accessors when possible
+csharp_style_expression_bodied_accessors = true:suggestion
+
+# --- Pattern Matching Preferences ---
+# Prefer pattern matching over 'as' with null check
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+
+# Prefer pattern matching over 'is' with cast check
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+
+# --- Null-Checking Preferences ---
+# Prefer throw expressions
+csharp_style_throw_expression = true:suggestion
+
+# Prefer conditional delegate calls
+csharp_style_conditional_delegate_call = true:suggestion
+
+# --- Code Block Preferences ---
+# Prefer braces even for single-line statements
+csharp_prefer_braces = true:warning
+
+# --- Using Directive Preferences ---
+# Place 'using' directives outside namespace
+csharp_using_directive_placement = outside_namespace:warning
+
+# --- Modifier Preferences ---
+# Prefer accessibility modifiers to be declared
+dotnet_style_require_accessibility_modifiers = always:warning
+
+# Prefer readonly fields
+dotnet_style_readonly_field = true:suggestion
+
+# Order modifiers: public private protected internal static extern new virtual abstract sealed override async unsafe volatile
+csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
+
+# --- Expression-Level Preferences ---
+# Prefer object initializers
+dotnet_style_object_initializer = true:suggestion
+
+# Prefer collection initializers
+dotnet_style_collection_initializer = true:suggestion
+
+# Prefer explicit tuple names
+dotnet_style_explicit_tuple_names = true:suggestion
+
+# Prefer inferred tuple element names
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+
+# Prefer inferred anonymous type member names
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
+
+# Prefer auto properties over properties with backing fields
+dotnet_style_prefer_auto_properties = true:suggestion
+
+# Prefer conditional expression over if-else for assignments
+dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
+
+# Prefer conditional expression over if-else for returns
+dotnet_style_prefer_conditional_expression_over_return = true:suggestion
+
+# Prefer compound assignments (+=, -=, etc.)
+dotnet_style_prefer_compound_assignment = true:suggestion
+
+# --- Null-Checking Preferences (Language Agnostic) ---
+# Prefer coalesce expression over null check
+dotnet_style_coalesce_expression = true:suggestion
+
+# Prefer null propagation
+dotnet_style_null_propagation = true:suggestion
+
+# Prefer is null check over reference equality
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+
+# --- Documentation Requirements ---
+# Require documentation headers on public members (CS1591)
+dotnet_diagnostic.CS1591.severity = warning
+
+# Require documentation on all public APIs
+dotnet_public_api_analyzer.require_api_documentation = true
+
+# --- Naming Conventions ---
+# Async methods should end with 'Async'
+dotnet_naming_rule.async_methods_end_in_async.severity = warning
+dotnet_naming_rule.async_methods_end_in_async.symbols = async_methods
+dotnet_naming_rule.async_methods_end_in_async.style = end_in_async
+
+dotnet_naming_symbols.async_methods.applicable_kinds = method
+dotnet_naming_symbols.async_methods.required_modifiers = async
+
+dotnet_naming_style.end_in_async.required_suffix = Async
+dotnet_naming_style.end_in_async.capitalization = pascal_case
+
+# Interfaces should start with 'I'
+dotnet_naming_rule.interface_should_be_begins_with_i.severity = warning
+dotnet_naming_rule.interface_should_be_begins_with_i.symbols = interface
+dotnet_naming_rule.interface_should_be_begins_with_i.style = begins_with_i
+
+dotnet_naming_symbols.interface.applicable_kinds = interface
+dotnet_naming_symbols.interface.applicable_accessibilities = *
+
+dotnet_naming_style.begins_with_i.required_prefix = I
+dotnet_naming_style.begins_with_i.capitalization = pascal_case
+
+# Types should be PascalCase
+dotnet_naming_rule.types_should_be_pascal_case.severity = warning
+dotnet_naming_rule.types_should_be_pascal_case.symbols = types
+dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_symbols.types.applicable_kinds = class,struct,interface,enum,delegate
+dotnet_naming_symbols.types.applicable_accessibilities = *
+
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+
+# Non-field members should be PascalCase
+dotnet_naming_rule.non_field_members_should_be_pascal_case.severity = warning
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
+dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_symbols.non_field_members.applicable_kinds = property,event,method
+dotnet_naming_symbols.non_field_members.applicable_accessibilities = *
+
+# Private fields should start with underscore
+dotnet_naming_rule.private_fields_should_be_underscore_camel_case.severity = warning
+dotnet_naming_rule.private_fields_should_be_underscore_camel_case.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_underscore_camel_case.style = underscore_camel_case_style
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel_case_style.capitalization = pascal_case
+
+# Constants should be UPPER_CASE
+dotnet_naming_rule.constants_should_be_upper_case.severity = warning
+dotnet_naming_rule.constants_should_be_upper_case.symbols = constants
+dotnet_naming_rule.constants_should_be_upper_case.style = upper_case_style
+
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+
+dotnet_naming_style.upper_case_style.capitalization = all_upper
+dotnet_naming_style.upper_case_style.word_separator = _
+
+# --- Code Quality Rules ---
+# Avoid unused parameters
+dotnet_code_quality_unused_parameters = all:suggestion
+
+# Remove unnecessary suppression
+dotnet_remove_unnecessary_suppression_exclusions = none
+
+# --- Organize Usings ---
+# Sort System.* using directives first
+dotnet_sort_system_directives_first = true
+
+# Separate using directive groups
+dotnet_separate_import_directive_groups = false
