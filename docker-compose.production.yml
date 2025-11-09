@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (for future use)
+  database:
+    image: postgres:16-alpine
+    container_name: seventysix-db
+    environment:
+      POSTGRES_DB: seventysix
+      POSTGRES_USER: ${DB_USER:-seventysix}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seventysix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # .NET API Service
+  api:
+    build:
+      context: ./SeventySix.Server
+      dockerfile: Dockerfile.production
+    container_name: seventysix-api
+    ports:
+      - "5085:8080"
+      - "7074:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=seventysix;Username=${DB_USER:-seventysix};Password=${DB_PASSWORD:-changeme}
+      - Cors__AllowedOrigins__0=http://localhost:8080
+      - Cors__AllowedOrigins__1=http://localhost:4200
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Angular Client Service
+  client:
+    build:
+      context: ./SeventySix.Client
+      dockerfile: Dockerfile.production
+    container_name: seventysix-client
+    ports:
+      - "8080:8080"
+    environment:
+      - API_URL=http://api:8080
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # Nginx Reverse Proxy (optional for production)
+  nginx:
+    image: nginx:alpine
+    container_name: seventysix-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - client
+      - api
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  seventysix-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

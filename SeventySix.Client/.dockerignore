@@ -1,0 +1,39 @@
+# Node modules
+node_modules/
+npm-debug.log
+
+# Build outputs
+dist/
+.angular/
+coverage/
+playwright-report/
+test-results/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Testing
+e2e/
+*.spec.ts
+karma.conf.js
+
+# Documentation
+*.md
+!README.md

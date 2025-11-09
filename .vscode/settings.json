@@ -1,4 +1,8 @@
 {
+	// Auto-save settings
+	"files.autoSave": "afterDelay",
+	"files.autoSaveDelay": 500,
+
 	// Format on save for all file types
 	"editor.formatOnSave": true,
 

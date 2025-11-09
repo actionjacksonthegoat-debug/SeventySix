@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { provideHttpClient, withFetch } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { WorldMap } from "./world-map";
 
 describe("WorldMap", () =>
@@ -11,7 +13,11 @@ describe("WorldMap", () =>
 	{
 		await TestBed.configureTestingModule({
 			imports: [WorldMap],
-			providers: [provideZonelessChangeDetection()]
+			providers: [
+				provideHttpClient(withFetch()),
+				provideHttpClientTesting(),
+				provideZonelessChangeDetection()
+			]
 		}).compileComponents();
 
 		fixture = TestBed.createComponent(WorldMap);

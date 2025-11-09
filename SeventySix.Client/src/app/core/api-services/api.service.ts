@@ -7,11 +7,17 @@ import {
 import { inject, Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
 import { catchError, Observable, throwError } from "rxjs";
+import { IApiService } from "./i-api.service";
 
+/**
+ * API Service
+ * Implements IApiService interface for HTTP communication
+ * Provides centralized API calls with error handling
+ */
 @Injectable({
 	providedIn: "root"
 })
-export class ApiService
+export class ApiService implements IApiService
 {
 	private baseUrl: string = environment.apiUrl;
 	private defaultHeaders: HttpHeaders = new HttpHeaders({

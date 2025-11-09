@@ -1,0 +1,80 @@
+name: Server CI
+
+on:
+    push:
+        branches: [master, develop]
+        paths:
+            - "SeventySix.Server/**"
+            - ".github/workflows/server-ci.yml"
+    pull_request:
+        branches: [master, develop]
+        paths:
+            - "SeventySix.Server/**"
+            - ".github/workflows/server-ci.yml"
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+
+        defaults:
+            run:
+                working-directory: SeventySix.Server
+
+        strategy:
+            matrix:
+                dotnet-version: ["10.0.x"]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup .NET ${{ matrix.dotnet-version }}
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ matrix.dotnet-version }}
+
+            - name: Restore dependencies
+              run: dotnet restore SeventySix.Server.slnx
+
+            - name: Build
+              run: dotnet build SeventySix.Server.slnx --configuration Release --no-restore
+
+            - name: Run unit tests
+              run: dotnet test SeventySix.Server.slnx --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+            - name: Run tests with coverage
+              run: dotnet test SeventySix.Server.slnx --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+            - name: Install ReportGenerator
+              run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+            - name: Generate coverage report
+              run: reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:"Html;Cobertura"
+
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v4
+              with:
+                  files: ./SeventySix.Server/coverage/report/Cobertura.xml
+                  flags: server
+                  name: server-coverage
+                  fail_ci_if_error: false
+
+            - name: Publish test results
+              uses: EnricoMi/publish-unit-test-result-action@v2
+              if: always()
+              with:
+                  files: SeventySix.Server/**/*.trx
+
+            - name: Archive build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: server-build
+                  path: SeventySix.Server/SeventySix.Api/bin/Release
+                  retention-days: 7
+
+            - name: Archive coverage report
+              uses: actions/upload-artifact@v4
+              with:
+                  name: server-coverage
+                  path: SeventySix.Server/coverage/report
+                  retention-days: 7

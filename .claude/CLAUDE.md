@@ -1,0 +1,390 @@
+# Development Guidelines & Best Practices
+
+You are an expert in TypeScript, Angular, .NET Core 8+, and scalable full-stack application development. You write maintainable, performant, and accessible code following industry best practices, SOLID principles, and clean architecture.
+
+## Core Development Principles
+
+### SOLID Principles
+
+1. **Single Responsibility Principle (SRP)**: Each class/component/service should have one reason to change
+2. **Open/Closed Principle (OCP)**: Open for extension, closed for modification
+3. **Liskov Substitution Principle (LSP)**: Subtypes must be substitutable for their base types
+4. **Interface Segregation Principle (ISP)**: No client should depend on methods it doesn't use
+5. **Dependency Inversion Principle (DIP)**: Depend on abstractions, not concretions
+
+### KISS (Keep It Simple, Stupid)
+
+-   Favor simple, straightforward solutions over complex ones
+-   Write code that is easy to read and understand
+-   Avoid premature optimization
+-   Refactor complexity only when necessary
+
+### YAGNI (You Aren't Gonna Need It)
+
+-   Don't add functionality until it's actually needed
+-   Avoid speculative generality
+-   Build what is required now, not what might be needed later
+-   Delete unused code aggressively
+
+### Test-Driven Development (TDD)
+
+-   Write tests before implementation (Red-Green-Refactor)
+-   Aim for high test coverage (>80% for critical paths)
+-   Write unit tests for business logic
+-   Write integration tests for workflows
+-   Keep tests simple, focused, and maintainable
+-   Use meaningful test names that describe behavior
+
+## Design Patterns Reference
+
+Apply patterns judiciously when complexity justifies them. Start simple, refactor to patterns as needed.
+
+### Creational Patterns
+
+1. **Singleton**: Ensure a class has only one instance (Angular services with `providedIn: 'root'`)
+2. **Factory**: Create objects without specifying exact class (factory services for dynamic component creation)
+3. **Builder**: Construct complex objects step by step (form builders, query builders)
+4. **Prototype**: Clone objects instead of creating new ones (deep cloning utilities)
+5. **Dependency Injection**: Provide dependencies from external source (Angular DI, .NET DI container)
+
+### Structural Patterns
+
+6. **Adapter**: Make incompatible interfaces work together (API response adapters)
+7. **Decorator**: Add behavior to objects dynamically (Angular decorators, C# attributes)
+8. **Facade**: Simplified interface to complex subsystem (service layers wrapping multiple services)
+9. **Proxy**: Placeholder for another object (HTTP interceptors, lazy loading proxies)
+10. **Composite**: Treat individual objects and compositions uniformly (tree structures, nested components)
+
+### Behavioral Patterns
+
+11. **Strategy**: Define family of algorithms, make them interchangeable (validation strategies, sorting algorithms)
+12. **Observer**: One-to-many dependency, notify dependents of changes (RxJS Observables, C# events)
+13. **Command**: Encapsulate request as object (undo/redo, action dispatchers)
+14. **State**: Alter behavior when internal state changes (state machines, workflow engines)
+15. **Chain of Responsibility**: Pass request along chain of handlers (middleware, validation chains)
+
+### Architectural Patterns
+
+16. **Repository**: Abstract data access logic (data access layer)
+17. **Unit of Work**: Group operations into single transaction (EF Core DbContext)
+18. **CQRS**: Separate read and write operations (query/command separation)
+19. **Mediator**: Reduce coupling between components (MediatR in .NET)
+20. **Service Layer**: Define application's boundary with available operations (business logic layer)
+
+---
+
+## Angular Best Practices
+
+### TypeScript & Code Quality
+
+-   Use strict type checking (`strict: true` in tsconfig.json)
+-   Prefer type inference when type is obvious
+-   Avoid `any`; use `unknown` or proper types
+-   Use const assertions for readonly objects
+-   Leverage union types and type guards
+-   Use readonly properties where appropriate
+
+### Component Architecture
+
+-   Always use standalone components (default behavior)
+-   Must NOT explicitly set `standalone: true` in decorators
+-   Keep components small (<200 lines) and focused (SRP)
+-   Use `input()` and `output()` functions instead of decorators
+-   Use `computed()` for derived state
+-   Set `changeDetection: ChangeDetectionStrategy.OnPush`
+-   Prefer inline templates for small components (<10 lines)
+-   Use `viewChild()` and `contentChild()` for DOM queries
+-   Do NOT use `@HostBinding` and `@HostListener`; use `host` object instead
+
+```typescript
+@Component({
+	selector: "app-example",
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	host: {
+		"(click)": "onClick()",
+		"[class.active]": "isActive()",
+	},
+})
+export class ExampleComponent {
+	count = input.required<number>();
+	doubled = computed(() => this.count() * 2);
+	valueChange = output<number>();
+}
+```
+
+### State Management
+
+-   Use signals for local component state
+-   Use `computed()` for derived state
+-   Do NOT use `mutate()` on signals; use `update()` or `set()`
+-   Keep state transformations pure and predictable
+-   Consider state management library only for complex shared state
+-   Use RxJS for async operations, convert to signals with `toSignal()`
+
+### Templates & Directives
+
+-   Use native control flow: `@if`, `@for`, `@switch` (not `*ngIf`, `*ngFor`, `*ngSwitch`)
+-   Use async pipe to handle observables
+-   Do NOT use `ngClass`; use `class` bindings: `[class.active]="isActive()"`
+-   Do NOT use `ngStyle`; use `style` bindings: `[style.color]="color()"`
+-   Keep template logic minimal; move to component
+-   Use `trackBy` with `@for` for performance
+-   Use `NgOptimizedImage` for static images (not for base64)
+
+### Forms
+
+-   Prefer Reactive Forms over Template-driven forms
+-   Use typed forms with strict typing
+-   Create reusable form controls
+-   Implement custom validators as pure functions
+-   Use `FormBuilder` for complex forms
+
+### Services & Dependency Injection
+
+-   Design services with single responsibility (SRP)
+-   Use `providedIn: 'root'` for singleton services
+-   Use `inject()` function instead of constructor injection
+-   Create service interfaces for abstraction (DIP)
+-   Use HttpClient interceptors for cross-cutting concerns
+-   Implement repository pattern for data access
+
+```typescript
+export class UserService {
+	private http = inject(HttpClient);
+	private userRepo = inject(UserRepository);
+
+	getUsers() {
+		return this.userRepo.findAll();
+	}
+}
+```
+
+### Routing & Lazy Loading
+
+-   Implement lazy loading for all feature modules
+-   Use route guards for authorization
+-   Preload critical routes with custom preload strategy
+-   Use route resolvers for data fetching
+-   Type route parameters
+
+### Performance & Optimization
+
+-   Use OnPush change detection everywhere
+-   Implement virtual scrolling for large lists
+-   Use `trackBy` in loops
+-   Lazy load images and routes
+-   Avoid memory leaks: unsubscribe or use `takeUntilDestroyed()`
+-   Profile with Angular DevTools
+
+### Testing
+
+-   Write unit tests for all services and components
+-   Use Jest or Jasmine with Karma
+-   Mock dependencies with interfaces
+-   Test component behavior, not implementation
+-   Aim for >80% coverage on business logic
+-   Use Testing Library principles
+
+---
+
+## .NET Core 8+ Best Practices
+
+### Project Structure & Architecture
+
+-   Use Clean Architecture or Vertical Slice Architecture
+-   Separate concerns: API, Application, Domain, Infrastructure
+-   Keep domain models free of framework dependencies
+-   Use dependency injection for all services
+-   Implement repository and unit of work patterns
+
+### C# Code Quality
+
+-   Use nullable reference types (`<Nullable>enable</Nullable>`)
+-   Use records for immutable data
+-   Leverage pattern matching and switch expressions
+-   Use `required` keyword for required properties (C# 11+)
+-   Prefer `async`/`await` for I/O operations
+-   Use `ILogger<T>` for structured logging
+
+### API Development
+
+-   Use minimal APIs for simple endpoints, controllers for complex ones
+-   Implement proper HTTP status codes
+-   Use DTOs for request/response (never expose domain models)
+-   Validate input with FluentValidation or Data Annotations
+-   Version your APIs from the start
+-   Implement proper error handling middleware
+-   Use ProblemDetails for error responses
+
+```csharp
+app.MapGet("/users/{id}", async (int id, IUserService userService) =>
+{
+    var user = await userService.GetByIdAsync(id);
+    return user is not null ? Results.Ok(user) : Results.NotFound();
+})
+.WithName("GetUser")
+.WithOpenApi();
+```
+
+### Dependency Injection
+
+-   Register services in Program.cs
+-   Use appropriate lifetimes: Singleton, Scoped, Transient
+-   Depend on abstractions (interfaces), not implementations
+-   Use options pattern for configuration
+-   Validate options on startup
+
+### Entity Framework Core
+
+-   Use Code-First with migrations
+-   Implement repository pattern for data access
+-   Use Unit of Work pattern (DbContext)
+-   Configure entities with Fluent API, not attributes
+-   Use AsNoTracking() for read-only queries
+-   Implement soft deletes where appropriate
+-   Use indexes for frequently queried columns
+
+```csharp
+public class UserRepository : IUserRepository
+{
+    private readonly AppDbContext _context;
+
+    public UserRepository(AppDbContext context) => _context = context;
+
+    public async Task<User?> GetByIdAsync(int id) =>
+        await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+}
+```
+
+### Error Handling
+
+-   Use global exception handling middleware
+-   Create custom exception types for domain errors
+-   Log exceptions with context
+-   Return consistent error responses
+-   Never expose stack traces in production
+
+### Security
+
+-   Use authentication middleware (JWT, OAuth, etc.)
+-   Implement authorization with policies
+-   Validate and sanitize all inputs
+-   Use HTTPS everywhere
+-   Implement rate limiting
+-   Use CORS appropriately
+-   Store secrets in configuration (Azure Key Vault, User Secrets)
+
+### Testing
+
+-   Write unit tests with xUnit or NUnit
+-   Use Moq or NSubstitute for mocking
+-   Write integration tests with WebApplicationFactory
+-   Test controllers, services, and repositories separately
+-   Use in-memory database for integration tests
+-   Implement Test Fixtures for shared setup
+-   Aim for >80% code coverage
+
+```csharp
+public class UserServiceTests
+{
+    private readonly Mock<IUserRepository> _mockRepo = new();
+    private readonly UserService _sut;
+
+    public UserServiceTests() => _sut = new UserService(_mockRepo.Object);
+
+    [Fact]
+    public async Task GetByIdAsync_ReturnsUser_WhenExists()
+    {
+        // Arrange
+        var user = new User { Id = 1, Name = "Test" };
+        _mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+
+        // Act
+        var result = await _sut.GetByIdAsync(1);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Test", result.Name);
+    }
+}
+```
+
+### Performance
+
+-   Use async/await for I/O operations
+-   Implement caching (IMemoryCache, IDistributedCache)
+-   Use pagination for large datasets
+-   Optimize database queries (avoid N+1)
+-   Use compiled queries for frequent operations
+-   Profile with BenchmarkDotNet
+
+### Logging & Monitoring
+
+-   Use structured logging with ILogger
+-   Log at appropriate levels (Debug, Info, Warning, Error, Critical)
+-   Include correlation IDs for request tracing
+-   Use Application Insights or similar for production monitoring
+-   Implement health checks
+
+---
+
+## General Best Practices
+
+### Code Style
+
+-   Follow consistent naming conventions
+-   Use meaningful variable and function names
+-   Keep functions small (<20 lines ideal)
+-   Limit function parameters (<4 ideal)
+-   Avoid deep nesting (max 3 levels)
+-   Comment why, not what
+-   Delete commented-out code
+
+### Git & Version Control
+
+-   Write clear, descriptive commit messages
+-   Keep commits small and focused
+-   Use feature branches
+-   Review code before merging
+-   Tag releases semantically
+
+### Documentation
+
+-   Document public APIs
+-   Keep README up to date
+-   Document architecture decisions (ADRs)
+-   Include setup instructions
+-   Document environment variables
+
+### Refactoring Strategy
+
+1. Start simple, add patterns when needed
+2. Refactor when you see duplication (Rule of Three)
+3. Extract methods/services when complexity grows
+4. Run tests after each refactor
+5. Commit frequently during refactoring
+
+---
+
+## When to Apply Patterns
+
+**Start Simple**: Begin with the simplest solution that works.
+
+**Apply Patterns When**:
+
+-   You see repeated code (DRY violation)
+-   A class has multiple responsibilities (SRP violation)
+-   You need to swap implementations (Strategy, Dependency Injection)
+-   You have complex object creation (Factory, Builder)
+-   You need to decouple components (Observer, Mediator)
+
+**Avoid Patterns When**:
+
+-   The code is simple and clear without them
+-   It adds unnecessary complexity
+-   The pattern doesn't fit the problem
+-   You're speculating about future needs (YAGNI)
+
+---
+
+_Remember: Clean, simple, and practical code beats clever code. Optimize for readability and maintainability first, performance second._
