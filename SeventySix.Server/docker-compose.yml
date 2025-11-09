@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  seventysix-api:
+    build:
+      context: ./SeventySix.Api
+      dockerfile: Dockerfile
+    container_name: seventysix-api
+    ports:
+      # Map host port 5085 to container port 8080 (HTTP)
+      - "5085:8080"
+      # Map host port 7074 to container port 8081 (HTTPS)
+      - "7074:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_URLS=https://+:8081;http://+:8080
+    restart: unless-stopped
+    networks:
+      - seventysix-network
+
+networks:
+  seventysix-network:
+    driver: bridge

@@ -14,20 +14,6 @@
 		"lint:fix": "eslint \"src/**/*.ts\" --fix",
 		"cleanup": "npm run lint:fix && npm run format"
 	},
-	"prettier": {
-		"printWidth": 100,
-		"useTabs": true,
-		"tabWidth": 4,
-		"singleQuote": false,
-		"overrides": [
-			{
-				"files": "*.html",
-				"options": {
-					"parser": "angular"
-				}
-			}
-		]
-	},
 	"private": true,
 	"dependencies": {
 		"@angular/common": "^20.3.0",
@@ -53,7 +39,8 @@
 		"karma-coverage": "~2.2.0",
 		"karma-jasmine": "~5.1.0",
 		"karma-jasmine-html-reporter": "~2.1.0",
-		"prettier": "^3.0.0",
+		"prettier": "^3.6.2",
+		"prettier-plugin-brace-style": "^0.8.1",
 		"typescript": "~5.9.2"
 	}
 }
