@@ -6,7 +6,7 @@ using System.Net;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using SeventySix.Domain.Exceptions;
+using SeventySix.Core.Exceptions;
 
 namespace SeventySix.Api.Middleware;
 

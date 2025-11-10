@@ -5,7 +5,7 @@ import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideRouter } from "@angular/router";
 import { of } from "rxjs";
 import { UserCreatePage } from "./user-create";
-import { UserService } from "@core/services/user.service";
+import { UserService } from "@features/admin/users/services/user-service/user.service";
 import { Router } from "@angular/router";
 import { NotificationService } from "@core/services/notification.service";
 

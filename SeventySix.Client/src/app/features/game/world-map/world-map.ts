@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy } from "@angular/core";
-import { UserList } from "@shared/components/user-list/user-list";
-import { WeatherDisplay } from "@shared/components/weather-display/weather-display";
+import { UserList } from "@features/admin/users/components/user-list/user-list";
+import { WeatherDisplay } from "@features/home/weather/components/weather-display/weather-display";
 
 /**
  * World map container component.

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { UserList } from "@shared/components/user-list/user-list";
-import { UserService } from "@core/services/user.service";
+import { UserList } from "@features/admin/users/components/user-list/user-list";
+import { UserService } from "@features/admin/users/services/user-service/user.service";
 import { LoggerService } from "@core/services/logger.service";
 import { of } from "rxjs";
 import { UsersPage } from "./users-page";

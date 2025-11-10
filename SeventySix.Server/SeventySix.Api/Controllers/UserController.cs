@@ -3,9 +3,9 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
-using SeventySix.Application.DTOs;
-using SeventySix.Application.DTOs.Requests;
-using SeventySix.Application.Interfaces;
+using SeventySix.BusinessLogic.DTOs;
+using SeventySix.BusinessLogic.DTOs.Requests;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.Api.Controllers;
 

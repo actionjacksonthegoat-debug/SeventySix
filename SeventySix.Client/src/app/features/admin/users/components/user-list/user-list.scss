@@ -1,0 +1,289 @@
+@use "variables" as vars;
+
+:host {
+	display: block;
+	width: 100%;
+}
+
+// Loading State
+.loading-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: vars.$spacing-4xl vars.$spacing-lg;
+	gap: vars.$spacing-lg;
+
+	p {
+		margin: 0;
+		opacity: 0.7;
+	}
+}
+
+// Error State
+.error-card {
+	margin-bottom: vars.$spacing-lg;
+}
+
+.error-content {
+	display: flex;
+	align-items: flex-start;
+	gap: vars.$spacing-md;
+
+	mat-icon {
+		font-size: vars.$avatar-size-md;
+		width: vars.$avatar-size-md;
+		height: vars.$avatar-size-md;
+	}
+
+	h3 {
+		margin: 0 0 vars.$spacing-sm;
+	}
+
+	p {
+		margin: 0;
+	}
+}
+
+// Chart Section (Collapsible Expansion Panel)
+.chart-expansion-panel {
+	margin-bottom: vars.$spacing-lg;
+
+	mat-panel-title {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-sm;
+
+		mat-icon {
+			font-size: vars.$icon-size-base;
+		}
+	}
+}
+
+.chart-section {
+	width: 100%;
+	max-width: 100%;
+	padding-top: vars.$spacing-md;
+
+	app-chart {
+		display: block;
+		width: 100%;
+	}
+}
+
+// Table Actions (Buttons Above Table - only for bulk actions)
+.table-actions {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	gap: vars.$spacing-md;
+	// Note: Collapse behavior is defined in global utilities
+
+	.left-actions {
+		display: flex;
+		gap: vars.$spacing-sm;
+		align-items: center;
+
+		button {
+			mat-icon {
+				margin-right: vars.$spacing-xs;
+			}
+		}
+	}
+}
+
+// Table Header (Search and Column Menu)
+.table-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: vars.$spacing-sm;
+	margin-bottom: vars.$spacing-md;
+
+	.search-field {
+		flex: 1;
+		min-width: 300px;
+		max-width: 500px;
+
+		// Reduce height using subscript appearance
+		::ng-deep .mat-mdc-form-field-subscript-wrapper {
+			display: none;
+		}
+
+		::ng-deep .mat-mdc-text-field-wrapper {
+			padding-bottom: 0;
+		}
+
+		@media (max-width: vars.$breakpoint-xs-max) {
+			min-width: 100%;
+		}
+	}
+}
+
+// Filter Chips and Stats Row (50/50 split)
+.filter-stats-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: vars.$spacing-lg;
+	margin-bottom: vars.$spacing-lg;
+
+	@media (max-width: vars.$breakpoint-md-max) {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.filter-chips {
+		flex: 1;
+		min-width: 0;
+
+		mat-chip-listbox {
+			display: flex;
+			gap: vars.$spacing-xs;
+		}
+
+		// Reduce chip size
+		::ng-deep mat-chip-option {
+			--mdc-chip-label-text-size: 0.813rem;
+			min-height: 28px;
+			padding: 4px 12px;
+		}
+	}
+
+	.stats-summary {
+		flex: 1;
+		display: flex;
+		justify-content: flex-end;
+		gap: vars.$spacing-sm;
+		flex-wrap: wrap;
+		min-width: 0;
+
+		// Reduce chip size
+		mat-chip {
+			--mdc-chip-label-text-size: 0.813rem;
+			min-height: 28px;
+			padding: 4px 10px;
+
+			// Disable hover effect for non-interactive chips
+			&::ng-deep .mdc-evolution-chip__action--primary {
+				&:hover {
+					background-color: transparent;
+				}
+			}
+
+			// Alternative approach using Material's state layer
+			&::ng-deep .mat-mdc-chip-action-label {
+				&:hover::before {
+					opacity: 0 !important;
+				}
+			}
+
+			// Disable pointer cursor since these are not clickable
+			cursor: default;
+			pointer-events: none;
+
+			mat-icon {
+				margin-right: vars.$spacing-xs;
+				font-size: vars.$icon-size-sm;
+				width: vars.$icon-size-sm;
+				height: vars.$icon-size-sm;
+			}
+		}
+	}
+}
+
+// Column Menu
+.column-menu-header {
+	pointer-events: none;
+	opacity: 1 !important;
+	padding-bottom: vars.$spacing-sm;
+	border-bottom: 1px solid rgba(var(--mat-outline-rgb), 0.12);
+}
+
+// Table Container
+.table-container {
+	overflow-x: auto;
+	margin-bottom: vars.$spacing-md;
+	border: 1px solid rgba(var(--mat-outline-rgb), 0.12);
+	border-radius: vars.$border-radius-md;
+
+	table {
+		width: 100%;
+	}
+
+	th {
+		font-weight: vars.$font-weight-semibold;
+		background-color: rgba(var(--mat-primary-rgb), 0.04);
+	}
+
+	.user-id {
+		color: rgba(var(--mat-primary-rgb), 0.7);
+		font-family: monospace;
+	}
+
+	.username-cell {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-sm;
+
+		.user-icon {
+			color: rgba(var(--mat-primary-rgb), 0.6);
+		}
+	}
+
+	.user-row {
+		cursor: pointer;
+		transition: background-color vars.$transition-duration-normal;
+
+		&:hover {
+			background-color: rgba(var(--mat-primary-rgb), 0.04);
+		}
+	}
+
+	mat-chip {
+		mat-icon {
+			font-size: vars.$icon-size-sm;
+			width: vars.$icon-size-sm;
+			height: vars.$icon-size-sm;
+			margin-right: vars.$spacing-xs;
+		}
+	}
+}
+
+// No Data State
+.no-data-row {
+	height: vars.$table-row-height * 4;
+}
+
+.no-data {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: vars.$spacing-md;
+	padding: vars.$spacing-xl;
+
+	mat-icon {
+		font-size: 64px;
+		width: 64px;
+		height: 64px;
+		opacity: 0.3;
+	}
+
+	p {
+		margin: 0;
+		opacity: 0.6;
+	}
+}
+
+// Responsive
+@media (max-width: vars.$breakpoint-md-max) {
+	.table-container {
+		font-size: vars.$font-size-sm;
+
+		td,
+		th {
+			padding: vars.$spacing-base vars.$spacing-sm;
+		}
+	}
+}

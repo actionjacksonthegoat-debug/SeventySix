@@ -50,20 +50,20 @@ The backend follows **Clean Architecture** (aka Onion Architecture) with clear d
 └────────────────┬────────────────────────────────┘
                  │ depends on ↓
 ┌────────────────────────────────────────────────┐
-│      SeventySix.Application (Business Logic)   │
+│      SeventySix.BusinessLogic (Business Logic)   │
 │  - Services, DTOs, Validators, Interfaces      │
 │  - Use cases, orchestration, mapping           │
 └────────────────┬───────────────────────────────┘
                  │ depends on ↓
 ┌────────────────────────────────────────────────┐
-│        SeventySix.Domain (Core Domain)         │
+│        SeventySix.Core (Core Domain)         │
 │  - Entities, Value Objects, Domain Logic       │
 │  - Business rules, domain events               │
 │  - ZERO dependencies on other layers           │
 └────────────────────────────────────────────────┘
                  ↑ depends on
 ┌────────────────────────────────────────────────┐
-│     SeventySix.Infrastructure (Data Access)    │
+│     SeventySix.DataAccess (Data Access)    │
 │  - Repositories, Database Context              │
 │  - External service integrations               │
 └────────────────────────────────────────────────┘
@@ -73,7 +73,7 @@ The backend follows **Clean Architecture** (aka Onion Architecture) with clear d
 
 ### Layer Responsibilities
 
-#### 1. **SeventySix.Domain** (Core Domain)
+#### 1. **SeventySix.Core** (Core Domain)
 
 **Purpose**: Pure business logic with zero external dependencies
 
@@ -104,7 +104,7 @@ public class User
 -   ✅ OCP: Closed for modification, open for extension
 -   ✅ Framework-independent (no EF, no ASP.NET)
 
-#### 2. **SeventySix.Application** (Business Logic)
+#### 2. **SeventySix.BusinessLogic** (Business Logic)
 
 **Purpose**: Use cases and application-specific business rules
 
@@ -151,7 +151,7 @@ public class UserService : IUserService
 -   ✅ ISP: Interfaces are focused and minimal
 -   ✅ Separation of concerns: Validation → Mapping → Persistence → Response
 
-#### 3. **SeventySix.Infrastructure** (Data Access)
+#### 3. **SeventySix.DataAccess** (Data Access)
 
 **Purpose**: External dependencies and data persistence
 

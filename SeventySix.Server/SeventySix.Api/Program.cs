@@ -32,11 +32,11 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Scalar.AspNetCore;
 using Serilog;
 using SeventySix.Api.Middleware;
-using SeventySix.Application.Interfaces;
-using SeventySix.Application.Services;
-using SeventySix.Application.Validators;
-using SeventySix.Domain.Interfaces;
-using SeventySix.Infrastructure.Repositories;
+using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.BusinessLogic.Services;
+using SeventySix.BusinessLogic.Validators;
+using SeventySix.Core.Interfaces;
+using SeventySix.DataAccess.Repositories;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 

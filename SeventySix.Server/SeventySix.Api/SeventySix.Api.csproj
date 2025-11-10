@@ -27,8 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SeventySix.Application\SeventySix.Application.csproj" />
-    <ProjectReference Include="..\SeventySix.Infrastructure\SeventySix.Infrastructure.csproj" />
+    <ProjectReference Include="..\SeventySix.BusinessLogic\SeventySix.BusinessLogic.csproj" />
+    <ProjectReference Include="..\SeventySix.DataAccess\SeventySix.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>

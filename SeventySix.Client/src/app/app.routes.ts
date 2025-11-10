@@ -49,7 +49,7 @@ export const routes: Routes = [
 	{
 		path: "weather-forecast",
 		loadComponent: () =>
-			import("./features/home/weather-forecast/weather-forecast").then(
+			import("./features/home/weather/weather-forecast/weather-forecast").then(
 				(m) => m.WeatherForecastPage
 			),
 		title: "Weather Forecast",
