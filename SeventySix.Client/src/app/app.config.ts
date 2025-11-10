@@ -1,6 +1,7 @@
 import {
 	ApplicationConfig,
 	ErrorHandler,
+	isDevMode,
 	provideBrowserGlobalErrorListeners,
 	provideZonelessChangeDetection
 } from "@angular/core";
@@ -10,6 +11,7 @@ import {
 	withInterceptors,
 	withXsrfConfiguration
 } from "@angular/common/http";
+import { provideServiceWorker } from "@angular/service-worker";
 
 import { routes } from "./app.routes";
 import {
@@ -39,6 +41,11 @@ export const appConfig: ApplicationConfig = {
 		provideZonelessChangeDetection(),
 		provideRouter(routes),
 		// Global error handler
-		{ provide: ErrorHandler, useClass: ErrorHandlerService }
+		{ provide: ErrorHandler, useClass: ErrorHandlerService },
+		// Service Worker for PWA support and advanced caching
+		provideServiceWorker("ngsw-worker.js", {
+			enabled: !isDevMode(),
+			registrationStrategy: "registerWhenStable:30000"
+		})
 	]
 };

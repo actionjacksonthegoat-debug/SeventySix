@@ -1,124 +1,64 @@
 import { HttpInterceptorFn, HttpResponse } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { tap } from "rxjs/operators";
+import { inject } from "@angular/core";
+import { filter, map } from "rxjs/operators";
+import { CacheService } from "@core/services/cache.service";
+import { CacheConfigService } from "@core/services/cache-config.service";
 
 /**
- * Cache entry with expiration.
- */
-interface CacheEntry
-{
-	response: HttpResponse<unknown>;
-	timestamp: number;
-}
-
-/**
- * HTTP cache interceptor.
+ * HTTP cache interceptor with Service Worker integration.
  * Caches GET requests to reduce server load and improve performance.
- * Uses a simple in-memory cache with TTL (time-to-live).
+ * Features:
+ * - Inflight request deduplication
+ * - Service Worker integration
+ * - TTL values from ngsw-config.json (single source of truth)
+ * - Pattern-based cache invalidation
  */
 export const cacheInterceptor: HttpInterceptorFn = (req, next) =>
 {
+	const cacheService = inject(CacheService);
+	const cacheConfigService = inject(CacheConfigService);
+
 	// Only cache GET requests
 	if (req.method !== "GET")
 	{
 		return next(req);
 	}
 
-	// Skip caching for specific URLs
-	if (req.url.includes("/auth/") || req.url.includes("/user/"))
+	// Skip caching for specific URLs (auth, user profile, real-time data)
+	if (
+		req.url.includes("/auth/") ||
+		req.url.includes("/user/") ||
+		req.url.includes("/realtime/")
+	)
 	{
 		return next(req);
 	}
 
-	// Check cache
-	const cachedResponse = cache.get(req.url);
-	if (cachedResponse)
-	{
-		// Return cached response as observable
-		return new Observable((observer) =>
-		{
-			observer.next(cachedResponse);
-			observer.complete();
-		});
-	}
+	// Get cache TTL from ngsw-config.json dataGroups
+	const ttl = cacheConfigService.getTtl(req.url);
 
-	// Make request and cache response
-	return next(req).pipe(
-		tap((event) =>
+	// Check for cache-control headers to force refresh
+	const forceRefresh =
+		req.headers.get("Cache-Control") === "no-cache" ||
+		req.headers.get("Cache-Control") === "no-store";
+
+	// Use CacheService with inflight request deduplication
+	return cacheService.get<HttpResponse<unknown>>(
+		req.url,
+		next(req).pipe(
+			// Filter to only process HttpResponse events (ignore HttpSentEvent, etc.)
+			filter(event => event instanceof HttpResponse),
+			// Only cache successful responses (200 OK)
+			filter((response: HttpResponse<unknown>) => response.status === 200)
+		),
 		{
-			if (event instanceof HttpResponse)
-			{
-				cache.set(req.url, event);
-			}
-		})
+			ttl,
+			forceRefresh,
+			useServiceWorker: true,
+			prefix: "http-cache"
+		}
 	);
 };
-
-/**
- * Simple in-memory cache with TTL.
- */
-class HttpCache
-{
-	private readonly cache = new Map<string, CacheEntry>();
-	private readonly defaultTtl = 5 * 60 * 1000; // 5 minutes
-
-	/**
-	 * Gets cached response if not expired.
-	 */
-	get(url: string): HttpResponse<unknown> | null
-	{
-		const entry = this.cache.get(url);
-		if (!entry)
-		{
-			return null;
-		}
-
-		const isExpired = Date.now() - entry.timestamp > this.defaultTtl;
-		if (isExpired)
-		{
-			this.cache.delete(url);
-			return null;
-		}
-
-		return entry.response;
-	}
-
-	/**
-	 * Stores response in cache.
-	 */
-	set(url: string, response: HttpResponse<unknown>): void
-	{
-		this.cache.set(url, {
-			response,
-			timestamp: Date.now()
-		});
-	}
-
-	/**
-	 * Clears all cached entries.
-	 */
-	clear(): void
-	{
-		this.cache.clear();
-	}
-
-	/**
-	 * Clears cache entries matching a pattern.
-	 */
-	clearPattern(pattern: string): void
-	{
-		for (const key of this.cache.keys())
-		{
-			if (key.includes(pattern))
-			{
-				this.cache.delete(key);
-			}
-		}
-	}
-}
-
-// Singleton cache instance
-const cache = new HttpCache();
 
 /**
  * Clears the HTTP cache.
@@ -126,7 +66,8 @@ const cache = new HttpCache();
  */
 export function clearHttpCache(): void
 {
-	cache.clear();
+	const cacheService = inject(CacheService);
+	cacheService.clearAll({ prefix: "http-cache" }).subscribe();
 }
 
 /**
@@ -135,5 +76,6 @@ export function clearHttpCache(): void
  */
 export function clearHttpCachePattern(pattern: string): void
 {
-	cache.clearPattern(pattern);
+	const cacheService = inject(CacheService);
+	cacheService.clearPattern(pattern, { prefix: "http-cache" }).subscribe();
 }

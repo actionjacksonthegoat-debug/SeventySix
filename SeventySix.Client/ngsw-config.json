@@ -1,0 +1,62 @@
+{
+	"$schema": "./node_modules/@angular/service-worker/config/schema.json",
+	"index": "/index.html",
+	"appData": {
+		"name": "SeventySix",
+		"version": "1.0.0",
+		"description": "SeventySix Application with Progressive Web App capabilities"
+	},
+	"assetGroups": [
+		{
+			"name": "app",
+			"installMode": "prefetch",
+			"updateMode": "prefetch",
+			"resources": {
+				"files": ["/favicon.ico", "/index.html", "/*.css", "/*.js"]
+			}
+		},
+		{
+			"name": "assets",
+			"installMode": "lazy",
+			"updateMode": "prefetch",
+			"resources": {
+				"files": [
+					"/assets/**",
+					"/*.(eot|svg|cur|jpg|png|webp|gif|otf|ttf|woff|woff2|ani)"
+				]
+			}
+		}
+	],
+	"dataGroups": [
+		{
+			"name": "api-weather",
+			"urls": ["/weatherforecast", "/api/weather/**"],
+			"cacheConfig": {
+				"strategy": "freshness",
+				"maxSize": 50,
+				"maxAge": "5m",
+				"timeout": "5s"
+			}
+		},
+		{
+			"name": "api-reference-data",
+			"urls": ["/api/reference/**", "/api/config/**", "/api/lookup/**"],
+			"cacheConfig": {
+				"strategy": "performance",
+				"maxSize": 100,
+				"maxAge": "1h"
+			}
+		},
+		{
+			"name": "api-dynamic",
+			"urls": ["/api/**"],
+			"cacheConfig": {
+				"strategy": "freshness",
+				"maxSize": 100,
+				"maxAge": "5m",
+				"timeout": "10s"
+			}
+		}
+	],
+	"navigationUrls": ["/**", "!/**/*.*", "!/**/*__*", "!/**/*__*/**"]
+}

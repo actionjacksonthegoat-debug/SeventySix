@@ -5,14 +5,18 @@ import {
 } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { of, throwError } from "rxjs";
 import { WeatherDisplay } from "./weather-display";
 import { environment } from "@environments/environment";
+import { WeatherService } from "@core/services/weather.service";
+import { LoggerService } from "@core/services/logger.service";
 
 describe("WeatherDisplay", () =>
 {
 	let component: WeatherDisplay;
 	let fixture: ComponentFixture<WeatherDisplay>;
-	let httpMock: HttpTestingController;
+	let weatherServiceSpy: jasmine.SpyObj<WeatherService>;
+	let loggerServiceSpy: jasmine.SpyObj<LoggerService>;
 
 	const mockForecasts = [
 		{
@@ -31,106 +35,105 @@ describe("WeatherDisplay", () =>
 
 	beforeEach(async () =>
 	{
+		// Create spy objects for services
+		weatherServiceSpy = jasmine.createSpyObj("WeatherService", [
+			"getAllForecasts"
+		]);
+		loggerServiceSpy = jasmine.createSpyObj("LoggerService", [
+			"info",
+			"error",
+			"debug",
+			"warning",
+			"critical"
+		]);
+
+		// Default mock implementation - returns empty array to prevent errors
+		weatherServiceSpy.getAllForecasts.and.returnValue(of([]));
+
 		await TestBed.configureTestingModule({
 			imports: [WeatherDisplay],
 			providers: [
-				provideHttpClient(withFetch()),
-				provideHttpClientTesting(),
-				provideZonelessChangeDetection()
+				provideZonelessChangeDetection(),
+				{ provide: WeatherService, useValue: weatherServiceSpy },
+				{ provide: LoggerService, useValue: loggerServiceSpy }
 			]
 		}).compileComponents();
 
 		fixture = TestBed.createComponent(WeatherDisplay);
 		component = fixture.componentInstance;
-		httpMock = TestBed.inject(HttpTestingController);
-	});
-
-	afterEach(() =>
-	{
-		httpMock.verify();
 	});
 
 	it("should create", () =>
 	{
-		// Don't call detectChanges yet to avoid triggering ngOnInit
 		expect(component).toBeTruthy();
-
-		// Now flush the request that was made in constructor
-		const req = httpMock.expectOne(`${environment.apiUrl}/WeatherForecast`);
-		req.flush([]);
+		expect(weatherServiceSpy.getAllForecasts).toHaveBeenCalled();
 	});
 
 	it("should load forecasts on init", () =>
 	{
-		fixture.detectChanges();
+		weatherServiceSpy.getAllForecasts.and.returnValue(of(mockForecasts));
 
-		const req = httpMock.expectOne(`${environment.apiUrl}/WeatherForecast`);
-		expect(req.request.method).toBe("GET");
-
-		req.flush(mockForecasts);
+		component.loadForecasts();
 
 		expect(component.forecasts().length).toBe(2);
 		expect(component.isLoading()).toBe(false);
 		expect(component.error()).toBeNull();
+		expect(loggerServiceSpy.info).toHaveBeenCalledWith(
+			"Weather forecasts loaded successfully",
+			{ count: 2 }
+		);
 	});
 
 	it("should handle load error", () =>
 	{
-		fixture.detectChanges();
+		const errorResponse = new Error("Server Error");
+		weatherServiceSpy.getAllForecasts.and.returnValue(
+			throwError(() => errorResponse)
+		);
 
-		const req = httpMock.expectOne(`${environment.apiUrl}/WeatherForecast`);
-		req.error(new ProgressEvent("error"), {
-			status: 500,
-			statusText: "Server Error"
-		});
+		component.loadForecasts();
 
 		expect(component.error()).toBe(
 			"Failed to load weather forecasts. Please try again."
 		);
 		expect(component.isLoading()).toBe(false);
 		expect(component.forecasts().length).toBe(0);
+		expect(loggerServiceSpy.error).toHaveBeenCalledWith(
+			"Failed to load weather forecasts",
+			errorResponse
+		);
 	});
 
 	it("should compute hasForecasts correctly", () =>
 	{
-		fixture.detectChanges();
-
-		const req = httpMock.expectOne(`${environment.apiUrl}/WeatherForecast`);
-
 		expect(component.hasForecasts()).toBe(false);
 
-		req.flush(mockForecasts);
+		weatherServiceSpy.getAllForecasts.and.returnValue(of(mockForecasts));
+		component.loadForecasts();
 
 		expect(component.hasForecasts()).toBe(true);
 	});
 
 	it("should compute forecastCount correctly", () =>
 	{
-		fixture.detectChanges();
-
-		const req = httpMock.expectOne(`${environment.apiUrl}/WeatherForecast`);
-		req.flush(mockForecasts);
+		weatherServiceSpy.getAllForecasts.and.returnValue(of(mockForecasts));
+		component.loadForecasts();
 
 		expect(component.forecastCount()).toBe(2);
 	});
 
 	it("should retry loading forecasts", () =>
 	{
-		fixture.detectChanges();
-
-		const req1 = httpMock.expectOne(
-			`${environment.apiUrl}/WeatherForecast`
+		const errorResponse = new Error("Network error");
+		weatherServiceSpy.getAllForecasts.and.returnValue(
+			throwError(() => errorResponse)
 		);
-		req1.error(new ProgressEvent("error"));
 
+		component.loadForecasts();
 		expect(component.error()).not.toBeNull();
 
+		weatherServiceSpy.getAllForecasts.and.returnValue(of(mockForecasts));
 		component.retry();
-
-		const req2 = httpMock.expectOne(
-			`${environment.apiUrl}/WeatherForecast`
-		);
-		req2.flush(mockForecasts);
 
 		expect(component.error()).toBeNull();
 		expect(component.forecasts().length).toBe(2);
@@ -148,9 +151,5 @@ describe("WeatherDisplay", () =>
 		const result = component.trackByDate(0, forecast);
 
 		expect(result).toBe(forecast.date.toString());
-
-		// Flush the constructor request
-		const req = httpMock.expectOne(`${environment.apiUrl}/WeatherForecast`);
-		req.flush([]);
 	});
 });

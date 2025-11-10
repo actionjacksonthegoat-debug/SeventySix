@@ -24,6 +24,16 @@
 							{
 								"glob": "**/*",
 								"input": "public"
+							},
+							{
+								"glob": "manifest.webmanifest",
+								"input": "public",
+								"output": "/"
+							},
+							{
+								"glob": "ngsw-config.json",
+								"input": "./",
+								"output": "/"
 							}
 						],
 						"styles": ["src/styles.scss"]
@@ -42,7 +52,15 @@
 									"maximumError": "8kB"
 								}
 							],
-							"outputHashing": "all"
+							"outputHashing": "all",
+							"serviceWorker": "ngsw-config.json"
+						},
+						"production-local": {
+							"optimization": true,
+							"outputHashing": "all",
+							"sourceMap": true,
+							"extractLicenses": false,
+							"serviceWorker": "ngsw-config.json"
 						},
 						"development": {
 							"optimization": false,
@@ -57,6 +75,9 @@
 					"configurations": {
 						"production": {
 							"buildTarget": "SeventySix.Client:build:production"
+						},
+						"production-local": {
+							"buildTarget": "SeventySix.Client:build:production-local"
 						},
 						"development": {
 							"buildTarget": "SeventySix.Client:build:development"
@@ -76,6 +97,11 @@
 							{
 								"glob": "**/*",
 								"input": "public"
+							},
+							{
+								"glob": "ngsw-config.json",
+								"input": "./",
+								"output": "/"
 							}
 						],
 						"styles": ["src/styles.scss"],
