@@ -330,7 +330,21 @@ public class UserServiceTests
 
 ## General Best Practices
 
-### Code Style
+### Code Formatting & Style
+
+**CRITICAL: All code MUST adhere to `.editorconfig` settings:**
+
+-   **Line Endings**: CRLF (Windows standard) for all files
+-   **Indentation**: Tabs (width: 4 spaces) for C#, TypeScript, SCSS
+-   **Character Encoding**: UTF-8 for all files
+-   **Trailing Whitespace**: Remove from all files except Markdown
+-   **C# Braces**: Allman style (opening brace on new line)
+-   **TypeScript Braces**: Next line style
+-   **C# Naming**: PascalCase for public members, private fields with underscore prefix
+-   **Async Methods**: Must end with 'Async' suffix
+-   **Interfaces**: Must start with 'I' prefix
+
+**Readability Standards:**
 
 -   Follow consistent naming conventions
 -   Use meaningful variable and function names
@@ -339,6 +353,11 @@ public class UserServiceTests
 -   Avoid deep nesting (max 3 levels)
 -   Comment why, not what
 -   Delete commented-out code
+-   Use whitespace intentionally to separate logical blocks
+-   Align related code vertically when it improves readability
+-   Break long lines at logical points (always after an equals, sometimes after commas or operators)
+
+### Code Style
 
 ### Git & Version Control
 
@@ -350,11 +369,29 @@ public class UserServiceTests
 
 ### Documentation
 
--   Document public APIs
--   Keep README up to date
--   Document architecture decisions (ADRs)
--   Include setup instructions
--   Document environment variables
+**CRITICAL - Do NOT Create Documentation Files:**
+
+-   **NEVER** create new Markdown files to document changes, features, or work completed
+-   **NEVER** create summary documents, change logs, or feature documentation files
+-   **ONLY** create documentation files when explicitly requested by the user
+-   Focus on inline code documentation (JSDoc, XML comments) instead
+-   Keep README.md updated only when specifically asked
+
+**When Documentation IS Needed:**
+
+-   Document public APIs with inline comments
+-   Keep README up to date (only when requested)
+-   Document architecture decisions (ADRs) if requested
+-   Include setup instructions in existing documentation
+-   Document environment variables in existing configuration files
+
+**Code Documentation (Always Required):**
+
+-   Use JSDoc for TypeScript functions and classes
+-   Use XML documentation comments for C# public APIs
+-   Explain complex algorithms with inline comments
+-   Document "why" decisions were made, not "what" the code does
+-   Include usage examples in API documentation comments
 
 ### Refactoring Strategy
 

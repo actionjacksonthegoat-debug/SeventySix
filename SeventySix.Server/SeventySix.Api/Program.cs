@@ -82,10 +82,12 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateWeatherForecastValida
 // Repository pattern - Scoped lifetime for per-request database context
 // Implements Dependency Inversion Principle (DIP)
 builder.Services.AddScoped<IWeatherForecastRepository, WeatherForecastRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Application services - Business logic layer
 // Scoped lifetime ensures proper DbContext management
 builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // OpenAPI/Swagger configuration for API documentation
 builder.Services.AddOpenApi();

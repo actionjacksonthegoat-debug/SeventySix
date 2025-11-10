@@ -7,8 +7,29 @@ import { Routes } from "@angular/router";
 export const routes: Routes = [
 	{
 		path: "",
-		redirectTo: "game",
+		redirectTo: "users",
 		pathMatch: "full"
+	},
+	{
+		path: "users",
+		children: [
+			{
+				path: "",
+				loadComponent: () =>
+					import("./features/users/users/users-page").then(
+						(m) => m.UsersPage
+					),
+				title: "User Management"
+			},
+			{
+				path: ":id",
+				loadComponent: () =>
+					import("./features/users/user/user-page").then(
+						(m) => m.UserPage
+					),
+				title: "Edit User"
+			}
+		]
 	},
 	{
 		path: "game",
@@ -26,6 +47,6 @@ export const routes: Routes = [
 	},
 	{
 		path: "**",
-		redirectTo: "game"
+		redirectTo: "users"
 	}
 ];

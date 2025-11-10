@@ -1,0 +1,76 @@
+<div class="user-list">
+	<h2>Users</h2>
+
+	<!-- Loading State -->
+	@if (isLoading())
+	{
+		<div class="loading">
+			<p>Loading users...</p>
+		</div>
+	}
+
+	<!-- Error State -->
+	@if (error() && !isLoading())
+	{
+		<div class="error">
+			<p>{{ error() }}</p>
+			<button type="button" (click)="retry()">Retry</button>
+		</div>
+	}
+
+	<!-- Success State -->
+	@if (!isLoading() && !error() && hasUsers())
+	{
+		<div class="user-table-container">
+			<p>Showing {{ userCount() }} users</p>
+			<table class="user-table">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Username</th>
+						<th>Email</th>
+						<th>Full Name</th>
+						<th>Created At</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					@for (
+						user of users();
+						track trackById($index, user)
+					)
+					{
+						<tr
+							(click)="viewUser(user.id)"
+							class="clickable-row"
+						>
+							<td>{{ user.id }}</td>
+							<td>{{ user.username }}</td>
+							<td>{{ user.email }}</td>
+							<td>{{ user.fullName || 'N/A' }}</td>
+							<td>{{ user.createdAt | date: 'short' }}</td>
+							<td>
+								<span
+									[class.active]="user.isActive"
+									[class.inactive]="!user.isActive"
+									class="status-badge"
+								>
+									{{ user.isActive ? 'Active' : 'Inactive' }}
+								</span>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+
+	<!-- Empty State -->
+	@if (!isLoading() && !error() && !hasUsers())
+	{
+		<div class="empty">
+			<p>No users available.</p>
+			<button type="button" (click)="retry()">Refresh</button>
+		</div>
+	}
+</div>

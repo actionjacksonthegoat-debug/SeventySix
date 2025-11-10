@@ -1,0 +1,18 @@
+<div class="users-page">
+	<!-- Page Header -->
+	<header class="page-header">
+		<h1 class="page-title">{{ pageTitle() }}</h1>
+
+		@if (showHeaderActions())
+		{
+			<div class="page-actions">
+				<!-- Future: Add User button, filters, export, etc. -->
+			</div>
+		}
+	</header>
+
+	<!-- Main Content: UserList Component -->
+	<main class="page-content">
+		<app-user-list />
+	</main>
+</div>

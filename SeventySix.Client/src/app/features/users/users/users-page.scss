@@ -1,0 +1,51 @@
+.users-page {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+	background: var(--background-color, #ffffff);
+
+	.page-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2rem;
+		padding-bottom: 1rem;
+		border-bottom: 2px solid var(--border-color, #e0e0e0);
+
+		.page-title {
+			margin: 0;
+			font-size: 2rem;
+			font-weight: 600;
+			color: var(--text-primary, #1a1a1a);
+		}
+
+		.page-actions {
+			display: flex;
+			gap: 1rem;
+			align-items: center;
+		}
+	}
+
+	.page-content {
+		flex: 1;
+		overflow: auto;
+	}
+}
+
+// Responsive design
+@media (max-width: 768px) {
+	.users-page {
+		padding: 1rem;
+
+		.page-header {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 1rem;
+
+			.page-actions {
+				width: 100%;
+			}
+		}
+	}
+}

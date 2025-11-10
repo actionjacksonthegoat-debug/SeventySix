@@ -1,0 +1,173 @@
+<div class="user-detail">
+	<!-- Loading State -->
+	@if (isLoading())
+	{
+		<div class="loading">
+			<p>Loading user...</p>
+		</div>
+	}
+
+	<!-- Error State -->
+	@if (error() && !isLoading())
+	{
+		<div class="error">
+			<p>{{ error() }}</p>
+			<button type="button" (click)="cancel()">Back to Users</button>
+		</div>
+	}
+
+	<!-- Success State -->
+	@if (!isLoading() && !error() && hasUser())
+	{
+		<div class="user-detail-container">
+			<div class="header">
+				<h2>Edit User</h2>
+				<button
+					type="button"
+					class="btn-secondary"
+					(click)="cancel()"
+				>
+					Back to Users
+				</button>
+			</div>
+
+			<form [formGroup]="userForm" (ngSubmit)="save()">
+				<!-- User ID (read-only) -->
+				<div class="form-group">
+					<label>User ID</label>
+					<input
+						type="text"
+						[value]="user()!.id"
+						readonly
+						class="readonly"
+					/>
+					<small class="help-text">Auto-generated identifier</small>
+				</div>
+
+				<!-- Username -->
+				<div class="form-group">
+					<label for="username">Username *</label>
+					<input
+						id="username"
+						type="text"
+						formControlName="username"
+						[class.invalid]="userForm.get('username')?.invalid && userForm.get('username')?.touched"
+						placeholder="Enter username"
+					/>
+					@if (userForm.get('username')?.invalid && userForm.get('username')?.touched)
+					{
+						<small class="error-text">
+							{{ getErrorMessage('username') }}
+						</small>
+					}
+					<small class="help-text">
+						3-50 characters, alphanumeric and underscores only
+					</small>
+				</div>
+
+				<!-- Email -->
+				<div class="form-group">
+					<label for="email">Email *</label>
+					<input
+						id="email"
+						type="email"
+						formControlName="email"
+						[class.invalid]="userForm.get('email')?.invalid && userForm.get('email')?.touched"
+						placeholder="Enter email address"
+					/>
+					@if (userForm.get('email')?.invalid && userForm.get('email')?.touched)
+					{
+						<small class="error-text">
+							{{ getErrorMessage('email') }}
+						</small>
+					}
+					<small class="help-text">
+						Valid email address, max 255 characters
+					</small>
+				</div>
+
+				<!-- Full Name -->
+				<div class="form-group">
+					<label for="fullName">Full Name</label>
+					<input
+						id="fullName"
+						type="text"
+						formControlName="fullName"
+						[class.invalid]="userForm.get('fullName')?.invalid && userForm.get('fullName')?.touched"
+						placeholder="Enter full name (optional)"
+					/>
+					@if (userForm.get('fullName')?.invalid && userForm.get('fullName')?.touched)
+					{
+						<small class="error-text">
+							{{ getErrorMessage('fullName') }}
+						</small>
+					}
+					<small class="help-text">
+						Optional, max 100 characters
+					</small>
+				</div>
+
+				<!-- Is Active -->
+				<div class="form-group checkbox-group">
+					<label for="isActive">
+						<input
+							id="isActive"
+							type="checkbox"
+							formControlName="isActive"
+						/>
+						<span>Active Account</span>
+					</label>
+					<small class="help-text">
+						Inactive accounts cannot access the system
+					</small>
+				</div>
+
+				<!-- Created At (read-only) -->
+				<div class="form-group">
+					<label>Created At</label>
+					<input
+						type="text"
+						[value]="user()!.createdAt | date: 'full'"
+						readonly
+						class="readonly"
+					/>
+					<small class="help-text">Account creation timestamp (UTC)</small>
+				</div>
+
+				<!-- Action Buttons -->
+				<div class="form-actions">
+					<button
+						type="submit"
+						class="btn-primary"
+						[disabled]="!canSave()"
+					>
+						@if (isSaving())
+						{
+							<span>Saving...</span>
+						}
+						@else
+						{
+							<span>Save Changes</span>
+						}
+					</button>
+					<button
+						type="button"
+						class="btn-secondary"
+						(click)="reset()"
+						[disabled]="!userForm.dirty || isSaving()"
+					>
+						Reset
+					</button>
+					<button
+						type="button"
+						class="btn-tertiary"
+						(click)="cancel()"
+						[disabled]="isSaving()"
+					>
+						Cancel
+					</button>
+				</div>
+			</form>
+		</div>
+	}
+</div>

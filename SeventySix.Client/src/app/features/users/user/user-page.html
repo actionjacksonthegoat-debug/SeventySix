@@ -1,0 +1,196 @@
+<div class="user-page">
+	<!-- Page Header -->
+	<header class="page-header">
+		<h1 class="page-title">{{ pageTitle() }}</h1>
+		<div class="page-actions">
+			<button
+				type="button"
+				class="btn btn-secondary"
+				(click)="onCancel()"
+				[disabled]="isSaving()"
+			>
+				Cancel
+			</button>
+			<button
+				type="submit"
+				class="btn btn-primary"
+				(click)="onSubmit()"
+				[disabled]="
+					isSaving() || userForm.invalid || !hasUnsavedChanges()
+				"
+			>
+				@if (isSaving())
+				{
+					<span class="spinner"></span>
+					Saving...
+				}
+				@else
+				{
+					Save Changes
+				}
+			</button>
+		</div>
+	</header>
+
+	<!-- Loading State -->
+	@if (isLoading())
+	{
+		<div class="loading-container">
+			<div class="spinner-large"></div>
+			<p>Loading user...</p>
+		</div>
+	}
+
+	<!-- Error State -->
+	@if (error() && !isLoading())
+	{
+		<div class="error-container">
+			<div class="error-message">
+				<svg
+					class="error-icon"
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+				>
+					<circle cx="12" cy="12" r="10"></circle>
+					<line x1="12" y1="8" x2="12" y2="12"></line>
+					<line x1="12" y1="16" x2="12.01" y2="16"></line>
+				</svg>
+				<p>{{ error() }}</p>
+				<button
+					type="button"
+					class="btn btn-secondary"
+					(click)="onCancel()"
+				>
+					Back to Users
+				</button>
+			</div>
+		</div>
+	}
+
+	<!-- User Form -->
+	@if (!isLoading() && !error())
+	{
+		<main class="page-content">
+			<!-- Save Error Alert -->
+			@if (saveError())
+			{
+				<div class="alert alert-error">
+					<svg
+						class="alert-icon"
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+					>
+						<circle cx="12" cy="12" r="10"></circle>
+						<line x1="12" y1="8" x2="12" y2="12"></line>
+						<line x1="12" y1="16" x2="12.01" y2="16"></line>
+					</svg>
+					<span>{{ saveError() }}</span>
+				</div>
+			}
+
+			<form
+				[formGroup]="userForm"
+				class="user-form"
+				(ngSubmit)="onSubmit()"
+			>
+				<!-- Username Field -->
+				<div class="form-group">
+					<label for="username" class="form-label">
+						Username <span class="required">*</span>
+					</label>
+					<input
+						type="text"
+						id="username"
+						formControlName="username"
+						class="form-input"
+						[class.error]="hasFieldError('username')"
+						placeholder="Enter username"
+						autocomplete="username"
+					/>
+					@if (getFieldError("username"))
+					{
+						<span class="field-error">{{
+							getFieldError("username")
+						}}</span>
+					}
+				</div>
+
+				<!-- Email Field -->
+				<div class="form-group">
+					<label for="email" class="form-label">
+						Email <span class="required">*</span>
+					</label>
+					<input
+						type="email"
+						id="email"
+						formControlName="email"
+						class="form-input"
+						[class.error]="hasFieldError('email')"
+						placeholder="Enter email address"
+						autocomplete="email"
+					/>
+					@if (getFieldError("email"))
+					{
+						<span class="field-error">{{
+							getFieldError("email")
+						}}</span>
+					}
+				</div>
+
+				<!-- Full Name Field -->
+				<div class="form-group">
+					<label for="fullName" class="form-label"> Full Name </label>
+					<input
+						type="text"
+						id="fullName"
+						formControlName="fullName"
+						class="form-input"
+						[class.error]="hasFieldError('fullName')"
+						placeholder="Enter full name"
+						autocomplete="name"
+					/>
+					@if (getFieldError("fullName"))
+					{
+						<span class="field-error">{{
+							getFieldError("fullName")
+						}}</span>
+					}
+				</div>
+
+				<!-- Active Status Field -->
+				<div class="form-group form-group-checkbox">
+					<label class="checkbox-label">
+						<input
+							type="checkbox"
+							id="isActive"
+							formControlName="isActive"
+							class="form-checkbox"
+						/>
+						<span>Active User</span>
+					</label>
+					<p class="field-hint">
+						Inactive users cannot log in to the system
+					</p>
+				</div>
+
+				<!-- Form Info -->
+				<div class="form-info">
+					@if (user())
+					{
+						<p class="info-text">
+							<strong>Created:</strong>
+							{{ user()!.createdAt | date: "medium" }}
+						</p>
+						<p class="info-text">
+							<strong>User ID:</strong> {{ user()!.id }}
+						</p>
+					}
+				</div>
+			</form>
+		</main>
+	}
+</div>

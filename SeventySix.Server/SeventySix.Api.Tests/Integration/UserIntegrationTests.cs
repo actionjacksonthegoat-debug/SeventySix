@@ -1,0 +1,338 @@
+// <copyright file="UserIntegrationTests.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using System.Net;
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc.Testing;
+using SeventySix.Application.DTOs;
+using SeventySix.Application.DTOs.Requests;
+
+namespace SeventySix.Api.Tests.Integration;
+
+/// <summary>
+/// Integration tests for User API endpoints.
+/// Tests the full stack from HTTP request to response.
+/// </summary>
+/// <remarks>
+/// Following TDD principles:
+/// - Test real HTTP endpoints
+/// - Test full request/response cycle
+/// - Test with actual dependencies (or test doubles)
+/// - Verify JSON serialization
+///
+/// Uses WebApplicationFactory for in-memory test server.
+///
+/// Coverage Focus:
+/// - GET /api/user - Get all users
+/// - GET /api/user/{id} - Get user by ID
+/// - POST /api/user - Create user
+/// - HTTP status codes
+/// - Request/response JSON
+/// - Validation errors
+/// </remarks>
+public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+{
+	private readonly WebApplicationFactory<Program> Factory;
+	private readonly HttpClient Client;
+
+	public UserIntegrationTests(WebApplicationFactory<Program> factory)
+	{
+		Factory = factory;
+		Client = factory.CreateClient();
+	}
+
+	#region GET /api/user Tests
+
+	[Fact]
+	public async Task GetAllUsers_ShouldReturnOkWithUsersAsync()
+	{
+		// Act
+		var response = await Client.GetAsync("/api/user");
+
+		// Assert
+		response.EnsureSuccessStatusCode();
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		var users = await response.Content.ReadFromJsonAsync<List<UserDto>>();
+		Assert.NotNull(users);
+		Assert.NotEmpty(users); // Seeded data should exist
+	}
+
+	[Fact]
+	public async Task GetAllUsers_ShouldReturnJsonContentTypeAsync()
+	{
+		// Act
+		var response = await Client.GetAsync("/api/user");
+
+		// Assert
+		Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+	}
+
+	#endregion
+
+	#region GET /api/user/{id} Tests
+
+	[Fact]
+	public async Task GetUserById_ShouldReturnOkWithUser_WhenUserExistsAsync()
+	{
+		// Arrange - assuming seeded user with ID 1 exists
+		var userId = 1;
+
+		// Act
+		var response = await Client.GetAsync($"/api/user/{userId}");
+
+		// Assert
+		response.EnsureSuccessStatusCode();
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		var user = await response.Content.ReadFromJsonAsync<UserDto>();
+		Assert.NotNull(user);
+		Assert.Equal(userId, user.Id);
+		Assert.NotNull(user.Username);
+		Assert.NotNull(user.Email);
+	}
+
+	[Fact]
+	public async Task GetUserById_ShouldReturnNotFound_WhenUserDoesNotExistAsync()
+	{
+		// Arrange
+		var nonExistentId = 99999;
+
+		// Act
+		var response = await Client.GetAsync($"/api/user/{nonExistentId}");
+
+		// Assert
+		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+	}
+
+	#endregion
+
+	#region POST /api/user Tests
+
+	[Fact]
+	public async Task CreateUser_ShouldReturnCreated_WhenRequestIsValidAsync()
+	{
+		// Arrange
+		var request = new CreateUserRequest
+		{
+			Username = "integration_test_user",
+			Email = "integration@test.com",
+			FullName = "Integration Test User",
+			IsActive = true,
+		};
+
+		// Act
+		var response = await Client.PostAsJsonAsync("/api/user", request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+		Assert.NotNull(response.Headers.Location); // Location header should be set
+
+		var createdUser = await response.Content.ReadFromJsonAsync<UserDto>();
+		Assert.NotNull(createdUser);
+		Assert.True(createdUser.Id > 0); // ID should be assigned
+		Assert.Equal("integration_test_user", createdUser.Username);
+		Assert.Equal("integration@test.com", createdUser.Email);
+		Assert.Equal("Integration Test User", createdUser.FullName);
+		Assert.True(createdUser.IsActive);
+	}
+
+	[Fact]
+	public async Task CreateUser_ShouldReturnBadRequest_WhenUsernameIsTooShortAsync()
+	{
+		// Arrange
+		var request = new CreateUserRequest
+		{
+			Username = "ab", // Too short (< 3 chars)
+			Email = "test@example.com",
+		};
+
+		// Act
+		var response = await Client.PostAsJsonAsync("/api/user", request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+	}
+
+	[Fact]
+	public async Task CreateUser_ShouldReturnBadRequest_WhenUsernameContainsInvalidCharactersAsync()
+	{
+		// Arrange
+		var request = new CreateUserRequest
+		{
+			Username = "user name", // Contains space
+			Email = "test@example.com",
+		};
+
+		// Act
+		var response = await Client.PostAsJsonAsync("/api/user", request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+	}
+
+	[Fact]
+	public async Task CreateUser_ShouldReturnBadRequest_WhenEmailIsInvalidAsync()
+	{
+		// Arrange
+		var request = new CreateUserRequest
+		{
+			Username = "testuser",
+			Email = "not-an-email", // Invalid email format
+		};
+
+		// Act
+		var response = await Client.PostAsJsonAsync("/api/user", request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+	}
+
+	[Fact]
+	public async Task CreateUser_ShouldReturnBadRequest_WhenUsernameIsEmptyAsync()
+	{
+		// Arrange
+		var request = new CreateUserRequest
+		{
+			Username = string.Empty,
+			Email = "test@example.com",
+		};
+
+		// Act
+		var response = await Client.PostAsJsonAsync("/api/user", request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+	}
+
+	[Fact]
+	public async Task CreateUser_ShouldReturnBadRequest_WhenEmailIsEmptyAsync()
+	{
+		// Arrange
+		var request = new CreateUserRequest
+		{
+			Username = "testuser",
+			Email = string.Empty,
+		};
+
+		// Act
+		var response = await Client.PostAsJsonAsync("/api/user", request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+	}
+
+	[Fact]
+	public async Task CreateUser_ShouldAcceptNullFullNameAsync()
+	{
+		// Arrange
+		var request = new CreateUserRequest
+		{
+			Username = "user_without_fullname",
+			Email = "nofullname@test.com",
+			FullName = null,
+		};
+
+		// Act
+		var response = await Client.PostAsJsonAsync("/api/user", request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+		var createdUser = await response.Content.ReadFromJsonAsync<UserDto>();
+		Assert.NotNull(createdUser);
+		Assert.Null(createdUser.FullName);
+	}
+
+	[Fact]
+	public async Task CreateUser_ShouldAcceptIsActiveFalseAsync()
+	{
+		// Arrange
+		var request = new CreateUserRequest
+		{
+			Username = "inactive_user",
+			Email = "inactive@test.com",
+			IsActive = false,
+		};
+
+		// Act
+		var response = await Client.PostAsJsonAsync("/api/user", request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+		var createdUser = await response.Content.ReadFromJsonAsync<UserDto>();
+		Assert.NotNull(createdUser);
+		Assert.False(createdUser.IsActive);
+	}
+
+	#endregion
+
+	#region End-to-End Flow Tests
+
+	[Fact]
+	public async Task EndToEnd_CreateThenRetrieveUserAsync()
+	{
+		// Arrange
+		var createRequest = new CreateUserRequest
+		{
+			Username = "e2e_test_user",
+			Email = "e2e@test.com",
+			FullName = "End to End Test",
+			IsActive = true,
+		};
+
+		// Act 1: Create user
+		var createResponse = await Client.PostAsJsonAsync("/api/user", createRequest);
+		Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+		var createdUser = await createResponse.Content.ReadFromJsonAsync<UserDto>();
+		Assert.NotNull(createdUser);
+		var userId = createdUser.Id;
+
+		// Act 2: Retrieve the created user
+		var getResponse = await Client.GetAsync($"/api/user/{userId}");
+
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+
+		var retrievedUser = await getResponse.Content.ReadFromJsonAsync<UserDto>();
+		Assert.NotNull(retrievedUser);
+		Assert.Equal(userId, retrievedUser.Id);
+		Assert.Equal("e2e_test_user", retrievedUser.Username);
+		Assert.Equal("e2e@test.com", retrievedUser.Email);
+		Assert.Equal("End to End Test", retrievedUser.FullName);
+		Assert.True(retrievedUser.IsActive);
+	}
+
+	[Fact]
+	public async Task EndToEnd_CreateUserAndVerifyInGetAllAsync()
+	{
+		// Arrange
+		var createRequest = new CreateUserRequest
+		{
+			Username = "getall_test_user",
+			Email = "getall@test.com",
+		};
+
+		// Act 1: Create user
+		var createResponse = await Client.PostAsJsonAsync("/api/user", createRequest);
+		Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+		var createdUser = await createResponse.Content.ReadFromJsonAsync<UserDto>();
+		Assert.NotNull(createdUser);
+
+		// Act 2: Get all users
+		var getAllResponse = await Client.GetAsync("/api/user");
+		Assert.Equal(HttpStatusCode.OK, getAllResponse.StatusCode);
+
+		var allUsers = await getAllResponse.Content.ReadFromJsonAsync<List<UserDto>>();
+
+		// Assert
+		Assert.NotNull(allUsers);
+		Assert.Contains(allUsers, u => u.Id == createdUser.Id && u.Username == "getall_test_user");
+	}
+
+	#endregion
+}

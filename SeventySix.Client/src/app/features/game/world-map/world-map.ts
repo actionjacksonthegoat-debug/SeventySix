@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy } from "@angular/core";
+import { UserList } from "@shared/components/user-list/user-list";
 import { WeatherDisplay } from "@shared/components/weather-display/weather-display";
 
 /**
@@ -8,7 +9,7 @@ import { WeatherDisplay } from "@shared/components/weather-display/weather-displ
  */
 @Component({
 	selector: "app-world-map",
-	imports: [WeatherDisplay],
+	imports: [WeatherDisplay, UserList],
 	templateUrl: "./world-map.html",
 	styleUrl: "./world-map.scss",
 	changeDetection: ChangeDetectionStrategy.OnPush
