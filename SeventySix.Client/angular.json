@@ -101,6 +101,9 @@
 							}
 						],
 						"styles": ["src/styles.scss"],
+						"stylePreprocessorOptions": {
+							"includePaths": ["src/app/shared/styles"]
+						},
 						"codeCoverage": true,
 						"codeCoverageExclude": [
 							"src/**/*.spec.ts",
