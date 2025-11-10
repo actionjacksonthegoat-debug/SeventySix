@@ -50,12 +50,15 @@ public class CreateUserValidator : AbstractValidator<CreateUserRequest>
 
 		// Email validation: Required and valid email format
 		RuleFor(x => x.Email)
+			.Cascade(FluentValidation.CascadeMode.Stop)
 			.NotEmpty()
 			.WithMessage("Email is required")
+			.MaximumLength(255)
+			.WithMessage("Email must not exceed 255 characters")
 			.EmailAddress()
 			.WithMessage("Email must be a valid email address")
-			.MaximumLength(255)
-			.WithMessage("Email must not exceed 255 characters");
+			.Matches(@"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+			.WithMessage("Email must be a valid email address");
 
 		// FullName validation: Optional field with length constraint
 		RuleFor(x => x.FullName)

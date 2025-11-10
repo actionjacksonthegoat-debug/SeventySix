@@ -236,7 +236,7 @@ public class CreateUserValidatorTests
 	public void Email_ShouldHaveError_WhenTooLong()
 	{
 		// Arrange
-		var longEmail = new string('a', 240) + "@example.com"; // 252 chars total
+		var longEmail = new string('a', 244) + "@example.com"; // 256 chars total
 		var request = new CreateUserRequest
 		{
 			Username = "testuser",

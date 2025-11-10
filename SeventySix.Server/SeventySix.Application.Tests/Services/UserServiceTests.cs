@@ -216,7 +216,7 @@ public class UserServiceTests
 
 		var validationResult = new ValidationResult();
 		MockValidator
-			.Setup(v => v.ValidateAsync(request, It.IsAny<CancellationToken>()))
+			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()))
 			.ReturnsAsync(validationResult);
 
 		MockRepository
@@ -239,7 +239,7 @@ public class UserServiceTests
 		Assert.True(result.IsActive);
 
 		MockValidator.Verify(
-			v => v.ValidateAsync(request, It.IsAny<CancellationToken>()),
+			v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()),
 			Times.Once);
 		MockRepository.Verify(
 			r => r.CreateAsync(It.Is<User>(u =>
@@ -265,15 +265,15 @@ public class UserServiceTests
 		var validationResult = new ValidationResult(new[] { validationFailure });
 
 		MockValidator
-			.Setup(v => v.ValidateAsync(request, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(validationResult);
+			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()))
+			.ThrowsAsync(new ValidationException(validationResult.Errors));
 
 		// Act & Assert
 		await Assert.ThrowsAsync<ValidationException>(() =>
 			Service.CreateUserAsync(request));
 
 		MockValidator.Verify(
-			v => v.ValidateAsync(request, It.IsAny<CancellationToken>()),
+			v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()),
 			Times.Once);
 		MockRepository.Verify(
 			r => r.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()),
@@ -391,7 +391,7 @@ public class UserServiceTests
 
 		var validationResult = new ValidationResult();
 		MockValidator
-			.Setup(v => v.ValidateAsync(request, cancellationToken))
+			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), cancellationToken))
 			.ReturnsAsync(validationResult);
 
 		MockRepository
@@ -406,7 +406,7 @@ public class UserServiceTests
 		await Service.CreateUserAsync(request, cancellationToken);
 
 		// Assert
-		MockValidator.Verify(v => v.ValidateAsync(request, cancellationToken), Times.Once);
+		MockValidator.Verify(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), cancellationToken), Times.Once);
 		MockRepository.Verify(r => r.CreateAsync(It.IsAny<User>(), cancellationToken), Times.Once);
 	}
 

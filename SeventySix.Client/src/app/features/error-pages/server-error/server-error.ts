@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy } from "@angular/core";
+import { Component, ChangeDetectionStrategy, inject } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
+import { WindowUtilities } from "@shared/utilities";
 
 /**
  * 500 Server Error page.
@@ -18,11 +19,13 @@ import { MatIconModule } from "@angular/material/icon";
 })
 export class ServerErrorPage
 {
+	private readonly windowUtilities = inject(WindowUtilities);
+
 	/**
 	 * Reloads the current page
 	 */
 	reloadPage(): void
 	{
-		window.location.reload();
+		this.windowUtilities.reload();
 	}
 }

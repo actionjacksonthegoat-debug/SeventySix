@@ -3,3 +3,4 @@
  */
 
 export * from "./api.service.mock";
+export * from "./theme.service.mock";
