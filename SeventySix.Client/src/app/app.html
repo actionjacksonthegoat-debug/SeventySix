@@ -1,8 +1,50 @@
-<main class="main">
-	<h1>
-		Hello,
-		{{ title() }}
-	</h1>
-</main>
+<!-- Skip to main content link for accessibility -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
 
-<router-outlet />
+<mat-sidenav-container
+	class="app-container"
+	(backdropClick)="onBackdropClick()"
+>
+	<!-- Global Loading Bar -->
+	@if (loadingService.isLoading())
+	{
+		<mat-progress-bar
+			mode="indeterminate"
+			class="global-loading-bar"
+			role="progressbar"
+			aria-label="Page loading"
+		></mat-progress-bar>
+	}
+
+	<!-- Sidebar -->
+	<mat-sidenav
+		[mode]="layoutService.sidebarMode()"
+		[opened]="layoutService.sidebarExpanded()"
+		(closed)="layoutService.sidebarExpanded.set(false)"
+		[disableClose]="layoutService.sidebarMode() === 'side'"
+		[autoFocus]="false"
+		class="app-sidenav"
+		role="navigation"
+		aria-label="Main navigation"
+	>
+		<app-sidebar></app-sidebar>
+	</mat-sidenav>
+
+	<!-- Main Content -->
+	<mat-sidenav-content
+		class="app-content"
+		(swipeleft)="onSwipeLeft()"
+		(swiperight)="onSwipeRight()"
+	>
+		<!-- Header -->
+		<app-header></app-header>
+
+		<!-- Page Content -->
+		<main class="page-content" id="main-content" tabindex="-1">
+			<router-outlet />
+		</main>
+
+		<!-- Footer -->
+		<app-footer></app-footer>
+	</mat-sidenav-content>
+</mat-sidenav-container>

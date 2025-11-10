@@ -1,12 +1,14 @@
 {
-	"name": "SeventySix",
+	"name": "SeventySix - Modern Full-Stack Application",
 	"short_name": "SeventySix",
+	"description": "A production-ready full-stack application built with .NET Core 8+ and Angular 20+, demonstrating Clean Architecture, SOLID principles, and Material Design 3.",
 	"theme_color": "#1976d2",
 	"background_color": "#fafafa",
 	"display": "standalone",
-	"scope": "./",
-	"start_url": "./",
-	"description": "SeventySix Progressive Web Application",
+	"scope": "/",
+	"start_url": "/",
+	"orientation": "any",
+	"categories": ["productivity", "utilities"],
 	"icons": [
 		{
 			"src": "icons/icon-72x72.png",

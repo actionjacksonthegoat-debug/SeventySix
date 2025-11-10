@@ -1,0 +1,304 @@
+/**
+ * SeventySix - Global SCSS Variables
+ * Single source of truth for all design tokens, spacing, breakpoints, and sizes.
+ * Import this file in any component that needs access to these variables.
+ */
+
+// ============================================================================
+// SPACING SYSTEM (Material Design 8px Grid)
+// ============================================================================
+$spacing-base: 8px;
+
+// Spacing scale
+$spacing-xs: $spacing-base * 0.5; // 4px
+$spacing-sm: $spacing-base; // 8px
+$spacing-md: $spacing-base * 1.5; // 12px
+$spacing-lg: $spacing-base * 2; // 16px
+$spacing-xl: $spacing-base * 3; // 24px
+$spacing-2xl: $spacing-base * 4; // 32px
+$spacing-3xl: $spacing-base * 6; // 48px
+$spacing-4xl: $spacing-base * 8; // 64px
+
+// Common spacing values (aliases for convenience)
+$spacing-page-padding: $spacing-xl; // 24px - default page padding
+$spacing-section-gap: $spacing-2xl; // 32px - gap between major sections
+$spacing-card-padding: $spacing-lg; // 16px - card internal padding
+
+// ============================================================================
+// BREAKPOINTS (Material Design CDK Breakpoints)
+// ============================================================================
+$breakpoint-xs-max: 599.98px; // Phone (portrait)
+$breakpoint-sm-min: 600px; // Tablet (portrait)
+$breakpoint-sm-max: 959.98px;
+$breakpoint-md-min: 960px; // Laptop
+$breakpoint-md-max: 1279.98px;
+$breakpoint-lg-min: 1280px; // Desktop
+$breakpoint-lg-max: 1919.98px;
+$breakpoint-xl-min: 1920px; // Large desktop
+
+// Breakpoint ranges (for media queries)
+$breakpoint-xs: "(max-width: #{$breakpoint-xs-max})";
+$breakpoint-sm: "(min-width: #{$breakpoint-sm-min}) and (max-width: #{$breakpoint-sm-max})";
+$breakpoint-md: "(min-width: #{$breakpoint-md-min}) and (max-width: #{$breakpoint-md-max})";
+$breakpoint-lg: "(min-width: #{$breakpoint-lg-min}) and (max-width: #{$breakpoint-lg-max})";
+$breakpoint-xl: "(min-width: #{$breakpoint-xl-min})";
+
+// Simplified breakpoints (mobile-first)
+$breakpoint-mobile: $breakpoint-xs;
+$breakpoint-tablet: "(min-width: #{$breakpoint-sm-min})";
+$breakpoint-desktop: "(min-width: #{$breakpoint-md-min})";
+
+// ============================================================================
+// CONTAINER & LAYOUT WIDTHS
+// ============================================================================
+$container-max-width: 1400px; // Maximum content width
+$container-width-sm: 640px; // Small container (forms, narrow content)
+$container-width-md: 960px; // Medium container
+$container-width-lg: 1280px; // Large container
+
+// Sidebar widths
+$sidebar-width: 280px;
+$sidebar-width-collapsed: 64px;
+
+// Header/Footer heights
+$header-height: 64px;
+$header-height-mobile: 56px;
+$footer-height: 48px;
+
+// ============================================================================
+// TYPOGRAPHY SIZES (Material Design Type Scale)
+// ============================================================================
+// Font families
+$font-family-base: "Roboto", "Helvetica Neue", sans-serif;
+$font-family-monospace: "Roboto Mono", "Courier New", monospace;
+
+// Font weights
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// Font sizes (Material Design scale)
+$font-size-xs: 11px; // Label small
+$font-size-sm: 12px; // Body small, captions
+$font-size-base: 14px; // Body medium (default)
+$font-size-md: 16px; // Body large
+$font-size-lg: 22px; // Title large
+$font-size-xl: 24px; // Headline small
+$font-size-2xl: 28px; // Headline medium
+$font-size-3xl: 32px; // Headline large
+
+// Line heights
+$line-height-tight: 1.2;
+$line-height-base: 1.5;
+$line-height-relaxed: 1.75;
+
+// ============================================================================
+// BORDER RADIUS (Material Design)
+// ============================================================================
+$border-radius-none: 0;
+$border-radius-sm: 4px; // Small components
+$border-radius-base: 8px; // Default (cards, inputs)
+$border-radius-md: 8px; // Alias for base
+$border-radius-lg: 12px; // Large components
+$border-radius-xl: 16px; // Extra large
+$border-radius-full: 9999px; // Fully rounded (pills, avatars)
+
+// Component-specific radii
+$border-radius-button: $border-radius-base;
+$border-radius-card: $border-radius-lg;
+$border-radius-dialog: $border-radius-xl;
+$border-radius-chip: $border-radius-full;
+
+// ============================================================================
+// ELEVATION & SHADOWS (Material Design)
+// ============================================================================
+$elevation-none: none;
+$elevation-sm:
+	0 1px 3px rgba(0, 0, 0, 0.12),
+	0 1px 2px rgba(0, 0, 0, 0.24);
+$elevation-base:
+	0 3px 6px rgba(0, 0, 0, 0.16),
+	0 3px 6px rgba(0, 0, 0, 0.23);
+$elevation-md: $elevation-base; // Alias for base
+$elevation-lg:
+	0 10px 20px rgba(0, 0, 0, 0.19),
+	0 6px 6px rgba(0, 0, 0, 0.23);
+$elevation-xl:
+	0 14px 28px rgba(0, 0, 0, 0.25),
+	0 10px 10px rgba(0, 0, 0, 0.22);
+$elevation-2xl:
+	0 19px 38px rgba(0, 0, 0, 0.3),
+	0 15px 12px rgba(0, 0, 0, 0.22);
+
+// ============================================================================
+// Z-INDEX LAYERS (Stacking context)
+// ============================================================================
+$z-index-base: 0;
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-overlay: 1045; // For loading overlays, progress bars
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+$z-index-notification: 1080;
+
+// ============================================================================
+// TRANSITIONS & ANIMATIONS (Material Design Motion)
+// ============================================================================
+$transition-duration-instant: 100ms;
+$transition-duration-fast: 150ms;
+$transition-duration-normal: 200ms; // Alias for base
+$transition-duration-base: 200ms;
+$transition-duration-slow: 250ms;
+$transition-duration-slower: 300ms;
+
+// Easing functions (Material Design)
+$transition-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+$transition-easing-decelerate: cubic-bezier(0, 0, 0.2, 1);
+$transition-easing-accelerate: cubic-bezier(0.4, 0, 1, 1);
+$transition-easing-sharp: cubic-bezier(0.4, 0, 0.6, 1);
+
+// Common transitions
+$transition-all: all $transition-duration-base $transition-easing-standard;
+$transition-color: color $transition-duration-fast $transition-easing-standard;
+$transition-background: background-color $transition-duration-fast
+	$transition-easing-standard;
+$transition-transform: transform $transition-duration-base
+	$transition-easing-standard;
+$transition-opacity: opacity $transition-duration-fast
+	$transition-easing-standard;
+
+// ============================================================================
+// COMPONENT-SPECIFIC SIZES
+// ============================================================================
+// Buttons
+$button-height-sm: 32px;
+$button-height-base: 40px;
+$button-height-lg: 48px;
+$button-padding-x: $spacing-lg;
+$button-padding-y: $spacing-sm;
+
+// Form fields
+$form-field-height: 56px;
+$form-field-height-dense: 48px;
+$form-input-padding: $spacing-lg;
+
+// Cards
+$card-padding: $spacing-lg;
+$card-padding-lg: $spacing-xl;
+
+// Chips
+$chip-height: 24px;
+$chip-height-sm: 20px;
+
+// Tables
+$table-row-height: 52px;
+$table-header-height: 56px;
+$table-cell-padding: $spacing-lg;
+
+// Icons
+$icon-size-sm: 18px;
+$icon-size-base: 24px;
+$icon-size-md: 20px;
+$icon-size-lg: 32px;
+$icon-size-xl: 48px;
+
+// Avatars
+$avatar-size-sm: 32px;
+$avatar-size-base: 40px;
+$avatar-size-md: 48px;
+$avatar-size-lg: 56px;
+$avatar-size-xl: 64px;
+
+// Spinners/Progress
+$spinner-size-sm: 20px;
+$spinner-size-base: 40px;
+$spinner-size-lg: 64px;
+
+// ============================================================================
+// UTILITY MIXINS
+// ============================================================================
+
+// Responsive padding mixin
+@mixin responsive-padding() {
+	padding: $spacing-page-padding;
+
+	@media #{$breakpoint-sm} {
+		padding: $spacing-lg;
+	}
+
+	@media #{$breakpoint-xs} {
+		padding: $spacing-md;
+	}
+}
+
+// Center content mixin
+@mixin center-content() {
+	max-width: $container-max-width;
+	margin: 0 auto;
+	padding: 0 $spacing-page-padding;
+}
+
+// Truncate text mixin
+@mixin truncate-text() {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+// Multi-line truncate mixin
+@mixin truncate-multiline($lines: 2) {
+	display: -webkit-box;
+	-webkit-line-clamp: $lines;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+// Card shadow mixin
+@mixin card-shadow() {
+	box-shadow: $elevation-base;
+	transition: box-shadow $transition-duration-base $transition-easing-standard;
+
+	&:hover {
+		box-shadow: $elevation-lg;
+	}
+}
+
+// Focus visible mixin (accessibility)
+@mixin focus-visible() {
+	&:focus-visible {
+		outline: 2px solid var(--mat-sys-primary);
+		outline-offset: 2px;
+		border-radius: $border-radius-sm;
+	}
+
+	&:focus:not(:focus-visible) {
+		outline: none;
+	}
+}
+
+// Scrollbar styling mixin
+@mixin custom-scrollbar() {
+	&::-webkit-scrollbar {
+		width: $spacing-sm;
+		height: $spacing-sm;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: var(--mat-sys-surface-variant);
+		border-radius: $border-radius-sm;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: var(--mat-sys-outline);
+		border-radius: $border-radius-sm;
+
+		&:hover {
+			background: var(--mat-sys-on-surface-variant);
+		}
+	}
+}

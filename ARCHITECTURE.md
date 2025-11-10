@@ -5,13 +5,14 @@
 1. [Overview](#overview)
 2. [Backend Architecture (.NET Core 8+)](#backend-architecture-net-core-8)
 3. [Frontend Architecture (Angular)](#frontend-architecture-angular)
-4. [SOLID Principles Implementation](#solid-principles-implementation)
-5. [Design Patterns](#design-patterns)
-6. [Scalability Strategy](#scalability-strategy)
-7. [User Feature Workflow](#user-feature-workflow)
-8. [Security Architecture](#security-architecture)
-9. [Testing Strategy](#testing-strategy)
-10. [Deployment Architecture](#deployment-architecture)
+4. [UI/UX Architecture (Material Design 3)](#uiux-architecture-material-design-3)
+5. [SOLID Principles Implementation](#solid-principles-implementation)
+6. [Design Patterns](#design-patterns)
+7. [Scalability Strategy](#scalability-strategy)
+8. [User Feature Workflow](#user-feature-workflow)
+9. [Security Architecture](#security-architecture)
+10. [Testing Strategy](#testing-strategy)
+11. [Deployment Architecture](#deployment-architecture)
 
 ---
 
@@ -789,36 +790,499 @@ this.userService.getAllUsers().subscribe({
 });
 ```
 
-#### 8. **Chain of Responsibility** (Middleware Pipeline)
-
-**Purpose**: Pass request along chain of handlers
-
-**Backend**:
-
-```
-Request → Security Headers → Exception Handler → Rate Limiter →
-          Compression → Caching → CORS → Controller
-```
+**Why**: One-to-many dependency for state changes
 
 **Frontend**:
 
+```typescript
+this.userService.getAllUsers().subscribe({
+	next: (data) => this.users.set(data),
+	error: (err) => this.error.set(err.message),
+});
 ```
-HTTP Request → Cache → Auth → Logging → Error → Server
+
+---
+
+## UI/UX Architecture (Material Design 3)
+
+### Design Philosophy
+
+SeventySix's frontend strictly adheres to **Material Design 3 (M3)** guidelines as the **PRIMARY and ONLY** UI framework. All UI components must use Angular Material - never custom implementations.
+
+**Core Principles**:
+
+-   ✅ **Material-First**: Use Angular Material components exclusively
+-   ✅ **Accessibility**: WCAG 2.1 AA compliance throughout
+-   ✅ **Responsive**: Mobile-first design with breakpoint-driven layouts
+-   ✅ **Performance**: OnPush change detection, lazy loading, optimized rendering
+-   ✅ **Consistency**: Unified design language across all features
+
+**Documentation**: See `DESIGN_PATTERNS.md` for comprehensive implementation guidelines.
+
+### Material Design 3 Theming
+
+#### Theme Structure
+
+The application implements a **dynamic theming system** with 4 pre-configured variants:
+
+**Theme Axes**:
+
+-   **Brightness**: Light | Dark
+-   **Color Scheme**: Blue | Cyan-Orange
+
+**Available Themes**:
+
+1. `light-blue` - Professional blue theme (default)
+2. `dark-blue` - Dark mode with blue accents
+3. `light-cyan-orange` - Vibrant cyan/orange palette
+4. `dark-cyan-orange` - Dark mode with warm accents
+
+#### Theme Configuration
+
+**Location**: `src/styles.scss`
+
+```scss
+@use "@angular/material" as mat;
+
+// Define palettes
+$blue-palette: mat.define-palette(mat.$blue-palette);
+$cyan-palette: mat.define-palette(mat.$cyan-palette);
+$orange-palette: mat.define-palette(mat.$orange-palette);
+$red-palette: mat.define-palette(mat.$red-palette);
+
+// Light themes
+$light-blue-theme: mat.define-theme(
+	(
+		color: (
+			theme-type: light,
+			primary: $blue-palette,
+			tertiary: $blue-palette,
+		),
+	)
+);
+
+$light-cyan-orange-theme: mat.define-theme(
+	(
+		color: (
+			theme-type: light,
+			primary: $cyan-palette,
+			tertiary: $orange-palette,
+		),
+	)
+);
+
+// Dark themes (similar structure with theme-type: dark)
 ```
 
-#### 9. **Command** (Request/Response Objects)
+#### Theme Service
 
-**Purpose**: Encapsulate request as object
+**Location**: `src/app/core/services/theme.service.ts`
 
-**Example**: `CreateUserRequest`, `UserDto`
+**Purpose**: Manage theme switching and persistence
 
-```csharp
-public record CreateUserRequest
-{
-    public required string Username { get; init; }
-    public required string Email { get; init; }
+**Key Features**:
+
+-   Signal-based reactive state (`brightness`, `colorScheme`)
+-   Computed theme name (`themeName`)
+-   LocalStorage persistence
+-   Server-side rendering compatible
+
+**API**:
+
+```typescript
+export class ThemeService {
+	brightness = signal<ThemeBrightness>("light"); // 'light' | 'dark'
+	colorScheme = signal<ColorScheme>("blue"); // 'blue' | 'cyan-orange'
+	themeName = computed(() => `${this.brightness()}-${this.colorScheme()}`);
+
+	toggleBrightness(): void; // Switch light/dark
+	toggleColorScheme(): void; // Switch color schemes
+	setBrightness(brightness: ThemeBrightness): void;
+	setColorScheme(scheme: ColorScheme): void;
+
+	isDark(): boolean;
+	isLight(): boolean;
+	isBlue(): boolean;
+	isCyanOrange(): boolean;
 }
 ```
+
+**Usage in Components**:
+
+```typescript
+export class StyleGuideComponent {
+	protected readonly themeService = inject(ThemeService);
+
+	// In template:
+	// {{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}
+	// (click)="themeService.toggleBrightness()"
+}
+```
+
+#### Material Design Tokens
+
+**Color System**:
+
+-   `--mat-sys-primary` - Main brand color
+-   `--mat-sys-secondary` - Supporting actions
+-   `--mat-sys-tertiary` - Accent/highlight color
+-   `--mat-sys-error` - Error states
+-   `--mat-sys-surface` - Background surfaces
+-   `--mat-sys-on-primary` - Text on primary color
+-   `--mat-sys-on-surface` - Text on surfaces
+
+**Typography Scale** (Material Type Scale):
+
+-   `mat-headline-large` - 32px (Page titles)
+-   `mat-headline-medium` - 28px (Section headings)
+-   `mat-headline-small` - 24px (Card titles)
+-   `mat-title-large` - 22px
+-   `mat-title-medium` - 16px (Toolbar, dialogs)
+-   `mat-title-small` - 14px
+-   `mat-body-large` - 16px (Body text)
+-   `mat-body-medium` - 14px (Default)
+-   `mat-body-small` - 12px (Captions)
+-   `mat-label-large` - 14px (Form labels)
+-   `mat-label-medium` - 12px
+-   `mat-label-small` - 11px
+
+**Elevation System**:
+
+-   Level 0: Flat surfaces
+-   Level 1: Raised surfaces (4px shadow)
+-   Level 2: Cards, menus (8px shadow)
+-   Level 3: Dialogs, modals (16px shadow)
+-   Level 4: Navigation drawer (24px shadow)
+
+**Spacing Scale** (8px grid):
+
+-   4px, 8px, 12px, 16px, 24px, 32px, 48px, 64px
+
+### Component Architecture
+
+#### Material Component Usage
+
+**Button Hierarchy**:
+
+```html
+<!-- High emphasis - Primary actions -->
+<button mat-raised-button color="primary">Save</button>
+
+<!-- Medium emphasis - Secondary actions -->
+<button mat-flat-button color="accent">Edit</button>
+<button mat-stroked-button>Cancel</button>
+
+<!-- Low emphasis - Tertiary actions -->
+<button mat-button>Learn More</button>
+
+<!-- Icon buttons for compact actions -->
+<button mat-icon-button aria-label="Delete">
+	<mat-icon>delete</mat-icon>
+</button>
+
+<!-- Floating Action Button (FAB) for primary screen action -->
+<button mat-fab color="primary" aria-label="Add">
+	<mat-icon>add</mat-icon>
+</button>
+```
+
+**Form Controls**:
+
+```html
+<!-- Text inputs - Always outline appearance -->
+<mat-form-field appearance="outline">
+	<mat-label>Email</mat-label>
+	<input matInput type="email" [formControl]="emailControl" />
+	<mat-icon matPrefix>email</mat-icon>
+	<mat-hint>We'll never share your email</mat-hint>
+	<mat-error *ngIf="emailControl.hasError('email')"> Enter a valid email </mat-error>
+</mat-form-field>
+
+<!-- Selects -->
+<mat-form-field appearance="outline">
+	<mat-label>Country</mat-label>
+	<mat-select [formControl]="countryControl">
+		<mat-option *ngFor="let country of countries" [value]="country.code"> {{ country.name }} </mat-option>
+	</mat-select>
+</mat-form-field>
+
+<!-- Checkboxes and Radio Buttons -->
+<mat-checkbox [formControl]="agreeControl">I agree to terms</mat-checkbox>
+
+<mat-radio-group [formControl]="roleControl">
+	<mat-radio-button value="admin">Admin</mat-radio-button>
+	<mat-radio-button value="user">User</mat-radio-button>
+</mat-radio-group>
+```
+
+**Data Presentation**:
+
+```html
+<!-- Tables with sorting, filtering, pagination -->
+<table mat-table [dataSource]="dataSource" matSort>
+	<ng-container matColumnDef="name">
+		<th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+		<td mat-cell *matCellDef="let row">{{ row.name }}</td>
+	</ng-container>
+	<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+	<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+</table>
+
+<mat-paginator [length]="totalItems" [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
+
+<!-- Cards for content grouping -->
+<mat-card>
+	<mat-card-header>
+		<mat-card-title>User Statistics</mat-card-title>
+		<mat-card-subtitle>Last 6 months</mat-card-subtitle>
+	</mat-card-header>
+	<mat-card-content>
+		<!-- Chart or content -->
+	</mat-card-content>
+	<mat-card-actions>
+		<button mat-button>VIEW DETAILS</button>
+	</mat-card-actions>
+</mat-card>
+```
+
+**Feedback Components**:
+
+```typescript
+// Snackbar for brief messages
+this.snackBar.open("User created successfully", "DISMISS", {
+	duration: 3000,
+	horizontalPosition: "end",
+	verticalPosition: "bottom",
+});
+
+// Dialog for critical decisions
+const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+	data: {
+		title: "Delete User?",
+		message: "This action cannot be undone.",
+		confirmText: "DELETE",
+		cancelText: "CANCEL",
+		confirmColor: "warn",
+		icon: "warning",
+	},
+});
+
+dialogRef.afterClosed().subscribe((result) => {
+	if (result) {
+		// User confirmed
+	}
+});
+
+// Progress indicators
+<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+<mat-spinner diameter="40"></mat-spinner>
+```
+
+#### Layout Components
+
+**Application Shell** (`app.html`):
+
+```html
+<mat-sidenav-container>
+	<!-- Sidebar navigation -->
+	<mat-sidenav [mode]="layoutService.sidebarMode()" [opened]="layoutService.sidebarExpanded()">
+		<app-sidebar></app-sidebar>
+	</mat-sidenav>
+
+	<!-- Main content -->
+	<mat-sidenav-content>
+		<app-header></app-header>
+		<main class="page-content">
+			<router-outlet />
+		</main>
+		<app-footer></app-footer>
+	</mat-sidenav-content>
+</mat-sidenav-container>
+```
+
+**Responsive Breakpoints**:
+
+```typescript
+export class ViewportService {
+	// Breakpoint signals
+	isXSmall = computed(() => this.breakpoints()["(max-width: 599.98px)"]); // Phone
+	isSmall = computed(() => this.breakpoints()["(min-width: 600px) and (max-width: 959.98px)"]); // Tablet
+	isMedium = computed(() => this.breakpoints()["(min-width: 960px) and (max-width: 1279.98px)"]); // Laptop
+	isLarge = computed(() => this.breakpoints()["(min-width: 1280px) and (max-width: 1919.98px)"]); // Desktop
+	isXLarge = computed(() => this.breakpoints()["(min-width: 1920px)"]); // Large Desktop
+
+	// Device types
+	isMobile = computed(() => this.isXSmall() || this.isSmall());
+	isTablet = computed(() => this.isSmall() || this.isMedium());
+	isDesktop = computed(() => this.isLarge() || this.isXLarge());
+}
+```
+
+**Usage**:
+
+```typescript
+export class UserList {
+	protected readonly viewport = inject(ViewportService);
+
+	// Adjust columns based on screen size
+	displayedColumns = computed(() => {
+		if (this.viewport.isMobile()) {
+			return ["name", "email", "actions"];
+		}
+		return ["id", "username", "name", "email", "role", "status", "actions"];
+	});
+}
+```
+
+### Accessibility (WCAG 2.1 AA)
+
+**Keyboard Navigation**:
+
+-   All interactive elements accessible via keyboard
+-   Logical tab order (tabindex management)
+-   Keyboard shortcuts documented
+-   Skip-to-content link for screen readers
+
+**ARIA Labels**:
+
+```html
+<!-- Buttons with icon-only content -->
+<button mat-icon-button aria-label="Delete user">
+	<mat-icon aria-hidden="true">delete</mat-icon>
+</button>
+
+<!-- Loading states -->
+<div role="status" aria-live="polite" *ngIf="isLoading()">Loading users...</div>
+
+<!-- Error messages -->
+<div role="alert" aria-live="assertive" *ngIf="error()">{{ error() }}</div>
+
+<!-- Data tables -->
+<table mat-table role="table" aria-label="User list">
+	<!-- ... -->
+</table>
+```
+
+**Focus Management**:
+
+```scss
+// Global focus indicators (styles.scss)
+*:focus-visible {
+	outline: 2px solid var(--mat-sys-primary);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+*:focus:not(:focus-visible) {
+	outline: none; // Hide for mouse users
+}
+
+// Material button focus
+.mat-mdc-button:focus-visible {
+	box-shadow: 0 0 0 2px var(--mat-sys-primary);
+}
+```
+
+**Screen Reader Support**:
+
+-   Semantic HTML (`<nav>`, `<main>`, `<header>`, `<footer>`)
+-   ARIA landmarks (`role="navigation"`, `role="main"`)
+-   Live regions for dynamic content
+-   Descriptive link text (no "click here")
+
+### Animation & Motion
+
+**Material Design 3 Motion Principles**:
+
+-   **Duration**: 200-300ms for most transitions
+-   **Easing**: Cubic-bezier curves for natural motion
+-   **Choreography**: Stagger animations for lists
+
+**Example Animations** (`animations.ts`):
+
+```typescript
+export const fadeInOut = trigger("fadeInOut", [transition(":enter", [style({ opacity: 0 }), animate("200ms ease-in", style({ opacity: 1 }))]), transition(":leave", [animate("150ms ease-out", style({ opacity: 0 }))])]);
+
+export const slideIn = trigger("slideIn", [transition(":enter", [style({ transform: "translateX(-100%)", opacity: 0 }), animate("250ms ease-out", style({ transform: "translateX(0)", opacity: 1 }))])]);
+```
+
+**Usage**:
+
+```typescript
+@Component({
+	animations: [fadeInOut, slideIn],
+})
+export class UserList {}
+```
+
+```html
+<div @fadeInOut *ngIf="showContent">Content</div>
+<div @slideIn *ngFor="let user of users()">{{ user.name }}</div>
+```
+
+### Style Guide Component
+
+**Purpose**: Interactive documentation of all Material components used in the application
+
+**Location**: `/style-guide` (Developer tools section)
+
+**Features**:
+
+-   Live theme switcher
+-   All Material components showcase
+-   Color palette display
+-   Typography scale examples
+-   Button variants
+-   Form controls
+-   Tables and data presentation
+-   Feedback components (dialogs, snackbars)
+-   Icons reference
+
+**Access**: Development only (should be removed or protected in production)
+
+### Development Guidelines
+
+**DO**:
+
+-   ✅ Use Angular Material components exclusively
+-   ✅ Follow Material Design 3 spacing (8px grid)
+-   ✅ Use Material color tokens (never hardcoded colors)
+-   ✅ Apply proper ARIA labels to all interactive elements
+-   ✅ Test keyboard navigation
+-   ✅ Use OnPush change detection
+-   ✅ Implement responsive layouts with ViewportService
+-   ✅ Add focus indicators for accessibility
+
+**DON'T**:
+
+-   ❌ Create custom components when Material equivalent exists
+-   ❌ Hardcode colors (use CSS variables)
+-   ❌ Skip ARIA labels
+-   ❌ Use inline styles
+-   ❌ Ignore responsive design
+-   ❌ Forget hover/focus/active states
+-   ❌ Use `*ngIf`/`*ngFor` (use `@if`/`@for` instead)
+
+**References**:
+
+-   [Material Design 3](https://m3.material.io/)
+-   [Angular Material](https://material.angular.io/)
+-   [WCAG 2.1](https://www.w3.org/WAI/WCAG21/quickref/)
+-   `DESIGN_PATTERNS.md` - Comprehensive implementation patterns
+
+---
+
+## SOLID Principles Implementation
+
+### 1. Single Responsibility Principle (SRP)
+
+public record CreateUserRequest
+{
+public required string Username { get; init; }
+public required string Email { get; init; }
+}
+
+````
 
 ### Architectural Patterns
 
@@ -842,7 +1306,7 @@ public record UserDto // Never expose User entity directly
     public string Username { get; init; }
     public string Email { get; init; }
 }
-```
+````
 
 ---
 

@@ -44,11 +44,6 @@ describe("UsersPage", () =>
 		expect(component.pageTitle()).toBe("User Management");
 	});
 
-	it("should show header actions by default", () =>
-	{
-		expect(component.showHeaderActions()).toBe(true);
-	});
-
 	it("should render page header with title", async () =>
 	{
 		fixture.detectChanges();
@@ -69,11 +64,10 @@ describe("UsersPage", () =>
 		expect(userList).toBeTruthy();
 	});
 
-	it("should compute breadcrumbs correctly", () =>
+	it("should have a title", () =>
 	{
-		const breadcrumbs = component.breadcrumbs();
-		expect(breadcrumbs.length).toBe(2);
-		expect(breadcrumbs[0]).toEqual({ label: "Home", route: "/" });
-		expect(breadcrumbs[1]).toEqual({ label: "Users", route: "/users" });
+		const compiled = fixture.nativeElement;
+		const title = compiled.querySelector("h2");
+		expect(title).toBeTruthy();
 	});
 });

@@ -7,11 +7,13 @@ import { Routes } from "@angular/router";
 export const routes: Routes = [
 	{
 		path: "",
-		redirectTo: "users",
-		pathMatch: "full"
+		loadComponent: () =>
+			import("./features/home/home-page").then((m) => m.HomePage),
+		title: "SeventySix - Home"
 	},
 	{
 		path: "users",
+		data: { breadcrumb: "Users" },
 		children: [
 			{
 				path: "",
@@ -19,7 +21,17 @@ export const routes: Routes = [
 					import("./features/users/users/users-page").then(
 						(m) => m.UsersPage
 					),
-				title: "User Management"
+				title: "User Management",
+				data: { breadcrumb: "List" }
+			},
+			{
+				path: "new",
+				loadComponent: () =>
+					import("./features/users/user-create/user-create").then(
+						(m) => m.UserCreatePage
+					),
+				title: "Create User",
+				data: { breadcrumb: "New" }
 			},
 			{
 				path: ":id",
@@ -27,9 +39,19 @@ export const routes: Routes = [
 					import("./features/users/user/user-page").then(
 						(m) => m.UserPage
 					),
-				title: "Edit User"
+				title: "Edit User",
+				data: { breadcrumb: "Edit" }
 			}
 		]
+	},
+	{
+		path: "weather-forecast",
+		loadComponent: () =>
+			import("./features/weather/weather-forecast").then(
+				(m) => m.WeatherForecastPage
+			),
+		title: "Weather Forecast",
+		data: { breadcrumb: "Weather Forecast" }
 	},
 	{
 		path: "game",
@@ -37,16 +59,45 @@ export const routes: Routes = [
 			import("./features/game/world-map/world-map").then(
 				(m) => m.WorldMap
 			),
-		title: "Game - World Map"
+		title: "Game - World Map",
+		data: { breadcrumb: "Game" }
 	},
 	{
-		path: "sandbox",
+		path: "style-guide",
+		loadComponent: () =>
+			import("./features/style-guide/style-guide.component").then(
+				(m) => m.StyleGuideComponent
+			),
+		title: "Style Guide",
+		data: { breadcrumb: "Style Guide" }
+	},
+	{
+		path: "error",
 		children: [
-			// Add sandbox routes here when implemented
+			{
+				path: "404",
+				loadComponent: () =>
+					import("./features/error-pages/not-found/not-found").then(
+						(m) => m.NotFoundPage
+					),
+				title: "Page Not Found"
+			},
+			{
+				path: "500",
+				loadComponent: () =>
+					import(
+						"./features/error-pages/server-error/server-error"
+					).then((m) => m.ServerErrorPage),
+				title: "Server Error"
+			}
 		]
 	},
 	{
 		path: "**",
-		redirectTo: "users"
+		loadComponent: () =>
+			import("./features/error-pages/not-found/not-found").then(
+				(m) => m.NotFoundPage
+			),
+		title: "Page Not Found"
 	}
 ];

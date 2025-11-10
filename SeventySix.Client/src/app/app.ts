@@ -1,5 +1,13 @@
-import { Component, signal, ChangeDetectionStrategy } from "@angular/core";
+import { Component, inject } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
+import { MatSidenavModule } from "@angular/material/sidenav";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { ThemeService, LayoutService, LoadingService } from "@core/services";
+import {
+	HeaderComponent,
+	SidebarComponent,
+	FooterComponent
+} from "@core/layout";
 
 /**
  * Root application component.
@@ -7,12 +15,58 @@ import { RouterOutlet } from "@angular/router";
  */
 @Component({
 	selector: "app-root",
-	imports: [RouterOutlet],
+	imports: [
+		RouterOutlet,
+		MatSidenavModule,
+		MatProgressBarModule,
+		HeaderComponent,
+		SidebarComponent,
+		FooterComponent
+	],
 	templateUrl: "./app.html",
-	styleUrl: "./app.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
+	styleUrl: "./app.scss"
 })
 export class App
 {
-	protected readonly title = signal("SeventySix.Client");
+	protected readonly themeService = inject(ThemeService);
+	protected readonly layoutService = inject(LayoutService);
+	protected readonly loadingService = inject(LoadingService);
+
+	/**
+	 * Handle swipe left gesture (close sidebar on mobile)
+	 */
+	onSwipeLeft(): void
+	{
+		// Only handle swipe on mobile/tablet (overlay mode)
+		if (
+			this.layoutService.sidebarMode() === "over" &&
+			this.layoutService.sidebarExpanded()
+		)
+		{
+			this.layoutService.closeSidebar();
+		}
+	}
+
+	/**
+	 * Handle swipe right gesture (open sidebar on mobile)
+	 */
+	onSwipeRight(): void
+	{
+		// Only handle swipe on mobile/tablet (overlay mode)
+		if (
+			this.layoutService.sidebarMode() === "over" &&
+			!this.layoutService.sidebarExpanded()
+		)
+		{
+			this.layoutService.openSidebar();
+		}
+	}
+
+	/**
+	 * Handle backdrop click (close sidebar)
+	 */
+	onBackdropClick(): void
+	{
+		this.layoutService.closeSidebar();
+	}
 }

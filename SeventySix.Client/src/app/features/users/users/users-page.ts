@@ -1,9 +1,7 @@
-import {
-	Component,
-	signal,
-	computed,
-	ChangeDetectionStrategy
-} from "@angular/core";
+import { Component, signal, ChangeDetectionStrategy } from "@angular/core";
+import { RouterLink } from "@angular/router";
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
 import { UserList } from "@shared/components/user-list/user-list";
 
 /**
@@ -14,7 +12,7 @@ import { UserList } from "@shared/components/user-list/user-list";
  */
 @Component({
 	selector: "app-users-page",
-	imports: [UserList],
+	imports: [RouterLink, MatIconModule, MatButtonModule, UserList],
 	templateUrl: "./users-page.html",
 	styleUrls: ["./users-page.scss"],
 	changeDetection: ChangeDetectionStrategy.OnPush
@@ -23,21 +21,4 @@ export class UsersPage
 {
 	// Page-level state
 	readonly pageTitle = signal<string>("User Management");
-	readonly showHeaderActions = signal<boolean>(true);
-
-	// Computed values for page metadata
-	readonly breadcrumbs = computed(() => [
-		{ label: "Home", route: "/" },
-		{ label: "Users", route: "/users" }
-	]);
-
-	/**
-	 * Initializes the users page.
-	 * Component initialization logic can be added here for future enhancements.
-	 */
-	constructor()
-	{
-		// Future: Page-level initialization
-		// Could add analytics tracking, permission checks, etc.
-	}
 }

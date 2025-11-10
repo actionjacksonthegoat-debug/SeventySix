@@ -1,19 +1,21 @@
 <div class="user-page">
 	<!-- Page Header -->
 	<header class="page-header">
-		<h1 class="page-title">{{ pageTitle() }}</h1>
+		<h1 class="mat-headline-5">{{ pageTitle() }}</h1>
 		<div class="page-actions">
 			<button
+				mat-stroked-button
 				type="button"
-				class="btn btn-secondary"
 				(click)="onCancel()"
 				[disabled]="isSaving()"
 			>
+				<mat-icon>arrow_back</mat-icon>
 				Cancel
 			</button>
 			<button
+				mat-raised-button
+				color="primary"
 				type="submit"
-				class="btn btn-primary"
 				(click)="onSubmit()"
 				[disabled]="
 					isSaving() || userForm.invalid || !hasUnsavedChanges()
@@ -21,12 +23,14 @@
 			>
 				@if (isSaving())
 				{
-					<span class="spinner"></span>
-					Saving...
+					<mat-spinner diameter="20"></mat-spinner>
 				}
 				@else
 				{
-					Save Changes
+					<ng-container>
+						<mat-icon>save</mat-icon>
+						Save Changes
+					</ng-container>
 				}
 			</button>
 		</div>
@@ -36,8 +40,8 @@
 	@if (isLoading())
 	{
 		<div class="loading-container">
-			<div class="spinner-large"></div>
-			<p>Loading user...</p>
+			<mat-spinner></mat-spinner>
+			<p class="mat-body-1">Loading user...</p>
 		</div>
 	}
 
@@ -45,27 +49,24 @@
 	@if (error() && !isLoading())
 	{
 		<div class="error-container">
-			<div class="error-message">
-				<svg
-					class="error-icon"
-					xmlns="http://www.w3.org/2000/svg"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-				>
-					<circle cx="12" cy="12" r="10"></circle>
-					<line x1="12" y1="8" x2="12" y2="12"></line>
-					<line x1="12" y1="16" x2="12.01" y2="16"></line>
-				</svg>
-				<p>{{ error() }}</p>
-				<button
-					type="button"
-					class="btn btn-secondary"
-					(click)="onCancel()"
-				>
-					Back to Users
-				</button>
-			</div>
+			<mat-card appearance="outlined" class="error-card">
+				<mat-card-content>
+					<div class="error-content">
+						<mat-icon color="warn" class="error-icon"
+							>error</mat-icon
+						>
+						<p class="mat-body-1">{{ error() }}</p>
+						<button
+							mat-raised-button
+							type="button"
+							(click)="onCancel()"
+						>
+							<mat-icon>arrow_back</mat-icon>
+							Back to Users
+						</button>
+					</div>
+				</mat-card-content>
+			</mat-card>
 		</div>
 	}
 
@@ -76,20 +77,14 @@
 			<!-- Save Error Alert -->
 			@if (saveError())
 			{
-				<div class="alert alert-error">
-					<svg
-						class="alert-icon"
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-					>
-						<circle cx="12" cy="12" r="10"></circle>
-						<line x1="12" y1="8" x2="12" y2="12"></line>
-						<line x1="12" y1="16" x2="12.01" y2="16"></line>
-					</svg>
-					<span>{{ saveError() }}</span>
-				</div>
+				<mat-card appearance="outlined" class="alert-card error">
+					<mat-card-content>
+						<div class="alert-content">
+							<mat-icon color="warn">warning</mat-icon>
+							<span class="mat-body-1">{{ saveError() }}</span>
+						</div>
+					</mat-card-content>
+				</mat-card>
 			}
 
 			<form
@@ -97,99 +92,152 @@
 				class="user-form"
 				(ngSubmit)="onSubmit()"
 			>
-				<!-- Username Field -->
-				<div class="form-group">
-					<label for="username" class="form-label">
-						Username <span class="required">*</span>
-					</label>
-					<input
-						type="text"
-						id="username"
-						formControlName="username"
-						class="form-input"
-						[class.error]="hasFieldError('username')"
-						placeholder="Enter username"
-						autocomplete="username"
-					/>
-					@if (getFieldError("username"))
-					{
-						<span class="field-error">{{
-							getFieldError("username")
-						}}</span>
-					}
-				</div>
+				<mat-card appearance="outlined">
+					<mat-card-header>
+						<mat-card-title>User Information</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<!-- Username Field -->
+						<mat-form-field appearance="outline" class="full-width">
+							<mat-label>Username</mat-label>
+							<input
+								matInput
+								formControlName="username"
+								placeholder="Enter username"
+								autocomplete="username"
+								required
+							/>
+							<mat-icon matIconPrefix>person</mat-icon>
+							@if (
+								userForm.get("username")?.hasError("required")
+							)
+							{
+								<mat-error>Username is required</mat-error>
+							}
+							@if (
+								userForm.get("username")?.hasError("minlength")
+							)
+							{
+								<mat-error>
+									Username must be at least 3 characters
+								</mat-error>
+							}
+							@if (
+								userForm.get("username")?.hasError("maxlength")
+							)
+							{
+								<mat-error>
+									Username must not exceed 50 characters
+								</mat-error>
+							}
+						</mat-form-field>
 
-				<!-- Email Field -->
-				<div class="form-group">
-					<label for="email" class="form-label">
-						Email <span class="required">*</span>
-					</label>
-					<input
-						type="email"
-						id="email"
-						formControlName="email"
-						class="form-input"
-						[class.error]="hasFieldError('email')"
-						placeholder="Enter email address"
-						autocomplete="email"
-					/>
-					@if (getFieldError("email"))
-					{
-						<span class="field-error">{{
-							getFieldError("email")
-						}}</span>
-					}
-				</div>
+						<!-- Email Field -->
+						<mat-form-field appearance="outline" class="full-width">
+							<mat-label>Email</mat-label>
+							<input
+								matInput
+								type="email"
+								formControlName="email"
+								placeholder="Enter email address"
+								autocomplete="email"
+								required
+							/>
+							<mat-icon matIconPrefix>email</mat-icon>
+							@if (userForm.get("email")?.hasError("required"))
+							{
+								<mat-error>Email is required</mat-error>
+							}
+							@if (userForm.get("email")?.hasError("email"))
+							{
+								<mat-error>Invalid email format</mat-error>
+							}
+							@if (userForm.get("email")?.hasError("maxlength"))
+							{
+								<mat-error>
+									Email must not exceed 255 characters
+								</mat-error>
+							}
+						</mat-form-field>
 
-				<!-- Full Name Field -->
-				<div class="form-group">
-					<label for="fullName" class="form-label"> Full Name </label>
-					<input
-						type="text"
-						id="fullName"
-						formControlName="fullName"
-						class="form-input"
-						[class.error]="hasFieldError('fullName')"
-						placeholder="Enter full name"
-						autocomplete="name"
-					/>
-					@if (getFieldError("fullName"))
-					{
-						<span class="field-error">{{
-							getFieldError("fullName")
-						}}</span>
-					}
-				</div>
+						<!-- Full Name Field -->
+						<mat-form-field appearance="outline" class="full-width">
+							<mat-label>Full Name</mat-label>
+							<input
+								matInput
+								formControlName="fullName"
+								placeholder="Enter full name"
+								autocomplete="name"
+							/>
+							<mat-icon matIconPrefix>badge</mat-icon>
+							@if (
+								userForm.get("fullName")?.hasError("maxlength")
+							)
+							{
+								<mat-error>
+									Full name must not exceed 100 characters
+								</mat-error>
+							}
+							<mat-hint>Optional</mat-hint>
+						</mat-form-field>
 
-				<!-- Active Status Field -->
-				<div class="form-group form-group-checkbox">
-					<label class="checkbox-label">
-						<input
-							type="checkbox"
-							id="isActive"
-							formControlName="isActive"
-							class="form-checkbox"
-						/>
-						<span>Active User</span>
-					</label>
-					<p class="field-hint">
-						Inactive users cannot log in to the system
-					</p>
-				</div>
+						<!-- Active Status Field -->
+						<div class="checkbox-field">
+							<mat-checkbox
+								formControlName="isActive"
+								color="primary"
+							>
+								Active User
+							</mat-checkbox>
+							<p class="mat-body-2 field-hint">
+								Inactive users cannot log in to the system
+							</p>
+						</div>
+					</mat-card-content>
+				</mat-card>
 
-				<!-- Form Info -->
-				<div class="form-info">
-					@if (user())
-					{
-						<p class="info-text">
-							<strong>Created:</strong>
-							{{ user()!.createdAt | date: "medium" }}
-						</p>
-						<p class="info-text">
-							<strong>User ID:</strong> {{ user()!.id }}
-						</p>
-					}
-				</div>
+				<!-- Form Info Card -->
+				@if (user())
+				{
+					<mat-card appearance="outlined" class="info-card">
+						<mat-card-header>
+							<mat-card-title>Metadata</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="info-grid">
+								<div class="info-item">
+									<mat-icon class="info-icon"
+										>schedule</mat-icon
+									>
+									<div class="info-details">
+										<span class="mat-body-2 info-label"
+											>Created</span
+										>
+										<span class="mat-body-1">
+											{{
+												user()!.createdAt
+													| date: "medium"
+											}}
+										</span>
+									</div>
+								</div>
+								<div class="info-item">
+									<mat-icon class="info-icon"
+										>fingerprint</mat-icon
+									>
+									<div class="info-details">
+										<span class="mat-body-2 info-label"
+											>User ID</span
+										>
+										<span class="mat-body-1">{{
+											user()!.id
+										}}</span>
+									</div>
+								</div>
+							</div>
+						</mat-card-content>
+					</mat-card>
+				}
 			</form>
 		</main>
 	}

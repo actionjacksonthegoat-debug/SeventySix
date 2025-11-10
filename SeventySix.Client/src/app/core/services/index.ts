@@ -9,3 +9,8 @@ export * from "./error-handler.service";
 export * from "./cache.service";
 export * from "./cache-config.service";
 export * from "./sw-update.service";
+export * from "./theme.service";
+export * from "./layout.service";
+export * from "./loading.service";
+export * from "./viewport.service";
+export * from "./user.service";

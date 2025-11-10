@@ -123,6 +123,19 @@ app.Use(async (context, next) =>
 	context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 	context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
 
+	// Content Security Policy - Mitigates XSS and data injection attacks
+	// Configured for Angular + Material Design + Google Fonts
+	context.Response.Headers["Content-Security-Policy"] =
+		"default-src 'self'; " +
+		"script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+		"font-src 'self' https://fonts.gstatic.com; " +
+		"img-src 'self' data: https:; " +
+		"connect-src 'self'; " +
+		"frame-ancestors 'none'; " +
+		"base-uri 'self'; " +
+		"form-action 'self'";
+
 	// HSTS only in production to avoid development certificate issues
 	if (!app.Environment.IsDevelopment())
 	{

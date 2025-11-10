@@ -1,0 +1,745 @@
+<div class="style-guide">
+	<!-- Header -->
+	<header class="style-guide-header">
+		<h1>Style Guide</h1>
+		<p class="mat-body-1">
+			Material Design 3 components and design tokens used in SeventySix
+		</p>
+		<div class="theme-controls">
+			<button
+				mat-raised-button
+				(click)="themeService.toggleBrightness()"
+				aria-label="Toggle theme brightness"
+			>
+				<mat-icon>{{
+					themeService.isDark() ? "light_mode" : "dark_mode"
+				}}</mat-icon>
+				{{ themeService.isDark() ? "Light" : "Dark" }} Mode
+			</button>
+			<mat-form-field appearance="outline">
+				<mat-label>Color Scheme</mat-label>
+				<mat-select
+					[value]="themeService.colorScheme()"
+					(valueChange)="themeService.setColorScheme($event)"
+					aria-label="Select color scheme"
+				>
+					<mat-option value="blue">Blue</mat-option>
+					<mat-option value="cyan-orange">Cyan Orange</mat-option>
+				</mat-select>
+			</mat-form-field>
+		</div>
+	</header>
+
+	<mat-divider></mat-divider>
+
+	<!-- Tabs for different sections -->
+	<mat-tab-group mat-stretch-tabs="false" animationDuration="200ms">
+		<!-- Colors Tab -->
+		<mat-tab label="Colors">
+			<div class="tab-content">
+				<h2>Color Palette</h2>
+				<p class="mat-body-1">
+					Material Design 3 dynamic color system with primary,
+					secondary, tertiary, and error palettes.
+				</p>
+
+				<div class="color-grid">
+					<mat-card class="color-card">
+						<mat-card-header>
+							<mat-card-title>Primary</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="color-swatch primary"></div>
+							<p class="mat-body-2">
+								Main brand color for primary actions
+							</p>
+						</mat-card-content>
+					</mat-card>
+
+					<mat-card class="color-card">
+						<mat-card-header>
+							<mat-card-title>Secondary</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="color-swatch secondary"></div>
+							<p class="mat-body-2">
+								Supporting color for less prominent actions
+							</p>
+						</mat-card-content>
+					</mat-card>
+
+					<mat-card class="color-card">
+						<mat-card-header>
+							<mat-card-title>Tertiary</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="color-swatch tertiary"></div>
+							<p class="mat-body-2">
+								Accent color for highlighting and contrast
+							</p>
+						</mat-card-content>
+					</mat-card>
+
+					<mat-card class="color-card">
+						<mat-card-header>
+							<mat-card-title>Error</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="color-swatch error"></div>
+							<p class="mat-body-2">
+								Error states and destructive actions
+							</p>
+						</mat-card-content>
+					</mat-card>
+				</div>
+			</div>
+		</mat-tab>
+
+		<!-- Typography Tab -->
+		<mat-tab label="Typography">
+			<div class="tab-content">
+				<h2>Typography Scale</h2>
+				<p class="mat-body-1">
+					Roboto font family with Material Design 3 type scale.
+				</p>
+
+				<mat-card class="typography-card">
+					<mat-card-content>
+						<h1 class="mat-headline-large">Headline Large</h1>
+						<h2 class="mat-headline-medium">Headline Medium</h2>
+						<h3 class="mat-headline-small">Headline Small</h3>
+						<p class="mat-title-large">Title Large</p>
+						<p class="mat-title-medium">Title Medium</p>
+						<p class="mat-title-small">Title Small</p>
+						<p class="mat-body-large">
+							Body Large - For longer sections of text
+						</p>
+						<p class="mat-body-medium">
+							Body Medium - Default body text
+						</p>
+						<p class="mat-body-small">
+							Body Small - For captions and supporting text
+						</p>
+						<p class="mat-label-large">Label Large</p>
+						<p class="mat-label-medium">Label Medium</p>
+						<p class="mat-label-small">Label Small</p>
+					</mat-card-content>
+				</mat-card>
+			</div>
+		</mat-tab>
+
+		<!-- Buttons Tab -->
+		<mat-tab label="Buttons">
+			<div class="tab-content">
+				<h2>Button Variants</h2>
+				<p class="mat-body-1">
+					Material Design 3 button styles for different emphasis
+					levels.
+				</p>
+
+				<mat-card class="button-card">
+					<mat-card-header>
+						<mat-card-title
+							>Filled Buttons (High Emphasis)</mat-card-title
+						>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button mat-raised-button color="primary">
+								Primary
+							</button>
+							<button mat-raised-button color="accent">
+								Accent
+							</button>
+							<button mat-raised-button color="warn">Warn</button>
+							<button mat-raised-button disabled>Disabled</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="button-card">
+					<mat-card-header>
+						<mat-card-title
+							>Flat Buttons (Medium Emphasis)</mat-card-title
+						>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button mat-flat-button color="primary">
+								Primary
+							</button>
+							<button mat-flat-button color="accent">
+								Accent
+							</button>
+							<button mat-flat-button color="warn">Warn</button>
+							<button mat-flat-button disabled>Disabled</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="button-card">
+					<mat-card-header>
+						<mat-card-title
+							>Stroked Buttons (Medium Emphasis)</mat-card-title
+						>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button mat-stroked-button color="primary">
+								Primary
+							</button>
+							<button mat-stroked-button color="accent">
+								Accent
+							</button>
+							<button mat-stroked-button color="warn">
+								Warn
+							</button>
+							<button mat-stroked-button disabled>
+								Disabled
+							</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="button-card">
+					<mat-card-header>
+						<mat-card-title
+							>Text Buttons (Low Emphasis)</mat-card-title
+						>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button mat-button color="primary">Primary</button>
+							<button mat-button color="accent">Accent</button>
+							<button mat-button color="warn">Warn</button>
+							<button mat-button disabled>Disabled</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="button-card">
+					<mat-card-header>
+						<mat-card-title>Icon Buttons</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button
+								mat-icon-button
+								color="primary"
+								aria-label="Home"
+							>
+								<mat-icon>home</mat-icon>
+							</button>
+							<button
+								mat-icon-button
+								color="accent"
+								aria-label="Favorite"
+							>
+								<mat-icon>favorite</mat-icon>
+							</button>
+							<button
+								mat-icon-button
+								color="warn"
+								aria-label="Delete"
+							>
+								<mat-icon>delete</mat-icon>
+							</button>
+							<button
+								mat-icon-button
+								disabled
+								aria-label="Disabled"
+							>
+								<mat-icon>block</mat-icon>
+							</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="button-card">
+					<mat-card-header>
+						<mat-card-title>FAB Buttons</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button mat-fab color="primary" aria-label="Add">
+								<mat-icon>add</mat-icon>
+							</button>
+							<button mat-fab color="accent" aria-label="Edit">
+								<mat-icon>edit</mat-icon>
+							</button>
+							<button mat-fab color="warn" aria-label="Delete">
+								<mat-icon>delete</mat-icon>
+							</button>
+							<button mat-fab disabled aria-label="Disabled">
+								<mat-icon>block</mat-icon>
+							</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+			</div>
+		</mat-tab>
+
+		<!-- Forms Tab -->
+		<mat-tab label="Forms">
+			<div class="tab-content">
+				<h2>Form Controls</h2>
+				<p class="mat-body-1">
+					Material Design 3 form components for user input.
+				</p>
+
+				<mat-card class="form-card">
+					<mat-card-header>
+						<mat-card-title>Text Inputs</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="form-grid">
+							<mat-form-field appearance="outline">
+								<mat-label>Outlined</mat-label>
+								<input matInput placeholder="Placeholder" />
+								<mat-hint>Hint text</mat-hint>
+							</mat-form-field>
+
+							<mat-form-field appearance="outline">
+								<mat-label>With Icon</mat-label>
+								<mat-icon matPrefix>email</mat-icon>
+								<input
+									matInput
+									type="email"
+									placeholder="email@example.com"
+								/>
+							</mat-form-field>
+
+							<mat-form-field appearance="outline">
+								<mat-label>Required</mat-label>
+								<input matInput required />
+								<mat-error>This field is required</mat-error>
+							</mat-form-field>
+
+							<mat-form-field appearance="outline">
+								<mat-label>Disabled</mat-label>
+								<input
+									matInput
+									disabled
+									value="Disabled value"
+								/>
+							</mat-form-field>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="form-card">
+					<mat-card-header>
+						<mat-card-title>Select</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="form-grid">
+							<mat-form-field appearance="outline">
+								<mat-label>Basic Select</mat-label>
+								<mat-select>
+									<mat-option value="option1"
+										>Option 1</mat-option
+									>
+									<mat-option value="option2"
+										>Option 2</mat-option
+									>
+									<mat-option value="option3"
+										>Option 3</mat-option
+									>
+								</mat-select>
+							</mat-form-field>
+
+							<mat-form-field appearance="outline">
+								<mat-label>Multiple Select</mat-label>
+								<mat-select multiple>
+									<mat-option value="option1"
+										>Option 1</mat-option
+									>
+									<mat-option value="option2"
+										>Option 2</mat-option
+									>
+									<mat-option value="option3"
+										>Option 3</mat-option
+									>
+								</mat-select>
+							</mat-form-field>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="form-card">
+					<mat-card-header>
+						<mat-card-title
+							>Checkboxes & Radio Buttons</mat-card-title
+						>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="form-grid">
+							<div class="checkbox-group">
+								<mat-checkbox>Checkbox 1</mat-checkbox>
+								<mat-checkbox checked
+									>Checkbox 2 (Checked)</mat-checkbox
+								>
+								<mat-checkbox disabled
+									>Checkbox 3 (Disabled)</mat-checkbox
+								>
+							</div>
+
+							<mat-radio-group>
+								<mat-radio-button value="1"
+									>Radio 1</mat-radio-button
+								>
+								<mat-radio-button value="2" checked
+									>Radio 2 (Checked)</mat-radio-button
+								>
+								<mat-radio-button value="3" disabled
+									>Radio 3 (Disabled)</mat-radio-button
+								>
+							</mat-radio-group>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="form-card">
+					<mat-card-header>
+						<mat-card-title>Slide Toggle</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="toggle-group">
+							<mat-slide-toggle>Slide toggle 1</mat-slide-toggle>
+							<mat-slide-toggle checked
+								>Slide toggle 2 (Checked)</mat-slide-toggle
+							>
+							<mat-slide-toggle disabled
+								>Slide toggle 3 (Disabled)</mat-slide-toggle
+							>
+						</div>
+					</mat-card-content>
+				</mat-card>
+			</div>
+		</mat-tab>
+
+		<!-- Tables Tab -->
+		<mat-tab label="Tables">
+			<div class="tab-content">
+				<h2>Data Tables</h2>
+				<p class="mat-body-1">
+					Material Design 3 tables for structured data presentation.
+				</p>
+
+				<mat-card class="table-card">
+					<mat-card-header>
+						<mat-card-title>Basic Table</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<table
+							mat-table
+							[dataSource]="tableData"
+							class="example-table"
+						>
+							<ng-container matColumnDef="id">
+								<th mat-header-cell *matHeaderCellDef>ID</th>
+								<td mat-cell *matCellDef="let element">
+									{{ element.id }}
+								</td>
+							</ng-container>
+
+							<ng-container matColumnDef="name">
+								<th mat-header-cell *matHeaderCellDef>Name</th>
+								<td mat-cell *matCellDef="let element">
+									{{ element.name }}
+								</td>
+							</ng-container>
+
+							<ng-container matColumnDef="weight">
+								<th mat-header-cell *matHeaderCellDef>
+									Weight
+								</th>
+								<td mat-cell *matCellDef="let element">
+									{{ element.weight }}
+								</td>
+							</ng-container>
+
+							<ng-container matColumnDef="symbol">
+								<th mat-header-cell *matHeaderCellDef>
+									Symbol
+								</th>
+								<td mat-cell *matCellDef="let element">
+									{{ element.symbol }}
+								</td>
+							</ng-container>
+
+							<tr
+								mat-header-row
+								*matHeaderRowDef="displayedColumns"
+							></tr>
+							<tr
+								mat-row
+								*matRowDef="let row; columns: displayedColumns"
+							></tr>
+						</table>
+					</mat-card-content>
+				</mat-card>
+			</div>
+		</mat-tab>
+
+		<!-- Feedback Tab -->
+		<mat-tab label="Feedback">
+			<div class="tab-content">
+				<h2>Feedback Components</h2>
+				<p class="mat-body-1">
+					Material Design 3 components for user feedback and loading
+					states.
+				</p>
+
+				<mat-card class="feedback-card">
+					<mat-card-header>
+						<mat-card-title>Snackbars</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button
+								mat-raised-button
+								color="primary"
+								(click)="
+									showSnackbar('This is a success message!')
+								"
+							>
+								Show Snackbar
+							</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="feedback-card">
+					<mat-card-header>
+						<mat-card-title>Dialogs</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button
+								mat-raised-button
+								color="primary"
+								(click)="showDialog()"
+							>
+								Show Dialog
+							</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="feedback-card">
+					<mat-card-header>
+						<mat-card-title>Progress Indicators</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="progress-group">
+							<div class="progress-item">
+								<p class="mat-body-2">
+									Spinner (Indeterminate)
+								</p>
+								<mat-spinner diameter="40"></mat-spinner>
+							</div>
+							<div class="progress-item">
+								<p class="mat-body-2">Spinner (Determinate)</p>
+								<mat-spinner
+									diameter="40"
+									[value]="65"
+								></mat-spinner>
+							</div>
+							<div class="progress-item progress-bar-item">
+								<p class="mat-body-2">
+									Progress Bar (Indeterminate)
+								</p>
+								<mat-progress-bar
+									mode="indeterminate"
+								></mat-progress-bar>
+							</div>
+							<div class="progress-item progress-bar-item">
+								<p class="mat-body-2">
+									Progress Bar (Determinate)
+								</p>
+								<mat-progress-bar
+									mode="determinate"
+									[value]="65"
+								></mat-progress-bar>
+							</div>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="feedback-card">
+					<mat-card-header>
+						<mat-card-title>Chips</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<mat-chip-set aria-label="Example chips">
+							<mat-chip>Default Chip</mat-chip>
+							<mat-chip highlighted>Highlighted Chip</mat-chip>
+							<mat-chip disabled>Disabled Chip</mat-chip>
+							<mat-chip>
+								<mat-icon matChipAvatar>face</mat-icon>
+								Chip with Avatar
+							</mat-chip>
+							<mat-chip>
+								Chip with Remove
+								<button matChipRemove aria-label="Remove">
+									<mat-icon>cancel</mat-icon>
+								</button>
+							</mat-chip>
+						</mat-chip-set>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="feedback-card">
+					<mat-card-header>
+						<mat-card-title>Tooltips</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button
+								mat-raised-button
+								matTooltip="Tooltip above"
+								matTooltipPosition="above"
+							>
+								Above
+							</button>
+							<button
+								mat-raised-button
+								matTooltip="Tooltip below"
+								matTooltipPosition="below"
+							>
+								Below
+							</button>
+							<button
+								mat-raised-button
+								matTooltip="Tooltip left"
+								matTooltipPosition="left"
+							>
+								Left
+							</button>
+							<button
+								mat-raised-button
+								matTooltip="Tooltip right"
+								matTooltipPosition="right"
+							>
+								Right
+							</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+			</div>
+		</mat-tab>
+
+		<!-- Icons Tab -->
+		<mat-tab label="Icons">
+			<div class="tab-content">
+				<h2>Material Icons</h2>
+				<p class="mat-body-1">
+					Common Material icons used throughout the application.
+				</p>
+
+				<mat-card class="icon-card">
+					<mat-card-header>
+						<mat-card-title>Navigation Icons</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="icon-grid">
+							<div class="icon-item">
+								<mat-icon>home</mat-icon>
+								<span class="mat-body-2">home</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>menu</mat-icon>
+								<span class="mat-body-2">menu</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>arrow_back</mat-icon>
+								<span class="mat-body-2">arrow_back</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>arrow_forward</mat-icon>
+								<span class="mat-body-2">arrow_forward</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>expand_more</mat-icon>
+								<span class="mat-body-2">expand_more</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>expand_less</mat-icon>
+								<span class="mat-body-2">expand_less</span>
+							</div>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="icon-card">
+					<mat-card-header>
+						<mat-card-title>Action Icons</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="icon-grid">
+							<div class="icon-item">
+								<mat-icon>add</mat-icon>
+								<span class="mat-body-2">add</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>edit</mat-icon>
+								<span class="mat-body-2">edit</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>delete</mat-icon>
+								<span class="mat-body-2">delete</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>save</mat-icon>
+								<span class="mat-body-2">save</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>close</mat-icon>
+								<span class="mat-body-2">close</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>check</mat-icon>
+								<span class="mat-body-2">check</span>
+							</div>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="icon-card">
+					<mat-card-header>
+						<mat-card-title>Content Icons</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="icon-grid">
+							<div class="icon-item">
+								<mat-icon>search</mat-icon>
+								<span class="mat-body-2">search</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>filter_list</mat-icon>
+								<span class="mat-body-2">filter_list</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>sort</mat-icon>
+								<span class="mat-body-2">sort</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>info</mat-icon>
+								<span class="mat-body-2">info</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>warning</mat-icon>
+								<span class="mat-body-2">warning</span>
+							</div>
+							<div class="icon-item">
+								<mat-icon>error</mat-icon>
+								<span class="mat-body-2">error</span>
+							</div>
+						</div>
+					</mat-card-content>
+				</mat-card>
+			</div>
+		</mat-tab>
+	</mat-tab-group>
+</div>

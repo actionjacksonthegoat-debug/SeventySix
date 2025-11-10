@@ -1,102 +1,340 @@
-<div class="user-list">
-	<div class="user-list__header">
-		<h2>User Management</h2>
+<!-- Loading State -->
+@if (isLoading())
+{
+	<div class="loading-container" role="status" aria-live="polite">
+		<mat-spinner diameter="64" aria-label="Loading users"></mat-spinner>
+		<p class="mat-body-1">Loading users...</p>
+	</div>
+}
 
-		<!-- Statistics -->
-		@if (!isLoading() && hasUsers())
-		{
-			<div class="user-list__stats">
-				<span class="stat">Total: {{ userCount() }}</span>
-				<span class="stat stat--active">
-					Active: {{ activeUserCount() }}
-				</span>
-				<span class="stat stat--inactive">
-					Inactive: {{ inactiveUserCount() }}
-				</span>
+<!-- Error State -->
+@else if (error())
+{
+	<mat-card class="error-card" role="alert" aria-live="assertive">
+		<mat-card-content>
+			<div class="error-content">
+				<mat-icon color="warn" aria-hidden="true"
+					>error_outline</mat-icon
+				>
+				<div>
+					<h3 class="mat-headline-6">Error Loading Users</h3>
+					<p class="mat-body-1">{{ error() }}</p>
+				</div>
 			</div>
+		</mat-card-content>
+		<mat-card-actions align="end">
+			<button mat-button color="primary" (click)="retry()">
+				Try Again
+			</button>
+		</mat-card-actions>
+	</mat-card>
+}
+
+<!-- Data Display -->
+@else
+{
+	<!-- User Statistics Chart -->
+	@if (hasUsers())
+	{
+		<div class="chart-section">
+			<app-chart
+				title="User Growth Over Time"
+				subtitle="Active and inactive users by month"
+				[chartType]="'line'"
+				[chartData]="userStatsChartData()"
+				[showExport]="true"
+				[showRefresh]="true"
+				(refresh)="onChartRefresh()"
+				(exportPng)="onChartExportPng()"
+				(exportCsv)="onChartExportCsv()"
+			/>
+		</div>
+	}
+
+	<!-- Search and Actions -->
+	<div class="table-header">
+		<mat-form-field class="search-field" appearance="outline">
+			<mat-label>Search users</mat-label>
+			<input
+				matInput
+				[(ngModel)]="searchFilter"
+				(ngModelChange)="applyFilter()"
+				placeholder="Search by name, email, or ID"
+				autocomplete="off"
+				aria-label="Search users by name, email, or ID"
+			/>
+			<mat-icon matPrefix aria-hidden="true">search</mat-icon>
+			@if (searchFilter())
+			{
+				<button
+					matSuffix
+					mat-icon-button
+					aria-label="Clear search"
+					(click)="clearFilter()"
+				>
+					<mat-icon aria-hidden="true">close</mat-icon>
+				</button>
+			}
+		</mat-form-field>
+
+		<div
+			class="header-actions"
+			role="toolbar"
+			aria-label="User list actions"
+		>
+			<!-- Bulk Actions (shown when items selected) -->
+			@if (selectedCount() > 0)
+			{
+				<button
+					mat-stroked-button
+					color="warn"
+					(click)="deleteSelected()"
+					aria-label="Delete selected users"
+				>
+					<mat-icon aria-hidden="true">delete</mat-icon>
+					Delete ({{ selectedCount() }})
+				</button>
+				<button
+					mat-stroked-button
+					(click)="exportSelected()"
+					aria-label="Export selected users"
+				>
+					<mat-icon aria-hidden="true">download</mat-icon>
+					Export ({{ selectedCount() }})
+				</button>
+			}
+
+			<!-- Column Visibility Menu -->
+			<button
+				mat-icon-button
+				[matMenuTriggerFor]="columnMenu"
+				matTooltip="Customize columns"
+				aria-label="Customize table columns"
+			>
+				<mat-icon aria-hidden="true">view_column</mat-icon>
+			</button>
+			<mat-menu
+				#columnMenu="matMenu"
+				aria-label="Column visibility options"
+			>
+				<div class="column-menu-header" mat-menu-item disabled>
+					<strong>Show/Hide Columns</strong>
+				</div>
+				@for (col of columnDefs(); track col.key)
+				{
+					@if (col.key !== "select" && col.key !== "actions")
+					{
+						<button
+							mat-menu-item
+							(click)="
+								toggleColumn(col.key); $event.stopPropagation()
+							"
+							[attr.aria-label]="
+								'Toggle ' + col.label + ' column'
+							"
+						>
+							<mat-checkbox
+								[checked]="col.visible"
+								(click)="$event.stopPropagation()"
+								(change)="toggleColumn(col.key)"
+							>
+								{{ col.label }}
+							</mat-checkbox>
+						</button>
+					}
+				}
+			</mat-menu>
+		</div>
+	</div>
+
+	<!-- Filter Chips -->
+	<div class="filter-chips">
+		<mat-chip-listbox
+			[(ngModel)]="statusFilter"
+			(ngModelChange)="setStatusFilter($event)"
+			aria-label="Status filter"
+		>
+			<mat-chip-option value="all">All Users</mat-chip-option>
+			<mat-chip-option value="active">Active Only</mat-chip-option>
+			<mat-chip-option value="inactive">Inactive Only</mat-chip-option>
+		</mat-chip-listbox>
+	</div>
+
+	<!-- Statistics Summary -->
+	<div class="stats-summary" role="status" aria-live="polite">
+		<mat-chip>
+			<mat-icon aria-hidden="true">people</mat-icon>
+			<span aria-label="Total users">Total: {{ userCount() }}</span>
+		</mat-chip>
+		<mat-chip>
+			<mat-icon aria-hidden="true">check_circle</mat-icon>
+			<span aria-label="Active users"
+				>Active: {{ activeUserCount() }}</span
+			>
+		</mat-chip>
+		<mat-chip>
+			<mat-icon aria-hidden="true">block</mat-icon>
+			<span aria-label="Inactive users"
+				>Inactive: {{ inactiveUserCount() }}</span
+			>
+		</mat-chip>
+		@if (selectedCount() > 0)
+		{
+			<mat-chip highlighted>
+				<mat-icon aria-hidden="true">done_all</mat-icon>
+				<span aria-label="Selected users"
+					>Selected: {{ selectedCount() }}</span
+				>
+			</mat-chip>
 		}
 	</div>
 
-	<!-- Loading State -->
-	@if (isLoading())
-	{
-		<div class="user-list__loading">
-			<div class="spinner"></div>
-			<p>Loading users...</p>
-		</div>
-	}
+	<!-- Data Table -->
+	<div class="table-container">
+		<table mat-table [dataSource]="dataSource" matSort class="users-table">
+			<!-- Selection Column -->
+			<ng-container matColumnDef="select">
+				<th mat-header-cell *matHeaderCellDef>
+					<mat-checkbox
+						(change)="$event ? toggleAllRows() : null"
+						[checked]="selection.hasValue() && isAllSelected()"
+						[indeterminate]="
+							selection.hasValue() && !isAllSelected()
+						"
+						color="primary"
+					>
+					</mat-checkbox>
+				</th>
+				<td mat-cell *matCellDef="let user">
+					<mat-checkbox
+						(click)="$event.stopPropagation()"
+						(change)="$event ? selection.toggle(user) : null"
+						[checked]="selection.isSelected(user)"
+						color="primary"
+					>
+					</mat-checkbox>
+				</td>
+			</ng-container>
 
-	<!-- Error State -->
-	@if (error() && !isLoading())
-	{
-		<div class="user-list__error">
-			<p class="error-message">{{ error() }}</p>
-			<button type="button" class="btn btn--primary" (click)="retry()">
-				Retry
-			</button>
-		</div>
-	}
+			<!-- ID Column -->
+			<ng-container matColumnDef="id">
+				<th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+				<td mat-cell *matCellDef="let user">
+					<span class="user-id">#{{ user.id }}</span>
+				</td>
+			</ng-container>
 
-	<!-- Success State - User Table -->
-	@if (!isLoading() && !error() && hasUsers())
-	{
-		<div class="user-list__table-container">
-			<table class="user-table">
-				<thead>
-					<tr>
-						<th>ID</th>
-						<th>Username</th>
-						<th>Email</th>
-						<th>Full Name</th>
-						<th>Status</th>
-						<th>Created At</th>
-					</tr>
-				</thead>
-				<tbody>
-					@for (user of users(); track trackById($index, user))
-					{
-						<tr
-							[class.inactive-row]="!user.isActive"
-							class="clickable-row"
-							(click)="onUserClick(user)"
-							tabindex="0"
-							(keydown.enter)="onUserClick(user)"
-							(keydown.space)="onUserClick(user)"
-						>
-							<td class="user-table__id">{{ user.id }}</td>
-							<td class="user-table__username">
-								<strong>{{ user.username }}</strong>
-							</td>
-							<td class="user-table__email">{{ user.email }}</td>
-							<td class="user-table__full-name">
-								{{ user.fullName || "—" }}
-							</td>
-							<td class="user-table__status">
-								<span
-									class="status-badge"
-									[class]="getStatusClass(user)"
-								>
-									{{ getStatusText(user) }}
-								</span>
-							</td>
-							<td class="user-table__created">
-								{{ user.createdAt | date: "short" }}
-							</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		</div>
-	}
+			<!-- Username Column -->
+			<ng-container matColumnDef="username">
+				<th mat-header-cell *matHeaderCellDef mat-sort-header>
+					Username
+				</th>
+				<td mat-cell *matCellDef="let user">
+					<div class="username-cell">
+						<mat-icon class="user-icon">account_circle</mat-icon>
+						<strong>{{ user.username }}</strong>
+					</div>
+				</td>
+			</ng-container>
 
-	<!-- Empty State -->
-	@if (!isLoading() && !error() && !hasUsers())
-	{
-		<div class="user-list__empty">
-			<p>No users available.</p>
-			<button type="button" class="btn btn--secondary" (click)="retry()">
-				Refresh
-			</button>
-		</div>
-	}
-</div>
+			<!-- Email Column -->
+			<ng-container matColumnDef="email">
+				<th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+				<td mat-cell *matCellDef="let user">{{ user.email }}</td>
+			</ng-container>
+
+			<!-- Full Name Column -->
+			<ng-container matColumnDef="fullName">
+				<th mat-header-cell *matHeaderCellDef mat-sort-header>
+					Full Name
+				</th>
+				<td mat-cell *matCellDef="let user">
+					{{ user.fullName || "—" }}
+				</td>
+			</ng-container>
+
+			<!-- Status Column -->
+			<ng-container matColumnDef="isActive">
+				<th mat-header-cell *matHeaderCellDef mat-sort-header>
+					Status
+				</th>
+				<td mat-cell *matCellDef="let user">
+					<mat-chip [color]="getStatusColor(user)">
+						<mat-icon>{{
+							user.isActive ? "check_circle" : "block"
+						}}</mat-icon>
+						{{ user.isActive ? "Active" : "Inactive" }}
+					</mat-chip>
+				</td>
+			</ng-container>
+
+			<!-- Created Date Column -->
+			<ng-container matColumnDef="createdAt">
+				<th mat-header-cell *matHeaderCellDef mat-sort-header>
+					Created
+				</th>
+				<td mat-cell *matCellDef="let user">
+					{{ user.createdAt | date: "short" }}
+				</td>
+			</ng-container>
+
+			<!-- Actions Column -->
+			<ng-container matColumnDef="actions">
+				<th mat-header-cell *matHeaderCellDef>Actions</th>
+				<td mat-cell *matCellDef="let user">
+					<button
+						mat-icon-button
+						[matTooltip]="'Edit ' + user.username"
+						(click)="editUser(user); $event.stopPropagation()"
+						aria-label="Edit user"
+					>
+						<mat-icon>edit</mat-icon>
+					</button>
+				</td>
+			</ng-container>
+
+			<tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+			<tr
+				mat-row
+				*matRowDef="let row; columns: displayedColumns()"
+				class="user-row"
+				(click)="editUser(row)"
+			></tr>
+
+			<!-- No data row -->
+			@if (dataSource.filteredData.length === 0)
+			{
+				<tr class="mat-row no-data-row">
+					<td
+						class="mat-cell"
+						[attr.colspan]="displayedColumns().length"
+					>
+						<div class="no-data">
+							<mat-icon>people_outline</mat-icon>
+							<p class="mat-body-1">
+								@if (searchFilter())
+								{
+									No users found matching "{{
+										searchFilter()
+									}}"
+								}
+								@else
+								{
+									No users available
+								}
+							</p>
+						</div>
+					</td>
+				</tr>
+			}
+		</table>
+	</div>
+
+	<!-- Paginator -->
+	<mat-paginator
+		[pageSizeOptions]="[10, 25, 50, 100]"
+		[pageSize]="25"
+		showFirstLastButtons
+		aria-label="Select page of users"
+	></mat-paginator>
+}

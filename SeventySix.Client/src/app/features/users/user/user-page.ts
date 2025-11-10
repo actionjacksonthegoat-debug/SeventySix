@@ -14,6 +14,14 @@ import {
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatButtonModule } from "@angular/material/button";
+import { MatCardModule } from "@angular/material/card";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatIconModule } from "@angular/material/icon";
+import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { UserService } from "@core/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
 import { User } from "@core/models/interfaces/user";
@@ -26,7 +34,18 @@ import { User } from "@core/models/interfaces/user";
  */
 @Component({
 	selector: "app-user-page",
-	imports: [ReactiveFormsModule, DatePipe],
+	imports: [
+		ReactiveFormsModule,
+		DatePipe,
+		MatFormFieldModule,
+		MatInputModule,
+		MatButtonModule,
+		MatCardModule,
+		MatProgressSpinnerModule,
+		MatIconModule,
+		MatCheckboxModule,
+		MatSnackBarModule
+	],
 	templateUrl: "./user-page.html",
 	styleUrls: ["./user-page.scss"],
 	changeDetection: ChangeDetectionStrategy.OnPush
@@ -38,6 +57,7 @@ export class UserPage implements OnInit
 	private readonly route = inject(ActivatedRoute);
 	private readonly router = inject(Router);
 	private readonly fb = inject(FormBuilder);
+	private readonly snackBar = inject(MatSnackBar);
 
 	// State signals
 	readonly user = signal<User | null>(null);
@@ -169,6 +189,13 @@ export class UserPage implements OnInit
 				this.userForm.markAsPristine();
 				this.isSaving.set(false);
 				this.logger.info("User updated successfully", { id: userId });
+
+				// Show success notification
+				this.snackBar.open("User updated successfully", "Close", {
+					duration: 3000,
+					horizontalPosition: "end",
+					verticalPosition: "top"
+				});
 			},
 			error: (err) =>
 			{

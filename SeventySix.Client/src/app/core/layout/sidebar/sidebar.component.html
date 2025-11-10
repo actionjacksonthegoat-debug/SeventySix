@@ -1,0 +1,31 @@
+<nav class="app-sidebar">
+	@for (section of navSections; track section.title)
+	{
+		<!-- Section Title -->
+		<div class="nav-section-title">{{ section.title }}</div>
+
+		<!-- Navigation List -->
+		<mat-nav-list>
+			@for (item of section.items; track item.route)
+			{
+				<a
+					mat-list-item
+					[routerLink]="item.route"
+					routerLinkActive="active"
+					[routerLinkActiveOptions]="{ exact: item.route === '/' }"
+					[disabled]="item.disabled"
+					(click)="closeSidebarOnMobile()"
+				>
+					<mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+					<span matListItemTitle>{{ item.label }}</span>
+				</a>
+			}
+		</mat-nav-list>
+
+		<!-- Divider between sections -->
+		@if (!$last)
+		{
+			<mat-divider></mat-divider>
+		}
+	}
+</nav>

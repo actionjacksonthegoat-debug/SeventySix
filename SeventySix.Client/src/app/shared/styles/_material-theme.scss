@@ -1,0 +1,132 @@
+// =============================================================================
+// MATERIAL DESIGN 3 THEME CONFIGURATION
+// =============================================================================
+// Multiple color schemes (blue, cyan-orange) with light/dark variants
+// =============================================================================
+
+@use "@angular/material" as mat;
+
+// =============================================================================
+// BLUE COLOR SCHEME THEMES
+// =============================================================================
+
+// Light theme with blue primary
+$light-blue-theme: mat.define-theme(
+	(
+		color: (
+			theme-type: light,
+			primary: mat.$blue-palette,
+			tertiary: mat.$green-palette
+		),
+		typography: (
+			brand-family: "Roboto",
+			plain-family: "Roboto"
+		),
+		density: (
+			scale: 0
+		)
+	)
+);
+
+// Dark theme with blue primary
+$dark-blue-theme: mat.define-theme(
+	(
+		color: (
+			theme-type: dark,
+			primary: mat.$blue-palette,
+			tertiary: mat.$green-palette
+		),
+		typography: (
+			brand-family: "Roboto",
+			plain-family: "Roboto"
+		),
+		density: (
+			scale: 0
+		)
+	)
+);
+
+// =============================================================================
+// CYAN-ORANGE COLOR SCHEME THEMES
+// =============================================================================
+
+// Light theme with cyan primary and orange tertiary
+$light-cyan-orange-theme: mat.define-theme(
+	(
+		color: (
+			theme-type: light,
+			primary: mat.$cyan-palette,
+			tertiary: mat.$orange-palette
+		),
+		typography: (
+			brand-family: "Roboto",
+			plain-family: "Roboto"
+		),
+		density: (
+			scale: 0
+		)
+	)
+);
+
+// Dark theme with cyan primary and orange tertiary
+$dark-cyan-orange-theme: mat.define-theme(
+	(
+		color: (
+			theme-type: dark,
+			primary: mat.$cyan-palette,
+			tertiary: mat.$orange-palette
+		),
+		typography: (
+			brand-family: "Roboto",
+			plain-family: "Roboto"
+		),
+		density: (
+			scale: 0
+		)
+	)
+);
+
+// =============================================================================
+// THEME APPLICATION MIXINS
+// =============================================================================
+
+/**
+ * Apply light blue theme
+ */
+@mixin apply-light-blue-theme {
+	@include mat.all-component-colors($light-blue-theme);
+	color-scheme: light;
+}
+
+/**
+ * Apply dark blue theme
+ */
+@mixin apply-dark-blue-theme {
+	@include mat.all-component-colors($dark-blue-theme);
+	color-scheme: dark;
+}
+
+/**
+ * Apply light cyan-orange theme
+ */
+@mixin apply-light-cyan-orange-theme {
+	@include mat.all-component-colors($light-cyan-orange-theme);
+	color-scheme: light;
+}
+
+/**
+ * Apply dark cyan-orange theme
+ */
+@mixin apply-dark-cyan-orange-theme {
+	@include mat.all-component-colors($dark-cyan-orange-theme);
+	color-scheme: dark;
+}
+
+/**
+ * Apply base theme (typography, density) - called once globally
+ */
+@mixin apply-base-theme {
+	@include mat.core();
+	@include mat.all-component-typographies($light-blue-theme);
+	@include mat.all-component-densities($light-blue-theme);
+}

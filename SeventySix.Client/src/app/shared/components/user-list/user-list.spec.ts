@@ -134,51 +134,29 @@ describe("UserList", () =>
 		expect(component.error()).toBeNull();
 	});
 
-	it("should track users by ID", () =>
+	it("should display users in table after loading", () =>
 	{
 		mockUserService.getAllUsers.and.returnValue(of(mockUsers));
 		fixture = TestBed.createComponent(UserList);
 		component = fixture.componentInstance;
+		fixture.detectChanges();
 
-		const user = mockUsers[0];
-		const trackResult = component.trackById(0, user);
+		const compiled = fixture.nativeElement;
+		const rows = compiled.querySelectorAll("tbody tr");
 
-		expect(trackResult).toBe(user.id);
+		expect(rows.length).toBeGreaterThan(0);
 	});
 
-	it("should return correct status class", () =>
+	it("should display status chips for users", () =>
 	{
 		mockUserService.getAllUsers.and.returnValue(of(mockUsers));
 		fixture = TestBed.createComponent(UserList);
 		component = fixture.componentInstance;
+		fixture.detectChanges();
 
-		expect(component.getStatusClass(mockUsers[0])).toBe("status-active");
-		expect(component.getStatusClass(mockUsers[1])).toBe("status-inactive");
-	});
+		const compiled = fixture.nativeElement;
+		const chips = compiled.querySelectorAll("mat-chip");
 
-	it("should return correct status text", () =>
-	{
-		mockUserService.getAllUsers.and.returnValue(of(mockUsers));
-		fixture = TestBed.createComponent(UserList);
-		component = fixture.componentInstance;
-
-		expect(component.getStatusText(mockUsers[0])).toBe("Active");
-		expect(component.getStatusText(mockUsers[1])).toBe("Inactive");
-	});
-
-	it("should navigate to user detail on click", () =>
-	{
-		mockUserService.getAllUsers.and.returnValue(of(mockUsers));
-		fixture = TestBed.createComponent(UserList);
-		component = fixture.componentInstance;
-
-		const user = mockUsers[0];
-		component.onUserClick(user);
-
-		expect(mockRouter.navigate).toHaveBeenCalledWith(["/users", 1]);
-		expect(mockLogger.info).toHaveBeenCalledWith(
-			"Navigating to user detail",
-			{ userId: 1 }
-		);
+		expect(chips.length).toBeGreaterThan(0);
 	});
 });

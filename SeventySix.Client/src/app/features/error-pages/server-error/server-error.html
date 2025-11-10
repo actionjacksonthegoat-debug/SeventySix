@@ -1,0 +1,34 @@
+<div class="error-page">
+	<div class="error-container">
+		<mat-card appearance="outlined" class="error-card">
+			<mat-card-content>
+				<div class="error-content">
+					<mat-icon class="error-icon" color="warn">warning</mat-icon>
+					<h1 class="mat-headline-4">500 - Server Error</h1>
+					<p class="mat-body-1">
+						Something went wrong on our end. We're working to fix
+						the issue.
+					</p>
+					<p class="mat-body-2 error-detail">
+						Please try again in a few moments. If the problem
+						persists, contact support.
+					</p>
+					<div class="error-actions">
+						<button
+							mat-raised-button
+							color="primary"
+							routerLink="/"
+						>
+							<mat-icon>home</mat-icon>
+							Go to Home
+						</button>
+						<button mat-stroked-button (click)="reloadPage()">
+							<mat-icon>refresh</mat-icon>
+							Reload Page
+						</button>
+					</div>
+				</div>
+			</mat-card-content>
+		</mat-card>
+	</div>
+</div>

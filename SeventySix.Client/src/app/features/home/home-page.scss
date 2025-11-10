@@ -1,0 +1,247 @@
+@use "../../shared/styles/variables" as vars;
+
+:host {
+	display: block;
+	width: 100%;
+}
+
+// Hero Section
+.hero-section {
+	padding: vars.$spacing-3xl 0;
+	text-align: center;
+	background: linear-gradient(
+		135deg,
+		rgba(var(--mat-primary-rgb), 0.05) 0%,
+		rgba(var(--mat-primary-rgb), 0.02) 100%
+	);
+	border-radius: vars.$border-radius-lg;
+	margin-bottom: vars.$spacing-xl;
+
+	@media (max-width: vars.$breakpoint-xs-max) {
+		padding: vars.$spacing-xl vars.$spacing-md;
+		margin-bottom: vars.$spacing-lg;
+	}
+}
+
+.hero-content {
+	max-width: 700px;
+	margin: 0 auto;
+
+	h1 {
+		margin: 0 0 vars.$spacing-md;
+		font-weight: vars.$font-weight-medium;
+	}
+
+	p {
+		margin: 0 0 vars.$spacing-xl;
+		opacity: 0.8;
+	}
+}
+
+.hero-actions {
+	display: flex;
+	gap: vars.$spacing-md;
+	justify-content: center;
+	flex-wrap: wrap;
+
+	button {
+		mat-icon {
+			margin-right: vars.$spacing-sm;
+		}
+	}
+}
+
+// Section Titles
+.section-title {
+	margin: 0 0 vars.$spacing-lg;
+	font-weight: vars.$font-weight-medium;
+}
+
+// Stats Section
+.stats-section {
+	margin-bottom: vars.$spacing-3xl;
+
+	@media (max-width: vars.$breakpoint-xs-max) {
+		margin-bottom: vars.$spacing-xl;
+	}
+}
+
+.stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: vars.$spacing-md;
+
+	@media (max-width: vars.$breakpoint-xs-max) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.stat-card {
+	cursor: default;
+	transition:
+		transform vars.$transition-duration-normal,
+		box-shadow vars.$transition-duration-normal;
+
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: vars.$elevation-md;
+	}
+
+	mat-card-content {
+		padding: vars.$spacing-lg;
+	}
+}
+
+.stat-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: vars.$spacing-md;
+}
+
+.stat-icon {
+	font-size: vars.$icon-size-lg;
+	width: vars.$icon-size-lg;
+	height: vars.$icon-size-lg;
+	color: rgba(var(--mat-primary-rgb), 0.7);
+}
+
+.stat-card-primary .stat-icon {
+	color: var(--mat-primary-default);
+}
+
+.stat-card-accent .stat-icon {
+	color: var(--mat-accent-default);
+}
+
+.stat-card-warn .stat-icon {
+	color: var(--mat-warn-default);
+}
+
+.trend-chip {
+	height: vars.$chip-height;
+	font-size: vars.$font-size-xs;
+
+	mat-icon {
+		font-size: vars.$icon-size-sm;
+		width: vars.$icon-size-sm;
+		height: vars.$icon-size-sm;
+		margin-right: vars.$spacing-xs;
+	}
+
+	&.trend-up {
+		background-color: rgba(76, 175, 80, 0.1);
+		color: #4caf50;
+	}
+
+	&.trend-down {
+		background-color: rgba(244, 67, 54, 0.1);
+		color: #f44336;
+	}
+}
+
+.stat-value {
+	margin: vars.$spacing-sm 0;
+	font-weight: vars.$font-weight-semibold;
+}
+
+.stat-label {
+	opacity: 0.7;
+	margin: 0;
+}
+
+// Quick Actions Section
+.actions-section {
+	margin-bottom: vars.$spacing-3xl;
+
+	@media (max-width: vars.$breakpoint-xs-max) {
+		margin-bottom: vars.$spacing-xl;
+	}
+}
+
+.actions-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: vars.$spacing-md;
+
+	@media (max-width: vars.$breakpoint-xs-max) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.action-card {
+	cursor: pointer;
+	transition:
+		transform vars.$transition-duration-normal,
+		box-shadow vars.$transition-duration-normal;
+
+	&:hover {
+		transform: translateY(-4px);
+		box-shadow: vars.$elevation-lg;
+	}
+
+	mat-card-header {
+		mat-icon[mat-card-avatar] {
+			font-size: vars.$avatar-size-md;
+			width: vars.$avatar-size-md;
+			height: vars.$avatar-size-md;
+		}
+	}
+
+	mat-card-actions {
+		button {
+			mat-icon {
+				margin-left: vars.$spacing-xs;
+				font-size: vars.$icon-size-sm;
+				width: 18px;
+				height: 18px;
+			}
+		}
+	}
+}
+
+// Recent Activity Section
+.activity-section {
+	margin-bottom: vars.$spacing-xl;
+}
+
+.activity-card {
+	mat-card-content {
+		padding: 0;
+	}
+}
+
+.activity-list {
+	.activity-item {
+		display: flex;
+		gap: vars.$spacing-md;
+		padding: vars.$spacing-md vars.$spacing-lg;
+		transition: background-color vars.$transition-duration-normal;
+
+		&:hover {
+			background-color: rgba(var(--mat-primary-rgb), 0.04);
+		}
+
+		.activity-icon {
+			color: rgba(var(--mat-primary-rgb), 0.6);
+			flex-shrink: 0;
+		}
+
+		.activity-content {
+			flex: 1;
+
+			p {
+				margin: 0 0 vars.$spacing-xs;
+			}
+
+			.activity-time {
+				opacity: 0.6;
+				font-size: vars.$font-size-sm;
+			}
+		}
+	}
+
+	mat-divider {
+		margin: 0;
+	}
+}

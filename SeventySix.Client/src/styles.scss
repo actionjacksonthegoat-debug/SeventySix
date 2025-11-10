@@ -1,1 +1,176 @@
-/* You can add global styles to this file, and also import other style files */
+// =============================================================================
+// SEVENTYSIX GLOBAL STYLES
+// =============================================================================
+// Material Design 3 theme with blue primary color
+// Supports light and dark themes via ThemeService
+// =============================================================================
+
+// Import global variables and design tokens
+@use "./app/shared/styles/variables" as vars;
+
+// Import Material theme configuration
+@use "./app/shared/styles/material-theme" as theme;
+
+// Import base styles and utilities
+@use "./app/shared/styles/base";
+@use "./app/shared/styles/utilities";
+
+// =============================================================================
+// MATERIAL CORE & BASE THEME
+// =============================================================================
+// Apply core styles, typography, and density once globally
+@include theme.apply-base-theme;
+
+// =============================================================================
+// GLOBAL RESET & BASE STYLES
+// =============================================================================
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: Roboto, "Helvetica Neue", sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+// =============================================================================
+// THEME CLASSES
+// =============================================================================
+// Applied dynamically by ThemeService based on user preference
+// Supports: light-blue, dark-blue, light-cyan-orange, dark-cyan-orange
+
+// Light Blue Theme
+html.light-theme.blue-scheme {
+	@include theme.apply-light-blue-theme;
+	background-color: var(--mat-sys-surface);
+	color: var(--mat-sys-on-surface);
+}
+
+// Dark Blue Theme
+html.dark-theme.blue-scheme {
+	@include theme.apply-dark-blue-theme;
+	background-color: var(--mat-sys-surface);
+	color: var(--mat-sys-on-surface);
+}
+
+// Light Cyan-Orange Theme
+html.light-theme.cyan-orange-scheme {
+	@include theme.apply-light-cyan-orange-theme;
+	background-color: var(--mat-sys-surface);
+	color: var(--mat-sys-on-surface);
+}
+
+// Dark Cyan-Orange Theme
+html.dark-theme.cyan-orange-scheme {
+	@include theme.apply-dark-cyan-orange-theme;
+	background-color: var(--mat-sys-surface);
+	color: var(--mat-sys-on-surface);
+}
+
+// Default to light blue theme if no classes are applied yet
+html:not(.light-theme):not(.dark-theme) {
+	@include theme.apply-light-blue-theme;
+	background-color: var(--mat-sys-surface);
+	color: var(--mat-sys-on-surface);
+}
+
+// =============================================================================
+// BASE ELEMENT STYLES & UTILITY CLASSES
+// =============================================================================
+// Imported at the top of the file using @use instead of @import
+
+// =============================================================================
+// MATERIAL COMPONENT GLOBAL OVERRIDES
+// =============================================================================
+// Minimal global customizations - prefer component-level styles
+
+// Enhanced focus visibility for accessibility
+*:focus-visible {
+	outline: 2px solid var(--mat-sys-primary);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+// Remove focus outline for mouse users (but keep for keyboard)
+*:focus:not(:focus-visible) {
+	outline: none;
+}
+
+// Ensure Material buttons have visible focus indicators
+.mat-mdc-button:focus-visible,
+.mat-mdc-raised-button:focus-visible,
+.mat-mdc-outlined-button:focus-visible,
+.mat-mdc-fab:focus-visible,
+.mat-mdc-mini-fab:focus-visible,
+.mat-mdc-icon-button:focus-visible {
+	outline: 2px solid var(--mat-sys-primary);
+	outline-offset: 2px;
+}
+
+// Ensure Material form fields have visible focus indicators
+.mat-mdc-form-field:focus-within {
+	.mat-mdc-text-field-wrapper {
+		outline: 2px solid var(--mat-sys-primary);
+		outline-offset: 2px;
+		border-radius: vars.$border-radius-sm;
+	}
+}
+
+// Ensure Material cards have proper spacing
+.mat-mdc-card {
+	margin-bottom: vars.$spacing-md;
+}
+
+// Ensure proper scrollbar styling for dark theme
+html.dark-theme {
+	scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.2);
+
+	::-webkit-scrollbar {
+		width: 12px;
+		height: 12px;
+	}
+
+	::-webkit-scrollbar-track {
+		background: rgba(0, 0, 0, 0.2);
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.3);
+		border-radius: vars.$border-radius-sm;
+
+		&:hover {
+			background: rgba(255, 255, 255, 0.4);
+		}
+	}
+}
+
+html.light-theme {
+	scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);
+
+	::-webkit-scrollbar {
+		width: 12px;
+		height: 12px;
+	}
+
+	::-webkit-scrollbar-track {
+		background: rgba(0, 0, 0, 0.05);
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: rgba(0, 0, 0, 0.2);
+		border-radius: 6px;
+
+		&:hover {
+			background: rgba(0, 0, 0, 0.3);
+		}
+	}
+}

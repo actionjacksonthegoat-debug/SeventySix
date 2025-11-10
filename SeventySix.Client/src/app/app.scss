@@ -1,0 +1,102 @@
+@use "../app/shared/styles/variables" as vars;
+
+:host {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+// Skip to content link for accessibility
+.skip-link {
+	position: absolute;
+	top: -40px;
+	left: 0;
+	background: var(--mat-sys-primary);
+	color: var(--mat-sys-on-primary);
+	padding: vars.$spacing-sm vars.$spacing-md;
+	text-decoration: none;
+	border-radius: 0 0 vars.$border-radius-sm 0;
+	z-index: vars.$z-index-notification;
+	font-weight: vars.$font-weight-medium;
+	transition: top vars.$transition-duration-normal ease-in-out;
+
+	&:focus {
+		top: 0;
+		outline: 2px solid var(--mat-sys-primary);
+		outline-offset: 2px;
+	}
+}
+
+.app-container {
+	width: 100%;
+	height: 100vh;
+	display: flex;
+	position: relative;
+	overflow: hidden;
+
+	// Optimize for mobile performance
+	& {
+		-webkit-overflow-scrolling: touch;
+		-webkit-tap-highlight-color: transparent;
+	}
+}
+
+.global-loading-bar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: vars.$z-index-overlay;
+	height: 4px;
+}
+
+.app-sidenav {
+	width: vars.$sidebar-width;
+
+	// Touch-friendly scrolling
+	& {
+		-webkit-overflow-scrolling: touch;
+	}
+
+	// Mobile optimization
+	@media (max-width: vars.$breakpoint-md-max) {
+		width: vars.$sidebar-width;
+		max-width: 80vw;
+	}
+}
+
+.app-content {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	overflow-y: auto;
+	overflow-x: hidden;
+	scroll-behavior: smooth;
+
+	// Touch-friendly scrolling
+	& {
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
+.page-content {
+	flex: 1;
+	padding: vars.$spacing-lg;
+	max-width: vars.$container-max-width;
+	margin: 0 auto;
+	width: 100%;
+
+	@media (max-width: vars.$breakpoint-md-max) {
+		padding: vars.$spacing-md;
+	}
+
+	@media (max-width: vars.$breakpoint-xs-max) {
+		padding: vars.$spacing-sm;
+
+		// Optimize font rendering on mobile
+		& {
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+		}
+	}
+}

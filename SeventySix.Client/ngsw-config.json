@@ -39,6 +39,16 @@
 			}
 		},
 		{
+			"name": "api-users",
+			"urls": ["/api/users/**", "/api/user/**"],
+			"cacheConfig": {
+				"strategy": "freshness",
+				"maxSize": 100,
+				"maxAge": "2m",
+				"timeout": "10s"
+			}
+		},
+		{
 			"name": "api-reference-data",
 			"urls": ["/api/reference/**", "/api/config/**", "/api/lookup/**"],
 			"cacheConfig": {

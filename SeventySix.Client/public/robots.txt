@@ -1,0 +1,7 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /style-guide
+
+Sitemap: https://seventysix.app/sitemap.xml

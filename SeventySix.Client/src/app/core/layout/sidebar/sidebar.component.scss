@@ -1,0 +1,41 @@
+.app-sidebar {
+	height: 100%;
+	padding: 8px 0;
+}
+
+.nav-section-title {
+	font-size: 12px;
+	font-weight: 500;
+	text-transform: uppercase;
+	padding: 16px 16px 8px;
+	opacity: 0.7;
+	letter-spacing: 0.5px;
+}
+
+mat-nav-list {
+	padding-top: 0;
+}
+
+a[mat-list-item] {
+	&.active {
+		background-color: rgba(var(--mat-primary-rgb), 0.12);
+		color: var(--mat-primary-default);
+
+		mat-icon {
+			color: var(--mat-primary-default);
+		}
+	}
+
+	&[disabled] {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	mat-icon {
+		margin-right: 16px;
+	}
+}
+
+mat-divider {
+	margin: 8px 0;
+}

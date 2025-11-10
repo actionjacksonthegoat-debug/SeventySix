@@ -3,7 +3,8 @@ import {
 	ErrorHandler,
 	isDevMode,
 	provideBrowserGlobalErrorListeners,
-	provideZonelessChangeDetection
+	provideZonelessChangeDetection,
+	APP_INITIALIZER
 } from "@angular/core";
 import { provideRouter } from "@angular/router";
 import {
@@ -12,6 +13,7 @@ import {
 	withXsrfConfiguration
 } from "@angular/common/http";
 import { provideServiceWorker } from "@angular/service-worker";
+import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 
 import { routes } from "./app.routes";
 import {
@@ -20,7 +22,20 @@ import {
 	authInterceptor,
 	cacheInterceptor
 } from "@core/interceptors";
-import { ErrorHandlerService } from "@core/services";
+import { ErrorHandlerService, ThemeService } from "@core/services";
+
+/**
+ * Initialize theme service on app startup
+ * This ensures the theme is applied before the app renders
+ */
+function initializeTheme(_themeService: ThemeService)
+{
+	return () =>
+	{
+		// Theme service constructor handles initialization
+		return Promise.resolve();
+	};
+}
 
 export const appConfig: ApplicationConfig = {
 	providers: [
@@ -40,8 +55,16 @@ export const appConfig: ApplicationConfig = {
 		provideBrowserGlobalErrorListeners(),
 		provideZonelessChangeDetection(),
 		provideRouter(routes),
+		provideAnimationsAsync(),
 		// Global error handler
 		{ provide: ErrorHandler, useClass: ErrorHandlerService },
+		// Initialize theme service on app startup
+		{
+			provide: APP_INITIALIZER,
+			useFactory: initializeTheme,
+			deps: [ThemeService],
+			multi: true
+		},
 		// Service Worker for PWA support and advanced caching
 		provideServiceWorker("ngsw-worker.js", {
 			enabled: !isDevMode(),

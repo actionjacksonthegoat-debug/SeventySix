@@ -1,0 +1,54 @@
+<mat-card class="chart-card">
+	<mat-card-header>
+		<mat-card-title>{{ title() }}</mat-card-title>
+		@if (subtitle())
+		{
+			<mat-card-subtitle>{{ subtitle() }}</mat-card-subtitle>
+		}
+		<div class="header-actions">
+			@if (showRefresh())
+			{
+				<button
+					mat-icon-button
+					(click)="onRefresh()"
+					matTooltip="Refresh data"
+					aria-label="Refresh chart data"
+				>
+					<mat-icon>refresh</mat-icon>
+				</button>
+			}
+			@if (showExport())
+			{
+				<button
+					mat-icon-button
+					[matMenuTriggerFor]="exportMenu"
+					matTooltip="Export chart"
+					aria-label="Export chart"
+				>
+					<mat-icon>download</mat-icon>
+				</button>
+				<mat-menu #exportMenu="matMenu">
+					<button mat-menu-item (click)="onExportPng()">
+						<mat-icon>image</mat-icon>
+						<span>Export as PNG</span>
+					</button>
+					<button mat-menu-item (click)="onExportCsv()">
+						<mat-icon>table_chart</mat-icon>
+						<span>Export as CSV</span>
+					</button>
+				</mat-menu>
+			}
+		</div>
+	</mat-card-header>
+
+	<mat-card-content>
+		<div class="chart-container">
+			<canvas
+				baseChart
+				[type]="chartType()"
+				[data]="chartData()"
+				[options]="chartOptions()"
+			></canvas>
+		</div>
+	</mat-card-content>
+</mat-card>

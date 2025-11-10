@@ -1,15 +1,29 @@
+<!-- User Management Page -->
 <div class="users-page">
 	<!-- Page Header -->
-	<header class="page-header">
-		<h1 class="page-title">{{ pageTitle() }}</h1>
-
-		@if (showHeaderActions())
-		{
-			<div class="page-actions">
-				<!-- Future: Add User button, filters, export, etc. -->
+	<div class="page-header">
+		<div class="header-content">
+			<div class="header-title">
+				<mat-icon class="page-icon">people</mat-icon>
+				<div>
+					<h1 class="mat-headline-4">{{ pageTitle() }}</h1>
+					<p class="mat-body-2 subtitle">
+						Manage user accounts and permissions
+					</p>
+				</div>
 			</div>
-		}
-	</header>
+			<div class="header-actions">
+				<button
+					mat-raised-button
+					color="primary"
+					routerLink="/users/new"
+				>
+					<mat-icon>add</mat-icon>
+					Create User
+				</button>
+			</div>
+		</div>
+	</div>
 
 	<!-- Main Content: UserList Component -->
 	<main class="page-content">

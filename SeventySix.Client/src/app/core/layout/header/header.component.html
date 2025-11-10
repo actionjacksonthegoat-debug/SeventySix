@@ -1,0 +1,89 @@
+<mat-toolbar color="primary" class="app-header">
+	<!-- Menu Toggle for Mobile -->
+	<button
+		mat-icon-button
+		(click)="toggleSidebar()"
+		matTooltip="Toggle menu"
+		aria-label="Toggle menu"
+		class="menu-toggle"
+	>
+		<mat-icon>menu</mat-icon>
+	</button>
+
+	<!-- Logo/Brand -->
+	<span class="app-logo">
+		<mat-icon class="logo-icon">storage</mat-icon>
+		<span class="app-name">SeventySix</span>
+	</span>
+
+	<!-- Spacer -->
+	<span class="flex-1"></span>
+
+	<!-- Current Theme Display (Desktop only) -->
+	<span class="theme-indicator">
+		{{ themeService.themeName() }}
+	</span>
+
+	<!-- Color Scheme Toggle -->
+	<button
+		mat-icon-button
+		(click)="toggleColorScheme()"
+		[matTooltip]="
+			'Color: ' +
+			(themeService.isBlue()
+				? 'Blue → Cyan/Orange'
+				: 'Cyan/Orange → Blue')
+		"
+		aria-label="Toggle color scheme"
+	>
+		<mat-icon>{{
+			themeService.isBlue() ? "water_drop" : "local_fire_department"
+		}}</mat-icon>
+	</button>
+
+	<!-- Brightness Toggle -->
+	<button
+		mat-icon-button
+		(click)="toggleBrightness()"
+		[matTooltip]="
+			'Brightness: ' +
+			(themeService.isDark() ? 'Dark → Light' : 'Light → Dark')
+		"
+		aria-label="Toggle brightness"
+	>
+		<mat-icon>{{
+			themeService.isDark() ? "light_mode" : "dark_mode"
+		}}</mat-icon>
+	</button>
+
+	<!-- User Menu (Future) -->
+	<button
+		mat-icon-button
+		[matMenuTriggerFor]="userMenu"
+		matTooltip="User menu"
+		aria-label="User menu"
+	>
+		<mat-icon>account_circle</mat-icon>
+	</button>
+
+	<mat-menu #userMenu="matMenu">
+		<button mat-menu-item>
+			<mat-icon>person</mat-icon>
+			<span>Profile</span>
+		</button>
+		<button mat-menu-item>
+			<mat-icon>settings</mat-icon>
+			<span>Settings</span>
+		</button>
+		<mat-divider></mat-divider>
+		<button mat-menu-item>
+			<mat-icon>logout</mat-icon>
+			<span>Logout</span>
+		</button>
+	</mat-menu>
+</mat-toolbar>
+
+<!-- Breadcrumb Navigation (Second Row) -->
+<div class="breadcrumb-container">
+	<app-breadcrumb></app-breadcrumb>
+</div>
