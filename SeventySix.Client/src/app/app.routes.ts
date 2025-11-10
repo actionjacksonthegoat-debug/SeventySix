@@ -8,7 +8,9 @@ export const routes: Routes = [
 	{
 		path: "",
 		loadComponent: () =>
-			import("./features/home/home-page").then((m) => m.HomePage),
+			import("./features/home/home-page/home-page").then(
+				(m) => m.HomePage
+			),
 		title: "SeventySix - Home"
 	},
 	{
@@ -18,7 +20,7 @@ export const routes: Routes = [
 			{
 				path: "",
 				loadComponent: () =>
-					import("./features/users/users/users-page").then(
+					import("./features/admin/users/users/users-page").then(
 						(m) => m.UsersPage
 					),
 				title: "User Management",
@@ -27,16 +29,16 @@ export const routes: Routes = [
 			{
 				path: "new",
 				loadComponent: () =>
-					import("./features/users/user-create/user-create").then(
-						(m) => m.UserCreatePage
-					),
+					import(
+						"./features/admin/users/user-create/user-create"
+					).then((m) => m.UserCreatePage),
 				title: "Create User",
 				data: { breadcrumb: "New" }
 			},
 			{
 				path: ":id",
 				loadComponent: () =>
-					import("./features/users/user/user-page").then(
+					import("./features/admin/users/user/user-page").then(
 						(m) => m.UserPage
 					),
 				title: "Edit User",
@@ -47,7 +49,7 @@ export const routes: Routes = [
 	{
 		path: "weather-forecast",
 		loadComponent: () =>
-			import("./features/weather/weather-forecast").then(
+			import("./features/home/weather-forecast/weather-forecast").then(
 				(m) => m.WeatherForecastPage
 			),
 		title: "Weather Forecast",
@@ -65,9 +67,9 @@ export const routes: Routes = [
 	{
 		path: "style-guide",
 		loadComponent: () =>
-			import("./features/style-guide/style-guide.component").then(
-				(m) => m.StyleGuideComponent
-			),
+			import(
+				"./features/developer/style-guide/style-guide.component"
+			).then((m) => m.StyleGuideComponent),
 		title: "Style Guide",
 		data: { breadcrumb: "Style Guide" }
 	},
@@ -77,16 +79,16 @@ export const routes: Routes = [
 			{
 				path: "404",
 				loadComponent: () =>
-					import("./features/error-pages/not-found/not-found").then(
-						(m) => m.NotFoundPage
-					),
+					import(
+						"./features/admin/error-pages/not-found/not-found"
+					).then((m) => m.NotFoundPage),
 				title: "Page Not Found"
 			},
 			{
 				path: "500",
 				loadComponent: () =>
 					import(
-						"./features/error-pages/server-error/server-error"
+						"./features/admin/error-pages/server-error/server-error"
 					).then((m) => m.ServerErrorPage),
 				title: "Server Error"
 			}
@@ -95,7 +97,7 @@ export const routes: Routes = [
 	{
 		path: "**",
 		loadComponent: () =>
-			import("./features/error-pages/not-found/not-found").then(
+			import("./features/admin/error-pages/not-found/not-found").then(
 				(m) => m.NotFoundPage
 			),
 		title: "Page Not Found"
