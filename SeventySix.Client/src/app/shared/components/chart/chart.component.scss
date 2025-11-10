@@ -1,3 +1,5 @@
+@use "../../styles/variables" as vars;
+
 .chart-card {
 	height: 100%;
 	display: flex;
@@ -7,7 +9,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding-bottom: 16px;
+		padding-bottom: vars.$spacing-md;
 
 		mat-card-title {
 			margin: 0;
@@ -15,7 +17,7 @@
 
 		.header-actions {
 			display: flex;
-			gap: 8px;
+			gap: vars.$spacing-sm;
 			margin-left: auto;
 		}
 	}
@@ -24,7 +26,7 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		padding: 16px;
+		padding: vars.$spacing-md;
 	}
 
 	.chart-container {

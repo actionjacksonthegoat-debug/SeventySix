@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ChartComponent } from "./chart.component";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
+import { provideZonelessChangeDetection } from "@angular/core";
 
 describe("ChartComponent", () =>
 {
@@ -11,7 +12,10 @@ describe("ChartComponent", () =>
 	{
 		await TestBed.configureTestingModule({
 			imports: [ChartComponent],
-			providers: [provideNoopAnimations()]
+			providers: [
+				provideZonelessChangeDetection(),
+				provideNoopAnimations()
+			]
 		}).compileComponents();
 
 		fixture = TestBed.createComponent(ChartComponent);

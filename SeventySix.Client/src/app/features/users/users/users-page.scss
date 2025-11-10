@@ -1,3 +1,5 @@
+@use "../../../shared/styles/variables" as vars;
+
 :host {
 	display: block;
 	width: 100%;
@@ -8,10 +10,10 @@
 }
 
 .page-header {
-	margin-bottom: 32px;
+	margin-bottom: vars.$spacing-xl;
 
-	@media (max-width: 599px) {
-		margin-bottom: 24px;
+	@media (max-width: vars.$breakpoint-xs-max) {
+		margin-bottom: vars.$spacing-lg;
 	}
 }
 
@@ -20,14 +22,14 @@
 	justify-content: space-between;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 16px;
+	gap: vars.$spacing-md;
 }
 
 .header-actions {
 	display: flex;
-	gap: 12px;
+	gap: vars.$spacing-base;
 
-	@media (max-width: 599px) {
+	@media (max-width: vars.$breakpoint-xs-max) {
 		width: 100%;
 
 		button {
@@ -39,28 +41,28 @@
 .header-title {
 	display: flex;
 	align-items: center;
-	gap: 16px;
+	gap: vars.$spacing-md;
 
 	.page-icon {
-		font-size: 48px;
-		width: 48px;
-		height: 48px;
+		font-size: vars.$avatar-size-md;
+		width: vars.$avatar-size-md;
+		height: vars.$avatar-size-md;
 		color: var(--mat-primary-default);
 
-		@media (max-width: 599px) {
-			font-size: 36px;
-			width: 36px;
-			height: 36px;
+		@media (max-width: vars.$breakpoint-xs-max) {
+			font-size: vars.$icon-size-xl;
+			width: vars.$icon-size-xl;
+			height: vars.$icon-size-xl;
 		}
 	}
 
 	h1 {
 		margin: 0;
-		font-weight: 500;
+		font-weight: vars.$font-weight-medium;
 	}
 
 	.subtitle {
-		margin: 4px 0 0;
+		margin: vars.$spacing-xs 0 0;
 		opacity: 0.7;
 	}
 }

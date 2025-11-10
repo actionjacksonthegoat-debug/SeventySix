@@ -5,6 +5,7 @@ import { UserService } from "@core/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
 import { of } from "rxjs";
 import { UsersPage } from "./users-page";
+import { ActivatedRoute } from "@angular/router";
 
 describe("UsersPage", () =>
 {
@@ -12,11 +13,15 @@ describe("UsersPage", () =>
 	let fixture: ComponentFixture<UsersPage>;
 	let mockUserService: jasmine.SpyObj<UserService>;
 	let mockLogger: jasmine.SpyObj<LoggerService>;
+	let mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
 
 	beforeEach(async () =>
 	{
 		mockUserService = jasmine.createSpyObj("UserService", ["getAllUsers"]);
 		mockLogger = jasmine.createSpyObj("LoggerService", ["info", "error"]);
+		mockActivatedRoute = jasmine.createSpyObj("ActivatedRoute", [], {
+			params: of({})
+		});
 
 		// Set default mock return value
 		mockUserService.getAllUsers.and.returnValue(of([]));
@@ -25,6 +30,7 @@ describe("UsersPage", () =>
 			imports: [UsersPage, UserList],
 			providers: [
 				provideZonelessChangeDetection(),
+				{ provide: ActivatedRoute, useValue: mockActivatedRoute },
 				{ provide: UserService, useValue: mockUserService },
 				{ provide: LoggerService, useValue: mockLogger }
 			]
@@ -50,7 +56,8 @@ describe("UsersPage", () =>
 		await fixture.whenStable();
 
 		const compiled = fixture.nativeElement;
-		const title = compiled.querySelector(".page-title");
+		const title = compiled.querySelector("h1");
+		expect(title).toBeTruthy();
 		expect(title.textContent).toContain("User Management");
 	});
 
@@ -66,8 +73,9 @@ describe("UsersPage", () =>
 
 	it("should have a title", () =>
 	{
+		fixture.detectChanges();
 		const compiled = fixture.nativeElement;
-		const title = compiled.querySelector("h2");
+		const title = compiled.querySelector("h1");
 		expect(title).toBeTruthy();
 	});
 });

@@ -1,13 +1,15 @@
+@use "../../../shared/styles/variables" as vars;
+
 .app-sidebar {
 	height: 100%;
-	padding: 8px 0;
+	padding: vars.$spacing-sm 0;
 }
 
 .nav-section-title {
-	font-size: 12px;
-	font-weight: 500;
+	font-size: vars.$font-size-xs;
+	font-weight: vars.$font-weight-medium;
 	text-transform: uppercase;
-	padding: 16px 16px 8px;
+	padding: vars.$spacing-md vars.$spacing-md vars.$spacing-sm;
 	opacity: 0.7;
 	letter-spacing: 0.5px;
 }
@@ -32,10 +34,10 @@ a[mat-list-item] {
 	}
 
 	mat-icon {
-		margin-right: 16px;
+		margin-right: vars.$spacing-md;
 	}
 }
 
 mat-divider {
-	margin: 8px 0;
+	margin: vars.$spacing-sm 0;
 }

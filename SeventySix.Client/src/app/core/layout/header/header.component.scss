@@ -1,22 +1,24 @@
+@use "../../../shared/styles/variables" as vars;
+
 .app-header {
 	position: sticky;
 	top: 0;
 	z-index: 100;
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: vars.$spacing-sm;
 }
 
 .menu-toggle {
-	margin-right: 8px;
+	margin-right: vars.$spacing-sm;
 }
 
 .app-logo {
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	font-size: 20px;
-	font-weight: 500;
+	gap: vars.$spacing-sm;
+	font-size: vars.$font-size-lg;
+	font-weight: vars.$font-weight-medium;
 	cursor: pointer;
 	user-select: none;
 
@@ -27,28 +29,28 @@
 	}
 
 	.app-name {
-		@media (max-width: 599px) {
+		@media (max-width: vars.$breakpoint-xs-max) {
 			display: none;
 		}
 	}
 }
 
 .theme-indicator {
-	font-size: 14px;
+	font-size: vars.$font-size-sm;
 	opacity: 0.9;
-	margin: 0 16px;
+	margin: 0 vars.$spacing-md;
 
-	@media (max-width: 959px) {
+	@media (max-width: vars.$breakpoint-md-max) {
 		display: none;
 	}
 }
 
 .breadcrumb-container {
-	padding: 0 1rem;
+	padding: 0 vars.$spacing-md;
 	background-color: rgba(var(--mat-surface-rgb), 1);
 	border-bottom: 1px solid rgba(var(--mat-outline-rgb), 0.12);
 
-	@media (max-width: 599px) {
-		padding: 0 0.5rem;
+	@media (max-width: vars.$breakpoint-xs-max) {
+		padding: 0 vars.$spacing-sm;
 	}
 }

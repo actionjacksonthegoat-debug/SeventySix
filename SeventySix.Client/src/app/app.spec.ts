@@ -1,14 +1,29 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { App } from "./app";
+import { ActivatedRoute } from "@angular/router";
+import { of } from "rxjs";
 
 describe("App", () =>
 {
+	let mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
+
 	beforeEach(async () =>
 	{
+		mockActivatedRoute = jasmine.createSpyObj("ActivatedRoute", [], {
+			params: of({}),
+			root: {
+				firstChild: null,
+				snapshot: { data: {} }
+			}
+		});
+
 		await TestBed.configureTestingModule({
 			imports: [App],
-			providers: [provideZonelessChangeDetection()]
+			providers: [
+				provideZonelessChangeDetection(),
+				{ provide: ActivatedRoute, useValue: mockActivatedRoute }
+			]
 		}).compileComponents();
 	});
 
@@ -27,8 +42,8 @@ describe("App", () =>
 		fixture.detectChanges();
 		const compiled = fixture.nativeElement as HTMLElement;
 
-		expect(compiled.querySelector("h1")?.textContent).toContain(
-			"Hello, SeventySix.Client"
-		);
+		// Check for main content area instead of specific text
+		const mainContent = compiled.querySelector("#main-content");
+		expect(mainContent).toBeTruthy();
 	});
 });
