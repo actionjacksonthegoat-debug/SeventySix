@@ -10,14 +10,37 @@ namespace SeventySix.Application.Extensions;
 
 /// <summary>
 /// Extension methods for WeatherForecast entity mapping.
+/// Provides clean, reusable mapping between domain entities and DTOs.
 /// </summary>
+/// <remarks>
+/// This class implements the Adapter pattern, translating between different
+/// object representations (Domain Entities ↔ DTOs).
+///
+/// Design Benefits:
+/// - Separation of Concerns: Domain models remain independent of API contracts
+/// - Reusability: Mapping logic is centralized and reusable
+/// - Testability: Extension methods are easy to unit test
+/// - Fluent API: Enables readable method chaining
+///
+/// Mapping Strategy:
+/// - Entity → DTO: For read operations (GET requests)
+/// - Request → Entity: For write operations (POST/PUT requests)
+///
+/// Note: For complex mappings, consider using AutoMapper or Mapster libraries.
+/// </remarks>
 public static class WeatherForecastExtensions
 {
 	/// <summary>
-	/// Converts WeatherForecast entity to DTO.
+	/// Converts a WeatherForecast domain entity to a data transfer object (DTO).
 	/// </summary>
-	/// <param name="entity">The entity to convert.</param>
-	/// <returns>WeatherForecastDto.</returns>
+	/// <param name="entity">The domain entity to convert.</param>
+	/// <returns>A WeatherForecastDto containing the entity's data.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when entity is null.</exception>
+	/// <remarks>
+	/// This method maps all properties from the domain entity to the DTO.
+	/// The DTO includes computed properties like TemperatureF which is
+	/// calculated in the entity.
+	/// </remarks>
 	public static WeatherForecastDto ToDto(this WeatherForecast entity)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
@@ -32,10 +55,15 @@ public static class WeatherForecastExtensions
 	}
 
 	/// <summary>
-	/// Converts collection of WeatherForecast entities to DTOs.
+	/// Converts a collection of WeatherForecast entities to DTOs.
 	/// </summary>
-	/// <param name="entities">The entities to convert.</param>
-	/// <returns>Collection of WeatherForecastDto.</returns>
+	/// <param name="entities">The collection of entities to convert.</param>
+	/// <returns>An enumerable collection of WeatherForecastDto objects.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when entities is null.</exception>
+	/// <remarks>
+	/// This is a convenience method that applies ToDto to each entity in the collection.
+	/// Uses LINQ Select for efficient transformation with deferred execution.
+	/// </remarks>
 	public static IEnumerable<WeatherForecastDto> ToDto(this IEnumerable<WeatherForecast> entities)
 	{
 		ArgumentNullException.ThrowIfNull(entities);
@@ -44,10 +72,18 @@ public static class WeatherForecastExtensions
 	}
 
 	/// <summary>
-	/// Converts CreateWeatherForecastRequest to entity.
+	/// Converts a CreateWeatherForecastRequest to a domain entity.
 	/// </summary>
-	/// <param name="request">The request to convert.</param>
-	/// <returns>WeatherForecast entity.</returns>
+	/// <param name="request">The request object containing creation data.</param>
+	/// <returns>A new WeatherForecast entity initialized with request data.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when request is null.</exception>
+	/// <remarks>
+	/// This method creates a new entity instance and maps properties from the request.
+	/// Only maps properties that can be set during creation; computed properties
+	/// (like TemperatureF) are calculated by the entity itself.
+	///
+	/// The entity is not persisted here; persistence is handled by the repository.
+	/// </remarks>
 	public static WeatherForecast ToEntity(this CreateWeatherForecastRequest request)
 	{
 		ArgumentNullException.ThrowIfNull(request);

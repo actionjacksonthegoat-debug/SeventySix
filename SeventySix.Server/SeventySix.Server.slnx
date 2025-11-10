@@ -2,11 +2,11 @@
   <Folder Name="/Solution Items/">
     <File Path="docker-compose.yml" />
   </Folder>
-  <Project Path="SeventySix.Domain/SeventySix.Domain.csproj" Type="Classic C#" />
-  <Project Path="SeventySix.Application/SeventySix.Application.csproj" Type="Classic C#" />
-  <Project Path="SeventySix.Infrastructure/SeventySix.Infrastructure.csproj" Type="Classic C#" />
-  <Project Path="SeventySix.Api/SeventySix.Api.csproj" Type="Classic C#" />
-  <Project Path="SeventySix.Domain.Tests/SeventySix.Domain.Tests.csproj" Type="Classic C#" />
-  <Project Path="SeventySix.Application.Tests/SeventySix.Application.Tests.csproj" Type="Classic C#" />
-  <Project Path="SeventySix.Api.Tests/SeventySix.Api.Tests.csproj" Type="Classic C#" />
+  <Project Path="SeventySix.Domain/SeventySix.Domain.csproj" />
+  <Project Path="SeventySix.Application/SeventySix.Application.csproj" />
+  <Project Path="SeventySix.Infrastructure/SeventySix.Infrastructure.csproj" />
+  <Project Path="SeventySix.Api/SeventySix.Api.csproj" />
+  <Project Path="SeventySix.Domain.Tests/SeventySix.Domain.Tests.csproj" />
+  <Project Path="SeventySix.Application.Tests/SeventySix.Application.Tests.csproj" />
+  <Project Path="SeventySix.Api.Tests/SeventySix.Api.Tests.csproj" />
 </Solution>

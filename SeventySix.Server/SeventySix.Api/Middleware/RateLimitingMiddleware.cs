@@ -7,39 +7,81 @@ using System.Collections.Concurrent;
 namespace SeventySix.Api.Middleware;
 
 /// <summary>
-/// Rate limiting middleware.
-/// Prevents abuse by limiting the number of requests from a single IP address.
+/// Rate limiting middleware to prevent API abuse.
+/// Implements a sliding window rate limiter that tracks requests per client IP address.
 /// </summary>
+/// <remarks>
+/// This middleware implements the Throttling pattern to protect the API from abuse and ensure
+/// fair resource allocation across clients.
+///
+/// Configuration:
+/// - Maximum requests: 100 per minute per IP address
+/// - Time window: 60 seconds (sliding window)
+/// - Cleanup threshold: 10,000 client entries
+/// - Cleanup age: 5 minutes
+///
+/// The middleware returns HTTP 429 (Too Many Requests) when the rate limit is exceeded,
+/// with a Retry-After header indicating when the client can retry.
+///
+/// Thread Safety: Uses ConcurrentDictionary and locking for thread-safe operation.
+/// Memory Management: Automatically cleans up old client entries to prevent memory leaks.
+/// </remarks>
 public class RateLimitingMiddleware
 {
-	private readonly RequestDelegate _next;
-	private readonly ILogger<RateLimitingMiddleware> _logger;
-	private static readonly ConcurrentDictionary<string, RateLimitInfo> _clients = new();
-	private const int MaxRequestsPerMinute = 100;
-	private const int TimeWindowSeconds = 60;
+	private readonly RequestDelegate Next;
+	private readonly ILogger<RateLimitingMiddleware> Logger;
+	private static readonly ConcurrentDictionary<string, RateLimitInfo> Clients = new();
 
+	/// <summary>
+	/// Maximum number of requests allowed per time window.
+	/// </summary>
+	private const int MAX_REQUESTS_PER_MINUTE = 100;
+
+	/// <summary>
+	/// Time window in seconds for rate limiting.
+	/// </summary>
+	private const int TIME_WINDOW_SECONDS = 60;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="RateLimitingMiddleware"/> class.
+	/// </summary>
+	/// <param name="next">The next middleware in the pipeline.</param>
+	/// <param name="logger">The logger instance for recording rate limit violations.</param>
+	/// <exception cref="ArgumentNullException">Thrown when next or logger is null.</exception>
 	public RateLimitingMiddleware(
 		RequestDelegate next,
 		ILogger<RateLimitingMiddleware> logger)
 	{
-		_next = next;
-		_logger = logger;
+		Next = next;
+		Logger = logger;
 	}
 
+	/// <summary>
+	/// Invokes the rate limiting middleware to check and enforce request limits.
+	/// </summary>
+	/// <param name="context">The HTTP context for the current request.</param>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	/// <remarks>
+	/// This method:
+	/// 1. Extracts the client IP address from the connection
+	/// 2. Checks if the client has exceeded the rate limit
+	/// 3. Returns 429 if limit exceeded, otherwise proceeds to next middleware
+	/// 4. Periodically cleans up old client entries to manage memory
+	/// </remarks>
 	public async Task InvokeAsync(HttpContext context)
 	{
 		string? clientIp = context.Connection.RemoteIpAddress?.ToString();
 
 		if (string.IsNullOrEmpty(clientIp))
 		{
-			await _next(context);
+			await Next(context);
 			return;
 		}
 
-		RateLimitInfo clientInfo = _clients.GetOrAdd(clientIp, _ => new RateLimitInfo());
+		RateLimitInfo clientInfo = Clients.GetOrAdd(clientIp, _ => new RateLimitInfo());
 
 		// Clean up old entries periodically
-		if (_clients.Count > 10000)
+		if (Clients.Count > 10000)
 		{
 			CleanupOldEntries();
 		}
@@ -47,64 +89,91 @@ public class RateLimitingMiddleware
 		// Check rate limit
 		if (!clientInfo.AllowRequest())
 		{
-			_logger.LogWarning("Rate limit exceeded for IP: {ClientIp}", clientIp);
+			Logger.LogWarning("Rate limit exceeded for IP: {ClientIp}", clientIp);
 
 			context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-			context.Response.Headers["Retry-After"] = TimeWindowSeconds.ToString();
+			context.Response.Headers["Retry-After"] = TIME_WINDOW_SECONDS.ToString();
 
 			await context.Response.WriteAsJsonAsync(new
 			{
 				error = "Too Many Requests",
-				message = $"Rate limit exceeded. Maximum {MaxRequestsPerMinute} requests per minute allowed.",
-				retryAfter = TimeWindowSeconds
+				message = $"Rate limit exceeded. Maximum {MAX_REQUESTS_PER_MINUTE} requests per minute allowed.",
+				retryAfter = TIME_WINDOW_SECONDS
 			});
 
 			return;
 		}
 
-		await _next(context);
+		await Next(context);
 	}
 
+	/// <summary>
+	/// Removes client entries that haven't made requests in the last 5 minutes.
+	/// </summary>
+	/// <remarks>
+	/// This method prevents unbounded memory growth by removing stale entries.
+	/// Called when the client dictionary exceeds 10,000 entries.
+	/// </remarks>
 	private static void CleanupOldEntries()
 	{
 		DateTime cutoff = DateTime.UtcNow.AddMinutes(-5);
 
-		foreach (KeyValuePair<string, RateLimitInfo> client in _clients)
+		foreach (KeyValuePair<string, RateLimitInfo> client in Clients)
 		{
 			if (client.Value.LastRequestTime < cutoff)
 			{
-				_clients.TryRemove(client.Key, out _);
+				Clients.TryRemove(client.Key, out _);
 			}
 		}
 	}
 
+	/// <summary>
+	/// Tracks rate limit information for a single client.
+	/// </summary>
+	/// <remarks>
+	/// Uses a sliding window algorithm with a queue to track request timestamps.
+	/// Thread-safe implementation using lock for concurrent request handling.
+	/// </remarks>
 	private class RateLimitInfo
 	{
-		private readonly Queue<DateTime> _requestTimes = new();
-		private readonly object _lock = new();
+		private readonly Queue<DateTime> RequestTimes = new();
+		private readonly object Lock = new();
 
+		/// <summary>
+		/// Gets the timestamp of the most recent request from this client.
+		/// </summary>
 		public DateTime LastRequestTime { get; private set; } = DateTime.UtcNow;
 
+		/// <summary>
+		/// Checks if a new request should be allowed based on the rate limit.
+		/// </summary>
+		/// <returns>True if the request is allowed; otherwise, false.</returns>
+		/// <remarks>
+		/// This method:
+		/// 1. Removes requests outside the current time window
+		/// 2. Checks if the number of requests exceeds the limit
+		/// 3. Adds the current request timestamp if allowed
+		/// </remarks>
 		public bool AllowRequest()
 		{
-			lock (_lock)
+			lock (Lock)
 			{
 				DateTime now = DateTime.UtcNow;
 				LastRequestTime = now;
 
 				// Remove requests outside the time window
-				while (_requestTimes.Count > 0 && _requestTimes.Peek() < now.AddSeconds(-TimeWindowSeconds))
+				while (RequestTimes.Count > 0 && RequestTimes.Peek() < now.AddSeconds(-TIME_WINDOW_SECONDS))
 				{
-					_requestTimes.Dequeue();
+					RequestTimes.Dequeue();
 				}
 
 				// Check if limit exceeded
-				if (_requestTimes.Count >= MaxRequestsPerMinute)
+				if (RequestTimes.Count >= MAX_REQUESTS_PER_MINUTE)
 				{
 					return false;
 				}
 
-				_requestTimes.Enqueue(now);
+				RequestTimes.Enqueue(now);
 				return true;
 			}
 		}

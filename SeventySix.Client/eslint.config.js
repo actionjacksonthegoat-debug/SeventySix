@@ -7,22 +7,31 @@ export default [
 		languageOptions: {
 			parser: parser,
 			parserOptions: {
-				ecmaVersion: 2022,
-				sourceType: "module",
 				project: "./tsconfig.app.json",
-			},
+				tsconfigRootDir: import.meta.dirname
+			}
 		},
 		plugins: {
-			"@typescript-eslint": tseslint,
+			"@typescript-eslint": tseslint
 		},
 		rules: {
 			"@typescript-eslint/no-explicit-any": "warn",
-			"@typescript-eslint/explicit-function-return-type": "off",
-			"@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-			"no-console": ["warn", { allow: ["warn", "error"] }],
-		},
+			"@typescript-eslint/no-unused-vars": [
+				"warn",
+				{
+					argsIgnorePattern: "^_",
+					varsIgnorePattern: "^_"
+				}
+			],
+			"no-console": [
+				"warn",
+				{
+					allow: ["warn", "error"]
+				}
+			]
+		}
 	},
 	{
-		ignores: ["dist/", "node_modules/", "coverage/", "**/*.spec.ts"],
-	},
+		ignores: ["dist/**", "node_modules/**", "coverage/**", "**/*.spec.ts"]
+	}
 ];

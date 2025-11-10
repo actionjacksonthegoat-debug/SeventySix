@@ -15,51 +15,97 @@ namespace SeventySix.Application.Services;
 /// Weather forecast service implementation.
 /// Encapsulates business logic for weather forecast operations.
 /// </summary>
+/// <remarks>
+/// This service implements the Service Layer pattern, providing a facade over
+/// the repository layer while handling business logic and validation.
+///
+/// Design Principles Applied:
+/// - Single Responsibility Principle (SRP): Focuses only on weather forecast business logic
+/// - Dependency Inversion Principle (DIP): Depends on abstractions (IWeatherForecastRepository, IValidator)
+/// - Open/Closed Principle (OCP): Open for extension via dependency injection, closed for modification
+///
+/// Responsibilities:
+/// - Validate requests using FluentValidation
+/// - Coordinate between repository and mapping layers
+/// - Enforce business rules
+/// - Map between domain entities and DTOs
+///
+/// Transaction Management: Relies on repository layer for data persistence.
+/// Validation: Uses FluentValidation for request validation before processing.
+/// </remarks>
 public class WeatherForecastService : IWeatherForecastService
 {
-	private readonly IWeatherForecastRepository _repository;
-	private readonly IValidator<CreateWeatherForecastRequest> _createValidator;
+	private readonly IWeatherForecastRepository Repository;
+	private readonly IValidator<CreateWeatherForecastRequest> CreateValidator;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="WeatherForecastService"/> class.
 	/// </summary>
-	/// <param name="repository">Weather forecast repository.</param>
-	/// <param name="createValidator">Validator for create requests.</param>
+	/// <param name="repository">The repository for data access operations.</param>
+	/// <param name="createValidator">The validator for create requests.</param>
+	/// <exception cref="ArgumentNullException">
+	/// Thrown when repository or createValidator is null.
+	/// </exception>
+	/// <remarks>
+	/// Dependencies are injected via constructor following Dependency Injection pattern.
+	/// This enables loose coupling and facilitates unit testing with mocks.
+	/// </remarks>
 	public WeatherForecastService(
 		IWeatherForecastRepository repository,
 		IValidator<CreateWeatherForecastRequest> createValidator)
 	{
-		_repository = repository ?? throw new ArgumentNullException(nameof(repository));
-		_createValidator = createValidator ?? throw new ArgumentNullException(nameof(createValidator));
+		Repository = repository ?? throw new ArgumentNullException(nameof(repository));
+		CreateValidator = createValidator ?? throw new ArgumentNullException(nameof(createValidator));
 	}
 
 	/// <inheritdoc/>
+	/// <remarks>
+	/// Implementation retrieves all forecasts from the repository and maps them to DTOs.
+	/// Uses extension methods for clean entity-to-DTO transformation.
+	/// </remarks>
 	public async Task<IEnumerable<WeatherForecastDto>> GetAllForecastsAsync(CancellationToken cancellationToken = default)
 	{
-		var forecasts = await _repository.GetAllAsync(cancellationToken);
+		var forecasts = await Repository.GetAllAsync(cancellationToken);
 		return forecasts.ToDto();
 	}
 
 	/// <inheritdoc/>
+	/// <remarks>
+	/// Returns null if the forecast is not found, allowing the caller to determine
+	/// the appropriate response (typically 404 Not Found).
+	/// </remarks>
 	public async Task<WeatherForecastDto?> GetForecastByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
-		var forecast = await _repository.GetByIdAsync(id, cancellationToken);
+		var forecast = await Repository.GetByIdAsync(id, cancellationToken);
 		return forecast?.ToDto();
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ValidationException">
+	/// Thrown when the request fails validation rules defined in CreateWeatherForecastValidator.
+	/// </exception>
+	/// <remarks>
+	/// Processing steps:
+	/// 1. Validate request using FluentValidation (throws ValidationException if invalid)
+	/// 2. Map request to domain entity using extension method
+	/// 3. Persist entity via repository
+	/// 4. Map created entity to DTO and return
+	///
+	/// The ValidateAndThrowAsync method ensures validation happens before any processing,
+	/// following the fail-fast principle.
+	/// </remarks>
 	public async Task<WeatherForecastDto> CreateForecastAsync(
 		CreateWeatherForecastRequest request,
 		CancellationToken cancellationToken = default)
 	{
 		// Validate request using FluentValidation
-		await _createValidator.ValidateAndThrowAsync(request, cancellationToken);
+		await CreateValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		// Map request to entity using extension method
 		var forecast = request.ToEntity();
 
 		// Save via repository
-		var created = await _repository.CreateAsync(forecast, cancellationToken);
+		var created = await Repository.CreateAsync(forecast, cancellationToken);
 
 		// Map entity to DTO using extension method
 		return created.ToDto();

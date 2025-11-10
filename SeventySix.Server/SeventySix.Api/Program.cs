@@ -2,6 +2,31 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+// <summary>
+// Application entry point and service configuration.
+// Configures the ASP.NET Core web application with all required services,
+// middleware, and endpoints following Clean Architecture principles.
+// </summary>
+//
+// <remarks>
+// This file configures:
+// - Logging with Serilog (console and file outputs)
+// - Response compression (Brotli and Gzip)
+// - Response caching
+// - FluentValidation
+// - Repository pattern implementations
+// - Application services
+// - CORS policies
+// - Security headers middleware
+// - Global exception handling
+// - Rate limiting
+// - OpenAPI/Scalar documentation (development only)
+//
+// Architecture: Implements Dependency Inversion Principle (DIP) by registering
+// interfaces with their concrete implementations.
+// </remarks>
+
+using System.IO.Compression;
 using FluentValidation;
 using Microsoft.AspNetCore.ResponseCompression;
 using Scalar.AspNetCore;
@@ -12,11 +37,11 @@ using SeventySix.Application.Services;
 using SeventySix.Application.Validators;
 using SeventySix.Domain.Interfaces;
 using SeventySix.Infrastructure.Repositories;
-using System.IO.Compression;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
+// Configure Serilog for structured logging
+// Outputs: Console + Rolling file (daily rotation)
 Log.Logger = new LoggerConfiguration()
 	.ReadFrom.Configuration(builder.Configuration)
 	.Enrich.FromLogContext()
@@ -26,10 +51,11 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Add services to the container.
+// Add MVC controllers to the service container
 builder.Services.AddControllers();
 
-// Response compression for performance
+// Response compression for improved performance
+// Enables HTTPS compression with Brotli (preferred) and Gzip fallback
 builder.Services.AddResponseCompression(options =>
 {
 	options.EnableForHttps = true;
@@ -47,22 +73,25 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 	options.Level = CompressionLevel.Fastest;
 });
 
-// Response caching
+// Response caching middleware
 builder.Services.AddResponseCaching();
 
-// FluentValidation
+// FluentValidation - Register all validators from the assembly
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWeatherForecastValidator>();
 
-// Repository pattern - Scoped for per-request instances
+// Repository pattern - Scoped lifetime for per-request database context
+// Implements Dependency Inversion Principle (DIP)
 builder.Services.AddScoped<IWeatherForecastRepository, WeatherForecastRepository>();
 
-// Application services
+// Application services - Business logic layer
+// Scoped lifetime ensures proper DbContext management
 builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// OpenAPI/Swagger configuration for API documentation
 builder.Services.AddOpenApi();
 
-// CORS configuration from appsettings
+// CORS configuration - Load allowed origins from appsettings.json
+// Defaults to localhost:4200 for development if not configured
 string[] allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
 	?? ["http://localhost:4200"];
 
@@ -82,7 +111,8 @@ builder.Services.AddCors(options =>
 
 WebApplication app = builder.Build();
 
-// Security headers middleware
+// Security headers middleware - Implements defense in depth
+// Adds various security headers to prevent common web vulnerabilities
 app.Use(async (context, next) =>
 {
 	context.Response.Headers["X-Content-Type-Options"] = "nosniff";
@@ -91,6 +121,7 @@ app.Use(async (context, next) =>
 	context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 	context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
 
+	// HSTS only in production to avoid development certificate issues
 	if (!app.Environment.IsDevelopment())
 	{
 		context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
@@ -99,10 +130,11 @@ app.Use(async (context, next) =>
 	await next();
 });
 
-// Global exception handling
+// Global exception handling - Catches all unhandled exceptions
+// Returns consistent ProblemDetails responses (RFC 7807)
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-// Rate limiting
+// Rate limiting - Prevents API abuse (100 requests/minute per IP)
 app.UseMiddleware<RateLimitingMiddleware>();
 
 // Enable response compression
@@ -111,26 +143,32 @@ app.UseResponseCompression();
 // Enable response caching
 app.UseResponseCaching();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline for development environment
 if (app.Environment.IsDevelopment())
 {
 	_ = app.MapOpenApi();
 
-	// Scalar API reference UI
+	// Scalar API reference UI - Modern alternative to Swagger UI
 	_ = app.MapScalarApiReference();
 }
 
+// CORS - Must be called after UseRouting and before UseAuthorization
 app.UseCors("AllowedOrigins");
 
+// HTTPS redirection - Redirect HTTP to HTTPS in production
 app.UseHttpsRedirection();
 
+// Authorization middleware (currently no auth configured)
 app.UseAuthorization();
 
+// Map controller endpoints
 app.MapControllers();
 
+// Start the application
 app.Run();
 
-// Make Program class accessible to integration tests
+// Make Program class accessible to integration tests via partial class
+// This enables WebApplicationFactory<Program> in test projects
 public partial class Program
 {
 }

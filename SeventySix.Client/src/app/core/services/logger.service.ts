@@ -141,6 +141,7 @@ export class LoggerService
 		{
 			case LogLevel.Debug:
 			case LogLevel.Info:
+				// eslint-disable-next-line no-console
 				console.log(...args);
 				break;
 			case LogLevel.Warning:

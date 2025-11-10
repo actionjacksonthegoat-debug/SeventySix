@@ -55,13 +55,6 @@
 							"outputHashing": "all",
 							"serviceWorker": "ngsw-config.json"
 						},
-						"production-local": {
-							"optimization": true,
-							"outputHashing": "all",
-							"sourceMap": true,
-							"extractLicenses": false,
-							"serviceWorker": "ngsw-config.json"
-						},
 						"development": {
 							"optimization": false,
 							"extractLicenses": false,

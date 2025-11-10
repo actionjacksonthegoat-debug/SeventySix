@@ -1,6 +1,6 @@
 import { HttpInterceptorFn, HttpResponse } from "@angular/common/http";
-import { inject } from "@angular/core";
-import { filter, map } from "rxjs/operators";
+import { inject, isDevMode } from "@angular/core";
+import { filter } from "rxjs/operators";
 import { CacheService } from "@core/services/cache.service";
 import { CacheConfigService } from "@core/services/cache-config.service";
 
@@ -12,9 +12,17 @@ import { CacheConfigService } from "@core/services/cache-config.service";
  * - Service Worker integration
  * - TTL values from ngsw-config.json (single source of truth)
  * - Pattern-based cache invalidation
+ *
+ * Note: Caching is disabled in development mode to allow fast iterations.
  */
 export const cacheInterceptor: HttpInterceptorFn = (req, next) =>
 {
+	// Disable caching in development mode for fast iterations
+	if (isDevMode())
+	{
+		return next(req);
+	}
+
 	const cacheService = inject(CacheService);
 	const cacheConfigService = inject(CacheConfigService);
 
@@ -47,7 +55,7 @@ export const cacheInterceptor: HttpInterceptorFn = (req, next) =>
 		req.url,
 		next(req).pipe(
 			// Filter to only process HttpResponse events (ignore HttpSentEvent, etc.)
-			filter(event => event instanceof HttpResponse),
+			filter((event) => event instanceof HttpResponse),
 			// Only cache successful responses (200 OK)
 			filter((response: HttpResponse<unknown>) => response.status === 200)
 		),

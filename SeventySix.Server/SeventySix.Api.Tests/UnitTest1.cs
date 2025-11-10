@@ -1,4 +1,4 @@
-﻿// <copyright file="WeatherForecastControllerTests.cs" company="SeventySix">
+// <copyright file="WeatherForecastControllerTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -18,9 +18,9 @@ namespace SeventySix.Api.Tests.Controllers;
 /// </summary>
 public class WeatherForecastControllerTests
 {
-	private readonly Mock<IWeatherForecastService> _mockService;
-	private readonly Mock<ILogger<WeatherForecastController>> _mockLogger;
-	private readonly WeatherForecastController _controller;
+	private readonly Mock<IWeatherForecastService> MockService;
+	private readonly Mock<ILogger<WeatherForecastController>> MockLogger;
+	private readonly WeatherForecastController Controller;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="WeatherForecastControllerTests"/> class.
@@ -28,9 +28,9 @@ public class WeatherForecastControllerTests
 	/// </summary>
 	public WeatherForecastControllerTests()
 	{
-		_mockService = new Mock<IWeatherForecastService>();
-		_mockLogger = new Mock<ILogger<WeatherForecastController>>();
-		_controller = new WeatherForecastController(_mockService.Object, _mockLogger.Object);
+		MockService = new Mock<IWeatherForecastService>();
+		MockLogger = new Mock<ILogger<WeatherForecastController>>();
+		Controller = new WeatherForecastController(MockService.Object, MockLogger.Object);
 	}
 
 	[Fact]
@@ -38,7 +38,7 @@ public class WeatherForecastControllerTests
 	{
 		// Act & Assert
 		var exception = Assert.Throws<ArgumentNullException>(
-			() => new WeatherForecastController(null!, _mockLogger.Object));
+			() => new WeatherForecastController(null!, MockLogger.Object));
 		exception.ParamName.Should().Be("weatherService");
 	}
 
@@ -47,12 +47,12 @@ public class WeatherForecastControllerTests
 	{
 		// Act & Assert
 		var exception = Assert.Throws<ArgumentNullException>(
-			() => new WeatherForecastController(_mockService.Object, null!));
+			() => new WeatherForecastController(MockService.Object, null!));
 		exception.ParamName.Should().Be("logger");
 	}
 
 	[Fact]
-	public async Task GetAll_ReturnsOkResult_WithForecasts()
+	public async Task GetAllAsync_ReturnsOkResult_WithForecastsAsync()
 	{
 		// Arrange
 		var forecasts = new List<WeatherForecastDto>
@@ -60,28 +60,28 @@ public class WeatherForecastControllerTests
 			new() { Date = new DateOnly(2025, 11, 10), TemperatureC = 20, Summary = "Warm" },
 			new() { Date = new DateOnly(2025, 11, 11), TemperatureC = 22, Summary = "Hot" }
 		};
-		_mockService.Setup(s => s.GetAllForecastsAsync(It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.GetAllForecastsAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync(forecasts);
 
 		// Act
-		var result = await _controller.GetAll(CancellationToken.None);
+		var result = await Controller.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		result.Result.Should().BeOfType<OkObjectResult>();
 		var okResult = result.Result as OkObjectResult;
 		okResult!.Value.Should().BeEquivalentTo(forecasts);
-		_mockService.Verify(s => s.GetAllForecastsAsync(It.IsAny<CancellationToken>()), Times.Once);
+		MockService.Verify(s => s.GetAllForecastsAsync(It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	[Fact]
-	public async Task GetAll_ReturnsOkResult_WithEmptyList_WhenNoForecasts()
+	public async Task GetAllAsync_ReturnsOkResult_WithEmptyList_WhenNoForecastsAsync()
 	{
 		// Arrange
-		_mockService.Setup(s => s.GetAllForecastsAsync(It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.GetAllForecastsAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync(new List<WeatherForecastDto>());
 
 		// Act
-		var result = await _controller.GetAll(CancellationToken.None);
+		var result = await Controller.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		result.Result.Should().BeOfType<OkObjectResult>();
@@ -90,17 +90,17 @@ public class WeatherForecastControllerTests
 	}
 
 	[Fact]
-	public async Task GetAll_LogsInformation()
+	public async Task GetAllAsync_LogsInformationAsync()
 	{
 		// Arrange
-		_mockService.Setup(s => s.GetAllForecastsAsync(It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.GetAllForecastsAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync(new List<WeatherForecastDto>());
 
 		// Act
-		await _controller.GetAll(CancellationToken.None);
+		await Controller.GetAllAsync(CancellationToken.None);
 
 		// Assert
-		_mockLogger.Verify(
+		MockLogger.Verify(
 			x => x.Log(
 				LogLevel.Information,
 				It.IsAny<EventId>(),
@@ -111,50 +111,50 @@ public class WeatherForecastControllerTests
 	}
 
 	[Fact]
-	public async Task GetById_WithValidId_ReturnsOkResult_WithForecast()
+	public async Task GetByIdAsync_WithValidId_ReturnsOkResult_WithForecastAsync()
 	{
 		// Arrange
 		var forecast = new WeatherForecastDto { Date = new DateOnly(2025, 11, 10), TemperatureC = 20, Summary = "Warm" };
-		_mockService.Setup(s => s.GetForecastByIdAsync(1, It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.GetForecastByIdAsync(1, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(forecast);
 
 		// Act
-		var result = await _controller.GetById(1, CancellationToken.None);
+		var result = await Controller.GetByIdAsync(1, CancellationToken.None);
 
 		// Assert
 		result.Result.Should().BeOfType<OkObjectResult>();
 		var okResult = result.Result as OkObjectResult;
 		okResult!.Value.Should().BeEquivalentTo(forecast);
-		_mockService.Verify(s => s.GetForecastByIdAsync(1, It.IsAny<CancellationToken>()), Times.Once);
+		MockService.Verify(s => s.GetForecastByIdAsync(1, It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	[Fact]
-	public async Task GetById_WithInvalidId_ReturnsNotFoundResult()
+	public async Task GetByIdAsync_WithInvalidId_ReturnsNotFoundResultAsync()
 	{
 		// Arrange
-		_mockService.Setup(s => s.GetForecastByIdAsync(999, It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.GetForecastByIdAsync(999, It.IsAny<CancellationToken>()))
 			.ReturnsAsync((WeatherForecastDto?)null);
 
 		// Act
-		var result = await _controller.GetById(999, CancellationToken.None);
+		var result = await Controller.GetByIdAsync(999, CancellationToken.None);
 
 		// Assert
 		result.Result.Should().BeOfType<NotFoundResult>();
-		_mockService.Verify(s => s.GetForecastByIdAsync(999, It.IsAny<CancellationToken>()), Times.Once);
+		MockService.Verify(s => s.GetForecastByIdAsync(999, It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	[Fact]
-	public async Task GetById_WithInvalidId_LogsWarning()
+	public async Task GetByIdAsync_WithInvalidId_LogsWarningAsync()
 	{
 		// Arrange
-		_mockService.Setup(s => s.GetForecastByIdAsync(999, It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.GetForecastByIdAsync(999, It.IsAny<CancellationToken>()))
 			.ReturnsAsync((WeatherForecastDto?)null);
 
 		// Act
-		await _controller.GetById(999, CancellationToken.None);
+		await Controller.GetByIdAsync(999, CancellationToken.None);
 
 		// Assert
-		_mockLogger.Verify(
+		MockLogger.Verify(
 			x => x.Log(
 				LogLevel.Warning,
 				It.IsAny<EventId>(),
@@ -165,7 +165,7 @@ public class WeatherForecastControllerTests
 	}
 
 	[Fact]
-	public async Task Create_WithValidRequest_ReturnsCreatedAtRoute()
+	public async Task CreateAsync_WithValidRequest_ReturnsCreatedAtRouteAsync()
 	{
 		// Arrange
 		var request = new CreateWeatherForecastRequest
@@ -175,11 +175,11 @@ public class WeatherForecastControllerTests
 			Summary = "Warm"
 		};
 		var forecast = new WeatherForecastDto { Date = request.Date, TemperatureC = request.TemperatureC, Summary = request.Summary };
-		_mockService.Setup(s => s.CreateForecastAsync(request, It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.CreateForecastAsync(request, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(forecast);
 
 		// Act
-		var result = await _controller.Create(request, CancellationToken.None);
+		var result = await Controller.CreateAsync(request, CancellationToken.None);
 
 		// Assert
 		result.Result.Should().BeOfType<CreatedAtRouteResult>();
@@ -187,11 +187,11 @@ public class WeatherForecastControllerTests
 		createdResult!.RouteName.Should().Be("GetWeatherForecastById");
 		createdResult.RouteValues.Should().ContainKey("id");
 		createdResult.Value.Should().BeEquivalentTo(forecast);
-		_mockService.Verify(s => s.CreateForecastAsync(request, It.IsAny<CancellationToken>()), Times.Once);
+		MockService.Verify(s => s.CreateForecastAsync(request, It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	[Fact]
-	public async Task Create_LogsInformation()
+	public async Task CreateAsync_LogsInformationAsync()
 	{
 		// Arrange
 		var request = new CreateWeatherForecastRequest
@@ -201,14 +201,14 @@ public class WeatherForecastControllerTests
 			Summary = "Warm"
 		};
 		var forecast = new WeatherForecastDto { Date = request.Date, TemperatureC = request.TemperatureC, Summary = request.Summary };
-		_mockService.Setup(s => s.CreateForecastAsync(request, It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.CreateForecastAsync(request, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(forecast);
 
 		// Act
-		await _controller.Create(request, CancellationToken.None);
+		await Controller.CreateAsync(request, CancellationToken.None);
 
 		// Assert
-		_mockLogger.Verify(
+		MockLogger.Verify(
 			x => x.Log(
 				LogLevel.Information,
 				It.IsAny<EventId>(),
@@ -219,37 +219,37 @@ public class WeatherForecastControllerTests
 	}
 
 	[Fact]
-	public async Task GetAll_RespectsCancellationToken()
+	public async Task GetAllAsync_RespectsCancellationTokenAsync()
 	{
 		// Arrange
 		var cts = new CancellationTokenSource();
-		_mockService.Setup(s => s.GetAllForecastsAsync(It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.GetAllForecastsAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync(new List<WeatherForecastDto>());
 
 		// Act
-		await _controller.GetAll(cts.Token);
+		await Controller.GetAllAsync(cts.Token);
 
 		// Assert
-		_mockService.Verify(s => s.GetAllForecastsAsync(cts.Token), Times.Once);
+		MockService.Verify(s => s.GetAllForecastsAsync(cts.Token), Times.Once);
 	}
 
 	[Fact]
-	public async Task GetById_RespectsCancellationToken()
+	public async Task GetByIdAsync_RespectsCancellationTokenAsync()
 	{
 		// Arrange
 		var cts = new CancellationTokenSource();
-		_mockService.Setup(s => s.GetForecastByIdAsync(1, It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.GetForecastByIdAsync(1, It.IsAny<CancellationToken>()))
 			.ReturnsAsync((WeatherForecastDto?)null);
 
 		// Act
-		await _controller.GetById(1, cts.Token);
+		await Controller.GetByIdAsync(1, cts.Token);
 
 		// Assert
-		_mockService.Verify(s => s.GetForecastByIdAsync(1, cts.Token), Times.Once);
+		MockService.Verify(s => s.GetForecastByIdAsync(1, cts.Token), Times.Once);
 	}
 
 	[Fact]
-	public async Task Create_RespectsCancellationToken()
+	public async Task CreateAsync_RespectsCancellationTokenAsync()
 	{
 		// Arrange
 		var cts = new CancellationTokenSource();
@@ -260,13 +260,13 @@ public class WeatherForecastControllerTests
 			Summary = "Warm"
 		};
 		var forecast = new WeatherForecastDto { Date = request.Date, TemperatureC = request.TemperatureC, Summary = request.Summary };
-		_mockService.Setup(s => s.CreateForecastAsync(request, It.IsAny<CancellationToken>()))
+		MockService.Setup(s => s.CreateForecastAsync(request, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(forecast);
 
 		// Act
-		await _controller.Create(request, cts.Token);
+		await Controller.CreateAsync(request, cts.Token);
 
 		// Assert
-		_mockService.Verify(s => s.CreateForecastAsync(request, cts.Token), Times.Once);
+		MockService.Verify(s => s.CreateForecastAsync(request, cts.Token), Times.Once);
 	}
 }
