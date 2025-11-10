@@ -5,9 +5,8 @@ import {
 	computed,
 	ChangeDetectionStrategy
 } from "@angular/core";
-import { WeatherService } from "@core/services/weather.service";
+import { WeatherService, LoggerService } from "@core/services";
 import { WeatherForecast } from "@core/models/interfaces/weather-forecast";
-import { LoggerService } from "@core/services/logger.service";
 
 /**
  * Weather display component.

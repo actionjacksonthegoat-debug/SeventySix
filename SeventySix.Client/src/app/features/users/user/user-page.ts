@@ -22,8 +22,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconModule } from "@angular/material/icon";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { UserService } from "@core/services/user.service";
-import { LoggerService } from "@core/services/logger.service";
+import { UserService, LoggerService } from "@core/services";
 import { User } from "@core/models/interfaces/user";
 
 /**

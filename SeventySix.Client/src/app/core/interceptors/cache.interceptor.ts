@@ -1,8 +1,7 @@
 import { HttpInterceptorFn, HttpResponse } from "@angular/common/http";
 import { inject, isDevMode } from "@angular/core";
 import { filter } from "rxjs/operators";
-import { CacheService } from "@core/services/cache.service";
-import { CacheConfigService } from "@core/services/cache-config.service";
+import { CacheService, CacheConfigService } from "@core/services";
 
 /**
  * HTTP cache interceptor with Service Worker integration.

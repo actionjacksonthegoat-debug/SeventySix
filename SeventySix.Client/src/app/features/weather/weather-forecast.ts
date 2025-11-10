@@ -14,7 +14,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { DatePipe } from "@angular/common";
-import { WeatherService } from "@core/services/weather.service";
+import { WeatherService } from "@core/services";
 import { WeatherForecast } from "@core/models/interfaces/weather-forecast";
 
 /**

@@ -6,7 +6,7 @@ import {
 	ElementRef,
 	Renderer2
 } from "@angular/core";
-import { ViewportService } from "@core/services/viewport.service";
+import { ViewportService } from "@core/services";
 
 /**
  * Directive to hide elements on specific breakpoints

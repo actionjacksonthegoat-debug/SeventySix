@@ -6,7 +6,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatDividerModule } from "@angular/material/divider";
 import { ThemeService, LayoutService } from "@core/services";
-import { BreadcrumbComponent } from "@shared/components/breadcrumb/breadcrumb.component";
+import { BreadcrumbComponent } from "@shared/components";
 
 /**
  * Application header component

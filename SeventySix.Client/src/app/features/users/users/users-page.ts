@@ -2,7 +2,7 @@ import { Component, signal, ChangeDetectionStrategy } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
-import { UserList } from "@shared/components/user-list/user-list";
+import { UserList } from "@shared/components";
 
 /**
  * Users page component.

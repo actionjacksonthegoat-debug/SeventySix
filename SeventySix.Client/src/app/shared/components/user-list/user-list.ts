@@ -27,14 +27,13 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { SelectionModel } from "@angular/cdk/collections";
 import { FormsModule } from "@angular/forms";
 import { DatePipe } from "@angular/common";
-import { UserService } from "@core/services/user.service";
+import { UserService, LoggerService } from "@core/services";
 import { User } from "@core/models/interfaces/user";
-import { LoggerService } from "@core/services/logger.service";
-import { ChartComponent } from "@shared/components/chart/chart.component";
 import {
+	ChartComponent,
 	ConfirmDialogComponent,
-	ConfirmDialogData
-} from "@shared/components/confirm-dialog/confirm-dialog.component";
+	type ConfirmDialogData
+} from "@shared/components";
 import { ChartConfiguration } from "chart.js";
 
 /**
