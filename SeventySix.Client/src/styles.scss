@@ -133,25 +133,20 @@ html:not(.light-theme):not(.dark-theme) {
 }
 
 // =============================================================================
-// MATERIAL TABLE PAGINATOR - MINIMAL CUSTOMIZATION
+// MATERIAL DROPDOWNS - MINIMAL CUSTOMIZATION
 // =============================================================================
-// Add padding and reduce height for items per page selector
+// Add padding and reduce height for dropdowns to improve compactness
+.mat-mdc-select {
+	// Add left and right padding
+	padding-left: 12px;
+	padding-right: 8px;
+}
 
-.mat-mdc-paginator {
-	.mat-mdc-paginator-page-size-select {
-		.mat-mdc-select {
-			// Add left and right padding
-			padding-left: 12px;
-			padding-right: 8px;
-		}
-
-		// Reduce overall height
-		.mat-mdc-form-field-infix {
-			min-height: 32px;
-			padding-top: 6px;
-			padding-bottom: 6px;
-		}
-	}
+// Reduce overall height
+.mat-mdc-form-field-infix {
+	min-height: 32px;
+	padding-top: 6px;
+	padding-bottom: 6px;
 }
 
 // Ensure proper scrollbar styling for dark theme
