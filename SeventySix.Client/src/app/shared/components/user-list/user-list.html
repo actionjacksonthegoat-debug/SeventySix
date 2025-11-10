@@ -33,25 +33,66 @@
 <!-- Data Display -->
 @else
 {
-	<!-- User Statistics Chart -->
+	<!-- User Statistics Chart (Collapsible) -->
 	@if (hasUsers())
 	{
-		<div class="chart-section">
-			<app-chart
-				title="User Growth Over Time"
-				subtitle="Active and inactive users by month"
-				[chartType]="'line'"
-				[chartData]="userStatsChartData()"
-				[showExport]="true"
-				[showRefresh]="true"
-				(refresh)="onChartRefresh()"
-				(exportPng)="onChartExportPng()"
-				(exportCsv)="onChartExportCsv()"
-			/>
-		</div>
+		<mat-expansion-panel
+			[(expanded)]="chartExpanded"
+			class="chart-expansion-panel"
+		>
+			<mat-expansion-panel-header>
+				<mat-panel-title>
+					<mat-icon>insights</mat-icon>
+					User Growth Over Time
+				</mat-panel-title>
+				<mat-panel-description>
+					Active and inactive users by month
+				</mat-panel-description>
+			</mat-expansion-panel-header>
+			<div class="chart-section">
+				<app-chart
+					title="User Growth Over Time"
+					subtitle="Active and inactive users by month"
+					[chartType]="'line'"
+					[chartData]="userStatsChartData()"
+					[showExport]="true"
+					[showRefresh]="true"
+					(refresh)="onChartRefresh()"
+					(exportPng)="onChartExportPng()"
+					(exportCsv)="onChartExportCsv()"
+				/>
+			</div>
+		</mat-expansion-panel>
 	}
 
-	<!-- Search and Actions -->
+	<!-- Table Header: Buttons Left and Right Aligned -->
+	<div class="table-actions">
+		<!-- Left Side: Bulk Action Buttons (only shown when items selected) -->
+		<div class="left-actions">
+			@if (selectedCount() > 0)
+			{
+				<button
+					mat-raised-button
+					color="warn"
+					(click)="deleteSelected()"
+					aria-label="Delete selected users"
+				>
+					<mat-icon>delete</mat-icon>
+					Delete ({{ selectedCount() }})
+				</button>
+				<button
+					mat-raised-button
+					(click)="exportSelected()"
+					aria-label="Export selected users"
+				>
+					<mat-icon>download</mat-icon>
+					Export ({{ selectedCount() }})
+				</button>
+			}
+		</div>
+	</div>
+
+	<!-- Search and Column Customization -->
 	<div class="table-header">
 		<mat-form-field class="search-field" appearance="outline">
 			<mat-label>Search users</mat-label>
@@ -77,116 +118,88 @@
 			}
 		</mat-form-field>
 
-		<div
-			class="header-actions"
-			role="toolbar"
-			aria-label="User list actions"
+		<!-- Column Visibility Menu -->
+		<button
+			mat-icon-button
+			[matMenuTriggerFor]="columnMenu"
+			matTooltip="Customize columns"
+			aria-label="Customize table columns"
 		>
-			<!-- Bulk Actions (shown when items selected) -->
-			@if (selectedCount() > 0)
+			<mat-icon>view_column</mat-icon>
+		</button>
+		<mat-menu #columnMenu="matMenu" aria-label="Column visibility options">
+			<div class="column-menu-header" mat-menu-item disabled>
+				<strong>Show/Hide Columns</strong>
+			</div>
+			@for (col of columnDefs(); track col.key)
 			{
-				<button
-					mat-stroked-button
-					color="warn"
-					(click)="deleteSelected()"
-					aria-label="Delete selected users"
-				>
-					<mat-icon aria-hidden="true">delete</mat-icon>
-					Delete ({{ selectedCount() }})
-				</button>
-				<button
-					mat-stroked-button
-					(click)="exportSelected()"
-					aria-label="Export selected users"
-				>
-					<mat-icon aria-hidden="true">download</mat-icon>
-					Export ({{ selectedCount() }})
-				</button>
-			}
-
-			<!-- Column Visibility Menu -->
-			<button
-				mat-icon-button
-				[matMenuTriggerFor]="columnMenu"
-				matTooltip="Customize columns"
-				aria-label="Customize table columns"
-			>
-				<mat-icon aria-hidden="true">view_column</mat-icon>
-			</button>
-			<mat-menu
-				#columnMenu="matMenu"
-				aria-label="Column visibility options"
-			>
-				<div class="column-menu-header" mat-menu-item disabled>
-					<strong>Show/Hide Columns</strong>
-				</div>
-				@for (col of columnDefs(); track col.key)
+				@if (col.key !== "select" && col.key !== "actions")
 				{
-					@if (col.key !== "select" && col.key !== "actions")
-					{
-						<button
-							mat-menu-item
-							(click)="
-								toggleColumn(col.key); $event.stopPropagation()
-							"
-							[attr.aria-label]="
-								'Toggle ' + col.label + ' column'
-							"
+					<button
+						mat-menu-item
+						(click)="
+							toggleColumn(col.key); $event.stopPropagation()
+						"
+						[attr.aria-label]="'Toggle ' + col.label + ' column'"
+					>
+						<mat-checkbox
+							[checked]="col.visible"
+							(click)="$event.stopPropagation()"
+							(change)="toggleColumn(col.key)"
 						>
-							<mat-checkbox
-								[checked]="col.visible"
-								(click)="$event.stopPropagation()"
-								(change)="toggleColumn(col.key)"
-							>
-								{{ col.label }}
-							</mat-checkbox>
-						</button>
-					}
+							{{ col.label }}
+						</mat-checkbox>
+					</button>
 				}
-			</mat-menu>
+			}
+		</mat-menu>
+	</div>
+
+	<!-- Filter Chips and Stats Summary Row -->
+	<div class="filter-stats-row">
+		<!-- Filter Chips (Left Half) -->
+		<div class="filter-chips">
+			<mat-chip-listbox
+				[(ngModel)]="statusFilter"
+				(ngModelChange)="setStatusFilter($event)"
+				aria-label="Status filter"
+			>
+				<mat-chip-option value="all">All Users</mat-chip-option>
+				<mat-chip-option value="active">Active Only</mat-chip-option>
+				<mat-chip-option value="inactive"
+					>Inactive Only</mat-chip-option
+				>
+			</mat-chip-listbox>
 		</div>
-	</div>
 
-	<!-- Filter Chips -->
-	<div class="filter-chips">
-		<mat-chip-listbox
-			[(ngModel)]="statusFilter"
-			(ngModelChange)="setStatusFilter($event)"
-			aria-label="Status filter"
-		>
-			<mat-chip-option value="all">All Users</mat-chip-option>
-			<mat-chip-option value="active">Active Only</mat-chip-option>
-			<mat-chip-option value="inactive">Inactive Only</mat-chip-option>
-		</mat-chip-listbox>
-	</div>
-
-	<!-- Statistics Summary -->
-	<div class="stats-summary" role="status" aria-live="polite">
-		<mat-chip>
-			<mat-icon aria-hidden="true">people</mat-icon>
-			<span aria-label="Total users">Total: {{ userCount() }}</span>
-		</mat-chip>
-		<mat-chip>
-			<mat-icon aria-hidden="true">check_circle</mat-icon>
-			<span aria-label="Active users"
-				>Active: {{ activeUserCount() }}</span
-			>
-		</mat-chip>
-		<mat-chip>
-			<mat-icon aria-hidden="true">block</mat-icon>
-			<span aria-label="Inactive users"
-				>Inactive: {{ inactiveUserCount() }}</span
-			>
-		</mat-chip>
-		@if (selectedCount() > 0)
-		{
-			<mat-chip highlighted>
-				<mat-icon aria-hidden="true">done_all</mat-icon>
-				<span aria-label="Selected users"
-					>Selected: {{ selectedCount() }}</span
+		<!-- Statistics Summary (Right Half) -->
+		<div class="stats-summary" role="status" aria-live="polite">
+			<mat-chip>
+				<mat-icon aria-hidden="true">people</mat-icon>
+				<span aria-label="Total users">Total: {{ userCount() }}</span>
+			</mat-chip>
+			<mat-chip>
+				<mat-icon aria-hidden="true">check_circle</mat-icon>
+				<span aria-label="Active users"
+					>Active: {{ activeUserCount() }}</span
 				>
 			</mat-chip>
-		}
+			<mat-chip>
+				<mat-icon aria-hidden="true">block</mat-icon>
+				<span aria-label="Inactive users"
+					>Inactive: {{ inactiveUserCount() }}</span
+				>
+			</mat-chip>
+			@if (selectedCount() > 0)
+			{
+				<mat-chip highlighted>
+					<mat-icon aria-hidden="true">done_all</mat-icon>
+					<span aria-label="Selected users"
+						>Selected: {{ selectedCount() }}</span
+					>
+				</mat-chip>
+			}
+		</div>
 	</div>
 
 	<!-- Data Table -->

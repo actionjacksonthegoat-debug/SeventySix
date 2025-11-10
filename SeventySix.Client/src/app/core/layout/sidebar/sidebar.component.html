@@ -1,4 +1,17 @@
 <nav class="app-sidebar">
+	<!-- Close button for overlay mode -->
+	<div class="sidebar-header">
+		<button
+			mat-icon-button
+			class="close-sidebar-btn"
+			(click)="closeSidebar()"
+			matTooltip="Close menu"
+			aria-label="Close menu"
+		>
+			<mat-icon>close</mat-icon>
+		</button>
+	</div>
+
 	@for (section of navSections; track section.title)
 	{
 		<!-- Section Title -->
@@ -13,7 +26,6 @@
 					[routerLink]="item.route"
 					routerLinkActive="active"
 					[routerLinkActiveOptions]="{ exact: item.route === '/' }"
-					[disabled]="item.disabled"
 					(click)="closeSidebarOnMobile()"
 				>
 					<mat-icon matListItemIcon>{{ item.icon }}</mat-icon>

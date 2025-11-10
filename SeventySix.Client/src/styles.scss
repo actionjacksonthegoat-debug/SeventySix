@@ -32,8 +32,10 @@
 html,
 body {
 	height: 100%;
+	width: 100%;
 	margin: 0;
 	padding: 0;
+	overflow: hidden; // Prevent double scrollbars
 }
 
 body {
@@ -128,6 +130,28 @@ html:not(.light-theme):not(.dark-theme) {
 // Ensure Material cards have proper spacing
 .mat-mdc-card {
 	margin-bottom: vars.$spacing-md;
+}
+
+// =============================================================================
+// MATERIAL TABLE PAGINATOR - MINIMAL CUSTOMIZATION
+// =============================================================================
+// Add padding and reduce height for items per page selector
+
+.mat-mdc-paginator {
+	.mat-mdc-paginator-page-size-select {
+		.mat-mdc-select {
+			// Add left and right padding
+			padding-left: 12px;
+			padding-right: 8px;
+		}
+
+		// Reduce overall height
+		.mat-mdc-form-field-infix {
+			min-height: 32px;
+			padding-top: 6px;
+			padding-bottom: 6px;
+		}
+	}
 }
 
 // Ensure proper scrollbar styling for dark theme

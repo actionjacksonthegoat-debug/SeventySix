@@ -1,4 +1,4 @@
-import { Component, input, output } from "@angular/core";
+import { Component, input, output, viewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
@@ -6,6 +6,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { BaseChartDirective } from "ng2-charts";
+import { SiteLayoutChangedDirective } from "@shared/directives";
 import {
 	Chart,
 	ChartConfiguration,
@@ -53,13 +54,19 @@ Chart.register(
 		MatIconModule,
 		MatMenuModule,
 		MatTooltipModule,
-		BaseChartDirective
+		BaseChartDirective,
+		SiteLayoutChangedDirective
 	],
 	templateUrl: "./chart.component.html",
 	styleUrl: "./chart.component.scss"
 })
 export class ChartComponent
 {
+	/**
+	 * Reference to the BaseChartDirective for programmatic chart updates
+	 */
+	chart = viewChild(BaseChartDirective);
+
 	/**
 	 * Chart title displayed in mat-card header
 	 */
@@ -141,5 +148,20 @@ export class ChartComponent
 	onExportCsv(): void
 	{
 		this.exportCsv.emit();
+	}
+
+	/**
+	 * Handle layout change (triggered by SiteLayoutChangedDirective)
+	 * Redraws the chart to fit the new container width
+	 */
+	onLayoutChanged(): void
+	{
+		const chartInstance = this.chart();
+		if (chartInstance?.chart)
+		{
+			// Force chart to resize and redraw
+			chartInstance.chart.resize();
+			chartInstance.chart.update();
+		}
 	}
 }

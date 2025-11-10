@@ -7,10 +7,12 @@
 	display: flex;
 	align-items: center;
 	gap: vars.$spacing-sm;
+	flex-shrink: 0; // Prevent header from shrinking
 }
 
 .menu-toggle {
 	margin-right: vars.$spacing-sm;
+	flex-shrink: 0;
 }
 
 .app-logo {
@@ -49,6 +51,7 @@
 	padding: 0 vars.$spacing-md;
 	background-color: rgba(var(--mat-surface-rgb), 1);
 	border-bottom: 1px solid rgba(var(--mat-outline-rgb), 0.12);
+	flex-shrink: 0; // Prevent breadcrumb from shrinking
 
 	@media (max-width: vars.$breakpoint-xs-max) {
 		padding: 0 vars.$spacing-sm;

@@ -45,26 +45,41 @@
 	}
 }
 
-// Table Header
-.table-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: vars.$spacing-md;
-	margin-bottom: 16px;
-	flex-wrap: wrap;
+// Chart Section (Collapsible Expansion Panel)
+.chart-expansion-panel {
+	margin-bottom: vars.$spacing-lg;
 
-	.search-field {
-		flex: 1;
-		min-width: 300px;
-		max-width: 500px;
+	mat-panel-title {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-sm;
 
-		@media (max-width: vars.$breakpoint-xs-max) {
-			min-width: 100%;
+		mat-icon {
+			font-size: vars.$icon-size-base;
 		}
 	}
+}
 
-	.header-actions {
+.chart-section {
+	width: 100%;
+	max-width: 100%;
+	padding-top: vars.$spacing-md;
+
+	app-chart {
+		display: block;
+		width: 100%;
+	}
+}
+
+// Table Actions (Buttons Above Table - only for bulk actions)
+.table-actions {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	gap: vars.$spacing-md;
+	// Note: Collapse behavior is defined in global utilities
+
+	.left-actions {
 		display: flex;
 		gap: vars.$spacing-sm;
 		align-items: center;
@@ -77,25 +92,103 @@
 	}
 }
 
-// Filter Chips
-.filter-chips {
+// Table Header (Search and Column Menu)
+.table-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: vars.$spacing-sm;
 	margin-bottom: vars.$spacing-md;
 
-	mat-chip-listbox {
-		display: flex;
-		gap: vars.$spacing-sm;
+	.search-field {
+		flex: 1;
+		min-width: 300px;
+		max-width: 500px;
+
+		// Reduce height using subscript appearance
+		::ng-deep .mat-mdc-form-field-subscript-wrapper {
+			display: none;
+		}
+
+		::ng-deep .mat-mdc-text-field-wrapper {
+			padding-bottom: 0;
+		}
+
+		@media (max-width: vars.$breakpoint-xs-max) {
+			min-width: 100%;
+		}
 	}
 }
 
-// Chart Section
-.chart-section {
+// Filter Chips and Stats Row (50/50 split)
+.filter-stats-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: vars.$spacing-lg;
 	margin-bottom: vars.$spacing-lg;
-	width: 100%;
-	max-width: 100%;
 
-	app-chart {
-		display: block;
-		width: 100%;
+	@media (max-width: vars.$breakpoint-md-max) {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.filter-chips {
+		flex: 1;
+		min-width: 0;
+
+		mat-chip-listbox {
+			display: flex;
+			gap: vars.$spacing-xs;
+		}
+
+		// Reduce chip size
+		::ng-deep mat-chip-option {
+			--mdc-chip-label-text-size: 0.813rem;
+			min-height: 28px;
+			padding: 4px 12px;
+		}
+	}
+
+	.stats-summary {
+		flex: 1;
+		display: flex;
+		justify-content: flex-end;
+		gap: vars.$spacing-sm;
+		flex-wrap: wrap;
+		min-width: 0;
+
+		// Reduce chip size
+		mat-chip {
+			--mdc-chip-label-text-size: 0.813rem;
+			min-height: 28px;
+			padding: 4px 10px;
+
+			// Disable hover effect for non-interactive chips
+			&::ng-deep .mdc-evolution-chip__action--primary {
+				&:hover {
+					background-color: transparent;
+				}
+			}
+
+			// Alternative approach using Material's state layer
+			&::ng-deep .mat-mdc-chip-action-label {
+				&:hover::before {
+					opacity: 0 !important;
+				}
+			}
+
+			// Disable pointer cursor since these are not clickable
+			cursor: default;
+			pointer-events: none;
+
+			mat-icon {
+				margin-right: vars.$spacing-xs;
+				font-size: vars.$icon-size-sm;
+				width: vars.$icon-size-sm;
+				height: vars.$icon-size-sm;
+			}
+		}
 	}
 }
 
@@ -105,23 +198,6 @@
 	opacity: 1 !important;
 	padding-bottom: vars.$spacing-sm;
 	border-bottom: 1px solid rgba(var(--mat-outline-rgb), 0.12);
-}
-
-// Statistics Summary
-.stats-summary {
-	display: flex;
-	gap: vars.$spacing-base;
-	margin-bottom: vars.$spacing-lg;
-	flex-wrap: wrap;
-
-	mat-chip {
-		mat-icon {
-			margin-right: vars.$spacing-xs + 2px;
-			font-size: vars.$icon-size-sm;
-			width: vars.$icon-size-sm;
-			height: vars.$icon-size-sm;
-		}
-	}
 }
 
 // Table Container

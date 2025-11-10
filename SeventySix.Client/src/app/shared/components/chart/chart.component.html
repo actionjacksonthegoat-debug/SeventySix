@@ -1,4 +1,8 @@
-<mat-card class="chart-card">
+<mat-card
+	class="chart-card"
+	appSiteLayoutChanged
+	(layoutChanged)="onLayoutChanged()"
+>
 	<mat-card-header>
 		<mat-card-title>{{ title() }}</mat-card-title>
 		@if (subtitle())

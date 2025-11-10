@@ -153,3 +153,43 @@
 .gap-32 {
 	gap: vars.$spacing-xl !important;
 }
+
+// =============================================================================
+// COLLAPSIBLE CONTAINER UTILITIES
+// =============================================================================
+// Containers that collapse to zero height when empty
+// Useful for action bars, toolbars, and conditional content areas
+
+// Generic collapsible container - collapses when empty
+.collapse-when-empty {
+	&:empty {
+		margin: 0 !important;
+		padding: 0 !important;
+		min-height: 0 !important;
+		height: 0 !important;
+	}
+
+	// Also handle when children exist but are all hidden via @if directives
+	&:not(:has(*:not(:empty))) {
+		// No visible content - collapse
+		margin: 0 !important;
+		padding: 0 !important;
+		min-height: 0 !important;
+	}
+}
+
+// Table actions container - specific styling for action bars
+.table-actions {
+	&:not(:empty) {
+		margin-bottom: vars.$spacing-md;
+		min-height: 48px;
+	}
+
+	// Also handle when it has children but they're all hidden
+	&:has(*:empty),
+	&:empty {
+		margin: 0 !important;
+		padding: 0 !important;
+		min-height: 0 !important;
+	}
+}

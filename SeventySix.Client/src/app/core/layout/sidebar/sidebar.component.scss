@@ -3,6 +3,53 @@
 .app-sidebar {
 	height: 100%;
 	padding: vars.$spacing-sm 0;
+	display: flex;
+	flex-direction: column;
+	border-right: 1px solid transparent; // Default: no visible border in light mode
+}
+
+// Add border in dark mode only
+:host-context(html.dark-theme) .app-sidebar {
+	border-right-color: rgba(
+		255,
+		255,
+		255,
+		0.12
+	); // Lighter grey border in dark mode
+}
+
+.sidebar-header {
+	display: flex;
+	justify-content: flex-end;
+	padding: vars.$spacing-xs vars.$spacing-sm;
+	min-height: 48px;
+	align-items: center;
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 10;
+
+	// Only show close button when sidebar is in overlay mode (< 960px)
+	@media (min-width: vars.$breakpoint-md-min) {
+		display: none;
+	}
+
+	.close-sidebar-btn {
+		// Ensure the button is visible and accessible
+		mat-icon {
+			font-size: vars.$icon-size-base;
+		}
+	}
+}
+
+// Add top padding to first section title to account for absolute positioned close button
+.nav-section-title:first-of-type {
+	padding-top: vars.$spacing-md;
+
+	// No extra padding needed when close button is hidden
+	@media (min-width: vars.$breakpoint-md-min) {
+		padding-top: vars.$spacing-md;
+	}
 }
 
 .nav-section-title {
@@ -12,6 +59,14 @@
 	padding: vars.$spacing-md vars.$spacing-md vars.$spacing-sm;
 	opacity: 0.7;
 	letter-spacing: 0.5px;
+	display: block; // Ensure it's always displayed
+	visibility: visible; // Ensure it's always visible
+
+	// Ensure visibility at all breakpoints
+	@media (max-width: vars.$breakpoint-sm-max) {
+		display: block;
+		visibility: visible;
+	}
 }
 
 mat-nav-list {

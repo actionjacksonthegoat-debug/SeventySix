@@ -41,6 +41,11 @@
 	}
 }
 
+// Ensure body doesn't overflow
+body {
+	overflow: hidden;
+}
+
 .global-loading-bar {
 	position: fixed;
 	top: 0;
@@ -58,20 +63,22 @@
 		-webkit-overflow-scrolling: touch;
 	}
 
-	// Mobile optimization
-	@media (max-width: vars.$breakpoint-md-max) {
+	// Overlay mode on screens < 960px - ensure proper width
+	@media (max-width: vars.$breakpoint-sm-max) {
 		width: vars.$sidebar-width;
-		max-width: 80vw;
+		max-width: 80vw; // Don't take full width on very small screens
 	}
 }
 
 .app-content {
 	display: flex;
 	flex-direction: column;
-	min-height: 100vh;
+	height: 100%;
 	overflow-y: auto;
 	overflow-x: hidden;
 	scroll-behavior: smooth;
+	flex: 1;
+	min-width: 0; // Prevent content from pushing beyond bounds
 
 	// Touch-friendly scrolling
 	& {
@@ -82,11 +89,33 @@
 .page-content {
 	flex: 1;
 	padding: vars.$spacing-lg;
-	max-width: vars.$container-max-width;
-	margin: 0 auto;
 	width: 100%;
+	box-sizing: border-box;
+	overflow-x: hidden; // Prevent horizontal scrollbar
 
-	@media (max-width: vars.$breakpoint-md-max) {
+	// Container centering with max-width
+	margin: 0 auto;
+	max-width: vars.$container-max-width;
+
+	// Use golden ratio for content width on large screens
+	@media (min-width: vars.$breakpoint-xl-min) {
+		width: vars.$container-golden-width;
+		max-width: vars.$container-max-width;
+	}
+
+	// Ensure consistent width across breakpoints
+	@media (min-width: vars.$breakpoint-lg-min) and (max-width: vars.$breakpoint-lg-max) {
+		width: vars.$container-golden-width;
+		max-width: vars.$container-width-lg;
+	}
+
+	@media (min-width: vars.$breakpoint-md-min) and (max-width: vars.$breakpoint-md-max) {
+		width: 90%;
+		padding: vars.$spacing-md;
+	}
+
+	@media (max-width: vars.$breakpoint-sm-max) {
+		width: 100%;
 		padding: vars.$spacing-md;
 	}
 

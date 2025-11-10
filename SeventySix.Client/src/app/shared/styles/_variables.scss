@@ -51,7 +51,10 @@ $breakpoint-desktop: "(min-width: #{$breakpoint-md-min})";
 // ============================================================================
 // CONTAINER & LAYOUT WIDTHS
 // ============================================================================
-$container-max-width: 1400px; // Maximum content width
+// Golden ratio: 1.618
+// Using golden ratio for optimal reading width: viewport * 0.618
+$container-max-width: 1618px; // Maximum content width (golden ratio * 1000px base * 1.618)
+$container-golden-width: 61.8%; // Golden ratio percentage for centering
 $container-width-sm: 640px; // Small container (forms, narrow content)
 $container-width-md: 960px; // Medium container
 $container-width-lg: 1280px; // Large container

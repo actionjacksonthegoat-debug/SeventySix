@@ -21,6 +21,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatCardModule } from "@angular/material/card";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatExpansionModule } from "@angular/material/expansion";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { SelectionModel } from "@angular/cdk/collections";
@@ -58,6 +59,7 @@ import { ChartConfiguration } from "chart.js";
 		MatCardModule,
 		MatMenuModule,
 		MatCheckboxModule,
+		MatExpansionModule,
 		FormsModule,
 		DatePipe,
 		ChartComponent
@@ -83,6 +85,7 @@ export class UserList implements AfterViewInit
 	readonly error = signal<string | null>(null);
 	readonly searchFilter = signal<string>("");
 	readonly statusFilter = signal<"all" | "active" | "inactive">("all");
+	readonly chartExpanded = signal<boolean>(false);
 
 	// Material table data source
 	readonly dataSource = new MatTableDataSource<User>([]);

@@ -6,6 +6,7 @@
 	height: auto;
 	background-color: rgba(var(--mat-surface-rgb), 0.8);
 	border-top: 1px solid rgba(var(--mat-outline-rgb), 0.12);
+	flex-shrink: 0; // Prevent footer from shrinking
 }
 
 .footer-content {

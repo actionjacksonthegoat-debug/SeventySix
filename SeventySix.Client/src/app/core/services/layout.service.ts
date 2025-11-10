@@ -29,11 +29,17 @@ export class LayoutService
 
 	/**
 	 * Observe responsive breakpoints
+	 * Using Angular CDK Breakpoints constants:
+	 * - XSmall: (max-width: 599.98px) - Mobile phones
+	 * - Small: (min-width: 600px) and (max-width: 959.98px) - Tablets
+	 * - Medium and above: (min-width: 960px) - Laptop and desktop
 	 */
 	private breakpoints$ = this.breakpointObserver.observe([
-		Breakpoints.Handset,
-		Breakpoints.Tablet,
-		Breakpoints.Web
+		Breakpoints.XSmall, // (max-width: 599.98px)
+		Breakpoints.Small, // (min-width: 600px) and (max-width: 959.98px)
+		Breakpoints.Medium, // (min-width: 960px) and (max-width: 1279.98px)
+		Breakpoints.Large, // (min-width: 1280px) and (max-width: 1919.98px)
+		Breakpoints.XLarge // (min-width: 1920px)
 	]);
 
 	breakpoints = toSignal(this.breakpoints$, {
@@ -43,32 +49,68 @@ export class LayoutService
 	/**
 	 * Computed values for responsive behavior
 	 */
-	isHandset = computed(() =>
+	isMobile = computed(() =>
 	{
 		const bp = this.breakpoints().breakpoints as { [key: string]: boolean };
-		return !!bp[Breakpoints.Handset];
+		return !!bp[Breakpoints.XSmall];
 	});
 
 	isTablet = computed(() =>
 	{
 		const bp = this.breakpoints().breakpoints as { [key: string]: boolean };
-		return !!bp[Breakpoints.Tablet];
+		return !!bp[Breakpoints.Small];
 	});
 
-	isWeb = computed(() =>
+	isLaptop = computed(() =>
 	{
 		const bp = this.breakpoints().breakpoints as { [key: string]: boolean };
-		return !!bp[Breakpoints.Web];
+		return !!bp[Breakpoints.Medium];
+	});
+
+	isDesktop = computed(() =>
+	{
+		const bp = this.breakpoints().breakpoints as { [key: string]: boolean };
+		return !!bp[Breakpoints.Large] || !!bp[Breakpoints.XLarge];
+	});
+
+	isXLarge = computed(() =>
+	{
+		const bp = this.breakpoints().breakpoints as { [key: string]: boolean };
+		return !!bp[Breakpoints.XLarge];
+	});
+
+	/**
+	 * Helper: Is screen size 600px or larger (tablet and above)
+	 */
+	isTabletOrLarger = computed(() =>
+	{
+		return !this.isMobile();
+	});
+
+	/**
+	 * Helper: Is screen size below 960px (mobile and tablet)
+	 */
+	isBelowLaptop = computed(() =>
+	{
+		return this.isMobile() || this.isTablet();
+	});
+
+	/**
+	 * Helper: Is screen size 960px or larger (laptop and desktop)
+	 */
+	isLaptopOrLarger = computed(() =>
+	{
+		return this.isLaptop() || this.isDesktop() || this.isXLarge();
 	});
 
 	/**
 	 * Sidebar mode based on screen size
-	 * - Handset/Tablet: 'over' (overlay)
-	 * - Web: 'side' (push content)
+	 * - Below 960px: 'over' (overlay, full-width content)
+	 * - 960px and above: 'side' (push content)
 	 */
 	sidebarMode = computed(() =>
 	{
-		if (this.isHandset() || this.isTablet())
+		if (this.isBelowLaptop())
 		{
 			return "over";
 		}

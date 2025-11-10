@@ -3,3 +3,4 @@
  */
 
 export * from "./responsive.directive";
+export * from "./site-layout-changed.directive";
