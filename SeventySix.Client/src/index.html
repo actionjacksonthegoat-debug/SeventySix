@@ -61,6 +61,36 @@
 			href="https://fonts.googleapis.com/icon?family=Material+Icons"
 			rel="stylesheet"
 		/>
+
+		<!-- Performance: Preconnect to OpenWeather CDN -->
+		<link rel="preconnect" href="https://openweathermap.org" />
+		<link rel="dns-prefetch" href="https://openweathermap.org" />
+
+		<!-- Performance: Preload common weather icons -->
+		<link
+			rel="preload"
+			as="image"
+			href="https://openweathermap.org/img/wn/01d@2x.png"
+			fetchpriority="low"
+		/>
+		<link
+			rel="preload"
+			as="image"
+			href="https://openweathermap.org/img/wn/01n@2x.png"
+			fetchpriority="low"
+		/>
+		<link
+			rel="preload"
+			as="image"
+			href="https://openweathermap.org/img/wn/02d@2x.png"
+			fetchpriority="low"
+		/>
+		<link
+			rel="preload"
+			as="image"
+			href="https://openweathermap.org/img/wn/10d@2x.png"
+			fetchpriority="low"
+		/>
 	</head>
 	<body>
 		<app-root></app-root>

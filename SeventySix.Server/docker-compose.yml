@@ -16,6 +16,8 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ASPNETCORE_URLS=https://+:8081;http://+:8080
+      # OpenWeather API Key - Set via .env file or environment variable
+      - OpenWeather__ApiKey=${OPENWEATHER_APIKEY}
     restart: unless-stopped
     networks:
       - seventysix-network

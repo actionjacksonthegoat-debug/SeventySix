@@ -25,6 +25,7 @@ namespace SeventySix.Api.Middleware;
 /// - EntityNotFoundException -> 404 Not Found
 /// - BusinessRuleViolationException -> 422 Unprocessable Entity
 /// - DomainException -> 400 Bad Request
+/// - ExternalServiceException -> 503 Service Unavailable
 /// - ArgumentException/ArgumentNullException -> 400 Bad Request
 /// - KeyNotFoundException -> 404 Not Found
 /// - UnauthorizedAccessException -> 401 Unauthorized
@@ -101,6 +102,11 @@ public class GlobalExceptionMiddleware
 				HttpStatusCode.BadRequest,
 				"Domain Error",
 				domainEx.Message),
+			ExternalServiceException externalEx => CreateProblemDetails(
+				context,
+				HttpStatusCode.ServiceUnavailable,
+				"External Service Error",
+				externalEx.Message),
 			ArgumentNullException => CreateProblemDetails(
 				context,
 				HttpStatusCode.BadRequest,

@@ -1,0 +1,124 @@
+<mat-card class="weather-details-card">
+	<div class="card-header">
+		<h3>
+			<mat-icon>info</mat-icon>
+			Weather Details
+		</h3>
+	</div>
+
+	@if (currentWeather())
+	{
+		<div class="details-grid">
+			<!-- UV Index -->
+			<div class="detail-card detail-uvi">
+				<div class="detail-icon">
+					<mat-icon>wb_sunny</mat-icon>
+				</div>
+				<div class="detail-content">
+					<div class="detail-label">UV Index</div>
+					<div class="detail-value">{{ currentWeather()!.uvi }}</div>
+				</div>
+			</div>
+
+			<!-- Humidity -->
+			<div class="detail-card detail-humidity">
+				<div class="detail-icon">
+					<mat-icon>water_drop</mat-icon>
+				</div>
+				<div class="detail-content">
+					<div class="detail-label">Humidity</div>
+					<div class="detail-value">
+						{{ currentWeather()!.humidity }}%
+					</div>
+				</div>
+			</div>
+
+			<!-- Wind -->
+			<div class="detail-card detail-wind">
+				<div class="detail-icon">
+					<mat-icon>air</mat-icon>
+				</div>
+				<div class="detail-content">
+					<div class="detail-label">Wind</div>
+					<div class="detail-value">
+						{{ currentWeather()!.wind_speed }} m/s
+						{{ formatWindDirection(currentWeather()!.wind_deg) }}
+					</div>
+				</div>
+			</div>
+
+			<!-- Pressure -->
+			<div class="detail-card detail-pressure">
+				<div class="detail-icon">
+					<mat-icon>compress</mat-icon>
+				</div>
+				<div class="detail-content">
+					<div class="detail-label">Pressure</div>
+					<div class="detail-value">
+						{{ currentWeather()!.pressure }} hPa
+					</div>
+				</div>
+			</div>
+
+			<!-- Visibility -->
+			<div class="detail-card detail-visibility">
+				<div class="detail-icon">
+					<mat-icon>visibility</mat-icon>
+				</div>
+				<div class="detail-content">
+					<div class="detail-label">Visibility</div>
+					<div class="detail-value">
+						{{ formatVisibility(currentWeather()!.visibility) }}
+					</div>
+				</div>
+			</div>
+
+			<!-- Sunrise -->
+			<div class="detail-card detail-sunrise">
+				<div class="detail-icon">
+					<mat-icon>wb_twilight</mat-icon>
+				</div>
+				<div class="detail-content">
+					<div class="detail-label">Sunrise</div>
+					<div class="detail-value">
+						{{ formatTime(currentWeather()!.sunrise) }}
+					</div>
+				</div>
+			</div>
+
+			<!-- Sunset -->
+			<div class="detail-card detail-sunset">
+				<div class="detail-icon">
+					<mat-icon>nights_stay</mat-icon>
+				</div>
+				<div class="detail-content">
+					<div class="detail-label">Sunset</div>
+					<div class="detail-value">
+						{{ formatTime(currentWeather()!.sunset) }}
+					</div>
+				</div>
+			</div>
+
+			<!-- Dew Point -->
+			<div class="detail-card detail-dewpoint">
+				<div class="detail-icon">
+					<mat-icon>thermostat</mat-icon>
+				</div>
+				<div class="detail-content">
+					<div class="detail-label">Dew Point</div>
+					<div class="detail-value">
+						{{ currentWeather()!.dew_point | number: "1.1-1" }}°
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+
+	@if (!currentWeather())
+	{
+		<div class="empty-state">
+			<mat-icon>info</mat-icon>
+			<p>No weather details available</p>
+		</div>
+	}
+</mat-card>

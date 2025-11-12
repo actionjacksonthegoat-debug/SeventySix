@@ -1,0 +1,32 @@
+<div class="unit-toggle">
+	<button
+		mat-raised-button
+		class="toggle-button"
+		(click)="toggleUnits()"
+		[attr.aria-label]="
+			'Toggle between Metric and Imperial units. Currently using ' +
+			(currentUnits() === Units.Metric ? 'Metric' : 'Imperial')
+		"
+		matTooltip="Switch temperature units"
+	>
+		<div class="toggle-content">
+			<span
+				class="unit-label metric"
+				[class.active]="currentUnits() === Units.Metric"
+			>
+				<span class="temp-unit">°C</span>
+				<span class="wind-unit">m/s</span>
+			</span>
+
+			<mat-icon class="switch-icon">swap_horiz</mat-icon>
+
+			<span
+				class="unit-label imperial"
+				[class.active]="currentUnits() === Units.Imperial"
+			>
+				<span class="temp-unit">°F</span>
+				<span class="wind-unit">mph</span>
+			</span>
+		</div>
+	</button>
+</div>

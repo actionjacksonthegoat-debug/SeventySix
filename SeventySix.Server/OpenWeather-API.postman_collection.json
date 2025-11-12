@@ -1,0 +1,340 @@
+{
+	"info": {
+		"_postman_id": "76a9c2e1-8b3d-4e2f-9a5e-1d3f4c5b6e7f",
+		"name": "SeventySix - OpenWeather API",
+		"description": "Collection for testing OpenWeather API endpoints in the SeventySix application.\n\nAll endpoints support response caching with appropriate durations.\n\nRate Limit: 1000 calls per day (configured via OpenWeather:RateLimit:MaxCallsPerDay)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "latitude",
+			"value": "40.7128",
+			"type": "string"
+		},
+		{
+			"key": "longitude",
+			"value": "-74.0060",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Current Weather",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/weatherforecast/current?latitude={{latitude}}&longitude={{longitude}}&units=metric&language=en",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "weatherforecast", "current"],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}",
+							"description": "Latitude (-90 to 90). Example: 40.7128 (New York City)"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}",
+							"description": "Longitude (-180 to 180). Example: -74.0060 (New York City)"
+						},
+						{
+							"key": "units",
+							"value": "metric",
+							"description": "Units: metric (default), imperial, standard"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "Language code (ISO 639-1). Default: en"
+						}
+					]
+				},
+				"description": "Gets current weather conditions for a location.\n\n**Response Cache:** 5 minutes\n\n**Response:** `CurrentWeather` object with temperature, humidity, pressure, wind, clouds, etc."
+			},
+			"response": []
+		},
+		{
+			"name": "Hourly Forecast (48 hours)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/weatherforecast/hourly?latitude={{latitude}}&longitude={{longitude}}&units=metric&language=en",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "weatherforecast", "hourly"],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}",
+							"description": "Latitude (-90 to 90)"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}",
+							"description": "Longitude (-180 to 180)"
+						},
+						{
+							"key": "units",
+							"value": "metric",
+							"description": "Units: metric (default), imperial, standard"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "Language code (ISO 639-1). Default: en"
+						}
+					]
+				},
+				"description": "Gets hourly forecast for the next 48 hours.\n\n**Response Cache:** 5 minutes\n\n**Response:** Array of `HourlyForecast` objects"
+			},
+			"response": []
+		},
+		{
+			"name": "Daily Forecast (8 days)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/weatherforecast/daily?latitude={{latitude}}&longitude={{longitude}}&units=metric&language=en",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "weatherforecast", "daily"],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}",
+							"description": "Latitude (-90 to 90)"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}",
+							"description": "Longitude (-180 to 180)"
+						},
+						{
+							"key": "units",
+							"value": "metric",
+							"description": "Units: metric (default), imperial, standard"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "Language code (ISO 639-1). Default: en"
+						}
+					]
+				},
+				"description": "Gets daily forecast for the next 8 days.\n\n**Response Cache:** 5 minutes\n\n**Response:** Array of `DailyForecast` objects with min/max temperatures, sunrise/sunset, etc."
+			},
+			"response": []
+		},
+		{
+			"name": "Minutely Forecast (60 minutes)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/weatherforecast/minutely?latitude={{latitude}}&longitude={{longitude}}&units=metric&language=en",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "weatherforecast", "minutely"],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}",
+							"description": "Latitude (-90 to 90)"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}",
+							"description": "Longitude (-180 to 180)"
+						},
+						{
+							"key": "units",
+							"value": "metric",
+							"description": "Units: metric (default), imperial, standard"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "Language code (ISO 639-1). Default: en"
+						}
+					]
+				},
+				"description": "Gets minute-by-minute precipitation forecast for the next 60 minutes.\n\n**Response Cache:** 1 minute (shorter due to rapidly changing precipitation)\n\n**Response:** Array of `MinutelyForecast` objects"
+			},
+			"response": []
+		},
+		{
+			"name": "Weather Alerts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/weatherforecast/alerts?latitude={{latitude}}&longitude={{longitude}}&language=en",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "weatherforecast", "alerts"],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}",
+							"description": "Latitude (-90 to 90)"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}",
+							"description": "Longitude (-180 to 180)"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "Language code (ISO 639-1). Default: en"
+						}
+					]
+				},
+				"description": "Gets government weather alerts for a location.\n\n**Response Cache:** 5 minutes\n\n**Response:** Array of `WeatherAlert` objects with alert descriptions, severity, start/end times"
+			},
+			"response": []
+		},
+		{
+			"name": "Complete Weather Data",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/weatherforecast?latitude={{latitude}}&longitude={{longitude}}&units=metric&language=en",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "weatherforecast"],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}",
+							"description": "Latitude (-90 to 90)"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}",
+							"description": "Longitude (-180 to 180)"
+						},
+						{
+							"key": "units",
+							"value": "metric",
+							"description": "Units: metric (default), imperial, standard"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "Language code (ISO 639-1). Default: en"
+						},
+						{
+							"key": "exclude",
+							"value": "",
+							"description": "Comma-separated list to exclude: current,minutely,hourly,daily,alerts",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Gets complete weather data using OpenWeather One Call API 3.0.\n\n**Most efficient endpoint** when you need multiple data types.\n\n**Response Cache:** 5 minutes\n\n**Response:** `OneCallResponse` with current, minutely, hourly, daily, alerts data"
+			},
+			"response": []
+		},
+		{
+			"name": "Complete Weather Data (with exclude)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/weatherforecast?latitude={{latitude}}&longitude={{longitude}}&units=metric&language=en&exclude=minutely,alerts",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "weatherforecast"],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}",
+							"description": "Latitude (-90 to 90)"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}",
+							"description": "Longitude (-180 to 180)"
+						},
+						{
+							"key": "units",
+							"value": "metric",
+							"description": "Units: metric (default), imperial, standard"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "Language code (ISO 639-1). Default: en"
+						},
+						{
+							"key": "exclude",
+							"value": "minutely,alerts",
+							"description": "Exclude minutely and alerts data to reduce response size"
+						}
+					]
+				},
+				"description": "Gets complete weather data with exclusions.\n\nUse `exclude` parameter to omit data types you don't need (reduces response size and API call cost).\n\n**Response Cache:** 5 minutes"
+			},
+			"response": []
+		},
+		{
+			"name": "Historical Weather",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/weatherforecast/historical?latitude={{latitude}}&longitude={{longitude}}&timestamp=1609459200&units=metric&language=en",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "weatherforecast", "historical"],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}",
+							"description": "Latitude (-90 to 90)"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}",
+							"description": "Longitude (-180 to 180)"
+						},
+						{
+							"key": "timestamp",
+							"value": "1609459200",
+							"description": "Unix UTC timestamp (last 5 days). Example: 1609459200 = 2021-01-01 00:00:00"
+						},
+						{
+							"key": "units",
+							"value": "metric",
+							"description": "Units: metric (default), imperial, standard"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "Language code (ISO 639-1). Default: en"
+						}
+					]
+				},
+				"description": "Gets historical weather data for a specific timestamp.\n\n**Available:** Last 5 days from current time\n\n**Response Cache:** 24 hours (historical data doesn't change)\n\n**Response:** `OneCallResponse` with historical data"
+			},
+			"response": []
+		},
+		{
+			"name": "API Quota",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/weatherforecast/quota",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "weatherforecast", "quota"]
+				},
+				"description": "Gets current API usage quota information.\n\n**No caching** - always returns current quota state.\n\n**Response:**\n```json\n{\n  \"remainingCalls\": 950,\n  \"canMakeCall\": true,\n  \"resetsIn\": {\n    \"hours\": 12,\n    \"minutes\": 30,\n    \"seconds\": 45,\n    \"totalSeconds\": 45045\n  },\n  \"resetTime\": \"2024-01-02T00:00:00Z\"\n}\n```"
+			},
+			"response": []
+		}
+	]
+}

@@ -1,0 +1,212 @@
+// <copyright file="PollyIntegrationClientTests.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using System.Net;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using Moq.Protected;
+using SeventySix.BusinessLogic.Configuration;
+using SeventySix.Core.Interfaces;
+using SeventySix.DataAccess.Services;
+using Xunit;
+
+namespace SeventySix.DataAccess.Tests.Services;
+
+/// <summary>
+/// Unit tests for PollyIntegrationClient.
+/// </summary>
+public class PollyIntegrationClientTests : IDisposable
+{
+	private readonly Mock<IRateLimitingService> MockRateLimiter;
+	private readonly Mock<ILogger<PollyIntegrationClient>> MockLogger;
+	private readonly IMemoryCache Cache;
+	private readonly PollyOptions Options;
+	private readonly Mock<HttpMessageHandler> MockHttpMessageHandler;
+	private readonly HttpClient HttpClient;
+	private bool Disposed;
+
+	public PollyIntegrationClientTests()
+	{
+		MockRateLimiter = new Mock<IRateLimitingService>();
+		MockLogger = new Mock<ILogger<PollyIntegrationClient>>();
+		Cache = new MemoryCache(new MemoryCacheOptions());
+		Options = new PollyOptions
+		{
+			RetryCount = 2,
+			RetryDelaySeconds = 1,
+			TimeoutSeconds = 5,
+			CircuitBreakerFailureThreshold = 3,
+			CircuitBreakerBreakDurationSeconds = 10,
+			CircuitBreakerSamplingDurationSeconds = 60,
+			UseJitter = false,
+		};
+
+		MockHttpMessageHandler = new Mock<HttpMessageHandler>();
+		HttpClient = new HttpClient(MockHttpMessageHandler.Object)
+		{
+			BaseAddress = new Uri("https://api.test.com"),
+		};
+	}
+
+	[Fact]
+	public async Task GetAsync_WhenCacheHit_ShouldReturnFromCache()
+	{
+		// Arrange
+		const string url = "/test";
+		const string apiName = "TestApi";
+		const string cacheKey = "test-key";
+		var expectedData = new TestResponse { Value = "cached" };
+
+		Cache.Set(cacheKey, expectedData);
+
+		var sut = CreateSut();
+
+		// Act
+		var result = await sut.GetAsync<TestResponse>(url, apiName, cacheKey);
+
+		// Assert
+		Assert.NotNull(result);
+		Assert.Equal("cached", result.Value);
+		MockRateLimiter.Verify(r => r.CanMakeRequest(It.IsAny<string>()), Times.Never);
+	}
+
+	[Fact]
+	public async Task GetAsync_WhenRateLimitExceeded_ShouldThrowException()
+	{
+		// Arrange
+		const string url = "/test";
+		const string apiName = "TestApi";
+
+		MockRateLimiter.Setup(r => r.CanMakeRequest(apiName)).Returns(false);
+		MockRateLimiter.Setup(r => r.GetTimeUntilReset()).Returns(TimeSpan.FromHours(1));
+
+		var sut = CreateSut();
+
+		// Act & Assert
+		await Assert.ThrowsAsync<InvalidOperationException>(
+			async () => await sut.GetAsync<TestResponse>(url, apiName));
+	}
+
+	[Fact]
+	public async Task GetAsync_WhenSuccessfulRequest_ShouldCacheResult()
+	{
+		// Arrange
+		const string url = "/test";
+		const string apiName = "TestApi";
+		const string cacheKey = "test-key";
+
+		MockRateLimiter.Setup(r => r.CanMakeRequest(apiName)).Returns(true);
+
+		MockHttpMessageHandler.Protected()
+			.Setup<Task<HttpResponseMessage>>(
+				"SendAsync",
+				ItExpr.IsAny<HttpRequestMessage>(),
+				ItExpr.IsAny<CancellationToken>())
+			.ReturnsAsync(new HttpResponseMessage
+			{
+				StatusCode = HttpStatusCode.OK,
+				Content = new StringContent("{\"value\":\"success\"}"),
+			});
+
+		var sut = CreateSut();
+
+		// Act
+		var result = await sut.GetAsync<TestResponse>(url, apiName, cacheKey);
+
+		// Assert
+		Assert.NotNull(result);
+		Assert.Equal("success", result.Value);
+		MockRateLimiter.Verify(r => r.TryIncrementRequestCount(apiName), Times.Once);
+
+		// Verify cached
+		Assert.True(Cache.TryGetValue(cacheKey, out TestResponse? cached));
+		Assert.Equal("success", cached?.Value);
+	}
+
+	[Fact]
+	public async Task GetAsync_WhenUrlIsNull_ShouldThrowArgumentException()
+	{
+		// Arrange
+		var sut = CreateSut();
+
+		// Act & Assert
+		await Assert.ThrowsAsync<ArgumentNullException>(
+			async () => await sut.GetAsync<TestResponse>(null!, "TestApi"));
+	}
+
+	[Fact]
+	public async Task GetAsync_WhenApiNameIsNull_ShouldThrowArgumentException()
+	{
+		// Arrange
+		var sut = CreateSut();
+
+		// Act & Assert
+		await Assert.ThrowsAsync<ArgumentNullException>(
+			async () => await sut.GetAsync<TestResponse>("/test", null!));
+	}
+
+	[Fact]
+	public void CanMakeRequest_ShouldDelegateToRateLimiter()
+	{
+		// Arrange
+		const string apiName = "TestApi";
+		MockRateLimiter.Setup(r => r.CanMakeRequest(apiName)).Returns(true);
+
+		var sut = CreateSut();
+
+		// Act
+		bool result = sut.CanMakeRequest(apiName);
+
+		// Assert
+		Assert.True(result);
+		MockRateLimiter.Verify(r => r.CanMakeRequest(apiName), Times.Once);
+	}
+
+	[Fact]
+	public void GetRemainingQuota_ShouldDelegateToRateLimiter()
+	{
+		// Arrange
+		const string apiName = "TestApi";
+		MockRateLimiter.Setup(r => r.GetRemainingQuota(apiName)).Returns(500);
+
+		var sut = CreateSut();
+
+		// Act
+		int result = sut.GetRemainingQuota(apiName);
+
+		// Assert
+		Assert.Equal(500, result);
+		MockRateLimiter.Verify(r => r.GetRemainingQuota(apiName), Times.Once);
+	}
+
+	public void Dispose()
+	{
+		if (Disposed)
+		{
+			return;
+		}
+
+		HttpClient?.Dispose();
+		Cache?.Dispose();
+		Disposed = true;
+		GC.SuppressFinalize(this);
+	}
+
+	private PollyIntegrationClient CreateSut()
+	{
+		return new PollyIntegrationClient(
+			HttpClient,
+			Cache,
+			MockRateLimiter.Object,
+			MockLogger.Object,
+			Microsoft.Extensions.Options.Options.Create(Options));
+	}
+
+	private class TestResponse
+	{
+		public string Value { get; set; } = string.Empty;
+	}
+}

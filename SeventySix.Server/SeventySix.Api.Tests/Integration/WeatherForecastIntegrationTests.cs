@@ -6,19 +6,23 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using SeventySix.BusinessLogic.DTOs;
-using SeventySix.BusinessLogic.DTOs.Requests;
+using SeventySix.Core.DTOs.OpenWeather;
+using SeventySix.Core.DTOs.OpenWeather.Common;
 
 namespace SeventySix.Api.Tests.Integration;
 
 /// <summary>
-/// Integration tests for WeatherForecast API endpoints.
+/// Integration tests for WeatherForecastController using OpenWeather API endpoints.
 /// Tests the full HTTP request/response cycle with in-memory test server.
 /// </summary>
 public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
 {
 	private readonly WebApplicationFactory<Program> Factory;
 	private readonly HttpClient Client;
+
+	// Valid coordinates for testing (New York City)
+	private const double VALID_LATITUDE = 40.7128;
+	private const double VALID_LONGITUDE = -74.0060;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="WeatherForecastIntegrationTests"/> class.
@@ -31,184 +35,262 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	}
 
 	[Fact]
-	public async Task GetAll_ReturnsSuccessStatusCodeAsync()
+	public async Task GetCurrentWeather_ValidCoordinates_ReturnsOkAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/WeatherForecast");
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
-		response.EnsureSuccessStatusCode();
-		response.StatusCode.Should().Be(HttpStatusCode.OK);
+		// Note: Will return 503 ServiceUnavailable without valid API key
+		// but should at least return a valid HTTP response
+		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
 	[Fact]
-	public async Task GetAll_ReturnsJsonContentTypeAsync()
+	public async Task GetCurrentWeather_InVALID_LATITUDE_ReturnsBadRequestAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/WeatherForecast");
+		var response = await Client.GetAsync(
+			"/api/weatherforecast/current?latitude=91&longitude=-74.0060");
 
 		// Assert
-		response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+		response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 	}
 
 	[Fact]
-	public async Task GetAll_ReturnsArrayOfForecastsAsync()
+	public async Task GetCurrentWeather_InVALID_LONGITUDE_ReturnsBadRequestAsync()
 	{
 		// Act
-		var forecasts = await Client.GetFromJsonAsync<WeatherForecastDto[]>("/api/WeatherForecast");
+		var response = await Client.GetAsync(
+			"/api/weatherforecast/current?latitude=40.7128&longitude=-181");
 
 		// Assert
-		forecasts.Should().NotBeNull();
-		forecasts.Should().BeAssignableTo<IEnumerable<WeatherForecastDto>>();
+		response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 	}
 
 	[Fact]
-	public async Task GetAll_IncludesCacheControlHeaderAsync()
+	public async Task GetCurrentWeather_IncludesCacheControlHeaderAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/WeatherForecast");
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
+		response.Headers.CacheControl.Should().NotBeNull();
+		response.Headers.CacheControl!.MaxAge.Should().Be(TimeSpan.FromSeconds(300));
+	}
+
+	[Fact]
+	public async Task GetHourlyForecast_ValidCoordinates_ReturnsOkAsync()
+	{
+		// Act
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast/hourly?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+
+		// Assert
+		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+	}
+
+	[Fact]
+	public async Task GetDailyForecast_ValidCoordinates_ReturnsOkAsync()
+	{
+		// Act
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast/daily?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+
+		// Assert
+		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+	}
+
+	[Fact]
+	public async Task GetMinutelyForecast_ValidCoordinates_ReturnsOkAsync()
+	{
+		// Act
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast/minutely?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+
+		// Assert
+		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+	}
+
+	[Fact]
+	public async Task GetMinutelyForecast_HasShorterCacheDurationAsync()
+	{
+		// Act
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast/minutely?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+
+		// Assert - Minutely should have 1 minute cache
 		response.Headers.CacheControl.Should().NotBeNull();
 		response.Headers.CacheControl!.MaxAge.Should().Be(TimeSpan.FromSeconds(60));
 	}
 
 	[Fact]
-	public async Task GetById_WithValidId_ReturnsSuccessAsync()
+	public async Task GetWeatherAlerts_ValidCoordinates_ReturnsOkAsync()
 	{
-		// Arrange - First get all forecasts to find a valid ID
-		var allForecasts = await Client.GetFromJsonAsync<WeatherForecastDto[]>("/api/WeatherForecast");
-		if (allForecasts == null || allForecasts.Length == 0)
-		{
-			// Skip test if no forecasts available
-			return;
-		}
-
-		var validId = allForecasts[0].Date.DayNumber;
-
 		// Act
-		var response = await Client.GetAsync($"/api/WeatherForecast/{validId}");
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast/alerts?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
-		response.EnsureSuccessStatusCode();
-		response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-		var forecast = await response.Content.ReadFromJsonAsync<WeatherForecastDto>();
-		forecast.Should().NotBeNull();
+		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
 	[Fact]
-	public async Task GetById_WithInvalidId_ReturnsNotFoundAsync()
+	public async Task GetCompleteWeatherData_ValidCoordinates_ReturnsOkAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/WeatherForecast/999999");
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
-		response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
 	[Fact]
-	public async Task Create_WithValidRequest_ReturnsCreatedAsync()
+	public async Task GetCompleteWeatherData_WithExcludeParameter_ReturnsOkAsync()
+	{
+		// Act
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&exclude=minutely,alerts");
+
+		// Assert
+		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+	}
+
+	[Fact]
+	public async Task GetHistoricalWeather_ValidParameters_ReturnsOkAsync()
+	{
+		// Arrange - Timestamp for 2 days ago
+		var twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-2).ToUnixTimeSeconds();
+
+		// Act
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast/historical?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&timestamp={twoDaysAgo}");
+
+		// Assert
+		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+	}
+
+	[Fact]
+	public async Task GetHistoricalWeather_HasLongerCacheDurationAsync()
 	{
 		// Arrange
-		var request = new CreateWeatherForecastRequest
-		{
-			Date = new DateOnly(2025, 12, 25),
-			TemperatureC = 15,
-			Summary = "Mild"
-		};
+		var twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-2).ToUnixTimeSeconds();
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/WeatherForecast", request);
+		var response = await Client.GetAsync(
+			$"/api/weatherforecast/historical?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&timestamp={twoDaysAgo}");
+
+		// Assert - Historical data should have 24 hour cache
+		response.Headers.CacheControl.Should().NotBeNull();
+		response.Headers.CacheControl!.MaxAge.Should().Be(TimeSpan.FromSeconds(86400));
+	}
+
+	[Fact]
+	public async Task GetApiQuota_ReturnsOkAsync()
+	{
+		// Act
+		var response = await Client.GetAsync("/api/weatherforecast/quota");
 
 		// Assert
-		response.StatusCode.Should().Be(HttpStatusCode.Created);
-		response.Headers.Location.Should().NotBeNull();
-
-		var forecast = await response.Content.ReadFromJsonAsync<WeatherForecastDto>();
-		forecast.Should().NotBeNull();
-		forecast!.Date.Should().Be(request.Date);
-		forecast.TemperatureC.Should().Be(request.TemperatureC);
-		forecast.Summary.Should().Be(request.Summary);
+		response.StatusCode.Should().Be(HttpStatusCode.OK);
 	}
 
 	[Fact]
-	public async Task Create_WithInvalidRequest_ReturnsBadRequestAsync()
+	public async Task GetApiQuota_ReturnsExpectedStructureAsync()
 	{
-		// Arrange - Temperature out of valid range
-		var request = new
-		{
-			Date = new DateOnly(2025, 12, 25),
-			TemperatureC = 150, // Invalid: too hot
-			Summary = "Impossible"
-		};
-
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/WeatherForecast", request);
+		var response = await Client.GetAsync("/api/weatherforecast/quota");
+		var content = await response.Content.ReadAsStringAsync();
 
 		// Assert
-		response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+		response.IsSuccessStatusCode.Should().BeTrue();
+		content.Should().NotBeNullOrEmpty();
+		content.Should().Contain("remainingCalls");
+		content.Should().Contain("canMakeCall");
+		// Structure: { remainingCalls, canMakeCall, resetsIn: { hours, minutes, seconds, totalSeconds }, resetTime }
+	}
+
+	[Theory]
+	[InlineData("/api/weatherforecast/current")]
+	[InlineData("/api/weatherforecast/hourly")]
+	[InlineData("/api/weatherforecast/daily")]
+	[InlineData("/api/weatherforecast/alerts")]
+	public async Task WeatherEndpoints_WithDefaultCoordinates_CallsServiceAsync(string endpoint)
+	{
+		// Note: Without explicit query parameters, doubles default to 0.0
+		// Service layer validates coordinates, so (0, 0) may be valid depending on API
+
+		// Act
+		var response = await Client.GetAsync(endpoint);
+
+		// Assert - Should call service and return either OK or ServiceUnavailable
+		(response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.ServiceUnavailable)
+			.Should().BeTrue();
 	}
 
 	[Fact]
-	public async Task Create_WithMissingRequiredFields_ReturnsBadRequestAsync()
+	public async Task MultipleEndpoints_SupportConcurrentRequestsAsync()
 	{
-		// Arrange - Missing required Date field
-		var request = new
+		// Act - Make concurrent requests to different endpoints
+		var currentTask = Client.GetAsync($"/api/weatherforecast/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+		var hourlyTask = Client.GetAsync($"/api/weatherforecast/hourly?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+		var dailyTask = Client.GetAsync($"/api/weatherforecast/daily?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+		var quotaTask = Client.GetAsync("/api/weatherforecast/quota");
+
+		var responses = await Task.WhenAll(currentTask, hourlyTask, dailyTask, quotaTask);
+
+		// Assert - All should return valid HTTP responses
+		responses.Should().AllSatisfy(r =>
 		{
-			TemperatureC = 20,
-			Summary = "Warm"
+			r.StatusCode.Should().BeOneOf(
+				HttpStatusCode.OK,
+				HttpStatusCode.ServiceUnavailable,
+				HttpStatusCode.BadRequest);
+		});
+	}
+
+	[Fact]
+	public async Task AllEndpoints_ReturnJsonContentTypeAsync()
+	{
+		// Arrange
+		var endpoints = new[]
+		{
+			$"/api/weatherforecast/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}",
+			$"/api/weatherforecast/hourly?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}",
+			$"/api/weatherforecast/daily?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}",
+			"/api/weatherforecast/quota"
 		};
 
-		// Act
-		var response = await Client.PostAsJsonAsync("/api/WeatherForecast", request);
-
-		// Assert
-		response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-	}
-
-	[Fact]
-	public async Task GetAll_SupportsMultipleRequestsAsync()
-	{
-		// Act - Make multiple concurrent requests
-		var tasks = Enumerable.Range(0, 5).Select(_ => Client.GetAsync("/api/WeatherForecast"));
-		var responses = await Task.WhenAll(tasks);
-
-		// Assert - All should succeed
-		responses.Should().AllSatisfy(r => r.StatusCode.Should().Be(HttpStatusCode.OK));
-	}
-
-	[Fact]
-	public async Task Api_ReturnsConsistentDataFormatAsync()
-	{
-		// Act
-		var response1 = await Client.GetFromJsonAsync<WeatherForecastDto[]>("/api/WeatherForecast");
-		var response2 = await Client.GetFromJsonAsync<WeatherForecastDto[]>("/api/WeatherForecast");
-
-		// Assert - Same request should return same data structure
-		response1.Should().NotBeNull();
-		response2.Should().NotBeNull();
-		if (response1!.Length > 0 && response2!.Length > 0)
+		foreach (var endpoint in endpoints)
 		{
-			response1[0].Should().BeEquivalentTo(response2[0]);
+			// Act
+			var response = await Client.GetAsync(endpoint);
+
+			// Assert
+			if (response.IsSuccessStatusCode)
+			{
+				response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+			}
 		}
 	}
 
 	[Fact]
-	public async Task GetAll_ReturnsValidWeatherForecastStructureAsync()
+	public async Task GetCurrentWeather_WithDifferentUnits_ReturnsOkAsync()
 	{
-		// Act
-		var forecasts = await Client.GetFromJsonAsync<WeatherForecastDto[]>("/api/WeatherForecast");
+		// Arrange
+		var units = new[] { "metric", "imperial", "standard" };
 
-		// Assert
-		forecasts.Should().NotBeNull();
-		if (forecasts!.Length > 0)
+		foreach (var unit in units)
 		{
-			var forecast = forecasts[0];
-			forecast.Date.Should().NotBe(default);
-			forecast.TemperatureC.Should().BeInRange(-60, 60);
-			forecast.TemperatureF.Should().BeGreaterThan(forecast.TemperatureC); // F > C for positive temps
-			forecast.Summary.Should().NotBeNullOrWhiteSpace();
+			// Act
+			var response = await Client.GetAsync(
+				$"/api/weatherforecast/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&units={unit}");
+
+			// Assert
+			response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 		}
 	}
 }

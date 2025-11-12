@@ -49,9 +49,9 @@ export const routes: Routes = [
 	{
 		path: "weather-forecast",
 		loadComponent: () =>
-			import("./features/home/weather/weather-forecast/weather-forecast").then(
-				(m) => m.WeatherForecastPage
-			),
+			import(
+				"./features/home/weather/weather-forecast/weather-forecast"
+			).then((m) => m.WeatherForecastPage),
 		title: "Weather Forecast",
 		data: { breadcrumb: "Weather Forecast" }
 	},

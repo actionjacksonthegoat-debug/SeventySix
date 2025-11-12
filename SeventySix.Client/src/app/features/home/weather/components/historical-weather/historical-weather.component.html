@@ -1,0 +1,22 @@
+<mat-card class="historical-panel smooth-transition">
+	<div class="panel-header" (click)="toggleExpand()">
+		<div class="header-content">
+			<mat-icon>history</mat-icon>
+			<h3>Historical Weather</h3>
+		</div>
+		<mat-icon class="expand-icon">
+			{{ isExpanded() ? "expand_less" : "expand_more" }}
+		</mat-icon>
+	</div>
+
+	@if (isExpanded())
+	{
+		<div class="panel-content">
+			<p class="info-message">
+				Historical weather data will be available in a future update.
+				This section will show yesterday's weather summary and
+				comparison with today's conditions.
+			</p>
+		</div>
+	}
+</mat-card>

@@ -3,45 +3,51 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
-using SeventySix.BusinessLogic.DTOs;
-using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.Core.DTOs.OpenWeather;
+using SeventySix.Core.DTOs.OpenWeather.Common;
+using SeventySix.Core.DTOs.Requests;
 
 namespace SeventySix.Api.Controllers;
 
 /// <summary>
-/// Weather forecast API endpoints.
-/// Provides RESTful operations for managing weather forecast data.
+/// Weather forecast API endpoints using OpenWeather One Call API 3.0.
 /// </summary>
 /// <remarks>
-/// This controller implements the Service Layer pattern, delegating business logic
-/// to IWeatherForecastService while handling HTTP concerns.
+/// Provides RESTful operations for weather data including:
+/// - Current weather conditions
+/// - Hourly forecasts (48 hours)
+/// - Daily forecasts (8 days)
+/// - Minute-by-minute precipitation (1 hour)
+/// - Government weather alerts
+/// - Historical weather data (last 5 days)
 ///
-/// All endpoints return:
-/// - Proper HTTP status codes (200, 201, 400, 404, 500)
+/// All endpoints implement:
+/// - Input validation (FluentValidation)
+/// - Response caching (5 minute default)
+/// - Rate limiting (1000 calls/day)
+/// - Proper HTTP status codes
 /// - ProblemDetails for errors (RFC 7807)
-/// - Appropriate response caching headers
 ///
 /// Design Patterns:
+/// - Thin Controller: Delegates to service layer
+/// - RESTful API: Resource-based endpoints
 /// - Dependency Injection: Services injected via constructor
-/// - Repository Pattern: Data access abstracted through service layer
-/// - DTO Pattern: Domain models never exposed directly
 /// </remarks>
 [ApiController]
 [Route("api/[controller]")]
 public class WeatherForecastController : ControllerBase
 {
-	private readonly IWeatherForecastService WeatherService;
+	private readonly IOpenWeatherService WeatherService;
 	private readonly ILogger<WeatherForecastController> Logger;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="WeatherForecastController"/> class.
 	/// </summary>
-	/// <param name="weatherService">The weather forecast service for business logic operations.</param>
-	/// <param name="logger">The logger instance for recording controller operations.</param>
-	/// <exception cref="ArgumentNullException">Thrown when weatherService or logger is null.</exception>
+	/// <param name="weatherService">OpenWeather service for business logic.</param>
+	/// <param name="logger">Logger instance.</param>
 	public WeatherForecastController(
-		IWeatherForecastService weatherService,
+		IOpenWeatherService weatherService,
 		ILogger<WeatherForecastController> logger)
 	{
 		WeatherService = weatherService ?? throw new ArgumentNullException(nameof(weatherService));
@@ -49,99 +55,379 @@ public class WeatherForecastController : ControllerBase
 	}
 
 	/// <summary>
-	/// Gets all weather forecasts.
+	/// Gets current weather conditions for a location.
 	/// </summary>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>A list of all weather forecasts.</returns>
-	/// <response code="200">Returns the list of weather forecasts.</response>
-	/// <response code="500">If an unexpected error occurs.</response>
+	/// <param name="latitude">Latitude (-90 to 90).</param>
+	/// <param name="longitude">Longitude (-180 to 180).</param>
+	/// <param name="units">Units system (metric, imperial, standard). Default: metric.</param>
+	/// <param name="language">Language code (ISO 639-1). Default: en.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>Current weather data.</returns>
+	/// <response code="200">Returns current weather data.</response>
+	/// <response code="400">Invalid request parameters.</response>
+	/// <response code="429">Rate limit exceeded (1000 calls/day).</response>
+	/// <response code="503">External service unavailable.</response>
 	/// <remarks>
 	/// Sample request:
 	///
-	///     GET /api/weatherforecast
+	///     GET /api/weatherforecast/current?latitude=40.7128&amp;longitude=-74.0060&amp;units=metric
 	///
-	/// Response is cached for 60 seconds to improve performance.
+	/// Response is cached for 5 minutes.
 	/// </remarks>
-	[HttpGet(Name = "GetWeatherForecasts")]
-	[ProducesResponseType(typeof(IEnumerable<WeatherForecastDto>), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
-	public async Task<ActionResult<IEnumerable<WeatherForecastDto>>> GetAllAsync(CancellationToken cancellationToken)
+	[HttpGet("current", Name = "GetCurrentWeather")]
+	[ProducesResponseType(typeof(CurrentWeather), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+	[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+	[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude", "units" })]
+	public async Task<ActionResult<CurrentWeather>> GetCurrentWeatherAsync(
+		[FromQuery] double latitude,
+		[FromQuery] double longitude,
+		[FromQuery] Units units = Units.Metric,
+		[FromQuery] string language = "en",
+		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Getting all weather forecasts");
-		var forecasts = await WeatherService.GetAllForecastsAsync(cancellationToken);
-		return Ok(forecasts);
-	}
+		Logger.LogInformation("Getting current weather for ({Latitude}, {Longitude})", latitude, longitude);
 
-	/// <summary>
-	/// Gets a weather forecast by its identifier.
-	/// </summary>
-	/// <param name="id">The unique identifier of the forecast.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The weather forecast if found; otherwise, 404 Not Found.</returns>
-	/// <response code="200">Returns the weather forecast.</response>
-	/// <response code="404">If the forecast is not found.</response>
-	/// <response code="500">If an unexpected error occurs.</response>
-	/// <remarks>
-	/// Sample request:
-	///
-	///     GET /api/weatherforecast/123
-	///
-	/// Response is cached for 60 seconds to improve performance.
-	/// </remarks>
-	[HttpGet("{id}", Name = "GetWeatherForecastById")]
-	[ProducesResponseType(typeof(WeatherForecastDto), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
-	public async Task<ActionResult<WeatherForecastDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
-	{
-		Logger.LogInformation("Getting weather forecast with ID: {ForecastId}", id);
-		var forecast = await WeatherService.GetForecastByIdAsync(id, cancellationToken);
-
-		if (forecast is null)
+		var request = new WeatherRequest
 		{
-			Logger.LogWarning("Weather forecast with ID {ForecastId} not found", id);
-			return NotFound();
+			Latitude = latitude,
+			Longitude = longitude,
+			Units = units,
+			Language = language,
+		};
+
+		var result = await WeatherService.GetCurrentWeatherAsync(request, cancellationToken);
+
+		if (result is null)
+		{
+			return NotFound(new { message = "Weather data not available for this location" });
 		}
 
-		return Ok(forecast);
+		return Ok(result);
 	}
 
 	/// <summary>
-	/// Creates a new weather forecast.
+	/// Gets hourly weather forecast for the next 48 hours.
 	/// </summary>
-	/// <param name="request">The forecast creation request containing forecast data.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The created weather forecast with location header.</returns>
-	/// <response code="201">Returns the newly created forecast.</response>
-	/// <response code="400">If the request is invalid or validation fails.</response>
-	/// <response code="422">If a business rule is violated.</response>
-	/// <response code="500">If an unexpected error occurs.</response>
+	/// <param name="latitude">Latitude (-90 to 90).</param>
+	/// <param name="longitude">Longitude (-180 to 180).</param>
+	/// <param name="units">Units system. Default: metric.</param>
+	/// <param name="language">Language code. Default: en.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>List of hourly forecasts.</returns>
+	/// <response code="200">Returns hourly forecast data.</response>
+	/// <response code="400">Invalid request parameters.</response>
+	/// <response code="429">Rate limit exceeded.</response>
 	/// <remarks>
 	/// Sample request:
 	///
-	///     POST /api/weatherforecast
-	///     {
-	///        "date": "2025-11-10",
-	///        "temperatureC": 25,
-	///        "summary": "Warm and sunny"
-	///     }
+	///     GET /api/weatherforecast/hourly?latitude=40.7128&amp;longitude=-74.0060
 	///
-	/// FluentValidation automatically validates the request before processing.
-	/// Returns 201 Created with Location header pointing to the new resource.
+	/// Returns 48 hours of hourly forecasts.
 	/// </remarks>
-	[HttpPost(Name = "CreateWeatherForecast")]
-	[ProducesResponseType(typeof(WeatherForecastDto), StatusCodes.Status201Created)]
+	[HttpGet("hourly", Name = "GetHourlyForecast")]
+	[ProducesResponseType(typeof(IEnumerable<HourlyForecast>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<WeatherForecastDto>> CreateAsync(
-		[FromBody] CreateWeatherForecastRequest request,
-		CancellationToken cancellationToken)
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+	[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude", "units" })]
+	public async Task<ActionResult<IEnumerable<HourlyForecast>>> GetHourlyForecastAsync(
+		[FromQuery] double latitude,
+		[FromQuery] double longitude,
+		[FromQuery] Units units = Units.Metric,
+		[FromQuery] string language = "en",
+		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Creating new weather forecast");
-		var forecast = await WeatherService.CreateForecastAsync(request, cancellationToken);
-		return CreatedAtRoute("GetWeatherForecastById", new { id = forecast.Date.DayNumber }, forecast);
+		Logger.LogInformation("Getting hourly forecast for ({Latitude}, {Longitude})", latitude, longitude);
+
+		var request = new WeatherRequest
+		{
+			Latitude = latitude,
+			Longitude = longitude,
+			Units = units,
+			Language = language,
+		};
+
+		var result = await WeatherService.GetHourlyForecastAsync(request, cancellationToken);
+		return Ok(result);
+	}
+
+	/// <summary>
+	/// Gets daily weather forecast for the next 8 days.
+	/// </summary>
+	/// <param name="latitude">Latitude (-90 to 90).</param>
+	/// <param name="longitude">Longitude (-180 to 180).</param>
+	/// <param name="units">Units system. Default: metric.</param>
+	/// <param name="language">Language code. Default: en.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>List of daily forecasts.</returns>
+	/// <response code="200">Returns daily forecast data.</response>
+	/// <response code="400">Invalid request parameters.</response>
+	/// <response code="429">Rate limit exceeded.</response>
+	/// <remarks>
+	/// Sample request:
+	///
+	///     GET /api/weatherforecast/daily?latitude=40.7128&amp;longitude=-74.0060
+	///
+	/// Returns 8 days of daily forecasts including min/max temperatures, conditions, and more.
+	/// </remarks>
+	[HttpGet("daily", Name = "GetDailyForecast")]
+	[ProducesResponseType(typeof(IEnumerable<DailyForecast>), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+	[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude", "units" })]
+	public async Task<ActionResult<IEnumerable<DailyForecast>>> GetDailyForecastAsync(
+		[FromQuery] double latitude,
+		[FromQuery] double longitude,
+		[FromQuery] Units units = Units.Metric,
+		[FromQuery] string language = "en",
+		CancellationToken cancellationToken = default)
+	{
+		Logger.LogInformation("Getting daily forecast for ({Latitude}, {Longitude})", latitude, longitude);
+
+		var request = new WeatherRequest
+		{
+			Latitude = latitude,
+			Longitude = longitude,
+			Units = units,
+			Language = language,
+		};
+
+		var result = await WeatherService.GetDailyForecastAsync(request, cancellationToken);
+		return Ok(result);
+	}
+
+	/// <summary>
+	/// Gets minute-by-minute precipitation forecast for the next hour.
+	/// </summary>
+	/// <param name="latitude">Latitude (-90 to 90).</param>
+	/// <param name="longitude">Longitude (-180 to 180).</param>
+	/// <param name="units">Units system. Default: metric.</param>
+	/// <param name="language">Language code. Default: en.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>List of minutely precipitation forecasts.</returns>
+	/// <response code="200">Returns minutely precipitation data.</response>
+	/// <response code="400">Invalid request parameters.</response>
+	/// <response code="404">Minutely forecast not available for this location.</response>
+	/// <remarks>
+	/// Sample request:
+	///
+	///     GET /api/weatherforecast/minutely?latitude=40.7128&amp;longitude=-74.0060
+	///
+	/// Note: Minutely forecast is only available for certain geographic areas.
+	/// Returns empty list if not available.
+	/// </remarks>
+	[HttpGet("minutely", Name = "GetMinutelyForecast")]
+	[ProducesResponseType(typeof(IEnumerable<MinutelyForecast>), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude" })]
+	public async Task<ActionResult<IEnumerable<MinutelyForecast>>> GetMinutelyForecastAsync(
+		[FromQuery] double latitude,
+		[FromQuery] double longitude,
+		[FromQuery] Units units = Units.Metric,
+		[FromQuery] string language = "en",
+		CancellationToken cancellationToken = default)
+	{
+		Logger.LogInformation("Getting minutely forecast for ({Latitude}, {Longitude})", latitude, longitude);
+
+		var request = new WeatherRequest
+		{
+			Latitude = latitude,
+			Longitude = longitude,
+			Units = units,
+			Language = language,
+		};
+
+		var result = await WeatherService.GetMinutelyForecastAsync(request, cancellationToken);
+		return Ok(result);
+	}
+
+	/// <summary>
+	/// Gets government weather alerts for a location.
+	/// </summary>
+	/// <param name="latitude">Latitude (-90 to 90).</param>
+	/// <param name="longitude">Longitude (-180 to 180).</param>
+	/// <param name="language">Language code. Default: en.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>List of active weather alerts.</returns>
+	/// <response code="200">Returns weather alerts (empty list if none).</response>
+	/// <response code="400">Invalid request parameters.</response>
+	/// <remarks>
+	/// Sample request:
+	///
+	///     GET /api/weatherforecast/alerts?latitude=40.7128&amp;longitude=-74.0060
+	///
+	/// Returns government-issued weather alerts (warnings, watches, advisories).
+	/// Returns empty list if no active alerts.
+	/// </remarks>
+	[HttpGet("alerts", Name = "GetWeatherAlerts")]
+	[ProducesResponseType(typeof(IEnumerable<WeatherAlert>), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude" })]
+	public async Task<ActionResult<IEnumerable<WeatherAlert>>> GetWeatherAlertsAsync(
+		[FromQuery] double latitude,
+		[FromQuery] double longitude,
+		[FromQuery] string language = "en",
+		CancellationToken cancellationToken = default)
+	{
+		Logger.LogInformation("Getting weather alerts for ({Latitude}, {Longitude})", latitude, longitude);
+
+		var request = new WeatherRequest
+		{
+			Latitude = latitude,
+			Longitude = longitude,
+			Language = language,
+		};
+
+		var result = await WeatherService.GetWeatherAlertsAsync(request, cancellationToken);
+		return Ok(result);
+	}
+
+	/// <summary>
+	/// Gets complete weather data (current, forecasts, alerts) in one call.
+	/// </summary>
+	/// <param name="latitude">Latitude (-90 to 90).</param>
+	/// <param name="longitude">Longitude (-180 to 180).</param>
+	/// <param name="units">Units system. Default: metric.</param>
+	/// <param name="language">Language code. Default: en.</param>
+	/// <param name="exclude">Optional comma-separated list to exclude: current,minutely,hourly,daily,alerts.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>Complete One Call API response.</returns>
+	/// <response code="200">Returns complete weather data.</response>
+	/// <response code="400">Invalid request parameters.</response>
+	/// <response code="429">Rate limit exceeded.</response>
+	/// <remarks>
+	/// Sample request:
+	///
+	///     GET /api/weatherforecast?latitude=40.7128&amp;longitude=-74.0060&amp;exclude=minutely
+	///
+	/// This is the most efficient endpoint if you need multiple data types.
+	/// Use the 'exclude' parameter to omit data you don't need.
+	/// </remarks>
+	[HttpGet(Name = "GetCompleteWeatherData")]
+	[ProducesResponseType(typeof(OneCallResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+	[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude", "units", "exclude" })]
+	public async Task<ActionResult<OneCallResponse>> GetCompleteWeatherDataAsync(
+		[FromQuery] double latitude,
+		[FromQuery] double longitude,
+		[FromQuery] Units units = Units.Metric,
+		[FromQuery] string language = "en",
+		[FromQuery] string? exclude = null,
+		CancellationToken cancellationToken = default)
+	{
+		Logger.LogInformation("Getting complete weather data for ({Latitude}, {Longitude})", latitude, longitude);
+
+		var request = new WeatherRequest
+		{
+			Latitude = latitude,
+			Longitude = longitude,
+			Units = units,
+			Language = language,
+			Exclude = exclude,
+		};
+
+		var result = await WeatherService.GetCompleteWeatherDataAsync(request, cancellationToken);
+
+		if (result is null)
+		{
+			return NotFound(new { message = "Weather data not available" });
+		}
+
+		return Ok(result);
+	}
+
+	/// <summary>
+	/// Gets historical weather data for a specific date/time (last 5 days).
+	/// </summary>
+	/// <param name="latitude">Latitude (-90 to 90).</param>
+	/// <param name="longitude">Longitude (-180 to 180).</param>
+	/// <param name="timestamp">Unix UTC timestamp for the historical data.</param>
+	/// <param name="units">Units system. Default: metric.</param>
+	/// <param name="language">Language code. Default: en.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>Historical weather data.</returns>
+	/// <response code="200">Returns historical weather data.</response>
+	/// <response code="400">Invalid parameters or timestamp outside 5-day range.</response>
+	/// <response code="429">Rate limit exceeded.</response>
+	/// <remarks>
+	/// Sample request:
+	///
+	///     GET /api/weatherforecast/historical?latitude=40.7128&amp;longitude=-74.0060&amp;timestamp=1699632000
+	///
+	/// Historical data is available for the last 5 days only.
+	/// </remarks>
+	[HttpGet("historical", Name = "GetHistoricalWeather")]
+	[ProducesResponseType(typeof(OneCallResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+	[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude", "timestamp", "units" })]
+	public async Task<ActionResult<OneCallResponse>> GetHistoricalWeatherAsync(
+		[FromQuery] double latitude,
+		[FromQuery] double longitude,
+		[FromQuery] long timestamp,
+		[FromQuery] Units units = Units.Metric,
+		[FromQuery] string language = "en",
+		CancellationToken cancellationToken = default)
+	{
+		Logger.LogInformation(
+			"Getting historical weather for ({Latitude}, {Longitude}) at timestamp {Timestamp}",
+			latitude,
+			longitude,
+			timestamp);
+
+		var request = new HistoricalWeatherRequest
+		{
+			Latitude = latitude,
+			Longitude = longitude,
+			Timestamp = timestamp,
+			Units = units,
+			Language = language,
+		};
+
+		var result = await WeatherService.GetHistoricalWeatherAsync(request, cancellationToken);
+
+		if (result is null)
+		{
+			return NotFound(new { message = "Historical weather data not available" });
+		}
+
+		return Ok(result);
+	}
+
+	/// <summary>
+	/// Gets API usage information (rate limit status).
+	/// </summary>
+	/// <returns>API quota information.</returns>
+	/// <response code="200">Returns API quota status.</response>
+	/// <remarks>
+	/// Sample request:
+	///
+	///     GET /api/weatherforecast/quota
+	///
+	/// Use this endpoint to check remaining API calls and reset time.
+	/// </remarks>
+	[HttpGet("quota", Name = "GetApiQuota")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public ActionResult<object> GetApiQuota()
+	{
+		var remaining = WeatherService.GetRemainingApiQuota();
+		var canMakeCall = WeatherService.CanMakeApiCall();
+		var resetTime = WeatherService.GetTimeUntilReset();
+
+		return Ok(new
+		{
+			remainingCalls = remaining,
+			canMakeCall,
+			resetsIn = new
+			{
+				hours = (int)resetTime.TotalHours,
+				minutes = resetTime.Minutes,
+				seconds = resetTime.Seconds,
+				totalSeconds = (int)resetTime.TotalSeconds,
+			},
+			resetTime = DateTime.UtcNow.Add(resetTime),
+		});
 	}
 }

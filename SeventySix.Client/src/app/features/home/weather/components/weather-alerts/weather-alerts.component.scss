@@ -1,0 +1,166 @@
+:host {
+	display: block;
+	width: 100%;
+}
+
+.alerts-banner {
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.alert-card {
+	padding: 1rem;
+	border-left: 4px solid;
+	background: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(10px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+	@media (max-width: 768px) {
+		padding: 0.75rem;
+	}
+}
+
+// Severity colors
+.severity-warning {
+	border-left-color: #d32f2f;
+	background: rgba(211, 47, 47, 0.1);
+
+	.alert-icon {
+		color: #d32f2f;
+	}
+}
+
+.severity-advisory {
+	border-left-color: #f57c00;
+	background: rgba(245, 124, 0, 0.1);
+
+	.alert-icon {
+		color: #f57c00;
+	}
+}
+
+.severity-watch {
+	border-left-color: #fbc02d;
+	background: rgba(251, 192, 45, 0.1);
+
+	.alert-icon {
+		color: #fbc02d;
+	}
+}
+
+.severity-statement {
+	border-left-color: #1976d2;
+	background: rgba(25, 118, 210, 0.1);
+
+	.alert-icon {
+		color: #1976d2;
+	}
+}
+
+.severity-default {
+	border-left-color: #616161;
+	background: rgba(97, 97, 97, 0.1);
+
+	.alert-icon {
+		color: #616161;
+	}
+}
+
+// Alert header
+.alert-header {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.75rem;
+	margin-bottom: 0.75rem;
+}
+
+.alert-icon {
+	font-size: 28px;
+	width: 28px;
+	height: 28px;
+	flex-shrink: 0;
+
+	@media (max-width: 768px) {
+		font-size: 24px;
+		width: 24px;
+		height: 24px;
+	}
+}
+
+.alert-title {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.alert-event {
+	font-size: 1.125rem;
+	font-weight: 600;
+	color: rgba(0, 0, 0, 0.87);
+	line-height: 1.3;
+
+	@media (max-width: 768px) {
+		font-size: 1rem;
+	}
+}
+
+.alert-sender {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: rgba(0, 0, 0, 0.6);
+
+	@media (max-width: 768px) {
+		font-size: 0.75rem;
+	}
+}
+
+.alert-close {
+	flex-shrink: 0;
+	color: rgba(0, 0, 0, 0.54);
+
+	&:hover {
+		color: rgba(0, 0, 0, 0.87);
+	}
+}
+
+// Alert body
+.alert-body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding-left: calc(28px + 0.75rem);
+
+	@media (max-width: 768px) {
+		padding-left: calc(24px + 0.75rem);
+	}
+}
+
+.alert-description {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: rgba(0, 0, 0, 0.87);
+
+	@media (max-width: 768px) {
+		font-size: 0.8125rem;
+	}
+}
+
+.alert-time {
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: rgba(0, 0, 0, 0.6);
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+
+	@media (max-width: 768px) {
+		font-size: 0.6875rem;
+	}
+}

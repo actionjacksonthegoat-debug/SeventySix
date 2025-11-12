@@ -39,6 +39,7 @@ A full-stack web application showcasing modern development practices with Angula
 -   **VS Code** - Recommended IDE for frontend
 -   **Visual Studio 2026** - Recommended IDE for backend
 -   **Git** - For version control
+-   **OpenWeather API Key** - Free API key from [OpenWeather](https://openweathermap.org/api)
 
 ## 🚀 Getting Started
 
@@ -49,7 +50,27 @@ git clone https://github.com/actionjacksonthegoat-debug/SeventySix.git
 cd SeventySix
 ```
 
-### 2. Setup Frontend (Angular Client)
+### 2. Configure API Keys
+
+**⚠️ IMPORTANT**: Before running the application, you must configure your OpenWeather API key.
+
+See **[SeventySix.Server/API_KEY_SETUP.md](SeventySix.Server/API_KEY_SETUP.md)** for detailed instructions.
+
+**Quick Setup (Local Development)**:
+
+```bash
+cd SeventySix.Server/SeventySix.Api
+dotnet user-secrets set "OpenWeather:ApiKey" "YOUR_API_KEY_HERE"
+```
+
+**For Docker**:
+
+```bash
+# Create .env file in SeventySix.Server directory
+echo OPENWEATHER_APIKEY=YOUR_API_KEY_HERE > SeventySix.Server/.env
+```
+
+### 3. Setup Frontend (Angular Client)
 
 ```bash
 cd SeventySix.Client
@@ -59,7 +80,7 @@ npm start
 
 The client will be available at `http://localhost:4200`
 
-### 3. Setup Backend (.NET API)
+### 4. Setup Backend (.NET API)
 
 ```bash
 cd SeventySix.Server
@@ -69,7 +90,7 @@ dotnet run --project SeventySix.Api
 
 The API will be available at `https://localhost:7074`
 
-### 4. Access API Documentation
+### 5. Access API Documentation
 
 With the API running, visit:
 

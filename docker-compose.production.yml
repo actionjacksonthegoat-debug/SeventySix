@@ -37,6 +37,8 @@ services:
       - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=seventysix;Username=${DB_USER:-seventysix};Password=${DB_PASSWORD:-changeme}
       - Cors__AllowedOrigins__0=http://localhost:8080
       - Cors__AllowedOrigins__1=http://localhost:4200
+      # OpenWeather API Key - Set via .env file or environment variable
+      - OpenWeather__ApiKey=${OPENWEATHER_APIKEY}
     depends_on:
       database:
         condition: service_healthy

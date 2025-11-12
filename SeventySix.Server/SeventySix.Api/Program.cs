@@ -29,14 +29,17 @@
 using System.IO.Compression;
 using FluentValidation;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
 using SeventySix.Api.Middleware;
+using SeventySix.BusinessLogic.Configuration;
 using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.BusinessLogic.Services;
 using SeventySix.BusinessLogic.Validators;
 using SeventySix.Core.Interfaces;
 using SeventySix.DataAccess.Repositories;
+using SeventySix.DataAccess.Services;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -76,17 +79,57 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 // Response caching middleware
 builder.Services.AddResponseCaching();
 
-// FluentValidation - Register all validators from the assembly
-builder.Services.AddValidatorsFromAssemblyContaining<CreateWeatherForecastValidator>();
+// Memory cache for OpenWeather API responses
+builder.Services.AddMemoryCache();
+
+// Configuration options for OpenWeather API and Polly resilience policies
+// Uses Options pattern for strongly-typed configuration with validation
+builder.Services.Configure<OpenWeatherOptions>(
+	builder.Configuration.GetSection(OpenWeatherOptions.SECTION_NAME));
+
+builder.Services.Configure<PollyOptions>(
+	builder.Configuration.GetSection(PollyOptions.SECTION_NAME));
+
+// Validate configuration on startup to fail fast if misconfigured
+builder.Services.AddOptions<OpenWeatherOptions>()
+	.Bind(builder.Configuration.GetSection(OpenWeatherOptions.SECTION_NAME))
+	.ValidateOnStart();
+
+builder.Services.AddOptions<PollyOptions>()
+	.Bind(builder.Configuration.GetSection(PollyOptions.SECTION_NAME))
+	.ValidateOnStart();
+
+// Rate limiting service (Singleton - tracks state across all requests)
+// Critical: Must be singleton to maintain accurate API call counts
+builder.Services.AddSingleton<IRateLimitingService, RateLimitingService>();
+
+// HttpClient for PollyIntegrationClient
+// Configures base address, timeout, and User-Agent header
+builder.Services.AddHttpClient<IPollyIntegrationClient, PollyIntegrationClient>()
+	.ConfigureHttpClient((serviceProvider, client) =>
+	{
+		var options = serviceProvider.GetRequiredService<IOptions<OpenWeatherOptions>>().Value;
+		client.BaseAddress = new Uri(options.BaseUrl);
+		client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds + 5); // Add buffer for Polly timeout
+		client.DefaultRequestHeaders.Add("User-Agent", "SeventySix/1.0");
+	});
+
+// OpenWeather API client (Scoped - uses HttpClient)
+builder.Services.AddScoped<IOpenWeatherApiClient, OpenWeatherApiClient>();
+
+// OpenWeather business logic service (Scoped - depends on IOpenWeatherApiClient)
+builder.Services.AddScoped<IOpenWeatherService, OpenWeatherService>();
+
+// FluentValidation - Register all validators for OpenWeather requests
+// Validates weather coordinates, units, language codes, and timestamps
+builder.Services.AddValidatorsFromAssemblyContaining<WeatherRequestValidator>();
 
 // Repository pattern - Scoped lifetime for per-request database context
 // Implements Dependency Inversion Principle (DIP)
-builder.Services.AddScoped<IWeatherForecastRepository, WeatherForecastRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Application services - Business logic layer
 // Scoped lifetime ensures proper DbContext management
-builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 // OpenAPI/Swagger configuration for API documentation
