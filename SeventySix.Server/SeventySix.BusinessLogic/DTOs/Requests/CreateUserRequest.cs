@@ -42,7 +42,10 @@ public record CreateUserRequest
 	/// Must be 3-50 characters long (validated by FluentValidation).
 	/// Should contain only alphanumeric characters and underscores.
 	/// </remarks>
-	public required string Username { get; init; }
+	public required string Username
+	{
+		get; init;
+	}
 
 	/// <summary>
 	/// Gets the email address for the new user.
@@ -55,7 +58,10 @@ public record CreateUserRequest
 	/// Must be a valid email format (validated by FluentValidation).
 	/// Maximum length: 255 characters (validated by FluentValidation).
 	/// </remarks>
-	public required string Email { get; init; }
+	public required string Email
+	{
+		get; init;
+	}
 
 	/// <summary>
 	/// Gets the full name for the new user.
@@ -68,7 +74,10 @@ public record CreateUserRequest
 	/// Optional field.
 	/// If provided, must not exceed 100 characters (validated by FluentValidation).
 	/// </remarks>
-	public string? FullName { get; init; }
+	public string? FullName
+	{
+		get; init;
+	}
 
 	/// <summary>
 	/// Gets a value indicating whether the user account should be active.

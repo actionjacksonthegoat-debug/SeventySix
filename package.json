@@ -1,5 +1,8 @@
 {
-  "devDependencies": {
-    "@types/node": "^24.10.0"
-  }
+	"devDependencies": {
+		"@types/node": "^22.10.5"
+	},
+	"scripts": {
+		"format": "dotnet format SeventySix.Server/SeventySix.Server.slnx && cd SeventySix.Client && npm run cleanup"
+	}
 }

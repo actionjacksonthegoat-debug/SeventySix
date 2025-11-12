@@ -31,7 +31,10 @@ public record UserDto
 	/// <value>
 	/// An integer representing the user's unique ID.
 	/// </value>
-	public int Id { get; init; }
+	public int Id
+	{
+		get; init;
+	}
 
 	/// <summary>
 	/// Gets the username.
@@ -56,7 +59,10 @@ public record UserDto
 	/// A string representing the user's full name.
 	/// Null if not provided.
 	/// </value>
-	public string? FullName { get; init; }
+	public string? FullName
+	{
+		get; init;
+	}
 
 	/// <summary>
 	/// Gets the date and time when the user was created.
@@ -67,7 +73,10 @@ public record UserDto
 	/// <remarks>
 	/// Uses UTC time for consistency across time zones.
 	/// </remarks>
-	public DateTime CreatedAt { get; init; }
+	public DateTime CreatedAt
+	{
+		get; init;
+	}
 
 	/// <summary>
 	/// Gets a value indicating whether the user account is active.
@@ -75,5 +84,8 @@ public record UserDto
 	/// <value>
 	/// True if the user account is active; otherwise, false.
 	/// </value>
-	public bool IsActive { get; init; }
+	public bool IsActive
+	{
+		get; init;
+	}
 }

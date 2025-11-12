@@ -233,4 +233,3 @@ public class RateLimitingServiceIntegrationTests : PostgreSqlTestBase, IClassFix
 		count.Should().Be(10, "all concurrent increments should be persisted. Success: {0}, Failures: {1}, False: {2}", successCount, failureCount, falseCount);
 	}
 }
-

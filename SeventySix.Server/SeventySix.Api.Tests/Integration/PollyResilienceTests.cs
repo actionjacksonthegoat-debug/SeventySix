@@ -185,4 +185,3 @@ public class PollyResilienceTests
 			await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None));
 	}
 }
-
