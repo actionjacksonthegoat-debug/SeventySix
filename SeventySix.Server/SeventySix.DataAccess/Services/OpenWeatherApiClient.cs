@@ -102,15 +102,15 @@ public class OpenWeatherApiClient : IOpenWeatherApiClient
 	}
 
 	/// <inheritdoc/>
-	public bool CanMakeRequest()
+	public async Task<bool> CanMakeRequestAsync(CancellationToken cancellationToken = default)
 	{
-		return PollyClient.CanMakeRequest(ApiName);
+		return await PollyClient.CanMakeRequestAsync(ApiName, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public int GetRemainingQuota()
+	public async Task<int> GetRemainingQuotaAsync(CancellationToken cancellationToken = default)
 	{
-		return PollyClient.GetRemainingQuota(ApiName);
+		return await PollyClient.GetRemainingQuotaAsync(ApiName, cancellationToken);
 	}
 
 	/// <summary>

@@ -43,33 +43,47 @@ All architecture decisions align with **CLAUDE.md** guidelines:
 The backend follows **Clean Architecture** (aka Onion Architecture) with clear dependency rules:
 
 ```
-┌─────────────────────────────────────────────────┐
-│          SeventySix.Api (Presentation)          │
-│  - Controllers, Middleware, Program.cs          │
-│  - HTTP concerns, routing, authentication       │
-└────────────────┬────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                   SeventySix.Api (Presentation)                 │
+│  - Controllers, Middleware, Program.cs                          │
+│  - HTTP concerns, routing, authentication                       │
+│  - DI Composition Root (wires all layers together)              │
+└────────────────┬────────────────────────────────────────────────┘
                  │ depends on ↓
-┌────────────────────────────────────────────────┐
-│      SeventySix.BusinessLogic (Business Logic)   │
-│  - Services, DTOs, Validators, Interfaces      │
-│  - Use cases, orchestration, mapping           │
-└────────────────┬───────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│            SeventySix.BusinessLogic (Business Logic)            │
+│  - Services, DTOs, Validators, Interfaces                       │
+│  - Use cases, orchestration, mapping                            │
+└────────────────┬────────────────────────────────────────────────┘
                  │ depends on ↓
-┌────────────────────────────────────────────────┐
-│        SeventySix.Core (Core Domain)         │
-│  - Entities, Value Objects, Domain Logic       │
-│  - Business rules, domain events               │
-│  - ZERO dependencies on other layers           │
-└────────────────────────────────────────────────┘
-                 ↑ depends on
-┌────────────────────────────────────────────────┐
-│     SeventySix.DataAccess (Data Access)    │
-│  - Repositories, Database Context              │
-│  - External service integrations               │
-└────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                  SeventySix.Core (Core Domain)                  │
+│  - Entities, Value Objects, Domain Logic                        │
+│  - Repository Interfaces (IThirdPartyApiRequestRepository)      │
+│  - Business rules, domain events                                │
+│  - ZERO dependencies on other layers                            │
+└─────────────────────────────────────────────────────────────────┘
+      ↑ implements interfaces          ↑ configures entities
+      │                                 │
+┌─────┴──────────────────┐  ┌──────────┴──────────────────────────┐
+│  SeventySix.DataAccess │  │       SeventySix.Data               │
+│  (Persistence Logic)   │  │    (Database Schema)                │
+│                        │  │                                     │
+│  - Repositories (LINQ) │  │  - ApplicationDbContext             │
+│  - Services            │  │  - Entity Configurations            │
+│  - Caching             │  │  - Migrations                       │
+│                        │  │  - TransactionManager               │
+│  Dependencies:         │  │                                     │
+│  ✅ Core (interfaces)  │  │  Dependencies:                      │
+│  ✅ Data (DbContext)   │  │  ✅ Core (entities)                 │
+│  ✅ EF Core (abstract) │  │  ✅ Npgsql (PostgreSQL)             │
+│  ❌ NO DB providers!   │  │                                     │
+└────────────────────────┘  └─────────────────────────────────────┘
 ```
 
 **Dependency Rule**: Inner layers have no knowledge of outer layers. Dependencies point inward.
+
+**Database Independence**: The separation between `SeventySix.DataAccess` (persistence logic) and `SeventySix.Data` (database schema) enables true database independence. Repositories use only LINQ and EF Core abstractions, making it possible to swap database providers without modifying business logic.
 
 ### Layer Responsibilities
 
@@ -79,22 +93,23 @@ The backend follows **Clean Architecture** (aka Onion Architecture) with clear d
 
 **Contents**:
 
--   **Entities**: Rich domain models (e.g., `User.cs`)
+-   **Entities**: Rich domain models (e.g., `User.cs`, `ThirdPartyApiRequest.cs`)
 -   **Value Objects**: Immutable business concepts
 -   **Domain Exceptions**: Business rule violations
 -   **Repository Interfaces**: Abstractions for data access (DIP)
 
-**Example - User Entity**:
+**Example - ThirdPartyApiRequest Entity**:
 
 ```csharp
-public class User
+public class ThirdPartyApiRequest
 {
     public int Id { get; set; }
-    public string Username { get; set; }
-    public string Email { get; set; }
-    public string? FullName { get; set; }
+    public required string ApiName { get; set; }
+    public DateOnly ResetDate { get; set; }
+    public int RequestCount { get; set; }
     public DateTime CreatedAt { get; set; }
-    public bool IsActive { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public uint Version { get; set; } // Concurrency token
 }
 ```
 
@@ -103,8 +118,93 @@ public class User
 -   ✅ SRP: Each entity has one responsibility
 -   ✅ OCP: Closed for modification, open for extension
 -   ✅ Framework-independent (no EF, no ASP.NET)
+-   ✅ Database-agnostic (no annotations or database-specific code)
 
-#### 2. **SeventySix.BusinessLogic** (Business Logic)
+#### 2. **SeventySix.Data** (Database Schema & Configuration)
+
+**Purpose**: Database-specific schema definition, migrations, and optimizations
+
+**Contents**:
+
+-   **ApplicationDbContext**: EF Core database context with provider-specific configuration
+-   **Entity Configurations**: Fluent API configuration for database mapping
+    -   `ThirdPartyApiRequestConfiguration.cs` - Table schema, indexes, constraints
+-   **Migrations**: EF Core code-first migrations
+    -   Automatic schema versioning
+    -   Up/down migration support
+    -   Database-specific SQL generation
+-   **Infrastructure**: Database-specific implementations
+    -   `TransactionManager.cs` - Transaction coordination with retry logic
+    -   Database-specific concurrency handling (PostgreSQL xmin)
+
+**Database-Specific Features**:
+
+-   **PostgreSQL Optimizations**:
+    -   SERIAL columns for auto-increment
+    -   `xmin` system column for optimistic concurrency
+    -   Timestamp with timezone for UTC storage
+    -   Custom indexes for query performance
+    -   MVCC (Multi-Version Concurrency Control) support
+-   **Migration Management**:
+    -   Code-first approach
+    -   Version-controlled schema changes
+    -   Automatic index and constraint creation
+    -   Rollback support for failed deployments
+
+**Example - Entity Configuration**:
+
+```csharp
+public class ThirdPartyApiRequestConfiguration : IEntityTypeConfiguration<ThirdPartyApiRequest>
+{
+    public void Configure(EntityTypeBuilder<ThirdPartyApiRequest> builder)
+    {
+        builder.ToTable("ThirdPartyApiRequests");
+
+        // PostgreSQL-specific: SERIAL column
+        builder.Property(e => e.Id)
+            .UseIdentityColumn()
+            .IsRequired();
+
+        // PostgreSQL-specific: Timestamp with time zone
+        builder.Property(e => e.CreatedAt)
+            .HasColumnType("timestamp with time zone")
+            .HasDefaultValueSql("NOW()");
+
+        // Performance indexes
+        builder.HasIndex(e => new { e.ApiName, e.ResetDate })
+            .IsUnique();
+    }
+}
+```
+
+**Design Principles**:
+
+-   ✅ SRP: Only responsible for database schema
+-   ✅ OCP: Can swap database providers without changing DataAccess
+-   ✅ DIP: Implements abstractions from Core layer
+-   ✅ Database-Agnostic Core: Domain entities have no database annotations
+
+**Migration Commands**:
+
+```powershell
+# Create new migration
+dotnet ef migrations add MigrationName --project SeventySix.Data --startup-project SeventySix.Api
+
+# Apply migrations
+dotnet ef database update --project SeventySix.Data --startup-project SeventySix.Api
+
+# Rollback migration
+dotnet ef database update PreviousMigration --project SeventySix.Data --startup-project SeventySix.Api
+```
+
+**Future Extensibility**:
+
+-   Create `SeventySix.Data.SQLite` for SQLite provider
+-   Create `SeventySix.Data.SqlServer` for SQL Server
+-   Create `SeventySix.Data.MySQL` for MySQL/MariaDB
+-   Swap providers in `Program.cs` DI registration
+
+#### 3. **SeventySix.BusinessLogic** (Business Logic)
 
 **Purpose**: Use cases and application-specific business rules
 
@@ -151,48 +251,68 @@ public class UserService : IUserService
 -   ✅ ISP: Interfaces are focused and minimal
 -   ✅ Separation of concerns: Validation → Mapping → Persistence → Response
 
-#### 3. **SeventySix.DataAccess** (Data Access)
+#### 4. **SeventySix.DataAccess** (Data Access)
 
-**Purpose**: External dependencies and data persistence
+**Purpose**: Database-agnostic persistence logic and external service integrations
 
 **Contents**:
 
--   **Repositories**: Concrete implementations of domain interfaces
--   **Database Context**: EF Core DbContext (future)
--   **External Services**: Third-party integrations
+-   **Repositories**: Concrete implementations of domain interfaces (database-agnostic)
+    -   `ThirdPartyApiRequestRepository.cs` - Uses LINQ (no SQL)
+    -   Uses EF Core abstractions only
+-   **Services**: Data access services
+    -   `RateLimitingService.cs` - Rate limiting with database persistence
+    -   `PollyIntegrationClient.cs` - Resilient HTTP client
+-   **Caching**: In-memory caching for performance
 
-**Current Implementation**: In-memory repository (development)
-**Production Plan**: EF Core with PostgreSQL
+**Database Independence**:
 
-**Example - UserRepository (In-Memory)**:
+-   ✅ **No database provider packages** (no Npgsql, no SQLite)
+-   ✅ **LINQ queries only** (no raw SQL)
+-   ✅ **EF Core abstractions** (DbContext, DbSet)
+-   ✅ **Works with ANY provider** (PostgreSQL, SQLite, SQL Server)
+
+**Example - Database-Agnostic Repository**:
 
 ```csharp
-public class UserRepository : IUserRepository
+public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 {
-    private readonly List<User> _users = new();
+    private readonly ApplicationDbContext _context;
 
-    public Task<IEnumerable<User>> GetAllAsync(CancellationToken ct)
+    // ✅ LINQ is provider-agnostic
+    public async Task<ThirdPartyApiRequest?> GetByApiNameAndDateAsync(
+        string apiName, DateOnly date, CancellationToken ct)
     {
-        return Task.FromResult<IEnumerable<User>>(_users.ToList());
+        return await _context.ThirdPartyApiRequests
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.ApiName == apiName && r.ResetDate == date, ct);
     }
 
-    public Task<User> CreateAsync(User entity, CancellationToken ct)
+    // ✅ EF Core abstractions work with all providers
+    public async Task<ThirdPartyApiRequest> CreateAsync(
+        ThirdPartyApiRequest entity, CancellationToken ct)
     {
-        entity.Id = _nextId++;
-        entity.CreatedAt = DateTime.UtcNow;
-        _users.Add(entity);
-        return Task.FromResult(entity);
+        _context.ThirdPartyApiRequests.Add(entity);
+        await _context.SaveChangesAsync(ct);
+        return entity;
     }
 }
 ```
 
 **Design Principles**:
 
--   ✅ Repository Pattern: Abstract data access
--   ✅ DIP: Implements domain interface
--   ✅ Easy to swap: In-memory → EF Core → Dapper → MongoDB
+-   ✅ SRP: Only responsible for data access logic (not schema)
+-   ✅ OCP: Open to new database providers via DI
+-   ✅ DIP: Depends on DbContext abstraction, not concrete database
+-   ✅ Repository Pattern: Abstracts data access from business logic
 
-#### 4. **SeventySix.Api** (Presentation)
+**Dependencies**:
+
+-   `SeventySix.Core` - Domain entities and interfaces
+-   `SeventySix.Data` - DbContext for database operations
+-   `Microsoft.EntityFrameworkCore` - Abstractions only
+
+#### 5. **SeventySix.Api** (Presentation)
 
 **Purpose**: HTTP API, routing, and cross-cutting concerns
 

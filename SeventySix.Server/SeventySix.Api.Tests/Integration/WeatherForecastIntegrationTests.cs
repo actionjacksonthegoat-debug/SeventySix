@@ -5,7 +5,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using SeventySix.Api.Tests.Attributes;
 using SeventySix.Core.DTOs.OpenWeather;
 using SeventySix.Core.DTOs.OpenWeather.Common;
 
@@ -30,11 +32,14 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	/// <param name="factory">Web application factory for creating test server.</param>
 	public WeatherForecastIntegrationTests(WebApplicationFactory<Program> factory)
 	{
-		Factory = factory;
-		Client = factory.CreateClient();
+		Factory = factory.WithWebHostBuilder(builder =>
+		{
+			builder.UseEnvironment("Test");
+		});
+		Client = Factory.CreateClient();
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetCurrentWeather_ValidCoordinates_ReturnsOkAsync()
 	{
 		// Act
@@ -47,7 +52,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetCurrentWeather_InVALID_LATITUDE_ReturnsBadRequestAsync()
 	{
 		// Act
@@ -58,7 +63,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetCurrentWeather_InVALID_LONGITUDE_ReturnsBadRequestAsync()
 	{
 		// Act
@@ -69,7 +74,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetCurrentWeather_IncludesCacheControlHeaderAsync()
 	{
 		// Act
@@ -81,7 +86,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.Headers.CacheControl!.MaxAge.Should().Be(TimeSpan.FromSeconds(300));
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetHourlyForecast_ValidCoordinates_ReturnsOkAsync()
 	{
 		// Act
@@ -92,7 +97,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetDailyForecast_ValidCoordinates_ReturnsOkAsync()
 	{
 		// Act
@@ -103,7 +108,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetMinutelyForecast_ValidCoordinates_ReturnsOkAsync()
 	{
 		// Act
@@ -114,7 +119,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetMinutelyForecast_HasShorterCacheDurationAsync()
 	{
 		// Act
@@ -126,7 +131,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.Headers.CacheControl!.MaxAge.Should().Be(TimeSpan.FromSeconds(60));
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetWeatherAlerts_ValidCoordinates_ReturnsOkAsync()
 	{
 		// Act
@@ -137,7 +142,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetCompleteWeatherData_ValidCoordinates_ReturnsOkAsync()
 	{
 		// Act
@@ -148,7 +153,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetCompleteWeatherData_WithExcludeParameter_ReturnsOkAsync()
 	{
 		// Act
@@ -159,7 +164,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetHistoricalWeather_ValidParameters_ReturnsOkAsync()
 	{
 		// Arrange - Timestamp for 2 days ago
@@ -173,7 +178,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetHistoricalWeather_HasLongerCacheDurationAsync()
 	{
 		// Arrange
@@ -188,7 +193,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.Headers.CacheControl!.MaxAge.Should().Be(TimeSpan.FromSeconds(86400));
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetApiQuota_ReturnsOkAsync()
 	{
 		// Act
@@ -198,7 +203,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		response.StatusCode.Should().Be(HttpStatusCode.OK);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetApiQuota_ReturnsExpectedStructureAsync()
 	{
 		// Act
@@ -213,7 +218,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		// Structure: { remainingCalls, canMakeCall, resetsIn: { hours, minutes, seconds, totalSeconds }, resetTime }
 	}
 
-	[Theory]
+	[IntegrationTheory]
 	[InlineData("/api/weatherforecast/current")]
 	[InlineData("/api/weatherforecast/hourly")]
 	[InlineData("/api/weatherforecast/daily")]
@@ -231,7 +236,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 			.Should().BeTrue();
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task MultipleEndpoints_SupportConcurrentRequestsAsync()
 	{
 		// Act - Make concurrent requests to different endpoints
@@ -252,7 +257,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		});
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task AllEndpoints_ReturnJsonContentTypeAsync()
 	{
 		// Arrange
@@ -277,7 +282,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		}
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetCurrentWeather_WithDifferentUnits_ReturnsOkAsync()
 	{
 		// Arrange

@@ -6,218 +6,240 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using SeventySix.BusinessLogic.Configuration;
+using SeventySix.Core.Entities;
+using SeventySix.Core.Interfaces;
+using SeventySix.Data.Infrastructure;
 using SeventySix.DataAccess.Services;
 using Xunit;
 
 namespace SeventySix.DataAccess.Tests.Services;
 
 /// <summary>
-/// Unit tests for RateLimitingService.
-/// Follows TDD best practices - tests written before implementation.
+/// Unit tests for RateLimitingService with database-backed implementation.
+/// Tests use mocked repository to verify business logic without database dependencies.
+/// Follows TDD best practices.
 /// </summary>
 public class RateLimitingServiceTests
 {
 	private readonly Mock<ILogger<RateLimitingService>> MockLogger;
+	private readonly Mock<IThirdPartyApiRequestRepository> MockRepository;
+	private readonly Mock<ITransactionManager> MockTransactionManager;
 	private readonly OpenWeatherOptions Options;
 	private readonly RateLimitingService Sut;
 
 	public RateLimitingServiceTests()
 	{
 		MockLogger = new Mock<ILogger<RateLimitingService>>();
+		MockRepository = new Mock<IThirdPartyApiRequestRepository>();
+		MockTransactionManager = new Mock<ITransactionManager>();
 		Options = new OpenWeatherOptions
 		{
 			ApiKey = "test-key",
 			BaseUrl = "https://api.test.com",
-			DailyCallLimit = 10, // Low limit for testing
+			DailyCallLimit = 10,
 		};
 
+		// Setup TransactionManager to execute operations directly (pass-through)
+		MockTransactionManager
+			.Setup(tm => tm.ExecuteInTransactionAsync(
+				It.IsAny<Func<CancellationToken, Task<bool>>>(),
+				It.IsAny<int>(),
+				It.IsAny<CancellationToken>()))
+			.Returns<Func<CancellationToken, Task<bool>>, int, CancellationToken>(
+				async (operation, _, ct) => await operation(ct));
+
+		MockTransactionManager
+			.Setup(tm => tm.ExecuteInTransactionAsync(
+				It.IsAny<Func<CancellationToken, Task>>(),
+				It.IsAny<int>(),
+				It.IsAny<CancellationToken>()))
+			.Returns<Func<CancellationToken, Task>, int, CancellationToken>(
+				async (operation, _, ct) => await operation(ct));
+
 		IOptions<OpenWeatherOptions> optionsWrapper = Microsoft.Extensions.Options.Options.Create(Options);
-		Sut = new RateLimitingService(MockLogger.Object, optionsWrapper);
+		Sut = new RateLimitingService(MockLogger.Object, MockRepository.Object, MockTransactionManager.Object, optionsWrapper);
 	}
 
 	[Fact]
-	public void CanMakeRequest_WithUnderLimit_ReturnsTrue()
+	public async Task CanMakeRequestAsync_WithNoRecord_ReturnsTrue()
 	{
-		// Arrange
 		const string apiName = "TestApi";
+		MockRepository
+			.Setup(r => r.GetByApiNameAndDateAsync(apiName, It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync((ThirdPartyApiRequest?)null);
 
-		// Act
-		bool result = Sut.CanMakeRequest(apiName);
+		bool result = await Sut.CanMakeRequestAsync(apiName);
 
-		// Assert
 		Assert.True(result);
 	}
 
 	[Fact]
-	public void CanMakeRequest_AtLimit_ReturnsFalse()
+	public async Task CanMakeRequestAsync_UnderLimit_ReturnsTrue()
 	{
-		// Arrange
 		const string apiName = "TestApi";
-		for (int i = 0; i < Options.DailyCallLimit; i++)
+		var today = DateOnly.FromDateTime(DateTime.UtcNow);
+		var request = new ThirdPartyApiRequest
 		{
-			Sut.TryIncrementRequestCount(apiName);
-		}
+			Id = 1,
+			ApiName = apiName,
+			BaseUrl = "https://api.test.com",
+			CallCount = 5,
+			ResetDate = today
+		};
 
-		// Act
-		bool result = Sut.CanMakeRequest(apiName);
+		MockRepository
+			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(request);
 
-		// Assert
-		Assert.False(result);
-	}
+		bool result = await Sut.CanMakeRequestAsync(apiName);
 
-	[Fact]
-	public void TryIncrementRequestCount_UnderLimit_IncrementsAndReturnsTrue()
-	{
-		// Arrange
-		const string apiName = "TestApi";
-		int initialCount = Sut.GetRequestCount(apiName);
-
-		// Act
-		bool result = Sut.TryIncrementRequestCount(apiName);
-
-		// Assert
 		Assert.True(result);
-		Assert.Equal(initialCount + 1, Sut.GetRequestCount(apiName));
 	}
 
 	[Fact]
-	public void TryIncrementRequestCount_AtLimit_DoesNotIncrementAndReturnsFalse()
+	public async Task CanMakeRequestAsync_AtLimit_ReturnsFalse()
 	{
-		// Arrange
 		const string apiName = "TestApi";
-		for (int i = 0; i < Options.DailyCallLimit; i++)
+		var today = DateOnly.FromDateTime(DateTime.UtcNow);
+		var request = new ThirdPartyApiRequest
 		{
-			Sut.TryIncrementRequestCount(apiName);
-		}
+			Id = 1,
+			ApiName = apiName,
+			BaseUrl = "https://api.test.com",
+			CallCount = 10,
+			ResetDate = today
+		};
 
-		// Act
-		bool result = Sut.TryIncrementRequestCount(apiName);
+		MockRepository
+			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(request);
 
-		// Assert
+		bool result = await Sut.CanMakeRequestAsync(apiName);
+
 		Assert.False(result);
-		Assert.Equal(Options.DailyCallLimit, Sut.GetRequestCount(apiName));
 	}
 
 	[Fact]
-	public void GetRemainingQuota_AfterSomeRequests_ReturnsCorrectValue()
+	public async Task TryIncrementRequestCountAsync_NoRecord_CreatesNewRecord()
 	{
-		// Arrange
 		const string apiName = "TestApi";
-		Sut.TryIncrementRequestCount(apiName);
-		Sut.TryIncrementRequestCount(apiName);
-		Sut.TryIncrementRequestCount(apiName);
+		const string baseUrl = "https://api.test.com";
+		var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
-		// Act
-		int remaining = Sut.GetRemainingQuota(apiName);
+		MockRepository
+			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
+			.ReturnsAsync((ThirdPartyApiRequest?)null);
 
-		// Assert
-		Assert.Equal(Options.DailyCallLimit - 3, remaining);
+		MockRepository
+			.Setup(r => r.CreateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync((ThirdPartyApiRequest req, CancellationToken _) => req);
+
+		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
+
+		Assert.True(result);
+		MockRepository.Verify(
+			r => r.CreateAsync(
+				It.Is<ThirdPartyApiRequest>(req =>
+					req.ApiName == apiName &&
+					req.BaseUrl == baseUrl &&
+					req.CallCount == 1 &&
+					req.ResetDate == today),
+				It.IsAny<CancellationToken>()),
+			Times.Once);
 	}
 
 	[Fact]
-	public void GetRemainingQuota_AtLimit_ReturnsZero()
+	public async Task TryIncrementRequestCountAsync_UnderLimit_IncrementsCounter()
 	{
-		// Arrange
 		const string apiName = "TestApi";
-		for (int i = 0; i < Options.DailyCallLimit; i++)
+		const string baseUrl = "https://api.test.com";
+		var today = DateOnly.FromDateTime(DateTime.UtcNow);
+		var request = new ThirdPartyApiRequest
 		{
-			Sut.TryIncrementRequestCount(apiName);
-		}
+			Id = 1,
+			ApiName = apiName,
+			BaseUrl = baseUrl,
+			CallCount = 5,
+			ResetDate = today
+		};
 
-		// Act
-		int remaining = Sut.GetRemainingQuota(apiName);
+		MockRepository
+			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(request);
 
-		// Assert
-		Assert.Equal(0, remaining);
+		MockRepository
+			.Setup(r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync((ThirdPartyApiRequest req, CancellationToken _) => req);
+
+		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
+
+		Assert.True(result);
+		Assert.Equal(6, request.CallCount);
+		MockRepository.Verify(
+			r => r.UpdateAsync(request, It.IsAny<CancellationToken>()),
+			Times.Once);
 	}
 
 	[Fact]
-	public void ResetCounter_AfterIncrements_ResetsToZero()
+	public async Task TryIncrementRequestCountAsync_AtLimit_ReturnsFalse()
 	{
-		// Arrange
 		const string apiName = "TestApi";
-		Sut.TryIncrementRequestCount(apiName);
-		Sut.TryIncrementRequestCount(apiName);
+		const string baseUrl = "https://api.test.com";
+		var today = DateOnly.FromDateTime(DateTime.UtcNow);
+		var request = new ThirdPartyApiRequest
+		{
+			Id = 1,
+			ApiName = apiName,
+			BaseUrl = baseUrl,
+			CallCount = 10,
+			ResetDate = today
+		};
 
-		// Act
-		Sut.ResetCounter(apiName);
+		MockRepository
+			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(request);
 
-		// Assert
-		Assert.Equal(0, Sut.GetRequestCount(apiName));
+		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
+
+		Assert.False(result);
+		Assert.Equal(10, request.CallCount);
+		MockRepository.Verify(
+			r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()),
+			Times.Never);
+	}
+
+	[Fact]
+	public async Task GetRequestCountAsync_NoRecord_ReturnsZero()
+	{
+		const string apiName = "TestApi";
+		MockRepository
+			.Setup(r => r.GetByApiNameAndDateAsync(apiName, It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync((ThirdPartyApiRequest?)null);
+
+		int count = await Sut.GetRequestCountAsync(apiName);
+
+		Assert.Equal(0, count);
+	}
+
+	[Fact]
+	public async Task GetRemainingQuotaAsync_NoRecord_ReturnsFullLimit()
+	{
+		const string apiName = "TestApi";
+		MockRepository
+			.Setup(r => r.GetByApiNameAndDateAsync(apiName, It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync((ThirdPartyApiRequest?)null);
+
+		int remaining = await Sut.GetRemainingQuotaAsync(apiName);
+
+		Assert.Equal(Options.DailyCallLimit, remaining);
 	}
 
 	[Fact]
 	public void GetTimeUntilReset_ReturnsPositiveTimeSpan()
 	{
-		// Act
 		TimeSpan timeUntilReset = Sut.GetTimeUntilReset();
 
-		// Assert
 		Assert.True(timeUntilReset.TotalSeconds > 0);
 		Assert.True(timeUntilReset.TotalHours <= 24);
-	}
-
-	[Fact]
-	public void MultipleApis_TrackedSeparately()
-	{
-		// Arrange
-		const string api1 = "Api1";
-		const string api2 = "Api2";
-
-		// Act
-		Sut.TryIncrementRequestCount(api1);
-		Sut.TryIncrementRequestCount(api1);
-		Sut.TryIncrementRequestCount(api2);
-
-		// Assert
-		Assert.Equal(2, Sut.GetRequestCount(api1));
-		Assert.Equal(1, Sut.GetRequestCount(api2));
-	}
-
-	[Fact]
-	public void CanMakeRequest_WithNullApiName_ThrowsException()
-	{
-		// Arrange & Act & Assert
-		Assert.Throws<ArgumentNullException>(() => Sut.CanMakeRequest(null!));
-	}
-
-	[Fact]
-	public void CanMakeRequest_WithEmptyApiName_ThrowsException()
-	{
-		// Arrange & Act & Assert
-		Assert.Throws<ArgumentException>(() => Sut.CanMakeRequest(string.Empty));
-	}
-
-	[Fact]
-	public void TryIncrementRequestCount_WithNullApiName_ThrowsException()
-	{
-		// Arrange & Act & Assert
-		Assert.Throws<ArgumentNullException>(() => Sut.TryIncrementRequestCount(null!));
-	}
-
-	[Fact]
-	public void GetRequestCount_ForNewApi_ReturnsZero()
-	{
-		// Arrange
-		const string apiName = "NeverUsedApi";
-
-		// Act
-		int count = Sut.GetRequestCount(apiName);
-
-		// Assert
-		Assert.Equal(0, count);
-	}
-
-	[Fact]
-	public void GetRemainingQuota_ForNewApi_ReturnsFullLimit()
-	{
-		// Arrange
-		const string apiName = "NeverUsedApi";
-
-		// Act
-		int remaining = Sut.GetRemainingQuota(apiName);
-
-		// Assert
-		Assert.Equal(Options.DailyCallLimit, remaining);
 	}
 }

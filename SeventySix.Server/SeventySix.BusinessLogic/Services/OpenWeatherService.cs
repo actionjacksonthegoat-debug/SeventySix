@@ -302,15 +302,15 @@ public class OpenWeatherService : IOpenWeatherService
 	}
 
 	/// <inheritdoc/>
-	public bool CanMakeApiCall()
+	public async Task<bool> CanMakeApiCallAsync(CancellationToken cancellationToken = default)
 	{
-		return ApiClient.CanMakeRequest();
+		return await ApiClient.CanMakeRequestAsync(cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public int GetRemainingApiQuota()
+	public async Task<int> GetRemainingApiQuotaAsync(CancellationToken cancellationToken = default)
 	{
-		return ApiClient.GetRemainingQuota();
+		return await ApiClient.GetRemainingQuotaAsync(cancellationToken);
 	}
 
 	/// <inheritdoc/>

@@ -410,10 +410,10 @@ public class WeatherForecastController : ControllerBase
 	/// </remarks>
 	[HttpGet("quota", Name = "GetApiQuota")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public ActionResult<object> GetApiQuota()
+	public async Task<ActionResult<object>> GetApiQuota()
 	{
-		var remaining = WeatherService.GetRemainingApiQuota();
-		var canMakeCall = WeatherService.CanMakeApiCall();
+		var remaining = await WeatherService.GetRemainingApiQuotaAsync();
+		var canMakeCall = await WeatherService.CanMakeApiCallAsync();
 		var resetTime = WeatherService.GetTimeUntilReset();
 
 		return Ok(new

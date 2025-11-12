@@ -1,43 +1,59 @@
+# Docker Compose for SeventySix Production Deployment
+# Handles both clean deployments and existing data scenarios
+# Automatic migrations ensure database is always up-to-date
+
 version: '3.8'
 
 services:
-  # PostgreSQL Database (for future use)
+  # PostgreSQL Database - Persistent storage for production
   database:
     image: postgres:16-alpine
-    container_name: seventysix-db
+    container_name: seventysix-postgres-prod
     environment:
       POSTGRES_DB: seventysix
-      POSTGRES_USER: ${DB_USER:-seventysix}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-TestPassword}
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U seventysix"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - seventysix-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
-  # .NET API Service
+  # .NET API Service - Runs migrations on startup
   api:
     build:
       context: ./SeventySix.Server
       dockerfile: Dockerfile.production
-    container_name: seventysix-api
+    container_name: seventysix-api-prod
     ports:
       - "5085:8080"
-      - "7074:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=seventysix;Username=${DB_USER:-seventysix};Password=${DB_PASSWORD:-changeme}
+      - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=seventysix;Username=postgres;Password=${DB_PASSWORD:-TestPassword};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
+      - DB_HOST=database
+      - DB_NAME=seventysix
+      - DB_USER=postgres
+      - DB_PASSWORD=${DB_PASSWORD:-TestPassword}
       - Cors__AllowedOrigins__0=http://localhost:8080
       - Cors__AllowedOrigins__1=http://localhost:4200
-      # OpenWeather API Key - Set via .env file or environment variable
       - OpenWeather__ApiKey=${OPENWEATHER_APIKEY}
     depends_on:
       database:
@@ -47,7 +63,7 @@ services:
       interval: 30s
       timeout: 3s
       retries: 3
-      start_period: 40s
+      start_period: 60s  # Allow time for migrations
     networks:
       - seventysix-network
     restart: unless-stopped
@@ -65,7 +81,7 @@ services:
     build:
       context: ./SeventySix.Client
       dockerfile: Dockerfile.production
-    container_name: seventysix-client
+    container_name: seventysix-client-prod
     ports:
       - "8080:8080"
     environment:
@@ -74,7 +90,7 @@ services:
       api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -91,32 +107,14 @@ services:
           cpus: '0.25'
           memory: 128M
 
-  # Nginx Reverse Proxy (optional for production)
-  nginx:
-    image: nginx:alpine
-    container_name: seventysix-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/certs:/etc/nginx/certs:ro
-    depends_on:
-      - client
-      - api
-    networks:
-      - seventysix-network
-    restart: unless-stopped
-    profiles:
-      - production
-
+# Named volumes for data persistence across container lifecycle
+# Data survives: docker-compose down, docker-compose up, container restarts
 volumes:
-  postgres-data:
+  postgres_data:
     driver: local
+    name: seventysix_postgres_prod_data
 
 networks:
   seventysix-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
+    name: seventysix_prod_network

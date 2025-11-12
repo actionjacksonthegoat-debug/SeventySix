@@ -29,6 +29,7 @@
 using System.IO.Compression;
 using FluentValidation;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
@@ -38,6 +39,8 @@ using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.BusinessLogic.Services;
 using SeventySix.BusinessLogic.Validators;
 using SeventySix.Core.Interfaces;
+using SeventySix.Data;
+using SeventySix.Data.Infrastructure;
 using SeventySix.DataAccess.Repositories;
 using SeventySix.DataAccess.Services;
 
@@ -82,6 +85,32 @@ builder.Services.AddResponseCaching();
 // Memory cache for OpenWeather API responses
 builder.Services.AddMemoryCache();
 
+// Entity Framework Core with PostgreSQL
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+	var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+		?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+	options.UseNpgsql(connectionString, npgsqlOptions =>
+	{
+		// Retry on transient failures (network issues, deadlocks)
+		npgsqlOptions.EnableRetryOnFailure(
+			maxRetryCount: 3,
+			maxRetryDelay: TimeSpan.FromSeconds(5),
+			errorCodesToAdd: null);
+
+		// Set command timeout (default: 30s)
+		npgsqlOptions.CommandTimeout(30);
+	});
+
+	// Logging for development
+	if (builder.Environment.IsDevelopment())
+	{
+		options.EnableSensitiveDataLogging(); // Show parameter values in logs
+		options.EnableDetailedErrors(); // More detailed error messages
+	}
+});
+
 // Configuration options for OpenWeather API and Polly resilience policies
 // Uses Options pattern for strongly-typed configuration with validation
 builder.Services.Configure<OpenWeatherOptions>(
@@ -99,9 +128,10 @@ builder.Services.AddOptions<PollyOptions>()
 	.Bind(builder.Configuration.GetSection(PollyOptions.SECTION_NAME))
 	.ValidateOnStart();
 
-// Rate limiting service (Singleton - tracks state across all requests)
-// Critical: Must be singleton to maintain accurate API call counts
-builder.Services.AddSingleton<IRateLimitingService, RateLimitingService>();
+// Rate limiting service (Scoped - uses DbContext via repository)
+// Changed from Singleton: Database-backed implementation requires DbContext which is scoped
+builder.Services.AddScoped<ITransactionManager, TransactionManager>();
+builder.Services.AddScoped<IRateLimitingService, RateLimitingService>();
 
 // HttpClient for PollyIntegrationClient
 // Configures base address, timeout, and User-Agent header
@@ -127,6 +157,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<WeatherRequestValidator>();
 // Repository pattern - Scoped lifetime for per-request database context
 // Implements Dependency Inversion Principle (DIP)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IThirdPartyApiRequestRepository, ThirdPartyApiRequestRepository>();
 
 // Application services - Business logic layer
 // Scoped lifetime ensures proper DbContext management

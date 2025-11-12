@@ -97,12 +97,12 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		}
 
 		// Check rate limit
-		if (!RateLimitingService.CanMakeRequest(apiName))
+		if (!await RateLimitingService.CanMakeRequestAsync(apiName, cancellationToken))
 		{
 			Logger.LogWarning(
 				"Rate limit exceeded for {ApiName}. Quota: {Quota}, Resets in: {TimeUntilReset}",
 				apiName,
-				RateLimitingService.GetRemainingQuota(apiName),
+				await RateLimitingService.GetRemainingQuotaAsync(apiName, cancellationToken),
 				RateLimitingService.GetTimeUntilReset());
 
 			// Try to return cached value even if expired
@@ -115,6 +115,9 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 			throw new InvalidOperationException($"API rate limit exceeded for {apiName}. Resets in: {RateLimitingService.GetTimeUntilReset()}");
 		}
 
+		// Extract base URL from full URL
+		var baseUrl = GetBaseUrl(url);
+
 		try
 		{
 			// Execute request with resilience pipeline
@@ -125,7 +128,7 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 					var httpResponse = await HttpClient.GetAsync(url, ct);
 
 					// Increment rate limit counter on successful request
-					RateLimitingService.TryIncrementRequestCount(apiName);
+					await RateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
 
 					httpResponse.EnsureSuccessStatusCode();
 					return httpResponse;
@@ -190,11 +193,14 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		// Check rate limit
-		if (!RateLimitingService.CanMakeRequest(apiName))
+		if (!await RateLimitingService.CanMakeRequestAsync(apiName, cancellationToken))
 		{
 			Logger.LogWarning("Rate limit exceeded for {ApiName}", apiName);
 			throw new InvalidOperationException($"API rate limit exceeded for {apiName}");
 		}
+
+		// Extract base URL from full URL
+		var baseUrl = GetBaseUrl(url);
 
 		try
 		{
@@ -209,7 +215,7 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 					var httpResponse = await HttpClient.PostAsync(url, content, ct);
 
 					// Increment rate limit counter
-					RateLimitingService.TryIncrementRequestCount(apiName);
+					await RateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
 
 					httpResponse.EnsureSuccessStatusCode();
 					return httpResponse;
@@ -239,16 +245,19 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		ArgumentException.ThrowIfNullOrWhiteSpace(url);
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		if (!RateLimitingService.CanMakeRequest(apiName))
+		if (!await RateLimitingService.CanMakeRequestAsync(apiName, cancellationToken))
 		{
 			throw new InvalidOperationException($"API rate limit exceeded for {apiName}");
 		}
+
+		// Extract base URL from full URL
+		var baseUrl = GetBaseUrl(url);
 
 		var response = await ResiliencePipeline.ExecuteAsync(
 			async ct =>
 			{
 				var httpResponse = await HttpClient.GetAsync(url, ct);
-				RateLimitingService.TryIncrementRequestCount(apiName);
+				await RateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
 				return httpResponse;
 			},
 			cancellationToken);
@@ -257,15 +266,37 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 	}
 
 	/// <inheritdoc/>
-	public bool CanMakeRequest(string apiName)
+	public async Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default)
 	{
-		return RateLimitingService.CanMakeRequest(apiName);
+		return await RateLimitingService.CanMakeRequestAsync(apiName, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public int GetRemainingQuota(string apiName)
+	public async Task<int> GetRemainingQuotaAsync(string apiName, CancellationToken cancellationToken = default)
 	{
-		return RateLimitingService.GetRemainingQuota(apiName);
+		return await RateLimitingService.GetRemainingQuotaAsync(apiName, cancellationToken);
+	}
+
+	/// <summary>
+	/// Extracts the base URL from a full URL.
+	/// </summary>
+	/// <param name="fullUrl">The full URL (e.g., "https://api.example.com/v1/endpoint").</param>
+	/// <returns>The base URL (e.g., "https://api.example.com").</returns>
+	private string GetBaseUrl(string fullUrl)
+	{
+		// If it's a relative URL, use the HttpClient's BaseAddress
+		if (!Uri.TryCreate(fullUrl, UriKind.Absolute, out var uri))
+		{
+			if (HttpClient.BaseAddress != null)
+			{
+				return HttpClient.BaseAddress.GetLeftPart(UriPartial.Authority);
+			}
+
+			// Fallback to a default if neither absolute URL nor BaseAddress
+			throw new InvalidOperationException("Cannot determine base URL for rate limiting. URL must be absolute or HttpClient.BaseAddress must be set.");
+		}
+
+		return uri.GetLeftPart(UriPartial.Authority);
 	}
 
 	/// <summary>

@@ -70,7 +70,7 @@ public class PollyIntegrationClientTests : IDisposable
 		// Assert
 		Assert.NotNull(result);
 		Assert.Equal("cached", result.Value);
-		MockRateLimiter.Verify(r => r.CanMakeRequest(It.IsAny<string>()), Times.Never);
+		MockRateLimiter.Verify(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
 	}
 
 	[Fact]
@@ -80,7 +80,7 @@ public class PollyIntegrationClientTests : IDisposable
 		const string url = "/test";
 		const string apiName = "TestApi";
 
-		MockRateLimiter.Setup(r => r.CanMakeRequest(apiName)).Returns(false);
+		MockRateLimiter.Setup(r => r.CanMakeRequestAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 		MockRateLimiter.Setup(r => r.GetTimeUntilReset()).Returns(TimeSpan.FromHours(1));
 
 		var sut = CreateSut();
@@ -98,7 +98,7 @@ public class PollyIntegrationClientTests : IDisposable
 		const string apiName = "TestApi";
 		const string cacheKey = "test-key";
 
-		MockRateLimiter.Setup(r => r.CanMakeRequest(apiName)).Returns(true);
+		MockRateLimiter.Setup(r => r.CanMakeRequestAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
 		MockHttpMessageHandler.Protected()
 			.Setup<Task<HttpResponseMessage>>(
@@ -119,7 +119,7 @@ public class PollyIntegrationClientTests : IDisposable
 		// Assert
 		Assert.NotNull(result);
 		Assert.Equal("success", result.Value);
-		MockRateLimiter.Verify(r => r.TryIncrementRequestCount(apiName), Times.Once);
+		MockRateLimiter.Verify(r => r.TryIncrementRequestCountAsync(apiName, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
 
 		// Verify cached
 		Assert.True(Cache.TryGetValue(cacheKey, out TestResponse? cached));
@@ -149,37 +149,37 @@ public class PollyIntegrationClientTests : IDisposable
 	}
 
 	[Fact]
-	public void CanMakeRequest_ShouldDelegateToRateLimiter()
+	public async Task CanMakeRequest_ShouldDelegateToRateLimiter()
 	{
 		// Arrange
 		const string apiName = "TestApi";
-		MockRateLimiter.Setup(r => r.CanMakeRequest(apiName)).Returns(true);
+		MockRateLimiter.Setup(r => r.CanMakeRequestAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
 		var sut = CreateSut();
 
 		// Act
-		bool result = sut.CanMakeRequest(apiName);
+		bool result = await sut.CanMakeRequestAsync(apiName);
 
 		// Assert
 		Assert.True(result);
-		MockRateLimiter.Verify(r => r.CanMakeRequest(apiName), Times.Once);
+		MockRateLimiter.Verify(r => r.CanMakeRequestAsync(apiName, It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	[Fact]
-	public void GetRemainingQuota_ShouldDelegateToRateLimiter()
+	public async Task GetRemainingQuota_ShouldDelegateToRateLimiter()
 	{
 		// Arrange
 		const string apiName = "TestApi";
-		MockRateLimiter.Setup(r => r.GetRemainingQuota(apiName)).Returns(500);
+		MockRateLimiter.Setup(r => r.GetRemainingQuotaAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(500);
 
 		var sut = CreateSut();
 
 		// Act
-		int result = sut.GetRemainingQuota(apiName);
+		int result = await sut.GetRemainingQuotaAsync(apiName);
 
 		// Assert
 		Assert.Equal(500, result);
-		MockRateLimiter.Verify(r => r.GetRemainingQuota(apiName), Times.Once);
+		MockRateLimiter.Verify(r => r.GetRemainingQuotaAsync(apiName, It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	public void Dispose()

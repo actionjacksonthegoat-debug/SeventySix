@@ -55,8 +55,8 @@ public class PollyResilienceTests
 
 		var cache = new MemoryCache(new MemoryCacheOptions());
 		var rateLimiterMock = new Mock<IRateLimitingService>();
-		rateLimiterMock.Setup(r => r.CanMakeRequest(It.IsAny<string>())).Returns(true);
-		rateLimiterMock.Setup(r => r.TryIncrementRequestCount(It.IsAny<string>())).Returns(true);
+		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
 		var loggerMock = new Mock<ILogger<PollyIntegrationClient>>();
 
@@ -73,9 +73,7 @@ public class PollyResilienceTests
 		var client = new PollyIntegrationClient(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
 
 		// Act
-		var response = await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None);
-
-		// Assert
+		var response = await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None);        // Assert
 		callCount.Should().Be(3, "Should retry twice (3 attempts total)");
 	}
 
@@ -103,8 +101,8 @@ public class PollyResilienceTests
 
 		var cache = new MemoryCache(new MemoryCacheOptions());
 		var rateLimiterMock = new Mock<IRateLimitingService>();
-		rateLimiterMock.Setup(r => r.CanMakeRequest(It.IsAny<string>())).Returns(true);
-		rateLimiterMock.Setup(r => r.TryIncrementRequestCount(It.IsAny<string>())).Returns(true);
+		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
 		var loggerMock = new Mock<ILogger<PollyIntegrationClient>>();
 
@@ -166,8 +164,8 @@ public class PollyResilienceTests
 
 		var cache = new MemoryCache(new MemoryCacheOptions());
 		var rateLimiterMock = new Mock<IRateLimitingService>();
-		rateLimiterMock.Setup(r => r.CanMakeRequest(It.IsAny<string>())).Returns(true);
-		rateLimiterMock.Setup(r => r.TryIncrementRequestCount(It.IsAny<string>())).Returns(true);
+		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
 		var loggerMock = new Mock<ILogger<PollyIntegrationClient>>();
 
@@ -187,3 +185,4 @@ public class PollyResilienceTests
 			await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None));
 	}
 }
+

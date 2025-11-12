@@ -88,14 +88,16 @@ public interface IOpenWeatherService
 	/// <summary>
 	/// Checks if weather API calls can be made without exceeding rate limits.
 	/// </summary>
+	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>True if requests are allowed.</returns>
-	public bool CanMakeApiCall();
+	public Task<bool> CanMakeApiCallAsync(CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Gets the remaining API call quota for today.
 	/// </summary>
+	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>Number of remaining API calls.</returns>
-	public int GetRemainingApiQuota();
+	public Task<int> GetRemainingApiQuotaAsync(CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Gets the time until the rate limit resets.

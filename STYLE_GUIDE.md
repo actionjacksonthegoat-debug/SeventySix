@@ -1,4 +1,4 @@
-# Design Patterns Documentation
+# Style Guide Documentation
 
 ## SeventySix Application - Material Design 3 Patterns
 

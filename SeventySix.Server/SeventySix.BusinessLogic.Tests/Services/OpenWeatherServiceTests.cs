@@ -216,31 +216,31 @@ public class OpenWeatherServiceTests
 	}
 
 	[Fact]
-	public void CanMakeApiCall_DelegatesToApiClient()
+	public async Task CanMakeApiCall_DelegatesToApiClient()
 	{
 		// Arrange
-		MockApiClient.Setup(c => c.CanMakeRequest()).Returns(true);
+		MockApiClient.Setup(c => c.CanMakeRequestAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
 		// Act
-		bool result = Sut.CanMakeApiCall();
+		bool result = await Sut.CanMakeApiCallAsync();
 
 		// Assert
 		Assert.True(result);
-		MockApiClient.Verify(c => c.CanMakeRequest(), Times.Once);
+		MockApiClient.Verify(c => c.CanMakeRequestAsync(It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	[Fact]
-	public void GetRemainingApiQuota_DelegatesToApiClient()
+	public async Task GetRemainingApiQuota_DelegatesToApiClient()
 	{
 		// Arrange
-		MockApiClient.Setup(c => c.GetRemainingQuota()).Returns(500);
+		MockApiClient.Setup(c => c.GetRemainingQuotaAsync(It.IsAny<CancellationToken>())).ReturnsAsync(500);
 
 		// Act
-		int result = Sut.GetRemainingApiQuota();
+		int result = await Sut.GetRemainingApiQuotaAsync();
 
 		// Assert
 		Assert.Equal(500, result);
-		MockApiClient.Verify(c => c.GetRemainingQuota(), Times.Once);
+		MockApiClient.Verify(c => c.GetRemainingQuotaAsync(It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	[Fact]

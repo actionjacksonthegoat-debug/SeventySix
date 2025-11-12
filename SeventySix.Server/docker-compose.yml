@@ -1,27 +1,63 @@
+# Docker Compose for SeventySix Development Environment
+# Simple, effective setup for local development with persistent PostgreSQL data
+
 version: '3.8'
 
 services:
+  # PostgreSQL Database - Persistent storage for development
+  postgres:
+    image: postgres:16-alpine
+    container_name: seventysix-postgres-dev
+    environment:
+      POSTGRES_DB: seventysix
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: TestPassword
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # .NET API - Containerized for testing full stack
   seventysix-api:
     build:
       context: ./SeventySix.Api
       dockerfile: Dockerfile
-    container_name: seventysix-api
+    container_name: seventysix-api-dev
     ports:
-      # Map host port 5085 to container port 8080 (HTTP)
-      - "5085:8080"
-      # Map host port 7074 to container port 8081 (HTTPS)
-      - "7074:8081"
+      - "5085:8080"  # HTTP
+      - "7074:8081"  # HTTPS
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ASPNETCORE_URLS=https://+:8081;http://+:8080
-      # OpenWeather API Key - Set via .env file or environment variable
+      # PostgreSQL Connection
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=seventysix;Username=postgres;Password=TestPassword;Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
+      # OpenWeather API Key
       - OpenWeather__ApiKey=${OPENWEATHER_APIKEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - seventysix-network
 
+# Named volumes for persistent data across container restarts
+volumes:
+  postgres_data:
+    driver: local
+    name: seventysix_postgres_data
+
 networks:
   seventysix-network:
     driver: bridge
+

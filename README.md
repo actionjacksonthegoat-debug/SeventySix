@@ -50,24 +50,34 @@ git clone https://github.com/actionjacksonthegoat-debug/SeventySix.git
 cd SeventySix
 ```
 
-### 2. Configure API Keys
+### 2. Configure User Secrets
 
-**⚠️ IMPORTANT**: Before running the application, you must configure your OpenWeather API key.
+**⚠️ IMPORTANT**: Before running the application, you must configure your sensitive settings using User Secrets.
 
-See **[SeventySix.Server/API_KEY_SETUP.md](SeventySix.Server/API_KEY_SETUP.md)** for detailed instructions.
+See **[USER_SECRETS_SETUP.md](USER_SECRETS_SETUP.md)** for detailed instructions.
 
 **Quick Setup (Local Development)**:
 
 ```bash
 cd SeventySix.Server/SeventySix.Api
-dotnet user-secrets set "OpenWeather:ApiKey" "YOUR_API_KEY_HERE"
+
+# OpenWeather API Key
+dotnet user-secrets set "OpenWeather:ApiKey" "YOUR_OPENWEATHER_API_KEY_HERE"
+
+# Database Connection
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=seventysix_dev;Username=postgres;Password=TestPassword;Pooling=true;Minimum Pool Size=1;Maximum Pool Size=20;Include Error Detail=true"
+
+# Default Coordinates (New York City)
+dotnet user-secrets set "OpenWeather:DefaultLatitude" "40.7128"
+dotnet user-secrets set "OpenWeather:DefaultLongitude" "-74.0060"
 ```
 
 **For Docker**:
 
 ```bash
-# Create .env file in SeventySix.Server directory
-echo OPENWEATHER_APIKEY=YOUR_API_KEY_HERE > SeventySix.Server/.env
+# Create .env file in root directory (copy from .env.example)
+cp .env.example .env
+# Edit .env with your values
 ```
 
 ### 3. Setup Frontend (Angular Client)

@@ -6,9 +6,9 @@ WORKDIR /src
 
 # Copy solution and project files
 COPY ["SeventySix.Server.slnx", "./"]
-COPY ["SeventySix.Domain/SeventySix.Domain.csproj", "SeventySix.Domain/"]
-COPY ["SeventySix.Application/SeventySix.Application.csproj", "SeventySix.Application/"]
-COPY ["SeventySix.Infrastructure/SeventySix.Infrastructure.csproj", "SeventySix.Infrastructure/"]
+COPY ["SeventySix.Core/SeventySix.Core.csproj", "SeventySix.Core/"]
+COPY ["SeventySix.BusinessLogic/SeventySix.BusinessLogic.csproj", "SeventySix.BusinessLogic/"]
+COPY ["SeventySix.DataAccess/SeventySix.DataAccess.csproj", "SeventySix.DataAccess/"]
 COPY ["SeventySix.Api/SeventySix.Api.csproj", "SeventySix.Api/"]
 
 # Restore dependencies
@@ -24,27 +24,60 @@ RUN dotnet build "SeventySix.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build -
 # Stage 2: Publish
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
+WORKDIR "/src/SeventySix.Api"
 RUN dotnet publish "SeventySix.Api.csproj" \
 	-c $BUILD_CONFIGURATION \
 	-o /app/publish \
-	--no-restore \
-	--no-build \
 	/p:UseAppHost=false
+
+# Generate SQL migration script
+WORKDIR /src
+RUN dotnet tool install --global dotnet-ef --version 9.0.0
+ENV PATH="${PATH}:/root/.dotnet/tools"
+RUN dotnet ef migrations script --project SeventySix.DataAccess/SeventySix.DataAccess.csproj \
+	--startup-project SeventySix.Api/SeventySix.Api.csproj \
+	--idempotent \
+	--output /app/migrations.sql
 
 # Stage 3: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
+# Install curl and PostgreSQL client for healthchecks and migrations
+RUN apt-get update && \
+	apt-get install -y curl postgresql-client && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
+
 # Create a non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Copy published files
+# Copy published files and migration script
 COPY --from=publish /app/publish .
+COPY --from=publish /app/migrations.sql .
 
 # Create logs directory with proper permissions
 RUN mkdir -p /app/logs && chown -R appuser:appuser /app
 
-# Switch to non-root user
+# Create entrypoint script that runs migrations then starts the app
+RUN echo '#!/bin/bash\n\
+	set -e\n\
+	\n\
+	echo "Waiting for PostgreSQL..."\n\
+	until pg_isready -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" 2>/dev/null; do\n\
+	echo "PostgreSQL is unavailable - sleeping"\n\
+	sleep 2\n\
+	done\n\
+	\n\
+	echo "PostgreSQL is up - executing migrations"\n\
+	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/migrations.sql\n\
+	\n\
+	echo "Starting application"\n\
+	exec dotnet SeventySix.Api.dll' > /app/entrypoint.sh
+
+RUN chmod +x /app/entrypoint.sh
+
+# Switch to non-root user for application execution
 USER appuser
 
 # Expose ports
@@ -58,5 +91,9 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
+ENV DB_HOST=postgres
+ENV DB_NAME=seventysix
+ENV DB_USER=postgres
+ENV DB_PASSWORD=TestPassword
 
-ENTRYPOINT ["dotnet", "SeventySix.Api.dll"]
+ENTRYPOINT ["/app/entrypoint.sh"]

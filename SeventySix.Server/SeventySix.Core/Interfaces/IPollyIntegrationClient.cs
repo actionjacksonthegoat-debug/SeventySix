@@ -27,7 +27,7 @@ public interface IPollyIntegrationClient
 	/// <param name="cacheDuration">Optional cache duration override.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>Deserialized response or cached data.</returns>
-	Task<T?> GetAsync<T>(
+	public Task<T?> GetAsync<T>(
 		string url,
 		string apiName,
 		string? cacheKey = null,
@@ -45,7 +45,7 @@ public interface IPollyIntegrationClient
 	/// <param name="apiName">The API name for rate limiting.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>Deserialized response.</returns>
-	Task<TResponse?> PostAsync<TRequest, TResponse>(
+	public Task<TResponse?> PostAsync<TRequest, TResponse>(
 		string url,
 		TRequest body,
 		string apiName,
@@ -60,7 +60,7 @@ public interface IPollyIntegrationClient
 	/// <param name="apiName">The API name for rate limiting.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>HTTP response message.</returns>
-	Task<HttpResponseMessage> SendAsync(
+	public Task<HttpResponseMessage> SendAsync(
 		string url,
 		string apiName,
 		CancellationToken cancellationToken = default);
@@ -69,13 +69,15 @@ public interface IPollyIntegrationClient
 	/// Checks if a request can be made without exceeding rate limits.
 	/// </summary>
 	/// <param name="apiName">The API name.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>True if request is allowed.</returns>
-	bool CanMakeRequest(string apiName);
+	public Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Gets the remaining API quota for the specified API.
 	/// </summary>
 	/// <param name="apiName">The API name.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>Remaining request count.</returns>
-	int GetRemainingQuota(string apiName);
+	public Task<int> GetRemainingQuotaAsync(string apiName, CancellationToken cancellationToken = default);
 }

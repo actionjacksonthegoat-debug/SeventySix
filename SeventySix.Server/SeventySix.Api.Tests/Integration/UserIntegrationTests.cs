@@ -5,6 +5,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using SeventySix.Api.Tests.Attributes;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 
@@ -44,7 +45,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 
 	#region GET /api/user Tests
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetAllUsers_ShouldReturnOkWithUsersAsync()
 	{
 		// Act
@@ -59,7 +60,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		Assert.NotEmpty(users); // Seeded data should exist
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetAllUsers_ShouldReturnJsonContentTypeAsync()
 	{
 		// Act
@@ -73,7 +74,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 
 	#region GET /api/user/{id} Tests
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetUserById_ShouldReturnOkWithUser_WhenUserExistsAsync()
 	{
 		// Arrange - assuming seeded user with ID 1 exists
@@ -93,7 +94,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		Assert.NotNull(user.Email);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task GetUserById_ShouldReturnNotFound_WhenUserDoesNotExistAsync()
 	{
 		// Arrange
@@ -110,7 +111,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 
 	#region POST /api/user Tests
 
-	[Fact]
+	[IntegrationTest]
 	public async Task CreateUser_ShouldReturnCreated_WhenRequestIsValidAsync()
 	{
 		// Arrange
@@ -138,7 +139,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		Assert.True(createdUser.IsActive);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task CreateUser_ShouldReturnBadRequest_WhenUsernameIsTooShortAsync()
 	{
 		// Arrange
@@ -155,7 +156,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task CreateUser_ShouldReturnBadRequest_WhenUsernameContainsInvalidCharactersAsync()
 	{
 		// Arrange
@@ -172,7 +173,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task CreateUser_ShouldReturnBadRequest_WhenEmailIsInvalidAsync()
 	{
 		// Arrange
@@ -189,7 +190,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task CreateUser_ShouldReturnBadRequest_WhenUsernameIsEmptyAsync()
 	{
 		// Arrange
@@ -206,7 +207,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task CreateUser_ShouldReturnBadRequest_WhenEmailIsEmptyAsync()
 	{
 		// Arrange
@@ -223,7 +224,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task CreateUser_ShouldAcceptNullFullNameAsync()
 	{
 		// Arrange
@@ -245,7 +246,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		Assert.Null(createdUser.FullName);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task CreateUser_ShouldAcceptIsActiveFalseAsync()
 	{
 		// Arrange
@@ -271,7 +272,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 
 	#region End-to-End Flow Tests
 
-	[Fact]
+	[IntegrationTest]
 	public async Task EndToEnd_CreateThenRetrieveUserAsync()
 	{
 		// Arrange
@@ -306,7 +307,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		Assert.True(retrievedUser.IsActive);
 	}
 
-	[Fact]
+	[IntegrationTest]
 	public async Task EndToEnd_CreateUserAndVerifyInGetAllAsync()
 	{
 		// Arrange
