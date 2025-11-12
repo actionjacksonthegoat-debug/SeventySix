@@ -1,13 +1,67 @@
 # SeventySix Deployment Guide
 
+Comprehensive deployment guide for SeventySix with Docker, cloud platforms, and local development options.
+
 ## Table of Contents
 
+-   [Quick Start](#quick-start)
 -   [Local Development](#local-development)
 -   [Docker Deployment](#docker-deployment)
+-   [Data Persistence](#data-persistence)
+-   [Migration Handling](#migration-handling)
+-   [Testing Integration](#testing-integration)
 -   [Production Deployment](#production-deployment)
 -   [Environment Variables](#environment-variables)
 -   [Health Checks](#health-checks)
 -   [Monitoring](#monitoring)
+-   [Deployment Scenarios](#deployment-scenarios)
+-   [Security](#security)
+-   [Backup and Recovery](#backup-and-recovery)
+-   [Troubleshooting](#troubleshooting)
+
+## Quick Start
+
+### Development (with local PostgreSQL)
+
+```powershell
+# Start PostgreSQL only
+cd SeventySix.Server
+docker-compose up postgres -d
+
+# Run API locally (uses localhost PostgreSQL)
+dotnet run --project SeventySix.Api
+```
+
+### Development (fully containerized)
+
+```powershell
+# Start all services
+cd SeventySix.Server
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services (keeps data)
+docker-compose down
+```
+
+### Production Deployment
+
+```powershell
+# Create .env file with secrets
+cp .env.example .env
+# Edit .env with your values
+
+# Deploy all services
+docker-compose -f docker-compose.production.yml up -d
+
+# Check status
+docker-compose -f docker-compose.production.yml ps
+
+# View logs
+docker-compose -f docker-compose.production.yml logs -f api
+```
 
 ## Local Development
 
@@ -16,6 +70,7 @@
 -   Docker Desktop
 -   Node.js 20+
 -   .NET 10 SDK
+-   PostgreSQL (optional, can use Docker)
 
 ### Running Locally (Without Docker)
 
@@ -37,16 +92,43 @@ dotnet run --project SeventySix.Api
 # Access at https://localhost:7074
 ```
 
+### Connection Strings
+
+#### Development (Local PostgreSQL)
+
+```
+Host=localhost;Port=5432;Database=seventysix;Username=postgres;Password=TestPassword;Pooling=true
+```
+
+#### Development (Docker PostgreSQL)
+
+```
+Host=postgres;Port=5432;Database=seventysix;Username=postgres;Password=TestPassword;Pooling=true
+```
+
+#### Integration Tests
+
+```
+Host=localhost;Port=5432;Database=seventysix_test;Username=postgres;Password=TestPassword;Pooling=true
+```
+
 ## Docker Deployment
 
-### Development (Current docker-compose.yml)
+### Development Environment
 
 ```bash
 cd SeventySix.Server
 docker-compose up -d
 ```
 
-### Production (Multi-container)
+**Features:**
+
+-   Local PostgreSQL in Docker
+-   Hot reload support
+-   Debug-friendly configuration
+-   Default credentials (not for production)
+
+### Production Environment
 
 ```bash
 # Build and start all services
@@ -58,6 +140,13 @@ docker-compose -f docker-compose.production.yml logs -f
 # Stop all services
 docker-compose -f docker-compose.production.yml down
 ```
+
+**Features:**
+
+-   Optimized builds
+-   Health checks enabled
+-   Automatic migrations on startup
+-   Production-ready configuration
 
 ### Individual Service Builds
 
@@ -77,7 +166,102 @@ docker build -f Dockerfile.production -t seventysix-client:latest .
 docker run -p 8080:8080 seventysix-client:latest
 ```
 
+## Data Persistence
+
+### Named Volumes
+
+-   **Development**: `seventysix_postgres_data`
+-   **Production**: `seventysix_postgres_prod_data`
+
+Data persists across:
+
+-   ✅ Container restarts
+-   ✅ `docker-compose down` / `docker-compose up`
+-   ✅ Container recreation
+
+Data is lost only when:
+
+-   ❌ `docker-compose down -v` (removes volumes)
+-   ❌ `docker volume rm <volume_name>`
+
+### Managing Volumes
+
+```powershell
+# List volumes
+docker volume ls
+
+# Inspect volume
+docker volume inspect seventysix_postgres_prod_data
+
+# Backup volume
+docker run --rm -v seventysix_postgres_prod_data:/data -v ${PWD}:/backup alpine tar czf /backup/postgres-backup.tar.gz /data
+
+# Restore volume
+docker run --rm -v seventysix_postgres_prod_data:/data -v ${PWD}:/backup alpine tar xzf /backup/postgres-backup.tar.gz -C /data
+```
+
+## Migration Handling
+
+### Automatic Migrations (Production)
+
+The production Dockerfile automatically runs migrations on startup:
+
+1. Container starts
+2. Waits for PostgreSQL to be ready
+3. Runs `dotnet ef database update`
+4. Starts the API
+
+**Works for:**
+
+-   ✅ Clean deployments (new database)
+-   ✅ Existing databases (applies pending migrations)
+-   ✅ No migrations pending (no-op)
+
+### Manual Migrations (Development)
+
+```powershell
+# Create migration
+cd SeventySix.Server
+dotnet ef migrations add MigrationName --project SeventySix.DataAccess --startup-project SeventySix.Api
+
+# Apply migration to localhost
+dotnet ef database update --project SeventySix.DataAccess --startup-project SeventySix.Api
+
+# Apply to specific database
+dotnet ef database update --project SeventySix.DataAccess --startup-project SeventySix.Api --connection "Host=localhost;Port=5432;Database=seventysix;Username=postgres;Password=TestPassword"
+```
+
+## Testing Integration
+
+### Integration Tests (API Tests)
+
+Use **localhost PostgreSQL** for fast execution:
+
+```powershell
+# Ensure test database exists
+dotnet ef database update --project SeventySix.DataAccess --startup-project SeventySix.Api --connection "Host=localhost;Port=5432;Database=seventysix_test;Username=postgres;Password=TestPassword"
+
+# Run integration tests
+cd SeventySix.Server
+dotnet test SeventySix.Api.Tests
+```
+
+### Unit Tests (DataAccess Tests)
+
+Use **Testcontainers** for isolation:
+
+```powershell
+# Runs automatically with Docker
+dotnet test SeventySix.DataAccess.Tests
+```
+
 ## Production Deployment
+
+### Production Connection String
+
+```
+Host=database;Port=5432;Database=seventysix;Username=postgres;Password=${DB_PASSWORD};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
+```
 
 ### AWS ECS Deployment
 
@@ -145,6 +329,29 @@ kubectl apply -f k8s/ingress.yaml
 # Check status
 kubectl get pods -n seventysix
 kubectl get services -n seventysix
+```
+
+### Rolling Updates
+
+#### Zero-Downtime Deployment
+
+```bash
+# Update API with rolling update
+docker-compose -f docker-compose.production.yml up -d --no-deps --build api
+
+# Update client
+docker-compose -f docker-compose.production.yml up -d --no-deps --build client
+```
+
+### Scaling
+
+#### Horizontal Scaling
+
+```bash
+# Scale API to 3 replicas
+docker-compose -f docker-compose.production.yml up -d --scale api=3
+
+# Load balancer required for proper distribution
 ```
 
 ## Environment Variables
