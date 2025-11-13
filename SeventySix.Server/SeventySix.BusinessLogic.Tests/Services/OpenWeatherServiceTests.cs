@@ -12,7 +12,6 @@ using SeventySix.Core.DTOs.OpenWeather.Common;
 using SeventySix.Core.DTOs.Requests;
 using SeventySix.Core.Exceptions;
 using SeventySix.Core.Interfaces;
-using Xunit;
 
 namespace SeventySix.BusinessLogic.Tests.Services;
 

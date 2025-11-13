@@ -44,6 +44,11 @@ public class ApplicationDbContext : DbContext
 	public DbSet<ThirdPartyApiRequest> ThirdPartyApiRequests => Set<ThirdPartyApiRequest>();
 
 	/// <summary>
+	/// Gets the DbSet for Log entities.
+	/// </summary>
+	public DbSet<Log> Logs => Set<Log>();
+
+	/// <summary>
 	/// Configures the model that was discovered by convention from the entity types.
 	/// </summary>
 	/// <param name="modelBuilder">The builder being used to construct the model for this context.</param>
@@ -87,22 +92,31 @@ public class ApplicationDbContext : DbContext
 	private void UpdateTimestamps()
 	{
 		var entries = ChangeTracker.Entries()
-			.Where(e => e.Entity is ThirdPartyApiRequest &&
+			.Where(e => (e.Entity is ThirdPartyApiRequest || e.Entity is Log) &&
 						(e.State == EntityState.Added || e.State == EntityState.Modified));
 
 		foreach (var entry in entries)
 		{
-			var entity = (ThirdPartyApiRequest)entry.Entity;
 			var now = DateTime.UtcNow;
 
-			if (entry.State == EntityState.Added)
+			if (entry.Entity is ThirdPartyApiRequest entity)
 			{
-				entity.CreatedAt = now;
-				entity.UpdatedAt = now;
+				if (entry.State == EntityState.Added)
+				{
+					entity.CreatedAt = now;
+					entity.UpdatedAt = now;
+				}
+				else if (entry.State == EntityState.Modified)
+				{
+					entity.UpdatedAt = now;
+				}
 			}
-			else if (entry.State == EntityState.Modified)
+			else if (entry.Entity is Log log)
 			{
-				entity.UpdatedAt = now;
+				if (entry.State == EntityState.Added && log.Timestamp == default)
+				{
+					log.Timestamp = now;
+				}
 			}
 		}
 	}

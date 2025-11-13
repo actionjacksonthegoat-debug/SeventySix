@@ -5,13 +5,11 @@
 using System.Net;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 using SeventySix.BusinessLogic.Configuration;
 using SeventySix.Core.Interfaces;
 using SeventySix.DataAccess.Services;
-using Xunit;
 
 namespace SeventySix.DataAccess.Tests.Services;
 

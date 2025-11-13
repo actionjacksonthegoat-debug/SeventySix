@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Data;
 using Testcontainers.PostgreSql;
-using Xunit;
 
 namespace SeventySix.DataAccess.Tests.Integration;
 

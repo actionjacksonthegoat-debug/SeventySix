@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SeventySix.Core.Entities;
-using SeventySix.Data;
 using SeventySix.Data.Infrastructure;
 
 namespace SeventySix.Data.Tests.Infrastructure;

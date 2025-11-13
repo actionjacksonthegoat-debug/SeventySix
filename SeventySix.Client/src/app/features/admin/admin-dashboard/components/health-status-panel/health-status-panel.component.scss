@@ -1,0 +1,190 @@
+.health-status-panel {
+	width: 100%;
+
+	.loading-container,
+	.error-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-height: 300px;
+		gap: 1rem;
+
+		p {
+			margin: 0;
+			color: var(--md-sys-color-on-surface-variant);
+		}
+	}
+
+	.error-container {
+		mat-icon {
+			font-size: 48px;
+			width: 48px;
+			height: 48px;
+		}
+	}
+
+	mat-card {
+		mat-card-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 1rem;
+			flex-wrap: wrap;
+			gap: 1rem;
+
+			.overall-status {
+				mat-chip {
+					display: inline-flex;
+					align-items: center;
+					gap: 0.5rem;
+					font-size: 1rem;
+					padding: 0.5rem 1rem;
+
+					mat-icon {
+						font-size: 20px;
+						width: 20px;
+						height: 20px;
+					}
+
+					&.status-healthy {
+						background-color: rgba(76, 175, 80, 0.1);
+						color: rgb(76, 175, 80);
+					}
+
+					&.status-degraded {
+						background-color: rgba(255, 152, 0, 0.1);
+						color: rgb(255, 152, 0);
+					}
+
+					&.status-unhealthy {
+						background-color: rgba(244, 67, 54, 0.1);
+						color: rgb(244, 67, 54);
+					}
+				}
+			}
+		}
+
+		mat-card-content {
+			padding: 1rem;
+		}
+	}
+
+	.health-sections {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 1.5rem;
+
+		@media (max-width: 600px) {
+			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
+	}
+
+	.health-section {
+		border: 1px solid var(--md-sys-color-outline-variant);
+		border-radius: 8px;
+		padding: 1rem;
+
+		.section-header {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-bottom: 1rem;
+
+			mat-icon {
+				color: var(--md-sys-color-primary);
+			}
+
+			h3 {
+				margin: 0;
+				font-size: 1rem;
+				font-weight: 500;
+				color: var(--md-sys-color-on-surface);
+			}
+		}
+
+		.section-content {
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+		}
+
+		.health-item {
+			mat-chip {
+				font-size: 0.875rem;
+				padding: 0.25rem 0.75rem;
+
+				&.status-healthy {
+					background-color: rgba(76, 175, 80, 0.1);
+					color: rgb(76, 175, 80);
+				}
+
+				&.status-unhealthy {
+					background-color: rgba(244, 67, 54, 0.1);
+					color: rgb(244, 67, 54);
+				}
+			}
+		}
+
+		.health-metric {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+
+			.metric-label {
+				color: var(--md-sys-color-on-surface-variant);
+				font-size: 0.875rem;
+			}
+
+			.metric-value {
+				color: var(--md-sys-color-on-surface);
+				font-weight: 500;
+
+				&.metric-warning {
+					color: rgb(255, 152, 0);
+				}
+			}
+		}
+
+		.api-health-item {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			padding: 0.5rem;
+			background-color: var(--md-sys-color-surface-variant);
+			border-radius: 4px;
+
+			.api-name {
+				font-weight: 500;
+				color: var(--md-sys-color-on-surface);
+			}
+
+			.api-details {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+
+				mat-chip {
+					font-size: 0.75rem;
+					padding: 0.25rem 0.5rem;
+
+					&.status-healthy {
+						background-color: rgba(76, 175, 80, 0.1);
+						color: rgb(76, 175, 80);
+					}
+
+					&.status-unhealthy {
+						background-color: rgba(244, 67, 54, 0.1);
+						color: rgb(244, 67, 54);
+					}
+				}
+
+				.metric-value {
+					font-size: 0.875rem;
+					color: var(--md-sys-color-on-surface-variant);
+				}
+			}
+		}
+	}
+}

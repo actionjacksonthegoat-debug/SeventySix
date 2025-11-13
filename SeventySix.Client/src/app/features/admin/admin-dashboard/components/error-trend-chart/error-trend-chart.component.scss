@@ -1,0 +1,27 @@
+.error-trend-chart {
+	width: 100%;
+	min-height: 400px;
+
+	.loading-container,
+	.error-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-height: 400px;
+		gap: 1rem;
+
+		p {
+			margin: 0;
+			color: var(--md-sys-color-on-surface-variant);
+		}
+	}
+
+	.error-container {
+		mat-icon {
+			font-size: 48px;
+			width: 48px;
+			height: 48px;
+		}
+	}
+}

@@ -10,7 +10,6 @@ using SeventySix.Core.Entities;
 using SeventySix.Core.Interfaces;
 using SeventySix.Data.Infrastructure;
 using SeventySix.DataAccess.Services;
-using Xunit;
 
 namespace SeventySix.DataAccess.Tests.Services;
 

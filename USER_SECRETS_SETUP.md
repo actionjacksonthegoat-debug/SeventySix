@@ -275,7 +275,7 @@ docker exec <container-name> env | grep -i db_
 -   [ ] Verify: `dotnet user-secrets list`
 -   [ ] Apply migrations: `dotnet ef database update`
 -   [ ] Run application: `dotnet run`
--   [ ] Test API: `http://localhost:5085/swagger` or `http://localhost:5085/scalar/v1`
+-   [ ] Test API: `http://localhost:5085/scalar/v1`
 
 ---
 

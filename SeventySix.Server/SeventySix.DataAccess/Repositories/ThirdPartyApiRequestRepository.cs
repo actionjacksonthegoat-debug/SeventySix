@@ -32,8 +32,8 @@ namespace SeventySix.DataAccess.Repositories;
 /// </remarks>
 public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 {
-	private readonly ApplicationDbContext _context;
-	private readonly ILogger<ThirdPartyApiRequestRepository> _logger;
+	private readonly ApplicationDbContext Context;
+	private readonly ILogger<ThirdPartyApiRequestRepository> Logger;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ThirdPartyApiRequestRepository"/> class.
@@ -44,8 +44,8 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		ApplicationDbContext context,
 		ILogger<ThirdPartyApiRequestRepository> logger)
 	{
-		_context = context ?? throw new ArgumentNullException(nameof(context));
-		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		Context = context ?? throw new ArgumentNullException(nameof(context));
+		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
 	/// <inheritdoc/>
@@ -61,9 +61,9 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 			// Check if we're inside a transaction
 			// If so, use tracking to ensure we see the latest data and can update it
 			// If not, use AsNoTracking for better performance on read-only queries
-			var hasActiveTransaction = _context.Database.CurrentTransaction != null;
+			var hasActiveTransaction = Context.Database.CurrentTransaction != null;
 
-			var query = _context.ThirdPartyApiRequests.AsQueryable();
+			var query = Context.ThirdPartyApiRequests.AsQueryable();
 
 			if (!hasActiveTransaction)
 			{
@@ -76,7 +76,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 					r => r.ApiName == apiName && r.ResetDate == resetDate,
 					cancellationToken);
 
-			_logger.LogDebug(
+			Logger.LogDebug(
 				"Retrieved ThirdPartyApiRequest for {ApiName} on {ResetDate}: {Found} (Tracking: {Tracking})",
 				apiName,
 				resetDate,
@@ -87,7 +87,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(
+			Logger.LogError(
 				ex,
 				"Error retrieving ThirdPartyApiRequest for {ApiName} on {ResetDate}",
 				apiName,
@@ -105,10 +105,10 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 
 		try
 		{
-			_context.ThirdPartyApiRequests.Add(entity);
-			await _context.SaveChangesAsync(cancellationToken);
+			Context.ThirdPartyApiRequests.Add(entity);
+			await Context.SaveChangesAsync(cancellationToken);
 
-			_logger.LogInformation(
+			Logger.LogInformation(
 				"Created ThirdPartyApiRequest: Id={Id}, ApiName={ApiName}, ResetDate={ResetDate}",
 				entity.Id,
 				entity.ApiName,
@@ -118,7 +118,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		}
 		catch (DbUpdateException ex)
 		{
-			_logger.LogError(
+			Logger.LogError(
 				ex,
 				"Error creating ThirdPartyApiRequest for {ApiName}. Possible constraint violation.",
 				entity.ApiName);
@@ -126,7 +126,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(
+			Logger.LogError(
 				ex,
 				"Unexpected error creating ThirdPartyApiRequest for {ApiName}",
 				entity.ApiName);
@@ -144,23 +144,23 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		try
 		{
 			// Check if entity is already tracked
-			var trackedEntity = _context.ThirdPartyApiRequests.Local
+			var trackedEntity = Context.ThirdPartyApiRequests.Local
 				.FirstOrDefault(e => e.Id == entity.Id);
 
 			if (trackedEntity != null)
 			{
 				// Entity is already tracked, update its properties
-				_context.Entry(trackedEntity).CurrentValues.SetValues(entity);
+				Context.Entry(trackedEntity).CurrentValues.SetValues(entity);
 			}
 			else
 			{
 				// Entity is not tracked, attach and mark as modified
-				_context.ThirdPartyApiRequests.Update(entity);
+				Context.ThirdPartyApiRequests.Update(entity);
 			}
 
-			await _context.SaveChangesAsync(cancellationToken);
+			await Context.SaveChangesAsync(cancellationToken);
 
-			_logger.LogDebug(
+			Logger.LogDebug(
 				"Updated ThirdPartyApiRequest: Id={Id}, CallCount={CallCount}",
 				entity.Id,
 				entity.CallCount);
@@ -169,7 +169,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		}
 		catch (DbUpdateConcurrencyException ex)
 		{
-			_logger.LogError(
+			Logger.LogError(
 				ex,
 				"Concurrency error updating ThirdPartyApiRequest: Id={Id}",
 				entity.Id);
@@ -177,7 +177,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(
+			Logger.LogError(
 				ex,
 				"Error updating ThirdPartyApiRequest: Id={Id}",
 				entity.Id);
@@ -196,13 +196,13 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		{
 			// Use AsNoTracking for read-only query
 			// Order by ResetDate descending (most recent first)
-			var requests = await _context.ThirdPartyApiRequests
+			var requests = await Context.ThirdPartyApiRequests
 				.AsNoTracking()
 				.Where(r => r.ApiName == apiName)
 				.OrderByDescending(r => r.ResetDate)
 				.ToListAsync(cancellationToken);
 
-			_logger.LogDebug(
+			Logger.LogDebug(
 				"Retrieved {Count} ThirdPartyApiRequest records for {ApiName}",
 				requests.Count,
 				apiName);
@@ -211,10 +211,38 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(
+			Logger.LogError(
 				ex,
 				"Error retrieving ThirdPartyApiRequest records for {ApiName}",
 				apiName);
+			throw;
+		}
+	}
+
+	/// <inheritdoc/>
+	public async Task<IEnumerable<ThirdPartyApiRequest>> GetAllAsync(
+		CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			// Use AsNoTracking for read-only query
+			// Order by ApiName for consistent results
+			var requests = await Context.ThirdPartyApiRequests
+				.AsNoTracking()
+				.OrderBy(r => r.ApiName)
+				.ToListAsync(cancellationToken);
+
+			Logger.LogDebug(
+				"Retrieved {Count} ThirdPartyApiRequest records",
+				requests.Count);
+
+			return requests;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(
+				ex,
+				"Error retrieving all ThirdPartyApiRequest records");
 			throw;
 		}
 	}
@@ -227,11 +255,11 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		try
 		{
 			// Batch delete operation
-			var deletedCount = await _context.ThirdPartyApiRequests
+			var deletedCount = await Context.ThirdPartyApiRequests
 				.Where(r => r.ResetDate < cutoffDate)
 				.ExecuteDeleteAsync(cancellationToken);
 
-			_logger.LogInformation(
+			Logger.LogInformation(
 				"Deleted {Count} ThirdPartyApiRequest records older than {CutoffDate}",
 				deletedCount,
 				cutoffDate);
@@ -240,7 +268,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(
+			Logger.LogError(
 				ex,
 				"Error deleting ThirdPartyApiRequest records older than {CutoffDate}",
 				cutoffDate);

@@ -488,30 +488,24 @@ dotnet_naming_symbols.non_field_members.applicable_accessibilities = *
 # ========================================
 # NAMING RULE: Private Fields
 # ========================================
-# Private fields must start with underscore and use PascalCase: _myField
-dotnet_naming_rule.private_fields_should_be_underscore_camel_case.severity = warning
-dotnet_naming_rule.private_fields_should_be_underscore_camel_case.symbols = private_fields
-dotnet_naming_rule.private_fields_should_be_underscore_camel_case.style = underscore_pascal_case_style
+# Private fields must use PascalCase: MyField
+dotnet_naming_rule.private_fields_should_be_pascal_case.severity = warning
+dotnet_naming_rule.private_fields_should_be_pascal_case.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_pascal_case.style = pascal_case_style
 
 dotnet_naming_symbols.private_fields.applicable_kinds = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private
 
-dotnet_naming_style.underscore_pascal_case_style.required_prefix = _
-dotnet_naming_style.underscore_pascal_case_style.capitalization = pascal_case
-
 # ========================================
 # NAMING RULE: Constants
 # ========================================
-# Constants must be UPPER_CASE with underscores: MAX_VALUE
-dotnet_naming_rule.constants_should_be_upper_case.severity = warning
-dotnet_naming_rule.constants_should_be_upper_case.symbols = constants
-dotnet_naming_rule.constants_should_be_upper_case.style = upper_case_style
+# Constants must be PascalCase: MaxValue
+dotnet_naming_rule.constants_should_be_pascal_case.severity = warning
+dotnet_naming_rule.constants_should_be_pascal_case.symbols = constants
+dotnet_naming_rule.constants_should_be_pascal_case.style = pascal_case_style
 
 dotnet_naming_symbols.constants.applicable_kinds = field
 dotnet_naming_symbols.constants.required_modifiers = const
-
-dotnet_naming_style.upper_case_style.capitalization = all_upper
-dotnet_naming_style.upper_case_style.word_separator = _
 
 # --- Code Quality Rules ---
 # Warn about unused parameters (helps keep code clean)

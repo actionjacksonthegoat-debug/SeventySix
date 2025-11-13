@@ -56,6 +56,11 @@ export class SidebarComponent
 			title: "Management",
 			items: [
 				{
+					label: "Admin Dashboard",
+					icon: "admin_panel_settings",
+					route: "/admin"
+				},
+				{
 					label: "Users",
 					icon: "people",
 					route: "/users"

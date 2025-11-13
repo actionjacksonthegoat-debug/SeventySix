@@ -9,23 +9,23 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
+using SeventySix.Api.Tests.Attributes;
 using SeventySix.BusinessLogic.Configuration;
 using SeventySix.Core.Interfaces;
 using SeventySix.DataAccess.Services;
-using Xunit;
 
 namespace SeventySix.Api.Tests.Integration;
 
 /// <summary>
 /// Tests Polly resilience policies (retry, circuit breaker, timeout).
 /// </summary>
-public class PollyResilienceTests
+public class PollyResilienceIntegrationTests
 {
 	/// <summary>
 	/// Tests retry policy retries on transient failures.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-	[Fact]
+	[IntegrationTest]
 	public async Task RetryPolicy_TransientFailure_RetriesThreeTimesAsync()
 	{
 		// Arrange
@@ -81,7 +81,7 @@ public class PollyResilienceTests
 	/// Tests circuit breaker opens after threshold failures.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-	[Fact]
+	[IntegrationTest]
 	public async Task CircuitBreaker_ExceedsThreshold_OpensCircuitAsync()
 	{
 		// Arrange
@@ -140,7 +140,7 @@ public class PollyResilienceTests
 	/// Tests timeout policy cancels long-running requests.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-	[Fact]
+	[IntegrationTest]
 	public async Task TimeoutPolicy_SlowResponse_CancelsRequestAsync()
 	{
 		// Arrange

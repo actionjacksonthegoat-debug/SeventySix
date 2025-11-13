@@ -1,0 +1,150 @@
+.statistics-cards {
+	width: 100%;
+
+	.loading-container,
+	.error-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-height: 200px;
+		gap: 1rem;
+
+		p {
+			margin: 0;
+			color: var(--md-sys-color-on-surface-variant);
+		}
+	}
+
+	.error-container {
+		mat-icon {
+			font-size: 48px;
+			width: 48px;
+			height: 48px;
+		}
+	}
+
+	.cards-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 1rem;
+
+		@media (max-width: 600px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.stat-card {
+		transition:
+			transform 200ms ease-out,
+			box-shadow 200ms ease-out;
+		cursor: default;
+
+		&:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+		}
+
+		mat-card-content {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+			padding: 1.5rem;
+		}
+
+		.stat-icon {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 48px;
+			height: 48px;
+			border-radius: 12px;
+
+			mat-icon {
+				font-size: 32px;
+				width: 32px;
+				height: 32px;
+			}
+		}
+
+		.stat-info {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			gap: 0.25rem;
+		}
+
+		.stat-label {
+			font-size: 0.875rem;
+			color: var(--md-sys-color-on-surface-variant);
+			font-weight: 500;
+		}
+
+		.stat-value {
+			font-size: 2rem;
+			font-weight: 700;
+			line-height: 1;
+			color: var(--md-sys-color-on-surface);
+		}
+
+		&.error-card {
+			.stat-icon {
+				background-color: rgba(244, 67, 54, 0.1);
+
+				mat-icon {
+					color: rgb(244, 67, 54);
+				}
+			}
+		}
+
+		&.warning-card {
+			.stat-icon {
+				background-color: rgba(255, 152, 0, 0.1);
+
+				mat-icon {
+					color: rgb(255, 152, 0);
+				}
+			}
+		}
+
+		&.fatal-card {
+			.stat-icon {
+				background-color: rgba(156, 39, 176, 0.1);
+
+				mat-icon {
+					color: rgb(156, 39, 176);
+				}
+			}
+		}
+
+		&.info-card {
+			.stat-icon {
+				background-color: rgba(33, 150, 243, 0.1);
+
+				mat-icon {
+					color: rgb(33, 150, 243);
+				}
+			}
+		}
+
+		&.debug-card {
+			.stat-icon {
+				background-color: rgba(96, 125, 139, 0.1);
+
+				mat-icon {
+					color: rgb(96, 125, 139);
+				}
+			}
+		}
+
+		&.total-card {
+			.stat-icon {
+				background-color: rgba(76, 175, 80, 0.1);
+
+				mat-icon {
+					color: rgb(76, 175, 80);
+				}
+			}
+		}
+	}
+}

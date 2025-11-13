@@ -74,6 +74,15 @@ export const routes: Routes = [
 		data: { breadcrumb: "Style Guide" }
 	},
 	{
+		path: "admin",
+		loadComponent: () =>
+			import(
+				"./features/admin/admin-dashboard/admin-dashboard.component"
+			).then((m) => m.AdminDashboardComponent),
+		title: "Admin Dashboard",
+		data: { breadcrumb: "Admin" }
+	},
+	{
 		path: "error",
 		children: [
 			{

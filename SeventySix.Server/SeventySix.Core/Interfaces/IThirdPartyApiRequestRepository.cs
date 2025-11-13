@@ -87,6 +87,18 @@ public interface IThirdPartyApiRequestRepository
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Retrieves all tracking records across all APIs.
+	/// </summary>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>Collection of all tracking records.</returns>
+	/// <remarks>
+	/// Used for dashboard statistics and monitoring.
+	/// Returns all records ordered by ApiName.
+	/// </remarks>
+	public Task<IEnumerable<ThirdPartyApiRequest>> GetAllAsync(
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Deletes tracking records older than the specified cutoff date.
 	/// </summary>
 	/// <param name="cutoffDate">Delete records with ResetDate before this date.</param>

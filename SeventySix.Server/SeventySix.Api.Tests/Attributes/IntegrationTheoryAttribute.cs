@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.Extensions.Configuration;
-using Xunit;
 
 namespace SeventySix.Api.Tests.Attributes;
 
@@ -29,7 +28,7 @@ public sealed class IntegrationTheoryAttribute : TheoryAttribute
 			.AddEnvironmentVariables()
 			.Build();
 
-		RunIntegrationTests = configuration.GetValue<bool>("Testing:RunIntegrationTests", defaultValue: false);
+		RunIntegrationTests = configuration.GetValue("Testing:RunIntegrationTests", defaultValue: false);
 	}
 
 	/// <summary>

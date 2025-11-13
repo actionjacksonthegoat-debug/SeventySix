@@ -11,7 +11,6 @@ using SeventySix.Data.Infrastructure;
 using SeventySix.DataAccess.Repositories;
 using SeventySix.DataAccess.Services;
 using SeventySix.DataAccess.Tests.Attributes;
-using Xunit;
 
 namespace SeventySix.DataAccess.Tests.Integration;
 

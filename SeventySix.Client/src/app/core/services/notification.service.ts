@@ -19,7 +19,9 @@ export interface Notification
 	id: string;
 	level: NotificationLevel;
 	message: string;
-	duration?: number; // Auto-dismiss duration in ms
+	duration: number;
+	details?: string[];
+	copyData?: string;
 }
 
 /**
@@ -91,6 +93,47 @@ export class NotificationService
 	}
 
 	/**
+	 * Shows an error notification with optional details and copy data.
+	 */
+	errorWithDetails(
+		message: string,
+		details?: string[],
+		copyData?: string,
+		duration?: number
+	): void
+	{
+		this.showWithDetails(
+			NotificationLevel.Error,
+			message,
+			details,
+			copyData,
+			duration
+		);
+	}
+
+	/**
+	 * Copies notification data to the clipboard.
+	 */
+	async copyToClipboard(notification: Notification): Promise<boolean>
+	{
+		if (!notification.copyData)
+		{
+			return false;
+		}
+
+		try
+		{
+			await navigator.clipboard.writeText(notification.copyData);
+			return true;
+		}
+		catch (error)
+		{
+			console.error("Failed to copy error details to clipboard:", error);
+			return false;
+		}
+	}
+
+	/**
 	 * Core notification display logic.
 	 */
 	private show(
@@ -99,11 +142,27 @@ export class NotificationService
 		duration?: number
 	): void
 	{
+		this.showWithDetails(level, message, undefined, undefined, duration);
+	}
+
+	/**
+	 * Core notification display logic with details and copy data.
+	 */
+	private showWithDetails(
+		level: NotificationLevel,
+		message: string,
+		details?: string[],
+		copyData?: string,
+		duration?: number
+	): void
+	{
 		const notification: Notification = {
 			id: `notification-${++this.idCounter}`,
 			level,
 			message,
-			duration
+			duration: duration ?? 0,
+			details,
+			copyData
 		};
 
 		this.notifications.update((current) => [...current, notification]);

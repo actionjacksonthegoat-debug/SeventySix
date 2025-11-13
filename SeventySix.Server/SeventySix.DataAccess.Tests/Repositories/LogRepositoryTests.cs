@@ -1,0 +1,437 @@
+// <copyright file="LogRepositoryTests.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
+using SeventySix.Core.Entities;
+using SeventySix.Data;
+using SeventySix.DataAccess.Repositories;
+
+namespace SeventySix.DataAccess.Tests.Repositories;
+
+/// <summary>
+/// Unit tests for <see cref="LogRepository"/>.
+/// </summary>
+/// <remarks>
+/// Uses in-memory SQLite database for fast, isolated testing.
+/// Follows TDD principles and ensures repository implements contract correctly.
+///
+/// Test Coverage:
+/// - CRUD operations
+/// - Filtering and pagination
+/// - Statistics generation
+/// - Cleanup operations
+/// </remarks>
+public class LogRepositoryTests : IDisposable
+{
+	private readonly SqliteConnection Connection;
+	private readonly DbContextOptions<ApplicationDbContext> Options;
+	private readonly ApplicationDbContext Context;
+	private readonly LogRepository Repository;
+	private bool Disposed;
+
+	public LogRepositoryTests()
+	{
+		// Create in-memory SQLite database
+		Connection = new SqliteConnection("DataSource=:memory:");
+		Connection.Open();
+
+		Options = new DbContextOptionsBuilder<ApplicationDbContext>()
+			.UseSqlite(Connection)
+			.Options;
+
+		Context = new ApplicationDbContext(Options);
+		Context.Database.EnsureCreated();
+
+		Repository = new LogRepository(
+			Context,
+			Mock.Of<ILogger<LogRepository>>());
+	}
+
+	[Fact]
+	public async Task CreateAsync_CreatesLog_SuccessfullyAsync()
+	{
+		// Arrange
+		var log = new Log
+		{
+			LogLevel = "Error",
+			Message = "Test error message",
+			Timestamp = DateTime.UtcNow,
+		};
+
+		// Act
+		var result = await Repository.CreateAsync(log);
+
+		// Assert
+		Assert.NotEqual(0, result.Id);
+		Assert.Equal("Error", result.LogLevel);
+		Assert.Equal("Test error message", result.Message);
+	}
+
+	[Fact]
+	public async Task CreateAsync_ThrowsArgumentNullException_WhenEntityIsNullAsync()
+	{
+		// Act & Assert
+		await Assert.ThrowsAsync<ArgumentNullException>(
+			async () => await Repository.CreateAsync(null!));
+	}
+
+	[Fact]
+	public async Task GetLogsAsync_ReturnsAllLogs_WhenNoFiltersAsync()
+	{
+		// Arrange
+		await SeedTestLogsAsync();
+
+		// Act
+		var result = await Repository.GetLogsAsync();
+
+		// Assert
+		Assert.NotEmpty(result);
+		Assert.True(result.Count() >= 3);
+	}
+
+	[Fact]
+	public async Task GetLogsAsync_FiltersByLogLevel_SuccessfullyAsync()
+	{
+		// Arrange
+		await SeedTestLogsAsync();
+
+		// Act
+		var result = await Repository.GetLogsAsync(logLevel: "Error");
+
+		// Assert
+		Assert.All(result, log => Assert.Equal("Error", log.LogLevel));
+	}
+
+	[Fact]
+	public async Task GetLogsAsync_FiltersByDateRange_SuccessfullyAsync()
+	{
+		// Arrange
+		await SeedTestLogsAsync();
+		var startDate = DateTime.UtcNow.AddHours(-1);
+		var endDate = DateTime.UtcNow.AddHours(1);
+
+		// Act
+		var result = await Repository.GetLogsAsync(startDate: startDate, endDate: endDate);
+
+		// Assert
+		Assert.All(result, log =>
+		{
+			Assert.True(log.Timestamp >= startDate);
+			Assert.True(log.Timestamp <= endDate);
+		});
+	}
+
+	[Fact]
+	public async Task GetLogsAsync_FiltersBySourceContext_SuccessfullyAsync()
+	{
+		// Arrange
+		await SeedTestLogsAsync();
+
+		// Act
+		var result = await Repository.GetLogsAsync(sourceContext: "UserService");
+
+		// Assert
+		Assert.All(result, log => Assert.Contains("UserService", log.SourceContext ?? string.Empty));
+	}
+
+	[Fact]
+	public async Task GetLogsAsync_FiltersByRequestPath_SuccessfullyAsync()
+	{
+		// Arrange
+		await SeedTestLogsAsync();
+
+		// Act
+		var result = await Repository.GetLogsAsync(requestPath: "/api/users");
+
+		// Assert
+		Assert.All(result, log => Assert.Contains("/api/users", log.RequestPath ?? string.Empty));
+	}
+
+	[Fact]
+	public async Task GetLogsAsync_SupportsPagination_SuccessfullyAsync()
+	{
+		// Arrange
+		await SeedTestLogsAsync();
+
+		// Act
+		var page1 = await Repository.GetLogsAsync(skip: 0, take: 2);
+		var page2 = await Repository.GetLogsAsync(skip: 2, take: 2);
+
+		// Assert
+		Assert.Equal(2, page1.Count());
+		Assert.NotEmpty(page2);
+		Assert.NotEqual(page1.First().Id, page2.First().Id);
+	}
+
+	[Fact]
+	public async Task GetLogsAsync_OrdersByTimestampDescending_SuccessfullyAsync()
+	{
+		// Arrange
+		await SeedTestLogsAsync();
+
+		// Act
+		var result = (await Repository.GetLogsAsync()).ToList();
+
+		// Assert
+		for (int i = 0; i < result.Count - 1; i++)
+		{
+			Assert.True(result[i].Timestamp >= result[i + 1].Timestamp);
+		}
+	}
+
+	[Fact]
+	public async Task GetLogsAsync_LimitsTo1000Records_MaximumAsync()
+	{
+		// Arrange
+		for (int i = 0; i < 1100; i++)
+		{
+			await Repository.CreateAsync(new Log
+			{
+				LogLevel = "Info",
+				Message = $"Log {i}",
+				Timestamp = DateTime.UtcNow,
+			});
+		}
+
+		// Act
+		var result = await Repository.GetLogsAsync(take: 2000);
+
+		// Assert
+		Assert.True(result.Count() <= 1000);
+	}
+
+	[Fact]
+	public async Task GetLogsCountAsync_ReturnsCorrectCount_WhenNoFiltersAsync()
+	{
+		// Arrange
+		await SeedTestLogsAsync();
+
+		// Act
+		var count = await Repository.GetLogsCountAsync();
+
+		// Assert
+		Assert.True(count >= 3);
+	}
+
+	[Fact]
+	public async Task GetLogsCountAsync_FiltersCorrectly_WithMultipleCriteriaAsync()
+	{
+		// Arrange
+		await SeedTestLogsAsync();
+		var startDate = DateTime.UtcNow.AddHours(-1);
+
+		// Act
+		var count = await Repository.GetLogsCountAsync(
+			logLevel: "Error",
+			startDate: startDate);
+
+		// Assert
+		Assert.True(count > 0);
+	}
+
+	[Fact]
+	public async Task DeleteOlderThanAsync_DeletesOldLogs_SuccessfullyAsync()
+	{
+		// Arrange
+		var oldLog = new Log
+		{
+			LogLevel = "Error",
+			Message = "Old log",
+			Timestamp = DateTime.UtcNow.AddDays(-40),
+		};
+		await Repository.CreateAsync(oldLog);
+
+		var recentLog = new Log
+		{
+			LogLevel = "Error",
+			Message = "Recent log",
+			Timestamp = DateTime.UtcNow,
+		};
+		await Repository.CreateAsync(recentLog);
+
+		var cutoffDate = DateTime.UtcNow.AddDays(-30);
+
+		// Act
+		var deletedCount = await Repository.DeleteOlderThanAsync(cutoffDate);
+
+		// Assert
+		Assert.True(deletedCount > 0);
+		var remainingLogs = await Repository.GetLogsAsync();
+		Assert.All(remainingLogs, log => Assert.True(log.Timestamp >= cutoffDate));
+	}
+
+	[Fact]
+	public async Task GetStatisticsAsync_ReturnsCorrectStatistics_SuccessfullyAsync()
+	{
+		// Arrange
+		await SeedTestLogsAsync();
+		var startDate = DateTime.UtcNow.AddHours(-2);
+		var endDate = DateTime.UtcNow.AddHours(2);
+
+		// Act
+		var stats = await Repository.GetStatisticsAsync(startDate, endDate);
+
+		// Assert
+		Assert.NotNull(stats);
+		Assert.True(stats.TotalLogs > 0);
+		Assert.True(stats.ErrorCount >= 0);
+		Assert.True(stats.WarningCount >= 0);
+		Assert.NotNull(stats.TopErrorSources);
+		Assert.NotNull(stats.RequestsByPath);
+	}
+
+	[Fact]
+	public async Task GetStatisticsAsync_CalculatesAverageResponseTime_CorrectlyAsync()
+	{
+		// Arrange
+		await Repository.CreateAsync(new Log
+		{
+			LogLevel = "Info",
+			Message = "Request 1",
+			DurationMs = 100,
+			RequestPath = "/api/test",
+			Timestamp = DateTime.UtcNow,
+		});
+
+		await Repository.CreateAsync(new Log
+		{
+			LogLevel = "Info",
+			Message = "Request 2",
+			DurationMs = 200,
+			RequestPath = "/api/test",
+			Timestamp = DateTime.UtcNow,
+		});
+
+		var startDate = DateTime.UtcNow.AddHours(-1);
+		var endDate = DateTime.UtcNow.AddHours(1);
+
+		// Act
+		var stats = await Repository.GetStatisticsAsync(startDate, endDate);
+
+		// Assert
+		Assert.Equal(150, stats.AverageResponseTimeMs);
+	}
+
+	[Fact]
+	public async Task GetStatisticsAsync_CountsFailedRequests_CorrectlyAsync()
+	{
+		// Arrange
+		await Repository.CreateAsync(new Log
+		{
+			LogLevel = "Error",
+			Message = "Failed request",
+			StatusCode = 500,
+			RequestPath = "/api/test",
+			Timestamp = DateTime.UtcNow,
+		});
+
+		await Repository.CreateAsync(new Log
+		{
+			LogLevel = "Info",
+			Message = "Successful request",
+			StatusCode = 200,
+			RequestPath = "/api/test",
+			Timestamp = DateTime.UtcNow,
+		});
+
+		var startDate = DateTime.UtcNow.AddHours(-1);
+		var endDate = DateTime.UtcNow.AddHours(1);
+
+		// Act
+		var stats = await Repository.GetStatisticsAsync(startDate, endDate);
+
+		// Assert
+		Assert.True(stats.FailedRequests > 0);
+	}
+
+	[Fact]
+	public async Task GetStatisticsAsync_LimitsTopErrorSources_To10Async()
+	{
+		// Arrange
+		for (int i = 0; i < 15; i++)
+		{
+			await Repository.CreateAsync(new Log
+			{
+				LogLevel = "Error",
+				Message = $"Error {i}",
+				SourceContext = $"Service{i}",
+				Timestamp = DateTime.UtcNow,
+			});
+		}
+
+		var startDate = DateTime.UtcNow.AddHours(-1);
+		var endDate = DateTime.UtcNow.AddHours(1);
+
+		// Act
+		var stats = await Repository.GetStatisticsAsync(startDate, endDate);
+
+		// Assert
+		Assert.True(stats.TopErrorSources.Count <= 10);
+	}
+
+	private async Task SeedTestLogsAsync()
+	{
+		var logs = new[]
+		{
+			new Log
+			{
+				LogLevel = "Error",
+				Message = "Test error 1",
+				SourceContext = "SeventySix.Services.UserService",
+				RequestPath = "/api/users/1",
+				StatusCode = 500,
+				DurationMs = 150,
+				Timestamp = DateTime.UtcNow,
+			},
+			new Log
+			{
+				LogLevel = "Warning",
+				Message = "Test warning 1",
+				SourceContext = "SeventySix.Services.WeatherService",
+				RequestPath = "/api/weather",
+				StatusCode = 200,
+				DurationMs = 75,
+				Timestamp = DateTime.UtcNow.AddMinutes(-5),
+			},
+			new Log
+			{
+				LogLevel = "Error",
+				Message = "Test error 2",
+				SourceContext = "SeventySix.Services.UserService",
+				RequestPath = "/api/users/2",
+				StatusCode = 404,
+				DurationMs = 50,
+				Timestamp = DateTime.UtcNow.AddMinutes(-10),
+			},
+		};
+
+		foreach (var log in logs)
+		{
+			await Repository.CreateAsync(log);
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!Disposed)
+		{
+			if (disposing)
+			{
+				Context?.Dispose();
+				Connection?.Dispose();
+			}
+
+			Disposed = true;
+		}
+	}
+}

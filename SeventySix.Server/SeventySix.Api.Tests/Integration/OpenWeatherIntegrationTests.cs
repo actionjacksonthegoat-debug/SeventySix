@@ -9,9 +9,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Api.Tests.Attributes;
 using SeventySix.Core.DTOs.OpenWeather;
-using SeventySix.Core.DTOs.OpenWeather.Common;
 using SeventySix.Core.Interfaces;
-using Xunit;
 
 namespace SeventySix.Api.Tests.Integration;
 
@@ -20,7 +18,7 @@ namespace SeventySix.Api.Tests.Integration;
 /// Tests the complete request flow from controller -> service -> API client -> Polly pipeline.
 /// Uses real PostgreSQL database via Testcontainers for rate limiting persistence.
 /// </summary>
-public class OpenWeatherIntegrationTests : PostgreSqlTestBase, IClassFixture<PostgreSqlFixture>
+public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClassFixture<PostgreSqlFixture>
 {
 	private readonly WebApplicationFactory<Program> Factory;
 	private readonly HttpClient Client;

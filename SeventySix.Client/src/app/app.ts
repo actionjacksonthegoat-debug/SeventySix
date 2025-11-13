@@ -8,6 +8,7 @@ import {
 	SidebarComponent,
 	FooterComponent
 } from "@core/layout";
+import { NotificationToastComponent } from "@shared/components";
 
 /**
  * Root application component.
@@ -21,7 +22,8 @@ import {
 		MatProgressBarModule,
 		HeaderComponent,
 		SidebarComponent,
-		FooterComponent
+		FooterComponent,
+		NotificationToastComponent
 	],
 	templateUrl: "./app.html",
 	styleUrl: "./app.scss"

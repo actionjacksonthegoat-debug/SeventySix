@@ -33,6 +33,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
+using Serilog.Events;
+using Serilog.Exceptions;
+using SeventySix.Api.Logging;
 using SeventySix.Api.Middleware;
 using SeventySix.BusinessLogic.Configuration;
 using SeventySix.BusinessLogic.Interfaces;
@@ -47,12 +50,25 @@ using SeventySix.DataAccess.Services;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog for structured logging
-// Outputs: Console + Rolling file (daily rotation)
+// Outputs: Console + Rolling file (daily rotation) + Database (Warning+ levels)
+// Note: Database sink is added after building the app to access IServiceProvider
 Log.Logger = new LoggerConfiguration()
 	.ReadFrom.Configuration(builder.Configuration)
 	.Enrich.FromLogContext()
-	.WriteTo.Console()
-	.WriteTo.File("logs/seventysix-.txt", rollingInterval: RollingInterval.Day)
+	.Enrich.WithMachineName()
+	.Enrich.WithThreadId()
+	.Enrich.WithExceptionDetails()
+	.WriteTo.Console(
+		outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+	.WriteTo.File(
+		path: "logs/seventysix-.txt",
+		rollingInterval: RollingInterval.Day,
+		retainedFileCountLimit: 30,
+		outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties:j}{NewLine}{Exception}")
+	.MinimumLevel.Information()
+	.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+	.MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+	.MinimumLevel.Override("System", LogEventLevel.Warning)
 	.CreateLogger();
 
 builder.Host.UseSerilog();
@@ -158,10 +174,14 @@ builder.Services.AddValidatorsFromAssemblyContaining<WeatherRequestValidator>();
 // Implements Dependency Inversion Principle (DIP)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IThirdPartyApiRequestRepository, ThirdPartyApiRequestRepository>();
+builder.Services.AddScoped<ILogRepository, LogRepository>();
 
 // Application services - Business logic layer
 // Scoped lifetime ensures proper DbContext management
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IThirdPartyApiRequestService, ThirdPartyApiRequestService>();
+builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
+builder.Services.AddScoped<ILogChartService, LogChartService>();
 
 // OpenAPI/Swagger configuration for API documentation
 builder.Services.AddOpenApi();
@@ -186,6 +206,45 @@ builder.Services.AddCors(options =>
 });
 
 WebApplication app = builder.Build();
+
+// Add database sink now that we have the service provider
+// This allows us to resolve scoped services (DbContext) for logging
+Log.Logger = new LoggerConfiguration()
+	.ReadFrom.Configuration(builder.Configuration)
+	.Enrich.FromLogContext()
+	.Enrich.WithMachineName()
+	.Enrich.WithThreadId()
+	.Enrich.WithExceptionDetails()
+	.WriteTo.Console(
+		outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+	.WriteTo.File(
+		path: "logs/seventysix-.txt",
+		rollingInterval: RollingInterval.Day,
+		retainedFileCountLimit: 30,
+		outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties:j}{NewLine}{Exception}")
+	.WriteTo.Database(
+		serviceProvider: app.Services,
+		environment: app.Environment.EnvironmentName,
+		machineName: System.Environment.MachineName)
+	.MinimumLevel.Information()
+	.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+	.MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+	.MinimumLevel.Override("System", LogEventLevel.Warning)
+	.CreateLogger();
+
+// Serilog HTTP request logging - Captures request details
+// Enriches logs with RequestMethod, RequestPath, StatusCode, Elapsed time
+app.UseSerilogRequestLogging(options =>
+{
+	options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+	options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+	{
+		diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value ?? "unknown");
+		diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+		diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+		diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].ToString());
+	};
+});
 
 // Security headers middleware - Implements defense in depth
 // Adds various security headers to prevent common web vulnerabilities

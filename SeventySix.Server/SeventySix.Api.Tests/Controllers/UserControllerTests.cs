@@ -96,7 +96,7 @@ public class UserControllerTests
 		// Arrange
 		MockUserService
 			.Setup(s => s.GetAllUsersAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<UserDto>());
+			.ReturnsAsync([]);
 
 		// Act
 		var result = await Controller.GetAllAsync(CancellationToken.None);
@@ -113,7 +113,7 @@ public class UserControllerTests
 		// Arrange
 		MockUserService
 			.Setup(s => s.GetAllUsersAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<UserDto>());
+			.ReturnsAsync([]);
 
 		// Act
 		await Controller.GetAllAsync(CancellationToken.None);

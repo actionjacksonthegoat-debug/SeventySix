@@ -3,13 +3,10 @@
 // </copyright>
 
 using System.Net;
-using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using SeventySix.Api.Tests.Attributes;
-using SeventySix.Core.DTOs.OpenWeather;
-using SeventySix.Core.DTOs.OpenWeather.Common;
 
 namespace SeventySix.Api.Tests.Integration;
 

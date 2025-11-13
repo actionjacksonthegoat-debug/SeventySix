@@ -5,7 +5,6 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
-using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Services;
 using SeventySix.Core.Entities;
@@ -102,7 +101,7 @@ public class UserServiceTests
 		// Arrange
 		MockRepository
 			.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<User>());
+			.ReturnsAsync([]);
 
 		// Act
 		var result = await Service.GetAllUsersAsync();
@@ -121,7 +120,7 @@ public class UserServiceTests
 		var cancellationToken = new CancellationToken();
 		MockRepository
 			.Setup(r => r.GetAllAsync(cancellationToken))
-			.ReturnsAsync(new List<User>());
+			.ReturnsAsync([]);
 
 		// Act
 		await Service.GetAllUsersAsync(cancellationToken);

@@ -8,3 +8,4 @@ export {
 	ConfirmDialogComponent,
 	type ConfirmDialogData
 } from "./confirm-dialog/confirm-dialog.component";
+export { NotificationToastComponent } from "./notification-toast/notification-toast.component";

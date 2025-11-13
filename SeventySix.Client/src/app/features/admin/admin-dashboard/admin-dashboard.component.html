@@ -1,0 +1,30 @@
+<div class="admin-dashboard">
+	<mat-toolbar color="primary">
+		<mat-icon>dashboard</mat-icon>
+		<h1>Admin Dashboard</h1>
+	</mat-toolbar>
+
+	<div class="dashboard-content">
+		<div class="dashboard-grid">
+			<!-- Error Trend Chart Section -->
+			<div class="chart-section">
+				<app-error-trend-chart period="7d"></app-error-trend-chart>
+			</div>
+
+			<!-- Statistics Cards Section -->
+			<div class="stats-section">
+				<app-statistics-cards></app-statistics-cards>
+			</div>
+
+			<!-- API Statistics Table Section -->
+			<div class="api-section">
+				<app-api-statistics-table></app-api-statistics-table>
+			</div>
+
+			<!-- Health Status Panel Section -->
+			<div class="health-section">
+				<app-health-status-panel></app-health-status-panel>
+			</div>
+		</div>
+	</div>
+</div>

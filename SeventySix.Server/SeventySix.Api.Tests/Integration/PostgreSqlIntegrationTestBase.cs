@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SeventySix.Data;
-using Xunit;
 
 namespace SeventySix.Api.Tests.Integration;
 
@@ -58,18 +57,13 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
 /// Base class for API integration tests that require a shared PostgreSQL database and WebApplicationFactory.
 /// Uses IClassFixture to share a single PostgreSQL instance across all tests in the class.
 /// </summary>
-public abstract class PostgreSqlTestBase : IAsyncLifetime
+/// <remarks>
+/// Initializes a new instance of the <see cref="PostgreSqlIntegrationTestBase"/> class.
+/// </remarks>
+/// <param name="fixture">The shared PostgreSQL fixture.</param>
+public abstract class PostgreSqlIntegrationTestBase(PostgreSqlFixture fixture) : IAsyncLifetime
 {
-	private readonly PostgreSqlFixture Fixture;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="PostgreSqlTestBase"/> class.
-	/// </summary>
-	/// <param name="fixture">The shared PostgreSQL fixture.</param>
-	protected PostgreSqlTestBase(PostgreSqlFixture fixture)
-	{
-		Fixture = fixture;
-	}
+	private readonly PostgreSqlFixture Fixture = fixture;
 
 	/// <summary>
 	/// Gets the connection string for the shared test database.

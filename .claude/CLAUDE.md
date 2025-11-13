@@ -75,6 +75,26 @@ Apply patterns judiciously when complexity justifies them. Start simple, refacto
 
 ## Angular Best Practices
 
+### Zoneless Angular Architecture
+
+**The entire Angular application MUST be zoneless (Zone.js-free):**
+
+-   **NEVER** import or use `Zone`, `NgZone`, or any Zone.js APIs
+-   **ALWAYS** use `provideZonelessChangeDetection()` in all test configurations
+-   **Use RxJS patterns** instead of Zone-dependent timing:
+    -   Use `interval()` instead of `setInterval()`
+    -   Use `timer()` instead of `setTimeout()` for repeating operations
+    -   Use `Subscription` management instead of Zone patching
+-   **Testing zoneless code:**
+    -   Use `provideZonelessChangeDetection()` in `TestBed.configureTestingModule()`
+    -   Do NOT use `fakeAsync()`, `tick()`, or `flush()` (Zone.js dependent)
+    -   Use `done` callback or `async/await` patterns for async tests
+    -   Use `jasmine.clock()` for time-based testing
+-   **Async operations:**
+    -   Use `takeUntilDestroyed()` for automatic cleanup
+    -   Manually manage `Subscription` objects
+    -   Use signals with `toSignal()` for reactive state
+
 ### TypeScript & Code Quality
 
 -   Use strict type checking (`strict: true` in tsconfig.json)

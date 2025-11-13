@@ -6,6 +6,8 @@ export * from "../../features/home/weather/services/weather-service/weather.serv
 export * from "./logger.service";
 export * from "./notification.service";
 export * from "./error-handler.service";
+export * from "./error-queue.service";
+export * from "./client-error-logger.service";
 export * from "./cache.service";
 export * from "./cache-config.service";
 export * from "./sw-update.service";

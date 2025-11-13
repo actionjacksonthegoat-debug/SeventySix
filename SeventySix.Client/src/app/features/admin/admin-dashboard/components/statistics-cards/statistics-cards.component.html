@@ -1,0 +1,134 @@
+<div
+	class="statistics-cards"
+	role="region"
+	aria-label="Log statistics overview"
+>
+	@if (isLoading())
+	{
+		<div class="loading-container" role="status" aria-live="polite">
+			<mat-spinner
+				diameter="40"
+				aria-label="Loading statistics"
+			></mat-spinner>
+			<p>Loading statistics...</p>
+		</div>
+	}
+	@else if (error())
+	{
+		<div class="error-container" role="alert" aria-live="assertive">
+			<mat-icon color="warn" aria-hidden="true">error</mat-icon>
+			<p>{{ error() }}</p>
+			<button
+				mat-raised-button
+				color="primary"
+				(click)="onRefresh()"
+				aria-label="Retry loading statistics"
+			>
+				<mat-icon aria-hidden="true">refresh</mat-icon>
+				Retry
+			</button>
+		</div>
+	}
+	@else
+	{
+		<div class="cards-grid" role="list" [@staggerList]>
+			<!-- Total Errors Card -->
+			<mat-card class="stat-card error-card" role="listitem" @fadeInUp>
+				<mat-card-content>
+					<div class="stat-icon" aria-hidden="true">
+						<mat-icon>error</mat-icon>
+					</div>
+					<div class="stat-info">
+						<div class="stat-label" id="error-label">
+							Total Errors
+						</div>
+						<div class="stat-value" aria-labelledby="error-label">
+							{{ errorCount() }}
+						</div>
+					</div>
+				</mat-card-content>
+			</mat-card>
+
+			<!-- Warnings Card -->
+			<mat-card class="stat-card warning-card" role="listitem">
+				<mat-card-content>
+					<div class="stat-icon" aria-hidden="true">
+						<mat-icon>warning</mat-icon>
+					</div>
+					<div class="stat-info">
+						<div class="stat-label" id="warning-label">
+							Warnings
+						</div>
+						<div class="stat-value" aria-labelledby="warning-label">
+							{{ warningCount() }}
+						</div>
+					</div>
+				</mat-card-content>
+			</mat-card>
+
+			<!-- Fatals Card -->
+			<mat-card class="stat-card fatal-card" role="listitem">
+				<mat-card-content>
+					<div class="stat-icon" aria-hidden="true">
+						<mat-icon>dangerous</mat-icon>
+					</div>
+					<div class="stat-info">
+						<div class="stat-label" id="fatal-label">Fatals</div>
+						<div class="stat-value" aria-labelledby="fatal-label">
+							{{ fatalCount() }}
+						</div>
+					</div>
+				</mat-card-content>
+			</mat-card>
+
+			<!-- Info Card -->
+			<mat-card class="stat-card info-card" role="listitem">
+				<mat-card-content>
+					<div class="stat-icon" aria-hidden="true">
+						<mat-icon>info</mat-icon>
+					</div>
+					<div class="stat-info">
+						<div class="stat-label" id="info-label">Info Logs</div>
+						<div class="stat-value" aria-labelledby="info-label">
+							{{ infoCount() }}
+						</div>
+					</div>
+				</mat-card-content>
+			</mat-card>
+
+			<!-- Debug Card -->
+			<mat-card class="stat-card debug-card" role="listitem">
+				<mat-card-content>
+					<div class="stat-icon" aria-hidden="true">
+						<mat-icon>bug_report</mat-icon>
+					</div>
+					<div class="stat-info">
+						<div class="stat-label" id="debug-label">
+							Debug Logs
+						</div>
+						<div class="stat-value" aria-labelledby="debug-label">
+							{{ debugCount() }}
+						</div>
+					</div>
+				</mat-card-content>
+			</mat-card>
+
+			<!-- Total Card -->
+			<mat-card class="stat-card total-card" role="listitem">
+				<mat-card-content>
+					<div class="stat-icon" aria-hidden="true">
+						<mat-icon>inventory_2</mat-icon>
+					</div>
+					<div class="stat-info">
+						<div class="stat-label" id="total-label">
+							Total Logs
+						</div>
+						<div class="stat-value" aria-labelledby="total-label">
+							{{ totalCount() }}
+						</div>
+					</div>
+				</mat-card-content>
+			</mat-card>
+		</div>
+	}
+</div>
