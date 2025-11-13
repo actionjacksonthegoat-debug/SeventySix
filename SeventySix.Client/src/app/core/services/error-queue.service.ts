@@ -167,7 +167,7 @@ export class ErrorQueueService implements OnDestroy
 
 		// Send to server
 		this.http
-			.post(this.logEndpoint, payload)
+			.post(this.logEndpoint, payload, { observe: "response" })
 			.pipe(
 				catchError((err) =>
 				{
@@ -178,6 +178,7 @@ export class ErrorQueueService implements OnDestroy
 			)
 			.subscribe((response) =>
 			{
+				// Success if we got any response (including 204 No Content)
 				if (response !== null)
 				{
 					// Success - remove sent items from queue

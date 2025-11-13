@@ -16,7 +16,7 @@ import {
 export class ThirdPartyApiService
 {
 	private readonly http = inject(HttpClient);
-	private readonly apiUrl = `${environment.apiUrl}/third-party-requests`;
+	private readonly apiUrl = `${environment.apiUrl}/ThirdPartyApiRequest`;
 
 	/**
 	 * Gets all third-party API requests

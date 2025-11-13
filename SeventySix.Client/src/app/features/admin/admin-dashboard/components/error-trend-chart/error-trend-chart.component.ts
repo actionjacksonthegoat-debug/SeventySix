@@ -1,6 +1,7 @@
 import {
 	Component,
 	OnInit,
+	OnDestroy,
 	input,
 	computed,
 	signal,
@@ -14,6 +15,7 @@ import { ChartConfiguration } from "chart.js";
 import { ChartComponent } from "@shared/components/chart/chart.component";
 import { LogChartService } from "@features/admin/services";
 import { LogChartData } from "@core/models/admin";
+import { Subscription } from "rxjs";
 
 /**
  * Component for displaying error trend charts with time-series data
@@ -30,8 +32,12 @@ import { LogChartData } from "@core/models/admin";
 	templateUrl: "./error-trend-chart.component.html",
 	styleUrl: "./error-trend-chart.component.scss"
 })
-export class ErrorTrendChartComponent implements OnInit
+export class ErrorTrendChartComponent implements OnInit, OnDestroy
 {
+	/**
+	 * Subscription for HTTP requests
+	 */
+	private subscription?: Subscription;
 	/**
 	 * Time period for chart data (24h, 7d, 30d)
 	 */
@@ -152,27 +158,37 @@ export class ErrorTrendChartComponent implements OnInit
 		// Initial load is handled by effect
 	}
 
+	ngOnDestroy(): void
+	{
+		this.subscription?.unsubscribe();
+	}
+
 	/**
 	 * Load chart data from API
 	 */
 	private loadChartData(period: string): void
 	{
+		// Unsubscribe from previous request if still pending
+		this.subscription?.unsubscribe();
+
 		this.isLoading.set(true);
 		this.error.set(null);
 
-		this.logChartService.getChartData(period).subscribe({
-			next: (data) =>
-			{
-				this.rawData.set(data);
-				this.isLoading.set(false);
-			},
-			error: (err) =>
-			{
-				this.error.set(err.message || "Failed to load chart data");
-				this.rawData.set(null);
-				this.isLoading.set(false);
-			}
-		});
+		this.subscription = this.logChartService
+			.getChartData(period)
+			.subscribe({
+				next: (data) =>
+				{
+					this.rawData.set(data);
+					this.isLoading.set(false);
+				},
+				error: (err) =>
+				{
+					this.error.set(err.message || "Failed to load chart data");
+					this.rawData.set(null);
+					this.isLoading.set(false);
+				}
+			});
 	}
 
 	/**
