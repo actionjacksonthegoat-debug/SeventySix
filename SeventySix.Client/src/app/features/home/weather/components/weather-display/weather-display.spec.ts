@@ -8,7 +8,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { of, throwError } from "rxjs";
 import { WeatherDisplay } from "./weather-display";
 import { environment } from "@environments/environment";
-import { WeatherService } from "@features/home/weather/services/weather-service/weather.service";
+import { WeatherService } from "@features/home/weather/services/weather.service";
 import { LoggerService } from "@core/services/logger.service";
 
 describe("WeatherDisplay", () =>

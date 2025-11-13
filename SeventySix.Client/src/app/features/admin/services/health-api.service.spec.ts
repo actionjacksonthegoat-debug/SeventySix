@@ -9,7 +9,7 @@ import {
 	HealthStatus,
 	DatabaseHealth,
 	ExternalApiHealth
-} from "../../models/admin";
+} from "../../../core/models/admin";
 import { HealthApiService } from "./health-api.service";
 
 describe("HealthApiService", () =>

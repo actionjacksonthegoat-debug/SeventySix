@@ -5,7 +5,7 @@ import {
 	HealthStatus,
 	DatabaseHealth,
 	ExternalApiHealth
-} from "../../models/admin";
+} from "../../../core/models/admin";
 
 /**
  * Service for managing health check data

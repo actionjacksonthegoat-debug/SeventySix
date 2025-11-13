@@ -1,0 +1,106 @@
+<div class="log-filters" role="search" aria-label="Log filters">
+	<div class="search-section">
+		<mat-form-field appearance="outline" class="search-field">
+			<mat-label>Search logs</mat-label>
+			<input
+				matInput
+				#searchInput
+				placeholder="Search message, source, stack trace..."
+				(input)="onSearchChange($any($event.target).value)"
+				aria-label="Search logs by message, source, or stack trace"
+				aria-describedby="search-hint"
+			/>
+			<mat-icon matPrefix>search</mat-icon>
+			<mat-hint id="search-hint">Press Ctrl+F to focus search</mat-hint>
+		</mat-form-field>
+	</div>
+
+	<div class="filter-section">
+		<div class="level-filters">
+			<span class="filter-label">Level:</span>
+			<mat-chip-listbox
+				aria-label="Log level selection"
+				[value]="selectedLevel()"
+			>
+				<mat-chip-option
+					[value]="null"
+					(click)="onLevelChange(null)"
+					[class.selected]="selectedLevel() === null"
+				>
+					All
+				</mat-chip-option>
+				@for (level of levelOptions; track level)
+				{
+					<mat-chip-option
+						[value]="level"
+						(click)="onLevelChange(level)"
+						[class.selected]="selectedLevel() === level"
+						[class.level-error]="level === 4"
+						[class.level-warning]="level === 3"
+						[class.level-fatal]="level === 5"
+					>
+						{{ getLevelName(level) }}
+					</mat-chip-option>
+				}
+			</mat-chip-listbox>
+		</div>
+
+		<div class="date-range-filters">
+			<span class="filter-label">Date Range:</span>
+			<mat-chip-listbox
+				aria-label="Date range selection"
+				[value]="dateRange()"
+			>
+				@for (range of dateRangeOptions; track range)
+				{
+					<mat-chip-option
+						[value]="range"
+						(click)="onDateRangeChange(range)"
+						[class.selected]="dateRange() === range"
+					>
+						{{ getDateRangeLabel(range) }}
+					</mat-chip-option>
+				}
+			</mat-chip-listbox>
+		</div>
+	</div>
+
+	<div class="action-section">
+		<mat-slide-toggle
+			[checked]="autoRefresh()"
+			(change)="onAutoRefreshToggle($event.checked)"
+			color="primary"
+			aria-label="Enable or disable automatic log refresh"
+		>
+			<mat-icon>refresh</mat-icon>
+			Auto-refresh
+		</mat-slide-toggle>
+
+		<button
+			mat-stroked-button
+			(click)="onExportClick()"
+			aria-label="Export filtered logs to CSV file"
+		>
+			<mat-icon>download</mat-icon>
+			Export CSV
+		</button>
+
+		<button
+			mat-stroked-button
+			(click)="onCleanupClick()"
+			aria-label="Delete old logs"
+		>
+			<mat-icon>delete_sweep</mat-icon>
+			Cleanup
+		</button>
+
+		<button
+			mat-stroked-button
+			(click)="clearFilters()"
+			aria-label="Clear all filters and reset to default view"
+		>
+			<mat-icon>clear</mat-icon>
+			Clear Filters
+		</button>
+	</div>
+</div>

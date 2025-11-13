@@ -5,7 +5,7 @@ import {
 	HttpTestingController,
 	provideHttpClientTesting
 } from "@angular/common/http/testing";
-import { LogChartData, LogStatistics } from "../../models/admin";
+import { LogChartData, LogStatistics } from "../../../core/models/admin";
 import { LogChartService } from "./log-chart.service";
 
 describe("LogChartService", () =>

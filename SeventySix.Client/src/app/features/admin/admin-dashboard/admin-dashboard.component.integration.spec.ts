@@ -9,7 +9,7 @@ import {
 	LogChartService,
 	ThirdPartyApiService,
 	HealthApiService
-} from "@core/services/admin";
+} from "@features/admin/services";
 import {
 	LogStatistics,
 	ThirdPartyApiRequest,

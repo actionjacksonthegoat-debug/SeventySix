@@ -42,6 +42,48 @@ This document outlines the design patterns, architectural decisions, and Materia
 3. Layout containers not provided by Material (e.g., page layouts)
 4. Application-specific utilities (e.g., breadcrumb navigation)
 
+### 🚨 CRITICAL: SCSS Variables Import Rule
+
+**EVERY component SCSS file MUST start with:**
+
+```scss
+@use "variables" as vars;
+```
+
+This import provides access to:
+
+-   **Spacing system** (`vars.$spacing-xs`, `vars.$spacing-lg`, etc.) - 8px grid
+-   **Breakpoints** (`vars.$breakpoint-mobile`, `vars.$breakpoint-tablet`, `vars.$breakpoint-desktop`)
+-   **Typography** (`vars.$font-family-base`, `vars.$font-family-monospace`)
+-   **Border radius** (`vars.$border-radius-base`, `vars.$border-radius-card`)
+-   **Transitions** (`vars.$transition-all`, `vars.$transition-duration-base`)
+-   **Mixins** (`@include vars.responsive-padding()`, `@include vars.truncate-text()`)
+
+**Why This Is Critical**:
+
+1. **Consistency**: All spacing/sizing values come from a single source of truth
+2. **Maintainability**: Change values in one place, not scattered across 100+ files
+3. **Responsive Design**: Breakpoint variables ensure consistent responsive behavior
+4. **Theme Compatibility**: Variables work seamlessly with Material Design 3 theming
+
+**Example**:
+
+```scss
+@use "variables" as vars;
+
+.my-component {
+	padding: vars.$spacing-lg; // 16px - from 8px grid
+	gap: vars.$spacing-md; // 12px
+	border-radius: vars.$border-radius-card; // 12px
+
+	@media #{vars.$breakpoint-mobile} {
+		padding: vars.$spacing-sm; // 8px on mobile
+	}
+}
+```
+
+````
+
 ---
 
 ## Material Design Patterns
@@ -72,7 +114,7 @@ html.light - theme.cyan - orange - scheme;
 
 // Dark Cyan-Orange Theme
 html.dark - theme.cyan - orange - scheme;
-```
+````
 
 **Usage**:
 

@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection, signal } from "@angular/core";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { of, throwError } from "rxjs";
-import { LogChartService } from "@core/services/admin";
+import { LogChartService } from "@features/admin/services";
 import { LogChartData } from "@core/models/admin";
 import { ErrorTrendChartComponent } from "./error-trend-chart.component";
 

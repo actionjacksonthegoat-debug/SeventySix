@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { of, throwError } from "rxjs";
-import { ThirdPartyApiService } from "@core/services/admin";
+import { ThirdPartyApiService } from "@features/admin/services";
 import { ThirdPartyApiRequest } from "@core/models/admin";
 import { ApiStatisticsTableComponent } from "./api-statistics-table.component";
 

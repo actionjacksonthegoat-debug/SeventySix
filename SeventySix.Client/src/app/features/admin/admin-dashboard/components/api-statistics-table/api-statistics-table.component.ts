@@ -6,7 +6,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatButtonModule } from "@angular/material/button";
 import { MatChipsModule } from "@angular/material/chips";
-import { ThirdPartyApiService } from "@core/services/admin";
+import { ThirdPartyApiService } from "@features/admin/services";
 import { ThirdPartyApiRequest } from "@core/models/admin";
 
 /**

@@ -116,6 +116,44 @@ public class LogsController : ControllerBase
 	}
 
 	/// <summary>
+	/// Gets the total count of logs matching the filter criteria.
+	/// </summary>
+	/// <param name="request">The filter parameters.</param>
+	/// <returns>The total count of logs.</returns>
+	/// <response code="200">Returns the total log count.</response>
+	/// <response code="500">If an error occurs while retrieving the count.</response>
+	[HttpGet("count")]
+	[ProducesResponseType(typeof(LogCountResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<ActionResult<LogCountResponse>> GetCountAsync([FromQuery] LogFilterRequest request)
+	{
+		try
+		{
+			Logger.LogInformation(
+				"Retrieving log count - LogLevel: {LogLevel}, StartDate: {StartDate}, EndDate: {EndDate}",
+				request.LogLevel ?? "All",
+				request.StartDate?.ToString("O") ?? "None",
+				request.EndDate?.ToString("O") ?? "None");
+
+			var count = await LogRepository.GetLogsCountAsync(
+				logLevel: request.LogLevel,
+				startDate: request.StartDate,
+				endDate: request.EndDate,
+				sourceContext: request.SourceContext,
+				requestPath: request.RequestPath);
+
+			Logger.LogInformation("Retrieved log count: {Count}", count);
+
+			return Ok(new LogCountResponse { Total = count });
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error retrieving log count");
+			return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving log count");
+		}
+	}
+
+	/// <summary>
 	/// Gets aggregated statistics for logs within an optional date range.
 	/// </summary>
 	/// <param name="startDate">The start date for the statistics period (optional).</param>
@@ -169,6 +207,83 @@ public class LogsController : ControllerBase
 		{
 			Logger.LogError(ex, "Error retrieving log statistics");
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving log statistics");
+		}
+	}
+
+	/// <summary>
+	/// Deletes a single log entry by ID.
+	/// </summary>
+	/// <param name="id">The ID of the log to delete.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>No content if successful; not found if log doesn't exist.</returns>
+	/// <response code="204">Log successfully deleted.</response>
+	/// <response code="404">Log with specified ID not found.</response>
+	/// <response code="500">If an error occurs while deleting the log.</response>
+	[HttpDelete("{id}")]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<IActionResult> DeleteLogAsync(int id, CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			Logger.LogInformation("Deleting log with ID: {LogId}", id);
+
+			var deleted = await LogRepository.DeleteByIdAsync(id, cancellationToken);
+
+			if (!deleted)
+			{
+				Logger.LogWarning("Log with ID {LogId} not found", id);
+				return NotFound();
+			}
+
+			Logger.LogInformation("Successfully deleted log with ID: {LogId}", id);
+			return NoContent();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error deleting log with ID: {LogId}", id);
+			return StatusCode(StatusCodes.Status500InternalServerError, "Error deleting log");
+		}
+	}
+
+	/// <summary>
+	/// Deletes multiple log entries in a single batch operation.
+	/// </summary>
+	/// <param name="ids">Array of log IDs to delete.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>The number of logs successfully deleted.</returns>
+	/// <response code="200">Returns the count of deleted logs.</response>
+	/// <response code="400">If no log IDs are provided.</response>
+	/// <response code="500">If an error occurs while deleting logs.</response>
+	[HttpDelete("batch")]
+	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<ActionResult<int>> DeleteLogBatchAsync(
+		[FromBody] int[] ids,
+		CancellationToken cancellationToken = default)
+	{
+		if (ids == null || ids.Length == 0)
+		{
+			Logger.LogWarning("Batch delete request received with no IDs");
+			return BadRequest("No log IDs provided");
+		}
+
+		try
+		{
+			Logger.LogWarning("Bulk deleting {Count} logs", ids.Length);
+
+			var deletedCount = await LogRepository.DeleteBatchAsync(ids, cancellationToken);
+
+			Logger.LogWarning("Successfully deleted {DeletedCount} of {RequestedCount} logs", deletedCount, ids.Length);
+
+			return Ok(deletedCount);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error bulk deleting logs. Requested count: {Count}", ids.Length);
+			return StatusCode(StatusCodes.Status500InternalServerError, "Error bulk deleting logs");
 		}
 	}
 

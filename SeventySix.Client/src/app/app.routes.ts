@@ -75,12 +75,26 @@ export const routes: Routes = [
 	},
 	{
 		path: "admin",
-		loadComponent: () =>
-			import(
-				"./features/admin/admin-dashboard/admin-dashboard.component"
-			).then((m) => m.AdminDashboardComponent),
-		title: "Admin Dashboard",
-		data: { breadcrumb: "Admin" }
+		data: { breadcrumb: "Admin" },
+		children: [
+			{
+				path: "",
+				loadComponent: () =>
+					import(
+						"./features/admin/admin-dashboard/admin-dashboard.component"
+					).then((m) => m.AdminDashboardComponent),
+				title: "Admin Dashboard"
+			},
+			{
+				path: "logs",
+				loadComponent: () =>
+					import(
+						"./features/admin/pages/log-management-page/log-management-page.component"
+					).then((m) => m.LogManagementPageComponent),
+				title: "Log Management",
+				data: { breadcrumb: "Logs" }
+			}
+		]
 	},
 	{
 		path: "error",

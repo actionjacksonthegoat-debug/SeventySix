@@ -8,7 +8,7 @@ import {
 import {
 	ThirdPartyApiRequest,
 	ThirdPartyApiStatistics
-} from "../../models/admin";
+} from "../../../core/models/admin";
 import { ThirdPartyApiService } from "./third-party-api.service";
 
 describe("ThirdPartyApiService", () =>

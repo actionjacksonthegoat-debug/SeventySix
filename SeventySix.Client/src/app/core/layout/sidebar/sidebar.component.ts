@@ -66,6 +66,11 @@ export class SidebarComponent
 					route: "/users"
 				},
 				{
+					label: "Logs",
+					icon: "article",
+					route: "/admin/logs"
+				},
+				{
 					label: "Settings",
 					icon: "settings",
 					route: "/settings"

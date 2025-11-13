@@ -1,7 +1,7 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { LogChartData, LogStatistics } from "../../models/admin";
+import { LogChartData, LogStatistics } from "../../../core/models/admin";
 
 /**
  * Service for managing log chart data and statistics

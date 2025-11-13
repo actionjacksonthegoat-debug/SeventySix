@@ -1,0 +1,156 @@
+<div class="log-table-container" role="region" aria-label="Log entries table">
+	<!-- Bulk actions toolbar -->
+	@if (selection.hasValue())
+	{
+		<div
+			class="bulk-actions"
+			role="toolbar"
+			aria-label="Bulk actions for selected logs"
+		>
+			<span class="selected-count" aria-live="polite" aria-atomic="true"
+				>{{ selection.selected.length }} log{{
+					selection.selected.length !== 1 ? "s" : ""
+				}}
+				selected</span
+			>
+			<button
+				mat-raised-button
+				color="warn"
+				(click)="onDeleteSelected()"
+				aria-label="Delete {{
+					selection.selected.length
+				}} selected log entries"
+			>
+				<mat-icon>delete</mat-icon>
+				Delete Selected
+			</button>
+		</div>
+	}
+
+	<!-- Log table -->
+	<table
+		mat-table
+		[dataSource]="dataSource"
+		matSort
+		class="log-table"
+		role="table"
+		aria-label="Logs table with sortable columns"
+	>
+		<!-- Checkbox Column -->
+		<ng-container matColumnDef="select">
+			<th mat-header-cell *matHeaderCellDef>
+				<mat-checkbox
+					(change)="selectAll()"
+					[checked]="isAllSelected()"
+					[indeterminate]="selection.hasValue() && !isAllSelected()"
+					aria-label="Select all logs on this page"
+				>
+				</mat-checkbox>
+			</th>
+			<td mat-cell *matCellDef="let log">
+				<mat-checkbox
+					(click)="$event.stopPropagation()"
+					(change)="toggleSelection(log)"
+					[checked]="selection.isSelected(log)"
+					[attr.aria-label]="'Select log entry ' + log.id"
+				>
+				</mat-checkbox>
+			</td>
+		</ng-container>
+
+		<!-- Level Column -->
+		<ng-container matColumnDef="level">
+			<th mat-header-cell *matHeaderCellDef mat-sort-header>Level</th>
+			<td mat-cell *matCellDef="let log">
+				<span class="level-chip" [ngClass]="getLevelClass(log.level)">
+					{{ getLevelName(log.level) }}
+				</span>
+			</td>
+		</ng-container>
+
+		<!-- Timestamp Column -->
+		<ng-container matColumnDef="timestamp">
+			<th mat-header-cell *matHeaderCellDef mat-sort-header>Time</th>
+			<td mat-cell *matCellDef="let log">
+				<span
+					class="timestamp"
+					[matTooltip]="log.timestamp.toLocaleString()"
+				>
+					{{ getRelativeTime(log.timestamp) }}
+				</span>
+			</td>
+		</ng-container>
+
+		<!-- Message Column -->
+		<ng-container matColumnDef="message">
+			<th mat-header-cell *matHeaderCellDef mat-sort-header>Message</th>
+			<td mat-cell *matCellDef="let log">
+				<span class="message" [matTooltip]="log.message">
+					{{ truncateMessage(log.message, 100) }}
+				</span>
+			</td>
+		</ng-container>
+
+		<!-- Source Context Column -->
+		<ng-container matColumnDef="sourceContext">
+			<th mat-header-cell *matHeaderCellDef mat-sort-header>Source</th>
+			<td mat-cell *matCellDef="let log">
+				{{ log.sourceContext || "—" }}
+			</td>
+		</ng-container>
+
+		<!-- Request Path Column -->
+		<ng-container matColumnDef="requestPath">
+			<th mat-header-cell *matHeaderCellDef mat-sort-header>Path</th>
+			<td mat-cell *matCellDef="let log">
+				{{ log.requestPath || "—" }}
+			</td>
+		</ng-container>
+
+		<!-- Actions Column -->
+		<ng-container matColumnDef="actions">
+			<th mat-header-cell *matHeaderCellDef>Actions</th>
+			<td mat-cell *matCellDef="let log">
+				<button
+					mat-icon-button
+					color="warn"
+					(click)="$event.stopPropagation(); onDeleteLog(log)"
+					matTooltip="Delete log"
+				>
+					<mat-icon>delete</mat-icon>
+				</button>
+			</td>
+		</ng-container>
+
+		<!-- Table rows -->
+		<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+		<tr
+			mat-row
+			*matRowDef="let log; columns: displayedColumns"
+			class="log-row"
+			(click)="onRowClick(log)"
+		></tr>
+
+		<!-- Empty state -->
+		<tr class="mat-row" *matNoDataRow>
+			<td
+				class="mat-cell empty-state"
+				[attr.colspan]="displayedColumns.length"
+			>
+				<mat-icon>info</mat-icon>
+				<p>No logs found</p>
+			</td>
+		</tr>
+	</table>
+
+	<!-- Paginator -->
+	<mat-paginator
+		[length]="totalCount()"
+		[pageSize]="pageSize()"
+		[pageIndex]="pageIndex()"
+		[pageSizeOptions]="pageSizeOptions"
+		(page)="onPageChange($event)"
+		showFirstLastButtons
+	>
+	</mat-paginator>
+</div>

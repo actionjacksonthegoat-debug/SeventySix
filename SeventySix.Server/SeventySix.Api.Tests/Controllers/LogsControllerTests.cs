@@ -746,4 +746,268 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		Assert.NotNull(chartData);
 		Assert.Equal("24h", chartData.Period); // Default should be 24h
 	}
+
+	/// <summary>
+	/// Tests that GET /api/logs/count returns total count with no filters.
+	/// </summary>
+	[Fact]
+	public async Task GetCountAsync_NoFilters_ReturnsTotalCountAsync()
+	{
+		// Act
+		var response = await Client.GetAsync("/api/logs/count");
+
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		Assert.NotNull(countResponse);
+		Assert.True(countResponse.Total >= 3); // At least the 3 seeded logs
+	}
+
+	/// <summary>
+	/// Tests that GET /api/logs/count filters by log level.
+	/// </summary>
+	[Fact]
+	public async Task GetCountAsync_FilterByLogLevel_ReturnsMatchingCountAsync()
+	{
+		// Act
+		var response = await Client.GetAsync("/api/logs/count?logLevel=Error");
+
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		Assert.NotNull(countResponse);
+		Assert.True(countResponse.Total >= 1); // At least one Error log
+	}
+
+	/// <summary>
+	/// Tests that GET /api/logs/count filters by date range.
+	/// </summary>
+	[Fact]
+	public async Task GetCountAsync_FilterByDateRange_ReturnsMatchingCountAsync()
+	{
+		// Arrange
+		var startDate = DateTime.UtcNow.AddHours(-2.5);
+		var endDate = DateTime.UtcNow.AddMinutes(-30);
+
+		// Act
+		var response = await Client.GetAsync(
+			$"/api/logs/count?startDate={startDate:O}&endDate={endDate:O}");
+
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		Assert.NotNull(countResponse);
+		Assert.True(countResponse.Total >= 1); // At least one log in this range
+	}
+
+	/// <summary>
+	/// Tests that GET /api/logs/count filters by source context.
+	/// </summary>
+	[Fact]
+	public async Task GetCountAsync_FilterBySourceContext_ReturnsMatchingCountAsync()
+	{
+		// Act
+		var response = await Client.GetAsync(
+			"/api/logs/count?sourceContext=SeventySix.Api.Controllers.WeatherController");
+
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		Assert.NotNull(countResponse);
+		Assert.True(countResponse.Total >= 2); // At least 2 logs from WeatherController
+	}
+
+	/// <summary>
+	/// Tests that GET /api/logs/count filters by request path.
+	/// </summary>
+	[Fact]
+	public async Task GetCountAsync_FilterByRequestPath_ReturnsMatchingCountAsync()
+	{
+		// Act
+		var response = await Client.GetAsync("/api/logs/count?requestPath=/api/weather");
+
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		Assert.NotNull(countResponse);
+		Assert.True(countResponse.Total >= 2); // At least 2 logs for /api/weather
+	}
+
+	/// <summary>
+	/// Tests that GET /api/logs/count applies multiple filters.
+	/// </summary>
+	[Fact]
+	public async Task GetCountAsync_MultipleFilters_ReturnsMatchingCountAsync()
+	{
+		// Act
+		var response = await Client.GetAsync(
+			"/api/logs/count?logLevel=Warning&sourceContext=SeventySix.Api.Controllers.WeatherController");
+
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		Assert.NotNull(countResponse);
+		Assert.True(countResponse.Total >= 1); // At least 1 Warning from WeatherController
+	}
+
+	/// <summary>
+	/// Tests that DELETE /api/logs/{id} deletes a log and returns 204 No Content.
+	/// </summary>
+	[Fact]
+	public async Task DeleteLogAsync_WithValidId_ReturnsNoContentAsync()
+	{
+		// Arrange - Create a log to delete
+		using var scope = Factory.Services.CreateScope();
+		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		var log = await logRepo.CreateAsync(new Log
+		{
+			LogLevel = "Error",
+			Message = "Test log for deletion",
+			Timestamp = DateTime.UtcNow,
+			MachineName = "test",
+			Environment = "Test",
+		});
+
+		// Act
+		var response = await Client.DeleteAsync($"/api/logs/{log.Id}");
+
+		// Assert
+		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+		// Verify log is deleted
+		var logs = await logRepo.GetLogsAsync(take: 1000);
+		Assert.DoesNotContain(logs, l => l.Id == log.Id);
+	}
+
+	/// <summary>
+	/// Tests that DELETE /api/logs/{id} returns 404 for non-existent log.
+	/// </summary>
+	[Fact]
+	public async Task DeleteLogAsync_WithInvalidId_ReturnsNotFoundAsync()
+	{
+		// Act
+		var response = await Client.DeleteAsync("/api/logs/999999999");
+
+		// Assert
+		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+	}
+
+	/// <summary>
+	/// Tests that DELETE /api/logs/batch deletes multiple logs and returns count.
+	/// </summary>
+	[Fact]
+	public async Task DeleteLogBatchAsync_WithValidIds_ReturnsDeletedCountAsync()
+	{
+		// Arrange - Create logs to delete
+		using var scope = Factory.Services.CreateScope();
+		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+
+		var log1 = await logRepo.CreateAsync(new Log
+		{
+			LogLevel = "Error",
+			Message = "Batch delete test 1",
+			Timestamp = DateTime.UtcNow,
+			MachineName = "test",
+			Environment = "Test",
+		});
+
+		var log2 = await logRepo.CreateAsync(new Log
+		{
+			LogLevel = "Warning",
+			Message = "Batch delete test 2",
+			Timestamp = DateTime.UtcNow,
+			MachineName = "test",
+			Environment = "Test",
+		});
+
+		var log3 = await logRepo.CreateAsync(new Log
+		{
+			LogLevel = "Fatal",
+			Message = "Batch delete test 3",
+			Timestamp = DateTime.UtcNow,
+			MachineName = "test",
+			Environment = "Test",
+		});
+
+		var idsToDelete = new[] { log1.Id, log2.Id, log3.Id };
+
+		// Act
+		var request = new HttpRequestMessage(HttpMethod.Delete, "/api/logs/batch")
+		{
+			Content = JsonContent.Create(idsToDelete),
+		};
+		var response = await Client.SendAsync(request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		var deletedCount = await response.Content.ReadFromJsonAsync<int>();
+		Assert.Equal(3, deletedCount);
+
+		// Verify logs are deleted
+		var remainingLogs = await logRepo.GetLogsAsync(take: 1000);
+		Assert.DoesNotContain(remainingLogs, l => idsToDelete.Contains(l.Id));
+	}
+
+	/// <summary>
+	/// Tests that DELETE /api/logs/batch with empty array returns 400 Bad Request.
+	/// </summary>
+	[Fact]
+	public async Task DeleteLogBatchAsync_WithEmptyArray_ReturnsBadRequestAsync()
+	{
+		// Arrange
+		var emptyIds = Array.Empty<int>();
+
+		// Act
+		var request = new HttpRequestMessage(HttpMethod.Delete, "/api/logs/batch")
+		{
+			Content = JsonContent.Create(emptyIds),
+		};
+		var response = await Client.SendAsync(request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+	}
+
+	/// <summary>
+	/// Tests that DELETE /api/logs/batch returns partial count if some IDs don't exist.
+	/// </summary>
+	[Fact]
+	public async Task DeleteLogBatchAsync_WithSomeInvalidIds_ReturnsPartialCountAsync()
+	{
+		// Arrange - Create one log to delete
+		using var scope = Factory.Services.CreateScope();
+		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+
+		var log = await logRepo.CreateAsync(new Log
+		{
+			LogLevel = "Error",
+			Message = "Partial batch delete test",
+			Timestamp = DateTime.UtcNow,
+			MachineName = "test",
+			Environment = "Test",
+		});
+
+		// Include one valid and two invalid IDs
+		var idsToDelete = new[] { log.Id, 999999998, 999999999 };
+
+		// Act
+		var request = new HttpRequestMessage(HttpMethod.Delete, "/api/logs/batch")
+		{
+			Content = JsonContent.Create(idsToDelete),
+		};
+		var response = await Client.SendAsync(request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		var deletedCount = await response.Content.ReadFromJsonAsync<int>();
+		Assert.Equal(1, deletedCount); // Only 1 valid ID was deleted
+	}
 }

@@ -107,4 +107,29 @@ public interface ILogRepository
 		DateTime startDate,
 		DateTime endDate,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Deletes a single log entry by its ID.
+	/// </summary>
+	/// <param name="id">The ID of the log to delete.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>True if the log was found and deleted; false if not found.</returns>
+	/// <remarks>
+	/// Used for individual log deletion from the log management UI.
+	/// Returns false if the log doesn't exist (already deleted or invalid ID).
+	/// </remarks>
+	public Task<bool> DeleteByIdAsync(int id, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Deletes multiple log entries by their IDs in a single operation.
+	/// </summary>
+	/// <param name="ids">Array of log IDs to delete.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>The number of logs successfully deleted.</returns>
+	/// <remarks>
+	/// Used for bulk deletion from the log management UI.
+	/// Performs batch delete for better performance.
+	/// Returns count of actually deleted logs (may be less than input if some IDs don't exist).
+	/// </remarks>
+	public Task<int> DeleteBatchAsync(int[] ids, CancellationToken cancellationToken = default);
 }

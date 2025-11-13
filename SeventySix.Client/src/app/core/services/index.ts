@@ -2,7 +2,7 @@
  * Core services barrel export
  */
 
-export * from "../../features/home/weather/services/weather-service/weather.service";
+export * from "../../features/home/weather/services/weather.service";
 export * from "./logger.service";
 export * from "./notification.service";
 export * from "./error-handler.service";
@@ -15,4 +15,4 @@ export * from "./theme.service";
 export * from "./layout.service";
 export * from "./loading.service";
 export * from "./viewport.service";
-export * from "../../features/admin/users/services/user-service/user.service";
+export * from "../../features/admin/users/services/user.service";

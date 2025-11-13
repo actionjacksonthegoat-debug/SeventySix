@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { UserService } from "@features/admin/users/services/user-service/user.service";
+import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
 import { of, throwError } from "rxjs";
 import { User } from "@core/models/interfaces/user";

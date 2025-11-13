@@ -1,0 +1,49 @@
+<div class="log-summary">
+	@if (statistics())
+	{
+		<div class="summary-grid">
+			<div class="stat-card total">
+				<mat-icon class="stat-icon">feed</mat-icon>
+				<div class="stat-content">
+					<div class="stat-value">{{ formattedTotal() }}</div>
+					<div class="stat-label">Total Logs</div>
+				</div>
+			</div>
+
+			<div class="stat-card errors">
+				<mat-icon class="stat-icon">error</mat-icon>
+				<div class="stat-content">
+					<div class="stat-value">{{ formattedErrors() }}</div>
+					<div class="stat-label">Errors</div>
+				</div>
+			</div>
+
+			<div class="stat-card warnings">
+				<mat-icon class="stat-icon">warning</mat-icon>
+				<div class="stat-content">
+					<div class="stat-value">{{ formattedWarnings() }}</div>
+					<div class="stat-label">Warnings</div>
+				</div>
+			</div>
+
+			<div class="stat-card fatals">
+				<mat-icon class="stat-icon">report</mat-icon>
+				<div class="stat-content">
+					<div class="stat-value">{{ formattedFatals() }}</div>
+					<div class="stat-label">Fatals</div>
+				</div>
+			</div>
+		</div>
+	}
+	@else
+	{
+		<div class="no-data">No statistics available</div>
+	}
+	@if (lastUpdated())
+	{
+		<div class="last-updated">
+			<mat-icon>update</mat-icon>
+			<span>Last updated: {{ relativeTime() }}</span>
+		</div>
+	}
+</div>

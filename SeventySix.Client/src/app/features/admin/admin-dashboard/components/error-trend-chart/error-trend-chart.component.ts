@@ -12,7 +12,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { ChartConfiguration } from "chart.js";
 import { ChartComponent } from "@shared/components/chart/chart.component";
-import { LogChartService } from "@core/services/admin";
+import { LogChartService } from "@features/admin/services";
 import { LogChartData } from "@core/models/admin";
 
 /**

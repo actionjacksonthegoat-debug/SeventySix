@@ -1,0 +1,299 @@
+<div
+	class="log-detail-dialog"
+	role="dialog"
+	aria-labelledby="log-dialog-title"
+	aria-describedby="log-dialog-description"
+>
+	<!-- Header -->
+	<div mat-dialog-title class="dialog-header">
+		<div class="header-content" id="log-dialog-title">
+			<mat-icon
+				[ngClass]="getLevelClass(log().level)"
+				attr.aria-label="Log level: {{ getLevelName(log().level) }}"
+				>{{ getLevelIcon(log().level) }}</mat-icon
+			>
+			<span class="level-name" [ngClass]="getLevelClass(log().level)">{{
+				getLevelName(log().level)
+			}}</span>
+			@if (log().sourceContext)
+			{
+				<span class="source-context">• {{ log().sourceContext }}</span>
+			}
+			<span class="timestamp"
+				>• {{ getRelativeTime(log().timestamp) }}</span
+			>
+		</div>
+		<div class="header-actions">
+			<button
+				mat-icon-button
+				(click)="copyToClipboard()"
+				matTooltip="Copy to clipboard"
+				aria-label="Copy log details to clipboard"
+			>
+				<mat-icon>content_copy</mat-icon>
+			</button>
+			<button
+				mat-icon-button
+				(click)="onDelete()"
+				matTooltip="Delete log"
+				color="warn"
+				aria-label="Delete this log entry"
+			>
+				<mat-icon>delete</mat-icon>
+			</button>
+			<button
+				mat-icon-button
+				(click)="onClose()"
+				matTooltip="Close (Esc)"
+				aria-label="Close dialog (Press Escape)"
+			>
+				<mat-icon>close</mat-icon>
+			</button>
+		</div>
+	</div>
+
+	<mat-divider></mat-divider>
+
+	<!-- Content -->
+	<div mat-dialog-content class="dialog-content" id="log-dialog-description">
+		<!-- Message Section -->
+		<section class="detail-section">
+			<h3 class="section-title">Message</h3>
+			<div class="section-content message-content">
+				{{ log().message }}
+			</div>
+		</section>
+
+		<mat-divider></mat-divider>
+
+		<!-- Exception Section -->
+		@if (log().exception)
+		{
+			<section class="detail-section">
+				<h3 class="section-title">Exception</h3>
+				<div class="section-content exception-content">
+					{{ log().exception }}
+				</div>
+			</section>
+
+			<mat-divider></mat-divider>
+		}
+
+		<!-- Stack Trace Section -->
+		@if (log().stackTrace)
+		{
+			<section class="detail-section">
+				<div class="section-header">
+					<h3 class="section-title">Stack Trace</h3>
+					<button
+						mat-icon-button
+						(click)="toggleStackTrace()"
+						[matTooltip]="
+							stackTraceCollapsed() ? 'Expand' : 'Collapse'
+						"
+					>
+						<mat-icon>{{
+							stackTraceCollapsed()
+								? "expand_more"
+								: "expand_less"
+						}}</mat-icon>
+					</button>
+				</div>
+				@if (!stackTraceCollapsed())
+				{
+					<div class="section-content stack-trace-content">
+						<pre>{{ formatStackTrace(log().stackTrace) }}</pre>
+					</div>
+				}
+			</section>
+
+			<mat-divider></mat-divider>
+		}
+
+		<!-- Request Information Section -->
+		@if (log().requestPath || log().statusCode || log().duration)
+		{
+			<section class="detail-section">
+				<h3 class="section-title">Request Information</h3>
+				<div class="section-content info-grid">
+					@if (log().requestPath)
+					{
+						<div class="info-item">
+							<span class="info-label">Path:</span>
+							<span class="info-value">{{
+								log().requestPath
+							}}</span>
+						</div>
+					}
+					@if (log().statusCode)
+					{
+						<div class="info-item">
+							<span class="info-label">Status Code:</span>
+							<span class="info-value">{{
+								log().statusCode
+							}}</span>
+						</div>
+					}
+					@if (log().duration)
+					{
+						<div class="info-item">
+							<span class="info-label">Duration:</span>
+							<span class="info-value"
+								>{{ log().duration }} ms</span
+							>
+						</div>
+					}
+					@if (log().requestId)
+					{
+						<div class="info-item">
+							<span class="info-label">Request ID:</span>
+							<span class="info-value">{{
+								log().requestId
+							}}</span>
+						</div>
+					}
+					@if (log().correlationId)
+					{
+						<div class="info-item">
+							<span class="info-label">Correlation ID:</span>
+							<span class="info-value">{{
+								log().correlationId
+							}}</span>
+						</div>
+					}
+				</div>
+			</section>
+
+			<mat-divider></mat-divider>
+		}
+
+		<!-- User Information Section -->
+		@if (
+			log().userId || log().userName || log().clientIp || log().userAgent
+		)
+		{
+			<section class="detail-section">
+				<h3 class="section-title">User Information</h3>
+				<div class="section-content info-grid">
+					@if (log().userId)
+					{
+						<div class="info-item">
+							<span class="info-label">User ID:</span>
+							<span class="info-value">{{ log().userId }}</span>
+						</div>
+					}
+					@if (log().userName)
+					{
+						<div class="info-item">
+							<span class="info-label">Username:</span>
+							<span class="info-value">{{ log().userName }}</span>
+						</div>
+					}
+					@if (log().clientIp)
+					{
+						<div class="info-item">
+							<span class="info-label">IP Address:</span>
+							<span class="info-value">{{ log().clientIp }}</span>
+						</div>
+					}
+					@if (log().userAgent)
+					{
+						<div class="info-item">
+							<span class="info-label">User Agent:</span>
+							<span class="info-value">{{
+								log().userAgent
+							}}</span>
+						</div>
+					}
+					@if (log().sessionId)
+					{
+						<div class="info-item">
+							<span class="info-label">Session ID:</span>
+							<span class="info-value">{{
+								log().sessionId
+							}}</span>
+						</div>
+					}
+				</div>
+			</section>
+
+			<mat-divider></mat-divider>
+		}
+
+		<!-- Properties Section -->
+		@if (log().properties)
+		{
+			<section class="detail-section">
+				<div class="section-header">
+					<h3 class="section-title">Properties</h3>
+					<button
+						mat-icon-button
+						(click)="toggleProperties()"
+						[matTooltip]="
+							propertiesCollapsed() ? 'Expand' : 'Collapse'
+						"
+					>
+						<mat-icon>{{
+							propertiesCollapsed()
+								? "expand_more"
+								: "expand_less"
+						}}</mat-icon>
+					</button>
+				</div>
+				@if (!propertiesCollapsed())
+				{
+					<div class="section-content properties-content">
+						<pre>{{ formatProperties(log().properties) }}</pre>
+					</div>
+				}
+			</section>
+
+			<mat-divider></mat-divider>
+		}
+
+		<!-- Metadata Section -->
+		<section class="detail-section">
+			<h3 class="section-title">Metadata</h3>
+			<div class="section-content info-grid">
+				<div class="info-item">
+					<span class="info-label">Log ID:</span>
+					<span class="info-value">{{ log().id }}</span>
+				</div>
+				<div class="info-item">
+					<span class="info-label">Timestamp:</span>
+					<span class="info-value">{{
+						log().timestamp.toLocaleString()
+					}}</span>
+				</div>
+				@if (log().machineName)
+				{
+					<div class="info-item">
+						<span class="info-label">Machine:</span>
+						<span class="info-value">{{ log().machineName }}</span>
+					</div>
+				}
+				@if (log().environment)
+				{
+					<div class="info-item">
+						<span class="info-label">Environment:</span>
+						<span class="info-value">{{ log().environment }}</span>
+					</div>
+				}
+				@if (log().application)
+				{
+					<div class="info-item">
+						<span class="info-label">Application:</span>
+						<span class="info-value">{{ log().application }}</span>
+					</div>
+				}
+				@if (log().threadId)
+				{
+					<div class="info-item">
+						<span class="info-label">Thread ID:</span>
+						<span class="info-value">{{ log().threadId }}</span>
+					</div>
+				}
+			</div>
+		</section>
+	</div>
+</div>

@@ -5,7 +5,7 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatButtonModule } from "@angular/material/button";
-import { HealthApiService } from "../../../../../core/services/admin/health-api.service";
+import { HealthApiService } from "../../../services/health-api.service";
 import { HealthStatus } from "../../../../../core/models/admin/health-status.model";
 
 /**

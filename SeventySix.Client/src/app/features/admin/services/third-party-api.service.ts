@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 import {
 	ThirdPartyApiRequest,
 	ThirdPartyApiStatistics
-} from "../../models/admin";
+} from "../../../core/models/admin";
 
 /**
  * Service for managing third-party API request data

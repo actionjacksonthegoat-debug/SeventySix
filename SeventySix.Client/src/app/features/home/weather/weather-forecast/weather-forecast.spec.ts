@@ -5,7 +5,7 @@ import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideRouter } from "@angular/router";
 import { of } from "rxjs";
 import { WeatherForecastPage } from "./weather-forecast";
-import { WeatherService } from "@features/home/weather/services/weather-service/weather.service";
+import { WeatherService } from "@features/home/weather/services/weather.service";
 
 describe("WeatherForecastPage", () =>
 {

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { HealthApiService } from "../../../../../core/services/admin/health-api.service";
+import { HealthApiService } from "../../../services/health-api.service";
 import { of, throwError } from "rxjs";
 import { HealthStatus } from "../../../../../core/models/admin/health-status.model";
 import { provideZonelessChangeDetection } from "@angular/core";

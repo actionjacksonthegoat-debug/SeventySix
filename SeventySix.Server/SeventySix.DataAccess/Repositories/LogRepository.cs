@@ -266,4 +266,69 @@ public class LogRepository : ILogRepository
 			throw;
 		}
 	}
+
+	/// <inheritdoc/>
+	public async Task<bool> DeleteByIdAsync(int id, CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			Logger.LogDebug("Attempting to delete log with ID: {LogId}", id);
+
+			var log = await Context.Logs.FindAsync(new object[] { id }, cancellationToken);
+
+			if (log == null)
+			{
+				Logger.LogWarning("Log with ID {LogId} not found for deletion", id);
+				return false;
+			}
+
+			Context.Logs.Remove(log);
+			await Context.SaveChangesAsync(cancellationToken);
+
+			Logger.LogInformation("Successfully deleted log with ID: {LogId}", id);
+			return true;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error deleting log with ID: {LogId}", id);
+			throw;
+		}
+	}
+
+	/// <inheritdoc/>
+	public async Task<int> DeleteBatchAsync(int[] ids, CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			Logger.LogDebug("Attempting to delete {Count} logs", ids.Length);
+
+			// Convert to List to avoid ReadOnlySpan implicit conversion issues in .NET 10+ LINQ expressions
+			var idList = ids.ToList();
+
+			var logsToDelete = await Context.Logs
+				.Where(l => idList.Contains(l.Id))
+				.ToListAsync(cancellationToken);
+
+			if (logsToDelete.Count == 0)
+			{
+				Logger.LogWarning("No logs found matching the provided IDs");
+				return 0;
+			}
+
+			Context.Logs.RemoveRange(logsToDelete);
+			await Context.SaveChangesAsync(cancellationToken);
+
+			Logger.LogWarning(
+				"Successfully deleted {DeletedCount} of {RequestedCount} logs",
+				logsToDelete.Count,
+				ids.Length);
+
+			return logsToDelete.Count;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error bulk deleting logs. Requested count: {Count}", ids.Length);
+			throw;
+		}
+	}
 }
