@@ -168,10 +168,11 @@ export class LogTableComponent implements AfterViewInit
 		return classes[level];
 	}
 
-	getRelativeTime(date: Date): string
+	getRelativeTime(date: Date | string): string
 	{
+		const dateObj = typeof date === "string" ? new Date(date) : date;
 		const now = Date.now();
-		const diff = now - date.getTime();
+		const diff = now - dateObj.getTime();
 		const minutes = Math.floor(diff / 60000);
 		const hours = Math.floor(diff / 3600000);
 		const days = Math.floor(diff / 86400000);

@@ -1,6 +1,7 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
+import { environment } from "@environments/environment";
 import {
 	ThirdPartyApiRequest,
 	ThirdPartyApiStatistics
@@ -15,7 +16,7 @@ import {
 export class ThirdPartyApiService
 {
 	private readonly http = inject(HttpClient);
-	private readonly apiUrl = "/api/third-party-requests";
+	private readonly apiUrl = `${environment.apiUrl}/third-party-requests`;
 
 	/**
 	 * Gets all third-party API requests

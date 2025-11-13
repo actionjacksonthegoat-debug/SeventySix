@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Collections.Concurrent;
 using System.Text;
 using Serilog.Core;
 using Serilog.Events;
@@ -22,21 +23,29 @@ namespace SeventySix.Api.Logging;
 /// Design Patterns:
 /// - Sink: Custom log event processor
 /// - Repository: Uses ILogRepository for data access
+/// - Producer-Consumer: Batches log events to prevent connection pool exhaustion
 ///
 /// SOLID Principles:
 /// - SRP: Only responsible for formatting and persisting log events
 /// - DIP: Depends on ILogRepository abstraction
 ///
 /// Performance Considerations:
-/// - Async writes to database
-/// - Batch processing via PeriodicBatching sink wrapper
+/// - Batched writes to database (every 5 seconds or 50 events)
+/// - Single background task with dedicated connection
 /// - Only logs Warning level and above to reduce database I/O
+/// - Prevents connection pool exhaustion during high load
 /// </remarks>
-public class DatabaseLogSink : ILogEventSink
+public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 {
 	private readonly IServiceProvider ServiceProvider;
 	private readonly string? Environment;
 	private readonly string? MachineName;
+	private readonly ConcurrentQueue<LogEvent> LogQueue = new();
+	private readonly Timer BatchTimer;
+	private readonly SemaphoreSlim ProcessingSemaphore = new(1, 1);
+	private const int BatchSize = 50;
+	private const int BatchIntervalMs = 5000;
+	private bool _disposed;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DatabaseLogSink"/> class.
@@ -52,6 +61,13 @@ public class DatabaseLogSink : ILogEventSink
 		ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 		Environment = environment;
 		MachineName = machineName;
+
+		// Start batch processing timer
+		BatchTimer = new Timer(
+			callback: _ => _ = ProcessBatchAsync(),
+			state: null,
+			dueTime: TimeSpan.FromMilliseconds(BatchIntervalMs),
+			period: TimeSpan.FromMilliseconds(BatchIntervalMs));
 	}
 
 	/// <inheritdoc/>
@@ -59,107 +75,161 @@ public class DatabaseLogSink : ILogEventSink
 	{
 		ArgumentNullException.ThrowIfNull(logEvent);
 
+		if (_disposed)
+		{
+			return;
+		}
+
 		// Only log Warning and above to database
 		if (logEvent.Level < LogEventLevel.Warning)
 		{
 			return;
 		}
 
-		// Use async task to prevent blocking
-		_ = Task.Run(async () => await EmitAsync(logEvent));
+		// Add to queue for batch processing
+		LogQueue.Enqueue(logEvent);
+
+		// If batch size reached, trigger immediate processing
+		if (LogQueue.Count >= BatchSize)
+		{
+			_ = ProcessBatchAsync();
+		}
 	}
 
 	/// <summary>
-	/// Asynchronously persists log event to database.
+	/// Processes batched log events asynchronously.
 	/// </summary>
-	/// <param name="logEvent">The log event to persist.</param>
-	private async Task EmitAsync(LogEvent logEvent)
+	private async Task ProcessBatchAsync(bool isDisposing = false)
 	{
+		// Wait for semaphore - if disposing, wait indefinitely, otherwise return if busy
+		var acquired = isDisposing
+			? await ProcessingSemaphore.WaitAsync(TimeSpan.FromSeconds(10))
+			: await ProcessingSemaphore.WaitAsync(0);
+
+		if (!acquired || (_disposed && !isDisposing))
+		{
+			return; // Already processing or disposed
+		}
+
 		try
 		{
-			// Create scope to resolve scoped services (DbContext)
+			var batch = new List<LogEvent>(BatchSize);
+
+			// Dequeue up to BatchSize events
+			while (batch.Count < BatchSize && LogQueue.TryDequeue(out var logEvent))
+			{
+				batch.Add(logEvent);
+			}
+
+			if (batch.Count == 0)
+			{
+				return;
+			}
+
+			// Create a single scope for the entire batch
 			using var scope = ServiceProvider.CreateScope();
 			var logRepository = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
-			var log = new Log
+			// Process all events in batch
+			foreach (var logEvent in batch)
 			{
-				LogLevel = logEvent.Level.ToString(),
-				Message = logEvent.RenderMessage(),
-				Timestamp = logEvent.Timestamp.UtcDateTime,
-				Environment = Environment,
-				MachineName = MachineName,
-			};
-
-			// Extract exception information
-			if (logEvent.Exception != null)
-			{
-				var (exceptionMessage, baseExceptionMessage, stackTrace) = FormatException(logEvent.Exception);
-				log.ExceptionMessage = exceptionMessage;
-				log.BaseExceptionMessage = baseExceptionMessage;
-				log.StackTrace = stackTrace;
-			}
-
-			// Extract HTTP context properties if available
-			if (logEvent.Properties.TryGetValue("RequestMethod", out var requestMethod))
-			{
-				log.RequestMethod = requestMethod.ToString().Trim('"');
-			}
-
-			if (logEvent.Properties.TryGetValue("RequestPath", out var requestPath))
-			{
-				log.RequestPath = requestPath.ToString().Trim('"');
-			}
-
-			if (logEvent.Properties.TryGetValue("StatusCode", out var statusCode) &&
-				int.TryParse(statusCode.ToString(), out var statusCodeValue))
-			{
-				log.StatusCode = statusCodeValue;
-			}
-
-			if (logEvent.Properties.TryGetValue("Elapsed", out var elapsed) &&
-				double.TryParse(elapsed.ToString(), out var elapsedValue))
-			{
-				log.DurationMs = (long)elapsedValue;
-			}
-
-			if (logEvent.Properties.TryGetValue("SourceContext", out var sourceContext))
-			{
-				log.SourceContext = sourceContext.ToString().Trim('"');
-			}
-
-			// Store additional properties as JSON
-			if (logEvent.Properties.Count > 0)
-			{
-				var properties = new StringBuilder();
-				properties.Append('{');
-				var first = true;
-
-				foreach (var property in logEvent.Properties)
+				try
 				{
-					if (!IsStandardProperty(property.Key))
-					{
-						if (!first)
-						{
-							properties.Append(',');
-						}
-
-						properties.Append($"\"{property.Key}\":{property.Value}");
-						first = false;
-					}
+					await EmitAsync(logEvent, logRepository);
 				}
+				catch (Exception ex)
+				{
+					// Don't throw - log to console to avoid infinite loop
+					Console.WriteLine($"[DatabaseLogSink] Error writing log to database: {ex.Message}");
+				}
+			}
+		}
+		finally
+		{
+			ProcessingSemaphore.Release();
+		}
+	}
 
-				properties.Append('}');
-				log.Properties = properties.ToString();
+	/// <summary>
+	/// Asynchronously persists log event to database using provided repository.
+	/// </summary>
+	/// <param name="logEvent">The log event to persist.</param>
+	/// <param name="logRepository">The log repository to use (shared within batch).</param>
+	private async Task EmitAsync(LogEvent logEvent, ILogRepository logRepository)
+	{
+		var log = new Log
+		{
+			LogLevel = logEvent.Level.ToString(),
+			Message = logEvent.RenderMessage(),
+			Timestamp = logEvent.Timestamp.UtcDateTime,
+			Environment = Environment,
+			MachineName = MachineName,
+		};
+
+		// Extract exception information
+		if (logEvent.Exception != null)
+		{
+			var (exceptionMessage, baseExceptionMessage, stackTrace) = FormatException(logEvent.Exception);
+			log.ExceptionMessage = exceptionMessage;
+			log.BaseExceptionMessage = baseExceptionMessage;
+			log.StackTrace = stackTrace;
+		}
+
+		// Extract HTTP context properties if available
+		if (logEvent.Properties.TryGetValue("RequestMethod", out var requestMethod))
+		{
+			log.RequestMethod = requestMethod.ToString().Trim('"');
+		}
+
+		if (logEvent.Properties.TryGetValue("RequestPath", out var requestPath))
+		{
+			log.RequestPath = requestPath.ToString().Trim('"');
+		}
+
+		if (logEvent.Properties.TryGetValue("StatusCode", out var statusCode) &&
+			int.TryParse(statusCode.ToString(), out var statusCodeValue))
+		{
+			log.StatusCode = statusCodeValue;
+		}
+
+		if (logEvent.Properties.TryGetValue("Elapsed", out var elapsed) &&
+			double.TryParse(elapsed.ToString(), out var elapsedValue))
+		{
+			log.DurationMs = (long)elapsedValue;
+		}
+
+		if (logEvent.Properties.TryGetValue("SourceContext", out var sourceContext))
+		{
+			log.SourceContext = sourceContext.ToString().Trim('"');
+		}
+
+		// Store additional properties as JSON
+		if (logEvent.Properties.Count > 0)
+		{
+			var properties = new StringBuilder();
+			properties.Append('{');
+			var first = true;
+
+			foreach (var property in logEvent.Properties)
+			{
+				if (!IsStandardProperty(property.Key))
+				{
+					if (!first)
+					{
+						properties.Append(',');
+					}
+
+					properties.Append($"\"{property.Key}\":{property.Value}");
+					first = false;
+				}
 			}
 
-			// Persist to database
-			await logRepository.CreateAsync(log);
+			properties.Append('}');
+			log.Properties = properties.ToString();
 		}
-		catch (Exception ex)
-		{
-			// Don't throw - log to console to avoid infinite loop
-			Console.WriteLine($"[DatabaseLogSink] Error writing log to database: {ex.Message}");
-		}
+
+		// Persist to database (using shared DbContext from batch scope)
+		await logRepository.CreateAsync(log);
 	}
 
 	/// <summary>
@@ -219,5 +289,26 @@ public class DatabaseLogSink : ILogEventSink
 			"ProcessId" => true,
 			_ => false,
 		};
+	}
+
+	/// <summary>
+	/// Disposes resources and flushes remaining logs asynchronously.
+	/// </summary>
+	public async ValueTask DisposeAsync()
+	{
+		if (_disposed)
+		{
+			return;
+		}
+
+		_disposed = true;
+
+		// Stop the timer
+		await BatchTimer.DisposeAsync();
+
+		// Flush remaining logs asynchronously
+		await ProcessBatchAsync(isDisposing: true);
+
+		ProcessingSemaphore?.Dispose();
 	}
 }

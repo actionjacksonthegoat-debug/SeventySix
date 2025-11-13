@@ -1,6 +1,7 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
+import { environment } from "@environments/environment";
 import { LogChartData, LogStatistics } from "../../../core/models/admin";
 
 /**
@@ -12,7 +13,7 @@ import { LogChartData, LogStatistics } from "../../../core/models/admin";
 export class LogChartService
 {
 	private readonly http = inject(HttpClient);
-	private readonly apiUrl = "/api/logs";
+	private readonly apiUrl = `${environment.apiUrl}/logs`;
 
 	/**
 	 * Gets log chart data for the specified period

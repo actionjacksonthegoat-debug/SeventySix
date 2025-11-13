@@ -58,13 +58,13 @@ public class LogsController : ControllerBase
 	/// Gets logs with optional filtering and pagination.
 	/// </summary>
 	/// <param name="request">The filter and pagination parameters.</param>
-	/// <returns>A list of logs matching the filter criteria.</returns>
-	/// <response code="200">Returns the filtered list of logs.</response>
+	/// <returns>A paginated list of logs matching the filter criteria.</returns>
+	/// <response code="200">Returns the filtered list of logs with pagination metadata.</response>
 	/// <response code="400">If the request parameters are invalid.</response>
 	[HttpGet]
-	[ProducesResponseType(typeof(IEnumerable<LogResponse>), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(PagedLogResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<ActionResult<IEnumerable<LogResponse>>> GetLogsAsync([FromQuery] LogFilterRequest request)
+	public async Task<ActionResult<PagedLogResponse>> GetLogsAsync([FromQuery] LogFilterRequest request)
 	{
 		try
 		{
@@ -76,6 +76,15 @@ public class LogsController : ControllerBase
 				request.Page,
 				request.PageSize);
 
+			// Get total count for pagination
+			var totalCount = await LogRepository.GetLogsCountAsync(
+				logLevel: request.LogLevel,
+				startDate: request.StartDate,
+				endDate: request.EndDate,
+				sourceContext: request.SourceContext,
+				requestPath: request.RequestPath);
+
+			// Get paginated logs
 			var logs = await LogRepository.GetLogsAsync(
 				logLevel: request.LogLevel,
 				startDate: request.StartDate,
@@ -85,7 +94,7 @@ public class LogsController : ControllerBase
 				skip: request.GetSkip(),
 				take: request.GetValidatedPageSize());
 
-			var response = logs.Select(log => new LogResponse
+			var logResponses = logs.Select(log => new LogResponse
 			{
 				Id = log.Id,
 				LogLevel = log.LogLevel,
@@ -104,7 +113,15 @@ public class LogsController : ControllerBase
 				Environment = log.Environment,
 			}).ToList();
 
-			Logger.LogInformation("Retrieved {Count} logs", response.Count);
+			var response = new PagedLogResponse
+			{
+				Data = logResponses,
+				TotalCount = totalCount,
+				PageNumber = request.Page,
+				PageSize = request.GetValidatedPageSize(),
+			};
+
+			Logger.LogInformation("Retrieved {Count} of {Total} logs (Page {Page})", logResponses.Count, totalCount, request.Page);
 
 			return Ok(response);
 		}

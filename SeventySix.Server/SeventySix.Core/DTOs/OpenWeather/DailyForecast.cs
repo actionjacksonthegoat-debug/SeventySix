@@ -12,10 +12,11 @@ namespace SeventySix.Core.DTOs.OpenWeather;
 public class DailyForecast
 {
 	/// <summary>
-	/// Gets or sets the forecast time (Unix UTC, midnight).
+	/// Gets or sets the forecast time (Unix UTC, midnight) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("dt")]
-	public long Timestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long Timestamp
 	{
 		get; set;
 	}
@@ -26,10 +27,11 @@ public class DailyForecast
 	public DateTime DateTime => DateTimeOffset.FromUnixTimeSeconds(Timestamp).UtcDateTime;
 
 	/// <summary>
-	/// Gets or sets the sunrise time (Unix UTC).
+	/// Gets or sets the sunrise time (Unix UTC) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("sunrise")]
-	public long SunriseTimestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long SunriseTimestamp
 	{
 		get; set;
 	}
@@ -40,10 +42,11 @@ public class DailyForecast
 	public DateTime Sunrise => DateTimeOffset.FromUnixTimeSeconds(SunriseTimestamp).UtcDateTime;
 
 	/// <summary>
-	/// Gets or sets the sunset time (Unix UTC).
+	/// Gets or sets the sunset time (Unix UTC) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("sunset")]
-	public long SunsetTimestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long SunsetTimestamp
 	{
 		get; set;
 	}
@@ -54,10 +57,11 @@ public class DailyForecast
 	public DateTime Sunset => DateTimeOffset.FromUnixTimeSeconds(SunsetTimestamp).UtcDateTime;
 
 	/// <summary>
-	/// Gets or sets the moonrise time (Unix UTC).
+	/// Gets or sets the moonrise time (Unix UTC) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("moonrise")]
-	public long MoonriseTimestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long MoonriseTimestamp
 	{
 		get; set;
 	}
@@ -68,10 +72,11 @@ public class DailyForecast
 	public DateTime Moonrise => DateTimeOffset.FromUnixTimeSeconds(MoonriseTimestamp).UtcDateTime;
 
 	/// <summary>
-	/// Gets or sets the moonset time (Unix UTC).
+	/// Gets or sets the moonset time (Unix UTC) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("moonset")]
-	public long MoonsetTimestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long MoonsetTimestamp
 	{
 		get; set;
 	}

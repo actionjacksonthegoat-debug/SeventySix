@@ -27,10 +27,11 @@ public class WeatherAlert
 	public string Event { get; set; } = string.Empty;
 
 	/// <summary>
-	/// Gets or sets the alert start time (Unix UTC).
+	/// Gets or sets the alert start time (Unix UTC) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("start")]
-	public long StartTimestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long StartTimestamp
 	{
 		get; set;
 	}
@@ -41,10 +42,11 @@ public class WeatherAlert
 	public DateTime Start => DateTimeOffset.FromUnixTimeSeconds(StartTimestamp).UtcDateTime;
 
 	/// <summary>
-	/// Gets or sets the alert end time (Unix UTC).
+	/// Gets or sets the alert end time (Unix UTC) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("end")]
-	public long EndTimestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long EndTimestamp
 	{
 		get; set;
 	}

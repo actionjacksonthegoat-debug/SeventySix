@@ -68,7 +68,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task Emit_WarningLevel_WritesToDatabaseAsync()
 	{
 		// Arrange
-		var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
+		await using var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
 		var messageTemplate = new MessageTemplateParser().Parse("Test warning message");
 		var logEvent = new LogEvent(
 			DateTimeOffset.UtcNow,
@@ -79,7 +79,42 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 
 		// Act
 		sink.Emit(logEvent);
-		await Task.Delay(500); // Allow async write to complete
+		// await using will dispose and flush the batch automatically
+		// Note: Explicit DisposeAsync happens at end of scope
+	}
+
+	private async Task WaitForBatchProcessing()
+	{
+		await Task.Delay(100); // Allow batch to complete
+	}
+
+	private async Task AssertSingleLog(string expectedLevel, string expectedMessage)
+	{
+		await WaitForBatchProcessing();
+		var logs = await LogRepository!.GetLogsAsync();
+		Assert.Single(logs);
+		var log = logs.First();
+		Assert.Equal(expectedLevel, log.LogLevel);
+		Assert.Equal(expectedMessage, log.Message);
+	}
+
+	[Fact]
+	public async Task Emit_WarningLevel_WritesToDatabase_VerifiedAsync()
+	{
+		// Arrange
+		await using var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
+		var messageTemplate = new MessageTemplateParser().Parse("Test warning message");
+		var logEvent = new LogEvent(
+			DateTimeOffset.UtcNow,
+			LogEventLevel.Warning,
+			null,
+			messageTemplate,
+			[]);
+
+		// Act
+		sink.Emit(logEvent);
+		// Dispose flushes the batch
+		await sink.DisposeAsync();
 
 		// Assert
 		var logs = await LogRepository!.GetLogsAsync();
@@ -95,7 +130,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task Emit_ErrorLevel_WritesToDatabaseAsync()
 	{
 		// Arrange
-		var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
+		await using var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
 		var messageTemplate = new MessageTemplateParser().Parse("Test error message");
 		var logEvent = new LogEvent(
 			DateTimeOffset.UtcNow,
@@ -106,7 +141,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 
 		// Act
 		sink.Emit(logEvent);
-		await Task.Delay(500); // Allow async write to complete
+		await sink.DisposeAsync();
 
 		// Assert
 		var logs = await LogRepository!.GetLogsAsync();
@@ -120,7 +155,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task Emit_InformationLevel_DoesNotWriteToDatabaseAsync()
 	{
 		// Arrange
-		var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
+		await using var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
 		var messageTemplate = new MessageTemplateParser().Parse("Test info message");
 		var logEvent = new LogEvent(
 			DateTimeOffset.UtcNow,
@@ -131,7 +166,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 
 		// Act
 		sink.Emit(logEvent);
-		await Task.Delay(500); // Allow async write to complete
+		await sink.DisposeAsync();
 
 		// Assert
 		var logs = await LogRepository!.GetLogsAsync();
@@ -142,7 +177,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task Emit_WithException_FormatsExceptionProperlyAsync()
 	{
 		// Arrange
-		var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
+		await using var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
 		Exception caughtException;
 		try
 		{
@@ -163,7 +198,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 
 		// Act
 		sink.Emit(logEvent);
-		await Task.Delay(500); // Allow async write to complete
+		await sink.DisposeAsync();
 
 		// Assert
 		var logs = await LogRepository!.GetLogsAsync();
@@ -177,7 +212,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task Emit_WithNestedException_CapturesBaseExceptionAsync()
 	{
 		// Arrange
-		var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
+		await using var sink = new DatabaseLogSink(ServiceProvider!, "Test", "TestMachine");
 
 		Exception nestedException;
 		try
@@ -206,7 +241,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 
 		// Act
 		sink.Emit(logEvent);
-		await Task.Delay(500); // Allow async write to complete
+		await sink.DisposeAsync();
 
 		// Assert
 		var logs = await LogRepository!.GetLogsAsync();

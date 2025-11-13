@@ -1,6 +1,7 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
+import { environment } from "@environments/environment";
 import {
 	HealthStatus,
 	DatabaseHealth,
@@ -16,7 +17,7 @@ import {
 export class HealthApiService
 {
 	private readonly http = inject(HttpClient);
-	private readonly apiUrl = "/api/health";
+	private readonly apiUrl = `${environment.apiUrl}/health`;
 
 	/**
 	 * Gets overall system health status

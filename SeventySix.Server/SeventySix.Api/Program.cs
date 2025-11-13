@@ -207,6 +207,29 @@ builder.Services.AddCors(options =>
 
 WebApplication app = builder.Build();
 
+// Initialize database - Create if not exists and run migrations
+using (var scope = app.Services.CreateScope())
+{
+	var services = scope.ServiceProvider;
+	var logger = services.GetRequiredService<ILogger<Program>>();
+
+	try
+	{
+		logger.LogInformation("Ensuring database exists and applying migrations...");
+		var context = services.GetRequiredService<ApplicationDbContext>();
+
+		// Create database if it doesn't exist and apply all pending migrations
+		await context.Database.MigrateAsync();
+
+		logger.LogInformation("Database initialization completed successfully");
+	}
+	catch (Exception ex)
+	{
+		logger.LogError(ex, "An error occurred while initializing the database");
+		throw; // Re-throw to prevent app startup with invalid database
+	}
+}
+
 // Add database sink now that we have the service provider
 // This allows us to resolve scoped services (DbContext) for logging
 Log.Logger = new LoggerConfiguration()

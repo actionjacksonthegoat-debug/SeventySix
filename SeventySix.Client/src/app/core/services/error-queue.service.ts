@@ -56,7 +56,7 @@ type CircuitState = "closed" | "open";
 export class ErrorQueueService implements OnDestroy
 {
 	private readonly http = inject(HttpClient);
-	private readonly logEndpoint = "/api/logs/client/batch";
+	private readonly logEndpoint = `${environment.apiUrl}/logs/client/batch`;
 	private readonly localStorageKey = "error-queue";
 
 	// Queue management

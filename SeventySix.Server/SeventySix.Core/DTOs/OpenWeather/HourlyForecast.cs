@@ -12,10 +12,11 @@ namespace SeventySix.Core.DTOs.OpenWeather;
 public class HourlyForecast
 {
 	/// <summary>
-	/// Gets or sets the forecast time (Unix UTC).
+	/// Gets or sets the forecast time (Unix UTC) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("dt")]
-	public long Timestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long Timestamp
 	{
 		get; set;
 	}

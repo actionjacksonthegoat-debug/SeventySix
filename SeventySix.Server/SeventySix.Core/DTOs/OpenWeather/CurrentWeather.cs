@@ -12,10 +12,11 @@ namespace SeventySix.Core.DTOs.OpenWeather;
 public class CurrentWeather
 {
 	/// <summary>
-	/// Gets or sets the current time (Unix UTC).
+	/// Gets or sets the current time (Unix UTC) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("dt")]
-	public long Timestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long Timestamp
 	{
 		get; set;
 	}
@@ -26,10 +27,11 @@ public class CurrentWeather
 	public DateTime DateTime => DateTimeOffset.FromUnixTimeSeconds(Timestamp).UtcDateTime;
 
 	/// <summary>
-	/// Gets or sets the sunrise time (Unix UTC).
+	/// Gets or sets the sunrise time (Unix UTC) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("sunrise")]
-	public long SunriseTimestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long SunriseTimestamp
 	{
 		get; set;
 	}
@@ -40,10 +42,11 @@ public class CurrentWeather
 	public DateTime Sunrise => DateTimeOffset.FromUnixTimeSeconds(SunriseTimestamp).UtcDateTime;
 
 	/// <summary>
-	/// Gets or sets the sunset time (Unix UTC).
+	/// Gets or sets the sunset time (Unix UTC) - used for JSON deserialization.
 	/// </summary>
 	[JsonPropertyName("sunset")]
-	public long SunsetTimestamp
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	internal long SunsetTimestamp
 	{
 		get; set;
 	}
