@@ -16,7 +16,7 @@ describe("HealthApiService", () =>
 {
 	let service: HealthApiService;
 	let httpMock: HttpTestingController;
-	const apiUrl = "/api/health";
+	const apiUrl = "https://localhost:7074/api/health";
 
 	beforeEach(() =>
 	{

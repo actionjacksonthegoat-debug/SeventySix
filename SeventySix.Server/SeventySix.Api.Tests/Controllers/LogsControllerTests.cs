@@ -141,9 +141,10 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var logs = await response.Content.ReadFromJsonAsync<LogResponse[]>();
-		Assert.NotNull(logs);
-		Assert.True(logs.Length >= 4, "Should return at least the 4 seeded logs");
+		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		Assert.NotNull(pagedResponse);
+		Assert.NotNull(pagedResponse.Data);
+		Assert.True(pagedResponse.Data.Count >= 4, "Should return at least the 4 seeded logs");
 	}
 
 	/// <summary>
@@ -158,9 +159,10 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var logs = await response.Content.ReadFromJsonAsync<LogResponse[]>();
-		Assert.NotNull(logs);
-		Assert.All(logs, log => Assert.Equal("Error", log.LogLevel));
+		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		Assert.NotNull(pagedResponse);
+		Assert.NotNull(pagedResponse.Data);
+		Assert.All(pagedResponse.Data, log => Assert.Equal("Error", log.LogLevel));
 	}
 
 	/// <summary>
@@ -180,9 +182,10 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var logs = await response.Content.ReadFromJsonAsync<LogResponse[]>();
-		Assert.NotNull(logs);
-		Assert.All(logs, log =>
+		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		Assert.NotNull(pagedResponse);
+		Assert.NotNull(pagedResponse.Data);
+		Assert.All(pagedResponse.Data, log =>
 		{
 			Assert.True(log.Timestamp >= startDate);
 			Assert.True(log.Timestamp <= endDate);
@@ -202,9 +205,10 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var logs = await response.Content.ReadFromJsonAsync<LogResponse[]>();
-		Assert.NotNull(logs);
-		Assert.All(logs, log =>
+		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		Assert.NotNull(pagedResponse);
+		Assert.NotNull(pagedResponse.Data);
+		Assert.All(pagedResponse.Data, log =>
 			Assert.Equal("SeventySix.Api.Controllers.WeatherController", log.SourceContext));
 	}
 
@@ -220,9 +224,10 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var logs = await response.Content.ReadFromJsonAsync<LogResponse[]>();
-		Assert.NotNull(logs);
-		Assert.All(logs, log => Assert.Equal("/api/weather", log.RequestPath));
+		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		Assert.NotNull(pagedResponse);
+		Assert.NotNull(pagedResponse.Data);
+		Assert.All(pagedResponse.Data, log => Assert.Equal("/api/weather", log.RequestPath));
 	}
 
 	/// <summary>
@@ -233,23 +238,25 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	{
 		// Act - Get page 1
 		var response1 = await Client.GetAsync("/api/logs?page=1&pageSize=2");
-		var logs1 = await response1.Content.ReadFromJsonAsync<LogResponse[]>();
+		var pagedResponse1 = await response1.Content.ReadFromJsonAsync<PagedLogResponse>();
 
 		// Act - Get page 2
 		var response2 = await Client.GetAsync("/api/logs?page=2&pageSize=2");
-		var logs2 = await response2.Content.ReadFromJsonAsync<LogResponse[]>();
+		var pagedResponse2 = await response2.Content.ReadFromJsonAsync<PagedLogResponse>();
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response1.StatusCode);
 		Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
-		Assert.NotNull(logs1);
-		Assert.NotNull(logs2);
-		Assert.True(logs1.Length <= 2);
-		Assert.True(logs2.Length <= 2);
+		Assert.NotNull(pagedResponse1);
+		Assert.NotNull(pagedResponse1.Data);
+		Assert.NotNull(pagedResponse2);
+		Assert.NotNull(pagedResponse2.Data);
+		Assert.True(pagedResponse1.Data.Count <= 2);
+		Assert.True(pagedResponse2.Data.Count <= 2);
 
 		// Verify no duplicates between pages
-		var ids1 = logs1.Select(l => l.Id).ToHashSet();
-		var ids2 = logs2.Select(l => l.Id).ToHashSet();
+		var ids1 = pagedResponse1.Data.Select(l => l.Id).ToHashSet();
+		var ids2 = pagedResponse2.Data.Select(l => l.Id).ToHashSet();
 		Assert.Empty(ids1.Intersect(ids2));
 	}
 
@@ -265,9 +272,10 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var logs = await response.Content.ReadFromJsonAsync<LogResponse[]>();
-		Assert.NotNull(logs);
-		Assert.True(logs.Length <= 100, "Should not exceed maximum page size of 100");
+		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		Assert.NotNull(pagedResponse);
+		Assert.NotNull(pagedResponse.Data);
+		Assert.True(pagedResponse.Data.Count <= 100, "Should not exceed maximum page size of 100");
 	}
 
 	/// <summary>
@@ -287,9 +295,10 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var logs = await response.Content.ReadFromJsonAsync<LogResponse[]>();
-		Assert.NotNull(logs);
-		Assert.All(logs, log =>
+		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		Assert.NotNull(pagedResponse);
+		Assert.NotNull(pagedResponse.Data);
+		Assert.All(pagedResponse.Data, log =>
 		{
 			Assert.Equal("Warning", log.LogLevel);
 			Assert.True(log.Timestamp >= startDate);

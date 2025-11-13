@@ -153,7 +153,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 			// Wait for batch processor to attempt sending
 			setTimeout(() =>
 			{
-				const req = newHttpMock.expectOne("/api/logs/client/batch");
+				const req = newHttpMock.expectOne(
+					"https://localhost:7074/api/logs/client/batch"
+				);
 				expect(req.request.body.length).toBe(1);
 				expect(req.request.body[0].message).toBe("Persisted error");
 				req.flush({});
@@ -199,7 +201,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 			// Wait for batch interval
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne("/api/logs/client/batch");
+				const req = httpMock.expectOne(
+					"https://localhost:7074/api/logs/client/batch"
+				);
 				expect(req.request.method).toBe("POST");
 				expect(req.request.body.length).toBe(1);
 				expect(req.request.body[0].message).toBe("Batch test");
@@ -215,7 +219,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 			setTimeout(() =>
 			{
 				// Verify no HTTP requests were made
-				httpMock.expectNone("/api/logs/client/batch");
+				httpMock.expectNone(
+					"https://localhost:7074/api/logs/client/batch"
+				);
 
 				// Ensure we have a passing expectation
 				expect(true).toBe(true);
@@ -238,14 +244,18 @@ describe("ErrorQueueService (Zoneless)", () =>
 			// First batch should have 10 items
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne("/api/logs/client/batch");
+				const req = httpMock.expectOne(
+					"https://localhost:7074/api/logs/client/batch"
+				);
 				expect(req.request.body.length).toBe(10);
 				req.flush({});
 
 				// Second batch should have 5 items
 				setTimeout(() =>
 				{
-					const req2 = httpMock.expectOne("/api/logs/client/batch");
+					const req2 = httpMock.expectOne(
+						"https://localhost:7074/api/logs/client/batch"
+					);
 					expect(req2.request.body.length).toBe(5);
 					req2.flush({});
 					done();
@@ -269,7 +279,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne("/api/logs/client/batch");
+				const req = httpMock.expectOne(
+					"https://localhost:7074/api/logs/client/batch"
+				);
 				expect(req.request.body.length).toBe(2);
 
 				// Successful response
@@ -305,7 +317,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne("/api/logs/client/batch");
+				const req = httpMock.expectOne(
+					"https://localhost:7074/api/logs/client/batch"
+				);
 				const payload = req.request.body[0];
 
 				expect(payload.logLevel).toBe("Error");
@@ -353,7 +367,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 			{
 				setTimeout(() =>
 				{
-					const requests = httpMock.match("/api/logs/client/batch");
+					const requests = httpMock.match(
+						"https://localhost:7074/api/logs/client/batch"
+					);
 					if (requests.length > 0)
 					{
 						failureCount++;
@@ -388,7 +404,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 								setTimeout(() =>
 								{
 									httpMock.expectNone(
-										"/api/logs/client/batch"
+										"https://localhost:7074/api/logs/client/batch"
 									);
 									done();
 								}, BATCH_INTERVAL + 200);
@@ -418,7 +434,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 			{
 				setTimeout(() =>
 				{
-					const requests = httpMock.match("/api/logs/client/batch");
+					const requests = httpMock.match(
+						"https://localhost:7074/api/logs/client/batch"
+					);
 					if (requests.length > 0)
 					{
 						failureCount++;
@@ -452,7 +470,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 								{
 									// Verify no requests were made (circuit blocked them)
 									httpMock.expectNone(
-										"/api/logs/client/batch"
+										"https://localhost:7074/api/logs/client/batch"
 									);
 
 									// Ensure we have a passing expectation
@@ -478,7 +496,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne("/api/logs/client/batch");
+				const req = httpMock.expectOne(
+					"https://localhost:7074/api/logs/client/batch"
+				);
 				req.flush({}); // Success
 
 				// Enqueue another error and verify it sends
@@ -490,7 +510,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 				setTimeout(() =>
 				{
-					const req2 = httpMock.expectOne("/api/logs/client/batch");
+					const req2 = httpMock.expectOne(
+						"https://localhost:7074/api/logs/client/batch"
+					);
 					expect(req2.request.body[0].message).toBe("After reset");
 					req2.flush({});
 					done();
@@ -575,7 +597,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne("/api/logs/client/batch");
+				const req = httpMock.expectOne(
+					"https://localhost:7074/api/logs/client/batch"
+				);
 				expect(req.request.body[0].clientTimestamp).toBe(
 					"2025-11-12T10:00:00.000Z"
 				);
@@ -595,7 +619,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne("/api/logs/client/batch");
+				const req = httpMock.expectOne(
+					"https://localhost:7074/api/logs/client/batch"
+				);
 				expect(req.request.body[0].clientTimestamp).toBe(
 					"2025-11-12T10:00:00.000Z"
 				);
@@ -614,7 +640,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne("/api/logs/client/batch");
+				const req = httpMock.expectOne(
+					"https://localhost:7074/api/logs/client/batch"
+				);
 				expect(req.request.body[0].userAgent).toBe(navigator.userAgent);
 				req.flush({});
 				done();

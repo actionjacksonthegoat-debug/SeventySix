@@ -12,7 +12,7 @@ describe("LogChartService", () =>
 {
 	let service: LogChartService;
 	let httpMock: HttpTestingController;
-	const apiUrl = "/api/logs";
+	const apiUrl = "https://localhost:7074/api/logs";
 
 	beforeEach(() =>
 	{
