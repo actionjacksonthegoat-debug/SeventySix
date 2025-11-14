@@ -61,9 +61,7 @@ export class ClientErrorLoggerService
 			);
 			console.error("Original error:", errorDetails);
 		}
-	}
-
-	/**
+	} /**
 	 * Logs an HTTP error.
 	 */
 	logHttpError(
@@ -101,9 +99,7 @@ export class ClientErrorLoggerService
 			);
 			console.error("Original error:", errorDetails);
 		}
-	}
-
-	/**
+	} /**
 	 * Logs a client-side error (not HTTP related).
 	 */
 	logClientError(errorDetails: ErrorDetails): void

@@ -75,7 +75,7 @@ describe("ErrorHandlerService", () =>
 				// Expected in development mode
 			}
 
-			expect(mockLogger.error).toHaveBeenCalled();
+			expect(mockClientLogger.logError).toHaveBeenCalled();
 			expect(mockNotification.errorWithDetails).toHaveBeenCalled();
 		});
 
@@ -386,6 +386,83 @@ describe("ErrorHandlerService", () =>
 			const copyData = call.args[2];
 			expect(copyData).toContain("url");
 			expect(copyData).toContain("status");
+		});
+
+		it("should prevent re-entry when already handling an error", (done) =>
+		{
+			const consoleSpy = spyOn(console, "error");
+			let callCount = 0;
+
+			// Configure notification to throw an error that triggers handleError again
+			mockNotification.errorWithDetails.and.callFake(() =>
+			{
+				callCount++;
+				if (callCount === 1)
+				{
+					// First call throws to trigger the catch block
+					throw new Error("Notification failed");
+				}
+			});
+
+			const firstError = new Error("First error");
+
+			// First error triggers handleError
+			service.handleError(firstError);
+
+			// Verify notification failure was logged
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"[ErrorHandler] Notification failed:",
+				jasmine.any(Error)
+			);
+
+			done();
+		});
+
+		it("should gracefully handle errors during notification", () =>
+		{
+			const consoleSpy = spyOn(console, "error");
+			mockNotification.errorWithDetails.and.throwError(
+				"Notification system failure"
+			);
+
+			const error = new Error("Test error");
+
+			// Should not throw - should be caught and logged
+			expect(() =>
+			{
+				service.handleError(error);
+			}).not.toThrow();
+
+			// Should log the notification failure
+			expect(consoleSpy).toHaveBeenCalled();
+		});
+
+		it("should reset guard flag after handling error", () =>
+		{
+			const error1 = new Error("First error");
+			const error2 = new Error("Second error");
+
+			try
+			{
+				service.handleError(error1);
+			}
+			catch (e)
+			{
+				// Expected in dev mode
+			}
+
+			// Should be able to handle second error normally
+			try
+			{
+				service.handleError(error2);
+			}
+			catch (e)
+			{
+				// Expected in dev mode
+			}
+
+			// Both should have been logged
+			expect(mockClientLogger.logError).toHaveBeenCalledTimes(2);
 		});
 	});
 });

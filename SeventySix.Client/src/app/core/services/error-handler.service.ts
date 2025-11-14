@@ -33,61 +33,65 @@ export class ErrorHandlerService implements ErrorHandler
 	private readonly notification = inject(NotificationService);
 	private readonly clientLogger = inject(ClientErrorLoggerService);
 
+	// Guard flag to prevent re-entry during error handling
+	private isHandlingError = false;
+
 	/**
 	 * Handles errors globally.
 	 */
 	handleError(error: Error | HttpErrorResponse): void
 	{
-		// Extract error details
-		const errorDetails = this.extractErrorDetails(error);
-
-		// Log to server via queue
-		if (errorDetails.httpError)
+		// Prevent re-entry if we're already handling an error
+		if (this.isHandlingError)
 		{
-			this.clientLogger.logHttpError({
-				message: errorDetails.message,
-				httpError: errorDetails.httpError
-			});
-		}
-		else if (errorDetails.error)
-		{
-			this.clientLogger.logError({
-				message: errorDetails.message,
-				error: errorDetails.error
-			});
-		}
-
-		// Log all errors
-		this.logger.error("Unhandled error occurred", error, {
-			type: error.constructor.name,
-			url: error instanceof HttpErrorResponse ? error.url : undefined
-		});
-
-		// Generate copy data for clipboard
-		const copyData = this.generateCopyData(error, errorDetails);
-
-		// Display user-friendly message with details
-		if (errorDetails.details && errorDetails.details.length > 0)
-		{
-			this.notification.errorWithDetails(
-				errorDetails.message,
-				errorDetails.details,
-				copyData
+			console.error(
+				"[ErrorHandler] Re-entry detected, logging to console only:",
+				error
 			);
-		}
-		else
-		{
-			this.notification.errorWithDetails(
-				errorDetails.message,
-				undefined,
-				copyData
-			);
+			return;
 		}
 
-		// Re-throw in development for debugging
-		if (this.isDevelopment())
+		this.isHandlingError = true;
+
+		try
 		{
-			throw error;
+			// Extract error details
+			const errorDetails = this.extractErrorDetails(error);
+
+			// Log to server via queue
+			if (errorDetails.httpError)
+			{
+				this.clientLogger.logHttpError({
+					message: errorDetails.message,
+					httpError: errorDetails.httpError
+				});
+			}
+			else if (errorDetails.error)
+			{
+				this.clientLogger.logError({
+					message: errorDetails.message,
+					error: errorDetails.error
+				});
+			}
+
+			// Show user notification
+			this.showUserNotification(errorDetails, error);
+
+			// Re-throw in development for debugging
+			if (this.isDevelopment())
+			{
+				throw error;
+			}
+		}
+		catch (loggingError)
+		{
+			// If logging itself fails, just console log and continue
+			console.error("[ErrorHandler] Logging failed:", loggingError);
+			console.error("[ErrorHandler] Original error:", error);
+		}
+		finally
+		{
+			this.isHandlingError = false;
 		}
 	}
 
@@ -273,6 +277,45 @@ export class ErrorHandlerService implements ErrorHandler
 		if (error.url)
 		{
 			details.push(`URL: ${error.url}`);
+		}
+	}
+
+	/**
+	 * Shows user notification with error safety.
+	 */
+	private showUserNotification(
+		errorDetails: ErrorDetails,
+		error: Error | HttpErrorResponse
+	): void
+	{
+		try
+		{
+			const copyData = this.generateCopyData(error, errorDetails);
+
+			if (errorDetails.details && errorDetails.details.length > 0)
+			{
+				this.notification.errorWithDetails(
+					errorDetails.message,
+					errorDetails.details,
+					copyData
+				);
+			}
+			else
+			{
+				this.notification.errorWithDetails(
+					errorDetails.message,
+					undefined,
+					copyData
+				);
+			}
+		}
+		catch (notificationError)
+		{
+			// If notification fails, just log to console
+			console.error(
+				"[ErrorHandler] Notification failed:",
+				notificationError
+			);
 		}
 	}
 

@@ -93,6 +93,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			service.enqueue(error);
 
+			// Should log to console for every enqueued error (1:1 with DB)
 			expect(console.error).toHaveBeenCalledWith("[Client Error]", error);
 		});
 
@@ -165,10 +166,10 @@ describe("ErrorQueueService (Zoneless)", () =>
 			}, BATCH_INTERVAL + 100);
 		});
 
-		it("should not exceed max queue size", () =>
+		it("should allow unlimited queue growth", () =>
 		{
-			// Enqueue 101 errors (max is 100)
-			for (let i = 0; i < 101; i++)
+			// Enqueue many errors
+			for (let i = 0; i < 150; i++)
 			{
 				service.enqueue({
 					logLevel: LogLevel.Error,
@@ -177,12 +178,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 				});
 			}
 
-			// Verify error was logged for the 101st item
-			const calls = consoleSpy.calls.all();
-			const queueFullCall = calls.find((call) =>
-				call.args[0]?.includes("queue is full")
-			);
-			expect(queueFullCall).toBeDefined();
+			// All errors should be queued (no drops)
+			const queue = (service as any).queue;
+			expect(queue.length).toBe(150);
 		});
 	});
 
@@ -658,6 +656,110 @@ describe("ErrorQueueService (Zoneless)", () =>
 			service.ngOnDestroy();
 
 			expect(subscription.closed).toBe(true);
+		});
+	});
+
+	describe("Error Deduplication", () =>
+	{
+		it("should deduplicate identical errors within time window", () =>
+		{
+			const error: QueuedError = {
+				logLevel: LogLevel.Error,
+				message: "Duplicate error",
+				timestamp: new Date(),
+				exceptionMessage: "Same exception",
+				statusCode: 500,
+				requestUrl: "/api/test"
+			};
+
+			// Enqueue same error twice
+			service.enqueue(error);
+			service.enqueue({ ...error });
+
+			// Should only have 1 error in queue
+			const queue = (service as any).queue;
+			expect(queue.length).toBe(1);
+		});
+
+		it("should allow different errors", () =>
+		{
+			const error1: QueuedError = {
+				logLevel: LogLevel.Error,
+				message: "Error 1",
+				timestamp: new Date()
+			};
+
+			const error2: QueuedError = {
+				logLevel: LogLevel.Error,
+				message: "Error 2",
+				timestamp: new Date()
+			};
+
+			service.enqueue(error1);
+			service.enqueue(error2);
+
+			// Should have both errors
+			const queue = (service as any).queue;
+			expect(queue.length).toBe(2);
+		});
+
+		it("should cleanup old error signatures from tracking", () =>
+		{
+			const error: QueuedError = {
+				logLevel: LogLevel.Error,
+				message: "Test error",
+				timestamp: new Date()
+			};
+
+			// Enqueue first time
+			service.enqueue(error);
+			expect((service as any).queue.length).toBe(1);
+
+			// Mock the internal tracking map to simulate time passing
+			const recentErrors = (service as any).recentErrors as Map<
+				string,
+				number
+			>;
+			const oldSignature = Array.from(recentErrors.keys())[0];
+
+			// Set the timestamp to 15 seconds ago
+			recentErrors.set(oldSignature, Date.now() - 15000);
+
+			// Enqueue a different error to trigger cleanup
+			const differentError: QueuedError = {
+				logLevel: LogLevel.Error,
+				message: "Different error",
+				timestamp: new Date()
+			};
+			service.enqueue(differentError);
+
+			// The old signature should have been cleaned up
+			expect(recentErrors.has(oldSignature)).toBe(false);
+			expect((service as any).queue.length).toBe(2);
+		});
+
+		it("should track errors with different status codes separately", () =>
+		{
+			const error500: QueuedError = {
+				logLevel: LogLevel.Error,
+				message: "Server error",
+				statusCode: 500,
+				timestamp: new Date()
+			};
+
+			const error404: QueuedError = {
+				logLevel: LogLevel.Error,
+				message: "Server error",
+				statusCode: 404,
+				timestamp: new Date()
+			};
+
+			service.enqueue(error500);
+			service.enqueue(error404);
+
+			// Different status codes = different errors
+			const queue = (service as any).queue;
+			expect(queue.length).toBe(2);
 		});
 	});
 });

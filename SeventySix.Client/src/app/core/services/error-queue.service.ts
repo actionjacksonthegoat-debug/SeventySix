@@ -61,7 +61,6 @@ export class ErrorQueueService implements OnDestroy
 
 	// Queue management
 	private queue: QueuedError[] = [];
-	private readonly maxQueueSize = environment.logging.maxQueueSize;
 	private readonly batchSize = environment.logging.batchSize;
 	private readonly batchInterval = environment.logging.batchInterval;
 
@@ -73,6 +72,10 @@ export class ErrorQueueService implements OnDestroy
 		environment.logging.circuitBreakerTimeout;
 	private circuitBreakerOpenTime = 0;
 
+	// Error deduplication
+	private recentErrors = new Map<string, number>(); // signature -> timestamp
+	private readonly dedupeWindowMs = 5000; // 5 seconds
+
 	// RxJS subscription for zoneless compatibility
 	private batchProcessorSubscription?: Subscription;
 
@@ -80,24 +83,27 @@ export class ErrorQueueService implements OnDestroy
 	{
 		this.loadQueueFromStorage();
 		this.startBatchProcessor();
-	} /**
+	}
+
+	/**
 	 * Enqueues an error for batch sending.
-	 * Always logs to console as fallback.
+	 * Always logs to console for successfully enqueued errors (1:1 with DB).
+	 * Never drops errors - relies on deduplication and circuit breaker for protection.
 	 */
 	enqueue(error: QueuedError): void
 	{
-		// Always log to console
-		console.error("[Client Error]", error);
-
-		// Check queue size
-		if (this.queue.length >= this.maxQueueSize)
+		// Check for duplicates
+		if (this.isDuplicate(error))
 		{
-			console.error("Error queue is full. Dropping error:", error);
+			// Silently skip duplicate
 			return;
 		}
 
 		// Add to queue
 		this.queue.push(error);
+
+		// Log to console (1:1 with database logs)
+		console.error("[Client Error]", error);
 
 		// Persist to localStorage
 		this.saveQueueToStorage();
@@ -285,6 +291,60 @@ export class ErrorQueueService implements OnDestroy
 		catch (error)
 		{
 			console.error("Failed to save error queue to localStorage:", error);
+		}
+	}
+
+	/**
+	 * Generates a unique signature for an error for deduplication.
+	 */
+	private generateErrorSignature(error: QueuedError): string
+	{
+		const parts = [
+			error.message,
+			error.exceptionMessage || "",
+			error.statusCode?.toString() || "",
+			error.requestUrl || ""
+		];
+
+		// Include first 100 chars of stack trace for uniqueness
+		const stackPreview = error.stackTrace?.substring(0, 100) || "";
+		return `${parts.join("|")}|${stackPreview}`;
+	}
+
+	/**
+	 * Checks if an error is a duplicate within the deduplication window.
+	 */
+	private isDuplicate(error: QueuedError): boolean
+	{
+		const signature = this.generateErrorSignature(error);
+		const now = Date.now();
+		const lastSeen = this.recentErrors.get(signature);
+
+		if (lastSeen && now - lastSeen < this.dedupeWindowMs)
+		{
+			return true; // Duplicate within window
+		}
+
+		// Update tracking
+		this.recentErrors.set(signature, now);
+
+		// Cleanup old entries
+		this.cleanupRecentErrors(now);
+
+		return false;
+	}
+
+	/**
+	 * Removes old error signatures from tracking to prevent memory leaks.
+	 */
+	private cleanupRecentErrors(now: number): void
+	{
+		for (const [signature, timestamp] of this.recentErrors.entries())
+		{
+			if (now - timestamp > this.dedupeWindowMs * 2)
+			{
+				this.recentErrors.delete(signature);
+			}
 		}
 	}
 }
