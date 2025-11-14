@@ -6,8 +6,8 @@
 
 import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { WeatherForecast } from "@core/models/interfaces/weather-forecast";
-import { WeatherForecastRepository } from "@core/repositories/weather-forecast.repository";
+import { WeatherForecast } from "@home/weather/models";
+import { WeatherForecastRepository } from "@home/weather/repositories";
 
 /**
  * Service for weather forecast business logic

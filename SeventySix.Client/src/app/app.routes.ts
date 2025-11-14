@@ -15,43 +15,16 @@ export const routes: Routes = [
 	},
 	{
 		path: "users",
-		data: { breadcrumb: "Users" },
-		children: [
-			{
-				path: "",
-				loadComponent: () =>
-					import("./features/admin/users/users/users-page").then(
-						(m) => m.UsersPage
-					),
-				title: "User Management",
-				data: { breadcrumb: "List" }
-			},
-			{
-				path: "new",
-				loadComponent: () =>
-					import(
-						"./features/admin/users/user-create/user-create"
-					).then((m) => m.UserCreatePage),
-				title: "Create User",
-				data: { breadcrumb: "New" }
-			},
-			{
-				path: ":id",
-				loadComponent: () =>
-					import("./features/admin/users/user/user-page").then(
-						(m) => m.UserPage
-					),
-				title: "Edit User",
-				data: { breadcrumb: "Edit" }
-			}
-		]
+		loadChildren: () =>
+			import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES),
+		data: { breadcrumb: "Users" }
 	},
 	{
 		path: "weather-forecast",
 		loadComponent: () =>
-			import(
-				"./features/home/weather/weather-forecast/weather-forecast"
-			).then((m) => m.WeatherForecastPage),
+			import("./features/home/weather/weather-forecast.component").then(
+				(m) => m.WeatherForecastComponent
+			),
 		title: "Weather Forecast",
 		data: { breadcrumb: "Weather Forecast" }
 	},
@@ -75,47 +48,14 @@ export const routes: Routes = [
 	},
 	{
 		path: "admin",
-		data: { breadcrumb: "Admin" },
-		children: [
-			{
-				path: "",
-				loadComponent: () =>
-					import(
-						"./features/admin/admin-dashboard/admin-dashboard.component"
-					).then((m) => m.AdminDashboardComponent),
-				title: "Admin Dashboard"
-			},
-			{
-				path: "logs",
-				loadComponent: () =>
-					import(
-						"./features/admin/pages/log-management-page/log-management-page.component"
-					).then((m) => m.LogManagementPageComponent),
-				title: "Log Management",
-				data: { breadcrumb: "Logs" }
-			}
-		]
+		loadChildren: () =>
+			import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES),
+		data: { breadcrumb: "Admin" }
 	},
 	{
 		path: "error",
-		children: [
-			{
-				path: "404",
-				loadComponent: () =>
-					import(
-						"./features/admin/error-pages/not-found/not-found"
-					).then((m) => m.NotFoundPage),
-				title: "Page Not Found"
-			},
-			{
-				path: "500",
-				loadComponent: () =>
-					import(
-						"./features/admin/error-pages/server-error/server-error"
-					).then((m) => m.ServerErrorPage),
-				title: "Server Error"
-			}
-		]
+		loadChildren: () =>
+			import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES)
 	},
 	{
 		path: "**",

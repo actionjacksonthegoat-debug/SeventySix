@@ -1,3 +1,6 @@
+@use "variables" as vars;
+@use "mixins" as mixins;
+
 :host {
 	position: fixed;
 	top: 0;
@@ -40,16 +43,68 @@
 	);
 }
 
-// Clear sky - sunny gradient
+// Weather condition backgrounds using shared mixin
 .bg-clear {
-	background: linear-gradient(180deg, #87ceeb 0%, #4a90e2 50%, #f4a460 100%);
-	animation: sunnyPulse 20s ease-in-out infinite;
-
-	&.no-animation {
-		animation: none;
-	}
+	@include mixins.weather-gradient(
+		(#87ceeb 0%, #4a90e2 50%, #f4a460 100%),
+		sunnyPulse,
+		20s
+	);
 }
 
+.bg-clouds {
+	@include mixins.weather-gradient(
+		(#b0bec5 0%, #78909c 50%, #546e7a 100%),
+		cloudyDrift,
+		30s
+	);
+}
+
+.bg-rain {
+	@include mixins.weather-gradient(
+		(#4a5f7a 0%, #2c3e50 50%, #1a252f 100%),
+		rainFlow,
+		15s
+	);
+	@include mixins.weather-overlay("rain", 1s);
+}
+
+.bg-drizzle {
+	@include mixins.weather-gradient(
+		(#607d8b 0%, #455a64 50%, #37474f 100%),
+		drizzleFlow,
+		20s
+	);
+	@include mixins.weather-overlay("drizzle", 1.5s);
+}
+
+.bg-snow {
+	@include mixins.weather-gradient(
+		(#e3f2fd 0%, #bbdefb 50%, #90caf9 100%),
+		snowfall,
+		25s
+	);
+	@include mixins.weather-overlay("snow", 20s);
+}
+
+.bg-thunderstorm {
+	@include mixins.weather-gradient(
+		(#37474f 0%, #263238 50%, #1a1a2e 100%),
+		thunderFlash,
+		5s
+	);
+}
+
+.bg-mist {
+	@include mixins.weather-gradient(
+		(#cfd8dc 0%, #b0bec5 50%, #90a4ae 100%),
+		mistWave,
+		30s
+	);
+	@include mixins.weather-overlay("mist", 20s);
+}
+
+// Keyframe animations (kept in component - specific to weather)
 @keyframes sunnyPulse {
 	0%,
 	100% {
@@ -60,16 +115,6 @@
 	}
 }
 
-// Cloudy - grey gradient
-.bg-clouds {
-	background: linear-gradient(180deg, #b0bec5 0%, #78909c 50%, #546e7a 100%);
-	animation: cloudyDrift 30s ease-in-out infinite;
-
-	&.no-animation {
-		animation: none;
-	}
-}
-
 @keyframes cloudyDrift {
 	0%,
 	100% {
@@ -77,38 +122,6 @@
 	}
 	50% {
 		background-position: 100% 50%;
-	}
-}
-
-// Rain - dark blue gradient
-.bg-rain {
-	background: linear-gradient(180deg, #4a5f7a 0%, #2c3e50 50%, #1a252f 100%);
-	animation: rainFlow 15s linear infinite;
-
-	&.no-animation {
-		animation: none;
-	}
-
-	&::before {
-		content: "";
-		position: absolute;
-		top: -50%;
-		left: 0;
-		width: 100%;
-		height: 200%;
-		background-image: repeating-linear-gradient(
-			180deg,
-			transparent 0px,
-			transparent 2px,
-			rgba(255, 255, 255, 0.1) 2px,
-			rgba(255, 255, 255, 0.1) 4px
-		);
-		animation: rainDrop 1s linear infinite;
-	}
-
-	&.no-animation::before {
-		animation: none;
-		opacity: 0.5;
 	}
 }
 
@@ -133,38 +146,6 @@
 	}
 }
 
-// Drizzle - lighter rain
-.bg-drizzle {
-	background: linear-gradient(180deg, #607d8b 0%, #455a64 50%, #37474f 100%);
-	animation: drizzleFlow 20s ease-in-out infinite;
-
-	&.no-animation {
-		animation: none;
-	}
-
-	&::before {
-		content: "";
-		position: absolute;
-		top: -50%;
-		left: 0;
-		width: 100%;
-		height: 200%;
-		background-image: repeating-linear-gradient(
-			180deg,
-			transparent 0px,
-			transparent 3px,
-			rgba(255, 255, 255, 0.05) 3px,
-			rgba(255, 255, 255, 0.05) 6px
-		);
-		animation: drizzleDrop 1.5s linear infinite;
-	}
-
-	&.no-animation::before {
-		animation: none;
-		opacity: 0.3;
-	}
-}
-
 @keyframes drizzleFlow {
 	0%,
 	100% {
@@ -181,48 +162,6 @@
 	}
 	100% {
 		transform: translateY(40px);
-	}
-}
-
-// Snow - white/blue gradient
-.bg-snow {
-	background: linear-gradient(180deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%);
-	animation: snowfall 25s ease-in-out infinite;
-
-	&.no-animation {
-		animation: none;
-	}
-
-	&::before {
-		content: "";
-		position: absolute;
-		top: -50%;
-		left: 0;
-		width: 100%;
-		height: 200%;
-		background-image:
-			radial-gradient(
-				circle,
-				rgba(255, 255, 255, 0.8) 1px,
-				transparent 1px
-			),
-			radial-gradient(
-				circle,
-				rgba(255, 255, 255, 0.6) 1px,
-				transparent 1px
-			);
-		background-size:
-			50px 50px,
-			100px 100px;
-		background-position:
-			0 0,
-			25px 25px;
-		animation: snowDrift 20s linear infinite;
-	}
-
-	&.no-animation::before {
-		animation: none;
-		opacity: 0.5;
 	}
 }
 
@@ -245,16 +184,6 @@
 	}
 }
 
-// Thunderstorm - dark purple/grey
-.bg-thunderstorm {
-	background: linear-gradient(180deg, #37474f 0%, #263238 50%, #1a1a2e 100%);
-	animation: thunderFlash 5s ease-in-out infinite;
-
-	&.no-animation {
-		animation: none;
-	}
-}
-
 @keyframes thunderFlash {
 	0%,
 	90%,
@@ -265,36 +194,6 @@
 	96% {
 		filter: brightness(1.5);
 		box-shadow: inset 0 0 100px rgba(255, 255, 255, 0.5);
-	}
-}
-
-// Mist/Fog - pale grey gradient
-.bg-mist {
-	background: linear-gradient(180deg, #cfd8dc 0%, #b0bec5 50%, #90a4ae 100%);
-	animation: mistWave 30s ease-in-out infinite;
-
-	&.no-animation {
-		animation: none;
-	}
-
-	&::before {
-		content: "";
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: radial-gradient(
-			ellipse at center,
-			rgba(255, 255, 255, 0.3) 0%,
-			transparent 70%
-		);
-		animation: mistFlow 20s ease-in-out infinite;
-	}
-
-	&.no-animation::before {
-		animation: none;
-		opacity: 0.5;
 	}
 }
 

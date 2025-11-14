@@ -13,8 +13,8 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { ChartConfiguration } from "chart.js";
 import { ChartComponent } from "@shared/components/chart/chart.component";
-import { LogChartService } from "@features/admin/services";
-import { LogChartData } from "@core/models/admin";
+import { LogChartService } from "@admin/admin-dashboard/services";
+import { LogChartData } from "@admin/admin-dashboard/models";
 import { Subscription } from "rxjs";
 
 /**

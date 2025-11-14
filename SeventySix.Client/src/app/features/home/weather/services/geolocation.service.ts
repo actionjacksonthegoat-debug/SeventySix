@@ -1,6 +1,6 @@
 import { Injectable, signal, Signal } from "@angular/core";
 import { Observable } from "rxjs";
-import { UserLocation } from "../models";
+import { UserLocation } from "@home/weather/models";
 
 /**
  * Geolocation error with code and message

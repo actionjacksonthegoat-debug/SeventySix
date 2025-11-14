@@ -11,7 +11,7 @@ import {
 	UnauthorizedError,
 	NetworkError,
 	HttpError
-} from "../models/errors";
+} from "@core/models/errors";
 
 describe("ErrorHandlerService", () =>
 {

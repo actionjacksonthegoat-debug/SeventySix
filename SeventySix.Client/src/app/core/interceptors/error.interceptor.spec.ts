@@ -7,8 +7,12 @@ import {
 import { provideZonelessChangeDetection } from "@angular/core";
 import { throwError } from "rxjs";
 import { errorInterceptor } from "./error.interceptor";
-import { LoggerService } from "../services/logger.service";
-import { NetworkError, ValidationError, NotFoundError } from "../models/errors";
+import { LoggerService } from "@core/services/logger.service";
+import {
+	NetworkError,
+	ValidationError,
+	NotFoundError
+} from "@core/models/errors";
 
 describe("errorInterceptor", () =>
 {

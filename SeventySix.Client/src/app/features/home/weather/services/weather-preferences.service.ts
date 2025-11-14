@@ -5,7 +5,7 @@ import {
 	Units,
 	TemperatureUnit,
 	WindSpeedUnit
-} from "../models";
+} from "@home/weather/models";
 
 /**
  * Service for managing user weather preferences

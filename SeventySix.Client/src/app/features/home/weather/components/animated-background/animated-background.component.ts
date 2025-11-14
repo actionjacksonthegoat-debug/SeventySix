@@ -6,7 +6,7 @@ import {
 	inject
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { WeatherPreferencesService } from "../../services/weather-preferences.service";
+import { WeatherPreferencesService } from "@home/weather/services/weather-preferences.service";
 
 /**
  * Animated background component that changes based on weather conditions

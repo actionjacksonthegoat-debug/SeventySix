@@ -4,8 +4,8 @@ import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
 import { of, throwError } from "rxjs";
-import { LogChartService } from "@features/admin/services";
-import { LogStatistics } from "@core/models/admin";
+import { LogChartService } from "@admin/admin-dashboard/services";
+import { LogStatistics } from "@admin/log-management/models";
 import { StatisticsCardsComponent } from "./statistics-cards.component";
 
 describe("StatisticsCardsComponent", () =>

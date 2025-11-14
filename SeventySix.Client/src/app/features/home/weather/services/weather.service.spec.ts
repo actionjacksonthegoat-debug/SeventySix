@@ -2,8 +2,8 @@ import { TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { of } from "rxjs";
 import { WeatherService } from "./weather.service";
-import { WeatherForecastRepository } from "@core/repositories/weather-forecast.repository";
-import { WeatherForecast } from "@core/models/interfaces/weather-forecast";
+import { WeatherForecastRepository } from "@home/weather/repositories";
+import { WeatherForecast } from "@home/weather/models";
 
 describe("WeatherService", () =>
 {

@@ -6,8 +6,8 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatButtonModule } from "@angular/material/button";
 import { MatChipsModule } from "@angular/material/chips";
-import { ThirdPartyApiService } from "@features/admin/services";
-import { ThirdPartyApiRequest } from "@core/models/admin";
+import { ThirdPartyApiService } from "@admin/admin-dashboard/services";
+import { ThirdPartyApiRequest } from "@admin/admin-dashboard/models";
 
 /**
  * Component for displaying third-party API statistics in a table

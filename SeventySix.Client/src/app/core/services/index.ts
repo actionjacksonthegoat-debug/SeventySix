@@ -1,8 +1,9 @@
 /**
- * Core services barrel export
+ * Core infrastructure services barrel export
+ * ONLY exports infrastructure services, NOT feature services
  */
 
-export * from "../../features/home/weather/services/weather.service";
+// Infrastructure services
 export * from "./logger.service";
 export * from "./notification.service";
 export * from "./error-handler.service";
@@ -15,4 +16,8 @@ export * from "./theme.service";
 export * from "./layout.service";
 export * from "./loading.service";
 export * from "./viewport.service";
-export * from "../../features/admin/users/services/user.service";
+
+// DO NOT export feature services here
+// Import directly from feature folders when needed:
+// import { UserService } from '@admin/users/services';
+// import { WeatherService } from '@home/weather/services';

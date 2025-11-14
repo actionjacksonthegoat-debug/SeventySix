@@ -1,0 +1,133 @@
+@use "variables" as vars;
+@use "mixins" as mixins;
+
+.log-detail-dialog {
+	max-width: 800px;
+	min-height: 400px;
+
+	.dialog-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: vars.$spacing-lg vars.$spacing-xl; // 16px 24px
+		margin: 0;
+
+		.header-content {
+			display: flex;
+			align-items: center;
+			gap: vars.$spacing-sm; // 8px
+			flex: 1;
+
+			mat-icon {
+				font-size: vars.$icon-size-lg; // 32px
+				width: vars.$icon-size-lg;
+				height: vars.$icon-size-lg;
+			}
+
+			.level-name {
+				font-size: vars.$font-size-xl; // 24px
+				font-weight: vars.$font-weight-medium;
+			}
+
+			.source-context,
+			.timestamp {
+				font-size: vars.$font-size-sm; // 12px
+				color: var(--mat-dialog-supporting-text-color);
+			}
+		}
+
+		.header-actions {
+			display: flex;
+			gap: vars.$spacing-xs; // 4px
+		}
+
+		// Apply responsive mixin
+		@include mixins.dialog-header-responsive();
+	}
+
+	.dialog-content {
+		padding: 0;
+		max-height: 70vh;
+		overflow-y: auto;
+		@include vars.custom-scrollbar();
+	}
+
+	.detail-section {
+		@include mixins.dialog-section-responsive();
+
+		.section-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: vars.$spacing-sm; // 8px
+		}
+
+		.section-title {
+			font-size: vars.$font-size-base; // 14px
+			font-weight: vars.$font-weight-medium;
+			margin: 0 0 vars.$spacing-md 0; // 0 0 12px 0
+			color: var(--mat-dialog-headline-color);
+		}
+
+		.section-content {
+			font-size: vars.$font-size-sm; // 12px
+			line-height: vars.$line-height-base;
+			color: var(--mat-dialog-supporting-text-color);
+
+			&.message-content {
+				font-size: vars.$font-size-base; // 14px
+				color: var(--mat-dialog-headline-color);
+				white-space: pre-wrap;
+				word-break: break-word;
+			}
+
+			&.exception-content {
+				background-color: var(--mat-table-background-color);
+				padding: vars.$spacing-lg; // 16px
+				border-radius: vars.$border-radius-sm; // 4px
+				border-left: 4px solid var(--mat-sys-error);
+				font-family: vars.$font-family-monospace;
+				white-space: pre-wrap;
+				word-break: break-word;
+			}
+
+			&.stack-trace-content {
+				@include mixins.code-block-scrollable(300px);
+			}
+
+			&.properties-content {
+				@include mixins.code-block-scrollable(300px);
+			}
+
+			&.info-grid {
+				@include mixins.info-grid-responsive();
+			}
+		}
+	}
+
+	// Use shared log level color mixin
+	@include mixins.log-level-colors();
+
+	// Responsive Design
+	@media #{vars.$breakpoint-sm} {
+		max-width: 90vw;
+	}
+
+	@media #{vars.$breakpoint-xs} {
+		max-width: 95vw;
+
+		.detail-section {
+			.section-content.info-grid {
+				grid-template-columns: 1fr;
+				gap: vars.$spacing-md; // 12px
+			}
+		}
+
+		.detail-section .section-content {
+			&.stack-trace-content,
+			&.properties-content {
+				max-height: 200px;
+			}
+		}
+	}
+}

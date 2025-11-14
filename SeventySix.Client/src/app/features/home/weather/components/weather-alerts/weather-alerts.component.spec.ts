@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { WeatherAlert } from "../../models";
+import { WeatherAlert } from "@home/weather/models";
 import { WeatherAlertsComponent } from "./weather-alerts.component";
 
 describe("WeatherAlertsComponent", () =>

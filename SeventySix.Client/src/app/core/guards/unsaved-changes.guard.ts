@@ -1,6 +1,6 @@
 import { CanDeactivateFn } from "@angular/router";
 import { inject } from "@angular/core";
-import { NotificationService } from "../services/notification.service";
+import { NotificationService } from "@core/services/notification.service";
 
 /**
  * Interface for components that can have unsaved changes.

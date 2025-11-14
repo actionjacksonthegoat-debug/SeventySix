@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { WeatherPreferencesService } from "../../services/weather-preferences.service";
+import { WeatherPreferencesService } from "@home/weather/services/weather-preferences.service";
 import { AnimatedBackgroundComponent } from "./animated-background.component";
 
 describe("AnimatedBackgroundComponent", () =>

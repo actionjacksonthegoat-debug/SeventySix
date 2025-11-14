@@ -9,7 +9,7 @@ import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
-import { WeatherAlert } from "../../models";
+import { WeatherAlert } from "@home/weather/models";
 
 /**
  * Component displaying government weather alerts in a sticky banner

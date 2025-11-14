@@ -7,14 +7,14 @@
 import { HttpInterceptorFn, HttpErrorResponse } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { catchError, throwError } from "rxjs";
-import { LoggerService } from "../services/logger.service";
+import { LoggerService } from "@core/services/logger.service";
 import {
 	HttpError,
 	ValidationError,
 	NotFoundError,
 	UnauthorizedError,
 	NetworkError
-} from "../models/errors";
+} from "@core/models/errors";
 
 /**
  * Intercepts HTTP errors and converts them to typed application errors.

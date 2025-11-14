@@ -1,0 +1,263 @@
+/**
+ * SeventySix - Shared SCSS Mixins
+ * Reusable mixins for common UI patterns
+ */
+
+// Note: Variables are passed as parameters to avoid circular dependencies
+// Import variables in components, then use mixins
+
+// ============================================================================
+// WEATHER BACKGROUND GRADIENTS
+// ============================================================================
+
+/**
+ * Weather gradient mixin for animated backgrounds
+ * @param {List} $colors - List of gradient color stops
+ * @param {String} $animation-name - Optional animation name
+ * @param {Time} $duration - Animation duration (default: 20s)
+ */
+@mixin weather-gradient($colors, $animation-name: none, $duration: 20s) {
+	background: linear-gradient(180deg, $colors);
+
+	@if $animation-name != none {
+		animation: #{$animation-name} #{$duration} ease-in-out infinite;
+
+		&.no-animation {
+			animation: none;
+		}
+	}
+}
+
+/**
+ * Weather overlay effect (before/after pseudo-elements)
+ * @param {String} $type - Type of overlay (rain, snow, mist)
+ */
+@mixin weather-overlay($type, $duration: 1s) {
+	&::before {
+		content: "";
+		position: absolute;
+		top: -50%;
+		left: 0;
+		width: 100%;
+		height: 200%;
+
+		@if $type == "rain" {
+			background-image: repeating-linear-gradient(
+				180deg,
+				transparent 0px,
+				transparent 2px,
+				rgba(255, 255, 255, 0.1) 2px,
+				rgba(255, 255, 255, 0.1) 4px
+			);
+			animation: rainDrop #{$duration} linear infinite;
+		} @else if $type == "drizzle" {
+			background-image: repeating-linear-gradient(
+				180deg,
+				transparent 0px,
+				transparent 3px,
+				rgba(255, 255, 255, 0.05) 3px,
+				rgba(255, 255, 255, 0.05) 6px
+			);
+			animation: drizzleDrop 1.5s linear infinite;
+		} @else if $type == "snow" {
+			background-image:
+				radial-gradient(
+					circle,
+					rgba(255, 255, 255, 0.8) 1px,
+					transparent 1px
+				),
+				radial-gradient(
+					circle,
+					rgba(255, 255, 255, 0.6) 1px,
+					transparent 1px
+				);
+			background-size:
+				50px 50px,
+				100px 100px;
+			background-position:
+				0 0,
+				25px 25px;
+			animation: snowDrift 20s linear infinite;
+		} @else if $type == "mist" {
+			background: radial-gradient(
+				ellipse at center,
+				rgba(255, 255, 255, 0.3) 0%,
+				transparent 70%
+			);
+			animation: mistFlow 20s ease-in-out infinite;
+		}
+
+		&.no-animation {
+			animation: none;
+			opacity: 0.5;
+		}
+	}
+}
+
+// ============================================================================
+// DIALOG/MODAL RESPONSIVE SECTIONS
+// ============================================================================
+
+/**
+ * Responsive dialog section padding
+ * Automatically adjusts padding based on breakpoints
+ * @param {Size} $desktop - Desktop padding (default: 24px)
+ * @param {Size} $tablet - Tablet padding (default: 16px)
+ * @param {Size} $mobile - Mobile padding (default: 12px)
+ */
+@mixin dialog-section-responsive($desktop: 24px, $tablet: 16px, $mobile: 12px) {
+	padding: $desktop;
+
+	@media (min-width: 600px) and (max-width: 959.98px) {
+		padding: $tablet;
+	}
+
+	@media (max-width: 599.98px) {
+		padding: $mobile;
+	}
+}
+
+/**
+ * Responsive dialog header
+ * Adjusts layout and sizing for mobile devices
+ * @param {Size} $icon-size-md - Medium icon size (default: 20px)
+ */
+@mixin dialog-header-responsive($icon-size-md: 20px) {
+	@media (min-width: 600px) and (max-width: 959.98px) {
+		padding: 12px 16px;
+
+		.header-content {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 4px;
+
+			mat-icon {
+				font-size: $icon-size-md;
+				width: $icon-size-md;
+				height: $icon-size-md;
+			}
+		}
+	}
+
+	@media (max-width: 599.98px) {
+		padding: 8px 12px;
+	}
+}
+
+/**
+ * Code/pre block with scrollbar
+ * Common pattern for stack traces, JSON, etc.
+ * @param {Size} $max-height - Maximum height before scrolling
+ * @param {Size} $padding - Internal padding (default: 16px)
+ * @param {Size} $border-radius - Border radius (default: 4px)
+ * @param {Size} $font-size - Font size (default: 11px)
+ */
+@mixin code-block-scrollable(
+	$max-height: 300px,
+	$padding: 16px,
+	$border-radius: 4px,
+	$font-size: 11px
+) {
+	background-color: var(--mat-table-background-color);
+	padding: $padding;
+	border-radius: $border-radius;
+	max-height: $max-height;
+	overflow-y: auto;
+
+	// Custom scrollbar
+	&::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: var(--mat-sys-surface-variant);
+		border-radius: 4px;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: var(--mat-sys-outline);
+		border-radius: 4px;
+
+		&:hover {
+			background: var(--mat-sys-on-surface-variant);
+		}
+	}
+
+	pre {
+		margin: 0;
+		font-family: "Roboto Mono", "Courier New", monospace;
+		font-size: $font-size;
+		line-height: 1.4;
+		white-space: pre-wrap;
+		word-break: break-word;
+	}
+}
+
+/**
+ * Info grid layout (key-value pairs)
+ * Responsive grid for displaying metadata
+ * @param {Size} $gap - Gap between grid items (default: 16px)
+ * @param {Size} $min-width - Minimum column width (default: 200px)
+ */
+@mixin info-grid-responsive($gap: 16px, $min-width: 200px) {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax($min-width, 1fr));
+	gap: $gap;
+
+	.info-item {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+
+		.info-label {
+			font-size: 11px;
+			font-weight: 500;
+			color: var(--mat-dialog-supporting-text-color);
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+		}
+
+		.info-value {
+			font-size: 12px;
+			color: var(--mat-dialog-headline-color);
+			word-break: break-word;
+		}
+	}
+
+	@media (min-width: 600px) and (max-width: 959.98px) {
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+}
+
+// ============================================================================
+// LEVEL/SEVERITY COLOR CLASSES
+// ============================================================================
+
+/**
+ * Log level color classes
+ * Generates consistent color classes for log levels
+ */
+@mixin log-level-colors() {
+	.level-verbose,
+	.level-debug {
+		color: #616161;
+	}
+
+	.level-info {
+		color: #2e7d32;
+	}
+
+	.level-warning {
+		color: #e65100;
+	}
+
+	.level-error {
+		color: #c62828;
+	}
+
+	.level-fatal {
+		color: #6a1b9a;
+	}
+}

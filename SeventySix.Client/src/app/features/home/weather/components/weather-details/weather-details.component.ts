@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
-import { CurrentWeather } from "../../models";
+import { CurrentWeather } from "@home/weather/models";
 
 /**
  * Grid component displaying detailed weather metrics

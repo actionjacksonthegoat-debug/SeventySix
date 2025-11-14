@@ -9,13 +9,13 @@ import {
 	LogChartService,
 	ThirdPartyApiService,
 	HealthApiService
-} from "@features/admin/services";
+} from "@admin/admin-dashboard/services";
 import {
-	LogStatistics,
 	ThirdPartyApiRequest,
 	HealthStatus,
 	LogChartData
-} from "@core/models/admin";
+} from "@admin/admin-dashboard/models";
+import { LogStatistics } from "@admin/log-management/models";
 
 /**
  * Integration tests for AdminDashboardComponent

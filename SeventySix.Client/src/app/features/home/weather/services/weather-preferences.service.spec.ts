@@ -1,7 +1,7 @@
 import { TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { WeatherPreferencesService } from "./weather-preferences.service";
-import { Units, TemperatureUnit, WindSpeedUnit } from "../models";
+import { Units, TemperatureUnit, WindSpeedUnit } from "@home/weather/models";
 
 describe("WeatherPreferencesService", () =>
 {

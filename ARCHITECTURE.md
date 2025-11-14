@@ -1,1760 +1,569 @@
-# SeventySix Architecture Documentation
+# SeventySix Architecture Guide
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Backend Architecture (.NET Core 8+)](#backend-architecture-net-core-8)
-3. [Frontend Architecture (Angular)](#frontend-architecture-angular)
-4. [UI/UX Architecture (Material Design 3)](#uiux-architecture-material-design-3)
-5. [SOLID Principles Implementation](#solid-principles-implementation)
-6. [Design Patterns](#design-patterns)
-7. [Scalability Strategy](#scalability-strategy)
-8. [User Feature Workflow](#user-feature-workflow)
-9. [Security Architecture](#security-architecture)
+2. [Core Principles](#core-principles)
+3. [Backend Architecture](#backend-architecture)
+4. [Frontend Architecture](#frontend-architecture)
+5. [Feature Module Pattern](#feature-module-pattern)
+6. [Data Flow Architecture](#data-flow-architecture)
+7. [Dependency Management](#dependency-management)
+8. [Security Architecture](#security-architecture)
+9. [Performance & Scalability](#performance--scalability)
 10. [Testing Strategy](#testing-strategy)
-11. [Deployment Architecture](#deployment-architecture)
 
 ---
 
 ## Overview
 
-SeventySix is a full-stack application built with **Clean Architecture** principles, emphasizing separation of concerns, testability, and maintainability. The system consists of:
+SeventySix is a full-stack application built with **Clean Architecture** principles, emphasizing separation of concerns, testability, and maintainability.
 
--   **Backend**: .NET Core 8+ API following Clean Architecture
--   **Frontend**: Angular 19+ with modern signals and standalone components
--   **Infrastructure**: Containerized with Docker, production-ready with PostgreSQL support
+**Technology Stack:**
 
-### Core Architectural Principles
+-   **Backend**: .NET 8+ with Clean Architecture
+-   **Frontend**: Angular 19+ with Signals and Standalone Components
+-   **Database**: PostgreSQL with Entity Framework Core
+-   **UI Framework**: Angular Material (Material Design 3)
+-   **Deployment**: Docker containerization
 
-All architecture decisions align with **CLAUDE.md** guidelines:
+**Key Characteristics:**
 
--   **SOLID Principles**: Foundation of all design decisions
--   **KISS**: Simple solutions over complex abstractions
--   **YAGNI**: Build what's needed now, not what might be needed
--   **TDD**: Test-first development with >80% coverage
--   **Clean Code**: Readable, maintainable, self-documenting
+-   Layered architecture with strict dependency rules
+-   Feature-based module organization
+-   Repository and Service patterns
+-   SOLID principles throughout
+-   Test-driven development (>80% coverage)
+-   API-first design with OpenAPI documentation
 
 ---
 
-## Backend Architecture (.NET Core 8+)
+## Core Principles
 
-### Clean Architecture Layers
+### SOLID Principles
 
-The backend follows **Clean Architecture** (aka Onion Architecture) with clear dependency rules:
+**1. Single Responsibility (SRP)**
+
+-   Each class has one reason to change
+-   Controllers handle HTTP concerns only
+-   Services contain business logic only
+-   Repositories handle data access only
+
+**2. Open/Closed (OCP)**
+
+-   Open for extension via interfaces
+-   Closed for modification via dependency injection
+-   New features don't modify existing code
+
+**3. Liskov Substitution (LSP)**
+
+-   All implementations are interchangeable via interfaces
+-   Repositories, services, and validators follow contracts
+
+**4. Interface Segregation (ISP)**
+
+-   Focused, minimal interfaces
+-   No client depends on unused methods
+-   Feature-specific service interfaces
+
+**5. Dependency Inversion (DIP)**
+
+-   High-level modules depend on abstractions
+-   Low-level modules implement abstractions
+-   All dependencies injected via constructors/inject()
+
+### Additional Principles
+
+-   **KISS**: Simple solutions over complex abstractions
+-   **YAGNI**: Build what's needed now
+-   **DRY**: Don't repeat yourself
+-   **Separation of Concerns**: Clear boundaries between layers
+-   **Fail-Fast**: Validate early, throw exceptions immediately
+
+---
+
+## Backend Architecture
+
+### Layer Structure
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                   SeventySix.Api (Presentation)                 │
-│  - Controllers, Middleware, Program.cs                          │
-│  - HTTP concerns, routing, authentication                       │
-│  - DI Composition Root (wires all layers together)              │
-└────────────────┬────────────────────────────────────────────────┘
-                 │ depends on ↓
-┌─────────────────────────────────────────────────────────────────┐
-│            SeventySix.BusinessLogic (Business Logic)            │
-│  - Services, DTOs, Validators, Interfaces                       │
-│  - Use cases, orchestration, mapping                            │
-└────────────────┬────────────────────────────────────────────────┘
-                 │ depends on ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                  SeventySix.Core (Core Domain)                  │
-│  - Entities, Value Objects, Domain Logic                        │
-│  - Repository Interfaces (IThirdPartyApiRequestRepository)      │
-│  - Business rules, domain events                                │
-│  - ZERO dependencies on other layers                            │
-└─────────────────────────────────────────────────────────────────┘
-      ↑ implements interfaces          ↑ configures entities
-      │                                 │
-┌─────┴──────────────────┐  ┌──────────┴──────────────────────────┐
-│  SeventySix.DataAccess │  │       SeventySix.Data               │
-│  (Persistence Logic)   │  │    (Database Schema)                │
-│                        │  │                                     │
-│  - Repositories (LINQ) │  │  - ApplicationDbContext             │
-│  - Services            │  │  - Entity Configurations            │
-│  - Caching             │  │  - Migrations                       │
-│                        │  │  - TransactionManager               │
-│  Dependencies:         │  │                                     │
-│  ✅ Core (interfaces)  │  │  Dependencies:                      │
-│  ✅ Data (DbContext)   │  │  ✅ Core (entities)                 │
-│  ✅ EF Core (abstract) │  │  ✅ Npgsql (PostgreSQL)             │
-│  ❌ NO DB providers!   │  │                                     │
-└────────────────────────┘  └─────────────────────────────────────┘
+SeventySix.Api (Presentation)
+    ├─ Controllers: HTTP endpoints, routing
+    ├─ Middleware: Global concerns
+    └─ Program.cs: DI composition root
+         │ depends on ↓
+SeventySix.BusinessLogic (Application)
+    ├─ Services: Business logic orchestration
+    ├─ DTOs: Data transfer objects
+    ├─ Validators: FluentValidation rules
+    └─ Interfaces: Service contracts
+         │ depends on ↓
+SeventySix.Core (Domain)
+    ├─ Entities: Domain models
+    ├─ Value Objects: Immutable concepts
+    ├─ Exceptions: Business rule violations
+    └─ Interfaces: Repository contracts
+         ↑ implements      ↑ configures
+SeventySix.DataAccess    SeventySix.Data
+    ├─ Repositories           ├─ DbContext
+    └─ Services               ├─ Configurations
+                              └─ Migrations
 ```
-
-**Dependency Rule**: Inner layers have no knowledge of outer layers. Dependencies point inward.
-
-**Database Independence**: The separation between `SeventySix.DataAccess` (persistence logic) and `SeventySix.Data` (database schema) enables true database independence. Repositories use only LINQ and EF Core abstractions, making it possible to swap database providers without modifying business logic.
 
 ### Layer Responsibilities
 
-#### 1. **SeventySix.Core** (Core Domain)
-
-**Purpose**: Pure business logic with zero external dependencies
-
-**Contents**:
-
--   **Entities**: Rich domain models (e.g., `User.cs`, `ThirdPartyApiRequest.cs`)
--   **Value Objects**: Immutable business concepts
--   **Domain Exceptions**: Business rule violations
--   **Repository Interfaces**: Abstractions for data access (DIP)
-
-**Example - ThirdPartyApiRequest Entity**:
-
-```csharp
-public class ThirdPartyApiRequest
-{
-    public int Id { get; set; }
-    public required string ApiName { get; set; }
-    public DateOnly ResetDate { get; set; }
-    public int RequestCount { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public uint Version { get; set; } // Concurrency token
-}
-```
-
-**Design Principles**:
-
--   ✅ SRP: Each entity has one responsibility
--   ✅ OCP: Closed for modification, open for extension
--   ✅ Framework-independent (no EF, no ASP.NET)
--   ✅ Database-agnostic (no annotations or database-specific code)
-
-#### 2. **SeventySix.Data** (Database Schema & Configuration)
-
-**Purpose**: Database-specific schema definition, migrations, and optimizations
-
-**Contents**:
-
--   **ApplicationDbContext**: EF Core database context with provider-specific configuration
--   **Entity Configurations**: Fluent API configuration for database mapping
-    -   `ThirdPartyApiRequestConfiguration.cs` - Table schema, indexes, constraints
--   **Migrations**: EF Core code-first migrations
-    -   Automatic schema versioning
-    -   Up/down migration support
-    -   Database-specific SQL generation
--   **Infrastructure**: Database-specific implementations
-    -   `TransactionManager.cs` - Transaction coordination with retry logic
-    -   Database-specific concurrency handling (PostgreSQL xmin)
-
-**Database-Specific Features**:
-
--   **PostgreSQL Optimizations**:
-    -   SERIAL columns for auto-increment
-    -   `xmin` system column for optimistic concurrency
-    -   Timestamp with timezone for UTC storage
-    -   Custom indexes for query performance
-    -   MVCC (Multi-Version Concurrency Control) support
--   **Migration Management**:
-    -   Code-first approach
-    -   Version-controlled schema changes
-    -   Automatic index and constraint creation
-    -   Rollback support for failed deployments
-
-**Example - Entity Configuration**:
-
-```csharp
-public class ThirdPartyApiRequestConfiguration : IEntityTypeConfiguration<ThirdPartyApiRequest>
-{
-    public void Configure(EntityTypeBuilder<ThirdPartyApiRequest> builder)
-    {
-        builder.ToTable("ThirdPartyApiRequests");
-
-        // PostgreSQL-specific: SERIAL column
-        builder.Property(e => e.Id)
-            .UseIdentityColumn()
-            .IsRequired();
-
-        // PostgreSQL-specific: Timestamp with time zone
-        builder.Property(e => e.CreatedAt)
-            .HasColumnType("timestamp with time zone")
-            .HasDefaultValueSql("NOW()");
-
-        // Performance indexes
-        builder.HasIndex(e => new { e.ApiName, e.ResetDate })
-            .IsUnique();
-    }
-}
-```
-
-**Design Principles**:
-
--   ✅ SRP: Only responsible for database schema
--   ✅ OCP: Can swap database providers without changing DataAccess
--   ✅ DIP: Implements abstractions from Core layer
--   ✅ Database-Agnostic Core: Domain entities have no database annotations
-
-**Migration Commands**:
-
-```powershell
-# Create new migration
-dotnet ef migrations add MigrationName --project SeventySix.Data --startup-project SeventySix.Api
+**SeventySix.Core (Domain)**
 
-# Apply migrations
-dotnet ef database update --project SeventySix.Data --startup-project SeventySix.Api
-
-# Rollback migration
-dotnet ef database update PreviousMigration --project SeventySix.Data --startup-project SeventySix.Api
-```
-
-**Future Extensibility**:
-
--   Create `SeventySix.Data.SQLite` for SQLite provider
--   Create `SeventySix.Data.SqlServer` for SQL Server
--   Create `SeventySix.Data.MySQL` for MySQL/MariaDB
--   Swap providers in `Program.cs` DI registration
-
-#### 3. **SeventySix.BusinessLogic** (Business Logic)
-
-**Purpose**: Use cases and application-specific business rules
-
-**Contents**:
-
--   **Services**: Business logic orchestration (e.g., `UserService.cs`)
--   **Service Interfaces**: Abstractions (e.g., `IUserService.cs`)
--   **DTOs**: Data transfer objects for API contracts
--   **Request/Response Models**: Command/query objects
--   **Validators**: FluentValidation rules
--   **Extensions**: Mapping logic (Entity ↔ DTO)
+-   Pure business entities with no dependencies
+-   Repository interfaces (abstractions)
+-   Domain exceptions
+-   Value objects
+-   NO framework dependencies (no EF, no ASP.NET)
 
-**Example - UserService**:
+**SeventySix.Data (Database Schema)**
 
-```csharp
-public class UserService : IUserService
-{
-    private readonly IUserRepository _repository;
-    private readonly IValidator<CreateUserRequest> _validator;
+-   ApplicationDbContext
+-   Entity configurations (Fluent API)
+-   EF Core migrations
+-   Database-specific implementations (PostgreSQL)
+-   TransactionManager for coordinating transactions
 
-    public async Task<UserDto> CreateUserAsync(
-        CreateUserRequest request,
-        CancellationToken cancellationToken)
-    {
-        // 1. Validate
-        await _validator.ValidateAndThrowAsync(request, cancellationToken);
+**SeventySix.DataAccess (Data Access Logic)**
 
-        // 2. Map to entity
-        var user = request.ToEntity();
+-   Repository implementations using LINQ
+-   Database-agnostic (works with any EF provider)
+-   Caching services
+-   External API clients (Polly integration)
+-   NO database provider dependencies
 
-        // 3. Persist
-        var created = await _repository.CreateAsync(user, cancellationToken);
-
-        // 4. Map to DTO
-        return created.ToDto();
-    }
-}
-```
-
-**Design Principles**:
-
--   ✅ SRP: Each service handles one domain concept
--   ✅ DIP: Depends on abstractions (`IUserRepository`, `IValidator`)
--   ✅ ISP: Interfaces are focused and minimal
--   ✅ Separation of concerns: Validation → Mapping → Persistence → Response
-
-#### 4. **SeventySix.DataAccess** (Data Access)
-
-**Purpose**: Database-agnostic persistence logic and external service integrations
-
-**Contents**:
-
--   **Repositories**: Concrete implementations of domain interfaces (database-agnostic)
-    -   `ThirdPartyApiRequestRepository.cs` - Uses LINQ (no SQL)
-    -   Uses EF Core abstractions only
--   **Services**: Data access services
-    -   `RateLimitingService.cs` - Rate limiting with database persistence
-    -   `PollyIntegrationClient.cs` - Resilient HTTP client
--   **Caching**: In-memory caching for performance
-
-**Database Independence**:
-
--   ✅ **No database provider packages** (no Npgsql, no SQLite)
--   ✅ **LINQ queries only** (no raw SQL)
--   ✅ **EF Core abstractions** (DbContext, DbSet)
--   ✅ **Works with ANY provider** (PostgreSQL, SQLite, SQL Server)
-
-**Example - Database-Agnostic Repository**:
-
-```csharp
-public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
-{
-    private readonly ApplicationDbContext _context;
-
-    // ✅ LINQ is provider-agnostic
-    public async Task<ThirdPartyApiRequest?> GetByApiNameAndDateAsync(
-        string apiName, DateOnly date, CancellationToken ct)
-    {
-        return await _context.ThirdPartyApiRequests
-            .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.ApiName == apiName && r.ResetDate == date, ct);
-    }
-
-    // ✅ EF Core abstractions work with all providers
-    public async Task<ThirdPartyApiRequest> CreateAsync(
-        ThirdPartyApiRequest entity, CancellationToken ct)
-    {
-        _context.ThirdPartyApiRequests.Add(entity);
-        await _context.SaveChangesAsync(ct);
-        return entity;
-    }
-}
-```
-
-**Design Principles**:
-
--   ✅ SRP: Only responsible for data access logic (not schema)
--   ✅ OCP: Open to new database providers via DI
--   ✅ DIP: Depends on DbContext abstraction, not concrete database
--   ✅ Repository Pattern: Abstracts data access from business logic
-
-**Dependencies**:
-
--   `SeventySix.Core` - Domain entities and interfaces
--   `SeventySix.Data` - DbContext for database operations
--   `Microsoft.EntityFrameworkCore` - Abstractions only
-
-#### 5. **SeventySix.Api** (Presentation)
-
-**Purpose**: HTTP API, routing, and cross-cutting concerns
-
-**Contents**:
-
--   **Controllers**: API endpoints (e.g., `UserController.cs`)
--   **Middleware**: Global concerns (exception handling, rate limiting)
--   **Program.cs**: Dependency injection configuration
--   **Filters**: Cross-cutting concerns
-
-**Example - UserController**:
-
-```csharp
-[ApiController]
-[Route("api/[controller]")]
-public class UserController : ControllerBase
-{
-    private readonly IUserService _userService;
-    private readonly ILogger<UserController> _logger;
-
-    [HttpGet]
-    [ResponseCache(Duration = 60)]
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAsync(
-        CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Getting all users");
-        var users = await _userService.GetAllUsersAsync(cancellationToken);
-        return Ok(users);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<UserDto>> CreateAsync(
-        [FromBody] CreateUserRequest request,
-        CancellationToken cancellationToken)
-    {
-        var user = await _userService.CreateUserAsync(request, cancellationToken);
-        return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
-    }
-}
-```
-
-**Design Principles**:
-
--   ✅ Thin controllers: Delegate to services
--   ✅ RESTful API design
--   ✅ Proper HTTP status codes (200, 201, 400, 404, 422, 500)
--   ✅ ProblemDetails for errors (RFC 7807)
--   ✅ Caching headers for performance
-
-### Middleware Pipeline
-
-**Execution Order** (configured in `Program.cs`):
-
-1. **Security Headers** → Defense in depth (HSTS, X-Frame-Options, CSP)
-2. **Global Exception Handler** → Catch all unhandled exceptions
-3. **Rate Limiting** → Prevent API abuse (100 req/min per IP)
-4. **Response Compression** → Brotli/Gzip for bandwidth optimization
-5. **Response Caching** → HTTP caching headers
-6. **CORS** → Cross-origin resource sharing
-7. **HTTPS Redirection** → Force HTTPS in production
-8. **Authorization** → (Future: JWT/OAuth)
-9. **Controller Routing** → Map requests to controllers
-
-**Example - Global Exception Middleware**:
-
-```csharp
-public class GlobalExceptionMiddleware
-{
-    public async Task InvokeAsync(HttpContext context)
-    {
-        try
-        {
-            await _next(context);
-        }
-        catch (Exception ex)
-        {
-            await HandleExceptionAsync(context, ex);
-        }
-    }
-
-    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
-    {
-        var problemDetails = exception switch
-        {
-            ValidationException => CreateValidationProblem(...),
-            EntityNotFoundException => CreateProblem(404, ...),
-            BusinessRuleViolationException => CreateProblem(422, ...),
-            _ => CreateProblem(500, ...)
-        };
-
-        await context.Response.WriteAsJsonAsync(problemDetails);
-    }
-}
-```
-
-### Dependency Injection Configuration
-
-**Service Registration** (`Program.cs`):
-
-```csharp
-// Repositories (Scoped - per request)
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-// Services (Scoped - per request)
-builder.Services.AddScoped<IUserService, UserService>();
-
-// Validators (Scoped - auto-registered from assembly)
-builder.Services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
-```
-
-**Lifetimes**:
-
--   **Scoped**: Repositories, Services, DbContext
--   **Singleton**: Logging, Configuration, Caching
--   **Transient**: Stateless utilities
+**SeventySix.BusinessLogic (Application Logic)**
+
+-   Service implementations
+-   Service interfaces
+-   DTOs for API contracts
+-   FluentValidation validators
+-   Mapping extensions (Entity ↔ DTO)
+-   Command/Query handlers
+
+**SeventySix.Api (Presentation)**
+
+-   Controllers (thin, delegate to services)
+-   Middleware pipeline
+-   DI configuration
+-   API documentation (OpenAPI)
+-   HTTP-specific concerns
+
+### Dependency Rules
+
+-   **Core** has zero dependencies
+-   **Data** depends on Core only
+-   **DataAccess** depends on Core + Data
+-   **BusinessLogic** depends on Core only
+-   **Api** depends on all layers (composition root)
+
+### Key Design Decisions
+
+**Repository Pattern**
+
+-   Abstracts data access from business logic
+-   Interface in Core, implementation in DataAccess
+-   Returns domain entities, not DTOs
+-   Uses LINQ for database-agnostic queries
+
+**Service Layer Pattern**
+
+-   Encapsulates business logic
+-   Coordinates repositories, validation, mapping
+-   Returns DTOs, never domain entities
+-   Interface-based for testability
+
+**DTO Pattern**
+
+-   Never expose domain entities via API
+-   Request DTOs for incoming data
+-   Response DTOs for outgoing data
+-   Mapping via extension methods
+
+**Validation Strategy**
+
+-   FluentValidation for all requests
+-   ValidateAndThrowAsync for fail-fast
+-   Separate validators per request type
+-   Registered in DI container
+
+**Transaction Management**
+
+-   TransactionManager handles transactions
+-   Retry logic for transient failures
+-   Scoped lifetime (per-request)
 
 ---
 
-## Frontend Architecture (Angular)
+## Frontend Architecture
 
-### Project Structure
+### Directory Structure
 
 ```
 src/app/
-├── core/                      # Singleton services, global concerns
-│   ├── api-services/          # HTTP communication layer
-│   │   ├── api.service.ts     # Generic HTTP client wrapper
-│   │   └── i-api.service.ts   # API service interface
-│   ├── constants/             # Application-wide constants
-│   ├── enums/                 # TypeScript enumerations
-│   ├── guards/                # Route guards (auth, unsaved changes)
-│   ├── helpers/               # Utility functions
-│   ├── interceptors/          # HTTP interceptors
-│   │   ├── auth.interceptor.ts
-│   │   ├── cache.interceptor.ts
-│   │   ├── error.interceptor.ts
-│   │   └── logging.interceptor.ts
-│   ├── models/interfaces/     # TypeScript interfaces
-│   │   └── user.ts            # User interface
-│   ├── repositories/          # Data access layer (Repository Pattern)
-│   │   ├── base.repository.ts # Generic repository interface
-│   │   └── user.repository.ts # User data access
-│   └── services/              # Business logic services
-│       ├── user.service.ts    # User business logic
-│       ├── logger.service.ts  # Logging facade
-│       └── cache.service.ts   # Client-side caching
-├── features/                  # Feature modules (lazy loaded)
-│   └── game/                  # Game feature
-│       └── world-map/         # World map component
-├── shared/                    # Shared components, directives, pipes
-│   ├── components/            # Reusable UI components
-│   │   └── user-list/         # User list component
-│   ├── directives/            # Custom directives
-│   ├── pipes/                 # Custom pipes
-│   └── validators/            # Form validators
-└── app.config.ts              # Application configuration
+├── core/                       # Singleton services (app-wide)
+│   ├── api-services/           # Generic HTTP client
+│   ├── guards/                 # Route guards
+│   ├── interceptors/           # HTTP interceptors
+│   ├── models/                 # Shared interfaces
+│   ├── repositories/           # Shared data access
+│   └── services/               # Global services
+├── features/                   # Feature modules (lazy loaded)
+│   ├── admin/                  # Admin feature area
+│   │   ├── users/              # Users feature (self-contained)
+│   │   │   ├── components/     # Feature-specific components
+│   │   │   ├── models/         # Feature-specific models
+│   │   │   ├── repositories/   # Feature-specific data access
+│   │   │   ├── services/       # Feature-specific business logic
+│   │   │   └── subpages/       # Feature sub-routes
+│   │   └── admin.routes.ts     # Admin area routing
+│   ├── home/                   # Home feature area
+│   │   └── weather/            # Weather feature (self-contained)
+│   │       ├── components/     # Weather components
+│   │       ├── models/         # Weather models
+│   │       ├── repositories/   # Weather data access
+│   │       └── services/       # Weather business logic
+│   └── game/                   # Game feature area
+├── shared/                     # Reusable components
+│   ├── components/             # Shared UI components
+│   ├── directives/             # Custom directives
+│   └── pipes/                  # Custom pipes
+├── testing/                    # Test utilities
+│   └── mocks/                  # Mock objects
+├── app.config.ts               # App configuration
+└── app.routes.ts               # Main routing
 ```
 
-### Angular Architecture Layers
+### Modern Angular Patterns
 
-The frontend mirrors backend clean architecture:
+**Standalone Components (Default)**
 
-```
-┌─────────────────────────────────────────────┐
-│          Components (Presentation)          │
-│  - Smart/Container components               │
-│  - Presentational/Dumb components           │
-│  - Templates, styles, component logic       │
-└────────────────┬────────────────────────────┘
-                 │ depends on ↓
-┌─────────────────────────────────────────────┐
-│           Services (Business Logic)         │
-│  - UserService, LoggerService, etc.         │
-│  - Business rules, orchestration            │
-└────────────────┬────────────────────────────┘
-                 │ depends on ↓
-┌─────────────────────────────────────────────┐
-│          Repositories (Data Access)         │
-│  - UserRepository, etc.                     │
-│  - HTTP calls, caching, data transformation │
-└────────────────┬────────────────────────────┘
-                 │ depends on ↓
-┌─────────────────────────────────────────────┐
-│              API Service (HTTP)             │
-│  - Generic HTTP client wrapper              │
-│  - Error handling, interceptors             │
-└─────────────────────────────────────────────┘
-```
+-   All components are standalone
+-   Direct imports, no NgModule
+-   Tree-shakeable by default
 
-### Modern Angular Patterns (CLAUDE.md Compliant)
+**Signal-Based State**
 
-#### 1. **Standalone Components** (Default)
+-   Reactive state with signals
+-   Computed for derived values
+-   Better performance than RxJS for local state
 
-```typescript
-@Component({
-	selector: "app-user-list",
-	imports: [DatePipe], // Direct imports, no NgModule
-	templateUrl: "./user-list.html",
-	styleUrls: ["./user-list.scss"],
-	changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class UserList {}
-```
+**OnPush Change Detection**
 
-**Why**: Simplified, tree-shakeable, better for lazy loading
+-   All components use OnPush
+-   10-100x performance improvement
+-   Signal changes trigger updates automatically
 
-#### 2. **Signals for State Management**
-
-```typescript
-export class UserList {
-	// State signals
-	readonly users = signal<User[]>([]);
-	readonly isLoading = signal<boolean>(true);
-	readonly error = signal<string | null>(null);
-
-	// Computed signals for derived state
-	readonly userCount = computed(() => this.users().length);
-	readonly activeUserCount = computed(() => this.users().filter((u) => u.isActive).length);
-}
-```
-
-**Why**:
-
--   Reactive without RxJS complexity
--   Fine-grained change detection
--   Better performance than zones
--   Type-safe
-
-#### 3. **Dependency Injection with `inject()`**
-
-```typescript
-export class UserList {
-	private readonly userService = inject(UserService);
-	private readonly logger = inject(LoggerService);
-}
-```
-
-**Why**:
+**Dependency Injection with inject()**
 
 -   Cleaner than constructor injection
 -   Enables composition patterns
 -   Better for testing
 
-#### 4. **OnPush Change Detection** (Performance)
+**Modern Template Syntax**
 
-```typescript
-@Component({
-    changeDetection: ChangeDetectionStrategy.OnPush
-})
+-   `@if`, `@for`, `@switch` instead of directives
+-   Built into Angular, no imports needed
+-   Better performance and type safety
+
+**TrackBy Functions**
+
+-   All `@for` loops use track expressions
+-   Minimizes DOM manipulation
+-   Identity tracking for performance
+
+### Layer Pattern (Frontend)
+
+```
+Component (Presentation)
+    └─ inject service ↓
+Service (Business Logic)
+    └─ inject repository ↓
+Repository (Data Access)
+    └─ inject ApiService ↓
+ApiService (HTTP Client)
+    └─ HTTP interceptors
 ```
 
-**Why**: Only check when inputs change or events fire (10-100x faster)
+---
 
-#### 5. **Modern Template Syntax**
+## Feature Module Pattern
 
-```html
-<!-- Control flow -->
-@if (isLoading()) {
-<div class="spinner"></div>
-} @if (error()) {
-<div class="error">{{ error() }}</div>
-}
+### Self-Contained Feature Structure
 
-<!-- Iteration with trackBy -->
-@for (user of users(); track trackById($index, user)) {
-<tr>
-	<td>{{ user.username }}</td>
-	<td>{{ user.email }}</td>
-</tr>
-}
+Each feature is **fully self-contained** with its own:
+
+-   **Components**: UI components for the feature
+-   **Models**: TypeScript interfaces/classes
+-   **Repositories**: Data access specific to feature
+-   **Services**: Business logic specific to feature
+-   **Subpages**: Child routes/pages
+
+### Benefits
+
+-   **Encapsulation**: Feature internals are isolated
+-   **Reusability**: Features can be moved/shared
+-   **Lazy Loading**: Features load on-demand
+-   **Team Scalability**: Teams own features end-to-end
+-   **Testability**: Features test independently
+
+### Feature Organization Rules
+
+**When to create a feature-local service/repository:**
+
+-   Service/repository is used ONLY by this feature
+-   Logic is specific to feature domain
+-   No other features need this functionality
+
+**When to use core services/repositories:**
+
+-   Shared across multiple features
+-   Global app concerns (auth, logging, theme)
+-   Reusable infrastructure (HTTP client, cache)
+
+**Example: Users Feature**
+
+```
+features/admin/users/
+├── components/          # User-specific UI components
+├── models/
+│   ├── user.model.ts    # User interface
+│   └── index.ts         # Barrel export
+├── repositories/
+│   ├── user.repository.ts      # User data access
+│   └── index.ts                # Barrel export
+├── services/
+│   ├── user.service.ts         # User business logic
+│   └── index.ts                # Barrel export
+├── subpages/
+│   ├── users-page.ts           # List page
+│   ├── user-create-page.ts     # Create page
+│   └── user-edit-page.ts       # Edit page
+└── users.component.ts          # Feature root component
 ```
 
-**Why**:
+### Feature Barrel Exports
 
--   Better performance than `*ngIf`/`*ngFor`
--   Type-safe
--   Built into Angular (no directives needed)
-
-#### 6. **Repository Pattern**
+Each subdirectory has an `index.ts` for clean imports:
 
 ```typescript
-@Injectable({ providedIn: "root" })
-export class UserRepository implements IRepository<User> {
-	private readonly apiService = inject(ApiService);
-	private readonly endpoint = "User";
+// features/admin/users/models/index.ts
+export * from "./user.model";
 
-	getAll(): Observable<User[]> {
-		return this.apiService.get<User[]>(this.endpoint);
+// features/admin/users/services/index.ts
+export * from "./user.service";
+
+// features/admin/users/repositories/index.ts
+export * from "./user.repository";
+```
+
+**Usage in components:**
+
+```typescript
+import { User } from "@admin/users/models";
+import { UserService } from "@admin/users/services";
+import { UserRepository } from "@admin/users/repositories";
+```
+
+### Path Aliases
+
+Configure TypeScript path mappings for clean imports:
+
+```json
+{
+	"paths": {
+		"@core/*": ["src/app/core/*"],
+		"@shared/*": ["src/app/shared/*"],
+		"@admin/*": ["src/app/features/admin/*"],
+		"@home/*": ["src/app/features/home/*"],
+		"@environments/*": ["src/environments/*"]
 	}
-
-	create(user: Partial<User>): Observable<User> {
-		return this.apiService.post<User>(this.endpoint, user);
-	}
 }
 ```
 
-**Why**:
+### Routing Strategy
 
--   Separation of concerns (data access isolated)
--   Easy to mock for testing
--   Can add caching layer without changing services
-
-#### 7. **Service Layer**
+**Lazy load all features:**
 
 ```typescript
-@Injectable({ providedIn: "root" })
+export const routes: Routes = [
+	{
+		path: "users",
+		loadComponent: () => import("./features/admin/users/users-page").then((m) => m.UsersPage),
+		children: [
+			{
+				path: "new",
+				loadComponent: () => import("./features/admin/users/user-create-page").then((m) => m.UserCreatePage),
+			},
+			{
+				path: ":id",
+				loadComponent: () => import("./features/admin/users/user-edit-page").then((m) => m.UserEditPage),
+			},
+		],
+	},
+];
+```
+
+---
+
+## Data Flow Architecture
+
+### Request Flow (Create Entity)
+
+```
+1. User interacts with component
+       ↓
+2. Component calls feature service
+       ↓
+3. Service calls feature repository
+       ↓
+4. Repository calls ApiService.post()
+       ↓
+5. HTTP Interceptors (cache → auth → logging → error)
+       ↓
+6. HTTP POST to backend API
+       ↓
+7. Middleware pipeline (security → exception → rate limit → compression → CORS)
+       ↓
+8. Controller receives request
+       ↓
+9. Controller calls service
+       ↓
+10. Service validates (FluentValidation)
+       ↓
+11. Service maps DTO → Entity
+       ↓
+12. Service calls repository
+       ↓
+13. Repository persists to database
+       ↓
+14. Repository returns entity
+       ↓
+15. Service maps Entity → DTO
+       ↓
+16. Controller returns 201 Created + DTO
+       ↓
+17. Response through middleware (compression)
+       ↓
+18. Response through interceptors (error → logging)
+       ↓
+19. Repository receives Observable<Entity>
+       ↓
+20. Service receives Observable<Entity>
+       ↓
+21. Component subscribes, updates signals
+       ↓
+22. OnPush change detection triggers
+       ↓
+23. UI updates
+```
+
+### Error Handling Flow
+
+```
+Exception thrown in service
+       ↓
+GlobalExceptionMiddleware catches
+       ↓
+Convert to ProblemDetails (RFC 7807)
+       ↓
+HTTP 4xx/5xx response
+       ↓
+Error interceptor catches
+       ↓
+Logging interceptor logs error
+       ↓
+Component error callback fires
+       ↓
+Error signal updated
+       ↓
+UI displays error message
+```
+
+---
+
+## Dependency Management
+
+### Backend DI Configuration
+
+**Service Lifetimes:**
+
+-   **Scoped**: Repositories, Services, DbContext (per-request)
+-   **Singleton**: Configuration, Logging, Caching
+-   **Transient**: Stateless utilities
+
+**Registration Pattern:**
+
+```csharp
+// Repositories (interface → implementation)
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+// Services
+builder.Services.AddScoped<IUserService, UserService>();
+
+// Validators (auto-register from assembly)
+builder.Services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
+
+// DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
+```
+
+### Frontend DI Configuration
+
+**Service Registration:**
+
+-   All services use `providedIn: 'root'` (singleton)
+-   Feature services still singleton but isolated to feature
+
+**Injection Pattern:**
+
+```typescript
 export class UserService {
 	private readonly userRepository = inject(UserRepository);
-
-	getAllUsers(): Observable<User[]> {
-		return this.userRepository.getAll();
-	}
-
-	createUser(user: Partial<User>): Observable<User> {
-		return this.userRepository.create(user);
-	}
+	private readonly logger = inject(LoggerService);
 }
 ```
 
-**Why**:
+### Interceptor Chain
 
--   Business logic separated from data access
--   Can add cross-cutting concerns (logging, validation)
--   Testable
+**Order of execution:**
 
-### HTTP Interceptor Chain
+1. Cache Interceptor (check cache first)
+2. Auth Interceptor (add auth headers)
+3. Logging Interceptor (log requests)
+4. Error Interceptor (handle errors globally)
 
-**Order of Execution** (configured in `app.config.ts`):
-
-1. **Cache Interceptor** → Check cache before making request
-2. **Auth Interceptor** → Add JWT token to headers
-3. **Logging Interceptor** → Log requests/responses
-4. **Error Interceptor** → Handle HTTP errors globally
-
----
-
-## SOLID Principles Implementation
-
-### 1. Single Responsibility Principle (SRP)
-
-**"A class should have one, and only one, reason to change."**
-
-#### Backend Examples:
-
--   **UserController**: Only handles HTTP concerns (routing, status codes)
--   **UserService**: Only business logic (validation, orchestration)
--   **UserRepository**: Only data access (CRUD operations)
--   **GlobalExceptionMiddleware**: Only exception handling
-
-#### Frontend Examples:
-
--   **UserRepository**: Only HTTP calls for user data
--   **UserService**: Only user business logic
--   **UserList Component**: Only UI presentation
-
-**Benefit**: Easy to modify, test, and understand
-
-### 2. Open/Closed Principle (OCP)
-
-**"Open for extension, closed for modification."**
-
-#### Examples:
-
--   **Middleware Pipeline**: Add new middleware without modifying existing ones
--   **Repository Pattern**: Swap implementations (in-memory → EF Core) without changing services
--   **Interceptors**: Add new HTTP interceptors without modifying existing ones
--   **Validators**: Add new FluentValidation rules without modifying service logic
-
-**Implementation**:
-
-```csharp
-// Extension point - can add new implementations
-public interface IUserRepository
-{
-    Task<User> CreateAsync(User entity);
-}
-
-// Closed for modification - services use interface
-public class UserService
-{
-    private readonly IUserRepository _repository;
-    // Service doesn't change when repository implementation changes
-}
-```
-
-### 3. Liskov Substitution Principle (LSP)
-
-**"Subtypes must be substitutable for their base types."**
-
-#### Examples:
-
--   All `IRepository<T>` implementations can be swapped:
-    -   `InMemoryUserRepository` → `EfCoreUserRepository` → `DapperUserRepository`
--   All validators implement `IValidator<T>` and are interchangeable
-
-**Implementation**:
-
-```csharp
-// Can substitute any IUserRepository implementation
-public UserService(IUserRepository repository)
-{
-    _repository = repository; // Works with ANY implementation
-}
-```
-
-### 4. Interface Segregation Principle (ISP)
-
-**"No client should depend on methods it doesn't use."**
-
-#### Examples:
-
--   **IUserService**: Only user-specific methods (not generic CRUD)
--   **IUserRepository**: Focused interface (no unnecessary methods)
--   **IApiService** (Frontend): Generic HTTP methods (get, post, put, delete)
-
-**Anti-pattern Avoided**:
-
-```csharp
-// ❌ BAD: Bloated interface
-public interface IRepository<T>
-{
-    Task<T> GetById(int id);
-    Task<T> Create(T entity);
-    Task BulkInsert(IEnumerable<T> entities);  // Not all repos need this
-    Task<T> GetWithIncludes(int id, params string[] includes); // Too specific
-}
-
-// ✅ GOOD: Focused interface
-public interface IUserRepository
-{
-    Task<User> GetByIdAsync(int id);
-    Task<User> CreateAsync(User entity);
-}
-```
-
-### 5. Dependency Inversion Principle (DIP)
-
-**"Depend on abstractions, not concretions."**
-
-#### Backend Examples:
-
-```csharp
-// High-level module (UserService) depends on abstraction (IUserRepository)
-public class UserService : IUserService
-{
-    private readonly IUserRepository _repository; // ← Abstraction
-    private readonly IValidator<CreateUserRequest> _validator; // ← Abstraction
-}
-
-// Low-level module (UserRepository) implements abstraction
-public class UserRepository : IUserRepository { }
-```
-
-#### Frontend Examples:
+**Configuration:**
 
 ```typescript
-// Service depends on repository abstraction
-export class UserService {
-	private readonly userRepository = inject(UserRepository); // ← Abstraction
-}
-
-// Component depends on service abstraction
-export class UserList {
-	private readonly userService = inject(UserService); // ← Abstraction
-}
-```
-
-**Benefit**:
-
--   Easy to swap implementations
--   Easy to mock for testing
--   Loose coupling between layers
-
----
-
-## Design Patterns
-
-### Creational Patterns
-
-#### 1. **Singleton** (Dependency Injection)
-
-**Backend**: Services registered with `AddScoped` or `AddSingleton`
-**Frontend**: Services with `providedIn: 'root'`
-
-```typescript
-@Injectable({ providedIn: "root" })
-export class UserService {} // Single instance across app
-```
-
-#### 2. **Dependency Injection**
-
-**Universal pattern** across both backend and frontend
-
-**Backend**:
-
-```csharp
-builder.Services.AddScoped<IUserService, UserService>();
-```
-
-**Frontend**:
-
-```typescript
-private readonly userService = inject(UserService);
-```
-
-### Structural Patterns
-
-#### 3. **Repository Pattern** (Data Access Abstraction)
-
-**Purpose**: Separate data access logic from business logic
-
-**Backend**:
-
-```csharp
-public interface IUserRepository
-{
-    Task<IEnumerable<User>> GetAllAsync();
-    Task<User> CreateAsync(User entity);
-}
-```
-
-**Frontend**:
-
-```typescript
-export class UserRepository implements IRepository<User> {
-	getAll(): Observable<User[]> {}
-	create(entity: Partial<User>): Observable<User> {}
-}
-```
-
-#### 4. **Facade** (Simplified Interface)
-
-**Purpose**: Provide simple interface to complex subsystem
-
-**Example**: `UserService` is a facade over repository + validation + mapping
-
-```csharp
-public class UserService // Facade
-{
-    public async Task<UserDto> CreateUserAsync(CreateUserRequest request)
-    {
-        await _validator.ValidateAndThrowAsync(request); // Validation subsystem
-        var user = request.ToEntity(); // Mapping subsystem
-        var created = await _repository.CreateAsync(user); // Data access subsystem
-        return created.ToDto(); // Mapping subsystem
-    }
-}
-```
-
-#### 5. **Proxy** (HTTP Interceptors)
-
-**Purpose**: Add behavior without changing original object
-
-**Frontend**:
-
-```typescript
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-	const token = getToken();
-	const authReq = req.clone({
-		headers: req.headers.set("Authorization", `Bearer ${token}`),
-	});
-	return next(authReq); // Transparently add auth header
-};
-```
-
-### Behavioral Patterns
-
-#### 6. **Strategy** (Validation)
-
-**Purpose**: Define family of algorithms, make them interchangeable
-
-**Example**: FluentValidation rules
-
-```csharp
-public class CreateUserValidator : AbstractValidator<CreateUserRequest>
-{
-    public CreateUserValidator()
-    {
-        RuleFor(x => x.Username).NotEmpty().Length(3, 50);
-        RuleFor(x => x.Email).NotEmpty().EmailAddress();
-    }
-}
-```
-
-#### 7. **Observer** (RxJS Observables)
-
-**Purpose**: One-to-many dependency for state changes
-
-**Frontend**:
-
-```typescript
-this.userService.getAllUsers().subscribe({
-	next: (data) => this.users.set(data),
-	error: (err) => this.error.set(err.message),
-});
-```
-
-**Why**: One-to-many dependency for state changes
-
-**Frontend**:
-
-```typescript
-this.userService.getAllUsers().subscribe({
-	next: (data) => this.users.set(data),
-	error: (err) => this.error.set(err.message),
-});
-```
-
----
-
-## UI/UX Architecture (Material Design 3)
-
-### Design Philosophy
-
-SeventySix's frontend strictly adheres to **Material Design 3 (M3)** guidelines as the **PRIMARY and ONLY** UI framework. All UI components must use Angular Material - never custom implementations.
-
-**Core Principles**:
-
--   ✅ **Material-First**: Use Angular Material components exclusively
--   ✅ **Accessibility**: WCAG 2.1 AA compliance throughout
--   ✅ **Responsive**: Mobile-first design with breakpoint-driven layouts
--   ✅ **Performance**: OnPush change detection, lazy loading, optimized rendering
--   ✅ **Consistency**: Unified design language across all features
-
-**Documentation**: See `DESIGN_PATTERNS.md` for comprehensive implementation guidelines.
-
-### Material Design 3 Theming
-
-#### Theme Structure
-
-The application implements a **dynamic theming system** with 4 pre-configured variants:
-
-**Theme Axes**:
-
--   **Brightness**: Light | Dark
--   **Color Scheme**: Blue | Cyan-Orange
-
-**Available Themes**:
-
-1. `light-blue` - Professional blue theme (default)
-2. `dark-blue` - Dark mode with blue accents
-3. `light-cyan-orange` - Vibrant cyan/orange palette
-4. `dark-cyan-orange` - Dark mode with warm accents
-
-#### Theme Configuration
-
-**Location**: `src/styles.scss`
-
-```scss
-@use "@angular/material" as mat;
-
-// Define palettes
-$blue-palette: mat.define-palette(mat.$blue-palette);
-$cyan-palette: mat.define-palette(mat.$cyan-palette);
-$orange-palette: mat.define-palette(mat.$orange-palette);
-$red-palette: mat.define-palette(mat.$red-palette);
-
-// Light themes
-$light-blue-theme: mat.define-theme(
-	(
-		color: (
-			theme-type: light,
-			primary: $blue-palette,
-			tertiary: $blue-palette,
-		),
-	)
+provideHttpClient(
+	withInterceptors([cacheInterceptor, authInterceptor, loggingInterceptor, errorInterceptor]),
+	withXsrfConfiguration({
+		cookieName: "XSRF-TOKEN",
+		headerName: "X-XSRF-TOKEN",
+	})
 );
-
-$light-cyan-orange-theme: mat.define-theme(
-	(
-		color: (
-			theme-type: light,
-			primary: $cyan-palette,
-			tertiary: $orange-palette,
-		),
-	)
-);
-
-// Dark themes (similar structure with theme-type: dark)
 ```
 
-#### Theme Service
-
-**Location**: `src/app/core/services/theme.service.ts`
-
-**Purpose**: Manage theme switching and persistence
-
-**Key Features**:
-
--   Signal-based reactive state (`brightness`, `colorScheme`)
--   Computed theme name (`themeName`)
--   LocalStorage persistence
--   Server-side rendering compatible
-
-**API**:
-
-```typescript
-export class ThemeService {
-	brightness = signal<ThemeBrightness>("light"); // 'light' | 'dark'
-	colorScheme = signal<ColorScheme>("blue"); // 'blue' | 'cyan-orange'
-	themeName = computed(() => `${this.brightness()}-${this.colorScheme()}`);
-
-	toggleBrightness(): void; // Switch light/dark
-	toggleColorScheme(): void; // Switch color schemes
-	setBrightness(brightness: ThemeBrightness): void;
-	setColorScheme(scheme: ColorScheme): void;
-
-	isDark(): boolean;
-	isLight(): boolean;
-	isBlue(): boolean;
-	isCyanOrange(): boolean;
-}
-```
-
-**Usage in Components**:
-
-```typescript
-export class StyleGuideComponent {
-	protected readonly themeService = inject(ThemeService);
-
-	// In template:
-	// {{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}
-	// (click)="themeService.toggleBrightness()"
-}
-```
-
-#### Material Design Tokens
-
-**Color System**:
-
--   `--mat-sys-primary` - Main brand color
--   `--mat-sys-secondary` - Supporting actions
--   `--mat-sys-tertiary` - Accent/highlight color
--   `--mat-sys-error` - Error states
--   `--mat-sys-surface` - Background surfaces
--   `--mat-sys-on-primary` - Text on primary color
--   `--mat-sys-on-surface` - Text on surfaces
-
-**Typography Scale** (Material Type Scale):
-
--   `mat-headline-large` - 32px (Page titles)
--   `mat-headline-medium` - 28px (Section headings)
--   `mat-headline-small` - 24px (Card titles)
--   `mat-title-large` - 22px
--   `mat-title-medium` - 16px (Toolbar, dialogs)
--   `mat-title-small` - 14px
--   `mat-body-large` - 16px (Body text)
--   `mat-body-medium` - 14px (Default)
--   `mat-body-small` - 12px (Captions)
--   `mat-label-large` - 14px (Form labels)
--   `mat-label-medium` - 12px
--   `mat-label-small` - 11px
-
-**Elevation System**:
-
--   Level 0: Flat surfaces
--   Level 1: Raised surfaces (4px shadow)
--   Level 2: Cards, menus (8px shadow)
--   Level 3: Dialogs, modals (16px shadow)
--   Level 4: Navigation drawer (24px shadow)
-
-**Spacing Scale** (8px grid):
-
--   4px, 8px, 12px, 16px, 24px, 32px, 48px, 64px
-
-### Component Architecture
-
-#### Material Component Usage
-
-**Button Hierarchy**:
-
-```html
-<!-- High emphasis - Primary actions -->
-<button mat-raised-button color="primary">Save</button>
-
-<!-- Medium emphasis - Secondary actions -->
-<button mat-flat-button color="accent">Edit</button>
-<button mat-stroked-button>Cancel</button>
-
-<!-- Low emphasis - Tertiary actions -->
-<button mat-button>Learn More</button>
-
-<!-- Icon buttons for compact actions -->
-<button mat-icon-button aria-label="Delete">
-	<mat-icon>delete</mat-icon>
-</button>
-
-<!-- Floating Action Button (FAB) for primary screen action -->
-<button mat-fab color="primary" aria-label="Add">
-	<mat-icon>add</mat-icon>
-</button>
-```
-
-**Form Controls**:
-
-```html
-<!-- Text inputs - Always outline appearance -->
-<mat-form-field appearance="outline">
-	<mat-label>Email</mat-label>
-	<input matInput type="email" [formControl]="emailControl" />
-	<mat-icon matPrefix>email</mat-icon>
-	<mat-hint>We'll never share your email</mat-hint>
-	<mat-error *ngIf="emailControl.hasError('email')"> Enter a valid email </mat-error>
-</mat-form-field>
-
-<!-- Selects -->
-<mat-form-field appearance="outline">
-	<mat-label>Country</mat-label>
-	<mat-select [formControl]="countryControl">
-		<mat-option *ngFor="let country of countries" [value]="country.code"> {{ country.name }} </mat-option>
-	</mat-select>
-</mat-form-field>
-
-<!-- Checkboxes and Radio Buttons -->
-<mat-checkbox [formControl]="agreeControl">I agree to terms</mat-checkbox>
-
-<mat-radio-group [formControl]="roleControl">
-	<mat-radio-button value="admin">Admin</mat-radio-button>
-	<mat-radio-button value="user">User</mat-radio-button>
-</mat-radio-group>
-```
-
-**Data Presentation**:
-
-```html
-<!-- Tables with sorting, filtering, pagination -->
-<table mat-table [dataSource]="dataSource" matSort>
-	<ng-container matColumnDef="name">
-		<th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-		<td mat-cell *matCellDef="let row">{{ row.name }}</td>
-	</ng-container>
-	<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-	<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-</table>
-
-<mat-paginator [length]="totalItems" [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
-
-<!-- Cards for content grouping -->
-<mat-card>
-	<mat-card-header>
-		<mat-card-title>User Statistics</mat-card-title>
-		<mat-card-subtitle>Last 6 months</mat-card-subtitle>
-	</mat-card-header>
-	<mat-card-content>
-		<!-- Chart or content -->
-	</mat-card-content>
-	<mat-card-actions>
-		<button mat-button>VIEW DETAILS</button>
-	</mat-card-actions>
-</mat-card>
-```
-
-**Feedback Components**:
-
-```typescript
-// Snackbar for brief messages
-this.snackBar.open("User created successfully", "DISMISS", {
-	duration: 3000,
-	horizontalPosition: "end",
-	verticalPosition: "bottom",
-});
-
-// Dialog for critical decisions
-const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-	data: {
-		title: "Delete User?",
-		message: "This action cannot be undone.",
-		confirmText: "DELETE",
-		cancelText: "CANCEL",
-		confirmColor: "warn",
-		icon: "warning",
-	},
-});
-
-dialogRef.afterClosed().subscribe((result) => {
-	if (result) {
-		// User confirmed
-	}
-});
-
-// Progress indicators
-<mat-progress-bar mode="indeterminate"></mat-progress-bar>
-<mat-spinner diameter="40"></mat-spinner>
-```
-
-#### Layout Components
-
-**Application Shell** (`app.html`):
-
-```html
-<mat-sidenav-container>
-	<!-- Sidebar navigation -->
-	<mat-sidenav [mode]="layoutService.sidebarMode()" [opened]="layoutService.sidebarExpanded()">
-		<app-sidebar></app-sidebar>
-	</mat-sidenav>
-
-	<!-- Main content -->
-	<mat-sidenav-content>
-		<app-header></app-header>
-		<main class="page-content">
-			<router-outlet />
-		</main>
-		<app-footer></app-footer>
-	</mat-sidenav-content>
-</mat-sidenav-container>
-```
-
-**Responsive Breakpoints**:
-
-```typescript
-export class ViewportService {
-	// Breakpoint signals
-	isXSmall = computed(() => this.breakpoints()["(max-width: 599.98px)"]); // Phone
-	isSmall = computed(() => this.breakpoints()["(min-width: 600px) and (max-width: 959.98px)"]); // Tablet
-	isMedium = computed(() => this.breakpoints()["(min-width: 960px) and (max-width: 1279.98px)"]); // Laptop
-	isLarge = computed(() => this.breakpoints()["(min-width: 1280px) and (max-width: 1919.98px)"]); // Desktop
-	isXLarge = computed(() => this.breakpoints()["(min-width: 1920px)"]); // Large Desktop
-
-	// Device types
-	isMobile = computed(() => this.isXSmall() || this.isSmall());
-	isTablet = computed(() => this.isSmall() || this.isMedium());
-	isDesktop = computed(() => this.isLarge() || this.isXLarge());
-}
-```
-
-**Usage**:
-
-```typescript
-export class UserList {
-	protected readonly viewport = inject(ViewportService);
-
-	// Adjust columns based on screen size
-	displayedColumns = computed(() => {
-		if (this.viewport.isMobile()) {
-			return ["name", "email", "actions"];
-		}
-		return ["id", "username", "name", "email", "role", "status", "actions"];
-	});
-}
-```
-
-### Accessibility (WCAG 2.1 AA)
-
-**Keyboard Navigation**:
-
--   All interactive elements accessible via keyboard
--   Logical tab order (tabindex management)
--   Keyboard shortcuts documented
--   Skip-to-content link for screen readers
-
-**ARIA Labels**:
-
-```html
-<!-- Buttons with icon-only content -->
-<button mat-icon-button aria-label="Delete user">
-	<mat-icon aria-hidden="true">delete</mat-icon>
-</button>
-
-<!-- Loading states -->
-<div role="status" aria-live="polite" *ngIf="isLoading()">Loading users...</div>
-
-<!-- Error messages -->
-<div role="alert" aria-live="assertive" *ngIf="error()">{{ error() }}</div>
-
-<!-- Data tables -->
-<table mat-table role="table" aria-label="User list">
-	<!-- ... -->
-</table>
-```
-
-**Focus Management**:
-
-```scss
-// Global focus indicators (styles.scss)
-*:focus-visible {
-	outline: 2px solid var(--mat-sys-primary);
-	outline-offset: 2px;
-	border-radius: 4px;
-}
-
-*:focus:not(:focus-visible) {
-	outline: none; // Hide for mouse users
-}
-
-// Material button focus
-.mat-mdc-button:focus-visible {
-	box-shadow: 0 0 0 2px var(--mat-sys-primary);
-}
-```
-
-**Screen Reader Support**:
-
--   Semantic HTML (`<nav>`, `<main>`, `<header>`, `<footer>`)
--   ARIA landmarks (`role="navigation"`, `role="main"`)
--   Live regions for dynamic content
--   Descriptive link text (no "click here")
-
-### Animation & Motion
-
-**Material Design 3 Motion Principles**:
-
--   **Duration**: 200-300ms for most transitions
--   **Easing**: Cubic-bezier curves for natural motion
--   **Choreography**: Stagger animations for lists
-
-**Example Animations** (`animations.ts`):
-
-```typescript
-export const fadeInOut = trigger("fadeInOut", [transition(":enter", [style({ opacity: 0 }), animate("200ms ease-in", style({ opacity: 1 }))]), transition(":leave", [animate("150ms ease-out", style({ opacity: 0 }))])]);
-
-export const slideIn = trigger("slideIn", [transition(":enter", [style({ transform: "translateX(-100%)", opacity: 0 }), animate("250ms ease-out", style({ transform: "translateX(0)", opacity: 1 }))])]);
-```
-
-**Usage**:
-
-```typescript
-@Component({
-	animations: [fadeInOut, slideIn],
-})
-export class UserList {}
-```
-
-```html
-<div @fadeInOut *ngIf="showContent">Content</div>
-<div @slideIn *ngFor="let user of users()">{{ user.name }}</div>
-```
-
-### Style Guide Component
-
-**Purpose**: Interactive documentation of all Material components used in the application
-
-**Location**: `/style-guide` (Developer tools section)
-
-**Features**:
-
--   Live theme switcher
--   All Material components showcase
--   Color palette display
--   Typography scale examples
--   Button variants
--   Form controls
--   Tables and data presentation
--   Feedback components (dialogs, snackbars)
--   Icons reference
-
-**Access**: Development only (should be removed or protected in production)
-
-### Development Guidelines
-
-**DO**:
-
--   ✅ Use Angular Material components exclusively
--   ✅ Follow Material Design 3 spacing (8px grid)
--   ✅ Use Material color tokens (never hardcoded colors)
--   ✅ Apply proper ARIA labels to all interactive elements
--   ✅ Test keyboard navigation
--   ✅ Use OnPush change detection
--   ✅ Implement responsive layouts with ViewportService
--   ✅ Add focus indicators for accessibility
-
-**DON'T**:
-
--   ❌ Create custom components when Material equivalent exists
--   ❌ Hardcode colors (use CSS variables)
--   ❌ Skip ARIA labels
--   ❌ Use inline styles
--   ❌ Ignore responsive design
--   ❌ Forget hover/focus/active states
--   ❌ Use `*ngIf`/`*ngFor` (use `@if`/`@for` instead)
-
-**References**:
-
--   [Material Design 3](https://m3.material.io/)
--   [Angular Material](https://material.angular.io/)
--   [WCAG 2.1](https://www.w3.org/WAI/WCAG21/quickref/)
--   `DESIGN_PATTERNS.md` - Comprehensive implementation patterns
-
----
-
-## SOLID Principles Implementation
-
-### 1. Single Responsibility Principle (SRP)
-
-public record CreateUserRequest
-{
-public required string Username { get; init; }
-public required string Email { get; init; }
-}
-
-````
-
-### Architectural Patterns
-
-#### 10. **Service Layer** (Business Logic Boundary)
-
-**Purpose**: Define application's boundary with available operations
-
-**Backend**: `UserService.cs`
-**Frontend**: `UserService.ts`
-
-Both encapsulate business logic and coordinate between layers.
-
-#### 11. **DTO (Data Transfer Object)**
-
-**Purpose**: Transfer data between layers without exposing domain models
-
-```csharp
-public record UserDto // Never expose User entity directly
-{
-    public int Id { get; init; }
-    public string Username { get; init; }
-    public string Email { get; init; }
-}
-````
-
----
-
-## Scalability Strategy
-
-### Horizontal Scalability (Scale Out)
-
-**Definition**: Add more instances of the application
-
-#### Backend Scalability Features:
-
-1. **Stateless API Design**
-
-    - No session state stored in API
-    - All state in database or cache
-    - Any instance can handle any request
-
-2. **Docker Containerization**
-
-    - Easy to spin up multiple instances
-    - Container orchestration (Kubernetes/Docker Swarm)
-    - Health checks for auto-recovery
-
-3. **Load Balancer Ready**
-
-    ```yaml
-    nginx:
-        image: nginx:alpine
-        depends_on:
-            - api
-        ports:
-            - "80:80"
-    ```
-
-4. **Database Connection Pooling**
-
-    - EF Core connection pooling (future)
-    - Configurable pool size
-    - Connection reuse
-
-5. **Response Caching**
-    - HTTP caching headers
-    - Reduces database load
-    - Cache invalidation strategies
-
-#### Frontend Scalability:
-
-1. **Static Asset Hosting**
-
-    - Angular builds to static files
-    - Serve from CDN (CloudFront, Azure CDN)
-    - Geographic distribution
-
-2. **Service Worker (PWA)**
-
-    - Offline support
-    - Background sync
-    - Push notifications
-
-3. **Code Splitting**
-    - Lazy-loaded routes
-    - On-demand module loading
-    - Smaller initial bundle
-
-### Vertical Scalability (Scale Up)
-
-**Definition**: Add more resources to existing instances
-
-#### Backend:
-
-1. **Async/Await Throughout**
-
-    - Non-blocking I/O
-    - Thread pool efficiency
-    - `CancellationToken` support
-
-2. **Resource Limits** (Docker Compose):
-
-    ```yaml
-    deploy:
-        resources:
-            limits:
-                cpus: "1.0"
-                memory: 512M
-            reservations:
-                cpus: "0.5"
-                memory: 256M
-    ```
-
-3. **Response Compression**
-
-    - Brotli (preferred) and Gzip
-    - Reduces bandwidth by 70-80%
-    - Faster response times
-
-4. **Efficient Queries** (Future with EF Core):
-    - `AsNoTracking()` for read-only
-    - Compiled queries
-    - Indexes on frequently queried columns
-
-#### Frontend:
-
-1. **OnPush Change Detection**
-
-    - 10-100x performance improvement
-    - Reduces unnecessary checks
-
-2. **TrackBy Functions**
-
-    - Efficient list rendering
-    - Minimize DOM manipulation
-
-3. **Virtual Scrolling** (Future)
-    - Render only visible items
-    - Handle large datasets
-
-### Database Scalability (Future)
-
-1. **PostgreSQL Setup**
-
-    - Read replicas for scaling reads
-    - Connection pooling
-    - Query optimization
-
-2. **Caching Layer** (Redis)
-
-    - Frequently accessed data
-    - Session storage
-    - Rate limiting counters
-
-3. **Database Sharding** (If needed)
-    - Partition by tenant
-    - Partition by user ID range
-
-### Monitoring & Observability
-
-1. **Structured Logging** (Serilog)
-
-    - Correlation IDs for request tracing
-    - Log aggregation (ELK, Seq)
-    - Performance metrics
-
-2. **Health Checks**
-
-    ```csharp
-    app.MapHealthChecks("/health");
-    ```
-
-3. **Application Insights** (Future)
-    - Performance monitoring
-    - Dependency tracking
-    - Exception tracking
-
----
-
-## User Feature Workflow
-
-### End-to-End Request Flow (Create User)
-
-This example demonstrates how all architectural layers work together:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      1. CLIENT REQUEST                          │
-│  Angular Component (user-list.ts)                               │
-│  - User clicks "Create User" button                             │
-│  - Component calls UserService.createUser(...)                  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                  2. ANGULAR SERVICE LAYER                       │
-│  UserService.ts                                                 │
-│  - Receives create request                                      │
-│  - Delegates to UserRepository                                  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                 3. ANGULAR REPOSITORY LAYER                     │
-│  UserRepository.ts                                              │
-│  - Calls ApiService.post("/User", userData)                     │
-│  - Returns Observable<User>                                     │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                    4. HTTP INTERCEPTORS                         │
-│  Cache → Auth → Logging → Error                                │
-│  - Cache: Skip (POST not cacheable)                             │
-│  - Auth: Add "Authorization: Bearer <token>"                    │
-│  - Logging: Log request details                                 │
-│  - Error: Wrap for error handling                               │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                        HTTP POST /api/user
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                   5. .NET MIDDLEWARE PIPELINE                   │
-│  Request flows through:                                         │
-│  - Security Headers: Add X-Frame-Options, CSP, etc.             │
-│  - Global Exception Handler: Wrap in try/catch                  │
-│  - Rate Limiter: Check if under 100 req/min                     │
-│  - Response Compression: Setup compression                      │
-│  - Response Caching: Setup caching headers                      │
-│  - CORS: Validate origin                                        │
-│  - HTTPS Redirection: Ensure HTTPS                              │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                      6. CONTROLLER LAYER                        │
-│  UserController.cs                                              │
-│  - [HttpPost] CreateAsync(CreateUserRequest request)            │
-│  - Validates request binding                                    │
-│  - Calls UserService.CreateUserAsync(request)                   │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                      7. SERVICE LAYER                           │
-│  UserService.cs                                                 │
-│  - Validate: CreateUserValidator.ValidateAndThrowAsync()        │
-│    * Username: 3-50 chars, alphanumeric + underscores           │
-│    * Email: Valid format, max 255 chars                         │
-│    * FullName: Optional, max 100 chars                          │
-│  - Map: CreateUserRequest → User entity                         │
-│  - Call: UserRepository.CreateAsync(user)                       │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                     8. REPOSITORY LAYER                         │
-│  UserRepository.cs (In-Memory)                                  │
-│  - Generate ID: entity.Id = _nextId++                           │
-│  - Set CreatedAt: entity.CreatedAt = DateTime.UtcNow            │
-│  - Persist: _users.Add(entity)                                  │
-│  - Return: Created user entity                                  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                   9. BACK TO SERVICE LAYER                      │
-│  UserService.cs                                                 │
-│  - Map: User entity → UserDto                                   │
-│  - Return: UserDto to controller                                │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                  10. BACK TO CONTROLLER                         │
-│  UserController.cs                                              │
-│  - Return: CreatedAtRoute("GetUserById", { id }, userDto)       │
-│  - Status: 201 Created                                          │
-│  - Headers: Location: /api/user/{id}                            │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                 11. MIDDLEWARE (RESPONSE)                       │
-│  - Global Exception: (No exception, pass through)               │
-│  - Response Compression: Compress response (Brotli/Gzip)        │
-│  - Response Caching: Add Cache-Control headers                  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                     HTTP 201 Created + UserDto
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                 12. HTTP INTERCEPTORS (RESPONSE)                │
-│  - Error: (No error, pass through)                              │
-│  - Logging: Log response (201, duration)                        │
-│  - Auth: (No action on response)                                │
-│  - Cache: (No caching for POST)                                 │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                13. ANGULAR REPOSITORY (RESPONSE)                │
-│  UserRepository.ts                                              │
-│  - Receive: Observable<User> emits UserDto                      │
-│  - Return: Observable to service                                │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                14. ANGULAR SERVICE (RESPONSE)                   │
-│  UserService.ts                                                 │
-│  - Receive: Observable<User>                                    │
-│  - Return: Observable to component                              │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                15. ANGULAR COMPONENT (RESPONSE)                 │
-│  UserList.ts                                                    │
-│  - subscribe() callback fires                                   │
-│  - Update signals: users.set([...users(), newUser])            │
-│  - OnPush change detection triggers                             │
-│  - UI updates with new user in table                            │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Error Handling Example
-
-**Scenario**: User tries to create user with invalid email
-
-```
-Component → Service → Repository → HTTP POST
-                                     ↓
-                               Controller receives request
-                                     ↓
-                               UserService.CreateUserAsync()
-                                     ↓
-                               Validator.ValidateAndThrowAsync()
-                                     ↓
-                               ValidationException thrown
-                                     ↓
-                               GlobalExceptionMiddleware catches
-                                     ↓
-                               Convert to ValidationProblemDetails:
-                               {
-                                   "status": 400,
-                                   "title": "Validation Error",
-                                   "errors": {
-                                       "Email": ["Email must be valid"]
-                                   }
-                               }
-                                     ↓
-                               HTTP 400 Bad Request
-                                     ↓
-                               Error Interceptor catches
-                                     ↓
-                               Logging Interceptor logs error
-                                     ↓
-Repository → Service → Component.subscribe(error: ...)
-                                     ↓
-                               error.set("Email must be valid")
-                                     ↓
-                               UI displays error message
-```
+### Middleware Pipeline (Backend)
+
+**Order of execution:**
+
+1. Security Headers
+2. Global Exception Handler
+3. Rate Limiting
+4. Response Compression
+5. Response Caching
+6. CORS
+7. HTTPS Redirection
+8. Authentication (future)
+9. Authorization (future)
+10. Controller Routing
 
 ---
 
@@ -1762,68 +571,129 @@ Repository → Service → Component.subscribe(error: ...)
 
 ### Backend Security
 
-1. **Security Headers** (Middleware)
+**Security Headers (Middleware)**
 
-    - `X-Content-Type-Options: nosniff` → Prevent MIME sniffing
-    - `X-Frame-Options: DENY` → Prevent clickjacking
-    - `X-XSS-Protection: 1; mode=block` → XSS protection
-    - `Strict-Transport-Security` → Force HTTPS (production)
-    - `Referrer-Policy` → Control referrer information
-    - `Permissions-Policy` → Restrict browser features
+-   `X-Content-Type-Options: nosniff` (MIME sniffing prevention)
+-   `X-Frame-Options: DENY` (clickjacking protection)
+-   `X-XSS-Protection: 1; mode=block` (XSS protection)
+-   `Strict-Transport-Security` (HTTPS enforcement)
+-   `Referrer-Policy: strict-origin-when-cross-origin`
+-   `Content-Security-Policy` (future)
 
-2. **CORS Configuration**
+**CORS Configuration**
 
-    - Whitelist allowed origins (from appsettings.json)
-    - Allow credentials for cookies/auth
-    - Restrict headers and methods
+-   Whitelist allowed origins from configuration
+-   Allow credentials for cookies/auth
+-   Restrict headers and methods
 
-3. **Rate Limiting**
+**Rate Limiting**
 
-    - 100 requests per minute per IP
-    - Prevents DDoS and brute force
-    - Returns 429 Too Many Requests
+-   Database-backed rate limiting per API endpoint
+-   Configurable limits per endpoint
+-   Returns 429 Too Many Requests
+-   Prevents DDoS and brute force attacks
 
-4. **Input Validation**
+**Input Validation**
 
-    - FluentValidation for all requests
-    - Fail-fast approach
-    - Detailed validation errors
+-   FluentValidation for all requests
+-   Fail-fast with ValidationException
+-   Detailed validation error responses
 
-5. **Error Handling**
+**Error Handling**
 
-    - Never expose stack traces in production
-    - ProblemDetails for consistent errors
-    - Correlation IDs for tracking
-
-6. **Future**: Authentication & Authorization
-    - JWT tokens
-    - Role-based access control (RBAC)
-    - OAuth 2.0 / OpenID Connect
+-   Never expose stack traces in production
+-   ProblemDetails (RFC 7807) for consistent errors
+-   Correlation IDs for tracking
+-   Structured logging with Serilog
 
 ### Frontend Security
 
-1. **XSRF Protection**
+**XSRF Protection**
 
-    ```typescript
-    withXsrfConfiguration({
-    	cookieName: "XSRF-TOKEN",
-    	headerName: "X-XSRF-TOKEN",
-    });
-    ```
+-   Automatic XSRF token handling
+-   Cookie-to-header token strategy
 
-2. **HTTP-Only Cookies** (Future)
+**Content Sanitization**
 
-    - Store tokens in HTTP-only cookies
-    - Not accessible to JavaScript
+-   Angular sanitizes all bindings by default
+-   DomSanitizer for trusted content only
 
-3. **Content Security Policy** (Future)
+**HTTP-Only Cookies (Future)**
 
-    - Restrict script sources
-    - Prevent XSS attacks
+-   Store auth tokens in HTTP-only cookies
+-   Not accessible to JavaScript
 
-4. **Input Sanitization**
-    - Angular sanitizes bindings by default
-    - DomSanitizer for trusted content
+---
+
+## Performance & Scalability
+
+### Backend Performance
+
+**Async/Await Throughout**
+
+-   All controllers and services use async/await
+-   Non-blocking I/O
+-   CancellationToken support for request cancellation
+
+**Response Compression**
+
+-   Brotli (preferred) and Gzip fallback
+-   Reduces bandwidth by 70-80%
+-   Configured at fastest compression level
+
+**Response Caching**
+
+-   HTTP caching headers
+-   Client-side caching via Cache-Control
+-   Configurable cache duration per endpoint
+
+**Database Optimization**
+
+-   Connection pooling (EF Core)
+-   Retry logic for transient failures
+-   AsNoTracking() for read-only queries
+-   Indexes on frequently queried columns
+-   MVCC (PostgreSQL) for concurrency
+
+**Horizontal Scalability**
+
+-   Stateless API design (no session state)
+-   Docker containerization
+-   Load balancer ready
+-   Database connection pooling
+
+### Frontend Performance
+
+**OnPush Change Detection**
+
+-   All components use OnPush
+-   10-100x improvement over default
+-   Signal-based reactivity
+
+**Lazy Loading**
+
+-   All features lazy loaded
+-   Code splitting per route
+-   Smaller initial bundle
+
+**TrackBy Functions**
+
+-   Efficient list rendering
+-   Minimize DOM manipulation
+-   Identity tracking
+
+**Service Worker (PWA)**
+
+-   Offline support
+-   Background sync
+-   Asset caching
+-   Network-first strategy
+
+**Response Caching**
+
+-   HTTP cache via interceptor
+-   Configurable cache duration
+-   Cache invalidation strategies
 
 ---
 
@@ -1831,221 +701,118 @@ Repository → Service → Component.subscribe(error: ...)
 
 ### Backend Testing
 
-#### 1. **Unit Tests** (>80% coverage)
+**Unit Tests (>80% coverage)**
 
-**Domain Layer**:
+-   Test domain entities
+-   Test service logic with mocked repositories
+-   Test validators
+-   Test mapping extensions
+-   Use xUnit + Moq
 
-```csharp
-public class UserTests
-{
-    [Fact]
-    public void User_WhenCreated_ShouldHaveDefaultValues()
-    {
-        var user = new User();
-        Assert.True(user.IsActive);
-        Assert.NotEqual(default, user.CreatedAt);
-    }
-}
-```
+**Integration Tests**
 
-**Service Layer**:
+-   Test controllers with TestServer
+-   Test database repositories with test database
+-   Test middleware pipeline
+-   Use WebApplicationFactory
 
-```csharp
-public class UserServiceTests
-{
-    [Fact]
-    public async Task CreateUserAsync_ValidRequest_ReturnsUserDto()
-    {
-        // Arrange
-        var mockRepo = new Mock<IUserRepository>();
-        var mockValidator = new Mock<IValidator<CreateUserRequest>>();
-        var service = new UserService(mockRepo.Object, mockValidator.Object);
+**Test Organization**
 
-        // Act
-        var result = await service.CreateUserAsync(request);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal("john_doe", result.Username);
-    }
-}
-```
-
-**Repository Layer**:
-
-```csharp
-public class UserRepositoryTests
-{
-    [Fact]
-    public async Task CreateAsync_AddsUserToCollection()
-    {
-        var repo = new UserRepository();
-        var user = new User { Username = "test" };
-
-        var result = await repo.CreateAsync(user);
-
-        Assert.NotEqual(0, result.Id);
-        var all = await repo.GetAllAsync();
-        Assert.Contains(all, u => u.Username == "test");
-    }
-}
-```
-
-#### 2. **Integration Tests**
-
-```csharp
-public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
-{
-    [Fact]
-    public async Task POST_User_ReturnsCreated()
-    {
-        var client = _factory.CreateClient();
-        var request = new CreateUserRequest { ... };
-
-        var response = await client.PostAsJsonAsync("/api/user", request);
-
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-    }
-}
-```
+-   Separate test project per layer
+-   `SeventySix.Core.Tests`
+-   `SeventySix.BusinessLogic.Tests`
+-   `SeventySix.DataAccess.Tests`
+-   `SeventySix.Api.Tests`
 
 ### Frontend Testing
 
-#### 1. **Unit Tests** (Jasmine/Karma)
+**Unit Tests (Jasmine/Karma)**
 
-```typescript
-describe("UserList", () => {
-	it("should load users on initialization", () => {
-		mockUserService.getAllUsers.and.returnValue(of(mockUsers));
+-   Test components with mocked services
+-   Test services with mocked repositories
+-   Test repositories with mocked HTTP
+-   Test guards and interceptors
+-   Signal-based state testing
 
-		fixture.detectChanges();
+**E2E Tests (Playwright)**
 
-		expect(component.users()).toEqual(mockUsers);
-		expect(component.isLoading()).toBe(false);
-	});
+-   Test critical user workflows
+-   Test navigation
+-   Test form submissions
+-   Accessibility testing
 
-	it("should handle error when loading fails", () => {
-		mockUserService.getAllUsers.and.returnValue(throwError(() => new Error("Network error")));
+**Test Organization**
 
-		fixture.detectChanges();
+-   `*.spec.ts` alongside source files
+-   Shared mocks in `testing/mocks/`
+-   E2E tests in `e2e/` directory
 
-		expect(component.error()).toBe("Failed to load users");
-	});
-});
-```
+### Testing Best Practices
 
-#### 2. **E2E Tests** (Playwright)
+**Arrange-Act-Assert Pattern**
 
-```typescript
-test("should display user list", async ({ page }) => {
-	await page.goto("/users");
-	await expect(page.locator("h2")).toContainText("User Management");
-	await expect(page.locator("table tbody tr")).toHaveCount(3);
-});
-```
+-   Clear test structure
+-   One assertion per test
+-   Descriptive test names
 
----
+**Dependency Injection for Testing**
 
-## Deployment Architecture
+-   Mock all dependencies
+-   Use interfaces for substitution
+-   Test in isolation
 
-### Development Environment
+**Test Naming Convention**
 
-```
-┌─────────────────────────────────────────────────┐
-│  Developer Machine                              │
-│  ├─ Angular (ng serve): http://localhost:4200   │
-│  ├─ .NET API (dotnet run): https://localhost:7074
-│  └─ In-Memory Database                          │
-└─────────────────────────────────────────────────┘
-```
-
-### Production Environment (Docker Compose)
-
-```
-┌───────────────────────────────────────────────────────────┐
-│                         Nginx                             │
-│                  (Reverse Proxy / Load Balancer)          │
-│                  Port 80 (HTTP) / 443 (HTTPS)             │
-└────────────────┬──────────────────┬───────────────────────┘
-                 │                  │
-         ┌───────▼────────┐  ┌─────▼────────┐
-         │  Angular SPA   │  │  .NET API    │
-         │  (Static Files)│  │  (Container) │
-         │  Port 8080     │  │  Port 5085   │
-         └────────────────┘  └──────┬───────┘
-                                    │
-                             ┌──────▼───────┐
-                             │  PostgreSQL  │
-                             │  Port 5432   │
-                             │  (Persisted) │
-                             └──────────────┘
-```
-
-**Docker Compose Services**:
-
--   **database**: PostgreSQL 16
--   **api**: .NET API (multi-stage build)
--   **client**: Angular SPA (Nginx)
--   **nginx**: Reverse proxy (optional)
-
-**Benefits**:
-
--   ✅ Isolated environments
--   ✅ Easy scaling (docker compose up --scale api=3)
--   ✅ Health checks for auto-recovery
--   ✅ Resource limits
--   ✅ Network isolation
--   ✅ Volume persistence
-
-### CI/CD Pipeline (Future)
-
-```
-Git Push → GitHub Actions
-    ↓
-Run Tests (Backend + Frontend)
-    ↓
-Build Docker Images
-    ↓
-Push to Container Registry
-    ↓
-Deploy to Cloud (Azure/AWS)
-    ↓
-Health Check
-    ↓
-Switch Traffic (Blue/Green Deployment)
-```
+-   `MethodName_Scenario_ExpectedResult`
+-   Example: `CreateUser_ValidRequest_ReturnsUserDto`
 
 ---
 
-## Conclusion
+## Summary
 
-SeventySix demonstrates a **production-ready**, **scalable**, and **maintainable** architecture that:
+### When Adding a New Feature
 
-✅ **Follows SOLID Principles** religiously
-✅ **Implements Clean Architecture** with clear layer separation
-✅ **Uses proven Design Patterns** appropriately
-✅ **Scales horizontally** (stateless API, containers)
-✅ **Scales vertically** (async/await, efficient queries, caching)
-✅ **Prioritizes testability** (>80% coverage, integration tests)
-✅ **Maintains security** (headers, CORS, rate limiting, validation)
-✅ **Optimizes performance** (compression, caching, OnPush, lazy loading)
-✅ **Embraces modern patterns** (signals, standalone components, repository pattern)
+**Backend:**
 
-The User feature serves as a **template** for all future features, demonstrating:
+1. Create entity in `Core/Entities`
+2. Create repository interface in `Core/Interfaces`
+3. Create repository implementation in `DataAccess/Repositories`
+4. Create DTOs in `BusinessLogic/DTOs`
+5. Create service interface in `BusinessLogic/Interfaces`
+6. Create service implementation in `BusinessLogic/Services`
+7. Create validators in `BusinessLogic/Validators`
+8. Create controller in `Api/Controllers`
+9. Register in DI container in `Program.cs`
+10. Write unit and integration tests
 
--   End-to-end request flow
--   Proper error handling
--   Validation strategies
--   Clean separation of concerns
--   Testable code structure
+**Frontend:**
 
-**Next Steps**:
+1. Create feature folder in `features/`
+2. Create `models/` subdirectory with interfaces
+3. Create `repositories/` subdirectory with data access
+4. Create `services/` subdirectory with business logic
+5. Create `components/` subdirectory with UI components
+6. Create barrel exports (`index.ts`) for each subdirectory
+7. Add routes in `app.routes.ts` with lazy loading
+8. Write unit tests alongside source files
+9. Add E2E tests in `e2e/` directory
 
-1. Migrate from in-memory to EF Core + PostgreSQL
-2. Implement authentication (JWT)
-3. Add caching layer (Redis)
-4. Set up CI/CD pipeline
-5. Add monitoring and observability
-6. Implement additional features following the User pattern
+### Key Architectural Decisions
 
-This architecture is designed to evolve with the application while maintaining the principles outlined in **CLAUDE.md**.
+-   **Clean Architecture**: Dependency rules enforced via layers
+-   **Feature Modules**: Self-contained features with own models/services/repositories
+-   **Repository Pattern**: Abstract data access from business logic
+-   **Service Layer**: Encapsulate business logic and orchestration
+-   **DTO Pattern**: Never expose domain entities via API
+-   **Signals**: Reactive state management in Angular
+-   **OnPush**: Performance optimization via change detection strategy
+-   **Lazy Loading**: On-demand feature loading for smaller bundles
+-   **Dependency Injection**: Loose coupling and testability
+-   **SOLID Principles**: Foundation of all design decisions
+
+### Reference Documentation
+
+-   `STYLE_GUIDE.md`: Component patterns, UI/UX guidelines
+-   `CLAUDE.md`: Development guidelines, best practices
+-   `DEPLOYMENT.md`: Deployment and Docker configuration
+-   `USER_SECRETS_SETUP.md`: Environment configuration

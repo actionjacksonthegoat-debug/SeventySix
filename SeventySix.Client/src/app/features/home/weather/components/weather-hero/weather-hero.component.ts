@@ -10,7 +10,7 @@ import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { CurrentWeather, getWeatherIconUrl } from "../../models";
+import { CurrentWeather, getWeatherIconUrl } from "@home/weather/models";
 
 /**
  * Hero component displaying current weather with large temperature and condition

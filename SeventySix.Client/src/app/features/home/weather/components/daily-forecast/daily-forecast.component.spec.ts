@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { DailyForecast } from "../../models";
+import { DailyForecast } from "@home/weather/models";
 import { DailyForecastComponent } from "./daily-forecast.component";
 
 describe("DailyForecastComponent", () =>

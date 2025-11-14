@@ -10,3 +10,4 @@ export * from "./units.enum";
 export * from "./weather-alert.model";
 export * from "./weather-condition.model";
 export * from "./weather-preferences.model";
+export * from "./weather-forecast.model";

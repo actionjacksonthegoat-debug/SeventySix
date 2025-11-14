@@ -4,7 +4,7 @@ import {
 	unsavedChangesGuard,
 	CanComponentDeactivate
 } from "./unsaved-changes.guard";
-import { NotificationService } from "../services/notification.service";
+import { NotificationService } from "@core/services/notification.service";
 
 describe("unsavedChangesGuard", () =>
 {

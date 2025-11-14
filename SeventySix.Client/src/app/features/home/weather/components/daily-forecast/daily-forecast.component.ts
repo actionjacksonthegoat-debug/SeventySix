@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
-import { DailyForecast, getWeatherIconUrl } from "../../models";
+import { DailyForecast, getWeatherIconUrl } from "@home/weather/models";
 
 /**
  * Grid component for 8-day weather forecast

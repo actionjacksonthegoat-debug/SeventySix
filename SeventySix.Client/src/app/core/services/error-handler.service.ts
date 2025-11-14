@@ -9,7 +9,7 @@ import {
 	NotFoundError,
 	UnauthorizedError,
 	NetworkError
-} from "../models/errors";
+} from "@core/models/errors";
 
 interface ErrorDetails
 {

@@ -5,7 +5,7 @@ import { UserList } from "./user-list";
 import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
 import { of, throwError } from "rxjs";
-import { User } from "@core/models/interfaces/user";
+import { User } from "@admin/users/models";
 
 describe("UserList", () =>
 {

@@ -7,7 +7,7 @@ import {
 	HourlyForecast,
 	DailyForecast,
 	MinutelyForecast
-} from "../models";
+} from "@home/weather/models";
 
 /**
  * Options for weather API requests

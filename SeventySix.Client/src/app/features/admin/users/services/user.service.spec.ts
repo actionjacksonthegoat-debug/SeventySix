@@ -1,8 +1,8 @@
 import { TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { of } from "rxjs";
-import { UserRepository } from "@core/repositories/user.repository";
-import { User } from "@core/models/interfaces/user";
+import { UserRepository } from "@admin/users/repositories";
+import { User } from "@admin/users/models";
 import { UserService } from "./user.service";
 
 describe("UserService", () =>

@@ -3,7 +3,7 @@ import { HttpRequest, HttpHandler, HttpEvent } from "@angular/common/http";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { Observable, of } from "rxjs";
 import { authInterceptor } from "./auth.interceptor";
-import { TokenStorageService } from "../services/token-storage.service";
+import { TokenStorageService } from "@core/services/token-storage.service";
 
 describe("authInterceptor", () =>
 {

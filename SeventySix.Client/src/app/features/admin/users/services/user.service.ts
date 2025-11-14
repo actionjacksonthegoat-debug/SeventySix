@@ -6,8 +6,8 @@
 
 import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { User } from "@core/models/interfaces/user";
-import { UserRepository } from "@core/repositories/user.repository";
+import { User } from "@admin/users/models";
+import { UserRepository } from "@admin/users/repositories";
 
 /**
  * Service for user business logic

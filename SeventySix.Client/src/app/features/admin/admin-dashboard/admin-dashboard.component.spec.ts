@@ -5,11 +5,13 @@ import { ErrorTrendChartComponent } from "./components/error-trend-chart/error-t
 import { StatisticsCardsComponent } from "./components/statistics-cards/statistics-cards.component";
 import { ApiStatisticsTableComponent } from "./components/api-statistics-table/api-statistics-table.component";
 import { HealthStatusPanelComponent } from "./components/health-status-panel/health-status-panel.component";
-import { LogChartService } from "../services/log-chart.service";
-import { ThirdPartyApiService } from "../services/third-party-api.service";
-import { HealthApiService } from "../services/health-api.service";
 import { of } from "rxjs";
 import { AdminDashboardComponent } from "./admin-dashboard.component";
+import {
+	HealthApiService,
+	LogChartService,
+	ThirdPartyApiService
+} from "./services";
 
 describe("AdminDashboardComponent", () =>
 {

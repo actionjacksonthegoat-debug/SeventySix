@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
-import { HourlyForecast, getWeatherIconUrl } from "../../models";
+import { HourlyForecast, getWeatherIconUrl } from "@home/weather/models";
 
 /**
  * Horizontal scrollable carousel component for 48-hour weather forecast

@@ -4,8 +4,8 @@ import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatButtonModule } from "@angular/material/button";
-import { LogChartService } from "@features/admin/services";
-import { LogStatistics } from "@core/models/admin";
+import { LogChartService } from "@admin/admin-dashboard/services";
+import { LogStatistics } from "@admin/log-management/models";
 import {
 	fadeInUp,
 	staggerList

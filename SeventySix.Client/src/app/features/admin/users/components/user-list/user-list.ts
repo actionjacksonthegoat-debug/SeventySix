@@ -27,8 +27,9 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { SelectionModel } from "@angular/cdk/collections";
 import { FormsModule } from "@angular/forms";
 import { DatePipe } from "@angular/common";
-import { UserService, LoggerService } from "@core/services";
-import { User } from "@core/models/interfaces/user";
+import { UserService } from "@admin/users/services";
+import { LoggerService } from "@core/services";
+import { User } from "@admin/users/models";
 import {
 	ChartComponent,
 	ConfirmDialogComponent,

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { WeatherPreferencesService } from "../../services/weather-preferences.service";
-import { Units, TemperatureUnit, WindSpeedUnit } from "../../models";
+import { WeatherPreferencesService } from "@home/weather/services/weather-preferences.service";
+import { Units, TemperatureUnit, WindSpeedUnit } from "@home/weather/models";
 import { UnitToggleComponent } from "./unit-toggle.component";
 
 describe("UnitToggleComponent", () =>

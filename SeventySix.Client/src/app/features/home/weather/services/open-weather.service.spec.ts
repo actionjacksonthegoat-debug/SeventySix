@@ -5,7 +5,7 @@ import {
 	provideHttpClientTesting
 } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { OneCallResponse } from "../models";
+import { OneCallResponse } from "@home/weather/models";
 import { OpenWeatherService } from "./open-weather.service";
 
 describe("OpenWeatherService", () =>

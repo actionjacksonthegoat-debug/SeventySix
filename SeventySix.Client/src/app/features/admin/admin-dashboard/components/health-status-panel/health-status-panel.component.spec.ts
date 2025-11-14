@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { HealthApiService } from "../../../services/health-api.service";
+import { HealthApiService } from "@admin/admin-dashboard/services";
 import { of, throwError } from "rxjs";
-import { HealthStatus } from "../../../../../core/models/admin/health-status.model";
+import { HealthStatus } from "@admin/admin-dashboard/models";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { HealthStatusPanelComponent } from "./health-status-panel.component";
 

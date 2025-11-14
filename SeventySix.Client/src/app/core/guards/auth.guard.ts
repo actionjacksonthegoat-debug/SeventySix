@@ -1,8 +1,8 @@
 import { inject } from "@angular/core";
 import { CanActivateFn } from "@angular/router";
-import { LoggerService } from "../services/logger.service";
-import { TokenStorageService } from "../services/token-storage.service";
-import { NotificationService } from "../services/notification.service";
+import { LoggerService } from "@core/services/logger.service";
+import { TokenStorageService } from "@core/services/token-storage.service";
+import { NotificationService } from "@core/services/notification.service";
 
 /**
  * Authentication guard.
