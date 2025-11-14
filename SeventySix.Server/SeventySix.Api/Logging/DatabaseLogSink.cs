@@ -45,7 +45,7 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 	private readonly SemaphoreSlim ProcessingSemaphore = new(1, 1);
 	private const int BatchSize = 50;
 	private const int BatchIntervalMs = 5000;
-	private bool _disposed;
+	private bool Disposed;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DatabaseLogSink"/> class.
@@ -75,7 +75,7 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 	{
 		ArgumentNullException.ThrowIfNull(logEvent);
 
-		if (_disposed)
+		if (Disposed)
 		{
 			return;
 		}
@@ -102,21 +102,21 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 	private async Task ProcessBatchAsync(bool isDisposing = false)
 	{
 		// Wait for semaphore - if disposing, wait indefinitely, otherwise return if busy
-		var acquired = isDisposing
+		bool acquired = isDisposing
 			? await ProcessingSemaphore.WaitAsync(TimeSpan.FromSeconds(10))
 			: await ProcessingSemaphore.WaitAsync(0);
 
-		if (!acquired || (_disposed && !isDisposing))
+		if (!acquired || (Disposed && !isDisposing))
 		{
 			return; // Already processing or disposed
 		}
 
 		try
 		{
-			var batch = new List<LogEvent>(BatchSize);
+			List<LogEvent> batch = new(BatchSize);
 
 			// Dequeue up to BatchSize events
-			while (batch.Count < BatchSize && LogQueue.TryDequeue(out var logEvent))
+			while (batch.Count < BatchSize && LogQueue.TryDequeue(out LogEvent? logEvent))
 			{
 				batch.Add(logEvent);
 			}
@@ -127,11 +127,11 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 			}
 
 			// Create a single scope for the entire batch
-			using var scope = ServiceProvider.CreateScope();
-			var logRepository = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+			using IServiceScope scope = ServiceProvider.CreateScope();
+			ILogRepository logRepository = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 			// Process all events in batch
-			foreach (var logEvent in batch)
+			foreach (LogEvent logEvent in batch)
 			{
 				try
 				{
@@ -157,7 +157,7 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 	/// <param name="logRepository">The log repository to use (shared within batch).</param>
 	private async Task EmitAsync(LogEvent logEvent, ILogRepository logRepository)
 	{
-		var log = new Log
+		Log log = new()
 		{
 			LogLevel = logEvent.Level.ToString(),
 			Message = logEvent.RenderMessage(),
@@ -169,36 +169,36 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 		// Extract exception information
 		if (logEvent.Exception != null)
 		{
-			var (exceptionMessage, baseExceptionMessage, stackTrace) = FormatException(logEvent.Exception);
+			(string? exceptionMessage, string? baseExceptionMessage, string? stackTrace) = FormatException(logEvent.Exception);
 			log.ExceptionMessage = exceptionMessage;
 			log.BaseExceptionMessage = baseExceptionMessage;
 			log.StackTrace = stackTrace;
 		}
 
 		// Extract HTTP context properties if available
-		if (logEvent.Properties.TryGetValue("RequestMethod", out var requestMethod))
+		if (logEvent.Properties.TryGetValue("RequestMethod", out LogEventPropertyValue? requestMethod))
 		{
 			log.RequestMethod = requestMethod.ToString().Trim('"');
 		}
 
-		if (logEvent.Properties.TryGetValue("RequestPath", out var requestPath))
+		if (logEvent.Properties.TryGetValue("RequestPath", out LogEventPropertyValue? requestPath))
 		{
 			log.RequestPath = requestPath.ToString().Trim('"');
 		}
 
-		if (logEvent.Properties.TryGetValue("StatusCode", out var statusCode) &&
-			int.TryParse(statusCode.ToString(), out var statusCodeValue))
+		if (logEvent.Properties.TryGetValue("StatusCode", out LogEventPropertyValue? statusCode) &&
+			int.TryParse(statusCode.ToString(), out int statusCodeValue))
 		{
 			log.StatusCode = statusCodeValue;
 		}
 
-		if (logEvent.Properties.TryGetValue("Elapsed", out var elapsed) &&
-			double.TryParse(elapsed.ToString(), out var elapsedValue))
+		if (logEvent.Properties.TryGetValue("Elapsed", out LogEventPropertyValue? elapsed) &&
+			double.TryParse(elapsed.ToString(), out double elapsedValue))
 		{
 			log.DurationMs = (long)elapsedValue;
 		}
 
-		if (logEvent.Properties.TryGetValue("SourceContext", out var sourceContext))
+		if (logEvent.Properties.TryGetValue("SourceContext", out LogEventPropertyValue? sourceContext))
 		{
 			log.SourceContext = sourceContext.ToString().Trim('"');
 		}
@@ -206,11 +206,11 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 		// Store additional properties as JSON
 		if (logEvent.Properties.Count > 0)
 		{
-			var properties = new StringBuilder();
+			StringBuilder properties = new();
 			properties.Append('{');
-			var first = true;
+			bool first = true;
 
-			foreach (var property in logEvent.Properties)
+			foreach (KeyValuePair<string, LogEventPropertyValue> property in logEvent.Properties)
 			{
 				if (!IsStandardProperty(property.Key))
 				{
@@ -239,12 +239,12 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 	/// <returns>Tuple of (ExceptionMessage, BaseExceptionMessage, StackTrace).</returns>
 	private static (string? ExceptionMessage, string? BaseExceptionMessage, string? StackTrace) FormatException(Exception exception)
 	{
-		var exceptionMessage = exception.Message;
+		string exceptionMessage = exception.Message;
 		string? baseExceptionMessage = null;
 		string? stackTrace = null;
 
 		// Get base exception if different
-		var baseException = exception.GetBaseException();
+		Exception baseException = exception.GetBaseException();
 		if (baseException != exception && baseException.Message != exception.Message)
 		{
 			baseExceptionMessage = baseException.Message;
@@ -253,8 +253,8 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 		// Filter stack trace to only show our code (SeventySix namespace)
 		if (exception.StackTrace != null)
 		{
-			var lines = exception.StackTrace.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-			var ourLines = lines.Where(line => line.Contains("SeventySix")).ToList();
+			string[] lines = exception.StackTrace.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+			List<string> ourLines = [.. lines.Where(line => line.Contains("SeventySix"))];
 
 			if (ourLines.Count > 0)
 			{
@@ -296,12 +296,12 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 	/// </summary>
 	public async ValueTask DisposeAsync()
 	{
-		if (_disposed)
+		if (Disposed)
 		{
 			return;
 		}
 
-		_disposed = true;
+		Disposed = true;
 
 		// Stop the timer
 		await BatchTimer.DisposeAsync();
@@ -310,5 +310,7 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 		await ProcessBatchAsync(isDisposing: true);
 
 		ProcessingSemaphore?.Dispose();
+
+		GC.SuppressFinalize(this);
 	}
 }

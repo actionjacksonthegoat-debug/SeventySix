@@ -25,8 +25,18 @@ namespace SeventySix.DataAccess.Services;
 /// - Retry Policy: Handles transient failures with exponential backoff
 /// - Circuit Breaker: Prevents cascading failures
 /// - Timeout Policy: Prevents hanging requests
-/// - Rate Limiting: Enforces API call quotas
+/// - Rate Limiting: Enforces API call quotas (APPLICATION-WIDE, database-backed)
 /// - Caching: Reduces unnecessary API calls
+///
+/// IMPORTANT - TWO-LAYER RATE LIMITING:
+/// This service enforces EXTERNAL API quotas (e.g., OpenWeather 250 calls/day).
+/// This is SEPARATE from the HTTP middleware rate limiting which protects YOUR API endpoints.
+///
+/// - Layer 1 (HTTP): AttributeBasedRateLimitingMiddleware - protects YOUR API from client abuse
+/// - Layer 2 (External): RateLimitingService (this) - protects YOU from exceeding external API quotas
+///
+/// This rate limiting is ALWAYS enforced regardless of where the API is called from because
+/// ALL external API calls MUST go through IPollyIntegrationClient/PollyIntegrationClient.
 ///
 /// Design Patterns:
 /// - Proxy: Adds resilience behavior to HttpClient
@@ -116,16 +126,16 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		}
 
 		// Extract base URL from full URL
-		var baseUrl = GetBaseUrl(url);
+		string baseUrl = GetBaseUrl(url);
 
 		try
 		{
 			// Execute request with resilience pipeline
-			var response = await ResiliencePipeline.ExecuteAsync(
+			HttpResponseMessage response = await ResiliencePipeline.ExecuteAsync(
 				async ct =>
 				{
 					Logger.LogDebug("Sending GET request to: {Url}", url);
-					var httpResponse = await HttpClient.GetAsync(url, ct);
+					HttpResponseMessage httpResponse = await HttpClient.GetAsync(url, ct);
 
 					// Increment rate limit counter on successful request
 					await RateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
@@ -136,8 +146,8 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 				cancellationToken);
 
 			// Deserialize response
-			var content = await response.Content.ReadAsStringAsync(cancellationToken);
-			var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+			string content = await response.Content.ReadAsStringAsync(cancellationToken);
+			T? result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
 			{
 				PropertyNameCaseInsensitive = true,
 			});
@@ -145,7 +155,7 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 			// Cache the result
 			if (result is not null && !string.IsNullOrWhiteSpace(cacheKey))
 			{
-				var duration = cacheDuration ?? TimeSpan.FromMinutes(5);
+				TimeSpan duration = cacheDuration ?? TimeSpan.FromMinutes(5);
 				Cache.Set(cacheKey, result, duration);
 				Cache.Set($"{cacheKey}_stale", result, TimeSpan.FromHours(24)); // Keep stale copy for fallback
 
@@ -200,19 +210,19 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		}
 
 		// Extract base URL from full URL
-		var baseUrl = GetBaseUrl(url);
+		string baseUrl = GetBaseUrl(url);
 
 		try
 		{
 			// Execute request with resilience pipeline
-			var response = await ResiliencePipeline.ExecuteAsync(
+			HttpResponseMessage response = await ResiliencePipeline.ExecuteAsync(
 				async ct =>
 				{
-					var json = JsonSerializer.Serialize(body);
-					var content = new StringContent(json, Encoding.UTF8, "application/json");
+					string json = JsonSerializer.Serialize(body);
+					StringContent content = new(json, Encoding.UTF8, "application/json");
 
 					Logger.LogDebug("Sending POST request to: {Url}", url);
-					var httpResponse = await HttpClient.PostAsync(url, content, ct);
+					HttpResponseMessage httpResponse = await HttpClient.PostAsync(url, content, ct);
 
 					// Increment rate limit counter
 					await RateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
@@ -223,7 +233,7 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 				cancellationToken);
 
 			// Deserialize response
-			var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+			string responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 			return JsonSerializer.Deserialize<TResponse>(responseContent, new JsonSerializerOptions
 			{
 				PropertyNameCaseInsensitive = true,
@@ -251,12 +261,12 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		}
 
 		// Extract base URL from full URL
-		var baseUrl = GetBaseUrl(url);
+		string baseUrl = GetBaseUrl(url);
 
-		var response = await ResiliencePipeline.ExecuteAsync(
+		HttpResponseMessage response = await ResiliencePipeline.ExecuteAsync(
 			async ct =>
 			{
-				var httpResponse = await HttpClient.GetAsync(url, ct);
+				HttpResponseMessage httpResponse = await HttpClient.GetAsync(url, ct);
 				await RateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
 				return httpResponse;
 			},
@@ -266,16 +276,10 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default)
-	{
-		return await RateLimitingService.CanMakeRequestAsync(apiName, cancellationToken);
-	}
+	public async Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default) => await RateLimitingService.CanMakeRequestAsync(apiName, cancellationToken);
 
 	/// <inheritdoc/>
-	public async Task<int> GetRemainingQuotaAsync(string apiName, CancellationToken cancellationToken = default)
-	{
-		return await RateLimitingService.GetRemainingQuotaAsync(apiName, cancellationToken);
-	}
+	public async Task<int> GetRemainingQuotaAsync(string apiName, CancellationToken cancellationToken = default) => await RateLimitingService.GetRemainingQuotaAsync(apiName, cancellationToken);
 
 	/// <summary>
 	/// Extracts the base URL from a full URL.
@@ -285,7 +289,7 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 	private string GetBaseUrl(string fullUrl)
 	{
 		// If it's a relative URL, use the HttpClient's BaseAddress
-		if (!Uri.TryCreate(fullUrl, UriKind.Absolute, out var uri))
+		if (!Uri.TryCreate(fullUrl, UriKind.Absolute, out Uri? uri))
 		{
 			if (HttpClient.BaseAddress != null)
 			{

@@ -56,20 +56,20 @@ public class OpenWeatherServiceTests
 	public async Task GetCurrentWeatherAsync_ValidRequest_ReturnsCurrentWeather()
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 40.7128,
 			Longitude = -74.0060,
 			Units = Units.Metric,
 		};
 
-		var expectedCurrent = new CurrentWeather
+		CurrentWeather expectedCurrent = new()
 		{
 			Temperature = 20.5,
 			Humidity = 65,
 		};
 
-		var apiResponse = new OneCallResponse
+		OneCallResponse apiResponse = new()
 		{
 			Current = expectedCurrent,
 		};
@@ -99,19 +99,19 @@ public class OpenWeatherServiceTests
 	public async Task GetHourlyForecastAsync_ValidRequest_ReturnsHourlyForecasts()
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 40.7128,
 			Longitude = -74.0060,
 		};
 
-		var hourlyForecasts = new List<HourlyForecast>
-		{
+		List<HourlyForecast> hourlyForecasts =
+		[
 			new() { Temperature = 20 },
 			new() { Temperature = 21 },
-		};
+		];
 
-		var apiResponse = new OneCallResponse
+		OneCallResponse apiResponse = new()
 		{
 			Hourly = hourlyForecasts,
 		};
@@ -133,19 +133,19 @@ public class OpenWeatherServiceTests
 	public async Task GetDailyForecastAsync_ValidRequest_ReturnsDailyForecasts()
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 40.7128,
 			Longitude = -74.0060,
 		};
 
-		var dailyForecasts = new List<DailyForecast>
-		{
+		List<DailyForecast> dailyForecasts =
+		[
 			new() { Temperature = new Temperature { Day = 20 } },
 			new() { Temperature = new Temperature { Day = 22 } },
-		};
+		];
 
-		var apiResponse = new OneCallResponse
+		OneCallResponse apiResponse = new()
 		{
 			Daily = dailyForecasts,
 		};
@@ -166,18 +166,18 @@ public class OpenWeatherServiceTests
 	public async Task GetWeatherAlertsAsync_ValidRequest_ReturnsAlerts()
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 40.7128,
 			Longitude = -74.0060,
 		};
 
-		var alerts = new List<WeatherAlert>
-		{
+		List<WeatherAlert> alerts =
+		[
 			new() { Event = "Thunderstorm Warning", SenderName = "NWS" },
-		};
+		];
 
-		var apiResponse = new OneCallResponse
+		OneCallResponse apiResponse = new()
 		{
 			Alerts = alerts,
 		};
@@ -199,7 +199,7 @@ public class OpenWeatherServiceTests
 	public async Task GetCompleteWeatherDataAsync_ApiClientThrows_ThrowsExternalServiceException()
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 40.7128,
 			Longitude = -74.0060,
@@ -246,7 +246,7 @@ public class OpenWeatherServiceTests
 	public void GetTimeUntilReset_DelegatesToRateLimiter()
 	{
 		// Arrange
-		var expectedTime = TimeSpan.FromHours(5);
+		TimeSpan expectedTime = TimeSpan.FromHours(5);
 		MockRateLimiter.Setup(r => r.GetTimeUntilReset()).Returns(expectedTime);
 
 		// Act
@@ -261,19 +261,19 @@ public class OpenWeatherServiceTests
 	public async Task GetMinutelyForecastAsync_ValidRequest_ReturnsMinutelyForecasts()
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 40.7128,
 			Longitude = -74.0060,
 		};
 
-		var minutelyForecasts = new List<MinutelyForecast>
-		{
+		List<MinutelyForecast> minutelyForecasts =
+		[
 			new() { Precipitation = 0.5 },
 			new() { Precipitation = 0.7 },
-		};
+		];
 
-		var apiResponse = new OneCallResponse
+		OneCallResponse apiResponse = new()
 		{
 			Minutely = minutelyForecasts,
 		};

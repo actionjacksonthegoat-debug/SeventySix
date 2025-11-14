@@ -83,10 +83,7 @@ public class UserRepository : IUserRepository
 	/// Returns a copy of the collection to prevent external modification.
 	/// In production with EF Core, this would use AsNoTracking() for read-only queries.
 	/// </remarks>
-	public Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
-	{
-		return Task.FromResult<IEnumerable<User>>(Users.ToList());
-	}
+	public Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IEnumerable<User>>(Users.ToList());
 
 	/// <inheritdoc/>
 	/// <remarks>
@@ -96,7 +93,7 @@ public class UserRepository : IUserRepository
 	/// </remarks>
 	public Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
-		var user = Users.FirstOrDefault(u => u.Id == id);
+		User? user = Users.FirstOrDefault(u => u.Id == id);
 		return Task.FromResult(user);
 	}
 
@@ -151,7 +148,7 @@ public class UserRepository : IUserRepository
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
-		var existing = Users.FirstOrDefault(u => u.Id == entity.Id);
+		User? existing = Users.FirstOrDefault(u => u.Id == entity.Id);
 		if (existing is not null)
 		{
 			Users.Remove(existing);
@@ -183,7 +180,7 @@ public class UserRepository : IUserRepository
 	/// </remarks>
 	public Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
 	{
-		var user = Users.FirstOrDefault(u => u.Id == id);
+		User? user = Users.FirstOrDefault(u => u.Id == id);
 		if (user is null)
 		{
 			return Task.FromResult(false);

@@ -19,7 +19,7 @@ public class LogsByLevelResponse
 	/// <value>
 	/// Dictionary where key is log level (e.g., "Information", "Warning") and value is the count.
 	/// </value>
-	public Dictionary<string, int> LogCounts { get; set; } = new();
+	public Dictionary<string, int> LogCounts { get; set; } = [];
 }
 
 /// <summary>
@@ -34,7 +34,7 @@ public class LogsByHourResponse
 	/// <summary>
 	/// Gets or sets the collection of hourly log data points.
 	/// </summary>
-	public List<HourlyLogData> HourlyData { get; set; } = new();
+	public List<HourlyLogData> HourlyData { get; set; } = [];
 }
 
 /// <summary>
@@ -81,7 +81,7 @@ public class LogsBySourceResponse
 	/// <value>
 	/// Dictionary where key is source name (e.g., "WeatherController") and value is the count.
 	/// </value>
-	public Dictionary<string, int> SourceCounts { get; set; } = new();
+	public Dictionary<string, int> SourceCounts { get; set; } = [];
 }
 
 /// <summary>
@@ -96,7 +96,7 @@ public class RecentErrorsResponse
 	/// <summary>
 	/// Gets or sets the collection of recent error log summaries.
 	/// </summary>
-	public List<ErrorLogSummary> Errors { get; set; } = new();
+	public List<ErrorLogSummary> Errors { get; set; } = [];
 }
 
 /// <summary>

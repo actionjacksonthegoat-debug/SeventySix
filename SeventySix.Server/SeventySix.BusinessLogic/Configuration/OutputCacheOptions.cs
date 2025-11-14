@@ -24,7 +24,7 @@ public class OutputCacheOptions
 	/// Key is the policy name (e.g., "Weather", "Users").
 	/// Value is the policy configuration.
 	/// </summary>
-	public Dictionary<string, CachePolicyConfig> Policies { get; set; } = new();
+	public Dictionary<string, CachePolicyConfig> Policies { get; set; } = [];
 }
 
 /// <summary>
@@ -44,7 +44,7 @@ public class CachePolicyConfig
 	/// Gets or sets the query string parameters that vary the cache.
 	/// Each unique combination of these parameters creates a separate cache entry.
 	/// </summary>
-	public string[] VaryByQuery { get; set; } = Array.Empty<string>();
+	public string[] VaryByQuery { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the cache tag for invalidation.

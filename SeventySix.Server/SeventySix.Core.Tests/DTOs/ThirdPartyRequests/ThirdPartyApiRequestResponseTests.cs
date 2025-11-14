@@ -15,7 +15,7 @@ public class ThirdPartyApiRequestResponseTests
 	public void Constructor_ShouldInitializeWithDefaultValues()
 	{
 		// Arrange & Act
-		var response = new ThirdPartyApiRequestResponse();
+		ThirdPartyApiRequestResponse response = new();
 
 		// Assert
 		Assert.Equal(0, response.Id);
@@ -30,9 +30,9 @@ public class ThirdPartyApiRequestResponseTests
 	public void Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var resetDate = DateOnly.FromDateTime(now);
-		var response = new ThirdPartyApiRequestResponse
+		DateTime now = DateTime.UtcNow;
+		DateOnly resetDate = DateOnly.FromDateTime(now);
+		ThirdPartyApiRequestResponse response = new()
 		{
 			Id = 42,
 			ApiName = "OpenWeather",
@@ -55,7 +55,7 @@ public class ThirdPartyApiRequestResponseTests
 	public void LastCalledAt_ShouldAllowNull()
 	{
 		// Arrange
-		var response = new ThirdPartyApiRequestResponse
+		ThirdPartyApiRequestResponse response = new()
 		{
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",

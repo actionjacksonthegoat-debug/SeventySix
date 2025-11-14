@@ -59,9 +59,9 @@ public class OpenWeatherApiClient : IOpenWeatherApiClient
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		var url = BuildOneCallUrl(request);
-		var cacheKey = BuildCacheKey("onecall", request.Latitude, request.Longitude, request.Exclude);
-		var cacheDuration = TimeSpan.FromMinutes(Options.CacheDurationMinutes);
+		string url = BuildOneCallUrl(request);
+		string cacheKey = BuildCacheKey("onecall", request.Latitude, request.Longitude, request.Exclude);
+		TimeSpan cacheDuration = TimeSpan.FromMinutes(Options.CacheDurationMinutes);
 
 		Logger.LogInformation(
 			"Fetching One Call data for coordinates: ({Latitude}, {Longitude})",
@@ -83,9 +83,9 @@ public class OpenWeatherApiClient : IOpenWeatherApiClient
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		var url = BuildTimemachineUrl(request);
-		var cacheKey = BuildCacheKey("timemachine", request.Latitude, request.Longitude, request.Timestamp.ToString());
-		var cacheDuration = TimeSpan.FromHours(24); // Historical data doesn't change
+		string url = BuildTimemachineUrl(request);
+		string cacheKey = BuildCacheKey("timemachine", request.Latitude, request.Longitude, request.Timestamp.ToString());
+		TimeSpan cacheDuration = TimeSpan.FromHours(24); // Historical data doesn't change
 
 		Logger.LogInformation(
 			"Fetching historical data for coordinates: ({Latitude}, {Longitude}) at timestamp: {Timestamp}",
@@ -102,31 +102,25 @@ public class OpenWeatherApiClient : IOpenWeatherApiClient
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> CanMakeRequestAsync(CancellationToken cancellationToken = default)
-	{
-		return await PollyClient.CanMakeRequestAsync(ApiName, cancellationToken);
-	}
+	public async Task<bool> CanMakeRequestAsync(CancellationToken cancellationToken = default) => await PollyClient.CanMakeRequestAsync(ApiName, cancellationToken);
 
 	/// <inheritdoc/>
-	public async Task<int> GetRemainingQuotaAsync(CancellationToken cancellationToken = default)
-	{
-		return await PollyClient.GetRemainingQuotaAsync(ApiName, cancellationToken);
-	}
+	public async Task<int> GetRemainingQuotaAsync(CancellationToken cancellationToken = default) => await PollyClient.GetRemainingQuotaAsync(ApiName, cancellationToken);
 
 	/// <summary>
 	/// Builds the One Call API URL with query parameters.
 	/// </summary>
 	private string BuildOneCallUrl(WeatherRequest request)
 	{
-		var baseUrl = $"{Options.BaseUrl}{OneCallEndpoint}";
-		var queryParams = new List<string>
-		{
+		string baseUrl = $"{Options.BaseUrl}{OneCallEndpoint}";
+		List<string> queryParams =
+		[
 			$"lat={request.Latitude}",
 			$"lon={request.Longitude}",
 			$"appid={Options.ApiKey}",
 			$"units={request.Units.ToString().ToLowerInvariant()}",
 			$"lang={request.Language}",
-		};
+		];
 
 		if (!string.IsNullOrWhiteSpace(request.Exclude))
 		{
@@ -141,16 +135,16 @@ public class OpenWeatherApiClient : IOpenWeatherApiClient
 	/// </summary>
 	private string BuildTimemachineUrl(HistoricalWeatherRequest request)
 	{
-		var baseUrl = $"{Options.BaseUrl}{TimemachineEndpoint}";
-		var queryParams = new List<string>
-		{
+		string baseUrl = $"{Options.BaseUrl}{TimemachineEndpoint}";
+		List<string> queryParams =
+		[
 			$"lat={request.Latitude}",
 			$"lon={request.Longitude}",
 			$"dt={request.Timestamp}",
 			$"appid={Options.ApiKey}",
 			$"units={request.Units.ToString().ToLowerInvariant()}",
 			$"lang={request.Language}",
-		};
+		];
 
 		return $"{baseUrl}?{string.Join("&", queryParams)}";
 	}
@@ -160,7 +154,7 @@ public class OpenWeatherApiClient : IOpenWeatherApiClient
 	/// </summary>
 	private static string BuildCacheKey(string endpoint, double latitude, double longitude, string? extra = null)
 	{
-		var key = $"openweather:{endpoint}:{latitude:F4}:{longitude:F4}";
+		string key = $"openweather:{endpoint}:{latitude:F4}:{longitude:F4}";
 		if (!string.IsNullOrWhiteSpace(extra))
 		{
 			key += $":{extra}";

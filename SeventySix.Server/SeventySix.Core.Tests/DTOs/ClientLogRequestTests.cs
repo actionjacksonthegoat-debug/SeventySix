@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using SeventySix.Core.DTOs.Logs;
 using Xunit;
 
@@ -32,15 +33,15 @@ public class ClientLogRequestTests
 	public void ClientLogRequest_WithValidData_PassesValidation()
 	{
 		// Arrange
-		var request = new ClientLogRequest
+		ClientLogRequest request = new()
 		{
 			LogLevel = "Error",
 			Message = "Test error message",
 		};
 
 		// Act
-		var validationResults = new List<ValidationResult>();
-		var isValid = Validator.TryValidateObject(
+		List<ValidationResult> validationResults = [];
+		bool isValid = Validator.TryValidateObject(
 			request,
 			new ValidationContext(request),
 			validationResults,
@@ -60,11 +61,11 @@ public class ClientLogRequestTests
 		// This test validates that LogLevel is a required property
 		// The 'required' keyword enforces this at compile time
 		// We verify by checking the property info
-		var property = typeof(ClientLogRequest).GetProperty("LogLevel");
+		PropertyInfo? property = typeof(ClientLogRequest).GetProperty("LogLevel");
 		Assert.NotNull(property);
 
 		// Verify Required attribute exists
-		var requiredAttribute = property.GetCustomAttributes(typeof(RequiredAttribute), false);
+		object[] requiredAttribute = property.GetCustomAttributes(typeof(RequiredAttribute), false);
 		Assert.NotEmpty(requiredAttribute);
 	}
 
@@ -77,11 +78,11 @@ public class ClientLogRequestTests
 		// This test validates that Message is a required property
 		// The 'required' keyword enforces this at compile time
 		// We verify by checking the property info
-		var property = typeof(ClientLogRequest).GetProperty("Message");
+		PropertyInfo? property = typeof(ClientLogRequest).GetProperty("Message");
 		Assert.NotNull(property);
 
 		// Verify Required attribute exists
-		var requiredAttribute = property.GetCustomAttributes(typeof(RequiredAttribute), false);
+		object[] requiredAttribute = property.GetCustomAttributes(typeof(RequiredAttribute), false);
 		Assert.NotEmpty(requiredAttribute);
 	}
 
@@ -92,7 +93,7 @@ public class ClientLogRequestTests
 	public void ClientLogRequest_WithNullOptionalFields_PassesValidation()
 	{
 		// Arrange
-		var request = new ClientLogRequest
+		ClientLogRequest request = new()
 		{
 			LogLevel = "Error",
 			Message = "Test message",
@@ -108,8 +109,8 @@ public class ClientLogRequestTests
 		};
 
 		// Act
-		var validationResults = new List<ValidationResult>();
-		var isValid = Validator.TryValidateObject(
+		List<ValidationResult> validationResults = [];
+		bool isValid = Validator.TryValidateObject(
 			request,
 			new ValidationContext(request),
 			validationResults,
@@ -127,7 +128,7 @@ public class ClientLogRequestTests
 	public void ClientLogRequest_WithAllFields_PassesValidation()
 	{
 		// Arrange
-		var request = new ClientLogRequest
+		ClientLogRequest request = new()
 		{
 			LogLevel = "Error",
 			Message = "Test error message",
@@ -147,8 +148,8 @@ public class ClientLogRequestTests
 		};
 
 		// Act
-		var validationResults = new List<ValidationResult>();
-		var isValid = Validator.TryValidateObject(
+		List<ValidationResult> validationResults = [];
+		bool isValid = Validator.TryValidateObject(
 			request,
 			new ValidationContext(request),
 			validationResults,
@@ -171,15 +172,15 @@ public class ClientLogRequestTests
 	public void ClientLogRequest_WithValidLogLevel_PassesValidation(string logLevel)
 	{
 		// Arrange
-		var request = new ClientLogRequest
+		ClientLogRequest request = new()
 		{
 			LogLevel = logLevel,
 			Message = "Test message",
 		};
 
 		// Act
-		var validationResults = new List<ValidationResult>();
-		var isValid = Validator.TryValidateObject(
+		List<ValidationResult> validationResults = [];
+		bool isValid = Validator.TryValidateObject(
 			request,
 			new ValidationContext(request),
 			validationResults,
@@ -201,7 +202,7 @@ public class ClientLogRequestTests
 	public void ClientLogRequest_WithValidStatusCode_PassesValidation(int statusCode)
 	{
 		// Arrange
-		var request = new ClientLogRequest
+		ClientLogRequest request = new()
 		{
 			LogLevel = "Error",
 			Message = "Test message",
@@ -209,8 +210,8 @@ public class ClientLogRequestTests
 		};
 
 		// Act
-		var validationResults = new List<ValidationResult>();
-		var isValid = Validator.TryValidateObject(
+		List<ValidationResult> validationResults = [];
+		bool isValid = Validator.TryValidateObject(
 			request,
 			new ValidationContext(request),
 			validationResults,
@@ -228,7 +229,7 @@ public class ClientLogRequestTests
 	public void ClientLogRequest_WithVariousContextTypes_PassesValidation()
 	{
 		// Arrange
-		var request = new ClientLogRequest
+		ClientLogRequest request = new()
 		{
 			LogLevel = "Error",
 			Message = "Test message",
@@ -243,8 +244,8 @@ public class ClientLogRequestTests
 		};
 
 		// Act
-		var validationResults = new List<ValidationResult>();
-		var isValid = Validator.TryValidateObject(
+		List<ValidationResult> validationResults = [];
+		bool isValid = Validator.TryValidateObject(
 			request,
 			new ValidationContext(request),
 			validationResults,

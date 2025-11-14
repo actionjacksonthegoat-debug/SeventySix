@@ -46,8 +46,8 @@ public class WeatherRequestValidator : AbstractValidator<WeatherRequest>
 			return true;
 		}
 
-		var validValues = new[] { "current", "minutely", "hourly", "daily", "alerts" };
-		var excludeValues = exclude.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+		string[] validValues = ["current", "minutely", "hourly", "daily", "alerts"];
+		string[] excludeValues = exclude.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 		return excludeValues.All(v => validValues.Contains(v.ToLowerInvariant()));
 	}

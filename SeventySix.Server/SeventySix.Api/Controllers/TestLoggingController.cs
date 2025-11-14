@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
+using SeventySix.Api.Attributes;
 
 namespace SeventySix.Api.Controllers;
 
@@ -13,21 +14,16 @@ namespace SeventySix.Api.Controllers;
 /// DEVELOPMENT ONLY - Remove before production deployment.
 /// Provides endpoints to test different log levels and exception handling.
 /// </remarks>
+/// <remarks>
+/// Initializes a new instance of the <see cref="TestLoggingController"/> class.
+/// </remarks>
+/// <param name="logger">The logger instance.</param>
 [ApiController]
 [Route("api/[controller]")]
-public class TestLoggingController : ControllerBase
+[RateLimit()] // 250 req/hour (default)
+public class TestLoggingController(
+	ILogger<TestLoggingController> logger) : ControllerBase
 {
-	private readonly ILogger<TestLoggingController> Logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="TestLoggingController"/> class.
-	/// </summary>
-	/// <param name="logger">The logger instance.</param>
-	public TestLoggingController(ILogger<TestLoggingController> logger)
-	{
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-	}
-
 	/// <summary>
 	/// Tests warning level logging.
 	/// </summary>
@@ -35,7 +31,7 @@ public class TestLoggingController : ControllerBase
 	[HttpGet("warning")]
 	public IActionResult TestWarning()
 	{
-		Logger.LogWarning("Test warning message from TestLoggingController");
+		logger.LogWarning("Test warning message from TestLoggingController");
 		return Ok(new { message = "Warning logged", level = "Warning" });
 	}
 
@@ -46,7 +42,7 @@ public class TestLoggingController : ControllerBase
 	[HttpGet("error")]
 	public IActionResult TestError()
 	{
-		Logger.LogError("Test error message from TestLoggingController");
+		logger.LogError("Test error message from TestLoggingController");
 		return Ok(new { message = "Error logged", level = "Error" });
 	}
 
@@ -63,7 +59,7 @@ public class TestLoggingController : ControllerBase
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Caught test exception in TestLoggingController");
+			logger.LogError(ex, "Caught test exception in TestLoggingController");
 			return Ok(new { message = "Exception logged", exception = ex.Message });
 		}
 	}
@@ -88,7 +84,7 @@ public class TestLoggingController : ControllerBase
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Caught nested exception in TestLoggingController");
+			logger.LogError(ex, "Caught nested exception in TestLoggingController");
 			return Ok(new
 			{
 				message = "Nested exception logged",
@@ -103,10 +99,7 @@ public class TestLoggingController : ControllerBase
 	/// </summary>
 	/// <returns>Never returns normally.</returns>
 	[HttpGet("unhandled-exception")]
-	public IActionResult TestUnhandledException()
-	{
-		throw new InvalidOperationException("Test unhandled exception from TestLoggingController");
-	}
+	public IActionResult TestUnhandledException() => throw new InvalidOperationException("Test unhandled exception from TestLoggingController");
 
 	/// <summary>
 	/// Tests critical level logging.
@@ -115,7 +108,7 @@ public class TestLoggingController : ControllerBase
 	[HttpGet("critical")]
 	public IActionResult TestCritical()
 	{
-		Logger.LogCritical("Test critical message from TestLoggingController - SYSTEM FAILURE");
+		logger.LogCritical("Test critical message from TestLoggingController - SYSTEM FAILURE");
 		return Ok(new { message = "Critical logged", level = "Critical" });
 	}
 
@@ -126,7 +119,7 @@ public class TestLoggingController : ControllerBase
 	[HttpGet("info")]
 	public IActionResult TestInfo()
 	{
-		Logger.LogInformation("Test info message from TestLoggingController - should only appear in file/console");
+		logger.LogInformation("Test info message from TestLoggingController - should only appear in file/console");
 		return Ok(new { message = "Info logged - check file/console only", level = "Information" });
 	}
 }

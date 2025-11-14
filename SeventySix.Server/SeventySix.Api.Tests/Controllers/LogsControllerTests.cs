@@ -51,12 +51,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task InitializeAsync()
 	{
 		// Get repository to seed test data
-		using var scope = Factory.Services.CreateScope();
+		using IServiceScope scope = Factory.Services.CreateScope();
 		LogRepository = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 		// Seed test data
-		var testLogs = new[]
-		{
+		Log[] testLogs =
+		[
 			new Log
 			{
 				LogLevel = "Warning",
@@ -114,9 +114,9 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 				MachineName = "test-machine",
 				Environment = "Test",
 			},
-		};
+		];
 
-		foreach (var log in testLogs)
+		foreach (Log? log in testLogs)
 		{
 			await LogRepository.CreateAsync(log);
 		}
@@ -136,12 +136,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_NoFilters_ReturnsAllLogsAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/logs");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
 		Assert.True(pagedResponse.Data.Count >= 4, "Should return at least the 4 seeded logs");
@@ -154,12 +154,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_FilterByLogLevel_ReturnsMatchingLogsAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/logs?logLevel=Error");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs?logLevel=Error");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
 		Assert.All(pagedResponse.Data, log => Assert.Equal("Error", log.LogLevel));
@@ -172,17 +172,17 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_FilterByDateRange_ReturnsLogsInRangeAsync()
 	{
 		// Arrange
-		var startDate = DateTime.UtcNow.AddHours(-4);
-		var endDate = DateTime.UtcNow;
+		DateTime startDate = DateTime.UtcNow.AddHours(-4);
+		DateTime endDate = DateTime.UtcNow;
 
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			$"/api/logs?startDate={startDate:O}&endDate={endDate:O}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
 		Assert.All(pagedResponse.Data, log =>
@@ -199,13 +199,13 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_FilterBySourceContext_ReturnsMatchingLogsAsync()
 	{
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			"/api/logs?sourceContext=SeventySix.Api.Controllers.WeatherController");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
 		Assert.All(pagedResponse.Data, log =>
@@ -219,12 +219,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_FilterByRequestPath_ReturnsMatchingLogsAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/logs?requestPath=/api/weather");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs?requestPath=/api/weather");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
 		Assert.All(pagedResponse.Data, log => Assert.Equal("/api/weather", log.RequestPath));
@@ -237,12 +237,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_WithPagination_ReturnsCorrectPageAsync()
 	{
 		// Act - Get page 1
-		var response1 = await Client.GetAsync("/api/logs?page=1&pageSize=2");
-		var pagedResponse1 = await response1.Content.ReadFromJsonAsync<PagedLogResponse>();
+		HttpResponseMessage response1 = await Client.GetAsync("/api/logs?page=1&pageSize=2");
+		PagedLogResponse? pagedResponse1 = await response1.Content.ReadFromJsonAsync<PagedLogResponse>();
 
 		// Act - Get page 2
-		var response2 = await Client.GetAsync("/api/logs?page=2&pageSize=2");
-		var pagedResponse2 = await response2.Content.ReadFromJsonAsync<PagedLogResponse>();
+		HttpResponseMessage response2 = await Client.GetAsync("/api/logs?page=2&pageSize=2");
+		PagedLogResponse? pagedResponse2 = await response2.Content.ReadFromJsonAsync<PagedLogResponse>();
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response1.StatusCode);
@@ -255,8 +255,8 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		Assert.True(pagedResponse2.Data.Count <= 2);
 
 		// Verify no duplicates between pages
-		var ids1 = pagedResponse1.Data.Select(l => l.Id).ToHashSet();
-		var ids2 = pagedResponse2.Data.Select(l => l.Id).ToHashSet();
+		HashSet<int> ids1 = [.. pagedResponse1.Data.Select(l => l.Id)];
+		HashSet<int> ids2 = [.. pagedResponse2.Data.Select(l => l.Id)];
 		Assert.Empty(ids1.Intersect(ids2));
 	}
 
@@ -267,12 +267,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_ExceedsMaxPageSize_ReturnsMaxRecordsAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/logs?pageSize=200");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs?pageSize=200");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
 		Assert.True(pagedResponse.Data.Count <= 100, "Should not exceed maximum page size of 100");
@@ -285,17 +285,17 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_MultipleFilters_ReturnsMatchingLogsAsync()
 	{
 		// Arrange
-		var startDate = DateTime.UtcNow.AddHours(-4);
-		var endDate = DateTime.UtcNow;
+		DateTime startDate = DateTime.UtcNow.AddHours(-4);
+		DateTime endDate = DateTime.UtcNow;
 
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			$"/api/logs?logLevel=Warning&startDate={startDate:O}&endDate={endDate:O}&requestPath=/api/weather");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
 		Assert.All(pagedResponse.Data, log =>
@@ -314,12 +314,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetStatisticsAsync_NoFilters_ReturnsAggregatedDataAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/logs/statistics");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs/statistics");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var stats = await response.Content.ReadFromJsonAsync<LogStatisticsResponse>();
+		LogStatisticsResponse? stats = await response.Content.ReadFromJsonAsync<LogStatisticsResponse>();
 		Assert.NotNull(stats);
 		Assert.True(stats.TotalLogs >= 4);
 		Assert.True(stats.ErrorCount >= 1);
@@ -337,17 +337,17 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetStatisticsAsync_FilterByDateRange_ReturnsFilteredStatsAsync()
 	{
 		// Arrange
-		var startDate = DateTime.UtcNow.AddHours(-4);
-		var endDate = DateTime.UtcNow;
+		DateTime startDate = DateTime.UtcNow.AddHours(-4);
+		DateTime endDate = DateTime.UtcNow;
 
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			$"/api/logs/statistics?startDate={startDate:O}&endDate={endDate:O}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var stats = await response.Content.ReadFromJsonAsync<LogStatisticsResponse>();
+		LogStatisticsResponse? stats = await response.Content.ReadFromJsonAsync<LogStatisticsResponse>();
 		Assert.NotNull(stats);
 		Assert.Equal(startDate.Date, stats.StartDate.Date);
 		Assert.Equal(endDate.Date, stats.EndDate.Date);
@@ -362,16 +362,16 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task CleanupLogsAsync_WithCutoffDate_DeletesOldLogsAsync()
 	{
 		// Arrange
-		var cutoffDate = DateTime.UtcNow.AddDays(-30);
+		DateTime cutoffDate = DateTime.UtcNow.AddDays(-30);
 
 		// Act
-		var response = await Client.DeleteAsync(
+		HttpResponseMessage response = await Client.DeleteAsync(
 			$"/api/logs/cleanup?cutoffDate={cutoffDate:O}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var deletedCount = await response.Content.ReadFromJsonAsync<int>();
+		int deletedCount = await response.Content.ReadFromJsonAsync<int>();
 		Assert.True(deletedCount >= 1, "Should delete at least the 31-day-old log");
 	}
 
@@ -382,7 +382,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task CleanupLogsAsync_NoCutoffDate_ReturnsBadRequestAsync()
 	{
 		// Act
-		var response = await Client.DeleteAsync("/api/logs/cleanup");
+		HttpResponseMessage response = await Client.DeleteAsync("/api/logs/cleanup");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -395,7 +395,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task LogClientErrorAsync_WithValidRequest_ReturnsNoContentAsync()
 	{
 		// Arrange
-		var request = new ClientLogRequest
+		ClientLogRequest request = new()
 		{
 			LogLevel = "Error",
 			Message = "Client-side error occurred",
@@ -415,20 +415,20 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/logs/client", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
 		// Verify log was created
-		using var scope = Factory.Services.CreateScope();
-		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		var logs = await logRepo.GetLogsAsync(
+		using IServiceScope scope = Factory.Services.CreateScope();
+		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		IEnumerable<Log> logs = await logRepo.GetLogsAsync(
 			logLevel: "Error",
 			sourceContext: "UserComponent",
 			skip: 0,
 			take: 10);
-		var clientLog = logs.FirstOrDefault(l => l.Message == "Client-side error occurred");
+		Log? clientLog = logs.FirstOrDefault(l => l.Message == "Client-side error occurred");
 
 		Assert.NotNull(clientLog);
 		Assert.Equal("Error", clientLog.LogLevel);
@@ -458,7 +458,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/logs/client", invalidRequest);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", invalidRequest);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -477,7 +477,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/logs/client", invalidRequest);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", invalidRequest);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -490,26 +490,26 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task LogClientErrorAsync_WithMinimalRequest_ReturnsNoContentAsync()
 	{
 		// Arrange
-		var request = new ClientLogRequest
+		ClientLogRequest request = new()
 		{
 			LogLevel = "Warning",
 			Message = "Simple client warning",
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/logs/client", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
 		// Verify log was created with defaults
-		using var scope = Factory.Services.CreateScope();
-		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		var logs = await logRepo.GetLogsAsync(
+		using IServiceScope scope = Factory.Services.CreateScope();
+		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		IEnumerable<Log> logs = await logRepo.GetLogsAsync(
 			logLevel: "Warning",
 			skip: 0,
 			take: 10);
-		var clientLog = logs.FirstOrDefault(l => l.Message == "Simple client warning");
+		Log? clientLog = logs.FirstOrDefault(l => l.Message == "Simple client warning");
 
 		Assert.NotNull(clientLog);
 		Assert.Equal("Warning", clientLog.LogLevel);
@@ -530,14 +530,14 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task LogClientErrorAsync_WithDifferentLogLevels_ReturnsNoContentAsync(string logLevel)
 	{
 		// Arrange
-		var request = new ClientLogRequest
+		ClientLogRequest request = new()
 		{
 			LogLevel = logLevel,
 			Message = $"Test {logLevel} message",
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/logs/client", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -550,7 +550,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task LogClientErrorAsync_WithAdditionalContext_PreservesContextAsync()
 	{
 		// Arrange
-		var request = new ClientLogRequest
+		ClientLogRequest request = new()
 		{
 			LogLevel = "Error",
 			Message = "Error with context",
@@ -563,19 +563,19 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/logs/client", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
 		// Verify context was preserved in Properties JSON
-		using var scope = Factory.Services.CreateScope();
-		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		var logs = await logRepo.GetLogsAsync(
+		using IServiceScope scope = Factory.Services.CreateScope();
+		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		IEnumerable<Log> logs = await logRepo.GetLogsAsync(
 			logLevel: "Error",
 			skip: 0,
 			take: 10);
-		var clientLog = logs.FirstOrDefault(l => l.Message == "Error with context");
+		Log? clientLog = logs.FirstOrDefault(l => l.Message == "Error with context");
 
 		Assert.NotNull(clientLog);
 		Assert.NotNull(clientLog.Properties);
@@ -590,8 +590,8 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task LogClientErrorBatchAsync_WithValidRequests_ReturnsNoContentAsync()
 	{
 		// Arrange
-		var requests = new[]
-		{
+		ClientLogRequest[] requests =
+		[
 			new ClientLogRequest
 			{
 				LogLevel = "Error",
@@ -610,22 +610,22 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 				Message = "Batch info 3",
 				SourceContext = "Component3",
 			},
-		};
+		];
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
 		// Verify all logs were created
-		using var scope = Factory.Services.CreateScope();
-		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		var logs = await logRepo.GetLogsAsync(skip: 0, take: 100);
+		using IServiceScope scope = Factory.Services.CreateScope();
+		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		IEnumerable<Log> logs = await logRepo.GetLogsAsync(skip: 0, take: 100);
 
-		var log1 = logs.FirstOrDefault(l => l.Message == "Batch error 1");
-		var log2 = logs.FirstOrDefault(l => l.Message == "Batch warning 2");
-		var log3 = logs.FirstOrDefault(l => l.Message == "Batch info 3");
+		Log? log1 = logs.FirstOrDefault(l => l.Message == "Batch error 1");
+		Log? log2 = logs.FirstOrDefault(l => l.Message == "Batch warning 2");
+		Log? log3 = logs.FirstOrDefault(l => l.Message == "Batch info 3");
 
 		Assert.NotNull(log1);
 		Assert.NotNull(log2);
@@ -645,10 +645,10 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task LogClientErrorBatchAsync_WithEmptyArray_ReturnsNoContentAsync()
 	{
 		// Arrange
-		var requests = Array.Empty<ClientLogRequest>();
+		ClientLogRequest[] requests = [];
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -661,14 +661,14 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task LogClientErrorBatchAsync_WithInvalidRequest_ReturnsBadRequestAsync()
 	{
 		// Arrange - One invalid request in batch (missing required fields)
-		var requests = new object[]
-		{
+		object[] requests =
+		[
 			new { LogLevel = "Error", Message = "Valid error" },
 			new { LogLevel = "Warning" }, // Missing Message
-		};
+		];
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -681,26 +681,25 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task LogClientErrorBatchAsync_WithLargeBatch_ReturnsNoContentAsync()
 	{
 		// Arrange - Create 50 log requests
-		var requests = Enumerable.Range(1, 50)
+		ClientLogRequest[] requests = [.. Enumerable.Range(1, 50)
 			.Select(i => new ClientLogRequest
 			{
 				LogLevel = "Error",
 				Message = $"Batch error {i}",
 				SourceContext = $"Component{i}",
-			})
-			.ToArray();
+			})];
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
 		// Verify logs were created
-		using var scope = Factory.Services.CreateScope();
-		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		var logs = await logRepo.GetLogsAsync(logLevel: "Error", skip: 0, take: 100);
-		var batchLogs = logs.Where(l => l.Message.StartsWith("Batch error ")).ToList();
+		using IServiceScope scope = Factory.Services.CreateScope();
+		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		IEnumerable<Log> logs = await logRepo.GetLogsAsync(logLevel: "Error", skip: 0, take: 100);
+		List<Log> batchLogs = [.. logs.Where(l => l.Message.StartsWith("Batch error "))];
 
 		Assert.True(batchLogs.Count >= 50, $"Expected at least 50 batch logs, found {batchLogs.Count}");
 	}
@@ -715,12 +714,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetChartDataAsync_WithValidPeriod_ReturnsOkAsync(string period)
 	{
 		// Act
-		var response = await Client.GetAsync($"/api/logs/chart-data?period={period}");
+		HttpResponseMessage response = await Client.GetAsync($"/api/logs/chart-data?period={period}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var chartData = await response.Content.ReadFromJsonAsync<LogChartDataResponse>();
+		LogChartDataResponse? chartData = await response.Content.ReadFromJsonAsync<LogChartDataResponse>();
 		Assert.NotNull(chartData);
 		Assert.Equal(period, chartData.Period);
 		Assert.NotNull(chartData.DataPoints);
@@ -733,7 +732,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetChartDataAsync_WithInvalidPeriod_ReturnsBadRequestAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/logs/chart-data?period=invalid");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs/chart-data?period=invalid");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -746,12 +745,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetChartDataAsync_WithNoPeriod_UsesDefaultAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/logs/chart-data");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs/chart-data");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var chartData = await response.Content.ReadFromJsonAsync<LogChartDataResponse>();
+		LogChartDataResponse? chartData = await response.Content.ReadFromJsonAsync<LogChartDataResponse>();
 		Assert.NotNull(chartData);
 		Assert.Equal("24h", chartData.Period); // Default should be 24h
 	}
@@ -763,12 +762,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetCountAsync_NoFilters_ReturnsTotalCountAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/logs/count");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs/count");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		LogCountResponse? countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
 		Assert.NotNull(countResponse);
 		Assert.True(countResponse.Total >= 3); // At least the 3 seeded logs
 	}
@@ -780,12 +779,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetCountAsync_FilterByLogLevel_ReturnsMatchingCountAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/logs/count?logLevel=Error");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs/count?logLevel=Error");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		LogCountResponse? countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
 		Assert.NotNull(countResponse);
 		Assert.True(countResponse.Total >= 1); // At least one Error log
 	}
@@ -797,17 +796,17 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetCountAsync_FilterByDateRange_ReturnsMatchingCountAsync()
 	{
 		// Arrange
-		var startDate = DateTime.UtcNow.AddHours(-2.5);
-		var endDate = DateTime.UtcNow.AddMinutes(-30);
+		DateTime startDate = DateTime.UtcNow.AddHours(-2.5);
+		DateTime endDate = DateTime.UtcNow.AddMinutes(-30);
 
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			$"/api/logs/count?startDate={startDate:O}&endDate={endDate:O}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		LogCountResponse? countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
 		Assert.NotNull(countResponse);
 		Assert.True(countResponse.Total >= 1); // At least one log in this range
 	}
@@ -819,13 +818,13 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetCountAsync_FilterBySourceContext_ReturnsMatchingCountAsync()
 	{
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			"/api/logs/count?sourceContext=SeventySix.Api.Controllers.WeatherController");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		LogCountResponse? countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
 		Assert.NotNull(countResponse);
 		Assert.True(countResponse.Total >= 2); // At least 2 logs from WeatherController
 	}
@@ -837,12 +836,12 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetCountAsync_FilterByRequestPath_ReturnsMatchingCountAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/logs/count?requestPath=/api/weather");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs/count?requestPath=/api/weather");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		LogCountResponse? countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
 		Assert.NotNull(countResponse);
 		Assert.True(countResponse.Total >= 2); // At least 2 logs for /api/weather
 	}
@@ -854,13 +853,13 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetCountAsync_MultipleFilters_ReturnsMatchingCountAsync()
 	{
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			"/api/logs/count?logLevel=Warning&sourceContext=SeventySix.Api.Controllers.WeatherController");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
+		LogCountResponse? countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
 		Assert.NotNull(countResponse);
 		Assert.True(countResponse.Total >= 1); // At least 1 Warning from WeatherController
 	}
@@ -872,9 +871,9 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task DeleteLogAsync_WithValidId_ReturnsNoContentAsync()
 	{
 		// Arrange - Create a log to delete
-		using var scope = Factory.Services.CreateScope();
-		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		var log = await logRepo.CreateAsync(new Log
+		using IServiceScope scope = Factory.Services.CreateScope();
+		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		Log log = await logRepo.CreateAsync(new Log
 		{
 			LogLevel = "Error",
 			Message = "Test log for deletion",
@@ -884,13 +883,13 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		});
 
 		// Act
-		var response = await Client.DeleteAsync($"/api/logs/{log.Id}");
+		HttpResponseMessage response = await Client.DeleteAsync($"/api/logs/{log.Id}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
 		// Verify log is deleted
-		var logs = await logRepo.GetLogsAsync(take: 1000);
+		IEnumerable<Log> logs = await logRepo.GetLogsAsync(take: 1000);
 		Assert.DoesNotContain(logs, l => l.Id == log.Id);
 	}
 
@@ -901,7 +900,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task DeleteLogAsync_WithInvalidId_ReturnsNotFoundAsync()
 	{
 		// Act
-		var response = await Client.DeleteAsync("/api/logs/999999999");
+		HttpResponseMessage response = await Client.DeleteAsync("/api/logs/999999999");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -914,10 +913,10 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task DeleteLogBatchAsync_WithValidIds_ReturnsDeletedCountAsync()
 	{
 		// Arrange - Create logs to delete
-		using var scope = Factory.Services.CreateScope();
-		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		using IServiceScope scope = Factory.Services.CreateScope();
+		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
-		var log1 = await logRepo.CreateAsync(new Log
+		Log log1 = await logRepo.CreateAsync(new Log
 		{
 			LogLevel = "Error",
 			Message = "Batch delete test 1",
@@ -926,7 +925,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 			Environment = "Test",
 		});
 
-		var log2 = await logRepo.CreateAsync(new Log
+		Log log2 = await logRepo.CreateAsync(new Log
 		{
 			LogLevel = "Warning",
 			Message = "Batch delete test 2",
@@ -935,7 +934,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 			Environment = "Test",
 		});
 
-		var log3 = await logRepo.CreateAsync(new Log
+		Log log3 = await logRepo.CreateAsync(new Log
 		{
 			LogLevel = "Fatal",
 			Message = "Batch delete test 3",
@@ -944,23 +943,23 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 			Environment = "Test",
 		});
 
-		var idsToDelete = new[] { log1.Id, log2.Id, log3.Id };
+		int[] idsToDelete = [log1.Id, log2.Id, log3.Id];
 
 		// Act
-		var request = new HttpRequestMessage(HttpMethod.Delete, "/api/logs/batch")
+		HttpRequestMessage request = new(HttpMethod.Delete, "/api/logs/batch")
 		{
 			Content = JsonContent.Create(idsToDelete),
 		};
-		var response = await Client.SendAsync(request);
+		HttpResponseMessage response = await Client.SendAsync(request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var deletedCount = await response.Content.ReadFromJsonAsync<int>();
+		int deletedCount = await response.Content.ReadFromJsonAsync<int>();
 		Assert.Equal(3, deletedCount);
 
 		// Verify logs are deleted
-		var remainingLogs = await logRepo.GetLogsAsync(take: 1000);
+		IEnumerable<Log> remainingLogs = await logRepo.GetLogsAsync(take: 1000);
 		Assert.DoesNotContain(remainingLogs, l => idsToDelete.Contains(l.Id));
 	}
 
@@ -971,14 +970,14 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task DeleteLogBatchAsync_WithEmptyArray_ReturnsBadRequestAsync()
 	{
 		// Arrange
-		var emptyIds = Array.Empty<int>();
+		int[] emptyIds = [];
 
 		// Act
-		var request = new HttpRequestMessage(HttpMethod.Delete, "/api/logs/batch")
+		HttpRequestMessage request = new(HttpMethod.Delete, "/api/logs/batch")
 		{
 			Content = JsonContent.Create(emptyIds),
 		};
-		var response = await Client.SendAsync(request);
+		HttpResponseMessage response = await Client.SendAsync(request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -991,10 +990,10 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task DeleteLogBatchAsync_WithSomeInvalidIds_ReturnsPartialCountAsync()
 	{
 		// Arrange - Create one log to delete
-		using var scope = Factory.Services.CreateScope();
-		var logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		using IServiceScope scope = Factory.Services.CreateScope();
+		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
-		var log = await logRepo.CreateAsync(new Log
+		Log log = await logRepo.CreateAsync(new Log
 		{
 			LogLevel = "Error",
 			Message = "Partial batch delete test",
@@ -1004,19 +1003,19 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		});
 
 		// Include one valid and two invalid IDs
-		var idsToDelete = new[] { log.Id, 999999998, 999999999 };
+		int[] idsToDelete = [log.Id, 999999998, 999999999];
 
 		// Act
-		var request = new HttpRequestMessage(HttpMethod.Delete, "/api/logs/batch")
+		HttpRequestMessage request = new(HttpMethod.Delete, "/api/logs/batch")
 		{
 			Content = JsonContent.Create(idsToDelete),
 		};
-		var response = await Client.SendAsync(request);
+		HttpResponseMessage response = await Client.SendAsync(request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var deletedCount = await response.Content.ReadFromJsonAsync<int>();
+		int deletedCount = await response.Content.ReadFromJsonAsync<int>();
 		Assert.Equal(1, deletedCount); // Only 1 valid ID was deleted
 	}
 }

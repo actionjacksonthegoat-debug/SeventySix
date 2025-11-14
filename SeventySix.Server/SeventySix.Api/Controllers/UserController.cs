@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using SeventySix.Api.Attributes;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Interfaces;
@@ -28,27 +29,19 @@ namespace SeventySix.Api.Controllers;
 /// - Repository Pattern: Data access abstracted through service layer
 /// - DTO Pattern: Domain models never exposed directly
 /// </remarks>
+/// <remarks>
+/// Initializes a new instance of the <see cref="UserController"/> class.
+/// </remarks>
+/// <param name="userService">The user service for business logic operations.</param>
+/// <param name="logger">The logger instance for recording controller operations.</param>
+/// <exception cref="ArgumentNullException">Thrown when userService or logger is null.</exception>
 [ApiController]
 [Route("api/[controller]")]
-public class UserController : ControllerBase
+[RateLimit()] // 250 req/hour (default)
+public class UserController(
+	IUserService userService,
+	ILogger<UserController> logger) : ControllerBase
 {
-	private readonly IUserService UserService;
-	private readonly ILogger<UserController> Logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="UserController"/> class.
-	/// </summary>
-	/// <param name="userService">The user service for business logic operations.</param>
-	/// <param name="logger">The logger instance for recording controller operations.</param>
-	/// <exception cref="ArgumentNullException">Thrown when userService or logger is null.</exception>
-	public UserController(
-		IUserService userService,
-		ILogger<UserController> logger)
-	{
-		UserService = userService ?? throw new ArgumentNullException(nameof(userService));
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-	}
-
 	/// <summary>
 	/// Gets all users.
 	/// </summary>
@@ -69,8 +62,8 @@ public class UserController : ControllerBase
 	[OutputCache(PolicyName = "users")]
 	public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAsync(CancellationToken cancellationToken)
 	{
-		Logger.LogInformation("Getting all users");
-		var users = await UserService.GetAllUsersAsync(cancellationToken);
+		logger.LogInformation("Getting all users");
+		IEnumerable<UserDto> users = await userService.GetAllUsersAsync(cancellationToken);
 		return Ok(users);
 	}
 
@@ -97,16 +90,9 @@ public class UserController : ControllerBase
 	[OutputCache(PolicyName = "users")]
 	public async Task<ActionResult<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
 	{
-		Logger.LogInformation("Getting user with ID: {UserId}", id);
-		var user = await UserService.GetUserByIdAsync(id, cancellationToken);
+		UserDto? user = await userService.GetUserByIdAsync(id, cancellationToken);
 
-		if (user is null)
-		{
-			Logger.LogWarning("User with ID {UserId} not found", id);
-			return NotFound();
-		}
-
-		return Ok(user);
+		return user is null ? (ActionResult<UserDto>)NotFound() : (ActionResult<UserDto>)Ok(user);
 	}
 
 	/// <summary>
@@ -142,8 +128,7 @@ public class UserController : ControllerBase
 		[FromBody] CreateUserRequest request,
 		CancellationToken cancellationToken)
 	{
-		Logger.LogInformation("Creating new user with username: {Username}", request.Username);
-		var user = await UserService.CreateUserAsync(request, cancellationToken);
+		UserDto user = await userService.CreateUserAsync(request, cancellationToken);
 		return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
 	}
 }

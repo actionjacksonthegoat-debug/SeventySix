@@ -19,14 +19,14 @@ public class ThirdPartyApiRequestTests
 	public void IncrementCallCount_IncrementsCounterAndUpdatesTimestamp()
 	{
 		// Arrange
-		var request = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
 			CallCount = 5,
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 		};
-		var beforeTimestamp = DateTime.UtcNow;
+		DateTime beforeTimestamp = DateTime.UtcNow;
 
 		// Act
 		request.IncrementCallCount();
@@ -42,7 +42,7 @@ public class ThirdPartyApiRequestTests
 	public void IncrementCallCount_UpdatesLastCalledAtOnEachCall()
 	{
 		// Arrange
-		var request = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
@@ -52,12 +52,12 @@ public class ThirdPartyApiRequestTests
 
 		// Act
 		request.IncrementCallCount();
-		var firstCallTime = request.LastCalledAt;
+		DateTime? firstCallTime = request.LastCalledAt;
 
 		Thread.Sleep(10); // Ensure time difference
 
 		request.IncrementCallCount();
-		var secondCallTime = request.LastCalledAt;
+		DateTime? secondCallTime = request.LastCalledAt;
 
 		// Assert
 		Assert.Equal(2, request.CallCount);
@@ -70,7 +70,7 @@ public class ThirdPartyApiRequestTests
 	public void ResetCallCount_ResetsCounterToZero()
 	{
 		// Arrange
-		var request = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
@@ -78,8 +78,8 @@ public class ThirdPartyApiRequestTests
 			LastCalledAt = DateTime.UtcNow.AddHours(-1),
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 		};
-		var lastCalledBefore = request.LastCalledAt;
-		var beforeTimestamp = DateTime.UtcNow;
+		DateTime? lastCalledBefore = request.LastCalledAt;
+		DateTime beforeTimestamp = DateTime.UtcNow;
 
 		// Act
 		request.ResetCallCount();
@@ -94,7 +94,7 @@ public class ThirdPartyApiRequestTests
 	public void Constructor_AllowsSettingRequiredProperties()
 	{
 		// Arrange & Act
-		var request = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
@@ -113,7 +113,7 @@ public class ThirdPartyApiRequestTests
 	public void CallCount_DefaultsToZero()
 	{
 		// Arrange & Act
-		var request = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
@@ -128,7 +128,7 @@ public class ThirdPartyApiRequestTests
 	public void LastCalledAt_IsNullInitially()
 	{
 		// Arrange & Act
-		var request = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
@@ -143,7 +143,7 @@ public class ThirdPartyApiRequestTests
 	public void IncrementCallCount_CanBeCalledMultipleTimes()
 	{
 		// Arrange
-		var request = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",

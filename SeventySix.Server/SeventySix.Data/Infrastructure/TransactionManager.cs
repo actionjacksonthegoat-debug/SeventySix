@@ -3,7 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace SeventySix.Data.Infrastructure;
 
@@ -28,22 +28,14 @@ namespace SeventySix.Data.Infrastructure;
 /// - OCP: Can be extended with custom retry strategies
 /// - DIP: Depends on DbContext abstraction
 /// </remarks>
-public class TransactionManager : ITransactionManager
+/// <remarks>
+/// Initializes a new instance of the <see cref="TransactionManager"/> class.
+/// </remarks>
+/// <param name="context">The database context.</param>
+/// <param name="logger">Logger instance.</param>
+public class TransactionManager(
+	ApplicationDbContext context) : ITransactionManager
 {
-	private readonly ApplicationDbContext Context;
-	private readonly ILogger<TransactionManager> Logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="TransactionManager"/> class.
-	/// </summary>
-	/// <param name="context">The database context.</param>
-	/// <param name="logger">Logger instance.</param>
-	public TransactionManager(ApplicationDbContext context, ILogger<TransactionManager> logger)
-	{
-		Context = context ?? throw new ArgumentNullException(nameof(context));
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-	}
-
 	/// <inheritdoc/>
 	public async Task<T> ExecuteInTransactionAsync<T>(
 		Func<CancellationToken, Task<T>> operation,
@@ -52,7 +44,7 @@ public class TransactionManager : ITransactionManager
 	{
 		ArgumentNullException.ThrowIfNull(operation);
 
-		var retryCount = 0;
+		int retryCount = 0;
 		Exception? lastException = null;
 
 		while (retryCount <= maxRetries)
@@ -61,30 +53,23 @@ public class TransactionManager : ITransactionManager
 			{
 				// Use the database's execution strategy to handle transactions
 				// This is required when EnableRetryOnFailure is configured
-				var strategy = Context.Database.CreateExecutionStrategy();
+				IExecutionStrategy strategy = context.Database.CreateExecutionStrategy();
 
 				return await strategy.ExecuteAsync(async ct =>
 				{
 					// Start a new transaction with ReadCommitted isolation
 					// PostgreSQL will automatically detect conflicts and throw exceptions
-					using var transaction = await Context.Database.BeginTransactionAsync(
+					using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync(
 						System.Data.IsolationLevel.ReadCommitted,
 						ct);
 
 					try
 					{
 						// Execute the operation
-						var result = await operation(ct);
+						T? result = await operation(ct);
 
 						// Commit the transaction
 						await transaction.CommitAsync(ct);
-
-						if (retryCount > 0)
-						{
-							Logger.LogInformation(
-								"Transaction succeeded after {RetryCount} retries",
-								retryCount);
-						}
 
 						return result;
 					}
@@ -101,28 +86,16 @@ public class TransactionManager : ITransactionManager
 				// Optimistic concurrency conflict - another transaction modified the same data
 				lastException = ex;
 
-				Logger.LogWarning(
-					ex,
-					"Concurrency conflict detected. Retry {RetryCount}/{MaxRetries}",
-					retryCount + 1,
-					maxRetries);
-
 				// Clear change tracker to avoid tracking stale entities
-				Context.ChangeTracker.Clear();
+				context.ChangeTracker.Clear();
 			}
 			catch (DbUpdateException ex) when (IsConcurrencyRelated(ex))
 			{
 				// Database constraint violation (duplicate key, etc.) - likely race condition
 				lastException = ex;
 
-				Logger.LogWarning(
-					ex,
-					"Database constraint violation detected (likely race condition). Retry {RetryCount}/{MaxRetries}",
-					retryCount + 1,
-					maxRetries);
-
 				// Clear change tracker
-				Context.ChangeTracker.Clear();
+				context.ChangeTracker.Clear();
 			}
 			catch (Exception)
 			{
@@ -135,16 +108,10 @@ public class TransactionManager : ITransactionManager
 			if (retryCount <= maxRetries)
 			{
 				// Exponential backoff with jitter
-				var delayMs = CalculateBackoff(retryCount);
+				int delayMs = CalculateBackoff(retryCount);
 				await Task.Delay(delayMs, cancellationToken);
 			}
 		}
-
-		// Max retries exceeded
-		Logger.LogError(
-			lastException,
-			"Transaction failed after {MaxRetries} retries",
-			maxRetries);
 
 		throw new InvalidOperationException(
 			$"Transaction failed after {maxRetries} retries due to concurrency conflicts. " +
@@ -175,7 +142,7 @@ public class TransactionManager : ITransactionManager
 	/// <returns>True if the exception indicates a concurrency conflict.</returns>
 	private static bool IsConcurrencyRelated(DbUpdateException ex)
 	{
-		var message = ex.InnerException?.Message ?? ex.Message;
+		string message = ex.InnerException?.Message ?? ex.Message;
 
 		// PostgreSQL-specific error codes and messages
 		return message.Contains("duplicate key", StringComparison.OrdinalIgnoreCase) ||
@@ -192,11 +159,11 @@ public class TransactionManager : ITransactionManager
 	private static int CalculateBackoff(int retryCount)
 	{
 		// Base delay: 50ms, 100ms, 200ms, 400ms, etc.
-		var baseDelay = 50 * Math.Pow(2, retryCount - 1);
+		double baseDelay = 50 * Math.Pow(2, retryCount - 1);
 
 		// Add jitter (±25%) to prevent thundering herd
-		var jitter = Random.Shared.Next(-25, 26) / 100.0;
-		var delayMs = (int)(baseDelay * (1 + jitter));
+		double jitter = Random.Shared.Next(-25, 26) / 100.0;
+		int delayMs = (int)(baseDelay * (1 + jitter));
 
 		// Cap at 2 seconds
 		return Math.Min(delayMs, 2000);

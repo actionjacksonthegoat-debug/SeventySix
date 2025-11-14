@@ -28,7 +28,7 @@ public class UserTests
 	public void User_ShouldInitializeWithDefaultValues()
 	{
 		// Arrange & Act
-		var user = new User();
+		User user = new();
 
 		// Assert
 		Assert.Equal(0, user.Id);
@@ -44,8 +44,8 @@ public class UserTests
 	public void User_ShouldSetAndGetProperties()
 	{
 		// Arrange
-		var createdAt = DateTime.UtcNow.AddDays(-10);
-		var user = new User
+		DateTime createdAt = DateTime.UtcNow.AddDays(-10);
+		User user = new()
 		{
 			Id = 123,
 			Username = "john_doe",
@@ -68,7 +68,7 @@ public class UserTests
 	public void User_ShouldAllowNullFullName()
 	{
 		// Arrange & Act
-		var user = new User
+		User user = new()
 		{
 			Username = "test_user",
 			Email = "test@example.com",
@@ -83,7 +83,7 @@ public class UserTests
 	public void User_ShouldAllowEmptyFullName()
 	{
 		// Arrange & Act
-		var user = new User
+		User user = new()
 		{
 			Username = "test_user",
 			Email = "test@example.com",
@@ -98,7 +98,7 @@ public class UserTests
 	public void User_ShouldSetIsActiveToTrue_ByDefault()
 	{
 		// Arrange & Act
-		var user = new User();
+		User user = new();
 
 		// Assert
 		Assert.True(user.IsActive);
@@ -108,7 +108,7 @@ public class UserTests
 	public void User_ShouldAllowSettingIsActiveToFalse()
 	{
 		// Arrange & Act
-		var user = new User { IsActive = false };
+		User user = new() { IsActive = false };
 
 		// Assert
 		Assert.False(user.IsActive);
@@ -118,13 +118,13 @@ public class UserTests
 	public void User_CreatedAt_ShouldBeSetToUtcNow_ByDefault()
 	{
 		// Arrange
-		var beforeCreation = DateTime.UtcNow;
+		DateTime beforeCreation = DateTime.UtcNow;
 
 		// Act
-		var user = new User();
+		User user = new();
 
 		// Assert
-		var afterCreation = DateTime.UtcNow;
+		DateTime afterCreation = DateTime.UtcNow;
 		Assert.InRange(user.CreatedAt, beforeCreation, afterCreation);
 		Assert.Equal(DateTimeKind.Utc, user.CreatedAt.Kind);
 	}
@@ -133,10 +133,10 @@ public class UserTests
 	public void User_ShouldAllowOverridingCreatedAt()
 	{
 		// Arrange
-		var specificDate = new DateTime(2024, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+		DateTime specificDate = new(2024, 1, 1, 12, 0, 0, DateTimeKind.Utc);
 
 		// Act
-		var user = new User { CreatedAt = specificDate };
+		User user = new() { CreatedAt = specificDate };
 
 		// Assert
 		Assert.Equal(specificDate, user.CreatedAt);
@@ -151,7 +151,7 @@ public class UserTests
 	public void User_ShouldAcceptVariousUsernameFormats(string username)
 	{
 		// Arrange & Act
-		var user = new User { Username = username };
+		User user = new() { Username = username };
 
 		// Assert
 		Assert.Equal(username, user.Username);
@@ -166,7 +166,7 @@ public class UserTests
 	{
 		// Arrange & Act
 		// Note: Entity doesn't validate format; that's validation layer's job
-		var user = new User { Email = email };
+		User user = new() { Email = email };
 
 		// Assert
 		Assert.Equal(email, user.Email);
@@ -176,7 +176,7 @@ public class UserTests
 	public void User_ShouldSupportPropertyUpdates()
 	{
 		// Arrange
-		var user = new User
+		User user = new()
 		{
 			Username = "old_username",
 			Email = "old@example.com",

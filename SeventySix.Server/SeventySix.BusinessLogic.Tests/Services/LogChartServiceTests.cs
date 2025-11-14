@@ -29,15 +29,15 @@ public class LogChartServiceTests
 	public async Task GetLogsByLevelAsync_ReturnsGroupedCountsAsync()
 	{
 		// Arrange
-		var logs = new List<Log>
-		{
+		List<Log> logs =
+		[
 			new Log { LogLevel = "Information", Message = "Info 1", Timestamp = DateTime.UtcNow },
 			new Log { LogLevel = "Information", Message = "Info 2", Timestamp = DateTime.UtcNow },
 			new Log { LogLevel = "Warning", Message = "Warning 1", Timestamp = DateTime.UtcNow },
 			new Log { LogLevel = "Error", Message = "Error 1", Timestamp = DateTime.UtcNow },
 			new Log { LogLevel = "Error", Message = "Error 2", Timestamp = DateTime.UtcNow },
 			new Log { LogLevel = "Error", Message = "Error 3", Timestamp = DateTime.UtcNow },
-		};
+		];
 
 		MockRepository.Setup(r => r.GetLogsAsync(
 				null,
@@ -50,7 +50,7 @@ public class LogChartServiceTests
 			.ReturnsAsync(logs);
 
 		// Act
-		var result = await Service.GetLogsByLevelAsync(null, null, CancellationToken.None);
+		LogsByLevelResponse result = await Service.GetLogsByLevelAsync(null, null, CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -64,13 +64,13 @@ public class LogChartServiceTests
 	public async Task GetLogsByHourAsync_ReturnsHourlyDataAsync()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var logs = new List<Log>
-		{
+		DateTime now = DateTime.UtcNow;
+		List<Log> logs =
+		[
 			new Log { LogLevel = "Information", Message = "Log 1", Timestamp = now.AddHours(-1) },
 			new Log { LogLevel = "Information", Message = "Log 2", Timestamp = now.AddHours(-1).AddMinutes(15) },
 			new Log { LogLevel = "Information", Message = "Log 3", Timestamp = now.AddMinutes(-30) },
-		};
+		];
 
 		MockRepository.Setup(r => r.GetLogsAsync(
 				null,
@@ -83,7 +83,7 @@ public class LogChartServiceTests
 			.ReturnsAsync(logs);
 
 		// Act
-		var result = await Service.GetLogsByHourAsync(24, CancellationToken.None);
+		LogsByHourResponse result = await Service.GetLogsByHourAsync(24, CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -95,15 +95,15 @@ public class LogChartServiceTests
 	public async Task GetLogsBySourceAsync_ReturnsTopSourcesAsync()
 	{
 		// Arrange
-		var logs = new List<Log>
-		{
+		List<Log> logs =
+		[
 			new Log { LogLevel = "Information", Message = "Log 1", SourceContext = "WeatherController", Timestamp = DateTime.UtcNow },
 			new Log { LogLevel = "Information", Message = "Log 2", SourceContext = "WeatherController", Timestamp = DateTime.UtcNow },
 			new Log { LogLevel = "Information", Message = "Log 3", SourceContext = "WeatherController", Timestamp = DateTime.UtcNow },
 			new Log { LogLevel = "Information", Message = "Log 4", SourceContext = "UserService", Timestamp = DateTime.UtcNow },
 			new Log { LogLevel = "Information", Message = "Log 5", SourceContext = "UserService", Timestamp = DateTime.UtcNow },
 			new Log { LogLevel = "Information", Message = "Log 6", SourceContext = "ErrorQueue", Timestamp = DateTime.UtcNow },
-		};
+		];
 
 		MockRepository.Setup(r => r.GetLogsAsync(
 				null,
@@ -116,7 +116,7 @@ public class LogChartServiceTests
 			.ReturnsAsync(logs);
 
 		// Act
-		var result = await Service.GetLogsBySourceAsync(10, CancellationToken.None);
+		LogsBySourceResponse result = await Service.GetLogsBySourceAsync(10, CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -130,9 +130,9 @@ public class LogChartServiceTests
 	public async Task GetRecentErrorsAsync_ReturnsRecentErrorsAndWarningsAsync()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var logs = new List<Log>
-		{
+		DateTime now = DateTime.UtcNow;
+		List<Log> logs =
+		[
 			new Log
 			{
 				LogLevel = "Error",
@@ -154,7 +154,7 @@ public class LogChartServiceTests
 				SourceContext = "Service3",
 				Timestamp = now.AddMinutes(-1),
 			},
-		};
+		];
 
 		MockRepository.Setup(r => r.GetLogsAsync(
 				null,
@@ -167,7 +167,7 @@ public class LogChartServiceTests
 			.ReturnsAsync(logs);
 
 		// Act
-		var result = await Service.GetRecentErrorsAsync(50, CancellationToken.None);
+		RecentErrorsResponse result = await Service.GetRecentErrorsAsync(50, CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -191,7 +191,7 @@ public class LogChartServiceTests
 			.ReturnsAsync(new List<Log>());
 
 		// Act
-		var result = await Service.GetLogsByLevelAsync(null, null, CancellationToken.None);
+		LogsByLevelResponse result = await Service.GetLogsByLevelAsync(null, null, CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -205,13 +205,13 @@ public class LogChartServiceTests
 	public async Task GetChartDataAsync_ReturnsDataForValidPeriodAsync(string period)
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var logs = new List<Log>
-		{
+		DateTime now = DateTime.UtcNow;
+		List<Log> logs =
+		[
 			new Log { LogLevel = "Error", Message = "Error 1", Timestamp = now.AddHours(-2) },
 			new Log { LogLevel = "Warning", Message = "Warning 1", Timestamp = now.AddHours(-1) },
 			new Log { LogLevel = "Critical", Message = "Critical 1", Timestamp = now.AddMinutes(-30) },
-		};
+		];
 
 		MockRepository.Setup(r => r.GetLogsAsync(
 				null,
@@ -224,7 +224,7 @@ public class LogChartServiceTests
 			.ReturnsAsync(logs);
 
 		// Act
-		var result = await Service.GetChartDataAsync(period, CancellationToken.None);
+		LogChartDataResponse result = await Service.GetChartDataAsync(period, CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -236,14 +236,14 @@ public class LogChartServiceTests
 	public async Task GetChartDataAsync_GroupsLogsByTimeIntervalAsync()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var logs = new List<Log>
-		{
+		DateTime now = DateTime.UtcNow;
+		List<Log> logs =
+		[
 			new Log { LogLevel = "Error", Message = "Error 1", Timestamp = now.AddHours(-2) },
 			new Log { LogLevel = "Error", Message = "Error 2", Timestamp = now.AddHours(-2).AddMinutes(15) },
 			new Log { LogLevel = "Warning", Message = "Warning 1", Timestamp = now.AddHours(-1) },
 			new Log { LogLevel = "Critical", Message = "Critical 1", Timestamp = now.AddMinutes(-30) },
-		};
+		];
 
 		MockRepository.Setup(r => r.GetLogsAsync(
 				null,
@@ -256,14 +256,14 @@ public class LogChartServiceTests
 			.ReturnsAsync(logs);
 
 		// Act
-		var result = await Service.GetChartDataAsync("24h", CancellationToken.None);
+		LogChartDataResponse result = await Service.GetChartDataAsync("24h", CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
 		Assert.NotEmpty(result.DataPoints);
-		var totalErrors = result.DataPoints.Sum(dp => dp.ErrorCount);
-		var totalWarnings = result.DataPoints.Sum(dp => dp.WarningCount);
-		var totalFatals = result.DataPoints.Sum(dp => dp.FatalCount);
+		int totalErrors = result.DataPoints.Sum(dp => dp.ErrorCount);
+		int totalWarnings = result.DataPoints.Sum(dp => dp.WarningCount);
+		int totalFatals = result.DataPoints.Sum(dp => dp.FatalCount);
 		Assert.Equal(2, totalErrors);
 		Assert.Equal(1, totalWarnings);
 		Assert.Equal(1, totalFatals);

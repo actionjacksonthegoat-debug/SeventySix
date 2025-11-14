@@ -24,7 +24,7 @@ namespace SeventySix.BusinessLogic.Services;
 ///
 /// SOLID Principles:
 /// - SRP: Only responsible for weather business logic
-/// - DIP: Depends on abstractions (IOpenWeatherApiClient, IValidator)
+/// - DIP: Depends on abstractions (IOpenWeatherapiClient, IValidator)
 /// - OCP: Open for extension (new weather operations)
 ///
 /// Business Rules:
@@ -33,36 +33,21 @@ namespace SeventySix.BusinessLogic.Services;
 /// - Responses are cached for 5 minutes
 /// - Stale cached data is returned on API failures
 /// </remarks>
-public class OpenWeatherService : IOpenWeatherService
+/// <remarks>
+/// Initializes a new instance of the <see cref="OpenWeatherService"/> class.
+/// </remarks>
+/// <param name="apiClient">OpenWeather API client.</param>
+/// <param name="weatherRequestValidator">Weather request validator.</param>
+/// <param name="historicalRequestValidator">Historical request validator.</param>
+/// <param name="rateLimitingService">Rate limiting service.</param>
+/// <param name="logger">Logger instance.</param>
+public class OpenWeatherService(
+	IOpenWeatherApiClient apiClient,
+	IValidator<WeatherRequest> weatherRequestValidator,
+	IValidator<HistoricalWeatherRequest> historicalRequestValidator,
+	IRateLimitingService rateLimitingService,
+	ILogger<OpenWeatherService> logger) : IOpenWeatherService
 {
-	private readonly IOpenWeatherApiClient ApiClient;
-	private readonly IValidator<WeatherRequest> WeatherRequestValidator;
-	private readonly IValidator<HistoricalWeatherRequest> HistoricalRequestValidator;
-	private readonly IRateLimitingService RateLimitingService;
-	private readonly ILogger<OpenWeatherService> Logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="OpenWeatherService"/> class.
-	/// </summary>
-	/// <param name="apiClient">OpenWeather API client.</param>
-	/// <param name="weatherRequestValidator">Weather request validator.</param>
-	/// <param name="historicalRequestValidator">Historical request validator.</param>
-	/// <param name="rateLimitingService">Rate limiting service.</param>
-	/// <param name="logger">Logger instance.</param>
-	public OpenWeatherService(
-		IOpenWeatherApiClient apiClient,
-		IValidator<WeatherRequest> weatherRequestValidator,
-		IValidator<HistoricalWeatherRequest> historicalRequestValidator,
-		IRateLimitingService rateLimitingService,
-		ILogger<OpenWeatherService> logger)
-	{
-		ApiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-		WeatherRequestValidator = weatherRequestValidator ?? throw new ArgumentNullException(nameof(weatherRequestValidator));
-		HistoricalRequestValidator = historicalRequestValidator ?? throw new ArgumentNullException(nameof(historicalRequestValidator));
-		RateLimitingService = rateLimitingService ?? throw new ArgumentNullException(nameof(rateLimitingService));
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-	}
-
 	/// <inheritdoc/>
 	public async Task<CurrentWeather?> GetCurrentWeatherAsync(
 		WeatherRequest request,
@@ -71,17 +56,12 @@ public class OpenWeatherService : IOpenWeatherService
 		ArgumentNullException.ThrowIfNull(request);
 
 		// Validate request
-		await WeatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
-
-		Logger.LogInformation(
-			"Getting current weather for coordinates: ({Latitude}, {Longitude})",
-			request.Latitude,
-			request.Longitude);
+		await weatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		try
 		{
 			// Set exclude to only get current weather
-			var modifiedRequest = new WeatherRequest
+			WeatherRequest modifiedRequest = new()
 			{
 				Latitude = request.Latitude,
 				Longitude = request.Longitude,
@@ -89,13 +69,15 @@ public class OpenWeatherService : IOpenWeatherService
 				Language = request.Language,
 				Exclude = "minutely,hourly,daily,alerts",
 			};
-			OneCallResponse? response = await ApiClient.GetOneCallDataAsync(modifiedRequest, cancellationToken);
+			OneCallResponse? response = await apiClient.GetOneCallDataAsync(modifiedRequest, cancellationToken);
 
 			return response?.Current;
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Failed to get current weather for ({Latitude}, {Longitude})", request.Latitude, request.Longitude);
+			logger.LogError(ex, 
+				"Failed to retrieve current weather data for Lat: {Latitude}, Lon: {Longitude}, Units: {Units}", 
+				request.Latitude, request.Longitude, request.Units);
 			throw new ExternalServiceException("Failed to retrieve current weather data", ex);
 		}
 	}
@@ -107,17 +89,12 @@ public class OpenWeatherService : IOpenWeatherService
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		await WeatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
-
-		Logger.LogInformation(
-			"Getting hourly forecast for coordinates: ({Latitude}, {Longitude})",
-			request.Latitude,
-			request.Longitude);
+		await weatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		try
 		{
 			// Set exclude to only get hourly forecast
-			var modifiedRequest = new WeatherRequest
+			WeatherRequest modifiedRequest = new()
 			{
 				Latitude = request.Latitude,
 				Longitude = request.Longitude,
@@ -125,13 +102,15 @@ public class OpenWeatherService : IOpenWeatherService
 				Language = request.Language,
 				Exclude = "current,minutely,daily,alerts",
 			};
-			OneCallResponse? response = await ApiClient.GetOneCallDataAsync(modifiedRequest, cancellationToken);
+			OneCallResponse? response = await apiClient.GetOneCallDataAsync(modifiedRequest, cancellationToken);
 
 			return response?.Hourly ?? Enumerable.Empty<HourlyForecast>();
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Failed to get hourly forecast for ({Latitude}, {Longitude})", request.Latitude, request.Longitude);
+			logger.LogError(ex, 
+				"Failed to retrieve hourly forecast for Lat: {Latitude}, Lon: {Longitude}", 
+				request.Latitude, request.Longitude);
 			throw new ExternalServiceException("Failed to retrieve hourly forecast data", ex);
 		}
 	}
@@ -143,17 +122,12 @@ public class OpenWeatherService : IOpenWeatherService
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		await WeatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
-
-		Logger.LogInformation(
-			"Getting daily forecast for coordinates: ({Latitude}, {Longitude})",
-			request.Latitude,
-			request.Longitude);
+		await weatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		try
 		{
 			// Set exclude to only get daily forecast
-			var modifiedRequest = new WeatherRequest
+			WeatherRequest modifiedRequest = new()
 			{
 				Latitude = request.Latitude,
 				Longitude = request.Longitude,
@@ -161,13 +135,15 @@ public class OpenWeatherService : IOpenWeatherService
 				Language = request.Language,
 				Exclude = "current,minutely,hourly,alerts",
 			};
-			OneCallResponse? response = await ApiClient.GetOneCallDataAsync(modifiedRequest, cancellationToken);
+			OneCallResponse? response = await apiClient.GetOneCallDataAsync(modifiedRequest, cancellationToken);
 
 			return response?.Daily ?? Enumerable.Empty<DailyForecast>();
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Failed to get daily forecast for ({Latitude}, {Longitude})", request.Latitude, request.Longitude);
+			logger.LogError(ex, 
+				"Failed to retrieve daily forecast for Lat: {Latitude}, Lon: {Longitude}", 
+				request.Latitude, request.Longitude);
 			throw new ExternalServiceException("Failed to retrieve daily forecast data", ex);
 		}
 	}
@@ -179,17 +155,12 @@ public class OpenWeatherService : IOpenWeatherService
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		await WeatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
-
-		Logger.LogInformation(
-			"Getting weather alerts for coordinates: ({Latitude}, {Longitude})",
-			request.Latitude,
-			request.Longitude);
+		await weatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		try
 		{
 			// Set exclude to only get alerts
-			var modifiedRequest = new WeatherRequest
+			WeatherRequest modifiedRequest = new()
 			{
 				Latitude = request.Latitude,
 				Longitude = request.Longitude,
@@ -197,13 +168,15 @@ public class OpenWeatherService : IOpenWeatherService
 				Language = request.Language,
 				Exclude = "current,minutely,hourly,daily",
 			};
-			OneCallResponse? response = await ApiClient.GetOneCallDataAsync(modifiedRequest, cancellationToken);
+			OneCallResponse? response = await apiClient.GetOneCallDataAsync(modifiedRequest, cancellationToken);
 
 			return response?.Alerts ?? Enumerable.Empty<WeatherAlert>();
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Failed to get weather alerts for ({Latitude}, {Longitude})", request.Latitude, request.Longitude);
+			logger.LogError(ex, 
+				"Failed to retrieve weather alerts for Lat: {Latitude}, Lon: {Longitude}", 
+				request.Latitude, request.Longitude);
 			throw new ExternalServiceException("Failed to retrieve weather alerts", ex);
 		}
 	}
@@ -215,20 +188,17 @@ public class OpenWeatherService : IOpenWeatherService
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		await WeatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
-
-		Logger.LogInformation(
-			"Getting complete weather data for coordinates: ({Latitude}, {Longitude})",
-			request.Latitude,
-			request.Longitude);
+		await weatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		try
 		{
-			return await ApiClient.GetOneCallDataAsync(request, cancellationToken);
+			return await apiClient.GetOneCallDataAsync(request, cancellationToken);
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Failed to get complete weather data for ({Latitude}, {Longitude})", request.Latitude, request.Longitude);
+			logger.LogError(ex, 
+				"Failed to retrieve complete weather data for Lat: {Latitude}, Lon: {Longitude}, Exclude: {Exclude}", 
+				request.Latitude, request.Longitude, request.Exclude ?? "none");
 			throw new ExternalServiceException("Failed to retrieve complete weather data", ex);
 		}
 	}
@@ -240,27 +210,17 @@ public class OpenWeatherService : IOpenWeatherService
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		await HistoricalRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
-
-		var requestedDate = DateTimeOffset.FromUnixTimeSeconds(request.Timestamp).UtcDateTime;
-		Logger.LogInformation(
-			"Getting historical weather for coordinates: ({Latitude}, {Longitude}) at {Date:yyyy-MM-dd HH:mm:ss} UTC",
-			request.Latitude,
-			request.Longitude,
-			requestedDate);
+		await historicalRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		try
 		{
-			return await ApiClient.GetHistoricalDataAsync(request, cancellationToken);
+			return await apiClient.GetHistoricalDataAsync(request, cancellationToken);
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(
-				ex,
-				"Failed to get historical weather for ({Latitude}, {Longitude}) at {Date}",
-				request.Latitude,
-				request.Longitude,
-				requestedDate);
+			logger.LogError(ex, 
+				"Failed to retrieve historical weather for Lat: {Latitude}, Lon: {Longitude}, Timestamp: {Timestamp}", 
+				request.Latitude, request.Longitude, request.Timestamp);
 			throw new ExternalServiceException("Failed to retrieve historical weather data", ex);
 		}
 	}
@@ -272,17 +232,12 @@ public class OpenWeatherService : IOpenWeatherService
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		await WeatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
-
-		Logger.LogInformation(
-			"Getting minutely forecast for coordinates: ({Latitude}, {Longitude})",
-			request.Latitude,
-			request.Longitude);
+		await weatherRequestValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		try
 		{
 			// Set exclude to only get minutely forecast
-			var modifiedRequest = new WeatherRequest
+			WeatherRequest modifiedRequest = new()
 			{
 				Latitude = request.Latitude,
 				Longitude = request.Longitude,
@@ -290,32 +245,25 @@ public class OpenWeatherService : IOpenWeatherService
 				Language = request.Language,
 				Exclude = "current,hourly,daily,alerts",
 			};
-			OneCallResponse? response = await ApiClient.GetOneCallDataAsync(modifiedRequest, cancellationToken);
+			OneCallResponse? response = await apiClient.GetOneCallDataAsync(modifiedRequest, cancellationToken);
 
 			return response?.Minutely ?? Enumerable.Empty<MinutelyForecast>();
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Failed to get minutely forecast for ({Latitude}, {Longitude})", request.Latitude, request.Longitude);
+			logger.LogError(ex, 
+				"Failed to retrieve minutely forecast for Lat: {Latitude}, Lon: {Longitude}", 
+				request.Latitude, request.Longitude);
 			throw new ExternalServiceException("Failed to retrieve minutely forecast data", ex);
 		}
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> CanMakeApiCallAsync(CancellationToken cancellationToken = default)
-	{
-		return await ApiClient.CanMakeRequestAsync(cancellationToken);
-	}
+	public async Task<bool> CanMakeApiCallAsync(CancellationToken cancellationToken = default) => await apiClient.CanMakeRequestAsync(cancellationToken);
 
 	/// <inheritdoc/>
-	public async Task<int> GetRemainingApiQuotaAsync(CancellationToken cancellationToken = default)
-	{
-		return await ApiClient.GetRemainingQuotaAsync(cancellationToken);
-	}
+	public async Task<int> GetRemainingApiQuotaAsync(CancellationToken cancellationToken = default) => await apiClient.GetRemainingQuotaAsync(cancellationToken);
 
 	/// <inheritdoc/>
-	public TimeSpan GetTimeUntilReset()
-	{
-		return RateLimitingService.GetTimeUntilReset();
-	}
+	public TimeSpan GetTimeUntilReset() => rateLimitingService.GetTimeUntilReset();
 }

@@ -28,7 +28,7 @@ public class HealthControllerTests
 	public async Task GetHealthStatus_ReturnsOkResult_WithHealthStatusAsync()
 	{
 		// Arrange
-		var expectedStatus = new HealthStatusResponse
+		HealthStatusResponse expectedStatus = new()
 		{
 			Status = "Healthy",
 			CheckedAt = DateTime.UtcNow,
@@ -74,11 +74,11 @@ public class HealthControllerTests
 			.ReturnsAsync(expectedStatus);
 
 		// Act
-		var result = await Controller.GetHealthStatusAsync(CancellationToken.None);
+		ActionResult<HealthStatusResponse> result = await Controller.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedStatus = Assert.IsType<HealthStatusResponse>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		HealthStatusResponse returnedStatus = Assert.IsType<HealthStatusResponse>(okResult.Value);
 		Assert.Equal("Healthy", returnedStatus.Status);
 		Assert.True(returnedStatus.Database.IsConnected);
 		Assert.Equal(5, returnedStatus.ErrorQueue.QueuedItems);
@@ -89,7 +89,7 @@ public class HealthControllerTests
 	public async Task GetHealthStatus_ReturnsDegradedStatus_WhenComponentsAreDegradedAsync()
 	{
 		// Arrange
-		var expectedStatus = new HealthStatusResponse
+		HealthStatusResponse expectedStatus = new()
 		{
 			Status = "Degraded",
 			CheckedAt = DateTime.UtcNow,
@@ -102,7 +102,7 @@ public class HealthControllerTests
 			},
 			ExternalApis = new ExternalApiHealthResponse
 			{
-				Apis = new Dictionary<string, ApiHealthStatus>(),
+				Apis = [],
 			},
 			ErrorQueue = new QueueHealthResponse
 			{
@@ -118,11 +118,11 @@ public class HealthControllerTests
 			.ReturnsAsync(expectedStatus);
 
 		// Act
-		var result = await Controller.GetHealthStatusAsync(CancellationToken.None);
+		ActionResult<HealthStatusResponse> result = await Controller.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedStatus = Assert.IsType<HealthStatusResponse>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		HealthStatusResponse returnedStatus = Assert.IsType<HealthStatusResponse>(okResult.Value);
 		Assert.Equal("Degraded", returnedStatus.Status);
 		Assert.Equal("Degraded", returnedStatus.Database.Status);
 		Assert.Equal(100, returnedStatus.ErrorQueue.QueuedItems);
@@ -132,7 +132,7 @@ public class HealthControllerTests
 	public async Task GetHealthStatus_ReturnsUnhealthyStatus_WhenCriticalComponentsDownAsync()
 	{
 		// Arrange
-		var expectedStatus = new HealthStatusResponse
+		HealthStatusResponse expectedStatus = new()
 		{
 			Status = "Unhealthy",
 			CheckedAt = DateTime.UtcNow,
@@ -145,7 +145,7 @@ public class HealthControllerTests
 			},
 			ExternalApis = new ExternalApiHealthResponse
 			{
-				Apis = new Dictionary<string, ApiHealthStatus>(),
+				Apis = [],
 			},
 			ErrorQueue = new QueueHealthResponse
 			{
@@ -161,11 +161,11 @@ public class HealthControllerTests
 			.ReturnsAsync(expectedStatus);
 
 		// Act
-		var result = await Controller.GetHealthStatusAsync(CancellationToken.None);
+		ActionResult<HealthStatusResponse> result = await Controller.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedStatus = Assert.IsType<HealthStatusResponse>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		HealthStatusResponse returnedStatus = Assert.IsType<HealthStatusResponse>(okResult.Value);
 		Assert.Equal("Unhealthy", returnedStatus.Status);
 		Assert.False(returnedStatus.Database.IsConnected);
 		Assert.True(returnedStatus.ErrorQueue.CircuitBreakerOpen);

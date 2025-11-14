@@ -105,7 +105,7 @@ public class ExternalApiHealthResponse
 	/// <summary>
 	/// Gets or sets the dictionary of API health statuses keyed by API name.
 	/// </summary>
-	public Dictionary<string, ApiHealthStatus> Apis { get; set; } = new();
+	public Dictionary<string, ApiHealthStatus> Apis { get; set; } = [];
 }
 
 /// <summary>

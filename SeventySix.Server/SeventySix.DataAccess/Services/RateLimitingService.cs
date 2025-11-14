@@ -18,6 +18,22 @@ namespace SeventySix.DataAccess.Services;
 /// Scoped service that tracks API calls per 24-hour period (midnight to midnight UTC).
 /// Uses PostgreSQL for persistence across application restarts and horizontal scaling.
 ///
+/// IMPORTANT - TWO-LAYER RATE LIMITING:
+/// This service enforces EXTERNAL API quotas (e.g., OpenWeather 250 calls/day) to prevent
+/// exceeding paid API limits. This is SEPARATE from HTTP middleware rate limiting.
+///
+/// - Layer 1 (HTTP): AttributeBasedRateLimitingMiddleware - protects YOUR API from client abuse
+///   (Per IP + endpoint, in-memory, resets on restart)
+///
+/// - Layer 2 (External): RateLimitingService (this) - protects YOU from exceeding external API quotas
+///   (Application-wide, database-backed, persists across restarts)
+///
+/// This ensures you NEVER exceed external API limits regardless of:
+/// - Number of concurrent requests to your API
+/// - Application restarts
+/// - Multiple instances (horizontal scaling)
+/// - Direct vs indirect calls to external APIs
+///
 /// Design Patterns:
 /// - Repository Pattern: Delegates data access to IThirdPartyApiRequestRepository
 /// - Dependency Injection: All dependencies injected via constructor
@@ -65,8 +81,8 @@ public class RateLimitingService : IRateLimitingService
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		// If no record exists for today, we can make a request
 		if (request == null)
@@ -103,12 +119,12 @@ public class RateLimitingService : IRateLimitingService
 		// The TransactionManager handles all race conditions and concurrency issues transparently
 		return await TransactionManager.ExecuteInTransactionAsync(async ct =>
 		{
-			var today = DateOnly.FromDateTime(DateTime.UtcNow);
+			DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 
 			// Fetch the current record within the transaction
 			// Repository now uses tracking queries when inside a transaction
 			// This ensures we see the latest committed data from other transactions
-			var request = await Repository.GetByApiNameAndDateAsync(apiName, today, ct);
+			ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, ct);
 
 			if (request == null)
 			{
@@ -181,8 +197,8 @@ public class RateLimitingService : IRateLimitingService
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		return request?.CallCount ?? 0;
 	}
@@ -192,8 +208,8 @@ public class RateLimitingService : IRateLimitingService
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		int currentCount = request?.CallCount ?? 0;
 		return Math.Max(0, Options.DailyCallLimit - currentCount);
@@ -212,8 +228,8 @@ public class RateLimitingService : IRateLimitingService
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		if (request == null)
 		{

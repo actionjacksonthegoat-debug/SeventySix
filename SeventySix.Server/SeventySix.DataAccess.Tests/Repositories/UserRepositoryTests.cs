@@ -16,17 +16,17 @@ public class UserRepositoryTests
 	public async Task GetAllAsync_ShouldReturnEmptyList_WhenNoUsersExistAsync()
 	{
 		// Arrange - Create repository without seed data for clean test
-		var repository = new UserRepository();
+		UserRepository repository = new();
 
 		// Clear seed data
-		var seededUsers = await repository.GetAllAsync(CancellationToken.None);
-		foreach (var user in seededUsers)
+		IEnumerable<User> seededUsers = await repository.GetAllAsync(CancellationToken.None);
+		foreach (User user in seededUsers)
 		{
 			await repository.DeleteAsync(user.Id, CancellationToken.None);
 		}
 
 		// Act
-		var result = await repository.GetAllAsync(CancellationToken.None);
+		IEnumerable<User> result = await repository.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		result.Should().NotBeNull();
@@ -37,8 +37,8 @@ public class UserRepositoryTests
 	public async Task CreateAsync_ShouldCreateUser_WithValidDataAsync()
 	{
 		// Arrange
-		var repository = new UserRepository();
-		var user = new User
+		UserRepository repository = new();
+		User user = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com",
@@ -47,7 +47,7 @@ public class UserRepositoryTests
 		};
 
 		// Act
-		var result = await repository.CreateAsync(user, CancellationToken.None);
+		User result = await repository.CreateAsync(user, CancellationToken.None);
 
 		// Assert
 		result.Should().NotBeNull();
@@ -63,16 +63,16 @@ public class UserRepositoryTests
 	public async Task GetByIdAsync_ShouldReturnUser_WhenUserExistsAsync()
 	{
 		// Arrange
-		var repository = new UserRepository();
-		var user = new User
+		UserRepository repository = new();
+		User user = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com"
 		};
-		var created = await repository.CreateAsync(user, CancellationToken.None);
+		User created = await repository.CreateAsync(user, CancellationToken.None);
 
 		// Act
-		var result = await repository.GetByIdAsync(created.Id, CancellationToken.None);
+		User? result = await repository.GetByIdAsync(created.Id, CancellationToken.None);
 
 		// Assert
 		result.Should().NotBeNull();
@@ -84,10 +84,10 @@ public class UserRepositoryTests
 	public async Task GetByIdAsync_ShouldReturnNull_WhenUserDoesNotExistAsync()
 	{
 		// Arrange
-		var repository = new UserRepository();
+		UserRepository repository = new();
 
 		// Act
-		var result = await repository.GetByIdAsync(999, CancellationToken.None);
+		User? result = await repository.GetByIdAsync(999, CancellationToken.None);
 
 		// Assert
 		result.Should().BeNull();
@@ -97,19 +97,19 @@ public class UserRepositoryTests
 	public async Task UpdateAsync_ShouldUpdateUser_WhenUserExistsAsync()
 	{
 		// Arrange
-		var repository = new UserRepository();
-		var user = new User
+		UserRepository repository = new();
+		User user = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com"
 		};
-		var created = await repository.CreateAsync(user, CancellationToken.None);
+		User created = await repository.CreateAsync(user, CancellationToken.None);
 
 		created.Username = "updateduser";
 		created.Email = "updated@example.com";
 
 		// Act
-		var result = await repository.UpdateAsync(created, CancellationToken.None);
+		User result = await repository.UpdateAsync(created, CancellationToken.None);
 
 		// Assert
 		result.Should().NotBeNull();
@@ -121,22 +121,22 @@ public class UserRepositoryTests
 	public async Task DeleteAsync_ShouldReturnTrue_WhenUserExistsAsync()
 	{
 		// Arrange
-		var repository = new UserRepository();
-		var user = new User
+		UserRepository repository = new();
+		User user = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com"
 		};
-		var created = await repository.CreateAsync(user, CancellationToken.None);
+		User created = await repository.CreateAsync(user, CancellationToken.None);
 
 		// Act
-		var result = await repository.DeleteAsync(created.Id, CancellationToken.None);
+		bool result = await repository.DeleteAsync(created.Id, CancellationToken.None);
 
 		// Assert
 		result.Should().BeTrue();
 
 		// Verify user is deleted
-		var deletedUser = await repository.GetByIdAsync(created.Id, CancellationToken.None);
+		User? deletedUser = await repository.GetByIdAsync(created.Id, CancellationToken.None);
 		deletedUser.Should().BeNull();
 	}
 
@@ -144,10 +144,10 @@ public class UserRepositoryTests
 	public async Task DeleteAsync_ShouldReturnFalse_WhenUserDoesNotExistAsync()
 	{
 		// Arrange
-		var repository = new UserRepository();
+		UserRepository repository = new();
 
 		// Act
-		var result = await repository.DeleteAsync(999, CancellationToken.None);
+		bool result = await repository.DeleteAsync(999, CancellationToken.None);
 
 		// Assert
 		result.Should().BeFalse();
@@ -157,25 +157,25 @@ public class UserRepositoryTests
 	public async Task GetAllAsync_ShouldReturnMultipleUsers_WhenUsersExistAsync()
 	{
 		// Arrange
-		var repository = new UserRepository();
+		UserRepository repository = new();
 
 		// Clear seed data for clean test
-		var seededUsers = await repository.GetAllAsync(CancellationToken.None);
-		foreach (var seeded in seededUsers)
+		IEnumerable<User> seededUsers = await repository.GetAllAsync(CancellationToken.None);
+		foreach (User seeded in seededUsers)
 		{
 			await repository.DeleteAsync(seeded.Id, CancellationToken.None);
 		}
 
-		var user1 = new User { Username = "user1", Email = "user1@example.com" };
-		var user2 = new User { Username = "user2", Email = "user2@example.com" };
-		var user3 = new User { Username = "user3", Email = "user3@example.com" };
+		User user1 = new() { Username = "user1", Email = "user1@example.com" };
+		User user2 = new() { Username = "user2", Email = "user2@example.com" };
+		User user3 = new() { Username = "user3", Email = "user3@example.com" };
 
 		await repository.CreateAsync(user1, CancellationToken.None);
 		await repository.CreateAsync(user2, CancellationToken.None);
 		await repository.CreateAsync(user3, CancellationToken.None);
 
 		// Act
-		var result = await repository.GetAllAsync(CancellationToken.None);
+		IEnumerable<User> result = await repository.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		result.Should().HaveCount(3);

@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SeventySix.Api.Controllers;
@@ -19,6 +20,7 @@ public class LogsControllerLogChartTests
 	private readonly Mock<ILogRepository> MockLogRepository;
 	private readonly Mock<ILogChartService> MockLogChartService;
 	private readonly Mock<ILogger<LogsController>> MockLogger;
+	private readonly Mock<IOutputCacheStore> MockOutputCacheStore;
 	private readonly LogsController Controller;
 
 	public LogsControllerLogChartTests()
@@ -26,17 +28,19 @@ public class LogsControllerLogChartTests
 		MockLogRepository = new Mock<ILogRepository>();
 		MockLogChartService = new Mock<ILogChartService>();
 		MockLogger = new Mock<ILogger<LogsController>>();
+		MockOutputCacheStore = new Mock<IOutputCacheStore>();
 		Controller = new LogsController(
 			MockLogRepository.Object,
 			MockLogChartService.Object,
-			MockLogger.Object);
+			MockLogger.Object,
+			MockOutputCacheStore.Object);
 	}
 
 	[Fact]
 	public async Task GetLogsByLevel_ReturnsOkResult_WithLogCountsAsync()
 	{
 		// Arrange
-		var expectedResponse = new LogsByLevelResponse
+		LogsByLevelResponse expectedResponse = new()
 		{
 			LogCounts = new Dictionary<string, int>
 			{
@@ -55,11 +59,11 @@ public class LogsControllerLogChartTests
 			.ReturnsAsync(expectedResponse);
 
 		// Act
-		var result = await Controller.GetLogsByLevelAsync(null, null, CancellationToken.None);
+		ActionResult<LogsByLevelResponse> result = await Controller.GetLogsByLevelAsync(null, null, CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedData = Assert.IsType<LogsByLevelResponse>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		LogsByLevelResponse returnedData = Assert.IsType<LogsByLevelResponse>(okResult.Value);
 		Assert.Equal(4, returnedData.LogCounts.Count);
 		Assert.Equal(150, returnedData.LogCounts["Information"]);
 		Assert.Equal(5, returnedData.LogCounts["Error"]);
@@ -69,15 +73,15 @@ public class LogsControllerLogChartTests
 	public async Task GetLogsByHour_ReturnsOkResult_WithHourlyDataAsync()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var expectedResponse = new LogsByHourResponse
+		DateTime now = DateTime.UtcNow;
+		LogsByHourResponse expectedResponse = new()
 		{
-			HourlyData = new List<HourlyLogData>
-			{
-				new HourlyLogData { Hour = now.AddHours(-2), Count = 100 },
-				new HourlyLogData { Hour = now.AddHours(-1), Count = 150 },
-				new HourlyLogData { Hour = now, Count = 75 },
-			},
+			HourlyData =
+			[
+				new() { Hour = now.AddHours(-2), Count = 100 },
+				new() { Hour = now.AddHours(-1), Count = 150 },
+				new() { Hour = now, Count = 75 },
+			],
 		};
 
 		MockLogChartService
@@ -85,11 +89,11 @@ public class LogsControllerLogChartTests
 			.ReturnsAsync(expectedResponse);
 
 		// Act
-		var result = await Controller.GetLogsByHourAsync(24, CancellationToken.None);
+		ActionResult<LogsByHourResponse> result = await Controller.GetLogsByHourAsync(24, CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedData = Assert.IsType<LogsByHourResponse>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		LogsByHourResponse returnedData = Assert.IsType<LogsByHourResponse>(okResult.Value);
 		Assert.Equal(3, returnedData.HourlyData.Count);
 		Assert.Equal(100, returnedData.HourlyData[0].Count);
 	}
@@ -98,7 +102,7 @@ public class LogsControllerLogChartTests
 	public async Task GetLogsBySource_ReturnsOkResult_WithSourceCountsAsync()
 	{
 		// Arrange
-		var expectedResponse = new LogsBySourceResponse
+		LogsBySourceResponse expectedResponse = new()
 		{
 			SourceCounts = new Dictionary<string, int>
 			{
@@ -113,11 +117,11 @@ public class LogsControllerLogChartTests
 			.ReturnsAsync(expectedResponse);
 
 		// Act
-		var result = await Controller.GetLogsBySourceAsync(10, CancellationToken.None);
+		ActionResult<LogsBySourceResponse> result = await Controller.GetLogsBySourceAsync(10, CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedData = Assert.IsType<LogsBySourceResponse>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		LogsBySourceResponse returnedData = Assert.IsType<LogsBySourceResponse>(okResult.Value);
 		Assert.Equal(3, returnedData.SourceCounts.Count);
 		Assert.Equal(500, returnedData.SourceCounts["WeatherController"]);
 	}
@@ -126,26 +130,24 @@ public class LogsControllerLogChartTests
 	public async Task GetRecentErrors_ReturnsOkResult_WithRecentErrorsAsync()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var expectedResponse = new RecentErrorsResponse
+		DateTime now = DateTime.UtcNow;
+		RecentErrorsResponse expectedResponse = new()
 		{
-			Errors = new List<ErrorLogSummary>
-			{
-				new ErrorLogSummary
-				{
+			Errors =
+			[
+				new() {
 					Timestamp = now.AddMinutes(-5),
 					Level = "Error",
 					Message = "Database connection failed",
 					Source = "DatabaseService",
 				},
-				new ErrorLogSummary
-				{
+				new() {
 					Timestamp = now.AddMinutes(-2),
 					Level = "Critical",
 					Message = "API rate limit exceeded",
 					Source = "OpenWeatherService",
 				},
-			},
+			],
 		};
 
 		MockLogChartService
@@ -153,11 +155,11 @@ public class LogsControllerLogChartTests
 			.ReturnsAsync(expectedResponse);
 
 		// Act
-		var result = await Controller.GetRecentErrorsAsync(50, CancellationToken.None);
+		ActionResult<RecentErrorsResponse> result = await Controller.GetRecentErrorsAsync(50, CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedData = Assert.IsType<RecentErrorsResponse>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		RecentErrorsResponse returnedData = Assert.IsType<RecentErrorsResponse>(okResult.Value);
 		Assert.Equal(2, returnedData.Errors.Count);
 		Assert.Equal("Error", returnedData.Errors[0].Level);
 		Assert.Equal("Critical", returnedData.Errors[1].Level);
@@ -167,9 +169,9 @@ public class LogsControllerLogChartTests
 	public async Task GetLogsByLevel_UsesDefaultDates_WhenNotProvidedAsync()
 	{
 		// Arrange
-		var expectedResponse = new LogsByLevelResponse
+		LogsByLevelResponse expectedResponse = new()
 		{
-			LogCounts = new Dictionary<string, int>(),
+			LogCounts = [],
 		};
 
 		MockLogChartService
@@ -189,7 +191,7 @@ public class LogsControllerLogChartTests
 	public async Task GetLogsByHour_UsesDefaultHoursBack_WhenNotProvidedAsync()
 	{
 		// Arrange
-		var expectedResponse = new LogsByHourResponse { HourlyData = new List<HourlyLogData>() };
+		LogsByHourResponse expectedResponse = new() { HourlyData = [] };
 
 		MockLogChartService
 			.Setup(s => s.GetLogsByHourAsync(24, It.IsAny<CancellationToken>()))

@@ -23,6 +23,15 @@ export default [
 					varsIgnorePattern: "^_"
 				}
 			],
+			// Enforce explicit type annotations on variables and properties
+			"@typescript-eslint/typedef": [
+				"error",
+				{
+					variableDeclaration: true,
+					propertyDeclaration: true,
+					memberVariableDeclaration: true
+				}
+			],
 			"no-console": [
 				"warn",
 				{

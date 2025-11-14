@@ -21,7 +21,7 @@ public class LogChartDataResponse
 	/// <summary>
 	/// Gets or sets the list of data points for the chart.
 	/// </summary>
-	public List<LogChartDataPoint> DataPoints { get; set; } = new();
+	public List<LogChartDataPoint> DataPoints { get; set; } = [];
 }
 
 /// <summary>

@@ -118,6 +118,7 @@ ij_typescript_spaces_around_equality_operators = true
 ij_typescript_spaces_around_relational_operators = true
 ij_typescript_spaces_around_additive_operators = true
 ij_typescript_spaces_around_multiplicative_operators = true
+
 [*.md]
 # Disable line length restrictions for markdown
 max_line_length = off
@@ -385,6 +386,13 @@ dotnet_style_readonly_field = true:suggestion
 
 # Prefer this specific order of modifiers
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
+
+# --- Variable Type Preferences ---
+# Discourage use of 'var' keyword - require explicit types for clarity
+# var x = "test"; → string x = "test";
+csharp_style_var_for_built_in_types = false:warning
+csharp_style_var_when_type_is_apparent = false:warning
+csharp_style_var_elsewhere = false:warning
 
 # --- Expression-Level Preferences ---
 # Prefer object initializers: new Person { Name = "John" } vs var p = new Person(); p.Name = "John";

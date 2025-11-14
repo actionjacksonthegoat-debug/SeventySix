@@ -46,7 +46,7 @@ public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClass
 		const double LONGITUDE = -74.0060;
 
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			$"/api/weatherforecast?latitude={LATITUDE}&longitude={LONGITUDE}&units=metric");
 
 		// Assert
@@ -58,7 +58,7 @@ public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClass
 		}
 
 		response.StatusCode.Should().Be(HttpStatusCode.OK);
-		var weatherData = await response.Content.ReadFromJsonAsync<OneCallResponse>();
+		OneCallResponse? weatherData = await response.Content.ReadFromJsonAsync<OneCallResponse>();
 		weatherData.Should().NotBeNull();
 		weatherData!.Latitude.Should().BeApproximately(LATITUDE, 0.01);
 		weatherData.Longitude.Should().BeApproximately(LONGITUDE, 0.01);
@@ -74,8 +74,8 @@ public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClass
 	public async Task RateLimiting_ExceedsQuota_Returns503Async()
 	{
 		// Arrange
-		using var scope = Factory.Services.CreateScope();
-		var rateLimiter = scope.ServiceProvider.GetRequiredService<IRateLimitingService>();
+		using IServiceScope scope = Factory.Services.CreateScope();
+		IRateLimitingService rateLimiter = scope.ServiceProvider.GetRequiredService<IRateLimitingService>();
 
 		// Consume all available quota
 		for (int i = 0; i < 1000; i++)
@@ -84,7 +84,7 @@ public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClass
 		}
 
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			"/api/weatherforecast/current?latitude=40.7128&longitude=-74.0060");
 
 		// Assert - GlobalExceptionMiddleware returns 503 for InvalidOperationException (rate limit)
@@ -102,7 +102,7 @@ public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClass
 		const string URL = "/api/weatherforecast/current?latitude=40.7128&longitude=-74.0060";
 
 		// Act - First request
-		var response1 = await Client.GetAsync(URL);
+		HttpResponseMessage response1 = await Client.GetAsync(URL);
 		if (response1.StatusCode != HttpStatusCode.OK)
 		{
 			Assert.True(true, "Skipping cache test - service not available");
@@ -110,16 +110,16 @@ public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClass
 		}
 
 		// Get quota before second request
-		using var scope = Factory.Services.CreateScope();
-		var rateLimiter = scope.ServiceProvider.GetRequiredService<IRateLimitingService>();
-		var quotaBefore = await rateLimiter.GetRemainingQuotaAsync("OpenWeather");
+		using IServiceScope scope = Factory.Services.CreateScope();
+		IRateLimitingService rateLimiter = scope.ServiceProvider.GetRequiredService<IRateLimitingService>();
+		int quotaBefore = await rateLimiter.GetRemainingQuotaAsync("OpenWeather");
 
 		// Act - Second request (should use cache)
-		var response2 = await Client.GetAsync(URL);
+		HttpResponseMessage response2 = await Client.GetAsync(URL);
 
 		// Assert
 		response2.StatusCode.Should().Be(HttpStatusCode.OK);
-		var quotaAfter = await rateLimiter.GetRemainingQuotaAsync("OpenWeather");
+		int quotaAfter = await rateLimiter.GetRemainingQuotaAsync("OpenWeather");
 
 		// Quota should be same (cache hit) or only decremented by 1 (cache miss but still working)
 		quotaAfter.Should().BeGreaterThanOrEqualTo(quotaBefore - 1, "Cache should prevent multiple API calls");
@@ -139,7 +139,7 @@ public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClass
 	public async Task Validation_InvalidCoordinates_Returns400Async(double latitude, double longitude)
 	{
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			$"/api/weatherforecast/current?latitude={latitude}&longitude={longitude}");
 
 		// Assert
@@ -154,10 +154,10 @@ public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClass
 	public async Task GetHistoricalWeather_ValidTimestamp_ReturnsDataAsync()
 	{
 		// Arrange
-		var yesterday = DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeSeconds();
+		long yesterday = DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeSeconds();
 
 		// Act
-		var response = await Client.GetAsync(
+		HttpResponseMessage response = await Client.GetAsync(
 			$"/api/weatherforecast/historical?latitude=40.7128&longitude=-74.0060&timestamp={yesterday}");
 
 		// Assert
@@ -178,11 +178,11 @@ public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClass
 	public async Task GetQuota_ReturnsAccurateInformationAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/weatherforecast/quota");
+		HttpResponseMessage response = await Client.GetAsync("/api/weatherforecast/quota");
 
 		// Assert
 		response.StatusCode.Should().Be(HttpStatusCode.OK);
-		var content = await response.Content.ReadAsStringAsync();
+		string content = await response.Content.ReadAsStringAsync();
 		content.Should().Contain("remainingCalls");
 		content.Should().Contain("canMakeCall");
 		content.Should().Contain("resetsIn");
@@ -200,19 +200,19 @@ public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClass
 		const double LATITUDE = 51.5074; // London
 		const double LONGITUDE = -0.1278;
 
-		var endpoints = new[]
-		{
+		string[] endpoints =
+		[
 			$"/api/weatherforecast?latitude={LATITUDE}&longitude={LONGITUDE}",
 			$"/api/weatherforecast/current?latitude={LATITUDE}&longitude={LONGITUDE}",
-		};
+		];
 
 		// Act & Assert
-		foreach (var endpoint in endpoints)
+		foreach (string? endpoint in endpoints)
 		{
-			var response = await Client.GetAsync(endpoint);
+			HttpResponseMessage response = await Client.GetAsync(endpoint);
 			if (response.StatusCode == HttpStatusCode.OK)
 			{
-				var content = await response.Content.ReadAsStringAsync();
+				string content = await response.Content.ReadAsStringAsync();
 				content.Replace(" ", string.Empty).Should().Contain($"\"latitude\":{LATITUDE}");
 			}
 		}

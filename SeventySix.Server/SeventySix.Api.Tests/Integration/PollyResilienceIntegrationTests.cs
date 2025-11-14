@@ -29,8 +29,8 @@ public class PollyResilienceIntegrationTests
 	public async Task RetryPolicy_TransientFailure_RetriesThreeTimesAsync()
 	{
 		// Arrange
-		var callCount = 0;
-		var handlerMock = new Mock<HttpMessageHandler>();
+		int callCount = 0;
+		Mock<HttpMessageHandler> handlerMock = new();
 		handlerMock
 			.Protected()
 			.Setup<Task<HttpResponseMessage>>(
@@ -48,19 +48,19 @@ public class PollyResilienceIntegrationTests
 					};
 			});
 
-		var httpClient = new HttpClient(handlerMock.Object)
+		HttpClient httpClient = new(handlerMock.Object)
 		{
 			BaseAddress = new Uri("https://api.openweathermap.org/"),
 		};
 
-		var cache = new MemoryCache(new MemoryCacheOptions());
-		var rateLimiterMock = new Mock<IRateLimitingService>();
+		MemoryCache cache = new(new MemoryCacheOptions());
+		Mock<IRateLimitingService> rateLimiterMock = new();
 		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-		var loggerMock = new Mock<ILogger<PollyIntegrationClient>>();
+		Mock<ILogger<PollyIntegrationClient>> loggerMock = new();
 
-		var options = Options.Create(new PollyOptions
+		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
 			RetryCount = 3,
 			RetryDelaySeconds = 1,
@@ -70,10 +70,10 @@ public class PollyResilienceIntegrationTests
 			TimeoutSeconds = 10,
 		});
 
-		var client = new PollyIntegrationClient(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
+		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
 
 		// Act
-		var response = await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None);        // Assert
+		dynamic? response = await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None);        // Assert
 		callCount.Should().Be(3, "Should retry twice (3 attempts total)");
 	}
 
@@ -85,7 +85,7 @@ public class PollyResilienceIntegrationTests
 	public async Task CircuitBreaker_ExceedsThreshold_OpensCircuitAsync()
 	{
 		// Arrange
-		var handlerMock = new Mock<HttpMessageHandler>();
+		Mock<HttpMessageHandler> handlerMock = new();
 		handlerMock
 			.Protected()
 			.Setup<Task<HttpResponseMessage>>(
@@ -94,19 +94,19 @@ public class PollyResilienceIntegrationTests
 				ItExpr.IsAny<CancellationToken>())
 			.ReturnsAsync(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
 
-		var httpClient = new HttpClient(handlerMock.Object)
+		HttpClient httpClient = new(handlerMock.Object)
 		{
 			BaseAddress = new Uri("https://api.openweathermap.org/"),
 		};
 
-		var cache = new MemoryCache(new MemoryCacheOptions());
-		var rateLimiterMock = new Mock<IRateLimitingService>();
+		MemoryCache cache = new(new MemoryCacheOptions());
+		Mock<IRateLimitingService> rateLimiterMock = new();
 		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-		var loggerMock = new Mock<ILogger<PollyIntegrationClient>>();
+		Mock<ILogger<PollyIntegrationClient>> loggerMock = new();
 
-		var options = Options.Create(new PollyOptions
+		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
 			RetryCount = 1, // Minimum 1 required by Polly (use 1 for minimal retries)
 			CircuitBreakerFailureThreshold = 3,
@@ -115,7 +115,7 @@ public class PollyResilienceIntegrationTests
 			TimeoutSeconds = 10,
 		});
 
-		var client = new PollyIntegrationClient(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
+		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
 
 		// Act - Trigger circuit breaker
 		for (int i = 0; i < 5; i++)
@@ -144,7 +144,7 @@ public class PollyResilienceIntegrationTests
 	public async Task TimeoutPolicy_SlowResponse_CancelsRequestAsync()
 	{
 		// Arrange
-		var handlerMock = new Mock<HttpMessageHandler>();
+		Mock<HttpMessageHandler> handlerMock = new();
 		handlerMock
 			.Protected()
 			.Setup<Task<HttpResponseMessage>>(
@@ -157,19 +157,19 @@ public class PollyResilienceIntegrationTests
 				return new HttpResponseMessage(HttpStatusCode.OK);
 			});
 
-		var httpClient = new HttpClient(handlerMock.Object)
+		HttpClient httpClient = new(handlerMock.Object)
 		{
 			BaseAddress = new Uri("https://api.openweathermap.org/"),
 		};
 
-		var cache = new MemoryCache(new MemoryCacheOptions());
-		var rateLimiterMock = new Mock<IRateLimitingService>();
+		MemoryCache cache = new(new MemoryCacheOptions());
+		Mock<IRateLimitingService> rateLimiterMock = new();
 		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-		var loggerMock = new Mock<ILogger<PollyIntegrationClient>>();
+		Mock<ILogger<PollyIntegrationClient>> loggerMock = new();
 
-		var options = Options.Create(new PollyOptions
+		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
 			RetryCount = 1, // Minimum 1 required by Polly (use 1 for minimal retries)
 			CircuitBreakerFailureThreshold = 5,
@@ -178,7 +178,7 @@ public class PollyResilienceIntegrationTests
 			TimeoutSeconds = 2, // 2 second timeout
 		});
 
-		var client = new PollyIntegrationClient(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
+		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
 
 		// Act & Assert
 		await Assert.ThrowsAnyAsync<Exception>(async () =>

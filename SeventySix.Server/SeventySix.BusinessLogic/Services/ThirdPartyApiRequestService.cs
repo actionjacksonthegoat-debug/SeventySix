@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Core.DTOs.ThirdPartyRequests;
+using SeventySix.Core.Entities;
 using SeventySix.Core.Interfaces;
 
 namespace SeventySix.BusinessLogic.Services;
@@ -15,23 +16,16 @@ namespace SeventySix.BusinessLogic.Services;
 /// Follows SRP by handling only third-party API request business logic.
 /// Follows DIP by depending on IThirdPartyApiRequestRepository abstraction.
 /// </remarks>
-public class ThirdPartyApiRequestService : IThirdPartyApiRequestService
+/// <remarks>
+/// Initializes a new instance of the <see cref="ThirdPartyApiRequestService"/> class.
+/// </remarks>
+/// <param name="repository">The third-party API request repository.</param>
+public class ThirdPartyApiRequestService(IThirdPartyApiRequestRepository repository) : IThirdPartyApiRequestService
 {
-	private readonly IThirdPartyApiRequestRepository Repository;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="ThirdPartyApiRequestService"/> class.
-	/// </summary>
-	/// <param name="repository">The third-party API request repository.</param>
-	public ThirdPartyApiRequestService(IThirdPartyApiRequestRepository repository)
-	{
-		this.Repository = repository ?? throw new ArgumentNullException(nameof(repository));
-	}
-
 	/// <inheritdoc/>
 	public async Task<IEnumerable<ThirdPartyApiRequestResponse>> GetAllAsync(CancellationToken cancellationToken)
 	{
-		var requests = await Repository.GetAllAsync(cancellationToken);
+		IEnumerable<ThirdPartyApiRequest> requests = await repository.GetAllAsync(cancellationToken);
 
 		return requests.Select(r => new ThirdPartyApiRequestResponse
 		{
@@ -47,8 +41,8 @@ public class ThirdPartyApiRequestService : IThirdPartyApiRequestService
 	/// <inheritdoc/>
 	public async Task<ThirdPartyApiStatisticsResponse> GetStatisticsAsync(CancellationToken cancellationToken)
 	{
-		var requests = await Repository.GetAllAsync(cancellationToken);
-		var requestList = requests.ToList();
+		IEnumerable<ThirdPartyApiRequest> requests = await repository.GetAllAsync(cancellationToken);
+		List<ThirdPartyApiRequest> requestList = [.. requests];
 
 		return new ThirdPartyApiStatisticsResponse
 		{

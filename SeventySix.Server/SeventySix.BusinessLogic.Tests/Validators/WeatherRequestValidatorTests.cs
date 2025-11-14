@@ -28,7 +28,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldPass_WhenRequestIsValid()
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 40.7128,
 			Longitude = -74.0060,
@@ -37,7 +37,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveAnyValidationErrors();
@@ -51,7 +51,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldFail_WhenLatitudeIsOutOfRange(double latitude)
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = latitude,
 			Longitude = 0,
@@ -59,7 +59,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Latitude)
@@ -73,7 +73,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldPass_WhenLatitudeIsValid(double latitude)
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = latitude,
 			Longitude = 0,
@@ -81,7 +81,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Latitude);
@@ -95,7 +95,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldFail_WhenLongitudeIsOutOfRange(double longitude)
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = longitude,
@@ -103,7 +103,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Longitude)
@@ -117,7 +117,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldPass_WhenLongitudeIsValid(double longitude)
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = longitude,
@@ -125,7 +125,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Longitude);
@@ -138,7 +138,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldFail_WhenLanguageIsInvalid(string language)
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = 0,
@@ -146,7 +146,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Language)
@@ -160,7 +160,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldPass_WhenLanguageIsValid(string language)
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = 0,
@@ -168,7 +168,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Language);
@@ -185,7 +185,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldPass_WhenExcludeListIsValid(string exclude)
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = 0,
@@ -194,7 +194,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Exclude);
@@ -207,7 +207,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldFail_WhenExcludeListIsInvalid(string exclude)
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = 0,
@@ -216,7 +216,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Exclude)
@@ -227,7 +227,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldPass_WhenExcludeIsNull()
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = 0,
@@ -236,7 +236,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Exclude);
@@ -246,7 +246,7 @@ public class WeatherRequestValidatorTests
 	public void Validate_ShouldPass_WhenExcludeIsEmpty()
 	{
 		// Arrange
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = 0,
@@ -255,7 +255,7 @@ public class WeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<WeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Exclude);

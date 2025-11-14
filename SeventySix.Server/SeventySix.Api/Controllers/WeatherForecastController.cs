@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using SeventySix.Api.Attributes;
 using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.Core.DTOs.OpenWeather;
 using SeventySix.Core.DTOs.OpenWeather.Common;
@@ -34,27 +35,19 @@ namespace SeventySix.Api.Controllers;
 /// - Thin Controller: Delegates to service layer
 /// - RESTful API: Resource-based endpoints
 /// - Dependency Injection: Services injected via constructor
+/// - Attribute-based Configuration: Uses [RateLimit], [OutputCache] for per-endpoint control
 /// </remarks>
+/// <remarks>
+/// Initializes a new instance of the <see cref="WeatherForecastController"/> class.
+/// </remarks>
+/// <param name="weatherService">OpenWeather service for business logic.</param>
+/// <param name="logger">Logger instance.</param>
 [ApiController]
 [Route("api/[controller]")]
-public class WeatherForecastController : ControllerBase
+[RateLimit(MaxRequests = 100, WindowSeconds = 86400)] // Weather API: 100 req/day
+public class WeatherForecastController(
+	IOpenWeatherService weatherService) : ControllerBase
 {
-	private readonly IOpenWeatherService WeatherService;
-	private readonly ILogger<WeatherForecastController> Logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="WeatherForecastController"/> class.
-	/// </summary>
-	/// <param name="weatherService">OpenWeather service for business logic.</param>
-	/// <param name="logger">Logger instance.</param>
-	public WeatherForecastController(
-		IOpenWeatherService weatherService,
-		ILogger<WeatherForecastController> logger)
-	{
-		WeatherService = weatherService ?? throw new ArgumentNullException(nameof(weatherService));
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-	}
-
 	/// <summary>
 	/// Gets current weather conditions for a location.
 	/// </summary>
@@ -88,9 +81,7 @@ public class WeatherForecastController : ControllerBase
 		[FromQuery] string language = "en",
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Getting current weather for ({Latitude}, {Longitude})", latitude, longitude);
-
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = latitude,
 			Longitude = longitude,
@@ -98,14 +89,14 @@ public class WeatherForecastController : ControllerBase
 			Language = language,
 		};
 
-		var result = await WeatherService.GetCurrentWeatherAsync(request, cancellationToken);
+		CurrentWeather? result = await weatherService.GetCurrentWeatherAsync(request, cancellationToken);
 
-		if (result is null)
-		{
-			return NotFound(new { message = "Weather data not available for this location" });
-		}
-
-		return Ok(result);
+		return result is null ?
+			(ActionResult<CurrentWeather>)NotFound(new
+			{
+				message = "Weather data not available for this location"
+			})
+			: (ActionResult<CurrentWeather>)Ok(result);
 	}
 
 	/// <summary>
@@ -139,9 +130,7 @@ public class WeatherForecastController : ControllerBase
 		[FromQuery] string language = "en",
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Getting hourly forecast for ({Latitude}, {Longitude})", latitude, longitude);
-
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = latitude,
 			Longitude = longitude,
@@ -149,7 +138,7 @@ public class WeatherForecastController : ControllerBase
 			Language = language,
 		};
 
-		var result = await WeatherService.GetHourlyForecastAsync(request, cancellationToken);
+		IEnumerable<HourlyForecast> result = await weatherService.GetHourlyForecastAsync(request, cancellationToken);
 		return Ok(result);
 	}
 
@@ -184,9 +173,7 @@ public class WeatherForecastController : ControllerBase
 		[FromQuery] string language = "en",
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Getting daily forecast for ({Latitude}, {Longitude})", latitude, longitude);
-
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = latitude,
 			Longitude = longitude,
@@ -194,7 +181,7 @@ public class WeatherForecastController : ControllerBase
 			Language = language,
 		};
 
-		var result = await WeatherService.GetDailyForecastAsync(request, cancellationToken);
+		IEnumerable<DailyForecast> result = await weatherService.GetDailyForecastAsync(request, cancellationToken);
 		return Ok(result);
 	}
 
@@ -229,9 +216,7 @@ public class WeatherForecastController : ControllerBase
 		[FromQuery] string language = "en",
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Getting minutely forecast for ({Latitude}, {Longitude})", latitude, longitude);
-
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = latitude,
 			Longitude = longitude,
@@ -239,7 +224,7 @@ public class WeatherForecastController : ControllerBase
 			Language = language,
 		};
 
-		var result = await WeatherService.GetMinutelyForecastAsync(request, cancellationToken);
+		IEnumerable<MinutelyForecast> result = await weatherService.GetMinutelyForecastAsync(request, cancellationToken);
 		return Ok(result);
 	}
 
@@ -271,16 +256,14 @@ public class WeatherForecastController : ControllerBase
 		[FromQuery] string language = "en",
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Getting weather alerts for ({Latitude}, {Longitude})", latitude, longitude);
-
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = latitude,
 			Longitude = longitude,
 			Language = language,
 		};
 
-		var result = await WeatherService.GetWeatherAlertsAsync(request, cancellationToken);
+		IEnumerable<WeatherAlert> result = await weatherService.GetWeatherAlertsAsync(request, cancellationToken);
 		return Ok(result);
 	}
 
@@ -318,9 +301,7 @@ public class WeatherForecastController : ControllerBase
 		[FromQuery] string? exclude = null,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Getting complete weather data for ({Latitude}, {Longitude})", latitude, longitude);
-
-		var request = new WeatherRequest
+		WeatherRequest request = new()
 		{
 			Latitude = latitude,
 			Longitude = longitude,
@@ -329,14 +310,14 @@ public class WeatherForecastController : ControllerBase
 			Exclude = exclude,
 		};
 
-		var result = await WeatherService.GetCompleteWeatherDataAsync(request, cancellationToken);
+		OneCallResponse? result = await weatherService.GetCompleteWeatherDataAsync(request, cancellationToken);
 
-		if (result is null)
-		{
-			return NotFound(new { message = "Weather data not available" });
-		}
-
-		return Ok(result);
+		return result is null
+			? (ActionResult<OneCallResponse>)NotFound(new
+			{
+				message = "Weather data not available"
+			})
+			: (ActionResult<OneCallResponse>)Ok(result);
 	}
 
 	/// <summary>
@@ -372,13 +353,7 @@ public class WeatherForecastController : ControllerBase
 		[FromQuery] string language = "en",
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation(
-			"Getting historical weather for ({Latitude}, {Longitude}) at timestamp {Timestamp}",
-			latitude,
-			longitude,
-			timestamp);
-
-		var request = new HistoricalWeatherRequest
+		HistoricalWeatherRequest request = new()
 		{
 			Latitude = latitude,
 			Longitude = longitude,
@@ -387,14 +362,14 @@ public class WeatherForecastController : ControllerBase
 			Language = language,
 		};
 
-		var result = await WeatherService.GetHistoricalWeatherAsync(request, cancellationToken);
+		OneCallResponse? result = await weatherService.GetHistoricalWeatherAsync(request, cancellationToken);
 
-		if (result is null)
-		{
-			return NotFound(new { message = "Historical weather data not available" });
-		}
-
-		return Ok(result);
+		return result is null
+			? (ActionResult<OneCallResponse>)NotFound(new
+			{
+				message = "Historical weather data not available"
+			})
+			: (ActionResult<OneCallResponse>)Ok(result);
 	}
 
 	/// <summary>
@@ -411,11 +386,11 @@ public class WeatherForecastController : ControllerBase
 	/// </remarks>
 	[HttpGet("quota", Name = "GetApiQuota")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<ActionResult<object>> GetApiQuota()
+	public async Task<ActionResult<object>> GetApiQuotaAsync()
 	{
-		var remaining = await WeatherService.GetRemainingApiQuotaAsync();
-		var canMakeCall = await WeatherService.CanMakeApiCallAsync();
-		var resetTime = WeatherService.GetTimeUntilReset();
+		int remaining = await weatherService.GetRemainingApiQuotaAsync();
+		bool canMakeCall = await weatherService.CanMakeApiCallAsync();
+		TimeSpan resetTime = weatherService.GetTimeUntilReset();
 
 		return Ok(new
 		{

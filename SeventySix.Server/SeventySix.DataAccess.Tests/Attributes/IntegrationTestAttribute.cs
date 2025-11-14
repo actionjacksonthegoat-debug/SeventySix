@@ -20,7 +20,7 @@ public sealed class IntegrationTestAttribute : FactAttribute
 
 	static IntegrationTestAttribute()
 	{
-		var configuration = new ConfigurationBuilder()
+		IConfigurationRoot configuration = new ConfigurationBuilder()
 			.SetBasePath(Directory.GetCurrentDirectory())
 			.AddJsonFile("appsettings.json", optional: true)
 			.AddJsonFile("appsettings.Test.json", optional: true)

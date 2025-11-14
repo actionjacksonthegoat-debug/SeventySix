@@ -28,8 +28,8 @@ public class ThirdPartyApiRequestControllerTests
 	public async Task GetAll_ReturnsOkResult_WithListOfApiRequestsAsync()
 	{
 		// Arrange
-		var expectedRequests = new List<ThirdPartyApiRequestResponse>
-		{
+		List<ThirdPartyApiRequestResponse> expectedRequests =
+		[
 			new ThirdPartyApiRequestResponse
 			{
 				Id = 1,
@@ -48,17 +48,17 @@ public class ThirdPartyApiRequestControllerTests
 				LastCalledAt = DateTime.UtcNow.AddMinutes(-10),
 				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
 			},
-		};
+		];
 
 		MockService.Setup(s => s.GetAllAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync(expectedRequests);
 
 		// Act
-		var result = await Controller.GetAllAsync(CancellationToken.None);
+		ActionResult<IEnumerable<ThirdPartyApiRequestResponse>> result = await Controller.GetAllAsync(CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedRequests = Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestResponse>>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		IEnumerable<ThirdPartyApiRequestResponse> returnedRequests = Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestResponse>>(okResult.Value);
 		Assert.Equal(2, returnedRequests.Count());
 		MockService.Verify(s => s.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
 	}
@@ -71,11 +71,11 @@ public class ThirdPartyApiRequestControllerTests
 			.ReturnsAsync(new List<ThirdPartyApiRequestResponse>());
 
 		// Act
-		var result = await Controller.GetAllAsync(CancellationToken.None);
+		ActionResult<IEnumerable<ThirdPartyApiRequestResponse>> result = await Controller.GetAllAsync(CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedRequests = Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestResponse>>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		IEnumerable<ThirdPartyApiRequestResponse> returnedRequests = Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestResponse>>(okResult.Value);
 		Assert.Empty(returnedRequests);
 	}
 
@@ -83,7 +83,7 @@ public class ThirdPartyApiRequestControllerTests
 	public async Task GetStatistics_ReturnsOkResult_WithStatisticsAsync()
 	{
 		// Arrange
-		var expectedStats = new ThirdPartyApiStatisticsResponse
+		ThirdPartyApiStatisticsResponse expectedStats = new()
 		{
 			TotalCallsToday = 225,
 			TotalApisTracked = 2,
@@ -103,11 +103,11 @@ public class ThirdPartyApiRequestControllerTests
 			.ReturnsAsync(expectedStats);
 
 		// Act
-		var result = await Controller.GetStatisticsAsync(CancellationToken.None);
+		ActionResult<ThirdPartyApiStatisticsResponse> result = await Controller.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedStats = Assert.IsType<ThirdPartyApiStatisticsResponse>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		ThirdPartyApiStatisticsResponse returnedStats = Assert.IsType<ThirdPartyApiStatisticsResponse>(okResult.Value);
 		Assert.Equal(225, returnedStats.TotalCallsToday);
 		Assert.Equal(2, returnedStats.TotalApisTracked);
 		Assert.Equal(2, returnedStats.CallsByApi.Count);
@@ -118,23 +118,23 @@ public class ThirdPartyApiRequestControllerTests
 	public async Task GetStatistics_ReturnsEmptyStatistics_WhenNoDataAsync()
 	{
 		// Arrange
-		var expectedStats = new ThirdPartyApiStatisticsResponse
+		ThirdPartyApiStatisticsResponse expectedStats = new()
 		{
 			TotalCallsToday = 0,
 			TotalApisTracked = 0,
-			CallsByApi = new Dictionary<string, int>(),
-			LastCalledByApi = new Dictionary<string, DateTime?>(),
+			CallsByApi = [],
+			LastCalledByApi = [],
 		};
 
 		MockService.Setup(s => s.GetStatisticsAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync(expectedStats);
 
 		// Act
-		var result = await Controller.GetStatisticsAsync(CancellationToken.None);
+		ActionResult<ThirdPartyApiStatisticsResponse> result = await Controller.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedStats = Assert.IsType<ThirdPartyApiStatisticsResponse>(okResult.Value);
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		ThirdPartyApiStatisticsResponse returnedStats = Assert.IsType<ThirdPartyApiStatisticsResponse>(okResult.Value);
 		Assert.Equal(0, returnedStats.TotalCallsToday);
 		Assert.Empty(returnedStats.CallsByApi);
 	}

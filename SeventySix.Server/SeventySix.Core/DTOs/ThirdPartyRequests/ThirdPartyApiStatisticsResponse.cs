@@ -39,11 +39,11 @@ public class ThirdPartyApiStatisticsResponse
 	/// Gets or sets the number of calls made to each API today.
 	/// Key: API name, Value: Call count.
 	/// </summary>
-	public Dictionary<string, int> CallsByApi { get; set; } = new();
+	public Dictionary<string, int> CallsByApi { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the last time each API was called.
 	/// Key: API name, Value: Last called timestamp (null if never called).
 	/// </summary>
-	public Dictionary<string, DateTime?> LastCalledByApi { get; set; } = new();
+	public Dictionary<string, DateTime?> LastCalledByApi { get; set; } = [];
 }

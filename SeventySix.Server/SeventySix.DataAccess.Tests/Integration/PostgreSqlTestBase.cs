@@ -47,11 +47,11 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
 		await PostgreSqlContainer.StartAsync();
 
 		// Apply migrations to create database schema
-		var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+		DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
 			.UseNpgsql(ConnectionString)
 			.Options;
 
-		await using var context = new ApplicationDbContext(options);
+		await using ApplicationDbContext context = new(options);
 		await context.Database.MigrateAsync();
 	}
 
@@ -60,10 +60,7 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
 	/// Called once after all tests in the collection complete.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-	public async Task DisposeAsync()
-	{
-		await PostgreSqlContainer.DisposeAsync();
-	}
+	public async Task DisposeAsync() => await PostgreSqlContainer.DisposeAsync();
 }
 
 /// <summary>
@@ -96,7 +93,7 @@ public abstract class PostgreSqlTestBase : IAsyncLifetime
 	/// <returns>A configured ApplicationDbContext instance.</returns>
 	protected ApplicationDbContext CreateDbContext()
 	{
-		var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+		DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
 			.UseNpgsql(ConnectionString)
 			.Options;
 
@@ -110,11 +107,11 @@ public abstract class PostgreSqlTestBase : IAsyncLifetime
 	/// <returns>A service scope with ApplicationDbContext registered.</returns>
 	protected IServiceScope CreateServiceScope()
 	{
-		var services = new ServiceCollection();
+		ServiceCollection services = new();
 		services.AddDbContext<ApplicationDbContext>(options =>
 			options.UseNpgsql(ConnectionString));
 
-		var serviceProvider = services.BuildServiceProvider();
+		ServiceProvider serviceProvider = services.BuildServiceProvider();
 		return serviceProvider.CreateScope();
 	}
 
@@ -125,7 +122,7 @@ public abstract class PostgreSqlTestBase : IAsyncLifetime
 	public async Task InitializeAsync()
 	{
 		// Clean up data before each test to ensure isolation
-		await using var context = CreateDbContext();
+		await using ApplicationDbContext context = CreateDbContext();
 		await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"ThirdPartyApiRequests\" RESTART IDENTITY CASCADE");
 	}
 
@@ -133,9 +130,7 @@ public abstract class PostgreSqlTestBase : IAsyncLifetime
 	/// Called after each test. Cleanup is handled by InitializeAsync of the next test.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-	public Task DisposeAsync()
-	{
+	public Task DisposeAsync() =>
 		// No per-test cleanup needed - InitializeAsync handles it
-		return Task.CompletedTask;
-	}
+		Task.CompletedTask;
 }

@@ -4,6 +4,7 @@
 
 using SeventySix.Core.DTOs.LogCharts;
 using SeventySix.Core.DTOs.Logs;
+using SeventySix.Core.Entities;
 using SeventySix.Core.Interfaces;
 
 namespace SeventySix.BusinessLogic.Services;
@@ -14,37 +15,31 @@ namespace SeventySix.BusinessLogic.Services;
 /// <remarks>
 /// Provides business logic for retrieving aggregated log data for visualization.
 /// Follows SRP by handling only log chart business logic.
-/// Follows DIP by depending on ILogRepository abstraction.
+/// Follows DIP by depending on IlogRepository abstraction.
 /// </remarks>
-public class LogChartService : ILogChartService
+/// <remarks>
+/// Initializes a new instance of the <see cref="LogChartService"/> class.
+/// </remarks>
+/// <param name="logRepository">The log repository.</param>
+public class LogChartService(ILogRepository logRepository) : ILogChartService
 {
-	private readonly ILogRepository LogRepository;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="LogChartService"/> class.
-	/// </summary>
-	/// <param name="logRepository">The log repository.</param>
-	public LogChartService(ILogRepository logRepository)
-	{
-		this.LogRepository = logRepository ?? throw new ArgumentNullException(nameof(logRepository));
-	}
-
 	/// <inheritdoc/>
 	public async Task<LogsByLevelResponse> GetLogsByLevelAsync(
 		DateTime? startDate,
 		DateTime? endDate,
 		CancellationToken cancellationToken)
 	{
-		var logs = await LogRepository.GetLogsAsync(
+		IEnumerable<Log> logs = await logRepository.GetLogsAsync(
 			logLevel: null,
 			startDate: startDate,
 			endDate: endDate,
 			sourceContext: null,
 			requestPath: null,
 			skip: 0,
-			take: int.MaxValue);
+			take: int.MaxValue,
+			cancellationToken);
 
-		var logCounts = logs
+		Dictionary<string, int> logCounts = logs
 			.GroupBy(l => l.LogLevel)
 			.ToDictionary(g => g.Key, g => g.Count());
 
@@ -59,20 +54,21 @@ public class LogChartService : ILogChartService
 		int hoursBack,
 		CancellationToken cancellationToken)
 	{
-		var endDate = DateTime.UtcNow;
-		var startDate = endDate.AddHours(-hoursBack);
+		DateTime endDate = DateTime.UtcNow;
+		DateTime startDate = endDate.AddHours(-hoursBack);
 
-		var logs = await LogRepository.GetLogsAsync(
+		IEnumerable<Log> logs = await logRepository.GetLogsAsync(
 			logLevel: null,
 			startDate: startDate,
 			endDate: endDate,
 			sourceContext: null,
 			requestPath: null,
 			skip: 0,
-			take: int.MaxValue);
+			take: int.MaxValue,
+			cancellationToken);
 
 		// Group logs by hour
-		var hourlyData = logs
+		List<HourlyLogData> hourlyData = [.. logs
 			.GroupBy(l => new DateTime(
 				l.Timestamp.Year,
 				l.Timestamp.Month,
@@ -86,8 +82,7 @@ public class LogChartService : ILogChartService
 				Hour = g.Key,
 				Count = g.Count(),
 			})
-			.OrderBy(h => h.Hour)
-			.ToList();
+			.OrderBy(h => h.Hour)];
 
 		return new LogsByHourResponse
 		{
@@ -100,16 +95,17 @@ public class LogChartService : ILogChartService
 		int topN,
 		CancellationToken cancellationToken)
 	{
-		var logs = await LogRepository.GetLogsAsync(
+		IEnumerable<Log> logs = await logRepository.GetLogsAsync(
 			logLevel: null,
 			startDate: null,
 			endDate: null,
 			sourceContext: null,
 			requestPath: null,
 			skip: 0,
-			take: int.MaxValue);
+			take: int.MaxValue,
+			cancellationToken);
 
-		var sourceCounts = logs
+		Dictionary<string, int> sourceCounts = logs
 			.Where(l => !string.IsNullOrEmpty(l.SourceContext))
 			.GroupBy(l => l.SourceContext)
 			.OrderByDescending(g => g.Count())
@@ -127,16 +123,17 @@ public class LogChartService : ILogChartService
 		int count,
 		CancellationToken cancellationToken)
 	{
-		var logs = await LogRepository.GetLogsAsync(
+		IEnumerable<Log> logs = await logRepository.GetLogsAsync(
 			logLevel: null,
 			startDate: null,
 			endDate: null,
 			sourceContext: null,
 			requestPath: null,
 			skip: 0,
-			take: int.MaxValue);
+			take: int.MaxValue,
+			cancellationToken);
 
-		var recentErrors = logs
+		List<ErrorLogSummary> recentErrors = [.. logs
 			.Where(l => l.LogLevel == "Warning" || l.LogLevel == "Error" || l.LogLevel == "Critical")
 			.OrderByDescending(l => l.Timestamp)
 			.Take(count)
@@ -146,8 +143,7 @@ public class LogChartService : ILogChartService
 				Level = l.LogLevel,
 				Message = l.Message ?? string.Empty,
 				Source = l.SourceContext ?? string.Empty,
-			})
-			.ToList();
+			})];
 
 		return new RecentErrorsResponse
 		{
@@ -167,7 +163,7 @@ public class LogChartService : ILogChartService
 		}
 
 		// Calculate time range based on period
-		var endDate = DateTime.UtcNow;
+		DateTime endDate = DateTime.UtcNow;
 		DateTime startDate;
 		TimeSpan intervalSize;
 
@@ -190,18 +186,19 @@ public class LogChartService : ILogChartService
 		}
 
 		// Fetch logs within the time range
-		var logs = await LogRepository.GetLogsAsync(
+		IEnumerable<Log> logs = await logRepository.GetLogsAsync(
 			logLevel: null,
 			startDate: startDate,
 			endDate: endDate,
 			sourceContext: null,
 			requestPath: null,
 			skip: 0,
-			take: int.MaxValue);
+			take: int.MaxValue,
+			cancellationToken);
 
 		// Generate time intervals
-		var intervals = new List<DateTime>();
-		var currentTime = startDate;
+		List<DateTime> intervals = [];
+		DateTime currentTime = startDate;
 		while (currentTime <= endDate)
 		{
 			intervals.Add(currentTime);
@@ -209,10 +206,10 @@ public class LogChartService : ILogChartService
 		}
 
 		// Group logs by interval
-		var dataPoints = intervals.Select(intervalStart =>
+		List<LogChartDataPoint> dataPoints = [.. intervals.Select(intervalStart =>
 		{
-			var intervalEnd = intervalStart.Add(intervalSize);
-			var intervalLogs = logs.Where(l => l.Timestamp >= intervalStart && l.Timestamp < intervalEnd).ToList();
+			DateTime intervalEnd = intervalStart.Add(intervalSize);
+			List<Log> intervalLogs = [.. logs.Where(l => l.Timestamp >= intervalStart && l.Timestamp < intervalEnd)];
 
 			return new LogChartDataPoint
 			{
@@ -222,7 +219,7 @@ public class LogChartService : ILogChartService
 				FatalCount = intervalLogs.Count(l => l.LogLevel == "Critical" || l.LogLevel == "Fatal"),
 				TotalCount = intervalLogs.Count,
 			};
-		}).ToList();
+		})];
 
 		return new LogChartDataResponse
 		{

@@ -3,6 +3,8 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SeventySix.Core.Entities;
 
 namespace SeventySix.Data;
@@ -27,17 +29,13 @@ namespace SeventySix.Data;
 /// - Automatic timestamp updates in SaveChangesAsync
 /// - Fluent API configuration for explicit mappings
 /// </remarks>
-public class ApplicationDbContext : DbContext
+/// <remarks>
+/// Initializes a new instance of the <see cref="ApplicationDbContext"/> class.
+/// </remarks>
+/// <param name="options">The options to be used by the DbContext.</param>
+public class ApplicationDbContext(
+	DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
-	/// <summary>
-	/// Initializes a new instance of the <see cref="ApplicationDbContext"/> class.
-	/// </summary>
-	/// <param name="options">The options to be used by the DbContext.</param>
-	public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-		: base(options)
-	{
-	}
-
 	/// <summary>
 	/// Gets the DbSet for ThirdPartyApiRequest entities.
 	/// </summary>
@@ -64,7 +62,7 @@ public class ApplicationDbContext : DbContext
 		// Apply PostgreSQL-specific xmin mapping if using PostgreSQL
 		if (Database.IsNpgsql())
 		{
-			var entity = modelBuilder.Entity<ThirdPartyApiRequest>();
+			EntityTypeBuilder<ThirdPartyApiRequest> entity = modelBuilder.Entity<ThirdPartyApiRequest>();
 			entity.Property(e => e.RowVersion)
 				.HasColumnName("xmin")
 				.HasColumnType("xid");
@@ -91,13 +89,13 @@ public class ApplicationDbContext : DbContext
 	/// </summary>
 	private void UpdateTimestamps()
 	{
-		var entries = ChangeTracker.Entries()
+		IEnumerable<EntityEntry> entries = ChangeTracker.Entries()
 			.Where(e => (e.Entity is ThirdPartyApiRequest || e.Entity is Log) &&
 						(e.State == EntityState.Added || e.State == EntityState.Modified));
 
-		foreach (var entry in entries)
+		foreach (EntityEntry? entry in entries)
 		{
-			var now = DateTime.UtcNow;
+			DateTime now = DateTime.UtcNow;
 
 			if (entry.Entity is ThirdPartyApiRequest entity)
 			{

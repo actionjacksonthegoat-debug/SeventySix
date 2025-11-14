@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using SeventySix.Api.Attributes;
 using SeventySix.Core.DTOs.ThirdPartyRequests;
 using SeventySix.Core.Interfaces;
 
@@ -16,20 +17,15 @@ namespace SeventySix.Api.Controllers;
 /// Provides endpoints for retrieving API request tracking data and aggregated statistics.
 /// Follows SRP by handling only third-party API request operations.
 /// </remarks>
+/// <remarks>
+/// Initializes a new instance of the <see cref="ThirdPartyApiRequestController"/> class.
+/// </remarks>
+/// <param name="service">The third-party API request service.</param>
 [ApiController]
 [Route("api/[controller]")]
-public class ThirdPartyApiRequestController : ControllerBase
+[RateLimit()] // 250 req/hour (default)
+public class ThirdPartyApiRequestController(IThirdPartyApiRequestService service) : ControllerBase
 {
-	private readonly IThirdPartyApiRequestService Service;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="ThirdPartyApiRequestController"/> class.
-	/// </summary>
-	/// <param name="service">The third-party API request service.</param>
-	public ThirdPartyApiRequestController(IThirdPartyApiRequestService service)
-	{
-		Service = service;
-	}
 
 	/// <summary>
 	/// Retrieves all third-party API request tracking records.
@@ -42,7 +38,7 @@ public class ThirdPartyApiRequestController : ControllerBase
 	[OutputCache(PolicyName = "thirdpartyrequests")]
 	public async Task<ActionResult<IEnumerable<ThirdPartyApiRequestResponse>>> GetAllAsync(CancellationToken cancellationToken)
 	{
-		var requests = await Service.GetAllAsync(cancellationToken);
+		IEnumerable<ThirdPartyApiRequestResponse> requests = await service.GetAllAsync(cancellationToken);
 		return Ok(requests);
 	}
 
@@ -57,7 +53,7 @@ public class ThirdPartyApiRequestController : ControllerBase
 	[OutputCache(PolicyName = "thirdpartyrequests")]
 	public async Task<ActionResult<ThirdPartyApiStatisticsResponse>> GetStatisticsAsync(CancellationToken cancellationToken)
 	{
-		var statistics = await Service.GetStatisticsAsync(cancellationToken);
+		ThirdPartyApiStatisticsResponse statistics = await service.GetStatisticsAsync(cancellationToken);
 		return Ok(statistics);
 	}
 }

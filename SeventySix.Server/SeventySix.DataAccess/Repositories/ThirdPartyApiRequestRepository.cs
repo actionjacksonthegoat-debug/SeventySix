@@ -61,9 +61,9 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 			// Check if we're inside a transaction
 			// If so, use tracking to ensure we see the latest data and can update it
 			// If not, use AsNoTracking for better performance on read-only queries
-			var hasActiveTransaction = Context.Database.CurrentTransaction != null;
+			bool hasActiveTransaction = Context.Database.CurrentTransaction != null;
 
-			var query = Context.ThirdPartyApiRequests.AsQueryable();
+			IQueryable<ThirdPartyApiRequest> query = Context.ThirdPartyApiRequests.AsQueryable();
 
 			if (!hasActiveTransaction)
 			{
@@ -71,7 +71,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 			}
 
 			// Uses composite index on (ApiName, ResetDate) for O(log n) lookup
-			var request = await query
+			ThirdPartyApiRequest? request = await query
 				.FirstOrDefaultAsync(
 					r => r.ApiName == apiName && r.ResetDate == resetDate,
 					cancellationToken);
@@ -144,7 +144,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		try
 		{
 			// Check if entity is already tracked
-			var trackedEntity = Context.ThirdPartyApiRequests.Local
+			ThirdPartyApiRequest? trackedEntity = Context.ThirdPartyApiRequests.Local
 				.FirstOrDefault(e => e.Id == entity.Id);
 
 			if (trackedEntity != null)
@@ -196,7 +196,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		{
 			// Use AsNoTracking for read-only query
 			// Order by ResetDate descending (most recent first)
-			var requests = await Context.ThirdPartyApiRequests
+			List<ThirdPartyApiRequest> requests = await Context.ThirdPartyApiRequests
 				.AsNoTracking()
 				.Where(r => r.ApiName == apiName)
 				.OrderByDescending(r => r.ResetDate)
@@ -227,7 +227,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		{
 			// Use AsNoTracking for read-only query
 			// Order by ApiName for consistent results
-			var requests = await Context.ThirdPartyApiRequests
+			List<ThirdPartyApiRequest> requests = await Context.ThirdPartyApiRequests
 				.AsNoTracking()
 				.OrderBy(r => r.ApiName)
 				.ToListAsync(cancellationToken);
@@ -255,7 +255,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		try
 		{
 			// Batch delete operation
-			var deletedCount = await Context.ThirdPartyApiRequests
+			int deletedCount = await Context.ThirdPartyApiRequests
 				.Where(r => r.ResetDate < cutoffDate)
 				.ExecuteDeleteAsync(cancellationToken);
 

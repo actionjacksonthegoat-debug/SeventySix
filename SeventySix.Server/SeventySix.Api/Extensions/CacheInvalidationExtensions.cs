@@ -31,7 +31,7 @@ public static class CacheInvalidationExtensions
 		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(tag);
 
-		var cache = services.GetRequiredService<IOutputCacheStore>();
+		IOutputCacheStore cache = services.GetRequiredService<IOutputCacheStore>();
 		await cache.EvictByTagAsync(tag, cancellationToken);
 	}
 
@@ -51,9 +51,9 @@ public static class CacheInvalidationExtensions
 		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(tags);
 
-		var cache = services.GetRequiredService<IOutputCacheStore>();
+		IOutputCacheStore cache = services.GetRequiredService<IOutputCacheStore>();
 
-		foreach (var tag in tags)
+		foreach (string tag in tags)
 		{
 			await cache.EvictByTagAsync(tag, cancellationToken);
 		}

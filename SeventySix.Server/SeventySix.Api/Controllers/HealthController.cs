@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using SeventySix.Api.Attributes;
 using SeventySix.Core.DTOs.Health;
 using SeventySix.Core.Interfaces;
 
@@ -17,20 +18,15 @@ namespace SeventySix.Api.Controllers;
 /// including database, external APIs, error queue, and system resources.
 /// Follows SRP by handling only health check operations.
 /// </remarks>
+/// <remarks>
+/// Initializes a new instance of the <see cref="HealthController"/> class.
+/// </remarks>
+/// <param name="service">The health check service.</param>
 [ApiController]
 [Route("api/[controller]")]
-public class HealthController : ControllerBase
+[RateLimit()] // 250 req/hour (default)
+public class HealthController(IHealthCheckService service) : ControllerBase
 {
-	private readonly IHealthCheckService Service;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="HealthController"/> class.
-	/// </summary>
-	/// <param name="service">The health check service.</param>
-	public HealthController(IHealthCheckService service)
-	{
-		Service = service;
-	}
 
 	/// <summary>
 	/// Retrieves comprehensive system health status.
@@ -43,7 +39,7 @@ public class HealthController : ControllerBase
 	[OutputCache(PolicyName = "health")]
 	public async Task<ActionResult<HealthStatusResponse>> GetHealthStatusAsync(CancellationToken cancellationToken)
 	{
-		var status = await Service.GetHealthStatusAsync(cancellationToken);
+		HealthStatusResponse status = await service.GetHealthStatusAsync(cancellationToken);
 		return Ok(status);
 	}
 }

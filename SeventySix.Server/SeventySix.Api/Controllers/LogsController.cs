@@ -5,6 +5,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using SeventySix.Api.Attributes;
 using SeventySix.Core.DTOs.LogCharts;
 using SeventySix.Core.DTOs.Logs;
 using SeventySix.Core.Entities;
@@ -31,33 +32,21 @@ namespace SeventySix.Api.Controllers;
 /// - DIP: Depends on ILogRepository abstraction
 /// - OCP: Extensible for additional endpoints
 /// </remarks>
+/// <remarks>
+/// Initializes a new instance of the <see cref="LogsController"/> class.
+/// </remarks>
+/// <param name="logRepository">The log repository.</param>
+/// <param name="logChartService">The log chart service.</param>
+/// <param name="logger">The logger.</param>
 [ApiController]
 [Route("api/[controller]")]
-public class LogsController : ControllerBase
+[RateLimit()] // 250 req/hour (default)
+public class LogsController(
+	ILogRepository logRepository,
+	ILogChartService logChartService,
+	ILogger<LogsController> logger,
+	IOutputCacheStore outputCacheStore) : ControllerBase
 {
-	private readonly ILogRepository LogRepository;
-	private readonly ILogChartService LogChartService;
-	private readonly ILogger<LogsController> Logger;
-	private readonly IOutputCacheStore OutputCacheStore;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="LogsController"/> class.
-	/// </summary>
-	/// <param name="logRepository">The log repository.</param>
-	/// <param name="logChartService">The log chart service.</param>
-	/// <param name="logger">The logger.</param>
-	public LogsController(
-		ILogRepository logRepository,
-		ILogChartService logChartService,
-		ILogger<LogsController> logger,
-		IOutputCacheStore outputCacheStore)
-	{
-		LogRepository = logRepository ?? throw new ArgumentNullException(nameof(logRepository));
-		LogChartService = logChartService ?? throw new ArgumentNullException(nameof(logChartService));
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-		OutputCacheStore = outputCacheStore ?? throw new ArgumentNullException(nameof(outputCacheStore));
-	}
-
 	/// <summary>
 	/// Gets logs with optional filtering and pagination.
 	/// </summary>
@@ -77,16 +66,8 @@ public class LogsController : ControllerBase
 	{
 		try
 		{
-			Logger.LogInformation(
-				"Retrieving logs - LogLevel: {LogLevel}, StartDate: {StartDate}, EndDate: {EndDate}, Page: {Page}, PageSize: {PageSize}",
-				request.LogLevel ?? "All",
-				request.StartDate?.ToString("O") ?? "None",
-				request.EndDate?.ToString("O") ?? "None",
-				request.Page,
-				request.PageSize);
-
 			// Get total count for pagination
-			var totalCount = await LogRepository.GetLogsCountAsync(
+			int totalCount = await logRepository.GetLogsCountAsync(
 				logLevel: request.LogLevel,
 				startDate: request.StartDate,
 				endDate: request.EndDate,
@@ -94,7 +75,7 @@ public class LogsController : ControllerBase
 				requestPath: request.RequestPath);
 
 			// Get paginated logs
-			var logs = await LogRepository.GetLogsAsync(
+			IEnumerable<Log> logs = await logRepository.GetLogsAsync(
 				logLevel: request.LogLevel,
 				startDate: request.StartDate,
 				endDate: request.EndDate,
@@ -103,7 +84,7 @@ public class LogsController : ControllerBase
 				skip: request.GetSkip(),
 				take: request.GetValidatedPageSize());
 
-			var logResponses = logs.Select(log => new LogResponse
+			List<LogResponse> logResponses = [.. logs.Select(log => new LogResponse
 			{
 				Id = log.Id,
 				LogLevel = log.LogLevel,
@@ -120,9 +101,9 @@ public class LogsController : ControllerBase
 				Timestamp = log.Timestamp,
 				MachineName = log.MachineName,
 				Environment = log.Environment,
-			}).ToList();
+			})];
 
-			var response = new PagedLogResponse
+			PagedLogResponse response = new()
 			{
 				Data = logResponses,
 				TotalCount = totalCount,
@@ -130,13 +111,11 @@ public class LogsController : ControllerBase
 				PageSize = request.GetValidatedPageSize(),
 			};
 
-			Logger.LogInformation("Retrieved {Count} of {Total} logs (Page {Page})", logResponses.Count, totalCount, request.Page);
-
 			return Ok(response);
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Error retrieving logs");
+			logger.LogError(ex, "Error retrieving logs");
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving logs");
 		}
 	}
@@ -156,26 +135,18 @@ public class LogsController : ControllerBase
 	{
 		try
 		{
-			Logger.LogInformation(
-				"Retrieving log count - LogLevel: {LogLevel}, StartDate: {StartDate}, EndDate: {EndDate}",
-				request.LogLevel ?? "All",
-				request.StartDate?.ToString("O") ?? "None",
-				request.EndDate?.ToString("O") ?? "None");
-
-			var count = await LogRepository.GetLogsCountAsync(
+			int count = await logRepository.GetLogsCountAsync(
 				logLevel: request.LogLevel,
 				startDate: request.StartDate,
 				endDate: request.EndDate,
 				sourceContext: request.SourceContext,
 				requestPath: request.RequestPath);
 
-			Logger.LogInformation("Retrieved log count: {Count}", count);
-
 			return Ok(new LogCountResponse { Total = count });
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Error retrieving log count");
+			logger.LogError(ex, "Error retrieving log count");
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving log count");
 		}
 	}
@@ -198,17 +169,12 @@ public class LogsController : ControllerBase
 	{
 		try
 		{
-			Logger.LogInformation(
-				"Retrieving log statistics - StartDate: {StartDate}, EndDate: {EndDate}",
-				startDate?.ToString("O") ?? "None",
-				endDate?.ToString("O") ?? "None");
+			DateTime effectiveStartDate = startDate ?? DateTime.UtcNow.AddDays(-30);
+			DateTime effectiveEndDate = endDate ?? DateTime.UtcNow;
 
-			var effectiveStartDate = startDate ?? DateTime.UtcNow.AddDays(-30);
-			var effectiveEndDate = endDate ?? DateTime.UtcNow;
+			LogStatistics stats = await logRepository.GetStatisticsAsync(effectiveStartDate, effectiveEndDate);
 
-			var stats = await LogRepository.GetStatisticsAsync(effectiveStartDate, effectiveEndDate);
-
-			var response = new LogStatisticsResponse
+			LogStatisticsResponse response = new()
 			{
 				TotalLogs = stats.TotalLogs,
 				ErrorCount = stats.ErrorCount,
@@ -223,17 +189,11 @@ public class LogsController : ControllerBase
 				EndDate = effectiveEndDate,
 			};
 
-			Logger.LogInformation(
-				"Retrieved statistics - TotalLogs: {TotalLogs}, ErrorCount: {ErrorCount}, WarningCount: {WarningCount}",
-				response.TotalLogs,
-				response.ErrorCount,
-				response.WarningCount);
-
 			return Ok(response);
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Error retrieving log statistics");
+			logger.LogError(ex, "Error retrieving log statistics");
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving log statistics");
 		}
 	}
@@ -255,26 +215,21 @@ public class LogsController : ControllerBase
 	{
 		try
 		{
-			Logger.LogInformation("Deleting log with ID: {LogId}", id);
-
-			var deleted = await LogRepository.DeleteByIdAsync(id, cancellationToken);
+			bool deleted = await logRepository.DeleteByIdAsync(id, cancellationToken);
 
 			if (!deleted)
 			{
-				Logger.LogWarning("Log with ID {LogId} not found", id);
 				return NotFound();
 			}
 
-			Logger.LogInformation("Successfully deleted log with ID: {LogId}", id);
-
 			// Invalidate logs cache after deletion
-			await OutputCacheStore.EvictByTagAsync("logs", cancellationToken);
+			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 			return NoContent();
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Error deleting log with ID: {LogId}", id);
+			logger.LogError(ex, "Error deleting log with ID: {LogId}", id);
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error deleting log");
 		}
 	}
@@ -298,26 +253,22 @@ public class LogsController : ControllerBase
 	{
 		if (ids == null || ids.Length == 0)
 		{
-			Logger.LogWarning("Batch delete request received with no IDs");
 			return BadRequest("No log IDs provided");
 		}
 
 		try
 		{
-			Logger.LogWarning("Bulk deleting {Count} logs", ids.Length);
-
-			var deletedCount = await LogRepository.DeleteBatchAsync(ids, cancellationToken);
-
-			Logger.LogWarning("Successfully deleted {DeletedCount} of {RequestedCount} logs", deletedCount, ids.Length);
+			int deletedCount = await logRepository.DeleteBatchAsync(ids, cancellationToken);
 
 			// Invalidate logs cache after batch deletion
-			await OutputCacheStore.EvictByTagAsync("logs", cancellationToken);
+			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 			return Ok(deletedCount);
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Error bulk deleting logs. Requested count: {Count}", ids.Length);
+			logger.LogError(ex, "Error bulk deleting logs. Count: {Count}, IDs: {Ids}", 
+				ids.Length, string.Join(", ", ids.Take(10))); // Log first 10 IDs
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error bulk deleting logs");
 		}
 	}
@@ -338,30 +289,21 @@ public class LogsController : ControllerBase
 	{
 		if (!cutoffDate.HasValue)
 		{
-			Logger.LogWarning("Cleanup request received without cutoff date");
 			return BadRequest("Cutoff date is required");
 		}
 
 		try
 		{
-			Logger.LogWarning(
-				"Starting log cleanup - CutoffDate: {CutoffDate}",
-				cutoffDate.Value.ToString("O"));
-
-			var deletedCount = await LogRepository.DeleteOlderThanAsync(cutoffDate.Value);
-
-			Logger.LogWarning(
-				"Log cleanup completed - DeletedCount: {DeletedCount}",
-				deletedCount);
+			int deletedCount = await logRepository.DeleteOlderThanAsync(cutoffDate.Value);
 
 			// Invalidate logs cache after cleanup
-			await OutputCacheStore.EvictByTagAsync("logs", CancellationToken.None);
+			await outputCacheStore.EvictByTagAsync("logs", CancellationToken.None);
 
 			return Ok(deletedCount);
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Error during log cleanup");
+			logger.LogError(ex, "Error during log cleanup");
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error during log cleanup");
 		}
 	}
@@ -386,7 +328,7 @@ public class LogsController : ControllerBase
 		try
 		{
 			// Map ClientLogRequest to Log entity
-			var log = new Log
+			Log log = new()
 			{
 				LogLevel = request.LogLevel,
 				Message = request.Message,
@@ -398,25 +340,19 @@ public class LogsController : ControllerBase
 				StatusCode = request.StatusCode,
 				Properties = JsonSerializer.Serialize(new
 				{
-					UserAgent = request.UserAgent,
-					ClientTimestamp = request.ClientTimestamp,
-					AdditionalContext = request.AdditionalContext,
+					request.UserAgent,
+					request.ClientTimestamp,
+					request.AdditionalContext,
 				}),
 				Timestamp = DateTime.UtcNow,
 				MachineName = "Browser",
 				Environment = "Client",
 			};
 
-			await LogRepository.CreateAsync(log, cancellationToken);
-
-			Logger.LogInformation(
-				"Client error logged - Level: {LogLevel}, Source: {Source}, Message: {Message}",
-				request.LogLevel,
-				request.SourceContext,
-				request.Message);
+			await logRepository.CreateAsync(log, cancellationToken);
 
 			// Invalidate logs cache after creating new log
-			await OutputCacheStore.EvictByTagAsync("logs", cancellationToken);
+			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 			return NoContent();
 		}
@@ -424,7 +360,7 @@ public class LogsController : ControllerBase
 		{
 			// Don't throw - we don't want to cause errors when logging client errors
 			// This ensures graceful degradation
-			Logger.LogError(ex, "Error logging client error");
+			logger.LogError(ex, "Error logging client error");
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error logging client error");
 		}
 	}
@@ -455,7 +391,7 @@ public class LogsController : ControllerBase
 			}
 
 			// Map all requests to Log entities
-			var logs = requests.Select(request => new Log
+			List<Log> logs = [.. requests.Select(request => new Log
 			{
 				LogLevel = request.LogLevel,
 				Message = request.Message,
@@ -466,28 +402,23 @@ public class LogsController : ControllerBase
 				RequestMethod = request.RequestMethod,
 				StatusCode = request.StatusCode,
 				Properties = JsonSerializer.Serialize(new
-				{
-					UserAgent = request.UserAgent,
-					ClientTimestamp = request.ClientTimestamp,
-					AdditionalContext = request.AdditionalContext,
+				{ request.UserAgent,
+					 request.ClientTimestamp,
+					 request.AdditionalContext,
 				}),
 				Timestamp = DateTime.UtcNow,
 				MachineName = "Browser",
 				Environment = "Client",
-			}).ToList();
+			})];
 
 			// Create all logs
-			foreach (var log in logs)
+			foreach (Log? log in logs)
 			{
-				await LogRepository.CreateAsync(log, cancellationToken);
+				await logRepository.CreateAsync(log, cancellationToken);
 			}
 
-			Logger.LogInformation(
-				"Batch logged {Count} client errors",
-				requests.Length);
-
 			// Invalidate logs cache after batch creating logs
-			await OutputCacheStore.EvictByTagAsync("logs", cancellationToken);
+			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 			return NoContent();
 		}
@@ -495,7 +426,7 @@ public class LogsController : ControllerBase
 		{
 			// Don't throw - we don't want to cause errors when logging client errors
 			// This ensures graceful degradation
-			Logger.LogError(ex, "Error batch logging client errors");
+			logger.LogError(ex, "Error batch logging client errors");
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error batch logging client errors");
 		}
 	}
@@ -516,7 +447,7 @@ public class LogsController : ControllerBase
 		[FromQuery] DateTime? endDate,
 		CancellationToken cancellationToken)
 	{
-		var data = await LogChartService.GetLogsByLevelAsync(startDate, endDate, cancellationToken);
+		LogsByLevelResponse data = await logChartService.GetLogsByLevelAsync(startDate, endDate, cancellationToken);
 		return Ok(data);
 	}
 
@@ -534,7 +465,7 @@ public class LogsController : ControllerBase
 		[FromQuery] int? hoursBack,
 		CancellationToken cancellationToken)
 	{
-		var data = await LogChartService.GetLogsByHourAsync(hoursBack ?? 24, cancellationToken);
+		LogsByHourResponse data = await logChartService.GetLogsByHourAsync(hoursBack ?? 24, cancellationToken);
 		return Ok(data);
 	}
 
@@ -552,7 +483,7 @@ public class LogsController : ControllerBase
 		[FromQuery] int? topN,
 		CancellationToken cancellationToken)
 	{
-		var data = await LogChartService.GetLogsBySourceAsync(topN ?? 10, cancellationToken);
+		LogsBySourceResponse data = await logChartService.GetLogsBySourceAsync(topN ?? 10, cancellationToken);
 		return Ok(data);
 	}
 
@@ -570,7 +501,7 @@ public class LogsController : ControllerBase
 		[FromQuery] int? count,
 		CancellationToken cancellationToken)
 	{
-		var data = await LogChartService.GetRecentErrorsAsync(count ?? 50, cancellationToken);
+		RecentErrorsResponse data = await logChartService.GetRecentErrorsAsync(count ?? 50, cancellationToken);
 		return Ok(data);
 	}
 
@@ -592,13 +523,12 @@ public class LogsController : ControllerBase
 	{
 		try
 		{
-			var validPeriod = period ?? "24h";
-			var data = await LogChartService.GetChartDataAsync(validPeriod, cancellationToken);
+			string validPeriod = period ?? "24h";
+			LogChartDataResponse data = await logChartService.GetChartDataAsync(validPeriod, cancellationToken);
 			return Ok(data);
 		}
 		catch (ArgumentException ex)
 		{
-			Logger.LogWarning("Invalid period parameter: {Period}. Error: {Error}", period, ex.Message);
 			return BadRequest(new { error = ex.Message });
 		}
 	}

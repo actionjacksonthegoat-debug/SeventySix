@@ -20,7 +20,7 @@ public sealed class IntegrationTheoryAttribute : TheoryAttribute
 
 	static IntegrationTheoryAttribute()
 	{
-		var configuration = new ConfigurationBuilder()
+		IConfigurationRoot configuration = new ConfigurationBuilder()
 			.SetBasePath(Directory.GetCurrentDirectory())
 			.AddJsonFile("appsettings.json", optional: true)
 			.AddJsonFile("appsettings.Test.json", optional: true)

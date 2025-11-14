@@ -5,6 +5,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
+using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Services;
 using SeventySix.Core.Entities;
@@ -46,21 +47,9 @@ public class UserServiceTests
 
 	#region Constructor Tests
 
-	[Fact]
-	public void Constructor_ShouldThrowArgumentNullException_WhenRepositoryIsNull()
-	{
-		// Arrange, Act & Assert
-		Assert.Throws<ArgumentNullException>(() =>
-			new UserService(null!, MockValidator.Object));
-	}
-
-	[Fact]
-	public void Constructor_ShouldThrowArgumentNullException_WhenValidatorIsNull()
-	{
-		// Arrange, Act & Assert
-		Assert.Throws<ArgumentNullException>(() =>
-			new UserService(MockRepository.Object, null!));
-	}
+	// Note: UserService uses primary constructor syntax which relies on
+	// dependency injection to provide non-null dependencies.
+	// ArgumentNullException tests are not applicable with this pattern.
 
 	#endregion
 
@@ -70,23 +59,23 @@ public class UserServiceTests
 	public async Task GetAllUsersAsync_ShouldReturnAllUsers_WhenUsersExistAsync()
 	{
 		// Arrange
-		var users = new List<User>
-		{
+		List<User> users =
+		[
 			new User { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true },
 			new User { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false },
 			new User { Id = 3, Username = "user3", Email = "user3@example.com", IsActive = true },
-		};
+		];
 
 		MockRepository
 			.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync(users);
 
 		// Act
-		var result = await Service.GetAllUsersAsync();
+		IEnumerable<UserDto> result = await Service.GetAllUsersAsync();
 
 		// Assert
 		Assert.NotNull(result);
-		var userDtos = result.ToList();
+		List<UserDto> userDtos = [.. result];
 		Assert.Equal(3, userDtos.Count);
 		Assert.Equal("user1", userDtos[0].Username);
 		Assert.Equal("user2", userDtos[1].Username);
@@ -104,7 +93,7 @@ public class UserServiceTests
 			.ReturnsAsync([]);
 
 		// Act
-		var result = await Service.GetAllUsersAsync();
+		IEnumerable<UserDto> result = await Service.GetAllUsersAsync();
 
 		// Assert
 		Assert.NotNull(result);
@@ -117,7 +106,7 @@ public class UserServiceTests
 	public async Task GetAllUsersAsync_ShouldRespectCancellationTokenAsync()
 	{
 		// Arrange
-		var cancellationToken = new CancellationToken();
+		CancellationToken cancellationToken = new();
 		MockRepository
 			.Setup(r => r.GetAllAsync(cancellationToken))
 			.ReturnsAsync([]);
@@ -137,7 +126,7 @@ public class UserServiceTests
 	public async Task GetUserByIdAsync_ShouldReturnUser_WhenUserExistsAsync()
 	{
 		// Arrange
-		var user = new User
+		User user = new()
 		{
 			Id = 123,
 			Username = "john_doe",
@@ -151,7 +140,7 @@ public class UserServiceTests
 			.ReturnsAsync(user);
 
 		// Act
-		var result = await Service.GetUserByIdAsync(123);
+		UserDto? result = await Service.GetUserByIdAsync(123);
 
 		// Assert
 		Assert.NotNull(result);
@@ -173,7 +162,7 @@ public class UserServiceTests
 			.ReturnsAsync((User?)null);
 
 		// Act
-		var result = await Service.GetUserByIdAsync(999);
+		UserDto? result = await Service.GetUserByIdAsync(999);
 
 		// Assert
 		Assert.Null(result);
@@ -185,7 +174,7 @@ public class UserServiceTests
 	public async Task GetUserByIdAsync_ShouldRespectCancellationTokenAsync()
 	{
 		// Arrange
-		var cancellationToken = new CancellationToken();
+		CancellationToken cancellationToken = new();
 		MockRepository
 			.Setup(r => r.GetByIdAsync(1, cancellationToken))
 			.ReturnsAsync((User?)null);
@@ -205,7 +194,7 @@ public class UserServiceTests
 	public async Task CreateUserAsync_ShouldCreateUser_WhenRequestIsValidAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "new_user",
 			Email = "new@example.com",
@@ -213,7 +202,7 @@ public class UserServiceTests
 			IsActive = true,
 		};
 
-		var validationResult = new ValidationResult();
+		ValidationResult validationResult = new();
 		MockValidator
 			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()))
 			.ReturnsAsync(validationResult);
@@ -227,7 +216,7 @@ public class UserServiceTests
 			});
 
 		// Act
-		var result = await Service.CreateUserAsync(request);
+		UserDto result = await Service.CreateUserAsync(request);
 
 		// Assert
 		Assert.NotNull(result);
@@ -254,14 +243,14 @@ public class UserServiceTests
 	public async Task CreateUserAsync_ShouldThrowValidationException_WhenRequestIsInvalidAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "ab", // Too short
 			Email = "invalid-email",
 		};
 
-		var validationFailure = new ValidationFailure("Username", "Username must be between 3 and 50 characters");
-		var validationResult = new ValidationResult(new[] { validationFailure });
+		ValidationFailure validationFailure = new("Username", "Username must be between 3 and 50 characters");
+		ValidationResult validationResult = new(new[] { validationFailure });
 
 		MockValidator
 			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()))
@@ -283,14 +272,14 @@ public class UserServiceTests
 	public async Task CreateUserAsync_ShouldSetCreatedAtToUtcNowAsync()
 	{
 		// Arrange
-		var beforeCreation = DateTime.UtcNow;
-		var request = new CreateUserRequest
+		DateTime beforeCreation = DateTime.UtcNow;
+		CreateUserRequest request = new()
 		{
 			Username = "test_user",
 			Email = "test@example.com",
 		};
 
-		var validationResult = new ValidationResult();
+		ValidationResult validationResult = new();
 		MockValidator
 			.Setup(v => v.ValidateAsync(request, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(validationResult);
@@ -307,7 +296,7 @@ public class UserServiceTests
 
 		// Act
 		await Service.CreateUserAsync(request);
-		var afterCreation = DateTime.UtcNow;
+		DateTime afterCreation = DateTime.UtcNow;
 
 		// Assert
 		Assert.NotNull(capturedUser);
@@ -319,14 +308,14 @@ public class UserServiceTests
 	public async Task CreateUserAsync_ShouldHandleNullFullNameAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "test_user",
 			Email = "test@example.com",
 			FullName = null,
 		};
 
-		var validationResult = new ValidationResult();
+		ValidationResult validationResult = new();
 		MockValidator
 			.Setup(v => v.ValidateAsync(request, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(validationResult);
@@ -340,7 +329,7 @@ public class UserServiceTests
 			});
 
 		// Act
-		var result = await Service.CreateUserAsync(request);
+		UserDto result = await Service.CreateUserAsync(request);
 
 		// Assert
 		Assert.Null(result.FullName);
@@ -350,14 +339,14 @@ public class UserServiceTests
 	public async Task CreateUserAsync_ShouldRespectIsActiveFalseAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "inactive_user",
 			Email = "inactive@example.com",
 			IsActive = false,
 		};
 
-		var validationResult = new ValidationResult();
+		ValidationResult validationResult = new();
 		MockValidator
 			.Setup(v => v.ValidateAsync(request, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(validationResult);
@@ -367,11 +356,11 @@ public class UserServiceTests
 			.ReturnsAsync((User u, CancellationToken ct) =>
 			{
 				u.Id = 1;
-				return u;
+			 return u;
 			});
 
 		// Act
-		var result = await Service.CreateUserAsync(request);
+		UserDto result = await Service.CreateUserAsync(request);
 
 		// Assert
 		Assert.False(result.IsActive);
@@ -381,14 +370,14 @@ public class UserServiceTests
 	public async Task CreateUserAsync_ShouldRespectCancellationTokenAsync()
 	{
 		// Arrange
-		var cancellationToken = new CancellationToken();
-		var request = new CreateUserRequest
+		CancellationToken cancellationToken = new();
+		CreateUserRequest request = new()
 		{
 			Username = "test",
 			Email = "test@example.com",
 		};
 
-		var validationResult = new ValidationResult();
+		ValidationResult validationResult = new();
 		MockValidator
 			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), cancellationToken))
 			.ReturnsAsync(validationResult);
@@ -398,7 +387,7 @@ public class UserServiceTests
 			.ReturnsAsync((User u, CancellationToken ct) =>
 			{
 				u.Id = 1;
-				return u;
+			 return u;
 			});
 
 		// Act

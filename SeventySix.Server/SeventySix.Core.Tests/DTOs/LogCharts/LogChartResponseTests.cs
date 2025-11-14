@@ -15,7 +15,7 @@ public class LogChartResponseTests
 	public void LogsByLevelResponse_Constructor_ShouldInitializeWithEmptyDictionary()
 	{
 		// Arrange & Act
-		var response = new LogsByLevelResponse();
+		LogsByLevelResponse response = new();
 
 		// Assert
 		Assert.NotNull(response.LogCounts);
@@ -26,7 +26,7 @@ public class LogChartResponseTests
 	public void LogsByLevelResponse_LogCounts_ShouldStoreMultipleLevels()
 	{
 		// Arrange & Act
-		var response = new LogsByLevelResponse
+		LogsByLevelResponse response = new()
 		{
 			LogCounts = new Dictionary<string, int>
 			{
@@ -49,7 +49,7 @@ public class LogChartResponseTests
 	public void LogsByHourResponse_Constructor_ShouldInitializeWithEmptyList()
 	{
 		// Arrange & Act
-		var response = new LogsByHourResponse();
+		LogsByHourResponse response = new();
 
 		// Assert
 		Assert.NotNull(response.HourlyData);
@@ -60,15 +60,15 @@ public class LogChartResponseTests
 	public void LogsByHourResponse_HourlyData_ShouldStoreMultipleDataPoints()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var response = new LogsByHourResponse
+		DateTime now = DateTime.UtcNow;
+		LogsByHourResponse response = new()
 		{
-			HourlyData = new List<HourlyLogData>
-			{
-				new HourlyLogData { Hour = now.AddHours(-2), Count = 100 },
-				new HourlyLogData { Hour = now.AddHours(-1), Count = 150 },
-				new HourlyLogData { Hour = now, Count = 75 },
-			},
+			HourlyData =
+			[
+				new() { Hour = now.AddHours(-2), Count = 100 },
+				new() { Hour = now.AddHours(-1), Count = 150 },
+				new() { Hour = now, Count = 75 },
+			],
 		};
 
 		// Assert
@@ -82,7 +82,7 @@ public class LogChartResponseTests
 	public void HourlyLogData_Constructor_ShouldInitializeWithDefaults()
 	{
 		// Arrange & Act
-		var data = new HourlyLogData();
+		HourlyLogData data = new();
 
 		// Assert
 		Assert.Equal(default(DateTime), data.Hour);
@@ -93,8 +93,8 @@ public class LogChartResponseTests
 	public void HourlyLogData_Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange
-		var hour = DateTime.UtcNow;
-		var data = new HourlyLogData
+		DateTime hour = DateTime.UtcNow;
+		HourlyLogData data = new()
 		{
 			Hour = hour,
 			Count = 250,
@@ -109,7 +109,7 @@ public class LogChartResponseTests
 	public void LogsBySourceResponse_Constructor_ShouldInitializeWithEmptyDictionary()
 	{
 		// Arrange & Act
-		var response = new LogsBySourceResponse();
+		LogsBySourceResponse response = new();
 
 		// Assert
 		Assert.NotNull(response.SourceCounts);
@@ -120,7 +120,7 @@ public class LogChartResponseTests
 	public void LogsBySourceResponse_SourceCounts_ShouldStoreMultipleSources()
 	{
 		// Arrange & Act
-		var response = new LogsBySourceResponse
+		LogsBySourceResponse response = new()
 		{
 			SourceCounts = new Dictionary<string, int>
 			{
@@ -141,7 +141,7 @@ public class LogChartResponseTests
 	public void RecentErrorsResponse_Constructor_ShouldInitializeWithEmptyList()
 	{
 		// Arrange & Act
-		var response = new RecentErrorsResponse();
+		RecentErrorsResponse response = new();
 
 		// Assert
 		Assert.NotNull(response.Errors);
@@ -152,26 +152,24 @@ public class LogChartResponseTests
 	public void RecentErrorsResponse_Errors_ShouldStoreMultipleErrors()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var response = new RecentErrorsResponse
+		DateTime now = DateTime.UtcNow;
+		RecentErrorsResponse response = new()
 		{
-			Errors = new List<ErrorLogSummary>
-			{
-				new ErrorLogSummary
-				{
+			Errors =
+			[
+				new() {
 					Timestamp = now.AddMinutes(-5),
 					Level = "Error",
 					Message = "Database connection failed",
 					Source = "DatabaseService",
 				},
-				new ErrorLogSummary
-				{
+				new() {
 					Timestamp = now.AddMinutes(-2),
 					Level = "Critical",
 					Message = "API rate limit exceeded",
 					Source = "OpenWeatherService",
 				},
-			},
+			],
 		};
 
 		// Assert
@@ -185,7 +183,7 @@ public class LogChartResponseTests
 	public void ErrorLogSummary_Constructor_ShouldInitializeWithDefaults()
 	{
 		// Arrange & Act
-		var error = new ErrorLogSummary();
+		ErrorLogSummary error = new();
 
 		// Assert
 		Assert.Equal(default(DateTime), error.Timestamp);
@@ -198,8 +196,8 @@ public class LogChartResponseTests
 	public void ErrorLogSummary_Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange
-		var timestamp = DateTime.UtcNow;
-		var error = new ErrorLogSummary
+		DateTime timestamp = DateTime.UtcNow;
+		ErrorLogSummary error = new()
 		{
 			Timestamp = timestamp,
 			Level = "Warning",

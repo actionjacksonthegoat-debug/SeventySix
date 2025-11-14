@@ -76,8 +76,8 @@ public class RateLimitingServiceTests
 	public async Task CanMakeRequestAsync_UnderLimit_ReturnsTrue()
 	{
 		const string apiName = "TestApi";
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = new ThirdPartyApiRequest
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest request = new()
 		{
 			Id = 1,
 			ApiName = apiName,
@@ -99,8 +99,8 @@ public class RateLimitingServiceTests
 	public async Task CanMakeRequestAsync_AtLimit_ReturnsFalse()
 	{
 		const string apiName = "TestApi";
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = new ThirdPartyApiRequest
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest request = new()
 		{
 			Id = 1,
 			ApiName = apiName,
@@ -123,7 +123,7 @@ public class RateLimitingServiceTests
 	{
 		const string apiName = "TestApi";
 		const string baseUrl = "https://api.test.com";
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 
 		MockRepository
 			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
@@ -152,8 +152,8 @@ public class RateLimitingServiceTests
 	{
 		const string apiName = "TestApi";
 		const string baseUrl = "https://api.test.com";
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = new ThirdPartyApiRequest
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest request = new()
 		{
 			Id = 1,
 			ApiName = apiName,
@@ -184,8 +184,8 @@ public class RateLimitingServiceTests
 	{
 		const string apiName = "TestApi";
 		const string baseUrl = "https://api.test.com";
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = new ThirdPartyApiRequest
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest request = new()
 		{
 			Id = 1,
 			ApiName = apiName,

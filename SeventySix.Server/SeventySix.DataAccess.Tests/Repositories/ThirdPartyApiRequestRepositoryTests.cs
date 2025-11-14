@@ -56,8 +56,8 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task GetByApiNameAndDateAsync_ReturnsRecord_WhenExists()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = new ThirdPartyApiRequest
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
@@ -67,7 +67,7 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 		await _repository.CreateAsync(request);
 
 		// Act
-		var result = await _repository.GetByApiNameAndDateAsync("OpenWeather", today);
+		ThirdPartyApiRequest? result = await _repository.GetByApiNameAndDateAsync("OpenWeather", today);
 
 		// Assert
 		Assert.NotNull(result);
@@ -80,10 +80,10 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task GetByApiNameAndDateAsync_ReturnsNull_WhenNotFound()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 
 		// Act
-		var result = await _repository.GetByApiNameAndDateAsync("NonExistent", today);
+		ThirdPartyApiRequest? result = await _repository.GetByApiNameAndDateAsync("NonExistent", today);
 
 		// Assert
 		Assert.Null(result);
@@ -93,10 +93,10 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task GetByApiNameAndDateAsync_ReturnsNull_WhenDifferentDate()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var yesterday = today.AddDays(-1);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly yesterday = today.AddDays(-1);
 
-		var request = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
@@ -106,7 +106,7 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 		await _repository.CreateAsync(request);
 
 		// Act
-		var result = await _repository.GetByApiNameAndDateAsync("OpenWeather", yesterday);
+		ThirdPartyApiRequest? result = await _repository.GetByApiNameAndDateAsync("OpenWeather", yesterday);
 
 		// Assert
 		Assert.Null(result);
@@ -116,8 +116,8 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task CreateAsync_CreatesRecord_WithGeneratedId()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = new ThirdPartyApiRequest
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
@@ -126,7 +126,7 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 		};
 
 		// Act
-		var result = await _repository.CreateAsync(request);
+		ThirdPartyApiRequest result = await _repository.CreateAsync(request);
 
 		// Assert
 		Assert.NotEqual(0, result.Id); // Id should be generated
@@ -138,9 +138,9 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task CreateAsync_SetsTimestamps_Automatically()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var beforeCreate = DateTime.UtcNow;
-		var request = new ThirdPartyApiRequest
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateTime beforeCreate = DateTime.UtcNow;
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
@@ -148,8 +148,8 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 		};
 
 		// Act
-		var result = await _repository.CreateAsync(request);
-		var afterCreate = DateTime.UtcNow;
+		ThirdPartyApiRequest result = await _repository.CreateAsync(request);
+		DateTime afterCreate = DateTime.UtcNow;
 
 		// Assert
 		Assert.True(result.CreatedAt >= beforeCreate && result.CreatedAt <= afterCreate);
@@ -160,8 +160,8 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task CreateAsync_ThrowsException_WhenDuplicateApiNameAndDate()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request1 = new ThirdPartyApiRequest
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest request1 = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
@@ -169,7 +169,7 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 		};
 		await _repository.CreateAsync(request1);
 
-		var request2 = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request2 = new()
 		{
 			ApiName = "OpenWeather", // Same API
 			BaseUrl = "https://api.openweathermap.org",
@@ -184,17 +184,17 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task CreateAsync_AllowsDifferentDatesForSameApi()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var yesterday = today.AddDays(-1);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly yesterday = today.AddDays(-1);
 
-		var request1 = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request1 = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
 			ResetDate = today,
 		};
 
-		var request2 = new ThirdPartyApiRequest
+		ThirdPartyApiRequest request2 = new()
 		{
 			ApiName = "OpenWeather", // Same API
 			BaseUrl = "https://api.openweathermap.org",
@@ -203,7 +203,7 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 
 		// Act
 		await _repository.CreateAsync(request1);
-		var result = await _repository.CreateAsync(request2);
+		ThirdPartyApiRequest result = await _repository.CreateAsync(request2);
 
 		// Assert
 		Assert.NotNull(result);
@@ -214,19 +214,19 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task UpdateAsync_UpdatesRecord_Successfully()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = new ThirdPartyApiRequest
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
 			CallCount = 5,
 			ResetDate = today,
 		};
-		var created = await _repository.CreateAsync(request);
+		ThirdPartyApiRequest created = await _repository.CreateAsync(request);
 
 		// Act
 		created.CallCount = 10;
-		var result = await _repository.UpdateAsync(created);
+		ThirdPartyApiRequest result = await _repository.UpdateAsync(created);
 
 		// Assert
 		Assert.Equal(10, result.CallCount);
@@ -236,23 +236,23 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task UpdateAsync_UpdatesTimestamp_Automatically()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var request = new ThirdPartyApiRequest
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		ThirdPartyApiRequest request = new()
 		{
 			ApiName = "OpenWeather",
 			BaseUrl = "https://api.openweathermap.org",
 			CallCount = 5,
 			ResetDate = today,
 		};
-		var created = await _repository.CreateAsync(request);
-		var originalUpdatedAt = created.UpdatedAt;
+		ThirdPartyApiRequest created = await _repository.CreateAsync(request);
+		DateTime originalUpdatedAt = created.UpdatedAt;
 
 		// Wait to ensure timestamp difference
 		await Task.Delay(100);
 
 		// Act
 		created.CallCount = 10;
-		var result = await _repository.UpdateAsync(created);
+		ThirdPartyApiRequest result = await _repository.UpdateAsync(created);
 
 		// Assert
 		Assert.True(result.UpdatedAt > originalUpdatedAt);
@@ -262,9 +262,9 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task GetByApiNameAsync_ReturnsAllRecordsForApi()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var yesterday = today.AddDays(-1);
-		var twoDaysAgo = today.AddDays(-2);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly yesterday = today.AddDays(-1);
+		DateOnly twoDaysAgo = today.AddDays(-2);
 
 		await _repository.CreateAsync(new ThirdPartyApiRequest
 		{
@@ -300,10 +300,10 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 		});
 
 		// Act
-		var results = await _repository.GetByApiNameAsync("OpenWeather");
+		IEnumerable<ThirdPartyApiRequest> results = await _repository.GetByApiNameAsync("OpenWeather");
 
 		// Assert
-		var resultList = results.ToList();
+		List<ThirdPartyApiRequest> resultList = [.. results];
 		Assert.Equal(3, resultList.Count);
 		Assert.All(resultList, r => Assert.Equal("OpenWeather", r.ApiName));
 	}
@@ -312,7 +312,7 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task GetByApiNameAsync_ReturnsEmptyCollection_WhenNoRecords()
 	{
 		// Act
-		var results = await _repository.GetByApiNameAsync("NonExistent");
+		IEnumerable<ThirdPartyApiRequest> results = await _repository.GetByApiNameAsync("NonExistent");
 
 		// Assert
 		Assert.Empty(results);
@@ -322,10 +322,10 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task DeleteOlderThanAsync_DeletesOldRecords()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var tenDaysAgo = today.AddDays(-10);
-		var thirtyDaysAgo = today.AddDays(-30);
-		var fortyDaysAgo = today.AddDays(-40);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly tenDaysAgo = today.AddDays(-10);
+		DateOnly thirtyDaysAgo = today.AddDays(-30);
+		DateOnly fortyDaysAgo = today.AddDays(-40);
 
 		await _repository.CreateAsync(new ThirdPartyApiRequest
 		{
@@ -356,11 +356,11 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 		});
 
 		// Act
-		var deletedCount = await _repository.DeleteOlderThanAsync(thirtyDaysAgo);
+		int deletedCount = await _repository.DeleteOlderThanAsync(thirtyDaysAgo);
 
 		// Assert
 		Assert.Equal(1, deletedCount); // Only fortyDaysAgo should be deleted
-		var remaining = await _repository.GetByApiNameAsync("OpenWeather");
+		IEnumerable<ThirdPartyApiRequest> remaining = await _repository.GetByApiNameAsync("OpenWeather");
 		Assert.Equal(3, remaining.Count());
 	}
 
@@ -368,8 +368,8 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 	public async Task DeleteOlderThanAsync_ReturnsZero_WhenNoRecordsToDelete()
 	{
 		// Arrange
-		var today = DateOnly.FromDateTime(DateTime.UtcNow);
-		var yesterday = today.AddDays(-1);
+		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly yesterday = today.AddDays(-1);
 
 		await _repository.CreateAsync(new ThirdPartyApiRequest
 		{
@@ -379,25 +379,21 @@ public class ThirdPartyApiRequestRepositoryTests : IDisposable
 		});
 
 		// Act
-		var deletedCount = await _repository.DeleteOlderThanAsync(yesterday);
+		int deletedCount = await _repository.DeleteOlderThanAsync(yesterday);
 
 		// Assert
 		Assert.Equal(0, deletedCount);
 	}
 
 	[Fact]
-	public async Task CreateAsync_ThrowsException_WhenEntityIsNull()
-	{
+	public async Task CreateAsync_ThrowsException_WhenEntityIsNull() =>
 		// Act & Assert
 		await Assert.ThrowsAsync<ArgumentNullException>(() => _repository.CreateAsync(null!));
-	}
 
 	[Fact]
-	public async Task UpdateAsync_ThrowsException_WhenEntityIsNull()
-	{
+	public async Task UpdateAsync_ThrowsException_WhenEntityIsNull() =>
 		// Act & Assert
 		await Assert.ThrowsAsync<ArgumentNullException>(() => _repository.UpdateAsync(null!));
-	}
 
 	[Fact]
 	public async Task GetByApiNameAndDateAsync_ThrowsException_WhenApiNameIsNull()

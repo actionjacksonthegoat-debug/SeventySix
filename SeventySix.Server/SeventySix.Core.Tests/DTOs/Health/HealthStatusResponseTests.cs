@@ -15,7 +15,7 @@ public class HealthStatusResponseTests
 	public void HealthStatusResponse_Constructor_ShouldInitializeWithDefaults()
 	{
 		// Arrange & Act
-		var response = new HealthStatusResponse();
+		HealthStatusResponse response = new();
 
 		// Assert
 		Assert.Equal("Healthy", response.Status);
@@ -30,8 +30,8 @@ public class HealthStatusResponseTests
 	public void HealthStatusResponse_Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var response = new HealthStatusResponse
+		DateTime now = DateTime.UtcNow;
+		HealthStatusResponse response = new()
 		{
 			Status = "Degraded",
 			CheckedAt = now,
@@ -51,7 +51,7 @@ public class HealthStatusResponseTests
 	public void DatabaseHealthResponse_Constructor_ShouldInitializeWithDefaults()
 	{
 		// Arrange & Act
-		var response = new DatabaseHealthResponse();
+		DatabaseHealthResponse response = new();
 
 		// Assert
 		Assert.False(response.IsConnected);
@@ -64,7 +64,7 @@ public class HealthStatusResponseTests
 	public void DatabaseHealthResponse_Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange & Act
-		var response = new DatabaseHealthResponse
+		DatabaseHealthResponse response = new()
 		{
 			IsConnected = true,
 			ResponseTimeMs = 25.5,
@@ -83,7 +83,7 @@ public class HealthStatusResponseTests
 	public void ExternalApiHealthResponse_Constructor_ShouldInitializeWithEmptyDictionary()
 	{
 		// Arrange & Act
-		var response = new ExternalApiHealthResponse();
+		ExternalApiHealthResponse response = new();
 
 		// Assert
 		Assert.NotNull(response.Apis);
@@ -94,8 +94,8 @@ public class HealthStatusResponseTests
 	public void ExternalApiHealthResponse_Apis_ShouldStoreMultipleApis()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var response = new ExternalApiHealthResponse
+		DateTime now = DateTime.UtcNow;
+		ExternalApiHealthResponse response = new()
 		{
 			Apis = new Dictionary<string, ApiHealthStatus>
 			{
@@ -133,7 +133,7 @@ public class HealthStatusResponseTests
 	public void ApiHealthStatus_Constructor_ShouldInitializeWithDefaults()
 	{
 		// Arrange & Act
-		var status = new ApiHealthStatus();
+		ApiHealthStatus status = new();
 
 		// Assert
 		Assert.Equal(string.Empty, status.ApiName);
@@ -146,7 +146,7 @@ public class HealthStatusResponseTests
 	public void QueueHealthResponse_Constructor_ShouldInitializeWithDefaults()
 	{
 		// Arrange & Act
-		var response = new QueueHealthResponse();
+		QueueHealthResponse response = new();
 
 		// Assert
 		Assert.Equal(0, response.QueuedItems);
@@ -159,7 +159,7 @@ public class HealthStatusResponseTests
 	public void QueueHealthResponse_Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange & Act
-		var response = new QueueHealthResponse
+		QueueHealthResponse response = new()
 		{
 			QueuedItems = 5,
 			FailedItems = 2,
@@ -178,7 +178,7 @@ public class HealthStatusResponseTests
 	public void SystemResourcesResponse_Constructor_ShouldInitializeWithDefaults()
 	{
 		// Arrange & Act
-		var response = new SystemResourcesResponse();
+		SystemResourcesResponse response = new();
 
 		// Assert
 		Assert.Equal(0, response.CpuUsagePercent);
@@ -191,7 +191,7 @@ public class HealthStatusResponseTests
 	public void SystemResourcesResponse_Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange & Act
-		var response = new SystemResourcesResponse
+		SystemResourcesResponse response = new()
 		{
 			CpuUsagePercent = 45.5,
 			MemoryUsedMb = 2048,

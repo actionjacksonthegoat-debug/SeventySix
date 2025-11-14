@@ -40,8 +40,8 @@ public class HistoricalWeatherRequestValidator : AbstractValidator<HistoricalWea
 	/// </summary>
 	private static bool BeWithinLast5Days(long timestamp)
 	{
-		var requestedDate = DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
-		var fiveDaysAgo = DateTime.UtcNow.AddDays(-5).AddSeconds(-1); // Add buffer for edge case
+		DateTime requestedDate = DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
+		DateTime fiveDaysAgo = DateTime.UtcNow.AddDays(-5).AddSeconds(-1); // Add buffer for edge case
 
 		return requestedDate >= fiveDaysAgo && requestedDate <= DateTime.UtcNow;
 	}

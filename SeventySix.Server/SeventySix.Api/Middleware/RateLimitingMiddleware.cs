@@ -26,10 +26,15 @@ namespace SeventySix.Api.Middleware;
 /// Thread Safety: Uses ConcurrentDictionary and locking for thread-safe operation.
 /// Memory Management: Automatically cleans up old client entries to prevent memory leaks.
 /// </remarks>
-public class RateLimitingMiddleware
+/// <remarks>
+/// Initializes a new instance of the <see cref="RateLimitingMiddleware"/> class.
+/// </remarks>
+/// <param name="next">The next middleware in the pipeline.</param>
+/// <param name="logger">The logger instance for recording rate limit violations.</param>
+/// <exception cref="ArgumentNullException">Thrown when next or logger is null.</exception>
+public class RateLimitingMiddleware(
+	RequestDelegate next)
 {
-	private readonly RequestDelegate Next;
-	private readonly ILogger<RateLimitingMiddleware> Logger;
 	private static readonly ConcurrentDictionary<string, RateLimitInfo> Clients = new();
 
 	/// <summary>
@@ -41,20 +46,6 @@ public class RateLimitingMiddleware
 	/// Time window in seconds for rate limiting.
 	/// </summary>
 	private const int TIME_WINDOW_SECONDS = 60;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="RateLimitingMiddleware"/> class.
-	/// </summary>
-	/// <param name="next">The next middleware in the pipeline.</param>
-	/// <param name="logger">The logger instance for recording rate limit violations.</param>
-	/// <exception cref="ArgumentNullException">Thrown when next or logger is null.</exception>
-	public RateLimitingMiddleware(
-		RequestDelegate next,
-		ILogger<RateLimitingMiddleware> logger)
-	{
-		Next = next;
-		Logger = logger;
-	}
 
 	/// <summary>
 	/// Invokes the rate limiting middleware to check and enforce request limits.
@@ -74,7 +65,7 @@ public class RateLimitingMiddleware
 
 		if (string.IsNullOrEmpty(clientIp))
 		{
-			await Next(context);
+			await next(context);
 			return;
 		}
 
@@ -89,10 +80,8 @@ public class RateLimitingMiddleware
 		// Check rate limit
 		if (!clientInfo.AllowRequest())
 		{
-			Logger.LogWarning("Rate limit exceeded for IP: {ClientIp}", clientIp);
-
 			context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-			context.Response.Headers["Retry-After"] = TIME_WINDOW_SECONDS.ToString();
+			context.Response.Headers.RetryAfter = TIME_WINDOW_SECONDS.ToString();
 
 			await context.Response.WriteAsJsonAsync(new
 			{
@@ -104,7 +93,7 @@ public class RateLimitingMiddleware
 			return;
 		}
 
-		await Next(context);
+		await next(context);
 	}
 
 	/// <summary>
@@ -137,7 +126,7 @@ public class RateLimitingMiddleware
 	private class RateLimitInfo
 	{
 		private readonly Queue<DateTime> RequestTimes = new();
-		private readonly object Lock = new();
+		private readonly Lock Lock = new();
 
 		/// <summary>
 		/// Gets the timestamp of the most recent request from this client.

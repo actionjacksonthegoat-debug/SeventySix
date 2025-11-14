@@ -67,7 +67,9 @@ public class LogRepository : ILogRepository
 		}
 		catch (Exception ex)
 		{
-			// Don't use Logger to avoid infinite loop if logging system has issues
+			// ⚠️ IMPORTANT: Use Console.WriteLine here instead of Logger.LogError
+			// to prevent infinite loop if the logging system itself is failing.
+			// This is the ONLY place where Console.WriteLine should be used.
 			Console.WriteLine($"Error creating log entry: {ex.Message}");
 			throw;
 		}
@@ -86,7 +88,7 @@ public class LogRepository : ILogRepository
 	{
 		try
 		{
-			var query = Context.Logs.AsNoTracking();
+			IQueryable<Log> query = Context.Logs.AsNoTracking();
 
 			if (!string.IsNullOrWhiteSpace(logLevel))
 			{
@@ -142,7 +144,7 @@ public class LogRepository : ILogRepository
 	{
 		try
 		{
-			var query = Context.Logs.AsNoTracking();
+			IQueryable<Log> query = Context.Logs.AsNoTracking();
 
 			if (!string.IsNullOrWhiteSpace(logLevel))
 			{
@@ -188,7 +190,7 @@ public class LogRepository : ILogRepository
 	{
 		try
 		{
-			var deletedCount = await Context.Logs
+			int deletedCount = await Context.Logs
 				.Where(l => l.Timestamp < cutoffDate)
 				.ExecuteDeleteAsync(cancellationToken);
 
@@ -217,12 +219,12 @@ public class LogRepository : ILogRepository
 	{
 		try
 		{
-			var logs = await Context.Logs
+			List<Log> logs = await Context.Logs
 				.AsNoTracking()
 				.Where(l => l.Timestamp >= startDate && l.Timestamp <= endDate)
 				.ToListAsync(cancellationToken);
 
-			var stats = new LogStatistics
+			LogStatistics stats = new()
 			{
 				TotalLogs = logs.Count,
 				ErrorCount = logs.Count(l => l.LogLevel == "Error"),
@@ -274,7 +276,7 @@ public class LogRepository : ILogRepository
 		{
 			Logger.LogDebug("Attempting to delete log with ID: {LogId}", id);
 
-			var log = await Context.Logs.FindAsync(new object[] { id }, cancellationToken);
+			Log? log = await Context.Logs.FindAsync([id], cancellationToken);
 
 			if (log == null)
 			{
@@ -303,9 +305,9 @@ public class LogRepository : ILogRepository
 			Logger.LogDebug("Attempting to delete {Count} logs", ids.Length);
 
 			// Convert to List to avoid ReadOnlySpan implicit conversion issues in .NET 10+ LINQ expressions
-			var idList = ids.ToList();
+			List<int> idList = [.. ids];
 
-			var logsToDelete = await Context.Logs
+			List<Log> logsToDelete = await Context.Logs
 				.Where(l => idList.Contains(l.Id))
 				.ToListAsync(cancellationToken);
 

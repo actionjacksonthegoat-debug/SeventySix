@@ -7,6 +7,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SeventySix.Core.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace SeventySix.Api.Middleware;
 
@@ -33,27 +34,24 @@ namespace SeventySix.Api.Middleware;
 ///
 /// Security: Stack traces are only included in development environments.
 /// </remarks>
-public class GlobalExceptionMiddleware
+/// <remarks>
+/// Initializes a new instance of the <see cref="GlobalExceptionMiddleware"/> class.
+/// </remarks>
+/// <param name="next">Next middleware in pipeline.</param>
+/// <param name="logger">Logger instance.</param>
+/// <param name="environment">Host environment.</param>
+public class GlobalExceptionMiddleware(
+	RequestDelegate next,
+	ILogger<GlobalExceptionMiddleware> logger,
+	IHostEnvironment environment)
 {
-	private readonly RequestDelegate Next;
-	private readonly ILogger<GlobalExceptionMiddleware> Logger;
-	private readonly IHostEnvironment Environment;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="GlobalExceptionMiddleware"/> class.
-	/// </summary>
-	/// <param name="next">Next middleware in pipeline.</param>
-	/// <param name="logger">Logger instance.</param>
-	/// <param name="environment">Host environment.</param>
-	public GlobalExceptionMiddleware(
-		RequestDelegate next,
-		ILogger<GlobalExceptionMiddleware> logger,
-		IHostEnvironment environment)
-	{
-		Next = next ?? throw new ArgumentNullException(nameof(next));
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-		Environment = environment ?? throw new ArgumentNullException(nameof(environment));
-	}
+	// At the top of the class, add a static readonly field for the options:
+	private static readonly JsonSerializerOptions ProblemDetailsJsonOptions =
+		new()
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		};
 
 	/// <summary>
 	/// Invokes the middleware to process the HTTP request.
@@ -65,11 +63,11 @@ public class GlobalExceptionMiddleware
 	{
 		try
 		{
-			await Next(context);
+			await next(context);
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);
+			logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);
 			await HandleExceptionAsync(context, ex);
 		}
 	}
@@ -84,7 +82,7 @@ public class GlobalExceptionMiddleware
 	{
 		context.Response.ContentType = "application/problem+json";
 
-		var problemDetails = exception switch
+		ProblemDetails problemDetails = exception switch
 		{
 			ValidationException validationEx => CreateValidationProblemDetails(context, validationEx),
 			EntityNotFoundException notFoundEx => CreateProblemDetails(
@@ -131,18 +129,12 @@ public class GlobalExceptionMiddleware
 				context,
 				HttpStatusCode.InternalServerError,
 				"Internal Server Error",
-				Environment.IsDevelopment() ? exception.Message : "An error occurred processing your request.")
+				environment.IsDevelopment() ? exception.Message : "An error occurred processing your request.")
 		};
 
 		context.Response.StatusCode = problemDetails.Status ?? (int)HttpStatusCode.InternalServerError;
 
-		var options = new JsonSerializerOptions
-		{
-			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-			WriteIndented = true,
-		};
-
-		await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, options));
+		await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, ProblemDetailsJsonOptions));
 	}
 
 	/// <summary>
@@ -179,7 +171,7 @@ public class GlobalExceptionMiddleware
 		HttpContext context,
 		ValidationException validationException)
 	{
-		var errors = validationException.Errors
+		Dictionary<string, string[]> errors = validationException.Errors
 			.GroupBy(e => e.PropertyName)
 			.ToDictionary(
 				g => g.Key,

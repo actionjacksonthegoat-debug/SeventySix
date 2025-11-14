@@ -21,10 +21,10 @@ public class HealthCheckService : IHealthCheckService
 	public async Task<HealthStatusResponse> GetHealthStatusAsync(CancellationToken cancellationToken)
 	{
 		// Run health checks in parallel for better performance
-		var databaseHealthTask = CheckDatabaseHealthAsync(cancellationToken);
-		var externalApisHealthTask = CheckExternalApisHealthAsync(cancellationToken);
-		var errorQueueHealthTask = CheckErrorQueueHealthAsync(cancellationToken);
-		var systemHealthTask = CheckSystemResourcesAsync(cancellationToken);
+		Task<DatabaseHealthResponse> databaseHealthTask = CheckDatabaseHealthAsync(cancellationToken);
+		Task<ExternalApiHealthResponse> externalApisHealthTask = CheckExternalApisHealthAsync(cancellationToken);
+		Task<QueueHealthResponse> errorQueueHealthTask = CheckErrorQueueHealthAsync(cancellationToken);
+		Task<SystemResourcesResponse> systemHealthTask = CheckSystemResourcesAsync(cancellationToken);
 
 		await Task.WhenAll(
 			databaseHealthTask,
@@ -32,13 +32,13 @@ public class HealthCheckService : IHealthCheckService
 			errorQueueHealthTask,
 			systemHealthTask);
 
-		var databaseHealth = await databaseHealthTask;
-		var externalApisHealth = await externalApisHealthTask;
-		var errorQueueHealth = await errorQueueHealthTask;
-		var systemHealth = await systemHealthTask;
+		DatabaseHealthResponse databaseHealth = await databaseHealthTask;
+		ExternalApiHealthResponse externalApisHealth = await externalApisHealthTask;
+		QueueHealthResponse errorQueueHealth = await errorQueueHealthTask;
+		SystemResourcesResponse systemHealth = await systemHealthTask;
 
 		// Determine overall status based on component statuses
-		var overallStatus = DetermineOverallStatus(
+		string overallStatus = DetermineOverallStatus(
 			databaseHealth.Status,
 			errorQueueHealth.Status);
 
@@ -57,13 +57,14 @@ public class HealthCheckService : IHealthCheckService
 	{
 		// Basic implementation - in production this would check actual database connectivity
 		// For now, return healthy status
-		return Task.FromResult(new DatabaseHealthResponse
-		{
-			IsConnected = true,
-			ResponseTimeMs = 25.0,
-			ActiveConnections = 5,
-			Status = "Healthy",
-		});
+		return Task.FromResult(
+			new DatabaseHealthResponse
+			{
+				IsConnected = true,
+				ResponseTimeMs = 25.0,
+				ActiveConnections = 5,
+				Status = "Healthy",
+			});
 	}
 
 	private static Task<ExternalApiHealthResponse> CheckExternalApisHealthAsync(CancellationToken cancellationToken)
@@ -71,7 +72,7 @@ public class HealthCheckService : IHealthCheckService
 		// Basic implementation - in production this would check actual API availability
 		return Task.FromResult(new ExternalApiHealthResponse
 		{
-			Apis = new Dictionary<string, ApiHealthStatus>(),
+			Apis = [],
 		});
 	}
 
@@ -90,14 +91,14 @@ public class HealthCheckService : IHealthCheckService
 	private static Task<SystemResourcesResponse> CheckSystemResourcesAsync(CancellationToken cancellationToken)
 	{
 		// Get actual system resource metrics
-		var process = Process.GetCurrentProcess();
+		Process process = Process.GetCurrentProcess();
 
-		var memoryUsedMb = process.WorkingSet64 / 1024 / 1024;
-		var totalMemoryMb = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024;
+		long memoryUsedMb = process.WorkingSet64 / 1024 / 1024;
+		long totalMemoryMb = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024;
 
 		// CPU usage is more complex to calculate accurately
 		// For now, use a simple placeholder
-		var cpuUsage = 0.0;
+		double cpuUsage = 0.0;
 
 		return Task.FromResult(new SystemResourcesResponse
 		{

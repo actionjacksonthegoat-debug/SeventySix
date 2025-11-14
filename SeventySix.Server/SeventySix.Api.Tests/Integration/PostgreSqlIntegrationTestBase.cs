@@ -32,11 +32,11 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
 	public async Task InitializeAsync()
 	{
 		// Apply migrations to create database schema
-		var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+		DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
 			.UseNpgsql(ConnectionString)
 			.Options;
 
-		await using var context = new ApplicationDbContext(options);
+		await using ApplicationDbContext context = new(options);
 
 		// Ensure database exists and is up to date
 		await context.Database.MigrateAsync();
@@ -46,11 +46,9 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
 	/// Cleanup after all tests complete.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-	public Task DisposeAsync()
-	{
+	public Task DisposeAsync() =>
 		// Database remains for next test run - cleaned before each test
-		return Task.CompletedTask;
-	}
+		Task.CompletedTask;
 }
 
 /// <summary>
@@ -99,11 +97,11 @@ public abstract class PostgreSqlIntegrationTestBase(PostgreSqlFixture fixture) :
 	public async Task InitializeAsync()
 	{
 		// Clean up data before each test to ensure isolation
-		var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+		DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
 			.UseNpgsql(ConnectionString)
 			.Options;
 
-		await using var context = new ApplicationDbContext(options);
+		await using ApplicationDbContext context = new(options);
 		await context.Database.ExecuteSqlRawAsync(
 			"TRUNCATE TABLE \"ThirdPartyApiRequests\" RESTART IDENTITY CASCADE");
 	}
@@ -112,9 +110,7 @@ public abstract class PostgreSqlIntegrationTestBase(PostgreSqlFixture fixture) :
 	/// Called after each test. Cleanup is handled by InitializeAsync of the next test.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-	public Task DisposeAsync()
-	{
+	public Task DisposeAsync() =>
 		// No per-test cleanup needed - InitializeAsync handles it
-		return Task.CompletedTask;
-	}
+		Task.CompletedTask;
 }

@@ -37,14 +37,14 @@ public class CreateUserValidatorTests
 	public void Username_ShouldHaveError_WhenEmpty()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = string.Empty,
 			Email = "test@example.com",
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Username)
@@ -55,14 +55,14 @@ public class CreateUserValidatorTests
 	public void Username_ShouldHaveError_WhenNull()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = null!,
 			Email = "test@example.com",
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Username);
@@ -74,14 +74,14 @@ public class CreateUserValidatorTests
 	public void Username_ShouldHaveError_WhenTooShort(string username)
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = username,
 			Email = "test@example.com",
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Username)
@@ -92,14 +92,14 @@ public class CreateUserValidatorTests
 	public void Username_ShouldHaveError_WhenTooLong()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = new string('a', 51), // 51 chars
 			Email = "test@example.com",
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Username)
@@ -116,14 +116,14 @@ public class CreateUserValidatorTests
 	public void Username_ShouldHaveError_WhenContainsInvalidCharacters(string username)
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = username,
 			Email = "test@example.com",
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Username)
@@ -139,14 +139,14 @@ public class CreateUserValidatorTests
 	public void Username_ShouldNotHaveError_WhenValid(string username)
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = username,
 			Email = "test@example.com",
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Username);
@@ -156,14 +156,14 @@ public class CreateUserValidatorTests
 	public void Username_ShouldNotHaveError_WhenMaxLength()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = new string('a', 50), // Exactly 50 chars
 			Email = "test@example.com",
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Username);
@@ -177,14 +177,14 @@ public class CreateUserValidatorTests
 	public void Email_ShouldHaveError_WhenEmpty()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = string.Empty,
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Email)
@@ -195,14 +195,14 @@ public class CreateUserValidatorTests
 	public void Email_ShouldHaveError_WhenNull()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = null!,
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Email);
@@ -218,14 +218,14 @@ public class CreateUserValidatorTests
 	public void Email_ShouldHaveError_WhenInvalidFormat(string email)
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = email,
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Email)
@@ -236,15 +236,15 @@ public class CreateUserValidatorTests
 	public void Email_ShouldHaveError_WhenTooLong()
 	{
 		// Arrange
-		var longEmail = new string('a', 244) + "@example.com"; // 256 chars total
-		var request = new CreateUserRequest
+		string longEmail = new string('a', 244) + "@example.com"; // 256 chars total
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = longEmail,
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Email)
@@ -260,14 +260,14 @@ public class CreateUserValidatorTests
 	public void Email_ShouldNotHaveError_WhenValid(string email)
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = email,
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Email);
@@ -277,15 +277,15 @@ public class CreateUserValidatorTests
 	public void Email_ShouldNotHaveError_WhenMaxLength()
 	{
 		// Arrange
-		var email = new string('a', 240) + "@example.co"; // Exactly 255 chars
-		var request = new CreateUserRequest
+		string email = new string('a', 240) + "@example.co"; // Exactly 255 chars
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = email,
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Email);
@@ -299,7 +299,7 @@ public class CreateUserValidatorTests
 	public void FullName_ShouldNotHaveError_WhenNull()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com",
@@ -307,7 +307,7 @@ public class CreateUserValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.FullName);
@@ -317,7 +317,7 @@ public class CreateUserValidatorTests
 	public void FullName_ShouldNotHaveError_WhenEmpty()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com",
@@ -325,7 +325,7 @@ public class CreateUserValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.FullName);
@@ -335,7 +335,7 @@ public class CreateUserValidatorTests
 	public void FullName_ShouldNotHaveError_WhenWhitespace()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com",
@@ -343,7 +343,7 @@ public class CreateUserValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.FullName);
@@ -353,7 +353,7 @@ public class CreateUserValidatorTests
 	public void FullName_ShouldHaveError_WhenTooLong()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com",
@@ -361,7 +361,7 @@ public class CreateUserValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.FullName)
@@ -376,7 +376,7 @@ public class CreateUserValidatorTests
 	public void FullName_ShouldNotHaveError_WhenValid(string fullName)
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com",
@@ -384,7 +384,7 @@ public class CreateUserValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.FullName);
@@ -394,7 +394,7 @@ public class CreateUserValidatorTests
 	public void FullName_ShouldNotHaveError_WhenMaxLength()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com",
@@ -402,7 +402,7 @@ public class CreateUserValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.FullName);
@@ -418,7 +418,7 @@ public class CreateUserValidatorTests
 	public void IsActive_ShouldNotHaveError_ForAnyValue(bool isActive)
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com",
@@ -426,7 +426,7 @@ public class CreateUserValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.IsActive);
@@ -440,7 +440,7 @@ public class CreateUserValidatorTests
 	public void Validator_ShouldPass_WhenAllFieldsValid()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "john_doe",
 			Email = "john@example.com",
@@ -449,7 +449,7 @@ public class CreateUserValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveAnyValidationErrors();
@@ -459,14 +459,14 @@ public class CreateUserValidatorTests
 	public void Validator_ShouldPass_WhenOnlyRequiredFieldsProvided()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = "test@example.com",
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveAnyValidationErrors();
@@ -476,7 +476,7 @@ public class CreateUserValidatorTests
 	public void Validator_ShouldFail_WhenMultipleFieldsInvalid()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "ab", // Too short
 			Email = "invalid-email", // Invalid format
@@ -484,7 +484,7 @@ public class CreateUserValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Username);

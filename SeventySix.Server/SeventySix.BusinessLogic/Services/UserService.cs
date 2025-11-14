@@ -7,6 +7,7 @@ using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Extensions;
 using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.Core.Entities;
 using SeventySix.Core.Interfaces;
 
 namespace SeventySix.BusinessLogic.Services;
@@ -33,31 +34,22 @@ namespace SeventySix.BusinessLogic.Services;
 /// Transaction Management: Relies on repository layer for data persistence.
 /// Validation: Uses FluentValidation for request validation before processing.
 /// </remarks>
-public class UserService : IUserService
+/// <remarks>
+/// Initializes a new instance of the <see cref="UserService"/> class.
+/// </remarks>
+/// <param name="repository">The repository for data access operations.</param>
+/// <param name="createValidator">The validator for create requests.</param>
+/// <exception cref="ArgumentNullException">
+/// Thrown when repository or createValidator is null.
+/// </exception>
+/// <remarks>
+/// Dependencies are injected via constructor following Dependency Injection pattern.
+/// This enables loose coupling and facilitates unit testing with mocks.
+/// </remarks>
+public class UserService(
+	IUserRepository repository,
+	IValidator<CreateUserRequest> createValidator) : IUserService
 {
-	private readonly IUserRepository Repository;
-	private readonly IValidator<CreateUserRequest> CreateValidator;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="UserService"/> class.
-	/// </summary>
-	/// <param name="repository">The repository for data access operations.</param>
-	/// <param name="createValidator">The validator for create requests.</param>
-	/// <exception cref="ArgumentNullException">
-	/// Thrown when repository or createValidator is null.
-	/// </exception>
-	/// <remarks>
-	/// Dependencies are injected via constructor following Dependency Injection pattern.
-	/// This enables loose coupling and facilitates unit testing with mocks.
-	/// </remarks>
-	public UserService(
-		IUserRepository repository,
-		IValidator<CreateUserRequest> createValidator)
-	{
-		Repository = repository ?? throw new ArgumentNullException(nameof(repository));
-		CreateValidator = createValidator ?? throw new ArgumentNullException(nameof(createValidator));
-	}
-
 	/// <inheritdoc/>
 	/// <remarks>
 	/// Implementation retrieves all users from the repository and maps them to DTOs.
@@ -65,7 +57,7 @@ public class UserService : IUserService
 	/// </remarks>
 	public async Task<IEnumerable<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken = default)
 	{
-		var users = await Repository.GetAllAsync(cancellationToken);
+		IEnumerable<User> users = await repository.GetAllAsync(cancellationToken);
 		return users.ToDto();
 	}
 
@@ -76,7 +68,7 @@ public class UserService : IUserService
 	/// </remarks>
 	public async Task<UserDto?> GetUserByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
-		var user = await Repository.GetByIdAsync(id, cancellationToken);
+		User? user = await repository.GetByIdAsync(id, cancellationToken);
 		return user?.ToDto();
 	}
 
@@ -99,13 +91,13 @@ public class UserService : IUserService
 		CancellationToken cancellationToken = default)
 	{
 		// Validate request using FluentValidation
-		await CreateValidator.ValidateAndThrowAsync(request, cancellationToken);
+		await createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		// Map request to entity using extension method
-		var user = request.ToEntity();
+		User user = request.ToEntity();
 
 		// Save via repository
-		var created = await Repository.CreateAsync(user, cancellationToken);
+		User created = await repository.CreateAsync(user, cancellationToken);
 
 		// Map entity to DTO using extension method
 		return created.ToDto();

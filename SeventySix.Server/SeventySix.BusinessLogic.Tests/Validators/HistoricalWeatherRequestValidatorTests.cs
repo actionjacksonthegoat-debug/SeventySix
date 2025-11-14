@@ -28,8 +28,8 @@ public class HistoricalWeatherRequestValidatorTests
 	public void Validate_ShouldPass_WhenRequestIsValid()
 	{
 		// Arrange
-		var twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-2).ToUnixTimeSeconds();
-		var request = new HistoricalWeatherRequest
+		long twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-2).ToUnixTimeSeconds();
+		HistoricalWeatherRequest request = new()
 		{
 			Latitude = 40.7128,
 			Longitude = -74.0060,
@@ -39,7 +39,7 @@ public class HistoricalWeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<HistoricalWeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveAnyValidationErrors();
@@ -53,8 +53,8 @@ public class HistoricalWeatherRequestValidatorTests
 	public void Validate_ShouldFail_WhenLatitudeIsOutOfRange(double latitude)
 	{
 		// Arrange
-		var twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-2).ToUnixTimeSeconds();
-		var request = new HistoricalWeatherRequest
+		long twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-2).ToUnixTimeSeconds();
+		HistoricalWeatherRequest request = new()
 		{
 			Latitude = latitude,
 			Longitude = 0,
@@ -63,7 +63,7 @@ public class HistoricalWeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<HistoricalWeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Latitude)
@@ -78,8 +78,8 @@ public class HistoricalWeatherRequestValidatorTests
 	public void Validate_ShouldFail_WhenLongitudeIsOutOfRange(double longitude)
 	{
 		// Arrange
-		var twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-2).ToUnixTimeSeconds();
-		var request = new HistoricalWeatherRequest
+		long twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-2).ToUnixTimeSeconds();
+		HistoricalWeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = longitude,
@@ -88,7 +88,7 @@ public class HistoricalWeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<HistoricalWeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Longitude)
@@ -102,8 +102,8 @@ public class HistoricalWeatherRequestValidatorTests
 	public void Validate_ShouldFail_WhenLanguageIsInvalid(string language)
 	{
 		// Arrange
-		var twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-2).ToUnixTimeSeconds();
-		var request = new HistoricalWeatherRequest
+		long twoDaysAgo = DateTimeOffset.UtcNow.AddDays(-2).ToUnixTimeSeconds();
+		HistoricalWeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = 0,
@@ -112,7 +112,7 @@ public class HistoricalWeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<HistoricalWeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Language)
@@ -123,8 +123,8 @@ public class HistoricalWeatherRequestValidatorTests
 	public void Validate_ShouldFail_WhenTimestampIsTooOld()
 	{
 		// Arrange - 6 days ago (beyond 5-day limit)
-		var sixDaysAgo = DateTimeOffset.UtcNow.AddDays(-6).ToUnixTimeSeconds();
-		var request = new HistoricalWeatherRequest
+		long sixDaysAgo = DateTimeOffset.UtcNow.AddDays(-6).ToUnixTimeSeconds();
+		HistoricalWeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = 0,
@@ -133,7 +133,7 @@ public class HistoricalWeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<HistoricalWeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Timestamp)
@@ -144,8 +144,8 @@ public class HistoricalWeatherRequestValidatorTests
 	public void Validate_ShouldFail_WhenTimestampIsInFuture()
 	{
 		// Arrange - 1 hour in the future
-		var futureTime = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds();
-		var request = new HistoricalWeatherRequest
+		long futureTime = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds();
+		HistoricalWeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = 0,
@@ -154,7 +154,7 @@ public class HistoricalWeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<HistoricalWeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.Timestamp)
@@ -168,8 +168,8 @@ public class HistoricalWeatherRequestValidatorTests
 	public void Validate_ShouldPass_WhenTimestampIsWithinLast5Days(int daysAgo)
 	{
 		// Arrange
-		var timestamp = DateTimeOffset.UtcNow.AddDays(daysAgo).ToUnixTimeSeconds();
-		var request = new HistoricalWeatherRequest
+		long timestamp = DateTimeOffset.UtcNow.AddDays(daysAgo).ToUnixTimeSeconds();
+		HistoricalWeatherRequest request = new()
 		{
 			Latitude = 0,
 			Longitude = 0,
@@ -178,7 +178,7 @@ public class HistoricalWeatherRequestValidatorTests
 		};
 
 		// Act
-		var result = Validator.TestValidate(request);
+		TestValidationResult<HistoricalWeatherRequest> result = Validator.TestValidate(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(x => x.Timestamp);

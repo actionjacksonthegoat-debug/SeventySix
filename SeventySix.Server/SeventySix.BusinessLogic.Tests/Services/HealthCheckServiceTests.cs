@@ -24,7 +24,7 @@ public class HealthCheckServiceTests
 	public async Task GetHealthStatusAsync_ReturnsHealthyStatusAsync()
 	{
 		// Act
-		var result = await Service.GetHealthStatusAsync(CancellationToken.None);
+		HealthStatusResponse result = await Service.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -41,7 +41,7 @@ public class HealthCheckServiceTests
 	public async Task GetHealthStatusAsync_DatabaseIsConnectedAsync()
 	{
 		// Act
-		var result = await Service.GetHealthStatusAsync(CancellationToken.None);
+		HealthStatusResponse result = await Service.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
 		Assert.True(result.Database.IsConnected);
@@ -54,7 +54,7 @@ public class HealthCheckServiceTests
 	public async Task GetHealthStatusAsync_ExternalApisInitializedAsync()
 	{
 		// Act
-		var result = await Service.GetHealthStatusAsync(CancellationToken.None);
+		HealthStatusResponse result = await Service.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result.ExternalApis);
@@ -65,7 +65,7 @@ public class HealthCheckServiceTests
 	public async Task GetHealthStatusAsync_ErrorQueueHealthyAsync()
 	{
 		// Act
-		var result = await Service.GetHealthStatusAsync(CancellationToken.None);
+		HealthStatusResponse result = await Service.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result.ErrorQueue);
@@ -79,7 +79,7 @@ public class HealthCheckServiceTests
 	public async Task GetHealthStatusAsync_SystemResourcesPopulatedAsync()
 	{
 		// Act
-		var result = await Service.GetHealthStatusAsync(CancellationToken.None);
+		HealthStatusResponse result = await Service.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result.System);

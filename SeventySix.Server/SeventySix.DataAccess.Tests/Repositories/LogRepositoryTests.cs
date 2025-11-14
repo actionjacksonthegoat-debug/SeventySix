@@ -55,7 +55,7 @@ public class LogRepositoryTests : IDisposable
 	public async Task CreateAsync_CreatesLog_SuccessfullyAsync()
 	{
 		// Arrange
-		var log = new Log
+		Log log = new()
 		{
 			LogLevel = "Error",
 			Message = "Test error message",
@@ -63,7 +63,7 @@ public class LogRepositoryTests : IDisposable
 		};
 
 		// Act
-		var result = await Repository.CreateAsync(log);
+		Log result = await Repository.CreateAsync(log);
 
 		// Assert
 		Assert.NotEqual(0, result.Id);
@@ -86,7 +86,7 @@ public class LogRepositoryTests : IDisposable
 		await SeedTestLogsAsync();
 
 		// Act
-		var result = await Repository.GetLogsAsync();
+		IEnumerable<Log> result = await Repository.GetLogsAsync();
 
 		// Assert
 		Assert.NotEmpty(result);
@@ -100,7 +100,7 @@ public class LogRepositoryTests : IDisposable
 		await SeedTestLogsAsync();
 
 		// Act
-		var result = await Repository.GetLogsAsync(logLevel: "Error");
+		IEnumerable<Log> result = await Repository.GetLogsAsync(logLevel: "Error");
 
 		// Assert
 		Assert.All(result, log => Assert.Equal("Error", log.LogLevel));
@@ -111,11 +111,11 @@ public class LogRepositoryTests : IDisposable
 	{
 		// Arrange
 		await SeedTestLogsAsync();
-		var startDate = DateTime.UtcNow.AddHours(-1);
-		var endDate = DateTime.UtcNow.AddHours(1);
+		DateTime startDate = DateTime.UtcNow.AddHours(-1);
+		DateTime endDate = DateTime.UtcNow.AddHours(1);
 
 		// Act
-		var result = await Repository.GetLogsAsync(startDate: startDate, endDate: endDate);
+		IEnumerable<Log> result = await Repository.GetLogsAsync(startDate: startDate, endDate: endDate);
 
 		// Assert
 		Assert.All(result, log =>
@@ -132,7 +132,7 @@ public class LogRepositoryTests : IDisposable
 		await SeedTestLogsAsync();
 
 		// Act
-		var result = await Repository.GetLogsAsync(sourceContext: "UserService");
+		IEnumerable<Log> result = await Repository.GetLogsAsync(sourceContext: "UserService");
 
 		// Assert
 		Assert.All(result, log => Assert.Contains("UserService", log.SourceContext ?? string.Empty));
@@ -145,7 +145,7 @@ public class LogRepositoryTests : IDisposable
 		await SeedTestLogsAsync();
 
 		// Act
-		var result = await Repository.GetLogsAsync(requestPath: "/api/users");
+		IEnumerable<Log> result = await Repository.GetLogsAsync(requestPath: "/api/users");
 
 		// Assert
 		Assert.All(result, log => Assert.Contains("/api/users", log.RequestPath ?? string.Empty));
@@ -158,8 +158,8 @@ public class LogRepositoryTests : IDisposable
 		await SeedTestLogsAsync();
 
 		// Act
-		var page1 = await Repository.GetLogsAsync(skip: 0, take: 2);
-		var page2 = await Repository.GetLogsAsync(skip: 2, take: 2);
+		IEnumerable<Log> page1 = await Repository.GetLogsAsync(skip: 0, take: 2);
+		IEnumerable<Log> page2 = await Repository.GetLogsAsync(skip: 2, take: 2);
 
 		// Assert
 		Assert.Equal(2, page1.Count());
@@ -174,7 +174,7 @@ public class LogRepositoryTests : IDisposable
 		await SeedTestLogsAsync();
 
 		// Act
-		var result = (await Repository.GetLogsAsync()).ToList();
+		List<Log> result = [.. (await Repository.GetLogsAsync())];
 
 		// Assert
 		for (int i = 0; i < result.Count - 1; i++)
@@ -198,7 +198,7 @@ public class LogRepositoryTests : IDisposable
 		}
 
 		// Act
-		var result = await Repository.GetLogsAsync(take: 2000);
+		IEnumerable<Log> result = await Repository.GetLogsAsync(take: 2000);
 
 		// Assert
 		Assert.True(result.Count() <= 1000);
@@ -211,7 +211,7 @@ public class LogRepositoryTests : IDisposable
 		await SeedTestLogsAsync();
 
 		// Act
-		var count = await Repository.GetLogsCountAsync();
+		int count = await Repository.GetLogsCountAsync();
 
 		// Assert
 		Assert.True(count >= 3);
@@ -222,10 +222,10 @@ public class LogRepositoryTests : IDisposable
 	{
 		// Arrange
 		await SeedTestLogsAsync();
-		var startDate = DateTime.UtcNow.AddHours(-1);
+		DateTime startDate = DateTime.UtcNow.AddHours(-1);
 
 		// Act
-		var count = await Repository.GetLogsCountAsync(
+		int count = await Repository.GetLogsCountAsync(
 			logLevel: "Error",
 			startDate: startDate);
 
@@ -237,7 +237,7 @@ public class LogRepositoryTests : IDisposable
 	public async Task DeleteOlderThanAsync_DeletesOldLogs_SuccessfullyAsync()
 	{
 		// Arrange
-		var oldLog = new Log
+		Log oldLog = new()
 		{
 			LogLevel = "Error",
 			Message = "Old log",
@@ -245,7 +245,7 @@ public class LogRepositoryTests : IDisposable
 		};
 		await Repository.CreateAsync(oldLog);
 
-		var recentLog = new Log
+		Log recentLog = new()
 		{
 			LogLevel = "Error",
 			Message = "Recent log",
@@ -253,14 +253,14 @@ public class LogRepositoryTests : IDisposable
 		};
 		await Repository.CreateAsync(recentLog);
 
-		var cutoffDate = DateTime.UtcNow.AddDays(-30);
+		DateTime cutoffDate = DateTime.UtcNow.AddDays(-30);
 
 		// Act
-		var deletedCount = await Repository.DeleteOlderThanAsync(cutoffDate);
+		int deletedCount = await Repository.DeleteOlderThanAsync(cutoffDate);
 
 		// Assert
 		Assert.True(deletedCount > 0);
-		var remainingLogs = await Repository.GetLogsAsync();
+		IEnumerable<Log> remainingLogs = await Repository.GetLogsAsync();
 		Assert.All(remainingLogs, log => Assert.True(log.Timestamp >= cutoffDate));
 	}
 
@@ -269,11 +269,11 @@ public class LogRepositoryTests : IDisposable
 	{
 		// Arrange
 		await SeedTestLogsAsync();
-		var startDate = DateTime.UtcNow.AddHours(-2);
-		var endDate = DateTime.UtcNow.AddHours(2);
+		DateTime startDate = DateTime.UtcNow.AddHours(-2);
+		DateTime endDate = DateTime.UtcNow.AddHours(2);
 
 		// Act
-		var stats = await Repository.GetStatisticsAsync(startDate, endDate);
+		LogStatistics stats = await Repository.GetStatisticsAsync(startDate, endDate);
 
 		// Assert
 		Assert.NotNull(stats);
@@ -306,11 +306,11 @@ public class LogRepositoryTests : IDisposable
 			Timestamp = DateTime.UtcNow,
 		});
 
-		var startDate = DateTime.UtcNow.AddHours(-1);
-		var endDate = DateTime.UtcNow.AddHours(1);
+		DateTime startDate = DateTime.UtcNow.AddHours(-1);
+		DateTime endDate = DateTime.UtcNow.AddHours(1);
 
 		// Act
-		var stats = await Repository.GetStatisticsAsync(startDate, endDate);
+		LogStatistics stats = await Repository.GetStatisticsAsync(startDate, endDate);
 
 		// Assert
 		Assert.Equal(150, stats.AverageResponseTimeMs);
@@ -338,11 +338,11 @@ public class LogRepositoryTests : IDisposable
 			Timestamp = DateTime.UtcNow,
 		});
 
-		var startDate = DateTime.UtcNow.AddHours(-1);
-		var endDate = DateTime.UtcNow.AddHours(1);
+		DateTime startDate = DateTime.UtcNow.AddHours(-1);
+		DateTime endDate = DateTime.UtcNow.AddHours(1);
 
 		// Act
-		var stats = await Repository.GetStatisticsAsync(startDate, endDate);
+		LogStatistics stats = await Repository.GetStatisticsAsync(startDate, endDate);
 
 		// Assert
 		Assert.True(stats.FailedRequests > 0);
@@ -363,11 +363,11 @@ public class LogRepositoryTests : IDisposable
 			});
 		}
 
-		var startDate = DateTime.UtcNow.AddHours(-1);
-		var endDate = DateTime.UtcNow.AddHours(1);
+		DateTime startDate = DateTime.UtcNow.AddHours(-1);
+		DateTime endDate = DateTime.UtcNow.AddHours(1);
 
 		// Act
-		var stats = await Repository.GetStatisticsAsync(startDate, endDate);
+		LogStatistics stats = await Repository.GetStatisticsAsync(startDate, endDate);
 
 		// Assert
 		Assert.True(stats.TopErrorSources.Count <= 10);
@@ -375,8 +375,8 @@ public class LogRepositoryTests : IDisposable
 
 	private async Task SeedTestLogsAsync()
 	{
-		var logs = new[]
-		{
+		Log[] logs =
+		[
 			new Log
 			{
 				LogLevel = "Error",
@@ -407,9 +407,9 @@ public class LogRepositoryTests : IDisposable
 				DurationMs = 50,
 				Timestamp = DateTime.UtcNow.AddMinutes(-10),
 			},
-		};
+		];
 
-		foreach (var log in logs)
+		foreach (Log? log in logs)
 		{
 			await Repository.CreateAsync(log);
 		}

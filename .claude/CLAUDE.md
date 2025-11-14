@@ -4,6 +4,15 @@ You are an expert in TypeScript, Angular, .NET Core 8+, and scalable full-stack 
 
 ## Core Development Principles
 
+### Follow .editorconfig Guidelines
+
+**CRITICAL: Always adhere to .editorconfig rules when generating code:**
+
+-   All code formatting, style, and naming rules are defined in `.editorconfig`
+-   Review `.editorconfig` settings before generating code for any project
+-   Ensure your IDE/editor respects `.editorconfig` settings
+-   When in doubt, consult `.editorconfig` for the correct style
+
 ### SOLID Principles
 
 1. **Single Responsibility Principle (SRP)**: Each class/component/service should have one reason to change
@@ -98,7 +107,10 @@ Apply patterns judiciously when complexity justifies them. Start simple, refacto
 ### TypeScript & Code Quality
 
 -   Use strict type checking (`strict: true` in tsconfig.json)
--   Prefer type inference when type is obvious
+-   **ALWAYS use explicit type annotations on all variables, properties, and function parameters**
+-   **NEVER rely on type inference for variable declarations**
+-   **Correct**: `const test: string = "";` or `let count: number = 0;`
+-   **Wrong**: `const test = "";` or `let count = 0;`
 -   Avoid `any`; use `unknown` or proper types
 -   Use const assertions for readonly objects
 -   Leverage union types and type guards
@@ -220,6 +232,9 @@ export class UserService {
 ### C# Code Quality
 
 -   Use nullable reference types (`<Nullable>enable</Nullable>`)
+-   **ALWAYS use explicit type declarations - NEVER use `var` keyword**
+-   **Correct**: `string test = "";` or `int count = 0;`
+-   **Wrong**: `var test = "";` or `var count = 0;`
 -   Use records for immutable data
 -   Leverage pattern matching and switch expressions
 -   Use `required` keyword for required properties (C# 11+)

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Extensions;
 using SeventySix.Core.Entities;
@@ -32,8 +33,8 @@ public class UserExtensionsTests
 	public void ToDto_ShouldMapUserEntityToDto()
 	{
 		// Arrange
-		var createdAt = DateTime.UtcNow.AddDays(-5);
-		var user = new User
+		DateTime createdAt = DateTime.UtcNow.AddDays(-5);
+		User user = new()
 		{
 			Id = 123,
 			Username = "john_doe",
@@ -44,7 +45,7 @@ public class UserExtensionsTests
 		};
 
 		// Act
-		var dto = user.ToDto();
+		UserDto dto = user.ToDto();
 
 		// Assert
 		Assert.NotNull(dto);
@@ -60,7 +61,7 @@ public class UserExtensionsTests
 	public void ToDto_ShouldHandleNullFullName()
 	{
 		// Arrange
-		var user = new User
+		User user = new()
 		{
 			Id = 1,
 			Username = "test_user",
@@ -70,7 +71,7 @@ public class UserExtensionsTests
 		};
 
 		// Act
-		var dto = user.ToDto();
+		UserDto dto = user.ToDto();
 
 		// Assert
 		Assert.NotNull(dto);
@@ -81,7 +82,7 @@ public class UserExtensionsTests
 	public void ToDto_ShouldMapInactiveUser()
 	{
 		// Arrange
-		var user = new User
+		User user = new()
 		{
 			Id = 1,
 			Username = "inactive_user",
@@ -90,7 +91,7 @@ public class UserExtensionsTests
 		};
 
 		// Act
-		var dto = user.ToDto();
+		UserDto dto = user.ToDto();
 
 		// Assert
 		Assert.NotNull(dto);
@@ -111,15 +112,15 @@ public class UserExtensionsTests
 	public void ToDto_Collection_ShouldMapMultipleEntities()
 	{
 		// Arrange
-		var users = new List<User>
-		{
+		List<User> users =
+		[
 			new User { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true },
 			new User { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false },
 			new User { Id = 3, Username = "user3", Email = "user3@example.com", IsActive = true },
-		};
+		];
 
 		// Act
-		var dtos = users.ToDto().ToList();
+		List<UserDto> dtos = [.. users.ToDto()];
 
 		// Assert
 		Assert.NotNull(dtos);
@@ -133,10 +134,10 @@ public class UserExtensionsTests
 	public void ToDto_Collection_ShouldReturnEmptyCollection_WhenInputIsEmpty()
 	{
 		// Arrange
-		var users = new List<User>();
+		List<User> users = [];
 
 		// Act
-		var dtos = users.ToDto().ToList();
+		List<UserDto> dtos = [.. users.ToDto()];
 
 		// Assert
 		Assert.NotNull(dtos);
@@ -157,8 +158,8 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldMapCreateRequestToEntity()
 	{
 		// Arrange
-		var beforeCreation = DateTime.UtcNow;
-		var request = new CreateUserRequest
+		DateTime beforeCreation = DateTime.UtcNow;
+		CreateUserRequest request = new()
 		{
 			Username = "new_user",
 			Email = "new@example.com",
@@ -167,8 +168,8 @@ public class UserExtensionsTests
 		};
 
 		// Act
-		var entity = request.ToEntity();
-		var afterCreation = DateTime.UtcNow;
+		User entity = request.ToEntity();
+		DateTime afterCreation = DateTime.UtcNow;
 
 		// Assert
 		Assert.NotNull(entity);
@@ -184,7 +185,7 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldHandleNullFullName()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "test_user",
 			Email = "test@example.com",
@@ -193,7 +194,7 @@ public class UserExtensionsTests
 		};
 
 		// Act
-		var entity = request.ToEntity();
+		User entity = request.ToEntity();
 
 		// Assert
 		Assert.NotNull(entity);
@@ -204,7 +205,7 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldSetIsActiveFalse_WhenRequested()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "inactive_new",
 			Email = "inactive@example.com",
@@ -212,7 +213,7 @@ public class UserExtensionsTests
 		};
 
 		// Act
-		var entity = request.ToEntity();
+		User entity = request.ToEntity();
 
 		// Assert
 		Assert.NotNull(entity);
@@ -223,16 +224,16 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldSetCreatedAtToUtcNow()
 	{
 		// Arrange
-		var beforeCreation = DateTime.UtcNow;
-		var request = new CreateUserRequest
+		DateTime beforeCreation = DateTime.UtcNow;
+		CreateUserRequest request = new()
 		{
 			Username = "test",
 			Email = "test@example.com",
 		};
 
 		// Act
-		var entity = request.ToEntity();
-		var afterCreation = DateTime.UtcNow;
+		User entity = request.ToEntity();
+		DateTime afterCreation = DateTime.UtcNow;
 
 		// Assert
 		Assert.InRange(entity.CreatedAt, beforeCreation, afterCreation);
@@ -253,14 +254,14 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldNotSetId()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "test",
 			Email = "test@example.com",
 		};
 
 		// Act
-		var entity = request.ToEntity();
+		User entity = request.ToEntity();
 
 		// Assert
 		// Id should remain 0 (default) as it will be set by the database
@@ -274,14 +275,14 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldHandleVariousInputFormats(string username, string email)
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = username,
 			Email = email,
 		};
 
 		// Act
-		var entity = request.ToEntity();
+		User entity = request.ToEntity();
 
 		// Assert
 		Assert.Equal(username, entity.Username);

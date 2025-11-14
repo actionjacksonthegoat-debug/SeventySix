@@ -28,8 +28,8 @@ public class ThirdPartyApiRequestServiceTests
 	public async Task GetAllAsync_ReturnsAllRequests_MappedToResponseAsync()
 	{
 		// Arrange
-		var entities = new List<ThirdPartyApiRequest>
-		{
+		List<ThirdPartyApiRequest> entities =
+		[
 			new ThirdPartyApiRequest
 			{
 				Id = 1,
@@ -48,17 +48,17 @@ public class ThirdPartyApiRequestServiceTests
 				LastCalledAt = DateTime.UtcNow.AddMinutes(-10),
 				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
 			},
-		};
+		];
 
 		MockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync(entities);
 
 		// Act
-		var result = await Service.GetAllAsync(CancellationToken.None);
+		IEnumerable<ThirdPartyApiRequestResponse> result = await Service.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
-		var resultList = result.ToList();
+		List<ThirdPartyApiRequestResponse> resultList = [.. result];
 		Assert.Equal(2, resultList.Count);
 		Assert.Equal("OpenWeather", resultList[0].ApiName);
 		Assert.Equal(150, resultList[0].CallCount);
@@ -74,7 +74,7 @@ public class ThirdPartyApiRequestServiceTests
 			.ReturnsAsync(new List<ThirdPartyApiRequest>());
 
 		// Act
-		var result = await Service.GetAllAsync(CancellationToken.None);
+		IEnumerable<ThirdPartyApiRequestResponse> result = await Service.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -85,9 +85,9 @@ public class ThirdPartyApiRequestServiceTests
 	public async Task GetStatisticsAsync_ReturnsAggregatedStatisticsAsync()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var entities = new List<ThirdPartyApiRequest>
-		{
+		DateTime now = DateTime.UtcNow;
+		List<ThirdPartyApiRequest> entities =
+		[
 			new ThirdPartyApiRequest
 			{
 				Id = 1,
@@ -106,13 +106,13 @@ public class ThirdPartyApiRequestServiceTests
 				LastCalledAt = now.AddMinutes(-10),
 				ResetDate = DateOnly.FromDateTime(now.Date.AddDays(1)),
 			},
-		};
+		];
 
 		MockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync(entities);
 
 		// Act
-		var result = await Service.GetStatisticsAsync(CancellationToken.None);
+		ThirdPartyApiStatisticsResponse result = await Service.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -134,7 +134,7 @@ public class ThirdPartyApiRequestServiceTests
 			.ReturnsAsync(new List<ThirdPartyApiRequest>());
 
 		// Act
-		var result = await Service.GetStatisticsAsync(CancellationToken.None);
+		ThirdPartyApiStatisticsResponse result = await Service.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -148,8 +148,8 @@ public class ThirdPartyApiRequestServiceTests
 	public async Task GetStatisticsAsync_HandlesNullLastCalledAtAsync()
 	{
 		// Arrange
-		var entities = new List<ThirdPartyApiRequest>
-		{
+		List<ThirdPartyApiRequest> entities =
+		[
 			new ThirdPartyApiRequest
 			{
 				Id = 1,
@@ -159,13 +159,13 @@ public class ThirdPartyApiRequestServiceTests
 				LastCalledAt = null,
 				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
 			},
-		};
+		];
 
 		MockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync(entities);
 
 		// Act
-		var result = await Service.GetStatisticsAsync(CancellationToken.None);
+		ThirdPartyApiStatisticsResponse result = await Service.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);

@@ -49,13 +49,13 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task GetAllUsers_ShouldReturnOkWithUsersAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/user");
+		HttpResponseMessage response = await Client.GetAsync("/api/user");
 
 		// Assert
 		response.EnsureSuccessStatusCode();
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var users = await response.Content.ReadFromJsonAsync<List<UserDto>>();
+		List<UserDto>? users = await response.Content.ReadFromJsonAsync<List<UserDto>>();
 		Assert.NotNull(users);
 		Assert.NotEmpty(users); // Seeded data should exist
 	}
@@ -64,7 +64,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task GetAllUsers_ShouldReturnJsonContentTypeAsync()
 	{
 		// Act
-		var response = await Client.GetAsync("/api/user");
+		HttpResponseMessage response = await Client.GetAsync("/api/user");
 
 		// Assert
 		Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
@@ -78,16 +78,16 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task GetUserById_ShouldReturnOkWithUser_WhenUserExistsAsync()
 	{
 		// Arrange - assuming seeded user with ID 1 exists
-		var userId = 1;
+		int userId = 1;
 
 		// Act
-		var response = await Client.GetAsync($"/api/user/{userId}");
+		HttpResponseMessage response = await Client.GetAsync($"/api/user/{userId}");
 
 		// Assert
 		response.EnsureSuccessStatusCode();
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var user = await response.Content.ReadFromJsonAsync<UserDto>();
+		UserDto? user = await response.Content.ReadFromJsonAsync<UserDto>();
 		Assert.NotNull(user);
 		Assert.Equal(userId, user.Id);
 		Assert.NotNull(user.Username);
@@ -98,10 +98,10 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task GetUserById_ShouldReturnNotFound_WhenUserDoesNotExistAsync()
 	{
 		// Arrange
-		var nonExistentId = 99999;
+		int nonExistentId = 99999;
 
 		// Act
-		var response = await Client.GetAsync($"/api/user/{nonExistentId}");
+		HttpResponseMessage response = await Client.GetAsync($"/api/user/{nonExistentId}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -115,7 +115,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task CreateUser_ShouldReturnCreated_WhenRequestIsValidAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "integration_test_user",
 			Email = "integration@test.com",
@@ -124,13 +124,13 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/user", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/user", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 		Assert.NotNull(response.Headers.Location); // Location header should be set
 
-		var createdUser = await response.Content.ReadFromJsonAsync<UserDto>();
+		UserDto? createdUser = await response.Content.ReadFromJsonAsync<UserDto>();
 		Assert.NotNull(createdUser);
 		Assert.True(createdUser.Id > 0); // ID should be assigned
 		Assert.Equal("integration_test_user", createdUser.Username);
@@ -143,14 +143,14 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task CreateUser_ShouldReturnBadRequest_WhenUsernameIsTooShortAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "ab", // Too short (< 3 chars)
 			Email = "test@example.com",
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/user", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/user", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -160,14 +160,14 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task CreateUser_ShouldReturnBadRequest_WhenUsernameContainsInvalidCharactersAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "user name", // Contains space
 			Email = "test@example.com",
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/user", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/user", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -177,14 +177,14 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task CreateUser_ShouldReturnBadRequest_WhenEmailIsInvalidAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = "not-an-email", // Invalid email format
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/user", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/user", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -194,14 +194,14 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task CreateUser_ShouldReturnBadRequest_WhenUsernameIsEmptyAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = string.Empty,
 			Email = "test@example.com",
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/user", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/user", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -211,14 +211,14 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task CreateUser_ShouldReturnBadRequest_WhenEmailIsEmptyAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "testuser",
 			Email = string.Empty,
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/user", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/user", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -228,7 +228,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task CreateUser_ShouldAcceptNullFullNameAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "user_without_fullname",
 			Email = "nofullname@test.com",
@@ -236,12 +236,12 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/user", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/user", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-		var createdUser = await response.Content.ReadFromJsonAsync<UserDto>();
+		UserDto? createdUser = await response.Content.ReadFromJsonAsync<UserDto>();
 		Assert.NotNull(createdUser);
 		Assert.Null(createdUser.FullName);
 	}
@@ -250,7 +250,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task CreateUser_ShouldAcceptIsActiveFalseAsync()
 	{
 		// Arrange
-		var request = new CreateUserRequest
+		CreateUserRequest request = new()
 		{
 			Username = "inactive_user",
 			Email = "inactive@test.com",
@@ -258,12 +258,12 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		};
 
 		// Act
-		var response = await Client.PostAsJsonAsync("/api/user", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/user", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-		var createdUser = await response.Content.ReadFromJsonAsync<UserDto>();
+		UserDto? createdUser = await response.Content.ReadFromJsonAsync<UserDto>();
 		Assert.NotNull(createdUser);
 		Assert.False(createdUser.IsActive);
 	}
@@ -276,7 +276,7 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task EndToEnd_CreateThenRetrieveUserAsync()
 	{
 		// Arrange
-		var createRequest = new CreateUserRequest
+		CreateUserRequest createRequest = new()
 		{
 			Username = "e2e_test_user",
 			Email = "e2e@test.com",
@@ -285,20 +285,20 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 		};
 
 		// Act 1: Create user
-		var createResponse = await Client.PostAsJsonAsync("/api/user", createRequest);
+		HttpResponseMessage createResponse = await Client.PostAsJsonAsync("/api/user", createRequest);
 		Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
 
-		var createdUser = await createResponse.Content.ReadFromJsonAsync<UserDto>();
+		UserDto? createdUser = await createResponse.Content.ReadFromJsonAsync<UserDto>();
 		Assert.NotNull(createdUser);
-		var userId = createdUser.Id;
+		int userId = createdUser.Id;
 
 		// Act 2: Retrieve the created user
-		var getResponse = await Client.GetAsync($"/api/user/{userId}");
+		HttpResponseMessage getResponse = await Client.GetAsync($"/api/user/{userId}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
 
-		var retrievedUser = await getResponse.Content.ReadFromJsonAsync<UserDto>();
+		UserDto? retrievedUser = await getResponse.Content.ReadFromJsonAsync<UserDto>();
 		Assert.NotNull(retrievedUser);
 		Assert.Equal(userId, retrievedUser.Id);
 		Assert.Equal("e2e_test_user", retrievedUser.Username);
@@ -311,24 +311,24 @@ public class UserIntegrationTests : IClassFixture<WebApplicationFactory<Program>
 	public async Task EndToEnd_CreateUserAndVerifyInGetAllAsync()
 	{
 		// Arrange
-		var createRequest = new CreateUserRequest
+		CreateUserRequest createRequest = new()
 		{
 			Username = "getall_test_user",
 			Email = "getall@test.com",
 		};
 
 		// Act 1: Create user
-		var createResponse = await Client.PostAsJsonAsync("/api/user", createRequest);
+		HttpResponseMessage createResponse = await Client.PostAsJsonAsync("/api/user", createRequest);
 		Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
 
-		var createdUser = await createResponse.Content.ReadFromJsonAsync<UserDto>();
+		UserDto? createdUser = await createResponse.Content.ReadFromJsonAsync<UserDto>();
 		Assert.NotNull(createdUser);
 
 		// Act 2: Get all users
-		var getAllResponse = await Client.GetAsync("/api/user");
+		HttpResponseMessage getAllResponse = await Client.GetAsync("/api/user");
 		Assert.Equal(HttpStatusCode.OK, getAllResponse.StatusCode);
 
-		var allUsers = await getAllResponse.Content.ReadFromJsonAsync<List<UserDto>>();
+		List<UserDto>? allUsers = await getAllResponse.Content.ReadFromJsonAsync<List<UserDto>>();
 
 		// Assert
 		Assert.NotNull(allUsers);

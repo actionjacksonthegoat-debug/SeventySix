@@ -82,12 +82,12 @@ public class LogStatisticsResponse
 	/// <summary>
 	/// Gets or sets the top 10 error sources by frequency.
 	/// </summary>
-	public Dictionary<string, int> TopErrorSources { get; set; } = new();
+	public Dictionary<string, int> TopErrorSources { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the top 10 request paths by frequency.
 	/// </summary>
-	public Dictionary<string, int> RequestsByPath { get; set; } = new();
+	public Dictionary<string, int> RequestsByPath { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the date range start for the statistics.

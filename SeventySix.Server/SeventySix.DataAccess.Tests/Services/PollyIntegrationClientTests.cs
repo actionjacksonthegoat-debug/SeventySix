@@ -56,14 +56,14 @@ public class PollyIntegrationClientTests : IDisposable
 		const string url = "/test";
 		const string apiName = "TestApi";
 		const string cacheKey = "test-key";
-		var expectedData = new TestResponse { Value = "cached" };
+		TestResponse expectedData = new() { Value = "cached" };
 
 		Cache.Set(cacheKey, expectedData);
 
-		var sut = CreateSut();
+		PollyIntegrationClient sut = CreateSut();
 
 		// Act
-		var result = await sut.GetAsync<TestResponse>(url, apiName, cacheKey);
+		TestResponse? result = await sut.GetAsync<TestResponse>(url, apiName, cacheKey);
 
 		// Assert
 		Assert.NotNull(result);
@@ -81,7 +81,7 @@ public class PollyIntegrationClientTests : IDisposable
 		MockRateLimiter.Setup(r => r.CanMakeRequestAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 		MockRateLimiter.Setup(r => r.GetTimeUntilReset()).Returns(TimeSpan.FromHours(1));
 
-		var sut = CreateSut();
+		PollyIntegrationClient sut = CreateSut();
 
 		// Act & Assert
 		await Assert.ThrowsAsync<InvalidOperationException>(
@@ -109,10 +109,10 @@ public class PollyIntegrationClientTests : IDisposable
 				Content = new StringContent("{\"value\":\"success\"}"),
 			});
 
-		var sut = CreateSut();
+		PollyIntegrationClient sut = CreateSut();
 
 		// Act
-		var result = await sut.GetAsync<TestResponse>(url, apiName, cacheKey);
+		TestResponse? result = await sut.GetAsync<TestResponse>(url, apiName, cacheKey);
 
 		// Assert
 		Assert.NotNull(result);
@@ -128,7 +128,7 @@ public class PollyIntegrationClientTests : IDisposable
 	public async Task GetAsync_WhenUrlIsNull_ShouldThrowArgumentException()
 	{
 		// Arrange
-		var sut = CreateSut();
+		PollyIntegrationClient sut = CreateSut();
 
 		// Act & Assert
 		await Assert.ThrowsAsync<ArgumentNullException>(
@@ -139,7 +139,7 @@ public class PollyIntegrationClientTests : IDisposable
 	public async Task GetAsync_WhenApiNameIsNull_ShouldThrowArgumentException()
 	{
 		// Arrange
-		var sut = CreateSut();
+		PollyIntegrationClient sut = CreateSut();
 
 		// Act & Assert
 		await Assert.ThrowsAsync<ArgumentNullException>(
@@ -153,7 +153,7 @@ public class PollyIntegrationClientTests : IDisposable
 		const string apiName = "TestApi";
 		MockRateLimiter.Setup(r => r.CanMakeRequestAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-		var sut = CreateSut();
+		PollyIntegrationClient sut = CreateSut();
 
 		// Act
 		bool result = await sut.CanMakeRequestAsync(apiName);
@@ -170,7 +170,7 @@ public class PollyIntegrationClientTests : IDisposable
 		const string apiName = "TestApi";
 		MockRateLimiter.Setup(r => r.GetRemainingQuotaAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(500);
 
-		var sut = CreateSut();
+		PollyIntegrationClient sut = CreateSut();
 
 		// Act
 		int result = await sut.GetRemainingQuotaAsync(apiName);

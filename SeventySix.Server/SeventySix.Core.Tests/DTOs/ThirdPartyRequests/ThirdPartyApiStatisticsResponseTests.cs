@@ -15,7 +15,7 @@ public class ThirdPartyApiStatisticsResponseTests
 	public void Constructor_ShouldInitializeWithDefaultValues()
 	{
 		// Arrange & Act
-		var response = new ThirdPartyApiStatisticsResponse();
+		ThirdPartyApiStatisticsResponse response = new();
 
 		// Assert
 		Assert.Equal(0, response.TotalCallsToday);
@@ -30,19 +30,19 @@ public class ThirdPartyApiStatisticsResponseTests
 	public void Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange
-		var now = DateTime.UtcNow;
-		var callsByApi = new Dictionary<string, int>
+		DateTime now = DateTime.UtcNow;
+		Dictionary<string, int> callsByApi = new()
 		{
 			{ "OpenWeather", 150 },
 			{ "GoogleMaps", 75 },
 		};
-		var lastCalledByApi = new Dictionary<string, DateTime?>
+		Dictionary<string, DateTime?> lastCalledByApi = new()
 		{
 			{ "OpenWeather", now },
 			{ "GoogleMaps", now.AddMinutes(-30) },
 		};
 
-		var response = new ThirdPartyApiStatisticsResponse
+		ThirdPartyApiStatisticsResponse response = new()
 		{
 			TotalCallsToday = 225,
 			TotalApisTracked = 2,
@@ -65,13 +65,13 @@ public class ThirdPartyApiStatisticsResponseTests
 	public void LastCalledByApi_ShouldAllowNullValues()
 	{
 		// Arrange
-		var lastCalledByApi = new Dictionary<string, DateTime?>
+		Dictionary<string, DateTime?> lastCalledByApi = new()
 		{
 			{ "Api1", DateTime.UtcNow },
 			{ "Api2", null },
 		};
 
-		var response = new ThirdPartyApiStatisticsResponse
+		ThirdPartyApiStatisticsResponse response = new()
 		{
 			LastCalledByApi = lastCalledByApi,
 		};
