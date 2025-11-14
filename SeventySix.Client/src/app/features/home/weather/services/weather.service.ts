@@ -9,7 +9,7 @@ import { inject, Injectable } from "@angular/core";
 import {
 	injectQuery,
 	injectMutation,
-	injectQueryClient
+	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 import { WeatherForecast } from "@home/weather/models";
@@ -26,7 +26,7 @@ import { getQueryConfig } from "@core/utils/query-config";
 export class WeatherService
 {
 	private readonly weatherRepository = inject(WeatherForecastRepository);
-	private readonly queryClient = injectQueryClient();
+	private readonly queryClient = inject(QueryClient);
 	private readonly queryConfig = getQueryConfig("weather");
 
 	/**

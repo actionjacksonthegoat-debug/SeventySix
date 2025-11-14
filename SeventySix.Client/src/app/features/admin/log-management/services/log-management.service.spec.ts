@@ -9,7 +9,7 @@ import {
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { LogManagementService } from "./log-management.service";
-import { LogsApiService } from "./logs-api.service";
+import { LogRepository } from "@admin/log-management/repositories";
 import {
 	LogFilterRequest,
 	PagedLogResponse,
@@ -22,7 +22,7 @@ import { of } from "rxjs";
 describe("LogManagementService", () =>
 {
 	let service: LogManagementService;
-	let logsApiService: jasmine.SpyObj<LogsApiService>;
+	let logRepository: jasmine.SpyObj<LogRepository>;
 	let queryClient: QueryClient;
 
 	const mockLogResponse: LogResponse = {
@@ -66,11 +66,12 @@ describe("LogManagementService", () =>
 
 	beforeEach(() =>
 	{
-		logsApiService = jasmine.createSpyObj("LogsApiService", [
-			"getLogs",
-			"getLogCount",
-			"deleteLog",
-			"deleteLogs"
+		logRepository = jasmine.createSpyObj("LogRepository", [
+			"getAll",
+			"getById",
+			"getCount",
+			"delete",
+			"deleteBatch"
 		]);
 
 		queryClient = new QueryClient({
@@ -86,7 +87,7 @@ describe("LogManagementService", () =>
 				provideZonelessChangeDetection(),
 				provideAngularQuery(queryClient),
 				LogManagementService,
-				{ provide: LogsApiService, useValue: logsApiService }
+				{ provide: LogRepository, useValue: logRepository }
 			]
 		});
 
@@ -127,23 +128,21 @@ describe("LogManagementService", () =>
 	{
 		it("should create query with correct key", () =>
 		{
-			logsApiService.getLogs.and.returnValue(of(mockPagedResponse));
+			logRepository.getAll.and.returnValue(of(mockPagedResponse));
 
 			const query = service.getLogs();
 
 			expect(query.queryKey()).toEqual(["logs", service.filter()]);
 		});
 
-		it("should fetch logs from API", async () =>
+		it("should fetch logs from repository", async () =>
 		{
-			logsApiService.getLogs.and.returnValue(of(mockPagedResponse));
+			logRepository.getAll.and.returnValue(of(mockPagedResponse));
 
 			const query = service.getLogs();
 			await query.refetch();
 
-			expect(logsApiService.getLogs).toHaveBeenCalledWith(
-				service.filter()
-			);
+			expect(logRepository.getAll).toHaveBeenCalledWith(service.filter());
 			expect(query.data()).toEqual(mockPagedResponse);
 		});
 	});
@@ -152,7 +151,7 @@ describe("LogManagementService", () =>
 	{
 		it("should create query with correct key", () =>
 		{
-			logsApiService.getLogCount.and.returnValue(of(mockCountResponse));
+			logRepository.getCount.and.returnValue(of(mockCountResponse));
 
 			const query = service.getLogCount();
 
@@ -163,14 +162,14 @@ describe("LogManagementService", () =>
 			]);
 		});
 
-		it("should fetch log count from API", async () =>
+		it("should fetch log count from repository", async () =>
 		{
-			logsApiService.getLogCount.and.returnValue(of(mockCountResponse));
+			logRepository.getCount.and.returnValue(of(mockCountResponse));
 
 			const query = service.getLogCount();
 			await query.refetch();
 
-			expect(logsApiService.getLogCount).toHaveBeenCalledWith(
+			expect(logRepository.getCount).toHaveBeenCalledWith(
 				service.filter()
 			);
 			expect(query.data()).toEqual(mockCountResponse);
@@ -264,17 +263,17 @@ describe("LogManagementService", () =>
 
 		it("should delete log via mutation", async () =>
 		{
-			logsApiService.deleteLog.and.returnValue(of(void 0));
+			logRepository.delete.and.returnValue(of(void 0));
 
 			const mutation = service.deleteLog();
 			await mutation.mutateAsync(1);
 
-			expect(logsApiService.deleteLog).toHaveBeenCalledWith(1);
+			expect(logRepository.delete).toHaveBeenCalledWith(1);
 		});
 
 		it("should invalidate logs queries on success", async () =>
 		{
-			logsApiService.deleteLog.and.returnValue(of(void 0));
+			logRepository.delete.and.returnValue(of(void 0));
 
 			const mutation = service.deleteLog();
 			await mutation.mutateAsync(1);
@@ -296,17 +295,17 @@ describe("LogManagementService", () =>
 
 		it("should delete logs via mutation", async () =>
 		{
-			logsApiService.deleteLogs.and.returnValue(of(void 0));
+			logRepository.deleteBatch.and.returnValue(of(void 0));
 
 			const mutation = service.deleteLogs();
 			await mutation.mutateAsync([1, 2, 3]);
 
-			expect(logsApiService.deleteLogs).toHaveBeenCalledWith([1, 2, 3]);
+			expect(logRepository.deleteBatch).toHaveBeenCalledWith([1, 2, 3]);
 		});
 
 		it("should clear selection and invalidate queries on success", async () =>
 		{
-			logsApiService.deleteLogs.and.returnValue(of(void 0));
+			logRepository.deleteBatch.and.returnValue(of(void 0));
 			service.toggleSelection(1);
 			service.toggleSelection(2);
 

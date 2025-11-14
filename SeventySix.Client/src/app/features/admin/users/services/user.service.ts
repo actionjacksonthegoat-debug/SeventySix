@@ -9,7 +9,7 @@ import { inject, Injectable } from "@angular/core";
 import {
 	injectQuery,
 	injectMutation,
-	injectQueryClient
+	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 import { User } from "@admin/users/models";
@@ -27,7 +27,7 @@ import { getQueryConfig } from "@core/utils/query-config";
 export class UserService
 {
 	private readonly userRepository = inject(UserRepository);
-	private readonly queryClient = injectQueryClient();
+	private readonly queryClient = inject(QueryClient);
 	private readonly queryConfig = getQueryConfig("users");
 
 	/**

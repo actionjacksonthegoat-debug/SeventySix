@@ -1,26 +1,33 @@
+/**
+ * Log Management Service
+ * Business logic layer for log operations
+ * Uses TanStack Query for caching and state management
+ * Uses repository pattern for data access (SRP, DIP)
+ */
+
 import { inject, Injectable, signal, computed } from "@angular/core";
 import {
 	injectQuery,
 	injectMutation,
-	injectQueryClient
+	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
-import { LogsApiService } from "./logs-api.service";
+import { LogRepository } from "@admin/log-management/repositories";
 import { LogFilterRequest } from "@admin/log-management/models";
 import { getQueryConfig } from "@core/utils/query-config";
 
 /**
- * State management service for the log management page
- * Uses TanStack Query for data fetching and caching
- * Uses Angular signals for reactive state management
+ * Service for log management business logic
+ * Manages filter state and provides TanStack Query hooks for log operations
+ * All methods use TanStack Query for automatic caching and state management
  */
 @Injectable({
 	providedIn: "root"
 })
 export class LogManagementService
 {
-	private readonly logsApiService = inject(LogsApiService);
-	private readonly queryClient = injectQueryClient();
+	private readonly logRepository = inject(LogRepository);
+	private readonly queryClient = inject(QueryClient);
 	private readonly queryConfig = getQueryConfig("logs");
 
 	// Filter state using signals
@@ -45,7 +52,7 @@ export class LogManagementService
 		return injectQuery(() => ({
 			queryKey: ["logs", this.filter()],
 			queryFn: () =>
-				lastValueFrom(this.logsApiService.getLogs(this.filter())),
+				lastValueFrom(this.logRepository.getAll(this.filter())),
 			...this.queryConfig
 		}));
 	}
@@ -59,9 +66,55 @@ export class LogManagementService
 		return injectQuery(() => ({
 			queryKey: ["logs", "count", this.filter()],
 			queryFn: () =>
-				lastValueFrom(this.logsApiService.getLogCount(this.filter())),
+				lastValueFrom(this.logRepository.getCount(this.filter())),
 			...this.queryConfig
 		}));
+	}
+
+	/**
+	 * Mutation for deleting a single log
+	 * Automatically invalidates related queries on success
+	 * @returns Mutation object with mutate, isPending, error, etc.
+	 */
+	deleteLog()
+	{
+		return injectMutation(() => ({
+			mutationFn: (id: number) =>
+				lastValueFrom(this.logRepository.delete(id)),
+			onSuccess: () =>
+			{
+				// Invalidate all log queries
+				this.queryClient.invalidateQueries({ queryKey: ["logs"] });
+			}
+		}));
+	}
+
+	/**
+	 * Mutation for batch deleting logs
+	 * Automatically invalidates related queries on success
+	 * @returns Mutation object with mutate, isPending, error, etc.
+	 */
+	deleteLogs()
+	{
+		return injectMutation(() => ({
+			mutationFn: (ids: number[]) =>
+				lastValueFrom(this.logRepository.deleteBatch(ids)),
+			onSuccess: () =>
+			{
+				this.clearSelection();
+				this.queryClient.invalidateQueries({ queryKey: ["logs"] });
+			}
+		}));
+	}
+
+	/**
+	 * Delete selected logs
+	 */
+	deleteSelected()
+	{
+		const mutation = this.deleteLogs();
+		const ids = Array.from(this.selectedIds());
+		return mutation.mutate(ids);
 	}
 
 	/**
@@ -109,50 +162,6 @@ export class LogManagementService
 			pageSize: this.filter().pageSize || 50
 		});
 		this.clearSelection();
-	}
-
-	/**
-	 * Mutation for deleting a single log
-	 * @returns Mutation object with mutate, isPending, error, etc.
-	 */
-	deleteLog()
-	{
-		return injectMutation(() => ({
-			mutationFn: (id: number) =>
-				lastValueFrom(this.logsApiService.deleteLog(id)),
-			onSuccess: () =>
-			{
-				// Invalidate all log queries
-				this.queryClient.invalidateQueries({ queryKey: ["logs"] });
-			}
-		}));
-	}
-
-	/**
-	 * Mutation for batch deleting logs
-	 * @returns Mutation object with mutate, isPending, error, etc.
-	 */
-	deleteLogs()
-	{
-		return injectMutation(() => ({
-			mutationFn: (ids: number[]) =>
-				lastValueFrom(this.logsApiService.deleteLogs(ids)),
-			onSuccess: () =>
-			{
-				this.clearSelection();
-				this.queryClient.invalidateQueries({ queryKey: ["logs"] });
-			}
-		}));
-	}
-
-	/**
-	 * Delete selected logs
-	 */
-	deleteSelected()
-	{
-		const mutation = this.deleteLogs();
-		const ids = Array.from(this.selectedIds());
-		return mutation.mutate(ids);
 	}
 
 	/**

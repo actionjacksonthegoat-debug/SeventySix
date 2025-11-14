@@ -1,4 +1,10 @@
-import { Injectable } from "@angular/core";
+/**
+ * Log Repository
+ * Handles data access for log entities
+ * Implements Repository Pattern (SOLID - SRP, DIP)
+ */
+
+import { inject, Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { environment } from "@environments/environment";
@@ -10,24 +16,24 @@ import {
 } from "@admin/log-management/models";
 
 /**
- * Service for interacting with the Logs API
+ * Repository for log data access
+ * Follows the Repository pattern to abstract API calls
+ * Provides CRUD operations for log entities
  */
 @Injectable({
 	providedIn: "root"
 })
-export class LogsApiService
+export class LogRepository
 {
+	private readonly http = inject(HttpClient);
 	private readonly apiUrl = `${environment.apiUrl}/logs`;
-
-	constructor(private http: HttpClient)
-	{}
 
 	/**
 	 * Get paginated logs with optional filtering
 	 * @param filter - Filter criteria
 	 * @returns Observable of paged log response
 	 */
-	getLogs(filter?: LogFilterRequest): Observable<PagedLogResponse>
+	getAll(filter?: LogFilterRequest): Observable<PagedLogResponse>
 	{
 		let params = new HttpParams();
 
@@ -74,11 +80,21 @@ export class LogsApiService
 	}
 
 	/**
+	 * Get a single log by ID
+	 * @param id - Log ID
+	 * @returns Observable of log response
+	 */
+	getById(id: number): Observable<LogResponse>
+	{
+		return this.http.get<LogResponse>(`${this.apiUrl}/${id}`);
+	}
+
+	/**
 	 * Get total count of logs matching filter criteria
 	 * @param filter - Filter criteria
 	 * @returns Observable of log count response
 	 */
-	getLogCount(filter?: LogFilterRequest): Observable<LogCountResponse>
+	getCount(filter?: LogFilterRequest): Observable<LogCountResponse>
 	{
 		let params = new HttpParams();
 
@@ -115,21 +131,11 @@ export class LogsApiService
 	}
 
 	/**
-	 * Get a single log by ID
-	 * @param id - Log ID
-	 * @returns Observable of log response
-	 */
-	getLogById(id: number): Observable<LogResponse>
-	{
-		return this.http.get<LogResponse>(`${this.apiUrl}/${id}`);
-	}
-
-	/**
 	 * Delete a single log by ID
 	 * @param id - Log ID
 	 * @returns Observable of void (204 No Content on success)
 	 */
-	deleteLog(id: number): Observable<void>
+	delete(id: number): Observable<void>
 	{
 		return this.http.delete<void>(`${this.apiUrl}/${id}`);
 	}
@@ -139,7 +145,7 @@ export class LogsApiService
 	 * @param ids - Array of log IDs to delete
 	 * @returns Observable with count of deleted logs
 	 */
-	deleteLogs(ids: number[]): Observable<number>
+	deleteBatch(ids: number[]): Observable<number>
 	{
 		return this.http.request<number>("DELETE", `${this.apiUrl}/batch`, {
 			body: ids
