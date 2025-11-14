@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.Core.DTOs.OpenWeather;
 using SeventySix.Core.DTOs.OpenWeather.Common;
@@ -79,7 +80,7 @@ public class WeatherForecastController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
 	[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
-	[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude", "units" })]
+	[OutputCache(PolicyName = "weather")]
 	public async Task<ActionResult<CurrentWeather>> GetCurrentWeatherAsync(
 		[FromQuery] double latitude,
 		[FromQuery] double longitude,
@@ -130,7 +131,7 @@ public class WeatherForecastController : ControllerBase
 	[ProducesResponseType(typeof(IEnumerable<HourlyForecast>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-	[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude", "units" })]
+	[OutputCache(PolicyName = "weather")]
 	public async Task<ActionResult<IEnumerable<HourlyForecast>>> GetHourlyForecastAsync(
 		[FromQuery] double latitude,
 		[FromQuery] double longitude,
@@ -175,7 +176,7 @@ public class WeatherForecastController : ControllerBase
 	[ProducesResponseType(typeof(IEnumerable<DailyForecast>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-	[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude", "units" })]
+	[OutputCache(PolicyName = "weather")]
 	public async Task<ActionResult<IEnumerable<DailyForecast>>> GetDailyForecastAsync(
 		[FromQuery] double latitude,
 		[FromQuery] double longitude,
@@ -220,7 +221,7 @@ public class WeatherForecastController : ControllerBase
 	[HttpGet("minutely", Name = "GetMinutelyForecast")]
 	[ProducesResponseType(typeof(IEnumerable<MinutelyForecast>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude" })]
+	[OutputCache(PolicyName = "weather")]
 	public async Task<ActionResult<IEnumerable<MinutelyForecast>>> GetMinutelyForecastAsync(
 		[FromQuery] double latitude,
 		[FromQuery] double longitude,
@@ -263,7 +264,7 @@ public class WeatherForecastController : ControllerBase
 	[HttpGet("alerts", Name = "GetWeatherAlerts")]
 	[ProducesResponseType(typeof(IEnumerable<WeatherAlert>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude" })]
+	[OutputCache(PolicyName = "weather")]
 	public async Task<ActionResult<IEnumerable<WeatherAlert>>> GetWeatherAlertsAsync(
 		[FromQuery] double latitude,
 		[FromQuery] double longitude,
@@ -308,7 +309,7 @@ public class WeatherForecastController : ControllerBase
 	[ProducesResponseType(typeof(OneCallResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-	[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude", "units", "exclude" })]
+	[OutputCache(PolicyName = "weather")]
 	public async Task<ActionResult<OneCallResponse>> GetCompleteWeatherDataAsync(
 		[FromQuery] double latitude,
 		[FromQuery] double longitude,
@@ -362,7 +363,7 @@ public class WeatherForecastController : ControllerBase
 	[ProducesResponseType(typeof(OneCallResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-	[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "latitude", "longitude", "timestamp", "units" })]
+	[OutputCache(PolicyName = "weather")]
 	public async Task<ActionResult<OneCallResponse>> GetHistoricalWeatherAsync(
 		[FromQuery] double latitude,
 		[FromQuery] double longitude,

@@ -1,123 +1,80 @@
-import { Injectable, OnDestroy } from "@angular/core";
-import { BehaviorSubject, Observable, combineLatest, Subscription } from "rxjs";
+import { inject, Injectable, signal, computed } from "@angular/core";
 import {
-	tap,
-	catchError,
-	debounceTime,
-	distinctUntilChanged
-} from "rxjs/operators";
+	injectQuery,
+	injectMutation,
+	injectQueryClient
+} from "@tanstack/angular-query-experimental";
+import { lastValueFrom } from "rxjs";
 import { LogsApiService } from "./logs-api.service";
-import {
-	LogFilterRequest,
-	PagedLogResponse,
-	LogStatistics
-} from "@admin/log-management/models";
+import { LogFilterRequest } from "@admin/log-management/models";
+import { getQueryConfig } from "@core/utils/query-config";
 
 /**
  * State management service for the log management page
+ * Uses TanStack Query for data fetching and caching
+ * Uses Angular signals for reactive state management
  */
 @Injectable({
 	providedIn: "root"
 })
-export class LogManagementService implements OnDestroy
+export class LogManagementService
 {
-	private filterSubscription?: Subscription;
-	// Filter state
-	private readonly filterSubject = new BehaviorSubject<LogFilterRequest>({
+	private readonly logsApiService = inject(LogsApiService);
+	private readonly queryClient = injectQueryClient();
+	private readonly queryConfig = getQueryConfig("logs");
+
+	// Filter state using signals
+	readonly filter = signal<LogFilterRequest>({
 		pageNumber: 1,
 		pageSize: 50
 	});
-	public readonly filter$ = this.filterSubject.asObservable();
 
-	// Loading state
-	private readonly loadingSubject = new BehaviorSubject<boolean>(false);
-	public readonly loading$ = this.loadingSubject.asObservable();
+	// Selected log IDs using signals
+	readonly selectedIds = signal<Set<number>>(new Set());
 
-	// Error state
-	private readonly errorSubject = new BehaviorSubject<string | null>(null);
-	public readonly error$ = this.errorSubject.asObservable();
-
-	// Logs data
-	private readonly logsSubject = new BehaviorSubject<PagedLogResponse | null>(
-		null
-	);
-	public readonly logs$ = this.logsSubject.asObservable();
-
-	// Selected log IDs
-	private readonly selectedIdsSubject = new BehaviorSubject<Set<number>>(
-		new Set()
-	);
-	public readonly selectedIds$ = this.selectedIdsSubject.asObservable();
-
-	// Statistics
-	private readonly statisticsSubject =
-		new BehaviorSubject<LogStatistics | null>(null);
-	public readonly statistics$ = this.statisticsSubject.asObservable();
-
-	// Auto-refresh toggle
-	private readonly autoRefreshSubject = new BehaviorSubject<boolean>(false);
-	public readonly autoRefresh$ = this.autoRefreshSubject.asObservable();
-
-	constructor(private logsApiService: LogsApiService)
-	{
-		// Set up automatic data loading when filter changes
-		this.filterSubscription = this.filter$
-			.pipe(
-				debounceTime(300),
-				distinctUntilChanged(
-					(prev, curr) =>
-						JSON.stringify(prev) === JSON.stringify(curr)
-				)
-			)
-			.subscribe(() => this.loadLogs());
-	}
-
-	ngOnDestroy(): void
-	{
-		this.filterSubscription?.unsubscribe();
-	}
+	// Computed selected count
+	readonly selectedCount = computed(() => this.selectedIds().size);
 
 	/**
-	 * Load logs based on current filter
+	 * Query for logs based on current filter
+	 * Automatically cached with TanStack Query
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	private loadLogs(): void
+	getLogs()
 	{
-		this.loadingSubject.next(true);
-		this.errorSubject.next(null);
-
-		const filter = this.filterSubject.value;
-
-		combineLatest([
-			this.logsApiService.getLogs(filter),
-			this.logsApiService.getLogCount(filter)
-		])
-			.pipe(
-				tap(([logsResponse, countResponse]) =>
-				{
-					this.logsSubject.next(logsResponse);
-					this.updateStatistics(countResponse.total);
-					this.loadingSubject.next(false);
-				}),
-				catchError((error) =>
-				{
-					this.errorSubject.next(
-						"Failed to load logs. Please try again."
-					);
-					this.loadingSubject.next(false);
-					throw error;
-				})
-			)
-			.subscribe();
+		return injectQuery(() => ({
+			queryKey: ["logs", this.filter()],
+			queryFn: () =>
+				lastValueFrom(this.logsApiService.getLogs(this.filter())),
+			...this.queryConfig
+		}));
 	}
 
 	/**
-	 * Update filter and trigger reload
+	 * Query for log count based on current filter
+	 * @returns Query object with data, isLoading, error, etc.
+	 */
+	getLogCount()
+	{
+		return injectQuery(() => ({
+			queryKey: ["logs", "count", this.filter()],
+			queryFn: () =>
+				lastValueFrom(this.logsApiService.getLogCount(this.filter())),
+			...this.queryConfig
+		}));
+	}
+
+	/**
+	 * Update filter and automatically refetch
 	 * @param filter - Partial filter to update
 	 */
 	updateFilter(filter: Partial<LogFilterRequest>): void
 	{
-		const currentFilter = this.filterSubject.value;
-		this.filterSubject.next({ ...currentFilter, ...filter, pageNumber: 1 });
+		this.filter.update((current) => ({
+			...current,
+			...filter,
+			pageNumber: 1
+		}));
 	}
 
 	/**
@@ -126,8 +83,7 @@ export class LogManagementService implements OnDestroy
 	 */
 	setPage(pageNumber: number): void
 	{
-		const currentFilter = this.filterSubject.value;
-		this.filterSubject.next({ ...currentFilter, pageNumber });
+		this.filter.update((current) => ({ ...current, pageNumber }));
 	}
 
 	/**
@@ -136,8 +92,11 @@ export class LogManagementService implements OnDestroy
 	 */
 	setPageSize(pageSize: number): void
 	{
-		const currentFilter = this.filterSubject.value;
-		this.filterSubject.next({ ...currentFilter, pageSize, pageNumber: 1 });
+		this.filter.update((current) => ({
+			...current,
+			pageSize,
+			pageNumber: 1
+		}));
 	}
 
 	/**
@@ -145,19 +104,55 @@ export class LogManagementService implements OnDestroy
 	 */
 	clearFilters(): void
 	{
-		this.filterSubject.next({
+		this.filter.set({
 			pageNumber: 1,
-			pageSize: this.filterSubject.value.pageSize || 50
+			pageSize: this.filter().pageSize || 50
 		});
 		this.clearSelection();
 	}
 
 	/**
-	 * Refresh current data
+	 * Mutation for deleting a single log
+	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
-	refresh(): void
+	deleteLog()
 	{
-		this.loadLogs();
+		return injectMutation(() => ({
+			mutationFn: (id: number) =>
+				lastValueFrom(this.logsApiService.deleteLog(id)),
+			onSuccess: () =>
+			{
+				// Invalidate all log queries
+				this.queryClient.invalidateQueries({ queryKey: ["logs"] });
+			}
+		}));
+	}
+
+	/**
+	 * Mutation for batch deleting logs
+	 * @returns Mutation object with mutate, isPending, error, etc.
+	 */
+	deleteLogs()
+	{
+		return injectMutation(() => ({
+			mutationFn: (ids: number[]) =>
+				lastValueFrom(this.logsApiService.deleteLogs(ids)),
+			onSuccess: () =>
+			{
+				this.clearSelection();
+				this.queryClient.invalidateQueries({ queryKey: ["logs"] });
+			}
+		}));
+	}
+
+	/**
+	 * Delete selected logs
+	 */
+	deleteSelected()
+	{
+		const mutation = this.deleteLogs();
+		const ids = Array.from(this.selectedIds());
+		return mutation.mutate(ids);
 	}
 
 	/**
@@ -166,28 +161,28 @@ export class LogManagementService implements OnDestroy
 	 */
 	toggleSelection(id: number): void
 	{
-		const currentSelection = new Set(this.selectedIdsSubject.value);
-		if (currentSelection.has(id))
+		this.selectedIds.update((current) =>
 		{
-			currentSelection.delete(id);
-		}
-		else
-		{
-			currentSelection.add(id);
-		}
-		this.selectedIdsSubject.next(currentSelection);
+			const newSet = new Set(current);
+			if (newSet.has(id))
+			{
+				newSet.delete(id);
+			}
+			else
+			{
+				newSet.add(id);
+			}
+			return newSet;
+		});
 	}
 
 	/**
 	 * Select all visible logs
+	 * @param logIds - Array of log IDs to select
 	 */
-	selectAll(): void
+	selectAll(logIds: number[]): void
 	{
-		const logs = this.logsSubject.value;
-		if (!logs) return;
-
-		const allIds = new Set(logs.data.map((log) => log.id));
-		this.selectedIdsSubject.next(allIds);
+		this.selectedIds.set(new Set(logIds));
 	}
 
 	/**
@@ -195,92 +190,7 @@ export class LogManagementService implements OnDestroy
 	 */
 	clearSelection(): void
 	{
-		this.selectedIdsSubject.next(new Set());
-	}
-
-	/**
-	 * Delete selected logs
-	 * @returns Observable of deleted count
-	 */
-	deleteSelected(): Observable<number>
-	{
-		const ids = Array.from(this.selectedIdsSubject.value);
-		if (ids.length === 0)
-		{
-			throw new Error("No logs selected for deletion");
-		}
-
-		this.loadingSubject.next(true);
-
-		return this.logsApiService.deleteLogs(ids).pipe(
-			tap(() =>
-			{
-				this.clearSelection();
-				this.refresh();
-			}),
-			catchError((error) =>
-			{
-				this.errorSubject.next(
-					"Failed to delete logs. Please try again."
-				);
-				this.loadingSubject.next(false);
-				throw error;
-			})
-		);
-	}
-
-	/**
-	 * Delete a single log by ID
-	 * @param id - Log ID to delete
-	 * @returns Observable of void
-	 */
-	deleteLog(id: number): Observable<void>
-	{
-		this.loadingSubject.next(true);
-
-		return this.logsApiService.deleteLog(id).pipe(
-			tap(() =>
-			{
-				this.refresh();
-			}),
-			catchError((error) =>
-			{
-				this.errorSubject.next(
-					"Failed to delete log. Please try again."
-				);
-				this.loadingSubject.next(false);
-				throw error;
-			})
-		);
-	}
-
-	/**
-	 * Toggle auto-refresh
-	 * @param enabled - Whether to enable auto-refresh
-	 */
-	setAutoRefresh(enabled: boolean): void
-	{
-		this.autoRefreshSubject.next(enabled);
-	}
-
-	/**
-	 * Update statistics based on total count
-	 * @param totalCount - Total log count
-	 */
-	private updateStatistics(totalCount: number): void
-	{
-		// For now, we'll just store the total count
-		// In a future enhancement, we could make separate API calls for error/warning/fatal counts
-		this.statisticsSubject.next({
-			totalLogs: totalCount,
-			errorCount: 0,
-			warningCount: 0,
-			infoCount: 0,
-			debugCount: 0,
-			criticalCount: 0,
-			oldestLogDate: null,
-			newestLogDate: null
-		});
+		this.selectedIds.set(new Set());
 	}
 
 	/**
@@ -288,15 +198,7 @@ export class LogManagementService implements OnDestroy
 	 */
 	getCurrentFilter(): LogFilterRequest
 	{
-		return this.filterSubject.value;
-	}
-
-	/**
-	 * Get current logs value
-	 */
-	getCurrentLogs(): PagedLogResponse | null
-	{
-		return this.logsSubject.value;
+		return this.filter();
 	}
 
 	/**
@@ -304,6 +206,6 @@ export class LogManagementService implements OnDestroy
 	 */
 	getSelectedIds(): Set<number>
 	{
-		return this.selectedIdsSubject.value;
+		return this.selectedIds();
 	}
 }

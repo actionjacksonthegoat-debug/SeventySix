@@ -1,10 +1,10 @@
 import {
 	Component,
-	signal,
 	computed,
 	inject,
 	ChangeDetectionStrategy,
-	OnInit
+	OnInit,
+	effect
 } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { DatePipe } from "@angular/common";
@@ -59,12 +59,27 @@ export class UserPage implements OnInit
 	private readonly fb = inject(FormBuilder);
 	private readonly snackBar = inject(MatSnackBar);
 
-	// State signals
-	readonly user = signal<User | null>(null);
-	readonly isLoading = signal<boolean>(true);
-	readonly isSaving = signal<boolean>(false);
-	readonly error = signal<string | null>(null);
-	readonly saveError = signal<string | null>(null);
+	// Get user ID from route
+	private readonly userId = this.route.snapshot.paramMap.get("id") || "";
+
+	// TanStack Query for loading user data
+	readonly userQuery = this.userService.getUserById(this.userId);
+
+	// TanStack Query mutation for updating user
+	readonly updateMutation = this.userService.updateUser();
+
+	// Computed signals for derived state
+	readonly user = computed(() => this.userQuery.data() ?? null);
+	readonly isLoading = computed(() => this.userQuery.isLoading());
+	readonly isSaving = computed(() => this.updateMutation.isPending());
+	readonly error = computed(() =>
+		this.userQuery.error() ? "Failed to load user. Please try again." : null
+	);
+	readonly saveError = computed(() =>
+		this.updateMutation.error()
+			? "Failed to save user. Please try again."
+			: null
+	);
 
 	// Computed signals
 	readonly pageTitle = computed(() =>
@@ -95,46 +110,22 @@ export class UserPage implements OnInit
 
 	/**
 	 * Initializes the user page.
-	 * Loads user data from route parameter.
+	 * Loads user data from route parameter and populates form when available.
 	 */
 	ngOnInit(): void
 	{
-		this.loadUser();
-	}
-
-	/**
-	 * Loads user data based on route parameter ID.
-	 */
-	private loadUser(): void
-	{
-		const userId = this.route.snapshot.paramMap.get("id");
-
-		if (!userId)
-		{
-			this.error.set("Invalid user ID");
-			this.isLoading.set(false);
-			this.logger.error("No user ID provided in route");
-			return;
-		}
-
-		this.isLoading.set(true);
-		this.error.set(null);
-
-		this.userService.getUserById(userId).subscribe({
-			next: (data) =>
+		// Populate form when user data loads
+		effect(
+			() =>
 			{
-				this.user.set(data);
-				this.populateForm(data);
-				this.isLoading.set(false);
-				this.logger.info("User loaded successfully", { id: userId });
+				const currentUser = this.user();
+				if (currentUser && this.userForm.pristine)
+				{
+					this.populateForm(currentUser);
+				}
 			},
-			error: (err) =>
-			{
-				this.error.set("Failed to load user. Please try again.");
-				this.isLoading.set(false);
-				this.logger.error("Failed to load user", err);
-			}
-		});
+			{ allowSignalWrites: true }
+		);
 	}
 
 	/**
@@ -160,9 +151,6 @@ export class UserPage implements OnInit
 	 */
 	async onSubmit(): Promise<void>
 	{
-		// Clear previous save errors
-		this.saveError.set(null);
-
 		// Validate form
 		if (this.userForm.invalid)
 		{
@@ -171,39 +159,42 @@ export class UserPage implements OnInit
 			return;
 		}
 
-		const userId = this.route.snapshot.paramMap.get("id");
+		const userId = this.userId;
 		if (!userId)
 		{
-			this.saveError.set("Invalid user ID");
+			this.snackBar.open("Invalid user ID", "Close", {
+				duration: 3000,
+				horizontalPosition: "end",
+				verticalPosition: "top"
+			});
 			return;
 		}
 
-		this.isSaving.set(true);
-
 		const formValue = this.userForm.value;
 
-		this.userService.updateUser(userId, formValue).subscribe({
-			next: (updatedUser) =>
+		this.updateMutation.mutate(
+			{ id: userId, user: formValue },
 			{
-				this.user.set(updatedUser);
-				this.userForm.markAsPristine();
-				this.isSaving.set(false);
-				this.logger.info("User updated successfully", { id: userId });
+				onSuccess: () =>
+				{
+					this.userForm.markAsPristine();
+					this.logger.info("User updated successfully", {
+						id: userId
+					});
 
-				// Show success notification
-				this.snackBar.open("User updated successfully", "Close", {
-					duration: 3000,
-					horizontalPosition: "end",
-					verticalPosition: "top"
-				});
-			},
-			error: (err) =>
-			{
-				this.saveError.set("Failed to save user. Please try again.");
-				this.isSaving.set(false);
-				this.logger.error("Failed to save user", err);
+					// Show success notification
+					this.snackBar.open("User updated successfully", "Close", {
+						duration: 3000,
+						horizontalPosition: "end",
+						verticalPosition: "top"
+					});
+				},
+				onError: (err) =>
+				{
+					this.logger.error("Failed to save user", err);
+				}
 			}
-		});
+		);
 	}
 
 	/**

@@ -1,16 +1,24 @@
 /**
  * Weather Service
  * Business logic layer for weather forecast operations
+ * Uses TanStack Query for caching and state management
  * Uses repository pattern for data access (SRP, DIP)
  */
 
 import { inject, Injectable } from "@angular/core";
-import { Observable } from "rxjs";
+import {
+	injectQuery,
+	injectMutation,
+	injectQueryClient
+} from "@tanstack/angular-query-experimental";
+import { lastValueFrom } from "rxjs";
 import { WeatherForecast } from "@home/weather/models";
 import { WeatherForecastRepository } from "@home/weather/repositories";
+import { getQueryConfig } from "@core/utils/query-config";
 
 /**
  * Service for weather forecast business logic
+ * All methods use TanStack Query for automatic caching and state management
  */
 @Injectable({
 	providedIn: "root"
@@ -18,59 +26,100 @@ import { WeatherForecastRepository } from "@home/weather/repositories";
 export class WeatherService
 {
 	private readonly weatherRepository = inject(WeatherForecastRepository);
+	private readonly queryClient = injectQueryClient();
+	private readonly queryConfig = getQueryConfig("weather");
 
 	/**
-	 * Get all weather forecasts
-	 * @returns Observable of weather forecast array
+	 * Query for all weather forecasts
+	 * Automatically cached with TanStack Query
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getAllForecasts(): Observable<WeatherForecast[]>
+	getAllForecasts()
 	{
-		return this.weatherRepository.getAll();
+		return injectQuery(() => ({
+			queryKey: ["weather", "forecasts"],
+			queryFn: () => lastValueFrom(this.weatherRepository.getAll()),
+			...this.queryConfig
+		}));
 	}
 
 	/**
-	 * Get weather forecast by ID
+	 * Query for weather forecast by ID
 	 * @param id The forecast identifier
-	 * @returns Observable of weather forecast
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getForecastById(id: number | string): Observable<WeatherForecast>
+	getForecastById(id: number | string)
 	{
-		return this.weatherRepository.getById(id);
+		return injectQuery(() => ({
+			queryKey: ["weather", "forecast", id],
+			queryFn: () => lastValueFrom(this.weatherRepository.getById(id)),
+			...this.queryConfig
+		}));
 	}
 
 	/**
-	 * Create new weather forecast
-	 * @param forecast The forecast data
-	 * @returns Observable of created forecast
+	 * Mutation for creating weather forecast
+	 * Automatically invalidates related queries on success
+	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
-	createForecast(
-		forecast: Partial<WeatherForecast>
-	): Observable<WeatherForecast>
+	createForecast()
 	{
-		return this.weatherRepository.create(forecast);
+		return injectMutation(() => ({
+			mutationFn: (forecast: Partial<WeatherForecast>) =>
+				lastValueFrom(this.weatherRepository.create(forecast)),
+			onSuccess: () =>
+			{
+				// Invalidate and refetch all forecasts
+				this.queryClient.invalidateQueries({
+					queryKey: ["weather", "forecasts"]
+				});
+			}
+		}));
 	}
 
 	/**
-	 * Update existing weather forecast
-	 * @param id The forecast identifier
-	 * @param forecast The forecast data to update
-	 * @returns Observable of updated forecast
+	 * Mutation for updating weather forecast
+	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
-	updateForecast(
-		id: number | string,
-		forecast: Partial<WeatherForecast>
-	): Observable<WeatherForecast>
+	updateForecast()
 	{
-		return this.weatherRepository.update(id, forecast);
+		return injectMutation(() => ({
+			mutationFn: ({
+				id,
+				forecast
+			}: {
+				id: number | string;
+				forecast: Partial<WeatherForecast>;
+			}) => lastValueFrom(this.weatherRepository.update(id, forecast)),
+			onSuccess: (_, variables) =>
+			{
+				// Invalidate specific forecast and list
+				this.queryClient.invalidateQueries({
+					queryKey: ["weather", "forecast", variables.id]
+				});
+				this.queryClient.invalidateQueries({
+					queryKey: ["weather", "forecasts"]
+				});
+			}
+		}));
 	}
 
 	/**
-	 * Delete weather forecast
-	 * @param id The forecast identifier
-	 * @returns Observable of void
+	 * Mutation for deleting weather forecast
+	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
-	deleteForecast(id: number | string): Observable<void>
+	deleteForecast()
 	{
-		return this.weatherRepository.delete(id);
+		return injectMutation(() => ({
+			mutationFn: (id: number | string) =>
+				lastValueFrom(this.weatherRepository.delete(id)),
+			onSuccess: () =>
+			{
+				// Invalidate all forecasts
+				this.queryClient.invalidateQueries({
+					queryKey: ["weather", "forecasts"]
+				});
+			}
+		}));
 	}
 }

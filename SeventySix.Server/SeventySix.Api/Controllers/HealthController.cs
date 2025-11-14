@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Core.DTOs.Health;
 using SeventySix.Core.Interfaces;
 
@@ -39,6 +40,7 @@ public class HealthController : ControllerBase
 	/// <response code="200">Returns the system health status.</response>
 	[HttpGet]
 	[ProducesResponseType(typeof(HealthStatusResponse), StatusCodes.Status200OK)]
+	[OutputCache(PolicyName = "health")]
 	public async Task<ActionResult<HealthStatusResponse>> GetHealthStatusAsync(CancellationToken cancellationToken)
 	{
 		var status = await Service.GetHealthStatusAsync(cancellationToken);

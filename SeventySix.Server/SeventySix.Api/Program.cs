@@ -98,6 +98,43 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 // Response caching middleware
 builder.Services.AddResponseCaching();
 
+// Configure and validate output cache options
+builder.Services.Configure<OutputCacheOptions>(
+	builder.Configuration.GetSection(OutputCacheOptions.SECTION_NAME));
+
+builder.Services.AddOptions<OutputCacheOptions>()
+	.Bind(builder.Configuration.GetSection(OutputCacheOptions.SECTION_NAME))
+	.ValidateOnStart();
+
+// Add output caching with dynamic policy registration from configuration
+builder.Services.AddOutputCache(options =>
+{
+	var cacheConfig = builder.Configuration
+		.GetSection(OutputCacheOptions.SECTION_NAME)
+		.Get<OutputCacheOptions>();
+
+	if (cacheConfig?.Policies == null) return;
+
+	foreach (var (name, config) in cacheConfig.Policies)
+	{
+		if (!config.Enabled) continue;
+
+		var policyName = name.ToLowerInvariant();
+
+		options.AddPolicy(policyName, policyBuilder =>
+		{
+			policyBuilder
+				.Expire(TimeSpan.FromSeconds(config.DurationSeconds))
+				.Tag(config.Tag);
+
+			if (config.VaryByQuery.Length > 0)
+			{
+				policyBuilder.SetVaryByQuery(config.VaryByQuery);
+			}
+		});
+	}
+});
+
 // Memory cache for OpenWeather API responses
 builder.Services.AddMemoryCache();
 
@@ -313,6 +350,9 @@ app.UseResponseCompression();
 
 // Enable response caching
 app.UseResponseCaching();
+
+// Enable output caching (must be before UseAuthorization)
+app.UseOutputCache();
 
 // Configure the HTTP request pipeline for development environment
 if (app.Environment.IsDevelopment())

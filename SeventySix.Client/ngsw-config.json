@@ -27,46 +27,5 @@
 			}
 		}
 	],
-	"dataGroups": [
-		{
-			"name": "api-weather",
-			"urls": ["/weatherforecast", "/api/weather/**"],
-			"cacheConfig": {
-				"strategy": "freshness",
-				"maxSize": 50,
-				"maxAge": "5m",
-				"timeout": "5s"
-			}
-		},
-		{
-			"name": "api-users",
-			"urls": ["/api/users/**", "/api/user/**"],
-			"cacheConfig": {
-				"strategy": "freshness",
-				"maxSize": 100,
-				"maxAge": "2m",
-				"timeout": "10s"
-			}
-		},
-		{
-			"name": "api-reference-data",
-			"urls": ["/api/reference/**", "/api/config/**", "/api/lookup/**"],
-			"cacheConfig": {
-				"strategy": "performance",
-				"maxSize": 100,
-				"maxAge": "1h"
-			}
-		},
-		{
-			"name": "api-dynamic",
-			"urls": ["/api/**"],
-			"cacheConfig": {
-				"strategy": "freshness",
-				"maxSize": 100,
-				"maxAge": "5m",
-				"timeout": "10s"
-			}
-		}
-	],
 	"navigationUrls": ["/**", "!/**/*.*", "!/**/*__*", "!/**/*__*/**"]
 }

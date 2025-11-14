@@ -58,9 +58,16 @@ export class UserCreatePage
 
 	@ViewChild("stepper") stepper!: MatStepper;
 
+	// TanStack Query mutation for creating users
+	readonly createMutation = this.userService.createUser();
+
 	// State signals
-	readonly isSaving = signal<boolean>(false);
-	readonly saveError = signal<string | null>(null);
+	readonly isSaving = computed(() => this.createMutation.isPending());
+	readonly saveError = computed(() =>
+		this.createMutation.error()
+			? "Failed to create user. Please try again."
+			: null
+	);
 
 	// Form groups for each step
 	readonly basicInfoForm: FormGroup = this.fb.group({
@@ -107,24 +114,22 @@ export class UserCreatePage
 	 */
 	async onSubmit(): Promise<void>
 	{
-		// Clear previous errors
-		this.saveError.set(null);
-
 		// Validate all steps
 		if (this.basicInfoForm.invalid || this.accountDetailsForm.invalid)
 		{
-			this.saveError.set("Please complete all required fields");
+			this.snackBar.open("Please complete all required fields", "Close", {
+				duration: 3000,
+				horizontalPosition: "end",
+				verticalPosition: "top"
+			});
 			return;
 		}
 
-		this.isSaving.set(true);
-
 		const userData = this.formData();
 
-		this.userService.createUser(userData).subscribe({
-			next: (createdUser) =>
+		this.createMutation.mutate(userData, {
+			onSuccess: (createdUser) =>
 			{
-				this.isSaving.set(false);
 				this.logger.info("User created successfully", {
 					id: createdUser.id
 				});
@@ -139,10 +144,8 @@ export class UserCreatePage
 				// Navigate to user list
 				this.router.navigate(["/users"]);
 			},
-			error: (err) =>
+			onError: (err) =>
 			{
-				this.saveError.set("Failed to create user. Please try again.");
-				this.isSaving.set(false);
 				this.logger.error("Failed to create user", err);
 			}
 		});

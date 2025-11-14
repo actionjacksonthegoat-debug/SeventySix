@@ -30,6 +30,8 @@
     "@angular/pwa": "^20.3.9",
     "@angular/router": "^20.3.0",
     "@angular/service-worker": "^20.3.10",
+    "@tanstack/angular-query-experimental": "^5.90.11",
+    "@tanstack/query-core": "^5.90.9",
     "chart.js": "^4.5.1",
     "ng2-charts": "^8.0.0",
     "rxjs": "~7.8.0",

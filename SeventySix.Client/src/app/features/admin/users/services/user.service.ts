@@ -1,17 +1,25 @@
 /**
  * User Service
  * Business logic layer for user operations
+ * Uses TanStack Query for caching and state management
  * Uses repository pattern for data access (SRP, DIP)
  */
 
 import { inject, Injectable } from "@angular/core";
-import { Observable } from "rxjs";
+import {
+	injectQuery,
+	injectMutation,
+	injectQueryClient
+} from "@tanstack/angular-query-experimental";
+import { lastValueFrom } from "rxjs";
 import { User } from "@admin/users/models";
 import { UserRepository } from "@admin/users/repositories";
+import { getQueryConfig } from "@core/utils/query-config";
 
 /**
  * Service for user business logic
  * Follows Service Layer pattern to encapsulate business rules
+ * All methods use TanStack Query for automatic caching and state management
  */
 @Injectable({
 	providedIn: "root"
@@ -19,54 +27,100 @@ import { UserRepository } from "@admin/users/repositories";
 export class UserService
 {
 	private readonly userRepository = inject(UserRepository);
+	private readonly queryClient = injectQueryClient();
+	private readonly queryConfig = getQueryConfig("users");
 
 	/**
-	 * Get all users
-	 * @returns Observable of user array
+	 * Query for all users
+	 * Automatically cached with TanStack Query
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getAllUsers(): Observable<User[]>
+	getAllUsers()
 	{
-		return this.userRepository.getAll();
+		return injectQuery(() => ({
+			queryKey: ["users", "all"],
+			queryFn: () => lastValueFrom(this.userRepository.getAll()),
+			...this.queryConfig
+		}));
 	}
 
 	/**
-	 * Get user by ID
+	 * Query for user by ID
 	 * @param id The user identifier
-	 * @returns Observable of user
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getUserById(id: number | string): Observable<User>
+	getUserById(id: number | string)
 	{
-		return this.userRepository.getById(id);
+		return injectQuery(() => ({
+			queryKey: ["users", "user", id],
+			queryFn: () => lastValueFrom(this.userRepository.getById(id)),
+			...this.queryConfig
+		}));
 	}
 
 	/**
-	 * Create new user
-	 * @param user The user data
-	 * @returns Observable of created user
+	 * Mutation for creating user
+	 * Automatically invalidates related queries on success
+	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
-	createUser(user: Partial<User>): Observable<User>
+	createUser()
 	{
-		return this.userRepository.create(user);
+		return injectMutation(() => ({
+			mutationFn: (user: Partial<User>) =>
+				lastValueFrom(this.userRepository.create(user)),
+			onSuccess: () =>
+			{
+				// Invalidate and refetch all users
+				this.queryClient.invalidateQueries({
+					queryKey: ["users", "all"]
+				});
+			}
+		}));
 	}
 
 	/**
-	 * Update existing user
-	 * @param id The user identifier
-	 * @param user The user data to update
-	 * @returns Observable of updated user
+	 * Mutation for updating user
+	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
-	updateUser(id: number | string, user: Partial<User>): Observable<User>
+	updateUser()
 	{
-		return this.userRepository.update(id, user);
+		return injectMutation(() => ({
+			mutationFn: ({
+				id,
+				user
+			}: {
+				id: number | string;
+				user: Partial<User>;
+			}) => lastValueFrom(this.userRepository.update(id, user)),
+			onSuccess: (_, variables) =>
+			{
+				// Invalidate specific user and list
+				this.queryClient.invalidateQueries({
+					queryKey: ["users", "user", variables.id]
+				});
+				this.queryClient.invalidateQueries({
+					queryKey: ["users", "all"]
+				});
+			}
+		}));
 	}
 
 	/**
-	 * Delete user
-	 * @param id The user identifier
-	 * @returns Observable of void
+	 * Mutation for deleting user
+	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
-	deleteUser(id: number | string): Observable<void>
+	deleteUser()
 	{
-		return this.userRepository.delete(id);
+		return injectMutation(() => ({
+			mutationFn: (id: number | string) =>
+				lastValueFrom(this.userRepository.delete(id)),
+			onSuccess: () =>
+			{
+				// Invalidate all users
+				this.queryClient.invalidateQueries({
+					queryKey: ["users", "all"]
+				});
+			}
+		}));
 	}
 }

@@ -1,7 +1,6 @@
 import {
 	Component,
 	inject,
-	signal,
 	computed,
 	ChangeDetectionStrategy
 } from "@angular/core";
@@ -13,6 +12,7 @@ import { WeatherForecast } from "@home/weather/models";
  * Weather display component.
  * Displays list of weather forecasts with loading and error states.
  * Follows OnPush change detection for performance.
+ * Uses TanStack Query for data fetching and caching.
  */
 @Component({
 	selector: "app-weather-display",
@@ -26,54 +26,26 @@ export class WeatherDisplay
 	private readonly weatherService = inject(WeatherService);
 	private readonly logger = inject(LoggerService);
 
-	// State signals
-	readonly forecasts = signal<WeatherForecast[]>([]);
-	readonly isLoading = signal<boolean>(true);
-	readonly error = signal<string | null>(null);
+	// TanStack Query handles loading, error, and data states
+	readonly forecastsQuery = this.weatherService.getAllForecasts();
 
 	// Computed signals for derived state
+	readonly forecasts = computed(() => this.forecastsQuery.data() ?? []);
+	readonly isLoading = computed(() => this.forecastsQuery.isLoading());
+	readonly error = computed(() =>
+		this.forecastsQuery.error()
+			? "Failed to load weather forecasts. Please try again."
+			: null
+	);
 	readonly hasForecasts = computed(() => this.forecasts().length > 0);
 	readonly forecastCount = computed(() => this.forecasts().length);
-
-	constructor()
-	{
-		this.loadForecasts();
-	}
-
-	/**
-	 * Loads weather forecasts from the service.
-	 */
-	loadForecasts(): void
-	{
-		this.isLoading.set(true);
-		this.error.set(null);
-
-		this.weatherService.getAllForecasts().subscribe({
-			next: (data) =>
-			{
-				this.forecasts.set(data);
-				this.isLoading.set(false);
-				this.logger.info("Weather forecasts loaded successfully", {
-					count: data.length
-				});
-			},
-			error: (err) =>
-			{
-				this.error.set(
-					"Failed to load weather forecasts. Please try again."
-				);
-				this.isLoading.set(false);
-				this.logger.error("Failed to load weather forecasts", err);
-			}
-		});
-	}
 
 	/**
 	 * Retries loading forecasts.
 	 */
 	retry(): void
 	{
-		this.loadForecasts();
+		this.forecastsQuery.refetch();
 	}
 
 	/**

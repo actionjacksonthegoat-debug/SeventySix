@@ -107,8 +107,8 @@ public class OpenWeatherServiceTests
 
 		var hourlyForecasts = new List<HourlyForecast>
 		{
-			new() { Temperature = 20, Timestamp = 1699632000 },
-			new() { Temperature = 21, Timestamp = 1699635600 },
+			new() { Temperature = 20 },
+			new() { Temperature = 21 },
 		};
 
 		var apiResponse = new OneCallResponse
@@ -269,8 +269,8 @@ public class OpenWeatherServiceTests
 
 		var minutelyForecasts = new List<MinutelyForecast>
 		{
-			new() { Timestamp = 1699632000, Precipitation = 0.5 },
-			new() { Timestamp = 1699632060, Precipitation = 0.7 },
+			new() { Precipitation = 0.5 },
+			new() { Precipitation = 0.7 },
 		};
 
 		var apiResponse = new OneCallResponse

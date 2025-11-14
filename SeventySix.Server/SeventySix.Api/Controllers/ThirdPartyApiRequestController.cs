@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Core.DTOs.ThirdPartyRequests;
 using SeventySix.Core.Interfaces;
 
@@ -38,6 +39,7 @@ public class ThirdPartyApiRequestController : ControllerBase
 	/// <response code="200">Returns the list of API request records.</response>
 	[HttpGet]
 	[ProducesResponseType(typeof(IEnumerable<ThirdPartyApiRequestResponse>), StatusCodes.Status200OK)]
+	[OutputCache(PolicyName = "thirdpartyrequests")]
 	public async Task<ActionResult<IEnumerable<ThirdPartyApiRequestResponse>>> GetAllAsync(CancellationToken cancellationToken)
 	{
 		var requests = await Service.GetAllAsync(cancellationToken);
@@ -52,6 +54,7 @@ public class ThirdPartyApiRequestController : ControllerBase
 	/// <response code="200">Returns the aggregated statistics.</response>
 	[HttpGet("statistics")]
 	[ProducesResponseType(typeof(ThirdPartyApiStatisticsResponse), StatusCodes.Status200OK)]
+	[OutputCache(PolicyName = "thirdpartyrequests")]
 	public async Task<ActionResult<ThirdPartyApiStatisticsResponse>> GetStatisticsAsync(CancellationToken cancellationToken)
 	{
 		var statistics = await Service.GetStatisticsAsync(cancellationToken);

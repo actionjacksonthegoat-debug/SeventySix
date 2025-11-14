@@ -14,15 +14,19 @@ import {
 } from "@angular/common/http";
 import { provideServiceWorker } from "@angular/service-worker";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
+import {
+	provideAngularQuery,
+	QueryClient
+} from "@tanstack/angular-query-experimental";
 
 import { routes } from "./app.routes";
 import {
 	errorInterceptor,
 	loggingInterceptor,
-	authInterceptor,
-	cacheInterceptor
+	authInterceptor
 } from "@core/interceptors";
 import { ErrorHandlerService, ThemeService } from "@core/services";
+import { environment } from "@environments/environment";
 
 /**
  * Initialize theme service on app startup
@@ -39,9 +43,25 @@ function initializeTheme(_themeService: ThemeService)
 
 export const appConfig: ApplicationConfig = {
 	providers: [
+		// TanStack Query with environment-based configuration
+		provideAngularQuery(
+			new QueryClient({
+				defaultOptions: {
+					queries: {
+						staleTime: environment.cache.query.default.staleTime,
+						gcTime: environment.cache.query.default.gcTime,
+						retry: environment.cache.query.default.retry,
+						refetchOnWindowFocus:
+							environment.cache.query.default
+								.refetchOnWindowFocus,
+						refetchOnReconnect:
+							environment.cache.query.default.refetchOnReconnect
+					}
+				}
+			})
+		),
 		provideHttpClient(
 			withInterceptors([
-				cacheInterceptor, // Cache before auth/logging
 				authInterceptor,
 				loggingInterceptor,
 				errorInterceptor
@@ -65,7 +85,7 @@ export const appConfig: ApplicationConfig = {
 			deps: [ThemeService],
 			multi: true
 		},
-		// Service Worker for PWA support and advanced caching
+		// Service Worker for PWA support and asset caching only
 		provideServiceWorker("ngsw-worker.js", {
 			enabled: !isDevMode(),
 			registrationStrategy: "registerWhenStable:30000"

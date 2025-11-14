@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Core.DTOs.LogCharts;
 using SeventySix.Core.DTOs.Logs;
 using SeventySix.Core.Entities;
@@ -37,6 +38,7 @@ public class LogsController : ControllerBase
 	private readonly ILogRepository LogRepository;
 	private readonly ILogChartService LogChartService;
 	private readonly ILogger<LogsController> Logger;
+	private readonly IOutputCacheStore OutputCacheStore;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LogsController"/> class.
@@ -47,11 +49,13 @@ public class LogsController : ControllerBase
 	public LogsController(
 		ILogRepository logRepository,
 		ILogChartService logChartService,
-		ILogger<LogsController> logger)
+		ILogger<LogsController> logger,
+		IOutputCacheStore outputCacheStore)
 	{
 		LogRepository = logRepository ?? throw new ArgumentNullException(nameof(logRepository));
 		LogChartService = logChartService ?? throw new ArgumentNullException(nameof(logChartService));
 		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		OutputCacheStore = outputCacheStore ?? throw new ArgumentNullException(nameof(outputCacheStore));
 	}
 
 	/// <summary>
@@ -61,7 +65,12 @@ public class LogsController : ControllerBase
 	/// <returns>A paginated list of logs matching the filter criteria.</returns>
 	/// <response code="200">Returns the filtered list of logs with pagination metadata.</response>
 	/// <response code="400">If the request parameters are invalid.</response>
+	/// <remarks>
+	/// This endpoint uses output caching with tag-based invalidation.
+	/// Cache is automatically cleared when logs are created or deleted.
+	/// </remarks>
 	[HttpGet]
+	[OutputCache(PolicyName = "logs")]
 	[ProducesResponseType(typeof(PagedLogResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<PagedLogResponse>> GetLogsAsync([FromQuery] LogFilterRequest request)
@@ -140,6 +149,7 @@ public class LogsController : ControllerBase
 	/// <response code="200">Returns the total log count.</response>
 	/// <response code="500">If an error occurs while retrieving the count.</response>
 	[HttpGet("count")]
+	[OutputCache(PolicyName = "logs")]
 	[ProducesResponseType(typeof(LogCountResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<LogCountResponse>> GetCountAsync([FromQuery] LogFilterRequest request)
@@ -179,6 +189,7 @@ public class LogsController : ControllerBase
 	/// <response code="200">Returns the log statistics.</response>
 	/// <response code="500">If an error occurs while retrieving statistics.</response>
 	[HttpGet("statistics")]
+	[OutputCache(PolicyName = "logs")]
 	[ProducesResponseType(typeof(LogStatisticsResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<LogStatisticsResponse>> GetStatisticsAsync(
@@ -255,6 +266,10 @@ public class LogsController : ControllerBase
 			}
 
 			Logger.LogInformation("Successfully deleted log with ID: {LogId}", id);
+
+			// Invalidate logs cache after deletion
+			await OutputCacheStore.EvictByTagAsync("logs", cancellationToken);
+
 			return NoContent();
 		}
 		catch (Exception ex)
@@ -294,6 +309,9 @@ public class LogsController : ControllerBase
 			var deletedCount = await LogRepository.DeleteBatchAsync(ids, cancellationToken);
 
 			Logger.LogWarning("Successfully deleted {DeletedCount} of {RequestedCount} logs", deletedCount, ids.Length);
+
+			// Invalidate logs cache after batch deletion
+			await OutputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 			return Ok(deletedCount);
 		}
@@ -335,6 +353,9 @@ public class LogsController : ControllerBase
 			Logger.LogWarning(
 				"Log cleanup completed - DeletedCount: {DeletedCount}",
 				deletedCount);
+
+			// Invalidate logs cache after cleanup
+			await OutputCacheStore.EvictByTagAsync("logs", CancellationToken.None);
 
 			return Ok(deletedCount);
 		}
@@ -393,6 +414,9 @@ public class LogsController : ControllerBase
 				request.LogLevel,
 				request.SourceContext,
 				request.Message);
+
+			// Invalidate logs cache after creating new log
+			await OutputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 			return NoContent();
 		}
@@ -462,6 +486,9 @@ public class LogsController : ControllerBase
 				"Batch logged {Count} client errors",
 				requests.Length);
 
+			// Invalidate logs cache after batch creating logs
+			await OutputCacheStore.EvictByTagAsync("logs", cancellationToken);
+
 			return NoContent();
 		}
 		catch (Exception ex)
@@ -482,6 +509,7 @@ public class LogsController : ControllerBase
 	/// <returns>Log counts by level.</returns>
 	/// <response code="200">Returns the log counts by level.</response>
 	[HttpGet("charts/by-level")]
+	[OutputCache(PolicyName = "log-charts")]
 	[ProducesResponseType(typeof(LogsByLevelResponse), StatusCodes.Status200OK)]
 	public async Task<ActionResult<LogsByLevelResponse>> GetLogsByLevelAsync(
 		[FromQuery] DateTime? startDate,
@@ -500,6 +528,7 @@ public class LogsController : ControllerBase
 	/// <returns>Hourly log counts.</returns>
 	/// <response code="200">Returns the hourly log counts.</response>
 	[HttpGet("charts/by-hour")]
+	[OutputCache(PolicyName = "log-charts")]
 	[ProducesResponseType(typeof(LogsByHourResponse), StatusCodes.Status200OK)]
 	public async Task<ActionResult<LogsByHourResponse>> GetLogsByHourAsync(
 		[FromQuery] int? hoursBack,
@@ -517,6 +546,7 @@ public class LogsController : ControllerBase
 	/// <returns>Log counts by source.</returns>
 	/// <response code="200">Returns the log counts by source.</response>
 	[HttpGet("charts/by-source")]
+	[OutputCache(PolicyName = "log-charts")]
 	[ProducesResponseType(typeof(LogsBySourceResponse), StatusCodes.Status200OK)]
 	public async Task<ActionResult<LogsBySourceResponse>> GetLogsBySourceAsync(
 		[FromQuery] int? topN,
@@ -534,6 +564,7 @@ public class LogsController : ControllerBase
 	/// <returns>Recent error log summaries.</returns>
 	/// <response code="200">Returns the recent errors.</response>
 	[HttpGet("charts/recent-errors")]
+	[OutputCache(PolicyName = "log-charts")]
 	[ProducesResponseType(typeof(RecentErrorsResponse), StatusCodes.Status200OK)]
 	public async Task<ActionResult<RecentErrorsResponse>> GetRecentErrorsAsync(
 		[FromQuery] int? count,
@@ -552,6 +583,7 @@ public class LogsController : ControllerBase
 	/// <response code="200">Returns the chart data.</response>
 	/// <response code="400">If the period parameter is invalid.</response>
 	[HttpGet("chart-data")]
+	[OutputCache(PolicyName = "log-charts")]
 	[ProducesResponseType(typeof(LogChartDataResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<LogChartDataResponse>> GetChartDataAsync(

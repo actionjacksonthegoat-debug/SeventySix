@@ -1,9 +1,7 @@
 import {
 	Component,
 	ChangeDetectionStrategy,
-	signal,
 	inject,
-	OnInit,
 	computed
 } from "@angular/core";
 import { MatTableModule } from "@angular/material/table";
@@ -20,6 +18,7 @@ import { WeatherForecast } from "@home/weather/models";
 /**
  * Weather Forecast feature page
  * Displays weather data in Material table and cards
+ * Uses TanStack Query for data fetching and caching
  */
 @Component({
 	selector: "app-weather-forecast",
@@ -37,13 +36,25 @@ import { WeatherForecast } from "@home/weather/models";
 	styleUrl: "./weather-forecast.component.scss",
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WeatherForecastComponent implements OnInit
+export class WeatherForecastComponent
 {
 	private readonly weatherService = inject(WeatherService);
 
-	protected readonly forecasts = signal<WeatherForecast[]>([]);
-	protected readonly loading = signal(true);
-	protected readonly error = signal<string | null>(null);
+	// TanStack Query handles loading, error, and data states
+	protected readonly forecastsQuery = this.weatherService.getAllForecasts();
+
+	// Computed signals for derived state
+	protected readonly forecasts = computed(
+		() => this.forecastsQuery.data() ?? []
+	);
+	protected readonly loading = computed(() =>
+		this.forecastsQuery.isLoading()
+	);
+	protected readonly error = computed(() =>
+		this.forecastsQuery.error()
+			? "Failed to load weather data. Please try again."
+			: null
+	);
 
 	protected readonly displayedColumns: string[] = [
 		"date",
@@ -88,36 +99,9 @@ export class WeatherForecastComponent implements OnInit
 		return sorted[0] || null;
 	});
 
-	ngOnInit(): void
-	{
-		this.loadForecasts();
-	}
-
-	private loadForecasts(): void
-	{
-		this.loading.set(true);
-		this.error.set(null);
-
-		this.weatherService.getAllForecasts().subscribe({
-			next: (data) =>
-			{
-				this.forecasts.set(data);
-				this.loading.set(false);
-			},
-			error: (err) =>
-			{
-				console.error("Failed to load weather forecasts:", err);
-				this.error.set(
-					"Failed to load weather data. Please try again."
-				);
-				this.loading.set(false);
-			}
-		});
-	}
-
 	protected refresh(): void
 	{
-		this.loadForecasts();
+		this.forecastsQuery.refetch();
 	}
 
 	protected getTemperatureClass(tempC: number): string

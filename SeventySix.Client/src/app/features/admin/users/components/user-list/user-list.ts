@@ -5,7 +5,8 @@ import {
 	computed,
 	ChangeDetectionStrategy,
 	ViewChild,
-	AfterViewInit
+	AfterViewInit,
+	effect
 } from "@angular/core";
 import { Router } from "@angular/router";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
@@ -79,10 +80,17 @@ export class UserList implements AfterViewInit
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
-	// State signals
-	readonly users = signal<User[]>([]);
-	readonly isLoading = signal<boolean>(true);
-	readonly error = signal<string | null>(null);
+	// TanStack Query handles loading, error, and data states
+	readonly usersQuery = this.userService.getAllUsers();
+
+	// Computed signals for derived state
+	readonly users = computed(() => this.usersQuery.data() ?? []);
+	readonly isLoading = computed(() => this.usersQuery.isLoading());
+	readonly error = computed(() =>
+		this.usersQuery.error()
+			? "Failed to load users. Please try again."
+			: null
+	);
 	readonly searchFilter = signal<string>("");
 	readonly statusFilter = signal<"all" | "active" | "inactive">("all");
 	readonly chartExpanded = signal<boolean>(false);
@@ -203,6 +211,12 @@ export class UserList implements AfterViewInit
 	constructor()
 	{
 		this.loadUsers();
+
+		// Update table data when users change
+		effect(() =>
+		{
+			this.updateTableData();
+		});
 	}
 
 	ngAfterViewInit(): void
@@ -289,26 +303,7 @@ export class UserList implements AfterViewInit
 	 */
 	loadUsers(): void
 	{
-		this.isLoading.set(true);
-		this.error.set(null);
-
-		this.userService.getAllUsers().subscribe({
-			next: (data) =>
-			{
-				this.users.set(data);
-				this.updateTableData();
-				this.isLoading.set(false);
-				this.logger.info("Users loaded successfully", {
-					count: data.length
-				});
-			},
-			error: (err) =>
-			{
-				this.error.set("Failed to load users. Please try again.");
-				this.isLoading.set(false);
-				this.logger.error("Failed to load users", err);
-			}
-		});
+		this.usersQuery.refetch();
 	}
 
 	/**

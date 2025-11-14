@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Interfaces;
@@ -65,7 +66,7 @@ public class UserController : ControllerBase
 	[HttpGet(Name = "GetUsers")]
 	[ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+	[OutputCache(PolicyName = "users")]
 	public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAsync(CancellationToken cancellationToken)
 	{
 		Logger.LogInformation("Getting all users");
@@ -93,7 +94,7 @@ public class UserController : ControllerBase
 	[ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+	[OutputCache(PolicyName = "users")]
 	public async Task<ActionResult<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
 	{
 		Logger.LogInformation("Getting user with ID: {UserId}", id);

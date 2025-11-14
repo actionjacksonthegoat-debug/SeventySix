@@ -1,4 +1,4 @@
-import { Component, OnDestroy, signal } from "@angular/core";
+import { Component, computed, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatDialog } from "@angular/material/dialog";
@@ -7,13 +7,7 @@ import { LogFiltersComponent } from "@admin/log-management/components/log-filter
 import { LogSummaryComponent } from "@admin/log-management/components/log-summary/log-summary.component";
 import { LogTableComponent } from "@admin/log-management/components/log-table/log-table.component";
 import { LogDetailDialogComponent } from "@admin/log-management/components/log-detail-dialog/log-detail-dialog.component";
-import {
-	LogResponse,
-	LogFilterRequest,
-	PagedLogResponse,
-	LogStatistics
-} from "@admin/log-management/models";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { LogResponse, LogFilterRequest } from "@admin/log-management/models";
 
 @Component({
 	selector: "app-log-management",
@@ -28,43 +22,39 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 	templateUrl: "./log-management.component.html",
 	styleUrl: "./log-management.component.scss"
 })
-export class LogManagementComponent implements OnDestroy
+export class LogManagementComponent
 {
-	logs = signal<PagedLogResponse | null>(null);
-	isLoading = signal<boolean>(false);
-	error = signal<string | null>(null);
-	statistics = signal<LogStatistics | null>(null);
+	private readonly logService = inject(LogManagementService);
+	private readonly dialog = inject(MatDialog);
 
-	constructor(
-		private readonly logService: LogManagementService,
-		private readonly dialog: MatDialog
-	)
+	// TanStack Query handles loading, error, and data states
+	readonly logsQuery = this.logService.getLogs();
+	readonly logCountQuery = this.logService.getLogCount();
+
+	// Computed signals for derived state
+	readonly logs = computed(() => this.logsQuery.data() ?? null);
+	readonly isLoading = computed(() => this.logsQuery.isLoading());
+	readonly error = computed(() =>
+		this.logsQuery.error() ? "Failed to load logs. Please try again." : null
+	);
+	readonly statistics = computed(() =>
 	{
-		this.logService.logs$
-			.pipe(takeUntilDestroyed())
-			.subscribe((logs) => this.logs.set(logs));
-
-		this.logService.loading$
-			.pipe(takeUntilDestroyed())
-			.subscribe((loading) => this.isLoading.set(loading));
-
-		this.logService.error$
-			.pipe(takeUntilDestroyed())
-			.subscribe((error) => this.error.set(error));
-
-		this.logService.statistics$
-			.pipe(takeUntilDestroyed())
-			.subscribe((stats) => this.statistics.set(stats));
-	}
+		const total = this.logCountQuery.data()?.total ?? 0;
+		return {
+			totalLogs: total,
+			errorCount: 0,
+			warningCount: 0,
+			infoCount: 0,
+			debugCount: 0,
+			criticalCount: 0,
+			oldestLogDate: null,
+			newestLogDate: null
+		};
+	});
 
 	onFilterChange(filter: Partial<LogFilterRequest>): void
 	{
 		this.logService.updateFilter(filter);
-	}
-
-	onAutoRefreshChange(enabled: boolean): void
-	{
-		this.logService.setAutoRefresh(enabled);
 	}
 
 	onPageChange(pageIndex: number): void
@@ -85,21 +75,23 @@ export class LogManagementComponent implements OnDestroy
 			maxWidth: "90vw"
 		});
 
+		const deleteMutation = this.logService.deleteLog();
 		dialogRef.componentInstance.deleteLog.subscribe((id: number) =>
 		{
-			this.logService.deleteLog(id).subscribe();
+			deleteMutation.mutate(id);
 			dialogRef.close();
 		});
 	}
 
 	onDeleteLog(id: number): void
 	{
-		this.logService.deleteLog(id).subscribe();
+		const deleteMutation = this.logService.deleteLog();
+		deleteMutation.mutate(id);
 	}
 
 	onDeleteSelected(_ids: number[]): void
 	{
-		this.logService.deleteSelected().subscribe();
+		this.logService.deleteSelected();
 	}
 
 	onExportCsv(): void
@@ -110,10 +102,5 @@ export class LogManagementComponent implements OnDestroy
 	onCleanupLogs(): void
 	{
 		// TODO: Implement cleanup functionality
-	}
-
-	ngOnDestroy(): void
-	{
-		this.logService.setAutoRefresh(false);
 	}
 }
