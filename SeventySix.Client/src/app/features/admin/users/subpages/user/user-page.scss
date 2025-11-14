@@ -1,7 +1,6 @@
 .user-page {
 	display: flex;
 	flex-direction: column;
-	height: 100%;
 	padding: 1.5rem;
 
 	.page-header {
@@ -22,8 +21,6 @@
 	}
 
 	.page-content {
-		flex: 1;
-		overflow: auto;
 		max-width: 800px;
 		width: 100%;
 		margin: 0 auto;

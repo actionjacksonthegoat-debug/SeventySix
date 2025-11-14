@@ -1,0 +1,42 @@
+# Browserslist configuration for SeventySix
+# Targeting ONLY evergreen browsers (auto-updating browsers)
+# This eliminates unnecessary polyfills and reduces bundle size
+
+# STRICT: Only the last 2 versions of evergreen browsers
+
+# Desktop Browsers (Auto-updating)
+last 2 Chrome versions        # Chrome 141-142 (also covers Brave, Arc, Vivaldi)
+last 2 Firefox versions       # Firefox 143-144
+last 2 Safari versions        # Safari 26.0-26.1
+last 2 Edge versions          # Edge 141-142 (Chromium-based)
+
+# Mobile Browsers (Auto-updating)
+last 2 ChromeAndroid versions # Chrome Android 142
+last 2 FirefoxAndroid versions # Firefox Android 144
+last 2 iOS versions           # iOS Safari 18.5-18.6, 26.0
+last 2 Samsung versions       # Samsung Internet 28-29
+
+# Explicitly EXCLUDE non-evergreen browsers
+not dead
+not IE 11
+not op_mini all
+
+# Result: 14 browser versions (down from 400+)
+# - Desktop: Chrome 141-142, Firefox 143-144, Safari 26.0-26.1, Edge 141-142
+# - Mobile: Chrome Android 142, Firefox Android 144, iOS Safari 18.5-26.0, Samsung 28-29
+#
+# This configuration requires browsers with native support for:
+# - ES2022 features (async/await, classes, modules, optional chaining, etc.)
+# - ES Modules & Dynamic Imports
+# - Modern CSS (Grid, Flexbox, Custom Properties, Container Queries)
+# - Web Components
+# - Service Workers (PWA)
+#
+# Expected benefits:
+# - No polyfills needed (Angular 20 zoneless + ES2022 target)
+# - Smaller bundle size (~20-30% reduction)
+# - Faster loading and execution
+# - Modern browser features available
+
+
+

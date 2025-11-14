@@ -570,6 +570,21 @@ isMobile = computed(() => this.isHandset());
 }
 ```
 
+### 4. Page Layout and Scrolling
+
+**Pattern**: Use main application scrollbar, avoid nested scrollbars.
+
+**Guidelines for Page Components**:
+
+-   ✅ **DO** let page content flow naturally
+-   ✅ **DO** use padding for spacing
+-   ❌ **DON'T** set `height: 100%` or `height: 100vh` on page containers
+-   ❌ **DON'T** add `overflow: auto` or `overflow-y: auto` to page containers
+-   ✅ **DO** use `overflow-x: auto` for wide tables/data grids only
+-   ✅ **DO** use `overflow-y: auto` for modals/dialogs with `max-height`
+
+```
+
 ---
 
 ## Accessibility Patterns

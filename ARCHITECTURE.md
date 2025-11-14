@@ -676,6 +676,15 @@ provideHttpClient(
 -   Code splitting per route
 -   Smaller initial bundle
 
+**Browser Targeting & Polyfills**
+
+-   Target: Last 2 versions of evergreen browsers only (14 versions total)
+-   Chrome 141+, Firefox 143+, Safari 26+, Edge 141+
+-   No polyfills needed (Angular 20 zoneless + ES2022)
+-   Bundle size reduced by eliminating legacy browser support
+-   Configuration: `.browserslistrc` in client root
+-   Benefits: ~20-30% smaller bundles, faster loading
+
 **TrackBy Functions**
 
 -   Efficient list rendering

@@ -1,7 +1,6 @@
 .user-create-page {
 	display: flex;
 	flex-direction: column;
-	height: 100%;
 	padding: 1.5rem;
 	max-width: 900px;
 	margin: 0 auto;
@@ -48,9 +47,6 @@
 
 	// Stepper container
 	.stepper-container {
-		flex: 1;
-		overflow: auto;
-
 		mat-stepper {
 			background: transparent;
 		}
