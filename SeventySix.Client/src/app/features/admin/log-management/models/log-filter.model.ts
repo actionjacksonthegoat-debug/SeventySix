@@ -50,8 +50,8 @@ export function getDateRangeFromPreset(preset: DateRangePreset): {
 	endDate: Date | null;
 }
 {
-	const now = new Date();
-	const endDate = now;
+	const now: Date = new Date();
+	const endDate: Date = now;
 	let startDate: Date | null = null;
 
 	switch (preset)

@@ -25,9 +25,12 @@ import { getQueryConfig } from "@core/utils/query-config";
 })
 export class WeatherService
 {
-	private readonly weatherRepository = inject(WeatherForecastRepository);
-	private readonly queryClient = inject(QueryClient);
-	private readonly queryConfig = getQueryConfig("weather");
+	private readonly weatherRepository: WeatherForecastRepository = inject(
+		WeatherForecastRepository
+	);
+	private readonly queryClient: QueryClient = inject(QueryClient);
+	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
+		getQueryConfig("weather");
 
 	/**
 	 * Query for all weather forecasts

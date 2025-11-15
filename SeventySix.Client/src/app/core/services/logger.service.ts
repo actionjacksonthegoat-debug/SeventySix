@@ -36,9 +36,9 @@ export interface LogEntry
 })
 export class LoggerService
 {
-	private readonly http = inject(HttpClient);
-	private readonly isDevMode = isDevMode();
-	private readonly logEndpoint = "/api/logs"; // Configure via environment
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly isDevMode: boolean = isDevMode();
+	private readonly logEndpoint: string = "/api/logs"; // Configure via environment
 
 	/**
 	 * Logs debug message (dev only).
@@ -124,7 +124,7 @@ export class LoggerService
 	 */
 	private logToConsole(entry: LogEntry): void
 	{
-		const prefix = `[${LogLevel[entry.level]}] ${entry.timestamp}:`;
+		const prefix: string = `[${LogLevel[entry.level]}] ${entry.timestamp}:`;
 		const args: unknown[] = [prefix, entry.message];
 
 		if (entry.context)
@@ -160,7 +160,9 @@ export class LoggerService
 	private logToRemote(entry: LogEntry): void
 	{
 		// Serialize error object for JSON
-		const payload = {
+		const payload: Omit<LogEntry, "error"> & {
+			error?: { message: string; stack?: string; name: string };
+		} = {
 			...entry,
 			error: entry.error
 				? {

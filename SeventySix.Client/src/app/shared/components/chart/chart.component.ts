@@ -65,32 +65,38 @@ export class ChartComponent
 	/**
 	 * Reference to the BaseChartDirective for programmatic chart updates
 	 */
-	chart = viewChild(BaseChartDirective);
+	chart: Signal<BaseChartDirective | undefined> =
+		viewChild(BaseChartDirective);
 
 	/**
 	 * Chart title displayed in mat-card header
 	 */
-	title = input<string>("Chart");
+	readonly title: InputSignal<string> = input<string>("Chart");
 
 	/**
 	 * Chart subtitle displayed in mat-card header
 	 */
-	subtitle = input<string | undefined>(undefined);
+	readonly subtitle: InputSignal<string | undefined> = input<
+		string | undefined
+	>(undefined);
 
 	/**
 	 * Chart type (line, bar, pie, doughnut, etc.)
 	 */
-	chartType = input<ChartType>("line");
+	readonly chartType: InputSignal<ChartType> = input<ChartType>("line");
 
 	/**
 	 * Chart data configuration
 	 */
-	chartData = input.required<ChartConfiguration["data"]>();
+	readonly chartData: InputSignal<ChartConfiguration["data"]> =
+		input.required<ChartConfiguration["data"]>();
 
 	/**
 	 * Chart options configuration
 	 */
-	chartOptions = input<ChartConfiguration["options"]>({
+	readonly chartOptions: InputSignal<ChartConfiguration["options"]> = input<
+		ChartConfiguration["options"]
+	>({
 		responsive: true,
 		maintainAspectRatio: true,
 		plugins: {
@@ -104,27 +110,27 @@ export class ChartComponent
 	/**
 	 * Whether to show the export menu
 	 */
-	showExport = input<boolean>(true);
+	readonly showExport: InputSignal<boolean> = input<boolean>(true);
 
 	/**
 	 * Whether to show the refresh button
 	 */
-	showRefresh = input<boolean>(true);
+	readonly showRefresh: InputSignal<boolean> = input<boolean>(true);
 
 	/**
 	 * Event emitted when user clicks refresh
 	 */
-	refresh = output<void>();
+	readonly refresh: OutputEmitterRef<void> = output<void>();
 
 	/**
 	 * Event emitted when user exports chart as PNG
 	 */
-	exportPng = output<void>();
+	readonly exportPng: OutputEmitterRef<void> = output<void>();
 
 	/**
 	 * Event emitted when user exports chart data as CSV
 	 */
-	exportCsv = output<void>();
+	readonly exportCsv: OutputEmitterRef<void> = output<void>();
 
 	/**
 	 * Handle refresh button click
@@ -156,7 +162,7 @@ export class ChartComponent
 	 */
 	onLayoutChanged(): void
 	{
-		const chartInstance = this.chart();
+		const chartInstance: BaseChartDirective | undefined = this.chart();
 		if (chartInstance?.chart)
 		{
 			// Force chart to resize and redraw

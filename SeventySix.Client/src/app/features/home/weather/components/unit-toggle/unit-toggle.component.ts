@@ -14,21 +14,25 @@ import { Units } from "@home/weather/models";
 })
 export class UnitToggleComponent
 {
-	private readonly preferencesService = inject(WeatherPreferencesService);
+	private readonly preferencesService: WeatherPreferencesService = inject(
+		WeatherPreferencesService
+	);
 
-	readonly currentUnits = computed(() => this.preferencesService.units());
-	readonly temperatureUnit = computed(() =>
+	readonly currentUnits: Signal<"metric" | "imperial"> = computed(() =>
+		this.preferencesService.units()
+	);
+	readonly temperatureUnit: Signal<string> = computed(() =>
 		this.preferencesService.temperatureUnit()
 	);
-	readonly windSpeedUnit = computed(() =>
+	readonly windSpeedUnit: Signal<string> = computed(() =>
 		this.preferencesService.windSpeedUnit()
 	);
 
-	readonly Units = Units;
+	readonly Units: typeof Units = Units;
 
 	toggleUnits(): void
 	{
-		const newUnits =
+		const newUnits: Units =
 			this.currentUnits() === Units.Metric
 				? Units.Imperial
 				: Units.Metric;

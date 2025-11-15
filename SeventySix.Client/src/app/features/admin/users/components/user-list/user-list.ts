@@ -71,35 +71,49 @@ import { ChartConfiguration } from "chart.js";
 })
 export class UserList implements AfterViewInit
 {
-	private readonly userService = inject(UserService);
-	private readonly logger = inject(LoggerService);
-	private readonly router = inject(Router);
-	private readonly dialog = inject(MatDialog);
-	private readonly snackBar = inject(MatSnackBar);
+	private readonly userService: UserService = inject(UserService);
+	private readonly logger: LoggerService = inject(LoggerService);
+	private readonly router: Router = inject(Router);
+	private readonly dialog: MatDialog = inject(MatDialog);
+	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
 
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
 	// TanStack Query handles loading, error, and data states
-	readonly usersQuery = this.userService.getAllUsers();
+	readonly usersQuery: ReturnType<UserService["getAllUsers"]> =
+		this.userService.getAllUsers();
 
 	// Computed signals for derived state
-	readonly users = computed(() => this.usersQuery.data() ?? []);
-	readonly isLoading = computed(() => this.usersQuery.isLoading());
-	readonly error = computed(() =>
+	readonly users: Signal<User[]> = computed(
+		() => this.usersQuery.data() ?? []
+	);
+	readonly isLoading: Signal<boolean> = computed(() =>
+		this.usersQuery.isLoading()
+	);
+	readonly error: Signal<string | null> = computed(() =>
 		this.usersQuery.error()
 			? "Failed to load users. Please try again."
 			: null
 	);
-	readonly searchFilter = signal<string>("");
-	readonly statusFilter = signal<"all" | "active" | "inactive">("all");
-	readonly chartExpanded = signal<boolean>(false);
+	readonly searchFilter: WritableSignal<string> = signal<string>("");
+	readonly statusFilter: WritableSignal<"all" | "active" | "inactive"> =
+		signal<"all" | "active" | "inactive">("all");
+	readonly chartExpanded: WritableSignal<boolean> = signal<boolean>(false);
 
 	// Material table data source
-	readonly dataSource = new MatTableDataSource<User>([]);
+	readonly dataSource: MatTableDataSource<User> =
+		new MatTableDataSource<User>([]);
 
 	// Column visibility configuration
-	readonly columnDefs = signal([
+	readonly columnDefs: WritableSignal<
+		Array<{
+			key: string;
+			label: string;
+			visible: boolean;
+			sortable: boolean;
+		}>
+	> = signal([
 		{ key: "select", label: "Select", visible: true, sortable: false },
 		{ key: "id", label: "ID", visible: true, sortable: true },
 		{ key: "username", label: "Username", visible: true, sortable: true },
@@ -111,30 +125,39 @@ export class UserList implements AfterViewInit
 	]);
 
 	// Bulk selection
-	readonly selection = new SelectionModel<User>(true, []);
+	readonly selection: SelectionModel<User> = new SelectionModel<User>(
+		true,
+		[]
+	);
 
 	// Computed: visible columns
-	readonly displayedColumns = computed(() =>
+	readonly displayedColumns: Signal<string[]> = computed(() =>
 		this.columnDefs()
 			.filter((col) => col.visible)
 			.map((col) => col.key)
 	);
 
 	// Computed signals for derived state
-	readonly hasUsers = computed(() => this.users().length > 0);
-	readonly userCount = computed(() => this.users().length);
-	readonly activeUserCount = computed(
+	readonly hasUsers: Signal<boolean> = computed(
+		() => this.users().length > 0
+	);
+	readonly userCount: Signal<number> = computed(() => this.users().length);
+	readonly activeUserCount: Signal<number> = computed(
 		() => this.users().filter((u) => u.isActive).length
 	);
-	readonly inactiveUserCount = computed(
+	readonly inactiveUserCount: Signal<number> = computed(
 		() => this.users().filter((u) => !u.isActive).length
 	);
-	readonly selectedCount = computed(() => this.selection.selected.length);
+	readonly selectedCount: Signal<number> = computed(
+		() => this.selection.selected.length
+	);
 
 	// Chart data for user statistics
-	readonly userStatsChartData = computed<ChartConfiguration["data"]>(() =>
+	readonly userStatsChartData: Signal<ChartConfiguration["data"]> = computed<
+		ChartConfiguration["data"]
+	>(() =>
 	{
-		const users = this.users();
+		const users: User[] = this.users();
 		// Group users by created month
 		const monthCounts: Record<
 			string,
@@ -143,8 +166,8 @@ export class UserList implements AfterViewInit
 
 		users.forEach((user) =>
 		{
-			const date = new Date(user.createdAt);
-			const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+			const date: Date = new Date(user.createdAt);
+			const monthKey: string = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
 			if (!monthCounts[monthKey])
 			{
@@ -162,11 +185,13 @@ export class UserList implements AfterViewInit
 		});
 
 		// Sort months and get last 6 months
-		const sortedMonths = Object.keys(monthCounts).sort().slice(-6);
-		const labels = sortedMonths.map((key) =>
+		const sortedMonths: string[] = Object.keys(monthCounts)
+			.sort()
+			.slice(-6);
+		const labels: string[] = sortedMonths.map((key) =>
 		{
-			const [year, month] = key.split("-");
-			const date = new Date(parseInt(year), parseInt(month) - 1);
+			const [year, month]: string[] = key.split("-");
+			const date: Date = new Date(parseInt(year), parseInt(month) - 1);
 			return date.toLocaleDateString("en-US", {
 				month: "short",
 				year: "numeric"
@@ -197,10 +222,10 @@ export class UserList implements AfterViewInit
 	});
 
 	// Computed: filtered data based on status
-	readonly filteredUsers = computed(() =>
+	readonly filteredUsers: Signal<User[]> = computed(() =>
 	{
-		const filter = this.statusFilter();
-		const allUsers = this.users();
+		const filter: "all" | "active" | "inactive" = this.statusFilter();
+		const allUsers: User[] = this.users();
 
 		if (filter === "all") return allUsers;
 		if (filter === "active") return allUsers.filter((u) => u.isActive);
@@ -227,7 +252,7 @@ export class UserList implements AfterViewInit
 		// Custom filter predicate for search
 		this.dataSource.filterPredicate = (data: User, filter: string) =>
 		{
-			const searchStr = filter.toLowerCase();
+			const searchStr: string = filter.toLowerCase();
 			return (
 				data.username.toLowerCase().includes(searchStr) ||
 				data.email.toLowerCase().includes(searchStr) ||
@@ -246,12 +271,12 @@ export class UserList implements AfterViewInit
 	 */
 	loadColumnPreferences(): void
 	{
-		const saved = localStorage.getItem("userListColumns");
+		const saved: string | null = localStorage.getItem("userListColumns");
 		if (saved)
 		{
 			try
 			{
-				const prefs = JSON.parse(saved);
+				const prefs: Record<string, boolean> = JSON.parse(saved);
 				this.columnDefs.update((cols) =>
 					cols.map((col) => ({
 						...col,
@@ -274,7 +299,7 @@ export class UserList implements AfterViewInit
 	 */
 	saveColumnPreferences(): void
 	{
-		const prefs = this.columnDefs().reduce(
+		const prefs: Record<string, boolean> = this.columnDefs().reduce(
 			(acc, col) =>
 			{
 				acc[col.key] = col.visible;
@@ -389,8 +414,8 @@ export class UserList implements AfterViewInit
 	 */
 	isAllSelected(): boolean
 	{
-		const numSelected = this.selection.selected.length;
-		const numRows = this.dataSource.data.length;
+		const numSelected: number = this.selection.selected.length;
+		const numRows: number = this.dataSource.data.length;
 		return numSelected === numRows && numRows > 0;
 	}
 
@@ -414,7 +439,7 @@ export class UserList implements AfterViewInit
 	 */
 	deleteSelected(): void
 	{
-		const count = this.selection.selected.length;
+		const count: number = this.selection.selected.length;
 		if (count === 0) return;
 
 		const dialogData: ConfirmDialogData = {
@@ -426,13 +451,14 @@ export class UserList implements AfterViewInit
 			icon: "warning"
 		};
 
-		const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-			data: dialogData,
-			width: "450px",
-			disableClose: false,
-			autoFocus: true,
-			restoreFocus: true
-		});
+		const dialogRef: import("@angular/material/dialog").MatDialogRef<ConfirmDialogComponent> =
+			this.dialog.open(ConfirmDialogComponent, {
+				data: dialogData,
+				width: "450px",
+				disableClose: false,
+				autoFocus: true,
+				restoreFocus: true
+			});
 
 		dialogRef.afterClosed().subscribe((confirmed) =>
 		{
@@ -459,8 +485,8 @@ export class UserList implements AfterViewInit
 	 */
 	exportSelected(): void
 	{
-		const users = this.selection.selected;
-		const count = users.length;
+		const users: User[] = this.selection.selected;
+		const count: number = users.length;
 		if (count === 0) return;
 
 		this.logger.info("Export requested", { count });
@@ -477,7 +503,9 @@ export class UserList implements AfterViewInit
 	 */
 	private showSuccessMessage(message: string, action?: string): void
 	{
-		const snackBarRef = this.snackBar.open(message, action, {
+		const snackBarRef: import("@angular/material/snack-bar").MatSnackBarRef<
+			import("@angular/material/snack-bar").TextOnlySnackBar
+		> = this.snackBar.open(message, action, {
 			duration: action ? 5000 : 3000,
 			horizontalPosition: "end",
 			verticalPosition: "bottom",

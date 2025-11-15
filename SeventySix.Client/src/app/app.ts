@@ -30,9 +30,9 @@ import { NotificationToastComponent } from "@shared/components";
 })
 export class App
 {
-	protected readonly themeService = inject(ThemeService);
-	protected readonly layoutService = inject(LayoutService);
-	protected readonly loadingService = inject(LoadingService);
+	protected readonly themeService: ThemeService = inject(ThemeService);
+	protected readonly layoutService: LayoutService = inject(LayoutService);
+	protected readonly loadingService: LoadingService = inject(LoadingService);
 
 	/**
 	 * Handle swipe left gesture (close sidebar on mobile)

@@ -1,6 +1,11 @@
-import { Injectable, inject, computed } from "@angular/core";
-import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
+import { Injectable, inject, computed, Signal } from "@angular/core";
+import {
+	BreakpointObserver,
+	Breakpoints,
+	BreakpointState
+} from "@angular/cdk/layout";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { Observable } from "rxjs";
 
 /**
  * Viewport service for responsive design utilities
@@ -11,12 +16,12 @@ import { toSignal } from "@angular/core/rxjs-interop";
 })
 export class ViewportService
 {
-	private breakpointObserver = inject(BreakpointObserver);
+	private breakpointObserver: BreakpointObserver = inject(BreakpointObserver);
 
 	/**
 	 * Custom breakpoint queries
 	 */
-	private readonly BREAKPOINTS = {
+	private readonly BREAKPOINTS: { [key: string]: string } = {
 		xsmall: "(max-width: 599px)",
 		small: "(min-width: 600px) and (max-width: 959px)",
 		medium: "(min-width: 960px) and (max-width: 1279px)",
@@ -30,115 +35,128 @@ export class ViewportService
 		tabletPortrait: Breakpoints.TabletPortrait,
 		tabletLandscape: Breakpoints.TabletLandscape
 	};
-
 	/**
 	 * Observe all breakpoints
 	 */
-	private breakpoints$ = this.breakpointObserver.observe(
-		Object.values(this.BREAKPOINTS)
-	);
+	private breakpoints$: Observable<BreakpointState> =
+		this.breakpointObserver.observe(Object.values(this.BREAKPOINTS));
 
 	/**
 	 * Current breakpoint state as signal
 	 */
-	private breakpointState = toSignal(this.breakpoints$, {
+	private breakpointState: Signal<{
+		matches: boolean;
+		breakpoints: { [key: string]: boolean };
+	}> = toSignal(this.breakpoints$, {
 		initialValue: { matches: false, breakpoints: {} }
 	});
 
 	/**
 	 * Breakpoint detection signals
 	 */
-	isXSmall = computed(() =>
+	isXSmall: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
-		return !!bp[this.BREAKPOINTS.xsmall];
+		return !!bp[this.BREAKPOINTS["xsmall"]];
 	});
 
-	isSmall = computed(() =>
+	isSmall: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
-		return !!bp[this.BREAKPOINTS.small];
+		return !!bp[this.BREAKPOINTS["small"]];
 	});
 
-	isMedium = computed(() =>
+	isMedium: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
-		return !!bp[this.BREAKPOINTS.medium];
+		return !!bp[this.BREAKPOINTS["medium"]];
 	});
 
-	isLarge = computed(() =>
+	isLarge: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
-		return !!bp[this.BREAKPOINTS.large];
+		return !!bp[this.BREAKPOINTS["large"]];
 	});
 
-	isXLarge = computed(() =>
+	isXLarge: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
-		return !!bp[this.BREAKPOINTS.xlarge];
+		return !!bp[this.BREAKPOINTS["xlarge"]];
 	});
 
-	isHandset = computed(() =>
+	isHandset: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
 		return !!bp[Breakpoints.Handset];
 	});
 
-	isTablet = computed(() =>
+	isTablet: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
 		return !!bp[Breakpoints.Tablet];
 	});
 
-	isWeb = computed(() =>
+	isWeb: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
 		return !!bp[Breakpoints.Web];
 	});
 
-	isHandsetPortrait = computed(() =>
+	isHandsetPortrait: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
 		return !!bp[Breakpoints.HandsetPortrait];
 	});
 
-	isHandsetLandscape = computed(() =>
+	isHandsetLandscape: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
 		return !!bp[Breakpoints.HandsetLandscape];
 	});
 
-	isTabletPortrait = computed(() =>
+	isTabletPortrait: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
 		return !!bp[Breakpoints.TabletPortrait];
 	});
 
-	isTabletLandscape = computed(() =>
+	isTabletLandscape: Signal<boolean> = computed(() =>
 	{
-		const bp = this.breakpointState().breakpoints as {
+		const bp: { [key: string]: boolean } = this.breakpointState()
+			.breakpoints as {
 			[key: string]: boolean;
 		};
 		return !!bp[Breakpoints.TabletLandscape];
@@ -147,16 +165,16 @@ export class ViewportService
 	/**
 	 * Convenience computed values
 	 */
-	isMobile = computed(() => this.isHandset());
+	isMobile: Signal<boolean> = computed(() => this.isHandset());
 
-	isDesktop = computed(() => this.isWeb());
+	isDesktop: Signal<boolean> = computed(() => this.isWeb());
 
-	isTouchDevice = computed(() => this.isHandset() || this.isTablet());
-
-	/**
+	isTouchDevice: Signal<boolean> = computed(
+		() => this.isHandset() || this.isTablet()
+	); /**
 	 * Get current breakpoint name
 	 */
-	currentBreakpoint = computed(() =>
+	currentBreakpoint: Signal<string> = computed(() =>
 	{
 		if (this.isXSmall()) return "xsmall";
 		if (this.isSmall()) return "small";
@@ -169,7 +187,7 @@ export class ViewportService
 	/**
 	 * Get current device type
 	 */
-	deviceType = computed(() =>
+	deviceType: Signal<string> = computed(() =>
 	{
 		if (this.isHandset()) return "handset";
 		if (this.isTablet()) return "tablet";
@@ -180,7 +198,7 @@ export class ViewportService
 	/**
 	 * Get current orientation
 	 */
-	orientation = computed(() =>
+	orientation: Signal<string> = computed(() =>
 	{
 		if (this.isHandsetPortrait() || this.isTabletPortrait())
 		{

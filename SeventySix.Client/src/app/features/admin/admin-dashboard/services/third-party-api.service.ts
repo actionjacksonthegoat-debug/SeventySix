@@ -15,8 +15,8 @@ import {
 })
 export class ThirdPartyApiService
 {
-	private readonly http = inject(HttpClient);
-	private readonly apiUrl = `${environment.apiUrl}/ThirdPartyApiRequest`;
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly apiUrl: string = `${environment.apiUrl}/ThirdPartyApiRequest`;
 
 	/**
 	 * Gets all third-party API requests
@@ -34,7 +34,7 @@ export class ThirdPartyApiService
 	 */
 	getByApiName(apiName: string): Observable<ThirdPartyApiRequest[]>
 	{
-		const encodedName = encodeURIComponent(apiName);
+		const encodedName: string = encodeURIComponent(apiName);
 		return this.http.get<ThirdPartyApiRequest[]>(
 			`${this.apiUrl}/${encodedName}`
 		);

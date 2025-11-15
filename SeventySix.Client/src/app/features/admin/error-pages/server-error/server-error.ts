@@ -19,7 +19,7 @@ import { WindowUtilities } from "@shared/utilities";
 })
 export class ServerErrorPage
 {
-	private readonly windowUtilities = inject(WindowUtilities);
+	private readonly windowUtilities: WindowUtilities = inject(WindowUtilities);
 
 	/**
 	 * Reloads the current page

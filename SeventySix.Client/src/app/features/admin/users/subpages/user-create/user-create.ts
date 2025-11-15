@@ -1,10 +1,10 @@
 import {
 	Component,
-	signal,
 	computed,
 	inject,
 	ChangeDetectionStrategy,
-	ViewChild
+	ViewChild,
+	Signal
 } from "@angular/core";
 import { Router } from "@angular/router";
 import {
@@ -24,6 +24,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { UserService } from "@admin/users/services";
 import { LoggerService } from "@core/services";
+import { User } from "../../models";
 
 /**
  * User creation wizard component.
@@ -50,20 +51,23 @@ import { LoggerService } from "@core/services";
 })
 export class UserCreatePage
 {
-	private readonly userService = inject(UserService);
-	private readonly logger = inject(LoggerService);
-	private readonly router = inject(Router);
-	private readonly fb = inject(FormBuilder);
-	private readonly snackBar = inject(MatSnackBar);
+	private readonly userService: UserService = inject(UserService);
+	private readonly logger: LoggerService = inject(LoggerService);
+	private readonly router: Router = inject(Router);
+	private readonly fb: FormBuilder = inject(FormBuilder);
+	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
 
 	@ViewChild("stepper") stepper!: MatStepper;
 
 	// TanStack Query mutation for creating users
-	readonly createMutation = this.userService.createUser();
+	readonly createMutation: ReturnType<UserService["createUser"]> =
+		this.userService.createUser();
 
 	// State signals
-	readonly isSaving = computed(() => this.createMutation.isPending());
-	readonly saveError = computed(() =>
+	readonly isSaving: Signal<boolean> = computed(() =>
+		this.createMutation.isPending()
+	);
+	readonly saveError: Signal<string | null> = computed(() =>
 		this.createMutation.error()
 			? "Failed to create user. Please try again."
 			: null
@@ -91,7 +95,7 @@ export class UserCreatePage
 	});
 
 	// Computed signal for complete form data
-	readonly formData = computed(() => ({
+	readonly formData: Signal<Partial<User>> = computed(() => ({
 		...this.basicInfoForm.value,
 		...this.accountDetailsForm.value
 	}));
@@ -125,7 +129,7 @@ export class UserCreatePage
 			return;
 		}
 
-		const userData = this.formData();
+		const userData: Partial<User> = this.formData();
 
 		this.createMutation.mutate(userData, {
 			onSuccess: (createdUser) =>

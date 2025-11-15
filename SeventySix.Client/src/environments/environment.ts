@@ -1,4 +1,50 @@
-export const environment = {
+interface Environment
+{
+	production: boolean;
+	apiUrl: string;
+	logging: {
+		enableRemoteLogging: boolean;
+		batchSize: number;
+		batchInterval: number;
+		maxQueueSize: number;
+		maxRetryCount: number;
+		circuitBreakerThreshold: number;
+		circuitBreakerTimeout: number;
+	};
+	cache: {
+		query: {
+			default: {
+				staleTime: number;
+				gcTime: number;
+				retry: number;
+				refetchOnWindowFocus: boolean;
+				refetchOnReconnect: boolean;
+			};
+			weather: {
+				staleTime: number;
+				gcTime: number;
+				retry: number;
+			};
+			users: {
+				staleTime: number;
+				gcTime: number;
+				retry: number;
+			};
+			logs: {
+				staleTime: number;
+				gcTime: number;
+				retry: number;
+			};
+			health: {
+				staleTime: number;
+				gcTime: number;
+				retry: number;
+			};
+		};
+	};
+}
+
+export const environment: Environment = {
 	production: true,
 	apiUrl: "https://localhost:7074/api", // Default API URL for production
 	logging: {

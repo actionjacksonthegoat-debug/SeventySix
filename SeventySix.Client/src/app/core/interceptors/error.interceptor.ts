@@ -22,7 +22,7 @@ import {
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) =>
 {
-	const logger = inject(LoggerService);
+	const logger: LoggerService = inject(LoggerService);
 
 	return next(req).pipe(
 		catchError((error: HttpErrorResponse) =>
@@ -34,7 +34,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) =>
 			});
 
 			// Convert to application-specific error
-			const appError = convertToAppError(error, req.url, req.method);
+			const appError: Error = convertToAppError(
+				error,
+				req.url,
+				req.method
+			);
 
 			return throwError(() => appError);
 		})

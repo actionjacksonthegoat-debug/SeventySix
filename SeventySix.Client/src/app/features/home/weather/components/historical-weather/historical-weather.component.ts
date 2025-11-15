@@ -21,7 +21,7 @@ import { MatButtonModule } from "@angular/material/button";
 export class HistoricalWeatherComponent
 {
 	// State
-	readonly isExpanded = signal<boolean>(false);
+	readonly isExpanded: WritableSignal<boolean> = signal<boolean>(false);
 
 	/**
 	 * Toggle expansion state

@@ -2,7 +2,8 @@ import {
 	Component,
 	ChangeDetectionStrategy,
 	inject,
-	computed
+	computed,
+	Signal
 } from "@angular/core";
 import { MatTableModule } from "@angular/material/table";
 import { MatCardModule } from "@angular/material/card";
@@ -38,19 +39,21 @@ import { WeatherForecast } from "@home/weather/models";
 })
 export class WeatherForecastComponent
 {
-	private readonly weatherService = inject(WeatherService);
+	private readonly weatherService: WeatherService = inject(WeatherService);
 
 	// TanStack Query handles loading, error, and data states
-	protected readonly forecastsQuery = this.weatherService.getAllForecasts();
+	protected readonly forecastsQuery: ReturnType<
+		typeof this.weatherService.getAllForecasts
+	> = this.weatherService.getAllForecasts();
 
 	// Computed signals for derived state
-	protected readonly forecasts = computed(
+	protected readonly forecasts: Signal<WeatherForecast[]> = computed(
 		() => this.forecastsQuery.data() ?? []
 	);
-	protected readonly loading = computed(() =>
+	protected readonly loading: Signal<boolean> = computed(() =>
 		this.forecastsQuery.isLoading()
 	);
-	protected readonly error = computed(() =>
+	protected readonly error: Signal<string | null> = computed(() =>
 		this.forecastsQuery.error()
 			? "Failed to load weather data. Please try again."
 			: null
@@ -65,17 +68,17 @@ export class WeatherForecastComponent
 	];
 
 	// Computed values
-	protected readonly averageTempC = computed(() =>
+	protected readonly averageTempC: Signal<number> = computed(() =>
 	{
-		const temps = this.forecasts().map((f) => f.temperatureC);
+		const temps: number[] = this.forecasts().map((f) => f.temperatureC);
 		return temps.length > 0
 			? Math.round(temps.reduce((a, b) => a + b, 0) / temps.length)
 			: 0;
 	});
 
-	protected readonly averageTempF = computed(() =>
+	protected readonly averageTempF: Signal<number> = computed(() =>
 	{
-		const temps = this.forecasts()
+		const temps: number[] = this.forecasts()
 			.filter((f) => f.temperatureF)
 			.map((f) => f.temperatureF!);
 		return temps.length > 0
@@ -83,21 +86,25 @@ export class WeatherForecastComponent
 			: 0;
 	});
 
-	protected readonly hottestDay = computed(() =>
-	{
-		const sorted = [...this.forecasts()].sort(
-			(a, b) => b.temperatureC - a.temperatureC
-		);
-		return sorted[0] || null;
-	});
+	protected readonly hottestDay: Signal<WeatherForecast | null> = computed(
+		() =>
+		{
+			const sorted: WeatherForecast[] = [...this.forecasts()].sort(
+				(a, b) => b.temperatureC - a.temperatureC
+			);
+			return sorted[0] || null;
+		}
+	);
 
-	protected readonly coldestDay = computed(() =>
-	{
-		const sorted = [...this.forecasts()].sort(
-			(a, b) => a.temperatureC - b.temperatureC
-		);
-		return sorted[0] || null;
-	});
+	protected readonly coldestDay: Signal<WeatherForecast | null> = computed(
+		() =>
+		{
+			const sorted: WeatherForecast[] = [...this.forecasts()].sort(
+				(a, b) => a.temperatureC - b.temperatureC
+			);
+			return sorted[0] || null;
+		}
+	);
 
 	protected refresh(): void
 	{
@@ -116,7 +123,7 @@ export class WeatherForecastComponent
 	protected getSummaryColor(summary?: string): string
 	{
 		if (!summary) return "";
-		const lower = summary.toLowerCase();
+		const lower: string = summary.toLowerCase();
 		if (lower.includes("hot") || lower.includes("scorching")) return "warn";
 		if (lower.includes("warm") || lower.includes("balmy")) return "accent";
 		if (lower.includes("cool") || lower.includes("chilly"))

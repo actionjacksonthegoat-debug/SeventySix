@@ -4,7 +4,8 @@ import {
 	OnInit,
 	OnDestroy,
 	inject,
-	PLATFORM_ID
+	PLATFORM_ID,
+	OutputEmitterRef
 } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
 import { debounceTime, fromEvent, Subject, takeUntil } from "rxjs";
@@ -26,18 +27,18 @@ import { debounceTime, fromEvent, Subject, takeUntil } from "rxjs";
 })
 export class SiteLayoutChangedDirective implements OnInit, OnDestroy
 {
-	private platformId = inject(PLATFORM_ID);
-	private destroy$ = new Subject<void>();
+	private readonly platformId: Object = inject(PLATFORM_ID);
+	private readonly destroy$: Subject<void> = new Subject<void>();
 
 	/**
 	 * Event emitted when layout change is detected (after debounce)
 	 */
-	layoutChanged = output<void>();
+	readonly layoutChanged: OutputEmitterRef<void> = output<void>();
 
 	/**
 	 * Debounce time in milliseconds (default: 500ms)
 	 */
-	private readonly DEBOUNCE_TIME = 500;
+	private readonly DEBOUNCE_TIME: number = 500;
 
 	ngOnInit(): void
 	{

@@ -23,22 +23,31 @@ import { WeatherForecast } from "@home/weather/models";
 })
 export class WeatherDisplay
 {
-	private readonly weatherService = inject(WeatherService);
-	private readonly logger = inject(LoggerService);
+	private readonly weatherService: WeatherService = inject(WeatherService);
+	private readonly logger: LoggerService = inject(LoggerService);
 
 	// TanStack Query handles loading, error, and data states
-	readonly forecastsQuery = this.weatherService.getAllForecasts();
+	readonly forecastsQuery: ReturnType<WeatherService["getWeather"]> =
+		this.weatherService.getWeather();
 
 	// Computed signals for derived state
-	readonly forecasts = computed(() => this.forecastsQuery.data() ?? []);
-	readonly isLoading = computed(() => this.forecastsQuery.isLoading());
-	readonly error = computed(() =>
+	readonly forecasts: Signal<WeatherForecast[]> = computed(
+		() => this.forecastsQuery.data() ?? []
+	);
+	readonly isLoading: Signal<boolean> = computed(() =>
+		this.forecastsQuery.isLoading()
+	);
+	readonly error: Signal<string | null> = computed(() =>
 		this.forecastsQuery.error()
 			? "Failed to load weather forecasts. Please try again."
 			: null
 	);
-	readonly hasForecasts = computed(() => this.forecasts().length > 0);
-	readonly forecastCount = computed(() => this.forecasts().length);
+	readonly hasForecasts: Signal<boolean> = computed(
+		() => this.forecasts().length > 0
+	);
+	readonly forecastCount: Signal<number> = computed(
+		() => this.forecasts().length
+	);
 
 	/**
 	 * Retries loading forecasts.

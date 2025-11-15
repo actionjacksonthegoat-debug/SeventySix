@@ -56,8 +56,8 @@ export interface QuotaStatus
 })
 export class OpenWeatherService
 {
-	private readonly http = inject(HttpClient);
-	private readonly apiBaseUrl = "/api/weatherforecast";
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly apiBaseUrl: string = environment.openWeatherMapApiUrl;
 
 	/**
 	 * Get complete weather data (current + forecasts + alerts)
@@ -74,7 +74,7 @@ export class OpenWeatherService
 		options?: WeatherOptions
 	): Observable<OneCallResponse>
 	{
-		let params = new HttpParams()
+		let params: HttpParams = new HttpParams()
 			.set("latitude", lat.toString())
 			.set("longitude", lon.toString());
 
@@ -105,7 +105,7 @@ export class OpenWeatherService
 		options?: WeatherOptions
 	): Observable<CurrentWeather>
 	{
-		let params = new HttpParams()
+		let params: HttpParams = new HttpParams()
 			.set("latitude", lat.toString())
 			.set("longitude", lon.toString());
 
@@ -138,7 +138,7 @@ export class OpenWeatherService
 		options?: WeatherOptions
 	): Observable<HourlyForecast[]>
 	{
-		let params = new HttpParams()
+		let params: HttpParams = new HttpParams()
 			.set("latitude", lat.toString())
 			.set("longitude", lon.toString());
 
@@ -171,7 +171,7 @@ export class OpenWeatherService
 		options?: WeatherOptions
 	): Observable<DailyForecast[]>
 	{
-		let params = new HttpParams()
+		let params: HttpParams = new HttpParams()
 			.set("latitude", lat.toString())
 			.set("longitude", lon.toString());
 
@@ -204,7 +204,7 @@ export class OpenWeatherService
 		options?: WeatherOptions
 	): Observable<MinutelyForecast[]>
 	{
-		let params = new HttpParams()
+		let params: HttpParams = new HttpParams()
 			.set("latitude", lat.toString())
 			.set("longitude", lon.toString());
 
@@ -240,7 +240,7 @@ export class OpenWeatherService
 		options?: WeatherOptions
 	): Observable<OneCallResponse>
 	{
-		let params = new HttpParams()
+		let params: HttpParams = new HttpParams()
 			.set("latitude", lat.toString())
 			.set("longitude", lon.toString())
 			.set("timestamp", timestamp.toString());

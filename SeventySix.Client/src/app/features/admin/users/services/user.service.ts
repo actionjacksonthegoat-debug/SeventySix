@@ -26,9 +26,10 @@ import { getQueryConfig } from "@core/utils/query-config";
 })
 export class UserService
 {
-	private readonly userRepository = inject(UserRepository);
-	private readonly queryClient = inject(QueryClient);
-	private readonly queryConfig = getQueryConfig("users");
+	private readonly userRepository: UserRepository = inject(UserRepository);
+	private readonly queryClient: QueryClient = inject(QueryClient);
+	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
+		getQueryConfig("users");
 
 	/**
 	 * Query for all users

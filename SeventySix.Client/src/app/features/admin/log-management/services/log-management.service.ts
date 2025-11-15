@@ -5,7 +5,14 @@
  * Uses repository pattern for data access (SRP, DIP)
  */
 
-import { inject, Injectable, signal, computed } from "@angular/core";
+import {
+	inject,
+	Injectable,
+	signal,
+	computed,
+	Signal,
+	WritableSignal
+} from "@angular/core";
 import {
 	injectQuery,
 	injectMutation,
@@ -26,21 +33,27 @@ import { getQueryConfig } from "@core/utils/query-config";
 })
 export class LogManagementService
 {
-	private readonly logRepository = inject(LogRepository);
-	private readonly queryClient = inject(QueryClient);
-	private readonly queryConfig = getQueryConfig("logs");
+	private readonly logRepository: LogRepository = inject(LogRepository);
+	private readonly queryClient: QueryClient = inject(QueryClient);
+	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
+		getQueryConfig("logs");
 
 	// Filter state using signals
-	readonly filter = signal<LogFilterRequest>({
-		pageNumber: 1,
-		pageSize: 50
-	});
+	readonly filter: WritableSignal<LogFilterRequest> =
+		signal<LogFilterRequest>({
+			pageNumber: 1,
+			pageSize: 50
+		});
 
 	// Selected log IDs using signals
-	readonly selectedIds = signal<Set<number>>(new Set());
+	readonly selectedIds: WritableSignal<Set<number>> = signal<Set<number>>(
+		new Set()
+	);
 
 	// Computed selected count
-	readonly selectedCount = computed(() => this.selectedIds().size);
+	readonly selectedCount: Signal<number> = computed(
+		() => this.selectedIds().size
+	);
 
 	/**
 	 * Query for logs based on current filter
@@ -112,8 +125,8 @@ export class LogManagementService
 	 */
 	deleteSelected()
 	{
-		const mutation = this.deleteLogs();
-		const ids = Array.from(this.selectedIds());
+		const mutation: ReturnType<typeof this.deleteLogs> = this.deleteLogs();
+		const ids: number[] = Array.from(this.selectedIds());
 		return mutation.mutate(ids);
 	}
 
@@ -172,7 +185,7 @@ export class LogManagementService
 	{
 		this.selectedIds.update((current) =>
 		{
-			const newSet = new Set(current);
+			const newSet: Set<number> = new Set(current);
 			if (newSet.has(id))
 			{
 				newSet.delete(id);

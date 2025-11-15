@@ -18,11 +18,11 @@ export const unsavedChangesGuard: CanDeactivateFn<CanComponentDeactivate> = (
 	component
 ) =>
 {
-	const notification = inject(NotificationService);
+	const notification: NotificationService = inject(NotificationService);
 
 	if (component.canDeactivate && !component.canDeactivate())
 	{
-		const confirmed = window.confirm(
+		const confirmed: boolean = window.confirm(
 			"You have unsaved changes. Are you sure you want to leave?"
 		);
 

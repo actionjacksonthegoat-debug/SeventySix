@@ -1,4 +1,4 @@
-import { Component, computed, inject } from "@angular/core";
+import { Component, computed, inject, Signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatDialog } from "@angular/material/dialog";
@@ -24,22 +24,31 @@ import { LogResponse, LogFilterRequest } from "@admin/log-management/models";
 })
 export class LogManagementComponent
 {
-	private readonly logService = inject(LogManagementService);
-	private readonly dialog = inject(MatDialog);
+	private readonly logService: LogManagementService =
+		inject(LogManagementService);
+	private readonly dialog: MatDialog = inject(MatDialog);
 
 	// TanStack Query handles loading, error, and data states
-	readonly logsQuery = this.logService.getLogs();
-	readonly logCountQuery = this.logService.getLogCount();
+	readonly logsQuery: ReturnType<LogManagementService["getLogs"]> =
+		this.logService.getLogs();
+	readonly logCountQuery: ReturnType<LogManagementService["getLogCount"]> =
+		this.logService.getLogCount();
 
 	// Computed signals for derived state
-	readonly logs = computed(() => this.logsQuery.data() ?? null);
-	readonly isLoading = computed(() => this.logsQuery.isLoading());
-	readonly error = computed(() =>
+	readonly logs: Signal<
+		import("@admin/log-management/models").PagedLogResponse | null
+	> = computed(() => this.logsQuery.data() ?? null);
+	readonly isLoading: Signal<boolean> = computed(() =>
+		this.logsQuery.isLoading()
+	);
+	readonly error: Signal<string | null> = computed(() =>
 		this.logsQuery.error() ? "Failed to load logs. Please try again." : null
 	);
-	readonly statistics = computed(() =>
+	readonly statistics: Signal<
+		import("@admin/log-management/models").LogStatistics
+	> = computed(() =>
 	{
-		const total = this.logCountQuery.data()?.total ?? 0;
+		const total: number = this.logCountQuery.data()?.total ?? 0;
 		return {
 			totalLogs: total,
 			errorCount: 0,
@@ -69,13 +78,15 @@ export class LogManagementComponent
 
 	onLogSelected(log: LogResponse): void
 	{
-		const dialogRef = this.dialog.open(LogDetailDialogComponent, {
-			data: log,
-			width: "800px",
-			maxWidth: "90vw"
-		});
+		const dialogRef: import("@angular/material/dialog").MatDialogRef<LogDetailDialogComponent> =
+			this.dialog.open(LogDetailDialogComponent, {
+				data: log,
+				width: "800px",
+				maxWidth: "90vw"
+			});
 
-		const deleteMutation = this.logService.deleteLog();
+		const deleteMutation: ReturnType<LogManagementService["deleteLog"]> =
+			this.logService.deleteLog();
 		dialogRef.componentInstance.deleteLog.subscribe((id: number) =>
 		{
 			deleteMutation.mutate(id);
@@ -85,7 +96,8 @@ export class LogManagementComponent
 
 	onDeleteLog(id: number): void
 	{
-		const deleteMutation = this.logService.deleteLog();
+		const deleteMutation: ReturnType<LogManagementService["deleteLog"]> =
+			this.logService.deleteLog();
 		deleteMutation.mutate(id);
 	}
 

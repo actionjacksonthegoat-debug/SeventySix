@@ -13,8 +13,8 @@ import { LogStatistics } from "@admin/log-management/models";
 })
 export class LogChartService
 {
-	private readonly http = inject(HttpClient);
-	private readonly apiUrl = `${environment.apiUrl}/logs`;
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly apiUrl: string = `${environment.apiUrl}/logs`;
 
 	/**
 	 * Gets log chart data for the specified period
@@ -23,7 +23,7 @@ export class LogChartService
 	 */
 	getChartData(period: string = "24h"): Observable<LogChartData>
 	{
-		const params = new HttpParams().set("period", period);
+		const params: HttpParams = new HttpParams().set("period", period);
 		return this.http.get<LogChartData>(`${this.apiUrl}/chart-data`, {
 			params
 		});
@@ -40,7 +40,7 @@ export class LogChartService
 		endDate?: string
 	): Observable<LogStatistics>
 	{
-		let params = new HttpParams();
+		let params: HttpParams = new HttpParams();
 
 		if (startDate)
 		{

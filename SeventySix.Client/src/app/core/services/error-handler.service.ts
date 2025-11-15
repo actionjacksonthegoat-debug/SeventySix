@@ -29,12 +29,15 @@ interface ErrorDetails
 })
 export class ErrorHandlerService implements ErrorHandler
 {
-	private readonly logger = inject(LoggerService);
-	private readonly notification = inject(NotificationService);
-	private readonly clientLogger = inject(ClientErrorLoggerService);
+	private readonly logger: LoggerService = inject(LoggerService);
+	private readonly notification: NotificationService =
+		inject(NotificationService);
+	private readonly clientLogger: ClientErrorLoggerService = inject(
+		ClientErrorLoggerService
+	);
 
 	// Guard flag to prevent re-entry during error handling
-	private isHandlingError = false;
+	private isHandlingError: boolean = false;
 
 	/**
 	 * Handles errors globally.
@@ -56,7 +59,7 @@ export class ErrorHandlerService implements ErrorHandler
 		try
 		{
 			// Extract error details
-			const errorDetails = this.extractErrorDetails(error);
+			const errorDetails: ErrorDetails = this.extractErrorDetails(error);
 
 			// Log to server via queue
 			if (errorDetails.httpError)
@@ -188,8 +191,10 @@ export class ErrorHandlerService implements ErrorHandler
 	 */
 	private getValidationErrorMessage(error: ValidationError): string
 	{
-		const errorCount = Object.keys(error.errors).length;
-		const firstError = Object.values(error.errors)[0]?.[0];
+		const errorCount: number = Object.keys(error.errors).length;
+		const firstError: string | undefined = Object.values(
+			error.errors
+		)[0]?.[0];
 
 		if (errorCount === 1 && firstError)
 		{
@@ -290,7 +295,7 @@ export class ErrorHandlerService implements ErrorHandler
 	{
 		try
 		{
-			const copyData = this.generateCopyData(error, errorDetails);
+			const copyData: string = this.generateCopyData(error, errorDetails);
 
 			if (errorDetails.details && errorDetails.details.length > 0)
 			{

@@ -42,7 +42,7 @@ interface NavSection
 })
 export class SidebarComponent
 {
-	protected readonly layoutService = inject(LayoutService);
+	protected readonly layoutService: LayoutService = inject(LayoutService);
 
 	protected readonly navSections: NavSection[] = [
 		{

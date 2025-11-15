@@ -37,7 +37,7 @@ export function getNativeElement<T>(
 	selector: string
 ): HTMLElement | null
 {
-	const debugElement = findByCss(fixture, selector);
+	const debugElement: DebugElement = findByCss(fixture, selector);
 	return debugElement ? debugElement.nativeElement : null;
 }
 
@@ -49,7 +49,7 @@ export function getTextContent<T>(
 	selector: string
 ): string
 {
-	const element = getNativeElement(fixture, selector);
+	const element: HTMLElement | null = getNativeElement(fixture, selector);
 	return element ? element.textContent?.trim() || "" : "";
 }
 
@@ -61,7 +61,7 @@ export function clickElement<T>(
 	selector: string
 ): void
 {
-	const element = getNativeElement(fixture, selector);
+	const element: HTMLElement | null = getNativeElement(fixture, selector);
 	if (element)
 	{
 		element.click();
@@ -78,7 +78,10 @@ export function setInputValue<T>(
 	value: string
 ): void
 {
-	const input = getNativeElement(fixture, selector) as HTMLInputElement;
+	const input: HTMLInputElement | null = getNativeElement(
+		fixture,
+		selector
+	) as HTMLInputElement;
 	if (input)
 	{
 		input.value = value;

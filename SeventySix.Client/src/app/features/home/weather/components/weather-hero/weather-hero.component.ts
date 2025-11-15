@@ -3,7 +3,10 @@ import {
 	ChangeDetectionStrategy,
 	input,
 	output,
-	computed
+	computed,
+	Signal,
+	InputSignal,
+	OutputEmitterRef
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
@@ -35,42 +38,44 @@ import { CurrentWeather, getWeatherIconUrl } from "@home/weather/models";
 export class WeatherHeroComponent
 {
 	// Inputs
-	readonly currentWeather = input<CurrentWeather | undefined>(undefined);
-	readonly location = input<string>("");
-	readonly loading = input<boolean>(false);
+	readonly currentWeather: InputSignal<CurrentWeather | undefined> = input<
+		CurrentWeather | undefined
+	>(undefined);
+	readonly location: InputSignal<string> = input<string>("");
+	readonly loading: InputSignal<boolean> = input<boolean>(false);
 
 	// Outputs
-	readonly refresh = output<void>();
+	readonly refresh: OutputEmitterRef<void> = output<void>();
 
 	// Computed values
-	readonly primaryCondition = computed(() =>
+	readonly primaryCondition: Signal<string> = computed(() =>
 	{
-		const weather = this.currentWeather();
+		const weather: CurrentWeather | undefined = this.currentWeather();
 		return weather?.weather?.[0]?.main ?? "";
 	});
 
-	readonly weatherDescription = computed(() =>
+	readonly weatherDescription: Signal<string> = computed(() =>
 	{
-		const weather = this.currentWeather();
+		const weather: CurrentWeather | undefined = this.currentWeather();
 		return weather?.weather?.[0]?.description ?? "";
 	});
 
-	readonly weatherIconUrl = computed(() =>
+	readonly weatherIconUrl: Signal<string> = computed(() =>
 	{
-		const weather = this.currentWeather();
-		const icon = weather?.weather?.[0]?.icon;
+		const weather: CurrentWeather | undefined = this.currentWeather();
+		const icon: string | undefined = weather?.weather?.[0]?.icon;
 		return icon ? getWeatherIconUrl(icon) : "";
 	});
 
-	readonly temperature = computed(() =>
+	readonly temperature: Signal<number> = computed(() =>
 	{
-		const weather = this.currentWeather();
+		const weather: CurrentWeather | undefined = this.currentWeather();
 		return weather?.temp ?? 0;
 	});
 
-	readonly feelsLike = computed(() =>
+	readonly feelsLike: Signal<number> = computed(() =>
 	{
-		const weather = this.currentWeather();
+		const weather: CurrentWeather | undefined = this.currentWeather();
 		return weather?.feels_like ?? 0;
 	});
 

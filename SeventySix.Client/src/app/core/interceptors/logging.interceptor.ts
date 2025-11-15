@@ -12,8 +12,8 @@ import { tap, finalize } from "rxjs";
  */
 export const loggingInterceptor: HttpInterceptorFn = (req, next) =>
 {
-	const startTime = Date.now();
-	const isDevelopment = true; // TODO: Get from environment
+	const startTime: number = Date.now();
+	const isDevelopment: boolean = true; // TODO: Get from environment
 
 	if (!isDevelopment)
 	{
@@ -30,7 +30,7 @@ export const loggingInterceptor: HttpInterceptorFn = (req, next) =>
 				if (event.type !== 0)
 				{
 					// Not a sent event
-					const duration = Date.now() - startTime;
+					const duration: number = Date.now() - startTime;
 					// eslint-disable-next-line no-console
 					console.log(
 						`🟢 HTTP Response: ${req.method} ${req.url} (${duration}ms)`
@@ -39,7 +39,7 @@ export const loggingInterceptor: HttpInterceptorFn = (req, next) =>
 			},
 			error: (error) =>
 			{
-				const duration = Date.now() - startTime;
+				const duration: number = Date.now() - startTime;
 				console.error(
 					`🔴 HTTP Error: ${req.method} ${req.url} (${duration}ms)`,
 					error

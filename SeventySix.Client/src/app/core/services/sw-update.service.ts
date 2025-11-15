@@ -18,9 +18,9 @@ import { LoggerService } from "./logger.service";
 })
 export class SwUpdateService
 {
-	private readonly swUpdate = inject(SwUpdate);
-	private readonly appRef = inject(ApplicationRef);
-	private readonly logger = inject(LoggerService);
+	private readonly swUpdate: SwUpdate = inject(SwUpdate);
+	private readonly appRef: ApplicationRef = inject(ApplicationRef);
+	private readonly logger: LoggerService = inject(LoggerService);
 
 	/**
 	 * Initializes the Service Worker update service.
@@ -46,20 +46,23 @@ export class SwUpdateService
 	private checkForUpdates(): void
 	{
 		// Wait for app to stabilize, then check for updates every 6 hours
-		const appIsStable$ = this.appRef.isStable.pipe(
-			first((isStable) => isStable === true)
+		const appIsStable$: import("rxjs").Observable<boolean> =
+			this.appRef.isStable.pipe(
+				first((isStable: boolean) => isStable === true)
+			);
+		const everySixHours$: import("rxjs").Observable<number> = interval(
+			6 * 60 * 60 * 1000
 		);
-		const everySixHours$ = interval(6 * 60 * 60 * 1000);
-		const everySixHoursOnceAppIsStable$ = concat(
-			appIsStable$,
-			everySixHours$
-		);
+		const everySixHoursOnceAppIsStable$: import("rxjs").Observable<
+			boolean | number
+		> = concat(appIsStable$, everySixHours$);
 
 		everySixHoursOnceAppIsStable$.subscribe(async () =>
 		{
 			try
 			{
-				const updateFound = await this.swUpdate.checkForUpdate();
+				const updateFound: boolean =
+					await this.swUpdate.checkForUpdate();
 				if (updateFound)
 				{
 					this.logger.info("New version available");
@@ -177,7 +180,7 @@ export class SwUpdateService
 
 		try
 		{
-			const updateFound = await this.swUpdate.checkForUpdate();
+			const updateFound: boolean = await this.swUpdate.checkForUpdate();
 			if (updateFound)
 			{
 				this.logger.info("Update found");
@@ -211,7 +214,7 @@ export class SwUpdateService
 
 		try
 		{
-			const updateFound = await this.swUpdate.checkForUpdate();
+			const updateFound: boolean = await this.swUpdate.checkForUpdate();
 			if (updateFound)
 			{
 				await this.swUpdate.activateUpdate();

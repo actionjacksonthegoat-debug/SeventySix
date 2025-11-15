@@ -10,8 +10,8 @@ import { Injectable } from "@angular/core";
 })
 export class TokenStorageService
 {
-	private readonly ACCESS_TOKEN_KEY = "auth_access_token";
-	private readonly REFRESH_TOKEN_KEY = "auth_refresh_token";
+	private readonly ACCESS_TOKEN_KEY: string = "auth_access_token";
+	private readonly REFRESH_TOKEN_KEY: string = "auth_refresh_token";
 
 	/**
 	 * Stores access token.
@@ -96,7 +96,7 @@ export class TokenStorageService
 	 */
 	isAuthenticated(): boolean
 	{
-		const token = this.getAccessToken();
+		const token: string | null = this.getAccessToken();
 		if (!token)
 		{
 			return false;
@@ -118,9 +118,11 @@ export class TokenStorageService
 	{
 		try
 		{
-			const base64Url = token.split(".")[1];
-			const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-			const jsonPayload = decodeURIComponent(
+			const base64Url: string = token.split(".")[1];
+			const base64: string = base64Url
+				.replace(/-/g, "+")
+				.replace(/_/g, "/");
+			const jsonPayload: string = decodeURIComponent(
 				atob(base64)
 					.split("")
 					.map(

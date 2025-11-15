@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from "@angular/core";
+import { Component, OnInit, signal, WritableSignal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
 import { MatCardModule } from "@angular/material/card";
@@ -31,24 +31,26 @@ export class ApiStatisticsTableComponent implements OnInit
 	/**
 	 * Loading state signal
 	 */
-	isLoading = signal<boolean>(true);
+	readonly isLoading: WritableSignal<boolean> = signal<boolean>(true);
 
 	/**
 	 * Error state signal
 	 */
-	error = signal<string | null>(null);
+	readonly error: WritableSignal<string | null> = signal<string | null>(null);
 
 	/**
 	 * Table data source
 	 */
-	dataSource = signal<MatTableDataSource<ThirdPartyApiRequest>>(
+	readonly dataSource: WritableSignal<
+		MatTableDataSource<ThirdPartyApiRequest>
+	> = signal<MatTableDataSource<ThirdPartyApiRequest>>(
 		new MatTableDataSource<ThirdPartyApiRequest>([])
 	);
 
 	/**
 	 * Displayed columns
 	 */
-	displayedColumns = signal<string[]>([
+	readonly displayedColumns: WritableSignal<string[]> = signal<string[]>([
 		"apiName",
 		"callCount",
 		"lastCalledAt",
@@ -101,12 +103,12 @@ export class ApiStatisticsTableComponent implements OnInit
 	{
 		if (!timestamp) return "Never";
 
-		const date = new Date(timestamp);
-		const now = new Date();
-		const diffMs = now.getTime() - date.getTime();
-		const diffMins = Math.floor(diffMs / 60000);
-		const diffHours = Math.floor(diffMs / 3600000);
-		const diffDays = Math.floor(diffMs / 86400000);
+		const date: Date = new Date(timestamp);
+		const now: Date = new Date();
+		const diffMs: number = now.getTime() - date.getTime();
+		const diffMins: number = Math.floor(diffMs / 60000);
+		const diffHours: number = Math.floor(diffMs / 3600000);
+		const diffDays: number = Math.floor(diffMs / 86400000);
 
 		if (diffMins < 1) return "Just now";
 		if (diffMins < 60) return `${diffMins} min ago`;
@@ -127,9 +129,9 @@ export class ApiStatisticsTableComponent implements OnInit
 	{
 		if (!lastCalledAt) return "error";
 
-		const date = new Date(lastCalledAt);
-		const now = new Date();
-		const diffHours = (now.getTime() - date.getTime()) / 3600000;
+		const date: Date = new Date(lastCalledAt);
+		const now: Date = new Date();
+		const diffHours: number = (now.getTime() - date.getTime()) / 3600000;
 
 		if (diffHours < 1) return "ok";
 		if (diffHours < 24) return "warning";

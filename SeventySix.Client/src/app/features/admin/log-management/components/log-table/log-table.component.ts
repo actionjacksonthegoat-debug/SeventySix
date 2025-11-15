@@ -5,7 +5,9 @@ import {
 	output,
 	effect,
 	ViewChild,
-	AfterViewInit
+	AfterViewInit,
+	InputSignal,
+	OutputEmitterRef
 } from "@angular/core";
 import { NgClass } from "@angular/common";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
@@ -44,20 +46,20 @@ import { LogResponse, LogLevel } from "@admin/log-management/models";
 export class LogTableComponent implements AfterViewInit
 {
 	// Inputs
-	logs = input<LogResponse[]>([]);
-	totalCount = input<number>(0);
-	pageSize = input<number>(50);
-	pageIndex = input<number>(0);
+	readonly logs: InputSignal<LogResponse[]> = input<LogResponse[]>([]);
+	readonly totalCount: InputSignal<number> = input<number>(0);
+	readonly pageSize: InputSignal<number> = input<number>(50);
+	readonly pageIndex: InputSignal<number> = input<number>(0);
 
 	// Outputs
-	logSelected = output<LogResponse>();
-	deleteLog = output<number>();
-	deleteSelected = output<number[]>();
-	pageChange = output<number>();
-	pageSizeChange = output<number>();
+	readonly logSelected: OutputEmitterRef<LogResponse> = output<LogResponse>();
+	readonly deleteLog: OutputEmitterRef<number> = output<number>();
+	readonly deleteSelected: OutputEmitterRef<number[]> = output<number[]>();
+	readonly pageChange: OutputEmitterRef<number> = output<number>();
+	readonly pageSizeChange: OutputEmitterRef<number> = output<number>();
 
 	// Table configuration
-	displayedColumns = [
+	readonly displayedColumns: string[] = [
 		"select",
 		"level",
 		"timestamp",
@@ -67,9 +69,11 @@ export class LogTableComponent implements AfterViewInit
 		"actions"
 	];
 
-	dataSource = new MatTableDataSource<LogResponse>([]);
-	selection = new SelectionModel<LogResponse>(true, []);
-	pageSizeOptions = [25, 50, 100];
+	readonly dataSource: MatTableDataSource<LogResponse> =
+		new MatTableDataSource<LogResponse>([]);
+	readonly selection: SelectionModel<LogResponse> =
+		new SelectionModel<LogResponse>(true, []);
+	readonly pageSizeOptions: number[] = [25, 50, 100];
 
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 	@ViewChild(MatSort) sort!: MatSort;
@@ -113,9 +117,9 @@ export class LogTableComponent implements AfterViewInit
 
 	isAllSelected(): boolean
 	{
-		const numSelected = this.selection.selected.length;
-		const numRows = this.dataSource.data.length;
-		return numSelected === numRows && numRows > 0;
+		const numSelected: number = this.selection.selected.length;
+		const numRows: number = this.dataSource.data.length;
+		return numSelected === numRows;
 	}
 
 	onDeleteLog(log: LogResponse): void
@@ -125,7 +129,9 @@ export class LogTableComponent implements AfterViewInit
 
 	onDeleteSelected(): void
 	{
-		const selectedIds = this.selection.selected.map((log) => log.id);
+		const selectedIds: number[] = this.selection.selected.map(
+			(log) => log.id
+		);
 		if (selectedIds.length > 0)
 		{
 			this.deleteSelected.emit(selectedIds);
@@ -170,12 +176,12 @@ export class LogTableComponent implements AfterViewInit
 
 	getRelativeTime(date: Date | string): string
 	{
-		const dateObj = typeof date === "string" ? new Date(date) : date;
-		const now = Date.now();
-		const diff = now - dateObj.getTime();
-		const minutes = Math.floor(diff / 60000);
-		const hours = Math.floor(diff / 3600000);
-		const days = Math.floor(diff / 86400000);
+		const dateObj: Date = typeof date === "string" ? new Date(date) : date;
+		const now: number = Date.now();
+		const diff: number = now - dateObj.getTime();
+		const minutes: number = Math.floor(diff / 60000);
+		const hours: number = Math.floor(diff / 3600000);
+		const days: number = Math.floor(diff / 86400000);
 
 		if (days > 0)
 		{

@@ -267,7 +267,7 @@ public class LogsController(
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "Error bulk deleting logs. Count: {Count}, IDs: {Ids}", 
+			logger.LogError(ex, "Error bulk deleting logs. Count: {Count}, IDs: {Ids}",
 				ids.Length, string.Join(", ", ids.Take(10))); // Log first 10 IDs
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error bulk deleting logs");
 		}

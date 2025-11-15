@@ -2,7 +2,8 @@ import {
 	Component,
 	ChangeDetectionStrategy,
 	signal,
-	inject
+	inject,
+	WritableSignal
 } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
@@ -51,7 +52,7 @@ interface QuickAction
 })
 export class HomePage
 {
-	protected readonly themeService = inject(ThemeService);
+	protected readonly themeService: ThemeService = inject(ThemeService);
 
 	protected readonly stats: QuickStat[] = [
 		{
@@ -118,7 +119,9 @@ export class HomePage
 		}
 	];
 
-	protected readonly recentActivity = signal([
+	protected readonly recentActivity: WritableSignal<
+		Array<{ icon: string; text: string; time: string }>
+	> = signal([
 		{
 			icon: "person_add",
 			text: "New user registered: John Doe",

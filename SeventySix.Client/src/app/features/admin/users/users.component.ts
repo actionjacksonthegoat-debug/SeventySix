@@ -20,5 +20,6 @@ import { UserList } from "@admin/users/components/user-list/user-list";
 export class UsersComponent
 {
 	// Page-level state
-	readonly pageTitle = signal<string>("User Management");
+	readonly pageTitle: WritableSignal<string> =
+		signal<string>("User Management");
 }

@@ -13,7 +13,7 @@ export function dateRangeValidator(min?: Date, max?: Date): ValidatorFn
 			return null;
 		}
 
-		const value = new Date(control.value);
+		const value: Date = new Date(control.value);
 
 		if (min && value < min)
 		{
@@ -56,7 +56,7 @@ export function temperatureRangeValidator(min = -100, max = 100): ValidatorFn
 			return null;
 		}
 
-		const value = Number(control.value);
+		const value: number = Number(control.value);
 
 		if (isNaN(value))
 		{
@@ -91,7 +91,7 @@ export function stringLengthValidator(min?: number, max?: number): ValidatorFn
 			return null;
 		}
 
-		const length = String(control.value).length;
+		const length: number = String(control.value).length;
 
 		if (min !== undefined && length < min)
 		{
@@ -120,8 +120,8 @@ export function futureDateValidator(): ValidatorFn
 			return null;
 		}
 
-		const value = new Date(control.value);
-		const today = new Date();
+		const value: Date = new Date(control.value);
+		const today: Date = new Date();
 		today.setHours(0, 0, 0, 0);
 
 		if (value < today)
@@ -150,7 +150,8 @@ export function requiredIfValidator(dependentFieldName: string): ValidatorFn
 			return null;
 		}
 
-		const dependentControl = control.parent.get(dependentFieldName);
+		const dependentControl: AbstractControl | null =
+			control.parent.get(dependentFieldName);
 
 		if (dependentControl?.value && !control.value)
 		{
@@ -177,7 +178,8 @@ export function matchFieldValidator(matchFieldName: string): ValidatorFn
 			return null;
 		}
 
-		const matchControl = control.parent.get(matchFieldName);
+		const matchControl: AbstractControl | null =
+			control.parent.get(matchFieldName);
 
 		if (matchControl && control.value !== matchControl.value)
 		{

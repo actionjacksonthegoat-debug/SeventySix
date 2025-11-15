@@ -99,13 +99,13 @@ export interface BreadcrumbItem
 })
 export class BreadcrumbComponent
 {
-	private readonly router = inject(Router);
-	private readonly activatedRoute = inject(ActivatedRoute);
+	private readonly router: Router = inject(Router);
+	private readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
 	/**
 	 * Signal tracking navigation events
 	 */
-	private readonly navigationEnd$ = toSignal(
+	private readonly navigationEnd$: Signal<BreadcrumbItem[]> = toSignal(
 		this.router.events.pipe(
 			filter((event) => event instanceof NavigationEnd),
 			startWith(null),
@@ -117,7 +117,9 @@ export class BreadcrumbComponent
 	/**
 	 * Computed breadcrumb items
 	 */
-	readonly breadcrumbs = computed(() => this.navigationEnd$());
+	readonly breadcrumbs: Signal<BreadcrumbItem[]> = computed(() =>
+		this.navigationEnd$()
+	);
 
 	/**
 	 * Builds breadcrumb items from current route hierarchy
@@ -125,8 +127,8 @@ export class BreadcrumbComponent
 	private buildBreadcrumbs(): BreadcrumbItem[]
 	{
 		const breadcrumbs: BreadcrumbItem[] = [];
-		let currentRoute = this.activatedRoute.root;
-		let url = "";
+		let currentRoute: ActivatedRoute = this.activatedRoute.root;
+		let url: string = "";
 
 		// Always add home
 		breadcrumbs.push({
@@ -138,7 +140,8 @@ export class BreadcrumbComponent
 		while (currentRoute.firstChild)
 		{
 			currentRoute = currentRoute.firstChild;
-			const routeConfig = currentRoute.routeConfig;
+			const routeConfig: import("@angular/router").Route | null =
+				currentRoute.routeConfig;
 
 			// Skip routes without paths or with empty paths
 			if (!routeConfig?.path)
@@ -150,7 +153,7 @@ export class BreadcrumbComponent
 			url += `/${routeConfig.path}`;
 
 			// Get breadcrumb label from route data or path
-			const label =
+			const label: string =
 				currentRoute.snapshot.data["breadcrumb"] ||
 				this.formatPathSegment(routeConfig.path);
 
@@ -170,7 +173,7 @@ export class BreadcrumbComponent
 	private formatPathSegment(segment: string): string
 	{
 		// Remove route parameters
-		const cleaned = segment.replace(/:\w+/g, "");
+		const cleaned: string = segment.replace(/:\w+/g, "");
 
 		// Handle special cases
 		if (cleaned === "") return "Details";

@@ -75,8 +75,8 @@ public class OpenWeatherService(
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, 
-				"Failed to retrieve current weather data for Lat: {Latitude}, Lon: {Longitude}, Units: {Units}", 
+			logger.LogError(ex,
+				"Failed to retrieve current weather data for Lat: {Latitude}, Lon: {Longitude}, Units: {Units}",
 				request.Latitude, request.Longitude, request.Units);
 			throw new ExternalServiceException("Failed to retrieve current weather data", ex);
 		}
@@ -108,8 +108,8 @@ public class OpenWeatherService(
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, 
-				"Failed to retrieve hourly forecast for Lat: {Latitude}, Lon: {Longitude}", 
+			logger.LogError(ex,
+				"Failed to retrieve hourly forecast for Lat: {Latitude}, Lon: {Longitude}",
 				request.Latitude, request.Longitude);
 			throw new ExternalServiceException("Failed to retrieve hourly forecast data", ex);
 		}
@@ -141,8 +141,8 @@ public class OpenWeatherService(
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, 
-				"Failed to retrieve daily forecast for Lat: {Latitude}, Lon: {Longitude}", 
+			logger.LogError(ex,
+				"Failed to retrieve daily forecast for Lat: {Latitude}, Lon: {Longitude}",
 				request.Latitude, request.Longitude);
 			throw new ExternalServiceException("Failed to retrieve daily forecast data", ex);
 		}
@@ -174,8 +174,8 @@ public class OpenWeatherService(
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, 
-				"Failed to retrieve weather alerts for Lat: {Latitude}, Lon: {Longitude}", 
+			logger.LogError(ex,
+				"Failed to retrieve weather alerts for Lat: {Latitude}, Lon: {Longitude}",
 				request.Latitude, request.Longitude);
 			throw new ExternalServiceException("Failed to retrieve weather alerts", ex);
 		}
@@ -196,8 +196,8 @@ public class OpenWeatherService(
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, 
-				"Failed to retrieve complete weather data for Lat: {Latitude}, Lon: {Longitude}, Exclude: {Exclude}", 
+			logger.LogError(ex,
+				"Failed to retrieve complete weather data for Lat: {Latitude}, Lon: {Longitude}, Exclude: {Exclude}",
 				request.Latitude, request.Longitude, request.Exclude ?? "none");
 			throw new ExternalServiceException("Failed to retrieve complete weather data", ex);
 		}
@@ -218,8 +218,8 @@ public class OpenWeatherService(
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, 
-				"Failed to retrieve historical weather for Lat: {Latitude}, Lon: {Longitude}, Timestamp: {Timestamp}", 
+			logger.LogError(ex,
+				"Failed to retrieve historical weather for Lat: {Latitude}, Lon: {Longitude}, Timestamp: {Timestamp}",
 				request.Latitude, request.Longitude, request.Timestamp);
 			throw new ExternalServiceException("Failed to retrieve historical weather data", ex);
 		}
@@ -251,8 +251,8 @@ public class OpenWeatherService(
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, 
-				"Failed to retrieve minutely forecast for Lat: {Latitude}, Lon: {Longitude}", 
+			logger.LogError(ex,
+				"Failed to retrieve minutely forecast for Lat: {Latitude}, Lon: {Longitude}",
 				request.Latitude, request.Longitude);
 			throw new ExternalServiceException("Failed to retrieve minutely forecast data", ex);
 		}

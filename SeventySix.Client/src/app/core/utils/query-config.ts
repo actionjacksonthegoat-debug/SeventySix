@@ -23,8 +23,10 @@ export interface QueryOptions
  */
 export function getQueryConfig(resource: string): QueryOptions
 {
-	const config = environment.cache.query;
-	const resourceConfig = config[resource as keyof typeof config];
+	const config: typeof environment.cache.query = environment.cache.query;
+	const resourceConfig: QueryOptions | undefined = config[
+		resource as keyof typeof config
+	] as QueryOptions | undefined;
 
 	if (resourceConfig && typeof resourceConfig === "object")
 	{

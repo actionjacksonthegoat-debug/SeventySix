@@ -55,26 +55,27 @@ type CircuitState = "closed" | "open";
 })
 export class ErrorQueueService implements OnDestroy
 {
-	private readonly http = inject(HttpClient);
-	private readonly logEndpoint = `${environment.apiUrl}/logs/client/batch`;
-	private readonly localStorageKey = "error-queue";
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly logEndpoint: string = `${environment.apiUrl}/logs/client/batch`;
+	private readonly localStorageKey: string = "error-queue";
 
 	// Queue management
 	private queue: QueuedError[] = [];
-	private readonly batchSize = environment.logging.batchSize;
-	private readonly batchInterval = environment.logging.batchInterval;
+	private readonly batchSize: number = environment.logging.batchSize;
+	private readonly batchInterval: number = environment.logging.batchInterval;
 
 	// Circuit breaker
 	private circuitBreakerState: CircuitState = "closed";
-	private consecutiveFailures = 0;
-	private readonly maxFailures = environment.logging.circuitBreakerThreshold;
-	private readonly circuitOpenDuration =
+	private consecutiveFailures: number = 0;
+	private readonly maxFailures: number =
+		environment.logging.circuitBreakerThreshold;
+	private readonly circuitOpenDuration: number =
 		environment.logging.circuitBreakerTimeout;
-	private circuitBreakerOpenTime = 0;
+	private circuitBreakerOpenTime: number = 0;
 
 	// Error deduplication
-	private recentErrors = new Map<string, number>(); // signature -> timestamp
-	private readonly dedupeWindowMs = 5000; // 5 seconds
+	private recentErrors: Map<string, number> = new Map<string, number>(); // signature -> timestamp
+	private readonly dedupeWindowMs: number = 5000; // 5 seconds
 
 	// RxJS subscription for zoneless compatibility
 	private batchProcessorSubscription?: Subscription;
@@ -151,7 +152,7 @@ export class ErrorQueueService implements OnDestroy
 		}
 
 		// Get batch
-		const batch = this.queue.slice(0, this.batchSize);
+		const batch: QueuedError[] = this.queue.slice(0, this.batchSize);
 
 		// Convert to server format
 		const payload: ClientLogRequest[] = batch.map((error) => ({
@@ -242,7 +243,7 @@ export class ErrorQueueService implements OnDestroy
 		}
 
 		// Check if circuit should be closed (30 seconds elapsed)
-		const elapsed = Date.now() - this.circuitBreakerOpenTime;
+		const elapsed: number = Date.now() - this.circuitBreakerOpenTime;
 		if (elapsed >= this.circuitOpenDuration)
 		{
 			this.circuitBreakerState = "closed";
@@ -260,7 +261,9 @@ export class ErrorQueueService implements OnDestroy
 	{
 		try
 		{
-			const stored = localStorage.getItem(this.localStorageKey);
+			const stored: string | null = localStorage.getItem(
+				this.localStorageKey
+			);
 			if (stored)
 			{
 				this.queue = JSON.parse(stored);
@@ -299,7 +302,7 @@ export class ErrorQueueService implements OnDestroy
 	 */
 	private generateErrorSignature(error: QueuedError): string
 	{
-		const parts = [
+		const parts: string[] = [
 			error.message,
 			error.exceptionMessage || "",
 			error.statusCode?.toString() || "",
@@ -307,7 +310,7 @@ export class ErrorQueueService implements OnDestroy
 		];
 
 		// Include first 100 chars of stack trace for uniqueness
-		const stackPreview = error.stackTrace?.substring(0, 100) || "";
+		const stackPreview: string = error.stackTrace?.substring(0, 100) || "";
 		return `${parts.join("|")}|${stackPreview}`;
 	}
 
@@ -316,9 +319,9 @@ export class ErrorQueueService implements OnDestroy
 	 */
 	private isDuplicate(error: QueuedError): boolean
 	{
-		const signature = this.generateErrorSignature(error);
-		const now = Date.now();
-		const lastSeen = this.recentErrors.get(signature);
+		const signature: string = this.generateErrorSignature(error);
+		const now: number = Date.now();
+		const lastSeen: number | undefined = this.recentErrors.get(signature);
 
 		if (lastSeen && now - lastSeen < this.dedupeWindowMs)
 		{

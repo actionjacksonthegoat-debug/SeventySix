@@ -356,7 +356,7 @@ public class UserServiceTests
 			.ReturnsAsync((User u, CancellationToken ct) =>
 			{
 				u.Id = 1;
-			 return u;
+				return u;
 			});
 
 		// Act
@@ -387,7 +387,7 @@ public class UserServiceTests
 			.ReturnsAsync((User u, CancellationToken ct) =>
 			{
 				u.Id = 1;
-			 return u;
+				return u;
 			});
 
 		// Act

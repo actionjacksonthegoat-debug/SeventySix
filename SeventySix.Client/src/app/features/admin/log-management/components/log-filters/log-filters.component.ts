@@ -42,19 +42,22 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 export class LogFiltersComponent
 {
 	// View children
-	searchInput = viewChild<ElementRef<HTMLInputElement>>("searchInput");
+	readonly searchInput: Signal<ElementRef<HTMLInputElement> | undefined> =
+		viewChild<ElementRef<HTMLInputElement>>("searchInput");
 
 	// State
-	searchTerm = signal<string>("");
-	selectedLevel = signal<LogLevel | null>(null);
-	dateRange = signal<string>("24h");
-	autoRefresh = signal<boolean>(false);
+	readonly searchTerm: WritableSignal<string> = signal<string>("");
+	readonly selectedLevel: WritableSignal<LogLevel | null> =
+		signal<LogLevel | null>(null);
+	readonly dateRange: WritableSignal<string> = signal<string>("24h");
+	readonly autoRefresh: WritableSignal<boolean> = signal<boolean>(false);
 
 	// Events
-	filterChange = output<LogFilterRequest>();
-	autoRefreshChange = output<boolean>();
-	exportCsv = output<void>();
-	cleanupLogs = output<void>();
+	readonly filterChange: OutputEmitterRef<LogFilterRequest> =
+		output<LogFilterRequest>();
+	readonly autoRefreshChange: OutputEmitterRef<boolean> = output<boolean>();
+	readonly exportCsv: OutputEmitterRef<void> = output<void>();
+	readonly cleanupLogs: OutputEmitterRef<void> = output<void>();
 
 	// Options
 	readonly levelOptions: LogLevel[] = [
@@ -68,7 +71,7 @@ export class LogFiltersComponent
 
 	readonly dateRangeOptions: string[] = ["24h", "7d", "30d"];
 
-	private searchSubject = new Subject<string>();
+	private searchSubject: Subject<string> = new Subject<string>();
 
 	constructor()
 	{
@@ -167,7 +170,8 @@ export class LogFiltersComponent
 
 	private emitFilterChange(): void
 	{
-		const { startDate, endDate } = this.getDateRange();
+		const { startDate, endDate }: { startDate?: Date; endDate?: Date } =
+			this.getDateRange();
 
 		const filter: LogFilterRequest = {
 			pageNumber: 1,
@@ -183,8 +187,8 @@ export class LogFiltersComponent
 
 	private getDateRange(): { startDate?: Date; endDate?: Date }
 	{
-		const now = new Date();
-		const range = this.dateRange();
+		const now: Date = new Date();
+		const range: string = this.dateRange();
 
 		let startDate: Date | undefined;
 

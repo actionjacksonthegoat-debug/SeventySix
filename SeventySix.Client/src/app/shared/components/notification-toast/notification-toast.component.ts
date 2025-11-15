@@ -175,7 +175,8 @@ import {
 })
 export class NotificationToastComponent
 {
-	protected readonly notificationService = inject(NotificationService);
+	protected readonly notificationService: NotificationService =
+		inject(NotificationService);
 
 	/**
 	 * Get the appropriate icon for the notification level.

@@ -76,8 +76,11 @@ export interface ConfirmDialogData
 })
 export class ConfirmDialogComponent
 {
-	private dialogRef = inject(MatDialogRef<ConfirmDialogComponent>);
-	protected data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);
+	private dialogRef: MatDialogRef<ConfirmDialogComponent> = inject(
+		MatDialogRef<ConfirmDialogComponent>
+	);
+	protected data: ConfirmDialogData =
+		inject<ConfirmDialogData>(MAT_DIALOG_DATA);
 
 	onConfirm(): void
 	{

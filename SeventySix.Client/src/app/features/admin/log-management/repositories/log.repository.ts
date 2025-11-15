@@ -25,8 +25,8 @@ import {
 })
 export class LogRepository
 {
-	private readonly http = inject(HttpClient);
-	private readonly apiUrl = `${environment.apiUrl}/logs`;
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly apiUrl: string = `${environment.apiUrl}/logs`;
 
 	/**
 	 * Get paginated logs with optional filtering
@@ -35,7 +35,7 @@ export class LogRepository
 	 */
 	getAll(filter?: LogFilterRequest): Observable<PagedLogResponse>
 	{
-		let params = new HttpParams();
+		let params: HttpParams = new HttpParams();
 
 		if (filter)
 		{
@@ -96,7 +96,7 @@ export class LogRepository
 	 */
 	getCount(filter?: LogFilterRequest): Observable<LogCountResponse>
 	{
-		let params = new HttpParams();
+		let params: HttpParams = new HttpParams();
 
 		if (filter)
 		{

@@ -3,7 +3,9 @@ import {
 	ChangeDetectionStrategy,
 	input,
 	computed,
-	inject
+	inject,
+	InputSignal,
+	Signal
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { WeatherPreferencesService } from "@home/weather/services/weather-preferences.service";
@@ -24,15 +26,19 @@ import { WeatherPreferencesService } from "@home/weather/services/weather-prefer
 })
 export class AnimatedBackgroundComponent
 {
-	private readonly preferencesService = inject(WeatherPreferencesService);
+	private readonly preferencesService: WeatherPreferencesService = inject(
+		WeatherPreferencesService
+	);
 
 	// Inputs
-	readonly weatherCondition = input<string | undefined>(undefined);
+	readonly weatherCondition: InputSignal<string | undefined> = input<
+		string | undefined
+	>(undefined);
 
-	// Computed values
-	readonly backgroundClass = computed(() =>
+	// Computed
+	readonly backgroundClass: Signal<string> = computed(() =>
 	{
-		const condition = this.weatherCondition()?.toLowerCase() || "";
+		const condition: string = this.weatherCondition()?.toLowerCase() || "";
 
 		switch (condition)
 		{
@@ -59,7 +65,8 @@ export class AnimatedBackgroundComponent
 		}
 	});
 
-	readonly animationsEnabled = computed(() =>
-		this.preferencesService.animationsEnabled()
-	);
+	readonly animationsEnabled: Signal<boolean> = computed(() =>
+	{
+		return !this.preferencesService.animationsEnabled();
+	});
 }

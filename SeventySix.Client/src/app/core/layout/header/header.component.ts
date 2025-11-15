@@ -29,8 +29,8 @@ import { BreadcrumbComponent } from "@shared/components";
 })
 export class HeaderComponent
 {
-	protected readonly themeService = inject(ThemeService);
-	protected readonly layoutService = inject(LayoutService);
+	protected readonly themeService: ThemeService = inject(ThemeService);
+	protected readonly layoutService: LayoutService = inject(LayoutService);
 
 	toggleSidebar(): void
 	{

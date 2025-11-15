@@ -4,7 +4,8 @@ import {
 	effect,
 	inject,
 	ElementRef,
-	Renderer2
+	Renderer2,
+	InputSignal
 } from "@angular/core";
 import { ViewportService } from "@core/services";
 
@@ -21,14 +22,23 @@ import { ViewportService } from "@core/services";
 })
 export class HideOnDirective
 {
-	private viewportService = inject(ViewportService);
-	private elementRef = inject(ElementRef);
-	private renderer = inject(Renderer2);
+	private viewportService: ViewportService = inject(ViewportService);
+	private elementRef: ElementRef = inject(ElementRef);
+	private renderer: Renderer2 = inject(Renderer2);
 
 	/**
 	 * Breakpoint to hide on
 	 */
-	hideOn = input.required<
+	hideOn: InputSignal<
+		| "mobile"
+		| "tablet"
+		| "desktop"
+		| "xsmall"
+		| "small"
+		| "medium"
+		| "large"
+		| "xlarge"
+	> = input.required<
 		| "mobile"
 		| "tablet"
 		| "desktop"
@@ -43,8 +53,16 @@ export class HideOnDirective
 	{
 		effect(() =>
 		{
-			const breakpoint = this.hideOn();
-			let shouldHide = false;
+			const breakpoint:
+				| "mobile"
+				| "tablet"
+				| "desktop"
+				| "xsmall"
+				| "small"
+				| "medium"
+				| "large"
+				| "xlarge" = this.hideOn();
+			let shouldHide: boolean = false;
 
 			switch (breakpoint)
 			{
@@ -105,14 +123,23 @@ export class HideOnDirective
 })
 export class ShowOnDirective
 {
-	private viewportService = inject(ViewportService);
-	private elementRef = inject(ElementRef);
-	private renderer = inject(Renderer2);
+	private viewportService: ViewportService = inject(ViewportService);
+	private elementRef: ElementRef = inject(ElementRef);
+	private renderer: Renderer2 = inject(Renderer2);
 
 	/**
 	 * Breakpoint to show on
 	 */
-	showOn = input.required<
+	showOn: InputSignal<
+		| "mobile"
+		| "tablet"
+		| "desktop"
+		| "xsmall"
+		| "small"
+		| "medium"
+		| "large"
+		| "xlarge"
+	> = input.required<
 		| "mobile"
 		| "tablet"
 		| "desktop"
@@ -127,8 +154,16 @@ export class ShowOnDirective
 	{
 		effect(() =>
 		{
-			const breakpoint = this.showOn();
-			let shouldShow = false;
+			const breakpoint:
+				| "mobile"
+				| "tablet"
+				| "desktop"
+				| "xsmall"
+				| "small"
+				| "medium"
+				| "large"
+				| "xlarge" = this.showOn();
+			let shouldShow: boolean = false;
 
 			switch (breakpoint)
 			{

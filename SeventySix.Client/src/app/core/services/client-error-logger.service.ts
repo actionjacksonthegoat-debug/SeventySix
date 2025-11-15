@@ -24,7 +24,7 @@ export interface ErrorDetails
 })
 export class ClientErrorLoggerService
 {
-	private readonly errorQueue = inject(ErrorQueueService);
+	private readonly errorQueue: ErrorQueueService = inject(ErrorQueueService);
 
 	/**
 	 * Logs a generic error.
@@ -36,7 +36,8 @@ export class ClientErrorLoggerService
 	{
 		try
 		{
-			const error = errorDetails.error ?? errorDetails.httpError;
+			const error: Error | HttpErrorResponse | undefined =
+				errorDetails.error ?? errorDetails.httpError;
 
 			const queuedError: QueuedError = {
 				logLevel,
@@ -197,18 +198,21 @@ export class ClientErrorLoggerService
 
 		// Extract from Angular stack traces
 		// Format: "at ComponentName.methodName (file.ts:line:col)"
-		const stackLines = error.stack.split("\n");
+		const stackLines: string[] = error.stack.split("\n");
 		for (const line of stackLines)
 		{
 			// Match Angular component/service patterns
-			const match = line.match(/at\s+(\w+Component|\w+Service)\.(\w+)/);
+			const match: RegExpMatchArray | null = line.match(
+				/at\s+(\w+Component|\w+Service)\.(\w+)/
+			);
 			if (match)
 			{
 				return `${match[1]}.${match[2]}`;
 			}
 
 			// Fallback: match any class.method pattern
-			const fallbackMatch = line.match(/at\s+(\w+)\.(\w+)/);
+			const fallbackMatch: RegExpMatchArray | null =
+				line.match(/at\s+(\w+)\.(\w+)/);
 			if (fallbackMatch)
 			{
 				return `${fallbackMatch[1]}.${fallbackMatch[2]}`;

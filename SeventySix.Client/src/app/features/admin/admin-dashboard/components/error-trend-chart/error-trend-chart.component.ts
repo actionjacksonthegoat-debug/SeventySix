@@ -5,7 +5,10 @@ import {
 	input,
 	computed,
 	signal,
-	effect
+	effect,
+	InputSignal,
+	Signal,
+	WritableSignal
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
@@ -41,19 +44,21 @@ export class ErrorTrendChartComponent implements OnInit, OnDestroy
 	/**
 	 * Time period for chart data (24h, 7d, 30d)
 	 */
-	period = input<"24h" | "7d" | "30d">("24h");
+	readonly period: InputSignal<"24h" | "7d" | "30d"> = input<
+		"24h" | "7d" | "30d"
+	>("24h");
 
 	/**
 	 * Chart title
 	 */
-	title = computed(() => "Error Trends");
+	readonly title: Signal<string> = computed(() => "Error Trends");
 
 	/**
 	 * Chart subtitle based on period
 	 */
-	subtitle = computed(() =>
+	readonly subtitle: Signal<string> = computed(() =>
 	{
-		const periodMap = {
+		const periodMap: { [key: string]: string } = {
 			"24h": "Last 24 Hours",
 			"7d": "Last 7 Days",
 			"30d": "Last 30 Days"
@@ -64,24 +69,27 @@ export class ErrorTrendChartComponent implements OnInit, OnDestroy
 	/**
 	 * Loading state signal
 	 */
-	isLoading = signal<boolean>(true);
+	readonly isLoading: WritableSignal<boolean> = signal<boolean>(true);
 
 	/**
 	 * Error state signal
 	 */
-	error = signal<string | null>(null);
+	readonly error: WritableSignal<string | null> = signal<string | null>(null);
 
 	/**
 	 * Raw chart data from API
 	 */
-	private rawData = signal<LogChartData | null>(null);
+	private readonly rawData: WritableSignal<LogChartData | null> =
+		signal<LogChartData | null>(null);
 
 	/**
 	 * Transformed chart data for Chart.js
 	 */
-	chartData = computed<ChartConfiguration["data"] | null>(() =>
+	readonly chartData: Signal<ChartConfiguration["data"] | null> = computed<
+		ChartConfiguration["data"] | null
+	>(() =>
 	{
-		const data = this.rawData();
+		const data: LogChartData | null = this.rawData();
 		if (!data) return null;
 
 		return {
@@ -148,7 +156,7 @@ export class ErrorTrendChartComponent implements OnInit, OnDestroy
 		// Reload data when period changes
 		effect(() =>
 		{
-			const currentPeriod = this.period();
+			const currentPeriod: "24h" | "7d" | "30d" = this.period();
 			this.loadChartData(currentPeriod);
 		});
 	}
@@ -196,8 +204,8 @@ export class ErrorTrendChartComponent implements OnInit, OnDestroy
 	 */
 	private formatTimestamp(timestamp: string): string
 	{
-		const date = new Date(timestamp);
-		const period = this.period();
+		const date: Date = new Date(timestamp);
+		const period: "24h" | "7d" | "30d" = this.period();
 
 		if (period === "24h")
 		{

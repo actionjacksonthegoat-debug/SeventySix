@@ -32,47 +32,60 @@ export class StatisticsCardsComponent implements OnInit
 	/**
 	 * Loading state signal
 	 */
-	isLoading = signal<boolean>(true);
+	readonly isLoading: WritableSignal<boolean> = signal<boolean>(true);
 
 	/**
 	 * Error state signal
 	 */
-	error = signal<string | null>(null);
+	readonly error: WritableSignal<string | null> = signal<string | null>(null);
 
 	/**
 	 * Statistics data signal
 	 */
-	statistics = signal<LogStatistics | null>(null);
+	readonly statistics: WritableSignal<LogStatistics | null> =
+		signal<LogStatistics | null>(null);
 
 	/**
 	 * Computed error count
 	 */
-	errorCount = computed(() => this.statistics()?.errorCount ?? 0);
+	readonly errorCount: Signal<number> = computed(
+		() => this.statistics()?.errorCount ?? 0
+	);
 
 	/**
 	 * Computed warning count
 	 */
-	warningCount = computed(() => this.statistics()?.warningCount ?? 0);
+	readonly warningCount: Signal<number> = computed(
+		() => this.statistics()?.warningCount ?? 0
+	);
 
 	/**
 	 * Computed fatal count
 	 */
-	fatalCount = computed(() => this.statistics()?.criticalCount ?? 0);
+	readonly fatalCount: Signal<number> = computed(
+		() => this.statistics()?.criticalCount ?? 0
+	);
 
 	/**
 	 * Computed info count
 	 */
-	infoCount = computed(() => this.statistics()?.infoCount ?? 0);
+	readonly infoCount: Signal<number> = computed(
+		() => this.statistics()?.infoCount ?? 0
+	);
 
 	/**
 	 * Computed debug count
 	 */
-	debugCount = computed(() => this.statistics()?.debugCount ?? 0);
+	readonly debugCount: Signal<number> = computed(
+		() => this.statistics()?.debugCount ?? 0
+	);
 
 	/**
 	 * Computed total count
 	 */
-	totalCount = computed(() => this.statistics()?.totalLogs ?? 0);
+	readonly totalCount: Signal<number> = computed(
+		() => this.statistics()?.totalLogs ?? 0
+	);
 
 	constructor(private readonly logChartService: LogChartService)
 	{}

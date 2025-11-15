@@ -1,4 +1,4 @@
-import { Injectable, signal, Signal } from "@angular/core";
+import { Injectable, signal, Signal, WritableSignal } from "@angular/core";
 import { Observable } from "rxjs";
 import { UserLocation } from "@home/weather/models";
 
@@ -20,11 +20,11 @@ export interface GeolocationError
 })
 export class GeolocationService
 {
-	private readonly currentLocation = signal<UserLocation | undefined>(
-		undefined
-	);
-	private readonly permissionGranted = signal<boolean>(false);
-	private readonly STORAGE_KEY = "weatherLocation";
+	private readonly currentLocation: WritableSignal<UserLocation | undefined> =
+		signal<UserLocation | undefined>(undefined);
+	private readonly permissionGranted: WritableSignal<boolean> =
+		signal<boolean>(false);
+	private readonly STORAGE_KEY: string = "weather_user_location";
 
 	/**
 	 * Default geolocation options
@@ -62,7 +62,10 @@ export class GeolocationService
 				return;
 			}
 
-			const positionOptions = { ...this.defaultOptions, ...options };
+			const positionOptions: PositionOptions = {
+				...this.defaultOptions,
+				...options
+			};
 
 			navigator.geolocation.getCurrentPosition(
 				(position) =>
@@ -142,12 +145,14 @@ export class GeolocationService
 	 */
 	private loadLocationFromStorage(): void
 	{
-		const saved = localStorage.getItem(this.STORAGE_KEY);
+		const saved: string | null = localStorage.getItem(this.STORAGE_KEY);
 		if (saved)
 		{
 			try
 			{
-				const location = JSON.parse(saved) as UserLocation;
+				const location: UserLocation = JSON.parse(
+					saved
+				) as UserLocation;
 				this.currentLocation.set(location);
 				this.permissionGranted.set(true);
 			}

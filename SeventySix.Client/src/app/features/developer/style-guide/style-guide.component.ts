@@ -51,12 +51,17 @@ import { ConfirmDialogComponent } from "@shared/components";
 })
 export class StyleGuideComponent
 {
-	protected readonly themeService = inject(ThemeService);
-	private readonly snackBar = inject(MatSnackBar);
-	private readonly dialog = inject(MatDialog);
+	protected readonly themeService: ThemeService = inject(ThemeService);
+	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+	private readonly dialog: MatDialog = inject(MatDialog);
 
 	// Example table data
-	readonly tableData = [
+	readonly tableData: Array<{
+		id: number;
+		name: string;
+		weight: number;
+		symbol: string;
+	}> = [
 		{ id: 1, name: "Hydrogen", weight: 1.0079, symbol: "H" },
 		{ id: 2, name: "Helium", weight: 4.0026, symbol: "He" },
 		{ id: 3, name: "Lithium", weight: 6.941, symbol: "Li" },
@@ -64,7 +69,7 @@ export class StyleGuideComponent
 		{ id: 5, name: "Boron", weight: 10.811, symbol: "B" }
 	];
 
-	readonly displayedColumns = ["id", "name", "weight", "symbol"];
+	readonly displayedColumns: string[] = ["id", "name", "weight", "symbol"];
 
 	showSnackbar(message: string): void
 	{

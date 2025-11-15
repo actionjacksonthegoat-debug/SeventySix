@@ -1,4 +1,9 @@
-import { Component, ChangeDetectionStrategy, input } from "@angular/core";
+import {
+	Component,
+	ChangeDetectionStrategy,
+	input,
+	InputSignal
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -21,15 +26,17 @@ import { DailyForecast, getWeatherIconUrl } from "@home/weather/models";
 export class DailyForecastComponent
 {
 	// Inputs
-	readonly dailyForecasts = input<DailyForecast[] | undefined>(undefined);
+	readonly dailyForecasts: InputSignal<DailyForecast[] | undefined> = input<
+		DailyForecast[] | undefined
+	>(undefined);
 
 	/**
 	 * Format Unix timestamp to day name (e.g., "Monday", "Tuesday")
 	 */
 	formatDayName(timestamp: number): string
 	{
-		const date = new Date(timestamp * 1000);
-		const days = [
+		const date: Date = new Date(timestamp * 1000);
+		const days: string[] = [
 			"Sunday",
 			"Monday",
 			"Tuesday",
@@ -46,7 +53,7 @@ export class DailyForecastComponent
 	 */
 	getWeatherIconUrl(forecast: DailyForecast): string
 	{
-		const icon = forecast.weather?.[0]?.icon;
+		const icon: string | undefined = forecast.weather?.[0]?.icon;
 		return icon ? getWeatherIconUrl(icon) : "";
 	}
 

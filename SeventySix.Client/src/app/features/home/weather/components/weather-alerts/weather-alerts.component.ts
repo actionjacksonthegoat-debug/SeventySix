@@ -3,7 +3,10 @@ import {
 	ChangeDetectionStrategy,
 	input,
 	computed,
-	signal
+	signal,
+	WritableSignal,
+	InputSignal,
+	Signal
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
@@ -27,23 +30,25 @@ import { WeatherAlert } from "@home/weather/models";
 })
 export class WeatherAlertsComponent
 {
-	private readonly STORAGE_KEY = "dismissedAlerts";
-	private readonly dismissedAlerts = signal<Set<string>>(
-		this.loadDismissedAlerts()
-	);
+	private readonly STORAGE_KEY: string = "dismissedAlerts";
+	private readonly dismissedAlerts: WritableSignal<Set<string>> = signal<
+		Set<string>
+	>(this.loadDismissedAlerts());
 
 	// Inputs
-	readonly alerts = input<WeatherAlert[] | undefined>(undefined);
+	readonly alerts: InputSignal<WeatherAlert[] | undefined> = input<
+		WeatherAlert[] | undefined
+	>(undefined);
 
 	// Computed values
-	readonly visibleAlerts = computed(() =>
+	readonly visibleAlerts: Signal<WeatherAlert[]> = computed(() =>
 	{
-		const allAlerts = this.alerts() || [];
-		const dismissed = this.dismissedAlerts();
+		const allAlerts: WeatherAlert[] = this.alerts() || [];
+		const dismissed: Set<string> = this.dismissedAlerts();
 
 		return allAlerts.filter((alert) =>
 		{
-			const key = this.getAlertKey(alert);
+			const key: string = this.getAlertKey(alert);
 			return !dismissed.has(key);
 		});
 	});
@@ -53,11 +58,11 @@ export class WeatherAlertsComponent
 	 */
 	dismissAlert(index: number): void
 	{
-		const alert = this.visibleAlerts()[index];
+		const alert: WeatherAlert | undefined = this.visibleAlerts()[index];
 		if (!alert) return;
 
-		const key = this.getAlertKey(alert);
-		const dismissed = new Set(this.dismissedAlerts());
+		const key: string = this.getAlertKey(alert);
+		const dismissed: Set<string> = new Set(this.dismissedAlerts());
 		dismissed.add(key);
 
 		this.dismissedAlerts.set(dismissed);
@@ -71,7 +76,7 @@ export class WeatherAlertsComponent
 		event: string
 	): "warning" | "advisory" | "watch" | "statement" | "default"
 	{
-		const eventLower = event.toLowerCase();
+		const eventLower: string = event.toLowerCase();
 
 		if (eventLower.includes("warning")) return "warning";
 		if (eventLower.includes("advisory")) return "advisory";
@@ -86,10 +91,10 @@ export class WeatherAlertsComponent
 	 */
 	formatAlertTime(timestamp: number): string
 	{
-		const date = new Date(timestamp * 1000);
-		let hours = date.getHours();
-		const minutes = date.getMinutes().toString().padStart(2, "0");
-		const ampm = hours >= 12 ? "PM" : "AM";
+		const date: Date = new Date(timestamp * 1000);
+		let hours: number = date.getHours();
+		const minutes: string = date.getMinutes().toString().padStart(2, "0");
+		const ampm: string = hours >= 12 ? "PM" : "AM";
 		hours = hours % 12 || 12;
 		return `${hours}:${minutes} ${ampm}`;
 	}
@@ -109,10 +114,12 @@ export class WeatherAlertsComponent
 	{
 		try
 		{
-			const stored = localStorage.getItem(this.STORAGE_KEY);
+			const stored: string | null = localStorage.getItem(
+				this.STORAGE_KEY
+			);
 			if (!stored) return new Set();
 
-			const parsed = JSON.parse(stored) as string[];
+			const parsed: string[] = JSON.parse(stored) as string[];
 			return new Set(parsed);
 		}
 		catch
@@ -128,7 +135,7 @@ export class WeatherAlertsComponent
 	{
 		try
 		{
-			const array = Array.from(dismissed);
+			const array: string[] = Array.from(dismissed);
 			localStorage.setItem(this.STORAGE_KEY, JSON.stringify(array));
 		}
 		catch

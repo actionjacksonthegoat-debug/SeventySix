@@ -40,14 +40,20 @@ import { LogResponse, LogLevel } from "@admin/log-management/models";
 })
 export class LogDetailDialogComponent
 {
-	private readonly dialogRef = inject(MatDialogRef<LogDetailDialogComponent>);
-	private readonly clipboard = inject(Clipboard);
+	private readonly dialogRef: MatDialogRef<LogDetailDialogComponent> = inject(
+		MatDialogRef<LogDetailDialogComponent>
+	);
+	private readonly clipboard: Clipboard = inject(Clipboard);
 
-	log = signal(inject<LogResponse>(MAT_DIALOG_DATA));
-	stackTraceCollapsed = signal(false);
-	propertiesCollapsed = signal(true);
+	readonly log: WritableSignal<LogResponse> = signal<LogResponse>(
+		inject<LogResponse>(MAT_DIALOG_DATA)
+	);
+	readonly stackTraceCollapsed: WritableSignal<boolean> =
+		signal<boolean>(false);
+	readonly propertiesCollapsed: WritableSignal<boolean> =
+		signal<boolean>(true);
 
-	deleteLog = output<number>();
+	readonly deleteLog: OutputEmitterRef<number> = output<number>();
 
 	getLevelName(level: LogLevel): string
 	{
@@ -90,12 +96,12 @@ export class LogDetailDialogComponent
 
 	getRelativeTime(date: Date | string): string
 	{
-		const dateObj = typeof date === "string" ? new Date(date) : date;
-		const now = Date.now();
-		const diff = now - dateObj.getTime();
-		const minutes = Math.floor(diff / 60000);
-		const hours = Math.floor(diff / 3600000);
-		const days = Math.floor(diff / 86400000);
+		const dateObj: Date = typeof date === "string" ? new Date(date) : date;
+		const now: number = Date.now();
+		const diff: number = now - dateObj.getTime();
+		const minutes: number = Math.floor(diff / 60000);
+		const hours: number = Math.floor(diff / 3600000);
+		const days: number = Math.floor(diff / 86400000);
 
 		if (days > 0)
 		{
@@ -142,7 +148,7 @@ export class LogDetailDialogComponent
 
 	copyToClipboard(): void
 	{
-		const logData = JSON.stringify(this.log(), null, 2);
+		const logData: string = JSON.stringify(this.log(), null, 2);
 		this.clipboard.copy(logData);
 	}
 

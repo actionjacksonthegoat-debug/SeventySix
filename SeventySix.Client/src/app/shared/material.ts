@@ -77,7 +77,7 @@ import { DragDropModule } from "@angular/cdk/drag-drop";
  * export class MyComponent {}
  * ```
  */
-export const MATERIAL_MODULES = [
+export const MATERIAL_MODULES: readonly (typeof MatCommonModule)[] = [
 	// Core
 	MatCommonModule,
 	MatRippleModule,

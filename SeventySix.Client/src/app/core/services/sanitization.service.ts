@@ -15,7 +15,7 @@ import {
 })
 export class SanitizationService
 {
-	private readonly sanitizer = inject(DomSanitizer);
+	private readonly sanitizer: DomSanitizer = inject(DomSanitizer);
 
 	/**
 	 * Sanitizes HTML content to prevent XSS.
@@ -64,7 +64,7 @@ export class SanitizationService
 	 */
 	stripHtml(html: string): string
 	{
-		const div = document.createElement("div");
+		const div: HTMLDivElement = document.createElement("div");
 		div.innerHTML = html;
 		return div.textContent || div.innerText || "";
 	}
@@ -91,7 +91,7 @@ export class SanitizationService
 	{
 		try
 		{
-			const parsed = new URL(url);
+			const parsed: URL = new URL(url);
 			// Only allow http/https protocols
 			if (parsed.protocol !== "http:" && parsed.protocol !== "https:")
 			{

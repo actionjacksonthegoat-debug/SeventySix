@@ -1,4 +1,9 @@
-import { Component, ChangeDetectionStrategy, input } from "@angular/core";
+import {
+	Component,
+	ChangeDetectionStrategy,
+	input,
+	InputSignal
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -21,16 +26,18 @@ import { HourlyForecast, getWeatherIconUrl } from "@home/weather/models";
 export class HourlyForecastComponent
 {
 	// Inputs
-	readonly hourlyForecasts = input<HourlyForecast[] | undefined>(undefined);
+	readonly hourlyForecasts: InputSignal<HourlyForecast[] | undefined> = input<
+		HourlyForecast[] | undefined
+	>(undefined);
 
 	/**
 	 * Format Unix timestamp to HH:MM time string
 	 */
 	formatTime(timestamp: number): string
 	{
-		const date = new Date(timestamp * 1000);
-		const hours = date.getHours().toString().padStart(2, "0");
-		const minutes = date.getMinutes().toString().padStart(2, "0");
+		const date: Date = new Date(timestamp * 1000);
+		const hours: string = date.getHours().toString().padStart(2, "0");
+		const minutes: string = date.getMinutes().toString().padStart(2, "0");
 		return `${hours}:${minutes}`;
 	}
 
@@ -48,7 +55,7 @@ export class HourlyForecastComponent
 	 */
 	getWeatherIconUrl(forecast: HourlyForecast): string
 	{
-		const icon = forecast.weather?.[0]?.icon;
+		const icon: string | undefined = forecast.weather?.[0]?.icon;
 		return icon ? getWeatherIconUrl(icon) : "";
 	}
 }

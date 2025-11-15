@@ -1,4 +1,10 @@
-import { Injectable, signal, Signal, computed } from "@angular/core";
+import {
+	Injectable,
+	signal,
+	Signal,
+	WritableSignal,
+	computed
+} from "@angular/core";
 import {
 	WeatherPreferences,
 	DEFAULT_PREFERENCES,
@@ -16,23 +22,22 @@ import {
 })
 export class WeatherPreferencesService
 {
-	private readonly STORAGE_KEY = "weatherPreferences";
-	private readonly preferences =
+	private readonly STORAGE_KEY: string = "weatherPreferences";
+	private readonly preferences: WritableSignal<WeatherPreferences> =
 		signal<WeatherPreferences>(DEFAULT_PREFERENCES);
 
 	// Public computed signals for specific preferences
-	public readonly units = computed(() => this.preferences().preferredUnits);
-	public readonly temperatureUnit = computed(
-		() => this.preferences().temperatureUnit
+	public readonly units: Signal<Units> = computed(
+		() => this.preferences().preferredUnits
 	);
-	public readonly windSpeedUnit = computed(
-		() => this.preferences().windSpeedUnit
+	public readonly temperatureUnit: Signal<string> = computed(() =>
+		this.preferences().preferredUnits === "metric" ? "°C" : "°F"
 	);
-	public readonly animationsEnabled = computed(
+	public readonly windSpeedUnit: Signal<string> = computed(() =>
+		this.preferences().preferredUnits === "metric" ? "m/s" : "mph"
+	);
+	public readonly animationsEnabled: Signal<boolean> = computed(
 		() => this.preferences().animationsEnabled
-	);
-	public readonly reducedMotion = computed(
-		() => this.preferences().reducedMotion
 	);
 
 	constructor()
@@ -54,8 +59,8 @@ export class WeatherPreferencesService
 	 */
 	updatePreferences(updates: Partial<WeatherPreferences>): void
 	{
-		const current = this.preferences();
-		const updated = {
+		const current: WeatherPreferences = this.preferences();
+		const updated: WeatherPreferences = {
 			...current,
 			...updates,
 			lastUpdated: Date.now()
@@ -113,12 +118,14 @@ export class WeatherPreferencesService
 	 */
 	private loadPreferences(): void
 	{
-		const saved = localStorage.getItem(this.STORAGE_KEY);
+		const saved: string | null = localStorage.getItem(this.STORAGE_KEY);
 		if (saved)
 		{
 			try
 			{
-				const preferences = JSON.parse(saved) as WeatherPreferences;
+				const preferences: WeatherPreferences = JSON.parse(
+					saved
+				) as WeatherPreferences;
 				this.preferences.set(preferences);
 			}
 			catch
@@ -142,7 +149,7 @@ export class WeatherPreferencesService
 	 */
 	private detectReducedMotion(): void
 	{
-		const reducedMotion = window.matchMedia(
+		const reducedMotion: boolean = window.matchMedia(
 			"(prefers-reduced-motion: reduce)"
 		).matches;
 		if (reducedMotion !== this.preferences().reducedMotion)

@@ -7,7 +7,8 @@ bootstrapApplication(App, appConfig)
 	.then((appRef) =>
 	{
 		// Initialize Service Worker update service
-		const swUpdateService = appRef.injector.get(SwUpdateService);
+		const swUpdateService: SwUpdateService =
+			appRef.injector.get(SwUpdateService);
 		swUpdateService.init();
 	})
 	.catch((err) => console.error(err));

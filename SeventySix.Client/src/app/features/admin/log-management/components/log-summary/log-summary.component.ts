@@ -2,7 +2,9 @@ import {
 	Component,
 	ChangeDetectionStrategy,
 	input,
-	computed
+	computed,
+	InputSignal,
+	Signal
 } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -21,47 +23,48 @@ import { LogStatistics } from "@admin/log-management/models";
 export class LogSummaryComponent
 {
 	// Inputs
-	statistics = input<LogStatistics | null>(null);
-	lastUpdated = input<Date | null>(null);
+	readonly statistics: InputSignal<LogStatistics | null> =
+		input<LogStatistics | null>(null);
+	readonly lastUpdated: InputSignal<Date | null> = input<Date | null>(null);
 
 	// Computed
-	formattedTotal = computed(() =>
+	readonly formattedTotal: Signal<string> = computed(() =>
 	{
-		const stats = this.statistics();
+		const stats: LogStatistics | null = this.statistics();
 		return stats ? this.formatNumber(stats.totalLogs) : "";
 	});
 
-	formattedErrors = computed(() =>
+	readonly formattedErrors: Signal<string> = computed(() =>
 	{
-		const stats = this.statistics();
+		const stats: LogStatistics | null = this.statistics();
 		return stats ? this.formatNumber(stats.errorCount) : "";
 	});
 
-	formattedWarnings = computed(() =>
+	readonly formattedWarnings: Signal<string> = computed(() =>
 	{
-		const stats = this.statistics();
+		const stats: LogStatistics | null = this.statistics();
 		return stats ? this.formatNumber(stats.warningCount) : "";
 	});
 
-	formattedFatals = computed(() =>
+	readonly formattedFatals: Signal<string> = computed(() =>
 	{
-		const stats = this.statistics();
+		const stats: LogStatistics | null = this.statistics();
 		return stats ? this.formatNumber(stats.criticalCount) : "";
 	});
 
-	relativeTime = computed(() =>
+	readonly relativeTime: Signal<string | null> = computed(() =>
 	{
-		const updated = this.lastUpdated();
+		const updated: Date | null = this.lastUpdated();
 		if (!updated)
 		{
 			return null;
 		}
 
-		const now = Date.now();
-		const diff = now - updated.getTime();
-		const minutes = Math.floor(diff / 60000);
-		const hours = Math.floor(diff / 3600000);
-		const days = Math.floor(diff / 86400000);
+		const now: number = Date.now();
+		const diff: number = now - updated.getTime();
+		const minutes: number = Math.floor(diff / 60000);
+		const hours: number = Math.floor(diff / 3600000);
+		const days: number = Math.floor(diff / 86400000);
 
 		if (days > 0)
 		{

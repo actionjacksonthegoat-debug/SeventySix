@@ -8,7 +8,7 @@ import { TokenStorageService } from "@core/services/token-storage.service";
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) =>
 {
-	const tokenStorage = inject(TokenStorageService);
+	const tokenStorage: TokenStorageService = inject(TokenStorageService);
 
 	// Skip auth header for public endpoints
 	if (req.url.includes("/public/") || req.url.includes("/auth/login"))
@@ -16,12 +16,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) =>
 		return next(req);
 	}
 
-	const token = tokenStorage.getAccessToken();
+	const token: string | null = tokenStorage.getAccessToken();
 
 	if (token)
 	{
 		// Clone request and add authorization header
-		const authReq = req.clone({
+		const authReq: typeof req = req.clone({
 			headers: req.headers.set("Authorization", `Bearer ${token}`)
 		});
 

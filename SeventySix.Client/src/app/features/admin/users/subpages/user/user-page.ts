@@ -4,7 +4,8 @@ import {
 	inject,
 	ChangeDetectionStrategy,
 	OnInit,
-	effect
+	effect,
+	Signal
 } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { DatePipe } from "@angular/common";
@@ -52,43 +53,54 @@ import { User } from "@admin/users/models";
 })
 export class UserPage implements OnInit
 {
-	private readonly userService = inject(UserService);
-	private readonly logger = inject(LoggerService);
-	private readonly route = inject(ActivatedRoute);
-	private readonly router = inject(Router);
-	private readonly fb = inject(FormBuilder);
-	private readonly snackBar = inject(MatSnackBar);
+	private readonly userService: UserService = inject(UserService);
+	private readonly logger: LoggerService = inject(LoggerService);
+	private readonly route: ActivatedRoute = inject(ActivatedRoute);
+	private readonly router: Router = inject(Router);
+	private readonly fb: FormBuilder = inject(FormBuilder);
+	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
 
 	// Get user ID from route
-	private readonly userId = this.route.snapshot.paramMap.get("id") || "";
+	private readonly userId: string =
+		this.route.snapshot.paramMap.get("id") || "";
 
 	// TanStack Query for loading user data
-	readonly userQuery = this.userService.getUserById(this.userId);
+	readonly userQuery: ReturnType<UserService["getUserById"]> =
+		this.userService.getUserById(this.userId);
 
 	// TanStack Query mutation for updating user
-	readonly updateMutation = this.userService.updateUser();
+	readonly updateMutation: ReturnType<UserService["updateUser"]> =
+		this.userService.updateUser();
 
 	// Computed signals for derived state
-	readonly user = computed(() => this.userQuery.data() ?? null);
-	readonly isLoading = computed(() => this.userQuery.isLoading());
-	readonly isSaving = computed(() => this.updateMutation.isPending());
-	readonly error = computed(() =>
+	readonly user: Signal<User | null> = computed(
+		() => this.userQuery.data() ?? null
+	);
+	readonly isLoading: Signal<boolean> = computed(() =>
+		this.userQuery.isLoading()
+	);
+	readonly isSaving: Signal<boolean> = computed(() =>
+		this.updateMutation.isPending()
+	);
+	readonly error: Signal<string | null> = computed(() =>
 		this.userQuery.error() ? "Failed to load user. Please try again." : null
 	);
-	readonly saveError = computed(() =>
+	readonly saveError: Signal<string | null> = computed(() =>
 		this.updateMutation.error()
 			? "Failed to save user. Please try again."
 			: null
 	);
 
 	// Computed signals
-	readonly pageTitle = computed(() =>
+	readonly pageTitle: Signal<string> = computed(() =>
 	{
-		const currentUser = this.user();
+		const currentUser: User | null = this.user();
 		return currentUser ? `Edit User: ${currentUser.username}` : "Edit User";
 	});
 
-	readonly hasUnsavedChanges = computed(() => this.userForm.dirty);
+	readonly hasUnsavedChanges: Signal<boolean> = computed(
+		() => this.userForm.dirty
+	);
 
 	// Reactive form
 	readonly userForm: FormGroup = this.fb.group({
@@ -118,7 +130,7 @@ export class UserPage implements OnInit
 		effect(
 			() =>
 			{
-				const currentUser = this.user();
+				const currentUser: User | null = this.user();
 				if (currentUser && this.userForm.pristine)
 				{
 					this.populateForm(currentUser);
@@ -159,7 +171,7 @@ export class UserPage implements OnInit
 			return;
 		}
 
-		const userId = this.userId;
+		const userId: string = this.userId;
 		if (!userId)
 		{
 			this.snackBar.open("Invalid user ID", "Close", {
@@ -170,7 +182,7 @@ export class UserPage implements OnInit
 			return;
 		}
 
-		const formValue = this.userForm.value;
+		const formValue: Partial<User> = this.userForm.value;
 
 		this.updateMutation.mutate(
 			{ id: userId, user: formValue },
@@ -213,7 +225,8 @@ export class UserPage implements OnInit
 	 */
 	getFieldError(fieldName: string): string | null
 	{
-		const control = this.userForm.get(fieldName);
+		const control: import("@angular/forms").AbstractControl | null =
+			this.userForm.get(fieldName);
 
 		if (!control || !control.touched || !control.errors)
 		{
@@ -232,13 +245,15 @@ export class UserPage implements OnInit
 
 		if (control.errors["minlength"])
 		{
-			const minLength = control.errors["minlength"].requiredLength;
+			const minLength: number =
+				control.errors["minlength"].requiredLength;
 			return `${this.getFieldLabel(fieldName)} must be at least ${minLength} characters`;
 		}
 
 		if (control.errors["maxlength"])
 		{
-			const maxLength = control.errors["maxlength"].requiredLength;
+			const maxLength: number =
+				control.errors["maxlength"].requiredLength;
 			return `${this.getFieldLabel(fieldName)} must not exceed ${maxLength} characters`;
 		}
 
@@ -268,7 +283,8 @@ export class UserPage implements OnInit
 	 */
 	hasFieldError(fieldName: string): boolean
 	{
-		const control = this.userForm.get(fieldName);
+		const control: import("@angular/forms").AbstractControl | null =
+			this.userForm.get(fieldName);
 		return !!(control && control.invalid && control.touched);
 	}
 }

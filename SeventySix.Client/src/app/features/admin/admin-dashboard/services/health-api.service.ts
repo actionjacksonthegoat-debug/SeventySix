@@ -16,8 +16,8 @@ import {
 })
 export class HealthApiService
 {
-	private readonly http = inject(HttpClient);
-	private readonly apiUrl = `${environment.apiUrl}/health`;
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly apiUrl: string = `${environment.apiUrl}/health`;
 
 	/**
 	 * Gets overall system health status

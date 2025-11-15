@@ -14,8 +14,9 @@ import { ThemeBrightness, ColorScheme } from "@core/services/theme.service";
  */
 export class MockThemeService
 {
-	brightness = signal<ThemeBrightness>("light");
-	colorScheme = signal<ColorScheme>("blue");
+	brightness: WritableSignal<ThemeBrightness> =
+		signal<ThemeBrightness>("light");
+	colorScheme: WritableSignal<ColorScheme> = signal<ColorScheme>("blue");
 
 	toggleBrightness(): void
 	{

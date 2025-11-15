@@ -8,7 +8,7 @@ import { HttpParams } from "@angular/common/http";
 export class MockApiService
 {
 	// Mock data storage
-	private mockData = new Map<string, unknown>();
+	private mockData: Map<string, unknown> = new Map<string, unknown>();
 
 	/**
 	 * Set mock response for an endpoint
@@ -23,7 +23,7 @@ export class MockApiService
 	 */
 	get<T>(endpoint: string, _params?: HttpParams): Observable<T>
 	{
-		const data = this.mockData.get(endpoint);
+		const data: unknown | undefined = this.mockData.get(endpoint);
 		if (data !== undefined)
 		{
 			return of(data as T);
@@ -36,7 +36,7 @@ export class MockApiService
 	 */
 	post<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
-		const data = this.mockData.get(endpoint);
+		const data: unknown | undefined = this.mockData.get(endpoint);
 		if (data !== undefined)
 		{
 			return of(data as T);
@@ -49,7 +49,7 @@ export class MockApiService
 	 */
 	put<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
-		const data = this.mockData.get(endpoint);
+		const data: unknown | undefined = this.mockData.get(endpoint);
 		if (data !== undefined)
 		{
 			return of(data as T);
@@ -62,7 +62,7 @@ export class MockApiService
 	 */
 	patch<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
-		const data = this.mockData.get(endpoint);
+		const data: unknown | undefined = this.mockData.get(endpoint);
 		if (data !== undefined)
 		{
 			return of(data as T);
@@ -75,7 +75,7 @@ export class MockApiService
 	 */
 	delete<T>(endpoint: string): Observable<T>
 	{
-		const data = this.mockData.get(endpoint);
+		const data: unknown | undefined = this.mockData.get(endpoint);
 		if (data !== undefined)
 		{
 			return of(data as T);

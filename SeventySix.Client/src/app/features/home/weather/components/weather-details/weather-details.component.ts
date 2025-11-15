@@ -1,4 +1,9 @@
-import { Component, ChangeDetectionStrategy, input } from "@angular/core";
+import {
+	Component,
+	ChangeDetectionStrategy,
+	input,
+	InputSignal
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -21,7 +26,9 @@ import { CurrentWeather } from "@home/weather/models";
 export class WeatherDetailsComponent
 {
 	// Inputs
-	readonly currentWeather = input<CurrentWeather | undefined>(undefined);
+	readonly currentWeather: InputSignal<CurrentWeather | undefined> = input<
+		CurrentWeather | undefined
+	>(undefined);
 
 	/**
 	 * Format wind direction degrees to compass direction
@@ -30,8 +37,17 @@ export class WeatherDetailsComponent
 	{
 		if (degrees === undefined) return "N";
 
-		const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-		const index = Math.round(degrees / 45) % 8;
+		const directions: string[] = [
+			"N",
+			"NE",
+			"E",
+			"SE",
+			"S",
+			"SW",
+			"W",
+			"NW"
+		];
+		const index: number = Math.round(degrees / 45) % 8;
 		return directions[index];
 	}
 
@@ -40,10 +56,10 @@ export class WeatherDetailsComponent
 	 */
 	formatTime(timestamp: number): string
 	{
-		const date = new Date(timestamp * 1000);
-		let hours = date.getHours();
-		const minutes = date.getMinutes().toString().padStart(2, "0");
-		const ampm = hours >= 12 ? "PM" : "AM";
+		const date: Date = new Date(timestamp * 1000);
+		let hours: number = date.getHours();
+		const minutes: string = date.getMinutes().toString().padStart(2, "0");
+		const ampm: string = hours >= 12 ? "PM" : "AM";
 		hours = hours % 12 || 12;
 		return `${hours}:${minutes} ${ampm}`;
 	}
@@ -54,7 +70,7 @@ export class WeatherDetailsComponent
 	formatVisibility(meters: number | undefined): string
 	{
 		if (meters === undefined) return "0 km";
-		const km = meters / 1000;
+		const km: number = meters / 1000;
 		return `${km} km`;
 	}
 }

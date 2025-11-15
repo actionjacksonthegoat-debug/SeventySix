@@ -1,4 +1,4 @@
-import { Injectable, signal } from "@angular/core";
+import { Injectable, signal, WritableSignal, Signal } from "@angular/core";
 
 /**
  * Notification severity levels.
@@ -34,13 +34,16 @@ export interface Notification
 })
 export class NotificationService
 {
-	private readonly notifications = signal<Notification[]>([]);
-	private idCounter = 0;
+	private readonly notifications: WritableSignal<Notification[]> = signal<
+		Notification[]
+	>([]);
+	private idCounter: number = 0;
 
 	/**
 	 * Read-only signal of current notifications.
 	 */
-	readonly notifications$ = this.notifications.asReadonly();
+	readonly notifications$: Signal<Notification[]> =
+		this.notifications.asReadonly();
 
 	/**
 	 * Shows a success notification.

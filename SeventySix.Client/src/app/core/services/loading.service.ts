@@ -21,7 +21,8 @@ export class LoadingService
 	/**
 	 * Global loading state signal
 	 */
-	readonly isLoading = signal<boolean>(false);
+	readonly isLoading: ReturnType<typeof signal<boolean>> =
+		signal<boolean>(false);
 
 	constructor(private router: Router)
 	{

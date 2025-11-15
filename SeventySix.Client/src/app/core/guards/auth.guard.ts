@@ -10,11 +10,11 @@ import { NotificationService } from "@core/services/notification.service";
  */
 export const authGuard: CanActivateFn = (route, state) =>
 {
-	const logger = inject(LoggerService);
-	const tokenStorage = inject(TokenStorageService);
-	const notification = inject(NotificationService);
+	const logger: LoggerService = inject(LoggerService);
+	const tokenStorage: TokenStorageService = inject(TokenStorageService);
+	const notification: NotificationService = inject(NotificationService);
 
-	const isAuthenticated = tokenStorage.isAuthenticated();
+	const isAuthenticated: boolean = tokenStorage.isAuthenticated();
 
 	if (!isAuthenticated)
 	{

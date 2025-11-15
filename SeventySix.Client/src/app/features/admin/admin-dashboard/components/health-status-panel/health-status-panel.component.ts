@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from "@angular/core";
+import { Component, OnInit, signal, WritableSignal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatChipsModule } from "@angular/material/chips";
@@ -27,9 +27,10 @@ import { HealthStatus } from "@admin/admin-dashboard/models";
 })
 export class HealthStatusPanelComponent implements OnInit
 {
-	isLoading = signal(false);
-	error = signal<string | null>(null);
-	healthData = signal<HealthStatus | null>(null);
+	readonly isLoading: WritableSignal<boolean> = signal<boolean>(false);
+	readonly error: WritableSignal<string | null> = signal<string | null>(null);
+	readonly healthData: WritableSignal<HealthStatus | null> =
+		signal<HealthStatus | null>(null);
 
 	constructor(private healthApiService: HealthApiService)
 	{}
@@ -75,7 +76,8 @@ export class HealthStatusPanelComponent implements OnInit
 	 */
 	getApiNames(): string[]
 	{
-		const apis = this.healthData()?.externalApis.apis;
+		const apis: Record<string, unknown> | undefined =
+			this.healthData()?.externalApis.apis;
 		return apis ? Object.keys(apis) : [];
 	}
 }
