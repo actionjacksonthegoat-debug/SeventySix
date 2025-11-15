@@ -50,6 +50,8 @@ describe("BreadcrumbComponent", () =>
 	it("should include home in breadcrumbs", () =>
 	{
 		const breadcrumbs = component.breadcrumbs();
-		expect(breadcrumbs.some((b) => b.label === "Home")).toBe(true);
+		expect(
+			breadcrumbs.some((b: { label: string }) => b.label === "Home")
+		).toBe(true);
 	});
 });

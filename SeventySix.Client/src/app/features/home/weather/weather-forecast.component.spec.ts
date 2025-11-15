@@ -3,9 +3,10 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideRouter } from "@angular/router";
-import { of } from "rxjs";
 import { WeatherForecastComponent } from "./weather-forecast.component";
 import { WeatherService } from "@features/home/weather/services/weather.service";
+import { createMockQueryResult } from "@core/testing";
+import { WeatherForecast } from "@home/weather/models";
 
 describe("WeatherForecastComponent", () =>
 {
@@ -18,7 +19,9 @@ describe("WeatherForecastComponent", () =>
 		mockWeatherService = jasmine.createSpyObj("WeatherService", [
 			"getAllForecasts"
 		]);
-		mockWeatherService.getAllForecasts.and.returnValue(of([]));
+		mockWeatherService.getAllForecasts.and.returnValue(
+			createMockQueryResult<WeatherForecast[]>([])
+		);
 
 		await TestBed.configureTestingModule({
 			imports: [WeatherForecastComponent],

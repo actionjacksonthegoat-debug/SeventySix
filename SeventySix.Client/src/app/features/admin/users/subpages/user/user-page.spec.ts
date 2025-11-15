@@ -3,7 +3,10 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
-import { of, throwError } from "rxjs";
+import {
+	createMockQueryResult,
+	createMockMutationResult
+} from "@core/testing/tanstack-query-helpers";
 import { User } from "@admin/users/models";
 import { UserPage } from "./user-page";
 
@@ -42,7 +45,10 @@ describe("UserPage", () =>
 			}
 		};
 
-		mockUserService.getUserById.and.returnValue(of(mockUser));
+		mockUserService.getUserById.and.returnValue(
+			createMockQueryResult(mockUser)
+		);
+		mockUserService.updateUser.and.returnValue(createMockMutationResult());
 
 		await TestBed.configureTestingModule({
 			imports: [UserPage],
@@ -57,6 +63,12 @@ describe("UserPage", () =>
 
 		fixture = TestBed.createComponent(UserPage);
 		component = fixture.componentInstance;
+
+		// Run initial detectChanges in injection context to handle effect()
+		TestBed.runInInjectionContext(() =>
+		{
+			fixture.detectChanges();
+		});
 	});
 
 	it("should create", () =>
@@ -66,7 +78,6 @@ describe("UserPage", () =>
 
 	it("should load user on initialization", async () =>
 	{
-		fixture.detectChanges();
 		await fixture.whenStable();
 
 		expect(mockUserService.getUserById).toHaveBeenCalledWith("1");
@@ -76,7 +87,6 @@ describe("UserPage", () =>
 
 	it("should initialize form with user data", async () =>
 	{
-		fixture.detectChanges();
 		await fixture.whenStable();
 
 		expect(component.userForm.value).toEqual({
@@ -89,22 +99,33 @@ describe("UserPage", () =>
 
 	it("should handle error when loading user fails", async () =>
 	{
-		const error = new Error("Not found");
-		mockUserService.getUserById.and.returnValue(throwError(() => error));
+		const error: Error = new Error("Not found");
+		mockUserService.getUserById.and.returnValue(
+			createMockQueryResult<User, Error>(undefined, {
+				isError: true,
+				error
+			})
+		);
 
-		fixture.detectChanges();
-		await fixture.whenStable();
+		// Recreate component with error mock
+		const errorFixture: ComponentFixture<UserPage> =
+			TestBed.createComponent(UserPage);
+		const errorComponent: UserPage = errorFixture.componentInstance;
+		TestBed.runInInjectionContext(() =>
+		{
+			errorFixture.detectChanges();
+		});
+		await errorFixture.whenStable();
 
-		expect(component.error()).toBe(
+		expect(errorComponent.error()).toBe(
 			"Failed to load user. Please try again."
 		);
-		expect(component.isLoading()).toBe(false);
+		expect(errorComponent.isLoading()).toBe(false);
 		expect(mockLogger.error).toHaveBeenCalled();
 	});
 
 	it("should validate required fields", async () =>
 	{
-		fixture.detectChanges();
 		await fixture.whenStable();
 
 		component.userForm.patchValue({
@@ -125,7 +146,6 @@ describe("UserPage", () =>
 
 	it("should validate email format", async () =>
 	{
-		fixture.detectChanges();
 		await fixture.whenStable();
 
 		component.userForm.patchValue({
@@ -137,42 +157,88 @@ describe("UserPage", () =>
 
 	it("should update user on valid form submission", async () =>
 	{
-		const updatedUser = { ...mockUser, fullName: "Jane Doe" };
-		mockUserService.updateUser.and.returnValue(of(updatedUser));
+		const updatedUser: User = { ...mockUser, fullName: "Jane Doe" };
+		const localMockMutationResult = createMockMutationResult<
+			User,
+			Error,
+			{ id: string | number; user: Partial<User> },
+			unknown
+		>();
+		localMockMutationResult.mutate = jasmine
+			.createSpy("mutate")
+			.and.callFake((variables, options) =>
+			{
+				if (options?.onSuccess)
+				{
+					options.onSuccess(updatedUser, variables, undefined);
+				}
+			});
+		mockUserService.updateUser.and.returnValue(localMockMutationResult);
 
-		fixture.detectChanges();
+		// Recreate component to get new mutation instance
+		fixture = TestBed.createComponent(UserPage);
+		component = fixture.componentInstance;
+		TestBed.runInInjectionContext(() =>
+		{
+			fixture.detectChanges();
+		});
+
 		await fixture.whenStable();
 
 		component.userForm.patchValue({ fullName: "Jane Doe" });
 		await component.onSubmit();
 
-		expect(mockUserService.updateUser).toHaveBeenCalledWith("1", {
-			username: "john_doe",
-			email: "john@example.com",
-			fullName: "Jane Doe",
-			isActive: true
-		});
-		expect(component.isSaving()).toBe(false);
+		expect(component.updateMutation.mutate).toHaveBeenCalledWith(
+			{
+				id: "1",
+				user: jasmine.objectContaining({ fullName: "Jane Doe" })
+			},
+			jasmine.any(Object)
+		);
 		expect(mockLogger.info).toHaveBeenCalled();
 	});
 
 	it("should not submit invalid form", async () =>
 	{
-		fixture.detectChanges();
 		await fixture.whenStable();
 
 		component.userForm.patchValue({ username: "" });
 		await component.onSubmit();
 
-		expect(mockUserService.updateUser).not.toHaveBeenCalled();
+		expect(component.updateMutation.mutate).not.toHaveBeenCalled();
 	});
 
 	it("should handle save error", async () =>
 	{
-		const error = new Error("Save failed");
-		mockUserService.updateUser.and.returnValue(throwError(() => error));
+		const error: Error = new Error("Save failed");
+		const errorMutation = createMockMutationResult<
+			User,
+			Error,
+			{ id: string | number; user: Partial<User> },
+			unknown
+		>({ isError: true, error });
 
-		fixture.detectChanges();
+		// Setup mutate to call onError callback
+		errorMutation.mutate = jasmine
+			.createSpy("mutate")
+			.and.callFake((variables, options) =>
+			{
+				if (options?.onError)
+				{
+					options.onError(error, variables, undefined);
+				}
+			});
+
+		mockUserService.updateUser.and.returnValue(errorMutation);
+
+		// Recreate component to get new mutation
+		fixture = TestBed.createComponent(UserPage);
+		component = fixture.componentInstance;
+		TestBed.runInInjectionContext(() =>
+		{
+			fixture.detectChanges();
+		});
+
 		await fixture.whenStable();
 
 		await component.onSubmit();
@@ -180,7 +246,6 @@ describe("UserPage", () =>
 		expect(component.saveError()).toBe(
 			"Failed to save user. Please try again."
 		);
-		expect(component.isSaving()).toBe(false);
 		expect(mockLogger.error).toHaveBeenCalled();
 	});
 
@@ -193,7 +258,6 @@ describe("UserPage", () =>
 
 	it("should compute page title with username", async () =>
 	{
-		fixture.detectChanges();
 		await fixture.whenStable();
 
 		expect(component.pageTitle()).toBe("Edit User: john_doe");
@@ -201,12 +265,35 @@ describe("UserPage", () =>
 
 	it("should mark form as pristine after successful save", async () =>
 	{
-		const updatedUser = { ...mockUser };
-		mockUserService.updateUser.and.returnValue(of(updatedUser));
+		const updatedUser: User = { ...mockUser, fullName: "Updated Name" };
+		const localMockMutationResult = createMockMutationResult<
+			User,
+			Error,
+			{ id: string | number; user: Partial<User> },
+			unknown
+		>();
+		localMockMutationResult.mutate = jasmine
+			.createSpy("mutate")
+			.and.callFake((variables, options) =>
+			{
+				if (options?.onSuccess)
+				{
+					options.onSuccess(updatedUser, variables, undefined);
+				}
+			});
+		mockUserService.updateUser.and.returnValue(localMockMutationResult);
 
-		fixture.detectChanges();
+		// Recreate component to get new mutation instance
+		fixture = TestBed.createComponent(UserPage);
+		component = fixture.componentInstance;
+		TestBed.runInInjectionContext(() =>
+		{
+			fixture.detectChanges();
+		});
+
 		await fixture.whenStable();
 
+		component.userForm.patchValue({ fullName: "Updated Name" });
 		component.userForm.markAsDirty();
 		await component.onSubmit();
 

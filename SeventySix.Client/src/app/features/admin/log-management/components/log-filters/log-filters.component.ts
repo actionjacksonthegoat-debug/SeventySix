@@ -5,7 +5,10 @@ import {
 	output,
 	viewChild,
 	ElementRef,
-	HostListener
+	HostListener,
+	OutputEmitterRef,
+	Signal,
+	WritableSignal
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";

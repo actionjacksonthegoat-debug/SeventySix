@@ -4,7 +4,9 @@ import {
 	inject,
 	signal,
 	output,
-	HostListener
+	HostListener,
+	OutputEmitterRef,
+	WritableSignal
 } from "@angular/core";
 import { NgClass } from "@angular/common";
 import {

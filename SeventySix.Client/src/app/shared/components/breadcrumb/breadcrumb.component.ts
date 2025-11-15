@@ -2,7 +2,8 @@ import {
 	Component,
 	computed,
 	inject,
-	ChangeDetectionStrategy
+	ChangeDetectionStrategy,
+	Signal
 } from "@angular/core";
 import { Router, NavigationEnd, ActivatedRoute } from "@angular/router";
 import { toSignal } from "@angular/core/rxjs-interop";

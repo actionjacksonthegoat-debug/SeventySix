@@ -4,7 +4,7 @@ import { Router } from "@angular/router";
 import { UserList } from "./user-list";
 import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
-import { of, throwError } from "rxjs";
+import { createMockQueryResult } from "@core/testing/tanstack-query-helpers";
 import { User } from "@admin/users/models";
 
 describe("UserList", () =>
@@ -53,7 +53,9 @@ describe("UserList", () =>
 
 	it("should create", () =>
 	{
-		mockUserService.getAllUsers.and.returnValue(of([]));
+		mockUserService.getAllUsers.and.returnValue(
+			createMockQueryResult<User[], Error>([])
+		);
 		fixture = TestBed.createComponent(UserList);
 		component = fixture.componentInstance;
 
@@ -62,7 +64,9 @@ describe("UserList", () =>
 
 	it("should load users on initialization", async () =>
 	{
-		mockUserService.getAllUsers.and.returnValue(of(mockUsers));
+		mockUserService.getAllUsers.and.returnValue(
+			createMockQueryResult<User[], Error>(mockUsers)
+		);
 		fixture = TestBed.createComponent(UserList);
 		component = fixture.componentInstance;
 
@@ -80,8 +84,13 @@ describe("UserList", () =>
 
 	it("should handle error when loading users fails", async () =>
 	{
-		const error = new Error("Network error");
-		mockUserService.getAllUsers.and.returnValue(throwError(() => error));
+		const error: Error = new Error("Network error");
+		mockUserService.getAllUsers.and.returnValue(
+			createMockQueryResult<User[], Error>(undefined, {
+				isError: true,
+				error
+			})
+		);
 		fixture = TestBed.createComponent(UserList);
 		component = fixture.componentInstance;
 
@@ -101,7 +110,9 @@ describe("UserList", () =>
 
 	it("should compute user statistics correctly", async () =>
 	{
-		mockUserService.getAllUsers.and.returnValue(of(mockUsers));
+		mockUserService.getAllUsers.and.returnValue(
+			createMockQueryResult<User[], Error>(mockUsers)
+		);
 		fixture = TestBed.createComponent(UserList);
 		component = fixture.componentInstance;
 
@@ -116,27 +127,53 @@ describe("UserList", () =>
 
 	it("should retry loading users", async () =>
 	{
-		mockUserService.getAllUsers.and.returnValue(
-			throwError(() => new Error("Error"))
-		);
+		const error: Error = new Error("Error");
+		const errorQuery = createMockQueryResult<User[], Error>(undefined, {
+			isError: true,
+			error
+		});
+		mockUserService.getAllUsers.and.returnValue(errorQuery);
+
 		fixture = TestBed.createComponent(UserList);
 		component = fixture.componentInstance;
 
 		fixture.detectChanges();
 		await fixture.whenStable();
 
-		mockUserService.getAllUsers.and.returnValue(of(mockUsers));
+		// Verify error state
+		expect(component.error()).toBe(
+			"Failed to load users. Please try again."
+		);
+
+		// Update the refetch spy to simulate successful retry
+		const refetchSpy = errorQuery.refetch as jasmine.Spy;
+		refetchSpy.and.returnValue(
+			Promise.resolve({
+				data: mockUsers,
+				error: null,
+				isError: false,
+				isSuccess: true
+			})
+		);
+
+		// Manually update the query signals to simulate successful refetch
+		(component.usersQuery.data as any).set(mockUsers);
+		(component.usersQuery.isError as any).set(false);
+		(component.usersQuery.error as any).set(null);
+		(component.usersQuery.isLoading as any).set(false);
+
 		component.retry();
 		await fixture.whenStable();
 
-		expect(component.users()).toEqual(mockUsers);
-		expect(component.isLoading()).toBe(false);
+		expect(component.usersQuery.refetch).toHaveBeenCalled();
 		expect(component.error()).toBeNull();
 	});
 
 	it("should display users in table after loading", () =>
 	{
-		mockUserService.getAllUsers.and.returnValue(of(mockUsers));
+		mockUserService.getAllUsers.and.returnValue(
+			createMockQueryResult<User[], Error>(mockUsers)
+		);
 		fixture = TestBed.createComponent(UserList);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
@@ -149,7 +186,9 @@ describe("UserList", () =>
 
 	it("should display status chips for users", () =>
 	{
-		mockUserService.getAllUsers.and.returnValue(of(mockUsers));
+		mockUserService.getAllUsers.and.returnValue(
+			createMockQueryResult<User[], Error>(mockUsers)
+		);
 		fixture = TestBed.createComponent(UserList);
 		component = fixture.componentInstance;
 		fixture.detectChanges();

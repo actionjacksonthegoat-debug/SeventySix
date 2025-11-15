@@ -30,11 +30,11 @@ export class WeatherPreferencesService
 	public readonly units: Signal<Units> = computed(
 		() => this.preferences().preferredUnits
 	);
-	public readonly temperatureUnit: Signal<string> = computed(() =>
-		this.preferences().preferredUnits === "metric" ? "°C" : "°F"
+	public readonly temperatureUnit: Signal<string> = computed(
+		() => this.preferences().temperatureUnit
 	);
-	public readonly windSpeedUnit: Signal<string> = computed(() =>
-		this.preferences().preferredUnits === "metric" ? "m/s" : "mph"
+	public readonly windSpeedUnit: Signal<string> = computed(
+		() => this.preferences().windSpeedUnit
 	);
 	public readonly animationsEnabled: Signal<boolean> = computed(
 		() => this.preferences().animationsEnabled

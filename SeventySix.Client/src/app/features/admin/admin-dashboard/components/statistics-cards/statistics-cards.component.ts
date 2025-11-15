@@ -1,4 +1,11 @@
-import { Component, OnInit, signal, computed } from "@angular/core";
+import {
+	Component,
+	OnInit,
+	signal,
+	computed,
+	Signal,
+	WritableSignal
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";

@@ -127,17 +127,24 @@ export class UserPage implements OnInit
 	ngOnInit(): void
 	{
 		// Populate form when user data loads
-		effect(
-			() =>
+		effect(() =>
+		{
+			const currentUser: User | null = this.user();
+			if (currentUser && this.userForm.pristine)
 			{
-				const currentUser: User | null = this.user();
-				if (currentUser && this.userForm.pristine)
-				{
-					this.populateForm(currentUser);
-				}
-			},
-			{ allowSignalWrites: true }
-		);
+				this.populateForm(currentUser);
+			}
+		});
+
+		// Log errors when loading user fails
+		effect(() =>
+		{
+			const error: Error | null = this.userQuery.error();
+			if (error)
+			{
+				this.logger.error("Failed to load user", error);
+			}
+		});
 	}
 
 	/**

@@ -10,7 +10,7 @@ import {
 	LogFilterRequest,
 	PagedLogResponse
 } from "@admin/log-management/models";
-import { of } from "rxjs";
+import { createMockQueryResult } from "@core/testing/tanstack-query-helpers";
 
 describe("LogManagementComponent", () =>
 {
@@ -56,24 +56,21 @@ describe("LogManagementComponent", () =>
 
 	beforeEach(async () =>
 	{
-		mockLogService = jasmine.createSpyObj(
-			"LogManagementService",
-			[
-				"updateFilter",
-				"setPage",
-				"setPageSize",
-				"deleteLog",
-				"deleteSelected",
-				"setAutoRefresh",
-				"refresh"
-			],
-			{
-				logs$: of(mockPagedLogs),
-				loading$: of(false),
-				error$: of(null),
-				statistics$: of(null),
-				filter$: of({ pageNumber: 1, pageSize: 50 })
-			}
+		mockLogService = jasmine.createSpyObj("LogManagementService", [
+			"getLogs",
+			"getLogCount",
+			"updateFilter",
+			"setPage",
+			"setPageSize",
+			"deleteLog",
+			"deleteSelected"
+		]);
+
+		mockLogService.getLogs.and.returnValue(
+			createMockQueryResult<PagedLogResponse, Error>(mockPagedLogs)
+		);
+		mockLogService.getLogCount.and.returnValue(
+			createMockQueryResult<{ total: number }, Error>({ total: 1 })
 		);
 
 		mockDialog = jasmine.createSpyObj("MatDialog", ["open"]);
@@ -96,13 +93,9 @@ describe("LogManagementComponent", () =>
 		expect(component).toBeTruthy();
 	});
 
-	it("should subscribe to logs observable", (done) =>
+	it("should load logs data", () =>
 	{
-		setTimeout(() =>
-		{
-			expect(component.logs()).toEqual(mockPagedLogs);
-			done();
-		}, 0);
+		expect(component.logs()).toEqual(mockPagedLogs);
 	});
 
 	it("should handle filter changes", () =>
@@ -115,15 +108,6 @@ describe("LogManagementComponent", () =>
 		component.onFilterChange(filter);
 
 		expect(mockLogService.updateFilter).toHaveBeenCalledWith(filter);
-	});
-
-	it("should handle auto-refresh toggle", () =>
-	{
-		component.onAutoRefreshChange(true);
-		expect(mockLogService.setAutoRefresh).toHaveBeenCalledWith(true);
-
-		component.onAutoRefreshChange(false);
-		expect(mockLogService.setAutoRefresh).toHaveBeenCalledWith(false);
 	});
 
 	it("should handle page change", () =>
@@ -140,41 +124,45 @@ describe("LogManagementComponent", () =>
 
 	it("should open log detail dialog when log is selected", () =>
 	{
-		const mockDialogRef = {
-			afterClosed: () => of(undefined),
-			componentInstance: { deleteLog: of() }
+		const mockMutation: any = {
+			mutate: jasmine.createSpy("mutate")
 		};
-		mockDialog.open.and.returnValue(mockDialogRef as any);
+		mockLogService.deleteLog.and.returnValue(mockMutation);
+
+		const mockDialogRef: any = {
+			afterClosed: () => createMockQueryResult(undefined),
+			componentInstance: {
+				deleteLog: {
+					subscribe: jasmine.createSpy("subscribe")
+				}
+			},
+			close: jasmine.createSpy("close")
+		};
+		mockDialog.open.and.returnValue(mockDialogRef);
 
 		component.onLogSelected(mockPagedLogs.data[0]);
 
 		expect(mockDialog.open).toHaveBeenCalled();
 	});
 
-	it("should handle delete log from table", (done) =>
+	it("should handle delete log from table", () =>
 	{
-		mockLogService.deleteLog.and.returnValue(of(void 0));
+		const mockMutation: any = {
+			mutate: jasmine.createSpy("mutate")
+		};
+		mockLogService.deleteLog.and.returnValue(mockMutation);
 
 		component.onDeleteLog(1);
 
-		setTimeout(() =>
-		{
-			expect(mockLogService.deleteLog).toHaveBeenCalledWith(1);
-			done();
-		}, 0);
+		expect(mockLogService.deleteLog).toHaveBeenCalled();
+		expect(mockMutation.mutate).toHaveBeenCalledWith(1);
 	});
 
-	it("should handle delete multiple logs", (done) =>
+	it("should handle delete multiple logs", () =>
 	{
-		mockLogService.deleteSelected.and.returnValue(of(3));
-
 		component.onDeleteSelected([1, 2, 3]);
 
-		setTimeout(() =>
-		{
-			expect(mockLogService.deleteSelected).toHaveBeenCalled();
-			done();
-		}, 0);
+		expect(mockLogService.deleteSelected).toHaveBeenCalled();
 	});
 
 	it("should handle export to CSV", () =>
@@ -189,11 +177,5 @@ describe("LogManagementComponent", () =>
 		component.onCleanupLogs();
 		// Cleanup functionality to be implemented
 		expect(component).toBeTruthy();
-	});
-
-	it("should stop auto-refresh on destroy", () =>
-	{
-		component.ngOnDestroy();
-		expect(mockLogService.setAutoRefresh).toHaveBeenCalledWith(false);
 	});
 });

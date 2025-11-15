@@ -1,4 +1,12 @@
-import { Component, input, output, viewChild } from "@angular/core";
+import {
+	Component,
+	input,
+	InputSignal,
+	output,
+	OutputEmitterRef,
+	Signal,
+	viewChild
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";

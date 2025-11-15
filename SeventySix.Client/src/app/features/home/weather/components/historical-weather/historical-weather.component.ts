@@ -1,4 +1,9 @@
-import { Component, ChangeDetectionStrategy, signal } from "@angular/core";
+import {
+	Component,
+	ChangeDetectionStrategy,
+	signal,
+	WritableSignal
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -28,6 +33,6 @@ export class HistoricalWeatherComponent
 	 */
 	toggleExpand(): void
 	{
-		this.isExpanded.update((value) => !value);
+		this.isExpanded.update((value: boolean) => !value);
 	}
 }

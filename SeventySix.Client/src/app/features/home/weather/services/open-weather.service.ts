@@ -1,5 +1,6 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
+import { environment } from "@environments/environment";
 import { Observable } from "rxjs";
 import {
 	OneCallResponse,
@@ -57,7 +58,7 @@ export interface QuotaStatus
 export class OpenWeatherService
 {
 	private readonly http: HttpClient = inject(HttpClient);
-	private readonly apiBaseUrl: string = environment.openWeatherMapApiUrl;
+	private readonly apiBaseUrl: string = `${environment.apiUrl}/weatherforecast`;
 
 	/**
 	 * Get complete weather data (current + forecasts + alerts)

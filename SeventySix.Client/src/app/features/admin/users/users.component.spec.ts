@@ -3,9 +3,14 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { UserList } from "@features/admin/users/components/user-list/user-list";
 import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
+import { User } from "@admin/users/models";
 import { of } from "rxjs";
 import { UsersComponent } from "./users.component";
 import { ActivatedRoute } from "@angular/router";
+import {
+	createMockQueryResult,
+	createMockMutationResult
+} from "@core/testing/tanstack-query-helpers";
 
 describe("UsersComponent", () =>
 {
@@ -24,7 +29,9 @@ describe("UsersComponent", () =>
 		});
 
 		// Set default mock return value
-		mockUserService.getAllUsers.and.returnValue(of([]));
+		mockUserService.getAllUsers.and.returnValue(
+			createMockQueryResult<User[], Error>([])
+		);
 
 		await TestBed.configureTestingModule({
 			imports: [UsersComponent, UserList],

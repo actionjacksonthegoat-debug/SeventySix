@@ -3,11 +3,12 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideRouter } from "@angular/router";
-import { of } from "rxjs";
 import { UserCreatePage } from "./user-create";
 import { UserService } from "@features/admin/users/services/user.service";
 import { Router } from "@angular/router";
 import { NotificationService } from "@core/services/notification.service";
+import { createMockMutationResult } from "@core/testing";
+import { User } from "@admin/users/models";
 
 describe("UserCreatePage", () =>
 {
@@ -26,14 +27,18 @@ describe("UserCreatePage", () =>
 			"error"
 		]);
 
+		const mockUser: User = {
+			id: 1,
+			username: "test",
+			email: "test@test.com",
+			fullName: "Test User",
+			createdAt: "2024-01-01T00:00:00Z",
+			isActive: true
+		};
 		mockUserService.createUser.and.returnValue(
-			of({
-				id: 1,
-				username: "test",
-				email: "test@test.com",
-				fullName: "Test User",
-				createdAt: "",
-				isActive: true
+			createMockMutationResult<User, Error, Partial<User>, unknown>({
+				data: mockUser,
+				isSuccess: true
 			})
 		);
 

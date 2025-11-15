@@ -2,7 +2,8 @@ import {
 	Component,
 	inject,
 	computed,
-	ChangeDetectionStrategy
+	ChangeDetectionStrategy,
+	Signal
 } from "@angular/core";
 import { WeatherService } from "@home/weather/services";
 import { LoggerService } from "@core/services";
@@ -27,8 +28,8 @@ export class WeatherDisplay
 	private readonly logger: LoggerService = inject(LoggerService);
 
 	// TanStack Query handles loading, error, and data states
-	readonly forecastsQuery: ReturnType<WeatherService["getWeather"]> =
-		this.weatherService.getWeather();
+	readonly forecastsQuery: ReturnType<WeatherService["getAllForecasts"]> =
+		this.weatherService.getAllForecasts();
 
 	// Computed signals for derived state
 	readonly forecasts: Signal<WeatherForecast[]> = computed(

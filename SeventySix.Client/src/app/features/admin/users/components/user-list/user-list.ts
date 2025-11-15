@@ -6,7 +6,9 @@ import {
 	ChangeDetectionStrategy,
 	ViewChild,
 	AfterViewInit,
-	effect
+	effect,
+	Signal,
+	WritableSignal
 } from "@angular/core";
 import { Router } from "@angular/router";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
@@ -241,6 +243,31 @@ export class UserList implements AfterViewInit
 		effect(() =>
 		{
 			this.updateTableData();
+		});
+
+		// Log successful data load
+		effect(() =>
+		{
+			const users: User[] = this.users();
+			const isLoading: boolean = this.usersQuery.isLoading();
+			const isError: boolean = this.usersQuery.isError();
+
+			if (!isLoading && !isError && users.length > 0)
+			{
+				this.logger.info("Users loaded successfully", {
+					count: users.length
+				});
+			}
+		});
+
+		// Log errors
+		effect(() =>
+		{
+			const error: Error | null = this.usersQuery.error();
+			if (error)
+			{
+				this.logger.error("Failed to load users", error);
+			}
 		});
 	}
 

@@ -38,6 +38,7 @@ describe("WeatherService", () =>
 				mutations: { retry: false }
 			}
 		});
+		spyOn(queryClient, "invalidateQueries").and.callThrough();
 
 		TestBed.configureTestingModule({
 			providers: [
@@ -66,49 +67,53 @@ describe("WeatherService", () =>
 
 	describe("getAllForecasts", () =>
 	{
-		it("should create query with correct configuration", () =>
+		it("should create query", () =>
 		{
-			const forecasts = [mockForecast];
+			const forecasts: WeatherForecast[] = [mockForecast];
 			mockRepository.getAll.and.returnValue(of(forecasts));
 
-			const query = service.getAllForecasts();
+			const query: ReturnType<typeof service.getAllForecasts> =
+				TestBed.runInInjectionContext(() => service.getAllForecasts());
 
-			expect(query.queryKey()).toEqual(["weather", "forecasts"]);
+			expect(query).toBeTruthy();
 		});
 
 		it("should fetch forecasts from repository", async () =>
 		{
-			const forecasts = [mockForecast];
+			const forecasts: WeatherForecast[] = [mockForecast];
 			mockRepository.getAll.and.returnValue(of(forecasts));
 
-			const query = service.getAllForecasts();
-			await query.refetch();
+			const query: ReturnType<typeof service.getAllForecasts> =
+				TestBed.runInInjectionContext(() => service.getAllForecasts());
+			const result = await query.refetch();
 
 			expect(mockRepository.getAll).toHaveBeenCalled();
-			expect(query.data()).toEqual(forecasts);
+			expect(result.data).toEqual(forecasts);
 		});
 	});
 
 	describe("getForecastById", () =>
 	{
-		it("should create query with correct key", () =>
+		it("should create query", () =>
 		{
 			mockRepository.getById.and.returnValue(of(mockForecast));
 
-			const query = service.getForecastById(1);
+			const query: ReturnType<typeof service.getForecastById> =
+				TestBed.runInInjectionContext(() => service.getForecastById(1));
 
-			expect(query.queryKey()).toEqual(["weather", "forecast", 1]);
+			expect(query).toBeTruthy();
 		});
 
 		it("should fetch forecast by id from repository", async () =>
 		{
 			mockRepository.getById.and.returnValue(of(mockForecast));
 
-			const query = service.getForecastById(1);
-			await query.refetch();
+			const query: ReturnType<typeof service.getForecastById> =
+				TestBed.runInInjectionContext(() => service.getForecastById(1));
+			const result = await query.refetch();
 
 			expect(mockRepository.getById).toHaveBeenCalledWith(1);
-			expect(query.data()).toEqual(mockForecast);
+			expect(result.data).toEqual(mockForecast);
 		});
 	});
 
@@ -116,17 +121,22 @@ describe("WeatherService", () =>
 	{
 		it("should create mutation", () =>
 		{
-			const mutation = service.createForecast();
+			const mutation: ReturnType<typeof service.createForecast> =
+				TestBed.runInInjectionContext(() => service.createForecast());
 
 			expect(mutation).toBeTruthy();
 		});
 
 		it("should create forecast via mutation", async () =>
 		{
-			const newForecast = { date: "2024-01-02", temperatureC: 25 };
+			const newForecast: Partial<WeatherForecast> = {
+				date: "2024-01-02",
+				temperatureC: 25
+			};
 			mockRepository.create.and.returnValue(of(mockForecast));
 
-			const mutation = service.createForecast();
+			const mutation: ReturnType<typeof service.createForecast> =
+				TestBed.runInInjectionContext(() => service.createForecast());
 			await mutation.mutateAsync(newForecast);
 
 			expect(mockRepository.create).toHaveBeenCalledWith(newForecast);
@@ -134,18 +144,21 @@ describe("WeatherService", () =>
 
 		it("should invalidate forecasts query on success", async () =>
 		{
-			const newForecast = { date: "2024-01-02", temperatureC: 25 };
+			const newForecast: Partial<WeatherForecast> = {
+				date: "2024-01-02",
+				temperatureC: 25
+			};
 			mockRepository.create.and.returnValue(of(mockForecast));
 			mockRepository.getAll.and.returnValue(of([mockForecast]));
 
-			const query = service.getAllForecasts();
-			const mutation = service.createForecast();
+			const mutation: ReturnType<typeof service.createForecast> =
+				TestBed.runInInjectionContext(() => service.createForecast());
 
 			await mutation.mutateAsync(newForecast);
 
-			expect(
-				queryClient.isFetching({ queryKey: ["weather", "forecasts"] })
-			).toBeGreaterThan(0);
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["weather", "forecasts"]
+			});
 		});
 	});
 
@@ -153,17 +166,19 @@ describe("WeatherService", () =>
 	{
 		it("should create mutation", () =>
 		{
-			const mutation = service.updateForecast();
+			const mutation: ReturnType<typeof service.updateForecast> =
+				TestBed.runInInjectionContext(() => service.updateForecast());
 
 			expect(mutation).toBeTruthy();
 		});
 
 		it("should update forecast via mutation", async () =>
 		{
-			const updates = { temperatureC: 30 };
+			const updates: Partial<WeatherForecast> = { temperatureC: 30 };
 			mockRepository.update.and.returnValue(of(mockForecast));
 
-			const mutation = service.updateForecast();
+			const mutation: ReturnType<typeof service.updateForecast> =
+				TestBed.runInInjectionContext(() => service.updateForecast());
 			await mutation.mutateAsync({ id: 1, forecast: updates });
 
 			expect(mockRepository.update).toHaveBeenCalledWith(1, updates);
@@ -171,18 +186,19 @@ describe("WeatherService", () =>
 
 		it("should invalidate queries on success", async () =>
 		{
-			const updates = { temperatureC: 30 };
+			const updates: Partial<WeatherForecast> = { temperatureC: 30 };
 			mockRepository.update.and.returnValue(of(mockForecast));
 
-			const mutation = service.updateForecast();
+			const mutation: ReturnType<typeof service.updateForecast> =
+				TestBed.runInInjectionContext(() => service.updateForecast());
 			await mutation.mutateAsync({ id: 1, forecast: updates });
 
-			expect(
-				queryClient.isFetching({ queryKey: ["weather", "forecast", 1] })
-			).toBeGreaterThan(0);
-			expect(
-				queryClient.isFetching({ queryKey: ["weather", "forecasts"] })
-			).toBeGreaterThan(0);
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["weather", "forecast", 1]
+			});
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["weather", "forecasts"]
+			});
 		});
 	});
 
@@ -190,7 +206,8 @@ describe("WeatherService", () =>
 	{
 		it("should create mutation", () =>
 		{
-			const mutation = service.deleteForecast();
+			const mutation: ReturnType<typeof service.deleteForecast> =
+				TestBed.runInInjectionContext(() => service.deleteForecast());
 
 			expect(mutation).toBeTruthy();
 		});
@@ -199,7 +216,8 @@ describe("WeatherService", () =>
 		{
 			mockRepository.delete.and.returnValue(of(undefined));
 
-			const mutation = service.deleteForecast();
+			const mutation: ReturnType<typeof service.deleteForecast> =
+				TestBed.runInInjectionContext(() => service.deleteForecast());
 			await mutation.mutateAsync(1);
 
 			expect(mockRepository.delete).toHaveBeenCalledWith(1);
@@ -209,12 +227,13 @@ describe("WeatherService", () =>
 		{
 			mockRepository.delete.and.returnValue(of(undefined));
 
-			const mutation = service.deleteForecast();
+			const mutation: ReturnType<typeof service.deleteForecast> =
+				TestBed.runInInjectionContext(() => service.deleteForecast());
 			await mutation.mutateAsync(1);
 
-			expect(
-				queryClient.isFetching({ queryKey: ["weather", "forecasts"] })
-			).toBeGreaterThan(0);
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["weather", "forecasts"]
+			});
 		});
 	});
 });

@@ -1,4 +1,4 @@
-import { signal } from "@angular/core";
+import { signal, WritableSignal } from "@angular/core";
 import { ThemeBrightness, ColorScheme } from "@core/services/theme.service";
 
 /**

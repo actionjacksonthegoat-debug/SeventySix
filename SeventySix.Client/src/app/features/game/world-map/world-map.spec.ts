@@ -2,6 +2,10 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
+import {
+	provideAngularQuery,
+	QueryClient
+} from "@tanstack/angular-query-experimental";
 import { WorldMap } from "./world-map";
 
 describe("WorldMap", () =>
@@ -11,12 +15,20 @@ describe("WorldMap", () =>
 
 	beforeEach(async () =>
 	{
+		const queryClient = new QueryClient({
+			defaultOptions: {
+				queries: { retry: false },
+				mutations: { retry: false }
+			}
+		});
+
 		await TestBed.configureTestingModule({
 			imports: [WorldMap],
 			providers: [
 				provideHttpClient(withFetch()),
 				provideHttpClientTesting(),
-				provideZonelessChangeDetection()
+				provideZonelessChangeDetection(),
+				provideAngularQuery(queryClient)
 			]
 		}).compileComponents();
 

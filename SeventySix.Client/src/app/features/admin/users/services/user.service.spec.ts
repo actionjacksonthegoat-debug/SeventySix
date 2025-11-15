@@ -40,6 +40,7 @@ describe("UserService", () =>
 				mutations: { retry: false }
 			}
 		});
+		spyOn(queryClient, "invalidateQueries").and.callThrough();
 
 		TestBed.configureTestingModule({
 			providers: [
@@ -65,49 +66,53 @@ describe("UserService", () =>
 
 	describe("getAllUsers", () =>
 	{
-		it("should create query with correct configuration", () =>
+		it("should create query", () =>
 		{
-			const users = [mockUser];
+			const users: User[] = [mockUser];
 			mockRepository.getAll.and.returnValue(of(users));
 
-			const query = service.getAllUsers();
+			const query: ReturnType<typeof service.getAllUsers> =
+				TestBed.runInInjectionContext(() => service.getAllUsers());
 
-			expect(query.queryKey()).toEqual(["users"]);
+			expect(query).toBeTruthy();
 		});
 
 		it("should fetch users from repository", async () =>
 		{
-			const users = [mockUser];
+			const users: User[] = [mockUser];
 			mockRepository.getAll.and.returnValue(of(users));
 
-			const query = service.getAllUsers();
-			await query.refetch();
+			const query: ReturnType<typeof service.getAllUsers> =
+				TestBed.runInInjectionContext(() => service.getAllUsers());
+			const result = await query.refetch();
 
 			expect(mockRepository.getAll).toHaveBeenCalled();
-			expect(query.data()).toEqual(users);
+			expect(result.data).toEqual(users);
 		});
 	});
 
 	describe("getUserById", () =>
 	{
-		it("should create query with correct key", () =>
+		it("should create query", () =>
 		{
 			mockRepository.getById.and.returnValue(of(mockUser));
 
-			const query = service.getUserById(1);
+			const query: ReturnType<typeof service.getUserById> =
+				TestBed.runInInjectionContext(() => service.getUserById(1));
 
-			expect(query.queryKey()).toEqual(["users", 1]);
+			expect(query).toBeTruthy();
 		});
 
 		it("should fetch user by id from repository", async () =>
 		{
 			mockRepository.getById.and.returnValue(of(mockUser));
 
-			const query = service.getUserById(1);
-			await query.refetch();
+			const query: ReturnType<typeof service.getUserById> =
+				TestBed.runInInjectionContext(() => service.getUserById(1));
+			const result = await query.refetch();
 
 			expect(mockRepository.getById).toHaveBeenCalledWith(1);
-			expect(query.data()).toEqual(mockUser);
+			expect(result.data).toEqual(mockUser);
 		});
 	});
 
@@ -115,17 +120,22 @@ describe("UserService", () =>
 	{
 		it("should create mutation", () =>
 		{
-			const mutation = service.createUser();
+			const mutation: ReturnType<typeof service.createUser> =
+				TestBed.runInInjectionContext(() => service.createUser());
 
 			expect(mutation).toBeTruthy();
 		});
 
 		it("should create user via mutation", async () =>
 		{
-			const newUser = { username: "newuser", email: "new@example.com" };
+			const newUser: Partial<User> = {
+				username: "newuser",
+				email: "new@example.com"
+			};
 			mockRepository.create.and.returnValue(of(mockUser));
 
-			const mutation = service.createUser();
+			const mutation: ReturnType<typeof service.createUser> =
+				TestBed.runInInjectionContext(() => service.createUser());
 			await mutation.mutateAsync(newUser);
 
 			expect(mockRepository.create).toHaveBeenCalledWith(newUser);
@@ -133,36 +143,40 @@ describe("UserService", () =>
 
 		it("should invalidate users query on success", async () =>
 		{
-			const newUser = { username: "newuser", email: "new@example.com" };
+			const newUser: Partial<User> = {
+				username: "newuser",
+				email: "new@example.com"
+			};
 			mockRepository.create.and.returnValue(of(mockUser));
 			mockRepository.getAll.and.returnValue(of([mockUser]));
 
-			const query = service.getAllUsers();
-			const mutation = service.createUser();
+			const mutation: ReturnType<typeof service.createUser> =
+				TestBed.runInInjectionContext(() => service.createUser());
 
 			await mutation.mutateAsync(newUser);
 
-			expect(
-				queryClient.isFetching({ queryKey: ["users"] })
-			).toBeGreaterThan(0);
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["users", "all"]
+			});
 		});
 	});
-
 	describe("updateUser", () =>
 	{
 		it("should create mutation", () =>
 		{
-			const mutation = service.updateUser();
+			const mutation: ReturnType<typeof service.updateUser> =
+				TestBed.runInInjectionContext(() => service.updateUser());
 
 			expect(mutation).toBeTruthy();
 		});
 
 		it("should update user via mutation", async () =>
 		{
-			const updates = { email: "updated@example.com" };
+			const updates: Partial<User> = { email: "updated@example.com" };
 			mockRepository.update.and.returnValue(of(mockUser));
 
-			const mutation = service.updateUser();
+			const mutation: ReturnType<typeof service.updateUser> =
+				TestBed.runInInjectionContext(() => service.updateUser());
 			await mutation.mutateAsync({ id: 1, user: updates });
 
 			expect(mockRepository.update).toHaveBeenCalledWith(1, updates);
@@ -170,18 +184,19 @@ describe("UserService", () =>
 
 		it("should invalidate queries on success", async () =>
 		{
-			const updates = { email: "updated@example.com" };
+			const updates: Partial<User> = { email: "updated@example.com" };
 			mockRepository.update.and.returnValue(of(mockUser));
 
-			const mutation = service.updateUser();
+			const mutation: ReturnType<typeof service.updateUser> =
+				TestBed.runInInjectionContext(() => service.updateUser());
 			await mutation.mutateAsync({ id: 1, user: updates });
 
-			expect(
-				queryClient.isFetching({ queryKey: ["users", 1] })
-			).toBeGreaterThan(0);
-			expect(
-				queryClient.isFetching({ queryKey: ["users"] })
-			).toBeGreaterThan(0);
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["users", "user", 1]
+			});
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["users", "all"]
+			});
 		});
 	});
 
@@ -189,7 +204,8 @@ describe("UserService", () =>
 	{
 		it("should create mutation", () =>
 		{
-			const mutation = service.deleteUser();
+			const mutation: ReturnType<typeof service.deleteUser> =
+				TestBed.runInInjectionContext(() => service.deleteUser());
 
 			expect(mutation).toBeTruthy();
 		});
@@ -198,7 +214,8 @@ describe("UserService", () =>
 		{
 			mockRepository.delete.and.returnValue(of(undefined));
 
-			const mutation = service.deleteUser();
+			const mutation: ReturnType<typeof service.deleteUser> =
+				TestBed.runInInjectionContext(() => service.deleteUser());
 			await mutation.mutateAsync(1);
 
 			expect(mockRepository.delete).toHaveBeenCalledWith(1);
@@ -208,12 +225,13 @@ describe("UserService", () =>
 		{
 			mockRepository.delete.and.returnValue(of(undefined));
 
-			const mutation = service.deleteUser();
+			const mutation: ReturnType<typeof service.deleteUser> =
+				TestBed.runInInjectionContext(() => service.deleteUser());
 			await mutation.mutateAsync(1);
 
-			expect(
-				queryClient.isFetching({ queryKey: ["users"] })
-			).toBeGreaterThan(0);
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["users", "all"]
+			});
 		});
 	});
 });

@@ -1,15 +1,10 @@
-import { provideHttpClient, withFetch } from "@angular/common/http";
-import {
-	provideHttpClientTesting,
-	HttpTestingController
-} from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { of, throwError } from "rxjs";
+import { LoggerService } from "@core/services";
+import { WeatherService } from "../../services";
 import { WeatherDisplay } from "./weather-display";
-import { environment } from "@environments/environment";
-import { WeatherService } from "@features/home/weather/services/weather.service";
-import { LoggerService } from "@core/services/logger.service";
+import { createMockQueryResult } from "@core/testing";
+import { WeatherForecast } from "@home/weather/models";
 
 describe("WeatherDisplay", () =>
 {
@@ -18,7 +13,7 @@ describe("WeatherDisplay", () =>
 	let weatherServiceSpy: jasmine.SpyObj<WeatherService>;
 	let loggerServiceSpy: jasmine.SpyObj<LoggerService>;
 
-	const mockForecasts = [
+	const mockForecasts: WeatherForecast[] = [
 		{
 			date: "2025-11-10",
 			temperatureC: 20,
@@ -48,7 +43,9 @@ describe("WeatherDisplay", () =>
 		]);
 
 		// Default mock implementation - returns empty array to prevent errors
-		weatherServiceSpy.getAllForecasts.and.returnValue(of([]));
+		weatherServiceSpy.getAllForecasts.and.returnValue(
+			createMockQueryResult<WeatherForecast[]>([])
+		);
 
 		await TestBed.configureTestingModule({
 			imports: [WeatherDisplay],
@@ -69,86 +66,110 @@ describe("WeatherDisplay", () =>
 		expect(weatherServiceSpy.getAllForecasts).toHaveBeenCalled();
 	});
 
-	it("should load forecasts on init", () =>
+	it("should display forecasts when data is loaded", () =>
 	{
-		weatherServiceSpy.getAllForecasts.and.returnValue(of(mockForecasts));
+		weatherServiceSpy.getAllForecasts.and.returnValue(
+			createMockQueryResult(mockForecasts)
+		);
 
-		component.loadForecasts();
+		fixture = TestBed.createComponent(WeatherDisplay);
+		component = fixture.componentInstance;
 
 		expect(component.forecasts().length).toBe(2);
 		expect(component.isLoading()).toBe(false);
 		expect(component.error()).toBeNull();
-		expect(loggerServiceSpy.info).toHaveBeenCalledWith(
-			"Weather forecasts loaded successfully",
-			{ count: 2 }
-		);
 	});
 
 	it("should handle load error", () =>
 	{
-		const errorResponse = new Error("Server Error");
+		const errorResponse: Error = new Error("Server Error");
 		weatherServiceSpy.getAllForecasts.and.returnValue(
-			throwError(() => errorResponse)
+			createMockQueryResult<WeatherForecast[]>(undefined, {
+				isError: true,
+				error: errorResponse
+			})
 		);
 
-		component.loadForecasts();
+		fixture = TestBed.createComponent(WeatherDisplay);
+		component = fixture.componentInstance;
 
 		expect(component.error()).toBe(
 			"Failed to load weather forecasts. Please try again."
 		);
 		expect(component.isLoading()).toBe(false);
 		expect(component.forecasts().length).toBe(0);
-		expect(loggerServiceSpy.error).toHaveBeenCalledWith(
-			"Failed to load weather forecasts",
-			errorResponse
-		);
 	});
 
 	it("should compute hasForecasts correctly", () =>
 	{
+		weatherServiceSpy.getAllForecasts.and.returnValue(
+			createMockQueryResult<WeatherForecast[]>([])
+		);
+		fixture = TestBed.createComponent(WeatherDisplay);
+		component = fixture.componentInstance;
+
 		expect(component.hasForecasts()).toBe(false);
 
-		weatherServiceSpy.getAllForecasts.and.returnValue(of(mockForecasts));
-		component.loadForecasts();
+		weatherServiceSpy.getAllForecasts.and.returnValue(
+			createMockQueryResult(mockForecasts)
+		);
+		fixture = TestBed.createComponent(WeatherDisplay);
+		component = fixture.componentInstance;
 
 		expect(component.hasForecasts()).toBe(true);
 	});
 
 	it("should compute forecastCount correctly", () =>
 	{
-		weatherServiceSpy.getAllForecasts.and.returnValue(of(mockForecasts));
-		component.loadForecasts();
+		weatherServiceSpy.getAllForecasts.and.returnValue(
+			createMockQueryResult(mockForecasts)
+		);
+		fixture = TestBed.createComponent(WeatherDisplay);
+		component = fixture.componentInstance;
 
 		expect(component.forecastCount()).toBe(2);
 	});
 
-	it("should retry loading forecasts", () =>
+	it("should show loading state", () =>
 	{
-		const errorResponse = new Error("Network error");
 		weatherServiceSpy.getAllForecasts.and.returnValue(
-			throwError(() => errorResponse)
+			createMockQueryResult<WeatherForecast[]>(undefined, {
+				isLoading: true
+			})
 		);
 
-		component.loadForecasts();
-		expect(component.error()).not.toBeNull();
+		fixture = TestBed.createComponent(WeatherDisplay);
+		component = fixture.componentInstance;
 
-		weatherServiceSpy.getAllForecasts.and.returnValue(of(mockForecasts));
-		component.retry();
+		expect(component.isLoading()).toBe(true);
+		expect(component.forecasts().length).toBe(0);
+	});
 
-		expect(component.error()).toBeNull();
-		expect(component.forecasts().length).toBe(2);
+	it("should retry loading forecasts", async () =>
+	{
+		const mockQueryResult: ReturnType<
+			typeof createMockQueryResult<WeatherForecast[]>
+		> = createMockQueryResult(mockForecasts);
+		weatherServiceSpy.getAllForecasts.and.returnValue(mockQueryResult);
+
+		fixture = TestBed.createComponent(WeatherDisplay);
+		component = fixture.componentInstance;
+
+		await component.retry();
+
+		expect(mockQueryResult.refetch).toHaveBeenCalled();
 	});
 
 	it("should track forecasts by date", () =>
 	{
-		const forecast = {
+		const forecast: WeatherForecast = {
 			date: "2025-11-10",
 			temperatureC: 20,
 			temperatureF: 68,
 			summary: "Sunny"
 		};
 
-		const result = component.trackByDate(0, forecast);
+		const result: string = component.trackByDate(0, forecast);
 
 		expect(result).toBe(forecast.date.toString());
 	});

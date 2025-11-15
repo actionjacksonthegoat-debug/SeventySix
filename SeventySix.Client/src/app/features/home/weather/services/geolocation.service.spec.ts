@@ -298,7 +298,7 @@ describe("GeolocationService", () =>
 			service.requestLocation().subscribe({
 				next: () =>
 				{
-					const saved = localStorage.getItem("weatherLocation");
+					const saved = localStorage.getItem("weather_user_location");
 					expect(saved).toBeTruthy();
 					const location = JSON.parse(saved!);
 					expect(location.latitude).toBe(40.7128);
@@ -317,7 +317,7 @@ describe("GeolocationService", () =>
 				accuracy: 50
 			};
 			localStorage.setItem(
-				"weatherLocation",
+				"weather_user_location",
 				JSON.stringify(savedLocation)
 			);
 

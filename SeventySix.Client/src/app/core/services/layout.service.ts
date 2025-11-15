@@ -6,7 +6,11 @@ import {
 	PLATFORM_ID
 } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
-import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
+import {
+	BreakpointObserver,
+	Breakpoints,
+	BreakpointState
+} from "@angular/cdk/layout";
 import { toSignal } from "@angular/core/rxjs-interop";
 
 /**
@@ -45,11 +49,12 @@ export class LayoutService
 			Breakpoints.XLarge // (min-width: 1920px)
 		]);
 
-	breakpoints: ReturnType<
-		typeof toSignal<ReturnType<typeof this.breakpointObserver.observe>>
-	> = toSignal(this.breakpoints$, {
-		initialValue: { matches: false, breakpoints: {} }
-	});
+	breakpoints: ReturnType<typeof toSignal<BreakpointState>> = toSignal(
+		this.breakpoints$,
+		{
+			initialValue: { matches: false, breakpoints: {} }
+		}
+	);
 
 	/**
 	 * Computed values for responsive behavior

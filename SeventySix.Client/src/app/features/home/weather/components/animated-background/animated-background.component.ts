@@ -67,6 +67,6 @@ export class AnimatedBackgroundComponent
 
 	readonly animationsEnabled: Signal<boolean> = computed(() =>
 	{
-		return !this.preferencesService.animationsEnabled();
+		return this.preferencesService.animationsEnabled();
 	});
 }

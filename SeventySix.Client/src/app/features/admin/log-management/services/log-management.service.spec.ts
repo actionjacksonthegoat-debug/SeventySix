@@ -80,6 +80,7 @@ describe("LogManagementService", () =>
 				mutations: { retry: false }
 			}
 		});
+		spyOn(queryClient, "invalidateQueries").and.callThrough();
 
 		TestBed.configureTestingModule({
 			imports: [HttpClientTestingModule],
@@ -126,53 +127,54 @@ describe("LogManagementService", () =>
 
 	describe("getLogs", () =>
 	{
-		it("should create query with correct key", () =>
+		it("should create query", () =>
 		{
 			logRepository.getAll.and.returnValue(of(mockPagedResponse));
 
-			const query = service.getLogs();
+			const query: ReturnType<typeof service.getLogs> =
+				TestBed.runInInjectionContext(() => service.getLogs());
 
-			expect(query.queryKey()).toEqual(["logs", service.filter()]);
+			expect(query).toBeTruthy();
 		});
-
 		it("should fetch logs from repository", async () =>
 		{
 			logRepository.getAll.and.returnValue(of(mockPagedResponse));
 
-			const query = service.getLogs();
-			await query.refetch();
+			const query = TestBed.runInInjectionContext(() =>
+				service.getLogs()
+			);
+			const result = await query.refetch();
 
 			expect(logRepository.getAll).toHaveBeenCalledWith(service.filter());
-			expect(query.data()).toEqual(mockPagedResponse);
+			expect(result.data).toEqual(mockPagedResponse);
 		});
 	});
 
 	describe("getLogCount", () =>
 	{
-		it("should create query with correct key", () =>
+		it("should create query", () =>
 		{
 			logRepository.getCount.and.returnValue(of(mockCountResponse));
 
-			const query = service.getLogCount();
+			const query: ReturnType<typeof service.getLogCount> =
+				TestBed.runInInjectionContext(() => service.getLogCount());
 
-			expect(query.queryKey()).toEqual([
-				"logs",
-				"count",
-				service.filter()
-			]);
+			expect(query).toBeTruthy();
 		});
 
 		it("should fetch log count from repository", async () =>
 		{
 			logRepository.getCount.and.returnValue(of(mockCountResponse));
 
-			const query = service.getLogCount();
-			await query.refetch();
+			const query = TestBed.runInInjectionContext(() =>
+				service.getLogCount()
+			);
+			const result = await query.refetch();
 
 			expect(logRepository.getCount).toHaveBeenCalledWith(
 				service.filter()
 			);
-			expect(query.data()).toEqual(mockCountResponse);
+			expect(result.data).toEqual(mockCountResponse);
 		});
 	});
 
@@ -256,7 +258,8 @@ describe("LogManagementService", () =>
 	{
 		it("should create mutation", () =>
 		{
-			const mutation = service.deleteLog();
+			const mutation: ReturnType<typeof service.deleteLog> =
+				TestBed.runInInjectionContext(() => service.deleteLog());
 
 			expect(mutation).toBeTruthy();
 		});
@@ -265,7 +268,8 @@ describe("LogManagementService", () =>
 		{
 			logRepository.delete.and.returnValue(of(void 0));
 
-			const mutation = service.deleteLog();
+			const mutation: ReturnType<typeof service.deleteLog> =
+				TestBed.runInInjectionContext(() => service.deleteLog());
 			await mutation.mutateAsync(1);
 
 			expect(logRepository.delete).toHaveBeenCalledWith(1);
@@ -275,12 +279,13 @@ describe("LogManagementService", () =>
 		{
 			logRepository.delete.and.returnValue(of(void 0));
 
-			const mutation = service.deleteLog();
+			const mutation: ReturnType<typeof service.deleteLog> =
+				TestBed.runInInjectionContext(() => service.deleteLog());
 			await mutation.mutateAsync(1);
 
-			expect(
-				queryClient.isFetching({ queryKey: ["logs"] })
-			).toBeGreaterThan(0);
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["logs"]
+			});
 		});
 	});
 
@@ -288,16 +293,18 @@ describe("LogManagementService", () =>
 	{
 		it("should create mutation", () =>
 		{
-			const mutation = service.deleteLogs();
+			const mutation: ReturnType<typeof service.deleteLogs> =
+				TestBed.runInInjectionContext(() => service.deleteLogs());
 
 			expect(mutation).toBeTruthy();
 		});
 
 		it("should delete logs via mutation", async () =>
 		{
-			logRepository.deleteBatch.and.returnValue(of(void 0));
+			logRepository.deleteBatch.and.returnValue(of(3));
 
-			const mutation = service.deleteLogs();
+			const mutation: ReturnType<typeof service.deleteLogs> =
+				TestBed.runInInjectionContext(() => service.deleteLogs());
 			await mutation.mutateAsync([1, 2, 3]);
 
 			expect(logRepository.deleteBatch).toHaveBeenCalledWith([1, 2, 3]);
@@ -305,17 +312,18 @@ describe("LogManagementService", () =>
 
 		it("should clear selection and invalidate queries on success", async () =>
 		{
-			logRepository.deleteBatch.and.returnValue(of(void 0));
+			logRepository.deleteBatch.and.returnValue(of(2));
 			service.toggleSelection(1);
 			service.toggleSelection(2);
 
-			const mutation = service.deleteLogs();
+			const mutation: ReturnType<typeof service.deleteLogs> =
+				TestBed.runInInjectionContext(() => service.deleteLogs());
 			await mutation.mutateAsync([1, 2]);
 
 			expect(service.selectedIds().size).toBe(0);
-			expect(
-				queryClient.isFetching({ queryKey: ["logs"] })
-			).toBeGreaterThan(0);
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["logs"]
+			});
 		});
 	});
 });

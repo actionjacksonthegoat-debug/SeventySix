@@ -1,4 +1,4 @@
-import { Component, computed, inject } from "@angular/core";
+import { Component, computed, inject, Signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
@@ -18,7 +18,7 @@ export class UnitToggleComponent
 		WeatherPreferencesService
 	);
 
-	readonly currentUnits: Signal<"metric" | "imperial"> = computed(() =>
+	readonly currentUnits: Signal<Units> = computed(() =>
 		this.preferencesService.units()
 	);
 	readonly temperatureUnit: Signal<string> = computed(() =>
