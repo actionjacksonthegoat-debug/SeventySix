@@ -13,9 +13,13 @@ describe("ApiService", () =>
 	let service: ApiService;
 	let httpMock: HttpTestingController;
 	const baseUrl = environment.apiUrl;
+	let consoleErrorSpy: jasmine.Spy;
 
 	beforeEach(() =>
 	{
+		// Suppress console.error during tests to avoid cluttering test output
+		consoleErrorSpy = spyOn(console, "error");
+
 		TestBed.configureTestingModule({
 			providers: [
 				ApiService,

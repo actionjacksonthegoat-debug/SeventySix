@@ -94,7 +94,7 @@ describe("BreadcrumbComponent", () =>
 
 		const breadcrumbs = component.breadcrumbs();
 		const adminCrumb = breadcrumbs.find(
-			(b) => b.label === "Administration"
+			(b) => b.label === "Admin" || b.label === "Dashboard"
 		);
 
 		expect(adminCrumb).toBeDefined();
@@ -120,11 +120,11 @@ describe("BreadcrumbComponent", () =>
 
 		const breadcrumbs = component.breadcrumbs();
 
-		// Should have: Home, Administration, User Management, Details (for :id)
+		// Should have: Home, Admin, Users, Details (for :id)
 		expect(breadcrumbs.length).toBe(4);
 		expect(breadcrumbs[0].label).toBe("Home");
-		expect(breadcrumbs[1].label).toBe("Administration");
-		expect(breadcrumbs[2].label).toBe("User Management");
+		expect(breadcrumbs[1].label).toBe("Admin");
+		expect(breadcrumbs[2].label).toBe("Users");
 		expect(breadcrumbs[3].label).toBe("Details");
 	});
 
@@ -159,9 +159,7 @@ describe("BreadcrumbComponent", () =>
 		fixture.detectChanges();
 
 		const breadcrumbs = component.breadcrumbs();
-		const usersCrumb = breadcrumbs.find(
-			(b) => b.label === "User Management"
-		);
+		const usersCrumb = breadcrumbs.find((b) => b.label === "Users");
 
 		expect(usersCrumb?.url).toBe("/admin/users");
 	});

@@ -128,8 +128,9 @@ export class BreadcrumbComponent
 	private buildBreadcrumbs(): BreadcrumbItem[]
 	{
 		const breadcrumbs: BreadcrumbItem[] = [];
-		let currentRoute: ActivatedRoute = this.activatedRoute.root;
-		let url: string = "";
+		const urlSegments: string[] = this.router.url
+			.split("/")
+			.filter((s) => s);
 
 		// Always add home
 		breadcrumbs.push({
@@ -138,34 +139,104 @@ export class BreadcrumbComponent
 			isActive: this.router.url === "/"
 		});
 
-		while (currentRoute.firstChild)
+		if (urlSegments.length === 0)
 		{
-			currentRoute = currentRoute.firstChild;
-			const routeConfig: import("@angular/router").Route | null =
-				currentRoute.routeConfig;
+			return breadcrumbs;
+		}
 
-			// Skip routes without paths or with empty paths
-			if (!routeConfig?.path)
+		// Build feature-based breadcrumbs
+		const firstSegment = urlSegments[0];
+		const featureMap: Record<string, { label: string; url: string }> = {
+			"weather-forecast": { label: "Home", url: "/" },
+			game: { label: "Game", url: "/game" },
+			developer: { label: "Developer", url: "/developer/style-guide" },
+			admin: { label: "Admin", url: "/admin" }
+		};
+
+		// Add feature breadcrumb if not already home
+		if (firstSegment in featureMap && firstSegment !== "weather-forecast")
+		{
+			const feature = featureMap[firstSegment];
+			breadcrumbs.push({
+				label: feature.label,
+				url: feature.url,
+				isActive: this.router.url === feature.url
+			});
+		}
+
+		// Add sub-page breadcrumbs
+		let url = "";
+		for (let i = 0; i < urlSegments.length; i++)
+		{
+			const segment = urlSegments[i];
+			url += `/${segment}`;
+
+			// Skip if this is the feature root we already added
+			if (
+				i === 0 &&
+				segment in featureMap &&
+				segment !== "weather-forecast"
+			)
 			{
 				continue;
 			}
 
-			// Build URL
-			url += `/${routeConfig.path}`;
+			// Get label from custom mappings or format the segment
+			const label = this.getSegmentLabel(url, segment, urlSegments, i);
 
-			// Get breadcrumb label from route data or path
-			const label: string =
-				currentRoute.snapshot.data["breadcrumb"] ||
-				this.formatPathSegment(routeConfig.path);
+			// Skip empty labels
+			if (!label)
+			{
+				continue;
+			}
 
 			breadcrumbs.push({
 				label,
 				url,
-				isActive: this.router.url === url
+				isActive:
+					this.router.url === url ||
+					this.router.url.startsWith(url + "?")
 			});
 		}
 
 		return breadcrumbs;
+	}
+
+	/**
+	 * Gets the label for a URL segment
+	 */
+	private getSegmentLabel(
+		url: string,
+		segment: string,
+		allSegments: string[],
+		index: number
+	): string
+	{
+		// Custom labels for specific routes
+		const routeLabels: Record<string, string> = {
+			"/weather-forecast": "Weather Forecast",
+			"/game": "World Map",
+			"/developer/style-guide": "Style Guide",
+			"/admin": "Dashboard",
+			"/admin/dashboard": "Dashboard",
+			"/admin/logs": "Logs",
+			"/admin/users": "Users",
+			"/admin/users/create": "Create User"
+		};
+
+		if (routeLabels[url])
+		{
+			return routeLabels[url];
+		}
+
+		// Handle dynamic segments (like :id)
+		if (segment.match(/^\d+$/))
+		{
+			return "Details";
+		}
+
+		// Format the segment
+		return this.formatPathSegment(segment);
 	}
 
 	/**
