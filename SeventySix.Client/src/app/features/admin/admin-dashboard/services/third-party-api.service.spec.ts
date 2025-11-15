@@ -10,12 +10,13 @@ import {
 	ThirdPartyApiStatistics
 } from "@admin/admin-dashboard/models";
 import { ThirdPartyApiService } from "./third-party-api.service";
+import { environment } from "@environments/environment";
 
 describe("ThirdPartyApiService", () =>
 {
 	let service: ThirdPartyApiService;
 	let httpMock: HttpTestingController;
-	const apiUrl = "https://localhost:7074/api/ThirdPartyApiRequest";
+	const apiUrl = `${environment.apiUrl}/ThirdPartyApiRequest`;
 
 	beforeEach(() =>
 	{

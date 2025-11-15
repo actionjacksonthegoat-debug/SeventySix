@@ -36,40 +36,44 @@ interface Environment
 	};
 }
 
+/**
+ * Test Environment Configuration
+ * Uses port :1234 to ensure tests never hit real API endpoints
+ * Integration tests are disabled by default
+ */
 export const environment: Environment = {
 	production: false,
-	apiUrl: "https://localhost:7074/api", // HTTPS for docker-compose (use http://localhost:5085/api for Container debugging)
+	apiUrl: "http://localhost:1234/api", // Test-only port to prevent hitting real API
 	logging: {
-		enableRemoteLogging: true,
+		enableRemoteLogging: false, // Disable remote logging in tests
 		batchSize: 10,
-		batchInterval: 5000, // 5 seconds
+		batchInterval: 250, // Fast enough for tests but prevents race conditions
 		maxQueueSize: 100,
-		maxRetryCount: 3,
-		circuitBreakerThreshold: 5,
-		circuitBreakerTimeout: 30000 // 30 seconds
+		maxRetryCount: 1, // Minimal retries in tests
+		circuitBreakerThreshold: 3, // Lower threshold for faster tests
+		circuitBreakerTimeout: 1000 // Faster timeout (1s instead of 30s)
 	},
 	observability: {
-		// Observability stack URLs (Jaeger + Prometheus)
-		jaegerUrl: "http://localhost:16686", // Jaeger UI for distributed tracing
-		prometheusUrl: "http://localhost:9090", // Prometheus for metrics
-		enabled: true // Set to true when observability stack is deployed
+		jaegerUrl: "http://localhost:16686",
+		prometheusUrl: "http://localhost:9090",
+		enabled: false // Disabled in tests
 	},
 	cache: {
 		query: {
 			default: {
-				staleTime: 0, // Always stale in dev
-				gcTime: 60000, // 1min in dev
-				retry: 1,
+				staleTime: 0, // No caching in tests
+				gcTime: 0,
+				retry: 0, // No retries in tests
 				refetchOnWindowFocus: false,
 				refetchOnReconnect: false
 			},
-			weather: { staleTime: 0, gcTime: 60000, retry: 1 },
-			users: { staleTime: 0, gcTime: 60000, retry: 1 },
-			logs: { staleTime: 0, gcTime: 60000, retry: 1 },
-			health: { staleTime: 0, gcTime: 60000, retry: 1 }
+			weather: { staleTime: 0, gcTime: 0, retry: 0 },
+			users: { staleTime: 0, gcTime: 0, retry: 0 },
+			logs: { staleTime: 0, gcTime: 0, retry: 0 },
+			health: { staleTime: 0, gcTime: 0, retry: 0 }
 		}
 	},
 	testing: {
-		runIntegrationTests: false
+		runIntegrationTests: false // Integration tests disabled by default
 	}
 };

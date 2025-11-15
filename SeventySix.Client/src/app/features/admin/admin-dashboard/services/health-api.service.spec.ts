@@ -11,12 +11,13 @@ import {
 	ExternalApiHealth
 } from "@admin/admin-dashboard/models";
 import { HealthApiService } from "./health-api.service";
+import { environment } from "@environments/environment";
 
 describe("HealthApiService", () =>
 {
 	let service: HealthApiService;
 	let httpMock: HttpTestingController;
-	const apiUrl = "https://localhost:7074/api/health";
+	const apiUrl = `${environment.apiUrl}/health`;
 
 	beforeEach(() =>
 	{

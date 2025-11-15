@@ -7,12 +7,13 @@ import {
 import { provideZonelessChangeDetection } from "@angular/core";
 import { OneCallResponse } from "@home/weather/models";
 import { OpenWeatherService } from "./open-weather.service";
+import { environment } from "@environments/environment";
 
 describe("OpenWeatherService", () =>
 {
 	let service: OpenWeatherService;
 	let httpMock: HttpTestingController;
-	const apiBaseUrl = "https://localhost:7074/api/weatherforecast";
+	const apiBaseUrl = `${environment.apiUrl}/weatherforecast`;
 
 	beforeEach(() =>
 	{

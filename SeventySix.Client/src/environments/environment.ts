@@ -47,6 +47,9 @@ interface Environment
 			};
 		};
 	};
+	testing: {
+		runIntegrationTests: boolean;
+	};
 }
 
 export const environment: Environment = {
@@ -99,5 +102,8 @@ export const environment: Environment = {
 				retry: 1
 			}
 		}
+	},
+	testing: {
+		runIntegrationTests: false
 	}
 };

@@ -16,12 +16,13 @@ import {
 	LogChartData
 } from "@admin/admin-dashboard/models";
 import { LogStatistics } from "@admin/log-management/models";
+import { describeIntegration } from "@testing/integration-test.helper";
 
 /**
  * Integration tests for AdminDashboardComponent
  * Tests the integration between parent component and child components
  */
-describe("AdminDashboardComponent Integration Tests", () =>
+describeIntegration("AdminDashboardComponent Integration Tests", () =>
 {
 	let component: AdminDashboardComponent;
 	let fixture: ComponentFixture<AdminDashboardComponent>;

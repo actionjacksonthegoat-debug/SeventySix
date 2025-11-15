@@ -122,6 +122,12 @@
 						"codeCoverageExclude": [
 							"src/**/*.spec.ts",
 							"src/app/testing/**"
+						],
+						"fileReplacements": [
+							{
+								"replace": "src/environments/environment.ts",
+								"with": "src/environments/environment.test.ts"
+							}
 						]
 					}
 				}

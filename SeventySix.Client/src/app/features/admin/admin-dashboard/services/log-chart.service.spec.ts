@@ -8,12 +8,13 @@ import {
 import { LogChartData } from "@admin/admin-dashboard/models";
 import { LogStatistics } from "@admin/log-management/models";
 import { LogChartService } from "./log-chart.service";
+import { environment } from "@environments/environment";
 
 describe("LogChartService", () =>
 {
 	let service: LogChartService;
 	let httpMock: HttpTestingController;
-	const apiUrl = "https://localhost:7074/api/logs";
+	const apiUrl = `${environment.apiUrl}/logs`;
 
 	beforeEach(() =>
 	{

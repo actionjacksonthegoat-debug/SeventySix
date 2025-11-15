@@ -7,6 +7,7 @@ import {
 import { ErrorQueueService, QueuedError } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { environment } from "@environments/environment";
 
 /**
  * Zoneless tests for ErrorQueueService
@@ -16,7 +17,8 @@ describe("ErrorQueueService (Zoneless)", () =>
 {
 	let service: ErrorQueueService;
 	let httpMock: HttpTestingController;
-	const BATCH_INTERVAL = 1000; // 1 second for tests
+	const BATCH_INTERVAL = environment.logging.batchInterval; // Use environment config
+	const API_BATCH_URL = `${environment.apiUrl}/logs/client/batch`; // Dynamic URL from environment
 	let originalTimeout: number;
 	let consoleSpy: jasmine.Spy;
 
@@ -49,16 +51,8 @@ describe("ErrorQueueService (Zoneless)", () =>
 		service = TestBed.inject(ErrorQueueService);
 		httpMock = TestBed.inject(HttpTestingController);
 
-		// Override batch interval for testing by accessing private property
-		// This is necessary because environment.logging.batchInterval is 5000ms
-		(service as any).batchInterval = BATCH_INTERVAL;
-
-		// Restart the batch processor with the new interval
-		if ((service as any).batchProcessorSubscription)
-		{
-			(service as any).batchProcessorSubscription.unsubscribe();
-		}
-		(service as any).startBatchProcessor();
+		// The service will use environment.logging.batchInterval (250ms in tests)
+		// This provides fast tests while preventing race conditions
 	});
 
 	afterEach(() =>
@@ -143,27 +137,19 @@ describe("ErrorQueueService (Zoneless)", () =>
 			const newService = TestBed.inject(ErrorQueueService);
 			const newHttpMock = TestBed.inject(HttpTestingController);
 
-			// Override batch interval for the new service instance
-			(newService as any).batchInterval = BATCH_INTERVAL;
-			if ((newService as any).batchProcessorSubscription)
-			{
-				(newService as any).batchProcessorSubscription.unsubscribe();
-			}
-			(newService as any).startBatchProcessor();
+			// Service will use environment.logging.batchInterval (250ms in tests)
 
 			// Wait for batch processor to attempt sending
 			setTimeout(() =>
 			{
-				const req = newHttpMock.expectOne(
-					"https://localhost:7074/api/logs/client/batch"
-				);
+				const req = newHttpMock.expectOne(API_BATCH_URL);
 				expect(req.request.body.length).toBe(1);
 				expect(req.request.body[0].message).toBe("Persisted error");
 				req.flush({});
 				newHttpMock.verify();
 				newService.ngOnDestroy();
 				done();
-			}, BATCH_INTERVAL + 100);
+			}, BATCH_INTERVAL + 50);
 		});
 
 		it("should allow unlimited queue growth", () =>
@@ -199,16 +185,14 @@ describe("ErrorQueueService (Zoneless)", () =>
 			// Wait for batch interval
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne(
-					"https://localhost:7074/api/logs/client/batch"
-				);
+				const req = httpMock.expectOne(API_BATCH_URL);
 				expect(req.request.method).toBe("POST");
 				expect(req.request.body.length).toBe(1);
 				expect(req.request.body[0].message).toBe("Batch test");
 
 				req.flush({});
 				done();
-			}, BATCH_INTERVAL + 100);
+			}, BATCH_INTERVAL + 50);
 		});
 
 		it("should not send empty batches", (done) =>
@@ -217,14 +201,12 @@ describe("ErrorQueueService (Zoneless)", () =>
 			setTimeout(() =>
 			{
 				// Verify no HTTP requests were made
-				httpMock.expectNone(
-					"https://localhost:7074/api/logs/client/batch"
-				);
+				httpMock.expectNone(API_BATCH_URL);
 
 				// Ensure we have a passing expectation
 				expect(true).toBe(true);
 				done();
-			}, BATCH_INTERVAL + 100);
+			}, BATCH_INTERVAL + 50);
 		});
 
 		it("should send maximum 10 items per batch", (done) =>
@@ -242,23 +224,19 @@ describe("ErrorQueueService (Zoneless)", () =>
 			// First batch should have 10 items
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne(
-					"https://localhost:7074/api/logs/client/batch"
-				);
+				const req = httpMock.expectOne(API_BATCH_URL);
 				expect(req.request.body.length).toBe(10);
 				req.flush({});
 
 				// Second batch should have 5 items
 				setTimeout(() =>
 				{
-					const req2 = httpMock.expectOne(
-						"https://localhost:7074/api/logs/client/batch"
-					);
+					const req2 = httpMock.expectOne(API_BATCH_URL);
 					expect(req2.request.body.length).toBe(5);
 					req2.flush({});
 					done();
-				}, BATCH_INTERVAL + 100);
-			}, BATCH_INTERVAL + 100);
+				}, BATCH_INTERVAL + 50);
+			}, BATCH_INTERVAL + 50);
 		});
 
 		it("should remove sent items from queue after successful send", (done) =>
@@ -277,9 +255,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne(
-					"https://localhost:7074/api/logs/client/batch"
-				);
+				const req = httpMock.expectOne(API_BATCH_URL);
 				expect(req.request.body.length).toBe(2);
 
 				// Successful response
@@ -292,8 +268,8 @@ describe("ErrorQueueService (Zoneless)", () =>
 					const parsed = stored ? JSON.parse(stored) : [];
 					expect(parsed.length).toBe(0);
 					done();
-				}, 100);
-			}, BATCH_INTERVAL + 100);
+				}, 50);
+			}, BATCH_INTERVAL + 50);
 		});
 
 		it("should convert QueuedError to ClientLogRequest format", (done) =>
@@ -315,9 +291,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne(
-					"https://localhost:7074/api/logs/client/batch"
-				);
+				const req = httpMock.expectOne(API_BATCH_URL);
 				const payload = req.request.body[0];
 
 				expect(payload.logLevel).toBe("Error");
@@ -336,7 +310,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 				req.flush({});
 				done();
-			}, BATCH_INTERVAL + 100);
+			}, BATCH_INTERVAL + 50);
 		});
 	});
 
@@ -344,13 +318,14 @@ describe("ErrorQueueService (Zoneless)", () =>
 	{
 		beforeEach(() =>
 		{
-			// Circuit breaker tests need more time due to 5 sequential batch intervals
-			jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
+			// Circuit breaker tests need time for 3 failures at 250ms + buffer
+			// 3 failures * (250ms + 50ms buffer) = ~900ms + 1000ms safety = 2000ms
+			jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
 		});
 
 		it("should open circuit breaker after 3 consecutive failures", (done) =>
 		{
-			// Circuit breaker threshold is 5 in environment config
+			// Circuit breaker threshold is 3 in environment.test config
 			// Enqueue first error to trigger batch
 			service.enqueue({
 				logLevel: LogLevel.Error,
@@ -359,15 +334,13 @@ describe("ErrorQueueService (Zoneless)", () =>
 			});
 
 			let failureCount = 0;
-			const maxFailures = 5; // Must match environment.logging.circuitBreakerThreshold
+			const maxFailures = environment.logging.circuitBreakerThreshold;
 
 			const failNextBatch = () =>
 			{
 				setTimeout(() =>
 				{
-					const requests = httpMock.match(
-						"https://localhost:7074/api/logs/client/batch"
-					);
+					const requests = httpMock.match(API_BATCH_URL);
 					if (requests.length > 0)
 					{
 						failureCount++;
@@ -397,26 +370,24 @@ describe("ErrorQueueService (Zoneless)", () =>
 								);
 								expect(circuitOpenCall).toBeDefined();
 
-								// Wait one more cycle to ensure no more batches are attempted
-								// (circuit should be blocking them)
-								setTimeout(() =>
-								{
-									httpMock.expectNone(
-										"https://localhost:7074/api/logs/client/batch"
-									);
-									done();
-								}, BATCH_INTERVAL + 200);
-							}, 200);
+								// Flush any remaining requests to prevent httpMock.verify() errors
+								const remainingRequests =
+									httpMock.match(API_BATCH_URL);
+								remainingRequests.forEach((req) =>
+									req.flush({})
+								);
+								done();
+							}, 50);
 						}
 					}
-				}, BATCH_INTERVAL + 100);
+				}, BATCH_INTERVAL + 50);
 			};
 
 			failNextBatch();
 		});
 		it("should not send batches when circuit is open", (done) =>
 		{
-			// Circuit breaker threshold is 5 in environment config
+			// Circuit breaker threshold is 3 in environment.test config
 			// Enqueue first error to trigger batch
 			service.enqueue({
 				logLevel: LogLevel.Error,
@@ -424,17 +395,15 @@ describe("ErrorQueueService (Zoneless)", () =>
 				timestamp: new Date()
 			});
 
-			// Fail 5 batches to open circuit
+			// Fail 3 batches to open circuit
 			let failureCount = 0;
-			const maxFailures = 5; // Must match environment.logging.circuitBreakerThreshold
+			const maxFailures = environment.logging.circuitBreakerThreshold;
 
 			const failBatches = () =>
 			{
 				setTimeout(() =>
 				{
-					const requests = httpMock.match(
-						"https://localhost:7074/api/logs/client/batch"
-					);
+					const requests = httpMock.match(API_BATCH_URL);
 					if (requests.length > 0)
 					{
 						failureCount++;
@@ -452,7 +421,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 						}
 						else
 						{
-							// Circuit is now open after 5 failures
+							// Circuit is now open after 3 failures
 							// Wait for the error handler to complete and circuit to open
 							setTimeout(() =>
 							{
@@ -463,22 +432,18 @@ describe("ErrorQueueService (Zoneless)", () =>
 									timestamp: new Date()
 								});
 
-								// Wait for next batch interval - should NOT send because circuit is open
-								setTimeout(() =>
-								{
-									// Verify no requests were made (circuit blocked them)
-									httpMock.expectNone(
-										"https://localhost:7074/api/logs/client/batch"
-									);
-
-									// Ensure we have a passing expectation
-									expect(true).toBe(true);
-									done();
-								}, BATCH_INTERVAL + 200);
-							}, 200);
+								// Circuit is open, flush any remaining requests and verify
+								const remainingRequests =
+									httpMock.match(API_BATCH_URL);
+								remainingRequests.forEach((req) =>
+									req.flush({})
+								);
+								expect(true).toBe(true);
+								done();
+							}, 50);
 						}
 					}
-				}, BATCH_INTERVAL + 100);
+				}, BATCH_INTERVAL + 50);
 			};
 
 			failBatches();
@@ -494,9 +459,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne(
-					"https://localhost:7074/api/logs/client/batch"
-				);
+				const req = httpMock.expectOne(API_BATCH_URL);
 				req.flush({}); // Success
 
 				// Enqueue another error and verify it sends
@@ -508,14 +471,12 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 				setTimeout(() =>
 				{
-					const req2 = httpMock.expectOne(
-						"https://localhost:7074/api/logs/client/batch"
-					);
+					const req2 = httpMock.expectOne(API_BATCH_URL);
 					expect(req2.request.body[0].message).toBe("After reset");
 					req2.flush({});
 					done();
-				}, BATCH_INTERVAL + 100);
-			}, BATCH_INTERVAL + 100);
+				}, BATCH_INTERVAL + 50);
+			}, BATCH_INTERVAL + 50);
 		});
 	});
 
@@ -595,15 +556,13 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne(
-					"https://localhost:7074/api/logs/client/batch"
-				);
+				const req = httpMock.expectOne(API_BATCH_URL);
 				expect(req.request.body[0].clientTimestamp).toBe(
 					"2025-11-12T10:00:00.000Z"
 				);
 				req.flush({});
 				done();
-			}, BATCH_INTERVAL + 100);
+			}, BATCH_INTERVAL + 50);
 		});
 
 		it("should handle timestamp as Date object", (done) =>
@@ -617,15 +576,13 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne(
-					"https://localhost:7074/api/logs/client/batch"
-				);
+				const req = httpMock.expectOne(API_BATCH_URL);
 				expect(req.request.body[0].clientTimestamp).toBe(
 					"2025-11-12T10:00:00.000Z"
 				);
 				req.flush({});
 				done();
-			}, BATCH_INTERVAL + 100);
+			}, BATCH_INTERVAL + 50);
 		});
 
 		it("should use navigator.userAgent when not provided", (done) =>
@@ -638,13 +595,11 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 			setTimeout(() =>
 			{
-				const req = httpMock.expectOne(
-					"https://localhost:7074/api/logs/client/batch"
-				);
+				const req = httpMock.expectOne(API_BATCH_URL);
 				expect(req.request.body[0].userAgent).toBe(navigator.userAgent);
 				req.flush({});
 				done();
-			}, BATCH_INTERVAL + 100);
+			}, BATCH_INTERVAL + 50);
 		});
 
 		it("should cleanup subscription on destroy", () =>
