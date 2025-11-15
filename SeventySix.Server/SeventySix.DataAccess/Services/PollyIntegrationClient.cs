@@ -57,6 +57,12 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 	private readonly PollyOptions Options;
 	private readonly ResiliencePipeline<HttpResponseMessage> ResiliencePipeline;
 
+	// Add this field to cache the JsonSerializerOptions instance
+	private static readonly JsonSerializerOptions CachedJsonSerializerOptions = new JsonSerializerOptions
+	{
+		PropertyNameCaseInsensitive = true,
+	};
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="PollyIntegrationClient"/> class.
 	/// </summary>
@@ -147,10 +153,7 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 
 			// Deserialize response
 			string content = await response.Content.ReadAsStringAsync(cancellationToken);
-			T? result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-			{
-				PropertyNameCaseInsensitive = true,
-			});
+			T? result = JsonSerializer.Deserialize<T>(content, CachedJsonSerializerOptions);
 
 			// Cache the result
 			if (result is not null && !string.IsNullOrWhiteSpace(cacheKey))
@@ -234,10 +237,7 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 
 			// Deserialize response
 			string responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-			return JsonSerializer.Deserialize<TResponse>(responseContent, new JsonSerializerOptions
-			{
-				PropertyNameCaseInsensitive = true,
-			});
+			return JsonSerializer.Deserialize<TResponse>(responseContent, CachedJsonSerializerOptions);
 		}
 		catch (Exception ex)
 		{

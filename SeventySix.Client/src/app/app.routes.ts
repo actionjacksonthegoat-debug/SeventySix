@@ -14,12 +14,6 @@ export const routes: Routes = [
 		title: "SeventySix - Home"
 	},
 	{
-		path: "users",
-		loadChildren: () =>
-			import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES),
-		data: { breadcrumb: "Users" }
-	},
-	{
 		path: "weather-forecast",
 		loadComponent: () =>
 			import("./features/home/weather/weather-forecast.component").then(
@@ -38,7 +32,7 @@ export const routes: Routes = [
 		data: { breadcrumb: "Game" }
 	},
 	{
-		path: "style-guide",
+		path: "developer/style-guide",
 		loadComponent: () =>
 			import(
 				"./features/developer/style-guide/style-guide.component"

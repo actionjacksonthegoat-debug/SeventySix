@@ -146,7 +146,7 @@ export class UserCreatePage
 				});
 
 				// Navigate to user list
-				this.router.navigate(["/users"]);
+				this.router.navigate(["/admin/users"]);
 			},
 			onError: (err) =>
 			{
@@ -160,6 +160,6 @@ export class UserCreatePage
 	 */
 	onCancel(): void
 	{
-		this.router.navigate(["/users"]);
+		this.router.navigate(["/admin/users"]);
 	}
 }

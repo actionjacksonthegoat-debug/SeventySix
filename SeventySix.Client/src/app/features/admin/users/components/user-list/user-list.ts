@@ -412,7 +412,7 @@ export class UserList implements AfterViewInit
 	 */
 	addUser(): void
 	{
-		this.router.navigate(["/users", "new"]);
+		this.router.navigate(["/admin/users/create"]);
 		this.logger.info("Navigating to create user");
 	}
 
@@ -422,7 +422,7 @@ export class UserList implements AfterViewInit
 	 */
 	editUser(user: User): void
 	{
-		this.router.navigate(["/users", user.id]);
+		this.router.navigate(["/admin/users", user.id]);
 		this.logger.info("Navigating to user detail", { userId: user.id });
 	}
 

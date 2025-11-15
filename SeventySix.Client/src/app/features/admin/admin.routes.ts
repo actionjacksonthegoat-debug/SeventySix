@@ -30,25 +30,21 @@ export const ADMIN_ROUTES: Routes = [
 		path: "users",
 		loadComponent: () =>
 			import("./users/users.component").then((m) => m.UsersComponent),
-		title: "User Management - SeventySix",
-		children: [
-			{
-				path: "create",
-				loadComponent: () =>
-					import("./users/subpages/user-create/user-create").then(
-						(m) => m.UserCreatePage
-					),
-				title: "Create User - SeventySix"
-			},
-			{
-				path: ":id",
-				loadComponent: () =>
-					import("./users/subpages/user/user-page").then(
-						(m) => m.UserPage
-					),
-				title: "User Details - SeventySix"
-			}
-		]
+		title: "User Management - SeventySix"
+	},
+	{
+		path: "users/create",
+		loadComponent: () =>
+			import("./users/subpages/user-create/user-create").then(
+				(m) => m.UserCreatePage
+			),
+		title: "Create User - SeventySix"
+	},
+	{
+		path: "users/:id",
+		loadComponent: () =>
+			import("./users/subpages/user/user-page").then((m) => m.UserPage),
+		title: "User Details - SeventySix"
 	},
 	{
 		path: "not-found",

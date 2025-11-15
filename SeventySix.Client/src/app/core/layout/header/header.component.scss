@@ -21,13 +21,15 @@
 	gap: vars.$spacing-sm;
 	font-size: vars.$font-size-lg;
 	font-weight: vars.$font-weight-medium;
-	cursor: pointer;
+	cursor: arrow;
 	user-select: none;
 
 	.logo-icon {
-		font-size: 28px;
 		width: 28px;
 		height: 28px;
+		border-radius: 50%;
+		object-fit: cover;
+		display: block;
 	}
 
 	.app-name {

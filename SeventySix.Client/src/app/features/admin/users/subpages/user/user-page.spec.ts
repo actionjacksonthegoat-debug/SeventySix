@@ -253,7 +253,7 @@ describe("UserPage", () =>
 	{
 		component.onCancel();
 
-		expect(mockRouter.navigate).toHaveBeenCalledWith(["/users"]);
+		expect(mockRouter.navigate).toHaveBeenCalledWith(["/admin/users"]);
 	});
 
 	it("should compute page title with username", async () =>

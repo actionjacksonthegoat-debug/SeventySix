@@ -63,17 +63,12 @@ export class SidebarComponent
 				{
 					label: "Users",
 					icon: "people",
-					route: "/users"
+					route: "/admin/users"
 				},
 				{
 					label: "Logs",
 					icon: "article",
 					route: "/admin/logs"
-				},
-				{
-					label: "Settings",
-					icon: "settings",
-					route: "/settings"
 				}
 			]
 		},
@@ -83,7 +78,7 @@ export class SidebarComponent
 				{
 					label: "Style Guide",
 					icon: "palette",
-					route: "/style-guide"
+					route: "/developer/style-guide"
 				}
 			]
 		}
