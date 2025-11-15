@@ -107,6 +107,7 @@ This will:
 
 -   Start Docker Desktop (if not already running)
 -   Launch PostgreSQL, Jaeger, and Prometheus containers
+    -   Jaeger and Prometheus will be fresh instances so new Jaeger log links and prometheus graphs will display based on this single run
 -   Start the API in a Docker container with HTTPS on port 7074
 -   Launch the Angular client
 
@@ -130,12 +131,24 @@ For debugging the API in Visual Studio 2022:
     npm run start:api-debug
     ```
 
+This will:
+
+-   Launch PostgreSQL, Jaeger, and Prometheus containers
+    -   Jaeger and Prometheus will be fresh instances so new Jaeger log links and prometheus graphs will display based on this single run
+-   Launch the Angular client
+
 2. **Open Visual Studio 2022**:
 
     - Open `SeventySix.Server\SeventySix.Server.sln`
     - Set `SeventySix.Api` as the startup project
     - Select the **"https"** profile (NOT Container)
     - Press **F5** to start debugging
+
+3. **Allow the self signed certificate**
+
+    - Open https://localhost:7074/api/logs
+    - Select advanced and allow the certificate
+    - This will remain approved while the browser remains open
 
 **When finished**, stop the infrastructure:
 

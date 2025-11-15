@@ -75,6 +75,7 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IHealthCheckService, HealthCheckService>();
 		services.AddScoped<ILogChartService, LogChartService>();
 		services.AddScoped<IOpenWeatherService, OpenWeatherService>();
+		services.AddSingleton<IMetricsService, MetricsService>();
 
 		// Infrastructure services
 		services.AddScoped<ITransactionManager, TransactionManager>();

@@ -15,7 +15,9 @@ namespace SeventySix.BusinessLogic.Services;
 /// Provides business logic for retrieving comprehensive system health status.
 /// Follows SRP by handling only health check business logic.
 /// </remarks>
-public class HealthCheckService : IHealthCheckService
+/// <param name="metricsService">Metrics service for tracking health metrics.</param>
+/// <param name="logRepository">Log repository for database health checks.</param>
+public class HealthCheckService(IMetricsService metricsService, ILogRepository logRepository) : IHealthCheckService
 {
 	/// <inheritdoc/>
 	public async Task<HealthStatusResponse> GetHealthStatusAsync(CancellationToken cancellationToken)
@@ -53,51 +55,87 @@ public class HealthCheckService : IHealthCheckService
 		};
 	}
 
-	private static Task<DatabaseHealthResponse> CheckDatabaseHealthAsync(CancellationToken cancellationToken)
+	private async Task<DatabaseHealthResponse> CheckDatabaseHealthAsync(CancellationToken cancellationToken)
 	{
-		// Basic implementation - in production this would check actual database connectivity
-		// For now, return healthy status
-		return Task.FromResult(
-			new DatabaseHealthResponse
+		try
+		{
+			Stopwatch stopwatch = Stopwatch.StartNew();
+
+			// Check database connectivity with a simple count query
+			// This will throw if database is not accessible
+			_ = await logRepository.GetLogsCountAsync(cancellationToken: cancellationToken);
+
+			stopwatch.Stop();
+
+			// Get connection statistics from metrics service
+			int activeConnections = metricsService.GetActiveDbConnections();
+
+			return new DatabaseHealthResponse
 			{
 				IsConnected = true,
-				ResponseTimeMs = 25.0,
-				ActiveConnections = 5,
+				ResponseTimeMs = stopwatch.Elapsed.TotalMilliseconds,
+				ActiveConnections = activeConnections,
 				Status = "Healthy",
-			});
+			};
+		}
+		catch (Exception)
+		{
+			return new DatabaseHealthResponse
+			{
+				IsConnected = false,
+				ResponseTimeMs = 0,
+				ActiveConnections = 0,
+				Status = "Unhealthy",
+			};
+		}
 	}
 
 	private static Task<ExternalApiHealthResponse> CheckExternalApisHealthAsync(CancellationToken cancellationToken)
 	{
 		// Basic implementation - in production this would check actual API availability
+		// For now, we don't have external API health monitoring implemented
 		return Task.FromResult(new ExternalApiHealthResponse
 		{
 			Apis = [],
 		});
 	}
 
-	private static Task<QueueHealthResponse> CheckErrorQueueHealthAsync(CancellationToken cancellationToken)
+	private Task<QueueHealthResponse> CheckErrorQueueHealthAsync(CancellationToken cancellationToken)
 	{
-		// Basic implementation - in production this would check actual queue status
+		// Get queue statistics from metrics service
+		(int queuedItems, int failedItems) = metricsService.GetQueueStats();
+
+		// Determine status based on queue size
+		string status = "Healthy";
+		if (failedItems > 10)
+		{
+			status = "Unhealthy";
+		}
+		else if (queuedItems > 50)
+		{
+			status = "Degraded";
+		}
+
 		return Task.FromResult(new QueueHealthResponse
 		{
-			QueuedItems = 0,
-			FailedItems = 0,
-			CircuitBreakerOpen = false,
-			Status = "Healthy",
+			QueuedItems = queuedItems,
+			FailedItems = failedItems,
+			CircuitBreakerOpen = failedItems > 10, // Simple heuristic
+			Status = status,
 		});
 	}
 
 	private static Task<SystemResourcesResponse> CheckSystemResourcesAsync(CancellationToken cancellationToken)
 	{
-		// Get actual system resource metrics
+		// Get actual system resource metrics from the current process
 		Process process = Process.GetCurrentProcess();
 
 		long memoryUsedMb = process.WorkingSet64 / 1024 / 1024;
 		long totalMemoryMb = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024;
 
-		// CPU usage is more complex to calculate accurately
-		// For now, use a simple placeholder
+		// CPU usage calculation - get current usage
+		// Note: First call to TotalProcessorTime returns time since process start
+		// For real-time monitoring, this should be calculated over an interval
 		double cpuUsage = 0.0;
 
 		return Task.FromResult(new SystemResourcesResponse
@@ -105,7 +143,7 @@ public class HealthCheckService : IHealthCheckService
 			CpuUsagePercent = cpuUsage,
 			MemoryUsedMb = memoryUsedMb,
 			MemoryTotalMb = totalMemoryMb,
-			DiskUsagePercent = 0.0, // Placeholder
+			DiskUsagePercent = 0.0, // Placeholder - would need DriveInfo to calculate
 		});
 	}
 

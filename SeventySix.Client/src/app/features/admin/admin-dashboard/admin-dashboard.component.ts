@@ -48,12 +48,32 @@ export class AdminDashboardComponent
 	}
 
 	/**
-	 * Opens Prometheus UI in a new tab
+	 * Opens Prometheus UI in a new tab with SeventySix metrics dashboard
 	 */
 	openPrometheus(): void
 	{
-		const url: string =
+		const baseUrl: string =
 			environment.observability.prometheusUrl || "http://localhost:9090";
+
+		// Open to graph view with multiple useful queries
+		// g0: HTTP request rate, g1: Request duration, g2: Active requests, g3: Error rate
+		const queries: string[] = [
+			'rate(http_server_request_duration_seconds_count{job="seventysix-api"}[5m])',
+			'histogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket{job="seventysix-api"}[5m]))',
+			'http_server_active_requests{job="seventysix-api"}',
+			'rate(http_server_request_duration_seconds_count{job="seventysix-api",http_response_status_code=~"5.."}[5m])'
+		];
+
+		// Build URL with multiple graph panels
+		const queryParams: string = queries
+			.map(
+				(query, index) =>
+					`g${index}.expr=${encodeURIComponent(query)}&g${index}.tab=0&g${index}.range_input=1h`
+			)
+			.join("&");
+
+		const url: string = `${baseUrl}/graph?${queryParams}`;
+
 		window.open(url, "_blank");
 	}
 }

@@ -3,8 +3,10 @@
 // </copyright>
 
 using Moq;
+using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.BusinessLogic.Services;
 using SeventySix.Core.DTOs.Health;
+using SeventySix.Core.Interfaces;
 
 namespace SeventySix.BusinessLogic.Tests.Services;
 
@@ -13,11 +15,21 @@ namespace SeventySix.BusinessLogic.Tests.Services;
 /// </summary>
 public class HealthCheckServiceTests
 {
-	private readonly HealthCheckService Service;
+	private readonly Mock<IMetricsService> MockMetricsService;
+	private readonly Mock<ILogRepository> MockLogRepository;
+	private readonly IHealthCheckService Service;
 
 	public HealthCheckServiceTests()
 	{
-		Service = new HealthCheckService();
+		MockMetricsService = new Mock<IMetricsService>();
+		MockLogRepository = new Mock<ILogRepository>();
+
+		// Setup default mock behaviors
+		MockLogRepository
+			.Setup(x => x.GetLogsCountAsync(null, null, null, null, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(100);
+
+		Service = new HealthCheckService(MockMetricsService.Object, MockLogRepository.Object);
 	}
 
 	[Fact]

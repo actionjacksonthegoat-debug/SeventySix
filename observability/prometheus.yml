@@ -11,11 +11,25 @@ global:
 # Scrape configurations
 scrape_configs:
     # SeventySix API metrics
+    # Development: Uses HTTP for simplicity with Docker networking
+    # Production: Should use HTTPS with proper certificates
     - job_name: "seventysix-api"
       static_configs:
-          - targets: ["seventysix-api:8080", "host.docker.internal:5085"]
+          # When API runs in Docker: use service name on HTTP port
+          # The SmartHttpsRedirectionMiddleware allows /metrics over HTTP when configured
+          - targets: ["seventysix-api:8080"]
+            labels:
+                environment: "docker"
+          # When API runs locally: use host.docker.internal
+          - targets: ["host.docker.internal:5085"]
+            labels:
+                environment: "local"
       metrics_path: "/metrics"
       scrape_interval: 10s
+      # For production with HTTPS enforcement, uncomment and configure:
+      # scheme: https
+      # tls_config:
+      #   insecure_skip_verify: true  # Only for development/self-signed certs
 
     # Prometheus self-monitoring
     - job_name: "prometheus"
@@ -26,4 +40,3 @@ scrape_configs:
     - job_name: "jaeger"
       static_configs:
           - targets: ["jaeger:14269"]
-

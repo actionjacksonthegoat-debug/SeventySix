@@ -27,6 +27,7 @@
 // </remarks>
 
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
@@ -36,9 +37,14 @@ using Serilog.Exceptions;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Logging;
 using SeventySix.Api.Middleware;
+using SeventySix.BusinessLogic.Configuration;
 using SeventySix.Data;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// Bind centralized security settings (single source of truth for HTTPS enforcement)
+builder.Services.Configure<SecuritySettings>(
+	builder.Configuration.GetSection("Security"));
 
 // Disable HTTPS certificate requirements in development mode
 // This allows the app to run without certificate errors in Docker containers
@@ -81,7 +87,7 @@ builder.Host.UseSerilog();
 // Add HTTP context accessor for accessing HttpContext in services
 builder.Services.AddHttpContextAccessor();
 
-// Add OpenTelemetry with Jaeger exporter
+// Add OpenTelemetry with Jaeger exporter for tracing and Prometheus for metrics
 // Endpoint is configurable via appsettings.json or environment variable
 string otlpEndpoint = builder.Configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint")
 	?? "http://localhost:4317";
@@ -100,7 +106,16 @@ builder.Services.AddOpenTelemetry()
 		{
 			// Jaeger's OTLP endpoint (configurable for Docker vs local)
 			options.Endpoint = new Uri(otlpEndpoint);
-		}));
+		}))
+	.WithMetrics(metrics => metrics
+		// ASP.NET Core metrics (request duration, active requests, etc.)
+		.AddAspNetCoreInstrumentation()
+		// HTTP client metrics (outbound request duration, failures, etc.)
+		.AddHttpClientInstrumentation()
+		// .NET Runtime metrics (CPU, memory, GC, exceptions, thread pool)
+		.AddRuntimeInstrumentation()
+		// Prometheus exporter - exposes /metrics endpoint
+		.AddPrometheusExporter());
 
 // Add MVC controllers to the service container
 builder.Services.AddControllers();
@@ -221,14 +236,16 @@ if (app.Environment.IsDevelopment())
 // CORS - Must be called after UseRouting and before UseAuthorization
 app.UseCors("AllowedOrigins");
 
-// HTTPS redirection - Only redirect in production environments
-if (!app.Environment.IsDevelopment())
-{
-	app.UseHttpsRedirection();
-}
+// Smart HTTPS redirection - Centralized enforcement with configurable exemptions
+// Controlled by Security section in appsettings.json (single source of truth)
+app.UseMiddleware<SmartHttpsRedirectionMiddleware>();
 
 // Authorization middleware (currently no auth configured)
 app.UseAuthorization();
+
+// Map Prometheus metrics endpoint (accessible at /metrics)
+// This endpoint is scraped by Prometheus for metrics collection
+app.MapPrometheusScrapingEndpoint();
 
 // Map controller endpoints
 app.MapControllers();
