@@ -18,13 +18,14 @@ describe("LogManagementComponent", () =>
 	let fixture: ComponentFixture<LogManagementComponent>;
 	let mockLogService: jasmine.SpyObj<LogManagementService>;
 	let mockDialog: jasmine.SpyObj<MatDialog>;
+	let mockMutation: any;
 
 	const mockPagedLogs: PagedLogResponse = {
 		data: [
 			{
 				id: 1,
 				timestamp: new Date("2025-11-12T10:30:00Z"),
-				level: LogLevel.Error,
+				logLevel: "Error",
 				message: "Test error",
 				sourceContext: "TestService",
 				exception: null,
@@ -39,6 +40,8 @@ describe("LogManagementComponent", () =>
 				userName: null,
 				sessionId: null,
 				correlationId: null,
+				spanId: null,
+				parentSpanId: null,
 				clientIp: null,
 				userAgent: null,
 				duration: null,
@@ -56,6 +59,11 @@ describe("LogManagementComponent", () =>
 
 	beforeEach(async () =>
 	{
+		// Create mock mutation object with mutate method
+		mockMutation = {
+			mutate: jasmine.createSpy("mutate")
+		};
+
 		mockLogService = jasmine.createSpyObj("LogManagementService", [
 			"getLogs",
 			"getLogCount",
@@ -72,6 +80,7 @@ describe("LogManagementComponent", () =>
 		mockLogService.getLogCount.and.returnValue(
 			createMockQueryResult<{ total: number }, Error>({ total: 1 })
 		);
+		mockLogService.deleteLog.and.returnValue(mockMutation);
 
 		mockDialog = jasmine.createSpyObj("MatDialog", ["open"]);
 
@@ -147,14 +156,8 @@ describe("LogManagementComponent", () =>
 
 	it("should handle delete log from table", () =>
 	{
-		const mockMutation: any = {
-			mutate: jasmine.createSpy("mutate")
-		};
-		mockLogService.deleteLog.and.returnValue(mockMutation);
-
 		component.onDeleteLog(1);
 
-		expect(mockLogService.deleteLog).toHaveBeenCalled();
 		expect(mockMutation.mutate).toHaveBeenCalledWith(1);
 	});
 

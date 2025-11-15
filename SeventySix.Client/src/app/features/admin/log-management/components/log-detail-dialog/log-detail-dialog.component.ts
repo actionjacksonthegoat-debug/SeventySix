@@ -20,7 +20,11 @@ import { MatDividerModule } from "@angular/material/divider";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { Clipboard } from "@angular/cdk/clipboard";
-import { LogResponse, LogLevel } from "@admin/log-management/models";
+import {
+	LogResponse,
+	LogLevel,
+	parseLogLevel
+} from "@admin/log-management/models";
 import { environment } from "@environments/environment";
 
 /**
@@ -70,7 +74,8 @@ export class LogDetailDialogComponent
 	isError(): boolean
 	{
 		const log: LogResponse = this.log();
-		return log.level === LogLevel.Error || log.level === LogLevel.Fatal;
+		const level = parseLogLevel(log.logLevel);
+		return level === LogLevel.Error || level === LogLevel.Fatal;
 	}
 
 	/**
@@ -95,8 +100,9 @@ export class LogDetailDialogComponent
 		return /^0+$/.test(parentSpanId);
 	}
 
-	getLevelName(level: LogLevel): string
+	getLevelName(logLevel: string): string
 	{
+		const level = parseLogLevel(logLevel);
 		const names: Record<LogLevel, string> = {
 			[LogLevel.Verbose]: "Verbose",
 			[LogLevel.Debug]: "Debug",
@@ -108,8 +114,9 @@ export class LogDetailDialogComponent
 		return names[level];
 	}
 
-	getLevelIcon(level: LogLevel): string
+	getLevelIcon(logLevel: string): string
 	{
+		const level = parseLogLevel(logLevel);
 		const icons: Record<LogLevel, string> = {
 			[LogLevel.Verbose]: "bug_report",
 			[LogLevel.Debug]: "bug_report",
@@ -121,8 +128,9 @@ export class LogDetailDialogComponent
 		return icons[level];
 	}
 
-	getLevelClass(level: LogLevel): string
+	getLevelClass(logLevel: string): string
 	{
+		const level = parseLogLevel(logLevel);
 		const classes: Record<LogLevel, string> = {
 			[LogLevel.Verbose]: "level-verbose",
 			[LogLevel.Debug]: "level-debug",

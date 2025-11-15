@@ -15,9 +15,9 @@ describe("LogDetailDialogComponent", () =>
 
 	const mockLog: LogResponse = {
 		id: 1,
-		timestamp: new Date("2025-11-12T10:30:00Z"),
-		level: LogLevel.Error,
-		message: "Test error message",
+		timestamp: new Date("2024-11-13T09:00:00Z"),
+		logLevel: "Error",
+		message: "An error occurred while processing the request.",
 		sourceContext: "TestService",
 		exception: "System.Exception: Test exception",
 		stackTrace:
@@ -73,27 +73,27 @@ describe("LogDetailDialogComponent", () =>
 
 	it("should display log level name", () =>
 	{
-		expect(component.getLevelName(LogLevel.Error)).toBe("Error");
-		expect(component.getLevelName(LogLevel.Warning)).toBe("Warning");
-		expect(component.getLevelName(LogLevel.Fatal)).toBe("Fatal");
-		expect(component.getLevelName(LogLevel.Information)).toBe("Info");
-		expect(component.getLevelName(LogLevel.Debug)).toBe("Debug");
-		expect(component.getLevelName(LogLevel.Verbose)).toBe("Verbose");
+		expect(component.getLevelName("Error")).toBe("Error");
+		expect(component.getLevelName("Warning")).toBe("Warning");
+		expect(component.getLevelName("Fatal")).toBe("Fatal");
+		expect(component.getLevelName("Information")).toBe("Info");
+		expect(component.getLevelName("Debug")).toBe("Debug");
+		expect(component.getLevelName("Verbose")).toBe("Verbose");
 	});
 
 	it("should display log level icon", () =>
 	{
-		expect(component.getLevelIcon(LogLevel.Error)).toBe("error");
-		expect(component.getLevelIcon(LogLevel.Warning)).toBe("warning");
-		expect(component.getLevelIcon(LogLevel.Fatal)).toBe("cancel");
-		expect(component.getLevelIcon(LogLevel.Information)).toBe("info");
+		expect(component.getLevelIcon("Error")).toBe("error");
+		expect(component.getLevelIcon("Warning")).toBe("warning");
+		expect(component.getLevelIcon("Fatal")).toBe("cancel");
+		expect(component.getLevelIcon("Information")).toBe("info");
 	});
 
 	it("should display log level CSS class", () =>
 	{
-		expect(component.getLevelClass(LogLevel.Error)).toBe("level-error");
-		expect(component.getLevelClass(LogLevel.Warning)).toBe("level-warning");
-		expect(component.getLevelClass(LogLevel.Fatal)).toBe("level-fatal");
+		expect(component.getLevelClass("Error")).toBe("level-error");
+		expect(component.getLevelClass("Warning")).toBe("level-warning");
+		expect(component.getLevelClass("Fatal")).toBe("level-fatal");
 	});
 
 	it("should format relative time correctly", () =>

@@ -24,7 +24,7 @@ describe("LogRepository", () =>
 	const mockLog: LogResponse = {
 		id: 1,
 		timestamp: new Date("2024-01-01T00:00:00Z"),
-		level: LogLevel.Information,
+		logLevel: "Information",
 		message: "Test log message",
 		sourceContext: "TestContext",
 		exception: null,
@@ -39,6 +39,8 @@ describe("LogRepository", () =>
 		userName: null,
 		sessionId: null,
 		correlationId: null,
+		spanId: null,
+		parentSpanId: null,
 		clientIp: null,
 		userAgent: null,
 		duration: null,

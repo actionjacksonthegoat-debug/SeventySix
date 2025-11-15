@@ -28,7 +28,7 @@ describe("LogManagementService", () =>
 	const mockLogResponse: LogResponse = {
 		id: 1,
 		timestamp: new Date(),
-		level: LogLevel.Information,
+		logLevel: "Information",
 		message: "Test log",
 		sourceContext: "Test",
 		exception: null,
@@ -43,6 +43,8 @@ describe("LogManagementService", () =>
 		userName: null,
 		sessionId: null,
 		correlationId: null,
+		spanId: null,
+		parentSpanId: null,
 		clientIp: null,
 		userAgent: null,
 		duration: null,

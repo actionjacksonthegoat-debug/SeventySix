@@ -94,6 +94,23 @@ export class ApiStatisticsTableComponent implements OnInit
 	}
 
 	/**
+	 * Get status based on last called timestamp
+	 */
+	getStatus(timestamp: string | null): string
+	{
+		if (!timestamp) return "error";
+
+		const date: Date = new Date(timestamp);
+		const now: Date = new Date();
+		const diffMs: number = now.getTime() - date.getTime();
+		const diffHours: number = Math.floor(diffMs / 3600000);
+
+		if (diffHours < 1) return "ok";
+		if (diffHours < 24) return "warning";
+		return "error";
+	}
+
+	/**
 	 * Format last called timestamp
 	 */
 	formatLastCalled(timestamp: string | null): string

@@ -219,7 +219,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_FilterByRequestPath_ReturnsMatchingLogsAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs?requestPath=/api/weather");
+		HttpResponseMessage response = await Client.GetAsync("/api/logs?requestPath=/api/weatherforecast/current");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -227,7 +227,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
-		Assert.All(pagedResponse.Data, log => Assert.Equal("/api/weather", log.RequestPath));
+		Assert.All(pagedResponse.Data, log => Assert.Equal("/api/weatherforecast/current", log.RequestPath));
 	}
 
 	/// <summary>
@@ -290,7 +290,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/logs?logLevel=Warning&startDate={startDate:O}&endDate={endDate:O}&requestPath=/api/weather");
+			$"/api/logs?logLevel=Warning&startDate={startDate:O}&endDate={endDate:O}&requestPath=/api/weatherforecast/current");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -303,7 +303,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 			Assert.Equal("Warning", log.LogLevel);
 			Assert.True(log.Timestamp >= startDate);
 			Assert.True(log.Timestamp <= endDate);
-			Assert.Equal("/api/weather", log.RequestPath);
+			Assert.Equal("/api/weatherforecast/current", log.RequestPath);
 		});
 	}
 

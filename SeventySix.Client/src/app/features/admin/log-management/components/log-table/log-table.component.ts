@@ -22,7 +22,11 @@ import {
 } from "@angular/material/paginator";
 import { MatSortModule, MatSort } from "@angular/material/sort";
 import { SelectionModel } from "@angular/cdk/collections";
-import { LogResponse, LogLevel } from "@admin/log-management/models";
+import {
+	LogResponse,
+	LogLevel,
+	parseLogLevel
+} from "@admin/log-management/models";
 
 /**
  * Log table component with sorting, pagination, and selection
@@ -148,8 +152,9 @@ export class LogTableComponent implements AfterViewInit
 		this.pageChange.emit(event.pageIndex + 1);
 	}
 
-	getLevelName(level: LogLevel): string
+	getLevelName(logLevel: string): string
 	{
+		const level: LogLevel = parseLogLevel(logLevel);
 		const names: Record<LogLevel, string> = {
 			[LogLevel.Verbose]: "Verbose",
 			[LogLevel.Debug]: "Debug",
@@ -161,8 +166,9 @@ export class LogTableComponent implements AfterViewInit
 		return names[level];
 	}
 
-	getLevelClass(level: LogLevel): string
+	getLevelClass(logLevel: string): string
 	{
+		const level: LogLevel = parseLogLevel(logLevel);
 		const classes: Record<LogLevel, string> = {
 			[LogLevel.Verbose]: "level-verbose",
 			[LogLevel.Debug]: "level-debug",

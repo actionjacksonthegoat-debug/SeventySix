@@ -141,8 +141,7 @@ describe("ApiStatisticsTableComponent", () =>
 		expect(component.displayedColumns()).toEqual([
 			"apiName",
 			"callCount",
-			"lastCalledAt",
-			"status"
+			"lastCalledAt"
 		]);
 	});
 

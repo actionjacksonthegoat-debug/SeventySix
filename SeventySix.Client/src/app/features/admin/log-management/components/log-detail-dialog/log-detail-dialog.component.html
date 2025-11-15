@@ -8,13 +8,15 @@
 	<div mat-dialog-title class="dialog-header">
 		<div class="header-content" id="log-dialog-title">
 			<mat-icon
-				[ngClass]="getLevelClass(log().level)"
-				attr.aria-label="Log level: {{ getLevelName(log().level) }}"
-				>{{ getLevelIcon(log().level) }}</mat-icon
+				[ngClass]="getLevelClass(log().logLevel)"
+				attr.aria-label="Log level: {{ getLevelName(log().logLevel) }}"
+				>{{ getLevelIcon(log().logLevel) }}</mat-icon
 			>
-			<span class="level-name" [ngClass]="getLevelClass(log().level)">{{
-				getLevelName(log().level)
-			}}</span>
+			<span
+				class="level-name"
+				[ngClass]="getLevelClass(log().logLevel)"
+				>{{ getLevelName(log().logLevel) }}</span
+			>
 			@if (log().sourceContext)
 			{
 				<span class="source-context">• {{ log().sourceContext }}</span>

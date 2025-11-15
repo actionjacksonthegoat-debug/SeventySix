@@ -11,11 +11,11 @@ describe("LogTableComponent", () =>
 
 	const createMockLog = (
 		id: number,
-		level: LogLevel = LogLevel.Error
+		logLevel: string = "Error"
 	): LogResponse => ({
 		id,
 		timestamp: new Date(),
-		level,
+		logLevel,
 		message: `Test log message ${id}`,
 		sourceContext: "TestService",
 		exception: null,
@@ -204,22 +204,20 @@ describe("LogTableComponent", () =>
 
 	it("should format log level display name", () =>
 	{
-		expect(component.getLevelName(LogLevel.Error)).toBe("Error");
-		expect(component.getLevelName(LogLevel.Warning)).toBe("Warning");
-		expect(component.getLevelName(LogLevel.Fatal)).toBe("Fatal");
-		expect(component.getLevelName(LogLevel.Information)).toBe("Info");
-		expect(component.getLevelName(LogLevel.Debug)).toBe("Debug");
-		expect(component.getLevelName(LogLevel.Verbose)).toBe("Verbose");
+		expect(component.getLevelName("Error")).toBe("Error");
+		expect(component.getLevelName("Warning")).toBe("Warning");
+		expect(component.getLevelName("Fatal")).toBe("Fatal");
+		expect(component.getLevelName("Information")).toBe("Info");
+		expect(component.getLevelName("Debug")).toBe("Debug");
+		expect(component.getLevelName("Verbose")).toBe("Verbose");
 	});
 
 	it("should return level CSS class", () =>
 	{
-		expect(component.getLevelClass(LogLevel.Error)).toBe("level-error");
-		expect(component.getLevelClass(LogLevel.Warning)).toBe("level-warning");
-		expect(component.getLevelClass(LogLevel.Fatal)).toBe("level-fatal");
-		expect(component.getLevelClass(LogLevel.Information)).toBe(
-			"level-info"
-		);
+		expect(component.getLevelClass("Error")).toBe("level-error");
+		expect(component.getLevelClass("Warning")).toBe("level-warning");
+		expect(component.getLevelClass("Fatal")).toBe("level-fatal");
+		expect(component.getLevelClass("Information")).toBe("level-info");
 	});
 
 	it("should format timestamp as relative time", () =>

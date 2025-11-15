@@ -67,9 +67,9 @@
 				<td mat-cell *matCellDef="let log">
 					<span
 						class="level-chip"
-						[ngClass]="getLevelClass(log.level)"
+						[ngClass]="getLevelClass(log.logLevel)"
 					>
-						{{ getLevelName(log.level) }}
+						{{ getLevelName(log.logLevel) }}
 					</span>
 				</td>
 			</ng-container>
