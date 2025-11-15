@@ -32,6 +32,8 @@ describe("LogDetailDialogComponent", () =>
 		userName: "testuser",
 		sessionId: "session-123",
 		correlationId: "corr-123",
+		spanId: "span-456",
+		parentSpanId: "parent-789",
 		clientIp: "127.0.0.1",
 		userAgent: "Mozilla/5.0",
 		duration: 1500,

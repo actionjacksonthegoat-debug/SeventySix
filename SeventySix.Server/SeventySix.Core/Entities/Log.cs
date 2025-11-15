@@ -140,4 +140,31 @@ public class Log
 	{
 		get; set;
 	}
+
+	/// <summary>
+	/// Gets or sets the correlation ID (OpenTelemetry Trace ID) for distributed tracing.
+	/// </summary>
+	/// <example>4bf92f3577b34da6a3ce929d0e0e4736</example>
+	public string? CorrelationId
+	{
+		get; set;
+	}
+
+	/// <summary>
+	/// Gets or sets the span ID for this specific operation in the trace.
+	/// </summary>
+	/// <example>00f067aa0ba902b7</example>
+	public string? SpanId
+	{
+		get; set;
+	}
+
+	/// <summary>
+	/// Gets or sets the parent span ID if this is a child span.
+	/// </summary>
+	/// <example>00f067aa0ba902b7</example>
+	public string? ParentSpanId
+	{
+		get; set;
+	}
 }

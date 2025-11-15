@@ -427,6 +427,25 @@ export class UserList implements AfterViewInit
 	}
 
 	/**
+	 * Navigates to log management filtered by this user
+	 * @param user The user to view logs for
+	 */
+	viewUserLogs(user: User): void
+	{
+		// Navigate to log management with query params to filter by user
+		this.router.navigate(["/admin/logs"], {
+			queryParams: {
+				userId: user.id,
+				userName: user.username
+			}
+		});
+		this.logger.info("Navigating to logs for user", {
+			userId: user.id,
+			username: user.username
+		});
+	}
+
+	/**
 	 * Gets the status chip color for a user.
 	 * @param user The user object
 	 * @returns Chip color

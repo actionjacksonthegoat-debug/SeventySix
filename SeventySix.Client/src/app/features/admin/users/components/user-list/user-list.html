@@ -303,6 +303,15 @@
 					>
 						<mat-icon>edit</mat-icon>
 					</button>
+					<button
+						mat-icon-button
+						[matTooltip]="'View logs for ' + user.username"
+						(click)="viewUserLogs(user); $event.stopPropagation()"
+						aria-label="View user logs"
+						color="primary"
+					>
+						<mat-icon>description</mat-icon>
+					</button>
 				</td>
 			</ng-container>
 

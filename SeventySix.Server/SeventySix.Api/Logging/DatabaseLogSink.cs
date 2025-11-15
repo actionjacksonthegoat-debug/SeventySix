@@ -86,6 +86,28 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 			return;
 		}
 
+		// Capture Activity context NOW (before queueing) since Activity.Current is AsyncLocal
+		// and won't be available in the background thread
+		System.Diagnostics.Activity? activity = System.Diagnostics.Activity.Current;
+		if (activity != null && !logEvent.Properties.ContainsKey("__ActivityTraceId"))
+		{
+			// Create enriched properties dictionary
+			Dictionary<string, LogEventPropertyValue> enrichedProperties = new(logEvent.Properties)
+			{
+				["__ActivityTraceId"] = new ScalarValue(activity.TraceId.ToString()),
+				["__ActivitySpanId"] = new ScalarValue(activity.SpanId.ToString()),
+				["__ActivityParentSpanId"] = new ScalarValue(activity.ParentSpanId.ToString())
+			};
+
+			// Create new log event with enriched properties
+			logEvent = new LogEvent(
+				logEvent.Timestamp,
+				logEvent.Level,
+				logEvent.Exception,
+				logEvent.MessageTemplate,
+				enrichedProperties.Select(kvp => new LogEventProperty(kvp.Key, kvp.Value)));
+		}
+
 		// Add to queue for batch processing
 		LogQueue.Enqueue(logEvent);
 
@@ -165,6 +187,33 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 			Environment = Environment,
 			MachineName = MachineName,
 		};
+
+		// Capture OpenTelemetry trace context from Activity or enriched properties
+		if (logEvent.Properties.TryGetValue("__ActivityTraceId", out LogEventPropertyValue? traceIdProp))
+		{
+			log.CorrelationId = traceIdProp.ToString().Trim('"');
+		}
+
+		if (logEvent.Properties.TryGetValue("__ActivitySpanId", out LogEventPropertyValue? spanIdProp))
+		{
+			log.SpanId = spanIdProp.ToString().Trim('"');
+		}
+
+		if (logEvent.Properties.TryGetValue("__ActivityParentSpanId", out LogEventPropertyValue? parentSpanIdProp))
+		{
+			log.ParentSpanId = parentSpanIdProp.ToString().Trim('"');
+		}
+
+		// Fallback: check for explicitly logged properties
+		if (string.IsNullOrEmpty(log.CorrelationId) && logEvent.Properties.TryGetValue("TraceId", out LogEventPropertyValue? traceIdProperty))
+		{
+			log.CorrelationId = traceIdProperty.ToString().Trim('"');
+		}
+
+		if (string.IsNullOrEmpty(log.SpanId) && logEvent.Properties.TryGetValue("SpanId", out LogEventPropertyValue? spanIdProperty))
+		{
+			log.SpanId = spanIdProperty.ToString().Trim('"');
+		}
 
 		// Extract exception information
 		if (logEvent.Exception != null)
@@ -287,6 +336,12 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 			"MachineName" => true,
 			"ThreadId" => true,
 			"ProcessId" => true,
+			"TraceId" => true,
+			"SpanId" => true,
+			"ParentSpanId" => true,
+			"__ActivityTraceId" => true,
+			"__ActivitySpanId" => true,
+			"__ActivityParentSpanId" => true,
 			_ => false,
 		};
 	}

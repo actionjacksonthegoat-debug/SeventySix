@@ -33,6 +33,9 @@ export class LogManagementComponent
 		this.logService.getLogs();
 	readonly logCountQuery: ReturnType<LogManagementService["getLogCount"]> =
 		this.logService.getLogCount();
+	private readonly deleteMutation: ReturnType<
+		LogManagementService["deleteLog"]
+	> = this.logService.deleteLog();
 
 	// Computed signals for derived state
 	readonly logs: Signal<
@@ -85,20 +88,16 @@ export class LogManagementComponent
 				maxWidth: "90vw"
 			});
 
-		const deleteMutation: ReturnType<LogManagementService["deleteLog"]> =
-			this.logService.deleteLog();
 		dialogRef.componentInstance.deleteLog.subscribe((id: number) =>
 		{
-			deleteMutation.mutate(id);
+			this.deleteMutation.mutate(id);
 			dialogRef.close();
 		});
 	}
 
 	onDeleteLog(id: number): void
 	{
-		const deleteMutation: ReturnType<LogManagementService["deleteLog"]> =
-			this.logService.deleteLog();
-		deleteMutation.mutate(id);
+		this.deleteMutation.mutate(id);
 	}
 
 	onDeleteSelected(_ids: number[]): void

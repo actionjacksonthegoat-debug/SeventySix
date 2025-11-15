@@ -27,6 +27,8 @@
 // </remarks>
 
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
@@ -37,6 +39,20 @@ using SeventySix.Api.Middleware;
 using SeventySix.Data;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// Disable HTTPS certificate requirements in development mode
+// This allows the app to run without certificate errors in Docker containers
+if (builder.Environment.IsDevelopment())
+{
+	builder.WebHost.ConfigureKestrel(serverOptions =>
+	{
+		serverOptions.ConfigureHttpsDefaults(httpsOptions =>
+		{
+			// Accept any client certificate without validation
+			httpsOptions.AllowAnyClientCertificate();
+		});
+	});
+}
 
 // Configure Serilog for structured logging
 // Outputs: Console + Rolling file (daily rotation) + Database (Warning+ levels)
@@ -61,6 +77,30 @@ Log.Logger = new LoggerConfiguration()
 	.CreateLogger();
 
 builder.Host.UseSerilog();
+
+// Add HTTP context accessor for accessing HttpContext in services
+builder.Services.AddHttpContextAccessor();
+
+// Add OpenTelemetry with Jaeger exporter
+// Endpoint is configurable via appsettings.json or environment variable
+string otlpEndpoint = builder.Configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint")
+	?? "http://localhost:4317";
+
+builder.Services.AddOpenTelemetry()
+	.ConfigureResource(resource => resource
+		.AddService(serviceName: "SeventySix.Api", serviceVersion: "1.0.0"))
+	.WithTracing(tracing => tracing
+		.AddAspNetCoreInstrumentation(options =>
+		{
+			// Capture additional request/response details
+			options.RecordException = true;
+		})
+		.AddHttpClientInstrumentation()
+		.AddOtlpExporter(options =>
+		{
+			// Jaeger's OTLP endpoint (configurable for Docker vs local)
+			options.Endpoint = new Uri(otlpEndpoint);
+		}));
 
 // Add MVC controllers to the service container
 builder.Services.AddControllers();
@@ -181,8 +221,11 @@ if (app.Environment.IsDevelopment())
 // CORS - Must be called after UseRouting and before UseAuthorization
 app.UseCors("AllowedOrigins");
 
-// HTTPS redirection - Redirect HTTP to HTTPS in production
-app.UseHttpsRedirection();
+// HTTPS redirection - Only redirect in production environments
+if (!app.Environment.IsDevelopment())
+{
+	app.UseHttpsRedirection();
+}
 
 // Authorization middleware (currently no auth configured)
 app.UseAuthorization();

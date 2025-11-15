@@ -68,6 +68,7 @@ public class GlobalExceptionMiddleware(
 		catch (Exception ex)
 		{
 			logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);
+
 			await HandleExceptionAsync(context, ex);
 		}
 	}

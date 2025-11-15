@@ -24,6 +24,23 @@
 			>
 		</div>
 		<div class="header-actions">
+			@if (isObservabilityEnabled)
+			{
+				<button
+					mat-icon-button
+					(click)="openInJaeger()"
+					[matTooltip]="
+						hasCorrelationId()
+							? 'View this trace in Jaeger'
+							: 'No trace ID available. Enable OpenTelemetry in your backend to track distributed traces.'
+					"
+					[disabled]="!hasCorrelationId()"
+					aria-label="Open this specific trace in Jaeger"
+					color="warn"
+				>
+					<mat-icon>bug_report</mat-icon>
+				</button>
+			}
 			<button
 				mat-icon-button
 				(click)="copyToClipboard()"
@@ -66,25 +83,138 @@
 
 		<mat-divider></mat-divider>
 
-		<!-- Exception Section -->
+		<!-- Exception Section (Enhanced) -->
 		@if (log().exception)
 		{
-			<section class="detail-section">
-				<h3 class="section-title">Exception</h3>
-				<div class="section-content exception-content">
-					{{ log().exception }}
+			<section class="detail-section error-section">
+				<div class="section-header">
+					<h3 class="section-title">
+						<mat-icon class="section-icon error-icon"
+							>error</mat-icon
+						>
+						Exception Details
+					</h3>
+					<button
+						mat-icon-button
+						(click)="toggleException()"
+						[matTooltip]="
+							exceptionCollapsed() ? 'Expand' : 'Collapse'
+						"
+					>
+						<mat-icon>{{
+							exceptionCollapsed() ? "expand_more" : "expand_less"
+						}}</mat-icon>
+					</button>
 				</div>
+				@if (!exceptionCollapsed())
+				{
+					<div class="section-content">
+						<!-- Exception Type & Message -->
+						<div class="error-breakdown">
+							<div class="error-item exception-message">
+								<div class="error-label">
+									<mat-icon>message</mat-icon>
+									<span>Exception Message</span>
+								</div>
+								<div class="error-value">
+									{{ getExceptionMessage(log().exception) }}
+								</div>
+							</div>
+
+							<!-- Exception Type -->
+							@if (getExceptionType(log().exception))
+							{
+								<div class="error-item exception-type">
+									<div class="error-label">
+										<mat-icon>label</mat-icon>
+										<span>Exception Type</span>
+									</div>
+									<div class="error-value">
+										{{ getExceptionType(log().exception) }}
+									</div>
+								</div>
+							}
+
+							<!-- Base Exception -->
+							@if (getBaseException(log().exception))
+							{
+								<div class="error-item base-exception">
+									<div class="error-label">
+										<mat-icon>report</mat-icon>
+										<span>Base Exception</span>
+									</div>
+									<div class="error-value">
+										{{ getBaseException(log().exception) }}
+									</div>
+								</div>
+							}
+
+							<!-- Inner Exceptions -->
+							@if (
+								getInnerExceptions(log().exception);
+								as innerExceptions
+							)
+							{
+								@if (innerExceptions.length > 0)
+								{
+									<div class="error-item inner-exceptions">
+										<div class="error-label">
+											<mat-icon>layers</mat-icon>
+											<span
+												>Inner Exceptions ({{
+													innerExceptions.length
+												}})</span
+											>
+										</div>
+										<div class="error-value">
+											@for (
+												inner of innerExceptions;
+												track $index
+											)
+											{
+												<div
+													class="inner-exception-item"
+												>
+													<span class="inner-number"
+														>{{ $index + 1 }}.</span
+													>
+													<span>{{ inner }}</span>
+												</div>
+											}
+										</div>
+									</div>
+								}
+							}
+
+							<!-- Full Exception Text -->
+							<div class="error-item full-exception">
+								<div class="error-label">
+									<mat-icon>description</mat-icon>
+									<span>Full Exception</span>
+								</div>
+								<div class="error-value exception-content">
+									<pre>{{ log().exception }}</pre>
+								</div>
+							</div>
+						</div>
+					</div>
+				}
 			</section>
 
 			<mat-divider></mat-divider>
 		}
 
-		<!-- Stack Trace Section -->
+		<!-- Stack Trace Section (Enhanced) -->
 		@if (log().stackTrace)
 		{
-			<section class="detail-section">
+			<section class="detail-section stack-section">
 				<div class="section-header">
-					<h3 class="section-title">Stack Trace</h3>
+					<h3 class="section-title">
+						<mat-icon class="section-icon stack-icon"
+							>code</mat-icon
+						>
+						Stack Trace
+					</h3>
 					<button
 						mat-icon-button
 						(click)="toggleStackTrace()"
@@ -101,8 +231,26 @@
 				</div>
 				@if (!stackTraceCollapsed())
 				{
-					<div class="section-content stack-trace-content">
-						<pre>{{ formatStackTrace(log().stackTrace) }}</pre>
+					<div class="section-content">
+						<div class="stack-breakdown">
+							<!-- Stack Frame Count -->
+							<div class="stack-info">
+								<mat-icon>info</mat-icon>
+								<span
+									>{{
+										getStackFrameCount(log().stackTrace)
+									}}
+									stack frames</span
+								>
+							</div>
+
+							<!-- Stack Trace Content -->
+							<div class="stack-trace-content">
+								<pre>{{
+									formatStackTrace(log().stackTrace)
+								}}</pre>
+							</div>
+						</div>
 					</div>
 				}
 			</section>
@@ -159,6 +307,33 @@
 							<span class="info-value">{{
 								log().correlationId
 							}}</span>
+						</div>
+					}
+					@if (log().spanId)
+					{
+						<div class="info-item">
+							<span class="info-label">Span ID:</span>
+							<span class="info-value">{{ log().spanId }}</span>
+						</div>
+					}
+					@if (log().parentSpanId)
+					{
+						<div class="info-item">
+							<span class="info-label">Parent Span ID:</span>
+							<span
+								class="info-value"
+								[matTooltip]="
+									isRootSpan(log().parentSpanId)
+										? 'All zeros indicates this is a root span (top-level request with no parent)'
+										: ''
+								"
+							>
+								{{
+									isRootSpan(log().parentSpanId)
+										? log().parentSpanId + " (Root Span)"
+										: log().parentSpanId
+								}}
+							</span>
 						</div>
 					}
 				</div>

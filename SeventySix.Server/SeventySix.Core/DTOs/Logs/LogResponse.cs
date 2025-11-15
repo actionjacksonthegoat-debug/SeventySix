@@ -132,4 +132,28 @@ public class LogResponse
 	{
 		get; set;
 	}
+
+	/// <summary>
+	/// Gets or sets the correlation ID (OpenTelemetry Trace ID) for distributed tracing.
+	/// </summary>
+	public string? CorrelationId
+	{
+		get; set;
+	}
+
+	/// <summary>
+	/// Gets or sets the span ID for this specific operation in the trace.
+	/// </summary>
+	public string? SpanId
+	{
+		get; set;
+	}
+
+	/// <summary>
+	/// Gets or sets the parent span ID if this is a child span.
+	/// </summary>
+	public string? ParentSpanId
+	{
+		get; set;
+	}
 }

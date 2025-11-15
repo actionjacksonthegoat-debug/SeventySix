@@ -1,0 +1,29 @@
+# Prometheus Configuration for SeventySix
+# Collects metrics from API and monitors Jaeger
+
+global:
+    scrape_interval: 15s
+    evaluation_interval: 15s
+    external_labels:
+        cluster: "seventysix"
+        environment: "development"
+
+# Scrape configurations
+scrape_configs:
+    # SeventySix API metrics
+    - job_name: "seventysix-api"
+      static_configs:
+          - targets: ["seventysix-api:8080", "host.docker.internal:5085"]
+      metrics_path: "/metrics"
+      scrape_interval: 10s
+
+    # Prometheus self-monitoring
+    - job_name: "prometheus"
+      static_configs:
+          - targets: ["localhost:9090"]
+
+    # Jaeger metrics
+    - job_name: "jaeger"
+      static_configs:
+          - targets: ["jaeger:14269"]
+

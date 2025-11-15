@@ -11,6 +11,11 @@ interface Environment
 		circuitBreakerThreshold: number;
 		circuitBreakerTimeout: number;
 	};
+	observability: {
+		jaegerUrl: string;
+		prometheusUrl: string;
+		enabled: boolean;
+	};
 	cache: {
 		query: {
 			default: {
@@ -30,7 +35,7 @@ interface Environment
 
 export const environment: Environment = {
 	production: false,
-	apiUrl: "https://localhost:7074/api", // Default API URL for development
+	apiUrl: "https://localhost:7074/api", // HTTPS for docker-compose (use http://localhost:5085/api for Container debugging)
 	logging: {
 		enableRemoteLogging: true,
 		batchSize: 10,
@@ -39,6 +44,12 @@ export const environment: Environment = {
 		maxRetryCount: 3,
 		circuitBreakerThreshold: 5,
 		circuitBreakerTimeout: 30000 // 30 seconds
+	},
+	observability: {
+		// Observability stack URLs (Jaeger + Prometheus)
+		jaegerUrl: "http://localhost:16686", // Jaeger UI for distributed tracing
+		prometheusUrl: "http://localhost:9090", // Prometheus for metrics
+		enabled: true // Set to true when observability stack is deployed
 	},
 	cache: {
 		query: {

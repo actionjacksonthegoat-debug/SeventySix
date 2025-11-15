@@ -123,4 +123,13 @@ public class ClientLogRequest
 	{
 		get; set;
 	}
+
+	/// <summary>
+	/// Gets or sets the correlation ID (OpenTelemetry Trace ID) for distributed tracing.
+	/// </summary>
+	/// <example>4bf92f3577b34da6a3ce929d0e0e4736</example>
+	public string? CorrelationId
+	{
+		get; set;
+	}
 }

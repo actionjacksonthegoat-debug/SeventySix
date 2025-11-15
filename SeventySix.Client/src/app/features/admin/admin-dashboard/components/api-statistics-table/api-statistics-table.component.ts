@@ -5,7 +5,6 @@ import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatButtonModule } from "@angular/material/button";
-import { MatChipsModule } from "@angular/material/chips";
 import { ThirdPartyApiService } from "@admin/admin-dashboard/services";
 import { ThirdPartyApiRequest } from "@admin/admin-dashboard/models";
 
@@ -20,8 +19,7 @@ import { ThirdPartyApiRequest } from "@admin/admin-dashboard/models";
 		MatCardModule,
 		MatIconModule,
 		MatProgressSpinnerModule,
-		MatButtonModule,
-		MatChipsModule
+		MatButtonModule
 	],
 	templateUrl: "./api-statistics-table.component.html",
 	styleUrl: "./api-statistics-table.component.scss"
@@ -53,8 +51,7 @@ export class ApiStatisticsTableComponent implements OnInit
 	readonly displayedColumns: WritableSignal<string[]> = signal<string[]>([
 		"apiName",
 		"callCount",
-		"lastCalledAt",
-		"status"
+		"lastCalledAt"
 	]);
 
 	constructor(private readonly thirdPartyApiService: ThirdPartyApiService)
@@ -120,21 +117,5 @@ export class ApiStatisticsTableComponent implements OnInit
 			month: "short",
 			day: "numeric"
 		});
-	}
-
-	/**
-	 * Get status based on last called time
-	 */
-	getStatus(lastCalledAt: string | null): "ok" | "warning" | "error"
-	{
-		if (!lastCalledAt) return "error";
-
-		const date: Date = new Date(lastCalledAt);
-		const now: Date = new Date();
-		const diffHours: number = (now.getTime() - date.getTime()) / 3600000;
-
-		if (diffHours < 1) return "ok";
-		if (diffHours < 24) return "warning";
-		return "error";
 	}
 }

@@ -18,12 +18,15 @@
 		}
 	</div>
 
-	<mat-card class="filters-card">
+	<mat-card class="header-card">
 		<mat-card-header>
 			<mat-card-title>
 				<h1>Log Management</h1>
 			</mat-card-title>
 		</mat-card-header>
+	</mat-card>
+
+	<mat-card class="filters-card">
 		<mat-card-content>
 			<app-log-filters (filterChange)="onFilterChange($event)" />
 		</mat-card-content>

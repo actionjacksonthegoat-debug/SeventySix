@@ -6,14 +6,19 @@
 
 	<div class="dashboard-content">
 		<div class="dashboard-grid">
+			<!-- Statistics Cards Section -->
+			<div class="stats-section">
+				<app-statistics-cards></app-statistics-cards>
+			</div>
+
 			<!-- Error Trend Chart Section -->
 			<div class="chart-section">
 				<app-error-trend-chart period="7d"></app-error-trend-chart>
 			</div>
 
-			<!-- Statistics Cards Section -->
-			<div class="stats-section">
-				<app-statistics-cards></app-statistics-cards>
+			<!-- Health Status Panel Section (Full Width) -->
+			<div class="health-section">
+				<app-health-status-panel></app-health-status-panel>
 			</div>
 
 			<!-- API Statistics Table Section -->
@@ -21,10 +26,40 @@
 				<app-api-statistics-table></app-api-statistics-table>
 			</div>
 
-			<!-- Health Status Panel Section -->
-			<div class="health-section">
-				<app-health-status-panel></app-health-status-panel>
-			</div>
+			@if (isObservabilityEnabled)
+			{
+				<!-- Observability Quick Links Section -->
+				<div class="observability-section">
+					<mat-card>
+						<mat-card-header>
+							<mat-card-title>
+								<mat-icon>visibility</mat-icon>
+								Observability
+							</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="observability-links">
+								<button
+									mat-raised-button
+									color="accent"
+									(click)="openJaeger()"
+								>
+									<mat-icon>bug_report</mat-icon>
+									Jaeger Tracing
+								</button>
+								<button
+									mat-raised-button
+									color="accent"
+									(click)="openPrometheus()"
+								>
+									<mat-icon>analytics</mat-icon>
+									Prometheus Metrics
+								</button>
+							</div>
+						</mat-card-content>
+					</mat-card>
+				</div>
+			}
 		</div>
 	</div>
 </div>

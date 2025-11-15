@@ -11,6 +11,11 @@ interface Environment
 		circuitBreakerThreshold: number;
 		circuitBreakerTimeout: number;
 	};
+	observability: {
+		jaegerUrl: string;
+		prometheusUrl: string;
+		enabled: boolean;
+	};
 	cache: {
 		query: {
 			default: {
@@ -55,6 +60,12 @@ export const environment: Environment = {
 		maxRetryCount: 3,
 		circuitBreakerThreshold: 5,
 		circuitBreakerTimeout: 30000 // 30 seconds
+	},
+	observability: {
+		// Observability stack URLs (Jaeger + Prometheus)
+		jaegerUrl: "http://localhost:16686", // Jaeger UI for distributed tracing
+		prometheusUrl: "http://localhost:9090", // Prometheus for metrics
+		enabled: false // Set to true when observability stack is deployed
 	},
 	cache: {
 		query: {

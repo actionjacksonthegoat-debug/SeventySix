@@ -27,10 +27,13 @@
 	}
 }
 
-.log-table {
-	width: 100%;
+.table-wrapper {
 	overflow-x: auto;
 	@include vars.custom-scrollbar();
+}
+
+.log-table {
+	width: 100%;
 
 	.log-row {
 		cursor: pointer;

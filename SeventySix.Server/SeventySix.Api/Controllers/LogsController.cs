@@ -101,6 +101,9 @@ public class LogsController(
 				Timestamp = log.Timestamp,
 				MachineName = log.MachineName,
 				Environment = log.Environment,
+				CorrelationId = log.CorrelationId,
+				SpanId = log.SpanId,
+				ParentSpanId = log.ParentSpanId,
 			})];
 
 			PagedLogResponse response = new()
@@ -327,6 +330,11 @@ public class LogsController(
 	{
 		try
 		{
+			// Get trace context from current HTTP request
+			string? traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
+			string? spanId = System.Diagnostics.Activity.Current?.SpanId.ToString();
+			string? parentSpanId = System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
+
 			// Map ClientLogRequest to Log entity
 			Log log = new()
 			{
@@ -338,6 +346,9 @@ public class LogsController(
 				RequestPath = request.RequestUrl,
 				RequestMethod = request.RequestMethod,
 				StatusCode = request.StatusCode,
+				CorrelationId = request.CorrelationId ?? traceId,
+				SpanId = spanId,
+				ParentSpanId = parentSpanId,
 				Properties = JsonSerializer.Serialize(new
 				{
 					request.UserAgent,
@@ -390,6 +401,11 @@ public class LogsController(
 				return NoContent();
 			}
 
+			// Get trace context from current HTTP request
+			string? traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
+			string? spanId = System.Diagnostics.Activity.Current?.SpanId.ToString();
+			string? parentSpanId = System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
+
 			// Map all requests to Log entities
 			List<Log> logs = [.. requests.Select(request => new Log
 			{
@@ -401,6 +417,9 @@ public class LogsController(
 				RequestPath = request.RequestUrl,
 				RequestMethod = request.RequestMethod,
 				StatusCode = request.StatusCode,
+				CorrelationId = request.CorrelationId ?? traceId,
+				SpanId = spanId,
+				ParentSpanId = parentSpanId,
 				Properties = JsonSerializer.Serialize(new
 				{ request.UserAgent,
 					 request.ClientTimestamp,

@@ -20,6 +20,8 @@ export interface LogResponse
 	userName: string | null;
 	sessionId: string | null;
 	correlationId: string | null;
+	spanId: string | null;
+	parentSpanId: string | null;
 	clientIp: string | null;
 	userAgent: string | null;
 	duration: number | null;

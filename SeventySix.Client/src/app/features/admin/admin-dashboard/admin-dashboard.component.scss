@@ -42,6 +42,10 @@
 			grid-column: span 12;
 		}
 
+		.health-section {
+			grid-column: span 12;
+		}
+
 		.api-section {
 			grid-column: span 12;
 
@@ -50,11 +54,53 @@
 			}
 		}
 
-		.health-section {
+		.observability-section {
 			grid-column: span 12;
 
 			@media (min-width: 1024px) {
 				grid-column: span 6;
+			}
+
+			mat-card {
+				height: 100%;
+			}
+
+			mat-card-header {
+				mat-card-title {
+					display: flex;
+					align-items: center;
+					gap: 0.5rem;
+					font-size: 1.125rem;
+					font-weight: 500;
+
+					mat-icon {
+						font-size: 24px;
+						width: 24px;
+						height: 24px;
+					}
+				}
+			}
+
+			.observability-links {
+				display: flex;
+				flex-direction: column;
+				gap: 1rem;
+				margin-top: 1rem;
+
+				button {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					gap: 0.5rem;
+					width: 100%;
+					padding: 0.75rem 1rem;
+
+					mat-icon {
+						font-size: 20px;
+						width: 20px;
+						height: 20px;
+					}
+				}
 			}
 		}
 	}

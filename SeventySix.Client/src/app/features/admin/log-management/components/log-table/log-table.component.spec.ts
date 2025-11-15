@@ -30,6 +30,8 @@ describe("LogTableComponent", () =>
 		userName: null,
 		sessionId: null,
 		correlationId: null,
+		spanId: null,
+		parentSpanId: null,
 		clientIp: null,
 		userAgent: null,
 		duration: null,

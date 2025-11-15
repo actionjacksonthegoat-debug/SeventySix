@@ -9,39 +9,38 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: vars.$spacing-lg vars.$spacing-xl; // 16px 24px
+		padding: vars.$spacing-lg vars.$spacing-xl;
 		margin: 0;
 
 		.header-content {
 			display: flex;
 			align-items: center;
-			gap: vars.$spacing-sm; // 8px
+			gap: vars.$spacing-sm;
 			flex: 1;
 
 			mat-icon {
-				font-size: vars.$icon-size-lg; // 32px
+				font-size: vars.$icon-size-lg;
 				width: vars.$icon-size-lg;
 				height: vars.$icon-size-lg;
 			}
 
 			.level-name {
-				font-size: vars.$font-size-xl; // 24px
+				font-size: vars.$font-size-xl;
 				font-weight: vars.$font-weight-medium;
 			}
 
 			.source-context,
 			.timestamp {
-				font-size: vars.$font-size-sm; // 12px
+				font-size: vars.$font-size-sm;
 				color: var(--mat-dialog-supporting-text-color);
 			}
 		}
 
 		.header-actions {
 			display: flex;
-			gap: vars.$spacing-xs; // 4px
+			gap: vars.$spacing-xs;
 		}
 
-		// Apply responsive mixin
 		@include mixins.dialog-header-responsive();
 	}
 
@@ -59,42 +58,31 @@
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			margin-bottom: vars.$spacing-sm; // 8px
+			margin-bottom: vars.$spacing-sm;
 		}
 
 		.section-title {
-			font-size: vars.$font-size-base; // 14px
+			font-size: vars.$font-size-base;
 			font-weight: vars.$font-weight-medium;
-			margin: 0 0 vars.$spacing-md 0; // 0 0 12px 0
+			margin: 0 0 vars.$spacing-md 0;
 			color: var(--mat-dialog-headline-color);
+			display: flex;
+			align-items: center;
 		}
 
 		.section-content {
-			font-size: vars.$font-size-sm; // 12px
+			font-size: vars.$font-size-sm;
 			line-height: vars.$line-height-base;
 			color: var(--mat-dialog-supporting-text-color);
 
 			&.message-content {
-				font-size: vars.$font-size-base; // 14px
+				font-size: vars.$font-size-base;
 				color: var(--mat-dialog-headline-color);
 				white-space: pre-wrap;
 				word-break: break-word;
 			}
 
-			&.exception-content {
-				background-color: var(--mat-table-background-color);
-				padding: vars.$spacing-lg; // 16px
-				border-radius: vars.$border-radius-sm; // 4px
-				border-left: 4px solid var(--mat-sys-error);
-				font-family: vars.$font-family-monospace;
-				white-space: pre-wrap;
-				word-break: break-word;
-			}
-
-			&.stack-trace-content {
-				@include mixins.code-block-scrollable(300px);
-			}
-
+			&.stack-trace-content,
 			&.properties-content {
 				@include mixins.code-block-scrollable(300px);
 			}
@@ -103,31 +91,63 @@
 				@include mixins.info-grid-responsive();
 			}
 		}
+
+		&.error-section {
+			background-color: rgba(var(--mat-sys-error-rgb, 179, 38, 30), 0.05);
+			padding: vars.$spacing-lg;
+			border-radius: vars.$border-radius-md;
+			border-left: 4px solid var(--mat-sys-error);
+
+			.error-breakdown {
+				display: flex;
+				flex-direction: column;
+				gap: vars.$spacing-lg;
+
+				.error-label {
+					display: flex;
+					align-items: center;
+					gap: vars.$spacing-xs;
+					font-weight: vars.$font-weight-medium;
+					color: var(--mat-dialog-headline-color);
+				}
+
+				.error-value {
+					padding: vars.$spacing-md;
+					background-color: var(--mat-table-background-color);
+					border-radius: vars.$border-radius-sm;
+					font-family: vars.$font-family-monospace;
+					word-break: break-word;
+
+					pre {
+						margin: 0;
+						white-space: pre-wrap;
+					}
+				}
+			}
+		}
+
+		&.stack-section {
+			background-color: rgba(
+				var(--mat-sys-tertiary-rgb, 103, 80, 164),
+				0.05
+			);
+			padding: vars.$spacing-lg;
+			border-radius: vars.$border-radius-md;
+			border-left: 4px solid var(--mat-sys-tertiary);
+
+			.stack-trace-content {
+				@include mixins.code-block-scrollable(400px);
+			}
+		}
 	}
 
-	// Use shared log level color mixin
 	@include mixins.log-level-colors();
 
-	// Responsive Design
 	@media #{vars.$breakpoint-sm} {
 		max-width: 90vw;
 	}
 
 	@media #{vars.$breakpoint-xs} {
 		max-width: 95vw;
-
-		.detail-section {
-			.section-content.info-grid {
-				grid-template-columns: 1fr;
-				gap: vars.$spacing-md; // 12px
-			}
-		}
-
-		.detail-section .section-content {
-			&.stack-trace-content,
-			&.properties-content {
-				max-height: 200px;
-			}
-		}
 	}
 }

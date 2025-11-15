@@ -21,6 +21,26 @@
 	max-width: 1400px;
 	margin: 0 auto;
 
+	.header-card {
+		background-color: var(--mat-sys-surface-container-low);
+		color: var(--mat-sys-on-surface);
+
+		mat-card-header {
+			padding: vars.$spacing-lg; // 16px
+		}
+
+		mat-card-title {
+			margin: 0;
+
+			h1 {
+				margin: 0;
+				font-size: 2rem;
+				font-weight: 500;
+				color: var(--mat-sys-on-surface);
+			}
+		}
+	}
+
 	.filters-card,
 	.summary-card,
 	.table-card {
@@ -58,10 +78,18 @@
 	@media #{vars.$breakpoint-sm} {
 		gap: vars.$spacing-md; // 12px
 		padding: vars.$spacing-md; // 12px
+
+		.header-card mat-card-title h1 {
+			font-size: 1.5rem;
+		}
 	}
 
 	@media #{vars.$breakpoint-xs} {
 		gap: vars.$spacing-sm; // 8px
 		padding: vars.$spacing-sm; // 8px
+
+		.header-card mat-card-title h1 {
+			font-size: 1.25rem;
+		}
 	}
 }

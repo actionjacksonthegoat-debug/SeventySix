@@ -56,15 +56,15 @@ cd SeventySix
 
 See **[USER_SECRETS_SETUP.md](USER_SECRETS_SETUP.md)** for detailed instructions.
 
-**Quick Setup (Local Development)**:
+**Quick Setup**:
 
 ```bash
 cd SeventySix.Server/SeventySix.Api
 
-# OpenWeather API Key
+# OpenWeather API Key (REQUIRED)
 dotnet user-secrets set "OpenWeather:ApiKey" "YOUR_OPENWEATHER_API_KEY_HERE"
 
-# Database Connection
+# Database Connection (for local development)
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=seventysix_dev;Username=postgres;Password=TestPassword;Pooling=true;Minimum Pool Size=1;Maximum Pool Size=20;Include Error Detail=true"
 
 # Default Coordinates (New York City)
@@ -72,40 +72,133 @@ dotnet user-secrets set "OpenWeather:DefaultLatitude" "40.7128"
 dotnet user-secrets set "OpenWeather:DefaultLongitude" "-74.0060"
 ```
 
-**For Docker**:
+**Note**: User secrets are automatically used by the application when running locally with `dotnet run` or from Visual Studio. Docker containers use environment variables defined in `docker-compose.yml`.
 
-```bash
-# Create .env file in root directory (copy from .env.example)
-cp .env.example .env
-# Edit .env with your values
+### 3. Running the Application
+
+#### Option 1: Full Docker Container (Recommended for Client-Side Development)
+
+**⚠️ First-Time Setup**: Before running the Docker container with HTTPS, you must generate a development certificate:
+
+```powershell
+# Generate development HTTPS certificate (one-time setup)
+dotnet dev-certs https -ep "$env:USERPROFILE\.aspnet\https\aspnetapp.pfx" -p password
+dotnet dev-certs https --trust
 ```
 
-### 3. Setup Frontend (Angular Client)
+**What this does**:
 
-```bash
-cd SeventySix.Client
-npm install
-npm start
+-   Creates a self-signed certificate at `~/.aspnet/https/aspnetapp.pfx` with password `password`
+-   Trusts the certificate on your local machine (Windows Certificate Store)
+-   Allows the Docker container to use HTTPS via volume mount: `~/.aspnet/https:/https:ro`
+-   The container uses these environment variables:
+    -   `ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx`
+    -   `ASPNETCORE_Kestrel__Certificates__Default__Password=password`
+
+**Note**: You may still need to accept the certificate warning in your browser on first access to `https://localhost:7074`.
+
+For running a full Docker container environment, use:
+
+```powershell
+npm run start:all
 ```
 
-The client will be available at `http://localhost:4200`
+This will:
 
-### 4. Setup Backend (.NET API)
+-   Start Docker Desktop (if not already running)
+-   Launch PostgreSQL, Jaeger, and Prometheus containers
+-   Start the API in a Docker container with HTTPS on port 7074
+-   Launch the Angular client
 
-```bash
-cd SeventySix.Server
-dotnet restore
-dotnet run --project SeventySix.Api
+**Access**: http://localhost:4200
+
+**When finished**:
+
+```powershell
+npm run stop:all
 ```
 
-The API will be available at `https://localhost:7074`
+This will clean up and stop all background resources. This setup is best for client-side development and simulating deployed environments.
 
-### 5. Access API Documentation
+#### Option 2: API Debugging (For Backend Development)
 
-With the API running, visit:
+For debugging the API in Visual Studio 2022:
 
--   **Scalar UI**: `https://localhost:7074/scalar/v1`
--   **OpenAPI Spec**: `https://localhost:7074/openapi/v1.json`
+1. **Start infrastructure**:
+
+    ```powershell
+    npm run start:api-debug
+    ```
+
+2. **Open Visual Studio 2022**:
+
+    - Open `SeventySix.Server\SeventySix.Server.sln`
+    - Set `SeventySix.Api` as the startup project
+    - Select the **"https"** profile (NOT Container)
+    - Press **F5** to start debugging
+
+**When finished**, stop the infrastructure:
+
+```powershell
+npm run stop:api-debug
+```
+
+---
+
+### Alternative: Manual Start (Individual Commands)
+
+### Alternative: Manual Start (Individual Commands)
+
+**1. Start Infrastructure**:
+
+```powershell
+npm run start:api-debug
+```
+
+**2. Start API** (in Visual Studio or via command line):
+
+```powershell
+npm run start:api
+```
+
+**3. Start Client** (in new terminal):
+
+```powershell
+npm run start:client
+```
+
+**Stop Infrastructure**:
+
+```powershell
+npm run stop:api-debug
+```
+
+---
+
+### Access the Application
+
+-   **Application**: http://localhost:4200
+-   **Admin Dashboard**: http://localhost:4200/admin/dashboard
+-   **Log Management**: http://localhost:4200/admin/logs
+-   **API Documentation (Scalar)**: https://localhost:7074/scalar/v1
+-   **Jaeger Tracing**: http://localhost:16686
+-   **Prometheus Metrics**: http://localhost:9090
+
+---
+
+## 🛑 Stopping Services
+
+**Stop Full Stack** (if using `npm run start:all`):
+
+```powershell
+npm run stop:all
+```
+
+**Stop Infrastructure Only** (if using `npm run start:api-debug`):
+
+```powershell
+npm run stop:api-debug
+```
 
 ## 🧪 Testing
 
