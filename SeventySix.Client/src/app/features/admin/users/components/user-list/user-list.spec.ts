@@ -198,4 +198,596 @@ describe("UserList", () =>
 
 		expect(chips.length).toBeGreaterThan(0);
 	});
+
+	describe("Status Filtering", () =>
+	{
+		beforeEach(() =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>(mockUsers)
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+		});
+
+		it("should filter active users when status filter is set to active", () =>
+		{
+			component!.setStatusFilter("active");
+
+			expect(component!.filteredUsers()).toEqual([mockUsers[0]]);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Status filter changed",
+				{ status: "active" }
+			);
+		});
+
+		it("should filter inactive users when status filter is set to inactive", () =>
+		{
+			component!.setStatusFilter("inactive");
+
+			expect(component!.filteredUsers()).toEqual([mockUsers[1]]);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Status filter changed",
+				{ status: "inactive" }
+			);
+		});
+
+		it("should show all users when status filter is set to all", () =>
+		{
+			component!.setStatusFilter("all");
+
+			expect(component!.filteredUsers()).toEqual(mockUsers);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Status filter changed",
+				{ status: "all" }
+			);
+		});
+	});
+
+	describe("Search Filtering", () =>
+	{
+		beforeEach(() =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>(mockUsers)
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+		});
+
+		it("should apply search filter to table", () =>
+		{
+			component!.searchFilter.set("john");
+			component!.applyFilter();
+
+			expect(component!.dataSource.filter).toBe("john");
+		});
+
+		it("should reset paginator to first page when filter applied", () =>
+		{
+			component!.ngAfterViewInit();
+			fixture!.detectChanges();
+
+			const paginatorSpy = spyOn(
+				component!.dataSource.paginator!,
+				"firstPage"
+			);
+
+			component!.searchFilter.set("test");
+			component!.applyFilter();
+
+			expect(paginatorSpy).toHaveBeenCalled();
+		});
+
+		it("should clear filter", () =>
+		{
+			component!.searchFilter.set("john");
+			component!.applyFilter();
+
+			component!.clearFilter();
+
+			expect(component!.searchFilter()).toBe("");
+			expect(component!.dataSource.filter).toBe("");
+		});
+
+		it("should filter by username", () =>
+		{
+			component!.ngAfterViewInit();
+
+			const filterPredicate = component!.dataSource.filterPredicate!;
+			expect(filterPredicate(mockUsers[0], "john")).toBe(true);
+			expect(filterPredicate(mockUsers[1], "john")).toBe(false);
+		});
+
+		it("should filter by email", () =>
+		{
+			component!.ngAfterViewInit();
+
+			const filterPredicate = component!.dataSource.filterPredicate!;
+			expect(filterPredicate(mockUsers[0], "john@example")).toBe(true);
+			expect(filterPredicate(mockUsers[1], "john@example")).toBe(false);
+		});
+
+		it("should filter by fullName", () =>
+		{
+			component!.ngAfterViewInit();
+
+			const filterPredicate = component!.dataSource.filterPredicate!;
+			expect(filterPredicate(mockUsers[0], "john doe")).toBe(true);
+			expect(filterPredicate(mockUsers[1], "john doe")).toBe(false);
+		});
+
+		it("should filter by id", () =>
+		{
+			component!.ngAfterViewInit();
+
+			const filterPredicate = component!.dataSource.filterPredicate!;
+			expect(filterPredicate(mockUsers[0], "1")).toBe(true);
+			expect(filterPredicate(mockUsers[1], "1")).toBe(false);
+		});
+	});
+
+	describe("Column Visibility", () =>
+	{
+		beforeEach(() =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>([])
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+		});
+
+		it("should toggle column visibility", () =>
+		{
+			const initialVisible = component!.columnDefs()[1].visible; // id column
+
+			component!.toggleColumn("id");
+
+			expect(component!.columnDefs()[1].visible).toBe(!initialVisible);
+		});
+
+		it("should save column preferences after toggle", () =>
+		{
+			const saveSpy = spyOn<any>(component!, "saveColumnPreferences");
+
+			component!.toggleColumn("email");
+
+			expect(saveSpy).toHaveBeenCalled();
+		});
+
+		it("should save column preferences to localStorage", () =>
+		{
+			const setItemSpy = spyOn(localStorage, "setItem");
+
+			component!.saveColumnPreferences();
+
+			expect(setItemSpy).toHaveBeenCalledWith(
+				"userListColumns",
+				jasmine.any(String)
+			);
+		});
+
+		it("should load column preferences from localStorage", () =>
+		{
+			const prefs = JSON.stringify({ id: false, username: true });
+			spyOn(localStorage, "getItem").and.returnValue(prefs);
+
+			component!.loadColumnPreferences();
+
+			const idColumn = component!
+				.columnDefs()
+				.find((col) => col.key === "id");
+			expect(idColumn?.visible).toBe(false);
+		});
+
+		it("should handle localStorage errors when loading preferences", () =>
+		{
+			spyOn(localStorage, "getItem").and.returnValue("invalid-json");
+
+			component!.loadColumnPreferences();
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				"Failed to load column preferences",
+				jasmine.any(Error)
+			);
+		});
+
+		it("should use default visibility when no localStorage data exists", () =>
+		{
+			spyOn(localStorage, "getItem").and.returnValue(null);
+
+			const initialColumns = [...component!.columnDefs()];
+			component!.loadColumnPreferences();
+
+			expect(component!.columnDefs()).toEqual(initialColumns);
+		});
+	});
+
+	describe("Bulk Selection", () =>
+	{
+		beforeEach(() =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>(mockUsers)
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+		});
+
+		it("should report all selected when all rows are selected", () =>
+		{
+			component!.dataSource.data = mockUsers;
+			mockUsers.forEach((user) => component!.selection.select(user));
+
+			expect(component!.isAllSelected()).toBe(true);
+		});
+
+		it("should report not all selected when some rows are selected", () =>
+		{
+			component!.dataSource.data = mockUsers;
+			component!.selection.select(mockUsers[0]);
+
+			expect(component!.isAllSelected()).toBe(false);
+		});
+
+		it("should report not all selected when no data exists", () =>
+		{
+			component!.dataSource.data = [];
+
+			expect(component!.isAllSelected()).toBe(false);
+		});
+
+		it("should toggle all rows from none selected to all selected", () =>
+		{
+			component!.dataSource.data = mockUsers;
+
+			component!.toggleAllRows();
+
+			expect(component!.selection.selected.length).toBe(mockUsers.length);
+		});
+
+		it("should toggle all rows from all selected to none selected", () =>
+		{
+			component!.dataSource.data = mockUsers;
+			mockUsers.forEach((user) => component!.selection.select(user));
+
+			component!.toggleAllRows();
+
+			expect(component!.selection.selected.length).toBe(0);
+		});
+
+		it("should compute selected count", () =>
+		{
+			component!.dataSource.data = mockUsers;
+			component!.selection.select(mockUsers[0]);
+
+			// Verify selection was made (SelectionModel is not reactive)
+			expect(component!.selection.selected.length).toBe(1);
+			expect(component!.selection.isSelected(mockUsers[0])).toBe(true);
+		});
+	});
+
+	describe("Navigation", () =>
+	{
+		beforeEach(() =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>(mockUsers)
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+		});
+
+		it("should navigate to create user page", () =>
+		{
+			component!.addUser();
+
+			expect(mockRouter.navigate).toHaveBeenCalledWith([
+				"/admin/users/create"
+			]);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Navigating to create user"
+			);
+		});
+
+		it("should navigate to edit user page", () =>
+		{
+			component!.editUser(mockUsers[0]);
+
+			expect(mockRouter.navigate).toHaveBeenCalledWith([
+				"/admin/users",
+				1
+			]);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Navigating to user detail",
+				{ userId: 1 }
+			);
+		});
+
+		it("should navigate to user logs with query params", () =>
+		{
+			component!.viewUserLogs(mockUsers[0]);
+
+			expect(mockRouter.navigate).toHaveBeenCalledWith(["/admin/logs"], {
+				queryParams: {
+					userId: 1,
+					userName: "john_doe"
+				}
+			});
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Navigating to logs for user",
+				{
+					userId: 1,
+					username: "john_doe"
+				}
+			);
+		});
+	});
+
+	describe("Status Color", () =>
+	{
+		beforeEach(() =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>([])
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+		});
+
+		it("should return primary color for active users", () =>
+		{
+			expect(component!.getStatusColor(mockUsers[0])).toBe("primary");
+		});
+
+		it("should return warn color for inactive users", () =>
+		{
+			expect(component!.getStatusColor(mockUsers[1])).toBe("warn");
+		});
+	});
+
+	describe("Bulk Actions", () =>
+	{
+		let mockDialog: jasmine.SpyObj<any>;
+		let dialogOpenSpy: jasmine.Spy;
+
+		beforeEach(() =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>(mockUsers)
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+
+			mockDialog = jasmine.createSpyObj("MatDialogRef", ["afterClosed"]);
+			mockDialog.afterClosed.and.returnValue({
+				subscribe: (callback: (result: boolean) => void) =>
+					callback(true)
+			});
+
+			dialogOpenSpy = spyOn(component!["dialog"], "open").and.returnValue(
+				mockDialog
+			);
+
+			fixture.detectChanges();
+		});
+
+		it("should not delete when no users selected", () =>
+		{
+			component!.deleteSelected();
+
+			expect(component!["dialog"].open).not.toHaveBeenCalled();
+		});
+
+		it("should open confirmation dialog when deleting users", () =>
+		{
+			component!.selection.select(mockUsers[0]);
+
+			component!.deleteSelected();
+
+			expect(component!["dialog"].open).toHaveBeenCalled();
+		});
+
+		it("should show singular message for single user deletion", () =>
+		{
+			component!.selection.select(mockUsers[0]);
+
+			component!.deleteSelected();
+
+			const dialogData = dialogOpenSpy.calls.argsFor(0)[1].data;
+			expect(dialogData.message).toContain("1 user");
+		});
+
+		it("should show plural message for multiple user deletion", () =>
+		{
+			component!.selection.select(mockUsers[0]);
+			component!.selection.select(mockUsers[1]);
+
+			component!.deleteSelected();
+
+			const dialogData = dialogOpenSpy.calls.argsFor(0)[1].data;
+			expect(dialogData.message).toContain("2 users");
+		});
+
+		it("should log deletion when confirmed", () =>
+		{
+			component!.selection.select(mockUsers[0]);
+
+			component!.deleteSelected();
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Bulk delete confirmed",
+				{ count: 1 }
+			);
+		});
+
+		it("should clear selection after deletion", () =>
+		{
+			component!.selection.select(mockUsers[0]);
+
+			component!.deleteSelected();
+
+			expect(component!.selection.selected.length).toBe(0);
+		});
+
+		it("should log cancellation when delete is cancelled", () =>
+		{
+			mockDialog.afterClosed.and.returnValue({
+				subscribe: (callback: (result: boolean) => void) =>
+					callback(false)
+			});
+
+			component!.selection.select(mockUsers[0]);
+			component!.deleteSelected();
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Bulk delete cancelled"
+			);
+		});
+
+		it("should not export when no users selected", () =>
+		{
+			const initialCallCount = mockLogger.info.calls.count();
+
+			component!.exportSelected();
+
+			expect(mockLogger.info.calls.count()).toBe(initialCallCount);
+		});
+		it("should log export when users selected", () =>
+		{
+			component!.selection.select(mockUsers[0]);
+			component!.selection.select(mockUsers[1]);
+
+			component!.exportSelected();
+
+			expect(mockLogger.info).toHaveBeenCalledWith("Export requested", {
+				count: 2
+			});
+		});
+	});
+
+	describe("Chart Events", () =>
+	{
+		beforeEach(() =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>(mockUsers)
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+		});
+
+		it("should refresh data when chart refresh is triggered", () =>
+		{
+			component!.onChartRefresh();
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Chart refresh requested"
+			);
+			expect(component!.usersQuery.refetch).toHaveBeenCalled();
+		});
+		it("should log chart PNG export request", () =>
+		{
+			spyOn(window, "alert");
+
+			component!.onChartExportPng();
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Chart PNG export requested"
+			);
+		});
+
+		it("should log chart CSV export request", () =>
+		{
+			spyOn(window, "alert");
+
+			component!.onChartExportCsv();
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Chart CSV export requested"
+			);
+		});
+	});
+
+	describe("User Stats Chart", () =>
+	{
+		it("should generate chart data from users grouped by month", () =>
+		{
+			const testUsers: User[] = [
+				{
+					id: 1,
+					username: "user1",
+					email: "user1@test.com",
+					fullName: "User One",
+					createdAt: "2024-01-15T00:00:00Z",
+					isActive: true
+				},
+				{
+					id: 2,
+					username: "user2",
+					email: "user2@test.com",
+					fullName: "User Two",
+					createdAt: "2024-01-20T00:00:00Z",
+					isActive: false
+				},
+				{
+					id: 3,
+					username: "user3",
+					email: "user3@test.com",
+					fullName: "User Three",
+					createdAt: "2024-02-10T00:00:00Z",
+					isActive: true
+				}
+			];
+
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>(testUsers)
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+
+			const chartData = component!.userStatsChartData();
+
+			expect(chartData.datasets).toBeDefined();
+			expect(chartData.datasets!.length).toBe(2);
+			expect(chartData.datasets![0].label).toBe("Active Users");
+			expect(chartData.datasets![1].label).toBe("Inactive Users");
+		});
+
+		it("should limit chart data to last 6 months", () =>
+		{
+			const testUsers: User[] = [];
+			for (let i = 0; i < 12; i++)
+			{
+				testUsers.push({
+					id: i + 1,
+					username: `user${i + 1}`,
+					email: `user${i + 1}@test.com`,
+					fullName: `User ${i + 1}`,
+					createdAt: new Date(2024, i, 1).toISOString(),
+					isActive: true
+				});
+			}
+
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>(testUsers)
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+
+			const chartData = component!.userStatsChartData();
+
+			expect(chartData.labels!.length).toBe(6);
+		});
+	});
 });

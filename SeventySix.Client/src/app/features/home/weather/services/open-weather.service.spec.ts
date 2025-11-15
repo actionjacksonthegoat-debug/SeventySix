@@ -108,6 +108,47 @@ describe("OpenWeatherService", () =>
 			req.flush({});
 		});
 
+		it("should include lang parameter when provided", (done) =>
+		{
+			const latitude = 40.7128;
+			const longitude = -74.006;
+			const lang = "es";
+
+			service
+				.getCompleteWeather(latitude, longitude, { lang })
+				.subscribe({
+					next: () => done(),
+					error: done.fail
+				});
+
+			const req = httpMock.expectOne(
+				`${apiBaseUrl}?latitude=${latitude}&longitude=${longitude}&lang=${lang}`
+			);
+			expect(req.request.method).toBe("GET");
+			req.flush({});
+		});
+
+		it("should include both units and lang parameters when provided", (done) =>
+		{
+			const latitude = 40.7128;
+			const longitude = -74.006;
+			const units = "metric";
+			const lang = "fr";
+
+			service
+				.getCompleteWeather(latitude, longitude, { units, lang })
+				.subscribe({
+					next: () => done(),
+					error: done.fail
+				});
+
+			const req = httpMock.expectOne(
+				`${apiBaseUrl}?latitude=${latitude}&longitude=${longitude}&units=${units}&lang=${lang}`
+			);
+			expect(req.request.method).toBe("GET");
+			req.flush({});
+		});
+
 		it("should handle 429 rate limit error", (done) =>
 		{
 			const latitude = 40.7128;
@@ -193,6 +234,27 @@ describe("OpenWeatherService", () =>
 			expect(req.request.method).toBe("GET");
 			req.flush({});
 		});
+
+		it("should include options parameters when provided", (done) =>
+		{
+			const latitude = 40.7128;
+			const longitude = -74.006;
+			const units = "imperial";
+			const lang = "en";
+
+			service
+				.getCurrentWeather(latitude, longitude, { units, lang })
+				.subscribe({
+					next: () => done(),
+					error: done.fail
+				});
+
+			const req = httpMock.expectOne(
+				`${apiBaseUrl}/current?latitude=${latitude}&longitude=${longitude}&units=${units}&lang=${lang}`
+			);
+			expect(req.request.method).toBe("GET");
+			req.flush({});
+		});
 	});
 
 	describe("getHourlyForecast", () =>
@@ -209,6 +271,26 @@ describe("OpenWeatherService", () =>
 
 			const req = httpMock.expectOne(
 				`${apiBaseUrl}/hourly?latitude=${latitude}&longitude=${longitude}`
+			);
+			expect(req.request.method).toBe("GET");
+			req.flush([]);
+		});
+
+		it("should include options parameters when provided", (done) =>
+		{
+			const latitude = 40.7128;
+			const longitude = -74.006;
+			const units = "metric";
+
+			service
+				.getHourlyForecast(latitude, longitude, { units })
+				.subscribe({
+					next: () => done(),
+					error: done.fail
+				});
+
+			const req = httpMock.expectOne(
+				`${apiBaseUrl}/hourly?latitude=${latitude}&longitude=${longitude}&units=${units}`
 			);
 			expect(req.request.method).toBe("GET");
 			req.flush([]);
@@ -233,6 +315,65 @@ describe("OpenWeatherService", () =>
 			expect(req.request.method).toBe("GET");
 			req.flush([]);
 		});
+
+		it("should include options parameters when provided", (done) =>
+		{
+			const latitude = 40.7128;
+			const longitude = -74.006;
+			const lang = "de";
+
+			service.getDailyForecast(latitude, longitude, { lang }).subscribe({
+				next: () => done(),
+				error: done.fail
+			});
+
+			const req = httpMock.expectOne(
+				`${apiBaseUrl}/daily?latitude=${latitude}&longitude=${longitude}&lang=${lang}`
+			);
+			expect(req.request.method).toBe("GET");
+			req.flush([]);
+		});
+	});
+
+	describe("getMinutelyForecast", () =>
+	{
+		it("should call minutely forecast endpoint", (done) =>
+		{
+			const latitude = 40.7128;
+			const longitude = -74.006;
+
+			service.getMinutelyForecast(latitude, longitude).subscribe({
+				next: () => done(),
+				error: done.fail
+			});
+
+			const req = httpMock.expectOne(
+				`${apiBaseUrl}/minutely?latitude=${latitude}&longitude=${longitude}`
+			);
+			expect(req.request.method).toBe("GET");
+			req.flush([]);
+		});
+
+		it("should include options parameters when provided", (done) =>
+		{
+			const latitude = 40.7128;
+			const longitude = -74.006;
+			const units = "imperial";
+			const lang = "es";
+
+			service
+				.getMinutelyForecast(latitude, longitude, { units, lang })
+				.subscribe({
+					next: () => done(),
+					error: done.fail
+				});
+
+			const req = httpMock.expectOne(
+				`${apiBaseUrl}/minutely?latitude=${latitude}&longitude=${longitude}&units=${units}&lang=${lang}`
+			);
+			expect(req.request.method).toBe("GET");
+			req.flush([]);
+		});
 	});
 
 	describe("getHistoricalWeather", () =>
@@ -252,6 +393,31 @@ describe("OpenWeatherService", () =>
 
 			const req = httpMock.expectOne(
 				`${apiBaseUrl}/historical?latitude=${latitude}&longitude=${longitude}&timestamp=${timestamp}`
+			);
+			expect(req.request.method).toBe("GET");
+			req.flush({});
+		});
+
+		it("should include options parameters when provided", (done) =>
+		{
+			const latitude = 40.7128;
+			const longitude = -74.006;
+			const timestamp = 1699660800;
+			const units = "imperial";
+			const lang = "ja";
+
+			service
+				.getHistoricalWeather(latitude, longitude, timestamp, {
+					units,
+					lang
+				})
+				.subscribe({
+					next: () => done(),
+					error: done.fail
+				});
+
+			const req = httpMock.expectOne(
+				`${apiBaseUrl}/historical?latitude=${latitude}&longitude=${longitude}&timestamp=${timestamp}&units=${units}&lang=${lang}`
 			);
 			expect(req.request.method).toBe("GET");
 			req.flush({});

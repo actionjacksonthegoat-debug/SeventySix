@@ -246,4 +246,301 @@ describe("LogDetailDialogComponent", () =>
 		expect(component.log().correlationId).toBe("corr-123");
 		expect(component.log().requestId).toBe("req-123");
 	});
+
+	describe("isError", () =>
+	{
+		it("should return true for Error level", () =>
+		{
+			component.log.set({ ...mockLog, logLevel: "Error" });
+			expect(component.isError()).toBe(true);
+		});
+
+		it("should return true for Fatal level", () =>
+		{
+			component.log.set({ ...mockLog, logLevel: "Fatal" });
+			expect(component.isError()).toBe(true);
+		});
+
+		it("should return false for non-error levels", () =>
+		{
+			component.log.set({ ...mockLog, logLevel: "Warning" });
+			expect(component.isError()).toBe(false);
+
+			component.log.set({ ...mockLog, logLevel: "Information" });
+			expect(component.isError()).toBe(false);
+		});
+	});
+
+	describe("hasCorrelationId", () =>
+	{
+		it("should return true when correlation ID exists", () =>
+		{
+			component.log.set({ ...mockLog, correlationId: "test-123" });
+			expect(component.hasCorrelationId()).toBe(true);
+		});
+
+		it("should return false when correlation ID is null", () =>
+		{
+			component.log.set({ ...mockLog, correlationId: null });
+			expect(component.hasCorrelationId()).toBe(false);
+		});
+
+		it("should return false when correlation ID is empty string", () =>
+		{
+			component.log.set({ ...mockLog, correlationId: "" });
+			expect(component.hasCorrelationId()).toBe(false);
+		});
+	});
+
+	describe("isRootSpan", () =>
+	{
+		it("should return false when parentSpanId is null", () =>
+		{
+			expect(component.isRootSpan(null)).toBe(false);
+		});
+
+		it("should return true when parentSpanId is all zeros", () =>
+		{
+			expect(component.isRootSpan("0000000000000000")).toBe(true);
+			expect(component.isRootSpan("00000000")).toBe(true);
+		});
+
+		it("should return false when parentSpanId has non-zero values", () =>
+		{
+			expect(component.isRootSpan("parent-789")).toBe(false);
+			expect(component.isRootSpan("1234567890abcdef")).toBe(false);
+		});
+	});
+
+	describe("getRelativeTime", () =>
+	{
+		it("should return days ago when difference is in days", () =>
+		{
+			const now = new Date();
+			const threeDaysAgo = new Date(
+				now.getTime() - 3 * 24 * 60 * 60 * 1000
+			);
+			expect(component.getRelativeTime(threeDaysAgo)).toBe("3 days ago");
+		});
+
+		it("should return singular day when difference is 1 day", () =>
+		{
+			const now = new Date();
+			const oneDayAgo = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
+			expect(component.getRelativeTime(oneDayAgo)).toBe("1 day ago");
+		});
+
+		it("should return hours ago when difference is in hours", () =>
+		{
+			const now = new Date();
+			const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+			expect(component.getRelativeTime(threeHoursAgo)).toBe(
+				"3 hours ago"
+			);
+		});
+
+		it("should return singular hour when difference is 1 hour", () =>
+		{
+			const now = new Date();
+			const oneHourAgo = new Date(now.getTime() - 1 * 60 * 60 * 1000);
+			expect(component.getRelativeTime(oneHourAgo)).toBe("1 hour ago");
+		});
+
+		it("should return minutes ago when difference is in minutes", () =>
+		{
+			const now = new Date();
+			const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+			expect(component.getRelativeTime(fiveMinutesAgo)).toBe(
+				"5 minutes ago"
+			);
+		});
+
+		it("should return singular minute when difference is 1 minute", () =>
+		{
+			const now = new Date();
+			const oneMinuteAgo = new Date(now.getTime() - 1 * 60 * 1000);
+			expect(component.getRelativeTime(oneMinuteAgo)).toBe(
+				"1 minute ago"
+			);
+		});
+	});
+
+	describe("getExceptionMessage", () =>
+	{
+		it("should return empty string when exception is null", () =>
+		{
+			expect(component.getExceptionMessage(null)).toBe("");
+		});
+
+		it("should extract message after colon", () =>
+		{
+			const exception =
+				"System.NullReferenceException: Object reference not set to an instance";
+			expect(component.getExceptionMessage(exception)).toBe(
+				"Object reference not set to an instance"
+			);
+		});
+
+		it("should return first line when no colon present", () =>
+		{
+			const exception = "Generic error message\nWith more details";
+			expect(component.getExceptionMessage(exception)).toBe(
+				"Generic error message"
+			);
+		});
+	});
+
+	describe("getExceptionType", () =>
+	{
+		it("should return null when exception is null", () =>
+		{
+			expect(component.getExceptionType(null)).toBe(null);
+		});
+
+		it("should extract exception type before colon", () =>
+		{
+			const exception = "System.ArgumentException: Invalid argument";
+			expect(component.getExceptionType(exception)).toBe(
+				"System.ArgumentException"
+			);
+		});
+
+		it("should return full line when it contains Exception keyword", () =>
+		{
+			const exception = "CustomException\nWith details";
+			expect(component.getExceptionType(exception)).toBe(
+				"CustomException"
+			);
+		});
+
+		it("should return full line when it contains Error keyword", () =>
+		{
+			const exception = "NetworkError\nConnection failed";
+			expect(component.getExceptionType(exception)).toBe("NetworkError");
+		});
+
+		it("should return null when no exception pattern found", () =>
+		{
+			const exception = "Some random message\nNo exception here";
+			expect(component.getExceptionType(exception)).toBe(null);
+		});
+	});
+
+	describe("getBaseException", () =>
+	{
+		it("should return null when exception is null", () =>
+		{
+			expect(component.getBaseException(null)).toBe(null);
+		});
+
+		it("should extract base exception from inner exception pattern", () =>
+		{
+			const exception =
+				"Outer exception\n---> System.InvalidOperationException: Inner error\nStack trace";
+			expect(component.getBaseException(exception)).toBe(
+				"System.InvalidOperationException"
+			);
+		});
+
+		it("should return null when no base exception pattern found", () =>
+		{
+			const exception = "Simple exception without inner exceptions";
+			expect(component.getBaseException(exception)).toBe(null);
+		});
+	});
+
+	describe("getInnerExceptions", () =>
+	{
+		it("should return empty array when exception is null", () =>
+		{
+			expect(component.getInnerExceptions(null)).toEqual([]);
+		});
+
+		it("should extract multiple inner exceptions", () =>
+		{
+			const exception =
+				"Outer\n---> First inner exception\nDetails\n---> Second inner exception\nMore details";
+			const innerExceptions = component.getInnerExceptions(exception);
+
+			expect(innerExceptions.length).toBe(2);
+			expect(innerExceptions[0]).toBe("First inner exception");
+			expect(innerExceptions[1]).toBe("Second inner exception");
+		});
+
+		it("should return empty array when no inner exceptions found", () =>
+		{
+			const exception = "Simple exception without inner exceptions";
+			expect(component.getInnerExceptions(exception)).toEqual([]);
+		});
+	});
+
+	describe("getStackFrameCount", () =>
+	{
+		it("should return 0 when stack trace is null", () =>
+		{
+			expect(component.getStackFrameCount(null)).toBe(0);
+		});
+
+		it("should count stack frames starting with 'at '", () =>
+		{
+			const stackTrace =
+				"   at Method1()\n   at Method2()\n   at Method3()\nOther line";
+			expect(component.getStackFrameCount(stackTrace)).toBe(3);
+		});
+
+		it("should return 0 when no frames match pattern", () =>
+		{
+			const stackTrace = "No frames here\nJust text";
+			expect(component.getStackFrameCount(stackTrace)).toBe(0);
+		});
+	});
+
+	describe("openInJaeger", () =>
+	{
+		it("should show alert when no correlation ID exists", () =>
+		{
+			spyOn(window, "alert");
+			component.log.set({ ...mockLog, correlationId: null });
+
+			component.openInJaeger();
+
+			expect(window.alert).toHaveBeenCalledWith(
+				jasmine.stringContaining("No trace ID available")
+			);
+		});
+
+		it("should open Jaeger URL when correlation ID exists", () =>
+		{
+			spyOn(window, "open");
+			component.log.set({ ...mockLog, correlationId: "trace-123" });
+
+			component.openInJaeger();
+
+			expect(window.open).toHaveBeenCalledWith(
+				jasmine.stringContaining("trace-123"),
+				"_blank"
+			);
+		});
+	});
+
+	describe("toggleException", () =>
+	{
+		it("should toggle exception collapse state", () =>
+		{
+			expect(component.exceptionCollapsed()).toBe(false);
+			component.toggleException();
+			expect(component.exceptionCollapsed()).toBe(true);
+			component.toggleException();
+			expect(component.exceptionCollapsed()).toBe(false);
+		});
+	});
+
+	describe("handleEscape", () =>
+	{
+		it("should close dialog on escape key", () =>
+		{
+			component.handleEscape();
+			expect(mockDialogRef.close).toHaveBeenCalled();
+		});
+	});
 });

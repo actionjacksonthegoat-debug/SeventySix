@@ -1,33 +1,65 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { Router, NavigationEnd } from "@angular/router";
+import { Router, NavigationEnd, ActivatedRoute } from "@angular/router";
 import { provideRouter } from "@angular/router";
 import { Subject } from "rxjs";
 import { BreadcrumbComponent } from "./breadcrumb.component";
+import { Component } from "@angular/core";
+
+@Component({
+	selector: "app-test",
+	template: ""
+})
+class TestComponent
+{}
 
 describe("BreadcrumbComponent", () =>
 {
 	let component: BreadcrumbComponent;
 	let fixture: ComponentFixture<BreadcrumbComponent>;
-	let routerEventsSubject: Subject<any>;
+	let router: Router;
 
 	beforeEach(async () =>
 	{
-		routerEventsSubject = new Subject();
-
 		await TestBed.configureTestingModule({
 			imports: [BreadcrumbComponent],
 			providers: [
 				provideZonelessChangeDetection(),
 				provideRouter([
-					{ path: "", component: BreadcrumbComponent },
-					{ path: "test", component: BreadcrumbComponent }
+					{ path: "", component: TestComponent },
+					{
+						path: "admin",
+						component: TestComponent,
+						data: { breadcrumb: "Administration" },
+						children: [
+							{
+								path: "users",
+								component: TestComponent,
+								data: { breadcrumb: "User Management" },
+								children: [
+									{
+										path: ":id",
+										component: TestComponent
+									}
+								]
+							}
+						]
+					},
+					{
+						path: "weather-forecast",
+						component: TestComponent
+					},
+					{
+						path: "log-management",
+						component: TestComponent
+					}
 				])
 			]
 		}).compileComponents();
 
 		fixture = TestBed.createComponent(BreadcrumbComponent);
 		component = fixture.componentInstance;
+		router = TestBed.inject(Router);
 		fixture.detectChanges();
 	});
 
@@ -53,5 +85,103 @@ describe("BreadcrumbComponent", () =>
 		expect(
 			breadcrumbs.some((b: { label: string }) => b.label === "Home")
 		).toBe(true);
+	});
+
+	it("should use custom breadcrumb label from route data", async () =>
+	{
+		await router.navigate(["/admin"]);
+		fixture.detectChanges();
+
+		const breadcrumbs = component.breadcrumbs();
+		const adminCrumb = breadcrumbs.find(
+			(b) => b.label === "Administration"
+		);
+
+		expect(adminCrumb).toBeDefined();
+	});
+
+	it("should format path segment when no custom breadcrumb data", async () =>
+	{
+		await router.navigate(["/weather-forecast"]);
+		fixture.detectChanges();
+
+		const breadcrumbs = component.breadcrumbs();
+		const weatherCrumb = breadcrumbs.find(
+			(b) => b.label === "Weather Forecast"
+		);
+
+		expect(weatherCrumb).toBeDefined();
+	});
+
+	it("should handle route parameters by showing Details", async () =>
+	{
+		await router.navigate(["/admin/users/123"]);
+		fixture.detectChanges();
+
+		const breadcrumbs = component.breadcrumbs();
+
+		// Should have: Home, Administration, User Management, Details (for :id)
+		expect(breadcrumbs.length).toBe(4);
+		expect(breadcrumbs[0].label).toBe("Home");
+		expect(breadcrumbs[1].label).toBe("Administration");
+		expect(breadcrumbs[2].label).toBe("User Management");
+		expect(breadcrumbs[3].label).toBe("Details");
+	});
+
+	it("should skip routes with empty paths", async () =>
+	{
+		// Navigate to root which has empty path
+		await router.navigate(["/"]);
+		fixture.detectChanges();
+
+		const breadcrumbs = component.breadcrumbs();
+
+		// Should only have Home breadcrumb
+		expect(breadcrumbs.length).toBe(1);
+		expect(breadcrumbs[0].label).toBe("Home");
+	});
+
+	it("should mark current route as active", async () =>
+	{
+		await router.navigate(["/log-management"]);
+		fixture.detectChanges();
+
+		const breadcrumbs = component.breadcrumbs();
+		const activeCrumb = breadcrumbs.find((b) => b.isActive);
+
+		expect(activeCrumb).toBeDefined();
+		expect(activeCrumb?.label).toBe("Log Management");
+	});
+
+	it("should build correct URL paths for nested routes", async () =>
+	{
+		await router.navigate(["/admin/users"]);
+		fixture.detectChanges();
+
+		const breadcrumbs = component.breadcrumbs();
+		const usersCrumb = breadcrumbs.find(
+			(b) => b.label === "User Management"
+		);
+
+		expect(usersCrumb?.url).toBe("/admin/users");
+	});
+
+	it("should handle navigation events and update breadcrumbs", async () =>
+	{
+		await router.navigate(["/admin"]);
+		fixture.detectChanges();
+
+		let breadcrumbs = component.breadcrumbs();
+		expect(breadcrumbs.length).toBeGreaterThanOrEqual(2);
+
+		await router.navigate(["/weather-forecast"]);
+		fixture.detectChanges();
+
+		breadcrumbs = component.breadcrumbs();
+		const weatherCrumb = breadcrumbs.find(
+			(b) => b.label === "Weather Forecast"
+		);
+
+		expect(weatherCrumb).toBeDefined();
 	});
 });

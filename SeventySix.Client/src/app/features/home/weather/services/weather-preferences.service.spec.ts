@@ -9,6 +9,23 @@ describe("WeatherPreferencesService", () =>
 
 	beforeEach(() =>
 	{
+		localStorage.clear(); // Clear BEFORE service instantiation
+
+		// Mock matchMedia for reduced motion detection
+		Object.defineProperty(window, "matchMedia", {
+			writable: true,
+			value: jasmine.createSpy("matchMedia").and.returnValue({
+				matches: false,
+				media: "",
+				onchange: null,
+				addListener: jasmine.createSpy("addListener"),
+				removeListener: jasmine.createSpy("removeListener"),
+				addEventListener: jasmine.createSpy("addEventListener"),
+				removeEventListener: jasmine.createSpy("removeEventListener"),
+				dispatchEvent: jasmine.createSpy("dispatchEvent")
+			})
+		});
+
 		TestBed.configureTestingModule({
 			providers: [
 				WeatherPreferencesService,
@@ -17,7 +34,6 @@ describe("WeatherPreferencesService", () =>
 		});
 
 		service = TestBed.inject(WeatherPreferencesService);
-		localStorage.clear();
 	});
 
 	afterEach(() =>

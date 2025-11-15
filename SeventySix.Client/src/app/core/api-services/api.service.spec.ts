@@ -222,4 +222,133 @@ describe("ApiService", () =>
 			req.flush(testData);
 		});
 	});
+
+	describe("Error handling", () =>
+	{
+		it("should handle client-side errors (ErrorEvent)", () =>
+		{
+			const endpoint = "test";
+			const errorMessage = "Network error occurred";
+			const errorEvent = new ErrorEvent("Network error", {
+				message: errorMessage
+			});
+
+			service.get(endpoint).subscribe({
+				next: () => fail("should have failed with error"),
+				error: (error: Error) =>
+				{
+					expect(error.message).toContain("Client-side error");
+					expect(error.message).toContain(errorMessage);
+				}
+			});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			req.error(errorEvent);
+		});
+
+		it("should handle server-side errors (HTTP error response)", () =>
+		{
+			const endpoint = "test";
+			const errorStatus = 404;
+			const errorStatusText = "Not Found";
+
+			service.get(endpoint).subscribe({
+				next: () => fail("should have failed with error"),
+				error: (error: Error) =>
+				{
+					expect(error.message).toContain("Server-side error");
+					expect(error.message).toContain(errorStatus.toString());
+				}
+			});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			req.flush("Not Found", {
+				status: errorStatus,
+				statusText: errorStatusText
+			});
+		});
+
+		it("should handle errors in POST requests", () =>
+		{
+			const endpoint = "test";
+			const testData = { name: "Test" };
+
+			service.post(endpoint, testData).subscribe({
+				next: () => fail("should have failed with error"),
+				error: (error: Error) =>
+				{
+					expect(error.message).toContain("Server-side error");
+					expect(error.message).toContain("500");
+				}
+			});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			req.flush("Internal Server Error", {
+				status: 500,
+				statusText: "Internal Server Error"
+			});
+		});
+
+		it("should handle errors in PUT requests", () =>
+		{
+			const endpoint = "test/1";
+			const testData = { id: 1, name: "Test" };
+
+			service.put(endpoint, testData).subscribe({
+				next: () => fail("should have failed with error"),
+				error: (error: Error) =>
+				{
+					expect(error.message).toContain("Server-side error");
+				}
+			});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			req.flush("Unauthorized", {
+				status: 401,
+				statusText: "Unauthorized"
+			});
+		});
+
+		it("should handle errors in PATCH requests", () =>
+		{
+			const endpoint = "test/1";
+			const testData = { name: "Updated" };
+
+			service.patch(endpoint, testData).subscribe({
+				next: () => fail("should have failed with error"),
+				error: (error: Error) =>
+				{
+					expect(error.message).toContain("Server-side error");
+				}
+			});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			req.flush("Bad Request", {
+				status: 400,
+				statusText: "Bad Request"
+			});
+		});
+
+		it("should handle errors in DELETE requests", () =>
+		{
+			const endpoint = "test/1";
+
+			service.delete(endpoint).subscribe({
+				next: () => fail("should have failed with error"),
+				error: (error: Error) =>
+				{
+					expect(error.message).toContain("Server-side error");
+				}
+			});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			req.flush("Forbidden", { status: 403, statusText: "Forbidden" });
+		});
+	});
 });

@@ -53,4 +53,24 @@ describe("ChartComponent", () =>
 		component.onRefresh();
 		expect(component.refresh.emit).toHaveBeenCalled();
 	});
+
+	it("should emit exportPng event when export PNG clicked", () =>
+	{
+		spyOn(component.exportPng, "emit");
+		component.onExportPng();
+		expect(component.exportPng.emit).toHaveBeenCalled();
+	});
+
+	it("should emit exportCsv event when export CSV clicked", () =>
+	{
+		spyOn(component.exportCsv, "emit");
+		component.onExportCsv();
+		expect(component.exportCsv.emit).toHaveBeenCalled();
+	});
+
+	it("should not throw error when chart instance is undefined during layout change", () =>
+	{
+		// Ensure chart signal returns undefined
+		expect(() => component.onLayoutChanged()).not.toThrow();
+	});
 });
