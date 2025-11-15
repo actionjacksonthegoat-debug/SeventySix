@@ -60,7 +60,7 @@ public class RateLimitingServiceTests
 	}
 
 	[Fact]
-	public async Task CanMakeRequestAsync_WithNoRecord_ReturnsTrue()
+	public async Task CanMakeRequestAsync_WithNoRecord_ReturnsTrueAsync()
 	{
 		const string apiName = "TestApi";
 		MockRepository
@@ -73,7 +73,7 @@ public class RateLimitingServiceTests
 	}
 
 	[Fact]
-	public async Task CanMakeRequestAsync_UnderLimit_ReturnsTrue()
+	public async Task CanMakeRequestAsync_UnderLimit_ReturnsTrueAsync()
 	{
 		const string apiName = "TestApi";
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -96,7 +96,7 @@ public class RateLimitingServiceTests
 	}
 
 	[Fact]
-	public async Task CanMakeRequestAsync_AtLimit_ReturnsFalse()
+	public async Task CanMakeRequestAsync_AtLimit_ReturnsFalseAsync()
 	{
 		const string apiName = "TestApi";
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -119,7 +119,7 @@ public class RateLimitingServiceTests
 	}
 
 	[Fact]
-	public async Task TryIncrementRequestCountAsync_NoRecord_CreatesNewRecord()
+	public async Task TryIncrementRequestCountAsync_NoRecord_CreatesNewRecordAsync()
 	{
 		const string apiName = "TestApi";
 		const string baseUrl = "https://api.test.com";
@@ -148,7 +148,7 @@ public class RateLimitingServiceTests
 	}
 
 	[Fact]
-	public async Task TryIncrementRequestCountAsync_UnderLimit_IncrementsCounter()
+	public async Task TryIncrementRequestCountAsync_UnderLimit_IncrementsCounterAsync()
 	{
 		const string apiName = "TestApi";
 		const string baseUrl = "https://api.test.com";
@@ -180,7 +180,7 @@ public class RateLimitingServiceTests
 	}
 
 	[Fact]
-	public async Task TryIncrementRequestCountAsync_AtLimit_ReturnsFalse()
+	public async Task TryIncrementRequestCountAsync_AtLimit_ReturnsFalseAsync()
 	{
 		const string apiName = "TestApi";
 		const string baseUrl = "https://api.test.com";
@@ -208,7 +208,7 @@ public class RateLimitingServiceTests
 	}
 
 	[Fact]
-	public async Task GetRequestCountAsync_NoRecord_ReturnsZero()
+	public async Task GetRequestCountAsync_NoRecord_ReturnsZeroAsync()
 	{
 		const string apiName = "TestApi";
 		MockRepository
@@ -221,7 +221,7 @@ public class RateLimitingServiceTests
 	}
 
 	[Fact]
-	public async Task GetRemainingQuotaAsync_NoRecord_ReturnsFullLimit()
+	public async Task GetRemainingQuotaAsync_NoRecord_ReturnsFullLimitAsync()
 	{
 		const string apiName = "TestApi";
 		MockRepository

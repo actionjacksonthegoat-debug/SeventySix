@@ -50,7 +50,7 @@ public class PollyIntegrationClientTests : IDisposable
 	}
 
 	[Fact]
-	public async Task GetAsync_WhenCacheHit_ShouldReturnFromCache()
+	public async Task GetAsync_WhenCacheHit_ShouldReturnFromCacheAsync()
 	{
 		// Arrange
 		const string url = "/test";
@@ -72,7 +72,7 @@ public class PollyIntegrationClientTests : IDisposable
 	}
 
 	[Fact]
-	public async Task GetAsync_WhenRateLimitExceeded_ShouldThrowException()
+	public async Task GetAsync_WhenRateLimitExceeded_ShouldThrowExceptionAsync()
 	{
 		// Arrange
 		const string url = "/test";
@@ -89,7 +89,7 @@ public class PollyIntegrationClientTests : IDisposable
 	}
 
 	[Fact]
-	public async Task GetAsync_WhenSuccessfulRequest_ShouldCacheResult()
+	public async Task GetAsync_WhenSuccessfulRequest_ShouldCacheResultAsync()
 	{
 		// Arrange
 		const string url = "/test";
@@ -125,7 +125,7 @@ public class PollyIntegrationClientTests : IDisposable
 	}
 
 	[Fact]
-	public async Task GetAsync_WhenUrlIsNull_ShouldThrowArgumentException()
+	public async Task GetAsync_WhenUrlIsNull_ShouldThrowArgumentExceptionAsync()
 	{
 		// Arrange
 		PollyIntegrationClient sut = CreateSut();
@@ -136,7 +136,7 @@ public class PollyIntegrationClientTests : IDisposable
 	}
 
 	[Fact]
-	public async Task GetAsync_WhenApiNameIsNull_ShouldThrowArgumentException()
+	public async Task GetAsync_WhenApiNameIsNull_ShouldThrowArgumentExceptionAsync()
 	{
 		// Arrange
 		PollyIntegrationClient sut = CreateSut();
@@ -147,7 +147,7 @@ public class PollyIntegrationClientTests : IDisposable
 	}
 
 	[Fact]
-	public async Task CanMakeRequest_ShouldDelegateToRateLimiter()
+	public async Task CanMakeRequest_ShouldDelegateToRateLimiterAsync()
 	{
 		// Arrange
 		const string apiName = "TestApi";
@@ -164,7 +164,7 @@ public class PollyIntegrationClientTests : IDisposable
 	}
 
 	[Fact]
-	public async Task GetRemainingQuota_ShouldDelegateToRateLimiter()
+	public async Task GetRemainingQuota_ShouldDelegateToRateLimiterAsync()
 	{
 		// Arrange
 		const string apiName = "TestApi";

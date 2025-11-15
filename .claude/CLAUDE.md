@@ -235,6 +235,15 @@ export class UserService {
 -   **ALWAYS use explicit type declarations - NEVER use `var` keyword**
 -   **Correct**: `string test = "";` or `int count = 0;`
 -   **Wrong**: `var test = "";` or `var count = 0;`
+-   **ALWAYS use Primary Constructors when possible** (C# 12+)
+-   **Correct**: `public class UserService(IUserRepository repo, ILogger<UserService> logger)`
+-   **Wrong**: Using traditional constructor with field assignments
+-   **ALWAYS use Collection Expressions** (C# 12+)
+-   **Correct**: `int[] numbers = [1, 2, 3];` or `List<string> names = ["Alice", "Bob"];`
+-   **Wrong**: `new int[] { 1, 2, 3 }` or `new List<string> { "Alice", "Bob" }`
+-   **ALWAYS suffix async methods with 'Async', including test methods**
+-   **Correct**: `public async Task GetUserAsync()` or `public async Task GetUser_ReturnsUser_WhenExistsAsync()`
+-   **Wrong**: `public async Task GetUser()` or `public async Task GetUser_ReturnsUser_WhenExists()`
 -   Use records for immutable data
 -   Leverage pattern matching and switch expressions
 -   Use `required` keyword for required properties (C# 11+)
@@ -254,7 +263,7 @@ export class UserService {
 ```csharp
 app.MapGet("/users/{id}", async (int id, IUserService userService) =>
 {
-    var user = await userService.GetByIdAsync(id);
+    User? user = await userService.GetByIdAsync(id);
     return user is not null ? Results.Ok(user) : Results.NotFound();
 })
 .WithName("GetUser")
@@ -280,14 +289,10 @@ app.MapGet("/users/{id}", async (int id, IUserService userService) =>
 -   Use indexes for frequently queried columns
 
 ```csharp
-public class UserRepository : IUserRepository
+public class UserRepository(AppDbContext context) : IUserRepository
 {
-    private readonly AppDbContext _context;
-
-    public UserRepository(AppDbContext context) => _context = context;
-
     public async Task<User?> GetByIdAsync(int id) =>
-        await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+        await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
 }
 ```
 
@@ -322,20 +327,20 @@ public class UserRepository : IUserRepository
 ```csharp
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository> _mockRepo = new();
-    private readonly UserService _sut;
+    private readonly Mock<IUserRepository> MockRepo = new();
+    private readonly UserService Sut;
 
-    public UserServiceTests() => _sut = new UserService(_mockRepo.Object);
+    public UserServiceTests() => Sut = new UserService(MockRepo.Object);
 
     [Fact]
-    public async Task GetByIdAsync_ReturnsUser_WhenExists()
+    public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
     {
         // Arrange
-        var user = new User { Id = 1, Name = "Test" };
-        _mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        User user = new User { Id = 1, Name = "Test" };
+        MockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
 
         // Act
-        var result = await _sut.GetByIdAsync(1);
+        User? result = await Sut.GetByIdAsync(1);
 
         // Assert
         Assert.NotNull(result);
