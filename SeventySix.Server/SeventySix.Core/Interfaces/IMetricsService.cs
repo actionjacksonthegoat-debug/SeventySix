@@ -19,7 +19,7 @@ public interface IMetricsService
 	/// </summary>
 	/// <param name="durationMs">Query duration in milliseconds.</param>
 	/// <param name="queryType">Type of query (e.g., "Select", "Insert", "Update").</param>
-	void RecordDatabaseQuery(double durationMs, string queryType);
+	public void RecordDatabaseQuery(double durationMs, string queryType);
 
 	/// <summary>
 	/// Records an external API call.
@@ -27,24 +27,24 @@ public interface IMetricsService
 	/// <param name="durationMs">API call duration in milliseconds.</param>
 	/// <param name="apiName">Name of the external API.</param>
 	/// <param name="success">Whether the call was successful.</param>
-	void RecordApiCall(double durationMs, string apiName, bool success);
+	public void RecordApiCall(double durationMs, string apiName, bool success);
 
 	/// <summary>
 	/// Records queue statistics.
 	/// </summary>
 	/// <param name="queuedItems">Number of queued items.</param>
 	/// <param name="failedItems">Number of failed items.</param>
-	void RecordQueueStats(int queuedItems, int failedItems);
+	public void RecordQueueStats(int queuedItems, int failedItems);
 
 	/// <summary>
 	/// Gets the current number of active database connections.
 	/// </summary>
 	/// <returns>Number of active database connections.</returns>
-	int GetActiveDbConnections();
+	public int GetActiveDbConnections();
 
 	/// <summary>
 	/// Gets the current queue statistics.
 	/// </summary>
 	/// <returns>Tuple of (queuedItems, failedItems).</returns>
-	(int queuedItems, int failedItems) GetQueueStats();
+	public (int queuedItems, int failedItems) GetQueueStats();
 }

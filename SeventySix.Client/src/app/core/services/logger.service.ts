@@ -1,5 +1,6 @@
 import { Injectable, inject, isDevMode } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
+import { Router } from "@angular/router";
 import { catchError, of } from "rxjs";
 
 /**
@@ -27,6 +28,25 @@ export interface LogEntry
 }
 
 /**
+ * Client log request matching backend ClientLogRequest DTO
+ */
+interface ClientLogRequest
+{
+	logLevel: string;
+	message: string;
+	exceptionMessage?: string;
+	stackTrace?: string;
+	sourceContext?: string;
+	requestUrl?: string;
+	requestMethod?: string;
+	statusCode?: number;
+	userAgent?: string;
+	clientTimestamp?: string;
+	additionalContext?: Record<string, unknown>;
+	correlationId?: string;
+}
+
+/**
  * Logger service for application-wide logging.
  * Logs to console in development, sends to remote endpoint in production.
  * Follows Single Responsibility Principle (SRP).
@@ -37,8 +57,9 @@ export interface LogEntry
 export class LoggerService
 {
 	private readonly http: HttpClient = inject(HttpClient);
+	private readonly router: Router = inject(Router);
 	private readonly isDevMode: boolean = isDevMode();
-	private readonly logEndpoint: string = "/api/logs"; // Configure via environment
+	private readonly logEndpoint: string = "/api/logs/client";
 
 	/**
 	 * Logs debug message (dev only).
@@ -159,18 +180,23 @@ export class LoggerService
 	 */
 	private logToRemote(entry: LogEntry): void
 	{
-		// Serialize error object for JSON
-		const payload: Omit<LogEntry, "error"> & {
-			error?: { message: string; stack?: string; name: string };
-		} = {
-			...entry,
-			error: entry.error
-				? {
-						message: entry.error.message,
-						stack: entry.error.stack,
-						name: entry.error.name
-					}
-				: undefined
+		// Convert LogLevel enum to string
+		const logLevelString: string = LogLevel[entry.level];
+
+		// Get current route URL
+		const currentUrl: string = this.router.url || window.location.pathname;
+
+		// Prepare client log request matching backend DTO
+		const payload: ClientLogRequest = {
+			logLevel: logLevelString,
+			message: entry.message,
+			exceptionMessage: entry.error?.message,
+			stackTrace: entry.error?.stack,
+			sourceContext: "Client", // Set source as "Client" for all client-side logs
+			requestUrl: currentUrl,
+			userAgent: navigator.userAgent,
+			clientTimestamp: entry.timestamp,
+			additionalContext: entry.context
 		};
 
 		this.http

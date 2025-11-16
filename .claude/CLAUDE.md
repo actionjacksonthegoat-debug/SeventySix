@@ -217,6 +217,12 @@ export class UserService {
 -   Aim for >80% coverage on business logic
 -   Use Testing Library principles
 
+**Test Execution:**
+
+-   **Client-side tests (Angular)**: Run via terminal with `npm test` - `runTests` tool does NOT work for Angular
+-   **Server-side tests (.NET)**: Use `runTests` tool for all C# test projects
+-   Always verify test output in conversation to track failures and update context
+
 ---
 
 ## .NET Core 8+ Best Practices
@@ -406,6 +412,29 @@ public class UserServiceTests
 -   Use feature branches
 -   Review code before merging
 -   Tag releases semantically
+
+### Configuration Management
+
+**CRITICAL - Avoid Hardcoded Values:**
+
+-   **NEVER** hardcode configurable settings (intervals, timeouts, limits, URLs, API keys)
+-   **ALWAYS** use configuration files (appsettings.json, environment.ts) for configurable values
+-   **ALWAYS** use environment variables for secrets and environment-specific settings
+-   **Angular**: Use `environment.ts` files for configuration (development/production)
+-   **.NET**: Use `appsettings.json` with Options pattern for configuration
+-   Document all configuration options in existing configuration files
+-   Provide sensible defaults in configuration files
+-   Validate configuration on application startup
+
+**Examples of Values That Must Be Configurable:**
+
+-   Refresh intervals, polling intervals, timeouts
+-   API endpoints, URLs, base paths
+-   Pagination limits, batch sizes
+-   Feature flags, toggles
+-   Retry counts, backoff intervals
+-   Cache durations
+-   Rate limits, throttle settings
 
 ### Documentation
 

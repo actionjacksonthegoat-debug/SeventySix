@@ -16,5 +16,5 @@ import { MatIconModule } from "@angular/material/icon";
 export class FooterComponent
 {
 	protected readonly currentYear: number = new Date().getFullYear();
-	protected readonly version: string = "1.0.0"; // TODO: Pull from package.json or environment
+	protected readonly version: string = "1.0.0"; // TODO: Pull from package.json.
 }

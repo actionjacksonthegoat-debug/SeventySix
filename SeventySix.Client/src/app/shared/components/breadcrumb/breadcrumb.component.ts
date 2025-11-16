@@ -145,7 +145,7 @@ export class BreadcrumbComponent
 		}
 
 		// Build feature-based breadcrumbs
-		const firstSegment = urlSegments[0];
+		const firstSegment: string = urlSegments[0];
 		const featureMap: Record<string, { label: string; url: string }> = {
 			"weather-forecast": { label: "Home", url: "/" },
 			game: { label: "Game", url: "/game" },
@@ -156,7 +156,8 @@ export class BreadcrumbComponent
 		// Add feature breadcrumb if not already home
 		if (firstSegment in featureMap && firstSegment !== "weather-forecast")
 		{
-			const feature = featureMap[firstSegment];
+			const feature: { label: string; url: string } =
+				featureMap[firstSegment];
 			breadcrumbs.push({
 				label: feature.label,
 				url: feature.url,
@@ -165,10 +166,10 @@ export class BreadcrumbComponent
 		}
 
 		// Add sub-page breadcrumbs
-		let url = "";
-		for (let i = 0; i < urlSegments.length; i++)
+		let url: string = "";
+		for (let i: number = 0; i < urlSegments.length; i++)
 		{
-			const segment = urlSegments[i];
+			const segment: string = urlSegments[i];
 			url += `/${segment}`;
 
 			// Skip if this is the feature root we already added
@@ -182,7 +183,12 @@ export class BreadcrumbComponent
 			}
 
 			// Get label from custom mappings or format the segment
-			const label = this.getSegmentLabel(url, segment, urlSegments, i);
+			const label: string = this.getSegmentLabel(
+				url,
+				segment,
+				urlSegments,
+				i
+			);
 
 			// Skip empty labels
 			if (!label)
@@ -208,8 +214,8 @@ export class BreadcrumbComponent
 	private getSegmentLabel(
 		url: string,
 		segment: string,
-		allSegments: string[],
-		index: number
+		_allSegments: string[],
+		_index: number
 	): string
 	{
 		// Custom labels for specific routes

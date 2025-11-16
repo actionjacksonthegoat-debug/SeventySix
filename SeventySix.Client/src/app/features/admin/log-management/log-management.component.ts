@@ -56,11 +56,19 @@ export class LogManagementComponent
 			totalLogs: total,
 			errorCount: 0,
 			warningCount: 0,
+			fatalCount: 0,
+			criticalCount: 0,
 			infoCount: 0,
 			debugCount: 0,
-			criticalCount: 0,
+			averageResponseTimeMs: 0,
+			totalRequests: 0,
+			failedRequests: 0,
+			topErrorSources: {},
+			requestsByPath: {},
 			oldestLogDate: null,
-			newestLogDate: null
+			newestLogDate: null,
+			startDate: new Date().toISOString(),
+			endDate: new Date().toISOString()
 		};
 	});
 

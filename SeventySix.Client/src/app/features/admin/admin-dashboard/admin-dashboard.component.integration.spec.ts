@@ -31,16 +31,23 @@ describeIntegration("AdminDashboardComponent Integration Tests", () =>
 	let healthApiService: jasmine.SpyObj<HealthApiService>;
 
 	const mockStatistics: LogStatistics = {
-		totalLogs: 1500,
-		errorCount: 250,
-		warningCount: 450,
+		totalLogs: 1234,
+		errorCount: 123,
+		warningCount: 456,
+		fatalCount: 0,
+		criticalCount: 0,
 		infoCount: 600,
-		debugCount: 150,
-		criticalCount: 50,
-		oldestLogDate: "2025-10-01T00:00:00Z",
-		newestLogDate: "2025-11-12T10:30:00Z"
+		debugCount: 55,
+		averageResponseTimeMs: 0,
+		totalRequests: 0,
+		failedRequests: 0,
+		topErrorSources: {},
+		requestsByPath: {},
+		oldestLogDate: "2024-01-01T00:00:00Z",
+		newestLogDate: "2024-11-12T12:00:00Z",
+		startDate: "2024-01-01T00:00:00Z",
+		endDate: "2024-11-12T12:00:00Z"
 	};
-
 	const mockChartData: LogChartData = {
 		period: "week",
 		dataPoints: [

@@ -18,13 +18,20 @@ describe("StatisticsCardsComponent", () =>
 		totalLogs: 1234,
 		errorCount: 567,
 		warningCount: 234,
+		fatalCount: 0,
+		criticalCount: 10,
 		infoCount: 345,
 		debugCount: 78,
-		criticalCount: 10,
-		oldestLogDate: "2025-10-01T00:00:00Z",
-		newestLogDate: "2025-11-12T10:30:00Z"
+		averageResponseTimeMs: 0,
+		totalRequests: 0,
+		failedRequests: 0,
+		topErrorSources: {},
+		requestsByPath: {},
+		oldestLogDate: "2024-01-01T00:00:00Z",
+		newestLogDate: "2024-11-12T12:00:00Z",
+		startDate: "2024-01-01T00:00:00Z",
+		endDate: "2024-11-12T12:00:00Z"
 	};
-
 	beforeEach(async () =>
 	{
 		const logChartServiceSpy = jasmine.createSpyObj("LogChartService", [

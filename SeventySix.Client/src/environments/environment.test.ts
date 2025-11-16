@@ -31,6 +31,12 @@ interface Environment
 			health: { staleTime: number; gcTime: number; retry: number };
 		};
 	};
+	dashboard: {
+		health: {
+			autoRefreshEnabled: boolean;
+			refreshIntervalSeconds: number;
+		};
+	};
 	testing: {
 		runIntegrationTests: boolean;
 	};
@@ -71,6 +77,12 @@ export const environment: Environment = {
 			users: { staleTime: 0, gcTime: 0, retry: 0 },
 			logs: { staleTime: 0, gcTime: 0, retry: 0 },
 			health: { staleTime: 0, gcTime: 0, retry: 0 }
+		}
+	},
+	dashboard: {
+		health: {
+			autoRefreshEnabled: false, // Disabled in tests
+			refreshIntervalSeconds: 60
 		}
 	},
 	testing: {

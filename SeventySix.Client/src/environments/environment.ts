@@ -47,11 +47,16 @@ interface Environment
 			};
 		};
 	};
+	dashboard: {
+		health: {
+			autoRefreshEnabled: boolean;
+			refreshIntervalSeconds: number;
+		};
+	};
 	testing: {
 		runIntegrationTests: boolean;
 	};
 }
-
 export const environment: Environment = {
 	production: true,
 	apiUrl: "https://localhost:7074/api", // Default API URL for production
@@ -101,6 +106,12 @@ export const environment: Environment = {
 				gcTime: 60000, // 1min
 				retry: 1
 			}
+		}
+	},
+	dashboard: {
+		health: {
+			autoRefreshEnabled: true,
+			refreshIntervalSeconds: 60 // 1 minute
 		}
 	},
 	testing: {

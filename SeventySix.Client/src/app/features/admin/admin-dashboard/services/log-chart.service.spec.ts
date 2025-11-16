@@ -174,11 +174,19 @@ describe("LogChartService", () =>
 				totalLogs: 1234,
 				errorCount: 567,
 				warningCount: 234,
+				fatalCount: 0,
+				criticalCount: 10,
 				infoCount: 345,
 				debugCount: 78,
-				criticalCount: 10,
+				averageResponseTimeMs: 0,
+				totalRequests: 0,
+				failedRequests: 0,
+				topErrorSources: {},
+				requestsByPath: {},
 				oldestLogDate: "2025-10-01T00:00:00Z",
-				newestLogDate: "2025-11-12T10:30:00Z"
+				newestLogDate: "2025-11-12T10:30:00Z",
+				startDate: "2025-10-01T00:00:00Z",
+				endDate: "2025-11-12T10:30:00Z"
 			};
 
 			service.getStatistics().subscribe((stats: LogStatistics) =>
@@ -198,13 +206,21 @@ describe("LogChartService", () =>
 		{
 			const mockStats: LogStatistics = {
 				totalLogs: 500,
-				errorCount: 250,
-				warningCount: 100,
+				errorCount: 234,
+				warningCount: 123,
+				fatalCount: 0,
+				criticalCount: 5,
 				infoCount: 120,
-				debugCount: 20,
-				criticalCount: 10,
+				debugCount: 18,
+				averageResponseTimeMs: 0,
+				totalRequests: 0,
+				failedRequests: 0,
+				topErrorSources: {},
+				requestsByPath: {},
 				oldestLogDate: "2025-11-01T00:00:00Z",
-				newestLogDate: "2025-11-12T10:30:00Z"
+				newestLogDate: "2025-11-12T10:30:00Z",
+				startDate: "2025-11-01T00:00:00Z",
+				endDate: "2025-11-12T10:30:00Z"
 			};
 
 			const startDate = "2025-11-01T00:00:00Z";
@@ -232,11 +248,19 @@ describe("LogChartService", () =>
 				totalLogs: 200,
 				errorCount: 100,
 				warningCount: 50,
+				fatalCount: 0,
+				criticalCount: 2,
 				infoCount: 40,
 				debugCount: 8,
-				criticalCount: 2,
+				averageResponseTimeMs: 0,
+				totalRequests: 0,
+				failedRequests: 0,
+				topErrorSources: {},
+				requestsByPath: {},
 				oldestLogDate: "2025-11-10T00:00:00Z",
-				newestLogDate: "2025-11-12T10:30:00Z"
+				newestLogDate: "2025-11-12T10:30:00Z",
+				startDate: "2025-11-10T00:00:00Z",
+				endDate: "2025-11-12T10:30:00Z"
 			};
 
 			const startDate = "2025-11-10T00:00:00Z";
@@ -266,11 +290,19 @@ describe("LogChartService", () =>
 				totalLogs: 0,
 				errorCount: 0,
 				warningCount: 0,
+				fatalCount: 0,
+				criticalCount: 0,
 				infoCount: 0,
 				debugCount: 0,
-				criticalCount: 0,
+				averageResponseTimeMs: 0,
+				totalRequests: 0,
+				failedRequests: 0,
+				topErrorSources: {},
+				requestsByPath: {},
 				oldestLogDate: null,
-				newestLogDate: null
+				newestLogDate: null,
+				startDate: new Date().toISOString(),
+				endDate: new Date().toISOString()
 			};
 
 			service.getStatistics().subscribe((stats: LogStatistics) =>

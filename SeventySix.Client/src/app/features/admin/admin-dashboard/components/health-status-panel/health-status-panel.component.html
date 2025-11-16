@@ -31,71 +31,122 @@
 	}
 	@else if (healthData())
 	{
-		<mat-card>
-			<mat-card-header>
-				<mat-card-title>System Health Status</mat-card-title>
-				<div class="overall-status">
-					<mat-chip
-						[class.status-healthy]="
-							healthData()!.status === 'Healthy'
-						"
-						[class.status-degraded]="
-							healthData()!.status === 'Degraded'
-						"
-						[class.status-unhealthy]="
-							healthData()!.status === 'Unhealthy'
-						"
-						role="status"
-						[attr.aria-label]="
-							'Overall system status: ' + healthData()!.status
-						"
-					>
-						@if (healthData()!.status === "Healthy")
-						{
-							<mat-icon aria-hidden="true">check_circle</mat-icon>
-						}
-						@else if (healthData()!.status === "Degraded")
-						{
-							<mat-icon aria-hidden="true">warning</mat-icon>
-						}
-						@else
-						{
-							<mat-icon aria-hidden="true">error</mat-icon>
-						}
-						{{ healthData()!.status }}
-					</mat-chip>
-				</div>
-				<button
-					mat-icon-button
-					(click)="onRefresh()"
-					aria-label="Refresh health status"
-				>
-					<mat-icon aria-hidden="true">refresh</mat-icon>
-				</button>
-			</mat-card-header>
-			<mat-card-content>
-				<div class="health-sections" role="list">
-					<!-- Database Health -->
-					<div class="health-section" role="listitem">
-						<div class="section-header">
-							<mat-icon aria-hidden="true">storage</mat-icon>
-							<h3>Database</h3>
+		<mat-card class="health-card">
+			<!-- Header Section -->
+			<mat-card-header class="health-header">
+				<div class="header-content">
+					<div class="title-section">
+						<mat-icon class="header-icon">monitor_heart</mat-icon>
+						<div>
+							<mat-card-title
+								>System Health Status</mat-card-title
+							>
+							<mat-card-subtitle>
+								Last checked: {{ lastCheckedFormatted() }}
+							</mat-card-subtitle>
 						</div>
-						<div class="section-content">
-							<div class="health-item">
-								<mat-chip
-									[class.status-healthy]="
+					</div>
+
+					<div class="status-section">
+						<!-- Overall Status Badge -->
+						<mat-chip
+							[highlighted]="true"
+							[class.status-healthy]="
+								healthData()!.status === 'Healthy'
+							"
+							[class.status-degraded]="
+								healthData()!.status === 'Degraded'
+							"
+							[class.status-unhealthy]="
+								healthData()!.status === 'Unhealthy'
+							"
+						>
+							<mat-icon>{{
+								getStatusIcon(healthData()!.status)
+							}}</mat-icon>
+							{{ healthData()!.status }}
+						</mat-chip>
+
+						@if (criticalIssuesCount() > 0)
+						{
+							<mat-chip class="issues-badge" [highlighted]="true">
+								<mat-icon>warning</mat-icon>
+								{{ criticalIssuesCount() }} Issue{{
+									criticalIssuesCount() > 1 ? "s" : ""
+								}}
+							</mat-chip>
+						}
+					</div>
+				</div>
+
+				<!-- Action Buttons -->
+				<div class="action-buttons">
+					<mat-slide-toggle
+						[checked]="autoRefreshEnabled()"
+						(change)="toggleAutoRefresh()"
+						color="primary"
+						aria-label="Toggle auto-refresh"
+					>
+						Auto-refresh ({{ refreshIntervalSeconds() }}s)
+					</mat-slide-toggle>
+					<button
+						mat-icon-button
+						(click)="onRefresh()"
+						[disabled]="isLoading()"
+						matTooltip="Refresh now"
+						aria-label="Refresh health status"
+					>
+						<mat-icon>refresh</mat-icon>
+					</button>
+				</div>
+			</mat-card-header>
+
+			<mat-divider></mat-divider>
+
+			<!-- Content Grid -->
+			<mat-card-content class="health-content">
+				<div class="health-grid">
+					<!-- Database Health Card -->
+					<div class="metric-card database-card">
+						<div class="card-header">
+							<mat-icon
+								[class.icon-healthy]="
+									healthData()!.database.isConnected
+								"
+								[class.icon-error]="
+									!healthData()!.database.isConnected
+								"
+							>
+								storage
+							</mat-icon>
+							<h3>Database</h3>
+							<mat-chip
+								class="status-chip"
+								[class.status-healthy]="
+									healthData()!.database.status === 'Healthy'
+								"
+								[class.status-degraded]="
+									healthData()!.database.status === 'Degraded'
+								"
+								[class.status-unhealthy]="
+									healthData()!.database.status ===
+									'Unhealthy'
+								"
+							>
+								{{ healthData()!.database.status }}
+							</mat-chip>
+						</div>
+
+						<div class="card-content">
+							<div class="metric-row">
+								<span class="metric-label">Connection</span>
+								<span
+									class="metric-value"
+									[class.value-success]="
 										healthData()!.database.isConnected
 									"
-									[class.status-unhealthy]="
+									[class.value-error]="
 										!healthData()!.database.isConnected
-									"
-									role="status"
-									[attr.aria-label]="
-										'Database: ' +
-										(healthData()!.database.isConnected
-											? 'Connected'
-											: 'Disconnected')
 									"
 								>
 									{{
@@ -103,167 +154,444 @@
 											? "Connected"
 											: "Disconnected"
 									}}
-								</mat-chip>
+								</span>
 							</div>
-							<div class="health-metric">
-								<span class="metric-label">Response Time:</span>
-								<span class="metric-value"
-									>{{
+
+							<div class="metric-row">
+								<span class="metric-label">Response Time</span>
+								<span
+									class="metric-value"
+									[class.value-warning]="
+										healthData()!.database.responseTimeMs >
+										100
+									"
+									[class.value-error]="
+										healthData()!.database.responseTimeMs >
+										500
+									"
+								>
+									{{
 										healthData()!.database.responseTimeMs
-									}}ms</span
-								>
+											| number: "1.2-2"
+									}}ms
+								</span>
 							</div>
-							<div class="health-metric">
+
+							<div class="metric-row">
 								<span class="metric-label"
-									>Active Connections:</span
+									>Active Connections</span
 								>
-								<span class="metric-value"
-									>{{
+								<span class="metric-value">
+									{{
 										healthData()!.database.activeConnections
 									}}
-									active</span
-								>
+								</span>
 							</div>
 						</div>
 					</div>
 
-					<!-- External APIs Health -->
-					<div class="health-section">
-						<div class="section-header">
-							<mat-icon>api</mat-icon>
-							<h3>External APIs</h3>
+					<!-- System Resources Card -->
+					<div class="metric-card system-card">
+						<div class="card-header">
+							<mat-icon class="icon-primary">computer</mat-icon>
+							<h3>System Resources</h3>
 						</div>
-						<div class="section-content">
-							@for (apiName of getApiNames(); track apiName)
+
+						<div class="card-content">
+							<div class="resource-metric">
+								<div class="resource-header">
+									<span class="metric-label">CPU Usage</span>
+									<span
+										class="metric-value"
+										[class.value-warning]="
+											healthData()!.system
+												.cpuUsagePercent > 60
+										"
+										[class.value-error]="
+											healthData()!.system
+												.cpuUsagePercent > 80
+										"
+									>
+										@if (
+											healthData()!.system
+												.cpuUsagePercent === 0
+										)
+										{
+											Idle
+										}
+										@else
+										{
+											{{
+												healthData()!.system
+													.cpuUsagePercent
+													| number: "1.1-1"
+											}}%
+										}
+									</span>
+								</div>
+								<mat-progress-bar
+									mode="determinate"
+									[value]="
+										healthData()!.system.cpuUsagePercent
+									"
+									[class]="
+										getResourceStatusClass(
+											healthData()!.system.cpuUsagePercent
+										)
+									"
+								></mat-progress-bar>
+							</div>
+
+							<div class="resource-metric">
+								<div class="resource-header">
+									<span class="metric-label"
+										>Memory Usage</span
+									>
+									<span
+										class="metric-value"
+										[class.value-warning]="
+											memoryUsagePercent() > 60
+										"
+										[class.value-error]="
+											memoryUsagePercent() > 80
+										"
+									>
+										{{ healthData()!.system.memoryUsedMb }}
+										MB /
+										{{
+											healthData()!.system.memoryTotalMb
+												| number: "1.0-0"
+										}}
+										MB ({{ memoryUsagePercent() }}%)
+									</span>
+								</div>
+								<mat-progress-bar
+									mode="determinate"
+									[value]="memoryUsagePercent()"
+									[class]="
+										getResourceStatusClass(
+											memoryUsagePercent()
+										)
+									"
+								></mat-progress-bar>
+							</div>
+
+							@if (healthData()!.system.diskUsagePercent > 0)
 							{
-								<div class="api-health-item">
-									<div class="api-name">{{ apiName }}</div>
-									<div class="api-details">
-										<mat-chip
-											[class.status-healthy]="
-												healthData()!.externalApis.apis[
-													apiName
-												].isAvailable
+								<div class="resource-metric">
+									<div class="resource-header">
+										<span class="metric-label"
+											>Disk Usage</span
+										>
+										<span
+											class="metric-value"
+											[class.value-warning]="
+												healthData()!.system
+													.diskUsagePercent > 60
 											"
-											[class.status-unhealthy]="
-												!healthData()!.externalApis
-													.apis[apiName].isAvailable
+											[class.value-error]="
+												healthData()!.system
+													.diskUsagePercent > 80
 											"
 										>
 											{{
-												healthData()!.externalApis.apis[
-													apiName
-												].isAvailable
-													? "Available"
-													: "Unavailable"
-											}}
-										</mat-chip>
-										<span class="metric-value"
-											>{{
-												healthData()!.externalApis.apis[
-													apiName
-												].responseTimeMs
-											}}ms</span
-										>
+												healthData()!.system
+													.diskUsagePercent
+													| number: "1.1-1"
+											}}%
+										</span>
 									</div>
+									<mat-progress-bar
+										mode="determinate"
+										[value]="
+											healthData()!.system
+												.diskUsagePercent
+										"
+										[class]="
+											getResourceStatusClass(
+												healthData()!.system
+													.diskUsagePercent
+											)
+										"
+									></mat-progress-bar>
 								</div>
 							}
 						</div>
 					</div>
 
-					<!-- Queue Health -->
-					<div class="health-section">
-						<div class="section-header">
-							<mat-icon>queue</mat-icon>
-							<h3>Queue</h3>
-						</div>
-						<div class="section-content">
-							<div class="health-item">
-								<mat-chip
-									[class.status-healthy]="
-										!healthData()!.errorQueue
-											.circuitBreakerOpen
-									"
-									[class.status-unhealthy]="
-										healthData()!.errorQueue
-											.circuitBreakerOpen
-									"
+					<!-- Log Statistics Card -->
+					@if (statisticsData())
+					{
+						<div class="metric-card stats-card">
+							<div class="card-header">
+								<mat-icon class="icon-primary"
+									>analytics</mat-icon
 								>
-									{{
-										healthData()!.errorQueue
-											.circuitBreakerOpen
-											? "Circuit Open"
-											: "Normal"
-									}}
-								</mat-chip>
+								<h3>Log Statistics</h3>
 							</div>
-							<div class="health-metric">
-								<span class="metric-label">Queued Items:</span>
-								<span class="metric-value"
-									>{{
-										healthData()!.errorQueue.queuedItems
-									}}
-									queued</span
-								>
-							</div>
-							<div class="health-metric">
-								<span class="metric-label">Failed Items:</span>
-								<span class="metric-value"
-									>{{
-										healthData()!.errorQueue.failedItems
-									}}
-									failed</span
-								>
-							</div>
-						</div>
-					</div>
 
-					<!-- System Resources -->
-					<div class="health-section">
-						<div class="section-header">
-							<mat-icon>computer</mat-icon>
-							<h3>System Resources</h3>
+							<div class="card-content">
+								<div class="metric-row">
+									<span class="metric-label">Total Logs</span>
+									<span class="metric-value">
+										{{
+											statisticsData()!.totalLogs | number
+										}}
+									</span>
+								</div>
+
+								<div class="metric-row">
+									<span class="metric-label">Errors</span>
+									<span
+										class="metric-value"
+										[class.value-error]="
+											statisticsData()!.errorCount > 0
+										"
+									>
+										@if (statisticsData()!.errorCount > 0)
+										{
+											<mat-icon class="inline-icon"
+												>error</mat-icon
+											>
+										}
+										{{
+											statisticsData()!.errorCount
+												| number
+										}}
+									</span>
+								</div>
+
+								<div class="metric-row">
+									<span class="metric-label">Warnings</span>
+									<span
+										class="metric-value"
+										[class.value-warning]="
+											statisticsData()!.warningCount > 0
+										"
+									>
+										@if (
+											statisticsData()!.warningCount > 0
+										)
+										{
+											<mat-icon class="inline-icon"
+												>warning</mat-icon
+											>
+										}
+										{{
+											statisticsData()!.warningCount
+												| number
+										}}
+									</span>
+								</div>
+
+								@if (statisticsData()!.fatalCount > 0)
+								{
+									<div class="metric-row">
+										<span class="metric-label">Fatal</span>
+										<span class="metric-value value-error">
+											<mat-icon class="inline-icon"
+												>dangerous</mat-icon
+											>
+											{{
+												statisticsData()!.fatalCount
+													| number
+											}}
+										</span>
+									</div>
+								}
+							</div>
 						</div>
-						<div class="section-content">
-							<div class="health-metric">
-								<span class="metric-label">CPU Usage:</span>
-								<span
-									class="metric-value"
-									[class.metric-warning]="
-										healthData()!.system.cpuUsagePercent >
-										80
-									"
+
+						<!-- Request Statistics Card -->
+						<div class="metric-card request-card">
+							<div class="card-header">
+								<mat-icon class="icon-primary"
+									>trending_up</mat-icon
 								>
-									{{ healthData()!.system.cpuUsagePercent }}%
-								</span>
+								<h3>Request Stats</h3>
 							</div>
-							<div class="health-metric">
-								<span class="metric-label">Memory Used:</span>
-								<span
-									class="metric-value"
-									[class.metric-warning]="
-										healthData()!.system.memoryUsedMb >
-										healthData()!.system.memoryTotalMb * 0.8
-									"
-								>
-									{{ healthData()!.system.memoryUsedMb }} MB /
-									{{ healthData()!.system.memoryTotalMb }} MB
-								</span>
-							</div>
-							<div class="health-metric">
-								<span class="metric-label">Disk Usage:</span>
-								<span
-									class="metric-value"
-									[class.metric-warning]="
-										healthData()!.system.diskUsagePercent >
-										80
-									"
-								>
-									{{ healthData()!.system.diskUsagePercent }}%
-								</span>
+
+							<div class="card-content">
+								<div class="metric-row">
+									<span class="metric-label"
+										>Total Requests</span
+									>
+									<span class="metric-value">
+										{{
+											statisticsData()!.totalRequests
+												| number
+										}}
+									</span>
+								</div>
+
+								<div class="metric-row">
+									<span class="metric-label"
+										>Failed Requests</span
+									>
+									<span
+										class="metric-value"
+										[class.value-error]="
+											statisticsData()!.failedRequests > 0
+										"
+									>
+										@if (
+											statisticsData()!.failedRequests > 0
+										)
+										{
+											<mat-icon class="inline-icon"
+												>error</mat-icon
+											>
+										}
+										{{
+											statisticsData()!.failedRequests
+												| number
+										}}
+									</span>
+								</div>
+
+								<div class="metric-row">
+									<span class="metric-label">Error Rate</span>
+									<span
+										class="metric-value"
+										[class.value-warning]="
+											errorRate() > 5 && errorRate() <= 10
+										"
+										[class.value-error]="errorRate() > 10"
+									>
+										{{ errorRate() }}%
+									</span>
+								</div>
+
+								<div class="metric-row">
+									<span class="metric-label"
+										>Avg Response</span
+									>
+									<span
+										class="metric-value"
+										[class.value-warning]="
+											statisticsData()!
+												.averageResponseTimeMs > 1000 &&
+											statisticsData()!
+												.averageResponseTimeMs <= 5000
+										"
+										[class.value-error]="
+											statisticsData()!
+												.averageResponseTimeMs > 5000
+										"
+									>
+										{{
+											statisticsData()!
+												.averageResponseTimeMs
+												| number: "1.0-0"
+										}}ms
+									</span>
+								</div>
 							</div>
 						</div>
-					</div>
+
+						<!-- Top Error Sources Card -->
+						<div class="metric-card wide-card error-sources-card">
+							<div class="card-header">
+								<mat-icon class="icon-error"
+									>bug_report</mat-icon
+								>
+								<h3>Top Error Sources</h3>
+							</div>
+
+							<div class="card-content">
+								@if (topErrorSources().length > 0)
+								{
+									@for (
+										source of topErrorSources();
+										track source.name
+									)
+									{
+										<div class="list-item">
+											<div class="list-item-content">
+												<span class="list-item-name">{{
+													source.name
+												}}</span>
+												<mat-chip
+													class="count-chip"
+													[highlighted]="true"
+												>
+													{{ source.count }}
+												</mat-chip>
+											</div>
+											<div class="list-item-bar">
+												<div
+													class="bar-fill error-bar"
+													[style.width.%]="
+														(source.count /
+															topErrorSources()[0]
+																.count) *
+														100
+													"
+												></div>
+											</div>
+										</div>
+									}
+								}
+								@else
+								{
+									<p class="empty-message">
+										No error sources recorded
+									</p>
+								}
+							</div>
+						</div>
+
+						<!-- Top Request Paths Card -->
+						<div class="metric-card wide-card request-paths-card">
+							<div class="card-header">
+								<mat-icon class="icon-primary">route</mat-icon>
+								<h3>Top Request Paths</h3>
+							</div>
+
+							<div class="card-content">
+								@if (topRequestPaths().length > 0)
+								{
+									@for (
+										request of topRequestPaths();
+										track request.path
+									)
+									{
+										<div class="list-item">
+											<div class="list-item-content">
+												<span
+													class="list-item-name path"
+													>{{ request.path }}</span
+												>
+												<mat-chip
+													class="count-chip"
+													[highlighted]="true"
+												>
+													{{ request.count }}
+												</mat-chip>
+											</div>
+											<div class="list-item-bar">
+												<div
+													class="bar-fill primary-bar"
+													[style.width.%]="
+														(request.count /
+															topRequestPaths()[0]
+																.count) *
+														100
+													"
+												></div>
+											</div>
+										</div>
+									}
+								}
+								@else
+								{
+									<p class="empty-message">
+										No request paths recorded
+									</p>
+								}
+							</div>
+						</div>
+					}
 				</div>
 			</mat-card-content>
 		</mat-card>

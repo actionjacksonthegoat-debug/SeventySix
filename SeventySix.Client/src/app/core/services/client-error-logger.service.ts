@@ -2,6 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ErrorQueueService, QueuedError } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
+import { HttpError } from "@core/models/errors";
 
 /**
  * Error details for logging.
@@ -46,7 +47,9 @@ export class ClientErrorLoggerService
 				exceptionMessage: error?.message,
 				stackTrace: error instanceof Error ? error.stack : undefined,
 				sourceContext: this.extractSourceContext(error),
-				requestUrl: this.getCurrentUrl(),
+				requestUrl: this.extractRequestUrl(error),
+				requestMethod: this.extractRequestMethod(error),
+				statusCode: this.extractStatusCode(error),
 				userAgent: navigator.userAgent,
 				additionalContext: errorDetails.context
 			};
@@ -188,12 +191,13 @@ export class ClientErrorLoggerService
 	/**
 	 * Extracts source context from error stack trace.
 	 * Looks for component or service names.
+	 * Falls back to "Client" if no specific source is found.
 	 */
-	private extractSourceContext(error?: Error | unknown): string | undefined
+	private extractSourceContext(error?: Error | unknown): string
 	{
 		if (!error || !(error instanceof Error) || !error.stack)
 		{
-			return undefined;
+			return "Client";
 		}
 
 		// Extract from Angular stack traces
@@ -219,7 +223,8 @@ export class ClientErrorLoggerService
 			}
 		}
 
-		return undefined;
+		// If no specific source found, return "Client"
+		return "Client";
 	}
 
 	/**
@@ -233,6 +238,71 @@ export class ClientErrorLoggerService
 		// Try to extract from error object if available
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		return (httpError as any).method as string | undefined;
+	}
+
+	/**
+	 * Extracts request URL from error object.
+	 */
+	private extractRequestUrl(error?: Error | HttpErrorResponse): string
+	{
+		// Try HttpErrorResponse first
+		if (error instanceof HttpErrorResponse && error.url)
+		{
+			return error.url;
+		}
+
+		// Try HttpError (our custom error class)
+		if (error instanceof HttpError && error.url)
+		{
+			return error.url;
+		}
+
+		// Fallback to current URL
+		return this.getCurrentUrl();
+	}
+
+	/**
+	 * Extracts HTTP request method from error object.
+	 */
+	private extractRequestMethod(
+		error?: Error | HttpErrorResponse
+	): string | undefined
+	{
+		// Try HttpError (our custom error class) first
+		if (error instanceof HttpError && error.method)
+		{
+			return error.method;
+		}
+
+		// Try HttpErrorResponse (won't work, but kept for compatibility)
+		if (error instanceof HttpErrorResponse)
+		{
+			return this.extractHttpMethod(error);
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Extracts status code from error object.
+	 */
+	private extractStatusCode(
+		error?: Error | HttpErrorResponse
+	): number | undefined
+	{
+		// Try HttpErrorResponse first
+		if (error instanceof HttpErrorResponse)
+		{
+			return error.status;
+		}
+
+		// Try HttpError (our custom error class)
+		if (error instanceof HttpError && error.statusCode)
+		{
+			return error.statusCode;
+		}
+
+		return undefined;
 	}
 
 	/**

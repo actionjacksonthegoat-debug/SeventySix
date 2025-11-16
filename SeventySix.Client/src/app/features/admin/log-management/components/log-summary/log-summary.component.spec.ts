@@ -31,11 +31,19 @@ describe("LogSummaryComponent", () =>
 			totalLogs: 1234,
 			errorCount: 56,
 			warningCount: 78,
+			fatalCount: 0,
 			criticalCount: 10,
 			infoCount: 900,
 			debugCount: 190,
+			averageResponseTimeMs: 0,
+			totalRequests: 0,
+			failedRequests: 0,
+			topErrorSources: {},
+			requestsByPath: {},
 			oldestLogDate: "2024-01-01T00:00:00Z",
-			newestLogDate: "2024-01-15T00:00:00Z"
+			newestLogDate: "2024-01-15T00:00:00Z",
+			startDate: "2024-01-01T00:00:00Z",
+			endDate: "2024-01-15T00:00:00Z"
 		};
 
 		fixture.componentRef.setInput("statistics", mockStats);
@@ -51,11 +59,19 @@ describe("LogSummaryComponent", () =>
 			totalLogs: 1000,
 			errorCount: 456,
 			warningCount: 100,
+			fatalCount: 0,
 			criticalCount: 5,
 			infoCount: 350,
 			debugCount: 89,
+			averageResponseTimeMs: 0,
+			totalRequests: 0,
+			failedRequests: 0,
+			topErrorSources: {},
+			requestsByPath: {},
 			oldestLogDate: "2024-01-01T00:00:00Z",
-			newestLogDate: "2024-01-15T00:00:00Z"
+			newestLogDate: "2024-01-15T00:00:00Z",
+			startDate: "2024-01-01T00:00:00Z",
+			endDate: "2024-01-15T00:00:00Z"
 		};
 
 		fixture.componentRef.setInput("statistics", mockStats);
@@ -71,11 +87,19 @@ describe("LogSummaryComponent", () =>
 			totalLogs: 1000,
 			errorCount: 50,
 			warningCount: 678,
+			fatalCount: 0,
 			criticalCount: 5,
 			infoCount: 200,
 			debugCount: 67,
+			averageResponseTimeMs: 0,
+			totalRequests: 0,
+			failedRequests: 0,
+			topErrorSources: {},
+			requestsByPath: {},
 			oldestLogDate: "2024-01-01T00:00:00Z",
-			newestLogDate: "2024-01-15T00:00:00Z"
+			newestLogDate: "2024-01-15T00:00:00Z",
+			startDate: "2024-01-01T00:00:00Z",
+			endDate: "2024-01-15T00:00:00Z"
 		};
 
 		fixture.componentRef.setInput("statistics", mockStats);
@@ -91,11 +115,19 @@ describe("LogSummaryComponent", () =>
 			totalLogs: 1000,
 			errorCount: 50,
 			warningCount: 75,
+			fatalCount: 0,
 			criticalCount: 12,
 			infoCount: 800,
 			debugCount: 63,
+			averageResponseTimeMs: 0,
+			totalRequests: 0,
+			failedRequests: 0,
+			topErrorSources: {},
+			requestsByPath: {},
 			oldestLogDate: "2024-01-01T00:00:00Z",
-			newestLogDate: "2024-01-15T00:00:00Z"
+			newestLogDate: "2024-01-15T00:00:00Z",
+			startDate: "2024-01-01T00:00:00Z",
+			endDate: "2024-01-15T00:00:00Z"
 		};
 
 		fixture.componentRef.setInput("statistics", mockStats);
@@ -130,11 +162,19 @@ describe("LogSummaryComponent", () =>
 			totalLogs: 123456,
 			errorCount: 12345,
 			warningCount: 67890,
+			fatalCount: 0,
 			criticalCount: 123,
 			infoCount: 40000,
 			debugCount: 3098,
+			averageResponseTimeMs: 0,
+			totalRequests: 0,
+			failedRequests: 0,
+			topErrorSources: {},
+			requestsByPath: {},
 			oldestLogDate: "2024-01-01T00:00:00Z",
-			newestLogDate: "2024-01-15T00:00:00Z"
+			newestLogDate: "2024-01-15T00:00:00Z",
+			startDate: "2024-01-01T00:00:00Z",
+			endDate: "2024-01-15T00:00:00Z"
 		};
 
 		fixture.componentRef.setInput("statistics", mockStats);
@@ -152,11 +192,19 @@ describe("LogSummaryComponent", () =>
 			totalLogs: 100,
 			errorCount: 10,
 			warningCount: 20,
+			fatalCount: 0,
 			criticalCount: 0,
 			infoCount: 60,
 			debugCount: 10,
+			averageResponseTimeMs: 0,
+			totalRequests: 0,
+			failedRequests: 0,
+			topErrorSources: {},
+			requestsByPath: {},
 			oldestLogDate: "2024-01-01T00:00:00Z",
-			newestLogDate: "2024-01-15T00:00:00Z"
+			newestLogDate: "2024-01-15T00:00:00Z",
+			startDate: "2024-01-01T00:00:00Z",
+			endDate: "2024-01-15T00:00:00Z"
 		};
 
 		fixture.componentRef.setInput("statistics", mockStats);
@@ -193,11 +241,19 @@ describe("LogSummaryComponent", () =>
 			totalLogs: 5432,
 			errorCount: 432,
 			warningCount: 100,
+			fatalCount: 0,
 			criticalCount: 10,
 			infoCount: 4800,
 			debugCount: 90,
+			averageResponseTimeMs: 0,
+			totalRequests: 0,
+			failedRequests: 0,
+			topErrorSources: {},
+			requestsByPath: {},
 			oldestLogDate: "2024-01-01T00:00:00Z",
-			newestLogDate: "2024-01-15T00:00:00Z"
+			newestLogDate: "2024-01-15T00:00:00Z",
+			startDate: "2024-01-01T00:00:00Z",
+			endDate: "2024-01-15T00:00:00Z"
 		};
 
 		fixture.componentRef.setInput("statistics", mockStats);

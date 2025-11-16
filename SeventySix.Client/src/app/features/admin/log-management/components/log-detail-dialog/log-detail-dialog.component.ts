@@ -74,7 +74,7 @@ export class LogDetailDialogComponent
 	isError(): boolean
 	{
 		const log: LogResponse = this.log();
-		const level = parseLogLevel(log.logLevel);
+		const level: LogLevel = parseLogLevel(log.logLevel);
 		return level === LogLevel.Error || level === LogLevel.Fatal;
 	}
 
@@ -102,7 +102,7 @@ export class LogDetailDialogComponent
 
 	getLevelName(logLevel: string): string
 	{
-		const level = parseLogLevel(logLevel);
+		const level: LogLevel = parseLogLevel(logLevel);
 		const names: Record<LogLevel, string> = {
 			[LogLevel.Verbose]: "Verbose",
 			[LogLevel.Debug]: "Debug",
@@ -116,7 +116,7 @@ export class LogDetailDialogComponent
 
 	getLevelIcon(logLevel: string): string
 	{
-		const level = parseLogLevel(logLevel);
+		const level: LogLevel = parseLogLevel(logLevel);
 		const icons: Record<LogLevel, string> = {
 			[LogLevel.Verbose]: "bug_report",
 			[LogLevel.Debug]: "bug_report",
@@ -130,7 +130,7 @@ export class LogDetailDialogComponent
 
 	getLevelClass(logLevel: string): string
 	{
-		const level = parseLogLevel(logLevel);
+		const level: LogLevel = parseLogLevel(logLevel);
 		const classes: Record<LogLevel, string> = {
 			[LogLevel.Verbose]: "level-verbose",
 			[LogLevel.Debug]: "level-debug",
