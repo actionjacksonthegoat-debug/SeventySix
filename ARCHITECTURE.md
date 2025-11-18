@@ -21,7 +21,7 @@ SeventySix is a full-stack application built with **Clean Architecture** princip
 
 **Technology Stack:**
 
--   **Backend**: .NET 8+ with Clean Architecture
+-   **Backend**: .NET 10+ with Three-Layer Architecture
 -   **Frontend**: Angular 19+ with Signals and Standalone Components
 -   **Database**: PostgreSQL with Entity Framework Core
 -   **UI Framework**: Angular Material (Material Design 3)
@@ -29,7 +29,7 @@ SeventySix is a full-stack application built with **Clean Architecture** princip
 
 **Key Characteristics:**
 
--   Layered architecture with strict dependency rules
+-   Three-layer architecture with clear boundaries
 -   Feature-based module organization
 -   Repository and Service patterns
 -   SOLID principles throughout
@@ -92,17 +92,16 @@ SeventySix.Api (Presentation)
     ├─ Middleware: Global concerns
     └─ Program.cs: DI composition root
          │ depends on ↓
-SeventySix.BusinessLogic (Application)
+SeventySix.Application (Application/Domain)
     ├─ Services: Business logic orchestration
+    ├─ Entities: Domain models
     ├─ DTOs: Data transfer objects
     ├─ Validators: FluentValidation rules
-    └─ Interfaces: Service contracts
-         │ depends on ↓
-SeventySix.Core (Domain)
-    ├─ Entities: Domain models
-    ├─ Value Objects: Immutable concepts
+    ├─ Interfaces: Service & repository contracts
     ├─ Exceptions: Business rule violations
-    └─ Interfaces: Repository contracts
+    ├─ ValueObjects: Immutable domain concepts
+    ├─ Extensions: Mapping and helper methods
+    └─ Configuration: Application settings
          ↑ implements      ↑ configures
 SeventySix.DataAccess    SeventySix.Data
     ├─ Repositories           ├─ DbContext
@@ -112,13 +111,18 @@ SeventySix.DataAccess    SeventySix.Data
 
 ### Layer Responsibilities
 
-**SeventySix.Core (Domain)**
+**SeventySix.Application (Application + Domain)**
 
--   Pure business entities with no dependencies
--   Repository interfaces (abstractions)
+-   Business entities with domain logic
+-   Service implementations
+-   Service & repository interfaces (abstractions)
+-   DTOs for API contracts
+-   FluentValidation validators
 -   Domain exceptions
 -   Value objects
--   NO framework dependencies (no EF, no ASP.NET)
+-   Mapping extensions (Entity ↔ DTO)
+-   Configuration classes
+-   Minimal framework dependencies (EF abstractions, FluentValidation, MediatR)
 
 **SeventySix.Data (Database Schema)**
 
@@ -131,19 +135,10 @@ SeventySix.DataAccess    SeventySix.Data
 **SeventySix.DataAccess (Data Access Logic)**
 
 -   Repository implementations using LINQ
--   Database-agnostic (works with any EF provider)
 -   Caching services
 -   External API clients (Polly integration)
--   NO database provider dependencies
-
-**SeventySix.BusinessLogic (Application Logic)**
-
--   Service implementations
--   Service interfaces
--   DTOs for API contracts
--   FluentValidation validators
--   Mapping extensions (Entity ↔ DTO)
--   Command/Query handlers
+-   Rate limiting services
+-   Database-agnostic query logic
 
 **SeventySix.Api (Presentation)**
 
@@ -155,18 +150,24 @@ SeventySix.DataAccess    SeventySix.Data
 
 ### Dependency Rules
 
--   **Core** has zero dependencies
--   **Data** depends on Core only
--   **DataAccess** depends on Core + Data
--   **BusinessLogic** depends on Core only
+-   **Application** has minimal dependencies (EF Core abstractions, FluentValidation, MediatR)
+-   **Data** depends on Application
+-   **DataAccess** depends on Application + Data
 -   **Api** depends on all layers (composition root)
 
 ### Key Design Decisions
 
+**Simplified Three-Layer Architecture**
+
+-   Combines Core (Domain) and BusinessLogic (Application) into single Application layer
+-   Reduces over-engineering while maintaining separation of concerns
+-   Easier navigation and faster development
+-   Still maintains testability and clean boundaries
+
 **Repository Pattern**
 
 -   Abstracts data access from business logic
--   Interface in Core, implementation in DataAccess
+-   Interface in Application, implementation in DataAccess
 -   Returns domain entities, not DTOs
 -   Uses LINQ for database-agnostic queries
 
