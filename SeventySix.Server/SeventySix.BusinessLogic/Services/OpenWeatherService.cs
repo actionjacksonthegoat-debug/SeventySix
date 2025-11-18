@@ -4,7 +4,6 @@
 
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.BusinessLogic.DTOs.OpenWeather;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Exceptions;

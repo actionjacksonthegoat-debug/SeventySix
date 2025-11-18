@@ -8,9 +8,8 @@ using Moq;
 using SeventySix.Api.Controllers;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Interfaces;
-using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.Exceptions;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.Api.Tests.Controllers;
 

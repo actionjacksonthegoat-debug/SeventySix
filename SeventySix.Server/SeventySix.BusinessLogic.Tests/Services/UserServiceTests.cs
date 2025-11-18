@@ -9,11 +9,10 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Services;
-using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.BusinessLogic.Exceptions;
 using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.BusinessLogic.Services;
 
 namespace SeventySix.BusinessLogic.Tests.Services;
 

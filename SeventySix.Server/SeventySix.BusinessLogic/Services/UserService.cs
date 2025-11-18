@@ -7,10 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Extensions;
-using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.BusinessLogic.Exceptions;
+using SeventySix.BusinessLogic.Extensions;
 using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.BusinessLogic.Services;

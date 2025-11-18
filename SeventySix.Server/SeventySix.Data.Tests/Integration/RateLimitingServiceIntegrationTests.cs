@@ -9,9 +9,10 @@ using Moq;
 using SeventySix.BusinessLogic.Configuration;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.Data;
+using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.Data.Infrastructure;
 using SeventySix.Data.Repositories;
-using SeventySix.Data.Services;
+using SeventySix.BusinessLogic.Infrastructure;
 using SeventySix.Data.Tests.Attributes;
 
 namespace SeventySix.Data.Tests.Integration;

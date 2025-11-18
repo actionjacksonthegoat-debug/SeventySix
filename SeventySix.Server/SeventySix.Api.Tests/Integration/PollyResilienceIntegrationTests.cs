@@ -12,7 +12,7 @@ using Moq.Protected;
 using SeventySix.Api.Tests.Attributes;
 using SeventySix.BusinessLogic.Configuration;
 using SeventySix.BusinessLogic.Interfaces;
-using SeventySix.Data.Services;
+using SeventySix.BusinessLogic.Infrastructure;
 
 namespace SeventySix.Api.Tests.Integration;
 
