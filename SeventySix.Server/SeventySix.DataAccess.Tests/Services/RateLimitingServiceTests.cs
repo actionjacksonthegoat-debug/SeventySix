@@ -5,9 +5,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using SeventySix.BusinessLogic.Configuration;
-using SeventySix.Core.Entities;
-using SeventySix.Core.Interfaces;
+using SeventySix.Application.Configuration;
+using SeventySix.Application.Entities;
+using SeventySix.Application.Interfaces;
 using SeventySix.Data.Infrastructure;
 using SeventySix.DataAccess.Services;
 

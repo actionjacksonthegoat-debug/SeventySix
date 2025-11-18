@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
-using SeventySix.Core.DTOs.ThirdPartyRequests;
-using SeventySix.Core.Interfaces;
+using SeventySix.Application.DTOs.ThirdPartyRequests;
+using SeventySix.Application.Interfaces;
 
 namespace SeventySix.Api.Controllers;
 

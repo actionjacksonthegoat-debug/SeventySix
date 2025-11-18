@@ -10,8 +10,8 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 using SeventySix.Api.Tests.Attributes;
-using SeventySix.BusinessLogic.Configuration;
-using SeventySix.Core.Interfaces;
+using SeventySix.Application.Configuration;
+using SeventySix.Application.Interfaces;
 using SeventySix.DataAccess.Services;
 
 namespace SeventySix.Api.Tests.Integration;

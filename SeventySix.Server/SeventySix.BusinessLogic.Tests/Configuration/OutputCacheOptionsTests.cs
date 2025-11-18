@@ -3,7 +3,7 @@
 // </copyright>
 
 using Microsoft.Extensions.Configuration;
-using SeventySix.BusinessLogic.Configuration;
+using SeventySix.Application.Configuration;
 using Xunit;
 
 namespace SeventySix.BusinessLogic.Tests.Configuration;

@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Core.Entities;
+using SeventySix.Application.Entities;
 
 namespace SeventySix.Core.Tests.Entities;
 

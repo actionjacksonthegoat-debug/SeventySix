@@ -23,8 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SeventySix.BusinessLogic\SeventySix.BusinessLogic.csproj" />
-    <ProjectReference Include="..\SeventySix.Core\SeventySix.Core.csproj" />
+    <ProjectReference Include="..\SeventySix.Application\SeventySix.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

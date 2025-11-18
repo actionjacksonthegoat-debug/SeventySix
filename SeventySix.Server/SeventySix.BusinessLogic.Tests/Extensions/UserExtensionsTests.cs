@@ -2,10 +2,10 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.BusinessLogic.DTOs;
-using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Extensions;
-using SeventySix.Core.Entities;
+using SeventySix.Application.DTOs;
+using SeventySix.Application.DTOs.Requests;
+using SeventySix.Application.Extensions;
+using SeventySix.Application.Entities;
 
 namespace SeventySix.BusinessLogic.Tests.Extensions;
 

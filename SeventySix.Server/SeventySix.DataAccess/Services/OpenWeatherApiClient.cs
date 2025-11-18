@@ -4,10 +4,10 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SeventySix.BusinessLogic.Configuration;
-using SeventySix.Core.DTOs.OpenWeather;
-using SeventySix.Core.DTOs.Requests;
-using SeventySix.Core.Interfaces;
+using SeventySix.Application.Configuration;
+using SeventySix.Application.DTOs.OpenWeather;
+using SeventySix.Application.DTOs.Requests;
+using SeventySix.Application.Interfaces;
 
 namespace SeventySix.DataAccess.Services;
 

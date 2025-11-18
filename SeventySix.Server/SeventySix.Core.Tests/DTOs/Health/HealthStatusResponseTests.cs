@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Core.DTOs.Health;
+using SeventySix.Application.DTOs.Health;
 
 namespace SeventySix.Core.Tests.DTOs.Health;
 

@@ -6,8 +6,8 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using SeventySix.Api.Tests.Attributes;
-using SeventySix.BusinessLogic.DTOs;
-using SeventySix.BusinessLogic.DTOs.Requests;
+using SeventySix.Application.DTOs;
+using SeventySix.Application.DTOs.Requests;
 
 namespace SeventySix.Api.Tests.Integration;
 

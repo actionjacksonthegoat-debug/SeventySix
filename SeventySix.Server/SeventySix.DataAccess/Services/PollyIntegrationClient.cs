@@ -12,8 +12,8 @@ using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 using Polly.Timeout;
-using SeventySix.BusinessLogic.Configuration;
-using SeventySix.Core.Interfaces;
+using SeventySix.Application.Configuration;
+using SeventySix.Application.Interfaces;
 
 namespace SeventySix.DataAccess.Services;
 

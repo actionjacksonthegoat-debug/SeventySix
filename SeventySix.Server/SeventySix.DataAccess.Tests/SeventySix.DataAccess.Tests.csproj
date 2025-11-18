@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SeventySix.DataAccess\SeventySix.DataAccess.csproj" />
-    <ProjectReference Include="..\SeventySix.Core\SeventySix.Core.csproj" />
+    <ProjectReference Include="..\SeventySix.Application\SeventySix.Application.csproj" />
     <!-- NEW: Need Data layer for DbContext in tests -->
     <ProjectReference Include="..\SeventySix.Data\SeventySix.Data.csproj" />
   </ItemGroup>

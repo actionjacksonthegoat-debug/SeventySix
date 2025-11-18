@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Core.DTOs.LogCharts;
+using SeventySix.Application.DTOs.LogCharts;
 
 namespace SeventySix.Core.Tests.DTOs.LogCharts;
 

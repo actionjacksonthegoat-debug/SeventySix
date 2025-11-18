@@ -4,7 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using SeventySix.Core.DTOs.Logs;
+using SeventySix.Application.DTOs.Logs;
 using Xunit;
 
 namespace SeventySix.Core.Tests.DTOs;

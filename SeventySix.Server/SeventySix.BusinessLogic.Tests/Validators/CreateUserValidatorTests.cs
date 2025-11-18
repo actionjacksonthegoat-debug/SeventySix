@@ -3,8 +3,8 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Validators;
+using SeventySix.Application.DTOs.Requests;
+using SeventySix.Application.Validators;
 
 namespace SeventySix.BusinessLogic.Tests.Validators;
 

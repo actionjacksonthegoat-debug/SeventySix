@@ -5,7 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using SeventySix.Core.Entities;
+using SeventySix.Application.Entities;
 using SeventySix.Data;
 using SeventySix.DataAccess.Repositories;
 using SeventySix.DataAccess.Tests.Integration;

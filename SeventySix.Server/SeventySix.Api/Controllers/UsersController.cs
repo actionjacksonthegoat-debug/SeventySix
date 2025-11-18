@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
-using SeventySix.BusinessLogic.DTOs;
-using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Interfaces;
-using SeventySix.Core.DTOs;
+using SeventySix.Application.DTOs;
+using SeventySix.Application.DTOs.Requests;
+using SeventySix.Application.Interfaces;
+using SeventySix.Application.DTOs;
 
 namespace SeventySix.Api.Controllers;
 

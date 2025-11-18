@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SeventySix.Core\SeventySix.Core.csproj" />
+    <ProjectReference Include="..\SeventySix.Application\SeventySix.Application.csproj" />
   </ItemGroup>
 
 </Project>

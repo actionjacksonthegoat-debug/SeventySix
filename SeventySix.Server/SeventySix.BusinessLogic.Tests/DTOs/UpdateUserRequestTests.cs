@@ -3,7 +3,7 @@
 // </copyright>
 
 using FluentAssertions;
-using SeventySix.BusinessLogic.DTOs.Requests;
+using SeventySix.Application.DTOs.Requests;
 
 namespace SeventySix.BusinessLogic.Tests.DTOs;
 

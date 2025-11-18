@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SeventySix.Api.Controllers;
-using SeventySix.BusinessLogic.DTOs;
-using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Interfaces;
-using SeventySix.Core.DTOs;
-using SeventySix.Core.Exceptions;
+using SeventySix.Application.DTOs;
+using SeventySix.Application.DTOs.Requests;
+using SeventySix.Application.Interfaces;
+using SeventySix.Application.DTOs;
+using SeventySix.Application.Exceptions;
 
 namespace SeventySix.Api.Tests.Controllers;
 

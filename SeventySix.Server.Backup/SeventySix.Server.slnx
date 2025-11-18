@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="docker-compose.yml" />
+    <File Path="docker-compose.override.yml" />
+  </Folder>
+  <Project Path="SeventySix.Core/SeventySix.Core.csproj" />
+  <Project Path="SeventySix.BusinessLogic/SeventySix.BusinessLogic.csproj" />
+  <Project Path="SeventySix.DataAccess/SeventySix.DataAccess.csproj" />
+  <Project Path="SeventySix.Api/SeventySix.Api.csproj" />
+  <Project Path="SeventySix.Core.Tests/SeventySix.Core.Tests.csproj" />
+  <Project Path="SeventySix.BusinessLogic.Tests/SeventySix.BusinessLogic.Tests.csproj" />
+  <Project Path="SeventySix.Data.Tests/SeventySix.Data.Tests.csproj" />
+  <Project Path="SeventySix.Data/SeventySix.Data.csproj" />
+  <Project Path="SeventySix.DataAccess.Tests/SeventySix.DataAccess.Tests.csproj" />
+  <Project Path="SeventySix.Api.Tests/SeventySix.Api.Tests.csproj" />
+</Solution>

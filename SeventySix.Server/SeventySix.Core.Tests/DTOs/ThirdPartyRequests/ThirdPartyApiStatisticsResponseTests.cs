@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Core.DTOs.ThirdPartyRequests;
+using SeventySix.Application.DTOs.ThirdPartyRequests;
 
 namespace SeventySix.Core.Tests.DTOs.ThirdPartyRequests;
 

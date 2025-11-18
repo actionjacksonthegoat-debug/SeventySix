@@ -7,13 +7,13 @@ using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using SeventySix.BusinessLogic.DTOs;
-using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Services;
-using SeventySix.Core.DTOs;
-using SeventySix.Core.Entities;
-using SeventySix.Core.Exceptions;
-using SeventySix.Core.Interfaces;
+using SeventySix.Application.DTOs;
+using SeventySix.Application.DTOs.Requests;
+using SeventySix.Application.Services;
+using SeventySix.Application.DTOs;
+using SeventySix.Application.Entities;
+using SeventySix.Application.Exceptions;
+using SeventySix.Application.Interfaces;
 
 namespace SeventySix.BusinessLogic.Tests.Services;
 

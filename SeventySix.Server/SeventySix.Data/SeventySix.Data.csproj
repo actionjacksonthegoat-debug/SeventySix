@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <!-- Core domain entities to configure -->
-    <ProjectReference Include="..\SeventySix.Core\SeventySix.Core.csproj" />
+    <ProjectReference Include="..\SeventySix.Application\SeventySix.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

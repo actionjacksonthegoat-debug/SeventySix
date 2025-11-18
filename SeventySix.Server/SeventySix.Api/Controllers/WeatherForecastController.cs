@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
-using SeventySix.BusinessLogic.Interfaces;
-using SeventySix.Core.DTOs.OpenWeather;
-using SeventySix.Core.DTOs.OpenWeather.Common;
-using SeventySix.Core.DTOs.Requests;
+using SeventySix.Application.Interfaces;
+using SeventySix.Application.DTOs.OpenWeather;
+using SeventySix.Application.DTOs.OpenWeather.Common;
+using SeventySix.Application.DTOs.Requests;
 
 namespace SeventySix.Api.Controllers;
 

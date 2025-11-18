@@ -4,7 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SeventySix.Core.Entities;
+using SeventySix.Application.Entities;
 
 namespace SeventySix.Data.Configurations;
 

@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\SeventySix.Core\SeventySix.Core.csproj" />
-    <ProjectReference Include="..\SeventySix.BusinessLogic\SeventySix.BusinessLogic.csproj" />
+    <ProjectReference Include="..\SeventySix.Application\SeventySix.Application.csproj" />
     <!-- NEW: Reference to Data layer for DbContext -->
     <ProjectReference Include="..\SeventySix.Data\SeventySix.Data.csproj" />
   </ItemGroup>
