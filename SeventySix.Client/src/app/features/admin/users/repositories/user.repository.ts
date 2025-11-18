@@ -26,7 +26,7 @@ import { IRepository } from "@core/repositories/base.repository";
 export class UserRepository implements IRepository<User>
 {
 	private readonly apiService: ApiService = inject(ApiService);
-	private readonly endpoint: string = "User";
+	private readonly endpoint: string = "users";
 
 	/**
 	 * Get all users

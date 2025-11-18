@@ -24,7 +24,7 @@ export class LogChartService
 	getChartData(period: string = "24h"): Observable<LogChartData>
 	{
 		const params: HttpParams = new HttpParams().set("period", period);
-		return this.http.get<LogChartData>(`${this.apiUrl}/chart-data`, {
+		return this.http.get<LogChartData>(`${this.apiUrl}/chartdata`, {
 			params
 		});
 	}

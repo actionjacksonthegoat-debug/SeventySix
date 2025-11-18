@@ -136,7 +136,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_NoFilters_ReturnsAllLogsAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -154,7 +154,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_FilterByLogLevel_ReturnsMatchingLogsAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs?logLevel=Error");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs?logLevel=Error");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -177,7 +177,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/logs?startDate={startDate:O}&endDate={endDate:O}");
+			$"/api/v1/logs?startDate={startDate:O}&endDate={endDate:O}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -200,7 +200,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			"/api/logs?sourceContext=SeventySix.Api.Controllers.WeatherController");
+			"/api/v1/logs?sourceContext=SeventySix.Api.Controllers.WeatherController");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -219,7 +219,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_FilterByRequestPath_ReturnsMatchingLogsAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs?requestPath=/api/weatherforecast/current");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs?requestPath=/api/weatherforecast/current");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -237,11 +237,11 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_WithPagination_ReturnsCorrectPageAsync()
 	{
 		// Act - Get page 1
-		HttpResponseMessage response1 = await Client.GetAsync("/api/logs?page=1&pageSize=2");
+		HttpResponseMessage response1 = await Client.GetAsync("/api/v1/logs?page=1&pageSize=2");
 		PagedLogResponse? pagedResponse1 = await response1.Content.ReadFromJsonAsync<PagedLogResponse>();
 
 		// Act - Get page 2
-		HttpResponseMessage response2 = await Client.GetAsync("/api/logs?page=2&pageSize=2");
+		HttpResponseMessage response2 = await Client.GetAsync("/api/v1/logs?page=2&pageSize=2");
 		PagedLogResponse? pagedResponse2 = await response2.Content.ReadFromJsonAsync<PagedLogResponse>();
 
 		// Assert
@@ -267,7 +267,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetLogsAsync_ExceedsMaxPageSize_ReturnsMaxRecordsAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs?pageSize=200");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs?pageSize=200");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -290,7 +290,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/logs?logLevel=Warning&startDate={startDate:O}&endDate={endDate:O}&requestPath=/api/weatherforecast/current");
+			$"/api/v1/logs?logLevel=Warning&startDate={startDate:O}&endDate={endDate:O}&requestPath=/api/weatherforecast/current");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -314,7 +314,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetStatisticsAsync_NoFilters_ReturnsAggregatedDataAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs/statistics");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/statistics");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -342,7 +342,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/logs/statistics?startDate={startDate:O}&endDate={endDate:O}");
+			$"/api/v1/logs/statistics?startDate={startDate:O}&endDate={endDate:O}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -366,7 +366,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 
 		// Act
 		HttpResponseMessage response = await Client.DeleteAsync(
-			$"/api/logs/cleanup?cutoffDate={cutoffDate:O}");
+			$"/api/v1/logs/cleanup?cutoffDate={cutoffDate:O}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -382,7 +382,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task CleanupLogsAsync_NoCutoffDate_ReturnsBadRequestAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.DeleteAsync("/api/logs/cleanup");
+		HttpResponseMessage response = await Client.DeleteAsync("/api/v1/logs/cleanup");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -415,7 +415,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		};
 
 		// Act
-		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/logs/client", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -458,7 +458,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		};
 
 		// Act
-		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", invalidRequest);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/logs/client", invalidRequest);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -477,7 +477,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		};
 
 		// Act
-		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", invalidRequest);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/logs/client", invalidRequest);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -497,7 +497,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		};
 
 		// Act
-		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/logs/client", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -537,7 +537,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		};
 
 		// Act
-		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/logs/client", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -563,7 +563,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		};
 
 		// Act
-		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client", request);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/logs/client", request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -613,7 +613,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		];
 
 		// Act
-		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/logs/client/batch", requests);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -648,7 +648,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		ClientLogRequest[] requests = [];
 
 		// Act
-		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/logs/client/batch", requests);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -668,7 +668,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		];
 
 		// Act
-		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/logs/client/batch", requests);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -690,7 +690,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 			})];
 
 		// Act
-		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/logs/client/batch", requests);
+		HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/logs/client/batch", requests);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -705,7 +705,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	}
 
 	/// <summary>
-	/// Tests that GET /api/logs/chart-data returns chart data for valid period.
+	/// Tests that GET /api/logs/chartdata returns chart data for valid period.
 	/// </summary>
 	[Theory]
 	[InlineData("24h")]
@@ -714,7 +714,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetChartDataAsync_WithValidPeriod_ReturnsOkAsync(string period)
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync($"/api/logs/chart-data?period={period}");
+		HttpResponseMessage response = await Client.GetAsync($"/api/v1/logs/chartdata?period={period}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -726,26 +726,26 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	}
 
 	/// <summary>
-	/// Tests that GET /api/logs/chart-data returns BadRequest for invalid period.
+	/// Tests that GET /api/logs/chartdata returns BadRequest for invalid period.
 	/// </summary>
 	[Fact]
 	public async Task GetChartDataAsync_WithInvalidPeriod_ReturnsBadRequestAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs/chart-data?period=invalid");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/chartdata?period=invalid");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 
 	/// <summary>
-	/// Tests that GET /api/logs/chart-data uses default period when not specified.
+	/// Tests that GET /api/logs/chartdata uses default period when not specified.
 	/// </summary>
 	[Fact]
 	public async Task GetChartDataAsync_WithNoPeriod_UsesDefaultAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs/chart-data");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/chartdata");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -762,7 +762,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetCountAsync_NoFilters_ReturnsTotalCountAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs/count");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/count");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -779,7 +779,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetCountAsync_FilterByLogLevel_ReturnsMatchingCountAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs/count?logLevel=Error");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/count?logLevel=Error");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -801,7 +801,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/logs/count?startDate={startDate:O}&endDate={endDate:O}");
+			$"/api/v1/logs/count?startDate={startDate:O}&endDate={endDate:O}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -819,7 +819,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			"/api/logs/count?sourceContext=SeventySix.Api.Controllers.WeatherController");
+			"/api/v1/logs/count?sourceContext=SeventySix.Api.Controllers.WeatherController");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -836,7 +836,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetCountAsync_FilterByRequestPath_ReturnsMatchingCountAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/logs/count?requestPath=/api/weather");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/count?requestPath=/api/weather");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -854,7 +854,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			"/api/logs/count?logLevel=Warning&sourceContext=SeventySix.Api.Controllers.WeatherController");
+			"/api/v1/logs/count?logLevel=Warning&sourceContext=SeventySix.Api.Controllers.WeatherController");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -883,7 +883,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		});
 
 		// Act
-		HttpResponseMessage response = await Client.DeleteAsync($"/api/logs/{log.Id}");
+		HttpResponseMessage response = await Client.DeleteAsync($"/api/v1/logs/{log.Id}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -900,7 +900,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task DeleteLogAsync_WithInvalidId_ReturnsNotFoundAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.DeleteAsync("/api/logs/999999999");
+		HttpResponseMessage response = await Client.DeleteAsync("/api/v1/logs/999999999");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -946,7 +946,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		int[] idsToDelete = [log1.Id, log2.Id, log3.Id];
 
 		// Act
-		HttpRequestMessage request = new(HttpMethod.Delete, "/api/logs/batch")
+		HttpRequestMessage request = new(HttpMethod.Delete, "/api/v1/logs/batch")
 		{
 			Content = JsonContent.Create(idsToDelete),
 		};
@@ -973,7 +973,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		int[] emptyIds = [];
 
 		// Act
-		HttpRequestMessage request = new(HttpMethod.Delete, "/api/logs/batch")
+		HttpRequestMessage request = new(HttpMethod.Delete, "/api/v1/logs/batch")
 		{
 			Content = JsonContent.Create(emptyIds),
 		};
@@ -1006,7 +1006,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		int[] idsToDelete = [log.Id, 999999998, 999999999];
 
 		// Act
-		HttpRequestMessage request = new(HttpMethod.Delete, "/api/logs/batch")
+		HttpRequestMessage request = new(HttpMethod.Delete, "/api/v1/logs/batch")
 		{
 			Content = JsonContent.Create(idsToDelete),
 		};

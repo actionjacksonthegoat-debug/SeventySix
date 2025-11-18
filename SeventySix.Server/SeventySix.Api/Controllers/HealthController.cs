@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
+using SeventySix.Api.Configuration;
 using SeventySix.Core.DTOs.Health;
 using SeventySix.Core.Interfaces;
 
@@ -23,7 +24,7 @@ namespace SeventySix.Api.Controllers;
 /// </remarks>
 /// <param name="service">The health check service.</param>
 [ApiController]
-[Route("api/[controller]")]
+[Route(ApiVersionConfig.VersionedRoutePrefix + "/health")]
 [RateLimit()] // 250 req/hour (default)
 public class HealthController(IHealthCheckService service) : ControllerBase
 {

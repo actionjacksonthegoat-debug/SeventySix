@@ -46,8 +46,8 @@ public class OutputCacheOptionsTests
 			.Get<OutputCacheOptions>();
 
 		// Assert
-		Assert.True(options?.Policies.ContainsKey("Weather"));
-		CachePolicyConfig weatherPolicy = options!.Policies["Weather"];
+		Assert.True(options?.Policies.ContainsKey("weather"));
+		CachePolicyConfig weatherPolicy = options!.Policies["weather"];
 		Assert.Equal(300, weatherPolicy.DurationSeconds);
 		Assert.Equal("weather", weatherPolicy.Tag);
 		Assert.True(weatherPolicy.Enabled);
@@ -69,8 +69,8 @@ public class OutputCacheOptionsTests
 			.Get<OutputCacheOptions>();
 
 		// Assert
-		Assert.True(options?.Policies.ContainsKey("Users"));
-		CachePolicyConfig usersPolicy = options!.Policies["Users"];
+		Assert.True(options?.Policies.ContainsKey("users"));
+		CachePolicyConfig usersPolicy = options!.Policies["users"];
 		Assert.Equal(60, usersPolicy.DurationSeconds);
 		Assert.Equal("users", usersPolicy.Tag);
 		Assert.True(usersPolicy.Enabled);
@@ -91,8 +91,8 @@ public class OutputCacheOptionsTests
 			.Get<OutputCacheOptions>();
 
 		// Assert
-		Assert.True(options?.Policies.ContainsKey("Logs"));
-		CachePolicyConfig logsPolicy = options!.Policies["Logs"];
+		Assert.True(options?.Policies.ContainsKey("logs"));
+		CachePolicyConfig logsPolicy = options!.Policies["logs"];
 		Assert.Equal(300, logsPolicy.DurationSeconds);
 		Assert.Equal("logs", logsPolicy.Tag);
 		Assert.True(logsPolicy.Enabled);
@@ -168,8 +168,8 @@ public class OutputCacheOptionsTests
 			.Get<OutputCacheOptions>();
 
 		// Assert
-		Assert.True(options?.Policies.ContainsKey("Health"));
-		CachePolicyConfig healthPolicy = options!.Policies["Health"];
+		Assert.True(options?.Policies.ContainsKey("health"));
+		CachePolicyConfig healthPolicy = options!.Policies["health"];
 		Assert.Equal(30, healthPolicy.DurationSeconds);
 		Assert.Equal("health", healthPolicy.Tag);
 		Assert.Empty(healthPolicy.VaryByQuery);
@@ -189,11 +189,11 @@ public class OutputCacheOptionsTests
 			.Get<OutputCacheOptions>();
 
 		// Assert
-		Assert.True(options?.Policies.ContainsKey("LogCharts"));
-		Assert.True(options?.Policies.ContainsKey("Logs"));
+		Assert.True(options?.Policies.ContainsKey("logcharts"));
+		Assert.True(options?.Policies.ContainsKey("logs"));
 
-		CachePolicyConfig logChartsPolicy = options!.Policies["LogCharts"];
-		CachePolicyConfig logsPolicy = options.Policies["Logs"];
+		CachePolicyConfig logChartsPolicy = options!.Policies["logcharts"];
+		CachePolicyConfig logsPolicy = options.Policies["logs"];
 
 		// Both should share the same tag for coordinated invalidation
 		Assert.Equal(logsPolicy.Tag, logChartsPolicy.Tag);

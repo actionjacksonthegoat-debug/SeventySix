@@ -146,7 +146,7 @@ This will:
 
 3. **Allow the self signed certificate**
 
-    - Open https://localhost:7074/api/logs
+    - Open https://localhost:7074/api/v1/logs
     - Select advanced and allow the certificate
     - This will remain approved while the browser remains open
 
@@ -238,6 +238,8 @@ npm run test:e2e:headed     # Run in headed mode
 ```
 
 ### Backend Tests
+
+**⚠️ IMPORTANT**: Docker Desktop must be running to execute server tests. The DataAccess.Tests use Testcontainers which require Docker to spin up PostgreSQL instances for integration testing.
 
 #### Unit Tests (xUnit)
 

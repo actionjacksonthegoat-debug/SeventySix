@@ -1,30 +1,32 @@
-// <copyright file="ThirdPartyApiRequestController.cs" company="SeventySix">
+// <copyright file="ThirdPartyApiRequestsController.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
+using SeventySix.Api.Configuration;
 using SeventySix.Core.DTOs.ThirdPartyRequests;
 using SeventySix.Core.Interfaces;
 
 namespace SeventySix.Api.Controllers;
 
 /// <summary>
-/// API controller for third-party API request tracking and statistics.
+/// Third-party API requests tracking endpoints.
+/// Provides RESTful operations for API request tracking and statistics.
 /// </summary>
 /// <remarks>
 /// Provides endpoints for retrieving API request tracking data and aggregated statistics.
 /// Follows SRP by handling only third-party API request operations.
 /// </remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="ThirdPartyApiRequestController"/> class.
+/// Initializes a new instance of the <see cref="ThirdPartyApiRequestsController"/> class.
 /// </remarks>
 /// <param name="service">The third-party API request service.</param>
 [ApiController]
-[Route("api/[controller]")]
+[Route(ApiVersionConfig.VersionedRoutePrefix + "/thirdpartyrequests")]
 [RateLimit()] // 250 req/hour (default)
-public class ThirdPartyApiRequestController(IThirdPartyApiRequestService service) : ControllerBase
+public class ThirdPartyApiRequestsController(IThirdPartyApiRequestService service) : ControllerBase
 {
 
 	/// <summary>

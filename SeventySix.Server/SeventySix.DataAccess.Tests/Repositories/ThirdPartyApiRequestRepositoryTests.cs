@@ -26,7 +26,7 @@ namespace SeventySix.DataAccess.Tests.Repositories;
 /// - Query performance
 /// - Concurrency
 /// </remarks>
-[Collection("ThirdPartyApiRequestRepositoryTests")]
+[Collection("DatabaseTests")]
 public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFixture<PostgreSqlFixture>
 {
 	private readonly ThirdPartyApiRequestRepository Repository;
@@ -41,7 +41,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task GetByApiNameAndDateAsync_ReturnsRecord_WhenExists()
+	public async Task GetByApiNameAndDateAsync_ReturnsRecord_WhenExistsAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -65,7 +65,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task GetByApiNameAndDateAsync_ReturnsNull_WhenNotFound()
+	public async Task GetByApiNameAndDateAsync_ReturnsNull_WhenNotFoundAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -78,7 +78,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task GetByApiNameAndDateAsync_ReturnsNull_WhenDifferentDate()
+	public async Task GetByApiNameAndDateAsync_ReturnsNull_WhenDifferentDateAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -101,7 +101,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task CreateAsync_CreatesRecord_WithGeneratedId()
+	public async Task CreateAsync_CreatesRecord_WithGeneratedIdAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -123,7 +123,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task CreateAsync_SetsTimestamps_Automatically()
+	public async Task CreateAsync_SetsTimestamps_AutomaticallyAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -145,7 +145,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task CreateAsync_ThrowsException_WhenDuplicateApiNameAndDate()
+	public async Task CreateAsync_ThrowsException_WhenDuplicateApiNameAndDateAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -169,7 +169,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task CreateAsync_AllowsDifferentDatesForSameApi()
+	public async Task CreateAsync_AllowsDifferentDatesForSameApiAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -199,7 +199,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task UpdateAsync_UpdatesRecord_Successfully()
+	public async Task UpdateAsync_UpdatesRecord_SuccessfullyAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -221,7 +221,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task UpdateAsync_UpdatesTimestamp_Automatically()
+	public async Task UpdateAsync_UpdatesTimestamp_AutomaticallyAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -247,7 +247,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task GetByApiNameAsync_ReturnsAllRecordsForApi()
+	public async Task GetByApiNameAsync_ReturnsAllRecordsForApiAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -297,7 +297,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task GetByApiNameAsync_ReturnsEmptyCollection_WhenNoRecords()
+	public async Task GetByApiNameAsync_ReturnsEmptyCollection_WhenNoRecordsExistAsync()
 	{
 		// Act
 		IEnumerable<ThirdPartyApiRequest> results = await Repository.GetByApiNameAsync("NonExistent");
@@ -307,7 +307,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task DeleteOlderThanAsync_DeletesOldRecords()
+	public async Task DeleteOlderThanAsync_DeletesOldRecordsAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -353,7 +353,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task DeleteOlderThanAsync_ReturnsZero_WhenNoRecordsToDelete()
+	public async Task DeleteOlderThanAsync_ReturnsZero_WhenNoRecordsToDeleteAsync()
 	{
 		// Arrange
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -374,17 +374,17 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task CreateAsync_ThrowsException_WhenEntityIsNull() =>
+	public async Task CreateAsync_ThrowsException_WhenEntityIsNullAsync() =>
 		// Act & Assert
 		await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.CreateAsync(null!));
 
 	[Fact]
-	public async Task UpdateAsync_ThrowsException_WhenEntityIsNull() =>
+	public async Task UpdateAsync_ThrowsException_WhenEntityIsNullAsync() =>
 		// Act & Assert
 		await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.UpdateAsync(null!));
 
 	[Fact]
-	public async Task GetByApiNameAndDateAsync_ThrowsException_WhenApiNameIsNull()
+	public async Task GetByApiNameAndDateAsync_ThrowsException_WhenApiNameIsNullAsync()
 	{
 		// Act & Assert
 		await Assert.ThrowsAsync<ArgumentNullException>(
@@ -392,7 +392,7 @@ public class ThirdPartyApiRequestRepositoryTests : PostgreSqlTestBase, IClassFix
 	}
 
 	[Fact]
-	public async Task GetByApiNameAndDateAsync_ThrowsException_WhenApiNameIsEmpty()
+	public async Task GetByApiNameAndDateAsync_ThrowsException_WhenApiNameIsEmptyAsync()
 	{
 		// Act & Assert
 		await Assert.ThrowsAsync<ArgumentException>(

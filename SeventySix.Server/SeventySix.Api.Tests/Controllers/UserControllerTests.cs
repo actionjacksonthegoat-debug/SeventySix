@@ -1,4 +1,4 @@
-// <copyright file="UserControllerTests.cs" company="SeventySix">
+// <copyright file="UsersControllerTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -15,7 +15,7 @@ using SeventySix.Core.Exceptions;
 namespace SeventySix.Api.Tests.Controllers;
 
 /// <summary>
-/// Unit tests for UserController.
+/// Unit tests for UsersController.
 /// Tests HTTP endpoint behavior and response handling.
 /// </summary>
 /// <remarks>
@@ -32,22 +32,22 @@ namespace SeventySix.Api.Tests.Controllers;
 /// - Proper HTTP status codes (200, 201, 404, 500)
 /// - Logger integration
 /// </remarks>
-public class UserControllerTests
+public class UsersControllerTests
 {
 	private readonly Mock<IUserService> MockUserService;
-	private readonly Mock<ILogger<UserController>> MockLogger;
-	private readonly UserController Controller;
+	private readonly Mock<ILogger<UsersController>> MockLogger;
+	private readonly UsersController Controller;
 
-	public UserControllerTests()
+	public UsersControllerTests()
 	{
 		MockUserService = new Mock<IUserService>();
-		MockLogger = new Mock<ILogger<UserController>>();
-		Controller = new UserController(MockUserService.Object, MockLogger.Object);
+		MockLogger = new Mock<ILogger<UsersController>>();
+		Controller = new UsersController(MockUserService.Object, MockLogger.Object);
 	}
 
 	#region Constructor Tests
 
-	// Note: UserController uses primary constructor syntax which relies on
+	// Note: UsersController uses primary constructor syntax which relies on
 	// dependency injection to provide non-null dependencies.
 	// ArgumentNullException tests are not applicable with this pattern.
 
@@ -249,7 +249,7 @@ public class UserControllerTests
 	#region UpdateAsync Tests
 
 	[Fact]
-	public async Task UpdateAsync_ValidRequest_ReturnsOkWithUpdatedUser()
+	public async Task UpdateAsync_ValidRequest_ReturnsOkWithUpdatedUserAsync()
 	{
 		// Arrange
 		UpdateUserRequest request = new UpdateUserRequest
@@ -290,7 +290,7 @@ public class UserControllerTests
 	}
 
 	[Fact]
-	public async Task UpdateAsync_MismatchedId_ReturnsBadRequest()
+	public async Task UpdateAsync_MismatchedId_ReturnsBadRequestAsync()
 	{
 		// Arrange
 		UpdateUserRequest request = new UpdateUserRequest
@@ -319,7 +319,7 @@ public class UserControllerTests
 	#region DeleteAsync Tests
 
 	[Fact]
-	public async Task DeleteAsync_UserExists_ReturnsNoContent()
+	public async Task DeleteAsync_UserExists_ReturnsNoContentAsync()
 	{
 		// Arrange
 		MockUserService
@@ -334,7 +334,7 @@ public class UserControllerTests
 	}
 
 	[Fact]
-	public async Task DeleteAsync_UserNotFound_ReturnsNotFound()
+	public async Task DeleteAsync_UserNotFound_ReturnsNotFoundAsync()
 	{
 		// Arrange
 		MockUserService
@@ -353,7 +353,7 @@ public class UserControllerTests
 	#region RestoreAsync Tests
 
 	[Fact]
-	public async Task RestoreAsync_UserExists_ReturnsNoContent()
+	public async Task RestoreAsync_UserExists_ReturnsNoContentAsync()
 	{
 		// Arrange
 		MockUserService
@@ -368,7 +368,7 @@ public class UserControllerTests
 	}
 
 	[Fact]
-	public async Task RestoreAsync_UserNotFound_ReturnsNotFound()
+	public async Task RestoreAsync_UserNotFound_ReturnsNotFoundAsync()
 	{
 		// Arrange
 		MockUserService
@@ -387,7 +387,7 @@ public class UserControllerTests
 	#region GetPagedAsync Tests
 
 	[Fact]
-	public async Task GetPagedAsync_ValidRequest_ReturnsOkWithPagedResult()
+	public async Task GetPagedAsync_ValidRequest_ReturnsOkWithPagedResultAsync()
 	{
 		// Arrange
 		UserQueryRequest request = new UserQueryRequest
@@ -432,7 +432,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 	#region GetByUsernameAsync Tests
 
 	[Fact]
-	public async Task GetByUsernameAsync_UserExists_ReturnsOkWithUser()
+	public async Task GetByUsernameAsync_UserExists_ReturnsOkWithUserAsync()
 	{
 		// Arrange
 		UserDto user = new UserDto
@@ -457,7 +457,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 	}
 
 	[Fact]
-	public async Task GetByUsernameAsync_UserNotFound_ReturnsNotFound()
+	public async Task GetByUsernameAsync_UserNotFound_ReturnsNotFoundAsync()
 	{
 		// Arrange
 		MockUserService
@@ -476,7 +476,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 	#region CheckUsernameAsync Tests
 
 	[Fact]
-	public async Task CheckUsernameAsync_UsernameExists_ReturnsTrue()
+	public async Task CheckUsernameAsync_UsernameExists_ReturnsTrueAsync()
 	{
 		// Arrange
 		MockUserService
@@ -493,7 +493,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 	}
 
 	[Fact]
-	public async Task CheckUsernameAsync_UsernameNotFound_ReturnsFalse()
+	public async Task CheckUsernameAsync_UsernameNotFound_ReturnsFalseAsync()
 	{
 		// Arrange
 		MockUserService
@@ -514,7 +514,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 	#region BulkActivateAsync Tests
 
 	[Fact]
-	public async Task BulkActivateAsync_ValidRequest_ReturnsOkWithCount()
+	public async Task BulkActivateAsync_ValidRequest_ReturnsOkWithCountAsync()
 	{
 		// Arrange
 		List<int> ids = [1, 2, 3];
@@ -534,7 +534,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 	}
 
 	[Fact]
-	public async Task BulkDeactivateAsync_ValidRequest_ReturnsOkWithCount()
+	public async Task BulkDeactivateAsync_ValidRequest_ReturnsOkWithCountAsync()
 	{
 		// Arrange
 		List<int> ids = [1, 2, 3];

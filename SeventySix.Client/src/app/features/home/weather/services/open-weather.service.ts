@@ -58,7 +58,7 @@ export interface QuotaStatus
 export class OpenWeatherService
 {
 	private readonly http: HttpClient = inject(HttpClient);
-	private readonly apiBaseUrl: string = `${environment.apiUrl}/weatherforecast`;
+	private readonly apiBaseUrl: string = `${environment.apiUrl}/weather`;
 
 	/**
 	 * Get complete weather data (current + forecasts + alerts)

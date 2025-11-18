@@ -27,7 +27,7 @@ namespace SeventySix.DataAccess.Tests.Repositories;
 /// - Soft delete and restore
 /// - Bulk operations
 /// </remarks>
-[Collection("UserRepositoryTests")]
+[Collection("DatabaseTests")]
 public class UserRepositoryTests : PostgreSqlTestBase, IClassFixture<PostgreSqlFixture>
 {
 	private readonly UserRepository Repository;

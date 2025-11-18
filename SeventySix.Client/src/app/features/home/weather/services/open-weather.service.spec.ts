@@ -13,7 +13,7 @@ describe("OpenWeatherService", () =>
 {
 	let service: OpenWeatherService;
 	let httpMock: HttpTestingController;
-	const apiBaseUrl = `${environment.apiUrl}/weatherforecast`;
+	const apiBaseUrl = `${environment.apiUrl}/weather`;
 
 	beforeEach(() =>
 	{

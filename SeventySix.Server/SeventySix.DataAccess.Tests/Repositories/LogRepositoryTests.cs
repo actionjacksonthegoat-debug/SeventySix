@@ -25,7 +25,7 @@ namespace SeventySix.DataAccess.Tests.Repositories;
 /// - Statistics generation
 /// - Cleanup operations
 /// </remarks>
-[Collection("LogRepositoryTests")]
+[Collection("DatabaseTests")]
 public class LogRepositoryTests : PostgreSqlTestBase, IClassFixture<PostgreSqlFixture>
 {
 	private readonly LogRepository Repository;

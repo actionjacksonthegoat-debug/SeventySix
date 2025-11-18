@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
+using SeventySix.Api.Configuration;
 using SeventySix.Core.DTOs.LogCharts;
 using SeventySix.Core.DTOs.Logs;
 using SeventySix.Core.Entities;
@@ -39,7 +40,7 @@ namespace SeventySix.Api.Controllers;
 /// <param name="logChartService">The log chart service.</param>
 /// <param name="logger">The logger.</param>
 [ApiController]
-[Route("api/[controller]")]
+[Route(ApiVersionConfig.VersionedRoutePrefix + "/logs")]
 [RateLimit()] // 250 req/hour (default)
 public class LogsController(
 	ILogRepository logRepository,
@@ -458,8 +459,8 @@ public class LogsController(
 	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
 	/// <returns>Log counts by level.</returns>
 	/// <response code="200">Returns the log counts by level.</response>
-	[HttpGet("charts/by-level")]
-	[OutputCache(PolicyName = "log-charts")]
+	[HttpGet("charts/bylevel")]
+	[OutputCache(PolicyName = "logcharts")]
 	[ProducesResponseType(typeof(LogsByLevelResponse), StatusCodes.Status200OK)]
 	public async Task<ActionResult<LogsByLevelResponse>> GetLogsByLevelAsync(
 		[FromQuery] DateTime? startDate,
@@ -477,8 +478,8 @@ public class LogsController(
 	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
 	/// <returns>Hourly log counts.</returns>
 	/// <response code="200">Returns the hourly log counts.</response>
-	[HttpGet("charts/by-hour")]
-	[OutputCache(PolicyName = "log-charts")]
+	[HttpGet("charts/byhour")]
+	[OutputCache(PolicyName = "logcharts")]
 	[ProducesResponseType(typeof(LogsByHourResponse), StatusCodes.Status200OK)]
 	public async Task<ActionResult<LogsByHourResponse>> GetLogsByHourAsync(
 		[FromQuery] int? hoursBack,
@@ -495,8 +496,8 @@ public class LogsController(
 	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
 	/// <returns>Log counts by source.</returns>
 	/// <response code="200">Returns the log counts by source.</response>
-	[HttpGet("charts/by-source")]
-	[OutputCache(PolicyName = "log-charts")]
+	[HttpGet("charts/bysource")]
+	[OutputCache(PolicyName = "logcharts")]
 	[ProducesResponseType(typeof(LogsBySourceResponse), StatusCodes.Status200OK)]
 	public async Task<ActionResult<LogsBySourceResponse>> GetLogsBySourceAsync(
 		[FromQuery] int? topN,
@@ -513,8 +514,8 @@ public class LogsController(
 	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
 	/// <returns>Recent error log summaries.</returns>
 	/// <response code="200">Returns the recent errors.</response>
-	[HttpGet("charts/recent-errors")]
-	[OutputCache(PolicyName = "log-charts")]
+	[HttpGet("charts/recenterrors")]
+	[OutputCache(PolicyName = "logcharts")]
 	[ProducesResponseType(typeof(RecentErrorsResponse), StatusCodes.Status200OK)]
 	public async Task<ActionResult<RecentErrorsResponse>> GetRecentErrorsAsync(
 		[FromQuery] int? count,
@@ -532,8 +533,8 @@ public class LogsController(
 	/// <returns>Chart data with time-series log counts.</returns>
 	/// <response code="200">Returns the chart data.</response>
 	/// <response code="400">If the period parameter is invalid.</response>
-	[HttpGet("chart-data")]
-	[OutputCache(PolicyName = "log-charts")]
+	[HttpGet("chartdata")]
+	[OutputCache(PolicyName = "logcharts")]
 	[ProducesResponseType(typeof(LogChartDataResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<LogChartDataResponse>> GetChartDataAsync(

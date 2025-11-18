@@ -73,7 +73,7 @@ describe("LogChartService", () =>
 				done();
 			});
 
-			const req = httpMock.expectOne(`${apiUrl}/chart-data?period=24h`);
+			const req = httpMock.expectOne(`${apiUrl}/chartdata?period=24h`);
 			expect(req.request.method).toBe("GET");
 			req.flush(mockChartData);
 		});
@@ -107,7 +107,7 @@ describe("LogChartService", () =>
 				done();
 			});
 
-			const req = httpMock.expectOne(`${apiUrl}/chart-data?period=7d`);
+			const req = httpMock.expectOne(`${apiUrl}/chartdata?period=7d`);
 			expect(req.request.method).toBe("GET");
 			req.flush(mockChartData);
 		});
@@ -126,7 +126,7 @@ describe("LogChartService", () =>
 				done();
 			});
 
-			const req = httpMock.expectOne(`${apiUrl}/chart-data?period=30d`);
+			const req = httpMock.expectOne(`${apiUrl}/chartdata?period=30d`);
 			req.flush(mockChartData);
 		});
 
@@ -143,7 +143,7 @@ describe("LogChartService", () =>
 				done();
 			});
 
-			const req = httpMock.expectOne(`${apiUrl}/chart-data?period=24h`);
+			const req = httpMock.expectOne(`${apiUrl}/chartdata?period=24h`);
 			req.flush(mockChartData);
 		});
 
@@ -158,7 +158,7 @@ describe("LogChartService", () =>
 				}
 			});
 
-			const req = httpMock.expectOne(`${apiUrl}/chart-data?period=24h`);
+			const req = httpMock.expectOne(`${apiUrl}/chartdata?period=24h`);
 			req.flush("Invalid period", {
 				status: 400,
 				statusText: "Bad Request"

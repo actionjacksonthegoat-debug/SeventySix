@@ -2,6 +2,7 @@ import { Injectable, inject, isDevMode } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { catchError, of } from "rxjs";
+import { environment } from "../../../environments/environment";
 
 /**
  * Log levels for structured logging.
@@ -59,7 +60,7 @@ export class LoggerService
 	private readonly http: HttpClient = inject(HttpClient);
 	private readonly router: Router = inject(Router);
 	private readonly isDevMode: boolean = isDevMode();
-	private readonly logEndpoint: string = "/api/logs/client";
+	private readonly logEndpoint: string = `${environment.apiUrl}/logs/client`;
 
 	/**
 	 * Logs debug message (dev only).

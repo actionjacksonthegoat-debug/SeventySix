@@ -29,6 +29,12 @@ interface Environment
 			users: { staleTime: number; gcTime: number; retry: number };
 			logs: { staleTime: number; gcTime: number; retry: number };
 			health: { staleTime: number; gcTime: number; retry: number };
+			logcharts: { staleTime: number; gcTime: number; retry: number };
+			thirdpartyrequests: {
+				staleTime: number;
+				gcTime: number;
+				retry: number;
+			};
 		};
 	};
 	dashboard: {
@@ -44,7 +50,7 @@ interface Environment
 
 export const environment: Environment = {
 	production: false,
-	apiUrl: "https://localhost:7074/api", // HTTPS for docker-compose (use http://localhost:5085/api for Container debugging)
+	apiUrl: "https://localhost:7074/api/v1", // API v1 - HTTPS for docker-compose (use http://localhost:5085/api/v1 for Container debugging)
 	logging: {
 		enableRemoteLogging: true,
 		batchSize: 10,
@@ -72,7 +78,9 @@ export const environment: Environment = {
 			weather: { staleTime: 0, gcTime: 60000, retry: 1 },
 			users: { staleTime: 0, gcTime: 60000, retry: 1 },
 			logs: { staleTime: 0, gcTime: 60000, retry: 1 },
-			health: { staleTime: 0, gcTime: 60000, retry: 1 }
+			health: { staleTime: 0, gcTime: 60000, retry: 1 },
+			logcharts: { staleTime: 0, gcTime: 60000, retry: 1 },
+			thirdpartyrequests: { staleTime: 0, gcTime: 60000, retry: 1 }
 		}
 	},
 	dashboard: {

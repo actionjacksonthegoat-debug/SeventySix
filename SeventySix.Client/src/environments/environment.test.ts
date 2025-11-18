@@ -29,6 +29,12 @@ interface Environment
 			users: { staleTime: number; gcTime: number; retry: number };
 			logs: { staleTime: number; gcTime: number; retry: number };
 			health: { staleTime: number; gcTime: number; retry: number };
+			logcharts: { staleTime: number; gcTime: number; retry: number };
+			thirdpartyrequests: {
+				staleTime: number;
+				gcTime: number;
+				retry: number;
+			};
 		};
 	};
 	dashboard: {
@@ -49,7 +55,7 @@ interface Environment
  */
 export const environment: Environment = {
 	production: false,
-	apiUrl: "http://localhost:1234/api", // Test-only port to prevent hitting real API
+	apiUrl: "http://localhost:1234/api/v1", // API v1 - Test-only port to prevent hitting real API
 	logging: {
 		enableRemoteLogging: false, // Disable remote logging in tests
 		batchSize: 10,
@@ -76,7 +82,9 @@ export const environment: Environment = {
 			weather: { staleTime: 0, gcTime: 0, retry: 0 },
 			users: { staleTime: 0, gcTime: 0, retry: 0 },
 			logs: { staleTime: 0, gcTime: 0, retry: 0 },
-			health: { staleTime: 0, gcTime: 0, retry: 0 }
+			health: { staleTime: 0, gcTime: 0, retry: 0 },
+			logcharts: { staleTime: 0, gcTime: 0, retry: 0 },
+			thirdpartyrequests: { staleTime: 0, gcTime: 0, retry: 0 }
 		}
 	},
 	dashboard: {

@@ -1,4 +1,4 @@
-// <copyright file="ThirdPartyApiRequestControllerTests.cs" company="SeventySix">
+// <copyright file="ThirdPartyApiRequestsControllerTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -11,17 +11,17 @@ using SeventySix.Core.Interfaces;
 namespace SeventySix.Api.Tests.Controllers;
 
 /// <summary>
-/// Unit tests for ThirdPartyApiRequestController.
+/// Unit tests for ThirdPartyApiRequestsController.
 /// </summary>
-public class ThirdPartyApiRequestControllerTests
+public class ThirdPartyApiRequestsControllerTests
 {
 	private readonly Mock<IThirdPartyApiRequestService> MockService;
-	private readonly ThirdPartyApiRequestController Controller;
+	private readonly ThirdPartyApiRequestsController Controller;
 
-	public ThirdPartyApiRequestControllerTests()
+	public ThirdPartyApiRequestsControllerTests()
 	{
 		MockService = new Mock<IThirdPartyApiRequestService>();
-		Controller = new ThirdPartyApiRequestController(MockService.Object);
+		Controller = new ThirdPartyApiRequestsController(MockService.Object);
 	}
 
 	[Fact]

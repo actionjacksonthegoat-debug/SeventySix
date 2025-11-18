@@ -45,6 +45,16 @@ interface Environment
 				gcTime: number;
 				retry: number;
 			};
+			logcharts: {
+				staleTime: number;
+				gcTime: number;
+				retry: number;
+			};
+			thirdpartyrequests: {
+				staleTime: number;
+				gcTime: number;
+				retry: number;
+			};
 		};
 	};
 	dashboard: {
@@ -59,7 +69,7 @@ interface Environment
 }
 export const environment: Environment = {
 	production: true,
-	apiUrl: "https://localhost:7074/api", // Default API URL for production
+	apiUrl: "https://localhost:7074/api/v1", // API v1 for production
 	logging: {
 		enableRemoteLogging: true,
 		batchSize: 10,
@@ -105,6 +115,16 @@ export const environment: Environment = {
 				staleTime: 10000, // 10s
 				gcTime: 60000, // 1min
 				retry: 1
+			},
+			logcharts: {
+				staleTime: 120000, // 2min
+				gcTime: 300000, // 5min
+				retry: 2
+			},
+			thirdpartyrequests: {
+				staleTime: 60000, // 1min
+				gcTime: 300000, // 5min
+				retry: 2
 			}
 		}
 	},

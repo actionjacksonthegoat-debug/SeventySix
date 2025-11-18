@@ -16,7 +16,7 @@ describe("ThirdPartyApiService", () =>
 {
 	let service: ThirdPartyApiService;
 	let httpMock: HttpTestingController;
-	const apiUrl = `${environment.apiUrl}/ThirdPartyApiRequest`;
+	const apiUrl = `${environment.apiUrl}/thirdpartyrequests`;
 
 	beforeEach(() =>
 	{

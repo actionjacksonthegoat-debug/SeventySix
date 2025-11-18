@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
+using SeventySix.Api.Configuration;
 using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.Core.DTOs.OpenWeather;
 using SeventySix.Core.DTOs.OpenWeather.Common;
@@ -43,7 +44,7 @@ namespace SeventySix.Api.Controllers;
 /// <param name="weatherService">OpenWeather service for business logic.</param>
 /// <param name="logger">Logger instance.</param>
 [ApiController]
-[Route("api/[controller]")]
+[Route(ApiVersionConfig.VersionedRoutePrefix + "/weather")]
 [RateLimit(MaxRequests = 100, WindowSeconds = 86400)] // Weather API: 100 req/day
 public class WeatherForecastController(
 	IOpenWeatherService weatherService) : ControllerBase
@@ -64,7 +65,7 @@ public class WeatherForecastController(
 	/// <remarks>
 	/// Sample request:
 	///
-	///     GET /api/weatherforecast/current?latitude=40.7128&amp;longitude=-74.0060&amp;units=metric
+	///     GET /api/v1/weather/current?latitude=40.7128&amp;longitude=-74.0060&amp;units=metric
 	///
 	/// Response is cached for 5 minutes.
 	/// </remarks>
@@ -114,7 +115,7 @@ public class WeatherForecastController(
 	/// <remarks>
 	/// Sample request:
 	///
-	///     GET /api/weatherforecast/hourly?latitude=40.7128&amp;longitude=-74.0060
+	///     GET /api/v1/weather/hourly?latitude=40.7128&amp;longitude=-74.0060
 	///
 	/// Returns 48 hours of hourly forecasts.
 	/// </remarks>
@@ -157,7 +158,7 @@ public class WeatherForecastController(
 	/// <remarks>
 	/// Sample request:
 	///
-	///     GET /api/weatherforecast/daily?latitude=40.7128&amp;longitude=-74.0060
+	///     GET /api/v1/weather/daily?latitude=40.7128&amp;longitude=-74.0060
 	///
 	/// Returns 8 days of daily forecasts including min/max temperatures, conditions, and more.
 	/// </remarks>
@@ -200,7 +201,7 @@ public class WeatherForecastController(
 	/// <remarks>
 	/// Sample request:
 	///
-	///     GET /api/weatherforecast/minutely?latitude=40.7128&amp;longitude=-74.0060
+	///     GET /api/v1/weather/minutely?latitude=40.7128&amp;longitude=-74.0060
 	///
 	/// Note: Minutely forecast is only available for certain geographic areas.
 	/// Returns empty list if not available.
@@ -241,7 +242,7 @@ public class WeatherForecastController(
 	/// <remarks>
 	/// Sample request:
 	///
-	///     GET /api/weatherforecast/alerts?latitude=40.7128&amp;longitude=-74.0060
+	///     GET /api/v1/weather/alerts?latitude=40.7128&amp;longitude=-74.0060
 	///
 	/// Returns government-issued weather alerts (warnings, watches, advisories).
 	/// Returns empty list if no active alerts.
@@ -336,7 +337,7 @@ public class WeatherForecastController(
 	/// <remarks>
 	/// Sample request:
 	///
-	///     GET /api/weatherforecast/historical?latitude=40.7128&amp;longitude=-74.0060&amp;timestamp=1699632000
+	///     GET /api/v1/weather/historical?latitude=40.7128&amp;longitude=-74.0060&amp;timestamp=1699632000
 	///
 	/// Historical data is available for the last 5 days only.
 	/// </remarks>
@@ -380,7 +381,7 @@ public class WeatherForecastController(
 	/// <remarks>
 	/// Sample request:
 	///
-	///     GET /api/weatherforecast/quota
+	///     GET /api/v1/weather/quota
 	///
 	/// Use this endpoint to check remaining API calls and reset time.
 	/// </remarks>

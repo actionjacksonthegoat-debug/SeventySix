@@ -1,10 +1,11 @@
-// <copyright file="UserController.cs" company="SeventySix">
+// <copyright file="UsersController.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
+using SeventySix.Api.Configuration;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Interfaces;
@@ -13,8 +14,8 @@ using SeventySix.Core.DTOs;
 namespace SeventySix.Api.Controllers;
 
 /// <summary>
-/// User API endpoints.
-/// Provides RESTful operations for managing user data.
+/// Users API endpoints.
+/// Provides RESTful operations for managing user resources.
 /// </summary>
 /// <remarks>
 /// This controller implements the Service Layer pattern, delegating business logic
@@ -31,17 +32,17 @@ namespace SeventySix.Api.Controllers;
 /// - DTO Pattern: Domain models never exposed directly
 /// </remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="UserController"/> class.
+/// Initializes a new instance of the <see cref="UsersController"/> class.
 /// </remarks>
 /// <param name="userService">The user service for business logic operations.</param>
 /// <param name="logger">The logger instance for recording controller operations.</param>
 /// <exception cref="ArgumentNullException">Thrown when userService or logger is null.</exception>
 [ApiController]
-[Route("api/[controller]")]
+[Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
 [RateLimit()] // 250 req/hour (default)
-public class UserController(
+public class UsersController(
 	IUserService userService,
-	ILogger<UserController> logger) : ControllerBase
+	ILogger<UsersController> logger) : ControllerBase
 {
 	/// <summary>
 	/// Gets all users.
@@ -80,7 +81,7 @@ public class UserController(
 	/// <remarks>
 	/// Sample request:
 	///
-	///     GET /api/user/1
+	///     GET /api/v1/users/1
 	///
 	/// Response is cached for 60 seconds to improve performance.
 	/// </remarks>

@@ -41,7 +41,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+			$"/api/v1/weather/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
 		// Note: Will return 503 ServiceUnavailable without valid API key
@@ -54,7 +54,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			"/api/weatherforecast/current?latitude=91&longitude=-74.0060");
+			"/api/v1/weather/current?latitude=91&longitude=-74.0060");
 
 		// Assert
 		response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -65,7 +65,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			"/api/weatherforecast/current?latitude=40.7128&longitude=-181");
+			"/api/v1/weather/current?latitude=40.7128&longitude=-181");
 
 		// Assert
 		response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -76,7 +76,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+			$"/api/v1/weather/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
 		response.Headers.CacheControl.Should().NotBeNull();
@@ -88,7 +88,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast/hourly?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+			$"/api/v1/weather/hourly?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
@@ -99,7 +99,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast/daily?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+			$"/api/v1/weather/daily?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
@@ -110,7 +110,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast/minutely?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+			$"/api/v1/weather/minutely?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
@@ -121,7 +121,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast/minutely?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+			$"/api/v1/weather/minutely?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert - Minutely should have 1 minute cache
 		response.Headers.CacheControl.Should().NotBeNull();
@@ -133,7 +133,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast/alerts?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+			$"/api/v1/weather/alerts?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
@@ -144,7 +144,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+			$"/api/v1/weather?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
 
 		// Assert
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
@@ -155,7 +155,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&exclude=minutely,alerts");
+			$"/api/v1/weather?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&exclude=minutely,alerts");
 
 		// Assert
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
@@ -169,7 +169,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast/historical?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&timestamp={twoDaysAgo}");
+			$"/api/v1/weather/historical?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&timestamp={twoDaysAgo}");
 
 		// Assert
 		response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
@@ -183,7 +183,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/weatherforecast/historical?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&timestamp={twoDaysAgo}");
+			$"/api/v1/weather/historical?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&timestamp={twoDaysAgo}");
 
 		// Assert - Historical data should have 24 hour cache
 		response.Headers.CacheControl.Should().NotBeNull();
@@ -194,7 +194,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	public async Task GetApiQuota_ReturnsOkAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/weatherforecast/quota");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/weather/quota");
 
 		// Assert
 		response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -204,7 +204,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	public async Task GetApiQuota_ReturnsExpectedStructureAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/weatherforecast/quota");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/weather/quota");
 		string content = await response.Content.ReadAsStringAsync();
 
 		// Assert
@@ -216,10 +216,10 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	}
 
 	[IntegrationTheory]
-	[InlineData("/api/weatherforecast/current")]
-	[InlineData("/api/weatherforecast/hourly")]
-	[InlineData("/api/weatherforecast/daily")]
-	[InlineData("/api/weatherforecast/alerts")]
+	[InlineData("/api/v1/weather/current")]
+	[InlineData("/api/v1/weather/hourly")]
+	[InlineData("/api/v1/weather/daily")]
+	[InlineData("/api/v1/weather/alerts")]
 	public async Task WeatherEndpoints_WithDefaultCoordinates_CallsServiceAsync(string endpoint)
 	{
 		// Note: Without explicit query parameters, doubles default to 0.0
@@ -237,10 +237,10 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 	public async Task MultipleEndpoints_SupportConcurrentRequestsAsync()
 	{
 		// Act - Make concurrent requests to different endpoints
-		Task<HttpResponseMessage> currentTask = Client.GetAsync($"/api/weatherforecast/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
-		Task<HttpResponseMessage> hourlyTask = Client.GetAsync($"/api/weatherforecast/hourly?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
-		Task<HttpResponseMessage> dailyTask = Client.GetAsync($"/api/weatherforecast/daily?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
-		Task<HttpResponseMessage> quotaTask = Client.GetAsync("/api/weatherforecast/quota");
+		Task<HttpResponseMessage> currentTask = Client.GetAsync($"/api/v1/weather/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+		Task<HttpResponseMessage> hourlyTask = Client.GetAsync($"/api/v1/weather/hourly?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+		Task<HttpResponseMessage> dailyTask = Client.GetAsync($"/api/v1/weather/daily?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}");
+		Task<HttpResponseMessage> quotaTask = Client.GetAsync("/api/v1/weather/quota");
 
 		HttpResponseMessage[] responses = await Task.WhenAll(currentTask, hourlyTask, dailyTask, quotaTask);
 
@@ -260,10 +260,10 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		// Arrange
 		string[] endpoints =
 		[
-			$"/api/weatherforecast/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}",
-			$"/api/weatherforecast/hourly?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}",
-			$"/api/weatherforecast/daily?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}",
-			"/api/weatherforecast/quota"
+			$"/api/v1/weather/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}",
+			$"/api/v1/weather/hourly?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}",
+			$"/api/v1/weather/daily?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}",
+			"/api/v1/weather/quota"
 		];
 
 		foreach (string? endpoint in endpoints)
@@ -289,7 +289,7 @@ public class WeatherForecastIntegrationTests : IClassFixture<WebApplicationFacto
 		{
 			// Act
 			HttpResponseMessage response = await Client.GetAsync(
-				$"/api/weatherforecast/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&units={unit}");
+				$"/api/v1/weather/current?latitude={VALID_LATITUDE}&longitude={VALID_LONGITUDE}&units={unit}");
 
 			// Assert
 			response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
