@@ -8,6 +8,7 @@ using SeventySix.Api.Attributes;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.Core.DTOs;
 
 namespace SeventySix.Api.Controllers;
 
@@ -130,5 +131,187 @@ public class UserController(
 	{
 		UserDto user = await userService.CreateUserAsync(request, cancellationToken);
 		return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
+	}
+
+	/// <summary>
+	/// Updates an existing user.
+	/// </summary>
+	/// <param name="id">The unique identifier of the user to update.</param>
+	/// <param name="request">The user update request containing updated user data.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>The updated user.</returns>
+	/// <response code="200">Returns the updated user.</response>
+	/// <response code="400">If the request is invalid or ID mismatch.</response>
+	/// <response code="404">If the user is not found.</response>
+	/// <response code="409">If a concurrency conflict occurs.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpPut("{id}", Name = "UpdateUser")]
+	[ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status409Conflict)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<ActionResult<UserDto>> UpdateAsync(
+		int id,
+		[FromBody] UpdateUserRequest request,
+		CancellationToken cancellationToken)
+	{
+		if (id != request.Id)
+		{
+			return BadRequest("ID in URL does not match ID in request body");
+		}
+
+		UserDto user = await userService.UpdateUserAsync(request, cancellationToken);
+		return Ok(user);
+	}
+
+	/// <summary>
+	/// Soft deletes a user by their identifier.
+	/// </summary>
+	/// <param name="id">The unique identifier of the user to delete.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>No content if successful.</returns>
+	/// <response code="204">If the user was successfully deleted.</response>
+	/// <response code="404">If the user is not found.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpDelete("{id}", Name = "DeleteUser")]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<IActionResult> DeleteAsync(
+		int id,
+		CancellationToken cancellationToken)
+	{
+		bool deleted = await userService.DeleteUserAsync(id, "System", cancellationToken);
+		return deleted ? NoContent() : NotFound();
+	}
+
+	/// <summary>
+	/// Restores a previously soft-deleted user.
+	/// </summary>
+	/// <param name="id">The unique identifier of the user to restore.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>No content if successful.</returns>
+	/// <response code="204">If the user was successfully restored.</response>
+	/// <response code="404">If the user is not found or not deleted.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpPost("{id}/restore", Name = "RestoreUser")]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<IActionResult> RestoreAsync(
+		int id,
+		CancellationToken cancellationToken)
+	{
+		bool restored = await userService.RestoreUserAsync(id, cancellationToken);
+		return restored ? NoContent() : NotFound();
+	}
+
+	/// <summary>
+	/// Gets users with pagination and filtering.
+	/// </summary>
+	/// <param name="request">The query request containing pagination and filter parameters.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>A paged result containing users and metadata.</returns>
+	/// <response code="200">Returns the paged result.</response>
+	/// <response code="400">If the request is invalid.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpGet("paged", Name = "GetPagedUsers")]
+	[ProducesResponseType(typeof(PagedResult<UserDto>), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	[OutputCache(PolicyName = "users")]
+	public async Task<ActionResult<PagedResult<UserDto>>> GetPagedAsync(
+		[FromQuery] UserQueryRequest request,
+		CancellationToken cancellationToken)
+	{
+		PagedResult<UserDto> result = await userService.GetPagedUsersAsync(request, cancellationToken);
+		return Ok(result);
+	}
+
+	/// <summary>
+	/// Gets a user by their username.
+	/// </summary>
+	/// <param name="username">The username of the user.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>The user if found; otherwise, 404 Not Found.</returns>
+	/// <response code="200">Returns the user.</response>
+	/// <response code="404">If the user is not found.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpGet("username/{username}", Name = "GetUserByUsername")]
+	[ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	[OutputCache(PolicyName = "users")]
+	public async Task<ActionResult<UserDto>> GetByUsernameAsync(
+		string username,
+		CancellationToken cancellationToken)
+	{
+		UserDto? user = await userService.GetByUsernameAsync(username, cancellationToken);
+		return user is null ? NotFound() : Ok(user);
+	}
+
+	/// <summary>
+	/// Checks if a username already exists.
+	/// </summary>
+	/// <param name="username">The username to check.</param>
+	/// <param name="excludeId">Optional user ID to exclude from the check (for updates).</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>True if the username exists; otherwise, false.</returns>
+	/// <response code="200">Returns whether the username exists.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpGet("check/username/{username}", Name = "CheckUsername")]
+	[ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	[OutputCache(PolicyName = "users")]
+	public async Task<ActionResult<bool>> CheckUsernameAsync(
+		string username,
+		[FromQuery] int? excludeId,
+		CancellationToken cancellationToken)
+	{
+		bool exists = await userService.UsernameExistsAsync(username, excludeId, cancellationToken);
+		return Ok(exists);
+	}
+
+	/// <summary>
+	/// Bulk activates multiple users.
+	/// </summary>
+	/// <param name="ids">The collection of user IDs to activate.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>The number of users activated.</returns>
+	/// <response code="200">Returns the count of activated users.</response>
+	/// <response code="400">If the request is invalid.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpPost("bulk/activate", Name = "BulkActivateUsers")]
+	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<ActionResult<int>> BulkActivateAsync(
+		[FromBody] IEnumerable<int> ids,
+		CancellationToken cancellationToken)
+	{
+		int count = await userService.BulkUpdateActiveStatusAsync(ids, true, "System", cancellationToken);
+		return Ok(count);
+	}
+
+	/// <summary>
+	/// Bulk deactivates multiple users.
+	/// </summary>
+	/// <param name="ids">The collection of user IDs to deactivate.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>The number of users deactivated.</returns>
+	/// <response code="200">Returns the count of deactivated users.</response>
+	/// <response code="400">If the request is invalid.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpPost("bulk/deactivate", Name = "BulkDeactivateUsers")]
+	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<ActionResult<int>> BulkDeactivateAsync(
+		[FromBody] IEnumerable<int> ids,
+		CancellationToken cancellationToken)
+	{
+		int count = await userService.BulkUpdateActiveStatusAsync(ids, false, "System", cancellationToken);
+		return Ok(count);
 	}
 }

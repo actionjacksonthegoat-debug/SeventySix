@@ -193,4 +193,183 @@ public class UserTests
 		Assert.Equal("new@example.com", user.Email);
 		Assert.False(user.IsActive);
 	}
+
+	[Fact]
+	public void User_ShouldInitializeAuditFields_WithDefaults()
+	{
+		// Arrange & Act
+		User user = new();
+
+		// Assert
+		Assert.True(user.CreatedAt <= DateTime.UtcNow);
+		Assert.Null(user.CreatedBy);
+		Assert.Null(user.ModifiedAt);
+		Assert.Null(user.ModifiedBy);
+	}
+
+	[Fact]
+	public void User_ShouldSetAndGetAuditFields()
+	{
+		// Arrange
+		DateTime modifiedAt = DateTime.UtcNow.AddMinutes(-5);
+		User user = new()
+		{
+			CreatedBy = "admin",
+			ModifiedAt = modifiedAt,
+			ModifiedBy = "system",
+		};
+
+		// Assert
+		Assert.Equal("admin", user.CreatedBy);
+		Assert.Equal(modifiedAt, user.ModifiedAt);
+		Assert.Equal("system", user.ModifiedBy);
+	}
+
+	[Fact]
+	public void User_ShouldInitializeSoftDeleteFields_WithDefaults()
+	{
+		// Arrange & Act
+		User user = new();
+
+		// Assert
+		Assert.False(user.IsDeleted);
+		Assert.Null(user.DeletedAt);
+		Assert.Null(user.DeletedBy);
+	}
+
+	[Fact]
+	public void User_ShouldSetAndGetSoftDeleteFields()
+	{
+		// Arrange
+		DateTime deletedAt = DateTime.UtcNow;
+		User user = new()
+		{
+			IsDeleted = true,
+			DeletedAt = deletedAt,
+			DeletedBy = "admin",
+		};
+
+		// Assert
+		Assert.True(user.IsDeleted);
+		Assert.Equal(deletedAt, user.DeletedAt);
+		Assert.Equal("admin", user.DeletedBy);
+	}
+
+	[Fact]
+	public void User_ShouldInitializeRowVersion_WithNull()
+	{
+		// Arrange & Act
+		User user = new();
+
+		// Assert
+		Assert.Null(user.RowVersion);
+	}
+
+	[Fact]
+	public void User_ShouldSetAndGetRowVersion()
+	{
+		// Arrange
+		uint rowVersion = 12345;
+		User user = new() { RowVersion = rowVersion };
+
+		// Assert
+		Assert.Equal(rowVersion, user.RowVersion);
+	}
+
+	[Fact]
+	public void User_ShouldInitializePreferences_WithNull()
+	{
+		// Arrange & Act
+		User user = new();
+
+		// Assert
+		Assert.Null(user.Preferences);
+	}
+
+	[Fact]
+	public void User_ShouldSetAndGetPreferences()
+	{
+		// Arrange
+		string preferences = "{\"theme\":\"dark\",\"notifications\":true}";
+		User user = new() { Preferences = preferences };
+
+		// Assert
+		Assert.Equal(preferences, user.Preferences);
+	}
+
+	[Fact]
+	public void User_ShouldInitializeLastLoginFields_WithNull()
+	{
+		// Arrange & Act
+		User user = new();
+
+		// Assert
+		Assert.Null(user.LastLoginAt);
+		Assert.Null(user.LastLoginIp);
+	}
+
+	[Fact]
+	public void User_ShouldSetAndGetLastLoginFields()
+	{
+		// Arrange
+		DateTime lastLoginAt = DateTime.UtcNow.AddHours(-2);
+		string lastLoginIp = "192.168.1.1";
+		User user = new()
+		{
+			LastLoginAt = lastLoginAt,
+			LastLoginIp = lastLoginIp,
+		};
+
+		// Assert
+		Assert.Equal(lastLoginAt, user.LastLoginAt);
+		Assert.Equal(lastLoginIp, user.LastLoginIp);
+	}
+
+	[Fact]
+	public void User_ShouldSupportIpv6Address()
+	{
+		// Arrange
+		string ipv6Address = "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
+		User user = new() { LastLoginIp = ipv6Address };
+
+		// Assert
+		Assert.Equal(ipv6Address, user.LastLoginIp);
+	}
+
+	[Fact]
+	public void User_ShouldAllowUpdatingAllEnhancedFields()
+	{
+		// Arrange
+		User user = new()
+		{
+			Username = "test",
+			Email = "test@example.com",
+		};
+
+		DateTime now = DateTime.UtcNow;
+
+		// Act
+		user.CreatedBy = "admin";
+		user.ModifiedAt = now;
+		user.ModifiedBy = "system";
+		user.IsDeleted = true;
+		user.DeletedAt = now;
+		user.DeletedBy = "admin";
+		user.RowVersion = 54321;
+		user.Preferences = "{\"theme\":\"light\"}";
+		user.LastLoginAt = now;
+		user.LastLoginIp = "10.0.0.1";
+
+		// Assert
+		Assert.Equal("admin", user.CreatedBy);
+		Assert.Equal(now, user.ModifiedAt);
+		Assert.Equal("system", user.ModifiedBy);
+		Assert.True(user.IsDeleted);
+		Assert.Equal(now, user.DeletedAt);
+		Assert.Equal("admin", user.DeletedBy);
+		Assert.Equal(54321u, user.RowVersion);
+		Assert.Equal("{\"theme\":\"light\"}", user.Preferences);
+		Assert.Equal(now, user.LastLoginAt);
+		Assert.Equal("10.0.0.1", user.LastLoginIp);
+	}
 }

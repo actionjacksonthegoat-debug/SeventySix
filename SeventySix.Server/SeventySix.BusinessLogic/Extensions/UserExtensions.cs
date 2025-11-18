@@ -51,6 +51,11 @@ public static class UserExtensions
 			FullName = entity.FullName,
 			CreatedAt = entity.CreatedAt,
 			IsActive = entity.IsActive,
+			CreatedBy = entity.CreatedBy,
+			ModifiedAt = entity.ModifiedAt,
+			ModifiedBy = entity.ModifiedBy,
+			LastLoginAt = entity.LastLoginAt,
+			RowVersion = entity.RowVersion,
 		};
 	}
 
@@ -95,5 +100,30 @@ public static class UserExtensions
 			IsActive = request.IsActive,
 			CreatedAt = DateTime.UtcNow,
 		};
+	}
+	/// <summary>
+	/// Converts an UpdateUserRequest to update an existing domain entity.
+	/// </summary>
+	/// <param name="request">The request object containing update data.</param>
+	/// <param name="existing">The existing entity to update.</param>
+	/// <returns>The updated User entity.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when request or existing is null.</exception>
+	/// <remarks>
+	/// This method updates an existing entity with values from the request.
+	/// Audit fields (CreatedAt, CreatedBy) are preserved from the existing entity.
+	/// ModifiedAt and ModifiedBy should be set by the caller.
+	/// </remarks>
+	public static User ToEntity(this UpdateUserRequest request, User existing)
+	{
+		ArgumentNullException.ThrowIfNull(request);
+		ArgumentNullException.ThrowIfNull(existing);
+
+		existing.Username = request.Username;
+		existing.Email = request.Email;
+		existing.FullName = request.FullName;
+		existing.IsActive = request.IsActive;
+		existing.RowVersion = request.RowVersion;
+
+		return existing;
 	}
 }

@@ -23,9 +23,10 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconModule } from "@angular/material/icon";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatExpansionModule } from "@angular/material/expansion";
 import { UserService } from "@admin/users/services";
 import { LoggerService } from "@core/services";
-import { User } from "@admin/users/models";
+import { User, UpdateUserRequest } from "@admin/users/models";
 
 /**
  * User detail/edit page component.
@@ -45,7 +46,8 @@ import { User } from "@admin/users/models";
 		MatProgressSpinnerModule,
 		MatIconModule,
 		MatCheckboxModule,
-		MatSnackBarModule
+		MatSnackBarModule,
+		MatExpansionModule
 	],
 	templateUrl: "./user-page.html",
 	styleUrls: ["./user-page.scss"],
@@ -189,10 +191,28 @@ export class UserPage implements OnInit
 			return;
 		}
 
-		const formValue: Partial<User> = this.userForm.value;
+		const currentUser: User | null = this.user();
+		if (!currentUser)
+		{
+			this.snackBar.open("User data not loaded", "Close", {
+				duration: 3000,
+				horizontalPosition: "end",
+				verticalPosition: "top"
+			});
+			return;
+		}
+
+		const updateRequest: UpdateUserRequest = {
+			id: parseInt(userId),
+			username: this.userForm.value.username,
+			email: this.userForm.value.email,
+			fullName: this.userForm.value.fullName || undefined,
+			isActive: this.userForm.value.isActive,
+			rowVersion: currentUser.rowVersion
+		};
 
 		this.updateMutation.mutate(
-			{ id: userId, user: formValue },
+			{ id: userId, user: updateRequest },
 			{
 				onSuccess: () =>
 				{
@@ -208,9 +228,36 @@ export class UserPage implements OnInit
 						verticalPosition: "top"
 					});
 				},
-				onError: (err) =>
+				onError: (err: any) =>
 				{
-					this.logger.error("Failed to save user", err);
+					// Handle 409 Conflict (concurrency error)
+					if (err.status === 409)
+					{
+						this.snackBar
+							.open(
+								"User was modified by another user. Please refresh and try again.",
+								"REFRESH",
+								{
+									duration: 10000,
+									horizontalPosition: "end",
+									verticalPosition: "top"
+								}
+							)
+							.onAction()
+							.subscribe(() =>
+							{
+								this.userQuery.refetch();
+							});
+					}
+					else
+					{
+						this.logger.error("Failed to save user", err);
+						this.snackBar.open("Failed to save user", "Close", {
+							duration: 3000,
+							horizontalPosition: "end",
+							verticalPosition: "top"
+						});
+					}
 				}
 			}
 		);

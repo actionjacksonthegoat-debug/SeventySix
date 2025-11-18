@@ -4,11 +4,15 @@
 
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Services;
+using SeventySix.Core.DTOs;
 using SeventySix.Core.Entities;
+using SeventySix.Core.Exceptions;
 using SeventySix.Core.Interfaces;
 
 namespace SeventySix.BusinessLogic.Tests.Services;
@@ -35,14 +39,25 @@ namespace SeventySix.BusinessLogic.Tests.Services;
 public class UserServiceTests
 {
 	private readonly Mock<IUserRepository> MockRepository;
-	private readonly Mock<IValidator<CreateUserRequest>> MockValidator;
+	private readonly Mock<IValidator<CreateUserRequest>> MockCreateValidator;
+	private readonly Mock<IValidator<UpdateUserRequest>> MockUpdateValidator;
+	private readonly Mock<IValidator<UserQueryRequest>> MockQueryValidator;
+	private readonly Mock<ILogger<UserService>> MockLogger;
 	private readonly UserService Service;
 
 	public UserServiceTests()
 	{
 		MockRepository = new Mock<IUserRepository>();
-		MockValidator = new Mock<IValidator<CreateUserRequest>>();
-		Service = new UserService(MockRepository.Object, MockValidator.Object);
+		MockCreateValidator = new Mock<IValidator<CreateUserRequest>>();
+		MockUpdateValidator = new Mock<IValidator<UpdateUserRequest>>();
+		MockQueryValidator = new Mock<IValidator<UserQueryRequest>>();
+		MockLogger = new Mock<ILogger<UserService>>();
+		Service = new UserService(
+			MockRepository.Object,
+			MockCreateValidator.Object,
+			MockUpdateValidator.Object,
+			MockQueryValidator.Object,
+			MockLogger.Object);
 	}
 
 	#region Constructor Tests
@@ -203,9 +218,17 @@ public class UserServiceTests
 		};
 
 		ValidationResult validationResult = new();
-		MockValidator
+		MockCreateValidator
 			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()))
 			.ReturnsAsync(validationResult);
+
+		MockRepository
+			.Setup(r => r.UsernameExistsAsync(request.Username, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
+
+		MockRepository
+			.Setup(r => r.EmailExistsAsync(request.Email, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
 
 		MockRepository
 			.Setup(r => r.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
@@ -226,7 +249,7 @@ public class UserServiceTests
 		Assert.Equal("New User", result.FullName);
 		Assert.True(result.IsActive);
 
-		MockValidator.Verify(
+		MockCreateValidator.Verify(
 			v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()),
 			Times.Once);
 		MockRepository.Verify(
@@ -252,7 +275,7 @@ public class UserServiceTests
 		ValidationFailure validationFailure = new("Username", "Username must be between 3 and 50 characters");
 		ValidationResult validationResult = new(new[] { validationFailure });
 
-		MockValidator
+		MockCreateValidator
 			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()))
 			.ThrowsAsync(new ValidationException(validationResult.Errors));
 
@@ -260,7 +283,7 @@ public class UserServiceTests
 		await Assert.ThrowsAsync<ValidationException>(() =>
 			Service.CreateUserAsync(request));
 
-		MockValidator.Verify(
+		MockCreateValidator.Verify(
 			v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()),
 			Times.Once);
 		MockRepository.Verify(
@@ -280,9 +303,17 @@ public class UserServiceTests
 		};
 
 		ValidationResult validationResult = new();
-		MockValidator
+		MockCreateValidator
 			.Setup(v => v.ValidateAsync(request, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(validationResult);
+
+		MockRepository
+			.Setup(r => r.UsernameExistsAsync(request.Username, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
+
+		MockRepository
+			.Setup(r => r.EmailExistsAsync(request.Email, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
 
 		User? capturedUser = null;
 		MockRepository
@@ -316,9 +347,17 @@ public class UserServiceTests
 		};
 
 		ValidationResult validationResult = new();
-		MockValidator
+		MockCreateValidator
 			.Setup(v => v.ValidateAsync(request, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(validationResult);
+
+		MockRepository
+			.Setup(r => r.UsernameExistsAsync(request.Username, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
+
+		MockRepository
+			.Setup(r => r.EmailExistsAsync(request.Email, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
 
 		MockRepository
 			.Setup(r => r.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
@@ -347,9 +386,17 @@ public class UserServiceTests
 		};
 
 		ValidationResult validationResult = new();
-		MockValidator
+		MockCreateValidator
 			.Setup(v => v.ValidateAsync(request, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(validationResult);
+
+		MockRepository
+			.Setup(r => r.UsernameExistsAsync(request.Username, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
+
+		MockRepository
+			.Setup(r => r.EmailExistsAsync(request.Email, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
 
 		MockRepository
 			.Setup(r => r.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
@@ -378,9 +425,17 @@ public class UserServiceTests
 		};
 
 		ValidationResult validationResult = new();
-		MockValidator
+		MockCreateValidator
 			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), cancellationToken))
 			.ReturnsAsync(validationResult);
+
+		MockRepository
+			.Setup(r => r.UsernameExistsAsync(request.Username, null, cancellationToken))
+			.ReturnsAsync(false);
+
+		MockRepository
+			.Setup(r => r.EmailExistsAsync(request.Email, null, cancellationToken))
+			.ReturnsAsync(false);
 
 		MockRepository
 			.Setup(r => r.CreateAsync(It.IsAny<User>(), cancellationToken))
@@ -394,8 +449,551 @@ public class UserServiceTests
 		await Service.CreateUserAsync(request, cancellationToken);
 
 		// Assert
-		MockValidator.Verify(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), cancellationToken), Times.Once);
+		MockCreateValidator.Verify(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), cancellationToken), Times.Once);
 		MockRepository.Verify(r => r.CreateAsync(It.IsAny<User>(), cancellationToken), Times.Once);
+	}
+
+	#endregion
+
+	#region UpdateUserAsync Tests
+
+	[Fact]
+	public async Task UpdateUserAsync_ValidRequest_ReturnsUpdatedUserDto()
+	{
+		// Arrange
+		UpdateUserRequest request = new UpdateUserRequest
+		{
+			Id = 1,
+			Username = "updateduser",
+			Email = "updated@example.com",
+			FullName = "Updated User",
+			IsActive = true,
+			RowVersion = 1,
+		};
+
+		User existingUser = new User
+		{
+			Id = 1,
+			Username = "olduser",
+			Email = "old@example.com",
+			FullName = "Old User",
+			IsActive = true,
+			CreatedAt = DateTime.UtcNow.AddDays(-1),
+			CreatedBy = "System",
+			IsDeleted = false,
+			RowVersion = 1,
+		};
+
+		User updatedUser = new User
+		{
+			Id = 1,
+			Username = request.Username,
+			Email = request.Email,
+			FullName = request.FullName,
+			IsActive = request.IsActive,
+			CreatedAt = existingUser.CreatedAt,
+			CreatedBy = existingUser.CreatedBy,
+			ModifiedAt = DateTime.UtcNow,
+			ModifiedBy = "System",
+			IsDeleted = false,
+			RowVersion = 2,
+		};
+
+		ValidationResult validationResult = new();
+		MockUpdateValidator
+			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<UpdateUserRequest>>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(validationResult);
+
+		MockRepository
+			.Setup(r => r.GetByIdAsync(request.Id, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(existingUser);
+
+		MockRepository
+			.Setup(r => r.UsernameExistsAsync(request.Username, request.Id, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
+
+		MockRepository
+			.Setup(r => r.EmailExistsAsync(request.Email, request.Id, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
+
+		MockRepository
+			.Setup(r => r.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(updatedUser);
+
+		// Act
+		UserDto result = await Service.UpdateUserAsync(request);
+
+		// Assert
+		Assert.NotNull(result);
+		Assert.Equal(updatedUser.Id, result.Id);
+		Assert.Equal(updatedUser.Username, result.Username);
+		Assert.Equal(updatedUser.Email, result.Email);
+		Assert.Equal(updatedUser.FullName, result.FullName);
+
+		MockRepository.Verify(r => r.UpdateAsync(
+			It.Is<User>(u =>
+				u.Username == request.Username &&
+				u.Email == request.Email &&
+				u.ModifiedBy == "System"),
+			It.IsAny<CancellationToken>()), Times.Once);
+	}
+
+	[Fact]
+	public async Task UpdateUserAsync_UserNotFound_ThrowsUserNotFoundException()
+	{
+		// Arrange
+		UpdateUserRequest request = new UpdateUserRequest
+		{
+			Id = 999,
+			Username = "testuser",
+			Email = "test@example.com",
+			FullName = "Test User",
+			IsActive = true,
+			RowVersion = 1,
+		};
+
+		ValidationResult validationResult = new();
+		MockUpdateValidator
+			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<UpdateUserRequest>>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(validationResult);
+
+		MockRepository
+			.Setup(r => r.GetByIdAsync(request.Id, It.IsAny<CancellationToken>()))
+			.ReturnsAsync((User?)null);
+
+		// Act & Assert
+		UserNotFoundException exception = await Assert.ThrowsAsync<UserNotFoundException>(
+			() => Service.UpdateUserAsync(request));
+
+		Assert.Contains(request.Id.ToString(), exception.Message);
+
+		MockRepository.Verify(r => r.UpdateAsync(
+			It.IsAny<User>(),
+			It.IsAny<CancellationToken>()), Times.Never);
+	}
+
+	[Fact]
+	public async Task UpdateUserAsync_DuplicateUsername_ThrowsDuplicateUserException()
+	{
+		// Arrange
+		UpdateUserRequest request = new UpdateUserRequest
+		{
+			Id = 1,
+			Username = "duplicate",
+			Email = "test@example.com",
+			FullName = "Test User",
+			IsActive = true,
+			RowVersion = 1,
+		};
+
+		User existingUser = new User
+		{
+			Id = 1,
+			Username = "olduser",
+			Email = "test@example.com",
+			FullName = "Test User",
+			IsActive = true,
+			CreatedAt = DateTime.UtcNow.AddDays(-1),
+			CreatedBy = "System",
+			IsDeleted = false,
+			RowVersion = 1,
+		};
+
+		ValidationResult validationResult = new();
+		MockUpdateValidator
+			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<UpdateUserRequest>>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(validationResult);
+
+		MockRepository
+			.Setup(r => r.GetByIdAsync(request.Id, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(existingUser);
+
+		MockRepository
+			.Setup(r => r.UsernameExistsAsync(request.Username, request.Id, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(true);
+
+		// Act & Assert
+		DuplicateUserException exception = await Assert.ThrowsAsync<DuplicateUserException>(
+			() => Service.UpdateUserAsync(request));
+
+		Assert.Contains(request.Username, exception.Message);
+
+		MockRepository.Verify(r => r.UpdateAsync(
+			It.IsAny<User>(),
+			It.IsAny<CancellationToken>()), Times.Never);
+	}
+
+	[Fact]
+	public async Task UpdateUserAsync_ConcurrencyConflict_ThrowsConcurrencyException()
+	{
+		// Arrange
+		UpdateUserRequest request = new UpdateUserRequest
+		{
+			Id = 1,
+			Username = "testuser",
+			Email = "test@example.com",
+			FullName = "Test User",
+			IsActive = true,
+			RowVersion = 1,
+		};
+
+		User existingUser = new User
+		{
+			Id = 1,
+			Username = "testuser",
+			Email = "test@example.com",
+			FullName = "Test User",
+			IsActive = true,
+			CreatedAt = DateTime.UtcNow.AddDays(-1),
+			CreatedBy = "System",
+			IsDeleted = false,
+			RowVersion = 1,
+		};
+
+		ValidationResult validationResult = new();
+		MockUpdateValidator
+			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<UpdateUserRequest>>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(validationResult);
+
+		MockRepository
+			.Setup(r => r.GetByIdAsync(request.Id, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(existingUser);
+
+		MockRepository
+			.Setup(r => r.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+			.ThrowsAsync(new DbUpdateConcurrencyException());
+
+		// Act & Assert
+		ConcurrencyException exception = await Assert.ThrowsAsync<ConcurrencyException>(
+			() => Service.UpdateUserAsync(request));
+
+		Assert.Contains("modified by another user", exception.Message);
+	}
+
+	#endregion
+
+	#region DeleteUserAsync and RestoreUserAsync Tests
+
+	[Fact]
+	public async Task DeleteUserAsync_ValidId_DeletesUser()
+	{
+		// Arrange
+		int userId = 1;
+		string deletedBy = "Admin";
+
+		MockRepository
+			.Setup(r => r.SoftDeleteAsync(userId, deletedBy, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(true);
+
+		// Act
+		await Service.DeleteUserAsync(userId, deletedBy);
+
+		// Assert
+		MockRepository.Verify(r => r.SoftDeleteAsync(
+			userId,
+			deletedBy,
+			It.IsAny<CancellationToken>()), Times.Once);
+	}
+
+	[Fact]
+	public async Task RestoreUserAsync_ValidId_RestoresUser()
+	{
+		// Arrange
+		int userId = 1;
+
+		MockRepository
+			.Setup(r => r.RestoreAsync(userId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(true);
+
+		// Act
+		await Service.RestoreUserAsync(userId);
+
+		// Assert
+		MockRepository.Verify(r => r.RestoreAsync(
+			userId,
+			It.IsAny<CancellationToken>()), Times.Once);
+	}
+
+	#endregion
+
+	#region GetPagedUsersAsync Tests
+
+	[Fact]
+	public async Task GetPagedUsersAsync_ValidRequest_ReturnsPagedResult()
+	{
+		// Arrange
+		UserQueryRequest request = new UserQueryRequest
+		{
+			Page = 1,
+			PageSize = 10,
+			SearchTerm = "test",
+			IsActive = true,
+			IncludeDeleted = false,
+			SortBy = "username",
+			SortDescending = false,
+		};
+
+		List<User> users =
+		[
+			new User
+			{
+				Id = 1,
+				Username = "testuser1",
+				Email = "test1@example.com",
+				FullName = "Test User 1",
+				IsActive = true,
+				CreatedAt = DateTime.UtcNow,
+				CreatedBy = "System",
+				IsDeleted = false,
+				RowVersion = 1,
+			},
+			new User
+			{
+				Id = 2,
+				Username = "testuser2",
+				Email = "test2@example.com",
+				FullName = "Test User 2",
+				IsActive = true,
+				CreatedAt = DateTime.UtcNow,
+				CreatedBy = "System",
+				IsDeleted = false,
+				RowVersion = 1,
+			},
+		];
+
+		int totalCount = 15;
+
+		ValidationResult validationResult = new();
+		MockQueryValidator
+			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<UserQueryRequest>>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(validationResult);
+
+		MockRepository
+			.Setup(r => r.GetPagedAsync(
+				request.Page,
+				request.PageSize,
+				request.SearchTerm,
+				request.IsActive,
+				request.IncludeDeleted,
+				It.IsAny<CancellationToken>()))
+			.ReturnsAsync((users, totalCount));
+
+		// Act
+		PagedResult<UserDto> result = await Service.GetPagedUsersAsync(request);
+
+		// Assert
+		Assert.NotNull(result);
+		Assert.Equal(2, result.Items.Count());
+		Assert.Equal(1, result.Page);
+		Assert.Equal(10, result.PageSize);
+		Assert.Equal(15, result.TotalCount);
+		Assert.Equal(2, result.TotalPages);
+		Assert.False(result.HasPrevious);
+		Assert.True(result.HasNext);
+	}
+
+	#endregion
+
+	#region GetByUsername and GetByEmail Tests
+
+	[Fact]
+	public async Task GetByUsernameAsync_UserExists_ReturnsUserDto()
+	{
+		// Arrange
+		string username = "testuser";
+
+		User user = new User
+		{
+			Id = 1,
+			Username = username,
+			Email = "test@example.com",
+			FullName = "Test User",
+			IsActive = true,
+			CreatedAt = DateTime.UtcNow,
+			CreatedBy = "System",
+			IsDeleted = false,
+			RowVersion = 1,
+		};
+
+		MockRepository
+			.Setup(r => r.GetByUsernameAsync(username, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(user);
+
+		// Act
+		UserDto? result = await Service.GetByUsernameAsync(username);
+
+		// Assert
+		Assert.NotNull(result);
+		Assert.Equal(user.Id, result.Id);
+		Assert.Equal(user.Username, result.Username);
+		Assert.Equal(user.Email, result.Email);
+	}
+
+	[Fact]
+	public async Task GetByUsernameAsync_UserNotFound_ReturnsNull()
+	{
+		// Arrange
+		string username = "nonexistent";
+
+		MockRepository
+			.Setup(r => r.GetByUsernameAsync(username, It.IsAny<CancellationToken>()))
+			.ReturnsAsync((User?)null);
+
+		// Act
+		UserDto? result = await Service.GetByUsernameAsync(username);
+
+		// Assert
+		Assert.Null(result);
+	}
+
+	[Fact]
+	public async Task GetByEmailAsync_UserExists_ReturnsUserDto()
+	{
+		// Arrange
+		string email = "test@example.com";
+
+		User user = new User
+		{
+			Id = 1,
+			Username = "testuser",
+			Email = email,
+			FullName = "Test User",
+			IsActive = true,
+			CreatedAt = DateTime.UtcNow,
+			CreatedBy = "System",
+			IsDeleted = false,
+			RowVersion = 1,
+		};
+
+		MockRepository
+			.Setup(r => r.GetByEmailAsync(email, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(user);
+
+		// Act
+		UserDto? result = await Service.GetByEmailAsync(email);
+
+		// Assert
+		Assert.NotNull(result);
+		Assert.Equal(user.Id, result.Id);
+		Assert.Equal(user.Email, result.Email);
+	}
+
+	[Fact]
+	public async Task GetByEmailAsync_UserNotFound_ReturnsNull()
+	{
+		// Arrange
+		string email = "nonexistent@example.com";
+
+		MockRepository
+			.Setup(r => r.GetByEmailAsync(email, It.IsAny<CancellationToken>()))
+			.ReturnsAsync((User?)null);
+
+		// Act
+		UserDto? result = await Service.GetByEmailAsync(email);
+
+		// Assert
+		Assert.Null(result);
+	}
+
+	#endregion
+
+	#region ExistsAsync Tests
+
+	[Fact]
+	public async Task UsernameExistsAsync_UsernameExists_ReturnsTrue()
+	{
+		// Arrange
+		string username = "existinguser";
+
+		MockRepository
+			.Setup(r => r.UsernameExistsAsync(username, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(true);
+
+		// Act
+		bool result = await Service.UsernameExistsAsync(username);
+
+		// Assert
+		Assert.True(result);
+	}
+
+	[Fact]
+	public async Task UsernameExistsAsync_UsernameNotFound_ReturnsFalse()
+	{
+		// Arrange
+		string username = "newuser";
+
+		MockRepository
+			.Setup(r => r.UsernameExistsAsync(username, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
+
+		// Act
+		bool result = await Service.UsernameExistsAsync(username);
+
+		// Assert
+		Assert.False(result);
+	}
+
+	[Fact]
+	public async Task EmailExistsAsync_EmailExists_ReturnsTrue()
+	{
+		// Arrange
+		string email = "existing@example.com";
+
+		MockRepository
+			.Setup(r => r.EmailExistsAsync(email, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(true);
+
+		// Act
+		bool result = await Service.EmailExistsAsync(email);
+
+		// Assert
+		Assert.True(result);
+	}
+
+	[Fact]
+	public async Task EmailExistsAsync_EmailNotFound_ReturnsFalse()
+	{
+		// Arrange
+		string email = "new@example.com";
+
+		MockRepository
+			.Setup(r => r.EmailExistsAsync(email, null, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(false);
+
+		// Act
+		bool result = await Service.EmailExistsAsync(email);
+
+		// Assert
+		Assert.False(result);
+	}
+
+	#endregion
+
+	#region BulkUpdateActiveStatusAsync Tests
+
+	[Fact]
+	public async Task BulkUpdateActiveStatusAsync_ValidRequest_UpdatesUsers()
+	{
+		// Arrange
+		List<int> userIds = [1, 2, 3];
+		bool isActive = false;
+		string modifiedBy = "Admin";
+		int expectedCount = 3;
+
+		MockRepository
+			.Setup(r => r.BulkUpdateActiveStatusAsync(userIds, isActive, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(expectedCount);
+
+		// Act
+		int result = await Service.BulkUpdateActiveStatusAsync(userIds, isActive, modifiedBy);
+
+		// Assert
+		Assert.Equal(expectedCount, result);
+
+		MockRepository.Verify(r => r.BulkUpdateActiveStatusAsync(
+			userIds,
+			isActive,
+			It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	#endregion

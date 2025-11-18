@@ -47,6 +47,11 @@ public class ApplicationDbContext(
 	public DbSet<Log> Logs => Set<Log>();
 
 	/// <summary>
+	/// Gets the DbSet for User entities.
+	/// </summary>
+	public DbSet<User> Users => Set<User>();
+
+	/// <summary>
 	/// Configures the model that was discovered by convention from the entity types.
 	/// </summary>
 	/// <param name="modelBuilder">The builder being used to construct the model for this context.</param>
@@ -62,10 +67,16 @@ public class ApplicationDbContext(
 		// Apply PostgreSQL-specific xmin mapping if using PostgreSQL
 		if (Database.IsNpgsql())
 		{
-			EntityTypeBuilder<ThirdPartyApiRequest> entity = modelBuilder.Entity<ThirdPartyApiRequest>();
-			entity.Property(e => e.RowVersion)
+			EntityTypeBuilder<ThirdPartyApiRequest> apiRequestEntity = modelBuilder.Entity<ThirdPartyApiRequest>();
+			apiRequestEntity.Property(e => e.RowVersion)
 				.HasColumnName("xmin")
 				.HasColumnType("xid");
+
+			EntityTypeBuilder<User> userEntity = modelBuilder.Entity<User>();
+			userEntity.Property(e => e.RowVersion)
+				.HasColumnName("xmin")
+				.HasColumnType("xid")
+				.ValueGeneratedOnAddOrUpdate();
 		}
 	}
 
@@ -90,23 +101,23 @@ public class ApplicationDbContext(
 	private void UpdateTimestamps()
 	{
 		IEnumerable<EntityEntry> entries = ChangeTracker.Entries()
-			.Where(e => (e.Entity is ThirdPartyApiRequest || e.Entity is Log) &&
+			.Where(e => (e.Entity is ThirdPartyApiRequest || e.Entity is Log || e.Entity is User) &&
 						(e.State == EntityState.Added || e.State == EntityState.Modified));
 
 		foreach (EntityEntry? entry in entries)
 		{
 			DateTime now = DateTime.UtcNow;
 
-			if (entry.Entity is ThirdPartyApiRequest entity)
+			if (entry.Entity is ThirdPartyApiRequest apiRequest)
 			{
 				if (entry.State == EntityState.Added)
 				{
-					entity.CreatedAt = now;
-					entity.UpdatedAt = now;
+					apiRequest.CreatedAt = now;
+					apiRequest.UpdatedAt = now;
 				}
 				else if (entry.State == EntityState.Modified)
 				{
-					entity.UpdatedAt = now;
+					apiRequest.UpdatedAt = now;
 				}
 			}
 			else if (entry.Entity is Log log)
@@ -114,6 +125,22 @@ public class ApplicationDbContext(
 				if (entry.State == EntityState.Added && log.Timestamp == default)
 				{
 					log.Timestamp = now;
+				}
+			}
+			else if (entry.Entity is User user)
+			{
+				if (entry.State == EntityState.Added)
+				{
+					user.CreatedAt = now;
+					// For SQLite tests, set a default RowVersion if not set
+					if (!user.RowVersion.HasValue)
+					{
+						user.RowVersion = 1;
+					}
+				}
+				else if (entry.State == EntityState.Modified)
+				{
+					user.ModifiedAt = now;
 				}
 			}
 		}

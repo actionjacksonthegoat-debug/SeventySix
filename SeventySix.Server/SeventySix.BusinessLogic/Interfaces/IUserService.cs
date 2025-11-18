@@ -77,4 +77,108 @@ public interface IUserService
 	/// - FullName must not exceed 100 characters if provided
 	/// </remarks>
 	public Task<UserDto> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Updates an existing user in the system.
+	/// </summary>
+	/// <param name="request">The request containing updated user data.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// The task result contains the updated user DTO.
+	/// </returns>
+	public Task<UserDto> UpdateUserAsync(UpdateUserRequest request, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Soft-deletes a user by their unique identifier.
+	/// </summary>
+	/// <param name="id">The unique identifier of the user to delete.</param>
+	/// <param name="deletedBy">The username of the person deleting the user.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// The task result contains true if the user was deleted; otherwise, false.
+	/// </returns>
+	public Task<bool> DeleteUserAsync(int id, string deletedBy, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Restores a soft-deleted user.
+	/// </summary>
+	/// <param name="id">The unique identifier of the user to restore.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// The task result contains true if the user was restored; otherwise, false.
+	/// </returns>
+	public Task<bool> RestoreUserAsync(int id, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Retrieves users with pagination and filtering.
+	/// </summary>
+	/// <param name="request">The query request with pagination and filter parameters.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// The task result contains paged results with items and pagination metadata.
+	/// </returns>
+	public Task<PagedResult<UserDto>> GetPagedUsersAsync(UserQueryRequest request, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Retrieves a user by their username.
+	/// </summary>
+	/// <param name="username">The username to search for.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// The task result contains the user DTO if found; otherwise, null.
+	/// </returns>
+	public Task<UserDto?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Retrieves a user by their email address.
+	/// </summary>
+	/// <param name="email">The email address to search for.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// The task result contains the user DTO if found; otherwise, null.
+	/// </returns>
+	public Task<UserDto?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Checks if a username exists in the system.
+	/// </summary>
+	/// <param name="username">The username to check.</param>
+	/// <param name="excludeId">Optional user ID to exclude from the check.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// The task result contains true if the username exists; otherwise, false.
+	/// </returns>
+	public Task<bool> UsernameExistsAsync(string username, int? excludeId = null, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Checks if an email address exists in the system.
+	/// </summary>
+	/// <param name="email">The email address to check.</param>
+	/// <param name="excludeId">Optional user ID to exclude from the check.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// The task result contains true if the email exists; otherwise, false.
+	/// </returns>
+	public Task<bool> EmailExistsAsync(string email, int? excludeId = null, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Updates the active status for multiple users.
+	/// </summary>
+	/// <param name="ids">The user IDs to update.</param>
+	/// <param name="isActive">The new active status.</param>
+	/// <param name="modifiedBy">The username of the person making the change.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// The task result contains the number of users updated.
+	/// </returns>
+	public Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> ids, bool isActive, string modifiedBy, CancellationToken cancellationToken = default);
 }

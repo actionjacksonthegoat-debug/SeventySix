@@ -2,21 +2,21 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SeventySix.Core.Entities;
 using SeventySix.Data;
 using SeventySix.DataAccess.Repositories;
+using SeventySix.DataAccess.Tests.Integration;
 
 namespace SeventySix.DataAccess.Tests.Repositories;
 
 /// <summary>
-/// Unit tests for <see cref="LogRepository"/>.
+/// Integration tests for <see cref="LogRepository"/>.
 /// </summary>
 /// <remarks>
-/// Uses in-memory SQLite database for fast, isolated testing.
+/// Uses Testcontainers with PostgreSQL for realistic integration testing.
 /// Follows TDD principles and ensures repository implements contract correctly.
 ///
 /// Test Coverage:
@@ -25,29 +25,17 @@ namespace SeventySix.DataAccess.Tests.Repositories;
 /// - Statistics generation
 /// - Cleanup operations
 /// </remarks>
-public class LogRepositoryTests : IDisposable
+[Collection("LogRepositoryTests")]
+public class LogRepositoryTests : PostgreSqlTestBase, IClassFixture<PostgreSqlFixture>
 {
-	private readonly SqliteConnection Connection;
-	private readonly DbContextOptions<ApplicationDbContext> Options;
-	private readonly ApplicationDbContext Context;
 	private readonly LogRepository Repository;
-	private bool Disposed;
 
-	public LogRepositoryTests()
+	public LogRepositoryTests(PostgreSqlFixture fixture)
+		: base(fixture)
 	{
-		// Create in-memory SQLite database
-		Connection = new SqliteConnection("DataSource=:memory:");
-		Connection.Open();
-
-		Options = new DbContextOptionsBuilder<ApplicationDbContext>()
-			.UseSqlite(Connection)
-			.Options;
-
-		Context = new ApplicationDbContext(Options);
-		Context.Database.EnsureCreated();
-
+		ApplicationDbContext context = CreateDbContext();
 		Repository = new LogRepository(
-			Context,
+			context,
 			Mock.Of<ILogger<LogRepository>>());
 	}
 
@@ -412,26 +400,6 @@ public class LogRepositoryTests : IDisposable
 		foreach (Log? log in logs)
 		{
 			await Repository.CreateAsync(log);
-		}
-	}
-
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	protected virtual void Dispose(bool disposing)
-	{
-		if (!Disposed)
-		{
-			if (disposing)
-			{
-				Context?.Dispose();
-				Connection?.Dispose();
-			}
-
-			Disposed = true;
 		}
 	}
 }

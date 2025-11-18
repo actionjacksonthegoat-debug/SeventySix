@@ -22,7 +22,10 @@ describe("UserCreatePage", () =>
 
 	beforeEach(async () =>
 	{
-		mockUserService = jasmine.createSpyObj("UserService", ["createUser"]);
+		mockUserService = jasmine.createSpyObj("UserService", [
+			"createUser",
+			"checkUsernameAvailability"
+		]);
 		mockRouter = jasmine.createSpyObj("Router", ["navigate"]);
 		mockNotification = jasmine.createSpyObj("NotificationService", [
 			"success",
@@ -138,6 +141,79 @@ describe("UserCreatePage", () =>
 
 			expect(component.basicInfoForm.valid).toBe(true);
 			expect(component.accountDetailsForm.valid).toBe(true);
+		});
+	});
+
+	describe("Async Username Validation", () =>
+	{
+		it("should validate username availability asynchronously", async () =>
+		{
+			// Mock username check to return false (username available)
+			mockUserService.checkUsernameAvailability.and.returnValue(
+				Promise.resolve(false)
+			);
+
+			const usernameControl = component.basicInfoForm.get("username");
+			usernameControl?.setValue("newuser");
+
+			// Wait for async validation
+			await fixture.whenStable();
+
+			expect(
+				mockUserService.checkUsernameAvailability
+			).toHaveBeenCalledWith("newuser");
+			expect(usernameControl?.hasError("usernameTaken")).toBe(false);
+			expect(usernameControl?.valid).toBe(true);
+		});
+
+		it("should fail validation if username is taken", async () =>
+		{
+			// Mock username check to return true (username exists)
+			mockUserService.checkUsernameAvailability.and.returnValue(
+				Promise.resolve(true)
+			);
+
+			const usernameControl = component.basicInfoForm.get("username");
+			usernameControl?.setValue("existinguser");
+
+			// Wait for async validation
+			await fixture.whenStable();
+
+			expect(
+				mockUserService.checkUsernameAvailability
+			).toHaveBeenCalledWith("existinguser");
+			expect(usernameControl?.hasError("usernameTaken")).toBe(true);
+			expect(usernameControl?.valid).toBe(false);
+		});
+
+		it("should not validate empty username", async () =>
+		{
+			const usernameControl = component.basicInfoForm.get("username");
+			usernameControl?.setValue("");
+
+			// Wait for async validation
+			await fixture.whenStable();
+
+			expect(
+				mockUserService.checkUsernameAvailability
+			).not.toHaveBeenCalled();
+		});
+
+		it("should handle validation errors gracefully", async () =>
+		{
+			// Mock username check to reject
+			mockUserService.checkUsernameAvailability.and.returnValue(
+				Promise.reject(new Error("API Error"))
+			);
+
+			const usernameControl = component.basicInfoForm.get("username");
+			usernameControl?.setValue("testuser");
+
+			// Wait for async validation
+			await fixture.whenStable();
+
+			// Should not set usernameTaken error on API failure
+			expect(usernameControl?.hasError("usernameTaken")).toBe(false);
 		});
 	});
 

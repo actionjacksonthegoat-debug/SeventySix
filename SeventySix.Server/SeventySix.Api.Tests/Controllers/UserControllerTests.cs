@@ -9,6 +9,8 @@ using SeventySix.Api.Controllers;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.Core.DTOs;
+using SeventySix.Core.Exceptions;
 
 namespace SeventySix.Api.Tests.Controllers;
 
@@ -240,6 +242,315 @@ public class UserControllerTests
 					r.Email == "test@example.com"),
 				It.IsAny<CancellationToken>()),
 			Times.Once);
+	}
+
+	#endregion
+
+	#region UpdateAsync Tests
+
+	[Fact]
+	public async Task UpdateAsync_ValidRequest_ReturnsOkWithUpdatedUser()
+	{
+		// Arrange
+		UpdateUserRequest request = new UpdateUserRequest
+		{
+			Id = 1,
+			Username = "updateduser",
+			Email = "updated@example.com",
+			FullName = "Updated User",
+			IsActive = true,
+			RowVersion = 1,
+		};
+
+		UserDto updatedUser = new UserDto
+		{
+			Id = 1,
+			Username = "updateduser",
+			Email = "updated@example.com",
+			FullName = "Updated User",
+			IsActive = true,
+			CreatedAt = DateTime.UtcNow.AddDays(-1),
+			ModifiedAt = DateTime.UtcNow,
+			RowVersion = 2,
+		};
+
+		MockUserService
+		.Setup(s => s.UpdateUserAsync(request, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(updatedUser);
+
+		// Act
+		ActionResult<UserDto> result = await Controller.UpdateAsync(1, request, CancellationToken.None);
+
+		// Assert
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		UserDto returnedUser = Assert.IsType<UserDto>(okResult.Value);
+		Assert.Equal(1, returnedUser.Id);
+		Assert.Equal("updateduser", returnedUser.Username);
+		Assert.NotNull(returnedUser.ModifiedAt);
+	}
+
+	[Fact]
+	public async Task UpdateAsync_MismatchedId_ReturnsBadRequest()
+	{
+		// Arrange
+		UpdateUserRequest request = new UpdateUserRequest
+		{
+			Id = 1,
+			Username = "test",
+			Email = "test@example.com",
+			IsActive = true,
+			RowVersion = 1,
+		};
+
+		// Act
+		ActionResult<UserDto> result = await Controller.UpdateAsync(2, request, CancellationToken.None);
+
+		// Assert
+		BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+		Assert.Equal("ID in URL does not match ID in request body", badRequestResult.Value);
+
+		MockUserService.Verify(
+		s => s.UpdateUserAsync(It.IsAny<UpdateUserRequest>(), It.IsAny<CancellationToken>()),
+		Times.Never);
+	}
+
+	#endregion
+
+	#region DeleteAsync Tests
+
+	[Fact]
+	public async Task DeleteAsync_UserExists_ReturnsNoContent()
+	{
+		// Arrange
+		MockUserService
+		.Setup(s => s.DeleteUserAsync(1, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+		.ReturnsAsync(true);
+
+		// Act
+		IActionResult result = await Controller.DeleteAsync(1, CancellationToken.None);
+
+		// Assert
+		Assert.IsType<NoContentResult>(result);
+	}
+
+	[Fact]
+	public async Task DeleteAsync_UserNotFound_ReturnsNotFound()
+	{
+		// Arrange
+		MockUserService
+		.Setup(s => s.DeleteUserAsync(999, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+		.ReturnsAsync(false);
+
+		// Act
+		IActionResult result = await Controller.DeleteAsync(999, CancellationToken.None);
+
+		// Assert
+		Assert.IsType<NotFoundResult>(result);
+	}
+
+	#endregion
+
+	#region RestoreAsync Tests
+
+	[Fact]
+	public async Task RestoreAsync_UserExists_ReturnsNoContent()
+	{
+		// Arrange
+		MockUserService
+		.Setup(s => s.RestoreUserAsync(1, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(true);
+
+		// Act
+		IActionResult result = await Controller.RestoreAsync(1, CancellationToken.None);
+
+		// Assert
+		Assert.IsType<NoContentResult>(result);
+	}
+
+	[Fact]
+	public async Task RestoreAsync_UserNotFound_ReturnsNotFound()
+	{
+		// Arrange
+		MockUserService
+		.Setup(s => s.RestoreUserAsync(999, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(false);
+
+		// Act
+		IActionResult result = await Controller.RestoreAsync(999, CancellationToken.None);
+
+		// Assert
+		Assert.IsType<NotFoundResult>(result);
+	}
+
+	#endregion
+
+	#region GetPagedAsync Tests
+
+	[Fact]
+	public async Task GetPagedAsync_ValidRequest_ReturnsOkWithPagedResult()
+	{
+		// Arrange
+		UserQueryRequest request = new UserQueryRequest
+		{
+			Page = 1,
+			PageSize = 10,
+			SearchTerm = "test",
+		};
+
+		List<UserDto> users =
+		[
+		new UserDto { Id = 1, Username = "testuser1", Email = "test1@example.com", IsActive = true },
+new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsActive = true },
+];
+
+		PagedResult<UserDto> pagedResult = new PagedResult<UserDto>
+		{
+			Items = users,
+			Page = 1,
+			PageSize = 10,
+			TotalCount = 2,
+		};
+
+		MockUserService
+		.Setup(s => s.GetPagedUsersAsync(request, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(pagedResult);
+
+		// Act
+		ActionResult<PagedResult<UserDto>> result = await Controller.GetPagedAsync(request, CancellationToken.None);
+
+		// Assert
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		PagedResult<UserDto> returnedResult = Assert.IsType<PagedResult<UserDto>>(okResult.Value);
+		Assert.Equal(2, returnedResult.Items.Count());
+		Assert.Equal(1, returnedResult.Page);
+		Assert.Equal(10, returnedResult.PageSize);
+		Assert.Equal(2, returnedResult.TotalCount);
+	}
+
+	#endregion
+
+	#region GetByUsernameAsync Tests
+
+	[Fact]
+	public async Task GetByUsernameAsync_UserExists_ReturnsOkWithUser()
+	{
+		// Arrange
+		UserDto user = new UserDto
+		{
+			Id = 1,
+			Username = "testuser",
+			Email = "test@example.com",
+			IsActive = true,
+		};
+
+		MockUserService
+		.Setup(s => s.GetByUsernameAsync("testuser", It.IsAny<CancellationToken>()))
+		.ReturnsAsync(user);
+
+		// Act
+		ActionResult<UserDto> result = await Controller.GetByUsernameAsync("testuser", CancellationToken.None);
+
+		// Assert
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		UserDto returnedUser = Assert.IsType<UserDto>(okResult.Value);
+		Assert.Equal("testuser", returnedUser.Username);
+	}
+
+	[Fact]
+	public async Task GetByUsernameAsync_UserNotFound_ReturnsNotFound()
+	{
+		// Arrange
+		MockUserService
+		.Setup(s => s.GetByUsernameAsync("nonexistent", It.IsAny<CancellationToken>()))
+		.ReturnsAsync((UserDto?)null);
+
+		// Act
+		ActionResult<UserDto> result = await Controller.GetByUsernameAsync("nonexistent", CancellationToken.None);
+
+		// Assert
+		Assert.IsType<NotFoundResult>(result.Result);
+	}
+
+	#endregion
+
+	#region CheckUsernameAsync Tests
+
+	[Fact]
+	public async Task CheckUsernameAsync_UsernameExists_ReturnsTrue()
+	{
+		// Arrange
+		MockUserService
+		.Setup(s => s.UsernameExistsAsync("existinguser", null, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(true);
+
+		// Act
+		ActionResult<bool> result = await Controller.CheckUsernameAsync("existinguser", null, CancellationToken.None);
+
+		// Assert
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		bool exists = Assert.IsType<bool>(okResult.Value);
+		Assert.True(exists);
+	}
+
+	[Fact]
+	public async Task CheckUsernameAsync_UsernameNotFound_ReturnsFalse()
+	{
+		// Arrange
+		MockUserService
+		.Setup(s => s.UsernameExistsAsync("newuser", null, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(false);
+
+		// Act
+		ActionResult<bool> result = await Controller.CheckUsernameAsync("newuser", null, CancellationToken.None);
+
+		// Assert
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		bool exists = Assert.IsType<bool>(okResult.Value);
+		Assert.False(exists);
+	}
+
+	#endregion
+
+	#region BulkActivateAsync Tests
+
+	[Fact]
+	public async Task BulkActivateAsync_ValidRequest_ReturnsOkWithCount()
+	{
+		// Arrange
+		List<int> ids = [1, 2, 3];
+		int expectedCount = 3;
+
+		MockUserService
+		.Setup(s => s.BulkUpdateActiveStatusAsync(ids, true, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+		.ReturnsAsync(expectedCount);
+
+		// Act
+		ActionResult<int> result = await Controller.BulkActivateAsync(ids, CancellationToken.None);
+
+		// Assert
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		int count = Assert.IsType<int>(okResult.Value);
+		Assert.Equal(3, count);
+	}
+
+	[Fact]
+	public async Task BulkDeactivateAsync_ValidRequest_ReturnsOkWithCount()
+	{
+		// Arrange
+		List<int> ids = [1, 2, 3];
+		int expectedCount = 3;
+
+		MockUserService
+		.Setup(s => s.BulkUpdateActiveStatusAsync(ids, false, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+		.ReturnsAsync(expectedCount);
+
+		// Act
+		ActionResult<int> result = await Controller.BulkDeactivateAsync(ids, CancellationToken.None);
+
+		// Assert
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		int count = Assert.IsType<int>(okResult.Value);
+		Assert.Equal(3, count);
 	}
 
 	#endregion

@@ -2,241 +2,370 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SeventySix.Core.Entities;
 using SeventySix.Core.Interfaces;
+using SeventySix.Data;
 
 namespace SeventySix.DataAccess.Repositories;
 
 /// <summary>
-/// In-memory implementation of the user repository.
-/// Provides a simple data store for demonstration and testing purposes.
+/// EF Core implementation of the user repository.
+/// Provides data access operations for User entities using PostgreSQL.
 /// </summary>
 /// <remarks>
-/// This is a temporary implementation using an in-memory collection.
-/// In production, this should be replaced with a persistent data store.
-///
-/// Current Implementation:
-/// - Uses List&lt;User&gt; for storage
-/// - Data is lost on application restart
-/// - Not thread-safe (would need locking for concurrent access)
-/// - No query optimization (full table scans)
-///
-/// Production Considerations:
-/// Replace with:
-/// - Entity Framework Core with SQL Server/PostgreSQL
-/// - Dapper for high-performance scenarios
-/// - NoSQL database (MongoDB, CosmosDB) for document storage
-/// - Redis for caching layer
-///
-/// Missing Features (to add in production):
-/// - Actual database persistence
-/// - Connection pooling
-/// - Transaction management
-/// - Optimistic concurrency control
-/// - Query optimization (indexes, compiled queries)
-/// - Audit logging (created/modified timestamps)
-/// - Soft delete support
-/// - Unit of Work pattern
+/// Implements <see cref="IUserRepository"/> using Entity Framework Core.
 ///
 /// Design Patterns:
-/// - Repository Pattern: Abstracts data access
-/// - Dependency Inversion: Implements domain interface
+/// - Repository: Abstracts data access logic
+/// - Unit of Work: DbContext manages transactions
 ///
-/// Note: Seeds with 3 sample users on initialization for demo purposes.
+/// SOLID Principles:
+/// - SRP: Only responsible for data access operations
+/// - DIP: Implements interface defined in Core layer
+/// - OCP: Can be extended without modification
+///
+/// Performance Optimizations:
+/// - AsNoTracking for read-only queries
+/// - Indexes on Username, Email, IsDeleted, IsActive, CreatedAt
+/// - Global query filter for soft delete (excludes IsDeleted = true by default)
+/// - Optimistic concurrency control using PostgreSQL xmin (uint RowVersion)
 /// </remarks>
 public class UserRepository : IUserRepository
 {
-	/// <summary>
-	/// In-memory storage for user entities.
-	/// </summary>
-	/// <remarks>
-	/// WARNING: This is not thread-safe. For concurrent access, wrap operations in locks
-	/// or use ConcurrentBag/ConcurrentDictionary.
-	/// </remarks>
-	private readonly List<User> Users = [];
-
-	/// <summary>
-	/// Counter for generating unique IDs.
-	/// </summary>
-	/// <remarks>
-	/// In production with real DB, this would be handled by auto-increment/identity columns.
-	/// </remarks>
-	private int NextId = 1;
+	private readonly ApplicationDbContext Context;
+	private readonly ILogger<UserRepository> Logger;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserRepository"/> class.
 	/// </summary>
-	/// <remarks>
-	/// Constructor seeds the repository with 3 sample user records for demonstration.
-	/// In production, seeding should be handled by:
-	/// - Database migrations
-	/// - Separate seed data scripts
-	/// - Configuration/startup initialization
-	/// </remarks>
-	public UserRepository()
+	/// <param name="context">The database context.</param>
+	/// <param name="logger">The logger instance.</param>
+	public UserRepository(
+		ApplicationDbContext context,
+		ILogger<UserRepository> logger)
 	{
-		SeedData();
+		Context = context ?? throw new ArgumentNullException(nameof(context));
+		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
 	/// <inheritdoc/>
-	/// <remarks>
-	/// Returns a copy of the collection to prevent external modification.
-	/// In production with EF Core, this would use AsNoTracking() for read-only queries.
-	/// </remarks>
-	public Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IEnumerable<User>>(Users.ToList());
-
-	/// <inheritdoc/>
-	/// <remarks>
-	/// Returns null if user not found (caller handles this).
-	///
-	/// Production Note: With proper database, this would be a simple indexed lookup.
-	/// </remarks>
-	public Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+	public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
 	{
-		User? user = Users.FirstOrDefault(u => u.Id == id);
-		return Task.FromResult(user);
+		return await Context.Users
+			.AsNoTracking()
+			.OrderBy(u => u.Username)
+			.ToListAsync(cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	/// <exception cref="ArgumentNullException">Thrown when entity is null.</exception>
-	/// <remarks>
-	/// Assigns a new ID and adds to the in-memory list.
-	///
-	/// Production Implementation with EF Core:
-	/// <code>
-	/// await _context.Users.AddAsync(entity, cancellationToken);
-	/// await _context.SaveChangesAsync(cancellationToken);
-	/// return entity;
-	/// </code>
-	///
-	/// Missing Features:
-	/// - Duplicate username/email detection
-	/// - Validation before persistence
-	/// - Audit fields (CreatedDate, CreatedBy)
-	/// - Transaction handling
-	/// </remarks>
-	public Task<User> CreateAsync(User entity, CancellationToken cancellationToken = default)
+	public async Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+	{
+		return await Context.Users
+			.AsNoTracking()
+			.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<User> CreateAsync(User entity, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
-		entity.Id = NextId++;
-		entity.CreatedAt = DateTime.UtcNow;
-		Users.Add(entity);
-		return Task.FromResult(entity);
-	}
-
-	/// <inheritdoc/>
-	/// <exception cref="ArgumentNullException">Thrown when entity is null.</exception>
-	/// <remarks>
-	/// Uses Id to find and update the entity.
-	/// Replace-based update: removes old, adds updated.
-	///
-	/// Production Implementation with EF Core:
-	/// <code>
-	/// _context.Users.Update(entity);
-	/// await _context.SaveChangesAsync(cancellationToken);
-	/// return entity;
-	/// </code>
-	///
-	/// Missing Features:
-	/// - Concurrency conflict detection
-	/// - Partial updates (only changed fields)
-	/// - Audit fields (ModifiedDate, ModifiedBy)
-	/// - Entity existence check (should throw if not found)
-	/// </remarks>
-	public Task<User> UpdateAsync(User entity, CancellationToken cancellationToken = default)
-	{
-		ArgumentNullException.ThrowIfNull(entity);
-
-		User? existing = Users.FirstOrDefault(u => u.Id == entity.Id);
-		if (existing is not null)
+		try
 		{
-			Users.Remove(existing);
-			Users.Add(entity);
+			Context.Users.Add(entity);
+			await Context.SaveChangesAsync(cancellationToken);
+
+			Logger.LogInformation(
+				"Created User: Id={Id}, Username={Username}",
+				entity.Id,
+				entity.Username);
+
+			return entity;
+		}
+		catch (DbUpdateException ex)
+		{
+			Logger.LogError(
+				ex,
+				"Error creating User: {Username}. Possible constraint violation.",
+				entity.Username);
+			throw;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(
+				ex,
+				"Unexpected error creating User: {Username}",
+				entity.Username);
+			throw;
+		}
+	}
+
+	/// <inheritdoc/>
+	public async Task<User> UpdateAsync(User entity, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(entity);
+
+		try
+		{
+			// Check if entity is already tracked
+			User? trackedEntity = Context.Users.Local
+				.FirstOrDefault(e => e.Id == entity.Id);
+
+			if (trackedEntity != null)
+			{
+				// Entity is already tracked, update its properties
+				Context.Entry(trackedEntity).CurrentValues.SetValues(entity);
+			}
+			else
+			{
+				// Entity is not tracked, attach and mark as modified
+				Context.Users.Update(entity);
+			}
+
+			await Context.SaveChangesAsync(cancellationToken);
+
+			Logger.LogDebug(
+				"Updated User: Id={Id}, Username={Username}",
+				entity.Id,
+				entity.Username);
+
+			return entity;
+		}
+		catch (DbUpdateConcurrencyException ex)
+		{
+			Logger.LogWarning(
+				ex,
+				"Concurrency conflict updating User: Id={Id}",
+				entity.Id);
+			throw;
+		}
+		catch (DbUpdateException ex)
+		{
+			Logger.LogError(
+				ex,
+				"Error updating User: Id={Id}. Possible constraint violation.",
+				entity.Id);
+			throw;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(
+				ex,
+				"Unexpected error updating User: Id={Id}",
+				entity.Id);
+			throw;
+		}
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+	{
+		User? entity = await Context.Users.FindAsync([id], cancellationToken);
+		if (entity is null)
+		{
+			return false;
 		}
 
-		return Task.FromResult(entity);
+		Context.Users.Remove(entity);
+		await Context.SaveChangesAsync(cancellationToken);
+
+		Logger.LogInformation(
+			"Deleted User: Id={Id}",
+			id);
+
+		return true;
 	}
 
 	/// <inheritdoc/>
-	/// <remarks>
-	/// Hard delete - permanently removes the entity.
-	/// Returns false if entity not found.
-	///
-	/// Production Implementation with EF Core:
-	/// <code>
-	/// var entity = await _context.Users.FindAsync(id, cancellationToken);
-	/// if (entity is null) return false;
-	/// _context.Users.Remove(entity);
-	/// await _context.SaveChangesAsync(cancellationToken);
-	/// return true;
-	/// </code>
-	///
-	/// Consider Soft Delete Instead:
-	/// - Add IsDeleted bool property
-	/// - Set flag instead of removing
-	/// - Filter deleted entities in queries
-	/// - Benefits: audit trail, data recovery, referential integrity
-	/// </remarks>
-	public Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+	public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
 	{
-		User? user = Users.FirstOrDefault(u => u.Id == id);
+		return await Context.Users
+			.AsNoTracking()
+			.FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+	{
+		return await Context.Users
+			.AsNoTracking()
+			.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower(), cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> UsernameExistsAsync(string username, int? excludeId = null, CancellationToken cancellationToken = default)
+	{
+		if (excludeId.HasValue)
+		{
+			return await Context.Users.AnyAsync(u => u.Username == username && u.Id != excludeId.Value, cancellationToken);
+		}
+
+		return await Context.Users.AnyAsync(u => u.Username == username, cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> EmailExistsAsync(string email, int? excludeId = null, CancellationToken cancellationToken = default)
+	{
+		string lowerEmail = email.ToLower();
+
+		if (excludeId.HasValue)
+		{
+			return await Context.Users.AnyAsync(u => u.Email.ToLower() == lowerEmail && u.Id != excludeId.Value, cancellationToken);
+		}
+
+		return await Context.Users.AnyAsync(u => u.Email.ToLower() == lowerEmail, cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<(IEnumerable<User> Users, int TotalCount)> GetPagedAsync(
+		int page,
+		int pageSize,
+		string? searchTerm = null,
+		bool? isActive = null,
+		bool includeDeleted = false,
+		CancellationToken cancellationToken = default)
+	{
+		IQueryable<User> query = Context.Users.AsQueryable();
+
+		// Include deleted users if requested
+		if (includeDeleted)
+		{
+			query = query.IgnoreQueryFilters();
+		}
+
+		// Apply search filter
+		if (!string.IsNullOrWhiteSpace(searchTerm))
+		{
+			query = query.Where(u =>
+				u.Username.Contains(searchTerm) ||
+				u.Email.Contains(searchTerm) ||
+				(u.FullName != null && u.FullName.Contains(searchTerm)));
+		}
+
+		// Apply active status filter
+		if (isActive.HasValue)
+		{
+			query = query.Where(u => u.IsActive == isActive.Value);
+		}
+
+		// Get total count before pagination
+		int totalCount = await query.CountAsync(cancellationToken);
+
+		// Apply pagination and ordering
+		List<User> users = await query
+			.AsNoTracking()
+			.OrderBy(u => u.Username)
+			.Skip((page - 1) * pageSize)
+			.Take(pageSize)
+			.ToListAsync(cancellationToken);
+
+		return (users, totalCount);
+	}
+
+	/// <inheritdoc/>
+	public async Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<int> ids, CancellationToken cancellationToken = default)
+	{
+		return await Context.Users
+			.AsNoTracking()
+			.Where(u => ids.Contains(u.Id))
+			.ToListAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> ids, bool isActive, CancellationToken cancellationToken = default)
+	{
+		List<User> users = await Context.Users
+			.Where(u => ids.Contains(u.Id))
+			.ToListAsync(cancellationToken);
+
+		foreach (User user in users)
+		{
+			user.IsActive = isActive;
+			user.ModifiedAt = DateTime.UtcNow;
+		}
+
+		await Context.SaveChangesAsync(cancellationToken);
+
+		Logger.LogInformation(
+			"Bulk updated active status for {Count} users to {IsActive}",
+			users.Count,
+			isActive);
+
+		return users.Count;
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> SoftDeleteAsync(int id, string deletedBy, CancellationToken cancellationToken = default)
+	{
+		// Need to ignore query filters to find the user even if already soft-deleted
+		User? user = await Context.Users
+			.IgnoreQueryFilters()
+			.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, cancellationToken);
+
 		if (user is null)
 		{
-			return Task.FromResult(false);
+			return false;
 		}
 
-		Users.Remove(user);
-		return Task.FromResult(true);
+		user.IsDeleted = true;
+		user.DeletedAt = DateTime.UtcNow;
+		user.DeletedBy = deletedBy;
+
+		await Context.SaveChangesAsync(cancellationToken);
+
+		Logger.LogInformation(
+			"Soft deleted User: Id={Id}, DeletedBy={DeletedBy}",
+			id,
+			deletedBy);
+
+		return true;
 	}
 
-	/// <summary>
-	/// Seeds the repository with sample user data.
-	/// </summary>
-	/// <remarks>
-	/// Creates 3 sample users for demonstration purposes.
-	///
-	/// This is for demonstration purposes only. In production:
-	/// - Use database migrations for schema and seed data
-	/// - Load seed data from configuration files (JSON, YAML)
-	/// - Use environment-specific seeding (dev vs production)
-	/// - Consider using libraries like Bogus for test data generation
-	///
-	/// Seed Data Characteristics:
-	/// - Sample usernames and emails
-	/// - Mix of active and inactive accounts
-	/// - Realistic full names
-	/// </remarks>
-	private void SeedData()
+	/// <inheritdoc/>
+	public async Task<bool> RestoreAsync(int id, CancellationToken cancellationToken = default)
 	{
-		Users.Add(new User
-		{
-			Id = NextId++,
-			Username = "john_doe",
-			Email = "john.doe@example.com",
-			FullName = "John Doe",
-			CreatedAt = DateTime.UtcNow.AddDays(-30),
-			IsActive = true,
-		});
+		// Need to ignore query filters to find soft-deleted users
+		User? user = await Context.Users
+			.IgnoreQueryFilters()
+			.FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted, cancellationToken);
 
-		Users.Add(new User
+		if (user is null)
 		{
-			Id = NextId++,
-			Username = "jane_smith",
-			Email = "jane.smith@example.com",
-			FullName = "Jane Smith",
-			CreatedAt = DateTime.UtcNow.AddDays(-15),
-			IsActive = true,
-		});
+			return false;
+		}
 
-		Users.Add(new User
+		user.IsDeleted = false;
+		user.DeletedAt = null;
+		user.DeletedBy = null;
+
+		await Context.SaveChangesAsync(cancellationToken);
+
+		Logger.LogInformation(
+			"Restored User: Id={Id}",
+			id);
+
+		return true;
+	}
+
+	/// <inheritdoc/>
+	public async Task<int> CountAsync(bool? isActive = null, bool includeDeleted = false, CancellationToken cancellationToken = default)
+	{
+		IQueryable<User> query = Context.Users.AsQueryable();
+
+		// Include deleted users if requested
+		if (includeDeleted)
 		{
-			Id = NextId++,
-			Username = "bob_wilson",
-			Email = "bob.wilson@example.com",
-			FullName = "Bob Wilson",
-			CreatedAt = DateTime.UtcNow.AddDays(-7),
-			IsActive = false,
-		});
+			query = query.IgnoreQueryFilters();
+		}
+
+		// Apply active status filter
+		if (isActive.HasValue)
+		{
+			query = query.Where(u => u.IsActive == isActive.Value);
+		}
+
+		return await query.CountAsync(cancellationToken);
 	}
 }

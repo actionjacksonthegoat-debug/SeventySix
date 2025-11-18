@@ -88,4 +88,44 @@ public record UserDto
 	{
 		get; init;
 	}
+
+	/// <summary>
+	/// Gets the username of the user who created this user.
+	/// </summary>
+	public string? CreatedBy
+	{
+		get; init;
+	}
+
+	/// <summary>
+	/// Gets the date and time when the user was last modified.
+	/// </summary>
+	public DateTime? ModifiedAt
+	{
+		get; init;
+	}
+
+	/// <summary>
+	/// Gets the username of the user who last modified this user.
+	/// </summary>
+	public string? ModifiedBy
+	{
+		get; init;
+	}
+
+	/// <summary>
+	/// Gets the date and time of the user's last login.
+	/// </summary>
+	public DateTime? LastLoginAt
+	{
+		get; init;
+	}
+
+	/// <summary>
+	/// Gets the row version for optimistic concurrency control.
+	/// </summary>
+	public uint? RowVersion
+	{
+		get; init;
+	}
 }

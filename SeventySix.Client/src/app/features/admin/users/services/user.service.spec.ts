@@ -1,12 +1,17 @@
 import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
+import { provideZonelessChangeDetection, signal } from "@angular/core";
 import {
 	provideAngularQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { of } from "rxjs";
 import { UserRepository } from "@admin/users/repositories";
-import { User } from "@admin/users/models";
+import {
+	User,
+	UpdateUserRequest,
+	UserQueryRequest,
+	PagedResult
+} from "@admin/users/models";
 import { UserService } from "./user.service";
 
 describe("UserService", () =>
@@ -21,7 +26,12 @@ describe("UserService", () =>
 		email: "test@example.com",
 		fullName: "Test User",
 		createdAt: "2024-01-01T00:00:00Z",
-		isActive: true
+		isActive: true,
+		createdBy: "admin",
+		modifiedAt: "2024-01-02T00:00:00Z",
+		modifiedBy: "admin",
+		lastLoginAt: "2024-01-03T00:00:00Z",
+		rowVersion: 1
 	};
 
 	beforeEach(() =>
@@ -31,7 +41,13 @@ describe("UserService", () =>
 			"getById",
 			"create",
 			"update",
-			"delete"
+			"delete",
+			"getPaged",
+			"getByUsername",
+			"checkUsername",
+			"restore",
+			"bulkActivate",
+			"bulkDeactivate"
 		]);
 
 		queryClient = new QueryClient({
@@ -172,24 +188,39 @@ describe("UserService", () =>
 
 		it("should update user via mutation", async () =>
 		{
-			const updates: Partial<User> = { email: "updated@example.com" };
+			const updateRequest: UpdateUserRequest = {
+				id: 1,
+				username: "testuser",
+				email: "updated@example.com",
+				isActive: true,
+				rowVersion: 1
+			};
 			mockRepository.update.and.returnValue(of(mockUser));
 
 			const mutation: ReturnType<typeof service.updateUser> =
 				TestBed.runInInjectionContext(() => service.updateUser());
-			await mutation.mutateAsync({ id: 1, user: updates });
+			await mutation.mutateAsync({ id: 1, user: updateRequest });
 
-			expect(mockRepository.update).toHaveBeenCalledWith(1, updates);
+			expect(mockRepository.update).toHaveBeenCalledWith(
+				1,
+				updateRequest
+			);
 		});
 
 		it("should invalidate queries on success", async () =>
 		{
-			const updates: Partial<User> = { email: "updated@example.com" };
+			const updateRequest: UpdateUserRequest = {
+				id: 1,
+				username: "testuser",
+				email: "updated@example.com",
+				isActive: true,
+				rowVersion: 1
+			};
 			mockRepository.update.and.returnValue(of(mockUser));
 
 			const mutation: ReturnType<typeof service.updateUser> =
 				TestBed.runInInjectionContext(() => service.updateUser());
-			await mutation.mutateAsync({ id: 1, user: updates });
+			await mutation.mutateAsync({ id: 1, user: updateRequest });
 
 			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
 				queryKey: ["users", "user", 1]
@@ -231,6 +262,260 @@ describe("UserService", () =>
 
 			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
 				queryKey: ["users", "all"]
+			});
+		});
+	});
+
+	describe("getPagedUsers", () =>
+	{
+		it("should create query", () =>
+		{
+			const request: UserQueryRequest = {
+				page: 1,
+				pageSize: 10,
+				searchTerm: "test",
+				includeInactive: false,
+				sortBy: "username",
+				sortDescending: false
+			};
+			const requestSignal = signal(request);
+			const pagedResult: PagedResult<User> = {
+				items: [mockUser],
+				totalCount: 1,
+				page: 1,
+				pageSize: 10,
+				totalPages: 1,
+				hasPreviousPage: false,
+				hasNextPage: false
+			};
+			mockRepository.getPaged.and.returnValue(of(pagedResult));
+
+			const query: ReturnType<typeof service.getPagedUsers> =
+				TestBed.runInInjectionContext(() =>
+					service.getPagedUsers(requestSignal)
+				);
+
+			expect(query).toBeTruthy();
+		});
+
+		it("should fetch paged users from repository", async () =>
+		{
+			const request: UserQueryRequest = {
+				page: 1,
+				pageSize: 10,
+				searchTerm: "test",
+				includeInactive: false,
+				sortBy: "username",
+				sortDescending: false
+			};
+			const requestSignal = signal(request);
+			const pagedResult: PagedResult<User> = {
+				items: [mockUser],
+				totalCount: 1,
+				page: 1,
+				pageSize: 10,
+				totalPages: 1,
+				hasPreviousPage: false,
+				hasNextPage: false
+			};
+			mockRepository.getPaged.and.returnValue(of(pagedResult));
+
+			const query: ReturnType<typeof service.getPagedUsers> =
+				TestBed.runInInjectionContext(() =>
+					service.getPagedUsers(requestSignal)
+				);
+			const result = await query.refetch();
+
+			expect(mockRepository.getPaged).toHaveBeenCalledWith(request);
+			expect(result.data).toEqual(pagedResult);
+		});
+	});
+
+	describe("getUserByUsername", () =>
+	{
+		it("should create query", () =>
+		{
+			mockRepository.getByUsername.and.returnValue(of(mockUser));
+
+			const query: ReturnType<typeof service.getUserByUsername> =
+				TestBed.runInInjectionContext(() =>
+					service.getUserByUsername("testuser")
+				);
+
+			expect(query).toBeTruthy();
+		});
+
+		it("should fetch user by username from repository", async () =>
+		{
+			mockRepository.getByUsername.and.returnValue(of(mockUser));
+
+			const query: ReturnType<typeof service.getUserByUsername> =
+				TestBed.runInInjectionContext(() =>
+					service.getUserByUsername("testuser")
+				);
+			const result = await query.refetch();
+
+			expect(mockRepository.getByUsername).toHaveBeenCalledWith(
+				"testuser"
+			);
+			expect(result.data).toEqual(mockUser);
+		});
+	});
+
+	describe("checkUsernameAvailability", () =>
+	{
+		it("should check username without excludeId", async () =>
+		{
+			mockRepository.checkUsername.and.returnValue(of(true));
+
+			const result: boolean = await TestBed.runInInjectionContext(() =>
+				service.checkUsernameAvailability("newuser")
+			);
+
+			expect(mockRepository.checkUsername).toHaveBeenCalledWith(
+				"newuser",
+				undefined
+			);
+			expect(result).toBe(true);
+		});
+
+		it("should check username with excludeId", async () =>
+		{
+			mockRepository.checkUsername.and.returnValue(of(false));
+
+			const result: boolean = await TestBed.runInInjectionContext(() =>
+				service.checkUsernameAvailability("existinguser", 5)
+			);
+
+			expect(mockRepository.checkUsername).toHaveBeenCalledWith(
+				"existinguser",
+				5
+			);
+			expect(result).toBe(false);
+		});
+	});
+
+	describe("restoreUser", () =>
+	{
+		it("should create mutation", () =>
+		{
+			const mutation: ReturnType<typeof service.restoreUser> =
+				TestBed.runInInjectionContext(() => service.restoreUser());
+
+			expect(mutation).toBeTruthy();
+		});
+
+		it("should restore user via mutation", async () =>
+		{
+			mockRepository.restore.and.returnValue(of(undefined));
+
+			const mutation: ReturnType<typeof service.restoreUser> =
+				TestBed.runInInjectionContext(() => service.restoreUser());
+			await mutation.mutateAsync(1);
+
+			expect(mockRepository.restore).toHaveBeenCalledWith(1);
+		});
+
+		it("should invalidate users query on success", async () =>
+		{
+			mockRepository.restore.and.returnValue(of(undefined));
+
+			const mutation: ReturnType<typeof service.restoreUser> =
+				TestBed.runInInjectionContext(() => service.restoreUser());
+			await mutation.mutateAsync(1);
+
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["users"]
+			});
+		});
+	});
+
+	describe("bulkActivateUsers", () =>
+	{
+		it("should create mutation", () =>
+		{
+			const mutation: ReturnType<typeof service.bulkActivateUsers> =
+				TestBed.runInInjectionContext(() =>
+					service.bulkActivateUsers()
+				);
+
+			expect(mutation).toBeTruthy();
+		});
+
+		it("should bulk activate users via mutation", async () =>
+		{
+			const ids: number[] = [1, 2, 3];
+			const count: number = 3;
+			mockRepository.bulkActivate.and.returnValue(of(count));
+
+			const mutation: ReturnType<typeof service.bulkActivateUsers> =
+				TestBed.runInInjectionContext(() =>
+					service.bulkActivateUsers()
+				);
+			const result: number = await mutation.mutateAsync(ids);
+
+			expect(mockRepository.bulkActivate).toHaveBeenCalledWith(ids);
+			expect(result).toBe(count);
+		});
+
+		it("should invalidate users query on success", async () =>
+		{
+			const ids: number[] = [1, 2, 3];
+			mockRepository.bulkActivate.and.returnValue(of(3));
+
+			const mutation: ReturnType<typeof service.bulkActivateUsers> =
+				TestBed.runInInjectionContext(() =>
+					service.bulkActivateUsers()
+				);
+			await mutation.mutateAsync(ids);
+
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["users"]
+			});
+		});
+	});
+
+	describe("bulkDeactivateUsers", () =>
+	{
+		it("should create mutation", () =>
+		{
+			const mutation: ReturnType<typeof service.bulkDeactivateUsers> =
+				TestBed.runInInjectionContext(() =>
+					service.bulkDeactivateUsers()
+				);
+
+			expect(mutation).toBeTruthy();
+		});
+
+		it("should bulk deactivate users via mutation", async () =>
+		{
+			const ids: number[] = [1, 2, 3];
+			const count: number = 3;
+			mockRepository.bulkDeactivate.and.returnValue(of(count));
+
+			const mutation: ReturnType<typeof service.bulkDeactivateUsers> =
+				TestBed.runInInjectionContext(() =>
+					service.bulkDeactivateUsers()
+				);
+			const result: number = await mutation.mutateAsync(ids);
+
+			expect(mockRepository.bulkDeactivate).toHaveBeenCalledWith(ids);
+			expect(result).toBe(count);
+		});
+
+		it("should invalidate users query on success", async () =>
+		{
+			const ids: number[] = [1, 2, 3];
+			mockRepository.bulkDeactivate.and.returnValue(of(3));
+
+			const mutation: ReturnType<typeof service.bulkDeactivateUsers> =
+				TestBed.runInInjectionContext(() =>
+					service.bulkDeactivateUsers()
+				);
+			await mutation.mutateAsync(ids);
+
+			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+				queryKey: ["users"]
 			});
 		});
 	});

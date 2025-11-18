@@ -22,15 +22,25 @@ describe("UsersComponent", () =>
 
 	beforeEach(async () =>
 	{
-		mockUserService = jasmine.createSpyObj("UserService", ["getAllUsers"]);
+		mockUserService = jasmine.createSpyObj("UserService", [
+			"getAllUsers",
+			"bulkActivateUsers",
+			"bulkDeactivateUsers"
+		]);
 		mockLogger = jasmine.createSpyObj("LoggerService", ["info", "error"]);
 		mockActivatedRoute = jasmine.createSpyObj("ActivatedRoute", [], {
 			params: of({})
 		});
 
-		// Set default mock return value
+		// Set default mock return values
 		mockUserService.getAllUsers.and.returnValue(
 			createMockQueryResult<User[], Error>([])
+		);
+		mockUserService.bulkActivateUsers.and.returnValue(
+			createMockMutationResult<number, Error, number[], unknown>()
+		);
+		mockUserService.bulkDeactivateUsers.and.returnValue(
+			createMockMutationResult<number, Error, number[], unknown>()
 		);
 
 		await TestBed.configureTestingModule({

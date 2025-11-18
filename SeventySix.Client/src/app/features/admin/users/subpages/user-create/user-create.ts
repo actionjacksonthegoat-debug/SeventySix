@@ -11,7 +11,10 @@ import {
 	FormBuilder,
 	FormGroup,
 	ReactiveFormsModule,
-	Validators
+	Validators,
+	AbstractControl,
+	AsyncValidatorFn,
+	ValidationErrors
 } from "@angular/forms";
 import { MatStepperModule, MatStepper } from "@angular/material/stepper";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -22,6 +25,16 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import {
+	of,
+	Observable,
+	from,
+	debounceTime,
+	distinctUntilChanged,
+	switchMap,
+	map,
+	catchError
+} from "rxjs";
 import { UserService } from "@admin/users/services";
 import { LoggerService } from "@core/services";
 import { User } from "../../models";
@@ -73,6 +86,34 @@ export class UserCreatePage
 			: null
 	);
 
+	/**
+	 * Async validator for username availability
+	 */
+	private usernameAvailabilityValidator(): AsyncValidatorFn
+	{
+		return (
+			control: AbstractControl
+		): Observable<ValidationErrors | null> =>
+		{
+			if (!control.value)
+			{
+				return of(null);
+			}
+
+			return of(control.value).pipe(
+				debounceTime(500),
+				distinctUntilChanged(),
+				switchMap((username: string) =>
+					from(this.userService.checkUsernameAvailability(username))
+				),
+				map((exists: boolean) =>
+					exists ? { usernameTaken: true } : null
+				),
+				catchError(() => of(null))
+			);
+		};
+	}
+
 	// Form groups for each step
 	readonly basicInfoForm: FormGroup = this.fb.group({
 		username: [
@@ -81,7 +122,8 @@ export class UserCreatePage
 				Validators.required,
 				Validators.minLength(3),
 				Validators.maxLength(50)
-			]
+			],
+			[this.usernameAvailabilityValidator()]
 		],
 		email: [
 			"",

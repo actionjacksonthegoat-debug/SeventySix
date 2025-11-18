@@ -83,6 +83,16 @@
 										Username must not exceed 50 characters
 									</mat-error>
 								}
+								@if (
+									basicInfoForm
+										.get("username")
+										?.hasError("usernameTaken")
+								)
+								{
+									<mat-error>
+										Username is already taken
+									</mat-error>
+								}
 							</mat-form-field>
 
 							<!-- Email Field -->

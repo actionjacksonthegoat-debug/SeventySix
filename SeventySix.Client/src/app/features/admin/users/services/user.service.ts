@@ -5,14 +5,19 @@
  * Uses repository pattern for data access (SRP, DIP)
  */
 
-import { inject, Injectable } from "@angular/core";
+import { inject, Injectable, Signal } from "@angular/core";
 import {
 	injectQuery,
 	injectMutation,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
-import { User } from "@admin/users/models";
+import {
+	User,
+	UpdateUserRequest,
+	UserQueryRequest,
+	PagedResult
+} from "@admin/users/models";
 import { UserRepository } from "@admin/users/repositories";
 import { getQueryConfig } from "@core/utils/query-config";
 
@@ -91,7 +96,7 @@ export class UserService
 				user
 			}: {
 				id: number | string;
-				user: Partial<User>;
+				user: UpdateUserRequest;
 			}) => lastValueFrom(this.userRepository.update(id, user)),
 			onSuccess: (_, variables) =>
 			{
@@ -121,6 +126,100 @@ export class UserService
 				this.queryClient.invalidateQueries({
 					queryKey: ["users", "all"]
 				});
+			}
+		}));
+	}
+
+	/**
+	 * Query for paginated users
+	 * @param request Signal containing query parameters
+	 * @returns Query object with paged data
+	 */
+	getPagedUsers(request: Signal<UserQueryRequest>)
+	{
+		return injectQuery(() => ({
+			queryKey: ["users", "paged", request()],
+			queryFn: () =>
+				lastValueFrom(this.userRepository.getPaged(request())),
+			...this.queryConfig
+		}));
+	}
+
+	/**
+	 * Query for user by username
+	 * @param username The username to search
+	 * @returns Query object with user data
+	 */
+	getUserByUsername(username: string)
+	{
+		return injectQuery(() => ({
+			queryKey: ["users", "username", username],
+			queryFn: () =>
+				lastValueFrom(this.userRepository.getByUsername(username)),
+			...this.queryConfig
+		}));
+	}
+
+	/**
+	 * Check username availability (not cached for real-time validation)
+	 * @param username The username to check
+	 * @param excludeId Optional user ID to exclude
+	 * @returns Promise of boolean
+	 */
+	checkUsernameAvailability(
+		username: string,
+		excludeId?: number
+	): Promise<boolean>
+	{
+		return lastValueFrom(
+			this.userRepository.checkUsername(username, excludeId)
+		);
+	}
+
+	/**
+	 * Mutation for restoring deleted user
+	 * @returns Mutation object
+	 */
+	restoreUser()
+	{
+		return injectMutation(() => ({
+			mutationFn: (id: number | string) =>
+				lastValueFrom(this.userRepository.restore(id)),
+			onSuccess: () =>
+			{
+				this.queryClient.invalidateQueries({ queryKey: ["users"] });
+			}
+		}));
+	}
+
+	/**
+	 * Mutation for bulk activating users
+	 * @returns Mutation object
+	 */
+	bulkActivateUsers()
+	{
+		return injectMutation(() => ({
+			mutationFn: (ids: number[]) =>
+				lastValueFrom(this.userRepository.bulkActivate(ids)),
+			onSuccess: () =>
+			{
+				this.queryClient.invalidateQueries({ queryKey: ["users"] });
+			}
+		}));
+	}
+
+	/**
+	 * Mutation for bulk deactivating users
+	 * @returns Mutation object
+	 */
+	bulkDeactivateUsers()
+	{
+		return injectMutation(() => ({
+			mutationFn: (ids: number[]) =>
+				lastValueFrom(this.userRepository.bulkDeactivate(ids)),
+			onSuccess: () =>
+			{
+				this.queryClient.invalidateQueries({ queryKey: ["users"] });
 			}
 		}));
 	}

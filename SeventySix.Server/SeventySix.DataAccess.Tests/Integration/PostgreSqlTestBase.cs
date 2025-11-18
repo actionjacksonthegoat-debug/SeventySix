@@ -123,7 +123,11 @@ public abstract class PostgreSqlTestBase : IAsyncLifetime
 	{
 		// Clean up data before each test to ensure isolation
 		await using ApplicationDbContext context = CreateDbContext();
+
+		// Truncate all tables in correct order (respecting foreign keys)
+		await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"Logs\" RESTART IDENTITY CASCADE");
 		await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"ThirdPartyApiRequests\" RESTART IDENTITY CASCADE");
+		await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"Users\" RESTART IDENTITY CASCADE");
 	}
 
 	/// <summary>

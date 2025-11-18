@@ -123,6 +123,30 @@ export class UserList implements AfterViewInit
 		{ key: "fullName", label: "Full Name", visible: true, sortable: true },
 		{ key: "isActive", label: "Status", visible: true, sortable: true },
 		{ key: "createdAt", label: "Created", visible: true, sortable: true },
+		{
+			key: "createdBy",
+			label: "Created By",
+			visible: false,
+			sortable: true
+		},
+		{
+			key: "modifiedAt",
+			label: "Modified",
+			visible: false,
+			sortable: true
+		},
+		{
+			key: "modifiedBy",
+			label: "Modified By",
+			visible: false,
+			sortable: true
+		},
+		{
+			key: "lastLoginAt",
+			label: "Last Login",
+			visible: false,
+			sortable: true
+		},
 		{ key: "actions", label: "Actions", visible: true, sortable: false }
 	]);
 
@@ -131,6 +155,14 @@ export class UserList implements AfterViewInit
 		true,
 		[]
 	);
+
+	// Bulk operation mutations
+	readonly bulkActivateMutation: ReturnType<
+		UserService["bulkActivateUsers"]
+	> = this.userService.bulkActivateUsers();
+	readonly bulkDeactivateMutation: ReturnType<
+		UserService["bulkDeactivateUsers"]
+	> = this.userService.bulkDeactivateUsers();
 
 	// Computed: visible columns
 	readonly displayedColumns: Signal<string[]> = computed(() =>
@@ -524,6 +556,120 @@ export class UserList implements AfterViewInit
 				this.logger.info("Bulk delete cancelled");
 			}
 		});
+	}
+
+	/**
+	 * Bulk activate selected users
+	 */
+	activateSelected(): void
+	{
+		const users: User[] = this.selection.selected;
+		const ids: number[] = users.map((u) => u.id);
+		const count: number = ids.length;
+
+		if (count === 0) return;
+
+		const dialogData: ConfirmDialogData = {
+			title: "Activate Users",
+			message: `Are you sure you want to activate ${count} user${count > 1 ? "s" : ""}?`,
+			confirmText: "Activate",
+			cancelText: "Cancel",
+			confirmColor: "primary",
+			icon: "check_circle"
+		};
+
+		this.dialog
+			.open(ConfirmDialogComponent, {
+				data: dialogData,
+				width: "450px"
+			})
+			.afterClosed()
+			.subscribe((confirmed) =>
+			{
+				if (confirmed)
+				{
+					this.bulkActivateMutation.mutate(ids, {
+						onSuccess: (activatedCount: number) =>
+						{
+							this.showSuccessMessage(
+								`${activatedCount} user${activatedCount > 1 ? "s" : ""} activated`
+							);
+							this.selection.clear();
+							this.logger.info("Bulk activate successful", {
+								count: activatedCount
+							});
+						},
+						onError: (err: Error) =>
+						{
+							this.logger.error("Bulk activate failed", err);
+							this.snackBar.open(
+								"Failed to activate users",
+								"Close",
+								{
+									duration: 3000
+								}
+							);
+						}
+					});
+				}
+			});
+	}
+
+	/**
+	 * Bulk deactivate selected users
+	 */
+	deactivateSelected(): void
+	{
+		const users: User[] = this.selection.selected;
+		const ids: number[] = users.map((u) => u.id);
+		const count: number = ids.length;
+
+		if (count === 0) return;
+
+		const dialogData: ConfirmDialogData = {
+			title: "Deactivate Users",
+			message: `Are you sure you want to deactivate ${count} user${count > 1 ? "s" : ""}?`,
+			confirmText: "Deactivate",
+			cancelText: "Cancel",
+			confirmColor: "warn",
+			icon: "block"
+		};
+
+		this.dialog
+			.open(ConfirmDialogComponent, {
+				data: dialogData,
+				width: "450px"
+			})
+			.afterClosed()
+			.subscribe((confirmed) =>
+			{
+				if (confirmed)
+				{
+					this.bulkDeactivateMutation.mutate(ids, {
+						onSuccess: (deactivatedCount: number) =>
+						{
+							this.showSuccessMessage(
+								`${deactivatedCount} user${deactivatedCount > 1 ? "s" : ""} deactivated`
+							);
+							this.selection.clear();
+							this.logger.info("Bulk deactivate successful", {
+								count: deactivatedCount
+							});
+						},
+						onError: (err: Error) =>
+						{
+							this.logger.error("Bulk deactivate failed", err);
+							this.snackBar.open(
+								"Failed to deactivate users",
+								"Close",
+								{
+									duration: 3000
+								}
+							);
+						}
+					});
+				}
+			});
 	}
 
 	/**

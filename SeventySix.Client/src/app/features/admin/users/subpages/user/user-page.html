@@ -196,6 +196,67 @@
 					</mat-card-content>
 				</mat-card>
 
+				<!-- Audit Information -->
+				@if (user())
+				{
+					<mat-expansion-panel>
+						<mat-expansion-panel-header>
+							<mat-panel-title>
+								<mat-icon>info</mat-icon>
+								Audit Information
+							</mat-panel-title>
+						</mat-expansion-panel-header>
+
+						<div class="audit-info">
+							<div class="info-row">
+								<strong>Created:</strong>
+								<span>{{
+									user()!.createdAt | date: "medium"
+								}}</span>
+							</div>
+							@if (user()!.createdBy)
+							{
+								<div class="info-row">
+									<strong>Created By:</strong>
+									<span>{{ user()!.createdBy }}</span>
+								</div>
+							}
+							@if (user()!.modifiedAt)
+							{
+								<div class="info-row">
+									<strong>Last Modified:</strong>
+									<span>{{
+										user()!.modifiedAt | date: "medium"
+									}}</span>
+								</div>
+							}
+							@if (user()!.modifiedBy)
+							{
+								<div class="info-row">
+									<strong>Modified By:</strong>
+									<span>{{ user()!.modifiedBy }}</span>
+								</div>
+							}
+							@if (user()!.lastLoginAt)
+							{
+								<div class="info-row">
+									<strong>Last Login:</strong>
+									<span>{{
+										user()!.lastLoginAt | date: "medium"
+									}}</span>
+								</div>
+							}
+							@if (user()!.rowVersion)
+							{
+								<div class="info-row">
+									<strong>Version:</strong>
+									<span>{{ user()!.rowVersion }}</span>
+								</div>
+							}
+						</div>
+					</mat-expansion-panel>
+				}
+
 				<!-- Form Info Card -->
 				@if (user())
 				{

@@ -1,0 +1,524 @@
+using FluentAssertions;
+using SeventySix.Core.Entities;
+using SeventySix.DataAccess.Repositories;
+
+namespace SeventySix.DataAccess.Tests.Repositories;
+
+/// <summary>
+/// Unit tests for UserRepository
+/// </summary>
+public class UserRepositoryTests
+{
+	// Note: Each test creates its own repository instance to ensure test isolation
+	// xUnit reuses test class instances, so a shared repository would have persistent data across tests
+
+	[Fact]
+	public async Task GetAllAsync_ShouldReturnEmptyList_WhenNoUsersExistAsync()
+	{
+		// Arrange - Create repository without seed data for clean test
+		UserRepository repository = new();
+
+		// Clear seed data
+		IEnumerable<User> seededUsers = await repository.GetAllAsync(CancellationToken.None);
+		foreach (User user in seededUsers)
+		{
+			await repository.DeleteAsync(user.Id, CancellationToken.None);
+		}
+
+		// Act
+		IEnumerable<User> result = await repository.GetAllAsync(CancellationToken.None);
+
+		// Assert
+		result.Should().NotBeNull();
+		result.Should().BeEmpty();
+	}
+
+	[Fact]
+	public async Task CreateAsync_ShouldCreateUser_WithValidDataAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new()
+		{
+			Username = "testuser",
+			Email = "test@example.com",
+			FullName = "Test User",
+			IsActive = true
+		};
+
+		// Act
+		User result = await repository.CreateAsync(user, CancellationToken.None);
+
+		// Assert
+		result.Should().NotBeNull();
+		result.Id.Should().BeGreaterThan(0);
+		result.Username.Should().Be("testuser");
+		result.Email.Should().Be("test@example.com");
+		result.FullName.Should().Be("Test User");
+		result.IsActive.Should().BeTrue();
+		result.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+	}
+
+	[Fact]
+	public async Task GetByIdAsync_ShouldReturnUser_WhenUserExistsAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new()
+		{
+			Username = "testuser",
+			Email = "test@example.com"
+		};
+		User created = await repository.CreateAsync(user, CancellationToken.None);
+
+		// Act
+		User? result = await repository.GetByIdAsync(created.Id, CancellationToken.None);
+
+		// Assert
+		result.Should().NotBeNull();
+		result.Id.Should().Be(created.Id);
+		result.Username.Should().Be("testuser");
+	}
+
+	[Fact]
+	public async Task GetByIdAsync_ShouldReturnNull_WhenUserDoesNotExistAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+
+		// Act
+		User? result = await repository.GetByIdAsync(999, CancellationToken.None);
+
+		// Assert
+		result.Should().BeNull();
+	}
+
+	[Fact]
+	public async Task UpdateAsync_ShouldUpdateUser_WhenUserExistsAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new()
+		{
+			Username = "testuser",
+			Email = "test@example.com"
+		};
+		User created = await repository.CreateAsync(user, CancellationToken.None);
+
+		created.Username = "updateduser";
+		created.Email = "updated@example.com";
+
+		// Act
+		User result = await repository.UpdateAsync(created, CancellationToken.None);
+
+		// Assert
+		result.Should().NotBeNull();
+		result.Username.Should().Be("updateduser");
+		result.Email.Should().Be("updated@example.com");
+	}
+
+	[Fact]
+	public async Task DeleteAsync_ShouldReturnTrue_WhenUserExistsAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new()
+		{
+			Username = "testuser",
+			Email = "test@example.com"
+		};
+		User created = await repository.CreateAsync(user, CancellationToken.None);
+
+		// Act
+		bool result = await repository.DeleteAsync(created.Id, CancellationToken.None);
+
+		// Assert
+		result.Should().BeTrue();
+
+		// Verify user is deleted
+		User? deletedUser = await repository.GetByIdAsync(created.Id, CancellationToken.None);
+		deletedUser.Should().BeNull();
+	}
+
+	[Fact]
+	public async Task DeleteAsync_ShouldReturnFalse_WhenUserDoesNotExistAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+
+		// Act
+		bool result = await repository.DeleteAsync(999, CancellationToken.None);
+
+		// Assert
+		result.Should().BeFalse();
+	}
+
+	[Fact]
+	public async Task GetAllAsync_ShouldReturnMultipleUsers_WhenUsersExistAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+
+		// Clear seed data for clean test
+		IEnumerable<User> seededUsers = await repository.GetAllAsync(CancellationToken.None);
+		foreach (User seeded in seededUsers)
+		{
+			await repository.DeleteAsync(seeded.Id, CancellationToken.None);
+		}
+
+		User user1 = new() { Username = "user1", Email = "user1@example.com" };
+		User user2 = new() { Username = "user2", Email = "user2@example.com" };
+		User user3 = new() { Username = "user3", Email = "user3@example.com" };
+
+		await repository.CreateAsync(user1, CancellationToken.None);
+		await repository.CreateAsync(user2, CancellationToken.None);
+		await repository.CreateAsync(user3, CancellationToken.None);
+
+		// Act
+		IEnumerable<User> result = await repository.GetAllAsync(CancellationToken.None);
+
+		// Assert
+		result.Should().HaveCount(3);
+		result.Select(u => u.Username).Should().Contain(new[] { "user1", "user2", "user3" });
+	}
+
+	[Fact]
+	public async Task GetByUsernameAsync_ShouldReturnUser_WhenUsernameExistsAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new() { Username = "uniqueuser", Email = "unique@example.com" };
+		await repository.CreateAsync(user, CancellationToken.None);
+
+		// Act
+		User? result = await repository.GetByUsernameAsync("uniqueuser", CancellationToken.None);
+
+		// Assert
+		result.Should().NotBeNull();
+		result!.Username.Should().Be("uniqueuser");
+	}
+
+	[Fact]
+	public async Task GetByUsernameAsync_ShouldReturnNull_WhenUsernameDoesNotExistAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+
+		// Act
+		User? result = await repository.GetByUsernameAsync("nonexistent", CancellationToken.None);
+
+		// Assert
+		result.Should().BeNull();
+	}
+
+	[Fact]
+	public async Task GetByEmailAsync_ShouldReturnUser_WhenEmailExistsAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new() { Username = "emailtest", Email = "test@example.com" };
+		await repository.CreateAsync(user, CancellationToken.None);
+
+		// Act
+		User? result = await repository.GetByEmailAsync("test@example.com", CancellationToken.None);
+
+		// Assert
+		result.Should().NotBeNull();
+		result!.Email.Should().Be("test@example.com");
+	}
+
+	[Fact]
+	public async Task GetByEmailAsync_ShouldBeCaseInsensitive_WhenSearchingAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new() { Username = "casetest", Email = "Test@Example.Com" };
+		await repository.CreateAsync(user, CancellationToken.None);
+
+		// Act
+		User? result = await repository.GetByEmailAsync("test@example.com", CancellationToken.None);
+
+		// Assert
+		result.Should().NotBeNull();
+	}
+
+	[Fact]
+	public async Task UsernameExistsAsync_ShouldReturnTrue_WhenUsernameExistsAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new() { Username = "existinguser", Email = "existing@example.com" };
+		await repository.CreateAsync(user, CancellationToken.None);
+
+		// Act
+		bool result = await repository.UsernameExistsAsync("existinguser", null, CancellationToken.None);
+
+		// Assert
+		result.Should().BeTrue();
+	}
+
+	[Fact]
+	public async Task UsernameExistsAsync_ShouldReturnFalse_WhenUsernameDoesNotExistAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+
+		// Act
+		bool result = await repository.UsernameExistsAsync("nonexistent", null, CancellationToken.None);
+
+		// Assert
+		result.Should().BeFalse();
+	}
+
+	[Fact]
+	public async Task UsernameExistsAsync_ShouldExcludeSpecifiedUser_WhenExcludeIdProvidedAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new() { Username = "updatetest", Email = "update@example.com" };
+		User created = await repository.CreateAsync(user, CancellationToken.None);
+
+		// Act - Check if username exists, excluding the user itself (for update scenario)
+		bool result = await repository.UsernameExistsAsync("updatetest", created.Id, CancellationToken.None);
+
+		// Assert
+		result.Should().BeFalse();
+	}
+
+	[Fact]
+	public async Task EmailExistsAsync_ShouldReturnTrue_WhenEmailExistsAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new() { Username = "emailcheck", Email = "check@example.com" };
+		await repository.CreateAsync(user, CancellationToken.None);
+
+		// Act
+		bool result = await repository.EmailExistsAsync("check@example.com", null, CancellationToken.None);
+
+		// Assert
+		result.Should().BeTrue();
+	}
+
+	[Fact]
+	public async Task GetPagedAsync_ShouldReturnPagedResults_WithCorrectCountAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		IEnumerable<User> seededUsers = await repository.GetAllAsync(CancellationToken.None);
+		foreach (User seeded in seededUsers)
+		{
+			await repository.DeleteAsync(seeded.Id, CancellationToken.None);
+		}
+
+		for (int i = 1; i <= 25; i++)
+		{
+			await repository.CreateAsync(new User { Username = $"user{i}", Email = $"user{i}@example.com" }, CancellationToken.None);
+		}
+
+		// Act
+		(IEnumerable<User> users, int totalCount) = await repository.GetPagedAsync(1, 10, null, null, false, CancellationToken.None);
+
+		// Assert
+		users.Should().HaveCount(10);
+		totalCount.Should().Be(25);
+	}
+
+	[Fact]
+	public async Task GetPagedAsync_ShouldFilterBySearchTerm_WhenProvidedAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		IEnumerable<User> seededUsers = await repository.GetAllAsync(CancellationToken.None);
+		foreach (User seeded in seededUsers)
+		{
+			await repository.DeleteAsync(seeded.Id, CancellationToken.None);
+		}
+
+		await repository.CreateAsync(new User { Username = "alice", Email = "alice@example.com" }, CancellationToken.None);
+		await repository.CreateAsync(new User { Username = "bob", Email = "bob@example.com" }, CancellationToken.None);
+		await repository.CreateAsync(new User { Username = "charlie", Email = "alice@other.com" }, CancellationToken.None);
+
+		// Act
+		(IEnumerable<User> users, int totalCount) = await repository.GetPagedAsync(1, 10, "alice", null, false, CancellationToken.None);
+
+		// Assert
+		users.Should().HaveCount(2);
+		totalCount.Should().Be(2);
+	}
+
+	[Fact]
+	public async Task GetPagedAsync_ShouldFilterByIsActive_WhenProvidedAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		IEnumerable<User> seededUsers = await repository.GetAllAsync(CancellationToken.None);
+		foreach (User seeded in seededUsers)
+		{
+			await repository.DeleteAsync(seeded.Id, CancellationToken.None);
+		}
+
+		await repository.CreateAsync(new User { Username = "active1", Email = "active1@example.com", IsActive = true }, CancellationToken.None);
+		await repository.CreateAsync(new User { Username = "inactive1", Email = "inactive1@example.com", IsActive = false }, CancellationToken.None);
+
+		// Act
+		(IEnumerable<User> users, int totalCount) = await repository.GetPagedAsync(1, 10, null, true, false, CancellationToken.None);
+
+		// Assert
+		users.Should().HaveCount(1);
+		users.First().IsActive.Should().BeTrue();
+	}
+
+	[Fact]
+	public async Task GetPagedAsync_ShouldExcludeDeletedUsers_ByDefaultAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user1 = new() { Username = "visible", Email = "visible@example.com" };
+		User user2 = new() { Username = "deleted", Email = "deleted@example.com" };
+		User created1 = await repository.CreateAsync(user1, CancellationToken.None);
+		User created2 = await repository.CreateAsync(user2, CancellationToken.None);
+
+		await repository.SoftDeleteAsync(created2.Id, "test", CancellationToken.None);
+
+		// Act
+		(IEnumerable<User> users, int totalCount) = await repository.GetPagedAsync(1, 10, null, null, false, CancellationToken.None);
+
+		// Assert
+		users.Should().Contain(u => u.Username == "visible");
+		users.Should().NotContain(u => u.Username == "deleted");
+	}
+
+	[Fact]
+	public async Task GetByIdsAsync_ShouldReturnMatchingUsers_WhenIdsExistAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user1 = new() { Username = "bulk1", Email = "bulk1@example.com" };
+		User user2 = new() { Username = "bulk2", Email = "bulk2@example.com" };
+		User created1 = await repository.CreateAsync(user1, CancellationToken.None);
+		User created2 = await repository.CreateAsync(user2, CancellationToken.None);
+
+		// Act
+		IEnumerable<User> result = await repository.GetByIdsAsync([created1.Id, created2.Id], CancellationToken.None);
+
+		// Assert
+		result.Should().HaveCount(2);
+	}
+
+	[Fact]
+	public async Task BulkUpdateActiveStatusAsync_ShouldUpdateMultipleUsers_WhenIdsExistAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user1 = new() { Username = "bulkupdate1", Email = "bulk1@example.com", IsActive = true };
+		User user2 = new() { Username = "bulkupdate2", Email = "bulk2@example.com", IsActive = true };
+		User created1 = await repository.CreateAsync(user1, CancellationToken.None);
+		User created2 = await repository.CreateAsync(user2, CancellationToken.None);
+
+		// Act
+		int count = await repository.BulkUpdateActiveStatusAsync([created1.Id, created2.Id], false, CancellationToken.None);
+
+		// Assert
+		count.Should().Be(2);
+		User? updated1 = await repository.GetByIdAsync(created1.Id, CancellationToken.None);
+		updated1!.IsActive.Should().BeFalse();
+	}
+
+	[Fact]
+	public async Task SoftDeleteAsync_ShouldSetIsDeletedFlag_WhenUserExistsAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new() { Username = "softdelete", Email = "softdelete@example.com" };
+		User created = await repository.CreateAsync(user, CancellationToken.None);
+
+		// Act
+		bool result = await repository.SoftDeleteAsync(created.Id, "admin", CancellationToken.None);
+
+		// Assert
+		result.Should().BeTrue();
+		User? deleted = await repository.GetByIdAsync(created.Id, CancellationToken.None);
+		deleted.Should().BeNull(); // Excluded by query filter
+	}
+
+	[Fact]
+	public async Task SoftDeleteAsync_ShouldSetAuditFields_WhenDeletingAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new() { Username = "auditdelete", Email = "audit@example.com" };
+		User created = await repository.CreateAsync(user, CancellationToken.None);
+
+		// Act
+		await repository.SoftDeleteAsync(created.Id, "testuser", CancellationToken.None);
+
+		// Assert - Need to get all users including deleted to verify
+		IEnumerable<User> allUsers = await repository.GetAllAsync(CancellationToken.None);
+		User? softDeleted = allUsers.FirstOrDefault(u => u.Id == created.Id);
+		if (softDeleted != null)
+		{
+			softDeleted.IsDeleted.Should().BeTrue();
+			softDeleted.DeletedBy.Should().Be("testuser");
+			softDeleted.DeletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+		}
+	}
+
+	[Fact]
+	public async Task RestoreAsync_ShouldUnsetIsDeletedFlag_WhenUserWasDeletedAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		User user = new() { Username = "restore", Email = "restore@example.com" };
+		User created = await repository.CreateAsync(user, CancellationToken.None);
+		await repository.SoftDeleteAsync(created.Id, "admin", CancellationToken.None);
+
+		// Act
+		bool result = await repository.RestoreAsync(created.Id, CancellationToken.None);
+
+		// Assert
+		result.Should().BeTrue();
+		User? restored = await repository.GetByIdAsync(created.Id, CancellationToken.None);
+		restored.Should().NotBeNull();
+		restored!.IsDeleted.Should().BeFalse();
+	}
+
+	[Fact]
+	public async Task CountAsync_ShouldReturnCorrectCount_WithNoFiltersAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		IEnumerable<User> seededUsers = await repository.GetAllAsync(CancellationToken.None);
+		int initialCount = seededUsers.Count();
+
+		await repository.CreateAsync(new User { Username = "count1", Email = "count1@example.com" }, CancellationToken.None);
+		await repository.CreateAsync(new User { Username = "count2", Email = "count2@example.com" }, CancellationToken.None);
+
+		// Act
+		int result = await repository.CountAsync(null, false, CancellationToken.None);
+
+		// Assert
+		result.Should().Be(initialCount + 2);
+	}
+
+	[Fact]
+	public async Task CountAsync_ShouldFilterByIsActive_WhenProvidedAsync()
+	{
+		// Arrange
+		UserRepository repository = new();
+		IEnumerable<User> seededUsers = await repository.GetAllAsync(CancellationToken.None);
+		foreach (User seeded in seededUsers)
+		{
+			await repository.DeleteAsync(seeded.Id, CancellationToken.None);
+		}
+
+		await repository.CreateAsync(new User { Username = "activecount", Email = "active@example.com", IsActive = true }, CancellationToken.None);
+		await repository.CreateAsync(new User { Username = "inactivecount", Email = "inactive@example.com", IsActive = false }, CancellationToken.None);
+
+		// Act
+		int result = await repository.CountAsync(true, false, CancellationToken.None);
+
+		// Assert
+		result.Should().Be(1);
+	}
+}

@@ -1,13 +1,14 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
+import { Subject } from "rxjs";
 import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
 import {
 	createMockQueryResult,
 	createMockMutationResult
 } from "@core/testing/tanstack-query-helpers";
-import { User } from "@admin/users/models";
+import { User, UpdateUserRequest } from "@admin/users/models";
 import { UserPage } from "./user-page";
 
 describe("UserPage", () =>
@@ -25,7 +26,12 @@ describe("UserPage", () =>
 		email: "john@example.com",
 		fullName: "John Doe",
 		createdAt: "2024-01-01T00:00:00Z",
-		isActive: true
+		isActive: true,
+		createdBy: "admin",
+		modifiedAt: "2024-01-02T00:00:00Z",
+		modifiedBy: "admin",
+		lastLoginAt: "2024-01-03T00:00:00Z",
+		rowVersion: 1
 	};
 
 	beforeEach(async () =>
@@ -161,7 +167,7 @@ describe("UserPage", () =>
 		const localMockMutationResult = createMockMutationResult<
 			User,
 			Error,
-			{ id: string | number; user: Partial<User> },
+			{ id: string | number; user: UpdateUserRequest },
 			unknown
 		>();
 		localMockMutationResult.mutate = jasmine
@@ -214,7 +220,7 @@ describe("UserPage", () =>
 		const errorMutation = createMockMutationResult<
 			User,
 			Error,
-			{ id: string | number; user: Partial<User> },
+			{ id: string | number; user: UpdateUserRequest },
 			unknown
 		>({ isError: true, error });
 
@@ -269,7 +275,7 @@ describe("UserPage", () =>
 		const localMockMutationResult = createMockMutationResult<
 			User,
 			Error,
-			{ id: string | number; user: Partial<User> },
+			{ id: string | number; user: UpdateUserRequest },
 			unknown
 		>();
 		localMockMutationResult.mutate = jasmine
@@ -298,5 +304,199 @@ describe("UserPage", () =>
 		await component.onSubmit();
 
 		expect(component.userForm.pristine).toBe(true);
+	});
+
+	describe("UpdateUserRequest with RowVersion", () =>
+	{
+		it("should include rowVersion in update request", async () =>
+		{
+			const updatedUser: User = { ...mockUser, fullName: "New Name" };
+			const localMockMutationResult = createMockMutationResult<
+				User,
+				Error,
+				{ id: string | number; user: UpdateUserRequest },
+				unknown
+			>();
+			localMockMutationResult.mutate = jasmine
+				.createSpy("mutate")
+				.and.callFake((variables, options) =>
+				{
+					if (options?.onSuccess)
+					{
+						options.onSuccess(updatedUser, variables, undefined);
+					}
+				});
+			mockUserService.updateUser.and.returnValue(localMockMutationResult);
+
+			// Recreate component to get new mutation instance
+			fixture = TestBed.createComponent(UserPage);
+			component = fixture.componentInstance;
+			TestBed.runInInjectionContext(() =>
+			{
+				fixture.detectChanges();
+			});
+
+			await fixture.whenStable();
+
+			component.userForm.patchValue({ fullName: "New Name" });
+			await component.onSubmit();
+
+			expect(component.updateMutation.mutate).toHaveBeenCalledWith(
+				{
+					id: "1",
+					user: jasmine.objectContaining({
+						id: 1,
+						rowVersion: 1
+					})
+				},
+				jasmine.any(Object)
+			);
+		});
+
+		it("should handle 409 conflict error with refresh option", async () =>
+		{
+			const conflictError: any = {
+				status: 409,
+				message: "Concurrency conflict"
+			};
+			const errorMutation = createMockMutationResult<
+				User,
+				any,
+				{ id: string | number; user: UpdateUserRequest },
+				unknown
+			>({ isError: true, error: conflictError });
+
+			errorMutation.mutate = jasmine
+				.createSpy("mutate")
+				.and.callFake((variables, options) =>
+				{
+					if (options?.onError)
+					{
+						options.onError(conflictError, variables, undefined);
+					}
+				});
+
+			mockUserService.updateUser.and.returnValue(errorMutation);
+
+			// Spy on snackBar to verify it was called
+			const snackBarSpy = jasmine.createSpyObj("MatSnackBarRef", [
+				"onAction"
+			]);
+			snackBarSpy.onAction.and.returnValue(new Subject());
+
+			// Recreate component to get new mutation
+			fixture = TestBed.createComponent(UserPage);
+			component = fixture.componentInstance;
+
+			// Spy on the component's snackbar
+			spyOn(
+				component["snackBar" as keyof UserPage] as any,
+				"open"
+			).and.returnValue(snackBarSpy);
+
+			TestBed.runInInjectionContext(() =>
+			{
+				fixture.detectChanges();
+			});
+
+			await fixture.whenStable();
+
+			component.userForm.patchValue({ fullName: "Modified" });
+			await component.onSubmit();
+
+			expect(
+				(component["snackBar" as keyof UserPage] as any).open
+			).toHaveBeenCalledWith(
+				jasmine.stringContaining("User was modified by another user"),
+				"REFRESH",
+				jasmine.any(Object)
+			);
+		});
+
+		it("should not submit if user data not loaded", async () =>
+		{
+			mockUserService.getUserById.and.returnValue(
+				createMockQueryResult<User, Error>(undefined, {
+					isLoading: true
+				})
+			);
+
+			// Recreate component with loading state
+			const loadingFixture: ComponentFixture<UserPage> =
+				TestBed.createComponent(UserPage);
+			const loadingComponent: UserPage = loadingFixture.componentInstance;
+			TestBed.runInInjectionContext(() =>
+			{
+				loadingFixture.detectChanges();
+			});
+			await loadingFixture.whenStable();
+
+			loadingComponent.userForm.patchValue({ fullName: "New Name" });
+			await loadingComponent.onSubmit();
+
+			expect(
+				loadingComponent.updateMutation.mutate
+			).not.toHaveBeenCalled();
+		});
+
+		it("should include all required fields in UpdateUserRequest", async () =>
+		{
+			const updatedUser: User = {
+				...mockUser,
+				username: "new_username",
+				email: "new@example.com",
+				fullName: "New Full Name",
+				isActive: false
+			};
+			const localMockMutationResult = createMockMutationResult<
+				User,
+				Error,
+				{ id: string | number; user: UpdateUserRequest },
+				unknown
+			>();
+			localMockMutationResult.mutate = jasmine
+				.createSpy("mutate")
+				.and.callFake((variables, options) =>
+				{
+					if (options?.onSuccess)
+					{
+						options.onSuccess(updatedUser, variables, undefined);
+					}
+				});
+			mockUserService.updateUser.and.returnValue(localMockMutationResult);
+
+			// Recreate component to get new mutation instance
+			fixture = TestBed.createComponent(UserPage);
+			component = fixture.componentInstance;
+			TestBed.runInInjectionContext(() =>
+			{
+				fixture.detectChanges();
+			});
+
+			await fixture.whenStable();
+
+			component.userForm.patchValue({
+				username: "new_username",
+				email: "new@example.com",
+				fullName: "New Full Name",
+				isActive: false
+			});
+			await component.onSubmit();
+
+			expect(component.updateMutation.mutate).toHaveBeenCalledWith(
+				{
+					id: "1",
+					user: {
+						id: 1,
+						username: "new_username",
+						email: "new@example.com",
+						fullName: "New Full Name",
+						isActive: false,
+						rowVersion: 1
+					}
+				},
+				jasmine.any(Object)
+			);
+		});
 	});
 });

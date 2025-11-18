@@ -4,7 +4,10 @@ import { Router } from "@angular/router";
 import { UserList } from "./user-list";
 import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
-import { createMockQueryResult } from "@core/testing/tanstack-query-helpers";
+import {
+	createMockQueryResult,
+	createMockMutationResult
+} from "@core/testing/tanstack-query-helpers";
 import { User } from "@admin/users/models";
 
 describe("UserList", () =>
@@ -22,7 +25,12 @@ describe("UserList", () =>
 			email: "john@example.com",
 			fullName: "John Doe",
 			createdAt: "2024-01-01T00:00:00Z",
-			isActive: true
+			isActive: true,
+			createdBy: "admin",
+			modifiedAt: "2024-01-02T00:00:00Z",
+			modifiedBy: "admin",
+			lastLoginAt: "2024-01-03T00:00:00Z",
+			rowVersion: 1
 		},
 		{
 			id: 2,
@@ -30,13 +38,22 @@ describe("UserList", () =>
 			email: "jane@example.com",
 			fullName: "Jane Smith",
 			createdAt: "2024-01-02T00:00:00Z",
-			isActive: false
+			isActive: false,
+			createdBy: "system",
+			modifiedAt: "2024-01-03T00:00:00Z",
+			modifiedBy: "system",
+			lastLoginAt: "2024-01-04T00:00:00Z",
+			rowVersion: 2
 		}
 	];
 
 	beforeEach(async () =>
 	{
-		mockUserService = jasmine.createSpyObj("UserService", ["getAllUsers"]);
+		mockUserService = jasmine.createSpyObj("UserService", [
+			"getAllUsers",
+			"bulkActivateUsers",
+			"bulkDeactivateUsers"
+		]);
 		mockLogger = jasmine.createSpyObj("LoggerService", ["info", "error"]);
 		mockRouter = jasmine.createSpyObj("Router", ["navigate"]);
 
@@ -788,6 +805,143 @@ describe("UserList", () =>
 			const chartData = component!.userStatsChartData();
 
 			expect(chartData.labels!.length).toBe(6);
+		});
+	});
+
+	describe("Audit Column Definitions", () =>
+	{
+		it("should include audit columns in column definitions", () =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>([])
+			);
+			mockUserService.bulkActivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			mockUserService.bulkDeactivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+
+			const columnDefs = component!.columnDefs();
+			const columnKeys: string[] = columnDefs.map((col) => col.key);
+
+			expect(columnKeys).toContain("createdBy");
+			expect(columnKeys).toContain("modifiedAt");
+			expect(columnKeys).toContain("modifiedBy");
+			expect(columnKeys).toContain("lastLoginAt");
+		});
+
+		it("should have audit columns hidden by default", () =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>([])
+			);
+			mockUserService.bulkActivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			mockUserService.bulkDeactivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+
+			const columnDefs = component!.columnDefs();
+			const createdByCol = columnDefs.find((c) => c.key === "createdBy");
+			const modifiedAtCol = columnDefs.find(
+				(c) => c.key === "modifiedAt"
+			);
+			const modifiedByCol = columnDefs.find(
+				(c) => c.key === "modifiedBy"
+			);
+			const lastLoginCol = columnDefs.find(
+				(c) => c.key === "lastLoginAt"
+			);
+
+			expect(createdByCol?.visible).toBe(false);
+			expect(modifiedAtCol?.visible).toBe(false);
+			expect(modifiedByCol?.visible).toBe(false);
+			expect(lastLoginCol?.visible).toBe(false);
+		});
+	});
+
+	describe("Bulk Operations", () =>
+	{
+		it("should have bulkActivateMutation property", () =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>([])
+			);
+			mockUserService.bulkActivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			mockUserService.bulkDeactivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+
+			expect(component!.bulkActivateMutation).toBeDefined();
+		});
+
+		it("should have bulkDeactivateMutation property", () =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>([])
+			);
+			mockUserService.bulkActivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			mockUserService.bulkDeactivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+
+			expect(component!.bulkDeactivateMutation).toBeDefined();
+		});
+
+		it("should have activateSelected method", () =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>([])
+			);
+			mockUserService.bulkActivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			mockUserService.bulkDeactivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+
+			expect(component!.activateSelected).toBeDefined();
+			expect(typeof component!.activateSelected).toBe("function");
+		});
+
+		it("should have deactivateSelected method", () =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>([])
+			);
+			mockUserService.bulkActivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			mockUserService.bulkDeactivateUsers.and.returnValue(
+				createMockMutationResult<number, Error, number[], unknown>()
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+
+			expect(component!.deactivateSelected).toBeDefined();
+			expect(typeof component!.deactivateSelected).toBe("function");
 		});
 	});
 });
