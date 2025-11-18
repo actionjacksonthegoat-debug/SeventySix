@@ -2,8 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Core.DTOs.OpenWeather;
-using SeventySix.Core.DTOs.Requests;
+using SeventySix.BusinessLogic.DTOs.OpenWeather;
+using SeventySix.BusinessLogic.DTOs.Requests;
 
 namespace SeventySix.BusinessLogic.Interfaces;
 

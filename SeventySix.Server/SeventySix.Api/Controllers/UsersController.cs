@@ -9,7 +9,6 @@ using SeventySix.Api.Configuration;
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Interfaces;
-using SeventySix.Core.DTOs;
 
 namespace SeventySix.Api.Controllers;
 

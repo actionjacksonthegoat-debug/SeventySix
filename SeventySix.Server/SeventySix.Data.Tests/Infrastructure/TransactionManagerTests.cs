@@ -4,7 +4,8 @@
 
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using SeventySix.Core.Entities;
+using SeventySix.BusinessLogic.Entities;
+using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.Data.Infrastructure;
 
 namespace SeventySix.Data.Tests.Infrastructure;

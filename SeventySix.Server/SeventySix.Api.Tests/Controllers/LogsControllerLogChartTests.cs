@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SeventySix.Api.Controllers;
-using SeventySix.Core.DTOs.LogCharts;
-using SeventySix.Core.Interfaces;
+using SeventySix.BusinessLogic.DTOs.LogCharts;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.Api.Tests.Controllers;
 

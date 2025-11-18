@@ -8,8 +8,8 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Api.Tests.Attributes;
-using SeventySix.Core.DTOs.OpenWeather;
-using SeventySix.Core.Interfaces;
+using SeventySix.BusinessLogic.DTOs.OpenWeather;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.Api.Tests.Integration;
 

@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SeventySix.BusinessLogic\SeventySix.BusinessLogic.csproj" />
-    <ProjectReference Include="..\SeventySix.Core\SeventySix.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,11 +4,10 @@
 
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using SeventySix.BusinessLogic.DTOs.OpenWeather;
+using SeventySix.BusinessLogic.DTOs.Requests;
+using SeventySix.BusinessLogic.Exceptions;
 using SeventySix.BusinessLogic.Interfaces;
-using SeventySix.Core.DTOs.OpenWeather;
-using SeventySix.Core.DTOs.Requests;
-using SeventySix.Core.Exceptions;
-using SeventySix.Core.Interfaces;
 
 namespace SeventySix.BusinessLogic.Services;
 

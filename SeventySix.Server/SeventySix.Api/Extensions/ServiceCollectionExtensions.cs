@@ -8,14 +8,13 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SeventySix.BusinessLogic.Configuration;
+using SeventySix.BusinessLogic.Infrastructure;
 using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.BusinessLogic.Services;
 using SeventySix.BusinessLogic.Validators;
-using SeventySix.Core.Interfaces;
 using SeventySix.Data;
 using SeventySix.Data.Infrastructure;
-using SeventySix.DataAccess.Repositories;
-using SeventySix.DataAccess.Services;
+using SeventySix.Data.Repositories;
 
 namespace SeventySix.Api.Extensions;
 

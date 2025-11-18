@@ -11,8 +11,8 @@ using Moq;
 using Moq.Protected;
 using SeventySix.Api.Tests.Attributes;
 using SeventySix.BusinessLogic.Configuration;
-using SeventySix.Core.Interfaces;
-using SeventySix.DataAccess.Services;
+using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.BusinessLogic.Infrastructure;
 
 namespace SeventySix.Api.Tests.Integration;
 

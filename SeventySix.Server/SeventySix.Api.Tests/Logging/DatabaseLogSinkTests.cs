@@ -7,10 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog.Events;
 using Serilog.Parsing;
 using SeventySix.Api.Logging;
-using SeventySix.Core.Entities;
-using SeventySix.Core.Interfaces;
+using SeventySix.BusinessLogic.Entities;
+using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.Data;
-using SeventySix.DataAccess.Repositories;
+using SeventySix.Data.Repositories;
 using Testcontainers.PostgreSql;
 
 namespace SeventySix.Api.Tests.Logging;

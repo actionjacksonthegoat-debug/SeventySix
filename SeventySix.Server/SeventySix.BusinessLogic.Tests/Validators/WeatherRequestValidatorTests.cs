@@ -4,8 +4,8 @@
 
 using FluentValidation.TestHelper;
 using SeventySix.BusinessLogic.Validators;
-using SeventySix.Core.DTOs.OpenWeather.Common;
-using SeventySix.Core.DTOs.Requests;
+using SeventySix.BusinessLogic.DTOs.OpenWeather.Common;
+using SeventySix.BusinessLogic.DTOs.Requests;
 
 namespace SeventySix.BusinessLogic.Tests.Validators;
 

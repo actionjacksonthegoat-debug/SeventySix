@@ -4,10 +4,10 @@
 
 using Moq;
 using SeventySix.BusinessLogic.Services;
-using SeventySix.Core.DTOs.LogCharts;
-using SeventySix.Core.DTOs.Logs;
-using SeventySix.Core.Entities;
-using SeventySix.Core.Interfaces;
+using SeventySix.BusinessLogic.DTOs.LogCharts;
+using SeventySix.BusinessLogic.DTOs.Logs;
+using SeventySix.BusinessLogic.Entities;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.BusinessLogic.Tests.Services;
 

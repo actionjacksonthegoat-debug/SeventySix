@@ -4,7 +4,7 @@
 
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.Core.Entities;
+using SeventySix.BusinessLogic.Entities;
 
 namespace SeventySix.BusinessLogic.Extensions;
 

@@ -21,7 +21,7 @@ SeventySix is a full-stack application built with **Clean Architecture** princip
 
 **Technology Stack:**
 
--   **Backend**: .NET 8+ with Clean Architecture
+-   **Backend**: .NET 10+ with Three-Layer Architecture
 -   **Frontend**: Angular 19+ with Signals and Standalone Components
 -   **Database**: PostgreSQL with Entity Framework Core
 -   **UI Framework**: Angular Material (Material Design 3)
@@ -29,7 +29,7 @@ SeventySix is a full-stack application built with **Clean Architecture** princip
 
 **Key Characteristics:**
 
--   Layered architecture with strict dependency rules
+-   Three-layer architecture with clear boundaries
 -   Feature-based module organization
 -   Repository and Service patterns
 -   SOLID principles throughout
@@ -92,58 +92,51 @@ SeventySix.Api (Presentation)
     ├─ Middleware: Global concerns
     └─ Program.cs: DI composition root
          │ depends on ↓
-SeventySix.BusinessLogic (Application)
+SeventySix.BusinessLogic (Application/Domain)
     ├─ Services: Business logic orchestration
+    ├─ Entities: Domain models
     ├─ DTOs: Data transfer objects
     ├─ Validators: FluentValidation rules
-    └─ Interfaces: Service contracts
-         │ depends on ↓
-SeventySix.Core (Domain)
-    ├─ Entities: Domain models
-    ├─ Value Objects: Immutable concepts
+    ├─ Interfaces: Service & repository contracts
     ├─ Exceptions: Business rule violations
-    └─ Interfaces: Repository contracts
-         ↑ implements      ↑ configures
-SeventySix.DataAccess    SeventySix.Data
-    ├─ Repositories           ├─ DbContext
-    └─ Services               ├─ Configurations
-                              └─ Migrations
+    ├─ ValueObjects: Immutable domain concepts
+    ├─ Extensions: Mapping and helper methods
+    ├─ Configuration: Application settings
+    └─ Infrastructure: HTTP clients, external services
+         ↑ implements
+SeventySix.Data (Persistence)
+    ├─ DbContext: Entity Framework Core context
+    ├─ Configurations: Entity configurations
+    ├─ Migrations: Database migrations
+    ├─ Repositories: Repository implementations
+    └─ Infrastructure: TransactionManager
 ```
 
 ### Layer Responsibilities
 
-**SeventySix.Core (Domain)**
+**SeventySix.BusinessLogic (Application + Domain)**
 
--   Pure business entities with no dependencies
--   Repository interfaces (abstractions)
+-   Business entities with domain logic
+-   Service implementations
+-   Service & repository interfaces (abstractions)
+-   DTOs for API contracts
+-   FluentValidation validators
 -   Domain exceptions
 -   Value objects
--   NO framework dependencies (no EF, no ASP.NET)
+-   Mapping extensions (Entity ↔ DTO)
+-   Configuration classes
+-   Infrastructure adapters (HTTP clients, external API wrappers)
+-   Minimal framework dependencies (EF abstractions, FluentValidation, MediatR, Polly)
 
-**SeventySix.Data (Database Schema)**
+**SeventySix.Data (Persistence)**
 
 -   ApplicationDbContext
 -   Entity configurations (Fluent API)
 -   EF Core migrations
 -   Database-specific implementations (PostgreSQL)
--   TransactionManager for coordinating transactions
-
-**SeventySix.DataAccess (Data Access Logic)**
-
 -   Repository implementations using LINQ
--   Database-agnostic (works with any EF provider)
--   Caching services
--   External API clients (Polly integration)
--   NO database provider dependencies
-
-**SeventySix.BusinessLogic (Application Logic)**
-
--   Service implementations
--   Service interfaces
--   DTOs for API contracts
--   FluentValidation validators
--   Mapping extensions (Entity ↔ DTO)
--   Command/Query handlers
+-   TransactionManager implementation (ITransactionManager interface in BusinessLogic)
+-   Database-agnostic query logic
 
 **SeventySix.Api (Presentation)**
 
@@ -155,18 +148,25 @@ SeventySix.DataAccess    SeventySix.Data
 
 ### Dependency Rules
 
--   **Core** has zero dependencies
--   **Data** depends on Core only
--   **DataAccess** depends on Core + Data
--   **BusinessLogic** depends on Core only
--   **Api** depends on all layers (composition root)
+-   **BusinessLogic** has minimal dependencies (EF Core abstractions, FluentValidation, MediatR, Polly for HTTP resilience)
+-   **Data** depends on BusinessLogic (for entity definitions and interfaces)
+-   **Api** depends on BusinessLogic + Data (composition root)
 
 ### Key Design Decisions
+
+**Simplified Three-Layer Architecture**
+
+-   Combines Core (Domain) and BusinessLogic (Application) into single BusinessLogic layer
+-   Consolidates DataAccess and Data into single Data layer
+-   Reduces over-engineering (5 projects → 3 projects) while maintaining separation of concerns
+-   Easier navigation and faster development
+-   Still maintains testability and clean boundaries
+-   Follows Dependency Inversion Principle: interfaces in BusinessLogic, implementations in Data
 
 **Repository Pattern**
 
 -   Abstracts data access from business logic
--   Interface in Core, implementation in DataAccess
+-   Interface in BusinessLogic, implementation in Data
 -   Returns domain entities, not DTOs
 -   Uses LINQ for database-agnostic queries
 
@@ -728,9 +728,8 @@ provideHttpClient(
 **Test Organization**
 
 -   Separate test project per layer
--   `SeventySix.Core.Tests`
 -   `SeventySix.BusinessLogic.Tests`
--   `SeventySix.DataAccess.Tests`
+-   `SeventySix.Data.Tests`
 -   `SeventySix.Api.Tests`
 
 ### Frontend Testing
@@ -783,16 +782,17 @@ provideHttpClient(
 
 **Backend:**
 
-1. Create entity in `Core/Entities`
-2. Create repository interface in `Core/Interfaces`
-3. Create repository implementation in `DataAccess/Repositories`
-4. Create DTOs in `BusinessLogic/DTOs`
-5. Create service interface in `BusinessLogic/Interfaces`
+1. Create entity in `BusinessLogic/Entities`
+2. Create repository interface in `BusinessLogic/Interfaces`
+3. Create DTOs in `BusinessLogic/DTOs`
+4. Create service interface in `BusinessLogic/Interfaces`
+5. Create validators in `BusinessLogic/Validators`
 6. Create service implementation in `BusinessLogic/Services`
-7. Create validators in `BusinessLogic/Validators`
-8. Create controller in `Api/Controllers`
-9. Register in DI container in `Program.cs`
-10. Write unit and integration tests
+7. Create repository implementation in `Data/Repositories`
+8. Create entity configuration in `Data/Configurations`
+9. Create controller in `Api/Controllers`
+10. Register in DI container in `Api/Extensions/ServiceCollectionExtensions.cs`
+11. Write unit and integration tests
 
 **Frontend:**
 

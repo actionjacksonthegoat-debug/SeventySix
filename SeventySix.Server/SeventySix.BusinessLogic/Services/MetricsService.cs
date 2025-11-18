@@ -3,7 +3,7 @@
 // </copyright>
 
 using System.Diagnostics.Metrics;
-using SeventySix.Core.Interfaces;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.BusinessLogic.Services;
 

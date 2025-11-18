@@ -3,7 +3,7 @@
 // </copyright>
 
 using FluentValidation;
-using SeventySix.Core.DTOs.Requests;
+using SeventySix.BusinessLogic.DTOs.Requests;
 
 namespace SeventySix.BusinessLogic.Validators;
 

@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.Data.Infrastructure;
 

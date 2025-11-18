@@ -3,8 +3,8 @@
 // </copyright>
 
 using System.Diagnostics;
-using SeventySix.Core.DTOs.Health;
-using SeventySix.Core.Interfaces;
+using SeventySix.BusinessLogic.DTOs.Health;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.BusinessLogic.Services;
 
