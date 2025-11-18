@@ -5,8 +5,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using SeventySix.Api.Controllers;
-using SeventySix.Application.DTOs.ThirdPartyRequests;
-using SeventySix.Application.Interfaces;
+using SeventySix.BusinessLogic.DTOs.ThirdPartyRequests;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.Api.Tests.Controllers;
 

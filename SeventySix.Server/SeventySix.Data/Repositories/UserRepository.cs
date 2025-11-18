@@ -4,8 +4,8 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SeventySix.Application.Entities;
-using SeventySix.Application.Interfaces;
+using SeventySix.BusinessLogic.Entities;
+using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.Data;
 
 namespace SeventySix.Data.Repositories;

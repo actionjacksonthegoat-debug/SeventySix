@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SeventySix.Application\SeventySix.Application.csproj" />
+    <ProjectReference Include="..\SeventySix.BusinessLogic\SeventySix.BusinessLogic.csproj" />
     <!-- NEW: Reference to Data layer for DbContext registration -->
     <ProjectReference Include="..\SeventySix.Data\SeventySix.Data.csproj" />
   </ItemGroup>

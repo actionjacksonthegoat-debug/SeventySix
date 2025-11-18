@@ -6,8 +6,8 @@ using System.Collections.Concurrent;
 using System.Text;
 using Serilog.Core;
 using Serilog.Events;
-using SeventySix.Application.Entities;
-using SeventySix.Application.Interfaces;
+using SeventySix.BusinessLogic.Entities;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.Api.Logging;
 

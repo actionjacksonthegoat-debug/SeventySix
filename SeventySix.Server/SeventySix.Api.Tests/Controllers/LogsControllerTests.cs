@@ -6,9 +6,9 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using SeventySix.Application.DTOs.Logs;
-using SeventySix.Application.Entities;
-using SeventySix.Application.Interfaces;
+using SeventySix.BusinessLogic.DTOs.Logs;
+using SeventySix.BusinessLogic.Entities;
+using SeventySix.BusinessLogic.Interfaces;
 using Xunit;
 
 namespace SeventySix.Api.Tests.Controllers;

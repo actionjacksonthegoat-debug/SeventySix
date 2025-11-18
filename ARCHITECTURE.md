@@ -92,7 +92,7 @@ SeventySix.Api (Presentation)
     ├─ Middleware: Global concerns
     └─ Program.cs: DI composition root
          │ depends on ↓
-SeventySix.Application (Application/Domain)
+SeventySix.BusinessLogic (Application/Domain)
     ├─ Services: Business logic orchestration
     ├─ Entities: Domain models
     ├─ DTOs: Data transfer objects
@@ -111,7 +111,7 @@ SeventySix.DataAccess    SeventySix.Data
 
 ### Layer Responsibilities
 
-**SeventySix.Application (Application + Domain)**
+**SeventySix.BusinessLogic (Application + Domain)**
 
 -   Business entities with domain logic
 -   Service implementations

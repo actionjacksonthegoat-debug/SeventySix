@@ -7,8 +7,8 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using SeventySix.Application.Configuration;
-using SeventySix.Application.Interfaces;
+using SeventySix.BusinessLogic.Configuration;
+using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.Data.Services;
 
 namespace SeventySix.Data.Tests.Services;

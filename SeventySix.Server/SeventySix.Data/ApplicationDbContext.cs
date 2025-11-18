@@ -5,7 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SeventySix.Application.Entities;
+using SeventySix.BusinessLogic.Entities;
 
 namespace SeventySix.Data;
 

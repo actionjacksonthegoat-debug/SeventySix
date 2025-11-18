@@ -7,7 +7,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SeventySix.Application.Exceptions;
+using SeventySix.BusinessLogic.Exceptions;
 
 namespace SeventySix.Api.Middleware;
 

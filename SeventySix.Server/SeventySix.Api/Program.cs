@@ -37,7 +37,7 @@ using Serilog.Exceptions;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Logging;
 using SeventySix.Api.Middleware;
-using SeventySix.Application.Configuration;
+using SeventySix.BusinessLogic.Configuration;
 using SeventySix.Data;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);

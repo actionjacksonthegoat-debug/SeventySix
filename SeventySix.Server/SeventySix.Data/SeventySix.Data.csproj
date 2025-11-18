@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <!-- Core domain entities to configure -->
-    <ProjectReference Include="..\SeventySix.Application\SeventySix.Application.csproj" />
+    <ProjectReference Include="..\SeventySix.BusinessLogic\SeventySix.BusinessLogic.csproj" />
   </ItemGroup>
 
   <ItemGroup>
