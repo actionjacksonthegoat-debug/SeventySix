@@ -9,7 +9,7 @@ using SeventySix.Application.DTOs.OpenWeather;
 using SeventySix.Application.DTOs.Requests;
 using SeventySix.Application.Interfaces;
 
-namespace SeventySix.DataAccess.Services;
+namespace SeventySix.Data.Services;
 
 /// <summary>
 /// OpenWeather API client implementation.

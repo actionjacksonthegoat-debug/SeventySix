@@ -14,8 +14,8 @@ using SeventySix.Application.Validators;
 using SeventySix.Application.Interfaces;
 using SeventySix.Data;
 using SeventySix.Data.Infrastructure;
-using SeventySix.DataAccess.Repositories;
-using SeventySix.DataAccess.Services;
+using SeventySix.Data.Repositories;
+using SeventySix.Data.Services;
 
 namespace SeventySix.Api.Extensions;
 

@@ -7,10 +7,10 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SeventySix.Application.Entities;
 using SeventySix.Data;
-using SeventySix.DataAccess.Repositories;
-using SeventySix.DataAccess.Tests.Integration;
+using SeventySix.Data.Repositories;
+using SeventySix.Data.Tests.Integration;
 
-namespace SeventySix.DataAccess.Tests.Repositories;
+namespace SeventySix.Data.Tests.Repositories;
 
 /// <summary>
 /// Integration tests for <see cref="ThirdPartyApiRequestRepository"/>.

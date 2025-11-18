@@ -9,7 +9,7 @@ using SeventySix.Application.Entities;
 using SeventySix.Application.Interfaces;
 using SeventySix.Data.Infrastructure;
 
-namespace SeventySix.DataAccess.Services;
+namespace SeventySix.Data.Services;
 
 /// <summary>
 /// Database-backed rate limiting service for API call tracking.

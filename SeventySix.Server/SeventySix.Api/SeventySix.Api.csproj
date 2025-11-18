@@ -42,7 +42,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SeventySix.Application\SeventySix.Application.csproj" />
-    <ProjectReference Include="..\SeventySix.DataAccess\SeventySix.DataAccess.csproj" />
     <!-- NEW: Reference to Data layer for DbContext registration -->
     <ProjectReference Include="..\SeventySix.Data\SeventySix.Data.csproj" />
   </ItemGroup>

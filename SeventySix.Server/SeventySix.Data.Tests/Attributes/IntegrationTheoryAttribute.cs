@@ -1,24 +1,24 @@
-// <copyright file="IntegrationTestAttribute.cs" company="SeventySix">
+// <copyright file="IntegrationTheoryAttribute.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
 using Microsoft.Extensions.Configuration;
 
-namespace SeventySix.DataAccess.Tests.Attributes;
+namespace SeventySix.Data.Tests.Attributes;
 
 /// <summary>
-/// Custom xUnit Fact attribute that skips integration tests unless explicitly enabled in configuration.
+/// Custom xUnit Theory attribute that skips integration tests unless explicitly enabled in configuration.
 /// Integration tests are those that:
 /// - Call external APIs (e.g., OpenWeather)
 /// - Connect to deployed PostgreSQL databases
 /// - Perform E2E testing against real infrastructure
 /// Unit tests should use mocks or TestContainers instead.
 /// </summary>
-public sealed class IntegrationTestAttribute : FactAttribute
+public sealed class IntegrationTheoryAttribute : TheoryAttribute
 {
 	private static readonly bool RunIntegrationTests;
 
-	static IntegrationTestAttribute()
+	static IntegrationTheoryAttribute()
 	{
 		IConfigurationRoot configuration = new ConfigurationBuilder()
 			.SetBasePath(Directory.GetCurrentDirectory())
@@ -32,9 +32,9 @@ public sealed class IntegrationTestAttribute : FactAttribute
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="IntegrationTestAttribute"/> class.
+	/// Initializes a new instance of the <see cref="IntegrationTheoryAttribute"/> class.
 	/// </summary>
-	public IntegrationTestAttribute()
+	public IntegrationTheoryAttribute()
 	{
 		if (!RunIntegrationTests)
 		{

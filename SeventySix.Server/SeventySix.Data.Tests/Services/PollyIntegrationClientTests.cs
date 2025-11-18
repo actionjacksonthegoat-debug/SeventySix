@@ -9,9 +9,9 @@ using Moq;
 using Moq.Protected;
 using SeventySix.Application.Configuration;
 using SeventySix.Application.Interfaces;
-using SeventySix.DataAccess.Services;
+using SeventySix.Data.Services;
 
-namespace SeventySix.DataAccess.Tests.Services;
+namespace SeventySix.Data.Tests.Services;
 
 /// <summary>
 /// Unit tests for PollyIntegrationClient.

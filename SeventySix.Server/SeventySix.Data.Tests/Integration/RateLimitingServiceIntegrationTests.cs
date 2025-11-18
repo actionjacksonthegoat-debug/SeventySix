@@ -10,11 +10,11 @@ using SeventySix.Application.Configuration;
 using SeventySix.Application.Entities;
 using SeventySix.Data;
 using SeventySix.Data.Infrastructure;
-using SeventySix.DataAccess.Repositories;
-using SeventySix.DataAccess.Services;
-using SeventySix.DataAccess.Tests.Attributes;
+using SeventySix.Data.Repositories;
+using SeventySix.Data.Services;
+using SeventySix.Data.Tests.Attributes;
 
-namespace SeventySix.DataAccess.Tests.Integration;
+namespace SeventySix.Data.Tests.Integration;
 
 /// <summary>
 /// Integration tests for RateLimitingService using real PostgreSQL database.

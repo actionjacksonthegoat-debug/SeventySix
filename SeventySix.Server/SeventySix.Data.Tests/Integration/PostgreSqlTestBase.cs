@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Data;
 using Testcontainers.PostgreSql;
 
-namespace SeventySix.DataAccess.Tests.Integration;
+namespace SeventySix.Data.Tests.Integration;
 
 /// <summary>
 /// Shared PostgreSQL fixture that creates a single database instance for DataAccess layer tests.

@@ -10,7 +10,7 @@ using SeventySix.Api.Logging;
 using SeventySix.Application.Entities;
 using SeventySix.Application.Interfaces;
 using SeventySix.Data;
-using SeventySix.DataAccess.Repositories;
+using SeventySix.Data.Repositories;
 using Testcontainers.PostgreSql;
 
 namespace SeventySix.Api.Tests.Logging;

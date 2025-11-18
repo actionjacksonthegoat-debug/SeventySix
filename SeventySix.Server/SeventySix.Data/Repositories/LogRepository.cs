@@ -8,7 +8,7 @@ using SeventySix.Application.Entities;
 using SeventySix.Application.Interfaces;
 using SeventySix.Data;
 
-namespace SeventySix.DataAccess.Repositories;
+namespace SeventySix.Data.Repositories;
 
 /// <summary>
 /// Repository implementation for log operations.

@@ -15,7 +15,7 @@ using Polly.Timeout;
 using SeventySix.Application.Configuration;
 using SeventySix.Application.Interfaces;
 
-namespace SeventySix.DataAccess.Services;
+namespace SeventySix.Data.Services;
 
 /// <summary>
 /// Generic HTTP client with Polly resilience policies.
