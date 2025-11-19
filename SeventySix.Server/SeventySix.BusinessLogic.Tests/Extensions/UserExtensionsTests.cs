@@ -4,8 +4,8 @@
 
 using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Extensions;
 using SeventySix.BusinessLogic.Entities;
+using SeventySix.BusinessLogic.Extensions;
 
 namespace SeventySix.BusinessLogic.Tests.Extensions;
 

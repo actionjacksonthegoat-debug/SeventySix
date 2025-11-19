@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
-using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.BusinessLogic.DTOs.OpenWeather;
 using SeventySix.BusinessLogic.DTOs.OpenWeather.Common;
 using SeventySix.BusinessLogic.DTOs.Requests;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.Api.Controllers;
 
@@ -75,6 +75,7 @@ public class WeatherForecastController(
 	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
 	[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
 	[OutputCache(PolicyName = "weather")]
+	[ResponseCache(Duration = 300)]
 	public async Task<ActionResult<CurrentWeather>> GetCurrentWeatherAsync(
 		[FromQuery] double latitude,
 		[FromQuery] double longitude,
@@ -210,6 +211,7 @@ public class WeatherForecastController(
 	[ProducesResponseType(typeof(IEnumerable<MinutelyForecast>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[OutputCache(PolicyName = "weather")]
+	[ResponseCache(Duration = 60)]
 	public async Task<ActionResult<IEnumerable<MinutelyForecast>>> GetMinutelyForecastAsync(
 		[FromQuery] double latitude,
 		[FromQuery] double longitude,
@@ -344,8 +346,9 @@ public class WeatherForecastController(
 	[HttpGet("historical", Name = "GetHistoricalWeather")]
 	[ProducesResponseType(typeof(OneCallResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[OutputCache(PolicyName = "weather")]
+	[ResponseCache(Duration = 86400)]
 	public async Task<ActionResult<OneCallResponse>> GetHistoricalWeatherAsync(
 		[FromQuery] double latitude,
 		[FromQuery] double longitude,

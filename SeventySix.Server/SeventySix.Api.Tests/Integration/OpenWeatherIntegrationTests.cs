@@ -8,17 +8,28 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Api.Tests.Attributes;
+using SeventySix.Api.Tests.TestBases;
 using SeventySix.BusinessLogic.DTOs.OpenWeather;
 using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.Api.Tests.Integration;
 
 /// <summary>
-/// Comprehensive integration tests for OpenWeather implementation.
-/// Tests the complete request flow from controller -> service -> API client -> Polly pipeline.
-/// Uses real PostgreSQL database via Testcontainers for rate limiting persistence.
+/// Integration tests for OpenWeather third-party API.
+/// Tests actual connectivity and responses from the OpenWeather service.
+///
+/// IMPORTANT: This is the ONLY test class that calls the real OpenWeather API.
+/// All other tests must mock IOpenWeatherApiClient.
+///
+/// These tests verify:
+/// - Actual API connectivity
+/// - Real response structure
+/// - Rate limiting with real database
+/// - End-to-end request flow
+///
+/// Uses real PostgreSQL database for rate limiting persistence.
 /// </summary>
-public class OpenWeatherIntegrationTests : PostgreSqlIntegrationTestBase, IClassFixture<PostgreSqlFixture>
+public class OpenWeatherIntegrationTests : PostgreSqlTestBase, IClassFixture<PostgreSqlFixture>
 {
 	private readonly WebApplicationFactory<Program> Factory;
 	private readonly HttpClient Client;

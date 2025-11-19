@@ -6,12 +6,12 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using Moq;
-using SeventySix.BusinessLogic.Services;
 using SeventySix.BusinessLogic.DTOs.OpenWeather;
 using SeventySix.BusinessLogic.DTOs.OpenWeather.Common;
 using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Exceptions;
 using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.BusinessLogic.Services;
 
 namespace SeventySix.BusinessLogic.Tests.Services;
 

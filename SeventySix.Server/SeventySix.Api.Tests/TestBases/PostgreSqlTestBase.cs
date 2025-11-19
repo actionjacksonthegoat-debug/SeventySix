@@ -8,10 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SeventySix.Data;
 
-namespace SeventySix.Api.Tests.Integration;
+namespace SeventySix.Api.Tests.TestBases;
 
 /// <summary>
-/// Shared PostgreSQL fixture that connects to localhost PostgreSQL for all API integration tests.
+/// Shared PostgreSQL fixture that connects to localhost PostgreSQL for all API tests.
 /// Uses local PostgreSQL instance for faster test execution compared to Testcontainers.
 /// This matches production behavior where all services connect to the same database.
 /// </summary>
@@ -52,14 +52,18 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
 }
 
 /// <summary>
-/// Base class for API integration tests that require a shared PostgreSQL database and WebApplicationFactory.
+/// Base class for API tests that require a shared PostgreSQL database and WebApplicationFactory.
 /// Uses IClassFixture to share a single PostgreSQL instance across all tests in the class.
+///
+/// IMPORTANT: This is NOT an integration test base class.
+/// Tests using this base class should mock all external dependencies (e.g., IOpenWeatherApiClient).
+/// Only OpenWeatherIntegrationTests should call the real OpenWeather third-party API.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="PostgreSqlIntegrationTestBase"/> class.
+/// Initializes a new instance of the <see cref="PostgreSqlTestBase"/> class.
 /// </remarks>
 /// <param name="fixture">The shared PostgreSQL fixture.</param>
-public abstract class PostgreSqlIntegrationTestBase(PostgreSqlFixture fixture) : IAsyncLifetime
+public abstract class PostgreSqlTestBase(PostgreSqlFixture fixture) : IAsyncLifetime
 {
 	private readonly PostgreSqlFixture Fixture = fixture;
 

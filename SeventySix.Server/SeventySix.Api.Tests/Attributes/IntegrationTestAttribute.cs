@@ -8,11 +8,21 @@ namespace SeventySix.Api.Tests.Attributes;
 
 /// <summary>
 /// Custom xUnit Fact attribute that skips integration tests unless explicitly enabled in configuration.
-/// Integration tests are those that:
-/// - Call external APIs (e.g., OpenWeather)
-/// - Connect to deployed PostgreSQL databases
-/// - Perform E2E testing against real infrastructure
-/// Unit tests should use mocks or TestContainers instead.
+/// This attribute is ONLY for tests that call external third-party APIs (OpenWeather).
+///
+/// IMPORTANT: Tests using TestContainers for PostgreSQL are NOT integration tests.
+/// TestContainers provide isolated database infrastructure for fast, reliable tests.
+/// Database tests should use [Fact] attribute and mock all external APIs (IOpenWeatherApiClient).
+///
+/// Use this attribute ONLY for:
+/// - Tests that call the real OpenWeather third-party API
+/// - Tests that validate actual connectivity to external services
+///
+/// Do NOT use this attribute for:
+/// - Tests using TestContainers (these are database tests, not integration tests)
+/// - Tests that mock IOpenWeatherApiClient (these are unit/database tests)
+/// - Controller tests (should mock external dependencies)
+/// - Repository tests (should mock external dependencies)
 /// </summary>
 public sealed class IntegrationTestAttribute : FactAttribute
 {

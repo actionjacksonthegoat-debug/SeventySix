@@ -228,10 +228,10 @@ export class UserPage implements OnInit
 						verticalPosition: "top"
 					});
 				},
-				onError: (err: any) =>
+				onError: (err: unknown) =>
 				{
 					// Handle 409 Conflict (concurrency error)
-					if (err.status === 409)
+					if ((err as { status?: number }).status === 409)
 					{
 						this.snackBar
 							.open(

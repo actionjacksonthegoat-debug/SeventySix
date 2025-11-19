@@ -1,4 +1,4 @@
-// <copyright file="PollyResilienceTests.cs" company="SeventySix">
+// <copyright file="PollyResiliencePolicyTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -9,23 +9,23 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
-using SeventySix.Api.Tests.Attributes;
 using SeventySix.BusinessLogic.Configuration;
-using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.BusinessLogic.Infrastructure;
+using SeventySix.BusinessLogic.Interfaces;
 
-namespace SeventySix.Api.Tests.Integration;
+namespace SeventySix.Api.Tests.Resilience;
 
 /// <summary>
-/// Tests Polly resilience policies (retry, circuit breaker, timeout).
+/// Tests for Polly resilience policies (retry, circuit breaker, timeout).
+/// Mocks external dependencies including HTTP calls.
 /// </summary>
-public class PollyResilienceIntegrationTests
+public class PollyResiliencePolicyTests
 {
 	/// <summary>
 	/// Tests retry policy retries on transient failures.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-	[IntegrationTest]
+	[Fact]
 	public async Task RetryPolicy_TransientFailure_RetriesThreeTimesAsync()
 	{
 		// Arrange
@@ -73,7 +73,9 @@ public class PollyResilienceIntegrationTests
 		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
 
 		// Act
-		dynamic? response = await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None);        // Assert
+		dynamic? response = await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None);
+
+		// Assert
 		callCount.Should().Be(3, "Should retry twice (3 attempts total)");
 	}
 
@@ -81,7 +83,7 @@ public class PollyResilienceIntegrationTests
 	/// Tests circuit breaker opens after threshold failures.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-	[IntegrationTest]
+	[Fact]
 	public async Task CircuitBreaker_ExceedsThreshold_OpensCircuitAsync()
 	{
 		// Arrange
@@ -108,7 +110,7 @@ public class PollyResilienceIntegrationTests
 
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
-			RetryCount = 1, // Minimum 1 required by Polly (use 1 for minimal retries)
+			RetryCount = 1,
 			CircuitBreakerFailureThreshold = 3,
 			CircuitBreakerSamplingDurationSeconds = 60,
 			CircuitBreakerBreakDurationSeconds = 1,
@@ -131,7 +133,6 @@ public class PollyResilienceIntegrationTests
 		}
 
 		// Assert - Circuit should now be open
-		// Next request should fail immediately without calling the handler
 		await Assert.ThrowsAnyAsync<Exception>(async () =>
 			await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None));
 	}
@@ -140,7 +141,7 @@ public class PollyResilienceIntegrationTests
 	/// Tests timeout policy cancels long-running requests.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-	[IntegrationTest]
+	[Fact]
 	public async Task TimeoutPolicy_SlowResponse_CancelsRequestAsync()
 	{
 		// Arrange
@@ -153,7 +154,7 @@ public class PollyResilienceIntegrationTests
 				ItExpr.IsAny<CancellationToken>())
 			.Returns(async () =>
 			{
-				await Task.Delay(TimeSpan.FromSeconds(15)); // Longer than timeout
+				await Task.Delay(TimeSpan.FromSeconds(15));
 				return new HttpResponseMessage(HttpStatusCode.OK);
 			});
 
@@ -171,11 +172,11 @@ public class PollyResilienceIntegrationTests
 
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
-			RetryCount = 1, // Minimum 1 required by Polly (use 1 for minimal retries)
+			RetryCount = 1,
 			CircuitBreakerFailureThreshold = 5,
 			CircuitBreakerSamplingDurationSeconds = 60,
 			CircuitBreakerBreakDurationSeconds = 30,
-			TimeoutSeconds = 2, // 2 second timeout
+			TimeoutSeconds = 2,
 		});
 
 		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);

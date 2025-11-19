@@ -12,12 +12,7 @@ import {
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
-import {
-	User,
-	UpdateUserRequest,
-	UserQueryRequest,
-	PagedResult
-} from "@admin/users/models";
+import { User, UpdateUserRequest, UserQueryRequest } from "@admin/users/models";
 import { UserRepository } from "@admin/users/repositories";
 import { getQueryConfig } from "@core/utils/query-config";
 

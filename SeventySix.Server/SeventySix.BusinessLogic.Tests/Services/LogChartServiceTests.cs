@@ -3,11 +3,11 @@
 // </copyright>
 
 using Moq;
-using SeventySix.BusinessLogic.Services;
 using SeventySix.BusinessLogic.DTOs.LogCharts;
 using SeventySix.BusinessLogic.DTOs.Logs;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.BusinessLogic.Services;
 
 namespace SeventySix.BusinessLogic.Tests.Services;
 

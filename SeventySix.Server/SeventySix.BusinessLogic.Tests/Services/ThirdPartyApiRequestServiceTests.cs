@@ -3,10 +3,10 @@
 // </copyright>
 
 using Moq;
-using SeventySix.BusinessLogic.Services;
 using SeventySix.BusinessLogic.DTOs.ThirdPartyRequests;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.BusinessLogic.Services;
 
 namespace SeventySix.BusinessLogic.Tests.Services;
 

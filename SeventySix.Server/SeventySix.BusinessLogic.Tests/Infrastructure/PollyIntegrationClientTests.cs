@@ -8,8 +8,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using SeventySix.BusinessLogic.Configuration;
-using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.BusinessLogic.Infrastructure;
+using SeventySix.BusinessLogic.Interfaces;
 
 namespace SeventySix.Data.Tests.Services;
 

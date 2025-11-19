@@ -1,4 +1,4 @@
-// <copyright file="RateLimitingServiceIntegrationTests.cs" company="SeventySix">
+// <copyright file="RateLimitingRepositoryTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -8,31 +8,31 @@ using Microsoft.Extensions.Options;
 using Moq;
 using SeventySix.BusinessLogic.Configuration;
 using SeventySix.BusinessLogic.Entities;
-using SeventySix.Data;
+using SeventySix.BusinessLogic.Infrastructure;
 using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.Data;
 using SeventySix.Data.Infrastructure;
 using SeventySix.Data.Repositories;
-using SeventySix.BusinessLogic.Infrastructure;
-using SeventySix.Data.Tests.Attributes;
+using SeventySix.Data.Tests.Integration;
 
-namespace SeventySix.Data.Tests.Integration;
+namespace SeventySix.Data.Tests.Repositories;
 
 /// <summary>
-/// Integration tests for RateLimitingService using real PostgreSQL database.
+/// Tests for RateLimitingService using real PostgreSQL database.
 /// Tests verify that rate limiting state persists correctly and handles concurrent requests.
 /// All tests share a single PostgreSQL instance to match production behavior.
 /// </summary>
-public class RateLimitingServiceIntegrationTests : PostgreSqlTestBase, IClassFixture<PostgreSqlFixture>
+public class RateLimitingRepositoryTests : PostgreSqlTestBase, IClassFixture<PostgreSqlFixture>
 {
 	private readonly Mock<ILogger<RateLimitingService>> LoggerMock;
 	private readonly Mock<ILogger<ThirdPartyApiRequestRepository>> RepoLoggerMock;
 	private readonly IOptions<OpenWeatherOptions> Options;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="RateLimitingServiceIntegrationTests"/> class.
+	/// Initializes a new instance of the <see cref="RateLimitingRepositoryTests"/> class.
 	/// </summary>
 	/// <param name="fixture">The shared PostgreSQL fixture.</param>
-	public RateLimitingServiceIntegrationTests(PostgreSqlFixture fixture)
+	public RateLimitingRepositoryTests(PostgreSqlFixture fixture)
 		: base(fixture)
 	{
 		LoggerMock = new Mock<ILogger<RateLimitingService>>();
@@ -45,7 +45,7 @@ public class RateLimitingServiceIntegrationTests : PostgreSqlTestBase, IClassFix
 		});
 	}
 
-	[IntegrationTest]
+	[Fact]
 	public async Task CanMakeRequestAsync_WhenNoRecordExists_ReturnsTrueAsync()
 	{
 		// Arrange
@@ -61,7 +61,7 @@ public class RateLimitingServiceIntegrationTests : PostgreSqlTestBase, IClassFix
 		result.Should().BeTrue();
 	}
 
-	[IntegrationTest]
+	[Fact]
 	public async Task TryIncrementRequestCountAsync_FirstCall_CreatesNewRecordAsync()
 	{
 		// Arrange
@@ -82,7 +82,7 @@ public class RateLimitingServiceIntegrationTests : PostgreSqlTestBase, IClassFix
 		record.BaseUrl.Should().Be("https://api.test.com");
 	}
 
-	[IntegrationTest]
+	[Fact]
 	public async Task TryIncrementRequestCountAsync_MultipleCalls_IncrementsCounterAsync()
 	{
 		// Arrange
@@ -101,7 +101,7 @@ public class RateLimitingServiceIntegrationTests : PostgreSqlTestBase, IClassFix
 		count.Should().Be(3);
 	}
 
-	[IntegrationTest]
+	[Fact]
 	public async Task TryIncrementRequestCountAsync_AtLimit_ReturnsFalseAsync()
 	{
 		// Arrange
@@ -123,7 +123,7 @@ public class RateLimitingServiceIntegrationTests : PostgreSqlTestBase, IClassFix
 		result.Should().BeFalse();
 	}
 
-	[IntegrationTest]
+	[Fact]
 	public async Task GetRemainingQuotaAsync_AfterIncrements_ReturnsCorrectValueAsync()
 	{
 		// Arrange
@@ -140,10 +140,10 @@ public class RateLimitingServiceIntegrationTests : PostgreSqlTestBase, IClassFix
 		int remaining = await sut.GetRemainingQuotaAsync("TestApi");
 
 		// Assert
-		remaining.Should().Be(97); // 100 - 3
+		remaining.Should().Be(97);
 	}
 
-	[IntegrationTest]
+	[Fact]
 	public async Task ResetCounterAsync_ResetsCallCountToZeroAsync()
 	{
 		// Arrange
@@ -163,7 +163,7 @@ public class RateLimitingServiceIntegrationTests : PostgreSqlTestBase, IClassFix
 		count.Should().Be(0);
 	}
 
-	[IntegrationTest]
+	[Fact]
 	public async Task RateLimiting_PersistsAcrossServiceInstancesAsync()
 	{
 		// Arrange - First service instance
@@ -189,7 +189,7 @@ public class RateLimitingServiceIntegrationTests : PostgreSqlTestBase, IClassFix
 		remaining.Should().Be(98, "remaining quota should be calculated from persisted state");
 	}
 
-	[IntegrationTest]
+	[Fact]
 	public async Task ConcurrentRequests_HandledCorrectlyAsync()
 	{
 		// Arrange & Act - Each concurrent request gets its own DbContext scope
