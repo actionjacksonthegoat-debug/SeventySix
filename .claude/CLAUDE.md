@@ -221,6 +221,8 @@ export class UserService {
 
 -   **Client-side tests (Angular)**: Run via terminal with `npm test` - `runTests` tool does NOT work for Angular
 -   **Server-side tests (.NET)**: Use `runTests` tool for all C# test projects
+-   **CRITICAL: Ensure Docker Desktop is running before executing tests** - Data layer tests use Testcontainers which require Docker
+-   Run `npm run start:docker` before running server tests to automatically start Docker Desktop if not already running
 -   Always verify test output in conversation to track failures and update context
 
 ---

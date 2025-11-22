@@ -251,7 +251,10 @@ export class UserPage implements OnInit
 					}
 					else
 					{
-						this.logger.error("Failed to save user", err);
+						this.logger.error(
+							"Failed to save user",
+							err instanceof Error ? err : undefined
+						);
 						this.snackBar.open("Failed to save user", "Close", {
 							duration: 3000,
 							horizontalPosition: "end",

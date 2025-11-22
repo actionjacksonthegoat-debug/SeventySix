@@ -4,9 +4,12 @@
     <File Path="docker-compose.override.yml" />
   </Folder>
   <Project Path="SeventySix.Api/SeventySix.Api.csproj" />
-  <Project Path="SeventySix.BusinessLogic.Tests/SeventySix.BusinessLogic.Tests.csproj" />
   <Project Path="SeventySix.BusinessLogic/SeventySix.BusinessLogic.csproj" />
-  <Project Path="SeventySix.Data.Tests/SeventySix.Data.Tests.csproj" />
   <Project Path="SeventySix.Data/SeventySix.Data.csproj" />
-  <Project Path="SeventySix.Api.Tests/SeventySix.Api.Tests.csproj" />
+  <Folder Name="/Tests/">
+    <Project Path="Tests/SeventySix.Api.Tests/SeventySix.Api.Tests.csproj" />
+    <Project Path="Tests/SeventySix.BusinessLogic.Tests/SeventySix.BusinessLogic.Tests.csproj" />
+    <Project Path="Tests/SeventySix.Data.Tests/SeventySix.Data.Tests.csproj" />
+    <Project Path="Tests/SeventySix.TestUtilities/SeventySix.TestUtilities.csproj" />
+  </Folder>
 </Solution>

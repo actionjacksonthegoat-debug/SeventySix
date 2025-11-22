@@ -725,12 +725,83 @@ provideHttpClient(
 -   Test middleware pipeline
 -   Use WebApplicationFactory
 
-**Test Organization**
+### Test Organization
 
--   Separate test project per layer
--   `SeventySix.BusinessLogic.Tests`
--   `SeventySix.Data.Tests`
--   `SeventySix.Api.Tests`
+**Test Project Structure:**
+
+All test projects are organized in a dedicated `Tests/` subfolder within the server solution, providing clear separation between production code and test infrastructure:
+
+-   `Tests/SeventySix.Api.Tests` - Integration tests for API controllers using WebApplicationFactory
+-   `Tests/SeventySix.BusinessLogic.Tests` - Unit tests for services, validators, and extensions
+-   `Tests/SeventySix.Data.Tests` - Integration tests for repositories using Testcontainers PostgreSQL
+-   `Tests/SeventySix.TestUtilities` - **Shared test infrastructure (NO duplication allowed)**
+
+#### Shared Test Utilities
+
+The `SeventySix.TestUtilities` project eliminates code duplication across test projects by providing:
+
+**Test Bases**:
+
+-   `BasePostgreSqlTestBase` - Abstract base for PostgreSQL tests with common operations
+-   `ApiPostgreSqlTestBase<TProgram>` - Base for API tests (uses localhost PostgreSQL)
+-   `DataPostgreSqlTestBase` - Base for Data layer tests (uses Testcontainers PostgreSQL)
+
+**Test Fixtures**:
+
+-   `BasePostgreSqlFixture` - Abstract fixture for PostgreSQL initialization
+-   `LocalPostgreSqlFixture` - Localhost PostgreSQL for API tests (faster, matches production)
+-   `TestcontainersPostgreSqlFixture` - Docker-based PostgreSQL for Data tests (isolated, reproducible)
+
+**Test Builders**:
+
+-   `LogBuilder` - Fluent builder for Log entities
+-   `UserBuilder` - Fluent builder for User entities
+-   `ThirdPartyApiRequestBuilder` - Fluent builder for API request entities
+
+**Test Helpers**:
+
+-   `RepositoryTestHelper` - Factory methods for creating repository instances
+-   `ValidationMockHelper` - Helpers for mocking FluentValidation
+-   `OpenWeatherMockHelper` - Helpers for mocking OpenWeather API
+
+**Custom Attributes**:
+
+-   `[IntegrationTest]` - Conditionally runs integration tests (requires configuration)
+-   `[IntegrationTheory]` - Conditionally runs integration theory tests
+
+#### Test Infrastructure Rules
+
+**CRITICAL: DO NOT duplicate test infrastructure**
+
+✅ **DO**:
+
+-   Use `SeventySix.TestUtilities` for ALL shared test infrastructure
+-   Inherit from provided base classes (`ApiPostgreSqlTestBase`, `DataPostgreSqlTestBase`)
+-   Use test builders for complex entity creation
+-   Use test helpers for common operations
+-   Add new shared infrastructure to TestUtilities (not individual test projects)
+
+❌ **DON'T**:
+
+-   Create local TestBases/ folders in test projects
+-   Create local Attributes/ folders in test projects
+-   Duplicate test helpers across projects
+-   Create manual entity instances when builders exist
+-   Copy test infrastructure code between projects
+
+**When to Add to TestUtilities**:
+
+1. Test infrastructure needed by 2+ test projects → Add to TestUtilities
+2. Test base classes for common scenarios → Add to TestBases/
+3. Reusable test data builders → Add to Builders/
+4. Shared test utilities/helpers → Add to TestHelpers/
+5. Custom xUnit attributes → Add to Attributes/
+
+**When to Keep in Test Project**:
+
+1. Tests specific to one layer (controllers, services, repositories)
+2. Test data specific to one feature
+3. Mocks specific to one scenario
 
 ### Frontend Testing
 
