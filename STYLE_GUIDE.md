@@ -92,11 +92,11 @@ This import provides access to:
 
 **Implementation**: `src/app/shared/styles/material-theme.scss`
 
-**Density Scale**: `scale: -2` (Compact)
-- **Benefits**: Better space efficiency, fits more content on screen
-- **Heights**: Form fields ~48px, Buttons ~32px, Chips ~28px
-- **Touch-friendly**: Maintains adequate touch targets for mobile devices
-- **Scale Options**: -4 (very dense) to 0 (default), -2 is optimal for web apps
+**Density Scale**: `scale: -1` (Comfortable)
+- **Benefits**: Balanced density - more spacious than compact while still efficient
+- **Heights**: Form fields ~52px, Buttons ~36px, Chips ~32px
+- **Touch-friendly**: Comfortable touch targets for mobile and desktop
+- **Scale Options**: -4 (very dense) to 0 (default), -1 balances space and usability
 
 **Color System**:
 
