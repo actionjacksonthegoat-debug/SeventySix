@@ -38,7 +38,7 @@ test.describe("Weather Forecast E2E", () =>
 	test("should handle error and retry", async ({ page }) =>
 	{
 		// Intercept API call and force an error
-		await page.route("**/WeatherForecast", (route) =>
+		await page.route("**/weather", (route) =>
 		{
 			route.abort("failed");
 		});
@@ -49,7 +49,7 @@ test.describe("Weather Forecast E2E", () =>
 		await expect(page.locator('[data-testid="error"]')).toBeVisible();
 
 		// Remove the route block
-		await page.unroute("**/WeatherForecast");
+		await page.unroute("**/weather");
 
 		// Click retry button
 		await page.locator('[data-testid="retry-button"]').click();

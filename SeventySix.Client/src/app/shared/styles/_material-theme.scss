@@ -23,7 +23,7 @@ $light-blue-theme: mat.define-theme(
 			plain-family: "Roboto"
 		),
 		density: (
-			scale: 0
+			scale: -1
 		)
 	)
 );
@@ -41,7 +41,7 @@ $dark-blue-theme: mat.define-theme(
 			plain-family: "Roboto"
 		),
 		density: (
-			scale: 0
+			scale: -1
 		)
 	)
 );
@@ -63,7 +63,7 @@ $light-cyan-orange-theme: mat.define-theme(
 			plain-family: "Roboto"
 		),
 		density: (
-			scale: 0
+			scale: -1
 		)
 	)
 );
@@ -81,7 +81,7 @@ $dark-cyan-orange-theme: mat.define-theme(
 			plain-family: "Roboto"
 		),
 		density: (
-			scale: 0
+			scale: -1
 		)
 	)
 );
@@ -95,6 +95,7 @@ $dark-cyan-orange-theme: mat.define-theme(
  */
 @mixin apply-light-blue-theme {
 	@include mat.all-component-colors($light-blue-theme);
+	@include mat.system-level-colors($light-blue-theme);
 	color-scheme: light;
 }
 
@@ -103,6 +104,7 @@ $dark-cyan-orange-theme: mat.define-theme(
  */
 @mixin apply-dark-blue-theme {
 	@include mat.all-component-colors($dark-blue-theme);
+	@include mat.system-level-colors($dark-blue-theme);
 	color-scheme: dark;
 }
 
@@ -111,6 +113,7 @@ $dark-cyan-orange-theme: mat.define-theme(
  */
 @mixin apply-light-cyan-orange-theme {
 	@include mat.all-component-colors($light-cyan-orange-theme);
+	@include mat.system-level-colors($light-cyan-orange-theme);
 	color-scheme: light;
 }
 
@@ -119,6 +122,7 @@ $dark-cyan-orange-theme: mat.define-theme(
  */
 @mixin apply-dark-cyan-orange-theme {
 	@include mat.all-component-colors($dark-cyan-orange-theme);
+	@include mat.system-level-colors($dark-cyan-orange-theme);
 	color-scheme: dark;
 }
 

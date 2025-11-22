@@ -168,6 +168,15 @@
 			}
 		}
 
+		// Full width cards span all 3 columns
+		&.request-paths-card {
+			grid-column: span 3;
+
+			@media (max-width: vars.$breakpoint-tablet) {
+				grid-column: span 1;
+			}
+		}
+
 		.card-header {
 			display: flex;
 			align-items: center;

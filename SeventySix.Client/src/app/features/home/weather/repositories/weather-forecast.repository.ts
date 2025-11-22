@@ -18,7 +18,7 @@ import { IRepository } from "@core/repositories/base.repository";
 export class WeatherForecastRepository implements IRepository<WeatherForecast>
 {
 	private readonly apiService: ApiService = inject(ApiService);
-	private readonly endpoint: string = "WeatherForecast";
+	private readonly endpoint: string = "weather";
 
 	/**
 	 * Get all weather forecasts

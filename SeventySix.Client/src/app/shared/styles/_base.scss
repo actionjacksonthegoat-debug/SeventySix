@@ -66,3 +66,30 @@ pre {
 	outline: 2px solid var(--mat-sys-primary);
 	outline-offset: 2px;
 }
+
+// =============================================================================
+// MATERIAL COMPONENT CUSTOMIZATIONS
+// =============================================================================
+
+// Form field horizontal padding (following 8px grid system)
+.mat-mdc-form-field {
+	.mat-mdc-text-field-wrapper {
+		padding-left: vars.$spacing-md; // 12px
+		padding-right: vars.$spacing-md; // 12px
+	}
+}
+
+// Button horizontal padding
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-unelevated-button {
+	padding-left: vars.$spacing-lg; // 16px
+	padding-right: vars.$spacing-lg; // 16px
+}
+
+// Chip horizontal padding
+.mat-mdc-chip {
+	padding-left: vars.$spacing-md; // 12px
+	padding-right: vars.$spacing-md; // 12px
+}

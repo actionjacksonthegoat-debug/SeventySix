@@ -1,3 +1,6 @@
+@use "variables" as vars;
+@use "@angular/material" as mat;
+
 .style-guide {
 	display: flex;
 	flex-direction: column;
@@ -62,26 +65,94 @@
 }
 
 .color-card {
+	.color-swatches {
+		display: flex;
+		gap: vars.$spacing-md;
+		margin-bottom: vars.$spacing-sm;
+
+		@media #{vars.$breakpoint-mobile} {
+			flex-direction: column;
+		}
+	}
+
 	.color-swatch {
-		width: 100%;
-		height: 100px;
-		border-radius: 8px;
-		margin-bottom: 12px;
+		flex: 1;
+		height: 80px;
+		border-radius: vars.$border-radius-base;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--mat-sys-outline);
+
+		span {
+			font-size: 12px;
+			font-weight: 500;
+			padding: vars.$spacing-xs vars.$spacing-sm;
+			border-radius: vars.$border-radius-base;
+		}
 
 		&.primary {
 			background-color: var(--mat-sys-primary);
+
+			span {
+				color: var(--mat-sys-on-primary);
+			}
+		}
+
+		&.primary-container {
+			background-color: var(--mat-sys-primary-container);
+
+			span {
+				color: var(--mat-sys-on-primary-container);
+			}
 		}
 
 		&.secondary {
 			background-color: var(--mat-sys-secondary);
+
+			span {
+				color: var(--mat-sys-on-secondary);
+			}
+		}
+
+		&.secondary-container {
+			background-color: var(--mat-sys-secondary-container);
+
+			span {
+				color: var(--mat-sys-on-secondary-container);
+			}
 		}
 
 		&.tertiary {
 			background-color: var(--mat-sys-tertiary);
+
+			span {
+				color: var(--mat-sys-on-tertiary);
+			}
+		}
+
+		&.tertiary-container {
+			background-color: var(--mat-sys-tertiary-container);
+
+			span {
+				color: var(--mat-sys-on-tertiary-container);
+			}
 		}
 
 		&.error {
 			background-color: var(--mat-sys-error);
+
+			span {
+				color: var(--mat-sys-on-error);
+			}
+		}
+
+		&.error-container {
+			background-color: var(--mat-sys-error-container);
+
+			span {
+				color: var(--mat-sys-on-error-container);
+			}
 		}
 	}
 }

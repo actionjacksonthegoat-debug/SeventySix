@@ -402,9 +402,7 @@ test.describe("Weather Dashboard E2E Tests", () =>
 	test("should handle network errors gracefully", async ({ page }) =>
 	{
 		// Block weather API requests
-		await page.route("**/api/weatherforecast**", (route) =>
-			route.abort("failed")
-		);
+		await page.route("**/api/weather**", (route) => route.abort("failed"));
 
 		await page.goto("/weather-forecast");
 

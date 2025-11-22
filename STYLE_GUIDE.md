@@ -92,6 +92,12 @@ This import provides access to:
 
 **Implementation**: `src/app/shared/styles/material-theme.scss`
 
+**Density Scale**: `scale: -2` (Compact)
+- **Benefits**: Better space efficiency, fits more content on screen
+- **Heights**: Form fields ~48px, Buttons ~32px, Chips ~28px
+- **Touch-friendly**: Maintains adequate touch targets for mobile devices
+- **Scale Options**: -4 (very dense) to 0 (default), -2 is optimal for web apps
+
 **Color System**:
 
 -   Primary: Main brand color (blue or cyan)
@@ -124,6 +130,13 @@ background-color: var(--mat-sys-surface);
 color: var(--mat-sys-on-surface);
 border-color: rgba(var(--mat-outline-rgb), 0.12);
 ```
+
+**Component Spacing Customizations**: (see `src/app/shared/styles/_base.scss`)
+
+-   **Form fields**: 12px horizontal padding (`vars.$spacing-md`)
+-   **Buttons**: 16px horizontal padding (`vars.$spacing-lg`)
+-   **Chips**: 12px horizontal padding (`vars.$spacing-md`)
+-   **Follows 8px grid system** defined in `_variables.scss`
 
 ### 2. Typography Scale
 
@@ -583,7 +596,7 @@ isMobile = computed(() => this.isHandset());
 -   ✅ **DO** use `overflow-x: auto` for wide tables/data grids only
 -   ✅ **DO** use `overflow-y: auto` for modals/dialogs with `max-height`
 
-```
+````
 
 ---
 
@@ -598,7 +611,7 @@ isMobile = computed(() => this.isHandset());
 <main id="main-content" tabindex="-1">
 	<!-- Content -->
 </main>
-```
+````
 
 **Focus Indicators**:
 
