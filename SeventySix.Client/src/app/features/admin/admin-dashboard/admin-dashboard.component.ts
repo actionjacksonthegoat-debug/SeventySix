@@ -76,4 +76,33 @@ export class AdminDashboardComponent
 
 		window.open(url, "_blank");
 	}
+
+	/**
+	 * Opens Grafana UI in a new tab with SeventySix API Endpoints dashboard
+	 * Opens in dark mode with pre-configured dashboard
+	 */
+	openGrafana(): void
+	{
+		const baseUrl: string =
+			environment.observability.grafanaUrl || "http://localhost:3000";
+
+		// Open directly to dashboard with dark theme forced
+		const dashboardUrl: string = `${baseUrl}/d/seventysix-api-endpoints/seventysix-api-endpoints?orgId=1&refresh=30s&theme=dark`;
+
+		window.open(dashboardUrl, "_blank");
+	}
+
+	/**
+	 * Opens Grafana System Overview dashboard in a new tab
+	 * Comprehensive metrics dashboard with health status, performance, and resource monitoring
+	 */
+	openGrafanaSystemOverview(): void
+	{
+		const baseUrl: string =
+			environment.observability.grafanaUrl || "http://localhost:3000";
+
+		const dashboardUrl: string = `${baseUrl}/d/seventysix-system-overview/seventysix-system-overview?orgId=1&refresh=5s&theme=dark`;
+
+		window.open(dashboardUrl, "_blank");
+	}
 }

@@ -894,5 +894,3 @@ The `SeventySix.TestUtilities` project eliminates code duplication across test p
 
 -   `STYLE_GUIDE.md`: Component patterns, UI/UX guidelines
 -   `CLAUDE.md`: Development guidelines, best practices
--   `DEPLOYMENT.md`: Deployment and Docker configuration
--   `USER_SECRETS_SETUP.md`: Environment configuration

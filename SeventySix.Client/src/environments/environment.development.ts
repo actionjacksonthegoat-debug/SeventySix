@@ -14,6 +14,7 @@ interface Environment
 	observability: {
 		jaegerUrl: string;
 		prometheusUrl: string;
+		grafanaUrl: string;
 		enabled: boolean;
 	};
 	cache: {
@@ -61,9 +62,10 @@ export const environment: Environment = {
 		circuitBreakerTimeout: 30000 // 30 seconds
 	},
 	observability: {
-		// Observability stack URLs (Jaeger + Prometheus)
+		// Observability stack URLs (Jaeger + Prometheus + Grafana)
 		jaegerUrl: "http://localhost:16686", // Jaeger UI for distributed tracing
 		prometheusUrl: "http://localhost:9090", // Prometheus for metrics
+		grafanaUrl: "http://localhost:3000", // Grafana for metrics visualization
 		enabled: true // Set to true when observability stack is deployed
 	},
 	cache: {

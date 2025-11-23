@@ -14,6 +14,7 @@ interface Environment
 	observability: {
 		jaegerUrl: string;
 		prometheusUrl: string;
+		grafanaUrl: string;
 		enabled: boolean;
 	};
 	cache: {
@@ -68,6 +69,7 @@ export const environment: Environment = {
 	observability: {
 		jaegerUrl: "http://localhost:16686",
 		prometheusUrl: "http://localhost:9090",
+		grafanaUrl: "http://localhost:3000",
 		enabled: false // Disabled in tests
 	},
 	cache: {

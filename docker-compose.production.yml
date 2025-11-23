@@ -107,12 +107,85 @@ services:
           cpus: '0.25'
           memory: 128M
 
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: seventysix-prometheus-prod
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Jaeger - Distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    container_name: seventysix-jaeger-prod
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # Grafana - Metrics visualization
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: seventysix-grafana-prod
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
 # Named volumes for data persistence across container lifecycle
 # Data survives: docker-compose down, docker-compose up, container restarts
 volumes:
   postgres_data:
     driver: local
     name: seventysix_postgres_prod_data
+  prometheus_data:
+    driver: local
+    name: seventysix_prometheus_prod_data
+  grafana_data:
+    driver: local
+    name: seventysix_grafana_prod_data
 
 networks:
   seventysix-network:

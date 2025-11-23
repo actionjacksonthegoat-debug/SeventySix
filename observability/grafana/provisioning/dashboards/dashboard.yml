@@ -1,0 +1,9 @@
+apiVersion: 1
+providers:
+    - name: "SeventySix"
+      orgId: 1
+      folder: "SeventySix"
+      type: file
+      allowUiUpdates: true
+      options:
+          path: /etc/grafana/provisioning/dashboards

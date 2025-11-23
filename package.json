@@ -9,8 +9,8 @@
 		"format": "dotnet format SeventySix.Server/SeventySix.Server.slnx && cd SeventySix.Client && npm run cleanup",
 		"start:client": "cd SeventySix.Client && npm start",
 		"start:docker": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\"",
-		"start:api-debug": "cd SeventySix.Server && docker compose up -d postgres jaeger prometheus --no-deps && cd ../SeventySix.Client && npm start",
-		"stop:api-debug": "cd SeventySix.Server && docker compose down",
+		"start:api-debug": "cd SeventySix.Server && docker compose up -d postgres jaeger prometheus grafana --no-deps && cd ../SeventySix.Client && npm start",
+		"stop:api-debug": "cd SeventySix.Server && docker compose stop postgres jaeger prometheus grafana",
 		"start:all": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" & cd SeventySix.Server && docker compose up -d --build --force-recreate && cd ../SeventySix.Client && npm start",
 		"stop:all": "cd SeventySix.Server && docker compose down",
 		"kill:api-ports": "powershell -Command \"$ports = @(5085, 7074); foreach($port in $ports) { $conn = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue; if($conn) { Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue } }\""

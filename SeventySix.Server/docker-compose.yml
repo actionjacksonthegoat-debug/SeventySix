@@ -52,11 +52,68 @@ services:
     networks:
       - seventysix-network
 
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: seventysix-prometheus-dev
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../../observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # Jaeger - Distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    container_name: seventysix-jaeger-dev
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
+  # Grafana - Metrics visualization
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: seventysix-grafana-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
 # Named volumes for persistent data across container restarts
 volumes:
   postgres_data:
     driver: local
     name: seventysix_postgres_data
+  prometheus_data:
+    driver: local
+    name: seventysix_prometheus_data
+  grafana_data:
+    driver: local
+    name: seventysix_grafana_data
 
 networks:
   seventysix-network:
