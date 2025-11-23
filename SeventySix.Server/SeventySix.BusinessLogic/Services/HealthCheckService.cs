@@ -125,26 +125,92 @@ public class HealthCheckService(IMetricsService metricsService, ILogRepository l
 		});
 	}
 
-	private static Task<SystemResourcesResponse> CheckSystemResourcesAsync(CancellationToken cancellationToken)
+	private static async Task<SystemResourcesResponse> CheckSystemResourcesAsync(CancellationToken cancellationToken)
 	{
-		// Get actual system resource metrics from the current process
+		// Get actual system resource metrics
 		Process process = Process.GetCurrentProcess();
 
 		long memoryUsedMb = process.WorkingSet64 / 1024 / 1024;
 		long totalMemoryMb = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024;
 
-		// CPU usage calculation - get current usage
-		// Note: First call to TotalProcessorTime returns time since process start
-		// For real-time monitoring, this should be calculated over an interval
-		double cpuUsage = 0.0;
+		// Get CPU usage - works on both Linux containers and Windows
+		double cpuUsage = await GetCpuUsageAsync(process, cancellationToken);
 
-		return Task.FromResult(new SystemResourcesResponse
+		// Get disk usage - works on both Linux containers and Windows
+		double diskUsage = GetDiskUsage();
+
+		return new SystemResourcesResponse
 		{
 			CpuUsagePercent = cpuUsage,
 			MemoryUsedMb = memoryUsedMb,
 			MemoryTotalMb = totalMemoryMb,
-			DiskUsagePercent = 0.0, // Placeholder - would need DriveInfo to calculate
-		});
+			DiskUsagePercent = diskUsage,
+		};
+	}
+
+	private static async Task<double> GetCpuUsageAsync(Process process, CancellationToken cancellationToken)
+	{
+		try
+		{
+			// Take two measurements with a short interval to calculate CPU percentage
+			TimeSpan startCpuTime = process.TotalProcessorTime;
+			long startTime = Stopwatch.GetTimestamp();
+
+			await Task.Delay(100, cancellationToken);
+
+			TimeSpan endCpuTime = process.TotalProcessorTime;
+			long endTime = Stopwatch.GetTimestamp();
+
+			double cpuUsedMs = (endCpuTime - startCpuTime).TotalMilliseconds;
+			double totalMs = (endTime - startTime) * 1000.0 / Stopwatch.Frequency;
+			double cpuUsagePercent = (cpuUsedMs / (Environment.ProcessorCount * totalMs)) * 100.0;
+
+			return Math.Round(Math.Min(cpuUsagePercent, 100.0), 2);
+		}
+		catch
+		{
+			return 0.0;
+		}
+	}
+
+	private static double GetDiskUsage()
+	{
+		try
+		{
+			// For Linux containers, read from /proc/mounts and df-style info
+			if (OperatingSystem.IsLinux())
+			{
+				// Get the root filesystem usage
+				DriveInfo rootDrive = new DriveInfo("/");
+				if (rootDrive.IsReady)
+				{
+					long totalBytes = rootDrive.TotalSize;
+					long freeBytes = rootDrive.AvailableFreeSpace;
+					long usedBytes = totalBytes - freeBytes;
+					double usagePercent = (double)usedBytes / totalBytes * 100.0;
+					return Math.Round(usagePercent, 2);
+				}
+			}
+			else if (OperatingSystem.IsWindows())
+			{
+				// For Windows, get C: drive usage
+				DriveInfo cDrive = new DriveInfo("C");
+				if (cDrive.IsReady)
+				{
+					long totalBytes = cDrive.TotalSize;
+					long freeBytes = cDrive.AvailableFreeSpace;
+					long usedBytes = totalBytes - freeBytes;
+					double usagePercent = (double)usedBytes / totalBytes * 100.0;
+					return Math.Round(usagePercent, 2);
+				}
+			}
+
+			return 0.0;
+		}
+		catch
+		{
+			return 0.0;
+		}
 	}
 
 	private static string DetermineOverallStatus(params string[] componentStatuses)

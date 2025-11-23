@@ -1,6 +1,7 @@
 @use "variables" as vars;
 
 .admin-dashboard {
+	height: 100%;
 	display: flex;
 	flex-direction: column;
 
@@ -25,86 +26,68 @@
 	}
 
 	.dashboard-content {
-		padding: vars.$spacing-xl;
-		background-color: var(--md-sys-color-surface-container-lowest);
+		flex: 1;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+
+		mat-tab-group {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+
+			::ng-deep {
+				.mat-mdc-tab-body-wrapper {
+					flex: 1;
+					overflow: hidden;
+					display: flex;
+					flex-direction: column;
+				}
+
+				.mat-mdc-tab-body {
+					flex: 1;
+					display: flex;
+					flex-direction: column;
+					overflow: hidden;
+				}
+
+				.mat-mdc-tab-body-content {
+					flex: 1;
+					display: flex;
+					flex-direction: column;
+					overflow: hidden;
+				}
+			}
+		}
+
+		.tab-content {
+			display: flex;
+			flex-direction: column;
+			gap: vars.$spacing-lg;
+
+			&.full-height {
+				flex: 1;
+				overflow: hidden;
+
+				app-grafana-dashboard-embed {
+					flex: 1;
+					display: flex;
+					min-height: 0;
+				}
+			}
+
+			&:not(.full-height) {
+				padding: vars.$spacing-lg;
+				overflow-y: auto;
+			}
+		}
 	}
 
-	.dashboard-grid {
-		display: grid;
-		grid-template-columns: repeat(12, 1fr);
-		gap: vars.$spacing-xl;
-		max-width: 1920px;
-		margin: 0 auto;
-
-		.chart-section {
-			grid-column: span 12;
-		}
-
-		.stats-section {
-			grid-column: span 12;
-		}
-
-		.health-section {
-			grid-column: span 12;
-		}
-
-		.api-section {
-			grid-column: span 12;
-
-			@media (min-width: 1024px) {
-				grid-column: span 6;
-			}
-		}
-
-		.observability-section {
-			grid-column: span 12;
-
-			@media (min-width: 1024px) {
-				grid-column: span 6;
-			}
-
-			mat-card {
-				height: 100%;
-			}
-
-			mat-card-header {
-				mat-card-title {
-					display: flex;
-					align-items: center;
-					gap: vars.$spacing-sm;
-					font-size: vars.$font-size-lg;
-					font-weight: vars.$font-weight-medium;
-
-					mat-icon {
-						font-size: vars.$icon-size-base;
-						width: vars.$icon-size-base;
-						height: vars.$icon-size-base;
-					}
-				}
-			}
-
-			.observability-links {
-				display: flex;
-				flex-direction: column;
-				gap: vars.$spacing-lg;
-				margin-top: vars.$spacing-lg;
-
-				button {
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					gap: vars.$spacing-sm;
-					width: 100%;
-					padding: vars.$spacing-md vars.$spacing-lg;
-
-					mat-icon {
-						font-size: vars.$icon-size-md;
-						width: vars.$icon-size-md;
-						height: vars.$icon-size-md;
-					}
-				}
-			}
-		}
+	.observability-links {
+		display: flex;
+		gap: vars.$spacing-md;
+		flex-wrap: wrap;
 	}
 
 	// Responsive breakpoints
@@ -118,11 +101,7 @@
 		}
 
 		.dashboard-content {
-			padding: vars.$spacing-lg;
-		}
-
-		.dashboard-grid {
-			gap: vars.$spacing-lg;
+			padding: vars.$spacing-md;
 		}
 	}
 }

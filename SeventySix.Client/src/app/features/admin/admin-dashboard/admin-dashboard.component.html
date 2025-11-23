@@ -5,77 +5,90 @@
 	</mat-toolbar>
 
 	<div class="dashboard-content">
-		<div class="dashboard-grid">
-			<!-- Statistics Cards Section -->
-			<div class="stats-section">
-				<app-statistics-cards></app-statistics-cards>
-			</div>
+		@if (isObservabilityEnabled)
+		{
+			<mat-tab-group>
+				<!-- System Overview Tab -->
+				<mat-tab label="System Overview">
+					<div class="tab-content full-height">
+						<!-- System Health & Metrics (Grafana) -->
+						<app-grafana-dashboard-embed
+							[dashboardUid]="systemOverviewDashboard"
+							title="System Health & Metrics"
+						></app-grafana-dashboard-embed>
+					</div>
+				</mat-tab>
 
-			<!-- Error Trend Chart Section -->
-			<div class="chart-section">
-				<app-error-trend-chart period="7d"></app-error-trend-chart>
-			</div>
+				<!-- API Metrics Tab -->
+				<mat-tab label="API Metrics">
+					<div class="tab-content full-height">
+						<!-- API Endpoint Metrics (Grafana) -->
+						<app-grafana-dashboard-embed
+							[dashboardUid]="apiEndpointsDashboard"
+							title="API Endpoint Metrics"
+						></app-grafana-dashboard-embed>
+					</div>
+				</mat-tab>
 
-			<!-- Health Status Panel Section (Full Width) -->
-			<div class="health-section">
-				<app-health-status-panel></app-health-status-panel>
-			</div>
+				<!-- Tools Tab -->
+				<mat-tab label="Tools">
+					<div class="tab-content">
+						<!-- Third-Party API Statistics (Application-specific data) -->
+						<app-api-statistics-table></app-api-statistics-table>
 
-			<!-- API Statistics Table Section -->
-			<div class="api-section">
-				<app-api-statistics-table></app-api-statistics-table>
-			</div>
-
-			@if (isObservabilityEnabled)
-			{
-				<!-- Observability Quick Links Section -->
-				<div class="observability-section">
-					<mat-card>
-						<mat-card-header>
-							<mat-card-title>
-								<mat-icon>visibility</mat-icon>
-								Observability
-							</mat-card-title>
-						</mat-card-header>
-						<mat-card-content>
-							<div class="observability-links">
-								<button
-									mat-raised-button
-									color="accent"
-									(click)="openJaeger()"
-								>
-									<mat-icon>bug_report</mat-icon>
-									Jaeger Tracing
-								</button>
-								<button
-									mat-raised-button
-									color="accent"
-									(click)="openPrometheus()"
-								>
-									<mat-icon>analytics</mat-icon>
-									Prometheus Metrics
-								</button>
-								<button
-									mat-raised-button
-									color="accent"
-									(click)="openGrafana()"
-								>
-									<mat-icon>bar_chart</mat-icon>
-									API Endpoints
-								</button>
-								<button
-									mat-raised-button
-									color="accent"
-									(click)="openGrafanaSystemOverview()"
-								>
-									<mat-icon>dashboard</mat-icon>
-									System Overview
-								</button>
-							</div>
-						</mat-card-content>
-					</mat-card>
-				</div>
-			}
-		</div>
+						<!-- Observability Quick Links -->
+						<mat-card>
+							<mat-card-header>
+								<mat-card-title>
+									<mat-icon>visibility</mat-icon>
+									Observability Tools
+								</mat-card-title>
+							</mat-card-header>
+							<mat-card-content>
+								<div class="observability-links">
+									<button
+										mat-raised-button
+										color="accent"
+										(click)="openJaeger()"
+									>
+										<mat-icon>bug_report</mat-icon>
+										Jaeger Tracing
+									</button>
+									<button
+										mat-raised-button
+										color="accent"
+										(click)="openPrometheus()"
+									>
+										<mat-icon>analytics</mat-icon>
+										Prometheus Metrics
+									</button>
+									<button
+										mat-raised-button
+										color="accent"
+										(click)="openGrafana()"
+									>
+										<mat-icon>open_in_new</mat-icon>
+										Grafana Full View
+									</button>
+								</div>
+							</mat-card-content>
+						</mat-card>
+					</div>
+				</mat-tab>
+			</mat-tab-group>
+		}
+		@else
+		{
+			<!-- Fallback message when observability is disabled -->
+			<mat-card>
+				<mat-card-content>
+					<p>
+						Observability stack is not enabled. Enable in
+						environment configuration and deploy
+						Grafana/Prometheus/Jaeger to view dashboards.
+					</p>
+				</mat-card-content>
+			</mat-card>
+		}
 	</div>
 </div>

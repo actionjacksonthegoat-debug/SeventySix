@@ -1,0 +1,43 @@
+@use "variables" as vars;
+
+:host {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
+mat-card {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+mat-card-header {
+	flex-shrink: 0;
+}
+
+mat-card-content {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	padding: 0 !important;
+}
+
+.grafana-embed {
+	width: 100%;
+	height: 100%;
+	border: none;
+	border-radius: vars.$border-radius-base;
+}
+
+.loading-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 400px;
+}

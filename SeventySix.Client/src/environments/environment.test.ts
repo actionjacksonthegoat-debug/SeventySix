@@ -16,6 +16,10 @@ interface Environment
 		prometheusUrl: string;
 		grafanaUrl: string;
 		enabled: boolean;
+		dashboards: {
+			systemOverview: string;
+			apiEndpoints: string;
+		};
 	};
 	cache: {
 		query: {
@@ -80,7 +84,11 @@ export const environment: Environment = {
 		jaegerUrl: "http://localhost:16686",
 		prometheusUrl: "http://localhost:9090",
 		grafanaUrl: "http://localhost:3000",
-		enabled: false // Disabled in tests
+		enabled: false, // Disabled in tests
+		dashboards: {
+			systemOverview: "seventysix-system-overview",
+			apiEndpoints: "seventysix-api-endpoints"
+		}
 	},
 	cache: {
 		query: {

@@ -4,105 +4,94 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
-import { ErrorTrendChartComponent } from "./components/error-trend-chart/error-trend-chart.component";
-import { StatisticsCardsComponent } from "./components/statistics-cards/statistics-cards.component";
+import { MatTabsModule } from "@angular/material/tabs";
+import { GrafanaDashboardEmbedComponent } from "./components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 import { ApiStatisticsTableComponent } from "./components/api-statistics-table/api-statistics-table.component";
-import { HealthStatusPanelComponent } from "./components/health-status-panel/health-status-panel.component";
 import { environment } from "@environments/environment";
 
 /**
- * Admin Dashboard main component
- * Composes all admin sub-components into a unified dashboard view
+ * Admin Dashboard main component.
+ * Embeds Grafana dashboards for system health and API endpoint metrics.
+ * Displays application-specific data (third-party API stats) not available in Grafana.
+ * @remarks
+ * Follows DRY principle by leveraging Grafana for metrics visualization.
+ * Only displays data not available in Grafana (third-party API statistics).
  */
 @Component({
 	selector: "app-admin-dashboard",
-	standalone: true,
 	imports: [
 		CommonModule,
 		MatToolbarModule,
 		MatIconModule,
 		MatCardModule,
 		MatButtonModule,
-		ErrorTrendChartComponent,
-		StatisticsCardsComponent,
-		ApiStatisticsTableComponent,
-		HealthStatusPanelComponent
+		MatTabsModule,
+		GrafanaDashboardEmbedComponent,
+		ApiStatisticsTableComponent
 	],
 	templateUrl: "./admin-dashboard.component.html",
 	styleUrl: "./admin-dashboard.component.scss"
 })
 export class AdminDashboardComponent
 {
-	// Observability integration
+	/**
+	 * Flag indicating if observability stack is enabled.
+	 * Controls visibility of Grafana dashboards and quick links.
+	 */
 	readonly isObservabilityEnabled: boolean =
 		environment.observability.enabled;
 
 	/**
-	 * Opens Jaeger UI in a new tab
+	 * System overview dashboard UID from environment configuration.
+	 */
+	readonly systemOverviewDashboard: string =
+		environment.observability.dashboards.systemOverview;
+
+	/**
+	 * API endpoints dashboard UID from environment configuration.
+	 */
+	readonly apiEndpointsDashboard: string =
+		environment.observability.dashboards.apiEndpoints;
+
+	/**
+	 * Opens Jaeger distributed tracing UI in a new browser tab.
+	 * Opens to the search page pre-filtered for SeventySix.Api service.
+	 * @remarks
+	 * Pre-filtered to show traces for the SeventySix.Api service.
 	 */
 	openJaeger(): void
 	{
-		const url: string =
+		const baseUrl: string =
 			environment.observability.jaegerUrl || "http://localhost:16686";
-		window.open(url, "_blank");
+		// Open to search view with SeventySix.Api service pre-selected
+		window.open(`${baseUrl}/search?service=SeventySix.Api`, "_blank");
 	}
 
 	/**
-	 * Opens Prometheus UI in a new tab with SeventySix metrics dashboard
+	 * Opens Prometheus metrics UI in a new browser tab.
+	 * Navigates to targets view showing all scrape endpoints and their health.
+	 * @remarks
+	 * Provides visibility into which metric endpoints are up/down.
 	 */
 	openPrometheus(): void
 	{
 		const baseUrl: string =
 			environment.observability.prometheusUrl || "http://localhost:9090";
-
-		// Open to graph view with multiple useful queries
-		// g0: HTTP request rate, g1: Request duration, g2: Active requests, g3: Error rate
-		const queries: string[] = [
-			'rate(http_server_request_duration_seconds_count{job="seventysix-api"}[5m])',
-			'histogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket{job="seventysix-api"}[5m]))',
-			'http_server_active_requests{job="seventysix-api"}',
-			'rate(http_server_request_duration_seconds_count{job="seventysix-api",http_response_status_code=~"5.."}[5m])'
-		];
-
-		// Build URL with multiple graph panels
-		const queryParams: string = queries
-			.map(
-				(query, index) =>
-					`g${index}.expr=${encodeURIComponent(query)}&g${index}.tab=0&g${index}.range_input=1h`
-			)
-			.join("&");
-
-		const url: string = `${baseUrl}/graph?${queryParams}`;
-
-		window.open(url, "_blank");
+		// Open to targets view to see scrape endpoint health
+		window.open(`${baseUrl}/targets`, "_blank");
 	}
 
 	/**
-	 * Opens Grafana UI in a new tab with SeventySix API Endpoints dashboard
-	 * Opens in dark mode with pre-configured dashboard
+	 * Opens Grafana full UI in a new browser tab.
+	 * Navigates to dashboards list for quick access to all available dashboards.
+	 * @remarks
+	 * Shows all configured dashboards in the organization.
 	 */
 	openGrafana(): void
 	{
 		const baseUrl: string =
 			environment.observability.grafanaUrl || "http://localhost:3000";
-
-		// Open directly to dashboard with dark theme forced
-		const dashboardUrl: string = `${baseUrl}/d/seventysix-api-endpoints/seventysix-api-endpoints?orgId=1&refresh=30s&theme=dark`;
-
-		window.open(dashboardUrl, "_blank");
-	}
-
-	/**
-	 * Opens Grafana System Overview dashboard in a new tab
-	 * Comprehensive metrics dashboard with health status, performance, and resource monitoring
-	 */
-	openGrafanaSystemOverview(): void
-	{
-		const baseUrl: string =
-			environment.observability.grafanaUrl || "http://localhost:3000";
-
-		const dashboardUrl: string = `${baseUrl}/d/seventysix-system-overview/seventysix-system-overview?orgId=1&refresh=5s&theme=dark`;
-
-		window.open(dashboardUrl, "_blank");
+		// Open to dashboards list view
+		window.open(`${baseUrl}/dashboards`, "_blank");
 	}
 }

@@ -1,0 +1,21 @@
+<mat-card>
+	<mat-card-header>
+		<mat-card-title>{{ title() }}</mat-card-title>
+	</mat-card-header>
+	<mat-card-content>
+		@if (isLoading())
+		{
+			<div class="loading-container">
+				<mat-progress-spinner
+					mode="indeterminate"
+				></mat-progress-spinner>
+			</div>
+		}
+		<iframe
+			[src]="sanitizedUrl()"
+			sandbox="allow-scripts allow-same-origin"
+			class="grafana-embed"
+			loading="lazy"
+		></iframe>
+	</mat-card-content>
+</mat-card>
