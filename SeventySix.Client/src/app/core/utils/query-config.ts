@@ -14,11 +14,11 @@ export interface QueryOptions
  * Get TanStack Query configuration for a specific resource.
  * Falls back to default configuration if resource-specific config not found.
  *
- * @param resource - The resource name (e.g., 'weather', 'users', 'logs', 'health')
+ * @param resource - The resource name (e.g., 'users', 'logs', 'health')
  * @returns Query options with staleTime, gcTime, and retry settings
  *
  * @example
- * const weatherConfig = getQueryConfig('weather');
+ * const userConfig = getQueryConfig('users');
  * // Returns: { staleTime: 300000, gcTime: 600000, retry: 2 }
  */
 export function getQueryConfig(resource: string): QueryOptions

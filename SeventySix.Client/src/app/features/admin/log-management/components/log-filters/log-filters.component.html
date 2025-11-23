@@ -1,20 +1,4 @@
 <div class="log-filters" role="search" aria-label="Log filters">
-	<div class="search-section">
-		<mat-form-field appearance="outline" class="search-field">
-			<mat-label>Search logs</mat-label>
-			<input
-				matInput
-				#searchInput
-				placeholder="Search message, source, stack trace..."
-				(input)="onSearchChange($any($event.target).value)"
-				aria-label="Search logs by message, source, or stack trace"
-				aria-describedby="search-hint"
-			/>
-			<mat-icon matPrefix>search</mat-icon>
-			<mat-hint id="search-hint">Press Ctrl+F to focus search</mat-hint>
-		</mat-form-field>
-	</div>
-
 	<div class="filter-section">
 		<div class="level-filters">
 			<span class="filter-label">Level:</span>

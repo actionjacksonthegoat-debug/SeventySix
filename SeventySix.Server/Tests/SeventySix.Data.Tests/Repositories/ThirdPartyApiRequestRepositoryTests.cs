@@ -47,19 +47,19 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 10,
 			ResetDate = today,
 		};
 		await Repository.CreateAsync(request);
 
 		// Act
-		ThirdPartyApiRequest? result = await Repository.GetByApiNameAndDateAsync("OpenWeather", today);
+		ThirdPartyApiRequest? result = await Repository.GetByApiNameAndDateAsync("ExternalAPI", today);
 
 		// Assert
 		Assert.NotNull(result);
-		Assert.Equal("OpenWeather", result.ApiName);
+		Assert.Equal("ExternalAPI", result.ApiName);
 		Assert.Equal(10, result.CallCount);
 		Assert.Equal(today, result.ResetDate);
 	}
@@ -86,15 +86,15 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 10,
 			ResetDate = today,
 		};
 		await Repository.CreateAsync(request);
 
 		// Act
-		ThirdPartyApiRequest? result = await Repository.GetByApiNameAndDateAsync("OpenWeather", yesterday);
+		ThirdPartyApiRequest? result = await Repository.GetByApiNameAndDateAsync("ExternalAPI", yesterday);
 
 		// Assert
 		Assert.Null(result);
@@ -107,8 +107,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 5,
 			ResetDate = today,
 		};
@@ -118,7 +118,7 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 
 		// Assert
 		Assert.NotEqual(0, result.Id); // Id should be generated
-		Assert.Equal("OpenWeather", result.ApiName);
+		Assert.Equal("ExternalAPI", result.ApiName);
 		Assert.Equal(5, result.CallCount);
 	}
 
@@ -130,8 +130,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 		DateTime beforeCreate = DateTime.UtcNow;
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = today,
 		};
 
@@ -151,16 +151,16 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 		ThirdPartyApiRequest request1 = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = today,
 		};
 		await Repository.CreateAsync(request1);
 
 		ThirdPartyApiRequest request2 = new()
 		{
-			ApiName = "OpenWeather", // Same API
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI", // Same API
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = today, // Same date
 		};
 
@@ -177,15 +177,15 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 
 		ThirdPartyApiRequest request1 = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = today,
 		};
 
 		ThirdPartyApiRequest request2 = new()
 		{
-			ApiName = "OpenWeather", // Same API
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI", // Same API
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = yesterday, // Different date
 		};
 
@@ -205,8 +205,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 5,
 			ResetDate = today,
 		};
@@ -227,8 +227,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 5,
 			ResetDate = today,
 		};
@@ -256,24 +256,24 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 
 		await Repository.CreateAsync(new ThirdPartyApiRequest
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 10,
 			ResetDate = today,
 		});
 
 		await Repository.CreateAsync(new ThirdPartyApiRequest
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 20,
 			ResetDate = yesterday,
 		});
 
 		await Repository.CreateAsync(new ThirdPartyApiRequest
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 15,
 			ResetDate = twoDaysAgo,
 		});
@@ -288,12 +288,12 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 		});
 
 		// Act
-		IEnumerable<ThirdPartyApiRequest> results = await Repository.GetByApiNameAsync("OpenWeather");
+		IEnumerable<ThirdPartyApiRequest> results = await Repository.GetByApiNameAsync("ExternalAPI");
 
 		// Assert
 		List<ThirdPartyApiRequest> resultList = [.. results];
 		Assert.Equal(3, resultList.Count);
-		Assert.All(resultList, r => Assert.Equal("OpenWeather", r.ApiName));
+		Assert.All(resultList, r => Assert.Equal("ExternalAPI", r.ApiName));
 	}
 
 	[Fact]
@@ -317,29 +317,29 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 
 		await Repository.CreateAsync(new ThirdPartyApiRequest
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = today,
 		});
 
 		await Repository.CreateAsync(new ThirdPartyApiRequest
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = tenDaysAgo,
 		});
 
 		await Repository.CreateAsync(new ThirdPartyApiRequest
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = thirtyDaysAgo,
 		});
 
 		await Repository.CreateAsync(new ThirdPartyApiRequest
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = fortyDaysAgo,
 		});
 
@@ -348,7 +348,7 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 
 		// Assert
 		Assert.Equal(1, deletedCount); // Only fortyDaysAgo should be deleted
-		IEnumerable<ThirdPartyApiRequest> remaining = await Repository.GetByApiNameAsync("OpenWeather");
+		IEnumerable<ThirdPartyApiRequest> remaining = await Repository.GetByApiNameAsync("ExternalAPI");
 		Assert.Equal(3, remaining.Count());
 	}
 
@@ -361,8 +361,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 
 		await Repository.CreateAsync(new ThirdPartyApiRequest
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = today,
 		});
 

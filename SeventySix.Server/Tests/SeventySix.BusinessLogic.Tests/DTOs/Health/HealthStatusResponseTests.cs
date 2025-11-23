@@ -100,9 +100,9 @@ public class HealthStatusResponseTests
 			Apis = new Dictionary<string, ApiHealthStatus>
 			{
 				{
-					"OpenWeather", new ApiHealthStatus
+					"ExternalAPI", new ApiHealthStatus
 					{
-						ApiName = "OpenWeather",
+						ApiName = "ExternalAPI",
 						IsAvailable = true,
 						ResponseTimeMs = 150.5,
 						LastChecked = now,
@@ -122,10 +122,10 @@ public class HealthStatusResponseTests
 
 		// Assert
 		Assert.Equal(2, response.Apis.Count);
-		Assert.True(response.Apis["OpenWeather"].IsAvailable);
+		Assert.True(response.Apis["ExternalAPI"].IsAvailable);
 		Assert.False(response.Apis["GoogleMaps"].IsAvailable);
-		Assert.Equal(150.5, response.Apis["OpenWeather"].ResponseTimeMs);
-		Assert.Equal(now, response.Apis["OpenWeather"].LastChecked);
+		Assert.Equal(150.5, response.Apis["ExternalAPI"].ResponseTimeMs);
+		Assert.Equal(now, response.Apis["ExternalAPI"].LastChecked);
 		Assert.Null(response.Apis["GoogleMaps"].LastChecked);
 	}
 

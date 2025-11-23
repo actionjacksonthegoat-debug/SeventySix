@@ -15,8 +15,8 @@ namespace SeventySix.TestUtilities.TestBases;
 /// Uses LocalPostgreSqlFixture for localhost PostgreSQL connection.
 ///
 /// IMPORTANT: This is NOT an integration test base class.
-/// Tests using this base class should mock all external dependencies (e.g., IOpenWeatherApiClient).
-/// Only OpenWeatherIntegrationTests should call the real OpenWeather third-party API.
+/// Tests using this base class should mock all external dependencies.
+/// Only integration tests should call real third-party APIs.
 /// </summary>
 /// <typeparam name="TProgram">The entry point type for the application.</typeparam>
 public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase

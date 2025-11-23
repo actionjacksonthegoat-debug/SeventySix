@@ -8,7 +8,7 @@ namespace SeventySix.BusinessLogic.Exceptions;
 /// Exception thrown when an external service call fails.
 /// </summary>
 /// <remarks>
-/// Used to wrap exceptions from third-party API calls (OpenWeather, etc.).
+/// Used to wrap exceptions from third-party API calls.
 /// Provides a consistent exception type for external service failures.
 /// </remarks>
 public class ExternalServiceException : Exception

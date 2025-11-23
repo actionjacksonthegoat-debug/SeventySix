@@ -252,115 +252,6 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		Assert.All(remainingLogs, log => Assert.True(log.Timestamp >= cutoffDate));
 	}
 
-	[Fact]
-	public async Task GetStatisticsAsync_ReturnsCorrectStatistics_SuccessfullyAsync()
-	{
-		// Arrange
-		await SeedTestLogsAsync();
-		DateTime startDate = DateTime.UtcNow.AddHours(-2);
-		DateTime endDate = DateTime.UtcNow.AddHours(2);
-
-		// Act
-		LogStatistics stats = await Repository.GetStatisticsAsync(startDate, endDate);
-
-		// Assert
-		Assert.NotNull(stats);
-		Assert.True(stats.TotalLogs > 0);
-		Assert.True(stats.ErrorCount >= 0);
-		Assert.True(stats.WarningCount >= 0);
-		Assert.NotNull(stats.TopErrorSources);
-		Assert.NotNull(stats.RequestsByPath);
-	}
-
-	[Fact]
-	public async Task GetStatisticsAsync_CalculatesAverageResponseTime_CorrectlyAsync()
-	{
-		// Arrange
-		await Repository.CreateAsync(new Log
-		{
-			LogLevel = "Info",
-			Message = "Request 1",
-			DurationMs = 100,
-			RequestPath = "/api/test",
-			Timestamp = DateTime.UtcNow,
-		});
-
-		await Repository.CreateAsync(new Log
-		{
-			LogLevel = "Info",
-			Message = "Request 2",
-			DurationMs = 200,
-			RequestPath = "/api/test",
-			Timestamp = DateTime.UtcNow,
-		});
-
-		DateTime startDate = DateTime.UtcNow.AddHours(-1);
-		DateTime endDate = DateTime.UtcNow.AddHours(1);
-
-		// Act
-		LogStatistics stats = await Repository.GetStatisticsAsync(startDate, endDate);
-
-		// Assert
-		Assert.Equal(150, stats.AverageResponseTimeMs);
-	}
-
-	[Fact]
-	public async Task GetStatisticsAsync_CountsFailedRequests_CorrectlyAsync()
-	{
-		// Arrange
-		await Repository.CreateAsync(new Log
-		{
-			LogLevel = "Error",
-			Message = "Failed request",
-			StatusCode = 500,
-			RequestPath = "/api/test",
-			Timestamp = DateTime.UtcNow,
-		});
-
-		await Repository.CreateAsync(new Log
-		{
-			LogLevel = "Info",
-			Message = "Successful request",
-			StatusCode = 200,
-			RequestPath = "/api/test",
-			Timestamp = DateTime.UtcNow,
-		});
-
-		DateTime startDate = DateTime.UtcNow.AddHours(-1);
-		DateTime endDate = DateTime.UtcNow.AddHours(1);
-
-		// Act
-		LogStatistics stats = await Repository.GetStatisticsAsync(startDate, endDate);
-
-		// Assert
-		Assert.True(stats.FailedRequests > 0);
-	}
-
-	[Fact]
-	public async Task GetStatisticsAsync_LimitsTopErrorSources_To10Async()
-	{
-		// Arrange
-		for (int i = 0; i < 15; i++)
-		{
-			await Repository.CreateAsync(new Log
-			{
-				LogLevel = "Error",
-				Message = $"Error {i}",
-				SourceContext = $"Service{i}",
-				Timestamp = DateTime.UtcNow,
-			});
-		}
-
-		DateTime startDate = DateTime.UtcNow.AddHours(-1);
-		DateTime endDate = DateTime.UtcNow.AddHours(1);
-
-		// Act
-		LogStatistics stats = await Repository.GetStatisticsAsync(startDate, endDate);
-
-		// Assert
-		Assert.True(stats.TopErrorSources.Count <= 10);
-	}
-
 	private async Task SeedTestLogsAsync()
 	{
 		Log[] logs =
@@ -379,8 +270,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 			{
 				LogLevel = "Warning",
 				Message = "Test warning 1",
-				SourceContext = "SeventySix.Services.WeatherService",
-				RequestPath = "/api/weather",
+				SourceContext = "SeventySix.Services.HealthCheckService",
+				RequestPath = "/api/health",
 				StatusCode = 200,
 				DurationMs = 75,
 				Timestamp = DateTime.UtcNow.AddMinutes(-5),

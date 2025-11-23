@@ -33,12 +33,12 @@ public class ThirdPartyApiStatisticsResponseTests
 		DateTime now = DateTime.UtcNow;
 		Dictionary<string, int> callsByApi = new()
 		{
-			{ "OpenWeather", 150 },
+			{ "ExternalAPI", 150 },
 			{ "GoogleMaps", 75 },
 		};
 		Dictionary<string, DateTime?> lastCalledByApi = new()
 		{
-			{ "OpenWeather", now },
+			{ "ExternalAPI", now },
 			{ "GoogleMaps", now.AddMinutes(-30) },
 		};
 
@@ -54,10 +54,10 @@ public class ThirdPartyApiStatisticsResponseTests
 		Assert.Equal(225, response.TotalCallsToday);
 		Assert.Equal(2, response.TotalApisTracked);
 		Assert.Equal(2, response.CallsByApi.Count);
-		Assert.Equal(150, response.CallsByApi["OpenWeather"]);
+		Assert.Equal(150, response.CallsByApi["ExternalAPI"]);
 		Assert.Equal(75, response.CallsByApi["GoogleMaps"]);
 		Assert.Equal(2, response.LastCalledByApi.Count);
-		Assert.Equal(now, response.LastCalledByApi["OpenWeather"]);
+		Assert.Equal(now, response.LastCalledByApi["ExternalAPI"]);
 		Assert.Equal(now.AddMinutes(-30), response.LastCalledByApi["GoogleMaps"]);
 	}
 

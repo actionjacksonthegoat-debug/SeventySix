@@ -28,10 +28,10 @@ namespace SeventySix.BusinessLogic.Exceptions;
 ///
 /// Usage Example:
 /// <code>
-/// var forecast = await _repository.GetByIdAsync(id, cancellationToken);
-/// if (forecast is null)
+/// var user = await _repository.GetByIdAsync(id, cancellationToken);
+/// if (user is null)
 /// {
-///     throw new EntityNotFoundException(nameof(WeatherForecast), id);
+///     throw new EntityNotFoundException(nameof(User), id);
 /// }
 /// </code>
 ///

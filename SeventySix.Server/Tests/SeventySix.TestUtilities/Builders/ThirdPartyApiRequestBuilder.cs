@@ -16,7 +16,7 @@ namespace SeventySix.TestUtilities.Builders;
 /// Usage:
 /// <code>
 /// ThirdPartyApiRequest request = new ThirdPartyApiRequestBuilder()
-///     .WithApiName("OpenWeather")
+///     .WithApiName("ExternalAPI")
 ///     .WithCallCount(150)
 ///     .Build();
 /// </code>
@@ -141,17 +141,6 @@ public class ThirdPartyApiRequestBuilder
 			UpdatedAt = UpdatedAt,
 			RowVersion = RowVersion,
 		};
-	}
-
-	/// <summary>
-	/// Creates a builder for OpenWeather API requests.
-	/// </summary>
-	/// <returns>A new ThirdPartyApiRequestBuilder configured for OpenWeather.</returns>
-	public static ThirdPartyApiRequestBuilder CreateOpenWeather()
-	{
-		return new ThirdPartyApiRequestBuilder()
-			.WithApiName("OpenWeather")
-			.WithBaseUrl("https://api.openweathermap.org");
 	}
 
 	/// <summary>

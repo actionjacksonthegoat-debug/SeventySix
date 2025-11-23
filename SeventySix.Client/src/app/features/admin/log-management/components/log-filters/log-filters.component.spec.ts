@@ -27,28 +27,9 @@ describe("LogFiltersComponent", () =>
 
 	it("should initialize with default filter values", () =>
 	{
-		expect(component.searchTerm()).toBe("");
 		expect(component.selectedLevel()).toBeNull();
 		expect(component.dateRange()).toBe("24h");
 		expect(component.autoRefresh()).toBe(false);
-	});
-
-	it("should update search term", () =>
-	{
-		component.searchTerm.set("error message");
-
-		expect(component.searchTerm()).toBe("error message");
-	});
-
-	it("should emit filterChange when search term changes", (done: DoneFn) =>
-	{
-		component.filterChange.subscribe((filter) =>
-		{
-			expect(filter.searchTerm).toBe("test");
-			done();
-		});
-
-		component.onSearchChange("test");
 	});
 
 	it("should update selected log level", () =>
@@ -167,7 +148,7 @@ describe("LogFiltersComponent", () =>
 		component.onCleanupClick();
 	});
 
-	it("should debounce search input", (done: DoneFn) =>
+	it("should emit filter changes for level updates", (done: DoneFn) =>
 	{
 		let emissionCount = 0;
 
@@ -177,17 +158,16 @@ describe("LogFiltersComponent", () =>
 		});
 
 		// Trigger multiple rapid changes
-		component.onSearchChange("a");
-		component.onSearchChange("ab");
-		component.onSearchChange("abc");
+		component.onLevelChange(LogLevel.Error);
+		component.onLevelChange(LogLevel.Warning);
+		component.onLevelChange(LogLevel.Information);
 
-		// Wait for debounce (300ms)
+		// Should emit for each change
 		setTimeout(() =>
 		{
-			// Should only emit once after debounce
-			expect(emissionCount).toBe(1);
+			expect(emissionCount).toBe(3);
 			done();
-		}, 400);
+		}, 100);
 	});
 
 	it("should provide level options", () =>
@@ -214,25 +194,21 @@ describe("LogFiltersComponent", () =>
 	it("should clear all filters", () =>
 	{
 		// Set some filters
-		component.searchTerm.set("test");
 		component.selectedLevel.set(LogLevel.Error);
 		component.dateRange.set("7d");
 
 		component.clearFilters();
 
-		expect(component.searchTerm()).toBe("");
 		expect(component.selectedLevel()).toBeNull();
 		expect(component.dateRange()).toBe("24h");
 	});
 
 	it("should emit filterChange when clearing filters", (done: DoneFn) =>
 	{
-		component.searchTerm.set("test");
 		component.selectedLevel.set(LogLevel.Error);
 
 		component.filterChange.subscribe((filter) =>
 		{
-			expect(filter.searchTerm).toBe("");
 			expect(filter.logLevel).toBeNull();
 			done();
 		});

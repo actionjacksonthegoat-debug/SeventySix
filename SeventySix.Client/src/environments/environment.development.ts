@@ -19,6 +19,7 @@ interface Environment
 		dashboards: {
 			systemOverview: string;
 			apiEndpoints: string;
+			logsOverview: string;
 		};
 	};
 	cache: {
@@ -33,7 +34,6 @@ interface Environment
 			users: { staleTime: number; gcTime: number; retry: number };
 			logs: { staleTime: number; gcTime: number; retry: number };
 			health: { staleTime: number; gcTime: number; retry: number };
-			logcharts: { staleTime: number; gcTime: number; retry: number };
 			thirdpartyrequests: {
 				staleTime: number;
 				gcTime: number;
@@ -90,7 +90,8 @@ export const environment: Environment = {
 		enabled: true, // Observability stack enabled for dashboard embedding
 		dashboards: {
 			systemOverview: "seventysix-system-overview",
-			apiEndpoints: "seventysix-api-endpoints"
+			apiEndpoints: "seventysix-api-endpoints",
+			logsOverview: "logs-overview"
 		}
 	},
 	cache: {
@@ -105,7 +106,6 @@ export const environment: Environment = {
 			users: { staleTime: 0, gcTime: 60000, retry: 1 },
 			logs: { staleTime: 0, gcTime: 60000, retry: 1 },
 			health: { staleTime: 0, gcTime: 60000, retry: 1 },
-			logcharts: { staleTime: 0, gcTime: 60000, retry: 1 },
 			thirdpartyrequests: { staleTime: 0, gcTime: 60000, retry: 1 }
 		}
 	},

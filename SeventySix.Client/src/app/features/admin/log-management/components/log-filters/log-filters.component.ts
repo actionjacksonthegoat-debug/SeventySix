@@ -3,25 +3,14 @@ import {
 	ChangeDetectionStrategy,
 	signal,
 	output,
-	viewChild,
-	ElementRef,
-	HostListener,
 	OutputEmitterRef,
-	Signal,
 	WritableSignal
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
-import { MatSelectModule } from "@angular/material/select";
 import { LogLevel, LogFilterRequest } from "@admin/log-management/models";
-import { Subject } from "rxjs";
-import { debounceTime, distinctUntilChanged } from "rxjs/operators";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 /**
  * Log filters component for the log management page
@@ -29,14 +18,10 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 @Component({
 	selector: "app-log-filters",
 	imports: [
-		FormsModule,
-		MatFormFieldModule,
-		MatInputModule,
 		MatChipsModule,
 		MatButtonModule,
 		MatIconModule,
-		MatSlideToggleModule,
-		MatSelectModule
+		MatSlideToggleModule
 	],
 	templateUrl: "./log-filters.component.html",
 	styleUrl: "./log-filters.component.scss",
@@ -44,12 +29,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 })
 export class LogFiltersComponent
 {
-	// View children
-	readonly searchInput: Signal<ElementRef<HTMLInputElement> | undefined> =
-		viewChild<ElementRef<HTMLInputElement>>("searchInput");
-
 	// State
-	readonly searchTerm: WritableSignal<string> = signal<string>("");
 	readonly selectedLevel: WritableSignal<LogLevel | null> =
 		signal<LogLevel | null>(null);
 	readonly dateRange: WritableSignal<string> = signal<string>("24h");
@@ -73,29 +53,6 @@ export class LogFiltersComponent
 	];
 
 	readonly dateRangeOptions: string[] = ["24h", "7d", "30d"];
-
-	private searchSubject: Subject<string> = new Subject<string>();
-
-	constructor()
-	{
-		// Set up debounced search
-		this.searchSubject
-			.pipe(
-				debounceTime(300),
-				distinctUntilChanged(),
-				takeUntilDestroyed()
-			)
-			.subscribe((term) =>
-			{
-				this.searchTerm.set(term);
-				this.emitFilterChange();
-			});
-	}
-
-	onSearchChange(value: string): void
-	{
-		this.searchSubject.next(value);
-	}
 
 	onLevelChange(level: LogLevel | null): void
 	{
@@ -127,25 +84,9 @@ export class LogFiltersComponent
 
 	clearFilters(): void
 	{
-		this.searchTerm.set("");
 		this.selectedLevel.set(null);
 		this.dateRange.set("24h");
 		this.emitFilterChange();
-	}
-
-	/**
-	 * Keyboard shortcut handler
-	 * Ctrl+F: Focus search input
-	 */
-	@HostListener("window:keydown", ["$event"])
-	handleKeyboardShortcut(event: KeyboardEvent): void
-	{
-		// Ctrl+F or Cmd+F: Focus search
-		if ((event.ctrlKey || event.metaKey) && event.key === "f")
-		{
-			event.preventDefault();
-			this.searchInput()?.nativeElement.focus();
-		}
 	}
 
 	getLevelName(level: LogLevel): string
@@ -179,7 +120,6 @@ export class LogFiltersComponent
 		const filter: LogFilterRequest = {
 			pageNumber: 1,
 			pageSize: 50,
-			searchTerm: this.searchTerm() || "",
 			logLevel: this.selectedLevel(),
 			startDate,
 			endDate

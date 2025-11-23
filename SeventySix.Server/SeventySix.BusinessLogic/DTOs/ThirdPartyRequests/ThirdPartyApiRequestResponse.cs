@@ -30,13 +30,13 @@ public class ThirdPartyApiRequestResponse
 	/// <summary>
 	/// Gets or sets the name of the external API.
 	/// </summary>
-	/// <example>OpenWeather</example>
+	/// <example>ExternalAPI</example>
 	public string ApiName { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets or sets the base URL of the external API.
 	/// </summary>
-	/// <example>https://api.openweathermap.org</example>
+	/// <example>https://api.example.com</example>
 	public string BaseUrl { get; set; } = string.Empty;
 
 	/// <summary>

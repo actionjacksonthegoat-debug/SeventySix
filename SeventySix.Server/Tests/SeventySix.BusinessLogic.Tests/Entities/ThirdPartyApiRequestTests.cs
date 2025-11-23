@@ -21,8 +21,8 @@ public class ThirdPartyApiRequestTests
 		// Arrange
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 5,
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 		};
@@ -44,8 +44,8 @@ public class ThirdPartyApiRequestTests
 		// Arrange
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 0,
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 		};
@@ -72,8 +72,8 @@ public class ThirdPartyApiRequestTests
 		// Arrange
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 50,
 			LastCalledAt = DateTime.UtcNow.AddHours(-1),
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
@@ -96,15 +96,15 @@ public class ThirdPartyApiRequestTests
 		// Arrange & Act
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 10,
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 		};
 
 		// Assert
-		Assert.Equal("OpenWeather", request.ApiName);
-		Assert.Equal("https://api.openweathermap.org", request.BaseUrl);
+		Assert.Equal("ExternalAPI", request.ApiName);
+		Assert.Equal("https://api.ExternalAPImap.org", request.BaseUrl);
 		Assert.Equal(10, request.CallCount);
 		Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), request.ResetDate);
 	}
@@ -115,8 +115,8 @@ public class ThirdPartyApiRequestTests
 		// Arrange & Act
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 		};
 
@@ -130,8 +130,8 @@ public class ThirdPartyApiRequestTests
 		// Arrange & Act
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 		};
 
@@ -145,8 +145,8 @@ public class ThirdPartyApiRequestTests
 		// Arrange
 		ThirdPartyApiRequest request = new()
 		{
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 		};
 

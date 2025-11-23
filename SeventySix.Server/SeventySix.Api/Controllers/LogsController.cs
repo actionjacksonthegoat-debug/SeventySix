@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
-using SeventySix.BusinessLogic.DTOs.LogCharts;
 using SeventySix.BusinessLogic.DTOs.Logs;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.BusinessLogic.Interfaces;
@@ -20,7 +19,7 @@ namespace SeventySix.Api.Controllers;
 /// <remarks>
 /// Provides endpoints for:
 /// - Querying logs with filters and pagination
-/// - Retrieving aggregated statistics
+/// - Client-side error logging
 /// - Cleaning up old logs
 ///
 /// Design Patterns:
@@ -37,14 +36,12 @@ namespace SeventySix.Api.Controllers;
 /// Initializes a new instance of the <see cref="LogsController"/> class.
 /// </remarks>
 /// <param name="logRepository">The log repository.</param>
-/// <param name="logChartService">The log chart service.</param>
 /// <param name="logger">The logger.</param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/logs")]
 [RateLimit()] // 250 req/hour (default)
 public class LogsController(
 	ILogRepository logRepository,
-	ILogChartService logChartService,
 	ILogger<LogsController> logger,
 	IOutputCacheStore outputCacheStore) : ControllerBase
 {
@@ -152,53 +149,6 @@ public class LogsController(
 		{
 			logger.LogError(ex, "Error retrieving log count");
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving log count");
-		}
-	}
-
-	/// <summary>
-	/// Gets aggregated statistics for logs within an optional date range.
-	/// </summary>
-	/// <param name="startDate">The start date for the statistics period (optional).</param>
-	/// <param name="endDate">The end date for the statistics period (optional).</param>
-	/// <returns>Aggregated log statistics.</returns>
-	/// <response code="200">Returns the log statistics.</response>
-	/// <response code="500">If an error occurs while retrieving statistics.</response>
-	[HttpGet("statistics")]
-	[OutputCache(PolicyName = "logs")]
-	[ProducesResponseType(typeof(LogStatisticsResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<LogStatisticsResponse>> GetStatisticsAsync(
-		[FromQuery] DateTime? startDate = null,
-		[FromQuery] DateTime? endDate = null)
-	{
-		try
-		{
-			DateTime effectiveStartDate = startDate ?? DateTime.UtcNow.AddDays(-30);
-			DateTime effectiveEndDate = endDate ?? DateTime.UtcNow;
-
-			LogStatistics stats = await logRepository.GetStatisticsAsync(effectiveStartDate, effectiveEndDate);
-
-			LogStatisticsResponse response = new()
-			{
-				TotalLogs = stats.TotalLogs,
-				ErrorCount = stats.ErrorCount,
-				WarningCount = stats.WarningCount,
-				FatalCount = stats.FatalCount,
-				AverageResponseTimeMs = stats.AverageResponseTimeMs,
-				TotalRequests = stats.TotalRequests,
-				FailedRequests = stats.FailedRequests,
-				TopErrorSources = stats.TopErrorSources,
-				RequestsByPath = stats.RequestsByPath,
-				StartDate = effectiveStartDate,
-				EndDate = effectiveEndDate,
-			};
-
-			return Ok(response);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Error retrieving log statistics");
-			return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving log statistics");
 		}
 	}
 
@@ -448,108 +398,6 @@ public class LogsController(
 			// This ensures graceful degradation
 			logger.LogError(ex, "Error batch logging client errors");
 			return StatusCode(StatusCodes.Status500InternalServerError, "Error batch logging client errors");
-		}
-	}
-
-	/// <summary>
-	/// Retrieves log counts grouped by severity level.
-	/// </summary>
-	/// <param name="startDate">Optional start date for filtering.</param>
-	/// <param name="endDate">Optional end date for filtering.</param>
-	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
-	/// <returns>Log counts by level.</returns>
-	/// <response code="200">Returns the log counts by level.</response>
-	[HttpGet("charts/bylevel")]
-	[OutputCache(PolicyName = "logcharts")]
-	[ProducesResponseType(typeof(LogsByLevelResponse), StatusCodes.Status200OK)]
-	public async Task<ActionResult<LogsByLevelResponse>> GetLogsByLevelAsync(
-		[FromQuery] DateTime? startDate,
-		[FromQuery] DateTime? endDate,
-		CancellationToken cancellationToken)
-	{
-		LogsByLevelResponse data = await logChartService.GetLogsByLevelAsync(startDate, endDate, cancellationToken);
-		return Ok(data);
-	}
-
-	/// <summary>
-	/// Retrieves log counts grouped by hour.
-	/// </summary>
-	/// <param name="hoursBack">Number of hours to look back from current time (default: 24).</param>
-	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
-	/// <returns>Hourly log counts.</returns>
-	/// <response code="200">Returns the hourly log counts.</response>
-	[HttpGet("charts/byhour")]
-	[OutputCache(PolicyName = "logcharts")]
-	[ProducesResponseType(typeof(LogsByHourResponse), StatusCodes.Status200OK)]
-	public async Task<ActionResult<LogsByHourResponse>> GetLogsByHourAsync(
-		[FromQuery] int? hoursBack,
-		CancellationToken cancellationToken)
-	{
-		LogsByHourResponse data = await logChartService.GetLogsByHourAsync(hoursBack ?? 24, cancellationToken);
-		return Ok(data);
-	}
-
-	/// <summary>
-	/// Retrieves log counts grouped by source component.
-	/// </summary>
-	/// <param name="topN">Number of top sources to return (default: 10).</param>
-	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
-	/// <returns>Log counts by source.</returns>
-	/// <response code="200">Returns the log counts by source.</response>
-	[HttpGet("charts/bysource")]
-	[OutputCache(PolicyName = "logcharts")]
-	[ProducesResponseType(typeof(LogsBySourceResponse), StatusCodes.Status200OK)]
-	public async Task<ActionResult<LogsBySourceResponse>> GetLogsBySourceAsync(
-		[FromQuery] int? topN,
-		CancellationToken cancellationToken)
-	{
-		LogsBySourceResponse data = await logChartService.GetLogsBySourceAsync(topN ?? 10, cancellationToken);
-		return Ok(data);
-	}
-
-	/// <summary>
-	/// Retrieves recent error and warning log entries.
-	/// </summary>
-	/// <param name="count">Number of recent errors to return (default: 50).</param>
-	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
-	/// <returns>Recent error log summaries.</returns>
-	/// <response code="200">Returns the recent errors.</response>
-	[HttpGet("charts/recenterrors")]
-	[OutputCache(PolicyName = "logcharts")]
-	[ProducesResponseType(typeof(RecentErrorsResponse), StatusCodes.Status200OK)]
-	public async Task<ActionResult<RecentErrorsResponse>> GetRecentErrorsAsync(
-		[FromQuery] int? count,
-		CancellationToken cancellationToken)
-	{
-		RecentErrorsResponse data = await logChartService.GetRecentErrorsAsync(count ?? 50, cancellationToken);
-		return Ok(data);
-	}
-
-	/// <summary>
-	/// Retrieves time-series log data for charting.
-	/// </summary>
-	/// <param name="period">Time period for the chart (24h, 7d, 30d). Default: 24h.</param>
-	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
-	/// <returns>Chart data with time-series log counts.</returns>
-	/// <response code="200">Returns the chart data.</response>
-	/// <response code="400">If the period parameter is invalid.</response>
-	[HttpGet("chartdata")]
-	[OutputCache(PolicyName = "logcharts")]
-	[ProducesResponseType(typeof(LogChartDataResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<ActionResult<LogChartDataResponse>> GetChartDataAsync(
-	[FromQuery] string? period,
-	CancellationToken cancellationToken)
-	{
-		try
-		{
-			string validPeriod = period ?? "24h";
-			LogChartDataResponse data = await logChartService.GetChartDataAsync(validPeriod, cancellationToken);
-			return Ok(data);
-		}
-		catch (ArgumentException ex)
-		{
-			return BadRequest(new { error = ex.Message });
 		}
 	}
 }

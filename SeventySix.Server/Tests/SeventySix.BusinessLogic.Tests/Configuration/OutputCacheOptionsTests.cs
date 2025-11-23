@@ -153,29 +153,4 @@ public class OutputCacheOptionsTests
 		Assert.Equal("health", healthPolicy.Tag);
 		Assert.Empty(healthPolicy.VaryByQuery);
 	}
-
-	[Fact]
-	public void OutputCacheOptions_LogChartsPolicy_SharesTagWithLogs()
-	{
-		// Arrange
-		IConfigurationRoot configuration = new ConfigurationBuilder()
-			.AddJsonFile("appsettings.json")
-			.Build();
-
-		// Act
-		OutputCacheOptions? options = configuration
-			.GetSection(OutputCacheOptions.SECTION_NAME)
-			.Get<OutputCacheOptions>();
-
-		// Assert
-		Assert.True(options?.Policies.ContainsKey("logcharts"));
-		Assert.True(options?.Policies.ContainsKey("logs"));
-
-		CachePolicyConfig logChartsPolicy = options!.Policies["logcharts"];
-		CachePolicyConfig logsPolicy = options.Policies["logs"];
-
-		// Both should share the same tag for coordinated invalidation
-		Assert.Equal(logsPolicy.Tag, logChartsPolicy.Tag);
-		Assert.Equal("logs", logChartsPolicy.Tag);
-	}
 }

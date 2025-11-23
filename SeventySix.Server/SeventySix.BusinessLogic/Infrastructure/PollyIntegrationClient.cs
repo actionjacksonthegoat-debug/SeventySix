@@ -29,7 +29,7 @@ namespace SeventySix.BusinessLogic.Infrastructure;
 /// - Caching: Reduces unnecessary API calls
 ///
 /// IMPORTANT - TWO-LAYER RATE LIMITING:
-/// This service enforces EXTERNAL API quotas (e.g., OpenWeather 250 calls/day).
+/// This service enforces EXTERNAL API quotas (e.g., third-party API rate limits).
 /// This is SEPARATE from the HTTP middleware rate limiting which protects YOUR API endpoints.
 ///
 /// - Layer 1 (HTTP): AttributeBasedRateLimitingMiddleware - protects YOUR API from client abuse

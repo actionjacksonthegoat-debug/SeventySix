@@ -33,7 +33,6 @@ interface Environment
 			users: { staleTime: number; gcTime: number; retry: number };
 			logs: { staleTime: number; gcTime: number; retry: number };
 			health: { staleTime: number; gcTime: number; retry: number };
-			logcharts: { staleTime: number; gcTime: number; retry: number };
 			thirdpartyrequests: {
 				staleTime: number;
 				gcTime: number;
@@ -102,7 +101,6 @@ export const environment: Environment = {
 			users: { staleTime: 0, gcTime: 0, retry: 0 },
 			logs: { staleTime: 0, gcTime: 0, retry: 0 },
 			health: { staleTime: 0, gcTime: 0, retry: 0 },
-			logcharts: { staleTime: 0, gcTime: 0, retry: 0 },
 			thirdpartyrequests: { staleTime: 0, gcTime: 0, retry: 0 }
 		}
 	},

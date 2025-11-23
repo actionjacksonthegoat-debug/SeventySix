@@ -33,8 +33,8 @@ public class ThirdPartyApiRequestServiceTests
 			new ThirdPartyApiRequest
 			{
 				Id = 1,
-				ApiName = "OpenWeather",
-				BaseUrl = "https://api.openweathermap.org",
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 150,
 				LastCalledAt = DateTime.UtcNow.AddMinutes(-5),
 				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
@@ -60,7 +60,7 @@ public class ThirdPartyApiRequestServiceTests
 		Assert.NotNull(result);
 		List<ThirdPartyApiRequestResponse> resultList = [.. result];
 		Assert.Equal(2, resultList.Count);
-		Assert.Equal("OpenWeather", resultList[0].ApiName);
+		Assert.Equal("ExternalAPI", resultList[0].ApiName);
 		Assert.Equal(150, resultList[0].CallCount);
 		Assert.Equal("GoogleMaps", resultList[1].ApiName);
 		MockRepository.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -91,8 +91,8 @@ public class ThirdPartyApiRequestServiceTests
 			new ThirdPartyApiRequest
 			{
 				Id = 1,
-				ApiName = "OpenWeather",
-				BaseUrl = "https://api.openweathermap.org",
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 150,
 				LastCalledAt = now.AddMinutes(-5),
 				ResetDate = DateOnly.FromDateTime(now.Date.AddDays(1)),
@@ -119,10 +119,10 @@ public class ThirdPartyApiRequestServiceTests
 		Assert.Equal(225, result.TotalCallsToday);
 		Assert.Equal(2, result.TotalApisTracked);
 		Assert.Equal(2, result.CallsByApi.Count);
-		Assert.Equal(150, result.CallsByApi["OpenWeather"]);
+		Assert.Equal(150, result.CallsByApi["ExternalAPI"]);
 		Assert.Equal(75, result.CallsByApi["GoogleMaps"]);
 		Assert.Equal(2, result.LastCalledByApi.Count);
-		Assert.NotNull(result.LastCalledByApi["OpenWeather"]);
+		Assert.NotNull(result.LastCalledByApi["ExternalAPI"]);
 		Assert.NotNull(result.LastCalledByApi["GoogleMaps"]);
 	}
 
@@ -153,8 +153,8 @@ public class ThirdPartyApiRequestServiceTests
 			new ThirdPartyApiRequest
 			{
 				Id = 1,
-				ApiName = "OpenWeather",
-				BaseUrl = "https://api.openweathermap.org",
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 150,
 				LastCalledAt = null,
 				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
@@ -171,6 +171,6 @@ public class ThirdPartyApiRequestServiceTests
 		Assert.NotNull(result);
 		Assert.Equal(150, result.TotalCallsToday);
 		Assert.Single(result.CallsByApi);
-		Assert.Null(result.LastCalledByApi["OpenWeather"]);
+		Assert.Null(result.LastCalledByApi["ExternalAPI"]);
 	}
 }

@@ -65,7 +65,6 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IUserService, UserService>();
 		services.AddScoped<IThirdPartyApiRequestService, ThirdPartyApiRequestService>();
 		services.AddScoped<IHealthCheckService, HealthCheckService>();
-		services.AddScoped<ILogChartService, LogChartService>();
 		services.AddSingleton<IMetricsService, MetricsService>();
 
 		// Infrastructure services

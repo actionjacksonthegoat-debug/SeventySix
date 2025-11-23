@@ -60,17 +60,17 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		[
 			LogBuilder.CreateWarning()
 				.WithMessage("Test warning message")
-				.WithSourceContext("SeventySix.Api.Controllers.WeatherController")
-				.WithHttpRequest("GET", "/api/weather", 200, 150)
+				.WithSourceContext("SeventySix.Api.Controllers.UsersController")
+				.WithHttpRequest("GET", "/api/users", 200, 150)
 				.WithTimestamp(DateTime.UtcNow.AddHours(-1))
 				.Build(),
 			LogBuilder.CreateError()
 				.WithMessage("Test error message")
 				.WithExceptionMessage("Exception occurred")
 				.WithBaseExceptionMessage("Base exception")
-				.WithStackTrace("at SeventySix.Api.Controllers.WeatherController.GetWeather()")
-				.WithSourceContext("SeventySix.Api.Controllers.WeatherController")
-				.WithHttpRequest("POST", "/api/weather", 500, 250)
+				.WithStackTrace("at SeventySix.Api.Controllers.UsersController.GetUser()")
+				.WithSourceContext("SeventySix.Api.Controllers.UsersController")
+				.WithHttpRequest("POST", "/api/users", 500, 250)
 				.WithTimestamp(DateTime.UtcNow.AddHours(-2))
 				.Build(),
 			LogBuilder.CreateFatal()
@@ -173,7 +173,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			"/api/v1/logs?sourceContext=SeventySix.Api.Controllers.WeatherController");
+			"/api/v1/logs?sourceContext=SeventySix.Api.Controllers.UsersController");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -182,7 +182,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
 		Assert.All(pagedResponse.Data, log =>
-			Assert.Equal("SeventySix.Api.Controllers.WeatherController", log.SourceContext));
+			Assert.Equal("SeventySix.Api.Controllers.UsersController", log.SourceContext));
 	}
 
 	/// <summary>
@@ -278,54 +278,6 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 			Assert.True(log.Timestamp <= endDate);
 			Assert.Equal("/api/weatherforecast/current", log.RequestPath);
 		});
-	}
-
-	/// <summary>
-	/// Tests that GET /api/logs/statistics returns aggregated statistics.
-	/// </summary>
-	[Fact]
-	public async Task GetStatisticsAsync_NoFilters_ReturnsAggregatedDataAsync()
-	{
-		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/statistics");
-
-		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-		LogStatisticsResponse? stats = await response.Content.ReadFromJsonAsync<LogStatisticsResponse>();
-		Assert.NotNull(stats);
-		Assert.True(stats.TotalLogs >= 4);
-		Assert.True(stats.ErrorCount >= 1);
-		Assert.True(stats.WarningCount >= 2);
-		Assert.True(stats.FatalCount >= 1);
-		Assert.True(stats.AverageResponseTimeMs > 0);
-		Assert.NotEmpty(stats.TopErrorSources);
-		Assert.NotEmpty(stats.RequestsByPath);
-	}
-
-	/// <summary>
-	/// Tests that GET /api/logs/statistics filters by date range correctly.
-	/// </summary>
-	[Fact]
-	public async Task GetStatisticsAsync_FilterByDateRange_ReturnsFilteredStatsAsync()
-	{
-		// Arrange
-		DateTime startDate = DateTime.UtcNow.AddHours(-4);
-		DateTime endDate = DateTime.UtcNow;
-
-		// Act
-		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/v1/logs/statistics?startDate={startDate:O}&endDate={endDate:O}");
-
-		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-		LogStatisticsResponse? stats = await response.Content.ReadFromJsonAsync<LogStatisticsResponse>();
-		Assert.NotNull(stats);
-		Assert.Equal(startDate.Date, stats.StartDate.Date);
-		Assert.Equal(endDate.Date, stats.EndDate.Date);
-		// Should not include the 31-day-old log
-		Assert.True(stats.TotalLogs >= 3);
 	}
 
 	/// <summary>
@@ -678,57 +630,6 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	}
 
 	/// <summary>
-	/// Tests that GET /api/logs/chartdata returns chart data for valid period.
-	/// </summary>
-	[Theory]
-	[InlineData("24h")]
-	[InlineData("7d")]
-	[InlineData("30d")]
-	public async Task GetChartDataAsync_WithValidPeriod_ReturnsOkAsync(string period)
-	{
-		// Act
-		HttpResponseMessage response = await Client.GetAsync($"/api/v1/logs/chartdata?period={period}");
-
-		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-		LogChartDataResponse? chartData = await response.Content.ReadFromJsonAsync<LogChartDataResponse>();
-		Assert.NotNull(chartData);
-		Assert.Equal(period, chartData.Period);
-		Assert.NotNull(chartData.DataPoints);
-	}
-
-	/// <summary>
-	/// Tests that GET /api/logs/chartdata returns BadRequest for invalid period.
-	/// </summary>
-	[Fact]
-	public async Task GetChartDataAsync_WithInvalidPeriod_ReturnsBadRequestAsync()
-	{
-		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/chartdata?period=invalid");
-
-		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-	}
-
-	/// <summary>
-	/// Tests that GET /api/logs/chartdata uses default period when not specified.
-	/// </summary>
-	[Fact]
-	public async Task GetChartDataAsync_WithNoPeriod_UsesDefaultAsync()
-	{
-		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/chartdata");
-
-		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-		LogChartDataResponse? chartData = await response.Content.ReadFromJsonAsync<LogChartDataResponse>();
-		Assert.NotNull(chartData);
-		Assert.Equal("24h", chartData.Period); // Default should be 24h
-	}
-
-	/// <summary>
 	/// Tests that GET /api/logs/count returns total count with no filters.
 	/// </summary>
 	[Fact]
@@ -792,14 +693,14 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			"/api/v1/logs/count?sourceContext=SeventySix.Api.Controllers.WeatherController");
+			"/api/v1/logs/count?sourceContext=SeventySix.Api.Controllers.UsersController");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
 		LogCountResponse? countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
 		Assert.NotNull(countResponse);
-		Assert.True(countResponse.Total >= 2); // At least 2 logs from WeatherController
+		Assert.True(countResponse.Total >= 2); // At least 2 logs from UsersController
 	}
 
 	/// <summary>
@@ -827,14 +728,14 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync(
-			"/api/v1/logs/count?logLevel=Warning&sourceContext=SeventySix.Api.Controllers.WeatherController");
+			"/api/v1/logs/count?logLevel=Warning&sourceContext=SeventySix.Api.Controllers.UsersController");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
 		LogCountResponse? countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
 		Assert.NotNull(countResponse);
-		Assert.True(countResponse.Total >= 1); // At least 1 Warning from WeatherController
+		Assert.True(countResponse.Total >= 1); // At least 1 Warning from UsersController
 	}
 
 	/// <summary>

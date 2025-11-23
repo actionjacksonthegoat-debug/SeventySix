@@ -212,64 +212,6 @@ public class LogRepository : ILogRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<LogStatistics> GetStatisticsAsync(
-		DateTime startDate,
-		DateTime endDate,
-		CancellationToken cancellationToken = default)
-	{
-		try
-		{
-			List<Log> logs = await Context.Logs
-				.AsNoTracking()
-				.Where(l => l.Timestamp >= startDate && l.Timestamp <= endDate)
-				.ToListAsync(cancellationToken);
-
-			LogStatistics stats = new()
-			{
-				TotalLogs = logs.Count,
-				ErrorCount = logs.Count(l => l.LogLevel == "Error"),
-				WarningCount = logs.Count(l => l.LogLevel == "Warning"),
-				FatalCount = logs.Count(l => l.LogLevel == "Fatal"),
-				TotalRequests = logs.Count(l => l.RequestPath != null),
-				FailedRequests = logs.Count(l => l.StatusCode >= 400),
-				AverageResponseTimeMs = logs.Where(l => l.DurationMs.HasValue).Average(l => (double?)l.DurationMs) ?? 0,
-			};
-
-			stats.TopErrorSources = logs
-				.Where(l => l.LogLevel == "Error" && l.SourceContext != null)
-				.GroupBy(l => l.SourceContext!)
-				.OrderByDescending(g => g.Count())
-				.Take(10)
-				.ToDictionary(g => g.Key, g => g.Count());
-
-			stats.RequestsByPath = logs
-				.Where(l => l.RequestPath != null)
-				.GroupBy(l => l.RequestPath!)
-				.OrderByDescending(g => g.Count())
-				.Take(10)
-				.ToDictionary(g => g.Key, g => g.Count());
-
-			Logger.LogDebug(
-				"Generated statistics: TotalLogs={TotalLogs}, ErrorCount={ErrorCount}, StartDate={StartDate}, EndDate={EndDate}",
-				stats.TotalLogs,
-				stats.ErrorCount,
-				startDate,
-				endDate);
-
-			return stats;
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(
-				ex,
-				"Error generating statistics for date range: StartDate={StartDate}, EndDate={EndDate}",
-				startDate,
-				endDate);
-			throw;
-		}
-	}
-
-	/// <inheritdoc/>
 	public async Task<bool> DeleteByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
 		try

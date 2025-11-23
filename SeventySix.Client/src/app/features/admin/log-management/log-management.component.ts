@@ -1,93 +1,46 @@
-import { Component, computed, inject, Signal } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { MatCardModule } from "@angular/material/card";
+import {
+	Component,
+	inject,
+	signal,
+	WritableSignal,
+	ChangeDetectionStrategy
+} from "@angular/core";
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
 import { MatDialog } from "@angular/material/dialog";
 import { LogManagementService } from "@admin/log-management/services";
-import { LogFiltersComponent } from "@admin/log-management/components/log-filters/log-filters.component";
-import { LogSummaryComponent } from "@admin/log-management/components/log-summary/log-summary.component";
-import { LogTableComponent } from "@admin/log-management/components/log-table/log-table.component";
-import { LogDetailDialogComponent } from "@admin/log-management/components/log-detail-dialog/log-detail-dialog.component";
-import { LogResponse, LogFilterRequest } from "@admin/log-management/models";
-import { DateService } from "@core/services/date.service";
+import {
+	LogList,
+	LogDetailDialogComponent
+} from "@admin/log-management/components";
+import { LogResponse } from "@admin/log-management/models";
 
+/**
+ * Log Management component.
+ * Smart container for log management functionality.
+ * Provides page layout and hosts the LogList component.
+ * Follows Smart/Presentational component pattern for separation of concerns.
+ */
 @Component({
 	selector: "app-log-management",
 	standalone: true,
-	imports: [
-		CommonModule,
-		MatCardModule,
-		LogFiltersComponent,
-		LogSummaryComponent,
-		LogTableComponent
-	],
+	imports: [MatIconModule, MatButtonModule, LogList],
 	templateUrl: "./log-management.component.html",
-	styleUrl: "./log-management.component.scss"
+	styleUrl: "./log-management.component.scss",
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LogManagementComponent
 {
 	private readonly logService: LogManagementService =
 		inject(LogManagementService);
 	private readonly dialog: MatDialog = inject(MatDialog);
-	private readonly dateService: DateService = inject(DateService);
 
-	// TanStack Query handles loading, error, and data states
-	readonly logsQuery: ReturnType<LogManagementService["getLogs"]> =
-		this.logService.getLogs();
-	readonly logCountQuery: ReturnType<LogManagementService["getLogCount"]> =
-		this.logService.getLogCount();
+	// Page-level state
+	readonly pageTitle: WritableSignal<string> = signal("Log Management");
+
 	private readonly deleteMutation: ReturnType<
 		LogManagementService["deleteLog"]
 	> = this.logService.deleteLog();
-
-	// Computed signals for derived state
-	readonly logs: Signal<
-		import("@admin/log-management/models").PagedLogResponse | null
-	> = computed(() => this.logsQuery.data() ?? null);
-	readonly isLoading: Signal<boolean> = computed(() =>
-		this.logsQuery.isLoading()
-	);
-	readonly error: Signal<string | null> = computed(() =>
-		this.logsQuery.error() ? "Failed to load logs. Please try again." : null
-	);
-	readonly statistics: Signal<
-		import("@admin/log-management/models").LogStatistics
-	> = computed(() =>
-	{
-		const total: number = this.logCountQuery.data()?.total ?? 0;
-		return {
-			totalLogs: total,
-			errorCount: 0,
-			warningCount: 0,
-			fatalCount: 0,
-			criticalCount: 0,
-			infoCount: 0,
-			debugCount: 0,
-			averageResponseTimeMs: 0,
-			totalRequests: 0,
-			failedRequests: 0,
-			topErrorSources: {},
-			requestsByPath: {},
-			oldestLogDate: null,
-			newestLogDate: null,
-			startDate: this.dateService.now(),
-			endDate: this.dateService.now()
-		};
-	});
-
-	onFilterChange(filter: Partial<LogFilterRequest>): void
-	{
-		this.logService.updateFilter(filter);
-	}
-
-	onPageChange(pageIndex: number): void
-	{
-		this.logService.setPage(pageIndex + 1);
-	}
-
-	onPageSizeChange(pageSize: number): void
-	{
-		this.logService.setPageSize(pageSize);
-	}
 
 	onLogSelected(log: LogResponse): void
 	{

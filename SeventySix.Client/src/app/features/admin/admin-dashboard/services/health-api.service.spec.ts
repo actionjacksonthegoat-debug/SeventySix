@@ -72,8 +72,8 @@ describe("HealthApiService", () =>
 				},
 				externalApis: {
 					apis: {
-						OpenWeather: {
-							apiName: "OpenWeather",
+						ExternalAPI: {
+							apiName: "ExternalAPI",
 							isAvailable: true,
 							responseTimeMs: 120.3,
 							lastChecked: "2025-11-12T10:29:00Z"
@@ -110,7 +110,7 @@ describe("HealthApiService", () =>
 			expect(health).toEqual(mockHealth);
 			expect(health?.status).toBe("Healthy");
 			expect(health?.database.isConnected).toBe(true);
-			expect(health?.externalApis.apis["OpenWeather"].isAvailable).toBe(
+			expect(health?.externalApis.apis["ExternalAPI"].isAvailable).toBe(
 				true
 			);
 		});
@@ -306,8 +306,8 @@ describe("HealthApiService", () =>
 				},
 				externalApis: {
 					apis: {
-						OpenWeather: {
-							apiName: "OpenWeather",
+						ExternalAPI: {
+							apiName: "ExternalAPI",
 							isAvailable: true,
 							responseTimeMs: 150.5,
 							lastChecked: "2025-11-12T10:28:00Z"
@@ -351,7 +351,7 @@ describe("HealthApiService", () =>
 				2
 			);
 			expect(
-				apiHealth?.externalApis.apis["OpenWeather"].isAvailable
+				apiHealth?.externalApis.apis["ExternalAPI"].isAvailable
 			).toBe(true);
 		});
 
@@ -368,8 +368,8 @@ describe("HealthApiService", () =>
 				},
 				externalApis: {
 					apis: {
-						OpenWeather: {
-							apiName: "OpenWeather",
+						ExternalAPI: {
+							apiName: "ExternalAPI",
 							isAvailable: false,
 							responseTimeMs: 0,
 							lastChecked: "2025-11-12T10:20:00Z"
@@ -402,10 +402,10 @@ describe("HealthApiService", () =>
 
 			const apiHealth = query.data();
 			expect(
-				apiHealth?.externalApis.apis["OpenWeather"].isAvailable
+				apiHealth?.externalApis.apis["ExternalAPI"].isAvailable
 			).toBe(false);
 			expect(
-				apiHealth?.externalApis.apis["OpenWeather"].responseTimeMs
+				apiHealth?.externalApis.apis["ExternalAPI"].responseTimeMs
 			).toBe(0);
 		});
 
@@ -475,3 +475,4 @@ describe("HealthApiService", () =>
 		});
 	});
 });
+

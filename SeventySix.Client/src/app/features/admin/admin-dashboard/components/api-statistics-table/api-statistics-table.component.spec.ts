@@ -16,8 +16,8 @@ describe("ApiStatisticsTableComponent", () =>
 	const mockApiData: ThirdPartyApiRequest[] = [
 		{
 			id: 1,
-			apiName: "OpenWeather",
-			baseUrl: "https://api.openweathermap.org",
+			apiName: "ExternalAPI",
+			baseUrl: "https://api.example.com",
 			callCount: 1234,
 			lastCalledAt: "2025-11-12T10:30:00Z",
 			resetDate: "2025-11-12"
@@ -96,7 +96,7 @@ describe("ApiStatisticsTableComponent", () =>
 
 		createComponent();
 
-		expect(component.dataSource().data[0].apiName).toBe("OpenWeather");
+		expect(component.dataSource().data[0].apiName).toBe("ExternalAPI");
 		expect(component.dataSource().data[1].apiName).toBe("GeocodeAPI");
 	});
 
@@ -181,3 +181,5 @@ describe("ApiStatisticsTableComponent", () =>
 		expect(component.dataSource().data.length).toBe(0);
 	});
 });
+
+

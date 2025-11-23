@@ -143,10 +143,10 @@
 				</ng-container>
 
 				<!-- Table rows -->
-				<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+				<tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
 				<tr
 					mat-row
-					*matRowDef="let log; columns: displayedColumns"
+					*matRowDef="let log; columns: displayedColumns()"
 					class="log-row"
 					(click)="onRowClick(log)"
 				></tr>
@@ -155,7 +155,7 @@
 				<tr class="mat-row" *matNoDataRow>
 					<td
 						class="mat-cell empty-state"
-						[attr.colspan]="displayedColumns.length"
+						[attr.colspan]="displayedColumns().length"
 					>
 						<mat-icon>info</mat-icon>
 						<p>No logs found</p>

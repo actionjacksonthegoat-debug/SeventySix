@@ -1,9 +1,20 @@
 @use "variables" as vars;
 
+:host {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	width: 100%;
+}
+
 .log-table-container {
 	display: flex;
 	flex-direction: column;
 	gap: vars.$spacing-lg; // 16px
+	flex: 1;
+	min-height: 0;
+	width: 100%;
 }
 
 .bulk-actions {
@@ -28,15 +39,23 @@
 }
 
 .table-wrapper {
-	overflow-x: auto;
-	@include vars.custom-scrollbar();
+	flex: 1;
+	min-height: 400px;
+	overflow: hidden;
+	width: 100%;
 
 	.table-viewport {
-		height: 600px;
+		height: 600px; // Fixed height for virtual scroller
 		overflow-y: auto;
+		width: 100%;
+		@include vars.custom-scrollbar();
 
-		@media #{vars.$breakpoint-md} {
-			height: 400px;
+		@media (min-height: 900px) {
+			height: 700px;
+		}
+
+		@media (min-height: 1080px) {
+			height: 800px;
 		}
 	}
 }

@@ -50,7 +50,7 @@ public class PollyResiliencePolicyTests
 
 		HttpClient httpClient = new(handlerMock.Object)
 		{
-			BaseAddress = new Uri("https://api.openweathermap.org/"),
+			BaseAddress = new Uri("https://api.example.com/"),
 		};
 
 		MemoryCache cache = new(new MemoryCacheOptions());
@@ -98,7 +98,7 @@ public class PollyResiliencePolicyTests
 
 		HttpClient httpClient = new(handlerMock.Object)
 		{
-			BaseAddress = new Uri("https://api.openweathermap.org/"),
+			BaseAddress = new Uri("https://api.example.com/"),
 		};
 
 		MemoryCache cache = new(new MemoryCacheOptions());
@@ -160,7 +160,7 @@ public class PollyResiliencePolicyTests
 
 		HttpClient httpClient = new(handlerMock.Object)
 		{
-			BaseAddress = new Uri("https://api.openweathermap.org/"),
+			BaseAddress = new Uri("https://api.example.com/"),
 		};
 
 		MemoryCache cache = new(new MemoryCacheOptions());

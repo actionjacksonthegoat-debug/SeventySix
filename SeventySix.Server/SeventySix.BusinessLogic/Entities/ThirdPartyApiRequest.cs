@@ -40,9 +40,9 @@ public class ThirdPartyApiRequest
 	}
 
 	/// <summary>
-	/// Gets or sets the base URL of the external API.
+	/// Gets or sets the base URL of the third-party API.
 	/// </summary>
-	/// <example>https://api.openweathermap.org</example>
+	/// <example>https://api.example.com</example>
 	public required string BaseUrl
 	{
 		get; set;

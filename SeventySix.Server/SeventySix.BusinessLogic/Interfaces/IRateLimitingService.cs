@@ -26,7 +26,7 @@ public interface IRateLimitingService
 	/// Attempts to increment the request count if under the limit.
 	/// </summary>
 	/// <param name="apiName">The name of the API being called.</param>
-	/// <param name="baseUrl">The base URL of the API (e.g., "https://api.openweathermap.org").</param>
+	/// <param name="baseUrl">The base URL of the API (e.g., "https://api.example.com").</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>True if the request was counted; false if limit exceeded.</returns>
 	public Task<bool> TryIncrementRequestCountAsync(string apiName, string baseUrl, CancellationToken cancellationToken = default);

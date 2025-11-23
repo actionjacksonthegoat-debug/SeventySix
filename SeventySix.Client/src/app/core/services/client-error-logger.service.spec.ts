@@ -318,12 +318,12 @@ describe("ClientErrorLoggerService", () =>
 		{
 			const error = new Error("Error");
 			error.stack =
-				"Error: Test\n  at WeatherComponent.getData (weather.component.ts:42:15)";
+				"Error: Test\n  at UserComponent.getData (user.component.ts:42:15)";
 
 			service.logError({ message: "Error", error });
 
 			const call = errorQueueService.enqueue.calls.mostRecent();
-			expect(call.args[0].sourceContext).toContain("WeatherComponent");
+			expect(call.args[0].sourceContext).toContain("UserComponent");
 		});
 
 		it("should extract service name from error stack", () =>

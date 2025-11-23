@@ -3,18 +3,8 @@
 .log-filters {
 	display: flex;
 	flex-direction: column;
-	gap: vars.$spacing-xl; // 24px
-	padding: 0; // Padding handled by parent card
-
-	.search-section {
-		.search-field {
-			width: 100%;
-
-			mat-form-field {
-				width: 100%;
-			}
-		}
-	}
+	gap: vars.$spacing-lg; // 16px
+	padding: vars.$spacing-md 0; // 12px vertical
 
 	.filter-section {
 		display: flex;
@@ -86,8 +76,6 @@
 
 	// Responsive Design
 	@media #{vars.$breakpoint-sm} {
-		gap: vars.$spacing-lg; // 16px
-
 		.filter-section {
 			gap: vars.$spacing-md; // 12px
 		}
@@ -104,8 +92,8 @@
 		}
 	}
 
-	@media #{vars.$breakpoint-xs} {
-		gap: vars.$spacing-md; // 12px
+	@media #{vars.$breakpoint-mobile} {
+		gap: vars.$spacing-sm; // 8px
 
 		.filter-section {
 			gap: vars.$spacing-sm; // 8px

@@ -59,6 +59,15 @@ export class LogTableComponent implements AfterViewInit
 		environment.ui.tables.defaultPageSize
 	);
 	readonly pageIndex: InputSignal<number> = input<number>(0);
+	readonly displayedColumns: InputSignal<string[]> = input<string[]>([
+		"select",
+		"level",
+		"timestamp",
+		"message",
+		"sourceContext",
+		"requestPath",
+		"actions"
+	]);
 
 	// Outputs
 	readonly logSelected: OutputEmitterRef<LogResponse> = output<LogResponse>();
@@ -68,15 +77,6 @@ export class LogTableComponent implements AfterViewInit
 	readonly pageSizeChange: OutputEmitterRef<number> = output<number>();
 
 	// Table configuration
-	readonly displayedColumns: string[] = [
-		"select",
-		"level",
-		"timestamp",
-		"message",
-		"sourceContext",
-		"requestPath",
-		"actions"
-	];
 
 	readonly dataSource: MatTableDataSource<LogResponse> =
 		new MatTableDataSource<LogResponse>([]);

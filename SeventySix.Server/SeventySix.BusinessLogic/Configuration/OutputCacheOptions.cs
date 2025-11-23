@@ -21,7 +21,7 @@ public class OutputCacheOptions
 
 	/// <summary>
 	/// Gets or sets the cache policies.
-	/// Key is the policy name (e.g., "Weather", "Users").
+	/// Key is the policy name (e.g., "Users", "Logs").
 	/// Value is the policy configuration.
 	/// </summary>
 	public Dictionary<string, CachePolicyConfig> Policies { get; set; } = [];

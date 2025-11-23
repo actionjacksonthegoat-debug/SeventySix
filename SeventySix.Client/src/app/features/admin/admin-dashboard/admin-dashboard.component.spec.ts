@@ -88,12 +88,24 @@ describe("AdminDashboardComponent", () =>
 		);
 	});
 
-	it("should contain API statistics table component", () =>
+	it("should display admin dashboard with appropriate content", () =>
 	{
 		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
-		expect(compiled.querySelector("app-api-statistics-table")).toBeTruthy();
+
+		// Dashboard title should always be present
+		expect(compiled.querySelector("h1")?.textContent).toContain(
+			"Admin Dashboard"
+		);
+
+		// In test environment, observability is disabled
+		// Verify the component correctly reads the environment configuration
+		expect(component.isObservabilityEnabled).toBe(false);
+
+		// When disabled, fallback message should be shown instead of tabs
+		const fallbackMessage = compiled.textContent;
+		expect(fallbackMessage).toContain("Observability stack is not enabled");
 	});
 
 	it("should open Jaeger in new tab", () =>
@@ -104,7 +116,7 @@ describe("AdminDashboardComponent", () =>
 		component.openJaeger();
 
 		expect(window.open).toHaveBeenCalledWith(
-			"http://localhost:16686",
+			"http://localhost:16686/search?service=SeventySix.Api",
 			"_blank"
 		);
 	});
@@ -117,7 +129,7 @@ describe("AdminDashboardComponent", () =>
 		component.openPrometheus();
 
 		expect(window.open).toHaveBeenCalledWith(
-			"http://localhost:9090/graph",
+			"http://localhost:9090/targets",
 			"_blank"
 		);
 	});
@@ -130,7 +142,7 @@ describe("AdminDashboardComponent", () =>
 		component.openGrafana();
 
 		expect(window.open).toHaveBeenCalledWith(
-			"http://localhost:3000",
+			"http://localhost:3000/dashboards",
 			"_blank"
 		);
 	});

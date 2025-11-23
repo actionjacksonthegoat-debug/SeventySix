@@ -93,22 +93,6 @@ public interface ILogRepository
 	public Task<int> DeleteOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default);
 
 	/// <summary>
-	/// Gets log statistics for dashboard.
-	/// </summary>
-	/// <param name="startDate">Start date for statistics.</param>
-	/// <param name="endDate">End date for statistics.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>Log statistics including counts by level, avg response times, etc.</returns>
-	/// <remarks>
-	/// Provides aggregated data for monitoring dashboard.
-	/// Includes error counts, request metrics, and top error sources.
-	/// </remarks>
-	public Task<LogStatistics> GetStatisticsAsync(
-		DateTime startDate,
-		DateTime endDate,
-		CancellationToken cancellationToken = default);
-
-	/// <summary>
 	/// Deletes a single log entry by its ID.
 	/// </summary>
 	/// <param name="id">The ID of the log to delete.</param>

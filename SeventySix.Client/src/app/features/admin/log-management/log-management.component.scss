@@ -1,95 +1,59 @@
 @use "variables" as vars;
 
-// Screen reader only content
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border-width: 0;
+:host {
+	display: block;
+	width: 100%;
 }
 
-.log-management-page {
+.logs-page {
+	width: 100%;
+}
+
+.page-header {
+	margin-bottom: vars.$spacing-xl;
+
+	@media (max-width: vars.$breakpoint-xs-max) {
+		margin-bottom: vars.$spacing-lg;
+	}
+}
+
+.header-content {
 	display: flex;
-	flex-direction: column;
-	gap: vars.$spacing-lg; // 16px
-	padding: vars.$spacing-lg; // 16px
-	max-width: 1400px;
-	margin: 0 auto;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: vars.$spacing-md;
+}
 
-	.header-card {
-		background-color: var(--mat-sys-surface-container-low);
-		color: var(--mat-sys-on-surface);
+.header-title {
+	display: flex;
+	align-items: center;
+	gap: vars.$spacing-md;
 
-		mat-card-header {
-			padding: vars.$spacing-lg; // 16px
-		}
+	.page-icon {
+		font-size: vars.$avatar-size-md;
+		width: vars.$avatar-size-md;
+		height: vars.$avatar-size-md;
+		color: var(--mat-primary-default);
 
-		mat-card-title {
-			margin: 0;
-
-			h1 {
-				margin: 0;
-				font-size: 2rem;
-				font-weight: 500;
-				color: var(--mat-sys-on-surface);
-			}
-		}
-	}
-
-	.filters-card,
-	.summary-card,
-	.table-card {
-		background-color: var(--mat-sys-surface-container-low);
-		color: var(--mat-sys-on-surface);
-
-		mat-card-content {
-			padding: vars.$spacing-lg; // 16px
-		}
-	}
-
-	.loading-state,
-	.error-state {
-		text-align: center;
-		padding: vars.$spacing-2xl; // 32px
-		color: var(--mat-sys-on-surface-variant);
-
-		mat-spinner {
-			margin: 0 auto;
-		}
-	}
-
-	.error-state {
-		color: var(--mat-sys-error);
-
-		mat-icon {
-			font-size: vars.$icon-size-xl; // 48px
+		@media (max-width: vars.$breakpoint-xs-max) {
+			font-size: vars.$icon-size-xl;
 			width: vars.$icon-size-xl;
 			height: vars.$icon-size-xl;
-			margin-bottom: vars.$spacing-lg; // 16px
 		}
 	}
 
-	// Responsive Design
-	@media #{vars.$breakpoint-sm} {
-		gap: vars.$spacing-md; // 12px
-		padding: vars.$spacing-md; // 12px
-
-		.header-card mat-card-title h1 {
-			font-size: 1.5rem;
-		}
+	h1 {
+		margin: 0;
+		font-weight: vars.$font-weight-medium;
 	}
 
-	@media #{vars.$breakpoint-xs} {
-		gap: vars.$spacing-sm; // 8px
-		padding: vars.$spacing-sm; // 8px
-
-		.header-card mat-card-title h1 {
-			font-size: 1.25rem;
-		}
+	.subtitle {
+		margin: vars.$spacing-xs 0 0;
+		opacity: 0.7;
 	}
+}
+
+.page-content {
+	width: 100%;
 }

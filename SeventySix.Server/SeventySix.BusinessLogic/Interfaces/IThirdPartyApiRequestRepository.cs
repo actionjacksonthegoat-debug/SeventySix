@@ -27,7 +27,7 @@ public interface IThirdPartyApiRequestRepository
 	/// <summary>
 	/// Retrieves a tracking record for a specific API on a specific date.
 	/// </summary>
-	/// <param name="apiName">The name of the API (e.g., "OpenWeather").</param>
+	/// <param name="apiName">The name of the API (e.g., "ExternalAPI").</param>
 	/// <param name="resetDate">The date for the tracking record.</param>
 	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>The tracking record if found; otherwise, null.</returns>

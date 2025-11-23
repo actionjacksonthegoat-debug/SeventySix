@@ -10,7 +10,7 @@ namespace SeventySix.TestUtilities.Attributes;
 /// <summary>
 /// Custom xUnit Theory attribute that skips integration tests unless explicitly enabled in configuration.
 /// Integration tests are those that:
-/// - Call external APIs (e.g., OpenWeather)
+/// - Call external APIs
 /// - Connect to deployed PostgreSQL databases
 /// - Perform E2E testing against real infrastructure
 /// Unit tests should use mocks or TestContainers instead.

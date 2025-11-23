@@ -35,8 +35,8 @@ public class ThirdPartyApiRequestResponseTests
 		ThirdPartyApiRequestResponse response = new()
 		{
 			Id = 42,
-			ApiName = "OpenWeather",
-			BaseUrl = "https://api.openweathermap.org",
+			ApiName = "ExternalAPI",
+			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 150,
 			LastCalledAt = now,
 			ResetDate = resetDate,
@@ -44,8 +44,8 @@ public class ThirdPartyApiRequestResponseTests
 
 		// Assert
 		Assert.Equal(42, response.Id);
-		Assert.Equal("OpenWeather", response.ApiName);
-		Assert.Equal("https://api.openweathermap.org", response.BaseUrl);
+		Assert.Equal("ExternalAPI", response.ApiName);
+		Assert.Equal("https://api.ExternalAPImap.org", response.BaseUrl);
 		Assert.Equal(150, response.CallCount);
 		Assert.Equal(now, response.LastCalledAt);
 		Assert.Equal(resetDate, response.ResetDate);

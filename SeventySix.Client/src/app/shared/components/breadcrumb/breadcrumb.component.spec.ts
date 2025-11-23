@@ -42,7 +42,7 @@ describe("BreadcrumbComponent", () =>
 						]
 					},
 					{
-						path: "weather-forecast",
+						path: "user-profile",
 						component: TestComponent
 					},
 					{

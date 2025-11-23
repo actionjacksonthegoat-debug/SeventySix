@@ -1,71 +1,26 @@
-<div class="log-management-page">
-	<!-- Screen reader announcements -->
-	<div class="sr-only" aria-live="polite" aria-atomic="true">
-		@if (isLoading())
-		{
-			<span>Loading log entries, please wait...</span>
-		}
-		@else if (error())
-		{
-			<span>Error loading logs: {{ error() }}</span>
-		}
-		@else if (logs())
-		{
-			<span
-				>Loaded {{ logs()!.data.length }} of
-				{{ logs()!.totalCount }} log entries</span
-			>
-		}
+<!-- Log Management Page -->
+<div class="logs-page">
+	<!-- Page Header -->
+	<div class="page-header">
+		<div class="header-content">
+			<div class="header-title">
+				<mat-icon class="page-icon">description</mat-icon>
+				<div>
+					<h1 class="mat-headline-4">{{ pageTitle() }}</h1>
+					<p class="mat-body-2 subtitle">
+						View and manage application logs
+					</p>
+				</div>
+			</div>
+		</div>
 	</div>
 
-	<mat-card class="header-card">
-		<mat-card-header>
-			<mat-card-title>
-				<h1>Log Management</h1>
-			</mat-card-title>
-		</mat-card-header>
-	</mat-card>
-
-	<mat-card class="filters-card">
-		<mat-card-content>
-			<app-log-filters (filterChange)="onFilterChange($event)" />
-		</mat-card-content>
-	</mat-card>
-
-	<mat-card class="summary-card">
-		<mat-card-content>
-			<app-log-summary [statistics]="statistics()" [lastUpdated]="null" />
-		</mat-card-content>
-	</mat-card>
-
-	<mat-card class="table-card">
-		<mat-card-content>
-			@if (isLoading())
-			{
-				<div class="loading-state">
-					<p>Loading logs...</p>
-				</div>
-			}
-			@else if (error())
-			{
-				<div class="error-state">
-					<p>Error: {{ error() }}</p>
-				</div>
-			}
-			@else if (logs())
-			{
-				<app-log-table
-					[logs]="logs()!.data"
-					[totalCount]="logs()!.totalCount"
-					[pageIndex]="logs()!.pageNumber - 1"
-					[pageSize]="logs()!.pageSize"
-					(logSelected)="onLogSelected($event)"
-					(deleteLog)="onDeleteLog($event)"
-					(deleteSelected)="onDeleteSelected($event)"
-					(pageChange)="onPageChange($event)"
-					(pageSizeChange)="onPageSizeChange($event)"
-				/>
-			}
-		</mat-card-content>
-	</mat-card>
+	<!-- Main Content: LogList Component -->
+	<main class="page-content">
+		<app-log-list
+			(logSelected)="onLogSelected($event)"
+			(deleteLog)="onDeleteLog($event)"
+			(deleteSelected)="onDeleteSelected($event)"
+		/>
+	</main>
 </div>

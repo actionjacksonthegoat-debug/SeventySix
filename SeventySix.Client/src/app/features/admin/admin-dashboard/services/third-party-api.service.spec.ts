@@ -58,8 +58,8 @@ describe("ThirdPartyApiService", () =>
 			const mockData: ThirdPartyApiRequest[] = [
 				{
 					id: 1,
-					apiName: "OpenWeather",
-					baseUrl: "https://api.openweathermap.org",
+					apiName: "ExternalAPI",
+					baseUrl: "https://api.example.com",
 					callCount: 1234,
 					lastCalledAt: "2025-11-12T10:30:00Z",
 					resetDate: "2025-11-12"
@@ -87,7 +87,7 @@ describe("ThirdPartyApiService", () =>
 			const data = query.data();
 			expect(data).toEqual(mockData);
 			expect(data?.length).toBe(2);
-			expect(data?.[0].apiName).toBe("OpenWeather");
+			expect(data?.[0].apiName).toBe("ExternalAPI");
 		});
 
 		it("should handle empty array response", async () =>
@@ -128,12 +128,12 @@ describe("ThirdPartyApiService", () =>
 	{
 		it("should return API requests filtered by API name", async () =>
 		{
-			const apiName = "OpenWeather";
+			const apiName = "ExternalAPI";
 			const mockData: ThirdPartyApiRequest[] = [
 				{
 					id: 1,
-					apiName: "OpenWeather",
-					baseUrl: "https://api.openweathermap.org",
+					apiName: "ExternalAPI",
+					baseUrl: "https://api.example.com",
 					callCount: 1234,
 					lastCalledAt: "2025-11-12T10:30:00Z",
 					resetDate: "2025-11-12"
@@ -205,11 +205,11 @@ describe("ThirdPartyApiService", () =>
 				totalCallsToday: 1801,
 				totalApisTracked: 2,
 				callsByApi: {
-					OpenWeather: 1234,
+					ExternalAPI: 1234,
 					GeocodeAPI: 567
 				},
 				lastCalledByApi: {
-					OpenWeather: "2025-11-12T10:30:00Z",
+					ExternalAPI: "2025-11-12T10:30:00Z",
 					GeocodeAPI: "2025-11-12T09:15:00Z"
 				}
 			};
@@ -230,7 +230,7 @@ describe("ThirdPartyApiService", () =>
 			expect(stats).toEqual(mockStats);
 			expect(stats?.totalCallsToday).toBe(1801);
 			expect(stats?.totalApisTracked).toBe(2);
-			expect(stats?.callsByApi["OpenWeather"]).toBe(1234);
+			expect(stats?.callsByApi["ExternalAPI"]).toBe(1234);
 		});
 
 		it("should handle empty statistics", async () =>
@@ -279,3 +279,5 @@ describe("ThirdPartyApiService", () =>
 		});
 	});
 });
+
+

@@ -4,87 +4,60 @@ import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { LogManagementComponent } from "./log-management.component";
 import { LogManagementService } from "@admin/log-management/services";
 import { MatDialog } from "@angular/material/dialog";
-import {
-	LogResponse,
-	LogLevel,
-	LogFilterRequest,
-	PagedLogResponse
-} from "@admin/log-management/models";
-import { createMockQueryResult } from "@testing/tanstack-query-helpers";
+import { LogResponse, LogLevel } from "@admin/log-management/models";
 import { createMockDialog } from "@testing";
 
-describe("LogManagementComponent", () =>
+describe("LogManagementComponent", (): void =>
 {
 	let component: LogManagementComponent;
 	let fixture: ComponentFixture<LogManagementComponent>;
 	let mockLogService: jasmine.SpyObj<LogManagementService>;
 	let mockDialog: jasmine.SpyObj<MatDialog>;
-	let mockMutation: any;
-
-	const mockPagedLogs: PagedLogResponse = {
-		data: [
-			{
-				id: 1,
-				timestamp: new Date("2025-11-12T10:30:00Z"),
-				logLevel: "Error",
-				message: "Test error",
-				sourceContext: "TestService",
-				exception: null,
-				stackTrace: null,
-				requestId: null,
-				requestPath: "/api/test",
-				machineName: null,
-				threadId: null,
-				application: null,
-				environment: null,
-				userId: null,
-				userName: null,
-				sessionId: null,
-				correlationId: null,
-				spanId: null,
-				parentSpanId: null,
-				clientIp: null,
-				userAgent: null,
-				duration: null,
-				statusCode: null,
-				properties: null
-			}
-		],
-		totalCount: 1,
-		pageNumber: 1,
-		pageSize: 50,
-		totalPages: 1,
-		hasPreviousPage: false,
-		hasNextPage: false
+	let mockMutation: {
+		mutate: jasmine.Spy;
+		isSuccess: jasmine.Spy;
+		isError: jasmine.Spy;
+		isPending: jasmine.Spy;
+		isIdle: jasmine.Spy;
 	};
 
-	beforeEach(async () =>
+	beforeEach(async (): Promise<void> =>
 	{
 		// Create mock mutation object with mutate method
 		mockMutation = {
-			mutate: jasmine.createSpy("mutate")
+			mutate: jasmine.createSpy("mutate"),
+			isSuccess: jasmine.createSpy("isSuccess").and.returnValue(false),
+			isError: jasmine.createSpy("isError").and.returnValue(false),
+			isPending: jasmine.createSpy("isPending").and.returnValue(false),
+			isIdle: jasmine.createSpy("isIdle").and.returnValue(true)
 		};
 
 		mockLogService = jasmine.createSpyObj("LogManagementService", [
 			"getLogs",
-			"getLogCount",
-			"updateFilter",
-			"setPage",
-			"setPageSize",
 			"deleteLog",
 			"deleteSelected"
 		]);
 
-		mockLogService.getLogs.and.returnValue(
-			createMockQueryResult<PagedLogResponse, Error>(mockPagedLogs)
-		);
-		mockLogService.getLogCount.and.returnValue(
-			createMockQueryResult<{ total: number }, Error>({ total: 1 })
-		);
-		mockLogService.deleteLog.and.returnValue(mockMutation);
+		// Mock getLogs to return a TanStack Query result
+		const mockPagedResponse = {
+			data: [],
+			pageNumber: 1,
+			pageSize: 10,
+			totalCount: 0,
+			totalPages: 0,
+			hasPreviousPage: false,
+			hasNextPage: false
+		};
 
+		mockLogService.getLogs.and.returnValue({
+			data: jasmine.createSpy("data").and.returnValue(mockPagedResponse),
+			isLoading: jasmine.createSpy("isLoading").and.returnValue(false),
+			error: jasmine.createSpy("error").and.returnValue(null),
+			isSuccess: jasmine.createSpy("isSuccess").and.returnValue(true),
+			isError: jasmine.createSpy("isError").and.returnValue(false)
+		} as any);
+		mockLogService.deleteLog.and.returnValue(mockMutation as any);
 		mockDialog = createMockDialog();
-
 		await TestBed.configureTestingModule({
 			imports: [LogManagementComponent, NoopAnimationsModule],
 			providers: [
@@ -98,49 +71,18 @@ describe("LogManagementComponent", () =>
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});
-	it("should create", () =>
+
+	it("should create", (): void =>
 	{
 		expect(component).toBeTruthy();
 	});
 
-	it("should load logs data", () =>
+	it("should open log detail dialog when log is selected", (): void =>
 	{
-		expect(component.logs()).toEqual(mockPagedLogs);
-	});
-
-	it("should handle filter changes", () =>
-	{
-		const filter: Partial<LogFilterRequest> = {
-			searchTerm: "error",
-			logLevel: LogLevel.Error
-		};
-
-		component.onFilterChange(filter);
-
-		expect(mockLogService.updateFilter).toHaveBeenCalledWith(filter);
-	});
-
-	it("should handle page change", () =>
-	{
-		component.onPageChange(1); // pageIndex 1 = pageNumber 2
-		expect(mockLogService.setPage).toHaveBeenCalledWith(2);
-	});
-
-	it("should handle page size change", () =>
-	{
-		component.onPageSizeChange(100);
-		expect(mockLogService.setPageSize).toHaveBeenCalledWith(100);
-	});
-
-	it("should open log detail dialog when log is selected", () =>
-	{
-		const mockMutation: any = {
-			mutate: jasmine.createSpy("mutate")
-		};
-		mockLogService.deleteLog.and.returnValue(mockMutation);
-
-		const mockDialogRef: any = {
-			afterClosed: () => createMockQueryResult(undefined),
+		const mockDialogRef: {
+			componentInstance: { deleteLog: { subscribe: jasmine.Spy } };
+			close: jasmine.Spy;
+		} = {
 			componentInstance: {
 				deleteLog: {
 					subscribe: jasmine.createSpy("subscribe")
@@ -148,38 +90,51 @@ describe("LogManagementComponent", () =>
 			},
 			close: jasmine.createSpy("close")
 		};
-		mockDialog.open.and.returnValue(mockDialogRef);
+		mockDialog.open.and.returnValue(mockDialogRef as any);
 
-		component.onLogSelected(mockPagedLogs.data[0]);
+		const mockLog: LogResponse = {
+			id: 1,
+			timestamp: new Date("2025-11-12T10:30:00Z"),
+			logLevel: "Error",
+			message: "Test error",
+			sourceContext: "TestService",
+			exception: null,
+			stackTrace: null,
+			requestId: null,
+			requestPath: "/api/test",
+			machineName: null,
+			threadId: null,
+			application: null,
+			environment: null,
+			userId: null,
+			userName: null,
+			sessionId: null,
+			correlationId: null,
+			spanId: null,
+			parentSpanId: null,
+			clientIp: null,
+			userAgent: null,
+			duration: null,
+			statusCode: null,
+			properties: null
+		};
+
+		component.onLogSelected(mockLog);
 
 		expect(mockDialog.open).toHaveBeenCalled();
 	});
 
-	it("should handle delete log from table", () =>
+	it("should handle delete log", (): void =>
 	{
 		component.onDeleteLog(1);
 
 		expect(mockMutation.mutate).toHaveBeenCalledWith(1);
 	});
 
-	it("should handle delete multiple logs", () =>
+	it("should handle delete multiple logs", (): void =>
 	{
 		component.onDeleteSelected([1, 2, 3]);
 
 		expect(mockLogService.deleteSelected).toHaveBeenCalled();
-	});
-
-	it("should handle export to CSV", () =>
-	{
-		component.onExportCsv();
-		// Export CSV functionality to be implemented
-		expect(component).toBeTruthy();
-	});
-
-	it("should handle cleanup old logs", () =>
-	{
-		component.onCleanupLogs();
-		// Cleanup functionality to be implemented
-		expect(component).toBeTruthy();
 	});
 });
