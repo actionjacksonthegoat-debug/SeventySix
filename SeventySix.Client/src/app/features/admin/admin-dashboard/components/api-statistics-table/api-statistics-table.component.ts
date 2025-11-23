@@ -1,4 +1,10 @@
-import { Component, OnInit, signal, WritableSignal } from "@angular/core";
+import {
+	Component,
+	OnInit,
+	signal,
+	WritableSignal,
+	ChangeDetectionStrategy
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
 import { MatCardModule } from "@angular/material/card";
@@ -7,6 +13,15 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatButtonModule } from "@angular/material/button";
 import { ThirdPartyApiService } from "@admin/admin-dashboard/services";
 import { ThirdPartyApiRequest } from "@admin/admin-dashboard/models";
+
+/**
+ * Extended interface with computed display properties
+ */
+interface ThirdPartyApiRequestDisplay extends ThirdPartyApiRequest
+{
+	formattedLastCalled: string;
+	status: string;
+}
 
 /**
  * Component for displaying third-party API statistics in a table
@@ -22,7 +37,8 @@ import { ThirdPartyApiRequest } from "@admin/admin-dashboard/models";
 		MatButtonModule
 	],
 	templateUrl: "./api-statistics-table.component.html",
-	styleUrl: "./api-statistics-table.component.scss"
+	styleUrl: "./api-statistics-table.component.scss",
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ApiStatisticsTableComponent implements OnInit
 {
@@ -40,9 +56,9 @@ export class ApiStatisticsTableComponent implements OnInit
 	 * Table data source
 	 */
 	readonly dataSource: WritableSignal<
-		MatTableDataSource<ThirdPartyApiRequest>
-	> = signal<MatTableDataSource<ThirdPartyApiRequest>>(
-		new MatTableDataSource<ThirdPartyApiRequest>([])
+		MatTableDataSource<ThirdPartyApiRequestDisplay>
+	> = signal<MatTableDataSource<ThirdPartyApiRequestDisplay>>(
+		new MatTableDataSource<ThirdPartyApiRequestDisplay>([])
 	);
 
 	/**
@@ -73,7 +89,18 @@ export class ApiStatisticsTableComponent implements OnInit
 		this.thirdPartyApiService.getAll().subscribe({
 			next: (data) =>
 			{
-				this.dataSource().data = data;
+				// Pre-compute display properties to avoid change detection issues
+				const displayData: ThirdPartyApiRequestDisplay[] = data.map(
+					(item) => ({
+						...item,
+						formattedLastCalled: this.formatLastCalled(
+							item.lastCalledAt
+						),
+						status: this.getStatus(item.lastCalledAt)
+					})
+				);
+
+				this.dataSource().data = displayData;
 				this.isLoading.set(false);
 			},
 			error: (err) =>

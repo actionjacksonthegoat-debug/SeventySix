@@ -32,28 +32,7 @@ public class OutputCacheOptionsTests
 		Assert.NotEmpty(options.Policies);
 	}
 
-	[Fact]
-	public void OutputCacheOptions_WeatherPolicy_HasCorrectConfiguration()
-	{
-		// Arrange
-		IConfigurationRoot configuration = new ConfigurationBuilder()
-			.AddJsonFile("appsettings.json")
-			.Build();
 
-		// Act
-		OutputCacheOptions? options = configuration
-			.GetSection(OutputCacheOptions.SECTION_NAME)
-			.Get<OutputCacheOptions>();
-
-		// Assert
-		Assert.True(options?.Policies.ContainsKey("weather"));
-		CachePolicyConfig weatherPolicy = options!.Policies["weather"];
-		Assert.Equal(300, weatherPolicy.DurationSeconds);
-		Assert.Equal("weather", weatherPolicy.Tag);
-		Assert.True(weatherPolicy.Enabled);
-		Assert.Contains("latitude", weatherPolicy.VaryByQuery);
-		Assert.Contains("longitude", weatherPolicy.VaryByQuery);
-	}
 
 	[Fact]
 	public void OutputCacheOptions_UsersPolicy_HasCorrectConfiguration()

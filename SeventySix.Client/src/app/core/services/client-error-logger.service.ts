@@ -40,9 +40,12 @@ export class ClientErrorLoggerService
 			const error: Error | HttpErrorResponse | undefined =
 				errorDetails.error ?? errorDetails.httpError;
 
+			// Prepend [Client] to the message
+			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
+
 			const queuedError: QueuedError = {
 				logLevel,
-				message: errorDetails.message,
+				message: formattedMessage,
 				timestamp: new Date(),
 				exceptionMessage: error?.message,
 				stackTrace: error instanceof Error ? error.stack : undefined,
@@ -74,9 +77,12 @@ export class ClientErrorLoggerService
 	{
 		try
 		{
+			// Prepend [Client] to the message
+			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
+
 			const queuedError: QueuedError = {
 				logLevel: LogLevel.Error,
-				message: errorDetails.message,
+				message: formattedMessage,
 				timestamp: new Date(),
 				exceptionMessage: errorDetails.httpError.message,
 				stackTrace:
@@ -110,9 +116,12 @@ export class ClientErrorLoggerService
 	{
 		try
 		{
+			// Prepend [Client] to the message
+			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
+
 			const queuedError: QueuedError = {
 				logLevel: LogLevel.Error,
-				message: errorDetails.message,
+				message: formattedMessage,
 				timestamp: new Date(),
 				exceptionMessage: errorDetails.error?.message,
 				stackTrace: errorDetails.error?.stack,
@@ -141,9 +150,12 @@ export class ClientErrorLoggerService
 	{
 		try
 		{
+			// Prepend [Client] to the message
+			const formattedMessage: string = `[Client] - ${message}`;
+
 			const queuedError: QueuedError = {
 				logLevel: LogLevel.Warning,
-				message,
+				message: formattedMessage,
 				timestamp: new Date(),
 				requestUrl: this.getCurrentUrl(),
 				userAgent: navigator.userAgent,
@@ -168,9 +180,12 @@ export class ClientErrorLoggerService
 	{
 		try
 		{
+			// Prepend [Client] to the message
+			const formattedMessage: string = `[Client] - ${message}`;
+
 			const queuedError: QueuedError = {
 				logLevel: LogLevel.Info,
-				message,
+				message: formattedMessage,
 				timestamp: new Date(),
 				requestUrl: this.getCurrentUrl(),
 				userAgent: navigator.userAgent,

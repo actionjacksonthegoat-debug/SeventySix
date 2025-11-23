@@ -8,8 +8,8 @@ import { UserService } from "@features/admin/users/services/user.service";
 import { Router } from "@angular/router";
 import { NotificationService } from "@core/services/notification.service";
 import { LoggerService } from "@core/services/logger.service";
-import { createMockMutationResult } from "@core/testing";
 import { User } from "@admin/users/models";
+import { createMockMutationResult } from "@testing/tanstack-query-helpers";
 
 describe("UserCreatePage", () =>
 {

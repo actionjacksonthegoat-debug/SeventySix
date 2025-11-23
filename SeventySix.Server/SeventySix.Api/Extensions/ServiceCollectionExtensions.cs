@@ -39,18 +39,11 @@ public static class ServiceCollectionExtensions
 		IConfiguration configuration)
 	{
 		// Configuration options with validation
-		services.Configure<OpenWeatherOptions>(
-			configuration.GetSection(OpenWeatherOptions.SECTION_NAME));
-
 		services.Configure<PollyOptions>(
 			configuration.GetSection(PollyOptions.SECTION_NAME));
 
 		services.Configure<OutputCacheOptions>(
 			configuration.GetSection(OutputCacheOptions.SECTION_NAME));
-
-		services.AddOptions<OpenWeatherOptions>()
-			.Bind(configuration.GetSection(OpenWeatherOptions.SECTION_NAME))
-			.ValidateOnStart();
 
 		services.AddOptions<PollyOptions>()
 			.Bind(configuration.GetSection(PollyOptions.SECTION_NAME))
@@ -61,7 +54,7 @@ public static class ServiceCollectionExtensions
 			.ValidateOnStart();
 
 		// FluentValidation
-		services.AddValidatorsFromAssemblyContaining<WeatherRequestValidator>();
+		services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
 
 		// Repositories
 		services.AddScoped<IUserRepository, UserRepository>();
@@ -73,7 +66,6 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IThirdPartyApiRequestService, ThirdPartyApiRequestService>();
 		services.AddScoped<IHealthCheckService, HealthCheckService>();
 		services.AddScoped<ILogChartService, LogChartService>();
-		services.AddScoped<IOpenWeatherService, OpenWeatherService>();
 		services.AddSingleton<IMetricsService, MetricsService>();
 
 		// Infrastructure services
@@ -84,13 +76,9 @@ public static class ServiceCollectionExtensions
 		services.AddHttpClient<IPollyIntegrationClient, PollyIntegrationClient>()
 			.ConfigureHttpClient((serviceProvider, client) =>
 			{
-				OpenWeatherOptions options = serviceProvider.GetRequiredService<IOptions<OpenWeatherOptions>>().Value;
-				client.BaseAddress = new Uri(options.BaseUrl);
-				client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds + 5);
+				client.Timeout = TimeSpan.FromSeconds(30);
 				client.DefaultRequestHeaders.Add("User-Agent", "SeventySix/1.0");
 			});
-
-		services.AddScoped<IOpenWeatherApiClient, OpenWeatherApiClient>();
 
 		// Memory cache
 		services.AddMemoryCache();

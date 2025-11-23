@@ -100,19 +100,6 @@ describe("BreadcrumbComponent", () =>
 		expect(adminCrumb).toBeDefined();
 	});
 
-	it("should format path segment when no custom breadcrumb data", async () =>
-	{
-		await router.navigate(["/weather-forecast"]);
-		fixture.detectChanges();
-
-		const breadcrumbs = component.breadcrumbs();
-		const weatherCrumb = breadcrumbs.find(
-			(b) => b.label === "Weather Forecast"
-		);
-
-		expect(weatherCrumb).toBeDefined();
-	});
-
 	it("should handle route parameters by showing Details", async () =>
 	{
 		await router.navigate(["/admin/users/123"]);
@@ -171,15 +158,5 @@ describe("BreadcrumbComponent", () =>
 
 		let breadcrumbs = component.breadcrumbs();
 		expect(breadcrumbs.length).toBeGreaterThanOrEqual(2);
-
-		await router.navigate(["/weather-forecast"]);
-		fixture.detectChanges();
-
-		breadcrumbs = component.breadcrumbs();
-		const weatherCrumb = breadcrumbs.find(
-			(b) => b.label === "Weather Forecast"
-		);
-
-		expect(weatherCrumb).toBeDefined();
 	});
 });

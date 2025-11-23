@@ -47,10 +47,7 @@ export class SidebarComponent
 	protected readonly navSections: NavSection[] = [
 		{
 			title: "Main",
-			items: [
-				{ label: "Dashboard", icon: "dashboard", route: "/" },
-				{ label: "Weather", icon: "cloud", route: "/weather-forecast" }
-			]
+			items: [{ label: "Dashboard", icon: "dashboard", route: "/" }]
 		},
 		{
 			title: "Management",

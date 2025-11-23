@@ -3,8 +3,6 @@
 // </copyright>
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using SeventySix.BusinessLogic.Configuration;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.BusinessLogic.Interfaces;
 
@@ -18,8 +16,8 @@ namespace SeventySix.BusinessLogic.Infrastructure;
 /// Uses PostgreSQL for persistence across application restarts and horizontal scaling.
 ///
 /// IMPORTANT - TWO-LAYER RATE LIMITING:
-/// This service enforces EXTERNAL API quotas (e.g., OpenWeather 250 calls/day) to prevent
-/// exceeding paid API limits. This is SEPARATE from HTTP middleware rate limiting.
+/// This service enforces EXTERNAL API quotas to prevent exceeding paid API limits.
+/// This is SEPARATE from HTTP middleware rate limiting.
 ///
 /// - Layer 1 (HTTP): AttributeBasedRateLimitingMiddleware - protects YOUR API from client abuse
 ///   (Per IP + endpoint, in-memory, resets on restart)
@@ -47,10 +45,11 @@ namespace SeventySix.BusinessLogic.Infrastructure;
 /// </remarks>
 public class RateLimitingService : IRateLimitingService
 {
+	private const int DEFAULT_DAILY_LIMIT = 1000; // Default daily API call limit
+
 	private readonly ILogger<RateLimitingService> Logger;
 	private readonly IThirdPartyApiRequestRepository Repository;
 	private readonly ITransactionManager TransactionManager;
-	private readonly OpenWeatherOptions Options;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RateLimitingService"/> class.
@@ -58,21 +57,18 @@ public class RateLimitingService : IRateLimitingService
 	/// <param name="logger">Logger instance.</param>
 	/// <param name="repository">Repository for third-party API request tracking.</param>
 	/// <param name="transactionManager">Transaction manager for thread-safe operations.</param>
-	/// <param name="options">OpenWeather configuration options.</param>
 	public RateLimitingService(
 		ILogger<RateLimitingService> logger,
 		IThirdPartyApiRequestRepository repository,
-		ITransactionManager transactionManager,
-		IOptions<OpenWeatherOptions> options)
+		ITransactionManager transactionManager)
 	{
 		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		Repository = repository ?? throw new ArgumentNullException(nameof(repository));
 		TransactionManager = transactionManager ?? throw new ArgumentNullException(nameof(transactionManager));
-		Options = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
 		Logger.LogInformation(
-			"RateLimitingService initialized. Daily limit: {DailyLimit}",
-			Options.DailyCallLimit);
+			"RateLimitingService initialized. Default daily limit: {DailyLimit}",
+			DEFAULT_DAILY_LIMIT);
 	}
 
 	/// <inheritdoc/>
@@ -90,7 +86,7 @@ public class RateLimitingService : IRateLimitingService
 			return true;
 		}
 
-		bool canMakeRequest = request.CallCount < Options.DailyCallLimit;
+		bool canMakeRequest = request.CallCount < DEFAULT_DAILY_LIMIT;
 
 		if (!canMakeRequest)
 		{
@@ -98,7 +94,7 @@ public class RateLimitingService : IRateLimitingService
 				"Rate limit exceeded for API: {ApiName}. Count: {Count}/{Limit}. Resets in: {TimeUntilReset}",
 				apiName,
 				request.CallCount,
-				Options.DailyCallLimit,
+				DEFAULT_DAILY_LIMIT,
 				GetTimeUntilReset());
 		}
 
@@ -152,13 +148,13 @@ public class RateLimitingService : IRateLimitingService
 			}
 
 			// Record exists - check limit before incrementing
-			if (request.CallCount >= Options.DailyCallLimit)
+			if (request.CallCount >= DEFAULT_DAILY_LIMIT)
 			{
 				Logger.LogWarning(
 					"Cannot increment request count for {ApiName}. Limit reached: {Count}/{Limit}",
 					apiName,
 					request.CallCount,
-					Options.DailyCallLimit);
+					DEFAULT_DAILY_LIMIT);
 
 				return false;
 			}
@@ -174,17 +170,17 @@ public class RateLimitingService : IRateLimitingService
 				"API call recorded for {ApiName}. Count: {Count}/{Limit}",
 				apiName,
 				request.CallCount,
-				Options.DailyCallLimit);
+				DEFAULT_DAILY_LIMIT);
 
 			// Warn when approaching limit (90%)
-			if (request.CallCount >= Options.DailyCallLimit * 0.9)
+			if (request.CallCount >= DEFAULT_DAILY_LIMIT * 0.9)
 			{
 				Logger.LogWarning(
 					"Approaching rate limit for {ApiName}: {Count}/{Limit} ({Percentage:F1}%)",
 					apiName,
 					request.CallCount,
-					Options.DailyCallLimit,
-					(double)request.CallCount / Options.DailyCallLimit * 100);
+					DEFAULT_DAILY_LIMIT,
+					(double)request.CallCount / DEFAULT_DAILY_LIMIT * 100);
 			}
 
 			return true;
@@ -211,7 +207,7 @@ public class RateLimitingService : IRateLimitingService
 		ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		int currentCount = request?.CallCount ?? 0;
-		return Math.Max(0, Options.DailyCallLimit - currentCount);
+		return Math.Max(0, DEFAULT_DAILY_LIMIT - currentCount);
 	}
 
 	/// <inheritdoc/>

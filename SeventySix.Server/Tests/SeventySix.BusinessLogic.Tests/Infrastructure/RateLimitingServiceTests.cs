@@ -3,9 +3,7 @@
 // </copyright>
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
-using SeventySix.BusinessLogic.Configuration;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.BusinessLogic.Infrastructure;
 using SeventySix.BusinessLogic.Interfaces;
@@ -22,7 +20,6 @@ public class RateLimitingServiceTests
 	private readonly Mock<ILogger<RateLimitingService>> MockLogger;
 	private readonly Mock<IThirdPartyApiRequestRepository> MockRepository;
 	private readonly Mock<ITransactionManager> MockTransactionManager;
-	private readonly OpenWeatherOptions Options;
 	private readonly RateLimitingService Sut;
 
 	public RateLimitingServiceTests()
@@ -30,12 +27,6 @@ public class RateLimitingServiceTests
 		MockLogger = new Mock<ILogger<RateLimitingService>>();
 		MockRepository = new Mock<IThirdPartyApiRequestRepository>();
 		MockTransactionManager = new Mock<ITransactionManager>();
-		Options = new OpenWeatherOptions
-		{
-			ApiKey = "test-key",
-			BaseUrl = "https://api.test.com",
-			DailyCallLimit = 10,
-		};
 
 		// Setup TransactionManager to execute operations directly (pass-through)
 		MockTransactionManager
@@ -54,8 +45,7 @@ public class RateLimitingServiceTests
 			.Returns<Func<CancellationToken, Task>, int, CancellationToken>(
 				async (operation, _, ct) => await operation(ct));
 
-		IOptions<OpenWeatherOptions> optionsWrapper = Microsoft.Extensions.Options.Options.Create(Options);
-		Sut = new RateLimitingService(MockLogger.Object, MockRepository.Object, MockTransactionManager.Object, optionsWrapper);
+		Sut = new RateLimitingService(MockLogger.Object, MockRepository.Object, MockTransactionManager.Object);
 	}
 
 	[Fact]
@@ -104,7 +94,7 @@ public class RateLimitingServiceTests
 			Id = 1,
 			ApiName = apiName,
 			BaseUrl = "https://api.test.com",
-			CallCount = 10,
+			CallCount = 1000,
 			ResetDate = today
 		};
 
@@ -189,7 +179,7 @@ public class RateLimitingServiceTests
 			Id = 1,
 			ApiName = apiName,
 			BaseUrl = baseUrl,
-			CallCount = 10,
+			CallCount = 1000,
 			ResetDate = today
 		};
 
@@ -200,7 +190,7 @@ public class RateLimitingServiceTests
 		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
 		Assert.False(result);
-		Assert.Equal(10, request.CallCount);
+		Assert.Equal(1000, request.CallCount);
 		MockRepository.Verify(
 			r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()),
 			Times.Never);
@@ -229,7 +219,7 @@ public class RateLimitingServiceTests
 
 		int remaining = await Sut.GetRemainingQuotaAsync(apiName);
 
-		Assert.Equal(Options.DailyCallLimit, remaining);
+		Assert.Equal(1000, remaining); // DEFAULT_DAILY_LIMIT
 	}
 
 	[Fact]

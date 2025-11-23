@@ -10,7 +10,7 @@ import {
 	LogFilterRequest,
 	PagedLogResponse
 } from "@admin/log-management/models";
-import { createMockQueryResult } from "@core/testing/tanstack-query-helpers";
+import { createMockQueryResult } from "@testing/tanstack-query-helpers";
 
 describe("LogManagementComponent", () =>
 {

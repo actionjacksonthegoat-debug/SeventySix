@@ -14,15 +14,6 @@ export const routes: Routes = [
 		title: "SeventySix - Home"
 	},
 	{
-		path: "weather-forecast",
-		loadComponent: () =>
-			import("./features/home/weather/weather-forecast.component").then(
-				(m) => m.WeatherForecastComponent
-			),
-		title: "Weather Forecast",
-		data: { breadcrumb: "Weather Forecast" }
-	},
-	{
 		path: "game",
 		loadComponent: () =>
 			import("./features/game/world-map/world-map").then(

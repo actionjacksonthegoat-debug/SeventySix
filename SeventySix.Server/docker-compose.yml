@@ -37,12 +37,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
-      - ASPNETCORE_URLS=https://+:8081;http://+:8080
       - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
       # PostgreSQL Connection
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=seventysix;Username=postgres;Password=TestPassword;Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
-      # OpenWeather API Key (stored in user secrets - mount not supported in compose, pass via docker run if needed)
     volumes:
       - ~/.aspnet/https:/https:ro
     depends_on:

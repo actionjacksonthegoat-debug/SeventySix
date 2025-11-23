@@ -38,8 +38,6 @@
 		// Home feature and sub-features
 		"@home": ["src/app/features/home"],
 		"@home/*": ["src/app/features/home/*"],
-		"@home/weather": ["src/app/features/home/weather"],
-		"@home/weather/*": ["src/app/features/home/weather/*"],
 		"@home/home-page": ["src/app/features/home/home-page"],
 		"@home/home-page/*": ["src/app/features/home/home-page/*"],
 

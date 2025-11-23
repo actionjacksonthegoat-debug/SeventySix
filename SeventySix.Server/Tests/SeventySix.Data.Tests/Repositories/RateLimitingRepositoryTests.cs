@@ -4,9 +4,7 @@
 
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
-using SeventySix.BusinessLogic.Configuration;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.BusinessLogic.Infrastructure;
 using SeventySix.BusinessLogic.Interfaces;
@@ -26,7 +24,6 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 {
 	private readonly Mock<ILogger<RateLimitingService>> LoggerMock;
 	private readonly Mock<ILogger<ThirdPartyApiRequestRepository>> RepoLoggerMock;
-	private readonly IOptions<OpenWeatherOptions> Options;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RateLimitingRepositoryTests"/> class.
@@ -37,12 +34,6 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 	{
 		LoggerMock = new Mock<ILogger<RateLimitingService>>();
 		RepoLoggerMock = new Mock<ILogger<ThirdPartyApiRequestRepository>>();
-		Options = Microsoft.Extensions.Options.Options.Create(new OpenWeatherOptions
-		{
-			ApiKey = "test_key",
-			BaseUrl = "https://api.test.com",
-			DailyCallLimit = 100,
-		});
 	}
 
 	[Fact]
@@ -52,7 +43,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 		await using ApplicationDbContext context = CreateDbContext();
 		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock.Object);
 		TransactionManager transactionManager = new(context);
-		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager, Options);
+		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager);
 
 		// Act
 		bool result = await sut.CanMakeRequestAsync("TestApi");
@@ -68,7 +59,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 		await using ApplicationDbContext context = CreateDbContext();
 		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock.Object);
 		TransactionManager transactionManager = new(context);
-		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager, Options);
+		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager);
 
 		// Act
 		bool result = await sut.TryIncrementRequestCountAsync("TestApi", "https://api.test.com");
@@ -89,7 +80,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 		await using ApplicationDbContext context = CreateDbContext();
 		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock.Object);
 		TransactionManager transactionManager = new(context);
-		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager, Options);
+		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager);
 
 		// Act
 		await sut.TryIncrementRequestCountAsync("TestApi", "https://api.test.com");
@@ -108,10 +99,10 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 		await using ApplicationDbContext context = CreateDbContext();
 		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock.Object);
 		TransactionManager transactionManager = new(context);
-		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager, Options);
+		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager);
 
 		// Consume all quota
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < 1000; i++)
 		{
 			await sut.TryIncrementRequestCountAsync("TestApi", "https://api.test.com");
 		}
@@ -130,7 +121,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 		await using ApplicationDbContext context = CreateDbContext();
 		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock.Object);
 		TransactionManager transactionManager = new(context);
-		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager, Options);
+		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager);
 
 		// Act
 		await sut.TryIncrementRequestCountAsync("TestApi", "https://api.test.com");
@@ -140,7 +131,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 		int remaining = await sut.GetRemainingQuotaAsync("TestApi");
 
 		// Assert
-		remaining.Should().Be(97);
+		remaining.Should().Be(997);
 	}
 
 	[Fact]
@@ -150,7 +141,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 		await using ApplicationDbContext context = CreateDbContext();
 		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock.Object);
 		TransactionManager transactionManager = new(context);
-		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager, Options);
+		RateLimitingService sut = new(LoggerMock.Object, repository, transactionManager);
 
 		await sut.TryIncrementRequestCountAsync("TestApi", "https://api.test.com");
 		await sut.TryIncrementRequestCountAsync("TestApi", "https://api.test.com");
@@ -170,7 +161,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 		await using ApplicationDbContext context1 = CreateDbContext();
 		ThirdPartyApiRequestRepository repository1 = new(context1, RepoLoggerMock.Object);
 		TransactionManager transactionManager1 = new(context1);
-		RateLimitingService service1 = new(LoggerMock.Object, repository1, transactionManager1, Options);
+		RateLimitingService service1 = new(LoggerMock.Object, repository1, transactionManager1);
 
 		await service1.TryIncrementRequestCountAsync("TestApi", "https://api.test.com");
 		await service1.TryIncrementRequestCountAsync("TestApi", "https://api.test.com");
@@ -179,14 +170,14 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 		await using ApplicationDbContext context2 = CreateDbContext();
 		ThirdPartyApiRequestRepository repository2 = new(context2, RepoLoggerMock.Object);
 		TransactionManager transactionManager2 = new(context2);
-		RateLimitingService service2 = new(LoggerMock.Object, repository2, transactionManager2, Options);
+		RateLimitingService service2 = new(LoggerMock.Object, repository2, transactionManager2);
 
 		int count = await service2.GetRequestCountAsync("TestApi");
 		int remaining = await service2.GetRemainingQuotaAsync("TestApi");
 
 		// Assert
 		count.Should().Be(2, "state should persist across service instances");
-		remaining.Should().Be(98, "remaining quota should be calculated from persisted state");
+		remaining.Should().Be(998, "remaining quota should be calculated from persisted state");
 	}
 
 	[Fact]
@@ -201,7 +192,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 					await using ApplicationDbContext context = CreateDbContext();
 					ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock.Object);
 					TransactionManager transactionManager = new(context);
-					RateLimitingService service = new(LoggerMock.Object, repository, transactionManager, Options);
+					RateLimitingService service = new(LoggerMock.Object, repository, transactionManager);
 					bool result = await service.TryIncrementRequestCountAsync("TestApi", "https://api.test.com");
 					return (Success: true, Result: result, Index: i, Error: (string?)null);
 				}
@@ -229,7 +220,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture
 		await using ApplicationDbContext verifyContext = CreateDbContext();
 		ThirdPartyApiRequestRepository verifyRepository = new(verifyContext, RepoLoggerMock.Object);
 		TransactionManager verifyTransactionManager = new(verifyContext);
-		RateLimitingService verifyService = new(LoggerMock.Object, verifyRepository, verifyTransactionManager, Options);
+		RateLimitingService verifyService = new(LoggerMock.Object, verifyRepository, verifyTransactionManager);
 		int count = await verifyService.GetRequestCountAsync("TestApi");
 		count.Should().Be(10, "all concurrent increments should be persisted. Success: {0}, Failures: {1}, False: {2}", successCount, failureCount, falseCount);
 	}

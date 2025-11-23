@@ -147,14 +147,13 @@ export class BreadcrumbComponent
 		// Build feature-based breadcrumbs
 		const firstSegment: string = urlSegments[0];
 		const featureMap: Record<string, { label: string; url: string }> = {
-			"weather-forecast": { label: "Home", url: "/" },
 			game: { label: "Game", url: "/game" },
 			developer: { label: "Developer", url: "/developer/style-guide" },
 			admin: { label: "Admin", url: "/admin" }
 		};
 
 		// Add feature breadcrumb if not already home
-		if (firstSegment in featureMap && firstSegment !== "weather-forecast")
+		if (firstSegment in featureMap)
 		{
 			const feature: { label: string; url: string } =
 				featureMap[firstSegment];
@@ -173,11 +172,7 @@ export class BreadcrumbComponent
 			url += `/${segment}`;
 
 			// Skip if this is the feature root we already added
-			if (
-				i === 0 &&
-				segment in featureMap &&
-				segment !== "weather-forecast"
-			)
+			if (i === 0 && segment in featureMap)
 			{
 				continue;
 			}
@@ -220,7 +215,6 @@ export class BreadcrumbComponent
 	{
 		// Custom labels for specific routes
 		const routeLabels: Record<string, string> = {
-			"/weather-forecast": "Weather Forecast",
 			"/game": "World Map",
 			"/developer/style-guide": "Style Guide",
 			"/admin": "Dashboard",

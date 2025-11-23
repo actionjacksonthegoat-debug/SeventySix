@@ -10,7 +10,7 @@ import { ActivatedRoute } from "@angular/router";
 import {
 	createMockQueryResult,
 	createMockMutationResult
-} from "@core/testing/tanstack-query-helpers";
+} from "@testing/tanstack-query-helpers";
 
 describe("UsersComponent", () =>
 {

@@ -7,7 +7,7 @@ import { LoggerService } from "@core/services/logger.service";
 import {
 	createMockQueryResult,
 	createMockMutationResult
-} from "@core/testing/tanstack-query-helpers";
+} from "@testing/tanstack-query-helpers";
 import { User } from "@admin/users/models";
 
 describe("UserList", () =>

@@ -97,13 +97,6 @@ export class HomePage
 			color: "primary"
 		},
 		{
-			title: "Weather Forecast",
-			description: "Check weather data and forecasts",
-			icon: "cloud",
-			route: "/weather-forecast",
-			color: "accent"
-		},
-		{
 			title: "World Map",
 			description: "Explore the interactive game world",
 			icon: "map",
