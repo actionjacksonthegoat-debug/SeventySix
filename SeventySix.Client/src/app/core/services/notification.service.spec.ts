@@ -1,6 +1,5 @@
-import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { NotificationService, NotificationLevel } from "./notification.service";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("NotificationService", () =>
 {
@@ -8,10 +7,7 @@ describe("NotificationService", () =>
 
 	beforeEach(() =>
 	{
-		TestBed.configureTestingModule({
-			providers: [provideZonelessChangeDetection()]
-		});
-		service = TestBed.inject(NotificationService);
+		service = setupSimpleServiceTest(NotificationService);
 		jasmine.clock().install();
 	});
 

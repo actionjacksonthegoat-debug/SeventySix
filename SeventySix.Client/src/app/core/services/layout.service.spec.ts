@@ -1,8 +1,7 @@
-import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { BreakpointObserver } from "@angular/cdk/layout";
 import { of } from "rxjs";
 import { LayoutService } from "./layout.service";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("LayoutService", () =>
 {
@@ -22,18 +21,12 @@ describe("LayoutService", () =>
 		spyOn(localStorage, "getItem").and.returnValue(null);
 		spyOn(localStorage, "setItem");
 
-		TestBed.configureTestingModule({
-			providers: [
-				provideZonelessChangeDetection(),
-				LayoutService,
-				{
-					provide: BreakpointObserver,
-					useValue: mockBreakpointObserver
-				}
-			]
-		});
-
-		service = TestBed.inject(LayoutService);
+		service = setupSimpleServiceTest(LayoutService, [
+			{
+				provide: BreakpointObserver,
+				useValue: mockBreakpointObserver
+			}
+		]);
 	});
 
 	it("should be created", () =>

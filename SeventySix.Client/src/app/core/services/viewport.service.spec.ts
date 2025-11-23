@@ -1,8 +1,7 @@
-import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { of } from "rxjs";
 import { ViewportService } from "./viewport.service";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("ViewportService", () =>
 {
@@ -19,18 +18,12 @@ describe("ViewportService", () =>
 			of({ matches: false, breakpoints: {} })
 		);
 
-		TestBed.configureTestingModule({
-			providers: [
-				provideZonelessChangeDetection(),
-				ViewportService,
-				{
-					provide: BreakpointObserver,
-					useValue: mockBreakpointObserver
-				}
-			]
-		});
-
-		service = TestBed.inject(ViewportService);
+		service = setupSimpleServiceTest(ViewportService, [
+			{
+				provide: BreakpointObserver,
+				useValue: mockBreakpointObserver
+			}
+		]);
 	});
 
 	it("should be created", () =>

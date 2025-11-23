@@ -1,7 +1,7 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture } from "@angular/core/testing";
 import { ChartComponent } from "./chart.component";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
-import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentTestBed } from "@testing";
 
 describe("ChartComponent", () =>
 {
@@ -10,15 +10,10 @@ describe("ChartComponent", () =>
 
 	beforeEach(async () =>
 	{
-		await TestBed.configureTestingModule({
-			imports: [ChartComponent],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideNoopAnimations()
-			]
-		}).compileComponents();
+		fixture = await new ComponentTestBed<ChartComponent>()
+			.withProvider(provideNoopAnimations())
+			.build(ChartComponent);
 
-		fixture = TestBed.createComponent(ChartComponent);
 		component = fixture.componentInstance;
 		fixture.componentRef.setInput("chartData", {
 			labels: ["January", "February", "March"],

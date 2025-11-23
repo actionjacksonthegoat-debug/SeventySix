@@ -14,6 +14,7 @@ export * from "./theme.service";
 export * from "./layout.service";
 export * from "./loading.service";
 export * from "./viewport.service";
+export * from "./storage.service";
 
 // DO NOT export feature services here
 // Import directly from feature folders when needed:

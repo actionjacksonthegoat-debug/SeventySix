@@ -10,6 +10,11 @@ import { NotificationService } from "@core/services/notification.service";
 import { LoggerService } from "@core/services/logger.service";
 import { User } from "@admin/users/models";
 import { createMockMutationResult } from "@testing/tanstack-query-helpers";
+import {
+	createMockRouter,
+	createMockNotificationService,
+	createMockLogger
+} from "@testing";
 
 describe("UserCreatePage", () =>
 {
@@ -26,12 +31,9 @@ describe("UserCreatePage", () =>
 			"createUser",
 			"checkUsernameAvailability"
 		]);
-		mockRouter = jasmine.createSpyObj("Router", ["navigate"]);
-		mockNotification = jasmine.createSpyObj("NotificationService", [
-			"success",
-			"error"
-		]);
-		mockLogger = jasmine.createSpyObj("LoggerService", ["info", "error"]);
+		mockRouter = createMockRouter();
+		mockNotification = createMockNotificationService();
+		mockLogger = createMockLogger();
 
 		const mockUser: User = {
 			id: 1,

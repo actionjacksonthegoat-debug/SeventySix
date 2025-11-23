@@ -1,6 +1,5 @@
-import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { TokenStorageService } from "./token-storage.service";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("TokenStorageService", () =>
 {
@@ -8,10 +7,7 @@ describe("TokenStorageService", () =>
 
 	beforeEach(() =>
 	{
-		TestBed.configureTestingModule({
-			providers: [provideZonelessChangeDetection()]
-		});
-		service = TestBed.inject(TokenStorageService);
+		service = setupSimpleServiceTest(TokenStorageService);
 		localStorage.clear();
 	});
 

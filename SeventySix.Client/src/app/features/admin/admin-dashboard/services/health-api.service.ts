@@ -1,11 +1,13 @@
 import { Injectable, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { environment } from "@environments/environment";
+import { ApiService } from "@core/api-services/api.service";
 import {
 	HealthStatus,
 	DatabaseHealth,
-	ExternalApiHealth
+	ExternalApiHealth,
+	HealthStatusSchema,
+	DatabaseHealthSchema,
+	ExternalApiHealthSchema
 } from "@admin/admin-dashboard/models";
 
 /**
@@ -16,8 +18,7 @@ import {
 })
 export class HealthApiService
 {
-	private readonly http: HttpClient = inject(HttpClient);
-	private readonly apiUrl: string = `${environment.apiUrl}/health`;
+	private readonly apiService: ApiService = inject(ApiService);
 
 	/**
 	 * Gets overall system health status
@@ -25,7 +26,11 @@ export class HealthApiService
 	 */
 	getHealth(): Observable<HealthStatus>
 	{
-		return this.http.get<HealthStatus>(this.apiUrl);
+		return this.apiService.get<HealthStatus>(
+			"health",
+			undefined,
+			HealthStatusSchema
+		);
 	}
 
 	/**
@@ -34,7 +39,11 @@ export class HealthApiService
 	 */
 	getDatabaseHealth(): Observable<DatabaseHealth>
 	{
-		return this.http.get<DatabaseHealth>(`${this.apiUrl}/database`);
+		return this.apiService.get<DatabaseHealth>(
+			"health/database",
+			undefined,
+			DatabaseHealthSchema
+		);
 	}
 
 	/**
@@ -43,6 +52,10 @@ export class HealthApiService
 	 */
 	getExternalApiHealth(): Observable<ExternalApiHealth>
 	{
-		return this.http.get<ExternalApiHealth>(`${this.apiUrl}/external-apis`);
+		return this.apiService.get<ExternalApiHealth>(
+			"health/external-apis",
+			undefined,
+			ExternalApiHealthSchema
+		);
 	}
 }

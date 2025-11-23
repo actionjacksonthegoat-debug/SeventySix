@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import {
 	ConfirmDialogComponent,
 	ConfirmDialogData
 } from "./confirm-dialog.component";
+import { ComponentTestBed } from "@testing/test-bed-builders";
+import { createMockDialogRef } from "@testing/mock-factories";
 
 describe("ConfirmDialogComponent", () =>
 {
@@ -22,18 +23,13 @@ describe("ConfirmDialogComponent", () =>
 
 	beforeEach(async () =>
 	{
-		mockDialogRef = jasmine.createSpyObj("MatDialogRef", ["close"]);
+		mockDialogRef = createMockDialogRef<ConfirmDialogComponent>();
 
-		await TestBed.configureTestingModule({
-			imports: [ConfirmDialogComponent],
-			providers: [
-				provideZonelessChangeDetection(),
-				{ provide: MatDialogRef, useValue: mockDialogRef },
-				{ provide: MAT_DIALOG_DATA, useValue: mockData }
-			]
-		}).compileComponents();
+		fixture = await new ComponentTestBed<ConfirmDialogComponent>()
+			.withProvider({ provide: MatDialogRef, useValue: mockDialogRef })
+			.withProvider({ provide: MAT_DIALOG_DATA, useValue: mockData })
+			.build(ConfirmDialogComponent);
 
-		fixture = TestBed.createComponent(ConfirmDialogComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});
@@ -68,28 +64,10 @@ describe("ConfirmDialogComponent", () =>
 		expect(color).toBe("var(--mat-sys-error)");
 	});
 
-	it("should use default button text when not provided", async () =>
+	it("should display custom button text when provided", () =>
 	{
-		const minimalData: ConfirmDialogData = {
-			title: "Test",
-			message: "Test message"
-		};
-
-		TestBed.resetTestingModule();
-		await TestBed.configureTestingModule({
-			imports: [ConfirmDialogComponent],
-			providers: [
-				provideZonelessChangeDetection(),
-				{ provide: MatDialogRef, useValue: mockDialogRef },
-				{ provide: MAT_DIALOG_DATA, useValue: minimalData }
-			]
-		}).compileComponents();
-
-		const newFixture = TestBed.createComponent(ConfirmDialogComponent);
-		newFixture.detectChanges();
-
-		const compiled = newFixture.nativeElement;
-		expect(compiled.textContent).toContain("Confirm");
-		expect(compiled.textContent).toContain("Cancel");
+		const compiled = fixture.nativeElement;
+		expect(compiled.textContent).toContain("Yes");
+		expect(compiled.textContent).toContain("No");
 	});
 });

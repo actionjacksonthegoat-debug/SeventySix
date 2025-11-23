@@ -1,10 +1,10 @@
 import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import {
 	HttpClientTestingModule,
 	HttpTestingController
 } from "@angular/common/http/testing";
 import { LoggerService, LogLevel } from "./logger.service";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("LoggerService", () =>
 {
@@ -13,12 +13,11 @@ describe("LoggerService", () =>
 
 	beforeEach(() =>
 	{
-		TestBed.configureTestingModule({
-			imports: [HttpClientTestingModule],
-			providers: [provideZonelessChangeDetection()]
-		});
-
-		service = TestBed.inject(LoggerService);
+		service = setupSimpleServiceTest(
+			LoggerService,
+			[],
+			[HttpClientTestingModule]
+		);
 		httpMock = TestBed.inject(HttpTestingController);
 
 		// Mock console methods

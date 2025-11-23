@@ -138,15 +138,15 @@ describe("HealthApiService", () =>
 
 		it("should handle HTTP errors", (done) =>
 		{
+			spyOn(console, "error"); // Suppress expected error logs
 			service.getHealth().subscribe({
 				next: () => fail("should have failed"),
 				error: (error: any) =>
 				{
-					expect(error.status).toBe(503);
+					expect(error.message).toContain("503");
 					done();
 				}
 			});
-
 			const req = httpMock.expectOne(apiUrl);
 			req.flush("Service unavailable", {
 				status: 503,
@@ -205,15 +205,15 @@ describe("HealthApiService", () =>
 
 		it("should handle HTTP errors", (done) =>
 		{
+			spyOn(console, "error"); // Suppress expected error logs
 			service.getDatabaseHealth().subscribe({
 				next: () => fail("should have failed"),
 				error: (error: any) =>
 				{
-					expect(error.status).toBe(500);
+					expect(error.message).toContain("500");
 					done();
 				}
 			});
-
 			const req = httpMock.expectOne(`${apiUrl}/database`);
 			req.flush("Server error", {
 				status: 500,
@@ -310,15 +310,15 @@ describe("HealthApiService", () =>
 
 		it("should handle HTTP errors", (done) =>
 		{
+			spyOn(console, "error"); // Suppress expected error logs
 			service.getExternalApiHealth().subscribe({
 				next: () => fail("should have failed"),
 				error: (error: any) =>
 				{
-					expect(error.status).toBe(502);
+					expect(error.message).toContain("502");
 					done();
 				}
 			});
-
 			const req = httpMock.expectOne(`${apiUrl}/external-apis`);
 			req.flush("Bad gateway", {
 				status: 502,

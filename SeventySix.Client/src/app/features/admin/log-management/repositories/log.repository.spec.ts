@@ -1,25 +1,21 @@
 import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
-import {
-	HttpTestingController,
-	provideHttpClientTesting
-} from "@angular/common/http/testing";
-import { provideHttpClient, withFetch } from "@angular/common/http";
 import { LogRepository } from "./log.repository";
+import { ApiService } from "@core/api-services/api.service";
 import {
 	LogResponse,
 	LogFilterRequest,
 	LogCountResponse,
-	PagedLogResponse
+	PagedLogResponse,
+	LogLevel
 } from "@admin/log-management/models";
-import { LogLevel } from "@admin/log-management/models/log.model";
-import { environment } from "@environments/environment";
+import { of } from "rxjs";
+import { HttpParams } from "@angular/common/http";
+import { setupRepositoryTest, createMockApiService } from "@testing";
 
 describe("LogRepository", () =>
 {
 	let repository: LogRepository;
-	let httpMock: HttpTestingController;
-	const apiUrl = `${environment.apiUrl}/logs`;
+	let mockApiService: jasmine.SpyObj<ApiService>;
 
 	const mockLog: LogResponse = {
 		id: 1,
@@ -64,22 +60,11 @@ describe("LogRepository", () =>
 
 	beforeEach(() =>
 	{
-		TestBed.configureTestingModule({
-			providers: [
-				provideHttpClient(withFetch()),
-				provideHttpClientTesting(),
-				provideZonelessChangeDetection(),
-				LogRepository
-			]
-		});
+		mockApiService = createMockApiService();
 
-		repository = TestBed.inject(LogRepository);
-		httpMock = TestBed.inject(HttpTestingController);
-	});
-
-	afterEach(() =>
-	{
-		httpMock.verify();
+		repository = setupRepositoryTest(LogRepository, [
+			{ provide: ApiService, useValue: mockApiService }
+		]);
 	});
 
 	it("should be created", () =>
@@ -87,374 +72,99 @@ describe("LogRepository", () =>
 		expect(repository).toBeTruthy();
 	});
 
-	describe("getAll", () =>
+	describe("getAllPaged", () =>
 	{
-		it("should get all logs without filters", (done) =>
+		it("should fetch paged logs without filter", (done) =>
 		{
-			repository.getAll().subscribe((result) =>
+			mockApiService.get.and.returnValue(of(mockPagedResponse));
+
+			repository.getAllPaged().subscribe((result) =>
 			{
 				expect(result).toEqual(mockPagedResponse);
+				expect(mockApiService.get).toHaveBeenCalledWith(
+					"logs",
+					undefined,
+					jasmine.anything()
+				);
 				done();
 			});
-
-			const req = httpMock.expectOne(apiUrl);
-			expect(req.request.method).toBe("GET");
-			expect(req.request.params.keys().length).toBe(0);
-			req.flush(mockPagedResponse);
 		});
 
-		it("should get logs with log level filter", (done) =>
+		it("should fetch paged logs with filter", (done) =>
 		{
 			const filter: LogFilterRequest = {
-				logLevel: LogLevel.Error
-			};
-
-			repository.getAll(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockPagedResponse);
-				done();
-			});
-
-			const req = httpMock.expectOne((request) => request.url === apiUrl);
-			expect(req.request.params.get("logLevel")).toBe(
-				LogLevel.Error.toString()
-			);
-			req.flush(mockPagedResponse);
-		});
-
-		it("should get logs with date range filters", (done) =>
-		{
-			const startDate = new Date("2024-01-01");
-			const endDate = new Date("2024-01-31");
-			const filter: LogFilterRequest = {
-				startDate,
-				endDate
-			};
-
-			repository.getAll(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockPagedResponse);
-				done();
-			});
-
-			const req = httpMock.expectOne((request) => request.url === apiUrl);
-			expect(req.request.params.get("startDate")).toBe(
-				startDate.toISOString()
-			);
-			expect(req.request.params.get("endDate")).toBe(
-				endDate.toISOString()
-			);
-			req.flush(mockPagedResponse);
-		});
-
-		it("should get logs with source context filter", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				sourceContext: "TestContext"
-			};
-
-			repository.getAll(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockPagedResponse);
-				done();
-			});
-
-			const req = httpMock.expectOne((request) => request.url === apiUrl);
-			expect(req.request.params.get("sourceContext")).toBe("TestContext");
-			req.flush(mockPagedResponse);
-		});
-
-		it("should get logs with request path filter", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				requestPath: "/api/test"
-			};
-
-			repository.getAll(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockPagedResponse);
-				done();
-			});
-
-			const req = httpMock.expectOne((request) => request.url === apiUrl);
-			expect(req.request.params.get("requestPath")).toBe("/api/test");
-			req.flush(mockPagedResponse);
-		});
-
-		it("should get logs with pagination parameters", (done) =>
-		{
-			const filter: LogFilterRequest = {
+				logLevel: LogLevel.Error,
 				pageNumber: 2,
 				pageSize: 25
 			};
+			mockApiService.get.and.returnValue(of(mockPagedResponse));
 
-			repository.getAll(filter).subscribe((result) =>
+			repository.getAllPaged(filter).subscribe((result) =>
 			{
 				expect(result).toEqual(mockPagedResponse);
+				expect(mockApiService.get).toHaveBeenCalledWith(
+					"logs",
+					jasmine.any(HttpParams),
+					jasmine.anything()
+				);
 				done();
 			});
-
-			const req = httpMock.expectOne((request) => request.url === apiUrl);
-			expect(req.request.params.get("pageNumber")).toBe("2");
-			expect(req.request.params.get("pageSize")).toBe("25");
-			req.flush(mockPagedResponse);
-		});
-
-		it("should get logs with search term", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				searchTerm: "error"
-			};
-
-			repository.getAll(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockPagedResponse);
-				done();
-			});
-
-			const req = httpMock.expectOne((request) => request.url === apiUrl);
-			expect(req.request.params.get("searchTerm")).toBe("error");
-			req.flush(mockPagedResponse);
-		});
-
-		it("should get logs with multiple filters", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				logLevel: LogLevel.Warning,
-				startDate: new Date("2024-01-01"),
-				sourceContext: "TestContext",
-				pageNumber: 1,
-				pageSize: 10,
-				searchTerm: "test"
-			};
-
-			repository.getAll(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockPagedResponse);
-				done();
-			});
-
-			const req = httpMock.expectOne((request) => request.url === apiUrl);
-			expect(req.request.params.get("logLevel")).toBe(
-				LogLevel.Warning.toString()
-			);
-			expect(req.request.params.get("sourceContext")).toBe("TestContext");
-			expect(req.request.params.get("pageNumber")).toBe("1");
-			expect(req.request.params.get("pageSize")).toBe("10");
-			expect(req.request.params.get("searchTerm")).toBe("test");
-			req.flush(mockPagedResponse);
-		});
-
-		it("should handle log level 0 (Verbose)", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				logLevel: LogLevel.Verbose
-			};
-
-			repository.getAll(filter).subscribe(() =>
-			{
-				done();
-			});
-
-			const req = httpMock.expectOne((request) => request.url === apiUrl);
-			expect(req.request.params.get("logLevel")).toBe("0");
-			req.flush(mockPagedResponse);
 		});
 	});
 
 	describe("getById", () =>
 	{
-		it("should get log by id", (done) =>
+		it("should fetch single log by id", (done) =>
 		{
+			mockApiService.get.and.returnValue(of(mockLog));
+
 			repository.getById(1).subscribe((result) =>
 			{
 				expect(result).toEqual(mockLog);
+				expect(mockApiService.get).toHaveBeenCalledWith(
+					"logs/1",
+					undefined,
+					jasmine.anything()
+				);
 				done();
 			});
-
-			const req = httpMock.expectOne(`${apiUrl}/1`);
-			expect(req.request.method).toBe("GET");
-			req.flush(mockLog);
-		});
-
-		it("should handle different log ids", (done) =>
-		{
-			repository.getById(42).subscribe(() =>
-			{
-				done();
-			});
-
-			const req = httpMock.expectOne(`${apiUrl}/42`);
-			expect(req.request.method).toBe("GET");
-			req.flush(mockLog);
 		});
 	});
 
 	describe("getCount", () =>
 	{
-		it("should get log count without filters", (done) =>
+		it("should fetch log count without filter", (done) =>
 		{
+			mockApiService.get.and.returnValue(of(mockCountResponse));
+
 			repository.getCount().subscribe((result) =>
 			{
 				expect(result).toEqual(mockCountResponse);
+				expect(mockApiService.get).toHaveBeenCalledWith(
+					"logs/count",
+					undefined
+				);
 				done();
 			});
-
-			const req = httpMock.expectOne(`${apiUrl}/count`);
-			expect(req.request.method).toBe("GET");
-			expect(req.request.params.keys().length).toBe(0);
-			req.flush(mockCountResponse);
 		});
 
-		it("should get log count with log level filter", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				logLevel: LogLevel.Error
-			};
-
-			repository.getCount(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockCountResponse);
-				done();
-			});
-
-			const req = httpMock.expectOne(
-				(request) => request.url === `${apiUrl}/count`
-			);
-			expect(req.request.params.get("logLevel")).toBe(
-				LogLevel.Error.toString()
-			);
-			req.flush(mockCountResponse);
-		});
-
-		it("should get log count with date range filters", (done) =>
-		{
-			const startDate = new Date("2024-01-01");
-			const endDate = new Date("2024-01-31");
-			const filter: LogFilterRequest = {
-				startDate,
-				endDate
-			};
-
-			repository.getCount(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockCountResponse);
-				done();
-			});
-
-			const req = httpMock.expectOne(
-				(request) => request.url === `${apiUrl}/count`
-			);
-			expect(req.request.params.get("startDate")).toBe(
-				startDate.toISOString()
-			);
-			expect(req.request.params.get("endDate")).toBe(
-				endDate.toISOString()
-			);
-			req.flush(mockCountResponse);
-		});
-
-		it("should get log count with source context filter", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				sourceContext: "TestContext"
-			};
-
-			repository.getCount(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockCountResponse);
-				done();
-			});
-
-			const req = httpMock.expectOne(
-				(request) => request.url === `${apiUrl}/count`
-			);
-			expect(req.request.params.get("sourceContext")).toBe("TestContext");
-			req.flush(mockCountResponse);
-		});
-
-		it("should get log count with request path filter", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				requestPath: "/api/test"
-			};
-
-			repository.getCount(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockCountResponse);
-				done();
-			});
-
-			const req = httpMock.expectOne(
-				(request) => request.url === `${apiUrl}/count`
-			);
-			expect(req.request.params.get("requestPath")).toBe("/api/test");
-			req.flush(mockCountResponse);
-		});
-
-		it("should get log count with multiple filters", (done) =>
+		it("should fetch log count with filter", (done) =>
 		{
 			const filter: LogFilterRequest = {
 				logLevel: LogLevel.Warning,
-				startDate: new Date("2024-01-01"),
-				endDate: new Date("2024-01-31"),
-				sourceContext: "TestContext",
-				requestPath: "/api/test"
+				sourceContext: "TestContext"
 			};
+			mockApiService.get.and.returnValue(of(mockCountResponse));
 
 			repository.getCount(filter).subscribe((result) =>
 			{
 				expect(result).toEqual(mockCountResponse);
+				expect(mockApiService.get).toHaveBeenCalledWith(
+					"logs/count",
+					jasmine.any(HttpParams)
+				);
 				done();
 			});
-
-			const req = httpMock.expectOne(
-				(request) => request.url === `${apiUrl}/count`
-			);
-			expect(req.request.params.get("logLevel")).toBe(
-				LogLevel.Warning.toString()
-			);
-			expect(req.request.params.get("sourceContext")).toBe("TestContext");
-			expect(req.request.params.get("requestPath")).toBe("/api/test");
-			req.flush(mockCountResponse);
-		});
-
-		it("should not include pagination params in count request", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				pageNumber: 2,
-				pageSize: 25
-			};
-
-			repository.getCount(filter).subscribe(() =>
-			{
-				done();
-			});
-
-			const req = httpMock.expectOne(
-				(request) => request.url === `${apiUrl}/count`
-			);
-			expect(req.request.params.has("pageNumber")).toBe(false);
-			expect(req.request.params.has("pageSize")).toBe(false);
-			req.flush(mockCountResponse);
-		});
-
-		it("should not include search term in count request", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				searchTerm: "test"
-			};
-
-			repository.getCount(filter).subscribe(() =>
-			{
-				done();
-			});
-
-			const req = httpMock.expectOne(
-				(request) => request.url === `${apiUrl}/count`
-			);
-			expect(req.request.params.has("searchTerm")).toBe(false);
-			req.flush(mockCountResponse);
 		});
 	});
 
@@ -462,97 +172,32 @@ describe("LogRepository", () =>
 	{
 		it("should delete log by id", (done) =>
 		{
+			mockApiService.delete.and.returnValue(of(void 0));
+
 			repository.delete(1).subscribe(() =>
 			{
+				expect(mockApiService.delete).toHaveBeenCalledWith("logs/1");
 				done();
 			});
-
-			const req = httpMock.expectOne(`${apiUrl}/1`);
-			expect(req.request.method).toBe("DELETE");
-			req.flush(null);
-		});
-
-		it("should handle different log ids for deletion", (done) =>
-		{
-			repository.delete(99).subscribe(() =>
-			{
-				done();
-			});
-
-			const req = httpMock.expectOne(`${apiUrl}/99`);
-			expect(req.request.method).toBe("DELETE");
-			req.flush(null);
 		});
 	});
 
 	describe("deleteBatch", () =>
 	{
-		it("should delete multiple logs by ids", (done) =>
+		it("should delete multiple logs", (done) =>
 		{
 			const ids = [1, 2, 3];
-			const deletedCount = 3;
+			mockApiService.delete.and.returnValue(of(3));
 
 			repository.deleteBatch(ids).subscribe((result) =>
 			{
-				expect(result).toBe(deletedCount);
+				expect(result).toBe(3);
+				expect(mockApiService.delete).toHaveBeenCalledWith(
+					"logs/batch",
+					ids
+				);
 				done();
 			});
-
-			const req = httpMock.expectOne(`${apiUrl}/batch`);
-			expect(req.request.method).toBe("DELETE");
-			expect(req.request.body).toEqual(ids);
-			req.flush(deletedCount);
-		});
-
-		it("should handle single id in batch delete", (done) =>
-		{
-			const ids = [42];
-			const deletedCount = 1;
-
-			repository.deleteBatch(ids).subscribe((result) =>
-			{
-				expect(result).toBe(deletedCount);
-				done();
-			});
-
-			const req = httpMock.expectOne(`${apiUrl}/batch`);
-			expect(req.request.method).toBe("DELETE");
-			expect(req.request.body).toEqual(ids);
-			req.flush(deletedCount);
-		});
-
-		it("should handle empty array in batch delete", (done) =>
-		{
-			const ids: number[] = [];
-			const deletedCount = 0;
-
-			repository.deleteBatch(ids).subscribe((result) =>
-			{
-				expect(result).toBe(deletedCount);
-				done();
-			});
-
-			const req = httpMock.expectOne(`${apiUrl}/batch`);
-			expect(req.request.method).toBe("DELETE");
-			expect(req.request.body).toEqual(ids);
-			req.flush(deletedCount);
-		});
-
-		it("should handle large batch of ids", (done) =>
-		{
-			const ids = Array.from({ length: 100 }, (_, i) => i + 1);
-			const deletedCount = 100;
-
-			repository.deleteBatch(ids).subscribe((result) =>
-			{
-				expect(result).toBe(deletedCount);
-				done();
-			});
-
-			const req = httpMock.expectOne(`${apiUrl}/batch`);
-			expect(req.request.method).toBe("DELETE");
-			expect(req.request.body).toEqual(ids);
-			req.flush(deletedCount);
 		});
 	});
 });

@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { SidebarComponent } from "./sidebar.component";
 import { LayoutService } from "@core/services/layout.service";
 import { signal } from "@angular/core";
+import { ComponentTestBed } from "@testing";
 
 describe("SidebarComponent", () =>
 {
@@ -21,16 +21,14 @@ describe("SidebarComponent", () =>
 			.createSpy("sidebarMode")
 			.and.returnValue("side");
 
-		await TestBed.configureTestingModule({
-			imports: [SidebarComponent],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideRouter([]),
-				{ provide: LayoutService, useValue: mockLayoutService }
-			]
-		}).compileComponents();
+		fixture = await new ComponentTestBed<SidebarComponent>()
+			.withProvider(provideRouter([]))
+			.withProvider({
+				provide: LayoutService,
+				useValue: mockLayoutService
+			})
+			.build(SidebarComponent);
 
-		fixture = TestBed.createComponent(SidebarComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});

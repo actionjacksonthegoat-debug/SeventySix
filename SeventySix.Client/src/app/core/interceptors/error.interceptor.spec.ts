@@ -7,6 +7,7 @@ import {
 import { provideZonelessChangeDetection } from "@angular/core";
 import { throwError } from "rxjs";
 import { errorInterceptor } from "./error.interceptor";
+import { createMockLogger } from "@testing";
 import { LoggerService } from "@core/services/logger.service";
 import {
 	NetworkError,
@@ -21,7 +22,7 @@ describe("errorInterceptor", () =>
 
 	beforeEach(() =>
 	{
-		mockLogger = jasmine.createSpyObj("LoggerService", ["warning"]);
+		mockLogger = createMockLogger();
 		mockHandler = jasmine.createSpyObj("HttpHandler", ["handle"]);
 
 		TestBed.configureTestingModule({

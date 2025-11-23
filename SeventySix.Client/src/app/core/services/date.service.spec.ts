@@ -1,6 +1,5 @@
-import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { DateService } from "./date.service";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("DateService", () =>
 {
@@ -8,10 +7,7 @@ describe("DateService", () =>
 
 	beforeEach(() =>
 	{
-		TestBed.configureTestingModule({
-			providers: [provideZonelessChangeDetection()]
-		});
-		service = TestBed.inject(DateService);
+		service = setupSimpleServiceTest(DateService);
 	});
 
 	it("should be created", () =>

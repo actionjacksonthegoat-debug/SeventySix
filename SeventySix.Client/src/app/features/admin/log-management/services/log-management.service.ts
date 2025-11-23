@@ -65,7 +65,7 @@ export class LogManagementService
 		return injectQuery(() => ({
 			queryKey: ["logs", this.filter()],
 			queryFn: () =>
-				lastValueFrom(this.logRepository.getAll(this.filter())),
+				lastValueFrom(this.logRepository.getAllPaged(this.filter())),
 			...this.queryConfig
 		}));
 	}

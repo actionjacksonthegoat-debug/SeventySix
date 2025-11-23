@@ -1,14 +1,12 @@
 import {
 	Component,
 	inject,
-	signal,
 	computed,
 	ChangeDetectionStrategy,
 	ViewChild,
 	AfterViewInit,
 	effect,
-	Signal,
-	WritableSignal
+	Signal
 } from "@angular/core";
 import { Router } from "@angular/router";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
@@ -32,8 +30,12 @@ import { ScrollingModule } from "@angular/cdk/scrolling";
 import { FormsModule } from "@angular/forms";
 import { DatePipe } from "@angular/common";
 import { UserService } from "@admin/users/services";
+import { UserExportService } from "@admin/users/services/user-export.service";
+import {
+	UserPreferencesService,
+	type UserListPreferences
+} from "@admin/users/services/user-preferences.service";
 import { LoggerService } from "@core/services";
-import { StorageService } from "@core/services/storage.service";
 import { User } from "@admin/users/models";
 import {
 	ChartComponent,
@@ -42,6 +44,10 @@ import {
 } from "@shared/components";
 import { ChartConfiguration } from "chart.js";
 import { environment } from "@environments/environment";
+import {
+	createUserTableState,
+	type UserTableState
+} from "@admin/users/composables/user-table-state";
 
 /**
  * User list component.
@@ -78,14 +84,21 @@ import { environment } from "@environments/environment";
 export class UserList implements AfterViewInit
 {
 	private readonly userService: UserService = inject(UserService);
+	private readonly userExportService: UserExportService =
+		inject(UserExportService);
+	private readonly userPreferencesService: UserPreferencesService = inject(
+		UserPreferencesService
+	);
 	private readonly logger: LoggerService = inject(LoggerService);
-	private readonly storage: StorageService = inject(StorageService);
 	private readonly router: Router = inject(Router);
 	private readonly dialog: MatDialog = inject(MatDialog);
 	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
 
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
+
+	// Table state composable
+	readonly tableState: UserTableState = createUserTableState();
 
 	// TanStack Query handles loading, error, and data states
 	readonly usersQuery: ReturnType<UserService["getAllUsers"]> =
@@ -103,57 +116,10 @@ export class UserList implements AfterViewInit
 			? "Failed to load users. Please try again."
 			: null
 	);
-	readonly searchFilter: WritableSignal<string> = signal<string>("");
-	readonly statusFilter: WritableSignal<"all" | "active" | "inactive"> =
-		signal<"all" | "active" | "inactive">("all");
-	readonly chartExpanded: WritableSignal<boolean> = signal<boolean>(false);
 
 	// Material table data source
 	readonly dataSource: MatTableDataSource<User> =
 		new MatTableDataSource<User>([]);
-
-	// Column visibility configuration
-	readonly columnDefs: WritableSignal<
-		Array<{
-			key: string;
-			label: string;
-			visible: boolean;
-			sortable: boolean;
-		}>
-	> = signal([
-		{ key: "select", label: "Select", visible: true, sortable: false },
-		{ key: "id", label: "ID", visible: true, sortable: true },
-		{ key: "username", label: "Username", visible: true, sortable: true },
-		{ key: "email", label: "Email", visible: true, sortable: true },
-		{ key: "fullName", label: "Full Name", visible: true, sortable: true },
-		{ key: "isActive", label: "Status", visible: true, sortable: true },
-		{ key: "createdAt", label: "Created", visible: true, sortable: true },
-		{
-			key: "createdBy",
-			label: "Created By",
-			visible: false,
-			sortable: true
-		},
-		{
-			key: "modifiedAt",
-			label: "Modified",
-			visible: false,
-			sortable: true
-		},
-		{
-			key: "modifiedBy",
-			label: "Modified By",
-			visible: false,
-			sortable: true
-		},
-		{
-			key: "lastLoginAt",
-			label: "Last Login",
-			visible: false,
-			sortable: true
-		},
-		{ key: "actions", label: "Actions", visible: true, sortable: false }
-	]);
 
 	// Bulk selection
 	readonly selection: SelectionModel<User> = new SelectionModel<User>(
@@ -170,13 +136,6 @@ export class UserList implements AfterViewInit
 	readonly bulkDeactivateMutation: ReturnType<
 		UserService["bulkDeactivateUsers"]
 	> = this.userService.bulkDeactivateUsers();
-
-	// Computed: visible columns
-	readonly displayedColumns: Signal<string[]> = computed(() =>
-		this.columnDefs()
-			.filter((col) => col.visible)
-			.map((col) => col.key)
-	);
 
 	// Computed signals for derived state
 	readonly hasUsers: Signal<boolean> = computed(
@@ -265,7 +224,8 @@ export class UserList implements AfterViewInit
 	// Computed: filtered data based on status
 	readonly filteredUsers: Signal<User[]> = computed(() =>
 	{
-		const filter: "all" | "active" | "inactive" = this.statusFilter();
+		const filter: "all" | "active" | "inactive" =
+			this.tableState.statusFilter();
 		const allUsers: User[] = this.users();
 
 		if (filter === "all") return allUsers;
@@ -337,17 +297,21 @@ export class UserList implements AfterViewInit
 	 */
 	loadColumnPreferences(): void
 	{
-		const prefs: Record<string, boolean> | null =
-			this.storage.getItem<Record<string, boolean>>("userListColumns");
-		if (prefs)
-		{
-			this.columnDefs.update((cols) =>
-				cols.map((col) => ({
-					...col,
-					visible: prefs[col.key] ?? col.visible
-				}))
-			);
-		}
+		const prefs: UserListPreferences =
+			this.userPreferencesService.loadPreferences();
+
+		// Apply column visibility from preferences
+		this.tableState.columns.update((cols) =>
+			cols.map((col) => ({
+				...col,
+				visible: prefs.displayedColumns.includes(col.key) ?? col.visible
+			}))
+		);
+
+		// Apply other preferences
+		this.tableState.setSearchFilter(prefs.searchFilter);
+		this.tableState.setStatusFilter(prefs.statusFilter);
+		this.tableState.chartExpanded.set(prefs.chartExpanded);
 	}
 
 	/**
@@ -355,15 +319,13 @@ export class UserList implements AfterViewInit
 	 */
 	saveColumnPreferences(): void
 	{
-		const prefs: Record<string, boolean> = this.columnDefs().reduce(
-			(acc, col) =>
-			{
-				acc[col.key] = col.visible;
-				return acc;
-			},
-			{} as Record<string, boolean>
-		);
-		this.storage.setItem("userListColumns", prefs);
+		const prefs: UserListPreferences = {
+			displayedColumns: this.tableState.displayedColumns(),
+			searchFilter: this.tableState.searchFilter(),
+			statusFilter: this.tableState.statusFilter(),
+			chartExpanded: this.tableState.chartExpanded()
+		};
+		this.userPreferencesService.savePreferences(prefs);
 	}
 
 	/**
@@ -371,11 +333,7 @@ export class UserList implements AfterViewInit
 	 */
 	toggleColumn(columnKey: string): void
 	{
-		this.columnDefs.update((cols) =>
-			cols.map((col) =>
-				col.key === columnKey ? { ...col, visible: !col.visible } : col
-			)
-		);
+		this.tableState.toggleColumn(columnKey);
 		this.saveColumnPreferences();
 	}
 
@@ -401,8 +359,9 @@ export class UserList implements AfterViewInit
 	 */
 	setStatusFilter(status: "all" | "active" | "inactive"): void
 	{
-		this.statusFilter.set(status);
+		this.tableState.setStatusFilter(status);
 		this.updateTableData();
+		this.saveColumnPreferences();
 		this.logger.info("Status filter changed", { status });
 	}
 
@@ -411,7 +370,10 @@ export class UserList implements AfterViewInit
 	 */
 	applyFilter(): void
 	{
-		this.dataSource.filter = this.searchFilter().trim().toLowerCase();
+		this.dataSource.filter = this.tableState
+			.searchFilter()
+			.trim()
+			.toLowerCase();
 
 		if (this.dataSource.paginator)
 		{
@@ -424,7 +386,7 @@ export class UserList implements AfterViewInit
 	 */
 	clearFilter(): void
 	{
-		this.searchFilter.set("");
+		this.tableState.setSearchFilter("");
 		this.applyFilter();
 	}
 
@@ -680,8 +642,9 @@ export class UserList implements AfterViewInit
 
 		this.logger.info("Export requested", { count });
 
-		// TODO: Implement actual CSV export
-		// For now, just show a message
+		// Export using UserExportService
+		this.userExportService.exportToCsv(users);
+
 		this.showSuccessMessage(
 			`Exported ${count} user${count > 1 ? "s" : ""} to CSV`
 		);

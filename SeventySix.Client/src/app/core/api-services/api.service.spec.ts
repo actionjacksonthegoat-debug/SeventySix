@@ -3,10 +3,11 @@ import {
 	HttpTestingController,
 	provideHttpClientTesting
 } from "@angular/common/http/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { z } from "zod";
 import { environment } from "@environments/environment";
 import { ApiService } from "./api.service";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("ApiService", () =>
 {
@@ -20,15 +21,10 @@ describe("ApiService", () =>
 		// Suppress console.error during tests to avoid cluttering test output
 		consoleErrorSpy = spyOn(console, "error");
 
-		TestBed.configureTestingModule({
-			providers: [
-				ApiService,
-				provideHttpClient(withFetch()),
-				provideHttpClientTesting(),
-				provideZonelessChangeDetection()
-			]
-		});
-		service = TestBed.inject(ApiService);
+		service = setupSimpleServiceTest(ApiService, [
+			provideHttpClient(withFetch()),
+			provideHttpClientTesting()
+		]);
 		httpMock = TestBed.inject(HttpTestingController);
 	});
 
@@ -353,6 +349,138 @@ describe("ApiService", () =>
 			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
 
 			req.flush("Forbidden", { status: 403, statusText: "Forbidden" });
+		});
+	});
+
+	describe("Zod Schema Validation (Development Only)", () =>
+	{
+		const TestSchema: z.ZodType<{ id: number; name: string }> = z.object({
+			id: z.number(),
+			name: z.string()
+		});
+
+		it("should validate GET response with Zod schema in development", () =>
+		{
+			const testData = {
+				id: 1,
+				name: "Test"
+			};
+			const endpoint = "test";
+
+			service
+				.get<typeof testData>(endpoint, undefined, TestSchema)
+				.subscribe((data) =>
+				{
+					expect(data).toEqual(testData);
+				});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			expect(req.request.method).toBe("GET");
+			req.flush(testData);
+		});
+
+		it("should throw error on invalid GET response schema in development", (done) =>
+		{
+			const invalidData = {
+				id: "not-a-number",
+				name: "Test"
+			};
+			const endpoint = "test";
+
+			// Temporarily set production to false for this test
+			const originalProduction: boolean = environment.production;
+
+			environment.production = false;
+
+			service
+				.get<{
+					id: number;
+					name: string;
+				}>(endpoint, undefined, TestSchema)
+				.subscribe({
+					next: () => fail("should have thrown validation error"),
+					error: (error: Error) =>
+					{
+						expect(error.message).toContain("validation failed");
+						environment.production = originalProduction;
+						done();
+					}
+				});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			req.flush(invalidData);
+		});
+
+		it("should validate POST response with Zod schema in development", () =>
+		{
+			const testData = {
+				id: 1,
+				name: "Test"
+			};
+			const endpoint = "test";
+
+			service
+				.post<typeof testData>(endpoint, testData, TestSchema)
+				.subscribe((data) =>
+				{
+					expect(data).toEqual(testData);
+				});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			expect(req.request.method).toBe("POST");
+			req.flush(testData);
+		});
+
+		it("should validate PUT response with Zod schema in development", () =>
+		{
+			const testData = {
+				id: 1,
+				name: "Updated"
+			};
+			const endpoint = "test/1";
+
+			service
+				.put<typeof testData>(endpoint, testData, TestSchema)
+				.subscribe((data) =>
+				{
+					expect(data).toEqual(testData);
+				});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			expect(req.request.method).toBe("PUT");
+			req.flush(testData);
+		});
+
+		it("should skip validation in production mode", () =>
+		{
+			const invalidData = {
+				id: "not-a-number" as unknown as number, // Type assertion for test
+				name: "Test"
+			};
+			const endpoint = "test";
+
+			// Temporarily set production to true
+			const originalProduction: boolean = environment.production;
+			environment.production = true;
+
+			service
+				.get<{
+					id: number;
+					name: string;
+				}>(endpoint, undefined, TestSchema)
+				.subscribe((data) =>
+				{
+					expect(data).toEqual(invalidData);
+					environment.production = originalProduction;
+				});
+
+			const req = httpMock.expectOne(`${baseUrl}/${endpoint}`);
+
+			req.flush(invalidData);
 		});
 	});
 });

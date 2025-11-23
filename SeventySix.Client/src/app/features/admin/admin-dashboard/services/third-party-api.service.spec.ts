@@ -1,5 +1,4 @@
 import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient } from "@angular/common/http";
 import {
 	HttpTestingController,
@@ -11,6 +10,7 @@ import {
 } from "@admin/admin-dashboard/models";
 import { ThirdPartyApiService } from "./third-party-api.service";
 import { environment } from "@environments/environment";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("ThirdPartyApiService", () =>
 {
@@ -20,15 +20,10 @@ describe("ThirdPartyApiService", () =>
 
 	beforeEach(() =>
 	{
-		TestBed.configureTestingModule({
-			providers: [
-				provideZonelessChangeDetection(),
-				provideHttpClient(),
-				provideHttpClientTesting(),
-				ThirdPartyApiService
-			]
-		});
-		service = TestBed.inject(ThirdPartyApiService);
+		service = setupSimpleServiceTest(ThirdPartyApiService, [
+			provideHttpClient(),
+			provideHttpClientTesting()
+		]);
 		httpMock = TestBed.inject(HttpTestingController);
 	});
 

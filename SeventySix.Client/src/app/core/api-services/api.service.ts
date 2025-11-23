@@ -6,7 +6,8 @@ import {
 } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
-import { catchError, Observable, throwError } from "rxjs";
+import { catchError, map, Observable, throwError } from "rxjs";
+import { z } from "zod";
 import { IApiService } from "./i-api.service";
 
 /**
@@ -55,46 +56,142 @@ export class ApiService implements IApiService
 	 * Generic GET request
 	 * @param endpoint - The API endpoint to call
 	 * @param params - Optional query parameters
+	 * @param schema - Optional Zod schema for runtime validation (only in development)
 	 * @returns Observable of type T
 	 */
-	get<T>(endpoint: string, params?: HttpParams): Observable<T>
+	get<T>(
+		endpoint: string,
+		params?: HttpParams,
+		schema?: z.ZodType<T>
+	): Observable<T>
 	{
 		return this.http
 			.get<T>(`${this.baseUrl}/${endpoint}`, {
 				headers: this.defaultHeaders,
 				params
 			})
-			.pipe(catchError(this.handleError));
+			.pipe(
+				map((response: T) =>
+				{
+					if (schema && !environment.production)
+					{
+						try
+						{
+							return schema.parse(response);
+						}
+						catch (error: unknown)
+						{
+							if (error instanceof z.ZodError)
+							{
+								console.error(
+									`[API Validation Error] ${endpoint}:`,
+									error.errors
+								);
+								throw new Error(
+									`API response validation failed for ${endpoint}: ${error.message}`
+								);
+							}
+							throw error;
+						}
+					}
+					return response;
+				}),
+				catchError(this.handleError)
+			);
 	}
 
 	/**
 	 * Generic POST request
 	 * @param endpoint - The API endpoint to call
 	 * @param body - The data to send
+	 * @param schema - Optional Zod schema for runtime validation (only in development)
 	 * @returns Observable of type T
 	 */
-	post<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
+	post<T, U = Partial<T>>(
+		endpoint: string,
+		body: U,
+		schema?: z.ZodType<T>
+	): Observable<T>
 	{
 		return this.http
 			.post<T>(`${this.baseUrl}/${endpoint}`, body, {
 				headers: this.defaultHeaders
 			})
-			.pipe(catchError(this.handleError));
+			.pipe(
+				map((response: T) =>
+				{
+					if (schema && !environment.production)
+					{
+						try
+						{
+							return schema.parse(response);
+						}
+						catch (error: unknown)
+						{
+							if (error instanceof z.ZodError)
+							{
+								console.error(
+									`[API Validation Error] ${endpoint}:`,
+									error.errors
+								);
+								throw new Error(
+									`API response validation failed for ${endpoint}: ${error.message}`
+								);
+							}
+							throw error;
+						}
+					}
+					return response;
+				}),
+				catchError(this.handleError)
+			);
 	}
 
 	/**
 	 * Generic PUT request
 	 * @param endpoint - The API endpoint to call
 	 * @param body - The data to send
+	 * @param schema - Optional Zod schema for runtime validation (only in development)
 	 * @returns Observable of type T
 	 */
-	put<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
+	put<T, U = Partial<T>>(
+		endpoint: string,
+		body: U,
+		schema?: z.ZodType<T>
+	): Observable<T>
 	{
 		return this.http
 			.put<T>(`${this.baseUrl}/${endpoint}`, body, {
 				headers: this.defaultHeaders
 			})
-			.pipe(catchError(this.handleError));
+			.pipe(
+				map((response: T) =>
+				{
+					if (schema && !environment.production)
+					{
+						try
+						{
+							return schema.parse(response);
+						}
+						catch (error: unknown)
+						{
+							if (error instanceof z.ZodError)
+							{
+								console.error(
+									`[API Validation Error] ${endpoint}:`,
+									error.errors
+								);
+								throw new Error(
+									`API response validation failed for ${endpoint}: ${error.message}`
+								);
+							}
+							throw error;
+						}
+					}
+					return response;
+				}),
+				catchError(this.handleError)
+			);
 	}
 
 	/**
@@ -115,13 +212,15 @@ export class ApiService implements IApiService
 	/**
 	 * Generic DELETE request
 	 * @param endpoint - The API endpoint to call
+	 * @param body - Optional body for DELETE requests with data
 	 * @returns Observable of type T
 	 */
-	delete<T>(endpoint: string): Observable<T>
+	delete<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
 		return this.http
-			.delete<T>(`${this.baseUrl}/${endpoint}`, {
-				headers: this.defaultHeaders
+			.request<T>("DELETE", `${this.baseUrl}/${endpoint}`, {
+				headers: this.defaultHeaders,
+				body
 			})
 			.pipe(catchError(this.handleError));
 	}

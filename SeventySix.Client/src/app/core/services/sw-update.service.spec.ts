@@ -4,6 +4,7 @@ import { SwUpdate, VersionReadyEvent } from "@angular/service-worker";
 import { Subject } from "rxjs";
 import { SwUpdateService } from "./sw-update.service";
 import { LoggerService } from "./logger.service";
+import { createMockLogger } from "@testing";
 
 describe("SwUpdateService", () =>
 {
@@ -29,13 +30,7 @@ describe("SwUpdateService", () =>
 
 	beforeEach(() =>
 	{
-		const logSpy = jasmine.createSpyObj("LoggerService", [
-			"debug",
-			"info",
-			"warning",
-			"error",
-			"critical"
-		]);
+		const logSpy = createMockLogger();
 
 		loggerSpy = logSpy;
 	});

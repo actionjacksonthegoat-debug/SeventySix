@@ -5,6 +5,7 @@ import {
 	CanComponentDeactivate
 } from "./unsaved-changes.guard";
 import { NotificationService } from "@core/services/notification.service";
+import { createMockNotificationService } from "@testing";
 
 describe("unsavedChangesGuard", () =>
 {
@@ -12,9 +13,7 @@ describe("unsavedChangesGuard", () =>
 
 	beforeEach(() =>
 	{
-		mockNotification = jasmine.createSpyObj("NotificationService", [
-			"info"
-		]);
+		mockNotification = createMockNotificationService();
 
 		TestBed.configureTestingModule({
 			providers: [

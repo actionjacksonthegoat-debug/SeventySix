@@ -8,6 +8,7 @@ import {
 	createMockQueryResult,
 	createMockMutationResult
 } from "@testing/tanstack-query-helpers";
+import { createMockLogger, createMockRouter } from "@testing";
 import { User, UpdateUserRequest } from "@admin/users/models";
 import { UserPage } from "./user-page";
 
@@ -40,8 +41,8 @@ describe("UserPage", () =>
 			"getUserById",
 			"updateUser"
 		]);
-		mockLogger = jasmine.createSpyObj("LoggerService", ["info", "error"]);
-		mockRouter = jasmine.createSpyObj("Router", ["navigate"]);
+		mockLogger = createMockLogger();
+		mockRouter = createMockRouter();
 
 		mockActivatedRoute = {
 			snapshot: {

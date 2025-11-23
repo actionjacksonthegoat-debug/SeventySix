@@ -4,36 +4,37 @@
  * Implements Repository Pattern (SOLID - SRP, DIP)
  */
 
-import { inject, Injectable } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { HttpParams } from "@angular/common/http";
-import { ApiService } from "@core/api-services/api.service";
+import { HttpRepository } from "@core/repositories/http.repository";
 import {
 	User,
 	UpdateUserRequest,
 	UserQueryRequest,
-	PagedResult
+	PagedResult,
+	UserSchema,
+	PagedUserResultSchema
 } from "@admin/users/models";
-import { IRepository } from "@core/repositories/base.repository";
 
 /**
  * Repository for user data access
- * Follows the Repository pattern to abstract API calls
+ * Extends HttpRepository for standard CRUD operations
  */
 @Injectable({
 	providedIn: "root"
 })
-export class UserRepository implements IRepository<User>
+export class UserRepository extends HttpRepository<User>
 {
-	private readonly apiService: ApiService = inject(ApiService);
-	private readonly endpoint: string = "users";
+	protected readonly endpoint: string = "users";
 
 	/**
 	 * Get all users
 	 * @returns Observable array of users
 	 */
-	getAll(): Observable<User[]>
+	override getAll(): Observable<User[]>
 	{
+		// Schema validation not applied to arrays - would need z.array(UserSchema)
 		return this.apiService.get<User[]>(this.endpoint);
 	}
 
@@ -42,9 +43,13 @@ export class UserRepository implements IRepository<User>
 	 * @param id The user identifier
 	 * @returns Observable of user
 	 */
-	getById(id: number | string): Observable<User>
+	override getById(id: number | string): Observable<User>
 	{
-		return this.apiService.get<User>(`${this.endpoint}/${id}`);
+		return this.apiService.get<User>(
+			`${this.endpoint}/${id}`,
+			undefined,
+			UserSchema
+		);
 	}
 
 	/**
@@ -52,9 +57,9 @@ export class UserRepository implements IRepository<User>
 	 * @param user The user data to create
 	 * @returns Observable of created user
 	 */
-	create(user: Partial<User>): Observable<User>
+	override create(user: Partial<User>): Observable<User>
 	{
-		return this.apiService.post<User>(this.endpoint, user);
+		return this.apiService.post<User>(this.endpoint, user, UserSchema);
 	}
 
 	/**
@@ -63,9 +68,16 @@ export class UserRepository implements IRepository<User>
 	 * @param user The user data to update (must include rowVersion for concurrency control)
 	 * @returns Observable of updated user
 	 */
-	update(id: number | string, user: UpdateUserRequest): Observable<User>
+	override update(
+		id: number | string,
+		user: UpdateUserRequest
+	): Observable<User>
 	{
-		return this.apiService.put<User>(`${this.endpoint}/${id}`, user);
+		return this.apiService.put<User>(
+			`${this.endpoint}/${id}`,
+			user,
+			UserSchema
+		);
 	}
 
 	/**
@@ -73,7 +85,7 @@ export class UserRepository implements IRepository<User>
 	 * @param id The user identifier
 	 * @returns Observable of void
 	 */
-	delete(id: number | string): Observable<void>
+	override delete(id: number | string): Observable<void>
 	{
 		return this.apiService.delete<void>(`${this.endpoint}/${id}`);
 	}
@@ -85,23 +97,19 @@ export class UserRepository implements IRepository<User>
 	 */
 	getPaged(request: UserQueryRequest): Observable<PagedResult<User>>
 	{
-		const params: HttpParams = new HttpParams()
-			.set("page", request.page.toString())
-			.set("pageSize", request.pageSize.toString())
-			.set("searchTerm", request.searchTerm || "")
-			.set(
-				"includeInactive",
-				request.includeInactive?.toString() || "false"
-			)
-			.set("sortBy", request.sortBy || "")
-			.set(
-				"sortDescending",
-				request.sortDescending?.toString() || "false"
-			);
+		const params: HttpParams = this.buildParams({
+			page: request.page,
+			pageSize: request.pageSize,
+			searchTerm: request.searchTerm || "",
+			includeInactive: request.includeInactive || false,
+			sortBy: request.sortBy || "",
+			sortDescending: request.sortDescending || false
+		});
 
 		return this.apiService.get<PagedResult<User>>(
 			`${this.endpoint}/paged`,
-			params
+			params,
+			PagedUserResultSchema
 		);
 	}
 
@@ -113,7 +121,9 @@ export class UserRepository implements IRepository<User>
 	getByUsername(username: string): Observable<User>
 	{
 		return this.apiService.get<User>(
-			`${this.endpoint}/username/${username}`
+			`${this.endpoint}/username/${username}`,
+			undefined,
+			UserSchema
 		);
 	}
 
@@ -125,20 +135,13 @@ export class UserRepository implements IRepository<User>
 	 */
 	checkUsername(username: string, excludeId?: number): Observable<boolean>
 	{
-		if (excludeId)
-		{
-			const params: HttpParams = new HttpParams().set(
-				"excludeId",
-				excludeId.toString()
-			);
-			return this.apiService.get<boolean>(
-				`${this.endpoint}/check/username/${username}`,
-				params
-			);
-		}
+		const params: HttpParams | undefined = excludeId
+			? this.buildParams({ excludeId })
+			: undefined;
 
 		return this.apiService.get<boolean>(
-			`${this.endpoint}/check/username/${username}`
+			`${this.endpoint}/check/username/${username}`,
+			params
 		);
 	}
 

@@ -1,7 +1,7 @@
 import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { DomSanitizer } from "@angular/platform-browser";
 import { SanitizationService } from "./sanitization.service";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("SanitizationService", () =>
 {
@@ -16,14 +16,10 @@ describe("SanitizationService", () =>
 			"bypassSecurityTrustUrl"
 		]);
 
-		TestBed.configureTestingModule({
-			providers: [
-				{ provide: DomSanitizer, useValue: sanitizerSpy },
-				provideZonelessChangeDetection()
-			]
-		});
+		service = setupSimpleServiceTest(SanitizationService, [
+			{ provide: DomSanitizer, useValue: sanitizerSpy }
+		]);
 
-		service = TestBed.inject(SanitizationService);
 		sanitizer = TestBed.inject(
 			DomSanitizer
 		) as jasmine.SpyObj<DomSanitizer>;

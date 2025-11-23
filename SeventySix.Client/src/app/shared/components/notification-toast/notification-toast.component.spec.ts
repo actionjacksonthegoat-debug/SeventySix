@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { NotificationToastComponent } from "./notification-toast.component";
-import { NotificationService, NotificationLevel } from "@core/services";
+import { NotificationService } from "@core/services";
+import { ComponentTestBed } from "@testing/test-bed-builders";
 
 describe("NotificationToastComponent", () =>
 {
@@ -11,12 +11,10 @@ describe("NotificationToastComponent", () =>
 
 	beforeEach(async () =>
 	{
-		await TestBed.configureTestingModule({
-			imports: [NotificationToastComponent],
-			providers: [provideZonelessChangeDetection(), NotificationService]
-		}).compileComponents();
+		fixture = await new ComponentTestBed<NotificationToastComponent>()
+			.withRealService(NotificationService)
+			.build(NotificationToastComponent);
 
-		fixture = TestBed.createComponent(NotificationToastComponent);
 		component = fixture.componentInstance;
 		notificationService = TestBed.inject(NotificationService);
 	});

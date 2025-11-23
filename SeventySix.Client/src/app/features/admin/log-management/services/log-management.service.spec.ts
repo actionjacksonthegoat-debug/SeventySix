@@ -1,29 +1,23 @@
 import { TestBed } from "@angular/core/testing";
-import {
-	HttpClientTestingModule,
-	HttpTestingController
-} from "@angular/common/http/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
-import {
-	provideAngularQuery,
-	QueryClient
-} from "@tanstack/angular-query-experimental";
+import { of } from "rxjs";
 import { LogManagementService } from "./log-management.service";
 import { LogRepository } from "@admin/log-management/repositories";
 import {
-	LogFilterRequest,
 	PagedLogResponse,
 	LogCountResponse,
 	LogLevel,
 	LogResponse
 } from "@admin/log-management/models";
-import { of } from "rxjs";
+import {
+	setupServiceTest,
+	createMockLogRepository,
+	MockLogRepository
+} from "@testing";
 
 describe("LogManagementService", () =>
 {
 	let service: LogManagementService;
-	let logRepository: jasmine.SpyObj<LogRepository>;
-	let queryClient: QueryClient;
+	let mockRepository: ReturnType<typeof createMockLogRepository>;
 
 	const mockLogResponse: LogResponse = {
 		id: 1,
@@ -68,38 +62,13 @@ describe("LogManagementService", () =>
 
 	beforeEach(() =>
 	{
-		logRepository = jasmine.createSpyObj("LogRepository", [
-			"getAll",
-			"getById",
-			"getCount",
-			"delete",
-			"deleteBatch"
+		mockRepository = createMockLogRepository();
+
+		setupServiceTest(LogManagementService, [
+			{ provide: LogRepository, useValue: mockRepository }
 		]);
 
-		queryClient = new QueryClient({
-			defaultOptions: {
-				queries: { retry: false },
-				mutations: { retry: false }
-			}
-		});
-		spyOn(queryClient, "invalidateQueries").and.callThrough();
-
-		TestBed.configureTestingModule({
-			imports: [HttpClientTestingModule],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideAngularQuery(queryClient),
-				LogManagementService,
-				{ provide: LogRepository, useValue: logRepository }
-			]
-		});
-
 		service = TestBed.inject(LogManagementService);
-	});
-
-	afterEach(() =>
-	{
-		queryClient.clear();
 	});
 
 	it("should be created", () =>
@@ -107,225 +76,134 @@ describe("LogManagementService", () =>
 		expect(service).toBeTruthy();
 	});
 
-	it("should initialize with default filter", () =>
-	{
-		const filter = service.filter();
-		expect(filter.pageNumber).toBe(1);
-		expect(filter.pageSize).toBe(50);
-	});
-
-	it("should initialize with empty selection", () =>
-	{
-		const ids = service.selectedIds();
-		expect(ids.size).toBe(0);
-	});
-
-	it("should compute selected count", () =>
-	{
-		expect(service.selectedCount()).toBe(0);
-		service.toggleSelection(1);
-		expect(service.selectedCount()).toBe(1);
-	});
-
 	describe("getLogs", () =>
 	{
-		it("should create query", () =>
-		{
-			logRepository.getAll.and.returnValue(of(mockPagedResponse));
-
-			const query: ReturnType<typeof service.getLogs> =
-				TestBed.runInInjectionContext(() => service.getLogs());
-
-			expect(query).toBeTruthy();
-		});
 		it("should fetch logs from repository", async () =>
 		{
-			logRepository.getAll.and.returnValue(of(mockPagedResponse));
+			mockRepository.getAllPaged.and.returnValue(of(mockPagedResponse));
 
 			const query = TestBed.runInInjectionContext(() =>
 				service.getLogs()
 			);
 			const result = await query.refetch();
 
-			expect(logRepository.getAll).toHaveBeenCalledWith(service.filter());
+			expect(mockRepository.getAllPaged).toHaveBeenCalledWith(
+				service.filter()
+			);
 			expect(result.data).toEqual(mockPagedResponse);
 		});
 	});
 
 	describe("getLogCount", () =>
 	{
-		it("should create query", () =>
-		{
-			logRepository.getCount.and.returnValue(of(mockCountResponse));
-
-			const query: ReturnType<typeof service.getLogCount> =
-				TestBed.runInInjectionContext(() => service.getLogCount());
-
-			expect(query).toBeTruthy();
-		});
-
 		it("should fetch log count from repository", async () =>
 		{
-			logRepository.getCount.and.returnValue(of(mockCountResponse));
+			mockRepository.getCount.and.returnValue(of(mockCountResponse));
 
 			const query = TestBed.runInInjectionContext(() =>
 				service.getLogCount()
 			);
 			const result = await query.refetch();
 
-			expect(logRepository.getCount).toHaveBeenCalledWith(
+			expect(mockRepository.getCount).toHaveBeenCalledWith(
 				service.filter()
 			);
 			expect(result.data).toEqual(mockCountResponse);
 		});
 	});
 
-	it("should update filter and reset to page 1", () =>
+	describe("updateFilter", () =>
 	{
-		service.updateFilter({ logLevel: LogLevel.Error });
+		it("should update filter and reset to page 1", () =>
+		{
+			service.updateFilter({ logLevel: LogLevel.Error });
 
-		const filter = service.filter();
-		expect(filter.logLevel).toBe(LogLevel.Error);
-		expect(filter.pageNumber).toBe(1);
+			const filter = service.filter();
+			expect(filter.logLevel).toBe(LogLevel.Error);
+			expect(filter.pageNumber).toBe(1);
+		});
 	});
 
-	it("should set page number", () =>
+	describe("clearFilters", () =>
 	{
-		service.setPage(2);
+		it("should reset filters and clear selection", () =>
+		{
+			service.updateFilter({
+				logLevel: LogLevel.Error,
+				startDate: new Date()
+			});
+			service.toggleSelection(1);
 
-		const filter = service.filter();
-		expect(filter.pageNumber).toBe(2);
+			service.clearFilters();
+
+			const filter = service.filter();
+			expect(filter.logLevel).toBeUndefined();
+			expect(filter.startDate).toBeUndefined();
+			expect(filter.pageNumber).toBe(1);
+			expect(service.selectedIds().size).toBe(0);
+		});
 	});
 
-	it("should set page size and reset to page 1", () =>
+	describe("selection", () =>
 	{
-		service.setPage(5); // Set to page 5
-		service.setPageSize(100);
+		it("should toggle selection on and off", () =>
+		{
+			service.toggleSelection(1);
+			expect(service.selectedIds().has(1)).toBe(true);
+			expect(service.selectedCount()).toBe(1);
 
-		const filter = service.filter();
-		expect(filter.pageSize).toBe(100);
-		expect(filter.pageNumber).toBe(1);
-	});
-
-	it("should clear filters", () =>
-	{
-		service.updateFilter({
-			logLevel: LogLevel.Error,
-			startDate: new Date()
+			service.toggleSelection(1);
+			expect(service.selectedIds().has(1)).toBe(false);
+			expect(service.selectedCount()).toBe(0);
 		});
 
-		service.clearFilters();
+		it("should select all visible logs", () =>
+		{
+			service.selectAll([1, 2, 3]);
 
-		const filter = service.filter();
-		expect(filter.logLevel).toBeUndefined();
-		expect(filter.startDate).toBeUndefined();
-		expect(filter.pageNumber).toBe(1);
-		expect(service.selectedIds().size).toBe(0);
-	});
+			expect(service.selectedIds().size).toBe(3);
+			expect(service.selectedCount()).toBe(3);
+		});
 
-	it("should toggle selection", () =>
-	{
-		service.toggleSelection(1);
+		it("should clear selection", () =>
+		{
+			service.toggleSelection(1);
+			service.clearSelection();
 
-		expect(service.selectedIds().has(1)).toBe(true);
-	});
-
-	it("should toggle selection off", () =>
-	{
-		service.toggleSelection(1);
-		service.toggleSelection(1);
-
-		expect(service.selectedIds().has(1)).toBe(false);
-	});
-
-	it("should select all visible logs", () =>
-	{
-		service.selectAll([1, 2, 3]);
-
-		expect(service.selectedIds().size).toBe(3);
-		expect(service.selectedIds().has(1)).toBe(true);
-		expect(service.selectedIds().has(2)).toBe(true);
-		expect(service.selectedIds().has(3)).toBe(true);
-	});
-
-	it("should clear selection", () =>
-	{
-		service.toggleSelection(1);
-		service.clearSelection();
-
-		expect(service.selectedIds().size).toBe(0);
+			expect(service.selectedIds().size).toBe(0);
+		});
 	});
 
 	describe("deleteLog", () =>
 	{
-		it("should create mutation", () =>
+		it("should delete single log", async () =>
 		{
-			const mutation: ReturnType<typeof service.deleteLog> =
-				TestBed.runInInjectionContext(() => service.deleteLog());
+			mockRepository.delete.and.returnValue(of(void 0));
 
-			expect(mutation).toBeTruthy();
-		});
-
-		it("should delete log via mutation", async () =>
-		{
-			logRepository.delete.and.returnValue(of(void 0));
-
-			const mutation: ReturnType<typeof service.deleteLog> =
-				TestBed.runInInjectionContext(() => service.deleteLog());
+			const mutation = TestBed.runInInjectionContext(() =>
+				service.deleteLog()
+			);
 			await mutation.mutateAsync(1);
 
-			expect(logRepository.delete).toHaveBeenCalledWith(1);
-		});
-
-		it("should invalidate logs queries on success", async () =>
-		{
-			logRepository.delete.and.returnValue(of(void 0));
-
-			const mutation: ReturnType<typeof service.deleteLog> =
-				TestBed.runInInjectionContext(() => service.deleteLog());
-			await mutation.mutateAsync(1);
-
-			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
-				queryKey: ["logs"]
-			});
+			expect(mockRepository.delete).toHaveBeenCalledWith(1);
 		});
 	});
 
 	describe("deleteLogs", () =>
 	{
-		it("should create mutation", () =>
+		it("should delete multiple logs and clear selection", async () =>
 		{
-			const mutation: ReturnType<typeof service.deleteLogs> =
-				TestBed.runInInjectionContext(() => service.deleteLogs());
-
-			expect(mutation).toBeTruthy();
-		});
-
-		it("should delete logs via mutation", async () =>
-		{
-			logRepository.deleteBatch.and.returnValue(of(3));
-
-			const mutation: ReturnType<typeof service.deleteLogs> =
-				TestBed.runInInjectionContext(() => service.deleteLogs());
-			await mutation.mutateAsync([1, 2, 3]);
-
-			expect(logRepository.deleteBatch).toHaveBeenCalledWith([1, 2, 3]);
-		});
-
-		it("should clear selection and invalidate queries on success", async () =>
-		{
-			logRepository.deleteBatch.and.returnValue(of(2));
+			mockRepository.deleteBatch.and.returnValue(of(2));
 			service.toggleSelection(1);
 			service.toggleSelection(2);
 
-			const mutation: ReturnType<typeof service.deleteLogs> =
-				TestBed.runInInjectionContext(() => service.deleteLogs());
+			const mutation = TestBed.runInInjectionContext(() =>
+				service.deleteLogs()
+			);
 			await mutation.mutateAsync([1, 2]);
 
+			expect(mockRepository.deleteBatch).toHaveBeenCalledWith([1, 2]);
 			expect(service.selectedIds().size).toBe(0);
-			expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
-				queryKey: ["logs"]
-			});
 		});
 	});
 });

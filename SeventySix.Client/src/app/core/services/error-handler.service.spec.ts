@@ -5,6 +5,7 @@ import { ErrorHandlerService } from "./error-handler.service";
 import { LoggerService } from "./logger.service";
 import { NotificationService } from "./notification.service";
 import { ClientErrorLoggerService } from "./client-error-logger.service";
+import { createMockLogger, createMockNotificationService } from "@testing";
 import {
 	ValidationError,
 	NotFoundError,
@@ -22,17 +23,8 @@ describe("ErrorHandlerService", () =>
 
 	beforeEach(() =>
 	{
-		mockLogger = jasmine.createSpyObj("LoggerService", [
-			"error",
-			"warning",
-			"info"
-		]);
-		mockNotification = jasmine.createSpyObj("NotificationService", [
-			"error",
-			"warning",
-			"success",
-			"errorWithDetails"
-		]);
+		mockLogger = createMockLogger();
+		mockNotification = createMockNotificationService();
 		mockClientLogger = jasmine.createSpyObj("ClientErrorLoggerService", [
 			"logError",
 			"logHttpError",

@@ -11,6 +11,7 @@ import {
 	PagedLogResponse
 } from "@admin/log-management/models";
 import { createMockQueryResult } from "@testing/tanstack-query-helpers";
+import { createMockDialog } from "@testing";
 
 describe("LogManagementComponent", () =>
 {
@@ -82,7 +83,7 @@ describe("LogManagementComponent", () =>
 		);
 		mockLogService.deleteLog.and.returnValue(mockMutation);
 
-		mockDialog = jasmine.createSpyObj("MatDialog", ["open"]);
+		mockDialog = createMockDialog();
 
 		await TestBed.configureTestingModule({
 			imports: [LogManagementComponent, NoopAnimationsModule],

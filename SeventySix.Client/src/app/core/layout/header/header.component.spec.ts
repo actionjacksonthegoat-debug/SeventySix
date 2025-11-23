@@ -1,10 +1,10 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { HeaderComponent } from "./header.component";
 import { ThemeService } from "@core/services/theme.service";
 import { LayoutService } from "@core/services/layout.service";
 import { createMockThemeService } from "@testing/mocks/theme.service.mock";
+import { ComponentTestBed } from "@testing";
 
 describe("HeaderComponent", () =>
 {
@@ -20,17 +20,15 @@ describe("HeaderComponent", () =>
 			"toggleSidebar"
 		]);
 
-		await TestBed.configureTestingModule({
-			imports: [HeaderComponent],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideRouter([]),
-				{ provide: ThemeService, useValue: mockThemeService },
-				{ provide: LayoutService, useValue: mockLayoutService }
-			]
-		}).compileComponents();
+		fixture = await new ComponentTestBed<HeaderComponent>()
+			.withProvider(provideRouter([]))
+			.withProvider({ provide: ThemeService, useValue: mockThemeService })
+			.withProvider({
+				provide: LayoutService,
+				useValue: mockLayoutService
+			})
+			.build(HeaderComponent);
 
-		fixture = TestBed.createComponent(HeaderComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});

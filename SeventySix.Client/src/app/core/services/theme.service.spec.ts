@@ -1,6 +1,5 @@
-import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { ThemeService } from "./theme.service";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("ThemeService", () =>
 {
@@ -12,11 +11,7 @@ describe("ThemeService", () =>
 		spyOn(localStorage, "getItem").and.returnValue(null);
 		spyOn(localStorage, "setItem");
 
-		TestBed.configureTestingModule({
-			providers: [provideZonelessChangeDetection(), ThemeService]
-		});
-
-		service = TestBed.inject(ThemeService);
+		service = setupSimpleServiceTest(ThemeService);
 	});
 
 	it("should be created", () =>

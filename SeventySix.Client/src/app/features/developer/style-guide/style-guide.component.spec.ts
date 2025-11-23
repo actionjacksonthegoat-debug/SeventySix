@@ -5,6 +5,7 @@ import { ThemeService } from "@core/services";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { createMockThemeService } from "@testing/mocks/theme.service.mock";
+import { createMockSnackBar, createMockDialog } from "@testing";
 
 describe("StyleGuideComponent", () =>
 {
@@ -17,8 +18,8 @@ describe("StyleGuideComponent", () =>
 	beforeEach(async () =>
 	{
 		mockThemeService = createMockThemeService();
-		mockSnackBar = jasmine.createSpyObj("MatSnackBar", ["open"]);
-		mockDialog = jasmine.createSpyObj("MatDialog", ["open"]);
+		mockSnackBar = createMockSnackBar();
+		mockDialog = createMockDialog();
 
 		await TestBed.configureTestingModule({
 			imports: [StyleGuideComponent],

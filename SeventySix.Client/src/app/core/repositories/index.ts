@@ -1,5 +1,6 @@
 /**
  * Repository barrel export
- * Only exports base repository interface
+ * Exports base repository interface and abstract HTTP repository
  */
 export * from "./base.repository";
+export * from "./http.repository";

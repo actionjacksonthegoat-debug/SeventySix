@@ -21,6 +21,7 @@
 		"@features/*": ["src/app/features/*"],
 		"@shared/*": ["src/app/shared/*"],
 		"@environments/*": ["src/environments/*"],
+		"@testing": ["src/app/testing"],
 		"@testing/*": ["src/app/testing/*"],
 
 		// Admin feature and sub-features

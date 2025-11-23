@@ -1,10 +1,11 @@
 import { TestBed } from "@angular/core/testing";
 import { HttpErrorResponse } from "@angular/common/http";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { ClientErrorLoggerService } from "./client-error-logger.service";
 import { ErrorQueueService } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
 import { ClientLogRequest } from "@core/models/client-log-request.model";
+import { createMockErrorQueueService } from "@testing";
+import { provideZonelessChangeDetection } from "@angular/core";
 
 describe("ClientErrorLoggerService", () =>
 {
@@ -17,23 +18,17 @@ describe("ClientErrorLoggerService", () =>
 		// Suppress console.error output during tests while still allowing verification
 		consoleSpy = spyOn(console, "error");
 
-		const errorQueueSpy = jasmine.createSpyObj<ErrorQueueService>(
-			"ErrorQueueService",
-			["enqueue"]
-		);
+		errorQueueService = createMockErrorQueueService();
 
 		TestBed.configureTestingModule({
 			providers: [
 				provideZonelessChangeDetection(),
 				ClientErrorLoggerService,
-				{ provide: ErrorQueueService, useValue: errorQueueSpy }
+				{ provide: ErrorQueueService, useValue: errorQueueService }
 			]
 		});
 
 		service = TestBed.inject(ClientErrorLoggerService);
-		errorQueueService = TestBed.inject(
-			ErrorQueueService
-		) as jasmine.SpyObj<ErrorQueueService>;
 	});
 
 	describe("logError", () =>

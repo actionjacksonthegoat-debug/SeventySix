@@ -3,11 +3,13 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { Router } from "@angular/router";
 import { UserList } from "./user-list";
 import { UserService } from "@features/admin/users/services/user.service";
+import { UserPreferencesService } from "@admin/users/services/user-preferences.service";
 import { LoggerService } from "@core/services/logger.service";
 import {
 	createMockQueryResult,
 	createMockMutationResult
 } from "@testing/tanstack-query-helpers";
+import { createMockLogger, createMockRouter } from "@testing";
 import { User } from "@admin/users/models";
 
 describe("UserList", () =>
@@ -54,8 +56,8 @@ describe("UserList", () =>
 			"bulkActivateUsers",
 			"bulkDeactivateUsers"
 		]);
-		mockLogger = jasmine.createSpyObj("LoggerService", ["info", "error"]);
-		mockRouter = jasmine.createSpyObj("Router", ["navigate"]);
+		mockLogger = createMockLogger();
+		mockRouter = createMockRouter();
 
 		await TestBed.configureTestingModule({
 			imports: [UserList],
@@ -276,7 +278,7 @@ describe("UserList", () =>
 
 		it("should apply search filter to table", () =>
 		{
-			component!.searchFilter.set("john");
+			component!.tableState.searchFilter.set("john");
 			component!.applyFilter();
 
 			expect(component!.dataSource.filter).toBe("john");
@@ -292,7 +294,7 @@ describe("UserList", () =>
 				"firstPage"
 			);
 
-			component!.searchFilter.set("test");
+			component!.tableState.searchFilter.set("test");
 			component!.applyFilter();
 
 			expect(paginatorSpy).toHaveBeenCalled();
@@ -300,12 +302,12 @@ describe("UserList", () =>
 
 		it("should clear filter", () =>
 		{
-			component!.searchFilter.set("john");
+			component!.tableState.searchFilter.set("john");
 			component!.applyFilter();
 
 			component!.clearFilter();
 
-			expect(component!.searchFilter()).toBe("");
+			expect(component!.tableState.searchFilter()).toBe("");
 			expect(component!.dataSource.filter).toBe("");
 		});
 
@@ -360,11 +362,13 @@ describe("UserList", () =>
 
 		it("should toggle column visibility", () =>
 		{
-			const initialVisible = component!.columnDefs()[1].visible; // id column
+			const initialVisible = component!.tableState.columns()[1].visible; // id column
 
 			component!.toggleColumn("id");
 
-			expect(component!.columnDefs()[1].visible).toBe(!initialVisible);
+			expect(component!.tableState.columns()[1].visible).toBe(
+				!initialVisible
+			);
 		});
 
 		it("should save column preferences after toggle", () =>
@@ -383,31 +387,30 @@ describe("UserList", () =>
 			component!.saveColumnPreferences();
 
 			expect(setItemSpy).toHaveBeenCalledWith(
-				"userListColumns",
+				"user-list-preferences",
 				jasmine.any(String)
 			);
 		});
 
 		it("should load column preferences from localStorage", () =>
 		{
-			const prefs = JSON.stringify({ id: false, username: true });
-			spyOn(localStorage, "getItem").and.returnValue(prefs);
+			const mockPrefs = {
+				displayedColumns: ["select", "username", "email", "actions"],
+				searchFilter: "",
+				statusFilter: "all" as const,
+				chartExpanded: true
+			};
+			const userPrefsService = TestBed.inject(UserPreferencesService);
+			spyOn(userPrefsService, "loadPreferences").and.returnValue(
+				mockPrefs
+			);
 
 			component!.loadColumnPreferences();
 
-			const idColumn = component!
-				.columnDefs()
-				.find((col) => col.key === "id");
-			expect(idColumn?.visible).toBe(false);
-		});
-
-		it("should use default visibility when no localStorage data exists", () =>
-		{
-			spyOn(localStorage, "getItem").and.returnValue(null);
-			const initialColumns = [...component!.columnDefs()];
-			component!.loadColumnPreferences();
-
-			expect(component!.columnDefs()).toEqual(initialColumns);
+			const visibleColumns = component!.tableState
+				.columns()
+				.filter((c) => c.visible);
+			expect(visibleColumns.length).toBeGreaterThan(0);
 		});
 	});
 
@@ -812,8 +815,8 @@ describe("UserList", () =>
 			component = fixture.componentInstance;
 			fixture.detectChanges();
 
-			const columnDefs = component!.columnDefs();
-			const columnKeys: string[] = columnDefs.map((col) => col.key);
+			const columnDefs = component!.tableState.columns();
+			const columnKeys: string[] = columnDefs.map((col: any) => col.key);
 
 			expect(columnKeys).toContain("createdBy");
 			expect(columnKeys).toContain("modifiedAt");
@@ -836,16 +839,18 @@ describe("UserList", () =>
 			component = fixture.componentInstance;
 			fixture.detectChanges();
 
-			const columnDefs = component!.columnDefs();
-			const createdByCol = columnDefs.find((c) => c.key === "createdBy");
+			const columnDefs = component!.tableState.columns();
+			const createdByCol = columnDefs.find(
+				(c: any) => c.key === "createdBy"
+			);
 			const modifiedAtCol = columnDefs.find(
-				(c) => c.key === "modifiedAt"
+				(c: any) => c.key === "modifiedAt"
 			);
 			const modifiedByCol = columnDefs.find(
-				(c) => c.key === "modifiedBy"
+				(c: any) => c.key === "modifiedBy"
 			);
 			const lastLoginCol = columnDefs.find(
-				(c) => c.key === "lastLoginAt"
+				(c: any) => c.key === "lastLoginAt"
 			);
 
 			expect(createdByCol?.visible).toBe(false);

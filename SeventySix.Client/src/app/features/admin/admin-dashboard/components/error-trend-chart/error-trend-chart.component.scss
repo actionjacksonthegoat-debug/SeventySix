@@ -1,3 +1,5 @@
+@use "variables" as vars;
+
 .error-trend-chart {
 	width: 100%;
 	min-height: 400px;
@@ -9,7 +11,7 @@
 		align-items: center;
 		justify-content: center;
 		min-height: 400px;
-		gap: 1rem;
+		gap: vars.$spacing-lg;
 
 		p {
 			margin: 0;
@@ -19,9 +21,9 @@
 
 	.error-container {
 		mat-icon {
-			font-size: 48px;
-			width: 48px;
-			height: 48px;
+			font-size: vars.$icon-size-xl;
+			width: vars.$icon-size-xl;
+			height: vars.$icon-size-xl;
 		}
 	}
 }

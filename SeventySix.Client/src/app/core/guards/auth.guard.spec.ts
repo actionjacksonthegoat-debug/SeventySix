@@ -1,6 +1,11 @@
 import { TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { authGuard } from "./auth.guard";
+import {
+	createMockLogger,
+	createMockRouter,
+	createMockNotificationService
+} from "@testing";
 import { LoggerService } from "@core/services/logger.service";
 import { TokenStorageService } from "@core/services/token-storage.service";
 import { NotificationService } from "@core/services/notification.service";
@@ -13,13 +18,11 @@ describe("authGuard", () =>
 
 	beforeEach(() =>
 	{
-		mockLogger = jasmine.createSpyObj("LoggerService", ["warning"]);
+		mockLogger = createMockLogger();
 		mockTokenStorage = jasmine.createSpyObj("TokenStorageService", [
 			"isAuthenticated"
 		]);
-		mockNotification = jasmine.createSpyObj("NotificationService", [
-			"error"
-		]);
+		mockNotification = createMockNotificationService();
 
 		TestBed.configureTestingModule({
 			providers: [

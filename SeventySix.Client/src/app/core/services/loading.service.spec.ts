@@ -1,8 +1,7 @@
-import { TestBed } from "@angular/core/testing";
 import { Router, NavigationStart, NavigationEnd } from "@angular/router";
-import { provideZonelessChangeDetection } from "@angular/core";
 import { Subject } from "rxjs";
 import { LoadingService } from "./loading.service";
+import { setupSimpleServiceTest } from "@testing";
 
 describe("LoadingService", () =>
 {
@@ -15,15 +14,9 @@ describe("LoadingService", () =>
 			events: new Subject()
 		};
 
-		TestBed.configureTestingModule({
-			providers: [
-				provideZonelessChangeDetection(),
-				LoadingService,
-				{ provide: Router, useValue: mockRouter }
-			]
-		});
-
-		service = TestBed.inject(LoadingService);
+		service = setupSimpleServiceTest(LoadingService, [
+			{ provide: Router, useValue: mockRouter }
+		]);
 	});
 
 	it("should be created", () =>

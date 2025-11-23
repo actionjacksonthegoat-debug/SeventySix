@@ -1,10 +1,8 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
-import { Router, NavigationEnd, ActivatedRoute } from "@angular/router";
-import { provideRouter } from "@angular/router";
-import { Subject } from "rxjs";
+import { Router, provideRouter } from "@angular/router";
 import { BreadcrumbComponent } from "./breadcrumb.component";
 import { Component } from "@angular/core";
+import { ComponentTestBed } from "@testing/test-bed-builders";
 
 @Component({
 	selector: "app-test",
@@ -21,10 +19,8 @@ describe("BreadcrumbComponent", () =>
 
 	beforeEach(async () =>
 	{
-		await TestBed.configureTestingModule({
-			imports: [BreadcrumbComponent],
-			providers: [
-				provideZonelessChangeDetection(),
+		fixture = await new ComponentTestBed<BreadcrumbComponent>()
+			.withProvider(
 				provideRouter([
 					{ path: "", component: TestComponent },
 					{
@@ -54,10 +50,9 @@ describe("BreadcrumbComponent", () =>
 						component: TestComponent
 					}
 				])
-			]
-		}).compileComponents();
+			)
+			.build(BreadcrumbComponent);
 
-		fixture = TestBed.createComponent(BreadcrumbComponent);
 		component = fixture.componentInstance;
 		router = TestBed.inject(Router);
 		fixture.detectChanges();

@@ -37,7 +37,7 @@
 	@if (hasUsers())
 	{
 		<mat-expansion-panel
-			[(expanded)]="chartExpanded"
+			[(expanded)]="tableState.chartExpanded"
 			class="chart-expansion-panel"
 		>
 			<mat-expansion-panel-header>
@@ -98,14 +98,14 @@
 			<mat-label>Search users</mat-label>
 			<input
 				matInput
-				[(ngModel)]="searchFilter"
+				[(ngModel)]="tableState.searchFilter"
 				(ngModelChange)="applyFilter()"
 				placeholder="Search by name, email, or ID"
 				autocomplete="off"
 				aria-label="Search users by name, email, or ID"
 			/>
 			<mat-icon matPrefix aria-hidden="true">search</mat-icon>
-			@if (searchFilter())
+			@if (tableState.searchFilter())
 			{
 				<button
 					matSuffix
@@ -131,7 +131,7 @@
 			<div class="column-menu-header" mat-menu-item disabled>
 				<strong>Show/Hide Columns</strong>
 			</div>
-			@for (col of columnDefs(); track col.key)
+			@for (col of tableState.columns(); track col.key)
 			{
 				@if (col.key !== "select" && col.key !== "actions")
 				{
@@ -160,7 +160,7 @@
 		<!-- Filter Chips (Left Half) -->
 		<div class="filter-chips">
 			<mat-chip-listbox
-				[(ngModel)]="statusFilter"
+				[(ngModel)]="tableState.statusFilter"
 				(ngModelChange)="setStatusFilter($event)"
 				aria-label="Status filter"
 			>
@@ -332,10 +332,13 @@
 					</td>
 				</ng-container>
 
-				<tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+				<tr
+					mat-header-row
+					*matHeaderRowDef="tableState.displayedColumns()"
+				></tr>
 				<tr
 					mat-row
-					*matRowDef="let row; columns: displayedColumns()"
+					*matRowDef="let row; columns: tableState.displayedColumns()"
 					class="user-row"
 					(click)="editUser(row)"
 				></tr>
@@ -346,15 +349,17 @@
 					<tr class="mat-row no-data-row">
 						<td
 							class="mat-cell"
-							[attr.colspan]="displayedColumns().length"
+							[attr.colspan]="
+								tableState.displayedColumns().length
+							"
 						>
 							<div class="no-data">
 								<mat-icon>people_outline</mat-icon>
 								<p class="mat-body-1">
-									@if (searchFilter())
+									@if (tableState.searchFilter())
 									{
 										No users found matching "{{
-											searchFilter()
+											tableState.searchFilter()
 										}}"
 									}
 									@else

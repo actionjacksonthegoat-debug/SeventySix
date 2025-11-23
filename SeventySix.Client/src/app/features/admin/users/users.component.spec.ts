@@ -1,5 +1,4 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture } from "@angular/core/testing";
 import { UserList } from "@features/admin/users/components/user-list/user-list";
 import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
@@ -9,8 +8,11 @@ import { UsersComponent } from "./users.component";
 import { ActivatedRoute } from "@angular/router";
 import {
 	createMockQueryResult,
-	createMockMutationResult
-} from "@testing/tanstack-query-helpers";
+	createMockMutationResult,
+	ComponentTestBed,
+	createMockLogger,
+	createMockActivatedRoute
+} from "@testing";
 
 describe("UsersComponent", () =>
 {
@@ -27,10 +29,8 @@ describe("UsersComponent", () =>
 			"bulkActivateUsers",
 			"bulkDeactivateUsers"
 		]);
-		mockLogger = jasmine.createSpyObj("LoggerService", ["info", "error"]);
-		mockActivatedRoute = jasmine.createSpyObj("ActivatedRoute", [], {
-			params: of({})
-		});
+		mockLogger = createMockLogger();
+		mockActivatedRoute = createMockActivatedRoute();
 
 		// Set default mock return values
 		mockUserService.getAllUsers.and.returnValue(
@@ -43,17 +43,16 @@ describe("UsersComponent", () =>
 			createMockMutationResult<number, Error, number[], unknown>()
 		);
 
-		await TestBed.configureTestingModule({
-			imports: [UsersComponent, UserList],
-			providers: [
-				provideZonelessChangeDetection(),
-				{ provide: ActivatedRoute, useValue: mockActivatedRoute },
-				{ provide: UserService, useValue: mockUserService },
-				{ provide: LoggerService, useValue: mockLogger }
-			]
-		}).compileComponents();
+		fixture = await new ComponentTestBed<UsersComponent>()
+			.withImport(UserList)
+			.withProvider({
+				provide: ActivatedRoute,
+				useValue: mockActivatedRoute
+			})
+			.withProvider({ provide: UserService, useValue: mockUserService })
+			.withProvider({ provide: LoggerService, useValue: mockLogger })
+			.build(UsersComponent);
 
-		fixture = TestBed.createComponent(UsersComponent);
 		component = fixture.componentInstance;
 	});
 	it("should create", () =>
