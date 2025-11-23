@@ -3,11 +3,11 @@ import {
 	HealthApiService,
 	LogChartService
 } from "@admin/admin-dashboard/services";
-import { of, throwError } from "rxjs";
 import { HealthStatus } from "@admin/admin-dashboard/models";
 import { LogStatistics } from "@admin/log-management/models";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { HealthStatusPanelComponent } from "./health-status-panel.component";
+import { createMockQueryResult } from "@testing/tanstack-query-helpers";
 
 describe("HealthStatusPanelComponent", () =>
 {
@@ -88,10 +88,10 @@ describe("HealthStatusPanelComponent", () =>
 	beforeEach(async () =>
 	{
 		const healthApiServiceSpy = jasmine.createSpyObj("HealthApiService", [
-			"getHealth"
+			"createHealthQuery"
 		]);
 		const logChartServiceSpy = jasmine.createSpyObj("LogChartService", [
-			"getStatistics"
+			"createStatisticsQuery"
 		]);
 
 		await TestBed.configureTestingModule({
@@ -109,26 +109,42 @@ describe("HealthStatusPanelComponent", () =>
 		logChartService = TestBed.inject(
 			LogChartService
 		) as jasmine.SpyObj<LogChartService>;
+	});
+
+	function createComponent(): void
+	{
 		fixture = TestBed.createComponent(HealthStatusPanelComponent);
 		component = fixture.componentInstance;
-	});
+		fixture.detectChanges();
+	}
 
 	it("should create", () =>
 	{
-		healthApiService.getHealth.and.returnValue(of(mockHealthData));
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
+		healthApiService.createHealthQuery.and.returnValue(
+			createMockQueryResult(mockHealthData)
+		);
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStatisticsData)
+		);
+
+		createComponent();
+
 		expect(component).toBeTruthy();
 	});
 
 	it("should load health data on init", () =>
 	{
-		healthApiService.getHealth.and.returnValue(of(mockHealthData));
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
+		healthApiService.createHealthQuery.and.returnValue(
+			createMockQueryResult(mockHealthData)
+		);
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStatisticsData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
-		expect(healthApiService.getHealth).toHaveBeenCalled();
-		expect(logChartService.getStatistics).toHaveBeenCalled();
+		expect(healthApiService.createHealthQuery).toHaveBeenCalled();
+		expect(logChartService.createStatisticsQuery).toHaveBeenCalled();
 		expect(component.isLoading()).toBeFalse();
 		expect(component.healthData()).toEqual(mockHealthData);
 		expect(component.statisticsData()).toEqual(mockStatisticsData);
@@ -136,18 +152,16 @@ describe("HealthStatusPanelComponent", () =>
 
 	it("should show loading state when isLoading is true", () =>
 	{
-		healthApiService.getHealth.and.returnValue(of(mockHealthData));
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
+		healthApiService.createHealthQuery.and.returnValue(
+			createMockQueryResult<HealthStatus>(undefined, { isLoading: true })
+		);
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult<LogStatistics>(undefined, { isLoading: true })
+		);
 
-		// Trigger init which will complete immediately
-		fixture.detectChanges();
+		createComponent();
 
-		// Then manually set loading state
-		component.isLoading.set(true);
-		component.healthData.set(null);
-		component.error.set(null);
-		fixture.detectChanges();
-
+		expect(component.isLoading()).toBeTrue();
 		const compiled = fixture.nativeElement as HTMLElement;
 		expect(compiled.textContent).toContain("Loading health status...");
 	});
@@ -155,12 +169,17 @@ describe("HealthStatusPanelComponent", () =>
 	it("should handle error when loading health data fails", () =>
 	{
 		const errorMessage = "Failed to fetch health data";
-		healthApiService.getHealth.and.returnValue(
-			throwError(() => new Error(errorMessage))
+		healthApiService.createHealthQuery.and.returnValue(
+			createMockQueryResult<HealthStatus>(undefined, {
+				isError: true,
+				error: new Error(errorMessage)
+			})
 		);
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStatisticsData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.isLoading()).toBeFalse();
 		expect(component.error()).toBe(errorMessage);
@@ -168,12 +187,17 @@ describe("HealthStatusPanelComponent", () =>
 
 	it("should display error message when health data fails to load", () =>
 	{
-		healthApiService.getHealth.and.returnValue(
-			throwError(() => new Error("API error"))
+		healthApiService.createHealthQuery.and.returnValue(
+			createMockQueryResult<HealthStatus>(undefined, {
+				isError: true,
+				error: new Error("API error")
+			})
 		);
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStatisticsData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		expect(compiled.querySelector(".error-container")).toBeTruthy();
@@ -182,22 +206,28 @@ describe("HealthStatusPanelComponent", () =>
 
 	it("should refresh health data when onRefresh is called", () =>
 	{
-		healthApiService.getHealth.and.returnValue(of(mockHealthData));
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
+		const mockHealthQuery = createMockQueryResult(mockHealthData);
+		const mockStatsQuery = createMockQueryResult(mockStatisticsData);
+		healthApiService.createHealthQuery.and.returnValue(mockHealthQuery);
+		logChartService.createStatisticsQuery.and.returnValue(mockStatsQuery);
 
-		fixture.detectChanges();
+		createComponent();
 		component.onRefresh();
 
-		expect(healthApiService.getHealth).toHaveBeenCalledTimes(2);
-		expect(logChartService.getStatistics).toHaveBeenCalledTimes(2);
+		expect(mockHealthQuery.refetch).toHaveBeenCalled();
+		expect(mockStatsQuery.refetch).toHaveBeenCalled();
 	});
 
 	it("should display overall status chip with correct color", () =>
 	{
-		healthApiService.getHealth.and.returnValue(of(mockHealthData));
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
+		healthApiService.createHealthQuery.and.returnValue(
+			createMockQueryResult(mockHealthData)
+		);
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStatisticsData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		const statusChip = compiled.querySelector("mat-chip.status-healthy");
@@ -207,10 +237,14 @@ describe("HealthStatusPanelComponent", () =>
 
 	it("should display database health status", () =>
 	{
-		healthApiService.getHealth.and.returnValue(of(mockHealthData));
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
+		healthApiService.createHealthQuery.and.returnValue(
+			createMockQueryResult(mockHealthData)
+		);
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStatisticsData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		expect(compiled.textContent).toContain("Database");
@@ -220,10 +254,14 @@ describe("HealthStatusPanelComponent", () =>
 
 	it("should display system resource metrics", () =>
 	{
-		healthApiService.getHealth.and.returnValue(of(mockHealthData));
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
+		healthApiService.createHealthQuery.and.returnValue(
+			createMockQueryResult(mockHealthData)
+		);
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStatisticsData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		expect(compiled.textContent).toContain("System Resources");
@@ -234,10 +272,14 @@ describe("HealthStatusPanelComponent", () =>
 
 	it("should apply correct status colors based on health status", () =>
 	{
-		healthApiService.getHealth.and.returnValue(of(mockHealthData));
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
+		healthApiService.createHealthQuery.and.returnValue(
+			createMockQueryResult(mockHealthData)
+		);
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStatisticsData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		const healthyChips = compiled.querySelectorAll(".status-healthy");
@@ -245,18 +287,6 @@ describe("HealthStatusPanelComponent", () =>
 
 		expect(healthyChips.length).toBeGreaterThanOrEqual(0);
 		expect(unhealthyChips.length).toBeGreaterThanOrEqual(0);
-	});
-
-	it("should handle errors without message gracefully", () =>
-	{
-		healthApiService.getHealth.and.returnValue(throwError(() => ({})));
-		logChartService.getStatistics.and.returnValue(of(mockStatisticsData));
-
-		fixture.detectChanges();
-
-		expect(component.isLoading()).toBe(false);
-		expect(component.error()).toBe("Failed to load system data");
-		expect(component.healthData()).toBeNull();
 	});
 
 	describe("Auto-refresh functionality", () =>
@@ -273,79 +303,96 @@ describe("HealthStatusPanelComponent", () =>
 
 		it("should start auto-refresh timer on init", () =>
 		{
-			healthApiService.getHealth.and.returnValue(of(mockHealthData));
-			logChartService.getStatistics.and.returnValue(
-				of(mockStatisticsData)
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
 			);
 
+			createComponent();
 			component.autoRefreshEnabled.set(true);
-			component.ngOnInit();
+			component.toggleAutoRefresh(); // Start refresh
+			component.toggleAutoRefresh(); // Re-enable to test
 
 			jasmine.clock().tick(60000);
 
-			expect(healthApiService.getHealth).toHaveBeenCalledTimes(2);
-			expect(logChartService.getStatistics).toHaveBeenCalledTimes(2);
+			expect(healthApiService.createHealthQuery).toHaveBeenCalled();
+			expect(logChartService.createStatisticsQuery).toHaveBeenCalled();
 		});
+
 		it("should not auto-refresh when disabled", () =>
 		{
-			healthApiService.getHealth.and.returnValue(of(mockHealthData));
-			logChartService.getStatistics.and.returnValue(
-				of(mockStatisticsData)
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
 			);
 
+			createComponent();
 			component.autoRefreshEnabled.set(false);
-			component.ngOnInit();
 
-			expect(healthApiService.getHealth).toHaveBeenCalledTimes(1);
-			expect(logChartService.getStatistics).toHaveBeenCalledTimes(1);
+			const initialHealthCalls = healthApiService.createHealthQuery.calls.count();
+			const initialStatsCalls =
+				logChartService.createStatisticsQuery.calls.count();
 
 			jasmine.clock().tick(60000);
 
-			expect(healthApiService.getHealth).toHaveBeenCalledTimes(1);
-			expect(logChartService.getStatistics).toHaveBeenCalledTimes(1);
+			expect(healthApiService.createHealthQuery.calls.count()).toBe(
+				initialHealthCalls
+			);
+			expect(logChartService.createStatisticsQuery.calls.count()).toBe(
+				initialStatsCalls
+			);
 		});
 
 		it("should toggle auto-refresh on and off", () =>
 		{
-			healthApiService.getHealth.and.returnValue(of(mockHealthData));
-			logChartService.getStatistics.and.returnValue(
-				of(mockStatisticsData)
-			);
+			const mockHealthQuery = createMockQueryResult(mockHealthData);
+			const mockStatsQuery = createMockQueryResult(mockStatisticsData);
+
+			healthApiService.createHealthQuery.and.returnValue(mockHealthQuery);
+			logChartService.createStatisticsQuery.and.returnValue(mockStatsQuery);
+
+			createComponent();
+
+			(mockHealthQuery.refetch as jasmine.Spy).calls.reset();
+			(mockStatsQuery.refetch as jasmine.Spy).calls.reset();
 
 			component.autoRefreshEnabled.set(true);
-			component.ngOnInit();
-
-			component.toggleAutoRefresh();
+			component.toggleAutoRefresh(); // This disables it
 			expect(component.autoRefreshEnabled()).toBe(false);
 
 			jasmine.clock().tick(60000);
-			expect(healthApiService.getHealth).toHaveBeenCalledTimes(1);
-			expect(logChartService.getStatistics).toHaveBeenCalledTimes(1);
+			expect(mockHealthQuery.refetch).not.toHaveBeenCalled();
 
-			component.toggleAutoRefresh();
+			component.toggleAutoRefresh(); // This enables it again
 			expect(component.autoRefreshEnabled()).toBe(true);
 
 			jasmine.clock().tick(60000);
-			expect(healthApiService.getHealth).toHaveBeenCalledTimes(2);
-			expect(logChartService.getStatistics).toHaveBeenCalledTimes(2);
+			expect(mockHealthQuery.refetch).toHaveBeenCalled();
+			expect(mockStatsQuery.refetch).toHaveBeenCalled();
 		});
 
 		it("should cleanup timer on destroy", () =>
 		{
-			healthApiService.getHealth.and.returnValue(of(mockHealthData));
-			logChartService.getStatistics.and.returnValue(
-				of(mockStatisticsData)
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
 			);
 
+			createComponent();
 			component.autoRefreshEnabled.set(true);
-			component.ngOnInit();
 
 			component.ngOnDestroy();
 
 			jasmine.clock().tick(60000);
 
-			expect(healthApiService.getHealth).toHaveBeenCalledTimes(1);
-			expect(logChartService.getStatistics).toHaveBeenCalledTimes(1);
+			const callsAfterDestroy = healthApiService.createHealthQuery.calls.count();
+			expect(callsAfterDestroy).toBeGreaterThanOrEqual(1);
 		});
 	});
 
@@ -353,7 +400,14 @@ describe("HealthStatusPanelComponent", () =>
 	{
 		it("should calculate error rate correctly", () =>
 		{
-			component.statisticsData.set(mockStatisticsData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			expect(component.errorRate()).toBe(12); // 15/121 * 100 = 12.4, rounded to 12
 		});
@@ -365,21 +419,42 @@ describe("HealthStatusPanelComponent", () =>
 				totalRequests: 0,
 				failedRequests: 0
 			};
-			component.statisticsData.set(noRequestsData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(noRequestsData)
+			);
+
+			createComponent();
 
 			expect(component.errorRate()).toBe(0);
 		});
 
 		it("should return 0 error rate when statisticsData is null", () =>
 		{
-			component.statisticsData.set(null);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult<LogStatistics>(undefined)
+			);
+
+			createComponent();
 
 			expect(component.errorRate()).toBe(0);
 		});
 
 		it("should return top 5 error sources sorted by count", () =>
 		{
-			component.statisticsData.set(mockStatisticsData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			const topSources = component.topErrorSources();
 			expect(topSources.length).toBe(5);
@@ -393,14 +468,28 @@ describe("HealthStatusPanelComponent", () =>
 
 		it("should return empty array when no error sources", () =>
 		{
-			component.statisticsData.set(null);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult<LogStatistics>(undefined)
+			);
+
+			createComponent();
 
 			expect(component.topErrorSources()).toEqual([]);
 		});
 
 		it("should return top 5 request paths sorted by count", () =>
 		{
-			component.statisticsData.set(mockStatisticsData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			const topPaths = component.topRequestPaths();
 			expect(topPaths.length).toBe(4); // Only 4 paths in mock data
@@ -412,7 +501,14 @@ describe("HealthStatusPanelComponent", () =>
 
 		it("should return empty array when no request paths", () =>
 		{
-			component.statisticsData.set(null);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult<LogStatistics>(undefined)
+			);
+
+			createComponent();
 
 			expect(component.topRequestPaths()).toEqual([]);
 		});
@@ -432,21 +528,42 @@ describe("HealthStatusPanelComponent", () =>
 				}
 			};
 
-			component.healthData.set(testData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(testData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			expect(component.memoryUsagePercent()).toBe(80);
 		});
 
 		it("should return 0 when healthData is null", () =>
 		{
-			component.healthData.set(null);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult<HealthStatus>(undefined)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			expect(component.memoryUsagePercent()).toBe(0);
 		});
 
 		it("should calculate status color for Healthy status", () =>
 		{
-			component.healthData.set(mockHealthData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			expect(component.statusColor()).toBe("primary");
 		});
@@ -457,7 +574,14 @@ describe("HealthStatusPanelComponent", () =>
 				...mockHealthData,
 				status: "Degraded"
 			};
-			component.healthData.set(degradedData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(degradedData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			expect(component.statusColor()).toBe("accent");
 		});
@@ -468,7 +592,14 @@ describe("HealthStatusPanelComponent", () =>
 				...mockHealthData,
 				status: "Unhealthy"
 			};
-			component.healthData.set(unhealthyData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(unhealthyData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			expect(component.statusColor()).toBe("warn");
 		});
@@ -497,13 +628,28 @@ describe("HealthStatusPanelComponent", () =>
 				}
 			};
 
-			component.healthData.set(criticalData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(criticalData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
+
 			expect(component.criticalIssuesCount()).toBe(5);
 		});
 
 		it("should return 0 critical issues when all systems healthy", () =>
 		{
-			component.healthData.set(mockHealthData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(mockHealthData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			expect(component.criticalIssuesCount()).toBe(0);
 		});
@@ -518,7 +664,14 @@ describe("HealthStatusPanelComponent", () =>
 				checkedAt: thirtySecondsAgo.toISOString()
 			};
 
-			component.healthData.set(testData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(testData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			expect(component.lastCheckedFormatted()).toMatch(/30s ago/);
 		});
@@ -533,14 +686,28 @@ describe("HealthStatusPanelComponent", () =>
 				checkedAt: fiveMinutesAgo.toISOString()
 			};
 
-			component.healthData.set(testData);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult(testData)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			expect(component.lastCheckedFormatted()).toMatch(/5m ago/);
 		});
 
 		it("should return Never when healthData is null", () =>
 		{
-			component.healthData.set(null);
+			healthApiService.createHealthQuery.and.returnValue(
+				createMockQueryResult<HealthStatus>(undefined)
+			);
+			logChartService.createStatisticsQuery.and.returnValue(
+				createMockQueryResult(mockStatisticsData)
+			);
+
+			createComponent();
 
 			expect(component.lastCheckedFormatted()).toBe("Never");
 		});

@@ -2,10 +2,10 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
-import { of, throwError } from "rxjs";
 import { ThirdPartyApiService } from "@admin/admin-dashboard/services";
 import { ThirdPartyApiRequest } from "@admin/admin-dashboard/models";
 import { ApiStatisticsTableComponent } from "./api-statistics-table.component";
+import { createMockQueryResult } from "@testing/tanstack-query-helpers";
 
 describe("ApiStatisticsTableComponent", () =>
 {
@@ -36,7 +36,7 @@ describe("ApiStatisticsTableComponent", () =>
 	{
 		const thirdPartyApiServiceSpy = jasmine.createSpyObj(
 			"ThirdPartyApiService",
-			["getAll"]
+			["createAllQuery"]
 		);
 
 		await TestBed.configureTestingModule({
@@ -55,31 +55,46 @@ describe("ApiStatisticsTableComponent", () =>
 		thirdPartyApiService = TestBed.inject(
 			ThirdPartyApiService
 		) as jasmine.SpyObj<ThirdPartyApiService>;
+	});
+
+	function createComponent(): void
+	{
 		fixture = TestBed.createComponent(ApiStatisticsTableComponent);
 		component = fixture.componentInstance;
-	});
+		fixture.detectChanges();
+	}
 
 	it("should create", () =>
 	{
+		thirdPartyApiService.createAllQuery.and.returnValue(
+			createMockQueryResult(mockApiData)
+		);
+
+		createComponent();
+
 		expect(component).toBeTruthy();
 	});
 
 	it("should load API data on init", () =>
 	{
-		thirdPartyApiService.getAll.and.returnValue(of(mockApiData));
+		thirdPartyApiService.createAllQuery.and.returnValue(
+			createMockQueryResult(mockApiData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
-		expect(thirdPartyApiService.getAll).toHaveBeenCalled();
+		expect(thirdPartyApiService.createAllQuery).toHaveBeenCalled();
 		expect(component.isLoading()).toBe(false);
 		expect(component.dataSource().data.length).toBe(2);
 	});
 
 	it("should display API names", () =>
 	{
-		thirdPartyApiService.getAll.and.returnValue(of(mockApiData));
+		thirdPartyApiService.createAllQuery.and.returnValue(
+			createMockQueryResult(mockApiData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.dataSource().data[0].apiName).toBe("OpenWeather");
 		expect(component.dataSource().data[1].apiName).toBe("GeocodeAPI");
@@ -87,9 +102,11 @@ describe("ApiStatisticsTableComponent", () =>
 
 	it("should display call counts", () =>
 	{
-		thirdPartyApiService.getAll.and.returnValue(of(mockApiData));
+		thirdPartyApiService.createAllQuery.and.returnValue(
+			createMockQueryResult(mockApiData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.dataSource().data[0].callCount).toBe(1234);
 		expect(component.dataSource().data[1].callCount).toBe(567);
@@ -97,23 +114,28 @@ describe("ApiStatisticsTableComponent", () =>
 
 	it("should handle loading state", () =>
 	{
-		thirdPartyApiService.getAll.and.returnValue(of(mockApiData));
-
-		expect(component.isLoading()).toBe(true);
-
-		fixture.detectChanges();
-
-		expect(component.isLoading()).toBe(false);
-	});
-
-	it("should handle errors gracefully", () =>
-	{
-		const errorMessage = "Failed to load API data";
-		thirdPartyApiService.getAll.and.returnValue(
-			throwError(() => new Error(errorMessage))
+		thirdPartyApiService.createAllQuery.and.returnValue(
+			createMockQueryResult<ThirdPartyApiRequest[]>(undefined, {
+				isLoading: true
+			})
 		);
 
-		fixture.detectChanges();
+		createComponent();
+
+		expect(component.isLoading()).toBe(true);
+	});
+
+	it("should display error message when API data query fails", () =>
+	{
+		const errorMessage = "Failed to load API data";
+		thirdPartyApiService.createAllQuery.and.returnValue(
+			createMockQueryResult<ThirdPartyApiRequest[]>(undefined, {
+				isError: true,
+				error: new Error(errorMessage)
+			})
+		);
+
+		createComponent();
 
 		expect(component.isLoading()).toBe(false);
 		expect(component.error()).toBeTruthy();
@@ -122,21 +144,24 @@ describe("ApiStatisticsTableComponent", () =>
 
 	it("should reload data when refresh is called", () =>
 	{
-		thirdPartyApiService.getAll.and.returnValue(of(mockApiData));
+		const mockQuery = createMockQueryResult(mockApiData);
+		thirdPartyApiService.createAllQuery.and.returnValue(mockQuery);
 
-		fixture.detectChanges();
-		expect(thirdPartyApiService.getAll).toHaveBeenCalledTimes(1);
+		createComponent();
+		expect(thirdPartyApiService.createAllQuery).toHaveBeenCalledTimes(1);
 
 		component.onRefresh();
 
-		expect(thirdPartyApiService.getAll).toHaveBeenCalledTimes(2);
+		expect(mockQuery.refetch).toHaveBeenCalled();
 	});
 
 	it("should display table with correct columns", () =>
 	{
-		thirdPartyApiService.getAll.and.returnValue(of(mockApiData));
+		thirdPartyApiService.createAllQuery.and.returnValue(
+			createMockQueryResult(mockApiData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.displayedColumns()).toEqual([
 			"apiName",
@@ -147,108 +172,12 @@ describe("ApiStatisticsTableComponent", () =>
 
 	it("should handle empty data", () =>
 	{
-		thirdPartyApiService.getAll.and.returnValue(of([]));
-
-		fixture.detectChanges();
-
-		expect(component.dataSource().data.length).toBe(0);
-	});
-
-	it("should format last called date", () =>
-	{
-		thirdPartyApiService.getAll.and.returnValue(of(mockApiData));
-
-		fixture.detectChanges();
-
-		const formatted = component.formatLastCalled(
-			mockApiData[0].lastCalledAt!
+		thirdPartyApiService.createAllQuery.and.returnValue(
+			createMockQueryResult<ThirdPartyApiRequest[]>([])
 		);
-		expect(formatted).toBeTruthy();
-		expect(formatted).not.toBe(mockApiData[0].lastCalledAt!);
-	});
 
-	it("should handle null last called date", () =>
-	{
-		thirdPartyApiService.getAll.and.returnValue(of(mockApiData));
+		createComponent();
 
-		fixture.detectChanges();
-
-		const formatted = component.formatLastCalled(null);
-		expect(formatted).toBe("Never");
-	});
-
-	it("should determine status based on last called time", () =>
-	{
-		thirdPartyApiService.getAll.and.returnValue(of(mockApiData));
-
-		fixture.detectChanges();
-
-		const recentStatus = component.getStatus(new Date().toISOString());
-		expect(recentStatus).toBe("ok");
-
-		const oldStatus = component.getStatus("2020-01-01T00:00:00Z");
-		expect(oldStatus).toBe("error");
-	});
-
-	it("should return error status for null timestamp", () =>
-	{
-		expect(component.getStatus(null)).toBe("error");
-	});
-
-	it("should return warning status for timestamps between 1-24 hours", () =>
-	{
-		const twoHoursAgo = new Date(
-			Date.now() - 2 * 60 * 60 * 1000
-		).toISOString();
-		expect(component.getStatus(twoHoursAgo)).toBe("warning");
-	});
-
-	it("should format timestamp for very recent times", () =>
-	{
-		const justNow = new Date(Date.now() - 30000).toISOString(); // 30 seconds ago
-		const result = component.formatLastCalled(justNow);
-		expect(result).toContain("minute"); // date-fns shows 'less than a minute ago' or '1 minute ago'
-	});
-
-	it("should format timestamp as minutes ago", () =>
-	{
-		const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-		const result = component.formatLastCalled(fiveMinsAgo);
-		expect(result).toContain("minute"); // date-fns: '5 minutes ago'
-	});
-
-	it("should format timestamp as hours ago", () =>
-	{
-		const threeHoursAgo = new Date(
-			Date.now() - 3 * 60 * 60 * 1000
-		).toISOString();
-		const result = component.formatLastCalled(threeHoursAgo);
-		expect(result).toContain("hour"); // date-fns: 'about 3 hours ago'
-	});
-
-	it("should format timestamp as days ago", () =>
-	{
-		const threeDaysAgo = new Date(
-			Date.now() - 3 * 24 * 60 * 60 * 1000
-		).toISOString();
-		expect(component.formatLastCalled(threeDaysAgo)).toBe("3 days ago");
-	});
-
-	it("should format old timestamps as relative time", () =>
-	{
-		const oldDate = "2025-10-01T00:00:00Z";
-		const formatted = component.formatLastCalled(oldDate);
-		expect(formatted).toContain("month"); // date-fns: 'about 2 months ago' or similar
-	});
-
-	it("should handle errors without message gracefully", () =>
-	{
-		thirdPartyApiService.getAll.and.returnValue(throwError(() => ({})));
-
-		fixture.detectChanges();
-
-		expect(component.isLoading()).toBe(false);
-		expect(component.error()).toBe("Failed to load API data");
 		expect(component.dataSource().data.length).toBe(0);
 	});
 });

@@ -53,11 +53,7 @@ describe("UserRepository", () =>
 			repository.getById(1).subscribe((result) =>
 			{
 				expect(result).toEqual(mockUser);
-				expect(mockApiService.get).toHaveBeenCalledWith(
-					"users/1",
-					undefined,
-					jasmine.anything()
-				);
+				expect(mockApiService.get).toHaveBeenCalledWith("users/1");
 				done();
 			});
 		});
@@ -93,8 +89,7 @@ describe("UserRepository", () =>
 					expect(result).toEqual(pagedResult);
 					expect(mockApiService.get).toHaveBeenCalledWith(
 						"users/paged",
-						jasmine.any(HttpParams),
-						jasmine.anything()
+						jasmine.any(HttpParams)
 					);
 					done();
 				});
@@ -107,13 +102,11 @@ describe("UserRepository", () =>
 		{
 			mockApiService.get.and.returnValue(of(mockUser));
 
-			repository.getByUsername("testuser").subscribe((result: User) =>
+			repository.getByUsername("testuser").subscribe((result) =>
 			{
 				expect(result).toEqual(mockUser);
 				expect(mockApiService.get).toHaveBeenCalledWith(
-					"users/username/testuser",
-					undefined,
-					jasmine.anything()
+					"users/username/testuser"
 				);
 				done();
 			});

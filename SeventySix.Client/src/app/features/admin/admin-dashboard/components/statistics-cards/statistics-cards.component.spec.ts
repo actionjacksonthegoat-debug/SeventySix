@@ -3,10 +3,10 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
-import { of, throwError } from "rxjs";
 import { LogChartService } from "@admin/admin-dashboard/services";
 import { LogStatistics } from "@admin/log-management/models";
 import { StatisticsCardsComponent } from "./statistics-cards.component";
+import { createMockQueryResult } from "@testing/tanstack-query-helpers";
 
 describe("StatisticsCardsComponent", () =>
 {
@@ -35,7 +35,7 @@ describe("StatisticsCardsComponent", () =>
 	beforeEach(async () =>
 	{
 		const logChartServiceSpy = jasmine.createSpyObj("LogChartService", [
-			"getStatistics"
+			"createStatisticsQuery"
 		]);
 
 		await TestBed.configureTestingModule({
@@ -52,104 +52,136 @@ describe("StatisticsCardsComponent", () =>
 		logChartService = TestBed.inject(
 			LogChartService
 		) as jasmine.SpyObj<LogChartService>;
+	});
+
+	function createComponent(): void
+	{
 		fixture = TestBed.createComponent(StatisticsCardsComponent);
 		component = fixture.componentInstance;
-	});
+		fixture.detectChanges();
+	}
 
 	it("should create", () =>
 	{
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStats)
+		);
+
+		createComponent();
+
 		expect(component).toBeTruthy();
 	});
 
 	it("should load statistics on init", () =>
 	{
-		logChartService.getStatistics.and.returnValue(of(mockStats));
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStats)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
-		expect(logChartService.getStatistics).toHaveBeenCalled();
+		expect(logChartService.createStatisticsQuery).toHaveBeenCalled();
 		expect(component.isLoading()).toBe(false);
-		expect(component.statistics()).toEqual(mockStats);
+		expect(component.errorCount()).toBe(567);
 	});
 
 	it("should display error count", () =>
 	{
-		logChartService.getStatistics.and.returnValue(of(mockStats));
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStats)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.errorCount()).toBe(567);
 	});
 
 	it("should display warning count", () =>
 	{
-		logChartService.getStatistics.and.returnValue(of(mockStats));
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStats)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.warningCount()).toBe(234);
 	});
 
 	it("should display fatal count", () =>
 	{
-		logChartService.getStatistics.and.returnValue(of(mockStats));
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStats)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.fatalCount()).toBe(10);
 	});
 
 	it("should handle loading state", () =>
 	{
-		logChartService.getStatistics.and.returnValue(of(mockStats));
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult<LogStatistics>(undefined, { isLoading: true })
+		);
+
+		createComponent();
 
 		expect(component.isLoading()).toBe(true);
-
-		fixture.detectChanges();
-
-		expect(component.isLoading()).toBe(false);
 	});
 
 	it("should handle errors gracefully", () =>
 	{
 		const errorMessage = "Failed to load statistics";
-		logChartService.getStatistics.and.returnValue(
-			throwError(() => new Error(errorMessage))
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult<LogStatistics>(undefined, {
+				isError: true,
+				error: new Error(errorMessage)
+			})
 		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.isLoading()).toBe(false);
 		expect(component.error()).toBeTruthy();
-		expect(component.statistics()).toBeNull();
+		expect(component.errorCount()).toBe(0);
 	});
 
 	it("should reload statistics when refresh is called", () =>
 	{
-		logChartService.getStatistics.and.returnValue(of(mockStats));
+		const mockQuery = createMockQueryResult(mockStats);
+		logChartService.createStatisticsQuery.and.returnValue(mockQuery);
 
-		fixture.detectChanges();
-		expect(logChartService.getStatistics).toHaveBeenCalledTimes(1);
+		createComponent();
+		expect(logChartService.createStatisticsQuery).toHaveBeenCalledTimes(1);
 
 		component.onRefresh();
 
-		expect(logChartService.getStatistics).toHaveBeenCalledTimes(2);
+		expect(mockQuery.refetch).toHaveBeenCalled();
 	});
 
-	it("should display zero when statistics are null", () =>
+	it("should display zero for all counts when statistics are null", () =>
 	{
-		logChartService.getStatistics.and.returnValue(of(mockStats));
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult<LogStatistics>(undefined)
+		);
+
+		createComponent();
 
 		expect(component.errorCount()).toBe(0);
 		expect(component.warningCount()).toBe(0);
 		expect(component.fatalCount()).toBe(0);
+		expect(component.infoCount()).toBe(0);
+		expect(component.debugCount()).toBe(0);
+		expect(component.totalCount()).toBe(0);
 	});
 
 	it("should have 6 stat cards", () =>
 	{
-		logChartService.getStatistics.and.returnValue(of(mockStats));
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStats)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		const cards = compiled.querySelectorAll("mat-card");
@@ -158,44 +190,14 @@ describe("StatisticsCardsComponent", () =>
 
 	it("should display default values for info and debug counts when null", () =>
 	{
-		logChartService.getStatistics.and.returnValue(of(mockStats));
+		logChartService.createStatisticsQuery.and.returnValue(
+			createMockQueryResult(mockStats)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.infoCount()).toBe(345);
 		expect(component.debugCount()).toBe(78);
 		expect(component.totalCount()).toBe(1234);
-	});
-
-	it("should display zero for info count when statistics is null", () =>
-	{
-		component.statistics.set(null);
-
-		expect(component.infoCount()).toBe(0);
-	});
-
-	it("should display zero for debug count when statistics is null", () =>
-	{
-		component.statistics.set(null);
-
-		expect(component.debugCount()).toBe(0);
-	});
-
-	it("should display zero for total count when statistics is null", () =>
-	{
-		component.statistics.set(null);
-
-		expect(component.totalCount()).toBe(0);
-	});
-
-	it("should handle errors without message gracefully", () =>
-	{
-		logChartService.getStatistics.and.returnValue(throwError(() => ({})));
-
-		fixture.detectChanges();
-
-		expect(component.isLoading()).toBe(false);
-		expect(component.error()).toBe("Failed to load statistics");
-		expect(component.statistics()).toBeNull();
 	});
 });

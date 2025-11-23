@@ -12,9 +12,7 @@ import {
 	User,
 	UpdateUserRequest,
 	UserQueryRequest,
-	PagedResult,
-	UserSchema,
-	PagedUserResultSchema
+	PagedResult
 } from "@admin/users/models";
 
 /**
@@ -34,7 +32,6 @@ export class UserRepository extends HttpRepository<User>
 	 */
 	override getAll(): Observable<User[]>
 	{
-		// Schema validation not applied to arrays - would need z.array(UserSchema)
 		return this.apiService.get<User[]>(this.endpoint);
 	}
 
@@ -45,11 +42,7 @@ export class UserRepository extends HttpRepository<User>
 	 */
 	override getById(id: number | string): Observable<User>
 	{
-		return this.apiService.get<User>(
-			`${this.endpoint}/${id}`,
-			undefined,
-			UserSchema
-		);
+		return this.apiService.get<User>(`${this.endpoint}/${id}`);
 	}
 
 	/**
@@ -59,7 +52,7 @@ export class UserRepository extends HttpRepository<User>
 	 */
 	override create(user: Partial<User>): Observable<User>
 	{
-		return this.apiService.post<User>(this.endpoint, user, UserSchema);
+		return this.apiService.post<User>(this.endpoint, user);
 	}
 
 	/**
@@ -73,11 +66,7 @@ export class UserRepository extends HttpRepository<User>
 		user: UpdateUserRequest
 	): Observable<User>
 	{
-		return this.apiService.put<User>(
-			`${this.endpoint}/${id}`,
-			user,
-			UserSchema
-		);
+		return this.apiService.put<User>(`${this.endpoint}/${id}`, user);
 	}
 
 	/**
@@ -108,8 +97,7 @@ export class UserRepository extends HttpRepository<User>
 
 		return this.apiService.get<PagedResult<User>>(
 			`${this.endpoint}/paged`,
-			params,
-			PagedUserResultSchema
+			params
 		);
 	}
 
@@ -121,9 +109,7 @@ export class UserRepository extends HttpRepository<User>
 	getByUsername(username: string): Observable<User>
 	{
 		return this.apiService.get<User>(
-			`${this.endpoint}/username/${username}`,
-			undefined,
-			UserSchema
+			`${this.endpoint}/username/${username}`
 		);
 	}
 

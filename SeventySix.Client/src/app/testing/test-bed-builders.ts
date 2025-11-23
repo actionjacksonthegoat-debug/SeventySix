@@ -12,7 +12,7 @@ import {
 	EnvironmentProviders
 } from "@angular/core";
 import {
-	provideAngularQuery,
+	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 
@@ -126,7 +126,7 @@ export class ComponentTestBed<T>
  * @example
  * const queryClient = createTestQueryClient();
  * TestBed.configureTestingModule({
- *   providers: [provideAngularQuery(queryClient)]
+ *   providers: [provideTanStackQuery(queryClient)]
  * });
  */
 export function createTestQueryClient(): QueryClient
@@ -173,7 +173,7 @@ export function setupServiceTest<T>(
 	TestBed.configureTestingModule({
 		providers: [
 			provideZonelessChangeDetection(),
-			provideAngularQuery(queryClient),
+			provideTanStackQuery(queryClient),
 			service,
 			...providers
 		]

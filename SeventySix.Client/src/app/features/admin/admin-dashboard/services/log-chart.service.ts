@@ -1,59 +1,63 @@
-import { Injectable, inject } from "@angular/core";
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { environment } from "@environments/environment";
-import { LogChartData } from "@admin/admin-dashboard/models";
+import {
+	Injectable,
+	inject,
+	Signal,
+	signal,
+	WritableSignal
+} from "@angular/core";
+import {
+	injectQuery,
+	QueryClient,
+	CreateQueryResult
+} from "@tanstack/angular-query-experimental";
+import { lastValueFrom } from "rxjs";
+import { LogChartRepository } from "../repositories";
+import { LogChartData } from "../models";
 import { LogStatistics } from "@admin/log-management/models";
+import { getQueryConfig } from "@core/utils/query-config";
 
 /**
  * Service for managing log chart data and statistics
+ * Uses TanStack Query for caching and state management
  */
 @Injectable({
 	providedIn: "root"
 })
 export class LogChartService
 {
-	private readonly http: HttpClient = inject(HttpClient);
-	private readonly apiUrl: string = `${environment.apiUrl}/logs`;
+	private readonly repository: LogChartRepository =
+		inject(LogChartRepository);
+	private readonly queryClient: QueryClient = inject(QueryClient);
+	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
+		getQueryConfig("logs");
 
 	/**
-	 * Gets log chart data for the specified period
-	 * @param period - Time period (24h, 7d, 30d). Defaults to 24h
-	 * @returns Observable of LogChartData
+	 * Creates a query for log chart data for the specified period signal
+	 * @param period - Signal containing time period (24h, 7d, 30d)
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getChartData(period: string = "24h"): Observable<LogChartData>
+	createChartDataQuery(
+		period: Signal<string>
+	): CreateQueryResult<LogChartData, Error>
 	{
-		const params: HttpParams = new HttpParams().set("period", period);
-		return this.http.get<LogChartData>(`${this.apiUrl}/chartdata`, {
-			params
-		});
+		return injectQuery(() => ({
+			queryKey: ["logs", "chartData", period()],
+			queryFn: () =>
+				lastValueFrom(this.repository.getChartData(period())),
+			...this.queryConfig
+		}));
 	}
 
 	/**
-	 * Gets log statistics for the specified date range
-	 * @param startDate - Optional start date filter
-	 * @param endDate - Optional end date filter
-	 * @returns Observable of LogStatistics
+	 * Creates a query for log statistics
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getStatistics(
-		startDate?: string,
-		endDate?: string
-	): Observable<LogStatistics>
+	createStatisticsQuery(): CreateQueryResult<LogStatistics, Error>
 	{
-		let params: HttpParams = new HttpParams();
-
-		if (startDate)
-		{
-			params = params.set("startDate", startDate);
-		}
-
-		if (endDate)
-		{
-			params = params.set("endDate", endDate);
-		}
-
-		return this.http.get<LogStatistics>(`${this.apiUrl}/statistics`, {
-			params
-		});
+		return injectQuery(() => ({
+			queryKey: ["logs", "statistics"],
+			queryFn: () => lastValueFrom(this.repository.getStatistics()),
+			...this.queryConfig
+		}));
 	}
 }

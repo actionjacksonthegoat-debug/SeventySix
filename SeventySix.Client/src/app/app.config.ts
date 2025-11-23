@@ -15,7 +15,7 @@ import {
 import { provideServiceWorker } from "@angular/service-worker";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import {
-	provideAngularQuery,
+	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 
@@ -45,7 +45,7 @@ function initializeTheme(_themeService: ThemeService)
 export const appConfig: ApplicationConfig = {
 	providers: [
 		// TanStack Query with environment-based configuration
-		provideAngularQuery(
+		provideTanStackQuery(
 			new QueryClient({
 				defaultOptions: {
 					queries: {

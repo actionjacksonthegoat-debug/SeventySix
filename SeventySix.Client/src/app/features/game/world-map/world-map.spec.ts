@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import {
-	provideAngularQuery,
+	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { WorldMap } from "./world-map";
@@ -28,7 +28,7 @@ describe("WorldMap", () =>
 				provideHttpClient(withFetch()),
 				provideHttpClientTesting(),
 				provideZonelessChangeDetection(),
-				provideAngularQuery(queryClient)
+				provideTanStackQuery(queryClient)
 			]
 		}).compileComponents();
 

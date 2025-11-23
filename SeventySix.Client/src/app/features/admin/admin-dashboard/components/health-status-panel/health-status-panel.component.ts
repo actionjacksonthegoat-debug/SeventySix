@@ -1,11 +1,12 @@
 import {
 	Component,
-	OnInit,
 	OnDestroy,
 	signal,
 	WritableSignal,
 	computed,
-	Signal
+	Signal,
+	inject,
+	ChangeDetectorRef
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
@@ -17,6 +18,7 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { CreateQueryResult } from "@tanstack/angular-query-experimental";
 import {
 	HealthApiService,
 	LogChartService
@@ -24,7 +26,6 @@ import {
 import { HealthStatus } from "@admin/admin-dashboard/models";
 import { LogStatistics } from "@admin/log-management/models";
 import { environment } from "@environments/environment";
-import { forkJoin } from "rxjs";
 
 /**
  * Component displaying system health status panel
@@ -47,14 +48,52 @@ import { forkJoin } from "rxjs";
 	templateUrl: "./health-status-panel.component.html",
 	styleUrl: "./health-status-panel.component.scss"
 })
-export class HealthStatusPanelComponent implements OnInit, OnDestroy
+export class HealthStatusPanelComponent implements OnDestroy
 {
-	readonly isLoading: WritableSignal<boolean> = signal<boolean>(false);
-	readonly error: WritableSignal<string | null> = signal<string | null>(null);
-	readonly healthData: WritableSignal<HealthStatus | null> =
-		signal<HealthStatus | null>(null);
-	readonly statisticsData: WritableSignal<LogStatistics | null> =
-		signal<LogStatistics | null>(null);
+	private readonly healthApiService: HealthApiService =
+		inject(HealthApiService);
+	private readonly logChartService: LogChartService = inject(LogChartService);
+	private readonly cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
+
+	/**
+	 * TanStack Query for health data
+	 */
+	readonly healthQuery: CreateQueryResult<HealthStatus, Error> =
+		this.healthApiService.createHealthQuery();
+	readonly statisticsQuery: CreateQueryResult<LogStatistics, Error> =
+		this.logChartService.createStatisticsQuery();
+
+	/**
+	 * Loading state from queries
+	 */
+	readonly isLoading: Signal<boolean> = computed(
+		() => this.healthQuery.isLoading() || this.statisticsQuery.isLoading()
+	);
+
+	/**
+	 * Error state from queries
+	 */
+	readonly error: Signal<string | null> = computed(() =>
+	{
+		const healthErr: Error | null = this.healthQuery.error();
+		const statsErr: Error | null = this.statisticsQuery.error();
+		const err: Error | null = healthErr || statsErr;
+		return err ? err.message || "Failed to load system data" : null;
+	});
+
+	/**
+	 * Health data from query
+	 */
+	readonly healthData: Signal<HealthStatus | null> = computed(
+		() => this.healthQuery.data() ?? null
+	);
+
+	/**
+	 * Statistics data from query
+	 */
+	readonly statisticsData: Signal<LogStatistics | null> = computed(
+		() => this.statisticsQuery.data() ?? null
+	);
 
 	readonly autoRefreshEnabled: WritableSignal<boolean> = signal<boolean>(
 		environment.dashboard.health.autoRefreshEnabled
@@ -175,16 +214,12 @@ export class HealthStatusPanelComponent implements OnInit, OnDestroy
 				.slice(0, 5);
 		});
 
-	constructor(
-		private healthApiService: HealthApiService,
-		private logChartService: LogChartService
-	)
-	{}
-
-	ngOnInit(): void
+	constructor()
 	{
-		this.loadHealthData();
 		this.startAutoRefresh();
+
+		// Schedule change detection after initialization to prevent ExpressionChangedAfterItHasBeenCheckedError
+		setTimeout(() => this.cdr.markForCheck(), 0);
 	}
 
 	ngOnDestroy(): void
@@ -193,39 +228,12 @@ export class HealthStatusPanelComponent implements OnInit, OnDestroy
 	}
 
 	/**
-	 * Load health and statistics data from services
-	 */
-	private loadHealthData(): void
-	{
-		this.isLoading.set(true);
-		this.error.set(null);
-
-		forkJoin({
-			health: this.healthApiService.getHealth(),
-			statistics: this.logChartService.getStatistics()
-		}).subscribe({
-			next: ({ health, statistics }) =>
-			{
-				this.healthData.set(health);
-				this.statisticsData.set(statistics);
-				this.isLoading.set(false);
-			},
-			error: (err) =>
-			{
-				this.error.set(err.message || "Failed to load system data");
-				this.healthData.set(null);
-				this.statisticsData.set(null);
-				this.isLoading.set(false);
-			}
-		});
-	}
-
-	/**
 	 * Refresh health data
 	 */
 	onRefresh(): void
 	{
-		this.loadHealthData();
+		this.healthQuery.refetch();
+		this.statisticsQuery.refetch();
 	}
 
 	/**
@@ -254,7 +262,8 @@ export class HealthStatusPanelComponent implements OnInit, OnDestroy
 		{
 			this.refreshTimer = setInterval(() =>
 			{
-				this.loadHealthData();
+				this.healthQuery.refetch();
+				this.statisticsQuery.refetch();
 			}, this.refreshIntervalSeconds() * 1000);
 		}
 	}

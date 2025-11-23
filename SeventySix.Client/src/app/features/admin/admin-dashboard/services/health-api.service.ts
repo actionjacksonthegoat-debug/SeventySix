@@ -1,61 +1,67 @@
 import { Injectable, inject } from "@angular/core";
-import { Observable } from "rxjs";
-import { ApiService } from "@core/api-services/api.service";
 import {
-	HealthStatus,
-	DatabaseHealth,
-	ExternalApiHealth,
-	HealthStatusSchema,
-	DatabaseHealthSchema,
-	ExternalApiHealthSchema
-} from "@admin/admin-dashboard/models";
+	injectQuery,
+	QueryClient,
+	CreateQueryResult
+} from "@tanstack/angular-query-experimental";
+import { lastValueFrom } from "rxjs";
+import { HealthApiRepository } from "../repositories";
+import { HealthStatus } from "../models";
+import { getQueryConfig } from "@core/utils/query-config";
 
 /**
  * Service for managing health check data
+ * Uses TanStack Query for caching and state management
  */
 @Injectable({
 	providedIn: "root"
 })
 export class HealthApiService
 {
-	private readonly apiService: ApiService = inject(ApiService);
+	private readonly repository: HealthApiRepository =
+		inject(HealthApiRepository);
+	private readonly queryClient: QueryClient = inject(QueryClient);
+	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
+		getQueryConfig("health");
 
 	/**
-	 * Gets overall system health status
-	 * @returns Observable of HealthStatus
+	 * Creates a query for overall system health status
+	 * Automatically cached with TanStack Query
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getHealth(): Observable<HealthStatus>
+	createHealthQuery(): CreateQueryResult<HealthStatus, Error>
 	{
-		return this.apiService.get<HealthStatus>(
-			"health",
-			undefined,
-			HealthStatusSchema
-		);
+		return injectQuery(() => ({
+			queryKey: ["health", "status"],
+			queryFn: () => lastValueFrom(this.repository.getHealth()),
+			...this.queryConfig
+		}));
 	}
 
 	/**
-	 * Gets database health status
-	 * @returns Observable of DatabaseHealth
+	 * Creates a query for database health status
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getDatabaseHealth(): Observable<DatabaseHealth>
+	createDatabaseHealthQuery(): CreateQueryResult<HealthStatus, Error>
 	{
-		return this.apiService.get<DatabaseHealth>(
-			"health/database",
-			undefined,
-			DatabaseHealthSchema
-		);
+		return injectQuery(() => ({
+			queryKey: ["health", "database"],
+			queryFn: () => lastValueFrom(this.repository.getDatabaseHealth()),
+			...this.queryConfig
+		}));
 	}
 
 	/**
-	 * Gets external API health status
-	 * @returns Observable of ExternalApiHealth
+	 * Creates a query for external API health status
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getExternalApiHealth(): Observable<ExternalApiHealth>
+	createExternalApiHealthQuery(): CreateQueryResult<HealthStatus, Error>
 	{
-		return this.apiService.get<ExternalApiHealth>(
-			"health/external-apis",
-			undefined,
-			ExternalApiHealthSchema
-		);
+		return injectQuery(() => ({
+			queryKey: ["health", "externalApis"],
+			queryFn: () =>
+				lastValueFrom(this.repository.getExternalApiHealth()),
+			...this.queryConfig
+		}));
 	}
 }

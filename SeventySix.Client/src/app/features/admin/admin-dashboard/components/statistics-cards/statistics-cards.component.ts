@@ -1,10 +1,10 @@
 import {
 	Component,
-	OnInit,
 	signal,
 	computed,
 	Signal,
-	WritableSignal
+	WritableSignal,
+	inject
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
@@ -34,23 +34,37 @@ import {
 	styleUrl: "./statistics-cards.component.scss",
 	animations: [fadeInUp, staggerList]
 })
-export class StatisticsCardsComponent implements OnInit
+export class StatisticsCardsComponent
 {
-	/**
-	 * Loading state signal
-	 */
-	readonly isLoading: WritableSignal<boolean> = signal<boolean>(true);
+	private readonly logChartService = inject(LogChartService);
 
 	/**
-	 * Error state signal
+	 * TanStack Query for statistics
 	 */
-	readonly error: WritableSignal<string | null> = signal<string | null>(null);
+	readonly statisticsQuery = this.logChartService.createStatisticsQuery();
 
 	/**
-	 * Statistics data signal
+	 * Loading state from query
 	 */
-	readonly statistics: WritableSignal<LogStatistics | null> =
-		signal<LogStatistics | null>(null);
+	readonly isLoading: Signal<boolean> = computed(() =>
+		this.statisticsQuery.isLoading()
+	);
+
+	/**
+	 * Error state from query
+	 */
+	readonly error: Signal<string | null> = computed(() =>
+	{
+		const err = this.statisticsQuery.error();
+		return err ? err.message || "Failed to load statistics" : null;
+	});
+
+	/**
+	 * Statistics data from query
+	 */
+	private readonly statistics: Signal<LogStatistics | null> = computed(
+		() => this.statisticsQuery.data() ?? null
+	);
 
 	/**
 	 * Computed error count
@@ -94,42 +108,11 @@ export class StatisticsCardsComponent implements OnInit
 		() => this.statistics()?.totalLogs ?? 0
 	);
 
-	constructor(private readonly logChartService: LogChartService)
-	{}
-
-	ngOnInit(): void
-	{
-		this.loadStatistics();
-	}
-
-	/**
-	 * Load statistics from API
-	 */
-	private loadStatistics(): void
-	{
-		this.isLoading.set(true);
-		this.error.set(null);
-
-		this.logChartService.getStatistics().subscribe({
-			next: (stats) =>
-			{
-				this.statistics.set(stats);
-				this.isLoading.set(false);
-			},
-			error: (err) =>
-			{
-				this.error.set(err.message || "Failed to load statistics");
-				this.statistics.set(null);
-				this.isLoading.set(false);
-			}
-		});
-	}
-
 	/**
 	 * Handle refresh button click
 	 */
 	onRefresh(): void
 	{
-		this.loadStatistics();
+		this.statisticsQuery.refetch();
 	}
 }

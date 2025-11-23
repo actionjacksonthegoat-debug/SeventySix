@@ -5,6 +5,10 @@ import {
 	provideHttpClientTesting
 } from "@angular/common/http/testing";
 import {
+	QueryClient,
+	provideTanStackQuery
+} from "@tanstack/angular-query-experimental";
+import {
 	ThirdPartyApiRequest,
 	ThirdPartyApiStatistics
 } from "@admin/admin-dashboard/models";
@@ -16,13 +20,22 @@ describe("ThirdPartyApiService", () =>
 {
 	let service: ThirdPartyApiService;
 	let httpMock: HttpTestingController;
+	let queryClient: QueryClient;
 	const apiUrl = `${environment.apiUrl}/thirdpartyrequests`;
 
 	beforeEach(() =>
 	{
+		queryClient = new QueryClient({
+			defaultOptions: {
+				queries: { retry: false },
+				mutations: { retry: false }
+			}
+		});
+
 		service = setupSimpleServiceTest(ThirdPartyApiService, [
 			provideHttpClient(),
-			provideHttpClientTesting()
+			provideHttpClientTesting(),
+			provideTanStackQuery(queryClient)
 		]);
 		httpMock = TestBed.inject(HttpTestingController);
 	});
@@ -30,6 +43,7 @@ describe("ThirdPartyApiService", () =>
 	afterEach(() =>
 	{
 		httpMock.verify();
+		queryClient.clear();
 	});
 
 	it("should be created", () =>
@@ -37,9 +51,9 @@ describe("ThirdPartyApiService", () =>
 		expect(service).toBeTruthy();
 	});
 
-	describe("getAll", () =>
+	describe("createAllQuery", () =>
 	{
-		it("should return all third-party API requests", (done) =>
+		it("should return all third-party API requests", async () =>
 		{
 			const mockData: ThirdPartyApiRequest[] = [
 				{
@@ -60,54 +74,59 @@ describe("ThirdPartyApiService", () =>
 				}
 			];
 
-			service.getAll().subscribe((data: ThirdPartyApiRequest[]) =>
-			{
-				expect(data).toEqual(mockData);
-				expect(data.length).toBe(2);
-				expect(data[0].apiName).toBe("OpenWeather");
-				done();
-			});
+			const query = TestBed.runInInjectionContext(() => service.createAllQuery()); // Wait for query to execute
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(apiUrl);
 			expect(req.request.method).toBe("GET");
 			req.flush(mockData);
+
+			// Wait for query to complete
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const data = query.data();
+			expect(data).toEqual(mockData);
+			expect(data?.length).toBe(2);
+			expect(data?.[0].apiName).toBe("OpenWeather");
 		});
 
-		it("should handle empty response", (done) =>
+		it("should handle empty array response", async () =>
 		{
-			service.getAll().subscribe((data: ThirdPartyApiRequest[]) =>
-			{
-				expect(data).toEqual([]);
-				expect(data.length).toBe(0);
-				done();
-			});
+			const query = TestBed.runInInjectionContext(() => service.createAllQuery());
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(apiUrl);
 			req.flush([]);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const data = query.data();
+			expect(data).toEqual([]);
+			expect(data?.length).toBe(0);
 		});
 
-		it("should handle HTTP errors", (done) =>
+		it("should handle HTTP errors", async () =>
 		{
-			service.getAll().subscribe({
-				next: () => fail("should have failed"),
-				error: (error: any) =>
-				{
-					expect(error.status).toBe(500);
-					done();
-				}
-			});
+			spyOn(console, "error"); // Suppress expected error logs
+			const query = TestBed.runInInjectionContext(() => service.createAllQuery());
 
+			await new Promise((resolve) => setTimeout(resolve, 0));
 			const req = httpMock.expectOne(apiUrl);
 			req.flush("Server error", {
 				status: 500,
 				statusText: "Internal Server Error"
 			});
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(query.error()).toBeTruthy();
+			expect(query.data()).toBeUndefined();
 		});
 	});
-
-	describe("getByApiName", () =>
+	describe("createByApiNameQuery", () =>
 	{
-		it("should return API requests filtered by API name", (done) =>
+		it("should return API requests filtered by API name", async () =>
 		{
 			const apiName = "OpenWeather";
 			const mockData: ThirdPartyApiRequest[] = [
@@ -121,57 +140,66 @@ describe("ThirdPartyApiService", () =>
 				}
 			];
 
-			service
-				.getByApiName(apiName)
-				.subscribe((data: ThirdPartyApiRequest[]) =>
-				{
-					expect(data).toEqual(mockData);
-					expect(data.length).toBe(1);
-					expect(data[0].apiName).toBe(apiName);
-					done();
-				});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createByApiNameQuery(apiName)
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/${apiName}`);
 			expect(req.request.method).toBe("GET");
 			req.flush(mockData);
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const data = query.data();
+			expect(data).toEqual(mockData);
+			expect(data?.length).toBe(1);
+			expect(data?.[0].apiName).toBe(apiName);
 		});
 
-		it("should handle API name with special characters", (done) =>
+		it("should handle API name with special characters", async () =>
 		{
 			const apiName = "API Name With Spaces";
 			const encodedName = encodeURIComponent(apiName);
 
-			service.getByApiName(apiName).subscribe(() =>
-			{
-				done();
-			});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createByApiNameQuery(apiName)
+			);
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/${encodedName}`);
 			expect(req.request.method).toBe("GET");
 			req.flush([]);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(query.data()).toEqual([]);
 		});
 
-		it("should handle HTTP errors", (done) =>
+		it("should handle HTTP errors", async () =>
 		{
+			spyOn(console, "error"); // Suppress expected error logs
 			const apiName = "NonExistent";
 
-			service.getByApiName(apiName).subscribe({
-				next: () => fail("should have failed"),
-				error: (error: any) =>
-				{
-					expect(error.status).toBe(404);
-					done();
-				}
-			});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createByApiNameQuery(apiName)
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/${apiName}`);
 			req.flush("Not found", { status: 404, statusText: "Not Found" });
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(query.error()).toBeTruthy();
+			expect(query.data()).toBeUndefined();
 		});
 	});
 
-	describe("getStatistics", () =>
+	describe("createStatisticsQuery", () =>
 	{
-		it("should return third-party API statistics", (done) =>
+		it("should return third-party API statistics", async () =>
 		{
 			const mockStats: ThirdPartyApiStatistics = {
 				totalCallsToday: 1801,
@@ -186,23 +214,26 @@ describe("ThirdPartyApiService", () =>
 				}
 			};
 
-			service
-				.getStatistics()
-				.subscribe((stats: ThirdPartyApiStatistics) =>
-				{
-					expect(stats).toEqual(mockStats);
-					expect(stats.totalCallsToday).toBe(1801);
-					expect(stats.totalApisTracked).toBe(2);
-					expect(stats.callsByApi["OpenWeather"]).toBe(1234);
-					done();
-				});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createStatisticsQuery()
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/statistics`);
 			expect(req.request.method).toBe("GET");
 			req.flush(mockStats);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const stats = query.data();
+			expect(stats).toEqual(mockStats);
+			expect(stats?.totalCallsToday).toBe(1801);
+			expect(stats?.totalApisTracked).toBe(2);
+			expect(stats?.callsByApi["OpenWeather"]).toBe(1234);
 		});
 
-		it("should handle empty statistics", (done) =>
+		it("should handle empty statistics", async () =>
 		{
 			const mockStats: ThirdPartyApiStatistics = {
 				totalCallsToday: 0,
@@ -211,36 +242,40 @@ describe("ThirdPartyApiService", () =>
 				lastCalledByApi: {}
 			};
 
-			service
-				.getStatistics()
-				.subscribe((stats: ThirdPartyApiStatistics) =>
-				{
-					expect(stats.totalCallsToday).toBe(0);
-					expect(stats.totalApisTracked).toBe(0);
-					expect(Object.keys(stats.callsByApi).length).toBe(0);
-					done();
-				});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createStatisticsQuery()
+			);
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/statistics`);
 			req.flush(mockStats);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const stats = query.data();
+			expect(stats?.totalCallsToday).toBe(0);
+			expect(stats?.totalApisTracked).toBe(0);
+			expect(Object.keys(stats?.callsByApi ?? {}).length).toBe(0);
 		});
 
-		it("should handle HTTP errors", (done) =>
+		it("should handle HTTP errors", async () =>
 		{
-			service.getStatistics().subscribe({
-				next: () => fail("should have failed"),
-				error: (error: any) =>
-				{
-					expect(error.status).toBe(503);
-					done();
-				}
-			});
+			spyOn(console, "error"); // Suppress expected error logs
+			const query = TestBed.runInInjectionContext(() =>
+				service.createStatisticsQuery()
+			);
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/statistics`);
 			req.flush("Service unavailable", {
 				status: 503,
 				statusText: "Service Unavailable"
 			});
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(query.error()).toBeTruthy();
+			expect(query.data()).toBeUndefined();
 		});
 	});
 });

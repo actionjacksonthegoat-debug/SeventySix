@@ -1,10 +1,14 @@
 import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
+import { provideZonelessChangeDetection, signal } from "@angular/core";
 import { provideHttpClient } from "@angular/common/http";
 import {
 	HttpTestingController,
 	provideHttpClientTesting
 } from "@angular/common/http/testing";
+import {
+	QueryClient,
+	provideTanStackQuery
+} from "@tanstack/angular-query-experimental";
 import { LogChartData } from "@admin/admin-dashboard/models";
 import { LogStatistics } from "@admin/log-management/models";
 import { LogChartService } from "./log-chart.service";
@@ -14,15 +18,24 @@ describe("LogChartService", () =>
 {
 	let service: LogChartService;
 	let httpMock: HttpTestingController;
+	let queryClient: QueryClient;
 	const apiUrl = `${environment.apiUrl}/logs`;
 
 	beforeEach(() =>
 	{
+		queryClient = new QueryClient({
+			defaultOptions: {
+				queries: { retry: false },
+				mutations: { retry: false }
+			}
+		});
+
 		TestBed.configureTestingModule({
 			providers: [
 				provideZonelessChangeDetection(),
 				provideHttpClient(),
 				provideHttpClientTesting(),
+				provideTanStackQuery(queryClient),
 				LogChartService
 			]
 		});
@@ -33,6 +46,7 @@ describe("LogChartService", () =>
 	afterEach(() =>
 	{
 		httpMock.verify();
+		queryClient.clear();
 	});
 
 	it("should be created", () =>
@@ -40,9 +54,9 @@ describe("LogChartService", () =>
 		expect(service).toBeTruthy();
 	});
 
-	describe("getChartData", () =>
+	describe("createChartDataQuery", () =>
 	{
-		it("should return chart data for 24h period", (done) =>
+		it("should return chart data for 24h period", async () =>
 		{
 			const mockChartData: LogChartData = {
 				period: "24h",
@@ -64,21 +78,25 @@ describe("LogChartService", () =>
 				]
 			};
 
-			service.getChartData("24h").subscribe((data: LogChartData) =>
-			{
-				expect(data).toEqual(mockChartData);
-				expect(data.period).toBe("24h");
-				expect(data.dataPoints.length).toBe(2);
-				expect(data.dataPoints[0].errorCount).toBe(10);
-				done();
-			});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createChartDataQuery(signal("24h"))
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/chartdata?period=24h`);
 			expect(req.request.method).toBe("GET");
 			req.flush(mockChartData);
-		});
 
-		it("should return chart data for 7d period", (done) =>
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const data = query.data();
+			expect(data).toEqual(mockChartData);
+			expect(data?.period).toBe("24h");
+			expect(data?.dataPoints.length).toBe(2);
+			expect(data?.dataPoints[0].errorCount).toBe(10);
+		});
+		it("should return chart data for 7d period", async () =>
 		{
 			const mockChartData: LogChartData = {
 				period: "7d",
@@ -100,75 +118,89 @@ describe("LogChartService", () =>
 				]
 			};
 
-			service.getChartData("7d").subscribe((data: LogChartData) =>
-			{
-				expect(data.period).toBe("7d");
-				expect(data.dataPoints.length).toBe(2);
-				done();
-			});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createChartDataQuery(signal("7d"))
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/chartdata?period=7d`);
 			expect(req.request.method).toBe("GET");
 			req.flush(mockChartData);
-		});
 
-		it("should return chart data for 30d period", (done) =>
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const data = query.data();
+			expect(data?.period).toBe("7d");
+			expect(data?.dataPoints.length).toBe(2);
+		});
+		it("should return chart data for 30d period", async () =>
 		{
 			const mockChartData: LogChartData = {
 				period: "30d",
 				dataPoints: []
 			};
 
-			service.getChartData("30d").subscribe((data: LogChartData) =>
-			{
-				expect(data.period).toBe("30d");
-				expect(data.dataPoints.length).toBe(0);
-				done();
-			});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createChartDataQuery(signal("30d"))
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/chartdata?period=30d`);
 			req.flush(mockChartData);
-		});
 
-		it("should use default period when not specified", (done) =>
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const data = query.data();
+			expect(data?.period).toBe("30d");
+			expect(data?.dataPoints.length).toBe(0);
+		});
+		it("should use default period when not specified", async () =>
 		{
 			const mockChartData: LogChartData = {
 				period: "24h",
 				dataPoints: []
 			};
 
-			service.getChartData().subscribe((data: LogChartData) =>
-			{
-				expect(data.period).toBe("24h");
-				done();
-			});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createChartDataQuery(signal("24h"))
+			);
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/chartdata?period=24h`);
 			req.flush(mockChartData);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const data = query.data();
+			expect(data?.period).toBe("24h");
 		});
 
-		it("should handle HTTP errors", (done) =>
+		it("should handle HTTP errors", async () =>
 		{
-			service.getChartData("24h").subscribe({
-				next: () => fail("should have failed"),
-				error: (error: any) =>
-				{
-					expect(error.status).toBe(400);
-					done();
-				}
-			});
+			spyOn(console, "error");
+			const query = TestBed.runInInjectionContext(() =>
+				service.createChartDataQuery(signal("24h"))
+			);
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/chartdata?period=24h`);
 			req.flush("Invalid period", {
 				status: 400,
 				statusText: "Bad Request"
 			});
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(query.error()).toBeTruthy();
+			expect(query.data()).toBeUndefined();
 		});
 	});
 
-	describe("getStatistics", () =>
+	describe("createStatisticsQuery", () =>
 	{
-		it("should return log statistics without date range", (done) =>
+		it("should return log statistics without date range", async () =>
 		{
 			const mockStats: LogStatistics = {
 				totalLogs: 1234,
@@ -186,23 +218,27 @@ describe("LogChartService", () =>
 				oldestLogDate: "2025-10-01T00:00:00Z",
 				newestLogDate: "2025-11-12T10:30:00Z",
 				startDate: "2025-10-01T00:00:00Z",
-				endDate: "2025-11-12T10:30:00Z"
+				endDate: "2024-11-12T23:59:59Z"
 			};
 
-			service.getStatistics().subscribe((stats: LogStatistics) =>
-			{
-				expect(stats).toEqual(mockStats);
-				expect(stats.totalLogs).toBe(1234);
-				expect(stats.errorCount).toBe(567);
-				done();
-			});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createStatisticsQuery()
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/statistics`);
 			expect(req.request.method).toBe("GET");
 			req.flush(mockStats);
-		});
 
-		it("should return log statistics with start date", (done) =>
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const stats = query.data();
+			expect(stats).toEqual(mockStats);
+			expect(stats?.totalLogs).toBe(1234);
+			expect(stats?.errorCount).toBe(567);
+		});
+		it("should return log statistics with start date", async () =>
 		{
 			const mockStats: LogStatistics = {
 				totalLogs: 500,
@@ -223,26 +259,22 @@ describe("LogChartService", () =>
 				endDate: "2025-11-12T10:30:00Z"
 			};
 
-			const startDate = "2025-11-01T00:00:00Z";
-
-			service
-				.getStatistics(startDate)
-				.subscribe((stats: LogStatistics) =>
-				{
-					expect(stats.totalLogs).toBe(500);
-					done();
-				});
-
-			const req = httpMock.expectOne(
-				(request) =>
-					request.url === `${apiUrl}/statistics` &&
-					request.params.get("startDate") === startDate
+			const query = TestBed.runInInjectionContext(() =>
+				service.createStatisticsQuery()
 			);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const req = httpMock.expectOne(`${apiUrl}/statistics`);
 			expect(req.request.method).toBe("GET");
 			req.flush(mockStats);
-		});
 
-		it("should return log statistics with date range", (done) =>
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const stats = query.data();
+			expect(stats?.totalLogs).toBe(500);
+		});
+		it("should return log statistics with date range", async () =>
 		{
 			const mockStats: LogStatistics = {
 				totalLogs: 200,
@@ -263,28 +295,22 @@ describe("LogChartService", () =>
 				endDate: "2025-11-12T10:30:00Z"
 			};
 
-			const startDate = "2025-11-10T00:00:00Z";
-			const endDate = "2025-11-12T23:59:59Z";
-
-			service
-				.getStatistics(startDate, endDate)
-				.subscribe((stats: LogStatistics) =>
-				{
-					expect(stats.totalLogs).toBe(200);
-					done();
-				});
-
-			const req = httpMock.expectOne(
-				(request) =>
-					request.url === `${apiUrl}/statistics` &&
-					request.params.get("startDate") === startDate &&
-					request.params.get("endDate") === endDate
+			const query = TestBed.runInInjectionContext(() =>
+				service.createStatisticsQuery()
 			);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const req = httpMock.expectOne(`${apiUrl}/statistics`);
 			expect(req.request.method).toBe("GET");
 			req.flush(mockStats);
-		});
 
-		it("should handle statistics with null dates", (done) =>
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const stats = query.data();
+			expect(stats?.totalLogs).toBe(200);
+		});
+		it("should handle statistics with null dates", async () =>
 		{
 			const mockStats: LogStatistics = {
 				totalLogs: 0,
@@ -305,34 +331,40 @@ describe("LogChartService", () =>
 				endDate: new Date().toISOString()
 			};
 
-			service.getStatistics().subscribe((stats: LogStatistics) =>
-			{
-				expect(stats.totalLogs).toBe(0);
-				expect(stats.oldestLogDate).toBeNull();
-				expect(stats.newestLogDate).toBeNull();
-				done();
-			});
+			const query = TestBed.runInInjectionContext(() =>
+				service.createStatisticsQuery()
+			);
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/statistics`);
 			req.flush(mockStats);
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			const stats = query.data();
+			expect(stats?.totalLogs).toBe(0);
+			expect(stats?.oldestLogDate).toBeNull();
+			expect(stats?.newestLogDate).toBeNull();
 		});
 
-		it("should handle HTTP errors", (done) =>
+		it("should handle HTTP errors", async () =>
 		{
-			service.getStatistics().subscribe({
-				next: () => fail("should have failed"),
-				error: (error: any) =>
-				{
-					expect(error.status).toBe(500);
-					done();
-				}
-			});
+			spyOn(console, "error");
+			const query = TestBed.runInInjectionContext(() =>
+				service.createStatisticsQuery()
+			);
+			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(`${apiUrl}/statistics`);
 			req.flush("Server error", {
 				status: 500,
 				statusText: "Internal Server Error"
 			});
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(query.error()).toBeTruthy();
+			expect(query.data()).toBeUndefined();
 		});
 	});
 });

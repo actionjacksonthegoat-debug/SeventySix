@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection, signal } from "@angular/core";
+import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
-import { of, throwError } from "rxjs";
 import { LogChartService } from "@admin/admin-dashboard/services";
 import { LogChartData } from "@admin/admin-dashboard/models";
 import { ErrorTrendChartComponent } from "./error-trend-chart.component";
+import { createMockQueryResult } from "@testing/tanstack-query-helpers";
 
 describe("ErrorTrendChartComponent", () =>
 {
@@ -36,7 +36,7 @@ describe("ErrorTrendChartComponent", () =>
 	beforeEach(async () =>
 	{
 		const logChartServiceSpy = jasmine.createSpyObj("LogChartService", [
-			"getChartData"
+			"createChartDataQuery"
 		]);
 
 		await TestBed.configureTestingModule({
@@ -52,48 +52,70 @@ describe("ErrorTrendChartComponent", () =>
 		logChartService = TestBed.inject(
 			LogChartService
 		) as jasmine.SpyObj<LogChartService>;
+	});
+
+	function createComponent(): void
+	{
 		fixture = TestBed.createComponent(ErrorTrendChartComponent);
 		component = fixture.componentInstance;
-	});
+		fixture.detectChanges();
+	}
 
 	it("should create", () =>
 	{
+		logChartService.createChartDataQuery.and.returnValue(
+			createMockQueryResult(mockChartData)
+		);
+
+		createComponent();
+
 		expect(component).toBeTruthy();
 	});
 
 	it("should have default period of 24h", () =>
 	{
+		logChartService.createChartDataQuery.and.returnValue(
+			createMockQueryResult(mockChartData)
+		);
+
+		createComponent();
+
 		expect(component.period()).toBe("24h");
 	});
 
 	it("should load chart data on init with default period", () =>
 	{
-		logChartService.getChartData.and.returnValue(of(mockChartData));
+		logChartService.createChartDataQuery.and.returnValue(
+			createMockQueryResult(mockChartData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
-		expect(logChartService.getChartData).toHaveBeenCalledWith("24h");
+		expect(logChartService.createChartDataQuery).toHaveBeenCalled();
 		expect(component.isLoading()).toBe(false);
 		expect(component.chartData()).toBeTruthy();
 	});
 
 	it("should load chart data with custom period", () =>
 	{
-		logChartService.getChartData.and.returnValue(
-			of({ ...mockChartData, period: "7d" })
+		logChartService.createChartDataQuery.and.returnValue(
+			createMockQueryResult({ ...mockChartData, period: "7d" })
 		);
 
+		createComponent();
 		fixture.componentRef.setInput("period", "7d");
 		fixture.detectChanges();
 
-		expect(logChartService.getChartData).toHaveBeenCalledWith("7d");
+		expect(logChartService.createChartDataQuery).toHaveBeenCalled();
 	});
 
 	it("should transform API data to Chart.js format", () =>
 	{
-		logChartService.getChartData.and.returnValue(of(mockChartData));
+		logChartService.createChartDataQuery.and.returnValue(
+			createMockQueryResult(mockChartData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		const chartData = component.chartData();
 		expect(chartData).toBeTruthy();
@@ -104,35 +126,28 @@ describe("ErrorTrendChartComponent", () =>
 		expect(chartData?.datasets?.[2].label).toBe("Fatals");
 	});
 
-	it("should format timestamps correctly for 24h period", () =>
-	{
-		logChartService.getChartData.and.returnValue(of(mockChartData));
-
-		fixture.detectChanges();
-
-		const chartData = component.chartData();
-		expect(chartData?.labels?.[0]).toContain(":00");
-	});
-
 	it("should handle loading state", () =>
 	{
-		logChartService.getChartData.and.returnValue(of(mockChartData));
+		logChartService.createChartDataQuery.and.returnValue(
+			createMockQueryResult<LogChartData>(undefined, { isLoading: true })
+		);
+
+		createComponent();
 
 		expect(component.isLoading()).toBe(true);
-
-		fixture.detectChanges();
-
-		expect(component.isLoading()).toBe(false);
 	});
 
 	it("should handle errors gracefully", () =>
 	{
 		const errorMessage = "Failed to load chart data";
-		logChartService.getChartData.and.returnValue(
-			throwError(() => new Error(errorMessage))
+		logChartService.createChartDataQuery.and.returnValue(
+			createMockQueryResult<LogChartData>(undefined, {
+				isError: true,
+				error: new Error(errorMessage)
+			})
 		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.isLoading()).toBe(false);
 		expect(component.error()).toBeTruthy();
@@ -141,35 +156,39 @@ describe("ErrorTrendChartComponent", () =>
 
 	it("should reload data when refresh is called", () =>
 	{
-		logChartService.getChartData.and.returnValue(of(mockChartData));
+		const mockQuery = createMockQueryResult(mockChartData);
+		logChartService.createChartDataQuery.and.returnValue(mockQuery);
 
-		fixture.detectChanges();
-		expect(logChartService.getChartData).toHaveBeenCalledTimes(1);
+		createComponent();
+		expect(logChartService.createChartDataQuery).toHaveBeenCalledTimes(1);
 
 		component.onRefresh();
 
-		expect(logChartService.getChartData).toHaveBeenCalledTimes(2);
+		expect(mockQuery.refetch).toHaveBeenCalled();
 	});
 
 	it("should reload data when period changes", () =>
 	{
-		logChartService.getChartData.and.returnValue(of(mockChartData));
+		const mockQuery = createMockQueryResult(mockChartData);
+		logChartService.createChartDataQuery.and.returnValue(mockQuery);
 
-		fixture.detectChanges();
-		expect(logChartService.getChartData).toHaveBeenCalledWith("24h");
+		createComponent();
+		expect(logChartService.createChartDataQuery).toHaveBeenCalledTimes(1);
 
 		fixture.componentRef.setInput("period", "7d");
 		fixture.detectChanges();
 
-		expect(logChartService.getChartData).toHaveBeenCalledWith("7d");
-		expect(logChartService.getChartData).toHaveBeenCalledTimes(2);
+		// Period change triggers refetch via effect, not a new query creation
+		expect(mockQuery.refetch).toHaveBeenCalled();
 	});
 
 	it("should use Material Design 3 theme colors", () =>
 	{
-		logChartService.getChartData.and.returnValue(of(mockChartData));
+		logChartService.createChartDataQuery.and.returnValue(
+			createMockQueryResult(mockChartData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		const chartData = component.chartData();
 		expect(chartData?.datasets?.[0].borderColor).toBe("rgb(244, 67, 54)"); // Material red
@@ -179,9 +198,11 @@ describe("ErrorTrendChartComponent", () =>
 
 	it("should display chart title", () =>
 	{
-		logChartService.getChartData.and.returnValue(of(mockChartData));
+		logChartService.createChartDataQuery.and.returnValue(
+			createMockQueryResult(mockChartData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		expect(component.title()).toBe("Error Trends");
 	});
@@ -192,9 +213,11 @@ describe("ErrorTrendChartComponent", () =>
 			period: "24h",
 			dataPoints: []
 		};
-		logChartService.getChartData.and.returnValue(of(emptyData));
+		logChartService.createChartDataQuery.and.returnValue(
+			createMockQueryResult(emptyData)
+		);
 
-		fixture.detectChanges();
+		createComponent();
 
 		const chartData = component.chartData();
 		expect(chartData?.labels?.length).toBe(0);

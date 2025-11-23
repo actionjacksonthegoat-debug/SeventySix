@@ -1,53 +1,69 @@
 import { Injectable, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { environment } from "@environments/environment";
 import {
-	ThirdPartyApiRequest,
-	ThirdPartyApiStatistics
-} from "@admin/admin-dashboard/models";
+	injectQuery,
+	CreateQueryResult
+} from "@tanstack/angular-query-experimental";
+import { lastValueFrom } from "rxjs";
+import { ThirdPartyApiRepository } from "../repositories";
+import { ThirdPartyApiRequest } from "../models";
+import { getQueryConfig } from "@core/utils/query-config";
 
 /**
  * Service for managing third-party API request data
+ * Uses TanStack Query for caching and state management
  */
 @Injectable({
 	providedIn: "root"
 })
 export class ThirdPartyApiService
 {
-	private readonly http: HttpClient = inject(HttpClient);
-	private readonly apiUrl: string = `${environment.apiUrl}/thirdpartyrequests`;
+	private readonly repository: ThirdPartyApiRepository = inject(
+		ThirdPartyApiRepository
+	);
+
+	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
+		getQueryConfig("thirdPartyApi");
 
 	/**
-	 * Gets all third-party API requests
-	 * @returns Observable of ThirdPartyApiRequest array
+	 * Creates a query for all third-party API requests
+	 * Automatically cached with TanStack Query
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getAll(): Observable<ThirdPartyApiRequest[]>
+	createAllQuery(): CreateQueryResult<ThirdPartyApiRequest[], Error>
 	{
-		return this.http.get<ThirdPartyApiRequest[]>(this.apiUrl);
+		return injectQuery(() => ({
+			queryKey: ["thirdPartyApi", "all"],
+			queryFn: () => lastValueFrom(this.repository.getAll()),
+			...this.queryConfig
+		}));
 	}
 
 	/**
-	 * Gets third-party API requests filtered by API name
+	 * Creates a query for third-party API requests filtered by API name
 	 * @param apiName - The API name to filter by
-	 * @returns Observable of ThirdPartyApiRequest array
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getByApiName(apiName: string): Observable<ThirdPartyApiRequest[]>
+	createByApiNameQuery(
+		apiName: string
+	): CreateQueryResult<ThirdPartyApiRequest[], Error>
 	{
-		const encodedName: string = encodeURIComponent(apiName);
-		return this.http.get<ThirdPartyApiRequest[]>(
-			`${this.apiUrl}/${encodedName}`
-		);
+		return injectQuery(() => ({
+			queryKey: ["thirdPartyApi", "byName", apiName],
+			queryFn: () => lastValueFrom(this.repository.getByApiName(apiName)),
+			...this.queryConfig
+		}));
 	}
 
 	/**
-	 * Gets third-party API statistics
-	 * @returns Observable of ThirdPartyApiStatistics
+	 * Creates a query for third-party API statistics
+	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getStatistics(): Observable<ThirdPartyApiStatistics>
+	createStatisticsQuery(): CreateQueryResult<any, Error>
 	{
-		return this.http.get<ThirdPartyApiStatistics>(
-			`${this.apiUrl}/statistics`
-		);
+		return injectQuery(() => ({
+			queryKey: ["thirdPartyApi", "statistics"],
+			queryFn: () => lastValueFrom(this.repository.getStatistics()),
+			...this.queryConfig
+		}));
 	}
 }

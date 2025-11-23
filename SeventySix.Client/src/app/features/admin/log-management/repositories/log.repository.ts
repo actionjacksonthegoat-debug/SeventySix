@@ -12,9 +12,7 @@ import {
 	LogResponse,
 	LogFilterRequest,
 	LogCountResponse,
-	PagedLogResponse,
-	LogResponseSchema,
-	PagedLogResponseSchema
+	PagedLogResponse
 } from "@admin/log-management/models";
 
 /**
@@ -48,11 +46,7 @@ export class LogRepository extends HttpRepository<LogResponse>
 				})
 			: undefined;
 
-		return this.apiService.get<PagedLogResponse>(
-			this.endpoint,
-			params,
-			PagedLogResponseSchema
-		);
+		return this.apiService.get<PagedLogResponse>(this.endpoint, params);
 	}
 
 	/**
@@ -62,11 +56,7 @@ export class LogRepository extends HttpRepository<LogResponse>
 	 */
 	override getById(id: number): Observable<LogResponse>
 	{
-		return this.apiService.get<LogResponse>(
-			`${this.endpoint}/${id}`,
-			undefined,
-			LogResponseSchema
-		);
+		return this.apiService.get<LogResponse>(`${this.endpoint}/${id}`);
 	}
 
 	/**

@@ -5,13 +5,13 @@ import { ErrorTrendChartComponent } from "./components/error-trend-chart/error-t
 import { StatisticsCardsComponent } from "./components/statistics-cards/statistics-cards.component";
 import { ApiStatisticsTableComponent } from "./components/api-statistics-table/api-statistics-table.component";
 import { HealthStatusPanelComponent } from "./components/health-status-panel/health-status-panel.component";
-import { of } from "rxjs";
 import { AdminDashboardComponent } from "./admin-dashboard.component";
 import {
 	HealthApiService,
 	LogChartService,
 	ThirdPartyApiService
 } from "./services";
+import { createMockQueryResult } from "@testing/tanstack-query-helpers";
 
 describe("AdminDashboardComponent", () =>
 {
@@ -24,34 +24,46 @@ describe("AdminDashboardComponent", () =>
 	beforeEach(async () =>
 	{
 		const logChartServiceSpy = jasmine.createSpyObj("LogChartService", [
-			"getChartData",
-			"getStatistics"
+			"createChartDataQuery",
+			"createStatisticsQuery"
 		]);
 		const thirdPartyApiServiceSpy = jasmine.createSpyObj(
 			"ThirdPartyApiService",
-			["getAll", "getStatistics"]
+			["createAllQuery", "createStatisticsQuery"]
 		);
 		const healthApiServiceSpy = jasmine.createSpyObj("HealthApiService", [
-			"getHealth"
+			"createHealthQuery"
 		]);
 
-		// Set up default return values
-		logChartServiceSpy.getChartData.and.returnValue(of({ dataPoints: [] }));
-		logChartServiceSpy.getStatistics.and.returnValue(
-			of({
+		// Set up TanStack Query mocks for child components
+		logChartServiceSpy.createChartDataQuery.and.returnValue(
+			createMockQueryResult({ period: "24h", dataPoints: [] })
+		);
+		logChartServiceSpy.createStatisticsQuery.and.returnValue(
+			createMockQueryResult({
 				totalLogs: 1000,
 				errorCount: 50,
 				warningCount: 100,
 				infoCount: 500,
 				debugCount: 300,
+				fatalCount: 0,
 				criticalCount: 50,
+				averageResponseTimeMs: 0,
+				totalRequests: 0,
+				failedRequests: 0,
+				topErrorSources: {},
+				requestsByPath: {},
 				oldestLogDate: "2024-01-01",
-				newestLogDate: "2024-11-12"
+				newestLogDate: "2024-11-12",
+				startDate: "2024-01-01",
+				endDate: "2024-11-12"
 			})
 		);
-		thirdPartyApiServiceSpy.getAll.and.returnValue(of([]));
-		healthApiServiceSpy.getHealth.and.returnValue(
-			of({
+		thirdPartyApiServiceSpy.createAllQuery.and.returnValue(
+			createMockQueryResult([])
+		);
+		healthApiServiceSpy.createHealthQuery.and.returnValue(
+			createMockQueryResult({
 				status: "Healthy",
 				checkedAt: new Date().toISOString(),
 				database: {
@@ -105,19 +117,25 @@ describe("AdminDashboardComponent", () =>
 		healthApiService = TestBed.inject(
 			HealthApiService
 		) as jasmine.SpyObj<HealthApiService>;
+	});
 
+	function createComponent(): void
+	{
 		fixture = TestBed.createComponent(AdminDashboardComponent);
 		component = fixture.componentInstance;
-	});
+		fixture.detectChanges();
+	}
 
 	it("should create", () =>
 	{
+		createComponent();
+
 		expect(component).toBeTruthy();
 	});
 
 	it("should render dashboard title", () =>
 	{
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		expect(compiled.querySelector("h1")?.textContent).toContain(
@@ -127,7 +145,7 @@ describe("AdminDashboardComponent", () =>
 
 	it("should contain error trend chart component", () =>
 	{
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		expect(compiled.querySelector("app-error-trend-chart")).toBeTruthy();
@@ -135,7 +153,7 @@ describe("AdminDashboardComponent", () =>
 
 	it("should contain statistics cards component", () =>
 	{
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		expect(compiled.querySelector("app-statistics-cards")).toBeTruthy();
@@ -143,7 +161,7 @@ describe("AdminDashboardComponent", () =>
 
 	it("should contain API statistics table component", () =>
 	{
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		expect(compiled.querySelector("app-api-statistics-table")).toBeTruthy();
@@ -151,7 +169,7 @@ describe("AdminDashboardComponent", () =>
 
 	it("should contain health status panel component", () =>
 	{
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		expect(compiled.querySelector("app-health-status-panel")).toBeTruthy();
@@ -159,7 +177,7 @@ describe("AdminDashboardComponent", () =>
 
 	it("should have responsive grid layout", () =>
 	{
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		const dashboardGrid = compiled.querySelector(".dashboard-grid");
@@ -168,7 +186,7 @@ describe("AdminDashboardComponent", () =>
 
 	it("should display all dashboard sections", () =>
 	{
-		fixture.detectChanges();
+		createComponent();
 
 		const compiled = fixture.nativeElement as HTMLElement;
 

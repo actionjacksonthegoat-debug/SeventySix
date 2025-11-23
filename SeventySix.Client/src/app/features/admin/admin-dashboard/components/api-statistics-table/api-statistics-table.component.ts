@@ -1,10 +1,11 @@
 import {
 	Component,
-	OnInit,
 	signal,
 	WritableSignal,
 	ChangeDetectionStrategy,
-	inject
+	inject,
+	computed,
+	Signal
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
@@ -42,26 +43,48 @@ interface ThirdPartyApiRequestDisplay extends ThirdPartyApiRequest
 	styleUrl: "./api-statistics-table.component.scss",
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ApiStatisticsTableComponent implements OnInit
+export class ApiStatisticsTableComponent
 {
-	/**
-	 * Loading state signal
-	 */
-	readonly isLoading: WritableSignal<boolean> = signal<boolean>(true);
+	private readonly thirdPartyApiService: ThirdPartyApiService =
+		inject(ThirdPartyApiService);
+	private readonly dateService: DateService = inject(DateService);
 
 	/**
-	 * Error state signal
+	 * TanStack Query for API data
 	 */
-	readonly error: WritableSignal<string | null> = signal<string | null>(null);
+	readonly apiDataQuery = this.thirdPartyApiService.createAllQuery();
 
 	/**
-	 * Table data source
+	 * Loading state from query
 	 */
-	readonly dataSource: WritableSignal<
-		MatTableDataSource<ThirdPartyApiRequestDisplay>
-	> = signal<MatTableDataSource<ThirdPartyApiRequestDisplay>>(
-		new MatTableDataSource<ThirdPartyApiRequestDisplay>([])
+	readonly isLoading: Signal<boolean> = computed(() =>
+		this.apiDataQuery.isLoading()
 	);
+
+	/**
+	 * Error state from query
+	 */
+	readonly error: Signal<string | null> = computed(() =>
+	{
+		const err = this.apiDataQuery.error();
+		return err ? err.message || "Failed to load API data" : null;
+	});
+
+	/**
+	 * Data source with computed display properties
+	 */
+	readonly dataSource: Signal<
+		MatTableDataSource<ThirdPartyApiRequestDisplay>
+	> = computed(() =>
+	{
+		const data = this.apiDataQuery.data() ?? [];
+		const displayData: ThirdPartyApiRequestDisplay[] = data.map((item) => ({
+			...item,
+			formattedLastCalled: this.formatLastCalled(item.lastCalledAt),
+			status: this.getStatus(item.lastCalledAt)
+		}));
+		return new MatTableDataSource<ThirdPartyApiRequestDisplay>(displayData);
+	});
 
 	/**
 	 * Displayed columns
@@ -72,55 +95,12 @@ export class ApiStatisticsTableComponent implements OnInit
 		"lastCalledAt"
 	]);
 
-	private readonly thirdPartyApiService: ThirdPartyApiService =
-		inject(ThirdPartyApiService);
-	private readonly dateService: DateService = inject(DateService);
-
-	ngOnInit(): void
-	{
-		this.loadApiData();
-	}
-
-	/**
-	 * Load API data from service
-	 */
-	private loadApiData(): void
-	{
-		this.isLoading.set(true);
-		this.error.set(null);
-
-		this.thirdPartyApiService.getAll().subscribe({
-			next: (data) =>
-			{
-				// Pre-compute display properties to avoid change detection issues
-				const displayData: ThirdPartyApiRequestDisplay[] = data.map(
-					(item) => ({
-						...item,
-						formattedLastCalled: this.formatLastCalled(
-							item.lastCalledAt
-						),
-						status: this.getStatus(item.lastCalledAt)
-					})
-				);
-
-				this.dataSource().data = displayData;
-				this.isLoading.set(false);
-			},
-			error: (err) =>
-			{
-				this.error.set(err.message || "Failed to load API data");
-				this.dataSource().data = [];
-				this.isLoading.set(false);
-			}
-		});
-	}
-
 	/**
 	 * Handle refresh button click
 	 */
 	onRefresh(): void
 	{
-		this.loadApiData();
+		this.apiDataQuery.refetch();
 	}
 
 	/**

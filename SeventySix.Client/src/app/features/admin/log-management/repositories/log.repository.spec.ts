@@ -83,8 +83,7 @@ describe("LogRepository", () =>
 				expect(result).toEqual(mockPagedResponse);
 				expect(mockApiService.get).toHaveBeenCalledWith(
 					"logs",
-					undefined,
-					jasmine.anything()
+					undefined
 				);
 				done();
 			});
@@ -104,8 +103,7 @@ describe("LogRepository", () =>
 				expect(result).toEqual(mockPagedResponse);
 				expect(mockApiService.get).toHaveBeenCalledWith(
 					"logs",
-					jasmine.any(HttpParams),
-					jasmine.anything()
+					jasmine.any(HttpParams)
 				);
 				done();
 			});
@@ -121,11 +119,7 @@ describe("LogRepository", () =>
 			repository.getById(1).subscribe((result) =>
 			{
 				expect(result).toEqual(mockLog);
-				expect(mockApiService.get).toHaveBeenCalledWith(
-					"logs/1",
-					undefined,
-					jasmine.anything()
-				);
+				expect(mockApiService.get).toHaveBeenCalledWith("logs/1");
 				done();
 			});
 		});

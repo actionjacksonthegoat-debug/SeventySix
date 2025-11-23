@@ -1,14 +1,11 @@
 import {
 	Component,
-	OnInit,
-	OnDestroy,
 	input,
 	computed,
-	signal,
 	effect,
+	inject,
 	InputSignal,
-	Signal,
-	WritableSignal
+	Signal
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
@@ -18,7 +15,6 @@ import { ChartConfiguration } from "chart.js";
 import { ChartComponent } from "@shared/components/chart/chart.component";
 import { LogChartService } from "@admin/admin-dashboard/services";
 import { LogChartData } from "@admin/admin-dashboard/models";
-import { Subscription } from "rxjs";
 
 /**
  * Component for displaying error trend charts with time-series data
@@ -35,12 +31,10 @@ import { Subscription } from "rxjs";
 	templateUrl: "./error-trend-chart.component.html",
 	styleUrl: "./error-trend-chart.component.scss"
 })
-export class ErrorTrendChartComponent implements OnInit, OnDestroy
+export class ErrorTrendChartComponent
 {
-	/**
-	 * Subscription for HTTP requests
-	 */
-	private subscription?: Subscription;
+	private readonly logChartService = inject(LogChartService);
+
 	/**
 	 * Time period for chart data (24h, 7d, 30d)
 	 */
@@ -67,20 +61,34 @@ export class ErrorTrendChartComponent implements OnInit, OnDestroy
 	});
 
 	/**
-	 * Loading state signal
+	 * Chart data query - initialized in field
 	 */
-	readonly isLoading: WritableSignal<boolean> = signal<boolean>(true);
+	readonly chartDataQuery = this.logChartService.createChartDataQuery(
+		this.period
+	);
 
 	/**
-	 * Error state signal
+	 * Loading state from query
 	 */
-	readonly error: WritableSignal<string | null> = signal<string | null>(null);
+	readonly isLoading: Signal<boolean> = computed(() =>
+		this.chartDataQuery.isLoading()
+	);
 
 	/**
-	 * Raw chart data from API
+	 * Error state from query
 	 */
-	private readonly rawData: WritableSignal<LogChartData | null> =
-		signal<LogChartData | null>(null);
+	readonly error: Signal<string | null> = computed(() =>
+	{
+		const err = this.chartDataQuery.error();
+		return err ? err.message || "Failed to load chart data" : null;
+	});
+
+	/**
+	 * Raw chart data from query
+	 */
+	private readonly rawData: Signal<LogChartData | null> = computed(
+		() => this.chartDataQuery.data() ?? null
+	);
 
 	/**
 	 * Transformed chart data for Chart.js
@@ -151,52 +159,17 @@ export class ErrorTrendChartComponent implements OnInit, OnDestroy
 		}
 	};
 
-	constructor(private readonly logChartService: LogChartService)
+	constructor()
 	{
-		// Reload data when period changes
+		// Trigger refetch when period changes
 		effect(() =>
 		{
-			const currentPeriod: "24h" | "7d" | "30d" = this.period();
-			this.loadChartData(currentPeriod);
+			const query = this.chartDataQuery;
+			if (query)
+			{
+				query.refetch();
+			}
 		});
-	}
-
-	ngOnInit(): void
-	{
-		// Initial load is handled by effect
-	}
-
-	ngOnDestroy(): void
-	{
-		this.subscription?.unsubscribe();
-	}
-
-	/**
-	 * Load chart data from API
-	 */
-	private loadChartData(period: string): void
-	{
-		// Unsubscribe from previous request if still pending
-		this.subscription?.unsubscribe();
-
-		this.isLoading.set(true);
-		this.error.set(null);
-
-		this.subscription = this.logChartService
-			.getChartData(period)
-			.subscribe({
-				next: (data) =>
-				{
-					this.rawData.set(data);
-					this.isLoading.set(false);
-				},
-				error: (err) =>
-				{
-					this.error.set(err.message || "Failed to load chart data");
-					this.rawData.set(null);
-					this.isLoading.set(false);
-				}
-			});
 	}
 
 	/**
@@ -239,6 +212,6 @@ export class ErrorTrendChartComponent implements OnInit, OnDestroy
 	 */
 	onRefresh(): void
 	{
-		this.loadChartData(this.period());
+		this.chartDataQuery.refetch();
 	}
 }
