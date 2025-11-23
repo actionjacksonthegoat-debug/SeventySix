@@ -3,6 +3,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { LoggerService } from "./logger.service";
 import { NotificationService } from "./notification.service";
 import { ClientErrorLoggerService } from "./client-error-logger.service";
+import { DateService } from "./date.service";
 import {
 	HttpError,
 	ValidationError,
@@ -35,6 +36,7 @@ export class ErrorHandlerService implements ErrorHandler
 	private readonly clientLogger: ClientErrorLoggerService = inject(
 		ClientErrorLoggerService
 	);
+	private readonly dateService: DateService = inject(DateService);
 
 	// Guard flag to prevent re-entry during error handling
 	private isHandlingError: boolean = false;
@@ -333,7 +335,7 @@ export class ErrorHandlerService implements ErrorHandler
 	): string
 	{
 		const copyObject: Record<string, unknown> = {
-			timestamp: new Date().toISOString(),
+			timestamp: this.dateService.now(),
 			message: details.message,
 			details: details.details,
 			error: {

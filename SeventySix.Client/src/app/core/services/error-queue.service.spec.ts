@@ -9,6 +9,7 @@ import { LogLevel } from "./logger.service";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { environment } from "@environments/environment";
 import { ClientLogRequest } from "@core/models/client-log-request.model";
+import { DateService } from "./date.service";
 
 /**
  * Zoneless tests for ErrorQueueService
@@ -18,6 +19,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 {
 	let service: ErrorQueueService;
 	let httpMock: HttpTestingController;
+	let dateService: DateService;
 	const BATCH_INTERVAL = environment.logging.batchInterval; // Use environment config
 	const API_BATCH_URL = `${environment.apiUrl}/logs/client/batch`; // Dynamic URL from environment
 	let originalTimeout: number;
@@ -51,6 +53,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 		service = TestBed.inject(ErrorQueueService);
 		httpMock = TestBed.inject(HttpTestingController);
+		dateService = TestBed.inject(DateService);
 
 		// The service will use environment.logging.batchInterval (250ms in tests)
 		// This provides fast tests while preventing race conditions
@@ -82,7 +85,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			const error: ClientLogRequest = {
 				logLevel: "Error",
 				message: "Test error",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			};
 
 			service.enqueue(error);
@@ -96,7 +99,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			const error: ClientLogRequest = {
 				logLevel: "Error",
 				message: "Test error",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			};
 
 			service.enqueue(error);
@@ -116,7 +119,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 				{
 					logLevel: "Warning",
 					message: "Persisted error",
-					clientTimestamp: new Date().toISOString()
+					clientTimestamp: dateService.now()
 				}
 			];
 			localStorage.setItem("error-queue", JSON.stringify(existingErrors));
@@ -158,7 +161,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 				service.enqueue({
 					logLevel: "Error",
 					message: `Error ${i}`,
-					clientTimestamp: new Date().toISOString()
+					clientTimestamp: dateService.now()
 				});
 			}
 
@@ -175,7 +178,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			const error: ClientLogRequest = {
 				logLevel: "Error",
 				message: "Batch test",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			};
 
 			service.enqueue(error);
@@ -215,7 +218,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 				service.enqueue({
 					logLevel: "Error",
 					message: `Error ${i}`,
-					clientTimestamp: new Date().toISOString()
+					clientTimestamp: dateService.now()
 				});
 			}
 
@@ -242,13 +245,13 @@ describe("ErrorQueueService (Zoneless)", () =>
 			service.enqueue({
 				logLevel: "Error",
 				message: "Test 1",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			});
 
 			service.enqueue({
 				logLevel: "Error",
 				message: "Test 2",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			});
 
 			setTimeout(() =>
@@ -329,7 +332,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			service.enqueue({
 				logLevel: "Error",
 				message: "Failure test 0",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			});
 
 			let failureCount = 0;
@@ -351,7 +354,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 							service.enqueue({
 								logLevel: "Error",
 								message: `Failure test ${failureCount}`,
-								clientTimestamp: new Date().toISOString()
+								clientTimestamp: dateService.now()
 							});
 							failNextBatch();
 						}
@@ -391,7 +394,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			service.enqueue({
 				logLevel: "Error",
 				message: "Failure 0",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			});
 
 			// Fail 3 batches to open circuit
@@ -414,7 +417,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 							service.enqueue({
 								logLevel: "Error",
 								message: `Failure ${failureCount}`,
-								clientTimestamp: new Date().toISOString()
+								clientTimestamp: dateService.now()
 							});
 							failBatches();
 						}
@@ -428,7 +431,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 								service.enqueue({
 									logLevel: "Error",
 									message: "After circuit open",
-									clientTimestamp: new Date().toISOString()
+									clientTimestamp: dateService.now()
 								});
 
 								// Circuit is open, flush any remaining requests and verify
@@ -453,7 +456,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			service.enqueue({
 				logLevel: "Error",
 				message: "Reset test",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			});
 
 			setTimeout(() =>
@@ -465,7 +468,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 				service.enqueue({
 					logLevel: "Error",
 					message: "After reset",
-					clientTimestamp: new Date().toISOString()
+					clientTimestamp: dateService.now()
 				});
 
 				setTimeout(() =>
@@ -486,7 +489,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			service.enqueue({
 				logLevel: "Error",
 				message: "Persist test",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			});
 
 			const stored = localStorage.getItem("error-queue");
@@ -503,7 +506,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			service.enqueue({
 				logLevel: "Error",
 				message: "Storage error test",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			});
 
 			// StorageService handles errors internally, returns false on failure
@@ -608,7 +611,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			const error: ClientLogRequest = {
 				logLevel: "Error",
 				message: "Duplicate error",
-				clientTimestamp: new Date().toISOString(),
+				clientTimestamp: dateService.now(),
 				exceptionMessage: "Same exception",
 				statusCode: 500,
 				requestUrl: "/api/test"
@@ -628,13 +631,13 @@ describe("ErrorQueueService (Zoneless)", () =>
 			const error1: ClientLogRequest = {
 				logLevel: "Error",
 				message: "Error 1",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			};
 
 			const error2: ClientLogRequest = {
 				logLevel: "Error",
 				message: "Error 2",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			};
 
 			service.enqueue(error1);
@@ -650,7 +653,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			const error: ClientLogRequest = {
 				logLevel: "Error",
 				message: "Test error",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			};
 
 			// Enqueue first time
@@ -671,7 +674,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			const differentError: ClientLogRequest = {
 				logLevel: "Error",
 				message: "Different error",
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			};
 			service.enqueue(differentError);
 
@@ -686,14 +689,14 @@ describe("ErrorQueueService (Zoneless)", () =>
 				logLevel: "Error",
 				message: "Server error",
 				statusCode: 500,
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			};
 
 			const error404: ClientLogRequest = {
 				logLevel: "Error",
 				message: "Server error",
 				statusCode: 404,
-				clientTimestamp: new Date().toISOString()
+				clientTimestamp: dateService.now()
 			};
 
 			service.enqueue(error500);

@@ -4,6 +4,7 @@ import { Router } from "@angular/router";
 import { catchError, of } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { ClientLogRequest } from "@core/models/client-log-request.model";
+import { DateService } from "./date.service";
 
 /**
  * Log levels for structured logging.
@@ -41,6 +42,7 @@ export class LoggerService
 {
 	private readonly http: HttpClient = inject(HttpClient);
 	private readonly router: Router = inject(Router);
+	private readonly dateService: DateService = inject(DateService);
 	private readonly isDevMode: boolean = isDevMode();
 	private readonly logEndpoint: string = `${environment.apiUrl}/logs/client`;
 
@@ -103,7 +105,7 @@ export class LoggerService
 	): void
 	{
 		const logEntry: LogEntry = {
-			timestamp: new Date().toISOString(),
+			timestamp: this.dateService.now(),
 			level,
 			message,
 			context,

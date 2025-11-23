@@ -2,6 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ErrorQueueService } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
+import { DateService } from "./date.service";
 import { HttpError } from "@core/models/errors";
 import { ClientLogRequest } from "@core/models/client-log-request.model";
 
@@ -27,6 +28,7 @@ export interface ErrorDetails
 export class ClientErrorLoggerService
 {
 	private readonly errorQueue: ErrorQueueService = inject(ErrorQueueService);
+	private readonly dateService: DateService = inject(DateService);
 
 	/**
 	 * Logs a generic error.
@@ -47,7 +49,7 @@ export class ClientErrorLoggerService
 			const logRequest: ClientLogRequest = {
 				logLevel: LogLevel[logLevel],
 				message: formattedMessage,
-				clientTimestamp: new Date().toISOString(),
+				clientTimestamp: this.dateService.now(),
 				exceptionMessage: error?.message,
 				stackTrace: error instanceof Error ? error.stack : undefined,
 				sourceContext: this.extractSourceContext(error),
@@ -84,7 +86,7 @@ export class ClientErrorLoggerService
 			const logRequest: ClientLogRequest = {
 				logLevel: LogLevel[LogLevel.Error],
 				message: formattedMessage,
-				clientTimestamp: new Date().toISOString(),
+				clientTimestamp: this.dateService.now(),
 				exceptionMessage: errorDetails.httpError.message,
 				stackTrace:
 					errorDetails.httpError.error instanceof Error
@@ -123,7 +125,7 @@ export class ClientErrorLoggerService
 			const logRequest: ClientLogRequest = {
 				logLevel: LogLevel[LogLevel.Error],
 				message: formattedMessage,
-				clientTimestamp: new Date().toISOString(),
+				clientTimestamp: this.dateService.now(),
 				exceptionMessage: errorDetails.error?.message,
 				stackTrace: errorDetails.error?.stack,
 				sourceContext: this.extractSourceContext(errorDetails.error),
@@ -157,7 +159,7 @@ export class ClientErrorLoggerService
 			const logRequest: ClientLogRequest = {
 				logLevel: LogLevel[LogLevel.Warning],
 				message: formattedMessage,
-				clientTimestamp: new Date().toISOString(),
+				clientTimestamp: this.dateService.now(),
 				requestUrl: this.getCurrentUrl(),
 				userAgent: navigator.userAgent,
 				additionalContext: context
@@ -187,7 +189,7 @@ export class ClientErrorLoggerService
 			const logRequest: ClientLogRequest = {
 				logLevel: LogLevel[LogLevel.Info],
 				message: formattedMessage,
-				clientTimestamp: new Date().toISOString(),
+				clientTimestamp: this.dateService.now(),
 				requestUrl: this.getCurrentUrl(),
 				userAgent: navigator.userAgent,
 				additionalContext: context

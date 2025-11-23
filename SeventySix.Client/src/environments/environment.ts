@@ -70,6 +70,13 @@ interface Environment
 			fpsWarningThreshold: number;
 		};
 	};
+	dateTime: {
+		defaultDisplayFormat: string;
+		inputFormat: string;
+		timeFormat: string;
+		relativeTimeThreshold: number;
+		timezoneMode: "utc" | "local";
+	};
 	testing: {
 		runIntegrationTests: boolean;
 	};
@@ -147,6 +154,13 @@ export const environment: Environment = {
 			enableMonitoring: true,
 			fpsWarningThreshold: 30
 		}
+	},
+	dateTime: {
+		defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",
+		inputFormat: "yyyy-MM-dd",
+		timeFormat: "HH:mm:ss",
+		relativeTimeThreshold: 86400000, // 24 hours in milliseconds
+		timezoneMode: "local"
 	},
 	testing: {
 		runIntegrationTests: false

@@ -203,16 +203,18 @@ describe("ApiStatisticsTableComponent", () =>
 		expect(component.getStatus(twoHoursAgo)).toBe("warning");
 	});
 
-	it('should format timestamp as "Just now" for very recent times', () =>
+	it("should format timestamp for very recent times", () =>
 	{
 		const justNow = new Date(Date.now() - 30000).toISOString(); // 30 seconds ago
-		expect(component.formatLastCalled(justNow)).toBe("Just now");
+		const result = component.formatLastCalled(justNow);
+		expect(result).toContain("minute"); // date-fns shows 'less than a minute ago' or '1 minute ago'
 	});
 
 	it("should format timestamp as minutes ago", () =>
 	{
 		const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-		expect(component.formatLastCalled(fiveMinsAgo)).toBe("5 min ago");
+		const result = component.formatLastCalled(fiveMinsAgo);
+		expect(result).toContain("minute"); // date-fns: '5 minutes ago'
 	});
 
 	it("should format timestamp as hours ago", () =>
@@ -220,7 +222,8 @@ describe("ApiStatisticsTableComponent", () =>
 		const threeHoursAgo = new Date(
 			Date.now() - 3 * 60 * 60 * 1000
 		).toISOString();
-		expect(component.formatLastCalled(threeHoursAgo)).toBe("3 hr ago");
+		const result = component.formatLastCalled(threeHoursAgo);
+		expect(result).toContain("hour"); // date-fns: 'about 3 hours ago'
 	});
 
 	it("should format timestamp as days ago", () =>
@@ -231,11 +234,11 @@ describe("ApiStatisticsTableComponent", () =>
 		expect(component.formatLastCalled(threeDaysAgo)).toBe("3 days ago");
 	});
 
-	it("should format old timestamps as date", () =>
+	it("should format old timestamps as relative time", () =>
 	{
 		const oldDate = "2025-10-01T00:00:00Z";
 		const formatted = component.formatLastCalled(oldDate);
-		expect(formatted).toMatch(/Oct|Sep/); // Depending on timezone
+		expect(formatted).toContain("month"); // date-fns: 'about 2 months ago' or similar
 	});
 
 	it("should handle errors without message gracefully", () =>

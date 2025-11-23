@@ -8,6 +8,7 @@ import { LogSummaryComponent } from "@admin/log-management/components/log-summar
 import { LogTableComponent } from "@admin/log-management/components/log-table/log-table.component";
 import { LogDetailDialogComponent } from "@admin/log-management/components/log-detail-dialog/log-detail-dialog.component";
 import { LogResponse, LogFilterRequest } from "@admin/log-management/models";
+import { DateService } from "@core/services/date.service";
 
 @Component({
 	selector: "app-log-management",
@@ -27,6 +28,7 @@ export class LogManagementComponent
 	private readonly logService: LogManagementService =
 		inject(LogManagementService);
 	private readonly dialog: MatDialog = inject(MatDialog);
+	private readonly dateService: DateService = inject(DateService);
 
 	// TanStack Query handles loading, error, and data states
 	readonly logsQuery: ReturnType<LogManagementService["getLogs"]> =
@@ -67,8 +69,8 @@ export class LogManagementComponent
 			requestsByPath: {},
 			oldestLogDate: null,
 			newestLogDate: null,
-			startDate: new Date().toISOString(),
-			endDate: new Date().toISOString()
+			startDate: this.dateService.now(),
+			endDate: this.dateService.now()
 		};
 	});
 

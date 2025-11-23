@@ -23,7 +23,8 @@ import { routes } from "./app.routes";
 import {
 	errorInterceptor,
 	loggingInterceptor,
-	authInterceptor
+	authInterceptor,
+	dateParserInterceptor
 } from "@core/interceptors";
 import { ErrorHandlerService, ThemeService } from "@core/services";
 import { environment } from "@environments/environment";
@@ -62,6 +63,7 @@ export const appConfig: ApplicationConfig = {
 		),
 		provideHttpClient(
 			withInterceptors([
+				dateParserInterceptor,
 				authInterceptor,
 				loggingInterceptor,
 				errorInterceptor

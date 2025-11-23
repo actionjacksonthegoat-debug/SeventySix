@@ -13,7 +13,7 @@ export interface ClientLogRequest
 	requestMethod?: string;
 	statusCode?: number;
 	userAgent?: string;
-	clientTimestamp?: string;
+	clientTimestamp: string;
 	additionalContext?: Record<string, unknown>;
 	correlationId?: string;
 }

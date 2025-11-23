@@ -3,7 +3,8 @@ import {
 	OnInit,
 	signal,
 	WritableSignal,
-	ChangeDetectionStrategy
+	ChangeDetectionStrategy,
+	inject
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
@@ -13,6 +14,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatButtonModule } from "@angular/material/button";
 import { ThirdPartyApiService } from "@admin/admin-dashboard/services";
 import { ThirdPartyApiRequest } from "@admin/admin-dashboard/models";
+import { DateService } from "@core/services/date.service";
 
 /**
  * Extended interface with computed display properties
@@ -70,8 +72,9 @@ export class ApiStatisticsTableComponent implements OnInit
 		"lastCalledAt"
 	]);
 
-	constructor(private readonly thirdPartyApiService: ThirdPartyApiService)
-	{}
+	private readonly thirdPartyApiService: ThirdPartyApiService =
+		inject(ThirdPartyApiService);
+	private readonly dateService: DateService = inject(DateService);
 
 	ngOnInit(): void
 	{
@@ -127,13 +130,10 @@ export class ApiStatisticsTableComponent implements OnInit
 	{
 		if (!timestamp) return "error";
 
-		const date: Date = new Date(timestamp);
-		const now: Date = new Date();
-		const diffMs: number = now.getTime() - date.getTime();
-		const diffHours: number = Math.floor(diffMs / 3600000);
+		const hoursSince: number = this.dateService.hoursSince(timestamp);
 
-		if (diffHours < 1) return "ok";
-		if (diffHours < 24) return "warning";
+		if (hoursSince < 1) return "ok";
+		if (hoursSince < 24) return "warning";
 		return "error";
 	}
 
@@ -144,22 +144,6 @@ export class ApiStatisticsTableComponent implements OnInit
 	{
 		if (!timestamp) return "Never";
 
-		const date: Date = new Date(timestamp);
-		const now: Date = new Date();
-		const diffMs: number = now.getTime() - date.getTime();
-		const diffMins: number = Math.floor(diffMs / 60000);
-		const diffHours: number = Math.floor(diffMs / 3600000);
-		const diffDays: number = Math.floor(diffMs / 86400000);
-
-		if (diffMins < 1) return "Just now";
-		if (diffMins < 60) return `${diffMins} min ago`;
-		if (diffHours < 24) return `${diffHours} hr ago`;
-		if (diffDays < 7)
-			return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-
-		return date.toLocaleDateString("en-US", {
-			month: "short",
-			day: "numeric"
-		});
+		return this.dateService.formatRelative(timestamp);
 	}
 }
