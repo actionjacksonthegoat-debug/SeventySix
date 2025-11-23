@@ -30,6 +30,15 @@
 .table-wrapper {
 	overflow-x: auto;
 	@include vars.custom-scrollbar();
+
+	.table-viewport {
+		height: 600px;
+		overflow-y: auto;
+
+		@media #{vars.$breakpoint-md} {
+			height: 400px;
+		}
+	}
 }
 
 .log-table {

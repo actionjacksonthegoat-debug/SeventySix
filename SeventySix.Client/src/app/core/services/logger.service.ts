@@ -3,6 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { catchError, of } from "rxjs";
 import { environment } from "../../../environments/environment";
+import { ClientLogRequest } from "@core/models/client-log-request.model";
 
 /**
  * Log levels for structured logging.
@@ -26,25 +27,6 @@ export interface LogEntry
 	message: string;
 	context?: Record<string, unknown>;
 	error?: Error;
-}
-
-/**
- * Client log request matching backend ClientLogRequest DTO
- */
-interface ClientLogRequest
-{
-	logLevel: string;
-	message: string;
-	exceptionMessage?: string;
-	stackTrace?: string;
-	sourceContext?: string;
-	requestUrl?: string;
-	requestMethod?: string;
-	statusCode?: number;
-	userAgent?: string;
-	clientTimestamp?: string;
-	additionalContext?: Record<string, unknown>;
-	correlationId?: string;
 }
 
 /**

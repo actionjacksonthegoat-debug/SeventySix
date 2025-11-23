@@ -26,11 +26,6 @@ interface Environment
 				refetchOnWindowFocus: boolean;
 				refetchOnReconnect: boolean;
 			};
-			weather: {
-				staleTime: number;
-				gcTime: number;
-				retry: number;
-			};
 			users: {
 				staleTime: number;
 				gcTime: number;
@@ -62,6 +57,17 @@ interface Environment
 		health: {
 			autoRefreshEnabled: boolean;
 			refreshIntervalSeconds: number;
+		};
+	};
+	ui: {
+		tables: {
+			defaultPageSize: number;
+			pageSizeOptions: number[];
+			virtualScrollItemSize: number;
+		};
+		performance: {
+			enableMonitoring: boolean;
+			fpsWarningThreshold: number;
 		};
 	};
 	testing: {
@@ -98,11 +104,6 @@ export const environment: Environment = {
 				refetchOnReconnect: true
 			},
 			// Resource-specific overrides
-			weather: {
-				staleTime: 300000, // 5min
-				gcTime: 600000, // 10min
-				retry: 2
-			},
 			users: {
 				staleTime: 60000, // 1min
 				gcTime: 300000, // 5min
@@ -134,6 +135,17 @@ export const environment: Environment = {
 		health: {
 			autoRefreshEnabled: true,
 			refreshIntervalSeconds: 60 // 1 minute
+		}
+	},
+	ui: {
+		tables: {
+			defaultPageSize: 50,
+			pageSizeOptions: [25, 50, 100],
+			virtualScrollItemSize: 48
+		},
+		performance: {
+			enableMonitoring: true,
+			fpsWarningThreshold: 30
 		}
 	},
 	testing: {

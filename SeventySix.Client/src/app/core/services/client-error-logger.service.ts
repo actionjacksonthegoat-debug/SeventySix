@@ -1,8 +1,9 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpErrorResponse } from "@angular/common/http";
-import { ErrorQueueService, QueuedError } from "./error-queue.service";
+import { ErrorQueueService } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
 import { HttpError } from "@core/models/errors";
+import { ClientLogRequest } from "@core/models/client-log-request.model";
 
 /**
  * Error details for logging.
@@ -43,10 +44,10 @@ export class ClientErrorLoggerService
 			// Prepend [Client] to the message
 			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
 
-			const queuedError: QueuedError = {
-				logLevel,
+			const logRequest: ClientLogRequest = {
+				logLevel: LogLevel[logLevel],
 				message: formattedMessage,
-				timestamp: new Date(),
+				clientTimestamp: new Date().toISOString(),
 				exceptionMessage: error?.message,
 				stackTrace: error instanceof Error ? error.stack : undefined,
 				sourceContext: this.extractSourceContext(error),
@@ -57,7 +58,7 @@ export class ClientErrorLoggerService
 				additionalContext: errorDetails.context
 			};
 
-			this.errorQueue.enqueue(queuedError);
+			this.errorQueue.enqueue(logRequest);
 		}
 		catch (err)
 		{
@@ -80,10 +81,10 @@ export class ClientErrorLoggerService
 			// Prepend [Client] to the message
 			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
 
-			const queuedError: QueuedError = {
-				logLevel: LogLevel.Error,
+			const logRequest: ClientLogRequest = {
+				logLevel: LogLevel[LogLevel.Error],
 				message: formattedMessage,
-				timestamp: new Date(),
+				clientTimestamp: new Date().toISOString(),
 				exceptionMessage: errorDetails.httpError.message,
 				stackTrace:
 					errorDetails.httpError.error instanceof Error
@@ -99,7 +100,7 @@ export class ClientErrorLoggerService
 				additionalContext: errorDetails.context
 			};
 
-			this.errorQueue.enqueue(queuedError);
+			this.errorQueue.enqueue(logRequest);
 		}
 		catch (err)
 		{
@@ -119,10 +120,10 @@ export class ClientErrorLoggerService
 			// Prepend [Client] to the message
 			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
 
-			const queuedError: QueuedError = {
-				logLevel: LogLevel.Error,
+			const logRequest: ClientLogRequest = {
+				logLevel: LogLevel[LogLevel.Error],
 				message: formattedMessage,
-				timestamp: new Date(),
+				clientTimestamp: new Date().toISOString(),
 				exceptionMessage: errorDetails.error?.message,
 				stackTrace: errorDetails.error?.stack,
 				sourceContext: this.extractSourceContext(errorDetails.error),
@@ -131,7 +132,7 @@ export class ClientErrorLoggerService
 				additionalContext: errorDetails.context
 			};
 
-			this.errorQueue.enqueue(queuedError);
+			this.errorQueue.enqueue(logRequest);
 		}
 		catch (err)
 		{
@@ -153,16 +154,16 @@ export class ClientErrorLoggerService
 			// Prepend [Client] to the message
 			const formattedMessage: string = `[Client] - ${message}`;
 
-			const queuedError: QueuedError = {
-				logLevel: LogLevel.Warning,
+			const logRequest: ClientLogRequest = {
+				logLevel: LogLevel[LogLevel.Warning],
 				message: formattedMessage,
-				timestamp: new Date(),
+				clientTimestamp: new Date().toISOString(),
 				requestUrl: this.getCurrentUrl(),
 				userAgent: navigator.userAgent,
 				additionalContext: context
 			};
 
-			this.errorQueue.enqueue(queuedError);
+			this.errorQueue.enqueue(logRequest);
 		}
 		catch (err)
 		{
@@ -183,16 +184,16 @@ export class ClientErrorLoggerService
 			// Prepend [Client] to the message
 			const formattedMessage: string = `[Client] - ${message}`;
 
-			const queuedError: QueuedError = {
-				logLevel: LogLevel.Info,
+			const logRequest: ClientLogRequest = {
+				logLevel: LogLevel[LogLevel.Info],
 				message: formattedMessage,
-				timestamp: new Date(),
+				clientTimestamp: new Date().toISOString(),
 				requestUrl: this.getCurrentUrl(),
 				userAgent: navigator.userAgent,
 				additionalContext: context
 			};
 
-			this.errorQueue.enqueue(queuedError);
+			this.errorQueue.enqueue(logRequest);
 		}
 		catch (err)
 		{

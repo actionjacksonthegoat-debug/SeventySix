@@ -12,6 +12,7 @@ import {
 	BreakpointState
 } from "@angular/cdk/layout";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { StorageService } from "./storage.service";
 
 /**
  * Service for managing application layout state
@@ -24,13 +25,14 @@ export class LayoutService
 {
 	private platformId: Object = inject(PLATFORM_ID);
 	private breakpointObserver: BreakpointObserver = inject(BreakpointObserver);
+	private readonly storage: StorageService = inject(StorageService);
 	private readonly SIDEBAR_STATE_KEY: string = "seventysix-sidebar-expanded";
 
 	/**
 	 * Sidebar expanded state
 	 */
 	sidebarExpanded: ReturnType<typeof signal<boolean>> = signal<boolean>(
-		this.getInitialSidebarState()
+		this.getSavedSidebarState()
 	);
 
 	/**
@@ -185,14 +187,9 @@ export class LayoutService
 	/**
 	 * Get initial sidebar state from localStorage
 	 */
-	private getInitialSidebarState(): boolean
+	private getSavedSidebarState(): boolean
 	{
-		if (!isPlatformBrowser(this.platformId))
-		{
-			return true; // Default to expanded for SSR
-		}
-
-		const saved: string | null = localStorage.getItem(
+		const saved: string | null = this.storage.getItem<string>(
 			this.SIDEBAR_STATE_KEY
 		);
 		return saved === "true" || saved === null; // Default to true if not set
@@ -203,11 +200,6 @@ export class LayoutService
 	 */
 	private saveSidebarState(expanded: boolean): void
 	{
-		if (!isPlatformBrowser(this.platformId))
-		{
-			return;
-		}
-
-		localStorage.setItem(this.SIDEBAR_STATE_KEY, expanded.toString());
+		this.storage.setItem(this.SIDEBAR_STATE_KEY, expanded.toString());
 	}
 }

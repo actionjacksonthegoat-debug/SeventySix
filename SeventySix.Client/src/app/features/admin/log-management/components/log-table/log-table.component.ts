@@ -22,11 +22,13 @@ import {
 } from "@angular/material/paginator";
 import { MatSortModule, MatSort } from "@angular/material/sort";
 import { SelectionModel } from "@angular/cdk/collections";
+import { ScrollingModule } from "@angular/cdk/scrolling";
 import {
 	LogResponse,
 	LogLevel,
 	parseLogLevel
 } from "@admin/log-management/models";
+import { environment } from "@environments/environment";
 
 /**
  * Log table component with sorting, pagination, and selection
@@ -41,7 +43,8 @@ import {
 		MatButtonModule,
 		MatTooltipModule,
 		MatPaginatorModule,
-		MatSortModule
+		MatSortModule,
+		ScrollingModule
 	],
 	templateUrl: "./log-table.component.html",
 	styleUrl: "./log-table.component.scss",
@@ -52,7 +55,9 @@ export class LogTableComponent implements AfterViewInit
 	// Inputs
 	readonly logs: InputSignal<LogResponse[]> = input<LogResponse[]>([]);
 	readonly totalCount: InputSignal<number> = input<number>(0);
-	readonly pageSize: InputSignal<number> = input<number>(50);
+	readonly pageSize: InputSignal<number> = input<number>(
+		environment.ui.tables.defaultPageSize
+	);
 	readonly pageIndex: InputSignal<number> = input<number>(0);
 
 	// Outputs
@@ -77,7 +82,9 @@ export class LogTableComponent implements AfterViewInit
 		new MatTableDataSource<LogResponse>([]);
 	readonly selection: SelectionModel<LogResponse> =
 		new SelectionModel<LogResponse>(true, []);
-	readonly pageSizeOptions: number[] = [25, 50, 100];
+	readonly pageSizeOptions: number[] = environment.ui.tables.pageSizeOptions;
+	readonly virtualScrollItemSize: number =
+		environment.ui.tables.virtualScrollItemSize;
 
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 	@ViewChild(MatSort) sort!: MatSort;

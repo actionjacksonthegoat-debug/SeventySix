@@ -401,22 +401,9 @@ describe("UserList", () =>
 			expect(idColumn?.visible).toBe(false);
 		});
 
-		it("should handle localStorage errors when loading preferences", () =>
-		{
-			spyOn(localStorage, "getItem").and.returnValue("invalid-json");
-
-			component!.loadColumnPreferences();
-
-			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to load column preferences",
-				jasmine.any(Error)
-			);
-		});
-
 		it("should use default visibility when no localStorage data exists", () =>
 		{
 			spyOn(localStorage, "getItem").and.returnValue(null);
-
 			const initialColumns = [...component!.columnDefs()];
 			component!.loadColumnPreferences();
 
@@ -942,6 +929,43 @@ describe("UserList", () =>
 
 			expect(component!.deactivateSelected).toBeDefined();
 			expect(typeof component!.deactivateSelected).toBe("function");
+		});
+	});
+
+	describe("Virtual Scrolling", () =>
+	{
+		it("should import ScrollingModule", () =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>([])
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+
+			const compiled = fixture.nativeElement;
+			const viewport = compiled.querySelector(
+				"cdk-virtual-scroll-viewport"
+			);
+
+			expect(viewport).toBeTruthy();
+		});
+
+		it("should set item size for virtual scroll", () =>
+		{
+			mockUserService.getAllUsers.and.returnValue(
+				createMockQueryResult<User[], Error>([])
+			);
+			fixture = TestBed.createComponent(UserList);
+			component = fixture.componentInstance;
+			fixture.detectChanges();
+
+			const compiled: HTMLElement = fixture.nativeElement;
+			const viewport: HTMLElement | null = compiled.querySelector(
+				"cdk-virtual-scroll-viewport"
+			);
+
+			expect(component.virtualScrollItemSize).toBe(48);
 		});
 	});
 });

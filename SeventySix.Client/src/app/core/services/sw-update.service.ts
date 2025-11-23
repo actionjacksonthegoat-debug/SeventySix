@@ -1,6 +1,7 @@
 import { Injectable, inject, ApplicationRef } from "@angular/core";
 import { SwUpdate, VersionReadyEvent } from "@angular/service-worker";
 import { filter, first, concat, interval } from "rxjs";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { LoggerService } from "./logger.service";
 
 /**
@@ -22,21 +23,28 @@ export class SwUpdateService
 	private readonly appRef: ApplicationRef = inject(ApplicationRef);
 	private readonly logger: LoggerService = inject(LoggerService);
 
+	constructor()
+	{
+		// Set up subscriptions in constructor (injection context) if SW is enabled
+		if (this.swUpdate.isEnabled)
+		{
+			this.checkForUpdates();
+			this.handleVersionUpdates();
+			this.handleUnrecoverableState();
+		}
+	}
+
 	/**
 	 * Initializes the Service Worker update service.
 	 * Should be called in the application's initialization logic.
+	 * Note: Actual subscriptions are set up in constructor.
 	 */
 	init(): void
 	{
 		if (!this.swUpdate.isEnabled)
 		{
 			this.logger.info("Service Worker is not enabled");
-			return;
 		}
-
-		this.checkForUpdates();
-		this.handleVersionUpdates();
-		this.handleUnrecoverableState();
 	}
 
 	/**
@@ -57,25 +65,27 @@ export class SwUpdateService
 			boolean | number
 		> = concat(appIsStable$, everySixHours$);
 
-		everySixHoursOnceAppIsStable$.subscribe(async () =>
-		{
-			try
+		everySixHoursOnceAppIsStable$
+			.pipe(takeUntilDestroyed())
+			.subscribe(async () =>
 			{
-				const updateFound: boolean =
-					await this.swUpdate.checkForUpdate();
-				if (updateFound)
+				try
 				{
-					this.logger.info("New version available");
+					const updateFound: boolean =
+						await this.swUpdate.checkForUpdate();
+					if (updateFound)
+					{
+						this.logger.info("New version available");
+					}
 				}
-			}
-			catch (err)
-			{
-				this.logger.error(
-					"Failed to check for updates",
-					err instanceof Error ? err : undefined
-				);
-			}
-		});
+				catch (err)
+				{
+					this.logger.error(
+						"Failed to check for updates",
+						err instanceof Error ? err : undefined
+					);
+				}
+			});
 	}
 
 	/**
@@ -89,7 +99,8 @@ export class SwUpdateService
 				filter(
 					(evt): evt is VersionReadyEvent =>
 						evt.type === "VERSION_READY"
-				)
+				),
+				takeUntilDestroyed()
 			)
 			.subscribe((evt) =>
 			{
@@ -112,18 +123,24 @@ export class SwUpdateService
 	 */
 	private handleUnrecoverableState(): void
 	{
-		this.swUpdate.unrecoverable.subscribe((event) =>
-		{
-			this.logger.error("Service Worker unrecoverable state", undefined, {
-				reason: event.reason
-			});
+		this.swUpdate.unrecoverable
+			.pipe(takeUntilDestroyed())
+			.subscribe((event) =>
+			{
+				this.logger.error(
+					"Service Worker unrecoverable state",
+					undefined,
+					{
+						reason: event.reason
+					}
+				);
 
-			// Reload the page
-			this.notifyUnrecoverableState(
-				"An error occurred that requires reloading the page."
-			);
-			window.location.reload();
-		});
+				// Reload the page
+				this.notifyUnrecoverableState(
+					"An error occurred that requires reloading the page."
+				);
+				window.location.reload();
+			});
 	}
 
 	/**

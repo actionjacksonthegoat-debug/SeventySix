@@ -3,17 +3,6 @@ import { environment } from "@environments/environment";
 
 describe("getQueryConfig", () =>
 {
-	it("should return weather-specific config", () =>
-	{
-		const config = getQueryConfig("weather");
-
-		expect(config.staleTime).toBe(
-			environment.cache.query.weather.staleTime
-		);
-		expect(config.gcTime).toBe(environment.cache.query.weather.gcTime);
-		expect(config.retry).toBe(environment.cache.query.weather.retry);
-	});
-
 	it("should return users-specific config", () =>
 	{
 		const config = getQueryConfig("users");
@@ -65,7 +54,7 @@ describe("getQueryConfig", () =>
 
 	it("should return complete QueryOptions object", () =>
 	{
-		const config = getQueryConfig("weather");
+		const config = getQueryConfig("users");
 
 		expect(config.staleTime).toBeDefined();
 		expect(config.gcTime).toBeDefined();

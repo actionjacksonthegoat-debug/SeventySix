@@ -7,6 +7,7 @@ import {
 	NavigationError
 } from "@angular/router";
 import { filter } from "rxjs/operators";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 /**
  * Loading indicator service.
@@ -26,7 +27,7 @@ export class LoadingService
 
 	constructor(private router: Router)
 	{
-		// Subscribe to router events
+		// Subscribe to router events with automatic cleanup
 		this.router.events
 			.pipe(
 				filter(
@@ -35,7 +36,8 @@ export class LoadingService
 						event instanceof NavigationEnd ||
 						event instanceof NavigationCancel ||
 						event instanceof NavigationError
-				)
+				),
+				takeUntilDestroyed()
 			)
 			.subscribe((event) =>
 			{

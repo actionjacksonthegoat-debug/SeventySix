@@ -28,10 +28,12 @@ import { MatExpansionModule } from "@angular/material/expansion";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { SelectionModel } from "@angular/cdk/collections";
+import { ScrollingModule } from "@angular/cdk/scrolling";
 import { FormsModule } from "@angular/forms";
 import { DatePipe } from "@angular/common";
 import { UserService } from "@admin/users/services";
 import { LoggerService } from "@core/services";
+import { StorageService } from "@core/services/storage.service";
 import { User } from "@admin/users/models";
 import {
 	ChartComponent,
@@ -39,6 +41,7 @@ import {
 	type ConfirmDialogData
 } from "@shared/components";
 import { ChartConfiguration } from "chart.js";
+import { environment } from "@environments/environment";
 
 /**
  * User list component.
@@ -63,6 +66,7 @@ import { ChartConfiguration } from "chart.js";
 		MatMenuModule,
 		MatCheckboxModule,
 		MatExpansionModule,
+		ScrollingModule,
 		FormsModule,
 		DatePipe,
 		ChartComponent
@@ -75,6 +79,7 @@ export class UserList implements AfterViewInit
 {
 	private readonly userService: UserService = inject(UserService);
 	private readonly logger: LoggerService = inject(LoggerService);
+	private readonly storage: StorageService = inject(StorageService);
 	private readonly router: Router = inject(Router);
 	private readonly dialog: MatDialog = inject(MatDialog);
 	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
@@ -155,6 +160,8 @@ export class UserList implements AfterViewInit
 		true,
 		[]
 	);
+	readonly virtualScrollItemSize: number =
+		environment.ui.tables.virtualScrollItemSize;
 
 	// Bulk operation mutations
 	readonly bulkActivateMutation: ReturnType<
@@ -330,26 +337,16 @@ export class UserList implements AfterViewInit
 	 */
 	loadColumnPreferences(): void
 	{
-		const saved: string | null = localStorage.getItem("userListColumns");
-		if (saved)
+		const prefs: Record<string, boolean> | null =
+			this.storage.getItem<Record<string, boolean>>("userListColumns");
+		if (prefs)
 		{
-			try
-			{
-				const prefs: Record<string, boolean> = JSON.parse(saved);
-				this.columnDefs.update((cols) =>
-					cols.map((col) => ({
-						...col,
-						visible: prefs[col.key] ?? col.visible
-					}))
-				);
-			}
-			catch (err)
-			{
-				this.logger.error(
-					"Failed to load column preferences",
-					err as Error
-				);
-			}
+			this.columnDefs.update((cols) =>
+				cols.map((col) => ({
+					...col,
+					visible: prefs[col.key] ?? col.visible
+				}))
+			);
 		}
 	}
 
@@ -366,7 +363,7 @@ export class UserList implements AfterViewInit
 			},
 			{} as Record<string, boolean>
 		);
-		localStorage.setItem("userListColumns", JSON.stringify(prefs));
+		this.storage.setItem("userListColumns", prefs);
 	}
 
 	/**

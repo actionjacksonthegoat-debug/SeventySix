@@ -1,44 +1,10 @@
-import { Injectable, OnDestroy, inject } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, of, interval, Subscription } from "rxjs";
-import { LogLevel } from "./logger.service";
+import { catchError, of, interval } from "rxjs";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { StorageService } from "./storage.service";
+import { ClientLogRequest } from "@core/models/client-log-request.model";
 import { environment } from "@environments/environment";
-
-/**
- * Client error log entry for queue.
- */
-export interface QueuedError
-{
-	logLevel: LogLevel;
-	message: string;
-	timestamp: Date | string;
-	exceptionMessage?: string;
-	stackTrace?: string;
-	sourceContext?: string;
-	requestUrl?: string;
-	requestMethod?: string;
-	statusCode?: number;
-	userAgent?: string;
-	additionalContext?: Record<string, unknown>;
-}
-
-/**
- * Client log request DTO matching server expectations.
- */
-interface ClientLogRequest
-{
-	logLevel: string;
-	message: string;
-	exceptionMessage?: string;
-	stackTrace?: string;
-	sourceContext?: string;
-	requestUrl?: string;
-	requestMethod?: string;
-	statusCode?: number;
-	userAgent?: string;
-	clientTimestamp?: string;
-	additionalContext?: Record<string, unknown>;
-}
 
 /**
  * Circuit breaker states.
@@ -53,14 +19,15 @@ type CircuitState = "closed" | "open";
 @Injectable({
 	providedIn: "root"
 })
-export class ErrorQueueService implements OnDestroy
+export class ErrorQueueService
 {
+	private readonly storage: StorageService = inject(StorageService);
 	private readonly http: HttpClient = inject(HttpClient);
 	private readonly logEndpoint: string = `${environment.apiUrl}/logs/client/batch`;
 	private readonly localStorageKey: string = "error-queue";
 
 	// Queue management
-	private queue: QueuedError[] = [];
+	private queue: ClientLogRequest[] = [];
 	private readonly batchSize: number = environment.logging.batchSize;
 	private readonly batchInterval: number = environment.logging.batchInterval;
 
@@ -77,13 +44,17 @@ export class ErrorQueueService implements OnDestroy
 	private recentErrors: Map<string, number> = new Map<string, number>(); // signature -> timestamp
 	private readonly dedupeWindowMs: number = 5000; // 5 seconds
 
-	// RxJS subscription for zoneless compatibility
-	private batchProcessorSubscription?: Subscription;
-
 	constructor()
 	{
 		this.loadQueueFromStorage();
-		this.startBatchProcessor();
+
+		// Start batch processing interval with automatic cleanup
+		interval(this.batchInterval)
+			.pipe(takeUntilDestroyed())
+			.subscribe(() =>
+			{
+				this.processBatch();
+			});
 	}
 
 	/**
@@ -91,7 +62,7 @@ export class ErrorQueueService implements OnDestroy
 	 * Always logs to console for successfully enqueued errors (1:1 with DB).
 	 * Never drops errors - relies on deduplication and circuit breaker for protection.
 	 */
-	enqueue(error: QueuedError): void
+	enqueue(error: ClientLogRequest): void
 	{
 		// Check for duplicates
 		if (this.isDuplicate(error))
@@ -111,30 +82,6 @@ export class ErrorQueueService implements OnDestroy
 	}
 
 	/**
-	 * Cleanup on service destroy.
-	 */
-	ngOnDestroy(): void
-	{
-		if (this.batchProcessorSubscription)
-		{
-			this.batchProcessorSubscription.unsubscribe();
-		}
-	}
-
-	/**
-	 * Starts the batch processing interval using RxJS for zoneless compatibility.
-	 */
-	private startBatchProcessor(): void
-	{
-		this.batchProcessorSubscription = interval(
-			this.batchInterval
-		).subscribe(() =>
-		{
-			this.processBatch();
-		});
-	}
-
-	/**
 	 * Processes a batch of errors.
 	 */
 	private processBatch(): void
@@ -151,30 +98,12 @@ export class ErrorQueueService implements OnDestroy
 			return;
 		}
 
-		// Get batch
-		const batch: QueuedError[] = this.queue.slice(0, this.batchSize);
-
-		// Convert to server format
-		const payload: ClientLogRequest[] = batch.map((error) => ({
-			logLevel: LogLevel[error.logLevel],
-			message: error.message,
-			exceptionMessage: error.exceptionMessage,
-			stackTrace: error.stackTrace,
-			sourceContext: error.sourceContext,
-			requestUrl: error.requestUrl,
-			requestMethod: error.requestMethod,
-			statusCode: error.statusCode,
-			userAgent: error.userAgent ?? navigator.userAgent,
-			clientTimestamp:
-				typeof error.timestamp === "string"
-					? error.timestamp
-					: error.timestamp.toISOString(),
-			additionalContext: error.additionalContext
-		}));
+		// Get batch (already in server format)
+		const batch: ClientLogRequest[] = this.queue.slice(0, this.batchSize);
 
 		// Send to server
 		this.http
-			.post(this.logEndpoint, payload, { observe: "response" })
+			.post(this.logEndpoint, batch, { observe: "response" })
 			.pipe(
 				catchError((err) =>
 				{
@@ -259,22 +188,15 @@ export class ErrorQueueService implements OnDestroy
 	 */
 	private loadQueueFromStorage(): void
 	{
-		try
+		const stored: ClientLogRequest[] | null = this.storage.getItem<
+			ClientLogRequest[]
+		>(this.localStorageKey);
+		if (stored)
 		{
-			const stored: string | null = localStorage.getItem(
-				this.localStorageKey
-			);
-			if (stored)
-			{
-				this.queue = JSON.parse(stored);
-			}
+			this.queue = stored;
 		}
-		catch (error)
+		else
 		{
-			console.error(
-				"Failed to load error queue from localStorage:",
-				error
-			);
 			this.queue = [];
 		}
 	}
@@ -284,23 +206,13 @@ export class ErrorQueueService implements OnDestroy
 	 */
 	private saveQueueToStorage(): void
 	{
-		try
-		{
-			localStorage.setItem(
-				this.localStorageKey,
-				JSON.stringify(this.queue)
-			);
-		}
-		catch (error)
-		{
-			console.error("Failed to save error queue to localStorage:", error);
-		}
+		this.storage.setItem(this.localStorageKey, this.queue);
 	}
 
 	/**
 	 * Generates a unique signature for an error for deduplication.
 	 */
-	private generateErrorSignature(error: QueuedError): string
+	private generateErrorSignature(error: ClientLogRequest): string
 	{
 		const parts: string[] = [
 			error.message,
@@ -317,7 +229,7 @@ export class ErrorQueueService implements OnDestroy
 	/**
 	 * Checks if an error is a duplicate within the deduplication window.
 	 */
-	private isDuplicate(error: QueuedError): boolean
+	private isDuplicate(error: ClientLogRequest): boolean
 	{
 		const signature: string = this.generateErrorSignature(error);
 		const now: number = Date.now();

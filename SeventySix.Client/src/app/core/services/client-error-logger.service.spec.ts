@@ -2,8 +2,9 @@ import { TestBed } from "@angular/core/testing";
 import { HttpErrorResponse } from "@angular/common/http";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ClientErrorLoggerService } from "./client-error-logger.service";
-import { ErrorQueueService, QueuedError } from "./error-queue.service";
+import { ErrorQueueService } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
+import { ClientLogRequest } from "@core/models/client-log-request.model";
 
 describe("ClientErrorLoggerService", () =>
 {
@@ -49,8 +50,8 @@ describe("ClientErrorLoggerService", () =>
 
 			expect(errorQueueService.enqueue).toHaveBeenCalledWith(
 				jasmine.objectContaining({
-					logLevel: LogLevel.Error,
-					message: "Something went wrong",
+					logLevel: "Error",
+					message: "[Client] - Something went wrong",
 					exceptionMessage: "Test error",
 					stackTrace: jasmine.stringContaining("Error: Test error")
 				})
@@ -63,7 +64,7 @@ describe("ClientErrorLoggerService", () =>
 
 			expect(errorQueueService.enqueue).toHaveBeenCalledWith(
 				jasmine.objectContaining({
-					logLevel: LogLevel.Error
+					logLevel: "Error"
 				})
 			);
 		});
@@ -74,7 +75,7 @@ describe("ClientErrorLoggerService", () =>
 
 			expect(errorQueueService.enqueue).toHaveBeenCalledWith(
 				jasmine.objectContaining({
-					logLevel: LogLevel.Warning
+					logLevel: "Warning"
 				})
 			);
 		});
@@ -113,7 +114,7 @@ describe("ClientErrorLoggerService", () =>
 
 			const afterTime = new Date();
 			const call = errorQueueService.enqueue.calls.mostRecent();
-			const timestamp = new Date(call.args[0].timestamp);
+			const timestamp = new Date(call.args[0].clientTimestamp!);
 
 			expect(timestamp.getTime()).toBeGreaterThanOrEqual(
 				beforeTime.getTime()
@@ -209,7 +210,7 @@ describe("ClientErrorLoggerService", () =>
 			expect(errorQueueService.enqueue).toHaveBeenCalledWith(
 				jasmine.objectContaining({
 					statusCode: 0,
-					message: "Network error"
+					message: "[Client] - Network error"
 				})
 			);
 		});
@@ -264,7 +265,7 @@ describe("ClientErrorLoggerService", () =>
 
 			expect(errorQueueService.enqueue).toHaveBeenCalledWith(
 				jasmine.objectContaining({
-					message: "Simple error",
+					message: "[Client] - Simple error",
 					stackTrace: undefined
 				})
 			);
@@ -279,8 +280,8 @@ describe("ClientErrorLoggerService", () =>
 
 			expect(errorQueueService.enqueue).toHaveBeenCalledWith(
 				jasmine.objectContaining({
-					logLevel: LogLevel.Warning,
-					message: "This is a warning"
+					logLevel: "Warning",
+					message: "[Client] - This is a warning"
 				})
 			);
 		});
@@ -293,8 +294,8 @@ describe("ClientErrorLoggerService", () =>
 
 			expect(errorQueueService.enqueue).toHaveBeenCalledWith(
 				jasmine.objectContaining({
-					logLevel: LogLevel.Warning,
-					message: "Warning message",
+					logLevel: "Warning",
+					message: "[Client] - Warning message",
 					additionalContext: { component: "TestComponent" }
 				})
 			);
@@ -309,8 +310,8 @@ describe("ClientErrorLoggerService", () =>
 
 			expect(errorQueueService.enqueue).toHaveBeenCalledWith(
 				jasmine.objectContaining({
-					logLevel: LogLevel.Info,
-					message: "This is info"
+					logLevel: "Info",
+					message: "[Client] - This is info"
 				})
 			);
 		});

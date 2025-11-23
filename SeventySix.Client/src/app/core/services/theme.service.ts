@@ -9,6 +9,7 @@ import {
 	Signal
 } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
+import { StorageService } from "./storage.service";
 
 /**
  * Theme brightness types
@@ -31,6 +32,7 @@ export type ColorScheme = "blue" | "cyan-orange";
 export class ThemeService
 {
 	private platformId: Object = inject(PLATFORM_ID);
+	private readonly storage: StorageService = inject(StorageService);
 	private readonly BRIGHTNESS_STORAGE_KEY: string =
 		"seventysix-theme-brightness";
 	private readonly SCHEME_STORAGE_KEY: string = "seventysix-color-scheme";
@@ -109,12 +111,7 @@ export class ThemeService
 	 */
 	private getInitialBrightness(): ThemeBrightness
 	{
-		if (!isPlatformBrowser(this.platformId))
-		{
-			return "light";
-		}
-
-		const saved: string | null = localStorage.getItem(
+		const saved: string | null = this.storage.getItem<string>(
 			this.BRIGHTNESS_STORAGE_KEY
 		);
 		return saved === "dark" || saved === "light" ? saved : "light";
@@ -125,12 +122,7 @@ export class ThemeService
 	 */
 	private getInitialColorScheme(): ColorScheme
 	{
-		if (!isPlatformBrowser(this.platformId))
-		{
-			return "blue";
-		}
-
-		const saved: string | null = localStorage.getItem(
+		const saved: string | null = this.storage.getItem<string>(
 			this.SCHEME_STORAGE_KEY
 		);
 		return saved === "cyan-orange" ? "cyan-orange" : "blue";
@@ -160,9 +152,9 @@ export class ThemeService
 		html.classList.add(`${brightness}-theme`);
 		html.classList.add(`${scheme}-scheme`);
 
-		// Save to localStorage
-		localStorage.setItem(this.BRIGHTNESS_STORAGE_KEY, brightness);
-		localStorage.setItem(this.SCHEME_STORAGE_KEY, scheme);
+		// Save to storage
+		this.storage.setItem(this.BRIGHTNESS_STORAGE_KEY, brightness);
+		this.storage.setItem(this.SCHEME_STORAGE_KEY, scheme);
 	}
 
 	/**
