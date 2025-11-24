@@ -22,8 +22,7 @@ import { debounceTime, fromEvent, Subject, takeUntil } from "rxjs";
  * ```
  */
 @Directive({
-	selector: "[appSiteLayoutChanged]",
-	standalone: true
+	selector: "[appSiteLayoutChanged]"
 })
 export class SiteLayoutChangedDirective implements OnInit, OnDestroy
 {

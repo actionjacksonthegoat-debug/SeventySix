@@ -46,7 +46,7 @@ public interface ILogRepository
 	/// Default sort: Timestamp descending (most recent first).
 	/// Returns both data and total count for efficient pagination.
 	/// </remarks>
-	public Task<(IEnumerable<Log> Logs, int TotalCount)> GetLogsAsync(
+	public Task<(IEnumerable<Log> Logs, int TotalCount)> GetPagedAsync(
 		SeventySix.BusinessLogic.DTOs.Logs.LogFilterRequest request,
 		CancellationToken cancellationToken = default);
 

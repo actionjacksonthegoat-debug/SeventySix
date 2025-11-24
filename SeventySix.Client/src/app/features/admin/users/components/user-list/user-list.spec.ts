@@ -2,10 +2,9 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import {
 	QueryClient,
-	provideAngularQuery
+	provideTanStackQuery
 } from "@tanstack/angular-query-experimental";
 import { UserList } from "./user-list";
 
@@ -17,12 +16,12 @@ describe("UserList", () =>
 	beforeEach(async () =>
 	{
 		await TestBed.configureTestingModule({
-			imports: [UserList, NoopAnimationsModule],
+			imports: [UserList],
 			providers: [
 				provideZonelessChangeDetection(),
 				provideHttpClient(),
 				provideHttpClientTesting(),
-				provideAngularQuery(new QueryClient())
+				provideTanStackQuery(new QueryClient())
 			]
 		}).compileComponents();
 

@@ -26,7 +26,7 @@ public class HealthCheckServiceTests
 
 		// Setup default mock behaviors
 		MockLogRepository
-			.Setup(x => x.GetLogsAsync(It.IsAny<SeventySix.BusinessLogic.DTOs.Logs.LogFilterRequest>(), It.IsAny<CancellationToken>()))
+			.Setup(x => x.GetPagedAsync(It.IsAny<SeventySix.BusinessLogic.DTOs.Logs.LogFilterRequest>(), It.IsAny<CancellationToken>()))
 			.ReturnsAsync(((IEnumerable<Log>)new List<Log>(), 100));
 
 		Service = new HealthCheckService(MockMetricsService.Object, MockLogRepository.Object);

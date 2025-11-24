@@ -36,7 +36,6 @@ import { NotificationService } from "@core/services/notification.service";
  */
 @Component({
 	selector: "app-log-list",
-	standalone: true,
 	imports: [DataTableComponent],
 	templateUrl: "./log-list.html",
 	styleUrl: "./log-list.scss",

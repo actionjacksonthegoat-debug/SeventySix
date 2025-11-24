@@ -3,7 +3,7 @@ import {
 	computed,
 	inject,
 	ChangeDetectionStrategy,
-	ViewChild,
+	viewChild,
 	Signal
 } from "@angular/core";
 import { Router } from "@angular/router";
@@ -70,7 +70,8 @@ export class UserCreatePage
 	private readonly fb: FormBuilder = inject(FormBuilder);
 	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
 
-	@ViewChild("stepper") stepper!: MatStepper;
+	readonly stepper: Signal<MatStepper | undefined> =
+		viewChild<MatStepper>("stepper");
 
 	// TanStack Query mutation for creating users
 	readonly createMutation: ReturnType<UserService["createUser"]> =

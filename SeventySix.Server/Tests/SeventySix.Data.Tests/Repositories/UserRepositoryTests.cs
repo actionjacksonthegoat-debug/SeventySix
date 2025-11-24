@@ -6,6 +6,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using SeventySix.BusinessLogic.DTOs.Requests;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.Data;
 using SeventySix.Data.Repositories;
@@ -295,7 +296,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 		}
 
 		// Act
-		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(1, 10, null, null, false, CancellationToken.None);
+		UserQueryRequest request = new() { Page = 1, PageSize = 10, StartDate = null };
+		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(request, CancellationToken.None);
 
 		// Assert
 		users.Should().HaveCount(10);
@@ -311,7 +313,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 		await Repository.CreateAsync(new UserBuilder().WithUsername("charlie").WithEmail("alice@other.com").Build(), CancellationToken.None);
 
 		// Act
-		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(1, 10, "alice", null, false, CancellationToken.None);
+		UserQueryRequest request = new() { Page = 1, PageSize = 10, SearchTerm = "alice", StartDate = null };
+		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(request, CancellationToken.None);
 
 		// Assert
 		users.Should().HaveCount(2);
@@ -326,7 +329,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 		await Repository.CreateAsync(UserBuilder.CreateInactive().WithUsername("inactive1").WithEmail("inactive1@example.com").Build(), CancellationToken.None);
 
 		// Act
-		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(1, 10, null, true, false, CancellationToken.None);
+		UserQueryRequest request = new() { Page = 1, PageSize = 10, IsActive = true, StartDate = null };
+		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(request, CancellationToken.None);
 
 		// Assert
 		users.Should().HaveCount(1);
@@ -345,7 +349,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 		await Repository.SoftDeleteAsync(created2.Id, "test", CancellationToken.None);
 
 		// Act
-		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(1, 10, null, null, false, CancellationToken.None);
+		UserQueryRequest request = new() { Page = 1, PageSize = 10, IncludeDeleted = false, StartDate = null };
+		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(request, CancellationToken.None);
 
 		// Assert
 		users.Should().Contain(u => u.Username == "visible");

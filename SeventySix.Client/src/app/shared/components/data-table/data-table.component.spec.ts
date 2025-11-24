@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import {
 	TableColumn,
 	QuickFilter,
@@ -82,7 +81,7 @@ describe("DataTableComponent", () =>
 	beforeEach(async () =>
 	{
 		await TestBed.configureTestingModule({
-			imports: [DataTableComponent, NoopAnimationsModule],
+			imports: [DataTableComponent],
 			providers: [provideZonelessChangeDetection()]
 		}).compileComponents();
 

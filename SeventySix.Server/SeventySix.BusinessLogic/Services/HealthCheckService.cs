@@ -65,7 +65,7 @@ public class HealthCheckService(IMetricsService metricsService, ILogRepository l
 			// This will throw if database is not accessible
 			// Use minimal LogFilterRequest for health check
 			DTOs.Logs.LogFilterRequest healthCheckRequest = new() { Page = 1, PageSize = 1 };
-			_ = await logRepository.GetLogsAsync(healthCheckRequest, cancellationToken);
+			_ = await logRepository.GetPagedAsync(healthCheckRequest, cancellationToken);
 
 			stopwatch.Stop();
 

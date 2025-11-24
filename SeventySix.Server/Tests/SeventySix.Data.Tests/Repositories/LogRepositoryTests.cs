@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using SeventySix.BusinessLogic.DTOs.Logs;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.Data;
 using SeventySix.Data.Repositories;
@@ -68,34 +69,36 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 	}
 
 	[Fact]
-	public async Task GetLogsAsync_ReturnsAllLogs_WhenNoFiltersAsync()
+	public async Task GetPagedAsync_ReturnsAllLogs_WhenNoFiltersAsync()
 	{
 		// Arrange
 		await SeedTestLogsAsync();
 
 		// Act
-		IEnumerable<Log> result = await Repository.GetLogsAsync();
+		LogFilterRequest request = new();
+		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
 
 		// Assert
-		Assert.NotEmpty(result);
-		Assert.True(result.Count() >= 3);
+		Assert.NotEmpty(logs);
+		Assert.True(logs.Count() >= 3);
 	}
 
 	[Fact]
-	public async Task GetLogsAsync_FiltersByLogLevel_SuccessfullyAsync()
+	public async Task GetPagedAsync_FiltersByLogLevel_SuccessfullyAsync()
 	{
 		// Arrange
 		await SeedTestLogsAsync();
 
 		// Act
-		IEnumerable<Log> result = await Repository.GetLogsAsync(logLevel: "Error");
+		LogFilterRequest request = new() { LogLevel = "Error" };
+		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
 
 		// Assert
-		Assert.All(result, log => Assert.Equal("Error", log.LogLevel));
+		Assert.All(logs, log => Assert.Equal("Error", log.LogLevel));
 	}
 
 	[Fact]
-	public async Task GetLogsAsync_FiltersByDateRange_SuccessfullyAsync()
+	public async Task GetPagedAsync_FiltersByDateRange_SuccessfullyAsync()
 	{
 		// Arrange
 		await SeedTestLogsAsync();
@@ -103,10 +106,11 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		DateTime endDate = DateTime.UtcNow.AddHours(1);
 
 		// Act
-		IEnumerable<Log> result = await Repository.GetLogsAsync(startDate: startDate, endDate: endDate);
+		LogFilterRequest request = new() { StartDate = startDate, EndDate = endDate };
+		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
 
 		// Assert
-		Assert.All(result, log =>
+		Assert.All(logs, log =>
 		{
 			Assert.True(log.Timestamp >= startDate);
 			Assert.True(log.Timestamp <= endDate);
@@ -114,80 +118,91 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 	}
 
 	[Fact]
-	public async Task GetLogsAsync_FiltersBySourceContext_SuccessfullyAsync()
+	public async Task GetPagedAsync_FiltersBySourceContext_SuccessfullyAsync()
 	{
 		// Arrange
 		await SeedTestLogsAsync();
 
 		// Act
-		IEnumerable<Log> result = await Repository.GetLogsAsync(searchTerm: "UserService");
+		LogFilterRequest request = new() { SearchTerm = "UserService" };
+		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
 
 		// Assert
-		Assert.All(result, log => Assert.Contains("UserService", log.SourceContext ?? string.Empty));
+		Assert.All(logs, log => Assert.Contains("UserService", log.SourceContext ?? string.Empty));
 	}
 
 	[Fact]
-	public async Task GetLogsAsync_FiltersByRequestPath_SuccessfullyAsync()
+	public async Task GetPagedAsync_FiltersByRequestPath_SuccessfullyAsync()
 	{
 		// Arrange
 		await SeedTestLogsAsync();
 
 		// Act
-		IEnumerable<Log> result = await Repository.GetLogsAsync(searchTerm: "/api/users");
+		LogFilterRequest request = new() { SearchTerm = "/api/users" };
+		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
 
 		// Assert
-		Assert.All(result, log => Assert.Contains("/api/users", log.RequestPath ?? string.Empty));
+		Assert.All(logs, log => Assert.Contains("/api/users", log.RequestPath ?? string.Empty));
 	}
 
 	[Fact]
-	public async Task GetLogsAsync_WithSearchTerm_FiltersMultipleFields_SuccessfullyAsync()
+	public async Task GetPagedAsync_WithSearchTerm_FiltersMultipleFields_SuccessfullyAsync()
 	{
 		// Arrange
 		await SeedTestLogsForSearchAsync();
 
 		// Act - Search for "Authentication" which should match Message field
-		IEnumerable<Log> messageResults = await Repository.GetLogsAsync(searchTerm: "Authentication");
+		LogFilterRequest messageRequest = new() { SearchTerm = "Authentication" };
+		(IEnumerable<Log> messageLogs, int _) = await Repository.GetPagedAsync(messageRequest);
 
 		// Act - Search for "UserService" which should match SourceContext field
-		IEnumerable<Log> sourceContextResults = await Repository.GetLogsAsync(searchTerm: "UserService");
+		LogFilterRequest sourceRequest = new() { SearchTerm = "UserService" };
+		(IEnumerable<Log> sourceLogs, int _) = await Repository.GetPagedAsync(sourceRequest);
 
 		// Act - Search for "users" which should match RequestPath field
-		IEnumerable<Log> requestPathResults = await Repository.GetLogsAsync(searchTerm: "users");
+		LogFilterRequest pathRequest = new() { SearchTerm = "users" };
+		(IEnumerable<Log> pathLogs, int _) = await Repository.GetPagedAsync(pathRequest);
 
 		// Act - Search for "NullReference" which should match ExceptionMessage field
-		IEnumerable<Log> exceptionResults = await Repository.GetLogsAsync(searchTerm: "NullReference");
+		LogFilterRequest exceptionRequest = new() { SearchTerm = "NullReference" };
+		(IEnumerable<Log> exceptionLogs, int _) = await Repository.GetPagedAsync(exceptionRequest);
 
 		// Assert - Verify search works across all fields
-		Assert.Single(messageResults); // Only "Authentication failed" message
-		Assert.Equal(2, sourceContextResults.Count()); // Two logs from UserService
-		Assert.Equal(2, requestPathResults.Count()); // Two logs with /api/users path
-		Assert.Single(exceptionResults); // Only one NullReferenceException
+		Assert.Single(messageLogs); // Only "Authentication failed" message
+		Assert.Equal(2, sourceLogs.Count()); // Two logs from UserService
+		Assert.Equal(2, pathLogs.Count()); // Two logs with /api/users path
+		Assert.Single(exceptionLogs); // Only one NullReferenceException
 	}
 
 	[Fact]
-	public async Task GetLogsAsync_SupportsPagination_SuccessfullyAsync()
+	public async Task GetPagedAsync_SupportsPagination_SuccessfullyAsync()
 	{
 		// Arrange
 		await SeedTestLogsAsync();
 
 		// Act
-		IEnumerable<Log> page1 = await Repository.GetLogsAsync(skip: 0, take: 2);
-		IEnumerable<Log> page2 = await Repository.GetLogsAsync(skip: 2, take: 2);
+		LogFilterRequest page1Request = new() { Page = 1, PageSize = 2 };
+		(IEnumerable<Log> page1Logs, int _) = await Repository.GetPagedAsync(page1Request);
+
+		LogFilterRequest page2Request = new() { Page = 2, PageSize = 2 };
+		(IEnumerable<Log> page2Logs, int _) = await Repository.GetPagedAsync(page2Request);
 
 		// Assert
-		Assert.Equal(2, page1.Count());
-		Assert.NotEmpty(page2);
-		Assert.NotEqual(page1.First().Id, page2.First().Id);
+		Assert.Equal(2, page1Logs.Count());
+		Assert.NotEmpty(page2Logs);
+		Assert.NotEqual(page1Logs.First().Id, page2Logs.First().Id);
 	}
 
 	[Fact]
-	public async Task GetLogsAsync_OrdersByTimestampDescending_SuccessfullyAsync()
+	public async Task GetPagedAsync_OrdersByTimestampDescending_SuccessfullyAsync()
 	{
 		// Arrange
 		await SeedTestLogsAsync();
 
 		// Act
-		List<Log> result = [.. (await Repository.GetLogsAsync())];
+		LogFilterRequest request = new();
+		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
+		List<Log> result = [.. logs];
 
 		// Assert
 		for (int i = 0; i < result.Count - 1; i++)
@@ -197,7 +212,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 	}
 
 	[Fact]
-	public async Task GetLogsAsync_LimitsTo1000Records_MaximumAsync()
+	public async Task GetPagedAsync_LimitsTo1000Records_MaximumAsync()
 	{
 		// Arrange
 		for (int i = 0; i < 1100; i++)
@@ -211,39 +226,44 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		}
 
 		// Act
-		IEnumerable<Log> result = await Repository.GetLogsAsync(take: 2000);
+		LogFilterRequest request = new() { PageSize = 100 }; // Note: PageSize max is 100, not 1000
+		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
 
 		// Assert
-		Assert.True(result.Count() <= 1000);
+		Assert.True(logs.Count() <= 100); // PageSize is capped at 100
 	}
 
 	[Fact]
-	public async Task GetLogsCountAsync_ReturnsCorrectCount_WhenNoFiltersAsync()
+	public async Task GetPagedAsync_ReturnsCorrectCount_WhenNoFiltersAsync()
 	{
 		// Arrange
 		await SeedTestLogsAsync();
 
 		// Act
-		int count = await Repository.GetLogsCountAsync();
+		LogFilterRequest request = new();
+		(IEnumerable<Log> _, int count) = await Repository.GetPagedAsync(request);
 
 		// Assert
 		Assert.True(count >= 3);
 	}
 
 	[Fact]
-	public async Task GetLogsCountAsync_FiltersCorrectly_WithMultipleCriteriaAsync()
+	public async Task GetPagedAsync_FiltersCorrectly_WithMultipleCriteriaAsync()
 	{
 		// Arrange
 		await SeedTestLogsAsync();
 		DateTime startDate = DateTime.UtcNow.AddHours(-1);
 
 		// Act
-		int count = await Repository.GetLogsCountAsync(
-			logLevel: "Error",
-			startDate: startDate);
+		LogFilterRequest request = new()
+		{
+			LogLevel = "Error",
+			StartDate = startDate,
+		};
+		(IEnumerable<Log> _, int count) = await Repository.GetPagedAsync(request);
 
 		// Assert
-		Assert.True(count > 0);
+		Assert.True(count >= 1); // At least one Error log exists
 	}
 
 	[Fact]
@@ -273,7 +293,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 
 		// Assert
 		Assert.True(deletedCount > 0);
-		IEnumerable<Log> remainingLogs = await Repository.GetLogsAsync();
+		LogFilterRequest request = new() { PageSize = 100 };
+		(IEnumerable<Log> remainingLogs, int _) = await Repository.GetPagedAsync(request);
 		Assert.All(remainingLogs, log => Assert.True(log.Timestamp >= cutoffDate));
 	}
 

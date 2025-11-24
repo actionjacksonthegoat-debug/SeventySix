@@ -6,7 +6,7 @@
  * Extends BaseFilterService for filter state management
  */
 
-import { inject, Injectable, Signal } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import {
 	injectQuery,
 	injectMutation,

@@ -65,7 +65,7 @@ public class LogService(
 		await filterValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		// Get paged data (repository returns both data and total count)
-		(IEnumerable<Log> logs, int totalCount) = await repository.GetLogsAsync(
+		(IEnumerable<Log> logs, int totalCount) = await repository.GetPagedAsync(
 			request,
 			cancellationToken);
 
@@ -94,7 +94,7 @@ public class LogService(
 		await filterValidator.ValidateAndThrowAsync(request, cancellationToken);
 
 		// Get count (efficient - no entity loading)
-		(_, int totalCount) = await repository.GetLogsAsync(
+		(_, int totalCount) = await repository.GetPagedAsync(
 			request,
 			cancellationToken);
 

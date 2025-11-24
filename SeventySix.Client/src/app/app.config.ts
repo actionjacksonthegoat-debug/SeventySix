@@ -26,7 +26,12 @@ import {
 	authInterceptor,
 	dateParserInterceptor
 } from "@core/interceptors";
-import { ErrorHandlerService, ThemeService } from "@core/services";
+import {
+	ErrorHandlerService,
+	ThemeService,
+	TelemetryService,
+	WebVitalsService
+} from "@core/services";
 import { environment } from "@environments/environment";
 
 /**
@@ -38,6 +43,32 @@ function initializeTheme(_themeService: ThemeService)
 	return () =>
 	{
 		// Theme service constructor handles initialization
+		return Promise.resolve();
+	};
+}
+
+/**
+ * Initialize OpenTelemetry on app startup
+ * This ensures tracing is active before any HTTP requests
+ */
+function initializeTelemetry(telemetryService: TelemetryService)
+{
+	return () =>
+	{
+		telemetryService.initialize();
+		return Promise.resolve();
+	};
+}
+
+/**
+ * Initialize Web Vitals monitoring on app startup
+ * The WebVitalsService constructor handles initialization automatically
+ */
+function initializeWebVitals(_webVitalsService: WebVitalsService)
+{
+	return () =>
+	{
+		// Web vitals service constructor handles initialization
 		return Promise.resolve();
 	};
 }
@@ -85,6 +116,20 @@ export const appConfig: ApplicationConfig = {
 			provide: APP_INITIALIZER,
 			useFactory: initializeTheme,
 			deps: [ThemeService],
+			multi: true
+		},
+		// Initialize OpenTelemetry on app startup
+		{
+			provide: APP_INITIALIZER,
+			useFactory: initializeTelemetry,
+			deps: [TelemetryService],
+			multi: true
+		},
+		// Initialize Web Vitals monitoring on app startup
+		{
+			provide: APP_INITIALIZER,
+			useFactory: initializeWebVitals,
+			deps: [WebVitalsService],
 			multi: true
 		},
 		// Service Worker for PWA support and asset caching only

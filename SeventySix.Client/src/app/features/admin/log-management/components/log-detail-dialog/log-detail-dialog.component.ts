@@ -4,11 +4,9 @@ import {
 	inject,
 	signal,
 	output,
-	HostListener,
 	OutputEmitterRef,
 	WritableSignal
 } from "@angular/core";
-import { NgClass } from "@angular/common";
 import {
 	MAT_DIALOG_DATA,
 	MatDialogModule,
@@ -33,7 +31,6 @@ import { environment } from "@environments/environment";
 @Component({
 	selector: "app-log-detail-dialog",
 	imports: [
-		NgClass,
 		MatDialogModule,
 		MatButtonModule,
 		MatIconModule,
@@ -326,7 +323,6 @@ export class LogDetailDialogComponent
 	 * Keyboard shortcut handler
 	 * ESC: Close dialog
 	 */
-	@HostListener("window:keydown.escape")
 	handleEscape(): void
 	{
 		this.onClose();

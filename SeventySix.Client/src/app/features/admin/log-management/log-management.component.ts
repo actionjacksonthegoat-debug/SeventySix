@@ -16,7 +16,6 @@ import { LogList } from "@admin/log-management/components";
  */
 @Component({
 	selector: "app-log-management",
-	standalone: true,
 	imports: [MatIconModule, MatButtonModule, LogList],
 	templateUrl: "./log-management.component.html",
 	styleUrl: "./log-management.component.scss",

@@ -80,6 +80,13 @@ interface Environment
 	testing: {
 		runIntegrationTests: boolean;
 	};
+	telemetry: {
+		enabled: boolean;
+		serviceName: string;
+		serviceVersion: string;
+		otlpEndpoint: string;
+		sampleRate: number;
+	};
 }
 export const environment: Environment = {
 	production: true,
@@ -164,5 +171,12 @@ export const environment: Environment = {
 	},
 	testing: {
 		runIntegrationTests: false
+	},
+	telemetry: {
+		enabled: true,
+		serviceName: "SeventySix.Client",
+		serviceVersion: "1.0.0",
+		otlpEndpoint: "http://localhost:4318/v1/traces",
+		sampleRate: 0.1 // 10% sampling for production
 	}
 };

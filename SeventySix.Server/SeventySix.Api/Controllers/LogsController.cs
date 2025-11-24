@@ -78,7 +78,7 @@ public class LogsController(
 	[OutputCache(PolicyName = "logs")]
 	[ProducesResponseType(typeof(PagedLogResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<ActionResult<PagedLogResponse>> GetLogsAsync(
+	public async Task<ActionResult<PagedLogResponse>> GetPagedAsync(
 		[FromQuery] LogFilterRequest request,
 		CancellationToken cancellationToken = default)
 	{

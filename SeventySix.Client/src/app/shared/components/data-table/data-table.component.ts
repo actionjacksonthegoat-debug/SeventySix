@@ -14,7 +14,7 @@ import {
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { Subject } from "rxjs";
-import { takeUntil, map } from "rxjs/operators";
+import { map } from "rxjs/operators";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { MatTableModule } from "@angular/material/table";
@@ -368,33 +368,29 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	constructor()
 	{
 		// Initialize first quick filter as active in single-selection mode
-		effect(
-			() =>
-			{
-				const filters: QuickFilter<T>[] = this.quickFilters();
-				const singleSelection: boolean =
-					this.quickFiltersSingleSelection();
-				const currentFilters: Set<string> = this.activeFilters();
+		effect(() =>
+		{
+			const filters: QuickFilter<T>[] = this.quickFilters();
+			const singleSelection: boolean = this.quickFiltersSingleSelection();
+			const currentFilters: Set<string> = this.activeFilters();
 
-				// Only initialize if single-selection mode, has filters, and no filter is active yet
-				if (
-					singleSelection &&
-					filters.length > 0 &&
-					currentFilters.size === 0
-				)
-				{
-					// Activate the first filter (typically "All")
-					const firstFilterKey: string = filters[0].key;
-					this.activeFilters.set(new Set([firstFilterKey]));
-					// Emit the initial filter state
-					this.filterChange.emit({
-						filterKey: firstFilterKey,
-						active: true
-					});
-				}
-			},
-			{ allowSignalWrites: true }
-		);
+			// Only initialize if single-selection mode, has filters, and no filter is active yet
+			if (
+				singleSelection &&
+				filters.length > 0 &&
+				currentFilters.size === 0
+			)
+			{
+				// Activate the first filter (typically "All")
+				const firstFilterKey: string = filters[0].key;
+				this.activeFilters.set(new Set([firstFilterKey]));
+				// Emit the initial filter state
+				this.filterChange.emit({
+					filterKey: firstFilterKey,
+					active: true
+				});
+			}
+		});
 
 		// Load column preferences from localStorage
 		effect(() =>

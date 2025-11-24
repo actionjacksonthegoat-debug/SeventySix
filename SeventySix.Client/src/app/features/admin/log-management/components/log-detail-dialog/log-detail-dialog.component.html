@@ -8,13 +8,41 @@
 	<div mat-dialog-title class="dialog-header">
 		<div class="header-content" id="log-dialog-title">
 			<mat-icon
-				[ngClass]="getLevelClass(log().logLevel)"
+				[class.level-debug]="
+					getLevelClass(log().logLevel) === 'level-debug'
+				"
+				[class.level-info]="
+					getLevelClass(log().logLevel) === 'level-info'
+				"
+				[class.level-warning]="
+					getLevelClass(log().logLevel) === 'level-warning'
+				"
+				[class.level-error]="
+					getLevelClass(log().logLevel) === 'level-error'
+				"
+				[class.level-critical]="
+					getLevelClass(log().logLevel) === 'level-critical'
+				"
 				attr.aria-label="Log level: {{ getLevelName(log().logLevel) }}"
 				>{{ getLevelIcon(log().logLevel) }}</mat-icon
 			>
 			<span
 				class="level-name"
-				[ngClass]="getLevelClass(log().logLevel)"
+				[class.level-debug]="
+					getLevelClass(log().logLevel) === 'level-debug'
+				"
+				[class.level-info]="
+					getLevelClass(log().logLevel) === 'level-info'
+				"
+				[class.level-warning]="
+					getLevelClass(log().logLevel) === 'level-warning'
+				"
+				[class.level-error]="
+					getLevelClass(log().logLevel) === 'level-error'
+				"
+				[class.level-critical]="
+					getLevelClass(log().logLevel) === 'level-critical'
+				"
 				>{{ getLevelName(log().logLevel) }}</span
 			>
 			@if (log().sourceContext)

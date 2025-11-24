@@ -74,13 +74,26 @@
 					<td mat-cell *matCellDef="let log">
 						<span
 							class="level-chip"
-							[ngClass]="getLevelClass(log.logLevel)"
+							[class.level-debug]="
+								getLevelClass(log.logLevel) === 'level-debug'
+							"
+							[class.level-info]="
+								getLevelClass(log.logLevel) === 'level-info'
+							"
+							[class.level-warning]="
+								getLevelClass(log.logLevel) === 'level-warning'
+							"
+							[class.level-error]="
+								getLevelClass(log.logLevel) === 'level-error'
+							"
+							[class.level-critical]="
+								getLevelClass(log.logLevel) === 'level-critical'
+							"
 						>
 							{{ getLevelName(log.logLevel) }}
 						</span>
 					</td>
 				</ng-container>
-
 				<!-- Timestamp Column -->
 				<ng-container matColumnDef="timestamp">
 					<th mat-header-cell *matHeaderCellDef mat-sort-header>

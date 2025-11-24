@@ -35,6 +35,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
 using SeventySix.Api.Extensions;
+using SeventySix.Api.HealthChecks;
 using SeventySix.Api.Logging;
 using SeventySix.Api.Middleware;
 using SeventySix.BusinessLogic.Configuration;
@@ -87,14 +88,33 @@ builder.Host.UseSerilog();
 // Add HTTP context accessor for accessing HttpContext in services
 builder.Services.AddHttpContextAccessor();
 
+// Add comprehensive health checks for observability
+// Liveness: Basic checks to determine if the app should be restarted
+// Readiness: Checks if the app is ready to serve traffic (includes dependencies)
+builder.Services.AddHealthChecks()
+	.AddDbContextCheck<ApplicationDbContext>(
+		name: "database",
+		failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
+		tags: new[] { "ready", "db" })
+	.AddCheck<JaegerHealthCheck>(
+		name: "jaeger",
+		failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Degraded,
+		tags: new[] { "ready", "tracing" });
+
 // Add OpenTelemetry with Jaeger exporter for tracing and Prometheus for metrics
-// Endpoint is configurable via appsettings.json or environment variable
-string otlpEndpoint = builder.Configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint")
-	?? "http://localhost:4317";
+// Configuration from appsettings.json
+string serviceName = builder.Configuration.GetValue<string>("OpenTelemetry:ServiceName") ?? "SeventySix.Api";
+string serviceVersion = builder.Configuration.GetValue<string>("OpenTelemetry:ServiceVersion") ?? "1.0.0";
+string otlpEndpoint = builder.Configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint") ?? "http://localhost:4317";
+string environment = builder.Environment.EnvironmentName;
 
 builder.Services.AddOpenTelemetry()
 	.ConfigureResource(resource => resource
-		.AddService(serviceName: "SeventySix.Api", serviceVersion: "1.0.0"))
+		.AddService(serviceName: serviceName, serviceVersion: serviceVersion)
+		.AddAttributes(new Dictionary<string, object>
+		{
+			["deployment.environment"] = environment,
+		}))
 	.WithTracing(tracing => tracing
 		.AddAspNetCoreInstrumentation(options =>
 		{
@@ -242,6 +262,52 @@ app.UseMiddleware<SmartHttpsRedirectionMiddleware>();
 
 // Authorization middleware (currently no auth configured)
 app.UseAuthorization();
+
+// Map health check endpoints following Kubernetes best practices
+// /health/live - Liveness probe (app is running)
+// /health/ready - Readiness probe (app is ready to serve traffic)
+// /health - Overall health status
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+	Predicate = _ => false, // No checks - just return 200 if app is running
+	ResponseWriter = async (context, report) =>
+	{
+		context.Response.ContentType = "application/json";
+		await context.Response.WriteAsJsonAsync(new { status = "Healthy", timestamp = DateTime.UtcNow });
+	}
+});
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+	Predicate = check => check.Tags.Contains("ready"), // Only readiness checks
+	ResponseWriter = WriteHealthCheckResponse
+});
+
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+	ResponseWriter = WriteHealthCheckResponse // Detailed JSON response
+});
+
+static async Task WriteHealthCheckResponse(HttpContext context, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport report)
+{
+	context.Response.ContentType = "application/json";
+	string result = System.Text.Json.JsonSerializer.Serialize(new
+	{
+		status = report.Status.ToString(),
+		timestamp = DateTime.UtcNow,
+		duration = report.TotalDuration,
+		checks = report.Entries.Select(e => new
+		{
+			name = e.Key,
+			status = e.Value.Status.ToString(),
+			description = e.Value.Description,
+			duration = e.Value.Duration,
+			exception = e.Value.Exception?.Message,
+			data = e.Value.Data
+		})
+	}, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+	await context.Response.WriteAsync(result);
+}
 
 // Map Prometheus metrics endpoint (accessible at /metrics)
 // This endpoint is scraped by Prometheus for metrics collection

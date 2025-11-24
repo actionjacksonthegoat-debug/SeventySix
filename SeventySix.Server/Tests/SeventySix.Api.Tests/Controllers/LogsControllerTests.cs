@@ -106,7 +106,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	/// Tests that GET /api/logs returns all logs when no filters are applied.
 	/// </summary>
 	[Fact]
-	public async Task GetLogsAsync_NoFilters_ReturnsAllLogsAsync()
+	public async Task GetPagedAsync_NoFilters_ReturnsAllLogsAsync()
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs");
@@ -124,7 +124,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	/// Tests that GET /api/logs filters by log level correctly.
 	/// </summary>
 	[Fact]
-	public async Task GetLogsAsync_FilterByLogLevel_ReturnsMatchingLogsAsync()
+	public async Task GetPagedAsync_FilterByLogLevel_ReturnsMatchingLogsAsync()
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs?logLevel=Error");
@@ -142,7 +142,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	/// Tests that GET /api/logs filters by date range correctly.
 	/// </summary>
 	[Fact]
-	public async Task GetLogsAsync_FilterByDateRange_ReturnsLogsInRangeAsync()
+	public async Task GetPagedAsync_FilterByDateRange_ReturnsLogsInRangeAsync()
 	{
 		// Arrange
 		DateTime startDate = DateTime.UtcNow.AddHours(-4);
@@ -166,14 +166,18 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	}
 
 	/// <summary>
-	/// Tests that GET /api/logs filters by source context correctly.
+	/// Tests that GET /api/logs filters by source context correctly via searchTerm.
 	/// </summary>
 	[Fact]
-	public async Task GetLogsAsync_FilterBySourceContext_ReturnsMatchingLogsAsync()
+	public async Task GetPagedAsync_FilterBySourceContext_ReturnsMatchingLogsAsync()
 	{
-		// Act
+		// Arrange - Use time range to get seeded test data only
+		DateTime startDate = DateTime.UtcNow.AddHours(-4);
+		DateTime endDate = DateTime.UtcNow;
+
+		// Act - Use searchTerm for SourceContext filtering
 		HttpResponseMessage response = await Client.GetAsync(
-			"/api/v1/logs?sourceContext=SeventySix.Api.Controllers.UsersController");
+			$"/api/v1/logs?searchTerm=UsersController&startDate={startDate:O}&endDate={endDate:O}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -181,18 +185,24 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
+		Assert.True(pagedResponse.Data.Count >= 2, "Should find at least 2 logs with UsersController in SourceContext");
 		Assert.All(pagedResponse.Data, log =>
-			Assert.Equal("SeventySix.Api.Controllers.UsersController", log.SourceContext));
+			Assert.Contains("UsersController", log.SourceContext ?? string.Empty));
 	}
 
 	/// <summary>
-	/// Tests that GET /api/logs filters by request path correctly.
+	/// Tests that GET /api/logs filters by request path correctly via searchTerm.
 	/// </summary>
 	[Fact]
-	public async Task GetLogsAsync_FilterByRequestPath_ReturnsMatchingLogsAsync()
+	public async Task GetPagedAsync_FilterByRequestPath_ReturnsMatchingLogsAsync()
 	{
-		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs?requestPath=/api/weatherforecast/current");
+		// Arrange - Use time range to get seeded test data only
+		DateTime startDate = DateTime.UtcNow.AddHours(-4);
+		DateTime endDate = DateTime.UtcNow;
+
+		// Act - Use searchTerm for RequestPath filtering
+		HttpResponseMessage response = await Client.GetAsync(
+			$"/api/v1/logs?searchTerm=/api/users&startDate={startDate:O}&endDate={endDate:O}");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -200,14 +210,15 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
-		Assert.All(pagedResponse.Data, log => Assert.Equal("/api/weatherforecast/current", log.RequestPath));
+		Assert.True(pagedResponse.Data.Count >= 2, "Should find at least 2 logs with /api/users in RequestPath");
+		Assert.All(pagedResponse.Data, log => Assert.Contains("/api/users", log.RequestPath ?? string.Empty));
 	}
 
 	/// <summary>
 	/// Tests that GET /api/logs respects pagination with default page size.
 	/// </summary>
 	[Fact]
-	public async Task GetLogsAsync_WithPagination_ReturnsCorrectPageAsync()
+	public async Task GetPagedAsync_WithPagination_ReturnsCorrectPageAsync()
 	{
 		// Act - Get page 1
 		HttpResponseMessage response1 = await Client.GetAsync("/api/v1/logs?page=1&pageSize=2");
@@ -237,7 +248,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	/// Tests that GET /api/logs validates maximum page size of 100.
 	/// </summary>
 	[Fact]
-	public async Task GetLogsAsync_ExceedsMaxPageSize_ReturnsMaxRecordsAsync()
+	public async Task GetPagedAsync_ExceedsMaxPageSize_ReturnsMaxRecordsAsync()
 	{
 		// Act
 		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs?pageSize=200");
@@ -250,15 +261,15 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	/// Tests that GET /api/logs combines multiple filters correctly.
 	/// </summary>
 	[Fact]
-	public async Task GetLogsAsync_MultipleFilters_ReturnsMatchingLogsAsync()
+	public async Task GetPagedAsync_MultipleFilters_ReturnsMatchingLogsAsync()
 	{
 		// Arrange
 		DateTime startDate = DateTime.UtcNow.AddHours(-4);
 		DateTime endDate = DateTime.UtcNow;
 
-		// Act
+		// Act - Use searchTerm for RequestPath filtering
 		HttpResponseMessage response = await Client.GetAsync(
-			$"/api/v1/logs?logLevel=Warning&startDate={startDate:O}&endDate={endDate:O}&requestPath=/api/weatherforecast/current");
+			$"/api/v1/logs?logLevel=Warning&startDate={startDate:O}&endDate={endDate:O}&searchTerm=/api/users");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -266,12 +277,13 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Data);
+		Assert.True(pagedResponse.Data.Count >= 1, "Should find at least 1 Warning log with /api/users");
 		Assert.All(pagedResponse.Data, log =>
 		{
 			Assert.Equal("Warning", log.LogLevel);
 			Assert.True(log.Timestamp >= startDate);
 			Assert.True(log.Timestamp <= endDate);
-			Assert.Equal("/api/weatherforecast/current", log.RequestPath);
+			Assert.Contains("/api/users", log.RequestPath ?? string.Empty);
 		});
 	}
 
@@ -343,11 +355,14 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Verify log was created
 		using IServiceScope scope = Factory.Services.CreateScope();
 		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		IEnumerable<Log> logs = await logRepo.GetLogsAsync(
-			logLevel: "Error",
-			searchTerm: "UserComponent",
-			skip: 0,
-			take: 10);
+		LogFilterRequest filterRequest = new()
+		{
+			LogLevel = "Error",
+			SearchTerm = "UserComponent",
+			Page = 1,
+			PageSize = 10,
+		};
+		(IEnumerable<Log> logs, int _) = await logRepo.GetPagedAsync(filterRequest);
 		Log? clientLog = logs.FirstOrDefault(l => l.Message == "Client-side error occurred");
 
 		Assert.NotNull(clientLog);
@@ -425,10 +440,13 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Verify log was created with defaults
 		using IServiceScope scope = Factory.Services.CreateScope();
 		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		IEnumerable<Log> logs = await logRepo.GetLogsAsync(
-			logLevel: "Warning",
-			skip: 0,
-			take: 10);
+		LogFilterRequest filterRequest = new()
+		{
+			LogLevel = "Warning",
+			Page = 1,
+			PageSize = 10,
+		};
+		(IEnumerable<Log> logs, int _) = await logRepo.GetPagedAsync(filterRequest);
 		Log? clientLog = logs.FirstOrDefault(l => l.Message == "Simple client warning");
 
 		Assert.NotNull(clientLog);
@@ -491,10 +509,14 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Verify context was preserved in Properties JSON
 		using IServiceScope scope = Factory.Services.CreateScope();
 		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		IEnumerable<Log> logs = await logRepo.GetLogsAsync(
-			logLevel: "Error",
-			skip: 0,
-			take: 10);
+		LogFilterRequest filterRequest = new()
+		{
+			SearchTerm = "Error with context", // Search for specific message
+			Page = 1,
+			PageSize = 10,
+			StartDate = null,
+		};
+		(IEnumerable<Log> logs, int _) = await logRepo.GetPagedAsync(filterRequest);
 		Log? clientLog = logs.FirstOrDefault(l => l.Message == "Error with context");
 
 		Assert.NotNull(clientLog);
@@ -541,7 +563,8 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Verify all logs were created
 		using IServiceScope scope = Factory.Services.CreateScope();
 		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		IEnumerable<Log> logs = await logRepo.GetLogsAsync(skip: 0, take: 100);
+		LogFilterRequest request = new() { Page = 1, PageSize = 100 };
+		(IEnumerable<Log> logs, int _) = await logRepo.GetPagedAsync(request);
 
 		Log? log1 = logs.FirstOrDefault(l => l.Message == "Batch error 1");
 		Log? log2 = logs.FirstOrDefault(l => l.Message == "Batch warning 2");
@@ -618,7 +641,8 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Verify logs were created
 		using IServiceScope scope = Factory.Services.CreateScope();
 		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		IEnumerable<Log> logs = await logRepo.GetLogsAsync(logLevel: "Error", skip: 0, take: 100);
+		LogFilterRequest request = new() { LogLevel = "Error", Page = 1, PageSize = 100 };
+		(IEnumerable<Log> logs, int _) = await logRepo.GetPagedAsync(request);
 		List<Log> batchLogs = [.. logs.Where(l => l.Message.StartsWith("Batch error "))];
 
 		Assert.True(batchLogs.Count >= 50, $"Expected at least 50 batch logs, found {batchLogs.Count}");
@@ -648,7 +672,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	public async Task GetCountAsync_FilterByLogLevel_ReturnsMatchingCountAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/count?logLevel=Error");
+		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs/count?logLevel=Error&startDate=");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -758,7 +782,8 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
 		// Verify log is deleted
-		IEnumerable<Log> logs = await logRepo.GetLogsAsync(take: 1000);
+		LogFilterRequest request = new() { PageSize = 1000 };
+		(IEnumerable<Log> logs, int _) = await logRepo.GetPagedAsync(request);
 		Assert.DoesNotContain(logs, l => l.Id == log.Id);
 	}
 
@@ -815,11 +840,11 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		int[] idsToDelete = [log1.Id, log2.Id, log3.Id];
 
 		// Act
-		HttpRequestMessage request = new(HttpMethod.Delete, "/api/v1/logs/batch")
+		HttpRequestMessage deleteRequest = new(HttpMethod.Delete, "/api/v1/logs/batch")
 		{
 			Content = JsonContent.Create(idsToDelete),
 		};
-		HttpResponseMessage response = await Client.SendAsync(request);
+		HttpResponseMessage response = await Client.SendAsync(deleteRequest);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -828,7 +853,8 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		Assert.Equal(3, deletedCount);
 
 		// Verify logs are deleted
-		IEnumerable<Log> remainingLogs = await logRepo.GetLogsAsync(take: 1000);
+		LogFilterRequest filterRequest = new() { PageSize = 1000 };
+		(IEnumerable<Log> remainingLogs, int _) = await logRepo.GetPagedAsync(filterRequest);
 		Assert.DoesNotContain(remainingLogs, l => idsToDelete.Contains(l.Id));
 	}
 
@@ -842,11 +868,11 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		int[] emptyIds = [];
 
 		// Act
-		HttpRequestMessage request = new(HttpMethod.Delete, "/api/v1/logs/batch")
+		HttpRequestMessage deleteRequest = new(HttpMethod.Delete, "/api/v1/logs/batch")
 		{
 			Content = JsonContent.Create(emptyIds),
 		};
-		HttpResponseMessage response = await Client.SendAsync(request);
+		HttpResponseMessage response = await Client.SendAsync(deleteRequest);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

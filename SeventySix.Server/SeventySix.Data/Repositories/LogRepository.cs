@@ -76,7 +76,7 @@ public class LogRepository : ILogRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<(IEnumerable<Log> Logs, int TotalCount)> GetLogsAsync(
+	public async Task<(IEnumerable<Log> Logs, int TotalCount)> GetPagedAsync(
 		SeventySix.BusinessLogic.DTOs.Logs.LogFilterRequest request,
 		CancellationToken cancellationToken = default)
 	{

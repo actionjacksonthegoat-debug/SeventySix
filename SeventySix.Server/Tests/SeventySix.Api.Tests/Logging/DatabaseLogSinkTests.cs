@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog.Events;
 using Serilog.Parsing;
 using SeventySix.Api.Logging;
+using SeventySix.BusinessLogic.DTOs.Logs;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.BusinessLogic.Interfaces;
 using SeventySix.Data;
@@ -89,7 +90,8 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	private async Task AssertSingleLogAsync(string expectedLevel, string expectedMessage)
 	{
 		await WaitForBatchProcessingAsync();
-		IEnumerable<Log> logs = await LogRepository!.GetLogsAsync();
+		LogFilterRequest request = new();
+		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal(expectedLevel, log.LogLevel);
@@ -115,7 +117,8 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		IEnumerable<Log> logs = await LogRepository!.GetLogsAsync();
+		LogFilterRequest request = new();
+		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal("Warning", log.LogLevel);
@@ -142,7 +145,8 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		IEnumerable<Log> logs = await LogRepository!.GetLogsAsync();
+		LogFilterRequest request = new();
+		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal("Error", log.LogLevel);
@@ -167,7 +171,8 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		IEnumerable<Log> logs = await LogRepository!.GetLogsAsync();
+		LogFilterRequest request = new();
+		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Empty(logs); // Information level should not be persisted
 	}
 
@@ -199,7 +204,8 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		IEnumerable<Log> logs = await LogRepository!.GetLogsAsync();
+		LogFilterRequest request = new();
+		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal("Test exception message", log.ExceptionMessage);
@@ -242,7 +248,8 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		IEnumerable<Log> logs = await LogRepository!.GetLogsAsync();
+		LogFilterRequest request = new();
+		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal("Outer exception", log.ExceptionMessage);

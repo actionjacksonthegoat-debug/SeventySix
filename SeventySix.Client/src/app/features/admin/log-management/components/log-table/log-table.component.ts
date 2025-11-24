@@ -4,12 +4,12 @@ import {
 	input,
 	output,
 	effect,
-	ViewChild,
+	viewChild,
+	Signal,
 	AfterViewInit,
 	InputSignal,
 	OutputEmitterRef
 } from "@angular/core";
-import { NgClass } from "@angular/common";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatIconModule } from "@angular/material/icon";
@@ -37,7 +37,6 @@ import { environment } from "@environments/environment";
 @Component({
 	selector: "app-log-table",
 	imports: [
-		NgClass,
 		MatTableModule,
 		MatCheckboxModule,
 		MatIconModule,
@@ -88,8 +87,9 @@ export class LogTableComponent implements AfterViewInit
 	readonly virtualScrollItemSize: number =
 		environment.ui.tables.virtualScrollItemSize;
 
-	@ViewChild(MatPaginator) paginator!: MatPaginator;
-	@ViewChild(MatSort) sort!: MatSort;
+	readonly paginator: Signal<MatPaginator | undefined> =
+		viewChild(MatPaginator);
+	readonly sort: Signal<MatSort | undefined> = viewChild(MatSort);
 
 	constructor()
 	{
@@ -102,8 +102,16 @@ export class LogTableComponent implements AfterViewInit
 
 	ngAfterViewInit(): void
 	{
-		this.dataSource.paginator = this.paginator;
-		this.dataSource.sort = this.sort;
+		const paginatorInstance: MatPaginator | undefined = this.paginator();
+		const sortInstance: MatSort | undefined = this.sort();
+		if (paginatorInstance)
+		{
+			this.dataSource.paginator = paginatorInstance;
+		}
+		if (sortInstance)
+		{
+			this.dataSource.sort = sortInstance;
+		}
 	}
 
 	onRowClick(log: LogResponse): void

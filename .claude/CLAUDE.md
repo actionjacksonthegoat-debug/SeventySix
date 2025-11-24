@@ -44,6 +44,34 @@ You are an expert in TypeScript, Angular, .NET Core 8+, and scalable full-stack 
 -   Keep tests simple, focused, and maintainable
 -   Use meaningful test names that describe behavior
 
+### 🚨 CRITICAL: Test Execution Rules
+
+**NEVER skip or defer failing tests:**
+
+-   ❌ **NEVER** proceed with implementation if tests are failing
+-   ❌ **NEVER** skip failing tests "to fix later"
+-   ✅ **ALWAYS** fix failing tests immediately when discovered
+-   ✅ **ALWAYS** run tests after each code change to verify success
+-   Hidden errors compound - fix tests NOW, not later
+
+**Client-side test execution (Angular):**
+
+-   **ALWAYS** run tests headless with no-watch: `npm test -- --no-watch --browsers=ChromeHeadless`
+-   **PREFERRED** npm scripts for running tests:
+    -   `npm test` - Runs unit tests headless (no-watch, ChromeHeadless)
+    -   `npm run test:watch` - Interactive test mode with watch
+    -   `npm run test:client` - Alias for headless unit tests
+    -   `npm run test:all` - Runs both unit tests and E2E tests headless
+    -   `npm run test:e2e` - Runs Playwright E2E tests
+-   **NEVER** use watch mode in CI/CD or automated test runs
+-   **NEVER** use headed browsers in automated test runs
+
+**Server-side test execution (.NET):**
+
+-   Use `dotnet test --no-build --logger "console;verbosity=normal"`
+-   Fix failing tests before proceeding to next phase
+-   Ensure Docker Desktop is running before executing tests (Testcontainers dependency)
+
 ## Design Patterns Reference
 
 Apply patterns judiciously when complexity justifies them. Start simple, refactor to patterns as needed.

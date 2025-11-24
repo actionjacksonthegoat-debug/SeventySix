@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { LogResponse, LogLevel } from "@admin/log-management/models";
 import { Clipboard } from "@angular/cdk/clipboard";
 import { LogDetailDialogComponent } from "./log-detail-dialog.component";
@@ -47,7 +46,7 @@ describe("LogDetailDialogComponent", () =>
 		mockClipboard = jasmine.createSpyObj("Clipboard", ["copy"]);
 
 		await TestBed.configureTestingModule({
-			imports: [LogDetailDialogComponent, NoopAnimationsModule],
+			imports: [LogDetailDialogComponent],
 			providers: [
 				provideZonelessChangeDetection(),
 				{ provide: MAT_DIALOG_DATA, useValue: mockLog },

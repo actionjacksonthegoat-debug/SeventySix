@@ -2,10 +2,9 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import {
 	QueryClient,
-	provideAngularQuery
+	provideTanStackQuery
 } from "@tanstack/angular-query-experimental";
 import { LogList } from "./log-list";
 
@@ -17,12 +16,12 @@ describe("LogList", () =>
 	beforeEach(async () =>
 	{
 		await TestBed.configureTestingModule({
-			imports: [LogList, NoopAnimationsModule],
+			imports: [LogList],
 			providers: [
 				provideZonelessChangeDetection(),
 				provideHttpClient(),
 				provideHttpClientTesting(),
-				provideAngularQuery(new QueryClient())
+				provideTanStackQuery(new QueryClient())
 			]
 		}).compileComponents();
 
@@ -47,9 +46,10 @@ describe("LogList", () =>
 	it("should define quick filters", () =>
 	{
 		expect(component.quickFilters).toBeDefined();
-		expect(component.quickFilters.length).toBe(2);
-		expect(component.quickFilters[0].key).toBe("error");
-		expect(component.quickFilters[1].key).toBe("warning");
+		expect(component.quickFilters.length).toBe(3);
+		expect(component.quickFilters[0].key).toBe("all");
+		expect(component.quickFilters[1].key).toBe("warnings");
+		expect(component.quickFilters[2].key).toBe("errors");
 	});
 
 	it("should define row actions", () =>

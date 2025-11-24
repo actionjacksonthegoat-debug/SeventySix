@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { LogManagementComponent } from "./log-management.component";
 import { LogManagementService } from "@admin/log-management/services";
 import { MatDialog } from "@angular/material/dialog";
@@ -35,6 +34,7 @@ describe("LogManagementComponent", (): void =>
 		mockLogService = jasmine.createSpyObj("LogManagementService", [
 			"getLogs",
 			"deleteLog",
+			"deleteLogs",
 			"deleteSelected"
 		]);
 
@@ -57,9 +57,10 @@ describe("LogManagementComponent", (): void =>
 			isError: jasmine.createSpy("isError").and.returnValue(false)
 		} as any);
 		mockLogService.deleteLog.and.returnValue(mockMutation as any);
+		mockLogService.deleteLogs.and.returnValue(mockMutation as any);
 		mockDialog = createMockDialog();
 		await TestBed.configureTestingModule({
-			imports: [LogManagementComponent, NoopAnimationsModule],
+			imports: [LogManagementComponent],
 			providers: [
 				provideZonelessChangeDetection(),
 				{ provide: LogManagementService, useValue: mockLogService },
