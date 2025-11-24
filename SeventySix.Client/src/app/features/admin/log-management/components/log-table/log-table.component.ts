@@ -23,6 +23,7 @@ import {
 import { MatSortModule, MatSort } from "@angular/material/sort";
 import { SelectionModel } from "@angular/cdk/collections";
 import { ScrollingModule } from "@angular/cdk/scrolling";
+import { TableHeightDirective } from "@shared/directives";
 import {
 	LogResponse,
 	LogLevel,
@@ -44,7 +45,8 @@ import { environment } from "@environments/environment";
 		MatTooltipModule,
 		MatPaginatorModule,
 		MatSortModule,
-		ScrollingModule
+		ScrollingModule,
+		TableHeightDirective
 	],
 	templateUrl: "./log-table.component.html",
 	styleUrl: "./log-table.component.scss",

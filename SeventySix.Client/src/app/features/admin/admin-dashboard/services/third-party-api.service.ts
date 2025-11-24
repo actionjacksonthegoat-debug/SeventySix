@@ -58,7 +58,7 @@ export class ThirdPartyApiService
 	 * Creates a query for third-party API statistics
 	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	createStatisticsQuery(): CreateQueryResult<any, Error>
+	createStatisticsQuery(): CreateQueryResult<Record<string, unknown>, Error>
 	{
 		return injectQuery(() => ({
 			queryKey: ["thirdPartyApi", "statistics"],

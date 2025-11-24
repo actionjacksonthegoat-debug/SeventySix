@@ -87,12 +87,12 @@ export class UserRepository extends HttpRepository<User>
 	getPaged(request: UserQueryRequest): Observable<PagedResult<User>>
 	{
 		const params: HttpParams = this.buildParams({
-			page: request.page,
+			pageNumber: request.pageNumber,
 			pageSize: request.pageSize,
 			searchTerm: request.searchTerm || "",
 			includeInactive: request.includeInactive || false,
-			sortBy: request.sortBy || "",
-			sortDescending: request.sortDescending || false
+			sortBy: request.sortBy,
+			sortDescending: request.sortDescending
 		});
 
 		return this.apiService.get<PagedResult<User>>(

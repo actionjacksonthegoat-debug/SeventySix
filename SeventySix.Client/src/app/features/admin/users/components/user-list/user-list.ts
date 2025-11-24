@@ -3,51 +3,23 @@ import {
 	inject,
 	computed,
 	ChangeDetectionStrategy,
-	ViewChild,
-	AfterViewInit,
-	effect,
 	Signal
 } from "@angular/core";
-import { Router } from "@angular/router";
-import { MatTableModule, MatTableDataSource } from "@angular/material/table";
-import { MatSortModule, MatSort } from "@angular/material/sort";
-import { MatPaginatorModule, MatPaginator } from "@angular/material/paginator";
-import { MatInputModule } from "@angular/material/input";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MatChipsModule } from "@angular/material/chips";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatCardModule } from "@angular/material/card";
-import { MatMenuModule } from "@angular/material/menu";
-import { MatCheckboxModule } from "@angular/material/checkbox";
-import { MatExpansionModule } from "@angular/material/expansion";
-import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { SelectionModel } from "@angular/cdk/collections";
-import { ScrollingModule } from "@angular/cdk/scrolling";
-import { FormsModule } from "@angular/forms";
 import { DatePipe } from "@angular/common";
+import { Router } from "@angular/router";
 import { UserService } from "@admin/users/services";
-import { UserExportService } from "@admin/users/services/user-export.service";
-import {
-	UserPreferencesService,
-	type UserListPreferences
-} from "@admin/users/services/user-preferences.service";
-import { LoggerService } from "@core/services";
+import { NotificationService } from "@core/services/notification.service";
 import { User } from "@admin/users/models";
-import {
-	ChartComponent,
-	ConfirmDialogComponent,
-	type ConfirmDialogData
-} from "@shared/components";
-import { ChartConfiguration } from "chart.js";
-import { environment } from "@environments/environment";
-import {
-	createUserTableState,
-	type UserTableState
-} from "@admin/users/composables/user-table-state";
+import { DataTableComponent } from "@shared/components";
+import type {
+	TableColumn,
+	QuickFilter,
+	RowAction,
+	BulkAction,
+	RowActionEvent,
+	BulkActionEvent,
+	DateRangeEvent
+} from "@shared/models";
 
 /**
  * User list component.
@@ -57,56 +29,37 @@ import {
  */
 @Component({
 	selector: "app-user-list",
-	imports: [
-		MatTableModule,
-		MatSortModule,
-		MatPaginatorModule,
-		MatInputModule,
-		MatFormFieldModule,
-		MatButtonModule,
-		MatIconModule,
-		MatChipsModule,
-		MatTooltipModule,
-		MatProgressSpinnerModule,
-		MatCardModule,
-		MatMenuModule,
-		MatCheckboxModule,
-		MatExpansionModule,
-		ScrollingModule,
-		FormsModule,
-		DatePipe,
-		ChartComponent
-	],
+	imports: [DataTableComponent],
+	providers: [DatePipe],
 	templateUrl: "./user-list.html",
 	styleUrls: ["./user-list.scss"],
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserList implements AfterViewInit
+export class UserList
 {
 	private readonly userService: UserService = inject(UserService);
-	private readonly userExportService: UserExportService =
-		inject(UserExportService);
-	private readonly userPreferencesService: UserPreferencesService = inject(
-		UserPreferencesService
-	);
-	private readonly logger: LoggerService = inject(LoggerService);
+	private readonly datePipe: DatePipe = inject(DatePipe);
 	private readonly router: Router = inject(Router);
-	private readonly dialog: MatDialog = inject(MatDialog);
-	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+	private readonly notificationService: NotificationService =
+		inject(NotificationService);
 
-	@ViewChild(MatSort) sort!: MatSort;
-	@ViewChild(MatPaginator) paginator!: MatPaginator;
+	readonly usersQuery: ReturnType<UserService["getPagedUsers"]> =
+		this.userService.getPagedUsers();
 
-	// Table state composable
-	readonly tableState: UserTableState = createUserTableState();
+	// Mutations
+	private readonly updateUserMutation: ReturnType<UserService["updateUser"]> =
+		this.userService.updateUser();
+	private readonly deleteUserMutation: ReturnType<UserService["deleteUser"]> =
+		this.userService.deleteUser();
+	private readonly bulkActivateMutation: ReturnType<
+		UserService["bulkActivateUsers"]
+	> = this.userService.bulkActivateUsers();
+	private readonly bulkDeactivateMutation: ReturnType<
+		UserService["bulkDeactivateUsers"]
+	> = this.userService.bulkDeactivateUsers();
 
-	// TanStack Query handles loading, error, and data states
-	readonly usersQuery: ReturnType<UserService["getAllUsers"]> =
-		this.userService.getAllUsers();
-
-	// Computed signals for derived state
-	readonly users: Signal<User[]> = computed(
-		() => this.usersQuery.data() ?? []
+	readonly data: Signal<User[]> = computed(
+		() => this.usersQuery.data()?.items ?? []
 	);
 	readonly isLoading: Signal<boolean> = computed(() =>
 		this.usersQuery.isLoading()
@@ -116,590 +69,468 @@ export class UserList implements AfterViewInit
 			? "Failed to load users. Please try again."
 			: null
 	);
-
-	// Material table data source
-	readonly dataSource: MatTableDataSource<User> =
-		new MatTableDataSource<User>([]);
-
-	// Bulk selection
-	readonly selection: SelectionModel<User> = new SelectionModel<User>(
-		true,
-		[]
+	readonly totalCount: Signal<number> = computed(
+		() => this.usersQuery.data()?.totalCount ?? 0
 	);
-	readonly virtualScrollItemSize: number =
-		environment.ui.tables.virtualScrollItemSize;
-
-	// Bulk operation mutations
-	readonly bulkActivateMutation: ReturnType<
-		UserService["bulkActivateUsers"]
-	> = this.userService.bulkActivateUsers();
-	readonly bulkDeactivateMutation: ReturnType<
-		UserService["bulkDeactivateUsers"]
-	> = this.userService.bulkDeactivateUsers();
-
-	// Computed signals for derived state
-	readonly hasUsers: Signal<boolean> = computed(
-		() => this.users().length > 0
+	readonly pageIndex: Signal<number> = computed(
+		() => (this.userService.getCurrentFilter().pageNumber ?? 1) - 1
 	);
-	readonly userCount: Signal<number> = computed(() => this.users().length);
-	readonly activeUserCount: Signal<number> = computed(
-		() => this.users().filter((u) => u.isActive).length
-	);
-	readonly inactiveUserCount: Signal<number> = computed(
-		() => this.users().filter((u) => !u.isActive).length
-	);
-	readonly selectedCount: Signal<number> = computed(
-		() => this.selection.selected.length
+	readonly pageSize: Signal<number> = computed(
+		() => this.userService.getCurrentFilter().pageSize ?? 50
 	);
 
-	// Chart data for user statistics
-	readonly userStatsChartData: Signal<ChartConfiguration["data"]> = computed<
-		ChartConfiguration["data"]
-	>(() =>
-	{
-		const users: User[] = this.users();
-		// Group users by created month
-		const monthCounts: Record<
-			string,
-			{ active: number; inactive: number }
-		> = {};
-
-		users.forEach((user) =>
+	readonly columns: TableColumn<User>[] = [
 		{
-			const date: Date = new Date(user.createdAt);
-			const monthKey: string = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-
-			if (!monthCounts[monthKey])
-			{
-				monthCounts[monthKey] = { active: 0, inactive: 0 };
-			}
-
-			if (user.isActive)
-			{
-				monthCounts[monthKey].active++;
-			}
-			else
-			{
-				monthCounts[monthKey].inactive++;
-			}
-		});
-
-		// Sort months and get last 6 months
-		const sortedMonths: string[] = Object.keys(monthCounts)
-			.sort()
-			.slice(-6);
-		const labels: string[] = sortedMonths.map((key) =>
+			key: "id",
+			label: "ID",
+			type: "text",
+			sortable: true,
+			visible: true
+		},
 		{
-			const [year, month]: string[] = key.split("-");
-			const date: Date = new Date(parseInt(year), parseInt(month) - 1);
-			return date.toLocaleDateString("en-US", {
-				month: "short",
-				year: "numeric"
-			});
-		});
-
-		return {
-			labels,
-			datasets: [
-				{
-					label: "Active Users",
-					data: sortedMonths.map((key) => monthCounts[key].active),
-					borderColor: "rgb(75, 192, 192)",
-					backgroundColor: "rgba(75, 192, 192, 0.2)",
-					tension: 0.4,
-					fill: true
-				},
-				{
-					label: "Inactive Users",
-					data: sortedMonths.map((key) => monthCounts[key].inactive),
-					borderColor: "rgb(255, 99, 132)",
-					backgroundColor: "rgba(255, 99, 132, 0.2)",
-					tension: 0.4,
-					fill: true
-				}
-			]
-		};
-	});
-
-	// Computed: filtered data based on status
-	readonly filteredUsers: Signal<User[]> = computed(() =>
-	{
-		const filter: "all" | "active" | "inactive" =
-			this.tableState.statusFilter();
-		const allUsers: User[] = this.users();
-
-		if (filter === "all") return allUsers;
-		if (filter === "active") return allUsers.filter((u) => u.isActive);
-		if (filter === "inactive") return allUsers.filter((u) => !u.isActive);
-		return allUsers;
-	});
-
-	constructor()
-	{
-		this.loadUsers();
-
-		// Update table data when users change
-		effect(() =>
+			key: "username",
+			label: "Username",
+			type: "text",
+			sortable: true,
+			visible: true
+		},
 		{
-			this.updateTableData();
-		});
-
-		// Log successful data load
-		effect(() =>
+			key: "email",
+			label: "Email",
+			type: "text",
+			sortable: true,
+			visible: true
+		},
 		{
-			const users: User[] = this.users();
-			const isLoading: boolean = this.usersQuery.isLoading();
-			const isError: boolean = this.usersQuery.isError();
-
-			if (!isLoading && !isError && users.length > 0)
-			{
-				this.logger.info("Users loaded successfully", {
-					count: users.length
-				});
-			}
-		});
-
-		// Log errors
-		effect(() =>
+			key: "fullName",
+			label: "Full Name",
+			type: "text",
+			sortable: true,
+			visible: true
+		},
 		{
-			const error: Error | null = this.usersQuery.error();
-			if (error)
-			{
-				this.logger.error("Failed to load users", error);
-			}
-		});
-	}
-
-	ngAfterViewInit(): void
-	{
-		this.dataSource.sort = this.sort;
-		this.dataSource.paginator = this.paginator;
-
-		// Custom filter predicate for search
-		this.dataSource.filterPredicate = (data: User, filter: string) =>
+			key: "isActive",
+			label: "Status",
+			type: "badge",
+			sortable: true,
+			visible: true,
+			formatter: (value: unknown): string =>
+				value === true ? "Active" : "Inactive",
+			badgeColor: (value: unknown): "primary" | "accent" | "warn" =>
+				value === true ? "primary" : "warn"
+		},
 		{
-			const searchStr: string = filter.toLowerCase();
-			return (
-				data.username.toLowerCase().includes(searchStr) ||
-				data.email.toLowerCase().includes(searchStr) ||
-				data.fullName?.toLowerCase().includes(searchStr) ||
-				false ||
-				data.id.toString().includes(searchStr)
-			);
-		};
-
-		// Load column visibility from localStorage
-		this.loadColumnPreferences();
-	}
-
-	/**
-	 * Loads column visibility preferences from localStorage
-	 */
-	loadColumnPreferences(): void
-	{
-		const prefs: UserListPreferences =
-			this.userPreferencesService.loadPreferences();
-
-		// Apply column visibility from preferences
-		this.tableState.columns.update((cols) =>
-			cols.map((col) => ({
-				...col,
-				visible: prefs.displayedColumns.includes(col.key) ?? col.visible
-			}))
-		);
-
-		// Apply other preferences
-		this.tableState.setSearchFilter(prefs.searchFilter);
-		this.tableState.setStatusFilter(prefs.statusFilter);
-		this.tableState.chartExpanded.set(prefs.chartExpanded);
-	}
-
-	/**
-	 * Saves column visibility preferences to localStorage
-	 */
-	saveColumnPreferences(): void
-	{
-		const prefs: UserListPreferences = {
-			displayedColumns: this.tableState.displayedColumns(),
-			searchFilter: this.tableState.searchFilter(),
-			statusFilter: this.tableState.statusFilter(),
-			chartExpanded: this.tableState.chartExpanded()
-		};
-		this.userPreferencesService.savePreferences(prefs);
-	}
-
-	/**
-	 * Toggles column visibility
-	 */
-	toggleColumn(columnKey: string): void
-	{
-		this.tableState.toggleColumn(columnKey);
-		this.saveColumnPreferences();
-	}
-
-	/**
-	 * Loads users from the service.
-	 */
-	loadUsers(): void
-	{
-		this.usersQuery.refetch();
-	}
-
-	/**
-	 * Updates table data based on current filters
-	 */
-	updateTableData(): void
-	{
-		this.dataSource.data = this.filteredUsers();
-		this.selection.clear();
-	}
-
-	/**
-	 * Sets status filter and updates table
-	 */
-	setStatusFilter(status: "all" | "active" | "inactive"): void
-	{
-		this.tableState.setStatusFilter(status);
-		this.updateTableData();
-		this.saveColumnPreferences();
-		this.logger.info("Status filter changed", { status });
-	}
-
-	/**
-	 * Applies search filter to the table.
-	 */
-	applyFilter(): void
-	{
-		this.dataSource.filter = this.tableState
-			.searchFilter()
-			.trim()
-			.toLowerCase();
-
-		if (this.dataSource.paginator)
+			key: "createdAt",
+			label: "Created",
+			type: "date",
+			sortable: true,
+			visible: true,
+			formatter: (value: unknown): string =>
+				this.datePipe.transform(value as string, "short") ?? ""
+		},
 		{
-			this.dataSource.paginator.firstPage();
+			key: "lastLoginAt",
+			label: "Last Login",
+			type: "date",
+			sortable: true,
+			visible: false,
+			formatter: (value: unknown): string =>
+				value
+					? (this.datePipe.transform(value as string, "short") ?? "")
+					: "Never"
 		}
-	}
+	];
 
-	/**
-	 * Clears the search filter.
-	 */
-	clearFilter(): void
-	{
-		this.tableState.setSearchFilter("");
-		this.applyFilter();
-	}
-
-	/**
-	 * Retries loading users.
-	 */
-	retry(): void
-	{
-		this.loadUsers();
-	}
-
-	/**
-	 * Navigates to add new user page.
-	 */
-	addUser(): void
-	{
-		this.router.navigate(["/admin/users/create"]);
-		this.logger.info("Navigating to create user");
-	}
-
-	/**
-	 * Navigates to edit user page.
-	 * @param user The user to edit
-	 */
-	editUser(user: User): void
-	{
-		this.router.navigate(["/admin/users", user.id]);
-		this.logger.info("Navigating to user detail", { userId: user.id });
-	}
-
-	/**
-	 * Navigates to log management filtered by this user
-	 * @param user The user to view logs for
-	 */
-	viewUserLogs(user: User): void
-	{
-		// Navigate to log management with query params to filter by user
-		this.router.navigate(["/admin/logs"], {
-			queryParams: {
-				userId: user.id,
-				userName: user.username
-			}
-		});
-		this.logger.info("Navigating to logs for user", {
-			userId: user.id,
-			username: user.username
-		});
-	}
-
-	/**
-	 * Gets the status chip color for a user.
-	 * @param user The user object
-	 * @returns Chip color
-	 */
-	getStatusColor(user: User): "primary" | "warn" | undefined
-	{
-		return user.isActive ? "primary" : "warn";
-	}
-
-	/**
-	 * Checks if all rows are selected
-	 */
-	isAllSelected(): boolean
-	{
-		const numSelected: number = this.selection.selected.length;
-		const numRows: number = this.dataSource.data.length;
-		return numSelected === numRows && numRows > 0;
-	}
-
-	/**
-	 * Toggles all rows selection
-	 */
-	toggleAllRows(): void
-	{
-		if (this.isAllSelected())
+	readonly quickFilters: QuickFilter<User>[] = [
 		{
-			this.selection.clear();
-		}
-		else
+			key: "all",
+			label: "All Users",
+			icon: "people"
+		},
 		{
-			this.dataSource.data.forEach((row) => this.selection.select(row));
-		}
-	}
-
-	/**
-	 * Deletes selected users (bulk action)
-	 */
-	deleteSelected(): void
-	{
-		const count: number = this.selection.selected.length;
-		if (count === 0) return;
-
-		const dialogData: ConfirmDialogData = {
-			title: "Delete Users",
-			message: `Are you sure you want to delete ${count} user${count > 1 ? "s" : ""}? This action cannot be undone.`,
-			confirmText: "Delete",
-			cancelText: "Cancel",
-			confirmColor: "warn",
-			icon: "warning"
-		};
-
-		const dialogRef: import("@angular/material/dialog").MatDialogRef<ConfirmDialogComponent> =
-			this.dialog.open(ConfirmDialogComponent, {
-				data: dialogData,
-				width: "450px",
-				disableClose: false,
-				autoFocus: true,
-				restoreFocus: true
-			});
-
-		dialogRef.afterClosed().subscribe((confirmed) =>
-		{
-			if (confirmed)
-			{
-				this.logger.info("Bulk delete confirmed", { count });
-				// TODO: Implement actual delete operation with API call
-				// For now, just show success message
-				this.showSuccessMessage(
-					`${count} user${count > 1 ? "s" : ""} deleted`,
-					"UNDO"
-				);
-				this.selection.clear();
-			}
-			else
-			{
-				this.logger.info("Bulk delete cancelled");
-			}
-		});
-	}
-
-	/**
-	 * Bulk activate selected users
-	 */
-	activateSelected(): void
-	{
-		const users: User[] = this.selection.selected;
-		const ids: number[] = users.map((u) => u.id);
-		const count: number = ids.length;
-
-		if (count === 0) return;
-
-		const dialogData: ConfirmDialogData = {
-			title: "Activate Users",
-			message: `Are you sure you want to activate ${count} user${count > 1 ? "s" : ""}?`,
-			confirmText: "Activate",
-			cancelText: "Cancel",
-			confirmColor: "primary",
+			key: "active",
+			label: "Active",
 			icon: "check_circle"
-		};
+		},
+		{
+			key: "inactive",
+			label: "Inactive",
+			icon: "cancel"
+		}
+	];
 
-		this.dialog
-			.open(ConfirmDialogComponent, {
-				data: dialogData,
-				width: "450px"
-			})
-			.afterClosed()
-			.subscribe((confirmed) =>
-			{
-				if (confirmed)
-				{
-					this.bulkActivateMutation.mutate(ids, {
-						onSuccess: (activatedCount: number) =>
-						{
-							this.showSuccessMessage(
-								`${activatedCount} user${activatedCount > 1 ? "s" : ""} activated`
-							);
-							this.selection.clear();
-							this.logger.info("Bulk activate successful", {
-								count: activatedCount
-							});
-						},
-						onError: (err: Error) =>
-						{
-							this.logger.error("Bulk activate failed", err);
-							this.snackBar.open(
-								"Failed to activate users",
-								"Close",
-								{
-									duration: 3000
-								}
-							);
-						}
-					});
-				}
-			});
+	readonly rowActions: RowAction<User>[] = [
+		{
+			key: "view",
+			label: "View Details",
+			icon: "visibility"
+		},
+		{
+			key: "edit",
+			label: "Edit",
+			icon: "edit"
+		},
+		{
+			key: "toggleStatus",
+			label: "Toggle Status",
+			icon: "swap_horiz"
+		},
+		{
+			key: "delete",
+			label: "Delete",
+			icon: "delete",
+			color: "warn"
+		}
+	];
+
+	readonly bulkActions: BulkAction[] = [
+		{
+			key: "activate",
+			label: "Activate Selected",
+			icon: "check_circle",
+			color: "primary"
+		},
+		{
+			key: "deactivate",
+			label: "Deactivate Selected",
+			icon: "cancel",
+			color: "accent"
+		},
+		{
+			key: "delete",
+			label: "Delete Selected",
+			icon: "delete",
+			color: "warn"
+		}
+	];
+
+	onSearch(searchTerm: string): void
+	{
+		this.userService.updateFilter({ searchTerm: searchTerm || undefined });
+	}
+
+	onRefresh(): void
+	{
+		void this.usersQuery.refetch();
+	}
+
+	onFilterChange(event: { filterKey: string }): void
+	{
+		const filterKey: string = event.filterKey;
+		let includeInactive: boolean | undefined = undefined;
+
+		switch (filterKey)
+		{
+			case "all":
+				// Show all users (active + inactive)
+				includeInactive = true;
+				break;
+			case "active":
+				// Show only active users
+				includeInactive = false;
+				break;
+			case "inactive":
+				// Show only inactive users (need to filter server-side)
+				// This would need backend support for isActive=false filter
+				includeInactive = true;
+				break;
+		}
+
+		this.userService.updateFilter({ includeInactive });
+	}
+
+	onDateRangeChange(event: DateRangeEvent): void
+	{
+		// Update filter with date range (filters by LastLogin)
+		this.userService.updateFilter({
+			startDate: event.startDate,
+			endDate: event.endDate
+		});
+	}
+
+	onRowAction(event: RowActionEvent<User>): void
+	{
+		switch (event.action)
+		{
+			case "view":
+				this.viewUser(event.row.id);
+				break;
+			case "edit":
+				this.editUser(event.row.id);
+				break;
+			case "toggleStatus":
+				this.toggleUserStatus(event.row);
+				break;
+			case "delete":
+				this.deleteUser(event.row.id, event.row.username);
+				break;
+		}
+	}
+
+	onBulkAction(event: BulkActionEvent): void
+	{
+		switch (event.action)
+		{
+			case "activate":
+				this.bulkActivateUsers(event.selectedIds);
+				break;
+			case "deactivate":
+				this.bulkDeactivateUsers(event.selectedIds);
+				break;
+			case "delete":
+				this.bulkDeleteUsers(event.selectedIds);
+				break;
+		}
+	}
+
+	onPageChange(pageIndex: number): void
+	{
+		this.userService.setPage(pageIndex + 1);
+	}
+
+	onPageSizeChange(pageSize: number): void
+	{
+		this.userService.setPageSize(pageSize);
 	}
 
 	/**
-	 * Bulk deactivate selected users
+	 * Navigates to the user details view page
+	 * @param userId - The user ID to view
 	 */
-	deactivateSelected(): void
+	private viewUser(userId: number): void
 	{
-		const users: User[] = this.selection.selected;
-		const ids: number[] = users.map((u) => u.id);
-		const count: number = ids.length;
-
-		if (count === 0) return;
-
-		const dialogData: ConfirmDialogData = {
-			title: "Deactivate Users",
-			message: `Are you sure you want to deactivate ${count} user${count > 1 ? "s" : ""}?`,
-			confirmText: "Deactivate",
-			cancelText: "Cancel",
-			confirmColor: "warn",
-			icon: "block"
-		};
-
-		this.dialog
-			.open(ConfirmDialogComponent, {
-				data: dialogData,
-				width: "450px"
-			})
-			.afterClosed()
-			.subscribe((confirmed) =>
-			{
-				if (confirmed)
-				{
-					this.bulkDeactivateMutation.mutate(ids, {
-						onSuccess: (deactivatedCount: number) =>
-						{
-							this.showSuccessMessage(
-								`${deactivatedCount} user${deactivatedCount > 1 ? "s" : ""} deactivated`
-							);
-							this.selection.clear();
-							this.logger.info("Bulk deactivate successful", {
-								count: deactivatedCount
-							});
-						},
-						onError: (err: Error) =>
-						{
-							this.logger.error("Bulk deactivate failed", err);
-							this.snackBar.open(
-								"Failed to deactivate users",
-								"Close",
-								{
-									duration: 3000
-								}
-							);
-						}
-					});
-				}
-			});
+		void this.router.navigate(["/admin/users", userId]);
 	}
 
 	/**
-	 * Exports selected users to CSV
+	 * Navigates to the user edit page
+	 * @param userId - The user ID to edit
 	 */
-	exportSelected(): void
+	private editUser(userId: number): void
 	{
-		const users: User[] = this.selection.selected;
-		const count: number = users.length;
-		if (count === 0) return;
+		void this.router.navigate(["/admin/users", userId, "edit"]);
+	}
 
-		this.logger.info("Export requested", { count });
+	/**
+	 * Toggles a user's active status
+	 * @param user - The user to toggle
+	 */
+	private toggleUserStatus(user: User): void
+	{
+		const newStatus: boolean = !user.isActive;
+		const action: string = newStatus ? "activate" : "deactivate";
 
-		// Export using UserExportService
-		this.userExportService.exportToCsv(users);
+		if (
+			!confirm(
+				`Are you sure you want to ${action} user "${user.username}"?`
+			)
+		)
+		{
+			return;
+		}
 
-		this.showSuccessMessage(
-			`Exported ${count} user${count > 1 ? "s" : ""} to CSV`
+		this.updateUserMutation.mutate(
+			{
+				id: user.id,
+				user: {
+					id: user.id,
+					username: user.username,
+					email: user.email,
+					fullName: user.fullName,
+					isActive: newStatus,
+					rowVersion: user.rowVersion
+				}
+			},
+			{
+				onSuccess: () =>
+				{
+					this.notificationService.success(
+						`User "${user.username}" ${action}d successfully`
+					);
+				},
+				onError: (error: Error) =>
+				{
+					this.notificationService.error(
+						`Failed to ${action} user: ${error.message}`
+					);
+				}
+			}
 		);
 	}
 
 	/**
-	 * Show success message with optional action
+	 * Deletes a single user
+	 * @param userId - The user ID to delete
+	 * @param username - The username for confirmation message
 	 */
-	private showSuccessMessage(message: string, action?: string): void
+	private deleteUser(userId: number, username: string): void
 	{
-		const snackBarRef: import("@angular/material/snack-bar").MatSnackBarRef<
-			import("@angular/material/snack-bar").TextOnlySnackBar
-		> = this.snackBar.open(message, action, {
-			duration: action ? 5000 : 3000,
-			horizontalPosition: "end",
-			verticalPosition: "bottom",
-			politeness: "polite"
-		});
-
-		if (action)
+		if (
+			!confirm(
+				`Are you sure you want to delete user "${username}"? This action cannot be undone.`
+			)
+		)
 		{
-			snackBarRef.onAction().subscribe(() =>
-			{
-				this.logger.info("Undo action triggered");
-				// TODO: Implement undo functionality
-			});
+			return;
 		}
+
+		this.deleteUserMutation.mutate(userId, {
+			onSuccess: () =>
+			{
+				this.notificationService.success(
+					`User "${username}" deleted successfully`
+				);
+			},
+			onError: (error: Error) =>
+			{
+				this.notificationService.error(
+					`Failed to delete user: ${error.message}`
+				);
+			}
+		});
 	}
 
 	/**
-	 * Refreshes chart data (reloads users)
+	 * Bulk activates multiple users
+	 * @param userIds - Array of user IDs to activate
 	 */
-	onChartRefresh(): void
+	private bulkActivateUsers(userIds: number[]): void
 	{
-		this.logger.info("Chart refresh requested");
-		this.loadUsers();
+		if (userIds.length === 0)
+		{
+			this.notificationService.warning(
+				"No users selected for activation"
+			);
+			return;
+		}
+
+		const count: number = userIds.length;
+		if (
+			!confirm(
+				`Are you sure you want to activate ${count} user${count === 1 ? "" : "s"}?`
+			)
+		)
+		{
+			return;
+		}
+
+		this.bulkActivateMutation.mutate(userIds, {
+			onSuccess: (activatedCount: number) =>
+			{
+				this.notificationService.success(
+					`Successfully activated ${activatedCount} user${activatedCount === 1 ? "" : "s"}`
+				);
+			},
+			onError: (error: Error) =>
+			{
+				this.notificationService.error(
+					`Failed to activate users: ${error.message}`
+				);
+			}
+		});
 	}
 
 	/**
-	 * Exports chart as PNG
+	 * Bulk deactivates multiple users
+	 * @param userIds - Array of user IDs to deactivate
 	 */
-	onChartExportPng(): void
+	private bulkDeactivateUsers(userIds: number[]): void
 	{
-		this.logger.info("Chart PNG export requested");
-		// TODO: Implement chart PNG export using Chart.js toBase64Image
-		alert("Export chart as PNG (Not implemented)");
+		if (userIds.length === 0)
+		{
+			this.notificationService.warning(
+				"No users selected for deactivation"
+			);
+			return;
+		}
+
+		const count: number = userIds.length;
+		if (
+			!confirm(
+				`Are you sure you want to deactivate ${count} user${count === 1 ? "" : "s"}?`
+			)
+		)
+		{
+			return;
+		}
+
+		this.bulkDeactivateMutation.mutate(userIds, {
+			onSuccess: (deactivatedCount: number) =>
+			{
+				this.notificationService.success(
+					`Successfully deactivated ${deactivatedCount} user${deactivatedCount === 1 ? "" : "s"}`
+				);
+			},
+			onError: (error: Error) =>
+			{
+				this.notificationService.error(
+					`Failed to deactivate users: ${error.message}`
+				);
+			}
+		});
 	}
 
 	/**
-	 * Exports chart data as CSV
+	 * Bulk deletes multiple users
+	 * @param userIds - Array of user IDs to delete
 	 */
-	onChartExportCsv(): void
+	private bulkDeleteUsers(userIds: number[]): void
 	{
-		this.logger.info("Chart CSV export requested");
-		// TODO: Implement chart data CSV export
-		alert("Export chart data as CSV (Not implemented)");
+		if (userIds.length === 0)
+		{
+			this.notificationService.warning("No users selected for deletion");
+			return;
+		}
+
+		const count: number = userIds.length;
+		if (
+			!confirm(
+				`Are you sure you want to delete ${count} user${count === 1 ? "" : "s"}? This action cannot be undone.`
+			)
+		)
+		{
+			return;
+		}
+
+		// Delete users one by one (could be optimized with a batch endpoint if available)
+		let successCount: number = 0;
+		let errorCount: number = 0;
+
+		// Process deletions sequentially to handle errors properly
+		const deleteNext: (index: number) => void = (index: number): void =>
+		{
+			if (index >= userIds.length)
+			{
+				// All done
+				if (successCount > 0)
+				{
+					this.notificationService.success(
+						`Successfully deleted ${successCount} user${successCount === 1 ? "" : "s"}`
+					);
+				}
+				if (errorCount > 0)
+				{
+					this.notificationService.error(
+						`Failed to delete ${errorCount} user${errorCount === 1 ? "" : "s"}`
+					);
+				}
+				return;
+			}
+
+			this.deleteUserMutation.mutate(userIds[index], {
+				onSuccess: () =>
+				{
+					successCount++;
+					deleteNext(index + 1);
+				},
+				onError: () =>
+				{
+					errorCount++;
+					deleteNext(index + 1);
+				}
+			});
+		};
+
+		deleteNext(0);
 	}
 }

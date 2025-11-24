@@ -32,7 +32,7 @@ describe("UserRepository", () =>
 
 	beforeEach(() =>
 	{
-		mockApiService = createMockApiService();
+		mockApiService = createMockApiService() as any;
 
 		repository = setupRepositoryTest(UserRepository, [
 			{ provide: ApiService, useValue: mockApiService }
@@ -64,7 +64,7 @@ describe("UserRepository", () =>
 		it("should get paged users with query params", (done) =>
 		{
 			const request: UserQueryRequest = {
-				page: 1,
+				pageNumber: 1,
 				pageSize: 10,
 				searchTerm: "test",
 				includeInactive: false,
@@ -74,7 +74,7 @@ describe("UserRepository", () =>
 			const pagedResult: PagedResult<User> = {
 				items: [mockUser],
 				totalCount: 1,
-				page: 1,
+				pageNumber: 1,
 				pageSize: 10,
 				totalPages: 1,
 				hasPreviousPage: false,

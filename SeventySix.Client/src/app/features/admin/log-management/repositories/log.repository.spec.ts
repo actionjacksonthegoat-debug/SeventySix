@@ -60,7 +60,7 @@ describe("LogRepository", () =>
 
 	beforeEach(() =>
 	{
-		mockApiService = createMockApiService();
+		mockApiService = createMockApiService() as any;
 
 		repository = setupRepositoryTest(LogRepository, [
 			{ provide: ApiService, useValue: mockApiService }
@@ -92,7 +92,7 @@ describe("LogRepository", () =>
 		it("should fetch paged logs with filter", (done) =>
 		{
 			const filter: LogFilterRequest = {
-				logLevel: LogLevel.Error,
+				logLevel: LogLevel.Error.toString(),
 				pageNumber: 2,
 				pageSize: 25
 			};
@@ -145,7 +145,7 @@ describe("LogRepository", () =>
 		it("should fetch log count with filter", (done) =>
 		{
 			const filter: LogFilterRequest = {
-				logLevel: LogLevel.Warning,
+				logLevel: LogLevel.Warning.toString(),
 				sourceContext: "TestContext"
 			};
 			mockApiService.get.and.returnValue(of(mockCountResponse));

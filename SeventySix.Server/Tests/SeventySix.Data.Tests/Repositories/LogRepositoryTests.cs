@@ -120,7 +120,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		await SeedTestLogsAsync();
 
 		// Act
-		IEnumerable<Log> result = await Repository.GetLogsAsync(sourceContext: "UserService");
+		IEnumerable<Log> result = await Repository.GetLogsAsync(searchTerm: "UserService");
 
 		// Assert
 		Assert.All(result, log => Assert.Contains("UserService", log.SourceContext ?? string.Empty));
@@ -133,10 +133,35 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		await SeedTestLogsAsync();
 
 		// Act
-		IEnumerable<Log> result = await Repository.GetLogsAsync(requestPath: "/api/users");
+		IEnumerable<Log> result = await Repository.GetLogsAsync(searchTerm: "/api/users");
 
 		// Assert
 		Assert.All(result, log => Assert.Contains("/api/users", log.RequestPath ?? string.Empty));
+	}
+
+	[Fact]
+	public async Task GetLogsAsync_WithSearchTerm_FiltersMultipleFields_SuccessfullyAsync()
+	{
+		// Arrange
+		await SeedTestLogsForSearchAsync();
+
+		// Act - Search for "Authentication" which should match Message field
+		IEnumerable<Log> messageResults = await Repository.GetLogsAsync(searchTerm: "Authentication");
+
+		// Act - Search for "UserService" which should match SourceContext field
+		IEnumerable<Log> sourceContextResults = await Repository.GetLogsAsync(searchTerm: "UserService");
+
+		// Act - Search for "users" which should match RequestPath field
+		IEnumerable<Log> requestPathResults = await Repository.GetLogsAsync(searchTerm: "users");
+
+		// Act - Search for "NullReference" which should match ExceptionMessage field
+		IEnumerable<Log> exceptionResults = await Repository.GetLogsAsync(searchTerm: "NullReference");
+
+		// Assert - Verify search works across all fields
+		Assert.Single(messageResults); // Only "Authentication failed" message
+		Assert.Equal(2, sourceContextResults.Count()); // Two logs from UserService
+		Assert.Equal(2, requestPathResults.Count()); // Two logs with /api/users path
+		Assert.Single(exceptionResults); // Only one NullReferenceException
 	}
 
 	[Fact]
@@ -284,6 +309,45 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 				RequestPath = "/api/users/2",
 				StatusCode = 404,
 				DurationMs = 50,
+				Timestamp = DateTime.UtcNow.AddMinutes(-10),
+			},
+		];
+
+		foreach (Log? log in logs)
+		{
+			await Repository.CreateAsync(log);
+		}
+	}
+
+	private async Task SeedTestLogsForSearchAsync()
+	{
+		Log[] logs =
+		[
+			new Log
+			{
+				LogLevel = "Error",
+				Message = "Authentication failed for user",
+				SourceContext = "SeventySix.Services.UserService",
+				RequestPath = "/api/users/login",
+				ExceptionMessage = null,
+				Timestamp = DateTime.UtcNow,
+			},
+			new Log
+			{
+				LogLevel = "Error",
+				Message = "Database connection timeout",
+				SourceContext = "SeventySix.Services.UserService",
+				RequestPath = "/api/users/profile",
+				ExceptionMessage = "NullReferenceException: Object reference not set",
+				Timestamp = DateTime.UtcNow.AddMinutes(-5),
+			},
+			new Log
+			{
+				LogLevel = "Warning",
+				Message = "Rate limit approaching",
+				SourceContext = "SeventySix.Services.ApiThrottlingService",
+				RequestPath = "/api/health",
+				ExceptionMessage = null,
 				Timestamp = DateTime.UtcNow.AddMinutes(-10),
 			},
 		];

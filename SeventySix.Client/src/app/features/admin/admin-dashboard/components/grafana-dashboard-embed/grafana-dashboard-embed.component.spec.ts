@@ -33,7 +33,7 @@ describe("GrafanaDashboardEmbedComponent", () =>
 		const url: string = component.sanitizedUrl().toString();
 
 		expect(url).toContain("http://localhost:3000/d/test-dashboard");
-		expect(url).toContain("refresh=5s");
+		expect(url).toContain("refresh=30s");
 		expect(url).toContain("theme=dark");
 		expect(url).toContain("kiosk");
 	});

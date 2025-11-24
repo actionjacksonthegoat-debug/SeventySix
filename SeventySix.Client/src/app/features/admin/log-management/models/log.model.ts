@@ -138,3 +138,27 @@ export function getLogLevelIcon(level: LogLevel): string
 			return "circle";
 	}
 }
+
+/**
+ * Convert LogLevel enum to string for API calls
+ */
+export function logLevelToString(level: LogLevel): string
+{
+	switch (level)
+	{
+		case LogLevel.Verbose:
+			return "Verbose";
+		case LogLevel.Debug:
+			return "Debug";
+		case LogLevel.Information:
+			return "Information";
+		case LogLevel.Warning:
+			return "Warning";
+		case LogLevel.Error:
+			return "Error";
+		case LogLevel.Fatal:
+			return "Fatal";
+		default:
+			return "Information";
+	}
+}

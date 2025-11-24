@@ -38,9 +38,7 @@ export class LogRepository extends HttpRepository<LogResponse>
 					logLevel: filter.logLevel,
 					startDate: filter.startDate,
 					endDate: filter.endDate,
-					sourceContext: filter.sourceContext,
-					requestPath: filter.requestPath,
-					pageNumber: filter.pageNumber,
+					page: filter.pageNumber, // Map pageNumber to page for backend
 					pageSize: filter.pageSize,
 					searchTerm: filter.searchTerm
 				})
@@ -71,8 +69,7 @@ export class LogRepository extends HttpRepository<LogResponse>
 					logLevel: filter.logLevel,
 					startDate: filter.startDate,
 					endDate: filter.endDate,
-					sourceContext: filter.sourceContext,
-					requestPath: filter.requestPath
+					searchTerm: filter.searchTerm
 				})
 			: undefined;
 

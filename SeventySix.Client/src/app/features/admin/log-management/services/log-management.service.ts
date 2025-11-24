@@ -3,6 +3,7 @@
  * Business logic layer for log operations
  * Uses TanStack Query for caching and state management
  * Uses repository pattern for data access (SRP, DIP)
+ * Extends BaseFilterService for filter state management
  */
 
 import {
@@ -22,6 +23,7 @@ import { lastValueFrom } from "rxjs";
 import { LogRepository } from "@admin/log-management/repositories";
 import { LogFilterRequest } from "@admin/log-management/models";
 import { getQueryConfig } from "@core/utils/query-config";
+import { BaseFilterService } from "@core/services/base-filter.service";
 
 /**
  * Service for log management business logic
@@ -31,19 +33,12 @@ import { getQueryConfig } from "@core/utils/query-config";
 @Injectable({
 	providedIn: "root"
 })
-export class LogManagementService
+export class LogManagementService extends BaseFilterService<LogFilterRequest>
 {
 	private readonly logRepository: LogRepository = inject(LogRepository);
 	private readonly queryClient: QueryClient = inject(QueryClient);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("logs");
-
-	// Filter state using signals
-	readonly filter: WritableSignal<LogFilterRequest> =
-		signal<LogFilterRequest>({
-			pageNumber: 1,
-			pageSize: 50
-		});
 
 	// Selected log IDs using signals
 	readonly selectedIds: WritableSignal<Set<number>> = signal<Set<number>>(
@@ -55,6 +50,14 @@ export class LogManagementService
 		() => this.selectedIds().size
 	);
 
+	constructor()
+	{
+		super({
+			pageNumber: 1,
+			pageSize: 50
+		});
+	}
+
 	/**
 	 * Query for logs based on current filter
 	 * Automatically cached with TanStack Query
@@ -63,9 +66,11 @@ export class LogManagementService
 	getLogs()
 	{
 		return injectQuery(() => ({
-			queryKey: ["logs", this.filter()],
+			queryKey: ["logs", this.getCurrentFilter()],
 			queryFn: () =>
-				lastValueFrom(this.logRepository.getAllPaged(this.filter())),
+				lastValueFrom(
+					this.logRepository.getAllPaged(this.getCurrentFilter())
+				),
 			...this.queryConfig
 		}));
 	}
@@ -77,9 +82,11 @@ export class LogManagementService
 	getLogCount()
 	{
 		return injectQuery(() => ({
-			queryKey: ["logs", "count", this.filter()],
+			queryKey: ["logs", "count", this.getCurrentFilter()],
 			queryFn: () =>
-				lastValueFrom(this.logRepository.getCount(this.filter())),
+				lastValueFrom(
+					this.logRepository.getCount(this.getCurrentFilter())
+				),
 			...this.queryConfig
 		}));
 	}
@@ -131,48 +138,14 @@ export class LogManagementService
 	}
 
 	/**
-	 * Update filter and automatically refetch
-	 * @param filter - Partial filter to update
+	 * Clear all filters and reset to defaults
+	 * Overrides base class method to also clear selection
 	 */
-	updateFilter(filter: Partial<LogFilterRequest>): void
-	{
-		this.filter.update((current) => ({
-			...current,
-			...filter,
-			pageNumber: 1
-		}));
-	}
-
-	/**
-	 * Set page number
-	 * @param pageNumber - Page number to load
-	 */
-	setPage(pageNumber: number): void
-	{
-		this.filter.update((current) => ({ ...current, pageNumber }));
-	}
-
-	/**
-	 * Set page size
-	 * @param pageSize - Number of items per page
-	 */
-	setPageSize(pageSize: number): void
-	{
-		this.filter.update((current) => ({
-			...current,
-			pageSize,
-			pageNumber: 1
-		}));
-	}
-
-	/**
-	 * Clear all filters
-	 */
-	clearFilters(): void
+	override clearFilters(): void
 	{
 		this.filter.set({
 			pageNumber: 1,
-			pageSize: this.filter().pageSize || 50
+			pageSize: 50
 		});
 		this.clearSelection();
 	}
@@ -213,14 +186,6 @@ export class LogManagementService
 	clearSelection(): void
 	{
 		this.selectedIds.set(new Set());
-	}
-
-	/**
-	 * Get current filter value
-	 */
-	getCurrentFilter(): LogFilterRequest
-	{
-		return this.filter();
 	}
 
 	/**

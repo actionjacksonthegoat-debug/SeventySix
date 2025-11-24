@@ -475,4 +475,3 @@ describe("HealthApiService", () =>
 		});
 	});
 });
-

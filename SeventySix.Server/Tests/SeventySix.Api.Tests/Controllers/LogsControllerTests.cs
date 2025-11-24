@@ -234,7 +234,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 	}
 
 	/// <summary>
-	/// Tests that GET /api/logs enforces maximum page size of 100.
+	/// Tests that GET /api/logs validates maximum page size of 100.
 	/// </summary>
 	[Fact]
 	public async Task GetLogsAsync_ExceedsMaxPageSize_ReturnsMaxRecordsAsync()
@@ -242,13 +242,8 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		// Act
 		HttpResponseMessage response = await Client.GetAsync("/api/v1/logs?pageSize=200");
 
-		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
-		Assert.NotNull(pagedResponse);
-		Assert.NotNull(pagedResponse.Data);
-		Assert.True(pagedResponse.Data.Count <= 100, "Should not exceed maximum page size of 100");
+		// Assert - Validator now rejects invalid PageSize
+		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 
 	/// <summary>
@@ -350,7 +345,7 @@ public class LogsControllerTests : IClassFixture<WebApplicationFactory<Program>>
 		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 		IEnumerable<Log> logs = await logRepo.GetLogsAsync(
 			logLevel: "Error",
-			sourceContext: "UserComponent",
+			searchTerm: "UserComponent",
 			skip: 0,
 			take: 10);
 		Log? clientLog = logs.FirstOrDefault(l => l.Message == "Client-side error occurred");

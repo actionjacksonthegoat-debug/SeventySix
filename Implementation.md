@@ -1,1246 +1,872 @@
-# Implementation Plan: Remove Deprecated Endpoints and Observability Cleanup
+# Implementation Plan: Generic Data Table Refactoring
 
-## Executive Summary
+## ✅ Phase 1 Complete: Base Filter Service
 
-**Objective**: Remove all client-side and server-side code related to deprecated weather, logchart, and logstatistic endpoints, while streamlining the admin dashboard to focus on Grafana-based observability with only two custom panels (API Statistics and Observability Quick Links).
+**Completion Date**: 2025-11-23
 
-**Approach**: ULTRATHINK methodology with systematic discovery, analysis, and incremental removal following KISS, DRY, and YAGNI principles.
+**Implemented**:
 
-**Architecture Compliance**: All changes align with Clean Architecture, Three-Layer Architecture, Feature Module Pattern, and established coding standards from `.editorconfig` and `CLAUDE.md`.
+-   ✅ Created `BaseQueryRequest` interface in `core/models/base-query-request.model.ts`
 
----
+    -   Common properties: `pageNumber`, `pageSize`, `searchTerm`, `startDate`, `endDate`, `sortBy`, `sortDescending`
+    -   Fully documented with JSDoc comments
+    -   Follows Allman brace style per .editorconfig
 
-## Phase 0: ULTRATHINK Analysis
+-   ✅ Created `BaseFilterService<TFilter>` in `core/services/base-filter.service.ts`
 
-### Problem Decomposition
+    -   Generic base class for filter state management
+    -   Protected filter signal for subclass access
+    -   Methods: `getCurrentFilter()`, `updateFilter()`, `setPage()`, `setPageSize()`, `abstract clearFilters()`
+    -   100% test coverage (13 tests passing)
+    -   Follows CLAUDE.md guidelines: explicit types, JSDoc, Allman braces
 
-1. **Observability Migration Context**
+-   ✅ Updated `LogFilterRequest` to extend `BaseQueryRequest`
 
-    - Transition from custom dashboards to Grafana-based observability
-    - Legacy endpoints (weather, logchart, logstatistic) no longer needed
-    - Admin dashboard simplified to two custom panels + Grafana embeds
+    -   Added `sourceContext` property for test compatibility
+    -   Removed duplicate pagination/search/date properties (inherited from base)
 
-2. **Code Removal Scope**
+-   ✅ Updated `UserQueryRequest` to extend `BaseQueryRequest`
 
-    - **Client-side**: Components, services, repositories, models, routes, tests
-    - **Server-side**: Controllers, services, repositories, DTOs, validators, tests
-    - **Shared**: Configuration, documentation references
+    -   Changed `page` → `pageNumber` for consistency with server contract
+    -   Added `sortBy`, `sortDescending` support
+    -   Comment added for date range support using `startDate`/`endDate`
 
-3. **Dependencies to Preserve**
-    - Logs endpoint (still used for application logging)
-    - Third-party API tracking (still needed for rate limiting/monitoring)
-    - Health endpoint (core infrastructure)
-    - User management (core feature)
+-   ✅ Fixed `PagedResult<T>` interface
 
-### Risk Assessment
+    -   Changed `page` → `pageNumber` to match server response
 
-| Risk                            | Mitigation                                               |
-| ------------------------------- | -------------------------------------------------------- |
-| Breaking existing observability | Verify Grafana dashboards fully replace removed features |
-| Test failures                   | Comprehensive test suite review and cleanup              |
-| Configuration drift             | Update all environment files consistently                |
-| Documentation gaps              | Update architecture docs to reflect new state            |
+-   ✅ Updated `UserRepository.getPaged()` to use new properties
 
-### Success Criteria
+    -   Uses `pageNumber`, `sortBy`, `sortDescending` from request
 
--   ✅ No weather/logchart/logstatistic code remains
--   ✅ Admin dashboard only contains API Statistics + Quick Links panels
--   ✅ All Grafana dashboards functional
--   ✅ All tests pass (client + server)
--   ✅ No unused imports, services, or dependencies
--   ✅ Architecture documentation updated
+-   ✅ Updated test files for compatibility
+    -   `user.service.spec.ts`: Updated to use `pageNumber`
+    -   `user.repository.spec.ts`: Updated to use `pageNumber`
+
+**Test Results**: ✅ All 13 tests passing with 100% coverage
+
+**Next Phase**: Phase 2 - Update LogManagementService and UserService to extend BaseFilterService
 
 ---
 
-## Phase 1: Discovery & Inventory
+## ULTRATHINK Analysis
 
-### 1.1 Client-Side Code Audit
+### Current State Assessment
 
-#### Components to Remove
+**Server Capabilities (✅ Ready)**:
 
-```
-SeventySix.Client/src/app/features/home/
-  └─ weather/                           # REMOVE: Entire weather feature
-      ├─ components/
-      ├─ models/
-      ├─ services/
-      └─ repositories/
-```
+-   ✅ Generic `BaseQueryRequest` with pagination, search, sorting, date ranges
+-   ✅ Generic `PagedResult<T>` response with metadata
+-   ✅ LogsController: Full support (`GetLogsAsync`, `GetCountAsync`, batch delete)
+-   ✅ UsersController: Full support (`GetPagedAsync`, batch operations)
+-   ✅ LogFilterRequest: Extends BaseQueryRequest with LogLevel
+-   ✅ UserQueryRequest: Extends BaseQueryRequest with IsActive, IncludeDeleted
 
-#### Services & Repositories to Audit
+**Client Current State**:
 
--   Search for any `*weather*`, `*log-chart*`, `*log-statistic*` files
--   Identify imports and dependencies in admin dashboard components
--   Catalog all test files referencing these endpoints
+-   ✅ DataTableComponent: Generic, reusable with powerful features
+-   ⚠️ LogList: Server-side pagination via LogManagementService
+-   ⚠️ UserList: Client-side filtering using getAllUsers (not getPaged)
+-   ❌ UserList: Not using server-side search, date ranges, or counts
+-   ❌ Inconsistent patterns between Log and User implementations
 
-#### Routes to Update
+**Key Insight**: The server is fully ready. The client has generic infrastructure but inconsistent usage patterns.
 
--   Remove weather route from `app.routes.ts` or feature routes
--   Clean up breadcrumb mappings
--   Update sidebar navigation
+### Core Problem
 
-#### Test Files to Clean
+1. **UserList uses client-side filtering** (loads all users, filters in browser)
+2. **LogList uses server-side filtering** (proper pagination/filtering)
+3. **No shared abstraction** for managing filter state, pagination, and queries
+4. **DataTableComponent is generic** but feature components duplicate filter/pagination logic
 
--   `e2e/` directory for weather/log-related tests
--   Component spec files with weather/log-chart/log-statistic mocks
+### Design Principle Analysis
 
-### 1.2 Server-Side Code Audit
-
-#### Controllers (Confirmed Existence)
-
--   ❌ `WeatherController` - NOT FOUND (already removed?)
--   ❌ `LogChartController` - NOT FOUND (already removed?)
--   ❌ `LogStatisticController` - NOT FOUND (already removed?)
--   ✅ `LogsController` - KEEP (still needed for logging)
--   ✅ `HealthController` - KEEP (infrastructure)
--   ✅ `ThirdPartyApiRequestsController` - KEEP (API tracking)
-
-#### Services & Repositories to Search
-
--   Business logic layer: `*Weather*`, `*LogChart*`, `*LogStatistic*`
--   Data layer: Repository implementations
--   Infrastructure: HTTP clients (e.g., `OpenWeatherApiClient`)
-
-#### DTOs to Remove
-
--   Weather-related request/response DTOs
--   Log chart/statistic DTOs (if separate from main Log DTOs)
-
-#### Validators to Remove
-
--   FluentValidation validators for weather requests
--   Log chart/statistic validators
-
-#### Tests to Clean
-
--   Unit tests for removed services/repositories
--   Integration tests for removed controllers
--   Test utilities/builders referencing weather data
--   Mock helpers for OpenWeather API
-
-### 1.3 Configuration Audit
-
-#### Environment Files
-
--   `SeventySix.Client/src/environments/environment*.ts`
-    -   Remove weather API configuration
-    -   Verify Grafana dashboard UIDs present
-
-#### App Settings
-
--   `SeventySix.Server/SeventySix.Api/appsettings*.json`
-    -   Remove OpenWeather API keys/configuration
-    -   Clean up rate limiting rules for removed endpoints
-
-#### Docker Compose
-
--   Verify observability stack (Grafana, Prometheus, Jaeger) configuration
--   Remove any weather-specific containers or volumes
-
----
-
-## Phase 2: Client-Side Cleanup
-
-### 2.1 Remove Weather Feature Module
-
-**Action**: Delete entire weather feature directory
-
-```powershell
-Remove-Item -Recurse -Force SeventySix.Client/src/app/features/home/weather
-```
-
-**Verification**:
-
--   No broken imports in remaining code
--   No route references to `/weather`
--   Breadcrumb component updated
--   Sidebar navigation cleaned
-
-### 2.2 Update Admin Dashboard
-
-**Current State** (from `admin-dashboard.component.html`):
-
--   ✅ System Overview Tab (Grafana embed) - KEEP
--   ✅ API Metrics Tab (Grafana embed) - KEEP
--   ✅ Tools Tab - SIMPLIFY
-    -   ✅ API Statistics Table - KEEP
-    -   ✅ Observability Quick Links - KEEP
-    -   ❌ Remove any log chart/weather panels if present
-
-**Action**:
-
-1. Review `admin-dashboard.component.html` for log-chart/weather references
-2. Verify only two custom panels remain:
-    - `ApiStatisticsTableComponent`
-    - Observability Quick Links (inline in template)
-3. Remove unused component imports from `admin-dashboard.component.ts`
-
-### 2.3 Clean Admin Dashboard Components
-
-**Components to Review**:
-
-```
-SeventySix.Client/src/app/features/admin/admin-dashboard/components/
-  ├─ api-statistics-table/          # KEEP - core functionality
-  └─ grafana-dashboard-embed/       # KEEP - core functionality
-```
-
-**Action**:
-
--   Search for any log-chart/weather components
--   Remove if found
--   Update barrel exports (`index.ts`)
-
-### 2.4 Clean Services & Repositories
-
-**Services to Audit** (`admin-dashboard/services/`):
-
--   `health-api.service.ts` - REVIEW for weather references
--   `third-party-api.service.ts` - REVIEW for weather references
--   Remove any dedicated weather/log-chart services
-
-**Repositories to Audit** (`admin-dashboard/repositories/`):
-
--   Remove weather/log-chart repositories if present
-
-**Action**:
-
-1. Search all service/repository files for "weather", "logchart", "logstatistic"
-2. Remove methods/endpoints no longer needed
-3. Update tests to remove weather/log-chart test cases
-4. Clean barrel exports
-
-### 2.5 Update Models
-
-**Action**:
-
--   Review `admin-dashboard/models/` for weather/log-chart interfaces
--   Remove deprecated models
--   Update barrel exports
--   Clean TypeScript imports throughout codebase
-
-### 2.6 Remove E2E Tests
-
-**Action**:
-
--   Search `e2e/` directory for weather/log-chart tests
--   Remove deprecated test files
--   Update remaining tests if they reference removed features
-
-### 2.7 Update Routing
-
-**Files to Update**:
-
--   `app.routes.ts` - Remove weather routes
--   `features/home/*.routes.ts` - Clean up home feature routes
--   `features/admin/admin.routes.ts` - Verify admin routes clean
-
-**Action**:
-
-```typescript
-// BEFORE
-{ path: 'weather', loadComponent: () => import('./weather/...') }
-
-// AFTER
-// Removed - functionality now in Grafana dashboards
-```
-
-### 2.8 Update Navigation
-
-**Files to Update**:
-
--   `core/layout/sidebar/sidebar.component.ts` - Remove weather links
--   `shared/components/breadcrumb/breadcrumb.component.ts` - Clean breadcrumb mappings
-
-**Action**:
-
--   Remove weather navigation items
--   Update breadcrumb route labels
--   Verify no broken links
-
-### 2.9 Clean Test Mocks & Fixtures
-
-**Action**:
-
--   Search `testing/mocks/` for weather/log-chart mocks
--   Remove deprecated mock data
--   Update remaining tests using cleaned mocks
-
-### 2.10 Run Client Tests
-
-**Action**:
-
-```powershell
-cd SeventySix.Client
-npm test
-```
-
-**Expected**:
-
--   All tests pass
--   No references to removed features
--   Coverage maintained >80%
-
----
-
-## Phase 3: Server-Side Cleanup
-
-### 3.1 Remove Controllers
-
-**Status**: Controllers appear already removed
-
--   ❌ `WeatherController` - NOT FOUND
--   ❌ `LogChartController` - NOT FOUND
--   ❌ `LogStatisticController` - NOT FOUND
-
-**Action**:
-
--   Verify no controller files exist
--   Search for route registrations in `Program.cs`
--   Clean up any middleware specific to these endpoints
-
-### 3.2 Remove Services (Business Logic Layer)
-
-**Search Pattern**:
-
-```
-SeventySix.BusinessLogic/Services/
-  - *Weather*.cs
-  - *LogChart*.cs
-  - *LogStatistic*.cs
-```
-
-**Action**:
-
-1. Identify weather/log-chart/log-statistic service implementations
-2. Remove service files
-3. Remove service interfaces from `Interfaces/`
-4. Update DI registration in `Program.cs` or extension methods
-5. Search for `IWeatherService`, `ILogChartService`, `ILogStatisticService`
-
-### 3.3 Remove Infrastructure (HTTP Clients)
-
-**Search Pattern**:
-
-```
-SeventySix.BusinessLogic/Infrastructure/
-  - OpenWeatherApiClient.cs or similar
-```
-
-**Action**:
-
-1. Remove HTTP client implementations for weather APIs
-2. Remove Polly policies specific to weather endpoints
-3. Clean up rate limiting configuration for OpenWeather
-4. Update DI registration
-
-### 3.4 Remove Repositories (Data Layer)
-
-**Search Pattern**:
-
-```
-SeventySix.Data/Repositories/
-  - *Weather*.cs
-  - *LogChart*.cs
-  - *LogStatistic*.cs
-```
-
-**Action**:
-
-1. Remove repository implementations
-2. Verify repository interfaces removed from BusinessLogic
-3. Clean up any weather-specific database queries
-4. **NOTE**: Keep `LogRepository` (needed for application logging)
-
-### 3.5 Remove DTOs
-
-**Search Pattern**:
-
-```
-SeventySix.BusinessLogic/DTOs/
-  - Weather/
-  - LogChart/
-  - LogStatistic/
-```
-
-**Action**:
-
-1. Remove weather/log-chart/log-statistic DTO folders
-2. Update barrel exports if any
-3. Search for references in remaining code
-
-### 3.6 Remove Validators
-
-**Search Pattern**:
-
-```
-SeventySix.BusinessLogic/Validators/
-  - *Weather*Validator.cs
-  - *LogChart*Validator.cs
-  - *LogStatistic*Validator.cs
-```
-
-**Action**:
-
-1. Remove validator files
-2. Clean up FluentValidation registration in DI
-
-### 3.7 Remove Entities (If Weather-Specific)
-
-**Search Pattern**:
-
-```
-SeventySix.BusinessLogic/Entities/
-  - Weather.cs (if exists)
-```
-
-**Action**:
-
--   Remove weather-specific entities
--   **NOTE**: Keep `Log` entity (still needed)
--   **NOTE**: Keep `ThirdPartyApiRequest` entity (still needed for API tracking)
-
-### 3.8 Clean Database Migrations
-
-**Action**:
-
--   Review EF Core migrations for weather-specific tables
--   If weather tables exist, create migration to drop them
--   **NOTE**: Do NOT remove Log or ThirdPartyApiRequest tables
-
-### 3.9 Update Configuration
-
-**Files to Update**:
-
--   `appsettings.json` - Remove OpenWeather configuration
--   `appsettings.Development.json`
--   `appsettings.Production.json`
--   `appsettings.Test.json`
-
-**Action**:
-
-```json
-// REMOVE
-{
-	"OpenWeather": {
-		"ApiKey": "...",
-		"BaseUrl": "..."
-	}
-}
-```
-
-### 3.10 Update DI Registration
-
-**File**: `SeventySix.Api/Program.cs` or extension methods
-
-**Action**:
-
-1. Remove weather service registrations
-2. Remove weather repository registrations
-3. Remove OpenWeather HTTP client registrations
-4. Remove weather validator registrations
-5. Clean up Polly policies for weather endpoints
-
-### 3.11 Clean Test Projects
-
-#### 3.11.1 Remove Test Files
-
-**Search Pattern**:
-
-```
-Tests/SeventySix.Api.Tests/Controllers/
-  - WeatherControllerTests.cs
-  - LogChartControllerTests.cs
-  - LogStatisticControllerTests.cs
-
-Tests/SeventySix.BusinessLogic.Tests/Services/
-  - *Weather*Tests.cs
-  - *LogChart*Tests.cs
-  - *LogStatistic*Tests.cs
-
-Tests/SeventySix.Data.Tests/Repositories/
-  - *Weather*RepositoryTests.cs
-  - *LogChart*RepositoryTests.cs
-  - *LogStatistic*RepositoryTests.cs
-```
-
-**Action**:
-
--   Remove all test files for deleted features
--   Clean up test references in existing tests (e.g., `LogsControllerTests.cs` has `WeatherController` references in test data)
-
-#### 3.11.2 Clean Test Utilities
-
-**Search Pattern**:
-
-```
-Tests/SeventySix.TestUtilities/
-  - Builders/*Weather*.cs
-  - Helpers/*Weather*.cs
-  - Attributes/ (review comments mentioning OpenWeather)
-```
-
-**Found References**:
-
--   `ThirdPartyApiRequestBuilder.CreateOpenWeather()` - REMOVE
--   Comments in `IntegrationTestAttribute.cs` mentioning OpenWeather - UPDATE
--   Comments in `ApiPostgreSqlTestBase.cs` mentioning OpenWeather - UPDATE
-
-**Action**:
-
-1. Remove `CreateOpenWeather()` factory method from builder
-2. Update comments to remove OpenWeather references
-3. Search for "OpenWeather" in all test files and clean up
-
-#### 3.11.3 Update Remaining Tests
-
-**Files with Weather References**:
-
--   `LogsControllerTests.cs` - Uses `WeatherController` in test data
--   `LogRepositoryTests.cs` - Uses "SeventySix.Services.WeatherService" source context
-
-**Action**:
-
-1. Replace weather-related test data with generic equivalents
-2. Use different controller names (e.g., "UsersController", "HealthController")
-3. Update source contexts to real services
-
-### 3.12 Run Server Tests
-
-**CRITICAL**: Ensure Docker Desktop is running
-
-**Action**:
-
-```powershell
-cd SeventySix.Server
-npm run start:docker  # Start Docker if not running
-dotnet test
-```
-
-**Expected**:
-
--   All tests pass
--   No references to weather/log-chart/log-statistic
--   Coverage maintained >80%
-
----
-
-## Phase 4: Documentation & Configuration
-
-### 4.1 Update Architecture Documentation
-
-**File**: `ARCHITECTURE.md`
-
-**Action**:
-
-1. Remove weather feature from frontend architecture examples
-2. Update feature module examples to use real features (Users, Admin)
-3. Clean up data flow diagrams if they reference weather
-4. Verify admin dashboard description matches new reality
-
-### 4.2 Update Implementation Guide
-
-**File**: `Implementation.md` (this file)
-
-**Action**:
-
--   Mark implementation complete
--   Document final state of system
--   List all removed components
-
-### 4.3 Update Style Guide
-
-**File**: `STYLE_GUIDE.md`
-
-**Action**:
-
--   Review for weather/log-chart examples
--   Replace with current features
-
-### 4.4 Clean Environment Configuration
-
-**Client**:
-
-```typescript
-// SeventySix.Client/src/environments/environment.ts
-export const environment = {
-	// REMOVE weather-related config
-	// VERIFY Grafana dashboard UIDs present
-	observability: {
-		enabled: true,
-		grafanaUrl: "http://localhost:3000",
-		prometheusUrl: "http://localhost:9090",
-		jaegerUrl: "http://localhost:16686",
-		dashboards: {
-			systemOverview: "xxxxxxxx",
-			apiEndpoints: "yyyyyyyy",
-		},
-	},
-};
-```
-
-**Server**:
-
--   Verify appsettings.json files cleaned (Phase 3.9)
-
-### 4.5 Update README
-
-**Action**:
-
--   Remove weather feature from feature list
--   Update observability section to reflect Grafana-first approach
--   Clean up setup instructions if they reference weather
-
-### 4.6 Update Docker Compose
-
-**Files**:
-
--   `docker-compose.yml`
--   `docker-compose.override.yml`
--   `docker-compose.production.yml`
-
-**Action**:
-
--   Verify observability stack configured
--   Remove weather-specific services/volumes if any
-
----
-
-## Phase 5: Verification & Testing
-
-### 5.1 Code Search Verification
-
-**Search Patterns**:
-
-```powershell
-# Client-side
-grep -r "weather" SeventySix.Client/src/app --include="*.ts" --include="*.html"
-grep -r "log-chart\|logchart" SeventySix.Client/src/app --include="*.ts" --include="*.html"
-grep -r "log-statistic\|logstatistic" SeventySix.Client/src/app --include="*.ts" --include="*.html"
-
-# Server-side
-grep -r "Weather" SeventySix.Server --include="*.cs" | grep -v "Test"
-grep -r "LogChart\|LogStatistic" SeventySix.Server --include="*.cs"
-grep -r "OpenWeather" SeventySix.Server --include="*.cs"
-```
-
-**Expected**: Only legitimate references (e.g., "Weather" in comments, historical test data)
-
-### 5.2 Build Verification
-
-**Client**:
-
-```powershell
-cd SeventySix.Client
-npm run build
-```
-
-**Server**:
-
-```powershell
-cd SeventySix.Server
-dotnet build
-```
-
-**Expected**: No compilation errors, no unused imports
-
-### 5.3 Test Suite Verification
-
-**Client**:
-
-```powershell
-cd SeventySix.Client
-npm test
-npm run test:e2e
-```
-
-**Server**:
-
-```powershell
-cd SeventySix.Server
-dotnet test --logger "console;verbosity=detailed"
-```
-
-**Expected**: All tests pass, coverage >80%
-
-### 5.4 Runtime Verification
-
-**Action**:
-
-1. Start observability stack (Grafana, Prometheus, Jaeger)
-2. Start backend API
-3. Start frontend
-4. Navigate to Admin Dashboard
-5. Verify only two custom panels visible
-6. Verify Grafana embeds load correctly
-7. Test observability quick links
-
-**Checklist**:
-
--   [ ] API Statistics Table displays data
--   [ ] Observability Quick Links functional
--   [ ] Grafana System Overview dashboard embeds
--   [ ] Grafana API Metrics dashboard embeds
--   [ ] No 404 errors in console
--   [ ] No broken routes
--   [ ] Jaeger button opens correct URL
--   [ ] Prometheus button opens correct URL
--   [ ] Grafana button opens correct URL
-
-### 5.5 API Endpoint Verification
-
-**Test Removed Endpoints**:
-
-```bash
-# These should return 404
-curl http://localhost:5000/api/v1/weather
-curl http://localhost:5000/api/v1/logchart
-curl http://localhost:5000/api/v1/logstatistic
-```
-
-**Test Preserved Endpoints**:
-
-```bash
-# These should still work
-curl http://localhost:5000/api/v1/health
-curl http://localhost:5000/api/v1/logs
-curl http://localhost:5000/api/v1/third-party-api-requests
-curl http://localhost:5000/api/v1/users
-```
-
----
-
-## Phase 6: Final Cleanup & Optimization
-
-### 6.1 Dependency Cleanup
-
-**Client**:
-
-```powershell
-cd SeventySix.Client
-npm prune
-npm audit fix
-```
-
-**Action**:
-
--   Remove unused npm packages related to weather/charts
--   Verify no broken peer dependencies
-
-**Server**:
-
--   Review NuGet packages
--   Remove packages only used by weather feature (e.g., OpenWeather client library)
-
-### 6.2 Code Formatting
-
-**Action**:
-
-```powershell
-# Client
-cd SeventySix.Client
-npm run lint:fix
-
-# Server
-cd SeventySix.Server
-dotnet format
-```
-
-**Expected**: All code adheres to `.editorconfig` rules
-
-### 6.3 Final Code Review
-
-**Checklist**:
-
--   [ ] No unused imports
--   [ ] No commented-out code
--   [ ] No `TODO` comments for removed features
--   [ ] All files follow naming conventions
--   [ ] All async methods end with 'Async'
--   [ ] All interfaces start with 'I'
--   [ ] Tabs (4 spaces) used consistently
--   [ ] CRLF line endings (Windows)
--   [ ] Allman brace style (C#)
--   [ ] Next-line brace style (TypeScript)
-
-### 6.4 Performance Baseline
-
-**Action**:
-
--   Measure application startup time
--   Measure admin dashboard load time
--   Compare with pre-cleanup metrics
-
-**Expected**: Equal or better performance (fewer unused services)
+**KISS**: Create ONE abstraction for filter state management
+**DRY**: Share pagination, search, date range, and count logic
+**YAGNI**: Don't over-engineer; use existing patterns (TanStack Query + Signals)
 
 ---
 
 ## Implementation Strategy
 
-### Execution Order
+### Phase 1: Create Generic Filter State Management
 
-1. **Phase 1 (Discovery)** - 2-4 hours
+**Goal**: Abstract filter/pagination state into reusable service base class
 
-    - Comprehensive code audit
-    - Document all removal targets
-    - Create dependency graph
+**Decision**: CREATE BaseFilterService - More DataTables coming
 
-2. **Phase 2 (Client Cleanup)** - 4-6 hours
+**Rationale**:
 
-    - Remove features in isolation
-    - Run tests after each major change
-    - Commit incrementally
+-   Multiple DataTables planned (Logs, Users, + more features)
+-   Date range support needed for both Logs and Users
+-   Consistent filter management pattern across all features
+-   Type-safe with generics: `BaseFilterService<TFilter extends BaseQueryRequest>`
+-   Reduces duplication across future features (DRY)
 
-3. **Phase 3 (Server Cleanup)** - 4-6 hours
+**New File**: `SeventySix.Client/src/app/core/services/base-filter.service.ts`
 
-    - Remove backend code layer-by-layer
-    - API → BusinessLogic → Data
-    - Run tests after each layer
+**Responsibilities**:
 
-4. **Phase 4 (Documentation)** - 2-3 hours
+-   Manage filter state signal (search, date ranges, pagination)
+-   Provide standard methods: `setPage()`, `setPageSize()`, `updateFilter()`, `clearFilters()`
+-   No TanStack Query coupling (pure state management)
+-   Feature services extend this base class
 
-    - Update all documentation files
-    - Clean configuration files
-
-5. **Phase 5 (Verification)** - 2-3 hours
-
-    - Comprehensive testing
-    - Runtime verification
-    - API endpoint validation
-
-6. **Phase 6 (Final Cleanup)** - 1-2 hours
-    - Dependencies and formatting
-    - Performance baseline
-
-**Total Estimated Time**: 15-24 hours
-
-### Incremental Commits
-
-**Commit Strategy**:
-
-```
-feat: Remove weather feature from client
-feat: Remove log chart/statistic components from admin dashboard
-refactor: Clean admin dashboard to two custom panels
-feat: Remove weather services and repositories (server)
-feat: Remove weather DTOs and validators
-test: Clean up weather-related test code
-docs: Update architecture documentation
-chore: Clean dependencies and configuration
-```
-
-### Rollback Plan
-
-**Git Strategy**:
-
-1. Create feature branch: `feat/remove-deprecated-endpoints`
-2. Commit after each phase completion
-3. Tag stable points: `cleanup-phase-1`, `cleanup-phase-2`, etc.
-4. Merge to main only after Phase 5 verification passes
-
-**Rollback**:
-
-```powershell
-git revert <commit-hash>
-# Or revert entire branch
-git reset --hard <tag-name>
-```
+**Action**: Create BaseFilterService, then update LogManagementService and UserService to extend it
 
 ---
 
-## Risk Mitigation
+### Phase 2: Update User Service to Use Server-Side Pagination
 
-### Breaking Changes
+**Goal**: Make UserList consistent with LogList pattern
 
-**Risk**: Removing code breaks existing functionality
+**Changes to `UserService`**:
 
-**Mitigation**:
+1. Add `filter` signal (type: `UserQueryRequest`)
+2. Add `updateFilter()`, `setPage()`, `setPageSize()` methods
+3. Change `getAllUsers()` to use `getPaged()` with filter signal
+4. Keep existing mutations (create, update, delete, bulk operations)
 
-1. Comprehensive test suite execution
-2. Incremental commits with verification
-3. Manual runtime testing
-4. API endpoint verification
+**Changes to `UserList`**:
 
-### Data Loss
+1. Use `usersQuery.data()?.data` (paged result) instead of `usersQuery.data()`
+2. Wire up search → `userService.updateFilter({ searchTerm })`
+3. Wire up date range → `userService.updateFilter({ startDate, endDate })`
+4. Wire up pagination → `userService.setPage()`, `userService.setPageSize()`
+5. Remove client-side filtering from DataTableComponent (let server handle it)
 
-**Risk**: Dropping weather database tables loses historical data
-
-**Mitigation**:
-
-1. Backup database before migrations
-2. Archive weather data if needed for historical analysis
-3. Only drop tables if confirmed unnecessary
-
-### Configuration Drift
-
-**Risk**: Inconsistent configuration across environments
-
-**Mitigation**:
-
-1. Update all environment files (dev, test, prod)
-2. Document configuration changes
-3. Verify in each environment
-
-### Test Coverage Gaps
-
-**Risk**: Removing tests reduces coverage below 80%
-
-**Mitigation**:
-
-1. Run coverage reports before and after
-2. Identify gaps introduced by cleanup
-3. Add missing tests for preserved features
+**Why**: Enables 10,000+ users without loading all into browser
 
 ---
 
-## Success Metrics
+### Phase 3: Standardize DataTableComponent Event Handlers
 
-### Quantitative
+**Goal**: Ensure DataTableComponent outputs are consistently handled
 
--   [ ] 0 references to "weather" in production code
--   [ ] 0 references to "logchart" or "logstatistic" in production code
--   [ ] 100% test pass rate (client + server)
--   [ ] Test coverage maintained ≥80%
--   [ ] Admin dashboard loads in <2 seconds
--   [ ] Grafana embeds load successfully
--   [ ] API response times unchanged or improved
+**Current DataTableComponent Outputs**:
 
-### Qualitative
+-   `searchChange` - search text (debounced)
+-   `filterChange` - quick filter toggled
+-   `dateRangeChange` - date range selected
+-   `pageChange` - page index changed
+-   `pageSizeChange` - page size changed
+-   `refreshClick` - refresh button clicked
+-   `rowAction` - row action triggered
+-   `bulkAction` - bulk action triggered
 
--   [ ] Clean code structure (no unused imports/services)
--   [ ] Clear separation of concerns maintained
--   [ ] Architecture documentation accurate
--   [ ] Admin dashboard UX simplified
--   [ ] Observability stack fully functional
--   [ ] No regression in existing features
-
----
-
-## Architectural Principles Applied
-
-### KISS (Keep It Simple, Stupid)
-
--   Remove complex custom dashboards in favor of Grafana
--   Simplify admin dashboard to two core panels
--   Delete unused code rather than commenting out
-
-### DRY (Don't Repeat Yourself)
-
--   Leverage Grafana for all metrics visualization
--   Consolidate observability tools into single interface
--   Remove duplicate test utilities
-
-### YAGNI (You Aren't Gonna Need It)
-
--   Delete weather feature (no longer needed)
--   Remove log chart/statistic endpoints (Grafana provides this)
--   Clean up OpenWeather integration (not used)
-
-### SOLID Principles
-
--   **SRP**: Each remaining service has single responsibility
--   **OCP**: Preserved services remain open for extension
--   **LSP**: Repository interfaces still substitutable
--   **ISP**: Cleaned interfaces only expose needed methods
--   **DIP**: Dependency injection patterns maintained
-
-### Clean Architecture
-
--   Layer boundaries preserved (API → BusinessLogic → Data)
--   Domain entities unchanged (Log, User, ThirdPartyApiRequest)
--   Repository pattern maintained
--   Service layer integrity preserved
-
----
-
-## Post-Implementation Review
-
-### Checklist
-
--   [ ] All phases completed successfully
--   [ ] All tests passing (client + server)
--   [ ] Documentation updated and accurate
--   [ ] Configuration files cleaned
--   [ ] No unused dependencies
--   [ ] Performance baseline met or exceeded
--   [ ] Code review completed
--   [ ] Pull request approved
--   [ ] Changes deployed to staging
--   [ ] Smoke tests passed in staging
--   [ ] Production deployment planned
-
-### Lessons Learned
-
-_To be completed after implementation_
-
-### Future Considerations
-
-1. **Monitoring**: Ensure Grafana dashboards cover all removed custom functionality
-2. **Alerts**: Configure Prometheus alerts for critical metrics
-3. **Documentation**: Keep architecture docs in sync with code
-4. **Dependency Management**: Regular audits to prevent accumulation of unused code
-
----
-
-## Appendix A: File Removal Checklist
-
-### Client-Side Files to Remove
-
-```
-SeventySix.Client/src/app/features/home/weather/           # Entire directory
-SeventySix.Client/e2e/*weather*.spec.ts                    # E2E tests
-SeventySix.Client/src/app/testing/mocks/*weather*          # Mocks
-```
-
-### Server-Side Files to Remove
-
-```
-# Controllers (if exist)
-SeventySix.Api/Controllers/WeatherController.cs
-SeventySix.Api/Controllers/LogChartController.cs
-SeventySix.Api/Controllers/LogStatisticController.cs
-
-# Services
-SeventySix.BusinessLogic/Services/*Weather*.cs
-SeventySix.BusinessLogic/Services/*LogChart*.cs
-SeventySix.BusinessLogic/Services/*LogStatistic*.cs
-
-# Interfaces
-SeventySix.BusinessLogic/Interfaces/I*Weather*.cs
-SeventySix.BusinessLogic/Interfaces/I*LogChart*.cs
-SeventySix.BusinessLogic/Interfaces/I*LogStatistic*.cs
-
-# DTOs
-SeventySix.BusinessLogic/DTOs/Weather/                     # Entire directory
-SeventySix.BusinessLogic/DTOs/LogChart/                    # Entire directory
-SeventySix.BusinessLogic/DTOs/LogStatistic/                # Entire directory
-
-# Validators
-SeventySix.BusinessLogic/Validators/*Weather*.cs
-SeventySix.BusinessLogic/Validators/*LogChart*.cs
-SeventySix.BusinessLogic/Validators/*LogStatistic*.cs
-
-# Infrastructure
-SeventySix.BusinessLogic/Infrastructure/OpenWeather*.cs
-
-# Repositories
-SeventySix.Data/Repositories/*Weather*.cs
-SeventySix.Data/Repositories/*LogChart*.cs
-SeventySix.Data/Repositories/*LogStatistic*.cs
-
-# Tests
-Tests/SeventySix.Api.Tests/Controllers/*Weather*.cs
-Tests/SeventySix.Api.Tests/Controllers/*LogChart*.cs
-Tests/SeventySix.Api.Tests/Controllers/*LogStatistic*.cs
-Tests/SeventySix.BusinessLogic.Tests/Services/*Weather*.cs
-Tests/SeventySix.Data.Tests/Repositories/*Weather*.cs
-```
-
-### Files to Update (Not Remove)
-
-```
-# Client
-SeventySix.Client/src/app/app.routes.ts
-SeventySix.Client/src/app/core/layout/sidebar/sidebar.component.ts
-SeventySix.Client/src/app/shared/components/breadcrumb/breadcrumb.component.ts
-SeventySix.Client/src/environments/environment*.ts
-
-# Server
-SeventySix.Api/Program.cs
-SeventySix.Api/appsettings*.json
-Tests/SeventySix.Api.Tests/Controllers/LogsControllerTests.cs
-Tests/SeventySix.Data.Tests/Repositories/LogRepositoryTests.cs
-Tests/SeventySix.TestUtilities/Builders/ThirdPartyApiRequestBuilder.cs
-Tests/SeventySix.TestUtilities/TestBases/ApiPostgreSqlTestBase.cs
-Tests/SeventySix.TestUtilities/Attributes/IntegrationTestAttribute.cs
-
-# Documentation
-ARCHITECTURE.md
-STYLE_GUIDE.md
-README.md
-```
-
----
-
-## Appendix B: Search Commands Reference
-
-### PowerShell Search Commands
-
-```powershell
-# Find all files containing "weather"
-Get-ChildItem -Recurse -Include *.ts,*.cs,*.html | Select-String "weather" -List
-
-# Find all files containing "logchart" or "logstatistic"
-Get-ChildItem -Recurse -Include *.ts,*.cs,*.html | Select-String "logchart|logstatistic" -List
-
-# Find component files
-Get-ChildItem -Recurse -Filter "*weather*.ts"
-
-# Find test files
-Get-ChildItem -Recurse -Filter "*.spec.ts" | Select-String "weather"
-
-# Count remaining references
-(Get-ChildItem -Recurse -Include *.ts,*.cs | Select-String "weather").Count
-```
-
-### Grep Search Commands
-
-```bash
-# Client-side searches
-grep -r "weather" SeventySix.Client/src --include="*.ts" --include="*.html"
-grep -r "log-chart\|logchart" SeventySix.Client/src --include="*.ts"
-grep -r "log-statistic\|logstatistic" SeventySix.Client/src --include="*.ts"
-
-# Server-side searches
-grep -r "Weather" SeventySix.Server --include="*.cs"
-grep -r "LogChart\|LogStatistic" SeventySix.Server --include="*.cs"
-grep -r "OpenWeather" SeventySix.Server --include="*.cs"
-
-# Case-insensitive search
-grep -ri "weather" .
-```
-
----
-
-## Appendix C: Testing Commands
-
-### Client-Side Testing
-
-```powershell
-cd SeventySix.Client
-
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run E2E tests
-npm run test:e2e
-
-# Run specific test file
-npm test -- --include="**/admin-dashboard.component.spec.ts"
-
-# Run linter
-npm run lint
-
-# Fix linter issues
-npm run lint:fix
-
-# Build production
-npm run build
-```
-
-### Server-Side Testing
-
-```powershell
-cd SeventySix.Server
-
-# Ensure Docker running
-npm run start:docker
-
-# Run all tests
-dotnet test
-
-# Run with detailed logging
-dotnet test --logger "console;verbosity=detailed"
-
-# Run specific test project
-dotnet test Tests/SeventySix.Api.Tests
-
-# Run with coverage
-dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-
-# Build solution
-dotnet build
-
-# Format code
-dotnet format
-```
-
----
-
-## Appendix D: Environment Configuration Template
-
-### Client Environment (Post-Cleanup)
+**Standard Pattern (Both Log & User)** - Allman brace style per .editorconfig:
 
 ```typescript
-// SeventySix.Client/src/environments/environment.ts
-export const environment = {
-	production: false,
-	apiUrl: "http://localhost:5000/api/v1",
-	observability: {
-		enabled: true,
-		grafanaUrl: "http://localhost:3000",
-		prometheusUrl: "http://localhost:9090",
-		jaegerUrl: "http://localhost:16686",
-		dashboards: {
-			systemOverview: "system-overview-uid",
-			apiEndpoints: "api-endpoints-uid",
-		},
-	},
-	logging: {
-		level: "debug",
-		enableConsole: true,
-	},
-};
-```
-
-### Server Configuration (Post-Cleanup)
-
-```json
-// SeventySix.Api/appsettings.json
+onSearch(searchText: string): void
 {
-	"Logging": {
-		"LogLevel": {
-			"Default": "Information",
-			"Microsoft.AspNetCore": "Warning"
-		}
-	},
-	"ConnectionStrings": {
-		"DefaultConnection": "Host=localhost;Database=seventysix;Username=postgres;Password=..."
-	},
-	"Observability": {
-		"Jaeger": {
-			"AgentHost": "localhost",
-			"AgentPort": 6831,
-			"ServiceName": "SeventySix.Api"
-		},
-		"Prometheus": {
-			"Enabled": true,
-			"Port": 9090
-		}
-	},
-	"RateLimiting": {
-		"Enabled": true,
-		"DefaultLimit": 100
-	}
+	this.service.updateFilter({ searchTerm: searchText || undefined });
+}
+
+onDateRangeChange(event: DateRangeEvent): void
+{
+	this.service.updateFilter({
+		startDate: event.startDate,
+		endDate: event.endDate
+	});
+}
+
+onPageChange(pageIndex: number): void
+{
+	this.service.setPage(pageIndex + 1); // DataTable uses 0-based, server uses 1-based
+}
+
+onPageSizeChange(pageSize: number): void
+{
+	this.service.setPageSize(pageSize);
+}
+
+onRefresh(): void
+{
+	void this.query.refetch();
 }
 ```
 
----
-
-## Document Control
-
-**Version**: 1.0
-**Author**: GitHub Copilot (Claude Sonnet 4.5)
-**Date**: November 23, 2025
-**Status**: Draft - Pending Implementation
-**Methodology**: ULTRATHINK
-
-**Change History**:
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2025-11-23 | Copilot | Initial implementation plan created |
-
-**Review Status**:
-
--   [ ] Technical Review
--   [ ] Architecture Review
--   [ ] Security Review
--   [ ] Approved for Implementation
+**Why**: Shared pattern = less cognitive load, easier maintenance
 
 ---
 
-_This implementation plan follows ULTRATHINK methodology, adhering to KISS, DRY, and YAGNI principles while maintaining Clean Architecture and SOLID compliance as defined in ARCHITECTURE.md, CLAUDE.md, and .editorconfig._
+### Phase 4: Document Customization Points
+
+**Goal**: Clarify what's generic vs. feature-specific
+
+**Generic (Shared in DataTableComponent)**:
+
+-   ✅ Search input
+-   ✅ Date range filter
+-   ✅ Pagination (page number, page size)
+-   ✅ Refresh button
+-   ✅ Column visibility toggle
+-   ✅ Bulk selection
+-   ✅ Virtual scrolling
+-   ✅ Loading/error states
+
+**Feature-Specific (Per Feature Component)**:
+
+-   ⚠️ Column definitions (keys, labels, formatters)
+-   ⚠️ Quick filters (status chips, log level chips)
+-   ⚠️ Row actions (view, edit, delete)
+-   ⚠️ Bulk actions (activate, deactivate, delete)
+-   ⚠️ Filter transformation (quick filter → server filter)
+
+**Example**: LogList quick filters ("All", "Warnings", "Errors") → map to LogLevel server filter
+
+**Why**: Clear separation of concerns for future features
+
+---
+
+## Detailed Implementation Steps
+
+### Step 1: Create BaseFilterService
+
+**Decision**: Create generic base class for filter management
+
+**Rationale**:
+
+-   Multiple DataTables planned (more than just Logs and Users)
+-   Consistent pattern needed across all features
+-   Date range support required for both Logs and Users
+-   Type-safe generics provide flexibility for feature-specific filters
+-   Reduces future duplication (DRY principle)
+
+**File**: `SeventySix.Client/src/app/core/services/base-filter.service.ts`
+
+**Implementation**:
+
+```typescript
+import { signal, WritableSignal } from "@angular/core";
+import { BaseQueryRequest } from "@core/models";
+
+/**
+ * Base class for filter state management
+ * Provides common filter operations for paginated data tables
+ * @template TFilter - Filter type extending BaseQueryRequest
+ */
+export abstract class BaseFilterService<TFilter extends BaseQueryRequest> {
+	/**
+	 * Filter state signal
+	 * Subclasses can access and modify this signal
+	 */
+	protected readonly filter: WritableSignal<TFilter>;
+
+	/**
+	 * Initialize filter with default values
+	 * @param initialFilter - Initial filter state
+	 */
+	protected constructor(initialFilter: TFilter) {
+		this.filter = signal<TFilter>(initialFilter);
+	}
+
+	/**
+	 * Get current filter value
+	 * @returns Current filter state
+	 */
+	getCurrentFilter(): TFilter {
+		return this.filter();
+	}
+
+	/**
+	 * Update filter and reset to page 1
+	 * @param filter - Partial filter to update
+	 */
+	updateFilter(filter: Partial<TFilter>): void {
+		this.filter.update(
+			(current: TFilter) =>
+				({
+					...current,
+					...filter,
+					pageNumber: 1, // Reset to page 1 on filter change
+				} as TFilter)
+		);
+	}
+
+	/**
+	 * Set page number
+	 * @param pageNumber - Page number to load (1-based)
+	 */
+	setPage(pageNumber: number): void {
+		this.filter.update(
+			(current: TFilter) =>
+				({
+					...current,
+					pageNumber,
+				} as TFilter)
+		);
+	}
+
+	/**
+	 * Set page size and reset to page 1
+	 * @param pageSize - Number of items per page
+	 */
+	setPageSize(pageSize: number): void {
+		this.filter.update(
+			(current: TFilter) =>
+				({
+					...current,
+					pageSize,
+					pageNumber: 1,
+				} as TFilter)
+		);
+	}
+
+	/**
+	 * Clear all filters and reset to defaults
+	 * Subclasses should override to provide feature-specific defaults
+	 */
+	abstract clearFilters(): void;
+}
+```
+
+**Why**: Provides consistent filter management for all feature services
+
+---
+
+### Step 2: Update LogManagementService to Extend BaseFilterService
+
+**File**: `SeventySix.Client/src/app/features/admin/log-management/services/log-management.service.ts`
+
+**Changes**:
+
+1. Extend BaseFilterService:
+
+```typescript
+export class LogManagementService extends BaseFilterService<LogFilterRequest> {
+	constructor() {
+		super({
+			pageNumber: 1,
+			pageSize: 50,
+		});
+	}
+
+	// ... existing code ...
+}
+```
+
+2. Remove duplicate filter management methods (inherited from base)
+
+3. Override `clearFilters()` for feature-specific defaults:
+
+```typescript
+clearFilters(): void
+{
+	this.filter.set({
+		pageNumber: 1,
+		pageSize: 50,
+		logLevel: undefined,
+		startDate: undefined,
+		endDate: undefined,
+		searchTerm: undefined
+	});
+	this.clearSelection();
+}
+```
+
+**Why**: Reduces duplication, maintains existing functionality
+
+---
+
+### Step 3: Update UserService to Extend BaseFilterService
+
+**File**: `SeventySix.Client/src/app/features/admin/users/services/user.service.ts`
+
+**Changes**:
+
+1. Extend BaseFilterService:
+
+```typescript
+export class UserService extends BaseFilterService<UserQueryRequest> {
+	constructor() {
+		super({
+			pageNumber: 1,
+			pageSize: 50,
+		});
+	}
+
+	// ... existing code ...
+}
+```
+
+2. Update `getAllUsers()` to use `getPaged()` with filter signal:
+
+```typescript
+getAllUsers();
+{
+	return injectQuery(() => ({
+		queryKey: ["users", "paged", this.filter()],
+		queryFn: () => lastValueFrom(this.userRepository.getPaged(this.filter())),
+		...this.queryConfig,
+	}));
+}
+```
+
+3. Override `clearFilters()` for feature-specific defaults:
+
+```typescript
+clearFilters(): void
+{
+	this.filter.set({
+		pageNumber: 1,
+		pageSize: 50,
+		isActive: undefined,
+		includeDeleted: false,
+		startDate: undefined,
+		endDate: undefined,
+		searchTerm: undefined
+	});
+}
+```
+
+4. Note: `updateFilter()`, `setPage()`, `setPageSize()` are inherited from BaseFilterService
+
+**Why**: Consistent pattern with LogManagementService, inherits common filter methods
+
+---
+
+### Step 4: Update UserList Component
+
+**File**: `SeventySix.Client/src/app/features/admin/users/components/user-list/user-list.ts`
+
+**Changes**:
+
+1. Update computed signals to use paged result:
+
+```typescript
+readonly data: Signal<User[]> = computed(
+	() => this.usersQuery.data()?.items ?? []
+);
+readonly totalCount: Signal<number> = computed(
+	() => this.usersQuery.data()?.totalCount ?? 0
+);
+readonly pageIndex: Signal<number> = computed(
+	() => (this.usersQuery.data()?.page ?? 1) - 1 // Convert 1-based to 0-based
+);
+readonly pageSize: Signal<number> = computed(
+	() => this.usersQuery.data()?.pageSize ?? 50
+);
+```
+
+2. Wire up search event (Allman brace style per .editorconfig):
+
+```typescript
+onSearch(searchText: string): void
+{
+	this.userService.updateFilter({ searchTerm: searchText || undefined });
+}
+```
+
+3. Wire up pagination events (Allman brace style per .editorconfig):
+
+```typescript
+onPageChange(pageIndex: number): void
+{
+	this.userService.setPage(pageIndex + 1); // Convert 0-based to 1-based
+}
+
+onPageSizeChange(pageSize: number): void
+{
+	this.userService.setPageSize(pageSize);
+}
+```
+
+4. Update quick filter logic to use server-side filtering (explicit types per CLAUDE.md):
+
+```typescript
+onFilterChange(event: FilterChangeEvent): void
+{
+	// Map quick filter UI to server filter parameter
+	const filterKey: string = event.active ? event.filterKey : "all";
+
+	let isActive: boolean | undefined;
+	switch (filterKey)
+	{
+		case "all":
+			isActive = undefined; // Show all users
+			break;
+		case "active":
+			isActive = true;
+			break;
+		case "inactive":
+			isActive = false;
+			break;
+	}
+
+	this.userService.updateFilter({ isActive });
+}
+```
+
+5. Remove client-side filtering from DataTableComponent template:
+
+```html
+<!-- BEFORE: DataTableComponent handled filtering -->
+<app-data-table [data]="data()" [quickFilters]="quickFilters" ... />
+
+<!-- AFTER: Server handles filtering, DataTable just displays -->
+<app-data-table [data]="data()" [totalCount]="totalCount()" [pageIndex]="pageIndex()" [pageSize]="pageSize()" [quickFilters]="quickFilters" (searchChange)="onSearch($event)" (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)" (filterChange)="onFilterChange($event)" ... />
+```
+
+**Why**: Consistent with LogList pattern, supports large datasets
+
+---
+
+### Step 5: Add Date Range Support for Users
+
+**Decision**: Add date range filtering using LastLogin property
+
+**Rationale**:
+
+-   Users have LastLogin timestamp that can be filtered by date range
+-   Matches server BaseQueryRequest (StartDate/EndDate)
+-   Consistent with LogList date range functionality
+-   Useful for finding inactive users, login activity analysis
+
+**File**: `SeventySix.Client/src/app/features/admin/users/components/user-list/user-list.ts`
+
+**Changes**:
+
+1. Enable date range in template:
+
+```html
+<app-data-table [dateRangeEnabled]="true" (dateRangeChange)="onDateRangeChange($event)" ... />
+```
+
+2. Add date range change handler:
+
+```typescript
+onDateRangeChange(event: DateRangeEvent): void
+{
+	this.userService.updateFilter({
+		startDate: event.startDate,
+		endDate: event.endDate
+	});
+}
+```
+
+**Server Behavior**:
+
+-   Filters users where `LastLoginAt >= StartDate AND LastLoginAt <= EndDate`
+-   Supported by BaseQueryRequest in server
+-   UserQueryRequest inherits StartDate/EndDate from BaseQueryRequest
+
+**Why**: Enables finding users who haven't logged in recently, activity analysis
+
+---
+
+### Step 6: Verify LogList Consistency
+
+**File**: `SeventySix.Client/src/app/features/admin/log-management/components/log-list/log-list.ts`
+
+**Check**:
+
+1. ✅ Uses `logsQuery.data()?.data` (paged result)
+2. ✅ Uses `logService.updateFilter()` for search
+3. ✅ Uses `logService.setPage()` / `setPageSize()` for pagination
+4. ✅ Uses date range filtering
+5. ✅ Maps quick filters to server LogLevel
+
+**Action**: No changes needed - LogList is the reference implementation
+
+---
+
+### Step 7: Update DataTableComponent Documentation
+
+**File**: `SeventySix.Client/src/app/shared/components/data-table/data-table.component.ts`
+
+**Add JSDoc**:
+
+```typescript
+/**
+ * Generic data table component
+ *
+ * RESPONSIBILITIES:
+ * - Display paginated data with virtual scrolling
+ * - Emit events for user interactions (search, filter, pagination)
+ * - Handle column visibility, bulk selection, row actions
+ * - Show loading/error states
+ *
+ * NOT RESPONSIBLE FOR:
+ * - Managing filter state (use service with filter signal)
+ * - Fetching data (use TanStack Query in service)
+ * - Server communication (use repository)
+ *
+ * USAGE PATTERN:
+ * 1. Feature service manages filter state signal
+ * 2. Feature service provides TanStack Query for data fetching
+ * 3. Feature component wires DataTable events to service methods
+ * 4. DataTable displays data and emits user interactions
+ *
+ * See LogList and UserList for reference implementations.
+ */
+```
+
+---
+
+## Migration Checklist
+
+### BaseFilterService Creation
+
+-   [ ] Create `SeventySix.Client/src/app/core/services/base-filter.service.ts`
+-   [ ] Add generic type parameter `<TFilter extends BaseQueryRequest>`
+-   [ ] Add protected `filter: WritableSignal<TFilter>`
+-   [ ] Add `updateFilter()`, `setPage()`, `setPageSize()` methods
+-   [ ] Add abstract `clearFilters()` method
+-   [ ] Follow Allman brace style per .editorconfig
+-   [ ] Use explicit type annotations per CLAUDE.md
+-   [ ] Add comprehensive JSDoc comments
+
+### LogManagementService Updates
+
+-   [ ] Extend `BaseFilterService<LogFilterRequest>`
+-   [ ] Add constructor calling `super()` with initial filter
+-   [ ] Remove duplicate `updateFilter()`, `setPage()`, `setPageSize()` methods
+-   [ ] Override `clearFilters()` with log-specific defaults
+-   [ ] Keep existing TanStack Query methods
+-   [ ] Verify all existing functionality still works
+
+### UserService Updates
+
+-   [ ] Extend `BaseFilterService<UserQueryRequest>`
+-   [ ] Add constructor calling `super()` with initial filter
+-   [ ] Change `getAllUsers()` to use `getPaged()` with filter signal
+-   [ ] Override `clearFilters()` with user-specific defaults
+-   [ ] Note: `updateFilter()`, `setPage()`, `setPageSize()` inherited from base
+-   [ ] Follow Allman brace style per .editorconfig
+-   [ ] Use explicit type annotations per CLAUDE.md
+
+### UserList Updates
+
+-   [ ] Update `data` signal to use `.items` from PagedResult
+-   [ ] Update `totalCount` signal to use `.totalCount` from PagedResult
+-   [ ] Add `pageIndex` computed signal (convert 1-based to 0-based)
+-   [ ] Add `pageSize` computed signal from PagedResult
+-   [ ] Update `onSearch()` to call `userService.updateFilter()` with explicit types
+-   [ ] Add `onPageChange()` handler (convert 0-based to 1-based)
+-   [ ] Add `onPageSizeChange()` handler
+-   [ ] Add `onDateRangeChange()` handler for LastLogin filtering
+-   [ ] Update `onFilterChange()` to map quick filters to `isActive` server filter
+-   [ ] Update template to pass `[pageIndex]`, `[pageSize]`, `[totalCount]` to DataTable
+-   [ ] Enable date range: `[dateRangeEnabled]="true"`
+-   [ ] Remove client-side filterFn from quickFilters (server handles filtering)
+-   [ ] Follow Allman brace style per .editorconfig
+-   [ ] Use explicit type annotations per CLAUDE.md
+
+### Testing
+
+-   [ ] Test UserList with 0 users
+-   [ ] Test UserList with 1000+ users
+-   [ ] Test pagination (page forward, backward, page size change)
+-   [ ] Test search (partial match across username, email, fullName)
+-   [ ] Test quick filters (all, active, inactive)
+-   [ ] Test date range filter (last 24h, 7d, 30d for LastLogin)
+-   [ ] Test date range with users who never logged in (null LastLogin)
+-   [ ] Test bulk actions with server-side pagination
+-   [ ] Test refresh button
+-   [ ] Test column visibility toggle
+-   [ ] Verify TanStack Query cache invalidation
+-   [ ] Verify LogList still works after BaseFilterService refactoring
+
+### Documentation
+
+-   [ ] Update DataTableComponent JSDoc with usage pattern
+-   [ ] Add code comments explaining quick filter → server filter mapping
+-   [ ] Add JSDoc to BaseFilterService explaining extension pattern
+-   [ ] Document date range usage for Users (LastLogin filtering)
+-   [ ] Add inline comments explaining 0-based vs 1-based pagination conversion
+
+---
+
+## Implementation Sequence
+
+1. **BaseFilterService** (20 min)
+
+    - Create base class with generics
+    - Add filter management methods
+    - Add comprehensive JSDoc
+
+2. **LogManagementService** (10 min)
+
+    - Extend BaseFilterService
+    - Remove duplicate methods
+    - Override clearFilters()
+
+3. **UserService** (15 min)
+
+    - Extend BaseFilterService
+    - Update getAllUsers to use getPaged
+    - Override clearFilters()
+
+4. **UserList** (25 min)
+
+    - Update computed signals
+    - Wire up event handlers (search, pagination, date range)
+    - Update template bindings
+
+5. **Testing** (20 min)
+
+    - Test both LogList and UserList
+    - Verify network requests
+    - Check pagination and date ranges
+
+6. **Documentation** (10 min)
+    - Update JSDoc comments
+    - Add inline code comments
+
+**Total Estimate**: 100 minutes
+
+---
+
+## Key Decisions Documented
+
+### ✅ Create BaseFilterService Base Class
+
+-   **Rationale**: Multiple DataTables planned, consistent pattern needed
+-   **Benefit**: DRY principle, reduces duplication across features
+-   **Implementation**: Generic base class with type parameter
+-   **Extensibility**: Easy to add new features with consistent filter management
+
+### ✅ Add Date Range for Users Using LastLogin
+
+-   **Rationale**: Users have LastLogin timestamp, useful for activity analysis
+-   **Use Cases**: Find inactive users, login activity reports
+-   **Server Support**: BaseQueryRequest already supports StartDate/EndDate
+-   **Consistency**: Matches LogList date range pattern
+
+### ✅ Keep Quick Filters in Feature Components
+
+-   **Rationale**: Feature-specific logic (LogLevel vs IsActive)
+-   **Alternative**: Could create filter mapping interface
+-   **Revisit When**: 5+ features with similar filter patterns
+
+### ✅ Server-Side Filtering for All Lists
+
+-   **Rationale**: Scalability (10,000+ records), consistency
+-   **Trade-off**: Extra network requests vs. browser memory
+-   **Benefit**: Single source of truth, search/filter in database
+
+---
+
+## Success Criteria
+
+1. ✅ BaseFilterService created and working with generics
+2. ✅ LogManagementService extends BaseFilterService (no regression)
+3. ✅ UserService extends BaseFilterService
+4. ✅ UserList uses server-side pagination (loads 50 users at a time)
+5. ✅ UserList supports search across username/email/fullName
+6. ✅ UserList supports quick filter (all/active/inactive)
+7. ✅ UserList supports date range filter (LastLogin)
+8. ✅ UserList matches LogList implementation pattern
+9. ✅ DataTableComponent remains generic (no feature-specific logic)
+10. ✅ TanStack Query cache invalidation works correctly
+11. ✅ No duplicate code between services (inherited from BaseFilterService)
+12. ✅ Network tab shows `GET /api/v1/users/paged?pageNumber=1&pageSize=50&startDate=...&endDate=...`
+
+---
+
+## Future Enhancements (Post-MVP)
+
+### Phase 2 Considerations (Not in This Plan)
+
+-   Advanced search (AND/OR conditions, field-specific filters)
+-   Column sorting integration with server (already supported by BaseQueryRequest)
+-   Export functionality (CSV, Excel)
+-   Saved filter presets (localStorage)
+
+### Technical Debt to Monitor
+
+-   UserRepository already has `getPaged()` - good
+-   LogRepository already has `getAllPaged()` - good
+-   Both follow same pattern - no refactoring needed
+-   Keep watching for duplication across 3+ features
+
+---
+
+## Rollback Plan
+
+If issues arise:
+
+1. Revert UserService to use `getAllUsers()` with `getAll()`
+2. Revert UserList to client-side filtering
+3. Keep DataTableComponent unchanged (generic, no rollback needed)
+4. LogList remains unchanged (working reference implementation)
+
+**Risk**: Low - pattern already proven with LogList
+
+---
+
+## Notes for Implementation
+
+### Column Definitions (Feature-Specific)
+
+```typescript
+// Each feature defines its own columns
+readonly columns: TableColumn<User>[] = [
+	{ key: "username", label: "Username", type: "text", sortable: true },
+	{ key: "email", label: "Email", type: "text", sortable: true },
+	{ key: "isActive", label: "Status", type: "badge", badgeColor: ... }
+];
+```
+
+### Quick Filters (Feature-Specific)
+
+```typescript
+// Each feature defines filter UI and maps to server filter
+readonly quickFilters: QuickFilter<User>[] = [
+	{ key: "all", label: "All Users", icon: "people" },
+	{ key: "active", label: "Active", icon: "check_circle" }
+];
+
+// Feature component maps UI filter to server filter
+onFilterChange(event: FilterChangeEvent): void {
+	const isActive = event.filterKey === "active" ? true : undefined;
+	this.service.updateFilter({ isActive });
+}
+```
+
+### Row Actions (Feature-Specific)
+
+```typescript
+// Each feature defines available actions
+readonly rowActions: RowAction<User>[] = [
+	{ key: "view", label: "View", icon: "visibility" },
+	{ key: "edit", label: "Edit", icon: "edit" },
+	{ key: "delete", label: "Delete", icon: "delete", color: "warn" }
+];
+```
+
+### Generic DataTable Events (Shared)
+
+```typescript
+// DataTableComponent emits these events (generic)
+- searchChange(searchText: string)
+- filterChange(event: FilterChangeEvent)
+- dateRangeChange(event: DateRangeEvent)
+- pageChange(pageIndex: number)
+- pageSizeChange(pageSize: number)
+- refreshClick()
+- rowAction(event: RowActionEvent<T>)
+- bulkAction(event: BulkActionEvent<T>)
+```
+
+---
+
+## Conclusion
+
+**Summary**: Refactor UserList to use server-side pagination matching LogList pattern. DataTableComponent remains generic. Services manage filter state. Feature components map UI interactions to server filters.
+
+**Complexity**: Low - mostly wiring existing infrastructure
+**Risk**: Low - pattern proven with LogList
+**Benefit**: Consistency, scalability, maintainability
+
+**Principles Applied**:
+
+-   ✅ KISS: Use existing TanStack Query + Signal pattern, simple base class
+-   ✅ DRY: Share DataTableComponent AND BaseFilterService across features
+-   ✅ YAGNI: Build for planned features (multiple DataTables), not speculation
+-   ✅ SRP: Services manage state, components handle UI, DataTable is generic
+-   ✅ OCP: DataTableComponent and BaseFilterService open for extension, closed for modification
+-   ✅ LSP: LogManagementService and UserService are substitutable for BaseFilterService
+-   ✅ DIP: Services depend on BaseFilterService abstraction, not concrete implementations
 

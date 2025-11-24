@@ -40,23 +40,14 @@
 
 .table-wrapper {
 	flex: 1;
-	min-height: 400px;
 	overflow: hidden;
 	width: 100%;
 
 	.table-viewport {
-		height: 600px; // Fixed height for virtual scroller
 		overflow-y: auto;
 		width: 100%;
 		@include vars.custom-scrollbar();
-
-		@media (min-height: 900px) {
-			height: 700px;
-		}
-
-		@media (min-height: 1080px) {
-			height: 800px;
-		}
+		// Height now managed by appTableHeight directive
 	}
 }
 

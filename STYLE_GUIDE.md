@@ -432,6 +432,61 @@ ngAfterViewInit(): void {
 }
 ```
 
+### 4. Table Height Management
+
+**Pattern**: Use `appTableHeight` directive for dynamic table heights.
+
+**Directive**: `TableHeightDirective`
+
+**Features**:
+
+-   Automatic viewport height calculation
+-   Enforces minimum height (default: 400px)
+-   Updates on window resize (debounced 500ms)
+-   Works with CDK Virtual Scroll Viewports
+-   Optimized for pages with hundreds of tables
+
+**Guidelines**:
+
+-   ✅ **DO** use `appTableHeight` directive on table viewport containers
+-   ✅ **DO** let directive calculate height automatically
+-   ✅ **DO** specify custom minimum height if needed: `[appTableHeight]="500"`
+-   ❌ **DON'T** hardcode table heights in SCSS
+-   ❌ **DON'T** use media queries for responsive table heights
+
+**Usage Examples**:
+
+```html
+<!-- Basic usage with default 400px minimum -->
+<cdk-virtual-scroll-viewport appTableHeight [itemSize]="48">
+	<table mat-table [dataSource]="data">
+		...
+	</table>
+</cdk-virtual-scroll-viewport>
+
+<!-- Custom minimum height -->
+<cdk-virtual-scroll-viewport [appTableHeight]="600" [itemSize]="48">
+	<table mat-table [dataSource]="data">
+		...
+	</table>
+</cdk-virtual-scroll-viewport>
+
+<!-- Non-virtual-scroll table -->
+<div appTableHeight class="table-wrapper">
+	<table mat-table [dataSource]="data">
+		...
+	</table>
+</div>
+```
+
+**Benefits**:
+
+-   Tables automatically fill available screen space
+-   No hardcoded heights in stylesheets
+-   Responsive to window resize
+-   Consistent behavior across all tables
+-   Handles hundreds of directive instances efficiently (500ms debounce)
+
 ---
 
 ## Form Patterns

@@ -2,7 +2,7 @@ import { ComponentFixture } from "@angular/core/testing";
 import { UserList } from "@features/admin/users/components/user-list/user-list";
 import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@core/services/logger.service";
-import { User } from "@admin/users/models";
+import { User, PagedResult } from "@admin/users/models";
 import { of } from "rxjs";
 import { UsersComponent } from "./users.component";
 import { ActivatedRoute } from "@angular/router";
@@ -25,16 +25,45 @@ describe("UsersComponent", () =>
 	beforeEach(async () =>
 	{
 		mockUserService = jasmine.createSpyObj("UserService", [
-			"getAllUsers",
+			"getPagedUsers",
+			"updateUser",
+			"deleteUser",
 			"bulkActivateUsers",
-			"bulkDeactivateUsers"
+			"bulkDeactivateUsers",
+			"getCurrentFilter",
+			"updateFilter",
+			"setPage",
+			"setPageSize"
 		]);
 		mockLogger = createMockLogger();
 		mockActivatedRoute = createMockActivatedRoute();
 
 		// Set default mock return values
-		mockUserService.getAllUsers.and.returnValue(
-			createMockQueryResult<User[], Error>([])
+		mockUserService.getPagedUsers.and.returnValue(
+			createMockQueryResult<PagedResult<User>, Error>({
+				items: [],
+				totalCount: 0,
+				pageNumber: 1,
+				pageSize: 50,
+				totalPages: 0,
+				hasPreviousPage: false,
+				hasNextPage: false
+			})
+		);
+		mockUserService.getCurrentFilter.and.returnValue({
+			pageNumber: 1,
+			pageSize: 50
+		});
+		mockUserService.updateUser.and.returnValue(
+			createMockMutationResult<
+				User,
+				Error,
+				{ id: number | string; user: any },
+				unknown
+			>()
+		);
+		mockUserService.deleteUser.and.returnValue(
+			createMockMutationResult<void, Error, number | string, unknown>()
 		);
 		mockUserService.bulkActivateUsers.and.returnValue(
 			createMockMutationResult<number, Error, number[], unknown>()

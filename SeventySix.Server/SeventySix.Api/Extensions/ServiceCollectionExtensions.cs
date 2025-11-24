@@ -63,6 +63,7 @@ public static class ServiceCollectionExtensions
 
 		// Business logic services
 		services.AddScoped<IUserService, UserService>();
+		services.AddScoped<ILogService, LogService>();
 		services.AddScoped<IThirdPartyApiRequestService, ThirdPartyApiRequestService>();
 		services.AddScoped<IHealthCheckService, HealthCheckService>();
 		services.AddSingleton<IMetricsService, MetricsService>();

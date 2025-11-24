@@ -74,7 +74,9 @@ describe("ThirdPartyApiService", () =>
 				}
 			];
 
-			const query = TestBed.runInInjectionContext(() => service.createAllQuery()); // Wait for query to execute
+			const query = TestBed.runInInjectionContext(() =>
+				service.createAllQuery()
+			); // Wait for query to execute
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const req = httpMock.expectOne(apiUrl);
@@ -92,7 +94,9 @@ describe("ThirdPartyApiService", () =>
 
 		it("should handle empty array response", async () =>
 		{
-			const query = TestBed.runInInjectionContext(() => service.createAllQuery());
+			const query = TestBed.runInInjectionContext(() =>
+				service.createAllQuery()
+			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -109,7 +113,9 @@ describe("ThirdPartyApiService", () =>
 		it("should handle HTTP errors", async () =>
 		{
 			spyOn(console, "error"); // Suppress expected error logs
-			const query = TestBed.runInInjectionContext(() => service.createAllQuery());
+			const query = TestBed.runInInjectionContext(() =>
+				service.createAllQuery()
+			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
 			const req = httpMock.expectOne(apiUrl);
@@ -226,11 +232,14 @@ describe("ThirdPartyApiService", () =>
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
-			const stats = query.data();
-			expect(stats).toEqual(mockStats);
-			expect(stats?.totalCallsToday).toBe(1801);
-			expect(stats?.totalApisTracked).toBe(2);
-			expect(stats?.callsByApi["ExternalAPI"]).toBe(1234);
+			const stats: Record<string, unknown> | undefined = query.data();
+			expect(stats?.["totalCallsToday"]).toBe(mockStats.totalCallsToday);
+			expect(stats?.["totalApisTracked"]).toBe(
+				mockStats.totalApisTracked
+			);
+			expect(
+				(stats?.["callsByApi"] as Record<string, number>)["ExternalAPI"]
+			).toBe(1234);
 		});
 
 		it("should handle empty statistics", async () =>
@@ -252,10 +261,14 @@ describe("ThirdPartyApiService", () =>
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
-			const stats = query.data();
-			expect(stats?.totalCallsToday).toBe(0);
-			expect(stats?.totalApisTracked).toBe(0);
-			expect(Object.keys(stats?.callsByApi ?? {}).length).toBe(0);
+			const stats: Record<string, unknown> | undefined = query.data();
+			expect(stats?.["totalCallsToday"]).toBe(0);
+			expect(stats?.["totalApisTracked"]).toBe(0);
+			expect(
+				Object.keys(
+					(stats?.["callsByApi"] as Record<string, number>) ?? {}
+				).length
+			).toBe(0);
 		});
 
 		it("should handle HTTP errors", async () =>
@@ -279,5 +292,3 @@ describe("ThirdPartyApiService", () =>
 		});
 	});
 });
-
-

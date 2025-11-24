@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
+using SeventySix.BusinessLogic.DTOs;
 using SeventySix.BusinessLogic.DTOs.Logs;
 using SeventySix.BusinessLogic.Entities;
 using SeventySix.BusinessLogic.Interfaces;
@@ -24,95 +25,82 @@ namespace SeventySix.Api.Controllers;
 ///
 /// Design Patterns:
 /// - RESTful API with resource-based endpoints
-/// - Repository pattern for data access
+/// - Service layer pattern for business logic
 /// - DTO pattern for request/response models
 ///
 /// SOLID Principles:
 /// - SRP: Only responsible for HTTP API layer for logs
-/// - DIP: Depends on ILogRepository abstraction
+/// - DIP: Depends on ILogService abstraction
 /// - OCP: Extensible for additional endpoints
 /// </remarks>
 /// <remarks>
 /// Initializes a new instance of the <see cref="LogsController"/> class.
 /// </remarks>
-/// <param name="logRepository">The log repository.</param>
+/// <param name="logService">The log service.</param>
+/// <param name="logRepository">The log repository (for client logging only).</param>
 /// <param name="logger">The logger.</param>
+/// <param name="outputCacheStore">The output cache store.</param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/logs")]
 [RateLimit()] // 250 req/hour (default)
 public class LogsController(
+	ILogService logService,
 	ILogRepository logRepository,
 	ILogger<LogsController> logger,
 	IOutputCacheStore outputCacheStore) : ControllerBase
 {
 	/// <summary>
-	/// Gets logs with optional filtering and pagination.
+	/// Gets logs with filtering, searching, sorting, and pagination.
 	/// </summary>
-	/// <param name="request">The filter and pagination parameters.</param>
+	/// <param name="request">The filter, search, sort, and pagination parameters.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>A paginated list of logs matching the filter criteria.</returns>
 	/// <response code="200">Returns the filtered list of logs with pagination metadata.</response>
 	/// <response code="400">If the request parameters are invalid.</response>
 	/// <remarks>
 	/// This endpoint uses output caching with tag-based invalidation.
 	/// Cache is automatically cleared when logs are created or deleted.
+	///
+	/// Filtering Options:
+	/// - LogLevel: Filter by severity (Error, Warning, etc.)
+	/// - SearchTerm: Full-text search across Message, ExceptionMessage, SourceContext, RequestPath, and StackTrace (3-200 chars)
+	/// - DateRange: Filter by timestamp (StartDate/EndDate, max 90 days)
+	/// - Sorting: SortBy property name, SortDescending (default: Timestamp descending)
+	/// - Pagination: Page (default 1), PageSize (default 50, max 100)
+	///
+	/// Security Validation:
+	/// - SearchTerm: 3-200 characters to prevent abuse
+	/// - DateRange: Limited to 90 days to protect database performance
+	/// - PageSize: Capped at 100 records to prevent resource exhaustion
+	/// - SortBy: Validated against Log entity properties via reflection
 	/// </remarks>
 	[HttpGet]
 	[OutputCache(PolicyName = "logs")]
 	[ProducesResponseType(typeof(PagedLogResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<ActionResult<PagedLogResponse>> GetLogsAsync([FromQuery] LogFilterRequest request)
+	public async Task<ActionResult<PagedLogResponse>> GetLogsAsync(
+		[FromQuery] LogFilterRequest request,
+		CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			// Get total count for pagination
-			int totalCount = await logRepository.GetLogsCountAsync(
-				logLevel: request.LogLevel,
-				startDate: request.StartDate,
-				endDate: request.EndDate,
-				sourceContext: request.SourceContext,
-				requestPath: request.RequestPath);
-
-			// Get paginated logs
-			IEnumerable<Log> logs = await logRepository.GetLogsAsync(
-				logLevel: request.LogLevel,
-				startDate: request.StartDate,
-				endDate: request.EndDate,
-				sourceContext: request.SourceContext,
-				requestPath: request.RequestPath,
-				skip: request.GetSkip(),
-				take: request.GetValidatedPageSize());
-
-			List<LogResponse> logResponses = [.. logs.Select(log => new LogResponse
-			{
-				Id = log.Id,
-				LogLevel = log.LogLevel,
-				Message = log.Message,
-				ExceptionMessage = log.ExceptionMessage,
-				BaseExceptionMessage = log.BaseExceptionMessage,
-				StackTrace = log.StackTrace,
-				SourceContext = log.SourceContext,
-				RequestMethod = log.RequestMethod,
-				RequestPath = log.RequestPath,
-				StatusCode = log.StatusCode,
-				DurationMs = log.DurationMs,
-				Properties = log.Properties,
-				Timestamp = log.Timestamp,
-				MachineName = log.MachineName,
-				Environment = log.Environment,
-				CorrelationId = log.CorrelationId,
-				SpanId = log.SpanId,
-				ParentSpanId = log.ParentSpanId,
-			})];
+			// Service layer handles validation and business logic
+			PagedResult<LogResponse> result = await logService.GetPagedLogsAsync(request, cancellationToken);
 
 			PagedLogResponse response = new()
 			{
-				Data = logResponses,
-				TotalCount = totalCount,
-				PageNumber = request.Page,
-				PageSize = request.GetValidatedPageSize(),
+				Data = result.Items.ToList(),
+				TotalCount = result.TotalCount,
+				PageNumber = result.Page,
+				PageSize = result.PageSize,
 			};
 
 			return Ok(response);
+		}
+		catch (FluentValidation.ValidationException ex)
+		{
+			// Return validation errors as BadRequest
+			return BadRequest(ex.Errors);
 		}
 		catch (Exception ex)
 		{
@@ -125,25 +113,30 @@ public class LogsController(
 	/// Gets the total count of logs matching the filter criteria.
 	/// </summary>
 	/// <param name="request">The filter parameters.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>The total count of logs.</returns>
 	/// <response code="200">Returns the total log count.</response>
+	/// <response code="400">If the request parameters are invalid.</response>
 	/// <response code="500">If an error occurs while retrieving the count.</response>
 	[HttpGet("count")]
 	[OutputCache(PolicyName = "logs")]
 	[ProducesResponseType(typeof(LogCountResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<LogCountResponse>> GetCountAsync([FromQuery] LogFilterRequest request)
+	public async Task<ActionResult<LogCountResponse>> GetCountAsync(
+		[FromQuery] LogFilterRequest request,
+		CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			int count = await logRepository.GetLogsCountAsync(
-				logLevel: request.LogLevel,
-				startDate: request.StartDate,
-				endDate: request.EndDate,
-				sourceContext: request.SourceContext,
-				requestPath: request.RequestPath);
+			// Service layer handles validation
+			int count = await logService.GetLogsCountAsync(request, cancellationToken);
 
 			return Ok(new LogCountResponse { Total = count });
+		}
+		catch (FluentValidation.ValidationException ex)
+		{
+			return BadRequest(ex.Errors);
 		}
 		catch (Exception ex)
 		{
@@ -169,7 +162,7 @@ public class LogsController(
 	{
 		try
 		{
-			bool deleted = await logRepository.DeleteByIdAsync(id, cancellationToken);
+			bool deleted = await logService.DeleteLogByIdAsync(id, cancellationToken);
 
 			if (!deleted)
 			{
@@ -212,7 +205,7 @@ public class LogsController(
 
 		try
 		{
-			int deletedCount = await logRepository.DeleteBatchAsync(ids, cancellationToken);
+			int deletedCount = await logService.DeleteLogsBatchAsync(ids, cancellationToken);
 
 			// Invalidate logs cache after batch deletion
 			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
@@ -248,7 +241,7 @@ public class LogsController(
 
 		try
 		{
-			int deletedCount = await logRepository.DeleteOlderThanAsync(cutoffDate.Value);
+			int deletedCount = await logService.DeleteLogsOlderThanAsync(cutoffDate.Value);
 
 			// Invalidate logs cache after cleanup
 			await outputCacheStore.EvictByTagAsync("logs", CancellationToken.None);

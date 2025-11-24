@@ -36,90 +36,34 @@ describe("LogList", () =>
 		expect(component).toBeTruthy();
 	});
 
-	it("should initialize with default state", () =>
+	it("should define column configuration", () =>
 	{
-		expect(component.filtersExpanded()).toBe(false);
-		expect(component.searchFilter()).toBe("");
-		expect(component.columns().length).toBeGreaterThan(0);
+		expect(component.columns).toBeDefined();
+		expect(component.columns.length).toBe(6);
+		expect(component.columns[0].key).toBe("logLevel");
+		expect(component.columns[1].key).toBe("timestamp");
 	});
 
-	it("should emit logSelected when onLogSelected is called", (done) =>
+	it("should define quick filters", () =>
 	{
-		const mockLog = {
-			id: 1,
-			timestamp: new Date(),
-			logLevel: "Error",
-			message: "Test error",
-			sourceContext: "TestContext"
-		} as any;
-
-		component.logSelected.subscribe((log) =>
-		{
-			expect(log).toEqual(mockLog);
-			done();
-		});
-
-		component.onLogSelected(mockLog);
+		expect(component.quickFilters).toBeDefined();
+		expect(component.quickFilters.length).toBe(2);
+		expect(component.quickFilters[0].key).toBe("error");
+		expect(component.quickFilters[1].key).toBe("warning");
 	});
 
-	it("should emit deleteLog when onDeleteLog is called", (done) =>
+	it("should define row actions", () =>
 	{
-		const logId = 123;
-
-		component.deleteLog.subscribe((id) =>
-		{
-			expect(id).toBe(logId);
-			done();
-		});
-
-		component.onDeleteLog(logId);
+		expect(component.rowActions).toBeDefined();
+		expect(component.rowActions.length).toBe(2);
+		expect(component.rowActions[0].key).toBe("view");
+		expect(component.rowActions[1].key).toBe("delete");
 	});
 
-	it("should emit deleteSelected when onDeleteSelected is called", (done) =>
+	it("should define bulk actions", () =>
 	{
-		const ids = [1, 2, 3];
-
-		component.deleteSelected.subscribe((emittedIds) =>
-		{
-			expect(emittedIds).toEqual(ids);
-			done();
-		});
-
-		component.onDeleteSelected(ids);
-	});
-
-	it("should toggle column visibility", () =>
-	{
-		const initialColumns = component.columns();
-		const columnToToggle = initialColumns.find((c) => c.key === "level");
-		const initialVisibility = columnToToggle?.visible;
-
-		component.toggleColumn("level");
-
-		const updatedColumns = component.columns();
-		const updatedColumn = updatedColumns.find((c) => c.key === "level");
-
-		expect(updatedColumn?.visible).toBe(!initialVisibility);
-	});
-
-	it("should clear search filter", () =>
-	{
-		component.searchFilter.set("test search");
-		expect(component.searchFilter()).toBe("test search");
-
-		component.clearSearch();
-
-		expect(component.searchFilter()).toBe("");
-	});
-
-	it("should compute displayed columns correctly", () =>
-	{
-		const displayedColumns = component.displayedColumns();
-		const visibleColumns = component
-			.columns()
-			.filter((c) => c.visible)
-			.map((c) => c.key);
-
-		expect(displayedColumns).toEqual(visibleColumns);
+		expect(component.bulkActions).toBeDefined();
+		expect(component.bulkActions.length).toBe(1);
+		expect(component.bulkActions[0].key).toBe("delete");
 	});
 });

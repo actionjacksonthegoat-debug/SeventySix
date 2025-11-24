@@ -40,9 +40,9 @@ export class GrafanaDashboardEmbedComponent
 	/**
 	 * Refresh interval using Grafana syntax.
 	 * Examples: '5s', '30s', '1m', '5m'
-	 * @default '5s'
+	 * @default '30s'
 	 */
-	readonly refreshInterval: InputSignal<string> = input<string>("5s");
+	readonly refreshInterval: InputSignal<string> = input<string>("30s");
 
 	/**
 	 * Grafana theme to apply to embedded dashboard.

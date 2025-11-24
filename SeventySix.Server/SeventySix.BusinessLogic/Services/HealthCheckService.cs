@@ -61,9 +61,11 @@ public class HealthCheckService(IMetricsService metricsService, ILogRepository l
 		{
 			Stopwatch stopwatch = Stopwatch.StartNew();
 
-			// Check database connectivity with a simple count query
+			// Check database connectivity with a simple query
 			// This will throw if database is not accessible
-			_ = await logRepository.GetLogsCountAsync(cancellationToken: cancellationToken);
+			// Use minimal LogFilterRequest for health check
+			DTOs.Logs.LogFilterRequest healthCheckRequest = new() { Page = 1, PageSize = 1 };
+			_ = await logRepository.GetLogsAsync(healthCheckRequest, cancellationToken);
 
 			stopwatch.Stop();
 

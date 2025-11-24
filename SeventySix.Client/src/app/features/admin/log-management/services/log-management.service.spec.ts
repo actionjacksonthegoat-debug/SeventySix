@@ -88,7 +88,7 @@ describe("LogManagementService", () =>
 			const result = await query.refetch();
 
 			expect(mockRepository.getAllPaged).toHaveBeenCalledWith(
-				service.filter()
+				service.getCurrentFilter()
 			);
 			expect(result.data).toEqual(mockPagedResponse);
 		});
@@ -106,7 +106,7 @@ describe("LogManagementService", () =>
 			const result = await query.refetch();
 
 			expect(mockRepository.getCount).toHaveBeenCalledWith(
-				service.filter()
+				service.getCurrentFilter()
 			);
 			expect(result.data).toEqual(mockCountResponse);
 		});
@@ -116,10 +116,36 @@ describe("LogManagementService", () =>
 	{
 		it("should update filter and reset to page 1", () =>
 		{
-			service.updateFilter({ logLevel: LogLevel.Error });
+			service.updateFilter({ logLevel: LogLevel.Error.toString() });
 
-			const filter = service.filter();
-			expect(filter.logLevel).toBe(LogLevel.Error);
+			const filter = service.getCurrentFilter();
+			expect(filter.logLevel).toBe(LogLevel.Error.toString());
+			expect(filter.pageNumber).toBe(1);
+		});
+	});
+
+	describe("setPage", () =>
+	{
+		it("should update page number without resetting other filters", () =>
+		{
+			service.updateFilter({ logLevel: LogLevel.Error.toString() });
+			service.setPage(3);
+
+			const filter = service.getCurrentFilter();
+			expect(filter.pageNumber).toBe(3);
+			expect(filter.logLevel).toBe(LogLevel.Error.toString());
+		});
+	});
+
+	describe("setPageSize", () =>
+	{
+		it("should update page size and reset to page 1", () =>
+		{
+			service.setPage(5);
+			service.setPageSize(100);
+
+			const filter = service.getCurrentFilter();
+			expect(filter.pageSize).toBe(100);
 			expect(filter.pageNumber).toBe(1);
 		});
 	});
@@ -129,17 +155,18 @@ describe("LogManagementService", () =>
 		it("should reset filters and clear selection", () =>
 		{
 			service.updateFilter({
-				logLevel: LogLevel.Error,
+				logLevel: LogLevel.Error.toString(),
 				startDate: new Date()
 			});
 			service.toggleSelection(1);
 
 			service.clearFilters();
 
-			const filter = service.filter();
+			const filter = service.getCurrentFilter();
 			expect(filter.logLevel).toBeUndefined();
 			expect(filter.startDate).toBeUndefined();
 			expect(filter.pageNumber).toBe(1);
+			expect(filter.pageSize).toBe(50);
 			expect(service.selectedIds().size).toBe(0);
 		});
 	});

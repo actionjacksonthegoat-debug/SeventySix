@@ -726,8 +726,6 @@ public class UserServiceTests
 			SearchTerm = "test",
 			IsActive = true,
 			IncludeDeleted = false,
-			SortBy = "username",
-			SortDescending = false,
 		};
 
 		List<User> users =
@@ -767,11 +765,7 @@ public class UserServiceTests
 
 		MockRepository
 			.Setup(r => r.GetPagedAsync(
-				request.Page,
-				request.PageSize,
-				request.SearchTerm,
-				request.IsActive,
-				request.IncludeDeleted,
+				request,
 				It.IsAny<CancellationToken>()))
 			.ReturnsAsync((users, totalCount));
 

@@ -3,6 +3,7 @@
  * Business logic layer for user operations
  * Uses TanStack Query for caching and state management
  * Uses repository pattern for data access (SRP, DIP)
+ * Extends BaseFilterService for filter state management
  */
 
 import { inject, Injectable, Signal } from "@angular/core";
@@ -15,6 +16,7 @@ import { lastValueFrom } from "rxjs";
 import { User, UpdateUserRequest, UserQueryRequest } from "@admin/users/models";
 import { UserRepository } from "@admin/users/repositories";
 import { getQueryConfig } from "@core/utils/query-config";
+import { BaseFilterService } from "@core/services/base-filter.service";
 
 /**
  * Service for user business logic
@@ -24,23 +26,34 @@ import { getQueryConfig } from "@core/utils/query-config";
 @Injectable({
 	providedIn: "root"
 })
-export class UserService
+export class UserService extends BaseFilterService<UserQueryRequest>
 {
 	private readonly userRepository: UserRepository = inject(UserRepository);
 	private readonly queryClient: QueryClient = inject(QueryClient);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("users");
 
+	constructor()
+	{
+		super({
+			pageNumber: 1,
+			pageSize: 50
+		});
+	}
+
 	/**
-	 * Query for all users
+	 * Query for paginated users with current filter
 	 * Automatically cached with TanStack Query
 	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getAllUsers()
+	getPagedUsers()
 	{
 		return injectQuery(() => ({
-			queryKey: ["users", "all"],
-			queryFn: () => lastValueFrom(this.userRepository.getAll()),
+			queryKey: ["users", "paged", this.getCurrentFilter()],
+			queryFn: () =>
+				lastValueFrom(
+					this.userRepository.getPaged(this.getCurrentFilter())
+				),
 			...this.queryConfig
 		}));
 	}
@@ -71,9 +84,9 @@ export class UserService
 				lastValueFrom(this.userRepository.create(user)),
 			onSuccess: () =>
 			{
-				// Invalidate and refetch all users
+				// Invalidate paged users queries
 				this.queryClient.invalidateQueries({
-					queryKey: ["users", "all"]
+					queryKey: ["users"]
 				});
 			}
 		}));
@@ -95,12 +108,12 @@ export class UserService
 			}) => lastValueFrom(this.userRepository.update(id, user)),
 			onSuccess: (_, variables) =>
 			{
-				// Invalidate specific user and list
+				// Invalidate specific user and all user queries
 				this.queryClient.invalidateQueries({
 					queryKey: ["users", "user", variables.id]
 				});
 				this.queryClient.invalidateQueries({
-					queryKey: ["users", "all"]
+					queryKey: ["users"]
 				});
 			}
 		}));
@@ -117,27 +130,24 @@ export class UserService
 				lastValueFrom(this.userRepository.delete(id)),
 			onSuccess: () =>
 			{
-				// Invalidate all users
+				// Invalidate all user queries
 				this.queryClient.invalidateQueries({
-					queryKey: ["users", "all"]
+					queryKey: ["users"]
 				});
 			}
 		}));
 	}
 
 	/**
-	 * Query for paginated users
-	 * @param request Signal containing query parameters
-	 * @returns Query object with paged data
+	 * Clear all filters and reset to defaults
+	 * Overrides base class method
 	 */
-	getPagedUsers(request: Signal<UserQueryRequest>)
+	override clearFilters(): void
 	{
-		return injectQuery(() => ({
-			queryKey: ["users", "paged", request()],
-			queryFn: () =>
-				lastValueFrom(this.userRepository.getPaged(request())),
-			...this.queryConfig
-		}));
+		this.filter.set({
+			pageNumber: 1,
+			pageSize: 50
+		});
 	}
 
 	/**

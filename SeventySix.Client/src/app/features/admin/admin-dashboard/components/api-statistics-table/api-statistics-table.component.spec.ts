@@ -181,5 +181,3 @@ describe("ApiStatisticsTableComponent", () =>
 		expect(component.dataSource().data.length).toBe(0);
 	});
 });
-
-

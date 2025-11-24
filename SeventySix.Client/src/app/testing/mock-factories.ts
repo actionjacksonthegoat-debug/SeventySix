@@ -195,12 +195,23 @@ export function createMockLogRepository(): jasmine.SpyObj<MockLogRepository>
 }
 
 /**
+ * Mock ApiService interface for testing
+ */
+export interface MockApiService
+{
+	get: jasmine.Spy;
+	post: jasmine.Spy;
+	put: jasmine.Spy;
+	delete: jasmine.Spy;
+}
+
+/**
  * Create a mocked ApiService
  * Used in repository tests
  *
  * @returns Jasmine spy object for ApiService
  */
-export function createMockApiService(): jasmine.SpyObj<any>
+export function createMockApiService(): jasmine.SpyObj<MockApiService>
 {
 	return jasmine.createSpyObj("ApiService", ["get", "post", "put", "delete"]);
 }

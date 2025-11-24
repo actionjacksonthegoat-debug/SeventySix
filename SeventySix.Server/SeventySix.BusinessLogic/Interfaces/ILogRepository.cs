@@ -34,50 +34,20 @@ public interface ILogRepository
 	public Task<Log> CreateAsync(Log entity, CancellationToken cancellationToken = default);
 
 	/// <summary>
-	/// Retrieves logs with optional filtering.
+	/// Retrieves logs with filtering, searching, sorting, and pagination.
 	/// </summary>
-	/// <param name="logLevel">Optional log level filter.</param>
-	/// <param name="startDate">Optional start date filter.</param>
-	/// <param name="endDate">Optional end date filter.</param>
-	/// <param name="sourceContext">Optional source context filter.</param>
-	/// <param name="requestPath">Optional request path filter.</param>
-	/// <param name="skip">Number of records to skip.</param>
-	/// <param name="take">Number of records to take.</param>
+	/// <param name="request">The query request with filter, search, sort, and pagination parameters.</param>
 	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>Collection of filtered log entries.</returns>
+	/// <returns>Tuple containing collection of filtered log entries and total count.</returns>
 	/// <remarks>
-	/// Returns logs ordered by Timestamp descending (most recent first).
-	/// Maximum of 1000 records per query for performance.
+	/// Supports filtering by LogLevel, date range (StartDate/EndDate via Timestamp).
+	/// Supports full-text search across Message, ExceptionMessage, SourceContext, RequestPath, and StackTrace.
+	/// Supports sorting by any Log entity property (SortBy, SortDescending).
+	/// Default sort: Timestamp descending (most recent first).
+	/// Returns both data and total count for efficient pagination.
 	/// </remarks>
-	public Task<IEnumerable<Log>> GetLogsAsync(
-		string? logLevel = null,
-		DateTime? startDate = null,
-		DateTime? endDate = null,
-		string? sourceContext = null,
-		string? requestPath = null,
-		int skip = 0,
-		int take = 100,
-		CancellationToken cancellationToken = default);
-
-	/// <summary>
-	/// Gets the total count of logs matching the filter criteria.
-	/// </summary>
-	/// <param name="logLevel">Optional log level filter.</param>
-	/// <param name="startDate">Optional start date filter.</param>
-	/// <param name="endDate">Optional end date filter.</param>
-	/// <param name="sourceContext">Optional source context filter.</param>
-	/// <param name="requestPath">Optional request path filter.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>Total count of matching logs.</returns>
-	/// <remarks>
-	/// Use in conjunction with GetLogsAsync for pagination.
-	/// </remarks>
-	public Task<int> GetLogsCountAsync(
-		string? logLevel = null,
-		DateTime? startDate = null,
-		DateTime? endDate = null,
-		string? sourceContext = null,
-		string? requestPath = null,
+	public Task<(IEnumerable<Log> Logs, int TotalCount)> GetLogsAsync(
+		SeventySix.BusinessLogic.DTOs.Logs.LogFilterRequest request,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

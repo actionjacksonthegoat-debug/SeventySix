@@ -1,0 +1,132 @@
+@use "variables" as vars;
+
+.data-table-container {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	height: 100%;
+}
+
+.table-toolbar {
+	display: flex;
+	align-items: center;
+	gap: vars.$spacing-md;
+	padding: 0 vars.$spacing-md;
+	flex-wrap: wrap;
+}
+
+.filter-toolbar {
+	display: flex;
+	align-items: center;
+	gap: vars.$spacing-md;
+	padding: vars.$spacing-sm vars.$spacing-md;
+	flex-wrap: wrap;
+}
+
+.search-field {
+	min-width: 300px;
+	flex: 1;
+	max-width: 600px;
+}
+
+.filter-chips {
+	display: flex;
+	gap: vars.$spacing-xs;
+	flex-wrap: wrap;
+}
+
+.date-filter-chips {
+	display: flex;
+	align-items: center;
+	gap: vars.$spacing-md;
+}
+
+.date-range-chip-button {
+	display: inline-flex;
+	align-items: center;
+	gap: vars.$spacing-xs;
+	padding: 4px 12px;
+	border-radius: 16px;
+	min-height: 32px;
+	font-size: 0.875rem;
+	font-weight: 500;
+	text-transform: none;
+	border: 1px solid rgba(var(--mat-sys-outline-rgb), 0.38);
+	color: rgba(var(--mat-sys-on-surface-rgb), 0.87);
+	background-color: transparent;
+	transition: all vars.$transition-duration-fast
+		vars.$transition-easing-standard;
+
+	&:hover {
+		background-color: rgba(var(--mat-sys-on-surface-rgb), 0.04);
+		border-color: rgba(var(--mat-sys-outline-rgb), 0.6);
+	}
+
+	mat-icon {
+		font-size: 18px;
+		width: 18px;
+		height: 18px;
+		margin: 0;
+	}
+
+	.dropdown-arrow {
+		margin-left: -4px;
+	}
+}
+
+.active-range {
+	background-color: rgba(var(--mat-sys-primary-rgb), 0.08);
+	color: rgb(var(--mat-sys-primary-rgb));
+
+	mat-icon {
+		color: rgb(var(--mat-sys-primary-rgb));
+	}
+}
+
+.result-count-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 6px 12px;
+	border-radius: 16px;
+	background-color: rgba(var(--mat-sys-primary-rgb), 0.12);
+	color: rgb(var(--mat-sys-primary-rgb));
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.spacer {
+	flex: 1;
+}
+
+.loading-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: vars.$spacing-xl;
+}
+
+.error-card {
+	margin: vars.$spacing-md;
+}
+
+.table-wrapper {
+	overflow: hidden;
+	flex: 1;
+
+	.table-viewport {
+		overflow-y: auto;
+		width: 100%;
+		@include vars.custom-scrollbar();
+		// Height managed by appTableHeight directive
+	}
+}
+
+.data-row {
+	cursor: pointer;
+
+	&:hover {
+		background-color: rgba(var(--mat-sys-on-surface-rgb), 0.04);
+	}
+}

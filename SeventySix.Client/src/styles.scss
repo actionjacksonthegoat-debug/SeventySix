@@ -118,18 +118,107 @@ html:not(.light-theme):not(.dark-theme) {
 	outline-offset: 2px;
 }
 
-// Ensure Material form fields have visible focus indicators
-.mat-mdc-form-field:focus-within {
-	.mat-mdc-text-field-wrapper {
-		outline: 2px solid var(--mat-sys-primary);
-		outline-offset: 2px;
-		border-radius: vars.$border-radius-sm;
+// =============================================================================
+// MATERIAL FORM FIELD SUFFIX BUTTONS
+// =============================================================================
+// Style suffix icon buttons to match the input's right-side border radius
+// Creates a filled right-side appearance for all input action buttons
+
+.mat-mdc-form-field {
+	// Reserve space for suffix button to prevent text overflow
+	input[matInput] {
+		padding-right: 48px;
+	}
+
+	// Style the suffix button
+	button[matIconSuffix] {
+		width: 40px;
+		height: 40px;
+		border-radius: 0 vars.$border-radius-sm vars.$border-radius-sm 0;
+		margin-right: 4px;
+
+		// Remove circular ripple effect, use rectangular shape
+		.mat-mdc-button-persistent-ripple,
+		.mat-mdc-button-ripple {
+			border-radius: 0 vars.$border-radius-sm vars.$border-radius-sm 0;
+		}
+
+		// Override Material's hover state circle
+		.mat-mdc-button-persistent-ripple::before {
+			border-radius: 0 vars.$border-radius-sm vars.$border-radius-sm 0;
+		}
 	}
 }
 
 // Ensure Material cards have proper spacing
 .mat-mdc-card {
 	margin-bottom: vars.$spacing-md;
+}
+
+// =============================================================================
+// MATERIAL CHIPS - GLOBAL CUSTOMIZATION
+// =============================================================================
+// Consistent chip styling across the entire application
+// Fixes icon alignment and provides uniform padding
+
+// All chips (mat-chip, mat-chip-option)
+mat-chip,
+mat-chip-option {
+	min-height: 32px;
+
+	// Fix chip action padding for consistent spacing
+	.mdc-evolution-chip__action--primary {
+		padding-left: vars.$spacing-md; // 12px
+		padding-right: vars.$spacing-md; // 12px
+		min-height: 32px;
+	}
+
+	// Fix chip graphic (icon container) alignment
+	.mdc-evolution-chip__graphic {
+		padding-left: 0;
+		padding-right: 0;
+		margin-right: vars.$spacing-xs; // 4px
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	// Fix text label alignment
+	.mdc-evolution-chip__text-label {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	// Fix icon sizing and alignment
+	mat-icon {
+		font-size: vars.$icon-size-sm; // 18px
+		width: vars.$icon-size-sm;
+		height: vars.$icon-size-sm;
+		line-height: vars.$icon-size-sm;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+	}
+}
+
+// Smaller chips in mobile view
+@media #{vars.$breakpoint-mobile} {
+	mat-chip,
+	mat-chip-option {
+		.mdc-evolution-chip__action--primary {
+			padding-left: 10px;
+			padding-right: 10px;
+		}
+
+		mat-icon {
+			font-size: 16px;
+			width: 16px;
+			height: 16px;
+			line-height: 16px;
+		}
+	}
 }
 
 // =============================================================================

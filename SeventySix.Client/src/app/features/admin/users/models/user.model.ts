@@ -51,18 +51,23 @@ export interface UpdateUserRequest
 	rowVersion?: number;
 }
 
+import { BaseQueryRequest } from "@core/models";
+
 /**
  * User Query Request interface
  * Represents query parameters for paginated user requests
+ * Extends BaseQueryRequest for common pagination and filtering properties
  */
-export interface UserQueryRequest
+export interface UserQueryRequest extends BaseQueryRequest
 {
-	page: number;
-	pageSize: number;
-	searchTerm?: string;
+	/**
+	 * Include inactive users in results
+	 */
 	includeInactive?: boolean;
-	sortBy?: string;
-	sortDescending?: boolean;
+
+	/**
+	 * Filter by last login date range (uses startDate/endDate from BaseQueryRequest)
+	 */
 }
 
 /**
@@ -73,7 +78,7 @@ export interface PagedResult<T>
 {
 	items: T[];
 	totalCount: number;
-	page: number;
+	pageNumber: number;
 	pageSize: number;
 	totalPages: number;
 	hasPreviousPage: boolean;

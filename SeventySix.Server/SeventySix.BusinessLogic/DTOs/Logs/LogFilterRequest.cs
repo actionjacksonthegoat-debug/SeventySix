@@ -2,85 +2,41 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.BusinessLogic.DTOs.Base;
+
 namespace SeventySix.BusinessLogic.DTOs.Logs;
 
 /// <summary>
 /// Request DTO for filtering log entries.
 /// </summary>
 /// <remarks>
-/// Supports filtering by log level, date range, source context, and request path.
+/// Inherits common query properties from BaseQueryRequest.
+/// ONLY adds domain-specific LogLevel filter.
+/// Uses base defaults: PageSize=50, SortBy="Id", StartDate=1 hour ago.
+///
+/// Supports filtering by log level, date range, and full-text search.
 /// Includes pagination support with configurable page size (max 100 records).
 ///
 /// Design Patterns:
 /// - DTO: Data Transfer Object for API request
+/// - Template: Inherits from BaseQueryRequest
 ///
 /// SOLID Principles:
-/// - SRP: Only responsible for log filter criteria
+/// - SRP: Only responsible for log-specific filter criteria
+/// - OCP: Extends base without modification
 /// </remarks>
-public class LogFilterRequest
+public record LogFilterRequest : BaseQueryRequest
 {
 	/// <summary>
-	/// Gets or sets the log level filter (Warning, Error, Fatal).
+	/// Gets the log level filter (Warning, Error, Fatal).
 	/// </summary>
+	/// <remarks>
+	/// LogFilterRequest-specific property - ONLY custom value added to base.
+	/// Searches across: Message, ExceptionMessage, SourceContext, RequestPath, and StackTrace.
+	/// </remarks>
 	/// <example>Error</example>
 	public string? LogLevel
 	{
-		get; set;
+		get; init;
 	}
-
-	/// <summary>
-	/// Gets or sets the start date filter (inclusive).
-	/// </summary>
-	public DateTime? StartDate
-	{
-		get; set;
-	}
-
-	/// <summary>
-	/// Gets or sets the end date filter (inclusive).
-	/// </summary>
-	public DateTime? EndDate
-	{
-		get; set;
-	}
-
-	/// <summary>
-	/// Gets or sets the source context filter (partial match).
-	/// </summary>
-	/// <example>SeventySix.Services.UserService</example>
-	public string? SourceContext
-	{
-		get; set;
-	}
-
-	/// <summary>
-	/// Gets or sets the request path filter (partial match).
-	/// </summary>
-	/// <example>/api/users</example>
-	public string? RequestPath
-	{
-		get; set;
-	}
-
-	/// <summary>
-	/// Gets or sets the page number (1-based).
-	/// </summary>
-	public int Page { get; set; } = 1;
-
-	/// <summary>
-	/// Gets or sets the page size (max 100).
-	/// </summary>
-	public int PageSize { get; set; } = 50;
-
-	/// <summary>
-	/// Calculates the skip count for pagination.
-	/// </summary>
-	/// <returns>Number of records to skip.</returns>
-	public int GetSkip() => (Page - 1) * PageSize;
-
-	/// <summary>
-	/// Gets the validated page size (capped at 100).
-	/// </summary>
-	/// <returns>Validated page size.</returns>
-	public int GetValidatedPageSize() => Math.Min(PageSize, 100);
 }

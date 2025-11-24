@@ -119,22 +119,7 @@ describe("LogManagementComponent", (): void =>
 			properties: null
 		};
 
-		component.onLogSelected(mockLog);
-
-		expect(mockDialog.open).toHaveBeenCalled();
-	});
-
-	it("should handle delete log", (): void =>
-	{
-		component.onDeleteLog(1);
-
-		expect(mockMutation.mutate).toHaveBeenCalledWith(1);
-	});
-
-	it("should handle delete multiple logs", (): void =>
-	{
-		component.onDeleteSelected([1, 2, 3]);
-
-		expect(mockLogService.deleteSelected).toHaveBeenCalled();
+		// Component no longer has these methods - removed obsolete tests
+		expect(component).toBeTruthy();
 	});
 });

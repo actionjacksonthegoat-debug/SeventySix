@@ -1,18 +1,20 @@
-import { LogLevel } from "./log.model";
+import { BaseQueryRequest } from "@core/models";
 
 /**
  * Log filter request model matching backend LogFilterRequest DTO
+ * Extends BaseQueryRequest for common pagination and filtering properties
  */
-export interface LogFilterRequest
+export interface LogFilterRequest extends BaseQueryRequest
 {
-	logLevel?: LogLevel | null;
-	startDate?: Date | null;
-	endDate?: Date | null;
+	/**
+	 * Filter by log level (e.g., Information, Warning, Error)
+	 */
+	logLevel?: string | null;
+
+	/**
+	 * Additional context information for filtering logs
+	 */
 	sourceContext?: string | null;
-	requestPath?: string | null;
-	pageNumber?: number;
-	pageSize?: number;
-	searchTerm?: string | null;
 }
 
 /**

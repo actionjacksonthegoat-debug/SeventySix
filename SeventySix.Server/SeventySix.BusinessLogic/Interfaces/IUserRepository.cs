@@ -202,13 +202,9 @@ public interface IUserRepository
 	public Task<bool> EmailExistsAsync(string email, int? excludeId = null, CancellationToken cancellationToken = default);
 
 	/// <summary>
-	/// Retrieves a paginated list of users with optional filtering and searching.
+	/// Retrieves a paginated list of users with filtering, searching, date range, and sorting.
 	/// </summary>
-	/// <param name="page">The page number (1-based).</param>
-	/// <param name="pageSize">The number of users per page.</param>
-	/// <param name="searchTerm">Optional search term to filter by username, email, or full name.</param>
-	/// <param name="isActive">Optional filter by active status (null = all users).</param>
-	/// <param name="includeDeleted">Whether to include soft-deleted users.</param>
+	/// <param name="request">The query request with filter, search, date range, sort, and pagination parameters.</param>
 	/// <param name="cancellationToken">Token to cancel the asynchronous operation.</param>
 	/// <returns>
 	/// A task that represents the asynchronous operation.
@@ -217,16 +213,13 @@ public interface IUserRepository
 	/// <remarks>
 	/// Pagination is 1-based (first page is 1, not 0).
 	/// Search term is applied to username, email, and full name (partial match).
-	/// By default, excludes soft-deleted users unless includeDeleted is true.
+	/// By default, excludes soft-deleted users unless IncludeDeleted is true.
+	/// Date filtering is applied to User.LastLoginAt (StartDate/EndDate).
+	/// Supports sorting by any User entity property (SortBy, SortDescending).
 	/// TotalCount reflects the total number of users matching filters (for pagination UI).
-	/// Results are ordered by username ascending.
 	/// </remarks>
 	public Task<(IEnumerable<User> Users, int TotalCount)> GetPagedAsync(
-		int page,
-		int pageSize,
-		string? searchTerm = null,
-		bool? isActive = null,
-		bool includeDeleted = false,
+		SeventySix.BusinessLogic.DTOs.Requests.UserQueryRequest request,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

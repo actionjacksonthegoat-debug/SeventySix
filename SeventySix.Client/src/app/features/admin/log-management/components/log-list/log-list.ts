@@ -3,174 +3,279 @@ import {
 	computed,
 	inject,
 	Signal,
-	signal,
-	WritableSignal,
-	output,
-	OutputEmitterRef,
-	ChangeDetectionStrategy
+	ChangeDetectionStrategy,
+	OutputRefSubscription
 } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
-import { MatCardModule } from "@angular/material/card";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatIconModule } from "@angular/material/icon";
-import { MatButtonModule } from "@angular/material/button";
-import { MatExpansionModule } from "@angular/material/expansion";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
-import { MatMenuModule } from "@angular/material/menu";
-import { MatCheckboxModule } from "@angular/material/checkbox";
-import { MatChipsModule } from "@angular/material/chips";
-import { MatTooltipModule } from "@angular/material/tooltip";
+import { DatePipe } from "@angular/common";
+import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { LogManagementService } from "@admin/log-management/services";
-import { LogFiltersComponent } from "@admin/log-management/components/log-filters/log-filters.component";
-import { LogTableComponent } from "@admin/log-management/components/log-table/log-table.component";
 import {
 	LogResponse,
-	LogFilterRequest,
-	PagedLogResponse
+	parseLogLevel,
+	LogLevel
 } from "@admin/log-management/models";
-
-interface ColumnDefinition
-{
-	key: string;
-	label: string;
-	visible: boolean;
-}
+import { DataTableComponent } from "@shared/components";
+import {
+	TableColumn,
+	QuickFilter,
+	RowAction,
+	BulkAction,
+	RowActionEvent,
+	BulkActionEvent,
+	FilterChangeEvent,
+	DateRangeEvent
+} from "@shared/models";
+import { LogDetailDialogComponent } from "../log-detail-dialog/log-detail-dialog.component";
+import { NotificationService } from "@core/services/notification.service";
 
 /**
- * Log list component.
- * Displays list of logs with filtering, search, and pagination.
- * Follows OnPush change detection for performance.
- * Uses signals for reactive state management.
+ * Log list component using DataTableComponent
+ * Displays list of logs with filtering, search, and pagination
+ * Follows OnPush change detection for performance
+ * Uses signals for reactive state management
  */
 @Component({
 	selector: "app-log-list",
 	standalone: true,
-	imports: [
-		CommonModule,
-		FormsModule,
-		MatCardModule,
-		MatProgressSpinnerModule,
-		MatIconModule,
-		MatButtonModule,
-		MatExpansionModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatMenuModule,
-		MatCheckboxModule,
-		MatChipsModule,
-		MatTooltipModule,
-		LogFiltersComponent,
-		LogTableComponent
-	],
+	imports: [DataTableComponent],
 	templateUrl: "./log-list.html",
 	styleUrl: "./log-list.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	providers: [DatePipe]
 })
 export class LogList
 {
 	private readonly logService: LogManagementService =
 		inject(LogManagementService);
+	private readonly datePipe: DatePipe = inject(DatePipe);
+	private readonly dialog: MatDialog = inject(MatDialog);
+	private readonly notificationService: NotificationService =
+		inject(NotificationService);
 
-	// Output events for parent component
-	readonly logSelected: OutputEmitterRef<LogResponse> = output<LogResponse>();
-	readonly deleteLog: OutputEmitterRef<number> = output<number>();
-	readonly deleteSelected: OutputEmitterRef<number[]> = output<number[]>();
-
-	// UI state
-	readonly filtersExpanded: WritableSignal<boolean> = signal(false);
-	readonly searchFilter: WritableSignal<string> = signal("");
-
-	// Column configuration
-	readonly columns: WritableSignal<ColumnDefinition[]> = signal([
-		{ key: "select", label: "Select", visible: true },
-		{ key: "level", label: "Level", visible: true },
-		{ key: "timestamp", label: "Timestamp", visible: true },
-		{ key: "message", label: "Message", visible: true },
-		{ key: "sourceContext", label: "Source", visible: true },
-		{ key: "requestPath", label: "Request Path", visible: false },
-		{ key: "stackTrace", label: "Stack Trace", visible: false },
-		{ key: "actions", label: "Actions", visible: true }
-	]);
-
-	// TanStack Query state
+	// TanStack Query
 	readonly logsQuery: ReturnType<LogManagementService["getLogs"]> =
 		this.logService.getLogs();
 
+	// Mutations
+	private readonly deleteLogMutation: ReturnType<
+		LogManagementService["deleteLog"]
+	> = this.logService.deleteLog();
+	private readonly deleteLogsMutation: ReturnType<
+		LogManagementService["deleteLogs"]
+	> = this.logService.deleteLogs();
+
+	// Table column definitions
+	readonly columns: TableColumn<LogResponse>[] = [
+		{
+			key: "logLevel",
+			label: "Level",
+			sortable: true,
+			visible: true,
+			type: "badge",
+			formatter: (value: unknown): string =>
+			{
+				const level: LogLevel = parseLogLevel(value as string);
+				return LogLevel[level];
+			},
+			badgeColor: (value: unknown): "primary" | "accent" | "warn" =>
+			{
+				const level: LogLevel = parseLogLevel(value as string);
+				if (level === LogLevel.Error || level === LogLevel.Fatal)
+				{
+					return "warn";
+				}
+				if (level === LogLevel.Warning)
+				{
+					return "accent";
+				}
+				return "primary";
+			}
+		},
+		{
+			key: "timestamp",
+			label: "Timestamp",
+			sortable: true,
+			visible: true,
+			type: "date",
+			formatter: (value: unknown): string =>
+				this.datePipe.transform(value as Date, "short") ?? ""
+		},
+		{
+			key: "message",
+			label: "Message",
+			sortable: false,
+			visible: true,
+			type: "text"
+		},
+		{
+			key: "sourceContext",
+			label: "Source",
+			sortable: false,
+			visible: false,
+			type: "text"
+		},
+		{
+			key: "requestPath",
+			label: "Request Path",
+			sortable: false,
+			visible: false,
+			type: "text"
+		},
+		{
+			key: "stackTrace",
+			label: "Stack Trace",
+			sortable: false,
+			visible: false,
+			type: "text"
+		}
+	];
+
+	// Quick filters
+	readonly quickFilters: QuickFilter<LogResponse>[] = [
+		{
+			key: "all",
+			label: "All",
+			icon: "list",
+			filterFn: (): boolean => true // Show all logs
+		},
+		{
+			key: "warnings",
+			label: "Warnings",
+			icon: "warning",
+			filterFn: (item: LogResponse): boolean =>
+			{
+				const level: LogLevel = parseLogLevel(item.logLevel);
+				// Warning level and above: Warning (3), Error (4), Fatal (5)
+				return level >= LogLevel.Warning;
+			}
+		},
+		{
+			key: "errors",
+			label: "Errors",
+			icon: "error",
+			filterFn: (item: LogResponse): boolean =>
+			{
+				const level: LogLevel = parseLogLevel(item.logLevel);
+				// Error level and above: Error (4), Fatal (5)
+				return level >= LogLevel.Error;
+			}
+		}
+	];
+
+	// Row actions
+	readonly rowActions: RowAction<LogResponse>[] = [
+		{
+			key: "view",
+			label: "View Details",
+			icon: "visibility",
+			color: "primary"
+		},
+		{
+			key: "delete",
+			label: "Delete",
+			icon: "delete",
+			color: "warn"
+		}
+	];
+
+	// Bulk actions
+	readonly bulkActions: BulkAction[] = [
+		{
+			key: "delete",
+			label: "Delete Selected",
+			icon: "delete",
+			color: "warn",
+			requiresSelection: true
+		}
+	];
+
 	// Computed signals
-	readonly logs: Signal<PagedLogResponse | null> = computed(
-		(): PagedLogResponse | null => this.logsQuery.data() ?? null
+	readonly data: Signal<LogResponse[]> = computed(
+		(): LogResponse[] => this.logsQuery.data()?.data ?? []
+	);
+	readonly totalCount: Signal<number> = computed(
+		(): number => this.logsQuery.data()?.totalCount ?? 0
+	);
+	readonly pageIndex: Signal<number> = computed(
+		(): number => (this.logsQuery.data()?.pageNumber ?? 1) - 1
+	);
+	readonly pageSize: Signal<number> = computed(
+		(): number => this.logsQuery.data()?.pageSize ?? 25
 	);
 	readonly isLoading: Signal<boolean> = computed((): boolean =>
 		this.logsQuery.isLoading()
 	);
 	readonly error: Signal<string | null> = computed((): string | null =>
-		this.logsQuery.error() ? "Failed to load logs. Please try again." : null
+		this.logsQuery.error() ? "Failed to load logs" : null
 	);
 
-	readonly displayedColumns: Signal<string[]> = computed((): string[] =>
-		this.columns()
-			.filter((col: ColumnDefinition): boolean => col.visible)
-			.map((col: ColumnDefinition): string => col.key)
-	);
-
-	readonly errorCount: Signal<number> = computed((): number =>
+	// Event handlers
+	onSearch(searchText: string): void
 	{
-		const logsData: PagedLogResponse | null = this.logs();
-		if (!logsData)
-		{
-			return 0;
-		}
-		return logsData.data.filter(
-			(log: LogResponse): boolean =>
-				log.logLevel?.toLowerCase() === "error"
-		).length;
-	});
-
-	readonly warningCount: Signal<number> = computed((): number =>
-	{
-		const logsData: PagedLogResponse | null = this.logs();
-		if (!logsData)
-		{
-			return 0;
-		}
-		return logsData.data.filter(
-			(log: LogResponse): boolean =>
-				log.logLevel?.toLowerCase() === "warning"
-		).length;
-	});
-
-	toggleColumn(key: string): void
-	{
-		this.columns.update((cols: ColumnDefinition[]): ColumnDefinition[] =>
-			cols.map(
-				(col: ColumnDefinition): ColumnDefinition =>
-					col.key === key ? { ...col, visible: !col.visible } : col
-			)
-		);
+		this.logService.updateFilter({ searchTerm: searchText || undefined });
 	}
 
-	applySearch(): void
-	{
-		const search: string = this.searchFilter().trim();
-		this.logService.updateFilter({ searchTerm: search || undefined });
-	}
-
-	clearSearch(): void
-	{
-		this.searchFilter.set("");
-		this.applySearch();
-	}
-
-	onRetry(): void
+	onRefresh(): void
 	{
 		void this.logsQuery.refetch();
 	}
 
-	onFilterChange(filter: Partial<LogFilterRequest>): void
+	onFilterChange(event: FilterChangeEvent): void
 	{
-		this.logService.updateFilter(filter);
+		// Always apply the filter that was clicked (single selection mode)
+		// If trying to deactivate current filter, default to "all"
+		let logLevel: string | null = null;
+		const filterKey: string = event.active ? event.filterKey : "all";
+
+		switch (filterKey)
+		{
+			case "all":
+				// No filter - show all logs
+				logLevel = null;
+				break;
+			case "warnings":
+				// Warning level and above: Warning (3), Error (4), Fatal (5)
+				logLevel = "Warning";
+				break;
+			case "errors":
+				// Error level and above: Error (4), Fatal (5)
+				logLevel = "Error";
+				break;
+		}
+
+		this.logService.updateFilter({ logLevel });
+	}
+
+	onDateRangeChange(event: DateRangeEvent): void
+	{
+		// Update filter with date range
+		this.logService.updateFilter({
+			startDate: event.startDate,
+			endDate: event.endDate
+		});
+	}
+
+	onRowAction(event: RowActionEvent<LogResponse>): void
+	{
+		switch (event.action)
+		{
+			case "view":
+				this.viewLogDetails(event.row);
+				break;
+			case "delete":
+				this.deleteLog(event.row.id);
+				break;
+		}
+	}
+
+	onBulkAction(event: BulkActionEvent<LogResponse>): void
+	{
+		switch (event.action)
+		{
+			case "delete":
+				this.deleteLogs(event.selectedIds);
+				break;
+		}
 	}
 
 	onPageChange(pageIndex: number): void
@@ -183,18 +288,105 @@ export class LogList
 		this.logService.setPageSize(pageSize);
 	}
 
-	onLogSelected(log: LogResponse): void
+	/**
+	 * Opens the log detail dialog to view full log information
+	 * @param log - The log entry to display
+	 */
+	private viewLogDetails(log: LogResponse): void
 	{
-		this.logSelected.emit(log);
+		const dialogRef: MatDialogRef<LogDetailDialogComponent> =
+			this.dialog.open(LogDetailDialogComponent, {
+				width: "900px",
+				maxWidth: "95vw",
+				maxHeight: "90vh",
+				data: log,
+				autoFocus: false,
+				restoreFocus: true
+			});
+
+		// Subscribe to delete event from dialog
+		const component: LogDetailDialogComponent = dialogRef.componentInstance;
+		const subscription: OutputRefSubscription =
+			component.deleteLog.subscribe((id: number) =>
+			{
+				this.deleteLog(id);
+			});
+
+		// Clean up subscription when dialog closes
+		dialogRef.afterClosed().subscribe(() =>
+		{
+			subscription.unsubscribe();
+		});
 	}
 
-	onDeleteLog(id: number): void
+	/**
+	 * Deletes a single log entry
+	 * Shows confirmation and handles success/error states
+	 * @param id - The log ID to delete
+	 */
+	private deleteLog(id: number): void
 	{
-		this.deleteLog.emit(id);
+		if (
+			!confirm(
+				"Are you sure you want to delete this log entry? This action cannot be undone."
+			)
+		)
+		{
+			return;
+		}
+
+		this.deleteLogMutation.mutate(id, {
+			onSuccess: () =>
+			{
+				this.notificationService.success(
+					"Log entry deleted successfully"
+				);
+			},
+			onError: (error: Error) =>
+			{
+				this.notificationService.error(
+					`Failed to delete log entry: ${error.message}`
+				);
+			}
+		});
 	}
 
-	onDeleteSelected(ids: number[]): void
+	/**
+	 * Deletes multiple log entries in batch
+	 * Shows confirmation and handles success/error states
+	 * @param ids - Array of log IDs to delete
+	 */
+	private deleteLogs(ids: number[]): void
 	{
-		this.deleteSelected.emit(ids);
+		if (ids.length === 0)
+		{
+			this.notificationService.warning("No logs selected for deletion");
+			return;
+		}
+
+		const count: number = ids.length;
+		if (
+			!confirm(
+				`Are you sure you want to delete ${count} log ${count === 1 ? "entry" : "entries"}? This action cannot be undone.`
+			)
+		)
+		{
+			return;
+		}
+
+		this.deleteLogsMutation.mutate(ids, {
+			onSuccess: () =>
+			{
+				this.notificationService.success(
+					`Successfully deleted ${count} log ${count === 1 ? "entry" : "entries"}`
+				);
+			},
+			onError: (error: Error) =>
+			{
+				this.notificationService.error(
+					`Failed to delete logs: ${error.message}`
+				);
+			}
+		});
 	}
 }

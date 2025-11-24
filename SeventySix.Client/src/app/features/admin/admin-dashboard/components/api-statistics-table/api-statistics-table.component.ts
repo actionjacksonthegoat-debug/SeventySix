@@ -52,7 +52,8 @@ export class ApiStatisticsTableComponent
 	/**
 	 * TanStack Query for API data
 	 */
-	readonly apiDataQuery = this.thirdPartyApiService.createAllQuery();
+	readonly apiDataQuery: ReturnType<ThirdPartyApiService["createAllQuery"]> =
+		this.thirdPartyApiService.createAllQuery();
 
 	/**
 	 * Loading state from query
@@ -66,7 +67,7 @@ export class ApiStatisticsTableComponent
 	 */
 	readonly error: Signal<string | null> = computed(() =>
 	{
-		const err = this.apiDataQuery.error();
+		const err: Error | null = this.apiDataQuery.error();
 		return err ? err.message || "Failed to load API data" : null;
 	});
 
@@ -77,7 +78,7 @@ export class ApiStatisticsTableComponent
 		MatTableDataSource<ThirdPartyApiRequestDisplay>
 	> = computed(() =>
 	{
-		const data = this.apiDataQuery.data() ?? [];
+		const data: ThirdPartyApiRequest[] = this.apiDataQuery.data() ?? [];
 		const displayData: ThirdPartyApiRequestDisplay[] = data.map((item) => ({
 			...item,
 			formattedLastCalled: this.formatLastCalled(item.lastCalledAt),

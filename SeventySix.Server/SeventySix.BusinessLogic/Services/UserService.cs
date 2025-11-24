@@ -223,13 +223,9 @@ public class UserService(
 		// Validate request
 		await queryValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-		// Get paged data
+		// Get paged data (repository now handles all request properties)
 		(IEnumerable<User> users, int totalCount) = await repository.GetPagedAsync(
-			request.Page,
-			request.PageSize,
-			request.SearchTerm,
-			request.IsActive,
-			request.IncludeDeleted,
+			request,
 			cancellationToken);
 
 		return new PagedResult<UserDto>

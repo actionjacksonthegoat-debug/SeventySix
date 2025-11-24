@@ -47,33 +47,44 @@ describe("UserService", () =>
 		expect(service).toBeTruthy();
 	});
 
-	describe("getAllUsers", () =>
+	describe("filter management", () =>
 	{
-		it("should fetch users from repository", async () =>
+		it("should update filter and reset to page 1", () =>
 		{
-			const users: User[] = [mockUser];
-			mockRepository.getAll.and.returnValue(of(users));
+			service.updateFilter({ searchTerm: "test" });
 
-			const query = TestBed.runInInjectionContext(() =>
-				service.getAllUsers()
-			);
-			const result = await query.refetch();
-
-			expect(result.data).toEqual(users);
+			const filter = service.getCurrentFilter();
+			expect(filter.searchTerm).toBe("test");
+			expect(filter.pageNumber).toBe(1);
 		});
 
-		it("should handle errors", async () =>
+		it("should set page number", () =>
 		{
-			mockRepository.getAll.and.returnValue(
-				throwError(() => new Error("API Error"))
-			);
+			service.setPage(3);
 
-			const query = TestBed.runInInjectionContext(() =>
-				service.getAllUsers()
-			);
-			const result = await query.refetch();
+			const filter = service.getCurrentFilter();
+			expect(filter.pageNumber).toBe(3);
+		});
 
-			expect(result.error).toBeDefined();
+		it("should set page size and reset to page 1", () =>
+		{
+			service.setPage(5);
+			service.setPageSize(100);
+
+			const filter = service.getCurrentFilter();
+			expect(filter.pageSize).toBe(100);
+			expect(filter.pageNumber).toBe(1);
+		});
+
+		it("should clear filters", () =>
+		{
+			service.updateFilter({ searchTerm: "test", includeInactive: true });
+			service.clearFilters();
+
+			const filter = service.getCurrentFilter();
+			expect(filter.searchTerm).toBeUndefined();
+			expect(filter.includeInactive).toBeUndefined();
+			expect(filter.pageNumber).toBe(1);
 		});
 	});
 
@@ -153,21 +164,18 @@ describe("UserService", () =>
 
 	describe("getPagedUsers", () =>
 	{
-		it("should fetch paged users", async () =>
+		it("should fetch paged users with current filter", async () =>
 		{
-			const request: UserQueryRequest = {
-				page: 1,
-				pageSize: 10,
-				searchTerm: "",
-				includeInactive: false,
-				sortBy: "",
-				sortDescending: false
-			};
+			service.updateFilter({
+				searchTerm: "test",
+				includeInactive: false
+			});
+
 			const pagedResult: PagedResult<User> = {
 				items: [mockUser],
 				totalCount: 1,
-				page: 1,
-				pageSize: 10,
+				pageNumber: 1,
+				pageSize: 50,
 				totalPages: 1,
 				hasPreviousPage: false,
 				hasNextPage: false
@@ -175,7 +183,7 @@ describe("UserService", () =>
 			mockRepository.getPaged.and.returnValue(of(pagedResult));
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.getPagedUsers(signal(request))
+				service.getPagedUsers()
 			);
 			const result = await query.refetch();
 

@@ -4,35 +4,40 @@
 
 using FluentValidation;
 using SeventySix.BusinessLogic.DTOs.Requests;
+using SeventySix.BusinessLogic.Entities;
+using SeventySix.BusinessLogic.Validators.Base;
 
 namespace SeventySix.BusinessLogic.Validators;
 
 /// <summary>
-/// Validator for <see cref="UserQueryRequest"/>.
-/// Ensures pagination and query parameters are within acceptable ranges.
+/// FluentValidation validator for UserQueryRequest.
 /// </summary>
-public class UserQueryValidator : AbstractValidator<UserQueryRequest>
+/// <remarks>
+/// Inherits ALL validation from BaseQueryValidator.
+/// NO custom validation needed (IsActive and IncludeDeleted are bool/bool? - type-safe).
+/// SortBy validation automatically uses User entity properties via reflection.
+///
+/// Common validations (inherited from base):
+/// - Excessive database queries (page size, search term length, date range)
+/// - Trivial searches (too short)
+/// - Invalid sort fields (validated against User entity properties)
+///
+/// Security Note:
+/// - SQL injection is NOT a concern - EF Core LINQ queries are automatically parameterized
+/// - No regex validation needed for security - only for business logic
+///
+/// This demonstrates proper abstraction: base handles everything common.
+/// </remarks>
+public class UserQueryValidator : BaseQueryValidator<UserQueryRequest, User>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserQueryValidator"/> class.
 	/// </summary>
 	public UserQueryValidator()
+		: base() // Call base constructor for ALL validation (Page, PageSize, SearchTerm, DateRange, SortBy)
 	{
-		RuleFor(x => x.Page)
-			.GreaterThan(0)
-			.WithMessage("Page must be greater than 0");
-
-		RuleFor(x => x.PageSize)
-			.InclusiveBetween(1, 100)
-			.WithMessage("Page size must be between 1 and 100");
-
-		RuleFor(x => x.SearchTerm)
-			.MaximumLength(100)
-			.WithMessage("Search term cannot exceed 100 characters")
-			.When(x => !string.IsNullOrWhiteSpace(x.SearchTerm));
-
-		RuleFor(x => x.SortBy)
-			.Must(x => new[] { "username", "email", "createdat", "modifiedat" }.Contains(x.ToLower()))
-			.WithMessage("SortBy must be one of: username, email, createdat, modifiedat");
+		// No additional validation needed for UserQueryRequest
+		// IsActive and IncludeDeleted are bool/bool? - no validation required
+		// SortBy automatically validates against User entity properties (Id, Username, Email, etc.)
 	}
 }

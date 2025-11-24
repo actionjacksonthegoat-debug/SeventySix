@@ -220,45 +220,63 @@ public class UserRepository : IUserRepository
 
 	/// <inheritdoc/>
 	public async Task<(IEnumerable<User> Users, int TotalCount)> GetPagedAsync(
-		int page,
-		int pageSize,
-		string? searchTerm = null,
-		bool? isActive = null,
-		bool includeDeleted = false,
+		SeventySix.BusinessLogic.DTOs.Requests.UserQueryRequest request,
 		CancellationToken cancellationToken = default)
 	{
+		ArgumentNullException.ThrowIfNull(request);
+
 		IQueryable<User> query = Context.Users.AsQueryable();
 
 		// Include deleted users if requested
-		if (includeDeleted)
+		if (request.IncludeDeleted)
 		{
 			query = query.IgnoreQueryFilters();
 		}
 
 		// Apply search filter
-		if (!string.IsNullOrWhiteSpace(searchTerm))
+		if (!string.IsNullOrWhiteSpace(request.SearchTerm))
 		{
 			query = query.Where(u =>
-				u.Username.Contains(searchTerm) ||
-				u.Email.Contains(searchTerm) ||
-				(u.FullName != null && u.FullName.Contains(searchTerm)));
+				u.Username.Contains(request.SearchTerm) ||
+				u.Email.Contains(request.SearchTerm) ||
+				(u.FullName != null && u.FullName.Contains(request.SearchTerm)));
 		}
 
 		// Apply active status filter
-		if (isActive.HasValue)
+		if (request.IsActive.HasValue)
 		{
-			query = query.Where(u => u.IsActive == isActive.Value);
+			query = query.Where(u => u.IsActive == request.IsActive.Value);
 		}
 
-		// Get total count before pagination
+		// Apply date range filter (StartDate/EndDate filter by LastLoginAt)
+		if (request.StartDate.HasValue)
+		{
+			query = query.Where(u => u.LastLoginAt >= request.StartDate.Value);
+		}
+
+		if (request.EndDate.HasValue)
+		{
+			query = query.Where(u => u.LastLoginAt <= request.EndDate.Value);
+		}
+
+		// Get total count BEFORE pagination
 		int totalCount = await query.CountAsync(cancellationToken);
 
-		// Apply pagination and ordering
+		// Apply sorting (dynamic based on SortBy property)
+		// Default: Id ascending
+		string sortProperty = string.IsNullOrWhiteSpace(request.SortBy) ? "Id" : request.SortBy;
+		query = request.SortDescending
+			? query.OrderByDescending(e => EF.Property<object>(e, sortProperty))
+			: query.OrderBy(e => EF.Property<object>(e, sortProperty));
+
+		// Apply pagination
+		int skip = request.GetSkip();
+		int take = request.GetValidatedPageSize();
+
 		List<User> users = await query
 			.AsNoTracking()
-			.OrderBy(u => u.Username)
-			.Skip((page - 1) * pageSize)
-			.Take(pageSize)
+			.Skip(skip)
+			.Take(take)
 			.ToListAsync(cancellationToken);
 
 		return (users, totalCount);

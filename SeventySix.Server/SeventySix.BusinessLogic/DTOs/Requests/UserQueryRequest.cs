@@ -2,35 +2,37 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.BusinessLogic.DTOs.Base;
+
 namespace SeventySix.BusinessLogic.DTOs.Requests;
 
 /// <summary>
 /// Request model for querying users with pagination and filtering.
 /// </summary>
-public record UserQueryRequest
+/// <remarks>
+/// Inherits common query properties from BaseQueryRequest.
+/// ONLY adds domain-specific IsActive and IncludeDeleted filters.
+/// Uses base defaults: PageSize=50, SortBy="Id", StartDate=1 hour ago.
+///
+/// Design Patterns:
+/// - DTO: Data Transfer Object for API request
+/// - Template: Inherits from BaseQueryRequest
+///
+/// SOLID Principles:
+/// - SRP: Only responsible for user-specific filter criteria
+/// - OCP: Extends base without modification
+///
+/// Searches across: Username, Email, FullName (partial match).
+/// </remarks>
+public record UserQueryRequest : BaseQueryRequest
 {
 	/// <summary>
-	/// Gets the page number (1-based).
-	/// </summary>
-	public int Page { get; init; } = 1;
-
-	/// <summary>
-	/// Gets the page size (max 100).
-	/// </summary>
-	public int PageSize { get; init; } = 20;
-
-	/// <summary>
-	/// Gets the search term to filter by username, email, or full name.
-	/// </summary>
-	public string? SearchTerm
-	{
-		get; init;
-	}
-
-	/// <summary>
 	/// Gets a value indicating whether to filter by active status.
-	/// Null returns all users regardless of status.
 	/// </summary>
+	/// <remarks>
+	/// UserQueryRequest-specific property - custom value for Users domain.
+	/// Null returns all users regardless of status.
+	/// </remarks>
 	public bool? IsActive
 	{
 		get; init;
@@ -39,15 +41,11 @@ public record UserQueryRequest
 	/// <summary>
 	/// Gets a value indicating whether to include soft-deleted users.
 	/// </summary>
-	public bool IncludeDeleted { get; init; } = false;
-
-	/// <summary>
-	/// Gets the field to sort by (username, email, createdat, modifiedat).
-	/// </summary>
-	public string SortBy { get; init; } = "username";
-
-	/// <summary>
-	/// Gets a value indicating whether to sort in descending order.
-	/// </summary>
-	public bool SortDescending { get; init; } = false;
+	/// <remarks>
+	/// UserQueryRequest-specific property - custom value for Users domain.
+	/// </remarks>
+	public bool IncludeDeleted
+	{
+		get; init;
+	} = false;
 }

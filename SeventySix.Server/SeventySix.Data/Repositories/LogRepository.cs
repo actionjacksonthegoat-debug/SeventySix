@@ -76,111 +76,76 @@ public class LogRepository : ILogRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<IEnumerable<Log>> GetLogsAsync(
-		string? logLevel = null,
-		DateTime? startDate = null,
-		DateTime? endDate = null,
-		string? sourceContext = null,
-		string? requestPath = null,
-		int skip = 0,
-		int take = 100,
+	public async Task<(IEnumerable<Log> Logs, int TotalCount)> GetLogsAsync(
+		SeventySix.BusinessLogic.DTOs.Logs.LogFilterRequest request,
 		CancellationToken cancellationToken = default)
 	{
+		ArgumentNullException.ThrowIfNull(request);
+
 		try
 		{
 			IQueryable<Log> query = Context.Logs.AsNoTracking();
 
-			if (!string.IsNullOrWhiteSpace(logLevel))
+			// Apply LogLevel filter
+			if (!string.IsNullOrWhiteSpace(request.LogLevel))
 			{
-				query = query.Where(l => l.LogLevel == logLevel);
+				query = query.Where(log => log.LogLevel == request.LogLevel);
 			}
 
-			if (startDate.HasValue)
+			// Apply date range filter (StartDate/EndDate filter by Timestamp)
+			if (request.StartDate.HasValue)
 			{
-				query = query.Where(l => l.Timestamp >= startDate.Value);
+				query = query.Where(log => log.Timestamp >= request.StartDate.Value);
 			}
 
-			if (endDate.HasValue)
+			if (request.EndDate.HasValue)
 			{
-				query = query.Where(l => l.Timestamp <= endDate.Value);
+				query = query.Where(log => log.Timestamp <= request.EndDate.Value);
 			}
 
-			if (!string.IsNullOrWhiteSpace(sourceContext))
+			// Apply search term filter
+			if (!string.IsNullOrWhiteSpace(request.SearchTerm))
 			{
-				query = query.Where(l => l.SourceContext != null && l.SourceContext.Contains(sourceContext));
+				// EF Core will automatically parameterize this query - no SQL injection risk
+				// Search across all relevant text fields for maximum flexibility
+				query = query.Where(log =>
+					(log.Message != null && log.Message.Contains(request.SearchTerm)) ||
+					(log.ExceptionMessage != null && log.ExceptionMessage.Contains(request.SearchTerm)) ||
+					(log.SourceContext != null && log.SourceContext.Contains(request.SearchTerm)) ||
+					(log.RequestPath != null && log.RequestPath.Contains(request.SearchTerm)) ||
+					(log.StackTrace != null && log.StackTrace.Contains(request.SearchTerm)));
 			}
 
-			if (!string.IsNullOrWhiteSpace(requestPath))
-			{
-				query = query.Where(l => l.RequestPath != null && l.RequestPath.Contains(requestPath));
-			}
+			// Get total count BEFORE pagination
+			int totalCount = await query.CountAsync(cancellationToken);
 
-			return await query
-				.OrderByDescending(l => l.Timestamp)
+			// Apply sorting (dynamic based on SortBy property)
+			// Default: Timestamp descending (most recent first)
+			string sortProperty = string.IsNullOrWhiteSpace(request.SortBy) ? "Timestamp" : request.SortBy;
+			query = request.SortDescending
+				? query.OrderByDescending(e => EF.Property<object>(e, sortProperty))
+				: query.OrderBy(e => EF.Property<object>(e, sortProperty));
+
+			// Apply pagination
+			int skip = request.GetSkip();
+			int take = request.GetValidatedPageSize();
+
+			List<Log> logs = await query
 				.Skip(skip)
-				.Take(Math.Min(take, 1000)) // Max 1000 records
+				.Take(take)
 				.ToListAsync(cancellationToken);
+
+			return (logs, totalCount);
 		}
 		catch (Exception ex)
 		{
 			Logger.LogError(
 				ex,
-				"Error retrieving logs with filters: LogLevel={LogLevel}, StartDate={StartDate}, EndDate={EndDate}",
-				logLevel,
-				startDate,
-				endDate);
-			throw;
-		}
-	}
-
-	/// <inheritdoc/>
-	public async Task<int> GetLogsCountAsync(
-		string? logLevel = null,
-		DateTime? startDate = null,
-		DateTime? endDate = null,
-		string? sourceContext = null,
-		string? requestPath = null,
-		CancellationToken cancellationToken = default)
-	{
-		try
-		{
-			IQueryable<Log> query = Context.Logs.AsNoTracking();
-
-			if (!string.IsNullOrWhiteSpace(logLevel))
-			{
-				query = query.Where(l => l.LogLevel == logLevel);
-			}
-
-			if (startDate.HasValue)
-			{
-				query = query.Where(l => l.Timestamp >= startDate.Value);
-			}
-
-			if (endDate.HasValue)
-			{
-				query = query.Where(l => l.Timestamp <= endDate.Value);
-			}
-
-			if (!string.IsNullOrWhiteSpace(sourceContext))
-			{
-				query = query.Where(l => l.SourceContext != null && l.SourceContext.Contains(sourceContext));
-			}
-
-			if (!string.IsNullOrWhiteSpace(requestPath))
-			{
-				query = query.Where(l => l.RequestPath != null && l.RequestPath.Contains(requestPath));
-			}
-
-			return await query.CountAsync(cancellationToken);
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(
-				ex,
-				"Error counting logs with filters: LogLevel={LogLevel}, StartDate={StartDate}, EndDate={EndDate}",
-				logLevel,
-				startDate,
-				endDate);
+				"Error retrieving logs with filters: LogLevel={LogLevel}, StartDate={StartDate}, EndDate={EndDate}, Page={Page}",
+				request.LogLevel,
+				request.StartDate,
+				request.EndDate,
+				request.Page);
 			throw;
 		}
 	}
