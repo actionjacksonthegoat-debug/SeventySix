@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { WorldMap } from "./world-map";
+import { RVCamper } from "./rv-camper";
 
-describe("WorldMap", () =>
+describe("RVCamper", () =>
 {
-	let component: WorldMap;
-	let fixture: ComponentFixture<WorldMap>;
+	let component: RVCamper;
+	let fixture: ComponentFixture<RVCamper>;
 
 	beforeEach(async () =>
 	{
 		await TestBed.configureTestingModule({
-			imports: [WorldMap],
+			imports: [RVCamper],
 			providers: [provideZonelessChangeDetection()]
 		}).compileComponents();
 
-		fixture = TestBed.createComponent(WorldMap);
+		fixture = TestBed.createComponent(RVCamper);
 		component = fixture.componentInstance;
 	});
 
@@ -26,12 +26,12 @@ describe("WorldMap", () =>
 
 	it("should have title property", () =>
 	{
-		expect(component.title).toBe("World Map");
+		expect(component.title).toBe("RV Camper Projects");
 	});
 
 	it("should have description property", () =>
 	{
-		expect(component.description).toContain("world map");
+		expect(component.description).toContain("RV camper");
 	});
 
 	it("should render title in template", () =>
@@ -40,7 +40,7 @@ describe("WorldMap", () =>
 		const compiled: HTMLElement = fixture.nativeElement;
 		const titleElement: HTMLElement | null =
 			compiled.querySelector("mat-card-title");
-		expect(titleElement?.textContent?.trim()).toBe("World Map");
+		expect(titleElement?.textContent?.trim()).toBe("RV Camper Projects");
 	});
 
 	it("should render description in template", () =>
@@ -49,15 +49,15 @@ describe("WorldMap", () =>
 		const compiled: HTMLElement = fixture.nativeElement;
 		const descriptionElement: HTMLElement | null =
 			compiled.querySelector("p");
-		expect(descriptionElement?.textContent?.trim()).toContain("world map");
+		expect(descriptionElement?.textContent?.trim()).toContain("RV camper");
 	});
 
-	it("should apply primary color theme class", () =>
+	it("should apply tertiary color theme class", () =>
 	{
 		fixture.detectChanges();
 		const compiled: HTMLElement = fixture.nativeElement;
 		const card: HTMLElement | null =
-			compiled.querySelector(".world-map-card");
+			compiled.querySelector(".rv-camper-card");
 		expect(card).toBeTruthy();
 	});
 });

@@ -1,27 +1,8 @@
-import {
-	Component,
-	ChangeDetectionStrategy,
-	signal,
-	inject,
-	WritableSignal
-} from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
-import { MatChipsModule } from "@angular/material/chips";
-import { MatDividerModule } from "@angular/material/divider";
 import { RouterLink } from "@angular/router";
-import { ThemeService } from "@core/services";
-
-interface QuickStat
-{
-	label: string;
-	value: string;
-	icon: string;
-	trend?: "up" | "down";
-	trendValue?: string;
-	color?: "primary" | "accent" | "warn";
-}
 
 interface QuickAction
 {
@@ -29,107 +10,44 @@ interface QuickAction
 	description: string;
 	icon: string;
 	route: string;
-	color?: string;
+	themeClass: string;
 }
 
 /**
- * Home/Dashboard page
- * Displays overview, quick stats, and navigation to key features
+ * Home page
+ * Displays navigation to 3 main features: WorldMap, Physics, RVCamper
  */
 @Component({
 	selector: "app-home-page",
-	imports: [
-		MatCardModule,
-		MatButtonModule,
-		MatIconModule,
-		MatChipsModule,
-		MatDividerModule,
-		RouterLink
-	],
+	imports: [MatCardModule, MatButtonModule, MatIconModule, RouterLink],
 	templateUrl: "./home-page.html",
 	styleUrl: "./home-page.scss",
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomePage
 {
-	protected readonly themeService: ThemeService = inject(ThemeService);
-
-	protected readonly stats: QuickStat[] = [
-		{
-			label: "Total Users",
-			value: "1,234",
-			icon: "people",
-			trend: "up",
-			trendValue: "+12%",
-			color: "primary"
-		},
-		{
-			label: "Active Sessions",
-			value: "89",
-			icon: "trending_up",
-			trend: "up",
-			trendValue: "+5%",
-			color: "accent"
-		},
-		{
-			label: "Data Storage",
-			value: "45.2 GB",
-			icon: "storage",
-			trend: "down",
-			trendValue: "-2%"
-		},
-		{
-			label: "API Calls Today",
-			value: "12.4K",
-			icon: "api",
-			trend: "up",
-			trendValue: "+18%",
-			color: "primary"
-		}
-	];
-
 	protected readonly quickActions: QuickAction[] = [
 		{
-			title: "User Management",
-			description: "View and manage user accounts",
-			icon: "people",
-			route: "/users",
-			color: "primary"
-		},
-		{
 			title: "World Map",
-			description: "Explore the interactive game world",
-			icon: "map",
+			description: "Interactive game world map and exploration features",
+			icon: "public",
 			route: "/game",
-			color: "warn"
+			themeClass: "theme-primary"
 		},
 		{
-			title: "Settings",
-			description: "Configure application preferences",
-			icon: "settings",
-			route: "/settings",
-			color: "primary"
+			title: "Physics",
+			description:
+				"Electricity generation from buoyancy and calculations",
+			icon: "bolt",
+			route: "/physics",
+			themeClass: "theme-secondary"
+		},
+		{
+			title: "RV Camper",
+			description: "Design and planning workspace for RV modifications",
+			icon: "rv_hookup",
+			route: "/rv-camper",
+			themeClass: "theme-tertiary"
 		}
 	];
-
-	protected readonly recentActivity: WritableSignal<
-		Array<{ icon: string; text: string; time: string }>
-	> = signal([
-		{
-			icon: "person_add",
-			text: "New user registered: John Doe",
-			time: "5 minutes ago"
-		},
-		{
-			icon: "edit",
-			text: "User profile updated: Jane Smith",
-			time: "12 minutes ago"
-		},
-		{
-			icon: "cloud_upload",
-			text: "Data backup completed",
-			time: "1 hour ago"
-		},
-		{ icon: "security", text: "Security scan passed", time: "2 hours ago" }
-	]);
 }

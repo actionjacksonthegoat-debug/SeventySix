@@ -23,6 +23,22 @@ export const routes: Routes = [
 		data: { breadcrumb: "Game" }
 	},
 	{
+		path: "physics",
+		loadComponent: () =>
+			import("./features/physics/physics/physics").then((m) => m.Physics),
+		title: "Physics - Calculations",
+		data: { breadcrumb: "Physics" }
+	},
+	{
+		path: "rv-camper",
+		loadComponent: () =>
+			import("./features/rv-camper/rv-camper/rv-camper").then(
+				(m) => m.RVCamper
+			),
+		title: "RV Camper - Projects",
+		data: { breadcrumb: "RV Camper" }
+	},
+	{
 		path: "developer/style-guide",
 		loadComponent: () =>
 			import(

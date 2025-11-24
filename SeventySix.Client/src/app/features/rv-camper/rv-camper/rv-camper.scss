@@ -1,4 +1,4 @@
-.world-map-container {
+.rv-camper-container {
 	padding: 1.5rem;
 	display: flex;
 	justify-content: center;
@@ -6,17 +6,17 @@
 	min-height: calc(100vh - 64px);
 }
 
-.world-map-card {
+.rv-camper-card {
 	max-width: 600px;
 	width: 100%;
-	background-color: var(--mat-sys-primary-container);
-	color: var(--mat-sys-on-primary-container);
+	background-color: var(--mat-sys-tertiary-container);
+	color: var(--mat-sys-on-tertiary-container);
 }
 
-.world-map-icon {
+.rv-camper-icon {
 	font-size: 48px;
 	width: 48px;
 	height: 48px;
 	margin-bottom: 1rem;
-	color: var(--mat-sys-primary);
+	color: var(--mat-sys-tertiary);
 }

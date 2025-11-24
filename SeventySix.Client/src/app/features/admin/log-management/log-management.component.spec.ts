@@ -35,7 +35,10 @@ describe("LogManagementComponent", (): void =>
 			"getLogs",
 			"deleteLog",
 			"deleteLogs",
-			"deleteSelected"
+			"deleteSelected",
+			"updateFilter",
+			"clearSelection",
+			"selectAll"
 		]);
 
 		// Mock getLogs to return a TanStack Query result

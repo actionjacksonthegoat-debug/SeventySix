@@ -1,81 +1,24 @@
-<!-- Hero Section -->
-<section class="hero-section">
-	<div class="hero-content">
-		<h1 class="mat-headline-3">Welcome to SeventySix</h1>
-		<p class="mat-body-1">
-			A modern data management platform built with Angular and Material
-			Design
-		</p>
-		<div class="hero-actions">
-			<button mat-raised-button color="primary" routerLink="/admin/users">
-				<mat-icon>people</mat-icon>
-				Get Started
-			</button>
-			<button mat-stroked-button routerLink="/game">
-				<mat-icon>explore</mat-icon>
-				Explore
-			</button>
-		</div>
-	</div>
-</section>
+<div class="home-container">
+	<h1 class="mat-headline-3">Welcome to SeventySix</h1>
+	<p class="mat-body-1 subtitle">Select a feature to get started</p>
 
-<!-- Quick Stats -->
-<section class="stats-section">
-	<h2 class="mat-headline-5 section-title">Quick Stats</h2>
-	<div class="stats-grid">
-		@for (stat of stats; track stat.label)
-		{
-			<mat-card
-				class="stat-card"
-				[class]="'stat-card-' + (stat.color || 'default')"
-			>
-				<mat-card-content>
-					<div class="stat-header">
-						<mat-icon class="stat-icon">{{ stat.icon }}</mat-icon>
-						@if (stat.trend)
-						{
-							<mat-chip
-								class="trend-chip"
-								[class.trend-up]="stat.trend === 'up'"
-								[class.trend-down]="stat.trend === 'down'"
-							>
-								<mat-icon>{{
-									stat.trend === "up"
-										? "arrow_upward"
-										: "arrow_downward"
-								}}</mat-icon>
-								{{ stat.trendValue }}
-							</mat-chip>
-						}
-					</div>
-					<div class="stat-value mat-headline-4">
-						{{ stat.value }}
-					</div>
-					<div class="stat-label mat-body-2">{{ stat.label }}</div>
-				</mat-card-content>
-			</mat-card>
-		}
-	</div>
-</section>
-
-<!-- Quick Actions -->
-<section class="actions-section">
-	<h2 class="mat-headline-5 section-title">Quick Actions</h2>
-	<div class="actions-grid">
+	<div class="features-grid">
 		@for (action of quickActions; track action.route)
 		{
-			<mat-card class="action-card" [routerLink]="action.route">
+			<mat-card
+				class="feature-card"
+				[class]="action.themeClass"
+				[routerLink]="action.route"
+			>
 				<mat-card-header>
-					<mat-icon mat-card-avatar [color]="action.color">{{
-						action.icon
-					}}</mat-icon>
+					<mat-icon class="feature-icon">{{ action.icon }}</mat-icon>
 					<mat-card-title>{{ action.title }}</mat-card-title>
-					<mat-card-subtitle>{{
-						action.description
-					}}</mat-card-subtitle>
 				</mat-card-header>
+				<mat-card-content>
+					<p>{{ action.description }}</p>
+				</mat-card-content>
 				<mat-card-actions align="end">
-					<button mat-button [color]="action.color">
+					<button mat-button>
 						Open
 						<mat-icon>arrow_forward</mat-icon>
 					</button>
@@ -83,39 +26,4 @@
 			</mat-card>
 		}
 	</div>
-</section>
-
-<!-- Recent Activity -->
-<section class="activity-section">
-	<h2 class="mat-headline-5 section-title">Recent Activity</h2>
-	<mat-card class="activity-card">
-		<mat-card-content>
-			<div class="activity-list">
-				@for (activity of recentActivity(); track $index)
-				{
-					<div class="activity-item">
-						<mat-icon class="activity-icon">{{
-							activity.icon
-						}}</mat-icon>
-						<div class="activity-content">
-							<p class="mat-body-1">{{ activity.text }}</p>
-							<span class="mat-body-2 activity-time">{{
-								activity.time
-							}}</span>
-						</div>
-					</div>
-					@if (!$last)
-					{
-						<mat-divider></mat-divider>
-					}
-				}
-			</div>
-		</mat-card-content>
-		<mat-card-actions align="end">
-			<button mat-button color="primary">
-				View All
-				<mat-icon>arrow_forward</mat-icon>
-			</button>
-		</mat-card-actions>
-	</mat-card>
-</section>
+</div>

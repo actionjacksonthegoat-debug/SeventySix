@@ -2,20 +2,16 @@ import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 
-/**
- * World map feature
- * Empty placeholder for game world map and future functionality
- */
 @Component({
-	selector: "app-world-map",
+	selector: "app-rv-camper",
 	imports: [MatCardModule, MatIconModule],
-	templateUrl: "./world-map.html",
-	styleUrl: "./world-map.scss",
+	templateUrl: "./rv-camper.html",
+	styleUrl: "./rv-camper.scss",
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorldMap
+export class RVCamper
 {
-	readonly title: string = "World Map";
+	readonly title: string = "RV Camper Projects";
 	readonly description: string =
-		"Interactive game world map and exploration features.";
+		"Design and planning workspace for RV camper modifications and improvements.";
 }
