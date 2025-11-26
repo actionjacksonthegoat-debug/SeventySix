@@ -7,11 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog.Events;
 using Serilog.Parsing;
 using SeventySix.Api.Logging;
-using SeventySix.BusinessLogic.DTOs.Logs;
-using SeventySix.BusinessLogic.Entities;
-using SeventySix.BusinessLogic.Interfaces;
-using SeventySix.Data;
-using SeventySix.Data.Repositories;
+using SeventySix.Logging;
 using Testcontainers.PostgreSql;
 
 namespace SeventySix.Api.Tests.Logging;
@@ -31,7 +27,7 @@ namespace SeventySix.Api.Tests.Logging;
 public class DatabaseLogSinkTests : IAsyncLifetime
 {
 	private PostgreSqlContainer? PostgresContainer;
-	private ApplicationDbContext? Context;
+	private LoggingDbContext? Context;
 	private ServiceProvider? ServiceProvider;
 	private ILogRepository? LogRepository;
 
@@ -48,11 +44,11 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await PostgresContainer.StartAsync();
 
 		// Configure DbContext with PostgreSQL
-		DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
+		DbContextOptions<LoggingDbContext> options = new DbContextOptionsBuilder<LoggingDbContext>()
 			.UseNpgsql(PostgresContainer.GetConnectionString())
 			.Options;
 
-		Context = new ApplicationDbContext(options);
+		Context = new LoggingDbContext(options);
 		await Context.Database.EnsureCreatedAsync();
 
 		// Create service provider for dependency injection

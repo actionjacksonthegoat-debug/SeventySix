@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SeventySix.Api.Controllers;
-using SeventySix.BusinessLogic.DTOs;
-using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Exceptions;
-using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.Identity;
+using SeventySix.Shared;
 
 namespace SeventySix.Api.Tests.Controllers;
 
@@ -274,7 +272,7 @@ public class UsersControllerTests
 		};
 
 		MockUserService
-		.Setup(s => s.UpdateUserAsync(request, It.IsAny<CancellationToken>()))
+		.Setup(s => s.UpdateUserAsync(request))
 		.ReturnsAsync(updatedUser);
 
 		// Act
@@ -309,7 +307,7 @@ public class UsersControllerTests
 		Assert.Equal("ID in URL does not match ID in request body", badRequestResult.Value);
 
 		MockUserService.Verify(
-		s => s.UpdateUserAsync(It.IsAny<UpdateUserRequest>(), It.IsAny<CancellationToken>()),
+		s => s.UpdateUserAsync(It.IsAny<UpdateUserRequest>()),
 		Times.Never);
 	}
 
@@ -398,9 +396,9 @@ public class UsersControllerTests
 
 		List<UserDto> users =
 		[
-		new UserDto { Id = 1, Username = "testuser1", Email = "test1@example.com", IsActive = true },
-new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsActive = true },
-];
+			new UserDto { Id = 1, Username = "testuser1", Email = "test1@example.com", IsActive = true },
+			new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsActive = true },
+		];
 
 		PagedResult<UserDto> pagedResult = new PagedResult<UserDto>
 		{
@@ -411,7 +409,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 		};
 
 		MockUserService
-		.Setup(s => s.GetPagedUsersAsync(request, It.IsAny<CancellationToken>()))
+		.Setup(s => s.GetPagedUsersAsync(request))
 		.ReturnsAsync(pagedResult);
 
 		// Act
@@ -443,7 +441,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 		};
 
 		MockUserService
-		.Setup(s => s.GetByUsernameAsync("testuser", It.IsAny<CancellationToken>()))
+		.Setup(s => s.GetByUsernameAsync("testuser"))
 		.ReturnsAsync(user);
 
 		// Act
@@ -460,7 +458,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 	{
 		// Arrange
 		MockUserService
-		.Setup(s => s.GetByUsernameAsync("nonexistent", It.IsAny<CancellationToken>()))
+		.Setup(s => s.GetByUsernameAsync("nonexistent"))
 		.ReturnsAsync((UserDto?)null);
 
 		// Act
@@ -479,7 +477,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 	{
 		// Arrange
 		MockUserService
-		.Setup(s => s.UsernameExistsAsync("existinguser", null, It.IsAny<CancellationToken>()))
+		.Setup(s => s.UsernameExistsAsync("existinguser", null))
 		.ReturnsAsync(true);
 
 		// Act
@@ -487,7 +485,8 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 
 		// Assert
 		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		bool exists = Assert.IsType<bool>(okResult.Value);
+		Assert.NotNull(okResult.Value);
+		bool exists = (bool)okResult.Value;
 		Assert.True(exists);
 	}
 
@@ -496,7 +495,7 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 	{
 		// Arrange
 		MockUserService
-		.Setup(s => s.UsernameExistsAsync("newuser", null, It.IsAny<CancellationToken>()))
+		.Setup(s => s.UsernameExistsAsync("newuser", null))
 		.ReturnsAsync(false);
 
 		// Act
@@ -504,7 +503,8 @@ new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsAct
 
 		// Assert
 		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		bool exists = Assert.IsType<bool>(okResult.Value);
+		Assert.NotNull(okResult.Value);
+		bool exists = (bool)okResult.Value;
 		Assert.False(exists);
 	}
 

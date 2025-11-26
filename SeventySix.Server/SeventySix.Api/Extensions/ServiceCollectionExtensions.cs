@@ -3,18 +3,9 @@
 // </copyright>
 
 using System.IO.Compression;
-using FluentValidation;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using SeventySix.BusinessLogic.Configuration;
-using SeventySix.BusinessLogic.Infrastructure;
-using SeventySix.BusinessLogic.Interfaces;
-using SeventySix.BusinessLogic.Services;
-using SeventySix.BusinessLogic.Validators;
-using SeventySix.Data;
-using SeventySix.Data.Infrastructure;
-using SeventySix.Data.Repositories;
+using SeventySix.Api.Configuration;
 
 namespace SeventySix.Api.Extensions;
 
@@ -53,32 +44,12 @@ public static class ServiceCollectionExtensions
 			.Bind(configuration.GetSection(OutputCacheOptions.SECTION_NAME))
 			.ValidateOnStart();
 
-		// FluentValidation
-		services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
-
-		// Repositories
-		services.AddScoped<IUserRepository, UserRepository>();
-		services.AddScoped<IThirdPartyApiRequestRepository, ThirdPartyApiRequestRepository>();
-		services.AddScoped<ILogRepository, LogRepository>();
-
-		// Business logic services
-		services.AddScoped<IUserService, UserService>();
-		services.AddScoped<ILogService, LogService>();
-		services.AddScoped<IThirdPartyApiRequestService, ThirdPartyApiRequestService>();
-		services.AddScoped<IHealthCheckService, HealthCheckService>();
-		services.AddSingleton<IMetricsService, MetricsService>();
-
-		// Infrastructure services
-		services.AddScoped<ITransactionManager, TransactionManager>();
-		services.AddScoped<IRateLimitingService, RateLimitingService>();
-
-		// HTTP clients
-		services.AddHttpClient<IPollyIntegrationClient, PollyIntegrationClient>()
-			.ConfigureHttpClient((serviceProvider, client) =>
-			{
-				client.Timeout = TimeSpan.FromSeconds(30);
-				client.DefaultRequestHeaders.Add("User-Agent", "SeventySix/1.0");
-			});
+		// Note: FluentValidation, Repositories, and Business Services
+		// are now registered via bounded context extensions:
+		// - AddIdentityDomain()
+		// - AddLoggingDomain()
+		// - AddApiTrackingDomain()
+		// - AddInfrastructureDomain()
 
 		// Memory cache
 		services.AddMemoryCache();
@@ -86,42 +57,7 @@ public static class ServiceCollectionExtensions
 		return services;
 	}
 
-	/// <summary>
-	/// Adds database context with PostgreSQL configuration.
-	/// </summary>
-	/// <param name="services">The service collection.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <param name="environment">The web host environment.</param>
-	/// <returns>The service collection for chaining.</returns>
-	public static IServiceCollection AddDatabaseContext(
-		this IServiceCollection services,
-		IConfiguration configuration,
-		IWebHostEnvironment environment)
-	{
-		services.AddDbContext<ApplicationDbContext>(options =>
-		{
-			string connectionString = configuration.GetConnectionString("DefaultConnection")
-				?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-			options.UseNpgsql(connectionString, npgsqlOptions =>
-			{
-				npgsqlOptions.EnableRetryOnFailure(
-					maxRetryCount: 3,
-					maxRetryDelay: TimeSpan.FromSeconds(5),
-					errorCodesToAdd: null);
-
-				npgsqlOptions.CommandTimeout(30);
-			});
-
-			if (environment.IsDevelopment())
-			{
-				options.EnableSensitiveDataLogging();
-				options.EnableDetailedErrors();
-			}
-		});
-
-		return services;
-	}
+	// AddDatabaseContext removed - bounded contexts now handle their own DbContext registration
 
 	/// <summary>
 	/// Adds response compression with optimized settings.

@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.BusinessLogic.Entities;
+using SeventySix.Identity;
 
 namespace SeventySix.TestUtilities.Builders;
 

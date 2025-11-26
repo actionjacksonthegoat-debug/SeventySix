@@ -3,7 +3,9 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
-using SeventySix.Data;
+using SeventySix.Identity;
+using SeventySix.Logging;
+using SeventySix.ApiTracking;
 
 namespace SeventySix.TestUtilities.TestBases;
 
@@ -28,15 +30,33 @@ public sealed class LocalPostgreSqlFixture : BasePostgreSqlFixture
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 	public override async Task InitializeAsync()
 	{
-		// Apply migrations to create database schema
-		DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
+		// Ensure database exists and apply migrations
+		DbContextOptions<IdentityDbContext> identityOptions = new DbContextOptionsBuilder<IdentityDbContext>()
 			.UseNpgsql(ConnectionString)
 			.Options;
+		await using (IdentityDbContext identityContext = new(identityOptions))
+		{
+			// Ensure database exists and apply migrations for Identity
+			await identityContext.Database.MigrateAsync();
+		}
 
-		await using ApplicationDbContext context = new(options);
+		// Apply migrations for Logging bounded context
+		DbContextOptions<LoggingDbContext> loggingOptions = new DbContextOptionsBuilder<LoggingDbContext>()
+			.UseNpgsql(ConnectionString)
+			.Options;
+		await using (LoggingDbContext loggingContext = new(loggingOptions))
+		{
+			await loggingContext.Database.MigrateAsync();
+		}
 
-		// Ensure database exists and is up to date
-		await context.Database.MigrateAsync();
+		// Apply migrations for ApiTracking bounded context
+		DbContextOptions<ApiTrackingDbContext> apiTrackingOptions = new DbContextOptionsBuilder<ApiTrackingDbContext>()
+			.UseNpgsql(ConnectionString)
+			.Options;
+		await using (ApiTrackingDbContext apiTrackingContext = new(apiTrackingOptions))
+		{
+			await apiTrackingContext.Database.MigrateAsync();
+		}
 	}
 
 	/// <summary>

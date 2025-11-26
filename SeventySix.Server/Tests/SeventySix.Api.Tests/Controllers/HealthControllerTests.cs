@@ -5,8 +5,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using SeventySix.Api.Controllers;
-using SeventySix.BusinessLogic.DTOs.Health;
-using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.Infrastructure;
 
 namespace SeventySix.Api.Tests.Controllers;
 
@@ -44,9 +43,9 @@ public class HealthControllerTests
 				Apis = new Dictionary<string, ApiHealthStatus>
 				{
 					{
-						"OpenWeather", new ApiHealthStatus
+						"ThirdPartyRateLimit", new ApiHealthStatus
 						{
-							ApiName = "OpenWeather",
+							ApiName = "ThirdPartyRateLimit",
 							IsAvailable = true,
 							ResponseTimeMs = 150.5,
 							LastChecked = DateTime.UtcNow.AddMinutes(-1),

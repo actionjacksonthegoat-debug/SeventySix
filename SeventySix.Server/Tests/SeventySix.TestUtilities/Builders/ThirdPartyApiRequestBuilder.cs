@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.BusinessLogic.Entities;
+using SeventySix.ApiTracking;
 
 namespace SeventySix.TestUtilities.Builders;
 

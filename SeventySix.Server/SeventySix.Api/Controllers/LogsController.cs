@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
-using SeventySix.BusinessLogic.DTOs;
-using SeventySix.BusinessLogic.DTOs.Logs;
-using SeventySix.BusinessLogic.Entities;
-using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.Logging;
+using SeventySix.Shared;
 
 namespace SeventySix.Api.Controllers;
 

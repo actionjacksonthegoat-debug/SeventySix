@@ -7,7 +7,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SeventySix.BusinessLogic.Exceptions;
+using SeventySix.Shared;
 
 namespace SeventySix.Api.Middleware;
 
@@ -96,16 +96,16 @@ public class GlobalExceptionMiddleware(
 				HttpStatusCode.UnprocessableEntity,
 				"Business Rule Violation",
 				businessEx.Message),
-			DomainException domainEx => CreateProblemDetails(
-				context,
-				HttpStatusCode.BadRequest,
-				"Domain Error",
-				domainEx.Message),
 			ExternalServiceException externalEx => CreateProblemDetails(
 				context,
 				HttpStatusCode.ServiceUnavailable,
 				"External Service Error",
 				externalEx.Message),
+			DomainException domainEx => CreateProblemDetails(
+				context,
+				HttpStatusCode.BadRequest,
+				"Domain Error",
+				domainEx.Message),
 			ArgumentNullException => CreateProblemDetails(
 				context,
 				HttpStatusCode.BadRequest,

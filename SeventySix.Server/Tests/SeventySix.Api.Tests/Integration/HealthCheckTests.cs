@@ -13,7 +13,7 @@ namespace SeventySix.Api.Tests.Integration;
 /// Tests the built-in ASP.NET Core health check endpoint.
 /// </summary>
 [Collection("PostgreSQL")]
-public class HealthCheckTests(LocalPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+public class HealthCheckTests(TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	[Fact]
 	public async Task HealthEndpoint_ReturnsHealthy_WhenDatabaseConnectedAsync()

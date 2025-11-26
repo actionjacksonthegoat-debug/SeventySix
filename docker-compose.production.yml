@@ -54,7 +54,6 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-TestPassword}
       - Cors__AllowedOrigins__0=http://localhost:8080
       - Cors__AllowedOrigins__1=http://localhost:4200
-      - OpenWeather__ApiKey=${OPENWEATHER_APIKEY}
     depends_on:
       database:
         condition: service_healthy

@@ -6,9 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
-using SeventySix.BusinessLogic.DTOs;
-using SeventySix.BusinessLogic.DTOs.Requests;
-using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.Identity;
+using SeventySix.Shared;
 
 namespace SeventySix.Api.Controllers;
 
@@ -182,8 +181,8 @@ public class UsersController(
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool deleted = await userService.DeleteUserAsync(id, "System", cancellationToken);
-		return deleted ? NoContent() : NotFound();
+		bool result = await userService.DeleteUserAsync(id, "System", cancellationToken);
+		return result ? NoContent() : NotFound();
 	}
 
 	/// <summary>
@@ -203,8 +202,8 @@ public class UsersController(
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool restored = await userService.RestoreUserAsync(id, cancellationToken);
-		return restored ? NoContent() : NotFound();
+		bool result = await userService.RestoreUserAsync(id, cancellationToken);
+		return result ? NoContent() : NotFound();
 	}
 
 	/// <summary>

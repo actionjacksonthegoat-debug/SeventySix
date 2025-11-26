@@ -34,12 +34,15 @@ using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
+using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.HealthChecks;
 using SeventySix.Api.Logging;
 using SeventySix.Api.Middleware;
-using SeventySix.BusinessLogic.Configuration;
-using SeventySix.Data;
+using SeventySix.Extensions;
+using SeventySix.Identity;
+using SeventySix.Logging;
+using SeventySix.ApiTracking;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -64,7 +67,7 @@ if (builder.Environment.IsDevelopment())
 // Configure Serilog for structured logging
 // Outputs: Console + Rolling file (daily rotation) + Database (Warning+ levels)
 // Note: Database sink is added after building the app to access IServiceProvider
-Log.Logger = new LoggerConfiguration()
+Serilog.Log.Logger = new LoggerConfiguration()
 	.ReadFrom.Configuration(builder.Configuration)
 	.Enrich.FromLogContext()
 	.Enrich.WithMachineName()
@@ -92,8 +95,16 @@ builder.Services.AddHttpContextAccessor();
 // Liveness: Basic checks to determine if the app should be restarted
 // Readiness: Checks if the app is ready to serve traffic (includes dependencies)
 builder.Services.AddHealthChecks()
-	.AddDbContextCheck<ApplicationDbContext>(
-		name: "database",
+	.AddDbContextCheck<IdentityDbContext>(
+		name: "identity-database",
+		failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
+		tags: new[] { "ready", "db" })
+	.AddDbContextCheck<LoggingDbContext>(
+		name: "logging-database",
+		failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
+		tags: new[] { "ready", "db" })
+	.AddDbContextCheck<ApiTrackingDbContext>(
+		name: "apitracking-database",
 		failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
 		tags: new[] { "ready", "db" })
 	.AddCheck<JaegerHealthCheck>(
@@ -144,8 +155,14 @@ builder.Services.AddControllers();
 // This includes: repositories, business logic services, validators, HTTP clients, and configuration
 builder.Services.AddApplicationServices(builder.Configuration);
 
-// Add database context with PostgreSQL
-builder.Services.AddDatabaseContext(builder.Configuration, builder.Environment);
+// Add bounded context domains
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+	?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+builder.Services.AddIdentityDomain(connectionString);
+builder.Services.AddLoggingDomain(connectionString);
+builder.Services.AddApiTrackingDomain(connectionString);
+builder.Services.AddInfrastructureDomain();
 
 // Add response compression (Brotli + Gzip)
 builder.Services.AddOptimizedResponseCompression();
@@ -170,10 +187,19 @@ using (IServiceScope scope = app.Services.CreateScope())
 	try
 	{
 		logger.LogInformation("Ensuring database exists and applying migrations...");
-		ApplicationDbContext context = services.GetRequiredService<ApplicationDbContext>();
 
-		// Create database if it doesn't exist and apply all pending migrations
-		await context.Database.MigrateAsync();
+		// Apply migrations for all bounded contexts
+		IdentityDbContext identityContext = services.GetRequiredService<IdentityDbContext>();
+		await identityContext.Database.MigrateAsync();
+		logger.LogInformation("Identity database migrations completed");
+
+		LoggingDbContext loggingContext = services.GetRequiredService<LoggingDbContext>();
+		await loggingContext.Database.MigrateAsync();
+		logger.LogInformation("Logging database migrations completed");
+
+		ApiTrackingDbContext apiTrackingContext = services.GetRequiredService<ApiTrackingDbContext>();
+		await apiTrackingContext.Database.MigrateAsync();
+		logger.LogInformation("ApiTracking database migrations completed");
 
 		logger.LogInformation("Database initialization completed successfully");
 	}
@@ -186,7 +212,7 @@ using (IServiceScope scope = app.Services.CreateScope())
 
 // Add database sink now that we have the service provider
 // This allows us to resolve scoped services (DbContext) for logging
-Log.Logger = new LoggerConfiguration()
+Serilog.Log.Logger = new LoggerConfiguration()
 	.ReadFrom.Configuration(builder.Configuration)
 	.Enrich.FromLogContext()
 	.Enrich.WithMachineName()

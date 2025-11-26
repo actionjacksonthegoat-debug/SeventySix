@@ -6,7 +6,9 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using SeventySix.Data;
+using SeventySix.Identity;
+using SeventySix.Logging;
+using SeventySix.ApiTracking;
 
 namespace SeventySix.TestUtilities.TestHelpers;
 
@@ -19,7 +21,7 @@ namespace SeventySix.TestUtilities.TestHelpers;
 ///
 /// Usage:
 /// <code>
-/// ApplicationDbContext context = CreateDbContext();
+/// IdentityDbContext context = CreateIdentityContext();
 /// UserRepository repository = RepositoryTestHelper.CreateRepository&lt;UserRepository&gt;(context);
 /// </code>
 ///
@@ -33,18 +35,20 @@ public static class RepositoryTestHelper
 	/// Creates a repository instance with a mocked logger.
 	/// </summary>
 	/// <typeparam name="TRepository">The repository type to create.</typeparam>
+	/// <typeparam name="TContext">The DbContext type.</typeparam>
 	/// <param name="context">The database context.</param>
 	/// <returns>A new repository instance.</returns>
 	/// <remarks>
 	/// This method uses reflection to create repository instances with:
-	/// - The provided ApplicationDbContext
+	/// - The provided DbContext
 	/// - A mocked ILogger&lt;TRepository&gt;
 	///
 	/// Assumes the repository constructor follows the pattern:
-	/// public TRepository(ApplicationDbContext context, ILogger&lt;TRepository&gt; logger)
+	/// public TRepository(TContext context, ILogger&lt;TRepository&gt; logger)
 	/// </remarks>
-	public static TRepository CreateRepository<TRepository>(ApplicationDbContext context)
+	public static TRepository CreateRepository<TRepository, TContext>(TContext context)
 		where TRepository : class
+		where TContext : DbContext
 	{
 		ILogger<TRepository> mockLogger = Mock.Of<ILogger<TRepository>>();
 
@@ -55,53 +59,100 @@ public static class RepositoryTestHelper
 
 		return repository ?? throw new InvalidOperationException(
 			$"Failed to create instance of {typeof(TRepository).Name}. " +
-			$"Ensure the repository has a constructor with parameters (ApplicationDbContext, ILogger<{typeof(TRepository).Name}>).");
+			$"Ensure the repository has a constructor with parameters ({typeof(TContext).Name}, ILogger<{typeof(TRepository).Name}>).");
 	}
 
 	/// <summary>
-	/// Creates an in-memory database context for testing.
+	/// Creates an in-memory Identity database context for testing.
 	/// </summary>
 	/// <param name="databaseName">The name of the in-memory database (default: random GUID).</param>
-	/// <returns>A new ApplicationDbContext configured for in-memory testing.</returns>
-	/// <remarks>
-	/// Creates a SQLite in-memory database context suitable for unit tests.
-	/// Each unique database name creates an isolated database instance.
-	/// Use a unique name per test to ensure test isolation.
-	/// </remarks>
-	public static ApplicationDbContext CreateInMemoryContext(string? databaseName = null)
+	/// <returns>A new IdentityDbContext configured for in-memory testing.</returns>
+	public static IdentityDbContext CreateInMemoryIdentityContext(string? databaseName = null)
 	{
 		string dbName = databaseName ?? Guid.NewGuid().ToString();
-
-		DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
+		DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
 			.UseInMemoryDatabase(databaseName: dbName)
 			.Options;
-
-		return new ApplicationDbContext(options);
+		return new IdentityDbContext(options);
 	}
 
 	/// <summary>
-	/// Creates a SQLite in-memory database context for testing.
+	/// Creates an in-memory Logging database context for testing.
 	/// </summary>
-	/// <returns>A new ApplicationDbContext configured for SQLite in-memory testing.</returns>
+	/// <param name="databaseName">The name of the in-memory database (default: random GUID).</param>
+	/// <returns>A new LoggingDbContext configured for in-memory testing.</returns>
+	public static LoggingDbContext CreateInMemoryLoggingContext(string? databaseName = null)
+	{
+		string dbName = databaseName ?? Guid.NewGuid().ToString();
+		DbContextOptions<LoggingDbContext> options = new DbContextOptionsBuilder<LoggingDbContext>()
+			.UseInMemoryDatabase(databaseName: dbName)
+			.Options;
+		return new LoggingDbContext(options);
+	}
+
+	/// <summary>
+	/// Creates an in-memory ApiTracking database context for testing.
+	/// </summary>
+	/// <param name="databaseName">The name of the in-memory database (default: random GUID).</param>
+	/// <returns>A new ApiTrackingDbContext configured for in-memory testing.</returns>
+	public static ApiTrackingDbContext CreateInMemoryApiTrackingContext(string? databaseName = null)
+	{
+		string dbName = databaseName ?? Guid.NewGuid().ToString();
+		DbContextOptions<ApiTrackingDbContext> options = new DbContextOptionsBuilder<ApiTrackingDbContext>()
+			.UseInMemoryDatabase(databaseName: dbName)
+			.Options;
+		return new ApiTrackingDbContext(options);
+	}
+
+	/// <summary>
+	/// Creates a SQLite in-memory Identity database context for testing.
+	/// </summary>
+	/// <returns>A new IdentityDbContext configured for SQLite in-memory testing.</returns>
 	/// <remarks>
-	/// Creates a SQLite in-memory database context that behaves more like a real database
-	/// than EF Core's InMemory provider. Useful for testing database-specific features.
-	///
 	/// IMPORTANT: Call connection.Open() before using the context and connection.Close()
 	/// after disposing the context to maintain the in-memory database.
 	/// </remarks>
-	public static (ApplicationDbContext context, SqliteConnection connection) CreateSqliteInMemoryContext()
+	public static (IdentityDbContext context, SqliteConnection connection) CreateSqliteInMemoryIdentityContext()
 	{
 		SqliteConnection connection = new("DataSource=:memory:");
 		connection.Open();
-
-		DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
+		DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
 			.UseSqlite(connection)
 			.Options;
-
-		ApplicationDbContext context = new(options);
+		IdentityDbContext context = new(options);
 		context.Database.EnsureCreated();
+		return (context, connection);
+	}
 
+	/// <summary>
+	/// Creates a SQLite in-memory Logging database context for testing.
+	/// </summary>
+	/// <returns>A new LoggingDbContext configured for SQLite in-memory testing.</returns>
+	public static (LoggingDbContext context, SqliteConnection connection) CreateSqliteInMemoryLoggingContext()
+	{
+		SqliteConnection connection = new("DataSource=:memory:");
+		connection.Open();
+		DbContextOptions<LoggingDbContext> options = new DbContextOptionsBuilder<LoggingDbContext>()
+			.UseSqlite(connection)
+			.Options;
+		LoggingDbContext context = new(options);
+		context.Database.EnsureCreated();
+		return (context, connection);
+	}
+
+	/// <summary>
+	/// Creates a SQLite in-memory ApiTracking database context for testing.
+	/// </summary>
+	/// <returns>A new ApiTrackingDbContext configured for SQLite in-memory testing.</returns>
+	public static (ApiTrackingDbContext context, SqliteConnection connection) CreateSqliteInMemoryApiTrackingContext()
+	{
+		SqliteConnection connection = new("DataSource=:memory:");
+		connection.Open();
+		DbContextOptions<ApiTrackingDbContext> options = new DbContextOptionsBuilder<ApiTrackingDbContext>()
+			.UseSqlite(connection)
+			.Options;
+		ApiTrackingDbContext context = new(options);
+		context.Database.EnsureCreated();
 		return (context, connection);
 	}
 }

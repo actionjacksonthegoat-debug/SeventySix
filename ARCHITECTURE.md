@@ -762,7 +762,6 @@ The `SeventySix.TestUtilities` project eliminates code duplication across test p
 
 -   `RepositoryTestHelper` - Factory methods for creating repository instances
 -   `ValidationMockHelper` - Helpers for mocking FluentValidation
--   `OpenWeatherMockHelper` - Helpers for mocking OpenWeather API
 
 **Custom Attributes**:
 

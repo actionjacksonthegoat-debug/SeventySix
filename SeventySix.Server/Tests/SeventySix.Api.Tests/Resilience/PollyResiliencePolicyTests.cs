@@ -9,9 +9,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
-using SeventySix.BusinessLogic.Configuration;
-using SeventySix.BusinessLogic.Infrastructure;
-using SeventySix.BusinessLogic.Interfaces;
+using SeventySix.Infrastructure;
+using SeventySix.Shared;
 
 namespace SeventySix.Api.Tests.Resilience;
 

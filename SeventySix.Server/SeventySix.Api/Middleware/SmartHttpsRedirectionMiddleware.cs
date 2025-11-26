@@ -3,7 +3,7 @@
 // </copyright>
 
 using Microsoft.Extensions.Options;
-using SeventySix.BusinessLogic.Configuration;
+using SeventySix.Api.Configuration;
 
 namespace SeventySix.Api.Middleware;
 
