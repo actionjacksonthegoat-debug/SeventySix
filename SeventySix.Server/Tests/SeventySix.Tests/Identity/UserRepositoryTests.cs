@@ -63,7 +63,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 			.Build();
 
 		// Act
-		User result = await Repository.CreateAsync(user, CancellationToken.None);
+		User result = await Repository.CreateAsync(user);
 
 		// Assert
 		result.Should().NotBeNull();
@@ -83,7 +83,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 			.WithUsername("testuser")
 			.WithEmail("test@example.com")
 			.Build();
-		User created = await Repository.CreateAsync(user, CancellationToken.None);
+		User created = await Repository.CreateAsync(user);
 
 		// Act
 		User? result = await Repository.GetByIdAsync(created.Id, CancellationToken.None);
@@ -112,13 +112,13 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 			.WithUsername("testuser")
 			.WithEmail("test@example.com")
 			.Build();
-		User created = await Repository.CreateAsync(user, CancellationToken.None);
+		User created = await Repository.CreateAsync(user);
 
 		created.Username = "updateduser";
 		created.Email = "updated@example.com";
 
 		// Act
-		User result = await Repository.UpdateAsync(created, CancellationToken.None);
+		User result = await Repository.UpdateAsync(created);
 
 		// Assert
 		result.Should().NotBeNull();
@@ -134,10 +134,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 			.WithUsername("testuser")
 			.WithEmail("test@example.com")
 			.Build();
-		User created = await Repository.CreateAsync(user, CancellationToken.None);
+		User created = await Repository.CreateAsync(user);
 
 		// Act
-		bool result = await Repository.DeleteAsync(created.Id, CancellationToken.None);
+		bool result = await Repository.DeleteAsync(created.Id);
 
 		// Assert
 		result.Should().BeTrue();
@@ -151,7 +151,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	public async Task DeleteAsync_ShouldReturnFalse_WhenUserDoesNotExistAsync()
 	{
 		// Act
-		bool result = await Repository.DeleteAsync(999, CancellationToken.None);
+		bool result = await Repository.DeleteAsync(999);
 
 		// Assert
 		result.Should().BeFalse();
@@ -165,9 +165,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 		User user2 = new UserBuilder().WithUsername("user2").WithEmail("user2@example.com").Build();
 		User user3 = new UserBuilder().WithUsername("user3").WithEmail("user3@example.com").Build();
 
-		await Repository.CreateAsync(user1, CancellationToken.None);
-		await Repository.CreateAsync(user2, CancellationToken.None);
-		await Repository.CreateAsync(user3, CancellationToken.None);
+		await Repository.CreateAsync(user1);
+		await Repository.CreateAsync(user2);
+		await Repository.CreateAsync(user3);
 
 		// Act
 		IEnumerable<User> result = await Repository.GetAllAsync(CancellationToken.None);
@@ -182,7 +182,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	{
 		// Arrange
 		User user = new UserBuilder().WithUsername("uniqueuser").WithEmail("unique@example.com").Build();
-		await Repository.CreateAsync(user, CancellationToken.None);
+		await Repository.CreateAsync(user);
 
 		// Act
 		User? result = await Repository.GetByUsernameAsync("uniqueuser", CancellationToken.None);
@@ -207,7 +207,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	{
 		// Arrange
 		User user = new UserBuilder().WithUsername("emailtest").WithEmail("test@example.com").Build();
-		await Repository.CreateAsync(user, CancellationToken.None);
+		await Repository.CreateAsync(user);
 
 		// Act
 		User? result = await Repository.GetByEmailAsync("test@example.com", CancellationToken.None);
@@ -222,7 +222,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	{
 		// Arrange
 		User user = new UserBuilder().WithUsername("casetest").WithEmail("Test@Example.Com").Build();
-		await Repository.CreateAsync(user, CancellationToken.None);
+		await Repository.CreateAsync(user);
 
 		// Act
 		User? result = await Repository.GetByEmailAsync("test@example.com", CancellationToken.None);
@@ -236,7 +236,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	{
 		// Arrange
 		User user = new UserBuilder().WithUsername("existinguser").WithEmail("existing@example.com").Build();
-		await Repository.CreateAsync(user, CancellationToken.None);
+		await Repository.CreateAsync(user);
 
 		// Act
 		bool result = await Repository.UsernameExistsAsync("existinguser", null, CancellationToken.None);
@@ -260,7 +260,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	{
 		// Arrange
 		User user = new UserBuilder().WithUsername("updatetest").WithEmail("update@example.com").Build();
-		User created = await Repository.CreateAsync(user, CancellationToken.None);
+		User created = await Repository.CreateAsync(user);
 
 		// Act - Check if username exists, excluding the user itself (for update scenario)
 		bool result = await Repository.UsernameExistsAsync("updatetest", created.Id, CancellationToken.None);
@@ -274,7 +274,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	{
 		// Arrange
 		User user = new UserBuilder().WithUsername("emailcheck").WithEmail("check@example.com").Build();
-		await Repository.CreateAsync(user, CancellationToken.None);
+		await Repository.CreateAsync(user);
 
 		// Act
 		bool result = await Repository.EmailExistsAsync("check@example.com", null, CancellationToken.None);
@@ -289,7 +289,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 		// Arrange
 		for (int i = 1; i <= 25; i++)
 		{
-			await Repository.CreateAsync(new UserBuilder().WithUsername($"user{i}").WithEmail($"user{i}@example.com").Build(), CancellationToken.None);
+			await Repository.CreateAsync(new UserBuilder().WithUsername($"user{i}").WithEmail($"user{i}@example.com").Build());
 		}
 
 		// Act
@@ -305,9 +305,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	public async Task GetPagedAsync_ShouldFilterBySearchTerm_WhenProvidedAsync()
 	{
 		// Arrange
-		await Repository.CreateAsync(new UserBuilder().WithUsername("alice").WithEmail("alice@example.com").Build(), CancellationToken.None);
-		await Repository.CreateAsync(new UserBuilder().WithUsername("bob").WithEmail("bob@example.com").Build(), CancellationToken.None);
-		await Repository.CreateAsync(new UserBuilder().WithUsername("charlie").WithEmail("alice@other.com").Build(), CancellationToken.None);
+		await Repository.CreateAsync(new UserBuilder().WithUsername("alice").WithEmail("alice@example.com").Build());
+		await Repository.CreateAsync(new UserBuilder().WithUsername("bob").WithEmail("bob@example.com").Build());
+		await Repository.CreateAsync(new UserBuilder().WithUsername("charlie").WithEmail("alice@other.com").Build());
 
 		// Act
 		UserQueryRequest request = new() { Page = 1, PageSize = 10, SearchTerm = "alice", StartDate = null };
@@ -322,8 +322,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	public async Task GetPagedAsync_ShouldFilterByIsActive_WhenProvidedAsync()
 	{
 		// Arrange
-		await Repository.CreateAsync(UserBuilder.CreateActive().WithUsername("active1").WithEmail("active1@example.com").Build(), CancellationToken.None);
-		await Repository.CreateAsync(UserBuilder.CreateInactive().WithUsername("inactive1").WithEmail("inactive1@example.com").Build(), CancellationToken.None);
+		await Repository.CreateAsync(UserBuilder.CreateActive().WithUsername("active1").WithEmail("active1@example.com").Build());
+		await Repository.CreateAsync(UserBuilder.CreateInactive().WithUsername("inactive1").WithEmail("inactive1@example.com").Build());
 
 		// Act
 		UserQueryRequest request = new() { Page = 1, PageSize = 10, IsActive = true, StartDate = null };
@@ -340,10 +340,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 		// Arrange
 		User user1 = new UserBuilder().WithUsername("visible").WithEmail("visible@example.com").Build();
 		User user2 = new UserBuilder().WithUsername("deleted").WithEmail("deleted@example.com").Build();
-		User created1 = await Repository.CreateAsync(user1, CancellationToken.None);
-		User created2 = await Repository.CreateAsync(user2, CancellationToken.None);
+		User created1 = await Repository.CreateAsync(user1);
+		User created2 = await Repository.CreateAsync(user2);
 
-		await Repository.SoftDeleteAsync(created2.Id, "test", CancellationToken.None);
+		await Repository.SoftDeleteAsync(created2.Id, "test");
 
 		// Act
 		UserQueryRequest request = new() { Page = 1, PageSize = 10, IncludeDeleted = false, StartDate = null };
@@ -360,8 +360,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 		// Arrange
 		User user1 = new UserBuilder().WithUsername("bulk1").WithEmail("bulk1@example.com").Build();
 		User user2 = new UserBuilder().WithUsername("bulk2").WithEmail("bulk2@example.com").Build();
-		User created1 = await Repository.CreateAsync(user1, CancellationToken.None);
-		User created2 = await Repository.CreateAsync(user2, CancellationToken.None);
+		User created1 = await Repository.CreateAsync(user1);
+		User created2 = await Repository.CreateAsync(user2);
 
 		// Act
 		IEnumerable<User> result = await Repository.GetByIdsAsync([created1.Id, created2.Id], CancellationToken.None);
@@ -376,11 +376,11 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 		// Arrange
 		User user1 = UserBuilder.CreateActive().WithUsername("bulkupdate1").WithEmail("bulk1@example.com").Build();
 		User user2 = UserBuilder.CreateActive().WithUsername("bulkupdate2").WithEmail("bulk2@example.com").Build();
-		User created1 = await Repository.CreateAsync(user1, CancellationToken.None);
-		User created2 = await Repository.CreateAsync(user2, CancellationToken.None);
+		User created1 = await Repository.CreateAsync(user1);
+		User created2 = await Repository.CreateAsync(user2);
 
 		// Act
-		int count = await Repository.BulkUpdateActiveStatusAsync([created1.Id, created2.Id], false, CancellationToken.None);
+		int count = await Repository.BulkUpdateActiveStatusAsync([created1.Id, created2.Id], false);
 
 		// Assert
 		count.Should().Be(2);
@@ -393,10 +393,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	{
 		// Arrange
 		User user = new UserBuilder().WithUsername("softdelete").WithEmail("softdelete@example.com").Build();
-		User created = await Repository.CreateAsync(user, CancellationToken.None);
+		User created = await Repository.CreateAsync(user);
 
 		// Act
-		bool result = await Repository.SoftDeleteAsync(created.Id, "admin", CancellationToken.None);
+		bool result = await Repository.SoftDeleteAsync(created.Id, "admin");
 
 		// Assert
 		result.Should().BeTrue();
@@ -409,10 +409,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	{
 		// Arrange
 		User user = new UserBuilder().WithUsername("auditdelete").WithEmail("audit@example.com").Build();
-		User created = await Repository.CreateAsync(user, CancellationToken.None);
+		User created = await Repository.CreateAsync(user);
 
 		// Act
-		await Repository.SoftDeleteAsync(created.Id, "testuser", CancellationToken.None);
+		await Repository.SoftDeleteAsync(created.Id, "testuser");
 
 		// Assert - Need to query with IgnoreQueryFilters to verify soft-deleted user
 		await using IdentityDbContext context = CreateIdentityDbContext();
@@ -431,11 +431,11 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	{
 		// Arrange
 		User user = new UserBuilder().WithUsername("restore").WithEmail("restore@example.com").Build();
-		User created = await Repository.CreateAsync(user, CancellationToken.None);
-		await Repository.SoftDeleteAsync(created.Id, "admin", CancellationToken.None);
+		User created = await Repository.CreateAsync(user);
+		await Repository.SoftDeleteAsync(created.Id, "admin");
 
 		// Act
-		bool result = await Repository.RestoreAsync(created.Id, CancellationToken.None);
+		bool result = await Repository.RestoreAsync(created.Id);
 
 		// Assert
 		result.Should().BeTrue();
@@ -448,8 +448,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	public async Task CountAsync_ShouldReturnCorrectCount_WithNoFiltersAsync()
 	{
 		// Arrange
-		await Repository.CreateAsync(new UserBuilder().WithUsername("count1").WithEmail("count1@example.com").Build(), CancellationToken.None);
-		await Repository.CreateAsync(new UserBuilder().WithUsername("count2").WithEmail("count2@example.com").Build(), CancellationToken.None);
+		await Repository.CreateAsync(new UserBuilder().WithUsername("count1").WithEmail("count1@example.com").Build());
+		await Repository.CreateAsync(new UserBuilder().WithUsername("count2").WithEmail("count2@example.com").Build());
 
 		// Act
 		int result = await Repository.CountAsync(null, false, CancellationToken.None);
@@ -462,8 +462,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcon
 	public async Task CountAsync_ShouldFilterByIsActive_WhenProvidedAsync()
 	{
 		// Arrange
-		await Repository.CreateAsync(UserBuilder.CreateActive().WithUsername("activecount").WithEmail("active@example.com").Build(), CancellationToken.None);
-		await Repository.CreateAsync(UserBuilder.CreateInactive().WithUsername("inactivecount").WithEmail("inactive@example.com").Build(), CancellationToken.None);
+		await Repository.CreateAsync(UserBuilder.CreateActive().WithUsername("activecount").WithEmail("active@example.com").Build());
+		await Repository.CreateAsync(UserBuilder.CreateInactive().WithUsername("inactivecount").WithEmail("inactive@example.com").Build());
 
 		// Act
 		int result = await Repository.CountAsync(true, false, CancellationToken.None);

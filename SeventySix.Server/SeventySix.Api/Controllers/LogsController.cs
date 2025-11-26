@@ -35,7 +35,6 @@ namespace SeventySix.Api.Controllers;
 /// Initializes a new instance of the <see cref="LogsController"/> class.
 /// </remarks>
 /// <param name="logService">The log service.</param>
-/// <param name="logRepository">The log repository (for client logging only).</param>
 /// <param name="logger">The logger.</param>
 /// <param name="outputCacheStore">The output cache store.</param>
 [ApiController]
@@ -43,7 +42,6 @@ namespace SeventySix.Api.Controllers;
 [RateLimit()] // 250 req/hour (default)
 public class LogsController(
 	ILogService logService,
-	ILogRepository logRepository,
 	ILogger<LogsController> logger,
 	IOutputCacheStore outputCacheStore) : ControllerBase
 {
@@ -160,7 +158,7 @@ public class LogsController(
 	{
 		try
 		{
-			bool deleted = await logService.DeleteLogByIdAsync(id, cancellationToken);
+			bool deleted = await logService.DeleteLogByIdAsync(id);
 
 			if (!deleted)
 			{
@@ -203,7 +201,7 @@ public class LogsController(
 
 		try
 		{
-			int deletedCount = await logService.DeleteLogsBatchAsync(ids, cancellationToken);
+			int deletedCount = await logService.DeleteLogsBatchAsync(ids);
 
 			// Invalidate logs cache after batch deletion
 			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
@@ -272,37 +270,7 @@ public class LogsController(
 	{
 		try
 		{
-			// Get trace context from current HTTP request
-			string? traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
-			string? spanId = System.Diagnostics.Activity.Current?.SpanId.ToString();
-			string? parentSpanId = System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
-
-			// Map ClientLogRequest to Log entity
-			Log log = new()
-			{
-				LogLevel = request.LogLevel,
-				Message = request.Message,
-				ExceptionMessage = request.ExceptionMessage,
-				StackTrace = request.StackTrace,
-				SourceContext = request.SourceContext,
-				RequestPath = request.RequestUrl,
-				RequestMethod = request.RequestMethod,
-				StatusCode = request.StatusCode,
-				CorrelationId = request.CorrelationId ?? traceId,
-				SpanId = spanId,
-				ParentSpanId = parentSpanId,
-				Properties = JsonSerializer.Serialize(new
-				{
-					request.UserAgent,
-					request.ClientTimestamp,
-					request.AdditionalContext,
-				}),
-				Timestamp = DateTime.UtcNow,
-				MachineName = "Browser",
-				Environment = "Client",
-			};
-
-			await logRepository.CreateAsync(log, cancellationToken);
+			await logService.CreateClientLogAsync(request);
 
 			// Invalidate logs cache after creating new log
 			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
@@ -337,46 +305,7 @@ public class LogsController(
 	{
 		try
 		{
-			// Handle empty batch gracefully
-			if (requests == null || requests.Length == 0)
-			{
-				return NoContent();
-			}
-
-			// Get trace context from current HTTP request
-			string? traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
-			string? spanId = System.Diagnostics.Activity.Current?.SpanId.ToString();
-			string? parentSpanId = System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
-
-			// Map all requests to Log entities
-			List<Log> logs = [.. requests.Select(request => new Log
-			{
-				LogLevel = request.LogLevel,
-				Message = request.Message,
-				ExceptionMessage = request.ExceptionMessage,
-				StackTrace = request.StackTrace,
-				SourceContext = request.SourceContext,
-				RequestPath = request.RequestUrl,
-				RequestMethod = request.RequestMethod,
-				StatusCode = request.StatusCode,
-				CorrelationId = request.CorrelationId ?? traceId,
-				SpanId = spanId,
-				ParentSpanId = parentSpanId,
-				Properties = JsonSerializer.Serialize(new
-				{ request.UserAgent,
-					 request.ClientTimestamp,
-					 request.AdditionalContext,
-				}),
-				Timestamp = DateTime.UtcNow,
-				MachineName = "Browser",
-				Environment = "Client",
-			})];
-
-			// Create all logs
-			foreach (Log? log in logs)
-			{
-				await logRepository.CreateAsync(log, cancellationToken);
-			}
+			await logService.CreateClientLogBatchAsync(requests);
 
 			// Invalidate logs cache after batch creating logs
 			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);

@@ -128,7 +128,7 @@ public class UsersController(
 		[FromBody] CreateUserRequest request,
 		CancellationToken cancellationToken)
 	{
-		UserDto user = await userService.CreateUserAsync(request, cancellationToken);
+		UserDto user = await userService.CreateUserAsync(request);
 		return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
 	}
 
@@ -160,7 +160,7 @@ public class UsersController(
 			return BadRequest("ID in URL does not match ID in request body");
 		}
 
-		UserDto user = await userService.UpdateUserAsync(request, cancellationToken);
+		UserDto user = await userService.UpdateUserAsync(request);
 		return Ok(user);
 	}
 
@@ -181,7 +181,7 @@ public class UsersController(
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool result = await userService.DeleteUserAsync(id, "System", cancellationToken);
+		bool result = await userService.DeleteUserAsync(id, "System");
 		return result ? NoContent() : NotFound();
 	}
 
@@ -202,7 +202,7 @@ public class UsersController(
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool result = await userService.RestoreUserAsync(id, cancellationToken);
+		bool result = await userService.RestoreUserAsync(id);
 		return result ? NoContent() : NotFound();
 	}
 
@@ -289,7 +289,7 @@ public class UsersController(
 		[FromBody] IEnumerable<int> ids,
 		CancellationToken cancellationToken)
 	{
-		int count = await userService.BulkUpdateActiveStatusAsync(ids, true, "System", cancellationToken);
+		int count = await userService.BulkUpdateActiveStatusAsync(ids, true, "System");
 		return Ok(count);
 	}
 
@@ -310,7 +310,7 @@ public class UsersController(
 		[FromBody] IEnumerable<int> ids,
 		CancellationToken cancellationToken)
 	{
-		int count = await userService.BulkUpdateActiveStatusAsync(ids, false, "System", cancellationToken);
+		int count = await userService.BulkUpdateActiveStatusAsync(ids, false, "System");
 		return Ok(count);
 	}
 }

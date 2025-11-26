@@ -137,12 +137,10 @@ public class RateLimitingService : IRateLimitingService
 				// Use domain method to increment (sets CallCount = 1 and LastCalledAt = now)
 				request.IncrementCallCount();
 
-				await Repository.CreateAsync(request, ct);
-
-				Logger.LogInformation(
-					"Created new tracking record for {ApiName}. CallCount: {CallCount}",
-					apiName,
-					request.CallCount);
+				await Repository.CreateAsync(request); Logger.LogInformation(
+						"Created new tracking record for {ApiName}. CallCount: {CallCount}",
+						apiName,
+						request.CallCount);
 
 				return true;
 			}
@@ -164,7 +162,7 @@ public class RateLimitingService : IRateLimitingService
 
 			// Update the record - if another transaction modified it, this will throw
 			// and the TransactionManager will automatically retry the entire operation
-			await Repository.UpdateAsync(request, ct);
+			await Repository.UpdateAsync(request);
 
 			Logger.LogDebug(
 				"API call recorded for {ApiName}. Count: {Count}/{Limit}",
@@ -235,7 +233,7 @@ public class RateLimitingService : IRateLimitingService
 		// Reset counter using domain logic
 		request.ResetCallCount();
 
-		await Repository.UpdateAsync(request, cancellationToken);
+		await Repository.UpdateAsync(request);
 
 		Logger.LogInformation("Rate limit counter reset for API: {ApiName}", apiName);
 	}

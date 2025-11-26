@@ -119,8 +119,8 @@ public class RateLimitingServiceTests
 			.ReturnsAsync((ThirdPartyApiRequest?)null);
 
 		MockRepository
-			.Setup(r => r.CreateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((ThirdPartyApiRequest req, CancellationToken _) => req);
+			.Setup(r => r.CreateAsync(It.IsAny<ThirdPartyApiRequest>()))
+			.ReturnsAsync((ThirdPartyApiRequest req) => req);
 
 		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
@@ -131,8 +131,7 @@ public class RateLimitingServiceTests
 					req.ApiName == apiName &&
 					req.BaseUrl == baseUrl &&
 					req.CallCount == 1 &&
-					req.ResetDate == today),
-				It.IsAny<CancellationToken>()),
+					req.ResetDate == today)),
 			Times.Once);
 	}
 
@@ -156,15 +155,15 @@ public class RateLimitingServiceTests
 			.ReturnsAsync(request);
 
 		MockRepository
-			.Setup(r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((ThirdPartyApiRequest req, CancellationToken _) => req);
+			.Setup(r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>()))
+			.ReturnsAsync((ThirdPartyApiRequest req) => req);
 
 		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
 		Assert.True(result);
 		Assert.Equal(6, request.CallCount);
 		MockRepository.Verify(
-			r => r.UpdateAsync(request, It.IsAny<CancellationToken>()),
+			r => r.UpdateAsync(request),
 			Times.Once);
 	}
 
@@ -192,7 +191,7 @@ public class RateLimitingServiceTests
 		Assert.False(result);
 		Assert.Equal(1000, request.CallCount);
 		MockRepository.Verify(
-			r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()),
+			r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>()),
 			Times.Never);
 	}
 

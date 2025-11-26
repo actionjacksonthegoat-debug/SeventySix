@@ -26,10 +26,9 @@ public interface ILogRepository
 	/// Creates a new log entry.
 	/// </summary>
 	/// <param name="entity">The log entity to create.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>The created entity with generated Id.</returns>
 	/// <exception cref="ArgumentNullException">Thrown when entity is null.</exception>
-	public Task<Log> CreateAsync(Log entity, CancellationToken cancellationToken = default);
+	public Task<Log> CreateAsync(Log entity);
 
 	/// <summary>
 	/// Retrieves logs with filtering, searching, sorting, and pagination.
@@ -52,36 +51,33 @@ public interface ILogRepository
 	/// Deletes logs older than the specified cutoff date.
 	/// </summary>
 	/// <param name="cutoffDate">Delete logs older than this date.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>Number of logs deleted.</returns>
 	/// <remarks>
 	/// Used for log retention cleanup.
 	/// Uses batch delete for performance.
 	/// </remarks>
-	public Task<int> DeleteOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default);
+	public Task<int> DeleteOlderThanAsync(DateTime cutoffDate);
 
 	/// <summary>
 	/// Deletes a single log entry by its ID.
 	/// </summary>
 	/// <param name="id">The ID of the log to delete.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>True if the log was found and deleted; false if not found.</returns>
 	/// <remarks>
 	/// Used for individual log deletion from the log management UI.
 	/// Returns false if the log doesn't exist (already deleted or invalid ID).
 	/// </remarks>
-	public Task<bool> DeleteByIdAsync(int id, CancellationToken cancellationToken = default);
+	public Task<bool> DeleteByIdAsync(int id);
 
 	/// <summary>
 	/// Deletes multiple log entries by their IDs in a single operation.
 	/// </summary>
 	/// <param name="ids">Array of log IDs to delete.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>The number of logs successfully deleted.</returns>
 	/// <remarks>
 	/// Used for bulk deletion from the log management UI.
 	/// Performs batch delete for better performance.
 	/// Returns count of actually deleted logs (may be less than input if some IDs don't exist).
 	/// </remarks>
-	public Task<int> DeleteBatchAsync(int[] ids, CancellationToken cancellationToken = default);
+	public Task<int> DeleteBatchAsync(int[] ids);
 }

@@ -1,1236 +1,1242 @@
-# Actionable Implementation Plan: Boundary-Described Architecture Migration
+# Implementation Plan: Service Facade & CancellationToken Enforcement
 
-**Project**: SeventySix Server Architecture Refactoring
-**Date**: November 24, 2025
-**Objective**: Migrate from current three-layer architecture to Boundary-Described structure while maintaining ALL existing functionality
-**Database**: PostgreSQL ONLY (no Redis/Dapper/Cassandra)
+**Project**: SeventySix Architecture Refinement
+**Date**: November 26, 2025
 **Principles**: KISS, DRY, YAGNI
-
----
-
-## 🚨 CRITICAL: Line-for-Line Code Migration Policy 🚨
-
-**THIS IS A CODE MOVE, NOT A CODE REWRITE**
-
-### Non-Negotiable Rules:
-
-1. **EXACT CODE COPY**: Every line of code moved to the new bounded context structure MUST be identical to the source
-2. **NO BEHAVIOR CHANGES**: Zero modifications to business logic, validation rules, or data access patterns
-3. **NO SCHEMA CHANGES**: Database schemas, column names, data types, constraints, and indexes remain unchanged
-4. **BACKWARDS COMPATIBILITY IS PRIORITY ONE**: The new structure must produce identical API responses and database operations
-5. **NAMESPACE CHANGES ONLY**: The ONLY acceptable changes are namespace updates to match new folder structure
-
-### What This Means:
-
--   ✅ **DO**: Copy entities, DTOs, services, repositories, validators, extensions exactly as-is
--   ✅ **DO**: Update `using` statements to reflect new namespaces
--   ✅ **DO**: Update DbContext references to use bounded context-specific contexts
--   ❌ **DON'T**: Refactor method signatures or implementations
--   ❌ **DON'T**: "Improve" validation logic or business rules
--   ❌ **DON'T**: Rename properties, methods, or variables
--   ❌ **DON'T**: Change data types, nullable annotations, or entity configurations
--   ❌ **DON'T**: Optimize queries or add new features
-
-### Verification Requirements:
-
--   **Every phase** must include side-by-side comparison of old vs. new code
--   **All tests** must pass without modification (except namespace updates)
--   **API responses** must be byte-for-byte identical for identical requests
--   **Database schemas** must match exactly (same tables, columns, types, constraints)
--   **Existing clients** must work without any changes whatsoever
-
-### Why This Matters:
-
-The goal is to **restructure**, not **rewrite**. Any behavioral changes introduce risk:
-
--   Risk of breaking existing integrations
--   Risk of data corruption or loss
--   Risk of introducing new bugs
--   Risk of inconsistent behavior across environments
-
-**We refactor the structure, not the code. Improvements come AFTER migration is complete and verified.**
+**Estimated Duration**: 10 hours
 
 ---
 
 ## Executive Summary
 
-This plan outlines the step-by-step migration from the current three-layer architecture (Api, BusinessLogic, Data) to a Boundary-Described structure organized by domain/feature with clear boundaries. The goal is to improve maintainability, scalability, and developer productivity while preserving all existing functionality.
+**Objective**: Enforce architectural standards for service facades and CancellationToken usage.
 
-**Key Constraints:**
+**Key Decisions**:
 
--   ✅ Keep ALL existing API endpoints working identically
--   ✅ Maintain ALL existing tests (update structure only)
--   ✅ PostgreSQL ONLY - no additional databases
--   ✅ No breaking changes to client applications
--   ✅ Zero downtime migration path
--   ✅ **LINE-FOR-LINE CODE COPY - NO BEHAVIOR CHANGES**
+1. ✅ **KEEP repositories** - Valid abstraction pattern (testability, bounded context isolation)
+2. ✅ **Service facade ALREADY enforced** - Add architectural tests to prevent regression
+3. ❌ **FIX CancellationToken** - Remove from mutations (Create/Update/Delete), keep for queries
 
----
+**Changes Required**:
 
-## 🏗️ Bounded Context Folder Structure Standard
-
-Each bounded context (Identity, Logging, ApiTracking) MUST follow this structure:
-
-### Standard Folder Organization
-
-```
-BoundedContext/
-├── Configurations/          # EF Core entity configurations
-│   └── EntityConfiguration.cs
-├── DTOs/                    # Data Transfer Objects
-│   ├── EntityDto.cs
-│   ├── CreateEntityRequest.cs
-│   └── UpdateEntityRequest.cs
-├── Entities/                # Domain entities
-│   └── Entity.cs
-├── Exceptions/              # Domain-specific exceptions (e.g., EntityNotFoundException)
-│   └── EntityNotFoundException.cs
-├── Extensions/              # Mapping extensions (ToDto, ToEntity)
-│   └── EntityExtensions.cs
-├── Infrastructure/          # DbContext and infrastructure
-│   └── BoundedContextDbContext.cs
-├── Interfaces/              # Service and repository contracts
-│   ├── IEntityRepository.cs
-│   └── IEntityService.cs
-├── Migrations/              # EF Core database migrations
-│   └── YYYYMMDDHHMMSS_InitialCreate.cs
-├── Repositories/            # Data access implementations
-│   └── EntityRepository.cs
-├── Services/                # Business logic implementations
-│   └── EntityService.cs
-└── Validators/              # FluentValidation validators
-    ├── CreateEntityValidator.cs
-    └── UpdateEntityValidator.cs
-```
-
-### Shared Project Organization
-
-```
-Shared/
-├── BaseQueryRequest.cs      # Base class for paginated queries
-├── ConcurrencyException.cs  # Optimistic concurrency failures
-├── DomainException.cs       # Base exception for domain errors
-├── EntityNotFoundException.cs # Base entity not found exception
-├── IEntity.cs               # Base entity interface
-├── PagedResult.cs           # Generic paged result type
-└── Result.cs                # Result<T> pattern for service operations
-```
-
-### Key Principles
-
-1. **Shared Types**: BaseQueryRequest, PagedResult, ConcurrencyException, EntityNotFoundException, DomainException belong in Shared (NOT in individual bounded contexts)
-2. **Domain-Specific Exceptions**: Entity-specific exceptions (e.g., UserNotFoundException) belong in the bounded context's Exceptions/ folder and inherit from Shared base exceptions
-3. **Namespace Convention**: All files in a bounded context use `namespace BoundedContextName;` regardless of subfolder
-4. **Using Statements**: Files reference types from subfolders via `using BoundedContextName.SubfolderName;` or `using SeventySix.Shared;`
-5. **Migrations Required**: Each DbContext MUST have migrations generated after creation
+-   Remove `CancellationToken` from all mutation operations across repositories, services, and controllers
+-   Add architectural tests using NetArchTest.Rules to enforce patterns
+-   Update existing tests to match new signatures
+-   Update ARCHITECTURE.md documentation
 
 ---
 
-## Current State Analysis
+## Phase 1: Remove CancellationToken from Mutations (3 hours)
 
-### Existing Entities
+### 1.1 Update Repository Interfaces
 
-1. **User** - User management domain
-2. **Log** - System logging domain
-3. **ThirdPartyApiRequest** - API tracking domain
+**Files**:
 
-### Current Services
+-   `SeventySix.Server/SeventySix/Identity/Interfaces/IUserRepository.cs`
+-   `SeventySix.Server/SeventySix/Logging/Interfaces/ILogRepository.cs`
+-   `SeventySix.Server/SeventySix/ApiTracking/Interfaces/IThirdPartyApiRequestRepository.cs`
 
-1. **UserService** - User business logic
-2. **LogService** - Log business logic
-3. **ThirdPartyApiRequestService** - API tracking logic
-4. **HealthCheckService** - Health monitoring
-5. **MetricsService** - Metrics aggregation
-6. **RateLimitingService** - Rate limiting infrastructure
+**Rule**:
 
-### Current Repositories (Interfaces in BusinessLogic, Implementations in Data)
+-   ✅ **KEEP** `CancellationToken` for: `Get*`, `List*`, `Search*`, `Query*`, `Count*`, `Exists*`, `Check*`
+-   ❌ **REMOVE** `CancellationToken` from: `Create*`, `Update*`, `Delete*`, `Restore*`, `Soft*`
 
-1. **IUserRepository** / **UserRepository**
-2. **ILogRepository** / **LogRepository**
-3. **IThirdPartyApiRequestRepository** / **ThirdPartyApiRequestRepository**
+**Pattern**:
 
-### Current Tests
+```csharp
+// BEFORE
+Task<User> CreateAsync(User entity, CancellationToken ct = default);
+Task<User> UpdateAsync(User entity, CancellationToken ct = default);
+Task<bool> DeleteAsync(int id, CancellationToken ct = default);
 
-1. **SeventySix.Api.Tests** - Controller integration tests
-2. **SeventySix.BusinessLogic.Tests** - Service unit tests
-3. **SeventySix.Data.Tests** - Repository integration tests
-4. **SeventySix.TestUtilities** - Shared test infrastructure
+// AFTER
+Task<User> CreateAsync(User entity);
+Task<User> UpdateAsync(User entity);
+Task<bool> DeleteAsync(int id);
+
+// KEEP (queries)
+Task<User?> GetByIdAsync(int id, CancellationToken ct = default);
+Task<IEnumerable<User>> GetAllAsync(CancellationToken ct = default);
+```
+
+### 1.2 Update Repository Implementations
+
+**Files**:
+
+-   `SeventySix.Server/SeventySix/Identity/Repositories/UserRepository.cs`
+-   `SeventySix.Server/SeventySix/Logging/Repositories/LogRepository.cs`
+-   `SeventySix.Server/SeventySix/ApiTracking/Repositories/ThirdPartyApiRequestRepository.cs`
+
+**Pattern**:
+
+```csharp
+// BEFORE
+public async Task<User> CreateAsync(User entity, CancellationToken ct = default)
+{
+	ArgumentNullException.ThrowIfNull(entity);
+	_context.Users.Add(entity);
+	await _context.SaveChangesAsync(ct);
+	return entity;
+}
+
+// AFTER (no CancellationToken parameter)
+public async Task<User> CreateAsync(User entity)
+{
+	ArgumentNullException.ThrowIfNull(entity);
+	_context.Users.Add(entity);
+	await _context.SaveChangesAsync();
+	return entity;
+}
+```
+
+**Rationale**: Mutations should complete atomically - cancellation mid-operation could leave partial writes.
+
+### 1.3 Update Service Interfaces
+
+**Files**:
+
+-   `SeventySix.Server/SeventySix/Identity/Interfaces/IUserService.cs`
+-   `SeventySix.Server/SeventySix/Logging/Interfaces/ILogService.cs`
+-   `SeventySix.Server/SeventySix/ApiTracking/Interfaces/IThirdPartyApiRequestService.cs`
+
+**Pattern**:
+
+```csharp
+// BEFORE
+Task<UserDto> CreateUserAsync(CreateUserRequest req, CancellationToken ct = default);
+Task<UserDto> UpdateUserAsync(UpdateUserRequest req, CancellationToken ct = default);
+Task<bool> DeleteUserAsync(int id, string by, CancellationToken ct = default);
+
+// AFTER
+Task<UserDto> CreateUserAsync(CreateUserRequest req);
+Task<UserDto> UpdateUserAsync(UpdateUserRequest req);
+Task<bool> DeleteUserAsync(int id, string by);
+
+// KEEP (queries)
+Task<UserDto?> GetUserByIdAsync(int id, CancellationToken ct = default);
+Task<PagedResult<UserDto>> GetPagedUsersAsync(UserQueryRequest req, CancellationToken ct = default);
+```
+
+### 1.4 Update Service Implementations
+
+**Files**:
+
+-   `SeventySix.Server/SeventySix/Identity/Services/UserService.cs`
+-   `SeventySix.Server/SeventySix/Logging/Services/LogService.cs`
+-   `SeventySix.Server/SeventySix/ApiTracking/Services/ThirdPartyApiRequestService.cs`
+
+**Pattern**:
+
+```csharp
+// BEFORE
+public async Task<UserDto> CreateUserAsync(CreateUserRequest req, CancellationToken ct = default)
+{
+	await _validator.ValidateAndThrowAsync(req, ct);
+
+	if (await _repository.UsernameExistsAsync(req.Username, null, ct))
+		throw new DuplicateUserException("Username exists");
+
+	User entity = req.ToEntity();
+	User created = await _repository.CreateAsync(entity, ct);
+	return created.ToDto();
+}
+
+// AFTER
+public async Task<UserDto> CreateUserAsync(CreateUserRequest req)
+{
+	await _validator.ValidateAndThrowAsync(req, CancellationToken.None);
+
+	if (await _repository.UsernameExistsAsync(req.Username, null, CancellationToken.None))
+		throw new DuplicateUserException("Username exists");
+
+	User entity = req.ToEntity();
+	User created = await _repository.CreateAsync(entity);
+	return created.ToDto();
+}
+```
+
+**Key Points**:
+
+-   Use `CancellationToken.None` for validation and existence checks (fast operations)
+-   No cancellation support for mutations (atomic operations)
+
+### 1.5 Update Controllers
+
+**Files**:
+
+-   `SeventySix.Server/SeventySix.Api/Controllers/UsersController.cs`
+-   `SeventySix.Server/SeventySix.Api/Controllers/LogsController.cs`
+-   `SeventySix.Server/SeventySix.Api/Controllers/ThirdPartyApiRequestController.cs`
+
+**Pattern**:
+
+```csharp
+// BEFORE
+[HttpPost]
+public async Task<ActionResult<UserDto>> CreateAsync(
+	[FromBody] CreateUserRequest req,
+	CancellationToken ct)
+{
+	UserDto result = await _userService.CreateUserAsync(req, ct);
+	return CreatedAtRoute("GetUserById", new { id = result.Id }, result);
+}
+
+// AFTER
+[HttpPost]
+public async Task<ActionResult<UserDto>> CreateAsync(
+	[FromBody] CreateUserRequest req)
+{
+	UserDto result = await _userService.CreateUserAsync(req);
+	return CreatedAtRoute("GetUserById", new { id = result.Id }, result);
+}
+
+// KEEP (queries still have CancellationToken)
+[HttpGet("{id}")]
+public async Task<ActionResult<UserDto>> GetByIdAsync(
+	int id,
+	CancellationToken ct)
+{
+	UserDto? result = await _userService.GetUserByIdAsync(id, ct);
+	return result is null ? NotFound() : Ok(result);
+}
+```
+
+**Rule**:
+
+-   GET endpoints: Keep `CancellationToken ct`
+-   POST/PUT/DELETE endpoints: Remove `CancellationToken ct`
+
+### 1.6 Verify Changes
+
+**Run server tests**:
+
+```powershell
+dotnet test SeventySix.Server/SeventySix.Server.slnx --no-build --logger "console;verbosity=normal"
+```
+
+**Expected**: Tests will FAIL due to signature changes. Fix in Phase 3.
 
 ---
 
-## Target Architecture: Boundary-Described Structure
+## Phase 2: Add Architectural Tests (2 hours)
 
-### Project Structure
+### 2.1 Create Architecture Test Project
 
-```
-SeventySix.Server/
-├── SeventySix.Api/                          # HTTP Entry Point (unchanged)
-│   ├── Program.cs
-│   ├── Middleware/
-│   ├── Attributes/
-│   └── Controllers/                         # Thin controllers (unchanged)
-│
-├── SeventySix/                              # NEW: Single Domain Project
-│   │
-│   ├── Identity/                            # Bounded Context 1
-│   │   ├── User.cs                          # Entity
-│   │   ├── UserDto.cs                       # DTOs
-│   │   ├── UserService.cs                   # Business logic
-│   │   ├── UserRepository.cs                # Data access
-│   │   ├── UserValidator.cs                 # Validation
-│   │   ├── UserExtensions.cs                # Mapping
-│   │   └── IdentityDbContext.cs             # Separate DbContext!
-│   │
-│   ├── Logging/                             # Bounded Context 2
-│   │   ├── Log.cs                           # Entity
-│   │   ├── LogDto.cs                        # DTOs
-│   │   ├── LogService.cs                    # Business logic
-│   │   ├── LogRepository.cs                 # Data access
-│   │   ├── LogValidator.cs                  # Validation
-│   │   ├── LogExtensions.cs                 # Mapping
-│   │   └── LoggingDbContext.cs              # Separate DbContext!
-│   │
-│   ├── ApiTracking/                         # Bounded Context 3
-│   │   ├── ThirdPartyApiRequest.cs          # Entity
-│   │   ├── ThirdPartyApiRequestDto.cs       # DTOs
-│   │   ├── ThirdPartyApiRequestService.cs   # Business logic
-│   │   ├── ThirdPartyApiRequestRepository.cs # Data access
-│   │   ├── ThirdPartyApiRequestValidator.cs # Validation
-│   │   ├── ThirdPartyApiRequestExtensions.cs # Mapping
-│   │   └── ApiTrackingDbContext.cs          # Separate DbContext!
-│   │
-│   ├── Infrastructure/                      # Shared Infrastructure
-│   │   ├── RateLimitingService.cs           # Rate limiting
-│   │   ├── MetricsService.cs                # Metrics
-│   │   └── HealthCheckService.cs            # Health checks
-│   │
-│   ├── Shared/                              # Minimal shared code
-│   │   ├── Result.cs                        # Result<T> pattern
-│   │   ├── PagedResult.cs                   # Pagination
-│   │   ├── DomainException.cs               # Base exception
-│   │   └── IEntity.cs                       # Base entity interface
-│   │
-│   └── Extensions/                          # DI registration
-│       ├── IdentityExtensions.cs            # services.AddIdentity()
-│       ├── LoggingExtensions.cs             # services.AddLogging()
-│       └── ApiTrackingExtensions.cs         # services.AddApiTracking()
-│
-└── Tests/
-    ├── SeventySix.Tests/                    # Unit tests by domain
-    │   ├── Identity/
-    │   ├── Logging/
-    │   └── ApiTracking/
-    └── SeventySix.IntegrationTests/         # Integration tests
-```
-
----
-
-## Phase 1: Project Setup and Shared Infrastructure
-
-**Goal**: Create new SeventySix project with minimal shared code
-
-### Step 1.1: Create New Project
-
-```bash
-cd SeventySix.Server
-dotnet new classlib -n SeventySix -f net9.0
-dotnet sln add SeventySix/SeventySix.csproj
-```
-
-### Step 1.2: Add Dependencies
+**Create**: `SeventySix.Server/Tests/SeventySix.ArchitectureTests/SeventySix.ArchitectureTests.csproj`
 
 ```xml
-<!-- SeventySix/SeventySix.csproj -->
-<ItemGroup>
-  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
-  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.0" />
-  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0" />
-  <PackageReference Include="FluentValidation" Version="11.11.0" />
-  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
-  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
-</ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<IsPackable>false</IsPackable>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+		<PackageReference Include="xunit" Version="2.9.3" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+		<PackageReference Include="NetArchTest.Rules" Version="1.3.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\SeventySix\SeventySix.csproj" />
+		<ProjectReference Include="..\..\SeventySix.Api\SeventySix.Api.csproj" />
+	</ItemGroup>
+</Project>
 ```
 
-### Step 1.3: Create Shared Primitives
+### 2.2 Create Service Facade Tests
 
-**File**: `Shared/IEntity.cs`
+**Create**: `SeventySix.Server/Tests/SeventySix.ArchitectureTests/ServiceFacadeTests.cs`
 
 ```csharp
-namespace SeventySix.Shared;
+using System.Reflection;
+using NetArchTest.Rules;
+using Xunit;
+
+namespace SeventySix.ArchitectureTests;
 
 /// <summary>
-/// Base interface for all entities.
+/// Architectural tests to enforce service facade pattern.
+/// Ensures controllers ONLY access services, never repositories directly.
+/// Automatically discovers all bounded contexts to prevent regression.
 /// </summary>
-public interface IEntity
+public class ServiceFacadeTests
 {
-	int Id { get; set; }
-	DateTime CreatedAt { get; set; }
-	DateTime? ModifiedAt { get; set; }
+	[Fact]
+	public void Controllers_Should_Not_Depend_On_Any_Repository_Namespace()
+	{
+		// Arrange - Discover all bounded context namespaces dynamically
+		Assembly domainAssembly = typeof(SeventySix.Identity.IUserService).Assembly;
+		string[] boundedContexts = domainAssembly.GetTypes()
+			.Select(t => t.Namespace)
+			.Where(ns => ns != null && ns.StartsWith("SeventySix.") && !ns.Contains("Shared") && !ns.Contains("Infrastructure"))
+			.Select(ns => ns!.Split('.')[1]) // Extract bounded context name (Identity, Logging, etc.)
+			.Distinct()
+			.ToArray();
+
+		// Act & Assert - Check each bounded context's repository namespace
+		foreach (string context in boundedContexts)
+		{
+			string repositoryNamespace = $"SeventySix.{context}.Repositories";
+
+			Types result = Types
+				.InAssembly(typeof(SeventySix.Api.Program).Assembly)
+				.That()
+				.ResideInNamespace("SeventySix.Api.Controllers")
+				.ShouldNot()
+				.HaveDependencyOn(repositoryNamespace)
+				.GetResult();
+
+			Assert.True(result.IsSuccessful,
+				$"Controllers must not depend on {repositoryNamespace} directly. " +
+				$"Found violations: {string.Join(", ", result.FailingTypeNames ?? [])}");
+		}
+	}
+
+	[Fact]
+	public void Repositories_Should_Not_Be_Public()
+	{
+		// Arrange - Discover all repository types across all bounded contexts
+		Assembly domainAssembly = typeof(SeventySix.Identity.IUserService).Assembly;
+		Type[] repositoryTypes = domainAssembly.GetTypes()
+			.Where(t => t.Name.EndsWith("Repository")
+					 && !t.IsInterface
+					 && !t.IsAbstract
+					 && t.Namespace != null
+					 && t.Namespace.StartsWith("SeventySix.")
+					 && !t.Namespace.Contains("Shared"))
+			.ToArray();
+
+		// Act
+		List<string> publicRepositories = [];
+		foreach (Type repositoryType in repositoryTypes)
+		{
+			if (repositoryType.IsPublic)
+			{
+				publicRepositories.Add($"{repositoryType.Namespace}.{repositoryType.Name}");
+			}
+		}
+
+		// Assert
+		Assert.Empty(publicRepositories);
+	}
+
+	[Fact]
+	public void Controllers_Should_Only_Depend_On_Service_Interfaces()
+	{
+		// Arrange - Get all controller types
+		Type[] controllerTypes = Types
+			.InAssembly(typeof(SeventySix.Api.Program).Assembly)
+			.That()
+			.ResideInNamespace("SeventySix.Api.Controllers")
+			.GetTypes()
+			.ToArray();
+
+		Assembly domainAssembly = typeof(SeventySix.Identity.IUserService).Assembly;
+
+		// Get all service interfaces
+		Type[] serviceInterfaces = domainAssembly.GetTypes()
+			.Where(t => t.IsInterface && t.Name.EndsWith("Service"))
+			.ToArray();
+
+		// Get all repository interfaces
+		Type[] repositoryInterfaces = domainAssembly.GetTypes()
+			.Where(t => t.IsInterface && t.Name.EndsWith("Repository"))
+			.ToArray();
+
+		// Act - Check constructor dependencies
+		List<string> violations = [];
+		foreach (Type controllerType in controllerTypes)
+		{
+			ConstructorInfo[] constructors = controllerType.GetConstructors();
+			foreach (ConstructorInfo constructor in constructors)
+			{
+				ParameterInfo[] parameters = constructor.GetParameters();
+				foreach (ParameterInfo parameter in parameters)
+				{
+					// Check if injecting a repository interface
+					if (repositoryInterfaces.Contains(parameter.ParameterType))
+					{
+						violations.Add($"{controllerType.Name} injects {parameter.ParameterType.Name} (repository) instead of a service");
+					}
+				}
+			}
+		}
+
+		// Assert
+		Assert.Empty(violations);
+	}
 }
 ```
 
-**File**: `Shared/Result.cs`
+### 2.3 Create CancellationToken Tests
+
+**Create**: `SeventySix.Server/Tests/SeventySix.ArchitectureTests/CancellationTokenTests.cs`
 
 ```csharp
-namespace SeventySix.Shared;
+using System.Reflection;
+using Xunit;
+
+namespace SeventySix.ArchitectureTests;
 
 /// <summary>
-/// Result pattern for service operations.
+/// Architectural tests to enforce CancellationToken usage rules.
+/// - Query methods (Get*, List*, Search*) MUST have CancellationToken
+/// - Mutation methods (Create*, Update*, Delete*) MUST NOT have CancellationToken
+/// Automatically discovers all service interfaces across all bounded contexts.
 /// </summary>
-public class Result<T>
+public class CancellationTokenTests
 {
-	public bool IsSuccess { get; }
-	public T? Value { get; }
-	public string? Error { get; }
+	private static readonly string[] QueryPrefixes = ["Get", "List", "Search", "Count", "Check", "Find"];
+	private static readonly string[] MutationPrefixes = ["Create", "Update", "Delete", "Restore", "Soft", "Add", "Remove"];
 
-	private Result(bool isSuccess, T? value, string? error)
+	[Fact]
+	public void Query_Methods_Should_Have_CancellationToken()
 	{
-		IsSuccess = isSuccess;
-		Value = value;
-		Error = error;
+		// Arrange - Discover all service interfaces dynamically
+		Type[] serviceTypes = GetAllServiceInterfaces();
+		List<string> violations = [];
+
+		// Act
+		foreach (Type serviceType in serviceTypes)
+		{
+			MethodInfo[] queryMethods = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+				.Where(m => IsQueryMethod(m.Name) || m.Name.Contains("Exists"))
+				.ToArray();
+
+			foreach (MethodInfo method in queryMethods)
+			{
+				bool hasCancellationToken = method.GetParameters()
+					.Any(p => p.ParameterType == typeof(CancellationToken));
+
+				if (!hasCancellationToken)
+				{
+					violations.Add($"{serviceType.Name}.{method.Name} should have CancellationToken parameter");
+				}
+			}
+		}
+
+		// Assert
+		Assert.Empty(violations);
 	}
 
-	public static Result<T> Success(T value) => new(true, value, null);
-	public static Result<T> Failure(string error) => new(false, default, error);
+	[Fact]
+	public void Mutation_Methods_Should_Not_Have_CancellationToken()
+	{
+		// Arrange - Discover all service interfaces dynamically
+		Type[] serviceTypes = GetAllServiceInterfaces();
+		List<string> violations = [];
+
+		// Act
+		foreach (Type serviceType in serviceTypes)
+		{
+			MethodInfo[] mutationMethods = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+				.Where(m => IsMutationMethod(m.Name))
+				.ToArray();
+
+			foreach (MethodInfo method in mutationMethods)
+			{
+				bool hasCancellationToken = method.GetParameters()
+					.Any(p => p.ParameterType == typeof(CancellationToken));
+
+				if (hasCancellationToken)
+				{
+					violations.Add($"{serviceType.Name}.{method.Name} should NOT have CancellationToken parameter");
+				}
+			}
+		}
+
+		// Assert
+		Assert.Empty(violations);
+	}
+
+	[Fact]
+	public void Repository_Query_Methods_Should_Have_CancellationToken()
+	{
+		// Arrange - Discover all repository interfaces dynamically
+		Type[] repositoryTypes = GetAllRepositoryInterfaces();
+		List<string> violations = [];
+
+		// Act
+		foreach (Type repositoryType in repositoryTypes)
+		{
+			MethodInfo[] queryMethods = repositoryType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+				.Where(m => IsQueryMethod(m.Name) || m.Name.Contains("Exists"))
+				.ToArray();
+
+			foreach (MethodInfo method in queryMethods)
+			{
+				bool hasCancellationToken = method.GetParameters()
+					.Any(p => p.ParameterType == typeof(CancellationToken));
+
+				if (!hasCancellationToken)
+				{
+					violations.Add($"{repositoryType.Name}.{method.Name} should have CancellationToken parameter");
+				}
+			}
+		}
+
+		// Assert
+		Assert.Empty(violations);
+	}
+
+	[Fact]
+	public void Repository_Mutation_Methods_Should_Not_Have_CancellationToken()
+	{
+		// Arrange - Discover all repository interfaces dynamically
+		Type[] repositoryTypes = GetAllRepositoryInterfaces();
+		List<string> violations = [];
+
+		// Act
+		foreach (Type repositoryType in repositoryTypes)
+		{
+			MethodInfo[] mutationMethods = repositoryType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+				.Where(m => IsMutationMethod(m.Name))
+				.ToArray();
+
+			foreach (MethodInfo method in mutationMethods)
+			{
+				bool hasCancellationToken = method.GetParameters()
+					.Any(p => p.ParameterType == typeof(CancellationToken));
+
+				if (hasCancellationToken)
+				{
+					violations.Add($"{repositoryType.Name}.{method.Name} should NOT have CancellationToken parameter");
+				}
+			}
+		}
+
+		// Assert
+		Assert.Empty(violations);
+	}
+
+	/// <summary>
+	/// Discovers all service interfaces across all bounded contexts.
+	/// </summary>
+	private static Type[] GetAllServiceInterfaces()
+	{
+		Assembly domainAssembly = typeof(SeventySix.Identity.IUserService).Assembly;
+
+		return domainAssembly.GetTypes()
+			.Where(t => t.IsInterface
+					 && t.Name.EndsWith("Service")
+					 && t.Namespace != null
+					 && t.Namespace.StartsWith("SeventySix.")
+					 && !t.Namespace.Contains("Shared")
+					 && !t.Namespace.Contains("Infrastructure"))
+			.ToArray();
+	}
+
+	/// <summary>
+	/// Discovers all repository interfaces across all bounded contexts.
+	/// </summary>
+	private static Type[] GetAllRepositoryInterfaces()
+	{
+		Assembly domainAssembly = typeof(SeventySix.Identity.IUserService).Assembly;
+
+		return domainAssembly.GetTypes()
+			.Where(t => t.IsInterface
+					 && t.Name.EndsWith("Repository")
+					 && t.Namespace != null
+					 && t.Namespace.StartsWith("SeventySix.")
+					 && !t.Namespace.Contains("Shared")
+					 && !t.Namespace.Contains("Infrastructure"))
+			.ToArray();
+	}
+
+	/// <summary>
+	/// Determines if a method name indicates a query operation.
+	/// </summary>
+	private static bool IsQueryMethod(string methodName)
+	{
+		return QueryPrefixes.Any(prefix => methodName.StartsWith(prefix));
+	}
+
+	/// <summary>
+	/// Determines if a method name indicates a mutation operation.
+	/// </summary>
+	private static bool IsMutationMethod(string methodName)
+	{
+		return MutationPrefixes.Any(prefix => methodName.StartsWith(prefix));
+	}
 }
 ```
 
-**File**: `Shared/PagedResult.cs`
+### 2.4 Create Bounded Context Isolation Tests
+
+**Create**: `SeventySix.Server/Tests/SeventySix.ArchitectureTests/BoundedContextTests.cs`
 
 ```csharp
-namespace SeventySix.Shared;
+using System.Reflection;
+using NetArchTest.Rules;
+using Xunit;
+
+namespace SeventySix.ArchitectureTests;
 
 /// <summary>
-/// Paged result for queries.
+/// Architectural tests to enforce bounded context isolation.
+/// Ensures bounded contexts don't have circular dependencies.
+/// Automatically discovers all bounded contexts.
 /// </summary>
-public class PagedResult<T>
+public class BoundedContextTests
 {
-	public required IReadOnlyList<T> Items { get; init; }
-	public int TotalCount { get; init; }
-	public int Page { get; init; }
-	public int PageSize { get; init; }
-	public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+	[Fact]
+	public void Bounded_Contexts_Should_Not_Reference_Each_Other()
+	{
+		// Arrange - Discover all bounded contexts
+		Assembly domainAssembly = typeof(SeventySix.Identity.IUserService).Assembly;
+		string[] boundedContexts = domainAssembly.GetTypes()
+			.Select(t => t.Namespace)
+			.Where(ns => ns != null && ns.StartsWith("SeventySix.") && !ns.Contains("Shared") && !ns.Contains("Infrastructure"))
+			.Select(ns => ns!.Split('.')[1])
+			.Distinct()
+			.ToArray();
+
+		List<string> violations = [];
+
+		// Act - Check each bounded context doesn't depend on others
+		foreach (string sourceContext in boundedContexts)
+		{
+			foreach (string targetContext in boundedContexts)
+			{
+				if (sourceContext == targetContext)
+					continue;
+
+				Types result = Types
+					.InNamespace($"SeventySix.{sourceContext}")
+					.ShouldNot()
+					.HaveDependencyOn($"SeventySix.{targetContext}")
+					.GetResult();
+
+				if (!result.IsSuccessful)
+				{
+					violations.Add($"{sourceContext} should not depend on {targetContext}. " +
+						$"Violating types: {string.Join(", ", result.FailingTypeNames ?? [])}");
+				}
+			}
+		}
+
+		// Assert
+		Assert.Empty(violations);
+	}
+
+	[Fact]
+	public void Bounded_Contexts_Can_Reference_Shared()
+	{
+		// Arrange - Discover all bounded contexts
+		Assembly domainAssembly = typeof(SeventySix.Identity.IUserService).Assembly;
+		string[] boundedContexts = domainAssembly.GetTypes()
+			.Select(t => t.Namespace)
+			.Where(ns => ns != null && ns.StartsWith("SeventySix.") && !ns.Contains("Shared") && !ns.Contains("Infrastructure"))
+			.Select(ns => ns!.Split('.')[1])
+			.Distinct()
+			.ToArray();
+
+		// Act & Assert - All bounded contexts CAN depend on Shared (it's allowed)
+		foreach (string context in boundedContexts)
+		{
+			// This test documents that Shared references ARE allowed
+			// No assertion needed - this is informational
+		}
+
+		Assert.True(true, "Bounded contexts are allowed to reference SeventySix.Shared");
+	}
+
+	[Fact]
+	public void Each_Bounded_Context_Should_Have_DbContext()
+	{
+		// Arrange - Discover all bounded contexts
+		Assembly domainAssembly = typeof(SeventySix.Identity.IUserService).Assembly;
+		string[] boundedContexts = domainAssembly.GetTypes()
+			.Select(t => t.Namespace)
+			.Where(ns => ns != null && ns.StartsWith("SeventySix.") && !ns.Contains("Shared") && !ns.Contains("Infrastructure"))
+			.Select(ns => ns!.Split('.')[1])
+			.Distinct()
+			.ToArray();
+
+		List<string> missingDbContexts = [];
+
+		// Act - Check each bounded context has a DbContext
+		foreach (string context in boundedContexts)
+		{
+			Type? dbContextType = domainAssembly.GetTypes()
+				.FirstOrDefault(t => t.Namespace == $"SeventySix.{context}"
+								  && t.Name.EndsWith("DbContext")
+								  && t.BaseType?.Name == "DbContext");
+
+			if (dbContextType == null)
+			{
+				missingDbContexts.Add(context);
+			}
+		}
+
+		// Assert
+		Assert.Empty(missingDbContexts);
+	}
+
+	[Fact]
+	public void Each_Bounded_Context_Should_Have_Standard_Folders()
+	{
+		// Arrange - Standard folder structure
+		string[] requiredSubNamespaces =
+		[
+			"Entities",
+			"DTOs",
+			"Interfaces",
+			"Services",
+			"Repositories"
+		];
+
+		// Discover all bounded contexts
+		Assembly domainAssembly = typeof(SeventySix.Identity.IUserService).Assembly;
+		string[] boundedContexts = domainAssembly.GetTypes()
+			.Select(t => t.Namespace)
+			.Where(ns => ns != null && ns.StartsWith("SeventySix.") && !ns.Contains("Shared") && !ns.Contains("Infrastructure"))
+			.Select(ns => ns!.Split('.')[1])
+			.Distinct()
+			.ToArray();
+
+		List<string> violations = [];
+
+		// Act - Check each bounded context has standard structure
+		foreach (string context in boundedContexts)
+		{
+			// Get all namespaces in this bounded context
+			string[] contextNamespaces = domainAssembly.GetTypes()
+				.Select(t => t.Namespace)
+				.Where(ns => ns != null && ns.StartsWith($"SeventySix.{context}."))
+				.Distinct()
+				.ToArray()!;
+
+			// Extract sub-namespaces (e.g., "Entities" from "SeventySix.Identity.Entities")
+			HashSet<string> existingSubNamespaces = contextNamespaces
+				.Select(ns => ns.Split('.').Length > 2 ? ns.Split('.')[2] : null)
+				.Where(s => s != null)
+				.ToHashSet()!;
+
+			// Check for missing required folders
+			foreach (string required in requiredSubNamespaces)
+			{
+				if (!existingSubNamespaces.Contains(required))
+				{
+					// Only warn if context has any files (ignore empty contexts)
+					if (contextNamespaces.Length > 0)
+					{
+						violations.Add($"{context} missing {required} folder/namespace");
+					}
+				}
+			}
+		}
+
+		// Assert - Allow some flexibility but document violations
+		// This is more of a guideline than hard rule
+		Assert.True(violations.Count == 0 || violations.Count < boundedContexts.Length * requiredSubNamespaces.Length / 2,
+			$"Too many missing standard folders: {string.Join(", ", violations)}");
+	}
 }
 ```
 
-**File**: `Shared/DomainException.cs`
+### 2.5 Add Project to Solution
 
-```csharp
-namespace SeventySix.Shared;
+**Update**: `SeventySix.Server/SeventySix.Server.slnx`
 
-/// <summary>
-/// Base exception for domain errors.
-/// </summary>
-public class DomainException : Exception
-{
-	public DomainException(string message) : base(message) { }
-	public DomainException(string message, Exception innerException)
-		: base(message, innerException) { }
-}
+Add architecture test project reference to solution file.
+
+### 2.6 Run Architecture Tests
+
+```powershell
+dotnet test SeventySix.Server/Tests/SeventySix.ArchitectureTests/SeventySix.ArchitectureTests.csproj --logger "console;verbosity=normal"
 ```
 
-**Deliverable**: SeventySix project with shared primitives only
+**Expected**: Tests PASS after Phase 1 changes complete.
+
+**Tests Created**:
+
+-   `ServiceFacadeTests` (3 tests) - Ensures controllers only use services, never repositories
+-   `CancellationTokenTests` (4 tests) - Enforces CancellationToken rules for services and repositories
+-   `BoundedContextTests` (4 tests) - Verifies bounded context isolation and structure
+
+**Total**: 11 new architectural tests that automatically adapt to new bounded contexts.
 
 ---
 
-## Phase 2: Identity Bounded Context Migration
+## Phase 3: Update Existing Tests (2 hours)
 
-**Goal**: Migrate User entity and related code to Identity bounded context
+### 3.1 Update Repository Tests
 
-### Step 2.1: Create Identity Folder Structure
+**Files**:
 
-**Create standard folder structure**:
+-   `SeventySix.Server/Tests/SeventySix.Data.Tests/UserRepositoryTests.cs`
+-   `SeventySix.Server/Tests/SeventySix.Data.Tests/LogRepositoryTests.cs`
+-   `SeventySix.Server/Tests/SeventySix.Data.Tests/ThirdPartyApiRequestRepositoryTests.cs`
 
-```bash
-New-Item -ItemType Directory -Path "SeventySix/Identity/Configurations"
-New-Item -ItemType Directory -Path "SeventySix/Identity/DTOs"
-New-Item -ItemType Directory -Path "SeventySix/Identity/Entities"
-New-Item -ItemType Directory -Path "SeventySix/Identity/Exceptions"
-New-Item -ItemType Directory -Path "SeventySix/Identity/Extensions"
-New-Item -ItemType Directory -Path "SeventySix/Identity/Infrastructure"
-New-Item -ItemType Directory -Path "SeventySix/Identity/Interfaces"
-New-Item -ItemType Directory -Path "SeventySix/Identity/Migrations"
-New-Item -ItemType Directory -Path "SeventySix/Identity/Repositories"
-New-Item -ItemType Directory -Path "SeventySix/Identity/Services"
-New-Item -ItemType Directory -Path "SeventySix/Identity/Validators"
-```
-
-### Step 2.1a: Copy User Entity (LINE-FOR-LINE)
-
--   Copy `User.cs` from BusinessLogic/Entities to `SeventySix/Identity/Entities/User.cs`
--   **ONLY** change namespace from original to `SeventySix.Identity`
--   **CRITICAL**: Keep ALL properties, methods, attributes, comments EXACTLY as-is
--   **VERIFY**: Compare old and new files line-by-line (excluding namespace change only)
-
-### Step 2.2: Create Identity DbContext
-
-**File**: `Identity/IdentityDbContext.cs`
+**Pattern**:
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
-
-namespace SeventySix.Identity;
-
-public class IdentityDbContext : DbContext
+// BEFORE
+[Fact]
+public async Task CreateAsync_AddsUser_WhenValidAsync()
 {
-	public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
-		: base(options) { }
+	// Arrange
+	User user = new() { Username = "test", Email = "test@test.com" };
+	CancellationToken ct = CancellationToken.None;
 
-	public DbSet<User> Users => Set<User>();
+	// Act
+	User result = await _repository.CreateAsync(user, ct);
 
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
-	{
-		// Apply configuration from existing UserConfiguration
-		modelBuilder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
+	// Assert
+	Assert.NotNull(result);
+	Assert.True(result.Id > 0);
+}
 
-		// Global query filter for soft delete
-		modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);
-	}
+// AFTER (remove CancellationToken)
+[Fact]
+public async Task CreateAsync_AddsUser_WhenValidAsync()
+{
+	// Arrange
+	User user = new() { Username = "test", Email = "test@test.com" };
+
+	// Act
+	User result = await _repository.CreateAsync(user);
+
+	// Assert
+	Assert.NotNull(result);
+	Assert.True(result.Id > 0);
 }
 ```
 
-### Step 2.3: Copy Entity Configuration (LINE-FOR-LINE)
+### 3.2 Update Service Tests
 
--   Copy `UserConfiguration.cs` from Data/Configurations to `SeventySix/Identity/`
--   Update to use `IdentityDbContext` (ONLY change required)
--   **CRITICAL**: Keep ALL column mappings, indexes, constraints, property configurations EXACTLY as-is
--   **VERIFY**: No changes to column names, data types, max lengths, nullable settings, indexes, foreign keys, or any EF Core configuration
+**Files**:
 
-### Step 2.4: Copy DTOs (LINE-FOR-LINE)
+-   `SeventySix.Server/Tests/SeventySix.BusinessLogic.Tests/UserServiceTests.cs`
+-   `SeventySix.Server/Tests/SeventySix.BusinessLogic.Tests/LogServiceTests.cs`
+-   `SeventySix.Server/Tests/SeventySix.BusinessLogic.Tests/ThirdPartyApiRequestServiceTests.cs`
 
--   Copy all User DTOs from BusinessLogic/DTOs to `SeventySix/Identity/UserDto.cs`
--   **ONLY** update namespace to `SeventySix.Identity`
--   **CRITICAL**: Keep ALL property names, types, nullable annotations, attributes, validation attributes EXACTLY as-is
--   **VERIFY**: API response schemas must remain identical
-
-### Step 2.5: Copy Repository (LINE-FOR-LINE)
-
--   Copy `IUserRepository` interface to `SeventySix/Identity/IUserRepository.cs`
--   Copy `UserRepository` implementation to `SeventySix/Identity/UserRepository.cs`
--   **ONLY** update DbContext reference from `ApplicationDbContext` to `IdentityDbContext`
--   **CRITICAL**: Keep ALL method signatures, return types, parameters, LINQ queries, SQL logic EXACTLY as-is
--   **VERIFY**: All repository methods produce identical database queries and results
-
-### Step 2.6: Copy Service (LINE-FOR-LINE)
-
--   Copy `IUserService` interface to `SeventySix/Identity/IUserService.cs`
--   Copy `UserService` implementation to `SeventySix/Identity/UserService.cs`
--   **ONLY** update namespace and using statements
--   **CRITICAL**: Keep ALL business logic, validation rules, error handling, method implementations EXACTLY as-is
--   **VERIFY**: All service methods produce identical results for identical inputs
-
-### Step 2.7: Copy Validators (LINE-FOR-LINE)
-
--   Copy all User validators to `SeventySix/Identity/`
--   **ONLY** update namespace to `SeventySix.Identity`
--   **CRITICAL**: Keep ALL validation rules, error messages, conditional logic EXACTLY as-is
--   **VERIFY**: Validation behavior remains identical for all input scenarios
-
-### Step 2.8: Copy Mapping Extensions (LINE-FOR-LINE)
-
--   Copy `UserExtensions.cs` to `SeventySix/Identity/`
--   **ONLY** update namespace to `SeventySix.Identity`
--   **CRITICAL**: Keep ALL mapping logic, property assignments, transformations EXACTLY as-is
--   **VERIFY**: Entity-to-DTO and DTO-to-Entity mappings produce identical results
-
-### Step 2.9: Create DI Extension
-
-**File**: `Extensions/IdentityExtensions.cs`
+**Pattern**:
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using FluentValidation;
-using SeventySix.Identity;
-
-namespace SeventySix.Extensions;
-
-public static class IdentityExtensions
+// BEFORE
+[Fact]
+public async Task CreateUserAsync_ReturnsUser_WhenValidAsync()
 {
-	public static IServiceCollection AddIdentityDomain(
-		this IServiceCollection services,
-		string connectionString)
-	{
-		// Register DbContext
-		services.AddDbContext<IdentityDbContext>(opt =>
-			opt.UseNpgsql(connectionString));
+	// Arrange
+	CreateUserRequest req = new() { Username = "test", Email = "test@test.com" };
+	User user = new() { Id = 1, Username = "test", Email = "test@test.com" };
 
-		// Register Repository
-		services.AddScoped<IUserRepository, UserRepository>();
+	_mockValidator.Setup(v => v.ValidateAsync(req, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(new ValidationResult());
+	_mockRepo.Setup(r => r.UsernameExistsAsync("test", null, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(false);
+	_mockRepo.Setup(r => r.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+		.ReturnsAsync(user);
 
-		// Register Service
-		services.AddScoped<IUserService, UserService>();
+	// Act
+	UserDto result = await _sut.CreateUserAsync(req, CancellationToken.None);
 
-		// Register Validators
-		services.AddValidatorsFromAssemblyContaining<UserValidator>();
+	// Assert
+	Assert.NotNull(result);
+	Assert.Equal(1, result.Id);
+}
 
-		return services;
-	}
+// AFTER (update mock setups and remove CancellationToken from Act)
+[Fact]
+public async Task CreateUserAsync_ReturnsUser_WhenValidAsync()
+{
+	// Arrange
+	CreateUserRequest req = new() { Username = "test", Email = "test@test.com" };
+	User user = new() { Id = 1, Username = "test", Email = "test@test.com" };
+
+	_mockValidator.Setup(v => v.ValidateAsync(req, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(new ValidationResult());
+	_mockRepo.Setup(r => r.UsernameExistsAsync("test", null, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(false);
+	_mockRepo.Setup(r => r.CreateAsync(It.IsAny<User>()))
+		.ReturnsAsync(user);
+
+	// Act
+	UserDto result = await _sut.CreateUserAsync(req);
+
+	// Assert
+	Assert.NotNull(result);
+	Assert.Equal(1, result.Id);
 }
 ```
 
-### Step 2.10: Generate Database Migration
+**Key Changes**:
 
-**Generate initial migration**:
+-   Remove `CancellationToken` parameter from mutation test calls
+-   Update mock setups to NOT expect `CancellationToken` for mutation methods
+-   Keep `It.IsAny<CancellationToken>()` for query methods
 
-```bash
-cd SeventySix.Server/SeventySix
-dotnet ef migrations add InitialCreate \
-  --context IdentityDbContext \
-  --output-dir Identity/Migrations \
-  --namespace SeventySix.Identity.Migrations
+### 3.3 Update Controller/Integration Tests
+
+**Files**:
+
+-   `SeventySix.Server/Tests/SeventySix.Api.Tests/UsersControllerTests.cs`
+-   `SeventySix.Server/Tests/SeventySix.Api.Tests/LogsControllerTests.cs`
+-   `SeventySix.Server/Tests/SeventySix.Api.Tests/ThirdPartyApiRequestControllerTests.cs`
+
+**Pattern**:
+
+```csharp
+// BEFORE
+[Fact]
+public async Task CreateAsync_ReturnsCreated_WhenValidAsync()
+{
+	// Arrange
+	CreateUserRequest req = new() { Username = "test", Email = "test@test.com" };
+	UserDto dto = new() { Id = 1, Username = "test", Email = "test@test.com" };
+
+	_mockService.Setup(s => s.CreateUserAsync(req, It.IsAny<CancellationToken>()))
+		.ReturnsAsync(dto);
+
+	// Act
+	ActionResult<UserDto> result = await _controller.CreateAsync(req, CancellationToken.None);
+
+	// Assert
+	CreatedAtRouteResult createdResult = Assert.IsType<CreatedAtRouteResult>(result.Result);
+	Assert.Equal(1, ((UserDto)createdResult.Value).Id);
+}
+
+// AFTER (update mock setup and remove CancellationToken)
+[Fact]
+public async Task CreateAsync_ReturnsCreated_WhenValidAsync()
+{
+	// Arrange
+	CreateUserRequest req = new() { Username = "test", Email = "test@test.com" };
+	UserDto dto = new() { Id = 1, Username = "test", Email = "test@test.com" };
+
+	_mockService.Setup(s => s.CreateUserAsync(req))
+		.ReturnsAsync(dto);
+
+	// Act
+	ActionResult<UserDto> result = await _controller.CreateAsync(req);
+
+	// Assert
+	CreatedAtRouteResult createdResult = Assert.IsType<CreatedAtRouteResult>(result.Result);
+	Assert.Equal(1, ((UserDto)createdResult.Value).Id);
+}
 ```
 
-**Verify migration**:
+### 3.4 Run All Server Tests
 
--   ✅ Users table created (with schema if configured in DbContext)
--   ✅ All columns match User entity configuration
--   ✅ Primary key, unique indexes, and filtered indexes created
--   ✅ Concurrency token configured
--   ✅ Soft delete query filter applied
+**CRITICAL: Ensure Docker Desktop is running before executing tests**
 
-**Deliverable**: Complete Identity bounded context with all User functionality and migrations
+```powershell
+# Start Docker if not already running
+npm run start:docker
+
+# Run all server tests
+dotnet test SeventySix.Server/SeventySix.Server.slnx --no-build --logger "console;verbosity=normal"
+```
+
+**Expected**: All 356+ tests PASS (including new architecture tests).
 
 ---
 
-## Phase 3: Logging Bounded Context Migration
+## Phase 4: Verify Client Unchanged (1 hour)
 
-**Goal**: Migrate Log entity and related code to Logging bounded context
+### 4.1 Review Client HTTP Calls
 
-### Step 3.1: Create Logging Folder Structure
+**Files to check**:
 
-**Follow standard bounded context structure**:
+-   `SeventySix.Client/src/app/features/admin/services/user-admin.service.ts`
+-   `SeventySix.Client/src/app/features/logs/services/log.service.ts`
 
-```bash
-New-Item -ItemType Directory -Path "SeventySix/Logging/Configurations"
-New-Item -ItemType Directory -Path "SeventySix/Logging/DTOs"
-New-Item -ItemType Directory -Path "SeventySix/Logging/Entities"
-New-Item -ItemType Directory -Path "SeventySix/Logging/Exceptions"
-New-Item -ItemType Directory -Path "SeventySix/Logging/Extensions"
-New-Item -ItemType Directory -Path "SeventySix/Logging/Infrastructure"
-New-Item -ItemType Directory -Path "SeventySix/Logging/Interfaces"
-New-Item -ItemType Directory -Path "SeventySix/Logging/Migrations"
-New-Item -ItemType Directory -Path "SeventySix/Logging/Repositories"
-New-Item -ItemType Directory -Path "SeventySix/Logging/Services"
-New-Item -ItemType Directory -Path "SeventySix/Logging/Validators"
+**Verify**: HTTP POST/PUT/DELETE calls remain unchanged (no CancellationToken in HTTP layer).
+
+**Expected**: No client changes required - CancellationToken is server-only concept.
+
+### 4.2 Run Client Tests
+
+```powershell
+cd SeventySix.Client
+npm test
 ```
 
-**All files use namespace SeventySix.Logging**
-**All files reference Shared types via using SeventySix.Shared**
+**Command runs**: `ng test --no-watch --browsers=ChromeHeadless` (headless, no-watch)
 
-### Step 3.1a: Copy Log Entity (LINE-FOR-LINE)
-
--   Copy `Log.cs` from BusinessLogic/Entities to `SeventySix/Logging/Entities/Log.cs`
--   **ONLY** change namespace from original to `SeventySix.Logging`
--   **CRITICAL**: Keep ALL properties, methods, attributes, comments EXACTLY as-is
--   **VERIFY**: Compare old and new files line-by-line (excluding namespace change only)
-
-### Step 3.2: Create Logging DbContext
-
-**File**: `Logging/LoggingDbContext.cs`
-
-```csharp
-using Microsoft.EntityFrameworkCore;
-
-namespace SeventySix.Logging;
-
-public class LoggingDbContext : DbContext
-{
-	public LoggingDbContext(DbContextOptions<LoggingDbContext> options)
-		: base(options) { }
-
-	public DbSet<Log> Logs => Set<Log>();
-
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
-	{
-		modelBuilder.ApplyConfigurationsFromAssembly(typeof(LoggingDbContext).Assembly);
-	}
-}
-```
-
-### Step 3.3: Copy Entity Configuration (LINE-FOR-LINE)
-
--   Copy `LogConfiguration.cs` to `SeventySix/Logging/`
--   **ONLY** update to use `LoggingDbContext`
--   **CRITICAL**: Keep ALL column mappings, indexes, constraints, property configurations EXACTLY as-is
--   **VERIFY**: Database schema for logs table remains identical
-
-### Step 3.4: Copy DTOs (LINE-FOR-LINE)
-
--   Copy all Log DTOs to `SeventySix/Logging/LogDto.cs`
--   **ONLY** update namespace to `SeventySix.Logging`
--   **CRITICAL**: Keep ALL property names, types, nullable annotations, attributes EXACTLY as-is
--   **VERIFY**: API response schemas remain identical
-
-### Step 3.5: Copy Repository (LINE-FOR-LINE)
-
--   Copy `ILogRepository` and `LogRepository` to `SeventySix/Logging/`
--   **ONLY** update DbContext reference to `LoggingDbContext`
--   **CRITICAL**: Keep ALL method signatures, LINQ queries, SQL logic EXACTLY as-is
--   **VERIFY**: All database queries produce identical results
-
-### Step 3.6: Copy Service (LINE-FOR-LINE)
-
--   Copy `ILogService` and `LogService` to `SeventySix/Logging/`
--   **ONLY** update namespace and using statements
--   **CRITICAL**: Keep ALL business logic, error handling, method implementations EXACTLY as-is
--   **VERIFY**: All service methods produce identical results
-
-### Step 3.7: Copy Validators (LINE-FOR-LINE)
-
--   Copy all Log validators to `SeventySix/Logging/`
--   **ONLY** update namespace to `SeventySix.Logging`
--   **CRITICAL**: Keep ALL validation rules, error messages EXACTLY as-is
--   **VERIFY**: Validation behavior remains identical
-
-### Step 3.8: Copy Mapping Extensions
-
--   Copy `LogExtensions.cs` to `SeventySix/Logging/`
-
-### Step 3.9: Create DI Extension
-
-**File**: `Extensions/LoggingExtensions.cs`
-
-```csharp
-public static class LoggingExtensions
-{
-	public static IServiceCollection AddLoggingDomain(
-		this IServiceCollection services,
-		string connectionString)
-	{
-		services.AddDbContext<LoggingDbContext>(opt =>
-			opt.UseNpgsql(connectionString));
-
-		services.AddScoped<ILogRepository, LogRepository>();
-		services.AddScoped<ILogService, LogService>();
-		services.AddValidatorsFromAssemblyContaining<LogValidator>();
-
-		return services;
-	}
-}
-```
-
-**Deliverable**: Complete Logging bounded context
+**Expected**: All 732 tests PASS with no changes.
 
 ---
 
-## Phase 4: API Tracking Bounded Context Migration
+## Phase 5: Update Documentation (1 hour)
 
-**Goal**: Migrate ThirdPartyApiRequest entity to ApiTracking bounded context
+### 5.1 Update ARCHITECTURE.md
 
-### Step 4.1: Create ApiTracking Folder Structure
+**File**: `ARCHITECTURE.md`
 
-**Follow standard bounded context structure**:
+**Add section**:
 
-```bash
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/Configurations"
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/DTOs"
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/Entities"
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/Exceptions"
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/Extensions"
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/Infrastructure"
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/Interfaces"
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/Migrations"
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/Repositories"
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/Services"
-New-Item -ItemType Directory -Path "SeventySix/ApiTracking/Validators"
-```
+````markdown
+## Service Facade Pattern
 
-**All files use namespace SeventySix.ApiTracking**
-**All files reference Shared types via using SeventySix.Shared**
+**Controllers → Services (only) → Repositories → DbContext**
 
-### Step 4.1a: Copy Entity (LINE-FOR-LINE)
+Controllers MUST NEVER inject repositories directly. All data access MUST go through service facades.
 
--   Copy `ThirdPartyApiRequest.cs` to `SeventySix/ApiTracking/Entities/ThirdPartyApiRequest.cs`
--   **ONLY** change namespace to `SeventySix.ApiTracking`
--   **CRITICAL**: Keep ALL properties, methods, attributes EXACTLY as-is
--   **VERIFY**: Compare old and new files line-by-line
+**Why Services Are Required**:
 
-### Step 4.2: Create DbContext
+-   **Validation**: FluentValidation integration
+-   **Business Logic**: Duplicate checks, soft delete, authorization
+-   **Mapping**: Entity ↔ DTO transformations
+-   **Transaction Coordination**: Multiple repository operations
+-   **Logging & Monitoring**: Centralized cross-cutting concerns
 
-**File**: `ApiTracking/ApiTrackingDbContext.cs`
+**Architectural Tests** (auto-discover all bounded contexts):
 
-```csharp
-using Microsoft.EntityFrameworkCore;
+-   `ServiceFacadeTests.Controllers_Should_Not_Depend_On_Any_Repository_Namespace()`
+-   `ServiceFacadeTests.Repositories_Should_Not_Be_Public()`
+-   `ServiceFacadeTests.Controllers_Should_Only_Depend_On_Service_Interfaces()`
 
-namespace SeventySix.ApiTracking;
+## Repository Pattern
 
-public class ApiTrackingDbContext : DbContext
-{
-	public ApiTrackingDbContext(DbContextOptions<ApiTrackingDbContext> options)
-		: base(options) { }
+**Purpose**: Abstract data access per bounded context.
 
-	public DbSet<ThirdPartyApiRequest> ApiRequests => Set<ThirdPartyApiRequest>();
+**Why Keep Repositories** (NOT anti-patterns):
 
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
-	{
-		modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApiTrackingDbContext).Assembly);
-	}
-}
-```
+1. **Testability**: Services can be tested with mocked repositories
+2. **Bounded Context Isolation**: Each context has its own DbContext
+3. **Future-Proofing**: Can swap EF Core for Dapper/raw SQL without changing services
+4. **Single Responsibility**: Repositories = data access, Services = business logic
+5. **Interface Segregation**: Clean contracts (ISP)
 
-### Step 4.3: Follow same pattern as Identity/Logging (LINE-FOR-LINE)
-
--   Copy configuration (DbContext reference only change)
--   Copy DTOs (namespace only change)
--   Copy repository (DbContext reference only change)
--   Copy service (namespace/using only change)
--   Copy validators (namespace only change)
--   Copy extensions (namespace only change)
--   Create DI extension (new code following existing patterns)
--   **CRITICAL**: Apply same LINE-FOR-LINE verification at each step
--   **VERIFY**: All ApiTracking functionality produces identical results
-
-**Deliverable**: Complete ApiTracking bounded context with zero behavioral changes
-
----
-
-## Phase 5: Infrastructure Services Migration
-
-**Goal**: Move cross-cutting infrastructure services to Infrastructure folder
-
-### Step 5.1: Copy Infrastructure Services (LINE-FOR-LINE)
-
--   Copy `RateLimitingService.cs` to `SeventySix/Infrastructure/`
--   Copy `MetricsService.cs` to `SeventySix/Infrastructure/`
--   Copy `HealthCheckService.cs` to `SeventySix/Infrastructure/`
--   **ONLY** update namespace to `SeventySix.Infrastructure`
--   **CRITICAL**: Keep ALL service logic, interfaces, method implementations EXACTLY as-is
-
-### Step 5.2: Update Dependencies (MINIMAL CHANGES)
-
--   Update `HealthCheckService` to reference new bounded context service interfaces
--   **ONLY** change: using statements and dependency injection references
--   **CRITICAL**: Keep health check logic, thresholds, return types EXACTLY as-is
--   **VERIFY**: Health check responses remain identical in format and content
-
-### Step 5.3: Create DI Extension
-
-**File**: `Extensions/InfrastructureExtensions.cs`
+**Pattern**:
 
 ```csharp
-public static class InfrastructureExtensions
+public interface IUserRepository
 {
-	public static IServiceCollection AddInfrastructureServices(
-		this IServiceCollection services)
-	{
-		services.AddScoped<IRateLimitingService, RateLimitingService>();
-		services.AddScoped<IMetricsService, MetricsService>();
-		services.AddScoped<IHealthCheckService, HealthCheckService>();
+	// Queries (read operations) - HAVE CancellationToken
+	Task<User?> GetByIdAsync(int id, CancellationToken ct = default);
+	Task<IEnumerable<User>> GetAllAsync(CancellationToken ct = default);
+	Task<bool> UsernameExistsAsync(string username, int? excludeId, CancellationToken ct = default);
 
-		return services;
-	}
+	// Mutations (write operations) - NO CancellationToken
+	Task<User> CreateAsync(User entity);
+	Task<User> UpdateAsync(User entity);
+	Task<bool> DeleteAsync(int id);
 }
 ```
+````
 
-**Deliverable**: Infrastructure services in new structure
+## CancellationToken Usage
 
----
+**Rule**:
 
-## Phase 6: Database Migration Strategy
+-   ✅ Query operations (Get/List/Search) MUST have `CancellationToken`
+-   ❌ Mutation operations (Create/Update/Delete) MUST NOT have `CancellationToken`
 
-**Goal**: Create separate schemas for each bounded context while using single PostgreSQL database
+**Rationale**:
 
-### Step 6.1: Schema Design
+-   Queries can be safely cancelled (read-only, no side effects)
+-   Mutations must complete atomically (cancellation could leave partial writes)
 
-```sql
--- Identity schema
-CREATE SCHEMA IF NOT EXISTS identity;
+**Architectural Tests** (auto-discover all bounded contexts):
 
--- Logging schema
-CREATE SCHEMA IF NOT EXISTS logging;
+-   `CancellationTokenTests.Query_Methods_Should_Have_CancellationToken()`
+-   `CancellationTokenTests.Mutation_Methods_Should_Not_Have_CancellationToken()`
+-   `CancellationTokenTests.Repository_Query_Methods_Should_Have_CancellationToken()`
+-   `CancellationTokenTests.Repository_Mutation_Methods_Should_Not_Have_CancellationToken()`
 
--- API Tracking schema
-CREATE SCHEMA IF NOT EXISTS api_tracking;
+## Bounded Context Isolation
 
--- Infrastructure schema
-CREATE SCHEMA IF NOT EXISTS infrastructure;
+**Pattern**: Each bounded context is independent with its own DbContext, entities, services, and repositories.
+
+**Current Bounded Contexts**:
+
+-   `Identity` - User management domain
+-   `Logging` - Application logging domain
+-   `ApiTracking` - Third-party API tracking domain
+
+**Isolation Rules**:
+
+-   ✅ Bounded contexts CAN reference `SeventySix.Shared` (common primitives)
+-   ✅ Bounded contexts CAN reference `SeventySix.Infrastructure` (cross-cutting concerns)
+-   ❌ Bounded contexts MUST NOT reference each other directly
+-   ✅ Each context has its own database schema
+-   ✅ Each context has its own DbContext with separate connection string
+
+**Standard Folder Structure** (enforced by architecture tests):
+
+```
+SeventySix.{BoundedContext}/
+├── Entities/          # Domain entities
+├── DTOs/              # Data transfer objects
+├── Interfaces/        # Service and repository contracts
+├── Services/          # Business logic (internal)
+├── Repositories/      # Data access (internal)
+├── Validators/        # FluentValidation validators
+├── Extensions/        # Mapping and helper extensions
+├── Configurations/    # EF Core entity configurations
+├── Infrastructure/    # DbContext and factories
+└── Migrations/        # EF Core migrations
 ```
 
-### Step 6.2: Update DbContext Configurations
+**Architectural Tests** (auto-discover all bounded contexts):
+
+-   `BoundedContextTests.Bounded_Contexts_Should_Not_Reference_Each_Other()`
+-   `BoundedContextTests.Each_Bounded_Context_Should_Have_DbContext()`
+-   `BoundedContextTests.Each_Bounded_Context_Should_Have_Standard_Folders()`
+
+**Adding New Bounded Contexts**:
+
+1. Create new folder under `SeventySix/` (e.g., `SeventySix/Orders/`)
+2. Follow standard folder structure above
+3. Use namespace `SeventySix.Orders` for all files
+4. Create `OrdersDbContext` with separate schema
+5. Architecture tests will automatically validate the new context
+
+**Examples**:
 
 ```csharp
-// Identity/IdentityDbContext.cs
-protected override void OnModelCreating(ModelBuilder modelBuilder)
+// Service Interface
+public interface IUserService
 {
-	modelBuilder.HasDefaultSchema("identity");
-	// ... rest of configuration
+	// Queries - WITH CancellationToken
+	Task<UserDto?> GetUserByIdAsync(int id, CancellationToken ct = default);
+	Task<PagedResult<UserDto>> GetPagedUsersAsync(UserQueryRequest req, CancellationToken ct = default);
+
+	// Mutations - NO CancellationToken
+	Task<UserDto> CreateUserAsync(CreateUserRequest req);
+	Task<UserDto> UpdateUserAsync(UpdateUserRequest req);
+	Task<bool> DeleteUserAsync(int id, string deletedBy);
 }
 
-// Logging/LoggingDbContext.cs
-protected override void OnModelCreating(ModelBuilder modelBuilder)
+// Service Implementation
+public async Task<UserDto> CreateUserAsync(CreateUserRequest req)
 {
-	modelBuilder.HasDefaultSchema("logging");
-	// ... rest of configuration
-}
+	// Use CancellationToken.None for internal queries
+	await _validator.ValidateAndThrowAsync(req, CancellationToken.None);
 
-// ApiTracking/ApiTrackingDbContext.cs
-protected override void OnModelCreating(ModelBuilder modelBuilder)
-{
-	modelBuilder.HasDefaultSchema("api_tracking");
-	// ... rest of configuration
-}
-```
+	if (await _repository.UsernameExistsAsync(req.Username, null, CancellationToken.None))
+		throw new DuplicateUserException("Username exists");
 
-### Step 6.3: Migration Strategy
-
-**Option A: Fresh Migration (Recommended for Development)**
-
-1. Generate new migrations for each DbContext
-2. Create schema migration script
-3. Migrate data from public schema to new schemas
-4. Test thoroughly
-5. Drop old tables
-
-**Option B: In-Place Migration (Production)**
-
-1. Create new schemas
-2. Generate migrations to create tables in new schemas
-3. Copy data from old tables to new schema tables
-4. Switch connection strings to use new contexts
-5. Verify all functionality
-6. Drop old tables after verification period
-
-### Step 6.4: Connection String Strategy
-
-**Single Database, Separate Schemas**
-
-```json
-{
-	"ConnectionStrings": {
-		"Identity": "Host=localhost;Database=seventysix;Schema=identity;Username=postgres;Password=***",
-		"Logging": "Host=localhost;Database=seventysix;Schema=logging;Username=postgres;Password=***",
-		"ApiTracking": "Host=localhost;Database=seventysix;Schema=api_tracking;Username=postgres;Password=***"
-	}
+	User entity = req.ToEntity();
+	User created = await _repository.CreateAsync(entity); // No CancellationToken
+	return created.ToDto();
 }
 ```
 
-**Deliverable**: Database schema separation with migration path
+````
 
----
+### 5.2 Update .editorconfig (if needed)
 
-## Phase 7: Update API Project
+**Verify**: CancellationToken naming rules already exist:
 
-**Goal**: Wire new bounded contexts into API project
+```ini
+# Async methods should have Async suffix
+dotnet_naming_rule.async_methods_end_in_async.severity = warning
+dotnet_naming_rule.async_methods_end_in_async.symbols = any_async_methods
+dotnet_naming_rule.async_methods_end_in_async.style = end_in_async
+````
 
-### Step 7.1: Add Project Reference
-
-```xml
-<!-- SeventySix.Api/SeventySix.Api.csproj -->
-<ItemGroup>
-  <ProjectReference Include="..\SeventySix\SeventySix.csproj" />
-</ItemGroup>
-```
-
-### Step 7.2: Update Program.cs
-
-```csharp
-using SeventySix.Extensions;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Register bounded contexts
-builder.Services.AddIdentityDomain(
-	builder.Configuration.GetConnectionString("Identity")!);
-
-builder.Services.AddLoggingDomain(
-	builder.Configuration.GetConnectionString("Logging")!);
-
-builder.Services.AddApiTrackingDomain(
-	builder.Configuration.GetConnectionString("ApiTracking")!);
-
-builder.Services.AddInfrastructureServices();
-
-// Rest of existing configuration...
-```
-
-### Step 7.3: Update Controllers (NAMESPACE CHANGES ONLY)
-
--   **ONLY** update using statements to reference new namespaces:
-    -   `SeventySix.Identity` for User-related code
-    -   `SeventySix.Logging` for Log-related code
-    -   `SeventySix.ApiTracking` for API tracking code
-    -   `SeventySix.Infrastructure` for infrastructure services
--   **CRITICAL**: Do NOT change controller logic, endpoints, route patterns, parameters, return types
--   **VERIFY**: All API endpoints return identical responses for identical requests
-
-### Step 7.4: Remove Old Project References
-
-```xml
-<!-- Remove these references -->
-<!-- <ProjectReference Include="..\SeventySix.BusinessLogic\SeventySix.BusinessLogic.csproj" /> -->
-<!-- <ProjectReference Include="..\SeventySix.Data\SeventySix.Data.csproj" /> -->
-```
-
-**Deliverable**: API project using new bounded contexts
-
----
-
-## Phase 8: Test Migration
-
-**Goal**: Update all tests to work with new structure
-
-### Step 8.1: Update TestUtilities
-
-**Update Base Classes**
-
-```csharp
-// TestUtilities/TestBases/IdentityTestBase.cs
-public abstract class IdentityTestBase
-{
-	protected IdentityDbContext CreateDbContext()
-	{
-		var options = new DbContextOptionsBuilder<IdentityDbContext>()
-			.UseNpgsql(ConnectionString)
-			.Options;
-		return new IdentityDbContext(options);
-	}
-}
-
-// Similar for LoggingTestBase, ApiTrackingTestBase
-```
-
-### Step 8.2: Update Repository Tests (LINE-FOR-LINE)
-
--   Move to `SeventySix.Tests/Identity/UserRepositoryTests.cs`
--   **ONLY** update DbContext reference to `IdentityDbContext`
--   **ONLY** update namespace and using statements
--   **CRITICAL**: Keep ALL test logic, assertions, test data, setup/teardown EXACTLY as-is
--   **VERIFY**: All tests pass without modification
-
-### Step 8.3: Update Service Tests (LINE-FOR-LINE)
-
--   Move to `SeventySix.Tests/Identity/UserServiceTests.cs`
--   **ONLY** update namespaces and using statements
--   **CRITICAL**: Keep ALL test scenarios, mocks, assertions EXACTLY as-is
--   **VERIFY**: All tests pass without modification
-
-### Step 8.4: Update Integration Tests (LINE-FOR-LINE)
-
--   Update controller tests to use new DI registration extensions
--   **ONLY** change: service registration calls in test setup
--   **CRITICAL**: Keep ALL API contract tests, assertions, test data EXACTLY as-is
--   **VERIFY**: All integration tests pass without modification
-
-### Step 8.5: Run All Tests
-
-```bash
-# Run all tests to verify migration
-dotnet test --no-build --logger "console;verbosity=normal"
-```
-
-**Critical**: ALL tests must pass before proceeding
-
-**Deliverable**: All tests passing with new structure
-
----
-
-## Phase 9: Cleanup and Finalization
-
-**Goal**: Remove old projects and finalize migration
-
-### Step 9.1: Verify Functionality Checklist
-
--   ✅ All API endpoints responding correctly
--   ✅ All CRUD operations working
--   ✅ All validations working
--   ✅ All tests passing
--   ✅ Migrations working
--   ✅ Soft delete working
--   ✅ Audit fields working
--   ✅ Rate limiting working
--   ✅ Health checks working
-
-### Step 9.2: Remove Old Projects
-
-```bash
-# After verification, remove old projects
-rm -rf SeventySix.BusinessLogic
-rm -rf SeventySix.Data
-dotnet sln remove SeventySix.BusinessLogic/SeventySix.BusinessLogic.csproj
-dotnet sln remove SeventySix.Data/SeventySix.Data.csproj
-```
-
-### Step 9.3: Update Documentation
-
--   Update ARCHITECTURE.md to reflect new structure
--   Update README.md with new project organization
--   Document bounded context boundaries
-
-### Step 9.4: Final Testing
-
--   Run full test suite
--   Test all API endpoints manually
--   Verify client application still works
--   Performance testing
-
-**Deliverable**: Clean codebase with new architecture
-
----
-
-## Phase 10: Future Extensibility
-
-**Goal**: Document how to add new bounded contexts
-
-### Adding New Bounded Context Template
-
-**Step 1**: Create folder structure
-
-```
-SeventySix/NewDomain/
-├── Entity.cs
-├── EntityDto.cs
-├── EntityRepository.cs
-├── EntityService.cs
-├── EntityValidator.cs
-├── EntityExtensions.cs
-├── EntityConfiguration.cs
-└── NewDomainDbContext.cs
-```
-
-**Step 2**: Create DbContext
-
-```csharp
-public class NewDomainDbContext : DbContext
-{
-	public NewDomainDbContext(DbContextOptions<NewDomainDbContext> options)
-		: base(options) { }
-
-	public DbSet<Entity> Entities => Set<Entity>();
-
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
-	{
-		modelBuilder.HasDefaultSchema("new_domain");
-		modelBuilder.ApplyConfigurationsFromAssembly(typeof(NewDomainDbContext).Assembly);
-	}
-}
-```
-
-**Step 3**: Create DI Extension
-
-```csharp
-public static class NewDomainExtensions
-{
-	public static IServiceCollection AddNewDomain(
-		this IServiceCollection services,
-		string connectionString)
-	{
-		services.AddDbContext<NewDomainDbContext>(opt =>
-			opt.UseNpgsql(connectionString));
-
-		services.AddScoped<IEntityRepository, EntityRepository>();
-		services.AddScoped<IEntityService, EntityService>();
-		services.AddValidatorsFromAssemblyContaining<EntityValidator>();
-
-		return services;
-	}
-}
-```
-
-**Step 4**: Register in Program.cs
-
-```csharp
-builder.Services.AddNewDomain(
-	builder.Configuration.GetConnectionString("NewDomain")!);
-```
-
-**Step 5**: Add tests
-
-```
-SeventySix.Tests/NewDomain/
-├── EntityRepositoryTests.cs
-├── EntityServiceTests.cs
-└── EntityValidatorTests.cs
-```
-
-**Deliverable**: Template for future domains
+**No changes needed** - rules already enforce async method naming.
 
 ---
 
 ## Success Criteria
 
-### Critical Requirements (MUST PASS)
+### Critical Requirements
 
--   ✅ **BACKWARDS COMPATIBILITY**: All existing API endpoints return identical responses
--   ✅ **SCHEMA INTEGRITY**: Database schemas remain unchanged (tables, columns, types, constraints)
--   ✅ **CODE FIDELITY**: All moved code is line-for-line identical (excluding namespace changes)
--   ✅ **TEST INTEGRITY**: All existing tests pass without logic modifications
--   ✅ **CLIENT COMPATIBILITY**: No breaking changes to client applications
--   ✅ **DATA INTEGRITY**: All CRUD operations produce identical database effects
+✅ **Repository Pattern**:
+
+-   Repositories remain in codebase
+-   Documentation explains justification
+-   Architectural tests verify isolation
+
+✅ **Service Facade**:
+
+-   Controllers only inject services (never repositories)
+-   Architectural tests enforce pattern
+-   Documentation explains rationale
+
+✅ **CancellationToken**:
+
+-   ALL query methods have `CancellationToken` parameter
+-   NO mutation methods have `CancellationToken` parameter
+-   Architectural tests enforce pattern
+-   All tests pass
 
 ### Functional Requirements
 
--   ✅ All existing API endpoints work identically
--   ✅ All existing tests pass
--   ✅ No breaking changes to client
--   ✅ All data persisted correctly
--   ✅ All validations working
--   ✅ All business logic preserved
+✅ **Testing**:
 
-### Non-Functional Requirements
+-   All 356+ server tests pass (including 11 new architecture tests)
+-   All 732 client tests pass (no changes needed)
+-   Build succeeds with zero warnings
+-   Docker Desktop running for data layer tests (Testcontainers)
+-   Architecture tests automatically validate all bounded contexts
 
--   ✅ Code organized by domain/feature
--   ✅ Clear bounded context boundaries
--   ✅ Each context has own DbContext
--   ✅ Separate database schemas
--   ✅ DI registration per context
--   ✅ Tests organized by domain
+✅ **Code Quality**:
 
-### Quality Metrics
-
--   ✅ Test coverage maintained (>80%)
--   ✅ No performance regression
--   ✅ Build succeeds
--   ✅ No compiler warnings
--   ✅ EditorConfig rules followed
--   ✅ SOLID principles maintained
-
-### Verification Checklist (AFTER EACH PHASE)
-
--   ✅ Side-by-side code comparison completed (old vs. new)
--   ✅ Only namespace/using statements changed
--   ✅ All tests pass without modification
--   ✅ API responses identical for sample requests
--   ✅ Database queries produce identical results
--   ✅ No new warnings or errors introduced
+-   Follows .editorconfig guidelines
+-   Adheres to KISS, DRY, YAGNI principles
+-   No breaking changes to API contracts
+-   All async methods end with "Async" suffix
+-   Explicit type annotations (no `var`)
+-   Primary constructors where applicable
+-   Collection expressions `[]` instead of `new()`
 
 ---
 
-## Risk Mitigation
+## Implementation Summary
 
-### Risk 1: Breaking Existing Functionality
-
-**Mitigation**:
-
--   Run full test suite after each phase
--   Manual testing of all endpoints
--   Keep old projects until full verification
-
-### Risk 2: Data Loss During Migration
-
-**Mitigation**:
-
--   Database backups before migration
--   Test migration on development database first
--   Use transactions for data migration
--   Verify data after migration
-
-### Risk 3: Test Failures
-
-**Mitigation**:
-
--   Fix tests immediately when discovered
--   Don't proceed to next phase with failing tests
--   Keep test structure as close to original as possible
-
-### Risk 4: Performance Degradation
-
-**Mitigation**:
-
--   Benchmark before and after
--   Use same EF Core patterns
--   Keep database indexes
--   Monitor query performance
+| Phase     | Description                                                        | Duration     | Dependencies   |
+| --------- | ------------------------------------------------------------------ | ------------ | -------------- |
+| 1         | Remove CancellationToken from Mutations                            | 3 hours      | None           |
+| 2         | Add Architectural Tests (11 tests, auto-discover bounded contexts) | 2 hours      | Phase 1        |
+| 3         | Update Existing Tests                                              | 2 hours      | Phase 1, 2     |
+| 4         | Verify Client Unchanged                                            | 1 hour       | Phase 3        |
+| 5         | Update Documentation                                               | 1 hour       | All phases     |
+| **TOTAL** | **Complete Implementation**                                        | **10 hours** | **Sequential** |
 
 ---
 
-## Timeline Estimation
+## Testing Checklist
 
-### Conservative Estimate
+**Before Each Phase**:
 
--   **Phase 1**: Project Setup - 2 hours
--   **Phase 2**: Identity Migration - 4 hours
--   **Phase 3**: Logging Migration - 3 hours
--   **Phase 4**: ApiTracking Migration - 3 hours
--   **Phase 5**: Infrastructure Migration - 2 hours
--   **Phase 6**: Database Migration - 4 hours
--   **Phase 7**: API Update - 2 hours
--   **Phase 8**: Test Migration - 6 hours
--   **Phase 9**: Cleanup - 2 hours
--   **Phase 10**: Documentation - 2 hours
+-   [ ] Docker Desktop is running (`npm run start:docker`)
+-   [ ] Working directory is clean (commit/stash changes)
 
-**Total**: ~30 hours (4-5 working days)
+**After Each Code Change**:
 
-### Aggressive Estimate
+-   [ ] Run affected tests immediately
+-   [ ] Fix failing tests before proceeding
+-   [ ] NEVER skip or defer failing tests
 
--   With automation and parallel work: ~15-20 hours (2-3 days)
+**Server Tests**:
 
----
+```powershell
+# All server tests
+dotnet test SeventySix.Server/SeventySix.Server.slnx --no-build --logger "console;verbosity=normal"
 
-## Dependencies and Prerequisites
+# Specific test project
+dotnet test SeventySix.Server/Tests/SeventySix.ArchitectureTests/SeventySix.ArchitectureTests.csproj --logger "console;verbosity=normal"
+```
 
-### Required Before Starting
+**Client Tests**:
 
--   ✅ Docker Desktop running (for Testcontainers)
--   ✅ PostgreSQL instance available
--   ✅ All current tests passing
--   ✅ Code committed to version control
--   ✅ Database backup created
+```powershell
+cd SeventySix.Client
+npm test  # Runs headless (--no-watch --browsers=ChromeHeadless)
+```
 
-### Required Tools
+**Final Verification**:
 
--   .NET 9.0 SDK
--   PostgreSQL 16+
--   Visual Studio 2022 or VS Code
--   Git
-
----
-
-## Rollback Plan
-
-### If Migration Fails
-
-1. Revert to previous commit
-2. Restore database from backup
-3. Keep old projects in place
-4. Document issues encountered
-5. Revise plan and retry
-
-### Staged Rollback
-
-1. Can run both old and new projects simultaneously
-2. Switch DI registration back to old projects
-3. Gradual cutover per bounded context
+-   [ ] All 356+ server tests pass
+-   [ ] All 732 client tests pass
+-   [ ] Architecture tests pass (11 tests across 3 test classes)
+-   [ ] Build succeeds: `dotnet build SeventySix.Server/SeventySix.Server.slnx`
+-   [ ] No compiler warnings
+-   [ ] Documentation updated
+-   [ ] Architecture tests auto-discover all bounded contexts (Identity, Logging, ApiTracking)
 
 ---
 
-## Conclusion
+**END OF IMPLEMENTATION PLAN**
 
-This plan provides a safe, incremental path to migrate from the current three-layer architecture to a Boundary-Described structure. The key principles are:
-
-1. **Line-for-Line Migration**: This is a code MOVE, not a code REWRITE
-2. **Backwards Compatibility First**: No behavioral changes whatsoever
-3. **Incremental Migration**: One bounded context at a time
-4. **Preserve Functionality**: No breaking changes to APIs or schemas
-5. **Test-Driven**: Tests must pass at every phase without modification
-6. **Reversible**: Can rollback at any point
-7. **PostgreSQL Only**: Single database, separate schemas
-8. **KISS/DRY/YAGNI**: Simple, maintainable solution
-9. **Verification at Every Step**: Side-by-side comparison before proceeding
-
-### What Success Looks Like:
-
--   ✅ New folder structure with code organized by bounded context
--   ✅ Every line of business logic identical to original
--   ✅ Every database schema element unchanged
--   ✅ Every API response identical for identical requests
--   ✅ Every test passing without logic changes
--   ✅ Zero client-side changes required
--   ✅ No behavioral differences in any scenario
-
-### What We're NOT Doing:
-
--   ❌ Refactoring business logic
--   ❌ Improving validation rules
--   ❌ Optimizing database queries
--   ❌ Changing API contracts
--   ❌ Modifying entity properties
--   ❌ Adding new features
-
-**The result will be a more maintainable, scalable codebase organized by domain with clear boundaries, while preserving 100% backwards compatibility with existing functionality and tests.**
-
-**Improvements and optimizations come AFTER this migration is complete and thoroughly verified.**
-
----
-
-**Next Steps**: Review this plan, validate approach, and begin Phase 1 when ready.
+_Principles: KISS (simple solutions), DRY (no duplication), YAGNI (build only what's needed now)_

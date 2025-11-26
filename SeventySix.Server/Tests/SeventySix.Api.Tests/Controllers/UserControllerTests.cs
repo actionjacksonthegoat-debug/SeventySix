@@ -189,7 +189,7 @@ public class UsersControllerTests
 		};
 
 		MockUserService
-			.Setup(s => s.CreateUserAsync(request, It.IsAny<CancellationToken>()))
+			.Setup(s => s.CreateUserAsync(request))
 			.ReturnsAsync(createdUser);
 
 		// Act
@@ -225,7 +225,7 @@ public class UsersControllerTests
 		};
 
 		MockUserService
-			.Setup(s => s.CreateUserAsync(request, It.IsAny<CancellationToken>()))
+			.Setup(s => s.CreateUserAsync(request))
 			.ReturnsAsync(createdUser);
 
 		// Act
@@ -236,8 +236,7 @@ public class UsersControllerTests
 			s => s.CreateUserAsync(
 				It.Is<CreateUserRequest>(r =>
 					r.Username == "test" &&
-					r.Email == "test@example.com"),
-				It.IsAny<CancellationToken>()),
+					r.Email == "test@example.com")),
 			Times.Once);
 	}
 
@@ -320,7 +319,7 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MockUserService
-		.Setup(s => s.DeleteUserAsync(1, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+		.Setup(s => s.DeleteUserAsync(1, It.IsAny<string>()))
 		.ReturnsAsync(true);
 
 		// Act
@@ -335,7 +334,7 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MockUserService
-		.Setup(s => s.DeleteUserAsync(999, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+		.Setup(s => s.DeleteUserAsync(999, It.IsAny<string>()))
 		.ReturnsAsync(false);
 
 		// Act
@@ -354,10 +353,8 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MockUserService
-		.Setup(s => s.RestoreUserAsync(1, It.IsAny<CancellationToken>()))
-		.ReturnsAsync(true);
-
-		// Act
+		.Setup(s => s.RestoreUserAsync(1))
+		.ReturnsAsync(true);        // Act
 		IActionResult result = await Controller.RestoreAsync(1, CancellationToken.None);
 
 		// Assert
@@ -369,10 +366,8 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MockUserService
-		.Setup(s => s.RestoreUserAsync(999, It.IsAny<CancellationToken>()))
-		.ReturnsAsync(false);
-
-		// Act
+		.Setup(s => s.RestoreUserAsync(999))
+		.ReturnsAsync(false);       // Act
 		IActionResult result = await Controller.RestoreAsync(999, CancellationToken.None);
 
 		// Assert
@@ -520,10 +515,8 @@ public class UsersControllerTests
 		int expectedCount = 3;
 
 		MockUserService
-		.Setup(s => s.BulkUpdateActiveStatusAsync(ids, true, It.IsAny<string>(), It.IsAny<CancellationToken>()))
-		.ReturnsAsync(expectedCount);
-
-		// Act
+		.Setup(s => s.BulkUpdateActiveStatusAsync(ids, true, It.IsAny<string>()))
+		.ReturnsAsync(expectedCount);       // Act
 		ActionResult<int> result = await Controller.BulkActivateAsync(ids, CancellationToken.None);
 
 		// Assert
@@ -540,10 +533,8 @@ public class UsersControllerTests
 		int expectedCount = 3;
 
 		MockUserService
-		.Setup(s => s.BulkUpdateActiveStatusAsync(ids, false, It.IsAny<string>(), It.IsAny<CancellationToken>()))
-		.ReturnsAsync(expectedCount);
-
-		// Act
+		.Setup(s => s.BulkUpdateActiveStatusAsync(ids, false, It.IsAny<string>()))
+		.ReturnsAsync(expectedCount);       // Act
 		ActionResult<int> result = await Controller.BulkDeactivateAsync(ids, CancellationToken.None);
 
 		// Assert

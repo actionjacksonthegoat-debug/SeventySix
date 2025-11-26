@@ -30,7 +30,7 @@ namespace SeventySix.Identity;
 /// - Global query filter for soft delete (excludes IsDeleted = true by default)
 /// - Optimistic concurrency control using PostgreSQL xmin (uint RowVersion)
 /// </remarks>
-public class UserRepository : IUserRepository
+internal class UserRepository : IUserRepository
 {
 	private readonly IdentityDbContext Context;
 	private readonly ILogger<UserRepository> Logger;
@@ -66,14 +66,14 @@ public class UserRepository : IUserRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<User> CreateAsync(User entity, CancellationToken cancellationToken = default)
+	public async Task<User> CreateAsync(User entity)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
 		try
 		{
 			Context.Users.Add(entity);
-			await Context.SaveChangesAsync(cancellationToken);
+			await Context.SaveChangesAsync();
 
 			Logger.LogInformation(
 				"Created User: Id={Id}, Username={Username}",
@@ -101,7 +101,7 @@ public class UserRepository : IUserRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<User> UpdateAsync(User entity, CancellationToken cancellationToken = default)
+	public async Task<User> UpdateAsync(User entity)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
@@ -122,7 +122,7 @@ public class UserRepository : IUserRepository
 				Context.Users.Update(entity);
 			}
 
-			await Context.SaveChangesAsync(cancellationToken);
+			await Context.SaveChangesAsync();
 
 			Logger.LogDebug(
 				"Updated User: Id={Id}, Username={Username}",
@@ -158,16 +158,16 @@ public class UserRepository : IUserRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+	public async Task<bool> DeleteAsync(int id)
 	{
-		User? entity = await Context.Users.FindAsync([id], cancellationToken);
+		User? entity = await Context.Users.FindAsync([id]);
 		if (entity is null)
 		{
 			return false;
 		}
 
 		Context.Users.Remove(entity);
-		await Context.SaveChangesAsync(cancellationToken);
+		await Context.SaveChangesAsync();
 
 		Logger.LogInformation(
 			"Deleted User: Id={Id}",
@@ -290,11 +290,11 @@ public class UserRepository : IUserRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> ids, bool isActive, CancellationToken cancellationToken = default)
+	public async Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> ids, bool isActive)
 	{
 		List<User> users = await Context.Users
 			.Where(u => ids.Contains(u.Id))
-			.ToListAsync(cancellationToken);
+			.ToListAsync(CancellationToken.None);
 
 		foreach (User user in users)
 		{
@@ -302,7 +302,7 @@ public class UserRepository : IUserRepository
 			user.ModifiedAt = DateTime.UtcNow;
 		}
 
-		await Context.SaveChangesAsync(cancellationToken);
+		await Context.SaveChangesAsync();
 
 		Logger.LogInformation(
 			"Bulk updated active status for {Count} users to {IsActive}",
@@ -313,12 +313,12 @@ public class UserRepository : IUserRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> SoftDeleteAsync(int id, string deletedBy, CancellationToken cancellationToken = default)
+	public async Task<bool> SoftDeleteAsync(int id, string deletedBy)
 	{
 		// Need to ignore query filters to find the user even if already soft-deleted
 		User? user = await Context.Users
 			.IgnoreQueryFilters()
-			.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, cancellationToken);
+			.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, CancellationToken.None);
 
 		if (user is null)
 		{
@@ -329,7 +329,7 @@ public class UserRepository : IUserRepository
 		user.DeletedAt = DateTime.UtcNow;
 		user.DeletedBy = deletedBy;
 
-		await Context.SaveChangesAsync(cancellationToken);
+		await Context.SaveChangesAsync();
 
 		Logger.LogInformation(
 			"Soft deleted User: Id={Id}, DeletedBy={DeletedBy}",
@@ -340,12 +340,12 @@ public class UserRepository : IUserRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> RestoreAsync(int id, CancellationToken cancellationToken = default)
+	public async Task<bool> RestoreAsync(int id)
 	{
 		// Need to ignore query filters to find soft-deleted users
 		User? user = await Context.Users
 			.IgnoreQueryFilters()
-			.FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted, cancellationToken);
+			.FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted, CancellationToken.None);
 
 		if (user is null)
 		{
@@ -356,7 +356,7 @@ public class UserRepository : IUserRepository
 		user.DeletedAt = null;
 		user.DeletedBy = null;
 
-		await Context.SaveChangesAsync(cancellationToken);
+		await Context.SaveChangesAsync();
 
 		Logger.LogInformation(
 			"Restored User: Id={Id}",

@@ -101,9 +101,9 @@ public class LogService(
 	/// Returns false if the log doesn't exist, allowing the caller to determine
 	/// the appropriate response (typically 404 Not Found).
 	/// </remarks>
-	public async Task<bool> DeleteLogByIdAsync(int id, CancellationToken cancellationToken = default)
+	public async Task<bool> DeleteLogByIdAsync(int id)
 	{
-		return await repository.DeleteByIdAsync(id, cancellationToken);
+		return await repository.DeleteByIdAsync(id);
 	}
 
 	/// <inheritdoc/>
@@ -111,9 +111,9 @@ public class LogService(
 	/// Performs batch delete for better performance.
 	/// Returns count of actually deleted logs (may be less than input if some IDs don't exist).
 	/// </remarks>
-	public async Task<int> DeleteLogsBatchAsync(int[] ids, CancellationToken cancellationToken = default)
+	public async Task<int> DeleteLogsBatchAsync(int[] ids)
 	{
-		return await repository.DeleteBatchAsync(ids, cancellationToken);
+		return await repository.DeleteBatchAsync(ids);
 	}
 
 	/// <inheritdoc/>
@@ -121,9 +121,9 @@ public class LogService(
 	/// Used for log retention cleanup.
 	/// Deletes all logs with Timestamp older than the specified cutoff date.
 	/// </remarks>
-	public async Task<int> DeleteLogsOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default)
+	public async Task<int> DeleteLogsOlderThanAsync(DateTime cutoffDate)
 	{
-		return await repository.DeleteOlderThanAsync(cutoffDate, cancellationToken);
+		return await repository.DeleteOlderThanAsync(cutoffDate);
 	}
 
 	/// <inheritdoc/>
@@ -143,6 +143,98 @@ public class LogService(
 		catch
 		{
 			return false;
+		}
+	}
+
+	/// <inheritdoc/>
+	/// <remarks>
+	/// Maps ClientLogRequest to Log entity with trace context and browser metadata.
+	/// Trace context is injected from Activity.Current by the controller.
+	/// </remarks>
+	public async Task CreateClientLogAsync(ClientLogRequest request)
+	{
+		ArgumentNullException.ThrowIfNull(request);
+
+		// Get trace context from current HTTP request
+		string? traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
+		string? spanId = System.Diagnostics.Activity.Current?.SpanId.ToString();
+		string? parentSpanId = System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
+
+		// Map ClientLogRequest to Log entity
+		Log log = new()
+		{
+			LogLevel = request.LogLevel,
+			Message = request.Message,
+			ExceptionMessage = request.ExceptionMessage,
+			StackTrace = request.StackTrace,
+			SourceContext = request.SourceContext,
+			RequestPath = request.RequestUrl,
+			RequestMethod = request.RequestMethod,
+			StatusCode = request.StatusCode,
+			CorrelationId = request.CorrelationId ?? traceId,
+			SpanId = spanId,
+			ParentSpanId = parentSpanId,
+			Properties = System.Text.Json.JsonSerializer.Serialize(new
+			{
+				request.UserAgent,
+				request.ClientTimestamp,
+				request.AdditionalContext,
+			}),
+			Timestamp = DateTime.UtcNow,
+			MachineName = "Browser",
+			Environment = "Client",
+		};
+
+		await repository.CreateAsync(log);
+	}
+
+	/// <inheritdoc/>
+	/// <remarks>
+	/// Batch operation for better performance when Angular sends multiple errors at once.
+	/// Each log gets the same trace context from the HTTP request.
+	/// </remarks>
+	public async Task CreateClientLogBatchAsync(ClientLogRequest[] requests)
+	{
+		ArgumentNullException.ThrowIfNull(requests);
+
+		if (requests.Length == 0)
+		{
+			return;
+		}
+
+		// Get trace context from current HTTP request
+		string? traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
+		string? spanId = System.Diagnostics.Activity.Current?.SpanId.ToString();
+		string? parentSpanId = System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
+
+		// Map all requests to Log entities
+		foreach (ClientLogRequest request in requests)
+		{
+			Log log = new()
+			{
+				LogLevel = request.LogLevel,
+				Message = request.Message,
+				ExceptionMessage = request.ExceptionMessage,
+				StackTrace = request.StackTrace,
+				SourceContext = request.SourceContext,
+				RequestPath = request.RequestUrl,
+				RequestMethod = request.RequestMethod,
+				StatusCode = request.StatusCode,
+				CorrelationId = request.CorrelationId ?? traceId,
+				SpanId = spanId,
+				ParentSpanId = parentSpanId,
+				Properties = System.Text.Json.JsonSerializer.Serialize(new
+				{
+					request.UserAgent,
+					request.ClientTimestamp,
+					request.AdditionalContext,
+				}),
+				Timestamp = DateTime.UtcNow,
+				MachineName = "Browser",
+				Environment = "Client",
+			};
+
+			await repository.CreateAsync(log);
 		}
 	}
 }

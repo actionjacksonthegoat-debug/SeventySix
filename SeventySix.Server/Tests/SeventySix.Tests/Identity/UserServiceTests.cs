@@ -224,8 +224,8 @@ public class UserServiceTests
 			.ReturnsAsync(false);
 
 		MockRepository
-			.Setup(r => r.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((User u, CancellationToken ct) =>
+			.Setup(r => r.CreateAsync(It.IsAny<User>()))
+			.ReturnsAsync((User u) =>
 			{
 				u.Id = 456; // Simulate DB assigning ID
 				return u;
@@ -250,8 +250,7 @@ public class UserServiceTests
 				u.Username == "new_user" &&
 				u.Email == "new@example.com" &&
 				u.FullName == "New User" &&
-				u.IsActive == true),
-				It.IsAny<CancellationToken>()),
+				u.IsActive == true)),
 			Times.Once);
 	}
 
@@ -280,7 +279,7 @@ public class UserServiceTests
 			v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()),
 			Times.Once);
 		MockRepository.Verify(
-			r => r.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()),
+			r => r.CreateAsync(It.IsAny<User>()),
 			Times.Never);
 	}
 
@@ -310,8 +309,8 @@ public class UserServiceTests
 
 		User? capturedUser = null;
 		MockRepository
-			.Setup(r => r.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((User u, CancellationToken ct) =>
+			.Setup(r => r.CreateAsync(It.IsAny<User>()))
+			.ReturnsAsync((User u) =>
 			{
 				capturedUser = u;
 				u.Id = 1;
@@ -353,8 +352,8 @@ public class UserServiceTests
 			.ReturnsAsync(false);
 
 		MockRepository
-			.Setup(r => r.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((User u, CancellationToken ct) =>
+			.Setup(r => r.CreateAsync(It.IsAny<User>()))
+			.ReturnsAsync((User u) =>
 			{
 				u.Id = 1;
 				return u;
@@ -392,8 +391,8 @@ public class UserServiceTests
 			.ReturnsAsync(false);
 
 		MockRepository
-			.Setup(r => r.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((User u, CancellationToken ct) =>
+			.Setup(r => r.CreateAsync(It.IsAny<User>()))
+			.ReturnsAsync((User u) =>
 			{
 				u.Id = 1;
 				return u;
@@ -431,19 +430,17 @@ public class UserServiceTests
 			.ReturnsAsync(false);
 
 		MockRepository
-			.Setup(r => r.CreateAsync(It.IsAny<User>(), cancellationToken))
-			.ReturnsAsync((User u, CancellationToken ct) =>
+			.Setup(r => r.CreateAsync(It.IsAny<User>()))
+			.ReturnsAsync((User u) =>
 			{
 				u.Id = 1;
 				return u;
 			});
 
 		// Act
-		await Service.CreateUserAsync(request, cancellationToken);
-
-		// Assert
+		await Service.CreateUserAsync(request);     // Assert
 		MockCreateValidator.Verify(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), cancellationToken), Times.Once);
-		MockRepository.Verify(r => r.CreateAsync(It.IsAny<User>(), cancellationToken), Times.Once);
+		MockRepository.Verify(r => r.CreateAsync(It.IsAny<User>()), Times.Once);
 	}
 
 	#endregion
@@ -510,7 +507,7 @@ public class UserServiceTests
 			.ReturnsAsync(false);
 
 		MockRepository
-			.Setup(r => r.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+			.Setup(r => r.UpdateAsync(It.IsAny<User>()))
 			.ReturnsAsync(updatedUser);
 
 		// Act
@@ -527,8 +524,7 @@ public class UserServiceTests
 			It.Is<User>(u =>
 				u.Username == request.Username &&
 				u.Email == request.Email &&
-				u.ModifiedBy == "System"),
-			It.IsAny<CancellationToken>()), Times.Once);
+				u.ModifiedBy == "System")), Times.Once);
 	}
 
 	[Fact]
@@ -561,8 +557,7 @@ public class UserServiceTests
 		Assert.Contains(request.Id.ToString(), exception.Message);
 
 		MockRepository.Verify(r => r.UpdateAsync(
-			It.IsAny<User>(),
-			It.IsAny<CancellationToken>()), Times.Never);
+			It.IsAny<User>()), Times.Never);
 	}
 
 	[Fact]
@@ -612,8 +607,7 @@ public class UserServiceTests
 		Assert.Contains(request.Username, exception.Message);
 
 		MockRepository.Verify(r => r.UpdateAsync(
-			It.IsAny<User>(),
-			It.IsAny<CancellationToken>()), Times.Never);
+			It.IsAny<User>()), Times.Never);
 	}
 
 	[Fact]
@@ -653,7 +647,7 @@ public class UserServiceTests
 			.ReturnsAsync(existingUser);
 
 		MockRepository
-			.Setup(r => r.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+			.Setup(r => r.UpdateAsync(It.IsAny<User>()))
 			.ThrowsAsync(new DbUpdateConcurrencyException());
 
 		// Act & Assert
@@ -675,17 +669,14 @@ public class UserServiceTests
 		string deletedBy = "Admin";
 
 		MockRepository
-			.Setup(r => r.SoftDeleteAsync(userId, deletedBy, It.IsAny<CancellationToken>()))
+			.Setup(r => r.SoftDeleteAsync(userId, deletedBy))
 			.ReturnsAsync(true);
 
 		// Act
 		await Service.DeleteUserAsync(userId, deletedBy);
 
 		// Assert
-		MockRepository.Verify(r => r.SoftDeleteAsync(
-			userId,
-			deletedBy,
-			It.IsAny<CancellationToken>()), Times.Once);
+		MockRepository.Verify(r => r.SoftDeleteAsync(userId, deletedBy), Times.Once);
 	}
 
 	[Fact]
@@ -695,16 +686,14 @@ public class UserServiceTests
 		int userId = 1;
 
 		MockRepository
-			.Setup(r => r.RestoreAsync(userId, It.IsAny<CancellationToken>()))
+			.Setup(r => r.RestoreAsync(userId))
 			.ReturnsAsync(true);
 
 		// Act
 		await Service.RestoreUserAsync(userId);
 
 		// Assert
-		MockRepository.Verify(r => r.RestoreAsync(
-			userId,
-			It.IsAny<CancellationToken>()), Times.Once);
+		MockRepository.Verify(r => r.RestoreAsync(userId), Times.Once);
 	}
 
 	#endregion
@@ -968,7 +957,7 @@ public class UserServiceTests
 		int expectedCount = 3;
 
 		MockRepository
-			.Setup(r => r.BulkUpdateActiveStatusAsync(userIds, isActive, It.IsAny<CancellationToken>()))
+			.Setup(r => r.BulkUpdateActiveStatusAsync(userIds, isActive))
 			.ReturnsAsync(expectedCount);
 
 		// Act
@@ -979,9 +968,10 @@ public class UserServiceTests
 
 		MockRepository.Verify(r => r.BulkUpdateActiveStatusAsync(
 			userIds,
-			isActive,
-			It.IsAny<CancellationToken>()), Times.Once);
+			isActive), Times.Once);
 	}
 
 	#endregion
 }
+
+

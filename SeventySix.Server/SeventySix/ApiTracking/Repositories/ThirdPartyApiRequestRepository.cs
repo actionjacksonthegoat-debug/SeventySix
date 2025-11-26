@@ -27,7 +27,7 @@ namespace SeventySix.ApiTracking;
 /// - Composite index on (ApiName, ResetDate)
 /// - Batch operations for bulk deletes
 /// </remarks>
-public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
+internal class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 {
 	private readonly ApiTrackingDbContext Context;
 	private readonly ILogger<ThirdPartyApiRequestRepository> Logger;
@@ -95,15 +95,14 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 
 	/// <inheritdoc/>
 	public async Task<ThirdPartyApiRequest> CreateAsync(
-		ThirdPartyApiRequest entity,
-		CancellationToken cancellationToken = default)
+		ThirdPartyApiRequest entity)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
 		try
 		{
 			Context.ThirdPartyApiRequests.Add(entity);
-			await Context.SaveChangesAsync(cancellationToken);
+			await Context.SaveChangesAsync();
 
 			Logger.LogInformation(
 				"Created ThirdPartyApiRequest: Id={Id}, ApiName={ApiName}, ResetDate={ResetDate}",
@@ -133,8 +132,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 
 	/// <inheritdoc/>
 	public async Task<ThirdPartyApiRequest> UpdateAsync(
-		ThirdPartyApiRequest entity,
-		CancellationToken cancellationToken = default)
+		ThirdPartyApiRequest entity)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
@@ -145,7 +143,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 
 			// Check if entity is already tracked
 			ThirdPartyApiRequest? trackedEntity = Context.ThirdPartyApiRequests.Local
-				.FirstOrDefault(e => e.Id == entity.Id);
+				.FirstOrDefault(existingEntity => existingEntity.Id == entity.Id);
 
 			if (trackedEntity != null)
 			{
@@ -158,7 +156,7 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 				Context.ThirdPartyApiRequests.Update(entity);
 			}
 
-			await Context.SaveChangesAsync(cancellationToken);
+			await Context.SaveChangesAsync();
 
 			Logger.LogDebug(
 				"Updated ThirdPartyApiRequest: Id={Id}, CallCount={CallCount}",
@@ -249,15 +247,14 @@ public class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 
 	/// <inheritdoc/>
 	public async Task<int> DeleteOlderThanAsync(
-		DateOnly cutoffDate,
-		CancellationToken cancellationToken = default)
+		DateOnly cutoffDate)
 	{
 		try
 		{
 			// Batch delete operation
 			int deletedCount = await Context.ThirdPartyApiRequests
 				.Where(r => r.ResetDate < cutoffDate)
-				.ExecuteDeleteAsync(cancellationToken);
+				.ExecuteDeleteAsync(CancellationToken.None);
 
 			Logger.LogInformation(
 				"Deleted {Count} ThirdPartyApiRequest records older than {CutoffDate}",

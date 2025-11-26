@@ -27,7 +27,7 @@ namespace SeventySix.Logging;
 /// - Indexes on Timestamp, LogLevel, SourceContext
 /// - Batch operations for bulk deletes
 /// </remarks>
-public class LogRepository : ILogRepository
+internal class LogRepository : ILogRepository
 {
 	private readonly LoggingDbContext Context;
 	private readonly ILogger<LogRepository> Logger;
@@ -46,14 +46,14 @@ public class LogRepository : ILogRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<Log> CreateAsync(Log entity, CancellationToken cancellationToken = default)
+	public async Task<Log> CreateAsync(Log entity)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
 		try
 		{
 			Context.Logs.Add(entity);
-			await Context.SaveChangesAsync(cancellationToken);
+			await Context.SaveChangesAsync();
 
 			Logger.LogDebug(
 				"Created Log: Id={Id}, LogLevel={LogLevel}",
@@ -148,13 +148,13 @@ public class LogRepository : ILogRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> DeleteOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default)
+	public async Task<int> DeleteOlderThanAsync(DateTime cutoffDate)
 	{
 		try
 		{
 			int deletedCount = await Context.Logs
 				.Where(l => l.Timestamp < cutoffDate)
-				.ExecuteDeleteAsync(cancellationToken);
+				.ExecuteDeleteAsync(CancellationToken.None);
 
 			Logger.LogInformation(
 				"Deleted {Count} logs older than {CutoffDate}",
@@ -174,13 +174,13 @@ public class LogRepository : ILogRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> DeleteByIdAsync(int id, CancellationToken cancellationToken = default)
+	public async Task<bool> DeleteByIdAsync(int id)
 	{
 		try
 		{
 			Logger.LogDebug("Attempting to delete log with ID: {LogId}", id);
 
-			Log? log = await Context.Logs.FindAsync([id], cancellationToken);
+			Log? log = await Context.Logs.FindAsync([id]);
 
 			if (log == null)
 			{
@@ -189,7 +189,7 @@ public class LogRepository : ILogRepository
 			}
 
 			Context.Logs.Remove(log);
-			await Context.SaveChangesAsync(cancellationToken);
+			await Context.SaveChangesAsync();
 
 			Logger.LogInformation("Successfully deleted log with ID: {LogId}", id);
 			return true;
@@ -202,7 +202,7 @@ public class LogRepository : ILogRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> DeleteBatchAsync(int[] ids, CancellationToken cancellationToken = default)
+	public async Task<int> DeleteBatchAsync(int[] ids)
 	{
 		try
 		{
@@ -213,7 +213,7 @@ public class LogRepository : ILogRepository
 
 			List<Log> logsToDelete = await Context.Logs
 				.Where(l => idList.Contains(l.Id))
-				.ToListAsync(cancellationToken);
+				.ToListAsync(CancellationToken.None);
 
 			if (logsToDelete.Count == 0)
 			{
@@ -222,7 +222,7 @@ public class LogRepository : ILogRepository
 			}
 
 			Context.Logs.RemoveRange(logsToDelete);
-			await Context.SaveChangesAsync(cancellationToken);
+			await Context.SaveChangesAsync();
 
 			Logger.LogWarning(
 				"Successfully deleted {DeletedCount} of {RequestedCount} logs",
