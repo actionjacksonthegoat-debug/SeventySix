@@ -123,7 +123,6 @@ public class UserService(
 
 		// Update entity
 		User user = request.ToEntity(existing);
-		user.ModifiedAt = DateTime.UtcNow;
 		user.ModifiedBy = "System"; // TODO: Get from auth context
 
 		try

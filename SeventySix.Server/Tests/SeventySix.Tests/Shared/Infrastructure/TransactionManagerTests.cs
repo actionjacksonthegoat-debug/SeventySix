@@ -48,9 +48,9 @@ public class TransactionManagerTests : IDisposable
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
-			CallCount = 1,
+			CallCount = 0,
 			CreatedAt = DateTime.UtcNow,
-			UpdatedAt = DateTime.UtcNow
+			ModifiedAt = null
 		};
 
 		// Act
@@ -79,7 +79,7 @@ public class TransactionManagerTests : IDisposable
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 			CallCount = 1,
 			CreatedAt = DateTime.UtcNow,
-			UpdatedAt = DateTime.UtcNow
+			ModifiedAt = null
 		};
 
 		// Act
@@ -119,7 +119,7 @@ public class TransactionManagerTests : IDisposable
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 			CallCount = 1,
 			CreatedAt = DateTime.UtcNow,
-			UpdatedAt = DateTime.UtcNow
+			ModifiedAt = null
 		};
 
 		// Act
@@ -146,7 +146,7 @@ public class TransactionManagerTests : IDisposable
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 			CallCount = 1,
 			CreatedAt = DateTime.UtcNow,
-			UpdatedAt = DateTime.UtcNow
+			ModifiedAt = null
 		};
 
 		DbContext.ThirdPartyApiRequests.Add(entity);
@@ -254,7 +254,7 @@ public class TransactionManagerTests : IDisposable
 				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 				CallCount = 1,
 				CreatedAt = DateTime.UtcNow,
-				UpdatedAt = DateTime.UtcNow
+				ModifiedAt = null
 			};
 			DbContext.ThirdPartyApiRequests.Add(entity);
 			await DbContext.SaveChangesAsync(cancellationToken);
@@ -270,7 +270,7 @@ public class TransactionManagerTests : IDisposable
 				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 				CallCount = 1,
 				CreatedAt = DateTime.UtcNow,
-				UpdatedAt = DateTime.UtcNow
+				ModifiedAt = null
 			};
 			DbContext.ThirdPartyApiRequests.Add(entity);
 			await DbContext.SaveChangesAsync(cancellationToken);

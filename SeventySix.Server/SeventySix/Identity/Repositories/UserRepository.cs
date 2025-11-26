@@ -299,9 +299,7 @@ internal class UserRepository : IUserRepository
 		foreach (User user in users)
 		{
 			user.IsActive = isActive;
-			user.ModifiedAt = DateTime.UtcNow;
 		}
-
 		await Context.SaveChangesAsync();
 
 		Logger.LogInformation(

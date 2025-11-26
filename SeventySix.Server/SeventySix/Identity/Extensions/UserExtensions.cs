@@ -96,7 +96,6 @@ public static class UserExtensions
 			Email = request.Email,
 			FullName = request.FullName,
 			IsActive = request.IsActive,
-			CreatedAt = DateTime.UtcNow,
 		};
 	}
 	/// <summary>

@@ -83,7 +83,7 @@ public class ThirdPartyApiRequest
 	/// <summary>
 	/// Gets or sets the timestamp when this record was last modified.
 	/// </summary>
-	public DateTime UpdatedAt
+	public DateTime? ModifiedAt
 	{
 		get; set;
 	}
@@ -113,7 +113,6 @@ public class ThirdPartyApiRequest
 	{
 		CallCount++;
 		LastCalledAt = DateTime.UtcNow;
-		UpdatedAt = DateTime.UtcNow;
 	}
 
 	/// <summary>
@@ -127,6 +126,5 @@ public class ThirdPartyApiRequest
 	public void ResetCallCount()
 	{
 		CallCount = 0;
-		UpdatedAt = DateTime.UtcNow;
 	}
 }

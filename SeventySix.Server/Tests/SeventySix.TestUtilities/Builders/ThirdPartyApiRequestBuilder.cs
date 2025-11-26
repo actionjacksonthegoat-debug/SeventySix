@@ -33,7 +33,7 @@ public class ThirdPartyApiRequestBuilder
 	private DateTime? LastCalledAt = null;
 	private DateOnly ResetDate = DateOnly.FromDateTime(DateTime.UtcNow);
 	private DateTime CreatedAt = DateTime.UtcNow;
-	private DateTime UpdatedAt = DateTime.UtcNow;
+	private DateTime? ModifiedAt = null;
 	private uint RowVersion = 1;
 
 	/// <summary>
@@ -105,11 +105,11 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Sets the updated timestamp.
 	/// </summary>
-	/// <param name="updatedAt">The updated timestamp.</param>
+	/// <param name="modifiedAt">The modified timestamp.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public ThirdPartyApiRequestBuilder WithUpdatedAt(DateTime updatedAt)
+	public ThirdPartyApiRequestBuilder WithModifiedAt(DateTime? modifiedAt)
 	{
-		UpdatedAt = updatedAt;
+		ModifiedAt = modifiedAt;
 		return this;
 	}
 
@@ -138,7 +138,7 @@ public class ThirdPartyApiRequestBuilder
 			LastCalledAt = LastCalledAt,
 			ResetDate = ResetDate,
 			CreatedAt = CreatedAt,
-			UpdatedAt = UpdatedAt,
+			ModifiedAt = ModifiedAt,
 			RowVersion = RowVersion,
 		};
 	}

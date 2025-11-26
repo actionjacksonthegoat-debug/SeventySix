@@ -140,7 +140,7 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 
 		// Assert
 		Assert.True(result.CreatedAt >= beforeCreate && result.CreatedAt <= afterCreate);
-		Assert.True(result.UpdatedAt >= beforeCreate && result.UpdatedAt <= afterCreate);
+		Assert.Null(result.ModifiedAt);
 	}
 
 	[Fact]
@@ -232,7 +232,7 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 			ResetDate = today,
 		};
 		ThirdPartyApiRequest created = await Repository.CreateAsync(request);
-		DateTime originalUpdatedAt = created.UpdatedAt;
+		DateTime? originalModifiedAt = created.ModifiedAt;
 
 		// Wait to ensure timestamp difference
 		await Task.Delay(100);
@@ -242,7 +242,7 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 		ThirdPartyApiRequest result = await Repository.UpdateAsync(created);
 
 		// Assert
-		Assert.True(result.UpdatedAt > originalUpdatedAt);
+		Assert.NotNull(result.ModifiedAt);
 	}
 
 	[Fact]

@@ -35,7 +35,7 @@ public class ThirdPartyApiRequestTests
 		Assert.Equal(6, request.CallCount);
 		Assert.NotNull(request.LastCalledAt);
 		Assert.True(request.LastCalledAt >= beforeTimestamp);
-		Assert.True(request.UpdatedAt >= beforeTimestamp);
+		
 	}
 
 	[Fact]
@@ -87,7 +87,7 @@ public class ThirdPartyApiRequestTests
 		// Assert
 		Assert.Equal(0, request.CallCount);
 		Assert.Equal(lastCalledBefore, request.LastCalledAt); // LastCalledAt preserved for history
-		Assert.True(request.UpdatedAt >= beforeTimestamp);
+		
 	}
 
 	[Fact]

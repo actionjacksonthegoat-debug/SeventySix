@@ -75,10 +75,9 @@ public class ThirdPartyApiRequestConfiguration : IEntityTypeConfiguration<ThirdP
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");
 
-		// UpdatedAt - Required timestamp, default NOW()
-		builder.Property(e => e.UpdatedAt)
-			.IsRequired()
-			.HasDefaultValueSql("NOW()")
+		// ModifiedAt - Optional timestamp (set when entity is modified)
+		builder.Property(e => e.ModifiedAt)
+			.IsRequired(false)
 			.HasColumnType("timestamp with time zone");
 
 		// RowVersion - Concurrency token

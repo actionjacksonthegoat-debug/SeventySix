@@ -138,14 +138,12 @@ internal class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 
 		try
 		{
-			// Update timestamp automatically for all updates
-			entity.UpdatedAt = DateTime.UtcNow;
+			// Set ModifiedAt timestamp
+			entity.ModifiedAt = DateTime.UtcNow;
 
 			// Check if entity is already tracked
 			ThirdPartyApiRequest? trackedEntity = Context.ThirdPartyApiRequests.Local
-				.FirstOrDefault(existingEntity => existingEntity.Id == entity.Id);
-
-			if (trackedEntity != null)
+				.FirstOrDefault(existingEntity => existingEntity.Id == entity.Id); if (trackedEntity != null)
 			{
 				// Entity is already tracked, update its properties
 				Context.Entry(trackedEntity).CurrentValues.SetValues(entity);
