@@ -91,6 +91,13 @@
 		margin-top: vars.$spacing-lg;
 	}
 
+	.log-validation-links {
+		display: flex;
+		gap: vars.$spacing-md;
+		flex-wrap: wrap;
+		margin-top: vars.$spacing-lg;
+	}
+
 	// Responsive breakpoints
 	@media (max-width: 768px) {
 		mat-toolbar {

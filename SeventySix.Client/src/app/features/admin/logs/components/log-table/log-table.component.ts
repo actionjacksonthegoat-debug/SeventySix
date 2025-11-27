@@ -24,11 +24,7 @@ import { MatSortModule, MatSort } from "@angular/material/sort";
 import { SelectionModel } from "@angular/cdk/collections";
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { TableHeightDirective } from "@shared/directives";
-import {
-	LogResponse,
-	LogLevel,
-	parseLogLevel
-} from "@admin/logs/models";
+import { LogResponse, LogLevel, parseLogLevel } from "@admin/logs/models";
 import { environment } from "@environments/environment";
 
 /**

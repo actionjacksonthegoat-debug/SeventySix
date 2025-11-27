@@ -124,9 +124,5 @@
 }
 
 .data-row {
-	cursor: pointer;
-
-	&:hover {
-		background-color: rgba(var(--mat-sys-on-surface-rgb), 0.04);
-	}
+	@include vars.interactive-row-hover();
 }

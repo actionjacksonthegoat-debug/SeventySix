@@ -1,8 +1,13 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, effect, Renderer2 } from "@angular/core";
+import { DOCUMENT } from "@angular/common";
 import { RouterOutlet } from "@angular/router";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
-import { ThemeService, LayoutService, LoadingService } from "@infrastructure/services";
+import {
+	ThemeService,
+	LayoutService,
+	LoadingService
+} from "@infrastructure/services";
 import {
 	HeaderComponent,
 	SidebarComponent,
@@ -33,6 +38,31 @@ export class App
 	protected readonly themeService: ThemeService = inject(ThemeService);
 	protected readonly layoutService: LayoutService = inject(LayoutService);
 	protected readonly loadingService: LoadingService = inject(LoadingService);
+	private readonly renderer: Renderer2 = inject(Renderer2);
+	private readonly document: Document = inject(DOCUMENT);
+
+	constructor()
+	{
+		// Sync sidebar state to body class for CSS targeting (dialogs, overlays)
+		effect(() =>
+		{
+			const isExpanded: boolean = this.layoutService.sidebarExpanded();
+			const isSideMode: boolean =
+				this.layoutService.sidebarMode() === "side";
+
+			if (isExpanded && isSideMode)
+			{
+				this.renderer.addClass(this.document.body, "sidebar-expanded");
+			}
+			else
+			{
+				this.renderer.removeClass(
+					this.document.body,
+					"sidebar-expanded"
+				);
+			}
+		});
+	}
 
 	/**
 	 * Handle swipe left gesture (close sidebar on mobile)

@@ -134,16 +134,12 @@ export class LayoutService
 	});
 
 	/**
-	 * Whether sidebar should be opened by default
+	 * Whether sidebar should be opened
+	 * On mobile/tablet: closed by default, managed by gestures/backdrop
+	 * On desktop: always starts open, only toggled via header
 	 */
 	sidebarOpened: ReturnType<typeof computed<boolean>> = computed(() =>
 	{
-		// On mobile/tablet, keep closed by default
-		if (this.sidebarMode() === "over")
-		{
-			return false;
-		}
-		// On desktop, use expanded state
 		return this.sidebarExpanded();
 	});
 

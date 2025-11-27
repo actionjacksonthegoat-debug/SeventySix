@@ -1,17 +1,24 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
+import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { GrafanaDashboardEmbedComponent } from "./components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 import { ApiStatisticsTableComponent } from "./components/api-statistics-table/api-statistics-table.component";
 import { AdminDashboardComponent } from "./admin-dashboard.component";
 import { ThirdPartyApiService } from "./services";
+import { NotificationService } from "@infrastructure/services/notification.service";
+import { LoggerService } from "@infrastructure/services/logger.service";
 import { createMockQueryResult } from "@testing/tanstack-query-helpers";
+import { createMockNotificationService, createMockLogger } from "@testing";
 
 describe("AdminDashboardComponent", () =>
 {
 	let component: AdminDashboardComponent;
 	let fixture: ComponentFixture<AdminDashboardComponent>;
 	let thirdPartyApiService: jasmine.SpyObj<ThirdPartyApiService>;
+	let mockNotificationService: jasmine.SpyObj<NotificationService>;
+	let mockLoggerService: jasmine.SpyObj<LoggerService>;
 
 	beforeEach(async () =>
 	{
@@ -25,6 +32,9 @@ describe("AdminDashboardComponent", () =>
 			createMockQueryResult([])
 		);
 
+		mockNotificationService = createMockNotificationService();
+		mockLoggerService = createMockLogger();
+
 		await TestBed.configureTestingModule({
 			imports: [
 				AdminDashboardComponent,
@@ -34,9 +44,19 @@ describe("AdminDashboardComponent", () =>
 			providers: [
 				provideZonelessChangeDetection(),
 				provideNoopAnimations(),
+				provideHttpClient(),
+				provideHttpClientTesting(),
 				{
 					provide: ThirdPartyApiService,
 					useValue: thirdPartyApiServiceSpy
+				},
+				{
+					provide: NotificationService,
+					useValue: mockNotificationService
+				},
+				{
+					provide: LoggerService,
+					useValue: mockLoggerService
 				}
 			]
 		}).compileComponents();
@@ -146,5 +166,44 @@ describe("AdminDashboardComponent", () =>
 			"_blank"
 		);
 	});
-});
 
+	it("should send info log and show notification", () =>
+	{
+		createComponent();
+
+		component.sendInfoLog();
+
+		expect(mockNotificationService.info).toHaveBeenCalledWith(
+			"Sending Info Log"
+		);
+		expect(mockLoggerService.forceInfo).toHaveBeenCalledWith(
+			"Test Info Log from Admin Dashboard"
+		);
+	});
+
+	it("should send warn log and show notification", () =>
+	{
+		createComponent();
+
+		component.sendWarnLog();
+
+		expect(mockNotificationService.warning).toHaveBeenCalledWith(
+			"Sending Warn Log"
+		);
+		expect(mockLoggerService.forceWarning).toHaveBeenCalledWith(
+			"Test Warning Log from Admin Dashboard"
+		);
+	});
+
+	it("should send error log, show notification, and throw error", () =>
+	{
+		createComponent();
+
+		expect(() => component.sendErrorLog()).toThrowError(
+			/Division by zero test error/
+		);
+		expect(mockNotificationService.error).toHaveBeenCalledWith(
+			"Sending Error Log"
+		);
+	});
+});

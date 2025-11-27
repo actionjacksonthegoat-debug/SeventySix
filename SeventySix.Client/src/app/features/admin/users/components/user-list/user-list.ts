@@ -294,6 +294,15 @@ export class UserList
 	}
 
 	/**
+	 * Handles row click to navigate to user details
+	 * @param user - The clicked user row
+	 */
+	onRowClick(user: User): void
+	{
+		this.viewUser(user.id);
+	}
+
+	/**
 	 * Navigates to the user details view page
 	 * @param userId - The user ID to view
 	 */

@@ -9,11 +9,7 @@ import {
 import { DatePipe } from "@angular/common";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { LogManagementService } from "@admin/logs/services";
-import {
-	LogResponse,
-	parseLogLevel,
-	LogLevel
-} from "@admin/logs/models";
+import { LogResponse, parseLogLevel, LogLevel } from "@admin/logs/models";
 import { DataTableComponent } from "@shared/components";
 import {
 	TableColumn,
@@ -285,6 +281,15 @@ export class LogList
 	onPageSizeChange(pageSize: number): void
 	{
 		this.logService.setPageSize(pageSize);
+	}
+
+	/**
+	 * Handles row click to open log details dialog
+	 * @param log - The clicked log row
+	 */
+	onRowClick(log: LogResponse): void
+	{
+		this.viewLogDetails(log);
 	}
 
 	/**

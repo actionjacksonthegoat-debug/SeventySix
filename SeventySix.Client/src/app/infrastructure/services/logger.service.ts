@@ -126,13 +126,68 @@ export class LoggerService
 	}
 
 	/**
+	 * Force logs debug message, bypassing level filtering.
+	 * Always logs to console and sends to remote.
+	 */
+	forceDebug(message: string, context?: Record<string, unknown>): void
+	{
+		this.log(LogLevel.Debug, message, context, undefined, true);
+	}
+
+	/**
+	 * Force logs info message, bypassing level filtering.
+	 * Always logs to console and sends to remote.
+	 */
+	forceInfo(message: string, context?: Record<string, unknown>): void
+	{
+		this.log(LogLevel.Info, message, context, undefined, true);
+	}
+
+	/**
+	 * Force logs warning message, bypassing level filtering.
+	 * Always logs to console and sends to remote.
+	 */
+	forceWarning(message: string, context?: Record<string, unknown>): void
+	{
+		this.log(LogLevel.Warning, message, context, undefined, true);
+	}
+
+	/**
+	 * Force logs error message, bypassing level filtering.
+	 * Always logs to console and sends to remote.
+	 */
+	forceError(
+		message: string,
+		error?: Error,
+		context?: Record<string, unknown>
+	): void
+	{
+		this.log(LogLevel.Error, message, context, error, true);
+	}
+
+	/**
+	 * Force logs critical message, bypassing level filtering.
+	 * Always logs to console and sends to remote.
+	 */
+	forceCritical(
+		message: string,
+		error?: Error,
+		context?: Record<string, unknown>
+	): void
+	{
+		this.log(LogLevel.Critical, message, context, error, true);
+	}
+
+	/**
 	 * Core logging implementation.
+	 * @param force - When true, bypasses all level filtering (console and remote).
 	 */
 	private log(
 		level: LogLevel,
 		message: string,
 		context?: Record<string, unknown>,
-		error?: Error
+		error?: Error,
+		force: boolean = false
 	): void
 	{
 		const logEntry: LogEntry = {
@@ -143,14 +198,14 @@ export class LoggerService
 			error
 		};
 
-		// Log to console if level meets minimum threshold
-		if (level >= this.minLogLevel)
+		// Log to console if level meets minimum threshold or force is true
+		if (force || level >= this.minLogLevel)
 		{
 			this.logToConsole(logEntry);
 		}
 
-		// Send to remote endpoint in production (errors and above)
-		if (!this.isDevMode && level >= LogLevel.Error)
+		// Send to remote endpoint in production (errors and above) or when forced
+		if (force || (!this.isDevMode && level >= LogLevel.Error))
 		{
 			this.logToRemote(logEntry);
 		}

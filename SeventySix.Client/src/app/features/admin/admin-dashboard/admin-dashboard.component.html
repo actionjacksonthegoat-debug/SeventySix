@@ -36,6 +36,44 @@
 						<!-- Third-Party API Statistics (Application-specific data) -->
 						<app-api-statistics-table></app-api-statistics-table>
 
+						<!-- Log Validations -->
+						<mat-card>
+							<mat-card-header>
+								<mat-card-title>
+									<mat-icon>science</mat-icon>
+									Log Validations
+								</mat-card-title>
+							</mat-card-header>
+							<mat-card-content>
+								<div class="log-validation-links">
+									<button
+										mat-raised-button
+										color="primary"
+										(click)="sendInfoLog()"
+									>
+										<mat-icon>info</mat-icon>
+										Info
+									</button>
+									<button
+										mat-raised-button
+										color="accent"
+										(click)="sendWarnLog()"
+									>
+										<mat-icon>warning</mat-icon>
+										Warn
+									</button>
+									<button
+										mat-raised-button
+										color="warn"
+										(click)="sendErrorLog()"
+									>
+										<mat-icon>error</mat-icon>
+										Error
+									</button>
+								</div>
+							</mat-card-content>
+						</mat-card>
+
 						<!-- Observability Quick Links -->
 						<mat-card>
 							<mat-card-header>

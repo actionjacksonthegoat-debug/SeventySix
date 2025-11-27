@@ -306,9 +306,10 @@
 								<button
 									mat-icon-button
 									[matMenuTriggerFor]="actionMenu"
+									(click)="$event.stopPropagation()"
 									aria-label="Row actions"
 								>
-									<mat-icon>more_vert</mat-icon>
+									<mat-icon>more_horiz</mat-icon>
 								</button>
 								<mat-menu #actionMenu="matMenu">
 									@for (

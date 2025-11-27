@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
@@ -8,6 +8,8 @@ import { MatTabsModule } from "@angular/material/tabs";
 import { GrafanaDashboardEmbedComponent } from "./components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 import { ApiStatisticsTableComponent } from "./components/api-statistics-table/api-statistics-table.component";
 import { environment } from "@environments/environment";
+import { NotificationService } from "@infrastructure/services/notification.service";
+import { LoggerService } from "@infrastructure/services/logger.service";
 
 /**
  * Admin Dashboard main component.
@@ -34,6 +36,10 @@ import { environment } from "@environments/environment";
 })
 export class AdminDashboardComponent
 {
+	private readonly notificationService: NotificationService =
+		inject(NotificationService);
+	private readonly loggerService: LoggerService = inject(LoggerService);
+
 	/**
 	 * Flag indicating if observability stack is enabled.
 	 * Controls visibility of Grafana dashboards and quick links.
@@ -93,5 +99,39 @@ export class AdminDashboardComponent
 			environment.observability.grafanaUrl || "http://localhost:3000";
 		// Open to dashboards list view
 		window.open(`${baseUrl}/dashboards`, "_blank");
+	}
+
+	/**
+	 * Sends a test Info log and shows notification.
+	 * Uses forceInfo to bypass environment log level filtering.
+	 */
+	sendInfoLog(): void
+	{
+		this.notificationService.info("Sending Info Log");
+		this.loggerService.forceInfo("Test Info Log from Admin Dashboard");
+	}
+
+	/**
+	 * Sends a test Warning log and shows notification.
+	 * Uses forceWarning to bypass environment log level filtering.
+	 */
+	sendWarnLog(): void
+	{
+		this.notificationService.warning("Sending Warn Log");
+		this.loggerService.forceWarning(
+			"Test Warning Log from Admin Dashboard"
+		);
+	}
+
+	/**
+	 * Sends a test Error log by intentionally dividing by zero.
+	 * Shows notification and throws error for error handling validation.
+	 * Uses forceError to bypass environment log level filtering.
+	 */
+	sendErrorLog(): void
+	{
+		const zero: number = 0;
+		const result: number = 1 / zero;
+		throw new Error(`Division by zero test error. Result: ${result}`);
 	}
 }

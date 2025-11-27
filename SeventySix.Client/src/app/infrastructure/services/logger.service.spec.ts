@@ -229,4 +229,105 @@ describe("LoggerService", () =>
 			expect(call.args[3]).toBe(error);
 		});
 	});
+
+	describe("force methods", () =>
+	{
+		it("should force log debug message regardless of level filtering", () =>
+		{
+			service.forceDebug("Force debug message");
+
+			// Flush the HTTP request that force logging sends
+			const req = httpMock.expectOne(
+				"http://localhost:1234/api/v1/logs/client"
+			);
+			req.flush({});
+
+			expect(console.log).toHaveBeenCalled();
+			const call = (console.log as jasmine.Spy).calls.mostRecent();
+			expect(call.args[1]).toBe("Force debug message");
+		});
+
+		it("should force log info message regardless of level filtering", () =>
+		{
+			service.forceInfo("Force info message");
+
+			// Flush the HTTP request that force logging sends
+			const req = httpMock.expectOne(
+				"http://localhost:1234/api/v1/logs/client"
+			);
+			req.flush({});
+
+			expect(console.log).toHaveBeenCalled();
+			const call = (console.log as jasmine.Spy).calls.mostRecent();
+			expect(call.args[1]).toBe("Force info message");
+		});
+
+		it("should force log warning message regardless of level filtering", () =>
+		{
+			service.forceWarning("Force warning message");
+
+			// Flush the HTTP request that force logging sends
+			const req = httpMock.expectOne(
+				"http://localhost:1234/api/v1/logs/client"
+			);
+			req.flush({});
+
+			expect(console.warn).toHaveBeenCalled();
+			const call = (console.warn as jasmine.Spy).calls.mostRecent();
+			expect(call.args[1]).toBe("Force warning message");
+		});
+
+		it("should force log error message regardless of level filtering", () =>
+		{
+			const error = new Error("Test error");
+
+			service.forceError("Force error message", error);
+
+			// Flush the HTTP request that force logging sends
+			const req = httpMock.expectOne(
+				"http://localhost:1234/api/v1/logs/client"
+			);
+			req.flush({});
+
+			expect(console.error).toHaveBeenCalled();
+			const call = (console.error as jasmine.Spy).calls.mostRecent();
+			expect(call.args[1]).toBe("Force error message");
+			expect(call.args[2]).toBe(error);
+		});
+
+		it("should force log critical message regardless of level filtering", () =>
+		{
+			const error = new Error("Critical error");
+
+			service.forceCritical("Force critical message", error);
+
+			// Flush the HTTP request that force logging sends
+			const req = httpMock.expectOne(
+				"http://localhost:1234/api/v1/logs/client"
+			);
+			req.flush({});
+
+			expect(console.error).toHaveBeenCalled();
+			const call = (console.error as jasmine.Spy).calls.mostRecent();
+			expect(call.args[1]).toBe("Force critical message");
+			expect(call.args[2]).toBe(error);
+		});
+
+		it("should include context in force log methods", () =>
+		{
+			const context = { source: "test" };
+
+			service.forceInfo("Force info with context", context);
+
+			// Flush the HTTP request that force logging sends
+			const req = httpMock.expectOne(
+				"http://localhost:1234/api/v1/logs/client"
+			);
+			req.flush({});
+
+			expect(console.log).toHaveBeenCalled();
+			const call = (console.log as jasmine.Spy).calls.mostRecent();
+			expect(call.args[2]).toBe(context);
+		});
+	});
 });

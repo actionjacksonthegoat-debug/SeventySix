@@ -26,7 +26,12 @@ export function createMockLogger(): jasmine.SpyObj<LoggerService>
 		"info",
 		"warning",
 		"error",
-		"critical"
+		"critical",
+		"forceDebug",
+		"forceInfo",
+		"forceWarning",
+		"forceError",
+		"forceCritical"
 	]);
 }
 

@@ -306,3 +306,38 @@ $spinner-size-lg: 64px;
 		}
 	}
 }
+
+// ============================================================================
+// INTERACTIVE ROW STYLING
+// ============================================================================
+// Theme-aware hover states for clickable table rows
+// Lightens in dark mode, darkens in light mode
+
+// Interactive row hover mixin - use on any clickable row
+@mixin interactive-row-hover() {
+	cursor: pointer;
+	transition: background-color $transition-duration-fast
+		$transition-easing-standard;
+
+	// Light theme: darken on hover
+	:host-context(html.light-theme) & {
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.04);
+		}
+
+		&:active {
+			background-color: rgba(0, 0, 0, 0.08);
+		}
+	}
+
+	// Dark theme: lighten on hover
+	:host-context(html.dark-theme) & {
+		&:hover {
+			background-color: rgba(255, 255, 255, 0.04);
+		}
+
+		&:active {
+			background-color: rgba(255, 255, 255, 0.08);
+		}
+	}
+}
