@@ -6,8 +6,8 @@ import { provideRouter } from "@angular/router";
 import { UserCreatePage } from "./user-create";
 import { UserService } from "@features/admin/users/services/user.service";
 import { Router } from "@angular/router";
-import { NotificationService } from "@core/services/notification.service";
-import { LoggerService } from "@core/services/logger.service";
+import { NotificationService } from "@infrastructure/services/notification.service";
+import { LoggerService } from "@infrastructure/services/logger.service";
 import { User } from "@admin/users/models";
 import { createMockMutationResult } from "@testing/tanstack-query-helpers";
 import {

@@ -1,7 +1,7 @@
 import { ComponentFixture } from "@angular/core/testing";
 import { UserList } from "@features/admin/users/components/user-list/user-list";
 import { UserService } from "@features/admin/users/services/user.service";
-import { LoggerService } from "@core/services/logger.service";
+import { LoggerService } from "@infrastructure/services/logger.service";
 import { User, PagedResult } from "@admin/users/models";
 import { of } from "rxjs";
 import { UsersComponent } from "./users.component";

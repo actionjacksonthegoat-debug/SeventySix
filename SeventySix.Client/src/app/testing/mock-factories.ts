@@ -4,9 +4,9 @@
  * Eliminates duplication across 40+ spec files
  */
 
-import { LoggerService } from "@core/services/logger.service";
-import { NotificationService } from "@core/services/notification.service";
-import { ErrorQueueService } from "@core/services/error-queue.service";
+import { LoggerService } from "@infrastructure/services/logger.service";
+import { NotificationService } from "@infrastructure/services/notification.service";
+import { ErrorQueueService } from "@infrastructure/services/error-queue.service";
 import { Router } from "@angular/router";
 import { ActivatedRoute } from "@angular/router";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";

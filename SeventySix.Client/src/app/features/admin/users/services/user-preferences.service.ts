@@ -5,7 +5,7 @@
  */
 
 import { Injectable, inject } from "@angular/core";
-import { StorageService } from "@core/services";
+import { StorageService } from "@infrastructure/services";
 
 export interface UserListPreferences
 {

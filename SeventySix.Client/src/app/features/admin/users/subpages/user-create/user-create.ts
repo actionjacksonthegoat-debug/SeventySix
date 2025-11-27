@@ -36,7 +36,7 @@ import {
 	catchError
 } from "rxjs";
 import { UserService } from "@admin/users/services";
-import { LoggerService } from "@core/services";
+import { LoggerService } from "@infrastructure/services";
 import { User } from "../../models";
 
 /**

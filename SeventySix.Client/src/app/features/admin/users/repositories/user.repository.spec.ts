@@ -2,7 +2,7 @@ import { TestBed } from "@angular/core/testing";
 import { HttpParams } from "@angular/common/http";
 import { of } from "rxjs";
 import { UserRepository } from "./user.repository";
-import { ApiService } from "@core/api-services/api.service";
+import { ApiService } from "@infrastructure/api-services/api.service";
 import {
 	User,
 	UserQueryRequest,

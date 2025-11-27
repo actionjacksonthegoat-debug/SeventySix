@@ -13,7 +13,7 @@ export const ADMIN_ROUTES: Routes = [
 	{
 		path: "logs",
 		loadComponent: () =>
-			import("./log-management/log-management.component").then(
+			import("./logs/log-management.component").then(
 				(m) => m.LogManagementComponent
 			),
 		title: "Log Management - SeventySix"

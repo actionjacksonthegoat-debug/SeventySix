@@ -2,7 +2,7 @@ import { Component } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { HideOnDirective, ShowOnDirective } from "./responsive.directive";
-import { ViewportService } from "@core/services";
+import { ViewportService } from "@infrastructure/services";
 import { signal } from "@angular/core";
 
 @Component({

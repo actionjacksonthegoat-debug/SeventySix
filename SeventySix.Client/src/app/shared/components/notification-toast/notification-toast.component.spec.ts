@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { NotificationToastComponent } from "./notification-toast.component";
-import { NotificationService } from "@core/services";
+import { NotificationService } from "@infrastructure/services";
 import { ComponentTestBed } from "@testing/test-bed-builders";
 
 describe("NotificationToastComponent", () =>

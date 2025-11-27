@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { StyleGuideComponent } from "./style-guide.component";
-import { ThemeService } from "@core/services";
+import { ThemeService } from "@infrastructure/services";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { createMockThemeService } from "@testing/mocks/theme.service.mock";

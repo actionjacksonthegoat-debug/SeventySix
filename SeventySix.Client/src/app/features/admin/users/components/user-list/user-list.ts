@@ -8,7 +8,7 @@ import {
 import { DatePipe } from "@angular/common";
 import { Router } from "@angular/router";
 import { UserService } from "@admin/users/services";
-import { NotificationService } from "@core/services/notification.service";
+import { NotificationService } from "@infrastructure/services/notification.service";
 import { User } from "@admin/users/models";
 import { DataTableComponent } from "@shared/components";
 import type {

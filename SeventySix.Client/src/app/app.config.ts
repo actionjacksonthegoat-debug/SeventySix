@@ -25,13 +25,13 @@ import {
 	loggingInterceptor,
 	authInterceptor,
 	dateParserInterceptor
-} from "@core/interceptors";
+} from "@infrastructure/interceptors";
 import {
 	ErrorHandlerService,
 	ThemeService,
 	TelemetryService,
 	WebVitalsService
-} from "@core/services";
+} from "@infrastructure/services";
 import { environment } from "@environments/environment";
 
 /**

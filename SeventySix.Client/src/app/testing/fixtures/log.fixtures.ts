@@ -4,7 +4,7 @@
  * Eliminates duplication across log-related tests
  */
 
-import { LogResponse } from "@features/admin/log-management/models/log.model";
+import { LogResponse } from "@admin/logs/models/log.model";
 
 /**
  * Log fixture factory

@@ -7,7 +7,7 @@ import {
 import { lastValueFrom } from "rxjs";
 import { HealthApiRepository } from "../repositories";
 import { HealthStatus, DatabaseHealth, ExternalApiHealth } from "../models";
-import { getQueryConfig } from "@core/utils/query-config";
+import { getQueryConfig } from "@infrastructure/utils/query-config";
 
 /**
  * Service for managing health check data

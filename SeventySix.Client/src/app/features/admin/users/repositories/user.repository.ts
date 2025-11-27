@@ -7,7 +7,7 @@
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { HttpParams } from "@angular/common/http";
-import { HttpRepository } from "@core/repositories/http.repository";
+import { HttpRepository } from "@infrastructure/repositories/http.repository";
 import {
 	User,
 	UpdateUserRequest,

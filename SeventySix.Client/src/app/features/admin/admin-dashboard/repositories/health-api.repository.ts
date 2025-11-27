@@ -1,6 +1,6 @@
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
-import { ApiService } from "@core/api-services/api.service";
+import { ApiService } from "@infrastructure/api-services/api.service";
 import { HealthStatus, DatabaseHealth, ExternalApiHealth } from "../models";
 
 /**

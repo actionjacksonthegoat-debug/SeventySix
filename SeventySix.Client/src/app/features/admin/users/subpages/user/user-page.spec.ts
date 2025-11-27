@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Subject } from "rxjs";
 import { UserService } from "@features/admin/users/services/user.service";
-import { LoggerService } from "@core/services/logger.service";
+import { LoggerService } from "@infrastructure/services/logger.service";
 import {
 	createMockQueryResult,
 	createMockMutationResult

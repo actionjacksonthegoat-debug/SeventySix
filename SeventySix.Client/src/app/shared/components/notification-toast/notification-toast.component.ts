@@ -7,7 +7,7 @@ import {
 	NotificationService,
 	NotificationLevel,
 	type Notification
-} from "@core/services";
+} from "@infrastructure/services";
 
 /**
  * Toast notification component that displays notifications from NotificationService.

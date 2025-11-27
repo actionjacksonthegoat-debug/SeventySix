@@ -1,25 +1,35 @@
-# Development Guidelines & Best Practices
+# SeventySix Development Guidelines
 
-You are an expert in TypeScript, Angular, .NET Core 8+, and scalable full-stack application development. You write maintainable, performant, and accessible code following industry best practices, SOLID principles, and clean architecture.
+> **Expert-level guidance for TypeScript, Angular 20+, .NET 10+, and full-stack development.**
+> Follow SOLID principles, clean architecture, and industry best practices.
 
-## Core Development Principles
+---
 
-### Follow .editorconfig Guidelines
+## Table of Contents
 
-**CRITICAL: Always adhere to .editorconfig rules when generating code:**
+1. [Core Principles](#core-principles)
+2. [Critical Rules](#critical-rules)
+3. [Angular Guidelines](#angular-guidelines)
+4. [.NET Guidelines](#net-guidelines)
+5. [Testing Guidelines](#testing-guidelines)
+6. [Architecture](#architecture)
+7. [Configuration Management](#configuration-management)
+8. [Documentation](#documentation)
+9. [Design Patterns](#design-patterns)
 
--   All code formatting, style, and naming rules are defined in `.editorconfig`
--   Review `.editorconfig` settings before generating code for any project
--   Ensure your IDE/editor respects `.editorconfig` settings
--   When in doubt, consult `.editorconfig` for the correct style
+---
+
+## Core Principles
 
 ### SOLID Principles
 
-1. **Single Responsibility Principle (SRP)**: Each class/component/service should have one reason to change
-2. **Open/Closed Principle (OCP)**: Open for extension, closed for modification
-3. **Liskov Substitution Principle (LSP)**: Subtypes must be substitutable for their base types
-4. **Interface Segregation Principle (ISP)**: No client should depend on methods it doesn't use
-5. **Dependency Inversion Principle (DIP)**: Depend on abstractions, not concretions
+| Principle | Description                                                    |
+| --------- | -------------------------------------------------------------- |
+| **SRP**   | Single Responsibility - each class has one reason to change    |
+| **OCP**   | Open/Closed - open for extension, closed for modification      |
+| **LSP**   | Liskov Substitution - subtypes must substitute for base types  |
+| **ISP**   | Interface Segregation - no client depends on unused methods    |
+| **DIP**   | Dependency Inversion - depend on abstractions, not concretions |
 
 ### KISS (Keep It Simple, Stupid)
 
@@ -28,6 +38,12 @@ You are an expert in TypeScript, Angular, .NET Core 8+, and scalable full-stack 
 -   Avoid premature optimization
 -   Refactor complexity only when necessary
 
+### DRY (Don't Repeat Yourself)
+
+-   No code duplication (Rule of Three: extract after third occurrence)
+-   Use abstractions for shared logic
+-   But don't over-abstract prematurely
+
 ### YAGNI (You Aren't Gonna Need It)
 
 -   Don't add functionality until it's actually needed
@@ -35,508 +51,824 @@ You are an expert in TypeScript, Angular, .NET Core 8+, and scalable full-stack 
 -   Build what is required now, not what might be needed later
 -   Delete unused code aggressively
 
-### Test-Driven Development (TDD)
+### .editorconfig Compliance
 
--   Write tests before implementation (Red-Green-Refactor)
--   Aim for high test coverage (>80% for critical paths)
--   Write unit tests for business logic
--   Write integration tests for workflows
--   Keep tests simple, focused, and maintainable
--   Use meaningful test names that describe behavior
+**CRITICAL**: Always adhere to `.editorconfig` rules:
 
-### 🚨 CRITICAL: Test Execution Rules
+-   Line Endings: CRLF (Windows)
+-   Indentation: Tabs (width: 4 spaces) for C#, TypeScript, SCSS
+-   Character Encoding: UTF-8
+-   Trailing Whitespace: Remove (except Markdown)
+-   C# Braces: Allman style (opening brace on new line)
 
-**NEVER skip or defer failing tests:**
+---
+
+## Critical Rules
+
+### 🚨 Test Execution (NEVER Skip)
 
 -   ❌ **NEVER** proceed with implementation if tests are failing
 -   ❌ **NEVER** skip failing tests "to fix later"
 -   ✅ **ALWAYS** fix failing tests immediately when discovered
--   ✅ **ALWAYS** run tests after each code change to verify success
--   Hidden errors compound - fix tests NOW, not later
+-   ✅ **ALWAYS** run tests after each code change
 
-**Client-side test execution (Angular):**
+| Platform | Command            | Tool         | Notes                   |
+| -------- | ------------------ | ------------ | ----------------------- |
+| Angular  | `npm test`         | Terminal     | Headless, no-watch      |
+| .NET     | `dotnet test`      | runTests/CLI | Docker Desktop required |
+| E2E      | `npm run test:e2e` | Terminal     | Playwright              |
 
--   **ALWAYS** run tests headless with no-watch: `npm test -- --no-watch --browsers=ChromeHeadless`
--   **PREFERRED** npm scripts for running tests:
-    -   `npm test` - Runs unit tests headless (no-watch, ChromeHeadless)
-    -   `npm run test:watch` - Interactive test mode with watch
-    -   `npm run test:client` - Alias for headless unit tests
-    -   `npm run test:all` - Runs both unit tests and E2E tests headless
-    -   `npm run test:e2e` - Runs Playwright E2E tests
--   **NEVER** use watch mode in CI/CD or automated test runs
--   **NEVER** use headed browsers in automated test runs
+### 🚨 No Hardcoded Values
 
-**Server-side test execution (.NET):**
+| ❌ Never Hardcode  | ✅ Use Instead                        |
+| ------------------ | ------------------------------------- |
+| API URLs           | `environment.ts` / `appsettings.json` |
+| Refresh intervals  | Configuration files                   |
+| Timeout values     | Options pattern                       |
+| Connection strings | Environment variables                 |
+| Feature flags      | Configuration                         |
+| Rate limits        | `appsettings.json`                    |
 
--   Use `dotnet test --no-build --logger "console;verbosity=normal"`
--   Fix failing tests before proceeding to next phase
--   Ensure Docker Desktop is running before executing tests (Testcontainers dependency)
+### 🚨 No Documentation Files
 
-## Design Patterns Reference
-
-Apply patterns judiciously when complexity justifies them. Start simple, refactor to patterns as needed.
-
-### Creational Patterns
-
-1. **Singleton**: Ensure a class has only one instance (Angular services with `providedIn: 'root'`)
-2. **Factory**: Create objects without specifying exact class (factory services for dynamic component creation)
-3. **Builder**: Construct complex objects step by step (form builders, query builders)
-4. **Prototype**: Clone objects instead of creating new ones (deep cloning utilities)
-5. **Dependency Injection**: Provide dependencies from external source (Angular DI, .NET DI container)
-
-### Structural Patterns
-
-6. **Adapter**: Make incompatible interfaces work together (API response adapters)
-7. **Decorator**: Add behavior to objects dynamically (Angular decorators, C# attributes)
-8. **Facade**: Simplified interface to complex subsystem (service layers wrapping multiple services)
-9. **Proxy**: Placeholder for another object (HTTP interceptors, lazy loading proxies)
-10. **Composite**: Treat individual objects and compositions uniformly (tree structures, nested components)
-
-### Behavioral Patterns
-
-11. **Strategy**: Define family of algorithms, make them interchangeable (validation strategies, sorting algorithms)
-12. **Observer**: One-to-many dependency, notify dependents of changes (RxJS Observables, C# events)
-13. **Command**: Encapsulate request as object (undo/redo, action dispatchers)
-14. **State**: Alter behavior when internal state changes (state machines, workflow engines)
-15. **Chain of Responsibility**: Pass request along chain of handlers (middleware, validation chains)
-
-### Architectural Patterns
-
-16. **Repository**: Abstract data access logic (data access layer)
-17. **Unit of Work**: Group operations into single transaction (EF Core DbContext)
-18. **CQRS**: Separate read and write operations (query/command separation)
-19. **Mediator**: Reduce coupling between components (MediatR in .NET)
-20. **Service Layer**: Define application's boundary with available operations (business logic layer)
+-   **NEVER** create new .md files unless explicitly asked
+-   **ALWAYS** use inline JSDoc/XML comments instead
+-   Keep code self-documenting with clear names
 
 ---
 
-## Angular Best Practices
+## Angular Guidelines
 
-### Zoneless Angular Architecture
+### Zoneless Architecture (CRITICAL)
 
-**The entire Angular application MUST be zoneless (Zone.js-free):**
-
--   **NEVER** import or use `Zone`, `NgZone`, or any Zone.js APIs
--   **ALWAYS** use `provideZonelessChangeDetection()` in all test configurations
--   **Use RxJS patterns** instead of Zone-dependent timing:
-    -   Use `interval()` instead of `setInterval()`
-    -   Use `timer()` instead of `setTimeout()` for repeating operations
-    -   Use `Subscription` management instead of Zone patching
--   **Testing zoneless code:**
-    -   Use `provideZonelessChangeDetection()` in `TestBed.configureTestingModule()`
-    -   Do NOT use `fakeAsync()`, `tick()`, or `flush()` (Zone.js dependent)
-    -   Use `done` callback or `async/await` patterns for async tests
-    -   Use `jasmine.clock()` for time-based testing
--   **Async operations:**
-    -   Use `takeUntilDestroyed()` for automatic cleanup
-    -   Manually manage `Subscription` objects
-    -   Use signals with `toSignal()` for reactive state
-
-### TypeScript & Code Quality
-
--   Use strict type checking (`strict: true` in tsconfig.json)
--   **ALWAYS use explicit type annotations on all variables, properties, and function parameters**
--   **NEVER rely on type inference for variable declarations**
--   **Correct**: `const test: string = "";` or `let count: number = 0;`
--   **Wrong**: `const test = "";` or `let count = 0;`
--   Avoid `any`; use `unknown` or proper types
--   Use const assertions for readonly objects
--   Leverage union types and type guards
--   Use readonly properties where appropriate
-
-### Component Architecture
-
--   Always use standalone components (default behavior)
--   Must NOT explicitly set `standalone: true` in decorators
--   Keep components small (<200 lines) and focused (SRP)
--   Use `input()` and `output()` functions instead of decorators
--   Use `computed()` for derived state
--   Set `changeDetection: ChangeDetectionStrategy.OnPush`
--   Prefer inline templates for small components (<10 lines)
--   Use `viewChild()` and `contentChild()` for DOM queries
--   Do NOT use `@HostBinding` and `@HostListener`; use `host` object instead
+The entire application is **Zone.js-free**:
 
 ```typescript
-@Component({
-	selector: "app-example",
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	host: {
-		"(click)": "onClick()",
-		"[class.active]": "isActive()",
-	},
-})
-export class ExampleComponent {
-	count = input.required<number>();
-	doubled = computed(() => this.count() * 2);
-	valueChange = output<number>();
-}
+// ✅ CORRECT - Zoneless patterns
+import { interval, timer } from "rxjs";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+
+interval(1000).pipe(takeUntilDestroyed()).subscribe();
+
+// ❌ FORBIDDEN - Zone.js APIs
+import { NgZone } from "@angular/core";
+fakeAsync(() => {});
+tick();
+flush();
 ```
 
-### State Management
-
--   Use signals for local component state
--   Use `computed()` for derived state
--   Do NOT use `mutate()` on signals; use `update()` or `set()`
--   Keep state transformations pure and predictable
--   Consider state management library only for complex shared state
--   Use RxJS for async operations, convert to signals with `toSignal()`
-
-### Templates & Directives
-
--   Use native control flow: `@if`, `@for`, `@switch` (not `*ngIf`, `*ngFor`, `*ngSwitch`)
--   Use async pipe to handle observables
--   Do NOT use `ngClass`; use `class` bindings: `[class.active]="isActive()"`
--   Do NOT use `ngStyle`; use `style` bindings: `[style.color]="color()"`
--   Keep template logic minimal; move to component
--   Use `trackBy` with `@for` for performance
--   Use `NgOptimizedImage` for static images (not for base64)
-
-### Forms
-
--   Prefer Reactive Forms over Template-driven forms
--   Use typed forms with strict typing
--   Create reusable form controls
--   Implement custom validators as pure functions
--   Use `FormBuilder` for complex forms
-
-### Services & Dependency Injection
-
--   Design services with single responsibility (SRP)
--   Use `providedIn: 'root'` for singleton services
--   **ALWAYS use `inject()` function instead of constructor injection**
--   Create service interfaces for abstraction (DIP)
--   Use HttpClient interceptors for cross-cutting concerns
--   Implement repository pattern for data access
-
-**Dependency Injection Pattern**:
+### Type Declarations (CRITICAL)
 
 ```typescript
+// ✅ CORRECT - Explicit types ALWAYS
+const name: string = "test";
+let count: number = 0;
+const users: User[] = [];
+const isActive: boolean = true;
+
+// ❌ WRONG - Never rely on type inference
+const name = "test";
+let count = 0;
+```
+
+### Dependency Injection (CRITICAL)
+
+```typescript
+// ✅ CORRECT - inject() function with explicit types
 export class UserService {
-	// CORRECT: Use inject() function with explicit types and readonly
 	private readonly http: HttpClient = inject(HttpClient);
 	private readonly userRepo: UserRepository = inject(UserRepository);
 
 	constructor() {
-		// Optional initialization logic only
+		// Optional initialization only - NO parameter injection
 	}
+}
 
-	getUsers(): Observable<User[]> {
-		return this.userRepo.findAll();
+// ❌ WRONG - Constructor injection (legacy)
+export class UserService {
+	constructor(private http: HttpClient) {} // FORBIDDEN
+}
+```
+
+### Component Architecture
+
+```typescript
+@Component({
+	selector: "app-user-card",
+	changeDetection: ChangeDetectionStrategy.OnPush, // REQUIRED
+	template: `
+		@if (user()) {
+		<div>{{ user()!.name }}</div>
+		} @for (item of items(); track item.id) {
+		<app-item [item]="item" />
+		} @empty {
+		<div>No items</div>
+		}
+	`,
+	// ✅ Use host object, NOT @HostBinding/@HostListener
+	host: {
+		"(click)": "onClick()",
+		"[class.active]": "isActive()",
+		"[attr.aria-label]": "ariaLabel()",
+	},
+})
+export class UserCardComponent {
+	// ✅ Modern input/output functions
+	user = input.required<User>();
+	items = input<Item[]>([]);
+	selected = output<User>();
+
+	// ✅ Derived state with computed()
+	isActive = computed(() => this.user()?.isActive ?? false);
+	ariaLabel = computed(() => `User: ${this.user()?.name}`);
+
+	onClick(): void {
+		this.selected.emit(this.user());
 	}
 }
 ```
 
-**Rules**:
+**Component Rules:**
 
--   ✅ All dependencies injected with `inject()` function
--   ✅ All injected properties marked as `private readonly`
--   ✅ Explicit type annotations on all injected dependencies
--   ✅ Constructor used only for initialization logic (if needed)
--   ❌ NO constructor parameter injection (legacy pattern)
+| ✅ Do                            | ❌ Don't                       |
+| -------------------------------- | ------------------------------ |
+| `input.required<T>()`            | `@Input() prop!: T`            |
+| `output<T>()`                    | `@Output() EventEmitter<T>`    |
+| `host: { '(click)': 'fn()' }`    | `@HostListener('click')`       |
+| `[class.active]="isActive()"`    | `[ngClass]="{ active: x }"`    |
+| `[style.color]="color()"`        | `[ngStyle]="{ color: x }"`     |
+| `@if`, `@for`, `@switch`         | `*ngIf`, `*ngFor`, `*ngSwitch` |
+| `ChangeDetectionStrategy.OnPush` | Default change detection       |
 
-### Routing & Lazy Loading
+### Signals & State Management
 
--   Implement lazy loading for all feature modules
--   Use route guards for authorization
--   Preload critical routes with custom preload strategy
--   Use route resolvers for data fetching
--   Type route parameters
+```typescript
+export class CounterComponent {
+	// Local state
+	count = signal<number>(0);
 
-### Performance & Optimization
+	// Derived state
+	doubled = computed(() => this.count() * 2);
 
--   Use OnPush change detection everywhere
--   Implement virtual scrolling for large lists
--   Use `trackBy` in loops
--   Lazy load images and routes
--   Avoid memory leaks: unsubscribe or use `takeUntilDestroyed()`
--   Profile with Angular DevTools
+	increment(): void {
+		this.count.update((c: number) => c + 1);
+	}
 
-### Testing
+	reset(): void {
+		this.count.set(0);
+	}
+}
 
--   Write unit tests for all services and components
--   Use Jest or Jasmine with Karma
--   Mock dependencies with interfaces
--   Test component behavior, not implementation
--   Aim for >80% coverage on business logic
--   Use Testing Library principles
+// ❌ WRONG - Don't use mutate()
+this.items.mutate((arr) => arr.push(item)); // FORBIDDEN
+```
 
-**Test Execution:**
+### Subscription Cleanup
 
--   **Client-side tests (Angular)**: Run via terminal with `npm test` - `runTests` tool does NOT work for Angular
--   **Server-side tests (.NET)**: Use `runTests` tool for all C# test projects
--   **CRITICAL: Ensure Docker Desktop is running before executing tests** - Data layer tests use Testcontainers which require Docker
--   Run `npm run start:docker` before running server tests to automatically start Docker Desktop if not already running
--   Always verify test output in conversation to track failures and update context
+```typescript
+// ✅ CORRECT - takeUntilDestroyed() for automatic cleanup
+export class DataComponent {
+	private readonly dataService: DataService = inject(DataService);
+
+	constructor() {
+		this.dataService
+			.getData()
+			.pipe(takeUntilDestroyed())
+			.subscribe((data: Data) => {
+				// Handle data
+			});
+	}
+}
+```
+
+### Forms (Reactive Only)
+
+```typescript
+export class UserFormComponent {
+	private readonly fb: FormBuilder = inject(FormBuilder);
+
+	form: FormGroup<UserForm> = this.fb.group({
+		username: ["", [Validators.required, Validators.minLength(3)]],
+		email: ["", [Validators.required, Validators.email]],
+	});
+
+	onSubmit(): void {
+		if (this.form.valid) {
+			const value: UserFormValue = this.form.getRawValue();
+			// Process form...
+		}
+	}
+}
+```
+
+### Path Aliases
+
+| Alias               | Path                       |
+| ------------------- | -------------------------- |
+| `@infrastructure/*` | `src/app/infrastructure/*` |
+| `@shared/*`         | `src/app/shared/*`         |
+| `@admin/*`          | `src/app/features/admin/*` |
+| `@game/*`           | `src/app/features/game/*`  |
+| `@home/*`           | `src/app/features/home/*`  |
+
+```typescript
+// ✅ CORRECT - Use path aliases
+import { LoggerService } from "@infrastructure/services/logger.service";
+import { UserService } from "@admin/users/services/user.service";
+
+// ❌ WRONG - Relative paths across boundaries
+import { UserService } from "../../../features/admin/users/services/user.service";
+
+// ❌ WRONG - Cross-feature imports (FORBIDDEN)
+import { GameService } from "@game/services/game.service"; // From admin feature
+```
+
+### File Naming
+
+| Type        | Pattern                  | Example                  |
+| ----------- | ------------------------ | ------------------------ |
+| Component   | `feature.component.ts`   | `user-list.component.ts` |
+| Service     | `feature.service.ts`     | `user.service.ts`        |
+| Repository  | `feature.repository.ts`  | `user.repository.ts`     |
+| Guard       | `feature.guard.ts`       | `auth.guard.ts`          |
+| Interceptor | `feature.interceptor.ts` | `error.interceptor.ts`   |
+| Pipe        | `feature.pipe.ts`        | `date-format.pipe.ts`    |
+| Model       | `feature.model.ts`       | `user.model.ts`          |
+| Validator   | `feature.validators.ts`  | `user.validators.ts`     |
+| Routes      | `feature.routes.ts`      | `admin.routes.ts`        |
 
 ---
 
-## .NET Core 8+ Best Practices
+## .NET Guidelines
 
-### Project Structure & Architecture
-
--   Use Clean Architecture or Vertical Slice Architecture
--   Separate concerns: API, Application, Domain, Infrastructure
--   Keep domain models free of framework dependencies
--   Use dependency injection for all services
--   Implement repository and unit of work patterns
-
-### C# Code Quality
-
--   Use nullable reference types (`<Nullable>enable</Nullable>`)
--   **ALWAYS use explicit type declarations - NEVER use `var` keyword**
--   **Correct**: `string test = "";` or `int count = 0;`
--   **Wrong**: `var test = "";` or `var count = 0;`
--   **ALWAYS use Primary Constructors when possible** (C# 12+)
--   **Correct**: `public class UserService(IUserRepository repo, ILogger<UserService> logger)` - parameters ARE the fields
--   **Wrong**: Creating separate private readonly field assignments
--   **With primary constructors, use constructor parameters directly in code - they ARE the fields**
--   **NEVER use excessive null checking** like `?? throw new ArgumentNullException` - if it's null we'll find out
--   **ALWAYS use Collection Expressions** (C# 12+)
--   **Correct**: `int[] numbers = [1, 2, 3];` or `List<string> names = ["Alice", "Bob"];`
--   **Wrong**: `new int[] { 1, 2, 3 }` or `new List<string> { "Alice", "Bob" }`
--   **ALWAYS suffix async methods with 'Async', including test methods**
--   **Correct**: `public async Task GetUserAsync()` or `public async Task GetUser_ReturnsUser_WhenExistsAsync()`
--   **Wrong**: `public async Task GetUser()` or `public async Task GetUser_ReturnsUser_WhenExists()`
--   Use records for immutable data
--   Leverage pattern matching and switch expressions
--   Use `required` keyword for required properties (C# 11+)
--   Prefer `async`/`await` for I/O operations
--   Use `ILogger<T>` for structured logging
-
-### API Development
-
--   Use minimal APIs for simple endpoints, controllers for complex ones
--   Implement proper HTTP status codes
--   Use DTOs for request/response (never expose domain models)
--   Validate input with FluentValidation or Data Annotations
--   Version your APIs from the start
--   Implement proper error handling middleware
--   Use ProblemDetails for error responses
+### Type Declarations (CRITICAL)
 
 ```csharp
-app.MapGet("/users/{id}", async (int id, IUserService userService) =>
-{
-    User? user = await userService.GetByIdAsync(id);
-    return user is not null ? Results.Ok(user) : Results.NotFound();
-})
-.WithName("GetUser")
-.WithOpenApi();
+// ✅ CORRECT - Explicit types ALWAYS
+string name = "test";
+int count = 0;
+List<User> users = [];
+Dictionary<string, int> map = [];
+
+// ❌ WRONG - Never use var
+var name = "test";
+var users = new List<User>();
 ```
 
-### Dependency Injection
-
--   Register services in Program.cs
--   Use appropriate lifetimes: Singleton, Scoped, Transient
--   Depend on abstractions (interfaces), not implementations
--   Use options pattern for configuration
--   Validate options on startup
-
-### Entity Framework Core
-
--   Use Code-First with migrations
--   Implement repository pattern for data access
--   Use Unit of Work pattern (DbContext)
--   Configure entities with Fluent API, not attributes
--   Use AsNoTracking() for read-only queries
--   Implement soft deletes where appropriate
--   Use indexes for frequently queried columns
+### Primary Constructors (C# 12+) (CRITICAL)
 
 ```csharp
-public class UserRepository(AppDbContext context) : IUserRepository
+// ✅ CORRECT - Primary constructor, parameters ARE fields
+public class UserService(IUserRepository repo, ILogger<UserService> logger)
 {
     public async Task<User?> GetByIdAsync(int id) =>
-        await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+        await repo.GetByIdAsync(id);  // Use parameter directly
+
+    public async Task CreateAsync(User user)
+    {
+        logger.LogInformation("Creating user {Username}", user.Username);
+        await repo.AddAsync(user);
+    }
+}
+
+// ❌ WRONG - Separate field assignments (legacy)
+public class UserService
+{
+    private readonly IUserRepository _repo;
+    public UserService(IUserRepository repo) => _repo = repo;
 }
 ```
 
-### Error Handling
+### Collection Expressions (C# 12+) (CRITICAL)
 
--   Use global exception handling middleware
--   Create custom exception types for domain errors
--   Log exceptions with context
--   Return consistent error responses
--   Never expose stack traces in production
+```csharp
+// ✅ CORRECT - Modern collection syntax
+int[] numbers = [1, 2, 3];
+List<string> names = ["Alice", "Bob"];
+HashSet<int> ids = [1, 2, 3];
+List<User> users = [];
 
-### Security
+// ❌ WRONG - Legacy syntax
+var numbers = new int[] { 1, 2, 3 };
+var names = new List<string> { "Alice", "Bob" };
+```
 
--   Use authentication middleware (JWT, OAuth, etc.)
--   Implement authorization with policies
--   Validate and sanitize all inputs
--   Use HTTPS everywhere
--   Implement rate limiting
--   Use CORS appropriately
--   Store secrets in configuration (Azure Key Vault, User Secrets)
+### Async Methods (CRITICAL)
 
-### Testing
+```csharp
+// ✅ CORRECT - Async suffix on ALL async methods
+public async Task<User?> GetUserByIdAsync(int id)
+public async Task CreateUserAsync(CreateUserRequest request)
 
--   Write unit tests with xUnit or NUnit
--   Use Moq or NSubstitute for mocking
--   Write integration tests with WebApplicationFactory
--   Test controllers, services, and repositories separately
--   Use in-memory database for integration tests
--   Implement Test Fixtures for shared setup
--   Aim for >80% code coverage
+// Test methods too!
+[Fact]
+public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
+
+// ❌ WRONG - Missing Async suffix
+public async Task<User?> GetUserById(int id)
+```
+
+### Null Handling (CRITICAL)
+
+```csharp
+// ✅ CORRECT - Let it fail if null (fail fast)
+public class UserService(IUserRepository repo)
+{
+    public async Task DoWorkAsync() => await repo.SaveAsync();
+}
+
+// ❌ WRONG - Excessive null checks
+public UserService(IUserRepository repo) =>
+    _repo = repo ?? throw new ArgumentNullException(nameof(repo)); // FORBIDDEN
+```
+
+### Records for DTOs (CRITICAL)
+
+```csharp
+// ✅ CORRECT - Records for immutable DTOs
+public record UserDto(int Id, string Username, string Email, bool IsActive);
+public record CreateUserRequest(string Username, string Email, string Password);
+public record PagedResult<T>(IReadOnlyList<T> Items, int TotalCount, int Page, int PageSize);
+
+// ❌ WRONG - Classes for DTOs
+public class UserDto { public int Id { get; set; } }
+```
+
+### Entity Framework Core
+
+```csharp
+// ✅ CORRECT - Fluent API configuration (NOT attributes)
+public class UserConfiguration : IEntityTypeConfiguration<User>
+{
+    public void Configure(EntityTypeBuilder<User> builder)
+    {
+        builder.ToTable("users", "identity");
+        builder.HasKey(u => u.Id);
+        builder.Property(u => u.Username).HasMaxLength(100).IsRequired();
+        builder.HasIndex(u => u.Username).IsUnique();
+        builder.HasQueryFilter(u => !u.IsDeleted);
+    }
+}
+
+// ✅ CORRECT - AsNoTracking for read-only queries
+public async Task<User?> GetByIdAsync(int id) =>
+    await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+
+// ❌ WRONG - Data annotations on entities
+[Table("Users")]
+[Index(nameof(Username))]
+public class User { }
+```
+
+### Repository Pattern (No Generic)
+
+```csharp
+// ✅ CORRECT - Domain-specific repository
+public class UserRepository(IdentityDbContext db)
+{
+    public async Task<User?> GetByIdAsync(int id) =>
+        await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+
+    public async Task<User?> GetByUsernameAsync(string username) =>
+        await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username);
+
+    public async Task AddAsync(User user)
+    {
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+    }
+}
+
+// ❌ WRONG - Generic repository (antipattern)
+public interface IRepository<T> where T : class
+{
+    IQueryable<T> Query();  // Defeats the purpose!
+}
+```
+
+### API Controllers
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController(UserService userService) : ControllerBase
+{
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<UserDto>> GetByIdAsync(int id)
+    {
+        Result<UserDto> result = await userService.GetByIdAsync(id);
+        return result.IsSuccess ? Ok(result.Value) : NotFound();
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<UserDto>> CreateAsync(CreateUserRequest request)
+    {
+        Result<UserDto> result = await userService.CreateAsync(request);
+        return result.IsSuccess
+            ? CreatedAtAction(nameof(GetByIdAsync), new { id = result.Value!.Id }, result.Value)
+            : BadRequest(result.Error);
+    }
+}
+```
+
+### Pattern Matching
+
+```csharp
+// ✅ CORRECT - Switch expressions
+string GetStatusMessage(OrderStatus status) => status switch
+{
+    OrderStatus.Pending => "Waiting",
+    OrderStatus.Processing => "In progress",
+    OrderStatus.Shipped => "On the way",
+    _ => "Unknown"
+};
+
+// ✅ CORRECT - Pattern matching with conditions
+string GetUserCategory(User user) => user switch
+{
+    { IsAdmin: true } => "Administrator",
+    { IsActive: false } => "Inactive",
+    _ => "Regular"
+};
+```
+
+---
+
+## Testing Guidelines
+
+### Angular Tests
+
+```bash
+# Standard test run (headless, no-watch) - USE THIS
+npm test
+
+# Interactive watch mode (development only)
+npm run test:watch
+
+# E2E (Playwright)
+npm run test:e2e
+```
+
+**Test Configuration (Zoneless - REQUIRED):**
+
+```typescript
+describe("UserComponent", () => {
+	beforeEach(async () => {
+		await TestBed.configureTestingModule({
+			imports: [UserComponent],
+			providers: [
+				provideZonelessChangeDetection(), // REQUIRED
+				provideHttpClientTesting(),
+			],
+		}).compileComponents();
+	});
+
+	it("should display user name", async () => {
+		const fixture: ComponentFixture<UserComponent> = TestBed.createComponent(UserComponent);
+
+		fixture.componentRef.setInput("user", { name: "Test" });
+		await fixture.whenStable();
+		fixture.detectChanges();
+
+		expect(fixture.nativeElement.textContent).toContain("Test");
+	});
+});
+
+// ❌ FORBIDDEN in tests
+fakeAsync(() => {});
+tick();
+flush();
+```
+
+### .NET Tests
+
+```bash
+# Run all tests (Docker Desktop MUST be running)
+dotnet test
+
+# Run with output
+dotnet test --logger "console;verbosity=normal"
+```
+
+**Test Structure:**
 
 ```csharp
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository> MockRepo = new();
-    private readonly UserService Sut;
+    private readonly Mock<IUserRepository> _mockRepo = new();
+    private readonly UserService _sut;
 
-    public UserServiceTests() => Sut = new UserService(MockRepo.Object);
+    public UserServiceTests() =>
+        _sut = new UserService(_mockRepo.Object);
 
     [Fact]
     public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
     {
         // Arrange
-        User user = new User { Id = 1, Name = "Test" };
-        MockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        User user = new() { Id = 1, Username = "Test" };
+        _mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
 
         // Act
-        User? result = await Sut.GetByIdAsync(1);
+        User? result = await _sut.GetByIdAsync(1);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test", result.Name);
+        Assert.Equal("Test", result.Username);
     }
 }
 ```
 
-### Performance
+**Naming Convention:**
 
--   Use async/await for I/O operations
--   Implement caching (IMemoryCache, IDistributedCache)
--   Use pagination for large datasets
--   Optimize database queries (avoid N+1)
--   Use compiled queries for frequent operations
--   Profile with BenchmarkDotNet
+```csharp
+// Pattern: MethodName_ExpectedBehavior_WhenConditionAsync
+[Fact]
+public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
 
-### Logging & Monitoring
-
--   Use structured logging with ILogger
--   Log at appropriate levels (Debug, Info, Warning, Error, Critical)
--   Include correlation IDs for request tracing
--   Use Application Insights or similar for production monitoring
--   Implement health checks
+[Fact]
+public async Task CreateAsync_ThrowsValidationException_WhenInvalidAsync()
+```
 
 ---
 
-## General Best Practices
+## Architecture
 
-### Code Formatting & Style
+### System Overview
 
-**CRITICAL: All code MUST adhere to `.editorconfig` settings:**
+```
+SeventySix/
+├── SeventySix.Client/          # Angular 20+ frontend (Zoneless)
+│   ├── src/app/
+│   │   ├── infrastructure/     # TRUE cross-cutting only
+│   │   │   ├── api/            # HTTP client configuration
+│   │   │   ├── repositories/   # Base repository classes
+│   │   │   ├── services/       # Infrastructure services
+│   │   │   └── models/         # Shared base types
+│   │   ├── shared/             # Reusable UI components
+│   │   └── features/           # Self-contained feature boundaries
+│   │       ├── admin/          # Admin bounded context
+│   │       │   ├── users/      # Maps to Identity
+│   │       │   ├── logs/       # Maps to Logging
+│   │       │   └── api-tracking/
+│   │       ├── game/           # Game bounded context
+│   │       └── home/           # Home feature
+│   └── e2e/                    # Playwright tests
+│
+├── SeventySix.Server/
+│   ├── SeventySix.Api/         # HTTP entry point
+│   ├── SeventySix/             # Domain library (bounded contexts)
+│   │   ├── Identity/           # User management
+│   │   ├── Logging/            # System logging
+│   │   ├── ApiTracking/        # API tracking
+│   │   ├── Infrastructure/     # Shared infrastructure
+│   │   ├── Shared/             # Minimal shared types
+│   │   └── Extensions/         # DI registration
+│   └── Tests/                  # Test projects
+│
+└── observability/              # Prometheus, Grafana
+```
 
--   **Line Endings**: CRLF (Windows standard) for all files
--   **Indentation**: Tabs (width: 4 spaces) for C#, TypeScript, SCSS
--   **Character Encoding**: UTF-8 for all files
--   **Trailing Whitespace**: Remove from all files except Markdown
--   **C# Braces**: Allman style (opening brace on new line)
--   **TypeScript Braces**: Next line style
--   **C# Naming**: PascalCase for public members, private fields with underscore prefix
--   **Async Methods**: Must end with 'Async' suffix
--   **Interfaces**: Must start with 'I' prefix
+### Server-Client Alignment
 
-**Readability Standards:**
+| Server Context    | Client Feature        | Path Alias            |
+| ----------------- | --------------------- | --------------------- |
+| `Identity/`       | `admin/users/`        | `@admin/users`        |
+| `Logging/`        | `admin/logs/`         | `@admin/logs`         |
+| `ApiTracking/`    | `admin/api-tracking/` | `@admin/api-tracking` |
+| `Infrastructure/` | `infrastructure/`     | `@infrastructure`     |
 
--   Follow consistent naming conventions
--   Use meaningful variable and function names
--   Keep functions small (<20 lines ideal)
--   Limit function parameters (<4 ideal)
--   Avoid deep nesting (max 3 levels)
--   Comment why, not what
--   Delete commented-out code
--   Use whitespace intentionally to separate logical blocks
--   Align related code vertically when it improves readability
--   Break long lines at logical points (always after an equals, sometimes after commas or operators)
+### Bounded Context Structure (Server)
 
-### Code Style
+```
+Context/
+├── Configurations/     # EF configs (Fluent API)
+├── DTOs/              # Request/Response records
+├── Entities/          # Domain models
+├── Exceptions/        # Domain errors
+├── Extensions/        # Mapping (ToDto)
+├── Infrastructure/    # DbContext
+├── Interfaces/        # Contracts
+├── Migrations/        # EF migrations
+├── Repositories/      # Data access (no generic)
+├── Services/          # Business logic
+└── Validators/        # FluentValidation
+```
 
-### Git & Version Control
+### Feature Structure (Client)
 
--   Write clear, descriptive commit messages
--   Keep commits small and focused
--   Use feature branches
--   Review code before merging
--   Tag releases semantically
+```
+feature/
+├── components/              # UI components
+├── composables/             # Reusable logic (optional)
+├── models/                  # TypeScript interfaces
+│   ├── feature.model.ts
+│   └── index.ts
+├── repositories/            # HTTP data access
+│   └── feature.repository.ts
+├── services/                # Business logic
+│   └── feature.service.ts
+├── validators/              # Form validators
+├── feature.routes.ts        # Feature routing (REQUIRED)
+├── feature.component.ts     # Main component
+└── feature.component.spec.ts
+```
 
-### Configuration Management
+### Feature Route Modularization (REQUIRED)
 
-**CRITICAL - Avoid Hardcoded Values:**
+Every feature MUST have its own `feature.routes.ts` file. This enables bounded context modularity - features can be added/removed from `app.routes.ts` as complete units.
 
--   **NEVER** hardcode configurable settings (intervals, timeouts, limits, URLs, API keys)
--   **ALWAYS** use configuration files (appsettings.json, environment.ts) for configurable values
--   **ALWAYS** use environment variables for secrets and environment-specific settings
--   **Angular**: Use `environment.ts` files for configuration (development/production)
--   **.NET**: Use `appsettings.json` with Options pattern for configuration
--   Document all configuration options in existing configuration files
--   Provide sensible defaults in configuration files
--   Validate configuration on application startup
+```typescript
+// features/game/game.routes.ts
+import { Routes } from "@angular/router";
 
-**Examples of Values That Must Be Configurable:**
+export const GAME_ROUTES: Routes = [
+	{
+		path: "",
+		loadComponent: () => import("./world-map/world-map").then((m) => m.WorldMap),
+		title: "Game - World Map",
+	},
+];
+```
 
--   Refresh intervals, polling intervals, timeouts
--   API endpoints, URLs, base paths
--   Pagination limits, batch sizes
--   Feature flags, toggles
--   Retry counts, backoff intervals
--   Cache durations
--   Rate limits, throttle settings
+Then in `app.routes.ts`, use `loadChildren`:
 
-### Documentation
+```typescript
+{
+	path: "game",
+	loadChildren: () => import("./features/game/game.routes").then((m) => m.GAME_ROUTES),
+	data: { breadcrumb: "Game" }
+}
+```
 
-**CRITICAL - Do NOT Create Documentation Files:**
+**Benefits:**
 
--   **NEVER** create new Markdown files to document changes, features, or work completed
--   **NEVER** create summary documents, change logs, or feature documentation files
--   **ONLY** create documentation files when explicitly requested by the user
--   Focus on inline code documentation (JSDoc, XML comments) instead
--   Keep README.md updated only when specifically asked
+-   Features are self-contained bounded contexts
+-   Features can be easily enabled/disabled by commenting out in `app.routes.ts`
+-   Features own their routing configuration
+-   Enables lazy loading per feature
 
-**When Documentation IS Needed:**
+### Feature Boundary Rules
 
--   Document public APIs with inline comments
--   Keep README up to date (only when requested)
--   Document architecture decisions (ADRs) if requested
--   Include setup instructions in existing documentation
--   Document environment variables in existing configuration files
+-   Features ONLY import from `@infrastructure/` and `@shared/`
+-   Features NEVER import from other features
+-   Each feature is fully self-contained (models, repos, services inside)
 
-**Code Documentation (Always Required):**
+### Architecture Decisions
 
--   Use JSDoc for TypeScript functions and classes
--   Use XML documentation comments for C# public APIs
--   Explain complex algorithms with inline comments
--   Document "why" decisions were made, not "what" the code does
--   Include usage examples in API documentation comments
-
-### Refactoring Strategy
-
-1. Start simple, add patterns when needed
-2. Refactor when you see duplication (Rule of Three)
-3. Extract methods/services when complexity grows
-4. Run tests after each refactor
-5. Commit frequently during refactoring
+| Decision      | Choice               | Rationale                 |
+| ------------- | -------------------- | ------------------------- |
+| Repository    | Domain-specific      | EF Core IS the pattern    |
+| CQRS          | Not yet              | KISS until scale demands  |
+| MediatR       | Not yet              | Avoid until cross-context |
+| Microservices | Not yet              | Extract when pain happens |
+| Database      | PostgreSQL           | All contexts              |
+| DbContext     | Separate per context | Clear boundaries          |
 
 ---
 
-## When to Apply Patterns
+## Configuration Management
 
-**Start Simple**: Begin with the simplest solution that works.
+### Angular
 
-**Apply Patterns When**:
+```typescript
+// environments/environment.ts
+export const environment = {
+    production: false,
+    apiUrl: "https://localhost:7001/api",
+    refreshInterval: 30000,
+    maxRetries: 3,
+};
 
--   You see repeated code (DRY violation)
--   A class has multiple responsibilities (SRP violation)
--   You need to swap implementations (Strategy, Dependency Injection)
--   You have complex object creation (Factory, Builder)
--   You need to decouple components (Observer, Mediator)
+// Usage
+private readonly apiUrl: string = environment.apiUrl;
+```
 
-**Avoid Patterns When**:
+### .NET
 
--   The code is simple and clear without them
--   It adds unnecessary complexity
--   The pattern doesn't fit the problem
--   You're speculating about future needs (YAGNI)
+```csharp
+// appsettings.json
+{
+    "ConnectionStrings": {
+        "Identity": "Host=localhost;Database=seventysix;..."
+    },
+    "RateLimiting": {
+        "PermitLimit": 100,
+        "Window": "00:01:00"
+    }
+}
+
+// Options pattern
+public class ApiSettings
+{
+    public string BaseUrl { get; init; } = "";
+    public int TimeoutSeconds { get; init; } = 30;
+}
+
+// Registration
+builder.Services.Configure<ApiSettings>(
+    builder.Configuration.GetSection("ApiSettings"));
+
+// Usage
+public class ExternalApiService(IOptions<ApiSettings> options)
+{
+    private readonly ApiSettings settings = options.Value;
+}
+```
+
+---
+
+## Documentation
+
+### Inline Documentation (Always Required)
+
+```typescript
+/**
+ * Retrieves a user by their unique identifier.
+ * @param id - The user's unique identifier
+ * @returns The user if found, null otherwise
+ * @throws {HttpErrorResponse} When the API request fails
+ */
+getUserById(id: number): Observable<User | null> {
+    return this.http.get<User>(`${this.apiUrl}/users/${id}`);
+}
+```
+
+```csharp
+/// <summary>
+/// Retrieves a user by their unique identifier.
+/// </summary>
+/// <param name="id">The user's unique identifier.</param>
+/// <returns>The user if found; otherwise, null.</returns>
+public async Task<User?> GetByIdAsync(int id) =>
+    await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+```
+
+---
+
+## Design Patterns
+
+Apply patterns judiciously when complexity justifies them.
+
+### When to Apply Patterns
+
+| Apply When                    | Avoid When                      |
+| ----------------------------- | ------------------------------- |
+| Repeated code (DRY violation) | Code is simple and clear        |
+| Multiple responsibilities     | Adds unnecessary complexity     |
+| Need to swap implementations  | Pattern doesn't fit the problem |
+| Complex object creation       | Speculating future needs        |
+
+### Commonly Used Patterns
+
+| Pattern    | Use Case                    | Example                      |
+| ---------- | --------------------------- | ---------------------------- |
+| Singleton  | App-wide services           | `providedIn: 'root'`         |
+| Factory    | Dynamic creation            | Component factories          |
+| Repository | Data access abstraction     | Domain-specific repos        |
+| Observer   | Event handling              | RxJS Observables, C# events  |
+| Strategy   | Interchangeable algorithms  | Validation strategies        |
+| Decorator  | Add behavior dynamically    | Angular decorators, C# attrs |
+| Facade     | Simplify complex subsystems | Service layers               |
+
+---
+
+## Quick Reference
+
+### Commands
+
+| Task         | Angular                | .NET           |
+| ------------ | ---------------------- | -------------- |
+| Run tests    | `npm test`             | `dotnet test`  |
+| Build        | `npm run build`        | `dotnet build` |
+| Start        | `npm start`            | `dotnet run`   |
+| Lint         | `npm run lint`         | N/A            |
+| E2E          | `npm run test:e2e`     | N/A            |
+| Start Docker | `npm run start:docker` | N/A            |
+
+### Error Checklist
+
+| Issue                   | Solution                               |
+| ----------------------- | -------------------------------------- |
+| Zone.js errors          | Add `provideZonelessChangeDetection()` |
+| Testcontainers fail     | Start Docker Desktop                   |
+| Async test hangs        | Use `await fixture.whenStable()`       |
+| Missing Async suffix    | Add `Async` to method name             |
+| Type inference warnings | Add explicit types                     |
+| Tests failing           | **Fix immediately - never skip**       |
+
+---
+
+## References
+
+| Purpose              | Location                                       |
+| -------------------- | ---------------------------------------------- |
+| Quick rules          | `.github/copilot-instructions.md`              |
+| Angular details      | `.github/instructions/angular.md`              |
+| C# details           | `.github/instructions/csharp.md`               |
+| Testing details      | `.github/instructions/testing.md`              |
+| Client architecture  | `.github/instructions/architecture-client.md`  |
+| Server architecture  | `.github/instructions/architecture-server.md`  |
+| Overall architecture | `.github/instructions/architecture-overall.md` |
 
 ---
 

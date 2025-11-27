@@ -18,7 +18,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
-import { ThemeService } from "@core/services";
+import { ThemeService } from "@infrastructure/services";
 import { ConfirmDialogComponent } from "@shared/components";
 
 /**

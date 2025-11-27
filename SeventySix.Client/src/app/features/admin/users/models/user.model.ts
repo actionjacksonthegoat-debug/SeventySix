@@ -48,7 +48,7 @@ export interface UpdateUserRequest
 	isActive: boolean;
 }
 
-import { BaseQueryRequest } from "@core/models";
+import { BaseQueryRequest } from "@infrastructure/models";
 
 /**
  * User Query Request interface

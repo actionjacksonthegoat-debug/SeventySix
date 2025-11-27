@@ -25,7 +25,7 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { UserService } from "@admin/users/services";
-import { LoggerService } from "@core/services";
+import { LoggerService } from "@infrastructure/services";
 import { User, UpdateUserRequest } from "@admin/users/models";
 
 /**

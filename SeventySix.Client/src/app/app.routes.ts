@@ -2,50 +2,44 @@ import { Routes } from "@angular/router";
 
 /**
  * Application routes with lazy loading.
- * All feature modules are lazy-loaded for optimal performance.
+ * All feature modules are lazy-loaded as bounded contexts.
+ * Each feature has its own routes file for easy enable/disable.
  */
 export const routes: Routes = [
 	{
 		path: "",
-		loadComponent: () =>
-			import("./features/home/home-page/home-page").then(
-				(m) => m.HomePage
-			),
-		title: "SeventySix - Home"
+		loadChildren: () =>
+			import("./features/home/home.routes").then((m) => m.HOME_ROUTES)
 	},
 	{
 		path: "game",
-		loadComponent: () =>
-			import("./features/game/world-map/world-map").then(
-				(m) => m.WorldMap
-			),
-		title: "Game - World Map",
+		loadChildren: () =>
+			import("./features/game/game.routes").then((m) => m.GAME_ROUTES),
 		data: { breadcrumb: "Game" }
 	},
 	{
 		path: "physics",
-		loadComponent: () =>
-			import("./features/physics/physics/physics").then((m) => m.Physics),
-		title: "Physics - Calculations",
+		loadChildren: () =>
+			import("./features/physics/physics.routes").then(
+				(m) => m.PHYSICS_ROUTES
+			),
 		data: { breadcrumb: "Physics" }
 	},
 	{
 		path: "rv-camper",
-		loadComponent: () =>
-			import("./features/rv-camper/rv-camper/rv-camper").then(
-				(m) => m.RVCamper
+		loadChildren: () =>
+			import("./features/rv-camper/rv-camper.routes").then(
+				(m) => m.RV_CAMPER_ROUTES
 			),
-		title: "RV Camper - Projects",
 		data: { breadcrumb: "RV Camper" }
 	},
 	{
-		path: "developer/style-guide",
-		loadComponent: () =>
-			import(
-				"./features/developer/style-guide/style-guide.component"
-			).then((m) => m.StyleGuideComponent),
-		title: "Style Guide",
-		data: { breadcrumb: "Style Guide" }
+		path: "developer",
+		loadChildren: () =>
+			import("./features/developer/developer.routes").then(
+				(m) => m.DEVELOPER_ROUTES
+			),
+		data: { breadcrumb: "Developer" }
 	},
 	{
 		path: "admin",

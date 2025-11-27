@@ -15,7 +15,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatButtonModule } from "@angular/material/button";
 import { ThirdPartyApiService } from "@admin/admin-dashboard/services";
 import { ThirdPartyApiRequest } from "@admin/admin-dashboard/models";
-import { DateService } from "@core/services/date.service";
+import { DateService } from "@infrastructure/services/date.service";
 
 /**
  * Extended interface with computed display properties

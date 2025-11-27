@@ -2,12 +2,12 @@ import { Component, inject } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
-import { ThemeService, LayoutService, LoadingService } from "@core/services";
+import { ThemeService, LayoutService, LoadingService } from "@infrastructure/services";
 import {
 	HeaderComponent,
 	SidebarComponent,
 	FooterComponent
-} from "@core/layout";
+} from "@infrastructure/layout";
 import { NotificationToastComponent } from "@shared/components";
 
 /**

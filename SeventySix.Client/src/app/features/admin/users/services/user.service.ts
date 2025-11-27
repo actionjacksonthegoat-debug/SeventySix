@@ -15,9 +15,9 @@ import {
 import { lastValueFrom } from "rxjs";
 import { User, UpdateUserRequest, UserQueryRequest } from "@admin/users/models";
 import { UserRepository } from "@admin/users/repositories";
-import { getQueryConfig } from "@core/utils/query-config";
-import { QueryKeys } from "@core/utils/query-keys";
-import { BaseFilterService } from "@core/services/base-filter.service";
+import { getQueryConfig } from "@infrastructure/utils/query-config";
+import { QueryKeys } from "@infrastructure/utils/query-keys";
+import { BaseFilterService } from "@infrastructure/services/base-filter.service";
 
 /**
  * Service for user business logic

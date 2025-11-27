@@ -1,7 +1,7 @@
 import { bootstrapApplication } from "@angular/platform-browser";
 import { appConfig } from "./app/app.config";
 import { App } from "./app/app";
-import { SwUpdateService } from "@core/services";
+import { SwUpdateService } from "@infrastructure/services";
 
 bootstrapApplication(App, appConfig)
 	.then((appRef) =>

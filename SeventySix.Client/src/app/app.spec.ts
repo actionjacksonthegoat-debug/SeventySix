@@ -3,7 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { App } from "./app";
 import { ActivatedRoute } from "@angular/router";
 import { of } from "rxjs";
-import { LayoutService } from "@core/services";
+import { LayoutService } from "@infrastructure/services";
 
 describe("App", () =>
 {

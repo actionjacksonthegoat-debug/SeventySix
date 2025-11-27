@@ -7,7 +7,7 @@ import {
 	Renderer2,
 	InputSignal
 } from "@angular/core";
-import { ViewportService } from "@core/services";
+import { ViewportService } from "@infrastructure/services";
 
 /**
  * Directive to hide elements on specific breakpoints
