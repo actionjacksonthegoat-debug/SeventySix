@@ -1,33 +1,22 @@
 # Testing Quick Reference
 
-> **Full documentation**: See `.claude/CLAUDE.md` for comprehensive testing guidelines.
-
----
+> Full documentation: `.claude/CLAUDE.md`
 
 ## Critical Rules
 
 -   ❌ **NEVER** skip failing tests - fix immediately
--   ❌ **NEVER** proceed if tests are failing
--   ✅ **ALWAYS** run tests after each code change
+-   ✅ **ALWAYS** run tests after code changes
 -   ✅ **ALWAYS** suffix async test methods with `Async`
-
----
 
 ## Commands
 
-| Platform | Command            | Notes                        |
-| -------- | ------------------ | ---------------------------- |
-| Angular  | `npm test`         | Headless, no-watch           |
-| .NET     | `dotnet test`      | Docker Desktop required      |
-| E2E      | `npm run test:e2e` | Playwright (not in test:all) |
+| Platform | Command            | Notes                   |
+| -------- | ------------------ | ----------------------- |
+| Angular  | `npm test`         | Headless, no-watch      |
+| .NET     | `dotnet test`      | Docker Desktop required |
+| E2E      | `npm run test:e2e` | Playwright, manual only |
 
-**Prerequisites**: Docker Desktop must be running for .NET integration tests.
-
-> ⚠️ **E2E Tests**: E2E tests cover admin-dashboard and home-page only. Run manually with `npm run test:e2e`. Not included in `test:all` - functionality incomplete for other views.
-
----
-
-## Angular Test Pattern (Zoneless)
+## Angular Test Pattern
 
 ```typescript
 describe("UserComponent", () => {
@@ -52,10 +41,8 @@ describe("UserComponent", () => {
 	});
 });
 
-// ❌ FORBIDDEN: fakeAsync(), tick(), flush()
+// ❌ FORBIDDEN: fakeAsync(), tick(), flush(), Zone.js
 ```
-
----
 
 ## .NET Test Pattern
 
@@ -65,9 +52,8 @@ public class UserServiceTests
     private readonly Mock<IUserRepository> _mockRepo = new();
     private readonly UserService _sut;
 
-    public UserServiceTests() => _sut = new UserService(_mockRepo.Object);
+    public UserServiceTests() => _sut = new(_mockRepo.Object);
 
-    // Pattern: MethodName_ExpectedBehavior_WhenConditionAsync
     [Fact]
     public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
     {
@@ -82,14 +68,11 @@ public class UserServiceTests
 }
 ```
 
----
+## Troubleshooting
 
-## Error Checklist
-
-| Issue               | Solution                               |
-| ------------------- | -------------------------------------- |
-| Zone.js errors      | Add `provideZonelessChangeDetection()` |
-| Testcontainers fail | Start Docker Desktop                   |
-| Async test hangs    | Use `await fixture.whenStable()`       |
-| Missing Async       | Add `Async` to method name             |
-| Tests failing       | **Fix immediately - never skip**       |
+| Issue                | Solution                               |
+| -------------------- | -------------------------------------- |
+| Zone.js errors       | Add `provideZonelessChangeDetection()` |
+| Testcontainers fail  | Start Docker Desktop                   |
+| Async test hangs     | Use `await fixture.whenStable()`       |
+| Missing Async suffix | Add `Async` to method name             |

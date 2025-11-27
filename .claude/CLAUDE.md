@@ -274,6 +274,65 @@ itemsWithMetadata = computed(() =>
 | `[ngClass]="obj"` | `[class.name]="bool()"` |
 | Dynamic style calculation | CSS classes + Material theming |
 
+### Pre-computed List Items Pattern
+
+For tables/lists with per-row computed values, extend the data model:
+
+```typescript
+// 1. Define extended interface with display properties
+interface ProcessedLog extends LogResponse
+{
+	levelClass: string;
+	levelName: string;
+	relativeTime: string;
+}
+
+// 2. Pre-compute in computed signal (memoized)
+readonly processedLogs: Signal<ProcessedLog[]> = computed((): ProcessedLog[] =>
+	this.logs().map((log: LogResponse): ProcessedLog => ({
+		...log,
+		levelClass: getLogLevelClass(log.logLevel),
+		levelName: getLogLevelName(log.logLevel),
+		relativeTime: getRelativeTime(log.createDate)
+	}))
+);
+
+// 3. Template uses direct property access
+@for (log of processedLogs(); track log.id) {
+	<span [class]="log.levelClass">{{ log.levelName }}</span>
+	<span>{{ log.relativeTime }}</span>
+}
+```
+
+### Shared Utility Functions (DRY)
+
+When helper methods are duplicated across 3+ components, extract to a utilities file:
+
+```typescript
+// feature/models/feature.utilities.ts
+// Use named constants (avoid magic numbers)
+const MILLISECONDS_PER_HOUR: number = 3_600_000;
+
+// Single source of truth for mappings
+const LOG_LEVEL_CLASSES: Record<LogLevel, string> = {
+	[LogLevel.Info]: "level-info",
+	[LogLevel.Error]: "level-error",
+};
+
+export function getLogLevelClass(logLevel: string): string {
+	const level: LogLevel = parseLogLevel(logLevel);
+	return LOG_LEVEL_CLASSES[level];
+}
+```
+
+### When to Accept Method Calls (KISS/YAGNI)
+
+Keep simple methods when overhead is negligible:
+
+-   **Column visibility toggles**: ~10 calls on menu open, not per row
+-   **Action visibility in menus**: Small arrays (1-3 items), not per-row render
+-   **One-time calculations**: Menu items, not repeated in `@for` loops
+
 ### Subscription Cleanup
 
 ```typescript
@@ -1104,15 +1163,14 @@ Apply patterns judiciously when complexity justifies them.
 
 ## References
 
-| Purpose              | Location                                       |
-| -------------------- | ---------------------------------------------- |
-| Quick rules          | `.github/copilot-instructions.md`              |
-| Angular details      | `.github/instructions/angular.md`              |
-| C# details           | `.github/instructions/csharp.md`               |
-| Testing details      | `.github/instructions/testing.md`              |
-| Client architecture  | `.github/instructions/architecture-client.md`  |
-| Server architecture  | `.github/instructions/architecture-server.md`  |
-| Overall architecture | `.github/instructions/architecture-overall.md` |
+| Purpose              | Location                                  |
+| -------------------- | ----------------------------------------- |
+| Quick rules          | `.github/copilot-instructions.md`         |
+| Quick reference card | `.github/instructions/quick-reference.md` |
+| Angular details      | `.github/instructions/angular.md`         |
+| C# details           | `.github/instructions/csharp.md`          |
+| Testing details      | `.github/instructions/testing.md`         |
+| Architecture         | `.github/instructions/architecture.md`    |
 
 ---
 

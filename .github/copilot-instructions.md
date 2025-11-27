@@ -31,6 +31,7 @@
 -   **ALWAYS** use `host` object, not `@HostBinding`/`@HostListener`
 -   **NEVER** use `ngClass`/`ngStyle` - use `[class.x]`/`[style.x]`
 -   **ALWAYS** use `takeUntilDestroyed()` for subscription cleanup
+-   **NEVER** call methods in templates - use `computed()` signals or pre-compute in data model
 
 ### SCSS/CSS Styling
 
@@ -76,8 +77,6 @@
 -   **Full C# rules**: `.github/instructions/csharp.md`
 -   **Full Angular rules**: `.github/instructions/angular.md`
 -   **Testing details**: `.github/instructions/testing.md`
--   **Server architecture**: `.github/instructions/architecture-server.md`
--   **Client architecture**: `.github/instructions/architecture-client.md`
--   **Overall architecture**: `.github/instructions/architecture-overall.md`
+-   **Architecture**: `.github/instructions/architecture.md`
 -   **Quick reference**: `.github/instructions/quick-reference.md`
 -   **Detailed standards**: `.claude/CLAUDE.md`

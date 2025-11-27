@@ -1,84 +1,68 @@
 # Quick Reference Card
 
-> **Full documentation**: See `.claude/CLAUDE.md` for comprehensive guidelines.
+> Ultra-compact rules. No code examples. See domain files for details.
 
----
+## C# Rules
 
-## Critical Rules (One-Liners)
+| Rule         | Do                            | Don't                |
+| ------------ | ----------------------------- | -------------------- |
+| Variables    | `string name = "x";`          | `var name = "x";`    |
+| Constructors | Primary: `class Svc(IRepo r)` | Traditional ctors    |
+| Collections  | `[1, 2, 3]`                   | `new List<int>{...}` |
+| Async        | `GetUserAsync`                | `GetUser` for async  |
+| DTOs         | `record UserDto(...)`         | class with props     |
+| Queries      | `AsNoTracking()` for reads    | Track read-only data |
+| Config       | Fluent API                    | Data annotations     |
 
-### C#
+## Angular Rules
 
-| Rule         | ✅ Do                    | ❌ Don't                    |
-| ------------ | ------------------------ | --------------------------- |
-| Types        | `string x = ""`          | `var x = ""`                |
-| Constructors | `class Svc(IRepo r)`     | `private readonly IRepo _r` |
-| Collections  | `int[] x = [1,2]`        | `new int[] {1,2}`           |
-| Async        | `GetUserAsync()`         | `GetUser()`                 |
-| DTOs         | `record UserDto(int Id)` | `class UserDto`             |
-| EF Config    | Fluent API               | Data annotations            |
-| Queries      | `AsNoTracking()`         | Tracked reads               |
-| Repository   | Domain-specific          | Generic `IRepository<T>`    |
+| Rule      | Do                                  | Don't                 |
+| --------- | ----------------------------------- | --------------------- |
+| DI        | `inject(Service)`                   | Constructor injection |
+| Signals   | `input()`, `output()`, `computed()` | `@Input`, `@Output`   |
+| Templates | `@if`, `@for`, `@switch`            | `*ngIf`, `*ngFor`     |
+| Host      | `host: { ... }`                     | `@HostBinding`        |
+| Classes   | `[class.active]="x"`                | `ngClass`             |
+| Styles    | `[style.width]="x"`                 | `ngStyle`             |
+| Cleanup   | `takeUntilDestroyed()`              | Manual unsubscribe    |
+| Templates | `computed()` signals                | Method calls          |
+| Zone      | Zoneless only                       | Zone.js, NgZone       |
 
-### Angular
+## SCSS Rules
 
-| Rule         | ✅ Do                         | ❌ Don't                   |
-| ------------ | ----------------------------- | -------------------------- |
-| Types        | `const x: string = ""`        | `const x = ""`             |
-| DI           | `inject(Service)`             | `constructor(private svc)` |
-| Detection    | `OnPush`                      | `Default`                  |
-| Inputs       | `input.required<T>()`         | `@Input()`                 |
-| Control Flow | `@if`, `@for`                 | `*ngIf`, `*ngFor`          |
-| Zone         | Zoneless only                 | Zone.js, NgZone            |
-| Host         | `host: { '(click)': 'fn()' }` | `@HostListener`            |
-| Cleanup      | `takeUntilDestroyed()`        | Manual subscriptions       |
+| Rule     | Do                                   | Don't          |
+| -------- | ------------------------------------ | -------------- |
+| Sizing   | `rem`                                | `px`           |
+| px OK    | borders, shadows, radii, breakpoints | spacing, fonts |
+| Colors   | `var(--color-info)`                  | `#hex`         |
+| Spacing  | `vars.$spacing-lg`                   | `1rem`         |
+| Patterns | Mixins after 3x                      | Repeat CSS     |
 
----
+## Testing Rules
 
-## Commands
+| Context       | Command                            |
+| ------------- | ---------------------------------- |
+| Angular       | `npm test` (headless, no-watch)    |
+| .NET          | `dotnet test` or runTests          |
+| Angular setup | `provideZonelessChangeDetection()` |
 
-```bash
-# Angular
-npm test                    # Unit tests (headless)
-npm run test:e2e            # E2E (manual only, not in test:all)
+## Architecture Rules
 
-# .NET
-dotnet test                 # All tests (Docker required)
+| Rule          | Pattern                                         |
+| ------------- | ----------------------------------------------- |
+| Boundaries    | Features self-contained                         |
+| Cross-feature | Via @shared only                                |
+| Path aliases  | `@infrastructure`, `@shared`, `@admin`, `@game` |
+| Contexts      | Identity, Logging, ApiTracking                  |
+| DB            | Separate DbContext per context                  |
+| Generic repos | Never                                           |
 
-# Docker
-npm run start:docker        # Start Docker Desktop
-```
+## File References
 
-> ⚠️ E2E tests cover admin-dashboard & home-page only. Run manually, not part of checkpoints.
-
----
-
-## Path Aliases
-
-| Alias               | Path                       |
-| ------------------- | -------------------------- |
-| `@infrastructure/*` | `src/app/infrastructure/*` |
-| `@shared/*`         | `src/app/shared/*`         |
-| `@admin/*`          | `src/app/features/admin/*` |
-| `@game/*`           | `src/app/features/game/*`  |
-
----
-
-## Key Locations
-
-| What           | Where                               |
-| -------------- | ----------------------------------- |
-| Angular app    | `SeventySix.Client/`                |
-| API project    | `SeventySix.Server/SeventySix.Api/` |
-| Domain library | `SeventySix.Server/SeventySix/`     |
-| Full standards | `.claude/CLAUDE.md`                 |
-| Migration plan | `Implementation-complete.md`        |
-
----
-
-## Configuration (CRITICAL)
-
-| ❌ Never Hardcode  | ✅ Use Instead      |
-| ------------------ | ------------------- |
-| API URLs           | `environment.ts`    |
-| Connection strings | `appsettings.json`  |
-| Refresh intervals  | Configuration files |
+| Topic           | File              |
+| --------------- | ----------------- |
+| C# details      | `csharp.md`       |
+| Angular details | `angular.md`      |
+| Testing details | `testing.md`      |
+| Architecture    | `architecture.md` |
+| Full guide      | `CLAUDE.md`       |
