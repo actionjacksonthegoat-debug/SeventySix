@@ -172,13 +172,21 @@ export class LogDetailDialogComponent
 		return stackTrace;
 	}
 
-	formatProperties(properties: Record<string, unknown> | null): string
+	formatProperties(properties: string | null): string
 	{
 		if (!properties)
 		{
 			return "";
 		}
-		return JSON.stringify(properties, null, 2);
+		try
+		{
+			const parsed: unknown = JSON.parse(properties);
+			return JSON.stringify(parsed, null, 2);
+		}
+		catch
+		{
+			return properties;
+		}
 	}
 
 	toggleStackTrace(): void
@@ -194,108 +202,6 @@ export class LogDetailDialogComponent
 	toggleException(): void
 	{
 		this.exceptionCollapsed.set(!this.exceptionCollapsed());
-	}
-
-	/**
-	 * Extracts the primary exception message from the full exception string
-	 */
-	getExceptionMessage(exception: string | null): string
-	{
-		if (!exception)
-		{
-			return "";
-		}
-
-		// Try to extract first line (usually the main message)
-		const lines: string[] = exception.split("\n");
-		const firstLine: string = lines[0].trim();
-
-		// If it contains a colon, the message is after the colon
-		const colonIndex: number = firstLine.indexOf(":");
-		if (colonIndex > -1)
-		{
-			return firstLine.substring(colonIndex + 1).trim();
-		}
-
-		return firstLine;
-	}
-
-	/**
-	 * Extracts the exception type from the full exception string
-	 */
-	getExceptionType(exception: string | null): string | null
-	{
-		if (!exception)
-		{
-			return null;
-		}
-
-		// Try to extract exception type (usually before first colon)
-		const lines: string[] = exception.split("\n");
-		const firstLine: string = lines[0].trim();
-
-		const colonIndex: number = firstLine.indexOf(":");
-		if (colonIndex > -1)
-		{
-			return firstLine.substring(0, colonIndex).trim();
-		}
-
-		// Check if first line looks like an exception type
-		if (firstLine.includes("Exception") || firstLine.includes("Error"))
-		{
-			return firstLine;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Extracts base exception message if present
-	 */
-	getBaseException(exception: string | null): string | null
-	{
-		if (!exception)
-		{
-			return null;
-		}
-
-		// Look for common base exception patterns
-		const basePattern: RegExp = /---> (.+?):/;
-		const match: RegExpMatchArray | null = exception.match(basePattern);
-
-		if (match && match[1])
-		{
-			return match[1].trim();
-		}
-
-		return null;
-	}
-
-	/**
-	 * Extracts inner exceptions from the full exception string
-	 */
-	getInnerExceptions(exception: string | null): string[]
-	{
-		if (!exception)
-		{
-			return [];
-		}
-
-		const innerExceptions: string[] = [];
-
-		// Look for inner exception markers
-		const innerPattern: RegExp = /---> (.+?)(?:\r?\n|$)/g;
-		let match: RegExpExecArray | null;
-
-		while ((match = innerPattern.exec(exception)) !== null)
-		{
-			if (match[1])
-			{
-				innerExceptions.push(match[1].trim());
-			}
-		}
-
-		return innerExceptions;
 	}
 
 	/**

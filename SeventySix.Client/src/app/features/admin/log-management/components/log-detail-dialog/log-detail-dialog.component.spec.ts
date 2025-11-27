@@ -125,8 +125,11 @@ describe("LogDetailDialogComponent", () =>
 
 	it("should format properties as JSON", () =>
 	{
-		const properties = { key: "value", nested: { prop: "data" } };
-		const formatted = component.formatProperties(properties);
+		const properties: string = JSON.stringify({
+			key: "value",
+			nested: { prop: "data" }
+		});
+		const formatted: string = component.formatProperties(properties);
 
 		expect(formatted).toContain('"key"');
 		expect(formatted).toContain('"value"');
@@ -136,6 +139,12 @@ describe("LogDetailDialogComponent", () =>
 	it("should return empty string when properties is null", () =>
 	{
 		expect(component.formatProperties(null)).toBe("");
+	});
+
+	it("should return original string when properties is invalid JSON", () =>
+	{
+		const invalidJson: string = "not valid json";
+		expect(component.formatProperties(invalidJson)).toBe(invalidJson);
 	});
 
 	it("should toggle stack trace collapse state", () =>
@@ -356,115 +365,6 @@ describe("LogDetailDialogComponent", () =>
 		});
 	});
 
-	describe("getExceptionMessage", () =>
-	{
-		it("should return empty string when exception is null", () =>
-		{
-			expect(component.getExceptionMessage(null)).toBe("");
-		});
-
-		it("should extract message after colon", () =>
-		{
-			const exception =
-				"System.NullReferenceException: Object reference not set to an instance";
-			expect(component.getExceptionMessage(exception)).toBe(
-				"Object reference not set to an instance"
-			);
-		});
-
-		it("should return first line when no colon present", () =>
-		{
-			const exception = "Generic error message\nWith more details";
-			expect(component.getExceptionMessage(exception)).toBe(
-				"Generic error message"
-			);
-		});
-	});
-
-	describe("getExceptionType", () =>
-	{
-		it("should return null when exception is null", () =>
-		{
-			expect(component.getExceptionType(null)).toBe(null);
-		});
-
-		it("should extract exception type before colon", () =>
-		{
-			const exception = "System.ArgumentException: Invalid argument";
-			expect(component.getExceptionType(exception)).toBe(
-				"System.ArgumentException"
-			);
-		});
-
-		it("should return full line when it contains Exception keyword", () =>
-		{
-			const exception = "CustomException\nWith details";
-			expect(component.getExceptionType(exception)).toBe(
-				"CustomException"
-			);
-		});
-
-		it("should return full line when it contains Error keyword", () =>
-		{
-			const exception = "NetworkError\nConnection failed";
-			expect(component.getExceptionType(exception)).toBe("NetworkError");
-		});
-
-		it("should return null when no exception pattern found", () =>
-		{
-			const exception = "Some random message\nNo exception here";
-			expect(component.getExceptionType(exception)).toBe(null);
-		});
-	});
-
-	describe("getBaseException", () =>
-	{
-		it("should return null when exception is null", () =>
-		{
-			expect(component.getBaseException(null)).toBe(null);
-		});
-
-		it("should extract base exception from inner exception pattern", () =>
-		{
-			const exception =
-				"Outer exception\n---> System.InvalidOperationException: Inner error\nStack trace";
-			expect(component.getBaseException(exception)).toBe(
-				"System.InvalidOperationException"
-			);
-		});
-
-		it("should return null when no base exception pattern found", () =>
-		{
-			const exception = "Simple exception without inner exceptions";
-			expect(component.getBaseException(exception)).toBe(null);
-		});
-	});
-
-	describe("getInnerExceptions", () =>
-	{
-		it("should return empty array when exception is null", () =>
-		{
-			expect(component.getInnerExceptions(null)).toEqual([]);
-		});
-
-		it("should extract multiple inner exceptions", () =>
-		{
-			const exception =
-				"Outer\n---> First inner exception\nDetails\n---> Second inner exception\nMore details";
-			const innerExceptions = component.getInnerExceptions(exception);
-
-			expect(innerExceptions.length).toBe(2);
-			expect(innerExceptions[0]).toBe("First inner exception");
-			expect(innerExceptions[1]).toBe("Second inner exception");
-		});
-
-		it("should return empty array when no inner exceptions found", () =>
-		{
-			const exception = "Simple exception without inner exceptions";
-			expect(component.getInnerExceptions(exception)).toEqual([]);
-		});
-	});
-
 	describe("getStackFrameCount", () =>
 	{
 		it("should return 0 when stack trace is null", () =>
@@ -474,14 +374,14 @@ describe("LogDetailDialogComponent", () =>
 
 		it("should count stack frames starting with 'at '", () =>
 		{
-			const stackTrace =
+			const stackTrace: string =
 				"   at Method1()\n   at Method2()\n   at Method3()\nOther line";
 			expect(component.getStackFrameCount(stackTrace)).toBe(3);
 		});
 
 		it("should return 0 when no frames match pattern", () =>
 		{
-			const stackTrace = "No frames here\nJust text";
+			const stackTrace: string = "No frames here\nJust text";
 			expect(component.getStackFrameCount(stackTrace)).toBe(0);
 		});
 	});

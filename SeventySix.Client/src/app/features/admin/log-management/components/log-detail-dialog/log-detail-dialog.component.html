@@ -113,8 +113,8 @@
 
 		<mat-divider></mat-divider>
 
-		<!-- Exception Section (Enhanced) -->
-		@if (log().exception)
+		<!-- Exception Section -->
+		@if (log().exceptionMessage || log().baseExceptionMessage)
 		{
 			<section class="detail-section error-section">
 				<div class="section-header">
@@ -139,34 +139,21 @@
 				@if (!exceptionCollapsed())
 				{
 					<div class="section-content">
-						<!-- Exception Type & Message -->
 						<div class="error-breakdown">
-							<div class="error-item exception-message">
-								<div class="error-label">
-									<mat-icon>message</mat-icon>
-									<span>Exception Message</span>
-								</div>
-								<div class="error-value">
-									{{ getExceptionMessage(log().exception) }}
-								</div>
-							</div>
-
-							<!-- Exception Type -->
-							@if (getExceptionType(log().exception))
+							@if (log().exceptionMessage)
 							{
-								<div class="error-item exception-type">
+								<div class="error-item exception-message">
 									<div class="error-label">
-										<mat-icon>label</mat-icon>
-										<span>Exception Type</span>
+										<mat-icon>message</mat-icon>
+										<span>Exception Message</span>
 									</div>
 									<div class="error-value">
-										{{ getExceptionType(log().exception) }}
+										{{ log().exceptionMessage }}
 									</div>
 								</div>
 							}
 
-							<!-- Base Exception -->
-							@if (getBaseException(log().exception))
+							@if (log().baseExceptionMessage)
 							{
 								<div class="error-item base-exception">
 									<div class="error-label">
@@ -174,58 +161,10 @@
 										<span>Base Exception</span>
 									</div>
 									<div class="error-value">
-										{{ getBaseException(log().exception) }}
+										{{ log().baseExceptionMessage }}
 									</div>
 								</div>
 							}
-
-							<!-- Inner Exceptions -->
-							@if (
-								getInnerExceptions(log().exception);
-								as innerExceptions
-							)
-							{
-								@if (innerExceptions.length > 0)
-								{
-									<div class="error-item inner-exceptions">
-										<div class="error-label">
-											<mat-icon>layers</mat-icon>
-											<span
-												>Inner Exceptions ({{
-													innerExceptions.length
-												}})</span
-											>
-										</div>
-										<div class="error-value">
-											@for (
-												inner of innerExceptions;
-												track $index
-											)
-											{
-												<div
-													class="inner-exception-item"
-												>
-													<span class="inner-number"
-														>{{ $index + 1 }}.</span
-													>
-													<span>{{ inner }}</span>
-												</div>
-											}
-										</div>
-									</div>
-								}
-							}
-
-							<!-- Full Exception Text -->
-							<div class="error-item full-exception">
-								<div class="error-label">
-									<mat-icon>description</mat-icon>
-									<span>Full Exception</span>
-								</div>
-								<div class="error-value exception-content">
-									<pre>{{ log().exception }}</pre>
-								</div>
-							</div>
 						</div>
 					</div>
 				}
@@ -234,7 +173,7 @@
 			<mat-divider></mat-divider>
 		}
 
-		<!-- Stack Trace Section (Enhanced) -->
+		<!-- Stack Trace Section -->
 		@if (log().stackTrace)
 		{
 			<section class="detail-section stack-section">
@@ -289,11 +228,20 @@
 		}
 
 		<!-- Request Information Section -->
-		@if (log().requestPath || log().statusCode || log().duration)
+		@if (log().requestPath || log().statusCode || log().durationMs)
 		{
 			<section class="detail-section">
 				<h3 class="section-title">Request Information</h3>
 				<div class="section-content info-grid">
+					@if (log().requestMethod)
+					{
+						<div class="info-item">
+							<span class="info-label">Method:</span>
+							<span class="info-value">{{
+								log().requestMethod
+							}}</span>
+						</div>
+					}
 					@if (log().requestPath)
 					{
 						<div class="info-item">
@@ -312,22 +260,13 @@
 							}}</span>
 						</div>
 					}
-					@if (log().duration)
+					@if (log().durationMs)
 					{
 						<div class="info-item">
 							<span class="info-label">Duration:</span>
 							<span class="info-value"
-								>{{ log().duration }} ms</span
+								>{{ log().durationMs }} ms</span
 							>
-						</div>
-					}
-					@if (log().requestId)
-					{
-						<div class="info-item">
-							<span class="info-label">Request ID:</span>
-							<span class="info-value">{{
-								log().requestId
-							}}</span>
 						</div>
 					}
 					@if (log().correlationId)
@@ -364,59 +303,6 @@
 										: log().parentSpanId
 								}}
 							</span>
-						</div>
-					}
-				</div>
-			</section>
-
-			<mat-divider></mat-divider>
-		}
-
-		<!-- User Information Section -->
-		@if (
-			log().userId || log().userName || log().clientIp || log().userAgent
-		)
-		{
-			<section class="detail-section">
-				<h3 class="section-title">User Information</h3>
-				<div class="section-content info-grid">
-					@if (log().userId)
-					{
-						<div class="info-item">
-							<span class="info-label">User ID:</span>
-							<span class="info-value">{{ log().userId }}</span>
-						</div>
-					}
-					@if (log().userName)
-					{
-						<div class="info-item">
-							<span class="info-label">Username:</span>
-							<span class="info-value">{{ log().userName }}</span>
-						</div>
-					}
-					@if (log().clientIp)
-					{
-						<div class="info-item">
-							<span class="info-label">IP Address:</span>
-							<span class="info-value">{{ log().clientIp }}</span>
-						</div>
-					}
-					@if (log().userAgent)
-					{
-						<div class="info-item">
-							<span class="info-label">User Agent:</span>
-							<span class="info-value">{{
-								log().userAgent
-							}}</span>
-						</div>
-					}
-					@if (log().sessionId)
-					{
-						<div class="info-item">
-							<span class="info-label">Session ID:</span>
-							<span class="info-value">{{
-								log().sessionId
-							}}</span>
 						</div>
 					}
 				</div>
@@ -482,20 +368,6 @@
 					<div class="info-item">
 						<span class="info-label">Environment:</span>
 						<span class="info-value">{{ log().environment }}</span>
-					</div>
-				}
-				@if (log().application)
-				{
-					<div class="info-item">
-						<span class="info-label">Application:</span>
-						<span class="info-value">{{ log().application }}</span>
-					</div>
-				}
-				@if (log().threadId)
-				{
-					<div class="info-item">
-						<span class="info-label">Thread ID:</span>
-						<span class="info-value">{{ log().threadId }}</span>
 					</div>
 				}
 			</div>

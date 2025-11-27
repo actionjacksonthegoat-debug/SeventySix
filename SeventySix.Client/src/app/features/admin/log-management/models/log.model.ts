@@ -5,7 +5,7 @@ export interface LogResponse
 {
 	id: number;
 	createDate: Date;
-	logLevel: string; // Changed from 'level: LogLevel' to match backend
+	logLevel: string;
 	message: string;
 	exceptionMessage: string | null;
 	baseExceptionMessage: string | null;
