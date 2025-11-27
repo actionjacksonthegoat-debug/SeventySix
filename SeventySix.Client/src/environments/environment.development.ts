@@ -4,6 +4,7 @@ interface Environment
 	apiUrl: string;
 	logging: {
 		enableRemoteLogging: boolean;
+		consoleLogLevel: "debug" | "info" | "warn" | "error" | "none";
 		batchSize: number;
 		batchInterval: number;
 		maxQueueSize: number;
@@ -82,6 +83,7 @@ export const environment: Environment = {
 	apiUrl: "http://localhost:5085/api/v1", // API v1 - HTTP for local development (use https://localhost:7074/api/v1 for docker-compose)
 	logging: {
 		enableRemoteLogging: true,
+		consoleLogLevel: "warn", // Only show warnings and errors in console
 		batchSize: 10,
 		batchInterval: 5000, // 5 seconds
 		maxQueueSize: 100,

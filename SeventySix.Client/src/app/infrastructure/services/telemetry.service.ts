@@ -1,7 +1,11 @@
 import { Injectable, inject } from "@angular/core";
 import {
 	WebTracerProvider,
-	BatchSpanProcessor
+	BatchSpanProcessor,
+	TraceIdRatioBasedSampler,
+	AlwaysOnSampler,
+	AlwaysOffSampler,
+	Sampler
 } from "@opentelemetry/sdk-trace-web";
 import { Resource } from "@opentelemetry/resources";
 import {
@@ -104,14 +108,8 @@ export class TelemetryService
 	/**
 	 * Creates a sampler based on configuration.
 	 */
-	private createSampler(): import("@opentelemetry/sdk-trace-web").Sampler
+	private createSampler(): Sampler
 	{
-		const {
-			TraceIdRatioBasedSampler,
-			AlwaysOnSampler,
-			AlwaysOffSampler
-		} = require("@opentelemetry/sdk-trace-web");
-
 		const sampleRate: number = environment.telemetry.sampleRate;
 
 		if (sampleRate >= 1.0)

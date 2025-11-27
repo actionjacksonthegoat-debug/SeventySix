@@ -65,7 +65,8 @@ export class GrafanaDashboardEmbedComponent
 	/**
 	 * Computed safe URL for iframe src binding.
 	 * Constructs Grafana URL with kiosk mode (hides UI chrome).
-	 * Format: {baseUrl}/d/{uid}?orgId=1&refresh={interval}&theme={theme}&kiosk
+	 * Format: {baseUrl}/d/{uid}/{slug}?orgId=1&refresh={interval}&theme={theme}&kiosk
+	 * Note: Including the slug prevents Grafana's "not correct url correcting" messages.
 	 * @returns Sanitized resource URL safe for iframe embedding
 	 */
 	readonly sanitizedUrl: Signal<SafeResourceUrl> = computed(() =>
@@ -75,7 +76,9 @@ export class GrafanaDashboardEmbedComponent
 		const refresh: string = this.refreshInterval();
 		const themeValue: string = this.theme();
 
-		const url: string = `${baseUrl}/d/${uid}?orgId=1&refresh=${refresh}&theme=${themeValue}&kiosk`;
+		// Include the UID as the slug to match Grafana's expected URL format
+		// This prevents "not correct url correcting" console messages
+		const url: string = `${baseUrl}/d/${uid}/${uid}?orgId=1&refresh=${refresh}&theme=${themeValue}&kiosk`;
 
 		return this.sanitizer.bypassSecurityTrustResourceUrl(url);
 	});

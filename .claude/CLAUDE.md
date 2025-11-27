@@ -72,11 +72,13 @@
 -   ✅ **ALWAYS** fix failing tests immediately when discovered
 -   ✅ **ALWAYS** run tests after each code change
 
-| Platform | Command            | Tool         | Notes                   |
-| -------- | ------------------ | ------------ | ----------------------- |
-| Angular  | `npm test`         | Terminal     | Headless, no-watch      |
-| .NET     | `dotnet test`      | runTests/CLI | Docker Desktop required |
-| E2E      | `npm run test:e2e` | Terminal     | Playwright              |
+| Platform | Command            | Tool         | Notes                         |
+| -------- | ------------------ | ------------ | ----------------------------- |
+| Angular  | `npm test`         | Terminal     | Headless, no-watch            |
+| .NET     | `dotnet test`      | runTests/CLI | Docker Desktop required       |
+| E2E      | `npm run test:e2e` | Terminal     | Manual only (not in test:all) |
+
+> ⚠️ **E2E Tests**: E2E tests cover admin-dashboard and home-page only. Not included in `test:all` or checkpoints - other views incomplete.
 
 ### 🚨 No Hardcoded Values
 
@@ -842,8 +844,10 @@ Apply patterns judiciously when complexity justifies them.
 | Build        | `npm run build`        | `dotnet build` |
 | Start        | `npm start`            | `dotnet run`   |
 | Lint         | `npm run lint`         | N/A            |
-| E2E          | `npm run test:e2e`     | N/A            |
+| E2E          | `npm run test:e2e`     | N/A (manual)   |
 | Start Docker | `npm run start:docker` | N/A            |
+
+> ⚠️ E2E tests (admin-dashboard, home-page) are manual only - not part of checkpoints or `test:all`.
 
 ### Error Checklist
 

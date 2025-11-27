@@ -5,17 +5,22 @@
 
 import { HttpInterceptorFn } from "@angular/common/http";
 import { tap, finalize } from "rxjs";
+import { environment } from "@environments/environment";
 
 /**
  * Intercepts HTTP requests/responses for logging
- * Only logs in development mode
+ * Respects consoleLogLevel configuration - only logs if level is 'debug' or 'info'
  */
 export const loggingInterceptor: HttpInterceptorFn = (req, next) =>
 {
 	const startTime: number = Date.now();
-	const isDevelopment: boolean = true; // TODO: Get from environment
+	const logLevel: string = environment.logging.consoleLogLevel;
 
-	if (!isDevelopment)
+	// Only log HTTP requests at debug/info level
+	// Skip logging if consoleLogLevel is warn, error, or none
+	const shouldLog: boolean = logLevel === "debug" || logLevel === "info";
+
+	if (!shouldLog)
 	{
 		return next(req);
 	}
@@ -40,6 +45,7 @@ export const loggingInterceptor: HttpInterceptorFn = (req, next) =>
 			error: (error) =>
 			{
 				const duration: number = Date.now() - startTime;
+				// Always log HTTP errors regardless of log level
 				console.error(
 					`🔴 HTTP Error: ${req.method} ${req.url} (${duration}ms)`,
 					error

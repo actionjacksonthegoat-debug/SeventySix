@@ -15,13 +15,15 @@
 
 ## Commands
 
-| Platform | Command            | Notes                   |
-| -------- | ------------------ | ----------------------- |
-| Angular  | `npm test`         | Headless, no-watch      |
-| .NET     | `dotnet test`      | Docker Desktop required |
-| E2E      | `npm run test:e2e` | Playwright              |
+| Platform | Command            | Notes                        |
+| -------- | ------------------ | ---------------------------- |
+| Angular  | `npm test`         | Headless, no-watch           |
+| .NET     | `dotnet test`      | Docker Desktop required      |
+| E2E      | `npm run test:e2e` | Playwright (not in test:all) |
 
 **Prerequisites**: Docker Desktop must be running for .NET integration tests.
+
+> ⚠️ **E2E Tests**: E2E tests cover admin-dashboard and home-page only. Run manually with `npm run test:e2e`. Not included in `test:all` - functionality incomplete for other views.
 
 ---
 
@@ -91,4 +93,3 @@ public class UserServiceTests
 | Async test hangs    | Use `await fixture.whenStable()`       |
 | Missing Async       | Add `Async` to method name             |
 | Tests failing       | **Fix immediately - never skip**       |
-

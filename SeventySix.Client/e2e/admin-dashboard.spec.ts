@@ -1,214 +1,204 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 
 /**
  * E2E Tests for Admin Dashboard
- * Tests complete user flows through the admin dashboard
+ *
+ * The dashboard has 3 tabs:
+ * 1. System Overview - Grafana dashboard embed for system health
+ * 2. API Metrics - Grafana dashboard embed for API endpoint metrics
+ * 3. External Systems - Third-party API statistics table + Observability tool buttons
  */
 test.describe("Admin Dashboard", () =>
 {
-	test.beforeEach(async ({ page }) =>
+	test.beforeEach(async ({ page }: { page: Page }) =>
 	{
-		// Navigate to admin dashboard before each test
 		await page.goto("/admin/dashboard");
 	});
 
-	test("should load and display all dashboard sections", async ({ page }) =>
+	test.describe("Page Structure", () =>
 	{
-		// Wait for dashboard to load
-		await expect(page.locator("h1")).toContainText("Admin Dashboard");
-
-		// Verify statistics cards section exists
-		await expect(page.locator("app-statistics-cards")).toBeVisible();
-
-		// Verify error trend chart section exists
-		await expect(page.locator("app-error-trend-chart")).toBeVisible();
-
-		// Verify API statistics table section exists
-		await expect(page.locator("app-api-statistics-table")).toBeVisible();
-
-		// Verify health status panel section exists
-		await expect(page.locator("app-health-status-panel")).toBeVisible();
-	});
-
-	test("should display statistics cards with data", async ({ page }) =>
-	{
-		// Wait for statistics cards to load
-		await page.waitForSelector("app-statistics-cards mat-card", {
-			state: "visible"
-		});
-
-		// Verify statistics cards are displayed
-		const cards = page.locator("app-statistics-cards mat-card");
-		await expect(cards).toHaveCount(6);
-
-		// Verify cards have content (not just loading spinners)
-		const firstCard = cards.first();
-		await expect(firstCard).toBeVisible();
-		await expect(firstCard.locator(".stat-label")).toBeVisible();
-	});
-
-	test("should display error trend chart", async ({ page }) =>
-	{
-		// Wait for chart to render
-		await page.waitForSelector("app-error-trend-chart canvas", {
-			state: "visible",
-			timeout: 10000
-		});
-
-		// Verify chart canvas exists
-		const canvas = page.locator("app-error-trend-chart canvas");
-		await expect(canvas).toBeVisible();
-	});
-
-	test("should switch chart time periods", async ({ page }) =>
-	{
-		// Wait for chart to load
-		await page.waitForSelector("app-error-trend-chart", {
-			state: "visible"
-		});
-
-		// Find and click period buttons if they exist
-		const periodButtons = page.locator(
-			"app-error-trend-chart button[mat-button]"
-		);
-
-		const buttonCount = await periodButtons.count();
-		if (buttonCount > 0)
+		test("should display dashboard title and toolbar", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
 		{
-			// Click first period button (e.g., "24h")
-			await periodButtons.first().click();
-
-			// Wait for chart to update
-			await page.waitForTimeout(1000);
-
-			// Verify chart still visible after period change
-			const canvas = page.locator("app-error-trend-chart canvas");
-			await expect(canvas).toBeVisible();
-		}
-	});
-
-	test("should display API statistics table", async ({ page }) =>
-	{
-		// Wait for table to load
-		await page.waitForSelector("app-api-statistics-table", {
-			state: "visible"
+			await expect(
+				page.locator(".admin-dashboard mat-toolbar h1")
+			).toHaveText("Admin Dashboard");
+			await expect(
+				page.locator(".admin-dashboard mat-toolbar mat-icon")
+			).toContainText("dashboard");
 		});
 
-		// Verify table exists
-		const table = page.locator("app-api-statistics-table table");
-		await expect(table).toBeVisible();
-
-		// Verify table has rows (header + data rows)
-		const rows = table.locator("tr");
-		const rowCount = await rows.count();
-		expect(rowCount).toBeGreaterThan(0);
+		test("should display three tabs when observability is enabled", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
+		{
+			const tabs = page.locator(".mat-mdc-tab");
+			await expect(tabs).toHaveCount(3);
+			await expect(tabs.nth(0)).toContainText("System Overview");
+			await expect(tabs.nth(1)).toContainText("API Metrics");
+			await expect(tabs.nth(2)).toContainText("External Systems");
+		});
 	});
 
-	test("should display health status panel", async ({ page }) =>
+	test.describe("Panel 1: System Overview Tab", () =>
 	{
-		// Wait for health panel to load
-		await page.waitForSelector("app-health-status-panel", {
-			state: "visible"
+		test("should display Grafana dashboard embed for system health", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
+		{
+			// System Overview is the default tab
+			const grafanaEmbed = page
+				.locator("app-grafana-dashboard-embed")
+				.first();
+			await expect(grafanaEmbed).toBeVisible();
 		});
 
-		// Verify health panel exists
-		const healthPanel = page.locator("app-health-status-panel");
-		await expect(healthPanel).toBeVisible();
-
-		// Verify overall status chip exists
-		const statusChip = healthPanel.locator("mat-chip").first();
-		await expect(statusChip).toBeVisible();
+		test("should have System Health & Metrics title", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
+		{
+			const embedTitle = page
+				.locator("app-grafana-dashboard-embed")
+				.first();
+			await expect(embedTitle).toHaveAttribute(
+				"title",
+				"System Health & Metrics"
+			);
+		});
 	});
 
-	test("should refresh statistics when refresh button clicked", async ({
-		page
-	}) =>
+	test.describe("Panel 2: API Metrics Tab", () =>
 	{
-		// Wait for statistics cards to load
-		await page.waitForSelector("app-statistics-cards", {
-			state: "visible"
+		test.beforeEach(async ({ page }: { page: Page }) =>
+		{
+			// Click API Metrics tab
+			await page.locator(".mat-mdc-tab").nth(1).click();
 		});
 
-		// Find refresh button
-		const refreshButton = page.locator(
-			"app-statistics-cards button[aria-label*='Refresh']"
-		);
-
-		if ((await refreshButton.count()) > 0)
+		test("should display Grafana dashboard embed for API metrics", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
 		{
-			// Click refresh button
-			await refreshButton.click();
+			const grafanaEmbed = page.getByTitle("API Endpoint Metrics");
+			await expect(grafanaEmbed).toBeVisible();
+		});
 
-			// Wait for loading spinner to appear and disappear
-			await page.waitForTimeout(500);
-
-			// Verify data still displayed
-			const cards = page.locator("app-statistics-cards mat-card");
-			await expect(cards.first()).toBeVisible();
-		}
+		test("should have API Endpoint Metrics title", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
+		{
+			const embedTitle = page.getByTitle("API Endpoint Metrics");
+			await expect(embedTitle).toBeVisible();
+		});
 	});
 
-	test("should navigate to admin dashboard from home", async ({ page }) =>
+	test.describe("Panel 3: External Systems Tab", () =>
 	{
-		// Start at home page
-		await page.goto("/");
-
-		// Look for admin dashboard link in navigation
-		const adminLink = page.locator('a[href*="/admin/dashboard"]').first();
-
-		if ((await adminLink.count()) > 0)
+		test.beforeEach(async ({ page }: { page: Page }) =>
 		{
-			// Click admin dashboard link
-			await adminLink.click();
+			// Click External Systems tab
+			await page.locator(".mat-mdc-tab").nth(2).click();
+		});
 
-			// Verify navigated to admin dashboard
-			await expect(page).toHaveURL(/.*admin\/dashboard/);
-			await expect(page.locator("h1")).toContainText("Admin Dashboard");
-		}
-		else
+		test("should display API statistics table", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
 		{
-			// Direct navigation if link not in nav
-			await page.goto("/admin/dashboard");
-			await expect(page.locator("h1")).toContainText("Admin Dashboard");
-		}
+			const statsTable = page.locator("app-api-statistics-table");
+			await expect(statsTable).toBeVisible();
+		});
+
+		test("should display Observability Tools card", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
+		{
+			const obsCard = page.locator(
+				"mat-card-title:has-text('Observability Tools')"
+			);
+			await expect(obsCard).toBeVisible();
+		});
+
+		test("should display Jaeger Tracing button", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
+		{
+			const jaegerButton = page.locator(
+				"button:has-text('Jaeger Tracing')"
+			);
+			await expect(jaegerButton).toBeVisible();
+		});
+
+		test("should display Prometheus Metrics button", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
+		{
+			const prometheusButton = page.locator(
+				"button:has-text('Prometheus Metrics')"
+			);
+			await expect(prometheusButton).toBeVisible();
+		});
+
+		test("should display Grafana Full View button", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
+		{
+			const grafanaButton = page.locator(
+				"button:has-text('Grafana Full View')"
+			);
+			await expect(grafanaButton).toBeVisible();
+		});
+
+		test("should have three observability buttons", async ({
+			page
+		}: {
+			page: Page;
+		}) =>
+		{
+			const obsButtons = page.locator(".observability-links button");
+			await expect(obsButtons).toHaveCount(3);
+		});
 	});
 
-	test("should handle errors gracefully", async ({ page }) =>
+	test.describe("Tab Navigation", () =>
 	{
-		// Navigate to dashboard (services might fail)
-		await page.goto("/admin/dashboard");
+		test("should switch between tabs", async ({ page }: { page: Page }) =>
+		{
+			// Verify System Overview tab is active by default
+			const systemOverviewTab = page.locator(".mat-mdc-tab").nth(0);
+			await expect(systemOverviewTab).toHaveClass(/mdc-tab--active/);
 
-		// Wait for page to load
-		await page.waitForTimeout(2000);
+			// Switch to API Metrics tab
+			await page.locator(".mat-mdc-tab").nth(1).click();
+			const apiMetricsTab = page.locator(".mat-mdc-tab").nth(1);
+			await expect(apiMetricsTab).toHaveClass(/mdc-tab--active/);
 
-		// Verify dashboard still renders even if some components have errors
-		const dashboard = page.locator("app-admin-dashboard");
-		await expect(dashboard).toBeVisible();
-
-		// At minimum, the main container should be visible
-		const compiled = page.locator(".dashboard-container, .dashboard-grid");
-		await expect(compiled.first()).toBeVisible();
-	});
-
-	test("should be responsive on mobile viewport", async ({ page }) =>
-	{
-		// Set mobile viewport
-		await page.setViewportSize({ width: 375, height: 667 });
-
-		// Wait for dashboard to load
-		await expect(page.locator("h1")).toContainText("Admin Dashboard");
-
-		// Verify all sections still visible on mobile
-		await expect(page.locator("app-statistics-cards")).toBeVisible();
-		await expect(page.locator("app-error-trend-chart")).toBeVisible();
-		await expect(page.locator("app-api-statistics-table")).toBeVisible();
-		await expect(page.locator("app-health-status-panel")).toBeVisible();
-
-		// Verify layout is stacked (not side-by-side)
-		const dashboardGrid = page.locator(".dashboard-grid");
-		const gridStyles = await dashboardGrid.evaluate(
-			(el) => window.getComputedStyle(el).display
-		);
-		expect(gridStyles).toBe("grid");
+			// Switch to External Systems tab
+			await page.locator(".mat-mdc-tab").nth(2).click();
+			const externalSystemsTab = page.locator(".mat-mdc-tab").nth(2);
+			await expect(externalSystemsTab).toHaveClass(/mdc-tab--active/);
+		});
 	});
 });

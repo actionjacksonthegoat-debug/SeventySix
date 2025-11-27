@@ -39,7 +39,7 @@
 ```bash
 # Angular
 npm test                    # Unit tests (headless)
-npm run test:e2e            # Playwright E2E
+npm run test:e2e            # E2E (manual only, not in test:all)
 
 # .NET
 dotnet test                 # All tests (Docker required)
@@ -47,6 +47,8 @@ dotnet test                 # All tests (Docker required)
 # Docker
 npm run start:docker        # Start Docker Desktop
 ```
+
+> ⚠️ E2E tests cover admin-dashboard & home-page only. Run manually, not part of checkpoints.
 
 ---
 
@@ -80,4 +82,3 @@ npm run start:docker        # Start Docker Desktop
 | API URLs           | `environment.ts`    |
 | Connection strings | `appsettings.json`  |
 | Refresh intervals  | Configuration files |
-

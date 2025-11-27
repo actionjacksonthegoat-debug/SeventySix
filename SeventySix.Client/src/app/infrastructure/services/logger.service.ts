@@ -19,6 +19,11 @@ export enum LogLevel
 }
 
 /**
+ * Console log level configuration type.
+ */
+type ConsoleLogLevel = "debug" | "info" | "warn" | "error" | "none";
+
+/**
  * Log entry structure for remote logging.
  */
 export interface LogEntry
@@ -32,7 +37,7 @@ export interface LogEntry
 
 /**
  * Logger service for application-wide logging.
- * Logs to console in development, sends to remote endpoint in production.
+ * Logs to console based on configured log level, sends to remote endpoint in production.
  * Follows Single Responsibility Principle (SRP).
  */
 @Injectable({
@@ -45,6 +50,32 @@ export class LoggerService
 	private readonly dateService: DateService = inject(DateService);
 	private readonly isDevMode: boolean = isDevMode();
 	private readonly logEndpoint: string = `${environment.apiUrl}/logs/client`;
+	private readonly consoleLogLevel: ConsoleLogLevel =
+		environment.logging.consoleLogLevel;
+
+	/**
+	 * Maps console log level config to minimum LogLevel enum.
+	 */
+	private readonly minLogLevel: LogLevel = this.getMinLogLevel();
+
+	private getMinLogLevel(): LogLevel
+	{
+		switch (this.consoleLogLevel)
+		{
+			case "debug":
+				return LogLevel.Debug;
+			case "info":
+				return LogLevel.Info;
+			case "warn":
+				return LogLevel.Warning;
+			case "error":
+				return LogLevel.Error;
+			case "none":
+				return LogLevel.Critical + 1; // Higher than any level
+			default:
+				return LogLevel.Warning;
+		}
+	}
 
 	/**
 	 * Logs debug message (dev only).
@@ -112,8 +143,8 @@ export class LoggerService
 			error
 		};
 
-		// Always log to console in development
-		if (this.isDevMode)
+		// Log to console if level meets minimum threshold
+		if (level >= this.minLogLevel)
 		{
 			this.logToConsole(logEntry);
 		}

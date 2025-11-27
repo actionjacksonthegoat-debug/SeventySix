@@ -4,6 +4,7 @@ interface Environment
 	apiUrl: string;
 	logging: {
 		enableRemoteLogging: boolean;
+		consoleLogLevel: "debug" | "info" | "warn" | "error" | "none";
 		batchSize: number;
 		batchInterval: number;
 		maxQueueSize: number;
@@ -79,6 +80,7 @@ export const environment: Environment = {
 	apiUrl: "http://localhost:1234/api/v1", // API v1 - Test-only port to prevent hitting real API
 	logging: {
 		enableRemoteLogging: false, // Disable remote logging in tests
+		consoleLogLevel: "debug", // Allow all log levels in tests for verification
 		batchSize: 10,
 		batchInterval: 250, // Fast enough for tests but prevents race conditions
 		maxQueueSize: 100,

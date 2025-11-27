@@ -410,6 +410,12 @@ testem.log
 /libpeerconnection.log
 __screenshots__/
 
+# Playwright
+/playwright-report/
+/test-results/
+SeventySix.Client/playwright-report/
+SeventySix.Client/test-results/
+
 # Sass
 .sass-cache/
 
