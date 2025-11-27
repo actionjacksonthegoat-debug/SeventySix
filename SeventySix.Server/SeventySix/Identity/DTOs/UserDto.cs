@@ -73,7 +73,7 @@ public record UserDto
 	/// <remarks>
 	/// Uses UTC time for consistency across time zones.
 	/// </remarks>
-	public DateTime CreatedAt
+	public DateTime CreateDate
 	{
 		get; init;
 	}
@@ -92,7 +92,7 @@ public record UserDto
 	/// <summary>
 	/// Gets the username of the user who created this user.
 	/// </summary>
-	public string? CreatedBy
+	public required string CreatedBy
 	{
 		get; init;
 	}
@@ -100,7 +100,7 @@ public record UserDto
 	/// <summary>
 	/// Gets the date and time when the user was last modified.
 	/// </summary>
-	public DateTime? ModifiedAt
+	public DateTime? ModifyDate
 	{
 		get; init;
 	}
@@ -108,7 +108,7 @@ public record UserDto
 	/// <summary>
 	/// Gets the username of the user who last modified this user.
 	/// </summary>
-	public string? ModifiedBy
+	public required string ModifiedBy
 	{
 		get; init;
 	}
@@ -117,14 +117,6 @@ public record UserDto
 	/// Gets the date and time of the user's last login.
 	/// </summary>
 	public DateTime? LastLoginAt
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets the row version for optimistic concurrency control.
-	/// </summary>
-	public uint? RowVersion
 	{
 		get; init;
 	}

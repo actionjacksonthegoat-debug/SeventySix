@@ -102,9 +102,9 @@
 					<td mat-cell *matCellDef="let log">
 						<span
 							class="timestamp"
-							[matTooltip]="log.timestamp.toLocaleString()"
+							[matTooltip]="log.createDate.toLocaleString()"
 						>
-							{{ getRelativeTime(log.timestamp) }}
+							{{ getRelativeTime(log.createDate) }}
 						</span>
 					</td>
 				</ng-container>

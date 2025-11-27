@@ -69,14 +69,14 @@ public class ThirdPartyApiRequestConfiguration : IEntityTypeConfiguration<ThirdP
 			.IsRequired()
 			.HasColumnType("date");
 
-		// CreatedAt - Required timestamp, default NOW()
-		builder.Property(e => e.CreatedAt)
+		// CreateDate - Required timestamp, default NOW()
+		builder.Property(e => e.CreateDate)
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");
 
-		// ModifiedAt - Optional timestamp (set when entity is modified)
-		builder.Property(e => e.ModifiedAt)
+		// ModifyDate - Optional timestamp (set when entity is modified)
+		builder.Property(e => e.ModifyDate)
 			.IsRequired(false)
 			.HasColumnType("timestamp with time zone");
 

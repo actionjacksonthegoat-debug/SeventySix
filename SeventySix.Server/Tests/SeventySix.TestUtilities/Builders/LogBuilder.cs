@@ -38,7 +38,7 @@ public class LogBuilder
 	private int? StatusCode = null;
 	private long? DurationMs = null;
 	private string? Properties = null;
-	private DateTime Timestamp = DateTime.UtcNow;
+	private DateTime CreateDate = DateTime.UtcNow;
 	private string? MachineName = "test-machine";
 	private string? Environment = "Test";
 	private string? CorrelationId = null;
@@ -129,13 +129,13 @@ public class LogBuilder
 	}
 
 	/// <summary>
-	/// Sets the timestamp.
+	/// Sets the CreateDate.
 	/// </summary>
-	/// <param name="timestamp">The log timestamp.</param>
+	/// <param name="timestamp">The log CreateDate.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public LogBuilder WithTimestamp(DateTime timestamp)
+	public LogBuilder WithTimestamp(DateTime createDate)
 	{
-		Timestamp = timestamp;
+		CreateDate = createDate;
 		return this;
 	}
 
@@ -215,7 +215,7 @@ public class LogBuilder
 			StatusCode = StatusCode,
 			DurationMs = DurationMs,
 			Properties = Properties,
-			Timestamp = Timestamp,
+			CreateDate = CreateDate,
 			MachineName = MachineName,
 			Environment = Environment,
 			CorrelationId = CorrelationId,

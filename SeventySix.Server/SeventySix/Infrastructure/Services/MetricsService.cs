@@ -36,9 +36,12 @@ public class MetricsService : IMetricsService
 		"api_call_failures_total",
 		description: "Total number of failed external API calls");
 
-	private static int ActiveDbConnections;
 	private static int QueuedItems;
 	private static int FailedItems;
+
+#pragma warning disable CS0649 // Field is never assigned to - TODO: Implement DB connection tracking
+	private static int ActiveDbConnections;
+#pragma warning restore CS0649
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MetricsService"/> class.
@@ -49,11 +52,6 @@ public class MetricsService : IMetricsService
 	/// </remarks>
 	public MetricsService()
 	{
-		ApplicationMeter.CreateObservableGauge(
-			"active_db_connections",
-			() => ActiveDbConnections,
-			description: "Current number of active database connections");
-
 		ApplicationMeter.CreateObservableGauge(
 			"queued_items",
 			() => QueuedItems,

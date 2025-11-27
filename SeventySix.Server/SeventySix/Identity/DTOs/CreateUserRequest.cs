@@ -26,7 +26,7 @@ namespace SeventySix.Identity;
 ///
 /// Validation is performed by CreateUserValidator using FluentValidation.
 ///
-/// Note: Id and CreatedAt are not included as they are auto-generated.
+/// Note: Id and CreateDate are not included as they are auto-generated.
 /// </remarks>
 public record CreateUserRequest
 {

@@ -23,7 +23,7 @@ const DEFAULT_PREFERENCES: UserListPreferences = {
 		"email",
 		"fullName",
 		"isActive",
-		"createdAt",
+		"createDate",
 		"actions"
 	],
 	searchFilter: "",

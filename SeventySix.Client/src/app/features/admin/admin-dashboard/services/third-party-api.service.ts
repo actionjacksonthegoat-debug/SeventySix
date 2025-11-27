@@ -5,7 +5,7 @@ import {
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 import { ThirdPartyApiRepository } from "../repositories";
-import { ThirdPartyApiRequest } from "../models";
+import { ThirdPartyApiRequest, ThirdPartyApiStatistics } from "../models";
 import { getQueryConfig } from "@core/utils/query-config";
 
 /**
@@ -25,11 +25,11 @@ export class ThirdPartyApiService
 		getQueryConfig("thirdPartyApi");
 
 	/**
-	 * Creates a query for all third-party API requests
+	 * Gets all third-party API requests
 	 * Automatically cached with TanStack Query
 	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	createAllQuery(): CreateQueryResult<ThirdPartyApiRequest[], Error>
+	getAllThirdPartyApis(): CreateQueryResult<ThirdPartyApiRequest[], Error>
 	{
 		return injectQuery(() => ({
 			queryKey: ["thirdPartyApi", "all"],
@@ -39,11 +39,11 @@ export class ThirdPartyApiService
 	}
 
 	/**
-	 * Creates a query for third-party API requests filtered by API name
+	 * Gets third-party API requests filtered by API name
 	 * @param apiName - The API name to filter by
 	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	createByApiNameQuery(
+	getByApiName(
 		apiName: string
 	): CreateQueryResult<ThirdPartyApiRequest[], Error>
 	{
@@ -55,10 +55,10 @@ export class ThirdPartyApiService
 	}
 
 	/**
-	 * Creates a query for third-party API statistics
+	 * Gets third-party API statistics
 	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	createStatisticsQuery(): CreateQueryResult<Record<string, unknown>, Error>
+	getStatistics(): CreateQueryResult<ThirdPartyApiStatistics, Error>
 	{
 		return injectQuery(() => ({
 			queryKey: ["thirdPartyApi", "statistics"],

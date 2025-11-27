@@ -31,12 +31,12 @@ public class UserExtensionsTests
 	public void ToDto_ShouldMapUserEntityToDto()
 	{
 		// Arrange
-		DateTime createdAt = DateTime.UtcNow.AddDays(-5);
+		DateTime createDate = DateTime.UtcNow.AddDays(-5);
 		User user = new UserBuilder()
 			.WithUsername("john_doe")
 			.WithEmail("john@example.com")
 			.WithFullName("John Doe")
-			.WithCreatedInfo(createdAt)
+			.WithCreatedInfo(createDate)
 			.WithIsActive(true)
 			.Build();
 		user.Id = 123;
@@ -50,7 +50,7 @@ public class UserExtensionsTests
 		Assert.Equal("john_doe", dto.Username);
 		Assert.Equal("john@example.com", dto.Email);
 		Assert.Equal("John Doe", dto.FullName);
-		Assert.Equal(createdAt, dto.CreatedAt);
+		Assert.Equal(createDate, dto.CreateDate);
 		Assert.True(dto.IsActive);
 	}
 
@@ -153,7 +153,6 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldMapCreateRequestToEntity()
 	{
 		// Arrange
-		DateTime beforeCreation = DateTime.UtcNow;
 		CreateUserRequest request = new()
 		{
 			Username = "new_user",
@@ -164,7 +163,6 @@ public class UserExtensionsTests
 
 		// Act
 		User entity = request.ToEntity();
-		DateTime afterCreation = DateTime.UtcNow;
 
 		// Assert
 		Assert.NotNull(entity);
@@ -173,7 +171,8 @@ public class UserExtensionsTests
 		Assert.Equal("new@example.com", entity.Email);
 		Assert.Equal("New User", entity.FullName);
 		Assert.True(entity.IsActive);
-		Assert.InRange(entity.CreatedAt, beforeCreation, afterCreation);
+		// Note: CreateDate is set by AuditInterceptor on SaveChanges, not during mapping
+		Assert.Equal(default(DateTime), entity.CreateDate);
 	}
 
 	[Fact]
@@ -216,10 +215,9 @@ public class UserExtensionsTests
 	}
 
 	[Fact]
-	public void ToEntity_ShouldSetCreatedAtToUtcNow()
+	public void ToEntity_ShouldNotSetCreateDate_InterceptorHandlesIt()
 	{
-		// Arrange
-		DateTime beforeCreation = DateTime.UtcNow;
+		// Arrange - CreateDate is set by AuditInterceptor, not during mapping
 		CreateUserRequest request = new()
 		{
 			Username = "test",
@@ -228,11 +226,9 @@ public class UserExtensionsTests
 
 		// Act
 		User entity = request.ToEntity();
-		DateTime afterCreation = DateTime.UtcNow;
 
-		// Assert
-		Assert.InRange(entity.CreatedAt, beforeCreation, afterCreation);
-		Assert.Equal(DateTimeKind.Utc, entity.CreatedAt.Kind);
+		// Assert - CreateDate defaults to MinValue, interceptor sets it on SaveChanges
+		Assert.Equal(default(DateTime), entity.CreateDate);
 	}
 
 	[Fact]

@@ -7,24 +7,26 @@ describe("ChartComponent", () =>
 {
 	let component: ChartComponent;
 	let fixture: ComponentFixture<ChartComponent>;
+	let builder: ComponentTestBed<ChartComponent>;
+
+	const defaultChartData = {
+		labels: ["January", "February", "March"],
+		datasets: [
+			{
+				data: [10, 20, 30],
+				label: "Test Data"
+			}
+		]
+	};
 
 	beforeEach(async () =>
 	{
-		fixture = await new ComponentTestBed<ChartComponent>()
-			.withProvider(provideNoopAnimations())
-			.build(ChartComponent);
-
+		builder = new ComponentTestBed<ChartComponent>().withProvider(
+			provideNoopAnimations()
+		);
+		fixture = await builder.build(ChartComponent);
 		component = fixture.componentInstance;
-		fixture.componentRef.setInput("chartData", {
-			labels: ["January", "February", "March"],
-			datasets: [
-				{
-					data: [10, 20, 30],
-					label: "Test Data"
-				}
-			]
-		});
-		fixture.detectChanges();
+		builder.withInputs(fixture, { chartData: defaultChartData });
 	});
 
 	it("should create", () =>
@@ -34,8 +36,7 @@ describe("ChartComponent", () =>
 
 	it("should display chart title", () =>
 	{
-		fixture.componentRef.setInput("title", "Test Chart");
-		fixture.detectChanges();
+		builder.withInputs(fixture, { title: "Test Chart" });
 
 		const compiled = fixture.nativeElement as HTMLElement;
 		const title = compiled.querySelector("mat-card-title");
@@ -44,23 +45,32 @@ describe("ChartComponent", () =>
 
 	it("should emit refresh event when refresh button clicked", () =>
 	{
-		spyOn(component.refresh, "emit");
+		const refreshSpy: jasmine.Spy = builder.withOutputSpy(
+			fixture,
+			"refresh"
+		);
 		component.onRefresh();
-		expect(component.refresh.emit).toHaveBeenCalled();
+		expect(refreshSpy).toHaveBeenCalled();
 	});
 
 	it("should emit exportPng event when export PNG clicked", () =>
 	{
-		spyOn(component.exportPng, "emit");
+		const exportPngSpy: jasmine.Spy = builder.withOutputSpy(
+			fixture,
+			"exportPng"
+		);
 		component.onExportPng();
-		expect(component.exportPng.emit).toHaveBeenCalled();
+		expect(exportPngSpy).toHaveBeenCalled();
 	});
 
 	it("should emit exportCsv event when export CSV clicked", () =>
 	{
-		spyOn(component.exportCsv, "emit");
+		const exportCsvSpy: jasmine.Spy = builder.withOutputSpy(
+			fixture,
+			"exportCsv"
+		);
 		component.onExportCsv();
-		expect(component.exportCsv.emit).toHaveBeenCalled();
+		expect(exportCsvSpy).toHaveBeenCalled();
 	});
 
 	it("should not throw error when chart instance is undefined during layout change", () =>

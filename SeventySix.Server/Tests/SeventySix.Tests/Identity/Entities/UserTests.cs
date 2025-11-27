@@ -20,7 +20,7 @@ namespace SeventySix.Tests.Identity;
 /// Coverage Focus:
 /// - Entity initialization
 /// - Property get/set operations
-/// - Default values (CreatedAt, IsActive)
+/// - Default values (createDate, IsActive)
 /// </remarks>
 public class UserTests
 {
@@ -36,22 +36,22 @@ public class UserTests
 		Assert.Equal(string.Empty, user.Email);
 		Assert.Null(user.FullName);
 		Assert.True(user.IsActive);
-		Assert.True(user.CreatedAt <= DateTime.UtcNow);
-		Assert.True(user.CreatedAt > DateTime.UtcNow.AddSeconds(-1));
+		// Note: CreateDate defaults to DateTime.MinValue - AuditInterceptor sets it on SaveChanges
+		Assert.Equal(default(DateTime), user.CreateDate);
 	}
 
 	[Fact]
 	public void User_ShouldSetAndGetProperties()
 	{
 		// Arrange
-		DateTime createdAt = DateTime.UtcNow.AddDays(-10);
+		DateTime createDate = DateTime.UtcNow.AddDays(-10);
 		User user = new()
 		{
 			Id = 123,
 			Username = "john_doe",
 			Email = "john@example.com",
 			FullName = "John Doe",
-			CreatedAt = createdAt,
+			CreateDate = createDate,
 			IsActive = false,
 		};
 
@@ -60,7 +60,7 @@ public class UserTests
 		Assert.Equal("john_doe", user.Username);
 		Assert.Equal("john@example.com", user.Email);
 		Assert.Equal("John Doe", user.FullName);
-		Assert.Equal(createdAt, user.CreatedAt);
+		Assert.Equal(createDate, user.CreateDate);
 		Assert.False(user.IsActive);
 	}
 
@@ -115,18 +115,13 @@ public class UserTests
 	}
 
 	[Fact]
-	public void User_CreatedAt_ShouldBeSetToUtcNow_ByDefault()
+	public void User_CreateDate_ShouldDefaultToMinValue_UntilInterceptorSetsIt()
 	{
-		// Arrange
-		DateTime beforeCreation = DateTime.UtcNow;
-
-		// Act
+		// Arrange & Act - CreateDate is set by AuditInterceptor on SaveChanges, not during construction
 		User user = new();
 
-		// Assert
-		DateTime afterCreation = DateTime.UtcNow;
-		Assert.InRange(user.CreatedAt, beforeCreation, afterCreation);
-		Assert.Equal(DateTimeKind.Utc, user.CreatedAt.Kind);
+		// Assert - Default value before interceptor runs
+		Assert.Equal(default(DateTime), user.CreateDate);
 	}
 
 	[Fact]
@@ -136,10 +131,10 @@ public class UserTests
 		DateTime specificDate = new(2024, 1, 1, 12, 0, 0, DateTimeKind.Utc);
 
 		// Act
-		User user = new() { CreatedAt = specificDate };
+		User user = new() { CreateDate = specificDate };
 
 		// Assert
-		Assert.Equal(specificDate, user.CreatedAt);
+		Assert.Equal(specificDate, user.CreateDate);
 	}
 
 	[Theory]
@@ -200,28 +195,28 @@ public class UserTests
 		// Arrange & Act
 		User user = new();
 
-		// Assert
-		Assert.True(user.CreatedAt <= DateTime.UtcNow);
-		Assert.Null(user.CreatedBy);
-		Assert.Null(user.ModifiedAt);
-		Assert.Null(user.ModifiedBy);
+		// Assert - CreateDate/CreateBy/ModifiedBy default to empty/default, interceptor sets them on SaveChanges
+		Assert.Equal(default(DateTime), user.CreateDate);
+		Assert.Equal(string.Empty, user.CreatedBy);  // Non-nullable, defaults to empty string
+		Assert.Null(user.ModifyDate);
+		Assert.Equal(string.Empty, user.ModifiedBy);  // Non-nullable, defaults to empty string
 	}
 
 	[Fact]
 	public void User_ShouldSetAndGetAuditFields()
 	{
 		// Arrange
-		DateTime modifiedAt = DateTime.UtcNow.AddMinutes(-5);
+		DateTime modifyDate = DateTime.UtcNow.AddMinutes(-5);
 		User user = new()
 		{
 			CreatedBy = "admin",
-			ModifiedAt = modifiedAt,
+			ModifyDate = modifyDate,
 			ModifiedBy = "system",
 		};
 
 		// Assert
 		Assert.Equal("admin", user.CreatedBy);
-		Assert.Equal(modifiedAt, user.ModifiedAt);
+		Assert.Equal(modifyDate, user.ModifyDate);
 		Assert.Equal("system", user.ModifiedBy);
 	}
 
@@ -350,7 +345,7 @@ public class UserTests
 
 		// Act
 		user.CreatedBy = "admin";
-		user.ModifiedAt = now;
+		user.ModifyDate = now;
 		user.ModifiedBy = "system";
 		user.IsDeleted = true;
 		user.DeletedAt = now;
@@ -362,7 +357,7 @@ public class UserTests
 
 		// Assert
 		Assert.Equal("admin", user.CreatedBy);
-		Assert.Equal(now, user.ModifiedAt);
+		Assert.Equal(now, user.ModifyDate);
 		Assert.Equal("system", user.ModifiedBy);
 		Assert.True(user.IsDeleted);
 		Assert.Equal(now, user.DeletedAt);

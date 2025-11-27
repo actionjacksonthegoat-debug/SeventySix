@@ -203,21 +203,36 @@ export class ExampleComponent {
 
 -   Design services with single responsibility (SRP)
 -   Use `providedIn: 'root'` for singleton services
--   Use `inject()` function instead of constructor injection
+-   **ALWAYS use `inject()` function instead of constructor injection**
 -   Create service interfaces for abstraction (DIP)
 -   Use HttpClient interceptors for cross-cutting concerns
 -   Implement repository pattern for data access
 
+**Dependency Injection Pattern**:
+
 ```typescript
 export class UserService {
-	private http = inject(HttpClient);
-	private userRepo = inject(UserRepository);
+	// CORRECT: Use inject() function with explicit types and readonly
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly userRepo: UserRepository = inject(UserRepository);
 
-	getUsers() {
+	constructor() {
+		// Optional initialization logic only
+	}
+
+	getUsers(): Observable<User[]> {
 		return this.userRepo.findAll();
 	}
 }
 ```
+
+**Rules**:
+
+-   ✅ All dependencies injected with `inject()` function
+-   ✅ All injected properties marked as `private readonly`
+-   ✅ Explicit type annotations on all injected dependencies
+-   ✅ Constructor used only for initialization logic (if needed)
+-   ❌ NO constructor parameter injection (legacy pattern)
 
 ### Routing & Lazy Loading
 
@@ -272,8 +287,10 @@ export class UserService {
 -   **Correct**: `string test = "";` or `int count = 0;`
 -   **Wrong**: `var test = "";` or `var count = 0;`
 -   **ALWAYS use Primary Constructors when possible** (C# 12+)
--   **Correct**: `public class UserService(IUserRepository repo, ILogger<UserService> logger)`
--   **Wrong**: Using traditional constructor with field assignments
+-   **Correct**: `public class UserService(IUserRepository repo, ILogger<UserService> logger)` - parameters ARE the fields
+-   **Wrong**: Creating separate private readonly field assignments
+-   **With primary constructors, use constructor parameters directly in code - they ARE the fields**
+-   **NEVER use excessive null checking** like `?? throw new ArgumentNullException` - if it's null we'll find out
 -   **ALWAYS use Collection Expressions** (C# 12+)
 -   **Correct**: `int[] numbers = [1, 2, 3];` or `List<string> names = ["Alice", "Bob"];`
 -   **Wrong**: `new int[] { 1, 2, 3 }` or `new List<string> { "Alice", "Bob" }`

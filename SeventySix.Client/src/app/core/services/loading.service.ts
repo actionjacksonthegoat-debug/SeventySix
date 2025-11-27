@@ -1,4 +1,4 @@
-import { Injectable, signal } from "@angular/core";
+import { Injectable, signal, inject } from "@angular/core";
 import {
 	Router,
 	NavigationStart,
@@ -19,13 +19,15 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 })
 export class LoadingService
 {
+	private readonly router: Router = inject(Router);
+
 	/**
 	 * Global loading state signal
 	 */
 	readonly isLoading: ReturnType<typeof signal<boolean>> =
 		signal<boolean>(false);
 
-	constructor(private router: Router)
+	constructor()
 	{
 		// Subscribe to router events with automatic cleanup
 		this.router.events

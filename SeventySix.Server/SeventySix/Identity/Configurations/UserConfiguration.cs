@@ -27,7 +27,7 @@ namespace SeventySix.Identity;
 /// - Global query filter to exclude soft-deleted users by default
 /// - Optimistic concurrency control via RowVersion (xmin in PostgreSQL)
 /// - JSON storage for user preferences (jsonb in PostgreSQL)
-/// - Audit field tracking (CreatedAt, CreatedBy, ModifiedAt, ModifiedBy)
+/// - Audit field tracking (CreateDate, CreatedBy, ModifyDate, ModifiedBy)
 /// - Soft delete support (IsDeleted, DeletedAt, DeletedBy)
 /// </remarks>
 public class UserConfiguration : IEntityTypeConfiguration<User>
@@ -71,23 +71,29 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 		builder.Property(e => e.FullName)
 			.HasMaxLength(100);
 
-		// Audit fields - CreatedAt
-		builder.Property(e => e.CreatedAt)
+		// Audit fields - CreateDate (maps to CreatedAt column for backward compatibility)
+		builder.Property(e => e.CreateDate)
+			.HasColumnName("CreatedAt")
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");
 
-		// Audit fields - CreatedBy (optional, max length 100)
+		// Audit fields - CreatedBy (required, max length 100)
 		builder.Property(e => e.CreatedBy)
-			.HasMaxLength(100);
+			.IsRequired()
+			.HasMaxLength(100)
+			.HasDefaultValue("System");
 
-		// Audit fields - ModifiedAt (optional)
-		builder.Property(e => e.ModifiedAt)
+		// Audit fields - ModifyDate (maps to ModifiedAt column for backward compatibility)
+		builder.Property(e => e.ModifyDate)
+			.HasColumnName("ModifiedAt")
 			.HasColumnType("timestamp with time zone");
 
-		// Audit fields - ModifiedBy (optional, max length 100)
+		// Audit fields - ModifiedBy (required, max length 100)
 		builder.Property(e => e.ModifiedBy)
-			.HasMaxLength(100);
+			.IsRequired()
+			.HasMaxLength(100)
+			.HasDefaultValue("System");
 
 		// IsActive - Required, default true
 		builder.Property(e => e.IsActive)
@@ -130,11 +136,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 			.HasMaxLength(45);
 
 		// Performance indexes
-		builder.HasIndex(e => new { e.IsActive, e.CreatedAt })
-			.HasDatabaseName("IX_Users_IsActive_CreatedAt");
+		builder.HasIndex(e => new { e.IsActive, e.CreateDate })
+			.HasDatabaseName("IX_Users_IsActive_CreateDate");
 
-		builder.HasIndex(e => e.CreatedAt)
-			.HasDatabaseName("IX_Users_CreatedAt");
+		builder.HasIndex(e => e.CreateDate)
+			.HasDatabaseName("IX_Users_CreateDate");
 
 		// Global query filter - Exclude soft-deleted users by default
 		builder.HasQueryFilter(e => !e.IsDeleted);

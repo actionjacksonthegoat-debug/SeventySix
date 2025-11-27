@@ -17,11 +17,11 @@ describe("AdminDashboardComponent", () =>
 	{
 		const thirdPartyApiServiceSpy = jasmine.createSpyObj(
 			"ThirdPartyApiService",
-			["createAllQuery"]
+			["getAllThirdPartyApis"]
 		);
 
 		// Set up TanStack Query mocks for child components
-		thirdPartyApiServiceSpy.createAllQuery.and.returnValue(
+		thirdPartyApiServiceSpy.getAllThirdPartyApis.and.returnValue(
 			createMockQueryResult([])
 		);
 
@@ -147,3 +147,4 @@ describe("AdminDashboardComponent", () =>
 		);
 	});
 });
+

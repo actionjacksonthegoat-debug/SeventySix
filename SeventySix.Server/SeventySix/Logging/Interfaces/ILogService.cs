@@ -64,6 +64,7 @@ public interface ILogService
 	/// Deletes a single log entry by its ID.
 	/// </summary>
 	/// <param name="id">The ID of the log to delete.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
 	/// <returns>
 	/// A task that represents the asynchronous operation.
 	/// The task result is true if the log was found and deleted; false if not found.
@@ -72,12 +73,13 @@ public interface ILogService
 	/// Used for individual log deletion from the log management UI.
 	/// Returns false if the log doesn't exist (already deleted or invalid ID).
 	/// </remarks>
-	public Task<bool> DeleteLogByIdAsync(int id);
+	public Task<bool> DeleteLogByIdAsync(int id, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Deletes multiple log entries by their IDs in a single operation.
 	/// </summary>
 	/// <param name="ids">Array of log IDs to delete.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
 	/// <returns>
 	/// A task that represents the asynchronous operation.
 	/// The task result contains the number of logs successfully deleted.
@@ -87,12 +89,13 @@ public interface ILogService
 	/// Performs batch delete for better performance.
 	/// Returns count of actually deleted logs (may be less than input if some IDs don't exist).
 	/// </remarks>
-	public Task<int> DeleteLogsBatchAsync(int[] ids);
+	public Task<int> DeleteLogsBatchAsync(int[] ids, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Deletes logs older than the specified cutoff date.
 	/// </summary>
 	/// <param name="cutoffDate">Delete logs older than this date.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
 	/// <returns>
 	/// A task that represents the asynchronous operation.
 	/// The task result contains the number of logs deleted.
@@ -101,7 +104,7 @@ public interface ILogService
 	/// Used for log retention cleanup.
 	/// Uses batch delete for performance.
 	/// </remarks>
-	public Task<int> DeleteLogsOlderThanAsync(DateTime cutoffDate);
+	public Task<int> DeleteLogsOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Checks database connectivity for health check purposes.
@@ -121,21 +124,23 @@ public interface ILogService
 	/// Creates a client-side log entry from the Angular application.
 	/// </summary>
 	/// <param name="request">The client log request containing error details.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
 	/// <returns>A task representing the asynchronous operation.</returns>
 	/// <remarks>
 	/// Maps ClientLogRequest to Log entity with trace context and browser metadata.
 	/// Used by Angular error interceptor to send client-side errors to server.
 	/// </remarks>
-	public Task CreateClientLogAsync(ClientLogRequest request);
+	public Task CreateClientLogAsync(ClientLogRequest request, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Creates multiple client-side log entries in a batch operation.
 	/// </summary>
 	/// <param name="requests">Array of client log requests.</param>
+	/// <param name="cancellationToken">Token to cancel the operation if needed.</param>
 	/// <returns>A task representing the asynchronous operation.</returns>
 	/// <remarks>
 	/// Batch operation for better performance when Angular sends multiple errors at once.
 	/// Used by Angular error queue to flush accumulated errors.
 	/// </remarks>
-	public Task CreateClientLogBatchAsync(ClientLogRequest[] requests);
+	public Task CreateClientLogBatchAsync(ClientLogRequest[] requests, CancellationToken cancellationToken = default);
 }

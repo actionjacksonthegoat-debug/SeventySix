@@ -38,6 +38,12 @@ namespace SeventySix.Logging.Migrations
                     b.Property<string>("CorrelationId")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CreateDate")
+                        .HasDefaultValueSql("NOW()");
+
                     b.Property<long?>("DurationMs")
                         .HasColumnType("bigint");
 
@@ -90,13 +96,10 @@ namespace SeventySix.Logging.Migrations
                     b.Property<int?>("StatusCode")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("Timestamp")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("CreatedAt")
-                        .HasDefaultValueSql("NOW()");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CreateDate")
+                        .HasDatabaseName("IX_Logs_CreatedAt");
 
                     b.HasIndex("LogLevel")
                         .HasDatabaseName("IX_Logs_LogLevel");
@@ -107,10 +110,7 @@ namespace SeventySix.Logging.Migrations
                     b.HasIndex("SourceContext")
                         .HasDatabaseName("IX_Logs_SourceContext");
 
-                    b.HasIndex("Timestamp")
-                        .HasDatabaseName("IX_Logs_CreatedAt");
-
-                    b.HasIndex("LogLevel", "Timestamp")
+                    b.HasIndex("LogLevel", "CreateDate")
                         .HasDatabaseName("IX_Logs_LogLevel_CreatedAt");
 
                     b.ToTable("Logs", "Logging");

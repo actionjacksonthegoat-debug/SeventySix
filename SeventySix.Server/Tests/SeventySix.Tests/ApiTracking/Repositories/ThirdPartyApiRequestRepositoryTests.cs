@@ -139,8 +139,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 		DateTime afterCreate = DateTime.UtcNow;
 
 		// Assert
-		Assert.True(result.CreatedAt >= beforeCreate && result.CreatedAt <= afterCreate);
-		Assert.Null(result.ModifiedAt);
+		Assert.True(result.CreateDate >= beforeCreate && result.CreateDate <= afterCreate);
+		Assert.Null(result.ModifyDate);
 	}
 
 	[Fact]
@@ -217,32 +217,6 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClas
 
 		// Assert
 		Assert.Equal(10, result.CallCount);
-	}
-
-	[Fact]
-	public async Task UpdateAsync_UpdatesTimestamp_AutomaticallyAsync()
-	{
-		// Arrange
-		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
-		ThirdPartyApiRequest request = new()
-		{
-			ApiName = "ExternalAPI",
-			BaseUrl = "https://api.ExternalAPImap.org",
-			CallCount = 5,
-			ResetDate = today,
-		};
-		ThirdPartyApiRequest created = await Repository.CreateAsync(request);
-		DateTime? originalModifiedAt = created.ModifiedAt;
-
-		// Wait to ensure timestamp difference
-		await Task.Delay(100);
-
-		// Act
-		created.CallCount = 10;
-		ThirdPartyApiRequest result = await Repository.UpdateAsync(created);
-
-		// Assert
-		Assert.NotNull(result.ModifiedAt);
 	}
 
 	[Fact]

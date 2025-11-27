@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Identity;
+using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
 
@@ -47,13 +47,12 @@ public static class UserExtensions
 			Username = entity.Username,
 			Email = entity.Email,
 			FullName = entity.FullName,
-			CreatedAt = entity.CreatedAt,
+			CreateDate = entity.CreateDate,
 			IsActive = entity.IsActive,
 			CreatedBy = entity.CreatedBy,
-			ModifiedAt = entity.ModifiedAt,
+			ModifyDate = entity.ModifyDate,
 			ModifiedBy = entity.ModifiedBy,
 			LastLoginAt = entity.LastLoginAt,
-			RowVersion = entity.RowVersion,
 		};
 	}
 
@@ -62,17 +61,11 @@ public static class UserExtensions
 	/// </summary>
 	/// <param name="entities">The collection of entities to convert.</param>
 	/// <returns>An enumerable collection of UserDto objects.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when entities is null.</exception>
 	/// <remarks>
-	/// This is a convenience method that applies ToDto to each entity in the collection.
-	/// Uses LINQ Select for efficient transformation with deferred execution.
+	/// Uses generic MapToDto utility for efficient transformation with deferred execution.
 	/// </remarks>
-	public static IEnumerable<UserDto> ToDto(this IEnumerable<User> entities)
-	{
-		ArgumentNullException.ThrowIfNull(entities);
-
-		return entities.Select(e => e.ToDto());
-	}
+	public static IEnumerable<UserDto> ToDto(this IEnumerable<User> entities) =>
+		entities.MapToDto(e => e.ToDto());
 
 	/// <summary>
 	/// Converts a CreateUserRequest to a domain entity.
@@ -82,7 +75,7 @@ public static class UserExtensions
 	/// <exception cref="ArgumentNullException">Thrown when request is null.</exception>
 	/// <remarks>
 	/// This method creates a new entity instance and maps properties from the request.
-	/// Id and CreatedAt are not mapped as they are auto-generated.
+	/// Id and CreateDate are not mapped as they are auto-generated.
 	///
 	/// The entity is not persisted here; persistence is handled by the repository.
 	/// </remarks>
@@ -107,8 +100,8 @@ public static class UserExtensions
 	/// <exception cref="ArgumentNullException">Thrown when request or existing is null.</exception>
 	/// <remarks>
 	/// This method updates an existing entity with values from the request.
-	/// Audit fields (CreatedAt, CreatedBy) are preserved from the existing entity.
-	/// ModifiedAt and ModifiedBy should be set by the caller.
+	/// Audit fields (CreateDate, CreatedBy) are preserved from the existing entity.
+	/// ModifyDate and ModifiedBy are set automatically by AuditInterceptor on SaveChanges.
 	/// </remarks>
 	public static User ToEntity(this UpdateUserRequest request, User existing)
 	{
@@ -119,8 +112,8 @@ public static class UserExtensions
 		existing.Email = request.Email;
 		existing.FullName = request.FullName;
 		existing.IsActive = request.IsActive;
-		existing.RowVersion = request.RowVersion;
-		existing.ModifiedBy = "System";
+		// Note: RowVersion is NOT copied - EF Core manages concurrency via database xmin column
+		// Note: ModifiedBy is set automatically by AuditInterceptor on SaveChanges
 
 		return existing;
 	}

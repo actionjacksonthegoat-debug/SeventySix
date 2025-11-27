@@ -57,9 +57,9 @@ export class UserExportService
 			this.escapeCsvValue(user.email),
 			this.escapeCsvValue(user.fullName || ""),
 			user.isActive ? "Active" : "Inactive",
-			user.createdAt,
+			user.createDate,
 			user.lastLoginAt || "Never",
-			user.modifiedAt || "",
+			user.modifyDate || "",
 			user.createdBy || "",
 			user.modifiedBy || ""
 		]);

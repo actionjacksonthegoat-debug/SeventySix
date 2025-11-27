@@ -34,39 +34,37 @@ namespace SeventySix.Api.Logging;
 /// - Only logs Warning level and above to reduce database I/O
 /// - Prevents connection pool exhaustion during high load
 /// </remarks>
-public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
+public class DatabaseLogSink(
+	IServiceProvider serviceProvider,
+	string? environment = null,
+	string? machineName = null) : ILogEventSink, IAsyncDisposable
 {
-	private readonly IServiceProvider ServiceProvider;
-	private readonly string? Environment;
-	private readonly string? MachineName;
 	private readonly ConcurrentQueue<LogEvent> LogQueue = new();
-	private readonly Timer BatchTimer;
 	private readonly SemaphoreSlim ProcessingSemaphore = new(1, 1);
+	private Timer? BatchTimer;
 	private const int BatchSize = 50;
 	private const int BatchIntervalMs = 5000;
 	private bool Disposed;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="DatabaseLogSink"/> class.
+	/// Ensures the batch timer is initialized.
 	/// </summary>
-	/// <param name="serviceProvider">Service provider for resolving scoped services.</param>
-	/// <param name="environment">Application environment (Development, Production, etc.).</param>
-	/// <param name="machineName">Machine/container name.</param>
-	public DatabaseLogSink(
-		IServiceProvider serviceProvider,
-		string? environment = null,
-		string? machineName = null)
+	private void EnsureTimerInitialized()
 	{
-		ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-		Environment = environment;
-		MachineName = machineName;
-
-		// Start batch processing timer
-		BatchTimer = new Timer(
-			callback: _ => _ = ProcessBatchAsync(),
-			state: null,
-			dueTime: TimeSpan.FromMilliseconds(BatchIntervalMs),
-			period: TimeSpan.FromMilliseconds(BatchIntervalMs));
+		if (BatchTimer == null)
+		{
+			lock (ProcessingSemaphore)
+			{
+				if (BatchTimer == null)
+				{
+					BatchTimer = new Timer(
+						callback: _ => _ = ProcessBatchAsync(),
+						state: null,
+						dueTime: TimeSpan.FromMilliseconds(BatchIntervalMs),
+						period: TimeSpan.FromMilliseconds(BatchIntervalMs));
+				}
+			}
+		}
 	}
 
 	/// <inheritdoc/>
@@ -78,6 +76,9 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 		{
 			return;
 		}
+
+		// Ensure timer is initialized on first call
+		EnsureTimerInitialized();
 
 		// Only log Warning and above to database
 		if (logEvent.Level < LogEventLevel.Warning)
@@ -148,7 +149,7 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 			}
 
 			// Create a single scope for the entire batch
-			using IServiceScope scope = ServiceProvider.CreateScope();
+			using IServiceScope scope = serviceProvider.CreateScope();
 			ILogRepository logRepository = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 			// Process all events in batch
@@ -182,9 +183,9 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 		{
 			LogLevel = logEvent.Level.ToString(),
 			Message = logEvent.RenderMessage(),
-			Timestamp = logEvent.Timestamp.UtcDateTime,
-			Environment = Environment,
-			MachineName = MachineName,
+			CreateDate = logEvent.Timestamp.UtcDateTime,
+			Environment = environment,
+			MachineName = machineName,
 		};
 
 		// Capture OpenTelemetry trace context from Activity or enriched properties
@@ -357,8 +358,11 @@ public class DatabaseLogSink : ILogEventSink, IAsyncDisposable
 
 		Disposed = true;
 
-		// Stop the timer
-		await BatchTimer.DisposeAsync();
+		// Stop the timer if initialized
+		if (BatchTimer != null)
+		{
+			await BatchTimer.DisposeAsync();
+		}
 
 		// Flush remaining logs asynchronously
 		await ProcessBatchAsync(isDisposing: true);

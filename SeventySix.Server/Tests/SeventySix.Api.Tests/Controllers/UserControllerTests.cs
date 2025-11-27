@@ -58,8 +58,8 @@ public class UsersControllerTests
 		// Arrange
 		List<UserDto> users =
 		[
-			new UserDto { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true },
-			new UserDto { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false },
+			new UserDto { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
+			new UserDto { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
 		];
 
 		MockUserService
@@ -131,6 +131,9 @@ public class UsersControllerTests
 			Email = "john@example.com",
 			FullName = "John Doe",
 			IsActive = true,
+			CreateDate = DateTime.UtcNow,
+			CreatedBy = "System",
+			ModifiedBy = "System",
 		};
 
 		MockUserService
@@ -185,7 +188,9 @@ public class UsersControllerTests
 			Email = "new@example.com",
 			FullName = "New User",
 			IsActive = true,
-			CreatedAt = DateTime.UtcNow,
+			CreateDate = DateTime.UtcNow,
+			CreatedBy = "System",
+			ModifiedBy = "System",
 		};
 
 		MockUserService
@@ -221,7 +226,9 @@ public class UsersControllerTests
 			Username = "test",
 			Email = "test@example.com",
 			IsActive = true,
-			CreatedAt = DateTime.UtcNow,
+			CreateDate = DateTime.UtcNow,
+			CreatedBy = "System",
+			ModifiedBy = "System",
 		};
 
 		MockUserService
@@ -255,7 +262,6 @@ public class UsersControllerTests
 			Email = "updated@example.com",
 			FullName = "Updated User",
 			IsActive = true,
-			RowVersion = 1,
 		};
 
 		UserDto updatedUser = new UserDto
@@ -265,9 +271,10 @@ public class UsersControllerTests
 			Email = "updated@example.com",
 			FullName = "Updated User",
 			IsActive = true,
-			CreatedAt = DateTime.UtcNow.AddDays(-1),
-			ModifiedAt = DateTime.UtcNow,
-			RowVersion = 2,
+			CreateDate = DateTime.UtcNow.AddDays(-1),
+			ModifyDate = DateTime.UtcNow,
+			CreatedBy = "System",
+			ModifiedBy = "Admin",
 		};
 
 		MockUserService
@@ -282,7 +289,7 @@ public class UsersControllerTests
 		UserDto returnedUser = Assert.IsType<UserDto>(okResult.Value);
 		Assert.Equal(1, returnedUser.Id);
 		Assert.Equal("updateduser", returnedUser.Username);
-		Assert.NotNull(returnedUser.ModifiedAt);
+		Assert.NotNull(returnedUser.ModifyDate);
 	}
 
 	[Fact]
@@ -295,7 +302,6 @@ public class UsersControllerTests
 			Username = "test",
 			Email = "test@example.com",
 			IsActive = true,
-			RowVersion = 1,
 		};
 
 		// Act
@@ -391,8 +397,8 @@ public class UsersControllerTests
 
 		List<UserDto> users =
 		[
-			new UserDto { Id = 1, Username = "testuser1", Email = "test1@example.com", IsActive = true },
-			new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsActive = true },
+			new UserDto { Id = 1, Username = "testuser1", Email = "test1@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
+			new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
 		];
 
 		PagedResult<UserDto> pagedResult = new PagedResult<UserDto>
@@ -433,6 +439,9 @@ public class UsersControllerTests
 			Username = "testuser",
 			Email = "test@example.com",
 			IsActive = true,
+			CreateDate = DateTime.UtcNow,
+			CreatedBy = "System",
+			ModifiedBy = "System",
 		};
 
 		MockUserService

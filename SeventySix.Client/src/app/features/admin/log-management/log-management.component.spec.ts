@@ -98,29 +98,23 @@ describe("LogManagementComponent", (): void =>
 
 		const mockLog: LogResponse = {
 			id: 1,
-			timestamp: new Date("2025-11-12T10:30:00Z"),
+			createDate: new Date("2025-11-12T10:30:00Z"),
 			logLevel: "Error",
 			message: "Test error",
-			sourceContext: "TestService",
-			exception: null,
+			exceptionMessage: null,
+			baseExceptionMessage: null,
 			stackTrace: null,
-			requestId: null,
+			sourceContext: "TestService",
+			requestMethod: null,
 			requestPath: "/api/test",
+			statusCode: null,
+			durationMs: null,
+			properties: null,
 			machineName: null,
-			threadId: null,
-			application: null,
 			environment: null,
-			userId: null,
-			userName: null,
-			sessionId: null,
 			correlationId: null,
 			spanId: null,
-			parentSpanId: null,
-			clientIp: null,
-			userAgent: null,
-			duration: null,
-			statusCode: null,
-			properties: null
+			parentSpanId: null
 		};
 
 		// Component no longer has these methods - removed obsolete tests

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -46,7 +47,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		{
 			LogLevel = "Error",
 			Message = "Test error message",
-			Timestamp = DateTime.UtcNow,
+			CreateDate = DateTime.UtcNow,
 		};
 
 		// Act
@@ -110,8 +111,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		// Assert
 		Assert.All(logs, log =>
 		{
-			Assert.True(log.Timestamp >= startDate);
-			Assert.True(log.Timestamp <= endDate);
+			Assert.True(log.CreateDate >= startDate);
+			Assert.True(log.CreateDate <= endDate);
 		});
 	}
 
@@ -205,7 +206,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		// Assert
 		for (int i = 0; i < result.Count - 1; i++)
 		{
-			Assert.True(result[i].Timestamp >= result[i + 1].Timestamp);
+			Assert.True(result[i].CreateDate >= result[i + 1].CreateDate);
 		}
 	}
 
@@ -219,7 +220,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 			{
 				LogLevel = "Info",
 				Message = $"Log {i}",
-				Timestamp = DateTime.UtcNow,
+				CreateDate = DateTime.UtcNow,
 			});
 		}
 
@@ -272,7 +273,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		{
 			LogLevel = "Error",
 			Message = "Old log",
-			Timestamp = DateTime.UtcNow.AddDays(-40),
+			CreateDate = DateTime.UtcNow.AddDays(-40),
 		};
 		await Repository.CreateAsync(oldLog);
 
@@ -280,7 +281,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		{
 			LogLevel = "Error",
 			Message = "Recent log",
-			Timestamp = DateTime.UtcNow,
+			CreateDate = DateTime.UtcNow,
 		};
 		await Repository.CreateAsync(recentLog);
 
@@ -293,7 +294,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 		Assert.True(deletedCount > 0);
 		LogFilterRequest request = new() { PageSize = 100 };
 		(IEnumerable<Log> remainingLogs, int _) = await Repository.GetPagedAsync(request);
-		Assert.All(remainingLogs, log => Assert.True(log.Timestamp >= cutoffDate));
+		Assert.All(remainingLogs, log => Assert.True(log.CreateDate >= cutoffDate));
 	}
 
 	private async Task SeedTestLogsAsync()
@@ -308,7 +309,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 				RequestPath = "/api/users/1",
 				StatusCode = 500,
 				DurationMs = 150,
-				Timestamp = DateTime.UtcNow,
+				CreateDate = DateTime.UtcNow,
 			},
 			new Log
 			{
@@ -318,7 +319,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 				RequestPath = "/api/health",
 				StatusCode = 200,
 				DurationMs = 75,
-				Timestamp = DateTime.UtcNow.AddMinutes(-5),
+				CreateDate = DateTime.UtcNow.AddMinutes(-5),
 			},
 			new Log
 			{
@@ -328,7 +329,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 				RequestPath = "/api/users/2",
 				StatusCode = 404,
 				DurationMs = 50,
-				Timestamp = DateTime.UtcNow.AddMinutes(-10),
+				CreateDate = DateTime.UtcNow.AddMinutes(-10),
 			},
 		];
 
@@ -349,7 +350,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 				SourceContext = "SeventySix.Services.UserService",
 				RequestPath = "/api/users/login",
 				ExceptionMessage = null,
-				Timestamp = DateTime.UtcNow,
+				CreateDate = DateTime.UtcNow,
 			},
 			new Log
 			{
@@ -358,7 +359,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 				SourceContext = "SeventySix.Services.UserService",
 				RequestPath = "/api/users/profile",
 				ExceptionMessage = "NullReferenceException: Object reference not set",
-				Timestamp = DateTime.UtcNow.AddMinutes(-5),
+				CreateDate = DateTime.UtcNow.AddMinutes(-5),
 			},
 			new Log
 			{
@@ -367,7 +368,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 				SourceContext = "SeventySix.Services.ApiThrottlingService",
 				RequestPath = "/api/health",
 				ExceptionMessage = null,
-				Timestamp = DateTime.UtcNow.AddMinutes(-10),
+				CreateDate = DateTime.UtcNow.AddMinutes(-10),
 			},
 		];
 
@@ -376,5 +377,53 @@ public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<Testcont
 			await Repository.CreateAsync(log);
 		}
 	}
+
+	#region Parameter Validation Tests
+
+	[Fact]
+	public async Task DeleteByIdAsync_ThrowsArgumentOutOfRangeException_WhenIdIsZeroAsync()
+	{
+		// Arrange & Act
+		Func<Task> act = async () => await Repository.DeleteByIdAsync(0);
+
+		// Assert
+		await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
+			.WithParameterName("id");
+	}
+
+	[Fact]
+	public async Task DeleteByIdAsync_ThrowsArgumentOutOfRangeException_WhenIdIsNegativeAsync()
+	{
+		// Arrange & Act
+		Func<Task> act = async () => await Repository.DeleteByIdAsync(-1);
+
+		// Assert
+		await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
+			.WithParameterName("id");
+	}
+
+	[Fact]
+	public async Task DeleteBatchAsync_ThrowsArgumentNullException_WhenIdsIsNullAsync()
+	{
+		// Arrange & Act
+		Func<Task> act = async () => await Repository.DeleteBatchAsync(null!);
+
+		// Assert
+		await act.Should().ThrowAsync<ArgumentNullException>()
+			.WithParameterName("ids");
+	}
+
+	[Fact]
+	public async Task DeleteBatchAsync_ThrowsArgumentOutOfRangeException_WhenIdsIsEmptyAsync()
+	{
+		// Arrange & Act
+		Func<Task> act = async () => await Repository.DeleteBatchAsync([]);
+
+		// Assert
+		await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
+			.WithParameterName("ids.Length");
+	}
+
+	#endregion
 }
 

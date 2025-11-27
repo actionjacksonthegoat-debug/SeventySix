@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.Extensions;
+
 namespace SeventySix.Logging;
 
 /// <summary>
@@ -50,7 +52,7 @@ public static class LogExtensions
 			StatusCode = entity.StatusCode,
 			DurationMs = entity.DurationMs,
 			Properties = entity.Properties,
-			Timestamp = entity.Timestamp,
+			CreateDate = entity.CreateDate,
 			MachineName = entity.MachineName,
 			Environment = entity.Environment,
 			CorrelationId = entity.CorrelationId,
@@ -64,15 +66,9 @@ public static class LogExtensions
 	/// </summary>
 	/// <param name="entities">The domain entities to convert.</param>
 	/// <returns>A collection of LogResponse DTOs.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when entities is null.</exception>
 	/// <remarks>
-	/// Uses Select to efficiently map each entity to a DTO.
-	/// Maintains original collection order.
+	/// Uses generic MapToDto utility for efficient transformation with deferred execution.
 	/// </remarks>
-	public static IEnumerable<LogResponse> ToDto(this IEnumerable<Log> entities)
-	{
-		ArgumentNullException.ThrowIfNull(entities);
-
-		return entities.Select(e => e.ToDto());
-	}
+	public static IEnumerable<LogResponse> ToDto(this IEnumerable<Log> entities) =>
+		entities.MapToDto(e => e.ToDto());
 }

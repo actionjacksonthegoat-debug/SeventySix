@@ -6,6 +6,9 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
+using SeventySix.Identity.Infrastructure;
+using SeventySix.Shared;
+using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Extensions;
 
@@ -47,9 +50,20 @@ public static class IdentityExtensions
 	/// </remarks>
 	public static IServiceCollection AddIdentityDomain(this IServiceCollection services, string connectionString)
 	{
-		// Register IdentityDbContext with PostgreSQL
-		services.AddDbContext<IdentityDbContext>(options =>
-			options.UseNpgsql(connectionString));
+		// Register user context accessor (Identity owns authentication/user concerns)
+		services.AddScoped<IUserContextAccessor, UserContextAccessor>();
+
+		// Register IdentityDbContext with PostgreSQL and AuditInterceptor
+		services.AddDbContext<IdentityDbContext>((serviceProvider, options) =>
+		{
+			AuditInterceptor auditInterceptor = serviceProvider.GetRequiredService<AuditInterceptor>();
+			options.UseNpgsql(connectionString);
+			options.AddInterceptors(auditInterceptor);
+		});
+
+		// Register transaction manager for Identity context
+		services.AddScoped<ITransactionManager>(serviceProvider =>
+			new TransactionManager(serviceProvider.GetRequiredService<IdentityDbContext>()));
 
 		// Register repositories
 		services.AddScoped<IUserRepository, UserRepository>();

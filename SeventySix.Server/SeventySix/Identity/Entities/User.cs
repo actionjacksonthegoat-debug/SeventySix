@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -22,23 +24,23 @@ namespace SeventySix.Identity;
 /// - Id is the unique identifier for the user
 /// - Username is required and must be unique
 /// - Email is required and must be valid
-/// - CreatedAt tracks when the user was created (cannot be modified)
+/// - CreateDate tracks when the user was created (cannot be modified)
 /// - CreatedBy tracks who created the user (cannot be modified)
-/// - ModifiedAt/ModifiedBy track last modification
+/// - ModifyDate/ModifiedBy track last modification
 /// - IsActive indicates whether the user account is active
 /// - IsDeleted enables soft delete (user excluded from queries by default)
 /// - RowVersion provides optimistic concurrency control
 ///
 /// Audit Trail:
-/// - CreatedAt, CreatedBy: Set on creation, immutable
-/// - ModifiedAt, ModifiedBy: Updated on each modification
+/// - CreateDate, CreatedBy: Set on creation, immutable
+/// - ModifyDate, ModifiedBy: Updated on each modification
 /// - DeletedAt, DeletedBy: Set when soft deleted
 ///
 /// Concurrency:
 /// - RowVersion: Automatically updated by database on each change
 /// - Prevents lost updates in concurrent scenarios
 /// </remarks>
-public class User
+public class User : IAuditableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier for the user.
@@ -102,28 +104,30 @@ public class User
 	/// A DateTime value representing when the user account was created.
 	/// </value>
 	/// <remarks>
-	/// This is typically set automatically during user creation.
+	/// This is automatically set by AuditInterceptor during user creation.
 	/// Uses UTC time for consistency across time zones.
 	/// Immutable after creation (business rule enforced at service layer).
 	/// </remarks>
-	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime CreateDate
+	{
+		get; set;
+	}
 
 	/// <summary>
 	/// Gets or sets the username or identifier of who created this user.
 	/// </summary>
 	/// <value>
 	/// A string representing the creator's username or identifier.
-	/// Null if not set or created by system.
 	/// </value>
 	/// <remarks>
 	/// Audit field for tracking user creation.
 	/// Immutable after creation (business rule enforced at service layer).
 	/// Maximum length: 100 characters (enforced by database layer).
 	/// </remarks>
-	public string? CreatedBy
+	public string CreatedBy
 	{
 		get; set;
-	}
+	} = string.Empty;
 
 	/// <summary>
 	/// Gets or sets the date and time when the user was last modified.
@@ -134,10 +138,10 @@ public class User
 	/// </value>
 	/// <remarks>
 	/// Audit field for tracking user modifications.
-	/// Updated automatically on each update operation.
+	/// Automatically set by AuditInterceptor on each update operation.
 	/// Uses UTC time for consistency across time zones.
 	/// </remarks>
-	public DateTime? ModifiedAt
+	public DateTime? ModifyDate
 	{
 		get; set;
 	}
@@ -147,17 +151,16 @@ public class User
 	/// </summary>
 	/// <value>
 	/// A string representing the modifier's username or identifier.
-	/// Null if never modified.
 	/// </value>
 	/// <remarks>
 	/// Audit field for tracking user modifications.
 	/// Updated automatically on each update operation.
 	/// Maximum length: 100 characters (enforced by database layer).
 	/// </remarks>
-	public string? ModifiedBy
+	public string ModifiedBy
 	{
 		get; set;
-	}
+	} = string.Empty;
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the user account is active.

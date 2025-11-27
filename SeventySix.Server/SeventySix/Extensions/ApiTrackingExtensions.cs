@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ApiTracking;
+using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Extensions;
 
@@ -44,9 +45,13 @@ public static class ApiTrackingExtensions
 	/// </remarks>
 	public static IServiceCollection AddApiTrackingDomain(this IServiceCollection services, string connectionString)
 	{
-		// Register ApiTrackingDbContext with PostgreSQL
-		services.AddDbContext<ApiTrackingDbContext>(options =>
-			options.UseNpgsql(connectionString));
+		// Register ApiTrackingDbContext with PostgreSQL and AuditInterceptor
+		services.AddDbContext<ApiTrackingDbContext>((serviceProvider, options) =>
+		{
+			AuditInterceptor auditInterceptor = serviceProvider.GetRequiredService<AuditInterceptor>();
+			options.UseNpgsql(connectionString);
+			options.AddInterceptors(auditInterceptor);
+		});
 
 		// Register repositories
 		services.AddScoped<IThirdPartyApiRequestRepository, ThirdPartyApiRequestRepository>();

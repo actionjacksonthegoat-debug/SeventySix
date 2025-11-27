@@ -211,7 +211,7 @@
 							<div class="info-row">
 								<strong>Created:</strong>
 								<span>{{
-									user()!.createdAt | date: "medium"
+									user()!.createDate | date: "medium"
 								}}</span>
 							</div>
 							@if (user()!.createdBy)
@@ -221,12 +221,12 @@
 									<span>{{ user()!.createdBy }}</span>
 								</div>
 							}
-							@if (user()!.modifiedAt)
+							@if (user()!.modifyDate)
 							{
 								<div class="info-row">
 									<strong>Last Modified:</strong>
 									<span>{{
-										user()!.modifiedAt | date: "medium"
+										user()!.modifyDate | date: "medium"
 									}}</span>
 								</div>
 							}
@@ -276,7 +276,7 @@
 										>
 										<span class="mat-body-1">
 											{{
-												user()!.createdAt
+												user()!.createDate
 													| date: "medium"
 											}}
 										</span>

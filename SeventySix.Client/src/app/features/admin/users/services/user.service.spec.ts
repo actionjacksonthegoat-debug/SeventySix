@@ -130,8 +130,7 @@ describe("UserService", () =>
 				id: 1,
 				username: "testuser",
 				email: "updated@example.com",
-				isActive: true,
-				rowVersion: 1
+				isActive: true
 			};
 			mockRepository.update.and.returnValue(of(mockUser));
 

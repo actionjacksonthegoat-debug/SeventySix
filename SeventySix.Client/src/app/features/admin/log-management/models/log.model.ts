@@ -4,29 +4,23 @@
 export interface LogResponse
 {
 	id: number;
-	timestamp: Date;
+	createDate: Date;
 	logLevel: string; // Changed from 'level: LogLevel' to match backend
 	message: string;
-	sourceContext: string | null;
-	exception: string | null;
+	exceptionMessage: string | null;
+	baseExceptionMessage: string | null;
 	stackTrace: string | null;
-	requestId: string | null;
+	sourceContext: string | null;
+	requestMethod: string | null;
 	requestPath: string | null;
+	statusCode: number | null;
+	durationMs: number | null;
+	properties: string | null;
 	machineName: string | null;
-	threadId: number | null;
-	application: string | null;
 	environment: string | null;
-	userId: string | null;
-	userName: string | null;
-	sessionId: string | null;
 	correlationId: string | null;
 	spanId: string | null;
 	parentSpanId: string | null;
-	clientIp: string | null;
-	userAgent: string | null;
-	duration: number | null;
-	statusCode: number | null;
-	properties: Record<string, unknown> | null;
 }
 
 /**

@@ -23,7 +23,6 @@ public class UpdateUserRequestTests
 			Email = "test@example.com",
 			FullName = "Test User",
 			IsActive = true,
-			RowVersion = 123u
 		};
 
 		// Assert
@@ -32,7 +31,6 @@ public class UpdateUserRequestTests
 		request.Email.Should().Be("test@example.com");
 		request.FullName.Should().Be("Test User");
 		request.IsActive.Should().BeTrue();
-		request.RowVersion.Should().Be(123u);
 	}
 
 	[Fact]
@@ -46,7 +44,6 @@ public class UpdateUserRequestTests
 			Email = "test@example.com",
 			FullName = null,
 			IsActive = true,
-			RowVersion = null
 		};
 
 		// Assert

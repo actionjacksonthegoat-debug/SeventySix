@@ -51,7 +51,7 @@ describe("ThirdPartyApiService", () =>
 		expect(service).toBeTruthy();
 	});
 
-	describe("createAllQuery", () =>
+	describe("getAllThirdPartyApis", () =>
 	{
 		it("should return all third-party API requests", async () =>
 		{
@@ -75,7 +75,7 @@ describe("ThirdPartyApiService", () =>
 			];
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createAllQuery()
+				service.getAllThirdPartyApis()
 			); // Wait for query to execute
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -95,7 +95,7 @@ describe("ThirdPartyApiService", () =>
 		it("should handle empty array response", async () =>
 		{
 			const query = TestBed.runInInjectionContext(() =>
-				service.createAllQuery()
+				service.getAllThirdPartyApis()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -114,7 +114,7 @@ describe("ThirdPartyApiService", () =>
 		{
 			spyOn(console, "error"); // Suppress expected error logs
 			const query = TestBed.runInInjectionContext(() =>
-				service.createAllQuery()
+				service.getAllThirdPartyApis()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -130,7 +130,7 @@ describe("ThirdPartyApiService", () =>
 			expect(query.data()).toBeUndefined();
 		});
 	});
-	describe("createByApiNameQuery", () =>
+	describe("getByApiName", () =>
 	{
 		it("should return API requests filtered by API name", async () =>
 		{
@@ -147,7 +147,7 @@ describe("ThirdPartyApiService", () =>
 			];
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createByApiNameQuery(apiName)
+				service.getByApiName(apiName)
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -169,7 +169,7 @@ describe("ThirdPartyApiService", () =>
 			const encodedName = encodeURIComponent(apiName);
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createByApiNameQuery(apiName)
+				service.getByApiName(apiName)
 			);
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -188,7 +188,7 @@ describe("ThirdPartyApiService", () =>
 			const apiName = "NonExistent";
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createByApiNameQuery(apiName)
+				service.getByApiName(apiName)
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -203,7 +203,7 @@ describe("ThirdPartyApiService", () =>
 		});
 	});
 
-	describe("createStatisticsQuery", () =>
+	describe("getStatistics", () =>
 	{
 		it("should return third-party API statistics", async () =>
 		{
@@ -221,7 +221,7 @@ describe("ThirdPartyApiService", () =>
 			};
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createStatisticsQuery()
+				service.getStatistics()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -232,13 +232,11 @@ describe("ThirdPartyApiService", () =>
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
-			const stats: Record<string, unknown> | undefined = query.data();
-			expect(stats?.["totalCallsToday"]).toBe(mockStats.totalCallsToday);
-			expect(stats?.["totalApisTracked"]).toBe(
-				mockStats.totalApisTracked
-			);
+			const stats: ThirdPartyApiStatistics | undefined = query.data();
+			expect(stats?.totalCallsToday).toBe(mockStats.totalCallsToday);
+			expect(stats?.totalApisTracked).toBe(mockStats.totalApisTracked);
 			expect(
-				(stats?.["callsByApi"] as Record<string, number>)["ExternalAPI"]
+				(stats?.callsByApi as Record<string, number>)["ExternalAPI"]
 			).toBe(1234);
 		});
 
@@ -252,7 +250,7 @@ describe("ThirdPartyApiService", () =>
 			};
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createStatisticsQuery()
+				service.getStatistics()
 			);
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -261,13 +259,12 @@ describe("ThirdPartyApiService", () =>
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
-			const stats: Record<string, unknown> | undefined = query.data();
-			expect(stats?.["totalCallsToday"]).toBe(0);
-			expect(stats?.["totalApisTracked"]).toBe(0);
+			const stats: ThirdPartyApiStatistics | undefined = query.data();
+			expect(stats?.totalCallsToday).toBe(0);
+			expect(stats?.totalApisTracked).toBe(0);
 			expect(
-				Object.keys(
-					(stats?.["callsByApi"] as Record<string, number>) ?? {}
-				).length
+				Object.keys((stats?.callsByApi as Record<string, number>) ?? {})
+					.length
 			).toBe(0);
 		});
 
@@ -275,7 +272,7 @@ describe("ThirdPartyApiService", () =>
 		{
 			spyOn(console, "error"); // Suppress expected error logs
 			const query = TestBed.runInInjectionContext(() =>
-				service.createStatisticsQuery()
+				service.getStatistics()
 			);
 			await new Promise((resolve) => setTimeout(resolve, 0));
 

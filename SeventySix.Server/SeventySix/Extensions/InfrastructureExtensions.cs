@@ -4,6 +4,8 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Infrastructure;
+using SeventySix.Shared;
+using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Extensions;
 
@@ -12,7 +14,7 @@ namespace SeventySix.Extensions;
 /// </summary>
 /// <remarks>
 /// Provides dependency injection registration for cross-cutting infrastructure services
-/// including metrics collection and health checks.
+/// including metrics collection, health checks, and audit tracking.
 /// </remarks>
 public static class InfrastructureExtensions
 {
@@ -24,13 +26,17 @@ public static class InfrastructureExtensions
 	/// <remarks>
 	/// Registers:
 	/// - IMetricsService as singleton (maintains static metrics state)
-	/// - IHealthCheckService as scoped (per-request health checks).
+	/// - IHealthCheckService as scoped (per-request health checks)
+	/// - AuditInterceptor as scoped (per-request audit tracking).
 	/// </remarks>
 	public static IServiceCollection AddInfrastructureDomain(this IServiceCollection services)
 	{
 		// Register services
 		services.AddSingleton<IMetricsService, MetricsService>();
 		services.AddScoped<IHealthCheckService, HealthCheckService>();
+
+		// Register audit infrastructure (scoped for per-request user context)
+		services.AddScoped<AuditInterceptor>();
 
 		return services;
 	}

@@ -1,5 +1,4 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture } from "@angular/core/testing";
 import {
 	TableColumn,
 	QuickFilter,
@@ -10,6 +9,13 @@ import {
 	FilterChangeEvent
 } from "@shared/models";
 import { DataTableComponent } from "./data-table.component";
+import {
+	ComponentTestBed,
+	TableColumnBuilder,
+	createTextColumn,
+	createDateColumn,
+	createBadgeColumn
+} from "@testing";
 
 interface TestEntity
 {
@@ -23,38 +29,15 @@ describe("DataTableComponent", () =>
 {
 	let component: DataTableComponent<TestEntity>;
 	let fixture: ComponentFixture<DataTableComponent<TestEntity>>;
+	let builder: ComponentTestBed<DataTableComponent<TestEntity>>;
 
 	const mockColumns: TableColumn<TestEntity>[] = [
-		{
-			key: "id",
-			label: "ID",
-			sortable: true,
-			visible: true,
-			type: "text"
-		},
-		{
-			key: "name",
-			label: "Name",
-			sortable: true,
-			visible: true,
-			type: "text"
-		},
-		{
-			key: "status",
-			label: "Status",
-			sortable: false,
-			visible: true,
-			type: "badge",
-			badgeColor: (value: unknown) =>
-				value === "active" ? "primary" : "warn"
-		},
-		{
-			key: "createdAt",
-			label: "Created",
-			sortable: true,
-			visible: true,
-			type: "date"
-		}
+		createTextColumn<TestEntity>("id", "ID", true),
+		createTextColumn<TestEntity>("name", "Name", true),
+		createBadgeColumn<TestEntity>("status", "Status", (value: unknown) =>
+			value === "active" ? "primary" : "warn"
+		),
+		createDateColumn<TestEntity>("createdAt", "Created")
 	];
 
 	const mockData: TestEntity[] = [
@@ -78,14 +61,19 @@ describe("DataTableComponent", () =>
 		}
 	];
 
+	const defaultInputs = {
+		columns: mockColumns,
+		data: mockData,
+		isLoading: false,
+		totalCount: 3,
+		pageIndex: 0,
+		pageSize: 25
+	};
+
 	beforeEach(async () =>
 	{
-		await TestBed.configureTestingModule({
-			imports: [DataTableComponent],
-			providers: [provideZonelessChangeDetection()]
-		}).compileComponents();
-
-		fixture = TestBed.createComponent(DataTableComponent<TestEntity>);
+		builder = new ComponentTestBed<DataTableComponent<TestEntity>>();
+		fixture = await builder.build(DataTableComponent<TestEntity>);
 		component = fixture.componentInstance;
 	});
 
@@ -98,14 +86,7 @@ describe("DataTableComponent", () =>
 	{
 		it("should accept required inputs", () =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 3);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-
-			fixture.detectChanges();
+			builder.withInputs(fixture, defaultInputs);
 
 			expect(component.columns()).toEqual(mockColumns);
 			expect(component.data()).toEqual(mockData);
@@ -117,14 +98,7 @@ describe("DataTableComponent", () =>
 
 		it("should have correct default values for optional inputs", () =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 3);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-
-			fixture.detectChanges();
+			builder.withInputs(fixture, defaultInputs);
 
 			expect(component.error()).toBeNull();
 			expect(component.searchable()).toBe(true);
@@ -145,13 +119,7 @@ describe("DataTableComponent", () =>
 	{
 		beforeEach(() =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 3);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-			fixture.detectChanges();
+			builder.withInputs(fixture, defaultInputs);
 		});
 
 		it("should initialize visible columns from column definitions", () =>
@@ -204,14 +172,7 @@ describe("DataTableComponent", () =>
 	{
 		beforeEach(() =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 3);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-			fixture.componentRef.setInput("searchable", true);
-			fixture.detectChanges();
+			builder.withInputs(fixture, { ...defaultInputs, searchable: true });
 		});
 
 		it("should update search signal when input changes", () =>
@@ -267,14 +228,10 @@ describe("DataTableComponent", () =>
 
 		beforeEach(() =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 3);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-			fixture.componentRef.setInput("quickFilters", mockQuickFilters);
-			fixture.detectChanges();
+			builder.withInputs(fixture, {
+				...defaultInputs,
+				quickFilters: mockQuickFilters
+			});
 		});
 
 		it("should emit filterChange event when filter toggled", (done) =>
@@ -318,14 +275,10 @@ describe("DataTableComponent", () =>
 
 		beforeEach(() =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 3);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-			fixture.componentRef.setInput("rowActions", mockRowActions);
-			fixture.detectChanges();
+			builder.withInputs(fixture, {
+				...defaultInputs,
+				rowActions: mockRowActions
+			});
 		});
 
 		it("should emit rowAction event when action triggered", (done) =>
@@ -368,15 +321,11 @@ describe("DataTableComponent", () =>
 
 		beforeEach(() =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 3);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-			fixture.componentRef.setInput("selectable", true);
-			fixture.componentRef.setInput("bulkActions", mockBulkActions);
-			fixture.detectChanges();
+			builder.withInputs(fixture, {
+				...defaultInputs,
+				selectable: true,
+				bulkActions: mockBulkActions
+			});
 		});
 
 		it("should emit bulkAction event when action triggered", (done) =>
@@ -422,13 +371,7 @@ describe("DataTableComponent", () =>
 	{
 		beforeEach(() =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 100);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-			fixture.detectChanges();
+			builder.withInputs(fixture, { ...defaultInputs, totalCount: 100 });
 		});
 
 		it("should emit pageChange event when page changed", (done) =>
@@ -458,13 +401,7 @@ describe("DataTableComponent", () =>
 	{
 		beforeEach(() =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 3);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-			fixture.detectChanges();
+			builder.withInputs(fixture, defaultInputs);
 		});
 
 		it("should toggle column visibility", () =>
@@ -506,14 +443,10 @@ describe("DataTableComponent", () =>
 	{
 		beforeEach(() =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 3);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-			fixture.componentRef.setInput("showRefresh", true);
-			fixture.detectChanges();
+			builder.withInputs(fixture, {
+				...defaultInputs,
+				showRefresh: true
+			});
 		});
 
 		it("should emit refreshClick event when refresh button clicked", (done) =>
@@ -532,14 +465,7 @@ describe("DataTableComponent", () =>
 	{
 		beforeEach(() =>
 		{
-			fixture.componentRef.setInput("columns", mockColumns);
-			fixture.componentRef.setInput("data", mockData);
-			fixture.componentRef.setInput("isLoading", false);
-			fixture.componentRef.setInput("totalCount", 3);
-			fixture.componentRef.setInput("pageIndex", 0);
-			fixture.componentRef.setInput("pageSize", 25);
-			fixture.componentRef.setInput("showCreate", true);
-			fixture.detectChanges();
+			builder.withInputs(fixture, { ...defaultInputs, showCreate: true });
 		});
 
 		it("should emit createClick event when create button clicked", (done) =>

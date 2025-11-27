@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Identity;
 
@@ -10,7 +11,11 @@ namespace SeventySix.Identity;
 /// Entity Framework Core DbContext for Identity bounded context.
 /// Manages User entities and their database operations.
 /// </summary>
-public class IdentityDbContext : DbContext
+/// <remarks>
+/// Inherits common configuration from BaseDbContext.
+/// Provides "Identity" schema name and soft delete query filter for User entities.
+/// </remarks>
+public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="IdentityDbContext"/> class.
@@ -27,19 +32,20 @@ public class IdentityDbContext : DbContext
 	public DbSet<User> Users => Set<User>();
 
 	/// <summary>
-	/// Configures the model that was discovered by convention from the entity types.
+	/// Gets the schema name for Identity bounded context.
 	/// </summary>
-	/// <param name="modelBuilder">The builder being used to construct the model for this context.</param>
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	/// <returns>"Identity".</returns>
+	protected override string GetSchemaName() => "Identity";
+
+	/// <summary>
+	/// Configures entity-specific settings for Identity domain.
+	/// </summary>
+	/// <param name="modelBuilder">The model builder.</param>
+	/// <remarks>
+	/// Applies global query filter for soft delete on User entities.
+	/// </remarks>
+	protected override void ConfigureEntities(ModelBuilder modelBuilder)
 	{
-		// Configure schema for Identity bounded context
-		modelBuilder.HasDefaultSchema("Identity");
-
-		// ONLY apply configurations from Identity namespace (bounded context isolation)
-		modelBuilder.ApplyConfigurationsFromAssembly(
-			typeof(IdentityDbContext).Assembly,
-			t => t.Namespace != null && t.Namespace.StartsWith("SeventySix.Identity"));
-
 		// Global query filter for soft delete
 		modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);
 	}

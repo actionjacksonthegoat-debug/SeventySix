@@ -50,7 +50,7 @@
 				<span class="source-context">• {{ log().sourceContext }}</span>
 			}
 			<span class="timestamp"
-				>• {{ getRelativeTime(log().timestamp) }}</span
+				>• {{ getRelativeTime(log().createDate) }}</span
 			>
 		</div>
 		<div class="header-actions">
@@ -467,7 +467,7 @@
 				<div class="info-item">
 					<span class="info-label">Timestamp:</span>
 					<span class="info-value">{{
-						log().timestamp.toLocaleString()
+						log().createDate.toLocaleString()
 					}}</span>
 				</div>
 				@if (log().machineName)

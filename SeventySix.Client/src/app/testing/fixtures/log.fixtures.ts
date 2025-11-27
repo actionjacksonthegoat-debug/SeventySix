@@ -17,29 +17,23 @@ export class LogFixtures
 	 */
 	static readonly ERROR_LOG: LogResponse = {
 		id: 1,
-		timestamp: new Date("2024-01-01T12:00:00Z"),
+		createDate: new Date("2024-01-01T12:00:00Z"),
 		logLevel: "Error",
 		message: "Test error message",
 		sourceContext: "TestComponent",
+		requestMethod: "GET",
 		requestPath: "/api/test",
 		statusCode: 500,
-		exception: "Test exception",
+		durationMs: 1500,
+		exceptionMessage: "Test exception",
+		baseExceptionMessage: null,
 		stackTrace: "Test stack trace",
-		properties: {},
-		requestId: null,
-		machineName: null,
-		threadId: null,
-		application: null,
-		environment: null,
-		userId: null,
-		userName: null,
-		sessionId: null,
-		correlationId: null,
-		spanId: null,
-		parentSpanId: null,
-		clientIp: null,
-		userAgent: null,
-		duration: null
+		properties: null,
+		machineName: "TEST-MACHINE",
+		environment: "Test",
+		correlationId: "corr-123",
+		spanId: "span-456",
+		parentSpanId: null
 	};
 
 	/**
@@ -47,29 +41,23 @@ export class LogFixtures
 	 */
 	static readonly WARNING_LOG: LogResponse = {
 		id: 2,
-		timestamp: new Date("2024-01-01T12:01:00Z"),
+		createDate: new Date("2024-01-01T12:01:00Z"),
 		logLevel: "Warning",
 		message: "Test warning message",
 		sourceContext: "TestService",
+		requestMethod: "POST",
 		requestPath: "/api/test",
 		statusCode: 400,
-		exception: null,
+		durationMs: 250,
+		exceptionMessage: null,
+		baseExceptionMessage: null,
 		stackTrace: null,
-		properties: {},
-		requestId: null,
-		machineName: null,
-		threadId: null,
-		application: null,
-		environment: null,
-		userId: null,
-		userName: null,
-		sessionId: null,
-		correlationId: null,
-		spanId: null,
-		parentSpanId: null,
-		clientIp: null,
-		userAgent: null,
-		duration: null
+		properties: null,
+		machineName: "TEST-MACHINE",
+		environment: "Test",
+		correlationId: "corr-124",
+		spanId: "span-457",
+		parentSpanId: null
 	};
 
 	/**
@@ -77,29 +65,23 @@ export class LogFixtures
 	 */
 	static readonly INFO_LOG: LogResponse = {
 		id: 3,
-		timestamp: new Date("2024-01-01T12:02:00Z"),
+		createDate: new Date("2024-01-01T12:02:00Z"),
 		logLevel: "Information",
 		message: "Test info message",
 		sourceContext: "TestController",
+		requestMethod: "GET",
 		requestPath: "/api/test",
 		statusCode: 200,
-		exception: null,
+		durationMs: 50,
+		exceptionMessage: null,
+		baseExceptionMessage: null,
 		stackTrace: null,
-		properties: {},
-		requestId: null,
-		machineName: null,
-		threadId: null,
-		application: null,
-		environment: null,
-		userId: null,
-		userName: null,
-		sessionId: null,
-		correlationId: null,
-		spanId: null,
-		parentSpanId: null,
-		clientIp: null,
-		userAgent: null,
-		duration: null
+		properties: null,
+		machineName: "TEST-MACHINE",
+		environment: "Test",
+		correlationId: "corr-125",
+		spanId: "span-458",
+		parentSpanId: null
 	};
 
 	/**
@@ -135,7 +117,7 @@ export class LogFixtures
 		return Array.from({ length: count }, (_, i) =>
 			LogFixtures.createLog({
 				id: i + 1,
-				timestamp: new Date(Date.now() - i * 60000), // Each log 1 min apart
+				createDate: new Date(Date.now() - i * 60000), // Each log 1 min apart
 				logLevel: logLevel || "Information",
 				message: `Test log message ${i + 1}`
 			})

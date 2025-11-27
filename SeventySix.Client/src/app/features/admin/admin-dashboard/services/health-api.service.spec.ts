@@ -57,7 +57,7 @@ describe("HealthApiService", () =>
 		expect(service).toBeTruthy();
 	});
 
-	describe("createHealthQuery", () =>
+	describe("getHealth", () =>
 	{
 		it("should return overall system health status", async () =>
 		{
@@ -95,7 +95,7 @@ describe("HealthApiService", () =>
 			};
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createHealthQuery()
+				service.getHealth()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -144,7 +144,7 @@ describe("HealthApiService", () =>
 			};
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createHealthQuery()
+				service.getHealth()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -164,7 +164,7 @@ describe("HealthApiService", () =>
 		{
 			spyOn(console, "error"); // Suppress expected error logs
 			const query = TestBed.runInInjectionContext(() =>
-				service.createHealthQuery()
+				service.getHealth()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -181,36 +181,19 @@ describe("HealthApiService", () =>
 			expect(query.data()).toBeUndefined();
 		});
 	});
-	describe("createDatabaseHealthQuery", () =>
+	describe("getDatabaseHealth", () =>
 	{
 		it("should return database health status", async () =>
 		{
-			const mockDbHealth: HealthStatus = {
-				status: "Healthy",
-				checkedAt: new Date().toISOString(),
-				database: {
-					isConnected: true,
-					responseTimeMs: 10.2,
-					activeConnections: 3,
-					status: "Healthy"
-				},
-				externalApis: { apis: {} },
-				errorQueue: {
-					queuedItems: 0,
-					failedItems: 0,
-					circuitBreakerOpen: false,
-					status: "Healthy"
-				},
-				system: {
-					cpuUsagePercent: 10,
-					memoryUsedMb: 1024,
-					memoryTotalMb: 4096,
-					diskUsagePercent: 50
-				}
+			const mockDbHealth: DatabaseHealth = {
+				isConnected: true,
+				responseTimeMs: 10.2,
+				activeConnections: 3,
+				status: "Healthy"
 			};
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createDatabaseHealthQuery()
+				service.getDatabaseHealth()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -223,38 +206,21 @@ describe("HealthApiService", () =>
 
 			const dbHealth = query.data();
 			expect(dbHealth).toEqual(mockDbHealth);
-			expect(dbHealth?.database.isConnected).toBe(true);
-			expect(dbHealth?.database.responseTimeMs).toBeLessThan(50);
+			expect(dbHealth?.isConnected).toBe(true);
+			expect(dbHealth?.responseTimeMs).toBeLessThan(50);
 		});
 
 		it("should handle database connection failure", async () =>
 		{
-			const mockDbHealth: HealthStatus = {
-				status: "Unhealthy",
-				checkedAt: new Date().toISOString(),
-				database: {
-					isConnected: false,
-					responseTimeMs: 0,
-					activeConnections: 0,
-					status: "Unhealthy"
-				},
-				externalApis: { apis: {} },
-				errorQueue: {
-					queuedItems: 0,
-					failedItems: 0,
-					circuitBreakerOpen: false,
-					status: "Healthy"
-				},
-				system: {
-					cpuUsagePercent: 10,
-					memoryUsedMb: 1024,
-					memoryTotalMb: 4096,
-					diskUsagePercent: 50
-				}
+			const mockDbHealth: DatabaseHealth = {
+				isConnected: false,
+				responseTimeMs: 0,
+				activeConnections: 0,
+				status: "Unhealthy"
 			};
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createDatabaseHealthQuery()
+				service.getDatabaseHealth()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -265,7 +231,7 @@ describe("HealthApiService", () =>
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const dbHealth = query.data();
-			expect(dbHealth?.database.isConnected).toBe(false);
+			expect(dbHealth?.isConnected).toBe(false);
 			expect(dbHealth?.status).toBe("Unhealthy");
 		});
 
@@ -273,7 +239,7 @@ describe("HealthApiService", () =>
 		{
 			spyOn(console, "error"); // Suppress expected error logs
 			const query = TestBed.runInInjectionContext(() =>
-				service.createDatabaseHealthQuery()
+				service.getDatabaseHealth()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -291,51 +257,29 @@ describe("HealthApiService", () =>
 		});
 	});
 
-	describe("createExternalApiHealthQuery", () =>
+	describe("getExternalApiHealth", () =>
 	{
 		it("should return external API health status", async () =>
 		{
-			const mockApiHealth: HealthStatus = {
-				status: "Healthy",
-				checkedAt: new Date().toISOString(),
-				database: {
-					isConnected: true,
-					responseTimeMs: 10,
-					activeConnections: 3,
-					status: "Healthy"
-				},
-				externalApis: {
-					apis: {
-						ExternalAPI: {
-							apiName: "ExternalAPI",
-							isAvailable: true,
-							responseTimeMs: 150.5,
-							lastChecked: "2025-11-12T10:28:00Z"
-						},
-						GeocodeAPI: {
-							apiName: "GeocodeAPI",
-							isAvailable: true,
-							responseTimeMs: 200.0,
-							lastChecked: "2025-11-12T10:27:00Z"
-						}
+			const mockApiHealth: ExternalApiHealth = {
+				apis: {
+					ExternalAPI: {
+						apiName: "ExternalAPI",
+						isAvailable: true,
+						responseTimeMs: 150.5,
+						lastChecked: "2025-11-12T10:28:00Z"
+					},
+					GeocodeAPI: {
+						apiName: "GeocodeAPI",
+						isAvailable: true,
+						responseTimeMs: 200.0,
+						lastChecked: "2025-11-12T10:27:00Z"
 					}
-				},
-				errorQueue: {
-					queuedItems: 0,
-					failedItems: 0,
-					circuitBreakerOpen: false,
-					status: "Healthy"
-				},
-				system: {
-					cpuUsagePercent: 10,
-					memoryUsedMb: 1024,
-					memoryTotalMb: 4096,
-					diskUsagePercent: 50
 				}
 			};
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createExternalApiHealthQuery()
+				service.getExternalApiHealth()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
@@ -347,51 +291,25 @@ describe("HealthApiService", () =>
 
 			const apiHealth = query.data();
 			expect(apiHealth).toEqual(mockApiHealth);
-			expect(Object.keys(apiHealth?.externalApis.apis ?? {}).length).toBe(
-				2
-			);
-			expect(
-				apiHealth?.externalApis.apis["ExternalAPI"].isAvailable
-			).toBe(true);
+			expect(Object.keys(apiHealth?.apis ?? {}).length).toBe(2);
+			expect(apiHealth?.apis["ExternalAPI"].isAvailable).toBe(true);
 		});
 
 		it("should handle APIs with unavailable status", async () =>
 		{
-			const mockApiHealth: HealthStatus = {
-				status: "Degraded",
-				checkedAt: new Date().toISOString(),
-				database: {
-					isConnected: true,
-					responseTimeMs: 10,
-					activeConnections: 3,
-					status: "Healthy"
-				},
-				externalApis: {
-					apis: {
-						ExternalAPI: {
-							apiName: "ExternalAPI",
-							isAvailable: false,
-							responseTimeMs: 0,
-							lastChecked: "2025-11-12T10:20:00Z"
-						}
+			const mockApiHealth: ExternalApiHealth = {
+				apis: {
+					ExternalAPI: {
+						apiName: "ExternalAPI",
+						isAvailable: false,
+						responseTimeMs: 0,
+						lastChecked: "2025-11-12T10:20:00Z"
 					}
-				},
-				errorQueue: {
-					queuedItems: 0,
-					failedItems: 0,
-					circuitBreakerOpen: false,
-					status: "Healthy"
-				},
-				system: {
-					cpuUsagePercent: 10,
-					memoryUsedMb: 1024,
-					memoryTotalMb: 4096,
-					diskUsagePercent: 50
 				}
 			};
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createExternalApiHealthQuery()
+				service.getExternalApiHealth()
 			);
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -401,12 +319,8 @@ describe("HealthApiService", () =>
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const apiHealth = query.data();
-			expect(
-				apiHealth?.externalApis.apis["ExternalAPI"].isAvailable
-			).toBe(false);
-			expect(
-				apiHealth?.externalApis.apis["ExternalAPI"].responseTimeMs
-			).toBe(0);
+			expect(apiHealth?.apis["ExternalAPI"].isAvailable).toBe(false);
+			expect(apiHealth?.apis["ExternalAPI"].responseTimeMs).toBe(0);
 		});
 
 		it("should handle empty APIs list", async () =>
@@ -438,7 +352,7 @@ describe("HealthApiService", () =>
 			};
 
 			const query = TestBed.runInInjectionContext(() =>
-				service.createExternalApiHealthQuery()
+				service.getExternalApiHealth()
 			);
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -448,16 +362,14 @@ describe("HealthApiService", () =>
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const apiHealth = query.data();
-			expect(Object.keys(apiHealth?.externalApis.apis ?? {}).length).toBe(
-				0
-			);
+			expect(Object.keys(apiHealth?.apis ?? {}).length).toBe(0);
 		});
 
 		it("should handle HTTP errors", async () =>
 		{
 			spyOn(console, "error"); // Suppress expected error logs
 			const query = TestBed.runInInjectionContext(() =>
-				service.createExternalApiHealthQuery()
+				service.getExternalApiHealth()
 			);
 
 			await new Promise((resolve) => setTimeout(resolve, 0));

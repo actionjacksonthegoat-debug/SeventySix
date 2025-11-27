@@ -10,114 +10,122 @@ using SeventySix.Identity;
 
 namespace SeventySix.Identity.Migrations
 {
-	[DbContext(typeof(IdentityDbContext))]
-	partial class IdentityDbContextModelSnapshot : ModelSnapshot
-	{
-		protected override void BuildModel(ModelBuilder modelBuilder)
-		{
+    [DbContext(typeof(IdentityDbContext))]
+    partial class IdentityDbContextModelSnapshot : ModelSnapshot
+    {
+        protected override void BuildModel(ModelBuilder modelBuilder)
+        {
 #pragma warning disable 612, 618
-			modelBuilder
-				.HasDefaultSchema("Identity")
-				.HasAnnotation("ProductVersion", "10.0.0")
-				.HasAnnotation("Relational:MaxIdentifierLength", 63);
+            modelBuilder
+                .HasDefaultSchema("Identity")
+                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-			NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-			modelBuilder.Entity("SeventySix.Identity.User", b =>
-				{
-					b.Property<int>("Id")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("integer");
+            modelBuilder.Entity("SeventySix.Identity.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
 
-					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-					b.Property<DateTime>("CreatedAt")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("timestamp with time zone")
-						.HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CreatedAt")
+                        .HasDefaultValueSql("NOW()");
 
-					b.Property<string>("CreatedBy")
-						.HasMaxLength(100)
-						.HasColumnType("character varying(100)");
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasDefaultValue("System");
 
-					b.Property<DateTime?>("DeletedAt")
-						.HasColumnType("timestamp with time zone");
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
 
-					b.Property<string>("DeletedBy")
-						.HasMaxLength(100)
-						.HasColumnType("character varying(100)");
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-					b.Property<string>("Email")
-						.IsRequired()
-						.HasMaxLength(255)
-						.HasColumnType("character varying(255)");
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
-					b.Property<string>("FullName")
-						.HasMaxLength(100)
-						.HasColumnType("character varying(100)");
+                    b.Property<string>("FullName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-					b.Property<bool>("IsActive")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("boolean")
-						.HasDefaultValue(true);
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
-					b.Property<bool>("IsDeleted")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("boolean")
-						.HasDefaultValue(false);
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
-					b.Property<DateTime?>("LastLoginAt")
-						.HasColumnType("timestamp with time zone");
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone");
 
-					b.Property<string>("LastLoginIp")
-						.HasMaxLength(45)
-						.HasColumnType("character varying(45)");
+                    b.Property<string>("LastLoginIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
 
-					b.Property<DateTime?>("ModifiedAt")
-						.HasColumnType("timestamp with time zone");
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasDefaultValue("System");
 
-					b.Property<string>("ModifiedBy")
-						.HasMaxLength(100)
-						.HasColumnType("character varying(100)");
+                    b.Property<DateTime?>("ModifyDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ModifiedAt");
 
-					b.Property<string>("Preferences")
-						.HasColumnType("jsonb");
+                    b.Property<string>("Preferences")
+                        .HasColumnType("jsonb");
 
-					b.Property<uint?>("RowVersion")
-						.IsConcurrencyToken()
-						.ValueGeneratedOnAddOrUpdate()
-						.HasColumnType("xid")
-						.HasColumnName("xmin");
+                    b.Property<uint?>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
-					b.Property<string>("Username")
-						.IsRequired()
-						.HasMaxLength(50)
-						.HasColumnType("character varying(50)");
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-					b.HasKey("Id");
+                    b.HasKey("Id");
 
-					b.HasIndex("CreatedAt")
-						.HasDatabaseName("IX_Users_CreatedAt");
+                    b.HasIndex("CreateDate")
+                        .HasDatabaseName("IX_Users_CreateDate");
 
-					b.HasIndex("Email")
-						.IsUnique()
-						.HasDatabaseName("IX_Users_Email")
-						.HasFilter("\"IsDeleted\" = false");
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Users_Email")
+                        .HasFilter("\"IsDeleted\" = false");
 
-					b.HasIndex("IsDeleted")
-						.HasDatabaseName("IX_Users_IsDeleted");
+                    b.HasIndex("IsDeleted")
+                        .HasDatabaseName("IX_Users_IsDeleted");
 
-					b.HasIndex("Username")
-						.IsUnique()
-						.HasDatabaseName("IX_Users_Username")
-						.HasFilter("\"IsDeleted\" = false");
+                    b.HasIndex("Username")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Users_Username")
+                        .HasFilter("\"IsDeleted\" = false");
 
-					b.HasIndex("IsActive", "CreatedAt")
-						.HasDatabaseName("IX_Users_IsActive_CreatedAt");
+                    b.HasIndex("IsActive", "CreateDate")
+                        .HasDatabaseName("IX_Users_IsActive_CreateDate");
 
-					b.ToTable("Users", "Identity");
-				});
+                    b.ToTable("Users", "Identity");
+                });
 #pragma warning restore 612, 618
-		}
-	}
+        }
+    }
 }

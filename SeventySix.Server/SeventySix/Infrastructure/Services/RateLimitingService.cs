@@ -1,4 +1,4 @@
-﻿// <copyright file="RateLimitingService.cs" company="SeventySix">
+// <copyright file="RateLimitingService.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -43,33 +43,12 @@ namespace SeventySix.Infrastructure;
 /// - ISP: Interface contains only necessary methods
 /// - DIP: Depends on IThirdPartyApiRequestRepository abstraction
 /// </remarks>
-public class RateLimitingService : IRateLimitingService
+public class RateLimitingService(
+	ILogger<RateLimitingService> logger,
+	IThirdPartyApiRequestRepository repository,
+	ITransactionManager transactionManager) : IRateLimitingService
 {
 	private const int DAILY_CALL_LIMIT = 1000;
-
-	private readonly ILogger<RateLimitingService> Logger;
-	private readonly IThirdPartyApiRequestRepository Repository;
-	private readonly ITransactionManager TransactionManager;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="RateLimitingService"/> class.
-	/// </summary>
-	/// <param name="logger">Logger instance.</param>
-	/// <param name="repository">Repository for third-party API request tracking.</param>
-	/// <param name="transactionManager">Transaction manager for thread-safe operations.</param>
-	public RateLimitingService(
-		ILogger<RateLimitingService> logger,
-		IThirdPartyApiRequestRepository repository,
-		ITransactionManager transactionManager)
-	{
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-		Repository = repository ?? throw new ArgumentNullException(nameof(repository));
-		TransactionManager = transactionManager ?? throw new ArgumentNullException(nameof(transactionManager));
-
-		Logger.LogInformation(
-			"RateLimitingService initialized. Daily limit: {DailyLimit}",
-			DAILY_CALL_LIMIT);
-	}
 
 	/// <inheritdoc/>
 	public async Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default)
@@ -77,12 +56,12 @@ public class RateLimitingService : IRateLimitingService
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
-		ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		// If no record exists for today, we can make a request
 		if (request == null)
 		{
-			Logger.LogDebug("No tracking record found for {ApiName} on {Date}. Request allowed.", apiName, today);
+			logger.LogDebug("No tracking record found for {ApiName} on {Date}. Request allowed.", apiName, today);
 			return true;
 		}
 
@@ -90,7 +69,7 @@ public class RateLimitingService : IRateLimitingService
 
 		if (!canMakeRequest)
 		{
-			Logger.LogWarning(
+			logger.LogWarning(
 				"Rate limit exceeded for API: {ApiName}. Count: {Count}/{Limit}. Resets in: {TimeUntilReset}",
 				apiName,
 				request.CallCount,
@@ -112,14 +91,14 @@ public class RateLimitingService : IRateLimitingService
 
 		// Execute the entire operation in a transaction with automatic retry on conflicts
 		// The TransactionManager handles all race conditions and concurrency issues transparently
-		return await TransactionManager.ExecuteInTransactionAsync(async ct =>
+		return await transactionManager.ExecuteInTransactionAsync(async ct =>
 		{
 			DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 
 			// Fetch the current record within the transaction
 			// Repository now uses tracking queries when inside a transaction
 			// This ensures we see the latest committed data from other transactions
-			ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, ct);
+			ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, ct);
 
 			if (request == null)
 			{
@@ -137,7 +116,7 @@ public class RateLimitingService : IRateLimitingService
 				// Use domain method to increment (sets CallCount = 1 and LastCalledAt = now)
 				request.IncrementCallCount();
 
-				await Repository.CreateAsync(request); Logger.LogInformation(
+				await repository.CreateAsync(request); logger.LogInformation(
 						"Created new tracking record for {ApiName}. CallCount: {CallCount}",
 						apiName,
 						request.CallCount);
@@ -148,7 +127,7 @@ public class RateLimitingService : IRateLimitingService
 			// Record exists - check limit before incrementing
 			if (request.CallCount >= DAILY_CALL_LIMIT)
 			{
-				Logger.LogWarning(
+				logger.LogWarning(
 					"Cannot increment request count for {ApiName}. Limit reached: {Count}/{Limit}",
 					apiName,
 					request.CallCount,
@@ -162,9 +141,9 @@ public class RateLimitingService : IRateLimitingService
 
 			// Update the record - if another transaction modified it, this will throw
 			// and the TransactionManager will automatically retry the entire operation
-			await Repository.UpdateAsync(request);
+			await repository.UpdateAsync(request);
 
-			Logger.LogDebug(
+			logger.LogDebug(
 				"API call recorded for {ApiName}. Count: {Count}/{Limit}",
 				apiName,
 				request.CallCount,
@@ -173,7 +152,7 @@ public class RateLimitingService : IRateLimitingService
 			// Warn when approaching limit (90%)
 			if (request.CallCount >= DAILY_CALL_LIMIT * 0.9)
 			{
-				Logger.LogWarning(
+				logger.LogWarning(
 					"Approaching rate limit for {ApiName}: {Count}/{Limit} ({Percentage:F1}%)",
 					apiName,
 					request.CallCount,
@@ -191,7 +170,7 @@ public class RateLimitingService : IRateLimitingService
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
-		ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		return request?.CallCount ?? 0;
 	}
@@ -202,7 +181,7 @@ public class RateLimitingService : IRateLimitingService
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
-		ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		int currentCount = request?.CallCount ?? 0;
 		return Math.Max(0, DAILY_CALL_LIMIT - currentCount);
@@ -222,19 +201,19 @@ public class RateLimitingService : IRateLimitingService
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
-		ThirdPartyApiRequest? request = await Repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		if (request == null)
 		{
-			Logger.LogDebug("No tracking record to reset for {ApiName} on {Date}", apiName, today);
+			logger.LogDebug("No tracking record to reset for {ApiName} on {Date}", apiName, today);
 			return;
 		}
 
 		// Reset counter using domain logic
 		request.ResetCallCount();
 
-		await Repository.UpdateAsync(request);
+		await repository.UpdateAsync(request);
 
-		Logger.LogInformation("Rate limit counter reset for API: {ApiName}", apiName);
+		logger.LogInformation("Rate limit counter reset for API: {ApiName}", apiName);
 	}
 }

@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.ApiTracking;
 
@@ -15,6 +16,7 @@ namespace SeventySix.ApiTracking;
 ///
 /// Design Patterns:
 /// - Repository: Abstracts data access logic
+/// - Template Method: Inherits error handling from BaseRepository
 /// - Unit of Work: DbContext manages transactions
 ///
 /// SOLID Principles:
@@ -27,22 +29,16 @@ namespace SeventySix.ApiTracking;
 /// - Composite index on (ApiName, ResetDate)
 /// - Batch operations for bulk deletes
 /// </remarks>
-internal class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
+/// <param name="context">The database context.</param>
+/// <param name="logger">The logger instance.</param>
+internal class ThirdPartyApiRequestRepository(
+	ApiTrackingDbContext context,
+	ILogger<ThirdPartyApiRequestRepository> logger) : BaseRepository<ThirdPartyApiRequest, ApiTrackingDbContext>(context, logger), IThirdPartyApiRequestRepository
 {
-	private readonly ApiTrackingDbContext Context;
-	private readonly ILogger<ThirdPartyApiRequestRepository> Logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="ThirdPartyApiRequestRepository"/> class.
-	/// </summary>
-	/// <param name="context">The database context.</param>
-	/// <param name="logger">The logger instance.</param>
-	public ThirdPartyApiRequestRepository(
-		ApiTrackingDbContext context,
-		ILogger<ThirdPartyApiRequestRepository> logger)
+	/// <inheritdoc/>
+	protected override string GetEntityIdentifier(ThirdPartyApiRequest entity)
 	{
-		Context = context ?? throw new ArgumentNullException(nameof(context));
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		return $"Id={entity.Id}, ApiName={entity.ApiName}, ResetDate={entity.ResetDate}";
 	}
 
 	/// <inheritdoc/>
@@ -55,36 +51,17 @@ internal class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 
 		try
 		{
-			// Check if we're inside a transaction
-			// If so, use tracking to ensure we see the latest data and can update it
-			// If not, use AsNoTracking for better performance on read-only queries
-			bool hasActiveTransaction = Context.Database.CurrentTransaction != null;
-
-			IQueryable<ThirdPartyApiRequest> query = Context.ThirdPartyApiRequests.AsQueryable();
-
-			if (!hasActiveTransaction)
-			{
-				query = query.AsNoTracking();
-			}
-
 			// Uses composite index on (ApiName, ResetDate) for O(log n) lookup
-			ThirdPartyApiRequest? request = await query
+			ThirdPartyApiRequest? request = await GetQueryable()
 				.FirstOrDefaultAsync(
-					r => r.ApiName == apiName && r.ResetDate == resetDate,
-					cancellationToken);
-
-			Logger.LogDebug(
-				"Retrieved ThirdPartyApiRequest for {ApiName} on {ResetDate}: {Found} (Tracking: {Tracking})",
-				apiName,
-				resetDate,
-				request != null,
-				hasActiveTransaction);
+				r => r.ApiName == apiName && r.ResetDate == resetDate,
+				cancellationToken);
 
 			return request;
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(
+			base.logger.LogError(
 				ex,
 				"Error retrieving ThirdPartyApiRequest for {ApiName} on {ResetDate}",
 				apiName,
@@ -94,91 +71,14 @@ internal class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<ThirdPartyApiRequest> CreateAsync(
-		ThirdPartyApiRequest entity)
+	public override async Task<ThirdPartyApiRequest> UpdateAsync(
+		ThirdPartyApiRequest entity,
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
-		try
-		{
-			Context.ThirdPartyApiRequests.Add(entity);
-			await Context.SaveChangesAsync();
-
-			Logger.LogInformation(
-				"Created ThirdPartyApiRequest: Id={Id}, ApiName={ApiName}, ResetDate={ResetDate}",
-				entity.Id,
-				entity.ApiName,
-				entity.ResetDate);
-
-			return entity;
-		}
-		catch (DbUpdateException ex)
-		{
-			Logger.LogError(
-				ex,
-				"Error creating ThirdPartyApiRequest for {ApiName}. Possible constraint violation.",
-				entity.ApiName);
-			throw;
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(
-				ex,
-				"Unexpected error creating ThirdPartyApiRequest for {ApiName}",
-				entity.ApiName);
-			throw;
-		}
-	}
-
-	/// <inheritdoc/>
-	public async Task<ThirdPartyApiRequest> UpdateAsync(
-		ThirdPartyApiRequest entity)
-	{
-		ArgumentNullException.ThrowIfNull(entity);
-
-		try
-		{
-			// Set ModifiedAt timestamp
-			entity.ModifiedAt = DateTime.UtcNow;
-
-			// Check if entity is already tracked
-			ThirdPartyApiRequest? trackedEntity = Context.ThirdPartyApiRequests.Local
-				.FirstOrDefault(existingEntity => existingEntity.Id == entity.Id); if (trackedEntity != null)
-			{
-				// Entity is already tracked, update its properties
-				Context.Entry(trackedEntity).CurrentValues.SetValues(entity);
-			}
-			else
-			{
-				// Entity is not tracked, attach and mark as modified
-				Context.ThirdPartyApiRequests.Update(entity);
-			}
-
-			await Context.SaveChangesAsync();
-
-			Logger.LogDebug(
-				"Updated ThirdPartyApiRequest: Id={Id}, CallCount={CallCount}",
-				entity.Id,
-				entity.CallCount);
-
-			return entity;
-		}
-		catch (DbUpdateConcurrencyException ex)
-		{
-			Logger.LogError(
-				ex,
-				"Concurrency error updating ThirdPartyApiRequest: Id={Id}",
-				entity.Id);
-			throw;
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(
-				ex,
-				"Error updating ThirdPartyApiRequest: Id={Id}",
-				entity.Id);
-			throw;
-		}
+		// ModifyDate is automatically set by AuditInterceptor
+		return await base.UpdateAsync(entity, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -190,24 +90,19 @@ internal class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 
 		try
 		{
-			// Use AsNoTracking for read-only query
-			// Order by ResetDate descending (most recent first)
-			List<ThirdPartyApiRequest> requests = await Context.ThirdPartyApiRequests
-				.AsNoTracking()
+			// Use QueryBuilder for read-only query with ordering
+			QueryBuilder<ThirdPartyApiRequest> queryBuilder = new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
+			queryBuilder
 				.Where(r => r.ApiName == apiName)
-				.OrderByDescending(r => r.ResetDate)
-				.ToListAsync(cancellationToken);
+				.OrderByDescending(r => r.ResetDate);
 
-			Logger.LogDebug(
-				"Retrieved {Count} ThirdPartyApiRequest records for {ApiName}",
-				requests.Count,
-				apiName);
+			List<ThirdPartyApiRequest> requests = await queryBuilder.Build().ToListAsync(cancellationToken);
 
 			return requests;
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(
+			base.logger.LogError(
 				ex,
 				"Error retrieving ThirdPartyApiRequest records for {ApiName}",
 				apiName);
@@ -221,22 +116,17 @@ internal class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 	{
 		try
 		{
-			// Use AsNoTracking for read-only query
-			// Order by ApiName for consistent results
-			List<ThirdPartyApiRequest> requests = await Context.ThirdPartyApiRequests
-				.AsNoTracking()
-				.OrderBy(r => r.ApiName)
-				.ToListAsync(cancellationToken);
+			// Use QueryBuilder for read-only query with ordering
+			QueryBuilder<ThirdPartyApiRequest> queryBuilder = new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
+			queryBuilder.OrderBy(r => r.ApiName);
 
-			Logger.LogDebug(
-				"Retrieved {Count} ThirdPartyApiRequest records",
-				requests.Count);
+			List<ThirdPartyApiRequest> requests = await queryBuilder.Build().ToListAsync(cancellationToken);
 
 			return requests;
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(
+			base.logger.LogError(
 				ex,
 				"Error retrieving all ThirdPartyApiRequest records");
 			throw;
@@ -245,25 +135,21 @@ internal class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 
 	/// <inheritdoc/>
 	public async Task<int> DeleteOlderThanAsync(
-		DateOnly cutoffDate)
+		DateOnly cutoffDate,
+		CancellationToken cancellationToken = default)
 	{
 		try
 		{
 			// Batch delete operation
-			int deletedCount = await Context.ThirdPartyApiRequests
+			int deletedCount = await context.ThirdPartyApiRequests
 				.Where(r => r.ResetDate < cutoffDate)
-				.ExecuteDeleteAsync(CancellationToken.None);
-
-			Logger.LogInformation(
-				"Deleted {Count} ThirdPartyApiRequest records older than {CutoffDate}",
-				deletedCount,
-				cutoffDate);
+				.ExecuteDeleteAsync(cancellationToken);
 
 			return deletedCount;
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(
+			base.logger.LogError(
 				ex,
 				"Error deleting ThirdPartyApiRequest records older than {CutoffDate}",
 				cutoffDate);
@@ -271,3 +157,4 @@ internal class ThirdPartyApiRequestRepository : IThirdPartyApiRequestRepository
 		}
 	}
 }
+

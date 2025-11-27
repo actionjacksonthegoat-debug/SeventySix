@@ -119,8 +119,8 @@ public class RateLimitingServiceTests
 			.ReturnsAsync((ThirdPartyApiRequest?)null);
 
 		MockRepository
-			.Setup(r => r.CreateAsync(It.IsAny<ThirdPartyApiRequest>()))
-			.ReturnsAsync((ThirdPartyApiRequest req) => req);
+			.Setup(r => r.CreateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync((ThirdPartyApiRequest req, CancellationToken ct) => req);
 
 		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
@@ -155,8 +155,8 @@ public class RateLimitingServiceTests
 			.ReturnsAsync(request);
 
 		MockRepository
-			.Setup(r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>()))
-			.ReturnsAsync((ThirdPartyApiRequest req) => req);
+			.Setup(r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync((ThirdPartyApiRequest req, CancellationToken ct) => req);
 
 		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 

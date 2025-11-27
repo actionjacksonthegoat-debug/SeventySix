@@ -46,7 +46,7 @@ namespace SeventySix.ApiTracking.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -54,7 +54,7 @@ namespace SeventySix.ApiTracking.Migrations
                     b.Property<DateTime?>("LastCalledAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("ModifiedAt")
+                    b.Property<DateTime?>("ModifyDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateOnly>("ResetDate")

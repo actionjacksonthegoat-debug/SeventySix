@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Logging;
 
@@ -11,17 +12,19 @@ namespace SeventySix.Logging;
 /// </summary>
 /// <remarks>
 /// Manages Log entities and their database operations.
-/// Uses PostgreSQL with schema 'logging' for isolation.
+/// Uses PostgreSQL with schema 'Logging' for isolation.
+/// Inherits common configuration from BaseDbContext.
 ///
 /// Design Patterns:
 /// - Unit of Work: Coordinates changes to multiple entities
 /// - Repository: Provides data access abstraction
+/// - Template Method: Inherits from BaseDbContext
 ///
 /// SOLID Principles:
 /// - SRP: Only responsible for Logging domain data access
 /// - OCP: Can be extended with new entity configurations
 /// </remarks>
-public class LoggingDbContext : DbContext
+public class LoggingDbContext : BaseDbContext<LoggingDbContext>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LoggingDbContext"/> class.
@@ -38,21 +41,8 @@ public class LoggingDbContext : DbContext
 	public DbSet<Log> Logs => Set<Log>();
 
 	/// <summary>
-	/// Configures the model for this context.
+	/// Gets the schema name for Logging bounded context.
 	/// </summary>
-	/// <param name="modelBuilder">The builder being used to construct the model for this context.</param>
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
-	{
-		ArgumentNullException.ThrowIfNull(modelBuilder);
-
-		// Set default schema for Logging bounded context
-		modelBuilder.HasDefaultSchema("Logging");
-
-		// ONLY apply configurations from Logging namespace (bounded context isolation)
-		modelBuilder.ApplyConfigurationsFromAssembly(
-			typeof(LoggingDbContext).Assembly,
-			t => t.Namespace != null && t.Namespace.StartsWith("SeventySix.Logging"));
-
-		base.OnModelCreating(modelBuilder);
-	}
+	/// <returns>"Logging".</returns>
+	protected override string GetSchemaName() => "Logging";
 }

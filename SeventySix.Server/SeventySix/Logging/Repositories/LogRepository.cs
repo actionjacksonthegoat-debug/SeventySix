@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Logging;
 
@@ -15,6 +16,8 @@ namespace SeventySix.Logging;
 ///
 /// Design Patterns:
 /// - Repository: Abstracts data access logic
+/// - Template Method: Inherits error handling from BaseRepository
+/// - Builder: Uses QueryBuilder for complex queries
 /// - Unit of Work: DbContext manages transactions
 ///
 /// SOLID Principles:
@@ -27,46 +30,37 @@ namespace SeventySix.Logging;
 /// - Indexes on Timestamp, LogLevel, SourceContext
 /// - Batch operations for bulk deletes
 /// </remarks>
-internal class LogRepository : ILogRepository
+/// <param name="context">The database context.</param>
+/// <param name="logger">The logger instance.</param>
+internal class LogRepository(
+	LoggingDbContext context,
+	ILogger<LogRepository> logger) : BaseRepository<Log, LoggingDbContext>(context, logger), ILogRepository
 {
-	private readonly LoggingDbContext Context;
-	private readonly ILogger<LogRepository> Logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="LogRepository"/> class.
-	/// </summary>
-	/// <param name="context">The database context.</param>
-	/// <param name="logger">The logger instance.</param>
-	public LogRepository(
-		LoggingDbContext context,
-		ILogger<LogRepository> logger)
+	/// <inheritdoc/>
+	protected override string GetEntityIdentifier(Log entity)
 	{
-		Context = context ?? throw new ArgumentNullException(nameof(context));
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		return $"Id={entity.Id}, LogLevel={entity.LogLevel}, CreateDate={entity.CreateDate}";
 	}
 
 	/// <inheritdoc/>
-	public async Task<Log> CreateAsync(Log entity)
+	/// <remarks>
+	/// Special handling: Uses Console.WriteLine instead of logger to prevent infinite logging loops.
+	/// </remarks>
+	public new async Task<Log> CreateAsync(Log entity, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
+		// ⚠️ IMPORTANT: For log creation, we cannot use the base logger
+		// to prevent infinite loop if the logging system itself is failing.
 		try
 		{
-			Context.Logs.Add(entity);
-			await Context.SaveChangesAsync();
-
-			Logger.LogDebug(
-				"Created Log: Id={Id}, LogLevel={LogLevel}",
-				entity.Id,
-				entity.LogLevel);
-
+			context.Logs.Add(entity);
+			await context.SaveChangesAsync(cancellationToken);
 			return entity;
 		}
 		catch (Exception ex)
 		{
-			// ⚠️ IMPORTANT: Use Console.WriteLine here instead of Logger.LogError
-			// to prevent infinite loop if the logging system itself is failing.
-			// This is the ONLY place where Console.WriteLine should be used.
+			// Use Console.WriteLine instead of logger to prevent infinite loop
 			Console.WriteLine($"Error creating log entry: {ex.Message}");
 			throw;
 		}
@@ -81,23 +75,23 @@ internal class LogRepository : ILogRepository
 
 		try
 		{
-			IQueryable<Log> query = Context.Logs.AsNoTracking();
+			QueryBuilder<Log> queryBuilder = new QueryBuilder<Log>(GetQueryable());
 
 			// Apply LogLevel filter
 			if (!string.IsNullOrWhiteSpace(request.LogLevel))
 			{
-				query = query.Where(log => log.LogLevel == request.LogLevel);
+				queryBuilder.Where(log => log.LogLevel == request.LogLevel);
 			}
 
 			// Apply date range filter (StartDate/EndDate filter by Timestamp)
 			if (request.StartDate.HasValue)
 			{
-				query = query.Where(log => log.Timestamp >= request.StartDate.Value);
+				queryBuilder.Where(log => log.CreateDate >= request.StartDate.Value);
 			}
 
 			if (request.EndDate.HasValue)
 			{
-				query = query.Where(log => log.Timestamp <= request.EndDate.Value);
+				queryBuilder.Where(log => log.CreateDate <= request.EndDate.Value);
 			}
 
 			// Apply search term filter
@@ -105,7 +99,7 @@ internal class LogRepository : ILogRepository
 			{
 				// EF Core will automatically parameterize this query - no SQL injection risk
 				// Search across all relevant text fields for maximum flexibility
-				query = query.Where(log =>
+				queryBuilder.Where(log =>
 					(log.Message != null && log.Message.Contains(request.SearchTerm)) ||
 					(log.ExceptionMessage != null && log.ExceptionMessage.Contains(request.SearchTerm)) ||
 					(log.SourceContext != null && log.SourceContext.Contains(request.SearchTerm)) ||
@@ -114,126 +108,110 @@ internal class LogRepository : ILogRepository
 			}
 
 			// Get total count BEFORE pagination
-			int totalCount = await query.CountAsync(cancellationToken);
+			int totalCount = await queryBuilder.Build().CountAsync(cancellationToken);
 
 			// Apply sorting (dynamic based on SortBy property)
 			// Default: Timestamp descending (most recent first)
 			string sortProperty = string.IsNullOrWhiteSpace(request.SortBy) ? "Timestamp" : request.SortBy;
-			query = request.SortDescending
-				? query.OrderByDescending(e => EF.Property<object>(e, sortProperty))
-				: query.OrderBy(e => EF.Property<object>(e, sortProperty));
+			if (request.SortDescending)
+			{
+				queryBuilder.OrderByDescending(e => EF.Property<object>(e, sortProperty));
+			}
+			else
+			{
+				queryBuilder.OrderBy(e => EF.Property<object>(e, sortProperty));
+			}
 
-			// Apply pagination
-			int skip = request.GetSkip();
-			int take = request.GetValidatedPageSize();
+			// Apply pagination using QueryBuilder
+			queryBuilder.Paginate(request.Page, request.GetValidatedPageSize());
 
-			List<Log> logs = await query
-				.Skip(skip)
-				.Take(take)
-				.ToListAsync(cancellationToken);
+			List<Log> logs = await queryBuilder.Build().ToListAsync(cancellationToken);
 
 			return (logs, totalCount);
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(
-				ex,
-				"Error retrieving logs with filters: LogLevel={LogLevel}, StartDate={StartDate}, EndDate={EndDate}, Page={Page}",
-				request.LogLevel,
-				request.StartDate,
-				request.EndDate,
-				request.Page);
+			// Use Console.WriteLine instead of logger to prevent infinite loop
+			Console.WriteLine($"Error retrieving logs with filters: LogLevel={request.LogLevel}, StartDate={request.StartDate}, EndDate={request.EndDate}, Page={request.Page}, Exception={ex.Message}");
 			throw;
 		}
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> DeleteOlderThanAsync(DateTime cutoffDate)
+	public async Task<int> DeleteOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			int deletedCount = await Context.Logs
-				.Where(l => l.Timestamp < cutoffDate)
-				.ExecuteDeleteAsync(CancellationToken.None);
-
-			Logger.LogInformation(
-				"Deleted {Count} logs older than {CutoffDate}",
-				deletedCount,
-				cutoffDate);
+			int deletedCount = await context.Logs
+				.Where(l => l.CreateDate < cutoffDate)
+				.ExecuteDeleteAsync(cancellationToken);
 
 			return deletedCount;
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(
-				ex,
-				"Error deleting logs older than {CutoffDate}",
-				cutoffDate);
+			// Use Console.WriteLine instead of logger to prevent infinite loop
+			Console.WriteLine($"Error deleting logs older than {cutoffDate}: {ex.Message}");
 			throw;
 		}
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> DeleteByIdAsync(int id)
+	public async Task<bool> DeleteByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
+
 		try
 		{
-			Logger.LogDebug("Attempting to delete log with ID: {LogId}", id);
-
-			Log? log = await Context.Logs.FindAsync([id]);
+			Log? log = await context.Logs.FindAsync([id], cancellationToken);
 
 			if (log == null)
 			{
-				Logger.LogWarning("Log with ID {LogId} not found for deletion", id);
 				return false;
 			}
 
-			Context.Logs.Remove(log);
-			await Context.SaveChangesAsync();
+			context.Logs.Remove(log);
+			await context.SaveChangesAsync(cancellationToken);
 
-			Logger.LogInformation("Successfully deleted log with ID: {LogId}", id);
 			return true;
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Error deleting log with ID: {LogId}", id);
+			// Use Console.WriteLine instead of logger to prevent infinite loop
+			Console.WriteLine($"Error deleting log with ID: {id}, Exception={ex.Message}");
 			throw;
 		}
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> DeleteBatchAsync(int[] ids)
+	public async Task<int> DeleteBatchAsync(int[] ids, CancellationToken cancellationToken = default)
 	{
+		ArgumentNullException.ThrowIfNull(ids);
+		ArgumentOutOfRangeException.ThrowIfZero(ids.Length);
+
 		try
 		{
-			Logger.LogDebug("Attempting to delete {Count} logs", ids.Length);
-
 			// Convert to List to avoid ReadOnlySpan implicit conversion issues in .NET 10+ LINQ expressions
 			List<int> idList = [.. ids];
 
-			List<Log> logsToDelete = await Context.Logs
+			List<Log> logsToDelete = await context.Logs
 				.Where(l => idList.Contains(l.Id))
-				.ToListAsync(CancellationToken.None);
+				.ToListAsync(cancellationToken);
 
 			if (logsToDelete.Count == 0)
 			{
-				Logger.LogWarning("No logs found matching the provided IDs");
 				return 0;
 			}
 
-			Context.Logs.RemoveRange(logsToDelete);
-			await Context.SaveChangesAsync();
-
-			Logger.LogWarning(
-				"Successfully deleted {DeletedCount} of {RequestedCount} logs",
-				logsToDelete.Count,
-				ids.Length);
+			context.Logs.RemoveRange(logsToDelete);
+			await context.SaveChangesAsync(cancellationToken);
 
 			return logsToDelete.Count;
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Error bulk deleting logs. Requested count: {Count}", ids.Length);
+			// Use Console.WriteLine instead of logger to prevent infinite loop
+			Console.WriteLine($"Error bulk deleting logs. Requested count: {ids.Length}, Exception={ex.Message}");
 			throw;
 		}
 	}

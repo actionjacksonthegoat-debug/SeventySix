@@ -76,6 +76,7 @@ public interface IUserRepository
 	/// Creates a new user in the data store.
 	/// </summary>
 	/// <param name="user">The user entity to create.</param>
+	/// <param name="cancellationToken">Token to cancel the asynchronous operation.</param>
 	/// <returns>
 	/// A task that represents the asynchronous operation.
 	/// The task result contains the created user with any generated values (e.g., ID).
@@ -92,12 +93,13 @@ public interface IUserRepository
 	/// - Check for duplicate username/email
 	/// - Validate required fields
 	/// </remarks>
-	public Task<User> CreateAsync(User user);
+	public Task<User> CreateAsync(User user, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Updates an existing user in the data store.
 	/// </summary>
 	/// <param name="user">The user entity with updated values.</param>
+	/// <param name="cancellationToken">Token to cancel the asynchronous operation.</param>
 	/// <returns>
 	/// A task that represents the asynchronous operation.
 	/// The task result contains the updated user entity.
@@ -115,12 +117,13 @@ public interface IUserRepository
 	/// - Timestamp/RowVersion fields
 	/// - Concurrency tokens
 	/// </remarks>
-	public Task<User> UpdateAsync(User user);
+	public Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Deletes a user from the data store (hard delete).
 	/// </summary>
 	/// <param name="id">The unique identifier of the user to delete.</param>
+	/// <param name="cancellationToken">Token to cancel the asynchronous operation.</param>
 	/// <returns>
 	/// A task that represents the asynchronous operation.
 	/// The task result is true if the user was deleted; false if it wasn't found.
@@ -130,7 +133,7 @@ public interface IUserRepository
 	/// Note: This is a hard delete. For data retention, use SoftDeleteAsync instead.
 	/// Hard delete should be restricted to administrative operations only.
 	/// </remarks>
-	public Task<bool> DeleteAsync(int id);
+	public Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Retrieves a user by their username.
@@ -241,6 +244,7 @@ public interface IUserRepository
 	/// </summary>
 	/// <param name="ids">The collection of user IDs to update.</param>
 	/// <param name="isActive">The new active status to set.</param>
+	/// <param name="cancellationToken">Token to cancel the asynchronous operation.</param>
 	/// <returns>
 	/// A task that represents the asynchronous operation.
 	/// The task result contains the number of users actually updated.
@@ -249,15 +253,16 @@ public interface IUserRepository
 	/// Bulk operation for efficiently activating/deactivating multiple users.
 	/// Only updates existing, non-deleted users (silently skips missing/deleted IDs).
 	/// Returns count of successfully updated users.
-	/// Updates ModifiedAt timestamp automatically.
+	/// Updates ModifyDate timestamp automatically.
 	/// </remarks>
-	public Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> ids, bool isActive);
+	public Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> ids, bool isActive, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Soft deletes a user by setting the IsDeleted flag and audit fields.
 	/// </summary>
 	/// <param name="id">The unique identifier of the user to soft delete.</param>
 	/// <param name="deletedBy">The username or identifier of who is deleting the user.</param>
+	/// <param name="cancellationToken">Token to cancel the asynchronous operation.</param>
 	/// <returns>
 	/// A task that represents the asynchronous operation.
 	/// The task result is true if the user was soft deleted; false if not found or already deleted.
@@ -268,12 +273,13 @@ public interface IUserRepository
 	/// Soft-deleted users are excluded from queries by default (global query filter).
 	/// Returns false if user doesn't exist or is already deleted.
 	/// </remarks>
-	public Task<bool> SoftDeleteAsync(int id, string deletedBy);
+	public Task<bool> SoftDeleteAsync(int id, string deletedBy, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Restores a previously soft-deleted user.
 	/// </summary>
 	/// <param name="id">The unique identifier of the user to restore.</param>
+	/// <param name="cancellationToken">Token to cancel the asynchronous operation.</param>
 	/// <returns>
 	/// A task that represents the asynchronous operation.
 	/// The task result is true if the user was restored; false if not found or not deleted.
@@ -284,7 +290,7 @@ public interface IUserRepository
 	/// Returns false if user doesn't exist or is not currently deleted.
 	/// Requires IgnoreQueryFilters to find deleted users.
 	/// </remarks>
-	public Task<bool> RestoreAsync(int id);
+	public Task<bool> RestoreAsync(int id, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Counts the total number of users matching the specified criteria.

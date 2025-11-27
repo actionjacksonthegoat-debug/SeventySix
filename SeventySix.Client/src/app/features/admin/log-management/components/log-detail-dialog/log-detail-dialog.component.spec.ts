@@ -14,30 +14,24 @@ describe("LogDetailDialogComponent", () =>
 
 	const mockLog: LogResponse = {
 		id: 1,
-		timestamp: new Date("2024-11-13T09:00:00Z"),
+		createDate: new Date("2024-11-13T09:00:00Z"),
 		logLevel: "Error",
 		message: "An error occurred while processing the request.",
-		sourceContext: "TestService",
-		exception: "System.Exception: Test exception",
+		exceptionMessage: "System.Exception: Test exception",
+		baseExceptionMessage: null,
 		stackTrace:
 			"   at TestService.Method()\n      in TestService.cs:line 42\n   at TestController.Action()\n      in TestController.cs:line 87",
-		requestId: "req-123",
+		sourceContext: "TestService",
+		requestMethod: "GET",
 		requestPath: "/api/test",
+		statusCode: 500,
+		durationMs: 1500,
+		properties: JSON.stringify({ key: "value", nested: { prop: "data" } }),
 		machineName: "TEST-MACHINE",
-		threadId: 42,
-		application: "SeventySix",
 		environment: "Test",
-		userId: "user-123",
-		userName: "testuser",
-		sessionId: "session-123",
 		correlationId: "corr-123",
 		spanId: "span-456",
-		parentSpanId: "parent-789",
-		clientIp: "127.0.0.1",
-		userAgent: "Mozilla/5.0",
-		duration: 1500,
-		statusCode: 500,
-		properties: { key: "value", nested: { prop: "data" } }
+		parentSpanId: "parent-789"
 	};
 
 	beforeEach(async () =>
@@ -204,21 +198,19 @@ describe("LogDetailDialogComponent", () =>
 	{
 		expect(component.log().requestPath).toBe("/api/test");
 		expect(component.log().statusCode).toBe(500);
-		expect(component.log().duration).toBe(1500);
+		expect(component.log().durationMs).toBe(1500);
 	});
 
-	it("should display formatted user information", () =>
+	it("should display formatted source context", () =>
 	{
-		expect(component.log().userId).toBe("user-123");
-		expect(component.log().userName).toBe("testuser");
-		expect(component.log().clientIp).toBe("127.0.0.1");
+		expect(component.log().sourceContext).toBe("TestService");
+		expect(component.log().requestMethod).toBe("GET");
 	});
 
 	it("should display formatted metadata", () =>
 	{
 		expect(component.log().machineName).toBe("TEST-MACHINE");
 		expect(component.log().environment).toBe("Test");
-		expect(component.log().threadId).toBe(42);
 	});
 
 	it("should handle log with null fields gracefully", () =>
@@ -230,7 +222,7 @@ describe("LogDetailDialogComponent", () =>
 
 	it("should display duration in milliseconds", () =>
 	{
-		expect(component.log().duration).toBe(1500);
+		expect(component.log().durationMs).toBe(1500);
 	});
 
 	it("should format HTTP method from request info", () =>
@@ -243,7 +235,7 @@ describe("LogDetailDialogComponent", () =>
 	it("should show correlation ID for request tracking", () =>
 	{
 		expect(component.log().correlationId).toBe("corr-123");
-		expect(component.log().requestId).toBe("req-123");
+		expect(component.log().spanId).toBe("span-456");
 	});
 
 	describe("isError", () =>

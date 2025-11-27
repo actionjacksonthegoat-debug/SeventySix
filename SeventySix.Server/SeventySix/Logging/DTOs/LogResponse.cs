@@ -112,7 +112,7 @@ public class LogResponse
 	/// <summary>
 	/// Gets or sets the timestamp when this log was created.
 	/// </summary>
-	public DateTime Timestamp
+	public DateTime CreateDate
 	{
 		get; set;
 	}

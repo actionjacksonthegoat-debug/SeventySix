@@ -101,9 +101,9 @@ public class LogService(
 	/// Returns false if the log doesn't exist, allowing the caller to determine
 	/// the appropriate response (typically 404 Not Found).
 	/// </remarks>
-	public async Task<bool> DeleteLogByIdAsync(int id)
+	public async Task<bool> DeleteLogByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
-		return await repository.DeleteByIdAsync(id);
+		return await repository.DeleteByIdAsync(id, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -111,9 +111,9 @@ public class LogService(
 	/// Performs batch delete for better performance.
 	/// Returns count of actually deleted logs (may be less than input if some IDs don't exist).
 	/// </remarks>
-	public async Task<int> DeleteLogsBatchAsync(int[] ids)
+	public async Task<int> DeleteLogsBatchAsync(int[] ids, CancellationToken cancellationToken = default)
 	{
-		return await repository.DeleteBatchAsync(ids);
+		return await repository.DeleteBatchAsync(ids, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -121,9 +121,9 @@ public class LogService(
 	/// Used for log retention cleanup.
 	/// Deletes all logs with Timestamp older than the specified cutoff date.
 	/// </remarks>
-	public async Task<int> DeleteLogsOlderThanAsync(DateTime cutoffDate)
+	public async Task<int> DeleteLogsOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default)
 	{
-		return await repository.DeleteOlderThanAsync(cutoffDate);
+		return await repository.DeleteOlderThanAsync(cutoffDate, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -151,7 +151,7 @@ public class LogService(
 	/// Maps ClientLogRequest to Log entity with trace context and browser metadata.
 	/// Trace context is injected from Activity.Current by the controller.
 	/// </remarks>
-	public async Task CreateClientLogAsync(ClientLogRequest request)
+	public async Task CreateClientLogAsync(ClientLogRequest request, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
@@ -180,12 +180,12 @@ public class LogService(
 				request.ClientTimestamp,
 				request.AdditionalContext,
 			}),
-			Timestamp = DateTime.UtcNow,
+			// CreateDate is automatically set by AuditInterceptor
 			MachineName = "Browser",
 			Environment = "Client",
 		};
 
-		await repository.CreateAsync(log);
+		await repository.CreateAsync(log, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -193,7 +193,7 @@ public class LogService(
 	/// Batch operation for better performance when Angular sends multiple errors at once.
 	/// Each log gets the same trace context from the HTTP request.
 	/// </remarks>
-	public async Task CreateClientLogBatchAsync(ClientLogRequest[] requests)
+	public async Task CreateClientLogBatchAsync(ClientLogRequest[] requests, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(requests);
 
@@ -229,12 +229,12 @@ public class LogService(
 					request.ClientTimestamp,
 					request.AdditionalContext,
 				}),
-				Timestamp = DateTime.UtcNow,
+				// CreateDate is automatically set by AuditInterceptor
 				MachineName = "Browser",
 				Environment = "Client",
 			};
 
-			await repository.CreateAsync(log);
+			await repository.CreateAsync(log, cancellationToken);
 		}
 	}
 }

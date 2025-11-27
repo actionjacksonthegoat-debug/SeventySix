@@ -1,4 +1,4 @@
-﻿// <copyright file="PollyIntegrationClient.cs" company="SeventySix">
+// <copyright file="PollyIntegrationClient.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -47,50 +47,24 @@ namespace SeventySix.Infrastructure;
 /// - OCP: Policies are configurable and extensible
 /// - DIP: Depends on abstractions (IMemoryCache, IRateLimitingService)
 /// </remarks>
-public class PollyIntegrationClient : IPollyIntegrationClient
+public class PollyIntegrationClient(
+	HttpClient httpClient,
+	IMemoryCache cache,
+	IRateLimitingService rateLimitingService,
+	ILogger<PollyIntegrationClient> logger,
+	IOptions<PollyOptions> options) : IPollyIntegrationClient
 {
-	private readonly HttpClient HttpClient;
-	private readonly IMemoryCache Cache;
-	private readonly IRateLimitingService RateLimitingService;
-	private readonly ILogger<PollyIntegrationClient> Logger;
-	private readonly PollyOptions Options;
-	private readonly ResiliencePipeline<HttpResponseMessage> ResiliencePipeline;
+	// Lazy initialization to avoid field initialization from constructor parameters
+	private readonly Lazy<ResiliencePipeline<HttpResponseMessage>> LazyPipeline =
+		new(() => BuildResiliencePipeline(options.Value, logger));
+
+	private ResiliencePipeline<HttpResponseMessage> ResiliencePipeline => LazyPipeline.Value;
 
 	// Add this field to cache the JsonSerializerOptions instance
 	private static readonly JsonSerializerOptions CachedJsonSerializerOptions = new JsonSerializerOptions
 	{
 		PropertyNameCaseInsensitive = true,
 	};
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="PollyIntegrationClient"/> class.
-	/// </summary>
-	/// <param name="httpClient">HTTP client instance.</param>
-	/// <param name="cache">Memory cache for response caching.</param>
-	/// <param name="rateLimitingService">Rate limiting service.</param>
-	/// <param name="logger">Logger instance.</param>
-	/// <param name="options">Polly configuration options.</param>
-	public PollyIntegrationClient(
-		HttpClient httpClient,
-		IMemoryCache cache,
-		IRateLimitingService rateLimitingService,
-		ILogger<PollyIntegrationClient> logger,
-		IOptions<PollyOptions> options)
-	{
-		HttpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-		Cache = cache ?? throw new ArgumentNullException(nameof(cache));
-		RateLimitingService = rateLimitingService ?? throw new ArgumentNullException(nameof(rateLimitingService));
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-		Options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-
-		ResiliencePipeline = BuildResiliencePipeline();
-
-		Logger.LogInformation(
-			"PollyIntegrationClient initialized with retry={RetryCount}, timeout={TimeoutSeconds}s, circuit breaker threshold={CircuitBreakerThreshold}",
-			Options.RetryCount,
-			Options.TimeoutSeconds,
-			Options.CircuitBreakerFailureThreshold);
-	}
 
 	/// <inheritdoc/>
 	public async Task<T?> GetAsync<T>(
@@ -105,29 +79,29 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		// Check cache first
-		if (!string.IsNullOrWhiteSpace(cacheKey) && Cache.TryGetValue(cacheKey, out T? cachedValue))
+		if (!string.IsNullOrWhiteSpace(cacheKey) && cache.TryGetValue(cacheKey, out T? cachedValue))
 		{
-			Logger.LogDebug("Cache hit for key: {CacheKey}", cacheKey);
+			logger.LogDebug("Cache hit for key: {CacheKey}", cacheKey);
 			return cachedValue;
 		}
 
 		// Check rate limit
-		if (!await RateLimitingService.CanMakeRequestAsync(apiName, cancellationToken))
+		if (!await rateLimitingService.CanMakeRequestAsync(apiName, cancellationToken))
 		{
-			Logger.LogWarning(
+			logger.LogWarning(
 				"Rate limit exceeded for {ApiName}. Quota: {Quota}, Resets in: {TimeUntilReset}",
 				apiName,
-				await RateLimitingService.GetRemainingQuotaAsync(apiName, cancellationToken),
-				RateLimitingService.GetTimeUntilReset());
+				await rateLimitingService.GetRemainingQuotaAsync(apiName, cancellationToken),
+				rateLimitingService.GetTimeUntilReset());
 
 			// Try to return cached value even if expired
-			if (!string.IsNullOrWhiteSpace(cacheKey) && Cache.TryGetValue($"{cacheKey}_stale", out T? staleValue))
+			if (!string.IsNullOrWhiteSpace(cacheKey) && cache.TryGetValue($"{cacheKey}_stale", out T? staleValue))
 			{
-				Logger.LogInformation("Returning stale cached data due to rate limit");
+				logger.LogInformation("Returning stale cached data due to rate limit");
 				return staleValue;
 			}
 
-			throw new InvalidOperationException($"API rate limit exceeded for {apiName}. Resets in: {RateLimitingService.GetTimeUntilReset()}");
+			throw new InvalidOperationException($"API rate limit exceeded for {apiName}. Resets in: {rateLimitingService.GetTimeUntilReset()}");
 		}
 
 		// Extract base URL from full URL
@@ -139,11 +113,11 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 			HttpResponseMessage response = await ResiliencePipeline.ExecuteAsync(
 				async ct =>
 				{
-					Logger.LogDebug("Sending GET request to: {Url}", url);
-					HttpResponseMessage httpResponse = await HttpClient.GetAsync(url, ct);
+					logger.LogDebug("Sending GET request to: {Url}", url);
+					HttpResponseMessage httpResponse = await httpClient.GetAsync(url, ct);
 
 					// Increment rate limit counter on successful request
-					await RateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
+					await rateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
 
 					httpResponse.EnsureSuccessStatusCode();
 					return httpResponse;
@@ -158,22 +132,22 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 			if (result is not null && !string.IsNullOrWhiteSpace(cacheKey))
 			{
 				TimeSpan duration = cacheDuration ?? TimeSpan.FromMinutes(5);
-				Cache.Set(cacheKey, result, duration);
-				Cache.Set($"{cacheKey}_stale", result, TimeSpan.FromHours(24)); // Keep stale copy for fallback
+				cache.Set(cacheKey, result, duration);
+				cache.Set($"{cacheKey}_stale", result, TimeSpan.FromHours(24)); // Keep stale copy for fallback
 
-				Logger.LogDebug("Cached response with key: {CacheKey} for {Duration}", cacheKey, duration);
+				logger.LogDebug("Cached response with key: {CacheKey} for {Duration}", cacheKey, duration);
 			}
 
 			return result;
 		}
 		catch (BrokenCircuitException ex)
 		{
-			Logger.LogError(ex, "Circuit breaker is open for {ApiName}. Service may be unavailable.", apiName);
+			logger.LogError(ex, "Circuit breaker is open for {ApiName}. Service may be unavailable.", apiName);
 
 			// Try to return stale cached data
-			if (!string.IsNullOrWhiteSpace(cacheKey) && Cache.TryGetValue($"{cacheKey}_stale", out T? staleValue))
+			if (!string.IsNullOrWhiteSpace(cacheKey) && cache.TryGetValue($"{cacheKey}_stale", out T? staleValue))
 			{
-				Logger.LogInformation("Returning stale cached data due to circuit breaker");
+				logger.LogInformation("Returning stale cached data due to circuit breaker");
 				return staleValue;
 			}
 
@@ -181,12 +155,12 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		}
 		catch (TimeoutRejectedException ex)
 		{
-			Logger.LogError(ex, "Request timeout for {ApiName} after {TimeoutSeconds}s", apiName, Options.TimeoutSeconds);
+			logger.LogError(ex, "Request timeout for {ApiName} after {TimeoutSeconds}s", apiName, options.Value.TimeoutSeconds);
 			throw;
 		}
 		catch (HttpRequestException ex)
 		{
-			Logger.LogError(ex, "HTTP request failed for {ApiName}: {Message}", apiName, ex.Message);
+			logger.LogError(ex, "HTTP request failed for {ApiName}: {Message}", apiName, ex.Message);
 			throw;
 		}
 	}
@@ -205,9 +179,9 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		// Check rate limit
-		if (!await RateLimitingService.CanMakeRequestAsync(apiName, cancellationToken))
+		if (!await rateLimitingService.CanMakeRequestAsync(apiName, cancellationToken))
 		{
-			Logger.LogWarning("Rate limit exceeded for {ApiName}", apiName);
+			logger.LogWarning("Rate limit exceeded for {ApiName}", apiName);
 			throw new InvalidOperationException($"API rate limit exceeded for {apiName}");
 		}
 
@@ -223,11 +197,11 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 					string json = JsonSerializer.Serialize(body);
 					StringContent content = new(json, Encoding.UTF8, "application/json");
 
-					Logger.LogDebug("Sending POST request to: {Url}", url);
-					HttpResponseMessage httpResponse = await HttpClient.PostAsync(url, content, ct);
+					logger.LogDebug("Sending POST request to: {Url}", url);
+					HttpResponseMessage httpResponse = await httpClient.PostAsync(url, content, ct);
 
 					// Increment rate limit counter
-					await RateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
+					await rateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
 
 					httpResponse.EnsureSuccessStatusCode();
 					return httpResponse;
@@ -240,7 +214,7 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "POST request failed for {ApiName}", apiName);
+			logger.LogError(ex, "POST request failed for {ApiName}", apiName);
 			throw;
 		}
 	}
@@ -254,7 +228,7 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		ArgumentException.ThrowIfNullOrWhiteSpace(url);
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		if (!await RateLimitingService.CanMakeRequestAsync(apiName, cancellationToken))
+		if (!await rateLimitingService.CanMakeRequestAsync(apiName, cancellationToken))
 		{
 			throw new InvalidOperationException($"API rate limit exceeded for {apiName}");
 		}
@@ -265,8 +239,8 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		HttpResponseMessage response = await ResiliencePipeline.ExecuteAsync(
 			async ct =>
 			{
-				HttpResponseMessage httpResponse = await HttpClient.GetAsync(url, ct);
-				await RateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
+				HttpResponseMessage httpResponse = await httpClient.GetAsync(url, ct);
+				await rateLimitingService.TryIncrementRequestCountAsync(apiName, baseUrl, ct);
 				return httpResponse;
 			},
 			cancellationToken);
@@ -275,10 +249,10 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default) => await RateLimitingService.CanMakeRequestAsync(apiName, cancellationToken);
+	public async Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default) => await rateLimitingService.CanMakeRequestAsync(apiName, cancellationToken);
 
 	/// <inheritdoc/>
-	public async Task<int> GetRemainingQuotaAsync(string apiName, CancellationToken cancellationToken = default) => await RateLimitingService.GetRemainingQuotaAsync(apiName, cancellationToken);
+	public async Task<int> GetRemainingQuotaAsync(string apiName, CancellationToken cancellationToken = default) => await rateLimitingService.GetRemainingQuotaAsync(apiName, cancellationToken);
 
 	/// <summary>
 	/// Extracts the base URL from a full URL.
@@ -290,13 +264,13 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 		// If it's a relative URL, use the HttpClient's BaseAddress
 		if (!Uri.TryCreate(fullUrl, UriKind.Absolute, out Uri? uri))
 		{
-			if (HttpClient.BaseAddress != null)
+			if (httpClient.BaseAddress != null)
 			{
-				return HttpClient.BaseAddress.GetLeftPart(UriPartial.Authority);
+				return httpClient.BaseAddress.GetLeftPart(UriPartial.Authority);
 			}
 
 			// Fallback to a default if neither absolute URL nor BaseAddress
-			throw new InvalidOperationException("Cannot determine base URL for rate limiting. URL must be absolute or HttpClient.BaseAddress must be set.");
+			throw new InvalidOperationException("Cannot determine base URL for rate limiting. URL must be absolute or httpClient.BaseAddress must be set.");
 		}
 
 		return uri.GetLeftPart(UriPartial.Authority);
@@ -305,22 +279,27 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 	/// <summary>
 	/// Builds the Polly resilience pipeline with retry, circuit breaker, and timeout policies.
 	/// </summary>
-	private ResiliencePipeline<HttpResponseMessage> BuildResiliencePipeline()
+	/// <param name="pollyOptions">Polly configuration options.</param>
+	/// <param name="logger">Logger instance for pipeline events.</param>
+	/// <returns>Configured resilience pipeline.</returns>
+	private static ResiliencePipeline<HttpResponseMessage> BuildResiliencePipeline(
+		PollyOptions pollyOptions,
+		ILogger<PollyIntegrationClient> logger)
 	{
 		return new ResiliencePipelineBuilder<HttpResponseMessage>()
 			.AddRetry(new RetryStrategyOptions<HttpResponseMessage>
 			{
-				MaxRetryAttempts = Options.RetryCount,
-				Delay = TimeSpan.FromSeconds(Options.RetryDelaySeconds),
+				MaxRetryAttempts = pollyOptions.RetryCount,
+				Delay = TimeSpan.FromSeconds(pollyOptions.RetryDelaySeconds),
 				BackoffType = DelayBackoffType.Exponential,
-				UseJitter = Options.UseJitter,
+				UseJitter = pollyOptions.UseJitter,
 				ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
 					.Handle<HttpRequestException>()
 					.Handle<TimeoutException>()
 					.HandleResult(r => r.StatusCode == HttpStatusCode.TooManyRequests || r.StatusCode == HttpStatusCode.ServiceUnavailable),
 				OnRetry = args =>
 				{
-					Logger.LogWarning(
+					logger.LogWarning(
 						"Retry attempt {AttemptNumber} after {Delay}ms due to: {Exception}",
 						args.AttemptNumber + 1,
 						args.RetryDelay.TotalMilliseconds,
@@ -331,34 +310,34 @@ public class PollyIntegrationClient : IPollyIntegrationClient
 			.AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>
 			{
 				FailureRatio = 0.5,
-				MinimumThroughput = Options.CircuitBreakerFailureThreshold,
-				SamplingDuration = TimeSpan.FromSeconds(Options.CircuitBreakerSamplingDurationSeconds),
-				BreakDuration = TimeSpan.FromSeconds(Options.CircuitBreakerBreakDurationSeconds),
+				MinimumThroughput = pollyOptions.CircuitBreakerFailureThreshold,
+				SamplingDuration = TimeSpan.FromSeconds(pollyOptions.CircuitBreakerSamplingDurationSeconds),
+				BreakDuration = TimeSpan.FromSeconds(pollyOptions.CircuitBreakerBreakDurationSeconds),
 				ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
 					.Handle<HttpRequestException>()
 					.HandleResult(r => (int)r.StatusCode >= 500),
 				OnOpened = args =>
 				{
-					Logger.LogError("Circuit breaker OPENED. Service calls will be blocked for {BreakDuration}s", Options.CircuitBreakerBreakDurationSeconds);
+					logger.LogError("Circuit breaker OPENED. Service calls will be blocked for {BreakDuration}s", pollyOptions.CircuitBreakerBreakDurationSeconds);
 					return ValueTask.CompletedTask;
 				},
 				OnClosed = args =>
 				{
-					Logger.LogInformation("Circuit breaker CLOSED. Service calls resumed.");
+					logger.LogInformation("Circuit breaker CLOSED. Service calls resumed.");
 					return ValueTask.CompletedTask;
 				},
 				OnHalfOpened = args =>
 				{
-					Logger.LogInformation("Circuit breaker HALF-OPEN. Testing service availability.");
+					logger.LogInformation("Circuit breaker HALF-OPEN. Testing service availability.");
 					return ValueTask.CompletedTask;
 				},
 			})
 			.AddTimeout(new TimeoutStrategyOptions
 			{
-				Timeout = TimeSpan.FromSeconds(Options.TimeoutSeconds),
+				Timeout = TimeSpan.FromSeconds(pollyOptions.TimeoutSeconds),
 				OnTimeout = args =>
 				{
-					Logger.LogError("Request timeout after {TimeoutSeconds}s", Options.TimeoutSeconds);
+					logger.LogError("Request timeout after {TimeoutSeconds}s", pollyOptions.TimeoutSeconds);
 					return ValueTask.CompletedTask;
 				},
 			})

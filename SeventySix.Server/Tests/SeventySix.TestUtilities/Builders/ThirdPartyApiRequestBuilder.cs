@@ -32,8 +32,8 @@ public class ThirdPartyApiRequestBuilder
 	private int CallCount = 0;
 	private DateTime? LastCalledAt = null;
 	private DateOnly ResetDate = DateOnly.FromDateTime(DateTime.UtcNow);
-	private DateTime CreatedAt = DateTime.UtcNow;
-	private DateTime? ModifiedAt = null;
+	private DateTime CreateDate = DateTime.UtcNow;
+	private DateTime? ModifyDate = null;
 	private uint RowVersion = 1;
 
 	/// <summary>
@@ -70,9 +70,9 @@ public class ThirdPartyApiRequestBuilder
 	}
 
 	/// <summary>
-	/// Sets the last called timestamp.
+	/// Sets the last called CreateDate.
 	/// </summary>
-	/// <param name="lastCalledAt">The last called timestamp.</param>
+	/// <param name="lastCalledAt">The last called CreateDate.</param>
 	/// <returns>The builder instance for method chaining.</returns>
 	public ThirdPartyApiRequestBuilder WithLastCalledAt(DateTime? lastCalledAt)
 	{
@@ -92,24 +92,24 @@ public class ThirdPartyApiRequestBuilder
 	}
 
 	/// <summary>
-	/// Sets the created timestamp.
+	/// Sets the created CreateDate.
 	/// </summary>
-	/// <param name="createdAt">The created timestamp.</param>
+	/// <param name="createDate">The created CreateDate.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public ThirdPartyApiRequestBuilder WithCreatedAt(DateTime createdAt)
+	public ThirdPartyApiRequestBuilder WithCreatedAt(DateTime createDate)
 	{
-		CreatedAt = createdAt;
+		CreateDate = createDate;
 		return this;
 	}
 
 	/// <summary>
-	/// Sets the updated timestamp.
+	/// Sets the updated CreateDate.
 	/// </summary>
-	/// <param name="modifiedAt">The modified timestamp.</param>
+	/// <param name="modifyDate">The modified CreateDate.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public ThirdPartyApiRequestBuilder WithModifiedAt(DateTime? modifiedAt)
+	public ThirdPartyApiRequestBuilder WithModifiedAt(DateTime? modifyDate)
 	{
-		ModifiedAt = modifiedAt;
+		ModifyDate = modifyDate;
 		return this;
 	}
 
@@ -137,8 +137,8 @@ public class ThirdPartyApiRequestBuilder
 			CallCount = CallCount,
 			LastCalledAt = LastCalledAt,
 			ResetDate = ResetDate,
-			CreatedAt = CreatedAt,
-			ModifiedAt = ModifiedAt,
+			CreateDate = CreateDate,
+			ModifyDate = ModifyDate,
 			RowVersion = RowVersion,
 		};
 	}

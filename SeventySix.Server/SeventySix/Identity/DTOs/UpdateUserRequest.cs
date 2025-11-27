@@ -6,7 +6,6 @@ namespace SeventySix.Identity;
 
 /// <summary>
 /// Request model for updating an existing user.
-/// Includes RowVersion for optimistic concurrency control.
 /// </summary>
 public record UpdateUserRequest
 {
@@ -46,15 +45,6 @@ public record UpdateUserRequest
 	/// Gets a value indicating whether the user account is active.
 	/// </summary>
 	public bool IsActive
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets the row version for concurrency control.
-	/// Must match the current database value to prevent lost updates.
-	/// </summary>
-	public uint? RowVersion
 	{
 		get; init;
 	}

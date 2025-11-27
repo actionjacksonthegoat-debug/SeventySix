@@ -36,7 +36,7 @@ describe("ApiStatisticsTableComponent", () =>
 	{
 		const thirdPartyApiServiceSpy = jasmine.createSpyObj(
 			"ThirdPartyApiService",
-			["createAllQuery"]
+			["getAllThirdPartyApis"]
 		);
 
 		await TestBed.configureTestingModule({
@@ -66,7 +66,7 @@ describe("ApiStatisticsTableComponent", () =>
 
 	it("should create", () =>
 	{
-		thirdPartyApiService.createAllQuery.and.returnValue(
+		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
 			createMockQueryResult(mockApiData)
 		);
 
@@ -77,20 +77,20 @@ describe("ApiStatisticsTableComponent", () =>
 
 	it("should load API data on init", () =>
 	{
-		thirdPartyApiService.createAllQuery.and.returnValue(
+		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
 			createMockQueryResult(mockApiData)
 		);
 
 		createComponent();
 
-		expect(thirdPartyApiService.createAllQuery).toHaveBeenCalled();
+		expect(thirdPartyApiService.getAllThirdPartyApis).toHaveBeenCalled();
 		expect(component.isLoading()).toBe(false);
 		expect(component.dataSource().data.length).toBe(2);
 	});
 
 	it("should display API names", () =>
 	{
-		thirdPartyApiService.createAllQuery.and.returnValue(
+		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
 			createMockQueryResult(mockApiData)
 		);
 
@@ -102,7 +102,7 @@ describe("ApiStatisticsTableComponent", () =>
 
 	it("should display call counts", () =>
 	{
-		thirdPartyApiService.createAllQuery.and.returnValue(
+		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
 			createMockQueryResult(mockApiData)
 		);
 
@@ -114,7 +114,7 @@ describe("ApiStatisticsTableComponent", () =>
 
 	it("should handle loading state", () =>
 	{
-		thirdPartyApiService.createAllQuery.and.returnValue(
+		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
 			createMockQueryResult<ThirdPartyApiRequest[]>(undefined, {
 				isLoading: true
 			})
@@ -128,7 +128,7 @@ describe("ApiStatisticsTableComponent", () =>
 	it("should display error message when API data query fails", () =>
 	{
 		const errorMessage = "Failed to load API data";
-		thirdPartyApiService.createAllQuery.and.returnValue(
+		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
 			createMockQueryResult<ThirdPartyApiRequest[]>(undefined, {
 				isError: true,
 				error: new Error(errorMessage)
@@ -145,10 +145,10 @@ describe("ApiStatisticsTableComponent", () =>
 	it("should reload data when refresh is called", () =>
 	{
 		const mockQuery = createMockQueryResult(mockApiData);
-		thirdPartyApiService.createAllQuery.and.returnValue(mockQuery);
+		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(mockQuery);
 
 		createComponent();
-		expect(thirdPartyApiService.createAllQuery).toHaveBeenCalledTimes(1);
+		expect(thirdPartyApiService.getAllThirdPartyApis).toHaveBeenCalledTimes(1);
 
 		component.onRefresh();
 
@@ -157,7 +157,7 @@ describe("ApiStatisticsTableComponent", () =>
 
 	it("should display table with correct columns", () =>
 	{
-		thirdPartyApiService.createAllQuery.and.returnValue(
+		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
 			createMockQueryResult(mockApiData)
 		);
 
@@ -172,7 +172,7 @@ describe("ApiStatisticsTableComponent", () =>
 
 	it("should handle empty data", () =>
 	{
-		thirdPartyApiService.createAllQuery.and.returnValue(
+		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
 			createMockQueryResult<ThirdPartyApiRequest[]>([])
 		);
 
@@ -181,3 +181,4 @@ describe("ApiStatisticsTableComponent", () =>
 		expect(component.dataSource().data.length).toBe(0);
 	});
 });
+

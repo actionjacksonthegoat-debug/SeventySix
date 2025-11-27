@@ -30,9 +30,9 @@ public class UserBuilder
 	private string Username = "testuser";
 	private string Email = "test@example.com";
 	private string? FullName = "Test User";
-	private DateTime CreatedAt = DateTime.UtcNow;
+	private DateTime CreateDate = DateTime.UtcNow;
 	private string? CreatedBy = "system";
-	private DateTime? ModifiedAt = null;
+	private DateTime? ModifyDate = null;
 	private string? ModifiedBy = null;
 	private bool IsActive = true;
 	private bool IsDeleted = false;
@@ -79,12 +79,12 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the created audit fields.
 	/// </summary>
-	/// <param name="createdAt">The creation timestamp.</param>
+	/// <param name="createDate">The creation CreateDate.</param>
 	/// <param name="createdBy">The creator identifier.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public UserBuilder WithCreatedInfo(DateTime createdAt, string? createdBy = "system")
+	public UserBuilder WithCreatedInfo(DateTime createDate, string? createdBy = "system")
 	{
-		CreatedAt = createdAt;
+		CreateDate = createDate;
 		CreatedBy = createdBy;
 		return this;
 	}
@@ -92,12 +92,12 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the modified audit fields.
 	/// </summary>
-	/// <param name="modifiedAt">The modification timestamp.</param>
+	/// <param name="modifyDate">The modification CreateDate.</param>
 	/// <param name="modifiedBy">The modifier identifier.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public UserBuilder WithModifiedInfo(DateTime modifiedAt, string? modifiedBy = "system")
+	public UserBuilder WithModifiedInfo(DateTime modifyDate, string? modifiedBy = "system")
 	{
-		ModifiedAt = modifiedAt;
+		ModifyDate = modifyDate;
 		ModifiedBy = modifiedBy;
 		return this;
 	}
@@ -117,7 +117,7 @@ public class UserBuilder
 	/// Sets the deleted status and audit fields.
 	/// </summary>
 	/// <param name="isDeleted">Whether the user is deleted.</param>
-	/// <param name="deletedAt">The deletion timestamp.</param>
+	/// <param name="deletedAt">The deletion CreateDate.</param>
 	/// <param name="deletedBy">The deleter identifier.</param>
 	/// <returns>The builder instance for method chaining.</returns>
 	public UserBuilder WithDeletedInfo(bool isDeleted, DateTime? deletedAt = null, string? deletedBy = null)
@@ -153,7 +153,7 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the last login information.
 	/// </summary>
-	/// <param name="lastLoginAt">The last login timestamp.</param>
+	/// <param name="lastLoginAt">The last login CreateDate.</param>
 	/// <param name="lastLoginIp">The last login IP address.</param>
 	/// <returns>The builder instance for method chaining.</returns>
 	public UserBuilder WithLastLogin(DateTime lastLoginAt, string? lastLoginIp = null)
@@ -174,10 +174,10 @@ public class UserBuilder
 			Username = Username,
 			Email = Email,
 			FullName = FullName,
-			CreatedAt = CreatedAt,
-			CreatedBy = CreatedBy,
-			ModifiedAt = ModifiedAt,
-			ModifiedBy = ModifiedBy,
+			CreateDate = CreateDate,
+			CreatedBy = CreatedBy ?? string.Empty,
+			ModifyDate = ModifyDate,
+			ModifiedBy = ModifiedBy ?? string.Empty,
 			IsActive = IsActive,
 			IsDeleted = IsDeleted,
 			DeletedAt = DeletedAt,

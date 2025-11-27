@@ -6,6 +6,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Logging;
+using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Extensions;
 
@@ -47,9 +48,13 @@ public static class LoggingExtensions
 	/// </remarks>
 	public static IServiceCollection AddLoggingDomain(this IServiceCollection services, string connectionString)
 	{
-		// Register LoggingDbContext with PostgreSQL
-		services.AddDbContext<LoggingDbContext>(options =>
-			options.UseNpgsql(connectionString));
+		// Register LoggingDbContext with PostgreSQL and AuditInterceptor
+		services.AddDbContext<LoggingDbContext>((serviceProvider, options) =>
+		{
+			AuditInterceptor auditInterceptor = serviceProvider.GetRequiredService<AuditInterceptor>();
+			options.UseNpgsql(connectionString);
+			options.AddInterceptors(auditInterceptor);
+		});
 
 		// Register repositories
 		services.AddScoped<ILogRepository, LogRepository>();

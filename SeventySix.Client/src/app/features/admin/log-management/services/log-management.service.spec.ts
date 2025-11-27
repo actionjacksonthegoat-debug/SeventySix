@@ -21,29 +21,23 @@ describe("LogManagementService", () =>
 
 	const mockLogResponse: LogResponse = {
 		id: 1,
-		timestamp: new Date(),
+		createDate: new Date(),
 		logLevel: "Information",
 		message: "Test log",
-		sourceContext: "Test",
-		exception: null,
+		exceptionMessage: null,
+		baseExceptionMessage: null,
 		stackTrace: null,
-		requestId: null,
+		sourceContext: "Test",
+		requestMethod: null,
 		requestPath: null,
+		statusCode: null,
+		durationMs: null,
+		properties: null,
 		machineName: null,
-		threadId: null,
-		application: null,
 		environment: null,
-		userId: null,
-		userName: null,
-		sessionId: null,
 		correlationId: null,
 		spanId: null,
-		parentSpanId: null,
-		clientIp: null,
-		userAgent: null,
-		duration: null,
-		statusCode: null,
-		properties: null
+		parentSpanId: null
 	};
 
 	const mockPagedResponse: PagedLogResponse = {

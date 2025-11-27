@@ -120,7 +120,7 @@ export class UserList
 				value === true ? "primary" : "warn"
 		},
 		{
-			key: "createdAt",
+			key: "createDate",
 			label: "Created",
 			type: "date",
 			sortable: true,
@@ -337,8 +337,7 @@ export class UserList
 					username: user.username,
 					email: user.email,
 					fullName: user.fullName,
-					isActive: newStatus,
-					rowVersion: user.rowVersion
+					isActive: newStatus
 				}
 			},
 			{

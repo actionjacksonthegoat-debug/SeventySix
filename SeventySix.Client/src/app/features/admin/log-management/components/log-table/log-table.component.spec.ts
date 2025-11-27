@@ -13,29 +13,23 @@ describe("LogTableComponent", () =>
 		logLevel: string = "Error"
 	): LogResponse => ({
 		id,
-		timestamp: new Date(),
+		createDate: new Date(),
 		logLevel,
 		message: `Test log message ${id}`,
-		sourceContext: "TestService",
-		exception: null,
+		exceptionMessage: null,
+		baseExceptionMessage: null,
 		stackTrace: null,
-		requestId: null,
+		sourceContext: "TestService",
+		requestMethod: null,
 		requestPath: null,
+		statusCode: null,
+		durationMs: null,
+		properties: null,
 		machineName: null,
-		threadId: null,
-		application: null,
 		environment: null,
-		userId: null,
-		userName: null,
-		sessionId: null,
 		correlationId: null,
 		spanId: null,
-		parentSpanId: null,
-		clientIp: null,
-		userAgent: null,
-		duration: null,
-		statusCode: null,
-		properties: null
+		parentSpanId: null
 	});
 
 	beforeEach(async () =>

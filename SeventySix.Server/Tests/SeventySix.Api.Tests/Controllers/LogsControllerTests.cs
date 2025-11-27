@@ -162,8 +162,8 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		Assert.NotNull(pagedResponse.Data);
 		Assert.All(pagedResponse.Data, log =>
 		{
-			Assert.True(log.Timestamp >= startDate);
-			Assert.True(log.Timestamp <= endDate);
+			Assert.True(log.CreateDate >= startDate);
+			Assert.True(log.CreateDate <= endDate);
 		});
 	}
 
@@ -283,8 +283,8 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		Assert.All(pagedResponse.Data, log =>
 		{
 			Assert.Equal("Warning", log.LogLevel);
-			Assert.True(log.Timestamp >= startDate);
-			Assert.True(log.Timestamp <= endDate);
+			Assert.True(log.CreateDate >= startDate);
+			Assert.True(log.CreateDate <= endDate);
 			Assert.Contains("/api/users", log.RequestPath ?? string.Empty);
 		});
 	}
@@ -776,7 +776,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		{
 			LogLevel = "Error",
 			Message = "Test log for deletion",
-			Timestamp = DateTime.UtcNow,
+			CreateDate = DateTime.UtcNow,
 			MachineName = "test",
 			Environment = "Test",
 		});
@@ -820,7 +820,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		{
 			LogLevel = "Error",
 			Message = "Batch delete test 1",
-			Timestamp = DateTime.UtcNow,
+			CreateDate = DateTime.UtcNow,
 			MachineName = "test",
 			Environment = "Test",
 		});
@@ -829,7 +829,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		{
 			LogLevel = "Warning",
 			Message = "Batch delete test 2",
-			Timestamp = DateTime.UtcNow,
+			CreateDate = DateTime.UtcNow,
 			MachineName = "test",
 			Environment = "Test",
 		});
@@ -838,7 +838,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		{
 			LogLevel = "Fatal",
 			Message = "Batch delete test 3",
-			Timestamp = DateTime.UtcNow,
+			CreateDate = DateTime.UtcNow,
 			MachineName = "test",
 			Environment = "Test",
 		});
@@ -898,7 +898,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		{
 			LogLevel = "Error",
 			Message = "Partial batch delete test",
-			Timestamp = DateTime.UtcNow,
+			CreateDate = DateTime.UtcNow,
 			MachineName = "test",
 			Environment = "Test",
 		});

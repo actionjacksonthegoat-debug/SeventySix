@@ -49,8 +49,8 @@ public class TransactionManagerTests : IDisposable
 			BaseUrl = "https://test.api",
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 			CallCount = 0,
-			CreatedAt = DateTime.UtcNow,
-			ModifiedAt = null
+			CreateDate = DateTime.UtcNow,
+			ModifyDate = null
 		};
 
 		// Act
@@ -77,9 +77,9 @@ public class TransactionManagerTests : IDisposable
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
-			CallCount = 1,
-			CreatedAt = DateTime.UtcNow,
-			ModifiedAt = null
+			CallCount = 2,
+			CreateDate = DateTime.UtcNow,
+			ModifyDate = null
 		};
 
 		// Act
@@ -118,8 +118,8 @@ public class TransactionManagerTests : IDisposable
 			BaseUrl = "https://test.api",
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 			CallCount = 1,
-			CreatedAt = DateTime.UtcNow,
-			ModifiedAt = null
+			CreateDate = DateTime.UtcNow,
+			ModifyDate = null
 		};
 
 		// Act
@@ -145,8 +145,8 @@ public class TransactionManagerTests : IDisposable
 			BaseUrl = "https://test.api",
 			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 			CallCount = 1,
-			CreatedAt = DateTime.UtcNow,
-			ModifiedAt = null
+			CreateDate = DateTime.UtcNow,
+			ModifyDate = null
 		};
 
 		DbContext.ThirdPartyApiRequests.Add(entity);
@@ -252,9 +252,9 @@ public class TransactionManagerTests : IDisposable
 				ApiName = "Api1",
 				BaseUrl = "https://api1.com",
 				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
-				CallCount = 1,
-				CreatedAt = DateTime.UtcNow,
-				ModifiedAt = null
+				CallCount = 0,
+				CreateDate = DateTime.UtcNow,
+				ModifyDate = null
 			};
 			DbContext.ThirdPartyApiRequests.Add(entity);
 			await DbContext.SaveChangesAsync(cancellationToken);
@@ -269,8 +269,8 @@ public class TransactionManagerTests : IDisposable
 				BaseUrl = "https://api2.com",
 				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
 				CallCount = 1,
-				CreatedAt = DateTime.UtcNow,
-				ModifiedAt = null
+				CreateDate = DateTime.UtcNow,
+				ModifyDate = null
 			};
 			DbContext.ThirdPartyApiRequests.Add(entity);
 			await DbContext.SaveChangesAsync(cancellationToken);

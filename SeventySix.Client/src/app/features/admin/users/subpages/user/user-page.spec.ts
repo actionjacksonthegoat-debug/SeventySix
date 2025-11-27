@@ -26,13 +26,12 @@ describe("UserPage", () =>
 		username: "john_doe",
 		email: "john@example.com",
 		fullName: "John Doe",
-		createdAt: "2024-01-01T00:00:00Z",
+		createDate: "2024-01-01T00:00:00Z",
 		isActive: true,
 		createdBy: "admin",
-		modifiedAt: "2024-01-02T00:00:00Z",
+		modifyDate: "2024-01-02T00:00:00Z",
 		modifiedBy: "admin",
-		lastLoginAt: "2024-01-03T00:00:00Z",
-		rowVersion: 1
+		lastLoginAt: "2024-01-03T00:00:00Z"
 	};
 
 	beforeEach(async () =>
@@ -307,9 +306,9 @@ describe("UserPage", () =>
 		expect(component.userForm.pristine).toBe(true);
 	});
 
-	describe("UpdateUserRequest with RowVersion", () =>
+	describe("UpdateUserRequest", () =>
 	{
-		it("should include rowVersion in update request", async () =>
+		it("should include all required fields in update request", async () =>
 		{
 			const updatedUser: User = { ...mockUser, fullName: "New Name" };
 			const localMockMutationResult = createMockMutationResult<
@@ -347,13 +346,12 @@ describe("UserPage", () =>
 					id: "1",
 					user: jasmine.objectContaining({
 						id: 1,
-						rowVersion: 1
+						username: "john_doe"
 					})
 				},
 				jasmine.any(Object)
 			);
 		});
-
 		it("should handle 409 conflict error with refresh option", async () =>
 		{
 			const conflictError: any = {
@@ -492,8 +490,7 @@ describe("UserPage", () =>
 						username: "new_username",
 						email: "new@example.com",
 						fullName: "New Full Name",
-						isActive: false,
-						rowVersion: 1
+						isActive: false
 					}
 				},
 				jasmine.any(Object)

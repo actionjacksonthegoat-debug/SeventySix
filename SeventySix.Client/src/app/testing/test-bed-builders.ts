@@ -75,6 +75,75 @@ export class ComponentTestBed<T>
 	}
 
 	/**
+	 * Configure component inputs after build
+	 * Reduces repetitive fixture.componentRef.setInput calls
+	 *
+	 * @param inputs - Object with input names as keys and values
+	 * @param fixture - Component fixture to apply inputs to
+	 * @returns void
+	 *
+	 * @example
+	 * const builder = new ComponentTestBed<DataTableComponent>();
+	 * const fixture = await builder.build(DataTableComponent);
+	 * builder.withInputs(fixture, { columns: mockColumns, data: mockData });
+	 */
+	withInputs(
+		fixture: ComponentFixture<T>,
+		inputs: Record<string, unknown>
+	): void
+	{
+		for (const [key, value] of Object.entries(inputs))
+		{
+			fixture.componentRef.setInput(key, value);
+		}
+		fixture.detectChanges();
+	}
+
+	/**
+	 * Add a spy for a component output event
+	 * Simplifies testing component outputs
+	 *
+	 * @param fixture - Component fixture
+	 * @param outputName - Name of the output property
+	 * @returns Jasmine spy that can be used for assertions
+	 *
+	 * @example
+	 * const fixture = await builder.build(DataTableComponent);
+	 * const refreshSpy = builder.withOutputSpy(fixture, 'refreshClick');
+	 * component.onRefresh();
+	 * expect(refreshSpy).toHaveBeenCalled();
+	 */
+	withOutputSpy(
+		fixture: ComponentFixture<T>,
+		outputName: string
+	): jasmine.Spy
+	{
+		const spy: jasmine.Spy = jasmine.createSpy(outputName);
+		const component: T = fixture.componentInstance as T;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const output: any = (component as any)[outputName];
+		if (output && typeof output.subscribe === "function")
+		{
+			output.subscribe(spy);
+		}
+		return spy;
+	}
+
+	/**
+	 * Add common Material modules to test configuration
+	 * Reduces import duplication for Material-heavy components
+	 *
+	 * @returns this for chaining
+	 */
+	withMaterialModules(): this
+	{
+		// Material modules are typically auto-imported with standalone components
+		// This method exists for consistency but may not be needed
+		// Components import their own Material dependencies
+		return this;
+	}
+
+	/**
 	 * Add an import (module or standalone component) to the test configuration
 	 *
 	 * @param importItem - Module or standalone component

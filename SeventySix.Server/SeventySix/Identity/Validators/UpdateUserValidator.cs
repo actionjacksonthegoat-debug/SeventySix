@@ -42,9 +42,5 @@ public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
 			.MaximumLength(100)
 			.WithMessage("Full name cannot exceed 100 characters")
 			.When(x => !string.IsNullOrWhiteSpace(x.FullName));
-
-		RuleFor(x => x.RowVersion)
-			.NotNull()
-			.WithMessage("Row version is required for concurrency control");
 	}
 }

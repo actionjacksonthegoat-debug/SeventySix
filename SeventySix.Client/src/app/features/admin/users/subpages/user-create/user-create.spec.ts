@@ -40,8 +40,10 @@ describe("UserCreatePage", () =>
 			username: "test",
 			email: "test@test.com",
 			fullName: "Test User",
-			createdAt: "2024-01-01T00:00:00Z",
-			isActive: true
+			createDate: "2024-01-01T00:00:00Z",
+			isActive: true,
+			createdBy: "system",
+			modifiedBy: "system"
 		};
 		mockUserService.createUser.and.returnValue(
 			createMockMutationResult<User, Error, Partial<User>, unknown>({
@@ -307,8 +309,10 @@ describe("UserCreatePage", () =>
 				username: "testuser",
 				email: "test@example.com",
 				fullName: "Test User",
-				createdAt: "2024-01-01T00:00:00Z",
-				isActive: true
+				createDate: "2024-01-01T00:00:00Z",
+				isActive: true,
+				createdBy: "system",
+				modifiedBy: "system"
 			};
 
 			component.basicInfoForm.patchValue({

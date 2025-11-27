@@ -207,8 +207,7 @@ export class UserPage implements OnInit
 			username: this.userForm.value.username,
 			email: this.userForm.value.email,
 			fullName: this.userForm.value.fullName || undefined,
-			isActive: this.userForm.value.isActive,
-			rowVersion: currentUser.rowVersion
+			isActive: this.userForm.value.isActive
 		};
 
 		this.updateMutation.mutate(

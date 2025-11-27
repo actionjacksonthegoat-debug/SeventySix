@@ -21,13 +21,12 @@ describe("UserRepository", () =>
 		username: "testuser",
 		email: "test@example.com",
 		fullName: "Test User",
-		createdAt: "2024-01-01T00:00:00Z",
+		createDate: "2024-01-01T00:00:00Z",
 		isActive: true,
 		createdBy: "admin",
-		modifiedAt: "2024-01-02T00:00:00Z",
+		modifyDate: "2024-01-02T00:00:00Z",
 		modifiedBy: "admin",
-		lastLoginAt: "2024-01-03T00:00:00Z",
-		rowVersion: 1
+		lastLoginAt: "2024-01-03T00:00:00Z"
 	};
 
 	beforeEach(() =>

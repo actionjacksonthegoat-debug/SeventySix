@@ -21,13 +21,12 @@ export class UserFixtures
 		username: "john_doe",
 		email: "john@example.com",
 		fullName: "John Doe",
-		createdAt: "2024-01-01T00:00:00Z",
+		createDate: "2024-01-01T00:00:00Z",
 		isActive: true,
 		createdBy: "admin",
-		modifiedAt: "2024-01-02T00:00:00Z",
+		modifyDate: "2024-01-02T00:00:00Z",
 		modifiedBy: "admin",
-		lastLoginAt: "2024-01-03T00:00:00Z",
-		rowVersion: 1
+		lastLoginAt: "2024-01-03T00:00:00Z"
 	};
 
 	/**
@@ -39,13 +38,12 @@ export class UserFixtures
 		username: "jane_smith",
 		email: "jane@example.com",
 		fullName: "Jane Smith",
-		createdAt: "2024-01-02T00:00:00Z",
+		createDate: "2024-01-02T00:00:00Z",
 		isActive: false,
 		createdBy: "system",
-		modifiedAt: "2024-01-03T00:00:00Z",
+		modifyDate: "2024-01-03T00:00:00Z",
 		modifiedBy: "system",
-		lastLoginAt: "2024-01-04T00:00:00Z",
-		rowVersion: 2
+		lastLoginAt: "2024-01-04T00:00:00Z"
 	};
 
 	/**

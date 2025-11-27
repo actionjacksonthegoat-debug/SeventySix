@@ -85,12 +85,12 @@ public class LogConfiguration : IEntityTypeConfiguration<Log>
 		builder.Property(e => e.Properties)
 			.HasColumnType("text");
 
-		// Timestamp - Required, default NOW()
-		// Maps to CreatedAt column in database
+		// CreateDate - Required, default NOW()
+		// Maps to CreateDate column in database
 		// ValueGeneratedOnAdd allows explicit values to override the database default
-		builder.Property(e => e.Timestamp)
+		builder.Property(e => e.CreateDate)
 			.IsRequired()
-			.HasColumnName("CreatedAt")
+			.HasColumnName("CreateDate")
 			.ValueGeneratedOnAdd()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");
@@ -104,7 +104,7 @@ public class LogConfiguration : IEntityTypeConfiguration<Log>
 			.HasMaxLength(50);
 
 		// Indexes for common queries
-		builder.HasIndex(e => e.Timestamp)
+		builder.HasIndex(e => e.CreateDate)
 			.HasDatabaseName("IX_Logs_CreatedAt");
 
 		builder.HasIndex(e => e.LogLevel)
@@ -113,7 +113,7 @@ public class LogConfiguration : IEntityTypeConfiguration<Log>
 		builder.HasIndex(e => e.SourceContext)
 			.HasDatabaseName("IX_Logs_SourceContext");
 
-		builder.HasIndex(e => new { e.LogLevel, e.Timestamp })
+		builder.HasIndex(e => new { e.LogLevel, e.CreateDate })
 			.HasDatabaseName("IX_Logs_LogLevel_CreatedAt");
 
 		builder.HasIndex(e => e.RequestPath)

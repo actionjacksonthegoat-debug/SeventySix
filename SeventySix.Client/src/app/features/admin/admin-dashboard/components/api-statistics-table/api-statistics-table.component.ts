@@ -52,8 +52,9 @@ export class ApiStatisticsTableComponent
 	/**
 	 * TanStack Query for API data
 	 */
-	readonly apiDataQuery: ReturnType<ThirdPartyApiService["createAllQuery"]> =
-		this.thirdPartyApiService.createAllQuery();
+	readonly apiDataQuery: ReturnType<
+		ThirdPartyApiService["getAllThirdPartyApis"]
+	> = this.thirdPartyApiService.getAllThirdPartyApis();
 
 	/**
 	 * Loading state from query

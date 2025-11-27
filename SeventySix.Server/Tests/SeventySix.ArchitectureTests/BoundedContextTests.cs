@@ -81,7 +81,7 @@ public class BoundedContextTests
 			Type? dbContextType = domainAssembly.GetTypes()
 				.FirstOrDefault(type => type.Namespace == $"SeventySix.{contextName}"
 					&& type.Name.EndsWith("DbContext")
-					&& type.BaseType?.Name == "DbContext");
+					&& InheritsFromDbContext(type));
 
 			if (dbContextType == null)
 			{
@@ -90,5 +90,36 @@ public class BoundedContextTests
 		}
 
 		Assert.Empty(contextsWithoutDbContext);
+	}
+
+	/// <summary>
+	/// Checks if a type inherits from DbContext (directly or indirectly).
+	/// </summary>
+	/// <param name="type">The type to check.</param>
+	/// <returns>True if the type inherits from DbContext.</returns>
+	private static bool InheritsFromDbContext(Type type)
+	{
+		Type? baseType = type.BaseType;
+		while (baseType != null)
+		{
+			if (baseType.Name == "DbContext")
+			{
+				return true;
+			}
+
+			// Handle generic base types like BaseDbContext<T>
+			if (baseType.IsGenericType)
+			{
+				Type genericDefinition = baseType.GetGenericTypeDefinition();
+				if (genericDefinition.Name.StartsWith("BaseDbContext"))
+				{
+					return true;
+				}
+			}
+
+			baseType = baseType.BaseType;
+		}
+
+		return false;
 	}
 }

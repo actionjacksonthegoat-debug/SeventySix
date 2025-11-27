@@ -6,7 +6,7 @@ import {
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 import { HealthApiRepository } from "../repositories";
-import { HealthStatus } from "../models";
+import { HealthStatus, DatabaseHealth, ExternalApiHealth } from "../models";
 import { getQueryConfig } from "@core/utils/query-config";
 
 /**
@@ -25,11 +25,11 @@ export class HealthApiService
 		getQueryConfig("health");
 
 	/**
-	 * Creates a query for overall system health status
+	 * Gets overall system health status
 	 * Automatically cached with TanStack Query
 	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	createHealthQuery(): CreateQueryResult<HealthStatus, Error>
+	getHealth(): CreateQueryResult<HealthStatus, Error>
 	{
 		return injectQuery(() => ({
 			queryKey: ["health", "status"],
@@ -39,10 +39,10 @@ export class HealthApiService
 	}
 
 	/**
-	 * Creates a query for database health status
+	 * Gets database health status
 	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	createDatabaseHealthQuery(): CreateQueryResult<HealthStatus, Error>
+	getDatabaseHealth(): CreateQueryResult<DatabaseHealth, Error>
 	{
 		return injectQuery(() => ({
 			queryKey: ["health", "database"],
@@ -52,10 +52,10 @@ export class HealthApiService
 	}
 
 	/**
-	 * Creates a query for external API health status
+	 * Gets external API health status
 	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	createExternalApiHealthQuery(): CreateQueryResult<HealthStatus, Error>
+	getExternalApiHealth(): CreateQueryResult<ExternalApiHealth, Error>
 	{
 		return injectQuery(() => ({
 			queryKey: ["health", "externalApis"],

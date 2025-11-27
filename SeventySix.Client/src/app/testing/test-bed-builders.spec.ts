@@ -3,10 +3,20 @@
  * Ensures test utilities work correctly
  */
 
-import { TestBed } from "@angular/core/testing";
-import { Injectable, InjectionToken } from "@angular/core";
+import { TestBed, ComponentFixture } from "@angular/core/testing";
+import {
+	Component,
+	Injectable,
+	InjectionToken,
+	input,
+	output
+} from "@angular/core";
 import { QueryClient } from "@tanstack/angular-query-experimental";
-import { createTestQueryClient, setupServiceTest } from "./test-bed-builders";
+import {
+	createTestQueryClient,
+	setupServiceTest,
+	ComponentTestBed
+} from "./test-bed-builders";
 
 // Mock service for testing
 @Injectable()
@@ -15,6 +25,23 @@ class MockTestService
 	getValue(): string
 	{
 		return "test value";
+	}
+}
+
+// Mock component for testing
+@Component({
+	selector: "app-test-component",
+	template: "<div>Test</div>",
+	standalone: true
+})
+class TestComponent
+{
+	testInput = input<string>();
+	testOutput = output<string>();
+
+	emitOutput(): void
+	{
+		this.testOutput.emit("test output");
 	}
 }
 
@@ -75,6 +102,47 @@ describe("Test Bed Builders", () =>
 			const injectedClient: QueryClient = TestBed.inject(QueryClient);
 
 			expect(setup.queryClient).toBe(injectedClient);
+		});
+	});
+
+	describe("ComponentTestBed", () =>
+	{
+		it("should configure component inputs with withInputs", async () =>
+		{
+			const builder: ComponentTestBed<TestComponent> =
+				new ComponentTestBed<TestComponent>();
+			const fixture: ComponentFixture<TestComponent> =
+				await builder.build(TestComponent);
+
+			builder.withInputs(fixture, { testInput: "test value" });
+
+			expect(fixture.componentInstance.testInput()).toBe("test value");
+		});
+
+		it("should spy on component outputs with withOutputSpy", async () =>
+		{
+			const builder: ComponentTestBed<TestComponent> =
+				new ComponentTestBed<TestComponent>();
+			const fixture: ComponentFixture<TestComponent> =
+				await builder.build(TestComponent);
+
+			const outputSpy: jasmine.Spy = builder.withOutputSpy(
+				fixture,
+				"testOutput"
+			);
+			fixture.componentInstance.emitOutput();
+
+			expect(outputSpy).toHaveBeenCalledWith("test output");
+		});
+
+		it("should return builder instance from withMaterialModules", () =>
+		{
+			const builder: ComponentTestBed<TestComponent> =
+				new ComponentTestBed<TestComponent>();
+			const result: ComponentTestBed<TestComponent> =
+				builder.withMaterialModules();
+
+			expect(result).toBe(builder);
 		});
 	});
 });

@@ -158,7 +158,7 @@ public class LogsController(
 	{
 		try
 		{
-			bool deleted = await logService.DeleteLogByIdAsync(id);
+			bool deleted = await logService.DeleteLogByIdAsync(id, cancellationToken);
 
 			if (!deleted)
 			{
@@ -201,7 +201,7 @@ public class LogsController(
 
 		try
 		{
-			int deletedCount = await logService.DeleteLogsBatchAsync(ids);
+			int deletedCount = await logService.DeleteLogsBatchAsync(ids, cancellationToken);
 
 			// Invalidate logs cache after batch deletion
 			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
@@ -228,7 +228,9 @@ public class LogsController(
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<int>> CleanupLogsAsync([FromQuery] DateTime? cutoffDate)
+	public async Task<ActionResult<int>> CleanupLogsAsync(
+		[FromQuery] DateTime? cutoffDate,
+		CancellationToken cancellationToken = default)
 	{
 		if (!cutoffDate.HasValue)
 		{
@@ -237,10 +239,10 @@ public class LogsController(
 
 		try
 		{
-			int deletedCount = await logService.DeleteLogsOlderThanAsync(cutoffDate.Value);
+			int deletedCount = await logService.DeleteLogsOlderThanAsync(cutoffDate.Value, cancellationToken);
 
 			// Invalidate logs cache after cleanup
-			await outputCacheStore.EvictByTagAsync("logs", CancellationToken.None);
+			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 			return Ok(deletedCount);
 		}
@@ -270,7 +272,7 @@ public class LogsController(
 	{
 		try
 		{
-			await logService.CreateClientLogAsync(request);
+			await logService.CreateClientLogAsync(request, cancellationToken);
 
 			// Invalidate logs cache after creating new log
 			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
@@ -305,7 +307,7 @@ public class LogsController(
 	{
 		try
 		{
-			await logService.CreateClientLogBatchAsync(requests);
+			await logService.CreateClientLogBatchAsync(requests, cancellationToken);
 
 			// Invalidate logs cache after batch creating logs
 			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);

@@ -42,27 +42,29 @@ public interface IThirdPartyApiRequestRepository
 	/// Creates a new tracking record.
 	/// </summary>
 	/// <param name="entity">The entity to create.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>The created entity with generated Id.</returns>
 	/// <exception cref="ArgumentNullException">Thrown when entity is null.</exception>
 	/// <exception cref="InvalidOperationException">Thrown when unique constraint is violated.</exception>
 	/// <remarks>
 	/// Enforces unique constraint: one record per (ApiName, ResetDate) combination.
-	/// Sets CreatedAt and UpdatedAt timestamps automatically via DbContext.
+	/// Sets CreateDate and ModifyDate timestamps automatically via DbContext.
 	/// </remarks>
-	public Task<ThirdPartyApiRequest> CreateAsync(ThirdPartyApiRequest entity);
+	public Task<ThirdPartyApiRequest> CreateAsync(ThirdPartyApiRequest entity, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Updates an existing tracking record.
 	/// </summary>
 	/// <param name="entity">The entity to update.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>The updated entity.</returns>
 	/// <exception cref="ArgumentNullException">Thrown when entity is null.</exception>
 	/// <exception cref="InvalidOperationException">Thrown when entity not found or concurrency conflict.</exception>
 	/// <remarks>
-	/// Updates UpdatedAt timestamp automatically via DbContext.
+	/// Updates ModifyDate timestamp automatically via DbContext.
 	/// Used primarily for incrementing CallCount.
 	/// </remarks>
-	public Task<ThirdPartyApiRequest> UpdateAsync(ThirdPartyApiRequest entity);
+	public Task<ThirdPartyApiRequest> UpdateAsync(ThirdPartyApiRequest entity, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Retrieves all tracking records for a specific API.
@@ -94,10 +96,11 @@ public interface IThirdPartyApiRequestRepository
 	/// Deletes tracking records older than the specified cutoff date.
 	/// </summary>
 	/// <param name="cutoffDate">Delete records with ResetDate before this date.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>The number of records deleted.</returns>
 	/// <remarks>
 	/// Used for data retention policies (e.g., keep only last 30 days).
 	/// Performs batch delete for efficiency.
 	/// </remarks>
-	public Task<int> DeleteOlderThanAsync(DateOnly cutoffDate);
+	public Task<int> DeleteOlderThanAsync(DateOnly cutoffDate, CancellationToken cancellationToken = default);
 }

@@ -35,12 +35,12 @@ public class UserService(
 	IValidator<CreateUserRequest> createValidator,
 	IValidator<UpdateUserRequest> updateValidator,
 	IValidator<UserQueryRequest> queryValidator,
+	ITransactionManager transactionManager,
 	ILogger<UserService> logger) : IUserService
 {
 	/// <inheritdoc/>
 	public async Task<IEnumerable<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken = default)
 	{
-		logger.LogInformation("Retrieving all users");
 		IEnumerable<User> users = await repository.GetAllAsync(cancellationToken);
 		return users.ToDto();
 	}
@@ -48,12 +48,10 @@ public class UserService(
 	/// <inheritdoc/>
 	public async Task<UserDto?> GetUserByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
-		logger.LogInformation("Retrieving user with ID {UserId}", id);
 		User? user = await repository.GetByIdAsync(id, cancellationToken);
 
 		if (user == null)
 		{
-			logger.LogWarning("User with ID {UserId} not found", id);
 			return null;
 		}
 
@@ -61,111 +59,91 @@ public class UserService(
 	}
 
 	/// <inheritdoc/>
-	public async Task<UserDto> CreateUserAsync(CreateUserRequest request)
+	public async Task<UserDto> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
 	{
 		// Validate request
-		await createValidator.ValidateAndThrowAsync(request, CancellationToken.None);
+		await createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-		logger.LogInformation("Creating new user with username {Username}", request.Username);
-
-		// Check for duplicate username
-		if (await repository.UsernameExistsAsync(request.Username, null, CancellationToken.None))
+		// Execute within transaction for ACID guarantees
+		return await transactionManager.ExecuteInTransactionAsync(async transactionCancellationToken =>
 		{
-			logger.LogWarning("Username {Username} already exists", request.Username);
-			throw new DuplicateUserException($"Username '{request.Username}' is already taken");
-		}
+			// Check for duplicate username
+			if (await repository.UsernameExistsAsync(request.Username, null, transactionCancellationToken))
+			{
+				string errorMessage = $"Failed to create user: Username '{request.Username}' is already taken";
+				logger.LogError("Duplicate username detected during user creation. Username: {Username}", request.Username);
+				throw new DuplicateUserException(errorMessage);
+			}
 
-		// Check for duplicate email
-		if (await repository.EmailExistsAsync(request.Email, null, CancellationToken.None))
-		{
-			logger.LogWarning("Email {Email} already exists", request.Email);
-			throw new DuplicateUserException($"Email '{request.Email}' is already registered");
-		}
+			// Check for duplicate email
+			if (await repository.EmailExistsAsync(request.Email, null, transactionCancellationToken))
+			{
+				string errorMessage = $"Failed to create user: Email '{request.Email}' is already registered";
+				logger.LogError("Duplicate email detected during user creation. Email: {Email}, Username: {Username}", request.Email, request.Username);
+				throw new DuplicateUserException(errorMessage);
+			}
 
-		// Create entity and save
-		User entity = request.ToEntity();
-		entity.CreatedBy = "System"; // TODO: Get from auth context
-		User created = await repository.CreateAsync(entity);
+			// Create entity and save (audit properties set by AuditInterceptor)
+			User entity = request.ToEntity();
+			User created = await repository.CreateAsync(entity, transactionCancellationToken);
 
-		logger.LogInformation("User created: Id={UserId}, Username={Username}", created.Id, created.Username);
-		return created.ToDto();
+			return created.ToDto();
+		}, maxRetries: 3, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<UserDto> UpdateUserAsync(UpdateUserRequest request)
+	public async Task<UserDto> UpdateUserAsync(UpdateUserRequest request, CancellationToken cancellationToken = default)
 	{
 		// Validate request
-		await updateValidator.ValidateAndThrowAsync(request, CancellationToken.None);
+		await updateValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-		logger.LogInformation("Updating user with ID {UserId}", request.Id);
-
-		// Retrieve existing user
-		User? existing = await repository.GetByIdAsync(request.Id, CancellationToken.None);
-		if (existing == null)
+		// Execute within transaction for ACID guarantees
+		return await transactionManager.ExecuteInTransactionAsync(async transactionCancellationToken =>
 		{
-			logger.LogWarning("User with ID {UserId} not found for update", request.Id);
-			throw new UserNotFoundException(request.Id);
-		}
+			// Retrieve existing user
+			User? existing = await repository.GetByIdAsync(request.Id, transactionCancellationToken);
+			if (existing == null)
+			{
+				string errorMessage = $"Failed to update user: User with ID {request.Id} not found";
+				logger.LogError("User not found during update operation. UserId: {UserId}", request.Id);
+				throw new UserNotFoundException(request.Id);
+			}
 
-		// Check for duplicate username (excluding current user)
-		if (await repository.UsernameExistsAsync(request.Username, request.Id, CancellationToken.None))
-		{
-			logger.LogWarning("Username {Username} already exists for another user", request.Username);
-			throw new DuplicateUserException($"Username '{request.Username}' is already taken");
-		}
+			// Check for duplicate username (excluding current user)
+			if (await repository.UsernameExistsAsync(request.Username, request.Id, transactionCancellationToken))
+			{
+				string errorMessage = $"Failed to update user: Username '{request.Username}' is already taken by another user";
+				logger.LogError("Duplicate username detected during user update. Username: {Username}, UserId: {UserId}", request.Username, request.Id);
+				throw new DuplicateUserException(errorMessage);
+			}
 
-		// Check for duplicate email (excluding current user)
-		if (await repository.EmailExistsAsync(request.Email, request.Id, CancellationToken.None))
-		{
-			logger.LogWarning("Email {Email} already exists for another user", request.Email);
-			throw new DuplicateUserException($"Email '{request.Email}' is already registered");
-		}
+			// Check for duplicate email (excluding current user)
+			if (await repository.EmailExistsAsync(request.Email, request.Id, transactionCancellationToken))
+			{
+				string errorMessage = $"Failed to update user: Email '{request.Email}' is already registered to another user";
+				logger.LogError("Duplicate email detected during user update. Email: {Email}, UserId: {UserId}, Username: {Username}", request.Email, request.Id, request.Username);
+				throw new DuplicateUserException(errorMessage);
+			}
 
-		// Update entity
-		User user = request.ToEntity(existing);
-		user.ModifiedBy = "System"; // TODO: Get from auth context
+			// Update entity (audit properties set by AuditInterceptor)
+			User user = request.ToEntity(existing);
 
-		try
-		{
-			User updated = await repository.UpdateAsync(user);
-			logger.LogInformation("User updated: Id={UserId}, Username={Username}", updated.Id, updated.Username);
+			User updated = await repository.UpdateAsync(user, transactionCancellationToken);
 			return updated.ToDto();
-		}
-		catch (DbUpdateConcurrencyException)
-		{
-			throw new ConcurrencyException("User was modified by another user. Please refresh and try again.");
-		}
+		}, maxRetries: 3, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> DeleteUserAsync(int id, string deletedBy)
+	public async Task<bool> DeleteUserAsync(int id, string deletedBy, CancellationToken cancellationToken = default)
 	{
-		logger.LogInformation("Soft deleting user with ID {UserId}", id);
-		bool result = await repository.SoftDeleteAsync(id, deletedBy);
-		if (result)
-		{
-			logger.LogInformation("User with ID {UserId} soft deleted successfully", id);
-		}
-		else
-		{
-			logger.LogWarning("User with ID {UserId} not found for soft delete", id);
-		}
+		bool result = await repository.SoftDeleteAsync(id, deletedBy, cancellationToken);
 		return result;
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> RestoreUserAsync(int id)
+	public async Task<bool> RestoreUserAsync(int id, CancellationToken cancellationToken = default)
 	{
-		logger.LogInformation("Restoring user with ID {UserId}", id);
-		bool result = await repository.RestoreAsync(id);
-		if (result)
-		{
-			logger.LogInformation("User with ID {UserId} restored successfully", id);
-		}
-		else
-		{
-			logger.LogWarning("User with ID {UserId} not found or not deleted for restore", id);
-		}
+		bool result = await repository.RestoreAsync(id, cancellationToken);
 		return result;
 	}
 
@@ -174,8 +152,6 @@ public class UserService(
 	{
 		// Validate request
 		await queryValidator.ValidateAndThrowAsync(request, cancellationToken);
-
-		logger.LogInformation("Retrieving paged users: Page {Page}, PageSize {PageSize}", request.Page, request.PageSize);
 
 		(IEnumerable<User> Users, int TotalCount) pagedResult = await repository.GetPagedAsync(request, cancellationToken);
 
@@ -191,7 +167,6 @@ public class UserService(
 	/// <inheritdoc/>
 	public async Task<UserDto?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
 	{
-		logger.LogInformation("Retrieving user by username {Username}", username);
 		User? user = await repository.GetByUsernameAsync(username, cancellationToken);
 		return user?.ToDto();
 	}
@@ -199,7 +174,6 @@ public class UserService(
 	/// <inheritdoc/>
 	public async Task<UserDto?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
 	{
-		logger.LogInformation("Retrieving user by email {Email}", email);
 		User? user = await repository.GetByEmailAsync(email, cancellationToken);
 		return user?.ToDto();
 	}
@@ -207,23 +181,23 @@ public class UserService(
 	/// <inheritdoc/>
 	public async Task<bool> UsernameExistsAsync(string username, int? excludeUserId = null, CancellationToken cancellationToken = default)
 	{
-		logger.LogDebug("Checking if username {Username} exists (excluding user {ExcludeUserId})", username, excludeUserId);
 		return await repository.UsernameExistsAsync(username, excludeUserId, cancellationToken);
 	}
 
 	/// <inheritdoc/>
 	public async Task<bool> EmailExistsAsync(string email, int? excludeUserId = null, CancellationToken cancellationToken = default)
 	{
-		logger.LogDebug("Checking if email {Email} exists (excluding user {ExcludeUserId})", email, excludeUserId);
 		return await repository.EmailExistsAsync(email, excludeUserId, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> userIds, bool isActive, string modifiedBy)
+	public async Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> userIds, bool isActive, string modifiedBy, CancellationToken cancellationToken = default)
 	{
-		logger.LogInformation("Bulk updating active status to {IsActive} for {Count} users", isActive, userIds.Count());
-		int count = await repository.BulkUpdateActiveStatusAsync(userIds, isActive);
-		logger.LogInformation("Successfully updated {Count} users", count);
-		return count;
+		// Execute within transaction to ensure all-or-nothing updates
+		return await transactionManager.ExecuteInTransactionAsync(async transactionCancellationToken =>
+		{
+			int count = await repository.BulkUpdateActiveStatusAsync(userIds, isActive, transactionCancellationToken);
+			return count;
+		}, maxRetries: 3, cancellationToken);
 	}
 }

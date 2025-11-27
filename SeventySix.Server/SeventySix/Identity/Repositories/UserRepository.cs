@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared;
+using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Identity;
 
@@ -17,6 +18,8 @@ namespace SeventySix.Identity;
 ///
 /// Design Patterns:
 /// - Repository: Abstracts data access logic
+/// - Template Method: Inherits error handling from BaseRepository
+/// - Builder: Uses QueryBuilder for complex queries
 /// - Unit of Work: DbContext manages transactions
 ///
 /// SOLID Principles:
@@ -26,33 +29,26 @@ namespace SeventySix.Identity;
 ///
 /// Performance Optimizations:
 /// - AsNoTracking for read-only queries
-/// - Indexes on Username, Email, IsDeleted, IsActive, CreatedAt
+/// - Indexes on Username, Email, IsDeleted, IsActive, CreateDate
 /// - Global query filter for soft delete (excludes IsDeleted = true by default)
 /// - Optimistic concurrency control using PostgreSQL xmin (uint RowVersion)
 /// </remarks>
-internal class UserRepository : IUserRepository
+/// <param name="context">The database context.</param>
+/// <param name="repositoryLogger">The logger instance.</param>
+internal class UserRepository(
+	IdentityDbContext context,
+	ILogger<UserRepository> repositoryLogger) : BaseRepository<User, IdentityDbContext>(context, repositoryLogger), IUserRepository
 {
-	private readonly IdentityDbContext Context;
-	private readonly ILogger<UserRepository> Logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="UserRepository"/> class.
-	/// </summary>
-	/// <param name="context">The database context.</param>
-	/// <param name="logger">The logger instance.</param>
-	public UserRepository(
-		IdentityDbContext context,
-		ILogger<UserRepository> logger)
+	/// <inheritdoc/>
+	protected override string GetEntityIdentifier(User entity)
 	{
-		Context = context ?? throw new ArgumentNullException(nameof(context));
-		Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		return $"Id={entity.Id}, Username={entity.Username}";
 	}
 
 	/// <inheritdoc/>
 	public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
 	{
-		return await Context.Users
-			.AsNoTracking()
+		return await GetQueryable()
 			.OrderBy(u => u.Username)
 			.ToListAsync(cancellationToken);
 	}
@@ -60,135 +56,78 @@ internal class UserRepository : IUserRepository
 	/// <inheritdoc/>
 	public async Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
-		return await Context.Users
-			.AsNoTracking()
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
+
+		return await GetQueryable()
 			.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<User> CreateAsync(User entity)
+	public new async Task<User> CreateAsync(User entity, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
-
-		try
-		{
-			Context.Users.Add(entity);
-			await Context.SaveChangesAsync();
-
-			Logger.LogInformation(
-				"Created User: Id={Id}, Username={Username}",
-				entity.Id,
-				entity.Username);
-
-			return entity;
-		}
-		catch (DbUpdateException ex)
-		{
-			Logger.LogError(
-				ex,
-				"Error creating User: {Username}. Possible constraint violation.",
-				entity.Username);
-			throw;
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(
-				ex,
-				"Unexpected error creating User: {Username}",
-				entity.Username);
-			throw;
-		}
+		return await base.CreateAsync(entity, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<User> UpdateAsync(User entity)
+	/// <remarks>
+	/// Uses base UpdateAsync implementation for consistent tracking logic.
+	/// </remarks>
+	public new async Task<User> UpdateAsync(User entity, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
+		return await base.UpdateAsync(entity, cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+	{
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
 
 		try
 		{
-			// Check if entity is already tracked
-			User? trackedEntity = Context.Users.Local
-				.FirstOrDefault(e => e.Id == entity.Id);
-
-			if (trackedEntity != null)
+			User? entity = await context.Users.FindAsync([id], cancellationToken);
+			if (entity is null)
 			{
-				// Entity is already tracked, update its properties
-				Context.Entry(trackedEntity).CurrentValues.SetValues(entity);
-			}
-			else
-			{
-				// Entity is not tracked, attach and mark as modified
-				Context.Users.Update(entity);
+				return false;
 			}
 
-			await Context.SaveChangesAsync();
-
-			Logger.LogDebug(
-				"Updated User: Id={Id}, Username={Username}",
-				entity.Id,
-				entity.Username);
-
-			return entity;
+			context.Users.Remove(entity);
+			await context.SaveChangesAsync(cancellationToken);
+			return true;
 		}
 		catch (DbUpdateConcurrencyException ex)
 		{
-			Logger.LogWarning(
-				ex,
-				"Concurrency conflict updating User: Id={Id}",
-				entity.Id);
+			base.logger.LogError(ex, "Concurrency conflict {Operation}: Id={Id}", nameof(DeleteAsync), id);
 			throw;
 		}
 		catch (DbUpdateException ex)
 		{
-			Logger.LogError(
-				ex,
-				"Error updating User: Id={Id}. Possible constraint violation.",
-				entity.Id);
+			base.logger.LogError(ex, "Database error {Operation}: Id={Id}", nameof(DeleteAsync), id);
 			throw;
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(
-				ex,
-				"Unexpected error updating User: Id={Id}",
-				entity.Id);
+			base.logger.LogError(ex, "Unexpected error {Operation}: Id={Id}", nameof(DeleteAsync), id);
 			throw;
 		}
-	}
-
-	/// <inheritdoc/>
-	public async Task<bool> DeleteAsync(int id)
-	{
-		User? entity = await Context.Users.FindAsync([id]);
-		if (entity is null)
-		{
-			return false;
-		}
-
-		Context.Users.Remove(entity);
-		await Context.SaveChangesAsync();
-
-		Logger.LogInformation(
-			"Deleted User: Id={Id}",
-			id);
-
-		return true;
 	}
 
 	/// <inheritdoc/>
 	public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
 	{
-		return await Context.Users
-			.AsNoTracking()
+		ArgumentException.ThrowIfNullOrWhiteSpace(username);
+
+		return await GetQueryable()
 			.FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
 	}
 
 	/// <inheritdoc/>
 	public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
 	{
-		return await Context.Users
-			.AsNoTracking()
+		ArgumentException.ThrowIfNullOrWhiteSpace(email);
+
+		return await GetQueryable()
 			.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower(), cancellationToken);
 	}
 
@@ -197,10 +136,10 @@ internal class UserRepository : IUserRepository
 	{
 		if (excludeId.HasValue)
 		{
-			return await Context.Users.AnyAsync(u => u.Username == username && u.Id != excludeId.Value, cancellationToken);
+			return await context.Users.AnyAsync(u => u.Username == username && u.Id != excludeId.Value, cancellationToken);
 		}
 
-		return await Context.Users.AnyAsync(u => u.Username == username, cancellationToken);
+		return await context.Users.AnyAsync(u => u.Username == username, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -210,10 +149,10 @@ internal class UserRepository : IUserRepository
 
 		if (excludeId.HasValue)
 		{
-			return await Context.Users.AnyAsync(u => u.Email.ToLower() == lowerEmail && u.Id != excludeId.Value, cancellationToken);
+			return await context.Users.AnyAsync(u => u.Email.ToLower() == lowerEmail && u.Id != excludeId.Value, cancellationToken);
 		}
 
-		return await Context.Users.AnyAsync(u => u.Email.ToLower() == lowerEmail, cancellationToken);
+		return await context.Users.AnyAsync(u => u.Email.ToLower() == lowerEmail, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -223,58 +162,82 @@ internal class UserRepository : IUserRepository
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		IQueryable<User> query = Context.Users.AsQueryable();
+		IQueryable<User> baseQuery = request.IncludeDeleted
+			? context.Users.IgnoreQueryFilters()
+			: GetQueryable();
 
-		// Include deleted users if requested
-		if (request.IncludeDeleted)
+		IQueryable<User> query = baseQuery.ApplyQueryBuilder(builder =>
 		{
-			query = query.IgnoreQueryFilters();
-		}
+			// Apply search filter
+			if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+			{
+				builder = builder.Where(u =>
+					u.Username.Contains(request.SearchTerm) ||
+					u.Email.Contains(request.SearchTerm) ||
+					(u.FullName != null && u.FullName.Contains(request.SearchTerm)));
+			}
 
-		// Apply search filter
-		if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-		{
-			query = query.Where(u =>
-				u.Username.Contains(request.SearchTerm) ||
-				u.Email.Contains(request.SearchTerm) ||
-				(u.FullName != null && u.FullName.Contains(request.SearchTerm)));
-		}
+			// Apply active status filter
+			if (request.IsActive.HasValue)
+			{
+				builder = builder.Where(u => u.IsActive == request.IsActive.Value);
+			}
 
-		// Apply active status filter
-		if (request.IsActive.HasValue)
-		{
-			query = query.Where(u => u.IsActive == request.IsActive.Value);
-		}
+			// Apply date range filter
+			if (request.StartDate.HasValue)
+			{
+				builder = builder.Where(u => u.LastLoginAt >= request.StartDate.Value);
+			}
 
-		// Apply date range filter (StartDate/EndDate filter by LastLoginAt)
-		if (request.StartDate.HasValue)
-		{
-			query = query.Where(u => u.LastLoginAt >= request.StartDate.Value);
-		}
+			if (request.EndDate.HasValue)
+			{
+				builder = builder.Where(u => u.LastLoginAt <= request.EndDate.Value);
+			}
 
-		if (request.EndDate.HasValue)
-		{
-			query = query.Where(u => u.LastLoginAt <= request.EndDate.Value);
-		}
+			// Apply sorting
+			string sortProperty = string.IsNullOrWhiteSpace(request.SortBy) ? "Id" : request.SortBy;
+			builder = request.SortDescending
+				? builder.OrderByDescending(u => EF.Property<object>(u, sortProperty))
+				: builder.OrderBy(u => EF.Property<object>(u, sortProperty));
 
-		// Get total count BEFORE pagination
-		int totalCount = await query.CountAsync(cancellationToken);
+			// Apply pagination
+			return builder
+				.Skip(request.GetSkip())
+				.Take(request.GetValidatedPageSize());
+		});
 
-		// Apply sorting (dynamic based on SortBy property)
-		// Default: Id ascending
-		string sortProperty = string.IsNullOrWhiteSpace(request.SortBy) ? "Id" : request.SortBy;
-		query = request.SortDescending
-			? query.OrderByDescending(e => EF.Property<object>(e, sortProperty))
-			: query.OrderBy(e => EF.Property<object>(e, sortProperty));
+		// Get total count and data
+		int totalCount = await baseQuery
+			.ApplyQueryBuilder(builder =>
+			{
+				if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+				{
+					builder = builder.Where(u =>
+						u.Username.Contains(request.SearchTerm) ||
+						u.Email.Contains(request.SearchTerm) ||
+						(u.FullName != null && u.FullName.Contains(request.SearchTerm)));
+				}
 
-		// Apply pagination
-		int skip = request.GetSkip();
-		int take = request.GetValidatedPageSize();
+				if (request.IsActive.HasValue)
+				{
+					builder = builder.Where(u => u.IsActive == request.IsActive.Value);
+				}
+
+				if (request.StartDate.HasValue)
+				{
+					builder = builder.Where(u => u.LastLoginAt >= request.StartDate.Value);
+				}
+
+				if (request.EndDate.HasValue)
+				{
+					builder = builder.Where(u => u.LastLoginAt <= request.EndDate.Value);
+				}
+
+				return builder;
+			})
+			.CountAsync(cancellationToken);
 
 		List<User> users = await query
-			.AsNoTracking()
-			.Skip(skip)
-			.Take(take)
 			.ToListAsync(cancellationToken);
 
 		return (users, totalCount);
@@ -283,90 +246,101 @@ internal class UserRepository : IUserRepository
 	/// <inheritdoc/>
 	public async Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<int> ids, CancellationToken cancellationToken = default)
 	{
-		return await Context.Users
-			.AsNoTracking()
+		return await GetQueryable()
 			.Where(u => ids.Contains(u.Id))
 			.ToListAsync(cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> ids, bool isActive)
+	public async Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> ids, bool isActive, CancellationToken cancellationToken = default)
 	{
-		List<User> users = await Context.Users
-			.Where(u => ids.Contains(u.Id))
-			.ToListAsync(CancellationToken.None);
-
-		foreach (User user in users)
-		{
-			user.IsActive = isActive;
-		}
-		await Context.SaveChangesAsync();
-
-		Logger.LogInformation(
-			"Bulk updated active status for {Count} users to {IsActive}",
-			users.Count,
-			isActive);
-
-		return users.Count;
+		BulkOperationExecutor<User> executor = new(context);
+		return await executor.ExecuteBulkUpdateAsync(
+			ids,
+			user => user.IsActive = isActive,
+			cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> SoftDeleteAsync(int id, string deletedBy)
+	public async Task<bool> SoftDeleteAsync(int id, string deletedBy, CancellationToken cancellationToken = default)
 	{
-		// Need to ignore query filters to find the user even if already soft-deleted
-		User? user = await Context.Users
-			.IgnoreQueryFilters()
-			.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, CancellationToken.None);
-
-		if (user is null)
+		try
 		{
-			return false;
+			User? user = await context.Users
+				.IgnoreQueryFilters()
+				.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, cancellationToken);
+
+			if (user is null)
+			{
+				return false;
+			}
+
+			user.IsDeleted = true;
+			user.DeletedAt = DateTime.UtcNow;
+			user.DeletedBy = deletedBy;
+
+			await context.SaveChangesAsync(cancellationToken);
+			return true;
 		}
-
-		user.IsDeleted = true;
-		user.DeletedAt = DateTime.UtcNow;
-		user.DeletedBy = deletedBy;
-
-		await Context.SaveChangesAsync();
-
-		Logger.LogInformation(
-			"Soft deleted User: Id={Id}, DeletedBy={DeletedBy}",
-			id,
-			deletedBy);
-
-		return true;
+		catch (DbUpdateConcurrencyException ex)
+		{
+			base.logger.LogError(ex, "Concurrency conflict {Operation}: Id={Id}", nameof(SoftDeleteAsync), id);
+			throw;
+		}
+		catch (DbUpdateException ex)
+		{
+			base.logger.LogError(ex, "Database error {Operation}: Id={Id}", nameof(SoftDeleteAsync), id);
+			throw;
+		}
+		catch (Exception ex)
+		{
+			base.logger.LogError(ex, "Unexpected error {Operation}: Id={Id}", nameof(SoftDeleteAsync), id);
+			throw;
+		}
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> RestoreAsync(int id)
+	public async Task<bool> RestoreAsync(int id, CancellationToken cancellationToken = default)
 	{
-		// Need to ignore query filters to find soft-deleted users
-		User? user = await Context.Users
-			.IgnoreQueryFilters()
-			.FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted, CancellationToken.None);
-
-		if (user is null)
+		try
 		{
-			return false;
+			User? user = await context.Users
+				.IgnoreQueryFilters()
+				.FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted, cancellationToken);
+
+			if (user is null)
+			{
+				return false;
+			}
+
+			user.IsDeleted = false;
+			user.DeletedAt = null;
+			user.DeletedBy = null;
+
+			await context.SaveChangesAsync(cancellationToken);
+			return true;
 		}
-
-		user.IsDeleted = false;
-		user.DeletedAt = null;
-		user.DeletedBy = null;
-
-		await Context.SaveChangesAsync();
-
-		Logger.LogInformation(
-			"Restored User: Id={Id}",
-			id);
-
-		return true;
+		catch (DbUpdateConcurrencyException ex)
+		{
+			base.logger.LogError(ex, "Concurrency conflict {Operation}: Id={Id}", nameof(RestoreAsync), id);
+			throw;
+		}
+		catch (DbUpdateException ex)
+		{
+			base.logger.LogError(ex, "Database error {Operation}: Id={Id}", nameof(RestoreAsync), id);
+			throw;
+		}
+		catch (Exception ex)
+		{
+			base.logger.LogError(ex, "Unexpected error {Operation}: Id={Id}", nameof(RestoreAsync), id);
+			throw;
+		}
 	}
 
 	/// <inheritdoc/>
 	public async Task<int> CountAsync(bool? isActive = null, bool includeDeleted = false, CancellationToken cancellationToken = default)
 	{
-		IQueryable<User> query = Context.Users.AsQueryable();
+		IQueryable<User> query = context.Users.AsQueryable();
 
 		// Include deleted users if requested
 		if (includeDeleted)
@@ -383,3 +357,4 @@ internal class UserRepository : IUserRepository
 		return await query.CountAsync(cancellationToken);
 	}
 }
+

@@ -24,7 +24,7 @@ const DEFAULT_COLUMNS: ColumnDefinition[] = [
 	{ key: "email", label: "Email", visible: true, sortable: true },
 	{ key: "fullName", label: "Full Name", visible: true, sortable: true },
 	{ key: "isActive", label: "Status", visible: true, sortable: true },
-	{ key: "createdAt", label: "Created", visible: true, sortable: true },
+	{ key: "createDate", label: "Created", visible: true, sortable: true },
 	{
 		key: "lastLoginAt",
 		label: "Last Login",
@@ -32,7 +32,7 @@ const DEFAULT_COLUMNS: ColumnDefinition[] = [
 		sortable: true
 	},
 	{
-		key: "modifiedAt",
+		key: "modifyDate",
 		label: "Modified",
 		visible: false,
 		sortable: true

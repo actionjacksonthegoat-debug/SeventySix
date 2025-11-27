@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared;
+
 namespace SeventySix.Logging;
 
 /// <summary>
@@ -18,7 +20,7 @@ namespace SeventySix.Logging;
 /// - SRP: Only responsible for log entry state
 /// - No framework dependencies (pure POCO)
 /// </remarks>
-public class Log
+public class Log : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -120,7 +122,11 @@ public class Log
 	/// <summary>
 	/// Gets or sets the timestamp when this log was created.
 	/// </summary>
-	public DateTime Timestamp
+	/// <remarks>
+	/// Automatically set by AuditInterceptor if not provided.
+	/// Used for metrics queries and log filtering.
+	/// </remarks>
+	public DateTime CreateDate
 	{
 		get; set;
 	}

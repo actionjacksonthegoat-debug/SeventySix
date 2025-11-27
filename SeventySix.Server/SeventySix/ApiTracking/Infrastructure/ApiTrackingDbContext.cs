@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.ApiTracking;
 
@@ -11,17 +12,19 @@ namespace SeventySix.ApiTracking;
 /// </summary>
 /// <remarks>
 /// Manages ThirdPartyApiRequest entities and their database operations.
-/// Uses PostgreSQL with schema 'api_tracking' for isolation.
+/// Uses PostgreSQL with schema 'ApiTracking' for isolation.
+/// Inherits common configuration from BaseDbContext.
 ///
 /// Design Patterns:
 /// - Unit of Work: Coordinates changes to multiple entities
 /// - Repository: Provides data access abstraction
+/// - Template Method: Inherits from BaseDbContext
 ///
 /// SOLID Principles:
 /// - SRP: Only responsible for ApiTracking domain data access
 /// - OCP: Can be extended with new entity configurations
 /// </remarks>
-public class ApiTrackingDbContext : DbContext
+public class ApiTrackingDbContext : BaseDbContext<ApiTrackingDbContext>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ApiTrackingDbContext"/> class.
@@ -38,21 +41,8 @@ public class ApiTrackingDbContext : DbContext
 	public DbSet<ThirdPartyApiRequest> ThirdPartyApiRequests => Set<ThirdPartyApiRequest>();
 
 	/// <summary>
-	/// Configures the model for this context.
+	/// Gets the schema name for ApiTracking bounded context.
 	/// </summary>
-	/// <param name="modelBuilder">The builder being used to construct the model for this context.</param>
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
-	{
-		ArgumentNullException.ThrowIfNull(modelBuilder);
-
-		// Set default schema for ApiTracking bounded context
-		modelBuilder.HasDefaultSchema("ApiTracking");
-
-		// ONLY apply configurations from ApiTracking namespace (bounded context isolation)
-		modelBuilder.ApplyConfigurationsFromAssembly(
-			typeof(ApiTrackingDbContext).Assembly,
-			t => t.Namespace != null && t.Namespace.StartsWith("SeventySix.ApiTracking"));
-
-		base.OnModelCreating(modelBuilder);
-	}
+	/// <returns>"ApiTracking".</returns>
+	protected override string GetSchemaName() => "ApiTracking";
 }

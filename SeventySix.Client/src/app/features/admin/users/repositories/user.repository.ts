@@ -58,7 +58,7 @@ export class UserRepository extends HttpRepository<User>
 	/**
 	 * Update existing user
 	 * @param id The user identifier
-	 * @param user The user data to update (must include rowVersion for concurrency control)
+	 * @param user The user data to update
 	 * @returns Observable of updated user
 	 */
 	override update(

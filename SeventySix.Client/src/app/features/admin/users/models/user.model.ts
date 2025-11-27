@@ -9,13 +9,12 @@ export interface User
 	username: string;
 	email: string;
 	fullName?: string;
-	createdAt: string;
+	createDate: string;
 	isActive: boolean;
-	createdBy?: string;
-	modifiedAt?: string;
-	modifiedBy?: string;
+	createdBy: string;
+	modifyDate?: string;
+	modifiedBy: string;
 	lastLoginAt?: string;
-	rowVersion?: number;
 }
 
 /**
@@ -39,7 +38,6 @@ export interface CreateUserRequest
 /**
  * Update User Request interface
  * Represents the structure for updating an existing user
- * Includes RowVersion for optimistic concurrency control
  */
 export interface UpdateUserRequest
 {
@@ -48,7 +46,6 @@ export interface UpdateUserRequest
 	email: string;
 	fullName?: string;
 	isActive: boolean;
-	rowVersion?: number;
 }
 
 import { BaseQueryRequest } from "@core/models";

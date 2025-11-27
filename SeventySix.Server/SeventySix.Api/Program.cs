@@ -159,10 +159,11 @@ builder.Services.AddApplicationServices(builder.Configuration);
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
 	?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
+// Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
+builder.Services.AddInfrastructureDomain();
 builder.Services.AddIdentityDomain(connectionString);
 builder.Services.AddLoggingDomain(connectionString);
 builder.Services.AddApiTrackingDomain(connectionString);
-builder.Services.AddInfrastructureDomain();
 
 // Add response compression (Brotli + Gzip)
 builder.Services.AddOptimizedResponseCompression();

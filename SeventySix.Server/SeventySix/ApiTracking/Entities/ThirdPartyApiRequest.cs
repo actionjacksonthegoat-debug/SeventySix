@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared;
+
 namespace SeventySix.ApiTracking;
 
 /// <summary>
@@ -20,7 +22,7 @@ namespace SeventySix.ApiTracking;
 /// - OCP: Extensible through inheritance if needed
 /// - No framework dependencies (pure POCO)
 /// </remarks>
-public class ThirdPartyApiRequest
+public class ThirdPartyApiRequest : IModifiableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -73,17 +75,17 @@ public class ThirdPartyApiRequest
 	}
 
 	/// <summary>
-	/// Gets or sets the timestamp when this record was created.
+	/// Gets or sets the date and time when the request was created.
 	/// </summary>
-	public DateTime CreatedAt
+	public DateTime CreateDate
 	{
 		get; set;
 	}
 
 	/// <summary>
-	/// Gets or sets the timestamp when this record was last modified.
+	/// Gets or sets the date and time when the request was last modified.
 	/// </summary>
-	public DateTime? ModifiedAt
+	public DateTime? ModifyDate
 	{
 		get; set;
 	}
