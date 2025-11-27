@@ -26,7 +26,8 @@ namespace SeventySix.Tests.Logging;
 /// - Statistics generation
 /// - Cleanup operations
 /// </remarks>
-public class LogRepositoryTests : DataPostgreSqlTestBase, IClassFixture<TestcontainersPostgreSqlFixture>
+[Collection("DatabaseTests")]
+public class LogRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly LogRepository Repository;
 

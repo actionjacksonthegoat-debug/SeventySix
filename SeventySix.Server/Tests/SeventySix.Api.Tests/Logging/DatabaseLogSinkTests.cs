@@ -8,7 +8,7 @@ using Serilog.Events;
 using Serilog.Parsing;
 using SeventySix.Api.Logging;
 using SeventySix.Logging;
-using Testcontainers.PostgreSql;
+using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Api.Tests.Logging;
 
@@ -22,34 +22,36 @@ namespace SeventySix.Api.Tests.Logging;
 /// - Stack trace filtering for SeventySix code
 /// - HTTP request property extraction
 ///
-/// Uses Testcontainers with PostgreSQL for realistic integration testing.
+/// Uses shared PostgreSQL Testcontainer for efficient integration testing.
 /// </remarks>
+[Collection("PostgreSQL")]
 public class DatabaseLogSinkTests : IAsyncLifetime
 {
-	private PostgreSqlContainer? PostgresContainer;
+	private readonly TestcontainersPostgreSqlFixture Fixture;
 	private LoggingDbContext? Context;
 	private ServiceProvider? ServiceProvider;
 	private ILogRepository? LogRepository;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="DatabaseLogSinkTests"/> class.
+	/// </summary>
+	/// <param name="fixture">The shared PostgreSQL fixture.</param>
+	public DatabaseLogSinkTests(TestcontainersPostgreSqlFixture fixture)
+	{
+		Fixture = fixture;
+	}
+
 	public async Task InitializeAsync()
 	{
-		// Create and start PostgreSQL container
-		PostgresContainer = new PostgreSqlBuilder()
-			.WithImage("postgres:16-alpine")
-			.WithDatabase("seventysix_test")
-			.WithUsername("postgres")
-			.WithPassword("testpass123")
-			.Build();
-
-		await PostgresContainer.StartAsync();
-
-		// Configure DbContext with PostgreSQL
+		// Configure DbContext with shared PostgreSQL container
 		DbContextOptions<LoggingDbContext> options = new DbContextOptionsBuilder<LoggingDbContext>()
-			.UseNpgsql(PostgresContainer.GetConnectionString())
+			.UseNpgsql(Fixture.ConnectionString)
 			.Options;
 
 		Context = new LoggingDbContext(options);
-		await Context.Database.EnsureCreatedAsync();
+
+		// Clear logs table before each test for isolation
+		await Context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"Logging\".\"Logs\" CASCADE");
 
 		// Create service provider for dependency injection
 		ServiceCollection services = new();
@@ -264,9 +266,6 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			await Context.DisposeAsync();
 		}
 
-		if (PostgresContainer != null)
-		{
-			await PostgresContainer.DisposeAsync();
-		}
+		// Note: Do not dispose the shared PostgreSQL container (Fixture) - it's managed by xUnit collection
 	}
 }

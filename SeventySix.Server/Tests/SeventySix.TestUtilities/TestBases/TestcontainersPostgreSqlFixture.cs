@@ -45,7 +45,7 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 	public override string ConnectionString => _connectionString ?? throw new InvalidOperationException("Fixture not initialized. Call InitializeAsync first.");
 
 	/// <summary>
-	/// Starts the PostgreSQL container, creates an isolated database, and applies migrations.
+	/// Starts the PostgreSQL container, creates an isolated database, and applies migrations if needed.
 	/// Called once before all tests in the test class.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>

@@ -27,7 +27,7 @@ namespace SeventySix.Tests.Identity;
 /// - Bulk operations
 /// </remarks>
 [Collection("DatabaseTests")]
-public class UserRepositoryTests : DataPostgreSqlTestBase, IClassFixture<TestcontainersPostgreSqlFixture>
+public class UserRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly UserRepository Repository;
 

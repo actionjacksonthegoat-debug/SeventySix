@@ -68,8 +68,7 @@ public class CreateUserValidatorTests
 	}
 
 	[Theory]
-	[InlineData("ab")] // Too short (2 chars)
-	[InlineData("a")] // Too short (1 char)
+	[MemberData(nameof(UserValidationTestData.TooShortUsernames), MemberType = typeof(UserValidationTestData))]
 	public void Username_ShouldHaveError_WhenTooShort(string username)
 	{
 		// Arrange
@@ -106,12 +105,7 @@ public class CreateUserValidatorTests
 	}
 
 	[Theory]
-	[InlineData("user name")] // Contains space
-	[InlineData("user-name")] // Contains hyphen
-	[InlineData("user.name")] // Contains dot
-	[InlineData("user@name")] // Contains @
-	[InlineData("user#name")] // Contains special char
-	[InlineData("user!name")] // Contains exclamation
+	[MemberData(nameof(UserValidationTestData.InvalidUsernameCharacters), MemberType = typeof(UserValidationTestData))]
 	public void Username_ShouldHaveError_WhenContainsInvalidCharacters(string username)
 	{
 		// Arrange
@@ -130,11 +124,7 @@ public class CreateUserValidatorTests
 	}
 
 	[Theory]
-	[InlineData("abc")] // Min length (3 chars)
-	[InlineData("user123")] // Alphanumeric
-	[InlineData("john_doe")] // With underscore
-	[InlineData("User_123")] // Mixed case with number and underscore
-	[InlineData("A1_b2_C3")] // Complex valid format
+	[MemberData(nameof(UserValidationTestData.ValidUsernames), MemberType = typeof(UserValidationTestData))]
 	public void Username_ShouldNotHaveError_WhenValid(string username)
 	{
 		// Arrange
@@ -208,12 +198,7 @@ public class CreateUserValidatorTests
 	}
 
 	[Theory]
-	[InlineData("notanemail")] // No @ symbol
-	[InlineData("@example.com")] // Missing local part
-	[InlineData("user@")] // Missing domain
-	[InlineData("user @example.com")] // Space in local part
-	[InlineData("user@exam ple.com")] // Space in domain
-	[InlineData("user@@example.com")] // Double @
+	[MemberData(nameof(UserValidationTestData.InvalidEmails), MemberType = typeof(UserValidationTestData))]
 	public void Email_ShouldHaveError_WhenInvalidFormat(string email)
 	{
 		// Arrange
@@ -251,11 +236,7 @@ public class CreateUserValidatorTests
 	}
 
 	[Theory]
-	[InlineData("user@example.com")]
-	[InlineData("john.doe@example.com")]
-	[InlineData("user+tag@example.co.uk")]
-	[InlineData("test_user123@sub.example.com")]
-	[InlineData("a@b.co")]
+	[MemberData(nameof(UserValidationTestData.ValidEmails), MemberType = typeof(UserValidationTestData))]
 	public void Email_ShouldNotHaveError_WhenValid(string email)
 	{
 		// Arrange

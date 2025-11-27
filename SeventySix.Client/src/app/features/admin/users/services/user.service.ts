@@ -16,6 +16,7 @@ import { lastValueFrom } from "rxjs";
 import { User, UpdateUserRequest, UserQueryRequest } from "@admin/users/models";
 import { UserRepository } from "@admin/users/repositories";
 import { getQueryConfig } from "@core/utils/query-config";
+import { QueryKeys } from "@core/utils/query-keys";
 import { BaseFilterService } from "@core/services/base-filter.service";
 
 /**
@@ -49,7 +50,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	getPagedUsers()
 	{
 		return injectQuery(() => ({
-			queryKey: ["users", "paged", this.getCurrentFilter()],
+			queryKey: QueryKeys.users.paged(this.getCurrentFilter()),
 			queryFn: () =>
 				lastValueFrom(
 					this.userRepository.getPaged(this.getCurrentFilter())
@@ -66,7 +67,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	getUserById(id: number | string)
 	{
 		return injectQuery(() => ({
-			queryKey: ["users", "user", id],
+			queryKey: QueryKeys.users.single(id),
 			queryFn: () => lastValueFrom(this.userRepository.getById(id)),
 			...this.queryConfig
 		}));
@@ -86,7 +87,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 			{
 				// Invalidate paged users queries
 				this.queryClient.invalidateQueries({
-					queryKey: ["users"]
+					queryKey: QueryKeys.users.all
 				});
 			}
 		}));
@@ -110,10 +111,10 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 			{
 				// Invalidate specific user and all user queries
 				this.queryClient.invalidateQueries({
-					queryKey: ["users", "user", variables.id]
+					queryKey: QueryKeys.users.single(variables.id)
 				});
 				this.queryClient.invalidateQueries({
-					queryKey: ["users"]
+					queryKey: QueryKeys.users.all
 				});
 			}
 		}));
@@ -132,7 +133,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 			{
 				// Invalidate all user queries
 				this.queryClient.invalidateQueries({
-					queryKey: ["users"]
+					queryKey: QueryKeys.users.all
 				});
 			}
 		}));
@@ -158,7 +159,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	getUserByUsername(username: string)
 	{
 		return injectQuery(() => ({
-			queryKey: ["users", "username", username],
+			queryKey: QueryKeys.users.byUsername(username),
 			queryFn: () =>
 				lastValueFrom(this.userRepository.getByUsername(username)),
 			...this.queryConfig
@@ -192,7 +193,9 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 				lastValueFrom(this.userRepository.restore(id)),
 			onSuccess: () =>
 			{
-				this.queryClient.invalidateQueries({ queryKey: ["users"] });
+				this.queryClient.invalidateQueries({
+					queryKey: QueryKeys.users.all
+				});
 			}
 		}));
 	}
@@ -208,7 +211,9 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 				lastValueFrom(this.userRepository.bulkActivate(ids)),
 			onSuccess: () =>
 			{
-				this.queryClient.invalidateQueries({ queryKey: ["users"] });
+				this.queryClient.invalidateQueries({
+					queryKey: QueryKeys.users.all
+				});
 			}
 		}));
 	}
@@ -224,7 +229,9 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 				lastValueFrom(this.userRepository.bulkDeactivate(ids)),
 			onSuccess: () =>
 			{
-				this.queryClient.invalidateQueries({ queryKey: ["users"] });
+				this.queryClient.invalidateQueries({
+					queryKey: QueryKeys.users.all
+				});
 			}
 		}));
 	}

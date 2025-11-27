@@ -84,33 +84,21 @@ internal class UserRepository(
 	{
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
 
-		try
-		{
-			User? entity = await context.Users.FindAsync([id], cancellationToken);
-			if (entity is null)
+		return await ExecuteWithErrorHandlingAsync(
+			async () =>
 			{
-				return false;
-			}
+				User? entity = await context.Users.FindAsync([id], cancellationToken);
+				if (entity is null)
+				{
+					return false;
+				}
 
-			context.Users.Remove(entity);
-			await context.SaveChangesAsync(cancellationToken);
-			return true;
-		}
-		catch (DbUpdateConcurrencyException ex)
-		{
-			base.logger.LogError(ex, "Concurrency conflict {Operation}: Id={Id}", nameof(DeleteAsync), id);
-			throw;
-		}
-		catch (DbUpdateException ex)
-		{
-			base.logger.LogError(ex, "Database error {Operation}: Id={Id}", nameof(DeleteAsync), id);
-			throw;
-		}
-		catch (Exception ex)
-		{
-			base.logger.LogError(ex, "Unexpected error {Operation}: Id={Id}", nameof(DeleteAsync), id);
-			throw;
-		}
+				context.Users.Remove(entity);
+				await context.SaveChangesAsync(cancellationToken);
+				return true;
+			},
+			nameof(DeleteAsync),
+			$"Id={id}");
 	}
 
 	/// <inheritdoc/>
@@ -264,77 +252,53 @@ internal class UserRepository(
 	/// <inheritdoc/>
 	public async Task<bool> SoftDeleteAsync(int id, string deletedBy, CancellationToken cancellationToken = default)
 	{
-		try
-		{
-			User? user = await context.Users
-				.IgnoreQueryFilters()
-				.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, cancellationToken);
-
-			if (user is null)
+		return await ExecuteWithErrorHandlingAsync(
+			async () =>
 			{
-				return false;
-			}
+				User? user = await context.Users
+					.IgnoreQueryFilters()
+					.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, cancellationToken);
 
-			user.IsDeleted = true;
-			user.DeletedAt = DateTime.UtcNow;
-			user.DeletedBy = deletedBy;
+				if (user is null)
+				{
+					return false;
+				}
 
-			await context.SaveChangesAsync(cancellationToken);
-			return true;
-		}
-		catch (DbUpdateConcurrencyException ex)
-		{
-			base.logger.LogError(ex, "Concurrency conflict {Operation}: Id={Id}", nameof(SoftDeleteAsync), id);
-			throw;
-		}
-		catch (DbUpdateException ex)
-		{
-			base.logger.LogError(ex, "Database error {Operation}: Id={Id}", nameof(SoftDeleteAsync), id);
-			throw;
-		}
-		catch (Exception ex)
-		{
-			base.logger.LogError(ex, "Unexpected error {Operation}: Id={Id}", nameof(SoftDeleteAsync), id);
-			throw;
-		}
+				user.IsDeleted = true;
+				user.DeletedAt = DateTime.UtcNow;
+				user.DeletedBy = deletedBy;
+
+				await context.SaveChangesAsync(cancellationToken);
+				return true;
+			},
+			nameof(SoftDeleteAsync),
+			$"Id={id}");
 	}
 
 	/// <inheritdoc/>
 	public async Task<bool> RestoreAsync(int id, CancellationToken cancellationToken = default)
 	{
-		try
-		{
-			User? user = await context.Users
-				.IgnoreQueryFilters()
-				.FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted, cancellationToken);
-
-			if (user is null)
+		return await ExecuteWithErrorHandlingAsync(
+			async () =>
 			{
-				return false;
-			}
+				User? user = await context.Users
+					.IgnoreQueryFilters()
+					.FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted, cancellationToken);
 
-			user.IsDeleted = false;
-			user.DeletedAt = null;
-			user.DeletedBy = null;
+				if (user is null)
+				{
+					return false;
+				}
 
-			await context.SaveChangesAsync(cancellationToken);
-			return true;
-		}
-		catch (DbUpdateConcurrencyException ex)
-		{
-			base.logger.LogError(ex, "Concurrency conflict {Operation}: Id={Id}", nameof(RestoreAsync), id);
-			throw;
-		}
-		catch (DbUpdateException ex)
-		{
-			base.logger.LogError(ex, "Database error {Operation}: Id={Id}", nameof(RestoreAsync), id);
-			throw;
-		}
-		catch (Exception ex)
-		{
-			base.logger.LogError(ex, "Unexpected error {Operation}: Id={Id}", nameof(RestoreAsync), id);
-			throw;
-		}
+				user.IsDeleted = false;
+				user.DeletedAt = null;
+				user.DeletedBy = null;
+
+				await context.SaveChangesAsync(cancellationToken);
+				return true;
+			},
+			nameof(RestoreAsync),
+			$"Id={id}");
 	}
 
 	/// <inheritdoc/>

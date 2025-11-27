@@ -23,6 +23,7 @@ import { lastValueFrom } from "rxjs";
 import { LogRepository } from "@admin/log-management/repositories";
 import { LogFilterRequest } from "@admin/log-management/models";
 import { getQueryConfig } from "@core/utils/query-config";
+import { QueryKeys } from "@core/utils/query-keys";
 import { BaseFilterService } from "@core/services/base-filter.service";
 
 /**
@@ -66,7 +67,7 @@ export class LogManagementService extends BaseFilterService<LogFilterRequest>
 	getLogs()
 	{
 		return injectQuery(() => ({
-			queryKey: ["logs", this.getCurrentFilter()],
+			queryKey: QueryKeys.logs.paged(this.getCurrentFilter()),
 			queryFn: () =>
 				lastValueFrom(
 					this.logRepository.getAllPaged(this.getCurrentFilter())
@@ -82,7 +83,7 @@ export class LogManagementService extends BaseFilterService<LogFilterRequest>
 	getLogCount()
 	{
 		return injectQuery(() => ({
-			queryKey: ["logs", "count", this.getCurrentFilter()],
+			queryKey: QueryKeys.logs.count(this.getCurrentFilter()),
 			queryFn: () =>
 				lastValueFrom(
 					this.logRepository.getCount(this.getCurrentFilter())
@@ -104,7 +105,9 @@ export class LogManagementService extends BaseFilterService<LogFilterRequest>
 			onSuccess: () =>
 			{
 				// Invalidate all log queries
-				this.queryClient.invalidateQueries({ queryKey: ["logs"] });
+				this.queryClient.invalidateQueries({
+					queryKey: QueryKeys.logs.all
+				});
 			}
 		}));
 	}
@@ -122,7 +125,9 @@ export class LogManagementService extends BaseFilterService<LogFilterRequest>
 			onSuccess: () =>
 			{
 				this.clearSelection();
-				this.queryClient.invalidateQueries({ queryKey: ["logs"] });
+				this.queryClient.invalidateQueries({
+					queryKey: QueryKeys.logs.all
+				});
 			}
 		}));
 	}

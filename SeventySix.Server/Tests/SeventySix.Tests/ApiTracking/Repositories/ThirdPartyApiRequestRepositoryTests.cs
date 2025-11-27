@@ -26,7 +26,7 @@ namespace SeventySix.Tests.ApiTracking;
 /// - Concurrency
 /// </remarks>
 [Collection("DatabaseTests")]
-public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase, IClassFixture<TestcontainersPostgreSqlFixture>
+public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ThirdPartyApiRequestRepository Repository;
 

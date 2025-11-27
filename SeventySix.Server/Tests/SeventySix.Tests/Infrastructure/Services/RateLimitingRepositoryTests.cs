@@ -17,7 +17,8 @@ namespace SeventySix.Tests.Infrastructure;
 /// Tests verify that rate limiting state persists correctly and handles concurrent requests.
 /// All tests share a single PostgreSQL instance to match production behavior.
 /// </summary>
-public class RateLimitingRepositoryTests : DataPostgreSqlTestBase, IClassFixture<TestcontainersPostgreSqlFixture>
+[Collection("DatabaseTests")]
+public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly Mock<ILogger<RateLimitingService>> LoggerMock;
 	private readonly Mock<ILogger<ThirdPartyApiRequestRepository>> RepoLoggerMock;
