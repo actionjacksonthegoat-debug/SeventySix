@@ -100,7 +100,9 @@ export class LogList
 			label: "Message",
 			sortable: false,
 			visible: true,
-			type: "text"
+			type: "text",
+			formatter: (_value: unknown, row?: LogResponse): string =>
+				row?.exceptionMessage ?? row?.message ?? ""
 		},
 		{
 			key: "sourceContext",
