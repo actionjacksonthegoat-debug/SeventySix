@@ -282,6 +282,37 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	readonly selectedDateRange: WritableSignal<string> = signal("24h");
 
 	/**
+	 * Date range display configuration (DRY - single source of truth)
+	 */
+	private static readonly DATE_RANGE_CONFIG: Record<
+		string,
+		{ icon: string; label: string }
+	> = {
+		"1h": { icon: "schedule", label: "1 Hour" },
+		"24h": { icon: "today", label: "24 Hours" },
+		"7d": { icon: "date_range", label: "7 Days" },
+		"30d": { icon: "calendar_month", label: "30 Days" }
+	};
+
+	/**
+	 * Computed date range icon (memoized for template performance)
+	 */
+	readonly dateRangeIcon: Signal<string> = computed(
+		(): string =>
+			DataTableComponent.DATE_RANGE_CONFIG[this.selectedDateRange()]
+				?.icon ?? "today"
+	);
+
+	/**
+	 * Computed date range label (memoized for template performance)
+	 */
+	readonly dateRangeLabel: Signal<string> = computed(
+		(): string =>
+			DataTableComponent.DATE_RANGE_CONFIG[this.selectedDateRange()]
+				?.label ?? "24 Hours"
+	);
+
+	/**
 	 * Column visibility state
 	 */
 	private readonly columnVisibility: WritableSignal<Map<string, boolean>> =
@@ -617,48 +648,6 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	}
 
 	/**
-	 * Get icon for current date range selection
-	 */
-	getDateRangeIcon(): string
-	{
-		const range: string = this.selectedDateRange();
-		switch (range)
-		{
-			case "1h":
-				return "schedule";
-			case "24h":
-				return "today";
-			case "7d":
-				return "date_range";
-			case "30d":
-				return "calendar_month";
-			default:
-				return "today";
-		}
-	}
-
-	/**
-	 * Get label for current date range selection
-	 */
-	getDateRangeLabel(): string
-	{
-		const range: string = this.selectedDateRange();
-		switch (range)
-		{
-			case "1h":
-				return "1 Hour";
-			case "24h":
-				return "24 Hours";
-			case "7d":
-				return "7 Days";
-			case "30d":
-				return "30 Days";
-			default:
-				return "24 Hours";
-		}
-	}
-
-	/**
 	 * Toggle column visibility
 	 */
 	toggleColumn(columnKey: string): void
@@ -727,19 +716,5 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 			(c: TableColumn<T>): boolean => c.key === key
 		);
 		return visibility.get(key) ?? column?.visible ?? true;
-	}
-
-	/**
-	 * Get CSS class for badge color
-	 * @param column - Column definition
-	 * @param row - Row data
-	 * @returns CSS class name for badge styling
-	 */
-	protected getBadgeClass(column: TableColumn<T>, row: T): string
-	{
-		const color: "primary" | "accent" | "warn" = column.badgeColor
-			? column.badgeColor(row[column.key as keyof T], row)
-			: "primary";
-		return `badge-${color}`;
 	}
 }

@@ -8,50 +8,18 @@
 	<div mat-dialog-title class="dialog-header">
 		<div class="header-content" id="log-dialog-title">
 			<mat-icon
-				[class.level-debug]="
-					getLevelClass(log().logLevel) === 'level-debug'
-				"
-				[class.level-info]="
-					getLevelClass(log().logLevel) === 'level-info'
-				"
-				[class.level-warning]="
-					getLevelClass(log().logLevel) === 'level-warning'
-				"
-				[class.level-error]="
-					getLevelClass(log().logLevel) === 'level-error'
-				"
-				[class.level-critical]="
-					getLevelClass(log().logLevel) === 'level-critical'
-				"
-				attr.aria-label="Log level: {{ getLevelName(log().logLevel) }}"
-				>{{ getLevelIcon(log().logLevel) }}</mat-icon
+				[class]="levelClass()"
+				[attr.aria-label]="'Log level: ' + levelName()"
+				>{{ levelIcon() }}</mat-icon
 			>
-			<span
-				class="level-name"
-				[class.level-debug]="
-					getLevelClass(log().logLevel) === 'level-debug'
-				"
-				[class.level-info]="
-					getLevelClass(log().logLevel) === 'level-info'
-				"
-				[class.level-warning]="
-					getLevelClass(log().logLevel) === 'level-warning'
-				"
-				[class.level-error]="
-					getLevelClass(log().logLevel) === 'level-error'
-				"
-				[class.level-critical]="
-					getLevelClass(log().logLevel) === 'level-critical'
-				"
-				>{{ getLevelName(log().logLevel) }}</span
-			>
+			<span class="level-name" [class]="levelClass()">{{
+				levelName()
+			}}</span>
 			@if (log().sourceContext)
 			{
 				<span class="source-context">• {{ log().sourceContext }}</span>
 			}
-			<span class="timestamp"
-				>• {{ getRelativeTime(log().createDate) }}</span
-			>
+			<span class="timestamp">• {{ relativeTime() }}</span>
 		</div>
 		<div class="header-actions">
 			@if (isObservabilityEnabled)
@@ -206,18 +174,13 @@
 							<div class="stack-info">
 								<mat-icon>info</mat-icon>
 								<span
-									>{{
-										getStackFrameCount(log().stackTrace)
-									}}
-									stack frames</span
+									>{{ stackFrameCount() }} stack frames</span
 								>
 							</div>
 
 							<!-- Stack Trace Content -->
 							<div class="stack-trace-content">
-								<pre>{{
-									formatStackTrace(log().stackTrace)
-								}}</pre>
+								<pre>{{ log().stackTrace ?? "" }}</pre>
 							</div>
 						</div>
 					</div>
@@ -292,13 +255,13 @@
 							<span
 								class="info-value"
 								[matTooltip]="
-									isRootSpan(log().parentSpanId)
+									isRootSpan()
 										? 'All zeros indicates this is a root span (top-level request with no parent)'
 										: ''
 								"
 							>
 								{{
-									isRootSpan(log().parentSpanId)
+									isRootSpan()
 										? log().parentSpanId + " (Root Span)"
 										: log().parentSpanId
 								}}
@@ -334,7 +297,7 @@
 				@if (!propertiesCollapsed())
 				{
 					<div class="section-content properties-content">
-						<pre>{{ formatProperties(log().properties) }}</pre>
+						<pre>{{ formattedProperties() }}</pre>
 					</div>
 				}
 			</section>

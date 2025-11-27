@@ -8,7 +8,8 @@ import {
 	Signal,
 	AfterViewInit,
 	InputSignal,
-	OutputEmitterRef
+	OutputEmitterRef,
+	computed
 } from "@angular/core";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
 import { MatCheckboxModule } from "@angular/material/checkbox";
@@ -24,8 +25,25 @@ import { MatSortModule, MatSort } from "@angular/material/sort";
 import { SelectionModel } from "@angular/cdk/collections";
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { TableHeightDirective } from "@shared/directives";
-import { LogResponse, LogLevel, parseLogLevel } from "@admin/logs/models";
+import {
+	LogResponse,
+	getLogLevelName,
+	getLogLevelClassName,
+	getRelativeTime,
+	truncateText
+} from "@admin/logs/models";
 import { environment } from "@environments/environment";
+
+/**
+ * Log with pre-computed display values for template performance
+ */
+export interface ProcessedLog extends LogResponse
+{
+	levelClass: string;
+	levelName: string;
+	relativeTime: string;
+	truncatedMessage: string;
+}
 
 /**
  * Log table component with sorting, pagination, and selection
@@ -49,6 +67,8 @@ import { environment } from "@environments/environment";
 })
 export class LogTableComponent implements AfterViewInit
 {
+	private static readonly MESSAGE_TRUNCATE_LENGTH: number = 100;
+
 	// Inputs
 	readonly logs: InputSignal<LogResponse[]> = input<LogResponse[]>([]);
 	readonly totalCount: InputSignal<number> = input<number>(0);
@@ -73,12 +93,28 @@ export class LogTableComponent implements AfterViewInit
 	readonly pageChange: OutputEmitterRef<number> = output<number>();
 	readonly pageSizeChange: OutputEmitterRef<number> = output<number>();
 
-	// Table configuration
+	// Pre-computed logs for template performance (no method calls per CD cycle)
+	readonly processedLogs: Signal<ProcessedLog[]> = computed(
+		(): ProcessedLog[] =>
+			this.logs().map(
+				(log: LogResponse): ProcessedLog => ({
+					...log,
+					levelClass: getLogLevelClassName(log.logLevel),
+					levelName: getLogLevelName(log.logLevel),
+					relativeTime: getRelativeTime(log.createDate),
+					truncatedMessage: truncateText(
+						log.message,
+						LogTableComponent.MESSAGE_TRUNCATE_LENGTH
+					)
+				})
+			)
+	);
 
-	readonly dataSource: MatTableDataSource<LogResponse> =
-		new MatTableDataSource<LogResponse>([]);
-	readonly selection: SelectionModel<LogResponse> =
-		new SelectionModel<LogResponse>(true, []);
+	// Table configuration
+	readonly dataSource: MatTableDataSource<ProcessedLog> =
+		new MatTableDataSource<ProcessedLog>([]);
+	readonly selection: SelectionModel<ProcessedLog> =
+		new SelectionModel<ProcessedLog>(true, []);
 	readonly pageSizeOptions: number[] = environment.ui.tables.pageSizeOptions;
 	readonly virtualScrollItemSize: number =
 		environment.ui.tables.virtualScrollItemSize;
@@ -89,10 +125,10 @@ export class LogTableComponent implements AfterViewInit
 
 	constructor()
 	{
-		// Update data source when logs change
+		// Update data source when processedLogs change
 		effect(() =>
 		{
-			this.dataSource.data = this.logs();
+			this.dataSource.data = this.processedLogs();
 		});
 	}
 
@@ -110,12 +146,12 @@ export class LogTableComponent implements AfterViewInit
 		}
 	}
 
-	onRowClick(log: LogResponse): void
+	onRowClick(log: ProcessedLog): void
 	{
 		this.logSelected.emit(log);
 	}
 
-	toggleSelection(log: LogResponse): void
+	toggleSelection(log: ProcessedLog): void
 	{
 		this.selection.toggle(log);
 	}
@@ -128,7 +164,9 @@ export class LogTableComponent implements AfterViewInit
 		}
 		else
 		{
-			this.dataSource.data.forEach((log) => this.selection.select(log));
+			this.dataSource.data.forEach((log: ProcessedLog) =>
+				this.selection.select(log)
+			);
 		}
 	}
 
@@ -139,7 +177,7 @@ export class LogTableComponent implements AfterViewInit
 		return numSelected === numRows;
 	}
 
-	onDeleteLog(log: LogResponse): void
+	onDeleteLog(log: ProcessedLog): void
 	{
 		this.deleteLog.emit(log.id);
 	}
@@ -147,7 +185,7 @@ export class LogTableComponent implements AfterViewInit
 	onDeleteSelected(): void
 	{
 		const selectedIds: number[] = this.selection.selected.map(
-			(log) => log.id
+			(log: ProcessedLog) => log.id
 		);
 		if (selectedIds.length > 0)
 		{
@@ -163,66 +201,5 @@ export class LogTableComponent implements AfterViewInit
 			this.pageSizeChange.emit(event.pageSize);
 		}
 		this.pageChange.emit(event.pageIndex + 1);
-	}
-
-	getLevelName(logLevel: string): string
-	{
-		const level: LogLevel = parseLogLevel(logLevel);
-		const names: Record<LogLevel, string> = {
-			[LogLevel.Verbose]: "Verbose",
-			[LogLevel.Debug]: "Debug",
-			[LogLevel.Information]: "Info",
-			[LogLevel.Warning]: "Warning",
-			[LogLevel.Error]: "Error",
-			[LogLevel.Fatal]: "Fatal"
-		};
-		return names[level];
-	}
-
-	getLevelClass(logLevel: string): string
-	{
-		const level: LogLevel = parseLogLevel(logLevel);
-		const classes: Record<LogLevel, string> = {
-			[LogLevel.Verbose]: "level-verbose",
-			[LogLevel.Debug]: "level-debug",
-			[LogLevel.Information]: "level-info",
-			[LogLevel.Warning]: "level-warning",
-			[LogLevel.Error]: "level-error",
-			[LogLevel.Fatal]: "level-fatal"
-		};
-		return classes[level];
-	}
-
-	getRelativeTime(date: Date | string): string
-	{
-		const dateObj: Date = typeof date === "string" ? new Date(date) : date;
-		const now: number = Date.now();
-		const diff: number = now - dateObj.getTime();
-		const minutes: number = Math.floor(diff / 60000);
-		const hours: number = Math.floor(diff / 3600000);
-		const days: number = Math.floor(diff / 86400000);
-
-		if (days > 0)
-		{
-			return `${days} day${days > 1 ? "s" : ""} ago`;
-		}
-		if (hours > 0)
-		{
-			return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-		}
-		if (minutes > 0)
-		{
-			return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-		}
-		return "just now";
-	}
-
-	truncateMessage(message: string, maxLength: number): string
-	{
-		if (message.length <= maxLength)
-		{
-			return message;
-		}
-		return message.substring(0, maxLength) + "...";
 	}
 }

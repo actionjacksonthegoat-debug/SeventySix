@@ -1,7 +1,16 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { LogResponse, LogLevel } from "@admin/logs/models";
+import {
+	LogResponse,
+	getLogLevelName,
+	getLogLevelClassName,
+	getLogLevelIconName,
+	getRelativeTime,
+	formatJsonProperties,
+	countStackFrames,
+	isRootSpanId
+} from "@admin/logs/models";
 import { Clipboard } from "@angular/cdk/clipboard";
 import { LogDetailDialogComponent } from "./log-detail-dialog.component";
 
@@ -64,87 +73,87 @@ describe("LogDetailDialogComponent", () =>
 		expect(component.log()).toEqual(mockLog);
 	});
 
-	it("should display log level name", () =>
+	it("should display log level name via utility", () =>
 	{
-		expect(component.getLevelName("Error")).toBe("Error");
-		expect(component.getLevelName("Warning")).toBe("Warning");
-		expect(component.getLevelName("Fatal")).toBe("Fatal");
-		expect(component.getLevelName("Information")).toBe("Info");
-		expect(component.getLevelName("Debug")).toBe("Debug");
-		expect(component.getLevelName("Verbose")).toBe("Verbose");
+		expect(getLogLevelName("Error")).toBe("Error");
+		expect(getLogLevelName("Warning")).toBe("Warning");
+		expect(getLogLevelName("Fatal")).toBe("Fatal");
+		expect(getLogLevelName("Information")).toBe("Info");
+		expect(getLogLevelName("Debug")).toBe("Debug");
+		expect(getLogLevelName("Verbose")).toBe("Verbose");
 	});
 
-	it("should display log level icon", () =>
+	it("should display log level icon via utility", () =>
 	{
-		expect(component.getLevelIcon("Error")).toBe("error");
-		expect(component.getLevelIcon("Warning")).toBe("warning");
-		expect(component.getLevelIcon("Fatal")).toBe("cancel");
-		expect(component.getLevelIcon("Information")).toBe("info");
+		expect(getLogLevelIconName("Error")).toBe("error");
+		expect(getLogLevelIconName("Warning")).toBe("warning");
+		expect(getLogLevelIconName("Fatal")).toBe("cancel");
+		expect(getLogLevelIconName("Information")).toBe("info");
 	});
 
-	it("should display log level CSS class", () =>
+	it("should display log level CSS class via utility", () =>
 	{
-		expect(component.getLevelClass("Error")).toBe("level-error");
-		expect(component.getLevelClass("Warning")).toBe("level-warning");
-		expect(component.getLevelClass("Fatal")).toBe("level-fatal");
+		expect(getLogLevelClassName("Error")).toBe("level-error");
+		expect(getLogLevelClassName("Warning")).toBe("level-warning");
+		expect(getLogLevelClassName("Fatal")).toBe("level-fatal");
 	});
 
-	it("should format relative time correctly", () =>
+	it("should format relative time correctly via utility", () =>
 	{
-		const now = new Date();
-		const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
-		const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-		const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+		const now: Date = new Date();
+		const twoMinutesAgo: Date = new Date(now.getTime() - 2 * 60 * 1000);
+		const twoHoursAgo: Date = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+		const twoDaysAgo: Date = new Date(
+			now.getTime() - 2 * 24 * 60 * 60 * 1000
+		);
 
-		expect(component.getRelativeTime(twoMinutesAgo)).toBe("2 minutes ago");
-		expect(component.getRelativeTime(twoHoursAgo)).toBe("2 hours ago");
-		expect(component.getRelativeTime(twoDaysAgo)).toBe("2 days ago");
+		expect(getRelativeTime(twoMinutesAgo)).toBe("2 minutes ago");
+		expect(getRelativeTime(twoHoursAgo)).toBe("2 hours ago");
+		expect(getRelativeTime(twoDaysAgo)).toBe("2 days ago");
 	});
 
-	it("should format relative time as 'just now' for recent logs", () =>
+	it("should format relative time as 'just now' for recent logs via utility", () =>
 	{
-		const now = new Date();
-		expect(component.getRelativeTime(now)).toBe("just now");
+		const now: Date = new Date();
+		expect(getRelativeTime(now)).toBe("just now");
 	});
 
-	it("should format stack trace with line breaks", () =>
+	it("should count stack frames via utility", () =>
 	{
-		const stackTrace =
+		const stackTrace: string =
 			"   at TestService.Method()\n      in TestService.cs:line 42\n   at TestController.Action()";
-		const formatted = component.formatStackTrace(stackTrace);
+		const count: number = countStackFrames(stackTrace);
 
-		expect(formatted).toContain("at TestService.Method()");
-		expect(formatted).toContain("in TestService.cs:line 42");
-		expect(formatted.split("\n").length).toBeGreaterThan(1);
+		expect(count).toBe(2);
 	});
 
-	it("should return empty string when stack trace is null", () =>
+	it("should return 0 when stack trace is null via utility", () =>
 	{
-		expect(component.formatStackTrace(null)).toBe("");
+		expect(countStackFrames(null)).toBe(0);
 	});
 
-	it("should format properties as JSON", () =>
+	it("should format properties as JSON via utility", () =>
 	{
 		const properties: string = JSON.stringify({
 			key: "value",
 			nested: { prop: "data" }
 		});
-		const formatted: string = component.formatProperties(properties);
+		const formatted: string = formatJsonProperties(properties);
 
 		expect(formatted).toContain('"key"');
 		expect(formatted).toContain('"value"');
 		expect(formatted).toContain('"nested"');
 	});
 
-	it("should return empty string when properties is null", () =>
+	it("should return empty string when properties is null via utility", () =>
 	{
-		expect(component.formatProperties(null)).toBe("");
+		expect(formatJsonProperties(null)).toBe("");
 	});
 
-	it("should return original string when properties is invalid JSON", () =>
+	it("should return original string when properties is invalid JSON via utility", () =>
 	{
 		const invalidJson: string = "not valid json";
-		expect(component.formatProperties(invalidJson)).toBe(invalidJson);
+		expect(formatJsonProperties(invalidJson)).toBe(invalidJson);
 	});
 
 	it("should toggle stack trace collapse state", () =>
@@ -222,11 +231,11 @@ describe("LogDetailDialogComponent", () =>
 		expect(component.log().environment).toBe("Test");
 	});
 
-	it("should handle log with null fields gracefully", () =>
+	it("should handle log with null fields gracefully via utilities", () =>
 	{
-		// Test that formatters handle null values
-		expect(component.formatStackTrace(null)).toBe("");
-		expect(component.formatProperties(null)).toBe("");
+		// Test that utilities handle null values
+		expect(countStackFrames(null)).toBe(0);
+		expect(formatJsonProperties(null)).toBe("");
 	});
 
 	it("should display duration in milliseconds", () =>
@@ -247,7 +256,7 @@ describe("LogDetailDialogComponent", () =>
 		expect(component.log().spanId).toBe("span-456");
 	});
 
-	describe("isError", () =>
+	describe("isError computed signal", () =>
 	{
 		it("should return true for Error level", () =>
 		{
@@ -271,7 +280,7 @@ describe("LogDetailDialogComponent", () =>
 		});
 	});
 
-	describe("hasCorrelationId", () =>
+	describe("hasCorrelationId computed signal", () =>
 	{
 		it("should return true when correlation ID exists", () =>
 		{
@@ -292,97 +301,99 @@ describe("LogDetailDialogComponent", () =>
 		});
 	});
 
-	describe("isRootSpan", () =>
+	describe("isRootSpan utility", () =>
 	{
 		it("should return false when parentSpanId is null", () =>
 		{
-			expect(component.isRootSpan(null)).toBe(false);
+			expect(isRootSpanId(null)).toBe(false);
 		});
 
 		it("should return true when parentSpanId is all zeros", () =>
 		{
-			expect(component.isRootSpan("0000000000000000")).toBe(true);
-			expect(component.isRootSpan("00000000")).toBe(true);
+			expect(isRootSpanId("0000000000000000")).toBe(true);
+			expect(isRootSpanId("00000000")).toBe(true);
 		});
 
 		it("should return false when parentSpanId has non-zero values", () =>
 		{
-			expect(component.isRootSpan("parent-789")).toBe(false);
-			expect(component.isRootSpan("1234567890abcdef")).toBe(false);
+			expect(isRootSpanId("parent-789")).toBe(false);
+			expect(isRootSpanId("1234567890abcdef")).toBe(false);
 		});
 	});
 
-	describe("getRelativeTime", () =>
+	describe("getRelativeTime utility", () =>
 	{
 		it("should return days ago when difference is in days", () =>
 		{
-			const now = new Date();
-			const threeDaysAgo = new Date(
+			const now: Date = new Date();
+			const threeDaysAgo: Date = new Date(
 				now.getTime() - 3 * 24 * 60 * 60 * 1000
 			);
-			expect(component.getRelativeTime(threeDaysAgo)).toBe("3 days ago");
+			expect(getRelativeTime(threeDaysAgo)).toBe("3 days ago");
 		});
 
 		it("should return singular day when difference is 1 day", () =>
 		{
-			const now = new Date();
-			const oneDayAgo = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
-			expect(component.getRelativeTime(oneDayAgo)).toBe("1 day ago");
+			const now: Date = new Date();
+			const oneDayAgo: Date = new Date(
+				now.getTime() - 1 * 24 * 60 * 60 * 1000
+			);
+			expect(getRelativeTime(oneDayAgo)).toBe("1 day ago");
 		});
 
 		it("should return hours ago when difference is in hours", () =>
 		{
-			const now = new Date();
-			const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-			expect(component.getRelativeTime(threeHoursAgo)).toBe(
-				"3 hours ago"
+			const now: Date = new Date();
+			const threeHoursAgo: Date = new Date(
+				now.getTime() - 3 * 60 * 60 * 1000
 			);
+			expect(getRelativeTime(threeHoursAgo)).toBe("3 hours ago");
 		});
 
 		it("should return singular hour when difference is 1 hour", () =>
 		{
-			const now = new Date();
-			const oneHourAgo = new Date(now.getTime() - 1 * 60 * 60 * 1000);
-			expect(component.getRelativeTime(oneHourAgo)).toBe("1 hour ago");
+			const now: Date = new Date();
+			const oneHourAgo: Date = new Date(
+				now.getTime() - 1 * 60 * 60 * 1000
+			);
+			expect(getRelativeTime(oneHourAgo)).toBe("1 hour ago");
 		});
 
 		it("should return minutes ago when difference is in minutes", () =>
 		{
-			const now = new Date();
-			const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
-			expect(component.getRelativeTime(fiveMinutesAgo)).toBe(
-				"5 minutes ago"
+			const now: Date = new Date();
+			const fiveMinutesAgo: Date = new Date(
+				now.getTime() - 5 * 60 * 1000
 			);
+			expect(getRelativeTime(fiveMinutesAgo)).toBe("5 minutes ago");
 		});
 
 		it("should return singular minute when difference is 1 minute", () =>
 		{
-			const now = new Date();
-			const oneMinuteAgo = new Date(now.getTime() - 1 * 60 * 1000);
-			expect(component.getRelativeTime(oneMinuteAgo)).toBe(
-				"1 minute ago"
-			);
+			const now: Date = new Date();
+			const oneMinuteAgo: Date = new Date(now.getTime() - 1 * 60 * 1000);
+			expect(getRelativeTime(oneMinuteAgo)).toBe("1 minute ago");
 		});
 	});
 
-	describe("getStackFrameCount", () =>
+	describe("countStackFrames utility", () =>
 	{
 		it("should return 0 when stack trace is null", () =>
 		{
-			expect(component.getStackFrameCount(null)).toBe(0);
+			expect(countStackFrames(null)).toBe(0);
 		});
 
 		it("should count stack frames starting with 'at '", () =>
 		{
 			const stackTrace: string =
 				"   at Method1()\n   at Method2()\n   at Method3()\nOther line";
-			expect(component.getStackFrameCount(stackTrace)).toBe(3);
+			expect(countStackFrames(stackTrace)).toBe(3);
 		});
 
 		it("should return 0 when no frames match pattern", () =>
 		{
 			const stackTrace: string = "No frames here\nJust text";
-			expect(component.getStackFrameCount(stackTrace)).toBe(0);
+			expect(countStackFrames(stackTrace)).toBe(0);
 		});
 	});
 

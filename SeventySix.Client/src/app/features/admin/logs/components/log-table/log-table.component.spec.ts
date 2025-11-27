@@ -1,7 +1,13 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { LogLevel, LogResponse } from "@admin/logs/models";
-import { LogTableComponent } from "./log-table.component";
+import {
+	LogResponse,
+	getLogLevelName,
+	getLogLevelClassName,
+	getRelativeTime,
+	truncateText
+} from "@admin/logs/models";
+import { LogTableComponent, ProcessedLog } from "./log-table.component";
 
 describe("LogTableComponent", () =>
 {
@@ -31,6 +37,21 @@ describe("LogTableComponent", () =>
 		spanId: null,
 		parentSpanId: null
 	});
+
+	const createMockProcessedLog = (
+		id: number,
+		logLevel: string = "Error"
+	): ProcessedLog =>
+	{
+		const log: LogResponse = createMockLog(id, logLevel);
+		return {
+			...log,
+			levelClass: getLogLevelClassName(log.logLevel),
+			levelName: getLogLevelName(log.logLevel),
+			relativeTime: getRelativeTime(log.createDate),
+			truncatedMessage: truncateText(log.message, 100)
+		};
+	};
 
 	beforeEach(async () =>
 	{
@@ -86,7 +107,7 @@ describe("LogTableComponent", () =>
 
 	it("should emit logSelected when row is clicked", (done: DoneFn) =>
 	{
-		const log = createMockLog(1);
+		const log: ProcessedLog = createMockProcessedLog(1);
 
 		component.logSelected.subscribe((selectedLog: LogResponse) =>
 		{
@@ -99,7 +120,7 @@ describe("LogTableComponent", () =>
 
 	it("should toggle selection", () =>
 	{
-		const log = createMockLog(1);
+		const log: ProcessedLog = createMockProcessedLog(1);
 
 		expect(component.selection.isSelected(log)).toBe(false);
 
@@ -151,11 +172,13 @@ describe("LogTableComponent", () =>
 
 	it("should emit deleteSelected when delete is triggered", (done: DoneFn) =>
 	{
-		const logs = [createMockLog(1), createMockLog(2)];
+		const logs: LogResponse[] = [createMockLog(1), createMockLog(2)];
 		fixture.componentRef.setInput("logs", logs);
 		fixture.detectChanges();
 
-		component.selection.select(logs[0], logs[1]);
+		// Select from processedLogs which is what the component uses
+		const processedLogs: ProcessedLog[] = component.processedLogs();
+		component.selection.select(processedLogs[0], processedLogs[1]);
 
 		component.deleteSelected.subscribe((ids: number[]) =>
 		{
@@ -170,7 +193,7 @@ describe("LogTableComponent", () =>
 
 	it("should emit deleteLog when single delete is triggered", (done: DoneFn) =>
 	{
-		const log = createMockLog(42);
+		const log: ProcessedLog = createMockProcessedLog(42);
 
 		component.deleteLog.subscribe((id: number) =>
 		{
@@ -183,11 +206,12 @@ describe("LogTableComponent", () =>
 
 	it("should clear selection after delete", () =>
 	{
-		const logs = [createMockLog(1), createMockLog(2)];
+		const logs: LogResponse[] = [createMockLog(1), createMockLog(2)];
 		fixture.componentRef.setInput("logs", logs);
 		fixture.detectChanges();
 
-		component.selection.select(logs[0]);
+		const processedLogs: ProcessedLog[] = component.processedLogs();
+		component.selection.select(processedLogs[0]);
 		expect(component.selection.selected.length).toBe(1);
 
 		component.onDeleteSelected();
@@ -195,50 +219,50 @@ describe("LogTableComponent", () =>
 		expect(component.selection.selected.length).toBe(0);
 	});
 
-	it("should format log level display name", () =>
+	it("should format log level display name via utility", () =>
 	{
-		expect(component.getLevelName("Error")).toBe("Error");
-		expect(component.getLevelName("Warning")).toBe("Warning");
-		expect(component.getLevelName("Fatal")).toBe("Fatal");
-		expect(component.getLevelName("Information")).toBe("Info");
-		expect(component.getLevelName("Debug")).toBe("Debug");
-		expect(component.getLevelName("Verbose")).toBe("Verbose");
+		expect(getLogLevelName("Error")).toBe("Error");
+		expect(getLogLevelName("Warning")).toBe("Warning");
+		expect(getLogLevelName("Fatal")).toBe("Fatal");
+		expect(getLogLevelName("Information")).toBe("Info");
+		expect(getLogLevelName("Debug")).toBe("Debug");
+		expect(getLogLevelName("Verbose")).toBe("Verbose");
 	});
 
-	it("should return level CSS class", () =>
+	it("should return level CSS class via utility", () =>
 	{
-		expect(component.getLevelClass("Error")).toBe("level-error");
-		expect(component.getLevelClass("Warning")).toBe("level-warning");
-		expect(component.getLevelClass("Fatal")).toBe("level-fatal");
-		expect(component.getLevelClass("Information")).toBe("level-info");
+		expect(getLogLevelClassName("Error")).toBe("level-error");
+		expect(getLogLevelClassName("Warning")).toBe("level-warning");
+		expect(getLogLevelClassName("Fatal")).toBe("level-fatal");
+		expect(getLogLevelClassName("Information")).toBe("level-info");
 	});
 
-	it("should format timestamp as relative time", () =>
+	it("should format timestamp as relative time via utility", () =>
 	{
-		const now = new Date();
-		const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
+		const now: Date = new Date();
+		const twoMinutesAgo: Date = new Date(now.getTime() - 2 * 60 * 1000);
 
-		const result = component.getRelativeTime(twoMinutesAgo);
+		const result: string = getRelativeTime(twoMinutesAgo);
 
 		expect(result).toContain("minute");
 		expect(result).toContain("ago");
 	});
 
-	it("should truncate long messages", () =>
+	it("should truncate long messages via utility", () =>
 	{
-		const longMessage = "A".repeat(150);
+		const longMessage: string = "A".repeat(150);
 
-		const result = component.truncateMessage(longMessage, 100);
+		const result: string = truncateText(longMessage, 100);
 
 		expect(result.length).toBeLessThanOrEqual(103); // 100 + "..."
 		expect(result).toContain("...");
 	});
 
-	it("should not truncate short messages", () =>
+	it("should not truncate short messages via utility", () =>
 	{
-		const shortMessage = "Short message";
+		const shortMessage: string = "Short message";
 
-		const result = component.truncateMessage(shortMessage, 100);
+		const result: string = truncateText(shortMessage, 100);
 
 		expect(result).toBe(shortMessage);
 		expect(result).not.toContain("...");

@@ -5,7 +5,9 @@ import {
 	signal,
 	output,
 	OutputEmitterRef,
-	WritableSignal
+	WritableSignal,
+	Signal,
+	computed
 } from "@angular/core";
 import {
 	MAT_DIALOG_DATA,
@@ -21,7 +23,14 @@ import { Clipboard } from "@angular/cdk/clipboard";
 import {
 	LogResponse,
 	LogLevel,
-	parseLogLevel
+	parseLogLevel,
+	getLogLevelName,
+	getLogLevelClassName,
+	getLogLevelIconName,
+	getRelativeTime,
+	formatJsonProperties,
+	countStackFrames,
+	isRootSpanId
 } from "@admin/logs/models";
 import { environment } from "@environments/environment";
 
@@ -65,129 +74,36 @@ export class LogDetailDialogComponent
 	readonly isObservabilityEnabled: boolean =
 		environment.observability.enabled;
 
-	/**
-	 * Checks if this log entry is an error (Error or Fatal level)
-	 */
-	isError(): boolean
+	// Pre-computed values for template performance (memoized computed signals)
+	readonly levelClass: Signal<string> = computed((): string =>
+		getLogLevelClassName(this.log().logLevel)
+	);
+	readonly levelName: Signal<string> = computed((): string =>
+		getLogLevelName(this.log().logLevel)
+	);
+	readonly levelIcon: Signal<string> = computed((): string =>
+		getLogLevelIconName(this.log().logLevel)
+	);
+	readonly relativeTime: Signal<string> = computed((): string =>
+		getRelativeTime(this.log().createDate)
+	);
+	readonly formattedProperties: Signal<string> = computed((): string =>
+		formatJsonProperties(this.log().properties)
+	);
+	readonly stackFrameCount: Signal<number> = computed((): number =>
+		countStackFrames(this.log().stackTrace)
+	);
+	readonly isRootSpan: Signal<boolean> = computed((): boolean =>
+		isRootSpanId(this.log().parentSpanId)
+	);
+	readonly hasCorrelationId: Signal<boolean> = computed(
+		(): boolean => !!this.log().correlationId
+	);
+	readonly isError: Signal<boolean> = computed((): boolean =>
 	{
-		const log: LogResponse = this.log();
-		const level: LogLevel = parseLogLevel(log.logLevel);
+		const level: LogLevel = parseLogLevel(this.log().logLevel);
 		return level === LogLevel.Error || level === LogLevel.Fatal;
-	}
-
-	/**
-	 * Checks if this log entry has a correlation ID for tracing
-	 */
-	hasCorrelationId(): boolean
-	{
-		const log: LogResponse = this.log();
-		return !!log.correlationId;
-	}
-
-	/**
-	 * Checks if a parent span ID represents a root span (all zeros)
-	 */
-	isRootSpan(parentSpanId: string | null): boolean
-	{
-		if (!parentSpanId)
-		{
-			return false;
-		}
-		// Root spans have a parent span ID of all zeros
-		return /^0+$/.test(parentSpanId);
-	}
-
-	getLevelName(logLevel: string): string
-	{
-		const level: LogLevel = parseLogLevel(logLevel);
-		const names: Record<LogLevel, string> = {
-			[LogLevel.Verbose]: "Verbose",
-			[LogLevel.Debug]: "Debug",
-			[LogLevel.Information]: "Info",
-			[LogLevel.Warning]: "Warning",
-			[LogLevel.Error]: "Error",
-			[LogLevel.Fatal]: "Fatal"
-		};
-		return names[level];
-	}
-
-	getLevelIcon(logLevel: string): string
-	{
-		const level: LogLevel = parseLogLevel(logLevel);
-		const icons: Record<LogLevel, string> = {
-			[LogLevel.Verbose]: "bug_report",
-			[LogLevel.Debug]: "bug_report",
-			[LogLevel.Information]: "info",
-			[LogLevel.Warning]: "warning",
-			[LogLevel.Error]: "error",
-			[LogLevel.Fatal]: "cancel"
-		};
-		return icons[level];
-	}
-
-	getLevelClass(logLevel: string): string
-	{
-		const level: LogLevel = parseLogLevel(logLevel);
-		const classes: Record<LogLevel, string> = {
-			[LogLevel.Verbose]: "level-verbose",
-			[LogLevel.Debug]: "level-debug",
-			[LogLevel.Information]: "level-info",
-			[LogLevel.Warning]: "level-warning",
-			[LogLevel.Error]: "level-error",
-			[LogLevel.Fatal]: "level-fatal"
-		};
-		return classes[level];
-	}
-
-	getRelativeTime(date: Date | string): string
-	{
-		const dateObj: Date = typeof date === "string" ? new Date(date) : date;
-		const now: number = Date.now();
-		const diff: number = now - dateObj.getTime();
-		const minutes: number = Math.floor(diff / 60000);
-		const hours: number = Math.floor(diff / 3600000);
-		const days: number = Math.floor(diff / 86400000);
-
-		if (days > 0)
-		{
-			return `${days} day${days > 1 ? "s" : ""} ago`;
-		}
-		if (hours > 0)
-		{
-			return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-		}
-		if (minutes > 0)
-		{
-			return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-		}
-		return "just now";
-	}
-
-	formatStackTrace(stackTrace: string | null): string
-	{
-		if (!stackTrace)
-		{
-			return "";
-		}
-		return stackTrace;
-	}
-
-	formatProperties(properties: string | null): string
-	{
-		if (!properties)
-		{
-			return "";
-		}
-		try
-		{
-			const parsed: unknown = JSON.parse(properties);
-			return JSON.stringify(parsed, null, 2);
-		}
-		catch
-		{
-			return properties;
-		}
-	}
+	});
 
 	toggleStackTrace(): void
 	{
@@ -204,31 +120,12 @@ export class LogDetailDialogComponent
 		this.exceptionCollapsed.set(!this.exceptionCollapsed());
 	}
 
-	/**
-	 * Counts the number of stack frames in the stack trace
-	 */
-	getStackFrameCount(stackTrace: string | null): number
-	{
-		if (!stackTrace)
-		{
-			return 0;
-		}
-
-		// Count lines that start with "at " (typical .NET stack trace format)
-		const lines: string[] = stackTrace.split("\n");
-		return lines.filter((line) => line.trim().startsWith("at ")).length;
-	}
-
 	copyToClipboard(): void
 	{
 		const logData: string = JSON.stringify(this.log(), null, 2);
 		this.clipboard.copy(logData);
 	}
 
-	/**
-	 * Keyboard shortcut handler
-	 * ESC: Close dialog
-	 */
 	handleEscape(): void
 	{
 		this.onClose();
