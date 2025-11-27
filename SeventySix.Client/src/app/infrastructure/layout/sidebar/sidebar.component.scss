@@ -22,7 +22,7 @@
 	display: flex;
 	justify-content: flex-end;
 	padding: vars.$spacing-xs vars.$spacing-sm;
-	min-height: 48px;
+	min-height: vars.$form-field-height-dense; // 48px
 	align-items: center;
 	position: absolute;
 	top: 0;

@@ -85,21 +85,21 @@ export class UserList
 			label: "ID",
 			type: "text",
 			sortable: true,
-			visible: true
+			visible: false
 		},
 		{
 			key: "username",
 			label: "Username",
 			type: "text",
 			sortable: true,
-			visible: true
+			visible: false
 		},
 		{
 			key: "email",
 			label: "Email",
 			type: "text",
 			sortable: true,
-			visible: true
+			visible: false
 		},
 		{
 			key: "fullName",
@@ -133,7 +133,7 @@ export class UserList
 			label: "Last Login",
 			type: "date",
 			sortable: true,
-			visible: false,
+			visible: true,
 			formatter: (value: unknown): string =>
 				value
 					? (this.datePipe.transform(value as string, "short") ?? "")

@@ -73,7 +73,7 @@ describe("LogList", () =>
 		expect(component.columns).toBeDefined();
 		expect(component.columns.length).toBe(6);
 		expect(component.columns[0].key).toBe("logLevel");
-		expect(component.columns[1].key).toBe("timestamp");
+		expect(component.columns[1].key).toBe("createDate");
 	});
 
 	it("should define quick filters", () =>
@@ -90,9 +90,8 @@ describe("LogList", () =>
 	{
 		fixture.detectChanges();
 		expect(component.rowActions).toBeDefined();
-		expect(component.rowActions.length).toBe(2);
-		expect(component.rowActions[0].key).toBe("view");
-		expect(component.rowActions[1].key).toBe("delete");
+		expect(component.rowActions.length).toBe(1);
+		expect(component.rowActions[0].key).toBe("delete");
 	});
 
 	it("should define bulk actions", () =>

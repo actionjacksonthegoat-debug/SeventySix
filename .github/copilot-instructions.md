@@ -32,6 +32,16 @@
 -   **NEVER** use `ngClass`/`ngStyle` - use `[class.x]`/`[style.x]`
 -   **ALWAYS** use `takeUntilDestroyed()` for subscription cleanup
 
+### SCSS/CSS Styling
+
+-   **ALWAYS** use `rem` for sizing (spacing, font-size, width, height)
+-   **NEVER** use `px` except: border width, border-radius, box-shadow, breakpoints
+-   **ALWAYS** use SCSS variables from `_variables.scss`: `vars.$spacing-lg` not `1rem`
+-   **ALWAYS** use semantic color vars: `var(--color-info)`, `var(--color-error)`
+-   **NEVER** hardcode hex colors - use CSS custom properties
+-   **ALWAYS** prefer mixins over repeated CSS (Rule of Three: extract after 3rd occurrence)
+-   **ALWAYS** use existing mixins from `_mixins.scss` for common patterns (loading states, icon sizing, page headers)
+
 ### Testing
 
 -   **NEVER** skip failing tests - fix immediately
@@ -71,4 +81,3 @@
 -   **Overall architecture**: `.github/instructions/architecture-overall.md`
 -   **Quick reference**: `.github/instructions/quick-reference.md`
 -   **Detailed standards**: `.claude/CLAUDE.md`
-

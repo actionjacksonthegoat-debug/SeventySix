@@ -171,13 +171,16 @@
 		{
 			@if (column.type !== "actions")
 			{
-				<button mat-menu-item (click)="toggleColumn(column.key)">
-					<mat-checkbox
-						[checked]="column.visible"
-						(click)="$event.stopPropagation()"
-					>
-						{{ column.label }}
-					</mat-checkbox>
+				<button
+					mat-menu-item
+					(click)="toggleColumn(column.key); $event.stopPropagation()"
+				>
+					<mat-icon>{{
+						columnVisible(column.key)
+							? "check_box"
+							: "check_box_outline_blank"
+					}}</mat-icon>
+					{{ column.label }}
 				</button>
 			}
 		}
@@ -251,16 +254,7 @@
 							<td mat-cell *matCellDef="let row">
 								@if (column.type === "badge")
 								{
-									<mat-chip
-										[color]="
-											column.badgeColor
-												? column.badgeColor(
-														row[column.key],
-														row
-													)
-												: 'primary'
-										"
-									>
+									<mat-chip>
 										{{
 											column.formatter
 												? column.formatter(
@@ -303,39 +297,71 @@
 						<ng-container matColumnDef="actions">
 							<th mat-header-cell *matHeaderCellDef>Actions</th>
 							<td mat-cell *matCellDef="let row">
-								<button
-									mat-icon-button
-									[matMenuTriggerFor]="actionMenu"
-									(click)="$event.stopPropagation()"
-									aria-label="Row actions"
-								>
-									<mat-icon>more_horiz</mat-icon>
-								</button>
-								<mat-menu #actionMenu="matMenu">
-									@for (
-										action of rowActions();
-										track action.key
-									)
-									{
-										@if (shouldShowAction(action, row))
+								@if (rowActions().length === 1)
+								{
+									<!-- Single action: show icon directly -->
+									<button
+										mat-icon-button
+										(click)="
+											onRowAction(
+												rowActions()[0].key,
+												row
+											);
+											$event.stopPropagation()
+										"
+										[matTooltip]="rowActions()[0].label"
+										[class.warn-action]="
+											rowActions()[0].color === 'warn'
+										"
+										aria-label="Row action"
+									>
+										<mat-icon>{{
+											rowActions()[0].icon
+										}}</mat-icon>
+									</button>
+								}
+								@else
+								{
+									<!-- Multiple actions: show menu -->
+									<button
+										mat-icon-button
+										[matMenuTriggerFor]="actionMenu"
+										(click)="$event.stopPropagation()"
+										aria-label="Row actions"
+									>
+										<mat-icon>more_vert</mat-icon>
+									</button>
+									<mat-menu #actionMenu="matMenu">
+										@for (
+											action of rowActions();
+											track action.key
+										)
 										{
-											<button
-												mat-menu-item
-												(click)="
-													onRowAction(action.key, row)
-												"
-												[class.warn-action]="
-													action.color === 'warn'
-												"
-											>
-												<mat-icon>{{
-													action.icon
-												}}</mat-icon>
-												{{ action.label }}
-											</button>
+											@if (
+												shouldShowAction(action, row)
+											)
+											{
+												<button
+													mat-menu-item
+													(click)="
+														onRowAction(
+															action.key,
+															row
+														)
+													"
+													[class.warn-action]="
+														action.color === 'warn'
+													"
+												>
+													<mat-icon>{{
+														action.icon
+													}}</mat-icon>
+													{{ action.label }}
+												</button>
+											}
 										}
-									}
-								</mat-menu>
+									</mat-menu>
+								}
 							</td>
 						</ng-container>
 					}

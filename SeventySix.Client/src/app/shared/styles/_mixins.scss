@@ -3,95 +3,64 @@
  * Reusable mixins for common UI patterns
  */
 
-// Note: Variables are passed as parameters to avoid circular dependencies
-// Import variables in components, then use mixins
+@use "variables" as vars;
 
 // ============================================================================
-// WEATHER BACKGROUND GRADIENTS
+// ICON SIZING
 // ============================================================================
 
 /**
- * Weather gradient mixin for animated backgrounds
- * @param {List} $colors - List of gradient color stops
- * @param {String} $animation-name - Optional animation name
- * @param {Time} $duration - Animation duration (default: 20s)
+ * Icon size mixin
+ * Sets font-size, width, and height for mat-icon elements
+ * @param {Size} $size - Icon size (default: $icon-size-base / 24px)
  */
-@mixin weather-gradient($colors, $animation-name: none, $duration: 20s) {
-	background: linear-gradient(180deg, $colors);
+@mixin icon-size($size: vars.$icon-size-base) {
+	font-size: $size;
+	width: $size;
+	height: $size;
+}
 
-	@if $animation-name != none {
-		animation: #{$animation-name} #{$duration} ease-in-out infinite;
+// ============================================================================
+// FEATURE PLACEHOLDER CARD
+// ============================================================================
 
-		&.no-animation {
-			animation: none;
-		}
-	}
+/**
+ * Feature placeholder container layout
+ * Base container styles for placeholder/coming-soon feature pages
+ */
+@mixin feature-placeholder-container() {
+	padding: vars.$spacing-xl;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	min-height: calc(100vh - vars.$header-height);
 }
 
 /**
- * Weather overlay effect (before/after pseudo-elements)
- * @param {String} $type - Type of overlay (rain, snow, mist)
+ * Feature placeholder card styles
+ * Card styling for placeholder pages
+ * @param {Color} $bg - Card background color
+ * @param {Color} $text - Card text color
  */
-@mixin weather-overlay($type, $duration: 1s) {
-	&::before {
-		content: "";
-		position: absolute;
-		top: -50%;
-		left: 0;
-		width: 100%;
-		height: 200%;
+@mixin feature-placeholder-card-style(
+	$bg: var(--mat-sys-primary-container),
+	$text: var(--mat-sys-on-primary-container)
+) {
+	max-width: vars.$container-width-sm;
+	width: 100%;
+	background-color: $bg;
+	color: $text;
+}
 
-		@if $type == "rain" {
-			background-image: repeating-linear-gradient(
-				180deg,
-				transparent 0px,
-				transparent 2px,
-				rgba(255, 255, 255, 0.1) 2px,
-				rgba(255, 255, 255, 0.1) 4px
-			);
-			animation: rainDrop #{$duration} linear infinite;
-		} @else if $type == "drizzle" {
-			background-image: repeating-linear-gradient(
-				180deg,
-				transparent 0px,
-				transparent 3px,
-				rgba(255, 255, 255, 0.05) 3px,
-				rgba(255, 255, 255, 0.05) 6px
-			);
-			animation: drizzleDrop 1.5s linear infinite;
-		} @else if $type == "snow" {
-			background-image:
-				radial-gradient(
-					circle,
-					rgba(255, 255, 255, 0.8) 1px,
-					transparent 1px
-				),
-				radial-gradient(
-					circle,
-					rgba(255, 255, 255, 0.6) 1px,
-					transparent 1px
-				);
-			background-size:
-				50px 50px,
-				100px 100px;
-			background-position:
-				0 0,
-				25px 25px;
-			animation: snowDrift 20s linear infinite;
-		} @else if $type == "mist" {
-			background: radial-gradient(
-				ellipse at center,
-				rgba(255, 255, 255, 0.3) 0%,
-				transparent 70%
-			);
-			animation: mistFlow 20s ease-in-out infinite;
-		}
-
-		&.no-animation {
-			animation: none;
-			opacity: 0.5;
-		}
-	}
+/**
+ * Feature placeholder icon styles
+ * Icon styling for placeholder pages
+ * @param {Color} $color - Icon color
+ */
+@mixin feature-placeholder-icon($color: var(--mat-sys-primary)) {
+	@include icon-size(vars.$icon-size-xl);
+	margin-bottom: vars.$spacing-lg;
+	color: $color;
 }
 
 // ============================================================================
@@ -101,18 +70,22 @@
 /**
  * Responsive dialog section padding
  * Automatically adjusts padding based on breakpoints
- * @param {Size} $desktop - Desktop padding (default: 24px)
- * @param {Size} $tablet - Tablet padding (default: 16px)
- * @param {Size} $mobile - Mobile padding (default: 12px)
+ * @param {Size} $desktop - Desktop padding (default: $spacing-xl)
+ * @param {Size} $tablet - Tablet padding (default: $spacing-lg)
+ * @param {Size} $mobile - Mobile padding (default: $spacing-md)
  */
-@mixin dialog-section-responsive($desktop: 24px, $tablet: 16px, $mobile: 12px) {
+@mixin dialog-section-responsive(
+	$desktop: vars.$spacing-xl,
+	$tablet: vars.$spacing-lg,
+	$mobile: vars.$spacing-md
+) {
 	padding: $desktop;
 
-	@media (min-width: 600px) and (max-width: 959.98px) {
+	@media #{vars.$breakpoint-tablet} {
 		padding: $tablet;
 	}
 
-	@media (max-width: 599.98px) {
+	@media #{vars.$breakpoint-mobile} {
 		padding: $mobile;
 	}
 }
@@ -120,43 +93,43 @@
 /**
  * Responsive dialog header
  * Adjusts layout and sizing for mobile devices
- * @param {Size} $icon-size-md - Medium icon size (default: 20px)
+ * @param {Size} $icon-size - Icon size (default: $icon-size-sm)
  */
-@mixin dialog-header-responsive($icon-size-md: 20px) {
-	@media (min-width: 600px) and (max-width: 959.98px) {
-		padding: 12px 16px;
+@mixin dialog-header-responsive($icon-size: vars.$icon-size-sm) {
+	@media #{vars.$breakpoint-tablet} {
+		padding: vars.$spacing-md vars.$spacing-lg;
 
 		.header-content {
 			flex-direction: column;
 			align-items: flex-start;
-			gap: 4px;
+			gap: vars.$spacing-xs;
 
 			mat-icon {
-				font-size: $icon-size-md;
-				width: $icon-size-md;
-				height: $icon-size-md;
+				font-size: $icon-size;
+				width: $icon-size;
+				height: $icon-size;
 			}
 		}
 	}
 
-	@media (max-width: 599.98px) {
-		padding: 8px 12px;
+	@media #{vars.$breakpoint-mobile} {
+		padding: vars.$spacing-sm vars.$spacing-md;
 	}
 }
 
 /**
  * Code/pre block with scrollbar
  * Common pattern for stack traces, JSON, etc.
- * @param {Size} $max-height - Maximum height before scrolling
- * @param {Size} $padding - Internal padding (default: 16px)
- * @param {Size} $border-radius - Border radius (default: 4px)
- * @param {Size} $font-size - Font size (default: 11px)
+ * @param {Size} $max-height - Maximum height before scrolling (default: 18.75rem)
+ * @param {Size} $padding - Internal padding (default: $spacing-lg)
+ * @param {Size} $border-radius - Border radius (default: $border-radius-sm)
+ * @param {Size} $font-size - Font size (default: $font-size-xs)
  */
 @mixin code-block-scrollable(
-	$max-height: 300px,
-	$padding: 16px,
-	$border-radius: 4px,
-	$font-size: 11px
+	$max-height: 18.75rem,
+	$padding: vars.$spacing-lg,
+	$border-radius: vars.$border-radius-sm,
+	$font-size: vars.$font-size-xs
 ) {
 	background-color: var(--mat-table-background-color);
 	padding: $padding;
@@ -166,18 +139,18 @@
 
 	// Custom scrollbar
 	&::-webkit-scrollbar {
-		width: 8px;
-		height: 8px;
+		width: 0.5rem;
+		height: 0.5rem;
 	}
 
 	&::-webkit-scrollbar-track {
 		background: var(--mat-sys-surface-variant);
-		border-radius: 4px;
+		border-radius: vars.$border-radius-sm;
 	}
 
 	&::-webkit-scrollbar-thumb {
 		background: var(--mat-sys-outline);
-		border-radius: 4px;
+		border-radius: vars.$border-radius-sm;
 
 		&:hover {
 			background: var(--mat-sys-on-surface-variant);
@@ -197,10 +170,10 @@
 /**
  * Info grid layout (key-value pairs)
  * Responsive grid for displaying metadata
- * @param {Size} $gap - Gap between grid items (default: 16px)
- * @param {Size} $min-width - Minimum column width (default: 200px)
+ * @param {Size} $gap - Gap between grid items (default: $spacing-lg)
+ * @param {Size} $min-width - Minimum column width (default: 12.5rem)
  */
-@mixin info-grid-responsive($gap: 16px, $min-width: 200px) {
+@mixin info-grid-responsive($gap: vars.$spacing-lg, $min-width: 12.5rem) {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax($min-width, 1fr));
 	gap: $gap;
@@ -208,10 +181,10 @@
 	.info-item {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: vars.$spacing-xs;
 
 		.info-label {
-			font-size: 11px;
+			font-size: vars.$font-size-xs;
 			font-weight: 500;
 			color: var(--mat-dialog-supporting-text-color);
 			text-transform: uppercase;
@@ -219,15 +192,15 @@
 		}
 
 		.info-value {
-			font-size: 12px;
+			font-size: vars.$font-size-sm;
 			color: var(--mat-dialog-headline-color);
 			word-break: break-word;
 		}
 	}
 
-	@media (min-width: 600px) and (max-width: 959.98px) {
+	@media #{vars.$breakpoint-tablet} {
 		grid-template-columns: 1fr;
-		gap: 12px;
+		gap: vars.$spacing-md;
 	}
 }
 
@@ -238,26 +211,334 @@
 /**
  * Log level color classes
  * Generates consistent color classes for log levels
+ * Uses CSS custom properties from _base.scss for theme-aware colors
  */
 @mixin log-level-colors() {
-	.level-verbose,
+	.level-verbose {
+		color: var(--color-log-verbose);
+	}
+
 	.level-debug {
-		color: #616161;
+		color: var(--color-log-debug);
 	}
 
 	.level-info {
-		color: #2e7d32;
+		color: var(--color-log-info);
 	}
 
 	.level-warning {
-		color: #e65100;
+		color: var(--color-log-warning);
 	}
 
 	.level-error {
-		color: #c62828;
+		color: var(--color-log-error);
 	}
 
 	.level-fatal {
-		color: #6a1b9a;
+		color: var(--color-log-fatal);
+	}
+}
+
+// ============================================================================
+// PAGE LAYOUT PATTERNS
+// ============================================================================
+
+/**
+ * Standard page header pattern
+ * Provides consistent header layout with title, icon, and actions
+ * Used by admin pages (users, logs, etc.)
+ */
+@mixin page-header() {
+	.page-header {
+		margin-bottom: vars.$spacing-xl;
+
+		@media (max-width: vars.$breakpoint-xs-max) {
+			margin-bottom: vars.$spacing-lg;
+		}
+	}
+
+	.header-content {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: vars.$spacing-md;
+	}
+
+	.header-actions {
+		display: flex;
+		gap: vars.$spacing-sm;
+
+		@media (max-width: vars.$breakpoint-xs-max) {
+			width: 100%;
+
+			button {
+				flex: 1;
+			}
+		}
+	}
+
+	.header-title {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-md;
+
+		.page-icon {
+			font-size: vars.$avatar-size-md;
+			width: vars.$avatar-size-md;
+			height: vars.$avatar-size-md;
+			color: var(--mat-primary-default);
+
+			@media (max-width: vars.$breakpoint-xs-max) {
+				font-size: vars.$icon-size-xl;
+				width: vars.$icon-size-xl;
+				height: vars.$icon-size-xl;
+			}
+		}
+
+		h1 {
+			margin: 0;
+			font-weight: vars.$font-weight-medium;
+		}
+
+		.subtitle {
+			margin: vars.$spacing-xs 0 0;
+			opacity: 0.7;
+		}
+	}
+}
+
+/**
+ * Loading state container
+ * Centered flex layout for loading spinners and messages
+ * @param {Size} $padding - Container padding (default: $spacing-xl)
+ * @param {Size} $gap - Gap between elements (default: $spacing-lg)
+ */
+@mixin loading-state($padding: vars.$spacing-xl, $gap: vars.$spacing-lg) {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: $padding;
+	gap: $gap;
+
+	p {
+		margin: 0;
+	}
+}
+
+/**
+ * Error state container
+ * Centered layout for error messages with optional max-width
+ * @param {Size} $padding - Container padding (default: $spacing-2xl)
+ * @param {Size} $max-width - Max width of error card (default: $toast-max-width)
+ */
+@mixin error-state(
+	$padding: vars.$spacing-2xl,
+	$max-width: vars.$toast-max-width
+) {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: $padding;
+
+	.error-card {
+		max-width: $max-width;
+	}
+
+	.error-content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: vars.$spacing-lg;
+
+		.error-icon {
+			font-size: vars.$icon-size-xl;
+			width: vars.$icon-size-xl;
+			height: vars.$icon-size-xl;
+		}
+
+		p {
+			margin: 0;
+		}
+	}
+}
+
+/**
+ * Alert card pattern
+ * Used for displaying inline alerts/warnings
+ * @param {Size} $margin-bottom - Bottom margin (default: $spacing-xl)
+ */
+@mixin alert-card($margin-bottom: vars.$spacing-xl) {
+	margin-bottom: $margin-bottom;
+
+	&.error {
+		border-color: rgb(var(--mat-warn-rgb));
+	}
+
+	.alert-content {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-md;
+
+		mat-icon {
+			flex-shrink: 0;
+		}
+
+		span {
+			flex: 1;
+		}
+	}
+}
+
+/**
+ * Form card content layout
+ * Standard vertical layout for form fields inside cards
+ */
+@mixin form-card-content() {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-lg;
+	padding-top: vars.$spacing-lg;
+}
+
+/**
+ * Info/Review grid layout
+ * Used for displaying key-value pairs in a responsive grid
+ * @param {Size} $min-column-width - Minimum column width (default: 12.5rem / 200px)
+ * @param {Size} $gap - Gap between items (default: $spacing-xl)
+ */
+@mixin info-review-grid($min-column-width: 12.5rem, $gap: vars.$spacing-xl) {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax($min-column-width, 1fr));
+	gap: $gap;
+	padding-top: vars.$spacing-lg;
+
+	.info-item,
+	.review-item {
+		display: flex;
+		align-items: flex-start;
+		gap: vars.$spacing-md;
+
+		.info-icon,
+		.review-icon {
+			color: rgba(var(--mat-primary-rgb), 0.7);
+			flex-shrink: 0;
+		}
+
+		.info-details,
+		.review-details {
+			display: flex;
+			flex-direction: column;
+			gap: vars.$spacing-xs;
+
+			.info-label,
+			.review-label {
+				color: rgba(var(--mat-outline-rgb), 0.6);
+				font-weight: vars.$font-weight-medium;
+			}
+		}
+	}
+
+	@media #{vars.$breakpoint-mobile} {
+		grid-template-columns: 1fr;
+	}
+}
+
+// ============================================================================
+// FULL PAGE LAYOUTS
+// ============================================================================
+
+/**
+ * Error page layout
+ * Full-page centered error layout with card
+ * Used by not-found, server-error, and other error pages
+ * @param {Size} $max-width - Max width of error container (default: $container-width-sm)
+ * @param {Size} $content-gap - Gap between content elements (default: $spacing-xl)
+ */
+@mixin error-page-layout(
+	$max-width: vars.$container-width-sm,
+	$content-gap: vars.$spacing-xl
+) {
+	.error-page {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 100vh;
+		padding: vars.$spacing-2xl;
+
+		.error-container {
+			width: 100%;
+			max-width: $max-width;
+
+			.error-card {
+				mat-card-content {
+					padding: vars.$spacing-3xl vars.$spacing-2xl;
+				}
+
+				.error-content {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					text-align: center;
+					gap: $content-gap;
+
+					.error-icon {
+						font-size: vars.$icon-size-4xl;
+						width: vars.$icon-size-4xl;
+						height: vars.$icon-size-4xl;
+					}
+
+					h1 {
+						margin: 0;
+					}
+
+					p {
+						margin: 0;
+						max-width: vars.$container-width-xs;
+					}
+
+					.error-actions {
+						display: flex;
+						gap: vars.$spacing-lg;
+						flex-wrap: wrap;
+						justify-content: center;
+						margin-top: vars.$spacing-lg;
+					}
+				}
+			}
+		}
+	}
+
+	@media #{vars.$breakpoint-mobile} {
+		.error-page {
+			padding: vars.$spacing-lg;
+
+			.error-container {
+				.error-card {
+					mat-card-content {
+						padding: vars.$spacing-2xl vars.$spacing-lg;
+					}
+
+					.error-content {
+						.error-icon {
+							font-size: vars.$icon-size-3xl;
+							width: vars.$icon-size-3xl;
+							height: vars.$icon-size-3xl;
+						}
+
+						.error-actions {
+							flex-direction: column;
+							width: 100%;
+
+							button {
+								width: 100%;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }

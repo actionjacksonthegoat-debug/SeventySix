@@ -17,9 +17,9 @@ describe("LayoutService", () =>
 			of({ matches: false, breakpoints: {} })
 		);
 
-		// Mock localStorage
-		spyOn(localStorage, "getItem").and.returnValue(null);
-		spyOn(localStorage, "setItem");
+		// Mock sessionStorage (sidebar uses sessionStorage for session-only persistence)
+		spyOn(sessionStorage, "getItem").and.returnValue(null);
+		spyOn(sessionStorage, "setItem");
 
 		service = setupSimpleServiceTest(LayoutService, [
 			{
@@ -43,10 +43,10 @@ describe("LayoutService", () =>
 			expect(service.sidebarExpanded()).toBe(!initialState);
 		});
 
-		it("should persist state to localStorage", () =>
+		it("should persist state to sessionStorage", () =>
 		{
 			service.toggleSidebar();
-			expect(localStorage.setItem).toHaveBeenCalled();
+			expect(sessionStorage.setItem).toHaveBeenCalled();
 		});
 	});
 
@@ -76,6 +76,15 @@ describe("LayoutService", () =>
 		it("should set sidebar to open", () =>
 		{
 			service.openSidebar();
+			expect(service.sidebarExpanded()).toBe(true);
+		});
+	});
+
+	describe("initial sidebar state", () =>
+	{
+		it("should start open when sessionStorage is empty (fresh load)", () =>
+		{
+			// Already mocked sessionStorage.getItem to return null
 			expect(service.sidebarExpanded()).toBe(true);
 		});
 	});

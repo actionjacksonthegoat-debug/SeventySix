@@ -1,22 +1,16 @@
+@use "mixins" as mixins;
+
 .rv-camper-container {
-	padding: 1.5rem;
-	display: flex;
-	justify-content: center;
-	align-items: flex-start;
-	min-height: calc(100vh - 64px);
+	@include mixins.feature-placeholder-container();
 }
 
 .rv-camper-card {
-	max-width: 600px;
-	width: 100%;
-	background-color: var(--mat-sys-tertiary-container);
-	color: var(--mat-sys-on-tertiary-container);
+	@include mixins.feature-placeholder-card-style(
+		$bg: var(--mat-sys-tertiary-container),
+		$text: var(--mat-sys-on-tertiary-container)
+	);
 }
 
 .rv-camper-icon {
-	font-size: 48px;
-	width: 48px;
-	height: 48px;
-	margin-bottom: 1rem;
-	color: var(--mat-sys-tertiary);
+	@include mixins.feature-placeholder-icon(var(--mat-sys-tertiary));
 }

@@ -11,7 +11,6 @@ import {
 	BreakpointState
 } from "@angular/cdk/layout";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { StorageService } from "./storage.service";
 
 /**
  * Service for managing application layout state
@@ -24,14 +23,15 @@ export class LayoutService
 {
 	private platformId: Object = inject(PLATFORM_ID);
 	private breakpointObserver: BreakpointObserver = inject(BreakpointObserver);
-	private readonly storage: StorageService = inject(StorageService);
-	private readonly SIDEBAR_STATE_KEY: string = "seventysix-sidebar-expanded";
+	private readonly SIDEBAR_SESSION_KEY: string = "seventysix-sidebar-session";
 
 	/**
 	 * Sidebar expanded state
+	 * Always starts open on fresh page load/refresh
+	 * Only persists closed state within the same session
 	 */
 	sidebarExpanded: ReturnType<typeof signal<boolean>> = signal<boolean>(
-		this.getSavedSidebarState()
+		this.getSessionSidebarState()
 	);
 
 	/**
@@ -149,7 +149,7 @@ export class LayoutService
 	toggleSidebar(): void
 	{
 		this.sidebarExpanded.update((expanded) => !expanded);
-		this.saveSidebarState(this.sidebarExpanded());
+		this.saveSessionSidebarState(this.sidebarExpanded());
 	}
 
 	/**
@@ -158,7 +158,7 @@ export class LayoutService
 	setSidebarExpanded(expanded: boolean): void
 	{
 		this.sidebarExpanded.set(expanded);
-		this.saveSidebarState(expanded);
+		this.saveSessionSidebarState(expanded);
 	}
 
 	/**
@@ -167,7 +167,7 @@ export class LayoutService
 	closeSidebar(): void
 	{
 		this.sidebarExpanded.set(false);
-		this.saveSidebarState(false);
+		this.saveSessionSidebarState(false);
 	}
 
 	/**
@@ -176,25 +176,53 @@ export class LayoutService
 	openSidebar(): void
 	{
 		this.sidebarExpanded.set(true);
-		this.saveSidebarState(true);
+		this.saveSessionSidebarState(true);
 	}
 
 	/**
-	 * Get initial sidebar state from localStorage
+	 * Get sidebar state for current session
+	 * Always returns true (open) on fresh page load/refresh
+	 * Uses sessionStorage to track user's explicit close action within session
 	 */
-	private getSavedSidebarState(): boolean
+	private getSessionSidebarState(): boolean
 	{
-		const saved: string | null = this.storage.getItem<string>(
-			this.SIDEBAR_STATE_KEY
+		// Check if browser environment
+		if (
+			typeof window === "undefined" ||
+			typeof sessionStorage === "undefined"
+		)
+		{
+			return true; // Default to open in SSR
+		}
+
+		const sessionValue: string | null = sessionStorage.getItem(
+			this.SIDEBAR_SESSION_KEY
 		);
-		return saved === "true" || saved === null; // Default to true if not set
+
+		// If no session value, this is a fresh load - start open
+		if (sessionValue === null)
+		{
+			return true;
+		}
+
+		// Return the session-stored value
+		return sessionValue === "true";
 	}
 
 	/**
-	 * Save sidebar state to localStorage
+	 * Save sidebar state to sessionStorage
+	 * Only tracks within current browser session
 	 */
-	private saveSidebarState(expanded: boolean): void
+	private saveSessionSidebarState(expanded: boolean): void
 	{
-		this.storage.setItem(this.SIDEBAR_STATE_KEY, expanded.toString());
+		if (
+			typeof window === "undefined" ||
+			typeof sessionStorage === "undefined"
+		)
+		{
+			return;
+		}
+
+		sessionStorage.setItem(this.SIDEBAR_SESSION_KEY, expanded.toString());
 	}
 }

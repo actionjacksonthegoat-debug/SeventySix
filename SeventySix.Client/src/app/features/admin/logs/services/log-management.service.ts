@@ -53,9 +53,14 @@ export class LogManagementService extends BaseFilterService<LogFilterRequest>
 
 	constructor()
 	{
+		// Initialize with 24-hour date range as default
+		const now: Date = new Date();
+		const startDate: Date = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 		super({
 			pageNumber: 1,
-			pageSize: 50
+			pageSize: 50,
+			startDate: startDate,
+			endDate: now
 		});
 	}
 

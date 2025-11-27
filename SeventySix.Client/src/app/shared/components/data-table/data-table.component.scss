@@ -1,4 +1,5 @@
 @use "variables" as vars;
+@use "mixins" as mixins;
 
 .data-table-container {
 	display: flex;
@@ -24,9 +25,9 @@
 }
 
 .search-field {
-	min-width: 300px;
+	min-width: vars.$toast-min-width;
 	flex: 1;
-	max-width: 600px;
+	max-width: vars.$container-width-sm;
 }
 
 .filter-chips {
@@ -45,10 +46,10 @@
 	display: inline-flex;
 	align-items: center;
 	gap: vars.$spacing-xs;
-	padding: 4px 12px;
-	border-radius: 16px;
-	min-height: 32px;
-	font-size: 0.875rem;
+	padding: vars.$spacing-xs vars.$spacing-md;
+	border-radius: vars.$border-radius-xl;
+	min-height: vars.$button-height-sm;
+	font-size: vars.$font-size-base;
 	font-weight: 500;
 	text-transform: none;
 	border: 1px solid rgba(var(--mat-sys-outline-rgb), 0.38);
@@ -63,9 +64,9 @@
 	}
 
 	mat-icon {
-		font-size: 18px;
-		width: 18px;
-		height: 18px;
+		font-size: vars.$icon-size-sm;
+		width: vars.$icon-size-sm;
+		height: vars.$icon-size-sm;
 		margin: 0;
 	}
 
@@ -86,11 +87,11 @@
 .result-count-chip {
 	display: inline-flex;
 	align-items: center;
-	padding: 6px 12px;
-	border-radius: 16px;
+	padding: vars.$spacing-xs vars.$spacing-md;
+	border-radius: vars.$border-radius-xl;
 	background-color: rgba(var(--mat-sys-primary-rgb), 0.12);
 	color: rgb(var(--mat-sys-primary-rgb));
-	font-size: 0.875rem;
+	font-size: vars.$font-size-base;
 	font-weight: 500;
 	line-height: 1;
 	white-space: nowrap;
@@ -101,10 +102,7 @@
 }
 
 .loading-container {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	padding: vars.$spacing-xl;
+	@include mixins.loading-state();
 }
 
 .error-card {
@@ -124,5 +122,15 @@
 }
 
 .data-row {
-	@include vars.interactive-row-hover();
+	cursor: pointer;
+	transition: background-color vars.$transition-duration-fast
+		vars.$transition-easing-standard;
+
+	&:hover {
+		background-color: var(--mat-table-row-item-hover-state-layer-color);
+	}
+
+	&:active {
+		background-color: var(--color-pressed);
+	}
 }

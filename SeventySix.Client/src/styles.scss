@@ -38,6 +38,17 @@ body {
 	overflow: hidden; // Prevent double scrollbars
 }
 
+html {
+	// ==========================================================================
+	// ROOT FONT SIZE - SITE-WIDE TEXT SCALING
+	// ==========================================================================
+	// Change this ONE value to scale ALL text site-wide, including Material components.
+	// Browser default is 16px. Using percentage allows user browser preferences to work.
+	// 100% = 16px (default), 106.25% = 17px, 112.5% = 18px, 87.5% = 14px
+	// This affects ALL rem-based sizing (Material typography, spacing, etc.)
+	font-size: 100%; // 16px base (default)
+}
+
 body {
 	font-family: Roboto, "Helvetica Neue", sans-serif;
 	-webkit-font-smoothing: antialiased;
@@ -127,15 +138,15 @@ html:not(.light-theme):not(.dark-theme) {
 .mat-mdc-form-field {
 	// Reserve space for suffix button to prevent text overflow
 	input[matInput] {
-		padding-right: 48px;
+		padding-right: vars.$form-field-height-dense; // 48px - matches suffix width
 	}
 
 	// Style the suffix button
 	button[matIconSuffix] {
-		width: 40px;
-		height: 40px;
+		width: vars.$avatar-size-base; // 40px
+		height: vars.$avatar-size-base;
 		border-radius: 0 vars.$border-radius-sm vars.$border-radius-sm 0;
-		margin-right: 4px;
+		margin-right: vars.$spacing-xs;
 
 		// Remove circular ripple effect, use rectangular shape
 		.mat-mdc-button-persistent-ripple,
@@ -164,13 +175,13 @@ html:not(.light-theme):not(.dark-theme) {
 // All chips (mat-chip, mat-chip-option)
 mat-chip,
 mat-chip-option {
-	min-height: 32px;
+	min-height: vars.$button-height-sm; // 32px
 
 	// Fix chip action padding for consistent spacing
 	.mdc-evolution-chip__action--primary {
 		padding-left: vars.$spacing-md; // 12px
 		padding-right: vars.$spacing-md; // 12px
-		min-height: 32px;
+		min-height: vars.$button-height-sm; // 32px
 	}
 
 	// Fix chip graphic (icon container) alignment
@@ -187,7 +198,7 @@ mat-chip-option {
 	.mdc-evolution-chip__text-label {
 		display: flex;
 		align-items: center;
-		gap: 6px;
+		gap: vars.$spacing-xs; // 4px - close icon spacing
 	}
 
 	// Fix icon sizing and alignment
@@ -208,15 +219,15 @@ mat-chip-option {
 	mat-chip,
 	mat-chip-option {
 		.mdc-evolution-chip__action--primary {
-			padding-left: 10px;
-			padding-right: 10px;
+			padding-left: vars.$spacing-sm; // 8px
+			padding-right: vars.$spacing-sm;
 		}
 
 		mat-icon {
-			font-size: 16px;
-			width: 16px;
-			height: 16px;
-			line-height: 16px;
+			font-size: vars.$icon-size-xs;
+			width: vars.$icon-size-xs;
+			height: vars.$icon-size-xs;
+			line-height: vars.$icon-size-xs;
 		}
 	}
 }
@@ -227,58 +238,43 @@ mat-chip-option {
 // Add padding and reduce height for dropdowns to improve compactness
 .mat-mdc-select {
 	// Add left and right padding
-	padding-left: 12px;
-	padding-right: 8px;
+	padding-left: vars.$spacing-md; // 12px
+	padding-right: vars.$spacing-sm; // 8px
 }
 
 // Reduce overall height
 .mat-mdc-form-field-infix {
-	min-height: 32px;
-	padding-top: 6px;
-	padding-bottom: 6px;
+	min-height: vars.$button-height-sm; // 32px
+	padding-top: vars.$spacing-xs; // 4px
+	padding-bottom: vars.$spacing-xs;
 }
 
-// Ensure proper scrollbar styling for dark theme
-html.dark-theme {
-	scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.2);
+// =============================================================================
+// GLOBAL SCROLLBAR STYLING
+// =============================================================================
+// Theme-aware scrollbar using CSS custom properties from Material theme
 
+html {
+	// Firefox scrollbar
+	scrollbar-width: thin;
+	scrollbar-color: var(--mat-sys-outline) var(--mat-sys-surface-variant);
+
+	// Webkit scrollbar
 	::-webkit-scrollbar {
-		width: 12px;
-		height: 12px;
+		width: 0.75rem; // 12px at 16px base
+		height: 0.75rem;
 	}
 
 	::-webkit-scrollbar-track {
-		background: rgba(0, 0, 0, 0.2);
+		background: var(--mat-sys-surface-variant);
 	}
 
 	::-webkit-scrollbar-thumb {
-		background: rgba(255, 255, 255, 0.3);
+		background: var(--mat-sys-outline);
 		border-radius: vars.$border-radius-sm;
 
 		&:hover {
-			background: rgba(255, 255, 255, 0.4);
-		}
-	}
-}
-
-html.light-theme {
-	scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);
-
-	::-webkit-scrollbar {
-		width: 12px;
-		height: 12px;
-	}
-
-	::-webkit-scrollbar-track {
-		background: rgba(0, 0, 0, 0.05);
-	}
-
-	::-webkit-scrollbar-thumb {
-		background: rgba(0, 0, 0, 0.2);
-		border-radius: 6px;
-
-		&:hover {
-			background: rgba(0, 0, 0, 0.3);
+			background: var(--mat-sys-on-surface-variant);
 		}
 	}
 }
@@ -288,6 +284,14 @@ html.light-theme {
 // =============================================================================
 // Ensures all dialogs align with main content and are responsive
 // Dialog positioning uses body.sidebar-expanded class set by app component
+
+// CDK Overlay container - ensure dialog centering
+.cdk-overlay-container {
+	// Ensure overlay is centered by default
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
 
 // Dialog panel positioning - offset when sidebar is expanded on desktop
 .cdk-overlay-pane.mat-mdc-dialog-panel {
@@ -312,7 +316,12 @@ html.light-theme {
 	}
 }
 
-// Dialog content should respect page content max-width
+// Dialog backdrop - darker mask for better focus
+.cdk-overlay-dark-backdrop {
+	background-color: var(--color-backdrop);
+}
+
+// Dialog content centering and responsive styling
 .mat-mdc-dialog-content {
 	max-height: 70vh;
 	overflow-y: auto;
@@ -334,11 +343,11 @@ html.light-theme {
 			vars.$transition-easing-standard;
 
 		&:hover {
-			background-color: rgba(0, 0, 0, 0.04);
+			background-color: var(--color-hover);
 		}
 
 		&:active {
-			background-color: rgba(0, 0, 0, 0.08);
+			background-color: var(--color-pressed);
 		}
 	}
 }
@@ -352,11 +361,11 @@ html.dark-theme {
 			vars.$transition-easing-standard;
 
 		&:hover {
-			background-color: rgba(255, 255, 255, 0.04);
+			background-color: var(--color-hover);
 		}
 
 		&:active {
-			background-color: rgba(255, 255, 255, 0.08);
+			background-color: var(--color-pressed);
 		}
 	}
 }

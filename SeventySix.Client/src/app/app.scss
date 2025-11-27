@@ -52,7 +52,7 @@ body {
 	left: 0;
 	right: 0;
 	z-index: vars.$z-index-overlay;
-	height: 4px;
+	height: vars.$spacing-xs; // 4px progress bar
 }
 
 .app-sidenav {
@@ -103,9 +103,9 @@ body {
 		max-width: vars.$container-max-width;
 	}
 
-	// Ensure consistent width across breakpoints
+	// Wide content on desktop, golden ratio on large displays
 	@media (min-width: vars.$breakpoint-lg-min) and (max-width: vars.$breakpoint-lg-max) {
-		width: vars.$container-golden-width;
+		width: vars.$container-wide-width;
 		max-width: vars.$container-width-lg;
 	}
 

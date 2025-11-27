@@ -1,4 +1,5 @@
 @use "variables" as vars;
+@use "mixins" as mixins;
 
 :host {
 	display: flex;
@@ -72,33 +73,33 @@
 		text-transform: uppercase;
 
 		&.level-verbose {
-			background-color: #e0e0e0;
-			color: #424242;
+			background-color: var(--color-log-verbose-surface);
+			color: var(--color-log-verbose);
 		}
 
 		&.level-debug {
-			background-color: #bbdefb;
-			color: #1565c0;
+			background-color: var(--color-log-debug-surface);
+			color: var(--color-log-debug);
 		}
 
 		&.level-info {
-			background-color: #c8e6c9;
-			color: #2e7d32;
+			background-color: var(--color-log-info-surface);
+			color: var(--color-log-info);
 		}
 
 		&.level-warning {
-			background-color: #ffe0b2;
-			color: #e65100;
+			background-color: var(--color-log-warning-surface);
+			color: var(--color-log-warning);
 		}
 
 		&.level-error {
-			background-color: #ffcdd2;
-			color: #c62828;
+			background-color: var(--color-log-error-surface);
+			color: var(--color-log-error);
 		}
 
 		&.level-fatal {
-			background-color: #f3e5f5;
-			color: #6a1b9a;
+			background-color: var(--color-log-fatal-surface);
+			color: var(--color-log-fatal);
 		}
 	}
 
@@ -109,7 +110,7 @@
 
 	.message {
 		display: block;
-		max-width: 400px;
+		max-width: vars.$message-truncate-width-lg;
 		@include vars.truncate-text();
 	}
 
@@ -119,9 +120,7 @@
 		color: var(--mat-table-row-item-label-text-color);
 
 		mat-icon {
-			font-size: vars.$icon-size-xl; // 48px
-			width: vars.$icon-size-xl;
-			height: vars.$icon-size-xl;
+			@include mixins.icon-size(vars.$icon-size-xl);
 			opacity: 0.3;
 		}
 
@@ -141,7 +140,7 @@ mat-paginator {
 @media #{vars.$breakpoint-sm} {
 	.log-table {
 		.message {
-			max-width: 300px;
+			max-width: vars.$message-truncate-width-md;
 		}
 	}
 
@@ -164,7 +163,7 @@ mat-paginator {
 
 	.log-table {
 		.message {
-			max-width: 200px;
+			max-width: vars.$message-truncate-width-sm;
 		}
 
 		.empty-state {

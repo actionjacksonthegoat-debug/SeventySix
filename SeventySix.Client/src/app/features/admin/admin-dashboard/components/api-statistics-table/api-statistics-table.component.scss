@@ -1,26 +1,24 @@
+@use "variables" as vars;
+@use "mixins" as mixins;
+
 .api-statistics-table {
 	width: 100%;
 
 	.loading-container,
 	.error-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
+		@include mixins.loading-state($padding: 0);
 		min-height: 300px;
-		gap: 1rem;
 
 		p {
-			margin: 0;
-			color: var(--md-sys-color-on-surface-variant);
+			color: var(--mat-sys-on-surface-variant);
 		}
 	}
 
 	.error-container {
 		mat-icon {
-			font-size: 48px;
-			width: 48px;
-			height: 48px;
+			font-size: vars.$icon-size-xl;
+			width: vars.$icon-size-xl;
+			height: vars.$icon-size-xl;
 		}
 	}
 
@@ -33,7 +31,7 @@
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			padding: 1rem;
+			padding: vars.$spacing-lg;
 			flex-shrink: 0;
 		}
 
@@ -48,24 +46,7 @@
 		max-height: calc(3 * 73px + 56px); // 3 rows + header
 		overflow-y: auto;
 		overflow-x: auto;
-
-		&::-webkit-scrollbar {
-			width: 8px;
-			height: 8px;
-		}
-
-		&::-webkit-scrollbar-track {
-			background: var(--md-sys-color-surface-variant);
-		}
-
-		&::-webkit-scrollbar-thumb {
-			background: var(--md-sys-color-outline);
-			border-radius: 4px;
-
-			&:hover {
-				background: var(--md-sys-color-on-surface-variant);
-			}
-		}
+		@include vars.custom-scrollbar();
 	}
 
 	.no-data {
@@ -74,13 +55,13 @@
 		align-items: center;
 		justify-content: center;
 		min-height: 200px;
-		gap: 1rem;
-		color: var(--md-sys-color-on-surface-variant);
+		gap: vars.$spacing-lg;
+		color: var(--mat-sys-on-surface-variant);
 
 		mat-icon {
-			font-size: 48px;
-			width: 48px;
-			height: 48px;
+			font-size: vars.$icon-size-xl;
+			width: vars.$icon-size-xl;
+			height: vars.$icon-size-xl;
 			opacity: 0.5;
 		}
 
@@ -93,60 +74,60 @@
 		width: 100%;
 		overflow-x: auto;
 
-		@media (max-width: 600px) {
-			font-size: 0.875rem;
+		@media #{vars.$breakpoint-xs} {
+			font-size: vars.$font-size-base;
 		}
 
 		.api-name-cell {
 			display: flex;
 			align-items: center;
-			gap: 1rem;
+			gap: vars.$spacing-lg;
 
-			@media (max-width: 600px) {
-				gap: 0.5rem;
+			@media #{vars.$breakpoint-xs} {
+				gap: vars.$spacing-sm;
 			}
 
 			mat-icon {
-				color: var(--md-sys-color-primary);
+				color: var(--mat-sys-primary);
 			}
 
 			.api-name {
-				font-weight: 500;
-				color: var(--md-sys-color-on-surface);
+				font-weight: vars.$font-weight-medium;
+				color: var(--mat-sys-on-surface);
 			}
 
 			.api-url {
-				font-size: 0.75rem;
-				color: var(--md-sys-color-on-surface-variant);
+				font-size: vars.$font-size-sm;
+				color: var(--mat-sys-on-surface-variant);
 			}
 		}
 
 		.status-chip {
 			display: inline-flex;
 			align-items: center;
-			gap: 0.25rem;
-			font-size: 0.875rem;
-			padding: 0.25rem 0.5rem;
+			gap: vars.$spacing-xs;
+			font-size: vars.$font-size-base;
+			padding: vars.$spacing-xs vars.$spacing-sm;
 
 			mat-icon {
-				font-size: 16px;
-				width: 16px;
-				height: 16px;
+				font-size: vars.$icon-size-xs;
+				width: vars.$icon-size-xs;
+				height: vars.$icon-size-xs;
 			}
 
 			&.status-ok {
-				background-color: rgba(76, 175, 80, 0.1);
-				color: rgb(76, 175, 80);
+				background-color: var(--color-success-surface);
+				color: var(--color-success);
 			}
 
 			&.status-warning {
-				background-color: rgba(255, 152, 0, 0.1);
-				color: rgb(255, 152, 0);
+				background-color: var(--color-warning-surface);
+				color: var(--color-warning);
 			}
 
 			&.status-error {
-				background-color: rgba(244, 67, 54, 0.1);
-				color: rgb(244, 67, 54);
+				background-color: var(--color-error-surface);
+				color: var(--color-error);
 			}
 		}
 	}

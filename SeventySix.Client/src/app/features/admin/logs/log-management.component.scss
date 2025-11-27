@@ -1,4 +1,4 @@
-@use "variables" as vars;
+@use "mixins" as mixins;
 
 :host {
 	display: block;
@@ -7,51 +7,8 @@
 
 .logs-page {
 	width: 100%;
-}
 
-.page-header {
-	margin-bottom: vars.$spacing-xl;
-
-	@media (max-width: vars.$breakpoint-xs-max) {
-		margin-bottom: vars.$spacing-lg;
-	}
-}
-
-.header-content {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: vars.$spacing-md;
-}
-
-.header-title {
-	display: flex;
-	align-items: center;
-	gap: vars.$spacing-md;
-
-	.page-icon {
-		font-size: vars.$avatar-size-md;
-		width: vars.$avatar-size-md;
-		height: vars.$avatar-size-md;
-		color: var(--mat-primary-default);
-
-		@media (max-width: vars.$breakpoint-xs-max) {
-			font-size: vars.$icon-size-xl;
-			width: vars.$icon-size-xl;
-			height: vars.$icon-size-xl;
-		}
-	}
-
-	h1 {
-		margin: 0;
-		font-weight: vars.$font-weight-medium;
-	}
-
-	.subtitle {
-		margin: vars.$spacing-xs 0 0;
-		opacity: 0.7;
-	}
+	@include mixins.page-header();
 }
 
 .page-content {

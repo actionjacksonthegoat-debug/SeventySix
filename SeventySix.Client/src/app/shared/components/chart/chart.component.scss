@@ -32,22 +32,22 @@
 	.chart-container {
 		position: relative;
 		height: 100%;
-		min-height: 300px;
+		min-height: 18.75rem; // 300px
 
 		canvas {
-			max-height: 400px;
+			max-height: 25rem; // 400px
 		}
 	}
 }
 
 // Responsive adjustments
-@media (max-width: 768px) {
+@media #{vars.$breakpoint-mobile} {
 	.chart-card {
 		.chart-container {
-			min-height: 250px;
+			min-height: 15.625rem; // 250px
 
 			canvas {
-				max-height: 300px;
+				max-height: 18.75rem; // 300px
 			}
 		}
 	}

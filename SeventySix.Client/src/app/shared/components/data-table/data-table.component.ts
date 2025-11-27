@@ -365,6 +365,11 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	// Constructor & Lifecycle
 	// ========================================
 
+	/**
+	 * Track whether initial date range has been emitted
+	 */
+	private initialDateRangeEmitted: boolean = false;
+
 	constructor()
 	{
 		// Initialize first quick filter as active in single-selection mode
@@ -389,6 +394,19 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 					filterKey: firstFilterKey,
 					active: true
 				});
+			}
+		});
+
+		// Emit initial date range when dateRangeEnabled is set
+		effect(() =>
+		{
+			const enabled: boolean = this.dateRangeEnabled();
+			if (enabled && !this.initialDateRangeEmitted)
+			{
+				this.initialDateRangeEmitted = true;
+				// Emit the default 24h date range on initialization
+				const range: string = this.selectedDateRange();
+				this.onDateRangeChange(range);
 			}
 		});
 
@@ -695,5 +713,33 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	shouldShowAction(action: RowAction<T>, row: T): boolean
 	{
 		return action.showIf ? action.showIf(row) : true;
+	}
+
+	/**
+	 * Check if a column is currently visible
+	 * @param key - Column key to check
+	 * @returns true if column is visible
+	 */
+	protected columnVisible(key: string): boolean
+	{
+		const visibility: Map<string, boolean> = this.columnVisibility();
+		const column: TableColumn<T> | undefined = this.columns().find(
+			(c: TableColumn<T>): boolean => c.key === key
+		);
+		return visibility.get(key) ?? column?.visible ?? true;
+	}
+
+	/**
+	 * Get CSS class for badge color
+	 * @param column - Column definition
+	 * @param row - Row data
+	 * @returns CSS class name for badge styling
+	 */
+	protected getBadgeClass(column: TableColumn<T>, row: T): string
+	{
+		const color: "primary" | "accent" | "warn" = column.badgeColor
+			? column.badgeColor(row[column.key as keyof T], row)
+			: "primary";
+		return `badge-${color}`;
 	}
 }

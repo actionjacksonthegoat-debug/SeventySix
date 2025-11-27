@@ -1,0 +1,97 @@
+@use "variables" as vars;
+
+.toast-container {
+	position: fixed;
+	top: 5rem; // Below header
+	right: vars.$spacing-lg;
+	z-index: 1000;
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-sm;
+	pointer-events: none;
+}
+
+.toast {
+	margin: 0;
+	padding: vars.$spacing-md;
+	border-radius: vars.$border-radius-sm;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	min-width: vars.$toast-min-width;
+	max-width: vars.$toast-max-width;
+	pointer-events: auto;
+	animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+	from {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+.toast-header {
+	display: flex;
+	align-items: center;
+	gap: vars.$spacing-sm;
+}
+
+.toast-message {
+	flex: 1;
+	font-weight: vars.$font-weight-medium;
+}
+
+.toast-actions {
+	display: flex;
+	gap: vars.$spacing-xs;
+}
+
+.toast-details {
+	margin-top: vars.$spacing-sm;
+	padding-top: vars.$spacing-sm;
+	border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.toast-details ul {
+	margin: 0;
+	padding-left: vars.$spacing-xl; // 24px for list indentation
+	font-size: vars.$font-size-base;
+}
+
+// Semantic status colors using CSS custom properties for theme integration
+.toast-error {
+	background-color: var(--color-error);
+	color: var(--color-on-error);
+}
+
+.toast-warning {
+	background-color: var(--color-warning);
+	color: var(--color-on-warning);
+}
+
+.toast-info {
+	background-color: var(--color-info);
+	color: var(--color-on-info);
+}
+
+.toast-success {
+	background-color: var(--color-success);
+	color: var(--color-on-success);
+}
+
+// Responsive design
+@media #{vars.$breakpoint-mobile} {
+	.toast-container {
+		right: vars.$spacing-sm;
+		left: vars.$spacing-sm;
+		top: vars.$header-height; // 4rem
+	}
+
+	.toast {
+		min-width: auto;
+		max-width: 100%;
+	}
+}

@@ -225,6 +225,55 @@ export class CounterComponent {
 this.items.mutate((arr) => arr.push(item)); // FORBIDDEN
 ```
 
+### 🚨 Change Detection Performance (CRITICAL)
+
+**NEVER** call methods directly in templates - they run on EVERY change detection cycle:
+
+```typescript
+// ❌ WRONG - Expensive operations on every CD cycle
+template: `
+	<div [class]="getClass(item)">  <!-- Runs repeatedly! -->
+	<span>{{ formatValue(item) }}</span>  <!-- Runs repeatedly! -->
+	@if (shouldShow(item)) { ... }  <!-- Runs repeatedly! -->
+`
+
+// ✅ CORRECT - Pre-compute with computed() signals (memoized)
+export class MyComponent {
+	item = input.required<Item>();
+
+	// Computed signals are memoized - only recalculate when dependencies change
+	itemClass = computed(() => this.computeClass(this.item()));
+	formattedValue = computed(() => this.format(this.item()));
+	isVisible = computed(() => this.checkVisibility(this.item()));
+}
+
+// ✅ CORRECT - Use pure pipes for formatting
+<span>{{ item.date | date:'short' }}</span>
+
+// ✅ CORRECT - Pre-compute in data model for lists
+itemsWithMetadata = computed(() =>
+	this.items().map(item => ({
+		...item,
+		cssClass: this.computeClass(item),
+		formattedValue: this.format(item)
+	}))
+);
+
+@for (item of itemsWithMetadata(); track item.id) {
+	<div [class]="item.cssClass">{{ item.formattedValue }}</div>
+}
+```
+
+**Performance Rules:**
+| ❌ Avoid | ✅ Use Instead |
+| -------- | -------------- |
+| Method calls in template | `computed()` signals |
+| `[class]="getClass()"` | Pre-computed class property |
+| `{{ format(value) }}` | Pure pipes or computed |
+| `@if (shouldShow())` | Computed boolean signal |
+| `[ngClass]="obj"` | `[class.name]="bool()"` |
+| Dynamic style calculation | CSS classes + Material theming |
+
 ### Subscription Cleanup
 
 ```typescript
@@ -284,6 +333,197 @@ import { UserService } from "../../../features/admin/users/services/user.service
 // ❌ WRONG - Cross-feature imports (FORBIDDEN)
 import { GameService } from "@game/services/game.service"; // From admin feature
 ```
+
+### 🚨 SCSS Semantic Status Colors (CRITICAL)
+
+**ALWAYS use CSS custom properties for notification color matching. These are theme-aware and adapt to light/dark mode and color scheme changes:**
+
+**Dark Mode (`:root`, `html.dark-theme`):**
+| CSS Variable | Maps To Material Theme | Usage |
+| -------------------- | -------------------------------- | ---------------------------------- |
+| `--color-info` | `--mat-sys-primary-container` | Informational messages, debug logs |
+| `--color-success` | `--mat-sys-primary` | Success states, positive actions |
+| `--color-warning` | `--mat-sys-error` | Warnings, caution indicators |
+| `--color-error` | `--mat-sys-error-container` | Errors, destructive actions |
+
+**Light Mode (`html.light-theme`):**
+| CSS Variable | Maps To Material Theme | Usage |
+| -------------------- | -------------------------------- | ---------------------------------- |
+| `--color-info` | `--mat-sys-primary-container` | Informational messages, debug logs |
+| `--color-success` | `--mat-sys-primary` | Success states, positive actions |
+| `--color-warning` | `--mat-sys-error-container` | Warnings, caution indicators |
+| `--color-error` | `--mat-sys-error` | Errors, destructive actions |
+
+**Text colors:** Use `--color-on-info`, `--color-on-success`, `--color-on-warning`, `--color-on-error` for text on status backgrounds.
+
+```scss
+// ✅ CORRECT - CSS custom properties (theme-aware)
+.badge-info {
+	background-color: var(--color-info);
+	color: var(--color-on-info);
+}
+
+.toast-error {
+	background-color: var(--color-error);
+	color: var(--color-on-error);
+}
+
+// For buttons, override Material CSS variables
+.btn-warning {
+	--mdc-outlined-button-label-text-color: var(--color-warning);
+	--mdc-outlined-button-outline-color: var(--color-warning);
+}
+
+// ❌ WRONG - Hardcoded hex values (FORBIDDEN)
+.badge {
+	background-color: #2196f3; // NEVER hardcode!
+}
+```
+
+**Benefits of Theme-Aware Colors**:
+
+-   Automatically adapt to light/dark mode
+-   Change with Blue/Cyan-Orange theme selection
+-   Proper contrast ratios from Material Design
+-   Single source of truth in `_base.scss`
+
+### 🚨 REM Units for Sizing (CRITICAL)
+
+**ALWAYS use `rem` units for all sizing values. NEVER use `px` except for specific exceptions.**
+
+**Why REM?**
+
+-   **Accessibility**: Respects user's browser font-size preferences
+-   **Scalability**: Site-wide scaling via single `html { font-size: X% }` value
+-   **Consistency**: All spacing scales proportionally together
+-   **Material Integration**: Works seamlessly with Material Design's density system
+
+**✅ Use REM for:**
+
+| Category         | Example                         |
+| ---------------- | ------------------------------- |
+| Spacing/Padding  | `padding: 1rem;`                |
+| Margins          | `margin: 0.5rem;`               |
+| Font sizes       | `font-size: 0.875rem;`          |
+| Widths/Heights   | `width: 20rem;` `height: 4rem;` |
+| Gap              | `gap: 1rem;`                    |
+| Max/Min sizes    | `max-width: 60rem;`             |
+| Container widths | `$sidebar-width: 17.5rem;`      |
+
+**❌ ONLY use PX for (exceptions):**
+
+| Category       | Example                      | Reason                                       |
+| -------------- | ---------------------------- | -------------------------------------------- |
+| Breakpoints    | `$breakpoint-md-min: 960px;` | Media queries based on viewport pixels       |
+| Border widths  | `border: 1px solid;`         | Sub-pixel precision, doesn't need scaling    |
+| Border radius  | `border-radius: 8px;`        | Visual consistency at small sizes            |
+| Box shadows    | `0 2px 4px rgba(...)`        | Visual consistency, doesn't need scaling     |
+| Outline widths | `outline: 2px solid;`        | Focus indicators need consistent pixel width |
+
+**Examples:**
+
+```scss
+@use "variables" as vars;
+
+// ✅ CORRECT - REM for all sizing
+.component {
+	padding: vars.$spacing-lg; // 1rem
+	margin-bottom: vars.$spacing-xl; // 1.5rem
+	font-size: vars.$font-size-base; // 0.875rem
+	max-width: vars.$container-width-md; // 60rem
+	gap: vars.$spacing-md; // 0.75rem
+	height: vars.$header-height; // 4rem
+}
+
+// ✅ CORRECT - PX only for exceptions
+.card {
+	border: 1px solid var(--border-color); // Border width in px
+	border-radius: 12px; // Border radius in px
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Shadow in px
+}
+
+// ❌ WRONG - PX for spacing/sizing (FORBIDDEN)
+.component {
+	padding: 16px; // Should be 1rem or vars.$spacing-lg
+	margin: 24px; // Should be 1.5rem or vars.$spacing-xl
+	font-size: 14px; // Should be 0.875rem or vars.$font-size-base
+	width: 300px; // Should be 18.75rem
+	height: 64px; // Should be 4rem
+}
+```
+
+**Converting PX to REM:**
+
+-   Formula: `rem = px / 16`
+-   `8px = 0.5rem`, `12px = 0.75rem`, `16px = 1rem`, `24px = 1.5rem`, `32px = 2rem`
+
+**Best Practice**: Always use SCSS variables from `_variables.scss` instead of raw rem values:
+
+```scss
+// ✅ BEST - Use SCSS variables (single source of truth)
+padding: vars.$spacing-lg; // Not: padding: 1rem;
+
+// ❌ AVOID - Raw rem values (harder to maintain)
+padding: 1rem;
+```
+
+### 🚨 SCSS Mixins & DRY Patterns (CRITICAL)
+
+**ALWAYS prefer mixins over repeated CSS patterns.** When you see the same CSS block appearing 3+ times, extract it into a mixin in `_mixins.scss`.
+
+**Why Mixins?**
+
+-   **DRY**: Single source of truth for common patterns
+-   **Maintainability**: Change once, update everywhere
+-   **Consistency**: Ensures uniform styling across components
+-   **Configurability**: Parameters allow controlled variation
+
+**Common Patterns That MUST Use Mixins:**
+
+| Pattern                              | Mixin                              | Instead of               |
+| ------------------------------------ | ---------------------------------- | ------------------------ |
+| Icon sizing (font-size/width/height) | `@include icon-size($size)`        | Repeated triplet         |
+| Loading/error states                 | `@include loading-state()`         | Repeated flex center     |
+| Page headers                         | `@include page-header()`           | Repeated header layout   |
+| Responsive padding                   | `@include responsive-padding()`    | Repeated media queries   |
+| Scrollbar styling                    | `@include custom-scrollbar()`      | Repeated scrollbar CSS   |
+| Code blocks                          | `@include code-block-scrollable()` | Repeated pre/code styles |
+
+```scss
+// ✅ CORRECT - Use existing mixins from _mixins.scss
+@use "mixins" as mixins;
+
+.my-component {
+	@include mixins.loading-state();
+}
+
+.my-icon {
+	@include mixins.icon-size(vars.$icon-size-xl);
+}
+
+// ❌ WRONG - Repeated CSS pattern (violates DRY)
+.my-component {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: vars.$spacing-xl;
+	gap: vars.$spacing-lg;
+}
+
+// ❌ WRONG - Repeated icon sizing triplet
+mat-icon {
+	font-size: vars.$icon-size-xl;
+	width: vars.$icon-size-xl;
+	height: vars.$icon-size-xl;
+}
+```
+
+**When to Create a New Mixin:**
+
+1. Same CSS block appears 3+ times (Rule of Three)
+2. Pattern has logical variations controlled by parameters
+3. Pattern is likely to change together across all usages
 
 ### File Naming
 

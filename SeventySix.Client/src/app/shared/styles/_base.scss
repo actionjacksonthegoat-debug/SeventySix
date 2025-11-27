@@ -7,6 +7,172 @@
 
 @use "variables" as vars;
 
+// =============================================================================
+// SEMANTIC STATUS COLORS (CSS Custom Properties)
+// =============================================================================
+// These map to Material Design 3 theme colors for automatic theme adaptation.
+// Use these throughout the app for notifications, badges, and status indicators.
+// Light and Dark modes use different mappings for optimal visual hierarchy.
+
+// -----------------------------------------------------------------------------
+// DARK MODE (default) - Softer container colors for info/error
+// -----------------------------------------------------------------------------
+:root,
+html.dark-theme {
+	// Info: Primary Container - softer blue for informational messages
+	--color-info: var(--mat-sys-primary-container);
+	--color-on-info: var(--mat-sys-on-primary-container);
+
+	// Success: Primary - vibrant for positive actions and success states
+	--color-success: var(--mat-sys-primary);
+	--color-on-success: var(--mat-sys-on-primary);
+
+	// Warning: Error Primary - vibrant for caution and attention
+	--color-warning: var(--mat-sys-error);
+	--color-on-warning: var(--mat-sys-on-error);
+
+	// Error: Error Container - softer red for errors
+	--color-error: var(--mat-sys-error-container);
+	--color-on-error: var(--mat-sys-on-error-container);
+
+	// Log Level Colors (theme-aware) - text colors for log level indicators
+	--color-log-verbose: var(--mat-sys-on-surface-variant);
+	--color-log-debug: var(--mat-sys-on-surface-variant);
+	--color-log-info: var(--color-success);
+	--color-log-warning: var(--color-warning);
+	--color-log-error: var(--color-error);
+	--color-log-fatal: var(--mat-sys-tertiary);
+
+	// Log Level Surface Colors (backgrounds) - 12% opacity for subtle chip backgrounds
+	--color-log-verbose-surface: var(--mat-sys-surface-variant);
+	--color-log-debug-surface: color-mix(
+		in srgb,
+		var(--mat-sys-primary) 12%,
+		transparent
+	);
+	--color-log-info-surface: color-mix(
+		in srgb,
+		var(--color-success) 12%,
+		transparent
+	);
+	--color-log-warning-surface: color-mix(
+		in srgb,
+		var(--color-warning) 12%,
+		transparent
+	);
+	--color-log-error-surface: color-mix(
+		in srgb,
+		var(--color-error) 12%,
+		transparent
+	);
+	--color-log-fatal-surface: color-mix(
+		in srgb,
+		var(--mat-sys-tertiary) 12%,
+		transparent
+	);
+
+	// State Layer Colors (interactive states)
+	--color-backdrop: rgba(0, 0, 0, 0.6);
+	--color-hover: rgba(255, 255, 255, 0.04);
+	--color-pressed: rgba(255, 255, 255, 0.08);
+
+	// Status Surface Colors (10% opacity backgrounds for status indicators)
+	--color-success-surface: color-mix(
+		in srgb,
+		var(--color-success) 10%,
+		transparent
+	);
+	--color-warning-surface: color-mix(
+		in srgb,
+		var(--color-warning) 10%,
+		transparent
+	);
+	--color-error-surface: color-mix(
+		in srgb,
+		var(--color-error) 10%,
+		transparent
+	);
+}
+
+// -----------------------------------------------------------------------------
+// LIGHT MODE - More vibrant main colors for better contrast
+// -----------------------------------------------------------------------------
+html.light-theme {
+	// Info: Tertiary Container - distinct color for informational messages
+	--color-info: var(--mat-sys-primary-container);
+	--color-on-info: var(--mat-sys-on-primary-container);
+
+	// Success: Primary - vibrant for positive actions and success states
+	--color-success: var(--mat-sys-primary);
+	--color-on-success: var(--mat-sys-on-primary);
+
+	// Warning: Error Container - softer for caution states
+	--color-warning: var(--mat-sys-error-container);
+	--color-on-warning: var(--mat-sys-on-error-container);
+
+	// Error: Error Primary - vibrant for errors
+	--color-error: var(--mat-sys-error);
+	--color-on-error: var(--mat-sys-on-error);
+
+	// Log Level Colors (theme-aware) - text colors for log level indicators
+	--color-log-verbose: var(--mat-sys-on-surface-variant);
+	--color-log-debug: var(--mat-sys-on-surface-variant);
+	--color-log-info: var(--color-success);
+	--color-log-warning: var(--color-warning);
+	--color-log-error: var(--color-error);
+	--color-log-fatal: var(--mat-sys-tertiary);
+
+	// Log Level Surface Colors (backgrounds) - 12% opacity for subtle chip backgrounds
+	--color-log-verbose-surface: var(--mat-sys-surface-variant);
+	--color-log-debug-surface: color-mix(
+		in srgb,
+		var(--mat-sys-primary) 12%,
+		transparent
+	);
+	--color-log-info-surface: color-mix(
+		in srgb,
+		var(--color-success) 12%,
+		transparent
+	);
+	--color-log-warning-surface: color-mix(
+		in srgb,
+		var(--color-warning) 12%,
+		transparent
+	);
+	--color-log-error-surface: color-mix(
+		in srgb,
+		var(--color-error) 12%,
+		transparent
+	);
+	--color-log-fatal-surface: color-mix(
+		in srgb,
+		var(--mat-sys-tertiary) 12%,
+		transparent
+	);
+
+	// State Layer Colors (interactive states)
+	--color-backdrop: rgba(0, 0, 0, 0.6);
+	--color-hover: rgba(0, 0, 0, 0.04);
+	--color-pressed: rgba(0, 0, 0, 0.08);
+
+	// Status Surface Colors (10% opacity backgrounds for status indicators)
+	--color-success-surface: color-mix(
+		in srgb,
+		var(--color-success) 10%,
+		transparent
+	);
+	--color-warning-surface: color-mix(
+		in srgb,
+		var(--color-warning) 10%,
+		transparent
+	);
+	--color-error-surface: color-mix(
+		in srgb,
+		var(--color-error) 10%,
+		transparent
+	);
+}
+
 // Link styles (for non-Material links)
 a:not([mat-button]):not([mat-raised-button]):not([mat-flat-button]):not(
 		[mat-stroked-button]
@@ -29,7 +195,7 @@ a:not([mat-button]):not([mat-raised-button]):not([mat-flat-button]):not(
 code:not(.mat-mdc-button-touch-target) {
 	font-family: vars.$font-family-monospace;
 	font-size: 0.9em;
-	padding: 2px 6px;
+	padding: 0.125rem vars.$spacing-xs; // 2px 4px - small inline padding
 	border-radius: vars.$border-radius-sm;
 	background-color: var(--mat-sys-surface-container-high);
 	color: var(--mat-sys-on-surface);
@@ -92,4 +258,29 @@ pre {
 .mat-mdc-chip {
 	padding-left: vars.$spacing-md; // 12px
 	padding-right: vars.$spacing-md; // 12px
+}
+
+// Admin dashboard tab-group full-height layout
+// Required for Grafana embed and scrollable tab content
+.admin-dashboard .dashboard-content mat-tab-group {
+	.mat-mdc-tab-body-wrapper {
+		flex: 1;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.mat-mdc-tab-body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.mat-mdc-tab-body-content {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
 }

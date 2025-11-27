@@ -1,4 +1,5 @@
 @use "variables" as vars;
+@use "mixins" as mixins;
 
 .app-footer {
 	margin-top: auto;
@@ -31,9 +32,7 @@
 	opacity: 0.8;
 
 	mat-icon {
-		font-size: vars.$icon-size-sm;
-		width: vars.$icon-size-sm;
-		height: vars.$icon-size-sm;
+		@include mixins.icon-size(vars.$icon-size-sm);
 	}
 }
 
@@ -68,7 +67,7 @@
 	}
 
 	@media (max-width: vars.$breakpoint-xs-max) {
-		gap: vars.$spacing-xs + 2px;
+		gap: vars.$spacing-xs;
 		font-size: vars.$font-size-xs;
 	}
 }

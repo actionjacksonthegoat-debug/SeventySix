@@ -66,23 +66,178 @@ This import provides access to:
 3. **Responsive Design**: Breakpoint variables ensure consistent responsive behavior
 4. **Theme Compatibility**: Variables work seamlessly with Material Design 3 theming
 
+### 🚨 CRITICAL: Semantic Status Colors (Theme-Aware)
+
+**ALWAYS use CSS custom properties for notifications, badges, and status indicators:**
+
+These colors automatically adapt to light/dark mode with optimized mappings for each:
+
+**Dark Mode (`:root`, `html.dark-theme`):**
+| CSS Variable | Maps To | Usage |
+| -------------------- | --------------------------------- | ---------------------------------- |
+| `--color-info` | `--mat-sys-primary-container` | Informational messages, debug logs |
+| `--color-success` | `--mat-sys-primary` | Success states, positive actions |
+| `--color-warning` | `--mat-sys-error` | Warnings, caution indicators |
+| `--color-error` | `--mat-sys-error-container` | Errors, destructive actions |
+
+**Light Mode (`html.light-theme`):**
+| CSS Variable | Maps To | Usage |
+| -------------------- | --------------------------------- | ---------------------------------- |
+| `--color-info` | `--mat-sys-primary-container` | Informational messages, debug logs |
+| `--color-success` | `--mat-sys-primary` | Success states, positive actions |
+| `--color-warning` | `--mat-sys-error-container` | Warnings, caution indicators |
+| `--color-error` | `--mat-sys-error` | Errors, destructive actions |
+
+**Text on colored backgrounds:**
+| CSS Variable | Usage |
+| -------------------- | -------------------------------- |
+| `--color-on-info` | Text on info background |
+| `--color-on-success` | Text on success background |
+| `--color-on-warning` | Text on warning background |
+| `--color-on-error` | Text on error background |
+
+**Why This Is Critical**:
+
+1. **Theme Integration**: Colors automatically adapt to light/dark mode and color scheme changes
+2. **DRY Principle**: Defined once in `_base.scss`, available everywhere
+3. **Consistency**: Same semantic meaning across all components
+4. **Accessibility**: Material theme colors have proper contrast ratios
+
 **Example**:
+
+```scss
+// ✅ CORRECT - CSS custom properties (theme-aware)
+.badge-info {
+	background-color: var(--color-info);
+	color: var(--color-on-info);
+}
+
+.toast-error {
+	background-color: var(--color-error);
+	color: var(--color-on-error);
+}
+
+.btn-warning {
+	--mdc-outlined-button-label-text-color: var(--color-warning);
+	--mdc-outlined-button-outline-color: var(--color-warning);
+}
+```
+
+**❌ NEVER hardcode hex values:**
+
+```scss
+// ❌ WRONG - Hardcoded colors (won't adapt to theme)
+.badge {
+	background-color: #2196f3;
+}
+.error {
+	background-color: #f44336;
+}
+
+// ✅ CORRECT - Theme-aware CSS custom properties
+.badge {
+	background-color: var(--color-info);
+}
+.error {
+	background-color: var(--color-error);
+}
+```
+
+**General Example**:
 
 ```scss
 @use "variables" as vars;
 
 .my-component {
-	padding: vars.$spacing-lg; // 16px - from 8px grid
-	gap: vars.$spacing-md; // 12px
-	border-radius: vars.$border-radius-card; // 12px
+	padding: vars.$spacing-lg; // 1rem (16px at 16px base)
+	gap: vars.$spacing-md; // 0.75rem (12px at 16px base)
+	border-radius: vars.$border-radius-card; // 12px (exception: px for radius)
 
 	@media #{vars.$breakpoint-mobile} {
-		padding: vars.$spacing-sm; // 8px on mobile
+		padding: vars.$spacing-sm; // 0.5rem (8px at 16px base)
 	}
 }
 ```
 
-````
+### 🚨 CRITICAL: REM Units for Sizing
+
+**ALWAYS use `rem` units for all sizing values. NEVER use `px` except for specific exceptions.**
+
+**Why REM?**
+
+1.  **Accessibility**: Respects user's browser font-size preferences
+2.  **Scalability**: Site-wide scaling via single `html { font-size: X% }` value
+3.  **Consistency**: All spacing scales proportionally together
+4.  **Material Integration**: Works seamlessly with Material Design's density system
+
+**✅ Use REM for:**
+
+| Category         | Example                | SCSS Variable              |
+| ---------------- | ---------------------- | -------------------------- |
+| Spacing/Padding  | `padding: 1rem;`       | `vars.$spacing-lg`         |
+| Margins          | `margin: 0.5rem;`      | `vars.$spacing-sm`         |
+| Font sizes       | `font-size: 0.875rem;` | `vars.$font-size-base`     |
+| Widths/Heights   | `width: 20rem;`        | `vars.$sidebar-width`      |
+| Gap              | `gap: 1rem;`           | `vars.$spacing-lg`         |
+| Max/Min sizes    | `max-width: 60rem;`    | `vars.$container-width-md` |
+| Container widths | `width: 17.5rem;`      | `vars.$sidebar-width`      |
+
+**❌ ONLY use PX for (exceptions):**
+
+| Category       | Example                      | Reason                                       |
+| -------------- | ---------------------------- | -------------------------------------------- |
+| Breakpoints    | `$breakpoint-md-min: 960px;` | Media queries based on viewport pixels       |
+| Border widths  | `border: 1px solid;`         | Sub-pixel precision, doesn't need scaling    |
+| Border radius  | `border-radius: 8px;`        | Visual consistency at small sizes            |
+| Box shadows    | `0 2px 4px rgba(...)`        | Visual consistency, doesn't need scaling     |
+| Outline widths | `outline: 2px solid;`        | Focus indicators need consistent pixel width |
+
+**Examples:**
+
+```scss
+@use "variables" as vars;
+
+// ✅ CORRECT - REM via SCSS variables
+.component {
+	padding: vars.$spacing-lg; // 1rem
+	margin-bottom: vars.$spacing-xl; // 1.5rem
+	font-size: vars.$font-size-base; // 0.875rem
+	max-width: vars.$container-width-md; // 60rem
+	gap: vars.$spacing-md; // 0.75rem
+	height: vars.$header-height; // 4rem
+}
+
+// ✅ CORRECT - PX only for exceptions
+.card {
+	border: 1px solid var(--border-color); // Border width in px
+	border-radius: 12px; // Border radius in px
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Shadow in px
+}
+
+// ❌ WRONG - PX for sizing (FORBIDDEN)
+.component {
+	padding: 16px; // Should be vars.$spacing-lg
+	margin: 24px; // Should be vars.$spacing-xl
+	font-size: 14px; // Should be vars.$font-size-base
+	width: 300px; // Should be 18.75rem
+	height: 64px; // Should be vars.$header-height
+}
+```
+
+**PX to REM Conversion** (at 16px base):
+
+| PX   | REM     |
+| ---- | ------- |
+| 4px  | 0.25rem |
+| 8px  | 0.5rem  |
+| 12px | 0.75rem |
+| 16px | 1rem    |
+| 24px | 1.5rem  |
+| 32px | 2rem    |
+| 48px | 3rem    |
+| 64px | 4rem    |
+
+**Best Practice**: Always use SCSS variables from `_variables.scss` instead of raw rem values for consistency and maintainability.
 
 ---
 
@@ -93,10 +248,11 @@ This import provides access to:
 **Implementation**: `src/app/shared/styles/material-theme.scss`
 
 **Density Scale**: `scale: -1` (Comfortable)
-- **Benefits**: Balanced density - more spacious than compact while still efficient
-- **Heights**: Form fields ~52px, Buttons ~36px, Chips ~32px
-- **Touch-friendly**: Comfortable touch targets for mobile and desktop
-- **Scale Options**: -4 (very dense) to 0 (default), -1 balances space and usability
+
+-   **Benefits**: Balanced density - more spacious than compact while still efficient
+-   **Heights**: Form fields ~52px, Buttons ~36px, Chips ~32px
+-   **Touch-friendly**: Comfortable touch targets for mobile and desktop
+-   **Scale Options**: -4 (very dense) to 0 (default), -1 balances space and usability
 
 **Color System**:
 
@@ -120,7 +276,7 @@ html.light - theme.cyan - orange - scheme;
 
 // Dark Cyan-Orange Theme
 html.dark - theme.cyan - orange - scheme;
-````
+```
 
 **Usage**:
 

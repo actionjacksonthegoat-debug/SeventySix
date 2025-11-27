@@ -13,9 +13,9 @@
 		padding: 0 vars.$spacing-xl;
 
 		mat-icon {
-			font-size: 28px;
-			width: 28px;
-			height: 28px;
+			font-size: vars.$icon-size-md;
+			width: vars.$icon-size-md;
+			height: vars.$icon-size-md;
 		}
 
 		h1 {
@@ -36,29 +36,6 @@
 			display: flex;
 			flex-direction: column;
 			overflow: hidden;
-
-			::ng-deep {
-				.mat-mdc-tab-body-wrapper {
-					flex: 1;
-					overflow: hidden;
-					display: flex;
-					flex-direction: column;
-				}
-
-				.mat-mdc-tab-body {
-					flex: 1;
-					display: flex;
-					flex-direction: column;
-					overflow: hidden;
-				}
-
-				.mat-mdc-tab-body-content {
-					flex: 1;
-					display: flex;
-					flex-direction: column;
-					overflow: hidden;
-				}
-			}
 		}
 
 		.tab-content {
@@ -99,7 +76,7 @@
 	}
 
 	// Responsive breakpoints
-	@media (max-width: 768px) {
+	@media #{vars.$breakpoint-mobile} {
 		mat-toolbar {
 			padding: 0 vars.$spacing-lg;
 

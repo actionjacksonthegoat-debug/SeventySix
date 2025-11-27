@@ -1,4 +1,5 @@
 @use "variables" as vars;
+@use "mixins" as mixins;
 
 .physics-container {
 	padding: vars.$spacing-lg;
@@ -8,7 +9,7 @@
 	min-height: 400px;
 
 	.feature-card {
-		max-width: 600px;
+		max-width: vars.$container-width-sm;
 		width: 100%;
 		text-align: center;
 
@@ -25,9 +26,7 @@
 
 			mat-icon {
 				color: var(--mat-sys-secondary);
-				font-size: 64px;
-				width: 64px;
-				height: 64px;
+				@include mixins.icon-size(vars.$icon-size-2xl);
 			}
 
 			h1 {

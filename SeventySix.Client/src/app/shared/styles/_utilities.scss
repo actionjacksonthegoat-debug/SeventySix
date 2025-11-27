@@ -3,6 +3,10 @@
 // =============================================================================
 // Helper classes that supplement Material's utilities
 // Keep minimal - Material provides most layout utilities
+//
+// NOTE: !important is intentional for utility classes. This follows the
+// utility-first CSS methodology where utilities must override component styles
+// to be useful. This is standard practice in frameworks like Tailwind, Bootstrap.
 // =============================================================================
 
 @use "variables" as vars;
@@ -142,7 +146,7 @@
 	gap: vars.$spacing-sm !important;
 }
 .gap-12 {
-	gap: vars.$spacing-base !important;
+	gap: vars.$spacing-sm !important;
 }
 .gap-16 {
 	gap: vars.$spacing-md !important;
@@ -182,7 +186,7 @@
 .table-actions {
 	&:not(:empty) {
 		margin-bottom: vars.$spacing-md;
-		min-height: 48px;
+		min-height: vars.$form-field-height-dense; // 48px
 	}
 
 	// Also handle when it has children but they're all hidden

@@ -5,24 +5,24 @@
  */
 
 // ============================================================================
-// SPACING SYSTEM (Material Design 8px Grid)
+// SPACING SYSTEM (Material Design 8px Grid - rem-based for root scaling)
 // ============================================================================
-$spacing-base: 8px;
+// All spacing uses rem to scale with html { font-size: X% } in styles.scss
 
-// Spacing scale
-$spacing-xs: $spacing-base * 0.5; // 4px
-$spacing-sm: $spacing-base; // 8px
-$spacing-md: $spacing-base * 1.5; // 12px
-$spacing-lg: $spacing-base * 2; // 16px
-$spacing-xl: $spacing-base * 3; // 24px
-$spacing-2xl: $spacing-base * 4; // 32px
-$spacing-3xl: $spacing-base * 6; // 48px
-$spacing-4xl: $spacing-base * 8; // 64px
+// Spacing scale (based on 16px = 1rem)
+$spacing-xs: 0.25rem; // 4px at 16px base
+$spacing-sm: 0.5rem; // 8px at 16px base
+$spacing-md: 0.75rem; // 12px at 16px base
+$spacing-lg: 1rem; // 16px at 16px base
+$spacing-xl: 1.5rem; // 24px at 16px base
+$spacing-2xl: 2rem; // 32px at 16px base
+$spacing-3xl: 3rem; // 48px at 16px base
+$spacing-4xl: 4rem; // 64px at 16px base
 
 // Common spacing values (aliases for convenience)
-$spacing-page-padding: $spacing-xl; // 24px - default page padding
-$spacing-section-gap: $spacing-2xl; // 32px - gap between major sections
-$spacing-card-padding: $spacing-lg; // 16px - card internal padding
+$spacing-page-padding: $spacing-xl; // 1.5rem - default page padding
+$spacing-section-gap: $spacing-2xl; // 2rem - gap between major sections
+$spacing-card-padding: $spacing-lg; // 1rem - card internal padding
 
 // ============================================================================
 // BREAKPOINTS (Material Design CDK Breakpoints)
@@ -53,24 +53,40 @@ $breakpoint-desktop: "(min-width: #{$breakpoint-md-min})";
 // ============================================================================
 // Golden ratio: 1.618
 // Using golden ratio for optimal reading width: viewport * 0.618
-$container-max-width: 1618px; // Maximum content width (golden ratio * 1000px base * 1.618)
-$container-golden-width: 61.8%; // Golden ratio percentage for centering
-$container-width-sm: 640px; // Small container (forms, narrow content)
-$container-width-md: 960px; // Medium container
-$container-width-lg: 1280px; // Large container
+$container-max-width: 101.125rem; // 1618px at 16px base
+$container-golden-width: 61.8%; // Golden ratio - 1920px+ displays
+$container-wide-width: 80.9%; // Wide content - 1280-1919px displays
+$container-width-xs: 25rem; // 400px - dialogs, narrow cards
+$container-width-sm: 40rem; // 640px at 16px base
+$container-width-md: 60rem; // 960px at 16px base
+$container-width-lg: 80rem; // 1280px at 16px base
+$container-width-xl: 87.5rem; // 1400px - style guide, wide layouts
+
+// Toast notification widths
+$toast-min-width: 18.75rem; // 300px
+$toast-max-width: 31.25rem; // 500px
+
+// Message truncation widths (responsive)
+$message-truncate-width-lg: 25rem; // 400px
+$message-truncate-width-md: 18.75rem; // 300px
+$message-truncate-width-sm: 12.5rem; // 200px
 
 // Sidebar widths
-$sidebar-width: 280px;
-$sidebar-width-collapsed: 64px;
+$sidebar-width: 17.5rem; // 280px at 16px base
+$sidebar-width-collapsed: 4rem; // 64px at 16px base
 
 // Header/Footer heights
-$header-height: 64px;
-$header-height-mobile: 56px;
-$footer-height: 48px;
+$header-height: 4rem; // 64px at 16px base
+$header-height-mobile: 3.5rem; // 56px at 16px base
+$footer-height: 3rem; // 48px at 16px base
 
 // ============================================================================
 // TYPOGRAPHY SIZES (Material Design Type Scale)
 // ============================================================================
+// NOTE: Site-wide text scaling is controlled by `html { font-size: X%; }`
+// in styles.scss. Change that ONE value to scale ALL text including Material.
+// These SCSS variables are for component-specific overrides only.
+
 // Font families
 $font-family-base: "Roboto", "Helvetica Neue", sans-serif;
 $font-family-monospace: "Roboto Mono", "Courier New", monospace;
@@ -82,16 +98,25 @@ $font-weight-medium: 500;
 $font-weight-semibold: 600;
 $font-weight-bold: 700;
 
-// Font sizes (Material Design scale)
-$font-size-xs: 11px; // Label small
-$font-size-sm: 12px; // Body small, captions
-$font-size-base: 14px; // Body medium (default)
-$font-size-md: 16px; // Body large
-$font-size-lg: 22px; // Title large
-$font-size-xl: 24px; // Headline small
-$font-size-xxl: 28px; // Headline medium
-$font-size-2xl: 28px; // Alias for xxl
-$font-size-3xl: 32px; // Headline large
+// ============================================================================
+// FONT SIZES (for component-specific use)
+// ============================================================================
+// Use rem units to respect root font-size scaling
+$font-size-xs: 0.6875rem; // 11px at 16px base
+$font-size-sm: 0.75rem; // 12px at 16px base
+$font-size-base: 0.875rem; // 14px at 16px base
+$font-size-md: 1rem; // 16px at 16px base
+$font-size-lg: 1.125rem; // 18px at 16px base
+$font-size-xl: 1.375rem; // 22px at 16px base
+$font-size-xxl: 1.5rem; // 24px at 16px base
+$font-size-2xl: 1.75rem; // 28px at 16px base
+$font-size-3xl: 2rem; // 32px at 16px base
+
+// Display sizes (for hero text, error pages, large icons)
+$font-size-4xl: 3rem; // 48px at 16px base
+$font-size-5xl: 4rem; // 64px at 16px base
+$font-size-6xl: 5rem; // 80px at 16px base
+$font-size-7xl: 7.5rem; // 120px at 16px base
 
 // Line heights
 $line-height-tight: 1.2;
@@ -177,18 +202,18 @@ $transition-opacity: opacity $transition-duration-fast
 	$transition-easing-standard;
 
 // ============================================================================
-// COMPONENT-SPECIFIC SIZES
+// COMPONENT-SPECIFIC SIZES (rem-based for root scaling)
 // ============================================================================
 // Buttons
-$button-height-sm: 32px;
-$button-height-base: 40px;
-$button-height-lg: 48px;
+$button-height-sm: 2rem; // 32px at 16px base
+$button-height-base: 2.5rem; // 40px at 16px base
+$button-height-lg: 3rem; // 48px at 16px base
 $button-padding-x: $spacing-lg;
 $button-padding-y: $spacing-sm;
 
 // Form fields
-$form-field-height: 56px;
-$form-field-height-dense: 48px;
+$form-field-height: 3.5rem; // 56px at 16px base
+$form-field-height-dense: 3rem; // 48px at 16px base
 $form-input-padding: $spacing-lg;
 
 // Cards
@@ -196,32 +221,36 @@ $card-padding: $spacing-lg;
 $card-padding-lg: $spacing-xl;
 
 // Chips
-$chip-height: 24px;
-$chip-height-sm: 20px;
+$chip-height: 1.5rem; // 24px at 16px base
+$chip-height-sm: 1.25rem; // 20px at 16px base
 
 // Tables
-$table-row-height: 52px;
-$table-header-height: 56px;
+$table-row-height: 3.25rem; // 52px at 16px base
+$table-header-height: 3.5rem; // 56px at 16px base
 $table-cell-padding: $spacing-lg;
 
-// Icons
-$icon-size-sm: 18px;
-$icon-size-base: 24px;
-$icon-size-md: 20px;
-$icon-size-lg: 32px;
-$icon-size-xl: 48px;
+// Icons (using rem for root font-size scaling)
+$icon-size-xs: 1rem; // 16px at 16px base
+$icon-size-sm: 1.125rem; // 18px at 16px base
+$icon-size-base: 1.5rem; // 24px at 16px base
+$icon-size-md: 1.75rem; // 28px at 16px base
+$icon-size-lg: 2rem; // 32px at 16px base
+$icon-size-xl: 3rem; // 48px at 16px base
+$icon-size-2xl: 4rem; // 64px at 16px base
+$icon-size-3xl: 5rem; // 80px at 16px base
+$icon-size-4xl: 7.5rem; // 120px at 16px base
 
 // Avatars
-$avatar-size-sm: 32px;
-$avatar-size-base: 40px;
-$avatar-size-md: 48px;
-$avatar-size-lg: 56px;
-$avatar-size-xl: 64px;
+$avatar-size-sm: 2rem; // 32px at 16px base
+$avatar-size-base: 2.5rem; // 40px at 16px base
+$avatar-size-md: 3rem; // 48px at 16px base
+$avatar-size-lg: 3.5rem; // 56px at 16px base
+$avatar-size-xl: 4rem; // 64px at 16px base
 
 // Spinners/Progress
-$spinner-size-sm: 20px;
-$spinner-size-base: 40px;
-$spinner-size-lg: 64px;
+$spinner-size-sm: 1.25rem; // 20px at 16px base
+$spinner-size-base: 2.5rem; // 40px at 16px base
+$spinner-size-lg: 4rem; // 64px at 16px base
 
 // ============================================================================
 // UTILITY MIXINS
@@ -303,41 +332,6 @@ $spinner-size-lg: 64px;
 
 		&:hover {
 			background: var(--mat-sys-on-surface-variant);
-		}
-	}
-}
-
-// ============================================================================
-// INTERACTIVE ROW STYLING
-// ============================================================================
-// Theme-aware hover states for clickable table rows
-// Lightens in dark mode, darkens in light mode
-
-// Interactive row hover mixin - use on any clickable row
-@mixin interactive-row-hover() {
-	cursor: pointer;
-	transition: background-color $transition-duration-fast
-		$transition-easing-standard;
-
-	// Light theme: darken on hover
-	:host-context(html.light-theme) & {
-		&:hover {
-			background-color: rgba(0, 0, 0, 0.04);
-		}
-
-		&:active {
-			background-color: rgba(0, 0, 0, 0.08);
-		}
-	}
-
-	// Dark theme: lighten on hover
-	:host-context(html.dark-theme) & {
-		&:hover {
-			background-color: rgba(255, 255, 255, 0.04);
-		}
-
-		&:active {
-			background-color: rgba(255, 255, 255, 0.08);
 		}
 	}
 }

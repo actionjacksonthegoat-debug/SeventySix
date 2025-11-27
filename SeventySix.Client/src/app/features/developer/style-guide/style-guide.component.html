@@ -37,7 +37,7 @@
 		<!-- Colors Tab -->
 		<mat-tab label="Colors">
 			<div class="tab-content">
-				<h2>Color Palette</h2>
+				<h2>Material Theme Colors</h2>
 				<p class="mat-body-1">
 					Material Design 3 dynamic color system with primary,
 					secondary, tertiary, and error palettes.
@@ -116,6 +116,86 @@
 							</div>
 							<p class="mat-body-2">
 								Error states and destructive actions
+							</p>
+						</mat-card-content>
+					</mat-card>
+				</div>
+
+				<h2>Semantic Status Colors</h2>
+				<p class="mat-body-1">
+					Theme-aware colors for notifications, badges, and status
+					indicators. These adapt automatically with theme changes.
+					<br />
+					<strong>Dark:</strong> Info=primary-container,
+					Success=primary, Warning=error, Error=error-container
+					<br />
+					<strong>Light:</strong> Info=primary-container,
+					Success=primary, Warning=error-container, Error=error
+				</p>
+
+				<div class="color-grid">
+					<mat-card class="color-card">
+						<mat-card-header>
+							<mat-card-title>Info</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="color-swatches">
+								<div class="color-swatch status-info">
+									<span>Info</span>
+								</div>
+							</div>
+							<p class="mat-body-2">
+								<code>--color-info</code> · Primary Container
+							</p>
+						</mat-card-content>
+					</mat-card>
+
+					<mat-card class="color-card">
+						<mat-card-header>
+							<mat-card-title>Success</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="color-swatches">
+								<div class="color-swatch status-success">
+									<span>Success</span>
+								</div>
+							</div>
+							<p class="mat-body-2">
+								<code>--color-success</code> · Primary
+							</p>
+						</mat-card-content>
+					</mat-card>
+
+					<mat-card class="color-card">
+						<mat-card-header>
+							<mat-card-title>Warning</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="color-swatches">
+								<div class="color-swatch status-warning">
+									<span>Warning</span>
+								</div>
+							</div>
+							<p class="mat-body-2">
+								<code>--color-warning</code> · Dark: Error |
+								Light: Error Container
+							</p>
+						</mat-card-content>
+					</mat-card>
+
+					<mat-card class="color-card">
+						<mat-card-header>
+							<mat-card-title>Error</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="color-swatches">
+								<div class="color-swatch status-error">
+									<span>Error</span>
+								</div>
+							</div>
+							<p class="mat-body-2">
+								<code>--color-error</code> · Dark: Error
+								Container | Light: Error
 							</p>
 						</mat-card-content>
 					</mat-card>

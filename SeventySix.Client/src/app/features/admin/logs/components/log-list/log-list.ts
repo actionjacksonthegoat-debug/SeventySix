@@ -87,8 +87,8 @@ export class LogList
 			}
 		},
 		{
-			key: "timestamp",
-			label: "Timestamp",
+			key: "createDate",
+			label: "Create Date",
 			sortable: true,
 			visible: true,
 			type: "date",
@@ -159,14 +159,8 @@ export class LogList
 		}
 	];
 
-	// Row actions
+	// Row actions (view handled by rowClick)
 	readonly rowActions: RowAction<LogResponse>[] = [
-		{
-			key: "view",
-			label: "View Details",
-			icon: "visibility",
-			color: "primary"
-		},
 		{
 			key: "delete",
 			label: "Delete",
