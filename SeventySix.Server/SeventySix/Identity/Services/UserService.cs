@@ -41,8 +41,7 @@ public class UserService(
 	/// <inheritdoc/>
 	public async Task<IEnumerable<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken = default)
 	{
-		IEnumerable<User> users = await repository.GetAllAsync(cancellationToken);
-		return users.ToDto();
+		return await repository.GetAllProjectedAsync(cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -61,13 +60,10 @@ public class UserService(
 	/// <inheritdoc/>
 	public async Task<UserDto> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
 	{
-		// Validate request
 		await createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-		// Execute within transaction for ACID guarantees
 		return await transactionManager.ExecuteInTransactionAsync(async transactionCancellationToken =>
 		{
-			// Check for duplicate username
 			if (await repository.UsernameExistsAsync(request.Username, null, transactionCancellationToken))
 			{
 				string errorMessage = $"Failed to create user: Username '{request.Username}' is already taken";
@@ -75,7 +71,6 @@ public class UserService(
 				throw new DuplicateUserException(errorMessage);
 			}
 
-			// Check for duplicate email
 			if (await repository.EmailExistsAsync(request.Email, null, transactionCancellationToken))
 			{
 				string errorMessage = $"Failed to create user: Email '{request.Email}' is already registered";
@@ -83,7 +78,6 @@ public class UserService(
 				throw new DuplicateUserException(errorMessage);
 			}
 
-			// Create entity and save (audit properties set by AuditInterceptor)
 			User entity = request.ToEntity();
 			User created = await repository.CreateAsync(entity, transactionCancellationToken);
 
@@ -94,13 +88,10 @@ public class UserService(
 	/// <inheritdoc/>
 	public async Task<UserDto> UpdateUserAsync(UpdateUserRequest request, CancellationToken cancellationToken = default)
 	{
-		// Validate request
 		await updateValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-		// Execute within transaction for ACID guarantees
 		return await transactionManager.ExecuteInTransactionAsync(async transactionCancellationToken =>
 		{
-			// Retrieve existing user
 			User? existing = await repository.GetByIdAsync(request.Id, transactionCancellationToken);
 			if (existing == null)
 			{
@@ -150,14 +141,13 @@ public class UserService(
 	/// <inheritdoc/>
 	public async Task<PagedResult<UserDto>> GetPagedUsersAsync(UserQueryRequest request, CancellationToken cancellationToken = default)
 	{
-		// Validate request
 		await queryValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-		(IEnumerable<User> Users, int TotalCount) pagedResult = await repository.GetPagedAsync(request, cancellationToken);
+		(IEnumerable<UserDto> Users, int TotalCount) pagedResult = await repository.GetPagedProjectedAsync(request, cancellationToken);
 
 		return new PagedResult<UserDto>
 		{
-			Items = pagedResult.Users.ToDto().ToList(),
+			Items = pagedResult.Users.ToList(),
 			TotalCount = pagedResult.TotalCount,
 			Page = request.Page,
 			PageSize = request.PageSize,

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Linq.Expressions;
 using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
@@ -10,33 +11,32 @@ namespace SeventySix.Identity;
 /// Extension methods for User entity mapping.
 /// Provides clean, reusable mapping between domain entities and DTOs.
 /// </summary>
-/// <remarks>
-/// This class implements the Adapter pattern, translating between different
-/// object representations (Domain Entities ↔ DTOs).
-///
-/// Design Benefits:
-/// - Separation of Concerns: Domain models remain independent of API contracts
-/// - Reusability: Mapping logic is centralized and reusable
-/// - Testability: Extension methods are easy to unit test
-/// - Fluent API: Enables readable method chaining
-///
-/// Mapping Strategy:
-/// - Entity → DTO: For read operations (GET requests)
-/// - Request → Entity: For write operations (POST/PUT requests)
-///
-/// Note: For complex mappings, consider using AutoMapper or Mapster libraries.
-/// </remarks>
 public static class UserExtensions
 {
 	/// <summary>
+	/// EF Core-compatible projection expression for database-level DTO selection.
+	/// Use with .Select() for server-side projection (avoids loading full entities).
+	/// </summary>
+	public static Expression<Func<User, UserDto>> ToDtoProjection
+	{
+		get;
+	} = user => new UserDto
+	{
+		Id = user.Id,
+		Username = user.Username,
+		Email = user.Email,
+		FullName = user.FullName,
+		IsActive = user.IsActive,
+		CreateDate = user.CreateDate,
+		CreatedBy = user.CreatedBy,
+		ModifyDate = user.ModifyDate,
+		ModifiedBy = user.ModifiedBy,
+		LastLoginAt = user.LastLoginAt
+	};
+
+	/// <summary>
 	/// Converts a User domain entity to a data transfer object (DTO).
 	/// </summary>
-	/// <param name="entity">The domain entity to convert.</param>
-	/// <returns>A UserDto containing the entity's data.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when entity is null.</exception>
-	/// <remarks>
-	/// This method maps all properties from the domain entity to the DTO.
-	/// </remarks>
 	public static UserDto ToDto(this User entity)
 	{
 		ArgumentNullException.ThrowIfNull(entity);

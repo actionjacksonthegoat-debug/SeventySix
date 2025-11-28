@@ -24,7 +24,16 @@ internal class UserRepository(
 	public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
 	{
 		return await GetQueryable()
-			.OrderBy(u => u.Username)
+			.OrderBy(user => user.Username)
+			.ToListAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<IEnumerable<UserDto>> GetAllProjectedAsync(CancellationToken cancellationToken = default)
+	{
+		return await GetQueryable()
+			.OrderBy(user => user.Username)
+			.Select(UserExtensions.ToDtoProjection)
 			.ToListAsync(cancellationToken);
 	}
 
@@ -134,6 +143,28 @@ internal class UserRepository(
 		int totalCount = await filteredQuery.CountAsync(cancellationToken);
 
 		List<User> users = await ApplySortingAndPaging(filteredQuery, request)
+			.ToListAsync(cancellationToken);
+
+		return (users, totalCount);
+	}
+
+	/// <inheritdoc/>
+	public async Task<(IEnumerable<UserDto> Users, int TotalCount)> GetPagedProjectedAsync(
+		UserQueryRequest request,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(request);
+
+		IQueryable<User> baseQuery = request.IncludeDeleted
+			? context.Users.IgnoreQueryFilters()
+			: GetQueryable();
+
+		IQueryable<User> filteredQuery = ApplyFilters(baseQuery, request);
+
+		int totalCount = await filteredQuery.CountAsync(cancellationToken);
+
+		List<UserDto> users = await ApplySortingAndPaging(filteredQuery, request)
+			.Select(UserExtensions.ToDtoProjection)
 			.ToListAsync(cancellationToken);
 
 		return (users, totalCount);

@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
 using SeventySix.ApiTracking;
 
@@ -24,7 +23,6 @@ namespace SeventySix.Api.Controllers;
 /// <param name="service">The third-party API request service.</param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/thirdpartyrequests")]
-[RateLimit()] // 250 req/hour (default)
 public class ThirdPartyApiRequestsController(IThirdPartyApiRequestService service) : ControllerBase
 {
 

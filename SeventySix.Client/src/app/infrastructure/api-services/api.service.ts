@@ -10,9 +10,11 @@ import { catchError, Observable, throwError } from "rxjs";
 import { LoggerService } from "@infrastructure/services/logger.service";
 
 /**
- * API Service
- * Provides centralized API calls with error handling
- * Single source of truth for HTTP communication (DRY)
+ * Low-level HTTP wrapper for API communication.
+ * Provides consistent headers, error handling, and logging.
+ *
+ * NOTE: Request deduplication and caching are handled by TanStack Query
+ * at the service layer. This service should remain a thin HTTP wrapper.
  */
 @Injectable({
 	providedIn: "root"
@@ -20,41 +22,12 @@ import { LoggerService } from "@infrastructure/services/logger.service";
 export class ApiService
 {
 	private readonly baseUrl: string = environment.apiUrl;
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly logger: LoggerService = inject(LoggerService);
 	private defaultHeaders: HttpHeaders = new HttpHeaders({
 		"Content-Type": "application/json"
 	});
-	private readonly http: HttpClient = inject(HttpClient);
-	private readonly logger: LoggerService = inject(LoggerService);
 
-	private handleError: (error: HttpErrorResponse) => Observable<never> = (
-		error: HttpErrorResponse
-	): Observable<never> =>
-	{
-		let errorMessage: string = "An error occurred";
-
-		if (error.error instanceof ErrorEvent)
-		{
-			errorMessage = `Client-side error: ${error.error.message}`;
-		}
-		else
-		{
-			errorMessage = `Server-side error: ${error.status} ${error.message}`;
-		}
-
-		this.logger.error(errorMessage, error);
-
-		return throwError(() =>
-		{
-			return new Error(errorMessage);
-		});
-	};
-
-	/**
-	 * Generic GET request
-	 * @param endpoint - The API endpoint to call
-	 * @param params - Optional query parameters
-	 * @returns Observable of type T
-	 */
 	get<T>(endpoint: string, params?: HttpParams): Observable<T>
 	{
 		return this.http
@@ -65,12 +38,6 @@ export class ApiService
 			.pipe(catchError(this.handleError));
 	}
 
-	/**
-	 * Generic POST request
-	 * @param endpoint - The API endpoint to call
-	 * @param body - The data to send
-	 * @returns Observable of type T
-	 */
 	post<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this.http
@@ -80,12 +47,6 @@ export class ApiService
 			.pipe(catchError(this.handleError));
 	}
 
-	/**
-	 * Generic PUT request
-	 * @param endpoint - The API endpoint to call
-	 * @param body - The data to send
-	 * @returns Observable of type T
-	 */
 	put<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this.http
@@ -95,12 +56,6 @@ export class ApiService
 			.pipe(catchError(this.handleError));
 	}
 
-	/**
-	 * Generic PATCH request
-	 * @param endpoint - The API endpoint to call
-	 * @param body - The partial data to send
-	 * @returns Observable of type T
-	 */
 	patch<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this.http
@@ -110,12 +65,6 @@ export class ApiService
 			.pipe(catchError(this.handleError));
 	}
 
-	/**
-	 * Generic DELETE request
-	 * @param endpoint - The API endpoint to call
-	 * @param body - Optional body for DELETE requests with data
-	 * @returns Observable of type T
-	 */
 	delete<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
 		return this.http
@@ -126,10 +75,6 @@ export class ApiService
 			.pipe(catchError(this.handleError));
 	}
 
-	/**
-	 * Add custom headers to the default headers
-	 * @param headers - Additional headers to add
-	 */
 	addHeaders(headers: Record<string, string>): void
 	{
 		Object.entries(headers).forEach(([key, value]) =>
@@ -137,4 +82,18 @@ export class ApiService
 			this.defaultHeaders = this.defaultHeaders.set(key, value);
 		});
 	}
+
+	private handleError: (error: HttpErrorResponse) => Observable<never> = (
+		error: HttpErrorResponse
+	): Observable<never> =>
+	{
+		const errorMessage: string =
+			error.error instanceof ErrorEvent
+				? `Client-side error: ${error.error.message}`
+				: `Server-side error: ${error.status} ${error.message}`;
+
+		this.logger.error(errorMessage, error);
+
+		return throwError(() => new Error(errorMessage));
+	};
 }

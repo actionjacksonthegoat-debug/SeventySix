@@ -153,6 +153,9 @@ builder.Services.AddOptimizedResponseCompression();
 // Add output caching with auto-discovery from configuration
 builder.Services.AddConfiguredOutputCache(builder.Configuration);
 
+// Add rate limiting (replaces custom middleware)
+builder.Services.AddConfiguredRateLimiting(builder.Configuration);
+
 // Add CORS from configuration
 builder.Services.AddConfiguredCors(builder.Configuration);
 
@@ -222,9 +225,8 @@ app.UseMiddleware<AttributeBasedSecurityHeadersMiddleware>();
 // Returns consistent ProblemDetails responses (RFC 7807)
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-// Rate limiting - Attribute-aware implementation
-// Reads [RateLimit] attributes from controllers/actions for customization
-app.UseMiddleware<AttributeBasedRateLimitingMiddleware>();
+// Rate limiting - Uses ASP.NET Core's built-in rate limiter
+app.UseRateLimiter();
 
 // Enable response compression
 app.UseResponseCompression();

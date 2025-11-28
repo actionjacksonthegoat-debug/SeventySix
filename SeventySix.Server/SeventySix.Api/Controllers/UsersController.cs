@@ -4,7 +4,6 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
 using SeventySix.Identity;
 using SeventySix.Shared;
@@ -37,7 +36,6 @@ namespace SeventySix.Api.Controllers;
 /// <exception cref="ArgumentNullException">Thrown when userService or logger is null.</exception>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
-[RateLimit()] // 250 req/hour (default)
 public class UsersController(
 	IUserService userService,
 	ILogger<UsersController> logger) : ControllerBase

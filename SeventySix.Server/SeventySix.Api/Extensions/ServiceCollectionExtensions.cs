@@ -3,6 +3,8 @@
 // </copyright>
 
 using System.IO.Compression;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
@@ -163,6 +165,56 @@ public static class ServiceCollectionExtensions
 						.AllowAnyMethod()
 						.AllowCredentials();
 				});
+		});
+
+		return services;
+	}
+
+	/// <summary>
+	/// Adds rate limiting using ASP.NET Core's built-in rate limiter.
+	/// Configures a fixed window rate limiter partitioned by client IP.
+	/// </summary>
+	/// <param name="services">The service collection.</param>
+	/// <param name="configuration">The application configuration.</param>
+	/// <returns>The service collection for chaining.</returns>
+	public static IServiceCollection AddConfiguredRateLimiting(
+		this IServiceCollection services,
+		IConfiguration configuration)
+	{
+		RateLimitingSettings settings = configuration
+			.GetSection("RateLimiting")
+			.Get<RateLimitingSettings>() ?? new RateLimitingSettings();
+
+		if (!settings.Enabled)
+		{
+			return services;
+		}
+
+		services.AddRateLimiter(options =>
+		{
+			options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+				RateLimitPartition.GetFixedWindowLimiter(
+					partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+					factory: _ => new FixedWindowRateLimiterOptions
+					{
+						PermitLimit = settings.PermitLimit,
+						Window = TimeSpan.FromSeconds(settings.WindowSeconds),
+						QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+						QueueLimit = 0
+					}));
+
+			options.OnRejected = async (context, cancellationToken) =>
+			{
+				context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+				context.HttpContext.Response.Headers.RetryAfter = settings.RetryAfterSeconds.ToString();
+
+				await context.HttpContext.Response.WriteAsJsonAsync(new
+				{
+					error = "Too Many Requests",
+					message = $"Rate limit exceeded. Maximum {settings.PermitLimit} requests per {settings.WindowSeconds} seconds allowed.",
+					retryAfter = settings.RetryAfterSeconds
+				}, cancellationToken);
+			};
 		});
 
 		return services;

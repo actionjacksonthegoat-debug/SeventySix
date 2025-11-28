@@ -32,7 +32,7 @@ namespace SeventySix.Infrastructure;
 /// This service enforces EXTERNAL API quotas (e.g., ThirdPartyRateLimit 250 calls/day).
 /// This is SEPARATE from the HTTP middleware rate limiting which protects YOUR API endpoints.
 ///
-/// - Layer 1 (HTTP): AttributeBasedRateLimitingMiddleware - protects YOUR API from client abuse
+/// - Layer 1 (HTTP): ASP.NET Core built-in rate limiter - protects YOUR API from client abuse
 /// - Layer 2 (External): RateLimitingService (this) - protects YOU from exceeding external API quotas
 ///
 /// This rate limiting is ALWAYS enforced regardless of where the API is called from because

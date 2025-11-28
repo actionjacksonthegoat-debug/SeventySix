@@ -11,6 +11,8 @@ public interface IUserRepository
 {
 	Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default);
 
+	Task<IEnumerable<UserDto>> GetAllProjectedAsync(CancellationToken cancellationToken = default);
+
 	Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
 	Task<User> CreateAsync(User user, CancellationToken cancellationToken = default);
@@ -28,6 +30,10 @@ public interface IUserRepository
 	Task<bool> EmailExistsAsync(string email, int? excludeId = null, CancellationToken cancellationToken = default);
 
 	Task<(IEnumerable<User> Users, int TotalCount)> GetPagedAsync(
+		UserQueryRequest request,
+		CancellationToken cancellationToken = default);
+
+	Task<(IEnumerable<UserDto> Users, int TotalCount)> GetPagedProjectedAsync(
 		UserQueryRequest request,
 		CancellationToken cancellationToken = default);
 

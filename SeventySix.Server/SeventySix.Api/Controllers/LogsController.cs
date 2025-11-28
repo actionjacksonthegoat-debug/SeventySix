@@ -5,7 +5,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using SeventySix.Api.Attributes;
 using SeventySix.Api.Configuration;
 using SeventySix.Logging;
 using SeventySix.Shared;
@@ -38,7 +37,6 @@ namespace SeventySix.Api.Controllers;
 /// <param name="outputCacheStore">The output cache store.</param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/logs")]
-[RateLimit()] // 250 req/hour (default)
 public class LogsController(
 	ILogService logService,
 	IOutputCacheStore outputCacheStore) : ControllerBase
