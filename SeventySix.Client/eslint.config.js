@@ -23,7 +23,6 @@ export default [
 					varsIgnorePattern: "^_"
 				}
 			],
-			// Enforce explicit type annotations on variables and properties
 			"@typescript-eslint/typedef": [
 				"error",
 				{
@@ -36,6 +35,28 @@ export default [
 				"warn",
 				{
 					allow: ["warn", "error"]
+				}
+			]
+		}
+	},
+	{
+		files: ["src/**/*.component.ts"],
+		rules: {
+			"no-restricted-imports": [
+				"error",
+				{
+					patterns: [
+						{
+							group: [
+								"**/repositories",
+								"**/repositories/*",
+								"@*/repositories",
+								"@*/repositories/*"
+							],
+							message:
+								"Components must not import repositories directly. Use services instead (Service Façade pattern)."
+						}
+					]
 				}
 			]
 		}

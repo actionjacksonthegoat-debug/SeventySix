@@ -12,6 +12,14 @@ import {
 	UserPreferencesService
 } from "@admin/users/services";
 import { UserRepository } from "@admin/users/repositories";
+import {
+	ThirdPartyApiService,
+	HealthApiService
+} from "@admin/admin-dashboard/services";
+import {
+	ThirdPartyApiRepository,
+	HealthApiRepository
+} from "@admin/admin-dashboard/repositories";
 
 export const ADMIN_ROUTES: Routes = [
 	{
@@ -30,6 +38,12 @@ export const ADMIN_ROUTES: Routes = [
 	},
 	{
 		path: "dashboard",
+		providers: [
+			ThirdPartyApiService,
+			ThirdPartyApiRepository,
+			HealthApiService,
+			HealthApiRepository
+		],
 		loadComponent: () =>
 			import("./admin-dashboard/admin-dashboard.component").then(
 				(m) => m.AdminDashboardComponent

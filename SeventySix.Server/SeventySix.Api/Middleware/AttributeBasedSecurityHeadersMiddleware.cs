@@ -41,15 +41,31 @@ public class AttributeBasedSecurityHeadersMiddleware(
 	RequestDelegate next,
 	IWebHostEnvironment environment)
 {
+	// Production CSP: Strict policy without unsafe-eval
+	// - script-src 'self': No inline scripts or eval needed for Angular AOT builds
+	// - style-src 'unsafe-inline': Required for Angular style bindings ([style.x])
+	// - frame-src: Allows Grafana dashboard embeds
+	private const string PRODUCTION_CSP =
+		"default-src 'self'; " +
+		"script-src 'self'; " +
+		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+		"font-src 'self' https://fonts.gstatic.com; " +
+		"img-src 'self' data: https:; " +
+		"connect-src 'self'; " +
+		"frame-src 'self' http://localhost:3000; " +
+		"frame-ancestors 'none'; " +
+		"base-uri 'self'; " +
+		"form-action 'self'";
 
-	// Default CSP for Angular + Material Design + Google Fonts
-	private const string DEFAULT_CSP =
+	// Development CSP: Relaxed for debugging, hot reload, etc.
+	private const string DEVELOPMENT_CSP =
 		"default-src 'self'; " +
 		"script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
 		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
 		"font-src 'self' https://fonts.gstatic.com; " +
 		"img-src 'self' data: https:; " +
-		"connect-src 'self'; " +
+		"connect-src 'self' ws: wss:; " +
+		"frame-src 'self' http://localhost:3000; " +
 		"frame-ancestors 'none'; " +
 		"base-uri 'self'; " +
 		"form-action 'self'";
@@ -71,8 +87,9 @@ public class AttributeBasedSecurityHeadersMiddleware(
 		context.Response.Headers["Referrer-Policy"] = config.ReferrerPolicy;
 		context.Response.Headers["Permissions-Policy"] = config.PermissionsPolicy;
 
-		// Content Security Policy
-		string csp = config.ContentSecurityPolicy ?? DEFAULT_CSP;
+		// Content Security Policy - use environment-appropriate default
+		string defaultCsp = environment.IsDevelopment() ? DEVELOPMENT_CSP : PRODUCTION_CSP;
+		string csp = config.ContentSecurityPolicy ?? defaultCsp;
 		context.Response.Headers.ContentSecurityPolicy = csp;
 
 		// HSTS only in production to avoid development certificate issues

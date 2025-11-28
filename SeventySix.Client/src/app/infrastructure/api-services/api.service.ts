@@ -26,12 +26,9 @@ export class ApiService
 	private readonly http: HttpClient = inject(HttpClient);
 	private readonly logger: LoggerService = inject(LoggerService);
 
-	/**
-	 * Handle HTTP errors
-	 * @param error The HTTP error response
-	 * @returns An observable error
-	 */
-	private handleError = (error: HttpErrorResponse): Observable<never> =>
+	private handleError: (error: HttpErrorResponse) => Observable<never> = (
+		error: HttpErrorResponse
+	): Observable<never> =>
 	{
 		let errorMessage: string = "An error occurred";
 

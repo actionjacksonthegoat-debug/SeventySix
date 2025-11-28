@@ -4,16 +4,10 @@
 
 namespace SeventySix.Shared;
 
-/// <summary>
-/// Entity with creation timestamp only (no modify tracking, no user tracking).
-/// CreateDate is auto-set to NOW() if not provided.
-/// </summary>
+/// <summary>Entity with creation timestamp only.</summary>
 public interface ICreatableEntity : IEntity
 {
-	/// <summary>
-	/// Gets or sets the date and time when the entity was created.
-	/// </summary>
-	public DateTime CreateDate
+	DateTime CreateDate
 	{
 		get; set;
 	}

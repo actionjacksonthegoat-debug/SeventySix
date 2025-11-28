@@ -15,6 +15,7 @@ import {
 	ExternalApiHealth
 } from "@admin/admin-dashboard/models";
 import { HealthApiService } from "./health-api.service";
+import { HealthApiRepository } from "../repositories";
 import { environment } from "@environments/environment";
 
 describe("HealthApiService", () =>
@@ -39,6 +40,7 @@ describe("HealthApiService", () =>
 				provideHttpClient(),
 				provideHttpClientTesting(),
 				provideTanStackQuery(queryClient),
+				HealthApiRepository,
 				HealthApiService
 			]
 		});

@@ -8,29 +8,7 @@ using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.ApiTracking;
 
-/// <summary>
-/// Repository implementation for third-party API request tracking operations.
-/// </summary>
-/// <remarks>
-/// Implements <see cref="IThirdPartyApiRequestRepository"/> using Entity Framework Core.
-///
-/// Design Patterns:
-/// - Repository: Abstracts data access logic
-/// - Template Method: Inherits error handling from BaseRepository
-/// - Unit of Work: DbContext manages transactions
-///
-/// SOLID Principles:
-/// - SRP: Only responsible for data access operations
-/// - DIP: Implements interface defined in Core layer
-/// - OCP: Can be extended without modification
-///
-/// Performance Optimizations:
-/// - AsNoTracking for read-only queries
-/// - Composite index on (ApiName, ResetDate)
-/// - Batch operations for bulk deletes
-/// </remarks>
-/// <param name="context">The database context.</param>
-/// <param name="logger">The logger instance.</param>
+/// <summary>EF Core implementation for ThirdPartyApiRequest data access.</summary>
 internal class ThirdPartyApiRequestRepository(
 	ApiTrackingDbContext context,
 	ILogger<ThirdPartyApiRequestRepository> logger) : BaseRepository<ThirdPartyApiRequest, ApiTrackingDbContext>(context, logger), IThirdPartyApiRequestRepository

@@ -3,13 +3,7 @@ import { Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
 import { HealthStatus, DatabaseHealth, ExternalApiHealth } from "../models";
 
-/**
- * Repository for health check data access
- * Follows Repository pattern for data access abstraction
- */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable()
 export class HealthApiRepository
 {
 	private readonly apiService: ApiService = inject(ApiService);

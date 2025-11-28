@@ -9,13 +9,7 @@ import { HealthApiRepository } from "../repositories";
 import { HealthStatus, DatabaseHealth, ExternalApiHealth } from "../models";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 
-/**
- * Service for managing health check data
- * Uses TanStack Query for caching and state management
- */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable()
 export class HealthApiService
 {
 	private readonly repository: HealthApiRepository =

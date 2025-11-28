@@ -9,32 +9,7 @@ using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Identity;
 
-/// <summary>
-/// EF Core implementation of the user repository.
-/// Provides data access operations for User entities using PostgreSQL.
-/// </summary>
-/// <remarks>
-/// Implements <see cref="IUserRepository"/> using Entity Framework Core.
-///
-/// Design Patterns:
-/// - Repository: Abstracts data access logic
-/// - Template Method: Inherits error handling from BaseRepository
-/// - Builder: Uses QueryBuilder for complex queries
-/// - Unit of Work: DbContext manages transactions
-///
-/// SOLID Principles:
-/// - SRP: Only responsible for data access operations
-/// - DIP: Implements interface defined in Core layer
-/// - OCP: Can be extended without modification
-///
-/// Performance Optimizations:
-/// - AsNoTracking for read-only queries
-/// - Indexes on Username, Email, IsDeleted, IsActive, CreateDate
-/// - Global query filter for soft delete (excludes IsDeleted = true by default)
-/// - Optimistic concurrency control using PostgreSQL xmin (uint RowVersion)
-/// </remarks>
-/// <param name="context">The database context.</param>
-/// <param name="repositoryLogger">The logger instance.</param>
+/// <summary>EF Core implementation for User data access.</summary>
 internal class UserRepository(
 	IdentityDbContext context,
 	ILogger<UserRepository> repositoryLogger) : BaseRepository<User, IdentityDbContext>(context, repositoryLogger), IUserRepository
@@ -154,81 +129,55 @@ internal class UserRepository(
 			? context.Users.IgnoreQueryFilters()
 			: GetQueryable();
 
-		IQueryable<User> query = baseQuery.ApplyQueryBuilder(builder =>
-		{
-			// Apply search filter
-			if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-			{
-				builder = builder.Where(u =>
-					u.Username.Contains(request.SearchTerm) ||
-					u.Email.Contains(request.SearchTerm) ||
-					(u.FullName != null && u.FullName.Contains(request.SearchTerm)));
-			}
+		IQueryable<User> filteredQuery = ApplyFilters(baseQuery, request);
 
-			// Apply active status filter
-			if (request.IsActive.HasValue)
-			{
-				builder = builder.Where(u => u.IsActive == request.IsActive.Value);
-			}
+		int totalCount = await filteredQuery.CountAsync(cancellationToken);
 
-			// Apply date range filter
-			if (request.StartDate.HasValue)
-			{
-				builder = builder.Where(u => u.LastLoginAt >= request.StartDate.Value);
-			}
-
-			if (request.EndDate.HasValue)
-			{
-				builder = builder.Where(u => u.LastLoginAt <= request.EndDate.Value);
-			}
-
-			// Apply sorting
-			string sortProperty = string.IsNullOrWhiteSpace(request.SortBy) ? "Id" : request.SortBy;
-			builder = request.SortDescending
-				? builder.OrderByDescending(u => EF.Property<object>(u, sortProperty))
-				: builder.OrderBy(u => EF.Property<object>(u, sortProperty));
-
-			// Apply pagination
-			return builder
-				.Skip(request.GetSkip())
-				.Take(request.GetValidatedPageSize());
-		});
-
-		// Get total count and data
-		int totalCount = await baseQuery
-			.ApplyQueryBuilder(builder =>
-			{
-				if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-				{
-					builder = builder.Where(u =>
-						u.Username.Contains(request.SearchTerm) ||
-						u.Email.Contains(request.SearchTerm) ||
-						(u.FullName != null && u.FullName.Contains(request.SearchTerm)));
-				}
-
-				if (request.IsActive.HasValue)
-				{
-					builder = builder.Where(u => u.IsActive == request.IsActive.Value);
-				}
-
-				if (request.StartDate.HasValue)
-				{
-					builder = builder.Where(u => u.LastLoginAt >= request.StartDate.Value);
-				}
-
-				if (request.EndDate.HasValue)
-				{
-					builder = builder.Where(u => u.LastLoginAt <= request.EndDate.Value);
-				}
-
-				return builder;
-			})
-			.CountAsync(cancellationToken);
-
-		List<User> users = await query
+		List<User> users = await ApplySortingAndPaging(filteredQuery, request)
 			.ToListAsync(cancellationToken);
 
 		return (users, totalCount);
+	}
+
+	private static IQueryable<User> ApplyFilters(IQueryable<User> query, UserQueryRequest request)
+	{
+		if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+		{
+			query = query.Where(u =>
+				u.Username.Contains(request.SearchTerm) ||
+				u.Email.Contains(request.SearchTerm) ||
+				(u.FullName != null && u.FullName.Contains(request.SearchTerm)));
+		}
+
+		if (request.IsActive.HasValue)
+		{
+			query = query.Where(u => u.IsActive == request.IsActive.Value);
+		}
+
+		if (request.StartDate.HasValue)
+		{
+			query = query.Where(u => u.LastLoginAt >= request.StartDate.Value);
+		}
+
+		if (request.EndDate.HasValue)
+		{
+			query = query.Where(u => u.LastLoginAt <= request.EndDate.Value);
+		}
+
+		return query;
+	}
+
+	private static IQueryable<User> ApplySortingAndPaging(IQueryable<User> query, UserQueryRequest request)
+	{
+		string sortProperty = string.IsNullOrWhiteSpace(request.SortBy) ? "Id" : request.SortBy;
+
+		query = request.SortDescending
+			? query.OrderByDescending(u => EF.Property<object>(u, sortProperty))
+			: query.OrderBy(u => EF.Property<object>(u, sortProperty));
+
+		return query
+			.Skip(request.GetSkip())
+			.Take(request.GetValidatedPageSize());
 	}
 
 	/// <inheritdoc/>

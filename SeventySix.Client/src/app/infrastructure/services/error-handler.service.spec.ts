@@ -7,11 +7,11 @@ import { NotificationService } from "./notification.service";
 import { ClientErrorLoggerService } from "./client-error-logger.service";
 import { createMockLogger, createMockNotificationService } from "@testing";
 import {
+	HttpError,
 	ValidationError,
 	NotFoundError,
 	UnauthorizedError,
-	NetworkError,
-	HttpError
+	NetworkError
 } from "@infrastructure/models/errors";
 
 describe("ErrorHandlerService", () =>
@@ -20,9 +20,12 @@ describe("ErrorHandlerService", () =>
 	let mockLogger: jasmine.SpyObj<LoggerService>;
 	let mockNotification: jasmine.SpyObj<NotificationService>;
 	let mockClientLogger: jasmine.SpyObj<ClientErrorLoggerService>;
+	let consoleErrorSpy: jasmine.Spy;
 
 	beforeEach(() =>
 	{
+		consoleErrorSpy = spyOn(console, "error");
+
 		mockLogger = createMockLogger();
 		mockNotification = createMockNotificationService();
 		mockClientLogger = jasmine.createSpyObj("ClientErrorLoggerService", [
@@ -56,11 +59,9 @@ describe("ErrorHandlerService", () =>
 	{
 		it("should log and notify for generic errors", () =>
 		{
-			const error: Error = new Error("Test error");
-
 			try
 			{
-				service.handleError(error);
+				service.handleError(new Error("Test error"));
 			}
 			catch (e)
 			{
@@ -73,7 +74,7 @@ describe("ErrorHandlerService", () =>
 
 		it("should handle HTTP 404 errors", () =>
 		{
-			const error = new HttpErrorResponse({
+			const error: HttpErrorResponse = new HttpErrorResponse({
 				status: 404,
 				statusText: "Not Found"
 			});
@@ -96,7 +97,7 @@ describe("ErrorHandlerService", () =>
 
 		it("should handle HTTP 401 errors", () =>
 		{
-			const error = new HttpErrorResponse({
+			const error: HttpErrorResponse = new HttpErrorResponse({
 				status: 401,
 				statusText: "Unauthorized"
 			});
@@ -119,7 +120,7 @@ describe("ErrorHandlerService", () =>
 
 		it("should handle HTTP 500 errors", () =>
 		{
-			const error = new HttpErrorResponse({
+			const error: HttpErrorResponse = new HttpErrorResponse({
 				status: 500,
 				statusText: "Internal Server Error"
 			});
@@ -142,9 +143,10 @@ describe("ErrorHandlerService", () =>
 
 		it("should handle ValidationError", () =>
 		{
-			const error = new ValidationError("Validation failed", {
-				field1: ["Error 1"]
-			});
+			const error: ValidationError = new ValidationError(
+				"Validation failed",
+				{ field1: ["Error 1"] }
+			);
 
 			try
 			{
@@ -155,12 +157,18 @@ describe("ErrorHandlerService", () =>
 				// Expected
 			}
 
-			expect(mockNotification.errorWithDetails).toHaveBeenCalled();
+			expect(mockNotification.errorWithDetails).toHaveBeenCalledWith(
+				"Error 1",
+				jasmine.anything(),
+				jasmine.any(String)
+			);
 		});
 
 		it("should handle NotFoundError", () =>
 		{
-			const error = new NotFoundError("Resource not found");
+			const error: NotFoundError = new NotFoundError(
+				"Resource not found"
+			);
 
 			try
 			{
@@ -180,7 +188,9 @@ describe("ErrorHandlerService", () =>
 
 		it("should handle UnauthorizedError", () =>
 		{
-			const error = new UnauthorizedError("Not authorized");
+			const error: UnauthorizedError = new UnauthorizedError(
+				"Not authorized"
+			);
 
 			try
 			{
@@ -200,7 +210,7 @@ describe("ErrorHandlerService", () =>
 
 		it("should handle NetworkError", () =>
 		{
-			const error = new NetworkError();
+			const error: NetworkError = new NetworkError();
 
 			try
 			{
@@ -222,7 +232,7 @@ describe("ErrorHandlerService", () =>
 
 		it("should handle HttpError", () =>
 		{
-			const error = new HttpError("Custom HTTP error", 418);
+			const error: HttpError = new HttpError("Custom HTTP error", 418);
 
 			try
 			{
@@ -245,11 +255,9 @@ describe("ErrorHandlerService", () =>
 	{
 		it("should log errors to ClientErrorLoggerService", () =>
 		{
-			const error: Error = new Error("Test error");
-
 			try
 			{
-				service.handleError(error);
+				service.handleError(new Error("Test error"));
 			}
 			catch (e)
 			{
@@ -261,7 +269,7 @@ describe("ErrorHandlerService", () =>
 
 		it("should log HTTP errors to ClientErrorLoggerService", () =>
 		{
-			const error = new HttpErrorResponse({
+			const error: HttpErrorResponse = new HttpErrorResponse({
 				status: 500,
 				statusText: "Internal Server Error",
 				url: "https://api.example.com/data"
@@ -285,11 +293,103 @@ describe("ErrorHandlerService", () =>
 		});
 	});
 
+	describe("copy data", () =>
+	{
+		it("should include timestamp in copy data", () =>
+		{
+			try
+			{
+				service.handleError(new Error("Test error"));
+			}
+			catch (e)
+			{
+				// Expected
+			}
+
+			const call: jasmine.CallInfo<
+				typeof mockNotification.errorWithDetails
+			> = mockNotification.errorWithDetails.calls.mostRecent();
+			const copyData: string = call.args[2] as string;
+			expect(copyData).toContain("timestamp");
+		});
+
+		it("should include stack trace in copy data", () =>
+		{
+			const error: Error = new Error("Test error");
+			error.stack = "Error: Test error\n    at Object.<anonymous>";
+
+			try
+			{
+				service.handleError(error);
+			}
+			catch (e)
+			{
+				// Expected
+			}
+
+			const call: jasmine.CallInfo<
+				typeof mockNotification.errorWithDetails
+			> = mockNotification.errorWithDetails.calls.mostRecent();
+			const copyData: string = call.args[2] as string;
+			expect(copyData).toContain("stack");
+		});
+
+		it("should include request details in copy data for HTTP errors", () =>
+		{
+			const error: HttpErrorResponse = new HttpErrorResponse({
+				status: 404,
+				statusText: "Not Found",
+				url: "https://api.example.com/users/123"
+			});
+
+			try
+			{
+				service.handleError(error);
+			}
+			catch (e)
+			{
+				// Expected
+			}
+
+			const call: jasmine.CallInfo<
+				typeof mockNotification.errorWithDetails
+			> = mockNotification.errorWithDetails.calls.mostRecent();
+			const copyData: string = call.args[2] as string;
+			expect(copyData).toContain("url");
+			expect(copyData).toContain("status");
+		});
+
+		it("should include details in copy data", () =>
+		{
+			const error: HttpErrorResponse = new HttpErrorResponse({
+				status: 400,
+				statusText: "Bad Request",
+				url: "https://api.example.com/data",
+				error: { errors: { email: ["Email is required"] } }
+			});
+
+			try
+			{
+				service.handleError(error);
+			}
+			catch (e)
+			{
+				// Expected
+			}
+
+			const call: jasmine.CallInfo<
+				typeof mockNotification.errorWithDetails
+			> = mockNotification.errorWithDetails.calls.mostRecent();
+			const copyData: string = call.args[2] as string;
+			expect(copyData).toContain("details");
+		});
+	});
+
 	describe("errorWithDetails notifications", () =>
 	{
-		it("should show error with details for HTTP errors", () =>
+		it("should show error with details for HTTP validation errors", () =>
 		{
-			const error = new HttpErrorResponse({
+			const error: HttpErrorResponse = new HttpErrorResponse({
 				status: 400,
 				statusText: "Bad Request",
 				url: "https://api.example.com/data",
@@ -318,9 +418,13 @@ describe("ErrorHandlerService", () =>
 			);
 		});
 
-		it("should include copy data with error details", () =>
+		it("should include status and URL in details for HTTP errors", () =>
 		{
-			const error: Error = new Error("Test error with stack");
+			const error: HttpErrorResponse = new HttpErrorResponse({
+				status: 500,
+				statusText: "Internal Server Error",
+				url: "https://api.example.com/data"
+			});
 
 			try
 			{
@@ -333,127 +437,72 @@ describe("ErrorHandlerService", () =>
 
 			expect(mockNotification.errorWithDetails).toHaveBeenCalledWith(
 				jasmine.any(String),
-				jasmine.any(Array),
-				jasmine.stringContaining("timestamp")
+				jasmine.arrayContaining([
+					jasmine.stringContaining("Status:"),
+					jasmine.stringContaining("URL:")
+				]),
+				jasmine.any(String)
 			);
 		});
+	});
 
-		it("should include stack trace in copy data", () =>
+	describe("re-entry protection", () =>
+	{
+		it("should prevent re-entry when already handling an error", () =>
 		{
-			const error: Error = new Error("Test error");
-			error.stack = "Error: Test error\n    at Object.<anonymous>";
-
-			try
-			{
-				service.handleError(error);
-			}
-			catch (e)
-			{
-				// Expected
-			}
-
-			const call = mockNotification.errorWithDetails.calls.mostRecent();
-			const copyData = call.args[2];
-			expect(copyData).toContain("stack");
-		});
-
-		it("should include request details in copy data for HTTP errors", () =>
-		{
-			const error = new HttpErrorResponse({
-				status: 404,
-				statusText: "Not Found",
-				url: "https://api.example.com/users/123"
-			});
-
-			try
-			{
-				service.handleError(error);
-			}
-			catch (e)
-			{
-				// Expected
-			}
-
-			const call = mockNotification.errorWithDetails.calls.mostRecent();
-			const copyData = call.args[2];
-			expect(copyData).toContain("url");
-			expect(copyData).toContain("status");
-		});
-
-		it("should prevent re-entry when already handling an error", (done) =>
-		{
-			const consoleSpy: jasmine.Spy = spyOn(console, "error");
 			let callCount: number = 0;
 
-			// Configure notification to throw an error that triggers handleError again
 			mockNotification.errorWithDetails.and.callFake(() =>
 			{
 				callCount++;
 				if (callCount === 1)
 				{
-					// First call throws to trigger the catch block
 					throw new Error("Notification failed");
 				}
 			});
 
-			const firstError: Error = new Error("First error");
+			service.handleError(new Error("First error"));
 
-			// First error triggers handleError
-			service.handleError(firstError);
-
-			// Verify notification failure was logged
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"[ErrorHandler] Notification failed:",
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				"[ErrorHandler] Failed:",
 				jasmine.any(Error)
 			);
-
-			done();
 		});
 
 		it("should gracefully handle errors during notification", () =>
 		{
-			const consoleSpy: jasmine.Spy = spyOn(console, "error");
 			mockNotification.errorWithDetails.and.throwError(
 				"Notification system failure"
 			);
 
-			const error: Error = new Error("Test error");
-
-			// Should not throw - should be caught and logged
 			expect(() =>
 			{
-				service.handleError(error);
+				service.handleError(new Error("Test error"));
 			}).not.toThrow();
 
-			// Should log the notification failure
-			expect(consoleSpy).toHaveBeenCalled();
+			expect(consoleErrorSpy).toHaveBeenCalled();
 		});
 
 		it("should reset guard flag after handling error", () =>
 		{
-			const error1: Error = new Error("First error");
-			const error2: Error = new Error("Second error");
-
 			try
 			{
-				service.handleError(error1);
+				service.handleError(new Error("First error"));
 			}
 			catch (e)
 			{
 				// Expected in dev mode
 			}
 
-			// Should be able to handle second error normally
 			try
 			{
-				service.handleError(error2);
+				service.handleError(new Error("Second error"));
 			}
 			catch (e)
 			{
 				// Expected in dev mode
 			}
 
-			// Both should have been logged
 			expect(mockClientLogger.logError).toHaveBeenCalledTimes(2);
 		});
 	});

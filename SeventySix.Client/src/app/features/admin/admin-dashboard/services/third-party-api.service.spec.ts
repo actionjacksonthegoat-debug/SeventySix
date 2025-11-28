@@ -13,6 +13,7 @@ import {
 	ThirdPartyApiStatistics
 } from "@admin/admin-dashboard/models";
 import { ThirdPartyApiService } from "./third-party-api.service";
+import { ThirdPartyApiRepository } from "../repositories";
 import { environment } from "@environments/environment";
 import { setupSimpleServiceTest } from "@testing";
 
@@ -35,7 +36,8 @@ describe("ThirdPartyApiService", () =>
 		service = setupSimpleServiceTest(ThirdPartyApiService, [
 			provideHttpClient(),
 			provideHttpClientTesting(),
-			provideTanStackQuery(queryClient)
+			provideTanStackQuery(queryClient),
+			ThirdPartyApiRepository
 		]);
 		httpMock = TestBed.inject(HttpTestingController);
 	});

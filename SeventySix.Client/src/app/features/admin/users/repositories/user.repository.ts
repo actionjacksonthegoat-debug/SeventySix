@@ -1,13 +1,8 @@
-/**
- * User Repository
- * Handles data access for user entities
- * Implements Repository Pattern (SOLID - SRP, DIP)
- */
-
-import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
+import { inject, Injectable } from "@angular/core";
 import { HttpParams } from "@angular/common/http";
-import { HttpRepository } from "@infrastructure/repositories/http.repository";
+import { Observable } from "rxjs";
+import { ApiService } from "@infrastructure/api-services/api.service";
+import { buildHttpParams } from "@infrastructure/utils/http-params.utility";
 import {
 	User,
 	UpdateUserRequest,
@@ -15,77 +10,40 @@ import {
 	PagedResult
 } from "@admin/users/models";
 
-/**
- * Repository for user data access
- * Extends HttpRepository for standard CRUD operations
- * Provided at route level for proper garbage collection (see admin.routes.ts)
- */
 @Injectable()
-export class UserRepository extends HttpRepository<User>
+export class UserRepository
 {
-	protected readonly endpoint: string = "users";
+	private readonly apiService: ApiService = inject(ApiService);
+	private readonly endpoint: string = "users";
 
-	/**
-	 * Get all users
-	 * @returns Observable array of users
-	 */
-	override getAll(): Observable<User[]>
+	getAll(): Observable<User[]>
 	{
 		return this.apiService.get<User[]>(this.endpoint);
 	}
 
-	/**
-	 * Get user by ID
-	 * @param id The user identifier
-	 * @returns Observable of user
-	 */
-	override getById(id: number | string): Observable<User>
+	getById(id: number | string): Observable<User>
 	{
 		return this.apiService.get<User>(`${this.endpoint}/${id}`);
 	}
 
-	/**
-	 * Create new user
-	 * @param user The user data to create
-	 * @returns Observable of created user
-	 */
-	override create(user: Partial<User>): Observable<User>
+	create(user: Partial<User>): Observable<User>
 	{
 		return this.apiService.post<User>(this.endpoint, user);
 	}
 
-	/**
-	 * Update existing user
-	 * @param id The user identifier
-	 * @param user The user data to update
-	 * @returns Observable of updated user
-	 */
-	override update(
-		id: number | string,
-		user: UpdateUserRequest
-	): Observable<User>
+	update(id: number | string, user: UpdateUserRequest): Observable<User>
 	{
 		return this.apiService.put<User>(`${this.endpoint}/${id}`, user);
 	}
 
-	/**
-	 * Delete user
-	 * @param id The user identifier
-	 * @returns Observable of void
-	 */
-	override delete(id: number | string): Observable<void>
+	delete(id: number | string): Observable<void>
 	{
 		return this.apiService.delete<void>(`${this.endpoint}/${id}`);
 	}
 
-	/**
-	 * Get paginated users with filtering
-	 * @param request Query parameters for pagination and filtering
-	 * @returns Observable of paged result
-	 */
 	getPaged(request: UserQueryRequest): Observable<PagedResult<User>>
 	{
-		const params: HttpParams = this.buildParams({
+		const params: HttpParams = buildHttpParams({
 			pageNumber: request.pageNumber,
 			pageSize: request.pageSize,
 			searchTerm: request.searchTerm || "",
@@ -100,11 +58,6 @@ export class UserRepository extends HttpRepository<User>
 		);
 	}
 
-	/**
-	 * Get user by username
-	 * @param username The username to search for
-	 * @returns Observable of user
-	 */
 	getByUsername(username: string): Observable<User>
 	{
 		return this.apiService.get<User>(
@@ -112,16 +65,10 @@ export class UserRepository extends HttpRepository<User>
 		);
 	}
 
-	/**
-	 * Check if username exists
-	 * @param username The username to check
-	 * @param excludeId Optional user ID to exclude from check (for updates)
-	 * @returns Observable of boolean
-	 */
 	checkUsername(username: string, excludeId?: number): Observable<boolean>
 	{
 		const params: HttpParams | undefined = excludeId
-			? this.buildParams({ excludeId })
+			? buildHttpParams({ excludeId })
 			: undefined;
 
 		return this.apiService.get<boolean>(
@@ -130,11 +77,6 @@ export class UserRepository extends HttpRepository<User>
 		);
 	}
 
-	/**
-	 * Restore soft-deleted user
-	 * @param id The user identifier
-	 * @returns Observable of void
-	 */
 	restore(id: number | string): Observable<void>
 	{
 		return this.apiService.post<void, Record<string, never>>(
@@ -143,11 +85,6 @@ export class UserRepository extends HttpRepository<User>
 		);
 	}
 
-	/**
-	 * Bulk activate users
-	 * @param ids Array of user IDs to activate
-	 * @returns Observable of count of activated users
-	 */
 	bulkActivate(ids: number[]): Observable<number>
 	{
 		return this.apiService.post<number, number[]>(
@@ -156,11 +93,6 @@ export class UserRepository extends HttpRepository<User>
 		);
 	}
 
-	/**
-	 * Bulk deactivate users
-	 * @param ids Array of user IDs to deactivate
-	 * @returns Observable of count of deactivated users
-	 */
 	bulkDeactivate(ids: number[]): Observable<number>
 	{
 		return this.apiService.post<number, number[]>(

@@ -8,30 +8,7 @@ using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Logging;
 
-/// <summary>
-/// Repository implementation for log operations.
-/// </summary>
-/// <remarks>
-/// Implements <see cref="ILogRepository"/> using Entity Framework Core.
-///
-/// Design Patterns:
-/// - Repository: Abstracts data access logic
-/// - Template Method: Inherits error handling from BaseRepository
-/// - Builder: Uses QueryBuilder for complex queries
-/// - Unit of Work: DbContext manages transactions
-///
-/// SOLID Principles:
-/// - SRP: Only responsible for data access operations
-/// - DIP: Implements interface defined in Core layer
-/// - OCP: Can be extended without modification
-///
-/// Performance Optimizations:
-/// - AsNoTracking for read-only queries
-/// - Indexes on Timestamp, LogLevel, SourceContext
-/// - Batch operations for bulk deletes
-/// </remarks>
-/// <param name="context">The database context.</param>
-/// <param name="logger">The logger instance.</param>
+/// <summary>EF Core implementation for Log data access.</summary>
 internal class LogRepository(
 	LoggingDbContext context,
 	ILogger<LogRepository> logger) : BaseRepository<Log, LoggingDbContext>(context, logger), ILogRepository
@@ -75,66 +52,63 @@ internal class LogRepository(
 
 		try
 		{
-			QueryBuilder<Log> queryBuilder = new QueryBuilder<Log>(GetQueryable());
+			IQueryable<Log> filteredQuery = ApplyFilters(GetQueryable(), request);
 
-			// Apply LogLevel filter
-			if (!string.IsNullOrWhiteSpace(request.LogLevel))
-			{
-				queryBuilder.Where(log => log.LogLevel == request.LogLevel);
-			}
+			int totalCount = await filteredQuery.CountAsync(cancellationToken);
 
-			// Apply date range filter (StartDate/EndDate filter by Timestamp)
-			if (request.StartDate.HasValue)
-			{
-				queryBuilder.Where(log => log.CreateDate >= request.StartDate.Value);
-			}
-
-			if (request.EndDate.HasValue)
-			{
-				queryBuilder.Where(log => log.CreateDate <= request.EndDate.Value);
-			}
-
-			// Apply search term filter
-			if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-			{
-				// EF Core will automatically parameterize this query - no SQL injection risk
-				// Search across all relevant text fields for maximum flexibility
-				queryBuilder.Where(log =>
-					(log.Message != null && log.Message.Contains(request.SearchTerm)) ||
-					(log.ExceptionMessage != null && log.ExceptionMessage.Contains(request.SearchTerm)) ||
-					(log.SourceContext != null && log.SourceContext.Contains(request.SearchTerm)) ||
-					(log.RequestPath != null && log.RequestPath.Contains(request.SearchTerm)) ||
-					(log.StackTrace != null && log.StackTrace.Contains(request.SearchTerm)));
-			}
-
-			// Get total count BEFORE pagination
-			int totalCount = await queryBuilder.Build().CountAsync(cancellationToken);
-
-			// Apply sorting (dynamic based on SortBy property)
-			// Default: Timestamp descending (most recent first)
-			string sortProperty = string.IsNullOrWhiteSpace(request.SortBy) ? "Timestamp" : request.SortBy;
-			if (request.SortDescending)
-			{
-				queryBuilder.OrderByDescending(e => EF.Property<object>(e, sortProperty));
-			}
-			else
-			{
-				queryBuilder.OrderBy(e => EF.Property<object>(e, sortProperty));
-			}
-
-			// Apply pagination using QueryBuilder
-			queryBuilder.Paginate(request.Page, request.GetValidatedPageSize());
-
-			List<Log> logs = await queryBuilder.Build().ToListAsync(cancellationToken);
+			List<Log> logs = await ApplySortingAndPaging(filteredQuery, request)
+				.ToListAsync(cancellationToken);
 
 			return (logs, totalCount);
 		}
 		catch (Exception ex)
 		{
-			// Use Console.WriteLine instead of logger to prevent infinite loop
-			Console.WriteLine($"Error retrieving logs with filters: LogLevel={request.LogLevel}, StartDate={request.StartDate}, EndDate={request.EndDate}, Page={request.Page}, Exception={ex.Message}");
+			Console.WriteLine($"Error retrieving logs: {ex.Message}");
 			throw;
 		}
+	}
+
+	private static IQueryable<Log> ApplyFilters(IQueryable<Log> query, LogFilterRequest request)
+	{
+		if (!string.IsNullOrWhiteSpace(request.LogLevel))
+		{
+			query = query.Where(log => log.LogLevel == request.LogLevel);
+		}
+
+		if (request.StartDate.HasValue)
+		{
+			query = query.Where(log => log.CreateDate >= request.StartDate.Value);
+		}
+
+		if (request.EndDate.HasValue)
+		{
+			query = query.Where(log => log.CreateDate <= request.EndDate.Value);
+		}
+
+		if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+		{
+			query = query.Where(log =>
+				(log.Message != null && log.Message.Contains(request.SearchTerm)) ||
+				(log.ExceptionMessage != null && log.ExceptionMessage.Contains(request.SearchTerm)) ||
+				(log.SourceContext != null && log.SourceContext.Contains(request.SearchTerm)) ||
+				(log.RequestPath != null && log.RequestPath.Contains(request.SearchTerm)) ||
+				(log.StackTrace != null && log.StackTrace.Contains(request.SearchTerm)));
+		}
+
+		return query;
+	}
+
+	private static IQueryable<Log> ApplySortingAndPaging(IQueryable<Log> query, LogFilterRequest request)
+	{
+		string sortProperty = string.IsNullOrWhiteSpace(request.SortBy) ? "CreateDate" : request.SortBy;
+
+		query = request.SortDescending
+			? query.OrderByDescending(e => EF.Property<object>(e, sortProperty))
+			: query.OrderBy(e => EF.Property<object>(e, sortProperty));
+
+		return query
+			.Skip(request.GetSkip())
+			.Take(request.GetValidatedPageSize());
 	}
 
 	/// <inheritdoc/>

@@ -3,13 +3,7 @@ import { Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
 import { ThirdPartyApiRequest, ThirdPartyApiStatistics } from "../models";
 
-/**
- * Repository for third-party API request data access
- * Follows Repository pattern for data access abstraction
- */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable()
 export class ThirdPartyApiRepository
 {
 	private readonly apiService: ApiService = inject(ApiService);

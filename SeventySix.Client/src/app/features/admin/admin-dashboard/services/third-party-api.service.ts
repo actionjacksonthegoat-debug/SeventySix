@@ -8,13 +8,7 @@ import { ThirdPartyApiRepository } from "../repositories";
 import { ThirdPartyApiRequest, ThirdPartyApiStatistics } from "../models";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 
-/**
- * Service for managing third-party API request data
- * Uses TanStack Query for caching and state management
- */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable()
 export class ThirdPartyApiService
 {
 	private readonly repository: ThirdPartyApiRepository = inject(
