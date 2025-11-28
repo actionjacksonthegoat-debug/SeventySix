@@ -3,7 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
-using Moq;
+using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.Infrastructure;
 
@@ -14,13 +14,13 @@ namespace SeventySix.Api.Tests.Controllers;
 /// </summary>
 public class HealthControllerTests
 {
-	private readonly Mock<IHealthCheckService> MockService;
+	private readonly IHealthCheckService Service;
 	private readonly HealthController Controller;
 
 	public HealthControllerTests()
 	{
-		MockService = new Mock<IHealthCheckService>();
-		Controller = new HealthController(MockService.Object);
+		Service = Substitute.For<IHealthCheckService>();
+		Controller = new HealthController(Service);
 	}
 
 	[Fact]
@@ -69,8 +69,8 @@ public class HealthControllerTests
 			},
 		};
 
-		MockService.Setup(s => s.GetHealthStatusAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(expectedStatus);
+		Service.GetHealthStatusAsync(Arg.Any<CancellationToken>())
+			.Returns(expectedStatus);
 
 		// Act
 		ActionResult<HealthStatusResponse> result = await Controller.GetHealthStatusAsync(CancellationToken.None);
@@ -81,7 +81,7 @@ public class HealthControllerTests
 		Assert.Equal("Healthy", returnedStatus.Status);
 		Assert.True(returnedStatus.Database.IsConnected);
 		Assert.Equal(5, returnedStatus.ErrorQueue.QueuedItems);
-		MockService.Verify(s => s.GetHealthStatusAsync(It.IsAny<CancellationToken>()), Times.Once);
+		await Service.Received(1).GetHealthStatusAsync(Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -113,8 +113,8 @@ public class HealthControllerTests
 			System = new SystemResourcesResponse(),
 		};
 
-		MockService.Setup(s => s.GetHealthStatusAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(expectedStatus);
+		Service.GetHealthStatusAsync(Arg.Any<CancellationToken>())
+			.Returns(expectedStatus);
 
 		// Act
 		ActionResult<HealthStatusResponse> result = await Controller.GetHealthStatusAsync(CancellationToken.None);
@@ -156,8 +156,8 @@ public class HealthControllerTests
 			System = new SystemResourcesResponse(),
 		};
 
-		MockService.Setup(s => s.GetHealthStatusAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(expectedStatus);
+		Service.GetHealthStatusAsync(Arg.Any<CancellationToken>())
+			.Returns(expectedStatus);
 
 		// Act
 		ActionResult<HealthStatusResponse> result = await Controller.GetHealthStatusAsync(CancellationToken.None);

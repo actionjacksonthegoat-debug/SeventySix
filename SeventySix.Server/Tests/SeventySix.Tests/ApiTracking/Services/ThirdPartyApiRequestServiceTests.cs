@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Moq;
+using NSubstitute;
 using SeventySix.ApiTracking;
 
 namespace SeventySix.Tests.ApiTracking;
@@ -12,13 +12,13 @@ namespace SeventySix.Tests.ApiTracking;
 /// </summary>
 public class ThirdPartyApiRequestServiceTests
 {
-	private readonly Mock<IThirdPartyApiRequestRepository> MockRepository;
+	private readonly IThirdPartyApiRequestRepository Repository;
 	private readonly ThirdPartyApiRequestService Service;
 
 	public ThirdPartyApiRequestServiceTests()
 	{
-		MockRepository = new Mock<IThirdPartyApiRequestRepository>();
-		Service = new ThirdPartyApiRequestService(MockRepository.Object);
+		Repository = Substitute.For<IThirdPartyApiRequestRepository>();
+		Service = new ThirdPartyApiRequestService(Repository);
 	}
 
 	[Fact]
@@ -47,8 +47,8 @@ public class ThirdPartyApiRequestServiceTests
 			},
 		];
 
-		MockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(entities);
+		Repository.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns(entities);
 
 		// Act
 		IEnumerable<ThirdPartyApiRequestResponse> result = await Service.GetAllAsync(CancellationToken.None);
@@ -60,15 +60,15 @@ public class ThirdPartyApiRequestServiceTests
 		Assert.Equal("ExternalAPI", resultList[0].ApiName);
 		Assert.Equal(150, resultList[0].CallCount);
 		Assert.Equal("GoogleMaps", resultList[1].ApiName);
-		MockRepository.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+		await Repository.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
 	public async Task GetAllAsync_ReturnsEmptyList_WhenNoRequestsAsync()
 	{
 		// Arrange
-		MockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync([]);
+		Repository.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns([]);
 
 		// Act
 		IEnumerable<ThirdPartyApiRequestResponse> result = await Service.GetAllAsync(CancellationToken.None);
@@ -105,8 +105,8 @@ public class ThirdPartyApiRequestServiceTests
 			},
 		];
 
-		MockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(entities);
+		Repository.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns(entities);
 
 		// Act
 		ThirdPartyApiStatisticsResponse result = await Service.GetStatisticsAsync(CancellationToken.None);
@@ -127,8 +127,8 @@ public class ThirdPartyApiRequestServiceTests
 	public async Task GetStatisticsAsync_ReturnsZeroStats_WhenNoRequestsAsync()
 	{
 		// Arrange
-		MockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync([]);
+		Repository.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns([]);
 
 		// Act
 		ThirdPartyApiStatisticsResponse result = await Service.GetStatisticsAsync(CancellationToken.None);
@@ -158,8 +158,8 @@ public class ThirdPartyApiRequestServiceTests
 			},
 		];
 
-		MockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(entities);
+		Repository.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns(entities);
 
 		// Act
 		ThirdPartyApiStatisticsResponse result = await Service.GetStatisticsAsync(CancellationToken.None);

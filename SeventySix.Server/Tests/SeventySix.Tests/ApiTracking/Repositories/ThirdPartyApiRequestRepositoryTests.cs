@@ -4,7 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using SeventySix.ApiTracking;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
@@ -36,7 +36,7 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		ApiTrackingDbContext context = CreateApiTrackingDbContext();
 		Repository = new ThirdPartyApiRequestRepository(
 			context,
-			Mock.Of<ILogger<ThirdPartyApiRequestRepository>>());
+			Substitute.For<ILogger<ThirdPartyApiRequestRepository>>());
 	}
 
 	[Fact]

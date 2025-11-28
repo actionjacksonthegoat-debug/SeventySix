@@ -454,11 +454,11 @@ data = signal<Data[]>([]);
 ```typescript
 @Injectable({ providedIn: "root" })
 export class ThemeService {
-	private _isDark = signal<boolean>(false);
-	isDark = this._isDark.asReadonly();
+	private readonly isDarkInternal = signal<boolean>(false);
+	readonly isDark: Signal<boolean> = this.isDarkInternal.asReadonly();
 
 	toggleBrightness(): void {
-		this._isDark.update((v) => !v);
+		this.isDarkInternal.update((v: boolean) => !v);
 	}
 }
 ```

@@ -131,7 +131,7 @@ beforeEach(async () => {
 });
 
 it("should display user", async () => {
-	const fixture = TestBed.createComponent(UserComponent);
+	const fixture: ComponentFixture<UserComponent> = TestBed.createComponent(UserComponent);
 	fixture.componentRef.setInput("user", { name: "Test" });
 	await fixture.whenStable();
 	fixture.detectChanges();

@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Moq;
+using NSubstitute;
 using SeventySix.Infrastructure;
 using SeventySix.Logging;
 
@@ -13,21 +13,20 @@ namespace SeventySix.Tests.Infrastructure;
 /// </summary>
 public class HealthCheckServiceTests
 {
-	private readonly Mock<IMetricsService> MockMetricsService;
-	private readonly Mock<ILogService> MockLogService;
+	private readonly IMetricsService MetricsService;
+	private readonly ILogService LogService;
 	private readonly IHealthCheckService Service;
 
 	public HealthCheckServiceTests()
 	{
-		MockMetricsService = new Mock<IMetricsService>();
-		MockLogService = new Mock<ILogService>();
+		MetricsService = Substitute.For<IMetricsService>();
+		LogService = Substitute.For<ILogService>();
 
 		// Setup default mock behaviors
-		MockLogService
-			.Setup(x => x.CheckDatabaseHealthAsync())
-			.ReturnsAsync(true);
+		LogService.CheckDatabaseHealthAsync()
+			.Returns(true);
 
-		Service = new HealthCheckService(MockMetricsService.Object, MockLogService.Object);
+		Service = new HealthCheckService(MetricsService, LogService);
 	}
 
 	[Fact]

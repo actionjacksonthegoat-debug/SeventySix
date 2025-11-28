@@ -4,7 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
 using Xunit;
@@ -17,7 +17,7 @@ namespace SeventySix.Tests.Shared.Infrastructure;
 /// </summary>
 public class BaseRepositoryTests
 {
-	private readonly Mock<ILogger<TestRepository>> MockLogger;
+	private readonly ILogger<TestRepository> Logger;
 	private readonly TestDbContext Context;
 	private readonly TestRepository Repository;
 
@@ -28,8 +28,8 @@ public class BaseRepositoryTests
 			.Options;
 
 		Context = new TestDbContext(options);
-		MockLogger = new Mock<ILogger<TestRepository>>();
-		Repository = new TestRepository(Context, MockLogger.Object);
+		Logger = Substitute.For<ILogger<TestRepository>>();
+		Repository = new TestRepository(Context, Logger);
 	}
 
 	[Fact]
@@ -46,14 +46,12 @@ public class BaseRepositoryTests
 
 		// Assert
 		Assert.Equal(expectedResult, result);
-		MockLogger.Verify(
-			x => x.Log(
-				LogLevel.Error,
-				It.IsAny<EventId>(),
-				It.IsAny<It.IsAnyType>(),
-				It.IsAny<Exception>(),
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Never);
+		Logger.DidNotReceive().Log(
+			LogLevel.Error,
+			Arg.Any<EventId>(),
+			Arg.Any<object>(),
+			Arg.Any<Exception>(),
+			Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]
@@ -70,14 +68,12 @@ public class BaseRepositoryTests
 				"TestEntity"));
 
 		Assert.Same(exception, thrown);
-		MockLogger.Verify(
-			x => x.Log(
-				LogLevel.Error,
-				It.IsAny<EventId>(),
-				It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Database error")),
-				It.IsAny<Exception>(),
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
+		Logger.Received().Log(
+			LogLevel.Error,
+			Arg.Any<EventId>(),
+			Arg.Is<object>(v => v.ToString()!.Contains("Database error")),
+			Arg.Any<Exception>(),
+			Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]
@@ -94,14 +90,12 @@ public class BaseRepositoryTests
 				"TestEntity"));
 
 		Assert.Same(exception, thrown);
-		MockLogger.Verify(
-			x => x.Log(
-				LogLevel.Error,
-				It.IsAny<EventId>(),
-				It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Concurrency conflict")),
-				It.IsAny<Exception>(),
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
+		Logger.Received().Log(
+			LogLevel.Error,
+			Arg.Any<EventId>(),
+			Arg.Is<object>(v => v.ToString()!.Contains("Concurrency conflict")),
+			Arg.Any<Exception>(),
+			Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]
@@ -118,14 +112,12 @@ public class BaseRepositoryTests
 				"TestEntity"));
 
 		Assert.Same(exception, thrown);
-		MockLogger.Verify(
-			x => x.Log(
-				LogLevel.Error,
-				It.IsAny<EventId>(),
-				It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Unexpected error")),
-				It.IsAny<Exception>(),
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
+		Logger.Received().Log(
+			LogLevel.Error,
+			Arg.Any<EventId>(),
+			Arg.Is<object>(v => v.ToString()!.Contains("Unexpected error")),
+			Arg.Any<Exception>(),
+			Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]

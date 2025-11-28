@@ -49,23 +49,71 @@ describe("UserComponent", () => {
 ```csharp
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository> _mockRepo = new();
-    private readonly UserService _sut;
+    private readonly IUserRepository UserRepository = Substitute.For<IUserRepository>();
+    private readonly UserService UserService;
 
-    public UserServiceTests() => _sut = new(_mockRepo.Object);
+    public UserServiceTests() => UserService = new(UserRepository);
 
     [Fact]
     public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
     {
+        // Arrange
         User user = new() { Id = 1, Username = "Test" };
-        _mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        UserRepository.GetByIdAsync(1).Returns(user);
 
-        User? result = await _sut.GetByIdAsync(1);
+        // Act
+        User? result = await UserService.GetByIdAsync(1);
 
-        Assert.NotNull(result);
-        Assert.Equal("Test", result.Username);
+        // Assert
+        result.ShouldNotBeNull();
+        result.Username.ShouldBe("Test");
+    }
+
+    [Fact]
+    public async Task CreateAsync_CallsRepository_WithCorrectDataAsync()
+    {
+        // Arrange
+        CreateUserRequest request = new("TestUser", "test@example.com");
+        UserRepository.CreateAsync(Arg.Any<User>()).Returns(Task.CompletedTask);
+
+        // Act
+        await UserService.CreateAsync(request);
+
+        // Assert - verify call was made
+        await UserRepository.Received(1).CreateAsync(Arg.Is<User>(u => u.Username == "TestUser"));
     }
 }
+
+// Libraries: NSubstitute (mocking), Shouldly (assertions), xUnit (framework)
+// ❌ NEVER use: Moq, FluentAssertions (license issues)
+```
+
+## NSubstitute Quick Reference
+
+```csharp
+// Setup returns
+MockService.Method(Arg.Any<int>()).Returns(value);
+MockService.MethodAsync(1).Returns(Task.FromResult(value));
+
+// Verify calls
+MockService.Received(1).Method(Arg.Any<int>());
+await MockService.Received().MethodAsync(Arg.Is<User>(u => u.Id == 1));
+MockService.DidNotReceive().Method(Arg.Any<int>());
+
+// Argument matchers
+Arg.Any<T>()           // Any value of type T
+Arg.Is<T>(x => x > 0)  // Predicate matching
+```
+
+## Shouldly Quick Reference
+
+```csharp
+result.ShouldBe(expected);
+result.ShouldNotBeNull();
+result.ShouldBeEmpty();
+result.ShouldContain(item);
+result.ShouldBeGreaterThan(5);
+await Should.ThrowAsync<InvalidOperationException>(async () => await action());
 ```
 
 ## Troubleshooting

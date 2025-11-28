@@ -3,7 +3,7 @@
 // </copyright>
 
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using SeventySix.ApiTracking;
 using SeventySix.Infrastructure;
 using SeventySix.Shared;
@@ -17,44 +17,52 @@ namespace SeventySix.Tests.Infrastructure;
 /// </summary>
 public class RateLimitingServiceTests
 {
-	private readonly Mock<ILogger<RateLimitingService>> MockLogger;
-	private readonly Mock<IThirdPartyApiRequestRepository> MockRepository;
-	private readonly Mock<ITransactionManager> MockTransactionManager;
+	private readonly ILogger<RateLimitingService> Logger;
+	private readonly IThirdPartyApiRequestRepository Repository;
+	private readonly ITransactionManager TransactionManager;
 	private readonly RateLimitingService Sut;
 
 	public RateLimitingServiceTests()
 	{
-		MockLogger = new Mock<ILogger<RateLimitingService>>();
-		MockRepository = new Mock<IThirdPartyApiRequestRepository>();
-		MockTransactionManager = new Mock<ITransactionManager>();
+		Logger = Substitute.For<ILogger<RateLimitingService>>();
+		Repository = Substitute.For<IThirdPartyApiRequestRepository>();
+		TransactionManager = Substitute.For<ITransactionManager>();
 
 		// Setup TransactionManager to execute operations directly (pass-through)
-		MockTransactionManager
-			.Setup(tm => tm.ExecuteInTransactionAsync(
-				It.IsAny<Func<CancellationToken, Task<bool>>>(),
-				It.IsAny<int>(),
-				It.IsAny<CancellationToken>()))
-			.Returns<Func<CancellationToken, Task<bool>>, int, CancellationToken>(
-				async (operation, _, ct) => await operation(ct));
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<bool>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(async callInfo =>
+			{
+				Func<CancellationToken, Task<bool>> operation = callInfo.ArgAt<Func<CancellationToken, Task<bool>>>(0);
+				CancellationToken ct = callInfo.ArgAt<CancellationToken>(2);
+				return await operation(ct);
+			});
 
-		MockTransactionManager
-			.Setup(tm => tm.ExecuteInTransactionAsync(
-				It.IsAny<Func<CancellationToken, Task>>(),
-				It.IsAny<int>(),
-				It.IsAny<CancellationToken>()))
-			.Returns<Func<CancellationToken, Task>, int, CancellationToken>(
-				async (operation, _, ct) => await operation(ct));
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(async callInfo =>
+			{
+				Func<CancellationToken, Task> operation = callInfo.ArgAt<Func<CancellationToken, Task>>(0);
+				CancellationToken ct = callInfo.ArgAt<CancellationToken>(2);
+				await operation(ct);
+			});
 
-		Sut = new RateLimitingService(MockLogger.Object, MockRepository.Object, MockTransactionManager.Object);
+		Sut = new RateLimitingService(Logger, Repository, TransactionManager);
 	}
 
 	[Fact]
 	public async Task CanMakeRequestAsync_WithNoRecord_ReturnsTrueAsync()
 	{
 		const string apiName = "TestApi";
-		MockRepository
-			.Setup(r => r.GetByApiNameAndDateAsync(apiName, It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((ThirdPartyApiRequest?)null);
+		Repository
+			.GetByApiNameAndDateAsync(apiName, Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+			.Returns((ThirdPartyApiRequest?)null);
 
 		bool result = await Sut.CanMakeRequestAsync(apiName);
 
@@ -75,9 +83,9 @@ public class RateLimitingServiceTests
 			ResetDate = today
 		};
 
-		MockRepository
-			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(request);
+		Repository
+			.GetByApiNameAndDateAsync(apiName, today, Arg.Any<CancellationToken>())
+			.Returns(request);
 
 		bool result = await Sut.CanMakeRequestAsync(apiName);
 
@@ -98,9 +106,9 @@ public class RateLimitingServiceTests
 			ResetDate = today
 		};
 
-		MockRepository
-			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(request);
+		Repository
+			.GetByApiNameAndDateAsync(apiName, today, Arg.Any<CancellationToken>())
+			.Returns(request);
 
 		bool result = await Sut.CanMakeRequestAsync(apiName);
 
@@ -114,25 +122,24 @@ public class RateLimitingServiceTests
 		const string baseUrl = "https://api.test.com";
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 
-		MockRepository
-			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
-			.ReturnsAsync((ThirdPartyApiRequest?)null);
+		Repository
+			.GetByApiNameAndDateAsync(apiName, today, Arg.Any<CancellationToken>())
+			.Returns((ThirdPartyApiRequest?)null);
 
-		MockRepository
-			.Setup(r => r.CreateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((ThirdPartyApiRequest req, CancellationToken ct) => req);
+		Repository
+			.CreateAsync(Arg.Any<ThirdPartyApiRequest>(), Arg.Any<CancellationToken>())
+			.Returns(callInfo => callInfo.ArgAt<ThirdPartyApiRequest>(0));
 
 		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
 		Assert.True(result);
-		MockRepository.Verify(
-			r => r.CreateAsync(
-				It.Is<ThirdPartyApiRequest>(req =>
-					req.ApiName == apiName &&
-					req.BaseUrl == baseUrl &&
-					req.CallCount == 1 &&
-					req.ResetDate == today)),
-			Times.Once);
+		await Repository.Received(1).CreateAsync(
+			Arg.Is<ThirdPartyApiRequest>(req =>
+				req.ApiName == apiName &&
+				req.BaseUrl == baseUrl &&
+				req.CallCount == 1 &&
+				req.ResetDate == today),
+			Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -150,21 +157,19 @@ public class RateLimitingServiceTests
 			ResetDate = today
 		};
 
-		MockRepository
-			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(request);
+		Repository
+			.GetByApiNameAndDateAsync(apiName, today, Arg.Any<CancellationToken>())
+			.Returns(request);
 
-		MockRepository
-			.Setup(r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((ThirdPartyApiRequest req, CancellationToken ct) => req);
+		Repository
+			.UpdateAsync(Arg.Any<ThirdPartyApiRequest>(), Arg.Any<CancellationToken>())
+			.Returns(callInfo => callInfo.ArgAt<ThirdPartyApiRequest>(0));
 
 		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
 		Assert.True(result);
 		Assert.Equal(6, request.CallCount);
-		MockRepository.Verify(
-			r => r.UpdateAsync(request),
-			Times.Once);
+		await Repository.Received(1).UpdateAsync(request, Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -182,26 +187,24 @@ public class RateLimitingServiceTests
 			ResetDate = today
 		};
 
-		MockRepository
-			.Setup(r => r.GetByApiNameAndDateAsync(apiName, today, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(request);
+		Repository
+			.GetByApiNameAndDateAsync(apiName, today, Arg.Any<CancellationToken>())
+			.Returns(request);
 
 		bool result = await Sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
 		Assert.False(result);
 		Assert.Equal(1000, request.CallCount);
-		MockRepository.Verify(
-			r => r.UpdateAsync(It.IsAny<ThirdPartyApiRequest>()),
-			Times.Never);
+		await Repository.DidNotReceive().UpdateAsync(Arg.Any<ThirdPartyApiRequest>(), Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
 	public async Task GetRequestCountAsync_NoRecord_ReturnsZeroAsync()
 	{
 		const string apiName = "TestApi";
-		MockRepository
-			.Setup(r => r.GetByApiNameAndDateAsync(apiName, It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((ThirdPartyApiRequest?)null);
+		Repository
+			.GetByApiNameAndDateAsync(apiName, Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+			.Returns((ThirdPartyApiRequest?)null);
 
 		int count = await Sut.GetRequestCountAsync(apiName);
 
@@ -212,9 +215,9 @@ public class RateLimitingServiceTests
 	public async Task GetRemainingQuotaAsync_NoRecord_ReturnsFullLimitAsync()
 	{
 		const string apiName = "TestApi";
-		MockRepository
-			.Setup(r => r.GetByApiNameAndDateAsync(apiName, It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync((ThirdPartyApiRequest?)null);
+		Repository
+			.GetByApiNameAndDateAsync(apiName, Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+			.Returns((ThirdPartyApiRequest?)null);
 
 		int remaining = await Sut.GetRemainingQuotaAsync(apiName);
 

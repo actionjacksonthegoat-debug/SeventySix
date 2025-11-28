@@ -5,11 +5,11 @@
 using System.Net;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Moq;
-using Moq.Protected;
+using NSubstitute;
 using SeventySix.ApiTracking;
 using SeventySix.Infrastructure;
 using SeventySix.Shared;
+using SeventySix.TestUtilities.TestHelpers;
 
 namespace SeventySix.Tests.Infrastructure;
 
@@ -18,19 +18,18 @@ namespace SeventySix.Tests.Infrastructure;
 /// </summary>
 public class PollyIntegrationClientTests : IDisposable
 {
-	private readonly Mock<IRateLimitingService> MockRateLimiter;
-	private readonly Mock<ILoggerFactory> MockLoggerFactory;
+	private readonly IRateLimitingService RateLimiter;
+	private readonly ILoggerFactory LoggerFactory;
 	private readonly IMemoryCache Cache;
 	private readonly PollyOptions Options;
-	private readonly Mock<HttpMessageHandler> MockHttpMessageHandler;
 	private readonly HttpClient HttpClient;
 	private bool Disposed;
 
 	public PollyIntegrationClientTests()
 	{
-		MockRateLimiter = new Mock<IRateLimitingService>();
-		MockLoggerFactory = new Mock<ILoggerFactory>();
-		MockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
+		RateLimiter = Substitute.For<IRateLimitingService>();
+		LoggerFactory = Substitute.For<ILoggerFactory>();
+		LoggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
 		Cache = new MemoryCache(new MemoryCacheOptions());
 		Options = new PollyOptions
 		{
@@ -43,8 +42,14 @@ public class PollyIntegrationClientTests : IDisposable
 			UseJitter = false,
 		};
 
-		MockHttpMessageHandler = new Mock<HttpMessageHandler>();
-		HttpClient = new HttpClient(MockHttpMessageHandler.Object)
+		MockHttpMessageHandler handler = new((request, cancellationToken) =>
+			Task.FromResult(new HttpResponseMessage
+			{
+				StatusCode = HttpStatusCode.OK,
+				Content = new StringContent("{\"value\":\"success\"}"),
+			}));
+
+		HttpClient = new HttpClient(handler)
 		{
 			BaseAddress = new Uri("https://api.test.com"),
 		};
@@ -69,7 +74,7 @@ public class PollyIntegrationClientTests : IDisposable
 		// Assert
 		Assert.NotNull(result);
 		Assert.Equal("cached", result.Value);
-		MockRateLimiter.Verify(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+		await RateLimiter.DidNotReceive().CanMakeRequestAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -79,8 +84,8 @@ public class PollyIntegrationClientTests : IDisposable
 		const string url = "/test";
 		const string apiName = "TestApi";
 
-		MockRateLimiter.Setup(r => r.CanMakeRequestAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(false);
-		MockRateLimiter.Setup(r => r.GetTimeUntilReset()).Returns(TimeSpan.FromHours(1));
+		RateLimiter.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>()).Returns(false);
+		RateLimiter.GetTimeUntilReset().Returns(TimeSpan.FromHours(1));
 
 		PollyIntegrationClient sut = CreateSut();
 
@@ -97,18 +102,8 @@ public class PollyIntegrationClientTests : IDisposable
 		const string apiName = "TestApi";
 		const string cacheKey = "test-key";
 
-		MockRateLimiter.Setup(r => r.CanMakeRequestAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(true);
-
-		MockHttpMessageHandler.Protected()
-			.Setup<Task<HttpResponseMessage>>(
-				"SendAsync",
-				ItExpr.IsAny<HttpRequestMessage>(),
-				ItExpr.IsAny<CancellationToken>())
-			.ReturnsAsync(new HttpResponseMessage
-			{
-				StatusCode = HttpStatusCode.OK,
-				Content = new StringContent("{\"value\":\"success\"}"),
-			});
+		RateLimiter.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>()).Returns(true);
+		RateLimiter.TryIncrementRequestCountAsync(apiName, Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
 
 		PollyIntegrationClient sut = CreateSut();
 
@@ -118,7 +113,7 @@ public class PollyIntegrationClientTests : IDisposable
 		// Assert
 		Assert.NotNull(result);
 		Assert.Equal("success", result.Value);
-		MockRateLimiter.Verify(r => r.TryIncrementRequestCountAsync(apiName, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+		await RateLimiter.Received(1).TryIncrementRequestCountAsync(apiName, Arg.Any<string>(), Arg.Any<CancellationToken>());
 
 		// Verify cached
 		Assert.True(Cache.TryGetValue(cacheKey, out TestResponse? cached));
@@ -152,7 +147,7 @@ public class PollyIntegrationClientTests : IDisposable
 	{
 		// Arrange
 		const string apiName = "TestApi";
-		MockRateLimiter.Setup(r => r.CanMakeRequestAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+		RateLimiter.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>()).Returns(true);
 
 		PollyIntegrationClient sut = CreateSut();
 
@@ -161,7 +156,7 @@ public class PollyIntegrationClientTests : IDisposable
 
 		// Assert
 		Assert.True(result);
-		MockRateLimiter.Verify(r => r.CanMakeRequestAsync(apiName, It.IsAny<CancellationToken>()), Times.Once);
+		await RateLimiter.Received(1).CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -169,7 +164,7 @@ public class PollyIntegrationClientTests : IDisposable
 	{
 		// Arrange
 		const string apiName = "TestApi";
-		MockRateLimiter.Setup(r => r.GetRemainingQuotaAsync(apiName, It.IsAny<CancellationToken>())).ReturnsAsync(500);
+		RateLimiter.GetRemainingQuotaAsync(apiName, Arg.Any<CancellationToken>()).Returns(500);
 
 		PollyIntegrationClient sut = CreateSut();
 
@@ -178,7 +173,7 @@ public class PollyIntegrationClientTests : IDisposable
 
 		// Assert
 		Assert.Equal(500, result);
-		MockRateLimiter.Verify(r => r.GetRemainingQuotaAsync(apiName, It.IsAny<CancellationToken>()), Times.Once);
+		await RateLimiter.Received(1).GetRemainingQuotaAsync(apiName, Arg.Any<CancellationToken>());
 	}
 
 	public void Dispose()
@@ -199,8 +194,8 @@ public class PollyIntegrationClientTests : IDisposable
 		return new PollyIntegrationClient(
 			HttpClient,
 			Cache,
-			MockRateLimiter.Object,
-			MockLoggerFactory.Object,
+			RateLimiter,
+			LoggerFactory,
 			Microsoft.Extensions.Options.Options.Create(Options));
 	}
 

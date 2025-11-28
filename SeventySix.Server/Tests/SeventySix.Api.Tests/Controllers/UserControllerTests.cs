@@ -4,7 +4,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.Identity;
 using SeventySix.Shared;
@@ -31,15 +31,15 @@ namespace SeventySix.Api.Tests.Controllers;
 /// </remarks>
 public class UsersControllerTests
 {
-	private readonly Mock<IUserService> MockUserService;
-	private readonly Mock<ILogger<UsersController>> MockLogger;
+	private readonly IUserService UserService;
+	private readonly ILogger<UsersController> Logger;
 	private readonly UsersController Controller;
 
 	public UsersControllerTests()
 	{
-		MockUserService = new Mock<IUserService>();
-		MockLogger = new Mock<ILogger<UsersController>>();
-		Controller = new UsersController(MockUserService.Object, MockLogger.Object);
+		UserService = Substitute.For<IUserService>();
+		Logger = Substitute.For<ILogger<UsersController>>();
+		Controller = new UsersController(UserService, Logger);
 	}
 
 	#region Constructor Tests
@@ -62,9 +62,9 @@ public class UsersControllerTests
 			new UserDto { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
 		];
 
-		MockUserService
-			.Setup(s => s.GetAllUsersAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(users);
+		UserService
+			.GetAllUsersAsync(Arg.Any<CancellationToken>())
+			.Returns(users);
 
 		// Act
 		ActionResult<IEnumerable<UserDto>> result = await Controller.GetAllAsync(CancellationToken.None);
@@ -74,16 +74,16 @@ public class UsersControllerTests
 		IEnumerable<UserDto> returnedUsers = Assert.IsAssignableFrom<IEnumerable<UserDto>>(okResult.Value);
 		Assert.Equal(2, returnedUsers.Count());
 
-		MockUserService.Verify(s => s.GetAllUsersAsync(It.IsAny<CancellationToken>()), Times.Once);
+		await UserService.Received(1).GetAllUsersAsync(Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
 	public async Task GetAllAsync_ShouldReturnOkWithEmptyList_WhenNoUsersExistAsync()
 	{
 		// Arrange
-		MockUserService
-			.Setup(s => s.GetAllUsersAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync([]);
+		UserService
+			.GetAllUsersAsync(Arg.Any<CancellationToken>())
+			.Returns([]);
 
 		// Act
 		ActionResult<IEnumerable<UserDto>> result = await Controller.GetAllAsync(CancellationToken.None);
@@ -98,22 +98,20 @@ public class UsersControllerTests
 	public async Task GetAllAsync_ShouldLogInformationAsync()
 	{
 		// Arrange
-		MockUserService
-			.Setup(s => s.GetAllUsersAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync([]);
+		UserService
+			.GetAllUsersAsync(Arg.Any<CancellationToken>())
+			.Returns([]);
 
 		// Act
 		await Controller.GetAllAsync(CancellationToken.None);
 
 		// Assert
-		MockLogger.Verify(
-			x => x.Log(
-				LogLevel.Information,
-				It.IsAny<EventId>(),
-				It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Getting all users")),
-				null,
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
+		Logger.Received().Log(
+			LogLevel.Information,
+			Arg.Any<EventId>(),
+			Arg.Is<object>(v => v.ToString()!.Contains("Getting all users")),
+			null,
+			Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	#endregion
@@ -136,9 +134,9 @@ public class UsersControllerTests
 			ModifiedBy = "System",
 		};
 
-		MockUserService
-			.Setup(s => s.GetUserByIdAsync(123, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(userDto);
+		UserService
+			.GetUserByIdAsync(123, Arg.Any<CancellationToken>())
+			.Returns(userDto);
 
 		// Act
 		ActionResult<UserDto> result = await Controller.GetByIdAsync(123, CancellationToken.None);
@@ -154,9 +152,9 @@ public class UsersControllerTests
 	public async Task GetByIdAsync_ShouldReturnNotFound_WhenUserDoesNotExistAsync()
 	{
 		// Arrange
-		MockUserService
-			.Setup(s => s.GetUserByIdAsync(999, It.IsAny<CancellationToken>()))
-			.ReturnsAsync((UserDto?)null);
+		UserService
+			.GetUserByIdAsync(999, Arg.Any<CancellationToken>())
+			.Returns((UserDto?)null);
 
 		// Act
 		ActionResult<UserDto> result = await Controller.GetByIdAsync(999, CancellationToken.None);
@@ -193,9 +191,9 @@ public class UsersControllerTests
 			ModifiedBy = "System",
 		};
 
-		MockUserService
-			.Setup(s => s.CreateUserAsync(request))
-			.ReturnsAsync(createdUser);
+		UserService
+			.CreateUserAsync(request, Arg.Any<CancellationToken>())
+			.Returns(createdUser);
 
 		// Act
 		ActionResult<UserDto> result = await Controller.CreateAsync(request, CancellationToken.None);
@@ -231,20 +229,19 @@ public class UsersControllerTests
 			ModifiedBy = "System",
 		};
 
-		MockUserService
-			.Setup(s => s.CreateUserAsync(request))
-			.ReturnsAsync(createdUser);
+		UserService
+			.CreateUserAsync(request, Arg.Any<CancellationToken>())
+			.Returns(createdUser);
 
 		// Act
 		await Controller.CreateAsync(request, CancellationToken.None);
 
 		// Assert
-		MockUserService.Verify(
-			s => s.CreateUserAsync(
-				It.Is<CreateUserRequest>(r =>
-					r.Username == "test" &&
-					r.Email == "test@example.com")),
-			Times.Once);
+		await UserService.Received(1).CreateUserAsync(
+			Arg.Is<CreateUserRequest>(r =>
+				r.Username == "test" &&
+				r.Email == "test@example.com"),
+			Arg.Any<CancellationToken>());
 	}
 
 	#endregion
@@ -277,9 +274,9 @@ public class UsersControllerTests
 			ModifiedBy = "Admin",
 		};
 
-		MockUserService
-		.Setup(s => s.UpdateUserAsync(request))
-		.ReturnsAsync(updatedUser);
+		UserService
+			.UpdateUserAsync(request, Arg.Any<CancellationToken>())
+			.Returns(updatedUser);
 
 		// Act
 		ActionResult<UserDto> result = await Controller.UpdateAsync(1, request, CancellationToken.None);
@@ -311,9 +308,7 @@ public class UsersControllerTests
 		BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
 		Assert.Equal("ID in URL does not match ID in request body", badRequestResult.Value);
 
-		MockUserService.Verify(
-		s => s.UpdateUserAsync(It.IsAny<UpdateUserRequest>()),
-		Times.Never);
+		await UserService.DidNotReceive().UpdateUserAsync(Arg.Any<UpdateUserRequest>(), Arg.Any<CancellationToken>());
 	}
 
 	#endregion
@@ -324,9 +319,9 @@ public class UsersControllerTests
 	public async Task DeleteAsync_UserExists_ReturnsNoContentAsync()
 	{
 		// Arrange
-		MockUserService
-		.Setup(s => s.DeleteUserAsync(1, It.IsAny<string>()))
-		.ReturnsAsync(true);
+		UserService
+			.DeleteUserAsync(1, Arg.Any<string>(), Arg.Any<CancellationToken>())
+			.Returns(true);
 
 		// Act
 		IActionResult result = await Controller.DeleteAsync(1, CancellationToken.None);
@@ -339,9 +334,9 @@ public class UsersControllerTests
 	public async Task DeleteAsync_UserNotFound_ReturnsNotFoundAsync()
 	{
 		// Arrange
-		MockUserService
-		.Setup(s => s.DeleteUserAsync(999, It.IsAny<string>()))
-		.ReturnsAsync(false);
+		UserService
+			.DeleteUserAsync(999, Arg.Any<string>(), Arg.Any<CancellationToken>())
+			.Returns(false);
 
 		// Act
 		IActionResult result = await Controller.DeleteAsync(999, CancellationToken.None);
@@ -358,9 +353,11 @@ public class UsersControllerTests
 	public async Task RestoreAsync_UserExists_ReturnsNoContentAsync()
 	{
 		// Arrange
-		MockUserService
-		.Setup(s => s.RestoreUserAsync(1))
-		.ReturnsAsync(true);        // Act
+		UserService
+			.RestoreUserAsync(1, Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		// Act
 		IActionResult result = await Controller.RestoreAsync(1, CancellationToken.None);
 
 		// Assert
@@ -371,9 +368,11 @@ public class UsersControllerTests
 	public async Task RestoreAsync_UserNotFound_ReturnsNotFoundAsync()
 	{
 		// Arrange
-		MockUserService
-		.Setup(s => s.RestoreUserAsync(999))
-		.ReturnsAsync(false);       // Act
+		UserService
+			.RestoreUserAsync(999, Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		// Act
 		IActionResult result = await Controller.RestoreAsync(999, CancellationToken.None);
 
 		// Assert
@@ -409,9 +408,9 @@ public class UsersControllerTests
 			TotalCount = 2,
 		};
 
-		MockUserService
-		.Setup(s => s.GetPagedUsersAsync(request))
-		.ReturnsAsync(pagedResult);
+		UserService
+			.GetPagedUsersAsync(request, Arg.Any<CancellationToken>())
+			.Returns(pagedResult);
 
 		// Act
 		ActionResult<PagedResult<UserDto>> result = await Controller.GetPagedAsync(request, CancellationToken.None);
@@ -444,9 +443,9 @@ public class UsersControllerTests
 			ModifiedBy = "System",
 		};
 
-		MockUserService
-		.Setup(s => s.GetByUsernameAsync("testuser"))
-		.ReturnsAsync(user);
+		UserService
+			.GetByUsernameAsync("testuser", Arg.Any<CancellationToken>())
+			.Returns(user);
 
 		// Act
 		ActionResult<UserDto> result = await Controller.GetByUsernameAsync("testuser", CancellationToken.None);
@@ -461,9 +460,9 @@ public class UsersControllerTests
 	public async Task GetByUsernameAsync_UserNotFound_ReturnsNotFoundAsync()
 	{
 		// Arrange
-		MockUserService
-		.Setup(s => s.GetByUsernameAsync("nonexistent"))
-		.ReturnsAsync((UserDto?)null);
+		UserService
+			.GetByUsernameAsync("nonexistent", Arg.Any<CancellationToken>())
+			.Returns((UserDto?)null);
 
 		// Act
 		ActionResult<UserDto> result = await Controller.GetByUsernameAsync("nonexistent", CancellationToken.None);
@@ -480,9 +479,9 @@ public class UsersControllerTests
 	public async Task CheckUsernameAsync_UsernameExists_ReturnsTrueAsync()
 	{
 		// Arrange
-		MockUserService
-		.Setup(s => s.UsernameExistsAsync("existinguser", null))
-		.ReturnsAsync(true);
+		UserService
+			.UsernameExistsAsync("existinguser", null, Arg.Any<CancellationToken>())
+			.Returns(true);
 
 		// Act
 		ActionResult<bool> result = await Controller.CheckUsernameAsync("existinguser", null, CancellationToken.None);
@@ -498,9 +497,9 @@ public class UsersControllerTests
 	public async Task CheckUsernameAsync_UsernameNotFound_ReturnsFalseAsync()
 	{
 		// Arrange
-		MockUserService
-		.Setup(s => s.UsernameExistsAsync("newuser", null))
-		.ReturnsAsync(false);
+		UserService
+			.UsernameExistsAsync("newuser", null, Arg.Any<CancellationToken>())
+			.Returns(false);
 
 		// Act
 		ActionResult<bool> result = await Controller.CheckUsernameAsync("newuser", null, CancellationToken.None);
@@ -523,9 +522,11 @@ public class UsersControllerTests
 		List<int> ids = [1, 2, 3];
 		int expectedCount = 3;
 
-		MockUserService
-		.Setup(s => s.BulkUpdateActiveStatusAsync(ids, true, It.IsAny<string>()))
-		.ReturnsAsync(expectedCount);       // Act
+		UserService
+			.BulkUpdateActiveStatusAsync(ids, true, Arg.Any<string>(), Arg.Any<CancellationToken>())
+			.Returns(expectedCount);
+
+		// Act
 		ActionResult<int> result = await Controller.BulkActivateAsync(ids, CancellationToken.None);
 
 		// Assert
@@ -541,9 +542,11 @@ public class UsersControllerTests
 		List<int> ids = [1, 2, 3];
 		int expectedCount = 3;
 
-		MockUserService
-		.Setup(s => s.BulkUpdateActiveStatusAsync(ids, false, It.IsAny<string>()))
-		.ReturnsAsync(expectedCount);       // Act
+		UserService
+			.BulkUpdateActiveStatusAsync(ids, false, Arg.Any<string>(), Arg.Any<CancellationToken>())
+			.Returns(expectedCount);
+
+		// Act
 		ActionResult<int> result = await Controller.BulkDeactivateAsync(ids, CancellationToken.None);
 
 		// Assert

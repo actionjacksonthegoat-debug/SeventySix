@@ -2,14 +2,14 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Moq;
+using NSubstitute;
 using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
+using Shouldly;
 
 namespace SeventySix.Tests.Infrastructure;
 
@@ -19,7 +19,7 @@ namespace SeventySix.Tests.Infrastructure;
 /// </summary>
 public class AuditInterceptorTests : IDisposable
 {
-	private readonly Mock<IUserContextAccessor> MockUserContextAccessor;
+	private readonly IUserContextAccessor MockUserContextAccessor;
 	private readonly AuditInterceptor Interceptor;
 	private readonly IdentityDbContext IdentityContext;
 	private readonly LoggingDbContext LoggingContext;
@@ -28,10 +28,10 @@ public class AuditInterceptorTests : IDisposable
 	public AuditInterceptorTests()
 	{
 		// Setup mock user context
-		MockUserContextAccessor = new Mock<IUserContextAccessor>();
-		MockUserContextAccessor.Setup(x => x.GetCurrentUser()).Returns("TestUser");
+		MockUserContextAccessor = Substitute.For<IUserContextAccessor>();
+		MockUserContextAccessor.GetCurrentUser().Returns("TestUser");
 
-		Interceptor = new AuditInterceptor(MockUserContextAccessor.Object);
+		Interceptor = new AuditInterceptor(MockUserContextAccessor);
 
 		// Setup Identity context (for User - IAuditableEntity)
 		DbContextOptions<IdentityDbContext> identityOptions = new DbContextOptionsBuilder<IdentityDbContext>()
@@ -95,8 +95,8 @@ public class AuditInterceptorTests : IDisposable
 		DateTime afterSave = DateTime.UtcNow;
 
 		// Assert
-		user.CreateDate.Should().BeOnOrAfter(beforeSave);
-		user.CreateDate.Should().BeOnOrBefore(afterSave);
+		user.CreateDate.ShouldBeGreaterThanOrEqualTo(beforeSave);
+		user.CreateDate.ShouldBeLessThanOrEqualTo(afterSave);
 	}
 
 	[Fact]
@@ -114,8 +114,8 @@ public class AuditInterceptorTests : IDisposable
 		await IdentityContext.SaveChangesAsync();
 
 		// Assert
-		user.CreatedBy.Should().Be("TestUser");
-		MockUserContextAccessor.Verify(x => x.GetCurrentUser(), Times.AtLeastOnce());
+		user.CreatedBy.ShouldBe("TestUser");
+		MockUserContextAccessor.Received().GetCurrentUser();
 	}
 
 	[Fact]
@@ -133,7 +133,7 @@ public class AuditInterceptorTests : IDisposable
 		await IdentityContext.SaveChangesAsync();
 
 		// Assert - On creation, ModifiedBy is also set to current user
-		user.ModifiedBy.Should().Be("TestUser");
+		user.ModifiedBy.ShouldBe("TestUser");
 	}
 
 	[Fact]
@@ -151,7 +151,7 @@ public class AuditInterceptorTests : IDisposable
 		await IdentityContext.SaveChangesAsync();
 
 		// Assert - ModifyDate should not be set on creation
-		user.ModifyDate.Should().BeNull();
+		user.ModifyDate.ShouldBeNull();
 	}
 
 	[Fact]
@@ -173,9 +173,9 @@ public class AuditInterceptorTests : IDisposable
 		DateTime afterUpdate = DateTime.UtcNow;
 
 		// Assert
-		user.ModifyDate.Should().NotBeNull();
-		user.ModifyDate.Should().BeOnOrAfter(beforeUpdate);
-		user.ModifyDate.Should().BeOnOrBefore(afterUpdate);
+		user.ModifyDate.ShouldNotBeNull();
+		Assert.True(user.ModifyDate!.Value >= beforeUpdate);
+		Assert.True(user.ModifyDate.Value <= afterUpdate);
 	}
 
 	[Fact]
@@ -191,14 +191,14 @@ public class AuditInterceptorTests : IDisposable
 		await IdentityContext.SaveChangesAsync();
 
 		// Change the user for modification
-		MockUserContextAccessor.Setup(x => x.GetCurrentUser()).Returns("ModifyingUser");
+		MockUserContextAccessor.GetCurrentUser().Returns("ModifyingUser");
 
 		// Act
 		user.Email = "updated@example.com";
 		await IdentityContext.SaveChangesAsync();
 
 		// Assert
-		user.ModifiedBy.Should().Be("ModifyingUser");
+		user.ModifiedBy.ShouldBe("ModifyingUser");
 	}
 
 	[Fact]
@@ -220,7 +220,7 @@ public class AuditInterceptorTests : IDisposable
 		await IdentityContext.SaveChangesAsync();
 
 		// Assert - CreateDate should remain unchanged
-		user.CreateDate.Should().Be(originalCreateDate);
+		user.CreateDate.ShouldBe(originalCreateDate);
 	}
 
 	[Fact]
@@ -237,14 +237,14 @@ public class AuditInterceptorTests : IDisposable
 		string originalCreatedBy = user.CreatedBy;
 
 		// Change the user for modification
-		MockUserContextAccessor.Setup(x => x.GetCurrentUser()).Returns("ModifyingUser");
+		MockUserContextAccessor.GetCurrentUser().Returns("ModifyingUser");
 
 		// Act
 		user.Email = "updated@example.com";
 		await IdentityContext.SaveChangesAsync();
 
 		// Assert - CreatedBy should remain unchanged
-		user.CreatedBy.Should().Be(originalCreatedBy);
+		user.CreatedBy.ShouldBe(originalCreatedBy);
 	}
 
 	[Fact]
@@ -264,7 +264,7 @@ public class AuditInterceptorTests : IDisposable
 		await IdentityContext.SaveChangesAsync();
 
 		// Assert - CreateDate should be preserved if not default
-		user.CreateDate.Should().Be(presetDate);
+		user.CreateDate.ShouldBe(presetDate);
 	}
 
 	[Fact]
@@ -283,7 +283,7 @@ public class AuditInterceptorTests : IDisposable
 		await IdentityContext.SaveChangesAsync();
 
 		// Assert - CreatedBy should be preserved if already set
-		user.CreatedBy.Should().Be("OriginalCreator");
+		user.CreatedBy.ShouldBe("OriginalCreator");
 	}
 
 	#endregion
@@ -308,8 +308,8 @@ public class AuditInterceptorTests : IDisposable
 		DateTime afterSave = DateTime.UtcNow;
 
 		// Assert
-		apiRequest.CreateDate.Should().BeOnOrAfter(beforeSave);
-		apiRequest.CreateDate.Should().BeOnOrBefore(afterSave);
+		apiRequest.CreateDate.ShouldBeGreaterThanOrEqualTo(beforeSave);
+		apiRequest.CreateDate.ShouldBeLessThanOrEqualTo(afterSave);
 	}
 
 	[Fact]
@@ -328,7 +328,7 @@ public class AuditInterceptorTests : IDisposable
 		await ApiTrackingContext.SaveChangesAsync();
 
 		// Assert
-		apiRequest.ModifyDate.Should().BeNull();
+		apiRequest.ModifyDate.ShouldBeNull();
 	}
 
 	[Fact]
@@ -351,9 +351,9 @@ public class AuditInterceptorTests : IDisposable
 		DateTime afterUpdate = DateTime.UtcNow;
 
 		// Assert
-		apiRequest.ModifyDate.Should().NotBeNull();
-		apiRequest.ModifyDate.Should().BeOnOrAfter(beforeUpdate);
-		apiRequest.ModifyDate.Should().BeOnOrBefore(afterUpdate);
+		apiRequest.ModifyDate.ShouldNotBeNull();
+		Assert.True(apiRequest.ModifyDate!.Value >= beforeUpdate);
+		Assert.True(apiRequest.ModifyDate.Value <= afterUpdate);
 	}
 
 	[Fact]
@@ -376,7 +376,7 @@ public class AuditInterceptorTests : IDisposable
 		await ApiTrackingContext.SaveChangesAsync();
 
 		// Assert
-		apiRequest.CreateDate.Should().Be(originalCreateDate);
+		apiRequest.CreateDate.ShouldBe(originalCreateDate);
 	}
 
 	[Fact]
@@ -397,7 +397,7 @@ public class AuditInterceptorTests : IDisposable
 		await ApiTrackingContext.SaveChangesAsync();
 
 		// Assert
-		apiRequest.CreateDate.Should().Be(presetDate);
+		apiRequest.CreateDate.ShouldBe(presetDate);
 	}
 
 	#endregion
@@ -422,8 +422,8 @@ public class AuditInterceptorTests : IDisposable
 		DateTime afterSave = DateTime.UtcNow;
 
 		// Assert
-		log.CreateDate.Should().BeOnOrAfter(beforeSave);
-		log.CreateDate.Should().BeOnOrBefore(afterSave);
+		log.CreateDate.ShouldBeGreaterThanOrEqualTo(beforeSave);
+		log.CreateDate.ShouldBeLessThanOrEqualTo(afterSave);
 	}
 
 	[Fact]
@@ -444,7 +444,7 @@ public class AuditInterceptorTests : IDisposable
 		await LoggingContext.SaveChangesAsync();
 
 		// Assert
-		log.CreateDate.Should().Be(presetDate);
+		log.CreateDate.ShouldBe(presetDate);
 	}
 
 	#endregion
@@ -474,18 +474,20 @@ public class AuditInterceptorTests : IDisposable
 		DateTime afterSave = DateTime.UtcNow;
 
 		// Assert
-		user1.CreateDate.Should().BeOnOrAfter(beforeSave).And.BeOnOrBefore(afterSave);
-		user1.CreatedBy.Should().Be("TestUser");
+		user1.CreateDate.ShouldBeGreaterThanOrEqualTo(beforeSave);
+		user1.CreateDate.ShouldBeLessThanOrEqualTo(afterSave);
+		user1.CreatedBy.ShouldBe("TestUser");
 
-		user2.CreateDate.Should().BeOnOrAfter(beforeSave).And.BeOnOrBefore(afterSave);
-		user2.CreatedBy.Should().Be("TestUser");
+		user2.CreateDate.ShouldBeGreaterThanOrEqualTo(beforeSave);
+		user2.CreateDate.ShouldBeLessThanOrEqualTo(afterSave);
+		user2.CreatedBy.ShouldBe("TestUser");
 	}
 
 	[Fact]
 	public async Task SavingChangesAsync_UserContextReturnsSystem_SetsSystemAsCreatedByAsync()
 	{
 		// Arrange
-		MockUserContextAccessor.Setup(x => x.GetCurrentUser()).Returns("System");
+		MockUserContextAccessor.GetCurrentUser().Returns("System");
 		User user = new()
 		{
 			Username = "testuser",
@@ -497,8 +499,8 @@ public class AuditInterceptorTests : IDisposable
 		await IdentityContext.SaveChangesAsync();
 
 		// Assert
-		user.CreatedBy.Should().Be("System");
-		user.ModifiedBy.Should().Be("System");
+		user.CreatedBy.ShouldBe("System");
+		user.ModifiedBy.ShouldBe("System");
 	}
 
 	#endregion

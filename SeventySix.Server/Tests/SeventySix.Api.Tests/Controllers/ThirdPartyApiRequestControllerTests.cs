@@ -3,7 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
-using Moq;
+using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.ApiTracking;
 
@@ -14,13 +14,13 @@ namespace SeventySix.Api.Tests.Controllers;
 /// </summary>
 public class ThirdPartyApiRequestsControllerTests
 {
-	private readonly Mock<IThirdPartyApiRequestService> MockService;
+	private readonly IThirdPartyApiRequestService Service;
 	private readonly ThirdPartyApiRequestsController Controller;
 
 	public ThirdPartyApiRequestsControllerTests()
 	{
-		MockService = new Mock<IThirdPartyApiRequestService>();
-		Controller = new ThirdPartyApiRequestsController(MockService.Object);
+		Service = Substitute.For<IThirdPartyApiRequestService>();
+		Controller = new ThirdPartyApiRequestsController(Service);
 	}
 
 	[Fact]
@@ -49,8 +49,8 @@ public class ThirdPartyApiRequestsControllerTests
 			},
 		];
 
-		MockService.Setup(s => s.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(expectedRequests);
+		Service.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns(expectedRequests);
 
 		// Act
 		ActionResult<IEnumerable<ThirdPartyApiRequestResponse>> result = await Controller.GetAllAsync(CancellationToken.None);
@@ -59,15 +59,15 @@ public class ThirdPartyApiRequestsControllerTests
 		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
 		IEnumerable<ThirdPartyApiRequestResponse> returnedRequests = Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestResponse>>(okResult.Value);
 		Assert.Equal(2, returnedRequests.Count());
-		MockService.Verify(s => s.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+		await Service.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
 	public async Task GetAll_ReturnsEmptyList_WhenNoApiRequestsAsync()
 	{
 		// Arrange
-		MockService.Setup(s => s.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync([]);
+		Service.GetAllAsync(Arg.Any<CancellationToken>())
+			.Returns([]);
 
 		// Act
 		ActionResult<IEnumerable<ThirdPartyApiRequestResponse>> result = await Controller.GetAllAsync(CancellationToken.None);
@@ -98,8 +98,8 @@ public class ThirdPartyApiRequestsControllerTests
 			},
 		};
 
-		MockService.Setup(s => s.GetStatisticsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(expectedStats);
+		Service.GetStatisticsAsync(Arg.Any<CancellationToken>())
+			.Returns(expectedStats);
 
 		// Act
 		ActionResult<ThirdPartyApiStatisticsResponse> result = await Controller.GetStatisticsAsync(CancellationToken.None);
@@ -110,7 +110,7 @@ public class ThirdPartyApiRequestsControllerTests
 		Assert.Equal(225, returnedStats.TotalCallsToday);
 		Assert.Equal(2, returnedStats.TotalApisTracked);
 		Assert.Equal(2, returnedStats.CallsByApi.Count);
-		MockService.Verify(s => s.GetStatisticsAsync(It.IsAny<CancellationToken>()), Times.Once);
+		await Service.Received(1).GetStatisticsAsync(Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -125,8 +125,8 @@ public class ThirdPartyApiRequestsControllerTests
 			LastCalledByApi = [],
 		};
 
-		MockService.Setup(s => s.GetStatisticsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(expectedStats);
+		Service.GetStatisticsAsync(Arg.Any<CancellationToken>())
+			.Returns(expectedStats);
 
 		// Act
 		ActionResult<ThirdPartyApiStatisticsResponse> result = await Controller.GetStatisticsAsync(CancellationToken.None);

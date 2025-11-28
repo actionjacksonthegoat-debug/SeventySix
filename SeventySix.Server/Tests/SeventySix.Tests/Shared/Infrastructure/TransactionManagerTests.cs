@@ -2,11 +2,11 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Shared;
+using Shouldly;
 
 namespace SeventySix.Tests.Infrastructure;
 
@@ -62,10 +62,10 @@ public class TransactionManagerTests : IDisposable
 		});
 
 		// Assert
-		result.Should().BeGreaterThan(0);
+		result.ShouldBeGreaterThan(0);
 		ThirdPartyApiRequest? savedEntity = await DbContext.ThirdPartyApiRequests.FindAsync(result);
-		savedEntity.Should().NotBeNull();
-		savedEntity!.ApiName.Should().Be("TestApi");
+		savedEntity.ShouldNotBeNull();
+		savedEntity!.ApiName.ShouldBe("TestApi");
 	}
 
 	[Fact]
@@ -91,11 +91,11 @@ public class TransactionManagerTests : IDisposable
 		});
 
 		// Assert
-		await act.Should().ThrowAsync<InvalidOperationException>()
-			.WithMessage("Simulated error");
+		InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(act);
+		exception.Message.ShouldBe("Simulated error");
 
 		List<ThirdPartyApiRequest> allEntities = await DbContext.ThirdPartyApiRequests.ToListAsync();
-		allEntities.Should().BeEmpty(); // Transaction was rolled back
+		allEntities.ShouldBeEmpty(); // Transaction was rolled back
 	}
 
 	[Fact]
@@ -105,7 +105,7 @@ public class TransactionManagerTests : IDisposable
 		Func<Task<int>> act = async () => await TransactionManager.ExecuteInTransactionAsync<int>(null!);
 
 		// Assert
-		await act.Should().ThrowAsync<ArgumentNullException>();
+		await Should.ThrowAsync<ArgumentNullException>(act);
 	}
 
 	[Fact]
@@ -131,8 +131,8 @@ public class TransactionManagerTests : IDisposable
 
 		// Assert
 		List<ThirdPartyApiRequest> allEntities = await DbContext.ThirdPartyApiRequests.ToListAsync();
-		allEntities.Should().HaveCount(1);
-		allEntities[0].ApiName.Should().Be("TestApi");
+		allEntities.Count.ShouldBe(1);
+		allEntities[0].ApiName.ShouldBe("TestApi");
 	}
 
 	[Fact]
@@ -175,8 +175,8 @@ public class TransactionManagerTests : IDisposable
 		}, maxRetries: 3);
 
 		// Assert
-		result.Should().Be(50);
-		attemptCount.Should().Be(2); // First attempt failed, second succeeded
+		result.ShouldBe(50);
+		attemptCount.ShouldBe(2); // First attempt failed, second succeeded
 	}
 
 	[Fact]
@@ -194,10 +194,10 @@ public class TransactionManagerTests : IDisposable
 		}, maxRetries: 2);
 
 		// Assert
-		await act.Should().ThrowAsync<InvalidOperationException>()
-			.WithMessage("*failed after 2 retries*");
+		InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(act);
+		exception.Message.ShouldContain("failed after 2 retries");
 
-		attemptCount.Should().Be(3); // Initial attempt + 2 retries
+		attemptCount.ShouldBe(3); // Initial attempt + 2 retries
 	}
 
 	[Fact]
@@ -214,10 +214,10 @@ public class TransactionManagerTests : IDisposable
 		}, maxRetries: 3);
 
 		// Assert
-		await act.Should().ThrowAsync<InvalidOperationException>()
-			.WithMessage("Non-retryable error");
+		InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(act);
+		exception.Message.ShouldBe("Non-retryable error");
 
-		attemptCount.Should().Be(1); // No retries for non-retryable exceptions
+		attemptCount.ShouldBe(1); // No retries for non-retryable exceptions
 	}
 
 	[Fact]
@@ -238,7 +238,7 @@ public class TransactionManagerTests : IDisposable
 			cancellationToken: cancellationTokenSource.Token);
 
 		// Assert
-		await act.Should().ThrowAsync<OperationCanceledException>();
+		await Should.ThrowAsync<OperationCanceledException>(act);
 	}
 
 	[Fact]
@@ -278,11 +278,11 @@ public class TransactionManagerTests : IDisposable
 		});
 
 		// Assert
-		result1.Should().NotBe(result2);
+		result1.ShouldNotBe(result2);
 		List<ThirdPartyApiRequest> allEntities = await DbContext.ThirdPartyApiRequests.ToListAsync();
-		allEntities.Should().HaveCount(2);
-		allEntities.Should().Contain(e => e.ApiName == "Api1");
-		allEntities.Should().Contain(e => e.ApiName == "Api2");
+		allEntities.Count.ShouldBe(2);
+		allEntities.ShouldContain(e => e.ApiName == "Api1");
+		allEntities.ShouldContain(e => e.ApiName == "Api2");
 	}
 
 	[Fact]
@@ -315,7 +315,7 @@ public class TransactionManagerTests : IDisposable
 		}, maxRetries: 2);
 
 		// Assert - Verify retry happened and operation succeeded
-		result.Should().Be(42);
-		attemptCount.Should().Be(2);
+		result.ShouldBe(42);
+		attemptCount.ShouldBe(2);
 	}
 }

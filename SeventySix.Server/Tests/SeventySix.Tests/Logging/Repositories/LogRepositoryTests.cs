@@ -2,13 +2,13 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using SeventySix.Logging;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
+using Shouldly;
 
 namespace SeventySix.Tests.Logging;
 
@@ -37,7 +37,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		LoggingDbContext context = CreateLoggingDbContext();
 		Repository = new LogRepository(
 			context,
-			Mock.Of<ILogger<LogRepository>>());
+			Substitute.For<ILogger<LogRepository>>());
 	}
 
 	[Fact]
@@ -384,45 +384,37 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	[Fact]
 	public async Task DeleteByIdAsync_ThrowsArgumentOutOfRangeException_WhenIdIsZeroAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.DeleteByIdAsync(0);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
-			.WithParameterName("id");
+		// Arrange & Act & Assert
+		ArgumentOutOfRangeException exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+			async () => await Repository.DeleteByIdAsync(0));
+		Assert.Equal("id", exception.ParamName);
 	}
 
 	[Fact]
 	public async Task DeleteByIdAsync_ThrowsArgumentOutOfRangeException_WhenIdIsNegativeAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.DeleteByIdAsync(-1);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
-			.WithParameterName("id");
+		// Arrange & Act & Assert
+		ArgumentOutOfRangeException exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+			async () => await Repository.DeleteByIdAsync(-1));
+		Assert.Equal("id", exception.ParamName);
 	}
 
 	[Fact]
 	public async Task DeleteBatchAsync_ThrowsArgumentNullException_WhenIdsIsNullAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.DeleteBatchAsync(null!);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentNullException>()
-			.WithParameterName("ids");
+		// Arrange & Act & Assert
+		ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
+			async () => await Repository.DeleteBatchAsync(null!));
+		Assert.Equal("ids", exception.ParamName);
 	}
 
 	[Fact]
 	public async Task DeleteBatchAsync_ThrowsArgumentOutOfRangeException_WhenIdsIsEmptyAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.DeleteBatchAsync([]);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
-			.WithParameterName("ids.Length");
+		// Arrange & Act & Assert
+		ArgumentOutOfRangeException exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+			async () => await Repository.DeleteBatchAsync([]));
+		Assert.Equal("ids.Length", exception.ParamName);
 	}
 
 	#endregion

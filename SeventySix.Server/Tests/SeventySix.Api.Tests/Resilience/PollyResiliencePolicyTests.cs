@@ -3,62 +3,47 @@
 // </copyright>
 
 using System.Net;
-using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Moq;
-using Moq.Protected;
+using NSubstitute;
 using SeventySix.Infrastructure;
 using SeventySix.Shared;
+using SeventySix.TestUtilities.TestHelpers;
+using Shouldly;
 
 namespace SeventySix.Api.Tests.Resilience;
 
 /// <summary>
 /// Tests for Polly resilience policies (retry, circuit breaker, timeout).
-/// Mocks external dependencies including HTTP calls.
 /// </summary>
 public class PollyResiliencePolicyTests
 {
-	/// <summary>
-	/// Tests retry policy retries on transient failures.
-	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
 	[Fact]
 	public async Task RetryPolicy_TransientFailure_RetriesThreeTimesAsync()
 	{
 		// Arrange
 		int callCount = 0;
-		Mock<HttpMessageHandler> handlerMock = new();
-		handlerMock
-			.Protected()
-			.Setup<Task<HttpResponseMessage>>(
-				"SendAsync",
-				ItExpr.IsAny<HttpRequestMessage>(),
-				ItExpr.IsAny<CancellationToken>())
-			.ReturnsAsync(() =>
-			{
-				callCount++;
-				return callCount < 3
-					? new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
-					: new HttpResponseMessage(HttpStatusCode.OK)
-					{
-						Content = new StringContent("{\"lat\":40.71,\"lon\":-74.01}"),
-					};
-			});
-
-		HttpClient httpClient = new(handlerMock.Object)
+		MockHttpMessageHandler handler = new((_, _) =>
 		{
-			BaseAddress = new Uri("https://api.example.com/"),
-		};
+			callCount++;
+			return Task.FromResult(callCount < 3
+				? new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+				: new HttpResponseMessage(HttpStatusCode.OK)
+				{
+					Content = new StringContent("{\"lat\":40.71,\"lon\":-74.01}"),
+				});
+		});
 
+		HttpClient httpClient = new(handler) { BaseAddress = new Uri("https://api.example.com/") };
 		MemoryCache cache = new(new MemoryCacheOptions());
-		Mock<IRateLimitingService> rateLimiterMock = new();
-		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-		Mock<ILoggerFactory> loggerFactoryMock = new();
-		loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
+		IRateLimitingService rateLimiter = Substitute.For<IRateLimitingService>();
+		rateLimiter.CanMakeRequestAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+		rateLimiter.TryIncrementRequestCountAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+
+		ILoggerFactory loggerFactory = Substitute.For<ILoggerFactory>();
+		loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
 
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
@@ -70,44 +55,31 @@ public class PollyResiliencePolicyTests
 			TimeoutSeconds = 10,
 		});
 
-		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerFactoryMock.Object, options);
+		PollyIntegrationClient client = new(httpClient, cache, rateLimiter, loggerFactory, options);
 
 		// Act
 		dynamic? response = await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None);
 
 		// Assert
-		callCount.Should().Be(3, "Should retry twice (3 attempts total)");
+		callCount.ShouldBe(3, "Should retry twice (3 attempts total)");
 	}
 
-	/// <summary>
-	/// Tests circuit breaker opens after threshold failures.
-	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
 	[Fact]
 	public async Task CircuitBreaker_ExceedsThreshold_OpensCircuitAsync()
 	{
 		// Arrange
-		Mock<HttpMessageHandler> handlerMock = new();
-		handlerMock
-			.Protected()
-			.Setup<Task<HttpResponseMessage>>(
-				"SendAsync",
-				ItExpr.IsAny<HttpRequestMessage>(),
-				ItExpr.IsAny<CancellationToken>())
-			.ReturnsAsync(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+		MockHttpMessageHandler handler = new((_, _) =>
+			Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)));
 
-		HttpClient httpClient = new(handlerMock.Object)
-		{
-			BaseAddress = new Uri("https://api.example.com/"),
-		};
-
+		HttpClient httpClient = new(handler) { BaseAddress = new Uri("https://api.example.com/") };
 		MemoryCache cache = new(new MemoryCacheOptions());
-		Mock<IRateLimitingService> rateLimiterMock = new();
-		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-		Mock<ILoggerFactory> loggerFactoryMock = new();
-		loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
+		IRateLimitingService rateLimiter = Substitute.For<IRateLimitingService>();
+		rateLimiter.CanMakeRequestAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+		rateLimiter.TryIncrementRequestCountAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+
+		ILoggerFactory loggerFactory = Substitute.For<ILoggerFactory>();
+		loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
 
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
@@ -118,7 +90,7 @@ public class PollyResiliencePolicyTests
 			TimeoutSeconds = 10,
 		});
 
-		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerFactoryMock.Object, options);
+		PollyIntegrationClient client = new(httpClient, cache, rateLimiter, loggerFactory, options);
 
 		// Act - Trigger circuit breaker
 		for (int i = 0; i < 5; i++)
@@ -138,39 +110,25 @@ public class PollyResiliencePolicyTests
 			await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None));
 	}
 
-	/// <summary>
-	/// Tests timeout policy cancels long-running requests.
-	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
 	[Fact]
 	public async Task TimeoutPolicy_SlowResponse_CancelsRequestAsync()
 	{
 		// Arrange
-		Mock<HttpMessageHandler> handlerMock = new();
-		handlerMock
-			.Protected()
-			.Setup<Task<HttpResponseMessage>>(
-				"SendAsync",
-				ItExpr.IsAny<HttpRequestMessage>(),
-				ItExpr.IsAny<CancellationToken>())
-			.Returns(async () =>
-			{
-				await Task.Delay(TimeSpan.FromSeconds(15));
-				return new HttpResponseMessage(HttpStatusCode.OK);
-			});
-
-		HttpClient httpClient = new(handlerMock.Object)
+		MockHttpMessageHandler handler = new(async (_, _) =>
 		{
-			BaseAddress = new Uri("https://api.example.com/"),
-		};
+			await Task.Delay(TimeSpan.FromSeconds(15));
+			return new HttpResponseMessage(HttpStatusCode.OK);
+		});
 
+		HttpClient httpClient = new(handler) { BaseAddress = new Uri("https://api.example.com/") };
 		MemoryCache cache = new(new MemoryCacheOptions());
-		Mock<IRateLimitingService> rateLimiterMock = new();
-		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-		Mock<ILoggerFactory> loggerFactoryMock = new();
-		loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
+		IRateLimitingService rateLimiter = Substitute.For<IRateLimitingService>();
+		rateLimiter.CanMakeRequestAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+		rateLimiter.TryIncrementRequestCountAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+
+		ILoggerFactory loggerFactory = Substitute.For<ILoggerFactory>();
+		loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
 
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
@@ -181,7 +139,7 @@ public class PollyResiliencePolicyTests
 			TimeoutSeconds = 2,
 		});
 
-		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerFactoryMock.Object, options);
+		PollyIntegrationClient client = new(httpClient, cache, rateLimiter, loggerFactory, options);
 
 		// Act & Assert
 		await Assert.ThrowsAnyAsync<Exception>(async () =>

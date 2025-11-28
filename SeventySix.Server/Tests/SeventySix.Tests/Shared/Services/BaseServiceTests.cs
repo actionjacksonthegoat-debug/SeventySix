@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using SeventySix.Shared.Services;
 using Xunit;
 
@@ -7,13 +7,13 @@ namespace SeventySix.Tests.Shared.Services;
 
 public sealed class BaseServiceTests
 {
-	private readonly Mock<ILogger<TestService>> MockLogger;
+	private readonly ILogger<TestService> Logger;
 	private readonly TestService Service;
 
 	public BaseServiceTests()
 	{
-		MockLogger = new Mock<ILogger<TestService>>();
-		Service = new TestService(MockLogger.Object);
+		Logger = Substitute.For<ILogger<TestService>>();
+		Service = new TestService(Logger);
 	}
 
 	[Fact]
@@ -30,22 +30,18 @@ public sealed class BaseServiceTests
 
 		// Assert
 		Assert.Equal(expectedResult, result);
-		MockLogger.Verify(
-			logger => logger.Log(
-				LogLevel.Information,
-				It.IsAny<EventId>(),
-				It.Is<It.IsAnyType>((value, type) => value.ToString()!.Contains("Starting TestOperation")),
-				null,
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
-		MockLogger.Verify(
-			logger => logger.Log(
-				LogLevel.Information,
-				It.IsAny<EventId>(),
-				It.Is<It.IsAnyType>((value, type) => value.ToString()!.Contains("Completed TestOperation")),
-				null,
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
+		Logger.Received().Log(
+			LogLevel.Information,
+			Arg.Any<EventId>(),
+			Arg.Is<object>(o => o.ToString()!.Contains("Starting TestOperation")),
+			null,
+			Arg.Any<Func<object, Exception?, string>>());
+		Logger.Received().Log(
+			LogLevel.Information,
+			Arg.Any<EventId>(),
+			Arg.Is<object>(o => o.ToString()!.Contains("Completed TestOperation")),
+			null,
+			Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]
@@ -63,14 +59,12 @@ public sealed class BaseServiceTests
 		);
 
 		Assert.Same(expectedException, exception);
-		MockLogger.Verify(
-			logger => logger.Log(
-				LogLevel.Error,
-				It.IsAny<EventId>(),
-				It.Is<It.IsAnyType>((value, type) => value.ToString()!.Contains("Error in FailingOperation")),
-				expectedException,
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
+		Logger.Received().Log(
+			LogLevel.Error,
+			Arg.Any<EventId>(),
+			Arg.Is<object>(o => o.ToString()!.Contains("Error in FailingOperation")),
+			expectedException,
+			Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]
@@ -90,14 +84,12 @@ public sealed class BaseServiceTests
 		);
 
 		// Assert
-		MockLogger.Verify(
-			logger => logger.Log(
-				LogLevel.Information,
-				It.IsAny<EventId>(),
-				It.Is<It.IsAnyType>((value, type) => value.ToString()!.Contains("Completed LongOperation")),
-				null,
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
+		Logger.Received().Log(
+			LogLevel.Information,
+			Arg.Any<EventId>(),
+			Arg.Is<object>(o => o.ToString()!.Contains("Completed LongOperation")),
+			null,
+			Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]

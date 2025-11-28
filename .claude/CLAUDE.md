@@ -671,8 +671,8 @@ public class UserService(IUserRepository repo, ILogger<UserService> logger)
 // ❌ WRONG - Separate field assignments (legacy)
 public class UserService
 {
-    private readonly IUserRepository _repo;
-    public UserService(IUserRepository repo) => _repo = repo;
+    private readonly IUserRepository Repo;
+    public UserService(IUserRepository repo) => Repo = repo;
 }
 ```
 
@@ -871,10 +871,8 @@ describe("UserComponent", () => {
 	});
 });
 
-// ❌ FORBIDDEN in tests
-fakeAsync(() => {});
-tick();
-flush();
+// Libraries: NSubstitute (mocking), Shouldly (assertions), xUnit (framework)
+// ❌ FORBIDDEN in tests: fakeAsync(), tick(), flush(), Zone.js, Moq, FluentAssertions
 ```
 
 ### .NET Tests
@@ -892,27 +890,30 @@ dotnet test --logger "console;verbosity=normal"
 ```csharp
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository> _mockRepo = new();
-    private readonly UserService _sut;
+    private readonly IUserRepository UserRepository = Substitute.For<IUserRepository>();
+    private readonly UserService UserService;
 
     public UserServiceTests() =>
-        _sut = new UserService(_mockRepo.Object);
+        UserService = new UserService(UserRepository);
 
     [Fact]
     public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
     {
         // Arrange
         User user = new() { Id = 1, Username = "Test" };
-        _mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        UserRepository.GetByIdAsync(1).Returns(user);
 
         // Act
-        User? result = await _sut.GetByIdAsync(1);
+        User? result = await UserService.GetByIdAsync(1);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("Test", result.Username);
+        result.ShouldNotBeNull();
+        result.Username.ShouldBe("Test");
     }
 }
+
+// Libraries: NSubstitute (mocking), Shouldly (assertions), xUnit (framework)
+// ❌ NEVER use: Moq, FluentAssertions (license issues)
 ```
 
 **Naming Convention:**
@@ -1069,7 +1070,14 @@ Then in `app.routes.ts`, use `loadChildren`:
 
 ```typescript
 // environments/environment.ts
-export const environment = {
+interface Environment {
+    production: boolean;
+    apiUrl: string;
+    refreshInterval: number;
+    maxRetries: number;
+}
+
+export const environment: Environment = {
     production: false,
     apiUrl: "https://localhost:7001/api",
     refreshInterval: 30000,

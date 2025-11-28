@@ -2,13 +2,13 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
+using Shouldly;
 
 namespace SeventySix.Tests.Identity;
 
@@ -37,7 +37,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		IdentityDbContext context = CreateIdentityDbContext();
 		Repository = new UserRepository(
 			context,
-			Mock.Of<ILogger<UserRepository>>());
+			Substitute.For<ILogger<UserRepository>>());
 	}
 
 	[Fact]
@@ -47,8 +47,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		IEnumerable<User> result = await Repository.GetAllAsync(CancellationToken.None);
 
 		// Assert
-		result.Should().NotBeNull();
-		result.Should().BeEmpty();
+		result.ShouldNotBeNull();
+		result.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -66,13 +66,13 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		User result = await Repository.CreateAsync(user);
 
 		// Assert
-		result.Should().NotBeNull();
-		result.Id.Should().BeGreaterThan(0);
-		result.Username.Should().Be("testuser");
-		result.Email.Should().Be("test@example.com");
-		result.FullName.Should().Be("Test User");
-		result.IsActive.Should().BeTrue();
-		result.CreateDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+		result.ShouldNotBeNull();
+		result.Id.ShouldBeGreaterThan(0);
+		result.Username.ShouldBe("testuser");
+		result.Email.ShouldBe("test@example.com");
+		result.FullName.ShouldBe("Test User");
+		result.IsActive.ShouldBeTrue();
+		result.CreateDate.ShouldBe(DateTime.UtcNow, TimeSpan.FromSeconds(5));
 	}
 
 	[Fact]
@@ -89,9 +89,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		User? result = await Repository.GetByIdAsync(created.Id, CancellationToken.None);
 
 		// Assert
-		result.Should().NotBeNull();
-		result!.Id.Should().Be(created.Id);
-		result.Username.Should().Be("testuser");
+		result.ShouldNotBeNull();
+		result!.Id.ShouldBe(created.Id);
+		result.Username.ShouldBe("testuser");
 	}
 
 	[Fact]
@@ -101,7 +101,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		User? result = await Repository.GetByIdAsync(999, CancellationToken.None);
 
 		// Assert
-		result.Should().BeNull();
+		result.ShouldBeNull();
 	}
 
 	[Fact]
@@ -121,9 +121,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		User result = await Repository.UpdateAsync(created);
 
 		// Assert
-		result.Should().NotBeNull();
-		result.Username.Should().Be("updateduser");
-		result.Email.Should().Be("updated@example.com");
+		result.ShouldNotBeNull();
+		result.Username.ShouldBe("updateduser");
+		result.Email.ShouldBe("updated@example.com");
 	}
 
 	[Fact]
@@ -140,11 +140,11 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		bool result = await Repository.DeleteAsync(created.Id);
 
 		// Assert
-		result.Should().BeTrue();
+		result.ShouldBeTrue();
 
 		// Verify user is deleted
 		User? deletedUser = await Repository.GetByIdAsync(created.Id, CancellationToken.None);
-		deletedUser.Should().BeNull();
+		deletedUser.ShouldBeNull();
 	}
 
 	[Fact]
@@ -154,7 +154,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		bool result = await Repository.DeleteAsync(999);
 
 		// Assert
-		result.Should().BeFalse();
+		result.ShouldBeFalse();
 	}
 
 	[Fact]
@@ -173,8 +173,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		IEnumerable<User> result = await Repository.GetAllAsync(CancellationToken.None);
 
 		// Assert
-		result.Should().HaveCount(3);
-		result.Select(u => u.Username).Should().Contain(["user1", "user2", "user3"]);
+		result.Count().ShouldBe(3);
+		result.Select(u => u.Username).ShouldContain("user1");
+		result.Select(u => u.Username).ShouldContain("user2");
+		result.Select(u => u.Username).ShouldContain("user3");
 	}
 
 	[Fact]
@@ -188,8 +190,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		User? result = await Repository.GetByUsernameAsync("uniqueuser", CancellationToken.None);
 
 		// Assert
-		result.Should().NotBeNull();
-		result!.Username.Should().Be("uniqueuser");
+		result.ShouldNotBeNull();
+		result!.Username.ShouldBe("uniqueuser");
 	}
 
 	[Fact]
@@ -199,7 +201,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		User? result = await Repository.GetByUsernameAsync("nonexistent", CancellationToken.None);
 
 		// Assert
-		result.Should().BeNull();
+		result.ShouldBeNull();
 	}
 
 	[Fact]
@@ -213,8 +215,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		User? result = await Repository.GetByEmailAsync("test@example.com", CancellationToken.None);
 
 		// Assert
-		result.Should().NotBeNull();
-		result!.Email.Should().Be("test@example.com");
+		result.ShouldNotBeNull();
+		result!.Email.ShouldBe("test@example.com");
 	}
 
 	[Fact]
@@ -228,7 +230,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		User? result = await Repository.GetByEmailAsync("test@example.com", CancellationToken.None);
 
 		// Assert
-		result.Should().NotBeNull();
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -242,7 +244,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		bool result = await Repository.UsernameExistsAsync("existinguser", null, CancellationToken.None);
 
 		// Assert
-		result.Should().BeTrue();
+		result.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -252,7 +254,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		bool result = await Repository.UsernameExistsAsync("nonexistent", null, CancellationToken.None);
 
 		// Assert
-		result.Should().BeFalse();
+		result.ShouldBeFalse();
 	}
 
 	[Fact]
@@ -266,7 +268,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		bool result = await Repository.UsernameExistsAsync("updatetest", created.Id, CancellationToken.None);
 
 		// Assert
-		result.Should().BeFalse();
+		result.ShouldBeFalse();
 	}
 
 	[Fact]
@@ -280,7 +282,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		bool result = await Repository.EmailExistsAsync("check@example.com", null, CancellationToken.None);
 
 		// Assert
-		result.Should().BeTrue();
+		result.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -297,8 +299,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(request, CancellationToken.None);
 
 		// Assert
-		users.Should().HaveCount(10);
-		totalCount.Should().Be(25);
+		users.Count().ShouldBe(10);
+		totalCount.ShouldBe(25);
 	}
 
 	[Fact]
@@ -314,8 +316,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(request, CancellationToken.None);
 
 		// Assert
-		users.Should().HaveCount(2);
-		totalCount.Should().Be(2);
+		users.Count().ShouldBe(2);
+		totalCount.ShouldBe(2);
 	}
 
 	[Fact]
@@ -330,8 +332,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(request, CancellationToken.None);
 
 		// Assert
-		users.Should().HaveCount(1);
-		users.First().IsActive.Should().BeTrue();
+		users.Count().ShouldBe(1);
+		users.First().IsActive.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -350,8 +352,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(request, CancellationToken.None);
 
 		// Assert
-		users.Should().Contain(u => u.Username == "visible");
-		users.Should().NotContain(u => u.Username == "deleted");
+		users.ShouldContain(u => u.Username == "visible");
+		users.ShouldNotContain(u => u.Username == "deleted");
 	}
 
 	[Fact]
@@ -367,7 +369,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		IEnumerable<User> result = await Repository.GetByIdsAsync([created1.Id, created2.Id], CancellationToken.None);
 
 		// Assert
-		result.Should().HaveCount(2);
+		result.Count().ShouldBe(2);
 	}
 
 	[Fact]
@@ -383,9 +385,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		int count = await Repository.BulkUpdateActiveStatusAsync([created1.Id, created2.Id], false);
 
 		// Assert
-		count.Should().Be(2);
+		count.ShouldBe(2);
 		User? updated1 = await Repository.GetByIdAsync(created1.Id, CancellationToken.None);
-		updated1!.IsActive.Should().BeFalse();
+		updated1!.IsActive.ShouldBeFalse();
 	}
 
 	[Fact]
@@ -399,9 +401,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		bool result = await Repository.SoftDeleteAsync(created.Id, "admin");
 
 		// Assert
-		result.Should().BeTrue();
+		result.ShouldBeTrue();
 		User? deleted = await Repository.GetByIdAsync(created.Id, CancellationToken.None);
-		deleted.Should().BeNull(); // Excluded by query filter
+		deleted.ShouldBeNull(); // Excluded by query filter
 	}
 
 	[Fact]
@@ -420,10 +422,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 			.IgnoreQueryFilters()
 			.FirstOrDefaultAsync(u => u.Id == created.Id);
 
-		softDeleted.Should().NotBeNull();
-		softDeleted!.IsDeleted.Should().BeTrue();
-		softDeleted.DeletedBy.Should().Be("testuser");
-		softDeleted.DeletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+		softDeleted.ShouldNotBeNull();
+		softDeleted!.IsDeleted.ShouldBeTrue();
+		softDeleted.DeletedBy.ShouldBe("testuser");
+		Assert.True(softDeleted.DeletedAt.HasValue && (DateTime.UtcNow - softDeleted.DeletedAt.Value).TotalSeconds <= 5);
 	}
 
 	[Fact]
@@ -438,10 +440,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		bool result = await Repository.RestoreAsync(created.Id);
 
 		// Assert
-		result.Should().BeTrue();
+		result.ShouldBeTrue();
 		User? restored = await Repository.GetByIdAsync(created.Id, CancellationToken.None);
-		restored.Should().NotBeNull();
-		restored!.IsDeleted.Should().BeFalse();
+		restored.ShouldNotBeNull();
+		restored!.IsDeleted.ShouldBeFalse();
 	}
 
 	[Fact]
@@ -455,7 +457,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		int result = await Repository.CountAsync(null, false, CancellationToken.None);
 
 		// Assert
-		result.Should().Be(2);
+		result.ShouldBe(2);
 	}
 
 	[Fact]
@@ -469,7 +471,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		int result = await Repository.CountAsync(true, false, CancellationToken.None);
 
 		// Assert
-		result.Should().Be(1);
+		result.ShouldBe(1);
 	}
 
 	#region Parameter Validation Tests
@@ -477,116 +479,94 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	[Fact]
 	public async Task GetByIdAsync_ThrowsArgumentOutOfRangeException_WhenIdIsZeroAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.GetByIdAsync(0, CancellationToken.None);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
-			.WithParameterName("id");
+		// Arrange & Act & Assert
+		ArgumentOutOfRangeException exception = await Should.ThrowAsync<ArgumentOutOfRangeException>(
+			async () => await Repository.GetByIdAsync(0, CancellationToken.None));
+		exception.ParamName.ShouldBe("id");
 	}
 
 	[Fact]
 	public async Task GetByIdAsync_ThrowsArgumentOutOfRangeException_WhenIdIsNegativeAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.GetByIdAsync(-1, CancellationToken.None);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
-			.WithParameterName("id");
+		// Arrange & Act & Assert
+		ArgumentOutOfRangeException exception = await Should.ThrowAsync<ArgumentOutOfRangeException>(
+			async () => await Repository.GetByIdAsync(-1, CancellationToken.None));
+		exception.ParamName.ShouldBe("id");
 	}
 
 	[Fact]
 	public async Task GetByUsernameAsync_ThrowsArgumentException_WhenUsernameIsNullAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.GetByUsernameAsync(null!, CancellationToken.None);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentException>();
+		// Arrange & Act & Assert
+		await Should.ThrowAsync<ArgumentException>(
+			async () => await Repository.GetByUsernameAsync(null!, CancellationToken.None));
 	}
 
 	[Fact]
 	public async Task GetByUsernameAsync_ThrowsArgumentException_WhenUsernameIsEmptyAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.GetByUsernameAsync(string.Empty, CancellationToken.None);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentException>();
+		// Arrange & Act & Assert
+		await Should.ThrowAsync<ArgumentException>(
+			async () => await Repository.GetByUsernameAsync(string.Empty, CancellationToken.None));
 	}
 
 	[Fact]
 	public async Task GetByUsernameAsync_ThrowsArgumentException_WhenUsernameIsWhitespaceAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.GetByUsernameAsync("   ", CancellationToken.None);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentException>();
+		// Arrange & Act & Assert
+		await Should.ThrowAsync<ArgumentException>(
+			async () => await Repository.GetByUsernameAsync("   ", CancellationToken.None));
 	}
 
 	[Fact]
 	public async Task GetByEmailAsync_ThrowsArgumentException_WhenEmailIsNullAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.GetByEmailAsync(null!, CancellationToken.None);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentException>();
+		// Arrange & Act & Assert
+		await Should.ThrowAsync<ArgumentException>(
+			async () => await Repository.GetByEmailAsync(null!, CancellationToken.None));
 	}
 
 	[Fact]
 	public async Task GetByEmailAsync_ThrowsArgumentException_WhenEmailIsEmptyAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.GetByEmailAsync(string.Empty, CancellationToken.None);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentException>();
+		// Arrange & Act & Assert
+		await Should.ThrowAsync<ArgumentException>(
+			async () => await Repository.GetByEmailAsync(string.Empty, CancellationToken.None));
 	}
 
 	[Fact]
 	public async Task GetByEmailAsync_ThrowsArgumentException_WhenEmailIsWhitespaceAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.GetByEmailAsync("   ", CancellationToken.None);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentException>();
+		// Arrange & Act & Assert
+		await Should.ThrowAsync<ArgumentException>(
+			async () => await Repository.GetByEmailAsync("   ", CancellationToken.None));
 	}
 
 	[Fact]
 	public async Task UpdateAsync_ThrowsArgumentNullException_WhenEntityIsNullAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.UpdateAsync(null!);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentNullException>()
-			.WithParameterName("entity");
+		// Arrange & Act & Assert
+		ArgumentNullException exception = await Should.ThrowAsync<ArgumentNullException>(
+			async () => await Repository.UpdateAsync(null!));
+		exception.ParamName.ShouldBe("entity");
 	}
 
 	[Fact]
 	public async Task DeleteAsync_ThrowsArgumentOutOfRangeException_WhenIdIsZeroAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.DeleteAsync(0);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
-			.WithParameterName("id");
+		// Arrange & Act & Assert
+		ArgumentOutOfRangeException exception = await Should.ThrowAsync<ArgumentOutOfRangeException>(
+			async () => await Repository.DeleteAsync(0));
+		exception.ParamName.ShouldBe("id");
 	}
 
 	[Fact]
 	public async Task DeleteAsync_ThrowsArgumentOutOfRangeException_WhenIdIsNegativeAsync()
 	{
-		// Arrange & Act
-		Func<Task> act = async () => await Repository.DeleteAsync(-1);
-
-		// Assert
-		await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
-			.WithParameterName("id");
+		// Arrange & Act & Assert
+		ArgumentOutOfRangeException exception = await Should.ThrowAsync<ArgumentOutOfRangeException>(
+			async () => await Repository.DeleteAsync(-1));
+		exception.ParamName.ShouldBe("id");
 	}
 
 	#endregion
@@ -602,8 +582,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 
 		// Manually corrupt the context to force a DbUpdateException
 		IdentityDbContext corruptContext = CreateIdentityDbContext();
-		Mock<ILogger<UserRepository>> mockLogger = new();
-		UserRepository corruptRepo = new(corruptContext, mockLogger.Object);
+		ILogger<UserRepository> mockLogger = Substitute.For<ILogger<UserRepository>>();
+		UserRepository corruptRepo = new(corruptContext, mockLogger);
 
 		// Remove the entity from the corrupt context to simulate a concurrency issue
 		await corruptContext.Users.Where(u => u.Id == created.Id).ExecuteDeleteAsync();
@@ -612,7 +592,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		bool result = await corruptRepo.DeleteAsync(created.Id);
 
 		// Assert - Should return false when not found
-		result.Should().BeFalse();
+		result.ShouldBeFalse();
 	}
 
 	[Fact]
@@ -627,7 +607,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		int result = await Repository.BulkUpdateActiveStatusAsync([created.Id], false);
 
 		// Assert
-		result.Should().Be(1);
+		result.ShouldBe(1);
 	}
 
 	#endregion

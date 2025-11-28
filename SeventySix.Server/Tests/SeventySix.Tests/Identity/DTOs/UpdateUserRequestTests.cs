@@ -2,8 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentAssertions;
 using SeventySix.Identity;
+using Shouldly;
 
 namespace SeventySix.Tests.Identity;
 
@@ -26,11 +26,11 @@ public class UpdateUserRequestTests
 		};
 
 		// Assert
-		request.Id.Should().Be(1);
-		request.Username.Should().Be("testuser");
-		request.Email.Should().Be("test@example.com");
-		request.FullName.Should().Be("Test User");
-		request.IsActive.Should().BeTrue();
+		request.Id.ShouldBe(1);
+		request.Username.ShouldBe("testuser");
+		request.Email.ShouldBe("test@example.com");
+		request.FullName.ShouldBe("Test User");
+		request.IsActive.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -47,6 +47,6 @@ public class UpdateUserRequestTests
 		};
 
 		// Assert
-		request.FullName.Should().BeNull();
+		request.FullName.ShouldBeNull();
 	}
 }

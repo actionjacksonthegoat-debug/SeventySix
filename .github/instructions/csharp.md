@@ -68,23 +68,29 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 ```csharp
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository> _mockRepo = new();
-    private readonly UserService _sut;
+    private readonly IUserRepository UserRepository = Substitute.For<IUserRepository>();
+    private readonly UserService UserService;
 
-    public UserServiceTests() => _sut = new(_mockRepo.Object);
+    public UserServiceTests() => UserService = new(UserRepository);
 
     [Fact]
     public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
     {
+        // Arrange
         User user = new() { Id = 1, Username = "Test" };
-        _mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        UserRepository.GetByIdAsync(1).Returns(user);
 
-        User? result = await _sut.GetByIdAsync(1);
+        // Act
+        User? result = await UserService.GetByIdAsync(1);
 
-        Assert.NotNull(result);
-        Assert.Equal("Test", result.Username);
+        // Assert
+        result.ShouldNotBeNull();
+        result.Username.ShouldBe("Test");
     }
 }
+
+// Libraries: NSubstitute (mocking), Shouldly (assertions), xUnit (framework)
+// ❌ NEVER use: Moq, FluentAssertions (license issues)
 ```
 
 ## Options Pattern
