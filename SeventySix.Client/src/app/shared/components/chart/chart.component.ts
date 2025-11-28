@@ -7,7 +7,6 @@ import {
 	Signal,
 	viewChild
 } from "@angular/core";
-import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
@@ -56,7 +55,6 @@ Chart.register(
 @Component({
 	selector: "app-chart",
 	imports: [
-		CommonModule,
 		MatCardModule,
 		MatButtonModule,
 		MatIconModule,

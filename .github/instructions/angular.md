@@ -98,6 +98,28 @@ readonly processedItems: Signal<ProcessedItem[]> = computed(() =>
 
 ---
 
+## Service Scoping (CRITICAL)
+
+| Service Type     | Scope                | Example                        |
+| ---------------- | -------------------- | ------------------------------ |
+| Cross-cutting    | `providedIn: 'root'` | `LoggerService`, `ApiService`  |
+| Feature-specific | Route `providers`    | `UserService`, `LogRepository` |
+
+```typescript
+// ❌ Feature service in root = memory leak
+@Injectable({ providedIn: "root" })
+export class UserService { }
+
+// ✅ Route-scoped (bounded context)
+@Injectable()
+export class UserService { }
+
+// In routes:
+{ path: "users", providers: [UserService, UserRepository], loadComponent: ... }
+```
+
+---
+
 ## Test Pattern (Zoneless)
 
 ```typescript

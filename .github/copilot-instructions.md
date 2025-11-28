@@ -32,6 +32,8 @@
 -   **NEVER** use `ngClass`/`ngStyle` - use `[class.x]`/`[style.x]`
 -   **ALWAYS** use `takeUntilDestroyed()` for subscription cleanup
 -   **NEVER** call methods in templates - use `computed()` signals or pre-compute in data model
+-   **NEVER** use `providedIn: 'root'` for feature services - use route `providers` array
+-   **ALWAYS** scope feature services (UserService, LogRepository) to their feature routes
 
 ### SCSS/CSS Styling
 
@@ -69,6 +71,7 @@
 -   No generic repository pattern
 -   PostgreSQL only
 -   Features are self-contained (models, repos, services inside feature)
+-   **Feature services scoped to routes** - NOT `providedIn: 'root'` (memory management, bounded context isolation)
 -   Path aliases: `@infrastructure/*`, `@shared/*`, `@admin/*`, `@game/*`
 -   Server-Client alignment: Identity → `@admin/users/`, Logging → `@admin/logs/`
 

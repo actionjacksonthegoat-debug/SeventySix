@@ -56,7 +56,7 @@ describe("ErrorHandlerService", () =>
 	{
 		it("should log and notify for generic errors", () =>
 		{
-			const error = new Error("Test error");
+			const error: Error = new Error("Test error");
 
 			try
 			{
@@ -245,7 +245,7 @@ describe("ErrorHandlerService", () =>
 	{
 		it("should log errors to ClientErrorLoggerService", () =>
 		{
-			const error = new Error("Test error");
+			const error: Error = new Error("Test error");
 
 			try
 			{
@@ -320,7 +320,7 @@ describe("ErrorHandlerService", () =>
 
 		it("should include copy data with error details", () =>
 		{
-			const error = new Error("Test error with stack");
+			const error: Error = new Error("Test error with stack");
 
 			try
 			{
@@ -340,7 +340,7 @@ describe("ErrorHandlerService", () =>
 
 		it("should include stack trace in copy data", () =>
 		{
-			const error = new Error("Test error");
+			const error: Error = new Error("Test error");
 			error.stack = "Error: Test error\n    at Object.<anonymous>";
 
 			try
@@ -396,7 +396,7 @@ describe("ErrorHandlerService", () =>
 				}
 			});
 
-			const firstError = new Error("First error");
+			const firstError: Error = new Error("First error");
 
 			// First error triggers handleError
 			service.handleError(firstError);
@@ -412,12 +412,12 @@ describe("ErrorHandlerService", () =>
 
 		it("should gracefully handle errors during notification", () =>
 		{
-			const consoleSpy = spyOn(console, "error");
+			const consoleSpy: jasmine.Spy = spyOn(console, "error");
 			mockNotification.errorWithDetails.and.throwError(
 				"Notification system failure"
 			);
 
-			const error = new Error("Test error");
+			const error: Error = new Error("Test error");
 
 			// Should not throw - should be caught and logged
 			expect(() =>
@@ -431,8 +431,8 @@ describe("ErrorHandlerService", () =>
 
 		it("should reset guard flag after handling error", () =>
 		{
-			const error1 = new Error("First error");
-			const error2 = new Error("Second error");
+			const error1: Error = new Error("First error");
+			const error2: Error = new Error("Second error");
 
 			try
 			{

@@ -26,7 +26,7 @@ describe("FooterComponent", () =>
 
 	it("should have current year", () =>
 	{
-		const currentYear = new Date().getFullYear();
+		const currentYear: number = new Date().getFullYear();
 		expect(component["currentYear"]).toBe(currentYear);
 	});
 

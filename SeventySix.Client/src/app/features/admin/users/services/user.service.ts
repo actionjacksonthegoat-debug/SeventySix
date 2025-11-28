@@ -23,10 +23,9 @@ import { BaseFilterService } from "@infrastructure/services/base-filter.service"
  * Service for user business logic
  * Follows Service Layer pattern to encapsulate business rules
  * All methods use TanStack Query for automatic caching and state management
+ * Provided at route level for proper garbage collection (see admin.routes.ts)
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable()
 export class UserService extends BaseFilterService<UserQueryRequest>
 {
 	private readonly userRepository: UserRepository = inject(UserRepository);

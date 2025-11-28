@@ -18,10 +18,9 @@ import {
 /**
  * Repository for log data access
  * Extends HttpRepository for standard CRUD operations
+ * Provided at route level for proper garbage collection (see admin.routes.ts)
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable()
 export class LogRepository extends HttpRepository<LogResponse>
 {
 	protected readonly endpoint: string = "logs";

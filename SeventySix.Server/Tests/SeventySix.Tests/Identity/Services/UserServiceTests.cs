@@ -286,7 +286,7 @@ public class UserServiceTests
 		};
 
 		ValidationFailure validationFailure = new("Username", "Username must be between 3 and 50 characters");
-		ValidationResult validationResult = new(new[] { validationFailure });
+		ValidationResult validationResult = new([validationFailure]);
 
 		MockCreateValidator
 			.Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<CreateUserRequest>>(), It.IsAny<CancellationToken>()))

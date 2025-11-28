@@ -18,10 +18,9 @@ import {
 /**
  * Repository for user data access
  * Extends HttpRepository for standard CRUD operations
+ * Provided at route level for proper garbage collection (see admin.routes.ts)
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable()
 export class UserRepository extends HttpRepository<User>
 {
 	protected readonly endpoint: string = "users";

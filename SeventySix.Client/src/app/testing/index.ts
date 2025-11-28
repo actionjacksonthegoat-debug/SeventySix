@@ -2,7 +2,6 @@
  * Testing utilities and mocks barrel export
  */
 
-export * from "./test-helpers";
 export * from "./integration-test.helper";
 export * from "./tanstack-query-helpers";
 export * from "./test-bed-builders";

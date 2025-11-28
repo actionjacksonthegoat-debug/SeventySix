@@ -8,7 +8,6 @@ import {
 	inject
 } from "@angular/core";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
-import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { environment } from "@environments/environment";
@@ -22,7 +21,7 @@ import { environment } from "@environments/environment";
  */
 @Component({
 	selector: "app-grafana-dashboard-embed",
-	imports: [CommonModule, MatCardModule, MatProgressSpinnerModule],
+	imports: [MatCardModule, MatProgressSpinnerModule],
 	templateUrl: "./grafana-dashboard-embed.component.html",
 	styleUrl: "./grafana-dashboard-embed.component.scss",
 	changeDetection: ChangeDetectionStrategy.OnPush

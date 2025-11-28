@@ -57,7 +57,8 @@ public class PollyResiliencePolicyTests
 		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-		Mock<ILogger<PollyIntegrationClient>> loggerMock = new();
+		Mock<ILoggerFactory> loggerFactoryMock = new();
+		loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
 
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
@@ -69,7 +70,7 @@ public class PollyResiliencePolicyTests
 			TimeoutSeconds = 10,
 		});
 
-		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
+		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerFactoryMock.Object, options);
 
 		// Act
 		dynamic? response = await client.GetAsync<dynamic>("test", "TestApi", cancellationToken: CancellationToken.None);
@@ -105,7 +106,8 @@ public class PollyResiliencePolicyTests
 		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-		Mock<ILogger<PollyIntegrationClient>> loggerMock = new();
+		Mock<ILoggerFactory> loggerFactoryMock = new();
+		loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
 
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
@@ -116,7 +118,7 @@ public class PollyResiliencePolicyTests
 			TimeoutSeconds = 10,
 		});
 
-		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
+		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerFactoryMock.Object, options);
 
 		// Act - Trigger circuit breaker
 		for (int i = 0; i < 5; i++)
@@ -167,7 +169,8 @@ public class PollyResiliencePolicyTests
 		rateLimiterMock.Setup(r => r.CanMakeRequestAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 		rateLimiterMock.Setup(r => r.TryIncrementRequestCountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-		Mock<ILogger<PollyIntegrationClient>> loggerMock = new();
+		Mock<ILoggerFactory> loggerFactoryMock = new();
+		loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
 
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
@@ -178,7 +181,7 @@ public class PollyResiliencePolicyTests
 			TimeoutSeconds = 2,
 		});
 
-		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerMock.Object, options);
+		PollyIntegrationClient client = new(httpClient, cache, rateLimiterMock.Object, loggerFactoryMock.Object, options);
 
 		// Act & Assert
 		await Assert.ThrowsAnyAsync<Exception>(async () =>

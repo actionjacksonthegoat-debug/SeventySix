@@ -35,14 +35,12 @@ namespace SeventySix.Api.Controllers;
 /// Initializes a new instance of the <see cref="LogsController"/> class.
 /// </remarks>
 /// <param name="logService">The log service.</param>
-/// <param name="logger">The logger.</param>
 /// <param name="outputCacheStore">The output cache store.</param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/logs")]
 [RateLimit()] // 250 req/hour (default)
 public class LogsController(
 	ILogService logService,
-	ILogger<LogsController> logger,
 	IOutputCacheStore outputCacheStore) : ControllerBase
 {
 	/// <summary>
@@ -78,31 +76,19 @@ public class LogsController(
 		[FromQuery] LogFilterRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		try
-		{
-			// Service layer handles validation and business logic
-			PagedResult<LogResponse> result = await logService.GetPagedLogsAsync(request, cancellationToken);
+		// Service layer handles validation and business logic
+		// GlobalExceptionMiddleware handles ValidationException -> 400 BadRequest
+		PagedResult<LogResponse> result = await logService.GetPagedLogsAsync(request, cancellationToken);
 
-			PagedLogResponse response = new()
-			{
-				Data = result.Items.ToList(),
-				TotalCount = result.TotalCount,
-				PageNumber = result.Page,
-				PageSize = result.PageSize,
-			};
+		PagedLogResponse response = new()
+		{
+			Data = result.Items.ToList(),
+			TotalCount = result.TotalCount,
+			PageNumber = result.Page,
+			PageSize = result.PageSize,
+		};
 
-			return Ok(response);
-		}
-		catch (FluentValidation.ValidationException ex)
-		{
-			// Return validation errors as BadRequest
-			return BadRequest(ex.Errors);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Error retrieving logs");
-			return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving logs");
-		}
+		return Ok(response);
 	}
 
 	/// <summary>
@@ -123,22 +109,10 @@ public class LogsController(
 		[FromQuery] LogFilterRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		try
-		{
-			// Service layer handles validation
-			int count = await logService.GetLogsCountAsync(request, cancellationToken);
+		// GlobalExceptionMiddleware handles ValidationException -> 400 BadRequest
+		int count = await logService.GetLogsCountAsync(request, cancellationToken);
 
-			return Ok(new LogCountResponse { Total = count });
-		}
-		catch (FluentValidation.ValidationException ex)
-		{
-			return BadRequest(ex.Errors);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Error retrieving log count");
-			return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving log count");
-		}
+		return Ok(new LogCountResponse { Total = count });
 	}
 
 	/// <summary>
@@ -156,25 +130,18 @@ public class LogsController(
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IActionResult> DeleteLogAsync(int id, CancellationToken cancellationToken = default)
 	{
-		try
+		// GlobalExceptionMiddleware handles EntityNotFoundException -> 404 NotFound
+		bool deleted = await logService.DeleteLogByIdAsync(id, cancellationToken);
+
+		if (!deleted)
 		{
-			bool deleted = await logService.DeleteLogByIdAsync(id, cancellationToken);
-
-			if (!deleted)
-			{
-				return NotFound();
-			}
-
-			// Invalidate logs cache after deletion
-			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
-
-			return NoContent();
+			return NotFound();
 		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Error deleting log with ID: {LogId}", id);
-			return StatusCode(StatusCodes.Status500InternalServerError, "Error deleting log");
-		}
+
+		// Invalidate logs cache after deletion
+		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+
+		return NoContent();
 	}
 
 	/// <summary>
@@ -199,21 +166,12 @@ public class LogsController(
 			return BadRequest("No log IDs provided");
 		}
 
-		try
-		{
-			int deletedCount = await logService.DeleteLogsBatchAsync(ids, cancellationToken);
+		int deletedCount = await logService.DeleteLogsBatchAsync(ids, cancellationToken);
 
-			// Invalidate logs cache after batch deletion
-			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		// Invalidate logs cache after batch deletion
+		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
-			return Ok(deletedCount);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Error bulk deleting logs. Count: {Count}, IDs: {Ids}",
-				ids.Length, string.Join(", ", ids.Take(10))); // Log first 10 IDs
-			return StatusCode(StatusCodes.Status500InternalServerError, "Error bulk deleting logs");
-		}
+		return Ok(deletedCount);
 	}
 
 	/// <summary>
@@ -237,20 +195,12 @@ public class LogsController(
 			return BadRequest("Cutoff date is required");
 		}
 
-		try
-		{
-			int deletedCount = await logService.DeleteLogsOlderThanAsync(cutoffDate.Value, cancellationToken);
+		int deletedCount = await logService.DeleteLogsOlderThanAsync(cutoffDate.Value, cancellationToken);
 
-			// Invalidate logs cache after cleanup
-			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		// Invalidate logs cache after cleanup
+		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
-			return Ok(deletedCount);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Error during log cleanup");
-			return StatusCode(StatusCodes.Status500InternalServerError, "Error during log cleanup");
-		}
+		return Ok(deletedCount);
 	}
 
 	/// <summary>
@@ -270,22 +220,13 @@ public class LogsController(
 		[FromBody] ClientLogRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		try
-		{
-			await logService.CreateClientLogAsync(request, cancellationToken);
+		// GlobalExceptionMiddleware handles exceptions consistently
+		await logService.CreateClientLogAsync(request, cancellationToken);
 
-			// Invalidate logs cache after creating new log
-			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		// Invalidate logs cache after creating new log
+		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
-			return NoContent();
-		}
-		catch (Exception ex)
-		{
-			// Don't throw - we don't want to cause errors when logging client errors
-			// This ensures graceful degradation
-			logger.LogError(ex, "Error logging client error");
-			return StatusCode(StatusCodes.Status500InternalServerError, "Error logging client error");
-		}
+		return NoContent();
 	}
 
 	/// <summary>
@@ -305,21 +246,12 @@ public class LogsController(
 		[FromBody] ClientLogRequest[] requests,
 		CancellationToken cancellationToken = default)
 	{
-		try
-		{
-			await logService.CreateClientLogBatchAsync(requests, cancellationToken);
+		// GlobalExceptionMiddleware handles exceptions consistently
+		await logService.CreateClientLogBatchAsync(requests, cancellationToken);
 
-			// Invalidate logs cache after batch creating logs
-			await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		// Invalidate logs cache after batch creating logs
+		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
-			return NoContent();
-		}
-		catch (Exception ex)
-		{
-			// Don't throw - we don't want to cause errors when logging client errors
-			// This ensures graceful degradation
-			logger.LogError(ex, "Error batch logging client errors");
-			return StatusCode(StatusCodes.Status500InternalServerError, "Error batch logging client errors");
-		}
+		return NoContent();
 	}
 }

@@ -23,8 +23,8 @@ describe("Custom Validators", () =>
 	{
 		it("should return null for valid date within range", () =>
 		{
-			const min = new Date("2024-01-01");
-			const max = new Date("2024-12-31");
+			const min: Date = new Date("2024-01-01");
+			const max: Date = new Date("2024-12-31");
 			const validator = dateRangeValidator(min, max);
 			const control = new FormControl(new Date("2024-06-15"));
 
@@ -33,7 +33,7 @@ describe("Custom Validators", () =>
 
 		it("should return error for date before minimum", () =>
 		{
-			const min = new Date("2024-01-01");
+			const min: Date = new Date("2024-01-01");
 			const validator = dateRangeValidator(min);
 			const control = new FormControl(new Date("2023-12-31"));
 
@@ -127,7 +127,7 @@ describe("Custom Validators", () =>
 		it("should return null for future date", () =>
 		{
 			const validator = futureDateValidator();
-			const futureDate = new Date();
+			const futureDate: Date = new Date();
 			futureDate.setDate(futureDate.getDate() + 1);
 			const control = new FormControl(futureDate);
 
@@ -137,7 +137,7 @@ describe("Custom Validators", () =>
 		it("should return error for past date", () =>
 		{
 			const validator = futureDateValidator();
-			const pastDate = new Date("2020-01-01");
+			const pastDate: Date = new Date("2020-01-01");
 			const control = new FormControl(pastDate);
 
 			expect(validator(control)).not.toBeNull();

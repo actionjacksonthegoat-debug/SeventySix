@@ -15,7 +15,7 @@ import {
 import { toSignal } from "@angular/core/rxjs-interop";
 import { Subject } from "rxjs";
 import { map } from "rxjs/operators";
-import { CommonModule } from "@angular/common";
+import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { MatTableModule } from "@angular/material/table";
 import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
@@ -53,7 +53,7 @@ import { environment } from "@environments/environment";
 @Component({
 	selector: "app-data-table",
 	imports: [
-		CommonModule,
+		DatePipe,
 		FormsModule,
 		MatTableModule,
 		MatPaginatorModule,

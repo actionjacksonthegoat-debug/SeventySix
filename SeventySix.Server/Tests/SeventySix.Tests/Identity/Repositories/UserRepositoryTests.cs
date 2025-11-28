@@ -174,7 +174,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 
 		// Assert
 		result.Should().HaveCount(3);
-		result.Select(u => u.Username).Should().Contain(new[] { "user1", "user2", "user3" });
+		result.Select(u => u.Username).Should().Contain(["user1", "user2", "user3"]);
 	}
 
 	[Fact]

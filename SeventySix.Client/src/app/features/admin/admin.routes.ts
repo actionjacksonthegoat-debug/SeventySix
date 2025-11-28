@@ -1,8 +1,17 @@
 /**
  * Admin Feature Routes
  * Lazy-loaded routes for admin-only features
+ * Services are provided at route level for proper garbage collection
  */
 import { Routes } from "@angular/router";
+import { LogManagementService } from "@admin/logs/services";
+import { LogRepository } from "@admin/logs/repositories";
+import {
+	UserService,
+	UserExportService,
+	UserPreferencesService
+} from "@admin/users/services";
+import { UserRepository } from "@admin/users/repositories";
 
 export const ADMIN_ROUTES: Routes = [
 	{
@@ -12,6 +21,7 @@ export const ADMIN_ROUTES: Routes = [
 	},
 	{
 		path: "logs",
+		providers: [LogManagementService, LogRepository],
 		loadComponent: () =>
 			import("./logs/log-management.component").then(
 				(m) => m.LogManagementComponent
@@ -28,23 +38,38 @@ export const ADMIN_ROUTES: Routes = [
 	},
 	{
 		path: "users",
-		loadComponent: () =>
-			import("./users/users.component").then((m) => m.UsersComponent),
-		title: "User Management - SeventySix"
-	},
-	{
-		path: "users/create",
-		loadComponent: () =>
-			import("./users/subpages/user-create/user-create").then(
-				(m) => m.UserCreatePage
-			),
-		title: "Create User - SeventySix"
-	},
-	{
-		path: "users/:id",
-		loadComponent: () =>
-			import("./users/subpages/user/user-page").then((m) => m.UserPage),
-		title: "User Details - SeventySix"
+		providers: [
+			UserService,
+			UserRepository,
+			UserExportService,
+			UserPreferencesService
+		],
+		children: [
+			{
+				path: "",
+				loadComponent: () =>
+					import("./users/users.component").then(
+						(m) => m.UsersComponent
+					),
+				title: "User Management - SeventySix"
+			},
+			{
+				path: "create",
+				loadComponent: () =>
+					import("./users/subpages/user-create/user-create").then(
+						(m) => m.UserCreatePage
+					),
+				title: "Create User - SeventySix"
+			},
+			{
+				path: ":id",
+				loadComponent: () =>
+					import("./users/subpages/user/user-page").then(
+						(m) => m.UserPage
+					),
+				title: "User Details - SeventySix"
+			}
+		]
 	},
 	{
 		path: "not-found",

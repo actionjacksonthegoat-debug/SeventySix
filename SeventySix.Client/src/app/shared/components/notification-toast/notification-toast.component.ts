@@ -1,5 +1,4 @@
 import { Component, inject } from "@angular/core";
-import { CommonModule } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
@@ -15,7 +14,7 @@ import {
  */
 @Component({
 	selector: "app-notification-toast",
-	imports: [CommonModule, MatIconModule, MatButtonModule, MatTooltipModule],
+	imports: [MatIconModule, MatButtonModule, MatTooltipModule],
 	template: `
 		<div class="toast-container" role="region" aria-label="Notifications">
 			@for (

@@ -7,30 +7,31 @@ import {
 import { inject, Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
 import { catchError, Observable, throwError } from "rxjs";
-import { IApiService } from "./i-api.service";
+import { LoggerService } from "@infrastructure/services/logger.service";
 
 /**
  * API Service
- * Implements IApiService interface for HTTP communication
  * Provides centralized API calls with error handling
+ * Single source of truth for HTTP communication (DRY)
  */
 @Injectable({
 	providedIn: "root"
 })
-export class ApiService implements IApiService
+export class ApiService
 {
-	private baseUrl: string = environment.apiUrl;
+	private readonly baseUrl: string = environment.apiUrl;
 	private defaultHeaders: HttpHeaders = new HttpHeaders({
 		"Content-Type": "application/json"
 	});
-	private http: HttpClient = inject(HttpClient);
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly logger: LoggerService = inject(LoggerService);
 
 	/**
 	 * Handle HTTP errors
 	 * @param error The HTTP error response
 	 * @returns An observable error
 	 */
-	private handleError(error: HttpErrorResponse): Observable<never>
+	private handleError = (error: HttpErrorResponse): Observable<never> =>
 	{
 		let errorMessage: string = "An error occurred";
 
@@ -43,13 +44,13 @@ export class ApiService implements IApiService
 			errorMessage = `Server-side error: ${error.status} ${error.message}`;
 		}
 
-		console.error(errorMessage);
+		this.logger.error(errorMessage, error);
 
 		return throwError(() =>
 		{
 			return new Error(errorMessage);
 		});
-	}
+	};
 
 	/**
 	 * Generic GET request

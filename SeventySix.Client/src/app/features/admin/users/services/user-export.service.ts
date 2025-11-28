@@ -7,9 +7,10 @@
 import { Injectable } from "@angular/core";
 import { User } from "@admin/users/models";
 
-@Injectable({
-	providedIn: "root"
-})
+/**
+ * Provided at route level for proper garbage collection (see admin.routes.ts)
+ */
+@Injectable()
 export class UserExportService
 {
 	/**

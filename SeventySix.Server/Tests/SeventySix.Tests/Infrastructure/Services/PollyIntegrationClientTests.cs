@@ -19,7 +19,7 @@ namespace SeventySix.Tests.Infrastructure;
 public class PollyIntegrationClientTests : IDisposable
 {
 	private readonly Mock<IRateLimitingService> MockRateLimiter;
-	private readonly Mock<ILogger<PollyIntegrationClient>> MockLogger;
+	private readonly Mock<ILoggerFactory> MockLoggerFactory;
 	private readonly IMemoryCache Cache;
 	private readonly PollyOptions Options;
 	private readonly Mock<HttpMessageHandler> MockHttpMessageHandler;
@@ -29,7 +29,8 @@ public class PollyIntegrationClientTests : IDisposable
 	public PollyIntegrationClientTests()
 	{
 		MockRateLimiter = new Mock<IRateLimitingService>();
-		MockLogger = new Mock<ILogger<PollyIntegrationClient>>();
+		MockLoggerFactory = new Mock<ILoggerFactory>();
+		MockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
 		Cache = new MemoryCache(new MemoryCacheOptions());
 		Options = new PollyOptions
 		{
@@ -199,7 +200,7 @@ public class PollyIntegrationClientTests : IDisposable
 			HttpClient,
 			Cache,
 			MockRateLimiter.Object,
-			MockLogger.Object,
+			MockLoggerFactory.Object,
 			Microsoft.Extensions.Options.Options.Create(Options));
 	}
 

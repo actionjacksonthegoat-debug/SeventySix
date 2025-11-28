@@ -1,4 +1,5 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import { LoggerService } from "@infrastructure/services/logger.service";
 
 /**
  * Token storage service.
@@ -12,6 +13,7 @@ export class TokenStorageService
 {
 	private readonly ACCESS_TOKEN_KEY: string = "auth_access_token";
 	private readonly REFRESH_TOKEN_KEY: string = "auth_refresh_token";
+	private readonly logger: LoggerService = inject(LoggerService);
 
 	/**
 	 * Stores access token.
@@ -24,7 +26,7 @@ export class TokenStorageService
 		}
 		catch (error)
 		{
-			console.error("Failed to store access token:", error);
+			this.logger.error("Failed to store access token", error as Error);
 		}
 	}
 
@@ -39,7 +41,10 @@ export class TokenStorageService
 		}
 		catch (error)
 		{
-			console.error("Failed to retrieve access token:", error);
+			this.logger.error(
+				"Failed to retrieve access token",
+				error as Error
+			);
 			return null;
 		}
 	}
@@ -55,7 +60,7 @@ export class TokenStorageService
 		}
 		catch (error)
 		{
-			console.error("Failed to store refresh token:", error);
+			this.logger.error("Failed to store refresh token", error as Error);
 		}
 	}
 
@@ -70,7 +75,10 @@ export class TokenStorageService
 		}
 		catch (error)
 		{
-			console.error("Failed to retrieve refresh token:", error);
+			this.logger.error(
+				"Failed to retrieve refresh token",
+				error as Error
+			);
 			return null;
 		}
 	}
@@ -87,7 +95,7 @@ export class TokenStorageService
 		}
 		catch (error)
 		{
-			console.error("Failed to clear tokens:", error);
+			this.logger.error("Failed to clear tokens", error as Error);
 		}
 	}
 
@@ -136,7 +144,7 @@ export class TokenStorageService
 		}
 		catch (error)
 		{
-			console.error("Failed to parse JWT:", error);
+			this.logger.error("Failed to parse JWT", error as Error);
 			return null;
 		}
 	}

@@ -1,5 +1,4 @@
 import { Component, inject } from "@angular/core";
-import { CommonModule } from "@angular/common";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
 import { MatCardModule } from "@angular/material/card";
@@ -22,7 +21,6 @@ import { LoggerService } from "@infrastructure/services/logger.service";
 @Component({
 	selector: "app-admin-dashboard",
 	imports: [
-		CommonModule,
 		MatToolbarModule,
 		MatIconModule,
 		MatCardModule,

@@ -32,12 +32,9 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
 using Serilog;
-using Serilog.Events;
-using Serilog.Exceptions;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.HealthChecks;
-using SeventySix.Api.Logging;
 using SeventySix.Api.Middleware;
 using SeventySix.Extensions;
 using SeventySix.Identity;
@@ -68,22 +65,7 @@ if (builder.Environment.IsDevelopment())
 // Outputs: Console + Rolling file (daily rotation) + Database (Warning+ levels)
 // Note: Database sink is added after building the app to access IServiceProvider
 Serilog.Log.Logger = new LoggerConfiguration()
-	.ReadFrom.Configuration(builder.Configuration)
-	.Enrich.FromLogContext()
-	.Enrich.WithMachineName()
-	.Enrich.WithThreadId()
-	.Enrich.WithExceptionDetails()
-	.WriteTo.Console(
-		outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-	.WriteTo.File(
-		path: "logs/seventysix-.txt",
-		rollingInterval: RollingInterval.Day,
-		retainedFileCountLimit: 30,
-		outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties:j}{NewLine}{Exception}")
-	.MinimumLevel.Information()
-	.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-	.MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-	.MinimumLevel.Override("System", LogEventLevel.Warning)
+	.ConfigureBaseSerilog(builder.Configuration)
 	.CreateLogger();
 
 builder.Host.UseSerilog();
@@ -98,19 +80,19 @@ builder.Services.AddHealthChecks()
 	.AddDbContextCheck<IdentityDbContext>(
 		name: "identity-database",
 		failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
-		tags: new[] { "ready", "db" })
+		tags: ["ready", "db"])
 	.AddDbContextCheck<LoggingDbContext>(
 		name: "logging-database",
 		failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
-		tags: new[] { "ready", "db" })
+		tags: ["ready", "db"])
 	.AddDbContextCheck<ApiTrackingDbContext>(
 		name: "apitracking-database",
 		failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
-		tags: new[] { "ready", "db" })
+		tags: ["ready", "db"])
 	.AddCheck<JaegerHealthCheck>(
 		name: "jaeger",
 		failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Degraded,
-		tags: new[] { "ready", "tracing" });
+		tags: ["ready", "tracing"]);
 
 // Add OpenTelemetry with Jaeger exporter for tracing and Prometheus for metrics
 // Configuration from appsettings.json
@@ -213,28 +195,10 @@ using (IServiceScope scope = app.Services.CreateScope())
 
 // Add database sink now that we have the service provider
 // This allows us to resolve scoped services (DbContext) for logging
-Serilog.Log.Logger = new LoggerConfiguration()
-	.ReadFrom.Configuration(builder.Configuration)
-	.Enrich.FromLogContext()
-	.Enrich.WithMachineName()
-	.Enrich.WithThreadId()
-	.Enrich.WithExceptionDetails()
-	.WriteTo.Console(
-		outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-	.WriteTo.File(
-		path: "logs/seventysix-.txt",
-		rollingInterval: RollingInterval.Day,
-		retainedFileCountLimit: 30,
-		outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties:j}{NewLine}{Exception}")
-	.WriteTo.Database(
-		serviceProvider: app.Services,
-		environment: app.Environment.EnvironmentName,
-		machineName: System.Environment.MachineName)
-	.MinimumLevel.Information()
-	.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-	.MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-	.MinimumLevel.Override("System", LogEventLevel.Warning)
-	.CreateLogger();
+SerilogExtensions.ReconfigureWithDatabaseSink(
+	builder.Configuration,
+	app.Services,
+	app.Environment.EnvironmentName);
 
 // Serilog HTTP request logging - Captures request details
 // Enriches logs with RequestMethod, RequestPath, StatusCode, Elapsed time

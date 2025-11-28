@@ -136,8 +136,11 @@ describe("ErrorQueueService (Zoneless)", () =>
 				]
 			});
 
-			const newService = TestBed.inject(ErrorQueueService);
-			const newHttpMock = TestBed.inject(HttpTestingController);
+			const newService: ErrorQueueService =
+				TestBed.inject(ErrorQueueService);
+			const newHttpMock: HttpTestingController = TestBed.inject(
+				HttpTestingController
+			);
 
 			// Service will use environment.logging.batchInterval (250ms in tests)
 
@@ -352,7 +355,8 @@ describe("ErrorQueueService (Zoneless)", () =>
 				]
 			});
 
-			const newService = TestBed.inject(ErrorQueueService);
+			const newService: ErrorQueueService =
+				TestBed.inject(ErrorQueueService);
 
 			// StorageService will return invalid JSON as a string, which won't match ClientLogRequest[]
 			// The queue will be initialized as empty since getItem returns string, not array

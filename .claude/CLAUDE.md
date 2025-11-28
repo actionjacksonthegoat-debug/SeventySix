@@ -393,6 +393,41 @@ import { UserService } from "../../../features/admin/users/services/user.service
 import { GameService } from "@game/services/game.service"; // From admin feature
 ```
 
+### 🚨 Service Scoping & Bounded Contexts (CRITICAL)
+
+Feature-specific services MUST be scoped to their feature routes, NOT `providedIn: 'root'`:
+
+-   **Memory**: Route-scoped services are garbage collected when navigating away
+-   **Isolation**: Features remain self-contained (bounded context)
+-   **Lazy loading**: Services only load when feature is accessed
+
+```typescript
+// ❌ WRONG - Feature service in root (memory leak, violates bounded context)
+@Injectable({ providedIn: "root" })
+export class LogManagementService { ... }
+
+// ✅ CORRECT - No providedIn, provided at route level
+@Injectable()
+export class LogManagementService { ... }
+
+// In feature routes:
+export const ADMIN_ROUTES: Routes = [
+	{
+		path: "logs",
+		providers: [LogManagementService, LogRepository],
+		loadComponent: () => import("./logs/log-management.component").then((m) => m.LogManagementComponent),
+	},
+];
+```
+
+**Service Scope Decision:**
+
+| Service Type        | Scope                | Example                              |
+| ------------------- | -------------------- | ------------------------------------ |
+| Cross-cutting       | `providedIn: 'root'` | `LoggerService`, `ApiService`        |
+| Feature-specific    | Route `providers`    | `UserService`, `LogRepository`       |
+| Stateless utilities | `providedIn: 'root'` | `DateService`, `SanitizationService` |
+
 ### 🚨 SCSS Semantic Status Colors (CRITICAL)
 
 **ALWAYS use CSS custom properties for notification color matching. These are theme-aware and adapt to light/dark mode and color scheme changes:**

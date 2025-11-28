@@ -7,6 +7,12 @@ import {
 	provideTanStackQuery
 } from "@tanstack/angular-query-experimental";
 import { UserList } from "./user-list";
+import {
+	UserService,
+	UserExportService,
+	UserPreferencesService
+} from "@admin/users/services";
+import { UserRepository } from "@admin/users/repositories";
 
 describe("UserList", () =>
 {
@@ -21,7 +27,12 @@ describe("UserList", () =>
 				provideZonelessChangeDetection(),
 				provideHttpClient(),
 				provideHttpClientTesting(),
-				provideTanStackQuery(new QueryClient())
+				provideTanStackQuery(new QueryClient()),
+				// Feature-scoped services (no longer providedIn: root)
+				UserService,
+				UserRepository,
+				UserExportService,
+				UserPreferencesService
 			]
 		}).compileComponents();
 

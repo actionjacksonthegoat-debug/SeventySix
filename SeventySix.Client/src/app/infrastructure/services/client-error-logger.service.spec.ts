@@ -35,7 +35,7 @@ describe("ClientErrorLoggerService", () =>
 	{
 		it("should enqueue error with correct fields", () =>
 		{
-			const error = new Error("Test error");
+			const error: Error = new Error("Test error");
 			error.stack = "Error: Test error\n  at TestComponent";
 
 			service.logError({
@@ -77,7 +77,7 @@ describe("ClientErrorLoggerService", () =>
 
 		it("should extract source context from error stack", () =>
 		{
-			const error = new Error("Test error");
+			const error: Error = new Error("Test error");
 			error.stack =
 				"Error: Test error\n  at UserComponent.doSomething (user.component.ts:42:15)";
 
@@ -103,13 +103,14 @@ describe("ClientErrorLoggerService", () =>
 
 		it("should include current timestamp", () =>
 		{
-			const beforeTime = new Date();
+			const beforeTime: Date = new Date();
 
 			service.logError({ message: "Test error" });
 
-			const afterTime = new Date();
-			const call = errorQueueService.enqueue.calls.mostRecent();
-			const timestamp = new Date(call.args[0].clientTimestamp!);
+			const afterTime: Date = new Date();
+			const call: jasmine.CallInfo<(error: ClientLogRequest) => void> =
+				errorQueueService.enqueue.calls.mostRecent();
+			const timestamp: Date = new Date(call.args[0].clientTimestamp!);
 
 			expect(timestamp.getTime()).toBeGreaterThanOrEqual(
 				beforeTime.getTime()
@@ -216,7 +217,7 @@ describe("ClientErrorLoggerService", () =>
 		it("should include current route as request URL", () =>
 		{
 			// We can't mock window.location, so just verify requestUrl is set
-			const error = new Error("Client error");
+			const error: Error = new Error("Client error");
 
 			service.logClientError({
 				message: "UI error occurred",
@@ -316,7 +317,7 @@ describe("ClientErrorLoggerService", () =>
 	{
 		it("should extract component name from Angular error stack", () =>
 		{
-			const error = new Error("Error");
+			const error: Error = new Error("Error");
 			error.stack =
 				"Error: Test\n  at UserComponent.getData (user.component.ts:42:15)";
 
@@ -328,7 +329,7 @@ describe("ClientErrorLoggerService", () =>
 
 		it("should extract service name from error stack", () =>
 		{
-			const error = new Error("Error");
+			const error: Error = new Error("Error");
 			error.stack =
 				"Error: Test\n  at UserService.getUser (user.service.ts:23:10)";
 
@@ -340,7 +341,7 @@ describe("ClientErrorLoggerService", () =>
 
 		it("should handle errors without source context", () =>
 		{
-			const error = new Error("Error");
+			const error: Error = new Error("Error");
 			error.stack = "Error: Test\n  at anonymous function";
 
 			service.logError({ message: "Error", error });

@@ -33,9 +33,10 @@ const DEFAULT_PREFERENCES: UserListPreferences = {
 
 const STORAGE_KEY: string = "user-list-preferences";
 
-@Injectable({
-	providedIn: "root"
-})
+/**
+ * Provided at route level for proper garbage collection (see admin.routes.ts)
+ */
+@Injectable()
 export class UserPreferencesService
 {
 	private readonly storageService: StorageService = inject(StorageService);

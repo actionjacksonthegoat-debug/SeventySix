@@ -8,6 +8,11 @@ import {
 } from "@tanstack/angular-query-experimental";
 import { LogList } from "./log-list";
 import { LogManagementService } from "@admin/logs/services";
+import {
+	createMockQueryResult,
+	createMockMutationResult
+} from "@testing/tanstack-query-helpers";
+import { PagedLogResponse } from "@admin/logs/models";
 
 describe("LogList", () =>
 {
@@ -17,18 +22,29 @@ describe("LogList", () =>
 
 	beforeEach(async () =>
 	{
-		// Create mock query/mutation results
-		const mockQuery: any = {
-			data: signal([]),
-			isLoading: signal(false),
-			error: signal(null)
+		// Create properly typed mock query/mutation results
+		const mockPagedResponse: PagedLogResponse = {
+			data: [],
+			totalCount: 0,
+			pageNumber: 1,
+			pageSize: 50,
+			totalPages: 0,
+			hasPreviousPage: false,
+			hasNextPage: false
 		};
 
-		const mockMutation: any = {
-			mutate: jasmine.createSpy("mutate"),
-			isPending: signal(false),
-			error: signal(null)
-		};
+		const mockQuery =
+			createMockQueryResult<PagedLogResponse>(mockPagedResponse);
+		const mockDeleteMutation = createMockMutationResult<
+			void,
+			Error,
+			number
+		>();
+		const mockBatchDeleteMutation = createMockMutationResult<
+			number,
+			Error,
+			number[]
+		>();
 
 		// Create mock service with all required methods
 		mockLogService = jasmine.createSpyObj("LogManagementService", [
@@ -43,8 +59,8 @@ describe("LogList", () =>
 
 		// Configure mock return values
 		mockLogService.getLogs.and.returnValue(mockQuery);
-		mockLogService.deleteLog.and.returnValue(mockMutation);
-		mockLogService.deleteLogs.and.returnValue(mockMutation);
+		mockLogService.deleteLog.and.returnValue(mockDeleteMutation);
+		mockLogService.deleteLogs.and.returnValue(mockBatchDeleteMutation);
 
 		await TestBed.configureTestingModule({
 			imports: [LogList],

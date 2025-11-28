@@ -346,7 +346,7 @@ describe("UserCreatePage", () =>
 		});
 		it("should handle failed user creation", async () =>
 		{
-			const error = new Error("Network error");
+			const error: Error = new Error("Network error");
 
 			component.basicInfoForm.patchValue({
 				username: "testuser",

@@ -113,7 +113,7 @@ describe("LoggerService", () =>
 
 		it("should include error object in log", () =>
 		{
-			const error = new Error("Test error");
+			const error: Error = new Error("Test error");
 
 			service.error("Error with exception", error);
 
@@ -124,7 +124,7 @@ describe("LoggerService", () =>
 
 		it("should include both error and context", () =>
 		{
-			const error = new Error("Test error");
+			const error: Error = new Error("Test error");
 			const context = { operation: "save" };
 
 			service.error("Error with context", error, context);
@@ -149,7 +149,7 @@ describe("LoggerService", () =>
 
 		it("should include error object in critical log", () =>
 		{
-			const error = new Error("Critical failure");
+			const error: Error = new Error("Critical failure");
 
 			service.critical("Critical failure occurred", error);
 
@@ -208,8 +208,11 @@ describe("LoggerService", () =>
 	{
 		it("should create structured log entry with all fields", () =>
 		{
-			const context = { user: "test", action: "login" };
-			const error = new Error("Login failed");
+			const context: { user: string; action: string } = {
+				user: "test",
+				action: "login"
+			};
+			const error: Error = new Error("Login failed");
 
 			service.error("Login error", error, context);
 
@@ -279,7 +282,7 @@ describe("LoggerService", () =>
 
 		it("should force log error message regardless of level filtering", () =>
 		{
-			const error = new Error("Test error");
+			const error: Error = new Error("Test error");
 
 			service.forceError("Force error message", error);
 
@@ -297,7 +300,7 @@ describe("LoggerService", () =>
 
 		it("should force log critical message regardless of level filtering", () =>
 		{
-			const error = new Error("Critical error");
+			const error: Error = new Error("Critical error");
 
 			service.forceCritical("Force critical message", error);
 

@@ -62,7 +62,7 @@ describe("Table Models", () =>
 					(value as Date).toLocaleDateString()
 			};
 
-			const testDate = new Date("2024-01-01");
+			const testDate: Date = new Date("2024-01-01");
 			expect(column.formatter?.(testDate)).toBe(
 				testDate.toLocaleDateString()
 			);
@@ -304,8 +304,8 @@ describe("Table Models", () =>
 	{
 		it("should create event with date range", () =>
 		{
-			const startDate = new Date("2024-01-01");
-			const endDate = new Date("2024-12-31");
+			const startDate: Date = new Date("2024-01-01");
+			const endDate: Date = new Date("2024-12-31");
 
 			const event: DateRangeEvent = {
 				startDate: startDate,

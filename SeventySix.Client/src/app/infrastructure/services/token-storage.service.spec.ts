@@ -1,13 +1,22 @@
 import { TokenStorageService } from "./token-storage.service";
 import { setupSimpleServiceTest } from "@testing";
+import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
+import { LoggerService } from "./logger.service";
 
 describe("TokenStorageService", () =>
 {
 	let service: TokenStorageService;
+	let loggerSpy: jasmine.SpyObj<LoggerService>;
 
 	beforeEach(() =>
 	{
-		service = setupSimpleServiceTest(TokenStorageService);
+		loggerSpy = jasmine.createSpyObj("LoggerService", ["error"]);
+		service = setupSimpleServiceTest(TokenStorageService, [
+			provideHttpClient(),
+			provideHttpClientTesting(),
+			{ provide: LoggerService, useValue: loggerSpy }
+		]);
 		localStorage.clear();
 	});
 
@@ -30,11 +39,10 @@ describe("TokenStorageService", () =>
 		it("should handle localStorage errors gracefully", () =>
 		{
 			spyOn(localStorage, "setItem").and.throwError("Storage error");
-			spyOn(console, "error");
 
 			service.setAccessToken("token");
 
-			expect(console.error).toHaveBeenCalled();
+			expect(loggerSpy.error).toHaveBeenCalled();
 		});
 	});
 
@@ -60,12 +68,11 @@ describe("TokenStorageService", () =>
 		it("should handle localStorage errors gracefully", () =>
 		{
 			spyOn(localStorage, "getItem").and.throwError("Storage error");
-			spyOn(console, "error");
 
 			const result = service.getAccessToken();
 
 			expect(result).toBeNull();
-			expect(console.error).toHaveBeenCalled();
+			expect(loggerSpy.error).toHaveBeenCalled();
 		});
 	});
 
@@ -83,11 +90,10 @@ describe("TokenStorageService", () =>
 		it("should handle localStorage errors gracefully", () =>
 		{
 			spyOn(localStorage, "setItem").and.throwError("Storage error");
-			spyOn(console, "error");
 
 			service.setRefreshToken("token");
 
-			expect(console.error).toHaveBeenCalled();
+			expect(loggerSpy.error).toHaveBeenCalled();
 		});
 	});
 
@@ -127,11 +133,10 @@ describe("TokenStorageService", () =>
 		it("should handle localStorage errors gracefully", () =>
 		{
 			spyOn(localStorage, "removeItem").and.throwError("Storage error");
-			spyOn(console, "error");
 
 			service.clearTokens();
 
-			expect(console.error).toHaveBeenCalled();
+			expect(loggerSpy.error).toHaveBeenCalled();
 		});
 	});
 

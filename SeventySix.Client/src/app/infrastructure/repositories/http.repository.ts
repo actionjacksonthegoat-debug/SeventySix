@@ -9,14 +9,13 @@ import { inject } from "@angular/core";
 import { Observable } from "rxjs";
 import { HttpParams } from "@angular/common/http";
 import { ApiService } from "@infrastructure/api-services/api.service";
-import { IRepository } from "./base.repository";
 
 /**
  * Abstract base class for HTTP-based repositories
- * Provides standard CRUD operations via ApiService
+ * Provides standard CRUD operations via ApiService (DRY)
  * @template T The entity type
  */
-export abstract class HttpRepository<T> implements IRepository<T>
+export abstract class HttpRepository<T>
 {
 	protected readonly apiService: ApiService = inject(ApiService);
 	protected abstract readonly endpoint: string;

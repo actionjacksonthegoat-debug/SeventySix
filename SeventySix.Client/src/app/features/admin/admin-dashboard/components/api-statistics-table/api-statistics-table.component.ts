@@ -7,7 +7,6 @@ import {
 	computed,
 	Signal
 } from "@angular/core";
-import { CommonModule } from "@angular/common";
 import { MatTableModule, MatTableDataSource } from "@angular/material/table";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -32,7 +31,6 @@ interface ThirdPartyApiRequestDisplay extends ThirdPartyApiRequest
 @Component({
 	selector: "app-api-statistics-table",
 	imports: [
-		CommonModule,
 		MatTableModule,
 		MatCardModule,
 		MatIconModule,

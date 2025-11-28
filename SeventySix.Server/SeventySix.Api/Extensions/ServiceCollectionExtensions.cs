@@ -6,6 +6,7 @@ using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
+using SeventySix.Shared;
 
 namespace SeventySix.Api.Extensions;
 

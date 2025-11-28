@@ -30,10 +30,9 @@ import { BaseFilterService } from "@infrastructure/services/base-filter.service"
  * Service for log management business logic
  * Manages filter state and provides TanStack Query hooks for log operations
  * All methods use TanStack Query for automatic caching and state management
+ * Provided at route level for proper garbage collection (see admin.routes.ts)
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable()
 export class LogManagementService extends BaseFilterService<LogFilterRequest>
 {
 	private readonly logRepository: LogRepository = inject(LogRepository);
