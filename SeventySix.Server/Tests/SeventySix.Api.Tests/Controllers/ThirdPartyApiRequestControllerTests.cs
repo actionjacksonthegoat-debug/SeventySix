@@ -67,7 +67,7 @@ public class ThirdPartyApiRequestsControllerTests
 	{
 		// Arrange
 		MockService.Setup(s => s.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<ThirdPartyApiRequestResponse>());
+			.ReturnsAsync([]);
 
 		// Act
 		ActionResult<IEnumerable<ThirdPartyApiRequestResponse>> result = await Controller.GetAllAsync(CancellationToken.None);

@@ -99,10 +99,10 @@ describe("UsersComponent", () =>
 		fixture.detectChanges();
 		await fixture.whenStable();
 
-		const compiled = fixture.nativeElement;
-		const title = compiled.querySelector("h1");
+		const compiled: HTMLElement = fixture.nativeElement;
+		const title: HTMLElement | null = compiled.querySelector("h1");
 		expect(title).toBeTruthy();
-		expect(title.textContent).toContain("User Management");
+		expect(title?.textContent).toContain("User Management");
 	});
 
 	it("should embed UserList component", async () =>
@@ -110,16 +110,17 @@ describe("UsersComponent", () =>
 		fixture.detectChanges();
 		await fixture.whenStable();
 
-		const compiled = fixture.nativeElement;
-		const userList = compiled.querySelector("app-user-list");
+		const compiled: HTMLElement = fixture.nativeElement;
+		const userList: HTMLElement | null =
+			compiled.querySelector("app-user-list");
 		expect(userList).toBeTruthy();
 	});
 
 	it("should have a title", () =>
 	{
 		fixture.detectChanges();
-		const compiled = fixture.nativeElement;
-		const title = compiled.querySelector("h1");
+		const compiled: HTMLElement = fixture.nativeElement;
+		const title: HTMLElement | null = compiled.querySelector("h1");
 		expect(title).toBeTruthy();
 	});
 });

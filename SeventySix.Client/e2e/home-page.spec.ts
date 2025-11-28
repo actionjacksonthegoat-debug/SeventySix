@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, Page, Locator } from "@playwright/test";
 
 /**
  * E2E Tests for Home Page
@@ -41,7 +41,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const cards = page.locator(".feature-card");
+			const cards: Locator = page.locator(".feature-card");
 			await expect(cards).toHaveCount(3);
 		});
 	});
@@ -54,7 +54,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").first();
+			const card: Locator = page.locator(".feature-card").first();
 			await expect(card.locator("mat-card-title")).toHaveText(
 				"World Map"
 			);
@@ -66,7 +66,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").first();
+			const card: Locator = page.locator(".feature-card").first();
 			await expect(card.locator("mat-card-content p")).toHaveText(
 				"Interactive game world map and exploration features"
 			);
@@ -78,7 +78,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").first();
+			const card: Locator = page.locator(".feature-card").first();
 			await expect(card.locator(".feature-icon")).toContainText("public");
 		});
 
@@ -88,7 +88,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").first();
+			const card: Locator = page.locator(".feature-card").first();
 			await card.click();
 			await expect(page).toHaveURL(/\/game/);
 		});
@@ -102,7 +102,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").nth(1);
+			const card: Locator = page.locator(".feature-card").nth(1);
 			await expect(card.locator("mat-card-title")).toHaveText("Physics");
 		});
 
@@ -112,7 +112,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").nth(1);
+			const card: Locator = page.locator(".feature-card").nth(1);
 			await expect(card.locator("mat-card-content p")).toHaveText(
 				"Electricity generation from buoyancy and calculations"
 			);
@@ -124,7 +124,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").nth(1);
+			const card: Locator = page.locator(".feature-card").nth(1);
 			await expect(card.locator(".feature-icon")).toContainText("bolt");
 		});
 
@@ -134,7 +134,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").nth(1);
+			const card: Locator = page.locator(".feature-card").nth(1);
 			await card.click();
 			await expect(page).toHaveURL(/\/physics/);
 		});
@@ -148,7 +148,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").nth(2);
+			const card: Locator = page.locator(".feature-card").nth(2);
 			await expect(card.locator("mat-card-title")).toHaveText(
 				"RV Camper"
 			);
@@ -160,7 +160,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").nth(2);
+			const card: Locator = page.locator(".feature-card").nth(2);
 			await expect(card.locator("mat-card-content p")).toHaveText(
 				"Design and planning workspace for RV modifications"
 			);
@@ -172,7 +172,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").nth(2);
+			const card: Locator = page.locator(".feature-card").nth(2);
 			await expect(card.locator(".feature-icon")).toContainText(
 				"rv_hookup"
 			);
@@ -184,7 +184,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const card = page.locator(".feature-card").nth(2);
+			const card: Locator = page.locator(".feature-card").nth(2);
 			await card.click();
 			await expect(page).toHaveURL(/\/rv-camper/);
 		});
@@ -198,7 +198,7 @@ test.describe("Home Page", () =>
 			page: Page;
 		}) =>
 		{
-			const cards = page.locator(".feature-card");
+			const cards: Locator = page.locator(".feature-card");
 			const cardCount: number = await cards.count();
 
 			for (let i: number = 0; i < cardCount; i++)

@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { HideOnDirective, ShowOnDirective } from "./responsive.directive";
 import { ViewportService } from "@infrastructure/services";
-import { signal } from "@angular/core";
+import { createMockViewportService, MockViewportService } from "@testing";
 
 @Component({
 	template: `<div [hideOn]="'mobile'">Hide on Mobile</div>`,
@@ -21,20 +21,11 @@ class TestShowOnComponent
 
 describe("Responsive Directives", () =>
 {
-	let mockViewportService: any;
+	let mockViewportService: MockViewportService;
 
 	beforeEach(() =>
 	{
-		mockViewportService = {
-			isMobile: signal(false),
-			isTablet: signal(false),
-			isDesktop: signal(false),
-			isXSmall: signal(false),
-			isSmall: signal(false),
-			isMedium: signal(false),
-			isLarge: signal(false),
-			isXLarge: signal(false)
-		};
+		mockViewportService = createMockViewportService();
 
 		TestBed.configureTestingModule({
 			providers: [
@@ -48,7 +39,8 @@ describe("Responsive Directives", () =>
 	{
 		it("should create directive", () =>
 		{
-			const fixture = TestBed.createComponent(TestHideOnComponent);
+			const fixture: ComponentFixture<TestHideOnComponent> =
+				TestBed.createComponent(TestHideOnComponent);
 			fixture.detectChanges();
 			expect(fixture.componentInstance).toBeTruthy();
 		});
@@ -56,10 +48,12 @@ describe("Responsive Directives", () =>
 		it("should hide element when breakpoint matches", () =>
 		{
 			mockViewportService.isMobile.set(true);
-			const fixture = TestBed.createComponent(TestHideOnComponent);
+			const fixture: ComponentFixture<TestHideOnComponent> =
+				TestBed.createComponent(TestHideOnComponent);
 			fixture.detectChanges();
 
-			const element = fixture.nativeElement.querySelector("div");
+			const element: HTMLElement | null =
+				fixture.nativeElement.querySelector("div");
 			expect(element).toBeTruthy();
 		});
 	});
@@ -68,7 +62,8 @@ describe("Responsive Directives", () =>
 	{
 		it("should create directive", () =>
 		{
-			const fixture = TestBed.createComponent(TestShowOnComponent);
+			const fixture: ComponentFixture<TestShowOnComponent> =
+				TestBed.createComponent(TestShowOnComponent);
 			fixture.detectChanges();
 			expect(fixture.componentInstance).toBeTruthy();
 		});
@@ -76,10 +71,12 @@ describe("Responsive Directives", () =>
 		it("should show element when breakpoint matches", () =>
 		{
 			mockViewportService.isDesktop.set(true);
-			const fixture = TestBed.createComponent(TestShowOnComponent);
+			const fixture: ComponentFixture<TestShowOnComponent> =
+				TestBed.createComponent(TestShowOnComponent);
 			fixture.detectChanges();
 
-			const element = fixture.nativeElement.querySelector("div");
+			const element: HTMLElement | null =
+				fixture.nativeElement.querySelector("div");
 			expect(element).toBeTruthy();
 		});
 	});

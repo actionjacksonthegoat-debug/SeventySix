@@ -8,7 +8,11 @@ import {
 	createMockQueryResult,
 	createMockMutationResult
 } from "@testing/tanstack-query-helpers";
-import { createMockLogger, createMockRouter } from "@testing";
+import {
+	createMockLogger,
+	createMockRouter,
+	createMockActivatedRoute
+} from "@testing";
 import { User, UpdateUserRequest } from "@admin/users/models";
 import { UserPage } from "./user-page";
 
@@ -19,7 +23,7 @@ describe("UserPage", () =>
 	let mockUserService: jasmine.SpyObj<UserService>;
 	let mockLogger: jasmine.SpyObj<LoggerService>;
 	let mockRouter: jasmine.SpyObj<Router>;
-	let mockActivatedRoute: any;
+	let mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
 
 	const mockUser: User = {
 		id: 1,
@@ -42,14 +46,7 @@ describe("UserPage", () =>
 		]);
 		mockLogger = createMockLogger();
 		mockRouter = createMockRouter();
-
-		mockActivatedRoute = {
-			snapshot: {
-				paramMap: {
-					get: jasmine.createSpy("get").and.returnValue("1")
-				}
-			}
-		};
+		mockActivatedRoute = createMockActivatedRoute({ id: "1" });
 
 		mockUserService.getUserById.and.returnValue(
 			createMockQueryResult(mockUser)

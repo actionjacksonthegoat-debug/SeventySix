@@ -4,6 +4,7 @@
  * Eliminates duplication across 40+ spec files
  */
 
+import { signal, WritableSignal } from "@angular/core";
 import { LoggerService } from "@infrastructure/services/logger.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import { ErrorQueueService } from "@infrastructure/services/error-queue.service";
@@ -84,7 +85,10 @@ export function createMockActivatedRoute(
 			snapshot: {
 				params,
 				queryParams: {},
-				data: {}
+				data: {},
+				paramMap: {
+					get: (key: string): unknown => params[key] ?? null
+				}
 			}
 		}
 	);
@@ -219,4 +223,78 @@ export interface MockApiService
 export function createMockApiService(): jasmine.SpyObj<MockApiService>
 {
 	return jasmine.createSpyObj("ApiService", ["get", "post", "put", "delete"]);
+}
+
+/**
+ * Mock LayoutService interface for testing
+ * Simulates signal-based properties with jasmine spies
+ */
+export interface MockLayoutService
+{
+	setSidebarExpanded: jasmine.Spy;
+	toggleSidebar: jasmine.Spy;
+	openSidebar: jasmine.Spy;
+	closeSidebar: jasmine.Spy;
+	sidebarMode: jasmine.Spy;
+	sidebarExpanded: jasmine.Spy;
+}
+
+/**
+ * Create a mocked LayoutService
+ * Used in App, Header, and Sidebar component tests
+ *
+ * @returns Mock object for LayoutService with signal-like properties
+ */
+export function createMockLayoutService(): MockLayoutService
+{
+	const mock: MockLayoutService = jasmine.createSpyObj("LayoutService", [
+		"setSidebarExpanded",
+		"toggleSidebar",
+		"openSidebar",
+		"closeSidebar"
+	]) as MockLayoutService;
+
+	// Add signal-like computed properties
+	mock.sidebarMode = jasmine.createSpy("sidebarMode").and.returnValue("side");
+	mock.sidebarExpanded = jasmine
+		.createSpy("sidebarExpanded")
+		.and.returnValue(true);
+
+	return mock;
+}
+
+/**
+ * Mock ViewportService interface for testing
+ * Uses writable signals for breakpoint detection
+ */
+export interface MockViewportService
+{
+	isMobile: WritableSignal<boolean>;
+	isTablet: WritableSignal<boolean>;
+	isDesktop: WritableSignal<boolean>;
+	isXSmall: WritableSignal<boolean>;
+	isSmall: WritableSignal<boolean>;
+	isMedium: WritableSignal<boolean>;
+	isLarge: WritableSignal<boolean>;
+	isXLarge: WritableSignal<boolean>;
+}
+
+/**
+ * Create a mocked ViewportService
+ * Used in responsive directive and component tests
+ *
+ * @returns Mock object for ViewportService with writable signal properties
+ */
+export function createMockViewportService(): MockViewportService
+{
+	return {
+		isMobile: signal(false),
+		isTablet: signal(false),
+		isDesktop: signal(true),
+		isXSmall: signal(false),
+		isSmall: signal(false),
+		isMedium: signal(false),
+		isLarge: signal(true),
+		isXLarge: signal(false)
+	};
 }

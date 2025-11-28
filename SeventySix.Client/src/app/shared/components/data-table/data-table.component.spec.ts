@@ -124,7 +124,8 @@ describe("DataTableComponent", () =>
 
 		it("should initialize visible columns from column definitions", () =>
 		{
-			const visibleColumns = component.visibleColumns();
+			const visibleColumns: TableColumn<TestEntity>[] =
+				component.visibleColumns();
 			expect(visibleColumns.length).toBe(4);
 			expect(
 				visibleColumns.map((c: TableColumn<TestEntity>) => c.key)
@@ -133,7 +134,7 @@ describe("DataTableComponent", () =>
 
 		it("should compute display columns for table", () =>
 		{
-			const displayColumns = component.displayedColumns();
+			const displayColumns: string[] = component.displayedColumns();
 			expect(displayColumns).toEqual([
 				"id",
 				"name",
@@ -147,7 +148,7 @@ describe("DataTableComponent", () =>
 			fixture.componentRef.setInput("selectable", true);
 			fixture.detectChanges();
 
-			const displayColumns = component.displayedColumns();
+			const displayColumns: string[] = component.displayedColumns();
 			expect(displayColumns[0]).toBe("select");
 		});
 
@@ -163,7 +164,7 @@ describe("DataTableComponent", () =>
 			fixture.componentRef.setInput("rowActions", actions);
 			fixture.detectChanges();
 
-			const displayColumns = component.displayedColumns();
+			const displayColumns: string[] = component.displayedColumns();
 			expect(displayColumns[displayColumns.length - 1]).toBe("actions");
 		});
 	});

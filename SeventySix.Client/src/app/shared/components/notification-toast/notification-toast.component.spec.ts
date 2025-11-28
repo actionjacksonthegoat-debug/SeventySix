@@ -31,7 +31,7 @@ describe("NotificationToastComponent", () =>
 			notificationService.success("Test message");
 			fixture.detectChanges();
 
-			const compiled = fixture.nativeElement;
+			const compiled: HTMLElement = fixture.nativeElement;
 			expect(
 				compiled.querySelector(".toast-message")?.textContent
 			).toContain("Test message");
@@ -43,7 +43,8 @@ describe("NotificationToastComponent", () =>
 			notificationService.error("Second");
 			fixture.detectChanges();
 
-			const toasts = fixture.nativeElement.querySelectorAll(".toast");
+			const toasts: NodeListOf<HTMLElement> =
+				fixture.nativeElement.querySelectorAll(".toast");
 			expect(toasts.length).toBe(2);
 		});
 
@@ -52,7 +53,8 @@ describe("NotificationToastComponent", () =>
 			notificationService.error("Error");
 			fixture.detectChanges();
 
-			const toast = fixture.nativeElement.querySelector(".toast");
+			const toast: HTMLElement | null =
+				fixture.nativeElement.querySelector(".toast");
 			expect(toast?.classList.contains("toast-error")).toBe(true);
 		});
 
@@ -61,7 +63,8 @@ describe("NotificationToastComponent", () =>
 			notificationService.warning("Warning");
 			fixture.detectChanges();
 
-			const toast = fixture.nativeElement.querySelector(".toast");
+			const toast: HTMLElement | null =
+				fixture.nativeElement.querySelector(".toast");
 			expect(toast?.classList.contains("toast-warning")).toBe(true);
 		});
 
@@ -70,7 +73,8 @@ describe("NotificationToastComponent", () =>
 			notificationService.info("Info");
 			fixture.detectChanges();
 
-			const toast = fixture.nativeElement.querySelector(".toast");
+			const toast: HTMLElement | null =
+				fixture.nativeElement.querySelector(".toast");
 			expect(toast?.classList.contains("toast-info")).toBe(true);
 		});
 
@@ -79,7 +83,8 @@ describe("NotificationToastComponent", () =>
 			notificationService.success("Success");
 			fixture.detectChanges();
 
-			const toast = fixture.nativeElement.querySelector(".toast");
+			const toast: HTMLElement | null =
+				fixture.nativeElement.querySelector(".toast");
 			expect(toast?.classList.contains("toast-success")).toBe(true);
 		});
 	});
@@ -91,7 +96,8 @@ describe("NotificationToastComponent", () =>
 			notificationService.error("Error");
 			fixture.detectChanges();
 
-			const icon = fixture.nativeElement.querySelector("mat-icon");
+			const icon: HTMLElement | null =
+				fixture.nativeElement.querySelector("mat-icon");
 			expect(icon?.textContent?.trim()).toBe("error");
 		});
 
@@ -100,7 +106,8 @@ describe("NotificationToastComponent", () =>
 			notificationService.warning("Warning");
 			fixture.detectChanges();
 
-			const icon = fixture.nativeElement.querySelector("mat-icon");
+			const icon: HTMLElement | null =
+				fixture.nativeElement.querySelector("mat-icon");
 			expect(icon?.textContent?.trim()).toBe("warning");
 		});
 
@@ -109,7 +116,8 @@ describe("NotificationToastComponent", () =>
 			notificationService.info("Info");
 			fixture.detectChanges();
 
-			const icon = fixture.nativeElement.querySelector("mat-icon");
+			const icon: HTMLElement | null =
+				fixture.nativeElement.querySelector("mat-icon");
 			expect(icon?.textContent?.trim()).toBe("info");
 		});
 
@@ -118,7 +126,8 @@ describe("NotificationToastComponent", () =>
 			notificationService.success("Success");
 			fixture.detectChanges();
 
-			const icon = fixture.nativeElement.querySelector("mat-icon");
+			const icon: HTMLElement | null =
+				fixture.nativeElement.querySelector("mat-icon");
 			expect(icon?.textContent?.trim()).toBe("check_circle");
 		});
 	});
@@ -172,9 +181,10 @@ describe("NotificationToastComponent", () =>
 			);
 			fixture.detectChanges();
 
-			const copyButton = fixture.nativeElement.querySelector(
-				"[aria-label='Copy error details']"
-			);
+			const copyButton: HTMLElement | null =
+				fixture.nativeElement.querySelector(
+					"[aria-label='Copy error details']"
+				);
 			expect(copyButton).toBeTruthy();
 		});
 
@@ -183,15 +193,16 @@ describe("NotificationToastComponent", () =>
 			notificationService.error("Error");
 			fixture.detectChanges();
 
-			const copyButton = fixture.nativeElement.querySelector(
-				"[aria-label='Copy error details']"
-			);
+			const copyButton: HTMLElement | null =
+				fixture.nativeElement.querySelector(
+					"[aria-label='Copy error details']"
+				);
 			expect(copyButton).toBeNull();
 		});
 
 		it("should call copyToClipboard when copy button is clicked", async () =>
 		{
-			const copySpy = spyOn(
+			const copySpy: jasmine.Spy = spyOn(
 				notificationService,
 				"copyToClipboard"
 			).and.returnValue(Promise.resolve(true));
@@ -202,9 +213,10 @@ describe("NotificationToastComponent", () =>
 			);
 			fixture.detectChanges();
 
-			const copyButton = fixture.nativeElement.querySelector(
-				"[aria-label='Copy error details']"
-			) as HTMLButtonElement;
+			const copyButton: HTMLButtonElement =
+				fixture.nativeElement.querySelector(
+					"[aria-label='Copy error details']"
+				) as HTMLButtonElement;
 			copyButton.click();
 
 			expect(copySpy).toHaveBeenCalled();
@@ -218,9 +230,8 @@ describe("NotificationToastComponent", () =>
 			notificationService.success("Success");
 			fixture.detectChanges();
 
-			const dismissButton = fixture.nativeElement.querySelector(
-				"[aria-label='Dismiss']"
-			);
+			const dismissButton: HTMLElement | null =
+				fixture.nativeElement.querySelector("[aria-label='Dismiss']");
 			expect(dismissButton).toBeTruthy();
 		});
 
@@ -232,9 +243,10 @@ describe("NotificationToastComponent", () =>
 				fixture.nativeElement.querySelectorAll(".toast").length
 			).toBe(1);
 
-			const dismissButton = fixture.nativeElement.querySelector(
-				"[aria-label='Dismiss']"
-			) as HTMLButtonElement;
+			const dismissButton: HTMLButtonElement =
+				fixture.nativeElement.querySelector(
+					"[aria-label='Dismiss']"
+				) as HTMLButtonElement;
 			dismissButton.click();
 			fixture.detectChanges();
 

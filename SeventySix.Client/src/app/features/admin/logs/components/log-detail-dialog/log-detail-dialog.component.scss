@@ -3,7 +3,7 @@
 
 .log-detail-dialog {
 	width: 100%;
-	min-height: 400px;
+	min-height: vars.$min-height-dialog;
 	border: 1px solid var(--mat-sys-outline-variant);
 
 	.dialog-header {

@@ -382,8 +382,8 @@ describe("ErrorHandlerService", () =>
 
 		it("should prevent re-entry when already handling an error", (done) =>
 		{
-			const consoleSpy = spyOn(console, "error");
-			let callCount = 0;
+			const consoleSpy: jasmine.Spy = spyOn(console, "error");
+			let callCount: number = 0;
 
 			// Configure notification to throw an error that triggers handleError again
 			mockNotification.errorWithDetails.and.callFake(() =>

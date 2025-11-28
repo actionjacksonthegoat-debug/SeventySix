@@ -311,7 +311,7 @@ describe("LogTableComponent", () =>
 		component.onDeleteSelected();
 
 		// Should not emit
-		let emitted = false;
+		let emitted: boolean = false;
 		component.deleteSelected.subscribe(() =>
 		{
 			emitted = true;

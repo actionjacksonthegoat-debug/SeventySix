@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { Router, provideRouter } from "@angular/router";
-import { BreadcrumbComponent } from "./breadcrumb.component";
+import { BreadcrumbComponent, BreadcrumbItem } from "./breadcrumb.component";
 import { Component } from "@angular/core";
 import { ComponentTestBed } from "@testing/test-bed-builders";
 
@@ -70,13 +70,13 @@ describe("BreadcrumbComponent", () =>
 
 	it("should compute breadcrumbs", () =>
 	{
-		const breadcrumbs = component.breadcrumbs();
+		const breadcrumbs: BreadcrumbItem[] = component.breadcrumbs();
 		expect(Array.isArray(breadcrumbs)).toBe(true);
 	});
 
 	it("should include home in breadcrumbs", () =>
 	{
-		const breadcrumbs = component.breadcrumbs();
+		const breadcrumbs: BreadcrumbItem[] = component.breadcrumbs();
 		expect(
 			breadcrumbs.some((b: { label: string }) => b.label === "Home")
 		).toBe(true);
@@ -87,7 +87,7 @@ describe("BreadcrumbComponent", () =>
 		await router.navigate(["/admin"]);
 		fixture.detectChanges();
 
-		const breadcrumbs = component.breadcrumbs();
+		const breadcrumbs: BreadcrumbItem[] = component.breadcrumbs();
 		const adminCrumb = breadcrumbs.find(
 			(b) => b.label === "Admin" || b.label === "Dashboard"
 		);
@@ -100,7 +100,7 @@ describe("BreadcrumbComponent", () =>
 		await router.navigate(["/admin/users/123"]);
 		fixture.detectChanges();
 
-		const breadcrumbs = component.breadcrumbs();
+		const breadcrumbs: BreadcrumbItem[] = component.breadcrumbs();
 
 		// Should have: Home, Admin, Users, Details (for :id)
 		expect(breadcrumbs.length).toBe(4);
@@ -116,7 +116,7 @@ describe("BreadcrumbComponent", () =>
 		await router.navigate(["/"]);
 		fixture.detectChanges();
 
-		const breadcrumbs = component.breadcrumbs();
+		const breadcrumbs: BreadcrumbItem[] = component.breadcrumbs();
 
 		// Should only have Home breadcrumb
 		expect(breadcrumbs.length).toBe(1);
@@ -128,7 +128,7 @@ describe("BreadcrumbComponent", () =>
 		await router.navigate(["/log-management"]);
 		fixture.detectChanges();
 
-		const breadcrumbs = component.breadcrumbs();
+		const breadcrumbs: BreadcrumbItem[] = component.breadcrumbs();
 		const activeCrumb = breadcrumbs.find((b) => b.isActive);
 
 		expect(activeCrumb).toBeDefined();
@@ -140,7 +140,7 @@ describe("BreadcrumbComponent", () =>
 		await router.navigate(["/admin/users"]);
 		fixture.detectChanges();
 
-		const breadcrumbs = component.breadcrumbs();
+		const breadcrumbs: BreadcrumbItem[] = component.breadcrumbs();
 		const usersCrumb = breadcrumbs.find((b) => b.label === "Users");
 
 		expect(usersCrumb?.url).toBe("/admin/users");
@@ -151,7 +151,7 @@ describe("BreadcrumbComponent", () =>
 		await router.navigate(["/admin"]);
 		fixture.detectChanges();
 
-		let breadcrumbs = component.breadcrumbs();
+		const breadcrumbs: BreadcrumbItem[] = component.breadcrumbs();
 		expect(breadcrumbs.length).toBeGreaterThanOrEqual(2);
 	});
 });

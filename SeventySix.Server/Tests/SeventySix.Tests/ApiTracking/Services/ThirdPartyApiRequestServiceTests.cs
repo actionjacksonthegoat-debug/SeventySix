@@ -68,7 +68,7 @@ public class ThirdPartyApiRequestServiceTests
 	{
 		// Arrange
 		MockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<ThirdPartyApiRequest>());
+			.ReturnsAsync([]);
 
 		// Act
 		IEnumerable<ThirdPartyApiRequestResponse> result = await Service.GetAllAsync(CancellationToken.None);
@@ -128,7 +128,7 @@ public class ThirdPartyApiRequestServiceTests
 	{
 		// Arrange
 		MockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<ThirdPartyApiRequest>());
+			.ReturnsAsync([]);
 
 		// Act
 		ThirdPartyApiStatisticsResponse result = await Service.GetStatisticsAsync(CancellationToken.None);

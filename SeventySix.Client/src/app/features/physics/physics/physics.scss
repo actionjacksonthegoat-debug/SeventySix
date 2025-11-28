@@ -6,7 +6,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	min-height: 400px;
+	min-height: vars.$min-height-dialog;
 
 	.feature-card {
 		max-width: vars.$container-width-sm;

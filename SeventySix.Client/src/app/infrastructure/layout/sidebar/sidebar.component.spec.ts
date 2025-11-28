@@ -2,24 +2,21 @@ import { ComponentFixture } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { SidebarComponent } from "./sidebar.component";
 import { LayoutService } from "@infrastructure/services/layout.service";
-import { signal } from "@angular/core";
-import { ComponentTestBed } from "@testing";
+import {
+	ComponentTestBed,
+	createMockLayoutService,
+	MockLayoutService
+} from "@testing";
 
 describe("SidebarComponent", () =>
 {
 	let component: SidebarComponent;
 	let fixture: ComponentFixture<SidebarComponent>;
-	let mockLayoutService: any;
+	let mockLayoutService: MockLayoutService;
 
 	beforeEach(async () =>
 	{
-		mockLayoutService = jasmine.createSpyObj("LayoutService", [
-			"setSidebarExpanded",
-			"toggleSidebar"
-		]);
-		mockLayoutService.sidebarMode = jasmine
-			.createSpy("sidebarMode")
-			.and.returnValue("side");
+		mockLayoutService = createMockLayoutService();
 
 		fixture = await new ComponentTestBed<SidebarComponent>()
 			.withProvider(provideRouter([]))

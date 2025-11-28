@@ -65,7 +65,8 @@ describe("HomePage", () =>
 	{
 		fixture.detectChanges();
 		const compiled: HTMLElement = fixture.nativeElement;
-		const cards = compiled.querySelectorAll(".feature-card");
+		const cards: NodeListOf<Element> =
+			compiled.querySelectorAll(".feature-card");
 		expect(cards.length).toBe(3);
 	});
 
@@ -73,9 +74,12 @@ describe("HomePage", () =>
 	{
 		fixture.detectChanges();
 		const compiled: HTMLElement = fixture.nativeElement;
-		const primaryCard = compiled.querySelector(".theme-primary");
-		const secondaryCard = compiled.querySelector(".theme-secondary");
-		const tertiaryCard = compiled.querySelector(".theme-tertiary");
+		const primaryCard: Element | null =
+			compiled.querySelector(".theme-primary");
+		const secondaryCard: Element | null =
+			compiled.querySelector(".theme-secondary");
+		const tertiaryCard: Element | null =
+			compiled.querySelector(".theme-tertiary");
 		expect(primaryCard).toBeTruthy();
 		expect(secondaryCard).toBeTruthy();
 		expect(tertiaryCard).toBeTruthy();

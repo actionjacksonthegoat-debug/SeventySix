@@ -80,6 +80,11 @@ $header-height: 4rem; // 64px at 16px base
 $header-height-mobile: 3.5rem; // 56px at 16px base
 $footer-height: 3rem; // 48px at 16px base
 
+// Min-height standards (Content containers)
+$min-height-dialog: 25rem; // 400px - Dialogs, embedded content
+$min-height-container-lg: 18.75rem; // 300px - Large containers, tables
+$min-height-container-md: 12.5rem; // 200px - Medium containers
+
 // ============================================================================
 // TYPOGRAPHY SIZES (Material Design Type Scale)
 // ============================================================================

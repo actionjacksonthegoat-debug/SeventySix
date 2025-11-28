@@ -41,7 +41,7 @@ describe("ConfirmDialogComponent", () =>
 
 	it("should display title and message", () =>
 	{
-		const compiled = fixture.nativeElement;
+		const compiled: HTMLElement = fixture.nativeElement;
 		expect(compiled.textContent).toContain("Confirm Action");
 		expect(compiled.textContent).toContain("Are you sure?");
 	});
@@ -60,13 +60,13 @@ describe("ConfirmDialogComponent", () =>
 
 	it("should get correct icon color for warn", () =>
 	{
-		const color = component.getIconColor();
+		const color: string = component.getIconColor();
 		expect(color).toBe("var(--mat-sys-error)");
 	});
 
 	it("should display custom button text when provided", () =>
 	{
-		const compiled = fixture.nativeElement;
+		const compiled: HTMLElement = fixture.nativeElement;
 		expect(compiled.textContent).toContain("Yes");
 		expect(compiled.textContent).toContain("No");
 	});

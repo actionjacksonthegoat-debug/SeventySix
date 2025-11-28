@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, Page, Locator } from "@playwright/test";
 
 /**
  * E2E Tests for Admin Dashboard
@@ -37,7 +37,7 @@ test.describe("Admin Dashboard", () =>
 			page: Page;
 		}) =>
 		{
-			const tabs = page.locator(".mat-mdc-tab");
+			const tabs: Locator = page.locator(".mat-mdc-tab");
 			await expect(tabs).toHaveCount(3);
 			await expect(tabs.nth(0)).toContainText("System Overview");
 			await expect(tabs.nth(1)).toContainText("API Metrics");
@@ -54,7 +54,7 @@ test.describe("Admin Dashboard", () =>
 		}) =>
 		{
 			// System Overview is the default tab
-			const grafanaEmbed = page
+			const grafanaEmbed: Locator = page
 				.locator("app-grafana-dashboard-embed")
 				.first();
 			await expect(grafanaEmbed).toBeVisible();
@@ -66,7 +66,7 @@ test.describe("Admin Dashboard", () =>
 			page: Page;
 		}) =>
 		{
-			const embedTitle = page
+			const embedTitle: Locator = page
 				.locator("app-grafana-dashboard-embed")
 				.first();
 			await expect(embedTitle).toHaveAttribute(
@@ -90,7 +90,9 @@ test.describe("Admin Dashboard", () =>
 			page: Page;
 		}) =>
 		{
-			const grafanaEmbed = page.getByTitle("API Endpoint Metrics");
+			const grafanaEmbed: Locator = page.getByTitle(
+				"API Endpoint Metrics"
+			);
 			await expect(grafanaEmbed).toBeVisible();
 		});
 
@@ -100,7 +102,7 @@ test.describe("Admin Dashboard", () =>
 			page: Page;
 		}) =>
 		{
-			const embedTitle = page.getByTitle("API Endpoint Metrics");
+			const embedTitle: Locator = page.getByTitle("API Endpoint Metrics");
 			await expect(embedTitle).toBeVisible();
 		});
 	});
@@ -119,7 +121,9 @@ test.describe("Admin Dashboard", () =>
 			page: Page;
 		}) =>
 		{
-			const statsTable = page.locator("app-api-statistics-table");
+			const statsTable: Locator = page.locator(
+				"app-api-statistics-table"
+			);
 			await expect(statsTable).toBeVisible();
 		});
 
@@ -129,7 +133,7 @@ test.describe("Admin Dashboard", () =>
 			page: Page;
 		}) =>
 		{
-			const obsCard = page.locator(
+			const obsCard: Locator = page.locator(
 				"mat-card-title:has-text('Observability Tools')"
 			);
 			await expect(obsCard).toBeVisible();
@@ -141,7 +145,7 @@ test.describe("Admin Dashboard", () =>
 			page: Page;
 		}) =>
 		{
-			const jaegerButton = page.locator(
+			const jaegerButton: Locator = page.locator(
 				"button:has-text('Jaeger Tracing')"
 			);
 			await expect(jaegerButton).toBeVisible();
@@ -153,7 +157,7 @@ test.describe("Admin Dashboard", () =>
 			page: Page;
 		}) =>
 		{
-			const prometheusButton = page.locator(
+			const prometheusButton: Locator = page.locator(
 				"button:has-text('Prometheus Metrics')"
 			);
 			await expect(prometheusButton).toBeVisible();
@@ -165,7 +169,7 @@ test.describe("Admin Dashboard", () =>
 			page: Page;
 		}) =>
 		{
-			const grafanaButton = page.locator(
+			const grafanaButton: Locator = page.locator(
 				"button:has-text('Grafana Full View')"
 			);
 			await expect(grafanaButton).toBeVisible();
@@ -177,7 +181,9 @@ test.describe("Admin Dashboard", () =>
 			page: Page;
 		}) =>
 		{
-			const obsButtons = page.locator(".observability-links button");
+			const obsButtons: Locator = page.locator(
+				".observability-links button"
+			);
 			await expect(obsButtons).toHaveCount(3);
 		});
 	});
@@ -187,17 +193,21 @@ test.describe("Admin Dashboard", () =>
 		test("should switch between tabs", async ({ page }: { page: Page }) =>
 		{
 			// Verify System Overview tab is active by default
-			const systemOverviewTab = page.locator(".mat-mdc-tab").nth(0);
+			const systemOverviewTab: Locator = page
+				.locator(".mat-mdc-tab")
+				.nth(0);
 			await expect(systemOverviewTab).toHaveClass(/mdc-tab--active/);
 
 			// Switch to API Metrics tab
 			await page.locator(".mat-mdc-tab").nth(1).click();
-			const apiMetricsTab = page.locator(".mat-mdc-tab").nth(1);
+			const apiMetricsTab: Locator = page.locator(".mat-mdc-tab").nth(1);
 			await expect(apiMetricsTab).toHaveClass(/mdc-tab--active/);
 
 			// Switch to External Systems tab
 			await page.locator(".mat-mdc-tab").nth(2).click();
-			const externalSystemsTab = page.locator(".mat-mdc-tab").nth(2);
+			const externalSystemsTab: Locator = page
+				.locator(".mat-mdc-tab")
+				.nth(2);
 			await expect(externalSystemsTab).toHaveClass(/mdc-tab--active/);
 		});
 	});
