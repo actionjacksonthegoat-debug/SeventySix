@@ -1,189 +1,156 @@
 # SeventySix Development Guidelines
 
-> **Expert-level guidance for TypeScript, Angular 20+, .NET 10+, and full-stack development.**
-> Follow SOLID principles, clean architecture, and industry best practices.
+> Expert guidance for Angular 20+, .NET 10+, TypeScript, and full-stack development.
+> Apply SOLID, KISS, DRY, YAGNI principles.
 
 ---
 
 ## Table of Contents
 
-1. [Core Principles](#core-principles)
-2. [Critical Rules](#critical-rules)
-3. [Angular Guidelines](#angular-guidelines)
-4. [.NET Guidelines](#net-guidelines)
+1. [Code Formatting](#code-formatting)
+2. [Angular Guidelines](#angular-guidelines)
+3. [.NET Guidelines](#net-guidelines)
+4. [SCSS Guidelines](#scss-guidelines)
 5. [Testing Guidelines](#testing-guidelines)
 6. [Architecture](#architecture)
-7. [Configuration Management](#configuration-management)
-8. [Documentation](#documentation)
-9. [Design Patterns](#design-patterns)
+7. [Quick Reference](#quick-reference)
 
 ---
 
-## Core Principles
+## Code Formatting
 
-### SOLID Principles
+> **CRITICAL**: These rules apply to ALL `.ts` and `.cs` files.
 
-| Principle | Description                                                    |
-| --------- | -------------------------------------------------------------- |
-| **SRP**   | Single Responsibility - each class has one reason to change    |
-| **OCP**   | Open/Closed - open for extension, closed for modification      |
-| **LSP**   | Liskov Substitution - subtypes must substitute for base types  |
-| **ISP**   | Interface Segregation - no client depends on unused methods    |
-| **DIP**   | Dependency Inversion - depend on abstractions, not concretions |
+### Summary Table
 
-### KISS (Keep It Simple, Stupid)
+| Rule             | ✅ Do                            | ❌ Don't                 |
+| ---------------- | -------------------------------- | ------------------------ |
+| 2+ Parameters    | Each on new line                 | Multiple on same line    |
+| Binary Operators | `\|\|`, `&&` on LEFT of new line | Operators at end of line |
+| Assignment       | New line AFTER `=`               | Value on same line       |
+| Method Chains    | New line BEFORE each `.`         | Chained on one line      |
+| Closing Paren    | `)` with last param              | `)` alone on line        |
+| Null Checks (C#) | `return x?.ToDto();`             | `if (x == null) {...}`   |
 
--   Favor simple, straightforward solutions over complex ones
--   Write code that is easy to read and understand
--   Avoid premature optimization
--   Refactor complexity only when necessary
+### Multi-Parameter Formatting
 
-### DRY (Don't Repeat Yourself)
+```typescript
+// ✅ CORRECT - each param on new line
+doSomething(firstParam, secondParam, thirdParam);
 
--   No code duplication (Rule of Three: extract after third occurrence)
--   Use abstractions for shared logic
--   But don't over-abstract prematurely
+// ❌ WRONG - all on one line
+doSomething(firstParam, secondParam, thirdParam);
+```
 
-### YAGNI (You Aren't Gonna Need It)
+```csharp
+// ✅ CORRECT
+public class UserService(
+	IUserRepository repo,
+	ILogger<UserService> logger)
+{
+}
 
--   Don't add functionality until it's actually needed
--   Avoid speculative generality
--   Build what is required now, not what might be needed later
--   Delete unused code aggressively
+// ❌ WRONG
+public class UserService(IUserRepository repo, ILogger<UserService> logger)
+```
 
-### .editorconfig Compliance
+### Binary Operators on Left
 
-**CRITICAL**: Always adhere to `.editorconfig` rules:
+```typescript
+// ✅ CORRECT - operators on LEFT of new line
+const isValid: boolean = hasPermission && isActive && !isDeleted;
 
--   Line Endings: CRLF (Windows)
--   Indentation: Tabs (width: 4 spaces) for C#, TypeScript, SCSS
--   Character Encoding: UTF-8
--   Trailing Whitespace: Remove (except Markdown)
--   C# Braces: Allman style (opening brace on new line)
+// ❌ WRONG - operators at end of line
+const isValid: boolean = hasPermission && isActive && !isDeleted;
+```
 
----
+### New Line After Assignment
 
-## Critical Rules
+```typescript
+// ✅ CORRECT - new line after =
+const user: User = this.userService.getById(id);
 
-### 🚨 Test Execution (NEVER Skip)
+// ❌ WRONG - value on same line
+const user: User = this.userService.getById(id);
+```
 
--   ❌ **NEVER** proceed with implementation if tests are failing
--   ❌ **NEVER** skip failing tests "to fix later"
--   ✅ **ALWAYS** fix failing tests immediately when discovered
--   ✅ **ALWAYS** run tests after each code change
+### Method Chains on New Lines
 
-| Platform | Command            | Tool         | Notes                         |
-| -------- | ------------------ | ------------ | ----------------------------- |
-| Angular  | `npm test`         | Terminal     | Headless, no-watch            |
-| .NET     | `dotnet test`      | runTests/CLI | Docker Desktop required       |
-| E2E      | `npm run test:e2e` | Terminal     | Manual only (not in test:all) |
+```typescript
+// ✅ CORRECT - new line BEFORE each .
+this.users
+	.filter((user: User) => user.isActive)
+	.map((user: User) => user.name)
+	.join(", ");
 
-> ⚠️ **E2E Tests**: E2E tests cover admin-dashboard and home-page only. Not included in `test:all` or checkpoints - other views incomplete.
+// ❌ WRONG - all chained on one line
+this.users
+	.filter((user: User) => user.isActive)
+	.map((user: User) => user.name)
+	.join(", ");
+```
 
-### 🚨 No Hardcoded Values
+### Null Check Simplification (C#)
 
-| ❌ Never Hardcode  | ✅ Use Instead                        |
-| ------------------ | ------------------------------------- |
-| API URLs           | `environment.ts` / `appsettings.json` |
-| Refresh intervals  | Configuration files                   |
-| Timeout values     | Options pattern                       |
-| Connection strings | Environment variables                 |
-| Feature flags      | Configuration                         |
-| Rate limits        | `appsettings.json`                    |
+```csharp
+// ✅ CORRECT
+return user?.ToDto();
 
-### 🚨 No Documentation Files
-
--   **NEVER** create new .md files unless explicitly asked
--   **ALWAYS** use inline JSDoc/XML comments instead
--   Keep code self-documenting with clear
--   Ensure code, properties, and classes are documented but not overly verbose
+// ❌ WRONG - Verbose (FORBIDDEN)
+if (user == null)
+{
+	return null;
+}
+return user.ToDto();
+```
 
 ---
 
 ## Angular Guidelines
 
-### Zoneless Architecture (CRITICAL)
+### Critical Rules
 
-The entire application is **Zone.js-free**:
+| Rule             | ✅ Do                  | ❌ Don't                        |
+| ---------------- | ---------------------- | ------------------------------- |
+| Types            | `const x: string = ""` | `const x = ""`                  |
+| DI               | `inject(Service)`      | `constructor(private svc)`      |
+| Change Detection | `OnPush`               | `Default`                       |
+| Inputs           | `input.required<T>()`  | `@Input()`                      |
+| Outputs          | `output<T>()`          | `@Output() EventEmitter`        |
+| Control Flow     | `@if`, `@for`          | `*ngIf`, `*ngFor`               |
+| Host Bindings    | `host: {...}`          | `@HostBinding`, `@HostListener` |
+| Classes          | `[class.active]="x()"` | `[ngClass]`                     |
+| Styles           | `[style.width]="x()"`  | `[ngStyle]`                     |
+| Zone             | Zoneless only          | Zone.js, NgZone, fakeAsync      |
+| Templates        | `computed()` signals   | Method calls                    |
+| Cleanup          | `takeUntilDestroyed()` | Manual unsubscribe              |
 
-```typescript
-// ✅ CORRECT - Zoneless patterns
-import { interval, timer } from "rxjs";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-
-interval(1000).pipe(takeUntilDestroyed()).subscribe();
-
-// ❌ FORBIDDEN - Zone.js APIs
-import { NgZone } from "@angular/core";
-fakeAsync(() => {});
-tick();
-flush();
-```
-
-### Type Declarations (CRITICAL)
-
-```typescript
-// ✅ CORRECT - Explicit types ALWAYS
-const name: string = "test";
-let count: number = 0;
-const users: User[] = [];
-const isActive: boolean = true;
-
-// ❌ WRONG - Never rely on type inference
-const name = "test";
-let count = 0;
-```
-
-### Dependency Injection (CRITICAL)
-
-```typescript
-// ✅ CORRECT - inject() function with explicit types
-export class UserService {
-	private readonly http: HttpClient = inject(HttpClient);
-	private readonly userRepo: UserRepository = inject(UserRepository);
-
-	constructor() {
-		// Optional initialization only - NO parameter injection
-	}
-}
-
-// ❌ WRONG - Constructor injection (legacy)
-export class UserService {
-	constructor(private http: HttpClient) {} // FORBIDDEN
-}
-```
-
-### Component Architecture
+### Component Pattern
 
 ```typescript
 @Component({
 	selector: "app-user-card",
-	changeDetection: ChangeDetectionStrategy.OnPush, // REQUIRED
+	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
 		@if (user()) {
-		<div>{{ user()!.name }}</div>
+		<div [class.active]="isActive()">{{ user()!.name }}</div>
 		} @for (item of items(); track item.id) {
 		<app-item [item]="item" />
-		} @empty {
-		<div>No items</div>
 		}
 	`,
-	// ✅ Use host object, NOT @HostBinding/@HostListener
 	host: {
 		"(click)": "onClick()",
 		"[class.active]": "isActive()",
-		"[attr.aria-label]": "ariaLabel()",
 	},
 })
 export class UserCardComponent {
-	// ✅ Modern input/output functions
+	private readonly service: UserService = inject(UserService);
+
 	user = input.required<User>();
 	items = input<Item[]>([]);
 	selected = output<User>();
 
-	// ✅ Derived state with computed()
 	isActive = computed(() => this.user()?.isActive ?? false);
-	ariaLabel = computed(() => `User: ${this.user()?.name}`);
 
 	onClick(): void {
 		this.selected.emit(this.user());
@@ -191,153 +158,62 @@ export class UserCardComponent {
 }
 ```
 
-**Component Rules:**
+### Service with Dependency Injection
 
-| ✅ Do                            | ❌ Don't                       |
-| -------------------------------- | ------------------------------ |
-| `input.required<T>()`            | `@Input() prop!: T`            |
-| `output<T>()`                    | `@Output() EventEmitter<T>`    |
-| `host: { '(click)': 'fn()' }`    | `@HostListener('click')`       |
-| `[class.active]="isActive()"`    | `[ngClass]="{ active: x }"`    |
-| `[style.color]="color()"`        | `[ngStyle]="{ color: x }"`     |
-| `@if`, `@for`, `@switch`         | `*ngIf`, `*ngFor`, `*ngSwitch` |
-| `ChangeDetectionStrategy.OnPush` | Default change detection       |
+```typescript
+@Injectable()
+export class UserService {
+	private readonly http: HttpClient = inject(HttpClient);
+	private readonly apiUrl: string = environment.apiUrl;
 
-### Signals & State Management
+	getById(id: number): Observable<User> {
+		return this.http.get<User>(`${this.apiUrl}/users/${id}`);
+	}
+}
+```
+
+### Signals & Computed State
 
 ```typescript
 export class CounterComponent {
-	// Local state
 	count = signal<number>(0);
 
-	// Derived state
 	doubled = computed(() => this.count() * 2);
 
 	increment(): void {
-		this.count.update((c: number) => c + 1);
-	}
-
-	reset(): void {
-		this.count.set(0);
+		this.count.update((count: number) => count + 1);
 	}
 }
-
-// ❌ WRONG - Don't use mutate()
-this.items.mutate((arr) => arr.push(item)); // FORBIDDEN
 ```
 
-### 🚨 Change Detection Performance (CRITICAL)
-
-**NEVER** call methods directly in templates - they run on EVERY change detection cycle:
+### Pre-computed List Pattern
 
 ```typescript
-// ❌ WRONG - Expensive operations on every CD cycle
-template: `
-	<div [class]="getClass(item)">  <!-- Runs repeatedly! -->
-	<span>{{ formatValue(item) }}</span>  <!-- Runs repeatedly! -->
-	@if (shouldShow(item)) { ... }  <!-- Runs repeatedly! -->
-`
-
-// ✅ CORRECT - Pre-compute with computed() signals (memoized)
-export class MyComponent {
-	item = input.required<Item>();
-
-	// Computed signals are memoized - only recalculate when dependencies change
-	itemClass = computed(() => this.computeClass(this.item()));
-	formattedValue = computed(() => this.format(this.item()));
-	isVisible = computed(() => this.checkVisibility(this.item()));
+// Define extended interface
+interface ProcessedItem extends Item {
+	cssClass: string;
+	displayValue: string;
 }
 
-// ✅ CORRECT - Use pure pipes for formatting
-<span>{{ item.date | date:'short' }}</span>
+// Pre-compute in signal
+readonly processedItems: Signal<ProcessedItem[]> =
+	computed(() =>
+		this.items()
+			.map((item: Item): ProcessedItem => ({
+				...item,
+				cssClass: getClass(item.status),
+				displayValue: format(item.value),
+			})));
 
-// ✅ CORRECT - Pre-compute in data model for lists
-itemsWithMetadata = computed(() =>
-	this.items().map(item => ({
-		...item,
-		cssClass: this.computeClass(item),
-		formattedValue: this.format(item)
-	}))
-);
-
-@for (item of itemsWithMetadata(); track item.id) {
-	<div [class]="item.cssClass">{{ item.formattedValue }}</div>
+// Template uses direct access
+@for (item of processedItems(); track item.id) {
+	<div [class]="item.cssClass">{{ item.displayValue }}</div>
 }
 ```
-
-**Performance Rules:**
-| ❌ Avoid | ✅ Use Instead |
-| -------- | -------------- |
-| Method calls in template | `computed()` signals |
-| `[class]="getClass()"` | Pre-computed class property |
-| `{{ format(value) }}` | Pure pipes or computed |
-| `@if (shouldShow())` | Computed boolean signal |
-| `[ngClass]="obj"` | `[class.name]="bool()"` |
-| Dynamic style calculation | CSS classes + Material theming |
-
-### Pre-computed List Items Pattern
-
-For tables/lists with per-row computed values, extend the data model:
-
-```typescript
-// 1. Define extended interface with display properties
-interface ProcessedLog extends LogResponse
-{
-	levelClass: string;
-	levelName: string;
-	relativeTime: string;
-}
-
-// 2. Pre-compute in computed signal (memoized)
-readonly processedLogs: Signal<ProcessedLog[]> = computed((): ProcessedLog[] =>
-	this.logs().map((log: LogResponse): ProcessedLog => ({
-		...log,
-		levelClass: getLogLevelClass(log.logLevel),
-		levelName: getLogLevelName(log.logLevel),
-		relativeTime: getRelativeTime(log.createDate)
-	}))
-);
-
-// 3. Template uses direct property access
-@for (log of processedLogs(); track log.id) {
-	<span [class]="log.levelClass">{{ log.levelName }}</span>
-	<span>{{ log.relativeTime }}</span>
-}
-```
-
-### Shared Utility Functions (DRY)
-
-When helper methods are duplicated across 3+ components, extract to a utilities file:
-
-```typescript
-// feature/models/feature.utilities.ts
-// Use named constants (avoid magic numbers)
-const MILLISECONDS_PER_HOUR: number = 3_600_000;
-
-// Single source of truth for mappings
-const LOG_LEVEL_CLASSES: Record<LogLevel, string> = {
-	[LogLevel.Info]: "level-info",
-	[LogLevel.Error]: "level-error",
-};
-
-export function getLogLevelClass(logLevel: string): string {
-	const level: LogLevel = parseLogLevel(logLevel);
-	return LOG_LEVEL_CLASSES[level];
-}
-```
-
-### When to Accept Method Calls (KISS/YAGNI)
-
-Keep simple methods when overhead is negligible:
-
--   **Column visibility toggles**: ~10 calls on menu open, not per row
--   **Action visibility in menus**: Small arrays (1-3 items), not per-row render
--   **One-time calculations**: Menu items, not repeated in `@for` loops
 
 ### Subscription Cleanup
 
 ```typescript
-// ✅ CORRECT - takeUntilDestroyed() for automatic cleanup
 export class DataComponent {
 	private readonly dataService: DataService = inject(DataService);
 
@@ -352,24 +228,30 @@ export class DataComponent {
 }
 ```
 
-### Forms (Reactive Only)
+### Service Scoping (CRITICAL)
+
+| Service Type     | Scope                | Example                        |
+| ---------------- | -------------------- | ------------------------------ |
+| Cross-cutting    | `providedIn: 'root'` | `LoggerService`, `ApiService`  |
+| Feature-specific | Route `providers`    | `UserService`, `LogRepository` |
 
 ```typescript
-export class UserFormComponent {
-	private readonly fb: FormBuilder = inject(FormBuilder);
+// ❌ WRONG - Feature service in root (memory leak)
+@Injectable({ providedIn: "root" })
+export class UserService {}
 
-	form: FormGroup<UserForm> = this.fb.group({
-		username: ["", [Validators.required, Validators.minLength(3)]],
-		email: ["", [Validators.required, Validators.email]],
-	});
+// ✅ CORRECT - Route-scoped
+@Injectable()
+export class UserService {}
 
-	onSubmit(): void {
-		if (this.form.valid) {
-			const value: UserFormValue = this.form.getRawValue();
-			// Process form...
-		}
-	}
-}
+// In routes:
+export const ADMIN_ROUTES: Routes = [
+	{
+		path: "users",
+		providers: [UserService, UserRepository],
+		loadComponent: () => import("./users.component").then((module) => module.UsersComponent),
+	},
+];
 ```
 
 ### Path Aliases
@@ -380,407 +262,112 @@ export class UserFormComponent {
 | `@shared/*`         | `src/app/shared/*`         |
 | `@admin/*`          | `src/app/features/admin/*` |
 | `@game/*`           | `src/app/features/game/*`  |
-| `@home/*`           | `src/app/features/home/*`  |
 
-```typescript
-// ✅ CORRECT - Use path aliases
-import { LoggerService } from "@infrastructure/services/logger.service";
-import { UserService } from "@admin/users/services/user.service";
-
-// ❌ WRONG - Relative paths across boundaries
-import { UserService } from "../../../features/admin/users/services/user.service";
-
-// ❌ WRONG - Cross-feature imports (FORBIDDEN)
-import { GameService } from "@game/services/game.service"; // From admin feature
-```
-
-### 🚨 Service Scoping & Bounded Contexts (CRITICAL)
-
-Feature-specific services MUST be scoped to their feature routes, NOT `providedIn: 'root'`:
-
--   **Memory**: Route-scoped services are garbage collected when navigating away
--   **Isolation**: Features remain self-contained (bounded context)
--   **Lazy loading**: Services only load when feature is accessed
-
-```typescript
-// ❌ WRONG - Feature service in root (memory leak, violates bounded context)
-@Injectable({ providedIn: "root" })
-export class LogManagementService { ... }
-
-// ✅ CORRECT - No providedIn, provided at route level
-@Injectable()
-export class LogManagementService { ... }
-
-// In feature routes:
-export const ADMIN_ROUTES: Routes = [
-	{
-		path: "logs",
-		providers: [LogManagementService, LogRepository],
-		loadComponent: () => import("./logs/log-management.component").then((m) => m.LogManagementComponent),
-	},
-];
-```
-
-**Service Scope Decision:**
-
-| Service Type        | Scope                | Example                              |
-| ------------------- | -------------------- | ------------------------------------ |
-| Cross-cutting       | `providedIn: 'root'` | `LoggerService`, `ApiService`        |
-| Feature-specific    | Route `providers`    | `UserService`, `LogRepository`       |
-| Stateless utilities | `providedIn: 'root'` | `DateService`, `SanitizationService` |
-
-### 🚨 SCSS Semantic Status Colors (CRITICAL)
-
-**ALWAYS use CSS custom properties for notification color matching. These are theme-aware and adapt to light/dark mode and color scheme changes:**
-
-**Dark Mode (`:root`, `html.dark-theme`):**
-| CSS Variable | Maps To Material Theme | Usage |
-| -------------------- | -------------------------------- | ---------------------------------- |
-| `--color-info` | `--mat-sys-primary-container` | Informational messages, debug logs |
-| `--color-success` | `--mat-sys-primary` | Success states, positive actions |
-| `--color-warning` | `--mat-sys-error` | Warnings, caution indicators |
-| `--color-error` | `--mat-sys-error-container` | Errors, destructive actions |
-
-**Light Mode (`html.light-theme`):**
-| CSS Variable | Maps To Material Theme | Usage |
-| -------------------- | -------------------------------- | ---------------------------------- |
-| `--color-info` | `--mat-sys-primary-container` | Informational messages, debug logs |
-| `--color-success` | `--mat-sys-primary` | Success states, positive actions |
-| `--color-warning` | `--mat-sys-error-container` | Warnings, caution indicators |
-| `--color-error` | `--mat-sys-error` | Errors, destructive actions |
-
-**Text colors:** Use `--color-on-info`, `--color-on-success`, `--color-on-warning`, `--color-on-error` for text on status backgrounds.
-
-```scss
-// ✅ CORRECT - CSS custom properties (theme-aware)
-.badge-info {
-	background-color: var(--color-info);
-	color: var(--color-on-info);
-}
-
-.toast-error {
-	background-color: var(--color-error);
-	color: var(--color-on-error);
-}
-
-// For buttons, override Material CSS variables
-.btn-warning {
-	--mdc-outlined-button-label-text-color: var(--color-warning);
-	--mdc-outlined-button-outline-color: var(--color-warning);
-}
-
-// ❌ WRONG - Hardcoded hex values (FORBIDDEN)
-.badge {
-	background-color: #2196f3; // NEVER hardcode!
-}
-```
-
-**Benefits of Theme-Aware Colors**:
-
--   Automatically adapt to light/dark mode
--   Change with Blue/Cyan-Orange theme selection
--   Proper contrast ratios from Material Design
--   Single source of truth in `_base.scss`
-
-### 🚨 REM Units for Sizing (CRITICAL)
-
-**ALWAYS use `rem` units for all sizing values. NEVER use `px` except for specific exceptions.**
-
-**Why REM?**
-
--   **Accessibility**: Respects user's browser font-size preferences
--   **Scalability**: Site-wide scaling via single `html { font-size: X% }` value
--   **Consistency**: All spacing scales proportionally together
--   **Material Integration**: Works seamlessly with Material Design's density system
-
-**✅ Use REM for:**
-
-| Category         | Example                         |
-| ---------------- | ------------------------------- |
-| Spacing/Padding  | `padding: 1rem;`                |
-| Margins          | `margin: 0.5rem;`               |
-| Font sizes       | `font-size: 0.875rem;`          |
-| Widths/Heights   | `width: 20rem;` `height: 4rem;` |
-| Gap              | `gap: 1rem;`                    |
-| Max/Min sizes    | `max-width: 60rem;`             |
-| Container widths | `$sidebar-width: 17.5rem;`      |
-
-**❌ ONLY use PX for (exceptions):**
-
-| Category       | Example                      | Reason                                       |
-| -------------- | ---------------------------- | -------------------------------------------- |
-| Breakpoints    | `$breakpoint-md-min: 960px;` | Media queries based on viewport pixels       |
-| Border widths  | `border: 1px solid;`         | Sub-pixel precision, doesn't need scaling    |
-| Border radius  | `border-radius: 8px;`        | Visual consistency at small sizes            |
-| Box shadows    | `0 2px 4px rgba(...)`        | Visual consistency, doesn't need scaling     |
-| Outline widths | `outline: 2px solid;`        | Focus indicators need consistent pixel width |
-
-**Examples:**
-
-```scss
-@use "variables" as vars;
-
-// ✅ CORRECT - REM for all sizing
-.component {
-	padding: vars.$spacing-lg; // 1rem
-	margin-bottom: vars.$spacing-xl; // 1.5rem
-	font-size: vars.$font-size-base; // 0.875rem
-	max-width: vars.$container-width-md; // 60rem
-	gap: vars.$spacing-md; // 0.75rem
-	height: vars.$header-height; // 4rem
-}
-
-// ✅ CORRECT - PX only for exceptions
-.card {
-	border: 1px solid var(--border-color); // Border width in px
-	border-radius: 12px; // Border radius in px
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Shadow in px
-}
-
-// ❌ WRONG - PX for spacing/sizing (FORBIDDEN)
-.component {
-	padding: 16px; // Should be 1rem or vars.$spacing-lg
-	margin: 24px; // Should be 1.5rem or vars.$spacing-xl
-	font-size: 14px; // Should be 0.875rem or vars.$font-size-base
-	width: 300px; // Should be 18.75rem
-	height: 64px; // Should be 4rem
-}
-```
-
-**Converting PX to REM:**
-
--   Formula: `rem = px / 16`
--   `8px = 0.5rem`, `12px = 0.75rem`, `16px = 1rem`, `24px = 1.5rem`, `32px = 2rem`
-
-**Best Practice**: Always use SCSS variables from `_variables.scss` instead of raw rem values:
-
-```scss
-// ✅ BEST - Use SCSS variables (single source of truth)
-padding: vars.$spacing-lg; // Not: padding: 1rem;
-
-// ❌ AVOID - Raw rem values (harder to maintain)
-padding: 1rem;
-```
-
-### 🚨 SCSS Mixins & DRY Patterns (CRITICAL)
-
-**ALWAYS prefer mixins over repeated CSS patterns.** When you see the same CSS block appearing 3+ times, extract it into a mixin in `_mixins.scss`.
-
-**Why Mixins?**
-
--   **DRY**: Single source of truth for common patterns
--   **Maintainability**: Change once, update everywhere
--   **Consistency**: Ensures uniform styling across components
--   **Configurability**: Parameters allow controlled variation
-
-**Common Patterns That MUST Use Mixins:**
-
-| Pattern                              | Mixin                              | Instead of               |
-| ------------------------------------ | ---------------------------------- | ------------------------ |
-| Icon sizing (font-size/width/height) | `@include icon-size($size)`        | Repeated triplet         |
-| Loading/error states                 | `@include loading-state()`         | Repeated flex center     |
-| Page headers                         | `@include page-header()`           | Repeated header layout   |
-| Responsive padding                   | `@include responsive-padding()`    | Repeated media queries   |
-| Scrollbar styling                    | `@include custom-scrollbar()`      | Repeated scrollbar CSS   |
-| Code blocks                          | `@include code-block-scrollable()` | Repeated pre/code styles |
-
-```scss
-// ✅ CORRECT - Use existing mixins from _mixins.scss
-@use "mixins" as mixins;
-
-.my-component {
-	@include mixins.loading-state();
-}
-
-.my-icon {
-	@include mixins.icon-size(vars.$icon-size-xl);
-}
-
-// ❌ WRONG - Repeated CSS pattern (violates DRY)
-.my-component {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: vars.$spacing-xl;
-	gap: vars.$spacing-lg;
-}
-
-// ❌ WRONG - Repeated icon sizing triplet
-mat-icon {
-	font-size: vars.$icon-size-xl;
-	width: vars.$icon-size-xl;
-	height: vars.$icon-size-xl;
-}
-```
-
-**When to Create a New Mixin:**
-
-1. Same CSS block appears 3+ times (Rule of Three)
-2. Pattern has logical variations controlled by parameters
-3. Pattern is likely to change together across all usages
-
-### File Naming
-
-| Type        | Pattern                  | Example                  |
-| ----------- | ------------------------ | ------------------------ |
-| Component   | `feature.component.ts`   | `user-list.component.ts` |
-| Service     | `feature.service.ts`     | `user.service.ts`        |
-| Repository  | `feature.repository.ts`  | `user.repository.ts`     |
-| Guard       | `feature.guard.ts`       | `auth.guard.ts`          |
-| Interceptor | `feature.interceptor.ts` | `error.interceptor.ts`   |
-| Pipe        | `feature.pipe.ts`        | `date-format.pipe.ts`    |
-| Model       | `feature.model.ts`       | `user.model.ts`          |
-| Validator   | `feature.validators.ts`  | `user.validators.ts`     |
-| Routes      | `feature.routes.ts`      | `admin.routes.ts`        |
+**Rule**: Features import from `@infrastructure/` and `@shared/` only. Never cross-feature.
 
 ---
 
 ## .NET Guidelines
 
-### Type Declarations (CRITICAL)
+### Critical Rules
+
+| Rule         | ✅ Do                         | ❌ Don't                 |
+| ------------ | ----------------------------- | ------------------------ |
+| Types        | `string x = ""`               | `var x = ""`             |
+| Constructors | Primary: `class Svc(IRepo r)` | Traditional with fields  |
+| Collections  | `[1, 2, 3]`                   | `new List<int>{...}`     |
+| Async        | `GetUserAsync()`              | `GetUser()` for async    |
+| Nulls        | `return x?.ToDto();`          | `if (x == null) {...}`   |
+| DTOs         | `record UserDto(...)`         | class with props         |
+| EF Config    | Fluent API                    | Data annotations         |
+| Queries      | `AsNoTracking()`              | Tracked for reads        |
+| Repository   | Domain-specific               | Generic `IRepository<T>` |
+
+### Service Pattern
 
 ```csharp
-// ✅ CORRECT - Explicit types ALWAYS
-string name = "test";
-int count = 0;
-List<User> users = [];
-Dictionary<string, int> map = [];
-
-// ❌ WRONG - Never use var
-var name = "test";
-var users = new List<User>();
-```
-
-### Primary Constructors (C# 12+) (CRITICAL)
-
-```csharp
-// ✅ CORRECT - Primary constructor, parameters ARE fields
-public class UserService(IUserRepository repo, ILogger<UserService> logger)
+public class UserService(
+	IUserRepository repo,
+	ILogger<UserService> logger)
 {
-    public async Task<User?> GetByIdAsync(int id) =>
-        await repo.GetByIdAsync(id);  // Use parameter directly
+	public async Task<User?> GetByIdAsync(int id) =>
+		await repo.GetByIdAsync(id);
 
-    public async Task CreateAsync(User user)
-    {
-        logger.LogInformation("Creating user {Username}", user.Username);
-        await repo.AddAsync(user);
-    }
-}
-
-// ❌ WRONG - Separate field assignments (legacy)
-public class UserService
-{
-    private readonly IUserRepository Repo;
-    public UserService(IUserRepository repo) => Repo = repo;
+	public async Task CreateAsync(User user)
+	{
+		logger.LogInformation(
+			"Creating user {Username}",
+			user.Username);
+		await repo.AddAsync(user);
+	}
 }
 ```
 
-### Collection Expressions (C# 12+) (CRITICAL)
+### Repository Pattern
 
 ```csharp
-// ✅ CORRECT - Modern collection syntax
-int[] numbers = [1, 2, 3];
-List<string> names = ["Alice", "Bob"];
-HashSet<int> ids = [1, 2, 3];
-List<User> users = [];
-
-// ❌ WRONG - Legacy syntax
-var numbers = new int[] { 1, 2, 3 };
-var names = new List<string> { "Alice", "Bob" };
-```
-
-### Async Methods (CRITICAL)
-
-```csharp
-// ✅ CORRECT - Async suffix on ALL async methods
-public async Task<User?> GetUserByIdAsync(int id)
-public async Task CreateUserAsync(CreateUserRequest request)
-
-// Test methods too!
-[Fact]
-public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
-
-// ❌ WRONG - Missing Async suffix
-public async Task<User?> GetUserById(int id)
-```
-
-### Null Handling (CRITICAL)
-
-```csharp
-// ✅ CORRECT - Let it fail if null (fail fast)
-public class UserService(IUserRepository repo)
-{
-    public async Task DoWorkAsync() => await repo.SaveAsync();
-}
-
-// ❌ WRONG - Excessive null checks
-public UserService(IUserRepository repo) =>
-    _repo = repo ?? throw new ArgumentNullException(nameof(repo)); // FORBIDDEN
-```
-
-### Records for DTOs (CRITICAL)
-
-```csharp
-// ✅ CORRECT - Records for immutable DTOs
-public record UserDto(int Id, string Username, string Email, bool IsActive);
-public record CreateUserRequest(string Username, string Email, string Password);
-public record PagedResult<T>(IReadOnlyList<T> Items, int TotalCount, int Page, int PageSize);
-
-// ❌ WRONG - Classes for DTOs
-public class UserDto { public int Id { get; set; } }
-```
-
-### Entity Framework Core
-
-```csharp
-// ✅ CORRECT - Fluent API configuration (NOT attributes)
-public class UserConfiguration : IEntityTypeConfiguration<User>
-{
-    public void Configure(EntityTypeBuilder<User> builder)
-    {
-        builder.ToTable("users", "identity");
-        builder.HasKey(u => u.Id);
-        builder.Property(u => u.Username).HasMaxLength(100).IsRequired();
-        builder.HasIndex(u => u.Username).IsUnique();
-        builder.HasQueryFilter(u => !u.IsDeleted);
-    }
-}
-
-// ✅ CORRECT - AsNoTracking for read-only queries
-public async Task<User?> GetByIdAsync(int id) =>
-    await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
-
-// ❌ WRONG - Data annotations on entities
-[Table("Users")]
-[Index(nameof(Username))]
-public class User { }
-```
-
-### Repository Pattern (No Generic)
-
-```csharp
-// ✅ CORRECT - Domain-specific repository
 public class UserRepository(IdentityDbContext db)
 {
-    public async Task<User?> GetByIdAsync(int id) =>
-        await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+	public async Task<User?> GetByIdAsync(int id) =>
+		await db.Users
+			.AsNoTracking()
+			.FirstOrDefaultAsync(user => user.Id == id);
 
-    public async Task<User?> GetByUsernameAsync(string username) =>
-        await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username);
+	public async Task<User?> GetByUsernameAsync(string username) =>
+		await db.Users
+			.AsNoTracking()
+			.FirstOrDefaultAsync(user => user.Username == username);
 
-    public async Task AddAsync(User user)
-    {
-        db.Users.Add(user);
-        await db.SaveChangesAsync();
-    }
+	public async Task AddAsync(User user)
+	{
+		db.Users.Add(user);
+		await db.SaveChangesAsync();
+	}
 }
+```
 
-// ❌ WRONG - Generic repository (antipattern)
-public interface IRepository<T> where T : class
+### Entity Configuration (Fluent API)
+
+```csharp
+public class UserConfiguration : IEntityTypeConfiguration<User>
 {
-    IQueryable<T> Query();  // Defeats the purpose!
+	public void Configure(EntityTypeBuilder<User> builder)
+	{
+		builder.ToTable(
+			"users",
+			"identity");
+		builder.HasKey(user => user.Id);
+		builder
+			.Property(user => user.Username)
+			.HasMaxLength(100)
+			.IsRequired();
+		builder
+			.HasIndex(user => user.Username)
+			.IsUnique();
+		builder.HasQueryFilter(user => !user.IsDeleted);
+	}
 }
+```
+
+### Records for DTOs
+
+```csharp
+public record UserDto(
+	int Id,
+	string Username,
+	string Email,
+	bool IsActive);
+
+public record CreateUserRequest(
+	string Username,
+	string Email,
+	string Password);
+
+public record PagedResult<T>(
+	IReadOnlyList<T> Items,
+	int TotalCount,
+	int Page,
+	int PageSize);
 ```
 
 ### API Controllers
@@ -790,73 +377,126 @@ public interface IRepository<T> where T : class
 [Route("api/[controller]")]
 public class UsersController(UserService userService) : ControllerBase
 {
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<UserDto>> GetByIdAsync(int id)
-    {
-        Result<UserDto> result = await userService.GetByIdAsync(id);
-        return result.IsSuccess ? Ok(result.Value) : NotFound();
-    }
+	[HttpGet("{id:int}")]
+	public async Task<ActionResult<UserDto>> GetByIdAsync(int id)
+	{
+		Result<UserDto> result =
+			await userService.GetByIdAsync(id);
+		return result.IsSuccess
+			? Ok(result.Value)
+			: NotFound();
+	}
 
-    [HttpPost]
-    public async Task<ActionResult<UserDto>> CreateAsync(CreateUserRequest request)
-    {
-        Result<UserDto> result = await userService.CreateAsync(request);
-        return result.IsSuccess
-            ? CreatedAtAction(nameof(GetByIdAsync), new { id = result.Value!.Id }, result.Value)
-            : BadRequest(result.Error);
-    }
+	[HttpPost]
+	public async Task<ActionResult<UserDto>> CreateAsync(CreateUserRequest request)
+	{
+		Result<UserDto> result =
+			await userService.CreateAsync(request);
+		return result.IsSuccess
+			? CreatedAtAction(
+				nameof(GetByIdAsync),
+				new { id = result.Value!.Id },
+				result.Value)
+			: BadRequest(result.Error);
+	}
 }
 ```
 
 ### Pattern Matching
 
 ```csharp
-// ✅ CORRECT - Switch expressions
-string GetStatusMessage(OrderStatus status) => status switch
-{
-    OrderStatus.Pending => "Waiting",
-    OrderStatus.Processing => "In progress",
-    OrderStatus.Shipped => "On the way",
-    _ => "Unknown"
-};
+string GetStatusMessage(OrderStatus status) =>
+	status switch
+	{
+		OrderStatus.Pending => "Waiting",
+		OrderStatus.Processing => "In progress",
+		OrderStatus.Shipped => "On the way",
+		_ => "Unknown",
+	};
 
-// ✅ CORRECT - Pattern matching with conditions
-string GetUserCategory(User user) => user switch
-{
-    { IsAdmin: true } => "Administrator",
-    { IsActive: false } => "Inactive",
-    _ => "Regular"
-};
+string GetUserCategory(User user) =>
+	user switch
+	{
+		{ IsAdmin: true } => "Administrator",
+		{ IsActive: false } => "Inactive",
+		_ => "Regular",
+	};
 ```
+
+---
+
+## SCSS Guidelines
+
+### Units
+
+| ✅ Use REM for           | ❌ Use PX only for |
+| ------------------------ | ------------------ |
+| Spacing, padding, margin | Border width       |
+| Font sizes               | Border radius      |
+| Widths, heights          | Box shadows        |
+| Gap                      | Breakpoints        |
+
+### Variables & Colors
+
+```scss
+@use "variables" as vars;
+
+// ✅ CORRECT
+.component {
+	padding: vars.$spacing-lg;
+	margin-bottom: vars.$spacing-xl;
+	font-size: vars.$font-size-base;
+	background-color: var(--color-info);
+	color: var(--color-on-info);
+}
+
+// ❌ WRONG
+.component {
+	padding: 16px;
+	margin-bottom: 24px;
+	background-color: #2196f3;
+}
+```
+
+### Mixins (DRY)
+
+```scss
+@use "mixins" as mixins;
+
+// ✅ Use existing mixins
+.my-component {
+	@include mixins.loading-state();
+}
+
+.my-icon {
+	@include mixins.icon-size(vars.$icon-size-xl);
+}
+```
+
+**Rule**: Extract to mixin after 3rd occurrence (Rule of Three).
 
 ---
 
 ## Testing Guidelines
 
-### Angular Tests
+### Commands
 
-```bash
-# Standard test run (headless, no-watch) - USE THIS
-npm test
+| Platform | Command            | Notes                   |
+| -------- | ------------------ | ----------------------- |
+| Angular  | `npm test`         | Headless, no-watch      |
+| .NET     | `dotnet test`      | Docker Desktop required |
+| E2E      | `npm run test:e2e` | Manual only             |
 
-# Interactive watch mode (development only)
-npm run test:watch
+**CRITICAL**: Never skip failing tests. Fix immediately.
 
-# E2E (Playwright)
-npm run test:e2e
-```
-
-**Test Configuration (Zoneless - REQUIRED):**
+### Angular Test Pattern
 
 ```typescript
 describe("UserComponent", () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [UserComponent],
-			providers: [
-				provideZonelessChangeDetection(), // REQUIRED
-				provideHttpClientTesting(),
-			],
+			providers: [provideZonelessChangeDetection(), provideHttpClientTesting()],
 		}).compileComponents();
 	});
 
@@ -871,52 +511,47 @@ describe("UserComponent", () => {
 	});
 });
 
-// Libraries: NSubstitute (mocking), Shouldly (assertions), xUnit (framework)
-// ❌ FORBIDDEN in tests: fakeAsync(), tick(), flush(), Zone.js, Moq, FluentAssertions
+// ❌ FORBIDDEN: fakeAsync(), tick(), flush(), Zone.js
 ```
 
-### .NET Tests
-
-```bash
-# Run all tests (Docker Desktop MUST be running)
-dotnet test
-
-# Run with output
-dotnet test --logger "console;verbosity=normal"
-```
-
-**Test Structure:**
+### .NET Test Pattern
 
 ```csharp
 public class UserServiceTests
 {
-    private readonly IUserRepository UserRepository = Substitute.For<IUserRepository>();
-    private readonly UserService UserService;
+	private readonly IUserRepository UserRepository =
+		Substitute.For<IUserRepository>();
+	private readonly UserService UserService;
 
-    public UserServiceTests() =>
-        UserService = new UserService(UserRepository);
+	public UserServiceTests() =>
+		UserService =
+			new UserService(UserRepository);
 
-    [Fact]
-    public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
-    {
-        // Arrange
-        User user = new() { Id = 1, Username = "Test" };
-        UserRepository.GetByIdAsync(1).Returns(user);
+	[Fact]
+	public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
+	{
+		// Arrange
+		User user =
+			new() { Id = 1, Username = "Test" };
+		UserRepository
+			.GetByIdAsync(1)
+			.Returns(user);
 
-        // Act
-        User? result = await UserService.GetByIdAsync(1);
+		// Act
+		User? result =
+			await UserService.GetByIdAsync(1);
 
-        // Assert
-        result.ShouldNotBeNull();
-        result.Username.ShouldBe("Test");
-    }
+		// Assert
+		result.ShouldNotBeNull();
+		result.Username.ShouldBe("Test");
+	}
 }
 
-// Libraries: NSubstitute (mocking), Shouldly (assertions), xUnit (framework)
-// ❌ NEVER use: Moq, FluentAssertions (license issues)
+// Libraries: NSubstitute, Shouldly, xUnit
+// ❌ NEVER: Moq, FluentAssertions (license issues)
 ```
 
-**Naming Convention:**
+### Test Naming
 
 ```csharp
 // Pattern: MethodName_ExpectedBehavior_WhenConditionAsync
@@ -924,7 +559,7 @@ public class UserServiceTests
 public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
 
 [Fact]
-public async Task CreateAsync_ThrowsValidationException_WhenInvalidAsync()
+public async Task CreateAsync_ThrowsException_WhenInvalidAsync()
 ```
 
 ---
@@ -935,249 +570,90 @@ public async Task CreateAsync_ThrowsValidationException_WhenInvalidAsync()
 
 ```
 SeventySix/
-├── SeventySix.Client/          # Angular 20+ frontend (Zoneless)
-│   ├── src/app/
-│   │   ├── infrastructure/     # TRUE cross-cutting only
-│   │   │   ├── api/            # HTTP client configuration
-│   │   │   ├── repositories/   # Base repository classes
-│   │   │   ├── services/       # Infrastructure services
-│   │   │   └── models/         # Shared base types
-│   │   ├── shared/             # Reusable UI components
-│   │   └── features/           # Self-contained feature boundaries
-│   │       ├── admin/          # Admin bounded context
-│   │       │   ├── users/      # Maps to Identity
-│   │       │   ├── logs/       # Maps to Logging
-│   │       │   └── api-tracking/
-│   │       ├── game/           # Game bounded context
-│   │       └── home/           # Home feature
-│   └── e2e/                    # Playwright tests
+├── SeventySix.Client/           # Angular 20+ (Zoneless)
+│   └── src/app/
+│       ├── infrastructure/      # Cross-cutting only
+│       ├── shared/              # Reusable UI
+│       └── features/            # Bounded contexts
+│           ├── admin/           # users/, logs/, api-tracking/
+│           ├── game/
+│           └── home/
 │
 ├── SeventySix.Server/
-│   ├── SeventySix.Api/         # HTTP entry point
-│   ├── SeventySix/             # Domain library (bounded contexts)
-│   │   ├── Identity/           # User management
-│   │   ├── Logging/            # System logging
-│   │   ├── ApiTracking/        # API tracking
-│   │   ├── Infrastructure/     # Shared infrastructure
-│   │   ├── Shared/             # Minimal shared types
-│   │   └── Extensions/         # DI registration
-│   └── Tests/                  # Test projects
+│   ├── SeventySix.Api/          # HTTP entry point
+│   └── SeventySix/              # Domain library
+│       ├── Identity/            # User management
+│       ├── Logging/             # System logging
+│       ├── ApiTracking/         # API tracking
+│       └── Shared/              # Common types
 │
-└── observability/              # Prometheus, Grafana
+└── observability/               # Prometheus, Grafana
 ```
 
 ### Server-Client Alignment
 
-| Server Context    | Client Feature        | Path Alias            |
-| ----------------- | --------------------- | --------------------- |
-| `Identity/`       | `admin/users/`        | `@admin/users`        |
-| `Logging/`        | `admin/logs/`         | `@admin/logs`         |
-| `ApiTracking/`    | `admin/api-tracking/` | `@admin/api-tracking` |
-| `Infrastructure/` | `infrastructure/`     | `@infrastructure`     |
+| Server Context | Client Feature        | Path Alias            |
+| -------------- | --------------------- | --------------------- |
+| `Identity/`    | `admin/users/`        | `@admin/users`        |
+| `Logging/`     | `admin/logs/`         | `@admin/logs`         |
+| `ApiTracking/` | `admin/api-tracking/` | `@admin/api-tracking` |
 
 ### Bounded Context Structure (Server)
 
 ```
 Context/
-├── Configurations/     # EF configs (Fluent API)
-├── DTOs/              # Request/Response records
-├── Entities/          # Domain models
-├── Exceptions/        # Domain errors
-├── Extensions/        # Mapping (ToDto)
-├── Infrastructure/    # DbContext
-├── Interfaces/        # Contracts
-├── Migrations/        # EF migrations
-├── Repositories/      # Data access (no generic)
-├── Services/          # Business logic
-└── Validators/        # FluentValidation
+├── Configurations/    # EF Fluent API
+├── DTOs/             # Records only
+├── Entities/
+├── Extensions/       # ToDto mapping
+├── Infrastructure/   # DbContext
+├── Repositories/     # Domain-specific
+├── Services/
+└── Validators/       # FluentValidation
 ```
 
 ### Feature Structure (Client)
 
 ```
 feature/
-├── components/              # UI components
-├── composables/             # Reusable logic (optional)
-├── models/                  # TypeScript interfaces
-│   ├── feature.model.ts
-│   └── index.ts
-├── repositories/            # HTTP data access
-│   └── feature.repository.ts
-├── services/                # Business logic
-│   └── feature.service.ts
-├── validators/              # Form validators
-├── feature.routes.ts        # Feature routing (REQUIRED)
-├── feature.component.ts     # Main component
+├── components/
+├── models/
+├── repositories/
+├── services/
+├── feature.routes.ts    # REQUIRED
+├── feature.component.ts
 └── feature.component.spec.ts
 ```
 
-### Feature Route Modularization (REQUIRED)
-
-Every feature MUST have its own `feature.routes.ts` file. This enables bounded context modularity - features can be added/removed from `app.routes.ts` as complete units.
+### Feature Routes (Required)
 
 ```typescript
 // features/game/game.routes.ts
-import { Routes } from "@angular/router";
-
-export const GAME_ROUTES: Routes = [
-	{
+export const GAME_ROUTES: Routes =
+	[{
 		path: "",
-		loadComponent: () => import("./world-map/world-map").then((m) => m.WorldMap),
-		title: "Game - World Map",
-	},
-];
-```
+		loadComponent: () =>
+			import("./world-map/world-map")
+				.then((module) => module.WorldMap),
+	}];
 
-Then in `app.routes.ts`, use `loadChildren`:
-
-```typescript
+// app.routes.ts
 {
 	path: "game",
-	loadChildren: () => import("./features/game/game.routes").then((m) => m.GAME_ROUTES),
-	data: { breadcrumb: "Game" }
+	loadChildren: () =>
+		import("./features/game/game.routes")
+			.then((module) => module.GAME_ROUTES),
 }
 ```
-
-**Benefits:**
-
--   Features are self-contained bounded contexts
--   Features can be easily enabled/disabled by commenting out in `app.routes.ts`
--   Features own their routing configuration
--   Enables lazy loading per feature
-
-### Feature Boundary Rules
-
--   Features ONLY import from `@infrastructure/` and `@shared/`
--   Features NEVER import from other features
--   Each feature is fully self-contained (models, repos, services inside)
 
 ### Architecture Decisions
 
-| Decision      | Choice               | Rationale                 |
-| ------------- | -------------------- | ------------------------- |
-| Repository    | Domain-specific      | EF Core IS the pattern    |
-| CQRS          | Not yet              | KISS until scale demands  |
-| MediatR       | Not yet              | Avoid until cross-context |
-| Microservices | Not yet              | Extract when pain happens |
-| Database      | PostgreSQL           | All contexts              |
-| DbContext     | Separate per context | Clear boundaries          |
-
----
-
-## Configuration Management
-
-### Angular
-
-```typescript
-// environments/environment.ts
-interface Environment {
-    production: boolean;
-    apiUrl: string;
-    refreshInterval: number;
-    maxRetries: number;
-}
-
-export const environment: Environment = {
-    production: false,
-    apiUrl: "https://localhost:7001/api",
-    refreshInterval: 30000,
-    maxRetries: 3,
-};
-
-// Usage
-private readonly apiUrl: string = environment.apiUrl;
-```
-
-### .NET
-
-```csharp
-// appsettings.json
-{
-    "ConnectionStrings": {
-        "Identity": "Host=localhost;Database=seventysix;..."
-    },
-    "RateLimiting": {
-        "PermitLimit": 100,
-        "Window": "00:01:00"
-    }
-}
-
-// Options pattern
-public class ApiSettings
-{
-    public string BaseUrl { get; init; } = "";
-    public int TimeoutSeconds { get; init; } = 30;
-}
-
-// Registration
-builder.Services.Configure<ApiSettings>(
-    builder.Configuration.GetSection("ApiSettings"));
-
-// Usage
-public class ExternalApiService(IOptions<ApiSettings> options)
-{
-    private readonly ApiSettings settings = options.Value;
-}
-```
-
----
-
-## Documentation
-
-### Inline Documentation (Always Required)
-
-```typescript
-/**
- * Retrieves a user by their unique identifier.
- * @param id - The user's unique identifier
- * @returns The user if found, null otherwise
- * @throws {HttpErrorResponse} When the API request fails
- */
-getUserById(id: number): Observable<User | null> {
-    return this.http.get<User>(`${this.apiUrl}/users/${id}`);
-}
-```
-
-```csharp
-/// <summary>
-/// Retrieves a user by their unique identifier.
-/// </summary>
-/// <param name="id">
-/// The user's unique identifier.
-/// </param>
-/// <returns>
-/// The user if found; otherwise, null.
-/// </returns>
-public async Task<User?> GetByIdAsync(int id) =>
-    await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
-```
-
----
-
-## Design Patterns
-
-Apply patterns judiciously when complexity justifies them.
-
-### When to Apply Patterns
-
-| Apply When                    | Avoid When                      |
-| ----------------------------- | ------------------------------- |
-| Repeated code (DRY violation) | Code is simple and clear        |
-| Multiple responsibilities     | Adds unnecessary complexity     |
-| Need to swap implementations  | Pattern doesn't fit the problem |
-| Complex object creation       | Speculating future needs        |
-
-### Commonly Used Patterns
-
-| Pattern    | Use Case                    | Example                      |
-| ---------- | --------------------------- | ---------------------------- |
-| Singleton  | App-wide services           | `providedIn: 'root'`         |
-| Factory    | Dynamic creation            | Component factories          |
-| Repository | Data access abstraction     | Domain-specific repos        |
-| Observer   | Event handling              | RxJS Observables, C# events  |
-| Strategy   | Interchangeable algorithms  | Validation strategies        |
-| Decorator  | Add behavior dynamically    | Angular decorators, C# attrs |
-| Facade     | Simplify complex subsystems | Service layers               |
+| Decision   | Choice               | Rationale                |
+| ---------- | -------------------- | ------------------------ |
+| Repository | Domain-specific      | EF Core IS the pattern   |
+| CQRS       | Not yet              | KISS until scale demands |
+| Database   | PostgreSQL           | All contexts             |
+| DbContext  | Separate per context | Clear boundaries         |
 
 ---
 
@@ -1185,41 +661,83 @@ Apply patterns judiciously when complexity justifies them.
 
 ### Commands
 
-| Task         | Angular                | .NET           |
-| ------------ | ---------------------- | -------------- |
-| Run tests    | `npm test`             | `dotnet test`  |
-| Build        | `npm run build`        | `dotnet build` |
-| Start        | `npm start`            | `dotnet run`   |
-| Lint         | `npm run lint`         | N/A            |
-| E2E          | `npm run test:e2e`     | N/A (manual)   |
-| Start Docker | `npm run start:docker` | N/A            |
+| Task  | Angular            | .NET           |
+| ----- | ------------------ | -------------- |
+| Test  | `npm test`         | `dotnet test`  |
+| Build | `npm run build`    | `dotnet build` |
+| Start | `npm start`        | `dotnet run`   |
+| E2E   | `npm run test:e2e` | N/A            |
 
-> ⚠️ E2E tests (admin-dashboard, home-page) are manual only - not part of checkpoints or `test:all`.
+### Configuration
+
+| ❌ Never Hardcode  | ✅ Use Instead                        |
+| ------------------ | ------------------------------------- |
+| API URLs           | `environment.ts` / `appsettings.json` |
+| Intervals, limits  | Configuration files                   |
+| Connection strings | Environment variables                 |
+
+### File Naming
+
+| Type       | Pattern                 | Example                  |
+| ---------- | ----------------------- | ------------------------ |
+| Component  | `feature.component.ts`  | `user-list.component.ts` |
+| Service    | `feature.service.ts`    | `user.service.ts`        |
+| Repository | `feature.repository.ts` | `user.repository.ts`     |
+| Routes     | `feature.routes.ts`     | `admin.routes.ts`        |
 
 ### Error Checklist
 
-| Issue                   | Solution                               |
-| ----------------------- | -------------------------------------- |
-| Zone.js errors          | Add `provideZonelessChangeDetection()` |
-| Testcontainers fail     | Start Docker Desktop                   |
-| Async test hangs        | Use `await fixture.whenStable()`       |
-| Missing Async suffix    | Add `Async` to method name             |
-| Type inference warnings | Add explicit types                     |
-| Tests failing           | **Fix immediately - never skip**       |
+| Issue               | Solution                               |
+| ------------------- | -------------------------------------- |
+| Zone.js errors      | Add `provideZonelessChangeDetection()` |
+| Testcontainers fail | Start Docker Desktop                   |
+| Async test hangs    | Use `await fixture.whenStable()`       |
+| Tests failing       | **Fix immediately**                    |
+
+---
+
+## Documentation Rules
+
+-   **NEVER** create new .md files unless asked
+-   **ALWAYS** use inline JSDoc/XML comments
+-   Keep code self-documenting
+
+```typescript
+/**
+ * Retrieves a user by ID.
+ * @param id - User's unique identifier
+ * @returns User if found, null otherwise
+ */
+getById(id: number): Observable<User | null> {
+	return this.http
+		.get<User>(`${this.apiUrl}/users/${id}`);
+}
+```
+
+```csharp
+/// <summary>
+/// Retrieves a user by ID.
+/// </summary>
+/// <param name="id">User's unique identifier.</param>
+/// <returns>User if found; otherwise, null.</returns>
+public async Task<User?> GetByIdAsync(int id) =>
+	await db.Users
+		.AsNoTracking()
+		.FirstOrDefaultAsync(user => user.Id == id);
+```
 
 ---
 
 ## References
 
-| Purpose              | Location                                  |
-| -------------------- | ----------------------------------------- |
-| Quick rules          | `.github/copilot-instructions.md`         |
-| Quick reference card | `.github/instructions/quick-reference.md` |
-| Angular details      | `.github/instructions/angular.md`         |
-| C# details           | `.github/instructions/csharp.md`          |
-| Testing details      | `.github/instructions/testing.md`         |
-| Architecture         | `.github/instructions/architecture.md`    |
+| Purpose         | File                                   |
+| --------------- | -------------------------------------- |
+| Quick rules     | `.github/copilot-instructions.md`      |
+| C# details      | `.github/instructions/csharp.md`       |
+| Angular details | `.github/instructions/angular.md`      |
+| Testing         | `.github/instructions/testing.md`      |
+| Architecture    | `.github/instructions/architecture.md` |
 
 ---
 
-_Remember: Clean, simple, and practical code beats clever code. Optimize for readability and maintainability first, performance second._
+_Clean, simple code beats clever code. Readability first, performance second._

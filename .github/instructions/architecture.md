@@ -72,17 +72,20 @@ SeventySix.Client/src/app/
 
 ```typescript
 // features/game/game.routes.ts
-export const GAME_ROUTES: Routes = [
-    {
-        path: '',
-        loadComponent: () => import('./world-map/world-map').then((m) => m.WorldMap),
-    },
-];
+export const GAME_ROUTES: Routes =
+	[{
+		path: "",
+		loadComponent: () =>
+			import("./world-map/world-map")
+				.then((module) => module.WorldMap),
+	}];
 
 // app.routes.ts - use loadChildren
 {
-    path: 'game',
-    loadChildren: () => import('./features/game/game.routes').then((m) => m.GAME_ROUTES),
+	path: "game",
+	loadChildren: () =>
+		import("./features/game/game.routes")
+			.then((module) => module.GAME_ROUTES),
 }
 ```
 

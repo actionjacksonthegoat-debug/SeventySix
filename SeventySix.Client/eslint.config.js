@@ -36,7 +36,20 @@ export default [
 				{
 					allow: ["warn", "error"]
 				}
-			]
+			],
+			// Formatting rules for code style consistency
+			// Note: Most formatting is handled by .editorconfig
+			// These rules catch common patterns that need attention
+			"operator-linebreak": [
+				"warn",
+				"before",
+				{
+					overrides: {
+						"=": "after"
+					}
+				}
+			],
+			"function-call-argument-newline": ["warn", "consistent"]
 		}
 	},
 	{

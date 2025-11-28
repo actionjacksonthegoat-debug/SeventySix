@@ -69,8 +69,8 @@ ij_typescript_brace_style = next_line
 ij_typescript_class_brace_style = next_line
 ij_typescript_lambda_brace_style = next_line
 
-# --- Multi-Parameter Formatting ---
-# Always wrap parameters/arguments on separate lines for better readability
+# --- Multi-Parameter Formatting (CRITICAL) ---
+# ALWAYS wrap parameters/arguments on separate lines when 2+ parameters (readability)
 ij_typescript_call_parameters_wrap = chop_always
 ij_typescript_method_parameters_wrap = chop_always
 ij_typescript_align_multiline_parameters = false
@@ -80,7 +80,7 @@ ij_typescript_align_multiline_parameters_in_calls = false
 ij_typescript_call_parameters_lparen_on_next_line = false
 ij_typescript_method_parameters_lparen_on_next_line = false
 
-# Keep closing parenthesis on same line as last parameter
+# Keep closing parenthesis on same line as last parameter (NEVER ) alone on line)
 ij_typescript_call_parameters_rparen_on_next_line = false
 ij_typescript_method_parameters_rparen_on_next_line = false
 
@@ -90,6 +90,22 @@ ij_typescript_force_quote_style = true
 ij_typescript_arrow_function_braces = always
 ij_typescript_chained_call_wrap = chop_down_if_long
 ij_typescript_call_parameters_new_line_after_left_paren = true
+
+# --- Chained Method Calls (CRITICAL) ---
+# New line BEFORE every dot delimiter in method chains
+ij_typescript_method_call_chain_wrap = chop_always
+ij_typescript_chained_call_dot_on_new_line = true
+
+# --- Binary Operators (CRITICAL) ---
+# Operators (+, ||, &&, etc.) on LEFT side of new lines (wrap before operator)
+ij_typescript_binary_operation_wrap = on_every_item
+ij_typescript_binary_operation_sign_on_next_line = true
+ij_typescript_place_assignment_sign_on_next_line = false
+
+# --- Assignment Formatting (CRITICAL) ---
+# New line AFTER every = sign with continuation indented
+ij_typescript_assignment_wrap = on_every_item
+ij_typescript_wrap_after_assignment = true
 
 # --- Object and Array Formatting ---
 # Wrap object literal properties on separate lines
@@ -103,8 +119,8 @@ ij_typescript_keep_first_column_comment = true
 ij_typescript_keep_line_breaks = true
 ij_typescript_blank_lines_around_method = 1
 
-# --- Method Parameter and Call Wrapping (Legacy from C# config) ---
-# Wrap parameters/arguments when they don't fit on one line
+# --- Method Parameter and Call Wrapping ---
+# Wrap parameters/arguments when 2+ exist (ALWAYS, not just when long)
 ij_typescript_method_parameters_wrap = on_every_item
 ij_typescript_call_parameters_wrap = on_every_item
 
@@ -118,6 +134,7 @@ ij_typescript_spaces_around_equality_operators = true
 ij_typescript_spaces_around_relational_operators = true
 ij_typescript_spaces_around_additive_operators = true
 ij_typescript_spaces_around_multiplicative_operators = true
+ij_typescript_spaces_around_logical_operators = true
 
 [*.md]
 # Disable line length restrictions for markdown
@@ -336,11 +353,31 @@ csharp_space_before_semicolon_in_for_statement = false
 # Allow statements and declarations to wrap to multiple lines
 csharp_preserve_single_line_blocks = false
 
-# Wrap parameters in method declarations to new lines when too long
-csharp_wrap_parameters_style = chop_if_long
+# Wrap parameters in method declarations when 2+ parameters (ALWAYS, not just when long)
+csharp_wrap_parameters_style = chop_always
 
-# Wrap arguments in method calls to new lines when too long
-csharp_wrap_arguments_style = chop_if_long
+# Wrap arguments in method calls when 2+ arguments (ALWAYS, not just when long)
+csharp_wrap_arguments_style = chop_always
+
+# --- Binary Operator Wrapping (CRITICAL) ---
+# Operators (+, ||, &&, etc.) on LEFT side of new lines (wrap before operator)
+csharp_wrap_before_binary_opsign = true
+
+# --- Chained Method Calls (CRITICAL) ---
+# New line BEFORE every dot delimiter in method chains
+csharp_wrap_chained_method_calls = chop_always
+csharp_wrap_before_dot = true
+
+# --- Assignment Wrapping (CRITICAL) ---
+# New line AFTER = sign with continuation indented
+csharp_place_simple_embedded_statement_on_same_line = false
+
+# --- Closing Parenthesis Placement (CRITICAL) ---
+# NEVER have ) on its own line - keep with last parameter
+csharp_wrap_after_declaration_lpar = true
+csharp_wrap_before_declaration_rpar = false
+csharp_wrap_after_invocation_lpar = true
+csharp_wrap_before_invocation_rpar = false
 
 # --- Expression Preferences ---
 # Prefer expression bodies for methods when they fit on a single line
@@ -369,9 +406,19 @@ csharp_style_throw_expression = true:suggestion
 # Prefer conditional delegate calls: Action?.Invoke() vs if (Action != null) Action();
 csharp_style_conditional_delegate_call = true:suggestion
 
+# Prefer null-coalescing over if-null-return patterns (CRITICAL)
+# Transforms: if (x == null) { return null; } return x.ToDto(); → return x?.ToDto();
+csharp_style_prefer_null_check_over_type_check = true:warning
+
 # --- Code Block Preferences ---
 # Require braces even for single-line statements (prevents bugs)
 csharp_prefer_braces = true:warning
+
+# --- Conditional Return Simplification (CRITICAL) ---
+# Prefer simplified null patterns: return user?.ToDto(); over if (user == null) { return null; } return user.ToDto();
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_prefer_pattern_matching = true:warning
+dotnet_style_prefer_simplified_boolean_expressions = true:warning
 
 # --- Using Directive Preferences ---
 # Place 'using' directives outside namespace (modern C# convention)

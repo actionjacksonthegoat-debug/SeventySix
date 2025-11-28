@@ -22,6 +22,18 @@
 
 ---
 
+## Code Formatting (CRITICAL)
+
+| Rule             | ✅ Do                      | ❌ Don't                  |
+| ---------------- | -------------------------- | ------------------------- |
+| 2+ Parameters    | Each on new line           | Multiple on same line     |
+| Binary Operators | `\|\|` on LEFT of new line | `\|\|` on right of line   |
+| Assignment       | New line AFTER `=`         | Value on same line as `=` |
+| Method Chains    | New line BEFORE each `.`   | All on one line           |
+| Closing Paren    | `)` with last param        | `)` alone on line         |
+
+---
+
 ## Component Pattern
 
 ```typescript
@@ -35,13 +47,18 @@
 		<app-item [item]="item" />
 		}
 	`,
-	host: { "(click)": "onClick()", "[class.active]": "isActive()" },
+	host: {
+		"(click)": "onClick()",
+		"[class.active]": "isActive()",
+	},
 })
 export class UserCardComponent {
 	private readonly service: UserService = inject(UserService);
+
 	user = input.required<User>();
 	items = input<Item[]>([]);
 	selected = output<User>();
+
 	isActive = computed(() => this.user()?.isActive ?? false);
 }
 ```
@@ -57,17 +74,20 @@ export class UserCardComponent {
 <div [class]="getClass(item)">{{ formatValue(item) }}</div>
 
 // ✅ CORRECT - Computed signals (memoized)
-itemClass = computed(() => this.computeClass(this.item()));
-formattedValue = computed(() => this.format(this.item()));
+itemClass =
+	computed(() => this.computeClass(this.item()));
+formattedValue =
+	computed(() => this.format(this.item()));
 
-// ✅ CORRECT - Pre-compute for lists
-readonly processedItems: Signal<ProcessedItem[]> = computed(() =>
-	this.items().map((item) => ({
-		...item,
-		cssClass: getItemClass(item.status),
-		formattedValue: formatValue(item)
-	}))
-);
+// ✅ CORRECT - Pre-compute for lists with method chains on new lines
+readonly processedItems: Signal<ProcessedItem[]> =
+	computed(() =>
+		this.items()
+			.map((item: Item) => ({
+				...item,
+				cssClass: getItemClass(item.status),
+				formattedValue: formatValue(item),
+			})));
 ```
 
 **When method calls are OK (KISS)**: Column visibility toggles, action menus (small arrays, not per-row).
@@ -108,14 +128,21 @@ readonly processedItems: Signal<ProcessedItem[]> = computed(() =>
 ```typescript
 // ❌ Feature service in root = memory leak
 @Injectable({ providedIn: "root" })
-export class UserService { }
+export class UserService {}
 
 // ✅ Route-scoped (bounded context)
 @Injectable()
-export class UserService { }
+export class UserService {}
 
 // In routes:
-{ path: "users", providers: [UserService, UserRepository], loadComponent: ... }
+{
+	path: "users",
+	providers: [
+		UserService,
+		UserRepository,
+	],
+	loadComponent: ...
+}
 ```
 
 ---

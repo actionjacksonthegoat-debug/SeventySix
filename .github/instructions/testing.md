@@ -49,39 +49,53 @@ describe("UserComponent", () => {
 ```csharp
 public class UserServiceTests
 {
-    private readonly IUserRepository UserRepository = Substitute.For<IUserRepository>();
-    private readonly UserService UserService;
+	private readonly IUserRepository UserRepository =
+		Substitute.For<IUserRepository>();
+	private readonly UserService UserService;
 
-    public UserServiceTests() => UserService = new(UserRepository);
+	public UserServiceTests() =>
+		UserService =
+			new(UserRepository);
 
-    [Fact]
-    public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
-    {
-        // Arrange
-        User user = new() { Id = 1, Username = "Test" };
-        UserRepository.GetByIdAsync(1).Returns(user);
+	[Fact]
+	public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
+	{
+		// Arrange
+		User user =
+			new() { Id = 1, Username = "Test" };
+		UserRepository
+			.GetByIdAsync(1)
+			.Returns(user);
 
-        // Act
-        User? result = await UserService.GetByIdAsync(1);
+		// Act
+		User? result =
+			await UserService.GetByIdAsync(1);
 
-        // Assert
-        result.ShouldNotBeNull();
-        result.Username.ShouldBe("Test");
-    }
+		// Assert
+		result.ShouldNotBeNull();
+		result.Username.ShouldBe("Test");
+	}
 
-    [Fact]
-    public async Task CreateAsync_CallsRepository_WithCorrectDataAsync()
-    {
-        // Arrange
-        CreateUserRequest request = new("TestUser", "test@example.com");
-        UserRepository.CreateAsync(Arg.Any<User>()).Returns(Task.CompletedTask);
+	[Fact]
+	public async Task CreateAsync_CallsRepository_WithCorrectDataAsync()
+	{
+		// Arrange
+		CreateUserRequest request =
+			new(
+				"TestUser",
+				"test@example.com");
+		UserRepository
+			.CreateAsync(Arg.Any<User>())
+			.Returns(Task.CompletedTask);
 
-        // Act
-        await UserService.CreateAsync(request);
+		// Act
+		await UserService.CreateAsync(request);
 
-        // Assert - verify call was made
-        await UserRepository.Received(1).CreateAsync(Arg.Is<User>(u => u.Username == "TestUser"));
-    }
+		// Assert
+		await UserRepository
+			.Received(1)
+			.CreateAsync(Arg.Is<User>(user => user.Username == "TestUser"));
+	}
 }
 
 // Libraries: NSubstitute (mocking), Shouldly (assertions), xUnit (framework)
@@ -92,17 +106,27 @@ public class UserServiceTests
 
 ```csharp
 // Setup returns
-MockService.Method(Arg.Any<int>()).Returns(value);
-MockService.MethodAsync(1).Returns(Task.FromResult(value));
+MockService
+	.Method(Arg.Any<int>())
+	.Returns(value);
+MockService
+	.MethodAsync(1)
+	.Returns(Task.FromResult(value));
 
 // Verify calls
-MockService.Received(1).Method(Arg.Any<int>());
-await MockService.Received().MethodAsync(Arg.Is<User>(u => u.Id == 1));
-MockService.DidNotReceive().Method(Arg.Any<int>());
+MockService
+	.Received(1)
+	.Method(Arg.Any<int>());
+await MockService
+	.Received()
+	.MethodAsync(Arg.Is<User>(user => user.Id == 1));
+MockService
+	.DidNotReceive()
+	.Method(Arg.Any<int>());
 
 // Argument matchers
-Arg.Any<T>()           // Any value of type T
-Arg.Is<T>(x => x > 0)  // Predicate matching
+Arg.Any<T>()                    // Any value of type T
+Arg.Is<T>(value => value > 0)   // Predicate matching
 ```
 
 ## Shouldly Quick Reference

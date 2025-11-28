@@ -9,13 +9,22 @@
 -   **DRY**: No code duplication (Rule of Three)
 -   **YAGNI**: Don't build what you don't need yet
 
+### Code Formatting (CRITICAL - All .ts and .cs files)
+
+-   **ALWAYS** put each parameter on new line when 2+ parameters
+-   **ALWAYS** place binary operators (`+`, `||`, `&&`, `??`) on LEFT of new lines
+-   **ALWAYS** new line AFTER every `=` sign with continuation indented
+-   **ALWAYS** new line BEFORE every `.` delimiter in method chains
+-   **NEVER** put `)` alone on its own line - keep with last parameter
+-   **ALWAYS** use null-conditional (`?.`) over verbose null checks in C#
+
 ### C# (.NET 10+)
 
 -   **NEVER** use `var` - always explicit types: `string name = "test";`
 -   **ALWAYS** use primary constructors: `public class Service(IRepo repo)`
 -   **ALWAYS** use collection expressions: `int[] nums = [1, 2, 3];`
 -   **ALWAYS** suffix async methods with `Async` (including tests)
--   **NEVER** excessive null checks - no `?? throw new ArgumentNullException`
+-   **NEVER** verbose null checks - use `return user?.ToDto();` not `if (user == null) { return null; } return user.ToDto();`
 -   **ALWAYS** use records for DTOs: `public record UserDto(int Id, string Name);`
 -   **ALWAYS** use Fluent API for EF Core, not attributes
 -   **ALWAYS** use `AsNoTracking()` for read-only queries

@@ -2,6 +2,17 @@
 
 > Ultra-compact rules. No code examples. See domain files for details.
 
+## Code Formatting (CRITICAL - .ts and .cs)
+
+| Rule             | Do                                | Don't                             |
+| ---------------- | --------------------------------- | --------------------------------- |
+| 2+ Parameters    | Each on new line                  | Multiple on same line             |
+| Binary Operators | `\|\|`, `&&`, `+` on LEFT of line | Operators on right of line        |
+| Assignment       | New line AFTER `=`                | Value on same line as `=`         |
+| Method Chains    | New line BEFORE each `.`          | All on one line                   |
+| Closing Paren    | `)` with last param               | `)` alone on line                 |
+| Null Checks (C#) | `return x?.ToDto();`              | `if (x == null) { return null; }` |
+
 ## C# Rules
 
 | Rule         | Do                            | Don't                |
