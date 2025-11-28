@@ -9,9 +9,7 @@ namespace SeventySix.Logging;
 /// <summary>Log business logic operations.</summary>
 public interface ILogService
 {
-	public Task<PagedResult<LogResponse>> GetPagedLogsAsync(LogFilterRequest request, CancellationToken cancellationToken = default);
-
-	public Task<int> GetLogsCountAsync(LogFilterRequest request, CancellationToken cancellationToken = default);
+	public Task<PagedResult<LogDto>> GetPagedLogsAsync(LogQueryRequest request, CancellationToken cancellationToken = default);
 
 	public Task<bool> DeleteLogByIdAsync(int id, CancellationToken cancellationToken = default);
 
@@ -21,7 +19,7 @@ public interface ILogService
 
 	public Task<bool> CheckDatabaseHealthAsync(CancellationToken cancellationToken = default);
 
-	public Task CreateClientLogAsync(ClientLogRequest request, CancellationToken cancellationToken = default);
+	public Task CreateClientLogAsync(CreateLogRequest request, CancellationToken cancellationToken = default);
 
-	public Task CreateClientLogBatchAsync(ClientLogRequest[] requests, CancellationToken cancellationToken = default);
+	public Task CreateClientLogBatchAsync(CreateLogRequest[] requests, CancellationToken cancellationToken = default);
 }

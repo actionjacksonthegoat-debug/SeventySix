@@ -3,12 +3,8 @@ import { HttpParams } from "@angular/common/http";
 import { of } from "rxjs";
 import { UserRepository } from "./user.repository";
 import { ApiService } from "@infrastructure/api-services/api.service";
-import {
-	User,
-	UserQueryRequest,
-	PagedResult,
-	UpdateUserRequest
-} from "@admin/users/models";
+import { PagedResponse } from "@infrastructure/models";
+import { User, UserQueryRequest, UpdateUserRequest } from "@admin/users/models";
 import { setupRepositoryTest, createMockApiService } from "@testing";
 
 describe("UserRepository", () =>
@@ -63,27 +59,27 @@ describe("UserRepository", () =>
 		it("should get paged users with query params", (done) =>
 		{
 			const request: UserQueryRequest = {
-				pageNumber: 1,
+				page: 1,
 				pageSize: 10,
 				searchTerm: "test",
 				includeInactive: false,
 				sortBy: "username",
 				sortDescending: false
 			};
-			const pagedResult: PagedResult<User> = {
+			const pagedResult: PagedResponse<User> = {
 				items: [mockUser],
 				totalCount: 1,
-				pageNumber: 1,
+				page: 1,
 				pageSize: 10,
 				totalPages: 1,
-				hasPreviousPage: false,
-				hasNextPage: false
+				hasPrevious: false,
+				hasNext: false
 			};
 			mockApiService.get.and.returnValue(of(pagedResult));
 
 			repository
 				.getPaged(request)
-				.subscribe((result: PagedResult<User>) =>
+				.subscribe((result: PagedResponse<User>) =>
 				{
 					expect(result).toEqual(pagedResult);
 					expect(mockApiService.get).toHaveBeenCalledWith(

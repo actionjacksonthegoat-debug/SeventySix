@@ -22,23 +22,20 @@
 			<span class="timestamp">• {{ relativeTime() }}</span>
 		</div>
 		<div class="header-actions">
-			@if (isObservabilityEnabled)
-			{
-				<button
-					mat-icon-button
-					(click)="openInJaeger()"
-					[matTooltip]="
-						hasCorrelationId()
-							? 'View this trace in Jaeger'
-							: 'No trace ID available. Enable OpenTelemetry in your backend to track distributed traces.'
-					"
-					[disabled]="!hasCorrelationId()"
-					aria-label="Open this specific trace in Jaeger"
-					color="warn"
-				>
-					<mat-icon>bug_report</mat-icon>
-				</button>
-			}
+			<button
+				mat-icon-button
+				(click)="openInJaeger()"
+				[matTooltip]="
+					hasCorrelationId()
+						? 'View this trace in Jaeger'
+						: 'No trace ID available. Enable OpenTelemetry in your backend to track distributed traces.'
+				"
+				[disabled]="!hasCorrelationId()"
+				aria-label="Open this specific trace in Jaeger"
+				color="warn"
+			>
+				<mat-icon>bug_report</mat-icon>
+			</button>
 			<button
 				mat-icon-button
 				(click)="copyToClipboard()"

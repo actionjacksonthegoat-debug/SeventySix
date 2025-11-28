@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
-import { provideZonelessChangeDetection, signal } from "@angular/core";
+import { provideZonelessChangeDetection } from "@angular/core";
 import {
 	QueryClient,
 	provideTanStackQuery
@@ -12,7 +12,8 @@ import {
 	createMockQueryResult,
 	createMockMutationResult
 } from "@testing/tanstack-query-helpers";
-import { PagedLogResponse } from "@admin/logs/models";
+import { LogDto } from "@admin/logs/models";
+import { PagedResponse } from "@infrastructure/models";
 
 describe("LogList", () =>
 {
@@ -23,18 +24,18 @@ describe("LogList", () =>
 	beforeEach(async () =>
 	{
 		// Create properly typed mock query/mutation results
-		const mockPagedResponse: PagedLogResponse = {
-			data: [],
+		const mockPagedResponse: PagedResponse<LogDto> = {
+			items: [],
 			totalCount: 0,
-			pageNumber: 1,
+			page: 1,
 			pageSize: 50,
 			totalPages: 0,
-			hasPreviousPage: false,
-			hasNextPage: false
+			hasPrevious: false,
+			hasNext: false
 		};
 
 		const mockQuery =
-			createMockQueryResult<PagedLogResponse>(mockPagedResponse);
+			createMockQueryResult<PagedResponse<LogDto>>(mockPagedResponse);
 		const mockDeleteMutation = createMockMutationResult<
 			void,
 			Error,

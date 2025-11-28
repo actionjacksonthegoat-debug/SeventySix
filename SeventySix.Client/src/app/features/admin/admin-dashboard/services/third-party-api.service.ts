@@ -4,8 +4,11 @@ import {
 	CreateQueryResult
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
-import { ThirdPartyApiRepository } from "../repositories";
-import { ThirdPartyApiRequest, ThirdPartyApiStatistics } from "../models";
+import { ThirdPartyApiRepository } from "@admin/admin-dashboard/repositories";
+import {
+	ThirdPartyApiRequest,
+	ThirdPartyApiStatistics
+} from "@admin/admin-dashboard/models";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
 

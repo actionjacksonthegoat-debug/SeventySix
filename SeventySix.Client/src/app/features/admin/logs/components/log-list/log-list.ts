@@ -9,7 +9,7 @@ import {
 import { DatePipe } from "@angular/common";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { LogManagementService } from "@admin/logs/services";
-import { LogResponse, parseLogLevel, LogLevel } from "@admin/logs/models";
+import { LogDto, parseLogLevel, LogLevel } from "@admin/logs/models";
 import { DataTableComponent } from "@shared/components";
 import {
 	TableColumn,
@@ -21,7 +21,7 @@ import {
 	FilterChangeEvent,
 	DateRangeEvent
 } from "@shared/models";
-import { LogDetailDialogComponent } from "../log-detail-dialog/log-detail-dialog.component";
+import { LogDetailDialogComponent } from "@admin/logs/components/log-detail-dialog/log-detail-dialog.component";
 import { NotificationService } from "@infrastructure/services/notification.service";
 
 /**
@@ -60,7 +60,7 @@ export class LogList
 	> = this.logService.deleteLogs();
 
 	// Table column definitions
-	readonly columns: TableColumn<LogResponse>[] = [
+	readonly columns: TableColumn<LogDto>[] = [
 		{
 			key: "logLevel",
 			label: "Level",
@@ -101,7 +101,7 @@ export class LogList
 			sortable: false,
 			visible: true,
 			type: "text",
-			formatter: (_value: unknown, row?: LogResponse): string =>
+			formatter: (_value: unknown, row?: LogDto): string =>
 				row?.exceptionMessage ?? row?.message ?? ""
 		},
 		{
@@ -128,7 +128,7 @@ export class LogList
 	];
 
 	// Quick filters
-	readonly quickFilters: QuickFilter<LogResponse>[] = [
+	readonly quickFilters: QuickFilter<LogDto>[] = [
 		{
 			key: "all",
 			label: "All",
@@ -139,7 +139,7 @@ export class LogList
 			key: "warnings",
 			label: "Warnings",
 			icon: "warning",
-			filterFn: (item: LogResponse): boolean =>
+			filterFn: (item: LogDto): boolean =>
 			{
 				const level: LogLevel = parseLogLevel(item.logLevel);
 				// Warning level and above: Warning (3), Error (4), Fatal (5)
@@ -150,7 +150,7 @@ export class LogList
 			key: "errors",
 			label: "Errors",
 			icon: "error",
-			filterFn: (item: LogResponse): boolean =>
+			filterFn: (item: LogDto): boolean =>
 			{
 				const level: LogLevel = parseLogLevel(item.logLevel);
 				// Error level and above: Error (4), Fatal (5)
@@ -160,7 +160,7 @@ export class LogList
 	];
 
 	// Row actions (view handled by rowClick)
-	readonly rowActions: RowAction<LogResponse>[] = [
+	readonly rowActions: RowAction<LogDto>[] = [
 		{
 			key: "delete",
 			label: "Delete",
@@ -181,14 +181,14 @@ export class LogList
 	];
 
 	// Computed signals
-	readonly data: Signal<LogResponse[]> = computed(
-		(): LogResponse[] => this.logsQuery.data()?.data ?? []
+	readonly data: Signal<LogDto[]> = computed(
+		(): LogDto[] => this.logsQuery.data()?.items ?? []
 	);
 	readonly totalCount: Signal<number> = computed(
 		(): number => this.logsQuery.data()?.totalCount ?? 0
 	);
 	readonly pageIndex: Signal<number> = computed(
-		(): number => (this.logsQuery.data()?.pageNumber ?? 1) - 1
+		(): number => (this.logsQuery.data()?.page ?? 1) - 1
 	);
 	readonly pageSize: Signal<number> = computed(
 		(): number => this.logsQuery.data()?.pageSize ?? 25
@@ -246,7 +246,7 @@ export class LogList
 		});
 	}
 
-	onRowAction(event: RowActionEvent<LogResponse>): void
+	onRowAction(event: RowActionEvent<LogDto>): void
 	{
 		switch (event.action)
 		{
@@ -259,7 +259,7 @@ export class LogList
 		}
 	}
 
-	onBulkAction(event: BulkActionEvent<LogResponse>): void
+	onBulkAction(event: BulkActionEvent<LogDto>): void
 	{
 		switch (event.action)
 		{
@@ -283,7 +283,7 @@ export class LogList
 	 * Handles row click to open log details dialog
 	 * @param log - The clicked log row
 	 */
-	onRowClick(log: LogResponse): void
+	onRowClick(log: LogDto): void
 	{
 		this.viewLogDetails(log);
 	}
@@ -292,7 +292,7 @@ export class LogList
 	 * Opens the log detail dialog to view full log information
 	 * @param log - The log entry to display
 	 */
-	private viewLogDetails(log: LogResponse): void
+	private viewLogDetails(log: LogDto): void
 	{
 		const dialogRef: MatDialogRef<LogDetailDialogComponent> =
 			this.dialog.open(LogDetailDialogComponent, {

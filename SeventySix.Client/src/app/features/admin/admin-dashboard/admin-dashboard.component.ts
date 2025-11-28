@@ -39,13 +39,6 @@ export class AdminDashboardComponent
 	private readonly loggerService: LoggerService = inject(LoggerService);
 
 	/**
-	 * Flag indicating if observability stack is enabled.
-	 * Controls visibility of Grafana dashboards and quick links.
-	 */
-	readonly isObservabilityEnabled: boolean =
-		environment.observability.enabled;
-
-	/**
 	 * System overview dashboard UID from environment configuration.
 	 */
 	readonly systemOverviewDashboard: string =

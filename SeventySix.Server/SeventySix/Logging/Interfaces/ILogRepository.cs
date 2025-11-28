@@ -10,7 +10,7 @@ public interface ILogRepository
 	public Task<Log> CreateAsync(Log entity, CancellationToken cancellationToken = default);
 
 	public Task<(IEnumerable<Log> Logs, int TotalCount)> GetPagedAsync(
-		LogFilterRequest request,
+		LogQueryRequest request,
 		CancellationToken cancellationToken = default);
 
 	public Task<int> DeleteOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default);

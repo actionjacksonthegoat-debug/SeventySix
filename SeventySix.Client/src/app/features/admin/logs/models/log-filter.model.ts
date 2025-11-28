@@ -1,39 +1,16 @@
 import { BaseQueryRequest } from "@infrastructure/models";
 
-/**
- * Log filter request model matching backend LogFilterRequest DTO
- * Extends BaseQueryRequest for common pagination and filtering properties
- */
-export interface LogFilterRequest extends BaseQueryRequest
+/** Log query request DTO matching backend LogQueryRequest. */
+export interface LogQueryRequest extends BaseQueryRequest
 {
-	/**
-	 * Filter by log level (e.g., Information, Warning, Error)
-	 */
+	/** Filter by log level (e.g., Information, Warning, Error). */
 	logLevel?: string | null;
 
-	/**
-	 * Additional context information for filtering logs
-	 */
+	/** Additional context information for filtering logs. */
 	sourceContext?: string | null;
 }
 
-/**
- * Paginated log response model matching backend PagedResponse<LogResponse>
- */
-export interface PagedLogResponse
-{
-	data: import("./log.model").LogResponse[];
-	pageNumber: number;
-	pageSize: number;
-	totalCount: number;
-	totalPages: number;
-	hasPreviousPage: boolean;
-	hasNextPage: boolean;
-}
-
-/**
- * Date range preset options for log filtering
- */
+/** Date range preset options for log filtering. */
 export enum DateRangePreset
 {
 	Last1Hour = "last1h",
@@ -44,9 +21,7 @@ export enum DateRangePreset
 	Custom = "custom"
 }
 
-/**
- * Helper to get date range from preset
- */
+/** Helper to get date range from preset. */
 export function getDateRangeFromPreset(preset: DateRangePreset): {
 	startDate: Date | null;
 	endDate: Date | null;
@@ -82,9 +57,7 @@ export function getDateRangeFromPreset(preset: DateRangePreset): {
 	return { startDate, endDate };
 }
 
-/**
- * Helper to get display label for date range preset
- */
+/** Helper to get display label for date range preset. */
 export function getDateRangePresetLabel(preset: DateRangePreset): string
 {
 	switch (preset)

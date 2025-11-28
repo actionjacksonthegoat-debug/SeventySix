@@ -36,7 +36,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	constructor()
 	{
 		super({
-			pageNumber: 1,
+			page: 1,
 			pageSize: 50
 		});
 	}
@@ -145,7 +145,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	override clearFilters(): void
 	{
 		this.filter.set({
-			pageNumber: 1,
+			page: 1,
 			pageSize: 50
 		});
 	}

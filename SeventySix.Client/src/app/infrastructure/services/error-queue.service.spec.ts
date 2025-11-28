@@ -8,7 +8,7 @@ import { ErrorQueueService } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { environment } from "@environments/environment";
-import { ClientLogRequest } from "@infrastructure/models/client-log-request.model";
+import { CreateLogRequest } from "@infrastructure/models";
 import { DateService } from "./date.service";
 
 /**
@@ -82,7 +82,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 		it("should enqueue an error", () =>
 		{
-			const error: ClientLogRequest = {
+			const error: CreateLogRequest = {
 				logLevel: "Error",
 				message: "Test error",
 				clientTimestamp: dateService.now()
@@ -96,7 +96,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 		it("should save enqueued errors to localStorage", () =>
 		{
-			const error: ClientLogRequest = {
+			const error: CreateLogRequest = {
 				logLevel: "Error",
 				message: "Test error",
 				clientTimestamp: dateService.now()
@@ -115,7 +115,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 		it("should load queue from localStorage on initialization", (done) =>
 		{
 			// Pre-populate localStorage
-			const existingErrors: ClientLogRequest[] = [
+			const existingErrors: CreateLogRequest[] = [
 				{
 					logLevel: "Warning",
 					message: "Persisted error",
@@ -161,7 +161,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 	{
 		it("should send batch after interval", (done) =>
 		{
-			const error: ClientLogRequest = {
+			const error: CreateLogRequest = {
 				logLevel: "Error",
 				message: "Batch test",
 				clientTimestamp: dateService.now()
@@ -259,9 +259,9 @@ describe("ErrorQueueService (Zoneless)", () =>
 			}, BATCH_INTERVAL + 50);
 		});
 
-		it("should send errors in ClientLogRequest format", (done) =>
+		it("should send errors in CreateLogRequest format", (done) =>
 		{
-			const error: ClientLogRequest = {
+			const error: CreateLogRequest = {
 				logLevel: "Error",
 				message: "Conversion test",
 				clientTimestamp: "2025-11-12T10:00:00.000Z",
@@ -358,7 +358,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 			const newService: ErrorQueueService =
 				TestBed.inject(ErrorQueueService);
 
-			// StorageService will return invalid JSON as a string, which won't match ClientLogRequest[]
+			// StorageService will return invalid JSON as a string, which won't match CreateLogRequest[]
 			// The queue will be initialized as empty since getItem returns string, not array
 			// Queue size is private, so just verify service was created successfully
 			expect(newService).toBeTruthy();
@@ -369,7 +369,7 @@ describe("ErrorQueueService (Zoneless)", () =>
 	{
 		it("should deduplicate identical errors within time window", () =>
 		{
-			const error: ClientLogRequest = {
+			const error: CreateLogRequest = {
 				logLevel: "Error",
 				message: "Duplicate error",
 				clientTimestamp: dateService.now(),
@@ -389,13 +389,13 @@ describe("ErrorQueueService (Zoneless)", () =>
 
 		it("should allow different errors", () =>
 		{
-			const error1: ClientLogRequest = {
+			const error1: CreateLogRequest = {
 				logLevel: "Error",
 				message: "Error 1",
 				clientTimestamp: dateService.now()
 			};
 
-			const error2: ClientLogRequest = {
+			const error2: CreateLogRequest = {
 				logLevel: "Error",
 				message: "Error 2",
 				clientTimestamp: dateService.now()

@@ -2,8 +2,8 @@ import { Injectable, inject, isDevMode } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { catchError, of } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { ClientLogRequest } from "@infrastructure/models/client-log-request.model";
+import { environment } from "@environments/environment";
+import { CreateLogRequest } from "@infrastructure/models";
 import { DateService } from "./date.service";
 
 /**
@@ -258,7 +258,7 @@ export class LoggerService
 		const currentUrl: string = this.router.url || window.location.pathname;
 
 		// Prepare client log request matching backend DTO
-		const payload: ClientLogRequest = {
+		const payload: CreateLogRequest = {
 			logLevel: logLevelString,
 			message: entry.message,
 			exceptionMessage: entry.error?.message,

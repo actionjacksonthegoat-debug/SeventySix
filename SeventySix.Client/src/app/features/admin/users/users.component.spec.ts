@@ -2,8 +2,8 @@ import { ComponentFixture } from "@angular/core/testing";
 import { UserList } from "@features/admin/users/components/user-list/user-list";
 import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@infrastructure/services/logger.service";
-import { User, PagedResult } from "@admin/users/models";
-import { of } from "rxjs";
+import { PagedResponse } from "@infrastructure/models";
+import { User } from "@admin/users/models";
 import { UsersComponent } from "./users.component";
 import { ActivatedRoute } from "@angular/router";
 import {
@@ -40,18 +40,18 @@ describe("UsersComponent", () =>
 
 		// Set default mock return values
 		mockUserService.getPagedUsers.and.returnValue(
-			createMockQueryResult<PagedResult<User>, Error>({
+			createMockQueryResult<PagedResponse<User>, Error>({
 				items: [],
 				totalCount: 0,
-				pageNumber: 1,
+				page: 1,
 				pageSize: 50,
 				totalPages: 0,
-				hasPreviousPage: false,
-				hasNextPage: false
+				hasPrevious: false,
+				hasNext: false
 			})
 		);
 		mockUserService.getCurrentFilter.and.returnValue({
-			pageNumber: 1,
+			page: 1,
 			pageSize: 50
 		});
 		mockUserService.updateUser.and.returnValue(
@@ -84,6 +84,7 @@ describe("UsersComponent", () =>
 
 		component = fixture.componentInstance;
 	});
+
 	it("should create", () =>
 	{
 		expect(component).toBeTruthy();

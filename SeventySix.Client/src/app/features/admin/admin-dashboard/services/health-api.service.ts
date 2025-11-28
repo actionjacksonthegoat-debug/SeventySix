@@ -5,8 +5,12 @@ import {
 	CreateQueryResult
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
-import { HealthApiRepository } from "../repositories";
-import { HealthStatus, DatabaseHealth, ExternalApiHealth } from "../models";
+import { HealthApiRepository } from "@admin/admin-dashboard/repositories";
+import {
+	HealthStatus,
+	DatabaseHealth,
+	ExternalApiHealth
+} from "@admin/admin-dashboard/models";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
 

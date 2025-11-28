@@ -45,7 +45,7 @@ internal class LogRepository(
 
 	/// <inheritdoc/>
 	public async Task<(IEnumerable<Log> Logs, int TotalCount)> GetPagedAsync(
-		LogFilterRequest request,
+		LogQueryRequest request,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(request);
@@ -68,7 +68,7 @@ internal class LogRepository(
 		}
 	}
 
-	private static IQueryable<Log> ApplyFilters(IQueryable<Log> query, LogFilterRequest request)
+	private static IQueryable<Log> ApplyFilters(IQueryable<Log> query, LogQueryRequest request)
 	{
 		if (!string.IsNullOrWhiteSpace(request.LogLevel))
 		{
@@ -98,7 +98,7 @@ internal class LogRepository(
 		return query;
 	}
 
-	private static IQueryable<Log> ApplySortingAndPaging(IQueryable<Log> query, LogFilterRequest request)
+	private static IQueryable<Log> ApplySortingAndPaging(IQueryable<Log> query, LogQueryRequest request)
 	{
 		string sortProperty = string.IsNullOrWhiteSpace(request.SortBy) ? "CreateDate" : request.SortBy;
 

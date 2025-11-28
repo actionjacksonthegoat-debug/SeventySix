@@ -1,8 +1,6 @@
-/**
- * User interface
- * Represents user data structure from the API
- * Matches backend UserDto structure
- */
+import { BaseQueryRequest } from "@infrastructure/models";
+
+/** User model from API. Matches backend UserDto structure. */
 export interface User
 {
 	id: number;
@@ -17,16 +15,7 @@ export interface User
 	lastLoginAt?: string;
 }
 
-/**
- * Create User Request interface
- * Represents the structure for creating a new user
- *
- * Validation Rules:
- * - username: Required, 3-50 characters, unique
- * - email: Required, valid email format, unique
- * - fullName: Optional, max 100 characters
- * - isActive: Optional, defaults to true
- */
+/** Create User Request - structure for creating a new user. */
 export interface CreateUserRequest
 {
 	username: string;
@@ -35,10 +24,7 @@ export interface CreateUserRequest
 	isActive?: boolean;
 }
 
-/**
- * Update User Request interface
- * Represents the structure for updating an existing user
- */
+/** Update User Request - structure for updating an existing user. */
 export interface UpdateUserRequest
 {
 	id: number;
@@ -48,36 +34,9 @@ export interface UpdateUserRequest
 	isActive: boolean;
 }
 
-import { BaseQueryRequest } from "@infrastructure/models";
-
-/**
- * User Query Request interface
- * Represents query parameters for paginated user requests
- * Extends BaseQueryRequest for common pagination and filtering properties
- */
+/** User Query Request - query parameters for paginated user requests. */
 export interface UserQueryRequest extends BaseQueryRequest
 {
-	/**
-	 * Include inactive users in results
-	 */
+	/** Include inactive users in results */
 	includeInactive?: boolean;
-
-	/**
-	 * Filter by last login date range (uses startDate/endDate from BaseQueryRequest)
-	 */
-}
-
-/**
- * Paged Result interface
- * Generic wrapper for paginated API responses
- */
-export interface PagedResult<T>
-{
-	items: T[];
-	totalCount: number;
-	pageNumber: number;
-	pageSize: number;
-	totalPages: number;
-	hasPreviousPage: boolean;
-	hasNextPage: boolean;
 }

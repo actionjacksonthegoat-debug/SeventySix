@@ -1,7 +1,10 @@
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
-import { ThirdPartyApiRequest, ThirdPartyApiStatistics } from "../models";
+import {
+	ThirdPartyApiRequest,
+	ThirdPartyApiStatistics
+} from "@admin/admin-dashboard/models";
 
 @Injectable()
 export class ThirdPartyApiRepository

@@ -2,13 +2,9 @@ import { inject, Injectable } from "@angular/core";
 import { HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
+import { PagedResponse } from "@infrastructure/models";
 import { buildHttpParams } from "@infrastructure/utils/http-params.utility";
-import {
-	User,
-	UpdateUserRequest,
-	UserQueryRequest,
-	PagedResult
-} from "@admin/users/models";
+import { User, UpdateUserRequest, UserQueryRequest } from "@admin/users/models";
 
 @Injectable()
 export class UserRepository
@@ -41,10 +37,10 @@ export class UserRepository
 		return this.apiService.delete<void>(`${this.endpoint}/${id}`);
 	}
 
-	getPaged(request: UserQueryRequest): Observable<PagedResult<User>>
+	getPaged(request: UserQueryRequest): Observable<PagedResponse<User>>
 	{
 		const params: HttpParams = buildHttpParams({
-			pageNumber: request.pageNumber,
+			page: request.page,
 			pageSize: request.pageSize,
 			searchTerm: request.searchTerm || "",
 			includeInactive: request.includeInactive || false,
@@ -52,7 +48,7 @@ export class UserRepository
 			sortDescending: request.sortDescending
 		});
 
-		return this.apiService.get<PagedResult<User>>(
+		return this.apiService.get<PagedResponse<User>>(
 			`${this.endpoint}/paged`,
 			params
 		);

@@ -19,7 +19,6 @@ export * from "./sw-update.service";
 export * from "./telemetry.service";
 export * from "./theme.service";
 export * from "./token-storage.service";
-export * from "./viewport.service";
 export * from "./web-vitals.service";
 
 // DO NOT export feature services here

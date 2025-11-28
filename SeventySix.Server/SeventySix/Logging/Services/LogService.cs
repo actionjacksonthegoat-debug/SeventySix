@@ -7,64 +7,25 @@ using SeventySix.Shared;
 
 namespace SeventySix.Logging;
 
-/// <summary>
-/// Log service implementation.
-/// Encapsulates business logic for log operations.
-/// </summary>
-/// <remarks>
-/// This service implements the Service Layer pattern, providing a facade over
-/// the repository layer while handling business logic and validation.
-///
-/// Design Principles Applied:
-/// - Single Responsibility Principle (SRP): Focuses only on log business logic
-/// - Dependency Inversion Principle (DIP): Depends on abstractions (ILogRepository, IValidator)
-/// - Open/Closed Principle (OCP): Open for extension via dependency injection, closed for modification
-///
-/// Responsibilities:
-/// - Validate requests using FluentValidation
-/// - Coordinate between repository and mapping layers
-/// - Enforce business rules
-/// - Map between domain entities and DTOs
-///
-/// Transaction Management: Relies on repository layer for data persistence.
-/// Validation: Uses FluentValidation for request validation before processing.
-/// </remarks>
+/// <summary>Log service implementation.</summary>
 /// <param name="repository">The repository for data access operations.</param>
-/// <param name="filterValidator">The validator for filter requests.</param>
-/// <exception cref="ArgumentNullException">
-/// Thrown when any required dependency is null.
-/// </exception>
+/// <param name="queryValidator">The validator for query requests.</param>
 public class LogService(
 	ILogRepository repository,
-	IValidator<LogFilterRequest> filterValidator) : ILogService
+	IValidator<LogQueryRequest> queryValidator) : ILogService
 {
 	/// <inheritdoc/>
-	/// <exception cref="ValidationException">
-	/// Thrown when the request fails validation rules defined in LogFilterRequestValidator.
-	/// </exception>
-	/// <remarks>
-	/// Processing steps:
-	/// 1. Validate request using FluentValidation (throws ValidationException if invalid)
-	/// 2. Query repository with filters, search, sort, and pagination
-	/// 3. Map entities to DTOs using extension method
-	/// 4. Return paged result with metadata
-	///
-	/// The ValidateAndThrowAsync method ensures validation happens before any processing,
-	/// following the fail-fast principle.
-	/// </remarks>
-	public async Task<PagedResult<LogResponse>> GetPagedLogsAsync(
-		LogFilterRequest request,
+	public async Task<PagedResult<LogDto>> GetPagedLogsAsync(
+		LogQueryRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		// Validate request
-		await filterValidator.ValidateAndThrowAsync(request, cancellationToken);
+		await queryValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-		// Get paged data (repository returns both data and total count)
 		(IEnumerable<Log> logs, int totalCount) = await repository.GetPagedAsync(
 			request,
 			cancellationToken);
 
-		return new PagedResult<LogResponse>
+		return new PagedResult<LogDto>
 		{
 			Items = logs.ToDto().ToList(),
 			Page = request.Page,
@@ -74,69 +35,29 @@ public class LogService(
 	}
 
 	/// <inheritdoc/>
-	/// <exception cref="ValidationException">
-	/// Thrown when the request fails validation rules.
-	/// </exception>
-	/// <remarks>
-	/// Returns only the count without loading entities into memory.
-	/// Uses same filters as GetPagedLogsAsync for consistency.
-	/// </remarks>
-	public async Task<int> GetLogsCountAsync(
-		LogFilterRequest request,
-		CancellationToken cancellationToken = default)
-	{
-		// Validate request
-		await filterValidator.ValidateAndThrowAsync(request, cancellationToken);
-
-		// Get count (efficient - no entity loading)
-		(_, int totalCount) = await repository.GetPagedAsync(
-			request,
-			cancellationToken);
-
-		return totalCount;
-	}
-
-	/// <inheritdoc/>
-	/// <remarks>
-	/// Returns false if the log doesn't exist, allowing the caller to determine
-	/// the appropriate response (typically 404 Not Found).
-	/// </remarks>
 	public async Task<bool> DeleteLogByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
 		return await repository.DeleteByIdAsync(id, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	/// <remarks>
-	/// Performs batch delete for better performance.
-	/// Returns count of actually deleted logs (may be less than input if some IDs don't exist).
-	/// </remarks>
 	public async Task<int> DeleteLogsBatchAsync(int[] ids, CancellationToken cancellationToken = default)
 	{
 		return await repository.DeleteBatchAsync(ids, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	/// <remarks>
-	/// Used for log retention cleanup.
-	/// Deletes all logs with Timestamp older than the specified cutoff date.
-	/// </remarks>
 	public async Task<int> DeleteLogsOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default)
 	{
 		return await repository.DeleteOlderThanAsync(cutoffDate, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	/// <remarks>
-	/// Performs a minimal query to verify database connectivity.
-	/// Returns true if the query succeeds, false if any exception occurs.
-	/// </remarks>
 	public async Task<bool> CheckDatabaseHealthAsync(CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			// Simple connectivity check - minimal query with Page=1, PageSize=1
-			LogFilterRequest healthCheckRequest = new() { Page = 1, PageSize = 1 };
+			LogQueryRequest healthCheckRequest = new() { Page = 1, PageSize = 1 };
 			_ = await repository.GetPagedAsync(healthCheckRequest, cancellationToken);
 			return true;
 		}
@@ -147,20 +68,14 @@ public class LogService(
 	}
 
 	/// <inheritdoc/>
-	/// <remarks>
-	/// Maps ClientLogRequest to Log entity with trace context and browser metadata.
-	/// Trace context is injected from Activity.Current by the controller.
-	/// </remarks>
-	public async Task CreateClientLogAsync(ClientLogRequest request, CancellationToken cancellationToken = default)
+	public async Task CreateClientLogAsync(CreateLogRequest request, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		// Get trace context from current HTTP request
 		string? traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
 		string? spanId = System.Diagnostics.Activity.Current?.SpanId.ToString();
 		string? parentSpanId = System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
 
-		// Map ClientLogRequest to Log entity
 		Log log = new()
 		{
 			LogLevel = request.LogLevel,
@@ -180,7 +95,6 @@ public class LogService(
 				request.ClientTimestamp,
 				request.AdditionalContext,
 			}),
-			// CreateDate is automatically set by AuditInterceptor
 			MachineName = "Browser",
 			Environment = "Client",
 		};
@@ -189,11 +103,7 @@ public class LogService(
 	}
 
 	/// <inheritdoc/>
-	/// <remarks>
-	/// Batch operation for better performance when Angular sends multiple errors at once.
-	/// Each log gets the same trace context from the HTTP request.
-	/// </remarks>
-	public async Task CreateClientLogBatchAsync(ClientLogRequest[] requests, CancellationToken cancellationToken = default)
+	public async Task CreateClientLogBatchAsync(CreateLogRequest[] requests, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(requests);
 
@@ -202,13 +112,11 @@ public class LogService(
 			return;
 		}
 
-		// Get trace context from current HTTP request
 		string? traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
 		string? spanId = System.Diagnostics.Activity.Current?.SpanId.ToString();
 		string? parentSpanId = System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
 
-		// Map all requests to Log entities
-		foreach (ClientLogRequest request in requests)
+		foreach (CreateLogRequest request in requests)
 		{
 			Log log = new()
 			{
@@ -229,7 +137,6 @@ public class LogService(
 					request.ClientTimestamp,
 					request.AdditionalContext,
 				}),
-				// CreateDate is automatically set by AuditInterceptor
 				MachineName = "Browser",
 				Environment = "Client",
 			};

@@ -16,7 +16,6 @@ interface Environment
 		jaegerUrl: string;
 		prometheusUrl: string;
 		grafanaUrl: string;
-		enabled: boolean;
 		dashboards: {
 			systemOverview: string;
 			apiEndpoints: string;
@@ -106,7 +105,6 @@ export const environment: Environment = {
 		jaegerUrl: "http://localhost:16686", // Jaeger UI for distributed tracing
 		prometheusUrl: "http://localhost:9090", // Prometheus for metrics
 		grafanaUrl: "http://localhost:3000", // Grafana for metrics visualization
-		enabled: true, // Observability stack enabled for dashboard embedding
 		dashboards: {
 			systemOverview: "seventysix-system-overview",
 			apiEndpoints: "seventysix-api-endpoints"

@@ -1,7 +1,5 @@
-/**
- * Log entry model matching backend LogResponse DTO
- */
-export interface LogResponse
+/** Log entry DTO matching backend LogDto. */
+export interface LogDto
 {
 	id: number;
 	createDate: Date;

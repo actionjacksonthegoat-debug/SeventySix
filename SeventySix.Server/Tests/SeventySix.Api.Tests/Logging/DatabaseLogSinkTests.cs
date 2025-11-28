@@ -88,7 +88,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	private async Task AssertSingleLogAsync(string expectedLevel, string expectedMessage)
 	{
 		await WaitForBatchProcessingAsync();
-		LogFilterRequest request = new();
+		LogQueryRequest request = new();
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
@@ -115,7 +115,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogFilterRequest request = new();
+		LogQueryRequest request = new();
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
@@ -143,7 +143,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogFilterRequest request = new();
+		LogQueryRequest request = new();
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
@@ -169,7 +169,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogFilterRequest request = new();
+		LogQueryRequest request = new();
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Empty(logs); // Information level should not be persisted
 	}
@@ -202,7 +202,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogFilterRequest request = new();
+		LogQueryRequest request = new();
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
@@ -246,7 +246,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogFilterRequest request = new();
+		LogQueryRequest request = new();
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();

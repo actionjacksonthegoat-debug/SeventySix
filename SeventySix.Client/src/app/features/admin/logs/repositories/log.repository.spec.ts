@@ -1,13 +1,8 @@
 import { TestBed } from "@angular/core/testing";
 import { LogRepository } from "./log.repository";
 import { ApiService } from "@infrastructure/api-services/api.service";
-import {
-	LogResponse,
-	LogFilterRequest,
-	LogCountResponse,
-	PagedLogResponse,
-	LogLevel
-} from "@admin/logs/models";
+import { LogDto, LogQueryRequest, LogLevel } from "@admin/logs/models";
+import { PagedResponse } from "@infrastructure/models";
 import { of } from "rxjs";
 import { HttpParams } from "@angular/common/http";
 import { setupRepositoryTest, createMockApiService } from "@testing";
@@ -17,7 +12,7 @@ describe("LogRepository", () =>
 	let repository: LogRepository;
 	let mockApiService: jasmine.SpyObj<ApiService>;
 
-	const mockLog: LogResponse = {
+	const mockLog: LogDto = {
 		id: 1,
 		createDate: new Date("2024-01-01T00:00:00Z"),
 		logLevel: "Information",
@@ -38,18 +33,14 @@ describe("LogRepository", () =>
 		parentSpanId: null
 	};
 
-	const mockPagedResponse: PagedLogResponse = {
-		data: [mockLog],
+	const mockPagedResponse: PagedResponse<LogDto> = {
+		items: [mockLog],
 		totalCount: 1,
-		pageNumber: 1,
+		page: 1,
 		pageSize: 10,
 		totalPages: 1,
-		hasPreviousPage: false,
-		hasNextPage: false
-	};
-
-	const mockCountResponse: LogCountResponse = {
-		total: 42
+		hasPrevious: false,
+		hasNext: false
 	};
 
 	beforeEach(() =>
@@ -85,9 +76,9 @@ describe("LogRepository", () =>
 
 		it("should fetch paged logs with filter", (done) =>
 		{
-			const filter: LogFilterRequest = {
+			const filter: LogQueryRequest = {
 				logLevel: LogLevel.Error.toString(),
-				pageNumber: 2,
+				page: 2,
 				pageSize: 25
 			};
 			mockApiService.get.and.returnValue(of(mockPagedResponse));
@@ -119,43 +110,6 @@ describe("LogRepository", () =>
 		});
 	});
 
-	describe("getCount", () =>
-	{
-		it("should fetch log count without filter", (done) =>
-		{
-			mockApiService.get.and.returnValue(of(mockCountResponse));
-
-			repository.getCount().subscribe((result) =>
-			{
-				expect(result).toEqual(mockCountResponse);
-				expect(mockApiService.get).toHaveBeenCalledWith(
-					"logs/count",
-					undefined
-				);
-				done();
-			});
-		});
-
-		it("should fetch log count with filter", (done) =>
-		{
-			const filter: LogFilterRequest = {
-				logLevel: LogLevel.Warning.toString(),
-				sourceContext: "TestContext"
-			};
-			mockApiService.get.and.returnValue(of(mockCountResponse));
-
-			repository.getCount(filter).subscribe((result) =>
-			{
-				expect(result).toEqual(mockCountResponse);
-				expect(mockApiService.get).toHaveBeenCalledWith(
-					"logs/count",
-					jasmine.any(HttpParams)
-				);
-				done();
-			});
-		});
-	});
-
 	describe("delete", () =>
 	{
 		it("should delete log by id", (done) =>
@@ -174,7 +128,7 @@ describe("LogRepository", () =>
 	{
 		it("should delete multiple logs", (done) =>
 		{
-			const ids = [1, 2, 3];
+			const ids: number[] = [1, 2, 3];
 			mockApiService.delete.and.returnValue(of(3));
 
 			repository.deleteBatch(ids).subscribe((result) =>

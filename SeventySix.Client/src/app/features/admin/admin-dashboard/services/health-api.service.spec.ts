@@ -15,7 +15,7 @@ import {
 	ExternalApiHealth
 } from "@admin/admin-dashboard/models";
 import { HealthApiService } from "./health-api.service";
-import { HealthApiRepository } from "../repositories";
+import { HealthApiRepository } from "@admin/admin-dashboard/repositories";
 import { environment } from "@environments/environment";
 
 describe("HealthApiService", () =>

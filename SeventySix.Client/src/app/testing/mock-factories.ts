@@ -174,30 +174,21 @@ export function createMockUserRepository(): jasmine.SpyObj<MockUserRepository>
 	]);
 }
 
-/**
- * Mock LogRepository type for testing
- */
+/** Mock LogRepository type for testing. */
 export interface MockLogRepository
 {
 	getAllPaged: jasmine.Spy;
 	getById: jasmine.Spy;
-	getCount: jasmine.Spy;
 	delete: jasmine.Spy;
 	deleteBatch: jasmine.Spy;
 }
 
-/**
- * Create a mocked LogRepository
- * Used in log management feature tests
- *
- * @returns Jasmine spy object for LogRepository
- */
+/** Create a mocked LogRepository. Used in log management feature tests. */
 export function createMockLogRepository(): jasmine.SpyObj<MockLogRepository>
 {
 	return jasmine.createSpyObj("LogRepository", [
 		"getAllPaged",
 		"getById",
-		"getCount",
 		"delete",
 		"deleteBatch"
 	]);
@@ -261,40 +252,4 @@ export function createMockLayoutService(): MockLayoutService
 		.and.returnValue(true);
 
 	return mock;
-}
-
-/**
- * Mock ViewportService interface for testing
- * Uses writable signals for breakpoint detection
- */
-export interface MockViewportService
-{
-	isMobile: WritableSignal<boolean>;
-	isTablet: WritableSignal<boolean>;
-	isDesktop: WritableSignal<boolean>;
-	isXSmall: WritableSignal<boolean>;
-	isSmall: WritableSignal<boolean>;
-	isMedium: WritableSignal<boolean>;
-	isLarge: WritableSignal<boolean>;
-	isXLarge: WritableSignal<boolean>;
-}
-
-/**
- * Create a mocked ViewportService
- * Used in responsive directive and component tests
- *
- * @returns Mock object for ViewportService with writable signal properties
- */
-export function createMockViewportService(): MockViewportService
-{
-	return {
-		isMobile: signal(false),
-		isTablet: signal(false),
-		isDesktop: signal(true),
-		isXSmall: signal(false),
-		isSmall: signal(false),
-		isMedium: signal(false),
-		isLarge: signal(true),
-		isXLarge: signal(false)
-	};
 }

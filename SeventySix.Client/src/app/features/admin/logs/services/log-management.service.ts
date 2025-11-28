@@ -21,7 +21,7 @@ import {
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 import { LogRepository } from "@admin/logs/repositories";
-import { LogFilterRequest } from "@admin/logs/models";
+import { LogQueryRequest } from "@admin/logs/models";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
 import { BaseFilterService } from "@infrastructure/services/base-filter.service";
@@ -33,7 +33,7 @@ import { BaseFilterService } from "@infrastructure/services/base-filter.service"
  * Provided at route level for proper garbage collection (see admin.routes.ts)
  */
 @Injectable()
-export class LogManagementService extends BaseFilterService<LogFilterRequest>
+export class LogManagementService extends BaseFilterService<LogQueryRequest>
 {
 	private readonly logRepository: LogRepository = inject(LogRepository);
 	private readonly queryClient: QueryClient = inject(QueryClient);
@@ -56,7 +56,7 @@ export class LogManagementService extends BaseFilterService<LogFilterRequest>
 		const now: Date = new Date();
 		const startDate: Date = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 		super({
-			pageNumber: 1,
+			page: 1,
 			pageSize: 50,
 			startDate: startDate,
 			endDate: now
@@ -80,27 +80,7 @@ export class LogManagementService extends BaseFilterService<LogFilterRequest>
 		}));
 	}
 
-	/**
-	 * Query for log count based on current filter
-	 * @returns Query object with data, isLoading, error, etc.
-	 */
-	getLogCount()
-	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.logs.count(this.getCurrentFilter()),
-			queryFn: () =>
-				lastValueFrom(
-					this.logRepository.getCount(this.getCurrentFilter())
-				),
-			...this.queryConfig
-		}));
-	}
-
-	/**
-	 * Mutation for deleting a single log
-	 * Automatically invalidates related queries on success
-	 * @returns Mutation object with mutate, isPending, error, etc.
-	 */
+	/** Mutation for deleting a single log. Automatically invalidates related queries on success. */
 	deleteLog()
 	{
 		return injectMutation(() => ({
@@ -153,7 +133,7 @@ export class LogManagementService extends BaseFilterService<LogFilterRequest>
 	override clearFilters(): void
 	{
 		this.filter.set({
-			pageNumber: 1,
+			page: 1,
 			pageSize: 50
 		});
 		this.clearSelection();

@@ -3,7 +3,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ClientErrorLoggerService } from "./client-error-logger.service";
 import { ErrorQueueService } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
-import { ClientLogRequest } from "@infrastructure/models/client-log-request.model";
+import { CreateLogRequest } from "@infrastructure/models";
 import { createMockErrorQueueService } from "@testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 
@@ -108,7 +108,7 @@ describe("ClientErrorLoggerService", () =>
 			service.logError({ message: "Test error" });
 
 			const afterTime: Date = new Date();
-			const call: jasmine.CallInfo<(error: ClientLogRequest) => void> =
+			const call: jasmine.CallInfo<(error: CreateLogRequest) => void> =
 				errorQueueService.enqueue.calls.mostRecent();
 			const timestamp: Date = new Date(call.args[0].clientTimestamp!);
 

@@ -6,39 +6,17 @@ using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Logging;
 
-/// <summary>
-/// Extension methods for Log entity mapping.
-/// Provides clean, reusable mapping between domain entities and DTOs.
-/// </summary>
-/// <remarks>
-/// This class implements the Adapter pattern, translating between different
-/// object representations (Domain Entities ↔ DTOs).
-///
-/// Design Benefits:
-/// - Separation of Concerns: Domain models remain independent of API contracts
-/// - Reusability: Mapping logic is centralized and reusable
-/// - Testability: Extension methods are easy to unit test
-/// - Fluent API: Enables readable method chaining
-///
-/// Mapping Strategy:
-/// - Entity → DTO: For read operations (GET requests)
-/// </remarks>
+/// <summary>Extension methods for Log entity mapping.</summary>
 public static class LogExtensions
 {
-	/// <summary>
-	/// Converts a Log domain entity to a data transfer object (DTO).
-	/// </summary>
+	/// <summary>Converts a Log domain entity to a DTO.</summary>
 	/// <param name="entity">The domain entity to convert.</param>
-	/// <returns>A LogResponse containing the entity's data.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when entity is null.</exception>
-	/// <remarks>
-	/// This method maps all properties from the domain entity to the DTO.
-	/// </remarks>
-	public static LogResponse ToDto(this Log entity)
+	/// <returns>A LogDto containing the entity's data.</returns>
+	public static LogDto ToDto(this Log entity)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
-		return new LogResponse
+		return new LogDto
 		{
 			Id = entity.Id,
 			LogLevel = entity.LogLevel,
@@ -61,14 +39,9 @@ public static class LogExtensions
 		};
 	}
 
-	/// <summary>
-	/// Converts a collection of Log entities to a collection of DTOs.
-	/// </summary>
+	/// <summary>Converts a collection of Log entities to a collection of DTOs.</summary>
 	/// <param name="entities">The domain entities to convert.</param>
-	/// <returns>A collection of LogResponse DTOs.</returns>
-	/// <remarks>
-	/// Uses generic MapToDto utility for efficient transformation with deferred execution.
-	/// </remarks>
-	public static IEnumerable<LogResponse> ToDto(this IEnumerable<Log> entities) =>
+	/// <returns>A collection of LogDto DTOs.</returns>
+	public static IEnumerable<LogDto> ToDto(this IEnumerable<Log> entities) =>
 		entities.MapToDto(e => e.ToDto());
 }

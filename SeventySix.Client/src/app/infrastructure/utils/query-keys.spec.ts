@@ -17,14 +17,14 @@ describe("QueryKeys", () =>
 
 		it("should generate correct paged key with filter", () =>
 		{
-			const filter: { pageNumber: number } = { pageNumber: 1 };
+			const filter: { page: number } = { page: 1 };
 			const key: readonly unknown[] = QueryKeys.logs.paged(filter);
 			expect(key).toEqual(["logs", filter]);
 		});
 
 		it("should generate correct count key with filter", () =>
 		{
-			const filter: { pageNumber: number } = { pageNumber: 1 };
+			const filter: { page: number } = { page: 1 };
 			const key: readonly unknown[] = QueryKeys.logs.count(filter);
 			expect(key).toEqual(["logs", "count", filter]);
 		});
@@ -40,7 +40,7 @@ describe("QueryKeys", () =>
 
 		it("should generate correct paged key with filter", () =>
 		{
-			const filter: { pageNumber: number } = { pageNumber: 1 };
+			const filter: { page: number } = { page: 1 };
 			const key: readonly unknown[] = QueryKeys.users.paged(filter);
 			expect(key).toEqual(["users", "paged", filter]);
 		});

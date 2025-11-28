@@ -26,7 +26,7 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { TableHeightDirective } from "@shared/directives";
 import {
-	LogResponse,
+	LogDto,
 	getLogLevelName,
 	getLogLevelClassName,
 	getRelativeTime,
@@ -34,10 +34,8 @@ import {
 } from "@admin/logs/models";
 import { environment } from "@environments/environment";
 
-/**
- * Log with pre-computed display values for template performance
- */
-export interface ProcessedLog extends LogResponse
+/** Log with pre-computed display values for template performance. */
+export interface ProcessedLog extends LogDto
 {
 	levelClass: string;
 	levelName: string;
@@ -45,9 +43,7 @@ export interface ProcessedLog extends LogResponse
 	truncatedMessage: string;
 }
 
-/**
- * Log table component with sorting, pagination, and selection
- */
+/** Log table component with sorting, pagination, and selection. */
 @Component({
 	selector: "app-log-table",
 	imports: [
@@ -70,7 +66,7 @@ export class LogTableComponent implements AfterViewInit
 	private static readonly MESSAGE_TRUNCATE_LENGTH: number = 100;
 
 	// Inputs
-	readonly logs: InputSignal<LogResponse[]> = input<LogResponse[]>([]);
+	readonly logs: InputSignal<LogDto[]> = input<LogDto[]>([]);
 	readonly totalCount: InputSignal<number> = input<number>(0);
 	readonly pageSize: InputSignal<number> = input<number>(
 		environment.ui.tables.defaultPageSize
@@ -87,7 +83,7 @@ export class LogTableComponent implements AfterViewInit
 	]);
 
 	// Outputs
-	readonly logSelected: OutputEmitterRef<LogResponse> = output<LogResponse>();
+	readonly logSelected: OutputEmitterRef<LogDto> = output<LogDto>();
 	readonly deleteLog: OutputEmitterRef<number> = output<number>();
 	readonly deleteSelected: OutputEmitterRef<number[]> = output<number[]>();
 	readonly pageChange: OutputEmitterRef<number> = output<number>();
@@ -97,7 +93,7 @@ export class LogTableComponent implements AfterViewInit
 	readonly processedLogs: Signal<ProcessedLog[]> = computed(
 		(): ProcessedLog[] =>
 			this.logs().map(
-				(log: LogResponse): ProcessedLog => ({
+				(log: LogDto): ProcessedLog => ({
 					...log,
 					levelClass: getLogLevelClassName(log.logLevel),
 					levelName: getLogLevelName(log.logLevel),

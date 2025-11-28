@@ -21,7 +21,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { Clipboard } from "@angular/cdk/clipboard";
 import {
-	LogResponse,
+	LogDto,
 	LogLevel,
 	parseLogLevel,
 	getLogLevelName,
@@ -34,9 +34,7 @@ import {
 } from "@admin/logs/models";
 import { environment } from "@environments/environment";
 
-/**
- * Dialog component for displaying detailed log information
- */
+/** Dialog component for displaying detailed log information. */
 @Component({
 	selector: "app-log-detail-dialog",
 	imports: [
@@ -58,8 +56,8 @@ export class LogDetailDialogComponent
 	);
 	private readonly clipboard: Clipboard = inject(Clipboard);
 
-	readonly log: WritableSignal<LogResponse> = signal<LogResponse>(
-		inject<LogResponse>(MAT_DIALOG_DATA)
+	readonly log: WritableSignal<LogDto> = signal<LogDto>(
+		inject<LogDto>(MAT_DIALOG_DATA)
 	);
 	readonly stackTraceCollapsed: WritableSignal<boolean> =
 		signal<boolean>(false);
@@ -69,10 +67,6 @@ export class LogDetailDialogComponent
 		signal<boolean>(false);
 
 	readonly deleteLog: OutputEmitterRef<number> = output<number>();
-
-	// Observability integration
-	readonly isObservabilityEnabled: boolean =
-		environment.observability.enabled;
 
 	// Pre-computed values for template performance (memoized computed signals)
 	readonly levelClass: Signal<string> = computed((): string =>
@@ -148,7 +142,7 @@ export class LogDetailDialogComponent
 	 */
 	openInJaeger(): void
 	{
-		const log: LogResponse = this.log();
+		const log: LogDto = this.log();
 
 		if (!log.correlationId)
 		{

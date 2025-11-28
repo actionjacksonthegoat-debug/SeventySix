@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import {
-	LogResponse,
+	LogDto,
 	getLogLevelName,
 	getLogLevelClassName,
 	getRelativeTime,
@@ -14,10 +14,7 @@ describe("LogTableComponent", () =>
 	let component: LogTableComponent;
 	let fixture: ComponentFixture<LogTableComponent>;
 
-	const createMockLog = (
-		id: number,
-		logLevel: string = "Error"
-	): LogResponse => ({
+	const createMockLog = (id: number, logLevel: string = "Error"): LogDto => ({
 		id,
 		createDate: new Date(),
 		logLevel,
@@ -43,7 +40,7 @@ describe("LogTableComponent", () =>
 		logLevel: string = "Error"
 	): ProcessedLog =>
 	{
-		const log: LogResponse = createMockLog(id, logLevel);
+		const log: LogDto = createMockLog(id, logLevel);
 		return {
 			...log,
 			levelClass: getLogLevelClassName(log.logLevel),
@@ -78,7 +75,7 @@ describe("LogTableComponent", () =>
 
 	it("should display logs when provided", () =>
 	{
-		const logs = [createMockLog(1), createMockLog(2)];
+		const logs: LogDto[] = [createMockLog(1), createMockLog(2)];
 
 		fixture.componentRef.setInput("logs", logs);
 		fixture.detectChanges();
@@ -88,13 +85,13 @@ describe("LogTableComponent", () =>
 
 	it("should update data source when logs change", () =>
 	{
-		const initialLogs = [createMockLog(1)];
+		const initialLogs: LogDto[] = [createMockLog(1)];
 		fixture.componentRef.setInput("logs", initialLogs);
 		fixture.detectChanges();
 
 		expect(component.dataSource.data.length).toBe(1);
 
-		const updatedLogs = [
+		const updatedLogs: LogDto[] = [
 			createMockLog(1),
 			createMockLog(2),
 			createMockLog(3)
@@ -109,7 +106,7 @@ describe("LogTableComponent", () =>
 	{
 		const log: ProcessedLog = createMockProcessedLog(1);
 
-		component.logSelected.subscribe((selectedLog: LogResponse) =>
+		component.logSelected.subscribe((selectedLog: LogDto) =>
 		{
 			expect(selectedLog.id).toBe(1);
 			done();
@@ -172,7 +169,7 @@ describe("LogTableComponent", () =>
 
 	it("should emit deleteSelected when delete is triggered", (done: DoneFn) =>
 	{
-		const logs: LogResponse[] = [createMockLog(1), createMockLog(2)];
+		const logs: LogDto[] = [createMockLog(1), createMockLog(2)];
 		fixture.componentRef.setInput("logs", logs);
 		fixture.detectChanges();
 
@@ -206,7 +203,7 @@ describe("LogTableComponent", () =>
 
 	it("should clear selection after delete", () =>
 	{
-		const logs: LogResponse[] = [createMockLog(1), createMockLog(2)];
+		const logs: LogDto[] = [createMockLog(1), createMockLog(2)];
 		fixture.componentRef.setInput("logs", logs);
 		fixture.detectChanges();
 

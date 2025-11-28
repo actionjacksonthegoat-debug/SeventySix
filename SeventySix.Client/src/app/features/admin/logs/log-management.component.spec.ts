@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { LogManagementComponent } from "./log-management.component";
 import { LogManagementService } from "@admin/logs/services";
 import { MatDialog } from "@angular/material/dialog";
-import { LogResponse, LogLevel } from "@admin/logs/models";
+import { LogDto, LogLevel } from "@admin/logs/models";
 import { createMockDialog } from "@testing";
 
 describe("LogManagementComponent", (): void =>
@@ -43,13 +43,13 @@ describe("LogManagementComponent", (): void =>
 
 		// Mock getLogs to return a TanStack Query result
 		const mockPagedResponse = {
-			data: [],
-			pageNumber: 1,
+			items: [],
+			page: 1,
 			pageSize: 10,
 			totalCount: 0,
 			totalPages: 0,
-			hasPreviousPage: false,
-			hasNextPage: false
+			hasPrevious: false,
+			hasNext: false
 		};
 
 		mockLogService.getLogs.and.returnValue({
@@ -96,7 +96,7 @@ describe("LogManagementComponent", (): void =>
 		};
 		mockDialog.open.and.returnValue(mockDialogRef as any);
 
-		const mockLog: LogResponse = {
+		const mockLog: LogDto = {
 			id: 1,
 			createDate: new Date("2025-11-12T10:30:00Z"),
 			logLevel: "Error",

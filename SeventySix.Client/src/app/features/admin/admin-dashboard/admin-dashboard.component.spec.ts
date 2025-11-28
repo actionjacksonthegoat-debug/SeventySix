@@ -112,20 +112,15 @@ describe("AdminDashboardComponent", () =>
 	{
 		createComponent();
 
-		const compiled = fixture.nativeElement as HTMLElement;
+		const compiled: HTMLElement = fixture.nativeElement as HTMLElement;
 
 		// Dashboard title should always be present
 		expect(compiled.querySelector("h1")?.textContent).toContain(
 			"Admin Dashboard"
 		);
 
-		// In test environment, observability is disabled
-		// Verify the component correctly reads the environment configuration
-		expect(component.isObservabilityEnabled).toBe(false);
-
-		// When disabled, fallback message should be shown instead of tabs
-		const fallbackMessage = compiled.textContent;
-		expect(fallbackMessage).toContain("Observability stack is not enabled");
+		// Tabs should always be present (observability always enabled)
+		expect(compiled.querySelector("mat-tab-group")).toBeTruthy();
 	});
 
 	it("should open Jaeger in new tab", () =>

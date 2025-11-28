@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { catchError, of, interval } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { StorageService } from "./storage.service";
-import { ClientLogRequest } from "@infrastructure/models/client-log-request.model";
+import { CreateLogRequest } from "@infrastructure/models";
 import { environment } from "@environments/environment";
 
 /**
@@ -27,7 +27,7 @@ export class ErrorQueueService
 	private readonly localStorageKey: string = "error-queue";
 
 	// Queue management
-	private queue: ClientLogRequest[] = [];
+	private queue: CreateLogRequest[] = [];
 	private readonly batchSize: number = environment.logging.batchSize;
 	private readonly batchInterval: number = environment.logging.batchInterval;
 
@@ -62,7 +62,7 @@ export class ErrorQueueService
 	 * Always logs to console for successfully enqueued errors (1:1 with DB).
 	 * Never drops errors - relies on deduplication and circuit breaker for protection.
 	 */
-	enqueue(error: ClientLogRequest): void
+	enqueue(error: CreateLogRequest): void
 	{
 		// Check for duplicates
 		if (this.isDuplicate(error))
@@ -99,7 +99,7 @@ export class ErrorQueueService
 		}
 
 		// Get batch (already in server format)
-		const batch: ClientLogRequest[] = this.queue.slice(0, this.batchSize);
+		const batch: CreateLogRequest[] = this.queue.slice(0, this.batchSize);
 
 		// Send to server
 		this.http
@@ -188,8 +188,8 @@ export class ErrorQueueService
 	 */
 	private loadQueueFromStorage(): void
 	{
-		const stored: ClientLogRequest[] | null = this.storage.getItem<
-			ClientLogRequest[]
+		const stored: CreateLogRequest[] | null = this.storage.getItem<
+			CreateLogRequest[]
 		>(this.localStorageKey);
 		if (stored)
 		{
@@ -212,7 +212,7 @@ export class ErrorQueueService
 	/**
 	 * Generates a unique signature for an error for deduplication.
 	 */
-	private generateErrorSignature(error: ClientLogRequest): string
+	private generateErrorSignature(error: CreateLogRequest): string
 	{
 		const parts: string[] = [
 			error.message,
@@ -229,7 +229,7 @@ export class ErrorQueueService
 	/**
 	 * Checks if an error is a duplicate within the deduplication window.
 	 */
-	private isDuplicate(error: ClientLogRequest): boolean
+	private isDuplicate(error: CreateLogRequest): boolean
 	{
 		const signature: string = this.generateErrorSignature(error);
 		const now: number = Date.now();

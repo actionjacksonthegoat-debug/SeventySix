@@ -1,7 +1,7 @@
 import { Injectable, inject } from "@angular/core";
 import { onLCP, onINP, onCLS, onFCP, onTTFB, Metric } from "web-vitals";
 import { LoggerService } from "./logger.service";
-import { environment } from "../../../environments/environment";
+import { environment } from "@environments/environment";
 
 /**
  * Web Vitals service for Core Web Vitals tracking.

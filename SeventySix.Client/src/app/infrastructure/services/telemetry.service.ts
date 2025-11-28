@@ -16,7 +16,7 @@ import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
 import { DocumentLoadInstrumentation } from "@opentelemetry/instrumentation-document-load";
 import { FetchInstrumentation } from "@opentelemetry/instrumentation-fetch";
-import { environment } from "../../../environments/environment";
+import { environment } from "@environments/environment";
 import { LoggerService } from "./logger.service";
 
 /**

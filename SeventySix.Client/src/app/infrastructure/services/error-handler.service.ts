@@ -11,7 +11,7 @@ import {
 	UnauthorizedError,
 	NetworkError
 } from "@infrastructure/models/errors";
-import { environment } from "../../../environments/environment";
+import { environment } from "@environments/environment";
 
 interface ErrorDetails
 {

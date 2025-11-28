@@ -1,10 +1,7 @@
-import { signal } from "@angular/core";
 import { BaseQueryRequest } from "@infrastructure/models";
 import { BaseFilterService } from "./base-filter.service";
 
-/**
- * Test implementation of BaseFilterService for testing purposes
- */
+/** Test implementation of BaseFilterService for testing purposes */
 class TestFilterService extends BaseFilterService<BaseQueryRequest>
 {
 	constructor(initialFilter: BaseQueryRequest)
@@ -15,7 +12,7 @@ class TestFilterService extends BaseFilterService<BaseQueryRequest>
 	clearFilters(): void
 	{
 		this.filter.set({
-			pageNumber: 1,
+			page: 1,
 			pageSize: 50
 		});
 	}
@@ -31,7 +28,7 @@ describe("BaseFilterService", () =>
 {
 	let service: TestFilterService;
 	const defaultFilter: BaseQueryRequest = {
-		pageNumber: 1,
+		page: 1,
 		pageSize: 50
 	};
 
@@ -46,7 +43,7 @@ describe("BaseFilterService", () =>
 		{
 			const currentFilter: BaseQueryRequest = service.getCurrentFilter();
 
-			expect(currentFilter.pageNumber).toBe(1);
+			expect(currentFilter.page).toBe(1);
 			expect(currentFilter.pageSize).toBe(50);
 		});
 	});
@@ -71,13 +68,13 @@ describe("BaseFilterService", () =>
 			expect(filter.searchTerm).toBe("test");
 		});
 
-		it("should reset page number to 1 when updating filter", () =>
+		it("should reset page to 1 when updating filter", () =>
 		{
 			service.setPage(5);
 			service.updateFilter({ searchTerm: "test" });
 
 			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.pageNumber).toBe(1);
+			expect(filter.page).toBe(1);
 		});
 
 		it("should preserve existing filter properties", () =>
@@ -105,12 +102,12 @@ describe("BaseFilterService", () =>
 
 	describe("setPage", () =>
 	{
-		it("should update page number", () =>
+		it("should update page", () =>
 		{
 			service.setPage(3);
 
 			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.pageNumber).toBe(3);
+			expect(filter.page).toBe(3);
 		});
 
 		it("should preserve other filter properties", () =>
@@ -119,7 +116,7 @@ describe("BaseFilterService", () =>
 			service.setPage(2);
 
 			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.pageNumber).toBe(2);
+			expect(filter.page).toBe(2);
 			expect(filter.searchTerm).toBe("test");
 			expect(filter.pageSize).toBe(100);
 		});
@@ -135,13 +132,13 @@ describe("BaseFilterService", () =>
 			expect(filter.pageSize).toBe(100);
 		});
 
-		it("should reset page number to 1", () =>
+		it("should reset page to 1", () =>
 		{
 			service.setPage(5);
 			service.setPageSize(100);
 
 			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.pageNumber).toBe(1);
+			expect(filter.page).toBe(1);
 			expect(filter.pageSize).toBe(100);
 		});
 
@@ -165,7 +162,7 @@ describe("BaseFilterService", () =>
 			service.clearFilters();
 
 			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.pageNumber).toBe(1);
+			expect(filter.page).toBe(1);
 			expect(filter.pageSize).toBe(50);
 			expect(filter.searchTerm).toBeUndefined();
 		});

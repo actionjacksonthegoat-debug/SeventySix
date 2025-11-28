@@ -1,13 +1,8 @@
 import { TestBed } from "@angular/core/testing";
-import { signal } from "@angular/core";
-import { of, throwError } from "rxjs";
+import { of } from "rxjs";
 import { UserRepository } from "@admin/users/repositories";
-import {
-	User,
-	UpdateUserRequest,
-	UserQueryRequest,
-	PagedResult
-} from "@admin/users/models";
+import { PagedResponse } from "@infrastructure/models";
+import { User, UpdateUserRequest } from "@admin/users/models";
 import { UserService } from "./user.service";
 import {
 	UserFixtures,
@@ -15,10 +10,7 @@ import {
 	setupServiceTest
 } from "@testing";
 
-/**
- * User Service Tests
- * Simplified following 80/20 principle - focuses on business logic, not framework internals
- */
+/** User Service Tests - focuses on business logic, not framework internals */
 describe("UserService", () =>
 {
 	let service: UserService;
@@ -55,15 +47,15 @@ describe("UserService", () =>
 
 			const filter = service.getCurrentFilter();
 			expect(filter.searchTerm).toBe("test");
-			expect(filter.pageNumber).toBe(1);
+			expect(filter.page).toBe(1);
 		});
 
-		it("should set page number", () =>
+		it("should set page", () =>
 		{
 			service.setPage(3);
 
 			const filter = service.getCurrentFilter();
-			expect(filter.pageNumber).toBe(3);
+			expect(filter.page).toBe(3);
 		});
 
 		it("should set page size and reset to page 1", () =>
@@ -73,7 +65,7 @@ describe("UserService", () =>
 
 			const filter = service.getCurrentFilter();
 			expect(filter.pageSize).toBe(100);
-			expect(filter.pageNumber).toBe(1);
+			expect(filter.page).toBe(1);
 		});
 
 		it("should clear filters", () =>
@@ -84,7 +76,7 @@ describe("UserService", () =>
 			const filter = service.getCurrentFilter();
 			expect(filter.searchTerm).toBeUndefined();
 			expect(filter.includeInactive).toBeUndefined();
-			expect(filter.pageNumber).toBe(1);
+			expect(filter.page).toBe(1);
 		});
 	});
 
@@ -170,14 +162,14 @@ describe("UserService", () =>
 				includeInactive: false
 			});
 
-			const pagedResult: PagedResult<User> = {
+			const pagedResult: PagedResponse<User> = {
 				items: [mockUser],
 				totalCount: 1,
-				pageNumber: 1,
+				page: 1,
 				pageSize: 50,
 				totalPages: 1,
-				hasPreviousPage: false,
-				hasNextPage: false
+				hasPrevious: false,
+				hasNext: false
 			};
 			mockRepository.getPaged.and.returnValue(of(pagedResult));
 

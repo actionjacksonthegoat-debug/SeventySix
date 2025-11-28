@@ -4,18 +4,13 @@
  * Eliminates duplication across log-related tests
  */
 
-import { LogResponse } from "@admin/logs/models/log.model";
+import { LogDto } from "@admin/logs/models/log.model";
 
-/**
- * Log fixture factory
- * Provides consistent test data across all log-related tests
- */
+/** Log fixture factory for consistent test data across log-related tests. */
 export class LogFixtures
 {
-	/**
-	 * Standard error log entry
-	 */
-	static readonly ERROR_LOG: LogResponse = {
+	/** Standard error log entry. */
+	static readonly ERROR_LOG: LogDto = {
 		id: 1,
 		createDate: new Date("2024-01-01T12:00:00Z"),
 		logLevel: "Error",
@@ -36,10 +31,8 @@ export class LogFixtures
 		parentSpanId: null
 	};
 
-	/**
-	 * Standard warning log entry
-	 */
-	static readonly WARNING_LOG: LogResponse = {
+	/** Standard warning log entry. */
+	static readonly WARNING_LOG: LogDto = {
 		id: 2,
 		createDate: new Date("2024-01-01T12:01:00Z"),
 		logLevel: "Warning",
@@ -60,10 +53,8 @@ export class LogFixtures
 		parentSpanId: null
 	};
 
-	/**
-	 * Standard info log entry
-	 */
-	static readonly INFO_LOG: LogResponse = {
+	/** Standard info log entry. */
+	static readonly INFO_LOG: LogDto = {
 		id: 3,
 		createDate: new Date("2024-01-01T12:02:00Z"),
 		logLevel: "Information",
@@ -84,35 +75,14 @@ export class LogFixtures
 		parentSpanId: null
 	};
 
-	/**
-	 * Create a custom log with optional overrides
-	 * Uses ERROR_LOG as base template
-	 *
-	 * @param overrides - Partial log properties to override
-	 * @returns LogResponse object with merged properties
-	 *
-	 * @example
-	 * const warningLog = LogFixtures.createLog({ logLevel: 'Warning' });
-	 * const customLog = LogFixtures.createLog({ message: 'Custom message' });
-	 */
-	static createLog(overrides?: Partial<LogResponse>): LogResponse
+	/** Create a custom log with optional overrides. Uses ERROR_LOG as base template. */
+	static createLog(overrides?: Partial<LogDto>): LogDto
 	{
 		return { ...LogFixtures.ERROR_LOG, ...overrides };
 	}
 
-	/**
-	 * Create multiple logs with incremental IDs
-	 * Useful for testing pagination and lists
-	 *
-	 * @param count - Number of logs to create
-	 * @param logLevel - Optional log level for all logs
-	 * @returns Array of log objects
-	 *
-	 * @example
-	 * const logs = LogFixtures.createLogs(50); // For pagination tests
-	 * const errorLogs = LogFixtures.createLogs(10, 'Error');
-	 */
-	static createLogs(count: number, logLevel?: string): LogResponse[]
+	/** Create multiple logs with incremental IDs. Useful for testing pagination and lists. */
+	static createLogs(count: number, logLevel?: string): LogDto[]
 	{
 		return Array.from({ length: count }, (_, i) =>
 			LogFixtures.createLog({
@@ -124,13 +94,8 @@ export class LogFixtures
 		);
 	}
 
-	/**
-	 * Get array of predefined test logs
-	 * Includes error, warning, and info logs
-	 *
-	 * @returns Array containing all predefined logs
-	 */
-	static getAll(): LogResponse[]
+	/** Get array of predefined test logs. Includes error, warning, and info logs. */
+	static getAll(): LogDto[]
 	{
 		return [
 			LogFixtures.ERROR_LOG,

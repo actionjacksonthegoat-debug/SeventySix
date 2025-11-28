@@ -73,7 +73,7 @@ export class UserList
 		() => this.usersQuery.data()?.totalCount ?? 0
 	);
 	readonly pageIndex: Signal<number> = computed(
-		() => (this.userService.getCurrentFilter().pageNumber ?? 1) - 1
+		() => (this.userService.getCurrentFilter().page ?? 1) - 1
 	);
 	readonly pageSize: Signal<number> = computed(
 		() => this.userService.getCurrentFilter().pageSize ?? 50

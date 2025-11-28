@@ -1,0 +1,32 @@
+// <copyright file="LogQueryRequestValidator.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using FluentValidation;
+using SeventySix.Shared;
+
+namespace SeventySix.Logging;
+
+/// <summary>FluentValidation validator for LogQueryRequest.</summary>
+/// <remarks>
+/// Inherits common validation from BaseQueryValidator.
+/// ONLY validates domain-specific LogLevel property.
+/// SortBy validation automatically uses Log entity properties via reflection.
+/// </remarks>
+public class LogQueryRequestValidator : BaseQueryValidator<LogQueryRequest, Log>
+{
+	private static readonly string[] AllowedLogLevels =
+		["Verbose", "Debug", "Information", "Warning", "Error", "Fatal"];
+
+	/// <summary>Initializes a new instance of the <see cref="LogQueryRequestValidator"/> class.</summary>
+	public LogQueryRequestValidator()
+		: base()
+	{
+		When(request => !string.IsNullOrWhiteSpace(request.LogLevel), () =>
+		{
+			RuleFor(request => request.LogLevel)
+				.Must(level => AllowedLogLevels.Contains(level!))
+				.WithMessage($"LogLevel must be one of: {string.Join(", ", AllowedLogLevels)}");
+		});
+	}
+}

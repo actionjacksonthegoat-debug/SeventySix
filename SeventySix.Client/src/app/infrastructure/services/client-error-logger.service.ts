@@ -3,7 +3,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ErrorQueueService } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
 import { DateService } from "./date.service";
-import { ClientLogRequest } from "@infrastructure/models/client-log-request.model";
+import { CreateLogRequest } from "@infrastructure/models";
 import {
 	extractRequestUrl,
 	extractRequestMethod,
@@ -50,7 +50,7 @@ export class ClientErrorLoggerService
 			// Prepend [Client] to the message
 			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
 
-			const logRequest: ClientLogRequest = {
+			const logRequest: CreateLogRequest = {
 				logLevel: LogLevel[logLevel],
 				message: formattedMessage,
 				clientTimestamp: this.dateService.now(),
@@ -87,7 +87,7 @@ export class ClientErrorLoggerService
 			// Prepend [Client] to the message
 			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
 
-			const logRequest: ClientLogRequest = {
+			const logRequest: CreateLogRequest = {
 				logLevel: LogLevel[LogLevel.Error],
 				message: formattedMessage,
 				clientTimestamp: this.dateService.now(),
@@ -126,7 +126,7 @@ export class ClientErrorLoggerService
 			// Prepend [Client] to the message
 			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
 
-			const logRequest: ClientLogRequest = {
+			const logRequest: CreateLogRequest = {
 				logLevel: LogLevel[LogLevel.Error],
 				message: formattedMessage,
 				clientTimestamp: this.dateService.now(),
@@ -160,7 +160,7 @@ export class ClientErrorLoggerService
 			// Prepend [Client] to the message
 			const formattedMessage: string = `[Client] - ${message}`;
 
-			const logRequest: ClientLogRequest = {
+			const logRequest: CreateLogRequest = {
 				logLevel: LogLevel[LogLevel.Warning],
 				message: formattedMessage,
 				clientTimestamp: this.dateService.now(),
@@ -190,7 +190,7 @@ export class ClientErrorLoggerService
 			// Prepend [Client] to the message
 			const formattedMessage: string = `[Client] - ${message}`;
 
-			const logRequest: ClientLogRequest = {
+			const logRequest: CreateLogRequest = {
 				logLevel: LogLevel[LogLevel.Info],
 				message: formattedMessage,
 				clientTimestamp: this.dateService.now(),

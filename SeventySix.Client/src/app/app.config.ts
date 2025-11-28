@@ -17,7 +17,7 @@ import {
 	withXsrfConfiguration
 } from "@angular/common/http";
 import { provideServiceWorker } from "@angular/service-worker";
-import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
+import { provideAnimations } from "@angular/platform-browser/animations";
 import {
 	provideTanStackQuery,
 	QueryClient
@@ -112,7 +112,7 @@ export const appConfig: ApplicationConfig = {
 		provideBrowserGlobalErrorListeners(),
 		provideZonelessChangeDetection(),
 		provideRouter(routes, withPreloading(PreloadAllModules)),
-		provideAnimationsAsync(),
+		provideAnimations(),
 		// Global error handler
 		{ provide: ErrorHandler, useClass: ErrorHandlerService },
 		// Initialize theme service on app startup

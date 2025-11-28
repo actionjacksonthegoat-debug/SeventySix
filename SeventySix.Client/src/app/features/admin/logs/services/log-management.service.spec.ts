@@ -2,24 +2,16 @@ import { TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
 import { LogManagementService } from "./log-management.service";
 import { LogRepository } from "@admin/logs/repositories";
-import {
-	PagedLogResponse,
-	LogCountResponse,
-	LogLevel,
-	LogResponse
-} from "@admin/logs/models";
-import {
-	setupServiceTest,
-	createMockLogRepository,
-	MockLogRepository
-} from "@testing";
+import { LogDto, LogLevel } from "@admin/logs/models";
+import { PagedResponse } from "@infrastructure/models";
+import { setupServiceTest, createMockLogRepository } from "@testing";
 
 describe("LogManagementService", () =>
 {
 	let service: LogManagementService;
 	let mockRepository: ReturnType<typeof createMockLogRepository>;
 
-	const mockLogResponse: LogResponse = {
+	const mockLog: LogDto = {
 		id: 1,
 		createDate: new Date(),
 		logLevel: "Information",
@@ -40,18 +32,14 @@ describe("LogManagementService", () =>
 		parentSpanId: null
 	};
 
-	const mockPagedResponse: PagedLogResponse = {
-		data: [mockLogResponse],
+	const mockPagedResponse: PagedResponse<LogDto> = {
+		items: [mockLog],
 		totalCount: 1,
-		pageNumber: 1,
+		page: 1,
 		pageSize: 50,
 		totalPages: 1,
-		hasPreviousPage: false,
-		hasNextPage: false
-	};
-
-	const mockCountResponse: LogCountResponse = {
-		total: 1
+		hasPrevious: false,
+		hasNext: false
 	};
 
 	beforeEach(() =>
@@ -88,24 +76,6 @@ describe("LogManagementService", () =>
 		});
 	});
 
-	describe("getLogCount", () =>
-	{
-		it("should fetch log count from repository", async () =>
-		{
-			mockRepository.getCount.and.returnValue(of(mockCountResponse));
-
-			const query = TestBed.runInInjectionContext(() =>
-				service.getLogCount()
-			);
-			const result = await query.refetch();
-
-			expect(mockRepository.getCount).toHaveBeenCalledWith(
-				service.getCurrentFilter()
-			);
-			expect(result.data).toEqual(mockCountResponse);
-		});
-	});
-
 	describe("updateFilter", () =>
 	{
 		it("should update filter and reset to page 1", () =>
@@ -114,7 +84,7 @@ describe("LogManagementService", () =>
 
 			const filter = service.getCurrentFilter();
 			expect(filter.logLevel).toBe(LogLevel.Error.toString());
-			expect(filter.pageNumber).toBe(1);
+			expect(filter.page).toBe(1);
 		});
 	});
 
@@ -126,7 +96,7 @@ describe("LogManagementService", () =>
 			service.setPage(3);
 
 			const filter = service.getCurrentFilter();
-			expect(filter.pageNumber).toBe(3);
+			expect(filter.page).toBe(3);
 			expect(filter.logLevel).toBe(LogLevel.Error.toString());
 		});
 	});
@@ -140,7 +110,7 @@ describe("LogManagementService", () =>
 
 			const filter = service.getCurrentFilter();
 			expect(filter.pageSize).toBe(100);
-			expect(filter.pageNumber).toBe(1);
+			expect(filter.page).toBe(1);
 		});
 	});
 
@@ -159,7 +129,7 @@ describe("LogManagementService", () =>
 			const filter = service.getCurrentFilter();
 			expect(filter.logLevel).toBeUndefined();
 			expect(filter.startDate).toBeUndefined();
-			expect(filter.pageNumber).toBe(1);
+			expect(filter.page).toBe(1);
 			expect(filter.pageSize).toBe(50);
 			expect(service.selectedIds().size).toBe(0);
 		});

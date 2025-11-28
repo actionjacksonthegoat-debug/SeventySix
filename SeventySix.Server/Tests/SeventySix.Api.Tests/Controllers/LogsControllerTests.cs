@@ -7,6 +7,7 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Logging;
+using SeventySix.Shared;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
 using Xunit;
@@ -87,10 +88,10 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		PagedLogResponse? pagedResponse = await response.Content.ReadFromJsonAsync<PagedLogResponse>();
+		PagedResult<LogDto>? pagedResponse = await response.Content.ReadFromJsonAsync<PagedResult<LogDto>>();
 		Assert.NotNull(pagedResponse);
-		Assert.NotNull(pagedResponse.Data);
-		Assert.True(pagedResponse.Data.Count >= 2, "Should return at least the 2 seeded logs");
+		Assert.NotNull(pagedResponse.Items);
+		Assert.True(pagedResponse.Items.Count >= 2, "Should return at least the 2 seeded logs");
 	}
 
 	/// <summary>
@@ -146,7 +147,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task LogClientErrorAsync_WithValidRequest_ReturnsNoContentAsync()
 	{
 		// Arrange
-		ClientLogRequest request = new()
+		CreateLogRequest request = new()
 		{
 			LogLevel = "Error",
 			Message = "Client-side error occurred",
@@ -167,10 +168,10 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task LogClientErrorBatchAsync_WithValidRequests_ReturnsNoContentAsync()
 	{
 		// Arrange
-		ClientLogRequest[] requests =
+		CreateLogRequest[] requests =
 		[
-			new ClientLogRequest { LogLevel = "Error", Message = "Batch error 1" },
-			new ClientLogRequest { LogLevel = "Warning", Message = "Batch warning 2" },
+			new CreateLogRequest { LogLevel = "Error", Message = "Batch error 1" },
+			new CreateLogRequest { LogLevel = "Warning", Message = "Batch warning 2" },
 		];
 
 		// Act
@@ -178,23 +179,6 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-	}
-
-	/// <summary>
-	/// Tests that GET /api/logs/count returns total count.
-	/// </summary>
-	[Fact]
-	public async Task GetCountAsync_NoFilters_ReturnsTotalCountAsync()
-	{
-		// Act
-		HttpResponseMessage response = await Client!.GetAsync("/api/v1/logs/count");
-
-		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-		LogCountResponse? countResponse = await response.Content.ReadFromJsonAsync<LogCountResponse>();
-		Assert.NotNull(countResponse);
-		Assert.True(countResponse.Total >= 1);
 	}
 
 	/// <summary>

@@ -37,7 +37,7 @@ import {
 } from "rxjs";
 import { UserService } from "@admin/users/services";
 import { LoggerService } from "@infrastructure/services";
-import { User } from "../../models";
+import { User } from "@admin/users/models";
 
 /**
  * User creation wizard component.

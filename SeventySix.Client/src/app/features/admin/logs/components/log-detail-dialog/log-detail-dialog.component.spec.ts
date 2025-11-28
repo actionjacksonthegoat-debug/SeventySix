@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import {
-	LogResponse,
+	LogDto,
 	getLogLevelName,
 	getLogLevelClassName,
 	getLogLevelIconName,
@@ -21,7 +21,7 @@ describe("LogDetailDialogComponent", () =>
 	let mockDialogRef: jasmine.SpyObj<MatDialogRef<LogDetailDialogComponent>>;
 	let mockClipboard: jasmine.SpyObj<Clipboard>;
 
-	const mockLog: LogResponse = {
+	const mockLog: LogDto = {
 		id: 1,
 		createDate: new Date("2024-11-13T09:00:00Z"),
 		logLevel: "Error",

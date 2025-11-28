@@ -31,11 +31,7 @@ test.describe("Admin Dashboard", () =>
 			).toContainText("dashboard");
 		});
 
-		test("should display three tabs when observability is enabled", async ({
-			page
-		}: {
-			page: Page;
-		}) =>
+		test("should display three tabs", async ({ page }: { page: Page }) =>
 		{
 			const tabs: Locator = page.locator(".mat-mdc-tab");
 			await expect(tabs).toHaveCount(3);

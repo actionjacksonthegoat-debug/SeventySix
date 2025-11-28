@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Configuration;
@@ -11,28 +10,7 @@ using SeventySix.Shared;
 
 namespace SeventySix.Api.Controllers;
 
-/// <summary>
-/// API controller for managing and retrieving system logs.
-/// </summary>
-/// <remarks>
-/// Provides endpoints for:
-/// - Querying logs with filters and pagination
-/// - Client-side error logging
-/// - Cleaning up old logs
-///
-/// Design Patterns:
-/// - RESTful API with resource-based endpoints
-/// - Service layer pattern for business logic
-/// - DTO pattern for request/response models
-///
-/// SOLID Principles:
-/// - SRP: Only responsible for HTTP API layer for logs
-/// - DIP: Depends on ILogService abstraction
-/// - OCP: Extensible for additional endpoints
-/// </remarks>
-/// <remarks>
-/// Initializes a new instance of the <see cref="LogsController"/> class.
-/// </remarks>
+/// <summary>API controller for managing and retrieving system logs.</summary>
 /// <param name="logService">The log service.</param>
 /// <param name="outputCacheStore">The output cache store.</param>
 [ApiController]
@@ -41,94 +19,35 @@ public class LogsController(
 	ILogService logService,
 	IOutputCacheStore outputCacheStore) : ControllerBase
 {
-	/// <summary>
-	/// Gets logs with filtering, searching, sorting, and pagination.
-	/// </summary>
+	/// <summary>Gets logs with filtering, searching, sorting, and pagination.</summary>
 	/// <param name="request">The filter, search, sort, and pagination parameters.</param>
 	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>A paginated list of logs matching the filter criteria.</returns>
 	/// <response code="200">Returns the filtered list of logs with pagination metadata.</response>
 	/// <response code="400">If the request parameters are invalid.</response>
-	/// <remarks>
-	/// This endpoint uses output caching with tag-based invalidation.
-	/// Cache is automatically cleared when logs are created or deleted.
-	///
-	/// Filtering Options:
-	/// - LogLevel: Filter by severity (Error, Warning, etc.)
-	/// - SearchTerm: Full-text search across Message, ExceptionMessage, SourceContext, RequestPath, and StackTrace (3-200 chars)
-	/// - DateRange: Filter by timestamp (StartDate/EndDate, max 90 days)
-	/// - Sorting: SortBy property name, SortDescending (default: Timestamp descending)
-	/// - Pagination: Page (default 1), PageSize (default 50, max 100)
-	///
-	/// Security Validation:
-	/// - SearchTerm: 3-200 characters to prevent abuse
-	/// - DateRange: Limited to 90 days to protect database performance
-	/// - PageSize: Capped at 100 records to prevent resource exhaustion
-	/// - SortBy: Validated against Log entity properties via reflection
-	/// </remarks>
 	[HttpGet]
 	[OutputCache(PolicyName = "logs")]
-	[ProducesResponseType(typeof(PagedLogResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(PagedResult<LogDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<ActionResult<PagedLogResponse>> GetPagedAsync(
-		[FromQuery] LogFilterRequest request,
+	public async Task<ActionResult<PagedResult<LogDto>>> GetPagedAsync(
+		[FromQuery] LogQueryRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		// Service layer handles validation and business logic
-		// GlobalExceptionMiddleware handles ValidationException -> 400 BadRequest
-		PagedResult<LogResponse> result = await logService.GetPagedLogsAsync(request, cancellationToken);
-
-		PagedLogResponse response = new()
-		{
-			Data = result.Items.ToList(),
-			TotalCount = result.TotalCount,
-			PageNumber = result.Page,
-			PageSize = result.PageSize,
-		};
-
-		return Ok(response);
+		PagedResult<LogDto> result = await logService.GetPagedLogsAsync(request, cancellationToken);
+		return Ok(result);
 	}
 
-	/// <summary>
-	/// Gets the total count of logs matching the filter criteria.
-	/// </summary>
-	/// <param name="request">The filter parameters.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The total count of logs.</returns>
-	/// <response code="200">Returns the total log count.</response>
-	/// <response code="400">If the request parameters are invalid.</response>
-	/// <response code="500">If an error occurs while retrieving the count.</response>
-	[HttpGet("count")]
-	[OutputCache(PolicyName = "logs")]
-	[ProducesResponseType(typeof(LogCountResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<LogCountResponse>> GetCountAsync(
-		[FromQuery] LogFilterRequest request,
-		CancellationToken cancellationToken = default)
-	{
-		// GlobalExceptionMiddleware handles ValidationException -> 400 BadRequest
-		int count = await logService.GetLogsCountAsync(request, cancellationToken);
-
-		return Ok(new LogCountResponse { Total = count });
-	}
-
-	/// <summary>
-	/// Deletes a single log entry by ID.
-	/// </summary>
+	/// <summary>Deletes a single log entry by ID.</summary>
 	/// <param name="id">The ID of the log to delete.</param>
 	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>No content if successful; not found if log doesn't exist.</returns>
 	/// <response code="204">Log successfully deleted.</response>
 	/// <response code="404">Log with specified ID not found.</response>
-	/// <response code="500">If an error occurs while deleting the log.</response>
 	[HttpDelete("{id}")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IActionResult> DeleteLogAsync(int id, CancellationToken cancellationToken = default)
 	{
-		// GlobalExceptionMiddleware handles EntityNotFoundException -> 404 NotFound
 		bool deleted = await logService.DeleteLogByIdAsync(id, cancellationToken);
 
 		if (!deleted)
@@ -136,25 +55,19 @@ public class LogsController(
 			return NotFound();
 		}
 
-		// Invalidate logs cache after deletion
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
-
 		return NoContent();
 	}
 
-	/// <summary>
-	/// Deletes multiple log entries in a single batch operation.
-	/// </summary>
+	/// <summary>Deletes multiple log entries in a single batch operation.</summary>
 	/// <param name="ids">Array of log IDs to delete.</param>
 	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>The number of logs successfully deleted.</returns>
 	/// <response code="200">Returns the count of deleted logs.</response>
 	/// <response code="400">If no log IDs are provided.</response>
-	/// <response code="500">If an error occurs while deleting logs.</response>
 	[HttpDelete("batch")]
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<int>> DeleteLogBatchAsync(
 		[FromBody] int[] ids,
 		CancellationToken cancellationToken = default)
@@ -165,25 +78,19 @@ public class LogsController(
 		}
 
 		int deletedCount = await logService.DeleteLogsBatchAsync(ids, cancellationToken);
-
-		// Invalidate logs cache after batch deletion
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
-
 		return Ok(deletedCount);
 	}
 
-	/// <summary>
-	/// Deletes logs older than the specified cutoff date.
-	/// </summary>
+	/// <summary>Deletes logs older than the specified cutoff date.</summary>
 	/// <param name="cutoffDate">The cutoff date. Logs older than this date will be deleted.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>The number of deleted logs.</returns>
 	/// <response code="200">Returns the number of deleted logs.</response>
 	/// <response code="400">If the cutoff date is not provided or invalid.</response>
-	/// <response code="500">If an error occurs while deleting logs.</response>
 	[HttpDelete("cleanup")]
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<int>> CleanupLogsAsync(
 		[FromQuery] DateTime? cutoffDate,
 		CancellationToken cancellationToken = default)
@@ -194,62 +101,43 @@ public class LogsController(
 		}
 
 		int deletedCount = await logService.DeleteLogsOlderThanAsync(cutoffDate.Value, cancellationToken);
-
-		// Invalidate logs cache after cleanup
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
-
 		return Ok(deletedCount);
 	}
 
-	/// <summary>
-	/// Receives and stores client-side error logs.
-	/// </summary>
+	/// <summary>Receives and stores client-side error logs.</summary>
 	/// <param name="request">The client log data.</param>
 	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>No content on success.</returns>
 	/// <response code="204">Log successfully recorded.</response>
 	/// <response code="400">Invalid request data.</response>
-	/// <response code="500">If an error occurs while logging the client error.</response>
 	[HttpPost("client")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IActionResult> LogClientErrorAsync(
-		[FromBody] ClientLogRequest request,
+		[FromBody] CreateLogRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		// GlobalExceptionMiddleware handles exceptions consistently
 		await logService.CreateClientLogAsync(request, cancellationToken);
-
-		// Invalidate logs cache after creating new log
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
-
 		return NoContent();
 	}
 
-	/// <summary>
-	/// Receives and stores multiple client-side error logs in a single batch.
-	/// </summary>
+	/// <summary>Receives and stores multiple client-side error logs in a single batch.</summary>
 	/// <param name="requests">Array of client log data.</param>
 	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>No content on success.</returns>
 	/// <response code="204">Logs successfully recorded.</response>
 	/// <response code="400">Invalid request data.</response>
-	/// <response code="500">If an error occurs while logging the client errors.</response>
 	[HttpPost("client/batch")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IActionResult> LogClientErrorBatchAsync(
-		[FromBody] ClientLogRequest[] requests,
+		[FromBody] CreateLogRequest[] requests,
 		CancellationToken cancellationToken = default)
 	{
-		// GlobalExceptionMiddleware handles exceptions consistently
 		await logService.CreateClientLogBatchAsync(requests, cancellationToken);
-
-		// Invalidate logs cache after batch creating logs
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
-
 		return NoContent();
 	}
 }

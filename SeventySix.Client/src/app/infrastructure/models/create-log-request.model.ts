@@ -1,8 +1,5 @@
-/**
- * Client log request DTO matching server expectations.
- * Represents error logs sent from the client (Angular app) to the server.
- */
-export interface ClientLogRequest
+/** Request DTO for creating log entries from the client. */
+export interface CreateLogRequest
 {
 	logLevel: string;
 	message: string;
