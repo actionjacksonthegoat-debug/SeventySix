@@ -20,7 +20,6 @@ interface Environment
 		dashboards: {
 			systemOverview: string;
 			apiEndpoints: string;
-			logsOverview: string;
 		};
 	};
 	cache: {
@@ -110,8 +109,7 @@ export const environment: Environment = {
 		enabled: true, // Observability stack enabled for dashboard embedding
 		dashboards: {
 			systemOverview: "seventysix-system-overview",
-			apiEndpoints: "seventysix-api-endpoints",
-			logsOverview: "logs-overview"
+			apiEndpoints: "seventysix-api-endpoints"
 		}
 	},
 	cache: {

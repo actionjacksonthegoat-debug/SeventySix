@@ -1,6 +1,3 @@
-/**
- * Query key structure for logs domain
- */
 interface LogQueryKeys
 {
 	readonly all: readonly ["logs"];
@@ -8,9 +5,6 @@ interface LogQueryKeys
 	readonly count: (filter: unknown) => readonly unknown[];
 }
 
-/**
- * Query key structure for users domain
- */
 interface UserQueryKeys
 {
 	readonly all: readonly ["users"];
@@ -19,72 +13,61 @@ interface UserQueryKeys
 	readonly byUsername: (username: string) => readonly unknown[];
 }
 
-/**
- * Query keys structure
- */
+interface HealthQueryKeys
+{
+	readonly all: readonly ["health"];
+	readonly status: readonly ["health", "status"];
+	readonly database: readonly ["health", "database"];
+	readonly externalApis: readonly ["health", "externalApis"];
+}
+
+interface ThirdPartyApiQueryKeys
+{
+	readonly all: readonly ["thirdPartyApi"];
+	readonly list: readonly ["thirdPartyApi", "all"];
+	readonly byName: (name: string) => readonly unknown[];
+	readonly statistics: readonly ["thirdPartyApi", "statistics"];
+}
+
 interface QueryKeysType
 {
 	readonly logs: LogQueryKeys;
 	readonly users: UserQueryKeys;
+	readonly health: HealthQueryKeys;
+	readonly thirdPartyApi: ThirdPartyApiQueryKeys;
 }
 
-/**
- * Centralized Query Key Constants
- * Provides type-safe query keys for TanStack Query
- * Prevents typos and enables easy refactoring
- *
- * @remarks
- * All query keys are defined as readonly tuples using `as const`
- * to ensure type safety and immutability.
- *
- * Design Pattern: Constants Object Pattern
- * - Centralizes magic strings into single location
- * - Enables IDE autocomplete and type checking
- * - Simplifies query invalidation patterns
- *
- * @example
- * ```typescript
- * // Instead of: queryKey: ["logs"]
- * queryKey: QueryKeys.logs.all
- *
- * // Instead of: queryKey: ["users", "paged", filter]
- * queryKey: QueryKeys.users.paged(filter)
- * ```
- */
 export const QueryKeys: QueryKeysType = {
-	/**
-	 * Query keys for log-related queries
-	 */
 	logs: {
-		/** Base key for all log queries - use for invalidation */
 		all: ["logs"] as const,
-
-		/** Key for paged log queries with filter */
 		paged: (filter: unknown): readonly unknown[] =>
 			["logs", filter] as const,
-
-		/** Key for log count queries with filter */
 		count: (filter: unknown): readonly unknown[] =>
 			["logs", "count", filter] as const
 	},
 
-	/**
-	 * Query keys for user-related queries
-	 */
 	users: {
-		/** Base key for all user queries - use for invalidation */
 		all: ["users"] as const,
-
-		/** Key for paged user queries with filter */
 		paged: (filter: unknown): readonly unknown[] =>
 			["users", "paged", filter] as const,
-
-		/** Key for single user queries by ID */
 		single: (id: number | string): readonly unknown[] =>
 			["users", "user", id] as const,
-
-		/** Key for user queries by username */
 		byUsername: (username: string): readonly unknown[] =>
 			["users", "username", username] as const
+	},
+
+	health: {
+		all: ["health"] as const,
+		status: ["health", "status"] as const,
+		database: ["health", "database"] as const,
+		externalApis: ["health", "externalApis"] as const
+	},
+
+	thirdPartyApi: {
+		all: ["thirdPartyApi"] as const,
+		list: ["thirdPartyApi", "all"] as const,
+		byName: (name: string): readonly unknown[] =>
+			["thirdPartyApi", "byName", name] as const,
+		statistics: ["thirdPartyApi", "statistics"] as const
 	}
 } as const;

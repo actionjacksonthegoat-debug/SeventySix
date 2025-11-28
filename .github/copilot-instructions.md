@@ -62,6 +62,7 @@
 -   **NEVER** create new .md files unless explicitly asked
 -   **ALWAYS** use inline JSDoc/XML comments instead
 -   Keep code self-documenting with clear names
+-   Ensure code, properties, and classes are documented but not overly verbose
 
 ### Architecture (Target State)
 

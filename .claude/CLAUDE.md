@@ -95,7 +95,8 @@
 
 -   **NEVER** create new .md files unless explicitly asked
 -   **ALWAYS** use inline JSDoc/XML comments instead
--   Keep code self-documenting with clear names
+-   Keep code self-documenting with clear
+-   Ensure code, properties, and classes are documented but not overly verbose
 
 ---
 
@@ -1133,8 +1134,12 @@ getUserById(id: number): Observable<User | null> {
 /// <summary>
 /// Retrieves a user by their unique identifier.
 /// </summary>
-/// <param name="id">The user's unique identifier.</param>
-/// <returns>The user if found; otherwise, null.</returns>
+/// <param name="id">
+/// The user's unique identifier.
+/// </param>
+/// <returns>
+/// The user if found; otherwise, null.
+/// </returns>
 public async Task<User?> GetByIdAsync(int id) =>
     await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
 ```
