@@ -7,13 +7,13 @@ namespace SeventySix.Infrastructure;
 /// <summary>Application metrics recording via OpenTelemetry.</summary>
 public interface IMetricsService
 {
-	void RecordDatabaseQuery(double durationMs, string queryType);
+	public void RecordDatabaseQuery(double durationMs, string queryType);
 
-	void RecordApiCall(double durationMs, string apiName, bool success);
+	public void RecordApiCall(double durationMs, string apiName, bool success);
 
-	void RecordQueueStats(int queuedItems, int failedItems);
+	public void RecordQueueStats(int queuedItems, int failedItems);
 
-	int GetActiveDbConnections();
+	public int GetActiveDbConnections();
 
-	(int queuedItems, int failedItems) GetQueueStats();
+	public (int queuedItems, int failedItems) GetQueueStats();
 }

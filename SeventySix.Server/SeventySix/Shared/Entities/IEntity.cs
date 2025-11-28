@@ -14,7 +14,7 @@ public interface IEntity
 	/// <summary>
 	/// Gets or sets the unique identifier for this entity.
 	/// </summary>
-	int Id
+	public int Id
 	{
 		get; set;
 	}

@@ -7,5 +7,5 @@ namespace SeventySix.Shared;
 /// <summary>Access to current user context for audit tracking.</summary>
 public interface IUserContextAccessor
 {
-	string GetCurrentUser();
+	public string GetCurrentUser();
 }

@@ -42,10 +42,8 @@
 		"@opentelemetry/semantic-conventions": "^1.38.0",
 		"@tanstack/angular-query-experimental": "^5.90.11",
 		"@tanstack/query-core": "^5.90.9",
-		"chart.js": "^4.5.1",
 		"date-fns": "^4.1.0",
 		"date-fns-tz": "^3.2.0",
-		"ng2-charts": "^8.0.0",
 		"rxjs": "~7.8.0",
 		"tslib": "^2.3.0",
 		"web-vitals": "^4.2.4"

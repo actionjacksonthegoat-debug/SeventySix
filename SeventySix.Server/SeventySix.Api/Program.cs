@@ -36,10 +36,10 @@ using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.HealthChecks;
 using SeventySix.Api.Middleware;
+using SeventySix.ApiTracking;
 using SeventySix.Extensions;
 using SeventySix.Identity;
 using SeventySix.Logging;
-using SeventySix.ApiTracking;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 

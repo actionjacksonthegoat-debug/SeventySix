@@ -7,12 +7,12 @@ namespace SeventySix.Shared;
 /// <summary>Entity with full audit tracking (create + modify timestamps and user info).</summary>
 public interface IAuditableEntity : IModifiableEntity
 {
-	string CreatedBy
+	public string CreatedBy
 	{
 		get; set;
 	}
 
-	string ModifiedBy
+	public string ModifiedBy
 	{
 		get; set;
 	}

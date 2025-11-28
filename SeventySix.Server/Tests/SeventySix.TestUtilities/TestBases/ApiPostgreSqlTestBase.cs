@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
-using SeventySix.ApiTracking;
 
 namespace SeventySix.TestUtilities.TestBases;
 

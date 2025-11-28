@@ -20,6 +20,10 @@
 						"browser": "src/main.ts",
 						"tsConfig": "tsconfig.app.json",
 						"inlineStyleLanguage": "scss",
+						"allowedCommonJsDependencies": [
+							"shimmer",
+							"protobufjs/minimal"
+						],
 						"assets": [
 							{
 								"glob": "**/*",
@@ -46,12 +50,12 @@
 							"budgets": [
 								{
 									"type": "initial",
-									"maximumWarning": "1MB",
-									"maximumError": "2MB"
+									"maximumWarning": "2MB",
+									"maximumError": "4MB"
 								},
 								{
 									"type": "anyComponentStyle",
-									"maximumWarning": "6kB",
+									"maximumWarning": "8kB",
 									"maximumError": "12kB"
 								}
 							],

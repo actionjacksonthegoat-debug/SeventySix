@@ -427,4 +427,3 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 
 	#endregion
 }
-

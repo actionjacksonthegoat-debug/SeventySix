@@ -212,7 +212,7 @@ public class BaseQueryValidatorTests
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(r => r.SortBy)
-			.WithErrorMessage("SortBy must be one of the following fields: createDate, Id, Name");
+			.WithErrorMessage("SortBy must be one of the following fields: CreateDate, Id, Name");
 	}
 }
 
@@ -226,7 +226,7 @@ public class TestEntity
 		get; set;
 	}
 	public string Name { get; set; } = string.Empty;
-	public DateTime createDate
+	public DateTime CreateDate
 	{
 		get; set;
 	}

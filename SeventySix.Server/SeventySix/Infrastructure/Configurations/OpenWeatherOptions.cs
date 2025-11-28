@@ -1,4 +1,4 @@
-﻿// <copyright file="ThirdPartyRateLimitOptions.cs" company="SeventySix">
+// <copyright file="ThirdPartyRateLimitOptions.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 

@@ -4,9 +4,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
-using SeventySix.ApiTracking;
 using Testcontainers.PostgreSql;
 
 namespace SeventySix.TestUtilities.TestBases;
@@ -20,7 +20,7 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 {
 	private readonly PostgreSqlContainer PostgreSqlContainer;
 	private readonly string DatabaseName;
-	private string? _connectionString;
+	private string? ConnectionStringValue;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="TestcontainersPostgreSqlFixture"/> class.
@@ -42,7 +42,7 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 	/// <summary>
 	/// Gets the connection string for the isolated test database.
 	/// </summary>
-	public override string ConnectionString => _connectionString ?? throw new InvalidOperationException("Fixture not initialized. Call InitializeAsync first.");
+	public override string ConnectionString => ConnectionStringValue ?? throw new InvalidOperationException("Fixture not initialized. Call InitializeAsync first.");
 
 	/// <summary>
 	/// Starts the PostgreSQL container, creates an isolated database, and applies migrations if needed.
@@ -68,7 +68,7 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 		{
 			Database = DatabaseName
 		};
-		_connectionString = builder.ToString();
+		ConnectionStringValue = builder.ToString();
 
 		// Apply migrations for Identity bounded context
 		DbContextOptions<IdentityDbContext> identityOptions = new DbContextOptionsBuilder<IdentityDbContext>()

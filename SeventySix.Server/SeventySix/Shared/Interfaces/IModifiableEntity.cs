@@ -7,12 +7,12 @@ namespace SeventySix.Shared;
 /// <summary>Entity with create + modify timestamps.</summary>
 public interface IModifiableEntity : IEntity
 {
-	DateTime CreateDate
+	public DateTime CreateDate
 	{
 		get; set;
 	}
 
-	DateTime? ModifyDate
+	public DateTime? ModifyDate
 	{
 		get; set;
 	}

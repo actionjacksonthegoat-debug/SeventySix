@@ -148,7 +148,9 @@ describe("ApiStatisticsTableComponent", () =>
 		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(mockQuery);
 
 		createComponent();
-		expect(thirdPartyApiService.getAllThirdPartyApis).toHaveBeenCalledTimes(1);
+		expect(thirdPartyApiService.getAllThirdPartyApis).toHaveBeenCalledTimes(
+			1
+		);
 
 		component.onRefresh();
 
@@ -181,4 +183,3 @@ describe("ApiStatisticsTableComponent", () =>
 		expect(component.dataSource().data.length).toBe(0);
 	});
 });
-

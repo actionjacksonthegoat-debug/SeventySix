@@ -7,7 +7,7 @@ namespace SeventySix.Shared;
 /// <summary>Entity with creation timestamp only.</summary>
 public interface ICreatableEntity : IEntity
 {
-	DateTime CreateDate
+	public DateTime CreateDate
 	{
 		get; set;
 	}

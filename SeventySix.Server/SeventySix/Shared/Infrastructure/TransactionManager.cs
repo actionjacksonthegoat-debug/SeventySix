@@ -1,4 +1,4 @@
-﻿// <copyright file="TransactionManager.cs" company="SeventySix">
+// <copyright file="TransactionManager.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 

@@ -301,4 +301,3 @@ internal class UserRepository(
 		return await query.CountAsync(cancellationToken);
 	}
 }
-

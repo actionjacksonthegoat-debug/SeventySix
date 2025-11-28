@@ -7,8 +7,7 @@ namespace SeventySix.ApiTracking;
 /// <summary>Third-party API request tracking business logic operations.</summary>
 public interface IThirdPartyApiRequestService
 {
-	Task<IEnumerable<ThirdPartyApiRequestResponse>> GetAllAsync(CancellationToken cancellationToken);
+	public Task<IEnumerable<ThirdPartyApiRequestResponse>> GetAllAsync(CancellationToken cancellationToken);
 
-	Task<ThirdPartyApiStatisticsResponse> GetStatisticsAsync(CancellationToken cancellationToken);
+	public Task<ThirdPartyApiStatisticsResponse> GetStatisticsAsync(CancellationToken cancellationToken);
 }
-

@@ -7,5 +7,5 @@ namespace SeventySix.Infrastructure;
 /// <summary>System health check operations.</summary>
 public interface IHealthCheckService
 {
-	Task<HealthStatusResponse> GetHealthStatusAsync(CancellationToken cancellationToken);
+	public Task<HealthStatusResponse> GetHealthStatusAsync(CancellationToken cancellationToken);
 }

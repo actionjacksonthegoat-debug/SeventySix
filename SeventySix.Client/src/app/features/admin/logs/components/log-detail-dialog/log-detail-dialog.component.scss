@@ -20,9 +20,7 @@
 			flex: 1;
 
 			mat-icon {
-				font-size: vars.$icon-size-lg;
-				width: vars.$icon-size-lg;
-				height: vars.$icon-size-lg;
+				@include mixins.icon-size(vars.$icon-size-lg);
 			}
 
 			.level-name {

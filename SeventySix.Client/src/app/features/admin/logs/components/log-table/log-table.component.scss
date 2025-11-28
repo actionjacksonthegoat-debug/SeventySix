@@ -65,42 +65,7 @@
 	}
 
 	.level-chip {
-		display: inline-block;
-		padding: vars.$spacing-xs vars.$spacing-sm; // 4px 8px
-		border-radius: vars.$border-radius-chip; // fully rounded
-		font-size: vars.$font-size-xs; // 11px
-		font-weight: vars.$font-weight-medium;
-		text-transform: uppercase;
-
-		&.level-verbose {
-			background-color: var(--color-log-verbose-surface);
-			color: var(--color-log-verbose);
-		}
-
-		&.level-debug {
-			background-color: var(--color-log-debug-surface);
-			color: var(--color-log-debug);
-		}
-
-		&.level-info {
-			background-color: var(--color-log-info-surface);
-			color: var(--color-log-info);
-		}
-
-		&.level-warning {
-			background-color: var(--color-log-warning-surface);
-			color: var(--color-log-warning);
-		}
-
-		&.level-error {
-			background-color: var(--color-log-error-surface);
-			color: var(--color-log-error);
-		}
-
-		&.level-fatal {
-			background-color: var(--color-log-fatal-surface);
-			color: var(--color-log-fatal);
-		}
+		@include mixins.log-level-chip();
 	}
 
 	.timestamp {
@@ -115,20 +80,7 @@
 	}
 
 	.empty-state {
-		text-align: center;
-		padding: vars.$spacing-3xl vars.$spacing-lg; // 48px 16px
-		color: var(--mat-table-row-item-label-text-color);
-
-		mat-icon {
-			@include mixins.icon-size(vars.$icon-size-xl);
-			opacity: 0.3;
-		}
-
-		p {
-			margin: vars.$spacing-sm 0 0 0; // 8px 0 0 0
-			font-size: vars.$font-size-base; // 14px
-			opacity: 0.6;
-		}
+		@include mixins.empty-state();
 	}
 }
 

@@ -92,29 +92,29 @@ public class UserServiceTests
 	public async Task GetAllUsersAsync_ShouldReturnAllUsers_WhenUsersExistAsync()
 	{
 		// Arrange
-		List<User> users =
+		List<UserDto> userDtos =
 		[
-			new UserBuilder().WithUsername("user1").WithEmail("user1@example.com").WithIsActive(true).Build(),
-			new UserBuilder().WithUsername("user2").WithEmail("user2@example.com").WithIsActive(false).Build(),
-			new UserBuilder().WithUsername("user3").WithEmail("user3@example.com").WithIsActive(true).Build(),
+			new UserDto { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
+			new UserDto { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
+			new UserDto { Id = 3, Username = "user3", Email = "user3@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
 		];
 
 		MockRepository
-			.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(users);
+			.Setup(r => r.GetAllProjectedAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(userDtos);
 
 		// Act
 		IEnumerable<UserDto> result = await Service.GetAllUsersAsync();
 
 		// Assert
 		Assert.NotNull(result);
-		List<UserDto> userDtos = [.. result];
-		Assert.Equal(3, userDtos.Count);
-		Assert.Equal("user1", userDtos[0].Username);
-		Assert.Equal("user2", userDtos[1].Username);
-		Assert.Equal("user3", userDtos[2].Username);
+		List<UserDto> resultList = [.. result];
+		Assert.Equal(3, resultList.Count);
+		Assert.Equal("user1", resultList[0].Username);
+		Assert.Equal("user2", resultList[1].Username);
+		Assert.Equal("user3", resultList[2].Username);
 
-		MockRepository.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+		MockRepository.Verify(r => r.GetAllProjectedAsync(It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	[Fact]
@@ -122,7 +122,7 @@ public class UserServiceTests
 	{
 		// Arrange
 		MockRepository
-			.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+			.Setup(r => r.GetAllProjectedAsync(It.IsAny<CancellationToken>()))
 			.ReturnsAsync([]);
 
 		// Act
@@ -132,7 +132,7 @@ public class UserServiceTests
 		Assert.NotNull(result);
 		Assert.Empty(result);
 
-		MockRepository.Verify(r => r.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
+		MockRepository.Verify(r => r.GetAllProjectedAsync(It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	[Fact]
@@ -141,14 +141,14 @@ public class UserServiceTests
 		// Arrange
 		CancellationToken cancellationToken = new();
 		MockRepository
-			.Setup(r => r.GetAllAsync(cancellationToken))
+			.Setup(r => r.GetAllProjectedAsync(cancellationToken))
 			.ReturnsAsync([]);
 
 		// Act
 		await Service.GetAllUsersAsync(cancellationToken);
 
 		// Assert
-		MockRepository.Verify(r => r.GetAllAsync(cancellationToken), Times.Once);
+		MockRepository.Verify(r => r.GetAllProjectedAsync(cancellationToken), Times.Once);
 	}
 
 	#endregion
@@ -732,9 +732,9 @@ public class UserServiceTests
 			IncludeDeleted = false,
 		};
 
-		List<User> users =
+		List<UserDto> userDtos =
 		[
-			new User
+			new UserDto
 			{
 				Id = 1,
 				Username = "testuser1",
@@ -743,10 +743,9 @@ public class UserServiceTests
 				IsActive = true,
 				CreateDate = DateTime.UtcNow,
 				CreatedBy = "System",
-				IsDeleted = false,
-				RowVersion = 1,
+				ModifiedBy = "System",
 			},
-			new User
+			new UserDto
 			{
 				Id = 2,
 				Username = "testuser2",
@@ -755,8 +754,7 @@ public class UserServiceTests
 				IsActive = true,
 				CreateDate = DateTime.UtcNow,
 				CreatedBy = "System",
-				IsDeleted = false,
-				RowVersion = 1,
+				ModifiedBy = "System",
 			},
 		];
 
@@ -768,10 +766,10 @@ public class UserServiceTests
 			.ReturnsAsync(validationResult);
 
 		MockRepository
-			.Setup(r => r.GetPagedAsync(
+			.Setup(r => r.GetPagedProjectedAsync(
 				request,
 				It.IsAny<CancellationToken>()))
-			.ReturnsAsync((users, totalCount));
+			.ReturnsAsync((userDtos.AsEnumerable(), totalCount));
 
 		// Act
 		PagedResult<UserDto> result = await Service.GetPagedUsersAsync(request);
@@ -992,5 +990,3 @@ public class UserServiceTests
 
 	#endregion
 }
-
-

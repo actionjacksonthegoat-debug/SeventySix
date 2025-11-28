@@ -4,9 +4,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
-using SeventySix.ApiTracking;
 using Xunit;
 
 namespace SeventySix.TestUtilities.TestBases;

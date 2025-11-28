@@ -208,11 +208,6 @@
 // LEVEL/SEVERITY COLOR CLASSES
 // ============================================================================
 
-/**
- * Log level color classes
- * Generates consistent color classes for log levels
- * Uses CSS custom properties from _base.scss for theme-aware colors
- */
 @mixin log-level-colors() {
 	.level-verbose {
 		color: var(--color-log-verbose);
@@ -239,15 +234,68 @@
 	}
 }
 
+@mixin log-level-chip() {
+	display: inline-block;
+	padding: vars.$spacing-xs vars.$spacing-sm;
+	border-radius: vars.$border-radius-chip;
+	font-size: vars.$font-size-xs;
+	font-weight: vars.$font-weight-medium;
+	text-transform: uppercase;
+
+	&.level-verbose {
+		background-color: var(--color-log-verbose-surface);
+		color: var(--color-log-verbose);
+	}
+
+	&.level-debug {
+		background-color: var(--color-log-debug-surface);
+		color: var(--color-log-debug);
+	}
+
+	&.level-info {
+		background-color: var(--color-log-info-surface);
+		color: var(--color-log-info);
+	}
+
+	&.level-warning {
+		background-color: var(--color-log-warning-surface);
+		color: var(--color-log-warning);
+	}
+
+	&.level-error {
+		background-color: var(--color-log-error-surface);
+		color: var(--color-log-error);
+	}
+
+	&.level-fatal {
+		background-color: var(--color-log-fatal-surface);
+		color: var(--color-log-fatal);
+	}
+}
+
+@mixin empty-state(
+	$icon-size: vars.$icon-size-xl,
+	$padding: vars.$spacing-3xl vars.$spacing-lg
+) {
+	text-align: center;
+	padding: $padding;
+	color: var(--mat-table-row-item-label-text-color);
+
+	mat-icon {
+		@include icon-size($icon-size);
+		opacity: 0.3;
+	}
+
+	p {
+		margin: vars.$spacing-sm 0 0 0;
+		font-size: vars.$font-size-base;
+		opacity: 0.6;
+	}
+}
+
 // ============================================================================
 // PAGE LAYOUT PATTERNS
 // ============================================================================
-
-/**
- * Standard page header pattern
- * Provides consistent header layout with title, icon, and actions
- * Used by admin pages (users, logs, etc.)
- */
 @mixin page-header() {
 	.page-header {
 		margin-bottom: vars.$spacing-xl;
