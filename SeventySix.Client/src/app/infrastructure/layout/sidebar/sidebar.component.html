@@ -12,7 +12,7 @@
 		</button>
 	</div>
 
-	@for (section of navSections; track section.title)
+	@for (section of visibleNavSections(); track section.title)
 	{
 		<!-- Section Title -->
 		<div class="nav-section-title">{{ section.title }}</div>

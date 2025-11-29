@@ -294,4 +294,39 @@ public class User : IAuditableEntity
 	{
 		get; set;
 	}
+
+	/// <summary>
+	/// Gets or sets the count of consecutive failed login attempts.
+	/// </summary>
+	/// <value>
+	/// An integer representing the number of failed login attempts.
+	/// </value>
+	/// <remarks>
+	/// Security field for account lockout protection.
+	/// Incremented on each failed login attempt.
+	/// Reset to 0 on successful login.
+	/// Used with LockoutEndUtc to implement brute-force protection.
+	/// </remarks>
+	public int FailedLoginCount
+	{
+		get; set;
+	}
+
+	/// <summary>
+	/// Gets or sets the UTC time when the account lockout expires.
+	/// </summary>
+	/// <value>
+	/// A DateTime value representing when the lockout ends.
+	/// Null if the account is not locked out.
+	/// </value>
+	/// <remarks>
+	/// Security field for account lockout protection.
+	/// Set when FailedLoginCount exceeds the configured threshold.
+	/// Cleared (null) when lockout expires or admin unlocks account.
+	/// Uses UTC time for consistency across time zones.
+	/// </remarks>
+	public DateTime? LockoutEndUtc
+	{
+		get; set;
+	}
 }

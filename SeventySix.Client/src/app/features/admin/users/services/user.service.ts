@@ -37,7 +37,9 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	{
 		super({
 			page: 1,
-			pageSize: 50
+			pageSize: 50,
+			sortBy: "Id",
+			sortDescending: true
 		});
 	}
 
@@ -146,7 +148,9 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	{
 		this.filter.set({
 			page: 1,
-			pageSize: 50
+			pageSize: 50,
+			sortBy: "Id",
+			sortDescending: true
 		});
 	}
 

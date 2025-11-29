@@ -1,70 +1,104 @@
 import { TestBed } from "@angular/core/testing";
 import { HttpRequest, HttpHandler, HttpEvent } from "@angular/common/http";
+import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { Observable, of } from "rxjs";
+import { of } from "rxjs";
 import { authInterceptor } from "./auth.interceptor";
-import { TokenStorageService } from "@infrastructure/services/token-storage.service";
+import { AuthService } from "@infrastructure/services/auth.service";
 
 describe("authInterceptor", () =>
 {
-	let mockTokenStorage: jasmine.SpyObj<TokenStorageService>;
+	let mockAuthService: jasmine.SpyObj<AuthService>;
 	let mockHandler: jasmine.SpyObj<HttpHandler>;
 
 	beforeEach(() =>
 	{
-		mockTokenStorage = jasmine.createSpyObj("TokenStorageService", [
-			"getAccessToken"
+		mockAuthService = jasmine.createSpyObj("AuthService", [
+			"getAccessToken",
+			"isTokenExpired",
+			"refreshToken"
 		]);
 		mockHandler = jasmine.createSpyObj("HttpHandler", ["handle"]);
-		mockHandler.handle.and.returnValue(of({} as HttpEvent<any>));
+		mockHandler.handle.and.returnValue(of({} as HttpEvent<unknown>));
 
 		TestBed.configureTestingModule({
 			providers: [
 				provideZonelessChangeDetection(),
-				{ provide: TokenStorageService, useValue: mockTokenStorage }
+				provideHttpClient(),
+				provideHttpClientTesting(),
+				{ provide: AuthService, useValue: mockAuthService }
 			]
 		});
 	});
 
 	it("should add authorization header when token exists", () =>
 	{
-		mockTokenStorage.getAccessToken.and.returnValue("test-token");
-		const req = new HttpRequest("GET", "/api/data");
+		mockAuthService.getAccessToken.and.returnValue("test-token");
+		mockAuthService.isTokenExpired.and.returnValue(false);
+		const req: HttpRequest<unknown> = new HttpRequest("GET", "/api/data");
 
 		TestBed.runInInjectionContext(() =>
 		{
 			authInterceptor(req, mockHandler.handle.bind(mockHandler));
 		});
 
-		const callArgs = mockHandler.handle.calls.mostRecent().args[0];
+		const callArgs: HttpRequest<unknown> =
+			mockHandler.handle.calls.mostRecent()
+				.args[0] as HttpRequest<unknown>;
 		expect(callArgs.headers.get("Authorization")).toBe("Bearer test-token");
 	});
 
 	it("should not add header for public endpoints", () =>
 	{
-		mockTokenStorage.getAccessToken.and.returnValue("test-token");
-		const req = new HttpRequest("GET", "/public/data");
+		mockAuthService.getAccessToken.and.returnValue("test-token");
+		const req: HttpRequest<unknown> = new HttpRequest("GET", "/auth/login");
 
 		TestBed.runInInjectionContext(() =>
 		{
 			authInterceptor(req, mockHandler.handle.bind(mockHandler));
 		});
 
-		const callArgs = mockHandler.handle.calls.mostRecent().args[0];
+		const callArgs: HttpRequest<unknown> =
+			mockHandler.handle.calls.mostRecent()
+				.args[0] as HttpRequest<unknown>;
 		expect(callArgs.headers.get("Authorization")).toBeNull();
+	});
+
+	it("should add header for change-password endpoint", () =>
+	{
+		mockAuthService.getAccessToken.and.returnValue("test-token");
+		mockAuthService.isTokenExpired.and.returnValue(false);
+		const req: HttpRequest<unknown> = new HttpRequest(
+			"POST",
+			"/api/v1/auth/change-password",
+			{ currentPassword: "old", newPassword: "new" }
+		);
+
+		TestBed.runInInjectionContext(() =>
+		{
+			authInterceptor(req, mockHandler.handle.bind(mockHandler));
+		});
+
+		const callArgs: HttpRequest<unknown> =
+			mockHandler.handle.calls.mostRecent()
+				.args[0] as HttpRequest<unknown>;
+		expect(callArgs.headers.get("Authorization")).toBe("Bearer test-token");
 	});
 
 	it("should not add header when no token", () =>
 	{
-		mockTokenStorage.getAccessToken.and.returnValue(null);
-		const req = new HttpRequest("GET", "/api/data");
+		mockAuthService.getAccessToken.and.returnValue(null);
+		const req: HttpRequest<unknown> = new HttpRequest("GET", "/api/data");
 
 		TestBed.runInInjectionContext(() =>
 		{
 			authInterceptor(req, mockHandler.handle.bind(mockHandler));
 		});
 
-		const callArgs = mockHandler.handle.calls.mostRecent().args[0];
+		const callArgs: HttpRequest<unknown> =
+			mockHandler.handle.calls.mostRecent()
+				.args[0] as HttpRequest<unknown>;
 		expect(callArgs.headers.get("Authorization")).toBeNull();
 	});
 });

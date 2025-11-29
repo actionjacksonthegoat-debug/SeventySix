@@ -32,6 +32,26 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 	public DbSet<User> Users => Set<User>();
 
 	/// <summary>
+	/// Gets or sets the UserCredentials DbSet.
+	/// </summary>
+	public DbSet<UserCredential> UserCredentials => Set<UserCredential>();
+
+	/// <summary>
+	/// Gets or sets the RefreshTokens DbSet.
+	/// </summary>
+	public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+	/// <summary>
+	/// Gets or sets the ExternalLogins DbSet.
+	/// </summary>
+	public DbSet<ExternalLogin> ExternalLogins => Set<ExternalLogin>();
+
+	/// <summary>
+	/// Gets or sets the UserRoles DbSet.
+	/// </summary>
+	public DbSet<UserRole> UserRoles => Set<UserRole>();
+
+	/// <summary>
 	/// Gets the schema name for Identity bounded context.
 	/// </summary>
 	/// <returns>"Identity".</returns>

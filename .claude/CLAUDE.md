@@ -363,6 +363,12 @@ public record CreateUserRequest(
 	string Email,
 	string Password);
 
+public record UpdateUserRequest(
+	int id,
+	string Username,
+	string Email,
+	string Password);
+
 public record PagedResult<T>(
 	IReadOnlyList<T> Items,
 	int TotalCount,

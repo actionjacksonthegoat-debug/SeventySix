@@ -25,7 +25,7 @@ public record BaseQueryRequest
 
 	public string? SortBy { get; init; } = "Id";
 
-	public bool SortDescending { get; init; } = false;
+	public bool SortDescending { get; init; } = true;
 
 	public int GetSkip() => (Page - 1) * PageSize;
 

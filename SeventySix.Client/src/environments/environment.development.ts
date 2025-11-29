@@ -74,6 +74,10 @@ interface Environment
 		otlpEndpoint: string;
 		sampleRate: number;
 	};
+	auth: {
+		loginUrl: string;
+		tokenRefreshBufferSeconds: number;
+	};
 }
 
 export const environment: Environment = {
@@ -147,5 +151,9 @@ export const environment: Environment = {
 		serviceVersion: "1.0.0",
 		otlpEndpoint: "http://localhost:4318/v1/traces",
 		sampleRate: 1.0 // 100% sampling for development
+	},
+	auth: {
+		loginUrl: "/auth/login",
+		tokenRefreshBufferSeconds: 60 // Refresh 60 seconds before expiry
 	}
 };

@@ -54,6 +54,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-TestPassword}
       - Cors__AllowedOrigins__0=http://localhost:8080
       - Cors__AllowedOrigins__1=http://localhost:4200
+    volumes:
+      - dataprotection_keys:/app/keys
     depends_on:
       database:
         condition: service_healthy
@@ -206,6 +208,9 @@ volumes:
   grafana_data:
     driver: local
     name: seventysix_grafana_prod_data
+  dataprotection_keys:
+    driver: local
+    name: seventysix_dataprotection_prod_keys
 
 networks:
   seventysix-network:

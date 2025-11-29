@@ -1,4 +1,10 @@
-import { Component, ChangeDetectionStrategy, inject } from "@angular/core";
+import {
+	Component,
+	ChangeDetectionStrategy,
+	inject,
+	computed,
+	Signal
+} from "@angular/core";
 import { MatListModule } from "@angular/material/list";
 import { MatIconModule } from "@angular/material/icon";
 import { MatDividerModule } from "@angular/material/divider";
@@ -6,6 +12,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { RouterLink, RouterLinkActive } from "@angular/router";
 import { LayoutService } from "@infrastructure/services";
+import { AuthService } from "@infrastructure/services/auth.service";
 
 interface NavItem
 {
@@ -19,11 +26,14 @@ interface NavSection
 {
 	title: string;
 	items: NavItem[];
+	/** Roles required to see this section. Empty array means visible to all (including guests). */
+	requiredRoles?: string[];
 }
 
 /**
  * Application sidebar component
  * Displays navigation menu with Material Design
+ * Filters visible sections based on user roles
  */
 @Component({
 	selector: "app-sidebar",
@@ -43,11 +53,25 @@ interface NavSection
 export class SidebarComponent
 {
 	protected readonly layoutService: LayoutService = inject(LayoutService);
+	private readonly authService: AuthService = inject(AuthService);
 
-	protected readonly navSections: NavSection[] = [
+	/** All navigation sections with role requirements. */
+	private readonly navSections: NavSection[] = [
 		{
 			title: "Main",
-			items: [{ label: "Dashboard", icon: "dashboard", route: "/" }]
+			items: [{ label: "Dashboard", icon: "dashboard", route: "/" }],
+			requiredRoles: [] // Visible to all including guests
+		},
+		{
+			title: "Developer",
+			items: [
+				{
+					label: "Style Guide",
+					icon: "palette",
+					route: "/developer/style-guide"
+				}
+			],
+			requiredRoles: ["Developer", "Admin"]
 		},
 		{
 			title: "Management",
@@ -67,19 +91,32 @@ export class SidebarComponent
 					icon: "article",
 					route: "/admin/logs"
 				}
-			]
-		},
-		{
-			title: "Developer",
-			items: [
-				{
-					label: "Style Guide",
-					icon: "palette",
-					route: "/developer/style-guide"
-				}
-			]
+			],
+			requiredRoles: ["Admin"]
 		}
 	];
+
+	/** Computed signal that filters sections based on current user's roles. */
+	protected readonly visibleNavSections: Signal<NavSection[]> = computed(() =>
+		this.navSections.filter((section: NavSection) =>
+			this.hasAccess(section.requiredRoles)
+		)
+	);
+
+	/**
+	 * Check if current user has access to a section.
+	 * @param requiredRoles Roles required to access the section.
+	 * @returns True if user has access (no roles required or user has any required role).
+	 */
+	private hasAccess(requiredRoles?: string[]): boolean
+	{
+		// No roles required - visible to all (including guests)
+		if (!requiredRoles || requiredRoles.length === 0)
+		{
+			return true;
+		}
+		return this.authService.hasAnyRole(...requiredRoles);
+	}
 
 	/**
 	 * Close sidebar (called from close button)

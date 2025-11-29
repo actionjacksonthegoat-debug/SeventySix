@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Configuration;
@@ -35,6 +36,7 @@ namespace SeventySix.Api.Controllers;
 /// <param name="logger">The logger instance for recording controller operations.</param>
 /// <exception cref="ArgumentNullException">Thrown when userService or logger is null.</exception>
 [ApiController]
+[Authorize(Policy = "AdminOnly")]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
 public class UsersController(
 	IUserService userService,

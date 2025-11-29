@@ -34,10 +34,10 @@ public class PollyIntegrationClientTests : IDisposable
 		Options = new PollyOptions
 		{
 			RetryCount = 2,
-			RetryDelaySeconds = 1,
+			RetryDelaySeconds = 0,  // Zero delay for fast test execution
 			TimeoutSeconds = 5,
 			CircuitBreakerFailureThreshold = 3,
-			CircuitBreakerBreakDurationSeconds = 10,
+			CircuitBreakerBreakDurationSeconds = 1,  // Polly minimum is 0.5s
 			CircuitBreakerSamplingDurationSeconds = 60,
 			UseJitter = false,
 		};

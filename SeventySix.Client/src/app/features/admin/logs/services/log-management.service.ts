@@ -59,7 +59,9 @@ export class LogManagementService extends BaseFilterService<LogQueryRequest>
 			page: 1,
 			pageSize: 50,
 			startDate: startDate,
-			endDate: now
+			endDate: now,
+			sortBy: "Id",
+			sortDescending: true
 		});
 	}
 
@@ -134,7 +136,9 @@ export class LogManagementService extends BaseFilterService<LogQueryRequest>
 	{
 		this.filter.set({
 			page: 1,
-			pageSize: 50
+			pageSize: 50,
+			sortBy: "Id",
+			sortDescending: true
 		});
 		this.clearSelection();
 	}

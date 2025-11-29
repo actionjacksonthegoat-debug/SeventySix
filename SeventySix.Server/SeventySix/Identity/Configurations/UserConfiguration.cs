@@ -135,6 +135,15 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 		builder.Property(e => e.LastLoginIp)
 			.HasMaxLength(45);
 
+		// Account lockout - FailedLoginCount (required, default 0)
+		builder.Property(e => e.FailedLoginCount)
+			.IsRequired()
+			.HasDefaultValue(0);
+
+		// Account lockout - LockoutEndUtc (optional)
+		builder.Property(e => e.LockoutEndUtc)
+			.HasColumnType("timestamp with time zone");
+
 		// Performance indexes
 		builder.HasIndex(e => new { e.IsActive, e.CreateDate })
 			.HasDatabaseName("IX_Users_IsActive_CreateDate");

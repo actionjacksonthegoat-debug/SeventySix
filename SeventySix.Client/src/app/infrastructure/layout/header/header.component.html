@@ -55,27 +55,44 @@
 		}}</mat-icon>
 	</button>
 
-	<!-- User Menu (Future) -->
-	<button
-		mat-icon-button
-		[matMenuTriggerFor]="userMenu"
-		matTooltip="User menu"
-		aria-label="User menu"
-	>
-		<mat-icon>account_circle</mat-icon>
-	</button>
+	<!-- Login Button (Unauthenticated) -->
+	@if (!authService.isAuthenticated())
+	{
+		<button
+			mat-icon-button
+			(click)="navigateToLogin()"
+			matTooltip="Login"
+			aria-label="Login"
+			data-testid="login-button"
+		>
+			<mat-icon>login</mat-icon>
+		</button>
+	}
 
-	<mat-menu #userMenu="matMenu">
-		<button mat-menu-item>
-			<mat-icon>person</mat-icon>
-			<span>Profile</span>
+	<!-- User Menu (Authenticated) -->
+	@if (authService.isAuthenticated())
+	{
+		<button
+			mat-icon-button
+			[matMenuTriggerFor]="userMenu"
+			matTooltip="User menu"
+			aria-label="User menu"
+			data-testid="user-menu-button"
+		>
+			<mat-icon>account_circle</mat-icon>
 		</button>
-		<mat-divider></mat-divider>
-		<button mat-menu-item>
-			<mat-icon>logout</mat-icon>
-			<span>Logout</span>
-		</button>
-	</mat-menu>
+
+		<mat-menu #userMenu="matMenu">
+			<div class="user-menu-header" mat-menu-item disabled>
+				<span data-testid="user-fullname">{{ displayName() }}</span>
+			</div>
+			<mat-divider></mat-divider>
+			<button mat-menu-item (click)="logout()">
+				<mat-icon>logout</mat-icon>
+				<span>Logout</span>
+			</button>
+		</mat-menu>
+	}
 </mat-toolbar>
 
 <!-- Breadcrumb Navigation (Second Row) -->

@@ -59,3 +59,9 @@
 		padding: 0 vars.$spacing-sm;
 	}
 }
+
+.user-menu-header {
+	color: var(--mat-sys-on-surface);
+	font-weight: vars.$font-weight-medium;
+	opacity: 1 !important;
+}

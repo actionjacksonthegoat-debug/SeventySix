@@ -2,13 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using SeventySix.ApiTracking;
-using SeventySix.Identity;
-using SeventySix.Logging;
+using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.TestUtilities.TestBases;
 
@@ -19,6 +15,9 @@ namespace SeventySix.TestUtilities.TestBases;
 /// IMPORTANT: This is NOT an integration test base class.
 /// Tests using this base class should mock all external dependencies.
 /// Only integration tests should call real third-party APIs.
+///
+/// PERFORMANCE: Uses a shared WebApplicationFactory from the fixture to avoid repeated
+/// factory creation overhead. The factory is created once per collection and reused.
 /// </summary>
 /// <typeparam name="TProgram">The entry point type for the application.</typeparam>
 public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
@@ -41,34 +40,45 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	protected override string ConnectionString => Fixture.ConnectionString;
 
 	/// <summary>
-	/// Creates a WebApplicationFactory configured to use the test PostgreSQL database.
+	/// Gets the shared WebApplicationFactory from the fixture.
+	/// This factory is cached and reused across all tests in the collection,
+	/// significantly reducing test execution time.
 	/// </summary>
-	/// <returns>A configured WebApplicationFactory instance.</returns>
-	protected WebApplicationFactory<TProgram> CreateWebApplicationFactory()
-	{
-		return new WebApplicationFactory<TProgram>()
-			.WithWebHostBuilder(builder =>
-			{
-				builder.ConfigureServices(services =>
-				{
-					// Remove existing DbContext registrations
-					services.RemoveAll<DbContextOptions<IdentityDbContext>>();
-					services.RemoveAll<IdentityDbContext>();
-					services.RemoveAll<DbContextOptions<LoggingDbContext>>();
-					services.RemoveAll<LoggingDbContext>();
-					services.RemoveAll<DbContextOptions<ApiTrackingDbContext>>();
-					services.RemoveAll<ApiTrackingDbContext>();
+	protected SharedWebApplicationFactory<TProgram> SharedFactory => Fixture.GetOrCreateFactory<TProgram>();
 
-					// Add DbContexts with test database connection string
-					services.AddDbContext<IdentityDbContext>(options =>
-						options.UseNpgsql(ConnectionString));
-					services.AddDbContext<LoggingDbContext>(options =>
-						options.UseNpgsql(ConnectionString));
-					services.AddDbContext<ApiTrackingDbContext>(options =>
-						options.UseNpgsql(ConnectionString));
-				});
-			});
-	}
+	/// <summary>
+	/// Creates an HttpClient from the shared WebApplicationFactory.
+	/// Use this for most tests instead of creating a new factory.
+	/// </summary>
+	/// <returns>An HttpClient configured to use the shared test server.</returns>
+	protected HttpClient CreateClient() => SharedFactory.CreateClient();
+
+	/// <summary>
+	/// Creates an HttpClient from the shared WebApplicationFactory with custom options.
+	/// </summary>
+	/// <param name="options">Options for configuring the HttpClient.</param>
+	/// <returns>An HttpClient configured to use the shared test server.</returns>
+	protected HttpClient CreateClient(WebApplicationFactoryClientOptions options) => SharedFactory.CreateClient(options);
+
+	/// <summary>
+	/// Creates a new isolated WebApplicationFactory that is NOT shared.
+	/// Use this for tests that require isolated in-memory state, such as rate limiting tests.
+	/// The caller is responsible for disposing the returned factory.
+	/// </summary>
+	/// <returns>A new WebApplicationFactory instance.</returns>
+	protected SharedWebApplicationFactory<TProgram> CreateIsolatedFactory() => new(ConnectionString);
+
+	/// <summary>
+	/// Creates a new isolated WebApplicationFactory with additional configuration.
+	/// Use this for tests that require isolated in-memory state with custom configuration.
+	/// The caller is responsible for disposing the returned factory.
+	/// </summary>
+	/// <param name="configureAdditional">Additional web host builder configuration.</param>
+	/// <returns>A new WebApplicationFactory instance.</returns>
+	protected SharedWebApplicationFactory<TProgram> CreateIsolatedFactory(Action<IWebHostBuilder> configureAdditional)
+		=> new(
+			ConnectionString,
+			configureAdditional);
 
 	/// <summary>
 	/// Called before each test. Clears all data from the database to ensure test isolation.
@@ -76,11 +86,7 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 	public override async Task InitializeAsync()
 	{
-		// Clean up data before each test to ensure isolation
-		// PostgreSQL identifiers are case-insensitive unless quoted, migrations create lowercase names
-		await TruncateTablesAsync(
-			"\"ApiTracking\".\"ThirdPartyApiRequests\"",
-			"\"Identity\".\"Users\"",
-			"\"Logging\".\"Logs\"");
+		// Clean up all tables before each test to ensure isolation
+		await TruncateTablesAsync(TestTables.All);
 	}
 }

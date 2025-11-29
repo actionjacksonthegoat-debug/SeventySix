@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
@@ -81,32 +82,44 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	}
 
 	/// <summary>
-	/// Truncates specified tables in the database to ensure test isolation.
-	/// Supports tables from all bounded contexts.
-	/// Silently skips tables that don't exist yet (before migrations run).
+	/// Truncates specified tables in a single batched statement for better performance.
+	/// Uses CASCADE to handle foreign key dependencies automatically.
+	/// Silently skips if tables don't exist yet (before migrations run).
 	/// </summary>
-	/// <param name="tables">The table names to truncate (with schema prefix if needed, e.g., "identity.Users").</param>
+	/// <param name="tables">The table names to truncate (with schema prefix, e.g., "Identity"."Users").</param>
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 	protected virtual async Task TruncateTablesAsync(params string[] tables)
 	{
-		// Use Identity context for truncation commands (any context will work)
-		await using IdentityDbContext context = CreateIdentityDbContext();
-
-		foreach (string table in tables)
+		if (tables.Length == 0)
 		{
-			try
-			{
-#pragma warning disable EF1002 // Risk of SQL injection - table names are hardcoded in test code
-				await context.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE {table} RESTART IDENTITY CASCADE");
-#pragma warning restore EF1002
-			}
-			catch (Npgsql.PostgresException ex) when (ex.SqlState == "42P01" || ex.SqlState == "3F000")
-			{
-				// 42P01: undefined_table - table doesn't exist yet
-				// 3F000: invalid_schema_name - schema doesn't exist yet
-				// This is expected during first test run before migrations complete
-				// Silently continue to next table
-			}
+			return;
+		}
+
+		// Single TRUNCATE with RESTART IDENTITY CASCADE is faster than multiple statements
+		// CASCADE handles foreign key dependencies automatically
+		string tableList =
+			string.Join(
+				", ",
+				tables);
+		string sql =
+			$"TRUNCATE TABLE {tableList} RESTART IDENTITY CASCADE";
+
+		try
+		{
+			await using NpgsqlConnection connection =
+				new(ConnectionString);
+			await connection.OpenAsync();
+			await using NpgsqlCommand command =
+				new(
+					sql,
+					connection);
+			await command.ExecuteNonQueryAsync();
+		}
+		catch (PostgresException ex) when (ex.SqlState is "42P01" or "3F000")
+		{
+			// 42P01: undefined_table - table doesn't exist yet
+			// 3F000: invalid_schema_name - schema doesn't exist yet
+			// This is expected during first test run before migrations complete
 		}
 	}
 

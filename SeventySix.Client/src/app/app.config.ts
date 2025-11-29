@@ -34,7 +34,8 @@ import {
 	ErrorHandlerService,
 	ThemeService,
 	TelemetryService,
-	WebVitalsService
+	WebVitalsService,
+	AuthService
 } from "@infrastructure/services";
 import { environment } from "@environments/environment";
 
@@ -74,6 +75,18 @@ function initializeWebVitals(_webVitalsService: WebVitalsService)
 	{
 		// Web vitals service constructor handles initialization
 		return Promise.resolve();
+	};
+}
+
+/**
+ * Initialize auth service on app startup
+ * Handles OAuth callback processing and restores auth state
+ */
+function initializeAuth(authService: AuthService)
+{
+	return () =>
+	{
+		return authService.initialize();
 	};
 }
 
@@ -134,6 +147,13 @@ export const appConfig: ApplicationConfig = {
 			provide: APP_INITIALIZER,
 			useFactory: initializeWebVitals,
 			deps: [WebVitalsService],
+			multi: true
+		},
+		// Initialize auth service on app startup (handles OAuth callbacks)
+		{
+			provide: APP_INITIALIZER,
+			useFactory: initializeAuth,
+			deps: [AuthService],
 			multi: true
 		},
 		// Service Worker for PWA support and asset caching only

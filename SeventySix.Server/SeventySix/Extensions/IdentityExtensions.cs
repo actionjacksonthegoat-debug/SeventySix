@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
 using SeventySix.Identity.Infrastructure;
+using SeventySix.Identity.Settings;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
 
@@ -70,11 +71,21 @@ public static class IdentityExtensions
 
 		// Register services
 		services.AddScoped<IUserService, UserService>();
+		services.AddScoped<ITokenService, TokenService>();
+		services.AddScoped<IAuthService, AuthService>();
+		services.AddSingleton<IOAuthCodeExchangeService, OAuthCodeExchangeService>();
 
 		// Register validators
 		services.AddSingleton<IValidator<CreateUserRequest>, CreateUserValidator>();
 		services.AddSingleton<IValidator<UpdateUserRequest>, UpdateUserValidator>();
 		services.AddSingleton<IValidator<UserQueryRequest>, UserQueryValidator>();
+		services.AddSingleton<IValidator<LoginRequest>, LoginRequestValidator>();
+		services.AddSingleton<IValidator<RegisterRequest>, RegisterRequestValidator>();
+		services.AddSingleton<IValidator<ChangePasswordRequest>, ChangePasswordRequestValidator>();
+
+		// Register background services
+		services.AddHostedService<TokenCleanupService>();
+		services.AddHostedService<AdminSeederService>();
 
 		return services;
 	}

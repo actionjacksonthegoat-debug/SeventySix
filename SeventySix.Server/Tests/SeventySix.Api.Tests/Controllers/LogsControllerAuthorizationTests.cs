@@ -1,0 +1,60 @@
+// <copyright file="LogsControllerAuthorizationTests.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using SeventySix.TestUtilities.Constants;
+using SeventySix.TestUtilities.TestBases;
+using SeventySix.TestUtilities.TestHelpers;
+using Xunit;
+
+namespace SeventySix.Api.Tests.Controllers;
+
+/// <summary>
+/// Authorization tests for LogsController.
+/// Tests that admin endpoints require proper authentication and admin role.
+/// </summary>
+[Collection("PostgreSQL")]
+public class LogsControllerAuthorizationTests(TestcontainersPostgreSqlFixture fixture)
+	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+{
+	private const string Endpoint = "/api/v1/logs";
+	private AuthorizationTestHelper AuthHelper = null!;
+
+	/// <inheritdoc/>
+	public override async Task InitializeAsync()
+	{
+		await base.InitializeAsync();
+		AuthHelper =
+			new AuthorizationTestHelper(CreateClient(), SharedFactory.Services);
+	}
+
+	/// <summary>
+	/// Tests that GET /api/v1/logs returns 401 without authentication.
+	/// </summary>
+	[Fact]
+	public Task GetPagedAsync_WithoutAuth_ReturnsUnauthorizedAsync()
+		=> AuthHelper.AssertUnauthorizedAsync(HttpMethod.Get, Endpoint);
+
+	/// <summary>
+	/// Tests that DELETE /api/v1/logs/cleanup returns 401 without authentication.
+	/// </summary>
+	[Fact]
+	public Task CleanupLogsAsync_WithoutAuth_ReturnsUnauthorizedAsync()
+		=> AuthHelper.AssertUnauthorizedAsync(
+			HttpMethod.Delete,
+			$"{Endpoint}/cleanup?cutoffDate=2024-01-01");
+
+	/// <summary>
+	/// Tests that GET /api/v1/logs returns 403 for Developer role.
+	/// </summary>
+	[Fact]
+	public Task GetPagedAsync_WithDeveloperRole_ReturnsForbiddenAsync()
+		=> AuthHelper.AssertForbiddenForRoleAsync("Developer", HttpMethod.Get, Endpoint);
+
+	/// <summary>
+	/// Tests that GET /api/v1/logs returns 200 for Admin role.
+	/// </summary>
+	[Fact]
+	public Task GetPagedAsync_WithAdminRole_ReturnsOkAsync()
+		=> AuthHelper.AssertAuthorizedForRoleAsync("Admin", HttpMethod.Get, Endpoint);
+}

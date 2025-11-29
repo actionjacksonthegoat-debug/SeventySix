@@ -1,11 +1,23 @@
-import { Component, ChangeDetectionStrategy, inject } from "@angular/core";
+import {
+	Component,
+	ChangeDetectionStrategy,
+	inject,
+	computed,
+	Signal
+} from "@angular/core";
+import { Router } from "@angular/router";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatDividerModule } from "@angular/material/divider";
-import { ThemeService, LayoutService } from "@infrastructure/services";
+import {
+	ThemeService,
+	LayoutService,
+	AuthService
+} from "@infrastructure/services";
+import { AuthUser } from "@infrastructure/models";
 import { BreadcrumbComponent } from "@shared/components";
 
 /**
@@ -31,6 +43,19 @@ export class HeaderComponent
 {
 	protected readonly themeService: ThemeService = inject(ThemeService);
 	protected readonly layoutService: LayoutService = inject(LayoutService);
+	protected readonly authService: AuthService = inject(AuthService);
+	private readonly router: Router = inject(Router);
+
+	/** Display name: fullName if available, otherwise username. */
+	protected readonly displayName: Signal<string> = computed(() =>
+	{
+		const user: AuthUser | null = this.authService.user();
+		if (!user)
+		{
+			return "";
+		}
+		return user.fullName || user.username;
+	});
 
 	toggleSidebar(): void
 	{
@@ -45,5 +70,15 @@ export class HeaderComponent
 	toggleColorScheme(): void
 	{
 		this.themeService.toggleColorScheme();
+	}
+
+	navigateToLogin(): void
+	{
+		this.router.navigate(["/auth/login"]);
+	}
+
+	logout(): void
+	{
+		this.authService.logout();
 	}
 }

@@ -26,5 +26,12 @@ RUN dotnet publish "./SeventySix.Api.csproj" -c $BUILD_CONFIGURATION -o /app/pub
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
+
+# Create data protection keys directory with proper ownership
+# This directory should be mounted as a Docker volume for key persistence
+USER root
+RUN mkdir -p /app/keys && chown $APP_UID:$APP_UID /app/keys
+USER $APP_UID
+
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "SeventySix.Api.dll"]

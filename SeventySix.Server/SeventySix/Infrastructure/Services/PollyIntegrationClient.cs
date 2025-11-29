@@ -312,8 +312,8 @@ public class PollyIntegrationClient(
 					.Handle<HttpRequestException>()
 					.Handle<TimeoutException>()
 					.HandleResult(response =>
-						response.StatusCode == HttpStatusCode.TooManyRequests
-							|| response.StatusCode == HttpStatusCode.ServiceUnavailable),
+						response.StatusCode is HttpStatusCode.TooManyRequests
+							or HttpStatusCode.ServiceUnavailable),
 			})
 			.AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>
 			{

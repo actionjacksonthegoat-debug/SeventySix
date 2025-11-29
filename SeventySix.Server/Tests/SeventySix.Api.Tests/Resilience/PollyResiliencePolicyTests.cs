@@ -45,10 +45,11 @@ public class PollyResiliencePolicyTests
 		ILoggerFactory loggerFactory = Substitute.For<ILoggerFactory>();
 		loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
 
+		// Use zero delays for fast test execution (exponential backoff: 0 * 2^n = 0)
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
 			RetryCount = 3,
-			RetryDelaySeconds = 1,
+			RetryDelaySeconds = 0,
 			CircuitBreakerFailureThreshold = 5,
 			CircuitBreakerSamplingDurationSeconds = 60,
 			CircuitBreakerBreakDurationSeconds = 30,
@@ -81,12 +82,14 @@ public class PollyResiliencePolicyTests
 		ILoggerFactory loggerFactory = Substitute.For<ILoggerFactory>();
 		loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
 
+		// Use zero delays for fast test execution
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
-			RetryCount = 1,
+			RetryCount = 0,
+			RetryDelaySeconds = 0,
 			CircuitBreakerFailureThreshold = 3,
 			CircuitBreakerSamplingDurationSeconds = 60,
-			CircuitBreakerBreakDurationSeconds = 1,
+			CircuitBreakerBreakDurationSeconds = 0,
 			TimeoutSeconds = 10,
 		});
 
@@ -113,10 +116,10 @@ public class PollyResiliencePolicyTests
 	[Fact]
 	public async Task TimeoutPolicy_SlowResponse_CancelsRequestAsync()
 	{
-		// Arrange
-		MockHttpMessageHandler handler = new(async (_, _) =>
+		// Arrange - handler respects cancellation token so timeout actually cancels the delay
+		MockHttpMessageHandler handler = new(async (_, cancellationToken) =>
 		{
-			await Task.Delay(TimeSpan.FromSeconds(15));
+			await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
 			return new HttpResponseMessage(HttpStatusCode.OK);
 		});
 
@@ -130,13 +133,15 @@ public class PollyResiliencePolicyTests
 		ILoggerFactory loggerFactory = Substitute.For<ILoggerFactory>();
 		loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
 
+		// Use 1 second timeout for fast test execution
 		IOptions<PollyOptions> options = Options.Create(new PollyOptions
 		{
-			RetryCount = 1,
+			RetryCount = 0,
+			RetryDelaySeconds = 0,
 			CircuitBreakerFailureThreshold = 5,
 			CircuitBreakerSamplingDurationSeconds = 60,
 			CircuitBreakerBreakDurationSeconds = 30,
-			TimeoutSeconds = 2,
+			TimeoutSeconds = 1,
 		});
 
 		PollyIntegrationClient client = new(httpClient, cache, rateLimiter, loggerFactory, options);

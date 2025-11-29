@@ -4,7 +4,7 @@
  * Eliminates duplication across 40+ spec files
  */
 
-import { signal, WritableSignal } from "@angular/core";
+import { signal, WritableSignal, Signal } from "@angular/core";
 import { LoggerService } from "@infrastructure/services/logger.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import { ErrorQueueService } from "@infrastructure/services/error-queue.service";

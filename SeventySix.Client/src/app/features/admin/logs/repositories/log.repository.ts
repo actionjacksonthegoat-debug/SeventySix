@@ -21,7 +21,9 @@ export class LogRepository
 					endDate: filter.endDate,
 					page: filter.page,
 					pageSize: filter.pageSize,
-					searchTerm: filter.searchTerm
+					searchTerm: filter.searchTerm,
+					sortBy: filter.sortBy,
+					sortDescending: filter.sortDescending
 				})
 			: undefined;
 

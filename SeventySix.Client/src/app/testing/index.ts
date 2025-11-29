@@ -3,6 +3,10 @@
  */
 
 export * from "./integration-test.helper";
+export {
+	createMockAuthService,
+	MockAuthService
+} from "./mocks/auth.service.mock";
 export * from "./tanstack-query-helpers";
 export * from "./test-bed-builders";
 export * from "./mock-factories";

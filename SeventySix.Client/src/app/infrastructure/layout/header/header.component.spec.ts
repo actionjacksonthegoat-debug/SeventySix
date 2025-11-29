@@ -1,9 +1,10 @@
 import { ComponentFixture } from "@angular/core/testing";
-import { provideRouter } from "@angular/router";
+import { provideRouter, Router } from "@angular/router";
 import { HeaderComponent } from "./header.component";
 import { ThemeService } from "@infrastructure/services/theme.service";
 import { LayoutService } from "@infrastructure/services/layout.service";
-import { createMockThemeService } from "@testing/mocks/theme.service.mock";
+import { AuthService } from "@infrastructure/services/auth.service";
+import { createMockThemeService, createMockAuthService } from "@testing/mocks";
 import { ComponentTestBed } from "@testing";
 
 describe("HeaderComponent", () =>
@@ -12,6 +13,8 @@ describe("HeaderComponent", () =>
 	let fixture: ComponentFixture<HeaderComponent>;
 	let mockThemeService: ReturnType<typeof createMockThemeService>;
 	let mockLayoutService: jasmine.SpyObj<LayoutService>;
+	let mockAuthService: ReturnType<typeof createMockAuthService>;
+	let router: Router;
 
 	beforeEach(async () =>
 	{
@@ -19,6 +22,7 @@ describe("HeaderComponent", () =>
 		mockLayoutService = jasmine.createSpyObj("LayoutService", [
 			"toggleSidebar"
 		]);
+		mockAuthService = createMockAuthService();
 
 		fixture = await new ComponentTestBed<HeaderComponent>()
 			.withProvider(provideRouter([]))
@@ -27,9 +31,12 @@ describe("HeaderComponent", () =>
 				provide: LayoutService,
 				useValue: mockLayoutService
 			})
+			.withProvider({ provide: AuthService, useValue: mockAuthService })
 			.build(HeaderComponent);
 
 		component = fixture.componentInstance;
+		router = fixture.debugElement.injector.get(Router);
+		spyOn(router, "navigate");
 		fixture.detectChanges();
 	});
 
@@ -56,5 +63,120 @@ describe("HeaderComponent", () =>
 		spyOn(mockThemeService, "toggleColorScheme");
 		component.toggleColorScheme();
 		expect(mockThemeService.toggleColorScheme).toHaveBeenCalled();
+	});
+
+	describe("authentication", () =>
+	{
+		it("should show login button when not authenticated", () =>
+		{
+			mockAuthService.setUser(null);
+			fixture.detectChanges();
+
+			const compiled: HTMLElement = fixture.nativeElement;
+			const loginButton: HTMLButtonElement | null =
+				compiled.querySelector("[data-testid='login-button']");
+
+			expect(loginButton).toBeTruthy();
+		});
+
+		it("should navigate to login when login button clicked", () =>
+		{
+			mockAuthService.setUser(null);
+			fixture.detectChanges();
+
+			component.navigateToLogin();
+
+			expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
+		});
+
+		it("should show user menu when authenticated", () =>
+		{
+			mockAuthService.setUser({
+				id: 1,
+				username: "testuser",
+				email: "test@example.com",
+				roles: [],
+				fullName: "John Doe"
+			});
+			fixture.detectChanges();
+
+			const compiled: HTMLElement = fixture.nativeElement;
+			const userMenuButton: HTMLButtonElement | null =
+				compiled.querySelector("[data-testid='user-menu-button']");
+
+			expect(userMenuButton).toBeTruthy();
+		});
+
+		it("should display user fullName in menu", async () =>
+		{
+			mockAuthService.setUser({
+				id: 1,
+				username: "testuser",
+				email: "test@example.com",
+				roles: [],
+				fullName: "John Doe"
+			});
+			fixture.detectChanges();
+
+			// Open the user menu
+			const userMenuButton: HTMLButtonElement | null =
+				fixture.nativeElement.querySelector(
+					"[data-testid='user-menu-button']"
+				);
+			userMenuButton?.click();
+			fixture.detectChanges();
+			await fixture.whenStable();
+
+			// Menu content is rendered in overlay, query from document
+			const userNameSpan: HTMLSpanElement | null = document.querySelector(
+				"[data-testid='user-fullname']"
+			);
+
+			expect(userNameSpan?.textContent?.trim()).toBe("John Doe");
+		});
+
+		it("should display username when fullName is null", async () =>
+		{
+			mockAuthService.setUser({
+				id: 1,
+				username: "testuser",
+				email: "test@example.com",
+				roles: [],
+				fullName: null
+			});
+			fixture.detectChanges();
+
+			// Open the user menu
+			const userMenuButton: HTMLButtonElement | null =
+				fixture.nativeElement.querySelector(
+					"[data-testid='user-menu-button']"
+				);
+			userMenuButton?.click();
+			fixture.detectChanges();
+			await fixture.whenStable();
+
+			// Menu content is rendered in overlay, query from document
+			const userNameSpan: HTMLSpanElement | null = document.querySelector(
+				"[data-testid='user-fullname']"
+			);
+
+			expect(userNameSpan?.textContent?.trim()).toBe("testuser");
+		});
+
+		it("should call logout when logout clicked", () =>
+		{
+			mockAuthService.setUser({
+				id: 1,
+				username: "testuser",
+				email: "test@example.com",
+				roles: [],
+				fullName: "John Doe"
+			});
+			fixture.detectChanges();
+
+			component.logout();
+
+			expect(mockAuthService.logout).toHaveBeenCalled();
+		});
 	});
 });

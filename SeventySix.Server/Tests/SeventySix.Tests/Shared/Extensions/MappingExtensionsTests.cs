@@ -13,7 +13,7 @@ namespace SeventySix.Tests.Shared.Extensions;
 public class MappingExtensionsTests
 {
 	[Fact]
-	public void MapToDto_ValidEntities_MapsCorrectlyAsync()
+	public void MapToDto_ValidEntities_MapsCorrectly()
 	{
 		// Arrange
 		List<TestEntity> entities =
@@ -40,7 +40,7 @@ public class MappingExtensionsTests
 	}
 
 	[Fact]
-	public void MapToDto_EmptyCollection_ReturnsEmptyAsync()
+	public void MapToDto_EmptyCollection_ReturnsEmpty()
 	{
 		// Arrange
 		List<TestEntity> entities = [];
@@ -57,7 +57,7 @@ public class MappingExtensionsTests
 	}
 
 	[Fact]
-	public void MapToDto_NullCollection_ThrowsArgumentNullExceptionAsync()
+	public void MapToDto_NullCollection_ThrowsArgumentNullException()
 	{
 		// Arrange
 		IEnumerable<TestEntity>? entities = null;
@@ -68,7 +68,7 @@ public class MappingExtensionsTests
 	}
 
 	[Fact]
-	public void MapToDto_NullMapper_ThrowsArgumentNullExceptionAsync()
+	public void MapToDto_NullMapper_ThrowsArgumentNullException()
 	{
 		// Arrange
 		List<TestEntity> entities = [new TestEntity { Id = 1, Name = "Test" }];
@@ -79,7 +79,7 @@ public class MappingExtensionsTests
 	}
 
 	[Fact]
-	public void MapToDto_DeferredExecution_OnlyEvaluatesWhenEnumeratedAsync()
+	public void MapToDto_DeferredExecution_OnlyEvaluatesWhenEnumerated()
 	{
 		// Arrange
 		int mapperCallCount = 0;

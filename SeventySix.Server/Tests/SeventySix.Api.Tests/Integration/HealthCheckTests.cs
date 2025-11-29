@@ -3,7 +3,6 @@
 // </copyright>
 
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
 using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Api.Tests.Integration;
@@ -18,9 +17,8 @@ public class HealthCheckTests(TestcontainersPostgreSqlFixture fixture) : ApiPost
 	[Fact]
 	public async Task HealthEndpoint_ReturnsHealthy_WhenDatabaseConnectedAsync()
 	{
-		// Arrange
-		using WebApplicationFactory<Program> factory = CreateWebApplicationFactory();
-		using HttpClient client = factory.CreateClient();
+		// Arrange - Use shared factory's client for better performance
+		using HttpClient client = CreateClient();
 
 		// Act
 		HttpResponseMessage response = await client.GetAsync("/health");

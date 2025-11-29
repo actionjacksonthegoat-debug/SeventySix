@@ -4,6 +4,7 @@
  */
 
 // Infrastructure services
+export * from "./auth.service";
 export * from "./base-filter.service";
 export * from "./client-error-logger.service";
 export * from "./date.service";
@@ -18,7 +19,6 @@ export * from "./storage.service";
 export * from "./sw-update.service";
 export * from "./telemetry.service";
 export * from "./theme.service";
-export * from "./token-storage.service";
 export * from "./web-vitals.service";
 
 // DO NOT export feature services here

@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.TestUtilities.Constants;
+
 namespace SeventySix.TestUtilities.TestBases;
 
 /// <summary>
@@ -34,13 +36,7 @@ public abstract class DataPostgreSqlTestBase : BasePostgreSqlTestBase
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 	public override async Task InitializeAsync()
 	{
-		// Clean up data before each test to ensure isolation
-		// Each test class has its own database, but tests within a class run sequentially
-		// Truncate all tables with schema-qualified names (bounded context isolation)
-		// Use quoted names to preserve case-sensitivity for PostgreSQL
-		await TruncateTablesAsync(
-			"\"Logging\".\"Logs\"",
-			"\"ApiTracking\".\"ThirdPartyApiRequests\"",
-			"\"Identity\".\"Users\"");
+		// Clean up all tables before each test to ensure isolation
+		await TruncateTablesAsync(TestTables.All);
 	}
 }

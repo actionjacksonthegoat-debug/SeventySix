@@ -26,6 +26,8 @@
 // interfaces with their concrete implementations.
 // </remarks>
 
+using System.Net;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -159,33 +161,73 @@ builder.Services.AddConfiguredRateLimiting(builder.Configuration);
 // Add CORS from configuration
 builder.Services.AddConfiguredCors(builder.Configuration);
 
+// Add Data Protection for key management
+builder.Services.AddConfiguredDataProtection(builder.Environment);
+
+// Add JWT authentication
+builder.Services.AddAuthenticationServices(builder.Configuration);
+
 // OpenAPI/Swagger configuration for API documentation
 builder.Services.AddOpenApi();
 
 WebApplication app = builder.Build();
 
-// Initialize database - Create if not exists and run migrations
-using (IServiceScope scope = app.Services.CreateScope())
+// Initialize database - Create if not exists and run pending migrations only
+// Skip migrations that are already applied (optimization for test scenarios where fixture pre-applies them)
+bool skipMigrationCheck =
+	builder.Configuration.GetValue<bool>("SkipMigrationCheck");
+
+if (!skipMigrationCheck)
 {
+	using IServiceScope scope = app.Services.CreateScope();
 	IServiceProvider services = scope.ServiceProvider;
 	ILogger<Program> logger = services.GetRequiredService<ILogger<Program>>();
 
 	try
 	{
-		logger.LogInformation("Ensuring database exists and applying migrations...");
+		logger.LogInformation("Checking for pending database migrations...");
 
-		// Apply migrations for all bounded contexts
+		// Apply migrations for Identity bounded context (only if pending)
 		IdentityDbContext identityContext = services.GetRequiredService<IdentityDbContext>();
-		await identityContext.Database.MigrateAsync();
-		logger.LogInformation("Identity database migrations completed");
+		IEnumerable<string> pendingIdentity =
+			await identityContext.Database.GetPendingMigrationsAsync();
+		if (pendingIdentity.Any())
+		{
+			await identityContext.Database.MigrateAsync();
+			logger.LogInformation("Identity database migrations applied");
+		}
+		else
+		{
+			logger.LogDebug("Identity database migrations already up to date");
+		}
 
+		// Apply migrations for Logging bounded context (only if pending)
 		LoggingDbContext loggingContext = services.GetRequiredService<LoggingDbContext>();
-		await loggingContext.Database.MigrateAsync();
-		logger.LogInformation("Logging database migrations completed");
+		IEnumerable<string> pendingLogging =
+			await loggingContext.Database.GetPendingMigrationsAsync();
+		if (pendingLogging.Any())
+		{
+			await loggingContext.Database.MigrateAsync();
+			logger.LogInformation("Logging database migrations applied");
+		}
+		else
+		{
+			logger.LogDebug("Logging database migrations already up to date");
+		}
 
+		// Apply migrations for ApiTracking bounded context (only if pending)
 		ApiTrackingDbContext apiTrackingContext = services.GetRequiredService<ApiTrackingDbContext>();
-		await apiTrackingContext.Database.MigrateAsync();
-		logger.LogInformation("ApiTracking database migrations completed");
+		IEnumerable<string> pendingApiTracking =
+			await apiTrackingContext.Database.GetPendingMigrationsAsync();
+		if (pendingApiTracking.Any())
+		{
+			await apiTrackingContext.Database.MigrateAsync();
+			logger.LogInformation("ApiTracking database migrations applied");
+		}
+		else
+		{
+			logger.LogDebug("ApiTracking database migrations already up to date");
+		}
 
 		logger.LogInformation("Database initialization completed successfully");
 	}
@@ -216,6 +258,51 @@ app.UseSerilogRequestLogging(options =>
 		diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
 	};
 });
+
+// ForwardedHeaders middleware - Securely processes X-Forwarded-* headers from trusted proxies
+// MUST be before rate limiter so HttpContext.Connection.RemoteIpAddress reflects true client IP
+ForwardedHeadersSettings forwardedSettings =
+	builder.Configuration
+		.GetSection(ForwardedHeadersSettings.SectionName)
+		.Get<ForwardedHeadersSettings>()
+	?? new ForwardedHeadersSettings();
+
+ForwardedHeadersOptions forwardedOptions =
+	new()
+	{
+		ForwardedHeaders =
+			ForwardedHeaders.XForwardedFor
+			| ForwardedHeaders.XForwardedProto,
+		ForwardLimit = forwardedSettings.ForwardLimit
+	};
+
+// Add known proxies (production load balancers)
+foreach (string proxy in forwardedSettings.KnownProxies)
+{
+	if (IPAddress.TryParse(proxy, out IPAddress? ip))
+	{
+		forwardedOptions.KnownProxies.Add(ip);
+	}
+}
+
+// Add known networks (internal proxy ranges in CIDR notation)
+foreach (string network in forwardedSettings.KnownNetworks)
+{
+	string[] parts =
+		network.Split('/');
+
+	if (parts.Length == 2
+		&& IPAddress.TryParse(parts[0], out IPAddress? prefix)
+		&& int.TryParse(parts[1], out int prefixLength))
+	{
+		forwardedOptions.KnownIPNetworks.Add(
+			new System.Net.IPNetwork(
+				prefix,
+				prefixLength));
+	}
+}
+
+app.UseForwardedHeaders(forwardedOptions);
 
 // Security headers middleware - Attribute-aware implementation
 // Reads [SecurityHeaders] attributes from controllers/actions for customization
@@ -253,7 +340,8 @@ app.UseCors("AllowedOrigins");
 // Controlled by Security section in appsettings.json (single source of truth)
 app.UseMiddleware<SmartHttpsRedirectionMiddleware>();
 
-// Authorization middleware (currently no auth configured)
+// Authentication and Authorization middleware
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Map health check endpoints following Kubernetes best practices

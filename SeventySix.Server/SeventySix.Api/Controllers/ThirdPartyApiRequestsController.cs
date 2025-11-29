@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Configuration;
@@ -22,6 +23,7 @@ namespace SeventySix.Api.Controllers;
 /// </remarks>
 /// <param name="service">The third-party API request service.</param>
 [ApiController]
+[Authorize(Policy = "AdminOnly")]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/thirdpartyrequests")]
 public class ThirdPartyApiRequestsController(IThirdPartyApiRequestService service) : ControllerBase
 {

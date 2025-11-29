@@ -194,7 +194,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	}
 
 	[Fact]
-	public async Task GetPagedAsync_OrdersByTimestampDescending_SuccessfullyAsync()
+	public async Task GetPagedAsync_OrdersByIdDescending_ByDefaultAsync()
 	{
 		// Arrange
 		await SeedTestLogsAsync();
@@ -204,10 +204,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
 		List<Log> result = [.. logs];
 
-		// Assert
+		// Assert - Default is now Id descending (newest first)
 		for (int i = 0; i < result.Count - 1; i++)
 		{
-			Assert.True(result[i].CreateDate >= result[i + 1].CreateDate);
+			Assert.True(result[i].Id > result[i + 1].Id);
 		}
 	}
 

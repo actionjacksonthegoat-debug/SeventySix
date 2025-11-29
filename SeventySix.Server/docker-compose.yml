@@ -43,6 +43,7 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=seventysix;Username=postgres;Password=TestPassword;Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
     volumes:
       - ~/.aspnet/https:/https:ro
+      - dataprotection_keys:/app/keys
     depends_on:
       postgres:
         condition: service_healthy
@@ -117,6 +118,9 @@ volumes:
   grafana_data:
     driver: local
     name: seventysix_grafana_data
+  dataprotection_keys:
+    driver: local
+    name: seventysix_dataprotection_keys
 
 networks:
   seventysix-network:

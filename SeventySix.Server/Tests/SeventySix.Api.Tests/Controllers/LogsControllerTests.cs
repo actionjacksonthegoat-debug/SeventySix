@@ -3,13 +3,16 @@
 // </copyright>
 
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using SeventySix.Identity;
 using SeventySix.Logging;
 using SeventySix.Shared;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
+using SeventySix.TestUtilities.TestHelpers;
 using Xunit;
 
 namespace SeventySix.Api.Tests.Controllers;
@@ -19,14 +22,13 @@ namespace SeventySix.Api.Tests.Controllers;
 /// </summary>
 /// <remarks>
 /// Tests the HTTP API endpoints for log management.
-/// Uses WebApplicationFactory to create a test server with real database.
+/// Uses shared WebApplicationFactory for improved test performance.
 /// Focuses on verifying API contract behavior (routes, status codes).
 /// Service-layer logic is tested separately in repository/service tests.
 /// </remarks>
 [Collection("PostgreSQL")]
 public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
-	private WebApplicationFactory<Program>? Factory;
 	private HttpClient? Client;
 	private ILogRepository? LogRepository;
 
@@ -36,16 +38,16 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		// DO NOT call base.InitializeAsync() to avoid truncating logs
 		// These tests expect logs from API requests to accumulate
 		// Only truncate non-logging tables for isolation
-		await TruncateTablesAsync(
-			"\"ApiTracking\".\"ThirdPartyApiRequests\"",
-			"\"Identity\".\"Users\"");
+		await TruncateTablesAsync([.. TestTables.ApiTracking, .. TestTables.Identity]);
 
-		// Create factory and client
-		Factory = CreateWebApplicationFactory();
-		Client = Factory.CreateClient();
+		// Use shared factory's client for better performance
+		Client = CreateClient();
 
-		// Get repository to seed test data
-		using IServiceScope scope = Factory!.Services.CreateScope();
+		// Create admin user and authenticate
+		await AuthenticateAsAdminAsync();
+
+		// Get repository to seed test data from shared factory
+		using IServiceScope scope = SharedFactory.Services.CreateScope();
 		LogRepository = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 		// Seed minimal test data needed for remaining tests
@@ -71,8 +73,8 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	/// <inheritdoc/>
 	public new Task DisposeAsync()
 	{
+		// Only dispose client, not the shared factory (managed by fixture)
 		Client?.Dispose();
-		Factory?.Dispose();
 		return Task.CompletedTask;
 	}
 
@@ -188,7 +190,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task DeleteLogAsync_WithValidId_ReturnsNoContentAsync()
 	{
 		// Arrange - Create a log to delete
-		using IServiceScope scope = Factory!.Services.CreateScope();
+		using IServiceScope scope = SharedFactory.Services.CreateScope();
 		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 		Log log = await logRepo.CreateAsync(new Log
 		{
@@ -226,7 +228,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task DeleteLogBatchAsync_WithValidIds_ReturnsDeletedCountAsync()
 	{
 		// Arrange - Create logs to delete
-		using IServiceScope scope = Factory!.Services.CreateScope();
+		using IServiceScope scope = SharedFactory.Services.CreateScope();
 		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 		Log log1 = await logRepo.CreateAsync(new Log
@@ -281,5 +283,30 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+	}
+
+	private async Task AuthenticateAsAdminAsync()
+	{
+		await TestUserHelper.CreateUserWithRolesAsync(
+			SharedFactory.Services,
+			"admin",
+			"admin@example.com",
+			["Admin"]);
+
+		LoginRequest request =
+			new(
+				UsernameOrEmail: "admin",
+				Password: TestUserHelper.TestPassword);
+
+		HttpResponseMessage response =
+			await Client!.PostAsJsonAsync("/api/v1/auth/login", request);
+
+		response.EnsureSuccessStatusCode();
+
+		AuthResponse? authResponse =
+			await response.Content.ReadFromJsonAsync<AuthResponse>();
+
+		Client!.DefaultRequestHeaders.Authorization =
+			new AuthenticationHeaderValue("Bearer", authResponse!.AccessToken);
 	}
 }

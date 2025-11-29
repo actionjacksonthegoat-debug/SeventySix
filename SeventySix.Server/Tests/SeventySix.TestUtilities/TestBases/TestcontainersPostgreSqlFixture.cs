@@ -2,24 +2,21 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using SeventySix.ApiTracking;
-using SeventySix.Identity;
-using SeventySix.Logging;
-using Testcontainers.PostgreSql;
+using System.Collections.Concurrent;
 
 namespace SeventySix.TestUtilities.TestBases;
 
 /// <summary>
-/// PostgreSQL fixture that creates a Testcontainers database instance for Data layer tests.
-/// Uses Testcontainers for isolated, reproducible testing without external dependencies.
+/// PostgreSQL fixture that uses SharedContainerManager for test database access.
+/// All fixtures share a single PostgreSQL container, with isolated databases per fixture.
 /// Each test class gets its own isolated database to enable parallel test execution.
+/// Also caches SharedWebApplicationFactory instances to avoid repeated factory creation overhead.
 /// </summary>
 public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 {
-	private readonly PostgreSqlContainer PostgreSqlContainer;
 	private readonly string DatabaseName;
+	private readonly ConcurrentDictionary<Type, object> CachedFactories =
+		new();
 	private string? ConnectionStringValue;
 
 	/// <summary>
@@ -28,81 +25,59 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 	public TestcontainersPostgreSqlFixture()
 	{
 		// Generate unique database name per test class instance
-		DatabaseName = $"test_{Guid.NewGuid():N}";
-
-		PostgreSqlContainer = new PostgreSqlBuilder()
-			.WithImage("postgres:16-alpine")
-			.WithDatabase("postgres") // Connect to default postgres database initially
-			.WithUsername("postgres")
-			.WithPassword("test_password")
-			.WithCleanUp(true)
-			.Build();
+		DatabaseName =
+			$"test_{Guid.NewGuid():N}";
 	}
 
 	/// <summary>
 	/// Gets the connection string for the isolated test database.
 	/// </summary>
-	public override string ConnectionString => ConnectionStringValue ?? throw new InvalidOperationException("Fixture not initialized. Call InitializeAsync first.");
+	public override string ConnectionString =>
+		ConnectionStringValue
+		?? throw new InvalidOperationException("Fixture not initialized. Call InitializeAsync first.");
 
 	/// <summary>
-	/// Starts the PostgreSQL container, creates an isolated database, and applies migrations if needed.
-	/// Called once before all tests in the test class.
+	/// Gets or creates a cached SharedWebApplicationFactory for the specified program type.
+	/// Reusing the factory across tests significantly reduces test execution time.
+	/// </summary>
+	/// <typeparam name="TProgram">The entry point type for the application.</typeparam>
+	/// <returns>A cached or newly created SharedWebApplicationFactory instance.</returns>
+	public override SharedWebApplicationFactory<TProgram> GetOrCreateFactory<TProgram>()
+	{
+		return (SharedWebApplicationFactory<TProgram>)CachedFactories.GetOrAdd(
+			typeof(TProgram),
+			_ => new SharedWebApplicationFactory<TProgram>(ConnectionString));
+	}
+
+	/// <summary>
+	/// Creates an isolated database using SharedContainerManager and applies migrations.
+	/// Uses SharedContainerManager to ensure only one container across all test assemblies.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 	public override async Task InitializeAsync()
 	{
-		// Start the container
-		await PostgreSqlContainer.StartAsync();
-
-		// Create unique database for this test class
-		string masterConnectionString = PostgreSqlContainer.GetConnectionString();
-		await using (NpgsqlConnection masterConnection = new(masterConnectionString))
-		{
-			await masterConnection.OpenAsync();
-			await using NpgsqlCommand createDbCommand = new($"CREATE DATABASE {DatabaseName}", masterConnection);
-			await createDbCommand.ExecuteNonQueryAsync();
-		}
-
-		// Build connection string for the new database
-		NpgsqlConnectionStringBuilder builder = new(masterConnectionString)
-		{
-			Database = DatabaseName
-		};
-		ConnectionStringValue = builder.ToString();
-
-		// Apply migrations for Identity bounded context
-		DbContextOptions<IdentityDbContext> identityOptions = new DbContextOptionsBuilder<IdentityDbContext>()
-			.UseNpgsql(ConnectionString)
-			.Options;
-		await using (IdentityDbContext identityContext = new(identityOptions))
-		{
-			await identityContext.Database.MigrateAsync();
-		}
-
-		// Apply migrations for Logging bounded context
-		DbContextOptions<LoggingDbContext> loggingOptions = new DbContextOptionsBuilder<LoggingDbContext>()
-			.UseNpgsql(ConnectionString)
-			.Options;
-		await using (LoggingDbContext loggingContext = new(loggingOptions))
-		{
-			await loggingContext.Database.MigrateAsync();
-		}
-
-		// Apply migrations for ApiTracking bounded context
-		DbContextOptions<ApiTrackingDbContext> apiTrackingOptions = new DbContextOptionsBuilder<ApiTrackingDbContext>()
-			.UseNpgsql(ConnectionString)
-			.Options;
-		await using (ApiTrackingDbContext apiTrackingContext = new(apiTrackingOptions))
-		{
-			await apiTrackingContext.Database.MigrateAsync();
-		}
+		ConnectionStringValue =
+			await SharedContainerManager.CreateDatabaseAsync(DatabaseName);
 	}
 
 	/// <summary>
-	/// Stops and disposes the PostgreSQL container.
-	/// The database will be automatically cleaned up with the container.
-	/// Called once after all tests in the test class complete.
+	/// Disposes cached factories. Container cleanup handled by SharedContainerManager.
 	/// </summary>
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-	public override async Task DisposeAsync() => await PostgreSqlContainer.DisposeAsync();
+	public override async Task DisposeAsync()
+	{
+		// Dispose all cached WebApplicationFactory instances
+		foreach (object factory in CachedFactories.Values)
+		{
+			if (factory is IDisposable disposable)
+			{
+				disposable.Dispose();
+			}
+		}
+
+		CachedFactories.Clear();
+
+		// Note: Don't dispose SharedContainerManager here - other fixtures may still use it
+		await Task.CompletedTask;
+	}
 }

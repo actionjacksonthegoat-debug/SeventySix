@@ -75,7 +75,9 @@ export class ClientErrorLoggerService
 			);
 			console.error("Original error:", errorDetails);
 		}
-	} /**
+	}
+
+	/**
 	 * Logs an HTTP error.
 	 */
 	logHttpError(

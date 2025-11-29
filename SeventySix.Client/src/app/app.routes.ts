@@ -1,11 +1,20 @@
 import { Routes } from "@angular/router";
+import { roleGuard } from "@infrastructure/guards/role.guard";
 
 /**
  * Application routes with lazy loading.
  * All feature modules are lazy-loaded as bounded contexts.
  * Each feature has its own routes file for easy enable/disable.
+ *
+ * Access Levels:
+ * - Public: No guard (guest access)
+ * - Authenticated: roleGuard() - any logged-in user
+ * - Role-based: roleGuard("Admin") or roleGuard("Developer", "Admin")
  */
 export const routes: Routes = [
+	// ══════════════════════════════════════════════════════════════
+	// PUBLIC ROUTES (Guest Access - No Authentication Required)
+	// ══════════════════════════════════════════════════════════════
 	{
 		path: "",
 		loadChildren: () =>
@@ -33,25 +42,46 @@ export const routes: Routes = [
 			),
 		data: { breadcrumb: "RV Camper" }
 	},
+	// Auth routes (login, change-password - public)
+	{
+		path: "auth",
+		loadChildren: () =>
+			import("./features/auth/auth.routes").then((m) => m.AUTH_ROUTES),
+		data: { breadcrumb: "Authentication" }
+	},
+
+	// ══════════════════════════════════════════════════════════════
+	// DEVELOPER ROUTES (Developer or Admin - ADDITIVE)
+	// ══════════════════════════════════════════════════════════════
 	{
 		path: "developer",
 		loadChildren: () =>
 			import("./features/developer/developer.routes").then(
 				(m) => m.DEVELOPER_ROUTES
 			),
+		canActivate: [roleGuard("Developer", "Admin")],
 		data: { breadcrumb: "Developer" }
 	},
+
+	// ══════════════════════════════════════════════════════════════
+	// ADMIN ROUTES (Admin Only)
+	// ══════════════════════════════════════════════════════════════
 	{
 		path: "admin",
 		loadChildren: () =>
 			import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES),
+		canActivate: [roleGuard("Admin")],
 		data: { breadcrumb: "Admin" }
 	},
+
+	// Error pages
 	{
 		path: "error",
 		loadChildren: () =>
 			import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES)
 	},
+
+	// Fallback
 	{
 		path: "**",
 		loadComponent: () =>

@@ -56,8 +56,9 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 COPY --from=publish /app/publish .
 COPY --from=publish /app/migrations.sql .
 
-# Create logs directory with proper permissions
-RUN mkdir -p /app/logs && chown -R appuser:appuser /app
+# Create logs and data protection keys directories with proper permissions
+# The keys directory should be mounted as a Docker volume for persistence across container restarts
+RUN mkdir -p /app/logs /app/keys && chown -R appuser:appuser /app
 
 # Create entrypoint script that runs migrations then starts the app
 RUN echo '#!/bin/bash\n\

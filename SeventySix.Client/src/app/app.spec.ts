@@ -3,13 +3,18 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { App } from "./app";
 import { ActivatedRoute } from "@angular/router";
 import { of } from "rxjs";
-import { LayoutService } from "@infrastructure/services";
-import { createMockLayoutService, MockLayoutService } from "@testing";
+import { LayoutService, AuthService } from "@infrastructure/services";
+import {
+	createMockLayoutService,
+	MockLayoutService,
+	createMockAuthService
+} from "@testing";
 
 describe("App", () =>
 {
 	let mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
 	let mockLayoutService: MockLayoutService;
+	let mockAuthService: ReturnType<typeof createMockAuthService>;
 
 	beforeEach(async () =>
 	{
@@ -23,13 +28,15 @@ describe("App", () =>
 
 		mockLayoutService = createMockLayoutService();
 		mockLayoutService.sidebarMode.and.returnValue("over");
+		mockAuthService = createMockAuthService();
 
 		await TestBed.configureTestingModule({
 			imports: [App],
 			providers: [
 				provideZonelessChangeDetection(),
 				{ provide: ActivatedRoute, useValue: mockActivatedRoute },
-				{ provide: LayoutService, useValue: mockLayoutService }
+				{ provide: LayoutService, useValue: mockLayoutService },
+				{ provide: AuthService, useValue: mockAuthService }
 			]
 		}).compileComponents();
 	});
