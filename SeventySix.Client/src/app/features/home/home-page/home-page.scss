@@ -34,7 +34,7 @@ h1 {
 
 	&:hover {
 		transform: translateY(-4px);
-		box-shadow: vars.$elevation-lg;
+		@include mixins.elevation(lg);
 	}
 
 	&.theme-primary {

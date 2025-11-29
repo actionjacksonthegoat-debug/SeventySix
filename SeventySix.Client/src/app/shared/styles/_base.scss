@@ -76,6 +76,11 @@ html.dark-theme {
 	--color-hover: rgba(255, 255, 255, 0.04);
 	--color-pressed: rgba(255, 255, 255, 0.08);
 
+	// Elevation/Shadow Colors - Light glow for dark backgrounds
+	--shadow-color: 255, 255, 255;
+	--shadow-opacity: 0.08;
+	--shadow-opacity-strong: 0.12;
+
 	// Status Surface Colors (10% opacity backgrounds for status indicators)
 	--color-success-surface: color-mix(
 		in srgb,
@@ -154,6 +159,11 @@ html.light-theme {
 	--color-backdrop: rgba(0, 0, 0, 0.6);
 	--color-hover: rgba(0, 0, 0, 0.04);
 	--color-pressed: rgba(0, 0, 0, 0.08);
+
+	// Elevation/Shadow Colors - Dark shadows for light backgrounds
+	--shadow-color: 0, 0, 0;
+	--shadow-opacity: 0.16;
+	--shadow-opacity-strong: 0.23;
 
 	// Status Surface Colors (10% opacity backgrounds for status indicators)
 	--color-success-surface: color-mix(

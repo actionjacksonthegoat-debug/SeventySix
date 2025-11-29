@@ -377,6 +377,8 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 	public async Task ValidateRefreshTokenAsync_ExpiredToken_ReturnsNullAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
+		string tokenValue = $"expired-validate-{testId}";
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		User user = await CreateTestUserAsync(context);
 
@@ -384,7 +386,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		RefreshToken expiredToken =
 			new()
 			{
-				TokenHash = ComputeSha256Hash("expired-token"),
+				TokenHash = ComputeSha256Hash(tokenValue),
 				UserId = user.Id,
 				ExpiresAt = FixedTime.AddDays(-1).UtcDateTime, // Already expired
 				CreatedAt = FixedTime.AddDays(-8).UtcDateTime,
@@ -399,7 +401,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		// Act
 		int? userId =
 			await service.ValidateRefreshTokenAsync(
-				"expired-token",
+				tokenValue,
 				CancellationToken.None);
 
 		// Assert
@@ -819,13 +821,15 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 	public async Task RotateRefreshTokenAsync_ReturnsNull_WhenTokenExpiredAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
+		string tokenValue = $"expired-rotate-{testId}";
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		User user = await CreateTestUserAsync(context);
 
 		RefreshToken expiredToken =
 			new()
 			{
-				TokenHash = ComputeSha256Hash("expired-token"),
+				TokenHash = ComputeSha256Hash(tokenValue),
 				UserId = user.Id,
 				FamilyId = Guid.NewGuid(),
 				ExpiresAt = FixedTime.AddDays(-1).UtcDateTime,
@@ -841,7 +845,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		// Act
 		string? result =
 			await service.RotateRefreshTokenAsync(
-				"expired-token",
+				tokenValue,
 				"127.0.0.1",
 				CancellationToken.None);
 

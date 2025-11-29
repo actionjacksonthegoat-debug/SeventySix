@@ -23,6 +23,43 @@ namespace SeventySix.Identity.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("SeventySix.Identity.EmailVerificationToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("email_verification_tokens", "identity");
+                });
+
             modelBuilder.Entity("SeventySix.Identity.ExternalLogin", b =>
                 {
                     b.Property<int>("Id")
@@ -66,6 +103,43 @@ namespace SeventySix.Identity.Migrations
                         .HasDatabaseName("IX_ExternalLogins_Provider_ProviderUserId");
 
                     b.ToTable("ExternalLogins", "Identity");
+                });
+
+            modelBuilder.Entity("SeventySix.Identity.PasswordResetToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PasswordResetTokens_Token");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_PasswordResetTokens_UserId");
+
+                    b.ToTable("PasswordResetTokens", "identity");
                 });
 
             modelBuilder.Entity("SeventySix.Identity.RefreshToken", b =>

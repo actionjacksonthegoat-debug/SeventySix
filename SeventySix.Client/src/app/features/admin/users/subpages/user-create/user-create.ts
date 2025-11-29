@@ -181,12 +181,16 @@ export class UserCreatePage
 					id: createdUser.id
 				});
 
-				// Show success notification
-				this.snackBar.open("User created successfully!", "View", {
-					duration: 5000,
-					horizontalPosition: "end",
-					verticalPosition: "top"
-				});
+				// Show success notification with email info
+				this.snackBar.open(
+					`User "${createdUser.username}" created. Welcome email sent to ${createdUser.email}.`,
+					"Close",
+					{
+						duration: 5000,
+						horizontalPosition: "end",
+						verticalPosition: "top"
+					}
+				);
 
 				// Navigate to user list
 				this.router.navigate(["/admin/users"]);

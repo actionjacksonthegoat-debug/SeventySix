@@ -6,6 +6,61 @@
 @use "variables" as vars;
 
 // ============================================================================
+// ELEVATION (Theme-aware shadows)
+// ============================================================================
+// Use these instead of $elevation-* variables for theme-aware shadows.
+// Shadows adapt to light/dark mode automatically via CSS custom properties.
+//
+// Usage: @include elevation(lg);
+// Levels: none, sm, base, md, lg, xl, 2xl
+// ============================================================================
+
+/**
+ * Theme-aware elevation shadow
+ * @param {String} $level - Elevation level (none, sm, base, md, lg, xl, 2xl)
+ */
+@mixin elevation($level: base) {
+	@if $level == none {
+		box-shadow: none;
+	} @else if $level == sm {
+		box-shadow:
+			0 1px 3px rgba(var(--shadow-color), var(--shadow-opacity)),
+			0 1px 2px rgba(var(--shadow-color), var(--shadow-opacity-strong));
+	} @else if $level == base or $level == md {
+		box-shadow:
+			0 3px 6px rgba(var(--shadow-color), var(--shadow-opacity)),
+			0 3px 6px rgba(var(--shadow-color), var(--shadow-opacity-strong));
+	} @else if $level == lg {
+		box-shadow:
+			0 10px 20px rgba(var(--shadow-color), var(--shadow-opacity)),
+			0 6px 6px rgba(var(--shadow-color), var(--shadow-opacity-strong));
+	} @else if $level == xl {
+		box-shadow:
+			0 14px 28px rgba(var(--shadow-color), var(--shadow-opacity)),
+			0 10px 10px rgba(var(--shadow-color), var(--shadow-opacity-strong));
+	} @else if $level == 2xl {
+		box-shadow:
+			0 19px 38px rgba(var(--shadow-color), var(--shadow-opacity)),
+			0 15px 12px rgba(var(--shadow-color), var(--shadow-opacity-strong));
+	}
+}
+
+/**
+ * Interactive elevation with hover transition
+ * @param {String} $base-level - Base elevation level (default: base)
+ * @param {String} $hover-level - Hover elevation level (default: lg)
+ */
+@mixin elevation-interactive($base-level: base, $hover-level: lg) {
+	@include elevation($base-level);
+	transition: box-shadow vars.$transition-duration-base
+		vars.$transition-easing-standard;
+
+	&:hover {
+		@include elevation($hover-level);
+	}
+}
+
+// ============================================================================
 // ICON SIZING
 // ============================================================================
 

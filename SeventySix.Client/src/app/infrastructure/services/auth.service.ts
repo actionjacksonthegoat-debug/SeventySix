@@ -193,6 +193,74 @@ export class AuthService
 	}
 
 	/**
+	 * Sets a new password using a reset token.
+	 * Used for password reset flow initiated by admin.
+	 * @param token - The password reset token from the email link
+	 * @param newPassword - The new password to set
+	 */
+	setPassword(token: string, newPassword: string): Observable<void>
+	{
+		return this.http.post<void>(`${this.authUrl}/set-password`, {
+			token,
+			newPassword
+		});
+	}
+
+	/**
+	 * Requests a password reset email for the given email address.
+	 * Always succeeds from the client's perspective (prevents email enumeration).
+	 * @param email - The email address to send the reset link to.
+	 */
+	requestPasswordReset(email: string): Observable<void>
+	{
+		return this.http.post<void>(`${this.authUrl}/forgot-password`, {
+			email
+		});
+	}
+
+	/**
+	 * Initiates self-registration by sending verification email.
+	 * Always shows success to prevent email enumeration.
+	 * @param email - The email address to register.
+	 */
+	initiateRegistration(email: string): Observable<void>
+	{
+		return this.http.post<void>(`${this.authUrl}/register/initiate`, {
+			email
+		});
+	}
+
+	/**
+	 * Completes self-registration after email verification.
+	 * @param token - The verification token from the email link.
+	 * @param username - The desired username.
+	 * @param password - The desired password.
+	 */
+	completeRegistration(
+		token: string,
+		username: string,
+		password: string
+	): Observable<AuthResponse>
+	{
+		return this.http
+			.post<AuthResponse>(
+				`${this.authUrl}/register/complete`,
+				{ token, username, password },
+				{ withCredentials: true }
+			)
+			.pipe(
+				tap((response: AuthResponse) =>
+				{
+					this.setAccessToken(
+						response.accessToken,
+						response.expiresAt
+					);
+					this.markHasSession();
+				})
+			);
+	}
+
+	/**
 	 * Gets the current access token.
 	 */
 	getAccessToken(): string | null

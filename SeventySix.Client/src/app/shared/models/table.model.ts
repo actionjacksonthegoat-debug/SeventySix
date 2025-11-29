@@ -213,3 +213,19 @@ export interface DateRangeEvent
 	 */
 	preset: "24h" | "7d" | "30d" | "all";
 }
+
+/**
+ * Sort change event for server-side sorting
+ */
+export interface SortChangeEvent
+{
+	/**
+	 * Column key to sort by
+	 */
+	sortBy: string;
+
+	/**
+	 * Sort direction (true = descending, false = ascending)
+	 */
+	sortDescending: boolean;
+}

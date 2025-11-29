@@ -44,30 +44,3 @@
 		display: none;
 	}
 }
-
-.footer-links {
-	display: flex;
-	align-items: center;
-	gap: vars.$spacing-sm;
-	opacity: 0.8;
-
-	.footer-link {
-		color: inherit;
-		text-decoration: none;
-		transition: opacity vars.$transition-duration-normal;
-
-		&:hover {
-			opacity: 1;
-			text-decoration: underline;
-		}
-	}
-
-	.separator {
-		opacity: 0.5;
-	}
-
-	@media (max-width: vars.$breakpoint-xs-max) {
-		gap: vars.$spacing-xs;
-		font-size: vars.$font-size-xs;
-	}
-}

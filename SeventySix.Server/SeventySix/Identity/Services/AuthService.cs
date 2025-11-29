@@ -3,12 +3,14 @@
 // </copyright>
 
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Shared;
 
 namespace SeventySix.Identity;
@@ -29,6 +31,10 @@ public class AuthService(
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings,
 	IValidator<ChangePasswordRequest> changePasswordValidator,
+	IValidator<SetPasswordRequest> setPasswordValidator,
+	IValidator<InitiateRegistrationRequest> initiateRegistrationValidator,
+	IValidator<CompleteRegistrationRequest> completeRegistrationValidator,
+	IEmailService emailService,
 	TimeProvider timeProvider,
 	ILogger<AuthService> logger) : IAuthService
 {
@@ -542,6 +548,230 @@ public class AuthService(
 		return AuthResult.Succeeded();
 	}
 
+	/// <inheritdoc/>
+	public async Task InitiatePasswordResetAsync(
+		int userId,
+		bool isNewUser,
+		CancellationToken cancellationToken = default)
+	{
+		User user =
+			await context.Users
+				.AsNoTracking()
+				.Where(u => u.Id == userId)
+				.FirstOrDefaultAsync(cancellationToken)
+			?? throw new InvalidOperationException($"User with ID {userId} not found.");
+
+		// Invalidate any existing unused tokens for this user
+		await context.PasswordResetTokens
+			.Where(t => t.UserId == userId && !t.IsUsed)
+			.ExecuteUpdateAsync(
+				setters => setters.SetProperty(t => t.IsUsed, true),
+				cancellationToken);
+
+		// Generate secure token
+		byte[] tokenBytes =
+			RandomNumberGenerator.GetBytes(64);
+		string token =
+			Convert.ToBase64String(tokenBytes);
+
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		PasswordResetToken resetToken =
+			new()
+			{
+				UserId = userId,
+				Token = token,
+				ExpiresAt = now.AddHours(24),
+				CreatedAt = now,
+				IsUsed = false,
+			};
+
+		context.PasswordResetTokens.Add(resetToken);
+		await context.SaveChangesAsync(cancellationToken);
+
+		// Send appropriate email
+		if (isNewUser)
+		{
+			await emailService.SendWelcomeEmailAsync(
+				user.Email,
+				user.Username,
+				token,
+				cancellationToken);
+
+			logger.LogInformation(
+				"Welcome email sent for new user. UserId: {UserId}, Email: {Email}",
+				userId,
+				user.Email);
+		}
+		else
+		{
+			await emailService.SendPasswordResetEmailAsync(
+				user.Email,
+				user.Username,
+				token,
+				cancellationToken);
+
+			logger.LogInformation(
+				"Password reset email sent. UserId: {UserId}, Email: {Email}",
+				userId,
+				user.Email);
+		}
+	}
+
+	/// <inheritdoc/>
+	public async Task InitiatePasswordResetByEmailAsync(
+		string email,
+		CancellationToken cancellationToken = default)
+	{
+		User? user =
+			await context.Users
+				.AsNoTracking()
+				.Where(user => user.Email.ToLower() == email.ToLower()
+					&& user.IsActive)
+				.FirstOrDefaultAsync(cancellationToken);
+
+		// Silent success for non-existent/inactive emails (prevents enumeration)
+		if (user == null)
+		{
+			logger.LogInformation(
+				"Password reset requested for non-existent or inactive email: {Email}",
+				email);
+			return;
+		}
+
+		await InitiatePasswordResetAsync(
+			user.Id,
+			isNewUser: false,
+			cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<AuthResult> SetPasswordAsync(
+		SetPasswordRequest request,
+		string? clientIp,
+		CancellationToken cancellationToken = default)
+	{
+		// Validate request
+		ValidationResult validationResult =
+			await setPasswordValidator.ValidateAsync(request, cancellationToken);
+
+		if (!validationResult.IsValid)
+		{
+			string errorMessage =
+				string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage));
+
+			return AuthResult.Failed(
+				errorMessage,
+				"VALIDATION_ERROR");
+		}
+
+		// Find the token
+		PasswordResetToken? resetToken =
+			await context.PasswordResetTokens
+				.Where(t => t.Token == request.Token)
+				.FirstOrDefaultAsync(cancellationToken);
+
+		if (resetToken == null)
+		{
+			logger.LogWarning("Invalid password reset token attempted.");
+			return AuthResult.Failed(
+				"Invalid or expired reset token.",
+				AuthErrorCodes.InvalidToken);
+		}
+
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		if (resetToken.IsUsed)
+		{
+			logger.LogWarning(
+				"Attempted to use already-used reset token. UserId: {UserId}",
+				resetToken.UserId);
+			return AuthResult.Failed(
+				"This reset link has already been used.",
+				AuthErrorCodes.TokenExpired);
+		}
+
+		if (resetToken.ExpiresAt < now)
+		{
+			logger.LogWarning(
+				"Attempted to use expired reset token. UserId: {UserId}, ExpiredAt: {ExpiredAt}",
+				resetToken.UserId,
+				resetToken.ExpiresAt);
+			return AuthResult.Failed(
+				"This reset link has expired.",
+				AuthErrorCodes.TokenExpired);
+		}
+
+		// Get the user
+		User? user =
+			await context.Users
+				.Where(u => u.Id == resetToken.UserId)
+				.FirstOrDefaultAsync(cancellationToken);
+
+		if (user == null)
+		{
+			logger.LogError(
+				"User not found for valid reset token. UserId: {UserId}",
+				resetToken.UserId);
+			return AuthResult.Failed(
+				"User not found.",
+				AuthErrorCodes.UserNotFound);
+		}
+
+		// Mark token as used
+		resetToken.IsUsed = true;
+
+		// Update or create credential
+		UserCredential? credential =
+			await context.UserCredentials
+				.Where(c => c.UserId == user.Id)
+				.FirstOrDefaultAsync(cancellationToken);
+
+		if (credential != null)
+		{
+			credential.PasswordHash =
+				BCrypt.Net.BCrypt.HashPassword(
+					request.NewPassword,
+					authSettings.Value.Password.WorkFactor);
+			credential.PasswordChangedAt = now;
+		}
+		else
+		{
+			credential =
+				new UserCredential
+				{
+					UserId = user.Id,
+					PasswordHash =
+						BCrypt.Net.BCrypt.HashPassword(
+							request.NewPassword,
+							authSettings.Value.Password.WorkFactor),
+					CreatedAt = now
+				};
+
+			context.UserCredentials.Add(credential);
+		}
+
+		await context.SaveChangesAsync(cancellationToken);
+
+		// Revoke all existing tokens
+		await tokenService.RevokeAllUserTokensAsync(
+			user.Id,
+			cancellationToken);
+
+		logger.LogInformation(
+			"Password set via reset token for user. UserId: {UserId}",
+			user.Id);
+
+		// Generate new auth tokens for immediate login
+		return await GenerateAuthResultAsync(
+			user,
+			clientIp,
+			requiresPasswordChange: false,
+			cancellationToken);
+	}
+
 	/// <summary>
 	/// Generates auth result with new tokens for user.
 	/// </summary>
@@ -853,6 +1083,240 @@ public class AuthService(
 		await context.SaveChangesAsync(cancellationToken);
 
 		return user;
+	}
+
+	/// <inheritdoc/>
+	public async Task InitiateRegistrationAsync(
+		InitiateRegistrationRequest request,
+		CancellationToken cancellationToken = default)
+	{
+		await initiateRegistrationValidator.ValidateAndThrowAsync(
+			request,
+			cancellationToken);
+
+		string email =
+			request.Email;
+
+		// Check if email is already registered
+		bool emailExists =
+			await context.Users
+				.AsNoTracking()
+				.AnyAsync(
+					u => u.Email.ToLower() == email.ToLower(),
+					cancellationToken);
+
+		if (emailExists)
+		{
+			logger.LogInformation(
+				"Registration attempt for existing email: {Email}",
+				email);
+			return; // Silent success to prevent enumeration
+		}
+
+		// Invalidate any existing verification tokens for this email
+		List<EmailVerificationToken> existingTokens =
+			await context.EmailVerificationTokens
+				.Where(t => t.Email.ToLower() == email.ToLower()
+					&& !t.IsUsed)
+				.ToListAsync(cancellationToken);
+
+		foreach (EmailVerificationToken existingToken in existingTokens)
+		{
+			existingToken.IsUsed = true;
+		}
+
+		// Generate new verification token
+		byte[] tokenBytes =
+			RandomNumberGenerator.GetBytes(64);
+		string token =
+			Convert.ToBase64String(tokenBytes);
+
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		EmailVerificationToken verificationToken =
+			new()
+			{
+				Email = email,
+				Token = token,
+				ExpiresAt = now.AddHours(24),
+				CreatedAt = now,
+				IsUsed = false,
+			};
+
+		context.EmailVerificationTokens.Add(verificationToken);
+		await context.SaveChangesAsync(cancellationToken);
+
+		// Send verification email
+		await emailService.SendVerificationEmailAsync(
+			email,
+			token,
+			cancellationToken);
+
+		logger.LogInformation(
+			"Registration verification email sent to: {Email}",
+			email);
+	}
+
+	/// <inheritdoc/>
+	public async Task<AuthResult> CompleteRegistrationAsync(
+		CompleteRegistrationRequest request,
+		string? clientIp,
+		CancellationToken cancellationToken = default)
+	{
+		await completeRegistrationValidator.ValidateAndThrowAsync(
+			request,
+			cancellationToken);
+
+		// Find the verification token
+		EmailVerificationToken? verificationToken =
+			await context.EmailVerificationTokens
+				.Where(t => t.Token == request.Token)
+				.FirstOrDefaultAsync(cancellationToken);
+
+		if (verificationToken == null)
+		{
+			logger.LogWarning("Invalid email verification token attempted.");
+			return AuthResult.Failed(
+				"Invalid or expired verification link.",
+				AuthErrorCodes.InvalidToken);
+		}
+
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		if (verificationToken.IsUsed)
+		{
+			logger.LogWarning(
+				"Attempted to use already-used verification token. Email: {Email}",
+				verificationToken.Email);
+			return AuthResult.Failed(
+				"This verification link has already been used.",
+				AuthErrorCodes.TokenExpired);
+		}
+
+		if (verificationToken.ExpiresAt < now)
+		{
+			logger.LogWarning(
+				"Attempted to use expired verification token. Email: {Email}, ExpiredAt: {ExpiredAt}",
+				verificationToken.Email,
+				verificationToken.ExpiresAt);
+			return AuthResult.Failed(
+				"This verification link has expired. Please request a new one.",
+				AuthErrorCodes.TokenExpired);
+		}
+
+		// Check if username already exists
+		bool usernameExists =
+			await context.Users
+				.AsNoTracking()
+				.AnyAsync(
+					u => u.Username.ToLower() == request.Username.ToLower(),
+					cancellationToken);
+
+		if (usernameExists)
+		{
+			logger.LogWarning(
+				"Registration attempt with existing username: {Username}",
+				request.Username);
+			return AuthResult.Failed(
+				"Username is already taken.",
+				AuthErrorCodes.UsernameExists);
+		}
+
+		// Double-check email isn't already registered (race condition protection)
+		bool emailExists =
+			await context.Users
+				.AsNoTracking()
+				.AnyAsync(
+					u => u.Email.ToLower() == verificationToken.Email.ToLower(),
+					cancellationToken);
+
+		if (emailExists)
+		{
+			logger.LogWarning(
+				"Registration attempt with already registered email: {Email}",
+				verificationToken.Email);
+			return AuthResult.Failed(
+				"This email is already registered.",
+				AuthErrorCodes.EmailExists);
+		}
+
+		// Create the user
+		User user =
+			new()
+			{
+				Username = request.Username,
+				Email = verificationToken.Email,
+				IsActive = true,
+				CreateDate = now,
+				CreatedBy = "Self-Registration",
+			};
+
+		context.Users.Add(user);
+		await context.SaveChangesAsync(cancellationToken);
+
+		// Create credential with hashed password
+		string hashedPassword =
+			BCrypt.Net.BCrypt.HashPassword(
+				request.Password,
+				authSettings.Value.Password.WorkFactor);
+
+		UserCredential credential =
+			new()
+			{
+				UserId = user.Id,
+				PasswordHash = hashedPassword,
+				CreatedAt = now,
+				PasswordChangedAt = now, // Set to now so no password change required
+			};
+
+		context.UserCredentials.Add(credential);
+
+		// Assign default User role
+		UserRole userRole =
+			new()
+			{
+				UserId = user.Id,
+				Role = "User",
+				AssignedAt = now,
+			};
+
+		context.UserRoles.Add(userRole);
+
+		// Mark token as used
+		verificationToken.IsUsed = true;
+
+		await context.SaveChangesAsync(cancellationToken);
+
+		logger.LogInformation(
+			"User registered successfully via self-registration. UserId: {UserId}, Email: {Email}",
+			user.Id,
+			user.Email);
+
+		// Generate tokens for immediate login
+		List<string> roles =
+			["User"];
+
+		string accessToken =
+			tokenService.GenerateAccessToken(
+				user.Id,
+				user.Username,
+				user.Email,
+				user.FullName,
+				roles);
+
+		string refreshToken =
+			await tokenService.GenerateRefreshTokenAsync(
+				user.Id,
+				clientIp,
+				cancellationToken);
+
+		return AuthResult.Succeeded(
+			accessToken,
+			refreshToken,
+			timeProvider.GetUtcNow().AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes).UtcDateTime,
+			requiresPasswordChange: false);
 	}
 
 	/// <summary>

@@ -11,8 +11,9 @@ import {
 	ChangeDetectionStrategy,
 	OnInit
 } from "@angular/core";
-import { Router, ActivatedRoute } from "@angular/router";
+import { Router, ActivatedRoute, RouterLink } from "@angular/router";
 import { FormsModule } from "@angular/forms";
+import { HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import {
@@ -23,7 +24,7 @@ import {
 @Component({
 	selector: "app-login",
 	standalone: true,
-	imports: [FormsModule],
+	imports: [FormsModule, RouterLink],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	templateUrl: "./login.component.html",
 	styleUrls: ["./login.component.scss"]
@@ -90,9 +91,10 @@ export class LoginComponent implements OnInit
 					this.router.navigateByUrl(this.returnUrl);
 				}
 			},
-			error: () =>
+			error: (error: HttpErrorResponse) =>
 			{
-				this.notification.error("Invalid username or password.");
+				const details: string[] = this.getLoginErrorDetails(error);
+				this.notification.errorWithDetails("Login Failed", details);
 				this.isLoading.set(false);
 			}
 		});
@@ -102,5 +104,32 @@ export class LoginComponent implements OnInit
 	{
 		this.isLoading.set(true);
 		this.authService.loginWithProvider("github", this.returnUrl);
+	}
+
+	/**
+	 * Extracts user-friendly error details from login failure.
+	 */
+	private getLoginErrorDetails(error: HttpErrorResponse): string[]
+	{
+		switch (error.status)
+		{
+			case 401:
+				return [
+					"Invalid username or password",
+					"Check your credentials and try again"
+				];
+			case 0:
+				return [
+					"Unable to connect to server",
+					"Check your internet connection"
+				];
+			case 429:
+				return [
+					"Too many login attempts",
+					"Please wait before trying again"
+				];
+			default:
+				return [error.error?.detail ?? "An unexpected error occurred"];
+		}
 	}
 }

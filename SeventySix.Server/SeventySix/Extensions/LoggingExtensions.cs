@@ -4,6 +4,7 @@
 
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Logging;
 using SeventySix.Shared.Infrastructure;
@@ -16,12 +17,20 @@ public static class LoggingExtensions
 	/// <summary>Registers Logging bounded context services with the DI container.</summary>
 	/// <param name="services">The service collection to register services with.</param>
 	/// <param name="connectionString">The database connection string for LoggingDbContext.</param>
+	/// <param name="configuration">The application configuration for settings binding.</param>
 	/// <returns>The service collection for method chaining.</returns>
-	public static IServiceCollection AddLoggingDomain(this IServiceCollection services, string connectionString)
+	public static IServiceCollection AddLoggingDomain(
+		this IServiceCollection services,
+		string connectionString,
+		IConfiguration configuration)
 	{
-		services.AddDbContext<LoggingDbContext>((serviceProvider, options) =>
+		services.AddDbContext<LoggingDbContext>((
+			serviceProvider,
+			options) =>
 		{
-			AuditInterceptor auditInterceptor = serviceProvider.GetRequiredService<AuditInterceptor>();
+			AuditInterceptor auditInterceptor =
+				serviceProvider.GetRequiredService<AuditInterceptor>();
+
 			options.UseNpgsql(connectionString);
 			options.AddInterceptors(auditInterceptor);
 		});
@@ -32,6 +41,12 @@ public static class LoggingExtensions
 		// Validators - Singleton (stateless, thread-safe)
 		services.AddSingleton<IValidator<LogQueryRequest>, LogQueryRequestValidator>();
 		services.AddSingleton<IValidator<CreateLogRequest>, CreateLogRequestValidator>();
+
+		// Log cleanup background service
+		services.Configure<LogCleanupSettings>(
+			configuration.GetSection(LogCleanupSettings.SectionName));
+
+		services.AddHostedService<LogCleanupService>();
 
 		return services;
 	}

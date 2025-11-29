@@ -107,4 +107,21 @@ describe("UserRepository", () =>
 			});
 		});
 	});
+
+	describe("resetPassword", () =>
+	{
+		it("should call reset password endpoint", (done) =>
+		{
+			mockApiService.post.and.returnValue(of(undefined));
+
+			repository.resetPassword(1).subscribe(() =>
+			{
+				expect(mockApiService.post).toHaveBeenCalledWith(
+					"users/1/reset-password",
+					{}
+				);
+				done();
+			});
+		});
+	});
 });

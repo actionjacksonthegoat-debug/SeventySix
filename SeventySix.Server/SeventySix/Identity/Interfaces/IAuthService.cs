@@ -106,4 +106,74 @@ public interface IAuthService
 		int userId,
 		ChangePasswordRequest request,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Initiates a password reset flow by creating a reset token and sending an email.
+	/// </summary>
+	/// <remarks>
+	/// Used for both:
+	/// - Admin creating new user (welcome email with password setup)
+	/// - User requesting password reset (forgot password).
+	/// </remarks>
+	/// <param name="userId">The user's ID.</param>
+	/// <param name="isNewUser">True for welcome email, false for password reset email.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>Task representing the async operation.</returns>
+	public Task InitiatePasswordResetAsync(
+		int userId,
+		bool isNewUser,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Initiates password reset by email address (public endpoint).
+	/// </summary>
+	/// <remarks>
+	/// Silently succeeds even if email doesn't exist (prevents email enumeration).
+	/// Only sends email if user exists and is active.
+	/// </remarks>
+	/// <param name="email">The email address to send reset link to.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>Task representing the async operation.</returns>
+	public Task InitiatePasswordResetByEmailAsync(
+		string email,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Sets a new password using a valid password reset token.
+	/// </summary>
+	/// <remarks>
+	/// Validates the token, sets the password, and marks the token as used.
+	/// Returns AuthResult to allow immediate login after password setup.
+	/// </remarks>
+	/// <param name="request">The set password request containing token and new password.</param>
+	/// <param name="clientIp">Client IP for token tracking.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>Authentication result with tokens if successful, or error.</returns>
+	public Task<AuthResult> SetPasswordAsync(
+		SetPasswordRequest request,
+		string? clientIp,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Initiates self-registration by sending verification email.
+	/// Always returns success to prevent email enumeration.
+	/// </summary>
+	/// <param name="request">The registration initiation request.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>Task representing the async operation.</returns>
+	public Task InitiateRegistrationAsync(
+		InitiateRegistrationRequest request,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Completes registration after email verification.
+	/// </summary>
+	/// <param name="request">The registration completion request.</param>
+	/// <param name="clientIp">Client IP for token tracking.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>Authentication result with tokens if successful.</returns>
+	public Task<AuthResult> CompleteRegistrationAsync(
+		CompleteRegistrationRequest request,
+		string? clientIp,
+		CancellationToken cancellationToken = default);
 }

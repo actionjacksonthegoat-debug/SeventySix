@@ -6,6 +6,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection, signal } from "@angular/core";
 import { provideRouter, Router } from "@angular/router";
+import { HttpErrorResponse } from "@angular/common/http";
 import { of, throwError } from "rxjs";
 import { LoginComponent } from "./login.component";
 import { AuthService } from "@infrastructure/services/auth.service";
@@ -165,11 +166,15 @@ describe("LoginComponent", () =>
 			);
 		});
 
-		it("should show error notification on login failure", () =>
+		it("should show detailed error for 401 unauthorized", () =>
 		{
 			// Arrange
+			const errorResponse: HttpErrorResponse = new HttpErrorResponse({
+				status: 401,
+				statusText: "Unauthorized"
+			});
 			mockAuthService.login.and.returnValue(
-				throwError(() => new Error("Invalid credentials"))
+				throwError(() => errorResponse)
 			);
 			(component as any).usernameOrEmail = "testuser";
 			(component as any).password = "wrongpassword";
@@ -178,9 +183,111 @@ describe("LoginComponent", () =>
 			(component as any).onLocalLogin();
 
 			// Assert
-			expect(mockNotificationService.error).toHaveBeenCalledWith(
-				"Invalid username or password."
+			expect(
+				mockNotificationService.errorWithDetails
+			).toHaveBeenCalledWith("Login Failed", [
+				"Invalid username or password",
+				"Check your credentials and try again"
+			]);
+		});
+
+		it("should show connection error for status 0", () =>
+		{
+			// Arrange
+			const errorResponse: HttpErrorResponse = new HttpErrorResponse({
+				status: 0,
+				statusText: "Unknown Error"
+			});
+			mockAuthService.login.and.returnValue(
+				throwError(() => errorResponse)
 			);
+			(component as any).usernameOrEmail = "testuser";
+			(component as any).password = "password";
+
+			// Act
+			(component as any).onLocalLogin();
+
+			// Assert
+			expect(
+				mockNotificationService.errorWithDetails
+			).toHaveBeenCalledWith("Login Failed", [
+				"Unable to connect to server",
+				"Check your internet connection"
+			]);
+		});
+
+		it("should show rate limit error for 429", () =>
+		{
+			// Arrange
+			const errorResponse: HttpErrorResponse = new HttpErrorResponse({
+				status: 429,
+				statusText: "Too Many Requests"
+			});
+			mockAuthService.login.and.returnValue(
+				throwError(() => errorResponse)
+			);
+			(component as any).usernameOrEmail = "testuser";
+			(component as any).password = "password";
+
+			// Act
+			(component as any).onLocalLogin();
+
+			// Assert
+			expect(
+				mockNotificationService.errorWithDetails
+			).toHaveBeenCalledWith("Login Failed", [
+				"Too many login attempts",
+				"Please wait before trying again"
+			]);
+		});
+
+		it("should show generic error for unexpected status codes", () =>
+		{
+			// Arrange
+			const errorResponse: HttpErrorResponse = new HttpErrorResponse({
+				status: 500,
+				statusText: "Internal Server Error"
+			});
+			mockAuthService.login.and.returnValue(
+				throwError(() => errorResponse)
+			);
+			(component as any).usernameOrEmail = "testuser";
+			(component as any).password = "password";
+
+			// Act
+			(component as any).onLocalLogin();
+
+			// Assert
+			expect(
+				mockNotificationService.errorWithDetails
+			).toHaveBeenCalledWith("Login Failed", [
+				"An unexpected error occurred"
+			]);
+		});
+
+		it("should use server error detail if available", () =>
+		{
+			// Arrange
+			const errorResponse: HttpErrorResponse = new HttpErrorResponse({
+				status: 500,
+				statusText: "Internal Server Error",
+				error: { detail: "Custom server error message" }
+			});
+			mockAuthService.login.and.returnValue(
+				throwError(() => errorResponse)
+			);
+			(component as any).usernameOrEmail = "testuser";
+			(component as any).password = "password";
+
+			// Act
+			(component as any).onLocalLogin();
+
+			// Assert
+			expect(
+				mockNotificationService.errorWithDetails
+			).toHaveBeenCalledWith("Login Failed", [
+				"Custom server error message"
+			]);
 		});
 
 		it("should set isLoading to true during login", () =>
@@ -201,8 +308,12 @@ describe("LoginComponent", () =>
 		it("should reset isLoading to false on login error", () =>
 		{
 			// Arrange
+			const errorResponse: HttpErrorResponse = new HttpErrorResponse({
+				status: 401,
+				statusText: "Unauthorized"
+			});
 			mockAuthService.login.and.returnValue(
-				throwError(() => new Error("Invalid credentials"))
+				throwError(() => errorResponse)
 			);
 			(component as any).usernameOrEmail = "testuser";
 			(component as any).password = "wrongpassword";

@@ -32,14 +32,19 @@ namespace SeventySix.Api.Tests.Controllers;
 public class UsersControllerTests
 {
 	private readonly IUserService UserService;
+	private readonly IAuthService AuthService;
 	private readonly ILogger<UsersController> Logger;
 	private readonly UsersController Controller;
 
 	public UsersControllerTests()
 	{
 		UserService = Substitute.For<IUserService>();
+		AuthService = Substitute.For<IAuthService>();
 		Logger = Substitute.For<ILogger<UsersController>>();
-		Controller = new UsersController(UserService, Logger);
+		Controller = new UsersController(
+			UserService,
+			AuthService,
+			Logger);
 	}
 
 	#region Constructor Tests

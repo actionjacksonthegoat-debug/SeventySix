@@ -52,6 +52,16 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 	public DbSet<UserRole> UserRoles => Set<UserRole>();
 
 	/// <summary>
+	/// Gets or sets the PasswordResetTokens DbSet.
+	/// </summary>
+	public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+
+	/// <summary>
+	/// Gets or sets the EmailVerificationTokens DbSet.
+	/// </summary>
+	public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
+
+	/// <summary>
 	/// Gets the schema name for Identity bounded context.
 	/// </summary>
 	/// <returns>"Identity".</returns>

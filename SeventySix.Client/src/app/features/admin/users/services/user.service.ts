@@ -238,4 +238,17 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 			}
 		}));
 	}
+
+	/**
+	 * Mutation for initiating password reset
+	 * Sends password reset email to user
+	 * @returns Mutation object with mutate, isPending, error, etc.
+	 */
+	resetPassword()
+	{
+		return injectMutation(() => ({
+			mutationFn: (id: number | string) =>
+				lastValueFrom(this.userRepository.resetPassword(id))
+		}));
+	}
 }

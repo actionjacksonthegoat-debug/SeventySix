@@ -440,6 +440,177 @@ public class AuthController(
 	}
 
 	/// <summary>
+	/// Initiates password reset for a user by email.
+	/// </summary>
+	/// <remarks>
+	/// Always returns 200 OK to prevent email enumeration attacks.
+	/// Email is only sent if the user exists and is active.
+	/// </remarks>
+	/// <param name="request">Forgot password request with email.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>200 OK regardless of whether email exists.</returns>
+	/// <response code="200">Request processed (email sent if user exists).</response>
+	/// <response code="400">Invalid email format.</response>
+	/// <response code="429">Too many requests.</response>
+	[HttpPost("forgot-password")]
+	[EnableRateLimiting(RateLimitPolicies.AuthLogin)]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+	public async Task<IActionResult> ForgotPasswordAsync(
+		[FromBody] ForgotPasswordRequest request,
+		CancellationToken cancellationToken)
+	{
+		await authService.InitiatePasswordResetByEmailAsync(
+			request.Email,
+			cancellationToken);
+
+		// Always return OK to prevent email enumeration
+		return Ok(new { message = "If an account exists with this email, a reset link has been sent." });
+	}
+
+	/// <summary>
+	/// Sets a new password using a password reset token.
+	/// </summary>
+	/// <remarks>
+	/// Used for both:
+	/// - New user welcome flow (initial password setup from welcome email)
+	/// - Forgot password flow (password reset from reset email).
+	///
+	/// On success, returns auth tokens for immediate login.
+	/// </remarks>
+	/// <param name="request">Set password request with token and new password.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>Access token and sets refresh token cookie.</returns>
+	/// <response code="200">Password set successfully, includes auth tokens.</response>
+	/// <response code="400">Invalid token, expired token, or validation error.</response>
+	[HttpPost("set-password")]
+	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	public async Task<ActionResult<AuthResponse>> SetPasswordAsync(
+		[FromBody] SetPasswordRequest request,
+		CancellationToken cancellationToken)
+	{
+		string? clientIp =
+			GetClientIpAddress();
+
+		AuthResult result =
+			await authService.SetPasswordAsync(
+				request,
+				clientIp,
+				cancellationToken);
+
+		if (!result.Success)
+		{
+			logger.LogWarning(
+				"Set password failed. Error: {Error}, Code: {ErrorCode}",
+				result.Error,
+				result.ErrorCode);
+
+			return BadRequest(new ProblemDetails
+			{
+				Title = "Set Password Failed",
+				Detail = result.Error,
+				Status = StatusCodes.Status400BadRequest,
+				Extensions = { ["errorCode"] = result.ErrorCode }
+			});
+		}
+
+		SetRefreshTokenCookie(result.RefreshToken!);
+
+		return Ok(new AuthResponse(
+			AccessToken: result.AccessToken!,
+			ExpiresAt: result.ExpiresAt!.Value,
+			RequiresPasswordChange: false));
+	}
+
+	/// <summary>
+	/// Initiates user self-registration by sending a verification email.
+	/// </summary>
+	/// <remarks>
+	/// Creates a verification token and sends an email with a link to complete registration.
+	/// The token expires after a configured time period.
+	/// Always returns OK to prevent email enumeration attacks.
+	/// </remarks>
+	/// <param name="request">Registration initiation request with email.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>200 OK regardless of whether email is available.</returns>
+	/// <response code="200">Request processed (email sent if valid).</response>
+	/// <response code="400">Invalid email format.</response>
+	/// <response code="429">Too many requests.</response>
+	[HttpPost("register/initiate")]
+	[EnableRateLimiting(RateLimitPolicies.AuthLogin)]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+	public async Task<IActionResult> InitiateRegistrationAsync(
+		[FromBody] InitiateRegistrationRequest request,
+		CancellationToken cancellationToken)
+	{
+		await authService.InitiateRegistrationAsync(
+			request,
+			cancellationToken);
+
+		// Always return OK to prevent email enumeration
+		return Ok(new { message = "If this email is available, a verification link has been sent." });
+	}
+
+	/// <summary>
+	/// Completes user self-registration using a verification token.
+	/// </summary>
+	/// <remarks>
+	/// Validates the token, creates the user account, and returns auth tokens.
+	/// The user can immediately start using the application after registration.
+	/// </remarks>
+	/// <param name="request">Registration completion request with token, username, and password.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>Auth tokens on success.</returns>
+	/// <response code="201">Registration completed successfully, includes auth tokens.</response>
+	/// <response code="400">Invalid token, expired token, or validation error.</response>
+	[HttpPost("register/complete")]
+	[EnableRateLimiting(RateLimitPolicies.AuthLogin)]
+	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	public async Task<ActionResult<AuthResponse>> CompleteRegistrationAsync(
+		[FromBody] CompleteRegistrationRequest request,
+		CancellationToken cancellationToken)
+	{
+		string? clientIp =
+			GetClientIpAddress();
+
+		AuthResult result =
+			await authService.CompleteRegistrationAsync(
+				request,
+				clientIp,
+				cancellationToken);
+
+		if (!result.Success)
+		{
+			logger.LogWarning(
+				"Registration completion failed. Error: {Error}, Code: {ErrorCode}",
+				result.Error,
+				result.ErrorCode);
+
+			return BadRequest(new ProblemDetails
+			{
+				Title = "Registration Failed",
+				Detail = result.Error,
+				Status = StatusCodes.Status400BadRequest,
+				Extensions = { ["errorCode"] = result.ErrorCode }
+			});
+		}
+
+		SetRefreshTokenCookie(result.RefreshToken!);
+
+		return StatusCode(
+			StatusCodes.Status201Created,
+			new AuthResponse(
+				AccessToken: result.AccessToken!,
+				ExpiresAt: result.ExpiresAt!.Value,
+				RequiresPasswordChange: false));
+	}
+
+	/// <summary>
 	/// Gets the current user ID from claims.
 	/// </summary>
 	private int? GetCurrentUserId()

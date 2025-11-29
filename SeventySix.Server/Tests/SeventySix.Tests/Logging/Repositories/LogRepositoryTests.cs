@@ -149,29 +149,30 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_WithSearchTerm_FiltersMultipleFields_SuccessfullyAsync()
 	{
 		// Arrange
-		await SeedTestLogsForSearchAsync();
+		string testId = Guid.NewGuid().ToString("N")[..8];
+		await SeedTestLogsForSearchAsync(testId);
 
-		// Act - Search for "Authentication" which should match Message field
-		LogQueryRequest messageRequest = new() { SearchTerm = "Authentication" };
+		// Act - Search for unique marker which should match Message field
+		LogQueryRequest messageRequest = new() { SearchTerm = $"Authentication_{testId}" };
 		(IEnumerable<Log> messageLogs, int _) = await Repository.GetPagedAsync(messageRequest);
 
-		// Act - Search for "UserService" which should match SourceContext field
-		LogQueryRequest sourceRequest = new() { SearchTerm = "UserService" };
+		// Act - Search for unique marker in SourceContext
+		LogQueryRequest sourceRequest = new() { SearchTerm = $"UserService_{testId}" };
 		(IEnumerable<Log> sourceLogs, int _) = await Repository.GetPagedAsync(sourceRequest);
 
-		// Act - Search for "users" which should match RequestPath field
-		LogQueryRequest pathRequest = new() { SearchTerm = "users" };
+		// Act - Search for unique marker in RequestPath
+		LogQueryRequest pathRequest = new() { SearchTerm = $"users_{testId}" };
 		(IEnumerable<Log> pathLogs, int _) = await Repository.GetPagedAsync(pathRequest);
 
-		// Act - Search for "NullReference" which should match ExceptionMessage field
-		LogQueryRequest exceptionRequest = new() { SearchTerm = "NullReference" };
+		// Act - Search for unique marker in ExceptionMessage
+		LogQueryRequest exceptionRequest = new() { SearchTerm = $"NullRef_{testId}" };
 		(IEnumerable<Log> exceptionLogs, int _) = await Repository.GetPagedAsync(exceptionRequest);
 
 		// Assert - Verify search works across all fields
-		Assert.Single(messageLogs); // Only "Authentication failed" message
-		Assert.Equal(2, sourceLogs.Count()); // Two logs from UserService
-		Assert.Equal(2, pathLogs.Count()); // Two logs with /api/users path
-		Assert.Single(exceptionLogs); // Only one NullReferenceException
+		Assert.Single(messageLogs); // Only one log with "Authentication_{testId}" message
+		Assert.Equal(2, sourceLogs.Count()); // Two logs from UserService_{testId}
+		Assert.Equal(2, pathLogs.Count()); // Two logs with users_{testId} path
+		Assert.Single(exceptionLogs); // Only one with NullRef_{testId}
 	}
 
 	[Fact]
@@ -340,16 +341,16 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		}
 	}
 
-	private async Task SeedTestLogsForSearchAsync()
+	private async Task SeedTestLogsForSearchAsync(string testId)
 	{
 		Log[] logs =
 		[
 			new Log
 			{
 				LogLevel = "Error",
-				Message = "Authentication failed for user",
-				SourceContext = "SeventySix.Services.UserService",
-				RequestPath = "/api/users/login",
+				Message = $"Authentication_{testId} failed for user",
+				SourceContext = $"SeventySix.Services.UserService_{testId}",
+				RequestPath = $"/api/users_{testId}/login",
 				ExceptionMessage = null,
 				CreateDate = DateTime.UtcNow,
 			},
@@ -357,9 +358,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			{
 				LogLevel = "Error",
 				Message = "Database connection timeout",
-				SourceContext = "SeventySix.Services.UserService",
-				RequestPath = "/api/users/profile",
-				ExceptionMessage = "NullReferenceException: Object reference not set",
+				SourceContext = $"SeventySix.Services.UserService_{testId}",
+				RequestPath = $"/api/users_{testId}/profile",
+				ExceptionMessage = $"NullRef_{testId}: Object reference not set",
 				CreateDate = DateTime.UtcNow.AddMinutes(-5),
 			},
 			new Log

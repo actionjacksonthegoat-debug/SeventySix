@@ -28,6 +28,7 @@ describe("UsersComponent", () =>
 			"getPagedUsers",
 			"updateUser",
 			"deleteUser",
+			"resetPassword",
 			"bulkActivateUsers",
 			"bulkDeactivateUsers",
 			"getCurrentFilter",
@@ -70,6 +71,9 @@ describe("UsersComponent", () =>
 		);
 		mockUserService.bulkDeactivateUsers.and.returnValue(
 			createMockMutationResult<number, Error, number[], unknown>()
+		);
+		mockUserService.resetPassword.and.returnValue(
+			createMockMutationResult<void, Error, number | string, unknown>()
 		);
 
 		fixture = await new ComponentTestBed<UsersComponent>()

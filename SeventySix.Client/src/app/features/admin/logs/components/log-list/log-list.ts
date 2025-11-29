@@ -19,9 +19,11 @@ import {
 	RowActionEvent,
 	BulkActionEvent,
 	FilterChangeEvent,
-	DateRangeEvent
+	DateRangeEvent,
+	SortChangeEvent
 } from "@shared/models";
 import { LogDetailDialogComponent } from "@admin/logs/components/log-detail-dialog/log-detail-dialog.component";
+import { DialogService } from "@infrastructure/services/dialog.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 
 /**
@@ -44,6 +46,7 @@ export class LogList
 		inject(LogManagementService);
 	private readonly datePipe: DatePipe = inject(DatePipe);
 	private readonly dialog: MatDialog = inject(MatDialog);
+	private readonly dialogService: DialogService = inject(DialogService);
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
 
@@ -246,6 +249,14 @@ export class LogList
 		});
 	}
 
+	onSortChange(event: SortChangeEvent): void
+	{
+		this.logService.updateFilter({
+			sortBy: event.sortBy,
+			sortDescending: event.sortDescending
+		});
+	}
+
 	onRowAction(event: RowActionEvent<LogDto>): void
 	{
 		switch (event.action)
@@ -326,29 +337,30 @@ export class LogList
 	 */
 	private deleteLog(id: number): void
 	{
-		if (
-			!confirm(
-				"Are you sure you want to delete this log entry? This action cannot be undone."
-			)
-		)
-		{
-			return;
-		}
+		this.dialogService
+			.confirmDelete("log")
+			.subscribe((confirmed: boolean) =>
+			{
+				if (!confirmed)
+				{
+					return;
+				}
 
-		this.deleteLogMutation.mutate(id, {
-			onSuccess: () =>
-			{
-				this.notificationService.success(
-					"Log entry deleted successfully"
-				);
-			},
-			onError: (error: Error) =>
-			{
-				this.notificationService.error(
-					`Failed to delete log entry: ${error.message}`
-				);
-			}
-		});
+				this.deleteLogMutation.mutate(id, {
+					onSuccess: () =>
+					{
+						this.notificationService.success(
+							"Log entry deleted successfully"
+						);
+					},
+					onError: (error: Error) =>
+					{
+						this.notificationService.error(
+							`Failed to delete log entry: ${error.message}`
+						);
+					}
+				});
+			});
 	}
 
 	/**
@@ -365,28 +377,30 @@ export class LogList
 		}
 
 		const count: number = ids.length;
-		if (
-			!confirm(
-				`Are you sure you want to delete ${count} log ${count === 1 ? "entry" : "entries"}? This action cannot be undone.`
-			)
-		)
-		{
-			return;
-		}
 
-		this.deleteLogsMutation.mutate(ids, {
-			onSuccess: () =>
+		this.dialogService
+			.confirmDelete("log", count)
+			.subscribe((confirmed: boolean) =>
 			{
-				this.notificationService.success(
-					`Successfully deleted ${count} log ${count === 1 ? "entry" : "entries"}`
-				);
-			},
-			onError: (error: Error) =>
-			{
-				this.notificationService.error(
-					`Failed to delete logs: ${error.message}`
-				);
-			}
-		});
+				if (!confirmed)
+				{
+					return;
+				}
+
+				this.deleteLogsMutation.mutate(ids, {
+					onSuccess: () =>
+					{
+						this.notificationService.success(
+							`Successfully deleted ${count} log ${count === 1 ? "entry" : "entries"}`
+						);
+					},
+					onError: (error: Error) =>
+					{
+						this.notificationService.error(
+							`Failed to delete logs: ${error.message}`
+						);
+					}
+				});
+			});
 	}
 }

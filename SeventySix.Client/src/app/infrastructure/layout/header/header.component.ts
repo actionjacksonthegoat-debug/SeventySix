@@ -77,6 +77,20 @@ export class HeaderComponent
 		this.router.navigate(["/auth/login"]);
 	}
 
+	navigateToRegister(): void
+	{
+		this.router.navigate(["/auth/register"]);
+	}
+
+	navigateToProfile(): void
+	{
+		const user: AuthUser | null = this.authService.user();
+		if (user)
+		{
+			this.router.navigate(["/admin/users", user.id]);
+		}
+	}
+
 	logout(): void
 	{
 		this.authService.logout();

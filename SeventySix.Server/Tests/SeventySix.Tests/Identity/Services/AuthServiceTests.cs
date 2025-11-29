@@ -2,11 +2,13 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.Security.Cryptography;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
@@ -34,6 +36,10 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	private readonly ITokenService TokenService = Substitute.For<ITokenService>();
 	private readonly IHttpClientFactory HttpClientFactory = Substitute.For<IHttpClientFactory>();
 	private readonly IValidator<ChangePasswordRequest> ChangePasswordValidator = new ChangePasswordRequestValidator();
+	private readonly IValidator<SetPasswordRequest> SetPasswordValidator = new SetPasswordRequestValidator();
+	private readonly IValidator<InitiateRegistrationRequest> InitiateRegistrationValidator = new InitiateRegistrationRequestValidator();
+	private readonly IValidator<CompleteRegistrationRequest> CompleteRegistrationValidator = new CompleteRegistrationRequestValidator();
+	private readonly IEmailService EmailService = Substitute.For<IEmailService>();
 	private readonly ILogger<AuthService> Logger = Substitute.For<ILogger<AuthService>>();
 
 	/// <summary>
@@ -114,6 +120,10 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 			AuthOptions,
 			JwtOptions,
 			ChangePasswordValidator,
+			SetPasswordValidator,
+			InitiateRegistrationValidator,
+			CompleteRegistrationValidator,
+			EmailService,
 			TestTimeProviderBuilder.CreateDefault(),
 			Logger);
 	}
@@ -124,12 +134,13 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	public async Task LoginAsync_ValidCredentials_ReturnsSuccessAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		User user =
 			await CreateTestUserWithPasswordAsync(
 				context,
-				"testuser",
-				"test@example.com",
+				$"validcreds_{testId}",
+				$"validcreds_{testId}@example.com",
 				"Password123");
 
 		SetupTokenServiceMock(user);
@@ -138,7 +149,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "testuser",
+				UsernameOrEmail: $"validcreds_{testId}",
 				Password: "Password123");
 
 		// Act
@@ -158,12 +169,13 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	public async Task LoginAsync_ValidEmailCredentials_ReturnsSuccessAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		User user =
 			await CreateTestUserWithPasswordAsync(
 				context,
-				"testuser",
-				"test@example.com",
+				$"emailcreds_{testId}",
+				$"emailcreds_{testId}@example.com",
 				"Password123");
 
 		SetupTokenServiceMock(user);
@@ -172,7 +184,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "test@example.com",
+				UsernameOrEmail: $"emailcreds_{testId}@example.com",
 				Password: "Password123");
 
 		// Act
@@ -214,18 +226,19 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	public async Task LoginAsync_InvalidPassword_ReturnsFailureAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		await CreateTestUserWithPasswordAsync(
 			context,
-			"testuser",
-			"test@example.com",
+			$"badpass_{testId}",
+			$"badpass_{testId}@example.com",
 			"Password123");
 
 		AuthService service = CreateService(context);
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "testuser",
+				UsernameOrEmail: $"badpass_{testId}",
 				Password: "WrongPassword");
 
 		// Act
@@ -244,11 +257,12 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	public async Task LoginAsync_InactiveAccount_ReturnsFailureAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		await CreateTestUserWithPasswordAsync(
 			context,
-			"inactiveuser",
-			"inactive@example.com",
+			$"inactive_{testId}",
+			$"inactive_{testId}@example.com",
 			"Password123",
 			isActive: false);
 
@@ -256,7 +270,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "inactiveuser",
+				UsernameOrEmail: $"inactive_{testId}",
 				Password: "Password123");
 
 		// Act
@@ -422,12 +436,13 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	public async Task LoginAsync_SuccessfulLogin_ResetsLockoutCounterAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		User user =
 			await CreateTestUserWithPasswordAsync(
 				context,
-				"resetuser",
-				"reset@example.com",
+				$"resetlock_{testId}",
+				$"resetlock_{testId}@example.com",
 				"Password123");
 
 		// Set some failed attempts (but not locked)
@@ -440,7 +455,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "resetuser",
+				UsernameOrEmail: $"resetlock_{testId}",
 				Password: "Password123");
 
 		// Act
@@ -465,6 +480,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	public async Task RegisterAsync_ValidRequest_CreatesUserAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
 		await using IdentityDbContext context = CreateIdentityDbContext();
 
 		SetupTokenServiceMockForNewUser();
@@ -473,8 +489,8 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 
 		RegisterRequest request =
 			new(
-				Username: "newuser",
-				Email: "newuser@example.com",
+				Username: $"newreg_{testId}",
+				Email: $"newreg_{testId}@example.com",
 				Password: "Password123",
 				FullName: "New User");
 
@@ -492,10 +508,10 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 		// Verify user was created
 		User? createdUser =
 			await context.Users
-				.FirstOrDefaultAsync(u => u.Username == "newuser");
+				.FirstOrDefaultAsync(u => u.Username == $"newreg_{testId}");
 
 		Assert.NotNull(createdUser);
-		Assert.Equal("newuser@example.com", createdUser.Email);
+		Assert.Equal($"newreg_{testId}@example.com", createdUser.Email);
 		Assert.Equal("New User", createdUser.FullName);
 		Assert.True(createdUser.IsActive);
 	}
@@ -504,19 +520,20 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	public async Task RegisterAsync_DuplicateUsername_ReturnsFailureAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		await CreateTestUserWithPasswordAsync(
 			context,
-			"existinguser",
-			"existing@example.com",
+			$"dupuser_{testId}",
+			$"dupuser_{testId}@example.com",
 			"Password123");
 
 		AuthService service = CreateService(context);
 
 		RegisterRequest request =
 			new(
-				Username: "existinguser",
-				Email: "new@example.com",
+				Username: $"dupuser_{testId}",
+				Email: $"newdupuser_{testId}@example.com",
 				Password: "Password123",
 				FullName: "New User");
 
@@ -536,19 +553,20 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	public async Task RegisterAsync_DuplicateEmail_ReturnsFailureAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		await CreateTestUserWithPasswordAsync(
 			context,
-			"existinguser",
-			"existing@example.com",
+			$"dupemail_{testId}",
+			$"dupemail_{testId}@example.com",
 			"Password123");
 
 		AuthService service = CreateService(context);
 
 		RegisterRequest request =
 			new(
-				Username: "newuser",
-				Email: "existing@example.com",
+				Username: $"newdupemail_{testId}",
+				Email: $"dupemail_{testId}@example.com",
 				Password: "Password123",
 				FullName: "New User");
 
@@ -576,12 +594,13 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	public async Task RefreshTokensAsync_ValidToken_ReturnsNewTokensAsync()
 	{
 		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		User user =
 			await CreateTestUserWithPasswordAsync(
 				context,
-				"testuser",
-				"test@example.com",
+				$"refresh_{testId}",
+				$"refresh_{testId}@example.com",
 				"Password123");
 
 		TokenService
@@ -720,6 +739,386 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 
 	#endregion
 
+	#region InitiatePasswordResetAsync Tests
+
+	[Fact]
+	public async Task InitiatePasswordResetAsync_SendsWelcomeEmail_WhenIsNewUserTrueAsync()
+	{
+		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		User user =
+			await CreateTestUserWithoutPasswordAsync(
+				context,
+				$"welcome_{testId}",
+				$"welcome_{testId}@example.com");
+
+		AuthService service = CreateService(context);
+
+		// Act
+		await service.InitiatePasswordResetAsync(
+			user.Id,
+			isNewUser: true,
+			CancellationToken.None);
+
+		// Assert
+		await EmailService
+			.Received(1)
+			.SendWelcomeEmailAsync(
+				user.Email,
+				user.Username,
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
+
+		PasswordResetToken? token =
+			await context.PasswordResetTokens
+				.FirstOrDefaultAsync(t => t.UserId == user.Id && !t.IsUsed);
+		Assert.NotNull(token);
+	}
+
+	[Fact]
+	public async Task InitiatePasswordResetAsync_SendsResetEmail_WhenIsNewUserFalseAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		User user =
+			await CreateTestUserWithPasswordAsync(
+				context,
+				"existinguser",
+				"existing@example.com",
+				"Password123");
+
+		AuthService service = CreateService(context);
+
+		// Act
+		await service.InitiatePasswordResetAsync(
+			user.Id,
+			isNewUser: false,
+			CancellationToken.None);
+
+		// Assert
+		await EmailService
+			.Received(1)
+			.SendPasswordResetEmailAsync(
+				user.Email,
+				user.Username,
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
+
+		PasswordResetToken? token =
+			await context.PasswordResetTokens
+				.FirstOrDefaultAsync(t => t.UserId == user.Id && !t.IsUsed);
+		Assert.NotNull(token);
+	}
+
+	#endregion
+
+	#region SetPasswordAsync Tests
+
+	[Fact]
+	public async Task SetPasswordAsync_ReturnsSuccess_WhenTokenValidAsync()
+	{
+		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		User user =
+			await CreateTestUserWithoutPasswordAsync(
+				context,
+				$"setpw_{testId}",
+				$"setpw_{testId}@example.com");
+
+		string validToken =
+			Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+		PasswordResetToken resetToken =
+			new()
+			{
+				UserId = user.Id,
+				Token = validToken,
+				ExpiresAt = FixedTime.AddHours(24).UtcDateTime,
+				CreatedAt = FixedTime.UtcDateTime,
+				IsUsed = false,
+			};
+		context.PasswordResetTokens.Add(resetToken);
+		await context.SaveChangesAsync();
+
+		SetupTokenServiceMock(user);
+
+		AuthService service = CreateService(context);
+
+		SetPasswordRequest request =
+			new(
+				Token: validToken,
+				NewPassword: "NewPassword123!");
+
+		// Act
+		AuthResult result =
+			await service.SetPasswordAsync(
+				request,
+				clientIp: "127.0.0.1",
+				CancellationToken.None);
+
+		// Assert
+		Assert.True(result.Success);
+		Assert.NotNull(result.AccessToken);
+		Assert.NotNull(result.RefreshToken);
+
+		// Token should be marked as used
+		PasswordResetToken? usedToken =
+			await context.PasswordResetTokens
+				.FirstOrDefaultAsync(t => t.Token == validToken);
+		Assert.NotNull(usedToken);
+		Assert.True(usedToken.IsUsed);
+
+		// Credential should be created
+		UserCredential? credential =
+			await context.UserCredentials
+				.FirstOrDefaultAsync(c => c.UserId == user.Id);
+		Assert.NotNull(credential);
+	}
+
+	[Fact]
+	public async Task SetPasswordAsync_ReturnsFailed_WhenTokenInvalidAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		AuthService service = CreateService(context);
+
+		// Use a valid base64 string that doesn't exist in the database
+		string nonExistentToken =
+			Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+		SetPasswordRequest request =
+			new(
+				Token: nonExistentToken,
+				NewPassword: "NewPassword123!");
+
+		// Act
+		AuthResult result =
+			await service.SetPasswordAsync(
+				request,
+				clientIp: "127.0.0.1",
+				CancellationToken.None);
+
+		// Assert
+		Assert.False(result.Success);
+		Assert.Equal(AuthErrorCodes.InvalidToken, result.ErrorCode);
+	}
+
+	[Fact]
+	public async Task SetPasswordAsync_ReturnsFailed_WhenTokenExpiredAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		User user =
+			await CreateTestUserWithoutPasswordAsync(
+				context,
+				"expireduser",
+				"expired@example.com");
+
+		string expiredToken =
+			Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+		// Token expired 1 hour ago
+		PasswordResetToken resetToken =
+			new()
+			{
+				UserId = user.Id,
+				Token = expiredToken,
+				ExpiresAt = FixedTime.AddHours(-1).UtcDateTime,
+				CreatedAt = FixedTime.AddHours(-25).UtcDateTime,
+				IsUsed = false,
+			};
+		context.PasswordResetTokens.Add(resetToken);
+		await context.SaveChangesAsync();
+
+		AuthService service = CreateService(context);
+
+		SetPasswordRequest request =
+			new(
+				Token: expiredToken,
+				NewPassword: "NewPassword123!");
+
+		// Act
+		AuthResult result =
+			await service.SetPasswordAsync(
+				request,
+				clientIp: "127.0.0.1",
+				CancellationToken.None);
+
+		// Assert
+		Assert.False(result.Success);
+		Assert.Equal(AuthErrorCodes.TokenExpired, result.ErrorCode);
+	}
+
+	[Fact]
+	public async Task SetPasswordAsync_ReturnsFailed_WhenPasswordValidationFailsAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		User user =
+			await CreateTestUserWithoutPasswordAsync(
+				context,
+				"weakpassuser",
+				"weakpass@example.com");
+
+		string validToken =
+			Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+		PasswordResetToken resetToken =
+			new()
+			{
+				UserId = user.Id,
+				Token = validToken,
+				ExpiresAt = FixedTime.AddHours(24).UtcDateTime,
+				CreatedAt = FixedTime.UtcDateTime,
+				IsUsed = false,
+			};
+		context.PasswordResetTokens.Add(resetToken);
+		await context.SaveChangesAsync();
+
+		AuthService service = CreateService(context);
+
+		SetPasswordRequest request =
+			new(
+				Token: validToken,
+				NewPassword: "weak");
+
+		// Act
+		AuthResult result =
+			await service.SetPasswordAsync(
+				request,
+				clientIp: "127.0.0.1",
+				CancellationToken.None);
+
+		// Assert
+		Assert.False(result.Success);
+		Assert.Equal("VALIDATION_ERROR", result.ErrorCode);
+	}
+
+	#endregion
+
+	#region InitiatePasswordResetByEmailAsync Tests
+
+	[Fact]
+	public async Task InitiatePasswordResetByEmailAsync_SendsEmail_WhenUserExistsAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		User user =
+			await CreateTestUserWithPasswordAsync(
+				context,
+				"resetuser",
+				"reset@example.com",
+				"Password123");
+
+		AuthService service = CreateService(context);
+
+		// Act
+		await service.InitiatePasswordResetByEmailAsync(
+			"reset@example.com",
+			CancellationToken.None);
+
+		// Assert
+		await EmailService
+			.Received(1)
+			.SendPasswordResetEmailAsync(
+				"reset@example.com",
+				"resetuser",
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
+
+		// Verify token was created (get the unused one)
+		PasswordResetToken? token =
+			await context.PasswordResetTokens
+				.Where(t => t.UserId == user.Id && !t.IsUsed)
+				.FirstOrDefaultAsync();
+		Assert.NotNull(token);
+	}
+
+	[Fact]
+	public async Task InitiatePasswordResetByEmailAsync_DoesNotThrow_WhenUserNotFoundAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		AuthService service = CreateService(context);
+
+		// Act - should not throw
+		await service.InitiatePasswordResetByEmailAsync(
+			"nonexistent@example.com",
+			CancellationToken.None);
+
+		// Assert - no email should be sent
+		await EmailService
+			.DidNotReceive()
+			.SendPasswordResetEmailAsync(
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task InitiatePasswordResetByEmailAsync_DoesNotSendEmail_WhenUserInactiveAsync()
+	{
+		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		await CreateTestUserWithPasswordAsync(
+			context,
+			$"pwreset_inactive_{testId}",
+			$"pwreset_inactive_{testId}@example.com",
+			"Password123",
+			isActive: false);
+
+		AuthService service = CreateService(context);
+
+		// Act
+		await service.InitiatePasswordResetByEmailAsync(
+			$"pwreset_inactive_{testId}@example.com",
+			CancellationToken.None);
+
+		// Assert - no email should be sent for inactive users
+		await EmailService
+			.DidNotReceive()
+			.SendPasswordResetEmailAsync(
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task InitiatePasswordResetByEmailAsync_IsCaseInsensitive_ForEmailAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		User user =
+			await CreateTestUserWithPasswordAsync(
+				context,
+				"caseuser",
+				"CaseTest@Example.COM",
+				"Password123");
+
+		AuthService service = CreateService(context);
+
+		// Act - use different case
+		await service.InitiatePasswordResetByEmailAsync(
+			"casetest@example.com",
+			CancellationToken.None);
+
+		// Assert - email should still be sent
+		await EmailService
+			.Received(1)
+			.SendPasswordResetEmailAsync(
+				"CaseTest@Example.COM",
+				"caseuser",
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	#endregion
+
 	#region Helper Methods
 
 	/// <summary>
@@ -765,6 +1164,34 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 			};
 
 		context.UserCredentials.Add(credential);
+		await context.SaveChangesAsync();
+
+		return user;
+	}
+
+	/// <summary>
+	/// Creates a test user without password credentials.
+	/// </summary>
+	/// <remarks>
+	/// Used for testing password reset flow for new users.
+	/// </remarks>
+	private async Task<User> CreateTestUserWithoutPasswordAsync(
+		IdentityDbContext context,
+		string username,
+		string email,
+		bool isActive = true)
+	{
+		User user =
+			new()
+			{
+				Username = username,
+				Email = email,
+				IsActive = isActive,
+				CreateDate = FixedTime.UtcDateTime,
+				CreatedBy = "Test",
+			};
+
+		context.Users.Add(user);
 		await context.SaveChangesAsync();
 
 		return user;

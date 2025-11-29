@@ -11,6 +11,7 @@ import {
 	Provider,
 	EnvironmentProviders
 } from "@angular/core";
+import { provideNoopAnimations } from "@angular/platform-browser/animations";
 import {
 	provideTanStackQuery,
 	QueryClient
@@ -157,7 +158,7 @@ export class ComponentTestBed<T>
 
 	/**
 	 * Build and compile the test component
-	 * Automatically includes provideZonelessChangeDetection
+	 * Automatically includes provideZonelessChangeDetection and provideNoopAnimations
 	 *
 	 * @param component - Component class to test
 	 * @returns Promise resolving to ComponentFixture
@@ -166,7 +167,11 @@ export class ComponentTestBed<T>
 	{
 		await TestBed.configureTestingModule({
 			imports: [component, ...this.imports],
-			providers: [provideZonelessChangeDetection(), ...this.providers]
+			providers: [
+				provideZonelessChangeDetection(),
+				provideNoopAnimations(),
+				...this.providers
+			]
 		}).compileComponents();
 
 		return TestBed.createComponent(component);

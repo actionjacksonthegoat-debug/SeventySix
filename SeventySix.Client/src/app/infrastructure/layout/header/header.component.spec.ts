@@ -67,16 +67,16 @@ describe("HeaderComponent", () =>
 
 	describe("authentication", () =>
 	{
-		it("should show login button when not authenticated", () =>
+		it("should show guest menu when not authenticated", () =>
 		{
 			mockAuthService.setUser(null);
 			fixture.detectChanges();
 
 			const compiled: HTMLElement = fixture.nativeElement;
-			const loginButton: HTMLButtonElement | null =
-				compiled.querySelector("[data-testid='login-button']");
+			const guestMenuButton: HTMLButtonElement | null =
+				compiled.querySelector("[data-testid='guest-menu-button']");
 
-			expect(loginButton).toBeTruthy();
+			expect(guestMenuButton).toBeTruthy();
 		});
 
 		it("should navigate to login when login button clicked", () =>
@@ -87,6 +87,16 @@ describe("HeaderComponent", () =>
 			component.navigateToLogin();
 
 			expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
+		});
+
+		it("should navigate to register when register method called", () =>
+		{
+			mockAuthService.setUser(null);
+			fixture.detectChanges();
+
+			component.navigateToRegister();
+
+			expect(router.navigate).toHaveBeenCalledWith(["/auth/register"]);
 		});
 
 		it("should show user menu when authenticated", () =>
@@ -177,6 +187,32 @@ describe("HeaderComponent", () =>
 			component.logout();
 
 			expect(mockAuthService.logout).toHaveBeenCalled();
+		});
+
+		it("should navigate to user profile when navigateToProfile called", () =>
+		{
+			mockAuthService.setUser({
+				id: 42,
+				username: "testuser",
+				email: "test@example.com",
+				roles: [],
+				fullName: "John Doe"
+			});
+			fixture.detectChanges();
+
+			component.navigateToProfile();
+
+			expect(router.navigate).toHaveBeenCalledWith(["/admin/users", 42]);
+		});
+
+		it("should not navigate when user is null", () =>
+		{
+			mockAuthService.setUser(null);
+			fixture.detectChanges();
+
+			component.navigateToProfile();
+
+			expect(router.navigate).not.toHaveBeenCalled();
 		});
 	});
 });

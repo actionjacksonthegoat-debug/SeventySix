@@ -122,3 +122,34 @@ export const shake: AnimationTriggerMetadata = trigger("shake", [
 		animate("0.1s", style({ transform: "translateX(0)" }))
 	])
 ]);
+
+/**
+ * Slide down animation for panels
+ * Used for selection panels, notification bars, etc.
+ */
+export const slideDown: AnimationTriggerMetadata = trigger("slideDown", [
+	transition(":enter", [
+		style({
+			height: "0",
+			opacity: 0,
+			overflow: "hidden"
+		}),
+		animate(
+			"200ms cubic-bezier(0.4, 0, 0.2, 1)",
+			style({
+				height: "*",
+				opacity: 1
+			})
+		)
+	]),
+	transition(":leave", [
+		animate(
+			"150ms cubic-bezier(0.4, 0, 1, 1)",
+			style({
+				height: "0",
+				opacity: 0,
+				overflow: "hidden"
+			})
+		)
+	])
+]);

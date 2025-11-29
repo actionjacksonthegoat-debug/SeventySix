@@ -101,6 +101,33 @@
 	flex: 1;
 }
 
+.selection-panel {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: vars.$spacing-md vars.$spacing-lg;
+	background-color: var(--mat-sys-primary-container);
+	color: var(--mat-sys-on-primary-container);
+	border-radius: vars.$border-radius-md;
+	margin: 0 vars.$spacing-md vars.$spacing-md;
+
+	.selection-info {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-sm;
+		font-weight: vars.$font-weight-medium;
+
+		mat-icon {
+			@include mixins.icon-size(vars.$icon-size-md);
+		}
+	}
+
+	.selection-actions {
+		display: flex;
+		gap: vars.$spacing-sm;
+	}
+}
+
 .loading-container {
 	@include mixins.loading-state();
 }

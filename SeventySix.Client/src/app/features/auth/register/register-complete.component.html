@@ -1,0 +1,101 @@
+<div class="register-container">
+	<div class="register-card">
+		@if (!tokenValid())
+		{
+			<div class="error-state">
+				<h1>Link Expired</h1>
+				<p>
+					This registration link is invalid or has expired. Please
+					request a new one to continue.
+				</p>
+				<a routerLink="/auth/register" class="btn-primary">
+					Request New Link
+				</a>
+			</div>
+		}
+		@else
+		{
+			<h1>Complete Registration</h1>
+			<p class="description">
+				Choose a username and password to complete your account setup.
+			</p>
+
+			<form (ngSubmit)="onSubmit()" class="register-form">
+				<div class="form-group">
+					<label for="username">Username</label>
+					<input
+						id="username"
+						type="text"
+						[(ngModel)]="username"
+						name="username"
+						required
+						autocomplete="username"
+						placeholder="Choose a username"
+						minlength="3"
+						maxlength="50"
+						pattern="^[a-zA-Z0-9_]+$"
+					/>
+					<span class="hint">
+						Letters, numbers, and underscores only
+					</span>
+				</div>
+
+				<div class="form-group">
+					<label for="password">Password</label>
+					<input
+						id="password"
+						type="password"
+						[(ngModel)]="password"
+						name="password"
+						required
+						autocomplete="new-password"
+						placeholder="Create a password"
+						minlength="8"
+					/>
+					<span class="hint">
+						At least 8 characters with uppercase, lowercase, digit,
+						and special character
+					</span>
+				</div>
+
+				<div class="form-group">
+					<label for="confirmPassword">Confirm Password</label>
+					<input
+						id="confirmPassword"
+						type="password"
+						[(ngModel)]="confirmPassword"
+						name="confirmPassword"
+						required
+						autocomplete="new-password"
+						placeholder="Confirm your password"
+					/>
+				</div>
+
+				<button
+					type="submit"
+					class="btn-primary"
+					[disabled]="
+						isLoading() ||
+						!username.trim() ||
+						!password.trim() ||
+						!confirmPassword.trim()
+					"
+				>
+					@if (isLoading())
+					{
+						Creating Account...
+					}
+					@else
+					{
+						Create Account
+					}
+				</button>
+			</form>
+
+			<div class="links">
+				<span>Already have an account?</span>
+				<a routerLink="/auth/login">Sign In</a>
+			</div>
+		}
+	</div>
+</div>

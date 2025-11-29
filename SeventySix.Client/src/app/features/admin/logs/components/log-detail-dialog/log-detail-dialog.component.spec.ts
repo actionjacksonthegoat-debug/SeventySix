@@ -85,10 +85,10 @@ describe("LogDetailDialogComponent", () =>
 
 	it("should display log level icon via utility", () =>
 	{
-		expect(getLogLevelIconName("Error")).toBe("error");
+		expect(getLogLevelIconName("Error")).toBe("cancel");
 		expect(getLogLevelIconName("Warning")).toBe("warning");
 		expect(getLogLevelIconName("Fatal")).toBe("cancel");
-		expect(getLogLevelIconName("Information")).toBe("info");
+		expect(getLogLevelIconName("Information")).toBe("lightbulb");
 	});
 
 	it("should display log level CSS class via utility", () =>

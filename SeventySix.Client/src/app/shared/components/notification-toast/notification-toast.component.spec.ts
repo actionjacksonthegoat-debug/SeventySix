@@ -91,14 +91,14 @@ describe("NotificationToastComponent", () =>
 
 	describe("icons", () =>
 	{
-		it("should show error icon for error notifications", () =>
+		it("should show cancel icon for error notifications", () =>
 		{
 			notificationService.error("Error");
 			fixture.detectChanges();
 
 			const icon: HTMLElement | null =
 				fixture.nativeElement.querySelector("mat-icon");
-			expect(icon?.textContent?.trim()).toBe("error");
+			expect(icon?.textContent?.trim()).toBe("cancel");
 		});
 
 		it("should show warning icon for warning notifications", () =>
@@ -111,14 +111,14 @@ describe("NotificationToastComponent", () =>
 			expect(icon?.textContent?.trim()).toBe("warning");
 		});
 
-		it("should show info icon for info notifications", () =>
+		it("should show lightbulb icon for info notifications", () =>
 		{
 			notificationService.info("Info");
 			fixture.detectChanges();
 
 			const icon: HTMLElement | null =
 				fixture.nativeElement.querySelector("mat-icon");
-			expect(icon?.textContent?.trim()).toBe("info");
+			expect(icon?.textContent?.trim()).toBe("lightbulb");
 		});
 
 		it("should show check_circle icon for success notifications", () =>

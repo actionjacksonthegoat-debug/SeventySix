@@ -34,6 +34,11 @@ export interface Notification
 })
 export class NotificationService
 {
+	private readonly successDurationMs: number = 5000;
+	private readonly infoDurationMs: number = 5000;
+	private readonly warningDurationMs: number = 7000;
+	private readonly errorDurationMs: number = 10000;
+
 	private readonly notifications: WritableSignal<Notification[]> = signal<
 		Notification[]
 	>([]);
@@ -48,33 +53,114 @@ export class NotificationService
 	/**
 	 * Shows a success notification.
 	 */
-	success(message: string, duration = 5000): void
+	success(message: string, duration: number = this.successDurationMs): void
 	{
-		this.show(NotificationLevel.Success, message, duration);
+		this.showWithDetails(
+			NotificationLevel.Success,
+			message,
+			undefined,
+			undefined,
+			duration
+		);
+	}
+
+	/**
+	 * Shows a success notification with details.
+	 */
+	successWithDetails(
+		message: string,
+		details?: string[],
+		copyData?: string,
+		duration: number = this.successDurationMs
+	): void
+	{
+		this.showWithDetails(
+			NotificationLevel.Success,
+			message,
+			details,
+			copyData,
+			duration
+		);
 	}
 
 	/**
 	 * Shows an info notification.
 	 */
-	info(message: string, duration = 5000): void
+	info(message: string, duration: number = this.infoDurationMs): void
 	{
-		this.show(NotificationLevel.Info, message, duration);
+		this.showWithDetails(
+			NotificationLevel.Info,
+			message,
+			undefined,
+			undefined,
+			duration
+		);
+	}
+
+	/**
+	 * Shows an info notification with details.
+	 */
+	infoWithDetails(
+		message: string,
+		details?: string[],
+		copyData?: string,
+		duration: number = this.infoDurationMs
+	): void
+	{
+		this.showWithDetails(
+			NotificationLevel.Info,
+			message,
+			details,
+			copyData,
+			duration
+		);
 	}
 
 	/**
 	 * Shows a warning notification.
 	 */
-	warning(message: string, duration = 7000): void
+	warning(message: string, duration: number = this.warningDurationMs): void
 	{
-		this.show(NotificationLevel.Warning, message, duration);
+		this.showWithDetails(
+			NotificationLevel.Warning,
+			message,
+			undefined,
+			undefined,
+			duration
+		);
+	}
+
+	/**
+	 * Shows a warning notification with details.
+	 */
+	warningWithDetails(
+		message: string,
+		details?: string[],
+		copyData?: string,
+		duration: number = this.warningDurationMs
+	): void
+	{
+		this.showWithDetails(
+			NotificationLevel.Warning,
+			message,
+			details,
+			copyData,
+			duration
+		);
 	}
 
 	/**
 	 * Shows an error notification.
 	 */
-	error(message: string, duration = 10000): void
+	error(message: string, duration: number = this.errorDurationMs): void
 	{
-		this.show(NotificationLevel.Error, message, duration);
+		this.showWithDetails(
+			NotificationLevel.Error,
+			message,
+			undefined,
+			undefined,
+			duration
+		);
 	}
 
 	/**
@@ -102,7 +188,7 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration?: number
+		duration: number = this.errorDurationMs
 	): void
 	{
 		this.showWithDetails(
@@ -115,7 +201,7 @@ export class NotificationService
 	}
 
 	/**
-	 * Copies notification data to the clipboard.
+	 * Copies notification data to the clipboard and logs to console.
 	 */
 	async copyToClipboard(notification: Notification): Promise<boolean>
 	{
@@ -127,6 +213,10 @@ export class NotificationService
 		try
 		{
 			await navigator.clipboard.writeText(notification.copyData);
+			console.info(
+				"Notification copied to clipboard:",
+				notification.copyData
+			);
 			return true;
 		}
 		catch (error)
@@ -134,18 +224,6 @@ export class NotificationService
 			console.error("Failed to copy error details to clipboard:", error);
 			return false;
 		}
-	}
-
-	/**
-	 * Core notification display logic.
-	 */
-	private show(
-		level: NotificationLevel,
-		message: string,
-		duration?: number
-	): void
-	{
-		this.showWithDetails(level, message, undefined, undefined, duration);
 	}
 
 	/**

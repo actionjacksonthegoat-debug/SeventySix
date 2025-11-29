@@ -82,6 +82,10 @@ public static class IdentityExtensions
 		services.AddSingleton<IValidator<LoginRequest>, LoginRequestValidator>();
 		services.AddSingleton<IValidator<RegisterRequest>, RegisterRequestValidator>();
 		services.AddSingleton<IValidator<ChangePasswordRequest>, ChangePasswordRequestValidator>();
+		services.AddSingleton<IValidator<SetPasswordRequest>, SetPasswordRequestValidator>();
+		services.AddSingleton<IValidator<ForgotPasswordRequest>, ForgotPasswordRequestValidator>();
+		services.AddSingleton<IValidator<InitiateRegistrationRequest>, InitiateRegistrationRequestValidator>();
+		services.AddSingleton<IValidator<CompleteRegistrationRequest>, CompleteRegistrationRequestValidator>();
 
 		// Register background services
 		services.AddHostedService<TokenCleanupService>();

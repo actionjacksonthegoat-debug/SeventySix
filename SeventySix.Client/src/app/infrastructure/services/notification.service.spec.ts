@@ -221,6 +221,87 @@ describe("NotificationService", () =>
 		});
 	});
 
+	describe("successWithDetails", () =>
+	{
+		it("should create a success notification with details", () =>
+		{
+			const details: string[] = ["Detail 1", "Detail 2"];
+
+			service.successWithDetails("Test success", details);
+
+			const notifications = service.notifications$();
+			expect(notifications.length).toBe(1);
+			expect(notifications[0].level).toBe(NotificationLevel.Success);
+			expect(notifications[0].message).toBe("Test success");
+			expect(notifications[0].details).toEqual(details);
+		});
+
+		it("should auto-dismiss after 5 seconds", () =>
+		{
+			service.successWithDetails("Test success", ["Detail"]);
+
+			expect(service.notifications$().length).toBe(1);
+
+			jasmine.clock().tick(5001);
+
+			expect(service.notifications$().length).toBe(0);
+		});
+	});
+
+	describe("infoWithDetails", () =>
+	{
+		it("should create an info notification with details", () =>
+		{
+			const details: string[] = ["Detail 1", "Detail 2"];
+
+			service.infoWithDetails("Test info", details);
+
+			const notifications = service.notifications$();
+			expect(notifications.length).toBe(1);
+			expect(notifications[0].level).toBe(NotificationLevel.Info);
+			expect(notifications[0].message).toBe("Test info");
+			expect(notifications[0].details).toEqual(details);
+		});
+
+		it("should auto-dismiss after 5 seconds", () =>
+		{
+			service.infoWithDetails("Test info", ["Detail"]);
+
+			expect(service.notifications$().length).toBe(1);
+
+			jasmine.clock().tick(5001);
+
+			expect(service.notifications$().length).toBe(0);
+		});
+	});
+
+	describe("warningWithDetails", () =>
+	{
+		it("should create a warning notification with details", () =>
+		{
+			const details: string[] = ["Detail 1", "Detail 2"];
+
+			service.warningWithDetails("Test warning", details);
+
+			const notifications = service.notifications$();
+			expect(notifications.length).toBe(1);
+			expect(notifications[0].level).toBe(NotificationLevel.Warning);
+			expect(notifications[0].message).toBe("Test warning");
+			expect(notifications[0].details).toEqual(details);
+		});
+
+		it("should auto-dismiss after 7 seconds", () =>
+		{
+			service.warningWithDetails("Test warning", ["Detail"]);
+
+			expect(service.notifications$().length).toBe(1);
+
+			jasmine.clock().tick(7001);
+
+			expect(service.notifications$().length).toBe(0);
+		});
+	});
+
 	describe("errorWithDetails", () =>
 	{
 		it("should create error notification with details", () =>
@@ -302,6 +383,7 @@ describe("NotificationService", () =>
 
 		it("should copy notification data to clipboard", async () =>
 		{
+			spyOn(console, "info");
 			const copyData = "Error details to copy";
 			service.errorWithDetails("Error", undefined, copyData);
 			const notification = service.notifications$()[0];
@@ -341,12 +423,29 @@ describe("NotificationService", () =>
 
 		it("should copy successfully and return true", async () =>
 		{
+			spyOn(console, "info");
 			service.errorWithDetails("Error", undefined, "Copy data");
 			const notification = service.notifications$()[0];
 
 			const result = await service.copyToClipboard(notification);
 
 			expect(result).toBe(true);
+		});
+
+		it("should log copy data to console.info when copying", async () =>
+		{
+			const consoleInfoSpy: jasmine.Spy = spyOn(console, "info");
+			const copyData: string = "Error details to copy";
+
+			service.errorWithDetails("Error", undefined, copyData);
+			const notification = service.notifications$()[0];
+
+			await service.copyToClipboard(notification);
+
+			expect(consoleInfoSpy).toHaveBeenCalledWith(
+				"Notification copied to clipboard:",
+				copyData
+			);
 		});
 	});
 });

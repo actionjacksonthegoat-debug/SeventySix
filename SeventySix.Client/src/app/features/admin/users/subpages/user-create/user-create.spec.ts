@@ -325,7 +325,7 @@ describe("UserCreatePage", () =>
 
 			// Mock mutate to call onSuccess
 			(component.createMutation.mutate as jasmine.Spy).and.callFake(
-				(data, options: any) =>
+				(data, options: { onSuccess: (user: User) => void }) =>
 				{
 					options.onSuccess(createdUser);
 				}
@@ -338,8 +338,8 @@ describe("UserCreatePage", () =>
 				{ id: 1 }
 			);
 			expect(snackBarSpy).toHaveBeenCalledWith(
-				"User created successfully!",
-				"View",
+				`User "testuser" created. Welcome email sent to test@example.com.`,
+				"Close",
 				jasmine.objectContaining({ duration: 5000 })
 			);
 			expect(mockRouter.navigate).toHaveBeenCalledWith(["/admin/users"]);

@@ -55,18 +55,29 @@
 		}}</mat-icon>
 	</button>
 
-	<!-- Login Button (Unauthenticated) -->
+	<!-- Guest Menu (Unauthenticated) -->
 	@if (!authService.isAuthenticated())
 	{
 		<button
 			mat-icon-button
-			(click)="navigateToLogin()"
-			matTooltip="Login"
-			aria-label="Login"
-			data-testid="login-button"
+			[matMenuTriggerFor]="guestMenu"
+			matTooltip="Account"
+			aria-label="Account options"
+			data-testid="guest-menu-button"
 		>
-			<mat-icon>login</mat-icon>
+			<mat-icon>person_outline</mat-icon>
 		</button>
+
+		<mat-menu #guestMenu="matMenu">
+			<button mat-menu-item (click)="navigateToLogin()">
+				<mat-icon>login</mat-icon>
+				<span>Sign In</span>
+			</button>
+			<button mat-menu-item (click)="navigateToRegister()">
+				<mat-icon>person_add</mat-icon>
+				<span>Create Account</span>
+			</button>
+		</mat-menu>
 	}
 
 	<!-- User Menu (Authenticated) -->
@@ -86,6 +97,11 @@
 			<div class="user-menu-header" mat-menu-item disabled>
 				<span data-testid="user-fullname">{{ displayName() }}</span>
 			</div>
+			<mat-divider></mat-divider>
+			<button mat-menu-item (click)="navigateToProfile()">
+				<mat-icon>person</mat-icon>
+				<span>Profile</span>
+			</button>
 			<mat-divider></mat-divider>
 			<button mat-menu-item (click)="logout()">
 				<mat-icon>logout</mat-icon>

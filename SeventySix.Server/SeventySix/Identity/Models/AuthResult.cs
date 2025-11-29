@@ -97,4 +97,10 @@ public static class AuthErrorCodes
 
 	/// <summary>Password does not meet requirements.</summary>
 	public const string WeakPassword = "WEAK_PASSWORD";
+
+	/// <summary>Token has expired.</summary>
+	public const string TokenExpired = "TOKEN_EXPIRED";
+
+	/// <summary>User not found.</summary>
+	public const string UserNotFound = "USER_NOT_FOUND";
 }

@@ -4,6 +4,7 @@
 
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -92,14 +93,17 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task LoginAsync_ValidCredentials_ReturnsTokenAsync()
 	{
 		// Arrange - Create user with credentials
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
-			username: "testuser",
-			email: "test@example.com");
+			username: $"testuser_{testId}",
+			email: $"test_{testId}@example.com");
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "testuser",
+				UsernameOrEmail: $"testuser_{testId}",
 				Password: TestUserHelper.TestPassword);
 
 		// Act
@@ -127,14 +131,17 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task LoginAsync_WithEmail_ReturnsTokenAsync()
 	{
 		// Arrange
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
-			username: "testuser",
-			email: "test@example.com");
+			username: $"testuser_{testId}",
+			email: $"test_{testId}@example.com");
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "test@example.com",
+				UsernameOrEmail: $"test_{testId}@example.com",
 				Password: TestUserHelper.TestPassword);
 
 		// Act
@@ -184,15 +191,18 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task RegisterAsync_DuplicateUsername_ReturnsBadRequestAsync()
 	{
 		// Arrange - Create existing user
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
-			username: "existinguser",
-			email: "existing@example.com");
+			username: $"existinguser_{testId}",
+			email: $"existing_{testId}@example.com");
 
 		RegisterRequest request =
 			new(
-				Username: "existinguser",
-				Email: "new@example.com",
+				Username: $"existinguser_{testId}",
+				Email: $"new_{testId}@example.com",
 				Password: "SecurePassword123!",
 				FullName: null);
 
@@ -211,15 +221,18 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task RegisterAsync_DuplicateEmail_ReturnsBadRequestAsync()
 	{
 		// Arrange
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
-			username: "existinguser",
-			email: "existing@example.com");
+			username: $"existinguser_{testId}",
+			email: $"existing_{testId}@example.com");
 
 		RegisterRequest request =
 			new(
-				Username: "newusername",
-				Email: "existing@example.com",
+				Username: $"newusername_{testId}",
+				Email: $"existing_{testId}@example.com",
 				Password: "SecurePassword123!",
 				FullName: null);
 
@@ -261,14 +274,17 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task LoginAsync_SetsSameSiteCookieStrict_WhenSuccessfulAsync()
 	{
 		// Arrange
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
-			username: "testuser",
-			email: "test@example.com");
+			username: $"testuser_{testId}",
+			email: $"test_{testId}@example.com");
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "testuser",
+				UsernameOrEmail: $"testuser_{testId}",
 				Password: TestUserHelper.TestPassword);
 
 		// Act
@@ -593,15 +609,18 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task GetCurrentUserAsync_Authenticated_ReturnsProfileAsync()
 	{
 		// Arrange - Login to get token
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
-			username: "testuser",
-			email: "test@example.com");
+			username: $"testuser_{testId}",
+			email: $"test_{testId}@example.com");
 
 		HttpResponseMessage loginResponse =
 			await Client!.PostAsJsonAsync(
 				"/api/v1/auth/login",
-				new LoginRequest("testuser", TestUserHelper.TestPassword));
+				new LoginRequest($"testuser_{testId}", TestUserHelper.TestPassword));
 
 		AuthResponse? authResponse =
 			await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
@@ -622,8 +641,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			await response.Content.ReadFromJsonAsync<UserProfileDto>();
 
 		Assert.NotNull(profile);
-		Assert.Equal("testuser", profile.Username);
-		Assert.Equal("test@example.com", profile.Email);
+		Assert.Equal($"testuser_{testId}", profile.Username);
+		Assert.Equal($"test_{testId}@example.com", profile.Email);
 	}
 
 	#endregion
@@ -658,15 +677,18 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task ChangePasswordAsync_ReturnsBadRequest_WhenWeakPasswordAsync()
 	{
 		// Arrange - Login to get authenticated
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
-			username: "weakpassuser",
-			email: "weakpass@example.com");
+			username: $"weakpassuser_{testId}",
+			email: $"weakpass_{testId}@example.com");
 
 		HttpResponseMessage loginResponse =
 			await Client!.PostAsJsonAsync(
 				"/api/v1/auth/login",
-				new LoginRequest("weakpassuser", TestUserHelper.TestPassword));
+				new LoginRequest($"weakpassuser_{testId}", TestUserHelper.TestPassword));
 
 		AuthResponse? authResponse =
 			await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
@@ -757,6 +779,137 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Assert - Token should be rejected with 401
 		// (fails signature validation since using test key)
 		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+	}
+
+	#endregion
+
+	#region Self-Registration Tests
+
+	/// <summary>
+	/// Tests that POST /auth/register/initiate returns 200 OK for valid email.
+	/// Returns 200 regardless of whether email exists (prevents enumeration).
+	/// </summary>
+	[Fact]
+	public async Task InitiateRegistrationAsync_ValidEmail_ReturnsOkAsync()
+	{
+		// Arrange
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+
+		InitiateRegistrationRequest request =
+			new($"newuser_{testId}@example.com");
+
+		// Act
+		HttpResponseMessage response =
+			await Client!.PostAsJsonAsync("/api/v1/auth/register/initiate", request);
+
+		// Assert - Should return OK regardless
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+	}
+
+	/// <summary>
+	/// Tests that POST /auth/register/initiate returns 200 OK even for existing email.
+	/// Prevents email enumeration attacks.
+	/// </summary>
+	[Fact]
+	public async Task InitiateRegistrationAsync_ExistingEmail_ReturnsOkAsync()
+	{
+		// Arrange - Create existing user
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+
+		await TestUserHelper.CreateUserWithPasswordAsync(
+			SharedFactory.Services,
+			username: $"existing_{testId}",
+			email: $"existing_{testId}@example.com");
+
+		InitiateRegistrationRequest request =
+			new($"existing_{testId}@example.com");
+
+		// Act
+		HttpResponseMessage response =
+			await Client!.PostAsJsonAsync("/api/v1/auth/register/initiate", request);
+
+		// Assert - Should return OK to prevent enumeration
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+	}
+
+	/// <summary>
+	/// Tests that POST /auth/register/complete returns 400 for invalid token.
+	/// </summary>
+	[Fact]
+	public async Task CompleteRegistrationAsync_InvalidToken_ReturnsBadRequestAsync()
+	{
+		// Arrange
+		CompleteRegistrationRequest request =
+			new(
+				Token: "invalid-token",
+				Username: "newuser",
+				Password: "SecurePass123!");
+
+		// Act
+		HttpResponseMessage response =
+			await Client!.PostAsJsonAsync("/api/v1/auth/register/complete", request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+		ProblemDetails? problemDetails =
+			await response.Content.ReadFromJsonAsync<ProblemDetails>();
+
+		Assert.NotNull(problemDetails);
+		Assert.Equal("Registration Failed", problemDetails.Title);
+	}
+
+	/// <summary>
+	/// Tests that POST /auth/register/complete creates user with valid token.
+	/// </summary>
+	[Fact]
+	public async Task CompleteRegistrationAsync_ValidToken_ReturnsCreatedAsync()
+	{
+		// Arrange - Create verification token directly
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string email =
+			$"newuser_{testId}@example.com";
+		string token =
+			Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+		using (IServiceScope scope = SharedFactory.Services.CreateScope())
+		{
+			IdentityDbContext context =
+				scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+
+			context.EmailVerificationTokens.Add(new EmailVerificationToken
+			{
+				Email = email,
+				Token = token,
+				ExpiresAt = DateTime.UtcNow.AddHours(24),
+				CreatedAt = DateTime.UtcNow,
+				IsUsed = false,
+			});
+
+			await context.SaveChangesAsync();
+		}
+
+		CompleteRegistrationRequest request =
+			new(
+				Token: token,
+				Username: $"newuser_{testId}",
+				Password: "SecurePass123!");
+
+		// Act
+		HttpResponseMessage response =
+			await Client!.PostAsJsonAsync("/api/v1/auth/register/complete", request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+		AuthResponse? authResponse =
+			await response.Content.ReadFromJsonAsync<AuthResponse>();
+
+		Assert.NotNull(authResponse);
+		Assert.NotEmpty(authResponse.AccessToken);
 	}
 
 	#endregion

@@ -88,15 +88,15 @@ export class NotificationToastComponent
 		switch (level)
 		{
 			case NotificationLevel.Error:
-				return "error";
+				return "cancel";
 			case NotificationLevel.Warning:
 				return "warning";
 			case NotificationLevel.Info:
-				return "info";
+				return "lightbulb";
 			case NotificationLevel.Success:
 				return "check_circle";
 			default:
-				return "info";
+				return "lightbulb";
 		}
 	}
 

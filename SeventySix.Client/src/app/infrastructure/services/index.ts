@@ -8,6 +8,7 @@ export * from "./auth.service";
 export * from "./base-filter.service";
 export * from "./client-error-logger.service";
 export * from "./date.service";
+export * from "./dialog.service";
 export * from "./error-handler.service";
 export * from "./error-queue.service";
 export * from "./layout.service";

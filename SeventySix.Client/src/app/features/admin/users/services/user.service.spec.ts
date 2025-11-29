@@ -27,6 +27,7 @@ describe("UserService", () =>
 		mockRepository.restore = jasmine.createSpy("restore");
 		mockRepository.bulkActivate = jasmine.createSpy("bulkActivate");
 		mockRepository.bulkDeactivate = jasmine.createSpy("bulkDeactivate");
+		mockRepository.resetPassword = jasmine.createSpy("resetPassword");
 
 		const setup = setupServiceTest(UserService, [
 			{ provide: UserRepository, useValue: mockRepository }
@@ -209,6 +210,21 @@ describe("UserService", () =>
 			await mutation.mutateAsync(1);
 
 			expect(mockRepository.restore).toHaveBeenCalledWith(1);
+		});
+	});
+
+	describe("resetPassword", () =>
+	{
+		it("should reset user password", async () =>
+		{
+			mockRepository.resetPassword.and.returnValue(of(undefined));
+
+			const mutation = TestBed.runInInjectionContext(() =>
+				service.resetPassword()
+			);
+			await mutation.mutateAsync(1);
+
+			expect(mockRepository.resetPassword).toHaveBeenCalledWith(1);
 		});
 	});
 });

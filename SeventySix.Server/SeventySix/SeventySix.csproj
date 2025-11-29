@@ -31,6 +31,7 @@
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.11.0" />
 		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 		<PackageReference Include="Polly.Extensions" Version="8.6.5" />
+		<PackageReference Include="MailKit" Version="4.10.0" />
 	</ItemGroup>
 
 </Project>

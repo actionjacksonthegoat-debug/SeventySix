@@ -8,6 +8,7 @@ import {
 import { DatePipe } from "@angular/common";
 import { Router } from "@angular/router";
 import { UserService } from "@admin/users/services";
+import { DialogService } from "@infrastructure/services/dialog.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import { User } from "@admin/users/models";
 import { DataTableComponent } from "@shared/components";
@@ -15,10 +16,8 @@ import type {
 	TableColumn,
 	QuickFilter,
 	RowAction,
-	BulkAction,
 	RowActionEvent,
-	BulkActionEvent,
-	DateRangeEvent
+	SortChangeEvent
 } from "@shared/models";
 
 /**
@@ -40,6 +39,7 @@ export class UserList
 	private readonly userService: UserService = inject(UserService);
 	private readonly datePipe: DatePipe = inject(DatePipe);
 	private readonly router: Router = inject(Router);
+	private readonly dialogService: DialogService = inject(DialogService);
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
 
@@ -49,14 +49,9 @@ export class UserList
 	// Mutations
 	private readonly updateUserMutation: ReturnType<UserService["updateUser"]> =
 		this.userService.updateUser();
-	private readonly deleteUserMutation: ReturnType<UserService["deleteUser"]> =
-		this.userService.deleteUser();
-	private readonly bulkActivateMutation: ReturnType<
-		UserService["bulkActivateUsers"]
-	> = this.userService.bulkActivateUsers();
-	private readonly bulkDeactivateMutation: ReturnType<
-		UserService["bulkDeactivateUsers"]
-	> = this.userService.bulkDeactivateUsers();
+	private readonly resetPasswordMutation: ReturnType<
+		UserService["resetPassword"]
+	> = this.userService.resetPassword();
 
 	readonly data: Signal<User[]> = computed(
 		() => this.usersQuery.data()?.items ?? []
@@ -171,35 +166,15 @@ export class UserList
 			icon: "edit"
 		},
 		{
-			key: "toggleStatus",
-			label: "Toggle Status",
-			icon: "swap_horiz"
-		},
-		{
-			key: "delete",
-			label: "Delete",
-			icon: "delete",
-			color: "warn"
-		}
-	];
-
-	readonly bulkActions: BulkAction[] = [
-		{
-			key: "activate",
-			label: "Activate Selected",
-			icon: "check_circle",
-			color: "primary"
-		},
-		{
-			key: "deactivate",
-			label: "Deactivate Selected",
-			icon: "cancel",
+			key: "resetPassword",
+			label: "Reset Password",
+			icon: "lock_reset",
 			color: "accent"
 		},
 		{
-			key: "delete",
-			label: "Delete Selected",
-			icon: "delete",
+			key: "deactivate",
+			label: "Deactivate",
+			icon: "person_off",
 			color: "warn"
 		}
 	];
@@ -239,12 +214,15 @@ export class UserList
 		this.userService.updateFilter({ includeInactive });
 	}
 
-	onDateRangeChange(event: DateRangeEvent): void
+	/**
+	 * Handles sort change from data table
+	 * @param event - Sort change event with column and direction
+	 */
+	onSortChange(event: SortChangeEvent): void
 	{
-		// Update filter with date range (filters by LastLogin)
 		this.userService.updateFilter({
-			startDate: event.startDate,
-			endDate: event.endDate
+			sortBy: event.sortBy,
+			sortDescending: event.sortDescending
 		});
 	}
 
@@ -258,27 +236,11 @@ export class UserList
 			case "edit":
 				this.editUser(event.row.id);
 				break;
-			case "toggleStatus":
-				this.toggleUserStatus(event.row);
-				break;
-			case "delete":
-				this.deleteUser(event.row.id, event.row.username);
-				break;
-		}
-	}
-
-	onBulkAction(event: BulkActionEvent): void
-	{
-		switch (event.action)
-		{
-			case "activate":
-				this.bulkActivateUsers(event.selectedIds);
+			case "resetPassword":
+				this.resetUserPassword(event.row);
 				break;
 			case "deactivate":
-				this.bulkDeactivateUsers(event.selectedIds);
-				break;
-			case "delete":
-				this.bulkDeleteUsers(event.selectedIds);
+				this.deactivateUser(event.row);
 				break;
 		}
 	}
@@ -321,224 +283,82 @@ export class UserList
 	}
 
 	/**
-	 * Toggles a user's active status
-	 * @param user - The user to toggle
+	 * Initiates password reset for a user
+	 * @param user - The user to reset password for
 	 */
-	private toggleUserStatus(user: User): void
+	private resetUserPassword(user: User): void
 	{
-		const newStatus: boolean = !user.isActive;
-		const action: string = newStatus ? "activate" : "deactivate";
-
-		if (
-			!confirm(
-				`Are you sure you want to ${action} user "${user.username}"?`
-			)
-		)
-		{
-			return;
-		}
-
-		this.updateUserMutation.mutate(
+		this.dialogService
+			.confirm({
+				title: "Reset Password",
+				message: `Are you sure you want to reset the password for "${user.username}"? They will receive an email with instructions to set a new password.`,
+				confirmText: "Reset Password"
+			})
+			.subscribe((confirmed: boolean) =>
 			{
-				id: user.id,
-				user: {
-					id: user.id,
-					username: user.username,
-					email: user.email,
-					fullName: user.fullName,
-					isActive: newStatus
+				if (!confirmed)
+				{
+					return;
 				}
-			},
-			{
-				onSuccess: () =>
-				{
-					this.notificationService.success(
-						`User "${user.username}" ${action}d successfully`
-					);
-				},
-				onError: (error: Error) =>
-				{
-					this.notificationService.error(
-						`Failed to ${action} user: ${error.message}`
-					);
-				}
-			}
-		);
-	}
 
-	/**
-	 * Deletes a single user
-	 * @param userId - The user ID to delete
-	 * @param username - The username for confirmation message
-	 */
-	private deleteUser(userId: number, username: string): void
-	{
-		if (
-			!confirm(
-				`Are you sure you want to delete user "${username}"? This action cannot be undone.`
-			)
-		)
-		{
-			return;
-		}
-
-		this.deleteUserMutation.mutate(userId, {
-			onSuccess: () =>
-			{
-				this.notificationService.success(
-					`User "${username}" deleted successfully`
-				);
-			},
-			onError: (error: Error) =>
-			{
-				this.notificationService.error(
-					`Failed to delete user: ${error.message}`
-				);
-			}
-		});
-	}
-
-	/**
-	 * Bulk activates multiple users
-	 * @param userIds - Array of user IDs to activate
-	 */
-	private bulkActivateUsers(userIds: number[]): void
-	{
-		if (userIds.length === 0)
-		{
-			this.notificationService.warning(
-				"No users selected for activation"
-			);
-			return;
-		}
-
-		const count: number = userIds.length;
-		if (
-			!confirm(
-				`Are you sure you want to activate ${count} user${count === 1 ? "" : "s"}?`
-			)
-		)
-		{
-			return;
-		}
-
-		this.bulkActivateMutation.mutate(userIds, {
-			onSuccess: (activatedCount: number) =>
-			{
-				this.notificationService.success(
-					`Successfully activated ${activatedCount} user${activatedCount === 1 ? "" : "s"}`
-				);
-			},
-			onError: (error: Error) =>
-			{
-				this.notificationService.error(
-					`Failed to activate users: ${error.message}`
-				);
-			}
-		});
-	}
-
-	/**
-	 * Bulk deactivates multiple users
-	 * @param userIds - Array of user IDs to deactivate
-	 */
-	private bulkDeactivateUsers(userIds: number[]): void
-	{
-		if (userIds.length === 0)
-		{
-			this.notificationService.warning(
-				"No users selected for deactivation"
-			);
-			return;
-		}
-
-		const count: number = userIds.length;
-		if (
-			!confirm(
-				`Are you sure you want to deactivate ${count} user${count === 1 ? "" : "s"}?`
-			)
-		)
-		{
-			return;
-		}
-
-		this.bulkDeactivateMutation.mutate(userIds, {
-			onSuccess: (deactivatedCount: number) =>
-			{
-				this.notificationService.success(
-					`Successfully deactivated ${deactivatedCount} user${deactivatedCount === 1 ? "" : "s"}`
-				);
-			},
-			onError: (error: Error) =>
-			{
-				this.notificationService.error(
-					`Failed to deactivate users: ${error.message}`
-				);
-			}
-		});
-	}
-
-	/**
-	 * Bulk deletes multiple users
-	 * @param userIds - Array of user IDs to delete
-	 */
-	private bulkDeleteUsers(userIds: number[]): void
-	{
-		if (userIds.length === 0)
-		{
-			this.notificationService.warning("No users selected for deletion");
-			return;
-		}
-
-		const count: number = userIds.length;
-		if (
-			!confirm(
-				`Are you sure you want to delete ${count} user${count === 1 ? "" : "s"}? This action cannot be undone.`
-			)
-		)
-		{
-			return;
-		}
-
-		// Delete users one by one (could be optimized with a batch endpoint if available)
-		let successCount: number = 0;
-		let errorCount: number = 0;
-
-		// Process deletions sequentially to handle errors properly
-		const deleteNext: (index: number) => void = (index: number): void =>
-		{
-			if (index >= userIds.length)
-			{
-				// All done
-				if (successCount > 0)
-				{
-					this.notificationService.success(
-						`Successfully deleted ${successCount} user${successCount === 1 ? "" : "s"}`
-					);
-				}
-				if (errorCount > 0)
-				{
-					this.notificationService.error(
-						`Failed to delete ${errorCount} user${errorCount === 1 ? "" : "s"}`
-					);
-				}
-				return;
-			}
-
-			this.deleteUserMutation.mutate(userIds[index], {
-				onSuccess: () =>
-				{
-					successCount++;
-					deleteNext(index + 1);
-				},
-				onError: () =>
-				{
-					errorCount++;
-					deleteNext(index + 1);
-				}
+				this.resetPasswordMutation.mutate(user.id, {
+					onSuccess: () =>
+					{
+						this.notificationService.success(
+							`Password reset email sent to ${user.email}`
+						);
+					},
+					onError: (error: Error) =>
+					{
+						this.notificationService.error(
+							`Failed to reset password: ${error.message}`
+						);
+					}
+				});
 			});
-		};
+	}
 
-		deleteNext(0);
+	/**
+	 * Deactivates a single user (soft delete)
+	 * @param user - The user to deactivate
+	 */
+	private deactivateUser(user: User): void
+	{
+		this.dialogService
+			.confirmDeactivate("user")
+			.subscribe((confirmed: boolean) =>
+			{
+				if (!confirmed)
+				{
+					return;
+				}
+
+				this.updateUserMutation.mutate(
+					{
+						id: user.id,
+						user: {
+							id: user.id,
+							username: user.username,
+							email: user.email,
+							fullName: user.fullName,
+							isActive: false
+						}
+					},
+					{
+						onSuccess: () =>
+						{
+							this.notificationService.success(
+								`User "${user.username}" deactivated successfully`
+							);
+						},
+						onError: (error: Error) =>
+						{
+							this.notificationService.error(
+								`Failed to deactivate user: ${error.message}`
+							);
+						}
+					}
+				);
+			});
 	}
 }

@@ -20,6 +20,8 @@ public static class TestTables
 			"\"Identity\".\"ExternalLogins\"",
 			"\"Identity\".\"UserCredentials\"",
 			"\"Identity\".\"UserRoles\"",
+			"\"Identity\".\"PasswordResetTokens\"",
+			"\"Identity\".\"EmailVerificationTokens\"",
 			"\"Identity\".\"Users\""
 		];
 

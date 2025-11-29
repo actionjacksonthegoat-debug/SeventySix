@@ -1,0 +1,60 @@
+<div class="register-container">
+	<div class="register-card">
+		@if (submitted())
+		{
+			<div class="success-state">
+				<h1>Check Your Email</h1>
+				<p>
+					If this email address is available, we've sent a
+					verification link. Please check your inbox and spam folder.
+				</p>
+				<a routerLink="/auth/login" class="btn-primary">
+					Return to Sign In
+				</a>
+			</div>
+		}
+		@else
+		{
+			<h1>Create Account</h1>
+			<p class="description">
+				Enter your email address to get started. We'll send you a link
+				to complete your registration.
+			</p>
+
+			<form (ngSubmit)="onSubmit()" class="register-form">
+				<div class="form-group">
+					<label for="email">Email Address</label>
+					<input
+						id="email"
+						type="email"
+						[(ngModel)]="email"
+						name="email"
+						required
+						autocomplete="email"
+						placeholder="Enter your email"
+					/>
+				</div>
+
+				<button
+					type="submit"
+					class="btn-primary"
+					[disabled]="isLoading() || !email.trim()"
+				>
+					@if (isLoading())
+					{
+						Sending...
+					}
+					@else
+					{
+						Continue
+					}
+				</button>
+			</form>
+
+			<div class="links">
+				<span>Already have an account?</span>
+				<a routerLink="/auth/login">Sign In</a>
+			</div>
+		}
+	</div>
+</div>

@@ -19,7 +19,7 @@ import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { MatTableModule } from "@angular/material/table";
 import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
-import { MatSortModule } from "@angular/material/sort";
+import { MatSortModule, Sort } from "@angular/material/sort";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
@@ -38,11 +38,13 @@ import {
 	RowActionEvent,
 	BulkActionEvent,
 	FilterChangeEvent,
-	DateRangeEvent
+	DateRangeEvent,
+	SortChangeEvent
 } from "@shared/models";
 import { MatCard, MatCardContent } from "@angular/material/card";
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { TableHeightDirective } from "@shared/directives";
+import { slideDown } from "@shared/animations/animations";
 import { environment } from "@environments/environment";
 
 /**
@@ -74,7 +76,8 @@ import { environment } from "@environments/environment";
 	],
 	templateUrl: "./data-table.component.html",
 	styleUrl: "./data-table.component.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	animations: [slideDown]
 })
 export class DataTableComponent<T extends { id: number }> implements OnDestroy
 {
@@ -257,6 +260,12 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	 */
 	readonly pageSizeChange: OutputEmitterRef<number> = output<number>();
 
+	/**
+	 * Sort column/direction changed
+	 */
+	readonly sortChange: OutputEmitterRef<SortChangeEvent> =
+		output<SortChangeEvent>();
+
 	// ========================================
 	// Internal State
 	// ========================================
@@ -380,6 +389,13 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	 */
 	readonly hasSelection: Signal<boolean> = computed(
 		() => this.selectionChange().length > 0
+	);
+
+	/**
+	 * Number of selected items
+	 */
+	readonly selectedCount: Signal<number> = computed(
+		() => this.selectionChange().length
 	);
 
 	/**
@@ -508,7 +524,21 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	{
 		const searchText: string = this.searchText();
 		this.searchChange.emit(searchText);
-	} /**
+	}
+
+	/**
+	 * Handle sort change from mat-sort
+	 * @param sort - Material sort event
+	 */
+	onSortChange(sort: Sort): void
+	{
+		this.sortChange.emit({
+			sortBy: sort.active,
+			sortDescending: sort.direction === "desc"
+		});
+	}
+
+	/**
 	 * Handle filter toggle
 	 */
 	onFilterToggle(filterKey: string): void

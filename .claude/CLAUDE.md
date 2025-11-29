@@ -591,6 +591,7 @@ SeventySix/
 │       ├── Identity/            # User management
 │       ├── Logging/             # System logging
 │       ├── ApiTracking/         # API tracking
+│       ├── ElectronicNotifications/  # Notifications (Emails, future: SignalR, SMS)
 │       └── Shared/              # Common types
 │
 └── observability/               # Prometheus, Grafana
@@ -598,11 +599,12 @@ SeventySix/
 
 ### Server-Client Alignment
 
-| Server Context | Client Feature        | Path Alias            |
-| -------------- | --------------------- | --------------------- |
-| `Identity/`    | `admin/users/`        | `@admin/users`        |
-| `Logging/`     | `admin/logs/`         | `@admin/logs`         |
-| `ApiTracking/` | `admin/api-tracking/` | `@admin/api-tracking` |
+| Server Context             | Client Feature        | Path Alias            |
+| -------------------------- | --------------------- | --------------------- |
+| `Identity/`                | `admin/users/`        | `@admin/users`        |
+| `Logging/`                 | `admin/logs/`         | `@admin/logs`         |
+| `ApiTracking/`             | `admin/api-tracking/` | `@admin/api-tracking` |
+| `ElectronicNotifications/` | N/A (service-only)    | N/A                   |
 
 ### Bounded Context Structure (Server)
 
@@ -619,6 +621,29 @@ Context/
 ├── Settings/         # appsettings.json binding classes (context-specific config)
 └── Validators/       # FluentValidation
 ```
+
+### ElectronicNotifications Context (Special Structure)
+
+```
+ElectronicNotifications/
+├── Emails/                   # First notification channel
+│   ├── Interfaces/
+│   │   └── IEmailService.cs
+│   ├── Models/               # Non-persisted
+│   │   └── EmailMessage.cs
+│   └── Services/
+│       └── EmailService.cs
+├── Extensions/
+│   └── ServiceCollectionExtensions.cs
+└── [Future: SignalR/, SMS/, Push/]
+```
+
+**Key Differences from Standard Contexts**:
+
+-   **No database** - Pure service layer
+-   **No DTOs** - Not exposed via API
+-   **Subfolder per channel** - `Emails/`, `SignalR/`, `SMS/`
+-   **Namespace**: `SeventySix.ElectronicNotifications.Emails`
 
 ### DTO vs Entity vs Model vs Settings
 

@@ -148,6 +148,10 @@ $border-radius-chip: $border-radius-full;
 // ============================================================================
 // ELEVATION & SHADOWS (Material Design)
 // ============================================================================
+// DEPRECATED: Use @include mixins.elevation() instead for theme-aware shadows.
+// These variables use hardcoded rgba(0,0,0) which doesn't adapt to dark mode.
+// Kept for backward compatibility - will be removed in future version.
+// ============================================================================
 $elevation-none: none;
 $elevation-sm:
 	0 1px 3px rgba(0, 0, 0, 0.12),
@@ -297,6 +301,8 @@ $spinner-size-lg: 4rem; // 64px at 16px base
 }
 
 // Card shadow mixin
+// DEPRECATED: Use @include mixins.elevation-interactive() instead.
+// Kept for backward compatibility.
 @mixin card-shadow() {
 	box-shadow: $elevation-base;
 	transition: box-shadow $transition-duration-base $transition-easing-standard;

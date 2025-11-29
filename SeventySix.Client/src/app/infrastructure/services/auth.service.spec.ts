@@ -574,6 +574,33 @@ describe("AuthService", () =>
 			expect(localStorage.getItem(SESSION_KEY)).toBeNull();
 		});
 	});
+
+	describe("setPassword", () =>
+	{
+		it("should call set password endpoint with token and new password", () =>
+		{
+			const token: string = "valid-reset-token";
+			const newPassword: string = "NewPassword123!";
+
+			let completed: boolean = false;
+			service.setPassword(token, newPassword).subscribe(() =>
+			{
+				completed = true;
+			});
+
+			const req = httpMock.expectOne(
+				`${environment.apiUrl}/auth/set-password`
+			);
+			expect(req.request.method).toBe("POST");
+			expect(req.request.body).toEqual({
+				token,
+				newPassword
+			});
+			req.flush(null);
+
+			expect(completed).toBeTrue();
+		});
+	});
 });
 
 /**

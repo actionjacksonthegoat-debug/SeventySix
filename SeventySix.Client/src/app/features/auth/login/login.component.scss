@@ -141,6 +141,21 @@
 	}
 }
 
+.forgot-password-link {
+	text-align: right;
+	margin-top: calc(-1 * vars.$spacing-sm);
+
+	a {
+		color: var(--mat-sys-primary);
+		font-size: 0.875rem;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
 .btn-primary {
 	width: 100%;
 	padding: vars.$spacing-md vars.$spacing-lg;

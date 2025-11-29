@@ -40,6 +40,7 @@ namespace SeventySix.Api.Controllers;
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
 public class UsersController(
 	IUserService userService,
+	IAuthService authService,
 	ILogger<UsersController> logger) : ControllerBase
 {
 	/// <summary>
@@ -312,5 +313,49 @@ public class UsersController(
 	{
 		int count = await userService.BulkUpdateActiveStatusAsync(ids, false, "System", cancellationToken);
 		return Ok(count);
+	}
+
+	/// <summary>
+	/// Initiates a password reset for a user (sends reset email).
+	/// </summary>
+	/// <remarks>
+	/// Admin action to send a password reset email to a user.
+	/// The user will receive an email with a link to set their new password.
+	/// </remarks>
+	/// <param name="id">The unique identifier of the user.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>No content if email sent successfully.</returns>
+	/// <response code="204">Password reset email sent successfully.</response>
+	/// <response code="404">If the user is not found.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpPost("{id}/reset-password", Name = "ResetUserPassword")]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<IActionResult> ResetPasswordAsync(
+		int id,
+		CancellationToken cancellationToken)
+	{
+		// Verify user exists
+		UserDto? user =
+			await userService.GetUserByIdAsync(
+				id,
+				cancellationToken);
+
+		if (user == null)
+		{
+			return NotFound();
+		}
+
+		await authService.InitiatePasswordResetAsync(
+			id,
+			isNewUser: false,
+			cancellationToken);
+
+		logger.LogInformation(
+			"Password reset initiated for user. UserId: {UserId}",
+			id);
+
+		return NoContent();
 	}
 }

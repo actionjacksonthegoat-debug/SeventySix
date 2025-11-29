@@ -14,6 +14,25 @@ namespace SeventySix.ArchitectureTests;
 /// </summary>
 public class BoundedContextTests
 {
+	/// <summary>
+	/// Service-only bounded contexts that don't require a DbContext.
+	/// These provide cross-cutting services (email, notifications, etc.).
+	/// </summary>
+	private static readonly string[] ServiceOnlyContexts =
+	[
+		"ElectronicNotifications"
+	];
+
+	/// <summary>
+	/// Allowed cross-context dependencies.
+	/// Key = dependent context, Value = contexts it can depend on.
+	/// Service-only contexts are typically safe to depend on.
+	/// </summary>
+	private static readonly Dictionary<string, string[]> AllowedDependencies = new()
+	{
+		["Identity"] = ["ElectronicNotifications"]
+	};
+
 	[Fact]
 	public void Bounded_Contexts_Should_Not_Reference_Each_Other()
 	{
@@ -37,6 +56,15 @@ public class BoundedContextTests
 			foreach (string targetContextName in boundedContextNames)
 			{
 				if (sourceContextName == targetContextName)
+				{
+					continue;
+				}
+
+				// Check if this dependency is explicitly allowed
+				if (AllowedDependencies.TryGetValue(
+						sourceContextName,
+						out string[]? allowed)
+					&& allowed.Contains(targetContextName))
 				{
 					continue;
 				}
@@ -78,6 +106,12 @@ public class BoundedContextTests
 
 		foreach (string contextName in boundedContextNames)
 		{
+			// Service-only contexts don't require a DbContext
+			if (ServiceOnlyContexts.Contains(contextName))
+			{
+				continue;
+			}
+
 			Type? dbContextType = domainAssembly.GetTypes()
 				.FirstOrDefault(type => type.Namespace == $"SeventySix.{contextName}"
 					&& type.Name.EndsWith("DbContext")

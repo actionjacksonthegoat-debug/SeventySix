@@ -31,9 +31,9 @@ const LOG_LEVEL_CLASSES: Record<LogLevel, string> = {
 const LOG_LEVEL_ICONS: Record<LogLevel, string> = {
 	[LogLevel.Verbose]: "bug_report",
 	[LogLevel.Debug]: "bug_report",
-	[LogLevel.Information]: "info",
+	[LogLevel.Information]: "lightbulb",
 	[LogLevel.Warning]: "warning",
-	[LogLevel.Error]: "error",
+	[LogLevel.Error]: "cancel",
 	[LogLevel.Fatal]: "cancel"
 };
 

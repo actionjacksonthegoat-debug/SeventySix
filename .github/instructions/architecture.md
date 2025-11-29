@@ -10,19 +10,21 @@ Angular Client ◄──HTTP──► .NET API Server
                      Bounded Contexts (SeventySix/)
                       ├─ Identity
                       ├─ Logging
-                      └─ ApiTracking
+                      ├─ ApiTracking
+                      └─ ElectronicNotifications
                               │
                          PostgreSQL (Separate schemas)
 ```
 
 ## Server-Client Alignment
 
-| Server Context    | Client Feature        | Path Alias            |
-| ----------------- | --------------------- | --------------------- |
-| `Identity/`       | `admin/users/`        | `@admin/users`        |
-| `Logging/`        | `admin/logs/`         | `@admin/logs`         |
-| `ApiTracking/`    | `admin/api-tracking/` | `@admin/api-tracking` |
-| `Infrastructure/` | `infrastructure/`     | `@infrastructure`     |
+| Server Context             | Client Feature        | Path Alias            |
+| -------------------------- | --------------------- | --------------------- |
+| `Identity/`                | `admin/users/`        | `@admin/users`        |
+| `Logging/`                 | `admin/logs/`         | `@admin/logs`         |
+| `ApiTracking/`             | `admin/api-tracking/` | `@admin/api-tracking` |
+| `ElectronicNotifications/` | (server-only)         | N/A                   |
+| `Infrastructure/`          | `infrastructure/`     | `@infrastructure`     |
 
 ## Server Structure
 
@@ -38,11 +40,23 @@ BoundedContext/
 └── Validators/       # FluentValidation
 ```
 
-| Context     | Schema         | DbContext              |
-| ----------- | -------------- | ---------------------- |
-| Identity    | `identity`     | `IdentityDbContext`    |
-| Logging     | `logging`      | `LoggingDbContext`     |
-| ApiTracking | `api_tracking` | `ApiTrackingDbContext` |
+### ElectronicNotifications Structure (Special Case)
+
+```
+ElectronicNotifications/
+├── Emails/                # Email implementation
+│   ├── Interfaces/
+│   └── Services/
+├── Extensions/            # DI registration for all notification types
+└── (Future: SignalR/, SMS/, Push/)
+```
+
+| Context                 | Schema         | DbContext              |
+| ----------------------- | -------------- | ---------------------- |
+| Identity                | `identity`     | `IdentityDbContext`    |
+| Logging                 | `logging`      | `LoggingDbContext`     |
+| ApiTracking             | `api_tracking` | `ApiTrackingDbContext` |
+| ElectronicNotifications | (no DB)        | N/A (service-only)     |
 
 ## DTO vs Entity vs Model vs Settings
 

@@ -29,6 +29,7 @@ namespace SeventySix.Api.Tests.Controllers;
 [Collection("PostgreSQL")]
 public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
+	private readonly string TestId = Guid.NewGuid().ToString("N")[..8];
 	private HttpClient? Client;
 	private ILogRepository? LogRepository;
 
@@ -289,13 +290,13 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	{
 		await TestUserHelper.CreateUserWithRolesAsync(
 			SharedFactory.Services,
-			"admin",
-			"admin@example.com",
+			$"admin_{TestId}",
+			$"admin_{TestId}@example.com",
 			["Admin"]);
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "admin",
+				UsernameOrEmail: $"admin_{TestId}",
 				Password: TestUserHelper.TestPassword);
 
 		HttpResponseMessage response =

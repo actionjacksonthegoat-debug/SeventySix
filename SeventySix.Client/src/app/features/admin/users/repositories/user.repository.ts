@@ -96,4 +96,17 @@ export class UserRepository
 			ids
 		);
 	}
+
+	/**
+	 * Initiates password reset for a user by sending reset email.
+	 * @param id - The user ID to reset password for.
+	 * @returns Observable that completes when email is sent.
+	 */
+	resetPassword(id: number | string): Observable<void>
+	{
+		return this.apiService.post<void, Record<string, never>>(
+			`${this.endpoint}/${id}/reset-password`,
+			{}
+		);
+	}
 }

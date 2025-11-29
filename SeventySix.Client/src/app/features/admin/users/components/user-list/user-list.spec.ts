@@ -66,9 +66,13 @@ describe("UserList", () =>
 		expect(component.rowActions.length).toBe(4);
 	});
 
-	it("should define bulk actions", () =>
+	it("should include resetPassword in row actions", () =>
 	{
-		expect(component.bulkActions).toBeDefined();
-		expect(component.bulkActions.length).toBe(3);
+		const resetPasswordAction = component.rowActions.find(
+			(action) => action.key === "resetPassword"
+		);
+		expect(resetPasswordAction).toBeTruthy();
+		expect(resetPasswordAction?.label).toBe("Reset Password");
+		expect(resetPasswordAction?.icon).toBe("lock_reset");
 	});
 });
