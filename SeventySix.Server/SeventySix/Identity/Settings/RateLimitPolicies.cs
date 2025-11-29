@@ -2,10 +2,11 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Api.Configuration;
+namespace SeventySix.Identity;
 
 /// <summary>
-/// Named rate limit policy constants for use with [EnableRateLimiting] attribute.
+/// Named rate limit policy constants for authentication endpoints.
+/// Use with [EnableRateLimiting] attribute on auth controllers.
 /// </summary>
 /// <remarks>
 /// Centralizes policy names to avoid magic strings across controllers.

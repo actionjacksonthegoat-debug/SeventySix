@@ -188,8 +188,8 @@ export class LayoutService
 	{
 		// Check if browser environment
 		if (
-			typeof window === "undefined" ||
-			typeof sessionStorage === "undefined"
+			typeof window === "undefined"
+			|| typeof sessionStorage === "undefined"
 		)
 		{
 			return true; // Default to open in SSR
@@ -216,8 +216,8 @@ export class LayoutService
 	private saveSessionSidebarState(expanded: boolean): void
 	{
 		if (
-			typeof window === "undefined" ||
-			typeof sessionStorage === "undefined"
+			typeof window === "undefined"
+			|| typeof sessionStorage === "undefined"
 		)
 		{
 			return;

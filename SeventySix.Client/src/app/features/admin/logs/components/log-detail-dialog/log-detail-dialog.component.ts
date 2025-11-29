@@ -147,12 +147,12 @@ export class LogDetailDialogComponent
 		if (!log.correlationId)
 		{
 			alert(
-				"No trace ID available for this error.\n\n" +
-					"To enable distributed tracing:\n" +
-					"1. Configure OpenTelemetry in your backend\n" +
-					"2. Ensure trace IDs are propagated through requests\n" +
-					"3. Verify Jaeger is running (npm run start:observability)\n" +
-					"4. Check that your API is exporting traces to Jaeger"
+				"No trace ID available for this error.\n\n"
+					+ "To enable distributed tracing:\n"
+					+ "1. Configure OpenTelemetry in your backend\n"
+					+ "2. Ensure trace IDs are propagated through requests\n"
+					+ "3. Verify Jaeger is running (npm run start:observability)\n"
+					+ "4. Check that your API is exporting traces to Jaeger"
 			);
 			return;
 		}

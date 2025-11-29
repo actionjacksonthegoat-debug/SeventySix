@@ -134,8 +134,8 @@ export class RegisterCompleteComponent implements OnInit
 					return "This username is already taken. Please choose another.";
 				default:
 					return (
-						error.error?.detail ??
-						"Invalid request. Please check your input."
+						error.error?.detail
+						?? "Invalid request. Please check your input."
 					);
 			}
 		}

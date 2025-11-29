@@ -428,9 +428,9 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 
 			// Only initialize if single-selection mode, has filters, and no filter is active yet
 			if (
-				singleSelection &&
-				filters.length > 0 &&
-				currentFilters.size === 0
+				singleSelection
+				&& filters.length > 0
+				&& currentFilters.size === 0
 			)
 			{
 				// Activate the first filter (typically "All")

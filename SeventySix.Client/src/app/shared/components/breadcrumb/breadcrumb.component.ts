@@ -195,8 +195,8 @@ export class BreadcrumbComponent
 				label,
 				url,
 				isActive:
-					this.router.url === url ||
-					this.router.url.startsWith(url + "?")
+					this.router.url === url
+					|| this.router.url.startsWith(url + "?")
 			});
 		}
 
