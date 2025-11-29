@@ -213,10 +213,6 @@ export class NotificationService
 		try
 		{
 			await navigator.clipboard.writeText(notification.copyData);
-			console.info(
-				"Notification copied to clipboard:",
-				notification.copyData
-			);
 			return true;
 		}
 		catch (error)

@@ -18,7 +18,7 @@ public class AuthorizationTestHelper
 {
 	private readonly HttpClient Client;
 	private readonly IServiceProvider Services;
-	private int userCounter;
+	private int UserCounter;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AuthorizationTestHelper"/> class.
@@ -129,7 +129,7 @@ public class AuthorizationTestHelper
 	private async Task AuthenticateAsRoleAsync(string role)
 	{
 		string uniqueSuffix =
-			$"{role.ToLowerInvariant()}_{++userCounter}_{Guid.NewGuid():N}";
+			$"{role.ToLowerInvariant()}_{++UserCounter}_{Guid.NewGuid():N}";
 
 		string username =
 			$"test_{uniqueSuffix}";
