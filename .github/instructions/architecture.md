@@ -44,6 +44,22 @@ BoundedContext/
 | Logging     | `logging`      | `LoggingDbContext`     |
 | ApiTracking | `api_tracking` | `ApiTrackingDbContext` |
 
+## DTO vs Entity vs Model vs Settings
+
+| Type         | Purpose                          | Persisted? | API Exposed? | Location            | Naming                          |
+| ------------ | -------------------------------- | ---------- | ------------ | ------------------- | ------------------------------- |
+| **DTOs**     | API contracts (request/response) | No         | **Yes**      | `Context/DTOs/`     | `*Dto`, `*Request`, `*Response` |
+| **Entities** | Database-persisted models        | **Yes**    | No           | `Context/Entities/` | Plain names (User, Log)         |
+| **Models**   | Internal non-persisted types     | No         | No           | `Context/Models/`   | `*Result`, `*Options`, etc.     |
+| **Settings** | Configuration binding            | No         | No           | `Context/Settings/` | `*Settings`                     |
+
+**Rules**:
+
+-   DTOs cross API boundary - serialized to/from JSON
+-   Entities are EF-tracked and saved to database - never returned directly from controllers
+-   Models are internal service/business logic types - not persisted, not exposed
+-   Settings bind to `appsettings.json` sections - context-specific config belongs in context
+
 ## Client Structure
 
 ```

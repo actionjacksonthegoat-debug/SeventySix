@@ -2,11 +2,11 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Shared;
+namespace SeventySix.Identity;
 
 /// <summary>
 /// JWT configuration settings.
-/// Used by Authentication context for token generation and validation.
+/// Used by Identity context for token generation and validation.
 /// </summary>
 public record JwtSettings
 {

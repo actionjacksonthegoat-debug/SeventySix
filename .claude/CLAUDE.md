@@ -609,14 +609,36 @@ SeventySix/
 ```
 Context/
 ├── Configurations/    # EF Fluent API
-├── DTOs/             # Records only
-├── Entities/
+├── DTOs/             # API contracts (records) - Request/Response/Dto types
+├── Entities/         # DB-persisted models - EF tracked, saved to database
 ├── Extensions/       # ToDto mapping
 ├── Infrastructure/   # DbContext
+├── Models/           # Internal non-persisted types (optional - create when needed)
 ├── Repositories/     # Domain-specific
 ├── Services/
+├── Settings/         # appsettings.json binding classes (context-specific config)
 └── Validators/       # FluentValidation
 ```
+
+### DTO vs Entity vs Model vs Settings
+
+| Category     | Purpose                        | Persisted? | API? | Examples                                       |
+| ------------ | ------------------------------ | ---------- | ---- | ---------------------------------------------- |
+| **DTOs**     | API request/response contracts | No         | Yes  | `UserDto`, `LoginRequest`, `PagedResult<T>`    |
+| **Entities** | Database-persisted models      | Yes        | No   | `User`, `RefreshToken`, `Log`                  |
+| **Models**   | Internal non-persisted types   | No         | No   | `AuthResult`, `TokenPair`, `ValidationContext` |
+| **Settings** | Configuration binding          | No         | No   | `JwtSettings`, `AuthSettings`                  |
+
+**Key Rules**:
+
+1. DTOs are **records** - immutable API contracts
+2. Entities are **classes** - EF-tracked, persisted to database
+3. Models are **records/classes** - internal business logic, not persisted
+4. Settings are **records** - bound from `appsettings.json`
+5. Controllers return DTOs, never Entities or Models
+6. Repositories work with Entities internally
+7. Services may use Models for internal operations
+8. Context-specific settings live in their bounded context (e.g., `Identity/Settings/`)
 
 ### Feature Structure (Client)
 
@@ -630,6 +652,22 @@ feature/
 ├── feature.component.ts
 └── feature.component.spec.ts
 ```
+
+### Client Model Organization
+
+```
+feature/
+└── models/
+    ├── index.ts              # Barrel export
+    ├── feature.model.ts      # DTOs - API contracts (matches backend)
+    └── feature.types.ts      # Models - internal types (optional, create when needed)
+```
+
+**Naming**:
+
+-   `*Request`, `*Dto`, `*Response` = DTOs (API contracts)
+-   `*Filter`, `*State`, `*Options` = Models (internal, not API)
+-   No `entities/` folder on client (Entities are server-side DB models only)
 
 ### Feature Routes (Required)
 

@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
-using SeventySix.Shared;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
 

@@ -3,9 +3,9 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
-using SeventySix.Shared;
+using SeventySix.Identity;
 
-namespace SeventySix.Tests.Shared.Validators;
+namespace SeventySix.Tests.Identity.Validators;
 
 /// <summary>
 /// Unit tests for JwtSettingsValidator.

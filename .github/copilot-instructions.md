@@ -81,6 +81,8 @@
 -   No generic repository pattern
 -   PostgreSQL only
 -   Features are self-contained (models, repos, services inside feature)
+-   **DTOs** = API contracts (request/response), **Entities** = DB-persisted models, **Models** = internal non-persisted types
+-   **Settings** = Configuration binding classes (bound from `appsettings.json`)
 -   **Feature services scoped to routes** - NOT `providedIn: 'root'` (memory management, bounded context isolation)
 -   Path aliases: `@infrastructure/*`, `@shared/*`, `@admin/*`, `@game/*`
 -   Server-Client alignment: Identity → `@admin/users/`, Logging → `@admin/logs/`

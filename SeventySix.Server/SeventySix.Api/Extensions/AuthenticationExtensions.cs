@@ -5,8 +5,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using SeventySix.Identity;
 using SeventySix.Identity.Settings;
-using SeventySix.Shared;
 
 namespace SeventySix.Api.Extensions;
 

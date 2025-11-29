@@ -6,6 +6,7 @@ namespace SeventySix.Identity;
 
 /// <summary>
 /// Authentication result with tokens or error information.
+/// Internal model - not exposed via API (use AuthResponse for API contracts).
 /// </summary>
 /// <param name="Success">Whether authentication succeeded.</param>
 /// <param name="AccessToken">JWT access token (null on failure).</param>

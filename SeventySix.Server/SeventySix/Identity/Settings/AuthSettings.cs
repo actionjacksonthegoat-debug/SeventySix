@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Shared;
+namespace SeventySix.Identity;
 
 /// <summary>
 /// Authentication settings bound from appsettings.json.
