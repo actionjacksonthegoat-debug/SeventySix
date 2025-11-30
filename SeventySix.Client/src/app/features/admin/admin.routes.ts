@@ -20,6 +20,8 @@ import {
 	ThirdPartyApiRepository,
 	HealthApiRepository
 } from "@admin/admin-dashboard/repositories";
+import { PermissionRequestService } from "@admin/permission-requests/services";
+import { PermissionRequestRepository } from "@admin/permission-requests/repositories";
 
 export const ADMIN_ROUTES: Routes = [
 	{
@@ -76,6 +78,15 @@ export const ADMIN_ROUTES: Routes = [
 				title: "Create User - SeventySix"
 			},
 			{
+				path: "request-permissions",
+				providers: [PermissionRequestService, PermissionRequestRepository],
+				loadComponent: () =>
+					import(
+						"./users/subpages/request-permissions/request-permissions.component"
+					).then((m) => m.RequestPermissionsComponent),
+				title: "Request Permissions - SeventySix"
+			},
+			{
 				path: ":id",
 				loadComponent: () =>
 					import("./users/subpages/user/user-page").then(
@@ -84,6 +95,15 @@ export const ADMIN_ROUTES: Routes = [
 				title: "User Details - SeventySix"
 			}
 		]
+	},
+	{
+		path: "permission-requests",
+		providers: [PermissionRequestService, PermissionRequestRepository],
+		loadComponent: () =>
+			import("./permission-requests/permission-requests.component").then(
+				(m) => m.PermissionRequestsComponent
+			),
+		title: "Permission Requests - SeventySix"
 	},
 	{
 		path: "not-found",

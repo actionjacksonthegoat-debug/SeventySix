@@ -196,6 +196,29 @@
 					</mat-card-content>
 				</mat-card>
 
+				<!-- Request Permissions (own profile only) -->
+				@if (isOwnProfile())
+				{
+					<mat-card appearance="outlined" class="actions-card">
+						<mat-card-header>
+							<mat-card-title>Permissions</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<p class="mat-body-2">
+								Need additional access? Request elevated permissions for your account.
+							</p>
+							<a
+								mat-stroked-button
+								[routerLink]="['request-permissions']"
+								class="request-permissions-link"
+							>
+								<mat-icon>security</mat-icon>
+								Request Permissions
+							</a>
+						</mat-card-content>
+					</mat-card>
+				}
+
 				<!-- Audit Information -->
 				@if (user())
 				{

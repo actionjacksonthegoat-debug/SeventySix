@@ -1,0 +1,50 @@
+@use "mixins" as mixins;
+@use "variables" as vars;
+
+:host {
+	display: block;
+	width: 100%;
+	max-width: 40rem;
+}
+
+.request-permissions-page {
+	width: 100%;
+
+	@include mixins.page-header();
+}
+
+.info-message {
+	padding: vars.$spacing-lg;
+	text-align: center;
+	color: var(--color-text-secondary);
+}
+
+.roles-list {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-md;
+	margin-bottom: vars.$spacing-lg;
+
+	mat-checkbox {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.role-description {
+		display: block;
+		font-size: vars.$font-size-sm;
+		color: var(--color-text-secondary);
+		margin-top: vars.$spacing-xs;
+	}
+}
+
+.message-field {
+	width: 100%;
+	margin-bottom: vars.$spacing-lg;
+}
+
+.actions {
+	display: flex;
+	justify-content: flex-end;
+}

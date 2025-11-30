@@ -24,8 +24,9 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatExpansionModule } from "@angular/material/expansion";
+import { RouterLink } from "@angular/router";
 import { UserService } from "@admin/users/services";
-import { LoggerService } from "@infrastructure/services";
+import { LoggerService, AuthService } from "@infrastructure/services";
 import { User, UpdateUserRequest } from "@admin/users/models";
 
 /**
@@ -47,7 +48,8 @@ import { User, UpdateUserRequest } from "@admin/users/models";
 		MatIconModule,
 		MatCheckboxModule,
 		MatSnackBarModule,
-		MatExpansionModule
+		MatExpansionModule,
+		RouterLink
 	],
 	templateUrl: "./user-page.html",
 	styleUrls: ["./user-page.scss"],
@@ -56,6 +58,7 @@ import { User, UpdateUserRequest } from "@admin/users/models";
 export class UserPage implements OnInit
 {
 	private readonly userService: UserService = inject(UserService);
+	private readonly authService: AuthService = inject(AuthService);
 	private readonly logger: LoggerService = inject(LoggerService);
 	private readonly route: ActivatedRoute = inject(ActivatedRoute);
 	private readonly router: Router = inject(Router);
@@ -65,6 +68,13 @@ export class UserPage implements OnInit
 	// Get user ID from route
 	private readonly userId: string =
 		this.route.snapshot.paramMap.get("id") || "";
+
+	/** Whether the current user is viewing their own profile. */
+	readonly isOwnProfile: Signal<boolean> = computed(() =>
+	{
+		const authUser: number | undefined = this.authService.user()?.id;
+		return authUser !== undefined && authUser.toString() === this.userId;
+	});
 
 	// TanStack Query for loading user data
 	readonly userQuery: ReturnType<UserService["getUserById"]> =

@@ -51,6 +51,17 @@ export const routes: Routes = [
 	},
 
 	// ══════════════════════════════════════════════════════════════
+	// USER ROUTES (Any Authenticated User - Own Profile Only)
+	// ══════════════════════════════════════════════════════════════
+	{
+		path: "user",
+		loadChildren: () =>
+			import("./features/user/user.routes").then((m) => m.USER_ROUTES),
+		canActivate: [roleGuard()],
+		data: { breadcrumb: "User" }
+	},
+
+	// ══════════════════════════════════════════════════════════════
 	// DEVELOPER ROUTES (Developer or Admin - ADDITIVE)
 	// ══════════════════════════════════════════════════════════════
 	{

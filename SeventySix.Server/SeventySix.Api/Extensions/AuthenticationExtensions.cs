@@ -59,6 +59,8 @@ public static class AuthenticationExtensions
 			})
 			.AddJwtBearer(options =>
 			{
+				options.MapInboundClaims = false;
+
 				options.TokenValidationParameters =
 					new TokenValidationParameters
 					{
@@ -102,6 +104,10 @@ public static class AuthenticationExtensions
 			options.AddPolicy(
 				"DeveloperOrAdmin",
 				policy => policy.RequireRole("Developer", "Admin"));
+
+			options.AddPolicy(
+				"Authenticated",
+				policy => policy.RequireAuthenticatedUser());
 		});
 
 		// Add HttpClientFactory for OAuth

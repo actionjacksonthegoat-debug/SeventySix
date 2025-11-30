@@ -78,6 +78,23 @@
 				@include mixins.info-review-grid();
 			}
 		}
+
+		.actions-card {
+			mat-card-content {
+				display: flex;
+				flex-direction: column;
+				gap: vars.$spacing-md;
+
+				p {
+					margin: 0;
+					color: rgba(var(--mat-outline-rgb), 0.7);
+				}
+
+				.request-permissions-link {
+					align-self: flex-start;
+				}
+			}
+		}
 	}
 }
 

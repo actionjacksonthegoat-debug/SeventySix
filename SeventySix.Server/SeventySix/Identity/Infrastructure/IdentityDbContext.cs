@@ -62,6 +62,11 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 	public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
 
 	/// <summary>
+	/// Gets or sets the PermissionRequests DbSet.
+	/// </summary>
+	public DbSet<PermissionRequest> PermissionRequests => Set<PermissionRequest>();
+
+	/// <summary>
 	/// Gets the schema name for Identity bounded context.
 	/// </summary>
 	/// <returns>"Identity".</returns>

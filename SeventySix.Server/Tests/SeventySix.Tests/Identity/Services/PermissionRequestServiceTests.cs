@@ -1,0 +1,225 @@
+// <copyright file="PermissionRequestServiceTests.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using NSubstitute;
+using SeventySix.Identity;
+using Shouldly;
+
+namespace SeventySix.Tests.Identity.Services;
+
+/// <summary>
+/// Unit tests for PermissionRequestService.
+/// Focus: Business logic validation (80/20 - high value tests only).
+/// </summary>
+public class PermissionRequestServiceTests
+{
+	private readonly IPermissionRequestRepository Repository =
+		Substitute.For<IPermissionRequestRepository>();
+	private readonly PermissionRequestService Service;
+
+	public PermissionRequestServiceTests()
+	{
+		Service =
+			new PermissionRequestService(Repository);
+	}
+
+	#region GetAvailableRolesAsync
+
+	[Fact]
+	public async Task GetAvailableRolesAsync_ReturnsAllRoles_WhenNoExistingRolesOrRequestsAsync()
+	{
+		// Arrange
+		Repository
+			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+		Repository
+			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+
+		// Act
+		IEnumerable<AvailableRoleDto> result =
+			await Service.GetAvailableRolesAsync(1);
+
+		// Assert
+		List<AvailableRoleDto> roles = result.ToList();
+		roles.Count.ShouldBe(2);
+		roles.ShouldContain(role => role.Name == "Developer");
+		roles.ShouldContain(role => role.Name == "Admin");
+	}
+
+	[Fact]
+	public async Task GetAvailableRolesAsync_ExcludesRolesUserAlreadyHasAsync()
+	{
+		// Arrange - user already has Developer role
+		Repository
+			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
+			.Returns(["Developer"]);
+		Repository
+			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+
+		// Act
+		IEnumerable<AvailableRoleDto> result =
+			await Service.GetAvailableRolesAsync(1);
+
+		// Assert - only Admin should be available
+		List<AvailableRoleDto> roles = result.ToList();
+		roles.Count.ShouldBe(1);
+		roles[0].Name.ShouldBe("Admin");
+	}
+
+	[Fact]
+	public async Task GetAvailableRolesAsync_ExcludesAlreadyRequestedRolesAsync()
+	{
+		// Arrange - user has pending request for Developer
+		Repository
+			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+		Repository
+			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
+			.Returns([new PermissionRequest { RequestedRole = "Developer" }]);
+
+		// Act
+		IEnumerable<AvailableRoleDto> result =
+			await Service.GetAvailableRolesAsync(1);
+
+		// Assert
+		List<AvailableRoleDto> roles = result.ToList();
+		roles.Count.ShouldBe(1);
+		roles[0].Name.ShouldBe("Admin");
+	}
+
+	#endregion
+
+	#region CreateRequestsAsync
+
+	[Fact]
+	public async Task CreateRequestsAsync_ThrowsArgumentException_WhenNoRolesSelectedAsync()
+	{
+		// Arrange
+		CreatePermissionRequestDto request =
+			new([]);
+
+		// Act & Assert
+		ArgumentException exception =
+			await Should.ThrowAsync<ArgumentException>(
+				() => Service.CreateRequestsAsync(
+					1,
+					"testuser",
+					request));
+
+		exception.Message.ShouldContain("At least one role");
+	}
+
+	[Fact]
+	public async Task CreateRequestsAsync_ThrowsArgumentException_WhenInvalidRoleAsync()
+	{
+		// Arrange
+		Repository
+			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+		Repository
+			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+
+		CreatePermissionRequestDto request =
+			new(["InvalidRole"]);
+
+		// Act & Assert
+		ArgumentException exception =
+			await Should.ThrowAsync<ArgumentException>(
+				() => Service.CreateRequestsAsync(
+					1,
+					"testuser",
+					request));
+
+		exception.Message.ShouldContain("Invalid role");
+	}
+
+	[Fact]
+	public async Task CreateRequestsAsync_CreatesOneRequestPerRoleAsync()
+	{
+		// Arrange
+		Repository
+			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+		Repository
+			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+
+		CreatePermissionRequestDto request =
+			new(["Developer", "Admin"], "Need access");
+
+		// Act
+		await Service.CreateRequestsAsync(
+			1,
+			"testuser",
+			request);
+
+		// Assert - verify CreateAsync called twice
+		await Repository
+			.Received(2)
+			.CreateAsync(
+				Arg.Any<PermissionRequest>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task CreateRequestsAsync_SkipsRolesUserAlreadyHas_IdempotentAsync()
+	{
+		// Arrange - user already has Developer role
+		Repository
+			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
+			.Returns(["Developer"]);
+		Repository
+			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+
+		CreatePermissionRequestDto request =
+			new(["Developer", "Admin"], "Need access");
+
+		// Act
+		await Service.CreateRequestsAsync(
+			1,
+			"testuser",
+			request);
+
+		// Assert - only Admin should be created (Developer skipped)
+		await Repository
+			.Received(1)
+			.CreateAsync(
+				Arg.Is<PermissionRequest>(permissionRequest => permissionRequest.RequestedRole == "Admin"),
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task CreateRequestsAsync_SkipsPendingRequests_IdempotentAsync()
+	{
+		// Arrange - user has pending request for Developer
+		Repository
+			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+		Repository
+			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
+			.Returns([new PermissionRequest { RequestedRole = "Developer" }]);
+
+		CreatePermissionRequestDto request =
+			new(["Developer", "Admin"], "Need access");
+
+		// Act
+		await Service.CreateRequestsAsync(
+			1,
+			"testuser",
+			request);
+
+		// Assert - only Admin should be created (Developer already requested)
+		await Repository
+			.Received(1)
+			.CreateAsync(
+				Arg.Is<PermissionRequest>(permissionRequest => permissionRequest.RequestedRole == "Admin"),
+				Arg.Any<CancellationToken>());
+	}
+
+	#endregion
+}

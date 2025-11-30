@@ -68,15 +68,18 @@ public static class IdentityExtensions
 
 		// Register repositories
 		services.AddScoped<IUserRepository, UserRepository>();
+		services.AddScoped<IPermissionRequestRepository, PermissionRequestRepository>();
 
 		// Register services
 		services.AddScoped<IUserService, UserService>();
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<IAuthService, AuthService>();
+		services.AddScoped<IPermissionRequestService, PermissionRequestService>();
 		services.AddSingleton<IOAuthCodeExchangeService, OAuthCodeExchangeService>();
 
 		// Register validators
 		services.AddSingleton<IValidator<CreateUserRequest>, CreateUserValidator>();
+		services.AddSingleton<IValidator<CreatePermissionRequestDto>, CreatePermissionRequestValidator>();
 		services.AddSingleton<IValidator<UpdateUserRequest>, UpdateUserValidator>();
 		services.AddSingleton<IValidator<UserQueryRequest>, UserQueryValidator>();
 		services.AddSingleton<IValidator<LoginRequest>, LoginRequestValidator>();

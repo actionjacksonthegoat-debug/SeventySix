@@ -16,6 +16,7 @@ public static class TestTables
 	/// </summary>
 	public static readonly string[] Identity =
 		[
+			"\"Identity\".\"PermissionRequests\"",
 			"\"Identity\".\"RefreshTokens\"",
 			"\"Identity\".\"ExternalLogins\"",
 			"\"Identity\".\"UserCredentials\"",

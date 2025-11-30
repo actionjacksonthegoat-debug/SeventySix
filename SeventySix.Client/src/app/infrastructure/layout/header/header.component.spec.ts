@@ -202,6 +202,24 @@ describe("HeaderComponent", () =>
 
 			component.navigateToProfile();
 
+			// Non-admin users navigate to /user/:id
+			expect(router.navigate).toHaveBeenCalledWith(["/user", 42]);
+		});
+
+		it("should navigate to admin user profile for admin users", () =>
+		{
+			mockAuthService.setUser({
+				id: 42,
+				username: "adminuser",
+				email: "admin@example.com",
+				roles: ["Admin"],
+				fullName: "Admin User"
+			});
+			fixture.detectChanges();
+
+			component.navigateToProfile();
+
+			// Admin users navigate to /admin/users/:id
 			expect(router.navigate).toHaveBeenCalledWith(["/admin/users", 42]);
 		});
 

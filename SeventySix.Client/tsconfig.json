@@ -31,6 +31,8 @@
 		"@admin/logs/*": ["src/app/features/admin/logs/*"],
 		"@admin/users": ["src/app/features/admin/users"],
 		"@admin/users/*": ["src/app/features/admin/users/*"],
+		"@admin/permission-requests": ["src/app/features/admin/permission-requests"],
+		"@admin/permission-requests/*": ["src/app/features/admin/permission-requests/*"],
 		"@admin/admin-dashboard": ["src/app/features/admin/admin-dashboard"],
 		"@admin/admin-dashboard/*": ["src/app/features/admin/admin-dashboard/*"],
 		"@admin/error-pages": ["src/app/features/admin/error-pages"],

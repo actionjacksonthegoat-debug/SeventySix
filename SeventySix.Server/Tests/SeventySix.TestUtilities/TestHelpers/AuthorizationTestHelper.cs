@@ -187,6 +187,13 @@ public class AuthorizationTestHelper
 				Content = content,
 			};
 
+		// Copy Authorization header - DefaultRequestHeaders are NOT auto-applied when using SendAsync with HttpRequestMessage
+		if (Client.DefaultRequestHeaders.Authorization != null)
+		{
+			request.Headers.Authorization =
+				Client.DefaultRequestHeaders.Authorization;
+		}
+
 		return await Client.SendAsync(request);
 	}
 }

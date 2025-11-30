@@ -87,7 +87,11 @@ export class HeaderComponent
 		const user: AuthUser | null = this.authService.user();
 		if (user)
 		{
-			this.router.navigate(["/admin/users", user.id]);
+			// Admins go to /admin/users/:id, regular users go to /user/:id
+			const basePath: string = this.authService.hasAnyRole("Admin")
+				? "/admin/users"
+				: "/user";
+			this.router.navigate([basePath, user.id]);
 		}
 	}
 

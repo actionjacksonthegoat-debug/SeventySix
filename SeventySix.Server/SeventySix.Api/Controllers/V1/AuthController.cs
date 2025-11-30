@@ -2,12 +2,12 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
+using SeventySix.Api.Extensions;
 using SeventySix.Identity;
 using SeventySix.Shared;
 
@@ -369,7 +369,7 @@ public class AuthController(
 		CancellationToken cancellationToken)
 	{
 		int? userId =
-			GetCurrentUserId();
+			User.GetUserId();
 
 		if (userId == null)
 		{
@@ -409,7 +409,7 @@ public class AuthController(
 		CancellationToken cancellationToken)
 	{
 		int? userId =
-			GetCurrentUserId();
+			User.GetUserId();
 
 		if (userId == null)
 		{
@@ -608,22 +608,6 @@ public class AuthController(
 				AccessToken: result.AccessToken!,
 				ExpiresAt: result.ExpiresAt!.Value,
 				RequiresPasswordChange: false));
-	}
-
-	/// <summary>
-	/// Gets the current user ID from claims.
-	/// </summary>
-	private int? GetCurrentUserId()
-	{
-		string? userIdClaim =
-			User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-		if (int.TryParse(userIdClaim, out int userId))
-		{
-			return userId;
-		}
-
-		return null;
 	}
 
 	/// <summary>

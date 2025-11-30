@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Subject } from "rxjs";
 import { UserService } from "@features/admin/users/services/user.service";
@@ -57,6 +59,8 @@ describe("UserPage", () =>
 			imports: [UserPage],
 			providers: [
 				provideZonelessChangeDetection(),
+				provideHttpClient(),
+				provideHttpClientTesting(),
 				{ provide: UserService, useValue: mockUserService },
 				{ provide: LoggerService, useValue: mockLogger },
 				{ provide: Router, useValue: mockRouter },

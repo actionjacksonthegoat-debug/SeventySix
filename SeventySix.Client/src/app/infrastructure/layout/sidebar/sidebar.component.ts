@@ -87,6 +87,11 @@ export class SidebarComponent
 					route: "/admin/users"
 				},
 				{
+					label: "Permission Requests",
+					icon: "lock_open",
+					route: "/admin/permission-requests"
+				},
+				{
 					label: "Logs",
 					icon: "article",
 					route: "/admin/logs"

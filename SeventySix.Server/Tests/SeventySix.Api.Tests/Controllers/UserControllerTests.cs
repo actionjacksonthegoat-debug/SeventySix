@@ -33,6 +33,7 @@ public class UsersControllerTests
 {
 	private readonly IUserService UserService;
 	private readonly IAuthService AuthService;
+	private readonly IPermissionRequestService PermissionRequestService;
 	private readonly ILogger<UsersController> Logger;
 	private readonly UsersController Controller;
 
@@ -40,10 +41,12 @@ public class UsersControllerTests
 	{
 		UserService = Substitute.For<IUserService>();
 		AuthService = Substitute.For<IAuthService>();
+		PermissionRequestService = Substitute.For<IPermissionRequestService>();
 		Logger = Substitute.For<ILogger<UsersController>>();
 		Controller = new UsersController(
 			UserService,
 			AuthService,
+			PermissionRequestService,
 			Logger);
 	}
 
