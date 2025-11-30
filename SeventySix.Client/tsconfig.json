@@ -35,8 +35,10 @@
 		"@admin/permission-requests/*": ["src/app/features/admin/permission-requests/*"],
 		"@admin/admin-dashboard": ["src/app/features/admin/admin-dashboard"],
 		"@admin/admin-dashboard/*": ["src/app/features/admin/admin-dashboard/*"],
-		"@admin/error-pages": ["src/app/features/admin/error-pages"],
-		"@admin/error-pages/*": ["src/app/features/admin/error-pages/*"],
+
+		// Shared error pages
+		"@shared/error-pages": ["src/app/shared/error-pages"],
+		"@shared/error-pages/*": ["src/app/shared/error-pages/*"],
 
 		// Home feature and sub-features
 		"@home": ["src/app/features/home"],
@@ -54,7 +56,11 @@
 
 		// Sandbox feature
 		"@sandbox": ["src/app/features/sandbox"],
-		"@sandbox/*": ["src/app/features/sandbox/*"]
+		"@sandbox/*": ["src/app/features/sandbox/*"],
+
+		// Account feature (user's own account)
+		"@account": ["src/app/features/account"],
+		"@account/*": ["src/app/features/account/*"]
 	}
 	},
 	"angularCompilerOptions": {

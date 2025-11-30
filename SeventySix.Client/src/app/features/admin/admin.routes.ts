@@ -78,15 +78,6 @@ export const ADMIN_ROUTES: Routes = [
 				title: "Create User - SeventySix"
 			},
 			{
-				path: "request-permissions",
-				providers: [PermissionRequestService, PermissionRequestRepository],
-				loadComponent: () =>
-					import(
-						"./users/subpages/request-permissions/request-permissions.component"
-					).then((m) => m.RequestPermissionsComponent),
-				title: "Request Permissions - SeventySix"
-			},
-			{
 				path: ":id",
 				loadComponent: () =>
 					import("./users/subpages/user/user-page").then(
@@ -108,7 +99,7 @@ export const ADMIN_ROUTES: Routes = [
 	{
 		path: "not-found",
 		loadComponent: () =>
-			import("./error-pages/not-found/not-found").then(
+			import("@shared/error-pages/not-found/not-found").then(
 				(m) => m.NotFoundPage
 			),
 		title: "Page Not Found - SeventySix"
@@ -116,7 +107,7 @@ export const ADMIN_ROUTES: Routes = [
 	{
 		path: "server-error",
 		loadComponent: () =>
-			import("./error-pages/server-error/server-error").then(
+			import("@shared/error-pages/server-error/server-error").then(
 				(m) => m.ServerErrorPage
 			),
 		title: "Server Error - SeventySix"

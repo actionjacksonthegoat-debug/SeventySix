@@ -27,7 +27,7 @@ import {
 	OAuthProvider,
 	JwtClaims,
 	DOTNET_ROLE_CLAIM
-} from "@infrastructure/models/auth.model";
+} from "@infrastructure/models";
 
 @Injectable({
 	providedIn: "root"

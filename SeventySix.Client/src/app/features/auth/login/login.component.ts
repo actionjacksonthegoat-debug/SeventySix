@@ -19,7 +19,7 @@ import { NotificationService } from "@infrastructure/services/notification.servi
 import {
 	LoginCredentials,
 	AuthResponse
-} from "@infrastructure/models/auth.model";
+} from "@infrastructure/models";
 
 @Component({
 	selector: "app-login",

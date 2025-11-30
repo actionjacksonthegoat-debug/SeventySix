@@ -82,17 +82,9 @@ export class HeaderComponent
 		this.router.navigate(["/auth/register"]);
 	}
 
-	navigateToProfile(): void
+	navigateToAccount(): void
 	{
-		const user: AuthUser | null = this.authService.user();
-		if (user)
-		{
-			// Admins go to /admin/users/:id, regular users go to /user/:id
-			const basePath: string = this.authService.hasAnyRole("Admin")
-				? "/admin/users"
-				: "/user";
-			this.router.navigate([basePath, user.id]);
-		}
+		this.router.navigate(["/account"]);
 	}
 
 	logout(): void

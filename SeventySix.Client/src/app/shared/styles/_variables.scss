@@ -148,27 +148,9 @@ $border-radius-chip: $border-radius-full;
 // ============================================================================
 // ELEVATION & SHADOWS (Material Design)
 // ============================================================================
-// DEPRECATED: Use @include mixins.elevation() instead for theme-aware shadows.
-// These variables use hardcoded rgba(0,0,0) which doesn't adapt to dark mode.
-// Kept for backward compatibility - will be removed in future version.
+// Use @include mixins.elevation($level) for theme-aware shadows.
+// All legacy elevation variables have been removed.
 // ============================================================================
-$elevation-none: none;
-$elevation-sm:
-	0 1px 3px rgba(0, 0, 0, 0.12),
-	0 1px 2px rgba(0, 0, 0, 0.24);
-$elevation-base:
-	0 3px 6px rgba(0, 0, 0, 0.16),
-	0 3px 6px rgba(0, 0, 0, 0.23);
-$elevation-md: $elevation-base; // Alias for base
-$elevation-lg:
-	0 10px 20px rgba(0, 0, 0, 0.19),
-	0 6px 6px rgba(0, 0, 0, 0.23);
-$elevation-xl:
-	0 14px 28px rgba(0, 0, 0, 0.25),
-	0 10px 10px rgba(0, 0, 0, 0.22);
-$elevation-2xl:
-	0 19px 38px rgba(0, 0, 0, 0.3),
-	0 15px 12px rgba(0, 0, 0, 0.22);
 
 // ============================================================================
 // Z-INDEX LAYERS (Stacking context)
@@ -300,17 +282,7 @@ $spinner-size-lg: 4rem; // 64px at 16px base
 	overflow: hidden;
 }
 
-// Card shadow mixin
-// DEPRECATED: Use @include mixins.elevation-interactive() instead.
-// Kept for backward compatibility.
-@mixin card-shadow() {
-	box-shadow: $elevation-base;
-	transition: box-shadow $transition-duration-base $transition-easing-standard;
-
-	&:hover {
-		box-shadow: $elevation-lg;
-	}
-}
+// Card shadow: Use @include mixins.elevation-interactive() for interactive elevation effects.
 
 // Focus visible mixin (accessibility)
 @mixin focus-visible() {

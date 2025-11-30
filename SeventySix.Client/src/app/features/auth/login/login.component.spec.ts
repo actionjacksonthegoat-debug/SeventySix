@@ -11,7 +11,7 @@ import { of, throwError } from "rxjs";
 import { LoginComponent } from "./login.component";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
-import { AuthResponse } from "@infrastructure/models/auth.model";
+import { AuthResponse } from "@infrastructure/models";
 import { createMockNotificationService } from "@testing";
 
 describe("LoginComponent", () =>

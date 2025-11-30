@@ -189,48 +189,11 @@ describe("HeaderComponent", () =>
 			expect(mockAuthService.logout).toHaveBeenCalled();
 		});
 
-		it("should navigate to user profile when navigateToProfile called", () =>
+		it("should navigate to account page when navigateToAccount called", () =>
 		{
-			mockAuthService.setUser({
-				id: 42,
-				username: "testuser",
-				email: "test@example.com",
-				roles: [],
-				fullName: "John Doe"
-			});
-			fixture.detectChanges();
+			component.navigateToAccount();
 
-			component.navigateToProfile();
-
-			// Non-admin users navigate to /user/:id
-			expect(router.navigate).toHaveBeenCalledWith(["/user", 42]);
-		});
-
-		it("should navigate to admin user profile for admin users", () =>
-		{
-			mockAuthService.setUser({
-				id: 42,
-				username: "adminuser",
-				email: "admin@example.com",
-				roles: ["Admin"],
-				fullName: "Admin User"
-			});
-			fixture.detectChanges();
-
-			component.navigateToProfile();
-
-			// Admin users navigate to /admin/users/:id
-			expect(router.navigate).toHaveBeenCalledWith(["/admin/users", 42]);
-		});
-
-		it("should not navigate when user is null", () =>
-		{
-			mockAuthService.setUser(null);
-			fixture.detectChanges();
-
-			component.navigateToProfile();
-
-			expect(router.navigate).not.toHaveBeenCalled();
+			expect(router.navigate).toHaveBeenCalledWith(["/account"]);
 		});
 	});
 });

@@ -29,12 +29,22 @@ interface ThirdPartyApiQueryKeys
 	readonly statistics: readonly ["thirdPartyApi", "statistics"];
 }
 
+interface AccountQueryKeys
+{
+	readonly all: readonly ["account"];
+	readonly profile: readonly ["account", "profile"];
+	readonly availableRoles: readonly ["account", "available-roles"];
+	readonly permissionRequest: readonly ["account", "permission-request"];
+}
+
+
 interface QueryKeysType
 {
 	readonly logs: LogQueryKeys;
 	readonly users: UserQueryKeys;
 	readonly health: HealthQueryKeys;
 	readonly thirdPartyApi: ThirdPartyApiQueryKeys;
+	readonly account: AccountQueryKeys;
 }
 
 export const QueryKeys: QueryKeysType = {
@@ -69,5 +79,12 @@ export const QueryKeys: QueryKeysType = {
 		byName: (name: string): readonly unknown[] =>
 			["thirdPartyApi", "byName", name] as const,
 		statistics: ["thirdPartyApi", "statistics"] as const
+	},
+
+	account: {
+		all: ["account"] as const,
+		profile: ["account", "profile"] as const,
+		availableRoles: ["account", "available-roles"] as const,
+		permissionRequest: ["account", "permission-request"] as const
 	}
 } as const;

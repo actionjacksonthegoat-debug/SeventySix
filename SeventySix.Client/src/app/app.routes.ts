@@ -51,14 +51,16 @@ export const routes: Routes = [
 	},
 
 	// ══════════════════════════════════════════════════════════════
-	// USER ROUTES (Any Authenticated User - Own Profile Only)
+	// USER ROUTES (Any Authenticated User - Own Account Only)
 	// ══════════════════════════════════════════════════════════════
 	{
-		path: "user",
+		path: "account",
 		loadChildren: () =>
-			import("./features/user/user.routes").then((m) => m.USER_ROUTES),
+			import("./features/account/account.routes").then(
+				(m) => m.ACCOUNT_ROUTES
+			),
 		canActivate: [roleGuard()],
-		data: { breadcrumb: "User" }
+		data: { breadcrumb: "Account" }
 	},
 
 	// ══════════════════════════════════════════════════════════════
@@ -96,7 +98,7 @@ export const routes: Routes = [
 	{
 		path: "**",
 		loadComponent: () =>
-			import("./features/admin/error-pages/not-found/not-found").then(
+			import("@shared/error-pages/not-found/not-found").then(
 				(m) => m.NotFoundPage
 			),
 		title: "Page Not Found"

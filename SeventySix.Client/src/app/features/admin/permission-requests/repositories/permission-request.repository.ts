@@ -4,8 +4,8 @@ import { ApiService } from "@infrastructure/api-services/api.service";
 import {
 	PermissionRequest,
 	AvailableRole,
-	CreatePermissionRequestDto
-} from "@admin/permission-requests/models";
+	CreatePermissionRequest
+} from "../models";
 
 /**
  * Repository for permission request API operations.
@@ -34,9 +34,9 @@ export class PermissionRequestRepository
 	}
 
 	/** Creates permission requests. */
-	create(request: CreatePermissionRequestDto): Observable<void>
+	create(request: CreatePermissionRequest): Observable<void>
 	{
-		return this.apiService.post<void, CreatePermissionRequestDto>(
+		return this.apiService.post<void, CreatePermissionRequest>(
 			`${this.endpoint}/me/permission-requests`,
 			request
 		);

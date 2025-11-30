@@ -1,0 +1,42 @@
+@use "variables" as vars;
+
+.request-permissions-page {
+	max-width: 37.5rem;
+	margin: 0 auto;
+	padding: vars.$spacing-lg;
+
+	.roles-list {
+		display: flex;
+		flex-direction: column;
+		gap: vars.$spacing-sm;
+		margin-bottom: vars.$spacing-lg;
+
+		mat-checkbox {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.role-description {
+			display: block;
+			font-size: vars.$font-size-sm;
+			color: var(--color-on-surface-variant);
+			margin-left: vars.$spacing-xl;
+		}
+	}
+
+	.no-roles {
+		color: var(--color-on-surface-variant);
+		font-style: italic;
+	}
+
+	mat-form-field {
+		width: 100%;
+	}
+
+	.form-actions {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: vars.$spacing-lg;
+	}
+}

@@ -1,0 +1,30 @@
+@use "variables" as vars;
+
+.profile-page {
+	max-width: 37.5rem;
+	margin: 0 auto;
+	padding: vars.$spacing-lg;
+
+	mat-card {
+		mat-card-content {
+			padding-top: vars.$spacing-md;
+		}
+	}
+
+	mat-form-field {
+		width: 100%;
+		margin-bottom: vars.$spacing-md;
+	}
+
+	.form-actions {
+		display: flex;
+		gap: vars.$spacing-md;
+		justify-content: flex-end;
+		margin-top: vars.$spacing-lg;
+	}
+
+	.error-card {
+		background-color: var(--color-error-container);
+		color: var(--color-on-error-container);
+	}
+}

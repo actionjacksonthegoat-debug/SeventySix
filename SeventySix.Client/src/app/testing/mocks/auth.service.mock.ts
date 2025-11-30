@@ -1,5 +1,5 @@
 import { signal, WritableSignal, computed, Signal } from "@angular/core";
-import { AuthUser } from "@infrastructure/models/auth.model";
+import { AuthUser } from "@infrastructure/models";
 
 /**
  * Mock AuthService for testing.

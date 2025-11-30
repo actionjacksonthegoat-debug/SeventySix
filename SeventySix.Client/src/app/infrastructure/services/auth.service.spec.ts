@@ -13,7 +13,7 @@ import { AuthService } from "./auth.service";
 import {
 	AuthResponse,
 	DOTNET_ROLE_CLAIM
-} from "@infrastructure/models/auth.model";
+} from "@infrastructure/models";
 import { environment } from "@environments/environment";
 
 /** AuthService Tests - focuses on authentication logic */
