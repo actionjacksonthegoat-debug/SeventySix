@@ -156,7 +156,8 @@ public static class TestUserHelper
 			{
 				UserId = user.Id,
 				Role = role,
-				AssignedAt = DateTime.UtcNow,
+				CreateDate = DateTime.UtcNow,
+				CreatedBy = "test"
 			});
 		}
 

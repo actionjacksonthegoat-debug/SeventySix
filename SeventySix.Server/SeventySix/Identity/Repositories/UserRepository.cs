@@ -300,4 +300,100 @@ internal class UserRepository(
 
 		return await query.CountAsync(cancellationToken);
 	}
+
+	/// <inheritdoc/>
+	public async Task<IEnumerable<string>> GetUserRolesAsync(
+		int userId,
+		CancellationToken cancellationToken = default)
+	{
+		return await context.UserRoles
+			.AsNoTracking()
+			.Where(userRole => userRole.UserId == userId)
+			.Select(userRole => userRole.Role)
+			.ToListAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> HasRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default)
+	{
+		return await context.UserRoles
+			.AsNoTracking()
+			.AnyAsync(
+				userRole =>
+					userRole.UserId == userId
+					&& userRole.Role == role,
+				cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task AddRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default)
+	{
+		// Audit fields (CreatedBy, CreateDate) set automatically by AuditInterceptor
+		UserRole userRole =
+			new()
+			{
+				UserId = userId,
+				Role = role
+			};
+
+		context.UserRoles.Add(userRole);
+		await context.SaveChangesAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task AddRoleWithoutAuditAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default)
+	{
+		// Direct SQL insert bypasses AuditInterceptor for whitelisted auto-approvals
+		await context.UserRoles
+			.Where(userRole => false) // Dummy filter for ExecuteInsertAsync base
+			.ExecuteDeleteAsync(cancellationToken); // Reset tracking
+
+		UserRole userRole =
+			new()
+			{
+				UserId = userId,
+				Role = role,
+				CreateDate = DateTime.UtcNow,
+				CreatedBy = string.Empty // Empty = auto-approved via whitelist
+			};
+
+		context.UserRoles.Add(userRole);
+		context.Entry(userRole).State = EntityState.Added;
+
+		// Temporarily detach to avoid interceptor, then save directly
+		await context.Database.ExecuteSqlRawAsync(
+			"""
+			INSERT INTO identity."UserRoles" ("UserId", "Role", "CreateDate", "CreatedBy")
+			VALUES ({0}, {1}, {2}, {3})
+			""",
+			[userId, role, DateTime.UtcNow, string.Empty],
+			cancellationToken);
+
+		context.Entry(userRole).State = EntityState.Detached;
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> RemoveRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default)
+	{
+		int deleted =
+			await context.UserRoles
+				.Where(userRole =>
+					userRole.UserId == userId
+					&& userRole.Role == role)
+				.ExecuteDeleteAsync(cancellationToken);
+
+		return deleted > 0;
+	}
 }

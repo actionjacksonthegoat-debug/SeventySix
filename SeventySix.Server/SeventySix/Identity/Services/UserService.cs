@@ -32,6 +32,7 @@ namespace SeventySix.Identity;
 /// </remarks>
 public class UserService(
 	IUserRepository repository,
+	IPermissionRequestRepository permissionRequestRepository,
 	IValidator<CreateUserRequest> createValidator,
 	IValidator<UpdateUserRequest> updateValidator,
 	IValidator<UserQueryRequest> queryValidator,
@@ -189,5 +190,63 @@ public class UserService(
 			int count = await repository.BulkUpdateActiveStatusAsync(userIds, isActive, transactionCancellationToken);
 			return count;
 		}, maxRetries: 3, cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<IEnumerable<string>> GetUserRolesAsync(
+		int userId,
+		CancellationToken cancellationToken = default)
+	{
+		return await repository.GetUserRolesAsync(
+			userId,
+			cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> AddUserRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default)
+	{
+		if (!RoleConstants.ValidRoleNames.Contains(role))
+		{
+			throw new ArgumentException(
+				$"Invalid role: {role}",
+				nameof(role));
+		}
+
+		if (await repository.HasRoleAsync(
+			userId,
+			role,
+			cancellationToken))
+		{
+			return false;
+		}
+
+		// Audit fields (CreatedBy, CreateDate) set by AuditInterceptor
+		await repository.AddRoleAsync(
+			userId,
+			role,
+			cancellationToken);
+
+		// Cleanup pending permission request for this role
+		await permissionRequestRepository.DeleteByUserAndRoleAsync(
+			userId,
+			role,
+			cancellationToken);
+
+		return true;
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> RemoveUserRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default)
+	{
+		return await repository.RemoveRoleAsync(
+			userId,
+			role,
+			cancellationToken);
 	}
 }

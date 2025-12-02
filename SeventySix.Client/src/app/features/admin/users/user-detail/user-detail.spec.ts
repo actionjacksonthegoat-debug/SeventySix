@@ -44,7 +44,10 @@ describe("UserDetailPage", () =>
 	{
 		mockUserService = jasmine.createSpyObj("UserService", [
 			"getUserById",
-			"updateUser"
+			"updateUser",
+			"getUserRoles",
+			"addRole",
+			"removeRole"
 		]);
 		mockLogger = createMockLogger();
 		mockRouter = createMockRouter();
@@ -54,6 +57,11 @@ describe("UserDetailPage", () =>
 			createMockQueryResult(mockUser)
 		);
 		mockUserService.updateUser.and.returnValue(createMockMutationResult());
+		mockUserService.getUserRoles.and.returnValue(
+			createMockQueryResult(["Developer"])
+		);
+		mockUserService.addRole.and.returnValue(createMockMutationResult());
+		mockUserService.removeRole.and.returnValue(createMockMutationResult());
 
 		await TestBed.configureTestingModule({
 			imports: [UserDetailPage],

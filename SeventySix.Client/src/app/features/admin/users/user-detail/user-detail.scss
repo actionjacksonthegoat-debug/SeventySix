@@ -78,6 +78,39 @@
 				@include mixins.info-review-grid();
 			}
 		}
+
+		// Roles card
+		.roles-card {
+			mat-card-title {
+				display: flex;
+				align-items: center;
+				gap: vars.$spacing-sm;
+			}
+
+			.roles-section {
+				display: flex;
+				flex-direction: column;
+				gap: vars.$spacing-lg;
+			}
+
+			.current-roles,
+			.add-role {
+				display: flex;
+				align-items: center;
+				gap: vars.$spacing-md;
+				flex-wrap: wrap;
+			}
+
+			.section-label {
+				font-weight: 500;
+				min-width: 7rem;
+			}
+
+			.no-roles {
+				color: var(--color-text-secondary);
+				font-style: italic;
+			}
+		}
 	}
 }
 

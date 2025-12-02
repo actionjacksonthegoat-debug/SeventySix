@@ -2,10 +2,10 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Identity;
 
 using FluentValidation;
 
+namespace SeventySix.Identity;
 /// <summary>Validator for <see cref="CreatePermissionRequestDto"/>.</summary>
 internal class CreatePermissionRequestValidator
 	: AbstractValidator<CreatePermissionRequestDto>

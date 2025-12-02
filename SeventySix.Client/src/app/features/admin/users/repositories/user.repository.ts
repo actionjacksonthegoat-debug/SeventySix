@@ -109,4 +109,35 @@ export class UserRepository
 			{}
 		);
 	}
+
+	/** Gets roles for a user. */
+	getRoles(userId: number): Observable<string[]>
+	{
+		return this.apiService.get<string[]>(
+			`${this.endpoint}/${userId}/roles`
+		);
+	}
+
+	/** Adds a role to a user. */
+	addRole(
+		userId: number,
+		role: string
+	): Observable<void>
+	{
+		return this.apiService.post<void, Record<string, never>>(
+			`${this.endpoint}/${userId}/roles/${role}`,
+			{}
+		);
+	}
+
+	/** Removes a role from a user. */
+	removeRole(
+		userId: number,
+		role: string
+	): Observable<void>
+	{
+		return this.apiService.delete<void>(
+			`${this.endpoint}/${userId}/roles/${role}`
+		);
+	}
 }

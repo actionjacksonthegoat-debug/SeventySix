@@ -41,4 +41,40 @@ export class PermissionRequestRepository
 			request
 		);
 	}
+
+	/** Approves a single permission request. */
+	approve(id: number): Observable<void>
+	{
+		return this.apiService.post<void, Record<string, never>>(
+			`${this.endpoint}/permission-requests/${id}/approve`,
+			{}
+		);
+	}
+
+	/** Rejects a single permission request. */
+	reject(id: number): Observable<void>
+	{
+		return this.apiService.post<void, Record<string, never>>(
+			`${this.endpoint}/permission-requests/${id}/reject`,
+			{}
+		);
+	}
+
+	/** Bulk approves permission requests. */
+	bulkApprove(ids: number[]): Observable<number>
+	{
+		return this.apiService.post<number, number[]>(
+			`${this.endpoint}/permission-requests/bulk/approve`,
+			ids
+		);
+	}
+
+	/** Bulk rejects permission requests. */
+	bulkReject(ids: number[]): Observable<number>
+	{
+		return this.apiService.post<number, number[]>(
+			`${this.endpoint}/permission-requests/bulk/reject`,
+			ids
+		);
+	}
 }

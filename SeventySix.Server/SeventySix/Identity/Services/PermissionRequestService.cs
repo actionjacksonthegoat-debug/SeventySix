@@ -2,31 +2,19 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Options;
+using SeventySix.Identity.Settings;
+
 namespace SeventySix.Identity;
 
 /// <summary>Service for permission request business logic.</summary>
 internal class PermissionRequestService(
-	IPermissionRequestRepository repository) : IPermissionRequestService
+	IPermissionRequestRepository repository,
+	IUserRepository userRepository,
+	IOptions<WhitelistedPermissionSettings> whitelistedOptions) : IPermissionRequestService
 {
-	/// <summary>All requestable roles in the system.</summary>
-	/// <remarks>
-	/// KISS: Hardcoded list is simpler than database/config management.
-	/// Easy to extend when new roles are added to the system.
-	/// </remarks>
-	private static readonly IReadOnlyList<AvailableRoleDto> AllRequestableRoles =
-	[
-		new AvailableRoleDto(
-			"Developer",
-			"Access to developer tools and APIs"),
-		new AvailableRoleDto(
-			"Admin",
-			"Full administrative access")
-	];
-
-	private static readonly HashSet<string> ValidRoleNames =
-		AllRequestableRoles
-			.Select(role => role.Name)
-			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+	private readonly WhitelistedPermissionSettings WhitelistedSettings =
+		whitelistedOptions.Value;
 
 	/// <inheritdoc/>
 	public async Task<IEnumerable<PermissionRequestDto>> GetAllRequestsAsync(
@@ -58,7 +46,7 @@ internal class PermissionRequestService(
 				.Concat(pendingRequests.Select(request => request.RequestedRole))
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-		return AllRequestableRoles
+		return RoleConstants.AllRequestableRoles
 			.Where(role => !excludedRoles.Contains(role.Name))
 			.ToList();
 	}
@@ -95,9 +83,15 @@ internal class PermissionRequestService(
 				.Concat(pendingRequests.Select(pendingRequest => pendingRequest.RequestedRole))
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+		// Get user email once for whitelist checking
+		string? userEmail =
+			await repository.GetUserEmailAsync(
+				userId,
+				cancellationToken);
+
 		foreach (string role in request.RequestedRoles)
 		{
-			if (!ValidRoleNames.Contains(role))
+			if (!RoleConstants.ValidRoleNames.Contains(role))
 			{
 				throw new ArgumentException(
 					$"Invalid role: {role}",
@@ -110,6 +104,22 @@ internal class PermissionRequestService(
 				continue;
 			}
 
+			// Check whitelist for auto-approval
+			if (userEmail != null
+				&& WhitelistedSettings.IsWhitelisted(
+					userEmail,
+					role))
+			{
+				// Auto-approve: add role directly, skip creating request
+				// Uses AddRoleWithoutAuditAsync - CreatedBy remains empty for whitelisted
+				await userRepository.AddRoleWithoutAuditAsync(
+					userId,
+					role,
+					cancellationToken);
+				continue;
+			}
+
+			// Create request as normal
 			PermissionRequest entity =
 				new()
 				{
@@ -123,5 +133,103 @@ internal class PermissionRequestService(
 				entity,
 				cancellationToken);
 		}
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> ApproveRequestAsync(
+		int requestId,
+		CancellationToken cancellationToken = default)
+	{
+		PermissionRequest? request =
+			await repository.GetByIdAsync(
+				requestId,
+				cancellationToken);
+
+		if (request == null)
+		{
+			return false;
+		}
+
+		// Audit fields (CreatedBy) set automatically by AuditInterceptor
+		await userRepository.AddRoleAsync(
+			request.UserId,
+			request.RequestedRole,
+			cancellationToken);
+
+		await repository.DeleteAsync(
+			requestId,
+			cancellationToken);
+
+		return true;
+	}
+
+	/// <inheritdoc/>
+	public async Task<bool> RejectRequestAsync(
+		int requestId,
+		CancellationToken cancellationToken = default)
+	{
+		PermissionRequest? request =
+			await repository.GetByIdAsync(
+				requestId,
+				cancellationToken);
+
+		if (request == null)
+		{
+			return false;
+		}
+
+		await repository.DeleteAsync(
+			requestId,
+			cancellationToken);
+
+		return true;
+	}
+
+	/// <inheritdoc/>
+	public async Task<int> ApproveRequestsAsync(
+		IEnumerable<int> requestIds,
+		CancellationToken cancellationToken = default)
+	{
+		List<int> idList =
+			requestIds.ToList();
+
+		IEnumerable<PermissionRequest> requests =
+			await repository.GetByIdsAsync(
+				idList,
+				cancellationToken);
+
+		int approvedCount =
+			0;
+
+		foreach (PermissionRequest request in requests)
+		{
+			// Audit fields (CreatedBy) set automatically by AuditInterceptor
+			await userRepository.AddRoleAsync(
+				request.UserId,
+				request.RequestedRole,
+				cancellationToken);
+			approvedCount++;
+		}
+
+		await repository.DeleteRangeAsync(
+			idList,
+			cancellationToken);
+
+		return approvedCount;
+	}
+
+	/// <inheritdoc/>
+	public async Task<int> RejectRequestsAsync(
+		IEnumerable<int> requestIds,
+		CancellationToken cancellationToken = default)
+	{
+		List<int> idList =
+			requestIds.ToList();
+
+		await repository.DeleteRangeAsync(
+			idList,
+			cancellationToken);
+
+		return idList.Count;
 	}
 }

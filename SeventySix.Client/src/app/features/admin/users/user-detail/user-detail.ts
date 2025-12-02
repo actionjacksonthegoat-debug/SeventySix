@@ -24,6 +24,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatExpansionModule } from "@angular/material/expansion";
+import { MatChipsModule } from "@angular/material/chips";
 import { UserService } from "@admin/users/services";
 import { LoggerService } from "@infrastructure/services";
 import { User, UpdateUserRequest } from "@admin/users/models";
@@ -47,7 +48,8 @@ import { User, UpdateUserRequest } from "@admin/users/models";
 		MatIconModule,
 		MatCheckboxModule,
 		MatSnackBarModule,
-		MatExpansionModule
+		MatExpansionModule,
+		MatChipsModule
 	],
 	templateUrl: "./user-detail.html",
 	styleUrl: "./user-detail.scss",
@@ -74,6 +76,17 @@ export class UserDetailPage implements OnInit
 	readonly updateMutation: ReturnType<UserService["updateUser"]> =
 		this.userService.updateUser();
 
+	// Role management queries and mutations
+	readonly rolesQuery: ReturnType<UserService["getUserRoles"]> =
+		this.userService.getUserRoles(this.userId);
+	readonly addRoleMutation: ReturnType<UserService["addRole"]> =
+		this.userService.addRole();
+	readonly removeRoleMutation: ReturnType<UserService["removeRole"]> =
+		this.userService.removeRole();
+
+	// Available roles constant (matches backend ValidRoleNames)
+	readonly availableRoles: readonly string[] = ["Developer", "Admin"];
+
 	// Computed signals for derived state
 	readonly user: Signal<User | null> = computed(
 		() => this.userQuery.data() ?? null
@@ -91,6 +104,21 @@ export class UserDetailPage implements OnInit
 		this.updateMutation.error()
 			? "Failed to save user. Please try again."
 			: null
+	);
+
+	// Role computed signals
+	readonly userRoles: Signal<string[]> = computed(
+		() => this.rolesQuery.data() ?? []
+	);
+	readonly availableRolesToAdd: Signal<string[]> = computed(() =>
+	{
+		const currentRoles: string[] = this.userRoles();
+		return this.availableRoles.filter(
+			(role: string) => !currentRoles.includes(role)
+		);
+	});
+	readonly isRoleMutating: Signal<boolean> = computed(() =>
+		this.addRoleMutation.isPending() || this.removeRoleMutation.isPending()
 	);
 
 	// Computed signals
@@ -342,5 +370,75 @@ export class UserDetailPage implements OnInit
 		const control: import("@angular/forms").AbstractControl | null =
 			this.userForm.get(fieldName);
 		return !!(control && control.invalid && control.touched);
+	}
+
+	/**
+	 * Adds a role to the user.
+	 * @param role The role to add
+	 */
+	onAddRole(role: string): void
+	{
+		const userIdNum: number = parseInt(this.userId);
+		if (isNaN(userIdNum))
+		{
+			return;
+		}
+
+		this.addRoleMutation.mutate(
+			{ userId: userIdNum, role },
+			{
+				onSuccess: () =>
+				{
+					this.snackBar.open(`Role "${role}" added`, "Close", {
+						duration: 3000,
+						horizontalPosition: "end",
+						verticalPosition: "top"
+					});
+				},
+				onError: () =>
+				{
+					this.snackBar.open(`Failed to add role "${role}"`, "Close", {
+						duration: 3000,
+						horizontalPosition: "end",
+						verticalPosition: "top"
+					});
+				}
+			}
+		);
+	}
+
+	/**
+	 * Removes a role from the user.
+	 * @param role The role to remove
+	 */
+	onRemoveRole(role: string): void
+	{
+		const userIdNum: number = parseInt(this.userId);
+		if (isNaN(userIdNum))
+		{
+			return;
+		}
+
+		this.removeRoleMutation.mutate(
+			{ userId: userIdNum, role },
+			{
+				onSuccess: () =>
+				{
+					this.snackBar.open(`Role "${role}" removed`, "Close", {
+						duration: 3000,
+						horizontalPosition: "end",
+						verticalPosition: "top"
+					});
+				},
+				onError: () =>
+				{
+					this.snackBar.open(`Failed to remove role "${role}"`, "Close", {
+						duration: 3000,
+						horizontalPosition: "end",
+						verticalPosition: "top"
+					});
+				}
+			}
+		);
 	}
 }

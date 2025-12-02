@@ -30,6 +30,32 @@ internal class PermissionRequestRepository(
 	}
 
 	/// <inheritdoc/>
+	public async Task<PermissionRequest?> GetByIdAsync(
+		int id,
+		CancellationToken cancellationToken = default)
+	{
+		return await dbContext.PermissionRequests
+			.Include(permissionRequest => permissionRequest.User)
+			.FirstOrDefaultAsync(
+				permissionRequest => permissionRequest.Id == id,
+				cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<IEnumerable<PermissionRequest>> GetByIdsAsync(
+		IEnumerable<int> ids,
+		CancellationToken cancellationToken = default)
+	{
+		List<int> idList =
+			ids.ToList();
+
+		return await dbContext.PermissionRequests
+			.Include(permissionRequest => permissionRequest.User)
+			.Where(permissionRequest => idList.Contains(permissionRequest.Id))
+			.ToListAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
 	public async Task<IEnumerable<PermissionRequest>> GetByUserIdAsync(
 		int userId,
 		CancellationToken cancellationToken = default)
@@ -53,11 +79,59 @@ internal class PermissionRequestRepository(
 	}
 
 	/// <inheritdoc/>
+	public async Task<string?> GetUserEmailAsync(
+		int userId,
+		CancellationToken cancellationToken = default)
+	{
+		return await dbContext.Users
+			.AsNoTracking()
+			.Where(user => user.Id == userId)
+			.Select(user => user.Email)
+			.FirstOrDefaultAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
 	public async Task CreateAsync(
 		PermissionRequest request,
 		CancellationToken cancellationToken = default)
 	{
 		dbContext.PermissionRequests.Add(request);
 		await dbContext.SaveChangesAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task DeleteAsync(
+		int id,
+		CancellationToken cancellationToken = default)
+	{
+		await dbContext.PermissionRequests
+			.Where(permissionRequest => permissionRequest.Id == id)
+			.ExecuteDeleteAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task DeleteRangeAsync(
+		IEnumerable<int> ids,
+		CancellationToken cancellationToken = default)
+	{
+		List<int> idList =
+			ids.ToList();
+
+		await dbContext.PermissionRequests
+			.Where(permissionRequest => idList.Contains(permissionRequest.Id))
+			.ExecuteDeleteAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task DeleteByUserAndRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default)
+	{
+		await dbContext.PermissionRequests
+			.Where(permissionRequest =>
+				permissionRequest.UserId == userId
+				&& permissionRequest.RequestedRole == role)
+			.ExecuteDeleteAsync(cancellationToken);
 	}
 }

@@ -250,6 +250,69 @@
 					</mat-expansion-panel>
 				}
 
+				<!-- User Roles Section -->
+				@if (user())
+				{
+					<mat-card appearance="outlined" class="roles-card">
+						<mat-card-header>
+							<mat-card-title>
+								<mat-icon>admin_panel_settings</mat-icon>
+								User Roles
+							</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="roles-section">
+								<!-- Current Roles -->
+								<div class="current-roles">
+									<span class="section-label">Current Roles:</span>
+									@if (userRoles().length === 0)
+									{
+										<span class="no-roles">No roles assigned</span>
+									}
+									@else
+									{
+										<mat-chip-set>
+											@for (role of userRoles(); track role)
+											{
+												<mat-chip
+													[removable]="true"
+													(removed)="onRemoveRole(role)"
+													[disabled]="isRoleMutating()"
+												>
+													{{ role }}
+													<button matChipRemove>
+														<mat-icon>cancel</mat-icon>
+													</button>
+												</mat-chip>
+											}
+										</mat-chip-set>
+									}
+								</div>
+
+								<!-- Add Role -->
+								@if (availableRolesToAdd().length > 0)
+								{
+									<div class="add-role">
+										<span class="section-label">Add Role:</span>
+										@for (role of availableRolesToAdd(); track role)
+										{
+											<button
+												mat-stroked-button
+												color="primary"
+												(click)="onAddRole(role)"
+												[disabled]="isRoleMutating()"
+											>
+												<mat-icon>add</mat-icon>
+												{{ role }}
+											</button>
+										}
+									</div>
+								}
+							</div>
+						</mat-card-content>
+					</mat-card>
+				}
+
 				<!-- Form Info Card -->
 				@if (user())
 				{

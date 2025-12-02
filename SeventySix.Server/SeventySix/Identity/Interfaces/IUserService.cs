@@ -32,4 +32,21 @@ public interface IUserService
 	public Task<bool> EmailExistsAsync(string email, int? excludeUserId = null, CancellationToken cancellationToken = default);
 
 	public Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> userIds, bool isActive, string modifiedBy, CancellationToken cancellationToken = default);
+
+	/// <summary>Gets roles for a user.</summary>
+	public Task<IEnumerable<string>> GetUserRolesAsync(
+		int userId,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>Adds a role to a user (admin action). Audit tracked.</summary>
+	public Task<bool> AddUserRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>Removes a role from a user (admin action).</summary>
+	public Task<bool> RemoveUserRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default);
 }

@@ -8,21 +8,52 @@ namespace SeventySix.Identity;
 public interface IPermissionRequestRepository
 {
 	/// <summary>Gets all permission requests with user info.</summary>
-	Task<IEnumerable<PermissionRequestDto>> GetAllAsync(CancellationToken cancellationToken = default);
+	public Task<IEnumerable<PermissionRequestDto>> GetAllAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>Gets a permission request by ID.</summary>
+	public Task<PermissionRequest?> GetByIdAsync(
+		int id,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>Gets multiple permission requests by IDs.</summary>
+	public Task<IEnumerable<PermissionRequest>> GetByIdsAsync(
+		IEnumerable<int> ids,
+		CancellationToken cancellationToken = default);
 
 	/// <summary>Gets permission requests for a specific user.</summary>
-	Task<IEnumerable<PermissionRequest>> GetByUserIdAsync(
+	public Task<IEnumerable<PermissionRequest>> GetByUserIdAsync(
 		int userId,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>Gets existing roles the user already has (from UserRoles).</summary>
 	/// <remarks>Used to hide roles user already has from available roles list.</remarks>
-	Task<IEnumerable<string>> GetUserExistingRolesAsync(
+	public Task<IEnumerable<string>> GetUserExistingRolesAsync(
+		int userId,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>Gets user email by ID (for whitelist check).</summary>
+	public Task<string?> GetUserEmailAsync(
 		int userId,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>Creates a new permission request.</summary>
-	Task CreateAsync(
+	public Task CreateAsync(
 		PermissionRequest request,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>Deletes a permission request (handled).</summary>
+	public Task DeleteAsync(
+		int id,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>Deletes multiple permission requests (bulk handled).</summary>
+	public Task DeleteRangeAsync(
+		IEnumerable<int> ids,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>Deletes requests matching user and role (cleanup on direct role add).</summary>
+	public Task DeleteByUserAndRoleAsync(
+		int userId,
+		string role,
 		CancellationToken cancellationToken = default);
 }

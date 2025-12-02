@@ -37,6 +37,7 @@ namespace SeventySix.Tests.Identity;
 public class UserServiceTests
 {
 	private readonly IUserRepository Repository;
+	private readonly IPermissionRequestRepository PermissionRequestRepository;
 	private readonly IValidator<CreateUserRequest> CreateValidator;
 	private readonly IValidator<UpdateUserRequest> UpdateValidator;
 	private readonly IValidator<UserQueryRequest> QueryValidator;
@@ -47,6 +48,7 @@ public class UserServiceTests
 	public UserServiceTests()
 	{
 		Repository = Substitute.For<IUserRepository>();
+		PermissionRequestRepository = Substitute.For<IPermissionRequestRepository>();
 		CreateValidator = Substitute.For<IValidator<CreateUserRequest>>();
 		UpdateValidator = Substitute.For<IValidator<UpdateUserRequest>>();
 		QueryValidator = Substitute.For<IValidator<UserQueryRequest>>();
@@ -80,6 +82,7 @@ public class UserServiceTests
 
 		Service = new UserService(
 			Repository,
+			PermissionRequestRepository,
 			CreateValidator,
 			UpdateValidator,
 			QueryValidator,

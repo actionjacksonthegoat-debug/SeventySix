@@ -121,13 +121,12 @@ public class AdminSeederService(
 
 		context.UserCredentials.Add(credential);
 
-		// Assign Admin role
+		// Assign Admin role - CreateDate/CreatedBy set by AuditInterceptor
 		UserRole adminRole =
 			new()
 			{
 				UserId = adminUser.Id,
-				Role = "Admin",
-				AssignedAt = now
+				Role = "Admin"
 			};
 
 		context.UserRoles.Add(adminRole);

@@ -302,13 +302,8 @@ public class UserService(
 	public async Task<User?> GetByIdAsync(int id) =>
 		await repo.GetByIdAsync(id);
 
-	public async Task CreateAsync(User user)
-	{
-		logger.LogInformation(
-			"Creating user {Username}",
-			user.Username);
+	public async Task CreateAsync(User user) =>
 		await repo.AddAsync(user);
-	}
 }
 ```
 

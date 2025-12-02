@@ -251,4 +251,65 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 				lastValueFrom(this.userRepository.resetPassword(id))
 		}));
 	}
+
+	/**
+	 * Query for user roles
+	 * @param userId The user ID
+	 * @returns Query object with roles data
+	 */
+	getUserRoles(userId: number | string)
+	{
+		return injectQuery(() => ({
+			queryKey: ["users", userId, "roles"],
+			queryFn: () =>
+				lastValueFrom(this.userRepository.getRoles(Number(userId))),
+			...this.queryConfig
+		}));
+	}
+
+	/**
+	 * Mutation for adding a role to a user
+	 * @returns Mutation object
+	 */
+	addRole()
+	{
+		return injectMutation(() => ({
+			mutationFn: ({
+				userId,
+				role
+			}: {
+				userId: number;
+				role: string;
+			}) => lastValueFrom(this.userRepository.addRole(userId, role)),
+			onSuccess: (_, variables) =>
+			{
+				this.queryClient.invalidateQueries({
+					queryKey: ["users", variables.userId, "roles"]
+				});
+			}
+		}));
+	}
+
+	/**
+	 * Mutation for removing a role from a user
+	 * @returns Mutation object
+	 */
+	removeRole()
+	{
+		return injectMutation(() => ({
+			mutationFn: ({
+				userId,
+				role
+			}: {
+				userId: number;
+				role: string;
+			}) => lastValueFrom(this.userRepository.removeRole(userId, role)),
+			onSuccess: (_, variables) =>
+			{
+				this.queryClient.invalidateQueries({
+					queryKey: ["users", variables.userId, "roles"]
+				});
+			}
+		}));
+	}
 }

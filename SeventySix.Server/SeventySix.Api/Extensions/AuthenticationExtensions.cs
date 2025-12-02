@@ -38,6 +38,8 @@ public static class AuthenticationExtensions
 			configuration.GetSection("Auth"));
 		services.Configure<AdminSeederSettings>(
 			configuration.GetSection(AdminSeederSettings.SectionName));
+		services.Configure<WhitelistedPermissionSettings>(
+			configuration.GetSection(WhitelistedPermissionSettings.SectionName));
 
 		JwtSettings jwtSettings =
 			configuration.GetSection("Jwt").Get<JwtSettings>()

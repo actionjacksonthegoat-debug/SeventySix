@@ -57,4 +57,64 @@ export class PermissionRequestService
 			}
 		}));
 	}
+
+	/** Mutation for approving a single request. */
+	approveRequest()
+	{
+		return injectMutation(() => ({
+			mutationFn: (id: number) =>
+				lastValueFrom(this.repository.approve(id)),
+			onSuccess: () =>
+			{
+				this.queryClient.invalidateQueries({
+					queryKey: ["permission-requests"]
+				});
+			}
+		}));
+	}
+
+	/** Mutation for rejecting a single request. */
+	rejectRequest()
+	{
+		return injectMutation(() => ({
+			mutationFn: (id: number) =>
+				lastValueFrom(this.repository.reject(id)),
+			onSuccess: () =>
+			{
+				this.queryClient.invalidateQueries({
+					queryKey: ["permission-requests"]
+				});
+			}
+		}));
+	}
+
+	/** Mutation for bulk approving requests. */
+	bulkApproveRequests()
+	{
+		return injectMutation(() => ({
+			mutationFn: (ids: number[]) =>
+				lastValueFrom(this.repository.bulkApprove(ids)),
+			onSuccess: () =>
+			{
+				this.queryClient.invalidateQueries({
+					queryKey: ["permission-requests"]
+				});
+			}
+		}));
+	}
+
+	/** Mutation for bulk rejecting requests. */
+	bulkRejectRequests()
+	{
+		return injectMutation(() => ({
+			mutationFn: (ids: number[]) =>
+				lastValueFrom(this.repository.bulkReject(ids)),
+			onSuccess: () =>
+			{
+				this.queryClient.invalidateQueries({
+					queryKey: ["permission-requests"]
+				});
+			}
+		}));
+	}
 }

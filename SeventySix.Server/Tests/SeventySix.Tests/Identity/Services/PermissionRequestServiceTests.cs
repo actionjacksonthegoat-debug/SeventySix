@@ -2,8 +2,10 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.Identity.Settings;
 using Shouldly;
 
 namespace SeventySix.Tests.Identity.Services;
@@ -16,13 +18,17 @@ public class PermissionRequestServiceTests
 {
 	private readonly IPermissionRequestRepository Repository =
 		Substitute.For<IPermissionRequestRepository>();
-	private readonly PermissionRequestService Service;
 
-	public PermissionRequestServiceTests()
-	{
-		Service =
-			new PermissionRequestService(Repository);
-	}
+	private readonly IUserRepository UserRepository =
+		Substitute.For<IUserRepository>();
+
+	private readonly IOptions<WhitelistedPermissionSettings> WhitelistedOptions =
+		Options.Create(new WhitelistedPermissionSettings());
+
+	private PermissionRequestService Service => new(
+		Repository,
+		UserRepository,
+		WhitelistedOptions);
 
 	#region GetAvailableRolesAsync
 
@@ -218,6 +224,103 @@ public class PermissionRequestServiceTests
 			.Received(1)
 			.CreateAsync(
 				Arg.Is<PermissionRequest>(permissionRequest => permissionRequest.RequestedRole == "Admin"),
+				Arg.Any<CancellationToken>());
+	}
+
+	#endregion
+
+	#region CreateRequestsAsync - Whitelist Auto-Approval
+
+	[Fact]
+	public async Task CreateRequestsAsync_AutoApprovesWhitelistedRole_WithoutCreatingRequestAsync()
+	{
+		// Arrange - user is whitelisted for Developer role
+		IOptions<WhitelistedPermissionSettings> whitelistedOptions =
+			Options.Create(new WhitelistedPermissionSettings
+			{
+				Grants =
+				[
+					new WhitelistedGrant
+					{
+						Email = "developer@test.com",
+						Roles = ["Developer"]
+					}
+				]
+			});
+
+		PermissionRequestService service =
+			new(
+				Repository,
+				UserRepository,
+				whitelistedOptions);
+
+		Repository
+			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+		Repository
+			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+		Repository
+			.GetUserEmailAsync(1, Arg.Any<CancellationToken>())
+			.Returns("developer@test.com");
+
+		CreatePermissionRequestDto request =
+			new(["Developer"], "Need access");
+
+		// Act
+		await service.CreateRequestsAsync(
+			1,
+			"testuser",
+			request);
+
+		// Assert - role added directly via AddRoleWithoutAuditAsync, no request created
+		await UserRepository
+			.Received(1)
+			.AddRoleWithoutAuditAsync(
+				1,
+				"Developer",
+				Arg.Any<CancellationToken>());
+		await Repository
+			.DidNotReceive()
+			.CreateAsync(
+				Arg.Any<PermissionRequest>(),
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task CreateRequestsAsync_CreatesRequest_WhenNotWhitelistedAsync()
+	{
+		// Arrange - user is NOT whitelisted
+		Repository
+			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+		Repository
+			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
+			.Returns([]);
+		Repository
+			.GetUserEmailAsync(1, Arg.Any<CancellationToken>())
+			.Returns("user@test.com");
+
+		CreatePermissionRequestDto request =
+			new(["Developer"], "Need access");
+
+		// Act
+		await Service.CreateRequestsAsync(
+			1,
+			"testuser",
+			request);
+
+		// Assert - request created, no direct role assignment
+		await UserRepository
+			.DidNotReceive()
+			.AddRoleWithoutAuditAsync(
+				Arg.Any<int>(),
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
+		await Repository
+			.Received(1)
+			.CreateAsync(
+				Arg.Is<PermissionRequest>(permissionRequest => permissionRequest.RequestedRole == "Developer"),
 				Arg.Any<CancellationToken>());
 	}
 

@@ -210,13 +210,12 @@ public class AuthService(
 
 		context.UserCredentials.Add(credential);
 
-		// Assign default role
+		// Assign default role - CreateDate/CreatedBy set by AuditInterceptor
 		UserRole userRole =
 			new()
 			{
 				UserId = user.Id,
-				Role = "User",
-				AssignedAt = now
+				Role = "User"
 			};
 
 		context.UserRoles.Add(userRole);
@@ -1070,13 +1069,12 @@ public class AuthService(
 
 		context.ExternalLogins.Add(externalLogin);
 
-		// Assign default role
+		// Assign default role - CreateDate/CreatedBy set by AuditInterceptor
 		UserRole userRole =
 			new()
 			{
 				UserId = user.Id,
-				Role = "User",
-				AssignedAt = now
+				Role = "User"
 			};
 
 		context.UserRoles.Add(userRole);
@@ -1273,13 +1271,12 @@ public class AuthService(
 
 		context.UserCredentials.Add(credential);
 
-		// Assign default User role
+		// Assign default User role - CreateDate/CreatedBy set by AuditInterceptor
 		UserRole userRole =
 			new()
 			{
 				UserId = user.Id,
-				Role = "User",
-				AssignedAt = now,
+				Role = "User"
 			};
 
 		context.UserRoles.Add(userRole);

@@ -14,6 +14,7 @@ namespace SeventySix.Identity;
 /// Design Principles:
 /// - Composite unique index on (UserId, Role) prevents duplicate role assignments
 /// - Role is a simple string (KISS - no complex permission hierarchy)
+/// - Implements IAuditableEntity for audit tracking.
 /// </remarks>
 public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 {
@@ -27,34 +28,46 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 
 		builder.ToTable("UserRoles");
 
-		builder.HasKey(e => e.Id);
-		builder.Property(e => e.Id)
+		builder.HasKey(userRole => userRole.Id);
+		builder.Property(userRole => userRole.Id)
 			.UseIdentityColumn()
 			.IsRequired();
 
 		// UserId - Required
-		builder.Property(e => e.UserId)
+		builder.Property(userRole => userRole.UserId)
 			.IsRequired();
 
-		// Role - Required, e.g., "User", "Admin"
-		builder.Property(e => e.Role)
+		// Role - Required, e.g., "User", "Admin", "Developer"
+		builder.Property(userRole => userRole.Role)
 			.IsRequired()
 			.HasMaxLength(50);
 
 		// Composite unique index - each user can only have each role once
-		builder.HasIndex(e => new { e.UserId, e.Role })
+		builder.HasIndex(userRole => new { userRole.UserId, userRole.Role })
 			.IsUnique()
 			.HasDatabaseName("IX_UserRoles_UserId_Role");
 
 		// Index for querying users by role
-		builder.HasIndex(e => e.Role)
+		builder.HasIndex(userRole => userRole.Role)
 			.HasDatabaseName("IX_UserRoles_Role");
 
-		// AssignedAt - Required
-		builder.Property(e => e.AssignedAt)
+		// Audit properties - nullable for whitelisted auto-approvals
+		builder.Property(userRole => userRole.CreateDate)
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");
+
+		builder.Property(userRole => userRole.ModifyDate)
+			.IsRequired(false)
+			.HasColumnType("timestamp with time zone");
+
+		builder.Property(userRole => userRole.CreatedBy)
+			.HasMaxLength(256)
+			.IsRequired(false);
+
+		builder.Property(userRole => userRole.ModifiedBy)
+			.HasMaxLength(256)
+			.IsRequired(false);
 
 		// FK relationship to User - cascade delete roles when user is deleted
 		builder

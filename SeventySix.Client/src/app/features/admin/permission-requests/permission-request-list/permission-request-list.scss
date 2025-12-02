@@ -1,5 +1,6 @@
-@use "mixins" as mixins;
 @use "variables" as vars;
+
+// PermissionRequestListPage uses DataTableComponent - all styling handled by data-table component
 
 :host {
 	display: block;
@@ -8,15 +9,4 @@
 
 .permission-requests-page {
 	width: 100%;
-}
-
-.empty-message {
-	padding: vars.$spacing-lg;
-	text-align: center;
-	color: var(--color-text-secondary);
-}
-
-.error-card {
-	background-color: var(--color-error-container);
-	color: var(--color-on-error-container);
 }

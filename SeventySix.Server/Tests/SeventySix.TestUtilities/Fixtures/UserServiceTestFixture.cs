@@ -21,6 +21,10 @@ public class UserServiceTestFixture
 	{
 		get;
 	}
+	public IPermissionRequestRepository MockPermissionRequestRepository
+	{
+		get;
+	}
 	public IValidator<CreateUserRequest> MockCreateValidator
 	{
 		get;
@@ -49,6 +53,7 @@ public class UserServiceTestFixture
 	public UserServiceTestFixture()
 	{
 		MockRepository = Substitute.For<IUserRepository>();
+		MockPermissionRequestRepository = Substitute.For<IPermissionRequestRepository>();
 		MockCreateValidator = Substitute.For<IValidator<CreateUserRequest>>();
 		MockUpdateValidator = Substitute.For<IValidator<UpdateUserRequest>>();
 		MockQueryValidator = Substitute.For<IValidator<UserQueryRequest>>();
@@ -59,6 +64,7 @@ public class UserServiceTestFixture
 
 		Service = new UserService(
 			MockRepository,
+			MockPermissionRequestRepository,
 			MockCreateValidator,
 			MockUpdateValidator,
 			MockQueryValidator,
