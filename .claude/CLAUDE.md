@@ -125,6 +125,15 @@ return user.ToDto();
 | Templates        | `computed()` signals   | Method calls                    |
 | Cleanup          | `takeUntilDestroyed()` | Manual unsubscribe              |
 
+### Component Naming (Routed Pages)
+
+| Scenario                    | Suffix       | Example                                         |
+| --------------------------- | ------------ | ----------------------------------------------- |
+| Model with same name exists | `*Page`      | `UserDetailPage` (User model exists)            |
+| No naming conflict          | `*Component` | `RegisterEmailComponent`, `StyleGuideComponent` |
+
+**Rule**: Use `*Page` suffix ONLY when there's a model/entity with the same name to avoid confusion (e.g., `User` model → `UserDetailPage`, `UserListPage`). Otherwise, use standard `*Component` suffix (e.g., `RegisterEmailComponent` - no `RegisterEmail` model exists).
+
 ### Component Pattern
 
 ```typescript

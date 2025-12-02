@@ -43,6 +43,7 @@
 -   **NEVER** call methods in templates - use `computed()` signals or pre-compute in data model
 -   **NEVER** use `providedIn: 'root'` for feature services - use route `providers` array
 -   **ALWAYS** scope feature services (UserService, LogRepository) to their feature routes
+-   **Component naming**: `*Page` suffix ONLY when model with same name exists (e.g., `UserDetailPage`); otherwise use `*Component` (e.g., `RegisterEmailComponent`)
 
 ### SCSS/CSS Styling
 

@@ -168,12 +168,24 @@ it("should display user", async () => {
 
 ---
 
+## Component Naming (Routed Pages)
+
+| Scenario                    | Suffix       | Example                              |
+| --------------------------- | ------------ | ------------------------------------ |
+| Model with same name exists | `*Page`      | `UserDetailPage` (User model exists) |
+| No naming conflict          | `*Component` | `RegisterEmailComponent`             |
+
+**Rule**: Use `*Page` suffix ONLY when there's a model/entity with the same name to avoid confusion. Otherwise, use standard `*Component` suffix.
+
+---
+
 ## File Naming
 
-| Type       | Pattern                 | Example                  |
-| ---------- | ----------------------- | ------------------------ |
-| Component  | `feature.component.ts`  | `user-list.component.ts` |
-| Service    | `feature.service.ts`    | `user.service.ts`        |
-| Repository | `feature.repository.ts` | `user.repository.ts`     |
-| Routes     | `feature.routes.ts`     | `admin.routes.ts`        |
-| Utilities  | `feature.utilities.ts`  | `log.utilities.ts`       |
+| Type       | Pattern                 | Example                                     |
+| ---------- | ----------------------- | ------------------------------------------- |
+| Component  | `feature.component.ts`  | `user-list.component.ts`                    |
+| Page       | `feature-page.ts`       | `user-detail-page.ts` (when model conflict) |
+| Service    | `feature.service.ts`    | `user.service.ts`                           |
+| Repository | `feature.repository.ts` | `user.repository.ts`                        |
+| Routes     | `feature.routes.ts`     | `admin.routes.ts`                           |
+| Utilities  | `feature.utilities.ts`  | `log.utilities.ts`                          |

@@ -27,17 +27,18 @@
 
 ## Angular Rules
 
-| Rule      | Do                                  | Don't                 |
-| --------- | ----------------------------------- | --------------------- |
-| DI        | `inject(Service)`                   | Constructor injection |
-| Signals   | `input()`, `output()`, `computed()` | `@Input`, `@Output`   |
-| Templates | `@if`, `@for`, `@switch`            | `*ngIf`, `*ngFor`     |
-| Host      | `host: { ... }`                     | `@HostBinding`        |
-| Classes   | `[class.active]="x"`                | `ngClass`             |
-| Styles    | `[style.width]="x"`                 | `ngStyle`             |
-| Cleanup   | `takeUntilDestroyed()`              | Manual unsubscribe    |
-| Templates | `computed()` signals                | Method calls          |
-| Zone      | Zoneless only                       | Zone.js, NgZone       |
+| Rule      | Do                                  | Don't                  |
+| --------- | ----------------------------------- | ---------------------- |
+| DI        | `inject(Service)`                   | Constructor injection  |
+| Signals   | `input()`, `output()`, `computed()` | `@Input`, `@Output`    |
+| Templates | `@if`, `@for`, `@switch`            | `*ngIf`, `*ngFor`      |
+| Host      | `host: { ... }`                     | `@HostBinding`         |
+| Classes   | `[class.active]="x"`                | `ngClass`              |
+| Styles    | `[style.width]="x"`                 | `ngStyle`              |
+| Cleanup   | `takeUntilDestroyed()`              | Manual unsubscribe     |
+| Templates | `computed()` signals                | Method calls           |
+| Zone      | Zoneless only                       | Zone.js, NgZone        |
+| Naming    | `*Page` if model conflict           | `*Page` for all routes |
 
 ## SCSS Rules
 

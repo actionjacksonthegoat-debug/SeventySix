@@ -1,0 +1,7 @@
+@use "mixins" as mixins;
+
+:host {
+	display: block;
+}
+
+@include mixins.page-header();

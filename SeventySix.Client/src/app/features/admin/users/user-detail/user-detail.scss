@@ -1,0 +1,103 @@
+@use "variables" as vars;
+@use "mixins" as mixins;
+
+.user-page {
+	display: flex;
+	flex-direction: column;
+	padding: vars.$spacing-xl;
+
+	.page-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: vars.$spacing-2xl;
+
+		h1 {
+			margin: 0;
+		}
+
+		.page-actions {
+			display: flex;
+			gap: vars.$spacing-md;
+			align-items: center;
+		}
+	}
+
+	.page-content {
+		max-width: 50rem;
+		width: 100%;
+		margin: 0 auto;
+	}
+
+	// Loading state
+	.loading-container {
+		@include mixins.loading-state(vars.$spacing-3xl, vars.$spacing-xl);
+	}
+
+	// Error state
+	.error-container {
+		@include mixins.error-state();
+	}
+
+	// Alert card
+	.alert-card {
+		@include mixins.alert-card();
+	}
+
+	// Form
+	.user-form {
+		display: flex;
+		flex-direction: column;
+		gap: vars.$spacing-xl;
+
+		mat-card {
+			mat-card-content {
+				@include mixins.form-card-content();
+			}
+		}
+
+		.full-width {
+			width: 100%;
+		}
+
+		.checkbox-field {
+			display: flex;
+			flex-direction: column;
+			gap: vars.$spacing-sm;
+			padding: vars.$spacing-sm 0;
+
+			.field-hint {
+				margin: 0;
+				color: rgba(var(--mat-outline-rgb), 0.6);
+				padding-left: vars.$spacing-2xl;
+			}
+		}
+
+		.info-card {
+			.info-grid {
+				@include mixins.info-review-grid();
+			}
+		}
+	}
+}
+
+// Responsive design
+@media #{vars.$breakpoint-mobile} {
+	.user-page {
+		padding: vars.$spacing-lg;
+
+		.page-header {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: vars.$spacing-lg;
+
+			.page-actions {
+				width: 100%;
+
+				button {
+					flex: 1;
+				}
+			}
+		}
+	}
+}

@@ -31,10 +31,13 @@ export const ADMIN_ROUTES: Routes = [
 	},
 	{
 		path: "logs",
-		providers: [LogManagementService, LogRepository],
+		providers: [
+			LogManagementService,
+			LogRepository
+		],
 		loadComponent: () =>
-			import("./logs/log-management.component").then(
-				(m) => m.LogManagementComponent
+			import("./logs/log-management/log-management").then(
+				(m) => m.LogManagementPage
 			),
 		title: "Log Management - SeventySix"
 	},
@@ -47,9 +50,9 @@ export const ADMIN_ROUTES: Routes = [
 			HealthApiRepository
 		],
 		loadComponent: () =>
-			import("./admin-dashboard/admin-dashboard.component").then(
-				(m) => m.AdminDashboardComponent
-			),
+			import(
+				"./admin-dashboard/admin-dashboard-page/admin-dashboard"
+			).then((m) => m.AdminDashboardPage),
 		title: "Admin Dashboard - SeventySix"
 	},
 	{
@@ -64,15 +67,15 @@ export const ADMIN_ROUTES: Routes = [
 			{
 				path: "",
 				loadComponent: () =>
-					import("./users/users.component").then(
-						(m) => m.UsersComponent
+					import("./users/user-management/user-management").then(
+						(m) => m.UserManagementPage
 					),
 				title: "User Management - SeventySix"
 			},
 			{
 				path: "create",
 				loadComponent: () =>
-					import("./users/subpages/user-create/user-create").then(
+					import("./users/user-create/user-create").then(
 						(m) => m.UserCreatePage
 					),
 				title: "Create User - SeventySix"
@@ -80,8 +83,8 @@ export const ADMIN_ROUTES: Routes = [
 			{
 				path: ":id",
 				loadComponent: () =>
-					import("./users/subpages/user/user-page").then(
-						(m) => m.UserPage
+					import("./users/user-detail/user-detail").then(
+						(m) => m.UserDetailPage
 					),
 				title: "User Details - SeventySix"
 			}
@@ -91,9 +94,9 @@ export const ADMIN_ROUTES: Routes = [
 		path: "permission-requests",
 		providers: [PermissionRequestService, PermissionRequestRepository],
 		loadComponent: () =>
-			import("./permission-requests/permission-requests.component").then(
-				(m) => m.PermissionRequestsComponent
-			),
+			import(
+				"./permission-requests/permission-request-list/permission-request-list"
+			).then((m) => m.PermissionRequestListPage),
 		title: "Permission Requests - SeventySix"
 	},
 	{

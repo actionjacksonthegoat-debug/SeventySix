@@ -13,7 +13,7 @@ export const DEVELOPER_ROUTES: Routes = [
 	{
 		path: "style-guide",
 		loadComponent: () =>
-			import("./style-guide/style-guide.component").then(
+			import("./style-guide/style-guide").then(
 				(m) => m.StyleGuideComponent
 			),
 		title: "Style Guide"
