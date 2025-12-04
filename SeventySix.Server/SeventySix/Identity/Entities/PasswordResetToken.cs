@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -15,7 +17,7 @@ namespace SeventySix.Identity;
 /// - Single-use enforcement via IsUsed flag
 /// - Old tokens invalidated when new reset is requested.
 /// </remarks>
-public class PasswordResetToken
+public class PasswordResetToken : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -49,7 +51,7 @@ public class PasswordResetToken
 	/// <summary>
 	/// Gets or sets when this token was created.
 	/// </summary>
-	public DateTime CreatedAt
+	public DateTime CreateDate
 	{
 		get; set;
 	}

@@ -43,7 +43,7 @@ internal class PermissionRequestService(
 		// Combine: exclude roles user already has AND already requested
 		HashSet<string> excludedRoles =
 			existingRoles
-				.Concat(pendingRequests.Select(request => request.RequestedRole))
+				.Concat(pendingRequests.Select(request => request.RequestedRole!.Name))
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
 		return RoleConstants.AllRequestableRoles
@@ -80,7 +80,7 @@ internal class PermissionRequestService(
 
 		HashSet<string> alreadyHasOrRequested =
 			existingRoles
-				.Concat(pendingRequests.Select(pendingRequest => pendingRequest.RequestedRole))
+				.Concat(pendingRequests.Select(pendingRequest => pendingRequest.RequestedRole!.Name))
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
 		// Get user email once for whitelist checking
@@ -119,12 +119,23 @@ internal class PermissionRequestService(
 				continue;
 			}
 
+			// Look up role ID from SecurityRoles
+			int? roleId =
+				await repository.GetRoleIdByNameAsync(
+					role,
+					cancellationToken);
+
+			if (roleId is null)
+			{
+				throw new InvalidOperationException($"Role '{role}' not found in SecurityRoles");
+			}
+
 			// Create request as normal
 			PermissionRequest entity =
 				new()
 				{
 					UserId = userId,
-					RequestedRole = role,
+					RequestedRoleId = roleId.Value,
 					RequestMessage = request.RequestMessage,
 					CreatedBy = username
 				};
@@ -153,7 +164,7 @@ internal class PermissionRequestService(
 		// Audit fields (CreatedBy) set automatically by AuditInterceptor
 		await userRepository.AddRoleAsync(
 			request.UserId,
-			request.RequestedRole,
+			request.RequestedRole!.Name,
 			cancellationToken);
 
 		await repository.DeleteAsync(
@@ -206,7 +217,7 @@ internal class PermissionRequestService(
 			// Audit fields (CreatedBy) set automatically by AuditInterceptor
 			await userRepository.AddRoleAsync(
 				request.UserId,
-				request.RequestedRole,
+				request.RequestedRole!.Name,
 				cancellationToken);
 			approvedCount++;
 		}

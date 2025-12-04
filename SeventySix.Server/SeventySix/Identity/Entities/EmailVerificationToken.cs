@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -15,7 +17,7 @@ namespace SeventySix.Identity;
 /// - Single-use enforcement via IsUsed flag.
 /// - Old tokens invalidated when new verification is requested.
 /// </remarks>
-public class EmailVerificationToken
+public class EmailVerificationToken : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -46,7 +48,7 @@ public class EmailVerificationToken
 	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
-	public DateTime CreatedAt
+	public DateTime CreateDate
 	{
 		get; set;
 	}

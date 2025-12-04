@@ -9,6 +9,17 @@ using SeventySix.Shared.Infrastructure;
 namespace SeventySix.Logging;
 
 /// <summary>EF Core implementation for Log data access.</summary>
+/// <remarks>
+/// <para>
+/// <b>INTENTIONAL EXCEPTION:</b> This repository does NOT use <see cref="ILogger"/>
+/// for error logging in write operations to prevent infinite loops when the logging
+/// system itself is failing.
+/// </para>
+/// <para>
+/// Uses <see cref="Console.WriteLine(string)"/> for error reporting as a last-resort fallback.
+/// No transactions are used to prevent deadlocks in the logging pipeline.
+/// </para>
+/// </remarks>
 internal class LogRepository(
 	LoggingDbContext context,
 	ILogger<LogRepository> logger) : BaseRepository<Log, LoggingDbContext>(context, logger), ILogRepository

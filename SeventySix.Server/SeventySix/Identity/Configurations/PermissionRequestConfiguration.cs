@@ -8,6 +8,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace SeventySix.Identity;
 
 /// <summary>EF Core configuration for <see cref="PermissionRequest"/> entity.</summary>
+/// <remarks>
+/// Design Principles:
+/// - RequestedRoleId FK to SecurityRoles with RESTRICT delete
+/// - Composite unique index prevents duplicate pending requests per user per role
+/// </remarks>
 public class PermissionRequestConfiguration : IEntityTypeConfiguration<PermissionRequest>
 {
 	/// <inheritdoc/>
@@ -28,9 +33,8 @@ public class PermissionRequestConfiguration : IEntityTypeConfiguration<Permissio
 			.IsRequired();
 
 		builder
-			.Property(request => request.RequestedRole)
-			.IsRequired()
-			.HasMaxLength(50);
+			.Property(request => request.RequestedRoleId)
+			.IsRequired();
 
 		builder
 			.Property(request => request.RequestMessage)
@@ -48,9 +52,9 @@ public class PermissionRequestConfiguration : IEntityTypeConfiguration<Permissio
 
 		// Composite unique: one pending request per user per role
 		builder
-			.HasIndex(request => new { request.UserId, request.RequestedRole })
+			.HasIndex(request => new { request.UserId, request.RequestedRoleId })
 			.IsUnique()
-			.HasDatabaseName("IX_PermissionRequests_UserId_Role");
+			.HasDatabaseName("IX_PermissionRequests_UserId_RoleId");
 
 		// FK to User - cascade delete when user is deleted
 		builder
@@ -58,5 +62,12 @@ public class PermissionRequestConfiguration : IEntityTypeConfiguration<Permissio
 			.WithMany()
 			.HasForeignKey(request => request.UserId)
 			.OnDelete(DeleteBehavior.Cascade);
+
+		// FK to SecurityRole - RESTRICT prevents deleting role with pending requests
+		builder
+			.HasOne(request => request.RequestedRole)
+			.WithMany()
+			.HasForeignKey(request => request.RequestedRoleId)
+			.OnDelete(DeleteBehavior.Restrict);
 	}
 }

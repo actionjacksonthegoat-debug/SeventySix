@@ -7,6 +7,11 @@ using SeventySix.Shared;
 namespace SeventySix.Identity;
 
 /// <summary>Represents a user's request for elevated permissions.</summary>
+/// <remarks>
+/// Design Principles:
+/// - DRY: RequestedRoleId FK to SecurityRoles (single source of truth)
+/// - Referential Integrity: FK constraint prevents invalid role requests
+/// </remarks>
 public class PermissionRequest : ICreatableEntity
 {
 	/// <summary>Gets or sets the unique identifier.</summary>
@@ -27,8 +32,17 @@ public class PermissionRequest : ICreatableEntity
 		get; set;
 	}
 
-	/// <summary>Gets or sets the requested role name.</summary>
-	public string RequestedRole { get; set; } = string.Empty;
+	/// <summary>Gets or sets the requested role ID (FK to SecurityRoles).</summary>
+	public int RequestedRoleId
+	{
+		get; set;
+	}
+
+	/// <summary>Gets or sets the requested role (navigation property).</summary>
+	public SecurityRole? RequestedRole
+	{
+		get; set;
+	}
 
 	/// <summary>Gets or sets the optional request message.</summary>
 	public string? RequestMessage

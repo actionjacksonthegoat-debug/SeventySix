@@ -16,7 +16,7 @@ public class EmailVerificationTokenConfiguration : IEntityTypeConfiguration<Emai
 	public void Configure(EntityTypeBuilder<EmailVerificationToken> builder)
 	{
 		builder.ToTable(
-			"email_verification_tokens",
+			"EmailVerificationTokens",
 			"identity");
 
 		builder.HasKey(token => token.Id);
@@ -29,6 +29,18 @@ public class EmailVerificationTokenConfiguration : IEntityTypeConfiguration<Emai
 		builder
 			.Property(token => token.Token)
 			.HasMaxLength(128)
+			.IsRequired();
+
+		// ExpiresAt - Required
+		builder.Property(token => token.ExpiresAt)
+			.IsRequired();
+
+		// CreateDate - Required (auto-set by AuditInterceptor for ICreatableEntity)
+		builder.Property(token => token.CreateDate)
+			.IsRequired();
+
+		// IsUsed - Required
+		builder.Property(token => token.IsUsed)
 			.IsRequired();
 
 		builder

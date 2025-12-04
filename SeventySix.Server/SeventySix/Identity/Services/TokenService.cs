@@ -189,7 +189,7 @@ public class TokenService(
 				FamilyId = familyId,
 				ExpiresAt =
 					now.AddDays(jwtSettings.Value.RefreshTokenExpirationDays),
-				CreatedAt = now,
+				CreateDate = now,
 				IsRevoked = false,
 				CreatedByIp = clientIp
 			};
@@ -246,7 +246,7 @@ public class TokenService(
 			.Where(token => token.UserId == userId)
 			.Where(token => !token.IsRevoked)
 			.Where(token => token.ExpiresAt > now)
-			.OrderBy(token => token.CreatedAt)
+			.OrderBy(token => token.CreateDate)
 			.Take(1)
 			.ExecuteUpdateAsync(
 				setters => setters

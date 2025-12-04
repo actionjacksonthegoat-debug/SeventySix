@@ -74,8 +74,9 @@ public class AdminSeederService(
 		// Check if any admin role exists (may have been created through other means)
 		bool anyAdminRoleExists =
 			await context.UserRoles
+				.Include(userRole => userRole.Role)
 				.AnyAsync(
-					r => r.Role == "Admin",
+					userRole => userRole.Role!.Name == "Admin",
 					cancellationToken);
 
 		if (anyAdminRoleExists)
@@ -116,17 +117,30 @@ public class AdminSeederService(
 				UserId = adminUser.Id,
 				PasswordHash = passwordHash,
 				PasswordChangedAt = null, // Forces password change on first login
-				CreatedAt = now
+				CreateDate = now
 			};
 
 		context.UserCredentials.Add(credential);
+
+		// Look up Admin role ID from SecurityRoles
+		int? adminRoleId =
+			await context.SecurityRoles
+				.Where(securityRole => securityRole.Name == "Admin")
+				.Select(securityRole => (int?)securityRole.Id)
+				.FirstOrDefaultAsync(cancellationToken);
+
+		if (adminRoleId is null)
+		{
+			logger.LogError("Admin role not found in SecurityRoles - cannot assign role to seeded admin user");
+			return;
+		}
 
 		// Assign Admin role - CreateDate/CreatedBy set by AuditInterceptor
 		UserRole adminRole =
 			new()
 			{
 				UserId = adminUser.Id,
-				Role = "Admin"
+				RoleId = adminRoleId.Value
 			};
 
 		context.UserRoles.Add(adminRole);

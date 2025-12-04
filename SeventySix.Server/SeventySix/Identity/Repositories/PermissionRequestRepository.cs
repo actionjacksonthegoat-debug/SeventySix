@@ -17,12 +17,13 @@ internal class PermissionRequestRepository(
 		return await dbContext.PermissionRequests
 			.AsNoTracking()
 			.Include(permissionRequest => permissionRequest.User)
+			.Include(permissionRequest => permissionRequest.RequestedRole)
 			.OrderByDescending(permissionRequest => permissionRequest.CreateDate)
 			.Select(permissionRequest => new PermissionRequestDto(
 				permissionRequest.Id,
 				permissionRequest.UserId,
 				permissionRequest.User!.Username,
-				permissionRequest.RequestedRole,
+				permissionRequest.RequestedRole!.Name,
 				permissionRequest.RequestMessage,
 				permissionRequest.CreatedBy,
 				permissionRequest.CreateDate))
@@ -36,6 +37,7 @@ internal class PermissionRequestRepository(
 	{
 		return await dbContext.PermissionRequests
 			.Include(permissionRequest => permissionRequest.User)
+			.Include(permissionRequest => permissionRequest.RequestedRole)
 			.FirstOrDefaultAsync(
 				permissionRequest => permissionRequest.Id == id,
 				cancellationToken);
@@ -51,6 +53,7 @@ internal class PermissionRequestRepository(
 
 		return await dbContext.PermissionRequests
 			.Include(permissionRequest => permissionRequest.User)
+			.Include(permissionRequest => permissionRequest.RequestedRole)
 			.Where(permissionRequest => idList.Contains(permissionRequest.Id))
 			.ToListAsync(cancellationToken);
 	}
@@ -62,6 +65,7 @@ internal class PermissionRequestRepository(
 	{
 		return await dbContext.PermissionRequests
 			.AsNoTracking()
+			.Include(permissionRequest => permissionRequest.RequestedRole)
 			.Where(permissionRequest => permissionRequest.UserId == userId)
 			.ToListAsync(cancellationToken);
 	}
@@ -74,7 +78,8 @@ internal class PermissionRequestRepository(
 		return await dbContext.UserRoles
 			.AsNoTracking()
 			.Where(userRole => userRole.UserId == userId)
-			.Select(userRole => userRole.Role)
+			.Include(userRole => userRole.Role)
+			.Select(userRole => userRole.Role!.Name)
 			.ToListAsync(cancellationToken);
 	}
 
@@ -129,9 +134,22 @@ internal class PermissionRequestRepository(
 		CancellationToken cancellationToken = default)
 	{
 		await dbContext.PermissionRequests
+			.Include(permissionRequest => permissionRequest.RequestedRole)
 			.Where(permissionRequest =>
 				permissionRequest.UserId == userId
-				&& permissionRequest.RequestedRole == role)
+				&& permissionRequest.RequestedRole!.Name == role)
 			.ExecuteDeleteAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<int?> GetRoleIdByNameAsync(
+		string roleName,
+		CancellationToken cancellationToken = default)
+	{
+		return await dbContext.SecurityRoles
+			.AsNoTracking()
+			.Where(securityRole => securityRole.Name == roleName)
+			.Select(securityRole => (int?)securityRole.Id)
+			.FirstOrDefaultAsync(cancellationToken);
 	}
 }

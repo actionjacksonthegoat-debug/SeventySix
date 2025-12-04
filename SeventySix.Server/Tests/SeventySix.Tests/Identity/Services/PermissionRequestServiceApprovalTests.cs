@@ -41,7 +41,8 @@ public class PermissionRequestServiceApprovalTests
 			{
 				Id = 1,
 				UserId = 10,
-				RequestedRole = "Developer"
+				RequestedRoleId = 1,
+				RequestedRole = new SecurityRole { Id = 1, Name = "Developer" }
 			};
 
 		PermissionRequestRepository
@@ -107,7 +108,8 @@ public class PermissionRequestServiceApprovalTests
 			{
 				Id = 1,
 				UserId = 10,
-				RequestedRole = "Developer"
+				RequestedRoleId = 1,
+				RequestedRole = new SecurityRole { Id = 1, Name = "Developer" }
 			};
 
 		PermissionRequestRepository
@@ -164,8 +166,8 @@ public class PermissionRequestServiceApprovalTests
 		// Arrange
 		List<PermissionRequest> requests =
 		[
-			new() { Id = 1, UserId = 10, RequestedRole = "Developer" },
-			new() { Id = 2, UserId = 20, RequestedRole = "Admin" }
+			new() { Id = 1, UserId = 10, RequestedRoleId = 1, RequestedRole = new SecurityRole { Id = 1, Name = "Developer" } },
+			new() { Id = 2, UserId = 20, RequestedRoleId = 2, RequestedRole = new SecurityRole { Id = 2, Name = "Admin" } }
 		];
 
 		PermissionRequestRepository

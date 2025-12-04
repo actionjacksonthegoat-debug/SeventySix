@@ -57,8 +57,8 @@ public class ExternalLoginConfiguration : IEntityTypeConfiguration<ExternalLogin
 		builder.Property(e => e.ProviderEmail)
 			.HasMaxLength(255);
 
-		// CreatedAt - Required
-		builder.Property(e => e.CreatedAt)
+		// CreateDate - Required (auto-set by AuditInterceptor for ICreatableEntity)
+		builder.Property(e => e.CreateDate)
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");

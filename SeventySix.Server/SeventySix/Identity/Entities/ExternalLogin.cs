@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -14,7 +16,7 @@ namespace SeventySix.Identity;
 /// - Stores provider-specific user ID for account linking
 /// - Composite unique index on (Provider, ProviderUserId)
 /// </remarks>
-public class ExternalLogin
+public class ExternalLogin : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -53,7 +55,7 @@ public class ExternalLogin
 	/// <summary>
 	/// Gets or sets when this login was created.
 	/// </summary>
-	public DateTime CreatedAt
+	public DateTime CreateDate
 	{
 		get; set;
 	}

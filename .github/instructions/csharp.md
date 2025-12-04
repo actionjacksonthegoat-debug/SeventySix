@@ -16,6 +16,41 @@
 | Queries      | `AsNoTracking()`         | Tracked for reads               |
 | Repository   | Domain-specific          | Generic `IRepository<T>`        |
 
+## Logging Standards
+
+> **CRITICAL**: Only log **Warning** and **Error** levels.
+
+| Level               | When to Use                                       | Example                    |
+| ------------------- | ------------------------------------------------- | -------------------------- |
+| ❌ `LogDebug`       | **NEVER**                                         | -                          |
+| ❌ `LogInformation` | **NEVER**                                         | -                          |
+| ⚠️ `LogWarning`     | Recoverable issues, unexpected but handled states | Duplicate username attempt |
+| 🔴 `LogError`       | Unrecoverable failures, exceptions                | Database save failure      |
+
+## Database Transactions
+
+| Scenario                              | Pattern                             | Example                          |
+| ------------------------------------- | ----------------------------------- | -------------------------------- |
+| Create single entity                  | Direct `SaveChangesAsync`           | `BaseRepository.CreateAsync`     |
+| Create multiple related entities      | **Consolidated `SaveChangesAsync`** | `AuthService.RegisterAsync`      |
+| Read-then-write with uniqueness check | `TransactionManager`                | `UserService.CreateUserAsync`    |
+| Bulk update with `ExecuteUpdateAsync` | None needed (already atomic)        | `TokenService.RevokeFamilyAsync` |
+
+```csharp
+// ❌ WRONG - Multiple SaveChanges = NOT atomic
+context.Users.Add(user);
+await context.SaveChangesAsync(cancellationToken);  // Save 1
+
+context.UserCredentials.Add(credential);
+await context.SaveChangesAsync(cancellationToken);  // Save 2 - orphan risk!
+
+// ✅ CORRECT - Single SaveChanges = fully atomic
+context.Users.Add(user);
+context.UserCredentials.Add(credential);
+context.UserRoles.Add(userRole);
+await context.SaveChangesAsync(cancellationToken);  // All or nothing
+```
+
 ## Code Formatting (CRITICAL)
 
 | Rule             | ✅ Do                      | ❌ Don't                          |
@@ -156,4 +191,51 @@ public class ApiService(IOptions<ApiSettings> options)
 	private readonly ApiSettings settings =
 		options.Value;
 }
+```
+
+## Entity & Database Conventions
+
+### Foreign Key Properties
+
+-   **ALWAYS** suffix FK properties with `Id`: `UserId`, `RoleId`, `ParentId`
+-   FK column names match property names in database
+
+```csharp
+// ✅ CORRECT - FK properties end with Id
+public int UserId { get; set; }
+public int RoleId { get; set; }
+public int ParentCommentId { get; set; }
+
+// ❌ WRONG - Missing Id suffix for FK
+public int User { get; set; }
+```
+
+### Audit Fields (NOT Foreign Keys)
+
+-   `CreatedBy`, `ModifiedBy`, `DeletedBy` store **username strings**
+-   These track WHO performed action, not FK relationships
+-   Do NOT suffix with `Id` - they are NOT foreign keys
+
+```csharp
+// ✅ CORRECT - Audit fields store username strings
+public string CreatedBy { get; set; }
+public string ModifiedBy { get; set; }
+public string DeletedBy { get; set; }
+
+// ❌ WRONG - Adding Id suffix to audit field
+public int CreatedById { get; set; }
+```
+
+### Cascade Delete Policy
+
+-   Use `CASCADE` for dependent children (tokens, credentials)
+-   Use `RESTRICT` for lookup tables (roles, categories)
+-   Document behavior in entity configuration comments
+
+```csharp
+// Dependent children - CASCADE (delete tokens when user deleted)
+.OnDelete(DeleteBehavior.Cascade)
+
+// Lookup tables - RESTRICT (prevent deleting role if users have it)
+.OnDelete(DeleteBehavior.Restrict)
 ```

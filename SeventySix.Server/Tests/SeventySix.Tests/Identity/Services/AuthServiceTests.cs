@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
+using SeventySix.Shared;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -125,6 +126,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 			CompleteRegistrationValidator,
 			EmailService,
 			TestTimeProviderBuilder.CreateDefault(),
+			new TransactionManager(context),
 			Logger);
 	}
 
@@ -477,7 +479,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 	#region RegisterAsync Tests
 
 	[Fact]
-	public async Task RegisterAsync_ValidRequest_CreatesUserAsync()
+	public async Task RegisterAsync_ValidRequest_CreatesUserWithCredentialAndRoleAtomicallyAsync()
 	{
 		// Arrange
 		string testId = Guid.NewGuid().ToString("N")[..8];
@@ -501,19 +503,36 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 				"127.0.0.1",
 				CancellationToken.None);
 
-		// Assert
+		// Assert - Registration succeeded
 		Assert.True(result.Success);
 		Assert.Equal("test-access-token", result.AccessToken);
 
-		// Verify user was created
+		// Assert - User created
 		User? createdUser =
 			await context.Users
+				.AsNoTracking()
 				.FirstOrDefaultAsync(u => u.Username == $"newreg_{testId}");
 
 		Assert.NotNull(createdUser);
 		Assert.Equal($"newreg_{testId}@example.com", createdUser.Email);
 		Assert.Equal("New User", createdUser.FullName);
 		Assert.True(createdUser.IsActive);
+
+		// Assert - Credential created atomically with user
+		bool hasCredential =
+			await context.UserCredentials
+				.AsNoTracking()
+				.AnyAsync(credential => credential.UserId == createdUser.Id);
+
+		Assert.True(hasCredential, "Credential should be created atomically with user");
+
+		// Assert - Role created atomically with user
+		bool hasRole =
+			await context.UserRoles
+				.AsNoTracking()
+				.AnyAsync(userRole => userRole.UserId == createdUser.Id);
+
+		Assert.True(hasRole, "Role should be created atomically with user");
 	}
 
 	[Fact]
@@ -693,10 +712,23 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 				"devadmin@example.com",
 				"Password123");
 
+		// Look up role IDs from SecurityRoles
+		int developerRoleId =
+			await context.SecurityRoles
+				.Where(r => r.Name == "Developer")
+				.Select(r => r.Id)
+				.FirstAsync();
+
+		int adminRoleId =
+			await context.SecurityRoles
+				.Where(r => r.Name == "Admin")
+				.Select(r => r.Id)
+				.FirstAsync();
+
 		// Add multiple roles
 		context.UserRoles.AddRange(
-			new UserRole { UserId = user.Id, Role = "Developer" },
-			new UserRole { UserId = user.Id, Role = "Admin" });
+			new UserRole { UserId = user.Id, RoleId = developerRoleId },
+			new UserRole { UserId = user.Id, RoleId = adminRoleId });
 		await context.SaveChangesAsync();
 
 		// Capture the roles passed to GenerateAccessToken
@@ -836,7 +868,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 				UserId = user.Id,
 				Token = validToken,
 				ExpiresAt = FixedTime.AddHours(24).UtcDateTime,
-				CreatedAt = FixedTime.UtcDateTime,
+				CreateDate = FixedTime.UtcDateTime,
 				IsUsed = false,
 			};
 		context.PasswordResetTokens.Add(resetToken);
@@ -926,7 +958,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 				UserId = user.Id,
 				Token = expiredToken,
 				ExpiresAt = FixedTime.AddHours(-1).UtcDateTime,
-				CreatedAt = FixedTime.AddHours(-25).UtcDateTime,
+				CreateDate = FixedTime.AddHours(-25).UtcDateTime,
 				IsUsed = false,
 			};
 		context.PasswordResetTokens.Add(resetToken);
@@ -971,7 +1003,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 				UserId = user.Id,
 				Token = validToken,
 				ExpiresAt = FixedTime.AddHours(24).UtcDateTime,
-				CreatedAt = FixedTime.UtcDateTime,
+				CreateDate = FixedTime.UtcDateTime,
 				IsUsed = false,
 			};
 		context.PasswordResetTokens.Add(resetToken);
@@ -1160,7 +1192,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 			{
 				UserId = user.Id,
 				PasswordHash = passwordHash,
-				CreatedAt = FixedTime.UtcDateTime,
+				CreateDate = FixedTime.UtcDateTime,
 			};
 
 		context.UserCredentials.Add(credential);

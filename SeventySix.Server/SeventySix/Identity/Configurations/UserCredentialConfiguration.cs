@@ -42,8 +42,8 @@ public class UserCredentialConfiguration : IEntityTypeConfiguration<UserCredenti
 		builder.Property(e => e.PasswordChangedAt)
 			.HasColumnType("timestamp with time zone");
 
-		// CreatedAt - Required
-		builder.Property(e => e.CreatedAt)
+		// CreateDate - Required
+		builder.Property(e => e.CreateDate)
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");

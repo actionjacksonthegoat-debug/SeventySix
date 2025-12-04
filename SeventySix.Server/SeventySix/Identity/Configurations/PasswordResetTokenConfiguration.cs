@@ -46,18 +46,27 @@ public class PasswordResetTokenConfiguration : IEntityTypeConfiguration<Password
 			.HasDatabaseName("IX_PasswordResetTokens_Token");
 
 		// UserId - for finding tokens by user
-		builder.Property(token => token.UserId)
+		builder
+			.Property(token => token.UserId)
 			.IsRequired();
 
-		builder.HasIndex(token => token.UserId)
+		builder
+			.HasIndex(token => token.UserId)
 			.HasDatabaseName("IX_PasswordResetTokens_UserId");
+
+		// FK relationship to User - cascade delete tokens when user is deleted
+		builder
+			.HasOne<User>()
+			.WithMany()
+			.HasForeignKey(token => token.UserId)
+			.OnDelete(DeleteBehavior.Cascade);
 
 		// ExpiresAt - Required
 		builder.Property(token => token.ExpiresAt)
 			.IsRequired();
 
-		// CreatedAt - Required
-		builder.Property(token => token.CreatedAt)
+		// CreateDate - Required (auto-set by AuditInterceptor for ICreatableEntity)
+		builder.Property(token => token.CreateDate)
 			.IsRequired();
 
 		// IsUsed - Required, defaults to false

@@ -67,6 +67,11 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 	public DbSet<PermissionRequest> PermissionRequests => Set<PermissionRequest>();
 
 	/// <summary>
+	/// Gets or sets the SecurityRoles DbSet.
+	/// </summary>
+	public DbSet<SecurityRole> SecurityRoles => Set<SecurityRole>();
+
+	/// <summary>
 	/// Gets the schema name for Identity bounded context.
 	/// </summary>
 	/// <returns>"Identity".</returns>

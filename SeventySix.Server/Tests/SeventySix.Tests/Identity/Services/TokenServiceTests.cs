@@ -389,7 +389,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 				TokenHash = ComputeSha256Hash(tokenValue),
 				UserId = user.Id,
 				ExpiresAt = FixedTime.AddDays(-1).UtcDateTime, // Already expired
-				CreatedAt = FixedTime.AddDays(-8).UtcDateTime,
+				CreateDate = FixedTime.AddDays(-8).UtcDateTime,
 				IsRevoked = false
 			};
 
@@ -623,7 +623,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			await context.RefreshTokens
 				.AsNoTracking()
 				.Where(t => t.UserId == user.Id)
-				.OrderBy(t => t.CreatedAt)
+				.OrderBy(t => t.CreateDate)
 				.ToListAsync();
 
 		Assert.Equal(3, tokens.Count);
@@ -833,7 +833,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 				UserId = user.Id,
 				FamilyId = Guid.NewGuid(),
 				ExpiresAt = FixedTime.AddDays(-1).UtcDateTime,
-				CreatedAt = FixedTime.AddDays(-8).UtcDateTime,
+				CreateDate = FixedTime.AddDays(-8).UtcDateTime,
 				IsRevoked = false
 			};
 

@@ -42,7 +42,7 @@ public class UserCredential
 	/// <summary>
 	/// Gets or sets when this credential was created.
 	/// </summary>
-	public DateTime CreatedAt
+	public DateTime CreateDate
 	{
 		get; set;
 	}

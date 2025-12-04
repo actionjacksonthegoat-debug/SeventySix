@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
+using SeventySix.Shared;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -108,6 +109,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 			CompleteRegistrationValidator,
 			EmailService,
 			TestTimeProviderBuilder.CreateDefault(),
+			new TransactionManager(context),
 			Logger);
 	}
 
@@ -437,7 +439,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 				Email = email,
 				Token = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64)),
 				ExpiresAt = FixedTime.UtcDateTime.AddHours(-1), // Expired 1 hour ago
-				CreatedAt = FixedTime.UtcDateTime.AddHours(-25),
+				CreateDate = FixedTime.UtcDateTime.AddHours(-25),
 				IsUsed = false,
 			};
 
@@ -603,11 +605,12 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 
 		UserRole? role =
 			await context.UserRoles
+				.Include(r => r.Role)
 				.Where(r => r.UserId == user.Id)
 				.FirstOrDefaultAsync();
 
 		role.ShouldNotBeNull();
-		role.Role.ShouldBe("User");
+		role.Role!.Name.ShouldBe("User");
 	}
 
 	#endregion

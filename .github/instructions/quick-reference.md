@@ -25,6 +25,24 @@
 | Queries      | `AsNoTracking()` for reads    | Track read-only data |
 | Config       | Fluent API                    | Data annotations     |
 
+## Logging Rules (C#)
+
+| Level               | Use                    |
+| ------------------- | ---------------------- |
+| ❌ `LogDebug`       | **NEVER**              |
+| ❌ `LogInformation` | **NEVER**              |
+| ⚠️ `LogWarning`     | Recoverable issues     |
+| 🔴 `LogError`       | Unrecoverable failures |
+
+## Database Transaction Rules
+
+| Scenario                  | Pattern                         |
+| ------------------------- | ------------------------------- |
+| Single entity             | Direct `SaveChangesAsync`       |
+| Multiple related entities | Consolidated `SaveChangesAsync` |
+| Read-then-write atomicity | `TransactionManager`            |
+| Bulk `ExecuteUpdateAsync` | None needed (already atomic)    |
+
 ## Angular Rules
 
 | Rule      | Do                                  | Don't                  |
@@ -51,6 +69,13 @@
 | Patterns | Mixins after 3x                      | Repeat CSS     |
 
 ## Testing Rules
+
+| Principle | Application                                         |
+| --------- | --------------------------------------------------- |
+| **TDD**   | Write failing test first, then implement            |
+| **80/20** | Test critical paths only - no exhaustive edge cases |
+| **Fix**   | Never skip failing tests                            |
+| **Async** | Suffix async test methods with `Async`              |
 
 | Context       | Command                            |
 | ------------- | ---------------------------------- |

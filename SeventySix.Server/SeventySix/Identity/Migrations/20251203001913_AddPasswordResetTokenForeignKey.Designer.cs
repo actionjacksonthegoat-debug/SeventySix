@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SeventySix.Identity;
@@ -11,9 +12,11 @@ using SeventySix.Identity;
 namespace SeventySix.Identity.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    partial class IdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251203001913_AddPasswordResetTokenForeignKey")]
+    partial class AddPasswordResetTokenForeignKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,7 +34,7 @@ namespace SeventySix.Identity.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
@@ -57,7 +60,7 @@ namespace SeventySix.Identity.Migrations
                     b.HasIndex("Token")
                         .IsUnique();
 
-                    b.ToTable("EmailVerificationTokens", "identity");
+                    b.ToTable("email_verification_tokens", "identity");
                 });
 
             modelBuilder.Entity("SeventySix.Identity.ExternalLogin", b =>
@@ -68,7 +71,7 @@ namespace SeventySix.Identity.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -113,7 +116,7 @@ namespace SeventySix.Identity.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("ExpiresAt")
@@ -162,19 +165,19 @@ namespace SeventySix.Identity.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<int>("RequestedRoleId")
-                        .HasColumnType("integer");
+                    b.Property<string>("RequestedRole")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RequestedRoleId");
-
-                    b.HasIndex("UserId", "RequestedRoleId")
+                    b.HasIndex("UserId", "RequestedRole")
                         .IsUnique()
-                        .HasDatabaseName("IX_PermissionRequests_UserId_RoleId");
+                        .HasDatabaseName("IX_PermissionRequests_UserId_Role");
 
                     b.ToTable("PermissionRequests", "Identity");
                 });
@@ -187,7 +190,7 @@ namespace SeventySix.Identity.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -231,68 +234,6 @@ namespace SeventySix.Identity.Migrations
                         .HasDatabaseName("IX_RefreshTokens_UserId_IsRevoked");
 
                     b.ToTable("RefreshTokens", "Identity");
-                });
-
-            modelBuilder.Entity("SeventySix.Identity.SecurityRole", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreateDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("IX_SecurityRoles_Name");
-
-                    b.ToTable("SecurityRoles", "Identity");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Standard user access",
-                            IsActive = true,
-                            Name = "User"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Access to developer tools and APIs",
-                            IsActive = true,
-                            Name = "Developer"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Full administrative access",
-                            IsActive = true,
-                            Name = "Admin"
-                        });
                 });
 
             modelBuilder.Entity("SeventySix.Identity.User", b =>
@@ -411,7 +352,7 @@ namespace SeventySix.Identity.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -453,20 +394,22 @@ namespace SeventySix.Identity.Migrations
                     b.Property<DateTime?>("ModifyDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoleId")
-                        .HasDatabaseName("IX_UserRoles_RoleId");
+                    b.HasIndex("Role")
+                        .HasDatabaseName("IX_UserRoles_Role");
 
-                    b.HasIndex("UserId", "RoleId")
+                    b.HasIndex("UserId", "Role")
                         .IsUnique()
-                        .HasDatabaseName("IX_UserRoles_UserId_RoleId");
+                        .HasDatabaseName("IX_UserRoles_UserId_Role");
 
                     b.ToTable("UserRoles", "Identity");
                 });
@@ -491,19 +434,11 @@ namespace SeventySix.Identity.Migrations
 
             modelBuilder.Entity("SeventySix.Identity.PermissionRequest", b =>
                 {
-                    b.HasOne("SeventySix.Identity.SecurityRole", "RequestedRole")
-                        .WithMany()
-                        .HasForeignKey("RequestedRoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("SeventySix.Identity.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("RequestedRole");
 
                     b.Navigation("User");
                 });
@@ -528,19 +463,11 @@ namespace SeventySix.Identity.Migrations
 
             modelBuilder.Entity("SeventySix.Identity.UserRole", b =>
                 {
-                    b.HasOne("SeventySix.Identity.SecurityRole", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("SeventySix.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Role");
                 });
 #pragma warning restore 612, 618
         }

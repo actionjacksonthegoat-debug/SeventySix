@@ -12,8 +12,10 @@
 3. [.NET Guidelines](#net-guidelines)
 4. [SCSS Guidelines](#scss-guidelines)
 5. [Testing Guidelines](#testing-guidelines)
-6. [Architecture](#architecture)
-7. [Quick Reference](#quick-reference)
+6. [Logging Standards](#logging-standards)
+7. [Database Transactions](#database-transactions)
+8. [Architecture](#architecture)
+9. [Quick Reference](#quick-reference)
 
 ---
 
@@ -353,6 +355,57 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 }
 ```
 
+### Database Normalization Standards
+
+#### Foreign Key Naming
+
+```csharp
+// ✅ CORRECT - FK properties end with Id
+public int UserId { get; set; }
+public int RoleId { get; set; }
+public int ParentCommentId { get; set; }
+
+// ✅ CORRECT - Audit fields store username, NOT FK
+public string CreatedBy { get; set; }
+public string ModifiedBy { get; set; }
+public string DeletedBy { get; set; }
+
+// ❌ WRONG - Missing Id suffix for FK
+public int User { get; set; }  // Ambiguous
+
+// ❌ WRONG - Adding Id to audit field
+public int CreatedById { get; set; }  // Audit fields are NOT FKs
+```
+
+#### Cascade Delete Policy
+
+```csharp
+// Dependent children - CASCADE (delete when parent deleted)
+builder
+	.HasOne<User>()
+	.WithMany()
+	.HasForeignKey(token => token.UserId)
+	.OnDelete(DeleteBehavior.Cascade);  // Tokens, credentials
+
+// Lookup tables - RESTRICT (prevent delete if referenced)
+builder
+	.HasOne(ur => ur.Role)
+	.WithMany()
+	.HasForeignKey(ur => ur.RoleId)
+	.OnDelete(DeleteBehavior.Restrict);  // Roles, categories
+```
+
+#### Naming Conventions
+
+| Element        | Convention                  | Example                      |
+| -------------- | --------------------------- | ---------------------------- |
+| Table names    | PascalCase                  | `UserRoles`, `SecurityRoles` |
+| Column names   | PascalCase                  | `UserId`, `CreateDate`       |
+| FK columns     | Suffix with `Id`            | `UserId`, `RoleId`           |
+| Audit columns  | String, no `Id` suffix      | `CreatedBy`, `ModifiedBy`    |
+| Index names    | `IX_{Table}_{Column(s)}`    | `IX_Users_Email`             |
+| FK constraints | `FK_{Child}_{Parent}_{Col}` | `FK_UserRoles_Users_UserId`  |
+
 ### Records for DTOs
 
 ```csharp
@@ -489,6 +542,15 @@ string GetUserCategory(User user) =>
 
 ## Testing Guidelines
 
+### Core Principles
+
+| Principle | Application                                                |
+| --------- | ---------------------------------------------------------- |
+| **TDD**   | Write failing test first, then implement fix               |
+| **80/20** | Test critical paths only - no exhaustive edge case testing |
+| **Fix**   | Never skip failing tests - fix immediately                 |
+| **Async** | Always suffix async test methods with `Async`              |
+
 ### Commands
 
 | Platform | Command            | Notes                   |
@@ -497,7 +559,27 @@ string GetUserCategory(User user) =>
 | .NET     | `dotnet test`      | Docker Desktop required |
 | E2E      | `npm run test:e2e` | Manual only             |
 
-**CRITICAL**: Never skip failing tests. Fix immediately.
+### 80/20 Rule Examples
+
+```csharp
+// ✅ CORRECT - Test the critical happy path
+[Fact]
+public async Task RegisterAsync_SavesAllEntitiesAtomically_WhenSuccessfulAsync()
+{
+	// Test atomicity of multi-entity save
+}
+
+// ❌ WRONG - Exhaustive edge case testing (YAGNI)
+[Fact]
+public async Task RegisterAsync_ThrowsWhenUsernameNull() { }
+[Fact]
+public async Task RegisterAsync_ThrowsWhenUsernameTooLong() { }
+[Fact]
+public async Task RegisterAsync_ThrowsWhenUsernameContainsSpaces() { }
+// ... 20 more edge cases
+```
+
+**Rule**: The consolidation/fix itself guarantees correctness. Test the happy path; don't over-test.
 
 ### Angular Test Pattern
 
@@ -571,6 +653,101 @@ public async Task GetByIdAsync_ReturnsUser_WhenExistsAsync()
 [Fact]
 public async Task CreateAsync_ThrowsException_WhenInvalidAsync()
 ```
+
+---
+
+## Logging Standards
+
+> **CRITICAL**: Only log **Warning** and **Error** levels. No Debug or Information logging.
+
+| Level               | When to Use                                       | Example                    |
+| ------------------- | ------------------------------------------------- | -------------------------- |
+| ❌ `LogDebug`       | **NEVER**                                         | -                          |
+| ❌ `LogInformation` | **NEVER**                                         | -                          |
+| ⚠️ `LogWarning`     | Recoverable issues, unexpected but handled states | Duplicate username attempt |
+| 🔴 `LogError`       | Unrecoverable failures, exceptions                | Database save failure      |
+
+```csharp
+// ✅ CORRECT - Warning for recoverable issue
+logger.LogWarning(
+	"Duplicate username attempt: {Username}",
+	username);
+
+// ✅ CORRECT - Error for unrecoverable failure
+logger.LogError(
+	exception,
+	"Failed to save user {UserId}",
+	userId);
+
+// ❌ WRONG - Debug/Information logging
+logger.LogDebug("Entering method");
+logger.LogInformation("User created successfully");
+```
+
+---
+
+## Database Transactions
+
+### Key Insight
+
+EF Core's `SaveChangesAsync()` is already transactional. All pending changes are committed atomically. The problem isn't missing transactions - it's **unnecessary multiple SaveChanges calls**.
+
+### Pattern Decision Matrix
+
+| Scenario                              | Pattern                             | Example                          |
+| ------------------------------------- | ----------------------------------- | -------------------------------- |
+| Create single entity                  | Direct `SaveChangesAsync`           | `BaseRepository.CreateAsync`     |
+| Create multiple related entities      | **Consolidated `SaveChangesAsync`** | `AuthService.RegisterAsync`      |
+| Read-then-write with uniqueness check | `TransactionManager`                | `UserService.CreateUserAsync`    |
+| Bulk update with `ExecuteUpdateAsync` | None needed (already atomic)        | `TokenService.RevokeFamilyAsync` |
+| Log writes                            | No transactions (prevent deadlock)  | `LogRepository.CreateAsync`      |
+
+### When to Use TransactionManager
+
+Use `TransactionManager` ONLY when you need:
+
+1. **Read-then-write atomicity** (e.g., check duplicate → create)
+2. **Multiple SaveChanges that CANNOT be combined** (rare)
+3. **Retry on concurrency conflicts** (optimistic locking scenarios)
+
+### Code Patterns
+
+```csharp
+// ❌ WRONG - Multiple SaveChanges = NOT atomic
+context.Users.Add(user);
+await context.SaveChangesAsync(cancellationToken);  // Save 1
+
+context.UserCredentials.Add(credential);
+context.UserRoles.Add(userRole);
+await context.SaveChangesAsync(cancellationToken);  // Save 2 - if fails, orphaned user!
+
+// ✅ CORRECT - Single SaveChanges = fully atomic
+context.Users.Add(user);
+context.UserCredentials.Add(credential);
+context.UserRoles.Add(userRole);
+await context.SaveChangesAsync(cancellationToken);  // All or nothing
+```
+
+```csharp
+// ✅ CORRECT - TransactionManager for read-then-write
+return await transactionManager.ExecuteInTransactionAsync(async ct =>
+{
+	if (await repository.UsernameExistsAsync(request.Username, null, ct))
+	{
+		throw new DuplicateUserException(...);
+	}
+	// Create user after uniqueness check
+	return await CreateUserInternalAsync(request, ct);
+}, cancellationToken: cancellationToken);
+```
+
+### What NOT to Do (YAGNI)
+
+| Rejected Approach                                | Why Rejected                                |
+| ------------------------------------------------ | ------------------------------------------- |
+| Wrapping single-write operations in transactions | Adds overhead with no benefit               |
+| Context-specific transaction manager interfaces  | Over-engineering - not needed               |
+| Unit of Work pattern                             | EF Core DbContext IS already a unit of work |
 
 ---
 

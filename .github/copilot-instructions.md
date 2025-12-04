@@ -28,6 +28,8 @@
 -   **ALWAYS** use records for DTOs: `public record UserDto(int Id, string Name);`
 -   **ALWAYS** use Fluent API for EF Core, not attributes
 -   **ALWAYS** use `AsNoTracking()` for read-only queries
+-   **ALWAYS** suffix FK properties with `Id`: `UserId`, `RoleId`, `ParentId`
+-   **ALWAYS** use string for audit fields (`CreatedBy`, `ModifiedBy`) - NOT FKs
 
 ### Angular (20+)
 
@@ -58,9 +60,25 @@
 ### Testing
 
 -   **NEVER** skip failing tests - fix immediately
+-   **ALWAYS** follow **80/20 rule** - test critical paths only, no exhaustive edge case testing
+-   **ALWAYS** use **TDD** for fixes - write failing test first, then implement
 -   **Angular**: `npm test` (headless, no-watch) - NOT runTests tool
 -   **.NET**: `dotnet test` or runTests tool - Docker Desktop required
 -   **ALWAYS** use `provideZonelessChangeDetection()` in Angular tests
+-   **ALWAYS** suffix async test methods with `Async`
+
+### Logging
+
+-   **NEVER** use `LogDebug` or `LogInformation` - only Warning and Error levels
+-   **ALWAYS** use `LogWarning` for recoverable issues (e.g., duplicate username attempt)
+-   **ALWAYS** use `LogError` for unrecoverable failures and exceptions
+
+### Database Transactions
+
+-   **NEVER** wrap single-write operations in transactions - adds overhead with no benefit
+-   **ALWAYS** consolidate multiple `SaveChangesAsync` calls into single call when possible
+-   **ONLY** use `TransactionManager` for read-then-write atomicity (e.g., check duplicate → create)
+-   **REMEMBER**: EF Core's `SaveChangesAsync` is already transactional - all pending changes committed atomically
 
 ### Configuration
 

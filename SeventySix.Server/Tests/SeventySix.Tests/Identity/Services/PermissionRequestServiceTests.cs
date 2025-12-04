@@ -25,6 +25,18 @@ public class PermissionRequestServiceTests
 	private readonly IOptions<WhitelistedPermissionSettings> WhitelistedOptions =
 		Options.Create(new WhitelistedPermissionSettings());
 
+	/// <summary>Initializes a new instance of the <see cref="PermissionRequestServiceTests"/> class.</summary>
+	public PermissionRequestServiceTests()
+	{
+		// Set up role ID lookups (matches SecurityRoles seed data)
+		Repository
+			.GetRoleIdByNameAsync("Developer", Arg.Any<CancellationToken>())
+			.Returns(1);
+		Repository
+			.GetRoleIdByNameAsync("Admin", Arg.Any<CancellationToken>())
+			.Returns(2);
+	}
+
 	private PermissionRequestService Service => new(
 		Repository,
 		UserRepository,
@@ -84,7 +96,7 @@ public class PermissionRequestServiceTests
 			.Returns([]);
 		Repository
 			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
-			.Returns([new PermissionRequest { RequestedRole = "Developer" }]);
+			.Returns([new PermissionRequest { RequestedRoleId = 1, RequestedRole = new SecurityRole { Id = 1, Name = "Developer" } }]);
 
 		// Act
 		IEnumerable<AvailableRoleDto> result =
@@ -192,10 +204,11 @@ public class PermissionRequestServiceTests
 			request);
 
 		// Assert - only Admin should be created (Developer skipped)
+		// RoleId 2 = Admin (based on test setup)
 		await Repository
 			.Received(1)
 			.CreateAsync(
-				Arg.Is<PermissionRequest>(permissionRequest => permissionRequest.RequestedRole == "Admin"),
+				Arg.Is<PermissionRequest>(permissionRequest => permissionRequest.RequestedRoleId == 2),
 				Arg.Any<CancellationToken>());
 	}
 
@@ -208,7 +221,7 @@ public class PermissionRequestServiceTests
 			.Returns([]);
 		Repository
 			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
-			.Returns([new PermissionRequest { RequestedRole = "Developer" }]);
+			.Returns([new PermissionRequest { RequestedRoleId = 1, RequestedRole = new SecurityRole { Id = 1, Name = "Developer" } }]);
 
 		CreatePermissionRequestDto request =
 			new(["Developer", "Admin"], "Need access");
@@ -220,10 +233,11 @@ public class PermissionRequestServiceTests
 			request);
 
 		// Assert - only Admin should be created (Developer already requested)
+		// RoleId 2 = Admin (based on test setup)
 		await Repository
 			.Received(1)
 			.CreateAsync(
-				Arg.Is<PermissionRequest>(permissionRequest => permissionRequest.RequestedRole == "Admin"),
+				Arg.Is<PermissionRequest>(permissionRequest => permissionRequest.RequestedRoleId == 2),
 				Arg.Any<CancellationToken>());
 	}
 
@@ -311,6 +325,7 @@ public class PermissionRequestServiceTests
 			request);
 
 		// Assert - request created, no direct role assignment
+		// RoleId 1 = Developer (based on test setup)
 		await UserRepository
 			.DidNotReceive()
 			.AddRoleWithoutAuditAsync(
@@ -320,7 +335,7 @@ public class PermissionRequestServiceTests
 		await Repository
 			.Received(1)
 			.CreateAsync(
-				Arg.Is<PermissionRequest>(permissionRequest => permissionRequest.RequestedRole == "Developer"),
+				Arg.Is<PermissionRequest>(permissionRequest => permissionRequest.RequestedRoleId == 1),
 				Arg.Any<CancellationToken>());
 	}
 

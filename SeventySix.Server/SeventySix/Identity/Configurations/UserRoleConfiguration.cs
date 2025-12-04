@@ -12,8 +12,8 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <remarks>
 /// Design Principles:
-/// - Composite unique index on (UserId, Role) prevents duplicate role assignments
-/// - Role is a simple string (KISS - no complex permission hierarchy)
+/// - Composite unique index on (UserId, RoleId) prevents duplicate role assignments
+/// - RoleId FK to SecurityRoles with RESTRICT delete (cannot delete role if assigned)
 /// - Implements IAuditableEntity for audit tracking.
 /// </remarks>
 public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
@@ -29,43 +29,51 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 		builder.ToTable("UserRoles");
 
 		builder.HasKey(userRole => userRole.Id);
-		builder.Property(userRole => userRole.Id)
+		builder
+			.Property(userRole => userRole.Id)
 			.UseIdentityColumn()
 			.IsRequired();
 
 		// UserId - Required
-		builder.Property(userRole => userRole.UserId)
+		builder
+			.Property(userRole => userRole.UserId)
 			.IsRequired();
 
-		// Role - Required, e.g., "User", "Admin", "Developer"
-		builder.Property(userRole => userRole.Role)
-			.IsRequired()
-			.HasMaxLength(50);
+		// RoleId - Required, FK to SecurityRoles
+		builder
+			.Property(userRole => userRole.RoleId)
+			.IsRequired();
 
 		// Composite unique index - each user can only have each role once
-		builder.HasIndex(userRole => new { userRole.UserId, userRole.Role })
+		builder
+			.HasIndex(userRole => new { userRole.UserId, userRole.RoleId })
 			.IsUnique()
-			.HasDatabaseName("IX_UserRoles_UserId_Role");
+			.HasDatabaseName("IX_UserRoles_UserId_RoleId");
 
 		// Index for querying users by role
-		builder.HasIndex(userRole => userRole.Role)
-			.HasDatabaseName("IX_UserRoles_Role");
+		builder
+			.HasIndex(userRole => userRole.RoleId)
+			.HasDatabaseName("IX_UserRoles_RoleId");
 
 		// Audit properties - nullable for whitelisted auto-approvals
-		builder.Property(userRole => userRole.CreateDate)
+		builder
+			.Property(userRole => userRole.CreateDate)
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");
 
-		builder.Property(userRole => userRole.ModifyDate)
+		builder
+			.Property(userRole => userRole.ModifyDate)
 			.IsRequired(false)
 			.HasColumnType("timestamp with time zone");
 
-		builder.Property(userRole => userRole.CreatedBy)
+		builder
+			.Property(userRole => userRole.CreatedBy)
 			.HasMaxLength(256)
 			.IsRequired(false);
 
-		builder.Property(userRole => userRole.ModifiedBy)
+		builder
+			.Property(userRole => userRole.ModifiedBy)
 			.HasMaxLength(256)
 			.IsRequired(false);
 
@@ -75,5 +83,12 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 			.WithMany()
 			.HasForeignKey(userRole => userRole.UserId)
 			.OnDelete(DeleteBehavior.Cascade);
+
+		// FK relationship to SecurityRole - RESTRICT prevents deleting role if assigned
+		builder
+			.HasOne(userRole => userRole.Role)
+			.WithMany()
+			.HasForeignKey(userRole => userRole.RoleId)
+			.OnDelete(DeleteBehavior.Restrict);
 	}
 }

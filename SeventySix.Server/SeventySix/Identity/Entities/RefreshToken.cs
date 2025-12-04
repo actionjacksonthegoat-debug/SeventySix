@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -15,7 +17,7 @@ namespace SeventySix.Identity;
 /// - Token families: FamilyId tracks chains of rotated tokens for reuse detection
 /// - Tracks creation IP for security auditing
 /// </remarks>
-public class RefreshToken
+public class RefreshToken : ICreatableEntity
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.
@@ -60,7 +62,7 @@ public class RefreshToken
 	/// <summary>
 	/// Gets or sets the creation date.
 	/// </summary>
-	public DateTime CreatedAt
+	public DateTime CreateDate
 	{
 		get; set;
 	}

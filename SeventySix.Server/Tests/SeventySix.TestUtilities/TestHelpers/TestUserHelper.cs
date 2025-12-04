@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
 
@@ -107,7 +108,7 @@ public static class TestUserHelper
 			{
 				UserId = user.Id,
 				PasswordHash = passwordHash ?? TestPasswordHash,
-				CreatedAt = DateTime.UtcNow,
+				CreateDate = DateTime.UtcNow,
 			};
 
 		context.UserCredentials.Add(credential);
@@ -152,10 +153,21 @@ public static class TestUserHelper
 
 		foreach (string role in roles)
 		{
+			int? roleId =
+				await context.SecurityRoles
+					.Where(securityRole => securityRole.Name == role)
+					.Select(securityRole => (int?)securityRole.Id)
+					.FirstOrDefaultAsync();
+
+			if (roleId is null)
+			{
+				throw new InvalidOperationException($"Role '{role}' not found in SecurityRoles");
+			}
+
 			context.UserRoles.Add(new UserRole
 			{
 				UserId = user.Id,
-				Role = role,
+				RoleId = roleId.Value,
 				CreateDate = DateTime.UtcNow,
 				CreatedBy = "test"
 			});

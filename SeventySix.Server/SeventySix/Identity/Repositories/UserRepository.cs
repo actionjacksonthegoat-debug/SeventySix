@@ -309,7 +309,8 @@ internal class UserRepository(
 		return await context.UserRoles
 			.AsNoTracking()
 			.Where(userRole => userRole.UserId == userId)
-			.Select(userRole => userRole.Role)
+			.Include(userRole => userRole.Role)
+			.Select(userRole => userRole.Role!.Name)
 			.ToListAsync(cancellationToken);
 	}
 
@@ -321,10 +322,11 @@ internal class UserRepository(
 	{
 		return await context.UserRoles
 			.AsNoTracking()
+			.Include(userRole => userRole.Role)
 			.AnyAsync(
 				userRole =>
 					userRole.UserId == userId
-					&& userRole.Role == role,
+					&& userRole.Role!.Name == role,
 				cancellationToken);
 	}
 
@@ -334,12 +336,24 @@ internal class UserRepository(
 		string role,
 		CancellationToken cancellationToken = default)
 	{
+		// Look up role ID from SecurityRoles
+		int? roleId =
+			await context.SecurityRoles
+				.Where(securityRole => securityRole.Name == role)
+				.Select(securityRole => (int?)securityRole.Id)
+				.FirstOrDefaultAsync(cancellationToken);
+
+		if (roleId is null)
+		{
+			throw new InvalidOperationException($"Role '{role}' not found in SecurityRoles");
+		}
+
 		// Audit fields (CreatedBy, CreateDate) set automatically by AuditInterceptor
 		UserRole userRole =
 			new()
 			{
 				UserId = userId,
-				Role = role
+				RoleId = roleId.Value,
 			};
 
 		context.UserRoles.Add(userRole);
@@ -352,33 +366,26 @@ internal class UserRepository(
 		string role,
 		CancellationToken cancellationToken = default)
 	{
+		// Look up role ID from SecurityRoles
+		int? roleId =
+			await context.SecurityRoles
+				.Where(securityRole => securityRole.Name == role)
+				.Select(securityRole => (int?)securityRole.Id)
+				.FirstOrDefaultAsync(cancellationToken);
+
+		if (roleId is null)
+		{
+			throw new InvalidOperationException($"Role '{role}' not found in SecurityRoles");
+		}
+
 		// Direct SQL insert bypasses AuditInterceptor for whitelisted auto-approvals
-		await context.UserRoles
-			.Where(userRole => false) // Dummy filter for ExecuteInsertAsync base
-			.ExecuteDeleteAsync(cancellationToken); // Reset tracking
-
-		UserRole userRole =
-			new()
-			{
-				UserId = userId,
-				Role = role,
-				CreateDate = DateTime.UtcNow,
-				CreatedBy = string.Empty // Empty = auto-approved via whitelist
-			};
-
-		context.UserRoles.Add(userRole);
-		context.Entry(userRole).State = EntityState.Added;
-
-		// Temporarily detach to avoid interceptor, then save directly
 		await context.Database.ExecuteSqlRawAsync(
 			"""
-			INSERT INTO identity."UserRoles" ("UserId", "Role", "CreateDate", "CreatedBy")
+			INSERT INTO identity."UserRoles" ("UserId", "RoleId", "CreateDate", "CreatedBy")
 			VALUES ({0}, {1}, {2}, {3})
 			""",
-			[userId, role, DateTime.UtcNow, string.Empty],
+			[userId, roleId.Value, DateTime.UtcNow, string.Empty],
 			cancellationToken);
-
-		context.Entry(userRole).State = EntityState.Detached;
 	}
 
 	/// <inheritdoc/>
@@ -389,9 +396,10 @@ internal class UserRepository(
 	{
 		int deleted =
 			await context.UserRoles
+				.Include(userRole => userRole.Role)
 				.Where(userRole =>
 					userRole.UserId == userId
-					&& userRole.Role == role)
+					&& userRole.Role!.Name == role)
 				.ExecuteDeleteAsync(cancellationToken);
 
 		return deleted > 0;

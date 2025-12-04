@@ -36,6 +36,7 @@ public class AuthService(
 	IValidator<CompleteRegistrationRequest> completeRegistrationValidator,
 	IEmailService emailService,
 	TimeProvider timeProvider,
+	ITransactionManager transactionManager,
 	ILogger<AuthService> logger) : IAuthService
 {
 	/// <inheritdoc/>
@@ -128,13 +129,6 @@ public class AuthService(
 		bool requiresPasswordChange =
 			credential.PasswordChangedAt == null;
 
-		if (requiresPasswordChange)
-		{
-			logger.LogInformation(
-				"User requires password change on first login. UserId: {UserId}",
-				user.Id);
-		}
-
 		return await GenerateAuthResultAsync(
 			user,
 			clientIp,
@@ -179,52 +173,64 @@ public class AuthService(
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		// Create user
+		// Get role ID before creating entities (read-only query)
+		int userRoleId =
+			await GetRoleIdByNameAsync(
+				"User",
+				cancellationToken);
+
+		// Create user with credential and role atomically
 		User user =
-			new()
-			{
-				Username = request.Username,
-				Email = request.Email,
-				FullName = request.FullName,
-				IsActive = true,
-				CreateDate = now,
-				CreatedBy = "Registration"
-			};
+			await transactionManager.ExecuteInTransactionAsync(
+				async transactionCancellationToken =>
+				{
+					User newUser =
+						new()
+						{
+							Username = request.Username,
+							Email = request.Email,
+							FullName = request.FullName,
+							IsActive = true,
+							CreateDate = now,
+							CreatedBy = "Registration"
+						};
 
-		context.Users.Add(user);
-		await context.SaveChangesAsync(cancellationToken);
+					context.Users.Add(newUser);
 
-		// Create credential
-		string passwordHash =
-			BCrypt.Net.BCrypt.HashPassword(
-				request.Password,
-				authSettings.Value.Password.WorkFactor);
+					// Save user first to get the ID
+					await context.SaveChangesAsync(transactionCancellationToken);
 
-		UserCredential credential =
-			new()
-			{
-				UserId = user.Id,
-				PasswordHash = passwordHash,
-				CreatedAt = now
-			};
+					// Create credential with user ID
+					string passwordHash =
+						BCrypt.Net.BCrypt.HashPassword(
+							request.Password,
+							authSettings.Value.Password.WorkFactor);
 
-		context.UserCredentials.Add(credential);
+					UserCredential credential =
+						new()
+						{
+							UserId = newUser.Id,
+							PasswordHash = passwordHash,
+							CreateDate = now
+						};
 
-		// Assign default role - CreateDate/CreatedBy set by AuditInterceptor
-		UserRole userRole =
-			new()
-			{
-				UserId = user.Id,
-				Role = "User"
-			};
+					context.UserCredentials.Add(credential);
 
-		context.UserRoles.Add(userRole);
-		await context.SaveChangesAsync(cancellationToken);
+					// Assign default role
+					UserRole userRole =
+						new()
+						{
+							UserId = newUser.Id,
+							RoleId = userRoleId
+						};
 
-		logger.LogInformation(
-			"New user registered. UserId: {UserId}, Username: {Username}",
-			user.Id,
-			user.Username);
+					context.UserRoles.Add(userRole);
+
+					await context.SaveChangesAsync(transactionCancellationToken);
+
+					return newUser;
+				},
+				cancellationToken: cancellationToken);
 
 		return await GenerateAuthResultAsync(
 			user,
@@ -295,7 +301,8 @@ public class AuthService(
 			await context.UserRoles
 				.AsNoTracking()
 				.Where(ur => ur.UserId == user.Id)
-				.Select(ur => ur.Role)
+				.Include(ur => ur.Role)
+				.Select(ur => ur.Role!.Name)
 				.ToListAsync(cancellationToken);
 
 		string accessToken =
@@ -399,11 +406,6 @@ public class AuthService(
 					userInfo,
 					cancellationToken);
 
-			logger.LogInformation(
-				"GitHub OAuth login successful. UserId: {UserId}, GitHubId: {GitHubId}",
-				user.Id,
-				userInfo.Id);
-
 			return await GenerateAuthResultAsync(
 				user,
 				clientIp,
@@ -442,7 +444,8 @@ public class AuthService(
 			await context.UserRoles
 				.AsNoTracking()
 				.Where(r => r.UserId == userId)
-				.Select(r => r.Role)
+				.Include(r => r.Role)
+				.Select(r => r.Role!.Name)
 				.ToListAsync(cancellationToken);
 
 		bool hasPassword =
@@ -527,7 +530,7 @@ public class AuthService(
 						BCrypt.Net.BCrypt.HashPassword(
 							request.NewPassword,
 							authSettings.Value.Password.WorkFactor),
-					CreatedAt = now
+					CreateDate = now
 				};
 
 			context.UserCredentials.Add(credential);
@@ -539,10 +542,6 @@ public class AuthService(
 		await tokenService.RevokeAllUserTokensAsync(
 			userId,
 			cancellationToken);
-
-		logger.LogInformation(
-			"Password changed for user. UserId: {UserId}",
-			userId);
 
 		return AuthResult.Succeeded();
 	}
@@ -582,7 +581,7 @@ public class AuthService(
 				UserId = userId,
 				Token = token,
 				ExpiresAt = now.AddHours(24),
-				CreatedAt = now,
+				CreateDate = now,
 				IsUsed = false,
 			};
 
@@ -597,11 +596,6 @@ public class AuthService(
 				user.Username,
 				token,
 				cancellationToken);
-
-			logger.LogInformation(
-				"Welcome email sent for new user. UserId: {UserId}, Email: {Email}",
-				userId,
-				user.Email);
 		}
 		else
 		{
@@ -610,11 +604,6 @@ public class AuthService(
 				user.Username,
 				token,
 				cancellationToken);
-
-			logger.LogInformation(
-				"Password reset email sent. UserId: {UserId}, Email: {Email}",
-				userId,
-				user.Email);
 		}
 	}
 
@@ -633,9 +622,6 @@ public class AuthService(
 		// Silent success for non-existent/inactive emails (prevents enumeration)
 		if (user == null)
 		{
-			logger.LogInformation(
-				"Password reset requested for non-existent or inactive email: {Email}",
-				email);
 			return;
 		}
 
@@ -746,7 +732,7 @@ public class AuthService(
 						BCrypt.Net.BCrypt.HashPassword(
 							request.NewPassword,
 							authSettings.Value.Password.WorkFactor),
-					CreatedAt = now
+					CreateDate = now
 				};
 
 			context.UserCredentials.Add(credential);
@@ -758,10 +744,6 @@ public class AuthService(
 		await tokenService.RevokeAllUserTokensAsync(
 			user.Id,
 			cancellationToken);
-
-		logger.LogInformation(
-			"Password set via reset token for user. UserId: {UserId}",
-			user.Id);
 
 		// Generate new auth tokens for immediate login
 		return await GenerateAuthResultAsync(
@@ -789,7 +771,8 @@ public class AuthService(
 			await context.UserRoles
 				.AsNoTracking()
 				.Where(r => r.UserId == user.Id)
-				.Select(r => r.Role)
+				.Include(r => r.Role)
+				.Select(r => r.Role!.Name)
 				.ToListAsync(cancellationToken);
 
 		string accessToken =
@@ -825,6 +808,31 @@ public class AuthService(
 			refreshToken,
 			expiresAt,
 			requiresPasswordChange);
+	}
+
+	/// <summary>
+	/// Gets the RoleId for a given role name from SecurityRoles table.
+	/// </summary>
+	/// <param name="roleName">The role name to look up.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>The role ID.</returns>
+	/// <exception cref="InvalidOperationException">Thrown if role not found.</exception>
+	private async Task<int> GetRoleIdByNameAsync(
+		string roleName,
+		CancellationToken cancellationToken)
+	{
+		int? roleId =
+			await context.SecurityRoles
+				.Where(securityRole => securityRole.Name == roleName)
+				.Select(securityRole => (int?)securityRole.Id)
+				.FirstOrDefaultAsync(cancellationToken);
+
+		if (roleId is null)
+		{
+			throw new InvalidOperationException($"Role '{roleName}' not found in SecurityRoles");
+		}
+
+		return roleId.Value;
 	}
 
 	/// <summary>
@@ -1009,8 +1017,8 @@ public class AuthService(
 		// Look for existing external login
 		ExternalLogin? existingLogin =
 			await context.ExternalLogins
-				.Where(e => e.Provider == "GitHub")
-				.Where(e => e.ProviderUserId == userInfo.Id)
+				.Where(externalLogin => externalLogin.Provider == "GitHub")
+				.Where(externalLogin => externalLogin.ProviderUserId == userInfo.Id)
 				.FirstOrDefaultAsync(cancellationToken);
 
 		if (existingLogin != null)
@@ -1022,65 +1030,81 @@ public class AuthService(
 			await context.SaveChangesAsync(cancellationToken);
 
 			return await context.Users
-				.Where(u => u.Id == existingLogin.UserId)
+				.Where(user => user.Id == existingLogin.UserId)
 				.FirstAsync(cancellationToken);
 		}
 
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		// Create new user
-		string username = userInfo.Login;
-		int counter = 1;
+		// Get role ID before creating entities (read-only query)
+		int userRoleId =
+			await GetRoleIdByNameAsync(
+				"User",
+				cancellationToken);
 
-		// Ensure unique username
-		while (await context.Users.AnyAsync(
-			u => u.Username == username,
-			cancellationToken))
-		{
-			username = $"{userInfo.Login}{counter++}";
-		}
-
-		User user =
-			new()
+		// Create user with external login and role atomically
+		return await transactionManager.ExecuteInTransactionAsync(
+			async transactionCancellationToken =>
 			{
-				Username = username,
-				Email = userInfo.Email ?? $"{userInfo.Login}@github.placeholder",
-				FullName = userInfo.Name,
-				IsActive = true,
-				CreateDate = now,
-				CreatedBy = "GitHub OAuth"
-			};
+				// Create new user - ensure unique username
+				string username =
+					userInfo.Login;
+				int counter =
+					1;
 
-		context.Users.Add(user);
-		await context.SaveChangesAsync(cancellationToken);
+				while (await context.Users.AnyAsync(
+					user => user.Username == username,
+					transactionCancellationToken))
+				{
+					username = $"{userInfo.Login}{counter++}";
+				}
 
-		// Create external login
-		ExternalLogin externalLogin =
-			new()
-			{
-				UserId = user.Id,
-				Provider = "GitHub",
-				ProviderUserId = userInfo.Id,
-				ProviderEmail = userInfo.Email,
-				CreatedAt = now,
-				LastUsedAt = now
-			};
+				User user =
+					new()
+					{
+						Username = username,
+						Email = userInfo.Email ?? $"{userInfo.Login}@github.placeholder",
+						FullName = userInfo.Name,
+						IsActive = true,
+						CreateDate = now,
+						CreatedBy = "GitHub OAuth"
+					};
 
-		context.ExternalLogins.Add(externalLogin);
+				context.Users.Add(user);
 
-		// Assign default role - CreateDate/CreatedBy set by AuditInterceptor
-		UserRole userRole =
-			new()
-			{
-				UserId = user.Id,
-				Role = "User"
-			};
+				// Save user first to get the ID
+				await context.SaveChangesAsync(transactionCancellationToken);
 
-		context.UserRoles.Add(userRole);
-		await context.SaveChangesAsync(cancellationToken);
+				// Create external login with user ID
+				ExternalLogin externalLogin =
+					new()
+					{
+						UserId = user.Id,
+						Provider = "GitHub",
+						ProviderUserId = userInfo.Id,
+						ProviderEmail = userInfo.Email,
+						CreateDate = now,
+						LastUsedAt = now
+					};
 
-		return user;
+				context.ExternalLogins.Add(externalLogin);
+
+				// Assign default role
+				UserRole userRole =
+					new()
+					{
+						UserId = user.Id,
+						RoleId = userRoleId
+					};
+
+				context.UserRoles.Add(userRole);
+
+				await context.SaveChangesAsync(transactionCancellationToken);
+
+				return user;
+			},
+			cancellationToken: cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -1105,9 +1129,6 @@ public class AuthService(
 
 		if (emailExists)
 		{
-			logger.LogInformation(
-				"Registration attempt for existing email: {Email}",
-				email);
 			return; // Silent success to prevent enumeration
 		}
 
@@ -1138,7 +1159,7 @@ public class AuthService(
 				Email = email,
 				Token = token,
 				ExpiresAt = now.AddHours(24),
-				CreatedAt = now,
+				CreateDate = now,
 				IsUsed = false,
 			};
 
@@ -1150,10 +1171,6 @@ public class AuthService(
 			email,
 			token,
 			cancellationToken);
-
-		logger.LogInformation(
-			"Registration verification email sent to: {Email}",
-			email);
 	}
 
 	/// <inheritdoc/>
@@ -1240,56 +1257,67 @@ public class AuthService(
 				AuthErrorCodes.EmailExists);
 		}
 
-		// Create the user
+		// Get role ID before creating entities (read-only query)
+		int userRoleId =
+			await GetRoleIdByNameAsync(
+				"User",
+				cancellationToken);
+
+		// Create user with credential and role atomically
 		User user =
-			new()
-			{
-				Username = request.Username,
-				Email = verificationToken.Email,
-				IsActive = true,
-				CreateDate = now,
-				CreatedBy = "Self-Registration",
-			};
+			await transactionManager.ExecuteInTransactionAsync(
+				async transactionCancellationToken =>
+				{
+					User newUser =
+						new()
+						{
+							Username = request.Username,
+							Email = verificationToken.Email,
+							IsActive = true,
+							CreateDate = now,
+							CreatedBy = "Self-Registration",
+						};
 
-		context.Users.Add(user);
-		await context.SaveChangesAsync(cancellationToken);
+					context.Users.Add(newUser);
 
-		// Create credential with hashed password
-		string hashedPassword =
-			BCrypt.Net.BCrypt.HashPassword(
-				request.Password,
-				authSettings.Value.Password.WorkFactor);
+					// Mark token as used
+					verificationToken.IsUsed = true;
 
-		UserCredential credential =
-			new()
-			{
-				UserId = user.Id,
-				PasswordHash = hashedPassword,
-				CreatedAt = now,
-				PasswordChangedAt = now, // Set to now so no password change required
-			};
+					// Save user first to get the ID
+					await context.SaveChangesAsync(transactionCancellationToken);
 
-		context.UserCredentials.Add(credential);
+					// Create credential with user ID
+					string hashedPassword =
+						BCrypt.Net.BCrypt.HashPassword(
+							request.Password,
+							authSettings.Value.Password.WorkFactor);
 
-		// Assign default User role - CreateDate/CreatedBy set by AuditInterceptor
-		UserRole userRole =
-			new()
-			{
-				UserId = user.Id,
-				Role = "User"
-			};
+					UserCredential credential =
+						new()
+						{
+							UserId = newUser.Id,
+							PasswordHash = hashedPassword,
+							CreateDate = now,
+							PasswordChangedAt = now, // Set to now so no password change required
+						};
 
-		context.UserRoles.Add(userRole);
+					context.UserCredentials.Add(credential);
 
-		// Mark token as used
-		verificationToken.IsUsed = true;
+					// Assign default User role
+					UserRole userRole =
+						new()
+						{
+							UserId = newUser.Id,
+							RoleId = userRoleId
+						};
 
-		await context.SaveChangesAsync(cancellationToken);
+					context.UserRoles.Add(userRole);
 
-		logger.LogInformation(
-			"User registered successfully via self-registration. UserId: {UserId}, Email: {Email}",
-			user.Id,
-			user.Email);
+					await context.SaveChangesAsync(transactionCancellationToken);
+
+					return newUser;
+				},
+				cancellationToken: cancellationToken);
 
 		// Generate tokens for immediate login
 		List<string> roles =

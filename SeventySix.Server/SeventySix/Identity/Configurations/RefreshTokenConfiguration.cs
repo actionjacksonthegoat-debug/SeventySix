@@ -60,8 +60,8 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 			.IsRequired()
 			.HasColumnType("timestamp with time zone");
 
-		// CreatedAt - Required
-		builder.Property(e => e.CreatedAt)
+		// CreateDate - Required (auto-set by AuditInterceptor for ICreatableEntity)
+		builder.Property(e => e.CreateDate)
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");

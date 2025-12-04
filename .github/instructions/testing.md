@@ -5,6 +5,8 @@
 ## Critical Rules
 
 -   ❌ **NEVER** skip failing tests - fix immediately
+-   ✅ **ALWAYS** follow **80/20 rule** - test critical paths only, no exhaustive edge case testing
+-   ✅ **ALWAYS** use **TDD** for fixes - write failing test first, then implement
 -   ✅ **ALWAYS** run tests after code changes
 -   ✅ **ALWAYS** suffix async test methods with `Async`
 
@@ -15,6 +17,27 @@
 | Angular  | `npm test`         | Headless, no-watch      |
 | .NET     | `dotnet test`      | Docker Desktop required |
 | E2E      | `npm run test:e2e` | Playwright, manual only |
+
+## 80/20 Rule
+
+Test the critical happy path. The fix itself guarantees correctness - don't over-test.
+
+```csharp
+// ✅ CORRECT - Single focused test for critical path
+[Fact]
+public async Task RegisterAsync_SavesAllEntitiesAtomically_WhenSuccessfulAsync()
+{
+	// Arrange, Act, Assert atomicity
+}
+
+// ❌ WRONG - Exhaustive edge cases (YAGNI)
+[Fact]
+public async Task RegisterAsync_ThrowsWhenUsernameNullAsync() { }
+[Fact]
+public async Task RegisterAsync_ThrowsWhenUsernameTooLongAsync() { }
+[Fact]
+public async Task RegisterAsync_ThrowsWhenUsernameContainsSpacesAsync() { }
+```
 
 ## Angular Test Pattern
 

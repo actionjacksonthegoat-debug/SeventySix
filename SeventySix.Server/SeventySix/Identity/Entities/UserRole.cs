@@ -12,8 +12,8 @@ namespace SeventySix.Identity;
 /// <remarks>
 /// Design Principles:
 /// - KISS: Simple role assignment without complex permission hierarchy
-/// - Roles stored as string values for flexibility
-/// - Standard roles: "User", "Admin", "Developer"
+/// - DRY: RoleId FK to SecurityRoles (single source of truth)
+/// - Standard roles: User, Developer, Admin
 /// - Implements IAuditableEntity for audit tracking
 /// - CreatedBy/CreateDate are nullable for whitelisted auto-approvals.
 /// </remarks>
@@ -31,8 +31,17 @@ public class UserRole : IAuditableEntity
 		get; set;
 	}
 
-	/// <summary>Gets or sets the role name.</summary>
-	public string Role { get; set; } = string.Empty;
+	/// <summary>Gets or sets the role ID (FK to SecurityRoles).</summary>
+	public int RoleId
+	{
+		get; set;
+	}
+
+	/// <summary>Gets or sets the security role (navigation property).</summary>
+	public SecurityRole? Role
+	{
+		get; set;
+	}
 
 	/// <summary>Gets or sets when this role was created (null for whitelisted).</summary>
 	public DateTime CreateDate

@@ -885,7 +885,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 				Email = email,
 				Token = token,
 				ExpiresAt = DateTime.UtcNow.AddHours(24),
-				CreatedAt = DateTime.UtcNow,
+				CreateDate = DateTime.UtcNow,
 				IsUsed = false,
 			});
 

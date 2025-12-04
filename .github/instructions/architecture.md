@@ -129,6 +129,32 @@ export const GAME_ROUTES: Routes =
 | No CQRS/MediatR       | YAGNI - add when pain happens       |
 | PostgreSQL only       | One DB until polyglot needed        |
 
+## Database Conventions
+
+### Naming Standards
+
+| Convention     | Standard                    | Example                      |
+| -------------- | --------------------------- | ---------------------------- |
+| Table names    | PascalCase                  | `UserRoles`, `SecurityRoles` |
+| Column names   | PascalCase                  | `UserId`, `CreateDate`       |
+| FK columns     | Suffix with `Id`            | `UserId`, `RoleId`           |
+| Audit columns  | String, no `Id` suffix      | `CreatedBy`, `ModifiedBy`    |
+| Index names    | `IX_{Table}_{Column(s)}`    | `IX_Users_Email`             |
+| FK constraints | `FK_{Child}_{Parent}_{Col}` | `FK_UserRoles_Users_UserId`  |
+
+### Foreign Keys vs Audit Fields
+
+-   **FK Properties**: End with `Id`, reference table PK → `UserId`, `RoleId`
+-   **Audit Fields**: Store username string, track WHO acted → `CreatedBy`, `ModifiedBy`
+
+### Cascade Delete Policy
+
+| Relationship        | Behavior   | Example                              |
+| ------------------- | ---------- | ------------------------------------ |
+| Dependent children  | `CASCADE`  | User → Tokens, Credentials           |
+| Lookup tables       | `RESTRICT` | SecurityRoles (can't delete if used) |
+| Optional references | `SET NULL` | Soft references (rare)               |
+
 ## Configuration
 
 **NEVER hardcode**: URLs, connection strings, intervals, limits
