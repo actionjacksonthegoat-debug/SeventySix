@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Identity;
+using SeventySix.Identity.Constants;
 using SeventySix.Shared;
 
 namespace SeventySix.Api.Controllers;
@@ -59,7 +60,7 @@ public class UsersController(
 	/// Response is cached for 60 seconds to improve performance.
 	/// </remarks>
 	[HttpGet(Name = "GetUsers")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	[OutputCache(PolicyName = "users")]
@@ -87,7 +88,7 @@ public class UsersController(
 	/// Response is cached for 60 seconds to improve performance.
 	/// </remarks>
 	[HttpGet("{id}", Name = "GetUserById")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -124,7 +125,7 @@ public class UsersController(
 	/// Returns 201 Created with Location header pointing to the new resource.
 	/// </remarks>
 	[HttpPost(Name = "CreateUser")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -150,7 +151,7 @@ public class UsersController(
 	/// <response code="409">If a concurrency conflict occurs.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPut("{id}", Name = "UpdateUser")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -180,7 +181,7 @@ public class UsersController(
 	/// <response code="404">If the user is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpDelete("{id}", Name = "DeleteUser")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -188,7 +189,7 @@ public class UsersController(
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool result = await userService.DeleteUserAsync(id, "System", cancellationToken);
+		bool result = await userService.DeleteUserAsync(id, AuditConstants.SystemUser, cancellationToken);
 		return result ? NoContent() : NotFound();
 	}
 
@@ -202,7 +203,7 @@ public class UsersController(
 	/// <response code="404">If the user is not found or not deleted.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPost("{id}/restore", Name = "RestoreUser")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -224,7 +225,7 @@ public class UsersController(
 	/// <response code="400">If the request is invalid.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpGet("paged", Name = "GetPagedUsers")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(PagedResult<UserDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -247,7 +248,7 @@ public class UsersController(
 	/// <response code="404">If the user is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpGet("username/{username}", Name = "GetUserByUsername")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -270,7 +271,7 @@ public class UsersController(
 	/// <response code="200">Returns whether the username exists.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpGet("check/username/{username}", Name = "CheckUsername")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	[OutputCache(PolicyName = "users")]
@@ -293,7 +294,7 @@ public class UsersController(
 	/// <response code="400">If the request is invalid.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPost("bulk/activate", Name = "BulkActivateUsers")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -301,7 +302,7 @@ public class UsersController(
 		[FromBody] IEnumerable<int> ids,
 		CancellationToken cancellationToken)
 	{
-		int count = await userService.BulkUpdateActiveStatusAsync(ids, true, "System", cancellationToken);
+		int count = await userService.BulkUpdateActiveStatusAsync(ids, true, AuditConstants.SystemUser, cancellationToken);
 		return Ok(count);
 	}
 
@@ -315,7 +316,7 @@ public class UsersController(
 	/// <response code="400">If the request is invalid.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPost("bulk/deactivate", Name = "BulkDeactivateUsers")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -323,7 +324,7 @@ public class UsersController(
 		[FromBody] IEnumerable<int> ids,
 		CancellationToken cancellationToken)
 	{
-		int count = await userService.BulkUpdateActiveStatusAsync(ids, false, "System", cancellationToken);
+		int count = await userService.BulkUpdateActiveStatusAsync(ids, false, AuditConstants.SystemUser, cancellationToken);
 		return Ok(count);
 	}
 
@@ -341,7 +342,7 @@ public class UsersController(
 	/// <response code="404">If the user is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPost("{id}/reset-password", Name = "ResetUserPassword")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -382,7 +383,7 @@ public class UsersController(
 	/// <response code="200">Returns the list of permission requests.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpGet("permission-requests", Name = "GetPermissionRequests")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(IEnumerable<PermissionRequestDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<PermissionRequestDto>>> GetPermissionRequestsAsync(
@@ -473,7 +474,7 @@ public class UsersController(
 	[HttpPost(
 		"permission-requests/{id}/approve",
 		Name = "ApprovePermissionRequest")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -499,7 +500,7 @@ public class UsersController(
 	[HttpPost(
 		"permission-requests/{id}/reject",
 		Name = "RejectPermissionRequest")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -524,7 +525,7 @@ public class UsersController(
 	[HttpPost(
 		"permission-requests/bulk/approve",
 		Name = "BulkApprovePermissionRequests")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<int>> BulkApprovePermissionRequestsAsync(
@@ -548,7 +549,7 @@ public class UsersController(
 	[HttpPost(
 		"permission-requests/bulk/reject",
 		Name = "BulkRejectPermissionRequests")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<int>> BulkRejectPermissionRequestsAsync(
@@ -577,7 +578,7 @@ public class UsersController(
 	[HttpGet(
 		"{id}/roles",
 		Name = "GetUserRoles")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -616,7 +617,7 @@ public class UsersController(
 	[HttpPost(
 		"{id}/roles/{role}",
 		Name = "AddUserRole")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -664,7 +665,7 @@ public class UsersController(
 	[HttpDelete(
 		"{id}/roles/{role}",
 		Name = "RemoveUserRole")]
-	[Authorize(Policy = "AdminOnly")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]

@@ -19,7 +19,7 @@ namespace SeventySix.Api.Tests.Controllers;
 public class UsersControllerAuthorizationTests(TestcontainersPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
-	private const string Endpoint = "/api/v1/users";
+	private const string Endpoint = ApiEndpoints.Users.Base;
 	private AuthorizationTestHelper AuthHelper = null!;
 
 	/// <inheritdoc/>
@@ -91,14 +91,14 @@ public class UsersControllerAuthorizationTests(TestcontainersPostgreSqlFixture f
 	/// </summary>
 	[Fact]
 	public Task GetAllAsync_WithDeveloperRole_ReturnsForbiddenAsync()
-		=> AuthHelper.AssertForbiddenForRoleAsync("Developer", HttpMethod.Get, Endpoint);
+		=> AuthHelper.AssertForbiddenForRoleAsync(TestRoleConstants.Developer, HttpMethod.Get, Endpoint);
 
 	/// <summary>
 	/// Tests that DELETE /api/v1/users/{id} returns 403 for Developer role.
 	/// </summary>
 	[Fact]
 	public Task DeleteAsync_WithDeveloperRole_ReturnsForbiddenAsync()
-		=> AuthHelper.AssertForbiddenForRoleAsync("Developer", HttpMethod.Delete, $"{Endpoint}/1");
+		=> AuthHelper.AssertForbiddenForRoleAsync(TestRoleConstants.Developer, HttpMethod.Delete, $"{Endpoint}/1");
 
 	#endregion
 
@@ -109,7 +109,7 @@ public class UsersControllerAuthorizationTests(TestcontainersPostgreSqlFixture f
 	/// </summary>
 	[Fact]
 	public Task GetAllAsync_WithAdminRole_ReturnsOkAsync()
-		=> AuthHelper.AssertAuthorizedForRoleAsync("Admin", HttpMethod.Get, Endpoint);
+		=> AuthHelper.AssertAuthorizedForRoleAsync(TestRoleConstants.Admin, HttpMethod.Get, Endpoint);
 
 	/// <summary>
 	/// Tests that GET /api/v1/users/{id} returns 404 for Admin role (auth passed, resource not found).
@@ -117,7 +117,7 @@ public class UsersControllerAuthorizationTests(TestcontainersPostgreSqlFixture f
 	[Fact]
 	public Task GetByIdAsync_WithAdminRole_ReturnsNotFoundAsync()
 		=> AuthHelper.AssertStatusCodeForRoleAsync(
-			"Admin",
+			TestRoleConstants.Admin,
 			HttpMethod.Get,
 			$"{Endpoint}/99999",
 			HttpStatusCode.NotFound);

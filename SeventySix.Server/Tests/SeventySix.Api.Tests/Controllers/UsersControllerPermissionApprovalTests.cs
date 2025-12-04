@@ -4,6 +4,7 @@
 
 using System.Net;
 using System.Net.Http.Json;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
 using Xunit;
@@ -19,7 +20,7 @@ public class UsersControllerPermissionApprovalTests(
 	TestcontainersPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
-	private const string BaseEndpoint = "/api/v1/users";
+	private const string BaseEndpoint = ApiEndpoints.Users.Base;
 	private AuthorizationTestHelper AuthHelper = null!;
 
 	/// <inheritdoc/>
@@ -41,21 +42,21 @@ public class UsersControllerPermissionApprovalTests(
 	[Fact]
 	public Task ApprovePermissionRequestAsync_WithUserRole_ReturnsForbiddenAsync()
 		=> AuthHelper.AssertForbiddenForRoleAsync(
-			"User",
+			TestRoleConstants.User,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/1/approve");
 
 	[Fact]
 	public Task ApprovePermissionRequestAsync_WithDeveloperRole_ReturnsForbiddenAsync()
 		=> AuthHelper.AssertForbiddenForRoleAsync(
-			"Developer",
+			TestRoleConstants.Developer,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/1/approve");
 
 	[Fact]
 	public Task ApprovePermissionRequestAsync_WithAdminRole_NotFound_Returns404Async()
 		=> AuthHelper.AssertStatusCodeForRoleAsync(
-			"Admin",
+			TestRoleConstants.Admin,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/999/approve",
 			HttpStatusCode.NotFound);
@@ -73,14 +74,14 @@ public class UsersControllerPermissionApprovalTests(
 	[Fact]
 	public Task RejectPermissionRequestAsync_WithUserRole_ReturnsForbiddenAsync()
 		=> AuthHelper.AssertForbiddenForRoleAsync(
-			"User",
+			TestRoleConstants.User,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/1/reject");
 
 	[Fact]
 	public Task RejectPermissionRequestAsync_WithAdminRole_NotFound_Returns404Async()
 		=> AuthHelper.AssertStatusCodeForRoleAsync(
-			"Admin",
+			TestRoleConstants.Admin,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/999/reject",
 			HttpStatusCode.NotFound);
@@ -99,7 +100,7 @@ public class UsersControllerPermissionApprovalTests(
 	[Fact]
 	public Task BulkApprovePermissionRequestsAsync_WithUserRole_ReturnsForbiddenAsync()
 		=> AuthHelper.AssertForbiddenForRoleAsync(
-			"User",
+			TestRoleConstants.User,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/bulk/approve",
 			JsonContent.Create(new[] { 1, 2 }));
@@ -107,7 +108,7 @@ public class UsersControllerPermissionApprovalTests(
 	[Fact]
 	public Task BulkApprovePermissionRequestsAsync_WithAdminRole_ReturnsOkAsync()
 		=> AuthHelper.AssertAuthorizedForRoleAsync(
-			"Admin",
+			TestRoleConstants.Admin,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/bulk/approve",
 			JsonContent.Create(Array.Empty<int>()));
@@ -126,7 +127,7 @@ public class UsersControllerPermissionApprovalTests(
 	[Fact]
 	public Task BulkRejectPermissionRequestsAsync_WithUserRole_ReturnsForbiddenAsync()
 		=> AuthHelper.AssertForbiddenForRoleAsync(
-			"User",
+			TestRoleConstants.User,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/bulk/reject",
 			JsonContent.Create(new[] { 1, 2 }));
@@ -134,7 +135,7 @@ public class UsersControllerPermissionApprovalTests(
 	[Fact]
 	public Task BulkRejectPermissionRequestsAsync_WithAdminRole_ReturnsOkAsync()
 		=> AuthHelper.AssertAuthorizedForRoleAsync(
-			"Admin",
+			TestRoleConstants.Admin,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/bulk/reject",
 			JsonContent.Create(Array.Empty<int>()));

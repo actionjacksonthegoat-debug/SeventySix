@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Identity;
+namespace SeventySix.Identity.Constants;
 
 /// <summary>
 /// Role constants for the application.
@@ -10,6 +10,15 @@ namespace SeventySix.Identity;
 /// </summary>
 public static class RoleConstants
 {
+	/// <summary>Developer role name.</summary>
+	public const string Developer = "Developer";
+
+	/// <summary>Admin role name.</summary>
+	public const string Admin = "Admin";
+
+	/// <summary>User role name (default role).</summary>
+	public const string User = "User";
+
 	/// <summary>All requestable roles in the system with descriptions.</summary>
 	/// <remarks>
 	/// KISS: Hardcoded list is simpler than database/config management.
@@ -18,10 +27,10 @@ public static class RoleConstants
 	public static readonly IReadOnlyList<AvailableRoleDto> AllRequestableRoles =
 	[
 		new AvailableRoleDto(
-			"Developer",
+			Developer,
 			"Access to developer tools and APIs"),
 		new AvailableRoleDto(
-			"Admin",
+			Admin,
 			"Full administrative access")
 	];
 

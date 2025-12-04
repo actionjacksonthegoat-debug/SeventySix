@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Tests.Identity.Settings;
@@ -25,7 +26,7 @@ public class WhitelistedPermissionSettingsTests
 					new WhitelistedGrant
 					{
 						Email = "dev@company.com",
-						Roles = ["Developer"]
+						Roles = [TestRoleConstants.Developer]
 					}
 				]
 			};
@@ -34,7 +35,7 @@ public class WhitelistedPermissionSettingsTests
 		bool result =
 			settings.IsWhitelisted(
 				"dev@company.com",
-				"Developer");
+				TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeTrue();
@@ -52,7 +53,7 @@ public class WhitelistedPermissionSettingsTests
 					new WhitelistedGrant
 					{
 						Email = "dev@company.com",
-						Roles = ["Developer"]
+						Roles = [TestRoleConstants.Developer]
 					}
 				]
 			};
@@ -61,7 +62,7 @@ public class WhitelistedPermissionSettingsTests
 		bool result =
 			settings.IsWhitelisted(
 				"DEV@COMPANY.COM",
-				"Developer");
+				TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeTrue();
@@ -79,7 +80,7 @@ public class WhitelistedPermissionSettingsTests
 					new WhitelistedGrant
 					{
 						Email = "dev@company.com",
-						Roles = ["Developer"]
+						Roles = [TestRoleConstants.Developer]
 					}
 				]
 			};
@@ -106,7 +107,7 @@ public class WhitelistedPermissionSettingsTests
 					new WhitelistedGrant
 					{
 						Email = "dev@company.com",
-						Roles = ["Developer"]
+						Roles = [TestRoleConstants.Developer]
 					}
 				]
 			};
@@ -115,7 +116,7 @@ public class WhitelistedPermissionSettingsTests
 		bool result =
 			settings.IsWhitelisted(
 				"other@company.com",
-				"Developer");
+				TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeFalse();
@@ -133,7 +134,7 @@ public class WhitelistedPermissionSettingsTests
 					new WhitelistedGrant
 					{
 						Email = "dev@company.com",
-						Roles = ["Developer"]
+						Roles = [TestRoleConstants.Developer]
 					}
 				]
 			};
@@ -142,7 +143,7 @@ public class WhitelistedPermissionSettingsTests
 		bool result =
 			settings.IsWhitelisted(
 				"dev@company.com",
-				"Admin");
+				TestRoleConstants.Admin);
 
 		// Assert
 		result.ShouldBeFalse();
@@ -162,7 +163,7 @@ public class WhitelistedPermissionSettingsTests
 		bool result =
 			settings.IsWhitelisted(
 				"dev@company.com",
-				"Developer");
+				TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeFalse();
@@ -180,7 +181,7 @@ public class WhitelistedPermissionSettingsTests
 					new WhitelistedGrant
 					{
 						Email = "admin@company.com",
-						Roles = ["Developer", "Admin"]
+						Roles = [TestRoleConstants.Developer, TestRoleConstants.Admin]
 					}
 				]
 			};
@@ -189,11 +190,11 @@ public class WhitelistedPermissionSettingsTests
 		bool developerResult =
 			settings.IsWhitelisted(
 				"admin@company.com",
-				"Developer");
+				TestRoleConstants.Developer);
 		bool adminResult =
 			settings.IsWhitelisted(
 				"admin@company.com",
-				"Admin");
+				TestRoleConstants.Admin);
 
 		// Assert
 		developerResult.ShouldBeTrue();

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
 
 namespace SeventySix.Identity;
@@ -98,7 +99,7 @@ public class AdminSeederService(
 				FullName = settings.Value.FullName ?? "System Administrator",
 				IsActive = true,
 				CreateDate = now,
-				CreatedBy = "System"
+				CreatedBy = AuditConstants.SystemUser
 			};
 
 		context.Users.Add(adminUser);

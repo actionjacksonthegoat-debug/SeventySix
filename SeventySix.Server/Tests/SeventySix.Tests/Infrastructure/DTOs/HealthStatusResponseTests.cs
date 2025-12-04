@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Infrastructure;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Tests.Infrastructure.DTOs;
 
@@ -18,7 +19,7 @@ public class HealthStatusResponseTests
 		HealthStatusResponse response = new();
 
 		// Assert
-		Assert.Equal("Healthy", response.Status);
+		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
 		Assert.Equal(default(DateTime), response.CheckedAt);
 		Assert.NotNull(response.Database);
 		Assert.NotNull(response.ExternalApis);
@@ -33,7 +34,7 @@ public class HealthStatusResponseTests
 		DateTime now = DateTime.UtcNow;
 		HealthStatusResponse response = new()
 		{
-			Status = "Degraded",
+			Status = HealthStatusConstants.Degraded,
 			CheckedAt = now,
 			Database = new DatabaseHealthResponse { IsConnected = true },
 			ExternalApis = new ExternalApiHealthResponse(),
@@ -42,7 +43,7 @@ public class HealthStatusResponseTests
 		};
 
 		// Assert
-		Assert.Equal("Degraded", response.Status);
+		Assert.Equal(HealthStatusConstants.Degraded, response.Status);
 		Assert.Equal(now, response.CheckedAt);
 		Assert.True(response.Database.IsConnected);
 	}
@@ -57,7 +58,7 @@ public class HealthStatusResponseTests
 		Assert.False(response.IsConnected);
 		Assert.Equal(0, response.ResponseTimeMs);
 		Assert.Equal(0, response.ActiveConnections);
-		Assert.Equal("Healthy", response.Status);
+		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
 	}
 
 	[Fact]
@@ -69,14 +70,14 @@ public class HealthStatusResponseTests
 			IsConnected = true,
 			ResponseTimeMs = 25.5,
 			ActiveConnections = 10,
-			Status = "Healthy",
+			Status = HealthStatusConstants.Healthy,
 		};
 
 		// Assert
 		Assert.True(response.IsConnected);
 		Assert.Equal(25.5, response.ResponseTimeMs);
 		Assert.Equal(10, response.ActiveConnections);
-		Assert.Equal("Healthy", response.Status);
+		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
 	}
 
 	[Fact]
@@ -152,7 +153,7 @@ public class HealthStatusResponseTests
 		Assert.Equal(0, response.QueuedItems);
 		Assert.Equal(0, response.FailedItems);
 		Assert.False(response.CircuitBreakerOpen);
-		Assert.Equal("Healthy", response.Status);
+		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
 	}
 
 	[Fact]
@@ -164,14 +165,14 @@ public class HealthStatusResponseTests
 			QueuedItems = 5,
 			FailedItems = 2,
 			CircuitBreakerOpen = true,
-			Status = "Degraded",
+			Status = HealthStatusConstants.Degraded,
 		};
 
 		// Assert
 		Assert.Equal(5, response.QueuedItems);
 		Assert.Equal(2, response.FailedItems);
 		Assert.True(response.CircuitBreakerOpen);
-		Assert.Equal("Degraded", response.Status);
+		Assert.Equal(HealthStatusConstants.Degraded, response.Status);
 	}
 
 	[Fact]

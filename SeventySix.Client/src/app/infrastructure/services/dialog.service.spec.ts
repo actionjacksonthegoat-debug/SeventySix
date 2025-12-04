@@ -3,10 +3,8 @@ import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { of } from "rxjs";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { DialogService, ConfirmOptions } from "./dialog.service";
-import {
-	ConfirmDialogComponent,
-	ConfirmDialogData
-} from "@shared/components/confirm-dialog/confirm-dialog.component";
+import { ConfirmDialogComponent } from "@shared/components";
+import { ConfirmDialogData } from "@shared/models";
 
 describe("DialogService", () =>
 {

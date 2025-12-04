@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Identity;
@@ -75,7 +76,7 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 	/// Gets the schema name for Identity bounded context.
 	/// </summary>
 	/// <returns>"Identity".</returns>
-	protected override string GetSchemaName() => "Identity";
+	protected override string GetSchemaName() => SchemaConstants.Identity;
 
 	/// <summary>
 	/// Configures entity-specific settings for Identity domain.

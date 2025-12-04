@@ -5,6 +5,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SeventySix.Identity.Constants;
 using SeventySix.Shared;
 
 namespace SeventySix.Identity;

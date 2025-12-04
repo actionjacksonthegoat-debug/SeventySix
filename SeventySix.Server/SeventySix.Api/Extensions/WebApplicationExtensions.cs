@@ -12,6 +12,8 @@ using SeventySix.Api.Configuration;
 using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
+using SeventySix.Shared;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.Extensions;
 
@@ -192,11 +194,11 @@ public static class WebApplicationExtensions
 		HttpContext context,
 		HealthReport _)
 	{
-		context.Response.ContentType = "application/json";
+		context.Response.ContentType = MediaTypeConstants.Json;
 
 		await context.Response.WriteAsJsonAsync(new
 		{
-			status = "Healthy",
+			status = HealthStatusConstants.Healthy,
 			timestamp = DateTime.UtcNow
 		});
 	}
@@ -205,7 +207,7 @@ public static class WebApplicationExtensions
 		HttpContext context,
 		HealthReport report)
 	{
-		context.Response.ContentType = "application/json";
+		context.Response.ContentType = MediaTypeConstants.Json;
 
 		object response =
 			new

@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using SeventySix.Identity;
+using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
 
 namespace SeventySix.Api.Extensions;
@@ -100,12 +101,12 @@ public static class AuthenticationExtensions
 		services.AddAuthorization(options =>
 		{
 			options.AddPolicy(
-				"AdminOnly",
-				policy => policy.RequireRole("Admin"));
+				PolicyConstants.AdminOnly,
+				policy => policy.RequireRole(RoleConstants.Admin));
 
 			options.AddPolicy(
 				"DeveloperOrAdmin",
-				policy => policy.RequireRole("Developer", "Admin"));
+				policy => policy.RequireRole(RoleConstants.Developer, RoleConstants.Admin));
 
 			options.AddPolicy(
 				"Authenticated",

@@ -2,6 +2,7 @@
  * Testing utilities and mocks barrel export
  */
 
+export * from "./constants";
 export * from "./integration-test.helper";
 export {
 	createMockAuthService,

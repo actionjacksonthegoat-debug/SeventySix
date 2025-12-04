@@ -34,14 +34,3 @@ public interface IOAuthCodeExchangeService
 	/// <returns>Token data if code is valid, null otherwise.</returns>
 	public OAuthCodeExchangeResult? ExchangeCode(string code);
 }
-
-/// <summary>
-/// Result of OAuth code exchange.
-/// </summary>
-/// <param name="AccessToken">The JWT access token.</param>
-/// <param name="RefreshToken">The refresh token.</param>
-/// <param name="ExpiresAt">Access token expiration time.</param>
-public record OAuthCodeExchangeResult(
-	string AccessToken,
-	string RefreshToken,
-	DateTime ExpiresAt);

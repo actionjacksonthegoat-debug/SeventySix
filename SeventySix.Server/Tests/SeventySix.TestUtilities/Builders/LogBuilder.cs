@@ -16,7 +16,7 @@ namespace SeventySix.TestUtilities.Builders;
 /// Usage:
 /// <code>
 /// Log log = new LogBuilder()
-///     .WithLogLevel("Error")
+///     .WithLogLevel(LogLevelConstants.Error)
 ///     .WithMessage("Test error")
 ///     .Build();
 /// </code>
@@ -27,7 +27,7 @@ namespace SeventySix.TestUtilities.Builders;
 /// </remarks>
 public class LogBuilder
 {
-	private string LogLevel = "Information";
+	private string LogLevel = LogLevelConstants.Information;
 	private string Message = "Test log message";
 	private string? ExceptionMessage = null;
 	private string? BaseExceptionMessage = null;
@@ -230,7 +230,7 @@ public class LogBuilder
 	/// <returns>A new LogBuilder configured for a Warning log.</returns>
 	public static LogBuilder CreateWarning()
 	{
-		return new LogBuilder().WithLogLevel("Warning");
+		return new LogBuilder().WithLogLevel(LogLevelConstants.Warning);
 	}
 
 	/// <summary>
@@ -240,7 +240,7 @@ public class LogBuilder
 	public static LogBuilder CreateError()
 	{
 		return new LogBuilder()
-			.WithLogLevel("Error")
+			.WithLogLevel(LogLevelConstants.Error)
 			.WithExceptionMessage("Test exception");
 	}
 
@@ -251,7 +251,7 @@ public class LogBuilder
 	public static LogBuilder CreateFatal()
 	{
 		return new LogBuilder()
-			.WithLogLevel("Fatal")
+			.WithLogLevel(LogLevelConstants.Fatal)
 			.WithExceptionMessage("Fatal exception")
 			.WithStackTrace("at SeventySix.Test.Method()");
 	}

@@ -46,11 +46,6 @@ public abstract class BaseQueryValidator<TRequest, TEntity> : AbstractValidator<
 	protected const int MinSearchTermLength = 3;
 
 	/// <summary>
-	/// Maximum allowed page size.
-	/// </summary>
-	protected const int MaxPageSize = 100;
-
-	/// <summary>
 	/// Maximum allowed date range in days.
 	/// </summary>
 	protected const int MaxDateRangeDays = 90;
@@ -78,8 +73,8 @@ public abstract class BaseQueryValidator<TRequest, TEntity> : AbstractValidator<
 		RuleFor(request => request.PageSize)
 			.GreaterThan(0)
 			.WithMessage("PageSize must be greater than 0")
-			.LessThanOrEqualTo(MaxPageSize)
-			.WithMessage($"PageSize must not exceed {MaxPageSize}");
+			.LessThanOrEqualTo(PaginationConstants.MaxPageSize)
+			.WithMessage($"PageSize must not exceed {PaginationConstants.MaxPageSize}");
 
 		// Date range validation: Prevent excessive queries (when both dates provided)
 		When(request => request.StartDate.HasValue && request.EndDate.HasValue, () =>

@@ -9,6 +9,7 @@ using SeventySix.Identity;
 using SeventySix.Logging;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Tests.Infrastructure;
@@ -85,8 +86,8 @@ public class AuditInterceptorTests : IDisposable
 		DateTime beforeSave = DateTime.UtcNow;
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com"
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail
 		};
 
 		// Act
@@ -105,8 +106,8 @@ public class AuditInterceptorTests : IDisposable
 		// Arrange
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com"
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail
 		};
 
 		// Act
@@ -124,8 +125,8 @@ public class AuditInterceptorTests : IDisposable
 		// Arrange
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com"
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail
 		};
 
 		// Act
@@ -142,8 +143,8 @@ public class AuditInterceptorTests : IDisposable
 		// Arrange
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com"
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail
 		};
 
 		// Act
@@ -160,8 +161,8 @@ public class AuditInterceptorTests : IDisposable
 		// Arrange
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com"
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail
 		};
 		IdentityContext.Users.Add(user);
 		await IdentityContext.SaveChangesAsync();
@@ -184,8 +185,8 @@ public class AuditInterceptorTests : IDisposable
 		// Arrange
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com"
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail
 		};
 		IdentityContext.Users.Add(user);
 		await IdentityContext.SaveChangesAsync();
@@ -207,8 +208,8 @@ public class AuditInterceptorTests : IDisposable
 		// Arrange
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com"
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail
 		};
 		IdentityContext.Users.Add(user);
 		await IdentityContext.SaveChangesAsync();
@@ -229,8 +230,8 @@ public class AuditInterceptorTests : IDisposable
 		// Arrange
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com"
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail
 		};
 		IdentityContext.Users.Add(user);
 		await IdentityContext.SaveChangesAsync();
@@ -254,8 +255,8 @@ public class AuditInterceptorTests : IDisposable
 		DateTime presetDate = new DateTime(2020, 1, 1, 12, 0, 0, DateTimeKind.Utc);
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com",
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail,
 			CreateDate = presetDate
 		};
 
@@ -273,8 +274,8 @@ public class AuditInterceptorTests : IDisposable
 		// Arrange
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com",
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail,
 			CreatedBy = "OriginalCreator"
 		};
 
@@ -411,7 +412,7 @@ public class AuditInterceptorTests : IDisposable
 		DateTime beforeSave = DateTime.UtcNow;
 		Log log = new()
 		{
-			LogLevel = "Information",
+			LogLevel = LogLevelConstants.Information,
 			Message = "Test log message",
 			SourceContext = "TestSource"
 		};
@@ -433,7 +434,7 @@ public class AuditInterceptorTests : IDisposable
 		DateTime presetDate = new DateTime(2021, 3, 10, 14, 0, 0, DateTimeKind.Utc);
 		Log log = new()
 		{
-			LogLevel = "Information",
+			LogLevel = LogLevelConstants.Information,
 			Message = "Test log message",
 			SourceContext = "TestSource",
 			CreateDate = presetDate
@@ -487,11 +488,11 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_UserContextReturnsSystem_SetsSystemAsCreatedByAsync()
 	{
 		// Arrange
-		MockUserContextAccessor.GetCurrentUser().Returns("System");
+		MockUserContextAccessor.GetCurrentUser().Returns(TestAuditConstants.SystemUser);
 		User user = new()
 		{
-			Username = "testuser",
-			Email = "test@example.com"
+			Username = TestUserConstants.DefaultUsername,
+			Email = TestUserConstants.DefaultEmail
 		};
 
 		// Act
@@ -499,8 +500,8 @@ public class AuditInterceptorTests : IDisposable
 		await IdentityContext.SaveChangesAsync();
 
 		// Assert
-		user.CreatedBy.ShouldBe("System");
-		user.ModifiedBy.ShouldBe("System");
+		user.CreatedBy.ShouldBe(TestAuditConstants.SystemUser);
+		user.ModifiedBy.ShouldBe(TestAuditConstants.SystemUser);
 	}
 
 	#endregion

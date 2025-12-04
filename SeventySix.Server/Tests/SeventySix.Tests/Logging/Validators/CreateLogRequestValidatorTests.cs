@@ -17,7 +17,7 @@ public class CreateLogRequestValidatorTests
 	{
 		CreateLogRequest request = new()
 		{
-			LogLevel = "Error",
+			LogLevel = LogLevelConstants.Error,
 			Message = "Test error message",
 		};
 
@@ -45,7 +45,7 @@ public class CreateLogRequestValidatorTests
 	{
 		CreateLogRequest request = new()
 		{
-			LogLevel = "Error",
+			LogLevel = LogLevelConstants.Error,
 			Message = "",
 		};
 
@@ -95,7 +95,7 @@ public class CreateLogRequestValidatorTests
 	{
 		CreateLogRequest request = new()
 		{
-			LogLevel = "Error",
+			LogLevel = LogLevelConstants.Error,
 			Message = "Test message",
 			ExceptionMessage = null,
 			StackTrace = null,
@@ -119,7 +119,7 @@ public class CreateLogRequestValidatorTests
 	{
 		CreateLogRequest request = new()
 		{
-			LogLevel = "Error",
+			LogLevel = LogLevelConstants.Error,
 			Message = "Test error message",
 			ExceptionMessage = "Test exception",
 			StackTrace = "at TestComponent.method()",
@@ -147,7 +147,7 @@ public class CreateLogRequestValidatorTests
 	{
 		CreateLogRequest request = new()
 		{
-			LogLevel = "Error",
+			LogLevel = LogLevelConstants.Error,
 			Message = new string('x', 4001),
 		};
 

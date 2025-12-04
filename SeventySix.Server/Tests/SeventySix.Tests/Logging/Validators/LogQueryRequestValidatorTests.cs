@@ -18,7 +18,7 @@ public class LogQueryRequestValidatorTests
 		LogQueryRequest request = new()
 		{
 			SearchTerm = "error message",
-			LogLevel = "Error",
+			LogLevel = LogLevelConstants.Error,
 			StartDate = DateTime.UtcNow.AddDays(-7),
 			EndDate = DateTime.UtcNow,
 			Page = 1,

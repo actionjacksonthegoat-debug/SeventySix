@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.Constants;
+
 namespace SeventySix.Infrastructure;
 
 /// <summary>
@@ -20,7 +22,7 @@ public class HealthStatusResponse
 	/// <value>
 	/// Health status: "Healthy", "Degraded", or "Unhealthy".
 	/// </value>
-	public string Status { get; set; } = "Healthy";
+	public string Status { get; set; } = HealthStatusConstants.Healthy;
 
 	/// <summary>
 	/// Gets or sets the timestamp when the health check was performed.
@@ -90,7 +92,7 @@ public class DatabaseHealthResponse
 	/// <value>
 	/// Status: "Healthy", "Degraded", or "Unhealthy".
 	/// </value>
-	public string Status { get; set; } = "Healthy";
+	public string Status { get; set; } = HealthStatusConstants.Healthy;
 }
 
 /// <summary>
@@ -192,7 +194,7 @@ public class QueueHealthResponse
 	/// <value>
 	/// Status: "Healthy", "Degraded", or "Unhealthy".
 	/// </value>
-	public string Status { get; set; } = "Healthy";
+	public string Status { get; set; } = HealthStatusConstants.Healthy;
 }
 
 /// <summary>

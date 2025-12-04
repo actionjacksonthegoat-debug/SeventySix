@@ -15,9 +15,6 @@ namespace SeventySix.Logging;
 /// </remarks>
 public class LogQueryRequestValidator : BaseQueryValidator<LogQueryRequest, Log>
 {
-	private static readonly string[] AllowedLogLevels =
-		["Verbose", "Debug", "Information", "Warning", "Error", "Fatal"];
-
 	/// <summary>Initializes a new instance of the <see cref="LogQueryRequestValidator"/> class.</summary>
 	public LogQueryRequestValidator()
 		: base()
@@ -25,8 +22,8 @@ public class LogQueryRequestValidator : BaseQueryValidator<LogQueryRequest, Log>
 		When(request => !string.IsNullOrWhiteSpace(request.LogLevel), () =>
 		{
 			RuleFor(request => request.LogLevel)
-				.Must(level => AllowedLogLevels.Contains(level!))
-				.WithMessage($"LogLevel must be one of: {string.Join(", ", AllowedLogLevels)}");
+				.Must(level => LogLevelConstants.QueryLevels.Contains(level!))
+				.WithMessage($"LogLevel must be one of: {string.Join(", ", LogLevelConstants.QueryLevels)}");
 		});
 	}
 }

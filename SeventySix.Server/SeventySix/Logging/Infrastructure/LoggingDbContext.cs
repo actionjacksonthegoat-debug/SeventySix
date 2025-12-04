@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Logging;
@@ -44,5 +45,5 @@ public class LoggingDbContext : BaseDbContext<LoggingDbContext>
 	/// Gets the schema name for Logging bounded context.
 	/// </summary>
 	/// <returns>"Logging".</returns>
-	protected override string GetSchemaName() => "Logging";
+	protected override string GetSchemaName() => SchemaConstants.Logging;
 }

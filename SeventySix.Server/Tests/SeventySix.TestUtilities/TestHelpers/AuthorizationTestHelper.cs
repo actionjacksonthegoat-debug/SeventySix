@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
 using Xunit;
 
 namespace SeventySix.TestUtilities.TestHelpers;
@@ -163,7 +164,7 @@ public class AuthorizationTestHelper
 				Password: TestUserHelper.TestPassword);
 
 		HttpResponseMessage response =
-			await Client.PostAsJsonAsync("/api/v1/auth/login", request);
+			await Client.PostAsJsonAsync(ApiEndpoints.Auth.Login, request);
 
 		response.EnsureSuccessStatusCode();
 

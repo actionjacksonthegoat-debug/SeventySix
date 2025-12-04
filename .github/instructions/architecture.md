@@ -31,6 +31,7 @@ Angular Client ◄──HTTP──► .NET API Server
 ```
 BoundedContext/
 ├── Configurations/    # EF Core Fluent API
+├── Constants/        # Domain-specific constants (RoleConstants, ClaimConstants)
 ├── DTOs/             # Records only
 ├── Entities/
 ├── Extensions/       # ToDto, ToEntity mapping
@@ -162,3 +163,70 @@ export const GAME_ROUTES: Routes =
 | Server             | Client           |
 | ------------------ | ---------------- |
 | `appsettings.json` | `environment.ts` |
+
+## Type Organization Rules (YAGNI)
+
+### Core Principle
+
+**Types stay in their feature/context unless cross-context usage is required.**
+
+### When to Extract Types
+
+```
+Is the type imported by a DIFFERENT module/folder?
+├── YES → Is it cross-context (used by multiple features)?
+│   ├── YES → Move to @shared/models/ (TS) or Shared/Models/ (C#)
+│   └── NO → Keep in feature/models/
+└── NO → Keep inline (YAGNI)
+```
+
+### Acceptable Inline Patterns
+
+| Pattern                                  | Example                          | Action      |
+| ---------------------------------------- | -------------------------------- | ----------- |
+| Same-folder imports                      | `logger.service.ts` → `LogLevel` | Keep inline |
+| Test files importing from same component | `user.service.spec.ts`           | Keep inline |
+| Mock files in testing folder             | `theme.service.mock.ts`          | Keep inline |
+| Private types not exported               | `interface QuickAction {}`       | Keep inline |
+
+### Cross-Context Types (Must Extract)
+
+| Type Used By                 | Location          | Example             |
+| ---------------------------- | ----------------- | ------------------- |
+| Multiple features (Angular)  | `@shared/models/` | `ConfirmDialogData` |
+| Multiple contexts (C#)       | `Shared/Models/`  | `PagedResult<T>`    |
+| Infrastructure + any feature | `@shared/models/` | `TableColumn`       |
+
+### C# Specific
+
+-   Interface return types → `Context/Models/` (same context)
+-   Cross-context records → `Shared/Models/`
+-   Private nested types → Keep in parent class file
+-   DTOs (API contracts) → `Context/DTOs/`
+
+### TypeScript Specific
+
+-   Feature types → `feature/models/` (never `@infrastructure/`)
+-   Cross-feature shared → `@shared/models/` only
+-   Service internal types → Keep inline if not exported
+
+### Constants Organization (DRY)
+
+| Scope             | C# Location                | TypeScript Location          |
+| ----------------- | -------------------------- | ---------------------------- |
+| Feature constants | `Context/Constants/`       | `feature/constants/`         |
+| Cross-feature     | `Shared/Constants/`        | `@shared/constants/`         |
+| Test constants    | `TestUtilities/Constants/` | `src/app/testing/constants/` |
+
+**Naming Conventions**:
+
+| Language   | Value Style     | File Suffix     | Example                   |
+| ---------- | --------------- | --------------- | ------------------------- |
+| C#         | PascalCase      | `*Constants.cs` | `RoleConstants.Developer` |
+| TypeScript | SCREAMING_SNAKE | `.constants.ts` | `ROLE_DEVELOPER`          |
+
+**Existing Patterns**:
+
+-   `Identity/Constants/RoleConstants.cs` - Role names (`Developer`, `Admin`, `User`)
+-   `TestUtilities/Constants/TestTables.cs` - Table names for test cleanup
+-   `@infrastructure/models/auth/jwt-claims.model.ts` - JWT claim constants

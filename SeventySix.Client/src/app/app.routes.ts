@@ -1,4 +1,8 @@
 import { Routes } from "@angular/router";
+import {
+	ROLE_ADMIN,
+	ROLE_DEVELOPER
+} from "@infrastructure/constants/role.constants";
 import { roleGuard } from "@infrastructure/guards/role.guard";
 
 /**
@@ -72,7 +76,7 @@ export const routes: Routes = [
 			import("./features/developer/developer.routes").then(
 				(m) => m.DEVELOPER_ROUTES
 			),
-		canActivate: [roleGuard("Developer", "Admin")],
+		canActivate: [roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
 		data: { breadcrumb: "Developer" }
 	},
 
@@ -83,7 +87,7 @@ export const routes: Routes = [
 		path: "admin",
 		loadChildren: () =>
 			import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES),
-		canActivate: [roleGuard("Admin")],
+		canActivate: [roleGuard(ROLE_ADMIN)],
 		data: { breadcrumb: "Admin" }
 	},
 

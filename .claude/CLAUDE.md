@@ -875,6 +875,137 @@ feature/
 -   `*Filter`, `*State`, `*Options` = Models (internal, not API)
 -   No `entities/` folder on client (Entities are server-side DB models only)
 
+### Type Organization (YAGNI)
+
+**Core Principle**: Types stay in their feature/context unless cross-context usage is required.
+
+| Scenario                  | Location                    | Example                      |
+| ------------------------- | --------------------------- | ---------------------------- |
+| Feature-specific type     | `feature/models/`           | `LogDto`, `UserQueryRequest` |
+| Cross-feature shared      | `@shared/models/`           | `ConfirmDialogData`          |
+| Same-folder internal type | Inline in service/component | `interface QuickAction {}`   |
+| Test-only type            | Keep in test file           | `interface MockUser {}`      |
+| C# cross-context          | `Shared/Models/`            | `PagedResult<T>`             |
+
+**When to Extract**:
+
+```
+Is the type imported by a DIFFERENT feature/context?
+├── YES → Move to @shared/models/ (TS) or Shared/Models/ (C#)
+└── NO → Keep in feature/models/ or inline (YAGNI)
+```
+
+**Never move feature types to `@infrastructure/`** - infrastructure is for cross-cutting concerns only.
+
+### Constants Organization (DRY)
+
+> **CRITICAL**: Never hardcode strings, enums, or primitive values that appear more than once.
+
+#### Folder Structure
+
+| Scope             | C# Location                | TypeScript Location          |
+| ----------------- | -------------------------- | ---------------------------- |
+| Feature constants | `Context/Constants/`       | `feature/constants/`         |
+| Cross-feature     | `Shared/Constants/`        | `@shared/constants/`         |
+| Test constants    | `TestUtilities/Constants/` | `src/app/testing/constants/` |
+
+#### Pattern Decision Matrix
+
+| Constant Type         | Location                               | Example                         |
+| --------------------- | -------------------------------------- | ------------------------------- |
+| Role names            | `Identity/Constants/RoleConstants`     | `Developer`, `Admin`, `User`    |
+| API endpoints (tests) | `TestUtilities/Constants/ApiEndpoints` | `/api/v1/users`, `/api/v1/logs` |
+| JWT claim types       | `@infrastructure/models/auth/`         | `DOTNET_ROLE_CLAIM`             |
+| Table names (tests)   | `TestUtilities/Constants/TestTables`   | `Identity[]`, `Logging[]`       |
+
+#### C# Constants Pattern
+
+```csharp
+// ✅ CORRECT - Static class with const fields
+// Location: Identity/Constants/RoleConstants.cs
+public static class RoleConstants
+{
+	public const string Developer = "Developer";
+	public const string Admin = "Admin";
+	public const string User = "User";
+
+	public static readonly HashSet<string> ValidRoleNames =
+		[Developer, Admin, User];
+}
+
+// Usage
+if (RoleConstants.ValidRoleNames.Contains(roleName))
+
+// ❌ WRONG - Hardcoded strings scattered everywhere
+if (role == "Developer" || role == "Admin")
+```
+
+#### TypeScript Constants Pattern
+
+```typescript
+// ✅ CORRECT - SCREAMING_SNAKE_CASE exports
+// Location: @infrastructure/models/auth/role.constants.ts
+export const ROLE_DEVELOPER: string = "Developer";
+export const ROLE_ADMIN: string = "Admin";
+export const ROLE_USER: string = "User";
+
+export const VALID_ROLES: string[] =
+	[ROLE_DEVELOPER, ROLE_ADMIN, ROLE_USER];
+
+// Usage
+if (VALID_ROLES.includes(role))
+
+// ❌ WRONG - Hardcoded strings
+if (role === "Developer" || role === "Admin")
+```
+
+#### Test Constants Pattern
+
+```csharp
+// ✅ CORRECT - Centralized API endpoints
+// Location: TestUtilities/Constants/ApiEndpoints.cs
+public static class ApiEndpoints
+{
+	public static class Users
+	{
+		public const string Base = "/api/v1/users";
+		public const string Me = "/api/v1/users/me";
+		public const string ById = "/api/v1/users/{0}";
+	}
+
+	public static class Logs
+	{
+		public const string Base = "/api/v1/logs";
+	}
+}
+
+// Usage in tests
+HttpResponseMessage response =
+	await client.GetAsync(ApiEndpoints.Users.Base);
+
+// ❌ WRONG - Hardcoded endpoints
+private const string Endpoint = "/api/v1/users";
+```
+
+#### When to Extract Constants
+
+```
+Is the value used more than once across files?
+├── YES → Extract to constants file in appropriate folder
+└── NO → Is it likely to be reused?
+    ├── YES → Extract proactively (DRY principle)
+    └── NO → Keep inline (YAGNI)
+```
+
+#### Naming Conventions
+
+| Language   | Convention          | Example                         |
+| ---------- | ------------------- | ------------------------------- |
+| C#         | PascalCase          | `RoleConstants.Developer`       |
+| TypeScript | SCREAMING_SNAKE     | `ROLE_DEVELOPER`                |
+| File names | `.constants.cs/ts`  | `role.constants.ts`             |
+| Class      | `*Constants` suffix | `RoleConstants`, `ApiEndpoints` |
+
 ### Feature Routes (Required)
 
 ```typescript

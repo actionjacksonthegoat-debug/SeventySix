@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.Tests.Identity;
 
@@ -211,13 +212,13 @@ public class UserTests
 		{
 			CreatedBy = "admin",
 			ModifyDate = modifyDate,
-			ModifiedBy = "system",
+			ModifiedBy = TestAuditConstants.SystemUser,
 		};
 
 		// Assert
 		Assert.Equal("admin", user.CreatedBy);
 		Assert.Equal(modifyDate, user.ModifyDate);
-		Assert.Equal("system", user.ModifiedBy);
+		Assert.Equal(TestAuditConstants.SystemUser, user.ModifiedBy);
 	}
 
 	[Fact]
@@ -338,7 +339,7 @@ public class UserTests
 		User user = new()
 		{
 			Username = "test",
-			Email = "test@example.com",
+			Email = TestUserConstants.DefaultEmail,
 		};
 
 		DateTime now = DateTime.UtcNow;
@@ -346,7 +347,7 @@ public class UserTests
 		// Act
 		user.CreatedBy = "admin";
 		user.ModifyDate = now;
-		user.ModifiedBy = "system";
+		user.ModifiedBy = TestAuditConstants.SystemUser;
 		user.IsDeleted = true;
 		user.DeletedAt = now;
 		user.DeletedBy = "admin";
@@ -358,7 +359,7 @@ public class UserTests
 		// Assert
 		Assert.Equal("admin", user.CreatedBy);
 		Assert.Equal(now, user.ModifyDate);
-		Assert.Equal("system", user.ModifiedBy);
+		Assert.Equal(TestAuditConstants.SystemUser, user.ModifiedBy);
 		Assert.True(user.IsDeleted);
 		Assert.Equal(now, user.DeletedAt);
 		Assert.Equal("admin", user.DeletedBy);

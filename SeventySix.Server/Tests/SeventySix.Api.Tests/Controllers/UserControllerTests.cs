@@ -8,6 +8,7 @@ using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.Identity;
 using SeventySix.Shared;
+using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.Api.Tests.Controllers;
 
@@ -66,8 +67,8 @@ public class UsersControllerTests
 		// Arrange
 		List<UserDto> users =
 		[
-			new UserDto { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
-			new UserDto { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
+			new UserDto { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = TestAuditConstants.SystemUser, ModifiedBy = TestAuditConstants.SystemUser },
+			new UserDto { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false, CreateDate = DateTime.UtcNow, CreatedBy = TestAuditConstants.SystemUser, ModifiedBy = TestAuditConstants.SystemUser },
 		];
 
 		UserService

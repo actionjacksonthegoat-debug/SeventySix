@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Shared;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Tests.Identity.Services;
@@ -54,7 +55,7 @@ public class UserServiceRoleTests
 	{
 		// Arrange
 		List<string> expectedRoles =
-			["Developer", "Admin"];
+			[TestRoleConstants.Developer, TestRoleConstants.Admin];
 
 		UserRepository
 			.GetUserRolesAsync(1, Arg.Any<CancellationToken>())
@@ -82,14 +83,14 @@ public class UserServiceRoleTests
 	{
 		// Arrange
 		UserRepository
-			.HasRoleAsync(1, "Developer", Arg.Any<CancellationToken>())
+			.HasRoleAsync(1, TestRoleConstants.Developer, Arg.Any<CancellationToken>())
 			.Returns(false);
 
 		// Act
 		bool result =
 			await Service.AddUserRoleAsync(
 				1,
-				"Developer");
+				TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeTrue();
@@ -97,13 +98,13 @@ public class UserServiceRoleTests
 			.Received(1)
 			.AddRoleAsync(
 				1,
-				"Developer",
+				TestRoleConstants.Developer,
 				Arg.Any<CancellationToken>());
 		await PermissionRequestRepository
 			.Received(1)
 			.DeleteByUserAndRoleAsync(
 				1,
-				"Developer",
+				TestRoleConstants.Developer,
 				Arg.Any<CancellationToken>());
 	}
 
@@ -112,14 +113,14 @@ public class UserServiceRoleTests
 	{
 		// Arrange
 		UserRepository
-			.HasRoleAsync(1, "Developer", Arg.Any<CancellationToken>())
+			.HasRoleAsync(1, TestRoleConstants.Developer, Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		// Act
 		bool result =
 			await Service.AddUserRoleAsync(
 				1,
-				"Developer");
+				TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeFalse();
@@ -163,14 +164,14 @@ public class UserServiceRoleTests
 	{
 		// Arrange
 		UserRepository
-			.RemoveRoleAsync(1, "Developer", Arg.Any<CancellationToken>())
+			.RemoveRoleAsync(1, TestRoleConstants.Developer, Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		// Act
 		bool result =
 			await Service.RemoveUserRoleAsync(
 				1,
-				"Developer");
+				TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeTrue();
@@ -178,7 +179,7 @@ public class UserServiceRoleTests
 			.Received(1)
 			.RemoveRoleAsync(
 				1,
-				"Developer",
+				TestRoleConstants.Developer,
 				Arg.Any<CancellationToken>());
 	}
 
@@ -187,14 +188,14 @@ public class UserServiceRoleTests
 	{
 		// Arrange
 		UserRepository
-			.RemoveRoleAsync(1, "Developer", Arg.Any<CancellationToken>())
+			.RemoveRoleAsync(1, TestRoleConstants.Developer, Arg.Any<CancellationToken>())
 			.Returns(false);
 
 		// Act
 		bool result =
 			await Service.RemoveUserRoleAsync(
 				1,
-				"Developer");
+				TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeFalse();

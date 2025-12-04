@@ -17,7 +17,7 @@ namespace SeventySix.Api.Tests.Controllers;
 public class LogsControllerAuthorizationTests(TestcontainersPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
-	private const string Endpoint = "/api/v1/logs";
+	private const string Endpoint = ApiEndpoints.Logs.Base;
 	private AuthorizationTestHelper AuthHelper = null!;
 
 	/// <inheritdoc/>
@@ -49,12 +49,12 @@ public class LogsControllerAuthorizationTests(TestcontainersPostgreSqlFixture fi
 	/// </summary>
 	[Fact]
 	public Task GetPagedAsync_WithDeveloperRole_ReturnsForbiddenAsync()
-		=> AuthHelper.AssertForbiddenForRoleAsync("Developer", HttpMethod.Get, Endpoint);
+		=> AuthHelper.AssertForbiddenForRoleAsync(TestRoleConstants.Developer, HttpMethod.Get, Endpoint);
 
 	/// <summary>
 	/// Tests that GET /api/v1/logs returns 200 for Admin role.
 	/// </summary>
 	[Fact]
 	public Task GetPagedAsync_WithAdminRole_ReturnsOkAsync()
-		=> AuthHelper.AssertAuthorizedForRoleAsync("Admin", HttpMethod.Get, Endpoint);
+		=> AuthHelper.AssertAuthorizedForRoleAsync(TestRoleConstants.Admin, HttpMethod.Get, Endpoint);
 }

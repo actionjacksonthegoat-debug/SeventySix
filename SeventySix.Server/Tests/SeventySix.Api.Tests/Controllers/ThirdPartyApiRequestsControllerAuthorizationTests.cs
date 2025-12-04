@@ -17,7 +17,7 @@ namespace SeventySix.Api.Tests.Controllers;
 public class ThirdPartyApiRequestsControllerAuthorizationTests(TestcontainersPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
-	private const string Endpoint = "/api/v1/thirdpartyrequests";
+	private const string Endpoint = ApiEndpoints.ThirdPartyRequests.Base;
 	private AuthorizationTestHelper AuthHelper = null!;
 
 	/// <inheritdoc/>
@@ -40,12 +40,12 @@ public class ThirdPartyApiRequestsControllerAuthorizationTests(TestcontainersPos
 	/// </summary>
 	[Fact]
 	public Task GetPagedAsync_WithDeveloperRole_ReturnsForbiddenAsync()
-		=> AuthHelper.AssertForbiddenForRoleAsync("Developer", HttpMethod.Get, Endpoint);
+		=> AuthHelper.AssertForbiddenForRoleAsync(TestRoleConstants.Developer, HttpMethod.Get, Endpoint);
 
 	/// <summary>
 	/// Tests that GET /api/v1/thirdpartyrequests returns 200 for Admin role.
 	/// </summary>
 	[Fact]
 	public Task GetPagedAsync_WithAdminRole_ReturnsOkAsync()
-		=> AuthHelper.AssertAuthorizedForRoleAsync("Admin", HttpMethod.Get, Endpoint);
+		=> AuthHelper.AssertAuthorizedForRoleAsync(TestRoleConstants.Admin, HttpMethod.Get, Endpoint);
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Configuration;
+using SeventySix.Identity.Constants;
 using SeventySix.Logging;
 using SeventySix.Shared;
 
@@ -15,7 +16,7 @@ namespace SeventySix.Api.Controllers;
 /// <param name="logService">The log service.</param>
 /// <param name="outputCacheStore">The output cache store.</param>
 [ApiController]
-[Authorize(Policy = "AdminOnly")]
+[Authorize(Policy = PolicyConstants.AdminOnly)]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/logs")]
 public class LogsController(
 	ILogService logService,

@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.ApiTracking;
@@ -44,5 +45,5 @@ public class ApiTrackingDbContext : BaseDbContext<ApiTrackingDbContext>
 	/// Gets the schema name for ApiTracking bounded context.
 	/// </summary>
 	/// <returns>"ApiTracking".</returns>
-	protected override string GetSchemaName() => "ApiTracking";
+	protected override string GetSchemaName() => SchemaConstants.ApiTracking;
 }

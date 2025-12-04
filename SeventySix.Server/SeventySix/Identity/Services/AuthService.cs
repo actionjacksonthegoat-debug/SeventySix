@@ -342,7 +342,7 @@ public class AuthService(
 	{
 		OAuthProviderSettings? github =
 			authSettings.Value.OAuth.Providers
-				.FirstOrDefault(p => p.Provider == "GitHub");
+				.FirstOrDefault(p => p.Provider == OAuthProviderConstants.GitHub);
 
 		if (github == null)
 		{
@@ -375,7 +375,7 @@ public class AuthService(
 	{
 		OAuthProviderSettings? github =
 			authSettings.Value.OAuth.Providers
-				.FirstOrDefault(p => p.Provider == "GitHub");
+				.FirstOrDefault(p => p.Provider == OAuthProviderConstants.GitHub);
 
 		if (github == null)
 		{
@@ -942,7 +942,7 @@ public class AuthService(
 			new(parameters);
 
 		client.DefaultRequestHeaders.Accept.Add(
-			new MediaTypeWithQualityHeaderValue("application/json"));
+			new MediaTypeWithQualityHeaderValue(MediaTypeConstants.Json));
 
 		HttpResponseMessage response =
 			await client.PostAsync(
@@ -1017,7 +1017,7 @@ public class AuthService(
 		// Look for existing external login
 		ExternalLogin? existingLogin =
 			await context.ExternalLogins
-				.Where(externalLogin => externalLogin.Provider == "GitHub")
+				.Where(externalLogin => externalLogin.Provider == OAuthProviderConstants.GitHub)
 				.Where(externalLogin => externalLogin.ProviderUserId == userInfo.Id)
 				.FirstOrDefaultAsync(cancellationToken);
 
@@ -1081,7 +1081,7 @@ public class AuthService(
 					new()
 					{
 						UserId = user.Id,
-						Provider = "GitHub",
+						Provider = OAuthProviderConstants.GitHub,
 						ProviderUserId = userInfo.Id,
 						ProviderEmail = userInfo.Email,
 						CreateDate = now,

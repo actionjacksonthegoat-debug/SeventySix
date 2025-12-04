@@ -13,6 +13,7 @@ import {
 import { inject } from "@angular/core";
 import { switchMap, take, catchError, throwError } from "rxjs";
 import { AuthService } from "@infrastructure/services/auth.service";
+import { HTTP_HEADER_AUTHORIZATION, HTTP_BEARER_PREFIX } from "@infrastructure/constants";
 
 export const authInterceptor: HttpInterceptorFn = (
 	req: HttpRequest<unknown>,
@@ -91,6 +92,6 @@ function addAuthHeader(
 	}
 
 	return req.clone({
-		headers: req.headers.set("Authorization", `Bearer ${token}`)
+		headers: req.headers.set(HTTP_HEADER_AUTHORIZATION, `${HTTP_BEARER_PREFIX}${token}`)
 	});
 }

@@ -5,6 +5,7 @@
 using NSubstitute;
 using SeventySix.Infrastructure;
 using SeventySix.Logging;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Tests.Infrastructure;
 
@@ -37,7 +38,7 @@ public class HealthCheckServiceTests
 
 		// Assert
 		Assert.NotNull(result);
-		Assert.Equal("Healthy", result.Status);
+		Assert.Equal(HealthStatusConstants.Healthy, result.Status);
 		Assert.NotNull(result.Database);
 		Assert.NotNull(result.ExternalApis);
 		Assert.NotNull(result.ErrorQueue);
@@ -54,7 +55,7 @@ public class HealthCheckServiceTests
 
 		// Assert
 		Assert.True(result.Database.IsConnected);
-		Assert.Equal("Healthy", result.Database.Status);
+		Assert.Equal(HealthStatusConstants.Healthy, result.Database.Status);
 		Assert.True(result.Database.ResponseTimeMs >= 0);
 		Assert.True(result.Database.ActiveConnections >= 0);
 	}
@@ -78,7 +79,7 @@ public class HealthCheckServiceTests
 
 		// Assert
 		Assert.NotNull(result.ErrorQueue);
-		Assert.Equal("Healthy", result.ErrorQueue.Status);
+		Assert.Equal(HealthStatusConstants.Healthy, result.ErrorQueue.Status);
 		Assert.False(result.ErrorQueue.CircuitBreakerOpen);
 		Assert.True(result.ErrorQueue.QueuedItems >= 0);
 		Assert.True(result.ErrorQueue.FailedItems >= 0);

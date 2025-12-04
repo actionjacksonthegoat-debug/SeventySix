@@ -70,7 +70,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 					[
 						new OAuthProviderSettings
 						{
-							Provider = "GitHub",
+							Provider = OAuthProviderConstants.GitHub,
 							ClientId = "test-client-id",
 							ClientSecret = "test-client-secret",
 							Scopes = "read:user user:email",

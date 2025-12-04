@@ -1,9 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
-import {
-	ConfirmDialogComponent,
-	ConfirmDialogData
-} from "./confirm-dialog.component";
+import { ConfirmDialogComponent } from "./confirm-dialog.component";
+import { ConfirmDialogData } from "@shared/models";
 import { ComponentTestBed } from "@testing/test-bed-builders";
 import { createMockDialogRef } from "@testing/mock-factories";
 

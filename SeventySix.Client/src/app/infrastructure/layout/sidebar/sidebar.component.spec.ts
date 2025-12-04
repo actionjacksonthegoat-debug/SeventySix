@@ -8,7 +8,9 @@ import {
 	createMockLayoutService,
 	createMockAuthService,
 	MockLayoutService,
-	MockAuthService
+	MockAuthService,
+	TEST_ROLE_ADMIN,
+	TEST_ROLE_DEVELOPER
 } from "@testing";
 
 describe("SidebarComponent", () =>
@@ -105,7 +107,7 @@ describe("SidebarComponent", () =>
 				username: "developer",
 				email: "dev@test.com",
 				fullName: "Test Developer",
-				roles: ["Developer"]
+				roles: [TEST_ROLE_DEVELOPER]
 			});
 
 			// Act
@@ -131,7 +133,7 @@ describe("SidebarComponent", () =>
 				username: "admin",
 				email: "admin@test.com",
 				fullName: "Test Admin",
-				roles: ["Admin"]
+				roles: [TEST_ROLE_ADMIN]
 			});
 
 			// Act
@@ -163,7 +165,7 @@ describe("SidebarComponent", () =>
 				username: "admin",
 				email: "admin@test.com",
 				fullName: "Test Admin",
-				roles: ["Admin"]
+				roles: [TEST_ROLE_ADMIN]
 			});
 			fixture.detectChanges();
 
@@ -186,7 +188,7 @@ describe("SidebarComponent", () =>
 				username: "admin",
 				email: "admin@test.com",
 				fullName: "Test Admin",
-				roles: ["Admin"]
+				roles: [TEST_ROLE_ADMIN]
 			});
 			fixture.detectChanges();
 			let sections: { title: string }[] =
@@ -216,7 +218,7 @@ describe("SidebarComponent", () =>
 				username: "superuser",
 				email: "super@test.com",
 				fullName: "Super User",
-				roles: ["Developer", "Admin"]
+				roles: [TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN]
 			});
 
 			// Act

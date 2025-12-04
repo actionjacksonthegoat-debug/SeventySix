@@ -86,7 +86,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task GetPagedAsync_NoFilters_ReturnsLogsAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client!.GetAsync("/api/v1/logs");
+		HttpResponseMessage response = await Client!.GetAsync(ApiEndpoints.Logs.Base);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -104,7 +104,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task GetPagedAsync_ExceedsMaxPageSize_ReturnsBadRequestAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client!.GetAsync("/api/v1/logs?pageSize=200");
+		HttpResponseMessage response = await Client!.GetAsync($"{ApiEndpoints.Logs.Base}?pageSize=200");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -121,7 +121,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 
 		// Act
 		HttpResponseMessage response = await Client!.DeleteAsync(
-			$"/api/v1/logs/cleanup?cutoffDate={cutoffDate:O}");
+			ApiEndpoints.Logs.CleanupWithDate(cutoffDate));
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -137,7 +137,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task CleanupLogsAsync_NoCutoffDate_ReturnsBadRequestAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client!.DeleteAsync("/api/v1/logs/cleanup");
+		HttpResponseMessage response = await Client!.DeleteAsync(ApiEndpoints.Logs.Cleanup);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -158,7 +158,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		};
 
 		// Act
-		HttpResponseMessage response = await Client!.PostAsJsonAsync("/api/v1/logs/client", request);
+		HttpResponseMessage response = await Client!.PostAsJsonAsync(ApiEndpoints.Logs.Client, request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -178,7 +178,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		];
 
 		// Act
-		HttpResponseMessage response = await Client!.PostAsJsonAsync("/api/v1/logs/client/batch", requests);
+		HttpResponseMessage response = await Client!.PostAsJsonAsync(ApiEndpoints.Logs.ClientBatch, requests);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -300,7 +300,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 				Password: TestUserHelper.TestPassword);
 
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/login", request);
+			await Client!.PostAsJsonAsync(ApiEndpoints.Auth.Login, request);
 
 		response.EnsureSuccessStatusCode();
 

@@ -7,6 +7,7 @@ import {
 import { inject, Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
 import { catchError, Observable, throwError } from "rxjs";
+import { HTTP_HEADER_CONTENT_TYPE, MEDIA_TYPE_JSON } from "@infrastructure/constants";
 import { LoggerService } from "@infrastructure/services/logger.service";
 
 /**
@@ -25,7 +26,7 @@ export class ApiService
 	private readonly http: HttpClient = inject(HttpClient);
 	private readonly logger: LoggerService = inject(LoggerService);
 	private defaultHeaders: HttpHeaders = new HttpHeaders({
-		"Content-Type": "application/json"
+		[HTTP_HEADER_CONTENT_TYPE]: MEDIA_TYPE_JSON
 	});
 
 	get<T>(endpoint: string, params?: HttpParams): Observable<T>

@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.TestUtilities.Builders;
 
@@ -27,11 +28,11 @@ namespace SeventySix.TestUtilities.Builders;
 /// </remarks>
 public class UserBuilder
 {
-	private string Username = "testuser";
-	private string Email = "test@example.com";
-	private string? FullName = "Test User";
+	private string Username = TestUserConstants.DefaultUsername;
+	private string Email = TestUserConstants.DefaultEmail;
+	private string? FullName = TestUserConstants.DefaultFullName;
 	private DateTime CreateDate = DateTime.UtcNow;
-	private string? CreatedBy = "system";
+	private string? CreatedBy = TestAuditConstants.SystemUser;
 	private DateTime? ModifyDate = null;
 	private string? ModifiedBy = null;
 	private bool IsActive = true;
@@ -82,7 +83,7 @@ public class UserBuilder
 	/// <param name="createDate">The creation CreateDate.</param>
 	/// <param name="createdBy">The creator identifier.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public UserBuilder WithCreatedInfo(DateTime createDate, string? createdBy = "system")
+	public UserBuilder WithCreatedInfo(DateTime createDate, string? createdBy = TestAuditConstants.SystemUser)
 	{
 		CreateDate = createDate;
 		CreatedBy = createdBy;
@@ -95,7 +96,7 @@ public class UserBuilder
 	/// <param name="modifyDate">The modification CreateDate.</param>
 	/// <param name="modifiedBy">The modifier identifier.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public UserBuilder WithModifiedInfo(DateTime modifyDate, string? modifiedBy = "system")
+	public UserBuilder WithModifiedInfo(DateTime modifyDate, string? modifiedBy = TestAuditConstants.SystemUser)
 	{
 		ModifyDate = modifyDate;
 		ModifiedBy = modifiedBy;
@@ -214,6 +215,6 @@ public class UserBuilder
 	public static UserBuilder CreateDeleted()
 	{
 		return new UserBuilder()
-			.WithDeletedInfo(true, DateTime.UtcNow, "system");
+			.WithDeletedInfo(true, DateTime.UtcNow, TestAuditConstants.SystemUser);
 	}
 }

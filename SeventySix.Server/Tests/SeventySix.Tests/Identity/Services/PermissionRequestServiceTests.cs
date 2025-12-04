@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Tests.Identity.Services;
@@ -30,10 +31,10 @@ public class PermissionRequestServiceTests
 	{
 		// Set up role ID lookups (matches SecurityRoles seed data)
 		Repository
-			.GetRoleIdByNameAsync("Developer", Arg.Any<CancellationToken>())
+			.GetRoleIdByNameAsync(TestRoleConstants.Developer, Arg.Any<CancellationToken>())
 			.Returns(1);
 		Repository
-			.GetRoleIdByNameAsync("Admin", Arg.Any<CancellationToken>())
+			.GetRoleIdByNameAsync(TestRoleConstants.Admin, Arg.Any<CancellationToken>())
 			.Returns(2);
 	}
 
@@ -62,8 +63,8 @@ public class PermissionRequestServiceTests
 		// Assert
 		List<AvailableRoleDto> roles = result.ToList();
 		roles.Count.ShouldBe(2);
-		roles.ShouldContain(role => role.Name == "Developer");
-		roles.ShouldContain(role => role.Name == "Admin");
+		roles.ShouldContain(role => role.Name == TestRoleConstants.Developer);
+		roles.ShouldContain(role => role.Name == TestRoleConstants.Admin);
 	}
 
 	[Fact]
@@ -72,7 +73,7 @@ public class PermissionRequestServiceTests
 		// Arrange - user already has Developer role
 		Repository
 			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
-			.Returns(["Developer"]);
+			.Returns([TestRoleConstants.Developer]);
 		Repository
 			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
 			.Returns([]);
@@ -84,7 +85,7 @@ public class PermissionRequestServiceTests
 		// Assert - only Admin should be available
 		List<AvailableRoleDto> roles = result.ToList();
 		roles.Count.ShouldBe(1);
-		roles[0].Name.ShouldBe("Admin");
+		roles[0].Name.ShouldBe(TestRoleConstants.Admin);
 	}
 
 	[Fact]
@@ -96,7 +97,7 @@ public class PermissionRequestServiceTests
 			.Returns([]);
 		Repository
 			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
-			.Returns([new PermissionRequest { RequestedRoleId = 1, RequestedRole = new SecurityRole { Id = 1, Name = "Developer" } }]);
+			.Returns([new PermissionRequest { RequestedRoleId = 1, RequestedRole = new SecurityRole { Id = 1, Name = TestRoleConstants.Developer } }]);
 
 		// Act
 		IEnumerable<AvailableRoleDto> result =
@@ -105,7 +106,7 @@ public class PermissionRequestServiceTests
 		// Assert
 		List<AvailableRoleDto> roles = result.ToList();
 		roles.Count.ShouldBe(1);
-		roles[0].Name.ShouldBe("Admin");
+		roles[0].Name.ShouldBe(TestRoleConstants.Admin);
 	}
 
 	#endregion
@@ -167,7 +168,7 @@ public class PermissionRequestServiceTests
 			.Returns([]);
 
 		CreatePermissionRequestDto request =
-			new(["Developer", "Admin"], "Need access");
+			new([TestRoleConstants.Developer, TestRoleConstants.Admin], "Need access");
 
 		// Act
 		await Service.CreateRequestsAsync(
@@ -189,13 +190,13 @@ public class PermissionRequestServiceTests
 		// Arrange - user already has Developer role
 		Repository
 			.GetUserExistingRolesAsync(1, Arg.Any<CancellationToken>())
-			.Returns(["Developer"]);
+			.Returns([TestRoleConstants.Developer]);
 		Repository
 			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
 			.Returns([]);
 
 		CreatePermissionRequestDto request =
-			new(["Developer", "Admin"], "Need access");
+			new([TestRoleConstants.Developer, TestRoleConstants.Admin], "Need access");
 
 		// Act
 		await Service.CreateRequestsAsync(
@@ -221,10 +222,10 @@ public class PermissionRequestServiceTests
 			.Returns([]);
 		Repository
 			.GetByUserIdAsync(1, Arg.Any<CancellationToken>())
-			.Returns([new PermissionRequest { RequestedRoleId = 1, RequestedRole = new SecurityRole { Id = 1, Name = "Developer" } }]);
+			.Returns([new PermissionRequest { RequestedRoleId = 1, RequestedRole = new SecurityRole { Id = 1, Name = TestRoleConstants.Developer } }]);
 
 		CreatePermissionRequestDto request =
-			new(["Developer", "Admin"], "Need access");
+			new([TestRoleConstants.Developer, TestRoleConstants.Admin], "Need access");
 
 		// Act
 		await Service.CreateRequestsAsync(
@@ -257,7 +258,7 @@ public class PermissionRequestServiceTests
 					new WhitelistedGrant
 					{
 						Email = "developer@test.com",
-						Roles = ["Developer"]
+						Roles = [TestRoleConstants.Developer]
 					}
 				]
 			});
@@ -279,7 +280,7 @@ public class PermissionRequestServiceTests
 			.Returns("developer@test.com");
 
 		CreatePermissionRequestDto request =
-			new(["Developer"], "Need access");
+			new([TestRoleConstants.Developer], "Need access");
 
 		// Act
 		await service.CreateRequestsAsync(
@@ -292,7 +293,7 @@ public class PermissionRequestServiceTests
 			.Received(1)
 			.AddRoleWithoutAuditAsync(
 				1,
-				"Developer",
+				TestRoleConstants.Developer,
 				Arg.Any<CancellationToken>());
 		await Repository
 			.DidNotReceive()

@@ -194,7 +194,7 @@ public class PollyIntegrationClient(
 				async ct =>
 				{
 					string json = JsonSerializer.Serialize(body);
-					StringContent content = new(json, Encoding.UTF8, "application/json");
+					StringContent content = new(json, Encoding.UTF8, MediaTypeConstants.Json);
 
 					HttpResponseMessage httpResponse = await httpClient.PostAsync(url, content, ct);
 

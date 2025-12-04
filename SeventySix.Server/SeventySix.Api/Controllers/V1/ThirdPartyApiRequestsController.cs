@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Configuration;
 using SeventySix.ApiTracking;
+using SeventySix.Identity.Constants;
 
 namespace SeventySix.Api.Controllers;
 
@@ -23,7 +24,7 @@ namespace SeventySix.Api.Controllers;
 /// </remarks>
 /// <param name="service">The third-party API request service.</param>
 [ApiController]
-[Authorize(Policy = "AdminOnly")]
+[Authorize(Policy = PolicyConstants.AdminOnly)]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/thirdpartyrequests")]
 public class ThirdPartyApiRequestsController(IThirdPartyApiRequestService service) : ControllerBase
 {

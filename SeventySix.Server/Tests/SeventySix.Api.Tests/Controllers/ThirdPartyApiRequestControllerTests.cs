@@ -32,7 +32,7 @@ public class ThirdPartyApiRequestsControllerTests
 			new ThirdPartyApiRequestResponse
 			{
 				Id = 1,
-				ApiName = "OpenWeather",
+				ApiName = ExternalApiConstants.OpenWeather,
 				BaseUrl = "https://api.openweathermap.org",
 				CallCount = 150,
 				LastCalledAt = DateTime.UtcNow.AddMinutes(-5),
@@ -88,12 +88,12 @@ public class ThirdPartyApiRequestsControllerTests
 			TotalApisTracked = 2,
 			CallsByApi = new Dictionary<string, int>
 			{
-				{ "OpenWeather", 150 },
+				{ ExternalApiConstants.OpenWeather, 150 },
 				{ "GoogleMaps", 75 },
 			},
 			LastCalledByApi = new Dictionary<string, DateTime?>
 			{
-				{ "OpenWeather", DateTime.UtcNow.AddMinutes(-5) },
+				{ ExternalApiConstants.OpenWeather, DateTime.UtcNow.AddMinutes(-5) },
 				{ "GoogleMaps", DateTime.UtcNow.AddMinutes(-10) },
 			},
 		};

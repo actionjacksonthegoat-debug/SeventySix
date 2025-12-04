@@ -106,6 +106,29 @@
 -   Path aliases: `@infrastructure/*`, `@shared/*`, `@admin/*`, `@game/*`
 -   Server-Client alignment: Identity → `@admin/users/`, Logging → `@admin/logs/`
 
+### Type Organization (YAGNI)
+
+-   **Feature types stay in feature** → Never move to `@infrastructure/` or `@shared/` unless cross-context
+-   **Cross-context types** → `@shared/models/` (TS) or `Shared/Models/` (C#)
+-   **Private types** → Inline in service/component is acceptable
+-   **Same-folder imports** → Types can stay in service if only used within same folder
+-   **Test-only types** → Keep in test file
+-   **Extract only when**: Type is imported by a DIFFERENT module/folder
+
+### Constants Organization (DRY)
+
+-   **Feature constants** → `feature/constants/` folder (e.g., `Identity/Constants/RoleConstants.cs`)
+-   **Cross-feature constants** → `Shared/Constants/` (C#) or `@shared/constants/` (TS)
+-   **Test constants** → `TestUtilities/Constants/` (C#) or `src/app/testing/constants/` (TS)
+-   **NEVER** hardcode strings like `"Developer"`, `"Admin"`, `"User"` - use constants
+-   **NEVER** hardcode API endpoints in tests - use `ApiEndpoints` constants class
+-   **ALWAYS** use `static class` with `const` fields for C# constants
+-   **ALWAYS** use `export const` with SCREAMING_SNAKE_CASE for TS constants
+-   **ALWAYS** group constants by domain: `RoleConstants`, `ClaimConstants`, `ApiEndpoints`
+-   **C# naming**: PascalCase values, `*Constants` suffix → `RoleConstants.Developer`
+-   **TS naming**: SCREAMING_SNAKE_CASE → `ROLE_DEVELOPER`, file suffix `.constants.ts`
+-   **TS test constants**: SCREAMING_SNAKE_CASE → `TEST_ADMIN_USER`, file suffix `.constants.ts`
+
 ## References (Use #file: when needed)
 
 -   **Full C# rules**: `.github/instructions/csharp.md`

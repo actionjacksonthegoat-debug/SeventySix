@@ -11,6 +11,10 @@ import { MatDividerModule } from "@angular/material/divider";
 import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { RouterLink, RouterLinkActive } from "@angular/router";
+import {
+	ROLE_ADMIN,
+	ROLE_DEVELOPER
+} from "@infrastructure/constants/role.constants";
 import { LayoutService } from "@infrastructure/services";
 import { AuthService } from "@infrastructure/services/auth.service";
 
@@ -71,7 +75,7 @@ export class SidebarComponent
 					route: "/developer/style-guide"
 				}
 			],
-			requiredRoles: ["Developer", "Admin"]
+			requiredRoles: [ROLE_DEVELOPER, ROLE_ADMIN]
 		},
 		{
 			title: "Management",
@@ -97,7 +101,7 @@ export class SidebarComponent
 					route: "/admin/logs"
 				}
 			],
-			requiredRoles: ["Admin"]
+			requiredRoles: [ROLE_ADMIN]
 		}
 	];
 

@@ -9,17 +9,14 @@ namespace SeventySix.Logging;
 /// <summary>FluentValidation validator for CreateLogRequest.</summary>
 public class CreateLogRequestValidator : AbstractValidator<CreateLogRequest>
 {
-	private static readonly string[] AllowedLogLevels =
-		["Verbose", "Debug", "Information", "Warning", "Error", "Fatal", "Critical"];
-
 	/// <summary>Initializes a new instance of the <see cref="CreateLogRequestValidator"/> class.</summary>
 	public CreateLogRequestValidator()
 	{
 		RuleFor(request => request.LogLevel)
 			.NotEmpty()
 			.WithMessage("LogLevel is required")
-			.Must(level => AllowedLogLevels.Contains(level))
-			.WithMessage($"LogLevel must be one of: {string.Join(", ", AllowedLogLevels)}");
+			.Must(level => LogLevelConstants.CreateLevels.Contains(level))
+			.WithMessage($"LogLevel must be one of: {string.Join(", ", LogLevelConstants.CreateLevels)}");
 
 		RuleFor(request => request.Message)
 			.NotEmpty()

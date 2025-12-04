@@ -11,6 +11,7 @@ using NSubstitute.ExceptionExtensions;
 using SeventySix.Identity;
 using SeventySix.Shared;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestHelpers;
 
 namespace SeventySix.Tests.Identity;
@@ -106,9 +107,9 @@ public class UserServiceTests
 		// Arrange
 		List<UserDto> userDtos =
 		[
-			new UserDto { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
-			new UserDto { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
-			new UserDto { Id = 3, Username = "user3", Email = "user3@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
+			new UserDto { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = TestAuditConstants.SystemUser, ModifiedBy = TestAuditConstants.SystemUser },
+			new UserDto { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false, CreateDate = DateTime.UtcNow, CreatedBy = TestAuditConstants.SystemUser, ModifiedBy = TestAuditConstants.SystemUser },
+			new UserDto { Id = 3, Username = "user3", Email = "user3@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = TestAuditConstants.SystemUser, ModifiedBy = TestAuditConstants.SystemUser },
 		];
 
 		Repository
@@ -346,8 +347,8 @@ public class UserServiceTests
 				capturedUser.Id = 1;
 				// Simulate what AuditInterceptor would do
 				capturedUser.CreateDate = DateTime.UtcNow;
-				capturedUser.CreatedBy = "System";
-				capturedUser.ModifiedBy = "System";
+				capturedUser.CreatedBy = TestAuditConstants.SystemUser;
+				capturedUser.ModifiedBy = TestAuditConstants.SystemUser;
 				return capturedUser;
 			});
 
@@ -358,7 +359,7 @@ public class UserServiceTests
 		Assert.NotNull(capturedUser);
 		// Service passes entity with default values - interceptor sets them on save
 		// After mock callback simulating interceptor, values are set
-		Assert.Equal("System", capturedUser.CreatedBy);
+		Assert.Equal(TestAuditConstants.SystemUser, capturedUser.CreatedBy);
 	}
 
 	[Fact]
@@ -507,7 +508,7 @@ public class UserServiceTests
 			FullName = "Old User",
 			IsActive = true,
 			CreateDate = DateTime.UtcNow.AddDays(-1),
-			CreatedBy = "System",
+			CreatedBy = TestAuditConstants.SystemUser,
 			IsDeleted = false,
 			RowVersion = 1,
 		};
@@ -522,7 +523,7 @@ public class UserServiceTests
 			CreateDate = existingUser.CreateDate,
 			CreatedBy = existingUser.CreatedBy,
 			ModifyDate = DateTime.UtcNow,
-			ModifiedBy = "System",
+			ModifiedBy = TestAuditConstants.SystemUser,
 			IsDeleted = false,
 			RowVersion = 2,
 		};
@@ -617,7 +618,7 @@ public class UserServiceTests
 			FullName = "Test User",
 			IsActive = true,
 			CreateDate = DateTime.UtcNow.AddDays(-1),
-			CreatedBy = "System",
+			CreatedBy = TestAuditConstants.SystemUser,
 			IsDeleted = false,
 			RowVersion = 1,
 		};
@@ -665,7 +666,7 @@ public class UserServiceTests
 			FullName = "Test User",
 			IsActive = true,
 			CreateDate = DateTime.UtcNow.AddDays(-1),
-			CreatedBy = "System",
+			CreatedBy = TestAuditConstants.SystemUser,
 			IsDeleted = false,
 			RowVersion = 1,
 		};
@@ -755,8 +756,8 @@ public class UserServiceTests
 				FullName = "Test User 1",
 				IsActive = true,
 				CreateDate = DateTime.UtcNow,
-				CreatedBy = "System",
-				ModifiedBy = "System",
+				CreatedBy = TestAuditConstants.SystemUser,
+				ModifiedBy = TestAuditConstants.SystemUser,
 			},
 			new UserDto
 			{
@@ -766,8 +767,8 @@ public class UserServiceTests
 				FullName = "Test User 2",
 				IsActive = true,
 				CreateDate = DateTime.UtcNow,
-				CreatedBy = "System",
-				ModifiedBy = "System",
+				CreatedBy = TestAuditConstants.SystemUser,
+				ModifiedBy = TestAuditConstants.SystemUser,
 			},
 		];
 
@@ -810,11 +811,11 @@ public class UserServiceTests
 		{
 			Id = 1,
 			Username = username,
-			Email = "test@example.com",
+			Email = TestUserConstants.DefaultEmail,
 			FullName = "Test User",
 			IsActive = true,
 			CreateDate = DateTime.UtcNow,
-			CreatedBy = "System",
+			CreatedBy = TestAuditConstants.SystemUser,
 			IsDeleted = false,
 			RowVersion = 1,
 		};
@@ -859,12 +860,12 @@ public class UserServiceTests
 		User user = new User
 		{
 			Id = 1,
-			Username = "testuser",
+			Username = TestUserConstants.DefaultUsername,
 			Email = email,
 			FullName = "Test User",
 			IsActive = true,
 			CreateDate = DateTime.UtcNow,
-			CreatedBy = "System",
+			CreatedBy = TestAuditConstants.SystemUser,
 			IsDeleted = false,
 			RowVersion = 1,
 		};

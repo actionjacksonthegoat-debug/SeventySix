@@ -5,6 +5,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
 using Xunit;
@@ -20,7 +21,7 @@ public class UsersControllerPermissionRequestsAuthorizationTests(
 	TestcontainersPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
-	private const string BaseEndpoint = "/api/v1/users";
+	private const string BaseEndpoint = ApiEndpoints.Users.Base;
 	private AuthorizationTestHelper AuthHelper = null!;
 
 	/// <inheritdoc/>
@@ -48,7 +49,7 @@ public class UsersControllerPermissionRequestsAuthorizationTests(
 	[Fact]
 	public Task GetPermissionRequestsAsync_WithUserRole_ReturnsForbiddenAsync()
 		=> AuthHelper.AssertForbiddenForRoleAsync(
-			"User",
+			TestRoleConstants.User,
 			HttpMethod.Get,
 			$"{BaseEndpoint}/permission-requests");
 
@@ -58,7 +59,7 @@ public class UsersControllerPermissionRequestsAuthorizationTests(
 	[Fact]
 	public Task GetPermissionRequestsAsync_WithDeveloperRole_ReturnsForbiddenAsync()
 		=> AuthHelper.AssertForbiddenForRoleAsync(
-			"Developer",
+			TestRoleConstants.Developer,
 			HttpMethod.Get,
 			$"{BaseEndpoint}/permission-requests");
 
@@ -68,7 +69,7 @@ public class UsersControllerPermissionRequestsAuthorizationTests(
 	[Fact]
 	public Task GetPermissionRequestsAsync_WithAdminRole_ReturnsOkAsync()
 		=> AuthHelper.AssertAuthorizedForRoleAsync(
-			"Admin",
+			TestRoleConstants.Admin,
 			HttpMethod.Get,
 			$"{BaseEndpoint}/permission-requests");
 
@@ -91,7 +92,7 @@ public class UsersControllerPermissionRequestsAuthorizationTests(
 	[Fact]
 	public Task GetAvailableRolesAsync_WithUserRole_ReturnsOkAsync()
 		=> AuthHelper.AssertAuthorizedForRoleAsync(
-			"User",
+			TestRoleConstants.User,
 			HttpMethod.Get,
 			$"{BaseEndpoint}/me/available-roles");
 
@@ -107,7 +108,7 @@ public class UsersControllerPermissionRequestsAuthorizationTests(
 		=> AuthHelper.AssertUnauthorizedAsync(
 			HttpMethod.Post,
 			$"{BaseEndpoint}/me/permission-requests",
-			JsonContent.Create(new CreatePermissionRequestDto(["Developer"])));
+			JsonContent.Create(new CreatePermissionRequestDto([TestRoleConstants.Developer])));
 
 	/// <summary>
 	/// Tests that POST /api/v1/users/me/permission-requests returns 204 for User role with valid request.
@@ -115,11 +116,11 @@ public class UsersControllerPermissionRequestsAuthorizationTests(
 	[Fact]
 	public Task CreatePermissionRequestsAsync_WithUserRole_ReturnsNoContentAsync()
 		=> AuthHelper.AssertStatusCodeForRoleAsync(
-			"User",
+			TestRoleConstants.User,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/me/permission-requests",
 			HttpStatusCode.NoContent,
-			JsonContent.Create(new CreatePermissionRequestDto(["Developer"], "Need access")));
+			JsonContent.Create(new CreatePermissionRequestDto([TestRoleConstants.Developer], "Need access")));
 
 	#endregion
 }

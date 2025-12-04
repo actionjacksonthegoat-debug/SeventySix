@@ -6,19 +6,7 @@ import {
 } from "@angular/material/dialog";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
-
-/**
- * Confirmation dialog data interface
- */
-export interface ConfirmDialogData
-{
-	title: string;
-	message: string;
-	confirmText?: string;
-	cancelText?: string;
-	confirmColor?: "primary" | "accent" | "warn";
-	icon?: string;
-}
+import { ConfirmDialogData } from "@shared/models";
 
 /**
  * Reusable confirmation dialog component
