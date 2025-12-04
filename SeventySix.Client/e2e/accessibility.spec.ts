@@ -1,5 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import type { Result } from "axe-core";
 
 /**
  * WCAG Accessibility E2E Tests using axe-core
@@ -11,19 +12,6 @@ import AxeBuilder from "@axe-core/playwright";
  * Uses axe-core/playwright for automated accessibility auditing.
  * Filters for critical and serious violations only to avoid noise.
  */
-
-interface AxeViolation
-{
-	id: string;
-	impact: string | null;
-	description: string;
-	nodes: Array<{ html: string; target: string[] }>;
-}
-
-interface AxeResults
-{
-	violations: AxeViolation[];
-}
 
 /**
  * Pages to test for accessibility compliance.
@@ -51,17 +39,16 @@ test.describe("WCAG Accessibility Compliance", () =>
 			// Wait for page to be fully loaded
 			await page.waitForLoadState("networkidle");
 
-			const axeResults: AxeResults = await new AxeBuilder({ page })
+			const axeResults = await new AxeBuilder({ page })
 				.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
 				.analyze();
 
 			// Filter for critical and serious violations only
-			const criticalViolations: AxeViolation[] =
-				axeResults.violations.filter(
-					(violation: AxeViolation) =>
-						violation.impact === "critical" ||
-						violation.impact === "serious"
-				);
+			const criticalViolations: Result[] = axeResults.violations.filter(
+				(violation: Result) =>
+					violation.impact === "critical" ||
+					violation.impact === "serious"
+			);
 
 			// Log violations for debugging (only if there are failures)
 			if (criticalViolations.length > 0)
@@ -69,7 +56,7 @@ test.describe("WCAG Accessibility Compliance", () =>
 				console.log(
 					`Accessibility violations on ${pageInfo.name}:`,
 					JSON.stringify(
-						criticalViolations.map((v: AxeViolation) => ({
+						criticalViolations.map((v: Result) => ({
 							id: v.id,
 							impact: v.impact,
 							description: v.description,
@@ -99,15 +86,13 @@ test.describe("WCAG Accessibility Compliance", () =>
 			await page.goto("/");
 			await page.waitForLoadState("networkidle");
 
-			const axeResults: AxeResults = await new AxeBuilder({ page })
+			const axeResults = await new AxeBuilder({ page })
 				.withTags(["wcag2aa"])
 				.analyze();
 
-			const contrastViolations: AxeViolation[] =
-				axeResults.violations.filter(
-					(violation: AxeViolation) =>
-						violation.id === "color-contrast"
-				);
+			const contrastViolations: Result[] = axeResults.violations.filter(
+				(violation: Result) => violation.id === "color-contrast"
+			);
 
 			expect(
 				contrastViolations,
@@ -124,15 +109,13 @@ test.describe("WCAG Accessibility Compliance", () =>
 			await page.goto("/auth/login");
 			await page.waitForLoadState("networkidle");
 
-			const axeResults: AxeResults = await new AxeBuilder({ page })
+			const axeResults = await new AxeBuilder({ page })
 				.withTags(["wcag2aa"])
 				.analyze();
 
-			const contrastViolations: AxeViolation[] =
-				axeResults.violations.filter(
-					(violation: AxeViolation) =>
-						violation.id === "color-contrast"
-				);
+			const contrastViolations: Result[] = axeResults.violations.filter(
+				(violation: Result) => violation.id === "color-contrast"
+			);
 
 			expect(
 				contrastViolations,
@@ -152,17 +135,16 @@ test.describe("WCAG Accessibility Compliance", () =>
 			await page.goto("/");
 			await page.waitForLoadState("networkidle");
 
-			const axeResults: AxeResults = await new AxeBuilder({ page })
+			const axeResults = await new AxeBuilder({ page })
 				.withTags(["wcag2a"])
 				.analyze();
 
-			const keyboardViolations: AxeViolation[] =
-				axeResults.violations.filter(
-					(violation: AxeViolation) =>
-						violation.id === "keyboard" ||
-						violation.id === "focus-order-semantics" ||
-						violation.id === "focusable-content"
-				);
+			const keyboardViolations: Result[] = axeResults.violations.filter(
+				(violation: Result) =>
+					violation.id === "keyboard" ||
+					violation.id === "focus-order-semantics" ||
+					violation.id === "focusable-content"
+			);
 
 			expect(
 				keyboardViolations,
@@ -219,16 +201,15 @@ test.describe("WCAG Accessibility Compliance", () =>
 			await page.goto("/");
 			await page.waitForLoadState("networkidle");
 
-			const axeResults: AxeResults = await new AxeBuilder({ page })
+			const axeResults = await new AxeBuilder({ page })
 				.withTags(["wcag2a"])
 				.analyze();
 
-			const imageViolations: AxeViolation[] =
-				axeResults.violations.filter(
-					(violation: AxeViolation) =>
-						violation.id === "image-alt" ||
-						violation.id === "image-redundant-alt"
-				);
+			const imageViolations: Result[] = axeResults.violations.filter(
+				(violation: Result) =>
+					violation.id === "image-alt" ||
+					violation.id === "image-redundant-alt"
+			);
 
 			expect(
 				imageViolations,

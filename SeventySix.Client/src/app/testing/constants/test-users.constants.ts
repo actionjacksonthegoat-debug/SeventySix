@@ -26,7 +26,10 @@ export const TEST_ADMIN_USER: string = "admin";
 export const TEST_UPDATED_EMAIL: string = "updated@example.com";
 
 /** User-specific test emails. */
-export const TEST_USER_EMAILS = {
+export const TEST_USER_EMAILS: {
+	readonly USER_1: string;
+	readonly USER_2: string;
+} = {
 	USER_1: "user1@example.com",
-	USER_2: "user2@example.com",
+	USER_2: "user2@example.com"
 } as const;
