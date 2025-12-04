@@ -9,7 +9,7 @@
 				(click)="onCancel()"
 				[disabled]="isSaving()"
 			>
-				<mat-icon>arrow_back</mat-icon>
+				<mat-icon aria-hidden="true">arrow_back</mat-icon>
 				Cancel
 			</button>
 			<button
@@ -28,7 +28,7 @@
 				@else
 				{
 					<ng-container>
-						<mat-icon>save</mat-icon>
+						<mat-icon aria-hidden="true">save</mat-icon>
 						Save Changes
 					</ng-container>
 				}
@@ -52,7 +52,7 @@
 			<mat-card appearance="outlined" class="error-card">
 				<mat-card-content>
 					<div class="error-content">
-						<mat-icon color="warn" class="error-icon"
+						<mat-icon color="warn" class="error-icon" aria-hidden="true"
 							>error</mat-icon
 						>
 						<p class="mat-body-1">{{ error() }}</p>
@@ -61,7 +61,7 @@
 							type="button"
 							(click)="onCancel()"
 						>
-							<mat-icon>arrow_back</mat-icon>
+							<mat-icon aria-hidden="true">arrow_back</mat-icon>
 							Back to Users
 						</button>
 					</div>
@@ -80,7 +80,7 @@
 				<mat-card appearance="outlined" class="alert-card error">
 					<mat-card-content>
 						<div class="alert-content">
-							<mat-icon color="warn">warning</mat-icon>
+							<mat-icon color="warn" aria-hidden="true">warning</mat-icon>
 							<span class="mat-body-1">{{ saveError() }}</span>
 						</div>
 					</mat-card-content>
@@ -107,7 +107,7 @@
 								autocomplete="username"
 								required
 							/>
-							<mat-icon matIconPrefix>person</mat-icon>
+							<mat-icon matIconPrefix aria-hidden="true">person</mat-icon>
 							@if (
 								userForm.get("username")?.hasError("required")
 							)
@@ -143,7 +143,7 @@
 								autocomplete="email"
 								required
 							/>
-							<mat-icon matIconPrefix>email</mat-icon>
+							<mat-icon matIconPrefix aria-hidden="true">email</mat-icon>
 							@if (userForm.get("email")?.hasError("required"))
 							{
 								<mat-error>Email is required</mat-error>
@@ -169,7 +169,7 @@
 								placeholder="Enter full name"
 								autocomplete="name"
 							/>
-							<mat-icon matIconPrefix>badge</mat-icon>
+							<mat-icon matIconPrefix aria-hidden="true">badge</mat-icon>
 							@if (
 								userForm.get("fullName")?.hasError("maxlength")
 							)
@@ -202,7 +202,7 @@
 					<mat-expansion-panel>
 						<mat-expansion-panel-header>
 							<mat-panel-title>
-								<mat-icon>info</mat-icon>
+								<mat-icon aria-hidden="true">info</mat-icon>
 								Audit Information
 							</mat-panel-title>
 						</mat-expansion-panel-header>
@@ -256,7 +256,7 @@
 					<mat-card appearance="outlined" class="roles-card">
 						<mat-card-header>
 							<mat-card-title>
-								<mat-icon>admin_panel_settings</mat-icon>
+								<mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
 								User Roles
 							</mat-card-title>
 						</mat-card-header>
@@ -281,7 +281,7 @@
 												>
 													{{ role }}
 													<button matChipRemove>
-														<mat-icon>cancel</mat-icon>
+														<mat-icon aria-hidden="true">cancel</mat-icon>
 													</button>
 												</mat-chip>
 											}
@@ -302,7 +302,7 @@
 												(click)="onAddRole(role)"
 												[disabled]="isRoleMutating()"
 											>
-												<mat-icon>add</mat-icon>
+												<mat-icon aria-hidden="true">add</mat-icon>
 												{{ role }}
 											</button>
 										}
@@ -323,7 +323,7 @@
 						<mat-card-content>
 							<div class="info-grid">
 								<div class="info-item">
-									<mat-icon class="info-icon"
+									<mat-icon class="info-icon" aria-hidden="true"
 										>schedule</mat-icon
 									>
 									<div class="info-details">
@@ -339,7 +339,7 @@
 									</div>
 								</div>
 								<div class="info-item">
-									<mat-icon class="info-icon"
+									<mat-icon class="info-icon" aria-hidden="true"
 										>fingerprint</mat-icon
 									>
 									<div class="info-details">

@@ -1,6 +1,5 @@
 import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { RouterLink } from "@angular/router";
 
@@ -19,7 +18,7 @@ interface QuickAction
  */
 @Component({
 	selector: "app-home",
-	imports: [MatCardModule, MatButtonModule, MatIconModule, RouterLink],
+	imports: [MatCardModule, MatIconModule, RouterLink],
 	templateUrl: "./home.component.html",
 	styleUrl: "./home.component.scss",
 	changeDetection: ChangeDetectionStrategy.OnPush

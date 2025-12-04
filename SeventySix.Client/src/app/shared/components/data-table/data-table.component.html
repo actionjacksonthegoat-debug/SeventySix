@@ -15,7 +15,7 @@
 					placeholder="Search..."
 					aria-label="Search table data"
 				/>
-				<mat-icon matIconPrefix>search</mat-icon>
+				<mat-icon matIconPrefix aria-hidden="true">search</mat-icon>
 				<button
 					mat-icon-button
 					matIconSuffix
@@ -24,7 +24,7 @@
 					aria-label="Execute search"
 					type="button"
 				>
-					<mat-icon>search</mat-icon>
+					<mat-icon aria-hidden="true">search</mat-icon>
 				</button>
 			</mat-form-field>
 		}
@@ -40,7 +40,7 @@
 				matTooltip="Refresh"
 				aria-label="Refresh table data"
 			>
-				<mat-icon>refresh</mat-icon>
+				<mat-icon aria-hidden="true">refresh</mat-icon>
 			</button>
 		}
 
@@ -51,7 +51,7 @@
 			matTooltip="Column visibility"
 			aria-label="Toggle column visibility"
 		>
-			<mat-icon>view_column</mat-icon>
+			<mat-icon aria-hidden="true">view_column</mat-icon>
 		</button>
 
 		<!-- Create Button -->
@@ -63,7 +63,7 @@
 				(click)="onCreate()"
 				aria-label="Create new item"
 			>
-				<mat-icon>add</mat-icon>
+				<mat-icon aria-hidden="true">add</mat-icon>
 				Create
 			</button>
 		}
@@ -88,7 +88,7 @@
 						>
 							@if (filter.icon)
 							{
-								<mat-icon>{{ filter.icon }}</mat-icon>
+								<mat-icon aria-hidden="true">{{ filter.icon }}</mat-icon>
 							}
 							{{ filter.label }}
 						</mat-chip-option>
@@ -109,9 +109,9 @@
 						[matMenuTriggerFor]="dateRangeMenu"
 						aria-label="Select date range"
 					>
-						<mat-icon>{{ dateRangeIcon() }}</mat-icon>
+						<mat-icon aria-hidden="true">{{ dateRangeIcon() }}</mat-icon>
 						{{ dateRangeLabel() }}
-						<mat-icon class="dropdown-arrow"
+						<mat-icon class="dropdown-arrow" aria-hidden="true"
 							>arrow_drop_down</mat-icon
 						>
 					</button>
@@ -123,7 +123,7 @@
 							(click)="onDateRangeChange('1h')"
 							[class.active-range]="selectedDateRange() === '1h'"
 						>
-							<mat-icon>schedule</mat-icon>
+							<mat-icon aria-hidden="true">schedule</mat-icon>
 							<span>1 Hour</span>
 						</button>
 						<button
@@ -131,7 +131,7 @@
 							(click)="onDateRangeChange('24h')"
 							[class.active-range]="selectedDateRange() === '24h'"
 						>
-							<mat-icon>today</mat-icon>
+							<mat-icon aria-hidden="true">today</mat-icon>
 							<span>24 Hours</span>
 						</button>
 						<button
@@ -139,7 +139,7 @@
 							(click)="onDateRangeChange('7d')"
 							[class.active-range]="selectedDateRange() === '7d'"
 						>
-							<mat-icon>date_range</mat-icon>
+							<mat-icon aria-hidden="true">date_range</mat-icon>
 							<span>7 Days</span>
 						</button>
 						<button
@@ -147,7 +147,7 @@
 							(click)="onDateRangeChange('30d')"
 							[class.active-range]="selectedDateRange() === '30d'"
 						>
-							<mat-icon>calendar_month</mat-icon>
+							<mat-icon aria-hidden="true">calendar_month</mat-icon>
 							<span>30 Days</span>
 						</button>
 					</mat-menu>
@@ -175,7 +175,7 @@
 					mat-menu-item
 					(click)="toggleColumn(column.key); $event.stopPropagation()"
 				>
-					<mat-icon>{{
+					<mat-icon aria-hidden="true">{{
 						columnVisible(column.key)
 							? "check_box"
 							: "check_box_outline_blank"
@@ -191,7 +191,7 @@
 	{
 		<div class="selection-panel" @slideDown>
 			<div class="selection-info">
-				<mat-icon>check_circle</mat-icon>
+				<mat-icon aria-hidden="true">check_circle</mat-icon>
 				<span>
 					{{ selectedCount() }} item{{
 						selectedCount() !== 1 ? "s" : ""
@@ -207,7 +207,7 @@
 						[color]="action.color || 'primary'"
 						(click)="onBulkAction(action.key)"
 					>
-						<mat-icon>{{ action.icon }}</mat-icon>
+						<mat-icon aria-hidden="true">{{ action.icon }}</mat-icon>
 						{{ action.label }}
 					</button>
 				}
@@ -218,7 +218,7 @@
 	<!-- Loading State -->
 	@if (isLoading())
 	{
-		<div class="loading-container">
+		<div class="loading-container" role="status" aria-label="Loading table data">
 			<mat-spinner diameter="50"></mat-spinner>
 		</div>
 	}
@@ -226,9 +226,9 @@
 	<!-- Error State -->
 	@if (error() && !isLoading())
 	{
-		<mat-card class="error-card">
+		<mat-card class="error-card" role="alert">
 			<mat-card-content>
-				<mat-icon color="warn">error</mat-icon>
+				<mat-icon color="warn" aria-hidden="true">error</mat-icon>
 				{{ error() }}
 			</mat-card-content>
 		</mat-card>
@@ -356,7 +356,7 @@
 										"
 										aria-label="Row action"
 									>
-										<mat-icon>{{
+										<mat-icon aria-hidden="true">{{
 											rowActions()[0].icon
 										}}</mat-icon>
 									</button>
@@ -370,7 +370,7 @@
 										(click)="$event.stopPropagation()"
 										aria-label="Row actions"
 									>
-										<mat-icon>more_vert</mat-icon>
+										<mat-icon aria-hidden="true">more_vert</mat-icon>
 									</button>
 									<mat-menu #actionMenu="matMenu">
 										@for (
@@ -394,7 +394,7 @@
 														action.color === 'warn'
 													"
 												>
-													<mat-icon>{{
+													<mat-icon aria-hidden="true">{{
 														action.icon
 													}}</mat-icon>
 													{{ action.label }}

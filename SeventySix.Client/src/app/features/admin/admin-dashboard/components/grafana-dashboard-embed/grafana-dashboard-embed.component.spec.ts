@@ -86,4 +86,55 @@ describe("GrafanaDashboardEmbedComponent", () =>
 
 		expect(component.height()).toBe("800px");
 	});
+
+	describe("Accessibility", () =>
+	{
+		it("should have accessible title on iframe", () =>
+		{
+			fixture.componentRef.setInput("title", "System Overview");
+			fixture.detectChanges();
+
+			const iframe: HTMLIFrameElement =
+				fixture.nativeElement.querySelector("iframe");
+
+			expect(iframe.title).toBe("System Overview dashboard");
+		});
+
+		it("should have role=status on loading container when loading", () =>
+		{
+			// Force loading state by setting input
+			fixture.componentRef.setInput("isLoading", true);
+			fixture.detectChanges();
+
+			const loadingContainer: HTMLElement =
+				fixture.nativeElement.querySelector(".loading-container");
+
+			expect(loadingContainer).toBeTruthy();
+			expect(loadingContainer.getAttribute("role")).toBe("status");
+			expect(loadingContainer.getAttribute("aria-live")).toBe("polite");
+		});
+
+		it("should have visually hidden loading text for screen readers", () =>
+		{
+			fixture.componentRef.setInput("isLoading", true);
+			fixture.detectChanges();
+
+			const loadingText: HTMLElement =
+				fixture.nativeElement.querySelector(".loading-container .visually-hidden");
+
+			expect(loadingText).toBeTruthy();
+			expect(loadingText.textContent).toContain("Loading");
+		});
+
+		it("should have aria-label on progress spinner", () =>
+		{
+			fixture.componentRef.setInput("isLoading", true);
+			fixture.detectChanges();
+
+			const spinner: HTMLElement =
+				fixture.nativeElement.querySelector("mat-progress-spinner");
+
+			expect(spinner.getAttribute("aria-label")).toBe("Loading dashboard");
+		});
+	});
 });

@@ -39,7 +39,7 @@
 					<mat-card>
 						<mat-card-header>
 							<mat-card-title>
-								<mat-icon>science</mat-icon>
+								<mat-icon aria-hidden="true">science</mat-icon>
 								Log Validations
 							</mat-card-title>
 						</mat-card-header>
@@ -49,21 +49,21 @@
 									mat-stroked-button
 									(click)="sendInfoLog()"
 								>
-									<mat-icon>info</mat-icon>
+									<mat-icon aria-hidden="true">info</mat-icon>
 									Info
 								</button>
 								<button
 									mat-stroked-button
 									(click)="sendWarnLog()"
 								>
-									<mat-icon>warning</mat-icon>
+									<mat-icon aria-hidden="true">warning</mat-icon>
 									Warn
 								</button>
 								<button
 									mat-stroked-button
 									(click)="sendErrorLog()"
 								>
-									<mat-icon>error</mat-icon>
+									<mat-icon aria-hidden="true">error</mat-icon>
 									Error
 								</button>
 							</div>
@@ -74,7 +74,7 @@
 					<mat-card>
 						<mat-card-header>
 							<mat-card-title>
-								<mat-icon>visibility</mat-icon>
+								<mat-icon aria-hidden="true">visibility</mat-icon>
 								Observability Tools
 							</mat-card-title>
 						</mat-card-header>
@@ -85,7 +85,7 @@
 									color="accent"
 									(click)="openJaeger()"
 								>
-									<mat-icon>bug_report</mat-icon>
+									<mat-icon aria-hidden="true">bug_report</mat-icon>
 									Jaeger Tracing
 								</button>
 								<button
@@ -93,7 +93,7 @@
 									color="accent"
 									(click)="openPrometheus()"
 								>
-									<mat-icon>analytics</mat-icon>
+									<mat-icon aria-hidden="true">analytics</mat-icon>
 									Prometheus Metrics
 								</button>
 								<button
@@ -101,7 +101,7 @@
 									color="accent"
 									(click)="openGrafana()"
 								>
-									<mat-icon>open_in_new</mat-icon>
+									<mat-icon aria-hidden="true">open_in_new</mat-icon>
 									Grafana Full View
 								</button>
 							</div>

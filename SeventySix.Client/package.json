@@ -52,6 +52,7 @@
 		"@angular/build": "^20.3.9",
 		"@angular/cli": "^20.3.9",
 		"@angular/compiler-cli": "^20.3.0",
+		"@axe-core/playwright": "^4.11.0",
 		"@playwright/test": "^1.56.1",
 		"@types/jasmine": "~5.1.0",
 		"@typescript-eslint/eslint-plugin": "^8.0.0",

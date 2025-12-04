@@ -9,6 +9,7 @@
 				class="btn-oauth btn-github"
 				[disabled]="isLoading()"
 				(click)="onGitHubLogin()"
+				aria-label="Continue with GitHub"
 			>
 				<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
 					<path
@@ -24,28 +25,45 @@
 		</div>
 
 		<!-- Local Login Form -->
-		<form (ngSubmit)="onLocalLogin()" class="login-form">
-			<div class="form-group">
+		<form
+			(ngSubmit)="onLocalLogin()"
+			class="login-form"
+			#loginForm="ngForm"
+		>
+			<div class="form-group required">
 				<label for="usernameOrEmail">Username or Email</label>
 				<input
 					id="usernameOrEmail"
 					type="text"
 					[(ngModel)]="usernameOrEmail"
 					name="usernameOrEmail"
+					#usernameField="ngModel"
 					required
 					autocomplete="username"
+					aria-required="true"
+					[attr.aria-invalid]="usernameField.invalid && usernameField.touched"
+					aria-describedby="usernameOrEmail-hint"
 				/>
+				<span
+					id="usernameOrEmail-hint"
+					class="visually-hidden"
+				>
+					Enter your username or email address
+				</span>
 			</div>
 
-			<div class="form-group">
+			<div class="form-group required">
 				<label for="password">Password</label>
 				<input
 					id="password"
 					type="password"
 					[(ngModel)]="password"
 					name="password"
+					#passwordField="ngModel"
 					required
 					autocomplete="current-password"
+					aria-required="true"
+					[attr.aria-invalid]="passwordField.invalid && passwordField.touched"
 				/>
 			</div>
 
@@ -53,7 +71,12 @@
 				<a routerLink="/auth/forgot-password">Forgot password?</a>
 			</div>
 
-			<button type="submit" class="btn-primary" [disabled]="isLoading()">
+			<button
+				type="submit"
+				class="btn-primary"
+				[disabled]="isLoading()"
+				[attr.aria-busy]="isLoading()"
+			>
 				@if (isLoading())
 				{
 					Signing in...

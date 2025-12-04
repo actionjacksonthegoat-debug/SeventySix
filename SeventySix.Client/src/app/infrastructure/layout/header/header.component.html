@@ -1,13 +1,13 @@
-<mat-toolbar color="primary" class="app-header">
+<mat-toolbar color="primary" class="app-header" role="banner">
 	<!-- Menu Toggle for Mobile -->
 	<button
 		mat-icon-button
 		(click)="toggleSidebar()"
 		matTooltip="Toggle menu"
-		aria-label="Toggle menu"
+		aria-label="Toggle navigation menu"
 		class="menu-toggle"
 	>
-		<mat-icon>menu</mat-icon>
+		<mat-icon aria-hidden="true">menu</mat-icon>
 	</button>
 
 	<!-- Logo/Brand -->
@@ -35,7 +35,7 @@
 		"
 		aria-label="Toggle color scheme"
 	>
-		<mat-icon>{{
+		<mat-icon aria-hidden="true">{{
 			themeService.isBlue() ? "water_drop" : "local_fire_department"
 		}}</mat-icon>
 	</button>
@@ -50,7 +50,7 @@
 		"
 		aria-label="Toggle brightness"
 	>
-		<mat-icon>{{
+		<mat-icon aria-hidden="true">{{
 			themeService.isDark() ? "light_mode" : "dark_mode"
 		}}</mat-icon>
 	</button>
@@ -65,16 +65,16 @@
 			aria-label="Account options"
 			data-testid="guest-menu-button"
 		>
-			<mat-icon>person_outline</mat-icon>
+			<mat-icon aria-hidden="true">person_outline</mat-icon>
 		</button>
 
 		<mat-menu #guestMenu="matMenu">
 			<button mat-menu-item (click)="navigateToLogin()">
-				<mat-icon>login</mat-icon>
+				<mat-icon aria-hidden="true">login</mat-icon>
 				<span>Sign In</span>
 			</button>
 			<button mat-menu-item (click)="navigateToRegister()">
-				<mat-icon>person_add</mat-icon>
+				<mat-icon aria-hidden="true">person_add</mat-icon>
 				<span>Create Account</span>
 			</button>
 		</mat-menu>
@@ -90,21 +90,21 @@
 			aria-label="User menu"
 			data-testid="user-menu-button"
 		>
-			<mat-icon>account_circle</mat-icon>
+			<mat-icon aria-hidden="true">account_circle</mat-icon>
 		</button>
 
 		<mat-menu #userMenu="matMenu">
 			<div class="user-menu-header" mat-menu-item disabled>
 				<span data-testid="user-fullname">{{ displayName() }}</span>
 			</div>
-			<mat-divider></mat-divider>
+			<mat-divider role="separator"></mat-divider>
 			<button mat-menu-item (click)="navigateToAccount()">
-				<mat-icon>person</mat-icon>
+				<mat-icon aria-hidden="true">person</mat-icon>
 				<span>Profile</span>
 			</button>
-			<mat-divider></mat-divider>
+			<mat-divider role="separator"></mat-divider>
 			<button mat-menu-item (click)="logout()">
-				<mat-icon>logout</mat-icon>
+				<mat-icon aria-hidden="true">logout</mat-icon>
 				<span>Logout</span>
 			</button>
 		</mat-menu>

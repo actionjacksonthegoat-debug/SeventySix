@@ -34,7 +34,7 @@
 				aria-label="Open this specific trace in Jaeger"
 				color="warn"
 			>
-				<mat-icon>bug_report</mat-icon>
+				<mat-icon aria-hidden="true">bug_report</mat-icon>
 			</button>
 			<button
 				mat-icon-button
@@ -42,7 +42,7 @@
 				matTooltip="Copy to clipboard"
 				aria-label="Copy log details to clipboard"
 			>
-				<mat-icon>content_copy</mat-icon>
+				<mat-icon aria-hidden="true">content_copy</mat-icon>
 			</button>
 			<button
 				mat-icon-button
@@ -51,7 +51,7 @@
 				color="warn"
 				aria-label="Delete this log entry"
 			>
-				<mat-icon>delete</mat-icon>
+				<mat-icon aria-hidden="true">delete</mat-icon>
 			</button>
 			<button
 				mat-icon-button
@@ -59,7 +59,7 @@
 				matTooltip="Close (Esc)"
 				aria-label="Close dialog (Press Escape)"
 			>
-				<mat-icon>close</mat-icon>
+				<mat-icon aria-hidden="true">close</mat-icon>
 			</button>
 		</div>
 	</div>
@@ -109,7 +109,7 @@
 							{
 								<div class="error-item exception-message">
 									<div class="error-label">
-										<mat-icon>message</mat-icon>
+										<mat-icon aria-hidden="true">message</mat-icon>
 										<span>Exception Message</span>
 									</div>
 									<div class="error-value">
@@ -122,7 +122,7 @@
 							{
 								<div class="error-item base-exception">
 									<div class="error-label">
-										<mat-icon>report</mat-icon>
+										<mat-icon aria-hidden="true">report</mat-icon>
 										<span>Base Exception</span>
 									</div>
 									<div class="error-value">
@@ -169,7 +169,7 @@
 						<div class="stack-breakdown">
 							<!-- Stack Frame Count -->
 							<div class="stack-info">
-								<mat-icon>info</mat-icon>
+								<mat-icon aria-hidden="true">info</mat-icon>
 								<span
 									>{{ stackFrameCount() }} stack frames</span
 								>

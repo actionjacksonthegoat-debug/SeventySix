@@ -24,18 +24,32 @@ h1 {
 	text-align: left;
 }
 
+// Accessible card link wrapper
+.feature-card-link {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+	border-radius: vars.$border-radius-card;
+
+	&:focus-visible {
+		outline: 2px solid var(--mat-sys-primary);
+		outline-offset: 2px;
+	}
+
+	&:hover .feature-card,
+	&:focus-visible .feature-card {
+		transform: translateY(-4px);
+		@include mixins.elevation(lg);
+	}
+}
+
 .feature-card {
-	cursor: pointer;
+	height: 100%;
 	transition:
 		transform vars.$transition-duration-base
 			vars.$transition-easing-standard,
 		box-shadow vars.$transition-duration-base
 			vars.$transition-easing-standard;
-
-	&:hover {
-		transform: translateY(-4px);
-		@include mixins.elevation(lg);
-	}
 
 	&.theme-primary {
 		background-color: var(--mat-sys-primary-container);
@@ -70,11 +84,16 @@ h1 {
 	margin-bottom: vars.$spacing-lg;
 }
 
-mat-card-actions {
-	button {
-		mat-icon {
-			margin-left: vars.$spacing-xs;
-			@include mixins.icon-size(vars.$icon-size-sm);
-		}
+// Card action text (non-interactive, just visual hint)
+.card-action-text {
+	display: inline-flex;
+	align-items: center;
+	gap: vars.$spacing-xs;
+	font-size: vars.$font-size-base;
+	font-weight: 500;
+	color: var(--mat-sys-primary);
+
+	mat-icon {
+		@include mixins.icon-size(vars.$icon-size-sm);
 	}
 }

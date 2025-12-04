@@ -5,7 +5,8 @@ import {
 	InputSignal,
 	computed,
 	Signal,
-	inject
+	inject,
+	InputSignalWithTransform
 } from "@angular/core";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { MatCardModule } from "@angular/material/card";
@@ -84,7 +85,18 @@ export class GrafanaDashboardEmbedComponent
 
 	/**
 	 * Loading state for showing spinner while iframe loads.
-	 * Currently always false; can be extended for actual load detection.
+	 * Can be controlled by parent component.
+	 * @default false
 	 */
-	readonly isLoading: Signal<boolean> = computed(() => false);
+	readonly isLoading: InputSignalWithTransform<boolean, boolean | string> =
+		input<boolean, boolean | string>(false, {
+			transform: (value: boolean | string) => value === true || value === "true"
+		});
+
+	/**
+	 * Computed accessible title for the iframe.
+	 * Appends 'dashboard' suffix for screen reader context.
+	 */
+	readonly iframeTitle: Signal<string> =
+		computed(() => `${this.title()} dashboard`);
 }

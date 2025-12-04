@@ -5,14 +5,17 @@
 	<mat-card-content>
 		@if (isLoading())
 		{
-			<div class="loading-container">
+			<div class="loading-container" role="status" aria-live="polite">
 				<mat-progress-spinner
 					mode="indeterminate"
+					aria-label="Loading dashboard"
 				></mat-progress-spinner>
+				<span class="visually-hidden">Loading {{ title() }} dashboard...</span>
 			</div>
 		}
 		<iframe
 			[src]="sanitizedUrl()"
+			[title]="iframeTitle()"
 			sandbox="allow-scripts allow-same-origin"
 			class="grafana-embed"
 			loading="lazy"

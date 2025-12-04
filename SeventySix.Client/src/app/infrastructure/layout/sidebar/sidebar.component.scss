@@ -53,11 +53,15 @@
 }
 
 .nav-section-title {
+	// Reset h2 default styling
+	margin: 0;
 	font-size: vars.$font-size-xs;
 	font-weight: vars.$font-weight-medium;
 	text-transform: uppercase;
 	padding: vars.$spacing-md vars.$spacing-md vars.$spacing-sm;
-	opacity: 0.7;
+	// Use on-surface-variant for WCAG AA compliant contrast (4.5:1 minimum)
+	// Avoid opacity which reduces contrast ratio unpredictably
+	color: var(--mat-sys-on-surface-variant);
 	letter-spacing: 0.5px;
 	display: block; // Ensure it's always displayed
 	visibility: visible; // Ensure it's always visible

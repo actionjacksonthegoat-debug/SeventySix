@@ -294,3 +294,51 @@ pre {
 		overflow: hidden;
 	}
 }
+
+// =============================================================================
+// FORM ACCESSIBILITY ENHANCEMENTS
+// =============================================================================
+
+// Required field indicator for form labels
+.form-group.required label::after,
+.mat-mdc-form-field.required .mat-mdc-floating-label::after {
+	content: " *";
+	color: var(--color-error);
+}
+
+// Error message styling for non-Material forms
+.form-error {
+	color: var(--color-error);
+	font-size: 0.75rem;
+	margin-top: vars.$spacing-xs;
+}
+
+// Invalid input visual indicator
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+	border-color: var(--color-error) !important;
+}
+
+// =============================================================================
+// REDUCED MOTION ACCESSIBILITY
+// =============================================================================
+// Respects user preference for reduced motion (vestibular disorders, motion sensitivity)
+// WCAG 2.1 Success Criterion 2.3.3 - Animation from Interactions
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+
+	// Disable Material ripple effect
+	.mat-mdc-button-ripple,
+	.mat-mdc-focus-indicator {
+		display: none !important;
+	}
+}
