@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ApiTracking;
 using SeventySix.Shared.Infrastructure;
@@ -34,17 +35,26 @@ public static class ApiTrackingExtensions
 	/// </summary>
 	/// <param name="services">The service collection to register services with.</param>
 	/// <param name="connectionString">The database connection string for ApiTrackingDbContext.</param>
+	/// <param name="configuration">The application configuration for binding settings.</param>
 	/// <returns>The service collection for method chaining.</returns>
 	/// <remarks>
 	/// Service Lifetimes:
 	/// - DbContext: Scoped (per request)
 	/// - Repositories: Scoped (shares DbContext instance)
 	/// - Services: Scoped (shares repository and DbContext)
+	/// - Settings: Singleton (bound from appsettings.json)
 	///
 	/// This method should be called once during application startup.
 	/// </remarks>
-	public static IServiceCollection AddApiTrackingDomain(this IServiceCollection services, string connectionString)
+	public static IServiceCollection AddApiTrackingDomain(
+		this IServiceCollection services,
+		string connectionString,
+		IConfiguration configuration)
 	{
+		// Configure ThirdPartyApiLimitSettings from appsettings.json
+		services.Configure<ThirdPartyApiLimitSettings>(
+			configuration.GetSection(ThirdPartyApiLimitSettings.SECTION_NAME));
+
 		// Register ApiTrackingDbContext with PostgreSQL and AuditInterceptor
 		services.AddDbContext<ApiTrackingDbContext>((serviceProvider, options) =>
 		{

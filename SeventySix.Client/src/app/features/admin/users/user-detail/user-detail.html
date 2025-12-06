@@ -52,7 +52,10 @@
 			<mat-card appearance="outlined" class="error-card">
 				<mat-card-content>
 					<div class="error-content">
-						<mat-icon color="warn" class="error-icon" aria-hidden="true"
+						<mat-icon
+							color="warn"
+							class="error-icon"
+							aria-hidden="true"
 							>error</mat-icon
 						>
 						<p class="mat-body-1">{{ error() }}</p>
@@ -80,7 +83,9 @@
 				<mat-card appearance="outlined" class="alert-card error">
 					<mat-card-content>
 						<div class="alert-content">
-							<mat-icon color="warn" aria-hidden="true">warning</mat-icon>
+							<mat-icon color="warn" aria-hidden="true"
+								>warning</mat-icon
+							>
 							<span class="mat-body-1">{{ saveError() }}</span>
 						</div>
 					</mat-card-content>
@@ -107,7 +112,9 @@
 								autocomplete="username"
 								required
 							/>
-							<mat-icon matIconPrefix aria-hidden="true">person</mat-icon>
+							<mat-icon matIconPrefix aria-hidden="true"
+								>person</mat-icon
+							>
 							@if (
 								userForm.get("username")?.hasError("required")
 							)
@@ -143,7 +150,9 @@
 								autocomplete="email"
 								required
 							/>
-							<mat-icon matIconPrefix aria-hidden="true">email</mat-icon>
+							<mat-icon matIconPrefix aria-hidden="true"
+								>email</mat-icon
+							>
 							@if (userForm.get("email")?.hasError("required"))
 							{
 								<mat-error>Email is required</mat-error>
@@ -169,7 +178,9 @@
 								placeholder="Enter full name"
 								autocomplete="name"
 							/>
-							<mat-icon matIconPrefix aria-hidden="true">badge</mat-icon>
+							<mat-icon matIconPrefix aria-hidden="true"
+								>badge</mat-icon
+							>
 							@if (
 								userForm.get("fullName")?.hasError("maxlength")
 							)
@@ -256,7 +267,9 @@
 					<mat-card appearance="outlined" class="roles-card">
 						<mat-card-header>
 							<mat-card-title>
-								<mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+								<mat-icon aria-hidden="true"
+									>admin_panel_settings</mat-icon
+								>
 								User Roles
 							</mat-card-title>
 						</mat-card-header>
@@ -264,24 +277,38 @@
 							<div class="roles-section">
 								<!-- Current Roles -->
 								<div class="current-roles">
-									<span class="section-label">Current Roles:</span>
+									<span class="section-label"
+										>Current Roles:</span
+									>
 									@if (userRoles().length === 0)
 									{
-										<span class="no-roles">No roles assigned</span>
+										<span class="no-roles"
+											>No roles assigned</span
+										>
 									}
 									@else
 									{
 										<mat-chip-set>
-											@for (role of userRoles(); track role)
+											@for (
+												role of userRoles();
+												track role
+											)
 											{
 												<mat-chip
 													[removable]="true"
-													(removed)="onRemoveRole(role)"
-													[disabled]="isRoleMutating()"
+													(removed)="
+														onRemoveRole(role)
+													"
+													[disabled]="
+														isRoleMutating()
+													"
 												>
 													{{ role }}
 													<button matChipRemove>
-														<mat-icon aria-hidden="true">cancel</mat-icon>
+														<mat-icon
+															aria-hidden="true"
+															>cancel</mat-icon
+														>
 													</button>
 												</mat-chip>
 											}
@@ -293,8 +320,13 @@
 								@if (availableRolesToAdd().length > 0)
 								{
 									<div class="add-role">
-										<span class="section-label">Add Role:</span>
-										@for (role of availableRolesToAdd(); track role)
+										<span class="section-label"
+											>Add Role:</span
+										>
+										@for (
+											role of availableRolesToAdd();
+											track role
+										)
 										{
 											<button
 												mat-stroked-button
@@ -302,7 +334,9 @@
 												(click)="onAddRole(role)"
 												[disabled]="isRoleMutating()"
 											>
-												<mat-icon aria-hidden="true">add</mat-icon>
+												<mat-icon aria-hidden="true"
+													>add</mat-icon
+												>
 												{{ role }}
 											</button>
 										}
@@ -323,7 +357,9 @@
 						<mat-card-content>
 							<div class="info-grid">
 								<div class="info-item">
-									<mat-icon class="info-icon" aria-hidden="true"
+									<mat-icon
+										class="info-icon"
+										aria-hidden="true"
 										>schedule</mat-icon
 									>
 									<div class="info-details">
@@ -339,7 +375,9 @@
 									</div>
 								</div>
 								<div class="info-item">
-									<mat-icon class="info-icon" aria-hidden="true"
+									<mat-icon
+										class="info-icon"
+										aria-hidden="true"
 										>fingerprint</mat-icon
 									>
 									<div class="info-details">

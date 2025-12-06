@@ -17,8 +17,9 @@ import { getQueryConfig } from "@infrastructure/utils/query-config";
 @Injectable()
 export class PermissionRequestService
 {
-	private readonly repository: PermissionRequestRepository =
-		inject(PermissionRequestRepository);
+	private readonly repository: PermissionRequestRepository = inject(
+		PermissionRequestRepository
+	);
 	private readonly queryClient: QueryClient = inject(QueryClient);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("permission-requests");

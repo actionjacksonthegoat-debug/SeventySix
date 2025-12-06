@@ -23,28 +23,23 @@ describe("PermissionRequestListPage", () =>
 		}
 	];
 
-	const mockApproveMutation: { mutate: jasmine.Spy } =
-	{
+	const mockApproveMutation: { mutate: jasmine.Spy } = {
 		mutate: jasmine.createSpy("approveMutate")
 	};
 
-	const mockRejectMutation: { mutate: jasmine.Spy } =
-	{
+	const mockRejectMutation: { mutate: jasmine.Spy } = {
 		mutate: jasmine.createSpy("rejectMutate")
 	};
 
-	const mockBulkApproveMutation: { mutate: jasmine.Spy } =
-	{
+	const mockBulkApproveMutation: { mutate: jasmine.Spy } = {
 		mutate: jasmine.createSpy("bulkApproveMutate")
 	};
 
-	const mockBulkRejectMutation: { mutate: jasmine.Spy } =
-	{
+	const mockBulkRejectMutation: { mutate: jasmine.Spy } = {
 		mutate: jasmine.createSpy("bulkRejectMutate")
 	};
 
-	const mockService: Partial<PermissionRequestService> =
-	{
+	const mockService: Partial<PermissionRequestService> = {
 		getAllRequests: jasmine.createSpy("getAllRequests").and.returnValue({
 			data: () => mockPermissionRequests,
 			isLoading: () => false,
@@ -52,13 +47,17 @@ describe("PermissionRequestListPage", () =>
 			isSuccess: () => true,
 			refetch: jasmine.createSpy("refetch")
 		}),
-		approveRequest: jasmine.createSpy("approveRequest")
+		approveRequest: jasmine
+			.createSpy("approveRequest")
 			.and.returnValue(mockApproveMutation),
-		rejectRequest: jasmine.createSpy("rejectRequest")
+		rejectRequest: jasmine
+			.createSpy("rejectRequest")
 			.and.returnValue(mockRejectMutation),
-		bulkApproveRequests: jasmine.createSpy("bulkApproveRequests")
+		bulkApproveRequests: jasmine
+			.createSpy("bulkApproveRequests")
 			.and.returnValue(mockBulkApproveMutation),
-		bulkRejectRequests: jasmine.createSpy("bulkRejectRequests")
+		bulkRejectRequests: jasmine
+			.createSpy("bulkRejectRequests")
 			.and.returnValue(mockBulkRejectMutation)
 	};
 
@@ -104,8 +103,7 @@ describe("PermissionRequestListPage", () =>
 
 	it("should call approve mutation on row action approve", () =>
 	{
-		const event: RowActionEvent<PermissionRequest> =
-		{
+		const event: RowActionEvent<PermissionRequest> = {
 			action: "approve",
 			row: mockPermissionRequests[0]
 		};
@@ -117,8 +115,7 @@ describe("PermissionRequestListPage", () =>
 
 	it("should call reject mutation on row action reject", () =>
 	{
-		const event: RowActionEvent<PermissionRequest> =
-		{
+		const event: RowActionEvent<PermissionRequest> = {
 			action: "reject",
 			row: mockPermissionRequests[0]
 		};

@@ -117,8 +117,10 @@ export class UserDetailPage implements OnInit
 			(role: string) => !currentRoles.includes(role)
 		);
 	});
-	readonly isRoleMutating: Signal<boolean> = computed(() =>
-		this.addRoleMutation.isPending() || this.removeRoleMutation.isPending()
+	readonly isRoleMutating: Signal<boolean> = computed(
+		() =>
+			this.addRoleMutation.isPending() ||
+			this.removeRoleMutation.isPending()
 	);
 
 	// Computed signals
@@ -397,11 +399,15 @@ export class UserDetailPage implements OnInit
 				},
 				onError: () =>
 				{
-					this.snackBar.open(`Failed to add role "${role}"`, "Close", {
-						duration: 3000,
-						horizontalPosition: "end",
-						verticalPosition: "top"
-					});
+					this.snackBar.open(
+						`Failed to add role "${role}"`,
+						"Close",
+						{
+							duration: 3000,
+							horizontalPosition: "end",
+							verticalPosition: "top"
+						}
+					);
 				}
 			}
 		);
@@ -432,11 +438,15 @@ export class UserDetailPage implements OnInit
 				},
 				onError: () =>
 				{
-					this.snackBar.open(`Failed to remove role "${role}"`, "Close", {
-						duration: 3000,
-						horizontalPosition: "end",
-						verticalPosition: "top"
-					});
+					this.snackBar.open(
+						`Failed to remove role "${role}"`,
+						"Close",
+						{
+							duration: 3000,
+							horizontalPosition: "end",
+							verticalPosition: "top"
+						}
+					);
 				}
 			}
 		);

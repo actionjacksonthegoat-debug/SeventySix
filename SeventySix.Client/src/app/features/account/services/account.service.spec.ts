@@ -1,6 +1,9 @@
 import { TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import { QueryClient, provideAngularQuery } from "@tanstack/angular-query-experimental";
+import {
+	QueryClient,
+	provideAngularQuery
+} from "@tanstack/angular-query-experimental";
 import { of } from "rxjs";
 import { AccountService } from "./account.service";
 import { AccountRepository } from "../repositories";
@@ -14,10 +17,12 @@ describe("AccountService", () =>
 
 	beforeEach(() =>
 	{
-		mockRepository = jasmine.createSpyObj(
-			"AccountRepository",
-			["getProfile", "updateProfile", "getAvailableRoles", "createPermissionRequest"]
-		);
+		mockRepository = jasmine.createSpyObj("AccountRepository", [
+			"getProfile",
+			"updateProfile",
+			"getAvailableRoles",
+			"createPermissionRequest"
+		]);
 
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false } }

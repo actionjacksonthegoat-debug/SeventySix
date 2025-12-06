@@ -11,8 +11,7 @@ describe("LogManagementPage", () =>
 {
 	let fixture: ComponentFixture<LogManagementPage>;
 
-	const mockLogService: Partial<LogManagementService> =
-	{
+	const mockLogService: Partial<LogManagementService> = {
 		selectedIds: signal(new Set<number>()),
 		selectedCount: signal(0),
 		getLogs: jasmine.createSpy("getLogs").and.returnValue({
@@ -30,19 +29,20 @@ describe("LogManagementPage", () =>
 			isPending: () => false
 		}),
 		updateFilter: jasmine.createSpy("updateFilter"),
-		getCurrentFilter: jasmine.createSpy("getCurrentFilter").and.returnValue({
-			page: 1,
-			pageSize: 50,
-			sortBy: "Id",
-			sortDescending: true
-		}),
+		getCurrentFilter: jasmine
+			.createSpy("getCurrentFilter")
+			.and.returnValue({
+				page: 1,
+				pageSize: 50,
+				sortBy: "Id",
+				sortDescending: true
+			}),
 		clearSelection: jasmine.createSpy("clearSelection"),
 		selectAll: jasmine.createSpy("selectAll"),
 		toggleSelection: jasmine.createSpy("toggleSelection")
 	};
 
-	const mockDialog: Partial<MatDialog> =
-	{
+	const mockDialog: Partial<MatDialog> = {
 		open: jasmine.createSpy("open")
 	};
 

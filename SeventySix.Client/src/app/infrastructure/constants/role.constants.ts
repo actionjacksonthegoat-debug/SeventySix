@@ -20,11 +20,11 @@ export const ROLE_USER: string = "User";
 export const ALL_ROLES: readonly string[] = [
 	ROLE_DEVELOPER,
 	ROLE_ADMIN,
-	ROLE_USER,
+	ROLE_USER
 ] as const;
 
 /** Roles that can be requested by users via permission requests. */
 export const REQUESTABLE_ROLES: readonly string[] = [
 	ROLE_DEVELOPER,
-	ROLE_ADMIN,
+	ROLE_ADMIN
 ] as const;

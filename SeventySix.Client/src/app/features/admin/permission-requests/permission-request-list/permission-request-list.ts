@@ -31,32 +31,28 @@ import type {
 })
 export class PermissionRequestListPage
 {
-	private readonly service: PermissionRequestService =
-		inject(PermissionRequestService);
+	private readonly service: PermissionRequestService = inject(
+		PermissionRequestService
+	);
 	private readonly datePipe: DatePipe = inject(DatePipe);
 
 	readonly requestsQuery: ReturnType<
 		PermissionRequestService["getAllRequests"]
-	> =
-		this.service.getAllRequests();
+	> = this.service.getAllRequests();
 
 	// Mutations
 	private readonly approveMutation: ReturnType<
 		PermissionRequestService["approveRequest"]
-	> =
-		this.service.approveRequest();
+	> = this.service.approveRequest();
 	private readonly rejectMutation: ReturnType<
 		PermissionRequestService["rejectRequest"]
-	> =
-		this.service.rejectRequest();
+	> = this.service.rejectRequest();
 	private readonly bulkApproveMutation: ReturnType<
 		PermissionRequestService["bulkApproveRequests"]
-	> =
-		this.service.bulkApproveRequests();
+	> = this.service.bulkApproveRequests();
 	private readonly bulkRejectMutation: ReturnType<
 		PermissionRequestService["bulkRejectRequests"]
-	> =
-		this.service.bulkRejectRequests();
+	> = this.service.bulkRejectRequests();
 
 	readonly requests: Signal<PermissionRequest[]> = computed(
 		() => this.requestsQuery.data() ?? []
@@ -73,8 +69,8 @@ export class PermissionRequestListPage
 	);
 
 	// DataTable pagination (simple mode - show all items)
-	readonly totalCount: Signal<number> = computed(() =>
-		this.requests().length
+	readonly totalCount: Signal<number> = computed(
+		() => this.requests().length
 	);
 	readonly pageIndex: number = 0;
 	readonly pageSize: number = 100;

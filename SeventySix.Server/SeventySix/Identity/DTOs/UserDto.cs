@@ -90,6 +90,17 @@ public record UserDto
 	}
 
 	/// <summary>
+	/// Gets a value indicating whether the user needs a pending password reset email.
+	/// </summary>
+	/// <value>
+	/// True if the user needs a pending email; otherwise, false.
+	/// </value>
+	public bool NeedsPendingEmail
+	{
+		get; init;
+	}
+
+	/// <summary>
 	/// Gets the username of the user who created this user.
 	/// </summary>
 	public required string CreatedBy

@@ -14,7 +14,8 @@ import { QueryKeys } from "@infrastructure/utils/query-keys";
 @Injectable()
 export class AccountService
 {
-	private readonly accountRepository: AccountRepository = inject(AccountRepository);
+	private readonly accountRepository: AccountRepository =
+		inject(AccountRepository);
 	private readonly queryClient: QueryClient = inject(QueryClient);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("account");
@@ -46,7 +47,8 @@ export class AccountService
 	{
 		return injectQuery(() => ({
 			queryKey: QueryKeys.account.availableRoles,
-			queryFn: () => lastValueFrom(this.accountRepository.getAvailableRoles()),
+			queryFn: () =>
+				lastValueFrom(this.accountRepository.getAvailableRoles()),
 			...this.queryConfig
 		}));
 	}
@@ -55,7 +57,9 @@ export class AccountService
 	{
 		return injectMutation(() => ({
 			mutationFn: (request: CreatePermissionRequest) =>
-				lastValueFrom(this.accountRepository.createPermissionRequest(request)),
+				lastValueFrom(
+					this.accountRepository.createPermissionRequest(request)
+				),
 			onSuccess: () =>
 			{
 				this.queryClient.invalidateQueries({

@@ -16,10 +16,7 @@ import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
-import {
-	LoginCredentials,
-	AuthResponse
-} from "@infrastructure/models";
+import { LoginCredentials, AuthResponse } from "@infrastructure/models";
 
 @Component({
 	selector: "app-login",

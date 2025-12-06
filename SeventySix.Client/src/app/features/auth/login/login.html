@@ -41,13 +41,12 @@
 					required
 					autocomplete="username"
 					aria-required="true"
-					[attr.aria-invalid]="usernameField.invalid && usernameField.touched"
+					[attr.aria-invalid]="
+						usernameField.invalid && usernameField.touched
+					"
 					aria-describedby="usernameOrEmail-hint"
 				/>
-				<span
-					id="usernameOrEmail-hint"
-					class="visually-hidden"
-				>
+				<span id="usernameOrEmail-hint" class="visually-hidden">
 					Enter your username or email address
 				</span>
 			</div>
@@ -63,7 +62,9 @@
 					required
 					autocomplete="current-password"
 					aria-required="true"
-					[attr.aria-invalid]="passwordField.invalid && passwordField.touched"
+					[attr.aria-invalid]="
+						passwordField.invalid && passwordField.touched
+					"
 				/>
 			</div>
 

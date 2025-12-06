@@ -87,7 +87,9 @@ builder.Services.AddIdentityDomain(connectionString);
 builder.Services.AddLoggingDomain(
 	connectionString,
 	builder.Configuration);
-builder.Services.AddApiTrackingDomain(connectionString);
+builder.Services.AddApiTrackingDomain(
+	connectionString,
+	builder.Configuration);
 builder.Services.AddElectronicNotificationsDomain(builder.Configuration);
 
 // Add response compression (Brotli + Gzip)

@@ -64,17 +64,16 @@ public record CreateUserRequest
 	}
 
 	/// <summary>
-	/// Gets the full name for the new user.
+	/// Gets the display name for the new user.
 	/// </summary>
 	/// <value>
-	/// A string representing the user's full name.
-	/// Null if not provided.
+	/// A string representing the user's display name.
 	/// </value>
 	/// <remarks>
-	/// Optional field.
-	/// If provided, must not exceed 100 characters (validated by FluentValidation).
+	/// Required field. Displayed as "Display Name" in UI.
+	/// Must not exceed 100 characters (validated by FluentValidation).
 	/// </remarks>
-	public string? FullName
+	public required string FullName
 	{
 		get; init;
 	}

@@ -37,7 +37,6 @@ interface AccountQueryKeys
 	readonly permissionRequest: readonly ["account", "permission-request"];
 }
 
-
 interface QueryKeysType
 {
 	readonly logs: LogQueryKeys;

@@ -12,7 +12,11 @@
 		</button>
 	</div>
 
-	@for (section of visibleNavSections(); track section.title; let idx = $index)
+	@for (
+		section of visibleNavSections();
+		track section.title;
+		let idx = $index
+	)
 	{
 		<!-- Section Title -->
 		<h2 class="nav-section-title" [id]="'nav-section-' + idx">
@@ -32,7 +36,9 @@
 					(click)="closeSidebarOnMobile()"
 					[attr.aria-current]="rla.isActive ? 'page' : null"
 				>
-					<mat-icon matListItemIcon aria-hidden="true">{{ item.icon }}</mat-icon>
+					<mat-icon matListItemIcon aria-hidden="true">{{
+						item.icon
+					}}</mat-icon>
 					<span matListItemTitle>{{ item.label }}</span>
 				</a>
 			}

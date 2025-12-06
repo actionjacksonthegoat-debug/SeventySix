@@ -20,5 +20,5 @@ export const TEST_ROLE_USER: string = "User";
 export const TEST_ROLES: readonly string[] = [
 	TEST_ROLE_DEVELOPER,
 	TEST_ROLE_ADMIN,
-	TEST_ROLE_USER,
+	TEST_ROLE_USER
 ] as const;

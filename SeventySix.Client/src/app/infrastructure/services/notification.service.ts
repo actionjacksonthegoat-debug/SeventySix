@@ -212,13 +212,13 @@ export class NotificationService
 
 		try
 		{
-			await navigator.clipboard.writeText(
-				notification.copyData);
+			await navigator.clipboard.writeText(notification.copyData);
 
 			// eslint-disable-next-line no-console
 			console.info(
 				"Notification copied to clipboard:",
-				notification.copyData);
+				notification.copyData
+			);
 
 			return true;
 		}

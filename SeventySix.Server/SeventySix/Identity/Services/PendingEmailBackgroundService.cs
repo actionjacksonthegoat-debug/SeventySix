@@ -1,0 +1,135 @@
+// <copyright file="PendingEmailBackgroundService.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SeventySix.ElectronicNotifications.Emails;
+
+namespace SeventySix.Identity;
+
+/// <summary>
+/// Background service that processes pending welcome emails for users.
+/// Runs daily at 00:05 UTC (5 minutes after rate limit reset).
+/// </summary>
+public class PendingEmailBackgroundService(
+	IServiceScopeFactory scopeFactory,
+	IOptions<EmailSettings> emailSettings,
+	ILogger<PendingEmailBackgroundService> logger) : BackgroundService
+{
+	private static readonly TimeOnly RunTime =
+		new(0, 5, 0);
+
+	/// <inheritdoc/>
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+	{
+		if (!emailSettings.Value.Enabled)
+		{
+			return;
+		}
+
+		while (!stoppingToken.IsCancellationRequested)
+		{
+			TimeSpan delay =
+				CalculateDelayUntilNextRun();
+
+			try
+			{
+				await Task.Delay(
+					delay,
+					stoppingToken);
+
+				await ProcessPendingEmailsAsync(stoppingToken);
+			}
+			catch (OperationCanceledException)
+			{
+				break;
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(
+					ex,
+					"Error in PendingEmailBackgroundService");
+
+				await Task.Delay(
+					TimeSpan.FromHours(1),
+					stoppingToken);
+			}
+		}
+	}
+
+	private static TimeSpan CalculateDelayUntilNextRun()
+	{
+		DateTime now =
+			DateTime.UtcNow;
+		DateTime todayRun =
+			now.Date.Add(RunTime.ToTimeSpan());
+		DateTime nextRun =
+			now < todayRun
+			? todayRun
+			: todayRun.AddDays(1);
+
+		return nextRun - now;
+	}
+
+	private async Task ProcessPendingEmailsAsync(CancellationToken cancellationToken)
+	{
+		await using AsyncServiceScope scope =
+			scopeFactory.CreateAsyncScope();
+
+		IUserService userService =
+			scope.ServiceProvider.GetRequiredService<IUserService>();
+		IAuthService authService =
+			scope.ServiceProvider.GetRequiredService<IAuthService>();
+
+		IEnumerable<UserDto> pendingUsers =
+			await userService.GetUsersNeedingEmailAsync(cancellationToken);
+
+		int successCount = 0;
+		int failCount = 0;
+
+		foreach (UserDto user in pendingUsers)
+		{
+			try
+			{
+				await authService.InitiatePasswordResetAsync(
+					user.Id,
+					isNewUser: true,
+					cancellationToken);
+
+				await userService.ClearPendingEmailFlagAsync(
+					user.Id,
+					cancellationToken);
+
+				successCount++;
+			}
+			catch (EmailRateLimitException)
+			{
+				failCount++;
+				logger.LogWarning(
+					"Still rate limited for user {UserId}",
+					user.Id);
+			}
+			catch (Exception ex)
+			{
+				failCount++;
+				logger.LogError(
+					ex,
+					"Failed to send pending email to user {UserId}",
+					user.Id);
+			}
+		}
+
+		if (
+			successCount > 0
+			|| failCount > 0)
+		{
+			logger.LogWarning(
+				"Pending email processing complete. Success: {Success}, Failed: {Failed}",
+				successCount,
+				failCount);
+		}
+	}
+}

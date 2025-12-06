@@ -186,8 +186,8 @@ export class ErrorHandlerService implements ErrorHandler
 		if (error instanceof UnauthorizedError)
 		{
 			return (
-				error.message
-				|| "You are not authorized to perform this action."
+				error.message ||
+				"You are not authorized to perform this action."
 			);
 		}
 
@@ -211,14 +211,14 @@ export class ErrorHandlerService implements ErrorHandler
 		const statusMessages: Record<number, string> = {
 			0: "Unable to connect to the server. Check your connection.",
 			400:
-				error.error?.title
-				|| "Invalid request. Please check your input.",
+				error.error?.title ||
+				"Invalid request. Please check your input.",
 			401: "Your session has expired. Please log in again.",
 			403: "You do not have permission to perform this action.",
 			404: error.error?.title || "The requested resource was not found.",
 			422:
-				error.error?.title
-				|| "Validation failed. Please check your input.",
+				error.error?.title ||
+				"Validation failed. Please check your input.",
 			429: "Too many requests. Please try again later.",
 			500: "Server error. Please try again later.",
 			502: "Server error. Please try again later.",
@@ -227,8 +227,8 @@ export class ErrorHandlerService implements ErrorHandler
 		};
 
 		return (
-			statusMessages[error.status]
-			|| (environment.production
+			statusMessages[error.status] ||
+			(environment.production
 				? "An error occurred."
 				: `HTTP ${error.status}: ${error.message}`)
 		);

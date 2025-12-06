@@ -60,10 +60,11 @@ public class CreateUserValidator : AbstractValidator<CreateUserRequest>
 			.Matches(@"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 			.WithMessage("Email must be a valid email address");
 
-		// FullName validation: Optional field with length constraint
+		// FullName validation: Required field with length constraint
 		RuleFor(x => x.FullName)
+			.NotEmpty()
+			.WithMessage("Display name is required")
 			.MaximumLength(100)
-			.When(x => !string.IsNullOrWhiteSpace(x.FullName))
-			.WithMessage("Full name must not exceed 100 characters");
+			.WithMessage("Display name must not exceed 100 characters");
 	}
 }

@@ -54,7 +54,9 @@
 									placeholder="Enter username"
 									required
 								/>
-								<mat-icon matIconPrefix aria-hidden="true">person</mat-icon>
+								<mat-icon matIconPrefix aria-hidden="true"
+									>person</mat-icon
+								>
 								@if (
 									basicInfoForm
 										.get("username")
@@ -108,7 +110,9 @@
 									placeholder="Enter email address"
 									required
 								/>
-								<mat-icon matIconPrefix aria-hidden="true">email</mat-icon>
+								<mat-icon matIconPrefix aria-hidden="true"
+									>email</mat-icon
+								>
 								@if (
 									basicInfoForm
 										.get("email")
@@ -155,7 +159,9 @@
 							matStepperNext
 						>
 							Next
-							<mat-icon aria-hidden="true">arrow_forward</mat-icon>
+							<mat-icon aria-hidden="true"
+								>arrow_forward</mat-icon
+							>
 						</button>
 					</div>
 				</form>
@@ -177,18 +183,31 @@
 							</mat-card-subtitle>
 						</mat-card-header>
 						<mat-card-content>
-							<!-- Full Name Field -->
+							<!-- Display Name Field (stored as fullName) -->
 							<mat-form-field
 								appearance="outline"
 								class="full-width"
 							>
-								<mat-label>Full Name</mat-label>
+								<mat-label>Display Name</mat-label>
 								<input
 									matInput
 									formControlName="fullName"
-									placeholder="Enter full name"
+									placeholder="Enter display name"
+									required
 								/>
-								<mat-icon matIconPrefix aria-hidden="true">badge</mat-icon>
+								<mat-icon matIconPrefix aria-hidden="true"
+									>badge</mat-icon
+								>
+								@if (
+									accountDetailsForm
+										.get("fullName")
+										?.hasError("required")
+								)
+								{
+									<mat-error
+										>Display name is required</mat-error
+									>
+								}
 								@if (
 									accountDetailsForm
 										.get("fullName")
@@ -196,12 +215,11 @@
 								)
 								{
 									<mat-error>
-										Full name must not exceed 100 characters
+										Display name must not exceed 100
+										characters
 									</mat-error>
 								}
-								<mat-hint>Optional</mat-hint>
 							</mat-form-field>
-
 							<!-- Active Status -->
 							<div class="checkbox-field">
 								<mat-checkbox
@@ -241,7 +259,9 @@
 							matStepperNext
 						>
 							Next
-							<mat-icon aria-hidden="true">arrow_forward</mat-icon>
+							<mat-icon aria-hidden="true"
+								>arrow_forward</mat-icon
+							>
 						</button>
 					</div>
 				</form>
@@ -259,7 +279,9 @@
 					<mat-card-content>
 						<div class="review-grid">
 							<div class="review-item">
-								<mat-icon class="review-icon" aria-hidden="true">person</mat-icon>
+								<mat-icon class="review-icon" aria-hidden="true"
+									>person</mat-icon
+								>
 								<div class="review-details">
 									<span class="mat-body-2 review-label"
 										>Username</span
@@ -270,7 +292,9 @@
 								</div>
 							</div>
 							<div class="review-item">
-								<mat-icon class="review-icon" aria-hidden="true">email</mat-icon>
+								<mat-icon class="review-icon" aria-hidden="true"
+									>email</mat-icon
+								>
 								<div class="review-details">
 									<span class="mat-body-2 review-label"
 										>Email</span
@@ -281,7 +305,9 @@
 								</div>
 							</div>
 							<div class="review-item">
-								<mat-icon class="review-icon" aria-hidden="true">badge</mat-icon>
+								<mat-icon class="review-icon" aria-hidden="true"
+									>badge</mat-icon
+								>
 								<div class="review-details">
 									<span class="mat-body-2 review-label"
 										>Full Name</span
@@ -295,11 +321,15 @@
 								</div>
 							</div>
 							<div class="review-item">
-								<mat-icon class="review-icon" aria-hidden="true">{{
-									formData().isActive
-										? "check_circle"
-										: "cancel"
-								}}</mat-icon>
+								<mat-icon
+									class="review-icon"
+									aria-hidden="true"
+									>{{
+										formData().isActive
+											? "check_circle"
+											: "cancel"
+									}}</mat-icon
+								>
 								<div class="review-details">
 									<span class="mat-body-2 review-label"
 										>Status</span

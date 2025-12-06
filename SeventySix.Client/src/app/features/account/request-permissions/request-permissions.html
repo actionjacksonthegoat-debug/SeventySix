@@ -2,22 +2,33 @@
 	<mat-card>
 		<mat-card-header>
 			<mat-card-title>Request Permissions</mat-card-title>
-			<mat-card-subtitle>Select roles you need access to</mat-card-subtitle>
+			<mat-card-subtitle
+				>Select roles you need access to</mat-card-subtitle
+			>
 		</mat-card-header>
 
 		<mat-card-content>
-			@if (isLoading()) {
+			@if (isLoading())
+			{
 				<mat-spinner diameter="40"></mat-spinner>
-			} @else {
+			}
+			@else
+			{
 				<div class="roles-list">
-					@for (role of availableRoles(); track role.name) {
+					@for (role of availableRoles(); track role.name)
+					{
 						<mat-checkbox
 							[checked]="roleSelectionMap().get(role.name)"
-							(change)="toggleRole(role.name)">
+							(change)="toggleRole(role.name)"
+						>
 							<strong>{{ role.name }}</strong>
-							<span class="role-description">{{ role.description }}</span>
+							<span class="role-description">{{
+								role.description
+							}}</span>
 						</mat-checkbox>
-					} @empty {
+					}
+					@empty
+					{
 						<p class="no-roles">No additional roles available</p>
 					}
 				</div>
@@ -28,7 +39,8 @@
 						<textarea
 							matInput
 							formControlName="requestMessage"
-							rows="3"></textarea>
+							rows="3"
+						></textarea>
 					</mat-form-field>
 
 					<div class="form-actions">
@@ -36,10 +48,16 @@
 							mat-raised-button
 							color="primary"
 							type="submit"
-							[disabled]="selectedRoles().size === 0 || isSubmitting()">
-							@if (isSubmitting()) {
+							[disabled]="
+								selectedRoles().size === 0 || isSubmitting()
+							"
+						>
+							@if (isSubmitting())
+							{
 								<mat-spinner diameter="20"></mat-spinner>
-							} @else {
+							}
+							@else
+							{
 								Submit Request
 							}
 						</button>

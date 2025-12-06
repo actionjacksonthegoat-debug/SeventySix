@@ -40,7 +40,9 @@
 						maxlength="50"
 						pattern="^[a-zA-Z0-9_]+$"
 						aria-required="true"
-						[attr.aria-invalid]="usernameField.invalid && usernameField.touched"
+						[attr.aria-invalid]="
+							usernameField.invalid && usernameField.touched
+						"
 						aria-describedby="username-hint"
 					/>
 					<span id="username-hint" class="hint">
@@ -61,7 +63,9 @@
 						placeholder="Create a password"
 						minlength="8"
 						aria-required="true"
-						[attr.aria-invalid]="passwordField.invalid && passwordField.touched"
+						[attr.aria-invalid]="
+							passwordField.invalid && passwordField.touched
+						"
 						aria-describedby="password-hint"
 					/>
 					<span id="password-hint" class="hint">
@@ -82,7 +86,10 @@
 						autocomplete="new-password"
 						placeholder="Confirm your password"
 						aria-required="true"
-						[attr.aria-invalid]="confirmPasswordField.invalid && confirmPasswordField.touched"
+						[attr.aria-invalid]="
+							confirmPasswordField.invalid &&
+							confirmPasswordField.touched
+						"
 					/>
 				</div>
 
@@ -90,10 +97,10 @@
 					type="submit"
 					class="btn-primary"
 					[disabled]="
-						isLoading()
-						|| !username.trim()
-						|| !password.trim()
-						|| !confirmPassword.trim()
+						isLoading() ||
+						!username.trim() ||
+						!password.trim() ||
+						!confirmPassword.trim()
 					"
 					[attr.aria-busy]="isLoading()"
 				>

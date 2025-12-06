@@ -67,4 +67,17 @@ public interface IUserService
 		int userId,
 		UpdateProfileRequest request,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Gets all users who need pending password reset emails.
+	/// </summary>
+	public Task<IEnumerable<UserDto>> GetUsersNeedingEmailAsync(
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Clears the pending email flag for a user.
+	/// </summary>
+	public Task ClearPendingEmailFlagAsync(
+		int userId,
+		CancellationToken cancellationToken = default);
 }

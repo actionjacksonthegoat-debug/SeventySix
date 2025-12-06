@@ -120,7 +120,9 @@ describe("GrafanaDashboardEmbedComponent", () =>
 			fixture.detectChanges();
 
 			const loadingText: HTMLElement =
-				fixture.nativeElement.querySelector(".loading-container .visually-hidden");
+				fixture.nativeElement.querySelector(
+					".loading-container .visually-hidden"
+				);
 
 			expect(loadingText).toBeTruthy();
 			expect(loadingText.textContent).toContain("Loading");
@@ -131,10 +133,13 @@ describe("GrafanaDashboardEmbedComponent", () =>
 			fixture.componentRef.setInput("isLoading", true);
 			fixture.detectChanges();
 
-			const spinner: HTMLElement =
-				fixture.nativeElement.querySelector("mat-progress-spinner");
+			const spinner: HTMLElement = fixture.nativeElement.querySelector(
+				"mat-progress-spinner"
+			);
 
-			expect(spinner.getAttribute("aria-label")).toBe("Loading dashboard");
+			expect(spinner.getAttribute("aria-label")).toBe(
+				"Loading dashboard"
+			);
 		});
 	});
 });

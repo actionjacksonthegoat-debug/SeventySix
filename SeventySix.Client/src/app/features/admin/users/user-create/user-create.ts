@@ -133,7 +133,7 @@ export class UserCreatePage
 	});
 
 	readonly accountDetailsForm: FormGroup = this.fb.group({
-		fullName: ["", [Validators.maxLength(100)]],
+		fullName: ["", [Validators.required, Validators.maxLength(100)]],
 		isActive: [true]
 	});
 
@@ -181,16 +181,15 @@ export class UserCreatePage
 					id: createdUser.id
 				});
 
-				// Show success notification with email info
-				this.snackBar.open(
-					`User "${createdUser.username}" created. Welcome email sent to ${createdUser.email}.`,
-					"Close",
-					{
-						duration: 5000,
-						horizontalPosition: "end",
-						verticalPosition: "top"
-					}
-				);
+				const message: string = createdUser.needsPendingEmail
+					? `User "${createdUser.username}" created. Email will be sent to ${createdUser.email} within 24 hours.`
+					: `User "${createdUser.username}" created. Welcome email sent to ${createdUser.email}.`;
+
+				this.snackBar.open(message, "Close", {
+					duration: 5000,
+					horizontalPosition: "end",
+					verticalPosition: "top"
+				});
 
 				// Navigate to user list
 				this.router.navigate(["/admin/users"]);

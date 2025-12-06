@@ -31,10 +31,7 @@ export const ADMIN_ROUTES: Routes = [
 	},
 	{
 		path: "logs",
-		providers: [
-			LogManagementService,
-			LogRepository
-		],
+		providers: [LogManagementService, LogRepository],
 		loadComponent: () =>
 			import("./logs/log-management/log-management").then(
 				(m) => m.LogManagementPage

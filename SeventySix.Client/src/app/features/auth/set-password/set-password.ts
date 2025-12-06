@@ -104,8 +104,8 @@ export class SetPasswordComponent implements OnInit
 		{
 			case 400:
 				return (
-					error.error?.detail
-					?? "Invalid request. Please check your password requirements."
+					error.error?.detail ??
+					"Invalid request. Please check your password requirements."
 				);
 			case 404:
 				return "Password reset link has expired or is invalid. Please request a new one.";

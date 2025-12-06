@@ -35,7 +35,7 @@ public class ThirdPartyApiRequest : IModifiableEntity
 	/// <summary>
 	/// Gets or sets the name of the external API.
 	/// </summary>
-	/// <example>OpenWeather</example>
+	/// <example>BrevoEmail</example>
 	public required string ApiName
 	{
 		get; set;

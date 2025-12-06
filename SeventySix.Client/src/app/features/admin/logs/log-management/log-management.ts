@@ -1,7 +1,4 @@
-import {
-	Component,
-	ChangeDetectionStrategy
-} from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { LogList } from "@admin/logs/components";
 import { PageHeaderComponent } from "@shared/components";
 
@@ -18,5 +15,4 @@ import { PageHeaderComponent } from "@shared/components";
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LogManagementPage
-{
-}
+{}

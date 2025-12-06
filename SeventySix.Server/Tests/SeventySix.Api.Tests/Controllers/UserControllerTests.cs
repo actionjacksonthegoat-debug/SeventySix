@@ -225,6 +225,7 @@ public class UsersControllerTests
 		{
 			Username = "test",
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		UserDto createdUser = new()

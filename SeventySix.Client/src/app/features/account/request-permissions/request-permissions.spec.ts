@@ -24,10 +24,10 @@ describe("RequestPermissionsPage", () =>
 
 	beforeEach(async () =>
 	{
-		mockRepository = jasmine.createSpyObj(
-			"AccountRepository",
-			["getAvailableRoles", "createPermissionRequest"]
-		);
+		mockRepository = jasmine.createSpyObj("AccountRepository", [
+			"getAvailableRoles",
+			"createPermissionRequest"
+		]);
 		mockRepository.getAvailableRoles.and.returnValue(
 			of([
 				{ name: "Admin", description: "Administrator access" },

@@ -51,14 +51,18 @@ export class ProfilePage
 	readonly updateMutation: ReturnType<AccountService["updateProfile"]> =
 		this.accountService.updateProfile();
 
-	readonly profile: Signal<Profile | undefined> =
-		computed(() => this.profileQuery.data());
-	readonly isLoading: Signal<boolean> =
-		computed(() => this.profileQuery.isLoading());
-	readonly isSaving: Signal<boolean> =
-		computed(() => this.updateMutation.isPending());
-	readonly error: Signal<string | null> =
-		computed(() => this.profileQuery.error() ? "Failed to load profile" : null);
+	readonly profile: Signal<Profile | undefined> = computed(() =>
+		this.profileQuery.data()
+	);
+	readonly isLoading: Signal<boolean> = computed(() =>
+		this.profileQuery.isLoading()
+	);
+	readonly isSaving: Signal<boolean> = computed(() =>
+		this.updateMutation.isPending()
+	);
+	readonly error: Signal<string | null> = computed(() =>
+		this.profileQuery.error() ? "Failed to load profile" : null
+	);
 
 	readonly profileForm: FormGroup = this.fb.group({
 		email: [
@@ -97,8 +101,7 @@ export class ProfilePage
 			return;
 		}
 
-		const request: UpdateProfileRequest =
-		{
+		const request: UpdateProfileRequest = {
 			email: this.profileForm.value.email,
 			fullName: this.profileForm.value.fullName || undefined
 		};
@@ -106,20 +109,14 @@ export class ProfilePage
 		try
 		{
 			await this.updateMutation.mutateAsync(request);
-			this.snackBar.open(
-				"Profile updated",
-				"Close",
-				{ duration: 3000 }
-			);
+			this.snackBar.open("Profile updated", "Close", { duration: 3000 });
 			this.profileForm.markAsPristine();
 		}
 		catch
 		{
-			this.snackBar.open(
-				"Failed to update profile",
-				"Close",
-				{ duration: 5000 }
-			);
+			this.snackBar.open("Failed to update profile", "Close", {
+				duration: 5000
+			});
 		}
 	}
 }

@@ -7,7 +7,10 @@ import {
 import { inject, Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
 import { catchError, Observable, throwError } from "rxjs";
-import { HTTP_HEADER_CONTENT_TYPE, MEDIA_TYPE_JSON } from "@infrastructure/constants";
+import {
+	HTTP_HEADER_CONTENT_TYPE,
+	MEDIA_TYPE_JSON
+} from "@infrastructure/constants";
 import { LoggerService } from "@infrastructure/services/logger.service";
 
 /**

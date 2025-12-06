@@ -94,6 +94,7 @@ public static class IdentityExtensions
 		// Register background services
 		services.AddHostedService<TokenCleanupService>();
 		services.AddHostedService<AdminSeederService>();
+		services.AddHostedService<PendingEmailBackgroundService>();
 
 		return services;
 	}

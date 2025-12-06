@@ -40,6 +40,7 @@ public class CreateUserValidatorTests
 		{
 			Username = string.Empty,
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		// Act
@@ -58,6 +59,7 @@ public class CreateUserValidatorTests
 		{
 			Username = null!,
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		// Act
@@ -76,6 +78,7 @@ public class CreateUserValidatorTests
 		{
 			Username = username,
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		// Act
@@ -94,6 +97,7 @@ public class CreateUserValidatorTests
 		{
 			Username = new string('a', 51), // 51 chars
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		// Act
@@ -113,6 +117,7 @@ public class CreateUserValidatorTests
 		{
 			Username = username,
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		// Act
@@ -132,6 +137,7 @@ public class CreateUserValidatorTests
 		{
 			Username = username,
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		// Act
@@ -149,6 +155,7 @@ public class CreateUserValidatorTests
 		{
 			Username = new string('a', 50), // Exactly 50 chars
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		// Act
@@ -170,6 +177,7 @@ public class CreateUserValidatorTests
 		{
 			Username = "testuser",
 			Email = string.Empty,
+			FullName = "Test User",
 		};
 
 		// Act
@@ -188,6 +196,7 @@ public class CreateUserValidatorTests
 		{
 			Username = "testuser",
 			Email = null!,
+			FullName = "Test User",
 		};
 
 		// Act
@@ -206,6 +215,7 @@ public class CreateUserValidatorTests
 		{
 			Username = "testuser",
 			Email = email,
+			FullName = "Test User",
 		};
 
 		// Act
@@ -225,6 +235,7 @@ public class CreateUserValidatorTests
 		{
 			Username = "testuser",
 			Email = longEmail,
+			FullName = "Test User",
 		};
 
 		// Act
@@ -244,6 +255,7 @@ public class CreateUserValidatorTests
 		{
 			Username = "testuser",
 			Email = email,
+			FullName = "Test User",
 		};
 
 		// Act
@@ -262,6 +274,7 @@ public class CreateUserValidatorTests
 		{
 			Username = "testuser",
 			Email = email,
+			FullName = "Test User",
 		};
 
 		// Act
@@ -276,25 +289,7 @@ public class CreateUserValidatorTests
 	#region FullName Validation Tests
 
 	[Fact]
-	public void FullName_ShouldNotHaveError_WhenNull()
-	{
-		// Arrange
-		CreateUserRequest request = new()
-		{
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = null,
-		};
-
-		// Act
-		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
-
-		// Assert
-		result.ShouldNotHaveValidationErrorFor(x => x.FullName);
-	}
-
-	[Fact]
-	public void FullName_ShouldNotHaveError_WhenEmpty()
+	public void FullName_ShouldHaveError_WhenEmpty()
 	{
 		// Arrange
 		CreateUserRequest request = new()
@@ -308,11 +303,12 @@ public class CreateUserValidatorTests
 		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
-		result.ShouldNotHaveValidationErrorFor(x => x.FullName);
+		result.ShouldHaveValidationErrorFor(x => x.FullName)
+			.WithErrorMessage("Display name is required");
 	}
 
 	[Fact]
-	public void FullName_ShouldNotHaveError_WhenWhitespace()
+	public void FullName_ShouldHaveError_WhenWhitespace()
 	{
 		// Arrange
 		CreateUserRequest request = new()
@@ -326,7 +322,8 @@ public class CreateUserValidatorTests
 		TestValidationResult<CreateUserRequest> result = Validator.TestValidate(request);
 
 		// Assert
-		result.ShouldNotHaveValidationErrorFor(x => x.FullName);
+		result.ShouldHaveValidationErrorFor(x => x.FullName)
+			.WithErrorMessage("Display name is required");
 	}
 
 	[Fact]
@@ -345,7 +342,7 @@ public class CreateUserValidatorTests
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(x => x.FullName)
-			.WithErrorMessage("Full name must not exceed 100 characters");
+			.WithErrorMessage("Display name must not exceed 100 characters");
 	}
 
 	[Theory]
@@ -402,6 +399,7 @@ public class CreateUserValidatorTests
 		{
 			Username = "testuser",
 			Email = "test@example.com",
+			FullName = "Test User",
 			IsActive = isActive,
 		};
 
@@ -443,6 +441,7 @@ public class CreateUserValidatorTests
 		{
 			Username = "testuser",
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		// Act

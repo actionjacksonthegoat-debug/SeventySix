@@ -4,4 +4,7 @@
 export type { PermissionRequest } from "./permission-request.model";
 
 // Re-export identity models for convenience
-export type { AvailableRole, CreatePermissionRequest } from "@infrastructure/models";
+export type {
+	AvailableRole,
+	CreatePermissionRequest
+} from "@infrastructure/models";

@@ -49,17 +49,23 @@ export class RequestPermissionsPage
 
 	readonly rolesQuery: ReturnType<AccountService["getAvailableRoles"]> =
 		this.accountService.getAvailableRoles();
-	readonly requestMutation: ReturnType<AccountService["createPermissionRequest"]> =
-		this.accountService.createPermissionRequest();
+	readonly requestMutation: ReturnType<
+		AccountService["createPermissionRequest"]
+	> = this.accountService.createPermissionRequest();
 
-	readonly availableRoles: Signal<AvailableRole[]> =
-		computed(() => this.rolesQuery.data() ?? []);
-	readonly isLoading: Signal<boolean> =
-		computed(() => this.rolesQuery.isLoading());
-	readonly isSubmitting: Signal<boolean> =
-		computed(() => this.requestMutation.isPending());
+	readonly availableRoles: Signal<AvailableRole[]> = computed(
+		() => this.rolesQuery.data() ?? []
+	);
+	readonly isLoading: Signal<boolean> = computed(() =>
+		this.rolesQuery.isLoading()
+	);
+	readonly isSubmitting: Signal<boolean> = computed(() =>
+		this.requestMutation.isPending()
+	);
 
-	readonly selectedRoles: WritableSignal<Set<string>> = signal(new Set<string>());
+	readonly selectedRoles: WritableSignal<Set<string>> = signal(
+		new Set<string>()
+	);
 
 	/** Pre-computed role selection map for template. */
 	readonly roleSelectionMap: Signal<Map<string, boolean>> = computed(() =>
@@ -68,10 +74,7 @@ export class RequestPermissionsPage
 		const map: Map<string, boolean> = new Map();
 		this.availableRoles().forEach((role: AvailableRole) =>
 		{
-			map.set(
-				role.name,
-				selected.has(role.name)
-			);
+			map.set(role.name, selected.has(role.name));
 		});
 		return map;
 	});
@@ -102,16 +105,13 @@ export class RequestPermissionsPage
 		const roles: string[] = Array.from(this.selectedRoles());
 		if (roles.length === 0)
 		{
-			this.snackBar.open(
-				"Select at least one role",
-				"Close",
-				{ duration: 3000 }
-			);
+			this.snackBar.open("Select at least one role", "Close", {
+				duration: 3000
+			});
 			return;
 		}
 
-		const request: CreatePermissionRequest =
-		{
+		const request: CreatePermissionRequest = {
 			requestedRoles: roles,
 			requestMessage: this.requestForm.value.requestMessage || undefined
 		};
@@ -119,20 +119,16 @@ export class RequestPermissionsPage
 		try
 		{
 			await this.requestMutation.mutateAsync(request);
-			this.snackBar.open(
-				"Permission request submitted",
-				"Close",
-				{ duration: 3000 }
-			);
+			this.snackBar.open("Permission request submitted", "Close", {
+				duration: 3000
+			});
 			this.router.navigate(["/account"]);
 		}
 		catch
 		{
-			this.snackBar.open(
-				"Failed to submit request",
-				"Close",
-				{ duration: 5000 }
-			);
+			this.snackBar.open("Failed to submit request", "Close", {
+				duration: 5000
+			});
 		}
 	}
 }

@@ -8,7 +8,11 @@ import { ApiStatisticsTableComponent } from "../components/api-statistics-table/
 import { AdminDashboardPage } from "./admin-dashboard";
 import { ThirdPartyApiService } from "../services";
 import { LoggerService, NotificationService } from "@infrastructure/services";
-import { createMockQueryResult, createMockNotificationService, createMockLogger } from "@testing";
+import {
+	createMockQueryResult,
+	createMockNotificationService,
+	createMockLogger
+} from "@testing";
 
 describe("AdminDashboardPage", () =>
 {

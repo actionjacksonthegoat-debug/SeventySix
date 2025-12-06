@@ -4,6 +4,7 @@
 
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared;
 
@@ -95,6 +96,22 @@ public class UserService(
 				createdUser.Id,
 				isNewUser: true,
 				cancellationToken);
+		}
+		catch (EmailRateLimitException ex)
+		{
+			// Email rate limited - mark user for pending email
+			await MarkUserNeedsPendingEmailAsync(
+				createdUser.Id,
+				cancellationToken);
+
+			logger.LogWarning(
+				"Email rate limited for user {Email} (ID: {UserId}). Resets in: {TimeUntilReset}",
+				createdUser.Email,
+				createdUser.Id,
+				ex.TimeUntilReset);
+
+			// Re-throw to let controller return appropriate response
+			throw;
 		}
 		catch (Exception ex)
 		{
@@ -338,5 +355,54 @@ public class UserService(
 			},
 			maxRetries: 3,
 			cancellationToken);
+	}
+
+	/// <summary>
+	/// Marks a user as needing a pending password reset email.
+	/// </summary>
+	private async Task MarkUserNeedsPendingEmailAsync(
+		int userId,
+		CancellationToken cancellationToken)
+	{
+		User? user =
+			await repository.GetByIdAsync(
+				userId,
+				cancellationToken);
+
+		if (user == null)
+		{
+			return;
+		}
+
+		user.NeedsPendingEmail = true;
+		await repository.UpdateAsync(
+			user,
+			cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<IEnumerable<UserDto>> GetUsersNeedingEmailAsync(
+		CancellationToken cancellationToken = default)
+	{
+		return await repository.GetUsersNeedingEmailAsync(cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task ClearPendingEmailFlagAsync(
+		int userId,
+		CancellationToken cancellationToken = default)
+	{
+		User? user =
+			await repository.GetByIdAsync(
+				userId,
+				cancellationToken);
+
+		if (user?.NeedsPendingEmail == true)
+		{
+			user.NeedsPendingEmail = false;
+			await repository.UpdateAsync(
+				user,
+				cancellationToken);
+		}
 	}
 }

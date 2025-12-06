@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
+using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared;
@@ -167,11 +168,16 @@ public class UsersController(
 	///     }
 	///
 	/// FluentValidation automatically validates the request before processing.
+	///
+	/// If email rate limit is exceeded, user is created and email will be sent within 24 hours.
 	/// Returns 201 Created with Location header pointing to the new resource.
 	/// </remarks>
+	/// <response code="201">User created. Welcome email sent.</response>
+	/// <response code="202">User created. Email pending due to rate limiting.</response>
 	[HttpPost(Name = "CreateUser")]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
+	[ProducesResponseType(typeof(UserDto), StatusCodes.Status202Accepted)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -179,8 +185,52 @@ public class UsersController(
 		[FromBody] CreateUserRequest request,
 		CancellationToken cancellationToken)
 	{
-		UserDto user = await userService.CreateUserAsync(request, cancellationToken);
-		return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
+		try
+		{
+			UserDto user =
+				await userService.CreateUserAsync(
+					request,
+					cancellationToken);
+
+			return CreatedAtRoute(
+				"GetUserById",
+				new
+				{
+					id = user.Id
+				},
+				user);
+		}
+		catch (EmailRateLimitException)
+		{
+			// User was created but email was rate limited
+			UserDto? user =
+				await userService.GetByEmailAsync(
+					request.Email,
+					cancellationToken);
+
+			if (user == null)
+			{
+				return StatusCode(
+					StatusCodes.Status500InternalServerError,
+					new ProblemDetails
+					{
+						Title = "Unexpected Error",
+						Detail = "User was created but could not be retrieved.",
+					});
+			}
+
+			logger.LogWarning(
+				"User {UserId} created but email rate limited",
+				user.Id);
+
+			return AcceptedAtRoute(
+				"GetUserById",
+				new
+				{
+					id = user.Id
+				},
+				user);
+		}
 	}
 
 	/// <summary>

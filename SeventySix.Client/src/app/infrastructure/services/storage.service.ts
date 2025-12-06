@@ -72,8 +72,8 @@ export class StorageService
 		{
 			// Handle quota exceeded
 			if (
-				error instanceof DOMException
-				&& error.name === "QuotaExceededError"
+				error instanceof DOMException &&
+				error.name === "QuotaExceededError"
 			)
 			{
 				console.error("StorageService: Quota exceeded");

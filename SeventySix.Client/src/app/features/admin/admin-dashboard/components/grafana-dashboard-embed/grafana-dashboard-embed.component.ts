@@ -90,13 +90,15 @@ export class GrafanaDashboardEmbedComponent
 	 */
 	readonly isLoading: InputSignalWithTransform<boolean, boolean | string> =
 		input<boolean, boolean | string>(false, {
-			transform: (value: boolean | string) => value === true || value === "true"
+			transform: (value: boolean | string) =>
+				value === true || value === "true"
 		});
 
 	/**
 	 * Computed accessible title for the iframe.
 	 * Appends 'dashboard' suffix for screen reader context.
 	 */
-	readonly iframeTitle: Signal<string> =
-		computed(() => `${this.title()} dashboard`);
+	readonly iframeTitle: Signal<string> = computed(
+		() => `${this.title()} dashboard`
+	);
 }

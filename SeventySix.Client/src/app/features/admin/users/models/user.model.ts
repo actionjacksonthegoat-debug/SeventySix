@@ -16,6 +16,7 @@ export interface User
 	isDeleted?: boolean;
 	deletedAt?: string;
 	deletedBy?: string;
+	needsPendingEmail?: boolean;
 }
 
 /** Create User Request - structure for creating a new user. */
@@ -23,7 +24,7 @@ export interface CreateUserRequest
 {
 	username: string;
 	email: string;
-	fullName?: string;
+	fullName: string;
 	isActive?: boolean;
 }
 

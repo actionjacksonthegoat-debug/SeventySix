@@ -452,4 +452,15 @@ internal class UserRepository(
 			LinkedProviders: linkedProviders,
 			LastLoginAt: user.LastLoginAt);
 	}
+
+	/// <inheritdoc/>
+	public async Task<IEnumerable<UserDto>> GetUsersNeedingEmailAsync(
+		CancellationToken cancellationToken = default)
+	{
+		return await context.Users
+			.AsNoTracking()
+			.Where(u => u.NeedsPendingEmail)
+			.Select(UserExtensions.ToDtoProjection)
+			.ToListAsync(cancellationToken);
+	}
 }

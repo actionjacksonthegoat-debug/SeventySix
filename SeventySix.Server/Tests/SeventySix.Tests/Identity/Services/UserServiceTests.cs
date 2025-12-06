@@ -8,11 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Shared;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestHelpers;
+using Shouldly;
 
 namespace SeventySix.Tests.Identity;
 
@@ -301,6 +303,7 @@ public class UserServiceTests
 		{
 			Username = "ab", // Too short
 			Email = "invalid-email",
+			FullName = "Test User",
 		};
 
 		ValidationFailure validationFailure = new("Username", "Username must be between 3 and 50 characters");
@@ -329,6 +332,7 @@ public class UserServiceTests
 		{
 			Username = "test_user",
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		ValidationResult validationResult = new();
@@ -369,14 +373,14 @@ public class UserServiceTests
 	}
 
 	[Fact]
-	public async Task CreateUserAsync_ShouldHandleNullFullNameAsync()
+	public async Task CreateUserAsync_ShouldHandleEmptyFullNameAsync()
 	{
 		// Arrange
 		CreateUserRequest request = new()
 		{
 			Username = "test_user",
 			Email = "test@example.com",
-			FullName = null,
+			FullName = string.Empty,
 		};
 
 		ValidationResult validationResult = new();
@@ -405,7 +409,7 @@ public class UserServiceTests
 		UserDto result = await Service.CreateUserAsync(request);
 
 		// Assert
-		Assert.Null(result.FullName);
+		Assert.Equal(string.Empty, result.FullName);
 	}
 
 	[Fact]
@@ -416,6 +420,7 @@ public class UserServiceTests
 		{
 			Username = "inactive_user",
 			Email = "inactive@example.com",
+			FullName = "Inactive User",
 			IsActive = false,
 		};
 
@@ -457,6 +462,7 @@ public class UserServiceTests
 		{
 			Username = "test",
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		ValidationResult validationResult = new();
@@ -648,6 +654,99 @@ public class UserServiceTests
 				Arg.Is<object>(o => o.ToString()!.Contains("Failed to send welcome email")),
 				Arg.Any<Exception>(),
 				Arg.Any<Func<object, Exception?, string>>());
+	}
+
+	[Fact]
+	public async Task CreateUserAsync_WhenEmailRateLimited_MarksUserAndRethrowsAsync()
+	{
+		// Arrange
+		IAuthService mockAuthService =
+			Substitute.For<IAuthService>();
+
+		mockAuthService
+			.InitiatePasswordResetAsync(
+				Arg.Any<int>(),
+				Arg.Any<bool>(),
+				Arg.Any<CancellationToken>())
+			.ThrowsAsync(
+				new EmailRateLimitException(
+					TimeSpan.FromHours(12),
+					0));
+
+		UserService service =
+			new(
+				Repository,
+				PermissionRequestRepository,
+				CreateValidator,
+				UpdateValidator,
+				UpdateProfileValidator,
+				QueryValidator,
+				TransactionManager,
+				mockAuthService,
+				Logger);
+
+		CreateUserRequest request =
+			new()
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = "Test User",
+				IsActive = true
+			};
+
+		CreateValidator.SetupSuccessfulValidation();
+
+		Repository
+			.UsernameExistsAsync(
+				request.Username,
+				null,
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		Repository
+			.EmailExistsAsync(
+				request.Email,
+				null,
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		User createdUser =
+			new()
+			{
+				Id = 123,
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = "Test User",
+				IsActive = true,
+				NeedsPendingEmail = false
+			};
+
+		Repository
+			.CreateAsync(
+				Arg.Any<User>(),
+				Arg.Any<CancellationToken>())
+			.Returns(createdUser);
+
+		Repository
+			.GetByIdAsync(
+				123,
+				Arg.Any<CancellationToken>())
+			.Returns(createdUser);
+
+		// Act & Assert: Verify exception is rethrown
+		await Should.ThrowAsync<EmailRateLimitException>(
+			() => service.CreateUserAsync(
+				request,
+				CancellationToken.None));
+
+		// Verify user was marked with NeedsPendingEmail flag
+		await Repository.Received(1)
+			.UpdateAsync(
+				Arg.Any<User>(),
+				Arg.Any<CancellationToken>());
+
+		// Verify the user object was mutated correctly
+		createdUser.NeedsPendingEmail.ShouldBeTrue();
 	}
 
 	#endregion

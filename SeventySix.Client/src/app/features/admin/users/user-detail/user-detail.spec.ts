@@ -432,7 +432,8 @@ describe("UserDetailPage", () =>
 			// Recreate component with loading state
 			const loadingFixture: ComponentFixture<UserDetailPage> =
 				TestBed.createComponent(UserDetailPage);
-			const loadingComponent: UserDetailPage = loadingFixture.componentInstance;
+			const loadingComponent: UserDetailPage =
+				loadingFixture.componentInstance;
 			TestBed.runInInjectionContext(() =>
 			{
 				loadingFixture.detectChanges();

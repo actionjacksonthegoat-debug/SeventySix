@@ -32,8 +32,8 @@ public class ThirdPartyApiRequestsControllerTests
 			new ThirdPartyApiRequestResponse
 			{
 				Id = 1,
-				ApiName = ExternalApiConstants.OpenWeather,
-				BaseUrl = "https://api.openweathermap.org",
+				ApiName = ExternalApiConstants.BrevoEmail,
+				BaseUrl = "smtp-relay.brevo.com",
 				CallCount = 150,
 				LastCalledAt = DateTime.UtcNow.AddMinutes(-5),
 				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
@@ -88,12 +88,12 @@ public class ThirdPartyApiRequestsControllerTests
 			TotalApisTracked = 2,
 			CallsByApi = new Dictionary<string, int>
 			{
-				{ ExternalApiConstants.OpenWeather, 150 },
+				{ ExternalApiConstants.BrevoEmail, 150 },
 				{ "GoogleMaps", 75 },
 			},
 			LastCalledByApi = new Dictionary<string, DateTime?>
 			{
-				{ ExternalApiConstants.OpenWeather, DateTime.UtcNow.AddMinutes(-5) },
+				{ ExternalApiConstants.BrevoEmail, DateTime.UtcNow.AddMinutes(-5) },
 				{ "GoogleMaps", DateTime.UtcNow.AddMinutes(-10) },
 			},
 		};

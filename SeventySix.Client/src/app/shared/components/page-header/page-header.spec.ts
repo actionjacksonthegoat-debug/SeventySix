@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { PageHeaderComponent } from "./page-header";
 
-
 describe("PageHeaderComponent", () =>
 {
 	beforeEach(async () =>
@@ -17,9 +16,7 @@ describe("PageHeaderComponent", () =>
 	{
 		const fixture: ComponentFixture<PageHeaderComponent> =
 			TestBed.createComponent(PageHeaderComponent);
-		fixture.componentRef.setInput(
-			"title",
-			"Test Title");
+		fixture.componentRef.setInput("title", "Test Title");
 		await fixture.whenStable();
 		fixture.detectChanges();
 
@@ -30,12 +27,8 @@ describe("PageHeaderComponent", () =>
 	{
 		const fixture: ComponentFixture<PageHeaderComponent> =
 			TestBed.createComponent(PageHeaderComponent);
-		fixture.componentRef.setInput(
-			"title",
-			"Test");
-		fixture.componentRef.setInput(
-			"icon",
-			"people");
+		fixture.componentRef.setInput("title", "Test");
+		fixture.componentRef.setInput("icon", "people");
 		await fixture.whenStable();
 		fixture.detectChanges();
 

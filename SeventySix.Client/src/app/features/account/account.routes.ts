@@ -2,8 +2,7 @@ import { Routes } from "@angular/router";
 import { AccountService } from "./services";
 import { AccountRepository } from "./repositories";
 
-export const ACCOUNT_ROUTES: Routes =
-[
+export const ACCOUNT_ROUTES: Routes = [
 	{
 		path: "",
 		providers: [AccountService, AccountRepository],

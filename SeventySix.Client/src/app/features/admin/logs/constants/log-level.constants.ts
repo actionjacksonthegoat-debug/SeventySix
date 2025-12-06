@@ -34,5 +34,5 @@ export const VALID_LOG_LEVELS: readonly string[] = [
 	LOG_LEVEL_INFORMATION,
 	LOG_LEVEL_WARNING,
 	LOG_LEVEL_ERROR,
-	LOG_LEVEL_FATAL,
+	LOG_LEVEL_FATAL
 ] as const;

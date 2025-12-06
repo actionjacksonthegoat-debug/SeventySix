@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SeventySix.ApiTracking;
 using SeventySix.Shared;
 
@@ -46,26 +47,33 @@ namespace SeventySix.Infrastructure;
 public class RateLimitingService(
 	ILogger<RateLimitingService> logger,
 	IThirdPartyApiRequestRepository repository,
-	ITransactionManager transactionManager) : IRateLimitingService
+	ITransactionManager transactionManager,
+	IOptions<ThirdPartyApiLimitSettings> settings) : IRateLimitingService
 {
-	private const int DAILY_CALL_LIMIT = 1000;
+	private readonly ThirdPartyApiLimitSettings rateLimitSettings = settings.Value;
 
 	/// <inheritdoc/>
 	public async Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
+		// If rate limiting is disabled globally or for this API, allow the request
+		if (!rateLimitSettings.IsApiRateLimitEnabled(apiName))
+		{
+			return true;
+		}
+
+		int dailyLimit = rateLimitSettings.GetDailyLimit(apiName);
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		// If no record exists for today, we can make a request
 		if (request == null)
 		{
-			logger.LogDebug("No tracking record found for {ApiName} on {Date}. Request allowed.", apiName, today);
 			return true;
 		}
 
-		bool canMakeRequest = request.CallCount < DAILY_CALL_LIMIT;
+		bool canMakeRequest = request.CallCount < dailyLimit;
 
 		if (!canMakeRequest)
 		{
@@ -73,7 +81,7 @@ public class RateLimitingService(
 				"Rate limit exceeded for API: {ApiName}. Count: {Count}/{Limit}. Resets in: {TimeUntilReset}",
 				apiName,
 				request.CallCount,
-				DAILY_CALL_LIMIT,
+				dailyLimit,
 				GetTimeUntilReset());
 		}
 
@@ -88,6 +96,14 @@ public class RateLimitingService(
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 		ArgumentException.ThrowIfNullOrWhiteSpace(baseUrl);
+
+		// If rate limiting is disabled globally or for this API, always succeed without tracking
+		if (!rateLimitSettings.IsApiRateLimitEnabled(apiName))
+		{
+			return true;
+		}
+
+		int dailyLimit = rateLimitSettings.GetDailyLimit(apiName);
 
 		// Execute the entire operation in a transaction with automatic retry on conflicts
 		// The TransactionManager handles all race conditions and concurrency issues transparently
@@ -116,22 +132,19 @@ public class RateLimitingService(
 				// Use domain method to increment (sets CallCount = 1 and LastCalledAt = now)
 				request.IncrementCallCount();
 
-				await repository.CreateAsync(request); logger.LogInformation(
-						"Created new tracking record for {ApiName}. CallCount: {CallCount}",
-						apiName,
-						request.CallCount);
+				await repository.CreateAsync(request);
 
 				return true;
 			}
 
 			// Record exists - check limit before incrementing
-			if (request.CallCount >= DAILY_CALL_LIMIT)
+			if (request.CallCount >= dailyLimit)
 			{
 				logger.LogWarning(
 					"Cannot increment request count for {ApiName}. Limit reached: {Count}/{Limit}",
 					apiName,
 					request.CallCount,
-					DAILY_CALL_LIMIT);
+					dailyLimit);
 
 				return false;
 			}
@@ -143,21 +156,15 @@ public class RateLimitingService(
 			// and the TransactionManager will automatically retry the entire operation
 			await repository.UpdateAsync(request);
 
-			logger.LogDebug(
-				"API call recorded for {ApiName}. Count: {Count}/{Limit}",
-				apiName,
-				request.CallCount,
-				DAILY_CALL_LIMIT);
-
 			// Warn when approaching limit (90%)
-			if (request.CallCount >= DAILY_CALL_LIMIT * 0.9)
+			if (request.CallCount >= dailyLimit * 0.9)
 			{
 				logger.LogWarning(
 					"Approaching rate limit for {ApiName}: {Count}/{Limit} ({Percentage:F1}%)",
 					apiName,
 					request.CallCount,
-					DAILY_CALL_LIMIT,
-					(double)request.CallCount / DAILY_CALL_LIMIT * 100);
+					dailyLimit,
+					(double)request.CallCount / dailyLimit * 100);
 			}
 
 			return true;
@@ -180,11 +187,12 @@ public class RateLimitingService(
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
+		int dailyLimit = rateLimitSettings.GetDailyLimit(apiName);
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		int currentCount = request?.CallCount ?? 0;
-		return Math.Max(0, DAILY_CALL_LIMIT - currentCount);
+		return Math.Max(0, dailyLimit - currentCount);
 	}
 
 	/// <inheritdoc/>
@@ -205,7 +213,6 @@ public class RateLimitingService(
 
 		if (request == null)
 		{
-			logger.LogDebug("No tracking record to reset for {ApiName} on {Date}", apiName, today);
 			return;
 		}
 
@@ -213,7 +220,5 @@ public class RateLimitingService(
 		request.ResetCallCount();
 
 		await repository.UpdateAsync(request);
-
-		logger.LogInformation("Rate limit counter reset for API: {ApiName}", apiName);
 	}
 }

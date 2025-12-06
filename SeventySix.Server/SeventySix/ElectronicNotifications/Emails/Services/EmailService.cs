@@ -7,6 +7,9 @@ using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using SeventySix.ApiTracking;
+using SeventySix.Infrastructure;
+using SeventySix.Shared;
 
 namespace SeventySix.ElectronicNotifications.Emails;
 
@@ -16,13 +19,18 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// <remarks>
 /// When Enabled=false, logs email details without sending (development mode).
 /// When Enabled=true, sends via configured SMTP server.
+/// Enforces daily rate limit via IRateLimitingService to prevent exceeding external API quotas.
 /// </remarks>
 /// <param name="settings">Email configuration settings.</param>
+/// <param name="rateLimitingService">Rate limiting service for API quota management.</param>
 /// <param name="logger">Logger for email operations.</param>
 public class EmailService(
 	IOptions<EmailSettings> settings,
+	IRateLimitingService rateLimitingService,
 	ILogger<EmailService> logger) : IEmailService
 {
+	private const string BREVO_API_NAME = "BrevoEmail";
+	private const string BREVO_BASE_URL = "smtp-relay.brevo.com";
 	/// <inheritdoc/>
 	public async Task SendWelcomeEmailAsync(
 		string email,
@@ -129,6 +137,7 @@ public class EmailService(
 	/// <param name="subject">Email subject.</param>
 	/// <param name="htmlBody">HTML email body.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <exception cref="InvalidOperationException">Thrown when email daily limit is exceeded.</exception>
 	private async Task SendEmailAsync(
 		string to,
 		string subject,
@@ -137,11 +146,35 @@ public class EmailService(
 	{
 		if (!settings.Value.Enabled)
 		{
-			logger.LogInformation(
+			logger.LogWarning(
 				"[EMAIL DISABLED] Would send to {To}: {Subject}",
 				to,
 				subject);
 			return;
+		}
+
+		// Check rate limit before sending
+		bool canSend = await rateLimitingService.CanMakeRequestAsync(
+			BREVO_API_NAME,
+			cancellationToken);
+
+		if (!canSend)
+		{
+			int remaining =
+				await rateLimitingService.GetRemainingQuotaAsync(
+					BREVO_API_NAME,
+					cancellationToken);
+			TimeSpan resetTime =
+				rateLimitingService.GetTimeUntilReset();
+
+			logger.LogError(
+				"Email daily limit exceeded. Remaining: {Remaining}. Resets in: {TimeUntilReset}",
+				remaining,
+				resetTime);
+
+			throw new EmailRateLimitException(
+				resetTime,
+				remaining);
 		}
 
 		using MimeMessage message =
@@ -193,7 +226,20 @@ public class EmailService(
 			quit: true,
 			cancellationToken);
 
-		logger.LogInformation(
+		// Increment rate limit counter after successful send
+		bool incrementSuccess = await rateLimitingService.TryIncrementRequestCountAsync(
+			BREVO_API_NAME,
+			BREVO_BASE_URL,
+			cancellationToken);
+
+		if (!incrementSuccess)
+		{
+			logger.LogWarning(
+				"Email sent successfully but failed to increment rate limit counter for {ApiName}",
+				BREVO_API_NAME);
+		}
+
+		logger.LogWarning(
 			"Email sent to {To}: {Subject}",
 			to,
 			subject);

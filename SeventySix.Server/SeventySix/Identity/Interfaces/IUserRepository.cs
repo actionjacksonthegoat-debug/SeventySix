@@ -83,4 +83,10 @@ public interface IUserRepository
 	public Task<UserProfileDto?> GetUserProfileAsync(
 		int userId,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Gets all users who need pending password reset emails.
+	/// </summary>
+	public Task<IEnumerable<UserDto>> GetUsersNeedingEmailAsync(
+		CancellationToken cancellationToken = default);
 }

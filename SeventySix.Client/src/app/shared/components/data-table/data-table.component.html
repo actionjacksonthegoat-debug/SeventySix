@@ -88,7 +88,9 @@
 						>
 							@if (filter.icon)
 							{
-								<mat-icon aria-hidden="true">{{ filter.icon }}</mat-icon>
+								<mat-icon aria-hidden="true">{{
+									filter.icon
+								}}</mat-icon>
 							}
 							{{ filter.label }}
 						</mat-chip-option>
@@ -109,7 +111,9 @@
 						[matMenuTriggerFor]="dateRangeMenu"
 						aria-label="Select date range"
 					>
-						<mat-icon aria-hidden="true">{{ dateRangeIcon() }}</mat-icon>
+						<mat-icon aria-hidden="true">{{
+							dateRangeIcon()
+						}}</mat-icon>
 						{{ dateRangeLabel() }}
 						<mat-icon class="dropdown-arrow" aria-hidden="true"
 							>arrow_drop_down</mat-icon
@@ -147,7 +151,9 @@
 							(click)="onDateRangeChange('30d')"
 							[class.active-range]="selectedDateRange() === '30d'"
 						>
-							<mat-icon aria-hidden="true">calendar_month</mat-icon>
+							<mat-icon aria-hidden="true"
+								>calendar_month</mat-icon
+							>
 							<span>30 Days</span>
 						</button>
 					</mat-menu>
@@ -207,7 +213,9 @@
 						[color]="action.color || 'primary'"
 						(click)="onBulkAction(action.key)"
 					>
-						<mat-icon aria-hidden="true">{{ action.icon }}</mat-icon>
+						<mat-icon aria-hidden="true">{{
+							action.icon
+						}}</mat-icon>
 						{{ action.label }}
 					</button>
 				}
@@ -218,7 +226,11 @@
 	<!-- Loading State -->
 	@if (isLoading())
 	{
-		<div class="loading-container" role="status" aria-label="Loading table data">
+		<div
+			class="loading-container"
+			role="status"
+			aria-label="Loading table data"
+		>
 			<mat-spinner diameter="50"></mat-spinner>
 		</div>
 	}
@@ -370,7 +382,9 @@
 										(click)="$event.stopPropagation()"
 										aria-label="Row actions"
 									>
-										<mat-icon aria-hidden="true">more_vert</mat-icon>
+										<mat-icon aria-hidden="true"
+											>more_vert</mat-icon
+										>
 									</button>
 									<mat-menu #actionMenu="matMenu">
 										@for (
@@ -394,9 +408,12 @@
 														action.color === 'warn'
 													"
 												>
-													<mat-icon aria-hidden="true">{{
-														action.icon
-													}}</mat-icon>
+													<mat-icon
+														aria-hidden="true"
+														>{{
+															action.icon
+														}}</mat-icon
+													>
 													{{ action.label }}
 												</button>
 											}

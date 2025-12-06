@@ -5,7 +5,10 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using SeventySix.ApiTracking;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Infrastructure;
+using SeventySix.Shared;
 using Shouldly;
 
 namespace SeventySix.Tests.ElectronicNotifications.Emails;
@@ -24,6 +27,9 @@ public class EmailServiceTests
 {
 	private readonly ILogger<EmailService> Logger =
 		Substitute.For<ILogger<EmailService>>();
+
+	private readonly IRateLimitingService RateLimitingService =
+		Substitute.For<IRateLimitingService>();
 
 	private static IOptions<EmailSettings> CreateOptions(
 		bool enabled = false,
@@ -51,7 +57,10 @@ public class EmailServiceTests
 		IOptions<EmailSettings> options =
 			CreateOptions(enabled: false);
 		EmailService service =
-			new(options, Logger);
+			new(
+				options,
+				RateLimitingService,
+				Logger);
 
 		// Act
 		await service.SendWelcomeEmailAsync(
@@ -62,7 +71,7 @@ public class EmailServiceTests
 
 		// Assert - should log but not throw
 		Logger.ReceivedWithAnyArgs(1)
-			.LogInformation(default!);
+			.LogWarning(default!);
 	}
 
 	[Fact]
@@ -72,7 +81,10 @@ public class EmailServiceTests
 		IOptions<EmailSettings> options =
 			CreateOptions();
 		EmailService service =
-			new(options, Logger);
+			new(
+				options,
+				RateLimitingService,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(
@@ -90,7 +102,10 @@ public class EmailServiceTests
 		IOptions<EmailSettings> options =
 			CreateOptions();
 		EmailService service =
-			new(options, Logger);
+			new(
+				options,
+				RateLimitingService,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(
@@ -108,7 +123,10 @@ public class EmailServiceTests
 		IOptions<EmailSettings> options =
 			CreateOptions();
 		EmailService service =
-			new(options, Logger);
+			new(
+				options,
+				RateLimitingService,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(
@@ -130,7 +148,10 @@ public class EmailServiceTests
 		IOptions<EmailSettings> options =
 			CreateOptions(enabled: false);
 		EmailService service =
-			new(options, Logger);
+			new(
+				options,
+				RateLimitingService,
+				Logger);
 
 		// Act
 		await service.SendPasswordResetEmailAsync(
@@ -141,7 +162,7 @@ public class EmailServiceTests
 
 		// Assert - should log but not throw
 		Logger.ReceivedWithAnyArgs(1)
-			.LogInformation(default!);
+			.LogWarning(default!);
 	}
 
 	[Fact]
@@ -151,7 +172,10 @@ public class EmailServiceTests
 		IOptions<EmailSettings> options =
 			CreateOptions();
 		EmailService service =
-			new(options, Logger);
+			new(
+				options,
+				RateLimitingService,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(
@@ -169,7 +193,10 @@ public class EmailServiceTests
 		IOptions<EmailSettings> options =
 			CreateOptions();
 		EmailService service =
-			new(options, Logger);
+			new(
+				options,
+				RateLimitingService,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(
@@ -187,7 +214,10 @@ public class EmailServiceTests
 		IOptions<EmailSettings> options =
 			CreateOptions();
 		EmailService service =
-			new(options, Logger);
+			new(
+				options,
+				RateLimitingService,
+				Logger);
 
 		// Act & Assert
 		await Should.ThrowAsync<ArgumentException>(
@@ -196,6 +226,44 @@ public class EmailServiceTests
 				"testuser",
 				"",
 				CancellationToken.None));
+	}
+
+	#endregion
+
+	#region Rate Limiting Tests
+
+	[Fact]
+	public async Task SendWelcomeEmailAsync_ThrowsException_WhenRateLimitExceededAsync()
+	{
+		// Arrange
+		IOptions<EmailSettings> options =
+			CreateOptions(enabled: true);
+
+		IRateLimitingService rateLimiterMock =
+			Substitute.For<IRateLimitingService>();
+
+		rateLimiterMock
+			.CanMakeRequestAsync(
+				ExternalApiConstants.BrevoEmail,
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		EmailService service =
+			new(
+				options,
+				rateLimiterMock,
+				Logger);
+
+		// Act & Assert
+		EmailRateLimitException ex =
+			await Should.ThrowAsync<EmailRateLimitException>(
+				() => service.SendWelcomeEmailAsync(
+					"test@example.com",
+					"testuser",
+					"token123",
+					CancellationToken.None));
+
+		ex.Message.ShouldContain("Email daily limit exceeded");
 	}
 
 	#endregion

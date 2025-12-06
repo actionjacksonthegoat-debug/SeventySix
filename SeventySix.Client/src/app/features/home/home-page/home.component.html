@@ -11,12 +11,11 @@
 				[attr.aria-label]="action.title + ': ' + action.description"
 				role="listitem"
 			>
-				<mat-card
-					class="feature-card"
-					[class]="action.themeClass"
-				>
+				<mat-card class="feature-card" [class]="action.themeClass">
 					<mat-card-header>
-						<mat-icon class="feature-icon" aria-hidden="true">{{ action.icon }}</mat-icon>
+						<mat-icon class="feature-icon" aria-hidden="true">{{
+							action.icon
+						}}</mat-icon>
 						<mat-card-title>{{ action.title }}</mat-card-title>
 					</mat-card-header>
 					<mat-card-content>
@@ -25,7 +24,9 @@
 					<mat-card-actions align="end">
 						<span class="card-action-text">
 							Open
-							<mat-icon aria-hidden="true">arrow_forward</mat-icon>
+							<mat-icon aria-hidden="true"
+								>arrow_forward</mat-icon
+							>
 						</span>
 					</mat-card-actions>
 				</mat-card>

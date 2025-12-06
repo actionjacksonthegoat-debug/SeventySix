@@ -58,8 +58,8 @@ export class ChangePasswordComponent implements OnInit
 		const requiredParam: string | null =
 			this.route.snapshot.queryParams["required"];
 		this.isRequired.set(
-			requiredParam === "true"
-				|| this.authService.requiresPasswordChange()
+			requiredParam === "true" ||
+				this.authService.requiresPasswordChange()
 		);
 		this.returnUrl = this.route.snapshot.queryParams["returnUrl"] ?? "/";
 
@@ -111,8 +111,8 @@ export class ChangePasswordComponent implements OnInit
 				error: (error: HttpErrorResponse) =>
 				{
 					const message: string =
-						error.error?.detail
-						?? "Failed to change password. Please try again.";
+						error.error?.detail ??
+						"Failed to change password. Please try again.";
 					this.notification.error(message);
 					this.isLoading.set(false);
 				}

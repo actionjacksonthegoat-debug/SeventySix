@@ -10,10 +10,7 @@ import {
 import { provideZonelessChangeDetection } from "@angular/core";
 import { provideRouter, Router } from "@angular/router";
 import { AuthService } from "./auth.service";
-import {
-	AuthResponse,
-	DOTNET_ROLE_CLAIM
-} from "@infrastructure/models";
+import { AuthResponse, DOTNET_ROLE_CLAIM } from "@infrastructure/models";
 import { environment } from "@environments/environment";
 
 /** AuthService Tests - focuses on authentication logic */

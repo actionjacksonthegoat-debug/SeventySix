@@ -9,6 +9,6 @@ namespace SeventySix.ApiTracking;
 /// </summary>
 public static class ExternalApiConstants
 {
-	/// <summary>OpenWeather API name.</summary>
-	public const string OpenWeather = "OpenWeather";
+	/// <summary>Brevo (formerly Sendinblue) email service.</summary>
+	public const string BrevoEmail = "BrevoEmail";
 }

@@ -176,6 +176,22 @@ public class User : IAuditableEntity
 	public bool IsActive { get; set; } = true;
 
 	/// <summary>
+	/// Gets or sets a value indicating whether the user needs a pending password reset email.
+	/// </summary>
+	/// <value>
+	/// True if the user needs a pending email; otherwise, false.
+	/// </value>
+	/// <remarks>
+	/// Set to true when email sending fails due to rate limiting.
+	/// Cleared by background job after successful email send.
+	/// Defaults to false for new users.
+	/// </remarks>
+	public bool NeedsPendingEmail
+	{
+		get; set;
+	}
+
+	/// <summary>
 	/// Gets or sets a value indicating whether the user is soft deleted.
 	/// </summary>
 	/// <value>

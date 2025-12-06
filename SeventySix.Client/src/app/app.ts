@@ -71,8 +71,8 @@ export class App
 	{
 		// Only handle swipe on mobile/tablet (overlay mode)
 		if (
-			this.layoutService.sidebarMode() === "over"
-			&& this.layoutService.sidebarExpanded()
+			this.layoutService.sidebarMode() === "over" &&
+			this.layoutService.sidebarExpanded()
 		)
 		{
 			this.layoutService.closeSidebar();
@@ -86,8 +86,8 @@ export class App
 	{
 		// Only handle swipe on mobile/tablet (overlay mode)
 		if (
-			this.layoutService.sidebarMode() === "over"
-			&& !this.layoutService.sidebarExpanded()
+			this.layoutService.sidebarMode() === "over" &&
+			!this.layoutService.sidebarExpanded()
 		)
 		{
 			this.layoutService.openSidebar();

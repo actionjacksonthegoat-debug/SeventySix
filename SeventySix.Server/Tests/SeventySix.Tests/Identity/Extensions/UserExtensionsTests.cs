@@ -176,14 +176,14 @@ public class UserExtensionsTests
 	}
 
 	[Fact]
-	public void ToEntity_ShouldHandleNullFullName()
+	public void ToEntity_ShouldHandleEmptyFullName()
 	{
 		// Arrange
 		CreateUserRequest request = new()
 		{
 			Username = "test_user",
 			Email = "test@example.com",
-			FullName = null,
+			FullName = string.Empty,
 			IsActive = true,
 		};
 
@@ -192,7 +192,7 @@ public class UserExtensionsTests
 
 		// Assert
 		Assert.NotNull(entity);
-		Assert.Null(entity.FullName);
+		Assert.Equal(string.Empty, entity.FullName);
 	}
 
 	[Fact]
@@ -203,6 +203,7 @@ public class UserExtensionsTests
 		{
 			Username = "inactive_new",
 			Email = "inactive@example.com",
+			FullName = "Inactive User",
 			IsActive = false,
 		};
 
@@ -222,6 +223,7 @@ public class UserExtensionsTests
 		{
 			Username = "test",
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		// Act
@@ -249,6 +251,7 @@ public class UserExtensionsTests
 		{
 			Username = "test",
 			Email = "test@example.com",
+			FullName = "Test User",
 		};
 
 		// Act
@@ -270,6 +273,7 @@ public class UserExtensionsTests
 		{
 			Username = username,
 			Email = email,
+			FullName = "Test User",
 		};
 
 		// Act

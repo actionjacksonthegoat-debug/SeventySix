@@ -319,6 +319,9 @@ describe("UserCreatePage", () =>
 				username: "testuser",
 				email: "test@example.com"
 			});
+			component.accountDetailsForm.patchValue({
+				fullName: "Test User"
+			});
 			fixture.detectChanges();
 
 			const snackBarSpy = spyOn(component["snackBar"], "open");
@@ -351,6 +354,9 @@ describe("UserCreatePage", () =>
 			component.basicInfoForm.patchValue({
 				username: "testuser",
 				email: "test@example.com"
+			});
+			component.accountDetailsForm.patchValue({
+				fullName: "Test User"
 			});
 			fixture.detectChanges();
 

@@ -1,7 +1,4 @@
-import {
-	Component,
-	ChangeDetectionStrategy
-} from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
@@ -27,5 +24,4 @@ import { PageHeaderComponent } from "@shared/components";
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserManagementPage
-{
-}
+{}
