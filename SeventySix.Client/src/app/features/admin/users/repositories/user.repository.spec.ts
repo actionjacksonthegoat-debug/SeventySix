@@ -62,7 +62,7 @@ describe("UserRepository", () =>
 				page: 1,
 				pageSize: 10,
 				searchTerm: "test",
-				includeInactive: false,
+				isActive: true,
 				sortBy: "username",
 				sortDescending: false
 			};

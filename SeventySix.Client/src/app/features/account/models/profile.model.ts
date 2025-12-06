@@ -5,8 +5,10 @@ export interface Profile
 	username: string;
 	email: string;
 	fullName?: string;
-	createDate: string;
 	roles: string[];
+	hasPassword: boolean;
+	linkedProviders: string[];
+	lastLoginAt?: string;
 }
 
 /** Request to update current user's profile. */

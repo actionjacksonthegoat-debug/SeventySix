@@ -13,6 +13,9 @@ export interface User
 	modifyDate?: string;
 	modifiedBy: string;
 	lastLoginAt?: string;
+	isDeleted?: boolean;
+	deletedAt?: string;
+	deletedBy?: string;
 }
 
 /** Create User Request - structure for creating a new user. */
@@ -37,6 +40,9 @@ export interface UpdateUserRequest
 /** User Query Request - query parameters for paginated user requests. */
 export interface UserQueryRequest extends BaseQueryRequest
 {
-	/** Include inactive users in results */
-	includeInactive?: boolean;
+	/** Filter by active status. null = all users, true = active only, false = inactive only */
+	isActive?: boolean;
+
+	/** Include soft-deleted users in results. Default false. */
+	includeDeleted?: boolean;
 }

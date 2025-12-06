@@ -41,8 +41,10 @@ public class UserServiceTests
 	private readonly IPermissionRequestRepository PermissionRequestRepository;
 	private readonly IValidator<CreateUserRequest> CreateValidator;
 	private readonly IValidator<UpdateUserRequest> UpdateValidator;
+	private readonly IValidator<UpdateProfileRequest> UpdateProfileValidator;
 	private readonly IValidator<UserQueryRequest> QueryValidator;
 	private readonly ITransactionManager TransactionManager;
+	private readonly IAuthService AuthService;
 	private readonly ILogger<UserService> Logger;
 	private readonly UserService Service;
 
@@ -52,8 +54,10 @@ public class UserServiceTests
 		PermissionRequestRepository = Substitute.For<IPermissionRequestRepository>();
 		CreateValidator = Substitute.For<IValidator<CreateUserRequest>>();
 		UpdateValidator = Substitute.For<IValidator<UpdateUserRequest>>();
+		UpdateProfileValidator = Substitute.For<IValidator<UpdateProfileRequest>>();
 		QueryValidator = Substitute.For<IValidator<UserQueryRequest>>();
 		TransactionManager = Substitute.For<ITransactionManager>();
+		AuthService = Substitute.For<IAuthService>();
 		Logger = Substitute.For<ILogger<UserService>>();
 
 		// Setup transaction manager to execute the delegate immediately
@@ -86,8 +90,10 @@ public class UserServiceTests
 			PermissionRequestRepository,
 			CreateValidator,
 			UpdateValidator,
+			UpdateProfileValidator,
 			QueryValidator,
 			TransactionManager,
+			AuthService,
 			Logger);
 	}
 
@@ -481,6 +487,167 @@ public class UserServiceTests
 		// Assert
 		await CreateValidator.Received(1).ValidateAsync(Arg.Any<ValidationContext<CreateUserRequest>>(), cancellationToken);
 		await Repository.Received(1).CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task CreateUserAsync_CallsInitiatePasswordReset_WithIsNewUserTrueAsync()
+	{
+		// Arrange
+		IAuthService mockAuthService =
+			Substitute.For<IAuthService>();
+
+		UserService service =
+			new(
+				Repository,
+				PermissionRequestRepository,
+				CreateValidator,
+				UpdateValidator,
+				UpdateProfileValidator,
+				QueryValidator,
+				TransactionManager,
+				mockAuthService,
+				Logger);
+
+		CreateUserRequest request =
+			new()
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = "Test User",
+				IsActive = true
+			};
+
+		CreateValidator.SetupSuccessfulValidation();
+
+		Repository
+			.UsernameExistsAsync(
+				request.Username,
+				null,
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		Repository
+			.EmailExistsAsync(
+				request.Email,
+				null,
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		Repository
+			.CreateAsync(
+				Arg.Any<User>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				callInfo =>
+				{
+					User user =
+						callInfo.ArgAt<User>(0);
+					user.Id = 123;
+					return user;
+				});
+
+		// Act
+		UserDto result =
+			await service.CreateUserAsync(
+				request,
+				CancellationToken.None);
+
+		// Assert
+		Assert.NotNull(result);
+		Assert.Equal("testuser", result.Username);
+
+		await mockAuthService.Received(1)
+			.InitiatePasswordResetAsync(
+				Arg.Is<int>(id => id == 123),
+				isNewUser: true,
+				Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task CreateUserAsync_SucceedsWhenEmailFails_LogsWarningAsync()
+	{
+		// Arrange
+		IAuthService mockAuthService =
+			Substitute.For<IAuthService>();
+
+		mockAuthService
+			.InitiatePasswordResetAsync(
+				Arg.Any<int>(),
+				Arg.Any<bool>(),
+				Arg.Any<CancellationToken>())
+			.ThrowsAsync(
+				new Exception("SMTP connection failed"));
+
+		UserService service =
+			new(
+				Repository,
+				PermissionRequestRepository,
+				CreateValidator,
+				UpdateValidator,
+				UpdateProfileValidator,
+				QueryValidator,
+				TransactionManager,
+				mockAuthService,
+				Logger);
+
+		CreateUserRequest request =
+			new()
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = "Test User",
+				IsActive = true
+			};
+
+		CreateValidator.SetupSuccessfulValidation();
+
+		Repository
+			.UsernameExistsAsync(
+				request.Username,
+				null,
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		Repository
+			.EmailExistsAsync(
+				request.Email,
+				null,
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		Repository
+			.CreateAsync(
+				Arg.Any<User>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				callInfo =>
+				{
+					User user =
+						callInfo.ArgAt<User>(0);
+					user.Id = 123;
+					user.Email = "test@example.com";
+					return user;
+				});
+
+		// Act
+		UserDto result =
+			await service.CreateUserAsync(
+				request,
+				CancellationToken.None);
+
+		// Assert - User created successfully despite email failure
+		Assert.NotNull(result);
+		Assert.Equal("testuser", result.Username);
+		Assert.Equal("test@example.com", result.Email);
+
+		// Verify warning logged with exception
+		Logger.Received(1)
+			.Log(
+				LogLevel.Warning,
+				Arg.Any<EventId>(),
+				Arg.Is<object>(o => o.ToString()!.Contains("Failed to send welcome email")),
+				Arg.Any<Exception>(),
+				Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	#endregion

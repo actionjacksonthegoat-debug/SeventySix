@@ -30,11 +30,17 @@ public class UserServiceRoleTests
 	private readonly IValidator<UpdateUserRequest> UpdateValidator =
 		Substitute.For<IValidator<UpdateUserRequest>>();
 
+	private readonly IValidator<UpdateProfileRequest> UpdateProfileValidator =
+		Substitute.For<IValidator<UpdateProfileRequest>>();
+
 	private readonly IValidator<UserQueryRequest> QueryValidator =
 		Substitute.For<IValidator<UserQueryRequest>>();
 
 	private readonly ITransactionManager TransactionManager =
 		Substitute.For<ITransactionManager>();
+
+	private readonly IAuthService AuthService =
+		Substitute.For<IAuthService>();
 
 	private readonly ILogger<UserService> Logger =
 		Substitute.For<ILogger<UserService>>();
@@ -44,8 +50,10 @@ public class UserServiceRoleTests
 		PermissionRequestRepository,
 		CreateValidator,
 		UpdateValidator,
+		UpdateProfileValidator,
 		QueryValidator,
 		TransactionManager,
+		AuthService,
 		Logger);
 
 	#region GetUserRolesAsync

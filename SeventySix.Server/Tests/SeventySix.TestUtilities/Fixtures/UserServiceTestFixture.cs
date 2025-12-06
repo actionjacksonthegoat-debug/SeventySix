@@ -33,11 +33,19 @@ public class UserServiceTestFixture
 	{
 		get;
 	}
+	public IValidator<UpdateProfileRequest> MockUpdateProfileValidator
+	{
+		get;
+	}
 	public IValidator<UserQueryRequest> MockQueryValidator
 	{
 		get;
 	}
 	public ITransactionManager MockTransactionManager
+	{
+		get;
+	}
+	public IAuthService MockAuthService
 	{
 		get;
 	}
@@ -56,8 +64,10 @@ public class UserServiceTestFixture
 		MockPermissionRequestRepository = Substitute.For<IPermissionRequestRepository>();
 		MockCreateValidator = Substitute.For<IValidator<CreateUserRequest>>();
 		MockUpdateValidator = Substitute.For<IValidator<UpdateUserRequest>>();
+		MockUpdateProfileValidator = Substitute.For<IValidator<UpdateProfileRequest>>();
 		MockQueryValidator = Substitute.For<IValidator<UserQueryRequest>>();
 		MockTransactionManager = Substitute.For<ITransactionManager>();
+		MockAuthService = Substitute.For<IAuthService>();
 		MockLogger = Substitute.For<ILogger<UserService>>();
 
 		SetupTransactionManagerDefaults();
@@ -67,8 +77,10 @@ public class UserServiceTestFixture
 			MockPermissionRequestRepository,
 			MockCreateValidator,
 			MockUpdateValidator,
+			MockUpdateProfileValidator,
 			MockQueryValidator,
 			MockTransactionManager,
+			MockAuthService,
 			MockLogger);
 	}
 
@@ -84,6 +96,12 @@ public class UserServiceTestFixture
 		return this;
 	}
 
+	public UserServiceTestFixture WithSuccessfulUpdateProfileValidation()
+	{
+		MockUpdateProfileValidator.SetupSuccessfulValidation();
+		return this;
+	}
+
 	public UserServiceTestFixture WithSuccessfulQueryValidation()
 	{
 		MockQueryValidator.SetupSuccessfulValidation();
@@ -94,6 +112,7 @@ public class UserServiceTestFixture
 	{
 		MockCreateValidator.SetupSuccessfulValidation();
 		MockUpdateValidator.SetupSuccessfulValidation();
+		MockUpdateProfileValidator.SetupSuccessfulValidation();
 		MockQueryValidator.SetupSuccessfulValidation();
 		return this;
 	}
@@ -135,6 +154,20 @@ public class UserServiceTestFixture
 			.Returns(callInfo =>
 			{
 				Func<CancellationToken, Task<int>> operation = callInfo.Arg<Func<CancellationToken, Task<int>>>();
+				CancellationToken ct = callInfo.Arg<CancellationToken>();
+				return operation(ct);
+			});
+
+		// Setup for operations returning UserProfileDto? (profile updates)
+		MockTransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<UserProfileDto?>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(callInfo =>
+			{
+				Func<CancellationToken, Task<UserProfileDto?>> operation =
+					callInfo.Arg<Func<CancellationToken, Task<UserProfileDto?>>>();
 				CancellationToken ct = callInfo.Arg<CancellationToken>();
 				return operation(ct);
 			});

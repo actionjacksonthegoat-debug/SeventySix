@@ -120,4 +120,28 @@ public record UserDto
 	{
 		get; init;
 	}
+
+	/// <summary>
+	/// Gets a value indicating whether the user has been soft-deleted.
+	/// </summary>
+	public bool IsDeleted
+	{
+		get; init;
+	}
+
+	/// <summary>
+	/// Gets the date and time when the user was soft-deleted.
+	/// </summary>
+	public DateTime? DeletedAt
+	{
+		get; init;
+	}
+
+	/// <summary>
+	/// Gets the username of the user who deleted this user.
+	/// </summary>
+	public string? DeletedBy
+	{
+		get; init;
+	}
 }

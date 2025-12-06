@@ -52,6 +52,9 @@ export class UserList
 	private readonly resetPasswordMutation: ReturnType<
 		UserService["resetPassword"]
 	> = this.userService.resetPassword();
+	private readonly restoreUserMutation: ReturnType<
+		UserService["restoreUser"]
+	> = this.userService.restoreUser();
 
 	readonly data: Signal<User[]> = computed(
 		() => this.usersQuery.data()?.items ?? []
@@ -109,10 +112,25 @@ export class UserList
 			type: "badge",
 			sortable: true,
 			visible: true,
-			formatter: (value: unknown): string =>
-				value === true ? "Active" : "Inactive",
-			badgeColor: (value: unknown): "primary" | "accent" | "warn" =>
-				value === true ? "primary" : "warn"
+			formatter: (value: unknown, row?: User): string =>
+			{
+				if (row?.isDeleted)
+				{
+					return "Deleted";
+				}
+				return value === true ? "Active" : "Inactive";
+			},
+			badgeColor: (
+				value: unknown,
+				row?: User
+			): "primary" | "accent" | "warn" =>
+			{
+				if (row?.isDeleted)
+				{
+					return "warn";
+				}
+				return value === true ? "primary" : "accent";
+			}
 		},
 		{
 			key: "createDate",
@@ -151,6 +169,11 @@ export class UserList
 			key: "inactive",
 			label: "Inactive",
 			icon: "cancel"
+		},
+		{
+			key: "deleted",
+			label: "Show Deleted",
+			icon: "delete"
 		}
 	];
 
@@ -163,19 +186,29 @@ export class UserList
 		{
 			key: "edit",
 			label: "Edit",
-			icon: "edit"
+			icon: "edit",
+			showIf: (user: User): boolean => !user.isDeleted
 		},
 		{
 			key: "resetPassword",
 			label: "Reset Password",
 			icon: "lock_reset",
-			color: "accent"
+			color: "accent",
+			showIf: (user: User): boolean => !user.isDeleted
+		},
+		{
+			key: "restore",
+			label: "Restore",
+			icon: "restore",
+			color: "primary",
+			showIf: (user: User): boolean => user.isDeleted === true
 		},
 		{
 			key: "deactivate",
 			label: "Deactivate",
 			icon: "person_off",
-			color: "warn"
+			color: "warn",
+			showIf: (user: User): boolean => !user.isDeleted
 		}
 	];
 
@@ -192,26 +225,41 @@ export class UserList
 	onFilterChange(event: { filterKey: string }): void
 	{
 		const filterKey: string = event.filterKey;
-		let includeInactive: boolean | undefined = undefined;
+		let isActive: boolean | undefined = undefined;
+		let includeDeleted: boolean | undefined = undefined;
 
 		switch (filterKey)
 		{
 			case "all":
-				// Show all users (active + inactive)
-				includeInactive = true;
+				// Show all active and inactive users (no filter)
+				isActive = undefined;
+				includeDeleted = false;
 				break;
 			case "active":
 				// Show only active users
-				includeInactive = false;
+				isActive = true;
+				includeDeleted = false;
 				break;
 			case "inactive":
-				// Show only inactive users (need to filter server-side)
-				// This would need backend support for isActive=false filter
-				includeInactive = true;
+				// Show only inactive users
+				isActive = false;
+				includeDeleted = false;
+				break;
+			case "deleted":
+				// Toggle showing deleted users
+				const currentFilter: { includeDeleted?: boolean } =
+					this.userService.getCurrentFilter();
+				const currentValue: boolean =
+					currentFilter.includeDeleted ?? false;
+				isActive = undefined;
+				includeDeleted = !currentValue;
 				break;
 		}
 
-		this.userService.updateFilter({ includeInactive });
+		this.userService.updateFilter({
+			isActive,
+			includeDeleted
+		});
 	}
 
 	/**
@@ -238,6 +286,9 @@ export class UserList
 				break;
 			case "resetPassword":
 				this.resetUserPassword(event.row);
+				break;
+			case "restore":
+				this.handleRestoreUser(event.row);
 				break;
 			case "deactivate":
 				this.deactivateUser(event.row);
@@ -359,6 +410,43 @@ export class UserList
 						}
 					}
 				);
+			});
+	}
+
+	/**
+	 * Restores a soft-deleted user
+	 * @param user - The user to restore
+	 */
+	private handleRestoreUser(user: User): void
+	{
+		this.dialogService
+			.confirm({
+				title: "Restore User",
+				message: `Are you sure you want to restore user "${user.username}"?`,
+				confirmText: "Restore",
+				cancelText: "Cancel"
+			})
+			.subscribe((confirmed: boolean) =>
+			{
+				if (!confirmed)
+				{
+					return;
+				}
+
+				this.restoreUserMutation.mutate(user.id, {
+					onSuccess: () =>
+					{
+						this.notificationService.success(
+							`User "${user.username}" restored successfully`
+						);
+					},
+					onError: (error: Error) =>
+					{
+						this.notificationService.error(
+							`Failed to restore user: ${error.message}`
+						);
+					}
+				});
 			});
 	}
 }

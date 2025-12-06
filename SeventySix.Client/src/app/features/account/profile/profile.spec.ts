@@ -20,17 +20,19 @@ describe("ProfilePage", () =>
 
 	beforeEach(async () =>
 	{
-		mockRepository = jasmine.createSpyObj(
-			"AccountRepository",
-			["getProfile", "updateProfile"]
-		);
+		mockRepository = jasmine.createSpyObj("AccountRepository", [
+			"getProfile",
+			"updateProfile"
+		]);
 		mockRepository.getProfile.and.returnValue(
 			of({
 				id: 1,
 				username: "testuser",
 				email: "test@example.com",
-				createDate: "2024-01-01",
-				roles: ["User"]
+				roles: ["User"],
+				hasPassword: true,
+				linkedProviders: [],
+				lastLoginAt: "2024-01-01T12:00:00Z"
 			})
 		);
 

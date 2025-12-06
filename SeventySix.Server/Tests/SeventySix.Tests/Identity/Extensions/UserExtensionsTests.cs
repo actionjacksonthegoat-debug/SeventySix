@@ -279,4 +279,51 @@ public class UserExtensionsTests
 		Assert.Equal(username, entity.Username);
 		Assert.Equal(email, entity.Email);
 	}
+
+	[Fact]
+	public void ToDto_ShouldIncludeSoftDeleteFields_WhenUserIsDeleted()
+	{
+		// Arrange
+		DateTime deletedAt = DateTime.UtcNow.AddHours(-2);
+		User user = new UserBuilder()
+			.WithUsername("deleted_user")
+			.WithEmail("deleted@example.com")
+			.WithFullName("Deleted User")
+			.WithIsActive(false)
+			.Build();
+		user.Id = 999;
+		user.IsDeleted = true;
+		user.DeletedAt = deletedAt;
+		user.DeletedBy = "admin";
+
+		// Act
+		UserDto dto = user.ToDto();
+
+		// Assert
+		Assert.NotNull(dto);
+		Assert.True(dto.IsDeleted);
+		Assert.Equal(deletedAt, dto.DeletedAt);
+		Assert.Equal("admin", dto.DeletedBy);
+	}
+
+	[Fact]
+	public void ToDto_ShouldHaveNullSoftDeleteFields_WhenUserIsNotDeleted()
+	{
+		// Arrange
+		User user = new UserBuilder()
+			.WithUsername("active_user")
+			.WithEmail("active@example.com")
+			.WithIsActive(true)
+			.Build();
+		user.Id = 1;
+
+		// Act
+		UserDto dto = user.ToDto();
+
+		// Assert
+		Assert.NotNull(dto);
+		Assert.False(dto.IsDeleted);
+		Assert.Null(dto.DeletedAt);
+		Assert.Null(dto.DeletedBy);
+	}
 }

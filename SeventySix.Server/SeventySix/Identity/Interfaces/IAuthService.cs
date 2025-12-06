@@ -86,16 +86,6 @@ public interface IAuthService
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
-	/// Gets the current user's profile.
-	/// </summary>
-	/// <param name="userId">The authenticated user's ID.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>User profile or null if not found.</returns>
-	public Task<UserProfileDto?> GetCurrentUserAsync(
-		int userId,
-		CancellationToken cancellationToken = default);
-
-	/// <summary>
 	/// Changes the current user's password.
 	/// </summary>
 	/// <param name="userId">The authenticated user's ID.</param>

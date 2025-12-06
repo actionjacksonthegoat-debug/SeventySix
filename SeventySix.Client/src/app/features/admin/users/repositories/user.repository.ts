@@ -43,7 +43,8 @@ export class UserRepository
 			page: request.page,
 			pageSize: request.pageSize,
 			searchTerm: request.searchTerm || "",
-			includeInactive: request.includeInactive || false,
+			isActive: request.isActive,
+			includeDeleted: request.includeDeleted,
 			sortBy: request.sortBy,
 			sortDescending: request.sortDescending
 		});
@@ -119,10 +120,7 @@ export class UserRepository
 	}
 
 	/** Adds a role to a user. */
-	addRole(
-		userId: number,
-		role: string
-	): Observable<void>
+	addRole(userId: number, role: string): Observable<void>
 	{
 		return this.apiService.post<void, Record<string, never>>(
 			`${this.endpoint}/${userId}/roles/${role}`,
@@ -131,10 +129,7 @@ export class UserRepository
 	}
 
 	/** Removes a role from a user. */
-	removeRole(
-		userId: number,
-		role: string
-	): Observable<void>
+	removeRole(userId: number, role: string): Observable<void>
 	{
 		return this.apiService.delete<void>(
 			`${this.endpoint}/${userId}/roles/${role}`

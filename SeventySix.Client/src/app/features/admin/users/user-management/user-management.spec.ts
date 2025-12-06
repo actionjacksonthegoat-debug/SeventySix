@@ -9,8 +9,7 @@ describe("UserManagementPage", () =>
 {
 	let fixture: ComponentFixture<UserManagementPage>;
 
-	const mockUserService: Partial<UserService> =
-	{
+	const mockUserService: Partial<UserService> = {
 		getPagedUsers: jasmine.createSpy("getPagedUsers").and.returnValue({
 			data: () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 }),
 			isLoading: () => false,
@@ -25,13 +24,19 @@ describe("UserManagementPage", () =>
 			mutate: jasmine.createSpy("mutate"),
 			isPending: () => false
 		}),
+		restoreUser: jasmine.createSpy("restoreUser").and.returnValue({
+			mutate: jasmine.createSpy("mutate"),
+			isPending: () => false
+		}),
 		updateFilter: jasmine.createSpy("updateFilter"),
-		getCurrentFilter: jasmine.createSpy("getCurrentFilter").and.returnValue({
-			page: 1,
-			pageSize: 50,
-			sortBy: "Id",
-			sortDescending: true
-		})
+		getCurrentFilter: jasmine
+			.createSpy("getCurrentFilter")
+			.and.returnValue({
+				page: 1,
+				pageSize: 50,
+				sortBy: "Id",
+				sortDescending: true
+			})
 	};
 
 	beforeEach(async () =>

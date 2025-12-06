@@ -56,14 +56,14 @@ describe("UserList", () =>
 	it("should define quick filters", () =>
 	{
 		expect(component.quickFilters).toBeDefined();
-		expect(component.quickFilters.length).toBe(3);
+		expect(component.quickFilters.length).toBe(4);
 		expect(component.quickFilters[0].key).toBe("all");
 	});
 
 	it("should define row actions", () =>
 	{
 		expect(component.rowActions).toBeDefined();
-		expect(component.rowActions.length).toBe(4);
+		expect(component.rowActions.length).toBe(5);
 	});
 
 	it("should include resetPassword in row actions", () =>

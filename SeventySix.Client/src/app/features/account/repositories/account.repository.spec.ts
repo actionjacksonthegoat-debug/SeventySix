@@ -1,7 +1,11 @@
 import { of } from "rxjs";
 import { AccountRepository } from "./account.repository";
 import { ApiService } from "@infrastructure/api-services/api.service";
-import { Profile, UpdateProfileRequest, CreatePermissionRequest } from "../models";
+import {
+	Profile,
+	UpdateProfileRequest,
+	CreatePermissionRequest
+} from "../models";
 import { setupRepositoryTest, createMockApiService } from "@testing";
 
 describe("AccountRepository", () =>
@@ -13,10 +17,9 @@ describe("AccountRepository", () =>
 	beforeEach(() =>
 	{
 		mockApiService = createMockApiService() as jasmine.SpyObj<ApiService>;
-		repository = setupRepositoryTest(
-			AccountRepository,
-			[{ provide: ApiService, useValue: mockApiService }]
-		);
+		repository = setupRepositoryTest(AccountRepository, [
+			{ provide: ApiService, useValue: mockApiService }
+		]);
 	});
 
 	it("should be created", () =>
@@ -24,30 +27,30 @@ describe("AccountRepository", () =>
 		expect(repository).toBeTruthy();
 	});
 
-	it("should GET profile from /users/me", (done) =>
+	it("should GET profile from /auth/me", (done) =>
 	{
-		const mockProfile: Profile =
-		{
+		const mockProfile: Profile = {
 			id: 1,
 			username: "testuser",
 			email: "test@example.com",
-			createDate: "2024-01-01",
-			roles: ["User"]
+			roles: ["User"],
+			hasPassword: true,
+			linkedProviders: [],
+			lastLoginAt: "2024-01-01T12:00:00Z"
 		};
 		mockApiService.get.and.returnValue(of(mockProfile));
 
 		repository.getProfile().subscribe((profile: Profile) =>
 		{
 			expect(profile).toEqual(mockProfile);
-			expect(mockApiService.get).toHaveBeenCalledWith(endpoint);
+			expect(mockApiService.get).toHaveBeenCalledWith("auth/me");
 			done();
 		});
 	});
 
 	it("should PUT profile update to /users/me", (done) =>
 	{
-		const request: UpdateProfileRequest =
-		{
+		const request: UpdateProfileRequest = {
 			email: "new@example.com",
 			fullName: "New Name"
 		};
@@ -55,10 +58,7 @@ describe("AccountRepository", () =>
 
 		repository.updateProfile(request).subscribe(() =>
 		{
-			expect(mockApiService.put).toHaveBeenCalledWith(
-				endpoint,
-				request
-			);
+			expect(mockApiService.put).toHaveBeenCalledWith(endpoint, request);
 			done();
 		});
 	});
@@ -69,15 +69,16 @@ describe("AccountRepository", () =>
 
 		repository.getAvailableRoles().subscribe(() =>
 		{
-			expect(mockApiService.get).toHaveBeenCalledWith(`${endpoint}/available-roles`);
+			expect(mockApiService.get).toHaveBeenCalledWith(
+				`${endpoint}/available-roles`
+			);
 			done();
 		});
 	});
 
 	it("should POST permission request to /users/me/permission-requests", (done) =>
 	{
-		const request: CreatePermissionRequest =
-		{
+		const request: CreatePermissionRequest = {
 			requestedRoles: ["Admin"],
 			requestMessage: "Need access"
 		};

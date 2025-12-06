@@ -49,4 +49,22 @@ public interface IUserService
 		int userId,
 		string role,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>Gets a user's complete profile with roles and authentication details.</summary>
+	/// <param name="userId">The ID of the user.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>The user profile, or null if user not found.</returns>
+	public Task<UserProfileDto?> GetUserProfileAsync(
+		int userId,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>Updates the current user's profile (self-service).</summary>
+	/// <param name="userId">The ID of the user to update.</param>
+	/// <param name="request">The profile update request.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>The updated user profile, or null if user not found.</returns>
+	public Task<UserProfileDto?> UpdateProfileAsync(
+		int userId,
+		UpdateProfileRequest request,
+		CancellationToken cancellationToken = default);
 }

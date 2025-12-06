@@ -17,23 +17,24 @@ export class AccountRepository
 
 	getProfile(): Observable<Profile>
 	{
-		return this.apiService.get<Profile>(this.endpoint);
+		return this.apiService.get<Profile>("auth/me");
 	}
 
 	updateProfile(request: UpdateProfileRequest): Observable<Profile>
 	{
-		return this.apiService.put<Profile>(
-			this.endpoint,
-			request
-		);
+		return this.apiService.put<Profile>(this.endpoint, request);
 	}
 
 	getAvailableRoles(): Observable<AvailableRole[]>
 	{
-		return this.apiService.get<AvailableRole[]>(`${this.endpoint}/available-roles`);
+		return this.apiService.get<AvailableRole[]>(
+			`${this.endpoint}/available-roles`
+		);
 	}
 
-	createPermissionRequest(request: CreatePermissionRequest): Observable<void>
+	createPermissionRequest(
+		request: CreatePermissionRequest
+	): Observable<void>
 	{
 		return this.apiService.post<void, CreatePermissionRequest>(
 			`${this.endpoint}/permission-requests`,

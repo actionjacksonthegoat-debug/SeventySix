@@ -31,7 +31,10 @@ public static class UserExtensions
 		CreatedBy = user.CreatedBy,
 		ModifyDate = user.ModifyDate,
 		ModifiedBy = user.ModifiedBy,
-		LastLoginAt = user.LastLoginAt
+		LastLoginAt = user.LastLoginAt,
+		IsDeleted = user.IsDeleted,
+		DeletedAt = user.DeletedAt,
+		DeletedBy = user.DeletedBy
 	};
 
 	/// <summary>
@@ -53,6 +56,9 @@ public static class UserExtensions
 			ModifyDate = entity.ModifyDate,
 			ModifiedBy = entity.ModifiedBy,
 			LastLoginAt = entity.LastLoginAt,
+			IsDeleted = entity.IsDeleted,
+			DeletedAt = entity.DeletedAt,
+			DeletedBy = entity.DeletedBy
 		};
 	}
 

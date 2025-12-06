@@ -45,6 +45,51 @@ public class UsersController(
 	IPermissionRequestService permissionRequestService,
 	ILogger<UsersController> logger) : ControllerBase
 {
+	#region Current User (/me) Endpoints
+
+	/// <summary>
+	/// Updates the current authenticated user's profile.
+	/// </summary>
+	/// <param name="request">The profile update request.</param>
+	/// <param name="cancellationToken">Cancellation token for async operation.</param>
+	/// <returns>The updated user profile.</returns>
+	/// <response code="200">Returns the updated profile.</response>
+	/// <response code="400">If the request is invalid.</response>
+	/// <response code="401">If the user is not authenticated.</response>
+	/// <response code="404">If the user is not found.</response>
+	[HttpPut("me", Name = "UpdateCurrentUser")]
+	[Authorize]
+	[ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<ActionResult<UserProfileDto>> UpdateCurrentUserAsync(
+		[FromBody] UpdateProfileRequest request,
+		CancellationToken cancellationToken)
+	{
+		int? userId =
+			User.GetUserId();
+
+		if (userId == null)
+		{
+			return Unauthorized();
+		}
+
+		UserProfileDto? profile =
+			await userService.UpdateProfileAsync(
+				userId.Value,
+				request,
+				cancellationToken);
+
+		return profile == null
+			? NotFound()
+			: Ok(profile);
+	}
+
+	#endregion
+
+	#region Admin User Management Endpoints
+
 	/// <summary>
 	/// Gets all users.
 	/// </summary>
@@ -372,6 +417,8 @@ public class UsersController(
 
 		return NoContent();
 	}
+
+	#endregion
 
 	#region Permission Requests
 

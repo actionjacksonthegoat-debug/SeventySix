@@ -28,6 +28,7 @@ namespace SeventySix.Api.Controllers;
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth")]
 public class AuthController(
 	IAuthService authService,
+	IUserService userService,
 	IOAuthCodeExchangeService oauthCodeExchange,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings,
@@ -376,9 +377,8 @@ public class AuthController(
 			return Unauthorized();
 		}
 
-
 		UserProfileDto? profile =
-			await authService.GetCurrentUserAsync(
+			await userService.GetUserProfileAsync(
 				userId.Value,
 				cancellationToken);
 

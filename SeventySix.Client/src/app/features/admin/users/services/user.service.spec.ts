@@ -71,13 +71,37 @@ describe("UserService", () =>
 
 		it("should clear filters", () =>
 		{
-			service.updateFilter({ searchTerm: "test", includeInactive: true });
+			service.updateFilter({ searchTerm: "test", isActive: true });
 			service.clearFilters();
 
 			const filter = service.getCurrentFilter();
 			expect(filter.searchTerm).toBeUndefined();
-			expect(filter.includeInactive).toBeUndefined();
+			expect(filter.isActive).toBeUndefined();
 			expect(filter.page).toBe(1);
+		});
+
+		it("should initialize with no date filters", () =>
+		{
+			const filter = service.getCurrentFilter();
+
+			expect(filter.startDate).toBeNull();
+			expect(filter.endDate).toBeNull();
+		});
+
+		it("should update isActive filter", () =>
+		{
+			service.updateFilter({ isActive: true });
+
+			const filter = service.getCurrentFilter();
+			expect(filter.isActive).toBe(true);
+		});
+
+		it("should update includeDeleted filter", () =>
+		{
+			service.updateFilter({ includeDeleted: true });
+
+			const filter = service.getCurrentFilter();
+			expect(filter.includeDeleted).toBe(true);
 		});
 	});
 
@@ -160,7 +184,7 @@ describe("UserService", () =>
 		{
 			service.updateFilter({
 				searchTerm: "test",
-				includeInactive: false
+				isActive: true
 			});
 
 			const pagedResult: PagedResponse<User> = {

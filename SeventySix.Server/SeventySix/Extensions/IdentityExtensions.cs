@@ -81,6 +81,7 @@ public static class IdentityExtensions
 		services.AddSingleton<IValidator<CreateUserRequest>, CreateUserValidator>();
 		services.AddSingleton<IValidator<CreatePermissionRequestDto>, CreatePermissionRequestValidator>();
 		services.AddSingleton<IValidator<UpdateUserRequest>, UpdateUserValidator>();
+		services.AddSingleton<IValidator<UpdateProfileRequest>, UpdateProfileRequestValidator>();
 		services.AddSingleton<IValidator<UserQueryRequest>, UserQueryValidator>();
 		services.AddSingleton<IValidator<LoginRequest>, LoginRequestValidator>();
 		services.AddSingleton<IValidator<RegisterRequest>, RegisterRequestValidator>();

@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared;
@@ -36,8 +35,10 @@ public class UserService(
 	IPermissionRequestRepository permissionRequestRepository,
 	IValidator<CreateUserRequest> createValidator,
 	IValidator<UpdateUserRequest> updateValidator,
+	IValidator<UpdateProfileRequest> updateProfileValidator,
 	IValidator<UserQueryRequest> queryValidator,
 	ITransactionManager transactionManager,
+	IAuthService authService,
 	ILogger<UserService> logger) : IUserService
 {
 	/// <inheritdoc/>
@@ -64,27 +65,48 @@ public class UserService(
 	{
 		await createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-		return await transactionManager.ExecuteInTransactionAsync(async transactionCancellationToken =>
+		UserDto createdUser =
+			await transactionManager.ExecuteInTransactionAsync(async transactionCancellationToken =>
+			{
+				if (await repository.UsernameExistsAsync(request.Username, null, transactionCancellationToken))
+				{
+					string errorMessage = $"Failed to create user: Username '{request.Username}' is already taken";
+					logger.LogError("Duplicate username detected during user creation. Username: {Username}", request.Username);
+					throw new DuplicateUserException(errorMessage);
+				}
+
+				if (await repository.EmailExistsAsync(request.Email, null, transactionCancellationToken))
+				{
+					string errorMessage = $"Failed to create user: Email '{request.Email}' is already registered";
+					logger.LogError("Duplicate email detected during user creation. Email: {Email}, Username: {Username}", request.Email, request.Username);
+					throw new DuplicateUserException(errorMessage);
+				}
+
+				User entity = request.ToEntity();
+				User created = await repository.CreateAsync(entity, transactionCancellationToken);
+
+				return created.ToDto();
+			}, maxRetries: 3, cancellationToken);
+
+		// Send welcome email OUTSIDE transaction to avoid rollback on email failure
+		try
 		{
-			if (await repository.UsernameExistsAsync(request.Username, null, transactionCancellationToken))
-			{
-				string errorMessage = $"Failed to create user: Username '{request.Username}' is already taken";
-				logger.LogError("Duplicate username detected during user creation. Username: {Username}", request.Username);
-				throw new DuplicateUserException(errorMessage);
-			}
+			await authService.InitiatePasswordResetAsync(
+				createdUser.Id,
+				isNewUser: true,
+				cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			logger.LogWarning(
+				ex,
+				"Failed to send welcome email to user {Email} (ID: {UserId}). User was created successfully but will need manual password reset. Error: {ErrorMessage}",
+				createdUser.Email,
+				createdUser.Id,
+				ex.Message);
+		}
 
-			if (await repository.EmailExistsAsync(request.Email, null, transactionCancellationToken))
-			{
-				string errorMessage = $"Failed to create user: Email '{request.Email}' is already registered";
-				logger.LogError("Duplicate email detected during user creation. Email: {Email}, Username: {Username}", request.Email, request.Username);
-				throw new DuplicateUserException(errorMessage);
-			}
-
-			User entity = request.ToEntity();
-			User created = await repository.CreateAsync(entity, transactionCancellationToken);
-
-			return created.ToDto();
-		}, maxRetries: 3, cancellationToken);
+		return createdUser;
 	}
 
 	/// <inheritdoc/>
@@ -248,6 +270,73 @@ public class UserService(
 		return await repository.RemoveRoleAsync(
 			userId,
 			role,
+			cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<UserProfileDto?> GetUserProfileAsync(
+		int userId,
+		CancellationToken cancellationToken = default)
+	{
+		return await repository.GetUserProfileAsync(
+			userId,
+			cancellationToken);
+	}
+
+	/// <inheritdoc/>
+	public async Task<UserProfileDto?> UpdateProfileAsync(
+		int userId,
+		UpdateProfileRequest request,
+		CancellationToken cancellationToken = default)
+	{
+		await updateProfileValidator.ValidateAndThrowAsync(
+			request,
+			cancellationToken);
+
+		return await transactionManager.ExecuteInTransactionAsync(
+			async transactionCancellationToken =>
+			{
+				User? user =
+					await repository.GetByIdAsync(
+						userId,
+						transactionCancellationToken);
+
+				if (user == null)
+				{
+					return null;
+				}
+
+				// Check for duplicate email only if it changed
+				if (!string.Equals(
+					user.Email,
+					request.Email,
+					StringComparison.OrdinalIgnoreCase))
+				{
+					if (await repository.EmailExistsAsync(
+						request.Email,
+						userId,
+						transactionCancellationToken))
+					{
+						throw new DuplicateUserException(
+							$"Email '{request.Email}' is already registered");
+					}
+				}
+
+				user.Email =
+					request.Email;
+				user.FullName =
+					request.FullName;
+
+				await repository.UpdateAsync(
+					user,
+					transactionCancellationToken);
+
+				// Use our own profile-building method
+				return await GetUserProfileAsync(
+					userId,
+					transactionCancellationToken);
+			},
+			maxRetries: 3,
 			cancellationToken);
 	}
 }

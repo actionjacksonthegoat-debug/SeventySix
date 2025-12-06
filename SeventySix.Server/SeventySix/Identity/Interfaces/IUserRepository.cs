@@ -75,4 +75,12 @@ public interface IUserRepository
 		int userId,
 		string role,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>Gets a user's complete profile with roles and authentication details.</summary>
+	/// <param name="userId">The ID of the user.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>The user profile, or null if user not found.</returns>
+	public Task<UserProfileDto?> GetUserProfileAsync(
+		int userId,
+		CancellationToken cancellationToken = default);
 }

@@ -39,7 +39,9 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 			page: 1,
 			pageSize: 50,
 			sortBy: "Id",
-			sortDescending: true
+			sortDescending: true,
+			startDate: null,
+			endDate: null
 		});
 	}
 
@@ -150,7 +152,9 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 			page: 1,
 			pageSize: 50,
 			sortBy: "Id",
-			sortDescending: true
+			sortDescending: true,
+			startDate: null,
+			endDate: null
 		});
 	}
 
@@ -274,13 +278,8 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	addRole()
 	{
 		return injectMutation(() => ({
-			mutationFn: ({
-				userId,
-				role
-			}: {
-				userId: number;
-				role: string;
-			}) => lastValueFrom(this.userRepository.addRole(userId, role)),
+			mutationFn: ({ userId, role }: { userId: number; role: string }) =>
+				lastValueFrom(this.userRepository.addRole(userId, role)),
 			onSuccess: (_, variables) =>
 			{
 				this.queryClient.invalidateQueries({
@@ -297,13 +296,8 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	removeRole()
 	{
 		return injectMutation(() => ({
-			mutationFn: ({
-				userId,
-				role
-			}: {
-				userId: number;
-				role: string;
-			}) => lastValueFrom(this.userRepository.removeRole(userId, role)),
+			mutationFn: ({ userId, role }: { userId: number; role: string }) =>
+				lastValueFrom(this.userRepository.removeRole(userId, role)),
 			onSuccess: (_, variables) =>
 			{
 				this.queryClient.invalidateQueries({

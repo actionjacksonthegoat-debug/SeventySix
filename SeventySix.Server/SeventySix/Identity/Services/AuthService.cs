@@ -425,54 +425,6 @@ public class AuthService(
 	}
 
 	/// <inheritdoc/>
-	public async Task<UserProfileDto?> GetCurrentUserAsync(
-		int userId,
-		CancellationToken cancellationToken = default)
-	{
-		User? user =
-			await context.Users
-				.AsNoTracking()
-				.Where(u => u.Id == userId)
-				.FirstOrDefaultAsync(cancellationToken);
-
-		if (user == null)
-		{
-			return null;
-		}
-
-		List<string> roles =
-			await context.UserRoles
-				.AsNoTracking()
-				.Where(r => r.UserId == userId)
-				.Include(r => r.Role)
-				.Select(r => r.Role!.Name)
-				.ToListAsync(cancellationToken);
-
-		bool hasPassword =
-			await context.UserCredentials
-				.AnyAsync(
-					c => c.UserId == userId,
-					cancellationToken);
-
-		List<string> linkedProviders =
-			await context.ExternalLogins
-				.AsNoTracking()
-				.Where(e => e.UserId == userId)
-				.Select(e => e.Provider)
-				.ToListAsync(cancellationToken);
-
-		return new UserProfileDto(
-			Id: user.Id,
-			Username: user.Username,
-			Email: user.Email,
-			FullName: user.FullName,
-			Roles: roles,
-			HasPassword: hasPassword,
-			LinkedProviders: linkedProviders,
-			LastLoginAt: user.LastLoginAt);
-	}
-
-	/// <inheritdoc/>
 	public async Task<AuthResult> ChangePasswordAsync(
 		int userId,
 		ChangePasswordRequest request,

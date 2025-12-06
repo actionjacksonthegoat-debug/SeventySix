@@ -41,6 +41,10 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
       # PostgreSQL Connection
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=seventysix;Username=postgres;Password=TestPassword;Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
+      # Email Configuration (loaded from .env file)
+      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME}
+      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD}
+      - Email__FromAddress=${EMAIL_FROM_ADDRESS}
     volumes:
       - ~/.aspnet/https:/https:ro
       - dataprotection_keys:/app/keys
