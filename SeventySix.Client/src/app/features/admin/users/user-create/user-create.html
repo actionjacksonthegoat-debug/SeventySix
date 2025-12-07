@@ -57,44 +57,15 @@
 								<mat-icon matIconPrefix aria-hidden="true"
 									>person</mat-icon
 								>
-								@if (
-									basicInfoForm
-										.get("username")
-										?.hasError("required")
-								)
-								{
-									<mat-error>Username is required</mat-error>
-								}
-								@if (
-									basicInfoForm
-										.get("username")
-										?.hasError("minlength")
-								)
-								{
-									<mat-error>
-										Username must be at least 3 characters
-									</mat-error>
-								}
-								@if (
-									basicInfoForm
-										.get("username")
-										?.hasError("maxlength")
-								)
-								{
-									<mat-error>
-										Username must not exceed 50 characters
-									</mat-error>
-								}
-								@if (
-									basicInfoForm
-										.get("username")
-										?.hasError("usernameTaken")
-								)
-								{
-									<mat-error>
-										Username is already taken
-									</mat-error>
-								}
+								<mat-error>
+									{{
+										getFieldError(
+											basicInfoForm,
+											"username",
+											"Username"
+										)
+									}}
+								</mat-error>
 							</mat-form-field>
 
 							<!-- Email Field -->
@@ -113,32 +84,15 @@
 								<mat-icon matIconPrefix aria-hidden="true"
 									>email</mat-icon
 								>
-								@if (
-									basicInfoForm
-										.get("email")
-										?.hasError("required")
-								)
-								{
-									<mat-error>Email is required</mat-error>
-								}
-								@if (
-									basicInfoForm
-										.get("email")
-										?.hasError("email")
-								)
-								{
-									<mat-error>Invalid email format</mat-error>
-								}
-								@if (
-									basicInfoForm
-										.get("email")
-										?.hasError("maxlength")
-								)
-								{
-									<mat-error>
-										Email must not exceed 255 characters
-									</mat-error>
-								}
+								<mat-error>
+									{{
+										getFieldError(
+											basicInfoForm,
+											"email",
+											"Email"
+										)
+									}}
+								</mat-error>
 							</mat-form-field>
 						</mat-card-content>
 					</mat-card>
@@ -198,27 +152,15 @@
 								<mat-icon matIconPrefix aria-hidden="true"
 									>badge</mat-icon
 								>
-								@if (
-									accountDetailsForm
-										.get("fullName")
-										?.hasError("required")
-								)
-								{
-									<mat-error
-										>Display name is required</mat-error
-									>
-								}
-								@if (
-									accountDetailsForm
-										.get("fullName")
-										?.hasError("maxlength")
-								)
-								{
-									<mat-error>
-										Display name must not exceed 100
-										characters
-									</mat-error>
-								}
+								<mat-error>
+									{{
+										getFieldError(
+											accountDetailsForm,
+											"fullName",
+											"Display name"
+										)
+									}}
+								</mat-error>
 							</mat-form-field>
 							<!-- Active Status -->
 							<div class="checkbox-field">

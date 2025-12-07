@@ -38,6 +38,7 @@ import {
 import { UserService } from "@admin/users/services";
 import { LoggerService } from "@infrastructure/services";
 import { User } from "@admin/users/models";
+import { getValidationError } from "@shared/utilities";
 
 /**
  * User creation wizard component.
@@ -207,5 +208,17 @@ export class UserCreatePage
 	onCancel(): void
 	{
 		this.router.navigate(["/admin/users"]);
+	}
+
+	/**
+	 * Gets validation error message for a form field.
+	 */
+	protected getFieldError(
+		formGroup: FormGroup,
+		fieldName: string,
+		fieldLabel: string
+	): string | null
+	{
+		return getValidationError(formGroup.get(fieldName), fieldLabel);
 	}
 }

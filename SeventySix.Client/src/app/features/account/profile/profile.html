@@ -28,14 +28,9 @@
 					<mat-form-field appearance="outline">
 						<mat-label>Email</mat-label>
 						<input matInput formControlName="email" type="email" />
-						@if (profileForm.get("email")?.hasError("required"))
-						{
-							<mat-error>Email is required</mat-error>
-						}
-						@if (profileForm.get("email")?.hasError("email"))
-						{
-							<mat-error>Invalid email format</mat-error>
-						}
+						<mat-error>
+							{{ getFieldError("email", "Email") }}
+						</mat-error>
 					</mat-form-field>
 
 					<mat-form-field appearance="outline">

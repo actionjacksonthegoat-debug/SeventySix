@@ -6,3 +6,4 @@
  * Shared constants barrel export.
  */
 export * from "./health.constants";
+export * from "./validation-error.constants";

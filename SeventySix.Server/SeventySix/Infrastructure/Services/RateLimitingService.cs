@@ -50,7 +50,7 @@ public class RateLimitingService(
 	ITransactionManager transactionManager,
 	IOptions<ThirdPartyApiLimitSettings> settings) : IRateLimitingService
 {
-	private readonly ThirdPartyApiLimitSettings rateLimitSettings = settings.Value;
+	private readonly ThirdPartyApiLimitSettings RateLimitSettings = settings.Value;
 
 	/// <inheritdoc/>
 	public async Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default)
@@ -58,12 +58,12 @@ public class RateLimitingService(
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		// If rate limiting is disabled globally or for this API, allow the request
-		if (!rateLimitSettings.IsApiRateLimitEnabled(apiName))
+		if (!this.RateLimitSettings.IsApiRateLimitEnabled(apiName))
 		{
 			return true;
 		}
 
-		int dailyLimit = rateLimitSettings.GetDailyLimit(apiName);
+		int dailyLimit = this.RateLimitSettings.GetDailyLimit(apiName);
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
@@ -98,12 +98,12 @@ public class RateLimitingService(
 		ArgumentException.ThrowIfNullOrWhiteSpace(baseUrl);
 
 		// If rate limiting is disabled globally or for this API, always succeed without tracking
-		if (!rateLimitSettings.IsApiRateLimitEnabled(apiName))
+		if (!this.RateLimitSettings.IsApiRateLimitEnabled(apiName))
 		{
 			return true;
 		}
 
-		int dailyLimit = rateLimitSettings.GetDailyLimit(apiName);
+		int dailyLimit = this.RateLimitSettings.GetDailyLimit(apiName);
 
 		// Execute the entire operation in a transaction with automatic retry on conflicts
 		// The TransactionManager handles all race conditions and concurrency issues transparently
@@ -187,7 +187,7 @@ public class RateLimitingService(
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		int dailyLimit = rateLimitSettings.GetDailyLimit(apiName);
+		int dailyLimit = this.RateLimitSettings.GetDailyLimit(apiName);
 		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 

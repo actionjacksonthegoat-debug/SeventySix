@@ -28,6 +28,7 @@ import { MatChipsModule } from "@angular/material/chips";
 import { UserService } from "@admin/users/services";
 import { LoggerService } from "@infrastructure/services";
 import { User, UpdateUserRequest } from "@admin/users/models";
+import { getValidationError } from "@shared/utilities";
 
 /**
  * User detail/edit page component.
@@ -305,73 +306,14 @@ export class UserDetailPage implements OnInit
 	}
 
 	/**
-	 * Gets error message for a form field.
-	 * @param fieldName The form field name
-	 * @returns Error message or null
+	 * Gets validation error message for a form field.
 	 */
-	getFieldError(fieldName: string): string | null
+	protected getFieldError(
+		fieldName: string,
+		fieldLabel: string
+	): string | null
 	{
-		const control: import("@angular/forms").AbstractControl | null =
-			this.userForm.get(fieldName);
-
-		if (!control || !control.touched || !control.errors)
-		{
-			return null;
-		}
-
-		if (control.errors["required"])
-		{
-			return `${this.getFieldLabel(fieldName)} is required`;
-		}
-
-		if (control.errors["email"])
-		{
-			return "Invalid email format";
-		}
-
-		if (control.errors["minlength"])
-		{
-			const minLength: number =
-				control.errors["minlength"].requiredLength;
-			return `${this.getFieldLabel(fieldName)} must be at least ${minLength} characters`;
-		}
-
-		if (control.errors["maxlength"])
-		{
-			const maxLength: number =
-				control.errors["maxlength"].requiredLength;
-			return `${this.getFieldLabel(fieldName)} must not exceed ${maxLength} characters`;
-		}
-
-		return "Invalid value";
-	}
-
-	/**
-	 * Gets display label for a field.
-	 * @param fieldName The form field name
-	 * @returns Display label
-	 */
-	private getFieldLabel(fieldName: string): string
-	{
-		const labels: Record<string, string> = {
-			username: "Username",
-			email: "Email",
-			fullName: "Full Name",
-			isActive: "Active Status"
-		};
-		return labels[fieldName] || fieldName;
-	}
-
-	/**
-	 * Checks if a field has an error and has been touched.
-	 * @param fieldName The form field name
-	 * @returns True if field has error
-	 */
-	hasFieldError(fieldName: string): boolean
-	{
-		const control: import("@angular/forms").AbstractControl | null =
-			this.userForm.get(fieldName);
-		return !!(control && control.invalid && control.touched);
+		return getValidationError(this.userForm.get(fieldName), fieldLabel);
 	}
 
 	/**

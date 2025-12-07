@@ -115,30 +115,10 @@
 							<mat-icon matIconPrefix aria-hidden="true"
 								>person</mat-icon
 							>
-							@if (
-								userForm.get("username")?.hasError("required")
-							)
-							{
-								<mat-error>Username is required</mat-error>
-							}
-							@if (
-								userForm.get("username")?.hasError("minlength")
-							)
-							{
-								<mat-error>
-									Username must be at least 3 characters
-								</mat-error>
-							}
-							@if (
-								userForm.get("username")?.hasError("maxlength")
-							)
-							{
-								<mat-error>
-									Username must not exceed 50 characters
-								</mat-error>
-							}
+							<mat-error>
+								{{ getFieldError("username", "Username") }}
+							</mat-error>
 						</mat-form-field>
-
 						<!-- Email Field -->
 						<mat-form-field appearance="outline" class="full-width">
 							<mat-label>Email</mat-label>
@@ -153,22 +133,10 @@
 							<mat-icon matIconPrefix aria-hidden="true"
 								>email</mat-icon
 							>
-							@if (userForm.get("email")?.hasError("required"))
-							{
-								<mat-error>Email is required</mat-error>
-							}
-							@if (userForm.get("email")?.hasError("email"))
-							{
-								<mat-error>Invalid email format</mat-error>
-							}
-							@if (userForm.get("email")?.hasError("maxlength"))
-							{
-								<mat-error>
-									Email must not exceed 255 characters
-								</mat-error>
-							}
+							<mat-error>
+								{{ getFieldError("email", "Email") }}
+							</mat-error>
 						</mat-form-field>
-
 						<!-- Full Name Field -->
 						<mat-form-field appearance="outline" class="full-width">
 							<mat-label>Full Name</mat-label>
@@ -181,17 +149,11 @@
 							<mat-icon matIconPrefix aria-hidden="true"
 								>badge</mat-icon
 							>
-							@if (
-								userForm.get("fullName")?.hasError("maxlength")
-							)
-							{
-								<mat-error>
-									Full name must not exceed 100 characters
-								</mat-error>
-							}
+							<mat-error>
+								{{ getFieldError("fullName", "Full name") }}
+							</mat-error>
 							<mat-hint>Optional</mat-hint>
 						</mat-form-field>
-
 						<!-- Active Status Field -->
 						<div class="checkbox-field">
 							<mat-checkbox

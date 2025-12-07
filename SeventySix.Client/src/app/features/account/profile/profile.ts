@@ -22,6 +22,7 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { RouterLink } from "@angular/router";
 import { AccountService } from "../services";
 import { Profile, UpdateProfileRequest } from "../models";
+import { getValidationError } from "@shared/utilities";
 
 @Component({
 	selector: "app-profile-page",
@@ -118,5 +119,16 @@ export class ProfilePage
 				duration: 5000
 			});
 		}
+	}
+
+	/**
+	 * Gets validation error message for a form field.
+	 */
+	protected getFieldError(
+		fieldName: string,
+		fieldLabel: string
+	): string | null
+	{
+		return getValidationError(this.profileForm.get(fieldName), fieldLabel);
 	}
 }
