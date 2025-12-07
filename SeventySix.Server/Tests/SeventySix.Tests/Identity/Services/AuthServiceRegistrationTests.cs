@@ -94,6 +94,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 			.GenerateRefreshTokenAsync(
 				Arg.Any<int>(),
 				Arg.Any<string?>(),
+				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns(Task.FromResult("test-refresh-token"));
 

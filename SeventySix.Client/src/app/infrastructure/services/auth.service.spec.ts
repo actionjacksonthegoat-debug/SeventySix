@@ -73,7 +73,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "testuser",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe((response: AuthResponse) =>
 				{
@@ -84,7 +85,8 @@ describe("AuthService", () =>
 			expect(req.request.method).toBe("POST");
 			expect(req.request.body).toEqual({
 				usernameOrEmail: "testuser",
-				password: "Password123"
+				password: "Password123",
+				rememberMe: false
 			});
 			req.flush(mockResponse);
 
@@ -98,7 +100,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "invalid",
-					password: "wrong"
+					password: "wrong",
+					rememberMe: false
 				})
 				.subscribe({
 					error: () =>
@@ -114,6 +117,64 @@ describe("AuthService", () =>
 			);
 
 			expect(service.isAuthenticated()).toBeFalse();
+		});
+
+		it("should include rememberMe in login request when true", () =>
+		{
+			const mockResponse: AuthResponse = {
+				accessToken: createMockJwt({
+					sub: "1",
+					unique_name: "testuser",
+					email: "test@example.com"
+				}),
+				expiresAt: new Date(Date.now() + 900000).toISOString(),
+				requiresPasswordChange: false
+			};
+
+			service
+				.login({
+					usernameOrEmail: "testuser",
+					password: "Password123",
+					rememberMe: true
+				})
+				.subscribe();
+
+			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			expect(req.request.body).toEqual({
+				usernameOrEmail: "testuser",
+				password: "Password123",
+				rememberMe: true
+			});
+			req.flush(mockResponse);
+		});
+
+		it("should include rememberMe in login request when false", () =>
+		{
+			const mockResponse: AuthResponse = {
+				accessToken: createMockJwt({
+					sub: "1",
+					unique_name: "testuser",
+					email: "test@example.com"
+				}),
+				expiresAt: new Date(Date.now() + 900000).toISOString(),
+				requiresPasswordChange: false
+			};
+
+			service
+				.login({
+					usernameOrEmail: "testuser",
+					password: "Password123",
+					rememberMe: false
+				})
+				.subscribe();
+
+			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			expect(req.request.body).toEqual({
+				usernameOrEmail: "testuser",
+				password: "Password123",
+				rememberMe: false
+			});
+			req.flush(mockResponse);
 		});
 	});
 
@@ -135,7 +196,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "testuser",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 
@@ -178,7 +240,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "testuser",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 
@@ -206,7 +269,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "testuser",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 
@@ -236,7 +300,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "testuser",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 
@@ -266,7 +331,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "johndoe",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 
@@ -292,7 +358,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "johndoe",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 
@@ -318,7 +385,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "johndoe",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 
@@ -407,7 +475,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "testuser",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 
@@ -440,7 +509,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "testuser",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 
@@ -533,7 +603,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "testuser",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 
@@ -552,7 +623,8 @@ describe("AuthService", () =>
 			service
 				.login({
 					usernameOrEmail: "testuser",
-					password: "Password123"
+					password: "Password123",
+					rememberMe: false
 				})
 				.subscribe();
 

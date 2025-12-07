@@ -141,6 +141,34 @@
 	}
 }
 
+.remember-me {
+	gap: vars.$spacing-xs;
+
+	.checkbox-label {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-sm;
+		cursor: pointer;
+		user-select: none;
+
+		input[type="checkbox"] {
+			width: auto;
+			cursor: pointer;
+		}
+
+		span {
+			font-size: 0.875rem;
+			color: var(--mat-sys-on-surface);
+		}
+	}
+
+	.hint-text {
+		font-size: 0.75rem;
+		color: var(--mat-sys-on-surface-variant);
+		margin-top: vars.$spacing-xs;
+	}
+}
+
 .forgot-password-link {
 	text-align: right;
 	margin-top: calc(-1 * vars.$spacing-sm);

@@ -68,6 +68,23 @@
 				/>
 			</div>
 
+			<div class="form-group remember-me">
+				<label class="checkbox-label">
+					<input
+						id="rememberMe"
+						type="checkbox"
+						[(ngModel)]="rememberMe"
+						name="rememberMe"
+						aria-describedby="rememberMe-hint"
+					/>
+					<span>Remember me</span>
+				</label>
+				<span id="rememberMe-hint" class="hint-text">
+					Keep me signed in for 14 days (recommended for personal
+					devices only)
+				</span>
+			</div>
+
 			<div class="forgot-password-link">
 				<a routerLink="/auth/forgot-password">Forgot password?</a>
 			</div>

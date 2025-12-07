@@ -32,6 +32,8 @@ using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Middleware;
 using SeventySix.Extensions;
+using SeventySix.Identity;
+using SeventySix.Identity.Settings;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -84,6 +86,12 @@ string connectionString =
 // Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
 builder.Services.AddInfrastructureDomain();
 builder.Services.AddIdentityDomain(connectionString);
+
+// Configure and register RefreshToken cleanup background job
+builder.Services.Configure<RefreshTokenCleanupSettings>(
+	builder.Configuration.GetSection(RefreshTokenCleanupSettings.SectionName));
+builder.Services.AddHostedService<RefreshTokenCleanupJob>();
+
 builder.Services.AddLoggingDomain(
 	connectionString,
 	builder.Configuration);

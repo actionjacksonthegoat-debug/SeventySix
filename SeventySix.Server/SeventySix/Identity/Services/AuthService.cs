@@ -133,6 +133,7 @@ public class AuthService(
 			user,
 			clientIp,
 			requiresPasswordChange,
+			request.RememberMe,
 			cancellationToken);
 	}
 
@@ -236,6 +237,7 @@ public class AuthService(
 			user,
 			clientIp,
 			requiresPasswordChange: false,
+			rememberMe: false,
 			cancellationToken);
 	}
 
@@ -410,6 +412,7 @@ public class AuthService(
 				user,
 				clientIp,
 				requiresPasswordChange: false,
+				rememberMe: false,
 				cancellationToken);
 		}
 		catch (Exception ex)
@@ -702,6 +705,7 @@ public class AuthService(
 			user,
 			clientIp,
 			requiresPasswordChange: false,
+			rememberMe: false,
 			cancellationToken);
 	}
 
@@ -711,12 +715,14 @@ public class AuthService(
 	/// <param name="user">The user to generate tokens for.</param>
 	/// <param name="clientIp">The client IP address.</param>
 	/// <param name="requiresPasswordChange">Whether user must change password.</param>
+	/// <param name="rememberMe">Whether to extend refresh token expiration.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>Authentication result with tokens.</returns>
 	private async Task<AuthResult> GenerateAuthResultAsync(
 		User user,
 		string? clientIp,
 		bool requiresPasswordChange,
+		bool rememberMe,
 		CancellationToken cancellationToken)
 	{
 		List<string> roles =
@@ -739,6 +745,7 @@ public class AuthService(
 			await tokenService.GenerateRefreshTokenAsync(
 				user.Id,
 				clientIp,
+				rememberMe,
 				cancellationToken);
 
 		DateTime expiresAt =
@@ -1287,6 +1294,7 @@ public class AuthService(
 			await tokenService.GenerateRefreshTokenAsync(
 				user.Id,
 				clientIp,
+				rememberMe: false,
 				cancellationToken);
 
 		return AuthResult.Succeeded(

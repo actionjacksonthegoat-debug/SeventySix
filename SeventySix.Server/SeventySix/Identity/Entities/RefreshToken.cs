@@ -60,6 +60,15 @@ public class RefreshToken : ICreatableEntity
 	}
 
 	/// <summary>
+	/// Gets or sets the session start date.
+	/// Used to enforce absolute session timeout regardless of token rotation.
+	/// </summary>
+	public DateTime SessionStartedAt
+	{
+		get; set;
+	}
+
+	/// <summary>
 	/// Gets or sets the creation date.
 	/// </summary>
 	public DateTime CreateDate

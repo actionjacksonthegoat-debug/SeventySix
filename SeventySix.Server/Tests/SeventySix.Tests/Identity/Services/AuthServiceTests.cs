@@ -746,6 +746,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 			.GenerateRefreshTokenAsync(
 				user.Id,
 				Arg.Any<string?>(),
+				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns("test-refresh-token");
 
@@ -1244,6 +1245,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 			.GenerateRefreshTokenAsync(
 				user.Id,
 				Arg.Any<string?>(),
+				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns("test-refresh-token");
 	}
@@ -1263,6 +1265,7 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 			.GenerateRefreshTokenAsync(
 				Arg.Any<int>(),
 				Arg.Any<string?>(),
+				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns("test-refresh-token");
 	}

@@ -5,6 +5,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
@@ -33,7 +34,9 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 				Issuer = "SeventySix.Api",
 				Audience = "SeventySix.Client",
 				AccessTokenExpirationMinutes = 15,
-				RefreshTokenExpirationDays = 7
+				RefreshTokenExpirationDays = 1,
+				RefreshTokenRememberMeExpirationDays = 14,
+				AbsoluteSessionTimeoutDays = 30
 			});
 
 	private IOptions<AuthSettings> AuthOptions =>
@@ -52,6 +55,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			context,
 			JwtOptions,
 			AuthOptions,
+			NullLogger<TokenService>.Instance,
 			TestTimeProviderBuilder.CreateDefault());
 	}
 
@@ -277,6 +281,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			await service.GenerateRefreshTokenAsync(
 				user.Id,
 				"127.0.0.1",
+				rememberMe: false,
 				CancellationToken.None);
 
 		// Assert
@@ -306,6 +311,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		await service.GenerateRefreshTokenAsync(
 			user.Id,
 			"127.0.0.1",
+			rememberMe: false,
 			CancellationToken.None);
 
 		// Assert
@@ -318,6 +324,41 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		DateTime expectedExpiry =
 			FixedTime
 				.AddDays(JwtOptions.Value.RefreshTokenExpirationDays)
+				.UtcDateTime;
+
+		Assert.Equal(
+			expectedExpiry,
+			storedToken.ExpiresAt,
+			TimeSpan.FromSeconds(1));
+	}
+
+	[Fact]
+	public async Task GenerateRefreshTokenAsync_ExtendsExpiration_WhenRememberMeTrueAsync()
+	{
+		// Arrange
+		await using IdentityDbContext context = CreateIdentityDbContext();
+		User user = await CreateTestUserAsync(context);
+
+		TokenService service = CreateService(context);
+
+		// Act - Generate token with RememberMe=true
+		await service.GenerateRefreshTokenAsync(
+			user.Id,
+			"127.0.0.1",
+			rememberMe: true,
+			CancellationToken.None);
+
+		// Assert
+		RefreshToken? storedToken =
+			await context.RefreshTokens
+				.FirstOrDefaultAsync(t => t.UserId == user.Id);
+
+		Assert.NotNull(storedToken);
+
+		// Verify extended expiration (14 days vs 1 day)
+		DateTime expectedExpiry =
+			FixedTime
+				.AddDays(JwtOptions.Value.RefreshTokenRememberMeExpirationDays)
 				.UtcDateTime;
 
 		Assert.Equal(
@@ -343,6 +384,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			await service.GenerateRefreshTokenAsync(
 				user.Id,
 				"127.0.0.1",
+				rememberMe: false,
 				CancellationToken.None);
 
 		// Act
@@ -421,6 +463,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			await service.GenerateRefreshTokenAsync(
 				user.Id,
 				"127.0.0.1",
+				rememberMe: false,
 				CancellationToken.None);
 
 		// Revoke the token
@@ -455,6 +498,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			await service.GenerateRefreshTokenAsync(
 				user.Id,
 				"127.0.0.1",
+				rememberMe: false,
 				CancellationToken.None);
 
 		// Act
@@ -511,16 +555,19 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		await service.GenerateRefreshTokenAsync(
 			user.Id,
 			"127.0.0.1",
+			rememberMe: false,
 			CancellationToken.None);
 
 		await service.GenerateRefreshTokenAsync(
 			user.Id,
 			"127.0.0.2",
+			rememberMe: false,
 			CancellationToken.None);
 
 		await service.GenerateRefreshTokenAsync(
 			user.Id,
 			"127.0.0.3",
+			rememberMe: false,
 			CancellationToken.None);
 
 		// Act
@@ -596,6 +643,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 				context,
 				JwtOptions,
 				limitedAuthOptions,
+				NullLogger<TokenService>.Instance,
 				timeProvider);
 
 		// Act - Create tokens up to and beyond limit
@@ -603,12 +651,14 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			await service.GenerateRefreshTokenAsync(
 				user.Id,
 				"192.168.1.1",
+				rememberMe: false,
 				CancellationToken.None);
 
 		string secondToken =
 			await service.GenerateRefreshTokenAsync(
 				user.Id,
 				"192.168.1.2",
+				rememberMe: false,
 				CancellationToken.None);
 
 		// This should trigger revocation of the oldest (first) token
@@ -616,6 +666,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			await service.GenerateRefreshTokenAsync(
 				user.Id,
 				"192.168.1.3",
+				rememberMe: false,
 				CancellationToken.None);
 
 		// Assert - First token should be revoked
@@ -653,6 +704,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		await service.GenerateRefreshTokenAsync(
 			user.Id,
 			"127.0.0.1",
+			rememberMe: false,
 			CancellationToken.None);
 
 		// Assert
@@ -882,6 +934,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			await service.GenerateRefreshTokenAsync(
 				user.Id,
 				"127.0.0.1",
+				rememberMe: false,
 				CancellationToken.None);
 
 		return (service, user, token);

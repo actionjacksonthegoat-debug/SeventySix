@@ -60,6 +60,11 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 			.IsRequired()
 			.HasColumnType("timestamp with time zone");
 
+		// SessionStartedAt - Required, for absolute session timeout enforcement
+		builder.Property(e => e.SessionStartedAt)
+			.IsRequired()
+			.HasColumnType("timestamp with time zone");
+
 		// CreateDate - Required (auto-set by AuditInterceptor for ICreatableEntity)
 		builder.Property(e => e.CreateDate)
 			.IsRequired()

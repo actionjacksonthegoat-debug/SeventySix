@@ -36,6 +36,7 @@ export class LoginComponent implements OnInit
 
 	protected usernameOrEmail: string = "";
 	protected password: string = "";
+	protected rememberMe: boolean = false;
 	protected readonly isLoading: WritableSignal<boolean> =
 		signal<boolean>(false);
 
@@ -64,7 +65,8 @@ export class LoginComponent implements OnInit
 
 		const credentials: LoginCredentials = {
 			usernameOrEmail: this.usernameOrEmail,
-			password: this.password
+			password: this.password,
+			rememberMe: this.rememberMe
 		};
 
 		this.authService.login(credentials).subscribe({

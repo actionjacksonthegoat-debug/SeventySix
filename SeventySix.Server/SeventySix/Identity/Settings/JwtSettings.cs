@@ -31,7 +31,17 @@ public record JwtSettings
 	public int AccessTokenExpirationMinutes { get; init; } = 15;
 
 	/// <summary>
-	/// Gets refresh token expiration in days. Default: 7.
+	/// Gets refresh token expiration when "Remember Me" is NOT checked. Default: 1 day.
 	/// </summary>
-	public int RefreshTokenExpirationDays { get; init; } = 7;
+	public int RefreshTokenExpirationDays { get; init; } = 1;
+
+	/// <summary>
+	/// Gets refresh token expiration when "Remember Me" IS checked. Default: 14 days.
+	/// </summary>
+	public int RefreshTokenRememberMeExpirationDays { get; init; } = 14;
+
+	/// <summary>
+	/// Gets absolute session timeout regardless of activity. Default: 30 days.
+	/// </summary>
+	public int AbsoluteSessionTimeoutDays { get; init; } = 30;
 }

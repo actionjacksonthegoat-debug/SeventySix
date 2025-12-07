@@ -34,11 +34,13 @@ public interface ITokenService
 	/// </summary>
 	/// <param name="userId">The user's ID.</param>
 	/// <param name="clientIp">The client's IP address.</param>
+	/// <param name="rememberMe">Whether to extend refresh token expiration.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>The plaintext refresh token (hash stored in database).</returns>
 	public Task<string> GenerateRefreshTokenAsync(
 		int userId,
 		string? clientIp,
+		bool rememberMe = false,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

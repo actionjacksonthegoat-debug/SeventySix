@@ -115,6 +115,7 @@ describe("LoginComponent", () =>
 			mockAuthService.login.and.returnValue(of(mockAuthResponse));
 			(component as any).usernameOrEmail = "testuser";
 			(component as any).password = "password123";
+			(component as any).rememberMe = false;
 
 			// Act
 			(component as any).onLocalLogin();
@@ -122,7 +123,8 @@ describe("LoginComponent", () =>
 			// Assert
 			expect(mockAuthService.login).toHaveBeenCalledWith({
 				usernameOrEmail: "testuser",
-				password: "password123"
+				password: "password123",
+				rememberMe: false
 			});
 		});
 
@@ -138,6 +140,25 @@ describe("LoginComponent", () =>
 
 			// Assert
 			expect(router.navigateByUrl).toHaveBeenCalledWith("/");
+		});
+
+		it("should include rememberMe when checked", () =>
+		{
+			// Arrange
+			mockAuthService.login.and.returnValue(of(mockAuthResponse));
+			(component as any).usernameOrEmail = "testuser";
+			(component as any).password = "password123";
+			(component as any).rememberMe = true;
+
+			// Act
+			(component as any).onLocalLogin();
+
+			// Assert
+			expect(mockAuthService.login).toHaveBeenCalledWith({
+				usernameOrEmail: "testuser",
+				password: "password123",
+				rememberMe: true
+			});
 		});
 
 		it("should redirect to change-password when requiresPasswordChange is true", () =>

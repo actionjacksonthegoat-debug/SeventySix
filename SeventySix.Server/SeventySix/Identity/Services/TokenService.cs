@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SeventySix.Shared;
@@ -26,6 +27,7 @@ public class TokenService(
 	IdentityDbContext context,
 	IOptions<JwtSettings> jwtSettings,
 	IOptions<AuthSettings> authSettings,
+	ILogger<TokenService> logger,
 	TimeProvider timeProvider) : ITokenService
 {
 	/// <inheritdoc/>
@@ -91,13 +93,16 @@ public class TokenService(
 	public async Task<string> GenerateRefreshTokenAsync(
 		int userId,
 		string? clientIp,
+		bool rememberMe = false,
 		CancellationToken cancellationToken = default)
 	{
 		// Create new family for fresh token generation
 		return await GenerateRefreshTokenInternalAsync(
 			userId,
 			clientIp,
+			rememberMe,
 			familyId: Guid.NewGuid(),
+			sessionStartedAt: null,
 			cancellationToken);
 	}
 
@@ -131,9 +136,34 @@ public class TokenService(
 			return null;
 		}
 
+		// Check absolute session timeout (30 days from session start)
+		DateTime absoluteTimeout =
+			existingToken.SessionStartedAt
+				.AddDays(jwtSettings.Value.AbsoluteSessionTimeoutDays);
+
+		if (now >= absoluteTimeout)
+		{
+			logger.LogWarning(
+				"Absolute session timeout reached for user {UserId}. Session started: {SessionStartedAt}",
+				existingToken.UserId,
+				existingToken.SessionStartedAt);
+
+			// Revoke this token
+			existingToken.IsRevoked = true;
+			existingToken.RevokedAt = now;
+			await context.SaveChangesAsync(cancellationToken);
+
+			return null;
+		}
+
 		// REUSE ATTACK DETECTED: Token already revoked but attacker trying to use it
 		if (existingToken.IsRevoked)
 		{
+			logger.LogWarning(
+				"Token reuse attack detected for user {UserId}, revoking family {FamilyId}",
+				existingToken.UserId,
+				existingToken.FamilyId);
+
 			// Revoke entire token family - this invalidates the legitimate user's token too
 			await RevokeFamilyAsync(
 				existingToken.FamilyId,
@@ -143,16 +173,25 @@ public class TokenService(
 			return null;
 		}
 
+		// Calculate rememberMe from token expiration to preserve original setting
+		int tokenLifetimeDays =
+			(int)(existingToken.ExpiresAt - existingToken.SessionStartedAt).TotalDays;
+
+		bool rememberMe =
+			tokenLifetimeDays > jwtSettings.Value.RefreshTokenExpirationDays;
+
 		// Valid rotation - revoke current token
 		existingToken.IsRevoked = true;
 		existingToken.RevokedAt = now;
 		await context.SaveChangesAsync(cancellationToken);
 
-		// Generate new token inheriting the family
+		// Generate new token inheriting the family and session start
 		return await GenerateRefreshTokenInternalAsync(
 			existingToken.UserId,
 			clientIp,
+			rememberMe,
 			existingToken.FamilyId,
+			existingToken.SessionStartedAt,
 			cancellationToken);
 	}
 
@@ -162,8 +201,10 @@ public class TokenService(
 	private async Task<string> GenerateRefreshTokenInternalAsync(
 		int userId,
 		string? clientIp,
+		bool rememberMe,
 		Guid familyId,
-		CancellationToken cancellationToken)
+		DateTime? sessionStartedAt = null,
+		CancellationToken cancellationToken = default)
 	{
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
@@ -181,14 +222,19 @@ public class TokenService(
 		string tokenHash =
 			CryptoExtensions.ComputeSha256Hash(plainTextToken);
 
+		int expirationDays =
+			rememberMe
+				? jwtSettings.Value.RefreshTokenRememberMeExpirationDays
+				: jwtSettings.Value.RefreshTokenExpirationDays;
+
 		RefreshToken refreshToken =
 			new()
 			{
 				TokenHash = tokenHash,
 				UserId = userId,
 				FamilyId = familyId,
-				ExpiresAt =
-					now.AddDays(jwtSettings.Value.RefreshTokenExpirationDays),
+				ExpiresAt = now.AddDays(expirationDays),
+				SessionStartedAt = sessionStartedAt ?? now,
 				CreateDate = now,
 				IsRevoked = false,
 				CreatedByIp = clientIp

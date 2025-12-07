@@ -9,6 +9,8 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <param name="UsernameOrEmail">Username or email address.</param>
 /// <param name="Password">User's password.</param>
+/// <param name="RememberMe">Whether to extend refresh token expiration (default: false).</param>
 public record LoginRequest(
 	string UsernameOrEmail,
-	string Password);
+	string Password,
+	bool RememberMe = false);
