@@ -29,7 +29,7 @@ public class LogsController(
 	/// <response code="200">Returns the filtered list of logs with pagination metadata.</response>
 	/// <response code="400">If the request parameters are invalid.</response>
 	[HttpGet]
-	[OutputCache(PolicyName = "logs")]
+	[OutputCache(PolicyName = CachePolicyConstants.Logs)]
 	[ProducesResponseType(typeof(PagedResult<LogDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<PagedResult<LogDto>>> GetPagedAsync(

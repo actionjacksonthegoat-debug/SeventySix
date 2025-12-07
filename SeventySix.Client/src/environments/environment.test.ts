@@ -1,78 +1,4 @@
-interface Environment
-{
-	production: boolean;
-	apiUrl: string;
-	logging: {
-		enableRemoteLogging: boolean;
-		consoleLogLevel: "debug" | "info" | "warn" | "error" | "none";
-		batchSize: number;
-		batchInterval: number;
-		maxQueueSize: number;
-		maxRetryCount: number;
-		circuitBreakerThreshold: number;
-		circuitBreakerTimeout: number;
-	};
-	observability: {
-		jaegerUrl: string;
-		prometheusUrl: string;
-		grafanaUrl: string;
-		enabled: boolean;
-		dashboards: {
-			systemOverview: string;
-			apiEndpoints: string;
-		};
-	};
-	cache: {
-		query: {
-			default: {
-				staleTime: number;
-				gcTime: number;
-				retry: number;
-				refetchOnWindowFocus: boolean;
-				refetchOnReconnect: boolean;
-			};
-			users: { staleTime: number; gcTime: number; retry: number };
-			logs: { staleTime: number; gcTime: number; retry: number };
-			health: { staleTime: number; gcTime: number; retry: number };
-			thirdpartyrequests: {
-				staleTime: number;
-				gcTime: number;
-				retry: number;
-			};
-		};
-	};
-	dashboard: {
-		health: {
-			autoRefreshEnabled: boolean;
-			refreshIntervalSeconds: number;
-		};
-	};
-	ui: {
-		tables: {
-			defaultPageSize: number;
-			pageSizeOptions: number[];
-			virtualScrollItemSize: number;
-		};
-		performance: {
-			enableMonitoring: boolean;
-			fpsWarningThreshold: number;
-		};
-	};
-	testing: {
-		runIntegrationTests: boolean;
-	};
-	telemetry: {
-		enabled: boolean;
-		serviceName: string;
-		serviceVersion: string;
-		otlpEndpoint: string;
-		sampleRate: number;
-	};
-	auth: {
-		loginUrl: string;
-		tokenRefreshBufferSeconds: number;
-	};
-}
+import { Environment } from "./environment.interface";
 
 /**
  * Test Environment Configuration
@@ -136,6 +62,13 @@ export const environment: Environment = {
 	},
 	testing: {
 		runIntegrationTests: false // Integration tests disabled by default
+	},
+	dateTime: {
+		defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",
+		inputFormat: "yyyy-MM-dd",
+		timeFormat: "HH:mm:ss",
+		relativeTimeThreshold: 86400000, // 24 hours in milliseconds
+		timezoneMode: "local"
 	},
 	telemetry: {
 		enabled: false, // Disabled in tests

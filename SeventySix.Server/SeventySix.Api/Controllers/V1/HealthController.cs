@@ -34,7 +34,7 @@ public class HealthController(IHealthCheckService service) : ControllerBase
 	/// <response code="200">Returns the system health status.</response>
 	[HttpGet]
 	[ProducesResponseType(typeof(HealthStatusResponse), StatusCodes.Status200OK)]
-	[OutputCache(PolicyName = "health")]
+	[OutputCache(PolicyName = CachePolicyConstants.Health)]
 	public async Task<ActionResult<HealthStatusResponse>> GetHealthStatusAsync(CancellationToken cancellationToken)
 	{
 		HealthStatusResponse status = await service.GetHealthStatusAsync(cancellationToken);

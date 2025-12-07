@@ -109,10 +109,9 @@ public class UsersController(
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[OutputCache(PolicyName = "users")]
+	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAsync(CancellationToken cancellationToken)
 	{
-		logger.LogInformation("Getting all users");
 		IEnumerable<UserDto> users = await userService.GetAllUsersAsync(cancellationToken);
 		return Ok(users);
 	}
@@ -138,7 +137,7 @@ public class UsersController(
 	[ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[OutputCache(PolicyName = "users")]
+	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
 	{
 		UserDto? user = await userService.GetUserByIdAsync(id, cancellationToken);
@@ -324,7 +323,7 @@ public class UsersController(
 	[ProducesResponseType(typeof(PagedResult<UserDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[OutputCache(PolicyName = "users")]
+	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<PagedResult<UserDto>>> GetPagedAsync(
 		[FromQuery] UserQueryRequest request,
 		CancellationToken cancellationToken)
@@ -347,7 +346,7 @@ public class UsersController(
 	[ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[OutputCache(PolicyName = "users")]
+	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<UserDto>> GetByUsernameAsync(
 		string username,
 		CancellationToken cancellationToken)
@@ -369,7 +368,7 @@ public class UsersController(
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	[OutputCache(PolicyName = "users")]
+	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<bool>> CheckUsernameAsync(
 		string username,
 		[FromQuery] int? excludeId,
@@ -460,10 +459,6 @@ public class UsersController(
 			id,
 			isNewUser: false,
 			cancellationToken);
-
-		logger.LogInformation(
-			"Password reset initiated for user. UserId: {UserId}",
-			id);
 
 		return NoContent();
 	}

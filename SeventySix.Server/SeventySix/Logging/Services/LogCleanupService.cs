@@ -24,12 +24,6 @@ public class LogCleanupService(
 		LogCleanupSettings config =
 			settings.Value;
 
-		if (!config.Enabled)
-		{
-			logger.LogInformation("Log cleanup service is disabled");
-			return;
-		}
-
 		TimeSpan initialDelay =
 			TimeSpan.FromMinutes(config.InitialDelayMinutes);
 

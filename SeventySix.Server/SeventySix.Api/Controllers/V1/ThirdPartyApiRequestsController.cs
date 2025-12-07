@@ -37,7 +37,7 @@ public class ThirdPartyApiRequestsController(IThirdPartyApiRequestService servic
 	/// <response code="200">Returns the list of API request records.</response>
 	[HttpGet]
 	[ProducesResponseType(typeof(IEnumerable<ThirdPartyApiRequestResponse>), StatusCodes.Status200OK)]
-	[OutputCache(PolicyName = "thirdpartyrequests")]
+	[OutputCache(PolicyName = CachePolicyConstants.ThirdPartyRequests)]
 	public async Task<ActionResult<IEnumerable<ThirdPartyApiRequestResponse>>> GetAllAsync(CancellationToken cancellationToken)
 	{
 		IEnumerable<ThirdPartyApiRequestResponse> requests = await service.GetAllAsync(cancellationToken);
@@ -52,7 +52,7 @@ public class ThirdPartyApiRequestsController(IThirdPartyApiRequestService servic
 	/// <response code="200">Returns the aggregated statistics.</response>
 	[HttpGet("statistics")]
 	[ProducesResponseType(typeof(ThirdPartyApiStatisticsResponse), StatusCodes.Status200OK)]
-	[OutputCache(PolicyName = "thirdpartyrequests")]
+	[OutputCache(PolicyName = CachePolicyConstants.ThirdPartyRequests)]
 	public async Task<ActionResult<ThirdPartyApiStatisticsResponse>> GetStatisticsAsync(CancellationToken cancellationToken)
 	{
 		ThirdPartyApiStatisticsResponse statistics = await service.GetStatisticsAsync(cancellationToken);
