@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { HttpParams } from "@angular/common/http";
+import { HttpContext, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
 import { PagedResponse } from "@infrastructure/models";
@@ -12,7 +12,10 @@ export class LogRepository
 	private readonly apiService: ApiService = inject(ApiService);
 	private readonly endpoint: string = "logs";
 
-	getAllPaged(filter?: LogQueryRequest): Observable<PagedResponse<LogDto>>
+	getAllPaged(
+		filter?: LogQueryRequest,
+		context?: HttpContext
+	): Observable<PagedResponse<LogDto>>
 	{
 		const params: HttpParams | undefined = filter
 			? buildHttpParams({
@@ -29,7 +32,8 @@ export class LogRepository
 
 		return this.apiService.get<PagedResponse<LogDto>>(
 			this.endpoint,
-			params
+			params,
+			context
 		);
 	}
 

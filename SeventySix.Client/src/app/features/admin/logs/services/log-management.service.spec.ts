@@ -1,5 +1,6 @@
 import { TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
+import { QueryClient } from "@tanstack/angular-query-experimental";
 import { LogManagementService } from "./log-management.service";
 import { LogRepository } from "@admin/logs/repositories";
 import { LogDto, LogLevel } from "@admin/logs/models";
@@ -70,7 +71,8 @@ describe("LogManagementService", () =>
 			const result = await query.refetch();
 
 			expect(mockRepository.getAllPaged).toHaveBeenCalledWith(
-				service.getCurrentFilter()
+				service.getCurrentFilter(),
+				undefined
 			);
 			expect(result.data).toEqual(mockPagedResponse);
 		});
@@ -195,6 +197,26 @@ describe("LogManagementService", () =>
 
 			expect(mockRepository.deleteBatch).toHaveBeenCalledWith([1, 2]);
 			expect(service.selectedIds().size).toBe(0);
+		});
+	});
+
+	describe("forceRefresh", () =>
+	{
+		it("should toggle force refresh trigger", async () =>
+		{
+			// Access the private signal via bracket notation for testing
+			const getSignalValue = (): boolean =>
+				(service as any)["forceRefreshTrigger"]();
+
+			const initialValue: boolean = getSignalValue();
+
+			// Force refresh
+			await TestBed.runInInjectionContext(() => service.forceRefresh());
+
+			const newValue: boolean = getSignalValue();
+
+			// Signal should have toggled
+			expect(newValue).toBe(!initialValue);
 		});
 	});
 });

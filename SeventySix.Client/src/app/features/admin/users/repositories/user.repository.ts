@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { HttpParams } from "@angular/common/http";
+import { HttpContext, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
 import { PagedResponse } from "@infrastructure/models";
@@ -37,7 +37,10 @@ export class UserRepository
 		return this.apiService.delete<void>(`${this.endpoint}/${id}`);
 	}
 
-	getPaged(request: UserQueryRequest): Observable<PagedResponse<User>>
+	getPaged(
+		request: UserQueryRequest,
+		context?: HttpContext
+	): Observable<PagedResponse<User>>
 	{
 		const params: HttpParams = buildHttpParams({
 			page: request.page,
@@ -51,7 +54,8 @@ export class UserRepository
 
 		return this.apiService.get<PagedResponse<User>>(
 			`${this.endpoint}/paged`,
-			params
+			params,
+			context
 		);
 	}
 

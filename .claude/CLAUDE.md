@@ -658,16 +658,33 @@ public async Task CreateAsync_ThrowsException_WhenInvalidAsync()
 
 ## Logging Standards
 
-> **CRITICAL**: Only log **Warning** and **Error** levels. No Debug or Information logging.
+> **CRITICAL**: Strict logging policy - Warning and Error only, with ONE exception for operational visibility.
 
-| Level               | When to Use                                       | Example                    |
-| ------------------- | ------------------------------------------------- | -------------------------- |
-| ❌ `LogDebug`       | **NEVER**                                         | -                          |
-| ❌ `LogInformation` | **NEVER**                                         | -                          |
-| ⚠️ `LogWarning`     | Recoverable issues, unexpected but handled states | Duplicate username attempt |
-| 🔴 `LogError`       | Unrecoverable failures, exceptions                | Database save failure      |
+### Logging Policy (CRITICAL)
+
+-   ❌ **NEVER** use `LogDebug`
+-   ❌ **NEVER** use `LogInformation` - **EXCEPT** background job completion messages
+-   ℹ️ **LogInformation** - ONLY for background job completion (operational visibility)
+-   ⚠️ **LogWarning** for recoverable issues, business rule violations
+-   🔴 **LogError** for unrecoverable failures, exceptions
+-   **Silent is OK** - no logging needed for disabled services or normal skips
+
+### When to Use Each Level
+
+| Level               | When to Use                                                         | Example                                      |
+| ------------------- | ------------------------------------------------------------------- | -------------------------------------------- |
+| ❌ `LogDebug`       | **NEVER**                                                           | -                                            |
+| ℹ️ `LogInformation` | **ONLY** background job completion messages (operational telemetry) | "Token cleanup completed: 42 tokens deleted" |
+| ⚠️ `LogWarning`     | Recoverable issues, business rule violations                        | Duplicate username attempt                   |
+| 🔴 `LogError`       | Unrecoverable failures, exceptions                                  | Database save failure                        |
+| 🔇 **No Logging**   | Disabled features, normal skips, early returns                      | "Admin seeding disabled" - SKIP logging      |
 
 ```csharp
+// ✅ CORRECT - Information for background job completion ONLY
+logger.LogInformation(
+	"Token cleanup completed: {DeletedCount} expired tokens deleted",
+	deletedCount);
+
 // ✅ CORRECT - Warning for recoverable issue
 logger.LogWarning(
 	"Duplicate username attempt: {Username}",
@@ -679,9 +696,15 @@ logger.LogError(
 	"Failed to save user {UserId}",
 	userId);
 
-// ❌ WRONG - Debug/Information logging
+// ✅ CORRECT - Silent operation (no logging needed)
+if (!settings.Value.Enabled)
+{
+	return; // No logging - disabled services are silent
+}
+
+// ❌ WRONG - Debug/Information logging (except job completion)
 logger.LogDebug("Entering method");
-logger.LogInformation("User created successfully");
+logger.LogInformation("User created successfully"); // Use Warning/Error only
 ```
 
 ---

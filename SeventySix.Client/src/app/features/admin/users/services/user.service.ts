@@ -6,7 +6,8 @@
  * Extends BaseFilterService for filter state management
  */
 
-import { inject, Injectable } from "@angular/core";
+import { inject, Injectable, signal, WritableSignal } from "@angular/core";
+import { HttpContext } from "@angular/common/http";
 import {
 	injectQuery,
 	injectMutation,
@@ -18,6 +19,7 @@ import { UserRepository } from "@admin/users/repositories";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
 import { BaseFilterService } from "@infrastructure/services/base-filter.service";
+import { FORCE_REFRESH } from "@infrastructure/interceptors/cache-bypass.interceptor";
 
 /**
  * Service for user business logic
@@ -32,6 +34,10 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	private readonly queryClient: QueryClient = inject(QueryClient);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("users");
+
+	/** Signal to trigger cache bypass - toggling this value forces fresh data fetch */
+	private readonly forceRefreshTrigger: WritableSignal<boolean> =
+		signal<boolean>(false);
 
 	constructor()
 	{
@@ -53,11 +59,23 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	getPagedUsers()
 	{
 		return injectQuery(() => ({
-			queryKey: QueryKeys.users.paged(this.getCurrentFilter()),
+			queryKey: QueryKeys.users
+				.paged(this.getCurrentFilter())
+				.concat(this.forceRefreshTrigger()),
 			queryFn: () =>
-				lastValueFrom(
-					this.userRepository.getPaged(this.getCurrentFilter())
-				),
+			{
+				const context: HttpContext | undefined =
+					this.forceRefreshTrigger()
+						? new HttpContext().set(FORCE_REFRESH, true)
+						: undefined;
+
+				return lastValueFrom(
+					this.userRepository.getPaged(
+						this.getCurrentFilter(),
+						context
+					)
+				);
+			},
 			...this.queryConfig
 		}));
 	}
@@ -305,5 +323,14 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 				});
 			}
 		}));
+	}
+
+	/**
+	 * Force refresh all active user queries
+	 * Bypasses cache and fetches fresh data from server
+	 */
+	async forceRefresh(): Promise<void>
+	{
+		this.forceRefreshTrigger.update((value: boolean) => !value);
 	}
 }

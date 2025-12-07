@@ -28,7 +28,8 @@ import {
 	errorInterceptor,
 	loggingInterceptor,
 	authInterceptor,
-	dateParserInterceptor
+	dateParserInterceptor,
+	cacheBypassInterceptor
 } from "@infrastructure/interceptors";
 import {
 	ErrorHandlerService,
@@ -111,6 +112,7 @@ export const appConfig: ApplicationConfig = {
 		),
 		provideHttpClient(
 			withInterceptors([
+				cacheBypassInterceptor,
 				dateParserInterceptor,
 				authInterceptor,
 				loggingInterceptor,

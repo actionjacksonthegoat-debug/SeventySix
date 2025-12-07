@@ -91,11 +91,6 @@ public static class IdentityExtensions
 		services.AddSingleton<IValidator<InitiateRegistrationRequest>, InitiateRegistrationRequestValidator>();
 		services.AddSingleton<IValidator<CompleteRegistrationRequest>, CompleteRegistrationRequestValidator>();
 
-		// Register background services
-		services.AddHostedService<TokenCleanupService>();
-		services.AddHostedService<AdminSeederService>();
-		services.AddHostedService<PendingEmailBackgroundService>();
-
 		return services;
 	}
 }

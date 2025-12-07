@@ -42,12 +42,6 @@ public static class LoggingExtensions
 		services.AddSingleton<IValidator<LogQueryRequest>, LogQueryRequestValidator>();
 		services.AddSingleton<IValidator<CreateLogRequest>, CreateLogRequestValidator>();
 
-		// Log cleanup background service
-		services.Configure<LogCleanupSettings>(
-			configuration.GetSection(LogCleanupSettings.SectionName));
-
-		services.AddHostedService<LogCleanupService>();
-
 		return services;
 	}
 }

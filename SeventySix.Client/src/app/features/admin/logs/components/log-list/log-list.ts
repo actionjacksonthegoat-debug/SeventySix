@@ -211,7 +211,7 @@ export class LogList
 
 	onRefresh(): void
 	{
-		void this.logsQuery.refetch();
+		void this.logService.forceRefresh();
 	}
 
 	onFilterChange(event: FilterChangeEvent): void

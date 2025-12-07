@@ -1,5 +1,6 @@
 import {
 	HttpClient,
+	HttpContext,
 	HttpErrorResponse,
 	HttpHeaders,
 	HttpParams
@@ -32,12 +33,17 @@ export class ApiService
 		[HTTP_HEADER_CONTENT_TYPE]: MEDIA_TYPE_JSON
 	});
 
-	get<T>(endpoint: string, params?: HttpParams): Observable<T>
+	get<T>(
+		endpoint: string,
+		params?: HttpParams,
+		context?: HttpContext
+	): Observable<T>
 	{
 		return this.http
 			.get<T>(`${this.baseUrl}/${endpoint}`, {
 				headers: this.defaultHeaders,
-				params
+				params,
+				context
 			})
 			.pipe(catchError(this.handleError));
 	}

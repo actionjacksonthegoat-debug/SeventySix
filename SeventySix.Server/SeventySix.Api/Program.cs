@@ -86,12 +86,6 @@ string connectionString =
 // Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
 builder.Services.AddInfrastructureDomain();
 builder.Services.AddIdentityDomain(connectionString);
-
-// Configure and register RefreshToken cleanup background job
-builder.Services.Configure<RefreshTokenCleanupSettings>(
-	builder.Configuration.GetSection(RefreshTokenCleanupSettings.SectionName));
-builder.Services.AddHostedService<RefreshTokenCleanupJob>();
-
 builder.Services.AddLoggingDomain(
 	connectionString,
 	builder.Configuration);
@@ -99,6 +93,9 @@ builder.Services.AddApiTrackingDomain(
 	connectionString,
 	builder.Configuration);
 builder.Services.AddElectronicNotificationsDomain(builder.Configuration);
+
+// Register all background jobs (single registration point)
+builder.Services.AddBackgroundJobs(builder.Configuration);
 
 // Add response compression (Brotli + Gzip)
 builder.Services.AddOptimizedResponseCompression();

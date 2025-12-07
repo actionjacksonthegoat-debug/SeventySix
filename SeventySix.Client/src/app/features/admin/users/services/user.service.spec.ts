@@ -1,5 +1,6 @@
 import { TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
+import { QueryClient } from "@tanstack/angular-query-experimental";
 import { UserRepository } from "@admin/users/repositories";
 import { PagedResponse } from "@infrastructure/models";
 import { User, UpdateUserRequest } from "@admin/users/models";
@@ -249,6 +250,38 @@ describe("UserService", () =>
 			await mutation.mutateAsync(1);
 
 			expect(mockRepository.resetPassword).toHaveBeenCalledWith(1);
+		});
+	});
+
+	describe("forceRefresh", () =>
+	{
+		it("should refetch all active user queries", async () =>
+		{
+			const mockPagedResponse: PagedResponse<User> = {
+				items: [mockUser],
+				totalCount: 1,
+				page: 1,
+				pageSize: 50,
+				totalPages: 1,
+				hasPrevious: false,
+				hasNext: false
+			};
+
+			mockRepository.getPaged.and.returnValue(of(mockPagedResponse));
+
+			// Access the private signal via bracket notation for testing
+			const getSignalValue = (): boolean =>
+				(service as any)["forceRefreshTrigger"]();
+
+			const initialValue: boolean = getSignalValue();
+
+			// Force refresh
+			await TestBed.runInInjectionContext(() => service.forceRefresh());
+
+			const newValue: boolean = getSignalValue();
+
+			// Signal should have toggled
+			expect(newValue).toBe(!initialValue);
 		});
 	});
 });

@@ -69,9 +69,12 @@
 
 ### Logging
 
--   **NEVER** use `LogDebug` or `LogInformation` - only Warning and Error levels
--   **ALWAYS** use `LogWarning` for recoverable issues (e.g., duplicate username attempt)
--   **ALWAYS** use `LogError` for unrecoverable failures and exceptions
+-   **NEVER** use `LogDebug`
+-   **NEVER** use `LogInformation` - EXCEPT background job completion messages
+-   **LogInformation** - ONLY for background job completion (operational visibility)
+-   **LogWarning** - Recoverable issues, business rule violations
+-   **LogError** - Unrecoverable failures, exceptions
+-   **Silent is OK** - No logging needed for disabled services or normal skips
 
 ### Database Transactions
 

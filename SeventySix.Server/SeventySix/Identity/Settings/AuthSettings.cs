@@ -39,11 +39,6 @@ public record AuthSettings
 	/// Gets account lockout configuration.
 	/// </summary>
 	public LockoutSettings Lockout { get; init; } = new();
-
-	/// <summary>
-	/// Gets token cleanup background service configuration.
-	/// </summary>
-	public TokenCleanupSettings TokenCleanup { get; init; } = new();
 }
 
 /// <summary>
@@ -223,27 +218,4 @@ public record TokenSettings
 	/// When exceeded, oldest token is automatically revoked.
 	/// </summary>
 	public int MaxActiveSessionsPerUser { get; init; } = 5;
-}
-
-/// <summary>
-/// Configuration for token cleanup background service.
-/// </summary>
-public record TokenCleanupSettings
-{
-	/// <summary>
-	/// Gets cleanup interval in hours. Default: 24 (daily).
-	/// </summary>
-	public int IntervalHours { get; init; } = 24;
-
-	/// <summary>
-	/// Gets retention period in days for expired tokens. Default: 30.
-	/// Tokens expired longer than this are deleted.
-	/// </summary>
-	public int RetentionDays { get; init; } = 30;
-
-	/// <summary>
-	/// Gets initial delay in minutes before first cleanup. Default: 5.
-	/// Allows app to fully start before cleanup begins.
-	/// </summary>
-	public int InitialDelayMinutes { get; init; } = 5;
 }

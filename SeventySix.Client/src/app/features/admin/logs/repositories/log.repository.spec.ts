@@ -68,6 +68,7 @@ describe("LogRepository", () =>
 				expect(result).toEqual(mockPagedResponse);
 				expect(mockApiService.get).toHaveBeenCalledWith(
 					"logs",
+					undefined,
 					undefined
 				);
 				done();
@@ -88,7 +89,8 @@ describe("LogRepository", () =>
 				expect(result).toEqual(mockPagedResponse);
 				expect(mockApiService.get).toHaveBeenCalledWith(
 					"logs",
-					jasmine.any(HttpParams)
+					jasmine.any(HttpParams),
+					undefined
 				);
 				done();
 			});

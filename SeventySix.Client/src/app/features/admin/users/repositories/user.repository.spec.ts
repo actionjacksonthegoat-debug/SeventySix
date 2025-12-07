@@ -84,7 +84,8 @@ describe("UserRepository", () =>
 					expect(result).toEqual(pagedResult);
 					expect(mockApiService.get).toHaveBeenCalledWith(
 						"users/paged",
-						jasmine.any(HttpParams)
+						jasmine.any(HttpParams),
+						undefined
 					);
 					done();
 				});

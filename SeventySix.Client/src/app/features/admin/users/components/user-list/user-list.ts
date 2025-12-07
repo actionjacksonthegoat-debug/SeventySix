@@ -219,7 +219,7 @@ export class UserList
 
 	onRefresh(): void
 	{
-		void this.usersQuery.refetch();
+		void this.userService.forceRefresh();
 	}
 
 	onFilterChange(event: { filterKey: string }): void

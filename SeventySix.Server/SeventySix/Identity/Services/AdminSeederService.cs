@@ -32,7 +32,6 @@ public class AdminSeederService(
 	{
 		if (!settings.Value.Enabled)
 		{
-			logger.LogInformation("Admin seeding is disabled");
 			return;
 		}
 
@@ -66,9 +65,6 @@ public class AdminSeederService(
 
 		if (adminExists)
 		{
-			logger.LogDebug(
-				"Admin user '{Username}' already exists, skipping seed",
-				settings.Value.Username);
 			return;
 		}
 
@@ -82,8 +78,6 @@ public class AdminSeederService(
 
 		if (anyAdminRoleExists)
 		{
-			logger.LogInformation(
-				"Admin role already assigned to a user, skipping seed");
 			return;
 		}
 
