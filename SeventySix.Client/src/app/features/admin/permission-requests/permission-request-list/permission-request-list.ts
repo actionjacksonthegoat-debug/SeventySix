@@ -59,14 +59,12 @@ export class PermissionRequestListPage
 	);
 
 	readonly isLoading: Signal<boolean> = computed(() =>
-		this.requestsQuery.isLoading()
-	);
+		this.requestsQuery.isLoading());
 
 	readonly error: Signal<string | null> = computed(() =>
 		this.requestsQuery.error()
 			? "Failed to load permission requests."
-			: null
-	);
+			: null);
 
 	// DataTable pagination (simple mode - show all items)
 	readonly totalCount: Signal<number> = computed(

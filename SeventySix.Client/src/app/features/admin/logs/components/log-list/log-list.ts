@@ -197,11 +197,9 @@ export class LogList
 		(): number => this.logsQuery.data()?.pageSize ?? 25
 	);
 	readonly isLoading: Signal<boolean> = computed((): boolean =>
-		this.logsQuery.isLoading()
-	);
+		this.logsQuery.isLoading());
 	readonly error: Signal<string | null> = computed((): string | null =>
-		this.logsQuery.error() ? "Failed to load logs" : null
-	);
+		this.logsQuery.error() ? "Failed to load logs" : null);
 
 	// Event handlers
 	onSearch(searchText: string): void

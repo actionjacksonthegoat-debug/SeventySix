@@ -76,8 +76,7 @@ export class ThemeService
 	toggleBrightness(): void
 	{
 		this.brightness.update((current) =>
-			current === "light" ? "dark" : "light"
-		);
+			current === "light" ? "dark" : "light");
 	}
 
 	/**
@@ -86,8 +85,7 @@ export class ThemeService
 	toggleColorScheme(): void
 	{
 		this.colorScheme.update((current) =>
-			current === "blue" ? "cyan-orange" : "blue"
-		);
+			current === "blue" ? "cyan-orange" : "blue");
 	}
 
 	/**

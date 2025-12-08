@@ -58,8 +58,7 @@ export class ApiStatisticsTableComponent
 	 * Loading state from query
 	 */
 	readonly isLoading: Signal<boolean> = computed(() =>
-		this.apiDataQuery.isLoading()
-	);
+		this.apiDataQuery.isLoading());
 
 	/**
 	 * Error state from query

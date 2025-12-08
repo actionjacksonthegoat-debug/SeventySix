@@ -1,7 +1,5 @@
 {
-	"plugins": [
-		"prettier-plugin-brace-style"
-	],
+	"plugins": ["prettier-plugin-brace-style"],
 	"braceStyle": "allman",
 	"tabWidth": 4,
 	"useTabs": true,
@@ -17,6 +15,12 @@
 			"files": "*.html",
 			"options": {
 				"parser": "angular"
+			}
+		},
+		{
+			"files": ["*.ts", "*.js"],
+			"options": {
+				"requirePragma": true
 			}
 		}
 	]

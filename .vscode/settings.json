@@ -26,10 +26,18 @@
 
 	// Default formatters
 	"[typescript]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
+		"editor.formatOnSave": false,
+		"editor.defaultFormatter": null,
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit"
+		}
 	},
 	"[javascript]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
+		"editor.formatOnSave": false,
+		"editor.defaultFormatter": null,
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit"
+		}
 	},
 	"[json]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"

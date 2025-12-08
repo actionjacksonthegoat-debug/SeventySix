@@ -80,8 +80,7 @@ export class UserFixtures
 				username: `user_${i + 1}`,
 				email: `user${i + 1}@example.com`,
 				fullName: `User ${i + 1}`
-			})
-		);
+			}));
 	}
 
 	/**

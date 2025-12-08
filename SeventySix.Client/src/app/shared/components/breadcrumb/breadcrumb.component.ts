@@ -119,8 +119,7 @@ export class BreadcrumbComponent
 	 * Computed breadcrumb items
 	 */
 	readonly breadcrumbs: Signal<BreadcrumbItem[]> = computed(() =>
-		this.navigationEnd$()
-	);
+		this.navigationEnd$());
 
 	/**
 	 * Builds breadcrumb items from current route hierarchy
@@ -201,8 +200,8 @@ export class BreadcrumbComponent
 				label,
 				url,
 				isActive:
-					this.router.url === url ||
-					this.router.url.startsWith(url + "?")
+					this.router.url === url
+					|| this.router.url.startsWith(url + "?")
 			});
 		}
 

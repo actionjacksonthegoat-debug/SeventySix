@@ -80,13 +80,11 @@ export class UserCreatePage
 
 	// State signals
 	readonly isSaving: Signal<boolean> = computed(() =>
-		this.createMutation.isPending()
-	);
+		this.createMutation.isPending());
 	readonly saveError: Signal<string | null> = computed(() =>
 		this.createMutation.error()
 			? "Failed to create user. Please try again."
-			: null
-	);
+			: null);
 
 	/**
 	 * Async validator for username availability
@@ -106,11 +104,9 @@ export class UserCreatePage
 				debounceTime(500),
 				distinctUntilChanged(),
 				switchMap((username: string) =>
-					from(this.userService.checkUsernameAvailability(username))
-				),
+					from(this.userService.checkUsernameAvailability(username))),
 				map((exists: boolean) =>
-					exists ? { usernameTaken: true } : null
-				),
+					exists ? { usernameTaken: true } : null),
 				catchError(() => of(null))
 			);
 		};

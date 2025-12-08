@@ -70,26 +70,19 @@ export class LogDetailDialogComponent
 
 	// Pre-computed values for template performance (memoized computed signals)
 	readonly levelClass: Signal<string> = computed((): string =>
-		getLogLevelClassName(this.log().logLevel)
-	);
+		getLogLevelClassName(this.log().logLevel));
 	readonly levelName: Signal<string> = computed((): string =>
-		getLogLevelName(this.log().logLevel)
-	);
+		getLogLevelName(this.log().logLevel));
 	readonly levelIcon: Signal<string> = computed((): string =>
-		getLogLevelIconName(this.log().logLevel)
-	);
+		getLogLevelIconName(this.log().logLevel));
 	readonly relativeTime: Signal<string> = computed((): string =>
-		getRelativeTime(this.log().createDate)
-	);
+		getRelativeTime(this.log().createDate));
 	readonly formattedProperties: Signal<string> = computed((): string =>
-		formatJsonProperties(this.log().properties)
-	);
+		formatJsonProperties(this.log().properties));
 	readonly stackFrameCount: Signal<number> = computed((): number =>
-		countStackFrames(this.log().stackTrace)
-	);
+		countStackFrames(this.log().stackTrace));
 	readonly isRootSpan: Signal<boolean> = computed((): boolean =>
-		isRootSpanId(this.log().parentSpanId)
-	);
+		isRootSpanId(this.log().parentSpanId));
 	readonly hasCorrelationId: Signal<boolean> = computed(
 		(): boolean => !!this.log().correlationId
 	);
@@ -147,12 +140,12 @@ export class LogDetailDialogComponent
 		if (!log.correlationId)
 		{
 			alert(
-				"No trace ID available for this error.\n\n" +
-					"To enable distributed tracing:\n" +
-					"1. Configure OpenTelemetry in your backend\n" +
-					"2. Ensure trace IDs are propagated through requests\n" +
-					"3. Verify Jaeger is running (npm run start:observability)\n" +
-					"4. Check that your API is exporting traces to Jaeger"
+				"No trace ID available for this error.\n\n"
+					+ "To enable distributed tracing:\n"
+					+ "1. Configure OpenTelemetry in your backend\n"
+					+ "2. Ensure trace IDs are propagated through requests\n"
+					+ "3. Verify Jaeger is running (npm run start:observability)\n"
+					+ "4. Check that your API is exporting traces to Jaeger"
 			);
 			return;
 		}

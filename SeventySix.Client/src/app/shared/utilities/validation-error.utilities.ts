@@ -44,9 +44,9 @@ export function getValidationError(
 	{
 		// Fallback for custom validators with message property
 		if (
-			typeof errorValue === "object" &&
-			errorValue !== null &&
-			"message" in errorValue
+			typeof errorValue === "object"
+			&& errorValue !== null
+			&& "message" in errorValue
 		)
 		{
 			return (errorValue as { message: string }).message;

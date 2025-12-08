@@ -169,8 +169,7 @@ export class NotificationService
 	dismiss(id: string): void
 	{
 		this.notifications.update((current) =>
-			current.filter((n) => n.id !== id)
-		);
+			current.filter((n) => n.id !== id));
 	}
 
 	/**

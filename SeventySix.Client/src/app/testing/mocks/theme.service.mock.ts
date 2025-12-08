@@ -24,15 +24,13 @@ export class MockThemeService
 	toggleBrightness(): void
 	{
 		this.brightness.update((current) =>
-			current === "light" ? "dark" : "light"
-		);
+			current === "light" ? "dark" : "light");
 	}
 
 	toggleColorScheme(): void
 	{
 		this.colorScheme.update((current) =>
-			current === "blue" ? "cyan-orange" : "blue"
-		);
+			current === "blue" ? "cyan-orange" : "blue");
 	}
 
 	setBrightness(brightness: ThemeBrightness): void

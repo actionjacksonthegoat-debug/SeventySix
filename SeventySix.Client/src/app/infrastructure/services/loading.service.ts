@@ -34,10 +34,10 @@ export class LoadingService
 			.pipe(
 				filter(
 					(event) =>
-						event instanceof NavigationStart ||
-						event instanceof NavigationEnd ||
-						event instanceof NavigationCancel ||
-						event instanceof NavigationError
+						event instanceof NavigationStart
+						|| event instanceof NavigationEnd
+						|| event instanceof NavigationCancel
+						|| event instanceof NavigationError
 				),
 				takeUntilDestroyed()
 			)
@@ -48,9 +48,9 @@ export class LoadingService
 					this.show();
 				}
 				else if (
-					event instanceof NavigationEnd ||
-					event instanceof NavigationCancel ||
-					event instanceof NavigationError
+					event instanceof NavigationEnd
+					|| event instanceof NavigationCancel
+					|| event instanceof NavigationError
 				)
 				{
 					this.hide();

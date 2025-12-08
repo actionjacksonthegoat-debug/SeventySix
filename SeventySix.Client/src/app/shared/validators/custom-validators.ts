@@ -48,9 +48,9 @@ export function temperatureRangeValidator(min = -100, max = 100): ValidatorFn
 	return (control: AbstractControl): ValidationErrors | null =>
 	{
 		if (
-			control.value === null ||
-			control.value === undefined ||
-			control.value === ""
+			control.value === null
+			|| control.value === undefined
+			|| control.value === ""
 		)
 		{
 			return null;

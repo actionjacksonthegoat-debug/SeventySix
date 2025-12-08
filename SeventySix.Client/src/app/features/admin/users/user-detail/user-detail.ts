@@ -92,19 +92,15 @@ export class UserDetailPage
 		() => this.userQuery.data() ?? null
 	);
 	readonly isLoading: Signal<boolean> = computed(() =>
-		this.userQuery.isLoading()
-	);
+		this.userQuery.isLoading());
 	readonly isSaving: Signal<boolean> = computed(() =>
-		this.updateMutation.isPending()
-	);
+		this.updateMutation.isPending());
 	readonly error: Signal<string | null> = computed(() =>
-		this.userQuery.error() ? "Failed to load user. Please try again." : null
-	);
+		this.userQuery.error() ? "Failed to load user. Please try again." : null);
 	readonly saveError: Signal<string | null> = computed(() =>
 		this.updateMutation.error()
 			? "Failed to save user. Please try again."
-			: null
-	);
+			: null);
 
 	// Role computed signals
 	readonly userRoles: Signal<string[]> = computed(
@@ -119,8 +115,8 @@ export class UserDetailPage
 	});
 	readonly isRoleMutating: Signal<boolean> = computed(
 		() =>
-			this.addRoleMutation.isPending() ||
-			this.removeRoleMutation.isPending()
+			this.addRoleMutation.isPending()
+			|| this.removeRoleMutation.isPending()
 	);
 
 	// Computed signals

@@ -27,7 +27,7 @@ export class UserExportService
 
 		const csvContent: string = this.generateCsvContent(users);
 		const csvFilename: string =
-			filename || `users_export_${new Date().toISOString()}.csv`;
+			filename ?? `users_export_${new Date().toISOString()}.csv`;
 
 		this.downloadCsv(csvContent, csvFilename);
 	}
@@ -56,13 +56,13 @@ export class UserExportService
 			user.id.toString(),
 			this.escapeCsvValue(user.username),
 			this.escapeCsvValue(user.email),
-			this.escapeCsvValue(user.fullName || ""),
+			this.escapeCsvValue(user.fullName ?? ""),
 			user.isActive ? "Active" : "Inactive",
 			user.createDate,
-			user.lastLoginAt || "Never",
-			user.modifyDate || "",
-			user.createdBy || "",
-			user.modifiedBy || ""
+			user.lastLoginAt ?? "Never",
+			user.modifyDate ?? "",
+			user.createdBy ?? "",
+			user.modifiedBy ?? ""
 		]);
 
 		const csvLines: string[] = [
@@ -81,11 +81,9 @@ export class UserExportService
 	 */
 	private escapeCsvValue(value: string): string
 	{
-		if (
-			value.includes(",") ||
-			value.includes('"') ||
-			value.includes("\n")
-		)
+		if (value.includes(",")
+			|| value.includes('"')
+			|| value.includes("\n"))
 		{
 			return `"${value.replace(/"/g, '""')}"`;
 		}

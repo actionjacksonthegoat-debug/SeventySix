@@ -53,17 +53,13 @@ export class ProfilePage
 		this.accountService.updateProfile();
 
 	readonly profile: Signal<Profile | undefined> = computed(() =>
-		this.profileQuery.data()
-	);
+		this.profileQuery.data());
 	readonly isLoading: Signal<boolean> = computed(() =>
-		this.profileQuery.isLoading()
-	);
+		this.profileQuery.isLoading());
 	readonly isSaving: Signal<boolean> = computed(() =>
-		this.updateMutation.isPending()
-	);
+		this.updateMutation.isPending());
 	readonly error: Signal<string | null> = computed(() =>
-		this.profileQuery.error() ? "Failed to load profile" : null
-	);
+		this.profileQuery.error() ? "Failed to load profile" : null);
 
 	readonly profileForm: FormGroup = this.fb.group({
 		email: [

@@ -108,9 +108,7 @@ export class SidebarComponent
 	/** Computed signal that filters sections based on current user's roles. */
 	protected readonly visibleNavSections: Signal<NavSection[]> = computed(() =>
 		this.navSections.filter((section: NavSection) =>
-			this.hasAccess(section.requiredRoles)
-		)
-	);
+			this.hasAccess(section.requiredRoles)));
 
 	/**
 	 * Check if current user has access to a section.

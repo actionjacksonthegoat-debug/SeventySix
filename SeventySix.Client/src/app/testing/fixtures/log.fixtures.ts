@@ -90,8 +90,7 @@ export class LogFixtures
 				createDate: new Date(Date.now() - i * 60000), // Each log 1 min apart
 				logLevel: logLevel || "Information",
 				message: `Test log message ${i + 1}`
-			})
-		);
+			}));
 	}
 
 	/** Get array of predefined test logs. Includes error, warning, and info logs. */

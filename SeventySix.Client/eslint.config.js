@@ -49,7 +49,9 @@ export default [
 					}
 				}
 			],
-			"function-call-argument-newline": ["warn", "consistent"]
+			"function-call-argument-newline": ["warn", "consistent"],
+			// Enforce closing ) on same line as last parameter (C# convention)
+			"function-paren-newline": ["warn", "multiline-arguments"]
 		}
 	},
 	{

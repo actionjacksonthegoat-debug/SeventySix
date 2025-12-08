@@ -2,11 +2,11 @@ import {
 	Directive,
 	ElementRef,
 	Renderer2,
+	afterNextRender,
 	effect,
 	inject,
 	input,
-	InputSignal,
-	OnInit
+	InputSignal
 } from "@angular/core";
 import { fromEvent } from "rxjs";
 import { debounceTime } from "rxjs/operators";
@@ -71,7 +71,7 @@ const TABLE_COMPONENT_HEIGHTS: {
 @Directive({
 	selector: "[appTableHeight]"
 })
-export class TableHeightDirective implements OnInit
+export class TableHeightDirective
 {
 	/**
 	 * Minimum height for the table in pixels
@@ -96,6 +96,12 @@ export class TableHeightDirective implements OnInit
 		// CLS Prevention: Apply min-height synchronously before first render
 		this.applyInitialHeight();
 
+		// Calculate actual height after element is rendered in DOM
+		afterNextRender(() =>
+		{
+			this.updateHeight();
+		});
+
 		// Listen to window resize events (zoneless compatible)
 		// Debounced at 500ms to handle scenarios with hundreds of directives on same page
 		fromEvent(window, "resize")
@@ -112,12 +118,6 @@ export class TableHeightDirective implements OnInit
 			this.appTableHeight();
 			this.updateHeight();
 		});
-	}
-
-	ngOnInit(): void
-	{
-		// Initial height calculation
-		this.updateHeight();
 	}
 
 	/**

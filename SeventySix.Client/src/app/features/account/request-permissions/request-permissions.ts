@@ -57,11 +57,9 @@ export class RequestPermissionsPage
 		() => this.rolesQuery.data() ?? []
 	);
 	readonly isLoading: Signal<boolean> = computed(() =>
-		this.rolesQuery.isLoading()
-	);
+		this.rolesQuery.isLoading());
 	readonly isSubmitting: Signal<boolean> = computed(() =>
-		this.requestMutation.isPending()
-	);
+		this.requestMutation.isPending());
 
 	readonly selectedRoles: WritableSignal<Set<string>> = signal(
 		new Set<string>()

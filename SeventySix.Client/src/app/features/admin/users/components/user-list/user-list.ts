@@ -60,13 +60,11 @@ export class UserList
 		() => this.usersQuery.data()?.items ?? []
 	);
 	readonly isLoading: Signal<boolean> = computed(() =>
-		this.usersQuery.isLoading()
-	);
+		this.usersQuery.isLoading());
 	readonly error: Signal<string | null> = computed(() =>
 		this.usersQuery.error()
 			? "Failed to load users. Please try again."
-			: null
-	);
+			: null);
 	readonly totalCount: Signal<number> = computed(
 		() => this.usersQuery.data()?.totalCount ?? 0
 	);
