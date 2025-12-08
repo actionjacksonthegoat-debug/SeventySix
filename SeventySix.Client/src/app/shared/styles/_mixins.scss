@@ -469,6 +469,31 @@
 }
 
 /**
+ * CLS-safe loading overlay pattern
+ * Positions loading spinner as absolute overlay without removing content from DOM
+ * Prevents layout shift by keeping container dimensions stable during load
+ * @param {Number} $z-index - Overlay z-index (default: 10)
+ * @example
+ *   .container {
+ *     @include cls-loading-overlay();
+ *   }
+ */
+@mixin cls-loading-overlay($z-index: 10) {
+	position: relative;
+
+	.loading-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: rgba(var(--mat-sys-surface-rgb), 0.8);
+		z-index: $z-index;
+		border-radius: vars.$border-radius-base;
+	}
+}
+
+/**
  * Alert card pattern
  * Used for displaying inline alerts/warnings
  * @param {Size} $margin-bottom - Bottom margin (default: $spacing-xl)

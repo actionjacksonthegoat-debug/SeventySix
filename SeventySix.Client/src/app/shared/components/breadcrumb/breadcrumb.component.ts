@@ -177,6 +177,12 @@ export class BreadcrumbComponent
 				continue;
 			}
 
+			// Skip if this URL was already added as feature root
+			if (breadcrumbs.some((b) => b.url === url))
+			{
+				continue;
+			}
+
 			// Get label from custom mappings or format the segment
 			const label: string = this.getSegmentLabel(
 				url,

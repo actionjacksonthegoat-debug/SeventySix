@@ -182,4 +182,29 @@ describe("ApiStatisticsTableComponent", () =>
 
 		expect(component.dataSource().data.length).toBe(0);
 	});
+
+	describe("CLS Prevention", () =>
+	{
+		it("should apply min-height to container to prevent layout shift", () =>
+		{
+			thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
+				createMockQueryResult(mockApiData)
+			);
+
+			createComponent();
+
+			const container: HTMLElement | null =
+				fixture.nativeElement.querySelector(".api-statistics-table");
+			expect(container).toBeTruthy();
+
+			const styles: CSSStyleDeclaration = window.getComputedStyle(
+				container!
+			);
+			const minHeight: string = styles.minHeight;
+
+			expect(minHeight).toBeTruthy();
+			expect(minHeight).not.toBe("0px");
+			expect(minHeight).not.toBe("auto");
+		});
+	});
 });

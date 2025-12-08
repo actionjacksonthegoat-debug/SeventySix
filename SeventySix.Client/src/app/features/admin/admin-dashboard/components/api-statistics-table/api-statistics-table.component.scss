@@ -3,6 +3,7 @@
 
 .api-statistics-table {
 	width: 100%;
+	min-height: vars.$cls-card-min-height; // Prevent CLS during load
 
 	.loading-container,
 	.error-container {

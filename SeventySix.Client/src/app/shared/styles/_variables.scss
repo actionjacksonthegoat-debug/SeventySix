@@ -85,6 +85,11 @@ $min-height-dialog: 25rem; // 400px - Dialogs, embedded content
 $min-height-container-lg: 18.75rem; // 300px - Large containers, tables
 $min-height-container-md: 12.5rem; // 200px - Medium containers
 
+// CLS Prevention - Minimum heights for dynamic content (prevent layout shift)
+$cls-table-min-height: 25rem; // 400px - Data tables with toolbar + pagination
+$cls-form-min-height: 18.75rem; // 300px - Form pages during load
+$cls-card-min-height: 12.5rem; // 200px - Card content during load
+
 // ============================================================================
 // TYPOGRAPHY SIZES (Material Design Type Scale)
 // ============================================================================

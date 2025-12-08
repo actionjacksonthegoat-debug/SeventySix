@@ -128,12 +128,26 @@
 	}
 }
 
-.loading-container {
-	@include mixins.loading-state();
-}
+// CLS Prevention: Reserve minimum height and use overlay pattern
+.table-content-wrapper {
+	position: relative;
+	min-height: vars.$cls-table-min-height;
+	display: flex;
+	flex-direction: column;
 
-.error-card {
-	margin: vars.$spacing-md;
+	.loading-overlay,
+	.error-overlay {
+		@include mixins.cls-loading-overlay();
+	}
+
+	.table-content {
+		opacity: 1;
+		transition: opacity 0.2s ease-in-out;
+
+		&.loading {
+			opacity: 0.5;
+		}
+	}
 }
 
 .table-wrapper {

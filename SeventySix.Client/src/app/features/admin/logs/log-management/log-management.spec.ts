@@ -77,4 +77,26 @@ describe("LogManagementPage", () =>
 			fixture.nativeElement.querySelector("app-page-header");
 		expect(header).toBeTruthy();
 	});
+
+	describe("CLS Prevention", () =>
+	{
+		it("should apply min-height to page-content to prevent layout shift", async () =>
+		{
+			await fixture.whenStable();
+			fixture.detectChanges();
+
+			const pageContent: HTMLElement | null =
+				fixture.nativeElement.querySelector(".page-content");
+			expect(pageContent).toBeTruthy();
+
+			const styles: CSSStyleDeclaration = window.getComputedStyle(
+				pageContent!
+			);
+			const minHeight: string = styles.minHeight;
+
+			expect(minHeight).toBeTruthy();
+			expect(minHeight).not.toBe("0px");
+			expect(minHeight).not.toBe("auto");
+		});
+	});
 });

@@ -9,24 +9,28 @@
 		<mat-tab-group>
 			<!-- System Overview Tab -->
 			<mat-tab label="System Overview">
-				<div class="tab-content full-height">
-					<!-- System Health & Metrics (Grafana) -->
-					<app-grafana-dashboard-embed
-						[dashboardUid]="systemOverviewDashboard"
-						title="System Health & Metrics"
-					></app-grafana-dashboard-embed>
-				</div>
+				<ng-template matTabContent>
+					<div class="tab-content full-height">
+						<!-- System Health & Metrics (Grafana) -->
+						<app-grafana-dashboard-embed
+							[dashboardUid]="systemOverviewDashboard"
+							title="System Health & Metrics"
+						></app-grafana-dashboard-embed>
+					</div>
+				</ng-template>
 			</mat-tab>
 
 			<!-- API Metrics Tab -->
 			<mat-tab label="API Metrics">
-				<div class="tab-content full-height">
-					<!-- API Endpoint Metrics (Grafana) -->
-					<app-grafana-dashboard-embed
-						[dashboardUid]="apiEndpointsDashboard"
-						title="API Endpoint Metrics"
-					></app-grafana-dashboard-embed>
-				</div>
+				<ng-template matTabContent>
+					<div class="tab-content full-height">
+						<!-- API Endpoint Metrics (Grafana) -->
+						<app-grafana-dashboard-embed
+							[dashboardUid]="apiEndpointsDashboard"
+							title="API Endpoint Metrics"
+						></app-grafana-dashboard-embed>
+					</div>
+				</ng-template>
 			</mat-tab>
 
 			<!-- External Systems Tab -->

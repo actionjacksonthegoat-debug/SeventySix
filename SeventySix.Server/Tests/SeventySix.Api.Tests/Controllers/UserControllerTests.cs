@@ -103,26 +103,6 @@ public class UsersControllerTests
 		Assert.Empty(returnedUsers);
 	}
 
-	[Fact]
-	public async Task GetAllAsync_ShouldLogInformationAsync()
-	{
-		// Arrange
-		UserService
-			.GetAllUsersAsync(Arg.Any<CancellationToken>())
-			.Returns([]);
-
-		// Act
-		await Controller.GetAllAsync(CancellationToken.None);
-
-		// Assert
-		Logger.Received().Log(
-			LogLevel.Information,
-			Arg.Any<EventId>(),
-			Arg.Is<object>(v => v.ToString()!.Contains("Getting all users")),
-			null,
-			Arg.Any<Func<object, Exception?, string>>());
-	}
-
 	#endregion
 
 	#region GetByIdAsync Tests

@@ -93,6 +93,9 @@ export class TableHeightDirective implements OnInit
 
 	constructor()
 	{
+		// CLS Prevention: Apply min-height synchronously before first render
+		this.applyInitialHeight();
+
 		// Listen to window resize events (zoneless compatible)
 		// Debounced at 500ms to handle scenarios with hundreds of directives on same page
 		fromEvent(window, "resize")
@@ -115,6 +118,20 @@ export class TableHeightDirective implements OnInit
 	{
 		// Initial height calculation
 		this.updateHeight();
+	}
+
+	/**
+	 * Apply min-height synchronously on initialization to prevent CLS
+	 *
+	 * This method sets the min-height BEFORE Angular's first change detection,
+	 * ensuring the table reserves its minimum space immediately.
+	 * Prevents Cumulative Layout Shift (CLS) caused by table content loading.
+	 */
+	private applyInitialHeight(): void
+	{
+		const element: HTMLElement = this.elementRef.nativeElement;
+		const minHeight: number = this.appTableHeight();
+		this.renderer.setStyle(element, "min-height", `${minHeight}px`);
 	}
 
 	/**
@@ -152,5 +169,8 @@ export class TableHeightDirective implements OnInit
 		const finalHeight: number = Math.max(minHeight, adjustedHeight);
 
 		this.renderer.setStyle(element, "height", `${finalHeight}px`);
+
+		// Also update min-height for consistency
+		this.renderer.setStyle(element, "min-height", `${minHeight}px`);
 	}
 }

@@ -111,4 +111,40 @@ describe("TableHeightDirective", () =>
 		expect(heightStyle).toContain("px");
 		// Height should be calculated with 120px offset subtracted
 	});
+
+	describe("CLS Prevention", () =>
+	{
+		it("should synchronously apply min-height on initialization to prevent CLS", () =>
+		{
+			// Create new component to test initialization sequence
+			const initFixture: ComponentFixture<TestComponent> =
+				TestBed.createComponent(TestComponent);
+			const initElement: HTMLElement =
+				initFixture.nativeElement.querySelector("div");
+
+			// Check min-height is applied BEFORE detectChanges (synchronous)
+			const minHeightStyle: string = initElement.style.minHeight;
+			expect(minHeightStyle).toBeTruthy();
+			expect(minHeightStyle).toContain("px");
+
+			// Parse the min-height value
+			const minHeight: number = parseInt(minHeightStyle, 10);
+			expect(minHeight).toBeGreaterThan(0);
+		});
+
+		it("should set min-height equal to minHeight input value", () =>
+		{
+			const minHeightStyle: string = directiveElement.style.minHeight;
+			expect(minHeightStyle).toBe("400px");
+		});
+
+		it("should update min-height when minHeight input changes", () =>
+		{
+			component.minHeight.set(600);
+			fixture.detectChanges();
+
+			const minHeightStyle: string = directiveElement.style.minHeight;
+			expect(minHeightStyle).toBe("600px");
+		});
+	});
 });

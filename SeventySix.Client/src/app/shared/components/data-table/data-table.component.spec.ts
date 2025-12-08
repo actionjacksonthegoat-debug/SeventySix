@@ -480,4 +480,54 @@ describe("DataTableComponent", () =>
 			component.onCreate();
 		});
 	});
+
+	describe("CLS Prevention", () =>
+	{
+		it("should reserve minimum height to prevent CLS", async (): Promise<void> =>
+		{
+			builder.withInputs(fixture, {
+				...defaultInputs,
+				isLoading: true
+			});
+
+			await fixture.whenStable();
+			fixture.detectChanges();
+
+			const wrapper: HTMLElement | null =
+				fixture.nativeElement.querySelector(".table-content-wrapper");
+
+			// Verify container exists and has minimum height to prevent CLS
+			expect(wrapper).toBeTruthy();
+
+			if (wrapper)
+			{
+				const computedStyle: CSSStyleDeclaration =
+					window.getComputedStyle(wrapper);
+				const minHeight: number = parseInt(computedStyle.minHeight, 10);
+
+				// Should have reserved height (400px = 25rem at 16px base)
+				expect(minHeight).toBeGreaterThan(0);
+			}
+		});
+
+		it("should render loading overlay without removing table content", async (): Promise<void> =>
+		{
+			builder.withInputs(fixture, {
+				...defaultInputs,
+				isLoading: true
+			});
+
+			await fixture.whenStable();
+			fixture.detectChanges();
+
+			const loadingOverlay: HTMLElement | null =
+				fixture.nativeElement.querySelector(".loading-overlay");
+			const tableContent: HTMLElement | null =
+				fixture.nativeElement.querySelector(".table-content");
+
+			// Both should exist when loading
+			expect(loadingOverlay).toBeTruthy();
+			expect(tableContent).toBeTruthy();
+		});
+	});
 });

@@ -1,3 +1,5 @@
+@use "variables" as vars;
+
 :host {
 	display: block;
 	width: 100%;
@@ -9,4 +11,5 @@
 
 .page-content {
 	width: 100%;
+	min-height: vars.$cls-table-min-height; // Prevent CLS during table load
 }

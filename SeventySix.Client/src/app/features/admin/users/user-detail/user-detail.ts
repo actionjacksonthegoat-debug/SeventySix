@@ -3,7 +3,6 @@ import {
 	computed,
 	inject,
 	ChangeDetectionStrategy,
-	OnInit,
 	effect,
 	Signal
 } from "@angular/core";
@@ -56,7 +55,7 @@ import { getValidationError } from "@shared/utilities";
 	styleUrl: "./user-detail.scss",
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserDetailPage implements OnInit
+export class UserDetailPage
 {
 	private readonly userService: UserService = inject(UserService);
 	private readonly logger: LoggerService = inject(LoggerService);
@@ -153,11 +152,7 @@ export class UserDetailPage implements OnInit
 		isActive: [true]
 	});
 
-	/**
-	 * Initializes the user page.
-	 * Loads user data from route parameter and populates form when available.
-	 */
-	ngOnInit(): void
+	constructor()
 	{
 		// Populate form when user data loads
 		effect(() =>
