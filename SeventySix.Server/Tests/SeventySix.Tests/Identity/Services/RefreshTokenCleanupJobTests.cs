@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
 using Shouldly;

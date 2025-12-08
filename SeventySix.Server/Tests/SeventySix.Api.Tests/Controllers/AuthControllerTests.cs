@@ -8,7 +8,6 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using SeventySix.Api.Controllers;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;

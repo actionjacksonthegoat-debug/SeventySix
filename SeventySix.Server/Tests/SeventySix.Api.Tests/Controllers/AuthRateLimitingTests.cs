@@ -4,7 +4,6 @@
 
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.Extensions.Configuration;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;

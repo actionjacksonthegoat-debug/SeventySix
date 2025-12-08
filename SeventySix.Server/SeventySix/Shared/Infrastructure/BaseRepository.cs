@@ -4,7 +4,6 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SeventySix.Shared;
 
 namespace SeventySix.Shared.Infrastructure;
 

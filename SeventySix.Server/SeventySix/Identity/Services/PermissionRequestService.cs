@@ -4,7 +4,6 @@
 
 using Microsoft.Extensions.Options;
 using SeventySix.Identity.Constants;
-using SeventySix.Identity.Settings;
 
 namespace SeventySix.Identity;
 

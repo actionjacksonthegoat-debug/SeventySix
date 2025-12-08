@@ -9,7 +9,7 @@ using SeventySix.ApiTracking;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
 
-namespace SeventySix.Extensions;
+namespace SeventySix.DependencyExtensions;
 
 /// <summary>
 /// Dependency injection extension methods for the ApiTracking bounded context.

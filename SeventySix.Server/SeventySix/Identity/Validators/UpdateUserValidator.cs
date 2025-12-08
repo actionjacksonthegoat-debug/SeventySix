@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation;
-using SeventySix.Identity;
 
 namespace SeventySix.Identity;
 

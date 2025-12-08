@@ -6,7 +6,6 @@ using System.Net;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using SeventySix.ApiTracking;
 using SeventySix.Infrastructure;
 using SeventySix.Shared;
 using SeventySix.TestUtilities.TestHelpers;

@@ -13,7 +13,6 @@ using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
-using Xunit;
 
 namespace SeventySix.Api.Tests.Controllers;
 

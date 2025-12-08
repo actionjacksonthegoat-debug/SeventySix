@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ElectronicNotifications.Emails;
 
-namespace SeventySix.Extensions;
+namespace SeventySix.DependencyExtensions;
 
 /// <summary>
 /// Dependency injection extension methods for the ElectronicNotifications bounded context.

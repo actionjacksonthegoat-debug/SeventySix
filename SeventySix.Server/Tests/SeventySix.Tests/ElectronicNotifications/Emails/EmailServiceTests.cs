@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.ApiTracking;
 using SeventySix.ElectronicNotifications.Emails;
-using SeventySix.Infrastructure;
 using SeventySix.Shared;
 using Shouldly;
 

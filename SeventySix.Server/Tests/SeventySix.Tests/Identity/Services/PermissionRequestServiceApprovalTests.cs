@@ -5,7 +5,6 @@
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
-using SeventySix.Identity.Settings;
 using Shouldly;
 
 namespace SeventySix.Tests.Identity.Services;

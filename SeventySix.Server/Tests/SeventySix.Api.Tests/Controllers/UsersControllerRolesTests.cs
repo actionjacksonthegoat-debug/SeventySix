@@ -5,7 +5,6 @@
 using System.Net;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
-using Xunit;
 
 namespace SeventySix.Api.Tests.Controllers;
 

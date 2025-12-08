@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
-using Xunit;
 
 namespace SeventySix.Tests.Shared.Infrastructure;
 

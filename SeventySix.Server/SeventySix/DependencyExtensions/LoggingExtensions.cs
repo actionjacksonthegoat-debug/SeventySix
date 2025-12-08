@@ -10,7 +10,7 @@ using SeventySix.Logging;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
 
-namespace SeventySix.Extensions;
+namespace SeventySix.DependencyExtensions;
 
 /// <summary>DI extension methods for the Logging bounded context.</summary>
 public static class LoggingExtensions

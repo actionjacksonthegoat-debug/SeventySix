@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Security.Cryptography;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

@@ -2,13 +2,10 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.Logging;
-using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
-using Shouldly;
 
 namespace SeventySix.Tests.Logging;
 

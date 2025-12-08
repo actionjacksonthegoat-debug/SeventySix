@@ -4,7 +4,6 @@
 
 using Microsoft.EntityFrameworkCore;
 using SeventySix.ApiTracking;
-using SeventySix.Identity;
 using SeventySix.Shared;
 using Shouldly;
 

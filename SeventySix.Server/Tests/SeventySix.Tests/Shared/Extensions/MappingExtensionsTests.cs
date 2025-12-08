@@ -3,7 +3,6 @@
 // </copyright>
 
 using SeventySix.Shared.Extensions;
-using Xunit;
 
 namespace SeventySix.Tests.Shared.Extensions;
 

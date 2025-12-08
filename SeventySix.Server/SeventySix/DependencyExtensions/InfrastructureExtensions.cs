@@ -7,7 +7,7 @@ using SeventySix.Infrastructure;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
 
-namespace SeventySix.Extensions;
+namespace SeventySix.DependencyExtensions;
 
 /// <summary>
 /// Extension methods for registering Infrastructure bounded context services.

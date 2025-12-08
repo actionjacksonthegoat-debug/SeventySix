@@ -1,5 +1,4 @@
 using SeventySix.Shared.Infrastructure;
-using Xunit;
 
 namespace SeventySix.Tests.Shared.Infrastructure;
 

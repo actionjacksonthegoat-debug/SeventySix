@@ -31,9 +31,7 @@ using Serilog;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Middleware;
-using SeventySix.Extensions;
-using SeventySix.Identity;
-using SeventySix.Identity.Settings;
+using SeventySix.DependencyExtensions;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 

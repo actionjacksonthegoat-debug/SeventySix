@@ -8,7 +8,7 @@ using SeventySix.Identity;
 using SeventySix.Identity.Settings;
 using SeventySix.Logging;
 
-namespace SeventySix.Extensions;
+namespace SeventySix.DependencyExtensions;
 
 /// <summary>
 /// Central registration point for all background jobs across bounded contexts.

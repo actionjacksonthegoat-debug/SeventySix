@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.ApiTracking;
-using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Tests.ApiTracking;

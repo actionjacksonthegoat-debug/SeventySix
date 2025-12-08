@@ -9,7 +9,6 @@ using SeventySix.Api.Controllers;
 using SeventySix.Identity;
 using SeventySix.Shared;
 using SeventySix.TestUtilities.Builders;
-using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.Api.Tests.Controllers;
 

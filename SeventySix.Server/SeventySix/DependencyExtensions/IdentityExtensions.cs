@@ -7,11 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
 using SeventySix.Identity.Infrastructure;
-using SeventySix.Identity.Settings;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
 
-namespace SeventySix.Extensions;
+namespace SeventySix.DependencyExtensions;
 
 /// <summary>
 /// Dependency injection extension methods for the Identity bounded context.
