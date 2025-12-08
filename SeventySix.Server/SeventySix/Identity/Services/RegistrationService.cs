@@ -4,7 +4,6 @@
 
 using System.Security.Cryptography;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.ElectronicNotifications.Emails;
@@ -19,9 +18,14 @@ namespace SeventySix.Identity;
 /// <remarks>
 /// Handles direct registration and email verification flows.
 /// Extracted from AuthService following SRP - focused solely on registration.
+/// DIP compliant: Depends on repository abstractions, not DbContext.
 /// </remarks>
 public class RegistrationService(
-	IdentityDbContext context,
+	IUserValidationRepository userValidationRepository,
+	IUserRoleRepository userRoleRepository,
+	IAuthRepository authRepository,
+	ICredentialRepository credentialRepository,
+	IEmailVerificationTokenRepository emailVerificationTokenRepository,
 	ITokenService tokenService,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings,
@@ -39,11 +43,10 @@ public class RegistrationService(
 		CancellationToken cancellationToken = default)
 	{
 		// Check for existing username
-		bool usernameExists =
-			await context.Users
-				.AnyAsync(
-					user => user.Username == request.Username,
-					cancellationToken);
+		bool usernameExists = await userValidationRepository.UsernameExistsAsync(
+			request.Username,
+			excludeId: null,
+			cancellationToken);
 
 		if (usernameExists)
 		{
@@ -53,11 +56,10 @@ public class RegistrationService(
 		}
 
 		// Check for existing email
-		bool emailExists =
-			await context.Users
-				.AnyAsync(
-					user => user.Email == request.Email,
-					cancellationToken);
+		bool emailExists = await userValidationRepository.EmailExistsAsync(
+			request.Email,
+			excludeId: null,
+			cancellationToken);
 
 		if (emailExists)
 		{
@@ -80,51 +82,18 @@ public class RegistrationService(
 			await transactionManager.ExecuteInTransactionAsync(
 				async transactionCancellationToken =>
 				{
-					User newUser =
-						new()
-						{
-							Username = request.Username,
-							Email = request.Email,
-							FullName = request.FullName,
-							IsActive = true,
-							CreateDate = now,
-							CreatedBy = "Registration"
-						};
+					User createdUser = await CreateUserWithCredentialAsync(
+						request.Username,
+						request.Email,
+						request.FullName,
+						request.Password,
+						"Registration",
+						userRoleId,
+						requiresPasswordChange: true,
+						now,
+						transactionCancellationToken);
 
-					context.Users.Add(newUser);
-
-					// Save user first to get the ID
-					await context.SaveChangesAsync(transactionCancellationToken);
-
-					// Create credential with user ID
-					string passwordHash =
-						BCrypt.Net.BCrypt.HashPassword(
-							request.Password,
-							authSettings.Value.Password.WorkFactor);
-
-					UserCredential credential =
-						new()
-						{
-							UserId = newUser.Id,
-							PasswordHash = passwordHash,
-							CreateDate = now
-						};
-
-					context.UserCredentials.Add(credential);
-
-					// Assign default role
-					UserRole userRole =
-						new()
-						{
-							UserId = newUser.Id,
-							RoleId = userRoleId
-						};
-
-					context.UserRoles.Add(userRole);
-
-					await context.SaveChangesAsync(transactionCancellationToken);
-
-					return newUser;
+					return createdUser;
 				},
 				cancellationToken: cancellationToken);
 
@@ -149,12 +118,10 @@ public class RegistrationService(
 			request.Email;
 
 		// Check if email is already registered
-		bool emailExists =
-			await context.Users
-				.AsNoTracking()
-				.AnyAsync(
-					user => user.Email.ToLower() == email.ToLower(),
-					cancellationToken);
+		bool emailExists = await userValidationRepository.EmailExistsAsync(
+			email,
+			excludeId: null,
+			cancellationToken);
 
 		if (emailExists)
 		{
@@ -162,16 +129,9 @@ public class RegistrationService(
 		}
 
 		// Invalidate any existing verification tokens for this email
-		List<EmailVerificationToken> existingTokens =
-			await context.EmailVerificationTokens
-				.Where(token => token.Email.ToLower() == email.ToLower()
-					&& !token.IsUsed)
-				.ToListAsync(cancellationToken);
-
-		foreach (EmailVerificationToken existingToken in existingTokens)
-		{
-			existingToken.IsUsed = true;
-		}
+		await emailVerificationTokenRepository.InvalidateTokensForEmailAsync(
+			email,
+			cancellationToken);
 
 		// Generate new verification token
 		byte[] tokenBytes =
@@ -192,8 +152,9 @@ public class RegistrationService(
 				IsUsed = false,
 			};
 
-		context.EmailVerificationTokens.Add(verificationToken);
-		await context.SaveChangesAsync(cancellationToken);
+		await emailVerificationTokenRepository.CreateAsync(
+			verificationToken,
+			cancellationToken);
 
 		// Send verification email
 		await emailService.SendVerificationEmailAsync(
@@ -213,10 +174,9 @@ public class RegistrationService(
 			cancellationToken);
 
 		// Find the verification token
-		EmailVerificationToken? verificationToken =
-			await context.EmailVerificationTokens
-				.Where(token => token.Token == request.Token)
-				.FirstOrDefaultAsync(cancellationToken);
+		EmailVerificationToken? verificationToken = await emailVerificationTokenRepository.GetByTokenAsync(
+			request.Token,
+			cancellationToken);
 
 		if (verificationToken == null)
 		{
@@ -251,12 +211,10 @@ public class RegistrationService(
 		}
 
 		// Check if username already exists
-		bool usernameExists =
-			await context.Users
-				.AsNoTracking()
-				.AnyAsync(
-					user => user.Username.ToLower() == request.Username.ToLower(),
-					cancellationToken);
+		bool usernameExists = await userValidationRepository.UsernameExistsAsync(
+			request.Username,
+			excludeId: null,
+			cancellationToken);
 
 		if (usernameExists)
 		{
@@ -269,12 +227,10 @@ public class RegistrationService(
 		}
 
 		// Double-check email isn't already registered (race condition protection)
-		bool emailExists =
-			await context.Users
-				.AsNoTracking()
-				.AnyAsync(
-					user => user.Email.ToLower() == verificationToken.Email.ToLower(),
-					cancellationToken);
+		bool emailExists = await userValidationRepository.EmailExistsAsync(
+			verificationToken.Email,
+			excludeId: null,
+			cancellationToken);
 
 		if (emailExists)
 		{
@@ -297,81 +253,33 @@ public class RegistrationService(
 			await transactionManager.ExecuteInTransactionAsync(
 				async transactionCancellationToken =>
 				{
-					User newUser =
-						new()
-						{
-							Username = request.Username,
-							Email = verificationToken.Email,
-							IsActive = true,
-							CreateDate = now,
-							CreatedBy = "Self-Registration",
-						};
-
-					context.Users.Add(newUser);
+					User createdUser = await CreateUserWithCredentialAsync(
+						request.Username,
+						verificationToken.Email,
+						fullName: null,
+						request.Password,
+						"Self-Registration",
+						userRoleId,
+						requiresPasswordChange: false,
+						now,
+						transactionCancellationToken);
 
 					// Mark token as used
 					verificationToken.IsUsed = true;
+					await emailVerificationTokenRepository.SaveChangesAsync(
+						verificationToken,
+						transactionCancellationToken);
 
-					// Save user first to get the ID
-					await context.SaveChangesAsync(transactionCancellationToken);
-
-					// Create credential with user ID
-					string hashedPassword =
-						BCrypt.Net.BCrypt.HashPassword(
-							request.Password,
-							authSettings.Value.Password.WorkFactor);
-
-					UserCredential credential =
-						new()
-						{
-							UserId = newUser.Id,
-							PasswordHash = hashedPassword,
-							CreateDate = now,
-							PasswordChangedAt = now, // Set to now so no password change required
-						};
-
-					context.UserCredentials.Add(credential);
-
-					// Assign default User role
-					UserRole userRole =
-						new()
-						{
-							UserId = newUser.Id,
-							RoleId = userRoleId
-						};
-
-					context.UserRoles.Add(userRole);
-
-					await context.SaveChangesAsync(transactionCancellationToken);
-
-					return newUser;
+					return createdUser;
 				},
 				cancellationToken: cancellationToken);
 
-		// Generate tokens for immediate login
-		List<string> roles =
-			[RoleConstants.User];
-
-		string accessToken =
-			tokenService.GenerateAccessToken(
-				user.Id,
-				user.Username,
-				user.Email,
-				user.FullName,
-				roles);
-
-		string refreshToken =
-			await tokenService.GenerateRefreshTokenAsync(
-				user.Id,
-				clientIp,
-				rememberMe: false,
-				cancellationToken);
-
-		return AuthResult.Succeeded(
-			accessToken,
-			refreshToken,
-			timeProvider.GetUtcNow().AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes).UtcDateTime,
-			requiresPasswordChange: false);
+		return await GenerateAuthResultAsync(
+			user,
+			clientIp,
+			requiresPasswordChange: false,
+			rememberMe: false,
+			cancellationToken);
 	}
 
 	/// <summary>
@@ -385,11 +293,9 @@ public class RegistrationService(
 		string roleName,
 		CancellationToken cancellationToken)
 	{
-		int? roleId =
-			await context.SecurityRoles
-				.Where(securityRole => securityRole.Name == roleName)
-				.Select(securityRole => (int?)securityRole.Id)
-				.FirstOrDefaultAsync(cancellationToken);
+		int? roleId = await authRepository.GetRoleIdByNameAsync(
+			roleName,
+			cancellationToken);
 
 		if (roleId is null)
 		{
@@ -397,6 +303,58 @@ public class RegistrationService(
 		}
 
 		return roleId.Value;
+	}
+
+	/// <summary>
+	/// Creates a user with credential and role assignment.
+	/// </summary>
+	/// <remarks>Must be called within a transaction.</remarks>
+	private async Task<User> CreateUserWithCredentialAsync(
+		string username,
+		string email,
+		string? fullName,
+		string password,
+		string createdBy,
+		int roleId,
+		bool requiresPasswordChange,
+		DateTime now,
+		CancellationToken cancellationToken)
+	{
+		User newUser =
+			new()
+			{
+				Username = username,
+				Email = email,
+				FullName = fullName,
+				IsActive = true,
+				CreateDate = now,
+				CreatedBy = createdBy,
+			};
+
+		User createdUser = await authRepository.CreateUserWithRoleAsync(
+			newUser,
+			roleId,
+			cancellationToken);
+
+		string passwordHash =
+			BCrypt.Net.BCrypt.HashPassword(
+				password,
+				authSettings.Value.Password.WorkFactor);
+
+		UserCredential credential =
+			new()
+			{
+				UserId = createdUser.Id,
+				PasswordHash = passwordHash,
+				CreateDate = now,
+				PasswordChangedAt = requiresPasswordChange ? null : now,
+			};
+
+		await credentialRepository.CreateAsync(
+			credential,
+			cancellationToken);
+
+		return createdUser;
 	}
 
 	/// <summary>
@@ -410,16 +368,9 @@ public class RegistrationService(
 		CancellationToken cancellationToken)
 	{
 		// Get user roles
-		List<string> roles =
-			await context.UserRoles
-				.AsNoTracking()
-				.Where(userRole => userRole.UserId == user.Id)
-				.Join(
-					context.SecurityRoles,
-					userRole => userRole.RoleId,
-					role => role.Id,
-					(userRole, role) => role.Name)
-				.ToListAsync(cancellationToken);
+		IEnumerable<string> roles = await userRoleRepository.GetUserRolesAsync(
+			user.Id,
+			cancellationToken);
 
 		string accessToken =
 			tokenService.GenerateAccessToken(
@@ -427,7 +378,7 @@ public class RegistrationService(
 				user.Username,
 				user.Email,
 				user.FullName,
-				roles);
+				roles.ToList());
 
 		string refreshToken =
 			await tokenService.GenerateRefreshTokenAsync(

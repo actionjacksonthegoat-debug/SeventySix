@@ -316,7 +316,7 @@ public class PermissionRequestServiceTests
 			.Returns("user@test.com");
 
 		CreatePermissionRequestDto request =
-			new(["Developer"], "Need access");
+			new([TestRoleConstants.Developer], "Need access");
 
 		// Act
 		await Service.CreateRequestsAsync(

@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
 using Shouldly;
 
 namespace SeventySix.Tests.Identity.Services;
@@ -41,7 +42,7 @@ public class PermissionRequestServiceApprovalTests
 				Id = 1,
 				UserId = 10,
 				RequestedRoleId = 1,
-				RequestedRole = new SecurityRole { Id = 1, Name = "Developer" }
+				RequestedRole = new SecurityRole { Id = 1, Name = TestRoleConstants.Developer }
 			};
 
 		PermissionRequestRepository
@@ -58,7 +59,7 @@ public class PermissionRequestServiceApprovalTests
 			.Received(1)
 			.AddRoleAsync(
 				10,
-				"Developer",
+				TestRoleConstants.Developer,
 				Arg.Any<CancellationToken>());
 		await PermissionRequestRepository
 			.Received(1)
@@ -108,7 +109,7 @@ public class PermissionRequestServiceApprovalTests
 				Id = 1,
 				UserId = 10,
 				RequestedRoleId = 1,
-				RequestedRole = new SecurityRole { Id = 1, Name = "Developer" }
+				RequestedRole = new SecurityRole { Id = 1, Name = TestRoleConstants.Developer }
 			};
 
 		PermissionRequestRepository
@@ -165,8 +166,8 @@ public class PermissionRequestServiceApprovalTests
 		// Arrange
 		List<PermissionRequest> requests =
 		[
-			new() { Id = 1, UserId = 10, RequestedRoleId = 1, RequestedRole = new SecurityRole { Id = 1, Name = "Developer" } },
-			new() { Id = 2, UserId = 20, RequestedRoleId = 2, RequestedRole = new SecurityRole { Id = 2, Name = "Admin" } }
+			new() { Id = 1, UserId = 10, RequestedRoleId = 1, RequestedRole = new SecurityRole { Id = 1, Name = TestRoleConstants.Developer } },
+			new() { Id = 2, UserId = 20, RequestedRoleId = 2, RequestedRole = new SecurityRole { Id = 2, Name = TestRoleConstants.Admin } }
 		];
 
 		PermissionRequestRepository
@@ -183,13 +184,13 @@ public class PermissionRequestServiceApprovalTests
 			.Received(1)
 			.AddRoleAsync(
 				10,
-				"Developer",
+				TestRoleConstants.Developer,
 				Arg.Any<CancellationToken>());
 		await UserRepository
 			.Received(1)
 			.AddRoleAsync(
 				20,
-				"Admin",
+				TestRoleConstants.Admin,
 				Arg.Any<CancellationToken>());
 		await PermissionRequestRepository
 			.Received(1)

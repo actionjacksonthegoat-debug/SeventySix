@@ -76,7 +76,10 @@ public class PasswordServiceTests(TestcontainersPostgreSqlFixture fixture)
 	private PasswordService CreateService(IdentityDbContext context)
 	{
 		return new PasswordService(
-			context,
+			new CredentialRepository(context),
+			new PasswordResetTokenRepository(context),
+			new UserQueryRepository(context),
+			new UserRoleRepository(context),
 			TokenService,
 			AuthOptions,
 			JwtOptions,

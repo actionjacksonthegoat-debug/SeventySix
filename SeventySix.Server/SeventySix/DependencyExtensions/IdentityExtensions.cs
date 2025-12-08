@@ -71,6 +71,11 @@ public static class IdentityExtensions
 		services.AddScoped<ITokenRepository, TokenRepository>();
 		services.AddScoped<ICredentialRepository, CredentialRepository>();
 		services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+		services.AddScoped<IAuthRepository, AuthRepository>();
+		services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
+		services.AddScoped<IUserValidationRepository, UserValidationRepository>();
+		services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+		services.AddScoped<IUserQueryRepository, UserQueryRepository>();
 
 		// Register services - focused interfaces only (no composite IUserService/IAuthService)
 		services.AddScoped<UserService>();

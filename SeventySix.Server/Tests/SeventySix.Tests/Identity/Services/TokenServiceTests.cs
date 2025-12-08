@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Tests.Identity.Services;
@@ -74,7 +75,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		int userId = 1;
 		string username = "testuser";
 		string email = "test@example.com";
-		List<string> roles = ["Developer", "Admin"];
+		List<string> roles = [TestRoleConstants.Developer, TestRoleConstants.Admin];
 
 		// Act
 		string token =
@@ -107,7 +108,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		int userId = 42;
 		string username = "testuser";
 		string email = "test@example.com";
-		List<string> roles = ["Developer"];
+		List<string> roles = [TestRoleConstants.Developer];
 
 		// Act
 		string token =
@@ -139,7 +140,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		int userId = 1;
 		string username = "testuser";
 		string email = "test@example.com";
-		List<string> roles = ["Developer", "Admin"];
+		List<string> roles = [TestRoleConstants.Developer, TestRoleConstants.Admin];
 
 		// Act
 		string token =
@@ -160,8 +161,8 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 				.Select(c => c.Value)
 				.ToList();
 
-		Assert.Contains("Developer", roleClaims);
-		Assert.Contains("Admin", roleClaims);
+		Assert.Contains(TestRoleConstants.Developer, roleClaims);
+		Assert.Contains(TestRoleConstants.Admin, roleClaims);
 	}
 
 	[Fact]

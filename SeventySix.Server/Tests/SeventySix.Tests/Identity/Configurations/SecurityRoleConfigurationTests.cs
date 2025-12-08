@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
@@ -39,9 +40,9 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		// Assert - Three standard roles should be seeded
 		roles.Count.ShouldBe(3);
-		roles[0].Name.ShouldBe("User");
-		roles[1].Name.ShouldBe("Developer");
-		roles[2].Name.ShouldBe("Admin");
+		roles[0].Name.ShouldBe(TestRoleConstants.User);
+		roles[1].Name.ShouldBe(TestRoleConstants.Developer);
+		roles[2].Name.ShouldBe(TestRoleConstants.Admin);
 	}
 
 	[Fact]
@@ -53,7 +54,7 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		SecurityRole duplicateRole =
 			new()
 			{
-				Name = "Developer", // Already seeded
+				Name = TestRoleConstants.Developer, // Already seeded
 				Description = "Duplicate attempt",
 			};
 
@@ -80,7 +81,7 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		// Get the seeded Developer role
 		SecurityRole? developerRole =
 			await context.SecurityRoles
-				.FirstOrDefaultAsync(r => r.Name == "Developer");
+				.FirstOrDefaultAsync(r => r.Name == TestRoleConstants.Developer);
 		developerRole.ShouldNotBeNull();
 
 		// Assign role to user
@@ -118,7 +119,7 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		// Get the seeded Admin role
 		SecurityRole? adminRole =
 			await context.SecurityRoles
-				.FirstOrDefaultAsync(r => r.Name == "Admin");
+				.FirstOrDefaultAsync(r => r.Name == TestRoleConstants.Admin);
 		adminRole.ShouldNotBeNull();
 
 		// Create permission request for that role

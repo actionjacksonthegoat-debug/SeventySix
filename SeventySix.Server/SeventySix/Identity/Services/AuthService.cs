@@ -4,7 +4,6 @@
 
 using System.Net.Http.Headers;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.Identity.Constants;
@@ -20,12 +19,16 @@ namespace SeventySix.Identity;
 /// - BCrypt for password hashing with configurable work factor
 /// - Returns AuthResult for explicit error handling (no exceptions for auth failures)
 /// - Supports both local and GitHub OAuth authentication
+/// - DIP compliant: Depends on repository abstractions, not DbContext
 ///
 /// ISP Pattern: Single implementation, multiple focused interfaces.
 /// Callers depend only on the specific interface they need.
 /// </remarks>
 public class AuthService(
-	IdentityDbContext context,
+	IAuthRepository authRepository,
+	ICredentialRepository credentialRepository,
+	IUserQueryRepository userQueryRepository,
+	IUserRoleRepository userRoleRepository,
 	ITokenService tokenService,
 	IHttpClientFactory httpClientFactory,
 	IOptions<AuthSettings> authSettings,
@@ -43,11 +46,9 @@ public class AuthService(
 		CancellationToken cancellationToken = default)
 	{
 		// Find user by username or email (tracked for lockout updates)
-		User? user =
-			await context.Users
-				.Where(u => u.Username == request.UsernameOrEmail
-					|| u.Email == request.UsernameOrEmail)
-				.FirstOrDefaultAsync(cancellationToken);
+		User? user = await authRepository.GetUserByUsernameOrEmailForUpdateAsync(
+			request.UsernameOrEmail,
+			cancellationToken);
 
 		if (user == null)
 		{
@@ -82,11 +83,9 @@ public class AuthService(
 		}
 
 		// Get user credential
-		UserCredential? credential =
-			await context.UserCredentials
-				.AsNoTracking()
-				.Where(c => c.UserId == user.Id)
-				.FirstOrDefaultAsync(cancellationToken);
+		UserCredential? credential = await credentialRepository.GetByUserIdAsync(
+			user.Id,
+			cancellationToken);
 
 		if (credential == null)
 		{
@@ -153,11 +152,9 @@ public class AuthService(
 				AuthErrorCodes.InvalidToken);
 		}
 
-		User? user =
-			await context.Users
-				.AsNoTracking()
-				.Where(u => u.Id == userId.Value)
-				.FirstOrDefaultAsync(cancellationToken);
+		User? user = await userQueryRepository.GetByIdAsync(
+			userId.Value,
+			cancellationToken);
 
 		if (user == null || !user.IsActive)
 		{
@@ -183,22 +180,16 @@ public class AuthService(
 		}
 
 		// Check if user still needs password change (persists across sessions)
-		UserCredential? credential =
-			await context.UserCredentials
-				.AsNoTracking()
-				.Where(c => c.UserId == user.Id)
-				.FirstOrDefaultAsync(cancellationToken);
+		UserCredential? credential = await credentialRepository.GetByUserIdAsync(
+			user.Id,
+			cancellationToken);
 
 		bool requiresPasswordChange =
 			credential?.PasswordChangedAt == null;
 
-		List<string> roles =
-			await context.UserRoles
-				.AsNoTracking()
-				.Where(ur => ur.UserId == user.Id)
-				.Include(ur => ur.Role)
-				.Select(ur => ur.Role!.Name)
-				.ToListAsync(cancellationToken);
+		IEnumerable<string> roles = await userRoleRepository.GetUserRolesAsync(
+			user.Id,
+			cancellationToken);
 
 		string accessToken =
 			tokenService.GenerateAccessToken(
@@ -206,7 +197,7 @@ public class AuthService(
 				user.Username,
 				user.Email,
 				user.FullName,
-				roles);
+				roles.ToList());
 
 		DateTime expiresAt =
 			timeProvider.GetUtcNow()
@@ -336,13 +327,9 @@ public class AuthService(
 		bool rememberMe,
 		CancellationToken cancellationToken)
 	{
-		List<string> roles =
-			await context.UserRoles
-				.AsNoTracking()
-				.Where(r => r.UserId == user.Id)
-				.Include(r => r.Role)
-				.Select(r => r.Role!.Name)
-				.ToListAsync(cancellationToken);
+		IEnumerable<string> roles = await userRoleRepository.GetUserRolesAsync(
+			user.Id,
+			cancellationToken);
 
 		string accessToken =
 			tokenService.GenerateAccessToken(
@@ -350,7 +337,7 @@ public class AuthService(
 				user.Username,
 				user.Email,
 				user.FullName,
-				roles);
+				roles.ToList());
 
 		string refreshToken =
 			await tokenService.GenerateRefreshTokenAsync(
@@ -365,13 +352,11 @@ public class AuthService(
 				.UtcDateTime;
 
 		// Update last login
-		await context.Users
-			.Where(u => u.Id == user.Id)
-			.ExecuteUpdateAsync(
-				setters => setters
-					.SetProperty(u => u.LastLoginAt, timeProvider.GetUtcNow().UtcDateTime)
-					.SetProperty(u => u.LastLoginIp, clientIp),
-				cancellationToken);
+		await authRepository.UpdateLastLoginAsync(
+			user.Id,
+			timeProvider.GetUtcNow().UtcDateTime,
+			clientIp,
+			cancellationToken);
 
 		return AuthResult.Succeeded(
 			accessToken,
@@ -391,11 +376,9 @@ public class AuthService(
 		string roleName,
 		CancellationToken cancellationToken)
 	{
-		int? roleId =
-			await context.SecurityRoles
-				.Where(securityRole => securityRole.Name == roleName)
-				.Select(securityRole => (int?)securityRole.Id)
-				.FirstOrDefaultAsync(cancellationToken);
+		int? roleId = await authRepository.GetRoleIdByNameAsync(
+			roleName,
+			cancellationToken);
 
 		if (roleId is null)
 		{
@@ -465,7 +448,9 @@ public class AuthService(
 				lockoutEnd);
 		}
 
-		await context.SaveChangesAsync(cancellationToken);
+		await authRepository.SaveUserChangesAsync(
+			user,
+			cancellationToken);
 	}
 
 	/// <summary>
@@ -483,7 +468,9 @@ public class AuthService(
 		user.FailedLoginCount = 0;
 		user.LockoutEndUtc = null;
 
-		await context.SaveChangesAsync(cancellationToken);
+		await authRepository.SaveUserChangesAsync(
+			user,
+			cancellationToken);
 	}
 
 	/// <summary>
@@ -585,11 +572,10 @@ public class AuthService(
 		CancellationToken cancellationToken)
 	{
 		// Look for existing external login
-		ExternalLogin? existingLogin =
-			await context.ExternalLogins
-				.Where(externalLogin => externalLogin.Provider == OAuthProviderConstants.GitHub)
-				.Where(externalLogin => externalLogin.ProviderUserId == userInfo.Id)
-				.FirstOrDefaultAsync(cancellationToken);
+		ExternalLogin? existingLogin = await authRepository.GetExternalLoginAsync(
+			OAuthProviderConstants.GitHub,
+			userInfo.Id,
+			cancellationToken);
 
 		if (existingLogin != null)
 		{
@@ -597,11 +583,16 @@ public class AuthService(
 			existingLogin.LastUsedAt =
 				timeProvider.GetUtcNow().UtcDateTime;
 
-			await context.SaveChangesAsync(cancellationToken);
+			await authRepository.UpdateExternalLoginAsync(
+				existingLogin,
+				cancellationToken);
 
-			return await context.Users
-				.Where(user => user.Id == existingLogin.UserId)
-				.FirstAsync(cancellationToken);
+			User? existingUser = await userQueryRepository.GetByIdAsync(
+				existingLogin.UserId,
+				cancellationToken);
+
+			return existingUser
+				?? throw new InvalidOperationException($"User with ID {existingLogin.UserId} not found for external login.");
 		}
 
 		DateTime now =
@@ -623,8 +614,8 @@ public class AuthService(
 				int counter =
 					1;
 
-				while (await context.Users.AnyAsync(
-					user => user.Username == username,
+				while (await authRepository.UsernameExistsAsync(
+					username,
 					transactionCancellationToken))
 				{
 					username = $"{userInfo.Login}{counter++}";
@@ -641,16 +632,17 @@ public class AuthService(
 						CreatedBy = "GitHub OAuth"
 					};
 
-				context.Users.Add(user);
-
-				// Save user first to get the ID
-				await context.SaveChangesAsync(transactionCancellationToken);
+				// Create user with role assignment
+				User createdUser = await authRepository.CreateUserWithRoleAsync(
+					user,
+					userRoleId,
+					transactionCancellationToken);
 
 				// Create external login with user ID
 				ExternalLogin externalLogin =
 					new()
 					{
-						UserId = user.Id,
+						UserId = createdUser.Id,
 						Provider = OAuthProviderConstants.GitHub,
 						ProviderUserId = userInfo.Id,
 						ProviderEmail = userInfo.Email,
@@ -658,21 +650,11 @@ public class AuthService(
 						LastUsedAt = now
 					};
 
-				context.ExternalLogins.Add(externalLogin);
+				await authRepository.CreateExternalLoginAsync(
+					externalLogin,
+					transactionCancellationToken);
 
-				// Assign default role
-				UserRole userRole =
-					new()
-					{
-						UserId = user.Id,
-						RoleId = userRoleId
-					};
-
-				context.UserRoles.Add(userRole);
-
-				await context.SaveChangesAsync(transactionCancellationToken);
-
-				return user;
+				return createdUser;
 			},
 			cancellationToken: cancellationToken);
 	}

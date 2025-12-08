@@ -10,6 +10,7 @@ using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Shared;
 using SeventySix.TestUtilities.Builders;
+using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
 
@@ -107,8 +108,17 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 
 	private AuthService CreateService(IdentityDbContext context)
 	{
-		return new AuthService(
+		AuthRepository authRepository = new(context);
+		CredentialRepository credentialRepository = new(context);
+		UserRepository userQueryRepository = new(
 			context,
+			Substitute.For<ILogger<UserRepository>>());
+
+		return new AuthService(
+			authRepository,
+			credentialRepository,
+			userQueryRepository,
+			userQueryRepository,
 			TokenService,
 			HttpClientFactory,
 			AuthOptions,
@@ -572,13 +582,13 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 		// Look up role IDs from SecurityRoles
 		int developerRoleId =
 			await context.SecurityRoles
-				.Where(r => r.Name == "Developer")
+				.Where(r => r.Name == TestRoleConstants.Developer)
 				.Select(r => r.Id)
 				.FirstAsync();
 
 		int adminRoleId =
 			await context.SecurityRoles
-				.Where(r => r.Name == "Admin")
+				.Where(r => r.Name == TestRoleConstants.Admin)
 				.Select(r => r.Id)
 				.FirstAsync();
 
@@ -623,8 +633,8 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 
 		// Assert
 		Assert.True(result.Success);
-		Assert.Contains("Developer", capturedRoles);
-		Assert.Contains("Admin", capturedRoles);
+		Assert.Contains(TestRoleConstants.Developer, capturedRoles);
+		Assert.Contains(TestRoleConstants.Admin, capturedRoles);
 	}
 
 	#endregion

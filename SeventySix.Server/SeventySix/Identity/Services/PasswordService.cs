@@ -5,7 +5,6 @@
 using System.Security.Cryptography;
 using FluentValidation;
 using FluentValidation.Results;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.ElectronicNotifications.Emails;
@@ -19,9 +18,13 @@ namespace SeventySix.Identity;
 /// <remarks>
 /// Handles password change, reset, and set operations.
 /// Extracted from AuthService following SRP - focused solely on password management.
+/// DIP compliant: Depends on repository abstractions, not DbContext.
 /// </remarks>
 public class PasswordService(
-	IdentityDbContext context,
+	ICredentialRepository credentialRepository,
+	IPasswordResetTokenRepository passwordResetTokenRepository,
+	IUserQueryRepository userQueryRepository,
+	IUserRoleRepository userRoleRepository,
 	ITokenService tokenService,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings,
@@ -48,10 +51,9 @@ public class PasswordService(
 				"VALIDATION_ERROR");
 		}
 
-		UserCredential? credential =
-			await context.UserCredentials
-				.Where(c => c.UserId == userId)
-				.FirstOrDefaultAsync(cancellationToken);
+		UserCredential? credential = await credentialRepository.GetByUserIdForUpdateAsync(
+			userId,
+			cancellationToken);
 
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
@@ -74,6 +76,10 @@ public class PasswordService(
 					request.NewPassword,
 					authSettings.Value.Password.WorkFactor);
 			credential.PasswordChangedAt = now;
+
+			await credentialRepository.UpdateAsync(
+				credential,
+				cancellationToken);
 		}
 		else
 		{
@@ -89,10 +95,10 @@ public class PasswordService(
 					CreateDate = now
 				};
 
-			context.UserCredentials.Add(credential);
+			await credentialRepository.CreateAsync(
+				credential,
+				cancellationToken);
 		}
-
-		await context.SaveChangesAsync(cancellationToken);
 
 		// Revoke all tokens to require re-login
 		await tokenService.RevokeAllUserTokensAsync(
@@ -108,19 +114,16 @@ public class PasswordService(
 		bool isNewUser,
 		CancellationToken cancellationToken = default)
 	{
-		User user =
-			await context.Users
-				.AsNoTracking()
-				.Where(u => u.Id == userId)
-				.FirstOrDefaultAsync(cancellationToken)
+		User user = await userQueryRepository.GetByIdAsync(
+			userId,
+			cancellationToken)
 			?? throw new InvalidOperationException($"User with ID {userId} not found.");
 
 		// Invalidate any existing unused tokens for this user
-		await context.PasswordResetTokens
-			.Where(t => t.UserId == userId && !t.IsUsed)
-			.ExecuteUpdateAsync(
-				setters => setters.SetProperty(t => t.IsUsed, true),
-				cancellationToken);
+		await passwordResetTokenRepository.InvalidateAllUserTokensAsync(
+			userId,
+			timeProvider.GetUtcNow().UtcDateTime,
+			cancellationToken);
 
 		// Generate secure token
 		byte[] tokenBytes =
@@ -141,8 +144,9 @@ public class PasswordService(
 				IsUsed = false,
 			};
 
-		context.PasswordResetTokens.Add(resetToken);
-		await context.SaveChangesAsync(cancellationToken);
+		await passwordResetTokenRepository.CreateAsync(
+			resetToken,
+			cancellationToken);
 
 		// Send appropriate email
 		if (isNewUser)
@@ -168,15 +172,12 @@ public class PasswordService(
 		string email,
 		CancellationToken cancellationToken = default)
 	{
-		User? user =
-			await context.Users
-				.AsNoTracking()
-				.Where(user => user.Email.ToLower() == email.ToLower()
-					&& user.IsActive)
-				.FirstOrDefaultAsync(cancellationToken);
+		User? user = await userQueryRepository.GetByEmailAsync(
+			email,
+			cancellationToken);
 
 		// Silent success for non-existent/inactive emails (prevents enumeration)
-		if (user == null)
+		if (user == null || !user.IsActive)
 		{
 			return;
 		}
@@ -200,7 +201,7 @@ public class PasswordService(
 		if (!validationResult.IsValid)
 		{
 			string errorMessage =
-				string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage));
+				string.Join(" ", validationResult.Errors.Select(error => error.ErrorMessage));
 
 			return AuthResult.Failed(
 				errorMessage,
@@ -208,10 +209,9 @@ public class PasswordService(
 		}
 
 		// Find the token
-		PasswordResetToken? resetToken =
-			await context.PasswordResetTokens
-				.Where(t => t.Token == request.Token)
-				.FirstOrDefaultAsync(cancellationToken);
+		PasswordResetToken? resetToken = await passwordResetTokenRepository.GetByHashAsync(
+			request.Token,
+			cancellationToken);
 
 		if (resetToken == null)
 		{
@@ -246,10 +246,9 @@ public class PasswordService(
 		}
 
 		// Get the user
-		User? user =
-			await context.Users
-				.Where(u => u.Id == resetToken.UserId)
-				.FirstOrDefaultAsync(cancellationToken);
+		User? user = await userQueryRepository.GetByIdAsync(
+			resetToken.UserId,
+			cancellationToken);
 
 		if (user == null)
 		{
@@ -262,13 +261,14 @@ public class PasswordService(
 		}
 
 		// Mark token as used
-		resetToken.IsUsed = true;
+		await passwordResetTokenRepository.MarkAsUsedAsync(
+			resetToken,
+			cancellationToken);
 
 		// Update or create credential
-		UserCredential? credential =
-			await context.UserCredentials
-				.Where(c => c.UserId == user.Id)
-				.FirstOrDefaultAsync(cancellationToken);
+		UserCredential? credential = await credentialRepository.GetByUserIdForUpdateAsync(
+			user.Id,
+			cancellationToken);
 
 		if (credential != null)
 		{
@@ -277,6 +277,10 @@ public class PasswordService(
 					request.NewPassword,
 					authSettings.Value.Password.WorkFactor);
 			credential.PasswordChangedAt = now;
+
+			await credentialRepository.UpdateAsync(
+				credential,
+				cancellationToken);
 		}
 		else
 		{
@@ -291,10 +295,10 @@ public class PasswordService(
 					CreateDate = now
 				};
 
-			context.UserCredentials.Add(credential);
+			await credentialRepository.CreateAsync(
+				credential,
+				cancellationToken);
 		}
-
-		await context.SaveChangesAsync(cancellationToken);
 
 		// Revoke all existing tokens
 		await tokenService.RevokeAllUserTokensAsync(
@@ -321,16 +325,9 @@ public class PasswordService(
 		CancellationToken cancellationToken)
 	{
 		// Get user roles
-		List<string> roles =
-			await context.UserRoles
-				.AsNoTracking()
-				.Where(userRole => userRole.UserId == user.Id)
-				.Join(
-					context.SecurityRoles,
-					userRole => userRole.RoleId,
-					role => role.Id,
-					(userRole, role) => role.Name)
-				.ToListAsync(cancellationToken);
+		IEnumerable<string> roles = await userRoleRepository.GetUserRolesAsync(
+			user.Id,
+			cancellationToken);
 
 		string accessToken =
 			tokenService.GenerateAccessToken(
@@ -338,7 +335,7 @@ public class PasswordService(
 				user.Username,
 				user.Email,
 				user.FullName,
-				roles);
+				roles.ToList());
 
 		string refreshToken =
 			await tokenService.GenerateRefreshTokenAsync(

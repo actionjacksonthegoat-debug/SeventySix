@@ -93,7 +93,11 @@ public class RegistrationServiceTests(TestcontainersPostgreSqlFixture fixture)
 			.Returns(Task.FromResult("test-refresh-token"));
 
 		return new RegistrationService(
-			context,
+			new UserValidationRepository(context),
+			new UserRoleRepository(context),
+			new AuthRepository(context),
+			new CredentialRepository(context),
+			new EmailVerificationTokenRepository(context),
 			TokenService,
 			AuthOptions,
 			JwtOptions,
