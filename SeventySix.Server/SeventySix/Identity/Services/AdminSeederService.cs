@@ -73,7 +73,7 @@ public class AdminSeederService(
 			await context.UserRoles
 				.Include(userRole => userRole.Role)
 				.AnyAsync(
-					userRole => userRole.Role!.Name == "Admin",
+					userRole => userRole.Role!.Name == RoleConstants.Admin,
 					cancellationToken);
 
 		if (anyAdminRoleExists)
@@ -120,7 +120,7 @@ public class AdminSeederService(
 		// Look up Admin role ID from SecurityRoles
 		int? adminRoleId =
 			await context.SecurityRoles
-				.Where(securityRole => securityRole.Name == "Admin")
+				.Where(securityRole => securityRole.Name == RoleConstants.Admin)
 				.Select(securityRole => (int?)securityRole.Id)
 				.FirstOrDefaultAsync(cancellationToken);
 

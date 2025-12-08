@@ -4,108 +4,44 @@
 
 namespace SeventySix.Logging;
 
-/// <summary>Log entry data transfer object.</summary>
-public record LogDto
-{
-	/// <summary>Gets the unique identifier.</summary>
-	public int Id
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the log level.</summary>
-	public string LogLevel { get; init; } = string.Empty;
-
-	/// <summary>Gets the log message.</summary>
-	public string Message { get; init; } = string.Empty;
-
-	/// <summary>Gets the exception message if applicable.</summary>
-	public string? ExceptionMessage
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the base exception message if different from exception.</summary>
-	public string? BaseExceptionMessage
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the call stack trace.</summary>
-	public string? StackTrace
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the source context (class name).</summary>
-	public string? SourceContext
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the HTTP request method.</summary>
-	public string? RequestMethod
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the HTTP request path.</summary>
-	public string? RequestPath
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the HTTP status code.</summary>
-	public int? StatusCode
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the request duration in milliseconds.</summary>
-	public long? DurationMs
-	{
-		get; init;
-	}
-
-	/// <summary>Gets additional properties as JSON.</summary>
-	public string? Properties
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the timestamp when this log was created.</summary>
-	public DateTime CreateDate
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the machine/container name where the log originated.</summary>
-	public string? MachineName
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the environment (Development, Production, etc.).</summary>
-	public string? Environment
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the correlation ID (OpenTelemetry Trace ID) for distributed tracing.</summary>
-	public string? CorrelationId
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the span ID for this specific operation in the trace.</summary>
-	public string? SpanId
-	{
-		get; init;
-	}
-
-	/// <summary>Gets the parent span ID if this is a child span.</summary>
-	public string? ParentSpanId
-	{
-		get; init;
-	}
-}
+/// <summary>
+/// Log entry data transfer object.
+/// Represents a read-only snapshot of log data for API responses.
+/// </summary>
+/// <param name="Id">The unique identifier.</param>
+/// <param name="LogLevel">The log level.</param>
+/// <param name="Message">The log message.</param>
+/// <param name="ExceptionMessage">The exception message if applicable.</param>
+/// <param name="BaseExceptionMessage">The base exception message if different from exception.</param>
+/// <param name="StackTrace">The call stack trace.</param>
+/// <param name="SourceContext">The source context (class name).</param>
+/// <param name="RequestMethod">The HTTP request method.</param>
+/// <param name="RequestPath">The HTTP request path.</param>
+/// <param name="StatusCode">The HTTP status code.</param>
+/// <param name="DurationMs">The request duration in milliseconds.</param>
+/// <param name="Properties">Additional properties as JSON.</param>
+/// <param name="CreateDate">The timestamp when this log was created.</param>
+/// <param name="MachineName">The machine/container name where the log originated.</param>
+/// <param name="Environment">The environment (Development, Production, etc.).</param>
+/// <param name="CorrelationId">The correlation ID (OpenTelemetry Trace ID) for distributed tracing.</param>
+/// <param name="SpanId">The span ID for this specific operation in the trace.</param>
+/// <param name="ParentSpanId">The parent span ID if this is a child span.</param>
+public record LogDto(
+	int Id,
+	string LogLevel,
+	string Message,
+	string? ExceptionMessage,
+	string? BaseExceptionMessage,
+	string? StackTrace,
+	string? SourceContext,
+	string? RequestMethod,
+	string? RequestPath,
+	int? StatusCode,
+	long? DurationMs,
+	string? Properties,
+	DateTime CreateDate,
+	string? MachineName,
+	string? Environment,
+	string? CorrelationId,
+	string? SpanId,
+	string? ParentSpanId);

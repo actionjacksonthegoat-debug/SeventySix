@@ -20,23 +20,21 @@ public static class UserExtensions
 	public static Expression<Func<User, UserDto>> ToDtoProjection
 	{
 		get;
-	} = user => new UserDto
-	{
-		Id = user.Id,
-		Username = user.Username,
-		Email = user.Email,
-		FullName = user.FullName,
-		IsActive = user.IsActive,
-		NeedsPendingEmail = user.NeedsPendingEmail,
-		CreateDate = user.CreateDate,
-		CreatedBy = user.CreatedBy,
-		ModifyDate = user.ModifyDate,
-		ModifiedBy = user.ModifiedBy,
-		LastLoginAt = user.LastLoginAt,
-		IsDeleted = user.IsDeleted,
-		DeletedAt = user.DeletedAt,
-		DeletedBy = user.DeletedBy
-	};
+	} = user => new UserDto(
+		user.Id,
+		user.Username,
+		user.Email,
+		user.FullName,
+		user.CreateDate,
+		user.IsActive,
+		user.NeedsPendingEmail,
+		user.CreatedBy,
+		user.ModifyDate,
+		user.ModifiedBy,
+		user.LastLoginAt,
+		user.IsDeleted,
+		user.DeletedAt,
+		user.DeletedBy);
 
 	/// <summary>
 	/// Converts a User domain entity to a data transfer object (DTO).
@@ -45,23 +43,21 @@ public static class UserExtensions
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
-		return new UserDto
-		{
-			Id = entity.Id,
-			Username = entity.Username,
-			Email = entity.Email,
-			FullName = entity.FullName,
-			CreateDate = entity.CreateDate,
-			IsActive = entity.IsActive,
-			NeedsPendingEmail = entity.NeedsPendingEmail,
-			CreatedBy = entity.CreatedBy,
-			ModifyDate = entity.ModifyDate,
-			ModifiedBy = entity.ModifiedBy,
-			LastLoginAt = entity.LastLoginAt,
-			IsDeleted = entity.IsDeleted,
-			DeletedAt = entity.DeletedAt,
-			DeletedBy = entity.DeletedBy
-		};
+		return new UserDto(
+			entity.Id,
+			entity.Username,
+			entity.Email,
+			entity.FullName,
+			entity.CreateDate,
+			entity.IsActive,
+			entity.NeedsPendingEmail,
+			entity.CreatedBy,
+			entity.ModifyDate,
+			entity.ModifiedBy,
+			entity.LastLoginAt,
+			entity.IsDeleted,
+			entity.DeletedAt,
+			entity.DeletedBy);
 	}
 
 	/// <summary>

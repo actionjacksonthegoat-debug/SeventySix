@@ -20,7 +20,7 @@ namespace SeventySix.Api.Configuration;
 /// <item>Production: Configure with actual load balancer/reverse proxy IPs</item>
 /// </list>
 /// </remarks>
-public class ForwardedHeadersSettings
+public record ForwardedHeadersSettings
 {
 	/// <summary>
 	/// Gets the configuration section name.

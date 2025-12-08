@@ -11,7 +11,8 @@ namespace SeventySix.ApiTracking;
 /// <summary>EF Core implementation for ThirdPartyApiRequest data access.</summary>
 internal class ThirdPartyApiRequestRepository(
 	ApiTrackingDbContext context,
-	ILogger<ThirdPartyApiRequestRepository> logger) : BaseRepository<ThirdPartyApiRequest, ApiTrackingDbContext>(context, logger), IThirdPartyApiRequestRepository
+	ILogger<ThirdPartyApiRequestRepository> logger) :
+	BaseRepository<ThirdPartyApiRequest, ApiTrackingDbContext>(context, logger), IThirdPartyApiRequestRepository
 {
 	/// <inheritdoc/>
 	protected override string GetEntityIdentifier(ThirdPartyApiRequest entity)

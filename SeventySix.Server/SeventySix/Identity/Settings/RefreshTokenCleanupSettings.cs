@@ -7,7 +7,7 @@ namespace SeventySix.Identity.Settings;
 /// <summary>
 /// Configuration settings for the refresh token cleanup background job.
 /// </summary>
-public class RefreshTokenCleanupSettings
+public record RefreshTokenCleanupSettings
 {
 	/// <summary>
 	/// The configuration section name for refresh token cleanup settings.

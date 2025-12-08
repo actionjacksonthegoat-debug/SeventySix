@@ -8,6 +8,7 @@ using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.Identity;
 using SeventySix.Shared;
+using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.Api.Tests.Controllers;
@@ -67,8 +68,8 @@ public class UsersControllerTests
 		// Arrange
 		List<UserDto> users =
 		[
-			new UserDto { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = TestAuditConstants.SystemUser, ModifiedBy = TestAuditConstants.SystemUser },
-			new UserDto { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false, CreateDate = DateTime.UtcNow, CreatedBy = TestAuditConstants.SystemUser, ModifiedBy = TestAuditConstants.SystemUser },
+			new UserDtoBuilder().WithId(1).WithUsername("user1").WithEmail("user1@example.com").WithIsActive(true).Build(),
+			new UserDtoBuilder().WithId(2).WithUsername("user2").WithEmail("user2@example.com").WithIsActive(false).Build(),
 		];
 
 		UserService
@@ -111,17 +112,16 @@ public class UsersControllerTests
 	public async Task GetByIdAsync_ShouldReturnOkWithUser_WhenUserExistsAsync()
 	{
 		// Arrange
-		UserDto userDto = new()
-		{
-			Id = 123,
-			Username = "john_doe",
-			Email = "john@example.com",
-			FullName = "John Doe",
-			IsActive = true,
-			CreateDate = DateTime.UtcNow,
-			CreatedBy = "System",
-			ModifiedBy = "System",
-		};
+		UserDto userDto =
+			new UserDtoBuilder()
+				.WithId(123)
+				.WithUsername("john_doe")
+				.WithEmail("john@example.com")
+				.WithFullName("John Doe")
+				.WithIsActive(true)
+				.WithCreatedBy("System")
+				.WithModifiedBy("System")
+				.Build();
 
 		UserService
 			.GetUserByIdAsync(123, Arg.Any<CancellationToken>())
@@ -168,17 +168,16 @@ public class UsersControllerTests
 			IsActive = true,
 		};
 
-		UserDto createdUser = new()
-		{
-			Id = 456,
-			Username = "new_user",
-			Email = "new@example.com",
-			FullName = "New User",
-			IsActive = true,
-			CreateDate = DateTime.UtcNow,
-			CreatedBy = "System",
-			ModifiedBy = "System",
-		};
+		UserDto createdUser =
+			new UserDtoBuilder()
+				.WithId(456)
+				.WithUsername("new_user")
+				.WithEmail("new@example.com")
+				.WithFullName("New User")
+				.WithIsActive(true)
+				.WithCreatedBy("System")
+				.WithModifiedBy("System")
+				.Build();
 
 		UserService
 			.CreateUserAsync(request, Arg.Any<CancellationToken>())
@@ -208,16 +207,15 @@ public class UsersControllerTests
 			FullName = "Test User",
 		};
 
-		UserDto createdUser = new()
-		{
-			Id = 1,
-			Username = "test",
-			Email = "test@example.com",
-			IsActive = true,
-			CreateDate = DateTime.UtcNow,
-			CreatedBy = "System",
-			ModifiedBy = "System",
-		};
+		UserDto createdUser =
+			new UserDtoBuilder()
+				.WithId(1)
+				.WithUsername("test")
+				.WithEmail("test@example.com")
+				.WithIsActive(true)
+				.WithCreatedBy("System")
+				.WithModifiedBy("System")
+				.Build();
 
 		UserService
 			.CreateUserAsync(request, Arg.Any<CancellationToken>())
@@ -251,18 +249,18 @@ public class UsersControllerTests
 			IsActive = true,
 		};
 
-		UserDto updatedUser = new UserDto
-		{
-			Id = 1,
-			Username = "updateduser",
-			Email = "updated@example.com",
-			FullName = "Updated User",
-			IsActive = true,
-			CreateDate = DateTime.UtcNow.AddDays(-1),
-			ModifyDate = DateTime.UtcNow,
-			CreatedBy = "System",
-			ModifiedBy = "Admin",
-		};
+		UserDto updatedUser =
+			new UserDtoBuilder()
+				.WithId(1)
+				.WithUsername("updateduser")
+				.WithEmail("updated@example.com")
+				.WithFullName("Updated User")
+				.WithIsActive(true)
+				.WithCreateDate(DateTime.UtcNow.AddDays(-1))
+				.WithModifyDate(DateTime.UtcNow)
+				.WithCreatedBy("System")
+				.WithModifiedBy("Admin")
+				.Build();
 
 		UserService
 			.UpdateUserAsync(request, Arg.Any<CancellationToken>())
@@ -386,8 +384,8 @@ public class UsersControllerTests
 
 		List<UserDto> users =
 		[
-			new UserDto { Id = 1, Username = "testuser1", Email = "test1@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
-			new UserDto { Id = 2, Username = "testuser2", Email = "test2@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = "System", ModifiedBy = "System" },
+			new UserDtoBuilder().WithId(1).WithUsername("testuser1").WithEmail("test1@example.com").WithIsActive(true).WithCreatedBy("System").WithModifiedBy("System").Build(),
+			new UserDtoBuilder().WithId(2).WithUsername("testuser2").WithEmail("test2@example.com").WithIsActive(true).WithCreatedBy("System").WithModifiedBy("System").Build(),
 		];
 
 		PagedResult<UserDto> pagedResult = new PagedResult<UserDto>
@@ -422,16 +420,15 @@ public class UsersControllerTests
 	public async Task GetByUsernameAsync_UserExists_ReturnsOkWithUserAsync()
 	{
 		// Arrange
-		UserDto user = new UserDto
-		{
-			Id = 1,
-			Username = "testuser",
-			Email = "test@example.com",
-			IsActive = true,
-			CreateDate = DateTime.UtcNow,
-			CreatedBy = "System",
-			ModifiedBy = "System",
-		};
+		UserDto user =
+			new UserDtoBuilder()
+				.WithId(1)
+				.WithUsername("testuser")
+				.WithEmail("test@example.com")
+				.WithIsActive(true)
+				.WithCreatedBy("System")
+				.WithModifiedBy("System")
+				.Build();
 
 		UserService
 			.GetByUsernameAsync("testuser", Arg.Any<CancellationToken>())

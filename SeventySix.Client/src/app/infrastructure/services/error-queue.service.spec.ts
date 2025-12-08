@@ -11,10 +11,6 @@ import { environment } from "@environments/environment";
 import { CreateLogRequest } from "@infrastructure/models";
 import { DateService } from "./date.service";
 
-/**
- * Zoneless tests for ErrorQueueService
- * Uses manual timing control instead of fakeAsync/tick
- */
 describe("ErrorQueueService (Zoneless)", () =>
 {
 	let service: ErrorQueueService;

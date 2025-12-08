@@ -115,9 +115,9 @@ public class UserServiceTests
 		// Arrange
 		List<UserDto> userDtos =
 		[
-			new UserDto { Id = 1, Username = "user1", Email = "user1@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = TestAuditConstants.SystemUser, ModifiedBy = TestAuditConstants.SystemUser },
-			new UserDto { Id = 2, Username = "user2", Email = "user2@example.com", IsActive = false, CreateDate = DateTime.UtcNow, CreatedBy = TestAuditConstants.SystemUser, ModifiedBy = TestAuditConstants.SystemUser },
-			new UserDto { Id = 3, Username = "user3", Email = "user3@example.com", IsActive = true, CreateDate = DateTime.UtcNow, CreatedBy = TestAuditConstants.SystemUser, ModifiedBy = TestAuditConstants.SystemUser },
+			new UserDtoBuilder().WithId(1).WithUsername("user1").WithEmail("user1@example.com").WithIsActive(true).Build(),
+			new UserDtoBuilder().WithId(2).WithUsername("user2").WithEmail("user2@example.com").WithIsActive(false).Build(),
+			new UserDtoBuilder().WithId(3).WithUsername("user3").WithEmail("user3@example.com").WithIsActive(true).Build(),
 		];
 
 		Repository
@@ -1014,28 +1014,20 @@ public class UserServiceTests
 
 		List<UserDto> userDtos =
 		[
-			new UserDto
-			{
-				Id = 1,
-				Username = "testuser1",
-				Email = "test1@example.com",
-				FullName = "Test User 1",
-				IsActive = true,
-				CreateDate = DateTime.UtcNow,
-				CreatedBy = TestAuditConstants.SystemUser,
-				ModifiedBy = TestAuditConstants.SystemUser,
-			},
-			new UserDto
-			{
-				Id = 2,
-				Username = "testuser2",
-				Email = "test2@example.com",
-				FullName = "Test User 2",
-				IsActive = true,
-				CreateDate = DateTime.UtcNow,
-				CreatedBy = TestAuditConstants.SystemUser,
-				ModifiedBy = TestAuditConstants.SystemUser,
-			},
+			new UserDtoBuilder()
+				.WithId(1)
+				.WithUsername("testuser1")
+				.WithEmail("test1@example.com")
+				.WithFullName("Test User 1")
+				.WithIsActive(true)
+				.Build(),
+			new UserDtoBuilder()
+				.WithId(2)
+				.WithUsername("testuser2")
+				.WithEmail("test2@example.com")
+				.WithFullName("Test User 2")
+				.WithIsActive(true)
+				.Build(),
 		];
 
 		int totalCount = 15;

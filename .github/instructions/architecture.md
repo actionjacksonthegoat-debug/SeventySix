@@ -61,19 +61,35 @@ ElectronicNotifications/
 
 ## DTO vs Entity vs Model vs Settings
 
-| Type         | Purpose                          | Persisted? | API Exposed? | Location            | Naming                          |
-| ------------ | -------------------------------- | ---------- | ------------ | ------------------- | ------------------------------- |
-| **DTOs**     | API contracts (request/response) | No         | **Yes**      | `Context/DTOs/`     | `*Dto`, `*Request`, `*Response` |
-| **Entities** | Database-persisted models        | **Yes**    | No           | `Context/Entities/` | Plain names (User, Log)         |
-| **Models**   | Internal non-persisted types     | No         | No           | `Context/Models/`   | `*Result`, `*Options`, etc.     |
-| **Settings** | Configuration binding            | No         | No           | `Context/Settings/` | `*Settings`                     |
+| Type         | Purpose                          | Persisted? | API Exposed? | Location            | Naming                          | Record Pattern                                                                            |
+| ------------ | -------------------------------- | ---------- | ------------ | ------------------- | ------------------------------- | ----------------------------------------------------------------------------------------- |
+| **DTOs**     | API contracts (request/response) | No         | **Yes**      | `Context/DTOs/`     | `*Dto`, `*Request`, `*Response` | Positional parameters: `public record UserDto(int Id, string Name);`                      |
+| **Entities** | Database-persisted models        | **Yes**    | No           | `Context/Entities/` | Plain names (User, Log)         | N/A (classes with EF)                                                                     |
+| **Models**   | Internal non-persisted types     | No         | No           | `Context/Models/`   | `*Result`, `*Options`, etc.     | Varies by use case                                                                        |
+| **Settings** | Configuration binding            | No         | No           | `Context/Settings/` | `*Settings`                     | Init properties: `public record AuthSettings { public int Timeout { get; init; } = 60; }` |
 
 **Rules**:
 
--   DTOs cross API boundary - serialized to/from JSON
--   Entities are EF-tracked and saved to database - never returned directly from controllers
--   Models are internal service/business logic types - not persisted, not exposed
--   Settings bind to `appsettings.json` sections - context-specific config belongs in context
+-   **DTOs** cross API boundary - serialized to/from JSON - use **positional parameters** for immutability
+-   **Entities** are EF-tracked and saved to database - never returned directly from controllers
+-   **Models** are internal service/business logic types - not persisted, not exposed
+-   **Settings** bind to `appsettings.json` sections - use **init properties with defaults** for Options pattern
+
+**Why Different Record Patterns?**:
+
+```csharp
+// DTOs: Positional (immutable, simple construction, API contracts)
+public record UserDto(int Id, string Name, string Email);
+var dto = new UserDto(1, "John", "john@example.com");
+
+// Settings: Init properties (defaults, Options pattern, configuration binding)
+public record AuthSettings
+{
+    public int AccessTokenExpirationMinutes { get; init; } = 60;
+    public int RefreshTokenExpirationDays { get; init; } = 7;
+}
+// Bound from appsettings.json - needs property setters for binding
+```
 
 ## Client Structure
 

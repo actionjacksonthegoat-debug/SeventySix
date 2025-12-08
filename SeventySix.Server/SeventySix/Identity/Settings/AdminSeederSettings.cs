@@ -11,7 +11,7 @@ namespace SeventySix.Identity.Settings;
 /// WARNING: The InitialPassword should be changed immediately after first login.
 /// In production, use environment variables or secrets management.
 /// </remarks>
-public class AdminSeederSettings
+public record AdminSeederSettings
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

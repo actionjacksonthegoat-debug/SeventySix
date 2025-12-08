@@ -16,143 +16,38 @@ namespace SeventySix.Identity;
 /// - Provide a stable interface for clients
 ///
 /// Design Notes:
-/// - Implemented as a record for immutability and value equality
-/// - Uses init-only properties (C# 9+) for immutable state
+/// - Implemented as a positional record for immutability and concise syntax
 /// - Contains no business logic (pure data container)
 /// - Excludes sensitive information (passwords, etc.)
 ///
 /// This record is serialized to JSON for HTTP responses.
 /// </remarks>
-public record UserDto
-{
-	/// <summary>
-	/// Gets the unique identifier for the user.
-	/// </summary>
-	/// <value>
-	/// An integer representing the user's unique ID.
-	/// </value>
-	public int Id
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets the username.
-	/// </summary>
-	/// <value>
-	/// A string representing the user's username.
-	/// </value>
-	public string Username { get; init; } = string.Empty;
-
-	/// <summary>
-	/// Gets the user's email address.
-	/// </summary>
-	/// <value>
-	/// A string representing the user's email.
-	/// </value>
-	public string Email { get; init; } = string.Empty;
-
-	/// <summary>
-	/// Gets the user's full name.
-	/// </summary>
-	/// <value>
-	/// A string representing the user's full name.
-	/// Null if not provided.
-	/// </value>
-	public string? FullName
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets the date and time when the user was created.
-	/// </summary>
-	/// <value>
-	/// A DateTime value representing when the user account was created.
-	/// </value>
-	/// <remarks>
-	/// Uses UTC time for consistency across time zones.
-	/// </remarks>
-	public DateTime CreateDate
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets a value indicating whether the user account is active.
-	/// </summary>
-	/// <value>
-	/// True if the user account is active; otherwise, false.
-	/// </value>
-	public bool IsActive
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets a value indicating whether the user needs a pending password reset email.
-	/// </summary>
-	/// <value>
-	/// True if the user needs a pending email; otherwise, false.
-	/// </value>
-	public bool NeedsPendingEmail
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets the username of the user who created this user.
-	/// </summary>
-	public required string CreatedBy
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets the date and time when the user was last modified.
-	/// </summary>
-	public DateTime? ModifyDate
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets the username of the user who last modified this user.
-	/// </summary>
-	public required string ModifiedBy
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets the date and time of the user's last login.
-	/// </summary>
-	public DateTime? LastLoginAt
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets a value indicating whether the user has been soft-deleted.
-	/// </summary>
-	public bool IsDeleted
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets the date and time when the user was soft-deleted.
-	/// </summary>
-	public DateTime? DeletedAt
-	{
-		get; init;
-	}
-
-	/// <summary>
-	/// Gets the username of the user who deleted this user.
-	/// </summary>
-	public string? DeletedBy
-	{
-		get; init;
-	}
-}
+/// <param name="Id">The unique identifier for the user.</param>
+/// <param name="Username">The username.</param>
+/// <param name="Email">The user's email address.</param>
+/// <param name="FullName">The user's full name (null if not provided).</param>
+/// <param name="CreateDate">The date and time when the user was created (UTC).</param>
+/// <param name="IsActive">Whether the user account is active.</param>
+/// <param name="NeedsPendingEmail">Whether the user needs a pending password reset email.</param>
+/// <param name="CreatedBy">The username of the user who created this user.</param>
+/// <param name="ModifyDate">The date and time when the user was last modified.</param>
+/// <param name="ModifiedBy">The username of the user who last modified this user.</param>
+/// <param name="LastLoginAt">The date and time of the user's last login.</param>
+/// <param name="IsDeleted">Whether the user has been soft-deleted.</param>
+/// <param name="DeletedAt">The date and time when the user was soft-deleted.</param>
+/// <param name="DeletedBy">The username of the user who deleted this user.</param>
+public record UserDto(
+	int Id,
+	string Username,
+	string Email,
+	string? FullName,
+	DateTime CreateDate,
+	bool IsActive,
+	bool NeedsPendingEmail,
+	string CreatedBy,
+	DateTime? ModifyDate,
+	string ModifiedBy,
+	DateTime? LastLoginAt,
+	bool IsDeleted,
+	DateTime? DeletedAt,
+	string? DeletedBy);

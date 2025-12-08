@@ -77,6 +77,40 @@ export default [
 		}
 	},
 	{
+		files: ["src/app/features/**/*.ts"],
+		rules: {
+			"no-restricted-imports": [
+				"error",
+				{
+					patterns: [
+						{
+							group: ["../../**/features/**/*"],
+							message:
+								"Features must not import from other features using relative paths. Use @infrastructure/ or @shared/ for cross-feature code (Feature Isolation pattern)."
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		files: ["src/app/infrastructure/**/*.ts"],
+		rules: {
+			"no-restricted-imports": [
+				"error",
+				{
+					patterns: [
+						{
+							group: ["@admin/*", "@game/*", "@features/*", "../features/*", "../../features/*"],
+							message:
+								"Infrastructure must not import from feature modules. Keep infrastructure independent (Dependency Inversion pattern)."
+						}
+					]
+				}
+			]
+		}
+	},
+	{
 		ignores: ["dist/**", "node_modules/**", "coverage/**", "**/*.spec.ts"]
 	}
 ];

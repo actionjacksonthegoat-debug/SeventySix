@@ -25,7 +25,8 @@
 -   **ALWAYS** use collection expressions: `int[] nums = [1, 2, 3];`
 -   **ALWAYS** suffix async methods with `Async` (including tests)
 -   **NEVER** verbose null checks - use `return user?.ToDto();` not `if (user == null) { return null; } return user.ToDto();`
--   **ALWAYS** use records for DTOs: `public record UserDto(int Id, string Name);`
+-   **ALWAYS** use records for DTOs (positional): `public record UserDto(int Id, string Name);`
+-   **ALWAYS** use records for Settings (init props): `public record AuthSettings { public int Timeout { get; init; } = 60; }`
 -   **ALWAYS** use Fluent API for EF Core, not attributes
 -   **ALWAYS** use `AsNoTracking()` for read-only queries
 -   **ALWAYS** suffix FK properties with `Id`: `UserId`, `RoleId`, `ParentId`

@@ -1,0 +1,176 @@
+// <copyright file="UserDtoBuilder.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using SeventySix.Identity;
+using SeventySix.TestUtilities.Constants;
+
+namespace SeventySix.TestUtilities.Builders;
+
+/// <summary>
+/// Builder for creating UserDto instances in tests.
+/// Provides sensible defaults and fluent API for customization.
+/// </summary>
+public class UserDtoBuilder
+{
+	private int Id = 1;
+	private string Username = "testuser";
+	private string Email = "test@example.com";
+	private string? FullName = null;
+	private DateTime CreateDate = DateTime.UtcNow;
+	private bool IsActive = true;
+	private bool NeedsPendingEmail = false;
+	private string CreatedBy = TestAuditConstants.SystemUser;
+	private DateTime? ModifyDate = null;
+	private string ModifiedBy = TestAuditConstants.SystemUser;
+	private DateTime? LastLoginAt = null;
+	private bool IsDeleted = false;
+	private DateTime? DeletedAt = null;
+	private string? DeletedBy = null;
+
+	/// <summary>
+	/// Sets the user ID.
+	/// </summary>
+	public UserDtoBuilder WithId(int value)
+	{
+		Id = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the username.
+	/// </summary>
+	public UserDtoBuilder WithUsername(string value)
+	{
+		Username = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the email.
+	/// </summary>
+	public UserDtoBuilder WithEmail(string value)
+	{
+		Email = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the full name.
+	/// </summary>
+	public UserDtoBuilder WithFullName(string? value)
+	{
+		FullName = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the create date.
+	/// </summary>
+	public UserDtoBuilder WithCreateDate(DateTime value)
+	{
+		CreateDate = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the active status.
+	/// </summary>
+	public UserDtoBuilder WithIsActive(bool value)
+	{
+		IsActive = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets whether user needs pending email.
+	/// </summary>
+	public UserDtoBuilder WithNeedsPendingEmail(bool value)
+	{
+		NeedsPendingEmail = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the created by value.
+	/// </summary>
+	public UserDtoBuilder WithCreatedBy(string value)
+	{
+		CreatedBy = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the modify date.
+	/// </summary>
+	public UserDtoBuilder WithModifyDate(DateTime? value)
+	{
+		ModifyDate = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the modified by value.
+	/// </summary>
+	public UserDtoBuilder WithModifiedBy(string value)
+	{
+		ModifiedBy = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the last login timestamp.
+	/// </summary>
+	public UserDtoBuilder WithLastLoginAt(DateTime? value)
+	{
+		LastLoginAt = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the deleted status.
+	/// </summary>
+	public UserDtoBuilder WithIsDeleted(bool value)
+	{
+		IsDeleted = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the deleted at timestamp.
+	/// </summary>
+	public UserDtoBuilder WithDeletedAt(DateTime? value)
+	{
+		DeletedAt = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the deleted by value.
+	/// </summary>
+	public UserDtoBuilder WithDeletedBy(string? value)
+	{
+		DeletedBy = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Builds the UserDto instance.
+	/// </summary>
+	public UserDto Build() =>
+		new UserDto(
+			Id,
+			Username,
+			Email,
+			FullName,
+			CreateDate,
+			IsActive,
+			NeedsPendingEmail,
+			CreatedBy,
+			ModifyDate,
+			ModifiedBy,
+			LastLoginAt,
+			IsDeleted,
+			DeletedAt,
+			DeletedBy);
+}

@@ -115,7 +115,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogQueryRequest request = new();
+		LogQueryRequest request = new() { SearchTerm = "Test warning message" };
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
@@ -143,7 +143,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogQueryRequest request = new();
+		LogQueryRequest request = new() { SearchTerm = "Test error message" };
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
@@ -169,7 +169,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogQueryRequest request = new();
+		LogQueryRequest request = new() { SearchTerm = "Test info message" };
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Empty(logs); // Information level should not be persisted
 	}
@@ -202,7 +202,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogQueryRequest request = new();
+		LogQueryRequest request = new() { SearchTerm = "Error occurred" };
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();
@@ -246,7 +246,7 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogQueryRequest request = new();
+		LogQueryRequest request = new() { SearchTerm = "Nested error occurred" };
 		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
 		Assert.Single(logs);
 		Log log = logs.First();

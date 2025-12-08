@@ -16,27 +16,25 @@ public static class LogExtensions
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
-		return new LogDto
-		{
-			Id = entity.Id,
-			LogLevel = entity.LogLevel,
-			Message = entity.Message,
-			ExceptionMessage = entity.ExceptionMessage,
-			BaseExceptionMessage = entity.BaseExceptionMessage,
-			StackTrace = entity.StackTrace,
-			SourceContext = entity.SourceContext,
-			RequestMethod = entity.RequestMethod,
-			RequestPath = entity.RequestPath,
-			StatusCode = entity.StatusCode,
-			DurationMs = entity.DurationMs,
-			Properties = entity.Properties,
-			CreateDate = entity.CreateDate,
-			MachineName = entity.MachineName,
-			Environment = entity.Environment,
-			CorrelationId = entity.CorrelationId,
-			SpanId = entity.SpanId,
-			ParentSpanId = entity.ParentSpanId,
-		};
+		return new LogDto(
+			entity.Id,
+			entity.LogLevel,
+			entity.Message,
+			entity.ExceptionMessage,
+			entity.BaseExceptionMessage,
+			entity.StackTrace,
+			entity.SourceContext,
+			entity.RequestMethod,
+			entity.RequestPath,
+			entity.StatusCode,
+			entity.DurationMs,
+			entity.Properties,
+			entity.CreateDate,
+			entity.MachineName,
+			entity.Environment,
+			entity.CorrelationId,
+			entity.SpanId,
+			entity.ParentSpanId);
 	}
 
 	/// <summary>Converts a collection of Log entities to a collection of DTOs.</summary>

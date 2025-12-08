@@ -28,7 +28,7 @@ namespace SeventySix.Api.Configuration;
 /// in development for Prometheus scraping while enforcing HTTPS in production.
 /// </para>
 /// </remarks>
-public class SecuritySettings
+public record SecuritySettings
 {
 	/// <summary>
 	/// Gets or sets a value indicating whether HTTPS redirection is enforced globally.

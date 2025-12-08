@@ -282,17 +282,18 @@ export const ADMIN_ROUTES: Routes = [
 
 ### Critical Rules
 
-| Rule         | ✅ Do                         | ❌ Don't                 |
-| ------------ | ----------------------------- | ------------------------ |
-| Types        | `string x = ""`               | `var x = ""`             |
-| Constructors | Primary: `class Svc(IRepo r)` | Traditional with fields  |
-| Collections  | `[1, 2, 3]`                   | `new List<int>{...}`     |
-| Async        | `GetUserAsync()`              | `GetUser()` for async    |
-| Nulls        | `return x?.ToDto();`          | `if (x == null) {...}`   |
-| DTOs         | `record UserDto(...)`         | class with props         |
-| EF Config    | Fluent API                    | Data annotations         |
-| Queries      | `AsNoTracking()`              | Tracked for reads        |
-| Repository   | Domain-specific               | Generic `IRepository<T>` |
+| Rule         | ✅ Do                          | ❌ Don't                 |
+| ------------ | ------------------------------ | ------------------------ |
+| Types        | `string x = ""`                | `var x = ""`             |
+| Constructors | Primary: `class Svc(IRepo r)`  | Traditional with fields  |
+| Collections  | `[1, 2, 3]`                    | `new List<int>{...}`     |
+| Async        | `GetUserAsync()`               | `GetUser()` for async    |
+| Nulls        | `return x?.ToDto();`           | `if (x == null) {...}`   |
+| DTOs         | `record UserDto(...)`          | `record` with init props |
+| Settings     | `record Settings { ... init }` | Positional parameters    |
+| EF Config    | Fluent API                     | Data annotations         |
+| Queries      | `AsNoTracking()`               | Tracked for reads        |
+| Repository   | Domain-specific                | Generic `IRepository<T>` |
 
 ### Service Pattern
 
@@ -408,7 +409,10 @@ builder
 
 ### Records for DTOs
 
+**DTOs use positional parameters** (immutable API contracts):
+
 ```csharp
+// ✅ CORRECT - Positional parameters
 public record UserDto(
 	int Id,
 	string Username,
@@ -432,6 +436,42 @@ public record PagedResult<T>(
 	int Page,
 	int PageSize);
 ```
+
+### Records for Settings
+
+**Settings use init properties with defaults** (Options pattern compatibility):
+
+```csharp
+// ✅ CORRECT - Init properties with defaults
+public record AuthSettings
+{
+	public const string SectionName = "Auth";
+
+	public int AccessTokenExpirationMinutes { get; init; } = 60;
+	public int RefreshTokenExpirationDays { get; init; } = 7;
+	public int MaxLoginAttempts { get; init; } = 5;
+}
+
+public record SecuritySettings
+{
+	public bool EnforceHttps { get; init; } = true;
+	public int HttpsPort { get; init; } = 7074;
+	public int HstsMaxAgeSeconds { get; init; } = 31536000;
+}
+
+// ❌ WRONG - Settings should NOT use positional parameters
+// (breaks Options pattern and default value support)
+public record AuthSettings(
+	int AccessTokenExpirationMinutes,
+	int RefreshTokenExpirationDays);
+```
+
+**Why Settings Need Init Properties**:
+
+-   Microsoft's `IOptions<T>` requires property setters for binding
+-   Default values provide fallback when config is missing
+-   Allows partial configuration in `appsettings.json`
+-   Supports environment-specific overrides
 
 ### API Controllers
 
@@ -851,23 +891,37 @@ ElectronicNotifications/
 
 ### DTO vs Entity vs Model vs Settings
 
-| Category     | Purpose                        | Persisted? | API? | Examples                                       |
-| ------------ | ------------------------------ | ---------- | ---- | ---------------------------------------------- |
-| **DTOs**     | API request/response contracts | No         | Yes  | `UserDto`, `LoginRequest`, `PagedResult<T>`    |
-| **Entities** | Database-persisted models      | Yes        | No   | `User`, `RefreshToken`, `Log`                  |
-| **Models**   | Internal non-persisted types   | No         | No   | `AuthResult`, `TokenPair`, `ValidationContext` |
-| **Settings** | Configuration binding          | No         | No   | `JwtSettings`, `AuthSettings`                  |
+| Category     | Purpose                        | Persisted? | API? | Record Pattern        | Examples                                       |
+| ------------ | ------------------------------ | ---------- | ---- | --------------------- | ---------------------------------------------- |
+| **DTOs**     | API request/response contracts | No         | Yes  | Positional parameters | `UserDto`, `LoginRequest`, `PagedResult<T>`    |
+| **Entities** | Database-persisted models      | Yes        | No   | Class (not record)    | `User`, `RefreshToken`, `Log`                  |
+| **Models**   | Internal non-persisted types   | No         | No   | Varies by use case    | `AuthResult`, `TokenPair`, `ValidationContext` |
+| **Settings** | Configuration binding          | No         | No   | Init properties       | `JwtSettings`, `AuthSettings`                  |
 
 **Key Rules**:
 
-1. DTOs are **records** - immutable API contracts
-2. Entities are **classes** - EF-tracked, persisted to database
-3. Models are **records/classes** - internal business logic, not persisted
-4. Settings are **records** - bound from `appsettings.json`
+1. **DTOs** are **records with positional parameters** - immutable API contracts
+2. **Settings** are **records with init properties** - Options pattern compatibility
+3. Entities are **classes** - EF-tracked, persisted to database
+4. Models are **records/classes** - internal business logic, not persisted
 5. Controllers return DTOs, never Entities or Models
 6. Repositories work with Entities internally
 7. Services may use Models for internal operations
 8. Context-specific settings live in their bounded context (e.g., `Identity/Settings/`)
+
+**Settings vs DTOs - Critical Distinction**:
+
+```csharp
+// DTOs: Positional parameters (API contracts)
+public record UserDto(int Id, string Name, string Email);
+
+// Settings: Init properties with defaults (Options pattern)
+public record AuthSettings
+{
+	public int TokenExpiration { get; init; } = 60;
+	public int MaxAttempts { get; init; } = 5;
+}
+```
 
 ### Feature Structure (Client)
 

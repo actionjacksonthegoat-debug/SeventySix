@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Identity.Constants;
+using SeventySix.Identity.Extensions;
 using SeventySix.Shared;
 
 namespace SeventySix.Identity;
@@ -177,7 +179,7 @@ public class AuthService(
 		// Get role ID before creating entities (read-only query)
 		int userRoleId =
 			await GetRoleIdByNameAsync(
-				"User",
+				RoleConstants.User,
 				cancellationToken);
 
 		// Create user with credential and role atomically
@@ -439,11 +441,8 @@ public class AuthService(
 
 		if (!validationResult.IsValid)
 		{
-			string errorMessage =
-				string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage));
-
 			return AuthResult.Failed(
-				errorMessage,
+				validationResult.ToErrorMessage(),
 				"VALIDATION_ERROR");
 		}
 
@@ -999,7 +998,7 @@ public class AuthService(
 		// Get role ID before creating entities (read-only query)
 		int userRoleId =
 			await GetRoleIdByNameAsync(
-				"User",
+				RoleConstants.User,
 				cancellationToken);
 
 		// Create user with external login and role atomically
@@ -1280,7 +1279,7 @@ public class AuthService(
 
 		// Generate tokens for immediate login
 		List<string> roles =
-			["User"];
+			[RoleConstants.User];
 
 		string accessToken =
 			tokenService.GenerateAccessToken(
