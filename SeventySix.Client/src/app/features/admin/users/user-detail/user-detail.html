@@ -7,9 +7,10 @@
 				mat-stroked-button
 				type="button"
 				(click)="onCancel()"
-				[disabled]="isSaving()"
-			>
-				<mat-icon aria-hidden="true">arrow_back</mat-icon>
+				[disabled]="isSaving()">
+				<mat-icon aria-hidden="true">
+					arrow_back
+				</mat-icon>
 				Cancel
 			</button>
 			<button
@@ -19,8 +20,7 @@
 				(click)="onSubmit()"
 				[disabled]="
 					isSaving() || userForm.invalid || !hasUnsavedChanges()
-				"
-			>
+				">
 				@if (isSaving())
 				{
 					<mat-spinner diameter="20"></mat-spinner>
@@ -28,7 +28,9 @@
 				@else
 				{
 					<ng-container>
-						<mat-icon aria-hidden="true">save</mat-icon>
+						<mat-icon aria-hidden="true">
+							save
+						</mat-icon>
 						Save Changes
 					</ng-container>
 				}
@@ -55,16 +57,17 @@
 						<mat-icon
 							color="warn"
 							class="error-icon"
-							aria-hidden="true"
-							>error</mat-icon
-						>
+							aria-hidden="true">
+							error
+						</mat-icon>
 						<p class="mat-body-1">{{ error() }}</p>
 						<button
 							mat-raised-button
 							type="button"
-							(click)="onCancel()"
-						>
-							<mat-icon aria-hidden="true">arrow_back</mat-icon>
+							(click)="onCancel()">
+							<mat-icon aria-hidden="true">
+								arrow_back
+							</mat-icon>
 							Back to Users
 						</button>
 					</div>
@@ -83,9 +86,9 @@
 				<mat-card appearance="outlined" class="alert-card error">
 					<mat-card-content>
 						<div class="alert-content">
-							<mat-icon color="warn" aria-hidden="true"
-								>warning</mat-icon
-							>
+							<mat-icon color="warn" aria-hidden="true">
+								warning
+							</mat-icon>
 							<span class="mat-body-1">{{ saveError() }}</span>
 						</div>
 					</mat-card-content>
@@ -110,13 +113,12 @@
 								formControlName="username"
 								placeholder="Enter username"
 								autocomplete="username"
-								required
-							/>
-							<mat-icon matIconPrefix aria-hidden="true"
-								>person</mat-icon
-							>
+								required/>
+							<mat-icon matIconPrefix aria-hidden="true">
+								person
+							</mat-icon>
 							<mat-error>
-								{{ getFieldError("username", "Username") }}
+								{{ usernameError() }}
 							</mat-error>
 						</mat-form-field>
 						<!-- Email Field -->
@@ -128,13 +130,12 @@
 								formControlName="email"
 								placeholder="Enter email address"
 								autocomplete="email"
-								required
-							/>
-							<mat-icon matIconPrefix aria-hidden="true"
-								>email</mat-icon
-							>
+								required/>
+							<mat-icon matIconPrefix aria-hidden="true">
+								email
+							</mat-icon>
 							<mat-error>
-								{{ getFieldError("email", "Email") }}
+								{{ emailError() }}
 							</mat-error>
 						</mat-form-field>
 						<!-- Full Name Field -->
@@ -144,13 +145,12 @@
 								matInput
 								formControlName="fullName"
 								placeholder="Enter full name"
-								autocomplete="name"
-							/>
-							<mat-icon matIconPrefix aria-hidden="true"
-								>badge</mat-icon
-							>
+								autocomplete="name"/>
+							<mat-icon matIconPrefix aria-hidden="true">
+								badge
+							</mat-icon>
 							<mat-error>
-								{{ getFieldError("fullName", "Full name") }}
+								{{ fullNameError() }}
 							</mat-error>
 							<mat-hint>Optional</mat-hint>
 						</mat-form-field>
@@ -158,8 +158,7 @@
 						<div class="checkbox-field">
 							<mat-checkbox
 								formControlName="isActive"
-								color="primary"
-							>
+								color="primary">
 								Active User
 							</mat-checkbox>
 							<p class="mat-body-2 field-hint">
@@ -229,9 +228,9 @@
 					<mat-card appearance="outlined" class="roles-card">
 						<mat-card-header>
 							<mat-card-title>
-								<mat-icon aria-hidden="true"
-									>admin_panel_settings</mat-icon
-								>
+								<mat-icon aria-hidden="true">
+									admin_panel_settings
+								</mat-icon>
 								User Roles
 							</mat-card-title>
 						</mat-card-header>
@@ -239,14 +238,14 @@
 							<div class="roles-section">
 								<!-- Current Roles -->
 								<div class="current-roles">
-									<span class="section-label"
-										>Current Roles:</span
-									>
+									<span class="section-label">
+										Current Roles:
+									</span>
 									@if (userRoles().length === 0)
 									{
-										<span class="no-roles"
-											>No roles assigned</span
-										>
+										<span class="no-roles">
+											No roles assigned
+										</span>
 									}
 									@else
 									{
@@ -263,14 +262,13 @@
 													"
 													[disabled]="
 														isRoleMutating()
-													"
-												>
+													">
 													{{ role }}
 													<button matChipRemove>
 														<mat-icon
-															aria-hidden="true"
-															>cancel</mat-icon
-														>
+															aria-hidden="true">
+															cancel
+														</mat-icon>
 													</button>
 												</mat-chip>
 											}
@@ -282,9 +280,9 @@
 								@if (availableRolesToAdd().length > 0)
 								{
 									<div class="add-role">
-										<span class="section-label"
-											>Add Role:</span
-										>
+										<span class="section-label">
+											Add Role:
+										</span>
 										@for (
 											role of availableRolesToAdd();
 											track role
@@ -294,11 +292,10 @@
 												mat-stroked-button
 												color="primary"
 												(click)="onAddRole(role)"
-												[disabled]="isRoleMutating()"
-											>
-												<mat-icon aria-hidden="true"
-													>add</mat-icon
-												>
+												[disabled]="isRoleMutating()">
+												<mat-icon aria-hidden="true">
+													add
+												</mat-icon>
 												{{ role }}
 											</button>
 										}
@@ -321,13 +318,13 @@
 								<div class="info-item">
 									<mat-icon
 										class="info-icon"
-										aria-hidden="true"
-										>schedule</mat-icon
-									>
+										aria-hidden="true">
+										schedule
+									</mat-icon>
 									<div class="info-details">
-										<span class="mat-body-2 info-label"
-											>Created</span
-										>
+										<span class="mat-body-2 info-label">
+											Created
+										</span>
 										<span class="mat-body-1">
 											{{
 												user()!.createDate
@@ -339,16 +336,18 @@
 								<div class="info-item">
 									<mat-icon
 										class="info-icon"
-										aria-hidden="true"
-										>fingerprint</mat-icon
-									>
+										aria-hidden="true">
+										fingerprint
+									</mat-icon>
 									<div class="info-details">
-										<span class="mat-body-2 info-label"
-											>User ID</span
-										>
-										<span class="mat-body-1">{{
-											user()!.id
-										}}</span>
+										<span class="mat-body-2 info-label">
+											User ID
+										</span>
+										<span class="mat-body-1">
+											{{
+												user()!.id
+											}}
+										</span>
 									</div>
 								</div>
 							</div>

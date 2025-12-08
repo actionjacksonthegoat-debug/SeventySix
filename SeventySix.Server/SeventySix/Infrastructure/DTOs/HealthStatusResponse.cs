@@ -93,6 +93,16 @@ public class DatabaseHealthResponse
 	/// Status: "Healthy", "Degraded", or "Unhealthy".
 	/// </value>
 	public string Status { get; set; } = HealthStatusConstants.Healthy;
+
+	/// <summary>
+	/// Gets or sets the health status per bounded context.
+	/// </summary>
+	/// <remarks>
+	/// Dictionary mapping context names (Identity, Logging, ApiTracking)
+	/// to their health check results (true = healthy, false = unhealthy).
+	/// Allows granular diagnosis of which database has issues.
+	/// </remarks>
+	public Dictionary<string, bool> ContextResults { get; set; } = [];
 }
 
 /// <summary>

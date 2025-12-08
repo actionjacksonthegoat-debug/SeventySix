@@ -19,6 +19,23 @@ namespace SeventySix.ApiTracking;
 public class ThirdPartyApiRequestService(IThirdPartyApiRequestRepository repository) : IThirdPartyApiRequestService
 {
 	/// <inheritdoc/>
+	public string ContextName => "ApiTracking";
+
+	/// <inheritdoc/>
+	public async Task<bool> CheckHealthAsync(CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			_ = await repository.GetAllAsync(cancellationToken);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	/// <inheritdoc/>
 	public async Task<IEnumerable<ThirdPartyApiRequestResponse>> GetAllAsync(CancellationToken cancellationToken)
 	{
 		IEnumerable<ThirdPartyApiRequest> requests = await repository.GetAllAsync(cancellationToken);

@@ -4,7 +4,7 @@
 
 using NSubstitute;
 using SeventySix.Infrastructure;
-using SeventySix.Logging;
+using SeventySix.Shared;
 using SeventySix.Shared.Constants;
 
 namespace SeventySix.Tests.Infrastructure;
@@ -15,19 +15,41 @@ namespace SeventySix.Tests.Infrastructure;
 public class HealthCheckServiceTests
 {
 	private readonly IMetricsService MetricsService;
-	private readonly ILogService LogService;
-	private readonly IHealthCheckService Service;
+	private readonly IDatabaseHealthCheck IdentityHealthCheck;
+	private readonly IDatabaseHealthCheck LoggingHealthCheck;
+	private readonly IDatabaseHealthCheck ApiTrackingHealthCheck;
+	private readonly HealthCheckService Service;
 
 	public HealthCheckServiceTests()
 	{
 		MetricsService = Substitute.For<IMetricsService>();
-		LogService = Substitute.For<ILogService>();
+		IdentityHealthCheck = Substitute.For<IDatabaseHealthCheck>();
+		LoggingHealthCheck = Substitute.For<IDatabaseHealthCheck>();
+		ApiTrackingHealthCheck = Substitute.For<IDatabaseHealthCheck>();
 
 		// Setup default mock behaviors
-		LogService.CheckDatabaseHealthAsync()
+		IdentityHealthCheck.ContextName.Returns("Identity");
+		IdentityHealthCheck.CheckHealthAsync(Arg.Any<CancellationToken>())
 			.Returns(true);
 
-		Service = new HealthCheckService(MetricsService, LogService);
+		LoggingHealthCheck.ContextName.Returns("Logging");
+		LoggingHealthCheck.CheckHealthAsync(Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		ApiTrackingHealthCheck.ContextName.Returns("ApiTracking");
+		ApiTrackingHealthCheck.CheckHealthAsync(Arg.Any<CancellationToken>())
+			.Returns(true);
+
+		IEnumerable<IDatabaseHealthCheck> databaseHealthChecks =
+		[
+			IdentityHealthCheck,
+			LoggingHealthCheck,
+			ApiTrackingHealthCheck
+		];
+
+		Service = new HealthCheckService(
+			MetricsService,
+			databaseHealthChecks);
 	}
 
 	[Fact]
@@ -51,13 +73,24 @@ public class HealthCheckServiceTests
 	public async Task GetHealthStatusAsync_DatabaseIsConnectedAsync()
 	{
 		// Act
-		HealthStatusResponse result = await Service.GetHealthStatusAsync(CancellationToken.None);
+		HealthStatusResponse result =
+			await Service.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
 		Assert.True(result.Database.IsConnected);
 		Assert.Equal(HealthStatusConstants.Healthy, result.Database.Status);
 		Assert.True(result.Database.ResponseTimeMs >= 0);
 		Assert.True(result.Database.ActiveConnections >= 0);
+
+		// Verify all bounded contexts are checked
+		Assert.NotNull(result.Database.ContextResults);
+		Assert.Equal(3, result.Database.ContextResults.Count);
+		Assert.True(result.Database.ContextResults.ContainsKey("Identity"));
+		Assert.True(result.Database.ContextResults.ContainsKey("Logging"));
+		Assert.True(result.Database.ContextResults.ContainsKey("ApiTracking"));
+		Assert.True(result.Database.ContextResults["Identity"]);
+		Assert.True(result.Database.ContextResults["Logging"]);
+		Assert.True(result.Database.ContextResults["ApiTracking"]);
 	}
 
 	[Fact]

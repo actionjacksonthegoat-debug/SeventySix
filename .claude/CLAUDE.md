@@ -584,12 +584,31 @@ string GetUserCategory(User user) =>
 
 ### Core Principles
 
-| Principle | Application                                                |
-| --------- | ---------------------------------------------------------- |
-| **TDD**   | Write failing test first, then implement fix               |
-| **80/20** | Test critical paths only - no exhaustive edge case testing |
-| **Fix**   | Never skip failing tests - fix immediately                 |
-| **Async** | Always suffix async test methods with `Async`              |
+| Principle       | Application                                                     |
+| --------------- | --------------------------------------------------------------- |
+| **TDD**         | Write failing test first, then implement fix                    |
+| **80/20**       | Test critical paths only - no exhaustive edge case testing      |
+| **Fix**         | Never skip failing tests - fix immediately                      |
+| **Async**       | Always suffix async test methods with `Async`                   |
+| **12+ Methods** | Split services/interfaces at 12+ methods (prevents god objects) |
+
+### Service Size Rule (TDD Enforcement)
+
+> **CRITICAL**: Services/interfaces with **12+ methods** MUST be split.
+
+| Threshold    | Action Required             |
+| ------------ | --------------------------- |
+| 1-11 methods | OK - single focused service |
+| 12+ methods  | SPLIT - violates SRP        |
+| 300+ lines   | REVIEW - likely needs split |
+
+**TDD Step for Service Creation:**
+
+1. Write interface with methods needed
+2. If interface has 12+ methods → STOP and split first
+3. Write failing test for critical path
+4. Implement service
+5. Verify < 300 lines, < 12 methods
 
 ### Commands
 

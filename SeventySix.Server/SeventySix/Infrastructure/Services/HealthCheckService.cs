@@ -3,7 +3,7 @@
 // </copyright>
 
 using System.Diagnostics;
-using SeventySix.Logging;
+using SeventySix.Shared;
 
 namespace SeventySix.Infrastructure;
 
@@ -15,7 +15,9 @@ namespace SeventySix.Infrastructure;
 /// external API availability, error queue status, and system resources.
 /// Used by the /health endpoint for monitoring and load balancer checks.
 /// </remarks>
-public class HealthCheckService(IMetricsService metricsService, ILogService logService) : IHealthCheckService
+public class HealthCheckService(
+	IMetricsService metricsService,
+	IEnumerable<IDatabaseHealthCheck> databaseHealthChecks) : IHealthCheckService
 {
 	/// <summary>
 	/// Retrieves comprehensive system health status.
@@ -68,26 +70,40 @@ public class HealthCheckService(IMetricsService metricsService, ILogService logS
 	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
 	/// <returns>Database health status with connection details.</returns>
 	/// <remarks>
-	/// Delegates to Logging bounded context service for database connectivity check.
-	/// Measures response time and active connection count.
+	/// Checks ALL bounded context databases (Identity, Logging, ApiTracking) in parallel.
+	/// Measures aggregate response time and active connection count.
+	/// Returns per-context health results for granular diagnosis.
 	/// </remarks>
 	private async Task<DatabaseHealthResponse> CheckDatabaseHealthAsync(CancellationToken cancellationToken)
 	{
 		Stopwatch stopwatch = Stopwatch.StartNew();
 
-		// Call Logging bounded context service for database health check
-		bool isHealthy = await logService.CheckDatabaseHealthAsync(cancellationToken);
+		// Check ALL bounded context databases in parallel
+		Dictionary<string, Task<bool>> healthCheckTasks =
+			databaseHealthChecks.ToDictionary(
+				check => check.ContextName,
+				check => check.CheckHealthAsync(cancellationToken));
+
+		await Task.WhenAll(healthCheckTasks.Values);
 
 		stopwatch.Stop();
 
+		// Collect results
+		Dictionary<string, bool> results =
+			healthCheckTasks.ToDictionary(
+				kvp => kvp.Key,
+				kvp => kvp.Value.Result);
+
+		bool allHealthy = results.Values.All(healthy => healthy);
 		int activeConnections = metricsService.GetActiveDbConnections();
 
 		return new DatabaseHealthResponse
 		{
-			IsConnected = isHealthy,
+			IsConnected = allHealthy,
 			ResponseTimeMs = stopwatch.Elapsed.TotalMilliseconds,
 			ActiveConnections = activeConnections,
-			Status = isHealthy ? "Healthy" : "Unhealthy",
+			Status = allHealthy ? "Healthy" : "Unhealthy",
+			ContextResults = results,
 		};
 	}
 

@@ -79,13 +79,13 @@ public class PendingEmailBackgroundService(
 		await using AsyncServiceScope scope =
 			scopeFactory.CreateAsyncScope();
 
-		IUserService userService =
-			scope.ServiceProvider.GetRequiredService<IUserService>();
-		IAuthService authService =
-			scope.ServiceProvider.GetRequiredService<IAuthService>();
+		IUserProfileService userProfileService =
+			scope.ServiceProvider.GetRequiredService<IUserProfileService>();
+		IPasswordService passwordService =
+			scope.ServiceProvider.GetRequiredService<IPasswordService>();
 
 		IEnumerable<UserDto> pendingUsers =
-			await userService.GetUsersNeedingEmailAsync(cancellationToken);
+			await userProfileService.GetUsersNeedingEmailAsync(cancellationToken);
 
 		int successCount = 0;
 		int failCount = 0;
@@ -94,12 +94,12 @@ public class PendingEmailBackgroundService(
 		{
 			try
 			{
-				await authService.InitiatePasswordResetAsync(
+				await passwordService.InitiatePasswordResetAsync(
 					user.Id,
 					isNewUser: true,
 					cancellationToken);
 
-				await userService.ClearPendingEmailFlagAsync(
+				await userProfileService.ClearPendingEmailFlagAsync(
 					user.Id,
 					cancellationToken);
 

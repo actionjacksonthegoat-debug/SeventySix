@@ -5,7 +5,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -24,7 +23,7 @@ namespace SeventySix.Identity;
 /// - Session limits: oldest token revoked when max sessions exceeded
 /// </remarks>
 public class TokenService(
-	IdentityDbContext context,
+	ITokenRepository tokenRepository,
 	IOptions<JwtSettings> jwtSettings,
 	IOptions<AuthSettings> authSettings,
 	ILogger<TokenService> logger,
@@ -120,9 +119,9 @@ public class TokenService(
 
 		// Find the token (including revoked ones for reuse detection)
 		RefreshToken? existingToken =
-			await context.RefreshTokens
-				.Where(t => t.TokenHash == tokenHash)
-				.FirstOrDefaultAsync(cancellationToken);
+			await tokenRepository.GetByTokenHashAsync(
+				tokenHash,
+				cancellationToken);
 
 		// Token not found
 		if (existingToken == null)
@@ -149,9 +148,10 @@ public class TokenService(
 				existingToken.SessionStartedAt);
 
 			// Revoke this token
-			existingToken.IsRevoked = true;
-			existingToken.RevokedAt = now;
-			await context.SaveChangesAsync(cancellationToken);
+			await tokenRepository.RevokeAsync(
+				existingToken,
+				now,
+				cancellationToken);
 
 			return null;
 		}
@@ -165,7 +165,7 @@ public class TokenService(
 				existingToken.FamilyId);
 
 			// Revoke entire token family - this invalidates the legitimate user's token too
-			await RevokeFamilyAsync(
+			await tokenRepository.RevokeFamilyAsync(
 				existingToken.FamilyId,
 				now,
 				cancellationToken);
@@ -181,9 +181,10 @@ public class TokenService(
 			tokenLifetimeDays > jwtSettings.Value.RefreshTokenExpirationDays;
 
 		// Valid rotation - revoke current token
-		existingToken.IsRevoked = true;
-		existingToken.RevokedAt = now;
-		await context.SaveChangesAsync(cancellationToken);
+		await tokenRepository.RevokeAsync(
+			existingToken,
+			now,
+			cancellationToken);
 
 		// Generate new token inheriting the family and session start
 		return await GenerateRefreshTokenInternalAsync(
@@ -240,28 +241,11 @@ public class TokenService(
 				CreatedByIp = clientIp
 			};
 
-		context.RefreshTokens.Add(refreshToken);
-		await context.SaveChangesAsync(cancellationToken);
+		await tokenRepository.CreateAsync(
+			refreshToken,
+			cancellationToken);
 
 		return plainTextToken;
-	}
-
-	/// <summary>
-	/// Revokes all tokens in a family (for reuse attack response).
-	/// </summary>
-	private async Task RevokeFamilyAsync(
-		Guid familyId,
-		DateTime now,
-		CancellationToken cancellationToken)
-	{
-		await context.RefreshTokens
-			.Where(t => t.FamilyId == familyId)
-			.Where(t => !t.IsRevoked)
-			.ExecuteUpdateAsync(
-				setters => setters
-					.SetProperty(t => t.IsRevoked, true)
-					.SetProperty(t => t.RevokedAt, now),
-				cancellationToken);
 	}
 
 	/// <summary>
@@ -276,11 +260,10 @@ public class TokenService(
 			authSettings.Value.Token.MaxActiveSessionsPerUser;
 
 		int activeTokenCount =
-			await context.RefreshTokens
-				.Where(token => token.UserId == userId)
-				.Where(token => !token.IsRevoked)
-				.Where(token => token.ExpiresAt > now)
-				.CountAsync(cancellationToken);
+			await tokenRepository.GetActiveSessionCountAsync(
+				userId,
+				now,
+				cancellationToken);
 
 		if (activeTokenCount < maxSessions)
 		{
@@ -288,17 +271,11 @@ public class TokenService(
 		}
 
 		// Revoke oldest active token to make room for new one
-		await context.RefreshTokens
-			.Where(token => token.UserId == userId)
-			.Where(token => !token.IsRevoked)
-			.Where(token => token.ExpiresAt > now)
-			.OrderBy(token => token.CreateDate)
-			.Take(1)
-			.ExecuteUpdateAsync(
-				setters => setters
-					.SetProperty(token => token.IsRevoked, true)
-					.SetProperty(token => token.RevokedAt, now),
-				cancellationToken);
+		await tokenRepository.RevokeOldestActiveTokenAsync(
+			userId,
+			now,
+			now,
+			cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -312,15 +289,10 @@ public class TokenService(
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		RefreshToken? token =
-			await context.RefreshTokens
-				.AsNoTracking()
-				.Where(t => t.TokenHash == tokenHash)
-				.Where(t => !t.IsRevoked)
-				.Where(t => t.ExpiresAt > now)
-				.FirstOrDefaultAsync(cancellationToken);
-
-		return token?.UserId;
+		return await tokenRepository.ValidateTokenAsync(
+			tokenHash,
+			now,
+			cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -334,17 +306,10 @@ public class TokenService(
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		int rowsAffected =
-			await context.RefreshTokens
-				.Where(t => t.TokenHash == tokenHash)
-				.Where(t => !t.IsRevoked)
-				.ExecuteUpdateAsync(
-					setters => setters
-						.SetProperty(t => t.IsRevoked, true)
-						.SetProperty(t => t.RevokedAt, now),
-					cancellationToken);
-
-		return rowsAffected > 0;
+		return await tokenRepository.RevokeByHashAsync(
+			tokenHash,
+			now,
+			cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -355,13 +320,9 @@ public class TokenService(
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		return await context.RefreshTokens
-			.Where(t => t.UserId == userId)
-			.Where(t => !t.IsRevoked)
-			.ExecuteUpdateAsync(
-				setters => setters
-					.SetProperty(t => t.IsRevoked, true)
-					.SetProperty(t => t.RevokedAt, now),
-				cancellationToken);
+		return await tokenRepository.RevokeAllUserTokensAsync(
+			userId,
+			now,
+			cancellationToken);
 	}
 }

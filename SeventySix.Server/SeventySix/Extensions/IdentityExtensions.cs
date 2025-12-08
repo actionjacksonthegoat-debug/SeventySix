@@ -29,7 +29,7 @@ namespace SeventySix.Extensions;
 /// Registered Components:
 /// - IdentityDbContext: Entity Framework Core DbContext
 /// - IUserRepository → UserRepository: Data access layer
-/// - IUserService → UserService: Business logic layer
+/// - Focused service interfaces: IUserQueryService, IUserAdminService, IPasswordService, etc.
 /// - Validators: CreateUserValidator, UpdateUserValidator, UserQueryValidator
 /// </remarks>
 public static class IdentityExtensions
@@ -69,13 +69,36 @@ public static class IdentityExtensions
 		// Register repositories
 		services.AddScoped<IUserRepository, UserRepository>();
 		services.AddScoped<IPermissionRequestRepository, PermissionRequestRepository>();
+		services.AddScoped<ITokenRepository, TokenRepository>();
+		services.AddScoped<ICredentialRepository, CredentialRepository>();
+		services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
-		// Register services
-		services.AddScoped<IUserService, UserService>();
+		// Register services - focused interfaces only (no composite IUserService/IAuthService)
+		services.AddScoped<UserService>();
+		services.AddScoped<IUserQueryService>(serviceProvider =>
+			serviceProvider.GetRequiredService<UserService>());
+		services.AddScoped<IUserValidationService>(serviceProvider =>
+			serviceProvider.GetRequiredService<UserService>());
+		services.AddScoped<IUserAdminService>(serviceProvider =>
+			serviceProvider.GetRequiredService<UserService>());
+		services.AddScoped<IUserRoleService>(serviceProvider =>
+			serviceProvider.GetRequiredService<UserService>());
+		services.AddScoped<IUserProfileService>(serviceProvider =>
+			serviceProvider.GetRequiredService<UserService>());
 		services.AddScoped<ITokenService, TokenService>();
-		services.AddScoped<IAuthService, AuthService>();
+		services.AddScoped<AuthService>();
+		services.AddScoped<IAuthenticationService>(serviceProvider =>
+			serviceProvider.GetRequiredService<AuthService>());
+		services.AddScoped<IRegistrationService, RegistrationService>();
+		services.AddScoped<IPasswordService, PasswordService>();
+		services.AddScoped<IOAuthService>(serviceProvider =>
+			serviceProvider.GetRequiredService<AuthService>());
 		services.AddScoped<IPermissionRequestService, PermissionRequestService>();
 		services.AddSingleton<IOAuthCodeExchangeService, OAuthCodeExchangeService>();
+
+		// Register UserService as IDatabaseHealthCheck for multi-db health checks
+		services.AddScoped<IDatabaseHealthCheck>(serviceProvider =>
+			serviceProvider.GetRequiredService<UserService>());
 
 		// Register validators
 		services.AddSingleton<IValidator<CreateUserRequest>, CreateUserValidator>();

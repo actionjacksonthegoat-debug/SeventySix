@@ -5,6 +5,7 @@
 ### Core Principles (SOLID, KISS, DRY, YAGNI)
 
 -   **SRP**: Each class/component has one reason to change
+-   **SRP Threshold**: Split services/interfaces at **12+ methods** (prevents god objects)
 -   **KISS**: Simple solutions over complex ones
 -   **DRY**: No code duplication (Rule of Three)
 -   **YAGNI**: Don't build what you don't need yet

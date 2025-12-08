@@ -7,7 +7,7 @@ using SeventySix.Shared;
 namespace SeventySix.Logging;
 
 /// <summary>Log business logic operations.</summary>
-public interface ILogService
+public interface ILogService : IDatabaseHealthCheck
 {
 	public Task<PagedResult<LogDto>> GetPagedLogsAsync(LogQueryRequest request, CancellationToken cancellationToken = default);
 
@@ -16,8 +16,6 @@ public interface ILogService
 	public Task<int> DeleteLogsBatchAsync(int[] ids, CancellationToken cancellationToken = default);
 
 	public Task<int> DeleteLogsOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default);
-
-	public Task<bool> CheckDatabaseHealthAsync(CancellationToken cancellationToken = default);
 
 	public Task CreateClientLogAsync(CreateLogRequest request, CancellationToken cancellationToken = default);
 

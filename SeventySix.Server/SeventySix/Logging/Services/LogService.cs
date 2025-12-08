@@ -15,6 +15,8 @@ public class LogService(
 	IValidator<LogQueryRequest> queryValidator) : ILogService
 {
 	/// <inheritdoc/>
+	public string ContextName => "Logging";
+	/// <inheritdoc/>
 	public async Task<PagedResult<LogDto>> GetPagedLogsAsync(
 		LogQueryRequest request,
 		CancellationToken cancellationToken = default)
@@ -53,12 +55,19 @@ public class LogService(
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> CheckDatabaseHealthAsync(CancellationToken cancellationToken = default)
+	public async Task<bool> CheckHealthAsync(CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			LogQueryRequest healthCheckRequest = new() { Page = 1, PageSize = 1 };
-			_ = await repository.GetPagedAsync(healthCheckRequest, cancellationToken);
+			LogQueryRequest healthCheckRequest =
+				new()
+				{
+					Page = 1,
+					PageSize = 1
+				};
+			_ = await repository.GetPagedAsync(
+				healthCheckRequest,
+				cancellationToken);
 			return true;
 		}
 		catch

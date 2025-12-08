@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ApiTracking;
+using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Extensions;
@@ -68,6 +69,10 @@ public static class ApiTrackingExtensions
 
 		// Register services
 		services.AddScoped<IThirdPartyApiRequestService, ThirdPartyApiRequestService>();
+
+		// Register ThirdPartyApiRequestService as IDatabaseHealthCheck for multi-db health checks
+		services.AddScoped<IDatabaseHealthCheck>(serviceProvider =>
+			serviceProvider.GetRequiredService<IThirdPartyApiRequestService>());
 
 		return services;
 	}

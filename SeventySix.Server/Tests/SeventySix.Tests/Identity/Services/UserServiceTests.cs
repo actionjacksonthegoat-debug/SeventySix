@@ -46,7 +46,7 @@ public class UserServiceTests
 	private readonly IValidator<UpdateProfileRequest> UpdateProfileValidator;
 	private readonly IValidator<UserQueryRequest> QueryValidator;
 	private readonly ITransactionManager TransactionManager;
-	private readonly IAuthService AuthService;
+	private readonly IPasswordService PasswordService;
 	private readonly ILogger<UserService> Logger;
 	private readonly UserService Service;
 
@@ -59,7 +59,7 @@ public class UserServiceTests
 		UpdateProfileValidator = Substitute.For<IValidator<UpdateProfileRequest>>();
 		QueryValidator = Substitute.For<IValidator<UserQueryRequest>>();
 		TransactionManager = Substitute.For<ITransactionManager>();
-		AuthService = Substitute.For<IAuthService>();
+		PasswordService = Substitute.For<IPasswordService>();
 		Logger = Substitute.For<ILogger<UserService>>();
 
 		// Setup transaction manager to execute the delegate immediately
@@ -95,7 +95,7 @@ public class UserServiceTests
 			UpdateProfileValidator,
 			QueryValidator,
 			TransactionManager,
-			AuthService,
+			PasswordService,
 			Logger);
 	}
 
@@ -499,8 +499,8 @@ public class UserServiceTests
 	public async Task CreateUserAsync_CallsInitiatePasswordReset_WithIsNewUserTrueAsync()
 	{
 		// Arrange
-		IAuthService mockAuthService =
-			Substitute.For<IAuthService>();
+		IPasswordService mockPasswordService =
+			Substitute.For<IPasswordService>();
 
 		UserService service =
 			new(
@@ -511,7 +511,7 @@ public class UserServiceTests
 				UpdateProfileValidator,
 				QueryValidator,
 				TransactionManager,
-				mockAuthService,
+				mockPasswordService,
 				Logger);
 
 		CreateUserRequest request =
@@ -562,7 +562,7 @@ public class UserServiceTests
 		Assert.NotNull(result);
 		Assert.Equal("testuser", result.Username);
 
-		await mockAuthService.Received(1)
+		await mockPasswordService.Received(1)
 			.InitiatePasswordResetAsync(
 				Arg.Is<int>(id => id == 123),
 				isNewUser: true,
@@ -573,10 +573,10 @@ public class UserServiceTests
 	public async Task CreateUserAsync_SucceedsWhenEmailFails_LogsWarningAsync()
 	{
 		// Arrange
-		IAuthService mockAuthService =
-			Substitute.For<IAuthService>();
+		IPasswordService mockPasswordService =
+			Substitute.For<IPasswordService>();
 
-		mockAuthService
+		mockPasswordService
 			.InitiatePasswordResetAsync(
 				Arg.Any<int>(),
 				Arg.Any<bool>(),
@@ -593,7 +593,7 @@ public class UserServiceTests
 				UpdateProfileValidator,
 				QueryValidator,
 				TransactionManager,
-				mockAuthService,
+				mockPasswordService,
 				Logger);
 
 		CreateUserRequest request =
@@ -660,10 +660,10 @@ public class UserServiceTests
 	public async Task CreateUserAsync_WhenEmailRateLimited_MarksUserAndRethrowsAsync()
 	{
 		// Arrange
-		IAuthService mockAuthService =
-			Substitute.For<IAuthService>();
+		IPasswordService mockPasswordService =
+			Substitute.For<IPasswordService>();
 
-		mockAuthService
+		mockPasswordService
 			.InitiatePasswordResetAsync(
 				Arg.Any<int>(),
 				Arg.Any<bool>(),
@@ -682,7 +682,7 @@ public class UserServiceTests
 				UpdateProfileValidator,
 				QueryValidator,
 				TransactionManager,
-				mockAuthService,
+				mockPasswordService,
 				Logger);
 
 		CreateUserRequest request =

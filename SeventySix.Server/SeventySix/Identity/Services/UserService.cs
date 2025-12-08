@@ -30,6 +30,9 @@ namespace SeventySix.Identity;
 /// - Entity-DTO mapping
 /// - Error handling and logging
 /// - Transaction coordination (via repository)
+///
+/// ISP Pattern: Single implementation, multiple focused interfaces.
+/// Callers depend only on the specific interface they need.
 /// </remarks>
 public class UserService(
 	IUserRepository repository,
@@ -39,9 +42,39 @@ public class UserService(
 	IValidator<UpdateProfileRequest> updateProfileValidator,
 	IValidator<UserQueryRequest> queryValidator,
 	ITransactionManager transactionManager,
-	IAuthService authService,
-	ILogger<UserService> logger) : IUserService
+	IPasswordService passwordService,
+	ILogger<UserService> logger) :
+	IUserQueryService,
+	IUserValidationService,
+	IUserAdminService,
+	IUserRoleService,
+	IUserProfileService
 {
+	/// <inheritdoc/>
+	public string ContextName => "Identity";
+
+	/// <inheritdoc/>
+	public async Task<bool> CheckHealthAsync(CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			UserQueryRequest healthCheckRequest =
+				new()
+				{
+					Page = 1,
+					PageSize = 1
+				};
+			_ = await repository.GetPagedAsync(
+				healthCheckRequest,
+				cancellationToken);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
 	/// <inheritdoc/>
 	public async Task<IEnumerable<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken = default)
 	{
@@ -92,7 +125,7 @@ public class UserService(
 		// Send welcome email OUTSIDE transaction to avoid rollback on email failure
 		try
 		{
-			await authService.InitiatePasswordResetAsync(
+			await passwordService.InitiatePasswordResetAsync(
 				createdUser.Id,
 				isNewUser: true,
 				cancellationToken);
@@ -224,12 +257,14 @@ public class UserService(
 	/// <inheritdoc/>
 	public async Task<int> BulkUpdateActiveStatusAsync(IEnumerable<int> userIds, bool isActive, string modifiedBy, CancellationToken cancellationToken = default)
 	{
-		// Execute within transaction to ensure all-or-nothing updates
-		return await transactionManager.ExecuteInTransactionAsync(async transactionCancellationToken =>
-		{
-			int count = await repository.BulkUpdateActiveStatusAsync(userIds, isActive, transactionCancellationToken);
-			return count;
-		}, maxRetries: 3, cancellationToken);
+		// Repository call is already atomic via EF Core's SaveChangesAsync
+		int count =
+			await repository.BulkUpdateActiveStatusAsync(
+				userIds,
+				isActive,
+				cancellationToken);
+
+		return count;
 	}
 
 	/// <inheritdoc/>

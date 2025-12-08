@@ -39,8 +39,8 @@ public class UserServiceRoleTests
 	private readonly ITransactionManager TransactionManager =
 		Substitute.For<ITransactionManager>();
 
-	private readonly IAuthService AuthService =
-		Substitute.For<IAuthService>();
+	private readonly IPasswordService PasswordService =
+		Substitute.For<IPasswordService>();
 
 	private readonly ILogger<UserService> Logger =
 		Substitute.For<ILogger<UserService>>();
@@ -53,7 +53,7 @@ public class UserServiceRoleTests
 		UpdateProfileValidator,
 		QueryValidator,
 		TransactionManager,
-		AuthService,
+		PasswordService,
 		Logger);
 
 	#region GetUserRolesAsync

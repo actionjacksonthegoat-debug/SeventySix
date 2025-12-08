@@ -18,29 +18,23 @@ using Shouldly;
 namespace SeventySix.Tests.Identity.Services;
 
 /// <summary>
-/// Unit tests for AuthService self-registration methods.
-/// Tests InitiateRegistrationAsync and CompleteRegistrationAsync.
+/// Unit tests for RegistrationService.
+/// Tests RegisterAsync, InitiateRegistrationAsync and CompleteRegistrationAsync.
 /// </summary>
 [Collection("DatabaseTests")]
-public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixture)
+public class RegistrationServiceTests(TestcontainersPostgreSqlFixture fixture)
 	: DataPostgreSqlTestBase(fixture)
 {
 	private readonly ITokenService TokenService =
 		Substitute.For<ITokenService>();
-	private readonly IHttpClientFactory HttpClientFactory =
-		Substitute.For<IHttpClientFactory>();
-	private readonly IValidator<ChangePasswordRequest> ChangePasswordValidator =
-		new ChangePasswordRequestValidator();
-	private readonly IValidator<SetPasswordRequest> SetPasswordValidator =
-		new SetPasswordRequestValidator();
 	private readonly IValidator<InitiateRegistrationRequest> InitiateRegistrationValidator =
 		new InitiateRegistrationRequestValidator();
 	private readonly IValidator<CompleteRegistrationRequest> CompleteRegistrationValidator =
 		new CompleteRegistrationRequestValidator();
 	private readonly IEmailService EmailService =
 		Substitute.For<IEmailService>();
-	private readonly ILogger<AuthService> Logger =
-		Substitute.For<ILogger<AuthService>>();
+	private readonly ILogger<RegistrationService> Logger =
+		Substitute.For<ILogger<RegistrationService>>();
 
 	/// <summary>
 	/// Fixed time for deterministic tests.
@@ -80,7 +74,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 				},
 			});
 
-	private AuthService CreateService(IdentityDbContext context)
+	private RegistrationService CreateService(IdentityDbContext context)
 	{
 		TokenService
 			.GenerateAccessToken(
@@ -98,14 +92,11 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 				Arg.Any<CancellationToken>())
 			.Returns(Task.FromResult("test-refresh-token"));
 
-		return new AuthService(
+		return new RegistrationService(
 			context,
 			TokenService,
-			HttpClientFactory,
 			AuthOptions,
 			JwtOptions,
-			ChangePasswordValidator,
-			SetPasswordValidator,
 			InitiateRegistrationValidator,
 			CompleteRegistrationValidator,
 			EmailService,
@@ -123,7 +114,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 		await using IdentityDbContext context =
 			CreateIdentityDbContext();
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		string testId =
@@ -150,7 +141,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 		await using IdentityDbContext context =
 			CreateIdentityDbContext();
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		string testId =
@@ -188,7 +179,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 			username: $"existingnosend_{testId}",
 			email: $"existingnosend_{testId}@example.com");
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		// Act
@@ -210,7 +201,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 		await using IdentityDbContext context =
 			CreateIdentityDbContext();
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		string testId =
@@ -249,7 +240,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 			username: $"existingnothrow_{testId}",
 			email: $"existingnothrow_{testId}@example.com");
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		// Act & Assert - should not throw
@@ -268,7 +259,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 		await using IdentityDbContext context =
 			CreateIdentityDbContext();
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		string testId =
@@ -308,7 +299,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 		await using IdentityDbContext context =
 			CreateIdentityDbContext();
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		string testId =
@@ -355,7 +346,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 		await using IdentityDbContext context =
 			CreateIdentityDbContext();
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		string testId =
@@ -398,7 +389,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 		await using IdentityDbContext context =
 			CreateIdentityDbContext();
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		string testId =
@@ -447,7 +438,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 		context.EmailVerificationTokens.Add(expiredToken);
 		await context.SaveChangesAsync();
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		CompleteRegistrationRequest request =
@@ -474,7 +465,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 		await using IdentityDbContext context =
 			CreateIdentityDbContext();
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		string testId =
@@ -533,7 +524,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 			username: $"existingname_{testId}",
 			email: $"other_{testId}@example.com");
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		string email =
@@ -571,7 +562,7 @@ public class AuthServiceRegistrationTests(TestcontainersPostgreSqlFixture fixtur
 		await using IdentityDbContext context =
 			CreateIdentityDbContext();
 
-		AuthService service =
+		RegistrationService service =
 			CreateService(context);
 
 		string testId =

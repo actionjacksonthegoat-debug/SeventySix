@@ -148,6 +148,19 @@ export class UserDetailPage
 		isActive: [true]
 	});
 
+	// Validation error signals
+	readonly usernameError: Signal<string | null> =
+		computed(() =>
+			getValidationError(this.userForm.get("username"), "Username"));
+
+	readonly emailError: Signal<string | null> =
+		computed(() =>
+			getValidationError(this.userForm.get("email"), "Email"));
+
+	readonly fullNameError: Signal<string | null> =
+		computed(() =>
+			getValidationError(this.userForm.get("fullName"), "Full name"));
+
 	constructor()
 	{
 		// Populate form when user data loads
@@ -294,17 +307,6 @@ export class UserDetailPage
 	onCancel(): void
 	{
 		this.router.navigate(["/admin/users"]);
-	}
-
-	/**
-	 * Gets validation error message for a form field.
-	 */
-	protected getFieldError(
-		fieldName: string,
-		fieldLabel: string
-	): string | null
-	{
-		return getValidationError(this.userForm.get(fieldName), fieldLabel);
 	}
 
 	/**

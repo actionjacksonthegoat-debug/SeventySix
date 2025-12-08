@@ -9,6 +9,7 @@
 -   ✅ **ALWAYS** use **TDD** for fixes - write failing test first, then implement
 -   ✅ **ALWAYS** run tests after code changes
 -   ✅ **ALWAYS** suffix async test methods with `Async`
+-   ✅ **ALWAYS** split services/interfaces at **12+ methods** - write test, check interface size, split if needed
 
 ## Commands
 

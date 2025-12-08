@@ -29,7 +29,7 @@
 						<mat-label>Email</mat-label>
 						<input matInput formControlName="email" type="email" />
 						<mat-error>
-							{{ getFieldError("email", "Email") }}
+							{{ emailError() }}
 						</mat-error>
 					</mat-form-field>
 
@@ -46,9 +46,7 @@
 							[disabled]="
 								profileForm.invalid ||
 								profileForm.pristine ||
-								isSaving()
-							"
-						>
+								isSaving()">
 							@if (isSaving())
 							{
 								<mat-spinner diameter="20"></mat-spinner>
@@ -58,9 +56,9 @@
 								Save Changes
 							}
 						</button>
-						<a mat-button routerLink="permissions"
-							>Request Permissions</a
-						>
+						<a mat-button routerLink="permissions">
+							Request Permissions
+						</a>
 					</div>
 				</form>
 			</mat-card-content>

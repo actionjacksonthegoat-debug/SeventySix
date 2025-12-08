@@ -182,12 +182,6 @@ public static class WebApplicationExtensions
 				"{ContextName} database migrations applied",
 				contextName);
 		}
-		else
-		{
-			logger.LogDebug(
-				"{ContextName} database migrations already up to date",
-				contextName);
-		}
 	}
 
 	private static async Task WriteLivenessResponseAsync(

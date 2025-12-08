@@ -69,6 +69,9 @@ export class ProfilePage
 		fullName: ["", [Validators.maxLength(100)]]
 	});
 
+	readonly emailError: Signal<string | null> = computed(() =>
+		getValidationError(this.profileForm.get("email"), "Email"));
+
 	constructor()
 	{
 		effect(() =>
@@ -115,16 +118,5 @@ export class ProfilePage
 				duration: 5000
 			});
 		}
-	}
-
-	/**
-	 * Gets validation error message for a form field.
-	 */
-	protected getFieldError(
-		fieldName: string,
-		fieldLabel: string
-	): string | null
-	{
-		return getValidationError(this.profileForm.get(fieldName), fieldLabel);
 	}
 }

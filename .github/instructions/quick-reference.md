@@ -76,6 +76,7 @@
 | **80/20** | Test critical paths only - no exhaustive edge cases |
 | **Fix**   | Never skip failing tests                            |
 | **Async** | Suffix async test methods with `Async`              |
+| **12+**   | Split services/interfaces at 12+ methods            |
 
 | Context       | Command                            |
 | ------------- | ---------------------------------- |
@@ -85,14 +86,15 @@
 
 ## Architecture Rules
 
-| Rule          | Pattern                                         |
-| ------------- | ----------------------------------------------- |
-| Boundaries    | Features self-contained                         |
-| Cross-feature | Via @shared only                                |
-| Path aliases  | `@infrastructure`, `@shared`, `@admin`, `@game` |
-| Contexts      | Identity, Logging, ApiTracking                  |
-| DB            | Separate DbContext per context                  |
-| Generic repos | Never                                           |
+| Rule            | Pattern                                         |
+| --------------- | ----------------------------------------------- |
+| Boundaries      | Features self-contained                         |
+| Cross-feature   | Via @shared only                                |
+| Path aliases    | `@infrastructure`, `@shared`, `@admin`, `@game` |
+| Contexts        | Identity, Logging, ApiTracking                  |
+| DB              | Separate DbContext per context                  |
+| Generic repos   | Never                                           |
+| Service methods | Max 11 per interface (split at 12+)             |
 
 ## File References
 

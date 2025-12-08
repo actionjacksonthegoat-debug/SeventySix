@@ -140,6 +140,19 @@ export class UserCreatePage
 		...this.accountDetailsForm.value
 	}));
 
+	// Validation error signals
+	readonly usernameError: Signal<string | null> =
+		computed(() =>
+			getValidationError(this.basicInfoForm.get("username"), "Username"));
+
+	readonly emailError: Signal<string | null> =
+		computed(() =>
+			getValidationError(this.basicInfoForm.get("email"), "Email"));
+
+	readonly fullNameError: Signal<string | null> =
+		computed(() =>
+			getValidationError(this.accountDetailsForm.get("fullName"), "Full name"));
+
 	/**
 	 * Save user as draft (partial save)
 	 */
@@ -206,15 +219,6 @@ export class UserCreatePage
 		this.router.navigate(["/admin/users"]);
 	}
 
-	/**
-	 * Gets validation error message for a form field.
-	 */
-	protected getFieldError(
-		formGroup: FormGroup,
-		fieldName: string,
-		fieldLabel: string
-	): string | null
-	{
-		return getValidationError(formGroup.get(fieldName), fieldLabel);
 	}
-}
+
+

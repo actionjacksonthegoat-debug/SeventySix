@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Logging;
+using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
 
 namespace SeventySix.Extensions;
@@ -37,6 +38,10 @@ public static class LoggingExtensions
 
 		services.AddScoped<ILogRepository, LogRepository>();
 		services.AddScoped<ILogService, LogService>();
+
+		// Register LogService as IDatabaseHealthCheck for multi-db health checks
+		services.AddScoped<IDatabaseHealthCheck>(sp =>
+			sp.GetRequiredService<ILogService>());
 
 		// Validators - Singleton (stateless, thread-safe)
 		services.AddSingleton<IValidator<LogQueryRequest>, LogQueryRequestValidator>();

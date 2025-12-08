@@ -41,8 +41,12 @@ namespace SeventySix.Api.Controllers;
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
 public class UsersController(
-	IUserService userService,
-	IAuthService authService,
+	IUserQueryService userQueryService,
+	IUserAdminService userAdminService,
+	IUserProfileService userProfileService,
+	IUserValidationService userValidationService,
+	IUserRoleService userRoleService,
+	IPasswordService passwordService,
 	IPermissionRequestService permissionRequestService,
 	ILogger<UsersController> logger) : ControllerBase
 {
@@ -77,7 +81,7 @@ public class UsersController(
 		}
 
 		UserProfileDto? profile =
-			await userService.UpdateProfileAsync(
+			await userProfileService.UpdateProfileAsync(
 				userId.Value,
 				request,
 				cancellationToken);
@@ -112,7 +116,7 @@ public class UsersController(
 	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAsync(CancellationToken cancellationToken)
 	{
-		IEnumerable<UserDto> users = await userService.GetAllUsersAsync(cancellationToken);
+		IEnumerable<UserDto> users = await userQueryService.GetAllUsersAsync(cancellationToken);
 		return Ok(users);
 	}
 
@@ -140,7 +144,7 @@ public class UsersController(
 	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
 	{
-		UserDto? user = await userService.GetUserByIdAsync(id, cancellationToken);
+		UserDto? user = await userQueryService.GetUserByIdAsync(id, cancellationToken);
 
 		return user is null ? (ActionResult<UserDto>)NotFound() : (ActionResult<UserDto>)Ok(user);
 	}
@@ -187,7 +191,7 @@ public class UsersController(
 		try
 		{
 			UserDto user =
-				await userService.CreateUserAsync(
+				await userAdminService.CreateUserAsync(
 					request,
 					cancellationToken);
 
@@ -203,7 +207,7 @@ public class UsersController(
 		{
 			// User was created but email was rate limited
 			UserDto? user =
-				await userService.GetByEmailAsync(
+				await userQueryService.GetByEmailAsync(
 					request.Email,
 					cancellationToken);
 
@@ -261,7 +265,7 @@ public class UsersController(
 			return BadRequest("ID in URL does not match ID in request body");
 		}
 
-		UserDto user = await userService.UpdateUserAsync(request, cancellationToken);
+		UserDto user = await userAdminService.UpdateUserAsync(request, cancellationToken);
 		return Ok(user);
 	}
 
@@ -283,7 +287,7 @@ public class UsersController(
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool result = await userService.DeleteUserAsync(id, AuditConstants.SystemUser, cancellationToken);
+		bool result = await userAdminService.DeleteUserAsync(id, AuditConstants.SystemUser, cancellationToken);
 		return result ? NoContent() : NotFound();
 	}
 
@@ -305,7 +309,7 @@ public class UsersController(
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool result = await userService.RestoreUserAsync(id, cancellationToken);
+		bool result = await userAdminService.RestoreUserAsync(id, cancellationToken);
 		return result ? NoContent() : NotFound();
 	}
 
@@ -328,7 +332,7 @@ public class UsersController(
 		[FromQuery] UserQueryRequest request,
 		CancellationToken cancellationToken)
 	{
-		PagedResult<UserDto> result = await userService.GetPagedUsersAsync(request, cancellationToken);
+		PagedResult<UserDto> result = await userQueryService.GetPagedUsersAsync(request, cancellationToken);
 		return Ok(result);
 	}
 
@@ -351,7 +355,7 @@ public class UsersController(
 		string username,
 		CancellationToken cancellationToken)
 	{
-		UserDto? user = await userService.GetByUsernameAsync(username, cancellationToken);
+		UserDto? user = await userQueryService.GetByUsernameAsync(username, cancellationToken);
 		return user is null ? NotFound() : Ok(user);
 	}
 
@@ -374,7 +378,7 @@ public class UsersController(
 		[FromQuery] int? excludeId,
 		CancellationToken cancellationToken)
 	{
-		bool exists = await userService.UsernameExistsAsync(username, excludeId, cancellationToken);
+		bool exists = await userValidationService.UsernameExistsAsync(username, excludeId, cancellationToken);
 		return Ok(exists);
 	}
 
@@ -396,7 +400,7 @@ public class UsersController(
 		[FromBody] IEnumerable<int> ids,
 		CancellationToken cancellationToken)
 	{
-		int count = await userService.BulkUpdateActiveStatusAsync(ids, true, AuditConstants.SystemUser, cancellationToken);
+		int count = await userAdminService.BulkUpdateActiveStatusAsync(ids, true, AuditConstants.SystemUser, cancellationToken);
 		return Ok(count);
 	}
 
@@ -418,7 +422,7 @@ public class UsersController(
 		[FromBody] IEnumerable<int> ids,
 		CancellationToken cancellationToken)
 	{
-		int count = await userService.BulkUpdateActiveStatusAsync(ids, false, AuditConstants.SystemUser, cancellationToken);
+		int count = await userAdminService.BulkUpdateActiveStatusAsync(ids, false, AuditConstants.SystemUser, cancellationToken);
 		return Ok(count);
 	}
 
@@ -446,7 +450,7 @@ public class UsersController(
 	{
 		// Verify user exists
 		UserDto? user =
-			await userService.GetUserByIdAsync(
+			await userQueryService.GetUserByIdAsync(
 				id,
 				cancellationToken);
 
@@ -455,7 +459,7 @@ public class UsersController(
 			return NotFound();
 		}
 
-		await authService.InitiatePasswordResetAsync(
+		await passwordService.InitiatePasswordResetAsync(
 			id,
 			isNewUser: false,
 			cancellationToken);
@@ -679,7 +683,7 @@ public class UsersController(
 		CancellationToken cancellationToken)
 	{
 		UserDto? user =
-			await userService.GetUserByIdAsync(
+			await userQueryService.GetUserByIdAsync(
 				id,
 				cancellationToken);
 
@@ -689,7 +693,7 @@ public class UsersController(
 		}
 
 		IEnumerable<string> roles =
-			await userService.GetUserRolesAsync(
+			await userRoleService.GetUserRolesAsync(
 				id,
 				cancellationToken);
 
@@ -721,7 +725,7 @@ public class UsersController(
 		CancellationToken cancellationToken)
 	{
 		UserDto? user =
-			await userService.GetUserByIdAsync(
+			await userQueryService.GetUserByIdAsync(
 				id,
 				cancellationToken);
 
@@ -733,7 +737,7 @@ public class UsersController(
 		try
 		{
 			bool added =
-				await userService.AddUserRoleAsync(
+				await userRoleService.AddUserRoleAsync(
 					id,
 					role,
 					cancellationToken);
@@ -767,7 +771,7 @@ public class UsersController(
 		CancellationToken cancellationToken)
 	{
 		UserDto? user =
-			await userService.GetUserByIdAsync(
+			await userQueryService.GetUserByIdAsync(
 				id,
 				cancellationToken);
 
@@ -777,7 +781,7 @@ public class UsersController(
 		}
 
 		bool removed =
-			await userService.RemoveUserRoleAsync(
+			await userRoleService.RemoveUserRoleAsync(
 				id,
 				role,
 				cancellationToken);

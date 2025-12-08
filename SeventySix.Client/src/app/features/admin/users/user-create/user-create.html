@@ -7,9 +7,10 @@
 				mat-stroked-button
 				type="button"
 				(click)="onCancel()"
-				[disabled]="isSaving()"
-			>
-				<mat-icon aria-hidden="true">close</mat-icon>
+				[disabled]="isSaving()">
+				<mat-icon aria-hidden="true">
+					close
+				</mat-icon>
 				Cancel
 			</button>
 		</div>
@@ -45,25 +46,19 @@
 							<!-- Username Field -->
 							<mat-form-field
 								appearance="outline"
-								class="full-width"
-							>
+								class="full-width">
 								<mat-label>Username</mat-label>
 								<input
 									matInput
 									formControlName="username"
 									placeholder="Enter username"
-									required
-								/>
-								<mat-icon matIconPrefix aria-hidden="true"
-									>person</mat-icon
-								>
+									required/>
+								<mat-icon matIconPrefix aria-hidden="true">
+									person
+								</mat-icon>
 								<mat-error>
 									{{
-										getFieldError(
-											basicInfoForm,
-											"username",
-											"Username"
-										)
+										usernameError()
 									}}
 								</mat-error>
 							</mat-form-field>
@@ -86,11 +81,7 @@
 								>
 								<mat-error>
 									{{
-										getFieldError(
-											basicInfoForm,
-											"email",
-											"Email"
-										)
+										emailError()
 									}}
 								</mat-error>
 							</mat-form-field>
@@ -113,9 +104,9 @@
 							matStepperNext
 						>
 							Next
-							<mat-icon aria-hidden="true"
-								>arrow_forward</mat-icon
-							>
+							<mat-icon aria-hidden="true">
+								arrow_forward
+							</mat-icon>
 						</button>
 					</div>
 				</form>
@@ -140,25 +131,19 @@
 							<!-- Display Name Field (stored as fullName) -->
 							<mat-form-field
 								appearance="outline"
-								class="full-width"
-							>
+								class="full-width">
 								<mat-label>Display Name</mat-label>
 								<input
 									matInput
 									formControlName="fullName"
 									placeholder="Enter display name"
-									required
-								/>
-								<mat-icon matIconPrefix aria-hidden="true"
-									>badge</mat-icon
-								>
+									required/>
+								<mat-icon matIconPrefix aria-hidden="true">
+									badge
+								</mat-icon>
 								<mat-error>
 									{{
-										getFieldError(
-											accountDetailsForm,
-											"fullName",
-											"Display name"
-										)
+										fullNameError()
 									}}
 								</mat-error>
 							</mat-form-field>
@@ -166,8 +151,7 @@
 							<div class="checkbox-field">
 								<mat-checkbox
 									formControlName="isActive"
-									color="primary"
-								>
+									color="primary">
 									Active User
 								</mat-checkbox>
 								<p class="mat-body-2 field-hint">
@@ -181,16 +165,14 @@
 						<button
 							mat-stroked-button
 							type="button"
-							matStepperPrevious
-						>
+							matStepperPrevious>
 							<mat-icon aria-hidden="true">arrow_back</mat-icon>
 							Back
 						</button>
 						<button
 							mat-stroked-button
 							type="button"
-							(click)="saveDraft()"
-						>
+							(click)="saveDraft()">
 							<mat-icon aria-hidden="true">save</mat-icon>
 							Save Draft
 						</button>
@@ -198,12 +180,11 @@
 						<button
 							mat-raised-button
 							color="primary"
-							matStepperNext
-						>
+							matStepperNext>
 							Next
-							<mat-icon aria-hidden="true"
-								>arrow_forward</mat-icon
-							>
+							<mat-icon aria-hidden="true">
+								arrow_forward
+							</mat-icon>
 						</button>
 					</div>
 				</form>
@@ -221,29 +202,33 @@
 					<mat-card-content>
 						<div class="review-grid">
 							<div class="review-item">
-								<mat-icon class="review-icon" aria-hidden="true"
-									>person</mat-icon
-								>
+								<mat-icon class="review-icon" aria-hidden="true">
+									person
+								</mat-icon>
 								<div class="review-details">
-									<span class="mat-body-2 review-label"
-										>Username</span
-									>
-									<span class="mat-body-1">{{
-										formData().username
-									}}</span>
+									<span class="mat-body-2 review-label">
+										Username
+									</span>
+									<span class="mat-body-1">
+										{{
+											formData().username
+										}}
+									</span>
 								</div>
 							</div>
 							<div class="review-item">
-								<mat-icon class="review-icon" aria-hidden="true"
-									>email</mat-icon
-								>
+								<mat-icon class="review-icon" aria-hidden="true">
+									email
+								</mat-icon>
 								<div class="review-details">
-									<span class="mat-body-2 review-label"
-										>Email</span
-									>
-									<span class="mat-body-1">{{
-										formData().email
-									}}</span>
+									<span class="mat-body-2 review-label">
+										Email
+									</span>
+									<span class="mat-body-1">
+										{{
+											formData().email
+										}}
+									</span>
 								</div>
 							</div>
 							<div class="review-item">
@@ -251,9 +236,9 @@
 									>badge</mat-icon
 								>
 								<div class="review-details">
-									<span class="mat-body-2 review-label"
-										>Full Name</span
-									>
+									<span class="mat-body-2 review-label">
+										Full Name
+									</span>
 									<span class="mat-body-1">
 										{{
 											formData().fullName ||
@@ -265,17 +250,17 @@
 							<div class="review-item">
 								<mat-icon
 									class="review-icon"
-									aria-hidden="true"
-									>{{
-										formData().isActive
-											? "check_circle"
-											: "cancel"
-									}}</mat-icon
-								>
+									aria-hidden="true">
+										{{
+											formData().isActive
+												? "check_circle"
+												: "cancel"
+										}}
+								</mat-icon>
 								<div class="review-details">
-									<span class="mat-body-2 review-label"
-										>Status</span
-									>
+									<span class="mat-body-2 review-label">
+										Status
+									</span>
 									<span class="mat-body-1">
 										{{
 											formData().isActive
@@ -300,8 +285,7 @@
 						color="primary"
 						type="button"
 						(click)="onSubmit()"
-						[disabled]="isSaving()"
-					>
+						[disabled]="isSaving()">
 						@if (isSaving())
 						{
 							<mat-spinner diameter="20"></mat-spinner>
@@ -319,3 +303,4 @@
 		</mat-stepper>
 	</div>
 </div>
+

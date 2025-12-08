@@ -27,8 +27,11 @@ namespace SeventySix.Api.Controllers;
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth")]
 public class AuthController(
-	IAuthService authService,
-	IUserService userService,
+	IAuthenticationService authenticationService,
+	IRegistrationService registrationService,
+	IPasswordService passwordService,
+	IOAuthService oAuthService,
+	IUserProfileService userProfileService,
 	IOAuthCodeExchangeService oauthCodeExchange,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings,
@@ -58,7 +61,7 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await authService.LoginAsync(
+			await authenticationService.LoginAsync(
 				request,
 				clientIp,
 				cancellationToken);
@@ -109,7 +112,7 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await authService.RegisterAsync(
+			await registrationService.RegisterAsync(
 				request,
 				clientIp,
 				cancellationToken);
@@ -173,7 +176,7 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await authService.RefreshTokensAsync(
+			await authenticationService.RefreshTokensAsync(
 				refreshToken,
 				clientIp,
 				cancellationToken);
@@ -215,7 +218,7 @@ public class AuthController(
 
 		if (!string.IsNullOrEmpty(refreshToken))
 		{
-			await authService.LogoutAsync(
+			await authenticationService.LogoutAsync(
 				refreshToken,
 				cancellationToken);
 		}
@@ -246,7 +249,7 @@ public class AuthController(
 		SetOAuthCodeVerifierCookie(codeVerifier);
 
 		string authorizationUrl =
-			authService.BuildGitHubAuthorizationUrl(
+			oAuthService.BuildGitHubAuthorizationUrl(
 				state,
 				codeVerifier);
 
@@ -292,7 +295,7 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await authService.HandleGitHubCallbackAsync(
+			await oAuthService.HandleGitHubCallbackAsync(
 				code,
 				codeVerifier,
 				clientIp,
@@ -378,7 +381,7 @@ public class AuthController(
 		}
 
 		UserProfileDto? profile =
-			await userService.GetUserProfileAsync(
+			await userProfileService.GetUserProfileAsync(
 				userId.Value,
 				cancellationToken);
 
@@ -417,7 +420,7 @@ public class AuthController(
 		}
 
 		AuthResult result =
-			await authService.ChangePasswordAsync(
+			await passwordService.ChangePasswordAsync(
 				userId.Value,
 				request,
 				cancellationToken);
@@ -461,7 +464,7 @@ public class AuthController(
 		[FromBody] ForgotPasswordRequest request,
 		CancellationToken cancellationToken)
 	{
-		await authService.InitiatePasswordResetByEmailAsync(
+		await passwordService.InitiatePasswordResetByEmailAsync(
 			request.Email,
 			cancellationToken);
 
@@ -495,7 +498,7 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await authService.SetPasswordAsync(
+			await passwordService.SetPasswordAsync(
 				request,
 				clientIp,
 				cancellationToken);
@@ -547,7 +550,7 @@ public class AuthController(
 		[FromBody] InitiateRegistrationRequest request,
 		CancellationToken cancellationToken)
 	{
-		await authService.InitiateRegistrationAsync(
+		await registrationService.InitiateRegistrationAsync(
 			request,
 			cancellationToken);
 
@@ -579,7 +582,7 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await authService.CompleteRegistrationAsync(
+			await registrationService.CompleteRegistrationAsync(
 				request,
 				clientIp,
 				cancellationToken);

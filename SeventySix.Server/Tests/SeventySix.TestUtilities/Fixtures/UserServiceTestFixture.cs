@@ -45,7 +45,7 @@ public class UserServiceTestFixture
 	{
 		get;
 	}
-	public IAuthService MockAuthService
+	public IPasswordService MockPasswordService
 	{
 		get;
 	}
@@ -67,7 +67,7 @@ public class UserServiceTestFixture
 		MockUpdateProfileValidator = Substitute.For<IValidator<UpdateProfileRequest>>();
 		MockQueryValidator = Substitute.For<IValidator<UserQueryRequest>>();
 		MockTransactionManager = Substitute.For<ITransactionManager>();
-		MockAuthService = Substitute.For<IAuthService>();
+		MockPasswordService = Substitute.For<IPasswordService>();
 		MockLogger = Substitute.For<ILogger<UserService>>();
 
 		SetupTransactionManagerDefaults();
@@ -80,7 +80,7 @@ public class UserServiceTestFixture
 			MockUpdateProfileValidator,
 			MockQueryValidator,
 			MockTransactionManager,
-			MockAuthService,
+			MockPasswordService,
 			MockLogger);
 	}
 

@@ -16,8 +16,10 @@
  * - Dependency Injection (2 tests): inject() function not constructor DI
  * - Service Scoping (2 tests): Feature services scoped to routes, infrastructure services root-scoped
  * - Zoneless Architecture (3 tests): No NgZone, no fakeAsync/tick, provideZonelessChangeDetection
+ * - Template Performance (2 tests): No method calls in interpolation/bindings, use computed() instead
+ * - God Class Detection (2 tests): Services/components with 12+ methods violate SRP
  *
- * Total: 13 architecture guardrails
+ * Total: 17 architecture guardrails
  * Complemented by ESLint rules in eslint.config.js for real-time feedback
  */
 
@@ -362,6 +364,235 @@ test('tests should use provideZonelessChangeDetection', async () => {
 });
 
 // ============================================================================
+// Template Method Call Tests (Performance)
+// ============================================================================
+
+console.log('\n🔍 Template Method Call Tests');
+
+test('templates should not call component methods in interpolation', async () => {
+	const htmlFiles = await getFiles(SRC_DIR, '.html');
+	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
+	const violations = [];
+
+	// Pattern: {{ someMethod(arg) }} - method with arguments
+	// Signal getters {{ signal() }} are ALLOWED (modern Angular pattern)
+	// Methods with arguments run logic on every CD cycle (performance issue)
+	const methodWithArgsPattern = /\{\{\s*[^}]*\([^)]+\)[^}]*\}\}/g;
+
+	// Check external templates
+	for (const file of htmlFiles) {
+		const content = await fs.readFile(file, 'utf-8');
+		const matches = content.match(methodWithArgsPattern);
+
+		if (matches) {
+			// Filter out safe patterns like pipes, trackBy, and ternary operators
+			const unsafeMatches = matches.filter(
+				(match) =>
+					!match.includes('|') // Pipes are fine
+					&& !match.includes('track') // TrackBy functions
+					&& !match.includes('?') // Ternary operators
+					&& !match.includes('$index')
+					&& !match.includes('$count'),
+			);
+
+			if (unsafeMatches.length > 0) {
+				violations.push(
+					`${path.relative(SRC_DIR, file)}: ${unsafeMatches.join(', ')}`,
+				);
+			}
+		}
+	}
+
+	// Check inline templates
+	for (const file of componentFiles) {
+		const content = await fs.readFile(file, 'utf-8');
+		const templateMatch = content.match(/template:\s*[`']([^`']*)[`']/s);
+
+		if (templateMatch) {
+			const matches = templateMatch[1].match(methodWithArgsPattern);
+
+			if (matches) {
+				const unsafeMatches = matches.filter(
+					(match) =>
+						!match.includes('|')
+						&& !match.includes('track')
+						&& !match.includes('?')
+						&& !match.includes('$index')
+						&& !match.includes('$count'),
+				);
+
+				if (unsafeMatches.length > 0) {
+					violations.push(
+						`${path.relative(SRC_DIR, file)} (inline): ${unsafeMatches.join(', ')}`,
+					);
+				}
+			}
+		}
+	}
+
+	assertEmpty(
+		violations,
+		'Templates calling methods with arguments in interpolation (use computed() signals instead)',
+	);
+});
+
+test('templates should not call methods in property bindings', async () => {
+	const htmlFiles = await getFiles(SRC_DIR, '.html');
+	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
+	const violations = [];
+
+	// Pattern: [property]="someMethod(arg)" with arguments
+	// Signal getters [class.active]="isActive()" are ALLOWED
+	// Methods with args like [disabled]="checkPermission(user)" are violations
+	const bindingWithArgsPattern = /\[(?:class|style|attr|disabled|hidden|readonly)\.[^\]]*\]\s*=\s*"[^"]*\([^)]+\)"/g;
+
+	// Check external templates
+	for (const file of htmlFiles) {
+		const content = await fs.readFile(file, 'utf-8');
+		const matches = content.match(bindingWithArgsPattern);
+
+		if (matches) {
+			// Filter out pipes and ternary operators
+			const unsafeMatches = matches.filter(
+				(match) => !match.includes('|') && !match.includes('?'),
+			);
+
+			if (unsafeMatches.length > 0) {
+				violations.push(`${path.relative(SRC_DIR, file)}: ${unsafeMatches.join(', ')}`);
+			}
+		}
+	}
+
+	// Check inline templates
+	for (const file of componentFiles) {
+		const content = await fs.readFile(file, 'utf-8');
+		const templateMatch = content.match(/template:\s*[`']([^`']*)[`']/s);
+
+		if (templateMatch && templateMatch[1].match(bindingWithArgsPattern)) {
+			const matches = templateMatch[1].match(bindingWithArgsPattern);
+			const unsafeMatches = matches.filter(
+				(match) => !match.includes('|') && !match.includes('?'),
+			);
+
+			if (unsafeMatches.length > 0) {
+				violations.push(
+					`${path.relative(SRC_DIR, file)} (inline): ${unsafeMatches.join(', ')}`,
+				);
+			}
+		}
+	}
+
+	assertEmpty(
+		violations,
+		'Templates calling methods with arguments in property bindings (use computed() signals instead)',
+	);
+});
+
+// ============================================================================
+// God Class Tests (12+ Methods = SRP Violation)
+// ============================================================================
+
+console.log('\n🔍 God Class Detection Tests');
+
+test('services should have less than 12 public methods', async () => {
+	const serviceFiles = await getFiles(SRC_DIR, '.service.ts');
+	const violations = [];
+	const maxMethodsPerService = 11;
+
+	// Services with cohesive single-domain responsibilities are exceptions
+	// These have many methods but serve a single purpose (utility patterns)
+	const allowedExceptions = [
+		'date.service.ts', // Date utilities - all methods serve date handling (single domain)
+		'logger.service.ts', // Logging levels - all methods serve logging (single domain)
+		'notification.service.ts', // Toast notifications - all methods serve user feedback (single domain)
+		'user.service.ts', // TanStack Query factory service - thin wrappers with single domain (user CRUD)
+	];
+
+	// TanStack Query callback method names (not public API methods)
+	const tanstackCallbacks = ['queryFn', 'mutationFn', 'onSuccess', 'onError', 'onSettled', 'onMutate'];
+
+	for (const file of serviceFiles) {
+		const fileName = path.basename(file);
+		if (allowedExceptions.includes(fileName)) {
+			continue;
+		}
+
+		const content = await fs.readFile(file, 'utf-8');
+
+		// Count public methods (not private/protected, not getters/setters)
+		// Pattern: matches method declarations like "methodName(" or "async methodName("
+		// Excludes: private, protected, get, set, constructor
+		const publicMethodPattern = /^\s+(?:readonly\s+)?(?!private|protected|get\s|set\s|constructor)(\w+)\s*[=:]\s*(?:async\s*)?\([^)]*\)\s*(?:=>|{)/gm;
+		const functionMethodPattern = /^\s+(?!private|protected|get\s|set\s|constructor)(\w+)\s*\([^)]*\)\s*(?::\s*\w+[<>[\],\s|]*)?(?:\s*{)/gm;
+
+		const methodMatches = [
+			...content.matchAll(publicMethodPattern),
+			...content.matchAll(functionMethodPattern),
+		];
+
+		// Deduplicate method names and filter out TanStack Query callbacks
+		const methodNames = [...new Set(methodMatches.map((match) => match[1]))]
+			.filter((name) => !tanstackCallbacks.includes(name));
+		const methodCount = methodNames.length;
+
+		if (methodCount > maxMethodsPerService) {
+			const displayMethods = methodNames.slice(0, 5).join(', ');
+			const additional = methodCount > 5 ? ` and ${methodCount - 5} more` : '';
+			violations.push(
+				`${path.relative(SRC_DIR, file)}: ${methodCount} methods (max ${maxMethodsPerService}): ${displayMethods}${additional}`,
+			);
+		}
+	}
+
+	assertEmpty(violations, 'Services with 12+ methods violate SRP (split into focused services)');
+});
+
+test('components should have less than 12 public methods', async () => {
+	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
+	const violations = [];
+	const maxMethodsPerComponent = 11;
+
+	// Components with complex UI may need more methods - these are exceptions
+	const allowedExceptions = [
+		'data-table.component.ts', // Complex reusable table with many features
+	];
+
+	for (const file of componentFiles) {
+		const fileName = path.basename(file);
+		if (allowedExceptions.includes(fileName)) {
+			continue;
+		}
+
+		const content = await fs.readFile(file, 'utf-8');
+
+		// Count public methods (same pattern as services)
+		const publicMethodPattern = /^\s+(?:readonly\s+)?(?!private|protected|get\s|set\s|constructor|ngOn)(\w+)\s*[=:]\s*(?:async\s*)?\([^)]*\)\s*(?:=>|{)/gm;
+		const functionMethodPattern = /^\s+(?!private|protected|get\s|set\s|constructor|ngOn)(\w+)\s*\([^)]*\)\s*(?::\s*\w+[<>[\],\s|]*)?(?:\s*{)/gm;
+
+		const methodMatches = [
+			...content.matchAll(publicMethodPattern),
+			...content.matchAll(functionMethodPattern),
+		];
+
+		// Deduplicate and filter out lifecycle hooks
+		const methodNames = [...new Set(methodMatches.map((match) => match[1]))]
+			.filter((name) => !name.startsWith('ngOn'));
+
+		const methodCount = methodNames.length;
+
+		if (methodCount > maxMethodsPerComponent) {
+			const displayMethods = methodNames.slice(0, 5).join(', ');
+			const additional = methodCount > 5 ? ` and ${methodCount - 5} more` : '';
+			violations.push(
+				`${path.relative(SRC_DIR, file)}: ${methodCount} methods (max ${maxMethodsPerComponent}): ${displayMethods}${additional}`,
+			);
+		}
+	}
+
+	assertEmpty(violations, 'Components with 12+ methods violate SRP (extract to services or split)');
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 
@@ -371,3 +602,4 @@ console.log(`\n📊 Test Results: ${passedTests} passed, ${failedTests} failed, 
 if (failedTests > 0) {
 	process.exit(1);
 }
+

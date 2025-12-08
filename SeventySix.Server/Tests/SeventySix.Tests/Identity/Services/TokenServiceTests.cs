@@ -51,8 +51,11 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 
 	private TokenService CreateService(IdentityDbContext context)
 	{
+		ITokenRepository tokenRepository =
+			new TokenRepository(context);
+
 		return new TokenService(
-			context,
+			tokenRepository,
 			JwtOptions,
 			AuthOptions,
 			NullLogger<TokenService>.Instance,
@@ -638,9 +641,12 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 				return result;
 			});
 
+		ITokenRepository tokenRepository =
+			new TokenRepository(context);
+
 		TokenService service =
 			new(
-				context,
+				tokenRepository,
 				JwtOptions,
 				limitedAuthOptions,
 				NullLogger<TokenService>.Instance,
