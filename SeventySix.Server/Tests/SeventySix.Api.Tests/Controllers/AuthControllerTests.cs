@@ -336,8 +336,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	[InlineData(true, "State mismatch - CSRF protection")]
 	[InlineData(false, "Missing code verifier - PKCE requirement")]
 	public async Task GitHubCallbackAsync_ReturnsError_WhenSecurityViolationAsync(
-		bool stateTampered,
-		string reason)
+		bool stateTampered)
 	{
 		// Arrange
 		string validState = "valid-state-value";
@@ -629,8 +628,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	[InlineData(true, "Invalid signature")]
 	[InlineData(false, "Expired token")]
 	public async Task GetCurrentUserAsync_ReturnsUnauthorized_WhenInvalidJwtAsync(
-		bool useInvalidSignature,
-		string reason)
+		bool useInvalidSignature)
 	{
 		// Arrange
 		string invalidToken =
