@@ -14,7 +14,9 @@ namespace SeventySix.Shared.Infrastructure;
 /// Automatically sets CreateDate, ModifyDate, CreatedBy, and ModifiedBy
 /// based on entity interface implementation (IAuditableEntity, IModifiableEntity, ICreatableEntity).
 /// </remarks>
-public class AuditInterceptor(IUserContextAccessor userContextAccessor) : SaveChangesInterceptor
+public class AuditInterceptor(
+	IUserContextAccessor userContextAccessor,
+	TimeProvider timeProvider) : SaveChangesInterceptor
 {
 	/// <summary>
 	/// Intercepts SaveChangesAsync to set audit properties on entities.
@@ -47,7 +49,10 @@ public class AuditInterceptor(IUserContextAccessor userContextAccessor) : SaveCh
 				{
 					if (auditable.CreateDate == default)
 					{
-						auditable.CreateDate = DateTime.UtcNow;
+						auditable.CreateDate =
+						timeProvider
+							.GetUtcNow()
+							.UtcDateTime;
 					}
 					if (string.IsNullOrWhiteSpace(auditable.CreatedBy))
 					{
@@ -60,7 +65,10 @@ public class AuditInterceptor(IUserContextAccessor userContextAccessor) : SaveCh
 				}
 				if (entry.State == EntityState.Modified)
 				{
-					auditable.ModifyDate = DateTime.UtcNow;
+					auditable.ModifyDate =
+					timeProvider
+						.GetUtcNow()
+						.UtcDateTime;
 					auditable.ModifiedBy = currentUser;
 				}
 			}
@@ -72,12 +80,18 @@ public class AuditInterceptor(IUserContextAccessor userContextAccessor) : SaveCh
 				{
 					if (modifiable.CreateDate == default)
 					{
-						modifiable.CreateDate = DateTime.UtcNow;
+						modifiable.CreateDate =
+						timeProvider
+							.GetUtcNow()
+							.UtcDateTime;
 					}
 				}
 				if (entry.State == EntityState.Modified)
 				{
-					modifiable.ModifyDate = DateTime.UtcNow;
+					modifiable.ModifyDate =
+					timeProvider
+						.GetUtcNow()
+						.UtcDateTime;
 				}
 			}
 			// ICreatableEntity: Set CreateDate only (no modify, no user tracking)
@@ -86,7 +100,10 @@ public class AuditInterceptor(IUserContextAccessor userContextAccessor) : SaveCh
 			{
 				if (entry.State == EntityState.Added && creatable.CreateDate == default)
 				{
-					creatable.CreateDate = DateTime.UtcNow;
+					creatable.CreateDate =
+						timeProvider
+							.GetUtcNow()
+							.UtcDateTime;
 				}
 			}
 		}

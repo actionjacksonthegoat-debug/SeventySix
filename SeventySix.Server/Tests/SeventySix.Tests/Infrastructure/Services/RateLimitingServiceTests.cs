@@ -78,7 +78,8 @@ public class RateLimitingServiceTests
 			Logger,
 			Repository,
 			TransactionManager,
-			options);
+			options,
+			TimeProvider.System);
 	}
 
 	[Fact]

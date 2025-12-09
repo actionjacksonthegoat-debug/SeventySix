@@ -106,15 +106,16 @@ public class ThirdPartyApiRequest : IModifiableEntity
 	/// <summary>
 	/// Increments the call counter and updates the last called timestamp.
 	/// </summary>
+	/// <param name="currentTime">Current UTC time to record as LastCalledAt.</param>
 	/// <remarks>
 	/// Domain method that encapsulates the business logic for recording an API call.
 	/// Ensures CallCount and LastCalledAt are always updated together (consistency).
 	/// RowVersion is automatically updated by PostgreSQL's xmin system column.
 	/// </remarks>
-	public void IncrementCallCount()
+	public void IncrementCallCount(DateTime currentTime)
 	{
 		CallCount++;
-		LastCalledAt = DateTime.UtcNow;
+		LastCalledAt = currentTime;
 	}
 
 	/// <summary>

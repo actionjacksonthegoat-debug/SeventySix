@@ -4,8 +4,9 @@
  * Follows SRP - Single Responsibility: User data export
  */
 
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { User } from "@admin/users/models";
+import { DateService } from "@infrastructure/services";
 
 /**
  * Provided at route level for proper garbage collection (see admin.routes.ts)
@@ -13,6 +14,8 @@ import { User } from "@admin/users/models";
 @Injectable()
 export class UserExportService
 {
+	private readonly dateService: DateService = inject(DateService);
+
 	/**
 	 * Export users to CSV format
 	 * @param users - Array of users to export
@@ -27,7 +30,7 @@ export class UserExportService
 
 		const csvContent: string = this.generateCsvContent(users);
 		const csvFilename: string =
-			filename ?? `users_export_${new Date().toISOString()}.csv`;
+			filename ?? `users_export_${this.dateService.now()}.csv`;
 
 		this.downloadCsv(csvContent, csvFilename);
 	}

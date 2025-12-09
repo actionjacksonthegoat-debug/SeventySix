@@ -25,6 +25,7 @@ namespace SeventySix.Identity;
 public class AdminSeederService(
 	IServiceScopeFactory scopeFactory,
 	IOptions<AdminSeederSettings> settings,
+	TimeProvider timeProvider,
 	ILogger<AdminSeederService> logger) : BackgroundService
 {
 	/// <inheritdoc/>
@@ -82,7 +83,9 @@ public class AdminSeederService(
 		}
 
 		DateTime now =
-			DateTime.UtcNow;
+			timeProvider
+				.GetUtcNow()
+				.UtcDateTime;
 
 		// Create admin user
 		User adminUser =

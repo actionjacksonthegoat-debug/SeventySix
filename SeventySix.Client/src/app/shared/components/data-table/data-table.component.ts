@@ -10,7 +10,8 @@ import {
 	WritableSignal,
 	effect,
 	ChangeDetectionStrategy,
-	OnDestroy
+	OnDestroy,
+	inject
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { Subject } from "rxjs";
@@ -46,6 +47,7 @@ import { ScrollingModule } from "@angular/cdk/scrolling";
 import { TableHeightDirective } from "@shared/directives";
 import { slideDown } from "@shared/animations/animations";
 import { environment } from "@environments/environment";
+import { DateService } from "@infrastructure/services";
 
 /**
  * Generic data table component
@@ -279,6 +281,11 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	 * Destroy subject for cleanup
 	 */
 	private readonly destroy$: Subject<void> = new Subject<void>();
+
+	/**
+	 * Date service for date operations
+	 */
+	private readonly dateService: DateService = inject(DateService);
 
 	/**
 	 * Active quick filters
@@ -577,7 +584,7 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	{
 		this.selectedDateRange.set(range);
 
-		const now: Date = new Date();
+		const now: Date = this.dateService.parseUTC(this.dateService.now());
 		let startDate: Date | undefined;
 
 		switch (range)

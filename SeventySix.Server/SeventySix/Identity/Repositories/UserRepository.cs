@@ -11,7 +11,8 @@ namespace SeventySix.Identity;
 /// <summary>EF Core implementation for User data access.</summary>
 internal class UserRepository(
 	IdentityDbContext context,
-	ILogger<UserRepository> repositoryLogger) : BaseRepository<User, IdentityDbContext>(context, repositoryLogger), IUserRepository
+	ILogger<UserRepository> repositoryLogger,
+	TimeProvider timeProvider) : BaseRepository<User, IdentityDbContext>(context, repositoryLogger), IUserRepository
 {
 	/// <inheritdoc/>
 	protected override string GetEntityIdentifier(User entity)
@@ -244,7 +245,10 @@ internal class UserRepository(
 				}
 
 				user.IsDeleted = true;
-				user.DeletedAt = DateTime.UtcNow;
+				user.DeletedAt =
+					timeProvider
+						.GetUtcNow()
+						.UtcDateTime;
 				user.DeletedBy = deletedBy;
 
 				await context.SaveChangesAsync(cancellationToken);
@@ -383,7 +387,7 @@ internal class UserRepository(
 			INSERT INTO identity."UserRoles" ("UserId", "RoleId", "CreateDate", "CreatedBy")
 			VALUES ({0}, {1}, {2}, {3})
 			""",
-			[userId, roleId.Value, DateTime.UtcNow, string.Empty],
+			[userId, roleId.Value, timeProvider.GetUtcNow().UtcDateTime, string.Empty],
 			cancellationToken);
 	}
 

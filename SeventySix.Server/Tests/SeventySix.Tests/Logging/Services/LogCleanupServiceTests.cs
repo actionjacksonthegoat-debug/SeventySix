@@ -51,21 +51,20 @@ public class LogCleanupServiceTests
 			};
 
 		IOptions<LogCleanupSettings> options =
-			Options.Create(settings);
+		Options.Create(settings);
 
 		LogCleanupService service =
 			new(
 				ScopeFactory,
 				options,
+				TimeProvider.System,
 				Logger);
 
 		using CancellationTokenSource cts =
 			new();
 
 		// Act - Start and immediately cancel
-		cts.CancelAfter(TimeSpan.FromMilliseconds(100));
-
-		await service.StartAsync(cts.Token);
+		cts.CancelAfter(TimeSpan.FromMilliseconds(100)); await service.StartAsync(cts.Token);
 		await Task.Delay(50);
 		await service.StopAsync(cts.Token);
 
@@ -99,19 +98,19 @@ public class LogCleanupServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns(5);
 
+
 		LogCleanupService service =
 			new(
 				ScopeFactory,
 				options,
+				TimeProvider.System,
 				Logger);
 
 		using CancellationTokenSource cts =
 			new();
 
 		// Act - Run briefly then cancel
-		cts.CancelAfter(TimeSpan.FromMilliseconds(200));
-
-		await service.StartAsync(cts.Token);
+		cts.CancelAfter(TimeSpan.FromMilliseconds(200)); await service.StartAsync(cts.Token);
 		await Task.Delay(100);
 		await service.StopAsync(cts.Token);
 
@@ -156,6 +155,7 @@ public class LogCleanupServiceTests
 			new(
 				ScopeFactory,
 				options,
+				TimeProvider.System,
 				Logger);
 
 		using CancellationTokenSource cts =
@@ -214,6 +214,7 @@ public class LogCleanupServiceTests
 			new(
 				ScopeFactory,
 				options,
+				TimeProvider.System,
 				Logger);
 
 		using CancellationTokenSource cts =

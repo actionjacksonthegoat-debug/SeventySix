@@ -17,7 +17,8 @@ namespace SeventySix.Infrastructure;
 /// </remarks>
 public class HealthCheckService(
 	IMetricsService metricsService,
-	IEnumerable<IDatabaseHealthCheck> databaseHealthChecks) : IHealthCheckService
+	IEnumerable<IDatabaseHealthCheck> databaseHealthChecks,
+	TimeProvider timeProvider) : IHealthCheckService
 {
 	/// <summary>
 	/// Retrieves comprehensive system health status.
@@ -56,7 +57,10 @@ public class HealthCheckService(
 		return new HealthStatusResponse
 		{
 			Status = overallStatus,
-			CheckedAt = DateTime.UtcNow,
+			CheckedAt =
+				timeProvider
+					.GetUtcNow()
+					.UtcDateTime,
 			Database = databaseHealth,
 			ExternalApis = externalApisHealth,
 			ErrorQueue = errorQueueHealth,

@@ -16,6 +16,7 @@ namespace SeventySix.Logging;
 public class LogCleanupService(
 	IServiceScopeFactory scopeFactory,
 	IOptions<LogCleanupSettings> settings,
+	TimeProvider timeProvider,
 	ILogger<LogCleanupService> logger) : BackgroundService
 {
 	/// <inheritdoc/>
@@ -72,7 +73,10 @@ public class LogCleanupService(
 			scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 		DateTime cutoff =
-			DateTime.UtcNow.AddDays(-settings.Value.RetentionDays);
+			timeProvider
+				.GetUtcNow()
+				.AddDays(-settings.Value.RetentionDays)
+				.UtcDateTime;
 
 		int deletedCount =
 			await repository.DeleteOlderThanAsync(
@@ -104,7 +108,10 @@ public class LogCleanupService(
 		}
 
 		DateTime cutoff =
-			DateTime.UtcNow.AddDays(-config.RetentionDays);
+			timeProvider
+				.GetUtcNow()
+				.AddDays(-config.RetentionDays)
+				.UtcDateTime;
 
 		int deletedCount = 0;
 

@@ -17,6 +17,7 @@ namespace SeventySix.Identity;
 public class PendingEmailBackgroundService(
 	IServiceScopeFactory scopeFactory,
 	IOptions<EmailSettings> emailSettings,
+	TimeProvider timeProvider,
 	ILogger<PendingEmailBackgroundService> logger) : BackgroundService
 {
 	private static readonly TimeOnly RunTime =
@@ -60,10 +61,12 @@ public class PendingEmailBackgroundService(
 		}
 	}
 
-	private static TimeSpan CalculateDelayUntilNextRun()
+	private TimeSpan CalculateDelayUntilNextRun()
 	{
 		DateTime now =
-			DateTime.UtcNow;
+			timeProvider
+				.GetUtcNow()
+				.UtcDateTime;
 		DateTime todayRun =
 			now.Date.Add(RunTime.ToTimeSpan());
 		DateTime nextRun =

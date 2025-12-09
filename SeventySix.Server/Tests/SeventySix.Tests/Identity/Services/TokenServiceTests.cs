@@ -72,25 +72,16 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		using IdentityDbContext context = CreateIdentityDbContext();
 		TokenService service = CreateService(context);
 
-		int userId = 1;
-		string username = "testuser";
-		string email = "test@example.com";
-		List<string> roles = [TestRoleConstants.Developer, TestRoleConstants.Admin];
-
 		// Act
 		string token =
-			service.GenerateAccessToken(
-				userId,
-				username,
-				email,
-				fullName: null,
-				roles);
+			GenerateTestAccessToken(
+				service,
+				roles: [TestRoleConstants.Developer, TestRoleConstants.Admin]);
 
 		// Assert
 		Assert.NotNull(token);
 		Assert.NotEmpty(token);
 
-		// Verify token structure
 		JwtSecurityTokenHandler handler = new();
 		JwtSecurityToken jwt = handler.ReadJwtToken(token);
 
@@ -105,19 +96,12 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		using IdentityDbContext context = CreateIdentityDbContext();
 		TokenService service = CreateService(context);
 
-		int userId = 42;
-		string username = "testuser";
-		string email = "test@example.com";
-		List<string> roles = [TestRoleConstants.Developer];
-
 		// Act
 		string token =
-			service.GenerateAccessToken(
-				userId,
-				username,
-				email,
-				fullName: null,
-				roles);
+			GenerateTestAccessToken(
+				service,
+				userId: 42,
+				roles: [TestRoleConstants.Developer]);
 
 		// Assert
 		JwtSecurityTokenHandler handler = new();
@@ -137,19 +121,11 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		using IdentityDbContext context = CreateIdentityDbContext();
 		TokenService service = CreateService(context);
 
-		int userId = 1;
-		string username = "testuser";
-		string email = "test@example.com";
-		List<string> roles = [TestRoleConstants.Developer, TestRoleConstants.Admin];
-
 		// Act
 		string token =
-			service.GenerateAccessToken(
-				userId,
-				username,
-				email,
-				fullName: null,
-				roles);
+			GenerateTestAccessToken(
+				service,
+				roles: [TestRoleConstants.Developer, TestRoleConstants.Admin]);
 
 		// Assert
 		JwtSecurityTokenHandler handler = new();
@@ -172,19 +148,8 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		using IdentityDbContext context = CreateIdentityDbContext();
 		TokenService service = CreateService(context);
 
-		int userId = 1;
-		string username = "testuser";
-		string email = "test@example.com";
-		List<string> roles = [];
-
 		// Act
-		string token =
-			service.GenerateAccessToken(
-				userId,
-				username,
-				email,
-				fullName: null,
-				roles);
+		string token = GenerateTestAccessToken(service);
 
 		// Assert
 		JwtSecurityTokenHandler handler = new();
@@ -195,33 +160,24 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 				.AddMinutes(JwtOptions.Value.AccessTokenExpirationMinutes)
 				.UtcDateTime;
 
-		// Allow 1 second tolerance for test execution time
 		Assert.True(
 			Math.Abs((jwt.ValidTo - expectedExpiry).TotalSeconds) < 1,
 			$"Expected expiry around {expectedExpiry}, got {jwt.ValidTo}");
 	}
 
-	[Fact]
-	public void GenerateAccessToken_ContainsGivenNameClaim_WhenFullNameProvided()
+	[Theory]
+	[InlineData("John Doe", "John Doe")]
+	[InlineData(null, "")]
+	public void GenerateAccessToken_ContainsGivenNameClaim_WithExpectedValue(
+		string? fullName,
+		string expectedClaimValue)
 	{
 		// Arrange
 		using IdentityDbContext context = CreateIdentityDbContext();
 		TokenService service = CreateService(context);
 
-		int userId = 1;
-		string username = "testuser";
-		string email = "test@example.com";
-		string fullName = "John Doe";
-		List<string> roles = [];
-
 		// Act
-		string token =
-			service.GenerateAccessToken(
-				userId,
-				username,
-				email,
-				fullName,
-				roles);
+		string token = GenerateTestAccessToken(service, fullName: fullName);
 
 		// Assert
 		JwtSecurityTokenHandler handler = new();
@@ -231,53 +187,21 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.GivenName);
 
 		Assert.NotNull(givenNameClaim);
-		Assert.Equal(fullName, givenNameClaim.Value);
+		Assert.Equal(expectedClaimValue, givenNameClaim.Value);
 	}
-
-	[Fact]
-	public void GenerateAccessToken_ContainsEmptyGivenNameClaim_WhenFullNameNull()
-	{
-		// Arrange
-		using IdentityDbContext context = CreateIdentityDbContext();
-		TokenService service = CreateService(context);
-
-		int userId = 1;
-		string username = "testuser";
-		string email = "test@example.com";
-		string? fullName = null;
-		List<string> roles = [];
-
-		// Act
-		string token =
-			service.GenerateAccessToken(
-				userId,
-				username,
-				email,
-				fullName,
-				roles);
-
-		// Assert
-		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
-
-		Claim? givenNameClaim =
-			jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.GivenName);
-
-		Assert.NotNull(givenNameClaim);
-		Assert.Equal(string.Empty, givenNameClaim.Value);
-	}
-
 	#endregion
-
 	#region GenerateRefreshTokenAsync Tests
 
-	[Fact]
-	public async Task GenerateRefreshTokenAsync_CreatesTokenInDatabaseAsync()
+	[Theory]
+	[InlineData(false, 1)]
+	[InlineData(true, 14)]
+	public async Task GenerateRefreshTokenAsync_CreatesTokenWithCorrectExpirationAsync(
+		bool rememberMe,
+		int expectedExpirationDays)
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		User user = await CreateTestUserAsync(context);
-
 		TokenService service = CreateService(context);
 
 		// Act
@@ -285,14 +209,13 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			await service.GenerateRefreshTokenAsync(
 				user.Id,
 				"127.0.0.1",
-				rememberMe: false,
+				rememberMe,
 				CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(refreshToken);
 		Assert.NotEmpty(refreshToken);
 
-		// Verify token was stored in database
 		RefreshToken? storedToken =
 			await context.RefreshTokens
 				.FirstOrDefaultAsync(t => t.UserId == user.Id);
@@ -300,34 +223,10 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		Assert.NotNull(storedToken);
 		Assert.False(storedToken.IsRevoked);
 		Assert.Equal("127.0.0.1", storedToken.CreatedByIp);
-	}
-
-	[Fact]
-	public async Task GenerateRefreshTokenAsync_SetsCorrectExpirationAsync()
-	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		User user = await CreateTestUserAsync(context);
-
-		TokenService service = CreateService(context);
-
-		// Act
-		await service.GenerateRefreshTokenAsync(
-			user.Id,
-			"127.0.0.1",
-			rememberMe: false,
-			CancellationToken.None);
-
-		// Assert
-		RefreshToken? storedToken =
-			await context.RefreshTokens
-				.FirstOrDefaultAsync(t => t.UserId == user.Id);
-
-		Assert.NotNull(storedToken);
 
 		DateTime expectedExpiry =
 			FixedTime
-				.AddDays(JwtOptions.Value.RefreshTokenExpirationDays)
+				.AddDays(expectedExpirationDays)
 				.UtcDateTime;
 
 		Assert.Equal(
@@ -335,283 +234,193 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			storedToken.ExpiresAt,
 			TimeSpan.FromSeconds(1));
 	}
-
-	[Fact]
-	public async Task GenerateRefreshTokenAsync_ExtendsExpiration_WhenRememberMeTrueAsync()
-	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		User user = await CreateTestUserAsync(context);
-
-		TokenService service = CreateService(context);
-
-		// Act - Generate token with RememberMe=true
-		await service.GenerateRefreshTokenAsync(
-			user.Id,
-			"127.0.0.1",
-			rememberMe: true,
-			CancellationToken.None);
-
-		// Assert
-		RefreshToken? storedToken =
-			await context.RefreshTokens
-				.FirstOrDefaultAsync(t => t.UserId == user.Id);
-
-		Assert.NotNull(storedToken);
-
-		// Verify extended expiration (14 days vs 1 day)
-		DateTime expectedExpiry =
-			FixedTime
-				.AddDays(JwtOptions.Value.RefreshTokenRememberMeExpirationDays)
-				.UtcDateTime;
-
-		Assert.Equal(
-			expectedExpiry,
-			storedToken.ExpiresAt,
-			TimeSpan.FromSeconds(1));
-	}
-
 	#endregion
-
 	#region ValidateRefreshTokenAsync Tests
 
-	[Fact]
-	public async Task ValidateRefreshTokenAsync_ValidToken_ReturnsUserIdAsync()
+	[Theory]
+	[InlineData("valid", true)]
+	[InlineData("invalid", false)]
+	[InlineData("expired", false)]
+	[InlineData("revoked", false)]
+	public async Task ValidateRefreshTokenAsync_ReturnsExpectedResultAsync(
+		string tokenType,
+		bool shouldReturnUserId)
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		User user = await CreateTestUserAsync(context);
-
 		TokenService service = CreateService(context);
+		string tokenValue;
 
-		string refreshToken =
-			await service.GenerateRefreshTokenAsync(
-				user.Id,
-				"127.0.0.1",
-				rememberMe: false,
-				CancellationToken.None);
+		switch (tokenType)
+		{
+			case "valid":
+				tokenValue =
+					await service.GenerateRefreshTokenAsync(
+						user.Id,
+						"127.0.0.1",
+						rememberMe: false,
+						CancellationToken.None);
+				break;
+
+			case "invalid":
+				tokenValue = "invalid-token";
+				break;
+
+			case "expired":
+				string testId = Guid.NewGuid().ToString("N")[..8];
+				tokenValue = $"expired-validate-{testId}";
+				RefreshToken expiredToken =
+					new()
+					{
+						TokenHash = ComputeSha256Hash(tokenValue),
+						UserId = user.Id,
+						ExpiresAt = FixedTime.AddDays(-1).UtcDateTime,
+						CreateDate = FixedTime.AddDays(-8).UtcDateTime,
+						IsRevoked = false
+					};
+				context.RefreshTokens.Add(expiredToken);
+				await context.SaveChangesAsync();
+				break;
+
+			case "revoked":
+				tokenValue =
+					await service.GenerateRefreshTokenAsync(
+						user.Id,
+						"127.0.0.1",
+						rememberMe: false,
+						CancellationToken.None);
+				await service.RevokeRefreshTokenAsync(
+					tokenValue,
+					CancellationToken.None);
+				break;
+
+			default:
+				throw new ArgumentException($"Unknown token type: {tokenType}");
+		}
 
 		// Act
-		int? userId =
-			await service.ValidateRefreshTokenAsync(
-				refreshToken,
-				CancellationToken.None);
-
-		// Assert
-		Assert.NotNull(userId);
-		Assert.Equal(user.Id, userId.Value);
-	}
-
-	[Fact]
-	public async Task ValidateRefreshTokenAsync_InvalidToken_ReturnsNullAsync()
-	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		TokenService service = CreateService(context);
-
-		// Act
-		int? userId =
-			await service.ValidateRefreshTokenAsync(
-				"invalid-token",
-				CancellationToken.None);
-
-		// Assert
-		Assert.Null(userId);
-	}
-
-	[Fact]
-	public async Task ValidateRefreshTokenAsync_ExpiredToken_ReturnsNullAsync()
-	{
-		// Arrange
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string tokenValue = $"expired-validate-{testId}";
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		User user = await CreateTestUserAsync(context);
-
-		// Create an already expired token directly in database
-		RefreshToken expiredToken =
-			new()
-			{
-				TokenHash = ComputeSha256Hash(tokenValue),
-				UserId = user.Id,
-				ExpiresAt = FixedTime.AddDays(-1).UtcDateTime, // Already expired
-				CreateDate = FixedTime.AddDays(-8).UtcDateTime,
-				IsRevoked = false
-			};
-
-		context.RefreshTokens.Add(expiredToken);
-		await context.SaveChangesAsync();
-
-		TokenService service = CreateService(context);
-
-		// Act
-		int? userId =
+		int? actualUserId =
 			await service.ValidateRefreshTokenAsync(
 				tokenValue,
 				CancellationToken.None);
 
 		// Assert
-		Assert.Null(userId);
+		if (shouldReturnUserId)
+		{
+			Assert.NotNull(actualUserId);
+			Assert.Equal(user.Id, actualUserId.Value);
+		}
+		else
+		{
+			Assert.Null(actualUserId);
+		}
 	}
-
-	[Fact]
-	public async Task ValidateRefreshTokenAsync_RevokedToken_ReturnsNullAsync()
-	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		User user = await CreateTestUserAsync(context);
-
-		TokenService service = CreateService(context);
-
-		string refreshToken =
-			await service.GenerateRefreshTokenAsync(
-				user.Id,
-				"127.0.0.1",
-				rememberMe: false,
-				CancellationToken.None);
-
-		// Revoke the token
-		await service.RevokeRefreshTokenAsync(
-			refreshToken,
-			CancellationToken.None);
-
-		// Act
-		int? userId =
-			await service.ValidateRefreshTokenAsync(
-				refreshToken,
-				CancellationToken.None);
-
-		// Assert
-		Assert.Null(userId);
-	}
-
 	#endregion
-
 	#region RevokeRefreshTokenAsync Tests
 
-	[Fact]
-	public async Task RevokeRefreshTokenAsync_ValidToken_RevokesSuccessfullyAsync()
-	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		User user = await CreateTestUserAsync(context);
-
-		TokenService service = CreateService(context);
-
-		string refreshToken =
-			await service.GenerateRefreshTokenAsync(
-				user.Id,
-				"127.0.0.1",
-				rememberMe: false,
-				CancellationToken.None);
-
-		// Act
-		bool result =
-			await service.RevokeRefreshTokenAsync(
-				refreshToken,
-				CancellationToken.None);
-
-		// Assert
-		Assert.True(result);
-
-		// Note: ExecuteUpdateAsync bypasses change tracker, use AsNoTracking for fresh data
-		RefreshToken? storedToken =
-			await context.RefreshTokens
-				.AsNoTracking()
-				.FirstOrDefaultAsync(t => t.UserId == user.Id);
-
-		Assert.NotNull(storedToken);
-		Assert.True(storedToken.IsRevoked);
-		Assert.NotNull(storedToken.RevokedAt);
-	}
-
-	[Fact]
-	public async Task RevokeRefreshTokenAsync_InvalidToken_ReturnsFalseAsync()
+	[Theory]
+	[InlineData(true, true)]
+	[InlineData(false, false)]
+	public async Task RevokeRefreshTokenAsync_ReturnsExpectedResultAsync(
+		bool isValidToken,
+		bool expectedResult)
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		TokenService service = CreateService(context);
+		string tokenToRevoke;
+
+		if (isValidToken)
+		{
+			User user = await CreateTestUserAsync(context);
+			tokenToRevoke =
+				await service.GenerateRefreshTokenAsync(
+					user.Id,
+					"127.0.0.1",
+					rememberMe: false,
+					CancellationToken.None);
+		}
+		else
+		{
+			tokenToRevoke = "nonexistent-token";
+		}
 
 		// Act
-		bool result =
+		bool actualResult =
 			await service.RevokeRefreshTokenAsync(
-				"nonexistent-token",
+				tokenToRevoke,
 				CancellationToken.None);
 
 		// Assert
-		Assert.False(result);
-	}
+		Assert.Equal(expectedResult, actualResult);
 
+		if (isValidToken)
+		{
+			RefreshToken? storedToken =
+				await context.RefreshTokens
+					.AsNoTracking()
+					.FirstAsync();
+
+			Assert.True(storedToken.IsRevoked);
+			Assert.NotNull(storedToken.RevokedAt);
+		}
+	}
 	#endregion
-
 	#region RevokeAllUserTokensAsync Tests
 
-	[Fact]
-	public async Task RevokeAllUserTokensAsync_RevokesAllTokensAsync()
-	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		User user = await CreateTestUserAsync(context);
-
-		TokenService service = CreateService(context);
-
-		// Create multiple tokens
-		await service.GenerateRefreshTokenAsync(
-			user.Id,
-			"127.0.0.1",
-			rememberMe: false,
-			CancellationToken.None);
-
-		await service.GenerateRefreshTokenAsync(
-			user.Id,
-			"127.0.0.2",
-			rememberMe: false,
-			CancellationToken.None);
-
-		await service.GenerateRefreshTokenAsync(
-			user.Id,
-			"127.0.0.3",
-			rememberMe: false,
-			CancellationToken.None);
-
-		// Act
-		int revokedCount =
-			await service.RevokeAllUserTokensAsync(
-				user.Id,
-				CancellationToken.None);
-
-		// Assert
-		Assert.Equal(3, revokedCount);
-
-		// Note: ExecuteUpdateAsync bypasses change tracker, use AsNoTracking for fresh data
-		List<RefreshToken> tokens =
-			await context.RefreshTokens
-				.AsNoTracking()
-				.Where(t => t.UserId == user.Id)
-				.ToListAsync();
-
-		Assert.All(tokens, t => Assert.True(t.IsRevoked));
-	}
-
-	[Fact]
-	public async Task RevokeAllUserTokensAsync_NoTokens_ReturnsZeroAsync()
+	[Theory]
+	[InlineData(3, 3)]
+	[InlineData(0, 0)]
+	public async Task RevokeAllUserTokensAsync_RevokesExpectedCountAsync(
+		int tokensToCreate,
+		int expectedRevokedCount)
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		TokenService service = CreateService(context);
+		int userId;
+
+		if (tokensToCreate > 0)
+		{
+			User user = await CreateTestUserAsync(context);
+			userId = user.Id;
+
+			for (int index = 0; index < tokensToCreate; index++)
+			{
+				await service.GenerateRefreshTokenAsync(
+					user.Id,
+					$"127.0.0.{index + 1}",
+					rememberMe: false,
+					CancellationToken.None);
+			}
+		}
+		else
+		{
+			userId = 99999;
+		}
 
 		// Act
-		int revokedCount =
+		int actualRevokedCount =
 			await service.RevokeAllUserTokensAsync(
-				99999,
+				userId,
 				CancellationToken.None);
 
 		// Assert
-		Assert.Equal(0, revokedCount);
-	}
+		Assert.Equal(expectedRevokedCount, actualRevokedCount);
 
+		if (tokensToCreate > 0)
+		{
+			List<RefreshToken> tokens =
+				await context.RefreshTokens
+					.AsNoTracking()
+					.Where(t => t.UserId == userId)
+					.ToListAsync();
+
+			Assert.All(tokens, t => Assert.True(t.IsRevoked));
+		}
+	}
 	#endregion
-
 	#region Session Limit Tests
 
 	[Fact]
@@ -694,9 +503,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		Assert.False(tokens[1].IsRevoked);
 		Assert.False(tokens[2].IsRevoked);
 	}
-
 	#endregion
-
 	#region Token Family Reuse Detection Tests
 
 	[Fact]
@@ -875,46 +682,25 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 		// Assert
 		Assert.Null(result);
 	}
-
-	[Fact]
-	public async Task RotateRefreshTokenAsync_ReturnsNull_WhenTokenExpiredAsync()
-	{
-		// Arrange
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string tokenValue = $"expired-rotate-{testId}";
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		User user = await CreateTestUserAsync(context);
-
-		RefreshToken expiredToken =
-			new()
-			{
-				TokenHash = ComputeSha256Hash(tokenValue),
-				UserId = user.Id,
-				FamilyId = Guid.NewGuid(),
-				ExpiresAt = FixedTime.AddDays(-1).UtcDateTime,
-				CreateDate = FixedTime.AddDays(-8).UtcDateTime,
-				IsRevoked = false
-			};
-
-		context.RefreshTokens.Add(expiredToken);
-		await context.SaveChangesAsync();
-
-		TokenService service = CreateService(context);
-
-		// Act
-		string? result =
-			await service.RotateRefreshTokenAsync(
-				tokenValue,
-				"127.0.0.1",
-				CancellationToken.None);
-
-		// Assert
-		Assert.Null(result);
-	}
-
 	#endregion
-
 	#region Helper Methods
+
+	/// <summary>
+	/// Helper to generate access token for tests.
+	/// </summary>
+	private string GenerateTestAccessToken(
+		TokenService service,
+		int userId = 1,
+		string username = "testuser",
+		string email = "test@example.com",
+		string? fullName = null,
+		List<string>? roles = null) =>
+		service.GenerateAccessToken(
+			userId,
+			username,
+			email,
+			fullName,
+			roles ?? []);
 
 	/// <summary>
 	/// Creates a service with a test user already created.

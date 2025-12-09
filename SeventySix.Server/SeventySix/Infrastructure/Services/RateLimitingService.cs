@@ -48,7 +48,8 @@ public class RateLimitingService(
 	ILogger<RateLimitingService> logger,
 	IThirdPartyApiRequestRepository repository,
 	ITransactionManager transactionManager,
-	IOptions<ThirdPartyApiLimitSettings> settings) : IRateLimitingService
+	IOptions<ThirdPartyApiLimitSettings> settings,
+	TimeProvider timeProvider) : IRateLimitingService
 {
 	private readonly ThirdPartyApiLimitSettings RateLimitSettings = settings.Value;
 
@@ -64,7 +65,11 @@ public class RateLimitingService(
 		}
 
 		int dailyLimit = this.RateLimitSettings.GetDailyLimit(apiName);
-		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly today =
+			DateOnly.FromDateTime(
+				timeProvider
+					.GetUtcNow()
+					.UtcDateTime);
 		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		// If no record exists for today, we can make a request
@@ -109,7 +114,11 @@ public class RateLimitingService(
 		// The TransactionManager handles all race conditions and concurrency issues transparently
 		return await transactionManager.ExecuteInTransactionAsync(async ct =>
 		{
-			DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+			DateOnly today =
+				DateOnly.FromDateTime(
+					timeProvider
+						.GetUtcNow()
+						.UtcDateTime);
 
 			// Fetch the current record within the transaction
 			// Repository now uses tracking queries when inside a transaction
@@ -130,11 +139,12 @@ public class RateLimitingService(
 				};
 
 				// Use domain method to increment (sets CallCount = 1 and LastCalledAt = now)
-				request.IncrementCallCount();
+				request.IncrementCallCount(
+					timeProvider
+						.GetUtcNow()
+						.UtcDateTime);
 
-				await repository.CreateAsync(request);
-
-				return true;
+				await repository.CreateAsync(request); return true;
 			}
 
 			// Record exists - check limit before incrementing
@@ -150,7 +160,10 @@ public class RateLimitingService(
 			}
 
 			// Increment counter using domain logic
-			request.IncrementCallCount();
+			request.IncrementCallCount(
+				timeProvider
+					.GetUtcNow()
+					.UtcDateTime);
 
 			// Update the record - if another transaction modified it, this will throw
 			// and the TransactionManager will automatically retry the entire operation
@@ -176,7 +189,11 @@ public class RateLimitingService(
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly today =
+			DateOnly.FromDateTime(
+				timeProvider
+					.GetUtcNow()
+					.UtcDateTime);
 		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		return request?.CallCount ?? 0;
@@ -188,7 +205,11 @@ public class RateLimitingService(
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		int dailyLimit = this.RateLimitSettings.GetDailyLimit(apiName);
-		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly today =
+			DateOnly.FromDateTime(
+				timeProvider
+					.GetUtcNow()
+					.UtcDateTime);
 		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		int currentCount = request?.CallCount ?? 0;
@@ -198,7 +219,10 @@ public class RateLimitingService(
 	/// <inheritdoc/>
 	public TimeSpan GetTimeUntilReset()
 	{
-		DateTime now = DateTime.UtcNow;
+		DateTime now =
+			timeProvider
+				.GetUtcNow()
+				.UtcDateTime;
 		DateTime nextMidnight = now.Date.AddDays(1);
 		return nextMidnight - now;
 	}
@@ -208,7 +232,11 @@ public class RateLimitingService(
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+		DateOnly today =
+			DateOnly.FromDateTime(
+				timeProvider
+					.GetUtcNow()
+					.UtcDateTime);
 		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
 
 		if (request == null)

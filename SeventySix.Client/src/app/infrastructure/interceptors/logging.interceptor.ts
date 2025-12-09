@@ -4,8 +4,10 @@
  */
 
 import { HttpInterceptorFn } from "@angular/common/http";
+import { inject } from "@angular/core";
 import { tap, finalize } from "rxjs";
 import { environment } from "@environments/environment";
+import { DateService } from "@infrastructure/services";
 
 /**
  * Intercepts HTTP requests/responses for logging
@@ -13,7 +15,8 @@ import { environment } from "@environments/environment";
  */
 export const loggingInterceptor: HttpInterceptorFn = (req, next) =>
 {
-	const startTime: number = Date.now();
+	const dateService: DateService = inject(DateService);
+	const startTime: number = dateService.nowTimestamp();
 	const logLevel: string = environment.logging.consoleLogLevel;
 
 	// Only log HTTP requests at debug/info level
@@ -35,7 +38,7 @@ export const loggingInterceptor: HttpInterceptorFn = (req, next) =>
 				if (event.type !== 0)
 				{
 					// Not a sent event
-					const duration: number = Date.now() - startTime;
+					const duration: number = dateService.nowTimestamp() - startTime;
 					// eslint-disable-next-line no-console
 					console.log(
 						`🟢 HTTP Response: ${req.method} ${req.url} (${duration}ms)`
@@ -44,7 +47,7 @@ export const loggingInterceptor: HttpInterceptorFn = (req, next) =>
 			},
 			error: (error) =>
 			{
-				const duration: number = Date.now() - startTime;
+				const duration: number = dateService.nowTimestamp() - startTime;
 				// Always log HTTP errors regardless of log level
 				console.error(
 					`🔴 HTTP Error: ${req.method} ${req.url} (${duration}ms)`,

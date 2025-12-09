@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy } from "@angular/core";
+import { Component, ChangeDetectionStrategy, inject } from "@angular/core";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
+import { DateService } from "@infrastructure/services";
 
 /**
  * Application footer component
@@ -15,6 +16,8 @@ import { MatIconModule } from "@angular/material/icon";
 })
 export class FooterComponent
 {
-	protected readonly currentYear: number = new Date().getFullYear();
+	private readonly dateService: DateService = inject(DateService);
+	protected readonly currentYear: number =
+		this.dateService.parseUTC(this.dateService.now()).getFullYear();
 	protected readonly version: string = "1.0.0"; // TODO: Pull from package.json.
 }

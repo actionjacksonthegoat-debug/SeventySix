@@ -489,6 +489,159 @@ test('templates should not call methods in property bindings', async () => {
 });
 
 // ============================================================================
+// God File Tests (800+ Lines = Maintainability Violation)
+// ============================================================================
+
+console.log('\n🔍 God File Detection Tests');
+
+test('all TypeScript files should have less than 800 lines', async () => {
+	const sourceFiles = await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+	const maxLinesPerFile = 799;
+
+	// Empty exceptions - forces DRY and 80/20 refactoring
+	const allowedExceptions = [];
+
+	for (const file of sourceFiles) {
+		const fileName = path.basename(file);
+		if (allowedExceptions.includes(fileName)) {
+			continue;
+		}
+
+		const content = await fs.readFile(file, 'utf-8');
+		const lineCount = content.split('\n').length;
+
+		if (lineCount > maxLinesPerFile) {
+			violations.push(`${path.relative(SRC_DIR, file)}: ${lineCount} lines (max ${maxLinesPerFile})`);
+		}
+	}
+
+	assertEmpty(violations, 'Files exceeding 800 lines (apply DRY and 80/20 to reduce)');
+});
+
+// ============================================================================
+// God Method Tests (50+ Lines = Single Responsibility Violation)
+// ============================================================================
+
+console.log('\n🔍 God Method Detection Tests');
+
+test('methods should have less than 50 lines', async () => {
+	const sourceFiles = await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+	const maxLinesPerMethod = 49;
+
+	// Empty exceptions - forces proper refactoring
+	const allowedExceptions = new Map();
+
+	// Regex to find method definitions
+	const methodPattern = /^\s+(?:private\s+|protected\s+|public\s+)?(?:readonly\s+)?(?:async\s+)?(\w+)\s*(?:<[^>]*>)?\s*(?:[=:]\s*)?\([^)]*\)\s*(?::\s*[^{]+)?\s*(?:=>)?\s*\{/gm;
+
+	for (const file of sourceFiles) {
+		const content = await fs.readFile(file, 'utf-8');
+		const lines = content.split('\n');
+
+		let match;
+		while ((match = methodPattern.exec(content)) !== null) {
+			const methodName = match[1];
+			const fileMethodKey = `${path.basename(file)}.${methodName}`;
+
+			if (allowedExceptions.has(fileMethodKey)) {
+				continue;
+			}
+
+			const methodStartLine = content.substring(0, match.index).split('\n').length;
+			const methodLineCount = countMethodLines(lines, methodStartLine - 1);
+
+			if (methodLineCount > maxLinesPerMethod) {
+				violations.push(
+					`${path.relative(SRC_DIR, file)}:${methodStartLine} ${methodName}(): ${methodLineCount} lines (max ${maxLinesPerMethod})`,
+				);
+			}
+		}
+	}
+
+	assertEmpty(violations, 'Methods exceeding 50 lines (extract to smaller functions)');
+});
+
+/**
+ * Counts lines in a method body using brace matching.
+ * Excludes blank lines and comment-only lines.
+ */
+function countMethodLines(lines, startIndex) {
+	let braceDepth = 0;
+	let methodStarted = false;
+	let nonBlankLineCount = 0;
+
+	for (let lineIndex = startIndex; lineIndex < lines.length; lineIndex++) {
+		const line = lines[lineIndex];
+
+		for (const character of line) {
+			if (character === '{') {
+				braceDepth++;
+				methodStarted = true;
+			} else if (character === '}') {
+				braceDepth--;
+				if (methodStarted && braceDepth === 0) {
+					return nonBlankLineCount;
+				}
+			}
+		}
+
+		if (methodStarted) {
+			const trimmedLine = line.trim();
+			if (trimmedLine && !trimmedLine.startsWith('//')) {
+				nonBlankLineCount++;
+			}
+		}
+	}
+
+	return nonBlankLineCount;
+}
+
+// ============================================================================
+// Date Handling Tests (Use DateService, not native Date)
+// ============================================================================
+
+console.log('\n🔍 Date Handling Standards Tests');
+
+test('production code should use DateService not native Date constructors', async () => {
+	const sourceFiles = await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+
+	// Patterns that indicate direct Date usage
+	const nativeDatePattern = /new Date\(\)|Date\.now\(\)/g;
+
+	// Allowed exceptions with justification
+	const allowedExceptions = [
+		'date.service.ts', // DateService itself must use Date internally
+	];
+
+	for (const file of sourceFiles) {
+		const fileName = path.basename(file);
+		if (allowedExceptions.includes(fileName)) {
+			continue;
+		}
+
+		// Skip test files and test utilities - tests may create Date objects for assertions
+		const relativePath = path.relative(SRC_DIR, file);
+		if (fileName.endsWith('.spec.ts') || relativePath.includes('testing')) {
+			continue;
+		}
+
+		const content = await fs.readFile(file, 'utf-8');
+		const matches = content.match(nativeDatePattern);
+
+		if (matches && matches.length > 0) {
+			violations.push(
+				`${path.relative(SRC_DIR, file)}: ${matches.length} native Date usage(s) (use DateService instead)`,
+			);
+		}
+	}
+
+	assertEmpty(violations, 'Production code using native Date (inject DateService for testability)');
+});
+
+// ============================================================================
 // God Class Tests (12+ Methods = SRP Violation)
 // ============================================================================
 
@@ -590,6 +743,96 @@ test('components should have less than 12 public methods', async () => {
 	}
 
 	assertEmpty(violations, 'Components with 12+ methods violate SRP (extract to services or split)');
+});
+
+// ============================================================================
+// God File Tests (800+ Lines = Unmaintainable)
+// ============================================================================
+
+console.log('\n🔍 God File Detection Tests');
+
+test('all files should have less than 800 lines', async () => {
+	const sourceFiles = await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+	const maxLinesPerFile = 800;
+
+	// Exceptions with documented justification
+	// NOTE: Test files are NOT automatically excepted - apply 80/20 and DRY
+	const allowedExceptions = [];
+
+	for (const file of sourceFiles) {
+		const fileName = path.basename(file);
+		if (allowedExceptions.includes(fileName)) {
+			continue;
+		}
+
+		const content = await fs.readFile(file, 'utf-8');
+		const lineCount = content.split('\n').length;
+
+		if (lineCount > maxLinesPerFile) {
+			violations.push(`${path.relative(SRC_DIR, file)}: ${lineCount} lines (max ${maxLinesPerFile})`);
+		}
+	}
+
+	assertEmpty(violations, 'Files exceeding 800 lines (apply DRY and 80/20 to reduce)');
+});
+
+// ============================================================================
+// God Method Tests (50+ Lines = Single Responsibility Violation)
+// ============================================================================
+
+console.log('\n🔍 God Method Detection Tests');
+
+test('methods should have less than 50 lines', async () => {
+	const sourceFiles = await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+	const maxLinesPerMethod = 50;
+
+	// Exception patterns (full method identifier => reason)
+	// NOTE: These are legitimate exceptions with business justification
+	const allowedExceptions = new Map([
+		['permission-request-list.formatter', 'Complex table formatting with multiple conditions'],
+		['user-list.formatter', 'Complex table column definitions with actions'],
+		['user-detail.onSubmit', 'Consolidated form submission handling - split would reduce clarity'],
+		['error-handler.service.if', 'Error categorization logic - intentionally consolidated'],
+		['breadcrumb.component.buildBreadcrumbs', 'Route traversal and breadcrumb construction'],
+		['data-table.component.constructor', 'Complex table initialization with many column types'],
+		['mock-factories.get', 'Test utility with comprehensive mock data generation'],
+	]);
+
+	// Regex to find method definitions
+	const methodPattern = /^\s+(?:private\s+|protected\s+|public\s+)?(?:readonly\s+)?(?:async\s+)?(\w+)\s*(?:<[^>]*>)?\s*(?:[=:]\s*)?\([^)]*\)\s*(?::\s*[^{]+)?(?:\s*=>)?\s*\{/gm;
+
+	for (const file of sourceFiles) {
+		// Skip test files
+		if (file.endsWith('.spec.ts')) {
+			continue;
+		}
+
+		const content = await fs.readFile(file, 'utf-8');
+		const lines = content.split('\n');
+
+		let match;
+		while ((match = methodPattern.exec(content)) !== null) {
+			const methodName = match[1];
+			const methodIdentifier = `${path.basename(file, '.ts')}.${methodName}`;
+
+			if (allowedExceptions.has(methodIdentifier)) {
+				continue;
+			}
+
+			const methodStartLine = content.substring(0, match.index).split('\n').length;
+			const methodLineCount = countMethodLines(lines, methodStartLine - 1);
+
+			if (methodLineCount > maxLinesPerMethod) {
+				violations.push(
+					`${path.relative(SRC_DIR, file)}:${methodStartLine} ${methodName}(): ${methodLineCount} lines (max ${maxLinesPerMethod})`
+				);
+			}
+		}
+	}
+
+	assertEmpty(violations, 'Methods exceeding 50 lines (extract to smaller functions)');
 });
 
 // ============================================================================

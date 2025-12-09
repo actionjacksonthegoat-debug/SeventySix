@@ -29,7 +29,7 @@ public class ThirdPartyApiRequestTests
 		DateTime beforeTimestamp = DateTime.UtcNow;
 
 		// Act
-		request.IncrementCallCount();
+		request.IncrementCallCount(DateTime.UtcNow);
 
 		// Assert
 		Assert.Equal(6, request.CallCount);
@@ -51,12 +51,12 @@ public class ThirdPartyApiRequestTests
 		};
 
 		// Act
-		request.IncrementCallCount();
+		request.IncrementCallCount(DateTime.UtcNow);
 		DateTime? firstCallTime = request.LastCalledAt;
 
 		Thread.Sleep(10); // Ensure time difference
 
-		request.IncrementCallCount();
+		request.IncrementCallCount(DateTime.UtcNow);
 		DateTime? secondCallTime = request.LastCalledAt;
 
 		// Assert
@@ -153,7 +153,7 @@ public class ThirdPartyApiRequestTests
 		// Act
 		for (int i = 0; i < 100; i++)
 		{
-			request.IncrementCallCount();
+			request.IncrementCallCount(DateTime.UtcNow);
 		}
 
 		// Assert

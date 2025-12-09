@@ -49,7 +49,8 @@ public class HealthCheckServiceTests
 
 		Service = new HealthCheckService(
 			MetricsService,
-			databaseHealthChecks);
+			databaseHealthChecks,
+			TimeProvider.System);
 	}
 
 	[Fact]

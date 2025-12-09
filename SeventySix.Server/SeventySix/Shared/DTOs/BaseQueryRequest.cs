@@ -16,7 +16,10 @@ public record BaseQueryRequest
 		get; init;
 	}
 
-	public DateTime? StartDate { get; init; } = DateTime.UtcNow.AddHours(-1);
+	public DateTime? StartDate
+	{
+		get; init;
+	}
 
 	public DateTime? EndDate
 	{

@@ -1,4 +1,5 @@
 import { LogLevel, parseLogLevel } from "./log.model";
+import { DateService } from "@infrastructure/services";
 
 // ============================================================
 // Time Constants (avoid magic numbers)
@@ -75,10 +76,13 @@ export function getLogLevelIconName(logLevel: string): string
 /**
  * Converts a date to a human-readable relative time string
  */
-export function getRelativeTime(date: Date | string): string
+export function getRelativeTime(
+	date: Date | string,
+	dateService: DateService
+): string
 {
 	const dateObj: Date = typeof date === "string" ? new Date(date) : date;
-	const diff: number = Date.now() - dateObj.getTime();
+	const diff: number = dateService.nowTimestamp() - dateObj.getTime();
 
 	const days: number = Math.floor(diff / MILLISECONDS_PER_DAY);
 	if (days > 0)

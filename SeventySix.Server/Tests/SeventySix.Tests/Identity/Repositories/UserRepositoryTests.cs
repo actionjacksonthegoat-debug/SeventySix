@@ -37,7 +37,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		IdentityDbContext context = CreateIdentityDbContext();
 		Repository = new UserRepository(
 			context,
-			Substitute.For<ILogger<UserRepository>>());
+			Substitute.For<ILogger<UserRepository>>(),
+			TimeProvider.System);
 	}
 
 	[Fact]
@@ -595,7 +596,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		// Manually corrupt the context to force a DbUpdateException
 		IdentityDbContext corruptContext = CreateIdentityDbContext();
 		ILogger<UserRepository> mockLogger = Substitute.For<ILogger<UserRepository>>();
-		UserRepository corruptRepo = new(corruptContext, mockLogger);
+		UserRepository corruptRepo = new(
+			corruptContext,
+			mockLogger,
+			TimeProvider.System);
 
 		// Remove the entity from the corrupt context to simulate a concurrency issue
 		await corruptContext.Users.Where(u => u.Id == created.Id).ExecuteDeleteAsync();

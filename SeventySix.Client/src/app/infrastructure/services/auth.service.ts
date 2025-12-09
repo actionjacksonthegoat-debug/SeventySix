@@ -34,8 +34,9 @@ import {
 })
 export class AuthService
 {
-	private readonly http: HttpClient = inject(HttpClient);
+	private readonly httpClient: HttpClient = inject(HttpClient);
 	private readonly router: Router = inject(Router);
+	private readonly dateService: DateService = inject(DateService);
 
 	private readonly authUrl: string = `${environment.apiUrl}/auth`;
 
@@ -281,7 +282,7 @@ export class AuthService
 		// Expired if within buffer seconds of expiry
 		const bufferMs: number =
 			environment.auth.tokenRefreshBufferSeconds * 1000;
-		return Date.now() >= this.tokenExpiresAt - bufferMs;
+		return this.dateService.nowTimestamp() >= this.tokenExpiresAt - bufferMs;
 	}
 
 	/**

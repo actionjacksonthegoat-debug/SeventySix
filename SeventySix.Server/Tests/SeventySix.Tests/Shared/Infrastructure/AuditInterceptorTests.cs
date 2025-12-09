@@ -32,7 +32,9 @@ public class AuditInterceptorTests : IDisposable
 		MockUserContextAccessor = Substitute.For<IUserContextAccessor>();
 		MockUserContextAccessor.GetCurrentUser().Returns("TestUser");
 
-		Interceptor = new AuditInterceptor(MockUserContextAccessor);
+		Interceptor = new AuditInterceptor(
+			MockUserContextAccessor,
+			TimeProvider.System);
 
 		// Setup Identity context (for User - IAuditableEntity)
 		DbContextOptions<IdentityDbContext> identityOptions = new DbContextOptionsBuilder<IdentityDbContext>()

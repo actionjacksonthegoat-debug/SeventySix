@@ -1,4 +1,5 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
+import { DateService } from "@infrastructure/services";
 
 /**
  * Validator for date ranges.
@@ -111,7 +112,7 @@ export function stringLengthValidator(min?: number, max?: number): ValidatorFn
  * Validator for future dates.
  * Ensures date is in the future.
  */
-export function futureDateValidator(): ValidatorFn
+export function futureDateValidator(dateService: DateService): ValidatorFn
 {
 	return (control: AbstractControl): ValidationErrors | null =>
 	{
@@ -121,7 +122,7 @@ export function futureDateValidator(): ValidatorFn
 		}
 
 		const value: Date = new Date(control.value);
-		const today: Date = new Date();
+		const today: Date = dateService.parseUTC(dateService.now());
 		today.setHours(0, 0, 0, 0);
 
 		if (value < today)

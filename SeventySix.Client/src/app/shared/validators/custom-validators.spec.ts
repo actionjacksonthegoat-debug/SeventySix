@@ -1,6 +1,7 @@
 import { TestBed } from "@angular/core/testing";
 import { FormControl } from "@angular/forms";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { DateService } from "@infrastructure/services";
 import {
 	dateRangeValidator,
 	temperatureRangeValidator,
@@ -12,8 +13,11 @@ import {
 
 describe("Custom Validators", () =>
 {
+	let dateService: DateService;
+
 	beforeEach(() =>
 	{
+		dateService = new DateService();
 		TestBed.configureTestingModule({
 			providers: [provideZonelessChangeDetection()]
 		});
@@ -126,7 +130,7 @@ describe("Custom Validators", () =>
 	{
 		it("should return null for future date", () =>
 		{
-			const validator = futureDateValidator();
+			const validator = futureDateValidator(dateService);
 			const futureDate: Date = new Date();
 			futureDate.setDate(futureDate.getDate() + 1);
 			const control = new FormControl(futureDate);
@@ -136,7 +140,7 @@ describe("Custom Validators", () =>
 
 		it("should return error for past date", () =>
 		{
-			const validator = futureDateValidator();
+			const validator = futureDateValidator(dateService);
 			const pastDate: Date = new Date("2020-01-01");
 			const control = new FormControl(pastDate);
 
@@ -145,7 +149,7 @@ describe("Custom Validators", () =>
 
 		it("should return null for empty value", () =>
 		{
-			const validator = futureDateValidator();
+			const validator = futureDateValidator(dateService);
 			const control = new FormControl(null);
 
 			expect(validator(control)).toBeNull();

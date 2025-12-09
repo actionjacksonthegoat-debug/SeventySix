@@ -12,6 +12,7 @@ import {
 	isRootSpanId
 } from "@admin/logs/models";
 import { Clipboard } from "@angular/cdk/clipboard";
+import { DateService } from "@infrastructure/services";
 import { LogDetailDialogComponent } from "./log-detail-dialog.component";
 
 describe("LogDetailDialogComponent", () =>
@@ -20,6 +21,7 @@ describe("LogDetailDialogComponent", () =>
 	let fixture: ComponentFixture<LogDetailDialogComponent>;
 	let mockDialogRef: jasmine.SpyObj<MatDialogRef<LogDetailDialogComponent>>;
 	let mockClipboard: jasmine.SpyObj<Clipboard>;
+	let dateService: DateService;
 
 	const mockLog: LogDto = {
 		id: 1,
@@ -47,6 +49,7 @@ describe("LogDetailDialogComponent", () =>
 	{
 		mockDialogRef = jasmine.createSpyObj("MatDialogRef", ["close"]);
 		mockClipboard = jasmine.createSpyObj("Clipboard", ["copy"]);
+		dateService = new DateService();
 
 		await TestBed.configureTestingModule({
 			imports: [LogDetailDialogComponent],
@@ -101,20 +104,20 @@ describe("LogDetailDialogComponent", () =>
 	it("should format relative time correctly via utility", () =>
 	{
 		const now: Date = new Date();
-		const twoMinutesAgo: Date = new Date(now.getTime() - 2 * 60 * 1000);
 		const twoHoursAgo: Date = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 		const twoDaysAgo: Date = new Date(
 			now.getTime() - 2 * 24 * 60 * 60 * 1000
 		);
 
-		expect(getRelativeTime(twoMinutesAgo)).toBe("2 minutes ago");
-		expect(getRelativeTime(twoHoursAgo)).toBe("2 hours ago");
-		expect(getRelativeTime(twoDaysAgo)).toBe("2 days ago");
+		expect(getRelativeTime(twoMinutesAgo, dateService)).toBe("2 minutes ago");
+		expect(getRelativeTime(twoHoursAgo, dateService)).toBe("2 hours ago");
+		expect(getRelativeTime(twoDaysAgo, dateService)).toBe("2 days ago");
 	});
 
 	it("should format relative time as 'just now' for recent logs via utility", () =>
 	{
 		const now: Date = new Date();
+		expect(getRelativeTime(now, dateService)).toBe("just now");
 		expect(getRelativeTime(now)).toBe("just now");
 	});
 
@@ -329,7 +332,7 @@ describe("LogDetailDialogComponent", () =>
 			const threeDaysAgo: Date = new Date(
 				now.getTime() - 3 * 24 * 60 * 60 * 1000
 			);
-			expect(getRelativeTime(threeDaysAgo)).toBe("3 days ago");
+			expect(getRelativeTime(threeDaysAgo, dateService)).toBe("3 days ago");
 		});
 
 		it("should return singular day when difference is 1 day", () =>
@@ -338,7 +341,7 @@ describe("LogDetailDialogComponent", () =>
 			const oneDayAgo: Date = new Date(
 				now.getTime() - 1 * 24 * 60 * 60 * 1000
 			);
-			expect(getRelativeTime(oneDayAgo)).toBe("1 day ago");
+			expect(getRelativeTime(oneDayAgo, dateService)).toBe("1 day ago");
 		});
 
 		it("should return hours ago when difference is in hours", () =>
@@ -347,7 +350,7 @@ describe("LogDetailDialogComponent", () =>
 			const threeHoursAgo: Date = new Date(
 				now.getTime() - 3 * 60 * 60 * 1000
 			);
-			expect(getRelativeTime(threeHoursAgo)).toBe("3 hours ago");
+			expect(getRelativeTime(threeHoursAgo, dateService)).toBe("3 hours ago");
 		});
 
 		it("should return singular hour when difference is 1 hour", () =>
@@ -356,7 +359,7 @@ describe("LogDetailDialogComponent", () =>
 			const oneHourAgo: Date = new Date(
 				now.getTime() - 1 * 60 * 60 * 1000
 			);
-			expect(getRelativeTime(oneHourAgo)).toBe("1 hour ago");
+			expect(getRelativeTime(oneHourAgo, dateService)).toBe("1 hour ago");
 		});
 
 		it("should return minutes ago when difference is in minutes", () =>
@@ -365,14 +368,14 @@ describe("LogDetailDialogComponent", () =>
 			const fiveMinutesAgo: Date = new Date(
 				now.getTime() - 5 * 60 * 1000
 			);
-			expect(getRelativeTime(fiveMinutesAgo)).toBe("5 minutes ago");
+			expect(getRelativeTime(fiveMinutesAgo, dateService)).toBe("5 minutes ago");
 		});
 
 		it("should return singular minute when difference is 1 minute", () =>
 		{
 			const now: Date = new Date();
 			const oneMinuteAgo: Date = new Date(now.getTime() - 1 * 60 * 1000);
-			expect(getRelativeTime(oneMinuteAgo)).toBe("1 minute ago");
+			expect(getRelativeTime(oneMinuteAgo, dateService)).toBe("1 minute ago");
 		});
 	});
 

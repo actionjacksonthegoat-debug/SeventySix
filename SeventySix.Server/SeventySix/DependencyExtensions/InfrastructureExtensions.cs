@@ -25,6 +25,7 @@ public static class InfrastructureExtensions
 	/// <returns>The service collection for method chaining.</returns>
 	/// <remarks>
 	/// Registers:
+	/// - TimeProvider as singleton (System.TimeProvider for production, mockable for tests)
 	/// - IMetricsService as singleton (maintains static metrics state)
 	/// - IHealthCheckService as scoped (per-request health checks)
 	/// - IRateLimitingService as scoped (per-request rate limit tracking)
@@ -32,6 +33,9 @@ public static class InfrastructureExtensions
 	/// </remarks>
 	public static IServiceCollection AddInfrastructureDomain(this IServiceCollection services)
 	{
+		// Register TimeProvider (enables testable time abstraction)
+		services.AddSingleton(TimeProvider.System);
+
 		// Register services
 		services.AddSingleton<IMetricsService, MetricsService>();
 		services.AddScoped<IHealthCheckService, HealthCheckService>();

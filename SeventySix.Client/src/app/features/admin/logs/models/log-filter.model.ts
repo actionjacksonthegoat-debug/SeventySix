@@ -1,4 +1,5 @@
 import { BaseQueryRequest } from "@infrastructure/models";
+import { DateService } from "@infrastructure/services";
 
 /** Log query request DTO matching backend LogQueryRequest. */
 export interface LogQueryRequest extends BaseQueryRequest
@@ -22,19 +23,22 @@ export enum DateRangePreset
 }
 
 /** Helper to get date range from preset. */
-export function getDateRangeFromPreset(preset: DateRangePreset): {
+export function getDateRangeFromPreset(
+	preset: DateRangePreset,
+	dateService: DateService
+): {
 	startDate: Date | null;
 	endDate: Date | null;
 }
 {
-	const now: Date = new Date();
+	const now: Date = dateService.parseUTC(dateService.now());
 	const endDate: Date = now;
 	let startDate: Date | null = null;
 
 	switch (preset)
 	{
 		case DateRangePreset.Last1Hour:
-			startDate = new Date(now.getTime() - 60 * 60 * 1000);
+			startDate = dateService.addHours(now, -1);
 			break;
 		case DateRangePreset.Last6Hours:
 			startDate = new Date(now.getTime() - 6 * 60 * 60 * 1000);

@@ -55,6 +55,20 @@ export class DateService
 	}
 
 	/**
+	 * Get current timestamp as milliseconds since epoch.
+	 * Use for internal timing (circuit breakers, rate limiting, performance tracking).
+	 *
+	 * @returns Milliseconds since Unix epoch
+	 *
+	 * @example
+	 * this.circuitBreakerOpenTime = this.dateService.nowTimestamp();
+	 */
+	nowTimestamp(): number
+	{
+		return Date.now();
+	}
+
+	/**
 	 * Convert Date object to UTC ISO string.
 	 * Use when sending dates to API.
 	 *

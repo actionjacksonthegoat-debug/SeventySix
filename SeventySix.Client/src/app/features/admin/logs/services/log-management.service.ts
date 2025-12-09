@@ -14,6 +14,7 @@ import {
 	Signal,
 	WritableSignal
 } from "@angular/core";
+import { DateService } from "@infrastructure/services";
 import { HttpContext } from "@angular/common/http";
 import {
 	injectQuery,
@@ -56,11 +57,13 @@ export class LogManagementService extends BaseFilterService<LogQueryRequest>
 		() => this.selectedIds().size
 	);
 
+	private readonly dateService: DateService = inject(DateService);
+
 	constructor()
 	{
 		// Initialize with 24-hour date range as default
-		const now: Date = new Date();
-		const startDate: Date = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+		const now: Date = this.dateService.parseUTC(this.dateService.now());
+		const startDate: Date = this.dateService.addHours(now, -24);
 		super({
 			page: 1,
 			pageSize: 50,

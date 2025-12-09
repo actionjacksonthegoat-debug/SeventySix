@@ -3,6 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { catchError, of, interval } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { StorageService } from "./storage.service";
+import { DateService } from "./date.service";
 import { CreateLogRequest } from "@infrastructure/models";
 import { environment } from "@environments/environment";
 
@@ -23,6 +24,7 @@ export class ErrorQueueService
 {
 	private readonly storage: StorageService = inject(StorageService);
 	private readonly http: HttpClient = inject(HttpClient);
+	private readonly dateService: DateService = inject(DateService);
 	private readonly logEndpoint: string = `${environment.apiUrl}/logs/client/batch`;
 	private readonly localStorageKey: string = "error-queue";
 
@@ -146,7 +148,7 @@ export class ErrorQueueService
 	private openCircuitBreaker(): void
 	{
 		this.circuitBreakerState = "open";
-		this.circuitBreakerOpenTime = Date.now();
+		this.circuitBreakerOpenTime = this.dateService.nowTimestamp();
 		console.error(
 			"Circuit breaker opened. Pausing error logging for 30 seconds."
 		);
@@ -172,7 +174,8 @@ export class ErrorQueueService
 		}
 
 		// Check if circuit should be closed (30 seconds elapsed)
-		const elapsed: number = Date.now() - this.circuitBreakerOpenTime;
+		const elapsed: number =
+			this.dateService.nowTimestamp() - this.circuitBreakerOpenTime;
 		if (elapsed >= this.circuitOpenDuration)
 		{
 			this.circuitBreakerState = "closed";
@@ -232,7 +235,7 @@ export class ErrorQueueService
 	private isDuplicate(error: CreateLogRequest): boolean
 	{
 		const signature: string = this.generateErrorSignature(error);
-		const now: number = Date.now();
+		const now: number = this.dateService.nowTimestamp();
 		const lastSeen: number | undefined = this.recentErrors.get(signature);
 
 		if (lastSeen && now - lastSeen < this.dedupeWindowMs)

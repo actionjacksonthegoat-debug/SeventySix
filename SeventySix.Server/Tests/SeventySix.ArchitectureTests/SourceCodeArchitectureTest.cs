@@ -70,4 +70,23 @@ public abstract class SourceCodeArchitectureTest
 		Path.GetRelativePath(
 			SolutionRoot,
 			fullPath);
+
+	/// <summary>
+	/// Gets all C# source files including tests.
+	/// Excludes bin, obj, and Migrations folders.
+	/// </summary>
+	/// <returns>Enumerable of all .cs file paths.</returns>
+	protected static IEnumerable<string> GetAllSourceFiles()
+	{
+		string[] allFiles =
+			Directory.GetFiles(
+				SolutionRoot,
+				"*.cs",
+				SearchOption.AllDirectories);
+
+		return allFiles.Where(filePath =>
+			!filePath.Contains("\\bin\\")
+			&& !filePath.Contains("\\obj\\")
+			&& !filePath.Contains("\\Migrations\\"));
+	}
 }

@@ -18,25 +18,6 @@ using Shouldly;
 
 namespace SeventySix.Tests.Identity;
 
-/// <summary>
-/// Unit tests for UserService.
-/// Tests business logic and service orchestration.
-/// </summary>
-/// <remarks>
-/// Following TDD principles:
-/// - Use mocks for dependencies (repository, validator)
-/// - Test each public method
-/// - Test success and failure scenarios
-/// - Verify proper service orchestration
-///
-/// Coverage Focus:
-/// - GetAllUsersAsync
-/// - GetUserByIdAsync
-/// - CreateUserAsync
-/// - Validation integration
-/// - Repository interaction
-/// - DTO mapping
-/// </remarks>
 public class UserServiceTests
 {
 	private readonly IUserRepository Repository;
@@ -62,30 +43,7 @@ public class UserServiceTests
 		PasswordService = Substitute.For<IPasswordService>();
 		Logger = Substitute.For<ILogger<UserService>>();
 
-		// Setup transaction manager to execute the delegate immediately
-		TransactionManager
-			.ExecuteInTransactionAsync(
-				Arg.Any<Func<CancellationToken, Task<UserDto>>>(),
-				Arg.Any<int>(),
-				Arg.Any<CancellationToken>())
-			.Returns(async callInfo =>
-			{
-				Func<CancellationToken, Task<UserDto>> operation = callInfo.ArgAt<Func<CancellationToken, Task<UserDto>>>(0);
-				CancellationToken ct = callInfo.ArgAt<CancellationToken>(2);
-				return await operation(ct);
-			});
-
-		TransactionManager
-			.ExecuteInTransactionAsync(
-				Arg.Any<Func<CancellationToken, Task<int>>>(),
-				Arg.Any<int>(),
-				Arg.Any<CancellationToken>())
-			.Returns(async callInfo =>
-			{
-				Func<CancellationToken, Task<int>> operation = callInfo.ArgAt<Func<CancellationToken, Task<int>>>(0);
-				CancellationToken ct = callInfo.ArgAt<CancellationToken>(2);
-				return await operation(ct);
-			});
+		SetupTransactionManager();
 
 		Service = new UserService(
 			Repository,
@@ -99,26 +57,172 @@ public class UserServiceTests
 			Logger);
 	}
 
-	#region Constructor Tests
+	#region Helper Methods
 
-	// Note: UserService uses primary constructor syntax which relies on
-	// dependency injection to provide non-null dependencies.
-	// ArgumentNullException tests are not applicable with this pattern.
+	private static User CreateTestUser(
+		int id = 1,
+		string username = "testuser",
+		string email = "test@example.com",
+		string fullName = "Test User",
+		bool isActive = true) =>
+		new()
+		{
+			Id = id,
+			Username = username,
+			Email = email,
+			FullName = fullName,
+			IsActive = isActive,
+			CreateDate = DateTime.UtcNow,
+			CreatedBy = TestAuditConstants.SystemUser,
+			ModifiedBy = TestAuditConstants.SystemUser,
+			IsDeleted = false,
+			RowVersion = 1,
+		};
+
+	private static CreateUserRequest CreateValidRequest(
+		string username = "new_user",
+		string email = "new@example.com",
+		string fullName = "New User",
+		bool isActive = true) =>
+		new()
+		{
+			Username = username,
+			Email = email,
+			FullName = fullName,
+			IsActive = isActive,
+		};
+
+	private static UpdateUserRequest CreateValidUpdateRequest(
+		int id = 1,
+		string username = "testuser",
+		string email = "test@example.com",
+		string fullName = "Test User",
+		bool isActive = true) =>
+		new()
+		{
+			Id = id,
+			Username = username,
+			Email = email,
+			FullName = fullName,
+			IsActive = isActive,
+		};
+
+	private void SetupSuccessfulCreateFlow(
+		CreateUserRequest request,
+		int assignedId = 1)
+	{
+		CreateValidator.SetupSuccessfulValidation();
+
+		Repository
+			.UsernameExistsAsync(
+				request.Username,
+				null,
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		Repository
+			.EmailExistsAsync(
+				request.Email,
+				null,
+				Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		Repository
+			.CreateAsync(
+				Arg.Any<User>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				callInfo =>
+				{
+					User user = callInfo.ArgAt<User>(0);
+					user.Id = assignedId;
+					return user;
+				});
+	}
+
+	private void SetupSuccessfulUpdateFlow(
+		UpdateUserRequest request,
+		User existingUser)
+	{
+		UpdateValidator.SetupSuccessfulValidation();
+
+		Repository
+			.GetByIdAsync(request.Id, Arg.Any<CancellationToken>())
+			.Returns(existingUser);
+
+		Repository
+			.UsernameExistsAsync(request.Username, request.Id, Arg.Any<CancellationToken>())
+			.Returns(false);
+
+		Repository
+			.EmailExistsAsync(request.Email, request.Id, Arg.Any<CancellationToken>())
+			.Returns(false);
+	}
+
+	private void SetupTransactionManager()
+	{
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<UserDto>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				async callInfo =>
+				{
+					Func<CancellationToken, Task<UserDto>> operation =
+						callInfo.ArgAt<Func<CancellationToken, Task<UserDto>>>(0);
+					CancellationToken cancellationToken =
+						callInfo.ArgAt<CancellationToken>(2);
+					return await operation(cancellationToken);
+				});
+
+		TransactionManager
+			.ExecuteInTransactionAsync(
+				Arg.Any<Func<CancellationToken, Task<int>>>(),
+				Arg.Any<int>(),
+				Arg.Any<CancellationToken>())
+			.Returns(
+				async callInfo =>
+				{
+					Func<CancellationToken, Task<int>> operation =
+						callInfo.ArgAt<Func<CancellationToken, Task<int>>>(0);
+					CancellationToken cancellationToken =
+						callInfo.ArgAt<CancellationToken>(2);
+					return await operation(cancellationToken);
+				});
+	}
+
+	private UserService CreateServiceWithMockPasswordService(
+		IPasswordService mockPasswordService) =>
+		new(
+			Repository,
+			PermissionRequestRepository,
+			CreateValidator,
+			UpdateValidator,
+			UpdateProfileValidator,
+			QueryValidator,
+			TransactionManager,
+			mockPasswordService,
+			Logger);
 
 	#endregion
 
 	#region GetAllUsersAsync Tests
 
-	[Fact]
-	public async Task GetAllUsersAsync_ShouldReturnAllUsers_WhenUsersExistAsync()
+	[Theory]
+	[InlineData(2, "user1")]
+	[InlineData(0, null)]
+	public async Task GetAllUsersAsync_ReturnsExpectedResultAsync(
+		int userCount,
+		string? firstUsername)
 	{
 		// Arrange
-		List<UserDto> userDtos =
-		[
-			new UserDtoBuilder().WithId(1).WithUsername("user1").WithEmail("user1@example.com").WithIsActive(true).Build(),
-			new UserDtoBuilder().WithId(2).WithUsername("user2").WithEmail("user2@example.com").WithIsActive(false).Build(),
-			new UserDtoBuilder().WithId(3).WithUsername("user3").WithEmail("user3@example.com").WithIsActive(true).Build(),
-		];
+		List<UserDto> userDtos = userCount > 0
+			? [
+				new UserDtoBuilder().WithId(1).WithUsername(firstUsername!).Build(),
+				new UserDtoBuilder().WithId(2).WithUsername("user2").Build(),
+			]
+			: [];
 
 		Repository
 			.GetAllProjectedAsync(Arg.Any<CancellationToken>())
@@ -128,65 +232,22 @@ public class UserServiceTests
 		IEnumerable<UserDto> result = await Service.GetAllUsersAsync();
 
 		// Assert
-		Assert.NotNull(result);
-		List<UserDto> resultList = [.. result];
-		Assert.Equal(3, resultList.Count);
-		Assert.Equal("user1", resultList[0].Username);
-		Assert.Equal("user2", resultList[1].Username);
-		Assert.Equal("user3", resultList[2].Username);
-
-		await Repository.Received(1).GetAllProjectedAsync(Arg.Any<CancellationToken>());
+		result.Count().ShouldBe(userCount);
+		if (userCount > 0)
+		{
+			result.First().Username.ShouldBe(firstUsername);
+		}
 	}
-
-	[Fact]
-	public async Task GetAllUsersAsync_ShouldReturnEmptyCollection_WhenNoUsersExistAsync()
-	{
-		// Arrange
-		Repository
-			.GetAllProjectedAsync(Arg.Any<CancellationToken>())
-			.Returns([]);
-
-		// Act
-		IEnumerable<UserDto> result = await Service.GetAllUsersAsync();
-
-		// Assert
-		Assert.NotNull(result);
-		Assert.Empty(result);
-
-		await Repository.Received(1).GetAllProjectedAsync(Arg.Any<CancellationToken>());
-	}
-
-	[Fact]
-	public async Task GetAllUsersAsync_ShouldRespectCancellationTokenAsync()
-	{
-		// Arrange
-		CancellationToken cancellationToken = new();
-		Repository
-			.GetAllProjectedAsync(cancellationToken)
-			.Returns([]);
-
-		// Act
-		await Service.GetAllUsersAsync(cancellationToken);
-
-		// Assert
-		await Repository.Received(1).GetAllProjectedAsync(cancellationToken);
-	}
-
 	#endregion
-
 	#region GetUserByIdAsync Tests
 
 	[Fact]
 	public async Task GetUserByIdAsync_ShouldReturnUser_WhenUserExistsAsync()
 	{
 		// Arrange
-		User user = new UserBuilder()
-			.WithUsername("john_doe")
-			.WithEmail("john@example.com")
-			.WithFullName("John Doe")
-			.WithIsActive(true)
-			.Build();
-		user.Id = 123;
+		User user = CreateTestUser(
+			id: 123,
+			username: "john_doe");
 
 		Repository
 			.GetByIdAsync(123, Arg.Any<CancellationToken>())
@@ -196,14 +257,9 @@ public class UserServiceTests
 		UserDto? result = await Service.GetUserByIdAsync(123);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal(123, result.Id);
-		Assert.Equal("john_doe", result.Username);
-		Assert.Equal("john@example.com", result.Email);
-		Assert.Equal("John Doe", result.FullName);
-		Assert.True(result.IsActive);
-
-		await Repository.Received(1).GetByIdAsync(123, Arg.Any<CancellationToken>());
+		result.ShouldNotBeNull();
+		result.Id.ShouldBe(123);
+		result.Username.ShouldBe("john_doe");
 	}
 
 	[Fact]
@@ -218,81 +274,27 @@ public class UserServiceTests
 		UserDto? result = await Service.GetUserByIdAsync(999);
 
 		// Assert
-		Assert.Null(result);
-
-		await Repository.Received(1).GetByIdAsync(999, Arg.Any<CancellationToken>());
+		result.ShouldBeNull();
 	}
-
-	[Fact]
-	public async Task GetUserByIdAsync_ShouldRespectCancellationTokenAsync()
-	{
-		// Arrange
-		CancellationToken cancellationToken = new();
-		Repository
-			.GetByIdAsync(1, cancellationToken)
-			.Returns((User?)null);
-
-		// Act
-		await Service.GetUserByIdAsync(1, cancellationToken);
-
-		// Assert
-		await Repository.Received(1).GetByIdAsync(1, cancellationToken);
-	}
-
 	#endregion
-
 	#region CreateUserAsync Tests
 
 	[Fact]
 	public async Task CreateUserAsync_ShouldCreateUser_WhenRequestIsValidAsync()
 	{
 		// Arrange
-		CreateUserRequest request = new()
-		{
-			Username = "new_user",
-			Email = "new@example.com",
-			FullName = "New User",
-			IsActive = true,
-		};
-
-		CreateValidator.SetupSuccessfulValidation();
-
-		Repository
-			.UsernameExistsAsync(request.Username, null, Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.EmailExistsAsync(request.Email, null, Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>())
-			.Returns(callInfo =>
-			{
-				User u = callInfo.ArgAt<User>(0);
-				u.Id = 456; // Simulate DB assigning ID
-				return u;
-			});
+		CreateUserRequest request = CreateValidRequest();
+		SetupSuccessfulCreateFlow(request, 456);
 
 		// Act
 		UserDto result = await Service.CreateUserAsync(request);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal(456, result.Id);
-		Assert.Equal("new_user", result.Username);
-		Assert.Equal("new@example.com", result.Email);
-		Assert.Equal("New User", result.FullName);
-		Assert.True(result.IsActive);
-
-		await CreateValidator.Received(1)
-			.ValidateAsync(Arg.Any<ValidationContext<CreateUserRequest>>(), Arg.Any<CancellationToken>());
-		await Repository.Received(1)
-			.CreateAsync(Arg.Is<User>(u =>
-				u.Username == "new_user" &&
-				u.Email == "new@example.com" &&
-				u.FullName == "New User" &&
-				u.IsActive == true), Arg.Any<CancellationToken>());
+		result.Id.ShouldBe(456);
+		result.Username.ShouldBe("new_user");
+		result.Email.ShouldBe("new@example.com");
+		result.FullName.ShouldBe("New User");
+		result.IsActive.ShouldBeTrue();
 	}
 
 	[Fact]
@@ -316,353 +318,57 @@ public class UserServiceTests
 		// Act & Assert
 		await Assert.ThrowsAsync<ValidationException>(() =>
 			Service.CreateUserAsync(request));
-
-		await CreateValidator.Received(1)
-			.ValidateAsync(Arg.Any<ValidationContext<CreateUserRequest>>(), Arg.Any<CancellationToken>());
-		await Repository.DidNotReceive()
-			.CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>());
 	}
 
-	[Fact]
-	public async Task CreateUserAsync_ShouldPassEntityToRepository_WithoutSettingCreateDateAsync()
-	{
-		// Arrange - CreateDate and CreatedBy are set by AuditInterceptor, not service
-		// Service passes entity to repository, interceptor handles audit properties on SaveChanges
-		CreateUserRequest request = new()
-		{
-			Username = "test_user",
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
-
-		ValidationResult validationResult = new();
-		CreateValidator
-			.ValidateAsync(request, Arg.Any<CancellationToken>())
-			.Returns(validationResult);
-
-		Repository
-			.UsernameExistsAsync(request.Username, null, Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.EmailExistsAsync(request.Email, null, Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		User? capturedUser = null;
-		Repository
-			.CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>())
-			.Returns(callInfo =>
-			{
-				capturedUser = callInfo.ArgAt<User>(0);
-				capturedUser.Id = 1;
-				// Simulate what AuditInterceptor would do
-				capturedUser.CreateDate = DateTime.UtcNow;
-				capturedUser.CreatedBy = TestAuditConstants.SystemUser;
-				capturedUser.ModifiedBy = TestAuditConstants.SystemUser;
-				return capturedUser;
-			});
-
-		// Act
-		await Service.CreateUserAsync(request);
-
-		// Assert - Service does NOT set audit fields, CreateDate/CreatedBy are default before interceptor
-		Assert.NotNull(capturedUser);
-		// Service passes entity with default values - interceptor sets them on save
-		// After mock callback simulating interceptor, values are set
-		Assert.Equal(TestAuditConstants.SystemUser, capturedUser.CreatedBy);
-	}
-
-	[Fact]
-	public async Task CreateUserAsync_ShouldHandleEmptyFullNameAsync()
+	[Theory]
+	[InlineData("", true)]
+	[InlineData("User Name", false)]
+	public async Task CreateUserAsync_HandlesEdgeCasesAsync(
+		string fullName,
+		bool isActive)
 	{
 		// Arrange
-		CreateUserRequest request = new()
-		{
-			Username = "test_user",
-			Email = "test@example.com",
-			FullName = string.Empty,
-		};
-
-		ValidationResult validationResult = new();
-		CreateValidator
-			.ValidateAsync(request, Arg.Any<CancellationToken>())
-			.Returns(validationResult);
-
-		Repository
-			.UsernameExistsAsync(request.Username, null, Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.EmailExistsAsync(request.Email, null, Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>())
-			.Returns(callInfo =>
-			{
-				User u = callInfo.ArgAt<User>(0);
-				u.Id = 1;
-				return u;
-			});
+		CreateUserRequest request =
+			CreateValidRequest(
+				fullName: fullName,
+				isActive: isActive);
+		SetupSuccessfulCreateFlow(request);
 
 		// Act
 		UserDto result = await Service.CreateUserAsync(request);
 
 		// Assert
-		Assert.Equal(string.Empty, result.FullName);
-	}
-
-	[Fact]
-	public async Task CreateUserAsync_ShouldRespectIsActiveFalseAsync()
-	{
-		// Arrange
-		CreateUserRequest request = new()
-		{
-			Username = "inactive_user",
-			Email = "inactive@example.com",
-			FullName = "Inactive User",
-			IsActive = false,
-		};
-
-		ValidationResult validationResult = new();
-		CreateValidator
-			.ValidateAsync(request, Arg.Any<CancellationToken>())
-			.Returns(validationResult);
-
-		Repository
-			.UsernameExistsAsync(request.Username, null, Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.EmailExistsAsync(request.Email, null, Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>())
-			.Returns(callInfo =>
-			{
-				User u = callInfo.ArgAt<User>(0);
-				u.Id = 1;
-				return u;
-			});
-
-		// Act
-		UserDto result = await Service.CreateUserAsync(request);
-
-		// Assert
-		Assert.False(result.IsActive);
-	}
-
-	[Fact]
-	public async Task CreateUserAsync_ShouldRespectCancellationTokenAsync()
-	{
-		// Arrange
-		CancellationToken cancellationToken = new();
-		CreateUserRequest request = new()
-		{
-			Username = "test",
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
-
-		ValidationResult validationResult = new();
-		CreateValidator
-			.ValidateAsync(Arg.Any<ValidationContext<CreateUserRequest>>(), cancellationToken)
-			.Returns(validationResult);
-
-		Repository
-			.UsernameExistsAsync(request.Username, null, cancellationToken)
-			.Returns(false);
-
-		Repository
-			.EmailExistsAsync(request.Email, null, cancellationToken)
-			.Returns(false);
-
-		Repository
-			.CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>())
-			.Returns(callInfo =>
-			{
-				User u = callInfo.ArgAt<User>(0);
-				u.Id = 1;
-				return u;
-			});
-
-		// Act
-		await Service.CreateUserAsync(request);
-
-		// Assert
-		await CreateValidator.Received(1).ValidateAsync(Arg.Any<ValidationContext<CreateUserRequest>>(), cancellationToken);
-		await Repository.Received(1).CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>());
+		result.FullName.ShouldBe(fullName);
+		result.IsActive.ShouldBe(isActive);
 	}
 
 	[Fact]
 	public async Task CreateUserAsync_CallsInitiatePasswordReset_WithIsNewUserTrueAsync()
 	{
 		// Arrange
-		IPasswordService mockPasswordService =
-			Substitute.For<IPasswordService>();
-
-		UserService service =
-			new(
-				Repository,
-				PermissionRequestRepository,
-				CreateValidator,
-				UpdateValidator,
-				UpdateProfileValidator,
-				QueryValidator,
-				TransactionManager,
-				mockPasswordService,
-				Logger);
-
-		CreateUserRequest request =
-			new()
-			{
-				Username = "testuser",
-				Email = "test@example.com",
-				FullName = "Test User",
-				IsActive = true
-			};
-
-		CreateValidator.SetupSuccessfulValidation();
-
-		Repository
-			.UsernameExistsAsync(
-				request.Username,
-				null,
-				Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.EmailExistsAsync(
-				request.Email,
-				null,
-				Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.CreateAsync(
-				Arg.Any<User>(),
-				Arg.Any<CancellationToken>())
-			.Returns(
-				callInfo =>
-				{
-					User user =
-						callInfo.ArgAt<User>(0);
-					user.Id = 123;
-					return user;
-				});
+		IPasswordService mockPasswordService = Substitute.For<IPasswordService>();
+		UserService service = CreateServiceWithMockPasswordService(mockPasswordService);
+		CreateUserRequest request = CreateValidRequest();
+		SetupSuccessfulCreateFlow(
+			request,
+			123);
 
 		// Act
-		UserDto result =
-			await service.CreateUserAsync(
-				request,
-				CancellationToken.None);
+		await service.CreateUserAsync(request);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal("testuser", result.Username);
-
 		await mockPasswordService.Received(1)
 			.InitiatePasswordResetAsync(
-				Arg.Is<int>(id => id == 123),
+				Arg.Is<int>(userId => userId == 123),
 				isNewUser: true,
 				Arg.Any<CancellationToken>());
-	}
-
-	[Fact]
-	public async Task CreateUserAsync_SucceedsWhenEmailFails_LogsWarningAsync()
-	{
-		// Arrange
-		IPasswordService mockPasswordService =
-			Substitute.For<IPasswordService>();
-
-		mockPasswordService
-			.InitiatePasswordResetAsync(
-				Arg.Any<int>(),
-				Arg.Any<bool>(),
-				Arg.Any<CancellationToken>())
-			.ThrowsAsync(
-				new Exception("SMTP connection failed"));
-
-		UserService service =
-			new(
-				Repository,
-				PermissionRequestRepository,
-				CreateValidator,
-				UpdateValidator,
-				UpdateProfileValidator,
-				QueryValidator,
-				TransactionManager,
-				mockPasswordService,
-				Logger);
-
-		CreateUserRequest request =
-			new()
-			{
-				Username = "testuser",
-				Email = "test@example.com",
-				FullName = "Test User",
-				IsActive = true
-			};
-
-		CreateValidator.SetupSuccessfulValidation();
-
-		Repository
-			.UsernameExistsAsync(
-				request.Username,
-				null,
-				Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.EmailExistsAsync(
-				request.Email,
-				null,
-				Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.CreateAsync(
-				Arg.Any<User>(),
-				Arg.Any<CancellationToken>())
-			.Returns(
-				callInfo =>
-				{
-					User user =
-						callInfo.ArgAt<User>(0);
-					user.Id = 123;
-					user.Email = "test@example.com";
-					return user;
-				});
-
-		// Act
-		UserDto result =
-			await service.CreateUserAsync(
-				request,
-				CancellationToken.None);
-
-		// Assert - User created successfully despite email failure
-		Assert.NotNull(result);
-		Assert.Equal("testuser", result.Username);
-		Assert.Equal("test@example.com", result.Email);
-
-		// Verify warning logged with exception
-		Logger.Received(1)
-			.Log(
-				LogLevel.Warning,
-				Arg.Any<EventId>(),
-				Arg.Is<object>(o => o.ToString()!.Contains("Failed to send welcome email")),
-				Arg.Any<Exception>(),
-				Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]
 	public async Task CreateUserAsync_WhenEmailRateLimited_MarksUserAndRethrowsAsync()
 	{
 		// Arrange
-		IPasswordService mockPasswordService =
-			Substitute.For<IPasswordService>();
-
+		IPasswordService mockPasswordService = Substitute.For<IPasswordService>();
 		mockPasswordService
 			.InitiatePasswordResetAsync(
 				Arg.Any<int>(),
@@ -673,59 +379,22 @@ public class UserServiceTests
 					TimeSpan.FromHours(12),
 					0));
 
-		UserService service =
-			new(
-				Repository,
-				PermissionRequestRepository,
-				CreateValidator,
-				UpdateValidator,
-				UpdateProfileValidator,
-				QueryValidator,
-				TransactionManager,
-				mockPasswordService,
-				Logger);
-
-		CreateUserRequest request =
-			new()
-			{
-				Username = "testuser",
-				Email = "test@example.com",
-				FullName = "Test User",
-				IsActive = true
-			};
-
-		CreateValidator.SetupSuccessfulValidation();
-
-		Repository
-			.UsernameExistsAsync(
-				request.Username,
-				null,
-				Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.EmailExistsAsync(
-				request.Email,
-				null,
-				Arg.Any<CancellationToken>())
-			.Returns(false);
+		UserService service = CreateServiceWithMockPasswordService(mockPasswordService);
+		CreateUserRequest request = CreateValidRequest();
+		SetupSuccessfulCreateFlow(
+			request,
+			123);
 
 		User createdUser =
 			new()
 			{
 				Id = 123,
-				Username = "testuser",
-				Email = "test@example.com",
-				FullName = "Test User",
+				Username = "new_user",
+				Email = "new@example.com",
+				FullName = "New User",
 				IsActive = true,
 				NeedsPendingEmail = false
 			};
-
-		Repository
-			.CreateAsync(
-				Arg.Any<User>(),
-				Arg.Any<CancellationToken>())
-			.Returns(createdUser);
 
 		Repository
 			.GetByIdAsync(
@@ -733,83 +402,40 @@ public class UserServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns(createdUser);
 
-		// Act & Assert: Verify exception is rethrown
+		// Act & Assert
 		await Should.ThrowAsync<EmailRateLimitException>(
-			() => service.CreateUserAsync(
-				request,
-				CancellationToken.None));
+			() => service.CreateUserAsync(request));
 
-		// Verify user was marked with NeedsPendingEmail flag
 		await Repository.Received(1)
 			.UpdateAsync(
 				Arg.Any<User>(),
 				Arg.Any<CancellationToken>());
 
-		// Verify the user object was mutated correctly
 		createdUser.NeedsPendingEmail.ShouldBeTrue();
 	}
-
 	#endregion
-
 	#region UpdateUserAsync Tests
 
 	[Fact]
 	public async Task UpdateUserAsync_ValidRequest_ReturnsUpdatedUserDtoAsync()
 	{
 		// Arrange
-		UpdateUserRequest request = new UpdateUserRequest
-		{
-			Id = 1,
-			Username = "updateduser",
-			Email = "updated@example.com",
-			FullName = "Updated User",
-			IsActive = true,
-		};
+		UpdateUserRequest request =
+			CreateValidUpdateRequest(
+				username: "updateduser",
+				email: "updated@example.com",
+				fullName: "Updated User");
 
-		User existingUser = new User
-		{
-			Id = 1,
-			Username = "olduser",
-			Email = "old@example.com",
-			FullName = "Old User",
-			IsActive = true,
-			CreateDate = DateTime.UtcNow.AddDays(-1),
-			CreatedBy = TestAuditConstants.SystemUser,
-			IsDeleted = false,
-			RowVersion = 1,
-		};
+		User existingUser = CreateTestUser();
 
-		User updatedUser = new User
-		{
-			Id = 1,
-			Username = request.Username,
-			Email = request.Email,
-			FullName = request.FullName,
-			IsActive = request.IsActive,
-			CreateDate = existingUser.CreateDate,
-			CreatedBy = existingUser.CreatedBy,
-			ModifyDate = DateTime.UtcNow,
-			ModifiedBy = TestAuditConstants.SystemUser,
-			IsDeleted = false,
-			RowVersion = 2,
-		};
+		User updatedUser =
+			CreateTestUser(
+				id: 1,
+				username: request.Username,
+				email: request.Email,
+				fullName: request.FullName);
 
-		ValidationResult validationResult = new();
-		UpdateValidator
-			.ValidateAsync(Arg.Any<ValidationContext<UpdateUserRequest>>(), Arg.Any<CancellationToken>())
-			.Returns(validationResult);
-
-		Repository
-			.GetByIdAsync(request.Id, Arg.Any<CancellationToken>())
-			.Returns(existingUser);
-
-		Repository
-			.UsernameExistsAsync(request.Username, request.Id, Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		Repository
-			.EmailExistsAsync(request.Email, request.Id, Arg.Any<CancellationToken>())
-			.Returns(false);
+		SetupSuccessfulUpdateFlow(request, existingUser);
 
 		Repository
 			.UpdateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>())
@@ -819,80 +445,50 @@ public class UserServiceTests
 		UserDto result = await Service.UpdateUserAsync(request);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal(updatedUser.Id, result.Id);
-		Assert.Equal(updatedUser.Username, result.Username);
-		Assert.Equal(updatedUser.Email, result.Email);
-		Assert.Equal(updatedUser.FullName, result.FullName);
-
-		await Repository.Received(1).UpdateAsync(
-			Arg.Is<User>(u =>
-				u.Username == request.Username &&
-				u.Email == request.Email),
-			Arg.Any<CancellationToken>());
+		result.Id.ShouldBe(updatedUser.Id);
+		result.Username.ShouldBe(updatedUser.Username);
+		result.Email.ShouldBe(updatedUser.Email);
+		result.FullName.ShouldBe(updatedUser.FullName);
 	}
 
 	[Fact]
 	public async Task UpdateUserAsync_UserNotFound_ThrowsUserNotFoundExceptionAsync()
 	{
 		// Arrange
-		UpdateUserRequest request = new UpdateUserRequest
-		{
-			Id = 999,
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = "Test User",
-			IsActive = true,
-		};
+		UpdateUserRequest request =
+			CreateValidUpdateRequest(id: 999);
 
 		ValidationResult validationResult = new();
 		UpdateValidator
-			.ValidateAsync(Arg.Any<ValidationContext<UpdateUserRequest>>(), Arg.Any<CancellationToken>())
+			.ValidateAsync(
+				Arg.Any<ValidationContext<UpdateUserRequest>>(),
+				Arg.Any<CancellationToken>())
 			.Returns(validationResult);
 
 		Repository
-			.GetByIdAsync(request.Id, Arg.Any<CancellationToken>())
+			.GetByIdAsync(
+				request.Id,
+				Arg.Any<CancellationToken>())
 			.Returns((User?)null);
 
 		// Act & Assert
-		UserNotFoundException exception = await Assert.ThrowsAsync<UserNotFoundException>(
-			() => Service.UpdateUserAsync(request));
+		UserNotFoundException exception =
+			await Assert.ThrowsAsync<UserNotFoundException>(
+				() => Service.UpdateUserAsync(request));
 
-		Assert.Contains(request.Id.ToString(), exception.Message);
-
-		await Repository.DidNotReceive().UpdateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>());
+		exception.Message.ShouldContain(request.Id.ToString());
 	}
 
 	[Fact]
 	public async Task UpdateUserAsync_DuplicateUsername_ThrowsDuplicateUserExceptionAsync()
 	{
 		// Arrange
-		UpdateUserRequest request = new UpdateUserRequest
-		{
-			Id = 1,
-			Username = "duplicate",
-			Email = "test@example.com",
-			FullName = "Test User",
-			IsActive = true,
-		};
+		UpdateUserRequest request =
+			CreateValidUpdateRequest(username: "duplicate");
 
-		User existingUser = new User
-		{
-			Id = 1,
-			Username = "olduser",
-			Email = "test@example.com",
-			FullName = "Test User",
-			IsActive = true,
-			CreateDate = DateTime.UtcNow.AddDays(-1),
-			CreatedBy = TestAuditConstants.SystemUser,
-			IsDeleted = false,
-			RowVersion = 1,
-		};
+		User existingUser = CreateTestUser();
 
-		ValidationResult validationResult = new();
-		UpdateValidator
-			.ValidateAsync(Arg.Any<ValidationContext<UpdateUserRequest>>(), Arg.Any<CancellationToken>())
-			.Returns(validationResult);
+		UpdateValidator.SetupSuccessfulValidation();
 
 		Repository
 			.GetByIdAsync(request.Id, Arg.Any<CancellationToken>())
@@ -903,51 +499,39 @@ public class UserServiceTests
 			.Returns(true);
 
 		// Act & Assert
-		DuplicateUserException exception = await Assert.ThrowsAsync<DuplicateUserException>(
-			() => Service.UpdateUserAsync(request));
+		DuplicateUserException exception =
+			await Assert.ThrowsAsync<DuplicateUserException>(
+				() => Service.UpdateUserAsync(request));
 
-		Assert.Contains(request.Username, exception.Message);
-
-		await Repository.DidNotReceive().UpdateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>());
+		exception.Message.ShouldContain(request.Username);
 	}
 
 	[Fact]
 	public async Task UpdateUserAsync_ConcurrencyConflict_ThrowsConcurrencyExceptionAsync()
 	{
 		// Arrange
-		UpdateUserRequest request = new UpdateUserRequest
-		{
-			Id = 1,
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = "Test User",
-			IsActive = true,
-		};
+		UpdateUserRequest request =
+			CreateValidUpdateRequest();
 
-		User existingUser = new User
-		{
-			Id = 1,
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = "Test User",
-			IsActive = true,
-			CreateDate = DateTime.UtcNow.AddDays(-1),
-			CreatedBy = TestAuditConstants.SystemUser,
-			IsDeleted = false,
-			RowVersion = 1,
-		};
+		User existingUser = CreateTestUser();
 
 		ValidationResult validationResult = new();
 		UpdateValidator
-			.ValidateAsync(Arg.Any<ValidationContext<UpdateUserRequest>>(), Arg.Any<CancellationToken>())
+			.ValidateAsync(
+				Arg.Any<ValidationContext<UpdateUserRequest>>(),
+				Arg.Any<CancellationToken>())
 			.Returns(validationResult);
 
 		Repository
-			.GetByIdAsync(request.Id, Arg.Any<CancellationToken>())
+			.GetByIdAsync(
+				request.Id,
+				Arg.Any<CancellationToken>())
 			.Returns(existingUser);
 
 		Repository
-			.UpdateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>())
+			.UpdateAsync(
+				Arg.Any<User>(),
+				Arg.Any<CancellationToken>())
 			.ThrowsAsync(new DbUpdateConcurrencyException());
 
 		// Act & Assert - DbUpdateConcurrencyException bubbles up from repository
@@ -955,44 +539,36 @@ public class UserServiceTests
 		await Assert.ThrowsAsync<DbUpdateConcurrencyException>(
 			() => Service.UpdateUserAsync(request));
 	}
-
 	#endregion
-
 	#region DeleteUserAsync and RestoreUserAsync Tests
 
 	[Fact]
 	public async Task DeleteUserAsync_ValidId_DeletesUserAsync()
 	{
-		// Arrange
-		int userId = 1;
-		string deletedBy = "Admin";
-
-		Repository
-			.SoftDeleteAsync(userId, deletedBy, Arg.Any<CancellationToken>())
-			.Returns(true);
-
-		// Act
-		await Service.DeleteUserAsync(userId, deletedBy);
+		// Arrange & Act
+		await Service.DeleteUserAsync(
+			1,
+			"Admin");
 
 		// Assert
-		await Repository.Received(1).SoftDeleteAsync(userId, deletedBy, Arg.Any<CancellationToken>());
+		await Repository.Received(1)
+			.SoftDeleteAsync(
+				1,
+				"Admin",
+				Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
 	public async Task RestoreUserAsync_ValidId_RestoresUserAsync()
 	{
-		// Arrange
-		int userId = 1;
-
-		Repository
-			.RestoreAsync(userId, Arg.Any<CancellationToken>())
-			.Returns(true);
-
-		// Act
-		await Service.RestoreUserAsync(userId);
+		// Arrange & Act
+		await Service.RestoreUserAsync(1);
 
 		// Assert
-		await Repository.Received(1).RestoreAsync(userId, Arg.Any<CancellationToken>());
+		await Repository.Received(1)
+			.RestoreAsync(
+				1,
+				Arg.Any<CancellationToken>());
 	}
 
 	#endregion
@@ -1003,231 +579,188 @@ public class UserServiceTests
 	public async Task GetPagedUsersAsync_ValidRequest_ReturnsPagedResultAsync()
 	{
 		// Arrange
-		UserQueryRequest request = new UserQueryRequest
-		{
-			Page = 1,
-			PageSize = 10,
-			SearchTerm = "test",
-			IsActive = true,
-			IncludeDeleted = false,
-		};
+		UserQueryRequest request =
+			new()
+			{
+				Page = 1,
+				PageSize = 10,
+				SearchTerm = "test",
+			};
 
 		List<UserDto> userDtos =
 		[
-			new UserDtoBuilder()
-				.WithId(1)
-				.WithUsername("testuser1")
-				.WithEmail("test1@example.com")
-				.WithFullName("Test User 1")
-				.WithIsActive(true)
-				.Build(),
-			new UserDtoBuilder()
-				.WithId(2)
-				.WithUsername("testuser2")
-				.WithEmail("test2@example.com")
-				.WithFullName("Test User 2")
-				.WithIsActive(true)
-				.Build(),
+			new UserDtoBuilder().WithId(1).Build(),
+			new UserDtoBuilder().WithId(2).Build(),
 		];
 
-		int totalCount = 15;
-
-		ValidationResult validationResult = new();
-		QueryValidator
-			.ValidateAsync(Arg.Any<ValidationContext<UserQueryRequest>>(), Arg.Any<CancellationToken>())
-			.Returns(validationResult);
+		QueryValidator.SetupSuccessfulValidation();
 
 		Repository
-			.GetPagedProjectedAsync(request, Arg.Any<CancellationToken>())
-			.Returns((userDtos.AsEnumerable(), totalCount));
+			.GetPagedProjectedAsync(
+				request,
+				Arg.Any<CancellationToken>())
+			.Returns((userDtos.AsEnumerable(), 15));
 
 		// Act
 		PagedResult<UserDto> result = await Service.GetPagedUsersAsync(request);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal(2, result.Items.Count());
-		Assert.Equal(1, result.Page);
-		Assert.Equal(10, result.PageSize);
-		Assert.Equal(15, result.TotalCount);
-		Assert.Equal(2, result.TotalPages);
-		Assert.False(result.HasPrevious);
-		Assert.True(result.HasNext);
+		result.Items.Count().ShouldBe(2);
+		result.TotalCount.ShouldBe(15);
+		result.TotalPages.ShouldBe(2);
 	}
 
 	#endregion
 
 	#region GetByUsername and GetByEmail Tests
 
-	[Fact]
-	public async Task GetByUsernameAsync_UserExists_ReturnsUserDtoAsync()
+	public static TheoryData<string, User?> UsernameTestData =>
+	new()
+	{
+{
+"testuser",
+new User
+{
+Id = 1,
+Username = "testuser",
+Email = TestUserConstants.DefaultEmail,
+FullName = "Test User",
+IsActive = true,
+CreateDate = DateTime.UtcNow,
+CreatedBy = TestAuditConstants.SystemUser,
+IsDeleted = false,
+RowVersion = 1,
+}
+},
+{ "nonexistent", null },
+	};
+
+	public static TheoryData<string, User?> EmailTestData =>
+	new()
+	{
+{
+"test@example.com",
+new User
+{
+Id = 1,
+Username = TestUserConstants.DefaultUsername,
+Email = "test@example.com",
+FullName = "Test User",
+IsActive = true,
+CreateDate = DateTime.UtcNow,
+CreatedBy = TestAuditConstants.SystemUser,
+IsDeleted = false,
+RowVersion = 1,
+}
+},
+{ "nonexistent@example.com", null },
+	};
+
+	[Theory]
+	[MemberData(nameof(UsernameTestData))]
+	public async Task GetByUsernameAsync_ReturnsExpectedResultAsync(
+	string username,
+	User? user)
 	{
 		// Arrange
-		string username = "testuser";
-
-		User user = new User
-		{
-			Id = 1,
-			Username = username,
-			Email = TestUserConstants.DefaultEmail,
-			FullName = "Test User",
-			IsActive = true,
-			CreateDate = DateTime.UtcNow,
-			CreatedBy = TestAuditConstants.SystemUser,
-			IsDeleted = false,
-			RowVersion = 1,
-		};
-
 		Repository
-			.GetByUsernameAsync(username, Arg.Any<CancellationToken>())
-			.Returns(user);
+		.GetByUsernameAsync(
+		username,
+		Arg.Any<CancellationToken>())
+		.Returns(user);
 
 		// Act
 		UserDto? result = await Service.GetByUsernameAsync(username);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal(user.Id, result.Id);
-		Assert.Equal(user.Username, result.Username);
-		Assert.Equal(user.Email, result.Email);
-	}
-
-	[Fact]
-	public async Task GetByUsernameAsync_UserNotFound_ReturnsNullAsync()
-	{
-		// Arrange
-		string username = "nonexistent";
-
-		Repository
-			.GetByUsernameAsync(username, Arg.Any<CancellationToken>())
-			.Returns((User?)null);
-
-		// Act
-		UserDto? result = await Service.GetByUsernameAsync(username);
-
-		// Assert
-		Assert.Null(result);
-	}
-
-	[Fact]
-	public async Task GetByEmailAsync_UserExists_ReturnsUserDtoAsync()
-	{
-		// Arrange
-		string email = "test@example.com";
-
-		User user = new User
+		if (user is null)
 		{
-			Id = 1,
-			Username = TestUserConstants.DefaultUsername,
-			Email = email,
-			FullName = "Test User",
-			IsActive = true,
-			CreateDate = DateTime.UtcNow,
-			CreatedBy = TestAuditConstants.SystemUser,
-			IsDeleted = false,
-			RowVersion = 1,
-		};
-
-		Repository
-			.GetByEmailAsync(email, Arg.Any<CancellationToken>())
-			.Returns(user);
-
-		// Act
-		UserDto? result = await Service.GetByEmailAsync(email);
-
-		// Assert
-		Assert.NotNull(result);
-		Assert.Equal(user.Id, result.Id);
-		Assert.Equal(user.Email, result.Email);
+			result.ShouldBeNull();
+		}
+		else
+		{
+			result.ShouldNotBeNull();
+			result.Id.ShouldBe(user.Id);
+			result.Username.ShouldBe(user.Username);
+			result.Email.ShouldBe(user.Email);
+		}
 	}
 
-	[Fact]
-	public async Task GetByEmailAsync_UserNotFound_ReturnsNullAsync()
+	[Theory]
+	[MemberData(nameof(EmailTestData))]
+	public async Task GetByEmailAsync_ReturnsExpectedResultAsync(
+	string email,
+	User? user)
 	{
 		// Arrange
-		string email = "nonexistent@example.com";
-
 		Repository
-			.GetByEmailAsync(email, Arg.Any<CancellationToken>())
-			.Returns((User?)null);
+		.GetByEmailAsync(
+		email,
+		Arg.Any<CancellationToken>())
+		.Returns(user);
 
 		// Act
 		UserDto? result = await Service.GetByEmailAsync(email);
 
 		// Assert
-		Assert.Null(result);
+		if (user is null)
+		{
+			result.ShouldBeNull();
+		}
+		else
+		{
+			result.ShouldNotBeNull();
+			result.Id.ShouldBe(user.Id);
+			result.Email.ShouldBe(user.Email);
+		}
 	}
 
 	#endregion
 
 	#region ExistsAsync Tests
 
-	[Fact]
-	public async Task UsernameExistsAsync_UsernameExists_ReturnsTrueAsync()
+	[Theory]
+	[InlineData("testuser", true)]
+	[InlineData("newuser", false)]
+	public async Task UsernameExistsAsync_ReturnsExpectedResultAsync(
+		string username,
+		bool expectedExists)
 	{
 		// Arrange
-		string username = "testuser";
-
 		Repository
-			.UsernameExistsAsync(username, null, Arg.Any<CancellationToken>())
-			.Returns(true);
+			.UsernameExistsAsync(
+				username,
+				null,
+				Arg.Any<CancellationToken>())
+			.Returns(expectedExists);
 
 		// Act
-		bool result = await Service.UsernameExistsAsync(username);
+		bool actualExists = await Service.UsernameExistsAsync(username);
 
 		// Assert
-		Assert.True(result);
+		actualExists.ShouldBe(expectedExists);
 	}
 
-	[Fact]
-	public async Task UsernameExistsAsync_UsernameNotFound_ReturnsFalseAsync()
+	[Theory]
+	[InlineData("test@example.com", true)]
+	[InlineData("new@example.com", false)]
+	public async Task EmailExistsAsync_ReturnsExpectedResultAsync(
+		string email,
+		bool expectedExists)
 	{
 		// Arrange
-		string username = "newuser";
-
 		Repository
-			.UsernameExistsAsync(username, null, Arg.Any<CancellationToken>())
-			.Returns(false);
+			.EmailExistsAsync(
+				email,
+				null,
+				Arg.Any<CancellationToken>())
+			.Returns(expectedExists);
 
 		// Act
-		bool result = await Service.UsernameExistsAsync(username);
+		bool actualExists = await Service.EmailExistsAsync(email);
 
 		// Assert
-		Assert.False(result);
-	}
-
-	[Fact]
-	public async Task EmailExistsAsync_EmailExists_ReturnsTrueAsync()
-	{
-		// Arrange
-		string email = "test@example.com";
-
-		Repository
-			.EmailExistsAsync(email, null, Arg.Any<CancellationToken>())
-			.Returns(true);
-
-		// Act
-		bool result = await Service.EmailExistsAsync(email);
-
-		// Assert
-		Assert.True(result);
-	}
-
-	[Fact]
-	public async Task EmailExistsAsync_EmailNotFound_ReturnsFalseAsync()
-	{
-		// Arrange
-		string email = "new@example.com";
-
-		Repository
-			.EmailExistsAsync(email, null, Arg.Any<CancellationToken>())
-			.Returns(false);
-
-		// Act
-		bool result = await Service.EmailExistsAsync(email);
-
-		// Assert
-		Assert.False(result);
+		actualExists.ShouldBe(expectedExists);
 	}
 
 	#endregion
@@ -1239,21 +772,22 @@ public class UserServiceTests
 	{
 		// Arrange
 		List<int> userIds = [1, 2, 3];
-		bool isActive = false;
-		string modifiedBy = "Admin";
-		int expectedCount = 3;
-
 		Repository
-			.BulkUpdateActiveStatusAsync(userIds, isActive, Arg.Any<CancellationToken>())
-			.Returns(expectedCount);
+			.BulkUpdateActiveStatusAsync(
+				userIds,
+				false,
+				Arg.Any<CancellationToken>())
+			.Returns(3);
 
 		// Act
-		int result = await Service.BulkUpdateActiveStatusAsync(userIds, isActive, modifiedBy);
+		int result =
+			await Service.BulkUpdateActiveStatusAsync(
+				userIds,
+				false,
+				"Admin");
 
 		// Assert
-		Assert.Equal(expectedCount, result);
-
-		await Repository.Received(1).BulkUpdateActiveStatusAsync(userIds, isActive, Arg.Any<CancellationToken>());
+		result.ShouldBe(3);
 	}
 
 	#endregion

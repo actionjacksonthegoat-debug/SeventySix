@@ -88,21 +88,25 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	/// <summary>
 	/// Tests that POST /auth/login returns 200 with valid credentials.
 	/// </summary>
-	[Fact]
-	public async Task LoginAsync_ValidCredentials_ReturnsTokenAsync()
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public async Task LoginAsync_ValidCredentials_ReturnsTokenAsync(
+		bool useEmail)
 	{
-		// Arrange - Create user with credentials
-		string testId =
-			Guid.NewGuid().ToString("N")[..8];
+		// Arrange
+		string testId = Guid.NewGuid().ToString("N")[..8];
+		string username = $"testuser_{testId}";
+		string email = $"test_{testId}@example.com";
 
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
-			username: $"testuser_{testId}",
-			email: $"test_{testId}@example.com");
+			username,
+			email);
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: $"testuser_{testId}",
+				UsernameOrEmail: useEmail ? email : username,
 				Password: TestUserHelper.TestPassword);
 
 		// Act
@@ -118,41 +122,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		Assert.NotNull(authResponse);
 		Assert.NotEmpty(authResponse.AccessToken);
 		Assert.True(authResponse.ExpiresAt > DateTime.UtcNow);
-
-		// Verify refresh token cookie was set
 		Assert.True(response.Headers.Contains("Set-Cookie"));
 	}
-
-	/// <summary>
-	/// Tests that POST /auth/login accepts email instead of username.
-	/// </summary>
-	[Fact]
-	public async Task LoginAsync_WithEmail_ReturnsTokenAsync()
-	{
-		// Arrange
-		string testId =
-			Guid.NewGuid().ToString("N")[..8];
-
-		await TestUserHelper.CreateUserWithPasswordAsync(
-			SharedFactory.Services,
-			username: $"testuser_{testId}",
-			email: $"test_{testId}@example.com");
-
-		LoginRequest request =
-			new(
-				UsernameOrEmail: $"test_{testId}@example.com",
-				Password: TestUserHelper.TestPassword);
-
-		// Act
-		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/login", request);
-
-		// Assert
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-	}
-
 	#endregion
-
 	#region Register Tests
 
 	/// <summary>
@@ -184,54 +156,28 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	}
 
 	/// <summary>
-	/// Tests that POST /auth/register returns 400 for duplicate username.
+	/// Tests that POST /auth/register returns 400 for duplicate username or email.
 	/// </summary>
-	[Fact]
-	public async Task RegisterAsync_DuplicateUsername_ReturnsBadRequestAsync()
-	{
-		// Arrange - Create existing user
-		string testId =
-			Guid.NewGuid().ToString("N")[..8];
-
-		await TestUserHelper.CreateUserWithPasswordAsync(
-			SharedFactory.Services,
-			username: $"existinguser_{testId}",
-			email: $"existing_{testId}@example.com");
-
-		RegisterRequest request =
-			new(
-				Username: $"existinguser_{testId}",
-				Email: $"new_{testId}@example.com",
-				Password: "SecurePassword123!",
-				FullName: null);
-
-		// Act
-		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/register", request);
-
-		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-	}
-
-	/// <summary>
-	/// Tests that POST /auth/register returns 400 for duplicate email.
-	/// </summary>
-	[Fact]
-	public async Task RegisterAsync_DuplicateEmail_ReturnsBadRequestAsync()
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public async Task RegisterAsync_DuplicateCredentials_ReturnsBadRequestAsync(
+		bool duplicateUsername)
 	{
 		// Arrange
-		string testId =
-			Guid.NewGuid().ToString("N")[..8];
+		string testId = Guid.NewGuid().ToString("N")[..8];
+		string existingUsername = $"existinguser_{testId}";
+		string existingEmail = $"existing_{testId}@example.com";
 
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
-			username: $"existinguser_{testId}",
-			email: $"existing_{testId}@example.com");
+			existingUsername,
+			existingEmail);
 
 		RegisterRequest request =
 			new(
-				Username: $"newusername_{testId}",
-				Email: $"existing_{testId}@example.com",
+				Username: duplicateUsername ? existingUsername : $"newusername_{testId}",
+				Email: duplicateUsername ? $"new_{testId}@example.com" : existingEmail,
 				Password: "SecurePassword123!",
 				FullName: null);
 
@@ -242,9 +188,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
-
 	#endregion
-
 	#region Refresh Tests
 
 	/// <summary>
@@ -260,9 +204,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Assert
 		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 	}
-
 	#endregion
-
 	#region Cookie Security Tests
 
 	/// <summary>
@@ -309,9 +251,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Verify HttpOnly is set (critical for XSS protection)
 		Assert.Contains("httponly", refreshTokenCookie.ToLowerInvariant());
 	}
-
 	#endregion
-
 	#region Logout Tests
 
 	/// <summary>
@@ -327,9 +267,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 	}
-
 	#endregion
-
 	#region OAuth Tests
 
 	/// <summary>
@@ -392,56 +330,28 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	}
 
 	/// <summary>
-	/// Tests that GET /auth/github/callback returns error when state is tampered.
-	/// Validates CSRF protection via OAuth state parameter.
+	/// Tests that GET /auth/github/callback returns error for CSRF/PKCE violations.
 	/// </summary>
-	[Fact]
-	public async Task GitHubCallbackAsync_ReturnsError_WhenStateTamperedAsync()
+	[Theory]
+	[InlineData(true, "State mismatch - CSRF protection")]
+	[InlineData(false, "Missing code verifier - PKCE requirement")]
+	public async Task GitHubCallbackAsync_ReturnsError_WhenSecurityViolationAsync(
+		bool stateTampered,
+		string reason)
 	{
-		// Arrange - Create request with mismatched state values
-		string storedState =
-			"legitimate-state-from-cookie";
-		string tamperedState =
-			"attacker-tampered-state";
+		// Arrange
+		string validState = "valid-state-value";
+		string queryState = stateTampered ? "tampered-state" : validState;
 
 		HttpRequestMessage request =
-			new(HttpMethod.Get, $"/api/v1/auth/github/callback?code=test&state={tamperedState}");
-		request.Headers.Add("Cookie", $"X-OAuth-State={storedState}");
-
-		// Act
-		HttpResponseMessage response =
-			await Client!.SendAsync(request);
-
-		// Assert - OAuth error response for state mismatch
-		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-		string content =
-			await response.Content.ReadAsStringAsync();
-
-		Assert.Contains("oauth_error", content);
-		Assert.Contains("postMessage", content);
-	}
-
-	/// <summary>
-	/// Tests that GET /auth/github/callback returns error when code verifier cookie is missing.
-	/// Validates PKCE code verifier requirement.
-	/// </summary>
-	[Fact]
-	public async Task GitHubCallbackAsync_ReturnsError_WhenCodeVerifierMissingAsync()
-	{
-		// Arrange - Set valid state but no code verifier
-		string validState =
-			"valid-state-value";
-
-		HttpRequestMessage request =
-			new(HttpMethod.Get, $"/api/v1/auth/github/callback?code=test&state={validState}");
+			new(HttpMethod.Get, $"/api/v1/auth/github/callback?code=test&state={queryState}");
 		request.Headers.Add("Cookie", $"X-OAuth-State={validState}");
 
 		// Act
 		HttpResponseMessage response =
 			await Client!.SendAsync(request);
 
-		// Assert - OAuth error response for missing code verifier
+		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
 		string content =
@@ -450,9 +360,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		Assert.Contains("oauth_error", content);
 		Assert.Contains("postMessage", content);
 	}
-
 	#endregion
-
 	#region OAuth Code Exchange Tests
 
 	/// <summary>
@@ -582,9 +490,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			response.Headers.GetValues("Set-Cookie"),
 			c => c.Contains("X-Refresh-Token"));
 	}
-
 	#endregion
-
 	#region Me Endpoint Tests
 
 	/// <summary>
@@ -643,9 +549,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		Assert.Equal($"testuser_{testId}", profile.Username);
 		Assert.Equal($"test_{testId}@example.com", profile.Email);
 	}
-
 	#endregion
-
 	#region Change Password Tests
 
 	/// <summary>
@@ -714,24 +618,30 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		Assert.Contains("uppercase", content.ToLowerInvariant());
 	}
-
 	#endregion
-
 	#region JWT Security Tests
 
 	/// <summary>
-	/// Tests that GET /auth/me returns 401 when JWT has an invalid signature.
-	/// This verifies the API properly rejects tokens signed with a different key.
+	/// Tests that GET /auth/me returns 401 for invalid or expired JWTs.
 	/// </summary>
-	[Fact]
-	public async Task GetCurrentUserAsync_ReturnsUnauthorized_WhenInvalidJwtSignatureAsync()
+	[Theory]
+	[InlineData(true, "Invalid signature")]
+	[InlineData(false, "Expired token")]
+	public async Task GetCurrentUserAsync_ReturnsUnauthorized_WhenInvalidJwtAsync(
+		bool useInvalidSignature,
+		string reason)
 	{
-		// Arrange - Create a JWT signed with the wrong secret key
+		// Arrange
 		string invalidToken =
-			JwtTestHelper.GenerateTokenWithWrongKey(
-				userId: 1,
-				username: "testuser",
-				email: "test@example.com");
+			useInvalidSignature
+				? JwtTestHelper.GenerateTokenWithWrongKey(
+					userId: 1,
+					username: "testuser",
+					email: "test@example.com")
+				: JwtTestHelper.GenerateExpiredToken(
+					userId: 1,
+					username: "testuser",
+					email: "test@example.com");
 
 		Client!.DefaultRequestHeaders.Authorization =
 			new System.Net.Http.Headers.AuthenticationHeaderValue(
@@ -745,43 +655,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Assert
 		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 	}
-
-	/// <summary>
-	/// Tests that GET /auth/me returns 401 when JWT is expired.
-	/// This verifies the API properly rejects expired tokens.
-	/// </summary>
-	/// <remarks>
-	/// Note: The token uses a test signing key, so the API validates signature first.
-	/// This test verifies that malformed/tampered expired tokens are rejected.
-	/// A separate test with a correctly-signed expired token would be needed
-	/// to test the X-Token-Expired header behavior.
-	/// </remarks>
-	[Fact]
-	public async Task GetCurrentUserAsync_ReturnsUnauthorized_WhenExpiredJwtAsync()
-	{
-		// Arrange - Create an expired JWT (signed with test key, not production key)
-		string expiredToken =
-			JwtTestHelper.GenerateExpiredToken(
-				userId: 1,
-				username: "testuser",
-				email: "test@example.com");
-
-		Client!.DefaultRequestHeaders.Authorization =
-			new System.Net.Http.Headers.AuthenticationHeaderValue(
-				"Bearer",
-				expiredToken);
-
-		// Act
-		HttpResponseMessage response =
-			await Client.GetAsync("/api/v1/auth/me");
-
-		// Assert - Token should be rejected with 401
-		// (fails signature validation since using test key)
-		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-	}
-
 	#endregion
-
 	#region Self-Registration Tests
 
 	/// <summary>

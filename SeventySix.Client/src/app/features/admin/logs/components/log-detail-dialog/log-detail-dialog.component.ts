@@ -20,6 +20,7 @@ import { MatDividerModule } from "@angular/material/divider";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { Clipboard } from "@angular/cdk/clipboard";
+import { DateService } from "@infrastructure/services";
 import {
 	LogDto,
 	LogLevel,
@@ -55,6 +56,7 @@ export class LogDetailDialogComponent
 		MatDialogRef<LogDetailDialogComponent>
 	);
 	private readonly clipboard: Clipboard = inject(Clipboard);
+	private readonly dateService: DateService = inject(DateService);
 
 	readonly log: WritableSignal<LogDto> = signal<LogDto>(
 		inject<LogDto>(MAT_DIALOG_DATA)
@@ -76,7 +78,10 @@ export class LogDetailDialogComponent
 	readonly levelIcon: Signal<string> = computed((): string =>
 		getLogLevelIconName(this.log().logLevel));
 	readonly relativeTime: Signal<string> = computed((): string =>
-		getRelativeTime(this.log().createDate));
+		getRelativeTime(
+			this.log().createDate,
+			this.dateService
+		));
 	readonly formattedProperties: Signal<string> = computed((): string =>
 		formatJsonProperties(this.log().properties));
 	readonly stackFrameCount: Signal<number> = computed((): number =>

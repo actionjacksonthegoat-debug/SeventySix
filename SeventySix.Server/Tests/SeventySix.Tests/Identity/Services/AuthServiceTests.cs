@@ -112,7 +112,8 @@ public class AuthServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPos
 		CredentialRepository credentialRepository = new(context);
 		UserRepository userQueryRepository = new(
 			context,
-			Substitute.For<ILogger<UserRepository>>());
+			Substitute.For<ILogger<UserRepository>>(),
+			TimeProvider.System);
 
 		return new AuthService(
 			authRepository,

@@ -190,10 +190,16 @@ public static class WebApplicationExtensions
 	{
 		context.Response.ContentType = MediaTypeConstants.Json;
 
+		TimeProvider timeProvider =
+			context.RequestServices.GetRequiredService<TimeProvider>();
+
 		await context.Response.WriteAsJsonAsync(new
 		{
 			status = HealthStatusConstants.Healthy,
-			timestamp = DateTime.UtcNow
+			timestamp =
+				timeProvider
+					.GetUtcNow()
+					.UtcDateTime
 		});
 	}
 
@@ -203,11 +209,17 @@ public static class WebApplicationExtensions
 	{
 		context.Response.ContentType = MediaTypeConstants.Json;
 
+		TimeProvider timeProvider =
+			context.RequestServices.GetRequiredService<TimeProvider>();
+
 		object response =
 			new
 			{
 				status = report.Status.ToString(),
-				timestamp = DateTime.UtcNow,
+				timestamp =
+					timeProvider
+						.GetUtcNow()
+						.UtcDateTime,
 				duration = report.TotalDuration,
 				checks = report.Entries.Select(entry => new
 				{
