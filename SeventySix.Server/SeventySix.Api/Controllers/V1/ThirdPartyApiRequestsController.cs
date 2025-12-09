@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Configuration;
 using SeventySix.ApiTracking;
 using SeventySix.Identity.Constants;
+using Wolverine;
 
 namespace SeventySix.Api.Controllers;
 
@@ -22,13 +23,12 @@ namespace SeventySix.Api.Controllers;
 /// <remarks>
 /// Initializes a new instance of the <see cref="ThirdPartyApiRequestsController"/> class.
 /// </remarks>
-/// <param name="service">The third-party API request service.</param>
+/// <param name="messageBus">The Wolverine message bus for executing queries.</param>
 [ApiController]
 [Authorize(Policy = PolicyConstants.AdminOnly)]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/thirdpartyrequests")]
-public class ThirdPartyApiRequestsController(IThirdPartyApiRequestService service) : ControllerBase
+public class ThirdPartyApiRequestsController(IMessageBus messageBus) : ControllerBase
 {
-
 	/// <summary>
 	/// Retrieves all third-party API request tracking records.
 	/// </summary>
@@ -38,9 +38,14 @@ public class ThirdPartyApiRequestsController(IThirdPartyApiRequestService servic
 	[HttpGet]
 	[ProducesResponseType(typeof(IEnumerable<ThirdPartyApiRequestResponse>), StatusCodes.Status200OK)]
 	[OutputCache(PolicyName = CachePolicyConstants.ThirdPartyRequests)]
-	public async Task<ActionResult<IEnumerable<ThirdPartyApiRequestResponse>>> GetAllAsync(CancellationToken cancellationToken)
+	public async Task<ActionResult<IEnumerable<ThirdPartyApiRequestResponse>>> GetAllAsync(
+		CancellationToken cancellationToken)
 	{
-		IEnumerable<ThirdPartyApiRequestResponse> requests = await service.GetAllAsync(cancellationToken);
+		IEnumerable<ThirdPartyApiRequestResponse> requests =
+			await messageBus.InvokeAsync<IEnumerable<ThirdPartyApiRequestResponse>>(
+				new GetAllApiRequestsQuery(),
+				cancellationToken);
+
 		return Ok(requests);
 	}
 
@@ -53,9 +58,14 @@ public class ThirdPartyApiRequestsController(IThirdPartyApiRequestService servic
 	[HttpGet("statistics")]
 	[ProducesResponseType(typeof(ThirdPartyApiStatisticsResponse), StatusCodes.Status200OK)]
 	[OutputCache(PolicyName = CachePolicyConstants.ThirdPartyRequests)]
-	public async Task<ActionResult<ThirdPartyApiStatisticsResponse>> GetStatisticsAsync(CancellationToken cancellationToken)
+	public async Task<ActionResult<ThirdPartyApiStatisticsResponse>> GetStatisticsAsync(
+		CancellationToken cancellationToken)
 	{
-		ThirdPartyApiStatisticsResponse statistics = await service.GetStatisticsAsync(cancellationToken);
+		ThirdPartyApiStatisticsResponse statistics =
+			await messageBus.InvokeAsync<ThirdPartyApiStatisticsResponse>(
+				new GetApiRequestStatisticsQuery(),
+				cancellationToken);
+
 		return Ok(statistics);
 	}
 }

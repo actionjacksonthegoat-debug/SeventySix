@@ -9,17 +9,18 @@ using SeventySix.Api.Configuration;
 using SeventySix.Identity.Constants;
 using SeventySix.Logging;
 using SeventySix.Shared;
+using Wolverine;
 
 namespace SeventySix.Api.Controllers;
 
 /// <summary>API controller for managing and retrieving system logs.</summary>
-/// <param name="logService">The log service.</param>
+/// <param name="messageBus">The Wolverine message bus for CQRS operations.</param>
 /// <param name="outputCacheStore">The output cache store.</param>
 [ApiController]
 [Authorize(Policy = PolicyConstants.AdminOnly)]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/logs")]
 public class LogsController(
-	ILogService logService,
+	IMessageBus messageBus,
 	IOutputCacheStore outputCacheStore) : ControllerBase
 {
 	/// <summary>Gets logs with filtering, searching, sorting, and pagination.</summary>
@@ -36,7 +37,11 @@ public class LogsController(
 		[FromQuery] LogQueryRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		PagedResult<LogDto> result = await logService.GetPagedLogsAsync(request, cancellationToken);
+		PagedResult<LogDto> result =
+			await messageBus.InvokeAsync<PagedResult<LogDto>>(
+				new GetLogsPagedQuery(request),
+				cancellationToken);
+
 		return Ok(result);
 	}
 
@@ -49,16 +54,24 @@ public class LogsController(
 	[HttpDelete("{id}")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<IActionResult> DeleteLogAsync(int id, CancellationToken cancellationToken = default)
+	public async Task<IActionResult> DeleteLogAsync(
+		int id,
+		CancellationToken cancellationToken = default)
 	{
-		bool deleted = await logService.DeleteLogByIdAsync(id, cancellationToken);
+		bool deleted =
+			await messageBus.InvokeAsync<bool>(
+				new DeleteLogCommand(id),
+				cancellationToken);
 
 		if (!deleted)
 		{
 			return NotFound();
 		}
 
-		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		await outputCacheStore.EvictByTagAsync(
+			"logs",
+			cancellationToken);
+
 		return NoContent();
 	}
 
@@ -80,8 +93,15 @@ public class LogsController(
 			return BadRequest("No log IDs provided");
 		}
 
-		int deletedCount = await logService.DeleteLogsBatchAsync(ids, cancellationToken);
-		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		int deletedCount =
+			await messageBus.InvokeAsync<int>(
+				new DeleteLogsBatchCommand(ids),
+				cancellationToken);
+
+		await outputCacheStore.EvictByTagAsync(
+			"logs",
+			cancellationToken);
+
 		return Ok(deletedCount);
 	}
 
@@ -103,8 +123,15 @@ public class LogsController(
 			return BadRequest("Cutoff date is required");
 		}
 
-		int deletedCount = await logService.DeleteLogsOlderThanAsync(cutoffDate.Value, cancellationToken);
-		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		int deletedCount =
+			await messageBus.InvokeAsync<int>(
+				new DeleteLogsOlderThanCommand(cutoffDate.Value),
+				cancellationToken);
+
+		await outputCacheStore.EvictByTagAsync(
+			"logs",
+			cancellationToken);
+
 		return Ok(deletedCount);
 	}
 
@@ -121,8 +148,14 @@ public class LogsController(
 		[FromBody] CreateLogRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		await logService.CreateClientLogAsync(request, cancellationToken);
-		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		await messageBus.InvokeAsync(
+			new CreateClientLogCommand(request),
+			cancellationToken);
+
+		await outputCacheStore.EvictByTagAsync(
+			"logs",
+			cancellationToken);
+
 		return NoContent();
 	}
 
@@ -139,8 +172,14 @@ public class LogsController(
 		[FromBody] CreateLogRequest[] requests,
 		CancellationToken cancellationToken = default)
 	{
-		await logService.CreateClientLogBatchAsync(requests, cancellationToken);
-		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
+		await messageBus.InvokeAsync(
+			new CreateClientLogBatchCommand(requests),
+			cancellationToken);
+
+		await outputCacheStore.EvictByTagAsync(
+			"logs",
+			cancellationToken);
+
 		return NoContent();
 	}
 }

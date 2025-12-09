@@ -27,7 +27,7 @@ namespace SeventySix.DependencyExtensions;
 /// Registered Components:
 /// - ApiTrackingDbContext: Entity Framework Core DbContext
 /// - IThirdPartyApiRequestRepository → ThirdPartyApiRequestRepository: Data access layer
-/// - IThirdPartyApiRequestService → ThirdPartyApiRequestService: Business logic layer
+/// - ApiTrackingHealthCheck: Health check implementation using Wolverine CQRS
 /// </remarks>
 public static class ApiTrackingExtensions
 {
@@ -67,12 +67,8 @@ public static class ApiTrackingExtensions
 		// Register repositories
 		services.AddScoped<IThirdPartyApiRequestRepository, ThirdPartyApiRequestRepository>();
 
-		// Register services
-		services.AddScoped<IThirdPartyApiRequestService, ThirdPartyApiRequestService>();
-
-		// Register ThirdPartyApiRequestService as IDatabaseHealthCheck for multi-db health checks
-		services.AddScoped<IDatabaseHealthCheck>(serviceProvider =>
-			serviceProvider.GetRequiredService<IThirdPartyApiRequestService>());
+		// Register health check for multi-db health monitoring
+		services.AddScoped<IDatabaseHealthCheck, ApiTrackingHealthCheck>();
 
 		return services;
 	}

@@ -1125,12 +1125,90 @@ export const GAME_ROUTES: Routes =
 
 ### Architecture Decisions
 
-| Decision   | Choice               | Rationale                |
-| ---------- | -------------------- | ------------------------ |
-| Repository | Domain-specific      | EF Core IS the pattern   |
-| CQRS       | Not yet              | KISS until scale demands |
-| Database   | PostgreSQL           | All contexts             |
-| DbContext  | Separate per context | Clear boundaries         |
+| Decision   | Choice               | Rationale                          |
+| ---------- | -------------------- | ---------------------------------- |
+| Repository | Domain-specific      | EF Core IS the pattern             |
+| CQRS       | Wolverine            | MIT license, source gen, messaging |
+| Database   | PostgreSQL           | All contexts                       |
+| DbContext  | Separate per context | Clear boundaries                   |
+
+### CQRS Pattern (Wolverine)
+
+**Use for bounded context operations.** Controllers inject `IMessageBus`, not services.
+
+> **Don't over-engineer**: Simple contexts (Logging, ApiTracking) don't need sagas.
+
+```
+Controller → IMessageBus.InvokeAsync(Query/Command) → Handler → DbContext
+```
+
+| Type    | Naming                        | Implementation                  |
+| ------- | ----------------------------- | ------------------------------- |
+| Query   | `Get{Entity}[By{Field}]Query` | `record` (positional)           |
+| Command | `{Verb}{Entity}Command`       | `record` (positional)           |
+| Handler | `{Query/Command}Handler`      | Static class with `HandleAsync` |
+
+**Folder Structure**: `Context/Commands/{Op}/` and `Context/Queries/{Op}/`
+
+### Wolverine Handler Pattern
+
+```csharp
+// Query record
+public record GetUserByIdQuery(int UserId);
+
+// Handler (static class, static method)
+public static class GetUserByIdHandler
+{
+    public static async Task<UserDto?> HandleAsync(
+        GetUserByIdQuery query,
+        SeventySixDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        User? user =
+            await dbContext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    item => item.Id == query.UserId,
+                    cancellationToken);
+
+        return user?.ToDto();
+    }
+}
+```
+
+### Controller with IMessageBus
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController(IMessageBus bus) : ControllerBase
+{
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<UserDto>> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        UserDto? user =
+            await bus.InvokeAsync<UserDto?>(
+                new GetUserByIdQuery(id),
+                cancellationToken);
+
+        return user is null
+            ? NotFound()
+            : Ok(user);
+    }
+}
+```
+
+### When to Use Wolverine vs Simple Services
+
+| Scenario                        | Approach                |
+| ------------------------------- | ----------------------- |
+| DB read/write operations        | Wolverine handlers      |
+| Complex domain (Identity, Game) | Full CQRS + validation  |
+| Simple context (Logging)        | Wolverine (light)       |
+| No DB (EmailService)            | Keep as service (YAGNI) |
+| Real-time, sagas, messaging     | Wolverine advanced      |
 
 ---
 

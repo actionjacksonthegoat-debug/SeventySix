@@ -32,6 +32,8 @@ using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Middleware;
 using SeventySix.DependencyExtensions;
+using Wolverine;
+using Wolverine.FluentValidation;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +63,16 @@ Serilog.Log.Logger = new LoggerConfiguration()
 	.CreateLogger();
 
 builder.Host.UseSerilog();
+
+// Configure Wolverine for CQRS handlers
+builder.Host.UseWolverine(options =>
+{
+	// Auto-discover handlers from SeventySix assembly
+	options.Discovery.IncludeAssembly(typeof(SeventySix.Logging.Log).Assembly);
+
+	// Use FluentValidation for command validation
+	options.UseFluentValidation();
+});
 
 // Services
 builder.Services.AddHttpContextAccessor();

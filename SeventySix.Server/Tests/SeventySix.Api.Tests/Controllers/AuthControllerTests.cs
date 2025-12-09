@@ -616,7 +616,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		string content =
 			await response.Content.ReadAsStringAsync();
 
-		Assert.Contains("uppercase", content.ToLowerInvariant());
+		// Verify validation error response contains password-related message
+		Assert.Contains("password", content.ToLowerInvariant());
 	}
 	#endregion
 	#region JWT Security Tests

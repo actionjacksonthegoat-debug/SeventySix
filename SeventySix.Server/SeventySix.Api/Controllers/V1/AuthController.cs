@@ -10,6 +10,7 @@ using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Identity;
 using SeventySix.Shared;
+using Wolverine;
 
 namespace SeventySix.Api.Controllers;
 
@@ -27,11 +28,8 @@ namespace SeventySix.Api.Controllers;
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth")]
 public class AuthController(
-	IAuthenticationService authenticationService,
-	IRegistrationService registrationService,
-	IPasswordService passwordService,
+	IMessageBus messageBus,
 	IOAuthService oAuthService,
-	IUserProfileService userProfileService,
 	IOAuthCodeExchangeService oauthCodeExchange,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings,
@@ -61,9 +59,10 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await authenticationService.LoginAsync(
-				request,
-				clientIp,
+			await messageBus.InvokeAsync<AuthResult>(
+				new LoginCommand(
+					request,
+					clientIp),
 				cancellationToken);
 
 		if (!result.Success)
@@ -112,9 +111,10 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await registrationService.RegisterAsync(
-				request,
-				clientIp,
+			await messageBus.InvokeAsync<AuthResult>(
+				new RegisterCommand(
+					request,
+					clientIp),
 				cancellationToken);
 
 		if (!result.Success)
@@ -176,9 +176,10 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await authenticationService.RefreshTokensAsync(
-				refreshToken,
-				clientIp,
+			await messageBus.InvokeAsync<AuthResult>(
+				new RefreshTokensCommand(
+					refreshToken,
+					clientIp),
 				cancellationToken);
 
 		if (!result.Success)
@@ -218,8 +219,8 @@ public class AuthController(
 
 		if (!string.IsNullOrEmpty(refreshToken))
 		{
-			await authenticationService.LogoutAsync(
-				refreshToken,
+			await messageBus.InvokeAsync<bool>(
+				new LogoutCommand(refreshToken),
 				cancellationToken);
 		}
 
@@ -381,8 +382,8 @@ public class AuthController(
 		}
 
 		UserProfileDto? profile =
-			await userProfileService.GetUserProfileAsync(
-				userId.Value,
+			await messageBus.InvokeAsync<UserProfileDto?>(
+				new GetUserProfileQuery(userId.Value),
 				cancellationToken);
 
 		if (profile == null)
@@ -420,9 +421,10 @@ public class AuthController(
 		}
 
 		AuthResult result =
-			await passwordService.ChangePasswordAsync(
-				userId.Value,
-				request,
+			await messageBus.InvokeAsync<AuthResult>(
+				new ChangePasswordCommand(
+					userId.Value,
+					request),
 				cancellationToken);
 
 		if (!result.Success)
@@ -464,8 +466,9 @@ public class AuthController(
 		[FromBody] ForgotPasswordRequest request,
 		CancellationToken cancellationToken)
 	{
-		await passwordService.InitiatePasswordResetByEmailAsync(
-			request.Email,
+		await messageBus.InvokeAsync(
+			new InitiatePasswordResetByEmailCommand(
+				request.Email),
 			cancellationToken);
 
 		// Always return OK to prevent email enumeration
@@ -498,9 +501,10 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await passwordService.SetPasswordAsync(
-				request,
-				clientIp,
+			await messageBus.InvokeAsync<AuthResult>(
+				new SetPasswordCommand(
+					request,
+					clientIp),
 				cancellationToken);
 
 		if (!result.Success)
@@ -550,8 +554,8 @@ public class AuthController(
 		[FromBody] InitiateRegistrationRequest request,
 		CancellationToken cancellationToken)
 	{
-		await registrationService.InitiateRegistrationAsync(
-			request,
+		await messageBus.InvokeAsync(
+			new InitiateRegistrationCommand(request),
 			cancellationToken);
 
 		// Always return OK to prevent email enumeration
@@ -582,9 +586,10 @@ public class AuthController(
 			GetClientIpAddress();
 
 		AuthResult result =
-			await registrationService.CompleteRegistrationAsync(
-				request,
-				clientIp,
+			await messageBus.InvokeAsync<AuthResult>(
+				new CompleteRegistrationCommand(
+					request,
+					clientIp),
 				cancellationToken);
 
 		if (!result.Success)

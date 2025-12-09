@@ -11,6 +11,7 @@ using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared;
+using Wolverine;
 
 namespace SeventySix.Api.Controllers;
 
@@ -19,8 +20,8 @@ namespace SeventySix.Api.Controllers;
 /// Provides RESTful operations for managing user resources.
 /// </summary>
 /// <remarks>
-/// This controller implements the Service Layer pattern, delegating business logic
-/// to IUserService while handling HTTP concerns.
+/// This controller implements the CQRS pattern, delegating operations
+/// to Wolverine handlers via IMessageBus while handling HTTP concerns.
 ///
 /// All endpoints return:
 /// - Proper HTTP status codes (200, 201, 400, 404, 500)
@@ -28,25 +29,20 @@ namespace SeventySix.Api.Controllers;
 /// - Appropriate response caching headers
 ///
 /// Design Patterns:
-/// - Dependency Injection: Services injected via constructor
-/// - Repository Pattern: Data access abstracted through service layer
+/// - CQRS: Commands and queries handled by Wolverine static handlers
+/// - Dependency Injection: IMessageBus injected via primary constructor
 /// - DTO Pattern: Domain models never exposed directly
 /// </remarks>
 /// <remarks>
 /// Initializes a new instance of the <see cref="UsersController"/> class.
 /// </remarks>
-/// <param name="userService">The user service for business logic operations.</param>
+/// <param name="messageBus">The Wolverine message bus for dispatching commands and queries.</param>
 /// <param name="logger">The logger instance for recording controller operations.</param>
-/// <exception cref="ArgumentNullException">Thrown when userService or logger is null.</exception>
+/// <exception cref="ArgumentNullException">Thrown when messageBus or logger is null.</exception>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
 public class UsersController(
-	IUserQueryService userQueryService,
-	IUserAdminService userAdminService,
-	IUserProfileService userProfileService,
-	IUserValidationService userValidationService,
-	IUserRoleService userRoleService,
-	IPasswordService passwordService,
+	IMessageBus messageBus,
 	IPermissionRequestService permissionRequestService,
 	ILogger<UsersController> logger) : ControllerBase
 {
@@ -81,9 +77,10 @@ public class UsersController(
 		}
 
 		UserProfileDto? profile =
-			await userProfileService.UpdateProfileAsync(
-				userId.Value,
-				request,
+			await messageBus.InvokeAsync<UserProfileDto?>(
+				new UpdateProfileCommand(
+					userId.Value,
+					request),
 				cancellationToken);
 
 		return profile == null
@@ -116,7 +113,11 @@ public class UsersController(
 	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAsync(CancellationToken cancellationToken)
 	{
-		IEnumerable<UserDto> users = await userQueryService.GetAllUsersAsync(cancellationToken);
+		IEnumerable<UserDto> users =
+			await messageBus.InvokeAsync<IEnumerable<UserDto>>(
+				new GetAllUsersQuery(),
+				cancellationToken);
+
 		return Ok(users);
 	}
 
@@ -144,7 +145,10 @@ public class UsersController(
 	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
 	{
-		UserDto? user = await userQueryService.GetUserByIdAsync(id, cancellationToken);
+		UserDto? user =
+			await messageBus.InvokeAsync<UserDto?>(
+				new GetUserByIdQuery(id),
+				cancellationToken);
 
 		return user is null ? (ActionResult<UserDto>)NotFound() : (ActionResult<UserDto>)Ok(user);
 	}
@@ -191,8 +195,8 @@ public class UsersController(
 		try
 		{
 			UserDto user =
-				await userAdminService.CreateUserAsync(
-					request,
+				await messageBus.InvokeAsync<UserDto>(
+					new CreateUserCommand(request),
 					cancellationToken);
 
 			return CreatedAtRoute(
@@ -207,8 +211,8 @@ public class UsersController(
 		{
 			// User was created but email was rate limited
 			UserDto? user =
-				await userQueryService.GetByEmailAsync(
-					request.Email,
+				await messageBus.InvokeAsync<UserDto?>(
+					new GetUserByEmailQuery(request.Email),
 					cancellationToken);
 
 			if (user == null)
@@ -265,7 +269,11 @@ public class UsersController(
 			return BadRequest("ID in URL does not match ID in request body");
 		}
 
-		UserDto user = await userAdminService.UpdateUserAsync(request, cancellationToken);
+		UserDto user =
+			await messageBus.InvokeAsync<UserDto>(
+				new UpdateUserCommand(request),
+				cancellationToken);
+
 		return Ok(user);
 	}
 
@@ -287,8 +295,16 @@ public class UsersController(
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool result = await userAdminService.DeleteUserAsync(id, AuditConstants.SystemUser, cancellationToken);
-		return result ? NoContent() : NotFound();
+		bool result =
+			await messageBus.InvokeAsync<bool>(
+				new DeleteUserCommand(
+					id,
+					AuditConstants.SystemUser),
+				cancellationToken);
+
+		return result
+			? NoContent()
+			: NotFound();
 	}
 
 	/// <summary>
@@ -309,8 +325,14 @@ public class UsersController(
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool result = await userAdminService.RestoreUserAsync(id, cancellationToken);
-		return result ? NoContent() : NotFound();
+		bool result =
+			await messageBus.InvokeAsync<bool>(
+				new RestoreUserCommand(id),
+				cancellationToken);
+
+		return result
+			? NoContent()
+			: NotFound();
 	}
 
 	/// <summary>
@@ -332,7 +354,11 @@ public class UsersController(
 		[FromQuery] UserQueryRequest request,
 		CancellationToken cancellationToken)
 	{
-		PagedResult<UserDto> result = await userQueryService.GetPagedUsersAsync(request, cancellationToken);
+		PagedResult<UserDto> result =
+			await messageBus.InvokeAsync<PagedResult<UserDto>>(
+				new GetPagedUsersQuery(request),
+				cancellationToken);
+
 		return Ok(result);
 	}
 
@@ -355,7 +381,11 @@ public class UsersController(
 		string username,
 		CancellationToken cancellationToken)
 	{
-		UserDto? user = await userQueryService.GetByUsernameAsync(username, cancellationToken);
+		UserDto? user =
+			await messageBus.InvokeAsync<UserDto?>(
+				new GetUserByUsernameQuery(username),
+				cancellationToken);
+
 		return user is null ? NotFound() : Ok(user);
 	}
 
@@ -378,7 +408,12 @@ public class UsersController(
 		[FromQuery] int? excludeId,
 		CancellationToken cancellationToken)
 	{
-		bool exists = await userValidationService.UsernameExistsAsync(username, excludeId, cancellationToken);
+		bool exists =
+			await messageBus.InvokeAsync<bool>(
+				new CheckUsernameExistsQuery(
+					username,
+					excludeId),
+				cancellationToken);
 		return Ok(exists);
 	}
 
@@ -400,7 +435,14 @@ public class UsersController(
 		[FromBody] IEnumerable<int> ids,
 		CancellationToken cancellationToken)
 	{
-		int count = await userAdminService.BulkUpdateActiveStatusAsync(ids, true, AuditConstants.SystemUser, cancellationToken);
+		int count =
+			await messageBus.InvokeAsync<int>(
+				new BulkUpdateActiveStatusCommand(
+					ids,
+					true,
+					AuditConstants.SystemUser),
+				cancellationToken);
+
 		return Ok(count);
 	}
 
@@ -422,7 +464,14 @@ public class UsersController(
 		[FromBody] IEnumerable<int> ids,
 		CancellationToken cancellationToken)
 	{
-		int count = await userAdminService.BulkUpdateActiveStatusAsync(ids, false, AuditConstants.SystemUser, cancellationToken);
+		int count =
+			await messageBus.InvokeAsync<int>(
+				new BulkUpdateActiveStatusCommand(
+					ids,
+					false,
+					AuditConstants.SystemUser),
+				cancellationToken);
+
 		return Ok(count);
 	}
 
@@ -450,8 +499,8 @@ public class UsersController(
 	{
 		// Verify user exists
 		UserDto? user =
-			await userQueryService.GetUserByIdAsync(
-				id,
+			await messageBus.InvokeAsync<UserDto?>(
+				new GetUserByIdQuery(id),
 				cancellationToken);
 
 		if (user == null)
@@ -459,9 +508,10 @@ public class UsersController(
 			return NotFound();
 		}
 
-		await passwordService.InitiatePasswordResetAsync(
-			id,
-			isNewUser: false,
+		await messageBus.InvokeAsync(
+			new InitiatePasswordResetCommand(
+				id,
+				IsNewUser: false),
 			cancellationToken);
 
 		return NoContent();
@@ -683,8 +733,8 @@ public class UsersController(
 		CancellationToken cancellationToken)
 	{
 		UserDto? user =
-			await userQueryService.GetUserByIdAsync(
-				id,
+			await messageBus.InvokeAsync<UserDto?>(
+				new GetUserByIdQuery(id),
 				cancellationToken);
 
 		if (user == null)
@@ -693,8 +743,8 @@ public class UsersController(
 		}
 
 		IEnumerable<string> roles =
-			await userRoleService.GetUserRolesAsync(
-				id,
+			await messageBus.InvokeAsync<IEnumerable<string>>(
+				new GetUserRolesQuery(id),
 				cancellationToken);
 
 		return Ok(roles);
@@ -725,8 +775,8 @@ public class UsersController(
 		CancellationToken cancellationToken)
 	{
 		UserDto? user =
-			await userQueryService.GetUserByIdAsync(
-				id,
+			await messageBus.InvokeAsync<UserDto?>(
+				new GetUserByIdQuery(id),
 				cancellationToken);
 
 		if (user == null)
@@ -737,9 +787,10 @@ public class UsersController(
 		try
 		{
 			bool added =
-				await userRoleService.AddUserRoleAsync(
-					id,
-					role,
+				await messageBus.InvokeAsync<bool>(
+					new AddUserRoleCommand(
+						id,
+						role),
 					cancellationToken);
 
 			return added ? NoContent() : Conflict("User already has this role");
@@ -771,8 +822,8 @@ public class UsersController(
 		CancellationToken cancellationToken)
 	{
 		UserDto? user =
-			await userQueryService.GetUserByIdAsync(
-				id,
+			await messageBus.InvokeAsync<UserDto?>(
+				new GetUserByIdQuery(id),
 				cancellationToken);
 
 		if (user == null)
@@ -781,9 +832,10 @@ public class UsersController(
 		}
 
 		bool removed =
-			await userRoleService.RemoveUserRoleAsync(
-				id,
-				role,
+			await messageBus.InvokeAsync<bool>(
+				new RemoveUserRoleCommand(
+					id,
+					role),
 				cancellationToken);
 
 		return removed ? NoContent() : NotFound("Role not found on user");

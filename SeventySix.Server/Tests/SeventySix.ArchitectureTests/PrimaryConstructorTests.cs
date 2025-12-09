@@ -40,7 +40,7 @@ public class PrimaryConstructorTests
 	public void All_Production_Classes_Should_Use_Primary_Constructors()
 	{
 		// Scan both domain and API assemblies
-		Assembly domainAssembly = typeof(SeventySix.Identity.IUserQueryService).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
 		Assembly apiAssembly = typeof(SeventySix.Api.Controllers.UsersController).Assembly;
 
 		List<Type> allProductionTypes = [];

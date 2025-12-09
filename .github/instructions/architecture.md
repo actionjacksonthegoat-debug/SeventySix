@@ -143,8 +143,39 @@ export const GAME_ROUTES: Routes =
 | Bounded contexts      | Clear boundaries, future extraction |
 | No generic repository | EF Core IS the repository           |
 | Separate DbContext    | Each domain owns its data           |
-| No CQRS/MediatR       | YAGNI - add when pain happens       |
+| CQRS/Wolverine        | MIT license, source gen, messaging  |
 | PostgreSQL only       | One DB until polyglot needed        |
+
+## CQRS Pattern (Wolverine)
+
+> **License**: Wolverine is MIT (free forever, commercial use allowed).
+> **Philosophy**: Don't over-engineer simple contexts. Use Wolverine's advanced features only when needed.
+
+### Folder Structure
+
+```
+Context/
+├── Commands/
+│   └── {Operation}/
+│       ├── {Operation}Command.cs
+│       ├── {Operation}CommandHandler.cs
+│       └── {Operation}CommandValidator.cs  # Optional
+├── Queries/
+│   └── {Operation}/
+│       ├── {Operation}Query.cs
+│       └── {Operation}QueryHandler.cs
+└── ...
+```
+
+### When to Use Wolverine Features
+
+| Feature               | Use When                      | Don't Over-Engineer     |
+| --------------------- | ----------------------------- | ----------------------- |
+| Basic handlers        | All DB read/write operations  | Always applicable       |
+| FluentValidation      | Commands needing input checks | Always applicable       |
+| Sagas/workflows       | Multi-step stateful processes | NOT for simple contexts |
+| Distributed messaging | Cross-service communication   | NOT for single-app      |
+| Background jobs       | Scheduled/delayed tasks       | Use when needed         |
 
 ## Database Conventions
 

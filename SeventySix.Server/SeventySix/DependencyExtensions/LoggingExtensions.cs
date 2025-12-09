@@ -37,15 +37,14 @@ public static class LoggingExtensions
 		});
 
 		services.AddScoped<ILogRepository, LogRepository>();
-		services.AddScoped<ILogService, LogService>();
 
-		// Register LogService as IDatabaseHealthCheck for multi-db health checks
-		services.AddScoped<IDatabaseHealthCheck>(sp =>
-			sp.GetRequiredService<ILogService>());
+		// Register health check for multi-db health monitoring
+		services.AddScoped<IDatabaseHealthCheck, LoggingHealthCheck>();
 
 		// Validators - Singleton (stateless, thread-safe)
 		services.AddSingleton<IValidator<LogQueryRequest>, LogQueryRequestValidator>();
 		services.AddSingleton<IValidator<CreateLogRequest>, CreateLogRequestValidator>();
+		services.AddSingleton<IValidator<GetLogsPagedQuery>, GetLogsPagedQueryValidator>();
 
 		return services;
 	}

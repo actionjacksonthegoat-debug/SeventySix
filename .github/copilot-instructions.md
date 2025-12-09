@@ -104,6 +104,13 @@
 -   Separate DbContext per bounded context
 -   No generic repository pattern
 -   PostgreSQL only
+-   **CQRS/Wolverine**: Preferred for bounded context operations (see `Implementation.md`)
+    -   Controllers inject `IMessageBus`, not services
+    -   Query records for reads, Command records for writes
+    -   Handlers are static classes with `HandleAsync` methods
+    -   Folder: `Context/Commands/{Op}/`, `Context/Queries/{Op}/`
+    -   Naming: `GetUserByIdQuery`, `CreateUserCommand`, `*Handler`
+    -   **Don't over-engineer**: Simple contexts don't need sagas (YAGNI)
 -   Features are self-contained (models, repos, services inside feature)
 -   **DTOs** = API contracts (request/response), **Entities** = DB-persisted models, **Models** = internal non-persisted types
 -   **Settings** = Configuration binding classes (bound from `appsettings.json`)

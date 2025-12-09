@@ -61,6 +61,33 @@ public static class UserExtensions
 	}
 
 	/// <summary>
+	/// Converts a UserDto back to a User entity.
+	/// </summary>
+	/// <remarks>Used by CQRS handlers when User entity is required for token generation.</remarks>
+	public static User ToEntity(this UserDto dto)
+	{
+		ArgumentNullException.ThrowIfNull(dto);
+
+		return new User
+		{
+			Id = dto.Id,
+			Username = dto.Username,
+			Email = dto.Email,
+			FullName = dto.FullName,
+			CreateDate = dto.CreateDate,
+			IsActive = dto.IsActive,
+			NeedsPendingEmail = dto.NeedsPendingEmail,
+			CreatedBy = dto.CreatedBy,
+			ModifyDate = dto.ModifyDate,
+			ModifiedBy = dto.ModifiedBy,
+			LastLoginAt = dto.LastLoginAt,
+			IsDeleted = dto.IsDeleted,
+			DeletedAt = dto.DeletedAt,
+			DeletedBy = dto.DeletedBy
+		};
+	}
+
+	/// <summary>
 	/// Converts a collection of User entities to DTOs.
 	/// </summary>
 	/// <param name="entities">The collection of entities to convert.</param>

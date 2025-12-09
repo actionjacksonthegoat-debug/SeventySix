@@ -66,7 +66,14 @@ public class GlobalExceptionMiddleware(
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);
+			if (ex is FluentValidation.ValidationException)
+			{
+				logger.LogWarning("Validation failed: {Message}", ex.Message);
+			}
+			else
+			{
+				logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);
+			}
 
 			await HandleExceptionAsync(context, ex);
 		}

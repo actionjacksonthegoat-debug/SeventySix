@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.ElectronicNotifications.Emails;
+using Wolverine;
 
 namespace SeventySix.Identity;
 
@@ -82,31 +83,28 @@ public class PendingEmailBackgroundService(
 		await using AsyncServiceScope scope =
 			scopeFactory.CreateAsyncScope();
 
-		IUserProfileService userProfileService =
-			scope.ServiceProvider.GetRequiredService<IUserProfileService>();
-		IPasswordService passwordService =
-			scope.ServiceProvider.GetRequiredService<IPasswordService>();
+		IMessageBus messageBus =
+			scope.ServiceProvider.GetRequiredService<IMessageBus>();
 
 		IEnumerable<UserDto> pendingUsers =
-			await userProfileService.GetUsersNeedingEmailAsync(cancellationToken);
-
-		int successCount = 0;
+			await messageBus.InvokeAsync<IEnumerable<UserDto>>(
+				new GetUsersNeedingEmailQuery(),
+				cancellationToken); int successCount = 0;
 		int failCount = 0;
 
 		foreach (UserDto user in pendingUsers)
 		{
 			try
 			{
-				await passwordService.InitiatePasswordResetAsync(
-					user.Id,
-					isNewUser: true,
+				await messageBus.InvokeAsync(
+					new InitiatePasswordResetCommand(
+						user.Id,
+						IsNewUser: true),
 					cancellationToken);
 
-				await userProfileService.ClearPendingEmailFlagAsync(
-					user.Id,
-					cancellationToken);
-
-				successCount++;
+				await messageBus.InvokeAsync(
+					new ClearPendingEmailFlagCommand(user.Id),
+					cancellationToken); successCount++;
 			}
 			catch (EmailRateLimitException)
 			{

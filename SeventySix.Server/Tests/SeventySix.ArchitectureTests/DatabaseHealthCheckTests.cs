@@ -43,21 +43,21 @@ public class DatabaseHealthCheckTests
 			string contextName =
 				dbContextType.Name.Replace("DbContext", string.Empty);
 
-			// Find service interface in same namespace that implements health check
-			Type? serviceInterface =
+			// Find service interface OR health check class that implements IDatabaseHealthCheck
+			Type? healthCheckImplementation =
 				dbContextType.Assembly
 					.GetTypes()
 					.FirstOrDefault(type =>
-						type.IsInterface
-						&& type.Namespace != null
+						type.Namespace != null
 						&& type.Namespace.Contains(contextName)
-						&& type.GetInterfaces().Contains(typeof(IDatabaseHealthCheck)));
+						&& ((type.IsInterface && type.GetInterfaces().Contains(typeof(IDatabaseHealthCheck)))
+							|| (type.IsClass && !type.IsAbstract && type.GetInterfaces().Contains(typeof(IDatabaseHealthCheck)))));
 
-			if (serviceInterface == null)
+			if (healthCheckImplementation == null)
 			{
 				violations.Add(
 					$"{contextName} bounded context has {dbContextType.Name} "
-					+ $"but no service implements IDatabaseHealthCheck");
+					+ $"but no service interface or health check class implements IDatabaseHealthCheck");
 			}
 		}
 

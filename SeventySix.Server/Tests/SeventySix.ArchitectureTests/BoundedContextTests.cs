@@ -36,7 +36,7 @@ public class BoundedContextTests
 	[Fact]
 	public void Bounded_Contexts_Should_Not_Reference_Each_Other()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.IUserQueryService).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
 		string[] boundedContextNames = domainAssembly.GetTypes()
 			.Select(type => type.Namespace)
 			.Where(namespaceName =>
@@ -89,7 +89,7 @@ public class BoundedContextTests
 	[Fact]
 	public void Each_Bounded_Context_Should_Have_DbContext()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.IUserQueryService).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
 		string[] boundedContextNames = domainAssembly.GetTypes()
 			.Select(type => type.Namespace)
 			.Where(namespaceName =>

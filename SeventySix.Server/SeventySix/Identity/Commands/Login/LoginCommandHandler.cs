@@ -1,0 +1,259 @@
+// <copyright file="LoginCommandHandler.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SeventySix.Identity.Constants;
+using SeventySix.Shared;
+
+namespace SeventySix.Identity;
+
+/// <summary>
+/// Handler for login command.
+/// </summary>
+public static class LoginCommandHandler
+{
+	/// <summary>
+	/// Handles login command.
+	/// </summary>
+	public static async Task<AuthResult> HandleAsync(
+		LoginCommand command,
+		IAuthRepository authRepository,
+		ICredentialRepository credentialRepository,
+		IUserRoleRepository userRoleRepository,
+		ITokenService tokenService,
+		IOptions<AuthSettings> authSettings,
+		IOptions<JwtSettings> jwtSettings,
+		TimeProvider timeProvider,
+		ILogger<LoginCommand> logger,
+		CancellationToken cancellationToken)
+	{
+		User? user =
+			await authRepository.GetUserByUsernameOrEmailForUpdateAsync(
+				command.Request.UsernameOrEmail,
+				cancellationToken);
+
+		if (user == null)
+		{
+			logger.LogWarning(
+				"Login attempt with invalid credentials. UsernameOrEmail: {UsernameOrEmail}",
+				command.Request.UsernameOrEmail);
+			return AuthResult.Failed(
+				"Invalid username/email or password.",
+				AuthErrorCodes.InvalidCredentials);
+		}
+
+		if (IsAccountLockedOut(
+			user,
+			authSettings,
+			timeProvider))
+		{
+			logger.LogWarning(
+				"Login attempt for locked account. UserId: {UserId}, LockoutEnd: {LockoutEnd}",
+				user.Id,
+				user.LockoutEndUtc);
+			return AuthResult.Failed(
+				"Account is temporarily locked. Please try again later.",
+				AuthErrorCodes.AccountLocked);
+		}
+
+		if (!user.IsActive)
+		{
+			logger.LogWarning(
+				"Login attempt for inactive account. UserId: {UserId}",
+				user.Id);
+			return AuthResult.Failed(
+				"Account is inactive.",
+				AuthErrorCodes.AccountInactive);
+		}
+
+		UserCredential? credential =
+			await credentialRepository.GetByUserIdAsync(
+				user.Id,
+				cancellationToken);
+
+		if (credential == null)
+		{
+			logger.LogWarning(
+				"Login attempt for user without password. UserId: {UserId}",
+				user.Id);
+			return AuthResult.Failed(
+				"Invalid username/email or password.",
+				AuthErrorCodes.InvalidCredentials);
+		}
+
+		if (!BCrypt.Net.BCrypt.Verify(
+			command.Request.Password,
+			credential.PasswordHash))
+		{
+			await HandleFailedLoginAttemptAsync(
+				user,
+				authRepository,
+				authSettings,
+				timeProvider,
+				logger,
+				cancellationToken);
+
+			logger.LogWarning(
+				"Login attempt with wrong password. UserId: {UserId}, FailedAttempts: {FailedAttempts}",
+				user.Id,
+				user.FailedLoginCount);
+
+			return AuthResult.Failed(
+				"Invalid username/email or password.",
+				AuthErrorCodes.InvalidCredentials);
+		}
+
+		await ResetLockoutAsync(
+			user,
+			authRepository,
+			cancellationToken);
+
+		bool requiresPasswordChange =
+			credential.PasswordChangedAt == null;
+
+		return await GenerateAuthResultAsync(
+			user,
+			command.ClientIp,
+			requiresPasswordChange,
+			command.Request.RememberMe,
+			userRoleRepository,
+			tokenService,
+			authRepository,
+			jwtSettings,
+			timeProvider,
+			cancellationToken);
+	}
+
+	private static bool IsAccountLockedOut(
+		User user,
+		IOptions<AuthSettings> authSettings,
+		TimeProvider timeProvider)
+	{
+		if (!authSettings.Value.Lockout.Enabled)
+		{
+			return false;
+		}
+
+		if (user.LockoutEndUtc == null)
+		{
+			return false;
+		}
+
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		if (user.LockoutEndUtc <= now)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	private static async Task HandleFailedLoginAttemptAsync(
+		User user,
+		IAuthRepository authRepository,
+		IOptions<AuthSettings> authSettings,
+		TimeProvider timeProvider,
+		ILogger<LoginCommand> logger,
+		CancellationToken cancellationToken)
+	{
+		if (!authSettings.Value.Lockout.Enabled)
+		{
+			return;
+		}
+
+		user.FailedLoginCount++;
+
+		if (user.FailedLoginCount >= authSettings.Value.Lockout.MaxFailedAttempts)
+		{
+			DateTime lockoutEnd =
+				timeProvider.GetUtcNow()
+					.AddMinutes(authSettings.Value.Lockout.LockoutDurationMinutes)
+					.UtcDateTime;
+
+			user.LockoutEndUtc = lockoutEnd;
+
+			logger.LogWarning(
+				"Account locked due to failed attempts. UserId: {UserId}, FailedAttempts: {FailedAttempts}, LockoutEnd: {LockoutEnd}",
+				user.Id,
+				user.FailedLoginCount,
+				lockoutEnd);
+		}
+
+		await authRepository.SaveUserChangesAsync(
+			user,
+			cancellationToken);
+	}
+
+	private static async Task ResetLockoutAsync(
+		User user,
+		IAuthRepository authRepository,
+		CancellationToken cancellationToken)
+	{
+		if (user.FailedLoginCount == 0
+			&& user.LockoutEndUtc == null)
+		{
+			return;
+		}
+
+		user.FailedLoginCount = 0;
+		user.LockoutEndUtc = null;
+
+		await authRepository.SaveUserChangesAsync(
+			user,
+			cancellationToken);
+	}
+
+	private static async Task<AuthResult> GenerateAuthResultAsync(
+		User user,
+		string? clientIp,
+		bool requiresPasswordChange,
+		bool rememberMe,
+		IUserRoleRepository userRoleRepository,
+		ITokenService tokenService,
+		IAuthRepository authRepository,
+		IOptions<JwtSettings> jwtSettings,
+		TimeProvider timeProvider,
+		CancellationToken cancellationToken)
+	{
+		IEnumerable<string> roles =
+			await userRoleRepository.GetUserRolesAsync(
+				user.Id,
+				cancellationToken);
+
+		string accessToken =
+			tokenService.GenerateAccessToken(
+				user.Id,
+				user.Username,
+				user.Email,
+				user.FullName,
+				roles.ToList());
+
+		string refreshToken =
+			await tokenService.GenerateRefreshTokenAsync(
+				user.Id,
+				clientIp,
+				rememberMe,
+				cancellationToken);
+
+		DateTime expiresAt =
+			timeProvider.GetUtcNow()
+				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
+				.UtcDateTime;
+
+		await authRepository.UpdateLastLoginAsync(
+			user.Id,
+			timeProvider.GetUtcNow().UtcDateTime,
+			clientIp,
+			cancellationToken);
+
+		return AuthResult.Succeeded(
+			accessToken,
+			refreshToken,
+			expiresAt,
+			requiresPasswordChange);
+	}
+}

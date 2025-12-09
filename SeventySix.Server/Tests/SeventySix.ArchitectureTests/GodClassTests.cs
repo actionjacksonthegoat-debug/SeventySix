@@ -44,17 +44,14 @@ public class GodClassTests
 	private static readonly HashSet<string> AllowedImplementationExceptions =
 		[
 			// ISP pattern: Single implementation implementing multiple focused interfaces
-			// AuthService implements: IAuthenticationService, IOAuthService
+			// AuthService implements: IOAuthService
 			"AuthService",
-
-			// UserService implements: IUserQueryService, IUserValidationService, IUserAdminService, IUserRoleService, IUserProfileService
-			"UserService",
 		];
 
 	[Fact]
 	public void Service_Interfaces_Should_Have_Less_Than_Twelve_Methods()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.IUserQueryService).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
 
 		Type[] serviceInterfaces = domainAssembly.GetTypes()
 			.Where(type =>
@@ -107,7 +104,7 @@ public class GodClassTests
 	[Fact]
 	public void Repository_Interfaces_Should_Have_Less_Than_Twelve_Methods()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.IUserQueryService).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
 
 		Type[] repositoryInterfaces = domainAssembly.GetTypes()
 			.Where(type =>
@@ -159,7 +156,7 @@ public class GodClassTests
 	[Fact]
 	public void Service_Implementations_Should_Have_Less_Than_Twelve_Public_Methods()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.IUserQueryService).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
 
 		Type[] serviceImplementations = domainAssembly.GetTypes()
 			.Where(type =>
