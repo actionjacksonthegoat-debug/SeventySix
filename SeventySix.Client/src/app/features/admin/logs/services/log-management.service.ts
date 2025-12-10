@@ -62,8 +62,9 @@ export class LogManagementService extends BaseFilterService<LogQueryRequest>
 	constructor()
 	{
 		// Initialize with 24-hour date range as default
-		const now: Date = this.dateService.parseUTC(this.dateService.now());
-		const startDate: Date = this.dateService.addHours(now, -24);
+		const dateService = new DateService();
+		const now: Date = dateService.parseUTC(dateService.now());
+		const startDate: Date = dateService.addHours(now, -24);
 		super({
 			page: 1,
 			pageSize: 50,

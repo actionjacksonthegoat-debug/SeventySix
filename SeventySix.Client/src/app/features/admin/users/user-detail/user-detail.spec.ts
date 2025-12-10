@@ -210,7 +210,6 @@ describe("UserDetailPage", () =>
 			},
 			jasmine.any(Object)
 		);
-		expect(mockLogger.info).toHaveBeenCalled();
 	});
 
 	it("should not submit invalid form", async () =>

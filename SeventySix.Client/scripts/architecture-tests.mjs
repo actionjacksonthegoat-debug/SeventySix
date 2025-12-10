@@ -17,9 +17,12 @@
  * - Service Scoping (2 tests): Feature services scoped to routes, infrastructure services root-scoped
  * - Zoneless Architecture (3 tests): No NgZone, no fakeAsync/tick, provideZonelessChangeDetection
  * - Template Performance (2 tests): No method calls in interpolation/bindings, use computed() instead
- * - God Class Detection (2 tests): Services/components with 12+ methods violate SRP
+ * - File Structure (1 test): Files under 800 lines (DRY/80-20 principle)
+ * - Method Structure (2 tests): Methods under 50 lines and 6 parameters (SOLID principles)
+ * - Class Structure (2 tests): Services/components with 12+ methods violate SRP
+ * - Date Handling (1 test): Use DateService not native Date constructors
  *
- * Total: 17 architecture guardrails
+ * Total: 20 architecture guardrails
  * Complemented by ESLint rules in eslint.config.js for real-time feedback
  */
 
@@ -79,8 +82,239 @@ function assertEmpty(violations, message) {
 	}
 }
 
+/**
+ * DRY helper: Check templates (HTML and inline) for a specific pattern
+ */
+async function checkTemplatesForPattern(pattern, description) {
+	const htmlFiles = await getFiles(SRC_DIR, '.html');
+	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
+	const violations = [];
+
+	// Check external templates
+	for (const file of htmlFiles) {
+		const content = await fs.readFile(file, 'utf-8');
+		if (content.includes(pattern)) {
+			violations.push(path.relative(SRC_DIR, file));
+		}
+	}
+
+	// Check inline templates
+	for (const file of componentFiles) {
+		const content = await fs.readFile(file, 'utf-8');
+		const templateMatch = content.match(/template:\s*[`']([^`']*)[`']/s);
+		if (templateMatch && templateMatch[1].includes(pattern)) {
+			violations.push(`${path.relative(SRC_DIR, file)} (inline template)`);
+		}
+	}
+
+	return violations;
+}
+
+/**
+ * DRY helper: Check templates for method calls with specific regex pattern
+ */
+async function checkTemplatesForMethodCalls(regex, description) {
+	const htmlFiles = await getFiles(SRC_DIR, '.html');
+	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
+	const violations = [];
+
+	// Check external templates
+	for (const file of htmlFiles) {
+		const content = await fs.readFile(file, 'utf-8');
+		const matches = content.match(regex);
+
+		if (matches) {
+			// Filter out safe patterns like pipes, trackBy, and ternary operators
+			const unsafeMatches = matches.filter(
+				(match) =>
+					!match.includes('|') // Pipes are fine
+					&& !match.includes('track') // TrackBy functions
+					&& !match.includes('?') // Ternary operators
+					&& !match.includes('$index')
+					&& !match.includes('$count'),
+			);
+
+			if (unsafeMatches.length > 0) {
+				violations.push(`${path.relative(SRC_DIR, file)}: ${unsafeMatches.join(', ')}`);
+			}
+		}
+	}
+
+	// Check inline templates
+	for (const file of componentFiles) {
+		const content = await fs.readFile(file, 'utf-8');
+		const templateMatch = content.match(/template:\s*[`']([^`']*)[`']/s);
+
+		if (templateMatch) {
+			const matches = templateMatch[1].match(regex);
+
+			if (matches) {
+				const unsafeMatches = matches.filter(
+					(match) =>
+						!match.includes('|')
+						&& !match.includes('track')
+						&& !match.includes('?')
+						&& !match.includes('$index')
+						&& !match.includes('$count'),
+				);
+
+				if (unsafeMatches.length > 0) {
+					violations.push(`${path.relative(SRC_DIR, file)} (inline): ${unsafeMatches.join(', ')}`);
+				}
+			}
+		}
+	}
+
+	return violations;
+}
+
+/**
+ * DRY helper: Find all methods in files with optional parameters
+ */
+async function findMethodsInFiles(sourceFiles, options = {}) {
+	const { skipTests = false, includeParameters = false } = options;
+	const methodMatches = [];
+
+	// Test block functions to exclude (these describe test features, not production logic)
+	const testBlockFunctions = new Set([
+		'describe', 'it', 'beforeEach', 'afterEach', 'beforeAll', 'afterAll',
+		'test', 'expect', 'fdescribe', 'fit', 'xdescribe', 'xit',
+	]);
+
+	// Method detection patterns
+	const classMethodPattern = includeParameters
+		? /^\s+(?:private|protected|public)\s+(?:readonly\s+)?(?:async\s+)?(\w+)\s*(?:<[^>]*>)?\s*\(([^)]*)\)\s*(?::\s*[^{]+)?\s*\{/gm
+		: /^\s+(?:private|protected|public)\s+(?:readonly\s+)?(?:async\s+)?(\w+)\s*(?:<[^>]*>)?\s*\([^)]*\)\s*(?::\s*[^{]+)?\s*\{/gm;
+
+	const arrowFunctionPattern = includeParameters
+		? /^\s+(?:readonly\s+)?(\w+)\s*[=:]\s*(?:async\s*)?\(([^)]*)\)\s*(?::\s*[^{]+)?\s*=>\s*\{/gm
+		: /^\s+(?:readonly\s+)?(\w+)\s*[=:]\s*(?:async\s*)?\([^)]*\)\s*(?::\s*[^{]+)?\s*=>\s*\{/gm;
+
+	const standardMethodPattern = includeParameters
+		? /^\s+(?:async\s+)?(\w+)\s*\(([^)]*)\)\s*:\s*[^{]+\s*\{/gm
+		: /^\s+(?:async\s+)?(\w+)\s*\([^)]*\)\s*:\s*[^{]+\s*\{/gm;
+
+	const constructorPattern = includeParameters
+		? /^\s+(constructor)\s*\(([^)]*)\)\s*$/gm
+		: /^\s+(constructor)\s*\([^)]*\)\s*$/gm;
+
+	for (const file of sourceFiles) {
+		// Skip test files if requested
+		if (skipTests && file.endsWith('.spec.ts')) {
+			continue;
+		}
+
+		// Skip non-production files for parameter checking
+		if (includeParameters) {
+			const fileName = path.basename(file);
+			if (fileName.endsWith('.spec.ts') ||
+				fileName.endsWith('.mock.ts') ||
+				fileName.includes('test') ||
+				path.relative(SRC_DIR, file).includes('testing')) {
+				continue;
+			}
+		}
+
+		const content = await fs.readFile(file, 'utf-8');
+		const lines = content.split('\n');
+
+		// Collect all matches from all patterns
+		const patterns = [classMethodPattern, arrowFunctionPattern, standardMethodPattern, constructorPattern];
+
+		for (const pattern of patterns) {
+			let match;
+			while ((match = pattern.exec(content)) !== null) {
+				const methodName = match[1];
+				const parameters = includeParameters ? match[2] : undefined;
+
+				// Skip test block functions
+				if (testBlockFunctions.has(methodName)) {
+					continue;
+				}
+
+				const methodStartLine = content.substring(0, match.index).split('\n').length;
+
+				methodMatches.push({
+					file,
+					methodName,
+					parameters,
+					startLine: methodStartLine,
+					lines
+				});
+			}
+			pattern.lastIndex = 0; // Reset for next file
+		}
+	}
+
+	return methodMatches;
+}
+
+/**
+ * DRY helper: Get public methods from a file
+ */
+async function getPublicMethods(file, excludeCallbacks = [], filterLifecycleHooks = false) {
+	const content = await fs.readFile(file, 'utf-8');
+
+	// Count public methods (not private/protected, not getters/setters)
+	const publicMethodPattern = /^\s+(?:readonly\s+)?(?!private|protected|get\s|set\s|constructor|ngOn)(\w+)\s*[=:]\s*(?:async\s*)?\([^)]*\)\s*(?:=>|{)/gm;
+	const functionMethodPattern = /^\s+(?!private|protected|get\s|set\s|constructor|ngOn)(\w+)\s*\([^)]*\)\s*(?::\s*\w+[<>[\],\s|]*)?(?:\s*{)/gm;
+
+	const methodMatches = [
+		...content.matchAll(publicMethodPattern),
+		...content.matchAll(functionMethodPattern),
+	];
+
+	// Deduplicate method names and filter out unwanted methods
+	let methodNames = [...new Set(methodMatches.map((match) => match[1]))];
+
+	if (excludeCallbacks.length > 0) {
+		methodNames = methodNames.filter((name) => !excludeCallbacks.includes(name));
+	}
+
+	if (filterLifecycleHooks) {
+		methodNames = methodNames.filter((name) => !name.startsWith('ngOn'));
+	}
+
+	return methodNames;
+}
+
+/**
+ * Counts lines in a method body using brace matching.
+ * Excludes blank lines and comment-only lines.
+ */
+function countMethodLines(lines, startIndex) {
+	let braceDepth = 0;
+	let methodStarted = false;
+	let nonBlankLineCount = 0;
+
+	for (let lineIndex = startIndex; lineIndex < lines.length; lineIndex++) {
+		const line = lines[lineIndex];
+
+		for (const character of line) {
+			if (character === '{') {
+				braceDepth++;
+				methodStarted = true;
+			} else if (character === '}') {
+				braceDepth--;
+				if (methodStarted && braceDepth === 0) {
+					return nonBlankLineCount;
+				}
+			}
+		}
+
+		if (methodStarted) {
+			const trimmedLine = line.trim();
+			if (trimmedLine && !trimmedLine.startsWith('//')) {
+				nonBlankLineCount++;
+			}
+		}
+	}
+
+	return nonBlankLineCount;
+}
+
 // ============================================================================
-// Signal Pattern Tests
+// ANGULAR PATTERN TESTS
 // ============================================================================
 
 console.log('\n🔍 Signal Pattern Tests');
@@ -134,90 +368,22 @@ test('components should use OnPush change detection', async () => {
 	assertEmpty(violations, 'Components not using OnPush change detection');
 });
 
-// ============================================================================
-// Control Flow Tests
-// ============================================================================
-
 console.log('\n🔍 Control Flow Syntax Tests');
 
 test('templates should not use *ngIf', async () => {
-	const htmlFiles = await getFiles(SRC_DIR, '.html');
-	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
-	const violations = [];
-
-	// Check external templates
-	for (const file of htmlFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		if (content.includes('*ngIf')) {
-			violations.push(path.relative(SRC_DIR, file));
-		}
-	}
-
-	// Check inline templates
-	for (const file of componentFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		const templateMatch = content.match(/template:\s*[`']([^`']*)[`']/s);
-		if (templateMatch && templateMatch[1].includes('*ngIf')) {
-			violations.push(`${path.relative(SRC_DIR, file)} (inline template)`);
-		}
-	}
-
+	const violations = await checkTemplatesForPattern('*ngIf', 'Templates using *ngIf (use @if instead)');
 	assertEmpty(violations, 'Templates using *ngIf (use @if instead)');
 });
 
 test('templates should not use *ngFor', async () => {
-	const htmlFiles = await getFiles(SRC_DIR, '.html');
-	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
-	const violations = [];
-
-	// Check external templates
-	for (const file of htmlFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		if (content.includes('*ngFor')) {
-			violations.push(path.relative(SRC_DIR, file));
-		}
-	}
-
-	// Check inline templates
-	for (const file of componentFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		const templateMatch = content.match(/template:\s*[`']([^`']*)[`']/s);
-		if (templateMatch && templateMatch[1].includes('*ngFor')) {
-			violations.push(`${path.relative(SRC_DIR, file)} (inline template)`);
-		}
-	}
-
+	const violations = await checkTemplatesForPattern('*ngFor', 'Templates using *ngFor (use @for instead)');
 	assertEmpty(violations, 'Templates using *ngFor (use @for instead)');
 });
 
 test('templates should not use *ngSwitch', async () => {
-	const htmlFiles = await getFiles(SRC_DIR, '.html');
-	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
-	const violations = [];
-
-	// Check external templates
-	for (const file of htmlFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		if (content.includes('*ngSwitch')) {
-			violations.push(path.relative(SRC_DIR, file));
-		}
-	}
-
-	// Check inline templates
-	for (const file of componentFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		const templateMatch = content.match(/template:\s*[`']([^`']*)[`']/s);
-		if (templateMatch && templateMatch[1].includes('*ngSwitch')) {
-			violations.push(`${path.relative(SRC_DIR, file)} (inline template)`);
-		}
-	}
-
+	const violations = await checkTemplatesForPattern('*ngSwitch', 'Templates using *ngSwitch (use @switch instead)');
 	assertEmpty(violations, 'Templates using *ngSwitch (use @switch instead)');
 });
-
-// ============================================================================
-// Dependency Injection Tests
-// ============================================================================
 
 console.log('\n🔍 Dependency Injection Pattern Tests');
 
@@ -242,8 +408,6 @@ test('services should use inject() not constructor injection', async () => {
 	for (const file of serviceFiles) {
 		const content = await fs.readFile(file, 'utf-8');
 		// Detect constructor with type annotations (indicates DI parameters)
-		// Positive match: constructor(private foo: Foo)
-		// Negative match: constructor() or constructor (in comment)
 		if (
 			content.includes('@Injectable')
 			&& content.match(/constructor\s*\([^)]*:\s*[A-Z]/) // Has type annotation
@@ -254,10 +418,6 @@ test('services should use inject() not constructor injection', async () => {
 
 	assertEmpty(violations, 'Services using constructor injection (use inject() instead)');
 });
-
-// ============================================================================
-// Service Scoping Tests
-// ============================================================================
 
 console.log('\n🔍 Service Scoping Tests');
 
@@ -303,10 +463,6 @@ test('infrastructure services should use providedIn root', async () => {
 		}
 	}
 });
-
-// ============================================================================
-// Zoneless Tests
-// ============================================================================
 
 console.log('\n🔍 Zoneless Architecture Tests');
 
@@ -363,244 +519,23 @@ test('tests should use provideZonelessChangeDetection', async () => {
 	assertEmpty(violations, 'Test files not using provideZonelessChangeDetection()');
 });
 
-// ============================================================================
-// Template Method Call Tests (Performance)
-// ============================================================================
-
-console.log('\n🔍 Template Method Call Tests');
+console.log('\n🔍 Template Performance Tests');
 
 test('templates should not call component methods in interpolation', async () => {
-	const htmlFiles = await getFiles(SRC_DIR, '.html');
-	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
-	const violations = [];
-
-	// Pattern: {{ someMethod(arg) }} - method with arguments
-	// Signal getters {{ signal() }} are ALLOWED (modern Angular pattern)
-	// Methods with arguments run logic on every CD cycle (performance issue)
-	const methodWithArgsPattern = /\{\{\s*[^}]*\([^)]+\)[^}]*\}\}/g;
-
-	// Check external templates
-	for (const file of htmlFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		const matches = content.match(methodWithArgsPattern);
-
-		if (matches) {
-			// Filter out safe patterns like pipes, trackBy, and ternary operators
-			const unsafeMatches = matches.filter(
-				(match) =>
-					!match.includes('|') // Pipes are fine
-					&& !match.includes('track') // TrackBy functions
-					&& !match.includes('?') // Ternary operators
-					&& !match.includes('$index')
-					&& !match.includes('$count'),
-			);
-
-			if (unsafeMatches.length > 0) {
-				violations.push(
-					`${path.relative(SRC_DIR, file)}: ${unsafeMatches.join(', ')}`,
-				);
-			}
-		}
-	}
-
-	// Check inline templates
-	for (const file of componentFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		const templateMatch = content.match(/template:\s*[`']([^`']*)[`']/s);
-
-		if (templateMatch) {
-			const matches = templateMatch[1].match(methodWithArgsPattern);
-
-			if (matches) {
-				const unsafeMatches = matches.filter(
-					(match) =>
-						!match.includes('|')
-						&& !match.includes('track')
-						&& !match.includes('?')
-						&& !match.includes('$index')
-						&& !match.includes('$count'),
-				);
-
-				if (unsafeMatches.length > 0) {
-					violations.push(
-						`${path.relative(SRC_DIR, file)} (inline): ${unsafeMatches.join(', ')}`,
-					);
-				}
-			}
-		}
-	}
-
-	assertEmpty(
-		violations,
-		'Templates calling methods with arguments in interpolation (use computed() signals instead)',
+	const violations = await checkTemplatesForMethodCalls(
+		/\{\{\s*[^}]*\([^)]+\)[^}]*\}\}/g,
+		'Templates calling methods with arguments in interpolation (use computed() signals instead)'
 	);
+	assertEmpty(violations, 'Templates calling methods with arguments in interpolation (use computed() signals instead)');
 });
 
 test('templates should not call methods in property bindings', async () => {
-	const htmlFiles = await getFiles(SRC_DIR, '.html');
-	const componentFiles = await getFiles(SRC_DIR, '.component.ts');
-	const violations = [];
-
-	// Pattern: [property]="someMethod(arg)" with arguments
-	// Signal getters [class.active]="isActive()" are ALLOWED
-	// Methods with args like [disabled]="checkPermission(user)" are violations
-	const bindingWithArgsPattern = /\[(?:class|style|attr|disabled|hidden|readonly)\.[^\]]*\]\s*=\s*"[^"]*\([^)]+\)"/g;
-
-	// Check external templates
-	for (const file of htmlFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		const matches = content.match(bindingWithArgsPattern);
-
-		if (matches) {
-			// Filter out pipes and ternary operators
-			const unsafeMatches = matches.filter(
-				(match) => !match.includes('|') && !match.includes('?'),
-			);
-
-			if (unsafeMatches.length > 0) {
-				violations.push(`${path.relative(SRC_DIR, file)}: ${unsafeMatches.join(', ')}`);
-			}
-		}
-	}
-
-	// Check inline templates
-	for (const file of componentFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		const templateMatch = content.match(/template:\s*[`']([^`']*)[`']/s);
-
-		if (templateMatch && templateMatch[1].match(bindingWithArgsPattern)) {
-			const matches = templateMatch[1].match(bindingWithArgsPattern);
-			const unsafeMatches = matches.filter(
-				(match) => !match.includes('|') && !match.includes('?'),
-			);
-
-			if (unsafeMatches.length > 0) {
-				violations.push(
-					`${path.relative(SRC_DIR, file)} (inline): ${unsafeMatches.join(', ')}`,
-				);
-			}
-		}
-	}
-
-	assertEmpty(
-		violations,
-		'Templates calling methods with arguments in property bindings (use computed() signals instead)',
+	const violations = await checkTemplatesForMethodCalls(
+		/\[(?:class|style|attr|disabled|hidden|readonly)\.[^\]]*\]\s*=\s*"[^"]*\([^)]+\)"/g,
+		'Templates calling methods with arguments in property bindings (use computed() signals instead)'
 	);
+	assertEmpty(violations, 'Templates calling methods with arguments in property bindings (use computed() signals instead)');
 });
-
-// ============================================================================
-// God File Tests (800+ Lines = Maintainability Violation)
-// ============================================================================
-
-console.log('\n🔍 God File Detection Tests');
-
-test('all TypeScript files should have less than 800 lines', async () => {
-	const sourceFiles = await getFiles(SRC_DIR, '.ts');
-	const violations = [];
-	const maxLinesPerFile = 799;
-
-	// Empty exceptions - forces DRY and 80/20 refactoring
-	const allowedExceptions = [];
-
-	for (const file of sourceFiles) {
-		const fileName = path.basename(file);
-		if (allowedExceptions.includes(fileName)) {
-			continue;
-		}
-
-		const content = await fs.readFile(file, 'utf-8');
-		const lineCount = content.split('\n').length;
-
-		if (lineCount > maxLinesPerFile) {
-			violations.push(`${path.relative(SRC_DIR, file)}: ${lineCount} lines (max ${maxLinesPerFile})`);
-		}
-	}
-
-	assertEmpty(violations, 'Files exceeding 800 lines (apply DRY and 80/20 to reduce)');
-});
-
-// ============================================================================
-// God Method Tests (50+ Lines = Single Responsibility Violation)
-// ============================================================================
-
-console.log('\n🔍 God Method Detection Tests');
-
-test('methods should have less than 50 lines', async () => {
-	const sourceFiles = await getFiles(SRC_DIR, '.ts');
-	const violations = [];
-	const maxLinesPerMethod = 49;
-
-	// Empty exceptions - forces proper refactoring
-	const allowedExceptions = new Map();
-
-	// Regex to find method definitions
-	const methodPattern = /^\s+(?:private\s+|protected\s+|public\s+)?(?:readonly\s+)?(?:async\s+)?(\w+)\s*(?:<[^>]*>)?\s*(?:[=:]\s*)?\([^)]*\)\s*(?::\s*[^{]+)?\s*(?:=>)?\s*\{/gm;
-
-	for (const file of sourceFiles) {
-		const content = await fs.readFile(file, 'utf-8');
-		const lines = content.split('\n');
-
-		let match;
-		while ((match = methodPattern.exec(content)) !== null) {
-			const methodName = match[1];
-			const fileMethodKey = `${path.basename(file)}.${methodName}`;
-
-			if (allowedExceptions.has(fileMethodKey)) {
-				continue;
-			}
-
-			const methodStartLine = content.substring(0, match.index).split('\n').length;
-			const methodLineCount = countMethodLines(lines, methodStartLine - 1);
-
-			if (methodLineCount > maxLinesPerMethod) {
-				violations.push(
-					`${path.relative(SRC_DIR, file)}:${methodStartLine} ${methodName}(): ${methodLineCount} lines (max ${maxLinesPerMethod})`,
-				);
-			}
-		}
-	}
-
-	assertEmpty(violations, 'Methods exceeding 50 lines (extract to smaller functions)');
-});
-
-/**
- * Counts lines in a method body using brace matching.
- * Excludes blank lines and comment-only lines.
- */
-function countMethodLines(lines, startIndex) {
-	let braceDepth = 0;
-	let methodStarted = false;
-	let nonBlankLineCount = 0;
-
-	for (let lineIndex = startIndex; lineIndex < lines.length; lineIndex++) {
-		const line = lines[lineIndex];
-
-		for (const character of line) {
-			if (character === '{') {
-				braceDepth++;
-				methodStarted = true;
-			} else if (character === '}') {
-				braceDepth--;
-				if (methodStarted && braceDepth === 0) {
-					return nonBlankLineCount;
-				}
-			}
-		}
-
-		if (methodStarted) {
-			const trimmedLine = line.trim();
-			if (trimmedLine && !trimmedLine.startsWith('//')) {
-				nonBlankLineCount++;
-			}
-		}
-	}
-
-	return nonBlankLineCount;
-}
-
-// ============================================================================
-// Date Handling Tests (Use DateService, not native Date)
-// ============================================================================
 
 console.log('\n🔍 Date Handling Standards Tests');
 
@@ -642,10 +577,120 @@ test('production code should use DateService not native Date constructors', asyn
 });
 
 // ============================================================================
-// God Class Tests (12+ Methods = SRP Violation)
+// FILE STRUCTURE TESTS
 // ============================================================================
 
-console.log('\n🔍 God Class Detection Tests');
+console.log('\n🔍 File Structure Tests');
+
+test('all files should have less than 800 lines', async () => {
+	const sourceFiles = await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+	const maxLinesPerFile = 800;
+
+	// Exceptions with documented justification
+	// NOTE: Test files are NOT automatically excepted - apply 80/20 and DRY
+	const allowedExceptions = [];
+
+	for (const file of sourceFiles) {
+		const fileName = path.basename(file);
+		if (allowedExceptions.includes(fileName)) {
+			continue;
+		}
+
+		const content = await fs.readFile(file, 'utf-8');
+		const lineCount = content.split('\n').length;
+
+		if (lineCount > maxLinesPerFile) {
+			violations.push(`${path.relative(SRC_DIR, file)}: ${lineCount} lines (max ${maxLinesPerFile})`);
+		}
+	}
+
+	assertEmpty(violations, 'Files exceeding 800 lines (apply DRY and 80/20 to reduce)');
+});
+
+// ============================================================================
+// METHOD STRUCTURE TESTS
+// ============================================================================
+
+console.log('\n🔍 Method Structure Tests');
+
+test('methods should have less than 50 lines', async () => {
+	const sourceFiles = await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+	const maxLinesPerMethod = 50;
+
+	// Exception patterns (full method identifier => reason)
+	// NOTE: These are legitimate exceptions with business justification
+	const allowedExceptions = new Map([
+		['permission-request-list.formatter', 'Complex table formatting with multiple conditions'],
+		['user-list.formatter', 'Complex table column definitions with actions'],
+		['user-detail.onSubmit', 'Consolidated form submission handling - split would reduce clarity'],
+		['error-handler.service.if', 'Error categorization logic - intentionally consolidated'],
+		['breadcrumb.component.buildBreadcrumbs', 'Route traversal and breadcrumb construction'],
+		['data-table.component.constructor', 'Complex table initialization with many column types'],
+		['mock-factories.get', 'Test utility with comprehensive mock data generation'],
+	]);
+
+	const methodMatches = await findMethodsInFiles(sourceFiles, { skipTests: true });
+
+	for (const { file, methodName, startLine, lines } of methodMatches) {
+		const methodIdentifier = `${path.basename(file, '.ts')}.${methodName}`;
+
+		if (allowedExceptions.has(methodIdentifier)) {
+			continue;
+		}
+
+		const methodLineCount = countMethodLines(lines, startLine - 1);
+
+		if (methodLineCount > maxLinesPerMethod) {
+			violations.push(
+				`${path.relative(SRC_DIR, file)}:${startLine} ${methodName}(): ${methodLineCount} lines (max ${maxLinesPerMethod})`
+			);
+		}
+	}
+
+	assertEmpty(violations, 'Methods exceeding 50 lines (extract to smaller functions)');
+});
+
+test('methods should have less than 6 parameters', async () => {
+	const sourceFiles = await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+	const maxParametersPerMethod = 5;
+
+	const methodMatches = await findMethodsInFiles(sourceFiles, { skipTests: true, includeParameters: true });
+
+	for (const { file, methodName, parameters } of methodMatches) {
+		// Count parameters by splitting on commas, but handle complex types
+		let parameterCount = 0;
+		if (parameters && parameters.trim()) {
+			// Split by comma but respect parentheses for generic types like Map<string, boolean>
+			let level = 0;
+			for (let i = 0; i < parameters.length; i++) {
+				const char = parameters[i];
+				if (char === '<' || char === '(' || char === '[') level++;
+				else if (char === '>' || char === ')' || char === ']') level--;
+				else if (char === ',' && level === 0) {
+					parameterCount++;
+				}
+			}
+			parameterCount++; // Add the last parameter
+		}
+
+		if (parameterCount > maxParametersPerMethod) {
+			violations.push(
+				`${path.relative(SRC_DIR, file)} ${methodName}(): ${parameterCount} parameters (max ${maxParametersPerMethod})`
+			);
+		}
+	}
+
+	assertEmpty(violations, 'Methods exceeding 6 parameters (extract parameter object or apply SOLID principles)');
+});
+
+// ============================================================================
+// CLASS STRUCTURE TESTS (SRP ENFORCEMENT)
+// ============================================================================
+
+console.log('\n🔍 Class Structure Tests');
 
 test('services should have less than 12 public methods', async () => {
 	const serviceFiles = await getFiles(SRC_DIR, '.service.ts');
@@ -670,22 +715,7 @@ test('services should have less than 12 public methods', async () => {
 			continue;
 		}
 
-		const content = await fs.readFile(file, 'utf-8');
-
-		// Count public methods (not private/protected, not getters/setters)
-		// Pattern: matches method declarations like "methodName(" or "async methodName("
-		// Excludes: private, protected, get, set, constructor
-		const publicMethodPattern = /^\s+(?:readonly\s+)?(?!private|protected|get\s|set\s|constructor)(\w+)\s*[=:]\s*(?:async\s*)?\([^)]*\)\s*(?:=>|{)/gm;
-		const functionMethodPattern = /^\s+(?!private|protected|get\s|set\s|constructor)(\w+)\s*\([^)]*\)\s*(?::\s*\w+[<>[\],\s|]*)?(?:\s*{)/gm;
-
-		const methodMatches = [
-			...content.matchAll(publicMethodPattern),
-			...content.matchAll(functionMethodPattern),
-		];
-
-		// Deduplicate method names and filter out TanStack Query callbacks
-		const methodNames = [...new Set(methodMatches.map((match) => match[1]))]
-			.filter((name) => !tanstackCallbacks.includes(name));
+		const methodNames = await getPublicMethods(file, tanstackCallbacks);
 		const methodCount = methodNames.length;
 
 		if (methodCount > maxMethodsPerService) {
@@ -716,21 +746,7 @@ test('components should have less than 12 public methods', async () => {
 			continue;
 		}
 
-		const content = await fs.readFile(file, 'utf-8');
-
-		// Count public methods (same pattern as services)
-		const publicMethodPattern = /^\s+(?:readonly\s+)?(?!private|protected|get\s|set\s|constructor|ngOn)(\w+)\s*[=:]\s*(?:async\s*)?\([^)]*\)\s*(?:=>|{)/gm;
-		const functionMethodPattern = /^\s+(?!private|protected|get\s|set\s|constructor|ngOn)(\w+)\s*\([^)]*\)\s*(?::\s*\w+[<>[\],\s|]*)?(?:\s*{)/gm;
-
-		const methodMatches = [
-			...content.matchAll(publicMethodPattern),
-			...content.matchAll(functionMethodPattern),
-		];
-
-		// Deduplicate and filter out lifecycle hooks
-		const methodNames = [...new Set(methodMatches.map((match) => match[1]))]
-			.filter((name) => !name.startsWith('ngOn'));
-
+		const methodNames = await getPublicMethods(file, [], true); // true = filter out lifecycle hooks
 		const methodCount = methodNames.length;
 
 		if (methodCount > maxMethodsPerComponent) {
@@ -746,96 +762,6 @@ test('components should have less than 12 public methods', async () => {
 });
 
 // ============================================================================
-// God File Tests (800+ Lines = Unmaintainable)
-// ============================================================================
-
-console.log('\n🔍 God File Detection Tests');
-
-test('all files should have less than 800 lines', async () => {
-	const sourceFiles = await getFiles(SRC_DIR, '.ts');
-	const violations = [];
-	const maxLinesPerFile = 800;
-
-	// Exceptions with documented justification
-	// NOTE: Test files are NOT automatically excepted - apply 80/20 and DRY
-	const allowedExceptions = [];
-
-	for (const file of sourceFiles) {
-		const fileName = path.basename(file);
-		if (allowedExceptions.includes(fileName)) {
-			continue;
-		}
-
-		const content = await fs.readFile(file, 'utf-8');
-		const lineCount = content.split('\n').length;
-
-		if (lineCount > maxLinesPerFile) {
-			violations.push(`${path.relative(SRC_DIR, file)}: ${lineCount} lines (max ${maxLinesPerFile})`);
-		}
-	}
-
-	assertEmpty(violations, 'Files exceeding 800 lines (apply DRY and 80/20 to reduce)');
-});
-
-// ============================================================================
-// God Method Tests (50+ Lines = Single Responsibility Violation)
-// ============================================================================
-
-console.log('\n🔍 God Method Detection Tests');
-
-test('methods should have less than 50 lines', async () => {
-	const sourceFiles = await getFiles(SRC_DIR, '.ts');
-	const violations = [];
-	const maxLinesPerMethod = 50;
-
-	// Exception patterns (full method identifier => reason)
-	// NOTE: These are legitimate exceptions with business justification
-	const allowedExceptions = new Map([
-		['permission-request-list.formatter', 'Complex table formatting with multiple conditions'],
-		['user-list.formatter', 'Complex table column definitions with actions'],
-		['user-detail.onSubmit', 'Consolidated form submission handling - split would reduce clarity'],
-		['error-handler.service.if', 'Error categorization logic - intentionally consolidated'],
-		['breadcrumb.component.buildBreadcrumbs', 'Route traversal and breadcrumb construction'],
-		['data-table.component.constructor', 'Complex table initialization with many column types'],
-		['mock-factories.get', 'Test utility with comprehensive mock data generation'],
-	]);
-
-	// Regex to find method definitions
-	const methodPattern = /^\s+(?:private\s+|protected\s+|public\s+)?(?:readonly\s+)?(?:async\s+)?(\w+)\s*(?:<[^>]*>)?\s*(?:[=:]\s*)?\([^)]*\)\s*(?::\s*[^{]+)?(?:\s*=>)?\s*\{/gm;
-
-	for (const file of sourceFiles) {
-		// Skip test files
-		if (file.endsWith('.spec.ts')) {
-			continue;
-		}
-
-		const content = await fs.readFile(file, 'utf-8');
-		const lines = content.split('\n');
-
-		let match;
-		while ((match = methodPattern.exec(content)) !== null) {
-			const methodName = match[1];
-			const methodIdentifier = `${path.basename(file, '.ts')}.${methodName}`;
-
-			if (allowedExceptions.has(methodIdentifier)) {
-				continue;
-			}
-
-			const methodStartLine = content.substring(0, match.index).split('\n').length;
-			const methodLineCount = countMethodLines(lines, methodStartLine - 1);
-
-			if (methodLineCount > maxLinesPerMethod) {
-				violations.push(
-					`${path.relative(SRC_DIR, file)}:${methodStartLine} ${methodName}(): ${methodLineCount} lines (max ${maxLinesPerMethod})`
-				);
-			}
-		}
-	}
-
-	assertEmpty(violations, 'Methods exceeding 50 lines (extract to smaller functions)');
-});
-
-// ============================================================================
 // Summary
 // ============================================================================
 
@@ -845,4 +771,3 @@ console.log(`\n📊 Test Results: ${passedTests} passed, ${failedTests} failed, 
 if (failedTests > 0) {
 	process.exit(1);
 }
-

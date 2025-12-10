@@ -207,97 +207,146 @@ export class UserDetailPage
 	 */
 	async onSubmit(): Promise<void>
 	{
-		// Validate form
+		if (!this.validateFormAndMarkTouched()) return;
+
+		const updateRequest: UpdateUserRequest | null = this.buildUpdateRequest();
+		if (!updateRequest) return;
+
+		this.executeMutation(updateRequest);
+	}
+
+	/**
+	 * Validates form and marks fields as touched if invalid.
+	 * @returns true if form is valid, false otherwise
+	 */
+	private validateFormAndMarkTouched(): boolean
+	{
 		if (this.userForm.invalid)
 		{
 			this.userForm.markAllAsTouched();
-			this.logger.info("Form validation failed");
-			return;
+			return false;
 		}
+		return true;
+	}
 
+	/**
+	 * Builds the update request from form data and validates prerequisites.
+	 * @returns UpdateUserRequest if valid, null if validation fails
+	 */
+	private buildUpdateRequest(): UpdateUserRequest | null
+	{
 		const userId: string = this.userId;
 		if (!userId)
 		{
-			this.snackBar.open("Invalid user ID", "Close", {
-				duration: 3000,
-				horizontalPosition: "end",
-				verticalPosition: "top"
-			});
-			return;
+			this.showErrorSnackBar("Invalid user ID");
+			return null;
 		}
 
 		const currentUser: User | null = this.user();
 		if (!currentUser)
 		{
-			this.snackBar.open("User data not loaded", "Close", {
-				duration: 3000,
-				horizontalPosition: "end",
-				verticalPosition: "top"
-			});
-			return;
+			this.showErrorSnackBar("User data not loaded");
+			return null;
 		}
 
-		const updateRequest: UpdateUserRequest = {
+		return {
 			id: parseInt(userId),
 			username: this.userForm.value.username,
 			email: this.userForm.value.email,
 			fullName: this.userForm.value.fullName || undefined,
 			isActive: this.userForm.value.isActive
 		};
+	}
 
+	/**
+	 * Executes the user update mutation with success and error handling.
+	 * @param updateRequest The update request to execute
+	 */
+	private executeMutation(updateRequest: UpdateUserRequest): void
+	{
 		this.updateMutation.mutate(
-			{ id: userId, user: updateRequest },
+			{ id: this.userId, user: updateRequest },
 			{
-				onSuccess: () =>
-				{
-					this.userForm.markAsPristine();
-					this.logger.info("User updated successfully", {
-						id: userId
-					});
-
-					// Show success notification
-					this.snackBar.open("User updated successfully", "Close", {
-						duration: 3000,
-						horizontalPosition: "end",
-						verticalPosition: "top"
-					});
-				},
-				onError: (err: unknown) =>
-				{
-					// Handle 409 Conflict (concurrency error)
-					if ((err as { status?: number }).status === 409)
-					{
-						this.snackBar
-							.open(
-								"User was modified by another user. Please refresh and try again.",
-								"REFRESH",
-								{
-									duration: 10000,
-									horizontalPosition: "end",
-									verticalPosition: "top"
-								}
-							)
-							.onAction()
-							.subscribe(() =>
-							{
-								this.userQuery.refetch();
-							});
-					}
-					else
-					{
-						this.logger.error(
-							"Failed to save user",
-							err instanceof Error ? err : undefined
-						);
-						this.snackBar.open("Failed to save user", "Close", {
-							duration: 3000,
-							horizontalPosition: "end",
-							verticalPosition: "top"
-						});
-					}
-				}
+				onSuccess: () => this.handleMutationSuccess(),
+				onError: (error: unknown) => this.handleMutationError(error)
 			}
 		);
+	}
+
+	/**
+	 * Handles successful user update.
+	 */
+	private handleMutationSuccess(): void
+	{
+		this.userForm.markAsPristine();
+		this.showSuccessSnackBar("User updated successfully");
+	}
+
+	/**
+	 * Handles user update errors with appropriate messaging.
+	 * @param error The error from the mutation
+	 */
+	private handleMutationError(error: unknown): void
+	{
+		const errorWithStatus = error as { status?: number };
+
+		if (errorWithStatus.status === 409)
+		{
+			this.handleConcurrencyError();
+		}
+		else
+		{
+			this.logger.error(
+				"Failed to save user",
+				error instanceof Error ? error : undefined
+			);
+			this.showErrorSnackBar("Failed to save user");
+		}
+	}
+
+	/**
+	 * Handles 409 conflict errors (concurrency issues).
+	 */
+	private handleConcurrencyError(): void
+	{
+		this.snackBar
+			.open(
+				"User was modified by another user. Please refresh and try again.",
+				"REFRESH",
+				{
+					duration: 10000,
+					horizontalPosition: "end",
+					verticalPosition: "top"
+				}
+			)
+			.onAction()
+			.subscribe(() => this.userQuery.refetch());
+	}
+
+	/**
+	 * Shows a success snack bar message.
+	 * @param message The message to display
+	 */
+	private showSuccessSnackBar(message: string): void
+	{
+		this.snackBar.open(message, "Close", {
+			duration: 3000,
+			horizontalPosition: "end",
+			verticalPosition: "top"
+		});
+	}
+
+	/**
+	 * Shows an error snack bar message.
+	 * @param message The message to display
+	 */
+	private showErrorSnackBar(message: string): void
+	{
+		this.snackBar.open(message, "Close", {
+			duration: 3000,
+			horizontalPosition: "end",
+			verticalPosition: "top"
+		});
 	}
 
 	/**
@@ -324,26 +373,8 @@ export class UserDetailPage
 		this.addRoleMutation.mutate(
 			{ userId: userIdNum, role },
 			{
-				onSuccess: () =>
-				{
-					this.snackBar.open(`Role "${role}" added`, "Close", {
-						duration: 3000,
-						horizontalPosition: "end",
-						verticalPosition: "top"
-					});
-				},
-				onError: () =>
-				{
-					this.snackBar.open(
-						`Failed to add role "${role}"`,
-						"Close",
-						{
-							duration: 3000,
-							horizontalPosition: "end",
-							verticalPosition: "top"
-						}
-					);
-				}
+				onSuccess: () => this.showSuccessSnackBar(`Role "${role}" added`),
+				onError: () => this.showErrorSnackBar(`Failed to add role "${role}"`)
 			}
 		);
 	}
@@ -363,26 +394,8 @@ export class UserDetailPage
 		this.removeRoleMutation.mutate(
 			{ userId: userIdNum, role },
 			{
-				onSuccess: () =>
-				{
-					this.snackBar.open(`Role "${role}" removed`, "Close", {
-						duration: 3000,
-						horizontalPosition: "end",
-						verticalPosition: "top"
-					});
-				},
-				onError: () =>
-				{
-					this.snackBar.open(
-						`Failed to remove role "${role}"`,
-						"Close",
-						{
-							duration: 3000,
-							horizontalPosition: "end",
-							verticalPosition: "top"
-						}
-					);
-				}
+				onSuccess: () => this.showSuccessSnackBar(`Role "${role}" removed`),
+				onError: () => this.showErrorSnackBar(`Failed to remove role "${role}"`)
 			}
 		);
 	}

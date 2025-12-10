@@ -104,6 +104,7 @@ describe("LogDetailDialogComponent", () =>
 	it("should format relative time correctly via utility", () =>
 	{
 		const now: Date = new Date();
+		const twoMinutesAgo: Date = new Date(now.getTime() - 2 * 60 * 1000);
 		const twoHoursAgo: Date = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 		const twoDaysAgo: Date = new Date(
 			now.getTime() - 2 * 24 * 60 * 60 * 1000
@@ -118,7 +119,6 @@ describe("LogDetailDialogComponent", () =>
 	{
 		const now: Date = new Date();
 		expect(getRelativeTime(now, dateService)).toBe("just now");
-		expect(getRelativeTime(now)).toBe("just now");
 	});
 
 	it("should count stack frames via utility", () =>

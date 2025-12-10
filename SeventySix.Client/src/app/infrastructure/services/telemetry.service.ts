@@ -39,11 +39,7 @@ export class TelemetryService
 	 */
 	public initialize(): void
 	{
-		if (!environment.telemetry.enabled)
-		{
-			this.logger.debug("Telemetry disabled via configuration");
-			return;
-		}
+		if (!environment.telemetry.enabled) return;
 
 		if (this.initialized)
 		{
@@ -53,48 +49,8 @@ export class TelemetryService
 
 		try
 		{
-			// Create resource with service metadata
-			const resource: Resource = new Resource({
-				[ATTR_SERVICE_NAME]: environment.telemetry.serviceName,
-				[ATTR_SERVICE_VERSION]: environment.telemetry.serviceVersion
-			});
-
-			// Create OTLP HTTP exporter for Jaeger
-			const exporter: OTLPTraceExporter = new OTLPTraceExporter({
-				url: environment.telemetry.otlpEndpoint
-			});
-
-			// Create tracer provider with batch processor
-			this.provider = new WebTracerProvider({
-				resource,
-				sampler: this.createSampler()
-			});
-
-			// Add batch span processor for efficient export
-			this.provider.addSpanProcessor(new BatchSpanProcessor(exporter));
-
-			// Register provider globally
-			this.provider.register();
-
-			// Register automatic instrumentations
-			registerInstrumentations({
-				instrumentations: [
-					new DocumentLoadInstrumentation(), // Page load timing
-					new FetchInstrumentation({
-						// Propagate trace context to backend
-						propagateTraceHeaderCorsUrls: [
-							new RegExp(environment.apiUrl)
-						]
-					})
-				]
-			});
-
+			this.setupTelemetryProvider();
 			this.initialized = true;
-			this.logger.info("OpenTelemetry initialized", {
-				serviceName: environment.telemetry.serviceName,
-				otlpEndpoint: environment.telemetry.otlpEndpoint,
-				sampleRate: environment.telemetry.sampleRate
-			});
 		}
 		catch (error: unknown)
 		{
@@ -103,6 +59,48 @@ export class TelemetryService
 				error instanceof Error ? error : undefined
 			);
 		}
+	}
+
+	/**
+	 * Sets up the OpenTelemetry provider with instrumentation.
+	 */
+	private setupTelemetryProvider(): void
+	{
+		// Create resource with service metadata
+		const resource: Resource = new Resource({
+			[ATTR_SERVICE_NAME]: environment.telemetry.serviceName,
+			[ATTR_SERVICE_VERSION]: environment.telemetry.serviceVersion
+		});
+
+		// Create OTLP HTTP exporter for Jaeger
+		const exporter: OTLPTraceExporter = new OTLPTraceExporter({
+			url: environment.telemetry.otlpEndpoint
+		});
+
+		// Create tracer provider with batch processor
+		this.provider = new WebTracerProvider({
+			resource,
+			sampler: this.createSampler()
+		});
+
+		// Add batch span processor for efficient export
+		this.provider.addSpanProcessor(new BatchSpanProcessor(exporter));
+
+		// Register provider globally
+		this.provider.register();
+
+		// Register automatic instrumentations
+		registerInstrumentations({
+			instrumentations: [
+				new DocumentLoadInstrumentation(), // Page load timing
+				new FetchInstrumentation({
+					// Propagate trace context to backend
+					propagateTraceHeaderCorsUrls: [
+						new RegExp(environment.apiUrl)
+					]
+				})
+			]
+		});
 	}
 
 	/**

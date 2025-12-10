@@ -55,15 +55,15 @@ describe("Log Filter Model", () =>
 					(result.endDate.getTime() - result.startDate.getTime()) /
 					(1000 * 60 * 60);
 				expect(hourDiff).toBeCloseTo(6, 0);
+			}
+		});
+
 		it("should return 24 hours range for Last24Hours preset", () =>
 		{
 			const result = getDateRangeFromPreset(
 				DateRangePreset.Last24Hours,
 				dateService
 			);
-		it("should return 24 hours range for Last24Hours preset", () =>
-		{
-			const result = getDateRangeFromPreset(DateRangePreset.Last24Hours);
 
 			expect(result.endDate).toBeDefined();
 			expect(result.startDate).toBeDefined();
@@ -74,15 +74,15 @@ describe("Log Filter Model", () =>
 					(result.endDate.getTime() - result.startDate.getTime()) /
 					(1000 * 60 * 60);
 				expect(hourDiff).toBeCloseTo(24, 0);
+			}
+		});
+
 		it("should return 7 days range for Last7Days preset", () =>
 		{
 			const result = getDateRangeFromPreset(
 				DateRangePreset.Last7Days,
 				dateService
 			);
-		it("should return 7 days range for Last7Days preset", () =>
-		{
-			const result = getDateRangeFromPreset(DateRangePreset.Last7Days);
 
 			expect(result.endDate).toBeDefined();
 			expect(result.startDate).toBeDefined();
@@ -90,18 +90,18 @@ describe("Log Filter Model", () =>
 			if (result.startDate && result.endDate)
 			{
 				const dayDiff =
+					(result.endDate.getTime() - result.startDate.getTime()) /
+					(1000 * 60 * 60 * 24);
+				expect(dayDiff).toBeCloseTo(7, 0);
+			}
+		});
+
 		it("should return 30 days range for Last30Days preset", () =>
 		{
 			const result = getDateRangeFromPreset(
 				DateRangePreset.Last30Days,
 				dateService
 			);
-			}
-		});
-
-		it("should return 30 days range for Last30Days preset", () =>
-		{
-			const result = getDateRangeFromPreset(DateRangePreset.Last30Days);
 
 			expect(result.endDate).toBeDefined();
 			expect(result.startDate).toBeDefined();
@@ -109,29 +109,29 @@ describe("Log Filter Model", () =>
 			if (result.startDate && result.endDate)
 			{
 				const dayDiff =
+					(result.endDate.getTime() - result.startDate.getTime()) /
+					(1000 * 60 * 60 * 24);
+				expect(dayDiff).toBeCloseTo(30, 0);
+			}
+		});
+
 		it("should return null dates for Custom preset", () =>
 		{
 			const result = getDateRangeFromPreset(
 				DateRangePreset.Custom,
 				dateService
 			);
-			}
+
+			expect(result.startDate).toBeNull();
+			expect(result.endDate).toBeNull();
 		});
 
-		it("should return null dates for Custom preset", () =>
-		{
 		it("should return null dates for invalid preset", () =>
 		{
 			const result = getDateRangeFromPreset(
 				"invalid" as DateRangePreset,
 				dateService
 			);
-			expect(result.endDate).toBeNull();
-		});
-
-		it("should return null dates for invalid preset", () =>
-		{
-			const result = getDateRangeFromPreset("invalid" as DateRangePreset);
 
 			expect(result.startDate).toBeNull();
 			expect(result.endDate).toBeNull();

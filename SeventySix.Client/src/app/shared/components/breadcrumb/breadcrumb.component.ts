@@ -104,6 +104,15 @@ export class BreadcrumbComponent
 	private readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
 	/**
+	 * Feature mapping configuration for breadcrumbs
+	 */
+	private readonly featureMap: Record<string, { label: string; url: string }> = {
+		game: { label: "Game", url: "/game" },
+		developer: { label: "Developer", url: "/developer/style-guide" },
+		admin: { label: "Admin", url: "/admin" }
+	};
+
+	/**
 	 * Signal tracking navigation events
 	 */
 	private readonly navigationEnd$: Signal<BreadcrumbItem[]> = toSignal(
@@ -126,44 +135,76 @@ export class BreadcrumbComponent
 	 */
 	private buildBreadcrumbs(): BreadcrumbItem[]
 	{
-		const breadcrumbs: BreadcrumbItem[] = [];
-		const urlSegments: string[] = this.router.url
-			.split("/")
-			.filter((s) => s);
-
-		// Always add home
-		breadcrumbs.push({
-			label: "Home",
-			url: "/",
-			isActive: this.router.url === "/"
-		});
+		const breadcrumbs: BreadcrumbItem[] = [this.createHomeBreadcrumb()];
+		const urlSegments: string[] = this.getUrlSegments();
 
 		if (urlSegments.length === 0)
 		{
 			return breadcrumbs;
 		}
 
-		// Build feature-based breadcrumbs
-		const firstSegment: string = urlSegments[0];
-		const featureMap: Record<string, { label: string; url: string }> = {
-			game: { label: "Game", url: "/game" },
-			developer: { label: "Developer", url: "/developer/style-guide" },
-			admin: { label: "Admin", url: "/admin" }
-		};
+		this.addFeatureBreadcrumb(breadcrumbs, urlSegments[0]);
+		this.addSubPageBreadcrumbs(breadcrumbs, urlSegments);
 
-		// Add feature breadcrumb if not already home
-		if (firstSegment in featureMap)
+		return breadcrumbs;
+	}
+
+	/**
+	 * Creates the home breadcrumb item.
+	 * @returns Home breadcrumb item
+	 */
+	private createHomeBreadcrumb(): BreadcrumbItem
+	{
+		return {
+			label: "Home",
+			url: "/",
+			isActive: this.router.url === "/"
+		};
+	}
+
+	/**
+	 * Gets URL segments from current route, filtered and cleaned.
+	 * @returns Array of URL segments
+	 */
+	private getUrlSegments(): string[]
+	{
+		return this.router.url
+			.split("/")
+			.filter((s) => s);
+	}
+
+	/**
+	 * Adds feature breadcrumb if the first segment matches a known feature.
+	 * @param breadcrumbs Breadcrumb array to modify
+	 * @param firstSegment First URL segment
+	 */
+	private addFeatureBreadcrumb(
+		breadcrumbs: BreadcrumbItem[],
+		firstSegment: string
+	): void
+	{
+		if (firstSegment in this.featureMap)
 		{
 			const feature: { label: string; url: string } =
-				featureMap[firstSegment];
+				this.featureMap[firstSegment];
 			breadcrumbs.push({
 				label: feature.label,
 				url: feature.url,
 				isActive: this.router.url === feature.url
 			});
 		}
+	}
 
-		// Add sub-page breadcrumbs
+	/**
+	 * Adds sub-page breadcrumbs for remaining URL segments.
+	 * @param breadcrumbs Breadcrumb array to modify
+	 * @param urlSegments All URL segments
+	 */
+	private addSubPageBreadcrumbs(
+		breadcrumbs: BreadcrumbItem[],
+		urlSegments: string[]
+	): void
+	{
 		let url: string = "";
 		for (let i: number = 0; i < urlSegments.length; i++)
 		{
@@ -171,7 +212,7 @@ export class BreadcrumbComponent
 			url += `/${segment}`;
 
 			// Skip if this is the feature root we already added
-			if (i === 0 && segment in featureMap)
+			if (i === 0 && segment in this.featureMap)
 			{
 				continue;
 			}
@@ -204,8 +245,6 @@ export class BreadcrumbComponent
 					|| this.router.url.startsWith(url + "?")
 			});
 		}
-
-		return breadcrumbs;
 	}
 
 	/**

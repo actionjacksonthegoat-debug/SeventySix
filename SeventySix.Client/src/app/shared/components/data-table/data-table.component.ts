@@ -426,81 +426,94 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 
 	constructor()
 	{
-		// Initialize first quick filter as active in single-selection mode
-		effect(() =>
-		{
-			const filters: QuickFilter<T>[] = this.quickFilters();
-			const singleSelection: boolean = this.quickFiltersSingleSelection();
-			const currentFilters: Set<string> = this.activeFilters();
+		effect(() => this.initializeFirstQuickFilter());
+		effect(() => this.emitInitialDateRange());
+		effect(() => this.loadColumnPreferences());
+		effect(() => this.clearSelectionOnDataChange());
+	}
 
-			// Only initialize if single-selection mode, has filters, and no filter is active yet
-			if (
-				singleSelection
-				&& filters.length > 0
-				&& currentFilters.size === 0
-			)
-			{
-				// Activate the first filter (typically "All")
-				const firstFilterKey: string = filters[0].key;
-				this.activeFilters.set(new Set([firstFilterKey]));
-				// Emit the initial filter state
-				this.filterChange.emit({
-					filterKey: firstFilterKey,
-					active: true
-				});
-			}
-		});
+	/**
+	 * Initializes first quick filter as active in single-selection mode.
+	 */
+	private initializeFirstQuickFilter(): void
+	{
+		const filters: QuickFilter<T>[] = this.quickFilters();
+		const singleSelection: boolean = this.quickFiltersSingleSelection();
+		const currentFilters: Set<string> = this.activeFilters();
 
-		// Emit initial date range when dateRangeEnabled is set
-		effect(() =>
+		// Only initialize if single-selection mode, has filters, and no filter is active yet
+		if (
+			singleSelection
+			&& filters.length > 0
+			&& currentFilters.size === 0
+		)
 		{
-			const enabled: boolean = this.dateRangeEnabled();
-			if (enabled && !this.initialDateRangeEmitted)
-			{
-				this.initialDateRangeEmitted = true;
-				// Emit the default 24h date range on initialization
-				const range: string = this.selectedDateRange();
-				this.onDateRangeChange(range);
-			}
-		});
+			// Activate the first filter (typically "All")
+			const firstFilterKey: string = filters[0].key;
+			this.activeFilters.set(new Set([firstFilterKey]));
+			// Emit the initial filter state
+			this.filterChange.emit({
+				filterKey: firstFilterKey,
+				active: true
+			});
+		}
+	}
 
-		// Load column preferences from localStorage
-		effect(() =>
+	/**
+	 * Emits initial date range when dateRangeEnabled is set.
+	 */
+	private emitInitialDateRange(): void
+	{
+		const enabled: boolean = this.dateRangeEnabled();
+		if (enabled && !this.initialDateRangeEmitted)
 		{
-			const key: string | null = this.storageKey();
-			if (key)
+			this.initialDateRangeEmitted = true;
+			// Emit the default 24h date range on initialization
+			const range: string = this.selectedDateRange();
+			this.onDateRangeChange(range);
+		}
+	}
+
+	/**
+	 * Loads column preferences from localStorage.
+	 */
+	private loadColumnPreferences(): void
+	{
+		const key: string | null = this.storageKey();
+		if (key)
+		{
+			const stored: string | null = localStorage.getItem(key);
+			if (stored)
 			{
-				const stored: string | null = localStorage.getItem(key);
-				if (stored)
+				try
 				{
-					try
+					const preferences: Record<string, unknown> =
+						JSON.parse(stored);
+					const visibility: Map<string, boolean> = new Map<
+						string,
+						boolean
+					>();
+					Object.entries(preferences).forEach(([k, v]) =>
 					{
-						const preferences: Record<string, unknown> =
-							JSON.parse(stored);
-						const visibility: Map<string, boolean> = new Map<
-							string,
-							boolean
-						>();
-						Object.entries(preferences).forEach(([k, v]) =>
-						{
-							visibility.set(k, v as boolean);
-						});
-						this.columnVisibility.set(visibility);
-					}
-					catch
-					{
-						// Invalid JSON, ignore
-					}
+						visibility.set(k, v as boolean);
+					});
+					this.columnVisibility.set(visibility);
+				}
+				catch
+				{
+					// Invalid JSON, ignore
 				}
 			}
-		});
+		}
+	}
 
-		// Clear selection when data changes
-		effect(() =>
-		{
-			this.data();
-			this.selection.clear();
-		});
+	/**
+	 * Clears selection when data changes.
+	 */
+	private clearSelectionOnDataChange(): void
+	{
+		this.data();
+		this.selection.clear();
 	}
 
 	/**

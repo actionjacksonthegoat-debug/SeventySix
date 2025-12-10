@@ -20,6 +20,7 @@ import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { Observable, tap, catchError, of } from "rxjs";
 import { environment } from "@environments/environment";
+import { DateService } from "@infrastructure/services";
 import {
 	LoginCredentials,
 	AuthResponse,
@@ -110,7 +111,7 @@ export class AuthService
 	 */
 	login(credentials: LoginCredentials): Observable<AuthResponse>
 	{
-		return this.http
+		return this.httpClient
 			.post<AuthResponse>(`${this.authUrl}/login`, credentials, {
 				withCredentials: true
 			})
@@ -145,7 +146,7 @@ export class AuthService
 	 */
 	refreshToken(): Observable<AuthResponse | null>
 	{
-		return this.http
+		return this.httpClient
 			.post<AuthResponse>(
 				`${this.authUrl}/refresh`,
 				{},
@@ -176,7 +177,7 @@ export class AuthService
 	 */
 	logout(): void
 	{
-		this.http
+		this.httpClient
 			.post<void>(`${this.authUrl}/logout`, {}, { withCredentials: true })
 			.subscribe({
 				complete: () =>
@@ -201,7 +202,7 @@ export class AuthService
 	 */
 	setPassword(token: string, newPassword: string): Observable<void>
 	{
-		return this.http.post<void>(`${this.authUrl}/set-password`, {
+		return this.httpClient.post<void>(`${this.authUrl}/set-password`, {
 			token,
 			newPassword
 		});
@@ -214,7 +215,7 @@ export class AuthService
 	 */
 	requestPasswordReset(email: string): Observable<void>
 	{
-		return this.http.post<void>(`${this.authUrl}/forgot-password`, {
+		return this.httpClient.post<void>(`${this.authUrl}/forgot-password`, {
 			email
 		});
 	}
@@ -226,7 +227,7 @@ export class AuthService
 	 */
 	initiateRegistration(email: string): Observable<void>
 	{
-		return this.http.post<void>(`${this.authUrl}/register/initiate`, {
+		return this.httpClient.post<void>(`${this.authUrl}/register/initiate`, {
 			email
 		});
 	}
@@ -243,7 +244,7 @@ export class AuthService
 		password: string
 	): Observable<AuthResponse>
 	{
-		return this.http
+		return this.httpClient
 			.post<AuthResponse>(
 				`${this.authUrl}/register/complete`,
 				{ token, username, password },
