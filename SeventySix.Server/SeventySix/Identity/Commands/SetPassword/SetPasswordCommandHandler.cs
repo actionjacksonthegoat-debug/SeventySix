@@ -26,9 +26,7 @@ public static class SetPasswordCommandHandler
 		ICredentialRepository credentialRepository,
 		IMessageBus messageBus,
 		ITokenRepository tokenRepository,
-		IUserRoleRepository userRoleRepository,
-		ITokenService tokenService,
-		IOptions<JwtSettings> jwtSettings,
+		RegistrationService registrationService,
 		IOptions<AuthSettings> authSettings,
 		TimeProvider timeProvider,
 		ILogger<SetPasswordCommand> logger,
@@ -46,9 +44,12 @@ public static class SetPasswordCommandHandler
 		await UpdateCredentialAsync(credentialRepository, user.Id, command.Request.NewPassword, authSettings, now, cancellationToken);
 		await tokenRepository.RevokeAllUserTokensAsync(user.Id, now, cancellationToken);
 
-		return await RegistrationHelpers.GenerateAuthResultAsync(
-			user.ToEntity(), command.ClientIp, requiresPasswordChange: false, rememberMe: false,
-			userRoleRepository, tokenService, jwtSettings, timeProvider, cancellationToken);
+		return await registrationService.GenerateAuthResultAsync(
+			user.ToEntity(),
+			command.ClientIp,
+			requiresPasswordChange: false,
+			rememberMe: false,
+			cancellationToken);
 	}
 
 	private static void ValidateResetToken(PasswordResetToken? token, DateTime now, ILogger logger)

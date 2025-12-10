@@ -46,7 +46,7 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	/// </summary>
 	private static readonly HashSet<string> AllowedLineExceptions =
 		[
-			// Test file exception - will be refactored
+			// Architecture test self-detection issue - method parser incorrectly counts helper methods
 			"Tests\\SeventySix.ArchitectureTests\\GodMethodTests.cs::FindOpeningBrace",
 		];
 
@@ -57,22 +57,20 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	/// </summary>
 	private static readonly HashSet<string> AllowedParameterExceptions =
 		[
-			// Shared helper methods - Wolverine Injected dependencies
-			"SeventySix\\Identity\\Shared\\RegistrationHelpers.cs::CreateUserWithCredentialAsync",
-			"SeventySix\\Identity\\Shared\\RegistrationHelpers.cs::GenerateAuthResultAsync",
+			// RegistrationService - encapsulates registration workflows
+			"SeventySix\\Identity\\Services\\RegistrationService.cs::CreateUserWithCredentialAsync",
 
 			// Authentication handlers - Wolverine Injected dependencies
 			"SeventySix\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
 			"SeventySix\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
 			"SeventySix\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::CreateUserAndMarkTokenUsedAsync",
+			"SeventySix\\Identity\\Commands\\CreateUser\\CreateUserCommandHandler.cs::HandleAsync",
 			"SeventySix\\Identity\\Commands\\InitiatePasswordReset\\InitiatePasswordResetCommandHandler.cs::HandleAsync",
 			"SeventySix\\Identity\\Commands\\InitiateRegistration\\InitiateRegistrationCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync",
+			"SeventySix\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync",  // 7 params (reduced from 10 via AuthenticationService)
 			"SeventySix\\Identity\\Commands\\Login\\LoginCommandHandler.cs::ValidateCredentialAsync",
-			"SeventySix\\Identity\\Commands\\Login\\LoginCommandHandler.cs::GenerateAuthResultAsync",
-			"SeventySix\\Identity\\Commands\\RefreshTokens\\RefreshTokensCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\Register\\RegisterCommandHandler.cs::HandleAsync",
 			"SeventySix\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
+			"SeventySix\\Identity\\Commands\\UpdateUser\\UpdateUserCommandHandler.cs::HandleAsync",
 		];
 
 	[Fact]

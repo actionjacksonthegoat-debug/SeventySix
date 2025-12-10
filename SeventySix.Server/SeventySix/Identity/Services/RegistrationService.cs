@@ -1,4 +1,4 @@
-// <copyright file="RegistrationHelpers.cs" company="SeventySix">
+// <copyright file="RegistrationService.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -9,22 +9,29 @@ using SeventySix.Identity.Constants;
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Shared helper methods for registration command handlers.
+/// Service for handling user registration operations.
 /// </summary>
 /// <remarks>
-/// Extracted from handlers to follow DRY principle.
-/// Used by RegisterCommandHandler and CompleteRegistrationCommandHandler.
+/// Encapsulates complex registration workflows including user creation,
+/// credential setup, role assignment, and token generation.
+/// Extracted from static RegistrationHelpers to reduce parameter coupling.
 /// </remarks>
-public static class RegistrationHelpers
+public sealed class RegistrationService(
+	IAuthRepository authRepository,
+	ICredentialRepository credentialRepository,
+	IUserRoleRepository userRoleRepository,
+	ITokenService tokenService,
+	IOptions<AuthSettings> authSettings,
+	IOptions<JwtSettings> jwtSettings,
+	TimeProvider timeProvider,
+	ILogger<RegistrationService> logger)
 {
 	/// <summary>
 	/// Gets the role ID by name.
 	/// </summary>
 	/// <exception cref="InvalidOperationException">Thrown if role not found.</exception>
-	public static async Task<int> GetRoleIdByNameAsync<TCommand>(
-		IAuthRepository authRepository,
+	public async Task<int> GetRoleIdByNameAsync(
 		string roleName,
-		ILogger<TCommand> logger,
 		CancellationToken cancellationToken)
 	{
 		int? roleId =
@@ -47,9 +54,7 @@ public static class RegistrationHelpers
 	/// Creates a user with credential and role assignment.
 	/// </summary>
 	/// <remarks>Must be called within a transaction.</remarks>
-	public static async Task<User> CreateUserWithCredentialAsync(
-		IAuthRepository authRepository,
-		ICredentialRepository credentialRepository,
+	public async Task<User> CreateUserWithCredentialAsync(
 		string username,
 		string email,
 		string? fullName,
@@ -57,10 +62,10 @@ public static class RegistrationHelpers
 		string createdBy,
 		int roleId,
 		bool requiresPasswordChange,
-		IOptions<AuthSettings> authSettings,
-		DateTime now,
 		CancellationToken cancellationToken)
 	{
+		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+
 		User newUser =
 			new()
 			{
@@ -102,15 +107,11 @@ public static class RegistrationHelpers
 	/// <summary>
 	/// Generates authentication result with access and refresh tokens.
 	/// </summary>
-	public static async Task<AuthResult> GenerateAuthResultAsync(
+	public async Task<AuthResult> GenerateAuthResultAsync(
 		User user,
 		string? clientIp,
 		bool requiresPasswordChange,
 		bool rememberMe,
-		IUserRoleRepository userRoleRepository,
-		ITokenService tokenService,
-		IOptions<JwtSettings> jwtSettings,
-		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
 		// Get user roles

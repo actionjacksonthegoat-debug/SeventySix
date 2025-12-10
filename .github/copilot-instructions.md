@@ -45,8 +45,7 @@
 -   **NEVER** use `ngClass`/`ngStyle` - use `[class.x]`/`[style.x]`
 -   **ALWAYS** use `takeUntilDestroyed()` for subscription cleanup
 -   **NEVER** call methods in templates - use `computed()` signals or pre-compute in data model
--   **NEVER** use `providedIn: 'root'` for feature services - use route `providers` array
--   **ALWAYS** scope feature services (UserService, LogRepository) to their feature routes
+-   **Service scoping**: Infrastructure services (NotificationService, CacheService) use `providedIn: 'root'`; feature services (UserService, LogRepository) scoped to feature routes via `providers` array (memory management, bounded context isolation)
 -   **Component naming**: `*Page` suffix ONLY when model with same name exists (e.g., `UserDetailPage`); otherwise use `*Component` (e.g., `RegisterEmailComponent`)
 
 ### SCSS/CSS Styling
@@ -114,7 +113,6 @@
 -   Features are self-contained (models, repos, services inside feature)
 -   **DTOs** = API contracts (request/response), **Entities** = DB-persisted models, **Models** = internal non-persisted types
 -   **Settings** = Configuration binding classes (bound from `appsettings.json`)
--   **Feature services scoped to routes** - NOT `providedIn: 'root'` (memory management, bounded context isolation)
 -   Path aliases: `@infrastructure/*`, `@shared/*`, `@admin/*`, `@game/*`
 -   Server-Client alignment: Identity → `@admin/users/`, Logging → `@admin/logs/`
 

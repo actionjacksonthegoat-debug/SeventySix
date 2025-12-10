@@ -13,16 +13,18 @@ public static class ClearPendingEmailFlagCommandHandler
 	/// Handles clearing the pending email flag for a user.
 	/// </summary>
 	/// <param name="command">The command.</param>
-	/// <param name="repository">User repository.</param>
+	/// <param name="userQueryRepository">User query repository.</param>
+	/// <param name="userCommandRepository">User command repository.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>A task representing the async operation.</returns>
 	public static async Task HandleAsync(
 		ClearPendingEmailFlagCommand command,
-		IUserRepository repository,
+		IUserQueryRepository userQueryRepository,
+		IUserCommandRepository userCommandRepository,
 		CancellationToken cancellationToken)
 	{
 		User? user =
-			await repository.GetByIdAsync(
+			await userQueryRepository.GetByIdAsync(
 				command.UserId,
 				cancellationToken);
 
@@ -30,7 +32,7 @@ public static class ClearPendingEmailFlagCommandHandler
 		{
 			user.NeedsPendingEmail = false;
 
-			await repository.UpdateAsync(
+			await userCommandRepository.UpdateAsync(
 				user,
 				cancellationToken);
 		}

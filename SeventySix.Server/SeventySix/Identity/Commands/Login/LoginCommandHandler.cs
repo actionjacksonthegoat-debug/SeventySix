@@ -21,10 +21,8 @@ public static class LoginCommandHandler
 		LoginCommand command,
 		IAuthRepository authRepository,
 		ICredentialRepository credentialRepository,
-		IUserRoleRepository userRoleRepository,
-		ITokenService tokenService,
+		AuthenticationService authenticationService,
 		IOptions<AuthSettings> authSettings,
-		IOptions<JwtSettings> jwtSettings,
 		TimeProvider timeProvider,
 		ILogger<LoginCommand> logger,
 		CancellationToken cancellationToken)
@@ -49,13 +47,11 @@ public static class LoginCommandHandler
 		await ResetLockoutAsync(user, authRepository, cancellationToken);
 
 		bool requiresPasswordChange = credential!.PasswordChangedAt == null;
-		return await GenerateAuthResultAsync(
-			user, command.ClientIp, requiresPasswordChange, command.Request.RememberMe,
-			userRoleRepository,
-			tokenService,
-			authRepository,
-			jwtSettings,
-			timeProvider,
+		return await authenticationService.GenerateAuthResultAsync(
+			user,
+			command.ClientIp,
+			requiresPasswordChange,
+			command.Request.RememberMe,
 			cancellationToken);
 	}
 
@@ -188,55 +184,5 @@ public static class LoginCommandHandler
 		await authRepository.SaveUserChangesAsync(
 			user,
 			cancellationToken);
-	}
-
-	private static async Task<AuthResult> GenerateAuthResultAsync(
-		User user,
-		string? clientIp,
-		bool requiresPasswordChange,
-		bool rememberMe,
-		IUserRoleRepository userRoleRepository,
-		ITokenService tokenService,
-		IAuthRepository authRepository,
-		IOptions<JwtSettings> jwtSettings,
-		TimeProvider timeProvider,
-		CancellationToken cancellationToken)
-	{
-		IEnumerable<string> roles =
-			await userRoleRepository.GetUserRolesAsync(
-				user.Id,
-				cancellationToken);
-
-		string accessToken =
-			tokenService.GenerateAccessToken(
-				user.Id,
-				user.Username,
-				user.Email,
-				user.FullName,
-				roles.ToList());
-
-		string refreshToken =
-			await tokenService.GenerateRefreshTokenAsync(
-				user.Id,
-				clientIp,
-				rememberMe,
-				cancellationToken);
-
-		DateTime expiresAt =
-			timeProvider.GetUtcNow()
-				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
-				.UtcDateTime;
-
-		await authRepository.UpdateLastLoginAsync(
-			user.Id,
-			timeProvider.GetUtcNow().UtcDateTime,
-			clientIp,
-			cancellationToken);
-
-		return AuthResult.Succeeded(
-			accessToken,
-			refreshToken,
-			expiresAt,
-			requiresPasswordChange);
 	}
 }

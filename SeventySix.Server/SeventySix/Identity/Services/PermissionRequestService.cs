@@ -10,7 +10,7 @@ namespace SeventySix.Identity;
 /// <summary>Service for permission request business logic.</summary>
 internal class PermissionRequestService(
 	IPermissionRequestRepository repository,
-	IUserRepository userRepository,
+	IUserRoleRepository userRoleRepository,
 	IOptions<WhitelistedPermissionSettings> whitelistedOptions) : IPermissionRequestService
 {
 	private readonly WhitelistedPermissionSettings WhitelistedSettings =
@@ -112,10 +112,10 @@ internal class PermissionRequestService(
 			{
 				// Auto-approve: add role directly, skip creating request
 				// Uses AddRoleWithoutAuditAsync - CreatedBy remains empty for whitelisted
-				await userRepository.AddRoleWithoutAuditAsync(
-					userId,
-					role,
-					cancellationToken);
+				await userRoleRepository.AddRoleWithoutAuditAsync(
+						userId,
+						role,
+						cancellationToken);
 				continue;
 			}
 
@@ -162,7 +162,7 @@ internal class PermissionRequestService(
 		}
 
 		// Audit fields (CreatedBy) set automatically by AuditInterceptor
-		await userRepository.AddRoleAsync(
+		await userRoleRepository.AddRoleAsync(
 			request.UserId,
 			request.RequestedRole!.Name,
 			cancellationToken);
@@ -215,7 +215,7 @@ internal class PermissionRequestService(
 		foreach (PermissionRequest request in requests)
 		{
 			// Audit fields (CreatedBy) set automatically by AuditInterceptor
-			await userRepository.AddRoleAsync(
+			await userRoleRepository.AddRoleAsync(
 				request.UserId,
 				request.RequestedRole!.Name,
 				cancellationToken);

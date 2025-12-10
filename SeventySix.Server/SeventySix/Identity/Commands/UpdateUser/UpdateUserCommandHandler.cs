@@ -33,7 +33,8 @@ public static class UpdateUserCommandHandler
 		UpdateUserCommand command,
 		IMessageBus messageBus,
 		IValidator<UpdateUserRequest> validator,
-		IUserRepository repository,
+		IUserQueryRepository userQueryRepository,
+		IUserCommandRepository userCommandRepository,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
@@ -42,7 +43,7 @@ public static class UpdateUserCommandHandler
 			cancellationToken);
 
 		User? existing =
-			await repository.GetByIdAsync(
+			await userQueryRepository.GetByIdAsync(
 				command.Request.Id,
 				cancellationToken);
 
@@ -58,7 +59,7 @@ public static class UpdateUserCommandHandler
 		try
 		{
 			User updated =
-				await repository.UpdateAsync(
+				await userCommandRepository.UpdateAsync(
 					user,
 					cancellationToken);
 

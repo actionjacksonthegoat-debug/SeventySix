@@ -25,13 +25,8 @@ public static class CompleteRegistrationCommandHandler
 	/// </remarks>
 	public static async Task<AuthResult> HandleAsync(
 		CompleteRegistrationCommand command,
-		IAuthRepository authRepository,
-		ICredentialRepository credentialRepository,
+		RegistrationService registrationService,
 		IEmailVerificationTokenRepository emailVerificationTokenRepository,
-		IUserRoleRepository userRoleRepository,
-		ITokenService tokenService,
-		IOptions<AuthSettings> authSettings,
-		IOptions<JwtSettings> jwtSettings,
 		IValidator<CompleteRegistrationRequest> completeRegistrationValidator,
 		TimeProvider timeProvider,
 		ILogger<CompleteRegistrationCommand> logger,
@@ -61,10 +56,8 @@ public static class CompleteRegistrationCommandHandler
 		}
 
 		int userRoleId =
-			await RegistrationHelpers.GetRoleIdByNameAsync(
-				authRepository,
+			await registrationService.GetRoleIdByNameAsync(
 				RoleConstants.User,
-				logger,
 				cancellationToken);
 
 		try
@@ -74,22 +67,16 @@ public static class CompleteRegistrationCommandHandler
 					command,
 					verificationToken!,
 					userRoleId,
-					authRepository,
-					credentialRepository,
+					registrationService,
 					emailVerificationTokenRepository,
-					authSettings,
 					now,
 					cancellationToken);
 
-			return await RegistrationHelpers.GenerateAuthResultAsync(
+			return await registrationService.GenerateAuthResultAsync(
 				user,
 				command.ClientIp,
 				requiresPasswordChange: false,
 				rememberMe: false,
-				userRoleRepository,
-				tokenService,
-				jwtSettings,
-				timeProvider,
 				cancellationToken);
 		}
 		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
@@ -106,17 +93,13 @@ public static class CompleteRegistrationCommandHandler
 		CompleteRegistrationCommand command,
 		EmailVerificationToken verificationToken,
 		int userRoleId,
-		IAuthRepository authRepository,
-		ICredentialRepository credentialRepository,
+		RegistrationService registrationService,
 		IEmailVerificationTokenRepository emailVerificationTokenRepository,
-		IOptions<AuthSettings> authSettings,
 		DateTime now,
 		CancellationToken cancellationToken)
 	{
 		User user =
-			await RegistrationHelpers.CreateUserWithCredentialAsync(
-				authRepository,
-				credentialRepository,
+			await registrationService.CreateUserWithCredentialAsync(
 				command.Request.Username,
 				verificationToken.Email,
 				fullName: null,
@@ -124,8 +107,6 @@ public static class CompleteRegistrationCommandHandler
 				"Self-Registration",
 				userRoleId,
 				requiresPasswordChange: false,
-				authSettings,
-				now,
 				cancellationToken);
 
 		verificationToken.IsUsed = true;

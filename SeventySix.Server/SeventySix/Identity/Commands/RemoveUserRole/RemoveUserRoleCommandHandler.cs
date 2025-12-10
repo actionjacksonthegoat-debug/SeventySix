@@ -15,10 +15,10 @@ public static class RemoveUserRoleCommandHandler
 	/// <returns>True if role was removed, false if role not found on user.</returns>
 	public static async Task<bool> HandleAsync(
 		RemoveUserRoleCommand command,
-		IUserRepository userRepository,
+		IUserRoleRepository userRoleRepository,
 		CancellationToken cancellationToken)
 	{
-		return await userRepository.RemoveRoleAsync(
+		return await userRoleRepository.RemoveRoleAsync(
 			command.UserId,
 			command.Role,
 			cancellationToken);

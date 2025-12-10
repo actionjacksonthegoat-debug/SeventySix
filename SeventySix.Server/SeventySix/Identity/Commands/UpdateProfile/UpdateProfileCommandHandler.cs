@@ -31,7 +31,8 @@ public static class UpdateProfileCommandHandler
 		UpdateProfileCommand command,
 		IMessageBus messageBus,
 		IValidator<UpdateProfileRequest> validator,
-		IUserRepository repository,
+		IUserQueryRepository userQueryRepository,
+		IUserCommandRepository userCommandRepository,
 		CancellationToken cancellationToken)
 	{
 		await validator.ValidateAndThrowAsync(
@@ -39,7 +40,7 @@ public static class UpdateProfileCommandHandler
 			cancellationToken);
 
 		User? user =
-			await repository.GetByIdAsync(
+			await userQueryRepository.GetByIdAsync(
 				command.UserId,
 				cancellationToken);
 
@@ -55,7 +56,7 @@ public static class UpdateProfileCommandHandler
 
 		try
 		{
-			await repository.UpdateAsync(
+			await userCommandRepository.UpdateAsync(
 				user,
 				cancellationToken);
 

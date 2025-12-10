@@ -20,9 +20,7 @@ public static class RefreshTokensCommandHandler
 		ITokenService tokenService,
 		IUserQueryRepository userQueryRepository,
 		ICredentialRepository credentialRepository,
-		IUserRoleRepository userRoleRepository,
-		IOptions<JwtSettings> jwtSettings,
-		TimeProvider timeProvider,
+		AuthenticationService authenticationService,
 		CancellationToken cancellationToken)
 	{
 		int? userId =
@@ -70,28 +68,21 @@ public static class RefreshTokensCommandHandler
 		bool requiresPasswordChange =
 			credential?.PasswordChangedAt == null;
 
-		IEnumerable<string> roles =
-			await userRoleRepository.GetUserRolesAsync(
-				user.Id,
+		// Generate new tokens using authentication service
+		// Note: We replace the refresh token with the rotated one
+		AuthResult result =
+			await authenticationService.GenerateAuthResultAsync(
+				user,
+				command.ClientIp,
+				requiresPasswordChange,
+				rememberMe: false, // Refresh doesn't change remember-me preference
 				cancellationToken);
 
-		string accessToken =
-			tokenService.GenerateAccessToken(
-				user.Id,
-				user.Username,
-				user.Email,
-				user.FullName,
-				roles.ToList());
-
-		DateTime expiresAt =
-			timeProvider.GetUtcNow()
-				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
-				.UtcDateTime;
-
+		// Replace with rotated refresh token
 		return AuthResult.Succeeded(
-			accessToken,
+			result.AccessToken!,
 			newRefreshToken,
-			expiresAt,
+			result.ExpiresAt!.Value,
 			requiresPasswordChange);
 	}
 }

@@ -18,7 +18,7 @@ public static class RestoreUserCommandHandler
 	/// <returns>True if the user was restored; otherwise false.</returns>
 	public static async Task<bool> HandleAsync(
 		RestoreUserCommand command,
-		IUserRepository repository,
+		IUserCommandRepository repository,
 		CancellationToken cancellationToken)
 	{
 		bool result =

@@ -18,7 +18,7 @@ public static class GetUserProfileQueryHandler
 	/// <returns>The user profile or null if not found.</returns>
 	public static async Task<UserProfileDto?> HandleAsync(
 		GetUserProfileQuery query,
-		IUserRepository repository,
+		IUserProfileRepository repository,
 		CancellationToken cancellationToken)
 	{
 		return await repository.GetUserProfileAsync(

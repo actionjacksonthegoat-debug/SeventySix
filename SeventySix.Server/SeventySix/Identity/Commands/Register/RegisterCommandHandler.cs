@@ -24,34 +24,21 @@ public static class RegisterCommandHandler
 	/// </remarks>
 	public static async Task<AuthResult> HandleAsync(
 		RegisterCommand command,
-		IAuthRepository authRepository,
-		ICredentialRepository credentialRepository,
-		IUserRoleRepository userRoleRepository,
-		ITokenService tokenService,
-		IOptions<AuthSettings> authSettings,
-		IOptions<JwtSettings> jwtSettings,
-		TimeProvider timeProvider,
+		RegistrationService registrationService,
 		ILogger<RegisterCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
-
 		// Get role ID (read-only query)
 		int userRoleId =
-			await RegistrationHelpers.GetRoleIdByNameAsync(
-				authRepository,
+			await registrationService.GetRoleIdByNameAsync(
 				RoleConstants.User,
-				logger,
 				cancellationToken);
 
 		try
 		{
 			// Create user with credential and role
 			User user =
-				await RegistrationHelpers.CreateUserWithCredentialAsync(
-					authRepository,
-					credentialRepository,
+				await registrationService.CreateUserWithCredentialAsync(
 					command.Request.Username,
 					command.Request.Email,
 					command.Request.FullName,
@@ -59,19 +46,13 @@ public static class RegisterCommandHandler
 					"Registration",
 					userRoleId,
 					requiresPasswordChange: true,
-					authSettings,
-					now,
 					cancellationToken);
 
-			return await RegistrationHelpers.GenerateAuthResultAsync(
+			return await registrationService.GenerateAuthResultAsync(
 				user,
 				command.ClientIp,
 				requiresPasswordChange: false,
 				rememberMe: false,
-				userRoleRepository,
-				tokenService,
-				jwtSettings,
-				timeProvider,
 				cancellationToken);
 		}
 		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())

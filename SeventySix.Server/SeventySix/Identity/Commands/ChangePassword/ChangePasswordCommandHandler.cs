@@ -24,9 +24,7 @@ public static class ChangePasswordCommandHandler
 		ICredentialRepository credentialRepository,
 		IMessageBus messageBus,
 		ITokenRepository tokenRepository,
-		IUserRoleRepository userRoleRepository,
-		ITokenService tokenService,
-		IOptions<JwtSettings> jwtSettings,
+		RegistrationService registrationService,
 		IOptions<AuthSettings> authSettings,
 		TimeProvider timeProvider,
 		ILogger<ChangePasswordCommand> logger,
@@ -106,15 +104,11 @@ public static class ChangePasswordCommandHandler
 			throw new InvalidOperationException($"User with ID {command.UserId} not found");
 		}
 
-		return await RegistrationHelpers.GenerateAuthResultAsync(
+		return await registrationService.GenerateAuthResultAsync(
 			user.ToEntity(),
 			clientIp: null,
 			requiresPasswordChange: false,
 			rememberMe: false,
-			userRoleRepository,
-			tokenService,
-			jwtSettings,
-			timeProvider,
 			cancellationToken);
 	}
 }
