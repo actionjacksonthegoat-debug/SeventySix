@@ -2,10 +2,11 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.Identity.Constants;
-using SeventySix.Shared;
+using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
 
@@ -17,9 +18,12 @@ public static class RegisterCommandHandler
 	/// <summary>
 	/// Handles the RegisterCommand request.
 	/// </summary>
+	/// <remarks>
+	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
+	/// Database unique constraints on Username and Email provide atomicity - no manual duplicate checks needed.
+	/// </remarks>
 	public static async Task<AuthResult> HandleAsync(
 		RegisterCommand command,
-		IUserValidationRepository userValidationRepository,
 		IAuthRepository authRepository,
 		ICredentialRepository credentialRepository,
 		IUserRoleRepository userRoleRepository,
@@ -27,42 +31,13 @@ public static class RegisterCommandHandler
 		IOptions<AuthSettings> authSettings,
 		IOptions<JwtSettings> jwtSettings,
 		TimeProvider timeProvider,
-		ITransactionManager transactionManager,
 		ILogger<RegisterCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		// Check for existing username
-		bool usernameExists =
-			await userValidationRepository.UsernameExistsAsync(
-				command.Request.Username,
-				excludeId: null,
-				cancellationToken);
-
-		if (usernameExists)
-		{
-			return AuthResult.Failed(
-				"Username is already taken.",
-				AuthErrorCodes.UsernameExists);
-		}
-
-		// Check for existing email
-		bool emailExists =
-			await userValidationRepository.EmailExistsAsync(
-				command.Request.Email,
-				excludeId: null,
-				cancellationToken);
-
-		if (emailExists)
-		{
-			return AuthResult.Failed(
-				"Email is already registered.",
-				AuthErrorCodes.EmailExists);
-		}
-
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		// Get role ID before creating entities (read-only query)
+		// Get role ID (read-only query)
 		int userRoleId =
 			await RegistrationHelpers.GetRoleIdByNameAsync(
 				authRepository,
@@ -70,39 +45,62 @@ public static class RegisterCommandHandler
 				logger,
 				cancellationToken);
 
-		// Create user with credential and role atomically
-		User user =
-			await transactionManager.ExecuteInTransactionAsync(
-				async transactionCancellationToken =>
-				{
-					User createdUser =
-						await RegistrationHelpers.CreateUserWithCredentialAsync(
-							authRepository,
-							credentialRepository,
-							command.Request.Username,
-							command.Request.Email,
-							command.Request.FullName,
-							command.Request.Password,
-							"Registration",
-							userRoleId,
-							requiresPasswordChange: true,
-							authSettings,
-							now,
-							transactionCancellationToken);
+		try
+		{
+			// Create user with credential and role
+			User user =
+				await RegistrationHelpers.CreateUserWithCredentialAsync(
+					authRepository,
+					credentialRepository,
+					command.Request.Username,
+					command.Request.Email,
+					command.Request.FullName,
+					command.Request.Password,
+					"Registration",
+					userRoleId,
+					requiresPasswordChange: true,
+					authSettings,
+					now,
+					cancellationToken);
 
-					return createdUser;
-				},
-				cancellationToken: cancellationToken);
+			return await RegistrationHelpers.GenerateAuthResultAsync(
+				user,
+				command.ClientIp,
+				requiresPasswordChange: false,
+				rememberMe: false,
+				userRoleRepository,
+				tokenService,
+				jwtSettings,
+				timeProvider,
+				cancellationToken);
+		}
+		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
+		{
+			// Database unique constraint violation - check which field caused it
+			string message = exception.InnerException?.Message ?? exception.Message;
 
-		return await RegistrationHelpers.GenerateAuthResultAsync(
-			user,
-			command.ClientIp,
-			requiresPasswordChange: false,
-			rememberMe: false,
-			userRoleRepository,
-			tokenService,
-			jwtSettings,
-			timeProvider,
-			cancellationToken);
+			if (message.Contains(
+				"IX_Users_Username",
+				StringComparison.OrdinalIgnoreCase))
+			{
+				return AuthResult.Failed(
+					"Username is already taken.",
+					AuthErrorCodes.UsernameExists);
+			}
+
+			if (message.Contains(
+				"IX_Users_Email",
+				StringComparison.OrdinalIgnoreCase))
+			{
+				return AuthResult.Failed(
+					"Email is already registered.",
+					AuthErrorCodes.EmailExists);
+			}
+
+			// Unknown constraint violation
+			return AuthResult.Failed(
+				"Username or email already exists.",
+				AuthErrorCodes.UsernameExists);
+		}
 	}
 }

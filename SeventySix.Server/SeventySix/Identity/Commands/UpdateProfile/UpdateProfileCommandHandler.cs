@@ -3,7 +3,8 @@
 // </copyright>
 
 using FluentValidation;
-using SeventySix.Shared;
+using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Extensions;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -20,73 +21,54 @@ public static class UpdateProfileCommandHandler
 	/// <param name="messageBus">Message bus for querying updated profile.</param>
 	/// <param name="validator">Request validator.</param>
 	/// <param name="repository">User repository.</param>
-	/// <param name="transactionManager">Transaction coordinator.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>The updated user profile or null if user not found.</returns>
+	/// <remarks>
+	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
+	/// Database unique constraint on Email provides atomicity - no manual transaction management needed.
+	/// </remarks>
 	public static async Task<UserProfileDto?> HandleAsync(
 		UpdateProfileCommand command,
 		IMessageBus messageBus,
 		IValidator<UpdateProfileRequest> validator,
 		IUserRepository repository,
-		ITransactionManager transactionManager,
 		CancellationToken cancellationToken)
 	{
 		await validator.ValidateAndThrowAsync(
 			command.Request,
 			cancellationToken);
 
-		User? updatedUser =
-			await transactionManager.ExecuteInTransactionAsync(
-				async transactionCancellationToken =>
-				{
-					User? user =
-						await repository.GetByIdAsync(
-							command.UserId,
-							transactionCancellationToken);
-
-					if (user == null)
-					{
-						return null;
-					}
-
-					// Check for duplicate email only if it changed
-					if (!string.Equals(
-						user.Email,
-						command.Request.Email,
-						StringComparison.OrdinalIgnoreCase))
-					{
-						if (await repository.EmailExistsAsync(
-							command.Request.Email,
-							command.UserId,
-							transactionCancellationToken))
-						{
-							throw new DuplicateUserException(
-								$"Email '{command.Request.Email}' is already registered");
-						}
-					}
-
-					user.Email =
-						command.Request.Email;
-					user.FullName =
-						command.Request.FullName;
-
-					await repository.UpdateAsync(
-						user,
-						transactionCancellationToken);
-
-					return user;
-				},
-				maxRetries: 3,
+		User? user =
+			await repository.GetByIdAsync(
+				command.UserId,
 				cancellationToken);
 
-		// Query full profile after transaction commits (avoids AsNoTracking stale data issue)
-		if (updatedUser != null)
+		if (user == null)
 		{
+			return null;
+		}
+
+		user.Email =
+			command.Request.Email;
+		user.FullName =
+			command.Request.FullName;
+
+		try
+		{
+			await repository.UpdateAsync(
+				user,
+				cancellationToken);
+
+			// Query full profile after successful update
 			return await messageBus.InvokeAsync<UserProfileDto?>(
 				new GetUserProfileQuery(command.UserId),
 				cancellationToken);
 		}
-
-		return null;
+		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
+		{
+			// Database unique constraint violation on email
+			throw new DuplicateUserException(
+				$"Email '{command.Request.Email}' is already registered");
+		}
 	}
 }
