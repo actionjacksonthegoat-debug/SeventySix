@@ -26,7 +26,6 @@ public class AuthenticationServiceTests
 	private readonly ITokenService TokenService;
 	private readonly IOptions<JwtSettings> JwtSettings;
 	private readonly TimeProvider TimeProvider;
-	private readonly ILogger<AuthenticationService> Logger;
 	private readonly AuthenticationService ServiceUnderTest;
 
 	public AuthenticationServiceTests()
@@ -35,7 +34,6 @@ public class AuthenticationServiceTests
 		UserRoleRepository = Substitute.For<IUserRoleRepository>();
 		TokenService = Substitute.For<ITokenService>();
 		TimeProvider = Substitute.For<TimeProvider>();
-		Logger = Substitute.For<ILogger<AuthenticationService>>();
 
 		JwtSettings =
 			Options.Create(
@@ -51,8 +49,7 @@ public class AuthenticationServiceTests
 				UserRoleRepository,
 				TokenService,
 				JwtSettings,
-				TimeProvider,
-				Logger);
+				TimeProvider);
 	}
 
 	[Fact]
