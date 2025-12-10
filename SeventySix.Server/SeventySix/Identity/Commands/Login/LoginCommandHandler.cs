@@ -29,95 +29,28 @@ public static class LoginCommandHandler
 		ILogger<LoginCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		User? user =
-			await authRepository.GetUserByUsernameOrEmailForUpdateAsync(
-				command.Request.UsernameOrEmail,
-				cancellationToken);
+		User? user = await authRepository.GetUserByUsernameOrEmailForUpdateAsync(command.Request.UsernameOrEmail, cancellationToken);
 
-		if (user == null)
+		AuthResult? userError = ValidateUserCanLogin(user, command.Request.UsernameOrEmail, authSettings, timeProvider, logger);
+		if (userError != null)
 		{
-			logger.LogWarning(
-				"Login attempt with invalid credentials. UsernameOrEmail: {UsernameOrEmail}",
-				command.Request.UsernameOrEmail);
-			return AuthResult.Failed(
-				"Invalid username/email or password.",
-				AuthErrorCodes.InvalidCredentials);
+			return userError;
 		}
 
-		if (IsAccountLockedOut(
-			user,
-			authSettings,
-			timeProvider))
+		UserCredential? credential = await credentialRepository.GetByUserIdAsync(user!.Id, cancellationToken);
+
+		AuthResult? credentialError = await ValidateCredentialAsync(
+			user, credential, command.Request.Password, authRepository, authSettings, timeProvider, logger, cancellationToken);
+		if (credentialError != null)
 		{
-			logger.LogWarning(
-				"Login attempt for locked account. UserId: {UserId}, LockoutEnd: {LockoutEnd}",
-				user.Id,
-				user.LockoutEndUtc);
-			return AuthResult.Failed(
-				"Account is temporarily locked. Please try again later.",
-				AuthErrorCodes.AccountLocked);
+			return credentialError;
 		}
 
-		if (!user.IsActive)
-		{
-			logger.LogWarning(
-				"Login attempt for inactive account. UserId: {UserId}",
-				user.Id);
-			return AuthResult.Failed(
-				"Account is inactive.",
-				AuthErrorCodes.AccountInactive);
-		}
+		await ResetLockoutAsync(user, authRepository, cancellationToken);
 
-		UserCredential? credential =
-			await credentialRepository.GetByUserIdAsync(
-				user.Id,
-				cancellationToken);
-
-		if (credential == null)
-		{
-			logger.LogWarning(
-				"Login attempt for user without password. UserId: {UserId}",
-				user.Id);
-			return AuthResult.Failed(
-				"Invalid username/email or password.",
-				AuthErrorCodes.InvalidCredentials);
-		}
-
-		if (!BCrypt.Net.BCrypt.Verify(
-			command.Request.Password,
-			credential.PasswordHash))
-		{
-			await HandleFailedLoginAttemptAsync(
-				user,
-				authRepository,
-				authSettings,
-				timeProvider,
-				logger,
-				cancellationToken);
-
-			logger.LogWarning(
-				"Login attempt with wrong password. UserId: {UserId}, FailedAttempts: {FailedAttempts}",
-				user.Id,
-				user.FailedLoginCount);
-
-			return AuthResult.Failed(
-				"Invalid username/email or password.",
-				AuthErrorCodes.InvalidCredentials);
-		}
-
-		await ResetLockoutAsync(
-			user,
-			authRepository,
-			cancellationToken);
-
-		bool requiresPasswordChange =
-			credential.PasswordChangedAt == null;
-
+		bool requiresPasswordChange = credential!.PasswordChangedAt == null;
 		return await GenerateAuthResultAsync(
-			user,
-			command.ClientIp,
-			requiresPasswordChange,
-			command.Request.RememberMe,
+			user, command.ClientIp, requiresPasswordChange, command.Request.RememberMe,
 			userRoleRepository,
 			tokenService,
 			authRepository,
@@ -150,6 +83,56 @@ public static class LoginCommandHandler
 		}
 
 		return true;
+	}
+
+	private static AuthResult? ValidateUserCanLogin(
+		User? user, string usernameOrEmail, IOptions<AuthSettings> authSettings, TimeProvider timeProvider, ILogger<LoginCommand> logger)
+	{
+		if (user == null)
+		{
+			logger.LogWarning("Login attempt with invalid credentials. UsernameOrEmail: {UsernameOrEmail}", usernameOrEmail);
+			return AuthResult.Failed("Invalid username/email or password.", AuthErrorCodes.InvalidCredentials);
+		}
+
+		if (IsAccountLockedOut(user, authSettings, timeProvider))
+		{
+			logger.LogWarning("Login attempt for locked account. UserId: {UserId}, LockoutEnd: {LockoutEnd}", user.Id, user.LockoutEndUtc);
+			return AuthResult.Failed("Account is temporarily locked. Please try again later.", AuthErrorCodes.AccountLocked);
+		}
+
+		if (!user.IsActive)
+		{
+			logger.LogWarning("Login attempt for inactive account. UserId: {UserId}", user.Id);
+			return AuthResult.Failed("Account is inactive.", AuthErrorCodes.AccountInactive);
+		}
+
+		return null;
+	}
+
+	private static async Task<AuthResult?> ValidateCredentialAsync(
+		User user,
+		UserCredential? credential,
+		string password,
+		IAuthRepository authRepository,
+		IOptions<AuthSettings> authSettings,
+		TimeProvider timeProvider,
+		ILogger<LoginCommand> logger,
+		CancellationToken cancellationToken)
+	{
+		if (credential == null)
+		{
+			logger.LogWarning("Login attempt for user without password. UserId: {UserId}", user.Id);
+			return AuthResult.Failed("Invalid username/email or password.", AuthErrorCodes.InvalidCredentials);
+		}
+
+		if (!BCrypt.Net.BCrypt.Verify(password, credential.PasswordHash))
+		{
+			await HandleFailedLoginAttemptAsync(user, authRepository, authSettings, timeProvider, logger, cancellationToken);
+			logger.LogWarning("Login attempt with wrong password. UserId: {UserId}, FailedAttempts: {FailedAttempts}", user.Id, user.FailedLoginCount);
+			return AuthResult.Failed("Invalid username/email or password.", AuthErrorCodes.InvalidCredentials);
+		}
+
+		return null;
 	}
 
 	private static async Task HandleFailedLoginAttemptAsync(

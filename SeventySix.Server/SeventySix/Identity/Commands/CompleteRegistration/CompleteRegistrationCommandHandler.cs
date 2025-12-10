@@ -34,129 +34,110 @@ public static class CompleteRegistrationCommandHandler
 		ILogger<CompleteRegistrationCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		await completeRegistrationValidator.ValidateAndThrowAsync(
-			command.Request,
-			cancellationToken);
+		await completeRegistrationValidator.ValidateAndThrowAsync(command.Request, cancellationToken);
 
-		// Find the verification token
-		EmailVerificationToken? verificationToken =
-			await emailVerificationTokenRepository.GetByTokenAsync(
-				command.Request.Token,
-				cancellationToken);
+		EmailVerificationToken? verificationToken = await emailVerificationTokenRepository.GetByTokenAsync(command.Request.Token, cancellationToken);
+		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
 
-		if (verificationToken == null)
+		AuthResult? tokenError = ValidateVerificationToken(verificationToken, now, logger);
+		if (tokenError != null)
 		{
-			logger.LogWarning("Invalid email verification token attempted.");
-			return AuthResult.Failed(
-				"Invalid or expired verification link.",
-				AuthErrorCodes.InvalidToken);
+			return tokenError;
 		}
 
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
-
-		if (verificationToken.IsUsed)
+		AuthResult? userError = await ValidateUserDoesNotExistAsync(userValidationRepository, command.Request.Username, verificationToken!.Email, logger, cancellationToken);
+		if (userError != null)
 		{
-			logger.LogWarning(
-				"Attempted to use already-used verification token. Email: {Email}",
-				verificationToken.Email);
-			return AuthResult.Failed(
-				"This verification link has already been used.",
-				AuthErrorCodes.TokenExpired);
+			return userError;
 		}
 
-		if (verificationToken.ExpiresAt < now)
-		{
-			logger.LogWarning(
-				"Attempted to use expired verification token. Email: {Email}, ExpiredAt: {ExpiredAt}",
-				verificationToken.Email,
-				verificationToken.ExpiresAt);
-			return AuthResult.Failed(
-				"This verification link has expired. Please request a new one.",
-				AuthErrorCodes.TokenExpired);
-		}
+		int userRoleId = await RegistrationHelpers.GetRoleIdByNameAsync(authRepository, RoleConstants.User, logger, cancellationToken);
 
-		// Check if username already exists
-		bool usernameExists =
-			await userValidationRepository.UsernameExistsAsync(
-				command.Request.Username,
-				excludeId: null,
-				cancellationToken);
-
-		if (usernameExists)
-		{
-			logger.LogWarning(
-				"Registration attempt with existing username: {Username}",
-				command.Request.Username);
-			return AuthResult.Failed(
-				"Username is already taken.",
-				AuthErrorCodes.UsernameExists);
-		}
-
-		// Double-check email isn't already registered (race condition protection)
-		bool emailExists =
-			await userValidationRepository.EmailExistsAsync(
-				verificationToken.Email,
-				excludeId: null,
-				cancellationToken);
-
-		if (emailExists)
-		{
-			logger.LogWarning(
-				"Registration attempt with already registered email: {Email}",
-				verificationToken.Email);
-			return AuthResult.Failed(
-				"This email is already registered.",
-				AuthErrorCodes.EmailExists);
-		}
-
-		// Get role ID before creating entities (read-only query)
-		int userRoleId =
-			await RegistrationHelpers.GetRoleIdByNameAsync(
-				authRepository,
-				RoleConstants.User,
-				logger,
-				cancellationToken);
-
-		// Create user with credential and role atomically
-		User user =
-			await transactionManager.ExecuteInTransactionAsync(
-				async transactionCancellationToken =>
-				{
-					User createdUser =
-						await RegistrationHelpers.CreateUserWithCredentialAsync(
-							authRepository,
-							credentialRepository,
-							command.Request.Username,
-							verificationToken.Email,
-							fullName: null,
-							command.Request.Password,
-							"Self-Registration",
-							userRoleId,
-							requiresPasswordChange: false,
-							authSettings,
-							now,
-							transactionCancellationToken);
-
-					// Mark token as used
-					verificationToken.IsUsed = true;
-					await emailVerificationTokenRepository.SaveChangesAsync(
-						verificationToken,
-						transactionCancellationToken);
-
-					return createdUser;
-				},
-				cancellationToken: cancellationToken);
+		User user = await CreateUserInTransactionAsync(
+			command, verificationToken!, userRoleId, authRepository, credentialRepository,
+			emailVerificationTokenRepository, authSettings, now, transactionManager, cancellationToken);
 
 		return await RegistrationHelpers.GenerateAuthResultAsync(
-			user,
-			command.ClientIp,
-			requiresPasswordChange: false,
-			rememberMe: false,
-			userRoleRepository,
-			tokenService,
-			jwtSettings,
-			timeProvider,
-			cancellationToken);
+			user, command.ClientIp, requiresPasswordChange: false, rememberMe: false,
+			userRoleRepository, tokenService, jwtSettings, timeProvider, cancellationToken);
+	}
+
+	private static AuthResult? ValidateVerificationToken(EmailVerificationToken? token, DateTime now, ILogger logger)
+	{
+		if (token == null)
+		{
+			logger.LogWarning("Invalid email verification token attempted.");
+			return AuthResult.Failed("Invalid or expired verification link.", AuthErrorCodes.InvalidToken);
+		}
+
+		if (token.IsUsed)
+		{
+			logger.LogWarning("Attempted to use already-used verification token. Email: {Email}", token.Email);
+			return AuthResult.Failed("This verification link has already been used.", AuthErrorCodes.TokenExpired);
+		}
+
+		if (token.ExpiresAt < now)
+		{
+			logger.LogWarning("Attempted to use expired verification token. Email: {Email}, ExpiredAt: {ExpiredAt}", token.Email, token.ExpiresAt);
+			return AuthResult.Failed("This verification link has expired. Please request a new one.", AuthErrorCodes.TokenExpired);
+		}
+
+		return null;
+	}
+
+	private static async Task<AuthResult?> ValidateUserDoesNotExistAsync(
+		IUserValidationRepository repository,
+		string username,
+		string email,
+		ILogger logger,
+		CancellationToken cancellationToken)
+	{
+		if (await repository.UsernameExistsAsync(username, excludeId: null, cancellationToken))
+		{
+			logger.LogWarning("Registration attempt with existing username: {Username}", username);
+			return AuthResult.Failed("Username is already taken.", AuthErrorCodes.UsernameExists);
+		}
+
+		if (await repository.EmailExistsAsync(email, excludeId: null, cancellationToken))
+		{
+			logger.LogWarning("Registration attempt with already registered email: {Email}", email);
+			return AuthResult.Failed("This email is already registered.", AuthErrorCodes.EmailExists);
+		}
+
+		return null;
+	}
+
+	private static async Task<User> CreateUserInTransactionAsync(
+		CompleteRegistrationCommand command,
+		EmailVerificationToken token,
+		int roleId,
+		IAuthRepository authRepository,
+		ICredentialRepository credentialRepository,
+		IEmailVerificationTokenRepository emailVerificationTokenRepository,
+		IOptions<AuthSettings> authSettings,
+		DateTime now,
+		ITransactionManager transactionManager,
+		CancellationToken cancellationToken)
+	{
+		return await transactionManager.ExecuteInTransactionAsync(async transactionCancellationToken =>
+		{
+			User user = await RegistrationHelpers.CreateUserWithCredentialAsync(
+				authRepository,
+				credentialRepository,
+				command.Request.Username,
+				token.Email,
+				fullName: null,
+				command.Request.Password,
+				"Self-Registration",
+				roleId,
+				requiresPasswordChange: false,
+				authSettings,
+				now,
+				transactionCancellationToken);
+
+			token.IsUsed = true;
+			await emailVerificationTokenRepository.SaveChangesAsync(token, transactionCancellationToken);
+			return user;
+		}, cancellationToken: cancellationToken);
 	}
 }

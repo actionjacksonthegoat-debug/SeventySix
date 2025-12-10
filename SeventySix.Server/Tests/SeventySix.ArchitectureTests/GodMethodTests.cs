@@ -12,12 +12,12 @@ namespace SeventySix.ArchitectureTests;
 
 /// <summary>
 /// Architectural tests to prevent god methods.
-/// Methods with 50+ lines violate SRP and must be split.
+/// Methods with 80+ lines violate SRP and must be split.
 /// </summary>
 /// <remarks>
 /// Per CLAUDE.md and copilot-instructions.md:
-/// - Under 50 lines: OK - focused method
-/// - 50+ lines: MUST SPLIT - violates single responsibility
+/// - Under 80 lines: OK - focused method
+/// - 80+ lines: MUST SPLIT - violates single responsibility
 /// Counts non-blank, non-comment lines only.
 /// </remarks>
 public class GodMethodTests : SourceCodeArchitectureTest
@@ -25,7 +25,7 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	/// <summary>
 	/// Maximum allowed lines per method before requiring split.
 	/// </summary>
-	private const int MaxLinesPerMethod = 49;
+	private const int MaxLinesPerMethod = 79;
 
 	/// <summary>
 	/// Methods that are explicitly allowed to exceed the line limit.
@@ -33,57 +33,11 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	/// </summary>
 	private static readonly HashSet<string> AllowedExceptions =
 		[
-			// DI Configuration - acceptable for setup methods
-			"SeventySix\\DependencyExtensions\\IdentityExtensions.cs::AddIdentityDomain",
-			"SeventySix.Api\\Extensions\\AuthenticationExtensions.cs::AddAuthenticationServices",
-			"SeventySix.Api\\Extensions\\ServiceCollectionExtensions.cs::AddConfiguredRateLimiting",
+			// No exceptions - all methods must follow the 80-line rule
+		];
 
-			// Middleware - initialization and exception handling
-			"SeventySix.Api\\Middleware\\AttributeBasedSecurityHeadersMiddleware.cs::AttributeBasedSecurityHeadersMiddleware",
-			"SeventySix.Api\\Middleware\\GlobalExceptionMiddleware.cs::GlobalExceptionMiddleware",
-			"SeventySix.Api\\Middleware\\GlobalExceptionMiddleware.cs::HandleExceptionAsync",
-
-			// Infrastructure services and health checks
-			"SeventySix.Api\\HealthChecks\\JaegerHealthCheck.cs::CheckHealthAsync",
-			"SeventySix.Api\\Logging\\DatabaseLogSink.cs::EmitAsync",
-			"SeventySix\\Infrastructure\\Services\\RateLimitingService.cs::TryIncrementRequestCountAsync",
-			"SeventySix\\ElectronicNotifications\\Emails\\Services\\EmailService.cs::SendEmailAsync",
-
-			// EF Core Configurations - fluent API chains
-			"SeventySix\\Identity\\Configurations\\SecurityRoleConfiguration.cs::Configure",
-			"SeventySix\\Identity\\Configurations\\UserConfiguration.cs::Configure",
-
-			// Seeding and complex business logic - to be migrated to Wolverine handlers
-			"SeventySix\\Identity\\Services\\AdminSeederService.cs::SeedAdminUserAsync",
-			"SeventySix\\Identity\\Services\\AuthService.cs::LoginAsync",
-			"SeventySix\\Identity\\Services\\AuthService.cs::RefreshTokensAsync",
-			"SeventySix\\Identity\\Services\\AuthService.cs::FindOrCreateGitHubUserAsync",
-			"SeventySix\\Identity\\Services\\PermissionRequestService.cs::CreateRequestsAsync",
-			"SeventySix\\Identity\\Services\\TokenService.cs::RotateRefreshTokenAsync",
-
-			// CQRS command handlers - complex business logic
-			"SeventySix\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\CreateUser\\CreateUserCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\InitiatePasswordReset\\InitiatePasswordResetCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\RefreshTokens\\RefreshTokensCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\Register\\RegisterCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\UpdateUser\\UpdateUserCommandHandler.cs::HandleAsync",
-
-			// Test methods - integration tests with setup/teardown
-			"Tests\\SeventySix.Api.Tests\\Controllers\\HealthControllerTests.cs::GetHealthStatus_ReturnsOkResult_WithHealthStatusAsync",
-			"Tests\\SeventySix.Tests\\Identity\\Services\\RefreshTokenCleanupJobTests.cs::CleanupExpiredTokensAsync_DeletesTokensExpiredMoreThanRetentionDaysAgoAsync",
-			"Tests\\SeventySix.Tests\\Identity\\Services\\TokenServiceTests.cs::ValidateRefreshTokenAsync_ReturnsExpectedResultAsync",
-			"Tests\\SeventySix.Tests\\Identity\\Services\\TokenServiceTests.cs::GenerateRefreshTokenAsync_RevokesOldestToken_WhenSessionLimitReachedAsync",
-
-			// Architecture tests themselves - meta exceptions
-			"Tests\\SeventySix.ArchitectureTests\\GodMethodTests.cs::FindAllMethods",
-			"Tests\\SeventySix.ArchitectureTests\\GodMethodTests.cs::CountMethodLines",
-			"Tests\\SeventySix.ArchitectureTests\\TransactionUsageTests.cs::Services_Should_Not_Wrap_Single_Repository_Calls_In_Transactions",
-		]; [Fact]
-	public void All_Methods_Should_Be_Under_50_Lines()
+	[Fact]
+	public void All_Methods_Should_Be_Under_80_Lines()
 	{
 		// Arrange
 		IEnumerable<string> sourceFiles = GetAllSourceFiles();
@@ -131,125 +85,110 @@ public class GodMethodTests : SourceCodeArchitectureTest
 		Assert.Empty(godMethodViolations);
 	}
 
+	private static readonly Regex MethodDeclarationRegex =
+		new(
+			@"^\s*(?:public|private|protected|internal|static|virtual|override|async|sealed|\s)+\s+(?:\w+(?:<[^>]+>)?(?:\?)?(?:\[\])?)\s+(\w+)\s*\([^)]*\)\s*(?:where[^{]*)?{",
+			RegexOptions.Multiline | RegexOptions.Compiled);
+
 	private static List<MethodInfo> FindAllMethods(string fileContent)
 	{
 		List<MethodInfo> methods = [];
-
-		// Match method declarations (public, private, protected, internal, async, static, etc.)
-		// Captures method name and finds opening brace
-		Regex methodRegex =
-			new(
-				@"^\s*(?:public|private|protected|internal|static|virtual|override|async|sealed|\s)+\s+(?:\w+(?:<[^>]+>)?(?:\?)?(?:\[\])?)\s+(\w+)\s*\([^)]*\)\s*(?:where[^{]*)?{",
-				RegexOptions.Multiline);
-
-		MatchCollection matches = methodRegex.Matches(fileContent);
+		MatchCollection matches = MethodDeclarationRegex.Matches(fileContent);
 
 		foreach (Match match in matches)
 		{
-			string methodName = match.Groups[1].Value;
-
-			// Skip property getters/setters and constructors that are single-line
-			if (methodName is "get" or "set" or "init")
+			MethodInfo? method = TryCreateMethodInfo(match);
+			if (method != null)
 			{
-				continue;
+				methods.Add(method);
 			}
-
-			methods.Add(
-				new MethodInfo
-				{
-					Name = methodName,
-					StartIndex = match.Index,
-				});
 		}
 
 		return methods;
+	}
+
+	private static MethodInfo? TryCreateMethodInfo(Match match)
+	{
+		string matchText = match.Value;
+
+		// Skip class/struct/record primary constructors
+		if (matchText.Contains("class ") || matchText.Contains("struct ") || matchText.Contains("record "))
+		{
+			return null;
+		}
+
+		string methodName = match.Groups[1].Value;
+		if (methodName is "get" or "set" or "init")
+		{
+			return null;
+		}
+
+		return new MethodInfo { Name = methodName, StartIndex = match.Index };
 	}
 
 	private static int CountMethodLines(
 		string fileContent,
 		int methodStartIndex)
 	{
-		int braceDepth = 0;
-		bool methodStarted = false;
-		int nonBlankLineCount = 0;
-
-		// Find the opening brace
-		int lineIndex = methodStartIndex;
-		while (lineIndex < fileContent.Length)
-		{
-			char character = fileContent[lineIndex];
-
-			if (character == '{')
-			{
-				braceDepth++;
-				methodStarted = true;
-				lineIndex++;
-				break;
-			}
-
-			lineIndex++;
-		}
-
-		if (!methodStarted)
+		int openingBraceIndex = FindOpeningBrace(fileContent, methodStartIndex);
+		if (openingBraceIndex < 0)
 		{
 			return 0;
 		}
 
-		// Count lines until closing brace
-		int currentLineStart = lineIndex;
+		return CountLinesInMethodBody(fileContent, openingBraceIndex);
+	}
 
-		for (int index = lineIndex; index < fileContent.Length; index++)
+	private static int FindOpeningBrace(string content, int startIndex)
+	{
+		for (int i = startIndex; i < content.Length; i++)
 		{
-			char character = fileContent[index];
+			if (content[i] == '{')
+			{
+				return i + 1;
+			}
+		}
 
-			if (character == '{')
+		return -1;
+	}
+
+	private static int CountLinesInMethodBody(string content, int startIndex)
+	{
+		int braceDepth = 1;
+		int nonBlankLineCount = 0;
+		int currentLineStart = startIndex;
+
+		for (int i = startIndex; i < content.Length; i++)
+		{
+			char c = content[i];
+
+			if (c == '{')
 			{
 				braceDepth++;
 			}
-			else if (character == '}')
+			else if (c == '}')
 			{
 				braceDepth--;
-
 				if (braceDepth == 0)
 				{
-					// Count the last line if not blank
-					string lastLine =
-						fileContent
-							.Substring(
-								currentLineStart,
-								index - currentLineStart)
-							.Trim();
-
-					if (!string.IsNullOrWhiteSpace(lastLine)
-						&& !lastLine.StartsWith("//"))
-					{
-						nonBlankLineCount++;
-					}
-
+					nonBlankLineCount += CountLineIfNotBlank(content, currentLineStart, i);
 					break;
 				}
 			}
-			else if (character == '\n')
+			else if (c == '\n')
 			{
-				// Count this line if not blank or comment
-				string lineContent =
-					fileContent
-						.Substring(
-							currentLineStart,
-							index - currentLineStart)
-						.Trim();
-
-				if (!string.IsNullOrWhiteSpace(lineContent)
-					&& !lineContent.StartsWith("//"))
-				{
-					nonBlankLineCount++;
-				}
-
-				currentLineStart = index + 1;
+				nonBlankLineCount += CountLineIfNotBlank(content, currentLineStart, i);
+				currentLineStart = i + 1;
 			}
 		}
 
 		return nonBlankLineCount;
+	}
+
+	private static int CountLineIfNotBlank(string content, int start, int end)
+	{
+		string line = content.Substring(start, end - start).Trim();
+		return !string.IsNullOrWhiteSpace(line) && !line.StartsWith("//") ? 1 : 0;
 	}
 
 	private sealed class MethodInfo

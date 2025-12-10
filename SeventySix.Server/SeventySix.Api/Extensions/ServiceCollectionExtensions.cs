@@ -4,6 +4,7 @@
 
 using System.IO.Compression;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 using SeventySix.Api.Configuration;
 using SeventySix.Identity;
@@ -198,98 +199,85 @@ public static class ServiceCollectionExtensions
 				.GetSection("Auth:RateLimit")
 				.Get<AuthRateLimitSettings>() ?? new AuthRateLimitSettings();
 
-		// Always register rate limiter services (required by UseRateLimiter middleware)
-		// When disabled, use NoLimiter policies that permit all requests
 		if (!globalSettings.Enabled)
 		{
-			services.AddRateLimiter(options =>
-			{
-				// No-op global limiter - permits all requests
-				options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
-					_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-
-				// Register named policies as no-op limiters
-				options.AddPolicy(
-					RateLimitPolicies.AuthLogin,
-					_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-
-				options.AddPolicy(
-					RateLimitPolicies.AuthRegister,
-					_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-
-				options.AddPolicy(
-					RateLimitPolicies.AuthRefresh,
-					_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-			});
-
-			return services;
+			return AddDisabledRateLimiting(services);
 		}
 
+		return AddEnabledRateLimiting(services, globalSettings, authSettings);
+	}
+
+	private static IServiceCollection AddDisabledRateLimiting(IServiceCollection services)
+	{
 		services.AddRateLimiter(options =>
 		{
-			// Global rate limiter - applies to all endpoints
-			options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
-				RateLimitPartition.GetFixedWindowLimiter(
-					partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
-					factory: _ => new FixedWindowRateLimiterOptions
-					{
-						PermitLimit = globalSettings.PermitLimit,
-						Window = TimeSpan.FromSeconds(globalSettings.WindowSeconds),
-						QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-						QueueLimit = 0
-					}));
+			options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
+				_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
 
-			// Auth-specific policies - stricter limits for security-sensitive endpoints
-			options.AddPolicy(
-				RateLimitPolicies.AuthLogin,
-				context => RateLimitPartition.GetFixedWindowLimiter(
-					partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
-					factory: _ => new FixedWindowRateLimiterOptions
-					{
-						PermitLimit = authSettings.LoginAttemptsPerMinute,
-						Window = TimeSpan.FromMinutes(1),
-						QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-						QueueLimit = 0
-					}));
-
-			options.AddPolicy(
-				RateLimitPolicies.AuthRegister,
-				context => RateLimitPartition.GetFixedWindowLimiter(
-					partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
-					factory: _ => new FixedWindowRateLimiterOptions
-					{
-						PermitLimit = authSettings.RegisterAttemptsPerHour,
-						Window = TimeSpan.FromHours(1),
-						QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-						QueueLimit = 0
-					}));
-
-			options.AddPolicy(
-				RateLimitPolicies.AuthRefresh,
-				context => RateLimitPartition.GetFixedWindowLimiter(
-					partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
-					factory: _ => new FixedWindowRateLimiterOptions
-					{
-						PermitLimit = authSettings.TokenRefreshPerMinute,
-						Window = TimeSpan.FromMinutes(1),
-						QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-						QueueLimit = 0
-					}));
-
-			options.OnRejected = async (context, cancellationToken) =>
-			{
-				context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-				context.HttpContext.Response.Headers.RetryAfter = globalSettings.RetryAfterSeconds.ToString();
-
-				await context.HttpContext.Response.WriteAsJsonAsync(new
-				{
-					error = "Too Many Requests",
-					message = "Rate limit exceeded. Please try again later.",
-					retryAfter = globalSettings.RetryAfterSeconds
-				}, cancellationToken);
-			};
+			options.AddPolicy(RateLimitPolicies.AuthLogin, _ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+			options.AddPolicy(RateLimitPolicies.AuthRegister, _ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+			options.AddPolicy(RateLimitPolicies.AuthRefresh, _ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
 		});
 
 		return services;
 	}
+
+	private static IServiceCollection AddEnabledRateLimiting(
+		IServiceCollection services,
+		RateLimitingSettings globalSettings,
+		AuthRateLimitSettings authSettings)
+	{
+		services.AddRateLimiter(options =>
+		{
+			options.GlobalLimiter = CreateGlobalLimiter(globalSettings);
+			AddAuthPolicies(options, authSettings);
+			options.OnRejected = CreateRejectedHandler(globalSettings);
+		});
+
+		return services;
+	}
+
+	private static PartitionedRateLimiter<HttpContext> CreateGlobalLimiter(RateLimitingSettings settings) =>
+		PartitionedRateLimiter.Create<HttpContext, string>(context =>
+			RateLimitPartition.GetFixedWindowLimiter(
+				partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+				factory: _ => new FixedWindowRateLimiterOptions
+				{
+					PermitLimit = settings.PermitLimit,
+					Window = TimeSpan.FromSeconds(settings.WindowSeconds),
+					QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+					QueueLimit = 0
+				}));
+
+	private static void AddAuthPolicies(RateLimiterOptions options, AuthRateLimitSettings settings)
+	{
+		options.AddPolicy(RateLimitPolicies.AuthLogin, ctx => CreateAuthLimiter(ctx, settings.LoginAttemptsPerMinute, TimeSpan.FromMinutes(1)));
+		options.AddPolicy(RateLimitPolicies.AuthRegister, ctx => CreateAuthLimiter(ctx, settings.RegisterAttemptsPerHour, TimeSpan.FromHours(1)));
+		options.AddPolicy(RateLimitPolicies.AuthRefresh, ctx => CreateAuthLimiter(ctx, settings.TokenRefreshPerMinute, TimeSpan.FromMinutes(1)));
+	}
+
+	private static RateLimitPartition<string> CreateAuthLimiter(HttpContext context, int permitLimit, TimeSpan window) =>
+		RateLimitPartition.GetFixedWindowLimiter(
+			partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+			factory: _ => new FixedWindowRateLimiterOptions
+			{
+				PermitLimit = permitLimit,
+				Window = window,
+				QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+				QueueLimit = 0
+			});
+
+	private static Func<OnRejectedContext, CancellationToken, ValueTask> CreateRejectedHandler(RateLimitingSettings settings) =>
+		async (context, cancellationToken) =>
+		{
+			context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+			context.HttpContext.Response.Headers.RetryAfter = settings.RetryAfterSeconds.ToString();
+
+			await context.HttpContext.Response.WriteAsJsonAsync(new
+			{
+				error = "Too Many Requests",
+				message = "Rate limit exceeded. Please try again later.",
+				retryAfter = settings.RetryAfterSeconds
+			}, cancellationToken);
+		};
 }

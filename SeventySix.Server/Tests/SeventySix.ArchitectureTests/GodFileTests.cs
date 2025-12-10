@@ -32,7 +32,7 @@ public class GodFileTests : SourceCodeArchitectureTest
 	/// </summary>
 	private static readonly HashSet<string> AllowedExceptions =
 		[
-			"UsersController.cs", // User management controller - 846 lines (CQRS handlers not yet extracted)
+			// No exceptions - all files must follow the 800-line rule
 		];
 
 	[Fact]

@@ -34,18 +34,15 @@ namespace SeventySix.Api.Tests.Controllers;
 public class UsersControllerTests
 {
 	private readonly IMessageBus MessageBus;
-	private readonly IPermissionRequestService PermissionRequestService;
 	private readonly ILogger<UsersController> Logger;
 	private readonly UsersController Controller;
 
 	public UsersControllerTests()
 	{
 		MessageBus = Substitute.For<IMessageBus>();
-		PermissionRequestService = Substitute.For<IPermissionRequestService>();
 		Logger = Substitute.For<ILogger<UsersController>>();
 		Controller = new UsersController(
 			MessageBus,
-			PermissionRequestService,
 			Logger);
 	}
 

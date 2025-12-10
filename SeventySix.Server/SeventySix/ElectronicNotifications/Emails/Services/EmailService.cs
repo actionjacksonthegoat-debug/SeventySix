@@ -144,103 +144,67 @@ public class EmailService(
 	{
 		if (!settings.Value.Enabled)
 		{
-			logger.LogWarning(
-				"[EMAIL DISABLED] Would send to {To}: {Subject}",
-				to,
-				subject);
+			logger.LogWarning("[EMAIL DISABLED] Would send to {To}: {Subject}", to, subject);
 			return;
 		}
 
-		// Check rate limit before sending
-		bool canSend = await rateLimitingService.CanMakeRequestAsync(
-			BREVO_API_NAME,
-			cancellationToken);
+		await EnsureRateLimitNotExceededAsync(cancellationToken);
 
-		if (!canSend)
+		using MimeMessage message = BuildMimeMessage(to, subject, htmlBody);
+		await SendViaSMtpAsync(message, cancellationToken);
+		await TrackRateLimitAsync(cancellationToken);
+
+		logger.LogWarning("Email sent to {To}: {Subject}", to, subject);
+	}
+
+	private async Task EnsureRateLimitNotExceededAsync(CancellationToken cancellationToken)
+	{
+		bool canSend = await rateLimitingService.CanMakeRequestAsync(BREVO_API_NAME, cancellationToken);
+		if (canSend)
 		{
-			int remaining =
-				await rateLimitingService.GetRemainingQuotaAsync(
-					BREVO_API_NAME,
-					cancellationToken);
-			TimeSpan resetTime =
-				rateLimitingService.GetTimeUntilReset();
-
-			logger.LogError(
-				"Email daily limit exceeded. Remaining: {Remaining}. Resets in: {TimeUntilReset}",
-				remaining,
-				resetTime);
-
-			throw new EmailRateLimitException(
-				resetTime,
-				remaining);
+			return;
 		}
 
-		using MimeMessage message =
-			new();
+		int remaining = await rateLimitingService.GetRemainingQuotaAsync(BREVO_API_NAME, cancellationToken);
+		TimeSpan resetTime = rateLimitingService.GetTimeUntilReset();
 
-		message.From.Add(
-			new MailboxAddress(
-				settings.Value.FromName,
-				settings.Value.FromAddress));
-		message.To.Add(
-			MailboxAddress.Parse(to));
+		logger.LogError("Email daily limit exceeded. Remaining: {Remaining}. Resets in: {TimeUntilReset}", remaining, resetTime);
+		throw new EmailRateLimitException(resetTime, remaining);
+	}
+
+	private MimeMessage BuildMimeMessage(string to, string subject, string htmlBody)
+	{
+		MimeMessage message = new();
+		message.From.Add(new MailboxAddress(settings.Value.FromName, settings.Value.FromAddress));
+		message.To.Add(MailboxAddress.Parse(to));
 		message.Subject = subject;
+		message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
+		return message;
+	}
 
-		BodyBuilder builder =
-			new()
-			{
-				HtmlBody = htmlBody
-			};
-		message.Body =
-			builder.ToMessageBody();
+	private async Task SendViaSMtpAsync(MimeMessage message, CancellationToken cancellationToken)
+	{
+		using SmtpClient client = new();
+		SecureSocketOptions securityOptions = settings.Value.UseSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None;
 
-		using SmtpClient client =
-			new();
-
-		SecureSocketOptions securityOptions =
-			settings.Value.UseSsl
-				? SecureSocketOptions.StartTls
-				: SecureSocketOptions.None;
-
-		await client.ConnectAsync(
-			settings.Value.SmtpHost,
-			settings.Value.SmtpPort,
-			securityOptions,
-			cancellationToken);
+		await client.ConnectAsync(settings.Value.SmtpHost, settings.Value.SmtpPort, securityOptions, cancellationToken);
 
 		if (!string.IsNullOrEmpty(settings.Value.SmtpUsername))
 		{
-			await client.AuthenticateAsync(
-				settings.Value.SmtpUsername,
-				settings.Value.SmtpPassword,
-				cancellationToken);
+			await client.AuthenticateAsync(settings.Value.SmtpUsername, settings.Value.SmtpPassword, cancellationToken);
 		}
 
-		await client.SendAsync(
-			message,
-			cancellationToken);
+		await client.SendAsync(message, cancellationToken);
+		await client.DisconnectAsync(quit: true, cancellationToken);
+	}
 
-		await client.DisconnectAsync(
-			quit: true,
-			cancellationToken);
-
-		// Increment rate limit counter after successful send
-		bool incrementSuccess = await rateLimitingService.TryIncrementRequestCountAsync(
-			BREVO_API_NAME,
-			BREVO_BASE_URL,
-			cancellationToken);
-
-		if (!incrementSuccess)
+	private async Task TrackRateLimitAsync(CancellationToken cancellationToken)
+	{
+		bool success = await rateLimitingService.TryIncrementRequestCountAsync(BREVO_API_NAME, BREVO_BASE_URL, cancellationToken);
+		if (!success)
 		{
-			logger.LogWarning(
-				"Email sent successfully but failed to increment rate limit counter for {ApiName}",
-				BREVO_API_NAME);
+			logger.LogWarning("Email sent successfully but failed to increment rate limit counter for {ApiName}", BREVO_API_NAME);
 		}
-
-		logger.LogWarning(
-			"Email sent to {To}: {Subject}",
-			to,
-			subject);
 	}
 
 	/// <summary>

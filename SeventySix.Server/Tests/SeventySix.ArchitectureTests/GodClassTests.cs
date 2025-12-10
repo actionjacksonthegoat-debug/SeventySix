@@ -43,9 +43,7 @@ public class GodClassTests
 	/// </summary>
 	private static readonly HashSet<string> AllowedImplementationExceptions =
 		[
-			// ISP pattern: Single implementation implementing multiple focused interfaces
-			// AuthService implements: IOAuthService
-			"AuthService",
+			// No exceptions - all implementations must follow the 12-method rule
 		];
 
 	[Fact]

@@ -89,60 +89,33 @@ public class GlobalExceptionMiddleware(
 	{
 		context.Response.ContentType = "application/problem+json";
 
-		ProblemDetails problemDetails = exception switch
-		{
-			ValidationException validationEx => CreateValidationProblemDetails(context, validationEx),
-			EntityNotFoundException notFoundEx => CreateProblemDetails(
-				context,
-				HttpStatusCode.NotFound,
-				"Resource Not Found",
-				notFoundEx.Message),
-			BusinessRuleViolationException businessEx => CreateProblemDetails(
-				context,
-				HttpStatusCode.UnprocessableEntity,
-				"Business Rule Violation",
-				businessEx.Message),
-			ExternalServiceException externalEx => CreateProblemDetails(
-				context,
-				HttpStatusCode.ServiceUnavailable,
-				"External Service Error",
-				externalEx.Message),
-			DomainException domainEx => CreateProblemDetails(
-				context,
-				HttpStatusCode.BadRequest,
-				"Domain Error",
-				domainEx.Message),
-			ArgumentNullException => CreateProblemDetails(
-				context,
-				HttpStatusCode.BadRequest,
-				"Bad Request",
-				exception.Message),
-			ArgumentException => CreateProblemDetails(
-				context,
-				HttpStatusCode.BadRequest,
-				"Bad Request",
-				exception.Message),
-			KeyNotFoundException => CreateProblemDetails(
-				context,
-				HttpStatusCode.NotFound,
-				"Not Found",
-				exception.Message),
-			UnauthorizedAccessException => CreateProblemDetails(
-				context,
-				HttpStatusCode.Unauthorized,
-				"Unauthorized",
-				exception.Message),
-			_ => CreateProblemDetails(
-				context,
-				HttpStatusCode.InternalServerError,
-				"Internal Server Error",
-				environment.IsDevelopment() ? exception.Message : "An error occurred processing your request.")
-		};
-
+		ProblemDetails problemDetails = MapExceptionToProblemDetails(context, exception);
 		context.Response.StatusCode = problemDetails.Status ?? (int)HttpStatusCode.InternalServerError;
 
 		await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, ProblemDetailsJsonOptions));
 	}
+
+	private ProblemDetails MapExceptionToProblemDetails(HttpContext context, Exception exception) =>
+		exception switch
+		{
+			ValidationException validationEx => CreateValidationProblemDetails(context, validationEx),
+			EntityNotFoundException ex => CreateProblemDetails(context, HttpStatusCode.NotFound, "Resource Not Found", ex.Message),
+			BusinessRuleViolationException ex => CreateProblemDetails(context, HttpStatusCode.UnprocessableEntity, "Business Rule Violation", ex.Message),
+			ExternalServiceException ex => CreateProblemDetails(context, HttpStatusCode.ServiceUnavailable, "External Service Error", ex.Message),
+			DomainException ex => CreateProblemDetails(context, HttpStatusCode.BadRequest, "Domain Error", ex.Message),
+			ArgumentNullException => CreateProblemDetails(context, HttpStatusCode.BadRequest, "Bad Request", exception.Message),
+			ArgumentException => CreateProblemDetails(context, HttpStatusCode.BadRequest, "Bad Request", exception.Message),
+			KeyNotFoundException => CreateProblemDetails(context, HttpStatusCode.NotFound, "Not Found", exception.Message),
+			UnauthorizedAccessException => CreateProblemDetails(context, HttpStatusCode.Unauthorized, "Unauthorized", exception.Message),
+			_ => CreateDefaultProblemDetails(context, exception)
+		};
+
+	private ProblemDetails CreateDefaultProblemDetails(HttpContext context, Exception exception) =>
+		CreateProblemDetails(
+			context,
+			HttpStatusCode.InternalServerError,
+			"Internal Server Error",
+			environment.IsDevelopment() ? exception.Message : "An error occurred processing your request.");
 
 	/// <summary>
 	/// Creates a ProblemDetails object for a given exception.

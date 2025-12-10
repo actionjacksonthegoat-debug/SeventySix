@@ -333,8 +333,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	/// Tests that GET /auth/github/callback returns error for CSRF/PKCE violations.
 	/// </summary>
 	[Theory]
-	[InlineData(true, "State mismatch - CSRF protection")]
-	[InlineData(false, "Missing code verifier - PKCE requirement")]
+	[InlineData(true)]
+	[InlineData(false)]
 	public async Task GitHubCallbackAsync_ReturnsError_WhenSecurityViolationAsync(
 		bool stateTampered)
 	{
@@ -625,8 +625,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	/// Tests that GET /auth/me returns 401 for invalid or expired JWTs.
 	/// </summary>
 	[Theory]
-	[InlineData(true, "Invalid signature")]
-	[InlineData(false, "Expired token")]
+	[InlineData(true)]
+	[InlineData(false)]
 	public async Task GetCurrentUserAsync_ReturnsUnauthorized_WhenInvalidJwtAsync(
 		bool useInvalidSignature)
 	{
