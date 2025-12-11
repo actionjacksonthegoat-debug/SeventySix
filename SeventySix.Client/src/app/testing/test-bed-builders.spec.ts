@@ -132,17 +132,23 @@ describe("Test Bed Builders", () =>
 			);
 			fixture.componentInstance.emitOutput();
 
-			expect(outputSpy).toHaveBeenCalledWith("test output");
-		});
+		expect(outputSpy).toHaveBeenCalledWith("test output");
+	});
 
-		it("should return builder instance from withMaterialModules", () =>
-		{
-			const builder: ComponentTestBed<TestComponent> =
-				new ComponentTestBed<TestComponent>();
-			const result: ComponentTestBed<TestComponent> =
-				builder.withMaterialModules();
+	it("should configure admin defaults with withAdminDefaults", async () =>
+	{
+		const builder: ComponentTestBed<TestComponent> =
+			new ComponentTestBed<TestComponent>();
+		const result: ComponentTestBed<TestComponent> =
+			builder.withAdminDefaults();			expect(result).toBe(builder);
 
-			expect(result).toBe(builder);
+			// Build and verify providers are configured
+			const fixture: ComponentFixture<TestComponent> =
+				await result.build(TestComponent);
+			const queryClient: QueryClient = TestBed.inject(QueryClient);
+
+			expect(fixture).toBeDefined();
+			expect(queryClient).toBeDefined();
 		});
 	});
 });

@@ -5,7 +5,7 @@
  */
 
 import { Injectable, inject } from "@angular/core";
-import { User } from "@admin/users/models";
+import { UserDto } from "@admin/users/models";
 import { DateService } from "@infrastructure/services";
 
 /**
@@ -21,7 +21,7 @@ export class UserExportService
 	 * @param users - Array of users to export
 	 * @param filename - Optional filename (defaults to timestamp)
 	 */
-	exportToCsv(users: User[], filename?: string): void
+	exportToCsv(users: UserDto[], filename?: string): void
 	{
 		if (users.length === 0)
 		{
@@ -40,7 +40,7 @@ export class UserExportService
 	 * @param users - Array of users
 	 * @returns CSV string
 	 */
-	private generateCsvContent(users: User[]): string
+	private generateCsvContent(users: UserDto[]): string
 	{
 		const headers: string[] = [
 			"ID",

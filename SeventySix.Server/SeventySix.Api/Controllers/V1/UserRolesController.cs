@@ -43,7 +43,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 				new GetUserByIdQuery(id),
 				cancellationToken);
 
-		if (user == null)
+		if (user is null)
 		{
 			return NotFound();
 		}
@@ -85,7 +85,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 				new GetUserByIdQuery(id),
 				cancellationToken);
 
-		if (user == null)
+		if (user is null)
 		{
 			return NotFound();
 		}
@@ -99,7 +99,12 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 						role),
 					cancellationToken);
 
-			return added ? NoContent() : Conflict("User already has this role");
+			if (!added)
+			{
+				return Conflict("User already has this role");
+			}
+
+			return NoContent();
 		}
 		catch (ArgumentException ex)
 		{
@@ -132,7 +137,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 				new GetUserByIdQuery(id),
 				cancellationToken);
 
-		if (user == null)
+		if (user is null)
 		{
 			return NotFound();
 		}
@@ -144,6 +149,11 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 					role),
 				cancellationToken);
 
-		return removed ? NoContent() : NotFound("Role not found on user");
+		if (!removed)
+		{
+			return NotFound("Role not found on user");
+		}
+
+		return NoContent();
 	}
 }

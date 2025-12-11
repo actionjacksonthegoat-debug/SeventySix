@@ -25,7 +25,7 @@ describe("LogDetailDialogComponent", () =>
 
 	const mockLog: LogDto = {
 		id: 1,
-		createDate: new Date("2024-11-13T09:00:00Z"),
+		createDate: "2024-11-13T09:00:00Z",
 		logLevel: "Error",
 		message: "An error occurred while processing the request.",
 		exceptionMessage: "System.Exception: Test exception",

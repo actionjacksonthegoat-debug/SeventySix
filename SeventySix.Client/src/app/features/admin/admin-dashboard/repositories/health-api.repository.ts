@@ -2,9 +2,9 @@ import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
 import {
-	HealthStatus,
-	DatabaseHealth,
-	ExternalApiHealth
+	HealthStatusResponse,
+	DatabaseHealthResponse,
+	ExternalApiHealthResponse
 } from "@admin/admin-dashboard/models";
 
 @Injectable()
@@ -15,29 +15,29 @@ export class HealthApiRepository
 
 	/**
 	 * Gets overall system health status
-	 * @returns Observable of HealthStatus
+	 * @returns Observable of HealthStatusResponse
 	 */
-	getHealth(): Observable<HealthStatus>
+	getHealth(): Observable<HealthStatusResponse>
 	{
-		return this.apiService.get<HealthStatus>(this.endpoint);
+		return this.apiService.get<HealthStatusResponse>(this.endpoint);
 	}
 
 	/**
 	 * Gets database health status
-	 * @returns Observable of DatabaseHealth
+	 * @returns Observable of DatabaseHealthResponse
 	 */
-	getDatabaseHealth(): Observable<DatabaseHealth>
+	getDatabaseHealth(): Observable<DatabaseHealthResponse>
 	{
-		return this.apiService.get<DatabaseHealth>(`${this.endpoint}/database`);
+		return this.apiService.get<DatabaseHealthResponse>(`${this.endpoint}/database`);
 	}
 
 	/**
 	 * Gets external API health status
-	 * @returns Observable of ExternalApiHealth
+	 * @returns Observable of ExternalApiHealthResponse
 	 */
-	getExternalApiHealth(): Observable<ExternalApiHealth>
+	getExternalApiHealth(): Observable<ExternalApiHealthResponse>
 	{
-		return this.apiService.get<ExternalApiHealth>(
+		return this.apiService.get<ExternalApiHealthResponse>(
 			`${this.endpoint}/external-apis`
 		);
 	}

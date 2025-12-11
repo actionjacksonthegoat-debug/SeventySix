@@ -3,7 +3,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ClientErrorLoggerService } from "./client-error-logger.service";
 import { ErrorQueueService } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
-import { CreateLogRequest } from "@infrastructure/models";
+import { CreateLogRequest } from "@infrastructure/api";
 import { createMockErrorQueueService } from "@testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 

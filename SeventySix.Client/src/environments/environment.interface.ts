@@ -144,6 +144,7 @@ export interface AuthConfig
 export interface Environment
 {
 	production: boolean;
+	version: string;
 	apiUrl: string;
 	logging: LoggingConfig;
 	observability: ObservabilityConfig;

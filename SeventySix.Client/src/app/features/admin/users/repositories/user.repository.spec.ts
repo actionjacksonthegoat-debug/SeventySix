@@ -3,8 +3,8 @@ import { HttpParams } from "@angular/common/http";
 import { of } from "rxjs";
 import { UserRepository } from "./user.repository";
 import { ApiService } from "@infrastructure/api-services/api.service";
-import { PagedResponse } from "@infrastructure/models";
-import { User, UserQueryRequest, UpdateUserRequest } from "@admin/users/models";
+import { PagedResultOfUserDto } from "@infrastructure/api";
+import { UserDto, UserQueryRequest, UpdateUserRequest } from "@admin/users/models";
 import { setupRepositoryTest, createMockApiService } from "@testing";
 
 describe("UserRepository", () =>
@@ -12,17 +12,21 @@ describe("UserRepository", () =>
 	let repository: UserRepository;
 	let mockApiService: jasmine.SpyObj<ApiService>;
 
-	const mockUser: User = {
+	const mockUser: UserDto = {
 		id: 1,
 		username: "testuser",
 		email: "test@example.com",
 		fullName: "Test User",
 		createDate: "2024-01-01T00:00:00Z",
 		isActive: true,
+		needsPendingEmail: false,
 		createdBy: "admin",
 		modifyDate: "2024-01-02T00:00:00Z",
 		modifiedBy: "admin",
-		lastLoginAt: "2024-01-03T00:00:00Z"
+		lastLoginAt: "2024-01-03T00:00:00Z",
+		isDeleted: false,
+		deletedAt: null,
+		deletedBy: null
 	};
 
 	beforeEach(() =>
@@ -66,7 +70,7 @@ describe("UserRepository", () =>
 				sortBy: "username",
 				sortDescending: false
 			};
-			const pagedResult: PagedResponse<User> = {
+			const pagedResult: PagedResultOfUserDto = {
 				items: [mockUser],
 				totalCount: 1,
 				page: 1,
@@ -78,8 +82,8 @@ describe("UserRepository", () =>
 			mockApiService.get.and.returnValue(of(pagedResult));
 
 			repository
-				.getPaged(request)
-				.subscribe((result: PagedResponse<User>) =>
+			.getPaged(request)
+			.subscribe((result: PagedResultOfUserDto) =>
 				{
 					expect(result).toEqual(pagedResult);
 					expect(mockApiService.get).toHaveBeenCalledWith(

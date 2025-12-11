@@ -1,10 +1,11 @@
 /**
  * Permission requests models barrel export.
+ * Re-exports generated DTOs from api-client.ts
  */
-export type { PermissionRequest } from "./permission-request.model";
 
-// Re-export identity models for convenience
+// Re-export generated DTOs
 export type {
-	AvailableRole,
-	CreatePermissionRequest
-} from "@infrastructure/models";
+	PermissionRequestDto,
+	AvailableRoleDto,
+	CreatePermissionRequestDto
+} from "@infrastructure/api";

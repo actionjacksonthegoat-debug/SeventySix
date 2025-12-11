@@ -2,8 +2,8 @@ import { TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
 import { QueryClient } from "@tanstack/angular-query-experimental";
 import { UserRepository } from "@admin/users/repositories";
-import { PagedResponse } from "@infrastructure/models";
-import { User, UpdateUserRequest } from "@admin/users/models";
+import { PagedResultOfUserDto } from "@infrastructure/api";
+import { UserDto, UpdateUserRequest } from "@admin/users/models";
 import { UserService } from "./user.service";
 import {
 	UserFixtures,
@@ -17,7 +17,7 @@ describe("UserService", () =>
 	let service: UserService;
 	let mockRepository: jasmine.SpyObj<UserRepository>;
 
-	const mockUser: User = UserFixtures.JOHN_DOE;
+	const mockUser: UserDto = UserFixtures.JOHN_DOE;
 
 	beforeEach(() =>
 	{
@@ -125,7 +125,7 @@ describe("UserService", () =>
 	{
 		it("should create user", async () =>
 		{
-			const newUser: Partial<User> = {
+			const newUser: Partial<UserDto> = {
 				username: "newuser",
 				email: "new@example.com"
 			};
@@ -136,7 +136,12 @@ describe("UserService", () =>
 			);
 			await mutation.mutateAsync(newUser);
 
-			expect(mockRepository.create).toHaveBeenCalledWith(newUser);
+			expect(mockRepository.create).toHaveBeenCalledWith(
+				jasmine.objectContaining({
+					username: "newuser",
+					email: "new@example.com"
+				})
+			);
 		});
 	});
 
@@ -188,7 +193,7 @@ describe("UserService", () =>
 				isActive: true
 			});
 
-			const pagedResult: PagedResponse<User> = {
+			const pagedResult: PagedResultOfUserDto = {
 				items: [mockUser],
 				totalCount: 1,
 				page: 1,
@@ -257,7 +262,7 @@ describe("UserService", () =>
 	{
 		it("should refetch all active user queries", async () =>
 		{
-			const mockPagedResponse: PagedResponse<User> = {
+			const mockPagedResponse: PagedResultOfUserDto = {
 				items: [mockUser],
 				totalCount: 1,
 				page: 1,

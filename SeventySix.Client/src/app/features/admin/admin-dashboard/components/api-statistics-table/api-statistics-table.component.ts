@@ -13,13 +13,13 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatButtonModule } from "@angular/material/button";
 import { ThirdPartyApiService } from "@admin/admin-dashboard/services";
-import { ThirdPartyApiRequest } from "@admin/admin-dashboard/models";
+import { ThirdPartyApiRequestResponse } from "@admin/admin-dashboard/models";
 import { DateService } from "@infrastructure/services/date.service";
 
 /**
  * Extended interface with computed display properties
  */
-interface ThirdPartyApiRequestDisplay extends ThirdPartyApiRequest
+interface ThirdPartyApiRequestDisplay extends ThirdPartyApiRequestResponse
 {
 	formattedLastCalled: string;
 	status: string;
@@ -76,7 +76,7 @@ export class ApiStatisticsTableComponent
 		MatTableDataSource<ThirdPartyApiRequestDisplay>
 	> = computed(() =>
 	{
-		const data: ThirdPartyApiRequest[] = this.apiDataQuery.data() ?? [];
+		const data: ThirdPartyApiRequestResponse[] = this.apiDataQuery.data() ?? [];
 		const displayData: ThirdPartyApiRequestDisplay[] = data.map((item) => ({
 			...item,
 			formattedLastCalled: this.formatLastCalled(item.lastCalledAt),
@@ -105,7 +105,7 @@ export class ApiStatisticsTableComponent
 	/**
 	 * Get status based on last called timestamp
 	 */
-	getStatus(timestamp: string | null): string
+	getStatus(timestamp: string | null | undefined): string
 	{
 		if (!timestamp) return "error";
 
@@ -119,7 +119,7 @@ export class ApiStatisticsTableComponent
 	/**
 	 * Format last called timestamp
 	 */
-	formatLastCalled(timestamp: string | null): string
+	formatLastCalled(timestamp: string | null | undefined): string
 	{
 		if (!timestamp) return "Never";
 

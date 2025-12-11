@@ -22,7 +22,7 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { AccountService } from "../services";
-import { AvailableRole, CreatePermissionRequest } from "../models";
+import { AvailableRoleDto, CreatePermissionRequestDto } from "../models";
 
 @Component({
 	selector: "app-request-permissions",
@@ -53,7 +53,7 @@ export class RequestPermissionsPage
 		AccountService["createPermissionRequest"]
 	> = this.accountService.createPermissionRequest();
 
-	readonly availableRoles: Signal<AvailableRole[]> = computed(
+	readonly availableRoles: Signal<AvailableRoleDto[]> = computed(
 		() => this.rolesQuery.data() ?? []
 	);
 	readonly isLoading: Signal<boolean> = computed(() =>
@@ -70,7 +70,7 @@ export class RequestPermissionsPage
 	{
 		const selected: Set<string> = this.selectedRoles();
 		const map: Map<string, boolean> = new Map();
-		this.availableRoles().forEach((role: AvailableRole) =>
+		this.availableRoles().forEach((role: AvailableRoleDto) =>
 		{
 			map.set(role.name, selected.has(role.name));
 		});
@@ -109,7 +109,7 @@ export class RequestPermissionsPage
 			return;
 		}
 
-		const request: CreatePermissionRequest = {
+		const request: CreatePermissionRequestDto = {
 			requestedRoles: roles,
 			requestMessage: this.requestForm.value.requestMessage || undefined
 		};

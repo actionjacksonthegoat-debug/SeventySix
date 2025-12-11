@@ -16,7 +16,7 @@ import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
-import { LoginCredentials, AuthResponse } from "@infrastructure/models";
+import { LoginRequest, AuthResponse } from "@infrastructure/api";
 
 @Component({
 	selector: "app-login",
@@ -63,7 +63,7 @@ export class LoginComponent implements OnInit
 
 		this.isLoading.set(true);
 
-		const credentials: LoginCredentials = {
+		const credentials: LoginRequest = {
 			usernameOrEmail: this.usernameOrEmail,
 			password: this.password,
 			rememberMe: this.rememberMe

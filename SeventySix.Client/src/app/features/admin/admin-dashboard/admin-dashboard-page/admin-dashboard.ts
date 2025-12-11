@@ -1,8 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from "@angular/core";
 import { MatToolbarModule } from "@angular/material/toolbar";
-import { MatIconModule } from "@angular/material/icon";
-import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
 import { MatTabsModule } from "@angular/material/tabs";
 import { GrafanaDashboardEmbedComponent } from "../components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 import { ApiStatisticsTableComponent } from "../components/api-statistics-table/api-statistics-table.component";
@@ -10,6 +7,7 @@ import { PageHeaderComponent } from "@shared/components";
 import { environment } from "@environments/environment";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import { LoggerService } from "@infrastructure/services/logger.service";
+import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
 
 /**
  * Admin Dashboard page.
@@ -23,13 +21,11 @@ import { LoggerService } from "@infrastructure/services/logger.service";
 	selector: "app-admin-dashboard",
 	imports: [
 		MatToolbarModule,
-		MatIconModule,
-		MatCardModule,
-		MatButtonModule,
 		MatTabsModule,
 		GrafanaDashboardEmbedComponent,
 		ApiStatisticsTableComponent,
-		PageHeaderComponent
+		PageHeaderComponent,
+		...CARD_MATERIAL_MODULES
 	],
 	templateUrl: "./admin-dashboard.html",
 	styleUrl: "./admin-dashboard.scss",

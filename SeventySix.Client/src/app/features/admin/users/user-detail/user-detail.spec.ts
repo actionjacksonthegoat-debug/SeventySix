@@ -15,7 +15,7 @@ import {
 	createMockRouter,
 	createMockActivatedRoute
 } from "@testing";
-import { User, UpdateUserRequest } from "@admin/users/models";
+import { UserDto, UpdateUserRequest } from "@admin/users/models";
 import { UserDetailPage } from "./user-detail";
 
 describe("UserDetailPage", () =>
@@ -27,17 +27,21 @@ describe("UserDetailPage", () =>
 	let mockRouter: jasmine.SpyObj<Router>;
 	let mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
 
-	const mockUser: User = {
+	const mockUser: UserDto = {
 		id: 1,
 		username: "john_doe",
 		email: "john@example.com",
 		fullName: "John Doe",
 		createDate: "2024-01-01T00:00:00Z",
 		isActive: true,
+		needsPendingEmail: false,
 		createdBy: "admin",
 		modifyDate: "2024-01-02T00:00:00Z",
 		modifiedBy: "admin",
-		lastLoginAt: "2024-01-03T00:00:00Z"
+		lastLoginAt: "2024-01-03T00:00:00Z",
+		isDeleted: false,
+		deletedAt: null,
+		deletedBy: null
 	};
 
 	beforeEach(async () =>
@@ -116,7 +120,7 @@ describe("UserDetailPage", () =>
 	{
 		const error: Error = new Error("Not found");
 		mockUserService.getUserById.and.returnValue(
-			createMockQueryResult<User, Error>(undefined, {
+			createMockQueryResult<UserDto, Error>(undefined, {
 				isError: true,
 				error
 			})
@@ -172,9 +176,9 @@ describe("UserDetailPage", () =>
 
 	it("should update user on valid form submission", async () =>
 	{
-		const updatedUser: User = { ...mockUser, fullName: "Jane Doe" };
+		const updatedUser: UserDto = { ...mockUser, fullName: "Jane Doe" };
 		const localMockMutationResult = createMockMutationResult<
-			User,
+			UserDto,
 			Error,
 			{ id: string | number; user: UpdateUserRequest },
 			unknown
@@ -226,7 +230,7 @@ describe("UserDetailPage", () =>
 	{
 		const error: Error = new Error("Save failed");
 		const errorMutation = createMockMutationResult<
-			User,
+			UserDto,
 			Error,
 			{ id: string | number; user: UpdateUserRequest },
 			unknown
@@ -279,9 +283,9 @@ describe("UserDetailPage", () =>
 
 	it("should mark form as pristine after successful save", async () =>
 	{
-		const updatedUser: User = { ...mockUser, fullName: "Updated Name" };
+		const updatedUser: UserDto = { ...mockUser, fullName: "Updated Name" };
 		const localMockMutationResult = createMockMutationResult<
-			User,
+			UserDto,
 			Error,
 			{ id: string | number; user: UpdateUserRequest },
 			unknown
@@ -318,9 +322,9 @@ describe("UserDetailPage", () =>
 	{
 		it("should include all required fields in update request", async () =>
 		{
-			const updatedUser: User = { ...mockUser, fullName: "New Name" };
+			const updatedUser: UserDto = { ...mockUser, fullName: "New Name" };
 			const localMockMutationResult = createMockMutationResult<
-				User,
+				UserDto,
 				Error,
 				{ id: string | number; user: UpdateUserRequest },
 				unknown
@@ -367,7 +371,7 @@ describe("UserDetailPage", () =>
 				message: "Concurrency conflict"
 			};
 			const errorMutation = createMockMutationResult<
-				User,
+				UserDto,
 				any,
 				{ id: string | number; user: UpdateUserRequest },
 				unknown
@@ -423,7 +427,7 @@ describe("UserDetailPage", () =>
 		it("should not submit if user data not loaded", async () =>
 		{
 			mockUserService.getUserById.and.returnValue(
-				createMockQueryResult<User, Error>(undefined, {
+				createMockQueryResult<UserDto, Error>(undefined, {
 					isLoading: true
 				})
 			);
@@ -449,7 +453,7 @@ describe("UserDetailPage", () =>
 
 		it("should include all required fields in UpdateUserRequest", async () =>
 		{
-			const updatedUser: User = {
+			const updatedUser: UserDto = {
 				...mockUser,
 				username: "new_username",
 				email: "new@example.com",
@@ -457,7 +461,7 @@ describe("UserDetailPage", () =>
 				isActive: false
 			};
 			const localMockMutationResult = createMockMutationResult<
-				User,
+				UserDto,
 				Error,
 				{ id: string | number; user: UpdateUserRequest },
 				unknown

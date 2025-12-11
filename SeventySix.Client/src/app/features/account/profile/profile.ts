@@ -21,7 +21,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { RouterLink } from "@angular/router";
 import { AccountService } from "../services";
-import { Profile, UpdateProfileRequest } from "../models";
+import { UserProfileDto, UpdateProfileRequest } from "../models";
 import { getValidationError } from "@shared/utilities";
 
 @Component({
@@ -52,7 +52,7 @@ export class ProfilePage
 	readonly updateMutation: ReturnType<AccountService["updateProfile"]> =
 		this.accountService.updateProfile();
 
-	readonly profile: Signal<Profile | undefined> = computed(() =>
+	readonly profile: Signal<UserProfileDto | undefined> = computed(() =>
 		this.profileQuery.data());
 	readonly isLoading: Signal<boolean> = computed(() =>
 		this.profileQuery.isLoading());
@@ -76,7 +76,7 @@ export class ProfilePage
 	{
 		effect(() =>
 		{
-			const currentProfile: Profile | undefined = this.profile();
+			const currentProfile: UserProfileDto | undefined = this.profile();
 			if (currentProfile)
 			{
 				this.populateForm(currentProfile);
@@ -84,11 +84,11 @@ export class ProfilePage
 		});
 	}
 
-	private populateForm(profile: Profile): void
+	private populateForm(UserProfileDto: UserProfileDto): void
 	{
 		this.profileForm.patchValue({
-			email: profile.email,
-			fullName: profile.fullName || ""
+			email: UserProfileDto.email,
+			fullName: UserProfileDto.fullName || ""
 		});
 		this.profileForm.markAsPristine();
 	}

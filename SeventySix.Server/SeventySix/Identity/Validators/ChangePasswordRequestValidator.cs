@@ -21,7 +21,7 @@ public class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRe
 	/// </summary>
 	public ChangePasswordRequestValidator()
 	{
-		RuleFor(x => x.NewPassword)
+		RuleFor(request => request.NewPassword)
 			.ApplyPasswordRules();
 	}
 }

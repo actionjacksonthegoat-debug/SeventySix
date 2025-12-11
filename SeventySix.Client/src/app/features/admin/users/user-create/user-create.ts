@@ -16,15 +16,9 @@ import {
 	AsyncValidatorFn,
 	ValidationErrors
 } from "@angular/forms";
-import { MatStepperModule, MatStepper } from "@angular/material/stepper";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
-import { MatButtonModule } from "@angular/material/button";
-import { MatCardModule } from "@angular/material/card";
-import { MatIconModule } from "@angular/material/icon";
-import { MatCheckboxModule } from "@angular/material/checkbox";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatStepper } from "@angular/material/stepper";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
 import {
 	of,
 	Observable,
@@ -37,8 +31,9 @@ import {
 } from "rxjs";
 import { UserService } from "@admin/users/services";
 import { LoggerService } from "@infrastructure/services";
-import { User } from "@admin/users/models";
+import { UserDto } from "@admin/users/models";
 import { getValidationError } from "@shared/utilities";
+import { STEPPER_MATERIAL_MODULES } from "@shared/material-bundles";
 
 /**
  * User creation wizard component.
@@ -49,15 +44,8 @@ import { getValidationError } from "@shared/utilities";
 	selector: "app-user-create",
 	imports: [
 		ReactiveFormsModule,
-		MatStepperModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatButtonModule,
-		MatCardModule,
-		MatIconModule,
-		MatCheckboxModule,
-		MatProgressSpinnerModule,
-		MatSnackBarModule
+		MatSnackBarModule,
+		...STEPPER_MATERIAL_MODULES
 	],
 	templateUrl: "./user-create.html",
 	styleUrls: ["./user-create.scss"],
@@ -95,7 +83,7 @@ export class UserCreatePage
 			control: AbstractControl
 		): Observable<ValidationErrors | null> =>
 		{
-			if (!control.value)
+			if (isNullOrUndefined(control.value))
 			{
 				return of(null);
 			}
@@ -135,7 +123,7 @@ export class UserCreatePage
 	});
 
 	// Computed signal for complete form data
-	readonly formData: Signal<Partial<User>> = computed(() => ({
+	readonly formData: Signal<Partial<UserDto>> = computed(() => ({
 		...this.basicInfoForm.value,
 		...this.accountDetailsForm.value
 	}));
@@ -182,7 +170,7 @@ export class UserCreatePage
 			return;
 		}
 
-		const userData: Partial<User> = this.formData();
+		const userData: Partial<UserDto> = this.formData();
 
 		this.createMutation.mutate(userData, {
 			onSuccess: (createdUser) =>

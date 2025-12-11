@@ -1,7 +1,7 @@
-export type { Profile, UpdateProfileRequest } from "./profile.model";
-
-// Re-export shared identity models for convenience
+// Re-export generated DTOs
 export type {
-	AvailableRole,
-	CreatePermissionRequest
-} from "@infrastructure/models";
+	UserProfileDto,
+	UpdateProfileRequest,
+	AvailableRoleDto,
+	CreatePermissionRequestDto
+} from "@infrastructure/api";

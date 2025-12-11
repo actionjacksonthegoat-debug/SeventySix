@@ -1,8 +1,6 @@
 import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { RouterLink } from "@angular/router";
-import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
+import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
 
 /**
  * 404 Not Found error page.
@@ -11,7 +9,7 @@ import { MatIconModule } from "@angular/material/icon";
  */
 @Component({
 	selector: "app-not-found",
-	imports: [RouterLink, MatCardModule, MatButtonModule, MatIconModule],
+	imports: [RouterLink, ...CARD_MATERIAL_MODULES],
 	templateUrl: "./not-found.html",
 	styleUrls: ["./not-found.scss"],
 	changeDetection: ChangeDetectionStrategy.OnPush

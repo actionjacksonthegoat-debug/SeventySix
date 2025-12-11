@@ -6,7 +6,7 @@ import {
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 import { PermissionRequestRepository } from "../repositories";
-import { CreatePermissionRequest } from "../models";
+import { CreatePermissionRequestDto } from "../models";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 
 /**
@@ -48,7 +48,7 @@ export class PermissionRequestService
 	createRequest()
 	{
 		return injectMutation(() => ({
-			mutationFn: (request: CreatePermissionRequest) =>
+			mutationFn: (request: CreatePermissionRequestDto) =>
 				lastValueFrom(this.repository.create(request)),
 			onSuccess: () =>
 			{

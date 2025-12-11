@@ -3,7 +3,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ErrorQueueService } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
 import { DateService } from "./date.service";
-import { CreateLogRequest } from "@infrastructure/models";
+import { CreateLogRequest } from "@infrastructure/api";
 import {
 	extractRequestUrl,
 	extractRequestMethod,

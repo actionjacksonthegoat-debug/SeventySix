@@ -14,20 +14,14 @@ import {
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
-import { MatButtonModule } from "@angular/material/button";
-import { MatCardModule } from "@angular/material/card";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatIconModule } from "@angular/material/icon";
-import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatChipsModule } from "@angular/material/chips";
 import { UserService } from "@admin/users/services";
 import { LoggerService } from "@infrastructure/services";
-import { User, UpdateUserRequest } from "@admin/users/models";
+import { UserDto, UpdateUserRequest } from "@admin/users/models";
 import { getValidationError } from "@shared/utilities";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles";
 
 /**
  * User detail/edit page component.
@@ -40,16 +34,10 @@ import { getValidationError } from "@shared/utilities";
 	imports: [
 		ReactiveFormsModule,
 		DatePipe,
-		MatFormFieldModule,
-		MatInputModule,
-		MatButtonModule,
-		MatCardModule,
-		MatProgressSpinnerModule,
-		MatIconModule,
-		MatCheckboxModule,
 		MatSnackBarModule,
 		MatExpansionModule,
-		MatChipsModule
+		MatChipsModule,
+		...FORM_MATERIAL_MODULES
 	],
 	templateUrl: "./user-detail.html",
 	styleUrl: "./user-detail.scss",
@@ -88,7 +76,7 @@ export class UserDetailPage
 	readonly availableRoles: readonly string[] = ["Developer", "Admin"];
 
 	// Computed signals for derived state
-	readonly user: Signal<User | null> = computed(
+	readonly user: Signal<UserDto | null> = computed(
 		() => this.userQuery.data() ?? null
 	);
 	readonly isLoading: Signal<boolean> = computed(() =>
@@ -122,7 +110,7 @@ export class UserDetailPage
 	// Computed signals
 	readonly pageTitle: Signal<string> = computed(() =>
 	{
-		const currentUser: User | null = this.user();
+		const currentUser: UserDto | null = this.user();
 		return currentUser ? `Edit User: ${currentUser.username}` : "Edit User";
 	});
 
@@ -166,7 +154,7 @@ export class UserDetailPage
 		// Populate form when user data loads
 		effect(() =>
 		{
-			const currentUser: User | null = this.user();
+			const currentUser: UserDto | null = this.user();
 			if (currentUser && this.userForm.pristine)
 			{
 				this.populateForm(currentUser);
@@ -188,7 +176,7 @@ export class UserDetailPage
 	 * Populates the form with user data.
 	 * @param user The user data to populate
 	 */
-	private populateForm(user: User): void
+	private populateForm(user: UserDto): void
 	{
 		this.userForm.patchValue({
 			username: user.username,
@@ -242,7 +230,7 @@ export class UserDetailPage
 			return null;
 		}
 
-		const currentUser: User | null = this.user();
+		const currentUser: UserDto | null = this.user();
 		if (!currentUser)
 		{
 			this.showErrorSnackBar("User data not loaded");
@@ -288,7 +276,8 @@ export class UserDetailPage
 	 */
 	private handleMutationError(error: unknown): void
 	{
-		const errorWithStatus = error as { status?: number };
+		const errorWithStatus: { status?: number } =
+			error as { status?: number };
 
 		if (errorWithStatus.status === 409)
 		{

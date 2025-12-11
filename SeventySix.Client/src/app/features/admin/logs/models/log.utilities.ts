@@ -1,5 +1,48 @@
-import { LogLevel, parseLogLevel } from "./log.model";
 import { DateService } from "@infrastructure/services";
+
+// ============================================================
+// Log Level Enumeration
+// ============================================================
+
+/**
+ * Log level enumeration
+ */
+export enum LogLevel
+{
+	Verbose = 0,
+	Debug = 1,
+	Information = 2,
+	Warning = 3,
+	Error = 4,
+	Fatal = 5
+}
+
+/**
+ * Convert string log level from API to LogLevel enum
+ */
+export function parseLogLevel(logLevel: string): LogLevel
+{
+	switch (logLevel?.toLowerCase())
+	{
+		case "verbose":
+			return LogLevel.Verbose;
+		case "debug":
+			return LogLevel.Debug;
+		case "information":
+		case "info":
+			return LogLevel.Information;
+		case "warning":
+		case "warn":
+			return LogLevel.Warning;
+		case "error":
+			return LogLevel.Error;
+		case "fatal":
+		case "critical":
+			return LogLevel.Fatal;
+		default:
+			return LogLevel.Information;
+	}
+}
 
 // ============================================================
 // Time Constants (avoid magic numbers)

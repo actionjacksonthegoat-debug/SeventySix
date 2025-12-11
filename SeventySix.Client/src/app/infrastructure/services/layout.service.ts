@@ -11,6 +11,7 @@ import {
 	BreakpointState
 } from "@angular/cdk/layout";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
 
 /**
  * Service for managing application layout state
@@ -200,7 +201,7 @@ export class LayoutService
 		);
 
 		// If no session value, this is a fresh load - start open
-		if (sessionValue === null)
+		if (isNullOrUndefined(sessionValue))
 		{
 			return true;
 		}

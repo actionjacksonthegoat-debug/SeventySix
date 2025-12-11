@@ -8,7 +8,7 @@ import { ErrorQueueService } from "./error-queue.service";
 import { LogLevel } from "./logger.service";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { environment } from "@environments/environment";
-import { CreateLogRequest } from "@infrastructure/models";
+import { CreateLogRequest } from "@infrastructure/api";
 import { DateService } from "./date.service";
 
 describe("ErrorQueueService (Zoneless)", () =>

@@ -21,13 +21,13 @@ public class LoginRequestValidator : AbstractValidator<LoginRequest>
 	/// </summary>
 	public LoginRequestValidator()
 	{
-		RuleFor(x => x.UsernameOrEmail)
+		RuleFor(request => request.UsernameOrEmail)
 			.NotEmpty()
 			.WithMessage("Username or email is required")
 			.MaximumLength(255)
 			.WithMessage("Username or email must not exceed 255 characters");
 
-		RuleFor(x => x.Password)
+		RuleFor(request => request.Password)
 			.NotEmpty()
 			.WithMessage("Password is required")
 			.MaximumLength(100)

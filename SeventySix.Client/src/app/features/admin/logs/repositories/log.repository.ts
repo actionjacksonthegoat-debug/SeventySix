@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { HttpContext, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
-import { PagedResponse } from "@infrastructure/models";
+import { PagedResultOfLogDto } from "@infrastructure/api";
 import { buildHttpParams } from "@infrastructure/utils/http-params.utility";
 import { LogDto, LogQueryRequest } from "@admin/logs/models";
 
@@ -15,22 +15,13 @@ export class LogRepository
 	getAllPaged(
 		filter?: LogQueryRequest,
 		context?: HttpContext
-	): Observable<PagedResponse<LogDto>>
+	): Observable<PagedResultOfLogDto>
 	{
 		const params: HttpParams | undefined = filter
-			? buildHttpParams({
-					logLevel: filter.logLevel,
-					startDate: filter.startDate,
-					endDate: filter.endDate,
-					page: filter.page,
-					pageSize: filter.pageSize,
-					searchTerm: filter.searchTerm,
-					sortBy: filter.sortBy,
-					sortDescending: filter.sortDescending
-				})
+			? buildHttpParams(filter)
 			: undefined;
 
-		return this.apiService.get<PagedResponse<LogDto>>(
+		return this.apiService.get<PagedResultOfLogDto>(
 			this.endpoint,
 			params,
 			context

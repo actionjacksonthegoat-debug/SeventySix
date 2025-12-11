@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { catchError, of } from "rxjs";
 import { environment } from "@environments/environment";
-import { CreateLogRequest } from "@infrastructure/models";
+import { CreateLogRequest } from "@infrastructure/api";
 import { DateService } from "./date.service";
 
 /**

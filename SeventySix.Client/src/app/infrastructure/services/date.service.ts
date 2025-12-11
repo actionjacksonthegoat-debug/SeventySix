@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
 import {
 	format,
 	formatDistanceToNow,
@@ -178,7 +179,7 @@ export class DateService
 	 */
 	isValid(date: Date | string | null | undefined): boolean
 	{
-		if (!date) return false;
+		if (isNullOrUndefined(date)) return false;
 		const parsedDate: Date =
 			typeof date === "string" ? this.parseUTC(date) : date;
 		return isValidDate(parsedDate);

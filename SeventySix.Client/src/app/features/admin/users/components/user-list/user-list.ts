@@ -10,7 +10,7 @@ import { Router } from "@angular/router";
 import { UserService } from "@admin/users/services";
 import { DialogService } from "@infrastructure/services/dialog.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
-import { User } from "@admin/users/models";
+import { UserDto } from "@admin/users/models";
 import { DataTableComponent } from "@shared/components";
 import type {
 	TableColumn,
@@ -56,8 +56,8 @@ export class UserList
 		UserService["restoreUser"]
 	> = this.userService.restoreUser();
 
-	readonly data: Signal<User[]> = computed(
-		() => this.usersQuery.data()?.items ?? []
+	readonly data: Signal<UserDto[]> = computed(
+		() => (this.usersQuery.data()?.items as UserDto[]) ?? []
 	);
 	readonly isLoading: Signal<boolean> = computed(() =>
 		this.usersQuery.isLoading());
@@ -75,7 +75,7 @@ export class UserList
 		() => this.userService.getCurrentFilter().pageSize ?? 50
 	);
 
-	readonly columns: TableColumn<User>[] = [
+	readonly columns: TableColumn<UserDto>[] = [
 		{
 			key: "id",
 			label: "ID",
@@ -110,7 +110,7 @@ export class UserList
 			type: "badge",
 			sortable: true,
 			visible: true,
-			formatter: (value: unknown, row?: User): string =>
+			formatter: (value: unknown, row?: UserDto): string =>
 			{
 				if (row?.isDeleted)
 				{
@@ -120,7 +120,7 @@ export class UserList
 			},
 			badgeColor: (
 				value: unknown,
-				row?: User
+				row?: UserDto
 			): "primary" | "accent" | "warn" =>
 			{
 				if (row?.isDeleted)
@@ -152,7 +152,7 @@ export class UserList
 		}
 	];
 
-	readonly quickFilters: QuickFilter<User>[] = [
+	readonly quickFilters: QuickFilter<UserDto>[] = [
 		{
 			key: "all",
 			label: "All Users",
@@ -175,7 +175,7 @@ export class UserList
 		}
 	];
 
-	readonly rowActions: RowAction<User>[] = [
+	readonly rowActions: RowAction<UserDto>[] = [
 		{
 			key: "view",
 			label: "View Details",
@@ -185,28 +185,28 @@ export class UserList
 			key: "edit",
 			label: "Edit",
 			icon: "edit",
-			showIf: (user: User): boolean => !user.isDeleted
+			showIf: (user: UserDto): boolean => !user.isDeleted
 		},
 		{
 			key: "resetPassword",
 			label: "Reset Password",
 			icon: "lock_reset",
 			color: "accent",
-			showIf: (user: User): boolean => !user.isDeleted
+			showIf: (user: UserDto): boolean => !user.isDeleted
 		},
 		{
 			key: "restore",
 			label: "Restore",
 			icon: "restore",
 			color: "primary",
-			showIf: (user: User): boolean => user.isDeleted === true
+			showIf: (user: UserDto): boolean => user.isDeleted === true
 		},
 		{
 			key: "deactivate",
 			label: "Deactivate",
 			icon: "person_off",
 			color: "warn",
-			showIf: (user: User): boolean => !user.isDeleted
+			showIf: (user: UserDto): boolean => !user.isDeleted
 		}
 	];
 
@@ -272,7 +272,7 @@ export class UserList
 		});
 	}
 
-	onRowAction(event: RowActionEvent<User>): void
+	onRowAction(event: RowActionEvent<UserDto>): void
 	{
 		switch (event.action)
 		{
@@ -308,7 +308,7 @@ export class UserList
 	 * Handles row click to navigate to user details
 	 * @param user - The clicked user row
 	 */
-	onRowClick(user: User): void
+	onRowClick(user: UserDto): void
 	{
 		this.viewUser(user.id);
 	}
@@ -335,7 +335,7 @@ export class UserList
 	 * Initiates password reset for a user
 	 * @param user - The user to reset password for
 	 */
-	private resetUserPassword(user: User): void
+	private resetUserPassword(user: UserDto): void
 	{
 		this.dialogService
 			.confirm({
@@ -371,7 +371,7 @@ export class UserList
 	 * Deactivates a single user (soft delete)
 	 * @param user - The user to deactivate
 	 */
-	private deactivateUser(user: User): void
+	private deactivateUser(user: UserDto): void
 	{
 		this.dialogService
 			.confirmDeactivate("user")
@@ -415,7 +415,7 @@ export class UserList
 	 * Restores a soft-deleted user
 	 * @param user - The user to restore
 	 */
-	private handleRestoreUser(user: User): void
+	private handleRestoreUser(user: UserDto): void
 	{
 		this.dialogService
 			.confirm({

@@ -27,7 +27,6 @@ import { LogQueryRequest } from "@admin/logs/models";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
 import { BaseFilterService } from "@infrastructure/services/base-filter.service";
-import { FORCE_REFRESH } from "@infrastructure/interceptors/cache-bypass.interceptor";
 
 /**
  * Service for log management business logic
@@ -42,10 +41,6 @@ export class LogManagementService extends BaseFilterService<LogQueryRequest>
 	private readonly queryClient: QueryClient = inject(QueryClient);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("logs");
-
-	/** Signal to trigger cache bypass - toggling this value forces fresh data fetch */
-	private readonly forceRefreshTrigger: WritableSignal<boolean> =
-		signal<boolean>(false);
 
 	// Selected log IDs using signals
 	readonly selectedIds: WritableSignal<Set<number>> = signal<Set<number>>(
@@ -62,7 +57,7 @@ export class LogManagementService extends BaseFilterService<LogQueryRequest>
 	constructor()
 	{
 		// Initialize with 24-hour date range as default
-		const dateService = new DateService();
+		const dateService: DateService = new DateService();
 		const now: Date = dateService.parseUTC(dateService.now());
 		const startDate: Date = dateService.addHours(now, -24);
 		super({
@@ -87,19 +82,12 @@ export class LogManagementService extends BaseFilterService<LogQueryRequest>
 				.paged(this.getCurrentFilter())
 				.concat(this.forceRefreshTrigger()),
 			queryFn: () =>
-			{
-				const context: HttpContext | undefined =
-					this.forceRefreshTrigger()
-						? new HttpContext().set(FORCE_REFRESH, true)
-						: undefined;
-
-				return lastValueFrom(
+				lastValueFrom(
 					this.logRepository.getAllPaged(
 						this.getCurrentFilter(),
-						context
+						this.getForceRefreshContext()
 					)
-				);
-			},
+				),
 			...this.queryConfig
 		}));
 	}
@@ -156,12 +144,7 @@ export class LogManagementService extends BaseFilterService<LogQueryRequest>
 	 */
 	override clearFilters(): void
 	{
-		this.filter.set({
-			page: 1,
-			pageSize: 50,
-			sortBy: "Id",
-			sortDescending: true
-		});
+		this.resetFilter();
 		this.clearSelection();
 	}
 
@@ -209,14 +192,5 @@ export class LogManagementService extends BaseFilterService<LogQueryRequest>
 	getSelectedIds(): Set<number>
 	{
 		return this.selectedIds();
-	}
-
-	/**
-	 * Force refresh all active log queries
-	 * Bypasses cache and fetches fresh data from server
-	 */
-	async forceRefresh(): Promise<void>
-	{
-		this.forceRefreshTrigger.update((value: boolean) => !value);
 	}
 }

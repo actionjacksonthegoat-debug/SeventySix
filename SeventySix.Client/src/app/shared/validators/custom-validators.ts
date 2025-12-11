@@ -1,5 +1,6 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
 import { DateService } from "@infrastructure/services";
+import { isNullOrUndefined, isNullOrWhitespace } from "@infrastructure/utils/null-check.utility";
 
 /**
  * Validator for date ranges.
@@ -9,7 +10,7 @@ export function dateRangeValidator(min?: Date, max?: Date): ValidatorFn
 {
 	return (control: AbstractControl): ValidationErrors | null =>
 	{
-		if (!control.value)
+		if (isNullOrUndefined(control.value))
 		{
 			return null;
 		}
@@ -41,53 +42,13 @@ export function dateRangeValidator(min?: Date, max?: Date): ValidatorFn
 }
 
 /**
- * Validator for temperature ranges.
- * Ensures temperature is within acceptable range.
- */
-export function temperatureRangeValidator(min = -100, max = 100): ValidatorFn
-{
-	return (control: AbstractControl): ValidationErrors | null =>
-	{
-		if (
-			control.value === null
-			|| control.value === undefined
-			|| control.value === ""
-		)
-		{
-			return null;
-		}
-
-		const value: number = Number(control.value);
-
-		if (isNaN(value))
-		{
-			return { temperature: { message: "Temperature must be a number" } };
-		}
-
-		if (value < min || value > max)
-		{
-			return {
-				temperatureRange: {
-					min,
-					max,
-					actual: value,
-					message: `Temperature must be between ${min}°C and ${max}°C`
-				}
-			};
-		}
-
-		return null;
-	};
-}
-
-/**
  * Validator for string length constraints.
  */
 export function stringLengthValidator(min?: number, max?: number): ValidatorFn
 {
 	return (control: AbstractControl): ValidationErrors | null =>
 	{
-		if (!control.value)
+		if (isNullOrUndefined(control.value))
 		{
 			return null;
 		}
@@ -116,7 +77,7 @@ export function futureDateValidator(dateService: DateService): ValidatorFn
 {
 	return (control: AbstractControl): ValidationErrors | null =>
 	{
-		if (!control.value)
+		if (isNullOrUndefined(control.value))
 		{
 			return null;
 		}
@@ -146,7 +107,7 @@ export function requiredIfValidator(dependentFieldName: string): ValidatorFn
 {
 	return (control: AbstractControl): ValidationErrors | null =>
 	{
-		if (!control.parent)
+		if (isNullOrUndefined(control.parent))
 		{
 			return null;
 		}
@@ -154,7 +115,7 @@ export function requiredIfValidator(dependentFieldName: string): ValidatorFn
 		const dependentControl: AbstractControl | null =
 			control.parent.get(dependentFieldName);
 
-		if (dependentControl?.value && !control.value)
+		if (dependentControl?.value && isNullOrWhitespace(control.value))
 		{
 			return {
 				requiredIf: {
@@ -174,7 +135,7 @@ export function matchFieldValidator(matchFieldName: string): ValidatorFn
 {
 	return (control: AbstractControl): ValidationErrors | null =>
 	{
-		if (!control.parent)
+		if (isNullOrUndefined(control.parent))
 		{
 			return null;
 		}

@@ -4,7 +4,7 @@
  * Eliminates duplication across 7+ test files
  */
 
-import { User } from "@admin/users/models";
+import { UserDto } from "@admin/users/models";
 
 /**
  * User fixture factory
@@ -16,34 +16,42 @@ export class UserFixtures
 	 * Standard test user - John Doe
 	 * Active user with admin privileges
 	 */
-	static readonly JOHN_DOE: User = {
+	static readonly JOHN_DOE: UserDto = {
 		id: 1,
 		username: "john_doe",
 		email: "john@example.com",
 		fullName: "John Doe",
 		createDate: "2024-01-01T00:00:00Z",
 		isActive: true,
+		needsPendingEmail: false,
 		createdBy: "admin",
 		modifyDate: "2024-01-02T00:00:00Z",
 		modifiedBy: "admin",
-		lastLoginAt: "2024-01-03T00:00:00Z"
+		lastLoginAt: "2024-01-03T00:00:00Z",
+		isDeleted: false,
+		deletedAt: null,
+		deletedBy: null
 	};
 
 	/**
 	 * Standard test user - Jane Smith
 	 * Inactive user for testing filter states
 	 */
-	static readonly JANE_SMITH: User = {
+	static readonly JANE_SMITH: UserDto = {
 		id: 2,
 		username: "jane_smith",
 		email: "jane@example.com",
 		fullName: "Jane Smith",
 		createDate: "2024-01-02T00:00:00Z",
 		isActive: false,
+		needsPendingEmail: false,
 		createdBy: "system",
 		modifyDate: "2024-01-03T00:00:00Z",
 		modifiedBy: "system",
-		lastLoginAt: "2024-01-04T00:00:00Z"
+		lastLoginAt: "2024-01-04T00:00:00Z",
+		isDeleted: false,
+		deletedAt: null,
+		deletedBy: null
 	};
 
 	/**
@@ -57,7 +65,7 @@ export class UserFixtures
 	 * const inactiveUser = UserFixtures.createUser({ isActive: false });
 	 * const adminUser = UserFixtures.createUser({ createdBy: 'admin' });
 	 */
-	static createUser(overrides?: Partial<User>): User
+	static createUser(overrides?: Partial<UserDto>): UserDto
 	{
 		return { ...UserFixtures.JOHN_DOE, ...overrides };
 	}
@@ -72,7 +80,7 @@ export class UserFixtures
 	 * @example
 	 * const users = UserFixtures.createUsers(50); // For pagination tests
 	 */
-	static createUsers(count: number): User[]
+	static createUsers(count: number): UserDto[]
 	{
 		return Array.from({ length: count }, (_, i) =>
 			UserFixtures.createUser({
@@ -89,7 +97,7 @@ export class UserFixtures
 	 *
 	 * @returns Array containing JOHN_DOE and JANE_SMITH
 	 */
-	static getAll(): User[]
+	static getAll(): UserDto[]
 	{
 		return [UserFixtures.JOHN_DOE, UserFixtures.JANE_SMITH];
 	}

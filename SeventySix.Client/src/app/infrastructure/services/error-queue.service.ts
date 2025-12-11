@@ -4,7 +4,7 @@ import { catchError, of, interval } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { StorageService } from "./storage.service";
 import { DateService } from "./date.service";
-import { CreateLogRequest } from "@infrastructure/models";
+import { CreateLogRequest } from "@infrastructure/api";
 import { environment } from "@environments/environment";
 
 /**

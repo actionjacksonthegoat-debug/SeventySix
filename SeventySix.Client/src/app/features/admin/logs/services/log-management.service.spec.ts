@@ -4,7 +4,7 @@ import { QueryClient } from "@tanstack/angular-query-experimental";
 import { LogManagementService } from "./log-management.service";
 import { LogRepository } from "@admin/logs/repositories";
 import { LogDto, LogLevel } from "@admin/logs/models";
-import { PagedResponse } from "@infrastructure/models";
+import { PagedResultOfLogDto } from "@infrastructure/api";
 import { setupServiceTest, createMockLogRepository } from "@testing";
 
 describe("LogManagementService", () =>
@@ -14,7 +14,7 @@ describe("LogManagementService", () =>
 
 	const mockLog: LogDto = {
 		id: 1,
-		createDate: new Date(),
+		createDate: "2024-01-01T12:00:00Z",
 		logLevel: "Information",
 		message: "Test log",
 		exceptionMessage: null,
@@ -33,8 +33,8 @@ describe("LogManagementService", () =>
 		parentSpanId: null
 	};
 
-	const mockPagedResponse: PagedResponse<LogDto> = {
-		items: [mockLog],
+	const mockPagedResponse: PagedResultOfLogDto = {
+		items: [mockLog as any],
 		totalCount: 1,
 		page: 1,
 		pageSize: 50,
@@ -130,7 +130,9 @@ describe("LogManagementService", () =>
 
 			const filter = service.getCurrentFilter();
 			expect(filter.logLevel).toBeUndefined();
-			expect(filter.startDate).toBeUndefined();
+			// startDate/endDate are reset to initial values (last 24 hours), not undefined
+			expect(filter.startDate).toBeDefined();
+			expect(filter.endDate).toBeDefined();
 			expect(filter.page).toBe(1);
 			expect(filter.pageSize).toBe(50);
 			expect(service.selectedIds().size).toBe(0);

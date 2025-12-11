@@ -4,7 +4,11 @@ import { HeaderComponent } from "./header.component";
 import { ThemeService } from "@infrastructure/services/theme.service";
 import { LayoutService } from "@infrastructure/services/layout.service";
 import { AuthService } from "@infrastructure/services/auth.service";
-import { createMockThemeService, createMockAuthService } from "@testing/mocks";
+import {
+	createMockThemeService,
+	createMockAuthService,
+	createMockUserProfile
+} from "@testing/mocks";
 import { ComponentTestBed } from "@testing";
 
 describe("HeaderComponent", () =>
@@ -101,13 +105,14 @@ describe("HeaderComponent", () =>
 
 		it("should show user menu when authenticated", () =>
 		{
-			mockAuthService.setUser({
-				id: 1,
-				username: "testuser",
-				email: "test@example.com",
-				roles: [],
-				fullName: "John Doe"
-			});
+			mockAuthService.setUser(
+				createMockUserProfile({
+					id: 1,
+					username: "testuser",
+					email: "test@example.com",
+					fullName: "John Doe"
+				})
+			);
 			fixture.detectChanges();
 
 			const compiled: HTMLElement = fixture.nativeElement;
@@ -119,13 +124,11 @@ describe("HeaderComponent", () =>
 
 		it("should display user fullName in menu", async () =>
 		{
-			mockAuthService.setUser({
-				id: 1,
-				username: "testuser",
-				email: "test@example.com",
-				roles: [],
-				fullName: "John Doe"
-			});
+			mockAuthService.setUser(
+				createMockUserProfile({
+					fullName: "John Doe"
+				})
+			);
 			fixture.detectChanges();
 
 			// Open the user menu
@@ -147,13 +150,12 @@ describe("HeaderComponent", () =>
 
 		it("should display username when fullName is null", async () =>
 		{
-			mockAuthService.setUser({
-				id: 1,
-				username: "testuser",
-				email: "test@example.com",
-				roles: [],
-				fullName: null
-			});
+			mockAuthService.setUser(
+				createMockUserProfile({
+					username: "testuser",
+					fullName: null
+				})
+			);
 			fixture.detectChanges();
 
 			// Open the user menu
@@ -175,13 +177,11 @@ describe("HeaderComponent", () =>
 
 		it("should call logout when logout clicked", () =>
 		{
-			mockAuthService.setUser({
-				id: 1,
-				username: "testuser",
-				email: "test@example.com",
-				roles: [],
-				fullName: "John Doe"
-			});
+			mockAuthService.setUser(
+				createMockUserProfile({
+					fullName: "John Doe"
+				})
+			);
 			fixture.detectChanges();
 
 			component.logout();

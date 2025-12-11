@@ -589,7 +589,9 @@ test('all files should have less than 800 lines', async () => {
 
 	// Exceptions with documented justification
 	// NOTE: Test files are NOT automatically excepted - apply 80/20 and DRY
-	const allowedExceptions = [];
+	const allowedExceptions = [
+		'generated-api.ts' // Auto-generated from OpenAPI spec
+	];
 
 	for (const file of sourceFiles) {
 		const fileName = path.basename(file);

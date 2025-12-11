@@ -1,11 +1,4 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideHttpClient } from "@angular/common/http";
-import { provideHttpClientTesting } from "@angular/common/http/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
-import {
-	QueryClient,
-	provideTanStackQuery
-} from "@tanstack/angular-query-experimental";
+import { ComponentFixture } from "@angular/core/testing";
 import { LogList } from "./log-list";
 import { LogManagementService } from "@admin/logs/services";
 import {
@@ -13,7 +6,8 @@ import {
 	createMockMutationResult
 } from "@testing/tanstack-query-helpers";
 import { LogDto } from "@admin/logs/models";
-import { PagedResponse } from "@infrastructure/models";
+import { PagedResultOfLogDto } from "@infrastructure/api";
+import { ComponentTestBed } from "@testing/test-bed-builders";
 
 describe("LogList", () =>
 {
@@ -24,7 +18,7 @@ describe("LogList", () =>
 	beforeEach(async () =>
 	{
 		// Create properly typed mock query/mutation results
-		const mockPagedResponse: PagedResponse<LogDto> = {
+		const mockPagedResponse: PagedResultOfLogDto = {
 			items: [],
 			totalCount: 0,
 			page: 1,
@@ -35,7 +29,7 @@ describe("LogList", () =>
 		};
 
 		const mockQuery =
-			createMockQueryResult<PagedResponse<LogDto>>(mockPagedResponse);
+			createMockQueryResult<PagedResultOfLogDto>(mockPagedResponse);
 		const mockDeleteMutation = createMockMutationResult<
 			void,
 			Error,
@@ -63,18 +57,15 @@ describe("LogList", () =>
 		mockLogService.deleteLog.and.returnValue(mockDeleteMutation);
 		mockLogService.deleteLogs.and.returnValue(mockBatchDeleteMutation);
 
-		await TestBed.configureTestingModule({
-			imports: [LogList],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideHttpClient(),
-				provideHttpClientTesting(),
-				provideTanStackQuery(new QueryClient()),
-				{ provide: LogManagementService, useValue: mockLogService }
-			]
-		}).compileComponents();
+		fixture =
+			await new ComponentTestBed<LogList>()
+				.withAdminDefaults()
+				.withProvider({
+					provide: LogManagementService,
+					useValue: mockLogService
+				})
+				.build(LogList);
 
-		fixture = TestBed.createComponent(LogList);
 		component = fixture.componentInstance;
 	});
 

@@ -2,9 +2,9 @@ import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
 import {
-	PermissionRequest,
-	AvailableRole,
-	CreatePermissionRequest
+	PermissionRequestDto,
+	AvailableRoleDto,
+	CreatePermissionRequestDto
 } from "../models";
 
 /**
@@ -18,25 +18,25 @@ export class PermissionRequestRepository
 	private readonly endpoint: string = "users";
 
 	/** Gets all permission requests (admin only). */
-	getAll(): Observable<PermissionRequest[]>
+	getAll(): Observable<PermissionRequestDto[]>
 	{
-		return this.apiService.get<PermissionRequest[]>(
+		return this.apiService.get<PermissionRequestDto[]>(
 			`${this.endpoint}/permission-requests`
 		);
 	}
 
 	/** Gets available roles for current user. */
-	getAvailableRoles(): Observable<AvailableRole[]>
+	getAvailableRoles(): Observable<AvailableRoleDto[]>
 	{
-		return this.apiService.get<AvailableRole[]>(
+		return this.apiService.get<AvailableRoleDto[]>(
 			`${this.endpoint}/me/available-roles`
 		);
 	}
 
 	/** Creates permission requests. */
-	create(request: CreatePermissionRequest): Observable<void>
+	create(request: CreatePermissionRequestDto): Observable<void>
 	{
-		return this.apiService.post<void, CreatePermissionRequest>(
+		return this.apiService.post<void, CreatePermissionRequestDto>(
 			`${this.endpoint}/me/permission-requests`,
 			request
 		);

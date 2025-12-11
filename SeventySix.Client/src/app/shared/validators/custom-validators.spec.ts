@@ -4,7 +4,6 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { DateService } from "@infrastructure/services";
 import {
 	dateRangeValidator,
-	temperatureRangeValidator,
 	stringLengthValidator,
 	futureDateValidator,
 	requiredIfValidator,
@@ -47,44 +46,6 @@ describe("Custom Validators", () =>
 		it("should return null for empty value", () =>
 		{
 			const validator = dateRangeValidator();
-			const control = new FormControl(null);
-
-			expect(validator(control)).toBeNull();
-		});
-	});
-
-	describe("temperatureRangeValidator", () =>
-	{
-		it("should return null for valid temperature", () =>
-		{
-			const validator = temperatureRangeValidator(-100, 100);
-			const control = new FormControl(25);
-
-			expect(validator(control)).toBeNull();
-		});
-
-		it("should return error for temperature below minimum", () =>
-		{
-			const validator = temperatureRangeValidator(-100, 100);
-			const control = new FormControl(-150);
-
-			const result = validator(control);
-			expect(result).not.toBeNull();
-			expect(result?.["temperatureRange"]).toBeDefined();
-		});
-
-		it("should return error for non-numeric value", () =>
-		{
-			const validator = temperatureRangeValidator();
-			const control = new FormControl("invalid");
-
-			const result = validator(control);
-			expect(result).not.toBeNull();
-		});
-
-		it("should return null for empty value", () =>
-		{
-			const validator = temperatureRangeValidator();
 			const control = new FormControl(null);
 
 			expect(validator(control)).toBeNull();

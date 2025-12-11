@@ -1,6 +1,14 @@
 import { HttpParams } from "@angular/common/http";
 
-export function buildHttpParams(params: Record<string, unknown>): HttpParams
+/**
+ * Builds HttpParams from an object
+ * Filters out undefined and null values
+ * Converts Date objects to ISO strings
+ *
+ * @param params - Object with parameters to convert
+ * @returns HttpParams instance
+ */
+export function buildHttpParams(params: Record<string, unknown> | object): HttpParams
 {
 	let httpParams: HttpParams = new HttpParams();
 

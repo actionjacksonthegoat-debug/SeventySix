@@ -25,8 +25,6 @@ public class PasswordValidationExtensionsTests
 {
 	private readonly TestPasswordValidator Validator = new();
 
-	#region Valid Password Tests
-
 	[Fact]
 	public void Password_ShouldNotHaveError_WhenValid()
 	{
@@ -75,10 +73,6 @@ public class PasswordValidationExtensionsTests
 		result.ShouldNotHaveValidationErrorFor(x => x.Password);
 	}
 
-	#endregion
-
-	#region Empty/Null Tests
-
 	[Fact]
 	public void Password_ShouldHaveError_WhenEmpty()
 	{
@@ -110,10 +104,6 @@ public class PasswordValidationExtensionsTests
 		result.ShouldHaveValidationErrorFor(x => x.Password)
 			.WithErrorMessage("Password is required");
 	}
-
-	#endregion
-
-	#region Length Tests
 
 	[Fact]
 	public void Password_ShouldHaveError_WhenTooShort()
@@ -149,10 +139,6 @@ public class PasswordValidationExtensionsTests
 		result.ShouldHaveValidationErrorFor(x => x.Password)
 			.WithErrorMessage("Password must not exceed 100 characters");
 	}
-
-	#endregion
-
-	#region Complexity Tests
 
 	[Fact]
 	public void Password_ShouldHaveError_WhenNoUppercase()
@@ -202,10 +188,6 @@ public class PasswordValidationExtensionsTests
 			.WithErrorMessage("Password must contain at least one digit");
 	}
 
-	#endregion
-
-	#region Test Helpers
-
 	/// <summary>
 	/// Test request record for password validation.
 	/// </summary>
@@ -223,6 +205,4 @@ public class PasswordValidationExtensionsTests
 				.ApplyPasswordRules();
 		}
 	}
-
-	#endregion
 }

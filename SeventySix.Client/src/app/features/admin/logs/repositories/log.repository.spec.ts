@@ -2,7 +2,7 @@ import { TestBed } from "@angular/core/testing";
 import { LogRepository } from "./log.repository";
 import { ApiService } from "@infrastructure/api-services/api.service";
 import { LogDto, LogQueryRequest, LogLevel } from "@admin/logs/models";
-import { PagedResponse } from "@infrastructure/models";
+import { PagedResultOfLogDto } from "@infrastructure/api";
 import { of } from "rxjs";
 import { HttpParams } from "@angular/common/http";
 import { setupRepositoryTest, createMockApiService } from "@testing";
@@ -14,7 +14,7 @@ describe("LogRepository", () =>
 
 	const mockLog: LogDto = {
 		id: 1,
-		createDate: new Date("2024-01-01T00:00:00Z"),
+		createDate: "2024-01-01T00:00:00Z",
 		logLevel: "Information",
 		message: "Test log message",
 		exceptionMessage: null,
@@ -33,8 +33,8 @@ describe("LogRepository", () =>
 		parentSpanId: null
 	};
 
-	const mockPagedResponse: PagedResponse<LogDto> = {
-		items: [mockLog],
+	const mockPagedResponse: PagedResultOfLogDto = {
+		items: [mockLog as any],
 		totalCount: 1,
 		page: 1,
 		pageSize: 10,

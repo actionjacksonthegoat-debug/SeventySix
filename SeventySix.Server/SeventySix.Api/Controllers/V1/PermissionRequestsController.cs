@@ -133,7 +133,12 @@ public class PermissionRequestsController(
 				id,
 				cancellationToken);
 
-		return result ? NoContent() : NotFound();
+		if (!result)
+		{
+			return NotFound();
+		}
+
+		return NoContent();
 	}
 
 	/// <summary>Rejects a permission request.</summary>
@@ -159,7 +164,12 @@ public class PermissionRequestsController(
 				id,
 				cancellationToken);
 
-		return result ? NoContent() : NotFound();
+		if (!result)
+		{
+			return NotFound();
+		}
+
+		return NoContent();
 	}
 
 	/// <summary>Bulk approves permission requests.</summary>

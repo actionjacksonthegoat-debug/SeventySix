@@ -58,7 +58,10 @@ describe("AccountService", () =>
 		const mutation = TestBed.runInInjectionContext(() =>
 			service.updateProfile()
 		);
-		await mutation.mutateAsync({ email: "test@example.com" });
+		await mutation.mutateAsync({
+			email: "test@example.com",
+			fullName: "Test User"
+		});
 
 		expect(invalidateSpy).toHaveBeenCalledWith({
 			queryKey: QueryKeys.account.all

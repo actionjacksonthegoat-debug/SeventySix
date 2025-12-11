@@ -67,10 +67,7 @@ public class UsersController(
 		[FromBody] UpdateProfileRequest request,
 		CancellationToken cancellationToken)
 	{
-		int? userId =
-			User.GetUserId();
-
-		if (userId == null)
+		if (User.GetUserId() is not int userId)
 		{
 			return Unauthorized();
 		}
@@ -78,11 +75,11 @@ public class UsersController(
 		UserProfileDto? profile =
 			await messageBus.InvokeAsync<UserProfileDto?>(
 				new UpdateProfileCommand(
-					userId.Value,
+					userId,
 					request),
 				cancellationToken);
 
-		return profile == null
+		return profile is null
 			? NotFound()
 			: Ok(profile);
 	}
@@ -149,7 +146,12 @@ public class UsersController(
 				new GetUserByIdQuery(id),
 				cancellationToken);
 
-		return user is null ? (ActionResult<UserDto>)NotFound() : (ActionResult<UserDto>)Ok(user);
+		if (user is null)
+		{
+			return NotFound();
+		}
+
+		return Ok(user);
 	}
 
 	/// <summary>
@@ -214,7 +216,7 @@ public class UsersController(
 					new GetUserByEmailQuery(request.Email),
 					cancellationToken);
 
-			if (user == null)
+			if (user is null)
 			{
 				return StatusCode(
 					StatusCodes.Status500InternalServerError,
@@ -385,7 +387,12 @@ public class UsersController(
 				new GetUserByUsernameQuery(username),
 				cancellationToken);
 
-		return user is null ? NotFound() : Ok(user);
+		if (user is null)
+		{
+			return NotFound();
+		}
+
+		return Ok(user);
 	}
 
 	/// <summary>
@@ -502,7 +509,7 @@ public class UsersController(
 				new GetUserByIdQuery(id),
 				cancellationToken);
 
-		if (user == null)
+		if (user is null)
 		{
 			return NotFound();
 		}

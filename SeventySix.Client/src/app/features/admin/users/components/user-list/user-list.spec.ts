@@ -1,11 +1,5 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
-import { provideHttpClient } from "@angular/common/http";
-import { provideHttpClientTesting } from "@angular/common/http/testing";
-import {
-	QueryClient,
-	provideTanStackQuery
-} from "@tanstack/angular-query-experimental";
+import { ComponentFixture } from "@angular/core/testing";
+import { DatePipe } from "@angular/common";
 import { UserList } from "./user-list";
 import {
 	UserService,
@@ -13,6 +7,7 @@ import {
 	UserPreferencesService
 } from "@admin/users/services";
 import { UserRepository } from "@admin/users/repositories";
+import { ComponentTestBed } from "@testing/test-bed-builders";
 
 describe("UserList", () =>
 {
@@ -21,22 +16,16 @@ describe("UserList", () =>
 
 	beforeEach(async () =>
 	{
-		await TestBed.configureTestingModule({
-			imports: [UserList],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideHttpClient(),
-				provideHttpClientTesting(),
-				provideTanStackQuery(new QueryClient()),
-				// Feature-scoped services (no longer providedIn: root)
-				UserService,
-				UserRepository,
-				UserExportService,
-				UserPreferencesService
-			]
-		}).compileComponents();
+		fixture =
+			await new ComponentTestBed<UserList>()
+				.withAdminDefaults()
+				.withRealService(UserService)
+				.withRealService(UserRepository)
+				.withRealService(UserExportService)
+				.withRealService(UserPreferencesService)
+				.withRealService(DatePipe)
+				.build(UserList);
 
-		fixture = TestBed.createComponent(UserList);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});

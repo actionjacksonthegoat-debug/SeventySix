@@ -1,8 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject } from "@angular/core";
 import { RouterLink } from "@angular/router";
-import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
+import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
 import { WindowUtilities } from "@shared/utilities";
 
 /**
@@ -12,7 +10,7 @@ import { WindowUtilities } from "@shared/utilities";
  */
 @Component({
 	selector: "app-server-error",
-	imports: [RouterLink, MatCardModule, MatButtonModule, MatIconModule],
+	imports: [RouterLink, ...CARD_MATERIAL_MODULES],
 	templateUrl: "./server-error.html",
 	styleUrls: ["./server-error.scss"],
 	changeDetection: ChangeDetectionStrategy.OnPush

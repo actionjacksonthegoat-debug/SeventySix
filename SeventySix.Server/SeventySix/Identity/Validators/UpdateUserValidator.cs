@@ -17,11 +17,11 @@ public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
 	/// </summary>
 	public UpdateUserValidator()
 	{
-		RuleFor(x => x.Id)
+		RuleFor(request => request.Id)
 			.GreaterThan(0)
 			.WithMessage("User ID must be greater than 0");
 
-		RuleFor(x => x.Username)
+		RuleFor(request => request.Username)
 			.NotEmpty()
 			.WithMessage("Username is required")
 			.Length(3, 50)
@@ -29,7 +29,7 @@ public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
 			.Matches(@"^[a-zA-Z0-9_]+$")
 			.WithMessage("Username can only contain letters, numbers, and underscores");
 
-		RuleFor(x => x.Email)
+		RuleFor(request => request.Email)
 			.NotEmpty()
 			.WithMessage("Email is required")
 			.MaximumLength(255)
@@ -37,9 +37,9 @@ public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
 			.EmailAddress()
 			.WithMessage("Email must be a valid email address");
 
-		RuleFor(x => x.FullName)
+		RuleFor(request => request.FullName)
 			.MaximumLength(100)
 			.WithMessage("Full name cannot exceed 100 characters")
-			.When(x => !string.IsNullOrWhiteSpace(x.FullName));
+			.When(request => !string.IsNullOrWhiteSpace(request.FullName));
 	}
 }

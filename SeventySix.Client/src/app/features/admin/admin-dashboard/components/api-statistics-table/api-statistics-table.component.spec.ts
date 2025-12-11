@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { ThirdPartyApiService } from "@admin/admin-dashboard/services";
-import { ThirdPartyApiRequest } from "@admin/admin-dashboard/models";
+import { ThirdPartyApiRequestResponse } from "@admin/admin-dashboard/models";
 import { ApiStatisticsTableComponent } from "./api-statistics-table.component";
 import { createMockQueryResult } from "@testing/tanstack-query-helpers";
 
@@ -13,7 +13,7 @@ describe("ApiStatisticsTableComponent", () =>
 	let fixture: ComponentFixture<ApiStatisticsTableComponent>;
 	let thirdPartyApiService: jasmine.SpyObj<ThirdPartyApiService>;
 
-	const mockApiData: ThirdPartyApiRequest[] = [
+	const mockApiData: ThirdPartyApiRequestResponse[] = [
 		{
 			id: 1,
 			apiName: "ExternalAPI",
@@ -115,7 +115,7 @@ describe("ApiStatisticsTableComponent", () =>
 	it("should handle loading state", () =>
 	{
 		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
-			createMockQueryResult<ThirdPartyApiRequest[]>(undefined, {
+			createMockQueryResult<ThirdPartyApiRequestResponse[]>(undefined, {
 				isLoading: true
 			})
 		);
@@ -129,7 +129,7 @@ describe("ApiStatisticsTableComponent", () =>
 	{
 		const errorMessage = "Failed to load API data";
 		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
-			createMockQueryResult<ThirdPartyApiRequest[]>(undefined, {
+			createMockQueryResult<ThirdPartyApiRequestResponse[]>(undefined, {
 				isError: true,
 				error: new Error(errorMessage)
 			})
@@ -175,7 +175,7 @@ describe("ApiStatisticsTableComponent", () =>
 	it("should handle empty data", () =>
 	{
 		thirdPartyApiService.getAllThirdPartyApis.and.returnValue(
-			createMockQueryResult<ThirdPartyApiRequest[]>([])
+			createMockQueryResult<ThirdPartyApiRequestResponse[]>([])
 		);
 
 		createComponent();

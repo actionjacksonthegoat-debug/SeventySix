@@ -8,9 +8,14 @@ import {
 	HttpTestingController
 } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import {
+	TEST_ROLE_DEVELOPER,
+	TEST_ROLE_ADMIN
+} from "@testing/constants";
 import { provideRouter, Router } from "@angular/router";
 import { AuthService } from "./auth.service";
-import { AuthResponse, DOTNET_ROLE_CLAIM } from "@infrastructure/models";
+import { AuthResponse } from "@infrastructure/api";
+import { DOTNET_ROLE_CLAIM } from "@infrastructure/models";
 import { environment } from "@environments/environment";
 
 /** AuthService Tests - focuses on authentication logic */
@@ -248,8 +253,8 @@ describe("AuthService", () =>
 			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(service.hasRole("Developer")).toBeTrue();
-			expect(service.hasRole("Admin")).toBeTrue();
+			expect(service.hasRole(TEST_ROLE_DEVELOPER)).toBeTrue();
+			expect(service.hasRole(TEST_ROLE_ADMIN)).toBeTrue();
 			expect(service.hasRole("SuperAdmin")).toBeFalse();
 		});
 
@@ -277,8 +282,8 @@ describe("AuthService", () =>
 			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(service.hasRole("Developer")).toBeTrue();
-			expect(service.hasRole("Admin")).toBeFalse();
+			expect(service.hasRole(TEST_ROLE_DEVELOPER)).toBeTrue();
+			expect(service.hasRole(TEST_ROLE_ADMIN)).toBeFalse();
 		});
 	});
 
@@ -308,8 +313,8 @@ describe("AuthService", () =>
 			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(service.hasAnyRole("Developer", "Admin")).toBeTrue();
-			expect(service.hasAnyRole("Admin", "SuperAdmin")).toBeFalse();
+			expect(service.hasAnyRole(TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN)).toBeTrue();
+			expect(service.hasAnyRole(TEST_ROLE_ADMIN, "SuperAdmin")).toBeFalse();
 		});
 	});
 

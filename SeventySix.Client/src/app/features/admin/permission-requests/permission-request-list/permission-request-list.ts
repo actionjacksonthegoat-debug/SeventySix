@@ -7,7 +7,7 @@ import {
 } from "@angular/core";
 import { DatePipe } from "@angular/common";
 import { PermissionRequestService } from "@admin/permission-requests/services";
-import { PermissionRequest } from "@admin/permission-requests/models";
+import { PermissionRequestDto } from "@admin/permission-requests/models";
 import { DataTableComponent, PageHeaderComponent } from "@shared/components";
 import type {
 	TableColumn,
@@ -54,7 +54,7 @@ export class PermissionRequestListPage
 		PermissionRequestService["bulkRejectRequests"]
 	> = this.service.bulkRejectRequests();
 
-	readonly requests: Signal<PermissionRequest[]> = computed(
+	readonly requests: Signal<PermissionRequestDto[]> = computed(
 		() => this.requestsQuery.data() ?? []
 	);
 
@@ -74,7 +74,7 @@ export class PermissionRequestListPage
 	readonly pageSize: number = 100;
 
 	// Column definitions
-	readonly columns: TableColumn<PermissionRequest>[] = [
+	readonly columns: TableColumn<PermissionRequestDto>[] = [
 		{
 			key: "username",
 			label: "User",
@@ -117,7 +117,7 @@ export class PermissionRequestListPage
 	];
 
 	// Row actions
-	readonly rowActions: RowAction<PermissionRequest>[] = [
+	readonly rowActions: RowAction<PermissionRequestDto>[] = [
 		{
 			key: "approve",
 			label: "Approve",
@@ -155,7 +155,7 @@ export class PermissionRequestListPage
 		void this.requestsQuery.refetch();
 	}
 
-	onRowAction(event: RowActionEvent<PermissionRequest>): void
+	onRowAction(event: RowActionEvent<PermissionRequestDto>): void
 	{
 		const requestId: number = event.row.id;
 
@@ -169,7 +169,7 @@ export class PermissionRequestListPage
 		}
 	}
 
-	onBulkAction(event: BulkActionEvent<PermissionRequest>): void
+	onBulkAction(event: BulkActionEvent<PermissionRequestDto>): void
 	{
 		const selectedIds: number[] = event.selectedIds;
 

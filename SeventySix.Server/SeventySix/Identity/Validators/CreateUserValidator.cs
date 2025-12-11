@@ -39,7 +39,7 @@ public class CreateUserValidator : AbstractValidator<CreateUserRequest>
 	public CreateUserValidator()
 	{
 		// Username validation: Required, length constraints, and format
-		RuleFor(x => x.Username)
+		RuleFor(request => request.Username)
 			.NotEmpty()
 			.WithMessage("Username is required")
 			.Length(3, 50)
@@ -48,7 +48,7 @@ public class CreateUserValidator : AbstractValidator<CreateUserRequest>
 			.WithMessage("Username must contain only alphanumeric characters and underscores");
 
 		// Email validation: Required and valid email format
-		RuleFor(x => x.Email)
+		RuleFor(request => request.Email)
 			.Cascade(FluentValidation.CascadeMode.Stop)
 			.NotEmpty()
 			.WithMessage("Email is required")
@@ -60,7 +60,7 @@ public class CreateUserValidator : AbstractValidator<CreateUserRequest>
 			.WithMessage("Email must be a valid email address");
 
 		// FullName validation: Required field with length constraint
-		RuleFor(x => x.FullName)
+		RuleFor(request => request.FullName)
 			.NotEmpty()
 			.WithMessage("Display name is required")
 			.MaximumLength(100)

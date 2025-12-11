@@ -10,7 +10,8 @@ import {
 	MockLayoutService,
 	MockAuthService,
 	TEST_ROLE_ADMIN,
-	TEST_ROLE_DEVELOPER
+	TEST_ROLE_DEVELOPER,
+	createMockUserProfile
 } from "@testing";
 
 describe("SidebarComponent", () =>
@@ -102,13 +103,14 @@ describe("SidebarComponent", () =>
 		it("should show Main and Developer sections for developers", () =>
 		{
 			// Arrange
-			mockAuthService.setUser({
-				id: 1,
-				username: "developer",
-				email: "dev@test.com",
-				fullName: "Test Developer",
-				roles: [TEST_ROLE_DEVELOPER]
-			});
+			mockAuthService.setUser(
+				createMockUserProfile({
+					username: "developer",
+					email: "dev@test.com",
+					fullName: "Test Developer",
+					roles: [TEST_ROLE_DEVELOPER]
+				})
+			);
 
 			// Act
 			fixture.detectChanges();
@@ -128,13 +130,14 @@ describe("SidebarComponent", () =>
 		it("should show all sections for admins", () =>
 		{
 			// Arrange
-			mockAuthService.setUser({
-				id: 1,
-				username: "admin",
-				email: "admin@test.com",
-				fullName: "Test Admin",
-				roles: [TEST_ROLE_ADMIN]
-			});
+			mockAuthService.setUser(
+				createMockUserProfile({
+					username: "admin",
+					email: "admin@test.com",
+					fullName: "Test Admin",
+					roles: [TEST_ROLE_ADMIN]
+				})
+			);
 
 			// Act
 			fixture.detectChanges();
@@ -160,13 +163,14 @@ describe("SidebarComponent", () =>
 			expect(sections.length).toBe(1); // Only Main
 
 			// Act - log in as admin
-			mockAuthService.setUser({
-				id: 1,
-				username: "admin",
-				email: "admin@test.com",
-				fullName: "Test Admin",
-				roles: [TEST_ROLE_ADMIN]
-			});
+			mockAuthService.setUser(
+				createMockUserProfile({
+					username: "admin",
+					email: "admin@test.com",
+					fullName: "Test Admin",
+					roles: [TEST_ROLE_ADMIN]
+				})
+			);
 			fixture.detectChanges();
 
 			// Assert
@@ -183,13 +187,14 @@ describe("SidebarComponent", () =>
 		it("should update visible sections when user logs out", () =>
 		{
 			// Arrange - start as admin
-			mockAuthService.setUser({
-				id: 1,
-				username: "admin",
-				email: "admin@test.com",
-				fullName: "Test Admin",
-				roles: [TEST_ROLE_ADMIN]
-			});
+			mockAuthService.setUser(
+				createMockUserProfile({
+					username: "admin",
+					email: "admin@test.com",
+					fullName: "Test Admin",
+					roles: [TEST_ROLE_ADMIN]
+				})
+			);
 			fixture.detectChanges();
 			let sections: { title: string }[] =
 				component["visibleNavSections"]();
@@ -213,13 +218,14 @@ describe("SidebarComponent", () =>
 		it("should show Developer section for users with both Developer and Admin roles", () =>
 		{
 			// Arrange
-			mockAuthService.setUser({
-				id: 1,
-				username: "superuser",
-				email: "super@test.com",
-				fullName: "Super User",
-				roles: [TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN]
-			});
+			mockAuthService.setUser(
+				createMockUserProfile({
+					username: "superuser",
+					email: "super@test.com",
+					fullName: "Super User",
+					roles: [TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN]
+				})
+			);
 
 			// Act
 			fixture.detectChanges();

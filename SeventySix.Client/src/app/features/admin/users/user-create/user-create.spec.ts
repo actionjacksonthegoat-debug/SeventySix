@@ -8,7 +8,7 @@ import { UserService } from "@features/admin/users/services/user.service";
 import { Router } from "@angular/router";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import { LoggerService } from "@infrastructure/services/logger.service";
-import { User } from "@admin/users/models";
+import { UserDto } from "@admin/users/models";
 import { createMockMutationResult } from "@testing/tanstack-query-helpers";
 import {
 	createMockRouter,
@@ -35,7 +35,7 @@ describe("UserCreatePage", () =>
 		mockNotification = createMockNotificationService();
 		mockLogger = createMockLogger();
 
-		const mockUser: User = {
+		const mockUser: UserDto = {
 			id: 1,
 			username: "test",
 			email: "test@test.com",
@@ -43,10 +43,10 @@ describe("UserCreatePage", () =>
 			createDate: "2024-01-01T00:00:00Z",
 			isActive: true,
 			createdBy: "system",
-			modifiedBy: "system"
+			modifiedBy: "system", needsPendingEmail: false, modifyDate: null, lastLoginAt: null, isDeleted: false, deletedAt: null, deletedBy: null
 		};
 		mockUserService.createUser.and.returnValue(
-			createMockMutationResult<User, Error, Partial<User>, unknown>({
+			createMockMutationResult<UserDto, Error, Partial<UserDto>, unknown>({
 				data: mockUser,
 				isSuccess: true
 			})
@@ -304,7 +304,7 @@ describe("UserCreatePage", () =>
 		});
 		it("should handle successful user creation", async () =>
 		{
-			const createdUser: User = {
+			const createdUser: UserDto = {
 				id: 1,
 				username: "testuser",
 				email: "test@example.com",
@@ -312,7 +312,7 @@ describe("UserCreatePage", () =>
 				createDate: "2024-01-01T00:00:00Z",
 				isActive: true,
 				createdBy: "system",
-				modifiedBy: "system"
+				modifiedBy: "system", needsPendingEmail: false, modifyDate: null, lastLoginAt: null, isDeleted: false, deletedAt: null, deletedBy: null
 			};
 
 			component.basicInfoForm.patchValue({
@@ -328,7 +328,7 @@ describe("UserCreatePage", () =>
 
 			// Mock mutate to call onSuccess
 			(component.createMutation.mutate as jasmine.Spy).and.callFake(
-				(data, options: { onSuccess: (user: User) => void }) =>
+				(data, options: { onSuccess: (user: UserDto) => void }) =>
 				{
 					options.onSuccess(createdUser);
 				}

@@ -18,18 +18,8 @@ import { Subject } from "rxjs";
 import { map } from "rxjs/operators";
 import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { MatTableModule } from "@angular/material/table";
-import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
-import { MatSortModule, Sort } from "@angular/material/sort";
-import { MatCheckboxModule } from "@angular/material/checkbox";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MatMenuModule } from "@angular/material/menu";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
-import { MatChipsModule } from "@angular/material/chips";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatTooltipModule } from "@angular/material/tooltip";
+import { PageEvent } from "@angular/material/paginator";
+import { Sort } from "@angular/material/sort";
 import { SelectionModel } from "@angular/cdk/collections";
 import {
 	TableColumn,
@@ -48,6 +38,7 @@ import { TableHeightDirective } from "@shared/directives";
 import { slideDown } from "@shared/animations/animations";
 import { environment } from "@environments/environment";
 import { DateService } from "@infrastructure/services";
+import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles";
 
 /**
  * Generic data table component
@@ -59,22 +50,11 @@ import { DateService } from "@infrastructure/services";
 	imports: [
 		DatePipe,
 		FormsModule,
-		MatTableModule,
-		MatPaginatorModule,
-		MatSortModule,
-		MatCheckboxModule,
-		MatButtonModule,
-		MatIconModule,
-		MatMenuModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatChipsModule,
-		MatProgressSpinnerModule,
-		MatTooltipModule,
 		MatCard,
 		MatCardContent,
 		ScrollingModule,
-		TableHeightDirective
+		TableHeightDirective,
+		...TABLE_MATERIAL_MODULES
 	],
 	templateUrl: "./data-table.component.html",
 	styleUrl: "./data-table.component.scss",

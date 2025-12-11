@@ -12,6 +12,9 @@ import {
 	EnvironmentProviders
 } from "@angular/core";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
+import { provideHttpClient, withFetch } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
+import { provideRouter } from "@angular/router";
 import {
 	provideTanStackQuery,
 	QueryClient
@@ -131,16 +134,28 @@ export class ComponentTestBed<T>
 	}
 
 	/**
-	 * Add common Material modules to test configuration
-	 * Reduces import duplication for Material-heavy components
+	 * Add admin page defaults to test configuration
+	 * Automatically includes HTTP client, TanStack Query, and router
+	 * Reduces test setup from 20+ lines to 1 line for admin components
 	 *
 	 * @returns this for chaining
+	 *
+	 * @example
+	 * const fixture = await new ComponentTestBed<UserList>()
+	 *     .withAdminDefaults()
+	 *     .withRealService(UserService)
+	 *     .withRealService(UserRepository)
+	 *     .build(UserList);
 	 */
-	withMaterialModules(): this
+	withAdminDefaults(): this
 	{
-		// Material modules are typically auto-imported with standalone components
-		// This method exists for consistency but may not be needed
-		// Components import their own Material dependencies
+		const queryClient: QueryClient = createTestQueryClient();
+		this.providers.push(
+			provideHttpClient(withFetch()),
+			provideHttpClientTesting(),
+			provideRouter([]),
+			provideTanStackQuery(queryClient)
+		);
 		return this;
 	}
 

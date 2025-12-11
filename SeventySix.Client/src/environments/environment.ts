@@ -2,6 +2,7 @@ import { Environment } from "./environment.interface";
 
 export const environment: Environment = {
 	production: true,
+	version: "1.0.0",
 	apiUrl: "https://localhost:7074/api/v1", // API v1 for production
 	logging: {
 		enableRemoteLogging: true,

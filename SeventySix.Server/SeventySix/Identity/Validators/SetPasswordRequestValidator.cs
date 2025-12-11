@@ -21,13 +21,13 @@ public class SetPasswordRequestValidator : AbstractValidator<SetPasswordRequest>
 	/// </summary>
 	public SetPasswordRequestValidator()
 	{
-		RuleFor(x => x.Token)
+		RuleFor(request => request.Token)
 			.NotEmpty()
 			.WithMessage("Reset token is required.")
 			.Must(BeValidBase64)
 			.WithMessage("Reset token is invalid.");
 
-		RuleFor(x => x.NewPassword)
+		RuleFor(request => request.NewPassword)
 			.ApplyPasswordRules();
 	}
 

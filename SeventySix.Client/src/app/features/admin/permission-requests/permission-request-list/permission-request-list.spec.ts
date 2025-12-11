@@ -1,17 +1,16 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
-import { provideHttpClientTesting } from "@angular/common/http/testing";
+import { ComponentFixture } from "@angular/core/testing";
 import { PermissionRequestListPage } from "./permission-request-list";
 import { PermissionRequestService } from "@admin/permission-requests/services";
-import { PermissionRequest } from "@admin/permission-requests/models";
+import { PermissionRequestDto } from "@admin/permission-requests/models";
 import type { RowActionEvent } from "@shared/models";
+import { ComponentTestBed } from "@testing/test-bed-builders";
 
 describe("PermissionRequestListPage", () =>
 {
 	let fixture: ComponentFixture<PermissionRequestListPage>;
 	let component: PermissionRequestListPage;
 
-	const mockPermissionRequests: PermissionRequest[] = [
+	const mockPermissionRequests: PermissionRequestDto[] = [
 		{
 			id: 1,
 			userId: 10,
@@ -68,16 +67,14 @@ describe("PermissionRequestListPage", () =>
 		mockBulkApproveMutation.mutate.calls.reset();
 		mockBulkRejectMutation.mutate.calls.reset();
 
-		await TestBed.configureTestingModule({
-			imports: [PermissionRequestListPage],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideHttpClientTesting(),
-				{ provide: PermissionRequestService, useValue: mockService }
-			]
-		}).compileComponents();
-
-		fixture = TestBed.createComponent(PermissionRequestListPage);
+		fixture =
+			await new ComponentTestBed<PermissionRequestListPage>()
+				.withAdminDefaults()
+				.withProvider({
+					provide: PermissionRequestService,
+					useValue: mockService
+				})
+				.build(PermissionRequestListPage);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});
@@ -103,7 +100,7 @@ describe("PermissionRequestListPage", () =>
 
 	it("should call approve mutation on row action approve", () =>
 	{
-		const event: RowActionEvent<PermissionRequest> = {
+		const event: RowActionEvent<PermissionRequestDto> = {
 			action: "approve",
 			row: mockPermissionRequests[0]
 		};
@@ -115,7 +112,7 @@ describe("PermissionRequestListPage", () =>
 
 	it("should call reject mutation on row action reject", () =>
 	{
-		const event: RowActionEvent<PermissionRequest> = {
+		const event: RowActionEvent<PermissionRequestDto> = {
 			action: "reject",
 			row: mockPermissionRequests[0]
 		};

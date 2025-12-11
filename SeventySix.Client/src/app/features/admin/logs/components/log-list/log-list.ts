@@ -185,7 +185,7 @@ export class LogList
 
 	// Computed signals
 	readonly data: Signal<LogDto[]> = computed(
-		(): LogDto[] => this.logsQuery.data()?.items ?? []
+		(): LogDto[] => (this.logsQuery.data()?.items as LogDto[]) ?? []
 	);
 	readonly totalCount: Signal<number> = computed(
 		(): number => this.logsQuery.data()?.totalCount ?? 0

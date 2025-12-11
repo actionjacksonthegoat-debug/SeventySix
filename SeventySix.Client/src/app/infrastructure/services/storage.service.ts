@@ -1,5 +1,6 @@
 import { Injectable, inject, PLATFORM_ID } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
+import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
 
 /**
  * Storage abstraction service using Angular best practices.
@@ -28,7 +29,7 @@ export class StorageService
 		try
 		{
 			const value: string | null = localStorage.getItem(key);
-			if (!value)
+			if (isNullOrUndefined(value))
 			{
 				return null;
 			}

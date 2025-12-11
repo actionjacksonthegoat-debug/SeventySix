@@ -17,7 +17,7 @@ import {
 	LayoutService,
 	AuthService
 } from "@infrastructure/services";
-import { AuthUser } from "@infrastructure/models";
+import { UserProfileDto } from "@infrastructure/api";
 import { BreadcrumbComponent } from "@shared/components";
 
 /**
@@ -49,7 +49,7 @@ export class HeaderComponent
 	/** Display name: fullName if available, otherwise username. */
 	protected readonly displayName: Signal<string> = computed(() =>
 	{
-		const user: AuthUser | null = this.authService.user();
+		const user: UserProfileDto | null = this.authService.user();
 		if (!user)
 		{
 			return "";

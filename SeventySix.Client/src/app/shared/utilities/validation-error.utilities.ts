@@ -3,6 +3,7 @@ import {
 	VALIDATION_ERROR_MESSAGES,
 	ValidationMessageTemplate
 } from "../constants/validation-error.constants";
+import { isNonNullObject } from "@infrastructure/utils/null-check.utility";
 
 /**
  * Gets the first validation error message for a form control.
@@ -43,11 +44,7 @@ export function getValidationError(
 	if (!messageTemplate)
 	{
 		// Fallback for custom validators with message property
-		if (
-			typeof errorValue === "object"
-			&& errorValue !== null
-			&& "message" in errorValue
-		)
+		if (isNonNullObject(errorValue) && "message" in errorValue)
 		{
 			return (errorValue as { message: string }).message;
 		}
@@ -57,8 +54,8 @@ export function getValidationError(
 	if (typeof messageTemplate === "function")
 	{
 		const params: Record<string, unknown> =
-			typeof errorValue === "object" && errorValue !== null
-				? (errorValue as Record<string, unknown>)
+			isNonNullObject(errorValue)
+				? errorValue
 				: {};
 		return messageTemplate(params).replace("{field}", fieldLabel);
 	}

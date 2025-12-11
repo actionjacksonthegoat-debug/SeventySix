@@ -1,5 +1,5 @@
 import { signal, WritableSignal, computed, Signal } from "@angular/core";
-import { AuthUser } from "@infrastructure/models";
+import { UserProfileDto } from "@infrastructure/api";
 
 /**
  * Mock AuthService for testing.
@@ -15,11 +15,11 @@ import { AuthUser } from "@infrastructure/models";
  */
 export class MockAuthService
 {
-	private readonly userSignal: WritableSignal<AuthUser | null> =
-		signal<AuthUser | null>(null);
+	private readonly userSignal: WritableSignal<UserProfileDto | null> =
+		signal<UserProfileDto | null>(null);
 
 	/** Read-only user state. */
-	readonly user: Signal<AuthUser | null> = this.userSignal.asReadonly();
+	readonly user: Signal<UserProfileDto | null> = this.userSignal.asReadonly();
 
 	/** Computed authentication state. */
 	readonly isAuthenticated: Signal<boolean> = computed(
@@ -36,7 +36,7 @@ export class MockAuthService
 	 */
 	hasRole(role: string): boolean
 	{
-		const user: AuthUser | null = this.userSignal();
+		const user: UserProfileDto | null = this.userSignal();
 		return user?.roles.includes(role) ?? false;
 	}
 
@@ -47,7 +47,7 @@ export class MockAuthService
 	 */
 	hasAnyRole(...roles: string[]): boolean
 	{
-		const user: AuthUser | null = this.userSignal();
+		const user: UserProfileDto | null = this.userSignal();
 		return roles.some(
 			(role: string) => user?.roles.includes(role) ?? false
 		);
@@ -57,7 +57,7 @@ export class MockAuthService
 	 * Sets the authenticated user for testing.
 	 * @param user The user to set, or null for unauthenticated state.
 	 */
-	setUser(user: AuthUser | null): void
+	setUser(user: UserProfileDto | null): void
 	{
 		this.userSignal.set(user);
 	}

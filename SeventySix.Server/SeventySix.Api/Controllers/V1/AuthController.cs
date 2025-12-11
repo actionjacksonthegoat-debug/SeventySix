@@ -338,7 +338,7 @@ public class AuthController(
 		OAuthCodeExchangeResult? result =
 			oauthCodeExchange.ExchangeCode(request.Code);
 
-		if (result == null)
+		if (result is null)
 		{
 			logger.LogWarning("OAuth code exchange failed - invalid or expired code");
 			return BadRequest(new ProblemDetails
@@ -373,20 +373,17 @@ public class AuthController(
 	public async Task<ActionResult<UserProfileDto>> GetCurrentUserAsync(
 		CancellationToken cancellationToken)
 	{
-		int? userId =
-			User.GetUserId();
-
-		if (userId == null)
+		if (User.GetUserId() is not int userId)
 		{
 			return Unauthorized();
 		}
 
 		UserProfileDto? profile =
 			await messageBus.InvokeAsync<UserProfileDto?>(
-				new GetUserProfileQuery(userId.Value),
+				new GetUserProfileQuery(userId),
 				cancellationToken);
 
-		if (profile == null)
+		if (profile is null)
 		{
 			return NotFound();
 		}
@@ -412,10 +409,7 @@ public class AuthController(
 		[FromBody] ChangePasswordRequest request,
 		CancellationToken cancellationToken)
 	{
-		int? userId =
-			User.GetUserId();
-
-		if (userId == null)
+		if (User.GetUserId() is not int userId)
 		{
 			return Unauthorized();
 		}
@@ -423,7 +417,7 @@ public class AuthController(
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
 				new ChangePasswordCommand(
-					userId.Value,
+					userId,
 					request),
 				cancellationToken);
 

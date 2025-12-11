@@ -1,28 +1,31 @@
 /**
  * User Service
- * Business logic layer for user operations
+ * Business logic layer for User operations
  * Uses TanStack Query for caching and state management
  * Uses repository pattern for data access (SRP, DIP)
  * Extends BaseFilterService for filter state management
  */
 
-import { inject, Injectable, signal, WritableSignal } from "@angular/core";
-import { HttpContext } from "@angular/common/http";
+import { inject, Injectable } from "@angular/core";
 import {
 	injectQuery,
 	injectMutation,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
-import { User, UpdateUserRequest, UserQueryRequest } from "@admin/users/models";
+import {
+	UserDto,
+	CreateUserRequest,
+	UpdateUserRequest,
+	UserQueryRequest
+} from "@admin/users/models";
 import { UserRepository } from "@admin/users/repositories";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
 import { BaseFilterService } from "@infrastructure/services/base-filter.service";
-import { FORCE_REFRESH } from "@infrastructure/interceptors/cache-bypass.interceptor";
 
 /**
- * Service for user business logic
+ * Service for User business logic
  * Follows Service Layer pattern to encapsulate business rules
  * All methods use TanStack Query for automatic caching and state management
  * Provided at route level for proper garbage collection (see admin.routes.ts)
@@ -34,10 +37,6 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	private readonly queryClient: QueryClient = inject(QueryClient);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("users");
-
-	/** Signal to trigger cache bypass - toggling this value forces fresh data fetch */
-	private readonly forceRefreshTrigger: WritableSignal<boolean> =
-		signal<boolean>(false);
 
 	constructor()
 	{
@@ -63,26 +62,19 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 				.paged(this.getCurrentFilter())
 				.concat(this.forceRefreshTrigger()),
 			queryFn: () =>
-			{
-				const context: HttpContext | undefined =
-					this.forceRefreshTrigger()
-						? new HttpContext().set(FORCE_REFRESH, true)
-						: undefined;
-
-				return lastValueFrom(
+				lastValueFrom(
 					this.userRepository.getPaged(
 						this.getCurrentFilter(),
-						context
+						this.getForceRefreshContext()
 					)
-				);
-			},
+				),
 			...this.queryConfig
 		}));
 	}
 
 	/**
-	 * Query for user by ID
-	 * @param id The user identifier
+	 * Query for User by ID
+	 * @param id The User identifier
 	 * @returns Query object with data, isLoading, error, etc.
 	 */
 	getUserById(id: number | string)
@@ -95,15 +87,15 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for creating user
+	 * Mutation for creating User
 	 * Automatically invalidates related queries on success
 	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
 	createUser()
 	{
 		return injectMutation(() => ({
-			mutationFn: (user: Partial<User>) =>
-				lastValueFrom(this.userRepository.create(user)),
+			mutationFn: (user: Partial<UserDto>) =>
+				lastValueFrom(this.userRepository.create(user as CreateUserRequest)),
 			onSuccess: () =>
 			{
 				// Invalidate paged users queries
@@ -115,7 +107,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for updating user
+	 * Mutation for updating User
 	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
 	updateUser()
@@ -130,7 +122,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 			}) => lastValueFrom(this.userRepository.update(id, user)),
 			onSuccess: (_, variables) =>
 			{
-				// Invalidate specific user and all user queries
+				// Invalidate specific User and all User queries
 				this.queryClient.invalidateQueries({
 					queryKey: QueryKeys.users.single(variables.id)
 				});
@@ -142,7 +134,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for deleting user
+	 * Mutation for deleting User
 	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
 	deleteUser()
@@ -152,7 +144,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 				lastValueFrom(this.userRepository.delete(id)),
 			onSuccess: () =>
 			{
-				// Invalidate all user queries
+				// Invalidate all User queries
 				this.queryClient.invalidateQueries({
 					queryKey: QueryKeys.users.all
 				});
@@ -166,20 +158,13 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	 */
 	override clearFilters(): void
 	{
-		this.filter.set({
-			page: 1,
-			pageSize: 50,
-			sortBy: "Id",
-			sortDescending: true,
-			startDate: null,
-			endDate: null
-		});
+		this.resetFilter();
 	}
 
 	/**
-	 * Query for user by username
+	 * Query for User by username
 	 * @param username The username to search
-	 * @returns Query object with user data
+	 * @returns Query object with User data
 	 */
 	getUserByUsername(username: string)
 	{
@@ -194,7 +179,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	/**
 	 * Check username availability (not cached for real-time validation)
 	 * @param username The username to check
-	 * @param excludeId Optional user ID to exclude
+	 * @param excludeId Optional User ID to exclude
 	 * @returns Promise of boolean
 	 */
 	checkUsernameAvailability(
@@ -208,7 +193,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for restoring deleted user
+	 * Mutation for restoring deleted User
 	 * @returns Mutation object
 	 */
 	restoreUser()
@@ -263,7 +248,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 
 	/**
 	 * Mutation for initiating password reset
-	 * Sends password reset email to user
+	 * Sends password reset email to User
 	 * @returns Mutation object with mutate, isPending, error, etc.
 	 */
 	resetPassword()
@@ -275,8 +260,8 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	}
 
 	/**
-	 * Query for user roles
-	 * @param userId The user ID
+	 * Query for User roles
+	 * @param userId The User ID
 	 * @returns Query object with roles data
 	 */
 	getUserRoles(userId: number | string)
@@ -290,7 +275,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for adding a role to a user
+	 * Mutation for adding a role to a User
 	 * @returns Mutation object
 	 */
 	addRole()
@@ -308,7 +293,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for removing a role from a user
+	 * Mutation for removing a role from a User
 	 * @returns Mutation object
 	 */
 	removeRole()
@@ -323,14 +308,5 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 				});
 			}
 		}));
-	}
-
-	/**
-	 * Force refresh all active user queries
-	 * Bypasses cache and fetches fresh data from server
-	 */
-	async forceRefresh(): Promise<void>
-	{
-		this.forceRefreshTrigger.update((value: boolean) => !value);
 	}
 }

@@ -12,6 +12,11 @@ import {
 	NetworkError
 } from "@infrastructure/models/errors";
 import { environment } from "@environments/environment";
+import {
+	extractValidationErrors,
+	extractHttpStatus,
+	extractErrorTitle
+} from "@infrastructure/utils/http-error.utility";
 
 interface ErrorDetails
 {
@@ -135,27 +140,19 @@ export class ErrorHandlerService implements ErrorHandler
 		userMessage: string
 	): void
 	{
-		if (error.error?.errors)
+		details.push(...extractValidationErrors(error));
+
+		const title: string | null =
+			extractErrorTitle(error, userMessage);
+		if (title)
 		{
-			Object.entries(error.error.errors).forEach(
-				([field, messages]: [string, unknown]) =>
-				{
-					if (Array.isArray(messages))
-					{
-						messages.forEach((msg: string) =>
-							details.push(`${field}: ${msg}`));
-					}
-				}
-			);
-		}
-		else if (error.error?.title && error.error.title !== userMessage)
-		{
-			details.push(error.error.title);
+			details.push(title);
 		}
 
-		if (error.status)
+		const status: string | null = extractHttpStatus(error);
+		if (status)
 		{
-			details.push(`Status: ${error.status} ${error.statusText}`);
+			details.push(status);
 		}
 
 		if (error.url)

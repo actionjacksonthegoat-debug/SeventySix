@@ -1,4 +1,4 @@
-import { BaseQueryRequest } from "@infrastructure/models";
+import { BaseQueryRequest } from "@shared/models";
 import { DateService } from "@infrastructure/services";
 
 /** Log query request DTO matching backend LogQueryRequest. */

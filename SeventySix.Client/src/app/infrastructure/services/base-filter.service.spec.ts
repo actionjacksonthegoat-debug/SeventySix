@@ -1,4 +1,6 @@
-import { BaseQueryRequest } from "@infrastructure/models";
+import { HttpContext } from "@angular/common/http";
+import { FORCE_REFRESH } from "@infrastructure/interceptors/cache-bypass.interceptor";
+import { BaseQueryRequest } from "@shared/models";
 import { BaseFilterService } from "./base-filter.service";
 
 /** Test implementation of BaseFilterService for testing purposes */
@@ -17,10 +19,20 @@ class TestFilterService extends BaseFilterService<BaseQueryRequest>
 		});
 	}
 
-	// Expose protected filter for testing
+	// Expose protected members for testing
 	getFilterSignal()
 	{
 		return this.filter;
+	}
+
+	override getForceRefreshContext(): HttpContext | undefined
+	{
+		return super.getForceRefreshContext();
+	}
+
+	override resetFilter(): void
+	{
+		super.resetFilter();
 	}
 }
 
@@ -180,6 +192,84 @@ describe("BaseFilterService", () =>
 
 			expect(updatedValue).not.toBe(initialValue);
 			expect(updatedValue.searchTerm).toBe("test");
+		});
+	});
+
+	describe("forceRefresh", () =>
+	{
+		it("should toggle forceRefreshTrigger signal", async () =>
+		{
+			const initialValue: boolean = service["forceRefreshTrigger"]();
+
+			await service.forceRefresh();
+
+			expect(service["forceRefreshTrigger"]()).toBe(!initialValue);
+		});
+
+		it("should toggle back on second call", async () =>
+		{
+			const initialValue: boolean = service["forceRefreshTrigger"]();
+
+			await service.forceRefresh();
+			await service.forceRefresh();
+
+			expect(service["forceRefreshTrigger"]()).toBe(initialValue);
+		});
+	});
+
+	describe("getForceRefreshContext", () =>
+	{
+		it("should return undefined when forceRefreshTrigger is false", () =>
+		{
+			service["forceRefreshTrigger"].set(false);
+
+			const context: HttpContext | undefined = service.getForceRefreshContext();
+
+			expect(context).toBeUndefined();
+		});
+
+		it("should return HttpContext with FORCE_REFRESH when trigger is true", () =>
+		{
+			service["forceRefreshTrigger"].set(true);
+
+			const context: HttpContext | undefined = service.getForceRefreshContext();
+
+			expect(context).toBeInstanceOf(HttpContext);
+			expect(context?.get(FORCE_REFRESH)).toBe(true);
+		});
+	});
+
+	describe("resetFilter", () =>
+	{
+		it("should reset filter to initial state", () =>
+		{
+			service.updateFilter({ searchTerm: "test", pageSize: 100 });
+			service.setPage(5);
+
+			service.resetFilter();
+
+			const filter: BaseQueryRequest = service.getCurrentFilter();
+			expect(filter).toEqual(defaultFilter);
+			expect(filter.page).toBe(1);
+			expect(filter.pageSize).toBe(50);
+			expect(filter.searchTerm).toBeUndefined();
+		});
+
+		it("should restore initial filter values", () =>
+		{
+			const customInitialFilter: BaseQueryRequest = {
+				page: 2,
+				pageSize: 25,
+				searchTerm: "initial"
+			};
+			const customService: TestFilterService = new TestFilterService(customInitialFilter);
+
+			customService.updateFilter({ searchTerm: "changed", pageSize: 100 });
+
+			customService.resetFilter();
+
+			const filter: BaseQueryRequest = customService.getCurrentFilter();
+			expect(filter).toEqual(customInitialFilter);
 		});
 	});
 });

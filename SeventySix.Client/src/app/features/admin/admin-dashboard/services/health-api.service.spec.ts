@@ -10,9 +10,9 @@ import {
 	provideTanStackQuery
 } from "@tanstack/angular-query-experimental";
 import {
-	HealthStatus,
-	DatabaseHealth,
-	ExternalApiHealth
+	HealthStatusResponse,
+	DatabaseHealthResponse,
+	ExternalApiHealthResponse
 } from "@admin/admin-dashboard/models";
 import { HealthApiService } from "./health-api.service";
 import { HealthApiRepository } from "@admin/admin-dashboard/repositories";
@@ -63,7 +63,7 @@ describe("HealthApiService", () =>
 	{
 		it("should return overall system health status", async () =>
 		{
-			const mockHealth: HealthStatus = {
+			const mockHealth: HealthStatusResponse = {
 				status: "Healthy",
 				checkedAt: "2025-11-12T10:30:00Z",
 				database: {
@@ -111,15 +111,15 @@ describe("HealthApiService", () =>
 			const health = query.data();
 			expect(health).toEqual(mockHealth);
 			expect(health?.status).toBe("Healthy");
-			expect(health?.database.isConnected).toBe(true);
-			expect(health?.externalApis.apis["ExternalAPI"].isAvailable).toBe(
+			expect(health?.database?.isConnected).toBe(true);
+			expect(health?.externalApis?.apis?.["ExternalAPI"].isAvailable).toBe(
 				true
 			);
 		});
 
 		it("should handle degraded system status", async () =>
 		{
-			const mockHealth: HealthStatus = {
+			const mockHealth: HealthStatusResponse = {
 				status: "Degraded",
 				checkedAt: "2025-11-12T10:30:00Z",
 				database: {
@@ -158,8 +158,8 @@ describe("HealthApiService", () =>
 
 			const health = query.data();
 			expect(health?.status).toBe("Degraded");
-			expect(health?.database.status).toBe("Degraded");
-			expect(health?.system.cpuUsagePercent).toBeGreaterThan(80);
+			expect(health?.database?.status).toBe("Degraded");
+			expect(health?.system?.cpuUsagePercent).toBeGreaterThan(80);
 		});
 
 		it("should handle HTTP errors", async () =>
@@ -187,7 +187,7 @@ describe("HealthApiService", () =>
 	{
 		it("should return database health status", async () =>
 		{
-			const mockDbHealth: DatabaseHealth = {
+			const mockDbHealth: DatabaseHealthResponse = {
 				isConnected: true,
 				responseTimeMs: 10.2,
 				activeConnections: 3,
@@ -214,7 +214,7 @@ describe("HealthApiService", () =>
 
 		it("should handle database connection failure", async () =>
 		{
-			const mockDbHealth: DatabaseHealth = {
+			const mockDbHealth: DatabaseHealthResponse = {
 				isConnected: false,
 				responseTimeMs: 0,
 				activeConnections: 0,
@@ -263,7 +263,7 @@ describe("HealthApiService", () =>
 	{
 		it("should return external API health status", async () =>
 		{
-			const mockApiHealth: ExternalApiHealth = {
+			const mockApiHealth: ExternalApiHealthResponse = {
 				apis: {
 					ExternalAPI: {
 						apiName: "ExternalAPI",
@@ -294,12 +294,12 @@ describe("HealthApiService", () =>
 			const apiHealth = query.data();
 			expect(apiHealth).toEqual(mockApiHealth);
 			expect(Object.keys(apiHealth?.apis ?? {}).length).toBe(2);
-			expect(apiHealth?.apis["ExternalAPI"].isAvailable).toBe(true);
+			expect(apiHealth?.apis?.["ExternalAPI"].isAvailable).toBe(true);
 		});
 
 		it("should handle APIs with unavailable status", async () =>
 		{
-			const mockApiHealth: ExternalApiHealth = {
+			const mockApiHealth: ExternalApiHealthResponse = {
 				apis: {
 					ExternalAPI: {
 						apiName: "ExternalAPI",
@@ -321,13 +321,13 @@ describe("HealthApiService", () =>
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			const apiHealth = query.data();
-			expect(apiHealth?.apis["ExternalAPI"].isAvailable).toBe(false);
-			expect(apiHealth?.apis["ExternalAPI"].responseTimeMs).toBe(0);
+			expect(apiHealth?.apis?.["ExternalAPI"].isAvailable).toBe(false);
+			expect(apiHealth?.apis?.["ExternalAPI"].responseTimeMs).toBe(0);
 		});
 
 		it("should handle empty APIs list", async () =>
 		{
-			const mockApiHealth: HealthStatus = {
+			const mockApiHealth: HealthStatusResponse = {
 				status: "Healthy",
 				checkedAt: new Date().toISOString(),
 				database: {

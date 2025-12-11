@@ -2,9 +2,14 @@ import { inject, Injectable } from "@angular/core";
 import { HttpContext, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
-import { PagedResponse } from "@infrastructure/models";
+import {
+	PagedResultOfUserDto,
+	UserDto,
+	CreateUserRequest,
+	UpdateUserRequest
+} from "@infrastructure/api";
 import { buildHttpParams } from "@infrastructure/utils/http-params.utility";
-import { User, UpdateUserRequest, UserQueryRequest } from "@admin/users/models";
+import { UserQueryRequest } from "@admin/users/models";
 
 @Injectable()
 export class UserRepository
@@ -12,24 +17,24 @@ export class UserRepository
 	private readonly apiService: ApiService = inject(ApiService);
 	private readonly endpoint: string = "users";
 
-	getAll(): Observable<User[]>
+	getAll(): Observable<UserDto[]>
 	{
-		return this.apiService.get<User[]>(this.endpoint);
+		return this.apiService.get<UserDto[]>(this.endpoint);
 	}
 
-	getById(id: number | string): Observable<User>
+	getById(id: number | string): Observable<UserDto>
 	{
-		return this.apiService.get<User>(`${this.endpoint}/${id}`);
+		return this.apiService.get<UserDto>(`${this.endpoint}/${id}`);
 	}
 
-	create(user: Partial<User>): Observable<User>
+	create(user: CreateUserRequest): Observable<UserDto>
 	{
-		return this.apiService.post<User>(this.endpoint, user);
+		return this.apiService.post<UserDto>(this.endpoint, user);
 	}
 
-	update(id: number | string, user: UpdateUserRequest): Observable<User>
+	update(id: number | string, user: UpdateUserRequest): Observable<UserDto>
 	{
-		return this.apiService.put<User>(`${this.endpoint}/${id}`, user);
+		return this.apiService.put<UserDto>(`${this.endpoint}/${id}`, user);
 	}
 
 	delete(id: number | string): Observable<void>
@@ -40,28 +45,20 @@ export class UserRepository
 	getPaged(
 		request: UserQueryRequest,
 		context?: HttpContext
-	): Observable<PagedResponse<User>>
+	): Observable<PagedResultOfUserDto>
 	{
-		const params: HttpParams = buildHttpParams({
-			page: request.page,
-			pageSize: request.pageSize,
-			searchTerm: request.searchTerm || "",
-			isActive: request.isActive,
-			includeDeleted: request.includeDeleted,
-			sortBy: request.sortBy,
-			sortDescending: request.sortDescending
-		});
+		const params: HttpParams = buildHttpParams(request);
 
-		return this.apiService.get<PagedResponse<User>>(
+		return this.apiService.get<PagedResultOfUserDto>(
 			`${this.endpoint}/paged`,
 			params,
 			context
 		);
 	}
 
-	getByUsername(username: string): Observable<User>
+	getByUsername(username: string): Observable<UserDto>
 	{
-		return this.apiService.get<User>(
+		return this.apiService.get<UserDto>(
 			`${this.endpoint}/username/${username}`
 		);
 	}

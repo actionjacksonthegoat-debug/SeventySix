@@ -9,8 +9,8 @@ import {
 	provideTanStackQuery
 } from "@tanstack/angular-query-experimental";
 import {
-	ThirdPartyApiRequest,
-	ThirdPartyApiStatistics
+	ThirdPartyApiRequestResponse,
+	ThirdPartyApiStatisticsResponse
 } from "@admin/admin-dashboard/models";
 import { ThirdPartyApiService } from "./third-party-api.service";
 import { ThirdPartyApiRepository } from "@admin/admin-dashboard/repositories";
@@ -57,7 +57,7 @@ describe("ThirdPartyApiService", () =>
 	{
 		it("should return all third-party API requests", async () =>
 		{
-			const mockData: ThirdPartyApiRequest[] = [
+			const mockData: ThirdPartyApiRequestResponse[] = [
 				{
 					id: 1,
 					apiName: "ExternalAPI",
@@ -137,7 +137,7 @@ describe("ThirdPartyApiService", () =>
 		it("should return API requests filtered by API name", async () =>
 		{
 			const apiName = "ExternalAPI";
-			const mockData: ThirdPartyApiRequest[] = [
+			const mockData: ThirdPartyApiRequestResponse[] = [
 				{
 					id: 1,
 					apiName: "ExternalAPI",
@@ -209,7 +209,7 @@ describe("ThirdPartyApiService", () =>
 	{
 		it("should return third-party API statistics", async () =>
 		{
-			const mockStats: ThirdPartyApiStatistics = {
+			const mockStats: ThirdPartyApiStatisticsResponse = {
 				totalCallsToday: 1801,
 				totalApisTracked: 2,
 				callsByApi: {
@@ -234,7 +234,7 @@ describe("ThirdPartyApiService", () =>
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
-			const stats: ThirdPartyApiStatistics | undefined = query.data();
+			const stats: ThirdPartyApiStatisticsResponse | undefined = query.data();
 			expect(stats?.totalCallsToday).toBe(mockStats.totalCallsToday);
 			expect(stats?.totalApisTracked).toBe(mockStats.totalApisTracked);
 			expect(
@@ -244,7 +244,7 @@ describe("ThirdPartyApiService", () =>
 
 		it("should handle empty statistics", async () =>
 		{
-			const mockStats: ThirdPartyApiStatistics = {
+			const mockStats: ThirdPartyApiStatisticsResponse = {
 				totalCallsToday: 0,
 				totalApisTracked: 0,
 				callsByApi: {},
@@ -261,7 +261,7 @@ describe("ThirdPartyApiService", () =>
 
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
-			const stats: ThirdPartyApiStatistics | undefined = query.data();
+			const stats: ThirdPartyApiStatisticsResponse | undefined = query.data();
 			expect(stats?.totalCallsToday).toBe(0);
 			expect(stats?.totalApisTracked).toBe(0);
 			expect(

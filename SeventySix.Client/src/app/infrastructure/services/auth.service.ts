@@ -22,9 +22,17 @@ import { Observable, tap, catchError, of } from "rxjs";
 import { environment } from "@environments/environment";
 import { DateService } from "@infrastructure/services";
 import {
-	LoginCredentials,
+	LoginRequest,
 	AuthResponse,
-	AuthUser,
+	UserProfileDto,
+	OAuthCodeExchangeRequest,
+	ChangePasswordRequest,
+	ForgotPasswordRequest,
+	InitiateRegistrationRequest,
+	CompleteRegistrationRequest,
+	SetPasswordRequest
+} from "@infrastructure/api";
+import {
 	OAuthProvider,
 	JwtClaims,
 	DOTNET_ROLE_CLAIM
@@ -54,15 +62,15 @@ export class AuthService
 	private initialized: boolean = false;
 
 	/** Current authenticated user signal. */
-	private readonly userSignal: WritableSignal<AuthUser | null> =
-		signal<AuthUser | null>(null);
+	private readonly userSignal: WritableSignal<UserProfileDto | null> =
+		signal<UserProfileDto | null>(null);
 
 	/** Whether user must change password before using the app. */
 	private readonly requiresPasswordChangeSignal: WritableSignal<boolean> =
 		signal<boolean>(false);
 
 	/** Read-only user state. */
-	readonly user: Signal<AuthUser | null> = this.userSignal.asReadonly();
+	readonly user: Signal<UserProfileDto | null> = this.userSignal.asReadonly();
 
 	/** Read-only password change requirement state. */
 	readonly requiresPasswordChange: Signal<boolean> =
@@ -109,7 +117,7 @@ export class AuthService
 	/**
 	 * Local username/password login.
 	 */
-	login(credentials: LoginCredentials): Observable<AuthResponse>
+	login(credentials: LoginRequest): Observable<AuthResponse>
 	{
 		return this.httpClient
 			.post<AuthResponse>(`${this.authUrl}/login`, credentials, {
@@ -291,7 +299,7 @@ export class AuthService
 	 */
 	hasRole(role: string): boolean
 	{
-		const user: AuthUser | null = this.userSignal();
+		const user: UserProfileDto | null = this.userSignal();
 		return user?.roles.includes(role) ?? false;
 	}
 
@@ -369,7 +377,10 @@ export class AuthService
 				username: claims.unique_name,
 				email: claims.email,
 				roles,
-				fullName: claims.given_name || null
+				fullName: claims.given_name || null,
+				hasPassword: true, // JWT exists, so user has password
+				linkedProviders: [], // TODO: Fetch from /me endpoint for full profile
+				lastLoginAt: null // TODO: Fetch from /me endpoint for full profile
 			});
 		}
 	}

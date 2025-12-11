@@ -49,7 +49,7 @@ public class AuthService(
 		if (github == null)
 		{
 			throw new InvalidOperationException(
-				"GitHub OAuth provider is not configured.");
+				OAuthProviderConstants.ErrorMessages.GitHubNotConfigured);
 		}
 
 		// Generate PKCE code challenge
@@ -82,7 +82,7 @@ public class AuthService(
 		if (github == null)
 		{
 			return AuthResult.Failed(
-				"GitHub OAuth is not configured.",
+				OAuthProviderConstants.ErrorMessages.GitHubOAuthDisabled,
 				AuthErrorCodes.OAuthError);
 		}
 
@@ -119,10 +119,10 @@ public class AuthService(
 		{
 			logger.LogError(
 				ex,
-				"GitHub OAuth callback failed.");
+				OAuthProviderConstants.ErrorMessages.GitHubCallbackFailed);
 
 			return AuthResult.Failed(
-				"GitHub authentication failed.",
+				OAuthProviderConstants.ErrorMessages.GitHubAuthenticationFailed,
 				AuthErrorCodes.OAuthError);
 		}
 	}
@@ -271,7 +271,7 @@ public class AuthService(
 
 		HttpResponseMessage response =
 			await client.GetAsync(
-				"https://api.github.com/user",
+				OAuthProviderConstants.Endpoints.GitHubUserApi,
 				cancellationToken);
 
 		response.EnsureSuccessStatusCode();
@@ -356,11 +356,11 @@ public class AuthService(
 					new()
 					{
 						Username = username,
-						Email = userInfo.Email ?? $"{userInfo.Login}@github.placeholder",
+						Email = userInfo.Email ?? $"{userInfo.Login}{OAuthProviderConstants.AuditValues.GitHubPlaceholderEmailDomain}",
 						FullName = userInfo.Name,
 						IsActive = true,
 						CreateDate = now,
-						CreatedBy = "GitHub OAuth"
+						CreatedBy = OAuthProviderConstants.AuditValues.GitHubOAuthCreatedBy
 					};
 
 				// Create user with role assignment

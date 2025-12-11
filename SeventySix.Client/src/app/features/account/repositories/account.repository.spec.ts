@@ -1,11 +1,7 @@
 import { of } from "rxjs";
 import { AccountRepository } from "./account.repository";
 import { ApiService } from "@infrastructure/api-services/api.service";
-import {
-	Profile,
-	UpdateProfileRequest,
-	CreatePermissionRequest
-} from "../models";
+import { UserProfileDto, UpdateProfileRequest, CreatePermissionRequestDto } from "../models";
 import { setupRepositoryTest, createMockApiService } from "@testing";
 
 describe("AccountRepository", () =>
@@ -29,10 +25,10 @@ describe("AccountRepository", () =>
 
 	it("should GET profile from /auth/me", (done) =>
 	{
-		const mockProfile: Profile = {
+		const mockProfile: UserProfileDto = {
 			id: 1,
 			username: "testuser",
-			email: "test@example.com",
+			email: "test@example.com", fullName: "Test User",
 			roles: ["User"],
 			hasPassword: true,
 			linkedProviders: [],
@@ -40,7 +36,7 @@ describe("AccountRepository", () =>
 		};
 		mockApiService.get.and.returnValue(of(mockProfile));
 
-		repository.getProfile().subscribe((profile: Profile) =>
+		repository.getProfile().subscribe((profile: UserProfileDto) =>
 		{
 			expect(profile).toEqual(mockProfile);
 			expect(mockApiService.get).toHaveBeenCalledWith("auth/me");
@@ -51,10 +47,9 @@ describe("AccountRepository", () =>
 	it("should PUT profile update to /users/me", (done) =>
 	{
 		const request: UpdateProfileRequest = {
-			email: "new@example.com",
-			fullName: "New Name"
+			email: "new@example.com", fullName: "New Name"
 		};
-		mockApiService.put.and.returnValue(of({} as Profile));
+		mockApiService.put.and.returnValue(of({} as UserProfileDto));
 
 		repository.updateProfile(request).subscribe(() =>
 		{
@@ -78,7 +73,7 @@ describe("AccountRepository", () =>
 
 	it("should POST permission request to /users/me/permission-requests", (done) =>
 	{
-		const request: CreatePermissionRequest = {
+		const request: CreatePermissionRequestDto = {
 			requestedRoles: ["Admin"],
 			requestMessage: "Need access"
 		};

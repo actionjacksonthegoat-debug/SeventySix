@@ -23,7 +23,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 	/// </summary>
 	public RegisterRequestValidator()
 	{
-		RuleFor(x => x.Username)
+		RuleFor(request => request.Username)
 			.NotEmpty()
 			.WithMessage("Username is required")
 			.Length(3, 50)
@@ -31,7 +31,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 			.Matches(@"^[a-zA-Z0-9_]+$")
 			.WithMessage("Username must contain only alphanumeric characters and underscores");
 
-		RuleFor(x => x.Email)
+		RuleFor(request => request.Email)
 			.Cascade(CascadeMode.Stop)
 			.NotEmpty()
 			.WithMessage("Email is required")
@@ -40,12 +40,12 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 			.EmailAddress()
 			.WithMessage("Email must be a valid email address");
 
-		RuleFor(x => x.Password)
+		RuleFor(request => request.Password)
 			.ApplyPasswordRules();
 
-		RuleFor(x => x.FullName)
+		RuleFor(request => request.FullName)
 			.MaximumLength(100)
 			.WithMessage("Full name must not exceed 100 characters")
-			.When(x => x.FullName != null);
+			.When(request => request.FullName != null);
 	}
 }

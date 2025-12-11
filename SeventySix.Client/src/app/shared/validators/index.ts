@@ -1,6 +1,5 @@
 export {
 	dateRangeValidator,
-	temperatureRangeValidator,
 	stringLengthValidator,
 	futureDateValidator,
 	requiredIfValidator,

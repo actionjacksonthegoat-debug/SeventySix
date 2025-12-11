@@ -20,7 +20,7 @@ public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRe
 	/// </summary>
 	public ForgotPasswordRequestValidator()
 	{
-		RuleFor(x => x.Email)
+		RuleFor(request => request.Email)
 			.Cascade(CascadeMode.Stop)
 			.NotEmpty()
 			.WithMessage("Email is required")

@@ -28,7 +28,7 @@ describe("ProfilePage", () =>
 			of({
 				id: 1,
 				username: "testuser",
-				email: "test@example.com",
+				email: "test@example.com", fullName: "Test User",
 				roles: ["User"],
 				hasPassword: true,
 				linkedProviders: [],
@@ -78,16 +78,14 @@ describe("ProfilePage", () =>
 	{
 		mockRepository.updateProfile.and.returnValue(of({} as any));
 		component.profileForm.patchValue({
-			email: "new@example.com",
-			fullName: "New Name"
+			email: "new@example.com", fullName: "New Name"
 		});
 		component.profileForm.markAsDirty();
 
 		await component.onSubmit();
 
 		expect(mockRepository.updateProfile).toHaveBeenCalledWith({
-			email: "new@example.com",
-			fullName: "New Name"
+			email: "new@example.com", fullName: "New Name"
 		});
 	});
 });

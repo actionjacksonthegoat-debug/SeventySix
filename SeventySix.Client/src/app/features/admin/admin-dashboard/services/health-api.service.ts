@@ -7,9 +7,9 @@ import {
 import { lastValueFrom } from "rxjs";
 import { HealthApiRepository } from "@admin/admin-dashboard/repositories";
 import {
-	HealthStatus,
-	DatabaseHealth,
-	ExternalApiHealth
+	HealthStatusResponse,
+	DatabaseHealthResponse,
+	ExternalApiHealthResponse
 } from "@admin/admin-dashboard/models";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
@@ -23,7 +23,7 @@ export class HealthApiService
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("health");
 
-	getHealth(): CreateQueryResult<HealthStatus, Error>
+	getHealth(): CreateQueryResult<HealthStatusResponse, Error>
 	{
 		return injectQuery(() => ({
 			queryKey: QueryKeys.health.status,
@@ -32,7 +32,7 @@ export class HealthApiService
 		}));
 	}
 
-	getDatabaseHealth(): CreateQueryResult<DatabaseHealth, Error>
+	getDatabaseHealth(): CreateQueryResult<DatabaseHealthResponse, Error>
 	{
 		return injectQuery(() => ({
 			queryKey: QueryKeys.health.database,
@@ -41,7 +41,7 @@ export class HealthApiService
 		}));
 	}
 
-	getExternalApiHealth(): CreateQueryResult<ExternalApiHealth, Error>
+	getExternalApiHealth(): CreateQueryResult<ExternalApiHealthResponse, Error>
 	{
 		return injectQuery(() => ({
 			queryKey: QueryKeys.health.externalApis,
