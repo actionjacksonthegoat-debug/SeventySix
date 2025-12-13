@@ -214,9 +214,9 @@ public static class ServiceCollectionExtensions
 			options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
 				_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
 
-			options.AddPolicy(RateLimitPolicies.AuthLogin, _ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-			options.AddPolicy(RateLimitPolicies.AuthRegister, _ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-			options.AddPolicy(RateLimitPolicies.AuthRefresh, _ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+			options.AddPolicy(RateLimitPolicyConstants.AuthLogin, _ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+			options.AddPolicy(RateLimitPolicyConstants.AuthRegister, _ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+			options.AddPolicy(RateLimitPolicyConstants.AuthRefresh, _ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
 		});
 
 		return services;
@@ -251,9 +251,9 @@ public static class ServiceCollectionExtensions
 
 	private static void AddAuthPolicies(RateLimiterOptions options, AuthRateLimitSettings settings)
 	{
-		options.AddPolicy(RateLimitPolicies.AuthLogin, ctx => CreateAuthLimiter(ctx, settings.LoginAttemptsPerMinute, TimeSpan.FromMinutes(1)));
-		options.AddPolicy(RateLimitPolicies.AuthRegister, ctx => CreateAuthLimiter(ctx, settings.RegisterAttemptsPerHour, TimeSpan.FromHours(1)));
-		options.AddPolicy(RateLimitPolicies.AuthRefresh, ctx => CreateAuthLimiter(ctx, settings.TokenRefreshPerMinute, TimeSpan.FromMinutes(1)));
+		options.AddPolicy(RateLimitPolicyConstants.AuthLogin, ctx => CreateAuthLimiter(ctx, settings.LoginAttemptsPerMinute, TimeSpan.FromMinutes(1)));
+		options.AddPolicy(RateLimitPolicyConstants.AuthRegister, ctx => CreateAuthLimiter(ctx, settings.RegisterAttemptsPerHour, TimeSpan.FromHours(1)));
+		options.AddPolicy(RateLimitPolicyConstants.AuthRefresh, ctx => CreateAuthLimiter(ctx, settings.TokenRefreshPerMinute, TimeSpan.FromMinutes(1)));
 	}
 
 	private static RateLimitPartition<string> CreateAuthLimiter(HttpContext context, int permitLimit, TimeSpan window) =>

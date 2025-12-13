@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: Generate .NET service with repository following SeventySix patterns
 ---
 

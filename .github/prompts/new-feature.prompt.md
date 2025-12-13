@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: Scaffold full-stack feature with Angular client and .NET server
 ---
 

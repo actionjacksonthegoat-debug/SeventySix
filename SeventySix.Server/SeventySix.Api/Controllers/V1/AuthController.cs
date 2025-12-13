@@ -46,7 +46,7 @@ public class AuthController(
 	/// <response code="401">Authentication failed.</response>
 	/// <response code="429">Too many login attempts.</response>
 	[HttpPost("login")]
-	[EnableRateLimiting(RateLimitPolicies.AuthLogin)]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -99,7 +99,7 @@ public class AuthController(
 	/// <response code="400">Validation error or username/email taken.</response>
 	/// <response code="429">Too many registration attempts.</response>
 	[HttpPost("register")]
-	[EnableRateLimiting(RateLimitPolicies.AuthRegister)]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthRegister)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
@@ -152,7 +152,7 @@ public class AuthController(
 	/// <response code="401">Invalid or expired refresh token.</response>
 	/// <response code="429">Too many refresh attempts.</response>
 	[HttpPost("refresh")]
-	[EnableRateLimiting(RateLimitPolicies.AuthRefresh)]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthRefresh)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
@@ -329,7 +329,7 @@ public class AuthController(
 	/// <response code="200">Exchange successful.</response>
 	/// <response code="400">Invalid or expired code.</response>
 	[HttpPost("oauth/exchange")]
-	[EnableRateLimiting(RateLimitPolicies.AuthLogin)]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
 	public ActionResult<AuthResponse> ExchangeOAuthCode(
@@ -452,7 +452,7 @@ public class AuthController(
 	/// <response code="400">Invalid email format.</response>
 	/// <response code="429">Too many requests.</response>
 	[HttpPost("forgot-password")]
-	[EnableRateLimiting(RateLimitPolicies.AuthLogin)]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
@@ -539,7 +539,7 @@ public class AuthController(
 	/// <response code="400">Invalid email format.</response>
 	/// <response code="429">Too many requests.</response>
 	[HttpPost("register/initiate")]
-	[EnableRateLimiting(RateLimitPolicies.AuthLogin)]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
@@ -568,7 +568,7 @@ public class AuthController(
 	/// <response code="201">Registration completed successfully, includes auth tokens.</response>
 	/// <response code="400">Invalid token, expired token, or validation error.</response>
 	[HttpPost("register/complete")]
-	[EnableRateLimiting(RateLimitPolicies.AuthLogin)]
+	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<AuthResponse>> CompleteRegistrationAsync(

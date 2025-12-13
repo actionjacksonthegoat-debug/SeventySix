@@ -1,4 +1,4 @@
-// <copyright file="RateLimitPolicies.cs" company="SeventySix">
+// <copyright file="RateLimitPolicyConstants.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -12,7 +12,7 @@ namespace SeventySix.Identity;
 /// Centralizes policy names to avoid magic strings across controllers.
 /// Policies are configured in ServiceCollectionExtensions.AddConfiguredRateLimiting().
 /// </remarks>
-public static class RateLimitPolicies
+public static class RateLimitPolicyConstants
 {
 	/// <summary>
 	/// Strict rate limit for login attempts (5/minute per IP).

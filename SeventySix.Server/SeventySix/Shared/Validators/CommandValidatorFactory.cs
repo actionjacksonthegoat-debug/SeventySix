@@ -27,7 +27,7 @@ public static class CommandValidatorFactory
 		Expression<Func<TCommand, TRequest>> requestSelector)
 	{
 		InlineValidator<TCommand> commandValidator =
-			new();
+			[];
 
 		commandValidator.RuleFor(requestSelector)
 			.SetValidator(requestValidator);
