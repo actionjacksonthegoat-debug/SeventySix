@@ -18,7 +18,7 @@ public static class RefreshTokensCommandHandler
 	public static async Task<AuthResult> HandleAsync(
 		RefreshTokensCommand command,
 		ITokenService tokenService,
-		IUserRepository repository,
+		IUserQueryRepository repository,
 		ICredentialRepository credentialRepository,
 		AuthenticationService authenticationService,
 		CancellationToken cancellationToken)

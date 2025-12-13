@@ -344,7 +344,7 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MessageBus
-			.InvokeAsync<bool>(Arg.Any<int>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<bool>(Arg.Any<RestoreUserCommand>(), Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		// Act
@@ -359,7 +359,7 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MessageBus
-			.InvokeAsync<bool>(Arg.Any<int>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<bool>(Arg.Any<RestoreUserCommand>(), Arg.Any<CancellationToken>())
 			.Returns(false);
 
 		// Act

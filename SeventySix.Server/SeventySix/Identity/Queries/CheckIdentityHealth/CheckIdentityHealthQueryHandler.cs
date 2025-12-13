@@ -18,7 +18,7 @@ public static class CheckIdentityHealthQueryHandler
 	/// <returns>True if database is healthy, false otherwise.</returns>
 	public static async Task<bool> HandleAsync(
 		CheckIdentityHealthQuery query,
-		IUserRepository repository,
+		IUserQueryRepository repository,
 		CancellationToken cancellationToken)
 	{
 		try

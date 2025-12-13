@@ -60,7 +60,7 @@ public class LogsController(
 	{
 		bool deleted =
 			await messageBus.InvokeAsync<bool>(
-				id,
+				new DeleteLogCommand(id),
 				cancellationToken);
 
 		if (!deleted)

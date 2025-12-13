@@ -18,7 +18,7 @@ namespace SeventySix.Identity;
 /// </remarks>
 public sealed class AuthenticationService(
 	IAuthRepository authRepository,
-	IUserRepository userRepository,
+	IUserQueryRepository userRepository,
 	ITokenService tokenService,
 	IOptions<JwtSettings> jwtSettings,
 	TimeProvider timeProvider)

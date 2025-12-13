@@ -19,7 +19,10 @@ public class PermissionRequestServiceApprovalTests
 	private readonly IPermissionRequestRepository PermissionRequestRepository =
 		Substitute.For<IPermissionRequestRepository>();
 
-	private readonly IUserCommandRepository UserRepository =
+	private readonly IUserQueryRepository UserQueryRepository =
+		Substitute.For<IUserQueryRepository>();
+
+	private readonly IUserCommandRepository UserCommandRepository =
 		Substitute.For<IUserCommandRepository>();
 
 	private readonly IOptions<WhitelistedPermissionSettings> WhitelistedOptions =
@@ -27,8 +30,12 @@ public class PermissionRequestServiceApprovalTests
 
 	private PermissionRequestService Service => new(
 		PermissionRequestRepository,
-		UserRepository,
+		UserQueryRepository,
+		UserCommandRepository,
 		WhitelistedOptions);
+
+	private IUserCommandRepository UserRepository =>
+		UserCommandRepository;
 
 	#region ApproveRequestAsync
 
@@ -55,7 +62,7 @@ public class PermissionRequestServiceApprovalTests
 
 		// Assert
 		result.ShouldBeTrue();
-		await UserRepository
+		await UserCommandRepository
 			.Received(1)
 			.AddRoleAsync(
 				10,
@@ -82,7 +89,7 @@ public class PermissionRequestServiceApprovalTests
 
 		// Assert
 		result.ShouldBeFalse();
-		await UserRepository
+		await UserCommandRepository
 			.DidNotReceive()
 			.AddRoleAsync(
 				Arg.Any<int>(),
@@ -122,7 +129,7 @@ public class PermissionRequestServiceApprovalTests
 
 		// Assert
 		result.ShouldBeTrue();
-		await UserRepository
+		await UserCommandRepository
 			.DidNotReceive()
 			.AddRoleAsync(
 				Arg.Any<int>(),
@@ -180,13 +187,13 @@ public class PermissionRequestServiceApprovalTests
 
 		// Assert
 		result.ShouldBe(2);
-		await UserRepository
+		await UserCommandRepository
 			.Received(1)
 			.AddRoleAsync(
 				10,
 				TestRoleConstants.Developer,
 				Arg.Any<CancellationToken>());
-		await UserRepository
+		await UserCommandRepository
 			.Received(1)
 			.AddRoleAsync(
 				20,
@@ -213,7 +220,7 @@ public class PermissionRequestServiceApprovalTests
 
 		// Assert
 		result.ShouldBe(0);
-		await UserRepository
+		await UserCommandRepository
 			.DidNotReceive()
 			.AddRoleAsync(
 				Arg.Any<int>(),
@@ -236,7 +243,7 @@ public class PermissionRequestServiceApprovalTests
 
 		// Assert
 		result.ShouldBe(3);
-		await UserRepository
+		await UserCommandRepository
 			.DidNotReceive()
 			.AddRoleAsync(
 				Arg.Any<int>(),

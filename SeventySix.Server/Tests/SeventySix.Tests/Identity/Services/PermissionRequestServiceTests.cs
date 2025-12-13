@@ -19,7 +19,10 @@ public class PermissionRequestServiceTests
 	private readonly IPermissionRequestRepository Repository =
 		Substitute.For<IPermissionRequestRepository>();
 
-	private readonly IUserCommandRepository UserRepository =
+	private readonly IUserQueryRepository UserQueryRepository =
+		Substitute.For<IUserQueryRepository>();
+
+	private readonly IUserCommandRepository UserCommandRepository =
 		Substitute.For<IUserCommandRepository>();
 
 	private readonly IOptions<WhitelistedPermissionSettings> WhitelistedOptions =
@@ -39,7 +42,8 @@ public class PermissionRequestServiceTests
 
 	private PermissionRequestService Service => new(
 		Repository,
-		UserRepository,
+		UserQueryRepository,
+		UserCommandRepository,
 		WhitelistedOptions);
 
 	#region GetAvailableRolesAsync
@@ -265,7 +269,8 @@ public class PermissionRequestServiceTests
 		PermissionRequestService service =
 			new(
 				Repository,
-				UserRepository,
+				UserQueryRepository,
+				UserCommandRepository,
 				whitelistedOptions);
 
 		Repository
@@ -288,7 +293,7 @@ public class PermissionRequestServiceTests
 			request);
 
 		// Assert - role added directly via AddRoleWithoutAuditAsync, no request created
-		await UserRepository
+		await UserCommandRepository
 			.Received(1)
 			.AddRoleWithoutAuditAsync(
 				1,
@@ -326,7 +331,7 @@ public class PermissionRequestServiceTests
 
 		// Assert - request created, no direct role assignment
 		// RoleId 1 = Developer (based on test setup)
-		await UserRepository
+		await UserCommandRepository
 			.DidNotReceive()
 			.AddRoleWithoutAuditAsync(
 				Arg.Any<int>(),

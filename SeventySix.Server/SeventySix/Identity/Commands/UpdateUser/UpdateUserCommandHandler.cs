@@ -31,12 +31,13 @@ public static class UpdateUserCommandHandler
 	public static async Task<UserDto> HandleAsync(
 		UpdateUserRequest request,
 		IMessageBus messageBus,
-		IUserRepository userRepository,
+		IUserQueryRepository userQueryRepository,
+		IUserCommandRepository userCommandRepository,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
 		User? existing =
-			await userRepository.GetByIdAsync(
+			await userQueryRepository.GetByIdAsync(
 				request.Id,
 				cancellationToken);
 
@@ -52,7 +53,7 @@ public static class UpdateUserCommandHandler
 		try
 		{
 			User updated =
-				await userRepository.UpdateAsync(
+				await userCommandRepository.UpdateAsync(
 					user,
 					cancellationToken);
 

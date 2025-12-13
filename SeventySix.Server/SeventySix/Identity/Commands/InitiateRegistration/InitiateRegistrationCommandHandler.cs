@@ -27,7 +27,7 @@ public static class InitiateRegistrationCommandHandler
 	/// </remarks>
 	public static async Task HandleAsync(
 		InitiateRegistrationRequest request,
-		IUserRepository repository,
+		IUserQueryRepository repository,
 		IEmailVerificationTokenRepository emailVerificationTokenRepository,
 		IEmailService emailService,
 		TimeProvider timeProvider,

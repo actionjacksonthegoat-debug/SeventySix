@@ -19,7 +19,8 @@ namespace SeventySix.Identity;
 public sealed class RegistrationService(
 	IAuthRepository authRepository,
 	ICredentialRepository credentialRepository,
-	IUserRepository userRepository,
+	IUserQueryRepository userQueryRepository,
+	IUserCommandRepository userCommandRepository,
 	ITokenService tokenService,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings,
@@ -116,7 +117,7 @@ public sealed class RegistrationService(
 	{
 		// Get user roles
 		IEnumerable<string> roles =
-			await userRepository.GetUserRolesAsync(
+			await userQueryRepository.GetUserRolesAsync(
 				user.Id,
 				cancellationToken);
 

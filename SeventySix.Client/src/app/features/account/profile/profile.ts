@@ -48,7 +48,7 @@ import {
 export class ProfilePage
 {
 	private readonly accountService: AccountService = inject(AccountService);
-	private readonly fb: FormBuilder = inject(FormBuilder);
+	private readonly formBuilder: FormBuilder = inject(FormBuilder);
 	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
 
 	readonly profileQuery: ReturnType<AccountService["getProfile"]> =
@@ -65,7 +65,7 @@ export class ProfilePage
 	readonly error: Signal<string | null> = computed(() =>
 		this.profileQuery.error() ? "Failed to load profile" : null);
 
-	readonly profileForm: FormGroup = this.fb.group({
+	readonly profileForm: FormGroup = this.formBuilder.group({
 		email: [
 			"",
 			[

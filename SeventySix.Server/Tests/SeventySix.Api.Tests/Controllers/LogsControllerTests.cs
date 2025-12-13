@@ -190,22 +190,35 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task DeleteLogAsync_WithValidId_ReturnsNoContentAsync()
 	{
 		// Arrange - Create a log to delete
-		using IServiceScope scope = SharedFactory.Services.CreateScope();
-		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
-		Log log = await logRepo.CreateAsync(new Log
+		int logId;
 		{
-			LogLevel = "Error",
-			Message = "Test log for deletion",
-			CreateDate = DateTime.UtcNow,
-			MachineName = "test",
-			Environment = "Test",
-		});
+			using IServiceScope scope = SharedFactory.Services.CreateScope();
+			ILogRepository logRepo =
+				scope.ServiceProvider.GetRequiredService<ILogRepository>();
+
+			Log log =
+				await logRepo.CreateAsync(
+					new Log
+					{
+						LogLevel = "Error",
+						Message = "Test log for deletion",
+						CreateDate = DateTime.UtcNow,
+						MachineName = "test",
+						Environment = "Test",
+					});
+
+			logId = log.Id;
+		} // Dispose scope to ensure transaction is committed
 
 		// Act
-		HttpResponseMessage response = await Client!.DeleteAsync($"/api/v1/logs/{log.Id}");
+		HttpResponseMessage response =
+			await Client!.DeleteAsync(
+				$"/api/v1/logs/{logId}");
 
 		// Assert
-		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.NoContent,
+			response.StatusCode);
 	}
 
 	/// <summary>

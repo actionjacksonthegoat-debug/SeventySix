@@ -87,7 +87,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		return this.createMutation<Partial<UserDto>, UserDto>(
 			(user) =>
-				this.apiService.post<UserDto>(this.endpoint, user as CreateUserRequest));
+				this.apiService.post<UserDto>(this.endpoint, user as CreateUserRequest)
+);
 	}
 
 	/**
@@ -109,7 +110,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 			{
 				this.invalidateSingle(variables.userId);
 				this.invalidateAll();
-			});
+			}
+);
 	}
 
 	/**
@@ -120,7 +122,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		return this.createMutation<number | string, void>(
 			(userId) =>
-				this.apiService.delete<void>(`${this.endpoint}/${userId}`));
+				this.apiService.delete<void>(`${this.endpoint}/${userId}`)
+);
 	}
 
 	/**
@@ -178,7 +181,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 			(userId) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/${userId}/restore`,
-					{}));
+					{}
+)
+);
 	}
 
 	/**
@@ -189,7 +194,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		return this.createMutation<number[], number>(
 			(userIds) =>
-				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/activate`, userIds));
+				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/activate`, userIds)
+);
 	}
 
 	/**
@@ -200,7 +206,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		return this.createMutation<number[], number>(
 			(userIds) =>
-				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/deactivate`, userIds));
+				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/deactivate`, userIds)
+);
 	}
 
 	/**
@@ -214,11 +221,13 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 			(userId) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/${userId}/reset-password`,
-					{}),
+					{}
+),
 			() =>
 			{
 				// No cache invalidation needed for password reset
-			});
+			}
+);
 	}
 
 	/**
@@ -252,13 +261,15 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 			(variables) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/${variables.userId}/roles/${variables.roleName}`,
-					{}),
+					{}
+),
 			(result, variables) =>
 			{
 				this.queryClient.invalidateQueries({
 					queryKey: QueryKeys.users.roles(variables.userId)
 				});
-			});
+			}
+);
 	}
 
 	/**
@@ -281,7 +292,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 				this.queryClient.invalidateQueries({
 					queryKey: QueryKeys.users.roles(variables.userId)
 				});
-			});
+			}
+);
 	}
 
 	/** Gets paged users with the given filter. */

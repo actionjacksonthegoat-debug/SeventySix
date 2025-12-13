@@ -28,7 +28,7 @@ namespace SeventySix.DependencyExtensions;
 ///
 /// Registered Components:
 /// - IdentityDbContext: Entity Framework Core DbContext
-/// - Repositories: IUserRepository, IAuthRepository, ITokenRepository, etc.
+/// - Repositories: IUserQueryRepository, IUserCommandRepository, IAuthRepository, ITokenRepository, etc.
 /// - Wolverine CQRS handlers for Identity operations (auto-discovered)
 /// - Traditional services: ITokenService, IOAuthService, IPermissionRequestService
 /// - Validators: Command/query validators with FluentValidation
@@ -67,8 +67,12 @@ public static class IdentityExtensions
 		services.AddScoped<ITransactionManager>(serviceProvider =>
 			new TransactionManager(serviceProvider.GetRequiredService<IdentityDbContext>()));
 
-		// Register repositories
-		services.AddScoped<IUserRepository, UserRepository>();
+		// Register repositories (CQRS pattern - Query + Command)
+		services.AddScoped<UserRepository>();
+		services.AddScoped<IUserQueryRepository>(serviceProvider =>
+			serviceProvider.GetRequiredService<UserRepository>());
+		services.AddScoped<IUserCommandRepository>(serviceProvider =>
+			serviceProvider.GetRequiredService<UserRepository>());
 		services.AddScoped<IPermissionRequestRepository, PermissionRequestRepository>();
 		services.AddScoped<ITokenRepository, TokenRepository>();
 		services.AddScoped<ICredentialRepository, CredentialRepository>();

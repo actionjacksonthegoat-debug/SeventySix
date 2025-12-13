@@ -328,7 +328,7 @@ public class UsersController(
 	{
 		bool result =
 			await messageBus.InvokeAsync<bool>(
-				id,
+				new RestoreUserCommand(id),
 				cancellationToken);
 
 		return result

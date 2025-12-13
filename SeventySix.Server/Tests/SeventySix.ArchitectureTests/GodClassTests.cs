@@ -33,12 +33,10 @@ public class GodClassTests
 	/// </summary>
 	private static readonly HashSet<string> AllowedInterfaceExceptions =
 		[
-			// IUserRepository: Consolidated from IUserQueryRepository + IUserCommandRepository
-			// Merged 14 query methods + 8 command methods = 22 methods total
-			// Intentional consolidation per YAGNI - no read replicas planned
-			// Reduces DI overhead: 2 interface injections → 1 in all handlers
-			// Acceptable tradeoff: simpler DI vs slightly larger interface
-			"IUserRepository"
+			// IUserQueryRepository (15 methods): Logical split of read-only CQRS query operations.
+			// Methods are cohesive user query operations - splitting would fragment the query contract
+			// and introduce artificial boundaries. The interface follows ISP by being read-only only.
+			"IUserQueryRepository",
 		];
 
 	/// <summary>

@@ -43,7 +43,7 @@ import { AvailableRoleDto, CreatePermissionRequestDto } from "../models";
 export class RequestPermissionsPage
 {
 	private readonly accountService: AccountService = inject(AccountService);
-	private readonly fb: FormBuilder = inject(FormBuilder);
+	private readonly formBuilder: FormBuilder = inject(FormBuilder);
 	private readonly router: Router = inject(Router);
 	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
 
@@ -77,7 +77,7 @@ export class RequestPermissionsPage
 		return map;
 	});
 
-	readonly requestForm: FormGroup = this.fb.group({
+	readonly requestForm: FormGroup = this.formBuilder.group({
 		requestMessage: ["", [Validators.maxLength(500)]]
 	});
 

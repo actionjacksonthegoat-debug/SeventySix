@@ -61,7 +61,7 @@ export class UserCreatePage
 	private readonly userService: UserService = inject(UserService);
 	private readonly logger: LoggerService = inject(LoggerService);
 	private readonly router: Router = inject(Router);
-	private readonly fb: FormBuilder = inject(FormBuilder);
+	private readonly formBuilder: FormBuilder = inject(FormBuilder);
 	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
 
 	readonly stepper: Signal<MatStepper | undefined> =
@@ -106,7 +106,7 @@ export class UserCreatePage
 	}
 
 	// Form groups for each step
-	readonly basicInfoForm: FormGroup = this.fb.group({
+	readonly basicInfoForm: FormGroup = this.formBuilder.group({
 		username: [
 			"",
 			[
@@ -126,7 +126,7 @@ export class UserCreatePage
 		]
 	});
 
-	readonly accountDetailsForm: FormGroup = this.fb.group({
+	readonly accountDetailsForm: FormGroup = this.formBuilder.group({
 		fullName: [
 			"",
 			[

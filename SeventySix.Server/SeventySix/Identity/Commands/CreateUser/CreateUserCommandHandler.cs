@@ -32,7 +32,8 @@ public static class CreateUserCommandHandler
 	public static async Task<UserDto> HandleAsync(
 		CreateUserRequest request,
 		IMessageBus messageBus,
-		IUserRepository userRepository,
+		IUserQueryRepository userQueryRepository,
+		IUserCommandRepository userCommandRepository,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
@@ -45,7 +46,7 @@ public static class CreateUserCommandHandler
 		try
 		{
 			User created =
-				await userRepository.CreateAsync(
+				await userCommandRepository.CreateAsync(
 					entity,
 					cancellationToken);
 
@@ -78,7 +79,8 @@ public static class CreateUserCommandHandler
 			// Email rate limited - mark user for pending email
 			await MarkUserNeedsPendingEmailAsync(
 				createdUser.Id,
-				userRepository,
+				userQueryRepository,
+				userCommandRepository,
 				cancellationToken);
 
 			logger.LogWarning(
@@ -108,11 +110,12 @@ public static class CreateUserCommandHandler
 	/// </summary>
 	private static async Task MarkUserNeedsPendingEmailAsync(
 		int userId,
-		IUserRepository userRepository,
+		IUserQueryRepository userQueryRepository,
+		IUserCommandRepository userCommandRepository,
 		CancellationToken cancellationToken)
 	{
 		User? user =
-			await userRepository.GetByIdAsync(
+			await userQueryRepository.GetByIdAsync(
 				userId,
 				cancellationToken);
 
@@ -123,7 +126,7 @@ public static class CreateUserCommandHandler
 
 		user.NeedsPendingEmail = true;
 
-		await userRepository.UpdateAsync(
+		await userCommandRepository.UpdateAsync(
 			user,
 			cancellationToken);
 	}

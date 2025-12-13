@@ -5,33 +5,34 @@
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Handler for clearing the pending email flag for a user.
+/// Handler for <see cref="ClearPendingEmailFlagCommand"/>.
 /// </summary>
 public static class ClearPendingEmailFlagCommandHandler
 {
 	/// <summary>
 	/// Handles clearing the pending email flag for a user.
 	/// </summary>
-	/// <param name="userId">The user ID to clear the pending email flag for.</param>
+	/// <param name="command">The clear pending email flag command.</param>
 	/// <param name="userQueryRepository">User query repository.</param>
 	/// <param name="userCommandRepository">User command repository.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>A task representing the async operation.</returns>
 	public static async Task HandleAsync(
-		int userId,
-		IUserRepository userRepository,
+		ClearPendingEmailFlagCommand command,
+		IUserQueryRepository userQueryRepository,
+		IUserCommandRepository userCommandRepository,
 		CancellationToken cancellationToken)
 	{
 		User? user =
-			await userRepository.GetByIdAsync(
-				userId,
+			await userQueryRepository.GetByIdAsync(
+				command.UserId,
 				cancellationToken);
 
 		if (user?.NeedsPendingEmail == true)
 		{
 			user.NeedsPendingEmail = false;
 
-			await userRepository.UpdateAsync(
+			await userCommandRepository.UpdateAsync(
 				user,
 				cancellationToken);
 		}

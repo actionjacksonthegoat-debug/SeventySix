@@ -18,7 +18,7 @@ public static class GetUsersNeedingEmailQueryHandler
 	/// <returns>Collection of users needing emails.</returns>
 	public static async Task<IEnumerable<UserDto>> HandleAsync(
 		GetUsersNeedingEmailQuery query,
-		IUserRepository repository,
+		IUserQueryRepository repository,
 		CancellationToken cancellationToken)
 	{
 		return await repository.GetUsersNeedingEmailAsync(cancellationToken);

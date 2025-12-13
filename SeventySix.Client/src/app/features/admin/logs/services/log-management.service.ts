@@ -18,7 +18,7 @@ import { DateService } from "@infrastructure/services";
 import { injectQuery } from "@tanstack/angular-query-experimental";
 import { lastValueFrom, Observable } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
-import { LogQueryRequest, LogDto } from "@admin/logs/models";
+import { LogQueryRequest } from "@admin/logs/models";
 import { PagedResultOfLogDto } from "@infrastructure/api";
 import { buildHttpParams } from "@infrastructure/utils/http-params.utility";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
@@ -87,7 +87,8 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	{
 		return this.createMutation<number, void>(
 			(logId) =>
-				this.apiService.delete<void>(`${this.endpoint}/${logId}`));
+				this.apiService.delete<void>(`${this.endpoint}/${logId}`)
+);
 	}
 
 	/**
@@ -104,7 +105,8 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 			{
 				this.clearSelection();
 				this.invalidateAll();
-			});
+			}
+);
 	}
 
 	/**

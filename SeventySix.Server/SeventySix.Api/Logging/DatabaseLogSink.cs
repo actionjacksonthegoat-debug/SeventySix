@@ -152,18 +152,10 @@ public class DatabaseLogSink(
 			using IServiceScope scope = serviceProvider.CreateScope();
 			ILogRepository logRepository = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
-			// Process all events in batch
+			// Process all events in a batch
 			foreach (LogEvent logEvent in batch)
 			{
-				try
-				{
-					await EmitAsync(logEvent, logRepository);
-				}
-				catch (Exception ex)
-				{
-					// Don't throw - log to console to avoid infinite loop
-					Console.WriteLine($"[DatabaseLogSink] Error writing log to database: {ex.Message}");
-				}
+				await EmitAsync(logEvent, logRepository);
 			}
 		}
 		finally

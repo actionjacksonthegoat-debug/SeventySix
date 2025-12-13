@@ -5,25 +5,25 @@
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Handler for restoring a soft-deleted user.
+/// Handler for <see cref="RestoreUserCommand"/>.
 /// </summary>
 public static class RestoreUserCommandHandler
 {
 	/// <summary>
 	/// Handles restoration of a soft-deleted user.
 	/// </summary>
-	/// <param name="userId">The user ID to restore.</param>
+	/// <param name="command">The restore user command.</param>
 	/// <param name="repository">User command repository.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>True if the user was restored; otherwise false.</returns>
 	public static async Task<bool> HandleAsync(
-		int userId,
-		IUserRepository repository,
+		RestoreUserCommand command,
+		IUserCommandRepository repository,
 		CancellationToken cancellationToken)
 	{
 		bool result =
 			await repository.RestoreAsync(
-				userId,
+				command.UserId,
 				cancellationToken);
 
 		return result;

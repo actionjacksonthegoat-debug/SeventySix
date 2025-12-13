@@ -4,7 +4,7 @@ public static class CheckEmailExistsQueryHandler
 {
 	public static async Task<bool> HandleAsync(
 		CheckEmailExistsQuery query,
-		IUserRepository repository,
+		IUserQueryRepository repository,
 		CancellationToken cancellationToken)
 	{
 		return await repository.EmailExistsAsync(

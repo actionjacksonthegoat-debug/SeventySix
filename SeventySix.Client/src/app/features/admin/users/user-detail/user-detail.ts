@@ -54,7 +54,7 @@ export class UserDetailPage
 	private readonly logger: LoggerService = inject(LoggerService);
 	private readonly route: ActivatedRoute = inject(ActivatedRoute);
 	private readonly router: Router = inject(Router);
-	private readonly fb: FormBuilder = inject(FormBuilder);
+	private readonly formBuilder: FormBuilder = inject(FormBuilder);
 	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
 
 	// Get user ID from route
@@ -124,7 +124,7 @@ export class UserDetailPage
 	);
 
 	// Reactive form
-	readonly userForm: FormGroup = this.fb.group({
+	readonly userForm: FormGroup = this.formBuilder.group({
 		username: [
 			"",
 			[

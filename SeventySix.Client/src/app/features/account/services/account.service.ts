@@ -1,28 +1,25 @@
-import { inject, Injectable } from "@angular/core";
 import {
-	injectQuery,
-	QueryClient
-} from "@tanstack/angular-query-experimental";
+	inject,
+	Injectable
+} from "@angular/core";
+import { injectQuery } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
+import { BaseMutationService } from "@infrastructure/services";
 import {
 	UpdateProfileRequest,
 	CreatePermissionRequestDto,
 	UserProfileDto,
 	AvailableRoleDto
 } from "../models";
-import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
-import { createMutation } from "@infrastructure/utils/mutation-factory";
 
 /** Service for current user's account operations. Provided at route level. */
 @Injectable()
-export class AccountService
+export class AccountService extends BaseMutationService
 {
+	protected readonly queryKeyPrefix: string = "account";
 	private readonly apiService: ApiService = inject(ApiService);
-	private readonly queryClient: QueryClient = inject(QueryClient);
-	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
-		getQueryConfig("account");
 	private readonly endpoint: string = "users/me";
 
 	getProfile()
@@ -36,11 +33,10 @@ export class AccountService
 
 	updateProfile()
 	{
-		return createMutation<UpdateProfileRequest, UserProfileDto>(
+		return this.createMutation<UpdateProfileRequest, UserProfileDto>(
 			(request) =>
-				this.apiService.put<UserProfileDto>(this.endpoint, request),
-			this.queryClient,
-			"account");
+				this.apiService.put<UserProfileDto>(this.endpoint, request)
+		);
 	}
 
 	getAvailableRoles()
@@ -55,18 +51,18 @@ export class AccountService
 
 	createPermissionRequest()
 	{
-		return createMutation<CreatePermissionRequestDto, void>(
+		return this.createMutation<CreatePermissionRequestDto, void>(
 			(request) =>
 				this.apiService.post<void, CreatePermissionRequestDto>(
 					`${this.endpoint}/permission-requests`,
-					request),
-			this.queryClient,
-			"account",
+					request
+				),
 			() =>
 			{
 				this.queryClient.invalidateQueries({
 					queryKey: QueryKeys.account.availableRoles
 				});
-			});
+			}
+		);
 	}
 }

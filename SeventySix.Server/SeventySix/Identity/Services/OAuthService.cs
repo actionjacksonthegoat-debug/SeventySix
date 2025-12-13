@@ -26,7 +26,8 @@ namespace SeventySix.Identity;
 /// </remarks>
 public class OAuthService(
 	IAuthRepository authRepository,
-	IUserRepository userRepository,
+	IUserQueryRepository userQueryRepository,
+	IUserCommandRepository userCommandRepository,
 	IHttpClientFactory httpClientFactory,
 	IOptions<AuthSettings> authSettings,
 	TimeProvider timeProvider,
@@ -262,7 +263,7 @@ public class OAuthService(
 				existingLogin,
 				cancellationToken);
 
-			User? existingUser = await userRepository.GetByIdAsync(
+			User? existingUser = await userQueryRepository.GetByIdAsync(
 							existingLogin.UserId,
 							cancellationToken);
 

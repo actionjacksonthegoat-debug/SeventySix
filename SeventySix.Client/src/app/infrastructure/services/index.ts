@@ -6,6 +6,7 @@
 // Infrastructure services
 export * from "./auth.service";
 export * from "./base-filter.service";
+export * from "./base-mutation.service";
 export * from "./client-error-logger.service";
 export * from "./date.service";
 export * from "./dialog.service";
