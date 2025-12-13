@@ -1,150 +1,156 @@
 # SeventySix Copilot Instructions
 
-## CRITICAL RULES - Always Apply
+## Code Formatting (CRITICAL - .ts and .cs)
 
-### Core Principles (SOLID, KISS, DRY, YAGNI)
+| Rule | Do | Don't |
+|------|-----|-------|
+| 2+ params | Each on new line, indented | Same line |
+| Lambda params | Lambda on new line after `(` | Lambda inline with `(` |
+| Binary ops | `\|\|` on LEFT of new line | End of line |
+| Assignment `=` | ALWAYS new line after `=`, value indented | Value on same line |
+| Chains | New line BEFORE `.`, indented | One line |
+| Closing `)` | With last param | Alone on line |
+| Nulls (C#) | `x?.ToDto()` | `if (x == null)` |
 
--   **SRP**: Each class/component has one reason to change
--   **SRP Threshold**: Split services/interfaces at **12+ methods** (prevents god objects)
--   **KISS**: Simple solutions over complex ones
--   **DRY**: No code duplication (Rule of Three)
--   **YAGNI**: Don't build what you don't need yet
+### Formatting Examples
 
-### Code Formatting (CRITICAL - All .ts and .cs files)
+**Assignment:**
+```csharp
+// ✅ CORRECT
+User? user =
+    await repo.GetByIdAsync(id);
 
--   **ALWAYS** put each parameter on new line when 2+ parameters
--   **ALWAYS** place binary operators (`+`, `||`, `&&`, `??`) on LEFT of new lines
--   **ALWAYS** new line AFTER every `=` sign with continuation indented
--   **ALWAYS** new line BEFORE every `.` delimiter in method chains
--   **NEVER** put `)` alone on its own line - keep with last parameter
--   **ALWAYS** use null-conditional (`?.`) over verbose null checks in C#
+// ❌ WRONG
+User? user = await repo.GetByIdAsync(id);
+```
 
-### C# (.NET 10+)
+**Method chains:**
+```csharp
+// ✅ CORRECT - lambda param on new line
+builder
+    .Property(
+        user => user.Username)
+    .HasMaxLength(100)
+    .IsRequired();
 
--   **NEVER** use `var` - always explicit types: `string name = "test";`
--   **ALWAYS** use primary constructors: `public class Service(IRepo repo)`
--   **ALWAYS** use collection expressions: `int[] nums = [1, 2, 3];`
--   **ALWAYS** suffix async methods with `Async` (including tests)
--   **NEVER** verbose null checks - use `return user?.ToDto();` not `if (user == null) { return null; } return user.ToDto();`
--   **ALWAYS** use records for DTOs (positional): `public record UserDto(int Id, string Name);`
--   **ALWAYS** use records for Settings (init props): `public record AuthSettings { public int Timeout { get; init; } = 60; }`
--   **ALWAYS** use Fluent API for EF Core, not attributes
--   **ALWAYS** use `AsNoTracking()` for read-only queries
--   **ALWAYS** suffix FK properties with `Id`: `UserId`, `RoleId`, `ParentId`
--   **ALWAYS** use string for audit fields (`CreatedBy`, `ModifiedBy`) - NOT FKs
+// ❌ WRONG
+builder.Property(user => user.Username).HasMaxLength(100);
+```
 
-### Angular (20+)
+**Multi-params:**
+```csharp
+// ✅ CORRECT
+await bus.InvokeAsync<UserDto?>(
+    new GetUserByIdQuery(id),
+    cancellationToken);
 
--   **Zoneless only** - never use Zone.js, NgZone, fakeAsync, tick
--   **ALWAYS** use `inject()` function, never constructor injection
--   **ALWAYS** use explicit types: `const name: string = "test";`
--   **ALWAYS** use OnPush change detection
--   **ALWAYS** use signals, `input()`, `output()`, `computed()`
--   **ALWAYS** use `@if`/`@for`/`@switch`, not `*ngIf`/`*ngFor`
--   **ALWAYS** use `host` object, not `@HostBinding`/`@HostListener`
--   **NEVER** use `ngClass`/`ngStyle` - use `[class.x]`/`[style.x]`
--   **ALWAYS** use `takeUntilDestroyed()` for subscription cleanup
--   **NEVER** call methods in templates - use `computed()` signals or pre-compute in data model
--   **Service scoping**: Infrastructure services (NotificationService, CacheService) use `providedIn: 'root'`; feature services (UserService, LogRepository) scoped to feature routes via `providers` array (memory management, bounded context isolation)
--   **Component naming**: `*Page` suffix ONLY when model with same name exists (e.g., `UserDetailPage`); otherwise use `*Component` (e.g., `RegisterEmailComponent`)
+// ❌ WRONG
+await bus.InvokeAsync<UserDto?>(new GetUserByIdQuery(id), cancellationToken);
+```
 
-### SCSS/CSS Styling
+## C# (.NET 10+)
 
--   **ALWAYS** use `rem` for sizing (spacing, font-size, width, height)
--   **NEVER** use `px` except: border width, border-radius, box-shadow, breakpoints
--   **ALWAYS** use SCSS variables from `_variables.scss`: `vars.$spacing-lg` not `1rem`
--   **ALWAYS** use semantic color vars: `var(--color-info)`, `var(--color-error)`
--   **NEVER** hardcode hex colors - use CSS custom properties
--   **ALWAYS** prefer mixins over repeated CSS (Rule of Three: extract after 3rd occurrence)
--   **ALWAYS** use existing mixins from `_mixins.scss` for common patterns (loading states, icon sizing, page headers)
-
-### Testing
-
--   **NEVER** skip failing tests - fix immediately
--   **ALWAYS** follow **80/20 rule** - test critical paths only, no exhaustive edge case testing
--   **ALWAYS** use **TDD** for fixes - write failing test first, then implement
--   **Angular**: `npm test` (headless, no-watch) - NOT runTests tool
--   **.NET**: `dotnet test` or runTests tool - Docker Desktop required
--   **ALWAYS** use `provideZonelessChangeDetection()` in Angular tests
--   **ALWAYS** suffix async test methods with `Async`
+| Rule | Pattern |
+|------|---------|
+| Types | `string x = ""` never `var` |
+| Constructors | `class Svc(IRepo r)` primary only |
+| Collections | `[1, 2, 3]` not `new List` |
+| Async | Suffix `*Async` always |
+| DTOs | `record UserDto(int Id)` positional |
+| Settings | `record X { prop { get; init; } = default; }` |
+| EF Config | Fluent API, never attributes |
+| Queries | `AsNoTracking()` for reads |
+| FK naming | Suffix `*Id`: `UserId`, `RoleId` |
+| Audit fields | String `CreatedBy`, not FK |
 
 ### Logging
 
--   **NEVER** use `LogDebug`
--   **NEVER** use `LogInformation` - EXCEPT background job completion messages
--   **LogInformation** - ONLY for background job completion (operational visibility)
--   **LogWarning** - Recoverable issues, business rule violations
--   **LogError** - Unrecoverable failures, exceptions
--   **Silent is OK** - No logging needed for disabled services or normal skips
+| Level | Usage |
+|-------|-------|
+| Debug | NEVER |
+| Information | Background job completion ONLY |
+| Warning | Recoverable issues |
+| Error | Unrecoverable failures |
 
-### Database Transactions
+### Transactions
 
--   **NEVER** wrap single-write operations in transactions - adds overhead with no benefit
--   **ALWAYS** consolidate multiple `SaveChangesAsync` calls into single call when possible
--   **ONLY** use `TransactionManager` for read-then-write atomicity (e.g., check duplicate → create)
--   **REMEMBER**: EF Core's `SaveChangesAsync` is already transactional - all pending changes committed atomically
+- Single write: Direct `SaveChangesAsync`
+- Multiple entities: Consolidated `SaveChangesAsync`
+- Read-then-write: `TransactionManager`
 
-### Configuration
+## Angular (20+)
 
--   **NEVER** hardcode configurable values (URLs, intervals, limits)
--   **ALWAYS** use `environment.ts` (Angular) or `appsettings.json` (.NET)
+| Rule | Pattern |
+|------|---------|
+| Zone | Zoneless only, never Zone.js |
+| DI | `inject(Service)` not constructor |
+| Types | `const x: string = ""` explicit |
+| Detection | `OnPush` always |
+| Inputs | `input.required<T>()` |
+| Outputs | `output<T>()` |
+| Control flow | `@if`, `@for`, `@switch` |
+| Host | `host: {}` not `@HostBinding` |
+| Classes | `[class.x]` not `ngClass` |
+| Styles | `[style.x]` not `ngStyle` |
+| Templates | `computed()` not method calls |
+| Cleanup | `takeUntilDestroyed()` |
+| Feature services | Route `providers` not `providedIn: 'root'` |
+| Component naming | `*Page` only if model conflict |
 
-### Documentation
+## SCSS
 
--   **NEVER** create new .md files unless explicitly asked
--   **ALWAYS** use inline JSDoc/XML comments instead
--   Keep code self-documenting with clear names
--   Ensure code, properties, and classes are documented but not overly verbose
+| Rule | Pattern |
+|------|---------|
+| Sizing | `rem` via `vars.$spacing-*` |
+| px OK | border, radius, shadow, breakpoints |
+| Colors | `var(--color-info)` semantic |
+| Variables | `vars.$spacing-lg` not `1rem` |
+| Patterns | Mixin after 3x repetition |
 
-### Architecture (Target State)
+## Testing
 
--   **Server**: Bounded contexts (Identity, Logging, ApiTracking)
--   **Client**: `infrastructure/` (renamed from `core/`) + self-contained features
--   Separate DbContext per bounded context
--   No generic repository pattern
--   PostgreSQL only
--   **CQRS/Wolverine**: Preferred for bounded context operations (see `Implementation.md`)
-    -   Controllers inject `IMessageBus`, not services
-    -   Query records for reads, Command records for writes
-    -   Handlers are static classes with `HandleAsync` methods
-    -   Folder: `Context/Commands/{Op}/`, `Context/Queries/{Op}/`
-    -   Naming: `GetUserByIdQuery`, `CreateUserCommand`, `*Handler`
-    -   **Validators colocate with handlers**: `{Op}CommandValidator.cs` lives in `Commands/{Op}/` folder
-    -   **Don't over-engineer**: Simple contexts don't need sagas (YAGNI)
--   Features are self-contained (models, repos, services inside feature)
--   **DTOs** = API contracts (request/response), **Entities** = DB-persisted models, **Models** = internal non-persisted types
--   **Settings** = Configuration binding classes (bound from `appsettings.json`)
--   Path aliases: `@infrastructure/*`, `@shared/*`, `@admin/*`, `@game/*`
--   Server-Client alignment: Identity → `@admin/users/`, Logging → `@admin/logs/`
+| Rule | Pattern |
+|------|---------|
+| Approach | 80/20 - critical paths only |
+| TDD | Failing test first |
+| Failing tests | Fix immediately, never skip |
+| Async suffix | `*Async` on all async tests |
+| Angular | `npm test` (headless) |
+| Angular setup | `provideZonelessChangeDetection()` |
+| .NET | `dotnet test` |
+| Libraries | xUnit, NSubstitute, Shouldly |
+| Forbidden | Moq, FluentAssertions |
 
-### Type Organization (YAGNI)
+## Architecture
 
--   **Feature types stay in feature** → Never move to `@infrastructure/` or `@shared/` unless cross-context
--   **Cross-context types** → `@shared/models/` (TS) or `Shared/Models/` (C#)
--   **Private types** → Inline in service/component is acceptable
--   **Same-folder imports** → Types can stay in service if only used within same folder
--   **Test-only types** → Keep in test file
--   **Extract only when**: Type is imported by a DIFFERENT module/folder
+| Concept | Pattern |
+|---------|---------|
+| Contexts | Identity, Logging, ApiTracking, ElectronicNotifications |
+| DbContext | Separate per context |
+| Repository | Domain-specific, no generic |
+| CQRS | Wolverine handlers |
+| Validators | Colocate with handlers |
+| Path aliases | `@infrastructure`, `@shared`, `@admin`, `@game` |
+| Feature imports | From `@infrastructure` and `@shared` only |
 
-### Constants Organization (DRY)
+### Type Organization
 
--   **Feature constants** → `feature/constants/` folder (e.g., `Identity/Constants/RoleConstants.cs`)
--   **Cross-feature constants** → `Shared/Constants/` (C#) or `@shared/constants/` (TS)
--   **Test constants** → `TestUtilities/Constants/` (C#) or `src/app/testing/constants/` (TS)
--   **NEVER** hardcode strings like `"Developer"`, `"Admin"`, `"User"` - use constants
--   **NEVER** hardcode API endpoints in tests - use `ApiEndpoints` constants class
--   **ALWAYS** use `static class` with `const` fields for C# constants
--   **ALWAYS** use `export const` with SCREAMING_SNAKE_CASE for TS constants
--   **ALWAYS** group constants by domain: `RoleConstants`, `ClaimConstants`, `ApiEndpoints`
--   **C# naming**: PascalCase values, `*Constants` suffix → `RoleConstants.Developer`
--   **TS naming**: SCREAMING_SNAKE_CASE → `ROLE_DEVELOPER`, file suffix `.constants.ts`
--   **TS test constants**: SCREAMING_SNAKE_CASE → `TEST_ADMIN_USER`, file suffix `.constants.ts`
+| Type | Location | Record Pattern |
+|------|----------|----------------|
+| DTOs | `Context/DTOs/` | Positional params |
+| Entities | `Context/Entities/` | Class |
+| Models | `Context/Models/` | Varies |
+| Settings | `Context/Settings/` | Init props with defaults |
+| Constants | `Context/Constants/` | Static class |
 
-## References (Use #file: when needed)
+### Constants
 
--   **Full C# rules**: `.github/instructions/csharp.md`
--   **Full Angular rules**: `.github/instructions/angular.md`
--   **Testing details**: `.github/instructions/testing.md`
--   **Architecture**: `.github/instructions/architecture.md`
--   **Quick reference**: `.github/instructions/quick-reference.md`
--   **Detailed standards**: `.claude/CLAUDE.md`
+- C#: `RoleConstants.Developer` (PascalCase)
+- TS: `ROLE_DEVELOPER` (SCREAMING_SNAKE)
+- Never hardcode repeated strings
+
+## Documentation
+
+- Inline JSDoc/XML comments only
+- Never create .md files unless asked
+- Self-documenting code preferred
