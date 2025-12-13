@@ -20,7 +20,6 @@ public sealed class RegistrationService(
 	IAuthRepository authRepository,
 	ICredentialRepository credentialRepository,
 	IUserQueryRepository userQueryRepository,
-	IUserCommandRepository userCommandRepository,
 	ITokenService tokenService,
 	IOptions<AuthSettings> authSettings,
 	IOptions<JwtSettings> jwtSettings,

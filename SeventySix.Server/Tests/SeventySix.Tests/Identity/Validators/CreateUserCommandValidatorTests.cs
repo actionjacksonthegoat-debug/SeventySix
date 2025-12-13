@@ -1,4 +1,4 @@
-// <copyright file="CreateUserValidatorTests.cs" company="SeventySix">
+// <copyright file="CreateUserCommandValidatorTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -9,27 +9,19 @@ using SeventySix.Identity.Commands.CreateUser;
 namespace SeventySix.Tests.Identity;
 
 /// <summary>
-/// Unit tests for CreateUserValidator.
+/// Unit tests for CreateUserCommandValidator.
 /// Tests all validation rules for user creation requests.
 /// </summary>
 /// <remarks>
-/// Following TDD principles:
-/// - Test valid scenarios (should pass)
-/// - Test invalid scenarios (should fail)
-/// - Test boundary conditions
-/// - Test each validation rule independently
-///
-/// Uses FluentValidation.TestHelper for cleaner test syntax.
-///
 /// Coverage Focus:
 /// - Username validation (required, length, format)
 /// - Email validation (required, format, length)
 /// - FullName validation (optional, length)
 /// - IsActive validation (no rules, just acceptance)
 /// </remarks>
-public class CreateUserValidatorTests
+public class CreateUserCommandValidatorTests
 {
-	private readonly CreateUserValidator Validator = new();
+	private readonly CreateUserCommandValidator Validator = new();
 
 	#region Username Validation Tests
 

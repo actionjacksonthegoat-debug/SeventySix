@@ -1,4 +1,4 @@
-// <copyright file="CompleteRegistrationRequestValidator.cs" company="SeventySix">
+// <copyright file="CompleteRegistrationCommandValidator.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -10,12 +10,12 @@ namespace SeventySix.Identity.Commands.CompleteRegistration;
 /// <summary>
 /// Validates complete registration requests.
 /// </summary>
-public class CompleteRegistrationRequestValidator : AbstractValidator<CompleteRegistrationRequest>
+public class CompleteRegistrationCommandValidator : AbstractValidator<CompleteRegistrationRequest>
 {
 	/// <summary>
-	/// Initializes a new instance of the <see cref="CompleteRegistrationRequestValidator"/> class.
+	/// Initializes a new instance of the <see cref="CompleteRegistrationCommandValidator"/> class.
 	/// </summary>
-	public CompleteRegistrationRequestValidator()
+	public CompleteRegistrationCommandValidator()
 	{
 		RuleFor(request => request.Token)
 			.NotEmpty()

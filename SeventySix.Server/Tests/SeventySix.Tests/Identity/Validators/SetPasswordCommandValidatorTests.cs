@@ -1,4 +1,4 @@
-// <copyright file="SetPasswordRequestValidatorTests.cs" company="SeventySix">
+// <copyright file="SetPasswordCommandValidatorTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -9,16 +9,16 @@ using SeventySix.Identity.Commands.SetPassword;
 namespace SeventySix.Tests.Identity;
 
 /// <summary>
-/// Unit tests for SetPasswordRequestValidator.
+/// Unit tests for SetPasswordCommandValidator.
 /// </summary>
 /// <remarks>
 /// Coverage Focus:
 /// - Token validation (required, valid base64)
 /// - NewPassword validation (delegates to password rules).
 /// </remarks>
-public class SetPasswordRequestValidatorTests
+public class SetPasswordCommandValidatorTests
 {
-	private readonly SetPasswordRequestValidator Validator = new();
+	private readonly SetPasswordCommandValidator Validator = new();
 
 	#region Valid Request Tests
 

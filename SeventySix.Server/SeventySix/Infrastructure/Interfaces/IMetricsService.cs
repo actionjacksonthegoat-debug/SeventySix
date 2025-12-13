@@ -13,7 +13,5 @@ public interface IMetricsService
 
 	public void RecordQueueStats(int queuedItems, int failedItems);
 
-	public int GetActiveDbConnections();
-
 	public (int queuedItems, int failedItems) GetQueueStats();
 }

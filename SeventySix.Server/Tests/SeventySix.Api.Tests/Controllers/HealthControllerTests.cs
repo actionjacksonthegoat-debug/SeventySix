@@ -35,7 +35,6 @@ public class HealthControllerTests
 			{
 				IsConnected = true,
 				ResponseTimeMs = 25.5,
-				ActiveConnections = 10,
 				Status = "Healthy",
 			},
 			ExternalApis = new ExternalApiHealthResponse
@@ -96,7 +95,6 @@ public class HealthControllerTests
 			{
 				IsConnected = true,
 				ResponseTimeMs = 500,
-				ActiveConnections = 50,
 				Status = "Degraded",
 			},
 			ExternalApis = new ExternalApiHealthResponse
@@ -139,7 +137,6 @@ public class HealthControllerTests
 			{
 				IsConnected = false,
 				ResponseTimeMs = 0,
-				ActiveConnections = 0,
 				Status = "Unhealthy",
 			},
 			ExternalApis = new ExternalApiHealthResponse

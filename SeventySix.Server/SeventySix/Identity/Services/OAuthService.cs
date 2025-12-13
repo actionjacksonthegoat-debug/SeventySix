@@ -27,7 +27,6 @@ namespace SeventySix.Identity;
 public class OAuthService(
 	IAuthRepository authRepository,
 	IUserQueryRepository userQueryRepository,
-	IUserCommandRepository userCommandRepository,
 	IHttpClientFactory httpClientFactory,
 	IOptions<AuthSettings> authSettings,
 	TimeProvider timeProvider,

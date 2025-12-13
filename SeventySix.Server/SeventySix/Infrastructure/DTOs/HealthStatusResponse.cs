@@ -79,14 +79,6 @@ public class DatabaseHealthResponse
 	}
 
 	/// <summary>
-	/// Gets or sets the number of active database connections.
-	/// </summary>
-	public int ActiveConnections
-	{
-		get; set;
-	}
-
-	/// <summary>
 	/// Gets or sets the database health status.
 	/// </summary>
 	/// <value>

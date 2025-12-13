@@ -1,4 +1,4 @@
-// <copyright file="CreateLogRequestValidator.cs" company="SeventySix">
+// <copyright file="CreateClientLogCommandValidator.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -7,10 +7,10 @@ using FluentValidation;
 namespace SeventySix.Logging.Commands.CreateClientLog;
 
 /// <summary>FluentValidation validator for CreateLogRequest.</summary>
-public class CreateLogRequestValidator : AbstractValidator<CreateLogRequest>
+public class CreateClientLogCommandValidator : AbstractValidator<CreateLogRequest>
 {
-	/// <summary>Initializes a new instance of the <see cref="CreateLogRequestValidator"/> class.</summary>
-	public CreateLogRequestValidator()
+	/// <summary>Initializes a new instance of the <see cref="CreateClientLogCommandValidator"/> class.</summary>
+	public CreateClientLogCommandValidator()
 	{
 		RuleFor(request => request.LogLevel)
 			.NotEmpty()

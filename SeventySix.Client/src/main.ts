@@ -6,9 +6,7 @@ import { SwUpdateService } from "@infrastructure/services";
 bootstrapApplication(App, appConfig)
 	.then((appRef) =>
 	{
-		// Initialize Service Worker update service
-		const swUpdateService: SwUpdateService =
-			appRef.injector.get(SwUpdateService);
-		swUpdateService.init();
+		// Trigger SW update service initialization via DI
+		appRef.injector.get(SwUpdateService);
 	})
 	.catch((err) => console.error(err));

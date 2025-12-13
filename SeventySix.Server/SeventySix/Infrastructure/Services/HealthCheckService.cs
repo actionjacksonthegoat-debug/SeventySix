@@ -99,13 +99,11 @@ public class HealthCheckService(
 				kvp => kvp.Value.Result);
 
 		bool allHealthy = results.Values.All(healthy => healthy);
-		int activeConnections = metricsService.GetActiveDbConnections();
 
 		return new DatabaseHealthResponse
 		{
 			IsConnected = allHealthy,
 			ResponseTimeMs = stopwatch.Elapsed.TotalMilliseconds,
-			ActiveConnections = activeConnections,
 			Status = allHealthy ? "Healthy" : "Unhealthy",
 			ContextResults = results,
 		};

@@ -57,7 +57,6 @@ public class HealthStatusResponseTests
 		// Assert
 		Assert.False(response.IsConnected);
 		Assert.Equal(0, response.ResponseTimeMs);
-		Assert.Equal(0, response.ActiveConnections);
 		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
 	}
 
@@ -69,14 +68,12 @@ public class HealthStatusResponseTests
 		{
 			IsConnected = true,
 			ResponseTimeMs = 25.5,
-			ActiveConnections = 10,
 			Status = HealthStatusConstants.Healthy,
 		};
 
 		// Assert
 		Assert.True(response.IsConnected);
 		Assert.Equal(25.5, response.ResponseTimeMs);
-		Assert.Equal(10, response.ActiveConnections);
 		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
 	}
 

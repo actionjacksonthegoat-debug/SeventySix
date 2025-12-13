@@ -1,4 +1,4 @@
-// <copyright file="CompleteRegistrationRequestValidatorTests.cs" company="SeventySix">
+// <copyright file="CompleteRegistrationCommandValidatorTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -10,11 +10,11 @@ using Shouldly;
 namespace SeventySix.Tests.Identity.Validators;
 
 /// <summary>
-/// Unit tests for <see cref="CompleteRegistrationRequestValidator"/>.
+/// Unit tests for <see cref="CompleteRegistrationCommandValidator"/>.
 /// </summary>
-public class CompleteRegistrationRequestValidatorTests
+public class CompleteRegistrationCommandValidatorTests
 {
-	private readonly CompleteRegistrationRequestValidator Validator =
+	private readonly CompleteRegistrationCommandValidator Validator =
 		new();
 
 	[Fact]

@@ -1,4 +1,4 @@
-// <copyright file="ChangePasswordRequestValidator.cs" company="SeventySix">
+// <copyright file="ChangePasswordCommandValidator.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -15,12 +15,12 @@ namespace SeventySix.Identity.Commands.ChangePassword;
 /// - NewPassword: Required, min 8 characters, complexity requirements
 /// - CurrentPassword: Optional (only required if user has existing password)
 /// </remarks>
-public class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRequest>
+public class ChangePasswordCommandValidator : AbstractValidator<ChangePasswordRequest>
 {
 	/// <summary>
-	/// Initializes a new instance of the <see cref="ChangePasswordRequestValidator"/> class.
+	/// Initializes a new instance of the <see cref="ChangePasswordCommandValidator"/> class.
 	/// </summary>
-	public ChangePasswordRequestValidator()
+	public ChangePasswordCommandValidator()
 	{
 		RuleFor(request => request.NewPassword)
 			.ApplyPasswordRules();

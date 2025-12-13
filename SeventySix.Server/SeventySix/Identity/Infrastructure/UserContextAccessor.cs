@@ -2,27 +2,29 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Http;
 using SeventySix.Shared;
 
 namespace SeventySix.Identity.Infrastructure;
 
 /// <summary>
-/// Stub implementation of user context accessor.
+/// Provides access to the current authenticated user from HttpContext.
+/// Falls back to "System" for unauthenticated requests (background jobs, etc.).
 /// </summary>
-/// <remarks>
-/// TODO: Implement authentication integration to retrieve actual user from HttpContext.
-/// Requires JWT/OAuth middleware configuration and claims parsing.
-/// </remarks>
-public class UserContextAccessor : IUserContextAccessor
+public class UserContextAccessor(IHttpContextAccessor httpContextAccessor) : IUserContextAccessor
 {
+	private const string SystemUser = "System";
+
 	/// <summary>
-	/// Gets the current user identifier.
+	/// Gets the current user's username from JWT claims.
 	/// </summary>
-	/// <returns>Always returns "System" until authentication is implemented.</returns>
+	/// <returns>The authenticated username or "System" if not authenticated.</returns>
 	public string GetCurrentUser()
 	{
-		// TODO: Replace with actual user retrieval from HttpContext or authentication context
-		// Example: httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System"
-		return "System";
+		string? username =
+			httpContextAccessor.HttpContext?.User?.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value;
+
+		return username ?? SystemUser;
 	}
 }

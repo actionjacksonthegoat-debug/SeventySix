@@ -366,15 +366,17 @@ export class AuthService
 					? [roleClaim]
 					: [];
 
+			// Note: Full profile data is available via
+			// AccountService.getProfile() which calls /auth/me.
 			this.userSignal.set({
 				id: parseInt(claims.sub, 10),
 				username: claims.unique_name,
 				email: claims.email,
 				roles,
 				fullName: claims.given_name || null,
-				hasPassword: true, // JWT exists, so user has password
-				linkedProviders: [], // TODO: Fetch from /me endpoint for full profile
-				lastLoginAt: null // TODO: Fetch from /me endpoint for full profile
+				hasPassword: true,
+				linkedProviders: [],
+				lastLoginAt: null
 			});
 		}
 	}

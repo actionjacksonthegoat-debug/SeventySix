@@ -1,4 +1,4 @@
-// <copyright file="CreateLogRequestValidatorTests.cs" company="SeventySix">
+// <copyright file="CreateClientLogCommandValidatorTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -8,10 +8,10 @@ using SeventySix.Logging.Commands.CreateClientLog;
 
 namespace SeventySix.Tests.Logging;
 
-/// <summary>Unit tests for CreateLogRequestValidator.</summary>
-public class CreateLogRequestValidatorTests
+/// <summary>Unit tests for CreateClientLogCommandValidator.</summary>
+public class CreateClientLogCommandValidatorTests
 {
-	private readonly CreateLogRequestValidator Validator = new();
+	private readonly CreateClientLogCommandValidator Validator = new();
 
 	[Fact]
 	public async Task ValidRequest_PassesValidationAsync()

@@ -105,33 +105,33 @@ public static class IdentityExtensions
 		services.AddScoped<IDatabaseHealthCheck, IdentityHealthCheck>();
 
 		// Register validators
-		services.AddSingleton<IValidator<CreateUserRequest>, CreateUserValidator>();
+		services.AddSingleton<IValidator<CreateUserRequest>, CreateUserCommandValidator>();
 		services.AddSingleton<IValidator<CreatePermissionRequestCommand>, CreatePermissionRequestValidator>();
-		services.AddSingleton<IValidator<UpdateUserRequest>, UpdateUserValidator>();
-		services.AddSingleton<IValidator<UpdateProfileRequest>, UpdateProfileRequestValidator>();
+		services.AddSingleton<IValidator<UpdateUserRequest>, UpdateUserCommandValidator>();
+		services.AddSingleton<IValidator<UpdateProfileRequest>, UpdateProfileCommandValidator>();
 		services.AddSingleton<IValidator<UpdateProfileCommand>>(
 			serviceProvider =>
 				CommandValidatorFactory.CreateFor<UpdateProfileCommand, UpdateProfileRequest>(
 					serviceProvider.GetRequiredService<IValidator<UpdateProfileRequest>>(),
 					command => command.Request));
 		services.AddSingleton<IValidator<UserQueryRequest>, UserQueryValidator>();
-		services.AddSingleton<IValidator<LoginRequest>, LoginRequestValidator>();
-		services.AddSingleton<IValidator<RegisterRequest>, RegisterRequestValidator>();
-		services.AddSingleton<IValidator<ChangePasswordRequest>, ChangePasswordRequestValidator>();
+		services.AddSingleton<IValidator<LoginRequest>, LoginCommandValidator>();
+		services.AddSingleton<IValidator<RegisterRequest>, RegisterCommandValidator>();
+		services.AddSingleton<IValidator<ChangePasswordRequest>, ChangePasswordCommandValidator>();
 		services.AddSingleton<IValidator<ChangePasswordCommand>>(
 			serviceProvider =>
 				CommandValidatorFactory.CreateFor<ChangePasswordCommand, ChangePasswordRequest>(
 					serviceProvider.GetRequiredService<IValidator<ChangePasswordRequest>>(),
 					command => command.Request));
-		services.AddSingleton<IValidator<SetPasswordRequest>, SetPasswordRequestValidator>();
+		services.AddSingleton<IValidator<SetPasswordRequest>, SetPasswordCommandValidator>();
 		services.AddSingleton<IValidator<SetPasswordCommand>>(
 			serviceProvider =>
 				CommandValidatorFactory.CreateFor<SetPasswordCommand, SetPasswordRequest>(
 					serviceProvider.GetRequiredService<IValidator<SetPasswordRequest>>(),
 					command => command.Request));
-		services.AddSingleton<IValidator<ForgotPasswordRequest>, ForgotPasswordRequestValidator>();
-		services.AddSingleton<IValidator<InitiateRegistrationRequest>, InitiateRegistrationRequestValidator>();
-		services.AddSingleton<IValidator<CompleteRegistrationRequest>, CompleteRegistrationRequestValidator>();
+		services.AddSingleton<IValidator<ForgotPasswordRequest>, InitiatePasswordResetByEmailCommandValidator>();
+		services.AddSingleton<IValidator<InitiateRegistrationRequest>, InitiateRegistrationCommandValidator>();
+		services.AddSingleton<IValidator<CompleteRegistrationRequest>, CompleteRegistrationCommandValidator>();
 		services.AddSingleton<IValidator<CompleteRegistrationCommand>>(
 			serviceProvider =>
 				CommandValidatorFactory.CreateFor<CompleteRegistrationCommand, CompleteRegistrationRequest>(

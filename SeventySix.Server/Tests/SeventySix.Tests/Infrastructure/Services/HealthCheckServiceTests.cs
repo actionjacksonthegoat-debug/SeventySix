@@ -81,7 +81,6 @@ public class HealthCheckServiceTests
 		Assert.True(result.Database.IsConnected);
 		Assert.Equal(HealthStatusConstants.Healthy, result.Database.Status);
 		Assert.True(result.Database.ResponseTimeMs >= 0);
-		Assert.True(result.Database.ActiveConnections >= 0);
 
 		// Verify all bounded contexts are checked
 		Assert.NotNull(result.Database.ContextResults);

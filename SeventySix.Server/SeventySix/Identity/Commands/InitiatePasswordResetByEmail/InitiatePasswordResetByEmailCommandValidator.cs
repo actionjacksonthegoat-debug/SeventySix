@@ -1,4 +1,4 @@
-// <copyright file="ForgotPasswordRequestValidator.cs" company="SeventySix">
+// <copyright file="InitiatePasswordResetByEmailCommandValidator.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -13,12 +13,12 @@ namespace SeventySix.Identity.Commands.InitiatePasswordResetByEmail;
 /// Validation Rules:
 /// - Email: Required, valid email format, max 255 characters.
 /// </remarks>
-public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
+public class InitiatePasswordResetByEmailCommandValidator : AbstractValidator<ForgotPasswordRequest>
 {
 	/// <summary>
-	/// Initializes a new instance of the <see cref="ForgotPasswordRequestValidator"/> class.
+	/// Initializes a new instance of the <see cref="InitiatePasswordResetByEmailCommandValidator"/> class.
 	/// </summary>
-	public ForgotPasswordRequestValidator()
+	public InitiatePasswordResetByEmailCommandValidator()
 	{
 		RuleFor(request => request.Email)
 			.Cascade(CascadeMode.Stop)

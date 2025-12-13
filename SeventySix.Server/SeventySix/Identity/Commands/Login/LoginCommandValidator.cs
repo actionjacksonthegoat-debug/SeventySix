@@ -1,4 +1,4 @@
-// <copyright file="LoginRequestValidator.cs" company="SeventySix">
+// <copyright file="LoginCommandValidator.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -14,12 +14,12 @@ namespace SeventySix.Identity.Commands.Login;
 /// - UsernameOrEmail: Required, max 255 characters
 /// - Password: Required
 /// </remarks>
-public class LoginRequestValidator : AbstractValidator<LoginRequest>
+public class LoginCommandValidator : AbstractValidator<LoginRequest>
 {
 	/// <summary>
-	/// Initializes a new instance of the <see cref="LoginRequestValidator"/> class.
+	/// Initializes a new instance of the <see cref="LoginCommandValidator"/> class.
 	/// </summary>
-	public LoginRequestValidator()
+	public LoginCommandValidator()
 	{
 		RuleFor(request => request.UsernameOrEmail)
 			.NotEmpty()

@@ -35,19 +35,6 @@ export class SwUpdateService
 	}
 
 	/**
-	 * Initializes the Service Worker update service.
-	 * Should be called in the application's initialization logic.
-	 * Note: Actual subscriptions are set up in constructor.
-	 */
-	init(): void
-	{
-		if (!this.swUpdate.isEnabled)
-		{
-			this.logger.info("Service Worker is not enabled");
-		}
-	}
-
-	/**
 	 * Checks for updates periodically.
 	 * Checks every 6 hours when the app is stable.
 	 */
@@ -71,12 +58,7 @@ export class SwUpdateService
 			{
 				try
 				{
-					const updateFound: boolean =
-						await this.swUpdate.checkForUpdate();
-					if (updateFound)
-					{
-						this.logger.info("New version available");
-					}
+					await this.swUpdate.checkForUpdate();
 				}
 				catch (err)
 				{
@@ -102,14 +84,8 @@ export class SwUpdateService
 				),
 				takeUntilDestroyed()
 			)
-			.subscribe((evt) =>
+			.subscribe(() =>
 			{
-				this.logger.info("New version ready", {
-					current: evt.currentVersion,
-					latest: evt.latestVersion
-				});
-
-				// Prompt user to reload
 				if (this.confirmUpdate())
 				{
 					this.activateUpdate();
@@ -149,7 +125,6 @@ export class SwUpdateService
 	 */
 	private confirmUpdate(): boolean
 	{
-		// TODO: Replace with custom UI notification
 		return confirm(
 			"A new version is available. Would you like to update now?"
 		);
@@ -160,7 +135,6 @@ export class SwUpdateService
 	 */
 	private notifyUnrecoverableState(message: string): void
 	{
-		// TODO: Replace with custom UI notification
 		alert(message);
 	}
 
@@ -172,7 +146,6 @@ export class SwUpdateService
 		try
 		{
 			await this.swUpdate.activateUpdate();
-			this.logger.info("Update activated, reloading...");
 			window.location.reload();
 		}
 		catch (err)

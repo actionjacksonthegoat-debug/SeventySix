@@ -1,4 +1,4 @@
-// <copyright file="SetPasswordRequestValidator.cs" company="SeventySix">
+// <copyright file="SetPasswordCommandValidator.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -15,12 +15,12 @@ namespace SeventySix.Identity.Commands.SetPassword;
 /// - Token: Required, must be a valid base64 string
 /// - NewPassword: Required, min 8 characters, complexity requirements.
 /// </remarks>
-public class SetPasswordRequestValidator : AbstractValidator<SetPasswordRequest>
+public class SetPasswordCommandValidator : AbstractValidator<SetPasswordRequest>
 {
 	/// <summary>
-	/// Initializes a new instance of the <see cref="SetPasswordRequestValidator"/> class.
+	/// Initializes a new instance of the <see cref="SetPasswordCommandValidator"/> class.
 	/// </summary>
-	public SetPasswordRequestValidator()
+	public SetPasswordCommandValidator()
 	{
 		RuleFor(request => request.Token)
 			.NotEmpty()

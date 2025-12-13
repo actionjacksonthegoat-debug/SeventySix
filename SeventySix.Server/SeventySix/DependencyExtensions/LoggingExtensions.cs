@@ -45,7 +45,7 @@ public static class LoggingExtensions
 
 		// Validators - Singleton (stateless, thread-safe)
 		services.AddSingleton<IValidator<LogQueryRequest>, LogQueryRequestValidator>();
-		services.AddSingleton<IValidator<CreateLogRequest>, CreateLogRequestValidator>();
+		services.AddSingleton<IValidator<CreateLogRequest>, CreateClientLogCommandValidator>();
 		services.AddSingleton<IValidator<GetLogsPagedQuery>, GetLogsPagedQueryValidator>();
 
 		return services;

@@ -1,4 +1,4 @@
-// <copyright file="ForgotPasswordRequestValidatorTests.cs" company="SeventySix">
+// <copyright file="InitiatePasswordResetByEmailCommandValidatorTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -9,15 +9,15 @@ using SeventySix.Identity.Commands.InitiatePasswordResetByEmail;
 namespace SeventySix.Tests.Identity;
 
 /// <summary>
-/// Unit tests for ForgotPasswordRequestValidator.
+/// Unit tests for InitiatePasswordResetByEmailCommandValidator.
 /// </summary>
 /// <remarks>
 /// Coverage Focus:
 /// - Email validation (required, valid format, max length).
 /// </remarks>
-public class ForgotPasswordRequestValidatorTests
+public class InitiatePasswordResetByEmailCommandValidatorTests
 {
-	private readonly ForgotPasswordRequestValidator Validator = new();
+	private readonly InitiatePasswordResetByEmailCommandValidator Validator = new();
 
 	#region Valid Request Tests
 

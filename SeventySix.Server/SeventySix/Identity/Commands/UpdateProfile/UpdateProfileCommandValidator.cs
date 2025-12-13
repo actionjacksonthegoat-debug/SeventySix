@@ -1,4 +1,4 @@
-// <copyright file="UpdateProfileRequestValidator.cs" company="SeventySix">
+// <copyright file="UpdateProfileCommandValidator.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -15,12 +15,12 @@ namespace SeventySix.Identity.Commands.UpdateProfile;
 /// - Email: Required, valid email format, max 255 characters
 /// - FullName: Optional, max 100 characters if provided
 /// </remarks>
-public class UpdateProfileRequestValidator : AbstractValidator<UpdateProfileRequest>
+public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileRequest>
 {
 	/// <summary>
-	/// Initializes a new instance of the <see cref="UpdateProfileRequestValidator"/> class.
+	/// Initializes a new instance of the <see cref="UpdateProfileCommandValidator"/> class.
 	/// </summary>
-	public UpdateProfileRequestValidator()
+	public UpdateProfileCommandValidator()
 	{
 		RuleFor(request => request.Email)
 			.ApplyEmailRules();

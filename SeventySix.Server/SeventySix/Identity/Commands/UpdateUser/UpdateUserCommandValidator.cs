@@ -1,4 +1,4 @@
-// <copyright file="UpdateUserValidator.cs" company="SeventySix">
+// <copyright file="UpdateUserCommandValidator.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -11,12 +11,12 @@ namespace SeventySix.Identity.Commands.UpdateUser;
 /// Validator for <see cref="UpdateUserRequest"/>.
 /// Ensures data integrity before updating user records.
 /// </summary>
-public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
+public class UpdateUserCommandValidator : AbstractValidator<UpdateUserRequest>
 {
 	/// <summary>
-	/// Initializes a new instance of the <see cref="UpdateUserValidator"/> class.
+	/// Initializes a new instance of the <see cref="UpdateUserCommandValidator"/> class.
 	/// </summary>
-	public UpdateUserValidator()
+	public UpdateUserCommandValidator()
 	{
 		RuleFor(request => request.Id)
 			.GreaterThan(0)

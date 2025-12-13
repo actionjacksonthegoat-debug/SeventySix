@@ -52,51 +52,6 @@ describe("SwUpdateService", () =>
 		expect(service).toBeTruthy();
 	});
 
-	describe("init", () =>
-	{
-		it("should log when Service Worker is not enabled", () =>
-		{
-			swUpdateSpy = createSwUpdateSpy(false);
-
-			TestBed.resetTestingModule();
-			TestBed.configureTestingModule({
-				providers: [
-					provideZonelessChangeDetection(),
-					SwUpdateService,
-					{ provide: SwUpdate, useValue: swUpdateSpy },
-					{ provide: LoggerService, useValue: loggerSpy }
-				]
-			});
-
-			service = TestBed.inject(SwUpdateService);
-			service.init();
-			expect(loggerSpy.info).toHaveBeenCalledWith(
-				"Service Worker is not enabled"
-			);
-		});
-
-		it("should initialize when Service Worker is enabled", () =>
-		{
-			swUpdateSpy = createSwUpdateSpy(true);
-
-			TestBed.resetTestingModule();
-			TestBed.configureTestingModule({
-				providers: [
-					provideZonelessChangeDetection(),
-					SwUpdateService,
-					{ provide: SwUpdate, useValue: swUpdateSpy },
-					{ provide: LoggerService, useValue: loggerSpy }
-				]
-			});
-
-			service = TestBed.inject(SwUpdateService);
-			service.init();
-			expect(loggerSpy.info).not.toHaveBeenCalledWith(
-				"Service Worker is not enabled"
-			);
-		});
-	});
-
 	describe("checkForUpdate", () =>
 	{
 		it("should return false when SW is not enabled", async () =>

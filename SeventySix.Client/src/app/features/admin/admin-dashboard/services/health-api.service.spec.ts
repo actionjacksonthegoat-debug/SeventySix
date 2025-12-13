@@ -67,7 +67,6 @@ describe("HealthApiService", () =>
 				database: {
 					isConnected: true,
 					responseTimeMs: 15.5,
-					activeConnections: 5,
 					status: "Healthy"
 				},
 				externalApis: {
@@ -123,7 +122,6 @@ describe("HealthApiService", () =>
 				database: {
 					isConnected: true,
 					responseTimeMs: 500.0,
-					activeConnections: 50,
 					status: "Degraded"
 				},
 				externalApis: {
@@ -188,7 +186,6 @@ describe("HealthApiService", () =>
 			const mockDbHealth: DatabaseHealthResponse = {
 				isConnected: true,
 				responseTimeMs: 10.2,
-				activeConnections: 3,
 				status: "Healthy"
 			};
 
@@ -215,7 +212,6 @@ describe("HealthApiService", () =>
 			const mockDbHealth: DatabaseHealthResponse = {
 				isConnected: false,
 				responseTimeMs: 0,
-				activeConnections: 0,
 				status: "Unhealthy"
 			};
 
@@ -331,7 +327,6 @@ describe("HealthApiService", () =>
 				database: {
 					isConnected: true,
 					responseTimeMs: 10,
-					activeConnections: 3,
 					status: "Healthy"
 				},
 				externalApis: {

@@ -1493,8 +1493,6 @@ export type components = {
             isConnected?: boolean;
             /** Format: double */
             responseTimeMs?: number | string;
-            /** Format: int32 */
-            activeConnections?: number | string;
             status?: string;
             contextResults?: {
                 [key: string]: boolean;

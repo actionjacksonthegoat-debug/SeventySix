@@ -1,4 +1,4 @@
-// <copyright file="RegisterRequestValidator.cs" company="SeventySix">
+// <copyright file="RegisterCommandValidator.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -17,12 +17,12 @@ namespace SeventySix.Identity.Commands.Register;
 /// - Password: Required, min 8 characters, complexity requirements
 /// - FullName: Optional, max 100 characters
 /// </remarks>
-public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
+public class RegisterCommandValidator : AbstractValidator<RegisterRequest>
 {
 	/// <summary>
-	/// Initializes a new instance of the <see cref="RegisterRequestValidator"/> class.
+	/// Initializes a new instance of the <see cref="RegisterCommandValidator"/> class.
 	/// </summary>
-	public RegisterRequestValidator()
+	public RegisterCommandValidator()
 	{
 		RuleFor(request => request.Username)
 			.ApplyUsernameRules();

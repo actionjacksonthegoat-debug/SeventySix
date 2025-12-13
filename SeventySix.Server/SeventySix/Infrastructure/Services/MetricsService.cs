@@ -39,10 +39,6 @@ public class MetricsService : IMetricsService
 	private static int QueuedItems;
 	private static int FailedItems;
 
-#pragma warning disable CS0649 // Field is never assigned to - TODO: Implement DB connection tracking
-	private static int ActiveDbConnections;
-#pragma warning restore CS0649
-
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MetricsService"/> class.
 	/// </summary>
@@ -119,19 +115,6 @@ public class MetricsService : IMetricsService
 	{
 		QueuedItems = queuedItems;
 		FailedItems = failedItems;
-	}
-
-	/// <summary>
-	/// Gets the current number of active database connections.
-	/// </summary>
-	/// <returns>Number of active database connections.</returns>
-	/// <remarks>
-	/// Value is exposed as an observable gauge for monitoring.
-	/// Used to detect connection leaks or pool exhaustion.
-	/// </remarks>
-	public int GetActiveDbConnections()
-	{
-		return ActiveDbConnections;
 	}
 
 	/// <summary>

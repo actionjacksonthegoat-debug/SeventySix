@@ -1,4 +1,4 @@
-// <copyright file="LoginRequestValidatorTests.cs" company="SeventySix">
+// <copyright file="LoginCommandValidatorTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -9,16 +9,16 @@ using SeventySix.Identity.Commands.Login;
 namespace SeventySix.Tests.Identity;
 
 /// <summary>
-/// Unit tests for LoginRequestValidator.
+/// Unit tests for LoginCommandValidator.
 /// </summary>
 /// <remarks>
 /// Coverage Focus:
 /// - UsernameOrEmail validation (required, max length)
 /// - Password validation (required, max length for DoS protection)
 /// </remarks>
-public class LoginRequestValidatorTests
+public class LoginCommandValidatorTests
 {
-	private readonly LoginRequestValidator Validator = new();
+	private readonly LoginCommandValidator Validator = new();
 
 	#region Valid Request Tests
 
