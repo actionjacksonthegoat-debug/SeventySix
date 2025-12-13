@@ -70,4 +70,48 @@ public interface IUserQueryRepository
 		bool? isActive = null,
 		bool includeDeleted = false,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Checks if a username exists.
+	/// </summary>
+	public Task<bool> UsernameExistsAsync(
+		string username,
+		int? excludeId = null,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Checks if an email exists.
+	/// </summary>
+	public Task<bool> EmailExistsAsync(
+		string email,
+		int? excludeId = null,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Gets all roles for a user.
+	/// </summary>
+	public Task<IEnumerable<string>> GetUserRolesAsync(
+		int userId,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Checks if a user has a specific role.
+	/// </summary>
+	public Task<bool> HasRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Gets a user's complete profile with roles and authentication details.
+	/// </summary>
+	public Task<UserProfileDto?> GetUserProfileAsync(
+		int userId,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Gets all users who need pending password reset emails.
+	/// </summary>
+	public Task<IEnumerable<UserDto>> GetUsersNeedingEmailAsync(
+		CancellationToken cancellationToken = default);
 }

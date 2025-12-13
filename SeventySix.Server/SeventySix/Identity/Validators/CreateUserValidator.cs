@@ -38,32 +38,13 @@ public class CreateUserValidator : AbstractValidator<CreateUserRequest>
 	/// </remarks>
 	public CreateUserValidator()
 	{
-		// Username validation: Required, length constraints, and format
 		RuleFor(request => request.Username)
-			.NotEmpty()
-			.WithMessage("Username is required")
-			.Length(3, 50)
-			.WithMessage("Username must be between 3 and 50 characters")
-			.Matches(@"^[a-zA-Z0-9_]+$")
-			.WithMessage("Username must contain only alphanumeric characters and underscores");
+			.ApplyUsernameRules();
 
-		// Email validation: Required and valid email format
 		RuleFor(request => request.Email)
-			.Cascade(FluentValidation.CascadeMode.Stop)
-			.NotEmpty()
-			.WithMessage("Email is required")
-			.MaximumLength(255)
-			.WithMessage("Email must not exceed 255 characters")
-			.EmailAddress()
-			.WithMessage("Email must be a valid email address")
-			.Matches(@"^[^\s@]+@[^\s@]+\.[^\s@]+$")
-			.WithMessage("Email must be a valid email address");
+			.ApplyEmailRules();
 
-		// FullName validation: Required field with length constraint
 		RuleFor(request => request.FullName)
-			.NotEmpty()
-			.WithMessage("Display name is required")
-			.MaximumLength(100)
-			.WithMessage("Display name must not exceed 100 characters");
+			.ApplyFullNameRules(required: true);
 	}
 }

@@ -24,28 +24,15 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 	public RegisterRequestValidator()
 	{
 		RuleFor(request => request.Username)
-			.NotEmpty()
-			.WithMessage("Username is required")
-			.Length(3, 50)
-			.WithMessage("Username must be between 3 and 50 characters")
-			.Matches(@"^[a-zA-Z0-9_]+$")
-			.WithMessage("Username must contain only alphanumeric characters and underscores");
+			.ApplyUsernameRules();
 
 		RuleFor(request => request.Email)
-			.Cascade(CascadeMode.Stop)
-			.NotEmpty()
-			.WithMessage("Email is required")
-			.MaximumLength(255)
-			.WithMessage("Email must not exceed 255 characters")
-			.EmailAddress()
-			.WithMessage("Email must be a valid email address");
+			.ApplyEmailRules();
 
 		RuleFor(request => request.Password)
 			.ApplyPasswordRules();
 
 		RuleFor(request => request.FullName)
-			.MaximumLength(100)
-			.WithMessage("Full name must not exceed 100 characters")
-			.When(request => request.FullName != null);
+			.ApplyFullNameRules(required: false);
 	}
 }

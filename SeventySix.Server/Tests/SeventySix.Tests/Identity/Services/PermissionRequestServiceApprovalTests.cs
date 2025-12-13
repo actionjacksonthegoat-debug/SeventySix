@@ -19,8 +19,8 @@ public class PermissionRequestServiceApprovalTests
 	private readonly IPermissionRequestRepository PermissionRequestRepository =
 		Substitute.For<IPermissionRequestRepository>();
 
-	private readonly IUserRepository UserRepository =
-		Substitute.For<IUserRepository>();
+	private readonly IUserCommandRepository UserRepository =
+		Substitute.For<IUserCommandRepository>();
 
 	private readonly IOptions<WhitelistedPermissionSettings> WhitelistedOptions =
 		Options.Create(new WhitelistedPermissionSettings());

@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Wolverine;
@@ -20,7 +19,6 @@ public static class ChangePasswordCommandHandler
 	/// <exception cref="ArgumentException">Thrown when validation fails.</exception>
 	public static async Task<AuthResult> HandleAsync(
 		ChangePasswordCommand command,
-		IValidator<ChangePasswordRequest> changePasswordValidator,
 		ICredentialRepository credentialRepository,
 		IMessageBus messageBus,
 		ITokenRepository tokenRepository,
@@ -32,10 +30,6 @@ public static class ChangePasswordCommandHandler
 	{
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
-
-		await changePasswordValidator.ValidateAndThrowAsync(
-			command.Request,
-			cancellationToken);
 
 		UserCredential? credential =
 			await credentialRepository.GetByUserIdForUpdateAsync(
@@ -72,7 +66,8 @@ public static class ChangePasswordCommandHandler
 				authSettings.Value.Password.WorkFactor);
 		credential.PasswordChangedAt = now;
 
-		if (credential.UserId == command.UserId && credential.PasswordHash != string.Empty)
+		if (credential.UserId == command.UserId
+			&& credential.PasswordHash != string.Empty)
 		{
 			await credentialRepository.UpdateAsync(
 				credential,

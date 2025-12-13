@@ -1,4 +1,4 @@
-// <copyright file="AuthService.cs" company="SeventySix">
+// <copyright file="OAuthService.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -24,17 +24,15 @@ namespace SeventySix.Identity;
 /// ISP Pattern: Single implementation, multiple focused interfaces.
 /// Callers depend only on the specific interface they need.
 /// </remarks>
-public class AuthService(
+public class OAuthService(
 	IAuthRepository authRepository,
 	IUserQueryRepository userQueryRepository,
-	IUserRoleRepository userRoleRepository,
-	ITokenService tokenService,
 	IHttpClientFactory httpClientFactory,
 	IOptions<AuthSettings> authSettings,
-	IOptions<JwtSettings> jwtSettings,
 	TimeProvider timeProvider,
 	ITransactionManager transactionManager,
-	ILogger<AuthService> logger) :
+	AuthenticationService authenticationService,
+	ILogger<OAuthService> logger) :
 	IOAuthService
 {
 	/// <inheritdoc/>
@@ -108,7 +106,7 @@ public class AuthService(
 					userInfo,
 					cancellationToken);
 
-			return await GenerateAuthResultAsync(
+			return await authenticationService.GenerateAuthResultAsync(
 				user,
 				clientIp,
 				requiresPasswordChange: false,
@@ -125,60 +123,6 @@ public class AuthService(
 				OAuthProviderConstants.ErrorMessages.GitHubAuthenticationFailed,
 				AuthErrorCodes.OAuthError);
 		}
-	}
-
-	/// <summary>
-	/// Generates auth result with new tokens for user.
-	/// </summary>
-	/// <param name="user">The user to generate tokens for.</param>
-	/// <param name="clientIp">The client IP address.</param>
-	/// <param name="requiresPasswordChange">Whether user must change password.</param>
-	/// <param name="rememberMe">Whether to extend refresh token expiration.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Authentication result with tokens.</returns>
-	private async Task<AuthResult> GenerateAuthResultAsync(
-		User user,
-		string? clientIp,
-		bool requiresPasswordChange,
-		bool rememberMe,
-		CancellationToken cancellationToken)
-	{
-		IEnumerable<string> roles = await userRoleRepository.GetUserRolesAsync(
-			user.Id,
-			cancellationToken);
-
-		string accessToken =
-			tokenService.GenerateAccessToken(
-				user.Id,
-				user.Username,
-				user.Email,
-				user.FullName,
-				roles.ToList());
-
-		string refreshToken =
-			await tokenService.GenerateRefreshTokenAsync(
-				user.Id,
-				clientIp,
-				rememberMe,
-				cancellationToken);
-
-		DateTime expiresAt =
-			timeProvider.GetUtcNow()
-				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
-				.UtcDateTime;
-
-		// Update last login
-		await authRepository.UpdateLastLoginAsync(
-			user.Id,
-			timeProvider.GetUtcNow().UtcDateTime,
-			clientIp,
-			cancellationToken);
-
-		return AuthResult.Succeeded(
-			accessToken,
-			refreshToken,
-			expiresAt,
-			requiresPasswordChange);
 	}
 
 	/// <summary>

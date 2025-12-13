@@ -52,4 +52,28 @@ public interface IUserCommandRepository
 		IEnumerable<int> ids,
 		bool isActive,
 		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Adds a role to a user.
+	/// </summary>
+	public Task AddRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Adds a role without audit tracking.
+	/// </summary>
+	public Task AddRoleWithoutAuditAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Removes a role from a user.
+	/// </summary>
+	public Task<bool> RemoveRoleAsync(
+		int userId,
+		string role,
+		CancellationToken cancellationToken = default);
 }

@@ -14,10 +14,10 @@ public static class GetUserRolesQueryHandler
 	/// </summary>
 	public static async Task<IEnumerable<string>> HandleAsync(
 		GetUserRolesQuery query,
-		IUserRoleRepository userRoleRepository,
+		IUserQueryRepository userQueryRepository,
 		CancellationToken cancellationToken)
 	{
-		return await userRoleRepository.GetUserRolesAsync(
+		return await userQueryRepository.GetUserRolesAsync(
 			query.UserId,
 			cancellationToken);
 	}

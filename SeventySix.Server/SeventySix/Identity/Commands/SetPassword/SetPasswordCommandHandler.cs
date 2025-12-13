@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Wolverine;
@@ -21,7 +20,6 @@ public static class SetPasswordCommandHandler
 	/// <exception cref="InvalidOperationException">Thrown when user not found or inactive.</exception>
 	public static async Task<AuthResult> HandleAsync(
 		SetPasswordCommand command,
-		IValidator<SetPasswordRequest> setPasswordValidator,
 		IPasswordResetTokenRepository passwordResetTokenRepository,
 		ICredentialRepository credentialRepository,
 		IMessageBus messageBus,
@@ -33,16 +31,36 @@ public static class SetPasswordCommandHandler
 		CancellationToken cancellationToken)
 	{
 		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
-		await setPasswordValidator.ValidateAndThrowAsync(command.Request, cancellationToken);
 
-		PasswordResetToken? resetToken = await passwordResetTokenRepository.GetByHashAsync(command.Request.Token, cancellationToken);
-		ValidateResetToken(resetToken, now, logger);
+		PasswordResetToken? resetToken =
+			await passwordResetTokenRepository.GetByHashAsync(
+				command.Request.Token,
+				cancellationToken);
+		ValidateResetToken(
+			resetToken,
+			now,
+			logger);
 
-		UserDto user = await GetActiveUserAsync(messageBus, resetToken!.UserId, logger, cancellationToken);
-		await passwordResetTokenRepository.MarkAsUsedAsync(resetToken, cancellationToken);
+		UserDto user = await GetActiveUserAsync(
+			messageBus,
+			resetToken!.UserId,
+			logger,
+			cancellationToken);
+		await passwordResetTokenRepository.MarkAsUsedAsync(
+			resetToken,
+			cancellationToken);
 
-		await UpdateCredentialAsync(credentialRepository, user.Id, command.Request.NewPassword, authSettings, now, cancellationToken);
-		await tokenRepository.RevokeAllUserTokensAsync(user.Id, now, cancellationToken);
+		await UpdateCredentialAsync(
+			credentialRepository,
+			user.Id,
+			command.Request.NewPassword,
+			authSettings,
+			now,
+			cancellationToken);
+		await tokenRepository.RevokeAllUserTokensAsync(
+			user.Id,
+			now,
+			cancellationToken);
 
 		return await registrationService.GenerateAuthResultAsync(
 			user.ToEntity(),

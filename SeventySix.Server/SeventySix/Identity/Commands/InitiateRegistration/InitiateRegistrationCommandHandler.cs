@@ -3,7 +3,6 @@
 // </copyright>
 
 using System.Security.Cryptography;
-using FluentValidation;
 using SeventySix.ElectronicNotifications.Emails;
 
 namespace SeventySix.Identity;
@@ -21,23 +20,18 @@ public static class InitiateRegistrationCommandHandler
 	/// </remarks>
 	public static async Task HandleAsync(
 		InitiateRegistrationCommand command,
-		IUserValidationRepository userValidationRepository,
+		IUserQueryRepository userQueryRepository,
 		IEmailVerificationTokenRepository emailVerificationTokenRepository,
-		IValidator<InitiateRegistrationRequest> initiateRegistrationValidator,
 		IEmailService emailService,
 		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
-		await initiateRegistrationValidator.ValidateAndThrowAsync(
-			command.Request,
-			cancellationToken);
-
 		string email =
 			command.Request.Email;
 
 		// Check if email is already registered
 		bool emailExists =
-			await userValidationRepository.EmailExistsAsync(
+			await userQueryRepository.EmailExistsAsync(
 				email,
 				excludeId: null,
 				cancellationToken);

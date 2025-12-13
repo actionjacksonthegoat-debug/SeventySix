@@ -11,6 +11,7 @@ interface UserQueryKeys
 	readonly paged: (filter: unknown) => readonly unknown[];
 	readonly single: (id: number | string) => readonly unknown[];
 	readonly byUsername: (username: string) => readonly unknown[];
+	readonly roles: (userId: number | string) => readonly unknown[];
 }
 
 interface HealthQueryKeys
@@ -37,6 +38,13 @@ interface AccountQueryKeys
 	readonly permissionRequest: readonly ["account", "permission-request"];
 }
 
+interface PermissionRequestQueryKeys
+{
+	readonly all: readonly ["permission-requests"];
+	readonly list: readonly ["permission-requests", "all"];
+	readonly availableRoles: readonly ["permission-requests", "available-roles"];
+}
+
 interface QueryKeysType
 {
 	readonly logs: LogQueryKeys;
@@ -44,6 +52,7 @@ interface QueryKeysType
 	readonly health: HealthQueryKeys;
 	readonly thirdPartyApi: ThirdPartyApiQueryKeys;
 	readonly account: AccountQueryKeys;
+	readonly permissionRequests: PermissionRequestQueryKeys;
 }
 
 export const QueryKeys: QueryKeysType = {
@@ -62,7 +71,9 @@ export const QueryKeys: QueryKeysType = {
 		single: (id: number | string): readonly unknown[] =>
 			["users", "user", id] as const,
 		byUsername: (username: string): readonly unknown[] =>
-			["users", "username", username] as const
+			["users", "username", username] as const,
+		roles: (userId: number | string): readonly unknown[] =>
+			["users", userId, "roles"] as const
 	},
 
 	health: {
@@ -85,5 +96,11 @@ export const QueryKeys: QueryKeysType = {
 		profile: ["account", "profile"] as const,
 		availableRoles: ["account", "available-roles"] as const,
 		permissionRequest: ["account", "permission-request"] as const
+	},
+
+	permissionRequests: {
+		all: ["permission-requests"] as const,
+		list: ["permission-requests", "all"] as const,
+		availableRoles: ["permission-requests", "available-roles"] as const
 	}
 } as const;

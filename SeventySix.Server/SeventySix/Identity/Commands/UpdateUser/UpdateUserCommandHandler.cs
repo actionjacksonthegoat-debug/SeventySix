@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Extensions;
@@ -32,16 +31,11 @@ public static class UpdateUserCommandHandler
 	public static async Task<UserDto> HandleAsync(
 		UpdateUserCommand command,
 		IMessageBus messageBus,
-		IValidator<UpdateUserRequest> validator,
 		IUserQueryRepository userQueryRepository,
 		IUserCommandRepository userCommandRepository,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
-		await validator.ValidateAndThrowAsync(
-			command.Request,
-			cancellationToken);
-
 		User? existing =
 			await userQueryRepository.GetByIdAsync(
 				command.Request.Id,

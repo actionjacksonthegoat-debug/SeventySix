@@ -57,31 +57,11 @@ public static class RegisterCommandHandler
 		}
 		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
 		{
-			// Database unique constraint violation - check which field caused it
-			string message = exception.InnerException?.Message ?? exception.Message;
-
-			if (message.Contains(
-				"IX_Users_Username",
-				StringComparison.OrdinalIgnoreCase))
-			{
-				return AuthResult.Failed(
-					"Username is already taken.",
-					AuthErrorCodes.UsernameExists);
-			}
-
-			if (message.Contains(
-				"IX_Users_Email",
-				StringComparison.OrdinalIgnoreCase))
-			{
-				return AuthResult.Failed(
-					"Email is already registered.",
-					AuthErrorCodes.EmailExists);
-			}
-
-			// Unknown constraint violation
-			return AuthResult.Failed(
-				"Username or email already exists.",
-				AuthErrorCodes.UsernameExists);
+			return DuplicateKeyViolationHandler.HandleAsAuthResult(
+				exception,
+				command.Request.Username,
+				command.Request.Email,
+				logger);
 		}
 	}
 }

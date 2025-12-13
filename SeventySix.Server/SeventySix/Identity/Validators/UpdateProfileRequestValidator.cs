@@ -22,17 +22,9 @@ public class UpdateProfileRequestValidator : AbstractValidator<UpdateProfileRequ
 	public UpdateProfileRequestValidator()
 	{
 		RuleFor(request => request.Email)
-			.Cascade(CascadeMode.Stop)
-			.NotEmpty()
-			.WithMessage("Email is required")
-			.MaximumLength(255)
-			.WithMessage("Email must not exceed 255 characters")
-			.EmailAddress()
-			.WithMessage("Email must be a valid email address");
+			.ApplyEmailRules();
 
 		RuleFor(request => request.FullName)
-			.MaximumLength(100)
-			.WithMessage("Full name must not exceed 100 characters")
-			.When(request => request.FullName != null);
+			.ApplyFullNameRules(required: false);
 	}
 }

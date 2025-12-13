@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SeventySix.Identity.Constants;
 
 namespace SeventySix.Identity;
 
@@ -69,7 +70,7 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 			new SecurityRole
 			{
 				Id = 1,
-				Name = "User",
+				Name = RoleConstants.User,
 				Description = "Standard user access",
 				IsActive = true,
 				CreateDate = new DateTime(
@@ -84,7 +85,7 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 			new SecurityRole
 			{
 				Id = 2,
-				Name = "Developer",
+				Name = RoleConstants.Developer,
 				Description = "Access to developer tools and APIs",
 				IsActive = true,
 				CreateDate = new DateTime(
@@ -99,7 +100,7 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 			new SecurityRole
 			{
 				Id = 3,
-				Name = "Admin",
+				Name = RoleConstants.Admin,
 				Description = "Full administrative access",
 				IsActive = true,
 				CreateDate = new DateTime(

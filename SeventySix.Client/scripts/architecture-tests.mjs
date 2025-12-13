@@ -631,6 +631,7 @@ test('methods should have less than 50 lines', async () => {
 		['breadcrumb.component.buildBreadcrumbs', 'Route traversal and breadcrumb construction'],
 		['data-table.component.constructor', 'Complex table initialization with many column types'],
 		['mock-factories.get', 'Test utility with comprehensive mock data generation'],
+		['auth.service.error', 'False positive - subscribe callback, not a method'],
 	]);
 
 	const methodMatches = await findMethodsInFiles(sourceFiles, { skipTests: true });

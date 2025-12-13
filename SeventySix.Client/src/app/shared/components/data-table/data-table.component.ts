@@ -10,11 +10,9 @@ import {
 	WritableSignal,
 	effect,
 	ChangeDetectionStrategy,
-	OnDestroy,
 	inject
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { Subject } from "rxjs";
 import { map } from "rxjs/operators";
 import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
@@ -45,6 +43,12 @@ import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles";
  * Provides reusable table infrastructure for feature components
  * Follows Material Design 3 patterns with OnPush change detection
  */
+/**
+ * Generic data table component
+ * Provides reusable table infrastructure for feature components
+ * Follows Material Design 3 patterns with OnPush change detection
+ * Angular 20+ compliant: signals, zoneless, inject() pattern
+ */
 @Component({
 	selector: "app-data-table",
 	imports: [
@@ -61,7 +65,7 @@ import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles";
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	animations: [slideDown]
 })
-export class DataTableComponent<T extends { id: number }> implements OnDestroy
+export class DataTableComponent<T extends { id: number }>
 {
 	// ========================================
 	// Required Inputs
@@ -253,14 +257,9 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	// ========================================
 
 	/**
-	 * Search text
+	 * Search text (debounced)
 	 */
 	readonly searchText: WritableSignal<string> = signal("");
-
-	/**
-	 * Destroy subject for cleanup
-	 */
-	private readonly destroy$: Subject<void> = new Subject<void>();
 
 	/**
 	 * Date service for date operations
@@ -494,15 +493,6 @@ export class DataTableComponent<T extends { id: number }> implements OnDestroy
 	{
 		this.data();
 		this.selection.clear();
-	}
-
-	/**
-	 * Cleanup subscriptions on destroy
-	 */
-	ngOnDestroy(): void
-	{
-		this.destroy$.next();
-		this.destroy$.complete();
 	}
 
 	// ========================================

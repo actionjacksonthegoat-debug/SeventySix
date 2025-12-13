@@ -107,6 +107,7 @@
 					"options": {
 						"tsConfig": "tsconfig.spec.json",
 						"inlineStyleLanguage": "scss",
+						"browsers": "ChromeHeadless",
 						"assets": [
 							{
 								"glob": "**/*",

@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -27,15 +26,10 @@ public static class CompleteRegistrationCommandHandler
 		CompleteRegistrationCommand command,
 		RegistrationService registrationService,
 		IEmailVerificationTokenRepository emailVerificationTokenRepository,
-		IValidator<CompleteRegistrationRequest> completeRegistrationValidator,
 		TimeProvider timeProvider,
 		ILogger<CompleteRegistrationCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		await completeRegistrationValidator.ValidateAndThrowAsync(
-			command.Request,
-			cancellationToken);
-
 		EmailVerificationToken? verificationToken =
 			await emailVerificationTokenRepository.GetByTokenAsync(
 				command.Request.Token,
@@ -81,7 +75,7 @@ public static class CompleteRegistrationCommandHandler
 		}
 		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
 		{
-			return HandleDuplicateKeyViolation(
+			return DuplicateKeyViolationHandler.HandleAsAuthResult(
 				exception,
 				command.Request.Username,
 				verificationToken!.Email,
@@ -115,46 +109,6 @@ public static class CompleteRegistrationCommandHandler
 			cancellationToken);
 
 		return user;
-	}
-
-	private static AuthResult HandleDuplicateKeyViolation(
-		DbUpdateException exception,
-		string username,
-		string email,
-		ILogger logger)
-	{
-		string message = exception.InnerException?.Message ?? exception.Message;
-
-		if (message.Contains(
-			"IX_Users_Username",
-			StringComparison.OrdinalIgnoreCase))
-		{
-			logger.LogWarning(
-				"Registration attempt with existing username: {Username}",
-				username);
-
-			return AuthResult.Failed(
-				"Username is already taken.",
-				AuthErrorCodes.UsernameExists);
-		}
-
-		if (message.Contains(
-			"IX_Users_Email",
-			StringComparison.OrdinalIgnoreCase))
-		{
-			logger.LogWarning(
-				"Registration attempt with already registered email: {Email}",
-				email);
-
-			return AuthResult.Failed(
-				"This email is already registered.",
-				AuthErrorCodes.EmailExists);
-		}
-
-		// Unknown constraint violation
-		return AuthResult.Failed(
-			"Username or email already exists.",
-			AuthErrorCodes.UsernameExists);
 	}
 
 	private static AuthResult? ValidateVerificationToken(

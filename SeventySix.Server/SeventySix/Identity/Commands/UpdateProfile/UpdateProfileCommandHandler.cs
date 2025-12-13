@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SeventySix.Shared.Extensions;
 using Wolverine;
@@ -30,15 +29,10 @@ public static class UpdateProfileCommandHandler
 	public static async Task<UserProfileDto?> HandleAsync(
 		UpdateProfileCommand command,
 		IMessageBus messageBus,
-		IValidator<UpdateProfileRequest> validator,
 		IUserQueryRepository userQueryRepository,
 		IUserCommandRepository userCommandRepository,
 		CancellationToken cancellationToken)
 	{
-		await validator.ValidateAndThrowAsync(
-			command.Request,
-			cancellationToken);
-
 		User? user =
 			await userQueryRepository.GetByIdAsync(
 				command.UserId,

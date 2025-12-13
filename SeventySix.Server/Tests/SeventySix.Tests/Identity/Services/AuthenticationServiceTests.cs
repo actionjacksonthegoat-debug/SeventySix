@@ -22,7 +22,7 @@ namespace SeventySix.Tests.Identity.Services;
 public class AuthenticationServiceTests
 {
 	private readonly IAuthRepository AuthRepository;
-	private readonly IUserRoleRepository UserRoleRepository;
+	private readonly IUserQueryRepository UserQueryRepository;
 	private readonly ITokenService TokenService;
 	private readonly IOptions<JwtSettings> JwtSettings;
 	private readonly TimeProvider TimeProvider;
@@ -31,7 +31,7 @@ public class AuthenticationServiceTests
 	public AuthenticationServiceTests()
 	{
 		AuthRepository = Substitute.For<IAuthRepository>();
-		UserRoleRepository = Substitute.For<IUserRoleRepository>();
+		UserQueryRepository = Substitute.For<IUserQueryRepository>();
 		TokenService = Substitute.For<ITokenService>();
 		TimeProvider = Substitute.For<TimeProvider>();
 
@@ -46,7 +46,7 @@ public class AuthenticationServiceTests
 		ServiceUnderTest =
 			new AuthenticationService(
 				AuthRepository,
-				UserRoleRepository,
+				UserQueryRepository,
 				TokenService,
 				JwtSettings,
 				TimeProvider);
@@ -71,7 +71,7 @@ public class AuthenticationServiceTests
 		string clientIp = "192.168.1.1";
 		DateTime utcNow = new(2025, 12, 9, 10, 0, 0, DateTimeKind.Utc);
 
-		UserRoleRepository.GetUserRolesAsync(
+		UserQueryRepository.GetUserRolesAsync(
 				user.Id,
 				Arg.Any<CancellationToken>())
 			.Returns(roles);
@@ -136,7 +136,7 @@ public class AuthenticationServiceTests
 				Email = "remember@example.com",
 			};
 
-		UserRoleRepository.GetUserRolesAsync(
+		UserQueryRepository.GetUserRolesAsync(
 				Arg.Any<int>(),
 				Arg.Any<CancellationToken>())
 			.Returns(Array.Empty<string>());
@@ -188,7 +188,7 @@ public class AuthenticationServiceTests
 				Email = "new@example.com",
 			};
 
-		UserRoleRepository.GetUserRolesAsync(
+		UserQueryRepository.GetUserRolesAsync(
 				Arg.Any<int>(),
 				Arg.Any<CancellationToken>())
 			.Returns(Array.Empty<string>());
@@ -243,7 +243,7 @@ public class AuthenticationServiceTests
 			RoleConstants.Developer,
 		];
 
-		UserRoleRepository.GetUserRolesAsync(
+		UserQueryRepository.GetUserRolesAsync(
 				user.Id,
 				Arg.Any<CancellationToken>())
 			.Returns(roles);

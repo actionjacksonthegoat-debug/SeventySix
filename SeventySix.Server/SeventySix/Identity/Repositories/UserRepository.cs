@@ -12,7 +12,7 @@ namespace SeventySix.Identity;
 internal class UserRepository(
 	IdentityDbContext context,
 	ILogger<UserRepository> repositoryLogger,
-	TimeProvider timeProvider) : BaseRepository<User, IdentityDbContext>(context, repositoryLogger), IUserRepository
+	TimeProvider timeProvider) : BaseRepository<User, IdentityDbContext>(context, repositoryLogger), IUserQueryRepository, IUserCommandRepository
 {
 	/// <inheritdoc/>
 	protected override string GetEntityIdentifier(User entity)
@@ -312,8 +312,13 @@ internal class UserRepository(
 		return await context.UserRoles
 			.AsNoTracking()
 			.Where(userRole => userRole.UserId == userId)
-			.Include(userRole => userRole.Role)
-			.Select(userRole => userRole.Role!.Name)
+			.Join(
+				context.SecurityRoles,
+				userRole => userRole.RoleId,
+				securityRole => securityRole.Id,
+				(
+					userRole,
+					securityRole) => securityRole.Name)
 			.ToListAsync(cancellationToken);
 	}
 
@@ -325,11 +330,19 @@ internal class UserRepository(
 	{
 		return await context.UserRoles
 			.AsNoTracking()
-			.Include(userRole => userRole.Role)
+			.Where(userRole => userRole.UserId == userId)
+			.Join(
+				context.SecurityRoles,
+				userRole => userRole.RoleId,
+				securityRole => securityRole.Id,
+				(
+					userRole,
+					securityRole) => securityRole.Name)
 			.AnyAsync(
-				userRole =>
-					userRole.UserId == userId
-					&& userRole.Role!.Name == role,
+				roleName =>
+					EF.Functions.ILike(
+						roleName,
+						role),
 				cancellationToken);
 	}
 

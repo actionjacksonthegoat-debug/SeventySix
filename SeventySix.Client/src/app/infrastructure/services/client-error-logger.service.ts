@@ -8,7 +8,7 @@ import {
 	extractRequestUrl,
 	extractRequestMethod,
 	extractStatusCode
-} from "@infrastructure/utils/http-error.utilities";
+} from "@infrastructure/utils/http-error.utility";
 
 /**
  * Error details for logging.

@@ -11,7 +11,7 @@ import { Router } from "@angular/router";
 import { catchError, throwError } from "rxjs";
 import { LoggerService } from "@infrastructure/services/logger.service";
 import { AuthService } from "@infrastructure/services/auth.service";
-import { convertToAppError } from "@infrastructure/utils/http-error.utilities";
+import { convertToAppError } from "@infrastructure/utils/http-error.utility";
 import { environment } from "@environments/environment";
 
 /**

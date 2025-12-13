@@ -33,7 +33,11 @@ public class GodClassTests
 	/// </summary>
 	private static readonly HashSet<string> AllowedInterfaceExceptions =
 		[
-			// No exceptions - all interfaces must follow the 12-method rule
+			// IUserQueryRepository: Intentionally consolidated from 4 separate interfaces
+			// (IUserValidationRepository, IUserRoleRepository, IUserProfileRepository, + original)
+			// Reduced interface explosion: 6 interfaces → 2 interfaces, 15+ DI registrations → 3
+			// 15 methods is acceptable tradeoff vs maintaining 4+ tiny interfaces
+			"IUserQueryRepository"
 		];
 
 	/// <summary>

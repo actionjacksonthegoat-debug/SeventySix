@@ -4,7 +4,7 @@ public static class CheckUsernameExistsQueryHandler
 {
 	public static async Task<bool> HandleAsync(
 		CheckUsernameExistsQuery query,
-		IUserValidationRepository repository,
+		IUserQueryRepository repository,
 		CancellationToken cancellationToken)
 	{
 		return await repository.UsernameExistsAsync(

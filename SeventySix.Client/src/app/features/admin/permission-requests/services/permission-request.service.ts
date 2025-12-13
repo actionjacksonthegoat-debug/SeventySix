@@ -8,6 +8,7 @@ import { lastValueFrom } from "rxjs";
 import { PermissionRequestRepository } from "../repositories";
 import { CreatePermissionRequestDto } from "../models";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
+import { QueryKeys } from "@infrastructure/utils/query-keys";
 
 /**
  * Service for permission request business logic.
@@ -28,7 +29,7 @@ export class PermissionRequestService
 	getAllRequests()
 	{
 		return injectQuery(() => ({
-			queryKey: ["permission-requests", "all"],
+			queryKey: QueryKeys.permissionRequests.list,
 			queryFn: () => lastValueFrom(this.repository.getAll()),
 			...this.queryConfig
 		}));
@@ -38,7 +39,7 @@ export class PermissionRequestService
 	getAvailableRoles()
 	{
 		return injectQuery(() => ({
-			queryKey: ["permission-requests", "available-roles"],
+			queryKey: QueryKeys.permissionRequests.availableRoles,
 			queryFn: () => lastValueFrom(this.repository.getAvailableRoles()),
 			...this.queryConfig
 		}));
@@ -53,7 +54,7 @@ export class PermissionRequestService
 			onSuccess: () =>
 			{
 				this.queryClient.invalidateQueries({
-					queryKey: ["permission-requests"]
+					queryKey: QueryKeys.permissionRequests.all
 				});
 			}
 		}));
@@ -68,7 +69,7 @@ export class PermissionRequestService
 			onSuccess: () =>
 			{
 				this.queryClient.invalidateQueries({
-					queryKey: ["permission-requests"]
+					queryKey: QueryKeys.permissionRequests.all
 				});
 			}
 		}));
@@ -83,7 +84,7 @@ export class PermissionRequestService
 			onSuccess: () =>
 			{
 				this.queryClient.invalidateQueries({
-					queryKey: ["permission-requests"]
+					queryKey: QueryKeys.permissionRequests.all
 				});
 			}
 		}));
@@ -98,7 +99,7 @@ export class PermissionRequestService
 			onSuccess: () =>
 			{
 				this.queryClient.invalidateQueries({
-					queryKey: ["permission-requests"]
+					queryKey: QueryKeys.permissionRequests.all
 				});
 			}
 		}));
@@ -113,7 +114,7 @@ export class PermissionRequestService
 			onSuccess: () =>
 			{
 				this.queryClient.invalidateQueries({
-					queryKey: ["permission-requests"]
+					queryKey: QueryKeys.permissionRequests.all
 				});
 			}
 		}));

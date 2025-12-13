@@ -15,18 +15,15 @@ import {
 	WritableSignal
 } from "@angular/core";
 import { DateService } from "@infrastructure/services";
-import { HttpContext } from "@angular/common/http";
 import {
 	injectQuery,
-	injectMutation,
-	QueryClient
+	injectMutation
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 import { LogRepository } from "@admin/logs/repositories";
 import { LogQueryRequest } from "@admin/logs/models";
-import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
-import { BaseFilterService } from "@infrastructure/services/base-filter.service";
+import { BaseQueryService } from "@infrastructure/services/base-query.service";
 
 /**
  * Service for log management business logic
@@ -35,12 +32,10 @@ import { BaseFilterService } from "@infrastructure/services/base-filter.service"
  * Provided at route level for proper garbage collection (see admin.routes.ts)
  */
 @Injectable()
-export class LogManagementService extends BaseFilterService<LogQueryRequest>
+export class LogManagementService extends BaseQueryService<LogQueryRequest>
 {
+	protected readonly queryKeyPrefix: string = "logs";
 	private readonly logRepository: LogRepository = inject(LogRepository);
-	private readonly queryClient: QueryClient = inject(QueryClient);
-	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
-		getQueryConfig("logs");
 
 	// Selected log IDs using signals
 	readonly selectedIds: WritableSignal<Set<number>> = signal<Set<number>>(

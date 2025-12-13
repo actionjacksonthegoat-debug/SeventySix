@@ -9,8 +9,7 @@
 import { inject, Injectable } from "@angular/core";
 import {
 	injectQuery,
-	injectMutation,
-	QueryClient
+	injectMutation
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 import {
@@ -20,9 +19,8 @@ import {
 	UserQueryRequest
 } from "@admin/users/models";
 import { UserRepository } from "@admin/users/repositories";
-import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
-import { BaseFilterService } from "@infrastructure/services/base-filter.service";
+import { BaseQueryService } from "@infrastructure/services/base-query.service";
 
 /**
  * Service for User business logic
@@ -31,12 +29,10 @@ import { BaseFilterService } from "@infrastructure/services/base-filter.service"
  * Provided at route level for proper garbage collection (see admin.routes.ts)
  */
 @Injectable()
-export class UserService extends BaseFilterService<UserQueryRequest>
+export class UserService extends BaseQueryService<UserQueryRequest>
 {
+	protected readonly queryKeyPrefix: string = "users";
 	private readonly userRepository: UserRepository = inject(UserRepository);
-	private readonly queryClient: QueryClient = inject(QueryClient);
-	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
-		getQueryConfig("users");
 
 	constructor()
 	{
@@ -267,7 +263,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 	getUserRoles(userId: number | string)
 	{
 		return injectQuery(() => ({
-			queryKey: ["users", userId, "roles"],
+			queryKey: QueryKeys.users.roles(userId),
 			queryFn: () =>
 				lastValueFrom(this.userRepository.getRoles(Number(userId))),
 			...this.queryConfig
@@ -286,7 +282,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 			onSuccess: (_, variables) =>
 			{
 				this.queryClient.invalidateQueries({
-					queryKey: ["users", variables.userId, "roles"]
+					queryKey: QueryKeys.users.roles(variables.userId)
 				});
 			}
 		}));
@@ -304,7 +300,7 @@ export class UserService extends BaseFilterService<UserQueryRequest>
 			onSuccess: (_, variables) =>
 			{
 				this.queryClient.invalidateQueries({
-					queryKey: ["users", variables.userId, "roles"]
+					queryKey: QueryKeys.users.roles(variables.userId)
 				});
 			}
 		}));
