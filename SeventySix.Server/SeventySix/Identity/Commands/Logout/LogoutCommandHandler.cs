@@ -10,15 +10,19 @@ namespace SeventySix.Identity;
 public static class LogoutCommandHandler
 {
 	/// <summary>
-	/// Handles logout command.
+	/// Handles logout by revoking the refresh token.
 	/// </summary>
+	/// <param name="refreshToken">The refresh token to revoke.</param>
+	/// <param name="tokenService">Token service.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>True if the token was revoked; otherwise false.</returns>
 	public static async Task<bool> HandleAsync(
-		LogoutCommand command,
+		string refreshToken,
 		ITokenService tokenService,
 		CancellationToken cancellationToken)
 	{
 		return await tokenService.RevokeRefreshTokenAsync(
-			command.RefreshToken,
+			refreshToken,
 			cancellationToken);
 	}
 }

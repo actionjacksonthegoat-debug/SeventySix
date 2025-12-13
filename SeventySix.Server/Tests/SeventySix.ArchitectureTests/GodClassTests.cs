@@ -33,11 +33,12 @@ public class GodClassTests
 	/// </summary>
 	private static readonly HashSet<string> AllowedInterfaceExceptions =
 		[
-			// IUserQueryRepository: Intentionally consolidated from 4 separate interfaces
-			// (IUserValidationRepository, IUserRoleRepository, IUserProfileRepository, + original)
-			// Reduced interface explosion: 6 interfaces → 2 interfaces, 15+ DI registrations → 3
-			// 15 methods is acceptable tradeoff vs maintaining 4+ tiny interfaces
-			"IUserQueryRepository"
+			// IUserRepository: Consolidated from IUserQueryRepository + IUserCommandRepository
+			// Merged 14 query methods + 8 command methods = 22 methods total
+			// Intentional consolidation per YAGNI - no read replicas planned
+			// Reduces DI overhead: 2 interface injections → 1 in all handlers
+			// Acceptable tradeoff: simpler DI vs slightly larger interface
+			"IUserRepository"
 		];
 
 	/// <summary>

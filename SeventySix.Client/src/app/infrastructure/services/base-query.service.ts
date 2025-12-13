@@ -1,5 +1,6 @@
 import { inject } from "@angular/core";
-import { QueryClient } from "@tanstack/angular-query-experimental";
+import { QueryClient, injectMutation, CreateMutationResult } from "@tanstack/angular-query-experimental";
+import { Observable, lastValueFrom } from "rxjs";
 import { BaseFilterService } from "./base-filter.service";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { BaseQueryRequest } from "@shared/models";
@@ -46,5 +47,39 @@ export abstract class BaseQueryService<TFilter extends BaseQueryRequest>
 	{
 		this.invalidateAll();
 		this.invalidateSingle(entityId);
+	}
+
+	/**
+	 * Creates a mutation with automatic query invalidation (DRY factory pattern).
+	 * Reduces boilerplate by handling Observable → Promise conversion and cache invalidation.
+	 * @template TInput - Input type for mutation function
+	 * @template TResult - Result type returned from API
+	 * @param mutationFunction - Observable-returning function to execute
+	 * @param onSuccessCallback - Optional callback for custom invalidation logic (receives result and variables)
+	 * @returns TanStack Query mutation result
+	 */
+	protected createMutation<TInput, TResult>(
+		mutationFunction: (input: TInput) => Observable<TResult>,
+		onSuccessCallback?: (
+			result: TResult,
+			variables: TInput
+		) => void
+	): CreateMutationResult<TResult, Error, TInput>
+	{
+		return injectMutation(() => ({
+			mutationFn: (input: TInput) =>
+				lastValueFrom(mutationFunction(input)),
+			onSuccess: (result, variables) =>
+			{
+				if (onSuccessCallback)
+				{
+					onSuccessCallback(result, variables);
+				}
+				else
+				{
+					this.invalidateAll();
+				}
+			}
+		}));
 	}
 }

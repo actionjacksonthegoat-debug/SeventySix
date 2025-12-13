@@ -16,6 +16,7 @@ import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
+import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 
 @Component({
 	selector: "app-set-password",
@@ -32,6 +33,9 @@ export class SetPasswordComponent implements OnInit
 	private readonly route: ActivatedRoute = inject(ActivatedRoute);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
+
+	protected readonly PASSWORD_MIN_LENGTH: number =
+		PASSWORD_VALIDATION.MIN_LENGTH;
 
 	protected newPassword: string = "";
 	protected confirmPassword: string = "";

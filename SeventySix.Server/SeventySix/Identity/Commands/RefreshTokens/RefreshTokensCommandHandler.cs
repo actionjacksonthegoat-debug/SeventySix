@@ -18,7 +18,7 @@ public static class RefreshTokensCommandHandler
 	public static async Task<AuthResult> HandleAsync(
 		RefreshTokensCommand command,
 		ITokenService tokenService,
-		IUserQueryRepository userQueryRepository,
+		IUserRepository repository,
 		ICredentialRepository credentialRepository,
 		AuthenticationService authenticationService,
 		CancellationToken cancellationToken)
@@ -36,7 +36,7 @@ public static class RefreshTokensCommandHandler
 		}
 
 		User? user =
-			await userQueryRepository.GetByIdAsync(
+			await repository.GetByIdAsync(
 				userId.Value,
 				cancellationToken);
 

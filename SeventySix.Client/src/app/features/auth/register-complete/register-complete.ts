@@ -17,6 +17,10 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
+import {
+	USERNAME_VALIDATION,
+	PASSWORD_VALIDATION
+} from "@shared/constants/validation.constants";
 
 @Component({
 	selector: "app-register-complete",
@@ -33,6 +37,16 @@ export class RegisterCompleteComponent implements OnInit
 	private readonly route: ActivatedRoute = inject(ActivatedRoute);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
+
+	// Expose validation constants to template
+	protected readonly USERNAME_MIN_LENGTH: number =
+		USERNAME_VALIDATION.MIN_LENGTH;
+	protected readonly USERNAME_MAX_LENGTH: number =
+		USERNAME_VALIDATION.MAX_LENGTH;
+	protected readonly USERNAME_PATTERN: string =
+		USERNAME_VALIDATION.PATTERN_STRING;
+	protected readonly PASSWORD_MIN_LENGTH: number =
+		PASSWORD_VALIDATION.MIN_LENGTH;
 
 	protected username: string = "";
 	protected password: string = "";
@@ -89,13 +103,18 @@ export class RegisterCompleteComponent implements OnInit
 
 	private validateForm(): boolean
 	{
-		if (!this.username || this.username.length < 3)
+		if (
+			!this.username
+			|| this.username.length < USERNAME_VALIDATION.MIN_LENGTH
+		)
 		{
-			this.notification.error("Username must be at least 3 characters.");
+			this.notification.error(
+				`Username must be at least ${USERNAME_VALIDATION.MIN_LENGTH} characters.`
+			);
 			return false;
 		}
 
-		if (!/^[a-zA-Z0-9_]+$/.test(this.username))
+		if (!USERNAME_VALIDATION.PATTERN.test(this.username))
 		{
 			this.notification.error(
 				"Username can only contain letters, numbers, and underscores."
@@ -103,9 +122,14 @@ export class RegisterCompleteComponent implements OnInit
 			return false;
 		}
 
-		if (!this.password || this.password.length < 8)
+		if (
+			!this.password
+			|| this.password.length < PASSWORD_VALIDATION.MIN_LENGTH
+		)
 		{
-			this.notification.error("Password must be at least 8 characters.");
+			this.notification.error(
+				`Password must be at least ${PASSWORD_VALIDATION.MIN_LENGTH} characters.`
+			);
 			return false;
 		}
 

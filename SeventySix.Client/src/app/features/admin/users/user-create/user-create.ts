@@ -34,6 +34,11 @@ import { LoggerService } from "@infrastructure/services";
 import { UserDto } from "@admin/users/models";
 import { getValidationError } from "@shared/utilities";
 import { STEPPER_MATERIAL_MODULES } from "@shared/material-bundles";
+import {
+	USERNAME_VALIDATION,
+	EMAIL_VALIDATION,
+	FULL_NAME_VALIDATION
+} from "@shared/constants/validation.constants";
 
 /**
  * User creation wizard component.
@@ -106,19 +111,29 @@ export class UserCreatePage
 			"",
 			[
 				Validators.required,
-				Validators.minLength(3),
-				Validators.maxLength(50)
+				Validators.minLength(USERNAME_VALIDATION.MIN_LENGTH),
+				Validators.maxLength(USERNAME_VALIDATION.MAX_LENGTH)
 			],
 			[this.usernameAvailabilityValidator()]
 		],
 		email: [
 			"",
-			[Validators.required, Validators.email, Validators.maxLength(255)]
+			[
+				Validators.required,
+				Validators.email,
+				Validators.maxLength(EMAIL_VALIDATION.MAX_LENGTH)
+			]
 		]
 	});
 
 	readonly accountDetailsForm: FormGroup = this.fb.group({
-		fullName: ["", [Validators.required, Validators.maxLength(100)]],
+		fullName: [
+			"",
+			[
+				Validators.required,
+				Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)
+			]
+		],
 		isActive: [true]
 	});
 

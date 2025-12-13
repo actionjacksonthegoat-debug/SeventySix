@@ -36,9 +36,9 @@
 						required
 						autocomplete="username"
 						placeholder="Choose a username"
-						minlength="3"
-						maxlength="50"
-						pattern="^[a-zA-Z0-9_]+$"
+						[minlength]="USERNAME_MIN_LENGTH"
+						[maxlength]="USERNAME_MAX_LENGTH"
+						[pattern]="USERNAME_PATTERN"
 						aria-required="true"
 						[attr.aria-invalid]="
 							usernameField.invalid && usernameField.touched
@@ -61,7 +61,7 @@
 						required
 						autocomplete="new-password"
 						placeholder="Create a password"
-						minlength="8"
+						[minlength]="PASSWORD_MIN_LENGTH"
 						aria-required="true"
 						[attr.aria-invalid]="
 							passwordField.invalid && passwordField.touched

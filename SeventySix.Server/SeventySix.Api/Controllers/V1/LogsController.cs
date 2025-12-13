@@ -60,7 +60,7 @@ public class LogsController(
 	{
 		bool deleted =
 			await messageBus.InvokeAsync<bool>(
-				new DeleteLogCommand(id),
+				id,
 				cancellationToken);
 
 		if (!deleted)
@@ -95,7 +95,7 @@ public class LogsController(
 
 		int deletedCount =
 			await messageBus.InvokeAsync<int>(
-				new DeleteLogsBatchCommand(ids),
+				ids,
 				cancellationToken);
 
 		await outputCacheStore.EvictByTagAsync(
@@ -125,7 +125,7 @@ public class LogsController(
 
 		int deletedCount =
 			await messageBus.InvokeAsync<int>(
-				new DeleteLogsOlderThanCommand(cutoffDate.Value),
+				cutoffDate.Value,
 				cancellationToken);
 
 		await outputCacheStore.EvictByTagAsync(
@@ -149,7 +149,7 @@ public class LogsController(
 		CancellationToken cancellationToken = default)
 	{
 		await messageBus.InvokeAsync(
-			new CreateClientLogCommand(request),
+			request,
 			cancellationToken);
 
 		await outputCacheStore.EvictByTagAsync(
@@ -173,7 +173,7 @@ public class LogsController(
 		CancellationToken cancellationToken = default)
 	{
 		await messageBus.InvokeAsync(
-			new CreateClientLogBatchCommand(requests),
+			requests,
 			cancellationToken);
 
 		await outputCacheStore.EvictByTagAsync(

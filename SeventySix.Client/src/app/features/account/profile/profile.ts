@@ -23,6 +23,10 @@ import { RouterLink } from "@angular/router";
 import { AccountService } from "../services";
 import { UserProfileDto, UpdateProfileRequest } from "../models";
 import { getValidationError } from "@shared/utilities";
+import {
+	EMAIL_VALIDATION,
+	FULL_NAME_VALIDATION
+} from "@shared/constants/validation.constants";
 
 @Component({
 	selector: "app-profile-page",
@@ -64,9 +68,13 @@ export class ProfilePage
 	readonly profileForm: FormGroup = this.fb.group({
 		email: [
 			"",
-			[Validators.required, Validators.email, Validators.maxLength(255)]
+			[
+				Validators.required,
+				Validators.email,
+				Validators.maxLength(EMAIL_VALIDATION.MAX_LENGTH)
+			]
 		],
-		fullName: ["", [Validators.maxLength(100)]]
+		fullName: ["", [Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)]]
 	});
 
 	readonly emailError: Signal<string | null> = computed(() =>

@@ -7,7 +7,7 @@ public static class GetUserByUsernameQueryHandler
 {
 	public static async Task<UserDto?> HandleAsync(
 		GetUserByUsernameQuery query,
-		IUserQueryRepository repository,
+		IUserRepository repository,
 		CancellationToken cancellationToken)
 	{
 		User? user =

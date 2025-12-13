@@ -5,23 +5,16 @@
  */
 import { Routes } from "@angular/router";
 import { LogManagementService } from "@admin/logs/services";
-import { LogRepository } from "@admin/logs/repositories";
 import {
 	UserService,
 	UserExportService,
 	UserPreferencesService
 } from "@admin/users/services";
-import { UserRepository } from "@admin/users/repositories";
 import {
 	ThirdPartyApiService,
 	HealthApiService
 } from "@admin/admin-dashboard/services";
-import {
-	ThirdPartyApiRepository,
-	HealthApiRepository
-} from "@admin/admin-dashboard/repositories";
 import { PermissionRequestService } from "@admin/permission-requests/services";
-import { PermissionRequestRepository } from "@admin/permission-requests/repositories";
 
 export const ADMIN_ROUTES: Routes = [
 	{
@@ -31,7 +24,7 @@ export const ADMIN_ROUTES: Routes = [
 	},
 	{
 		path: "logs",
-		providers: [LogManagementService, LogRepository],
+		providers: [LogManagementService],
 		loadComponent: () =>
 			import("./logs/log-management/log-management").then(
 				(m) => m.LogManagementPage
@@ -42,9 +35,7 @@ export const ADMIN_ROUTES: Routes = [
 		path: "dashboard",
 		providers: [
 			ThirdPartyApiService,
-			ThirdPartyApiRepository,
-			HealthApiService,
-			HealthApiRepository
+			HealthApiService
 		],
 		loadComponent: () =>
 			import(
@@ -56,7 +47,6 @@ export const ADMIN_ROUTES: Routes = [
 		path: "users",
 		providers: [
 			UserService,
-			UserRepository,
 			UserExportService,
 			UserPreferencesService
 		],
@@ -89,7 +79,7 @@ export const ADMIN_ROUTES: Routes = [
 	},
 	{
 		path: "permission-requests",
-		providers: [PermissionRequestService, PermissionRequestRepository],
+		providers: [PermissionRequestService],
 		loadComponent: () =>
 			import(
 				"./permission-requests/permission-request-list/permission-request-list"

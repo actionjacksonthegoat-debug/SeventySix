@@ -26,7 +26,7 @@ namespace SeventySix.Identity;
 /// </remarks>
 public class OAuthService(
 	IAuthRepository authRepository,
-	IUserQueryRepository userQueryRepository,
+	IUserRepository userRepository,
 	IHttpClientFactory httpClientFactory,
 	IOptions<AuthSettings> authSettings,
 	TimeProvider timeProvider,
@@ -262,9 +262,9 @@ public class OAuthService(
 				existingLogin,
 				cancellationToken);
 
-			User? existingUser = await userQueryRepository.GetByIdAsync(
-				existingLogin.UserId,
-				cancellationToken);
+			User? existingUser = await userRepository.GetByIdAsync(
+							existingLogin.UserId,
+							cancellationToken);
 
 			return existingUser
 				?? throw new InvalidOperationException($"User with ID {existingLogin.UserId} not found for external login.");

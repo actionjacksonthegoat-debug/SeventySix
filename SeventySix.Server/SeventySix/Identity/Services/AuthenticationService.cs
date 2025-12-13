@@ -18,7 +18,7 @@ namespace SeventySix.Identity;
 /// </remarks>
 public sealed class AuthenticationService(
 	IAuthRepository authRepository,
-	IUserQueryRepository userQueryRepository,
+	IUserRepository userRepository,
 	ITokenService tokenService,
 	IOptions<JwtSettings> jwtSettings,
 	TimeProvider timeProvider)
@@ -38,7 +38,7 @@ public sealed class AuthenticationService(
 		CancellationToken cancellationToken)
 	{
 		IEnumerable<string> roles =
-			await userQueryRepository.GetUserRolesAsync(
+			await userRepository.GetUserRolesAsync(
 				user.Id,
 				cancellationToken);
 

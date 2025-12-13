@@ -68,11 +68,7 @@ public static class IdentityExtensions
 			new TransactionManager(serviceProvider.GetRequiredService<IdentityDbContext>()));
 
 		// Register repositories
-		services.AddScoped<UserRepository>();
-		services.AddScoped<IUserQueryRepository>(
-			serviceProvider => serviceProvider.GetRequiredService<UserRepository>());
-		services.AddScoped<IUserCommandRepository>(
-			serviceProvider => serviceProvider.GetRequiredService<UserRepository>());
+		services.AddScoped<IUserRepository, UserRepository>();
 		services.AddScoped<IPermissionRequestRepository, PermissionRequestRepository>();
 		services.AddScoped<ITokenRepository, TokenRepository>();
 		services.AddScoped<ICredentialRepository, CredentialRepository>();
@@ -94,18 +90,8 @@ public static class IdentityExtensions
 
 		// Register validators
 		services.AddSingleton<IValidator<CreateUserRequest>, CreateUserValidator>();
-		services.AddSingleton<IValidator<CreateUserCommand>>(
-			serviceProvider =>
-				CommandValidatorFactory.CreateFor<CreateUserCommand, CreateUserRequest>(
-					serviceProvider.GetRequiredService<IValidator<CreateUserRequest>>(),
-					command => command.Request));
 		services.AddSingleton<IValidator<CreatePermissionRequestDto>, CreatePermissionRequestValidator>();
 		services.AddSingleton<IValidator<UpdateUserRequest>, UpdateUserValidator>();
-		services.AddSingleton<IValidator<UpdateUserCommand>>(
-			serviceProvider =>
-				CommandValidatorFactory.CreateFor<UpdateUserCommand, UpdateUserRequest>(
-					serviceProvider.GetRequiredService<IValidator<UpdateUserRequest>>(),
-					command => command.Request));
 		services.AddSingleton<IValidator<UpdateProfileRequest>, UpdateProfileRequestValidator>();
 		services.AddSingleton<IValidator<UpdateProfileCommand>>(
 			serviceProvider =>
@@ -129,11 +115,6 @@ public static class IdentityExtensions
 					command => command.Request));
 		services.AddSingleton<IValidator<ForgotPasswordRequest>, ForgotPasswordRequestValidator>();
 		services.AddSingleton<IValidator<InitiateRegistrationRequest>, InitiateRegistrationRequestValidator>();
-		services.AddSingleton<IValidator<InitiateRegistrationCommand>>(
-			serviceProvider =>
-				CommandValidatorFactory.CreateFor<InitiateRegistrationCommand, InitiateRegistrationRequest>(
-					serviceProvider.GetRequiredService<IValidator<InitiateRegistrationRequest>>(),
-					command => command.Request));
 		services.AddSingleton<IValidator<CompleteRegistrationRequest>, CompleteRegistrationRequestValidator>();
 		services.AddSingleton<IValidator<CompleteRegistrationCommand>>(
 			serviceProvider =>

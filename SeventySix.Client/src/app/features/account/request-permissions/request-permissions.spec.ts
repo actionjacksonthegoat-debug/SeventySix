@@ -9,7 +9,8 @@ import {
 import { of } from "rxjs";
 import { RequestPermissionsPage } from "./request-permissions";
 import { AccountService } from "../services";
-import { AccountRepository } from "../repositories";
+import { ApiService } from "@infrastructure/api-services/api.service";
+import { createMockApiService } from "@testing";
 
 const testRoutes: Routes = [
 	{ path: "account", component: RequestPermissionsPage }
@@ -19,16 +20,14 @@ describe("RequestPermissionsPage", () =>
 {
 	let component: RequestPermissionsPage;
 	let fixture: ComponentFixture<RequestPermissionsPage>;
-	let mockRepository: jasmine.SpyObj<AccountRepository>;
+	let mockApiService: jasmine.SpyObj<ApiService>;
 	let queryClient: QueryClient;
 
 	beforeEach(async () =>
 	{
-		mockRepository = jasmine.createSpyObj("AccountRepository", [
-			"getAvailableRoles",
-			"createPermissionRequest"
-		]);
-		mockRepository.getAvailableRoles.and.returnValue(
+		mockApiService =
+			createMockApiService() as jasmine.SpyObj<ApiService>;
+		mockApiService.get.and.returnValue(
 			of([
 				{ name: "Admin", description: "Administrator access" },
 				{ name: "Developer", description: "Developer access" }
@@ -47,7 +46,7 @@ describe("RequestPermissionsPage", () =>
 				provideRouter(testRoutes),
 				provideAngularQuery(queryClient),
 				AccountService,
-				{ provide: AccountRepository, useValue: mockRepository }
+				{ provide: ApiService, useValue: mockApiService }
 			]
 		}).compileComponents();
 
@@ -79,20 +78,23 @@ describe("RequestPermissionsPage", () =>
 	{
 		await component.onSubmit();
 
-		expect(mockRepository.createPermissionRequest).not.toHaveBeenCalled();
+		expect(mockApiService.post).not.toHaveBeenCalled();
 	});
 
 	it("should submit with selected roles", async () =>
 	{
-		mockRepository.createPermissionRequest.and.returnValue(of(undefined));
+		mockApiService.post.and.returnValue(of(undefined));
 		component.toggleRole("Admin");
 		component.requestForm.patchValue({ requestMessage: "Need access" });
 
 		await component.onSubmit();
 
-		expect(mockRepository.createPermissionRequest).toHaveBeenCalledWith({
-			requestedRoles: ["Admin"],
-			requestMessage: "Need access"
-		});
+		expect(mockApiService.post).toHaveBeenCalledWith(
+			"users/me/permission-requests",
+			{
+				requestedRoles: ["Admin"],
+				requestMessage: "Need access"
+			}
+		);
 	});
 });

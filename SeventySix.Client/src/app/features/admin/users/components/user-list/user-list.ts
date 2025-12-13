@@ -384,7 +384,7 @@ export class UserList
 
 				this.updateUserMutation.mutate(
 					{
-						id: user.id,
+						userId: user.id,
 						user: {
 							id: user.id,
 							username: user.username,

@@ -180,7 +180,7 @@ describe("UserDetailPage", () =>
 		const localMockMutationResult = createMockMutationResult<
 			UserDto,
 			Error,
-			{ id: string | number; user: UpdateUserRequest },
+			{ userId: string | number; user: UpdateUserRequest },
 			unknown
 		>();
 		localMockMutationResult.mutate = jasmine
@@ -209,7 +209,7 @@ describe("UserDetailPage", () =>
 
 		expect(component.updateMutation.mutate).toHaveBeenCalledWith(
 			{
-				id: "1",
+				userId: "1",
 				user: jasmine.objectContaining({ fullName: "Jane Doe" })
 			},
 			jasmine.any(Object)
@@ -232,7 +232,7 @@ describe("UserDetailPage", () =>
 		const errorMutation = createMockMutationResult<
 			UserDto,
 			Error,
-			{ id: string | number; user: UpdateUserRequest },
+			{ userId: string | number; user: UpdateUserRequest },
 			unknown
 		>({ isError: true, error });
 
@@ -287,7 +287,7 @@ describe("UserDetailPage", () =>
 		const localMockMutationResult = createMockMutationResult<
 			UserDto,
 			Error,
-			{ id: string | number; user: UpdateUserRequest },
+			{ userId: string | number; user: UpdateUserRequest },
 			unknown
 		>();
 		localMockMutationResult.mutate = jasmine
@@ -326,7 +326,7 @@ describe("UserDetailPage", () =>
 			const localMockMutationResult = createMockMutationResult<
 				UserDto,
 				Error,
-				{ id: string | number; user: UpdateUserRequest },
+				{ userId: string | number; user: UpdateUserRequest },
 				unknown
 			>();
 			localMockMutationResult.mutate = jasmine
@@ -355,7 +355,7 @@ describe("UserDetailPage", () =>
 
 			expect(component.updateMutation.mutate).toHaveBeenCalledWith(
 				{
-					id: "1",
+					userId: "1",
 					user: jasmine.objectContaining({
 						id: 1,
 						username: "john_doe"
@@ -373,7 +373,7 @@ describe("UserDetailPage", () =>
 			const errorMutation = createMockMutationResult<
 				UserDto,
 				any,
-				{ id: string | number; user: UpdateUserRequest },
+				{ userId: string | number; user: UpdateUserRequest },
 				unknown
 			>({ isError: true, error: conflictError });
 
@@ -463,7 +463,7 @@ describe("UserDetailPage", () =>
 			const localMockMutationResult = createMockMutationResult<
 				UserDto,
 				Error,
-				{ id: string | number; user: UpdateUserRequest },
+				{ userId: string | number; user: UpdateUserRequest },
 				unknown
 			>();
 			localMockMutationResult.mutate = jasmine
@@ -497,7 +497,7 @@ describe("UserDetailPage", () =>
 
 			expect(component.updateMutation.mutate).toHaveBeenCalledWith(
 				{
-					id: "1",
+					userId: "1",
 					user: {
 						id: 1,
 						username: "new_username",

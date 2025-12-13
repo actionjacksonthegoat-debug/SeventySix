@@ -103,7 +103,7 @@ public class PendingEmailBackgroundService(
 					cancellationToken);
 
 				await messageBus.InvokeAsync(
-					new ClearPendingEmailFlagCommand(user.Id),
+					user.Id,
 					cancellationToken); successCount++;
 			}
 			catch (EmailRateLimitException)

@@ -18,8 +18,7 @@ public static class AddUserRoleCommandHandler
 	/// <exception cref="ArgumentException">Thrown when role is invalid.</exception>
 	public static async Task<bool> HandleAsync(
 		AddUserRoleCommand command,
-		IUserQueryRepository userQueryRepository,
-		IUserCommandRepository userCommandRepository,
+		IUserRepository userRepository,
 		IPermissionRequestRepository permissionRequestRepository,
 		CancellationToken cancellationToken)
 	{
@@ -30,7 +29,7 @@ public static class AddUserRoleCommandHandler
 				nameof(command));
 		}
 
-		if (await userQueryRepository.HasRoleAsync(
+		if (await userRepository.HasRoleAsync(
 			command.UserId,
 			command.Role,
 			cancellationToken))
@@ -39,7 +38,7 @@ public static class AddUserRoleCommandHandler
 		}
 
 		// Audit fields (CreatedBy, CreateDate) set by AuditInterceptor
-		await userCommandRepository.AddRoleAsync(
+		await userRepository.AddRoleAsync(
 			command.UserId,
 			command.Role,
 			cancellationToken);

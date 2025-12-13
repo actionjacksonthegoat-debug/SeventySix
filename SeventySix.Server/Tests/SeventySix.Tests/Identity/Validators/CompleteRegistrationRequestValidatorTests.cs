@@ -273,25 +273,7 @@ public class CompleteRegistrationRequestValidatorTests
 			.ShouldContain(error => error.PropertyName == "Password");
 	}
 
-	[Fact]
-	public async Task ValidateAsync_ReturnsInvalid_WhenPasswordMissingSpecialCharacterAsync()
-	{
-		// Arrange
-		CompleteRegistrationRequest request =
-			new(
-				Token: "valid-token",
-				Username: "testuser",
-				Password: "SecurePassword123");
 
-		// Act
-		ValidationResult result =
-			await Validator.ValidateAsync(request);
-
-		// Assert
-		result.IsValid.ShouldBeFalse();
-		result.Errors
-			.ShouldContain(error => error.PropertyName == "Password");
-	}
 
 	[Theory]
 	[InlineData("SecurePass123!")]

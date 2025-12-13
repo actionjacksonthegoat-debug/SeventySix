@@ -12,7 +12,7 @@ namespace SeventySix.Identity;
 internal class UserRepository(
 	IdentityDbContext context,
 	ILogger<UserRepository> repositoryLogger,
-	TimeProvider timeProvider) : BaseRepository<User, IdentityDbContext>(context, repositoryLogger), IUserQueryRepository, IUserCommandRepository
+	TimeProvider timeProvider) : BaseRepository<User, IdentityDbContext>(context, repositoryLogger), IUserRepository
 {
 	/// <inheritdoc/>
 	protected override string GetEntityIdentifier(User entity)

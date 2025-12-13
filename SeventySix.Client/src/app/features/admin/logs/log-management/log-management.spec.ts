@@ -4,7 +4,6 @@ import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { signal } from "@angular/core";
 import { LogManagementPage } from "./log-management";
 import { LogManagementService } from "@admin/logs/services";
-import { LogRepository } from "@admin/logs/repositories";
 import { MatDialog } from "@angular/material/dialog";
 
 describe("LogManagementPage", () =>
@@ -54,7 +53,6 @@ describe("LogManagementPage", () =>
 				provideZonelessChangeDetection(),
 				provideHttpClientTesting(),
 				{ provide: LogManagementService, useValue: mockLogService },
-				{ provide: LogRepository, useValue: {} },
 				{ provide: MatDialog, useValue: mockDialog }
 			]
 		}).compileComponents();

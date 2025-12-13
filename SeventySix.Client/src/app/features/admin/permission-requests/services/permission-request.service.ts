@@ -1,14 +1,18 @@
 import { inject, Injectable } from "@angular/core";
 import {
 	injectQuery,
-	injectMutation,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
-import { PermissionRequestRepository } from "../repositories";
-import { CreatePermissionRequestDto } from "../models";
+import { ApiService } from "@infrastructure/api-services/api.service";
+import {
+	CreatePermissionRequestDto,
+	PermissionRequestDto,
+	AvailableRoleDto
+} from "../models";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
+import { createMutation } from "@infrastructure/utils/mutation-factory";
 
 /**
  * Service for permission request business logic.
@@ -18,19 +22,21 @@ import { QueryKeys } from "@infrastructure/utils/query-keys";
 @Injectable()
 export class PermissionRequestService
 {
-	private readonly repository: PermissionRequestRepository = inject(
-		PermissionRequestRepository
-	);
+	private readonly apiService: ApiService = inject(ApiService);
 	private readonly queryClient: QueryClient = inject(QueryClient);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("permission-requests");
+	private readonly endpoint: string = "users";
 
 	/** Query for all permission requests (admin). */
 	getAllRequests()
 	{
 		return injectQuery(() => ({
 			queryKey: QueryKeys.permissionRequests.list,
-			queryFn: () => lastValueFrom(this.repository.getAll()),
+			queryFn: () =>
+				lastValueFrom(
+					this.apiService.get<PermissionRequestDto[]>(`${this.endpoint}/permission-requests`)
+				),
 			...this.queryConfig
 		}));
 	}
@@ -40,7 +46,10 @@ export class PermissionRequestService
 	{
 		return injectQuery(() => ({
 			queryKey: QueryKeys.permissionRequests.availableRoles,
-			queryFn: () => lastValueFrom(this.repository.getAvailableRoles()),
+			queryFn: () =>
+				lastValueFrom(
+					this.apiService.get<AvailableRoleDto[]>(`${this.endpoint}/me/available-roles`)
+				),
 			...this.queryConfig
 		}));
 	}
@@ -48,75 +57,60 @@ export class PermissionRequestService
 	/** Mutation for creating permission requests. */
 	createRequest()
 	{
-		return injectMutation(() => ({
-			mutationFn: (request: CreatePermissionRequestDto) =>
-				lastValueFrom(this.repository.create(request)),
-			onSuccess: () =>
-			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.permissionRequests.all
-				});
-			}
-		}));
+		return createMutation<CreatePermissionRequestDto, void>(
+			(request) =>
+				this.apiService.post<void, CreatePermissionRequestDto>(
+					`${this.endpoint}/me/permission-requests`,
+					request),
+			this.queryClient,
+			"permissionRequests");
 	}
 
 	/** Mutation for approving a single request. */
 	approveRequest()
 	{
-		return injectMutation(() => ({
-			mutationFn: (id: number) =>
-				lastValueFrom(this.repository.approve(id)),
-			onSuccess: () =>
-			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.permissionRequests.all
-				});
-			}
-		}));
+		return createMutation<number, void>(
+			(requestId) =>
+				this.apiService.post<void, Record<string, never>>(
+					`${this.endpoint}/permission-requests/${requestId}/approve`,
+					{}),
+			this.queryClient,
+			"permissionRequests");
 	}
 
 	/** Mutation for rejecting a single request. */
 	rejectRequest()
 	{
-		return injectMutation(() => ({
-			mutationFn: (id: number) =>
-				lastValueFrom(this.repository.reject(id)),
-			onSuccess: () =>
-			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.permissionRequests.all
-				});
-			}
-		}));
+		return createMutation<number, void>(
+			(requestId) =>
+				this.apiService.post<void, Record<string, never>>(
+					`${this.endpoint}/permission-requests/${requestId}/reject`,
+					{}),
+			this.queryClient,
+			"permissionRequests");
 	}
 
 	/** Mutation for bulk approving requests. */
 	bulkApproveRequests()
 	{
-		return injectMutation(() => ({
-			mutationFn: (ids: number[]) =>
-				lastValueFrom(this.repository.bulkApprove(ids)),
-			onSuccess: () =>
-			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.permissionRequests.all
-				});
-			}
-		}));
+		return createMutation<number[], number>(
+			(requestIds) =>
+				this.apiService.post<number, number[]>(
+					`${this.endpoint}/permission-requests/bulk/approve`,
+					requestIds),
+			this.queryClient,
+			"permissionRequests");
 	}
 
 	/** Mutation for bulk rejecting requests. */
 	bulkRejectRequests()
 	{
-		return injectMutation(() => ({
-			mutationFn: (ids: number[]) =>
-				lastValueFrom(this.repository.bulkReject(ids)),
-			onSuccess: () =>
-			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.permissionRequests.all
-				});
-			}
-		}));
+		return createMutation<number[], number>(
+			(requestIds) =>
+				this.apiService.post<number, number[]>(
+					`${this.endpoint}/permission-requests/bulk/reject`,
+					requestIds),
+			this.queryClient,
+			"permissionRequests");
 	}
 }

@@ -7,7 +7,7 @@ public static class GetAllUsersQueryHandler
 {
 	public static async Task<IEnumerable<UserDto>> HandleAsync(
 		GetAllUsersQuery query,
-		IUserQueryRepository repository,
+		IUserRepository repository,
 		CancellationToken cancellationToken)
 	{
 		return await repository.GetAllProjectedAsync(

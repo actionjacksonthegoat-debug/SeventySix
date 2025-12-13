@@ -6,7 +6,6 @@ import {
 	UserExportService,
 	UserPreferencesService
 } from "@admin/users/services";
-import { UserRepository } from "@admin/users/repositories";
 import { ComponentTestBed } from "@testing/test-bed-builders";
 
 describe("UserList", () =>
@@ -20,7 +19,6 @@ describe("UserList", () =>
 			await new ComponentTestBed<UserList>()
 				.withAdminDefaults()
 				.withRealService(UserService)
-				.withRealService(UserRepository)
 				.withRealService(UserExportService)
 				.withRealService(UserPreferencesService)
 				.withRealService(DatePipe)

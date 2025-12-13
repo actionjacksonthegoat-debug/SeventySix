@@ -2,7 +2,6 @@
  * Log Management Service
  * Business logic layer for log operations
  * Uses TanStack Query for caching and state management
- * Uses repository pattern for data access (SRP, DIP)
  * Extends BaseFilterService for filter state management
  */
 
@@ -14,14 +13,14 @@ import {
 	Signal,
 	WritableSignal
 } from "@angular/core";
+import { HttpContext, HttpParams } from "@angular/common/http";
 import { DateService } from "@infrastructure/services";
-import {
-	injectQuery,
-	injectMutation
-} from "@tanstack/angular-query-experimental";
-import { lastValueFrom } from "rxjs";
-import { LogRepository } from "@admin/logs/repositories";
-import { LogQueryRequest } from "@admin/logs/models";
+import { injectQuery } from "@tanstack/angular-query-experimental";
+import { lastValueFrom, Observable } from "rxjs";
+import { ApiService } from "@infrastructure/api-services/api.service";
+import { LogQueryRequest, LogDto } from "@admin/logs/models";
+import { PagedResultOfLogDto } from "@infrastructure/api";
+import { buildHttpParams } from "@infrastructure/utils/http-params.utility";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
 import { BaseQueryService } from "@infrastructure/services/base-query.service";
 
@@ -35,7 +34,8 @@ import { BaseQueryService } from "@infrastructure/services/base-query.service";
 export class LogManagementService extends BaseQueryService<LogQueryRequest>
 {
 	protected readonly queryKeyPrefix: string = "logs";
-	private readonly logRepository: LogRepository = inject(LogRepository);
+	private readonly apiService: ApiService = inject(ApiService);
+	private readonly endpoint: string = "logs";
 
 	// Selected log IDs using signals
 	readonly selectedIds: WritableSignal<Set<number>> = signal<Set<number>>(
@@ -77,12 +77,7 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 				.paged(this.getCurrentFilter())
 				.concat(this.forceRefreshTrigger()),
 			queryFn: () =>
-				lastValueFrom(
-					this.logRepository.getAllPaged(
-						this.getCurrentFilter(),
-						this.getForceRefreshContext()
-					)
-				),
+				lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
 			...this.queryConfig
 		}));
 	}
@@ -90,17 +85,9 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	/** Mutation for deleting a single log. Automatically invalidates related queries on success. */
 	deleteLog()
 	{
-		return injectMutation(() => ({
-			mutationFn: (id: number) =>
-				lastValueFrom(this.logRepository.delete(id)),
-			onSuccess: () =>
-			{
-				// Invalidate all log queries
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.logs.all
-				});
-			}
-		}));
+		return this.createMutation<number, void>(
+			(logId) =>
+				this.apiService.delete<void>(`${this.endpoint}/${logId}`));
 	}
 
 	/**
@@ -110,17 +97,14 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	 */
 	deleteLogs()
 	{
-		return injectMutation(() => ({
-			mutationFn: (ids: number[]) =>
-				lastValueFrom(this.logRepository.deleteBatch(ids)),
-			onSuccess: () =>
+		return this.createMutation<number[], number>(
+			(logIds) =>
+				this.apiService.delete<number>(`${this.endpoint}/batch`, logIds),
+			() =>
 			{
 				this.clearSelection();
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.logs.all
-				});
-			}
-		}));
+				this.invalidateAll();
+			});
 	}
 
 	/**
@@ -187,5 +171,19 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	getSelectedIds(): Set<number>
 	{
 		return this.selectedIds();
+	}
+
+	/** Gets paged logs with the given filter. */
+	private getPaged(
+		filter?: LogQueryRequest,
+		context?: HttpContext
+	): Observable<PagedResultOfLogDto>
+	{
+		const params: HttpParams | undefined =
+			filter
+				? buildHttpParams(filter)
+				: undefined;
+
+		return this.apiService.get<PagedResultOfLogDto>(this.endpoint, params, context);
 	}
 }

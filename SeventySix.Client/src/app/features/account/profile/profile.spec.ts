@@ -9,22 +9,21 @@ import {
 import { of } from "rxjs";
 import { ProfilePage } from "./profile";
 import { AccountService } from "../services";
-import { AccountRepository } from "../repositories";
+import { ApiService } from "@infrastructure/api-services/api.service";
+import { createMockApiService } from "@testing";
 
 describe("ProfilePage", () =>
 {
 	let component: ProfilePage;
 	let fixture: ComponentFixture<ProfilePage>;
-	let mockRepository: jasmine.SpyObj<AccountRepository>;
+	let mockApiService: jasmine.SpyObj<ApiService>;
 	let queryClient: QueryClient;
 
 	beforeEach(async () =>
 	{
-		mockRepository = jasmine.createSpyObj("AccountRepository", [
-			"getProfile",
-			"updateProfile"
-		]);
-		mockRepository.getProfile.and.returnValue(
+		mockApiService =
+			createMockApiService() as jasmine.SpyObj<ApiService>;
+		mockApiService.get.and.returnValue(
 			of({
 				id: 1,
 				username: "testuser",
@@ -48,7 +47,7 @@ describe("ProfilePage", () =>
 				provideRouter([]),
 				provideAngularQuery(queryClient),
 				AccountService,
-				{ provide: AccountRepository, useValue: mockRepository }
+				{ provide: ApiService, useValue: mockApiService }
 			]
 		}).compileComponents();
 
@@ -71,12 +70,12 @@ describe("ProfilePage", () =>
 
 		await component.onSubmit();
 
-		expect(mockRepository.updateProfile).not.toHaveBeenCalled();
+		expect(mockApiService.put).not.toHaveBeenCalled();
 	});
 
 	it("should submit valid form", async () =>
 	{
-		mockRepository.updateProfile.and.returnValue(of({} as any));
+		mockApiService.put.and.returnValue(of({} as any));
 		component.profileForm.patchValue({
 			email: "new@example.com", fullName: "New Name"
 		});
@@ -84,8 +83,11 @@ describe("ProfilePage", () =>
 
 		await component.onSubmit();
 
-		expect(mockRepository.updateProfile).toHaveBeenCalledWith({
-			email: "new@example.com", fullName: "New Name"
-		});
+		expect(mockApiService.put).toHaveBeenCalledWith(
+			"users/me",
+			{
+				email: "new@example.com", fullName: "New Name"
+			}
+		);
 	});
 });

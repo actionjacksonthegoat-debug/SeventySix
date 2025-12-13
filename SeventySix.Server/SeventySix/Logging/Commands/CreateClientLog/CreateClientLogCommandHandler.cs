@@ -13,14 +13,14 @@ namespace SeventySix.Logging;
 public static class CreateClientLogCommandHandler
 {
 	/// <summary>
-	/// Handles the command to create a client log entry.
+	/// Handles the request to create a client log entry.
 	/// </summary>
-	/// <param name="command">The command containing log creation details.</param>
+	/// <param name="request">The client log creation request.</param>
 	/// <param name="repository">The log repository for data access.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>A task representing the asynchronous operation.</returns>
 	public static async Task HandleAsync(
-		CreateClientLogCommand command,
+		CreateLogRequest request,
 		ILogRepository repository,
 		CancellationToken cancellationToken)
 	{
@@ -34,24 +34,24 @@ public static class CreateClientLogCommandHandler
 		Log log =
 			new()
 			{
-				LogLevel = command.Request.LogLevel,
-				Message = command.Request.Message,
-				ExceptionMessage = command.Request.ExceptionMessage,
-				StackTrace = command.Request.StackTrace,
-				SourceContext = command.Request.SourceContext,
-				RequestPath = command.Request.RequestUrl,
-				RequestMethod = command.Request.RequestMethod,
-				StatusCode = command.Request.StatusCode,
-				CorrelationId = command.Request.CorrelationId ?? traceId,
+				LogLevel = request.LogLevel,
+				Message = request.Message,
+				ExceptionMessage = request.ExceptionMessage,
+				StackTrace = request.StackTrace,
+				SourceContext = request.SourceContext,
+				RequestPath = request.RequestUrl,
+				RequestMethod = request.RequestMethod,
+				StatusCode = request.StatusCode,
+				CorrelationId = request.CorrelationId ?? traceId,
 				SpanId = spanId,
 				ParentSpanId = parentSpanId,
 				Properties =
 					JsonSerializer.Serialize(
 						new
 						{
-							command.Request.UserAgent,
-							command.Request.ClientTimestamp,
-							command.Request.AdditionalContext,
+							request.UserAgent,
+							request.ClientTimestamp,
+							request.AdditionalContext,
 						}),
 				MachineName = "Browser",
 				Environment = "Client",

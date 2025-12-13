@@ -220,7 +220,7 @@ public class AuthController(
 		if (!string.IsNullOrEmpty(refreshToken))
 		{
 			await messageBus.InvokeAsync<bool>(
-				new LogoutCommand(refreshToken),
+				refreshToken,
 				cancellationToken);
 		}
 
@@ -461,8 +461,7 @@ public class AuthController(
 		CancellationToken cancellationToken)
 	{
 		await messageBus.InvokeAsync(
-			new InitiatePasswordResetByEmailCommand(
-				request.Email),
+			request.Email,
 			cancellationToken);
 
 		// Always return OK to prevent email enumeration
@@ -549,7 +548,7 @@ public class AuthController(
 		CancellationToken cancellationToken)
 	{
 		await messageBus.InvokeAsync(
-			new InitiateRegistrationCommand(request),
+			request,
 			cancellationToken);
 
 		// Always return OK to prevent email enumeration

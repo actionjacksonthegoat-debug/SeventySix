@@ -15,17 +15,21 @@ namespace SeventySix.Identity;
 public static class InitiatePasswordResetByEmailCommandHandler
 {
 	/// <summary>
-	/// Handles the initiate password reset by email command.
+	/// Handles the initiate password reset by email request.
 	/// </summary>
+	/// <param name="email">The email address to initiate password reset for.</param>
+	/// <param name="messageBus">Message bus.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>A task representing the async operation.</returns>
 	public static async Task HandleAsync(
-		InitiatePasswordResetByEmailCommand command,
+		string email,
 		IMessageBus messageBus,
 		CancellationToken cancellationToken)
 	{
 		UserDto? user =
 			await messageBus.InvokeAsync<UserDto?>(
 				new GetUserByEmailQuery(
-					command.Email),
+					email),
 				cancellationToken);
 
 		if (user is null || !user.IsActive)

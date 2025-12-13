@@ -197,7 +197,7 @@ public class UsersController(
 		{
 			UserDto user =
 				await messageBus.InvokeAsync<UserDto>(
-					new CreateUserCommand(request),
+					request,
 					cancellationToken);
 
 			return CreatedAtRoute(
@@ -272,7 +272,7 @@ public class UsersController(
 
 		UserDto user =
 			await messageBus.InvokeAsync<UserDto>(
-				new UpdateUserCommand(request),
+				request,
 				cancellationToken);
 
 		return Ok(user);
@@ -328,7 +328,7 @@ public class UsersController(
 	{
 		bool result =
 			await messageBus.InvokeAsync<bool>(
-				new RestoreUserCommand(id),
+				id,
 				cancellationToken);
 
 		return result

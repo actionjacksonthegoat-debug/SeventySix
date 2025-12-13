@@ -17,6 +17,7 @@ import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import { environment } from "@environments/environment";
+import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 
 interface ChangePasswordRequest
 {
@@ -40,6 +41,9 @@ export class ChangePasswordComponent implements OnInit
 	private readonly route: ActivatedRoute = inject(ActivatedRoute);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
+
+	protected readonly PASSWORD_MIN_LENGTH: number =
+		PASSWORD_VALIDATION.MIN_LENGTH;
 
 	protected currentPassword: string = "";
 	protected newPassword: string = "";

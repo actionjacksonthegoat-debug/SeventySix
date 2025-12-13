@@ -11,17 +11,17 @@ using Wolverine;
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Handler for <see cref="CreateUserCommand"/>.
+/// Handler for <see cref="CreateUserRequest"/>.
 /// </summary>
 public static class CreateUserCommandHandler
 {
 	/// <summary>
 	/// Handles user creation with duplicate checks and welcome email.
 	/// </summary>
-	/// <param name="command">The create user command.</param>
+	/// <param name="request">The create user request.</param>
 	/// <param name="messageBus">Message bus for querying users.</param>
-	/// <param name="validator">Request validator.</param>
-	/// <param name="repository">User repository.</param>
+	/// <param name="userQueryRepository">User query repository.</param>
+	/// <param name="userCommandRepository">User command repository.</param>
 	/// <param name="logger">Logger instance.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>The created user DTO.</returns>
@@ -30,35 +30,38 @@ public static class CreateUserCommandHandler
 	/// Database unique constraints on Username and Email provide atomicity - no manual transaction management needed.
 	/// </remarks>
 	public static async Task<UserDto> HandleAsync(
-		CreateUserCommand command,
+		CreateUserRequest request,
 		IMessageBus messageBus,
-		IUserQueryRepository userQueryRepository,
-		IUserCommandRepository userCommandRepository,
+		IUserRepository userRepository,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
 		// Create user entity
 		User entity =
-			command.Request.ToEntity();
+			request.ToEntity();
 
 		UserDto createdUser;
 
 		try
 		{
 			User created =
-				await userCommandRepository.CreateAsync(
+				await userRepository.CreateAsync(
 					entity,
 					cancellationToken);
 
-			createdUser = created.ToDto();
+			createdUser =
+				created.ToDto();
 		}
 		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
 		{
 			DuplicateKeyViolationHandler.HandleAsException(
 				exception,
-				command.Request.Username,
-				command.Request.Email,
+				request.Username,
+				request.Email,
 				logger);
+
+			// Unreachable because HandleAsException always throws
+			throw;
 		}
 
 		// Send welcome email OUTSIDE transaction to avoid rollback on email failure
@@ -75,8 +78,7 @@ public static class CreateUserCommandHandler
 			// Email rate limited - mark user for pending email
 			await MarkUserNeedsPendingEmailAsync(
 				createdUser.Id,
-				userQueryRepository,
-				userCommandRepository,
+				userRepository,
 				cancellationToken);
 
 			logger.LogWarning(
@@ -106,12 +108,11 @@ public static class CreateUserCommandHandler
 	/// </summary>
 	private static async Task MarkUserNeedsPendingEmailAsync(
 		int userId,
-		IUserQueryRepository userQueryRepository,
-		IUserCommandRepository userCommandRepository,
+		IUserRepository userRepository,
 		CancellationToken cancellationToken)
 	{
 		User? user =
-			await userQueryRepository.GetByIdAsync(
+			await userRepository.GetByIdAsync(
 				userId,
 				cancellationToken);
 
@@ -122,7 +123,7 @@ public static class CreateUserCommandHandler
 
 		user.NeedsPendingEmail = true;
 
-		await userCommandRepository.UpdateAsync(
+		await userRepository.UpdateAsync(
 			user,
 			cancellationToken);
 	}

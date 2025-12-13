@@ -8,30 +8,37 @@ using SeventySix.ElectronicNotifications.Emails;
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Handler for InitiateRegistrationCommand.
+/// Handler for initiating user registration.
 /// </summary>
 public static class InitiateRegistrationCommandHandler
 {
 	/// <summary>
-	/// Handles the InitiateRegistrationCommand request.
+	/// Handles the registration initiation request.
 	/// </summary>
+	/// <param name="request">The initiate registration request.</param>
+	/// <param name="userQueryRepository">User query repository.</param>
+	/// <param name="emailVerificationTokenRepository">Email verification token repository.</param>
+	/// <param name="emailService">Email service.</param>
+	/// <param name="timeProvider">Time provider.</param>
+	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <returns>A task representing the async operation.</returns>
 	/// <remarks>
 	/// Always succeeds to prevent email enumeration.
 	/// </remarks>
 	public static async Task HandleAsync(
-		InitiateRegistrationCommand command,
-		IUserQueryRepository userQueryRepository,
+		InitiateRegistrationRequest request,
+		IUserRepository repository,
 		IEmailVerificationTokenRepository emailVerificationTokenRepository,
 		IEmailService emailService,
 		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
 		string email =
-			command.Request.Email;
+			request.Email;
 
 		// Check if email is already registered
 		bool emailExists =
-			await userQueryRepository.EmailExistsAsync(
+			await repository.EmailExistsAsync(
 				email,
 				excludeId: null,
 				cancellationToken);

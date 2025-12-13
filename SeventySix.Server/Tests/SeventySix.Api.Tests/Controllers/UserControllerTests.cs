@@ -184,7 +184,7 @@ public class UsersControllerTests
 				.Build();
 
 		MessageBus
-			.InvokeAsync<UserDto>(Arg.Any<CreateUserCommand>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<UserDto>(Arg.Any<CreateUserRequest>(), Arg.Any<CancellationToken>())
 			.Returns(createdUser);
 
 		// Act
@@ -222,7 +222,7 @@ public class UsersControllerTests
 				.Build();
 
 		MessageBus
-			.InvokeAsync<UserDto>(Arg.Any<CreateUserCommand>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<UserDto>(Arg.Any<CreateUserRequest>(), Arg.Any<CancellationToken>())
 			.Returns(createdUser);
 
 		// Act
@@ -230,9 +230,9 @@ public class UsersControllerTests
 
 		// Assert
 		await MessageBus.Received(1).InvokeAsync<UserDto>(
-			Arg.Is<CreateUserCommand>(cmd =>
-				cmd.Request.Username == "test" &&
-				cmd.Request.Email == "test@example.com"),
+			Arg.Is<CreateUserRequest>(req =>
+				req.Username == "test" &&
+				req.Email == "test@example.com"),
 			Arg.Any<CancellationToken>());
 	}
 
@@ -267,12 +267,10 @@ public class UsersControllerTests
 				.Build();
 
 		MessageBus
-			.InvokeAsync<UserDto>(Arg.Any<UpdateUserCommand>(), Arg.Any<CancellationToken>())
-			.Returns(updatedUser);
+			.InvokeAsync<UserDto>(Arg.Any<UpdateUserRequest>(), Arg.Any<CancellationToken>()).Returns(updatedUser);
 
 		// Act
 		ActionResult<UserDto> result = await Controller.UpdateAsync(1, request, CancellationToken.None);
-
 		// Assert
 		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
 		UserDto returnedUser = Assert.IsType<UserDto>(okResult.Value);
@@ -300,7 +298,7 @@ public class UsersControllerTests
 		BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
 		Assert.Equal("ID in URL does not match ID in request body", badRequestResult.Value);
 
-		await MessageBus.DidNotReceive().InvokeAsync<UserDto>(Arg.Any<UpdateUserCommand>(), Arg.Any<CancellationToken>());
+		await MessageBus.DidNotReceive().InvokeAsync<UserDto>(Arg.Any<UpdateUserRequest>(), Arg.Any<CancellationToken>());
 	}
 
 	#endregion
@@ -346,7 +344,7 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MessageBus
-			.InvokeAsync<bool>(Arg.Any<RestoreUserCommand>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<bool>(Arg.Any<int>(), Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		// Act
@@ -361,7 +359,7 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MessageBus
-			.InvokeAsync<bool>(Arg.Any<RestoreUserCommand>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<bool>(Arg.Any<int>(), Arg.Any<CancellationToken>())
 			.Returns(false);
 
 		// Act

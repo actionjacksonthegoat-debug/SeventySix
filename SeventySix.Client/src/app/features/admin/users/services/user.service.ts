@@ -2,23 +2,22 @@
  * User Service
  * Business logic layer for User operations
  * Uses TanStack Query for caching and state management
- * Uses repository pattern for data access (SRP, DIP)
  * Extends BaseFilterService for filter state management
  */
 
 import { inject, Injectable } from "@angular/core";
-import {
-	injectQuery,
-	injectMutation
-} from "@tanstack/angular-query-experimental";
-import { lastValueFrom } from "rxjs";
+import { HttpContext, HttpParams } from "@angular/common/http";
+import { injectQuery } from "@tanstack/angular-query-experimental";
+import { lastValueFrom, Observable } from "rxjs";
 import {
 	UserDto,
 	CreateUserRequest,
 	UpdateUserRequest,
 	UserQueryRequest
 } from "@admin/users/models";
-import { UserRepository } from "@admin/users/repositories";
+import { PagedResultOfUserDto } from "@infrastructure/api";
+import { ApiService } from "@infrastructure/api-services/api.service";
+import { buildHttpParams } from "@infrastructure/utils/http-params.utility";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
 import { BaseQueryService } from "@infrastructure/services/base-query.service";
 
@@ -32,7 +31,8 @@ import { BaseQueryService } from "@infrastructure/services/base-query.service";
 export class UserService extends BaseQueryService<UserQueryRequest>
 {
 	protected readonly queryKeyPrefix: string = "users";
-	private readonly userRepository: UserRepository = inject(UserRepository);
+	private readonly apiService: ApiService = inject(ApiService);
+	private readonly endpoint: string = "users";
 
 	constructor()
 	{
@@ -58,26 +58,22 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 				.paged(this.getCurrentFilter())
 				.concat(this.forceRefreshTrigger()),
 			queryFn: () =>
-				lastValueFrom(
-					this.userRepository.getPaged(
-						this.getCurrentFilter(),
-						this.getForceRefreshContext()
-					)
-				),
+				lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
 			...this.queryConfig
 		}));
 	}
 
 	/**
 	 * Query for User by ID
-	 * @param id The User identifier
+	 * @param userId The User identifier
 	 * @returns Query object with data, isLoading, error, etc.
 	 */
-	getUserById(id: number | string)
+	getUserById(userId: number | string)
 	{
 		return injectQuery(() => ({
-			queryKey: QueryKeys.users.single(id),
-			queryFn: () => lastValueFrom(this.userRepository.getById(id)),
+			queryKey: QueryKeys.users.single(userId),
+			queryFn: () =>
+				lastValueFrom(this.apiService.get<UserDto>(`${this.endpoint}/${userId}`)),
 			...this.queryConfig
 		}));
 	}
@@ -89,17 +85,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	createUser()
 	{
-		return injectMutation(() => ({
-			mutationFn: (user: Partial<UserDto>) =>
-				lastValueFrom(this.userRepository.create(user as CreateUserRequest)),
-			onSuccess: () =>
-			{
-				// Invalidate paged users queries
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.users.all
-				});
-			}
-		}));
+		return this.createMutation<Partial<UserDto>, UserDto>(
+			(user) =>
+				this.apiService.post<UserDto>(this.endpoint, user as CreateUserRequest));
 	}
 
 	/**
@@ -108,25 +96,20 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	updateUser()
 	{
-		return injectMutation(() => ({
-			mutationFn: ({
-				id,
-				user
-			}: {
-				id: number | string;
-				user: UpdateUserRequest;
-			}) => lastValueFrom(this.userRepository.update(id, user)),
-			onSuccess: (_, variables) =>
+		return this.createMutation<
 			{
-				// Invalidate specific User and all User queries
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.users.single(variables.id)
-				});
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.users.all
-				});
-			}
-		}));
+				userId: number | string;
+				user: UpdateUserRequest;
+			},
+			UserDto
+		>(
+			(variables) =>
+				this.apiService.put<UserDto>(`${this.endpoint}/${variables.userId}`, variables.user),
+			(result, variables) =>
+			{
+				this.invalidateSingle(variables.userId);
+				this.invalidateAll();
+			});
 	}
 
 	/**
@@ -135,17 +118,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	deleteUser()
 	{
-		return injectMutation(() => ({
-			mutationFn: (id: number | string) =>
-				lastValueFrom(this.userRepository.delete(id)),
-			onSuccess: () =>
-			{
-				// Invalidate all User queries
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.users.all
-				});
-			}
-		}));
+		return this.createMutation<number | string, void>(
+			(userId) =>
+				this.apiService.delete<void>(`${this.endpoint}/${userId}`));
 	}
 
 	/**
@@ -167,7 +142,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 		return injectQuery(() => ({
 			queryKey: QueryKeys.users.byUsername(username),
 			queryFn: () =>
-				lastValueFrom(this.userRepository.getByUsername(username)),
+				lastValueFrom(this.apiService.get<UserDto>(`${this.endpoint}/username/${username}`)),
 			...this.queryConfig
 		}));
 	}
@@ -175,16 +150,21 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	/**
 	 * Check username availability (not cached for real-time validation)
 	 * @param username The username to check
-	 * @param excludeId Optional User ID to exclude
+	 * @param excludeUserId Optional User ID to exclude
 	 * @returns Promise of boolean
 	 */
 	checkUsernameAvailability(
 		username: string,
-		excludeId?: number
+		excludeUserId?: number
 	): Promise<boolean>
 	{
+		const params: HttpParams | undefined =
+			excludeUserId
+				? buildHttpParams({ excludeId: excludeUserId })
+				: undefined;
+
 		return lastValueFrom(
-			this.userRepository.checkUsername(username, excludeId)
+			this.apiService.get<boolean>(`${this.endpoint}/check/username/${username}`, params)
 		);
 	}
 
@@ -194,16 +174,11 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	restoreUser()
 	{
-		return injectMutation(() => ({
-			mutationFn: (id: number | string) =>
-				lastValueFrom(this.userRepository.restore(id)),
-			onSuccess: () =>
-			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.users.all
-				});
-			}
-		}));
+		return this.createMutation<number | string, void>(
+			(userId) =>
+				this.apiService.post<void, Record<string, never>>(
+					`${this.endpoint}/${userId}/restore`,
+					{}));
 	}
 
 	/**
@@ -212,16 +187,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	bulkActivateUsers()
 	{
-		return injectMutation(() => ({
-			mutationFn: (ids: number[]) =>
-				lastValueFrom(this.userRepository.bulkActivate(ids)),
-			onSuccess: () =>
-			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.users.all
-				});
-			}
-		}));
+		return this.createMutation<number[], number>(
+			(userIds) =>
+				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/activate`, userIds));
 	}
 
 	/**
@@ -230,16 +198,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	bulkDeactivateUsers()
 	{
-		return injectMutation(() => ({
-			mutationFn: (ids: number[]) =>
-				lastValueFrom(this.userRepository.bulkDeactivate(ids)),
-			onSuccess: () =>
-			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.users.all
-				});
-			}
-		}));
+		return this.createMutation<number[], number>(
+			(userIds) =>
+				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/deactivate`, userIds));
 	}
 
 	/**
@@ -249,10 +210,15 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	resetPassword()
 	{
-		return injectMutation(() => ({
-			mutationFn: (id: number | string) =>
-				lastValueFrom(this.userRepository.resetPassword(id))
-		}));
+		return this.createMutation<number | string, void>(
+			(userId) =>
+				this.apiService.post<void, Record<string, never>>(
+					`${this.endpoint}/${userId}/reset-password`,
+					{}),
+			() =>
+			{
+				// No cache invalidation needed for password reset
+			});
 	}
 
 	/**
@@ -265,7 +231,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 		return injectQuery(() => ({
 			queryKey: QueryKeys.users.roles(userId),
 			queryFn: () =>
-				lastValueFrom(this.userRepository.getRoles(Number(userId))),
+				lastValueFrom(this.apiService.get<string[]>(`${this.endpoint}/${userId}/roles`)),
 			...this.queryConfig
 		}));
 	}
@@ -276,16 +242,23 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	addRole()
 	{
-		return injectMutation(() => ({
-			mutationFn: ({ userId, role }: { userId: number; role: string }) =>
-				lastValueFrom(this.userRepository.addRole(userId, role)),
-			onSuccess: (_, variables) =>
+		return this.createMutation<
+			{
+				userId: number;
+				roleName: string;
+			},
+			void
+		>(
+			(variables) =>
+				this.apiService.post<void, Record<string, never>>(
+					`${this.endpoint}/${variables.userId}/roles/${variables.roleName}`,
+					{}),
+			(result, variables) =>
 			{
 				this.queryClient.invalidateQueries({
 					queryKey: QueryKeys.users.roles(variables.userId)
 				});
-			}
-		}));
+			});
 	}
 
 	/**
@@ -294,15 +267,35 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	removeRole()
 	{
-		return injectMutation(() => ({
-			mutationFn: ({ userId, role }: { userId: number; role: string }) =>
-				lastValueFrom(this.userRepository.removeRole(userId, role)),
-			onSuccess: (_, variables) =>
+		return this.createMutation<
+			{
+				userId: number;
+				roleName: string;
+			},
+			void
+		>(
+			(variables) =>
+				this.apiService.delete<void>(`${this.endpoint}/${variables.userId}/roles/${variables.roleName}`),
+			(result, variables) =>
 			{
 				this.queryClient.invalidateQueries({
 					queryKey: QueryKeys.users.roles(variables.userId)
 				});
-			}
-		}));
+			});
+	}
+
+	/** Gets paged users with the given filter. */
+	private getPaged(
+		request: UserQueryRequest,
+		context?: HttpContext
+	): Observable<PagedResultOfUserDto>
+	{
+		const params: HttpParams = buildHttpParams(request);
+
+		return this.apiService.get<PagedResultOfUserDto>(
+			`${this.endpoint}/paged`,
+			params,
+			context
+		);
 	}
 }

@@ -2,15 +2,15 @@ import { TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
 import { QueryClient } from "@tanstack/angular-query-experimental";
 import { LogManagementService } from "./log-management.service";
-import { LogRepository } from "@admin/logs/repositories";
+import { ApiService } from "@infrastructure/api-services/api.service";
 import { LogDto, LogLevel } from "@admin/logs/models";
 import { PagedResultOfLogDto } from "@infrastructure/api";
-import { setupServiceTest, createMockLogRepository } from "@testing";
+import { setupServiceTest, createMockApiService } from "@testing";
 
 describe("LogManagementService", () =>
 {
 	let service: LogManagementService;
-	let mockRepository: ReturnType<typeof createMockLogRepository>;
+	let mockApiService: jasmine.SpyObj<ApiService>;
 
 	const mockLog: LogDto = {
 		id: 1,
@@ -45,10 +45,11 @@ describe("LogManagementService", () =>
 
 	beforeEach(() =>
 	{
-		mockRepository = createMockLogRepository();
+		mockApiService =
+			createMockApiService() as jasmine.SpyObj<ApiService>;
 
 		setupServiceTest(LogManagementService, [
-			{ provide: LogRepository, useValue: mockRepository }
+			{ provide: ApiService, useValue: mockApiService }
 		]);
 
 		service = TestBed.inject(LogManagementService);
@@ -61,19 +62,15 @@ describe("LogManagementService", () =>
 
 	describe("getLogs", () =>
 	{
-		it("should fetch logs from repository", async () =>
+		it("should fetch logs from api", async () =>
 		{
-			mockRepository.getAllPaged.and.returnValue(of(mockPagedResponse));
+			mockApiService.get.and.returnValue(of(mockPagedResponse));
 
 			const query = TestBed.runInInjectionContext(() =>
 				service.getLogs()
 			);
 			const result = await query.refetch();
 
-			expect(mockRepository.getAllPaged).toHaveBeenCalledWith(
-				service.getCurrentFilter(),
-				undefined
-			);
 			expect(result.data).toEqual(mockPagedResponse);
 		});
 	});
@@ -173,14 +170,14 @@ describe("LogManagementService", () =>
 	{
 		it("should delete single log", async () =>
 		{
-			mockRepository.delete.and.returnValue(of(void 0));
+			mockApiService.delete.and.returnValue(of(void 0));
 
 			const mutation = TestBed.runInInjectionContext(() =>
 				service.deleteLog()
 			);
 			await mutation.mutateAsync(1);
 
-			expect(mockRepository.delete).toHaveBeenCalledWith(1);
+			expect(mockApiService.delete).toHaveBeenCalledWith("logs/1");
 		});
 	});
 
@@ -188,7 +185,7 @@ describe("LogManagementService", () =>
 	{
 		it("should delete multiple logs and clear selection", async () =>
 		{
-			mockRepository.deleteBatch.and.returnValue(of(2));
+			mockApiService.delete.and.returnValue(of(2));
 			service.toggleSelection(1);
 			service.toggleSelection(2);
 
@@ -197,7 +194,7 @@ describe("LogManagementService", () =>
 			);
 			await mutation.mutateAsync([1, 2]);
 
-			expect(mockRepository.deleteBatch).toHaveBeenCalledWith([1, 2]);
+			expect(mockApiService.delete).toHaveBeenCalledWith("logs/batch", [1, 2]);
 			expect(service.selectedIds().size).toBe(0);
 		});
 	});

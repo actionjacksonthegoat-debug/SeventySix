@@ -37,27 +37,20 @@ public static class UserExtensions
 		user.DeletedBy);
 
 	/// <summary>
+	/// Compiled delegate for in-memory mapping.
+	/// Cached for performance - compiled once, reused for all in-memory mappings.
+	/// </summary>
+	private static readonly Func<User, UserDto> CompiledToDtoFunction =
+		ToDtoProjection.Compile();
+
+	/// <summary>
 	/// Converts a User domain entity to a data transfer object (DTO).
+	/// Uses compiled projection to ensure consistency with EF Core projection.
 	/// </summary>
 	public static UserDto ToDto(this User entity)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
-
-		return new UserDto(
-			entity.Id,
-			entity.Username,
-			entity.Email,
-			entity.FullName,
-			entity.CreateDate,
-			entity.IsActive,
-			entity.NeedsPendingEmail,
-			entity.CreatedBy,
-			entity.ModifyDate,
-			entity.ModifiedBy,
-			entity.LastLoginAt,
-			entity.IsDeleted,
-			entity.DeletedAt,
-			entity.DeletedBy);
+		return CompiledToDtoFunction(entity);
 	}
 
 	/// <summary>

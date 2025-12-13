@@ -22,6 +22,11 @@ import { LoggerService } from "@infrastructure/services";
 import { UserDto, UpdateUserRequest } from "@admin/users/models";
 import { getValidationError } from "@shared/utilities";
 import { FORM_MATERIAL_MODULES } from "@shared/material-bundles";
+import {
+	USERNAME_VALIDATION,
+	EMAIL_VALIDATION,
+	FULL_NAME_VALIDATION
+} from "@shared/constants/validation.constants";
 
 /**
  * User detail/edit page component.
@@ -124,15 +129,19 @@ export class UserDetailPage
 			"",
 			[
 				Validators.required,
-				Validators.minLength(3),
-				Validators.maxLength(50)
+				Validators.minLength(USERNAME_VALIDATION.MIN_LENGTH),
+				Validators.maxLength(USERNAME_VALIDATION.MAX_LENGTH)
 			]
 		],
 		email: [
 			"",
-			[Validators.required, Validators.email, Validators.maxLength(255)]
+			[
+				Validators.required,
+				Validators.email,
+				Validators.maxLength(EMAIL_VALIDATION.MAX_LENGTH)
+			]
 		],
-		fullName: ["", [Validators.maxLength(100)]],
+		fullName: ["", [Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)]],
 		isActive: [true]
 	});
 
@@ -253,7 +262,7 @@ export class UserDetailPage
 	private executeMutation(updateRequest: UpdateUserRequest): void
 	{
 		this.updateMutation.mutate(
-			{ id: this.userId, user: updateRequest },
+			{ userId: this.userId, user: updateRequest },
 			{
 				onSuccess: () => this.handleMutationSuccess(),
 				onError: (error: unknown) => this.handleMutationError(error)
@@ -360,7 +369,7 @@ export class UserDetailPage
 		}
 
 		this.addRoleMutation.mutate(
-			{ userId: userIdNum, role },
+			{ userId: userIdNum, roleName: role },
 			{
 				onSuccess: () => this.showSuccessSnackBar(`Role "${role}" added`),
 				onError: () => this.showErrorSnackBar(`Failed to add role "${role}"`)
@@ -381,7 +390,7 @@ export class UserDetailPage
 		}
 
 		this.removeRoleMutation.mutate(
-			{ userId: userIdNum, role },
+			{ userId: userIdNum, roleName: role },
 			{
 				onSuccess: () => this.showSuccessSnackBar(`Role "${role}" removed`),
 				onError: () => this.showErrorSnackBar(`Failed to remove role "${role}"`)

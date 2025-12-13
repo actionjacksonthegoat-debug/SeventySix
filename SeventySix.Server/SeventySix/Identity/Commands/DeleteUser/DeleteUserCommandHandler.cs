@@ -18,7 +18,7 @@ public static class DeleteUserCommandHandler
 	/// <returns>True if the user was deleted; otherwise false.</returns>
 	public static async Task<bool> HandleAsync(
 		DeleteUserCommand command,
-		IUserCommandRepository repository,
+		IUserRepository repository,
 		CancellationToken cancellationToken)
 	{
 		bool result =

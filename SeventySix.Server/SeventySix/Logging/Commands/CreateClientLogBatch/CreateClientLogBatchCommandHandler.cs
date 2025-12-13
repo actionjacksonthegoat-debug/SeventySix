@@ -13,18 +13,18 @@ namespace SeventySix.Logging;
 public static class CreateClientLogBatchCommandHandler
 {
 	/// <summary>
-	/// Handles the command to create multiple client log entries.
+	/// Handles the request to create multiple client log entries.
 	/// </summary>
-	/// <param name="command">The command containing batch log creation details.</param>
+	/// <param name="requests">The array of client log creation requests.</param>
 	/// <param name="repository">The log repository for data access.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>A task representing the asynchronous operation.</returns>
 	public static async Task HandleAsync(
-		CreateClientLogBatchCommand command,
+		CreateLogRequest[] requests,
 		ILogRepository repository,
 		CancellationToken cancellationToken)
 	{
-		if (command.Requests.Length == 0)
+		if (requests.Length == 0)
 		{
 			return;
 		}
@@ -36,7 +36,7 @@ public static class CreateClientLogBatchCommandHandler
 		string? parentSpanId =
 			Activity.Current?.ParentSpanId.ToString();
 
-		foreach (CreateLogRequest request in command.Requests)
+		foreach (CreateLogRequest request in requests)
 		{
 			Log log =
 				new()

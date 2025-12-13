@@ -29,12 +29,11 @@ public static class UpdateProfileCommandHandler
 	public static async Task<UserProfileDto?> HandleAsync(
 		UpdateProfileCommand command,
 		IMessageBus messageBus,
-		IUserQueryRepository userQueryRepository,
-		IUserCommandRepository userCommandRepository,
+		IUserRepository userRepository,
 		CancellationToken cancellationToken)
 	{
 		User? user =
-			await userQueryRepository.GetByIdAsync(
+			await userRepository.GetByIdAsync(
 				command.UserId,
 				cancellationToken);
 
@@ -50,7 +49,7 @@ public static class UpdateProfileCommandHandler
 
 		try
 		{
-			await userCommandRepository.UpdateAsync(
+			await userRepository.UpdateAsync(
 				user,
 				cancellationToken);
 

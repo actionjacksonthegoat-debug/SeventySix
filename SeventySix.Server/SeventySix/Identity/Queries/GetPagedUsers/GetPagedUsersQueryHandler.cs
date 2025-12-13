@@ -9,7 +9,7 @@ public static class GetPagedUsersQueryHandler
 {
 	public static async Task<PagedResult<UserDto>> HandleAsync(
 		GetPagedUsersQuery query,
-		IUserQueryRepository repository,
+		IUserRepository repository,
 		CancellationToken cancellationToken)
 	{
 		(IEnumerable<UserDto> users, int totalCount) =

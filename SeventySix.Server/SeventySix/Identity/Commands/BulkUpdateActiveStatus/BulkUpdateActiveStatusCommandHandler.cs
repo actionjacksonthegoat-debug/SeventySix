@@ -22,7 +22,7 @@ public static class BulkUpdateActiveStatusCommandHandler
 	/// </remarks>
 	public static async Task<int> HandleAsync(
 		BulkUpdateActiveStatusCommand command,
-		IUserCommandRepository repository,
+		IUserRepository repository,
 		CancellationToken cancellationToken)
 	{
 		int count =

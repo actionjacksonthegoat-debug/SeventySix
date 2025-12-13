@@ -44,7 +44,7 @@ public static class UserFieldValidationExtensions
 			.Length(3, 50)
 			.WithMessage("Username must be between 3 and 50 characters")
 			.Matches(@"^[a-zA-Z0-9_]+$")
-			.WithMessage("Username can only contain letters, numbers, and underscores");
+			.WithMessage("Username must contain only alphanumeric characters and underscores");
 	}
 
 	/// <summary>
@@ -64,7 +64,6 @@ public static class UserFieldValidationExtensions
 		this IRuleBuilder<T, string> ruleBuilder)
 	{
 		return ruleBuilder
-			.Cascade(CascadeMode.Stop)
 			.NotEmpty()
 			.WithMessage("Email is required")
 			.MaximumLength(255)
@@ -88,21 +87,21 @@ public static class UserFieldValidationExtensions
 	/// - Maximum length: 100 characters
 	/// - Only validated when not null or whitespace (for optional fields)
 	/// </remarks>
-	public static IRuleBuilderOptions<T, string> ApplyFullNameRules<T>(
-		this IRuleBuilder<T, string> ruleBuilder,
+	public static IRuleBuilderOptions<T, string?> ApplyFullNameRules<T>(
+		this IRuleBuilder<T, string?> ruleBuilder,
 		bool required = false)
 	{
-		return required
-			? ruleBuilder
+		if (required)
+		{
+			return ruleBuilder
 				.NotEmpty()
 				.WithMessage("Display name is required")
 				.MaximumLength(100)
-				.WithMessage("Display name must not exceed 100 characters")
-			: ruleBuilder
-				.MaximumLength(100)
-				.WithMessage("Full name must not exceed 100 characters")
-				.When(
-					(parent, fullName) => !string.IsNullOrWhiteSpace(fullName),
-					ApplyConditionTo.CurrentValidator);
+				.WithMessage("Display name must not exceed 100 characters");
+		}
+
+		return ruleBuilder
+			.MaximumLength(100)
+			.WithMessage("Full name must not exceed 100 characters");
 	}
 }

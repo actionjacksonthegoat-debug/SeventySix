@@ -6,23 +6,20 @@ import {
 } from "@tanstack/angular-query-experimental";
 import { of } from "rxjs";
 import { AccountService } from "./account.service";
-import { AccountRepository } from "../repositories";
+import { ApiService } from "@infrastructure/api-services/api.service";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
+import { createMockApiService } from "@testing";
 
 describe("AccountService", () =>
 {
 	let service: AccountService;
 	let queryClient: QueryClient;
-	let mockRepository: jasmine.SpyObj<AccountRepository>;
+	let mockApiService: jasmine.SpyObj<ApiService>;
 
 	beforeEach(() =>
 	{
-		mockRepository = jasmine.createSpyObj("AccountRepository", [
-			"getProfile",
-			"updateProfile",
-			"getAvailableRoles",
-			"createPermissionRequest"
-		]);
+		mockApiService =
+			createMockApiService() as jasmine.SpyObj<ApiService>;
 
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false } }
@@ -33,7 +30,7 @@ describe("AccountService", () =>
 				provideZonelessChangeDetection(),
 				provideAngularQuery(queryClient),
 				AccountService,
-				{ provide: AccountRepository, useValue: mockRepository }
+				{ provide: ApiService, useValue: mockApiService }
 			]
 		});
 
@@ -49,7 +46,7 @@ describe("AccountService", () =>
 
 	it("should invalidate account queries on updateProfile success", async () =>
 	{
-		mockRepository.updateProfile.and.returnValue(of({} as any));
+		mockApiService.put.and.returnValue(of({} as any));
 		const invalidateSpy: jasmine.Spy = spyOn(
 			queryClient,
 			"invalidateQueries"
@@ -63,6 +60,13 @@ describe("AccountService", () =>
 			fullName: "Test User"
 		});
 
+		expect(mockApiService.put).toHaveBeenCalledWith(
+			"users/me",
+			jasmine.objectContaining({
+				email: "test@example.com",
+				fullName: "Test User"
+			})
+		);
 		expect(invalidateSpy).toHaveBeenCalledWith({
 			queryKey: QueryKeys.account.all
 		});
@@ -70,7 +74,7 @@ describe("AccountService", () =>
 
 	it("should invalidate available roles on createPermissionRequest success", async () =>
 	{
-		mockRepository.createPermissionRequest.and.returnValue(of(undefined));
+		mockApiService.post.and.returnValue(of(undefined));
 		const invalidateSpy: jasmine.Spy = spyOn(
 			queryClient,
 			"invalidateQueries"
@@ -84,6 +88,13 @@ describe("AccountService", () =>
 			requestMessage: "Test"
 		});
 
+		expect(mockApiService.post).toHaveBeenCalledWith(
+			"users/me/permission-requests",
+			jasmine.objectContaining({
+				requestedRoles: ["Admin"],
+				requestMessage: "Test"
+			})
+		);
 		expect(invalidateSpy).toHaveBeenCalledWith({
 			queryKey: QueryKeys.account.availableRoles
 		});

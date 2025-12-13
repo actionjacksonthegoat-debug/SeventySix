@@ -10,17 +10,17 @@ using Wolverine;
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Handler for <see cref="UpdateUserCommand"/>.
+/// Handler for updating a user.
 /// </summary>
 public static class UpdateUserCommandHandler
 {
 	/// <summary>
 	/// Handles user updates with duplicate checks and concurrency handling.
 	/// </summary>
-	/// <param name="command">The update user command.</param>
+	/// <param name="request">The update user request.</param>
 	/// <param name="messageBus">Message bus for querying users.</param>
-	/// <param name="validator">Request validator.</param>
-	/// <param name="repository">User repository.</param>
+	/// <param name="userQueryRepository">User query repository.</param>
+	/// <param name="userCommandRepository">User command repository.</param>
 	/// <param name="logger">Logger instance.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>The updated user DTO.</returns>
@@ -29,31 +29,30 @@ public static class UpdateUserCommandHandler
 	/// Database unique constraints on Username and Email provide atomicity - no manual transaction management needed.
 	/// </remarks>
 	public static async Task<UserDto> HandleAsync(
-		UpdateUserCommand command,
+		UpdateUserRequest request,
 		IMessageBus messageBus,
-		IUserQueryRepository userQueryRepository,
-		IUserCommandRepository userCommandRepository,
+		IUserRepository userRepository,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
 		User? existing =
-			await userQueryRepository.GetByIdAsync(
-				command.Request.Id,
+			await userRepository.GetByIdAsync(
+				request.Id,
 				cancellationToken);
 
 		if (existing == null)
 		{
-			throw new UserNotFoundException(command.Request.Id);
+			throw new UserNotFoundException(request.Id);
 		}
 
 		// Update entity (audit properties set by AuditInterceptor)
 		User user =
-			command.Request.ToEntity(existing);
+			request.ToEntity(existing);
 
 		try
 		{
 			User updated =
-				await userCommandRepository.UpdateAsync(
+				await userRepository.UpdateAsync(
 					user,
 					cancellationToken);
 
@@ -70,11 +69,11 @@ public static class UpdateUserCommandHandler
 			{
 				logger.LogWarning(
 					"Duplicate username detected during user update. Username: {Username}, UserId: {UserId}",
-					command.Request.Username,
-					command.Request.Id);
+					request.Username,
+					request.Id);
 
 				throw new DuplicateUserException(
-					$"Failed to update user: Username '{command.Request.Username}' is already taken by another user");
+					$"Failed to update user: Username '{request.Username}' is already taken by another user");
 			}
 
 			if (message.Contains(
@@ -83,20 +82,20 @@ public static class UpdateUserCommandHandler
 			{
 				logger.LogWarning(
 					"Duplicate email detected during user update. Email: {Email}, UserId: {UserId}, Username: {Username}",
-					command.Request.Email,
-					command.Request.Id,
-					command.Request.Username);
+					request.Email,
+					request.Id,
+					request.Username);
 
 				throw new DuplicateUserException(
-					$"Failed to update user: Email '{command.Request.Email}' is already registered to another user");
+					$"Failed to update user: Email '{request.Email}' is already registered to another user");
 			}
 
 			// Unknown constraint violation
 			logger.LogWarning(
 				"Unknown duplicate key violation during user update. Username: {Username}, Email: {Email}, UserId: {UserId}",
-				command.Request.Username,
-				command.Request.Email,
-				command.Request.Id);
+				request.Username,
+				request.Email,
+				request.Id);
 
 			throw new DuplicateUserException(
 				"Failed to update user: Username or email already exists");

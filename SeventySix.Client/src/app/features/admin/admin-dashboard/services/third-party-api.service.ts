@@ -4,7 +4,7 @@ import {
 	CreateQueryResult
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
-import { ThirdPartyApiRepository } from "@admin/admin-dashboard/repositories";
+import { ApiService } from "@infrastructure/api-services/api.service";
 import {
 	ThirdPartyApiRequestResponse,
 	ThirdPartyApiStatisticsResponse
@@ -15,17 +15,17 @@ import { QueryKeys } from "@infrastructure/utils/query-keys";
 @Injectable()
 export class ThirdPartyApiService
 {
-	private readonly repository: ThirdPartyApiRepository = inject(
-		ThirdPartyApiRepository
-	);
+	private readonly apiService: ApiService = inject(ApiService);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("thirdpartyrequests");
+	private readonly endpoint: string = "thirdpartyrequests";
 
 	getAllThirdPartyApis(): CreateQueryResult<ThirdPartyApiRequestResponse[], Error>
 	{
 		return injectQuery(() => ({
 			queryKey: QueryKeys.thirdPartyApi.list,
-			queryFn: () => lastValueFrom(this.repository.getAll()),
+			queryFn: () =>
+				lastValueFrom(this.apiService.get<ThirdPartyApiRequestResponse[]>(this.endpoint)),
 			...this.queryConfig
 		}));
 	}
@@ -36,7 +36,13 @@ export class ThirdPartyApiService
 	{
 		return injectQuery(() => ({
 			queryKey: QueryKeys.thirdPartyApi.byName(apiName),
-			queryFn: () => lastValueFrom(this.repository.getByApiName(apiName)),
+			queryFn: () =>
+			{
+				const encodedName: string = encodeURIComponent(apiName);
+				return lastValueFrom(
+					this.apiService.get<ThirdPartyApiRequestResponse[]>(`${this.endpoint}/${encodedName}`)
+				);
+			},
 			...this.queryConfig
 		}));
 	}
@@ -45,7 +51,10 @@ export class ThirdPartyApiService
 	{
 		return injectQuery(() => ({
 			queryKey: QueryKeys.thirdPartyApi.statistics,
-			queryFn: () => lastValueFrom(this.repository.getStatistics()),
+			queryFn: () =>
+				lastValueFrom(
+					this.apiService.get<ThirdPartyApiStatisticsResponse>(`${this.endpoint}/statistics`)
+				),
 			...this.queryConfig
 		}));
 	}

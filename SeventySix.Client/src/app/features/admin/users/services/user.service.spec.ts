@@ -1,13 +1,13 @@
 import { TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
 import { QueryClient } from "@tanstack/angular-query-experimental";
-import { UserRepository } from "@admin/users/repositories";
+import { ApiService } from "@infrastructure/api-services/api.service";
 import { PagedResultOfUserDto } from "@infrastructure/api";
 import { UserDto, UpdateUserRequest } from "@admin/users/models";
 import { UserService } from "./user.service";
 import {
 	UserFixtures,
-	createMockUserRepository,
+	createMockApiService,
 	setupServiceTest
 } from "@testing";
 
@@ -15,23 +15,17 @@ import {
 describe("UserService", () =>
 {
 	let service: UserService;
-	let mockRepository: jasmine.SpyObj<UserRepository>;
+	let mockApiService: jasmine.SpyObj<ApiService>;
 
 	const mockUser: UserDto = UserFixtures.JOHN_DOE;
 
 	beforeEach(() =>
 	{
-		mockRepository =
-			createMockUserRepository() as jasmine.SpyObj<UserRepository>;
-		mockRepository.getByUsername = jasmine.createSpy("getByUsername");
-		mockRepository.checkUsername = jasmine.createSpy("checkUsername");
-		mockRepository.restore = jasmine.createSpy("restore");
-		mockRepository.bulkActivate = jasmine.createSpy("bulkActivate");
-		mockRepository.bulkDeactivate = jasmine.createSpy("bulkDeactivate");
-		mockRepository.resetPassword = jasmine.createSpy("resetPassword");
+		mockApiService =
+			createMockApiService() as jasmine.SpyObj<ApiService>;
 
 		const setup = setupServiceTest(UserService, [
-			{ provide: UserRepository, useValue: mockRepository }
+			{ provide: ApiService, useValue: mockApiService }
 		]);
 		service = setup.service;
 	});
@@ -110,7 +104,7 @@ describe("UserService", () =>
 	{
 		it("should fetch user by id", async () =>
 		{
-			mockRepository.getById.and.returnValue(of(mockUser));
+			mockApiService.get.and.returnValue(of(mockUser));
 
 			const query = TestBed.runInInjectionContext(() =>
 				service.getUserById(1)
@@ -118,6 +112,7 @@ describe("UserService", () =>
 			const result = await query.refetch();
 
 			expect(result.data).toEqual(mockUser);
+			expect(mockApiService.get).toHaveBeenCalledWith("users/1");
 		});
 	});
 
@@ -129,14 +124,15 @@ describe("UserService", () =>
 				username: "newuser",
 				email: "new@example.com"
 			};
-			mockRepository.create.and.returnValue(of(mockUser));
+			mockApiService.post.and.returnValue(of(mockUser));
 
 			const mutation = TestBed.runInInjectionContext(() =>
 				service.createUser()
 			);
 			await mutation.mutateAsync(newUser);
 
-			expect(mockRepository.create).toHaveBeenCalledWith(
+			expect(mockApiService.post).toHaveBeenCalledWith(
+				"users",
 				jasmine.objectContaining({
 					username: "newuser",
 					email: "new@example.com"
@@ -155,15 +151,15 @@ describe("UserService", () =>
 				email: "updated@example.com",
 				isActive: true
 			};
-			mockRepository.update.and.returnValue(of(mockUser));
+			mockApiService.put.and.returnValue(of(mockUser));
 
 			const mutation = TestBed.runInInjectionContext(() =>
 				service.updateUser()
 			);
-			await mutation.mutateAsync({ id: 1, user: updateRequest });
+			await mutation.mutateAsync({ userId: 1, user: updateRequest });
 
-			expect(mockRepository.update).toHaveBeenCalledWith(
-				1,
+			expect(mockApiService.put).toHaveBeenCalledWith(
+				"users/1",
 				updateRequest
 			);
 		});
@@ -173,14 +169,14 @@ describe("UserService", () =>
 	{
 		it("should delete user", async () =>
 		{
-			mockRepository.delete.and.returnValue(of(undefined));
+			mockApiService.delete.and.returnValue(of(undefined));
 
 			const mutation = TestBed.runInInjectionContext(() =>
 				service.deleteUser()
 			);
 			await mutation.mutateAsync(1);
 
-			expect(mockRepository.delete).toHaveBeenCalledWith(1);
+			expect(mockApiService.delete).toHaveBeenCalledWith("users/1");
 		});
 	});
 
@@ -202,7 +198,7 @@ describe("UserService", () =>
 				hasPrevious: false,
 				hasNext: false
 			};
-			mockRepository.getPaged.and.returnValue(of(pagedResult));
+			mockApiService.get.and.returnValue(of(pagedResult));
 
 			const query = TestBed.runInInjectionContext(() =>
 				service.getPagedUsers()
@@ -217,7 +213,7 @@ describe("UserService", () =>
 	{
 		it("should fetch user by username", async () =>
 		{
-			mockRepository.getByUsername.and.returnValue(of(mockUser));
+			mockApiService.get.and.returnValue(of(mockUser));
 
 			const query = TestBed.runInInjectionContext(() =>
 				service.getUserByUsername("testuser")
@@ -225,6 +221,7 @@ describe("UserService", () =>
 			const result = await query.refetch();
 
 			expect(result.data).toEqual(mockUser);
+			expect(mockApiService.get).toHaveBeenCalledWith("users/username/testuser");
 		});
 	});
 
@@ -232,14 +229,14 @@ describe("UserService", () =>
 	{
 		it("should restore user", async () =>
 		{
-			mockRepository.restore.and.returnValue(of(undefined));
+			mockApiService.post.and.returnValue(of(undefined));
 
 			const mutation = TestBed.runInInjectionContext(() =>
 				service.restoreUser()
 			);
 			await mutation.mutateAsync(1);
 
-			expect(mockRepository.restore).toHaveBeenCalledWith(1);
+			expect(mockApiService.post).toHaveBeenCalledWith("users/1/restore", {});
 		});
 	});
 
@@ -247,14 +244,14 @@ describe("UserService", () =>
 	{
 		it("should reset user password", async () =>
 		{
-			mockRepository.resetPassword.and.returnValue(of(undefined));
+			mockApiService.post.and.returnValue(of(undefined));
 
 			const mutation = TestBed.runInInjectionContext(() =>
 				service.resetPassword()
 			);
 			await mutation.mutateAsync(1);
 
-			expect(mockRepository.resetPassword).toHaveBeenCalledWith(1);
+			expect(mockApiService.post).toHaveBeenCalledWith("users/1/reset-password", {});
 		});
 	});
 
@@ -272,7 +269,7 @@ describe("UserService", () =>
 				hasNext: false
 			};
 
-			mockRepository.getPaged.and.returnValue(of(mockPagedResponse));
+			mockApiService.get.and.returnValue(of(mockPagedResponse));
 
 			// Access the private signal via bracket notation for testing
 			const getSignalValue = (): boolean =>
