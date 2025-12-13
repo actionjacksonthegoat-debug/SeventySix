@@ -4,6 +4,7 @@
 
 using FluentValidation.Results;
 using SeventySix.Identity;
+using SeventySix.Identity.Commands.InitiateRegistration;
 using Shouldly;
 
 namespace SeventySix.Tests.Identity.Validators;

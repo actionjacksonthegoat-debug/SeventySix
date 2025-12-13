@@ -30,16 +30,34 @@ Angular Client ◄──HTTP──► .NET API Server
 
 ```
 BoundedContext/
+├── Commands/         # CQRS commands with colocated validators
+│   └── {Operation}/
+│       ├── {Operation}Command.cs
+│       ├── {Operation}CommandHandler.cs
+│       └── {Operation}CommandValidator.cs  # Validators live WITH handlers
 ├── Configurations/    # EF Core Fluent API
 ├── Constants/        # Domain-specific constants (RoleConstants, ClaimConstants)
 ├── DTOs/             # Records only
 ├── Entities/
 ├── Extensions/       # ToDto, ToEntity mapping
 ├── Infrastructure/   # DbContext
+├── Queries/          # CQRS queries
+│   └── {Operation}/
+│       ├── {Operation}Query.cs
+│       ├── {Operation}QueryHandler.cs
+│       └── {Operation}QueryValidator.cs   # Optional - query validators
 ├── Repositories/     # Domain-specific (NO generic)
 ├── Services/
-└── Validators/       # FluentValidation
+└── Settings/         # Configuration binding classes with validators
+    ├── {Name}Settings.cs
+    └── {Name}SettingsValidator.cs         # Settings validators live WITH settings
 ```
+
+**Validator Colocation Rule**: Validators ALWAYS live alongside the code they validate:
+
+-   Command validators → `Commands/{Op}/{Op}CommandValidator.cs`
+-   Query validators → `Queries/{Op}/{Op}QueryValidator.cs`
+-   Settings validators → `Settings/{Name}SettingsValidator.cs`
 
 ### ElectronicNotifications Structure (Special Case)
 
@@ -159,13 +177,29 @@ Context/
 │   └── {Operation}/
 │       ├── {Operation}Command.cs
 │       ├── {Operation}CommandHandler.cs
-│       └── {Operation}CommandValidator.cs  # Optional
+│       └── {Operation}RequestValidator.cs  # Validators colocate with handlers
 ├── Queries/
 │   └── {Operation}/
 │       ├── {Operation}Query.cs
-│       └── {Operation}QueryHandler.cs
+│       ├── {Operation}QueryHandler.cs
+│       └── {Operation}QueryValidator.cs    # Optional - query validators
+├── Settings/
+│   ├── {Name}Settings.cs
+│   └── {Name}SettingsValidator.cs          # Settings validators with settings
 └── ...
 ```
+
+### Validator Colocation Principle
+
+**Validators ALWAYS live alongside the code they validate** - this keeps validation logic close to where it's used:
+
+| Validator Type | Location                                | Example                                           |
+| -------------- | --------------------------------------- | ------------------------------------------------- |
+| Command/DTO    | `Commands/{Op}/{Op}RequestValidator.cs` | `Commands/Login/LoginRequestValidator.cs`         |
+| Query          | `Queries/{Op}/{Op}QueryValidator.cs`    | `Queries/GetPagedUsers/GetPagedUsersValidator.cs` |
+| Settings       | `Settings/{Name}SettingsValidator.cs`   | `Settings/JwtSettingsValidator.cs`                |
+
+**Rationale**: Locality of behavior - when modifying a command, the validator is right there. No hunting through separate `Validators/` folders.
 
 ### When to Use Wolverine Features
 

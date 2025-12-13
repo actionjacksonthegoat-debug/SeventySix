@@ -4,7 +4,7 @@
 
 using FluentValidation;
 
-namespace SeventySix.Logging;
+namespace SeventySix.Logging.Commands.CreateClientLog;
 
 /// <summary>FluentValidation validator for CreateLogRequest.</summary>
 public class CreateLogRequestValidator : AbstractValidator<CreateLogRequest>

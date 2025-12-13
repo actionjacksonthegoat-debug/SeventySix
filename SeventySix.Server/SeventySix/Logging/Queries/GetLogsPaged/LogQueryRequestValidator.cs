@@ -4,8 +4,9 @@
 
 using FluentValidation;
 using SeventySix.Shared;
+using SeventySix.Shared.Validators;
 
-namespace SeventySix.Logging;
+namespace SeventySix.Logging.Queries.GetLogsPaged;
 
 /// <summary>FluentValidation validator for LogQueryRequest.</summary>
 /// <remarks>

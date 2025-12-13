@@ -4,6 +4,7 @@
 
 using FluentValidation.TestHelper;
 using SeventySix.Logging;
+using SeventySix.Logging.Commands.CreateClientLog;
 
 namespace SeventySix.Tests.Logging;
 

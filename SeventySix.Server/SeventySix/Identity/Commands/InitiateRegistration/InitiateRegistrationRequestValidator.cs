@@ -4,7 +4,7 @@
 
 using FluentValidation;
 
-namespace SeventySix.Identity;
+namespace SeventySix.Identity.Commands.InitiateRegistration;
 
 /// <summary>
 /// Validates initiate registration requests.

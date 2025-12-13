@@ -7,7 +7,15 @@ using Microsoft.AspNetCore.Mvc;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Identity;
+using SeventySix.Identity.Commands.ApprovePermissionRequest;
+using SeventySix.Identity.Commands.BulkApprovePermissionRequests;
+using SeventySix.Identity.Commands.BulkRejectPermissionRequests;
+using SeventySix.Identity.Commands.CreatePermissionRequest;
+using SeventySix.Identity.Commands.RejectPermissionRequest;
 using SeventySix.Identity.Constants;
+using SeventySix.Identity.Queries.GetAllPermissionRequests;
+using SeventySix.Identity.Queries.GetAvailableRoles;
+using Wolverine;
 
 namespace SeventySix.Api.Controllers;
 
@@ -15,11 +23,10 @@ namespace SeventySix.Api.Controllers;
 /// Permission requests API endpoints.
 /// Provides RESTful operations for managing user permission/role requests.
 /// </summary>
-/// <param name="permissionRequestService">The permission request service.</param>
+/// <param name="messageBus">The Wolverine message bus.</param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
-public class PermissionRequestsController(
-	IPermissionRequestService permissionRequestService) : ControllerBase
+public class PermissionRequestsController(IMessageBus messageBus) : ControllerBase
 {
 	/// <summary>
 	/// Gets all pending permission requests (Admin only).
@@ -36,7 +43,10 @@ public class PermissionRequestsController(
 		CancellationToken cancellationToken)
 	{
 		IEnumerable<PermissionRequestDto> requests =
-			await permissionRequestService.GetAllRequestsAsync(cancellationToken);
+			await messageBus.InvokeAsync<IEnumerable<PermissionRequestDto>>(
+				new GetAllPermissionRequestsQuery(),
+				cancellationToken);
+
 		return Ok(requests);
 	}
 
@@ -64,8 +74,8 @@ public class PermissionRequestsController(
 			User.GetRequiredUserId();
 
 		IEnumerable<AvailableRoleDto> roles =
-			await permissionRequestService.GetAvailableRolesAsync(
-				userId,
+			await messageBus.InvokeAsync<IEnumerable<AvailableRoleDto>>(
+				new GetAvailableRolesQuery(userId),
 				cancellationToken);
 
 		return Ok(roles);
@@ -101,10 +111,14 @@ public class PermissionRequestsController(
 		string username =
 			User.GetRequiredUsername();
 
-		await permissionRequestService.CreateRequestsAsync(
-			userId,
-			username,
-			request,
+		CreatePermissionRequestCommand command =
+			new(
+				userId,
+				username,
+				request);
+
+		await messageBus.InvokeAsync(
+			command,
 			cancellationToken);
 
 		return NoContent();
@@ -129,8 +143,8 @@ public class PermissionRequestsController(
 		CancellationToken cancellationToken)
 	{
 		bool result =
-			await permissionRequestService.ApproveRequestAsync(
-				id,
+			await messageBus.InvokeAsync<bool>(
+				new ApprovePermissionRequestCommand(id),
 				cancellationToken);
 
 		if (!result)
@@ -160,8 +174,8 @@ public class PermissionRequestsController(
 		CancellationToken cancellationToken)
 	{
 		bool result =
-			await permissionRequestService.RejectRequestAsync(
-				id,
+			await messageBus.InvokeAsync<bool>(
+				new RejectPermissionRequestCommand(id),
 				cancellationToken);
 
 		if (!result)
@@ -189,8 +203,8 @@ public class PermissionRequestsController(
 		CancellationToken cancellationToken)
 	{
 		int count =
-			await permissionRequestService.ApproveRequestsAsync(
-				ids,
+			await messageBus.InvokeAsync<int>(
+				new BulkApprovePermissionRequestsCommand(ids),
 				cancellationToken);
 
 		return Ok(count);
@@ -213,8 +227,8 @@ public class PermissionRequestsController(
 		CancellationToken cancellationToken)
 	{
 		int count =
-			await permissionRequestService.RejectRequestsAsync(
-				ids,
+			await messageBus.InvokeAsync<int>(
+				new BulkRejectPermissionRequestsCommand(ids),
 				cancellationToken);
 
 		return Ok(count);

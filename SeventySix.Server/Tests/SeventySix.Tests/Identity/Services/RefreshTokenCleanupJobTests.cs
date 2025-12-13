@@ -23,9 +23,9 @@ public class RefreshTokenCleanupJobTests : IDisposable
 	private readonly IdentityDbContext DbContext;
 	private readonly IServiceScopeFactory ServiceScopeFactory;
 	private readonly IOptions<RefreshTokenCleanupSettings> Settings;
-	private readonly ILogger<RefreshTokenCleanupJob> Logger;
+	private readonly ILogger<RefreshTokenCleanupService> Logger;
 	private readonly TimeProvider TimeProvider;
-	private readonly RefreshTokenCleanupJob CleanupJob;
+	private readonly RefreshTokenCleanupService CleanupJob;
 	private readonly User TestUser;
 
 	public RefreshTokenCleanupJobTests()
@@ -70,12 +70,12 @@ public class RefreshTokenCleanupJobTests : IDisposable
 				RetentionDays = 7
 			});
 
-		this.Logger = Substitute.For<ILogger<RefreshTokenCleanupJob>>();
+		this.Logger = Substitute.For<ILogger<RefreshTokenCleanupService>>();
 		this.TimeProvider = TimeProvider.System;
 
 		// Act
 		this.CleanupJob =
-			new RefreshTokenCleanupJob(
+			new RefreshTokenCleanupService(
 				this.ServiceScopeFactory,
 				this.Settings,
 				this.Logger,
@@ -253,7 +253,7 @@ public class RefreshTokenCleanupJobTests : IDisposable
 		failingFactory.CreateAsyncScope()
 			.Returns(failingScope);
 
-		RefreshTokenCleanupJob failingJob =
+		RefreshTokenCleanupService failingJob =
 			new(
 				failingFactory,
 				this.Settings,

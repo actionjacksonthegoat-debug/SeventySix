@@ -4,7 +4,7 @@
 
 using FluentValidation;
 
-namespace SeventySix.Identity;
+namespace SeventySix.Identity.Extensions;
 
 /// <summary>
 /// Extension methods for FluentValidation password rules.

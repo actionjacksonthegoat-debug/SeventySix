@@ -4,7 +4,7 @@
 
 using FluentValidation.TestHelper;
 using SeventySix.Identity;
-
+using SeventySix.Identity.Settings;
 namespace SeventySix.Tests.Identity.Validators;
 
 /// <summary>

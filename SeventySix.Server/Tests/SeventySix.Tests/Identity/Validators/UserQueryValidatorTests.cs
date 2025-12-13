@@ -4,6 +4,7 @@
 
 using FluentValidation.TestHelper;
 using SeventySix.Identity;
+using SeventySix.Identity.Queries.GetPagedUsers;
 
 namespace SeventySix.Tests.Identity;
 

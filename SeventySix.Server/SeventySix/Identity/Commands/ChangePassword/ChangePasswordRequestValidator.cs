@@ -3,8 +3,9 @@
 // </copyright>
 
 using FluentValidation;
+using SeventySix.Identity.Extensions;
 
-namespace SeventySix.Identity;
+namespace SeventySix.Identity.Commands.ChangePassword;
 
 /// <summary>
 /// FluentValidation validator for ChangePasswordRequest.

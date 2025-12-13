@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Logging;
+using SeventySix.Logging.Commands.CreateClientLog;
+using SeventySix.Logging.Queries.GetLogsPaged;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
 

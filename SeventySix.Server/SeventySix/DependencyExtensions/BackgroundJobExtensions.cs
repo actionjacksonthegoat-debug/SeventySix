@@ -21,7 +21,7 @@ namespace SeventySix.DependencyExtensions;
 ///
 /// <para><strong>Background Jobs Inventory:</strong></para>
 /// <list type="bullet">
-///   <item><see cref="RefreshTokenCleanupJob"/> - Periodic cleanup of expired refresh tokens (Identity)</item>
+///   <item><see cref="RefreshTokenCleanupService"/> - Periodic cleanup of expired refresh tokens (Identity)</item>
 ///   <item><see cref="AdminSeederService"/> - One-time admin user seeding at startup (Identity)</item>
 ///   <item><see cref="PendingEmailBackgroundService"/> - Daily processing of pending welcome emails (Identity)</item>
 ///   <item><see cref="LogCleanupService"/> - Periodic cleanup of old log files and database entries (Logging)</item>
@@ -49,7 +49,7 @@ public static class BackgroundJobExtensions
 		services.Configure<RefreshTokenCleanupSettings>(
 			configuration.GetSection(
 				RefreshTokenCleanupSettings.SectionName));
-		services.AddHostedService<RefreshTokenCleanupJob>();
+		services.AddHostedService<RefreshTokenCleanupService>();
 
 		// AdminSeederService - One-time admin user seeding at startup
 		// Settings: AdminSeeder section in appsettings.json

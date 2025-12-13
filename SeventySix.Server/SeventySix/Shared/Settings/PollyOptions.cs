@@ -11,7 +11,7 @@ namespace SeventySix.Shared;
 /// Provides configuration for retry, circuit breaker, and timeout policies.
 /// Values are bound from appsettings.json "Polly" section.
 /// </remarks>
-public class PollyOptions
+public record PollyOptions
 {
 	/// <summary>
 	/// Configuration section name in appsettings.json.

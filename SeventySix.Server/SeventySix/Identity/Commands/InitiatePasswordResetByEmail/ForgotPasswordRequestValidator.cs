@@ -4,7 +4,7 @@
 
 using FluentValidation;
 
-namespace SeventySix.Identity;
+namespace SeventySix.Identity.Commands.InitiatePasswordResetByEmail;
 
 /// <summary>
 /// FluentValidation validator for ForgotPasswordRequest.

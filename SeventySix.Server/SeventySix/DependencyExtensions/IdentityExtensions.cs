@@ -6,7 +6,20 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
+using SeventySix.Identity.Commands.ChangePassword;
+using SeventySix.Identity.Commands.CompleteRegistration;
+using SeventySix.Identity.Commands.CreatePermissionRequest;
+using SeventySix.Identity.Commands.CreateUser;
+using SeventySix.Identity.Commands.InitiatePasswordResetByEmail;
+using SeventySix.Identity.Commands.InitiateRegistration;
+using SeventySix.Identity.Commands.Login;
+using SeventySix.Identity.Commands.Register;
+using SeventySix.Identity.Commands.SetPassword;
+using SeventySix.Identity.Commands.UpdateProfile;
+using SeventySix.Identity.Commands.UpdateUser;
 using SeventySix.Identity.Infrastructure;
+using SeventySix.Identity.Queries.GetPagedUsers;
+using SeventySix.Identity.Settings;
 using SeventySix.Shared;
 using SeventySix.Shared.Infrastructure;
 using SeventySix.Shared.Validators;
@@ -87,14 +100,13 @@ public static class IdentityExtensions
 		services.AddScoped<IOAuthService>(serviceProvider =>
 			serviceProvider.GetRequiredService<OAuthService>());
 		services.AddScoped<IOAuthCodeExchangeService, OAuthCodeExchangeService>();
-		services.AddScoped<IPermissionRequestService, PermissionRequestService>();
 		services.AddScoped<RegistrationService>();
 		// Register health check
 		services.AddScoped<IDatabaseHealthCheck, IdentityHealthCheck>();
 
 		// Register validators
 		services.AddSingleton<IValidator<CreateUserRequest>, CreateUserValidator>();
-		services.AddSingleton<IValidator<CreatePermissionRequestDto>, CreatePermissionRequestValidator>();
+		services.AddSingleton<IValidator<CreatePermissionRequestCommand>, CreatePermissionRequestValidator>();
 		services.AddSingleton<IValidator<UpdateUserRequest>, UpdateUserValidator>();
 		services.AddSingleton<IValidator<UpdateProfileRequest>, UpdateProfileRequestValidator>();
 		services.AddSingleton<IValidator<UpdateProfileCommand>>(

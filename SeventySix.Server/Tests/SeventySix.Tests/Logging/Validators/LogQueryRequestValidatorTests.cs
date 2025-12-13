@@ -4,6 +4,7 @@
 
 using FluentValidation.TestHelper;
 using SeventySix.Logging;
+using SeventySix.Logging.Queries.GetLogsPaged;
 
 namespace SeventySix.Tests.Logging;
 

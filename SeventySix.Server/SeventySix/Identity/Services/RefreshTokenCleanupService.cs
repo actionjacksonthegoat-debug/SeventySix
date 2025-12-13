@@ -18,10 +18,10 @@ namespace SeventySix.Identity;
 /// Deletes tokens expired more than RetentionDays ago.
 /// Runs every IntervalHours (default: 24 hours).
 /// </remarks>
-public class RefreshTokenCleanupJob(
+public class RefreshTokenCleanupService(
 	IServiceScopeFactory scopeFactory,
 	IOptions<RefreshTokenCleanupSettings> settings,
-	ILogger<RefreshTokenCleanupJob> logger,
+	ILogger<RefreshTokenCleanupService> logger,
 	TimeProvider timeProvider) : BackgroundService
 {
 	/// <summary>

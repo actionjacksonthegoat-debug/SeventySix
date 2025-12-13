@@ -4,6 +4,7 @@
 
 using FluentValidation.TestHelper;
 using SeventySix.Identity;
+using SeventySix.Identity.Commands.CreateUser;
 
 namespace SeventySix.Tests.Identity;
 

@@ -873,17 +873,40 @@ SeventySix/
 
 ```
 Context/
+├── Commands/         # CQRS commands with colocated validators
+│   └── {Operation}/
+│       ├── {Operation}Command.cs
+│       ├── {Operation}CommandHandler.cs
+│       └── {Operation}RequestValidator.cs  # Validators live WITH handlers
 ├── Configurations/    # EF Fluent API
 ├── DTOs/             # API contracts (records) - Request/Response/Dto types
 ├── Entities/         # DB-persisted models - EF tracked, saved to database
 ├── Extensions/       # ToDto mapping
 ├── Infrastructure/   # DbContext
 ├── Models/           # Internal non-persisted types (optional - create when needed)
+├── Queries/          # CQRS queries with colocated validators
+│   └── {Operation}/
+│       ├── {Operation}Query.cs
+│       ├── {Operation}QueryHandler.cs
+│       └── {Operation}QueryValidator.cs    # Optional - query validators
 ├── Repositories/     # Domain-specific
 ├── Services/
-├── Settings/         # appsettings.json binding classes (context-specific config)
-└── Validators/       # FluentValidation
+└── Settings/         # appsettings.json binding classes (context-specific config)
+    ├── {Name}Settings.cs
+    └── {Name}SettingsValidator.cs          # Settings validators live WITH settings
 ```
+
+### Validator Colocation Rule
+
+**Validators ALWAYS live alongside the code they validate** - this keeps validation logic close to where it's used:
+
+| Validator Type | Location                                | Example                                           |
+| -------------- | --------------------------------------- | ------------------------------------------------- |
+| Command/DTO    | `Commands/{Op}/{Op}RequestValidator.cs` | `Commands/Login/LoginRequestValidator.cs`         |
+| Query          | `Queries/{Op}/{Op}QueryValidator.cs`    | `Queries/GetPagedUsers/GetPagedUsersValidator.cs` |
+| Settings       | `Settings/{Name}SettingsValidator.cs`   | `Settings/JwtSettingsValidator.cs`                |
+
+**Rationale**: Locality of behavior - when modifying a command, the validator is right there. No hunting through separate `Validators/` folders.
 
 ### ElectronicNotifications Context (Special Structure)
 
@@ -1142,13 +1165,23 @@ export const GAME_ROUTES: Routes =
 Controller → IMessageBus.InvokeAsync(Query/Command) → Handler → DbContext
 ```
 
-| Type    | Naming                        | Implementation                  |
-| ------- | ----------------------------- | ------------------------------- |
-| Query   | `Get{Entity}[By{Field}]Query` | `record` (positional)           |
-| Command | `{Verb}{Entity}Command`       | `record` (positional)           |
-| Handler | `{Query/Command}Handler`      | Static class with `HandleAsync` |
+| Type      | Naming                        | Implementation                  |
+| --------- | ----------------------------- | ------------------------------- |
+| Query     | `Get{Entity}[By{Field}]Query` | `record` (positional)           |
+| Command   | `{Verb}{Entity}Command`       | `record` (positional)           |
+| Handler   | `{Query/Command}Handler`      | Static class with `HandleAsync` |
+| Validator | `{Request}Validator`          | Colocated with handler          |
 
 **Folder Structure**: `Context/Commands/{Op}/` and `Context/Queries/{Op}/`
+
+**Validator Colocation**: Validators live IN the same folder as their handler:
+
+```
+Commands/Login/
+├── LoginCommand.cs
+├── LoginCommandHandler.cs
+└── LoginRequestValidator.cs    ← Validator lives WITH handler
+```
 
 ### Wolverine Handler Pattern
 

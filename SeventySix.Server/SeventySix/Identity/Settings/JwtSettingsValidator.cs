@@ -4,7 +4,7 @@
 
 using FluentValidation;
 
-namespace SeventySix.Identity;
+namespace SeventySix.Identity.Settings;
 
 /// <summary>
 /// FluentValidation validator for JwtSettings.

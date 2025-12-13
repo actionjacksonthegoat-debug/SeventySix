@@ -3,8 +3,9 @@
 // </copyright>
 
 using FluentValidation;
+using SeventySix.Identity.Extensions;
 
-namespace SeventySix.Identity;
+namespace SeventySix.Identity.Commands.CompleteRegistration;
 
 /// <summary>
 /// Validates complete registration requests.

@@ -3,8 +3,9 @@
 // </copyright>
 
 using SeventySix.Shared;
+using SeventySix.Shared.Validators;
 
-namespace SeventySix.Identity;
+namespace SeventySix.Identity.Queries.GetPagedUsers;
 
 /// <summary>
 /// Validator for <see cref="UserQueryRequest"/>.
