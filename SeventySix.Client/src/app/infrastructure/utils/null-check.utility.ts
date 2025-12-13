@@ -18,8 +18,7 @@
  * ```
  */
 export function isNullOrUndefined(
-	value: unknown
-): value is null | undefined
+	value: unknown): value is null | undefined
 {
 	return value === null || value === undefined;
 }
@@ -42,8 +41,7 @@ export function isNullOrUndefined(
  * ```
  */
 export function isPresent<T>(
-	value: T | null | undefined
-): value is T
+	value: T | null | undefined): value is T
 {
 	return !isNullOrUndefined(value);
 }
@@ -66,8 +64,7 @@ export function isPresent<T>(
  * ```
  */
 export function isNullOrEmpty(
-	value: string | null | undefined
-): value is null | undefined | ""
+	value: string | null | undefined): value is null | undefined | ""
 {
 	return isNullOrUndefined(value) || value === "";
 }
@@ -90,8 +87,7 @@ export function isNullOrEmpty(
  * ```
  */
 export function isNullOrWhitespace(
-	value: string | null | undefined
-): value is null | undefined | ""
+	value: string | null | undefined): value is null | undefined | ""
 {
 	return isNullOrUndefined(value) || value.trim() === "";
 }
@@ -114,8 +110,7 @@ export function isNullOrWhitespace(
  * ```
  */
 export function isNonNullObject(
-	value: unknown
-): value is Record<string, unknown>
+	value: unknown): value is Record<string, unknown>
 {
 	return typeof value === "object"
 		&& value !== null

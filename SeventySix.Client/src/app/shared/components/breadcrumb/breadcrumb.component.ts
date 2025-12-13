@@ -1,16 +1,16 @@
 import {
+	ChangeDetectionStrategy,
 	Component,
 	computed,
 	inject,
-	ChangeDetectionStrategy,
 	Signal
 } from "@angular/core";
-import { Router, NavigationEnd, ActivatedRoute } from "@angular/router";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { filter, map, startWith } from "rxjs/operators";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
+import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { RouterLink } from "@angular/router";
+import { filter, map, startWith } from "rxjs/operators";
 
 /**
  * Breadcrumb item interface
@@ -100,43 +100,48 @@ export interface BreadcrumbItem
 })
 export class BreadcrumbComponent
 {
-	private readonly router: Router = inject(Router);
-	private readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+	private readonly router: Router =
+		inject(Router);
+	private readonly activatedRoute: ActivatedRoute =
+		inject(ActivatedRoute);
 
 	/**
 	 * Feature mapping configuration for breadcrumbs
 	 */
-	private readonly featureMap: Record<string, { label: string; url: string }> = {
-		game: { label: "Game", url: "/game" },
-		developer: { label: "Developer", url: "/developer/style-guide" },
-		admin: { label: "Admin", url: "/admin" }
-	};
+	private readonly featureMap: Record<string, { label: string; url: string; }> =
+		{
+			game: { label: "Game", url: "/game" },
+			developer: { label: "Developer", url: "/developer/style-guide" },
+			admin: { label: "Admin", url: "/admin" }
+		};
 
 	/**
 	 * Signal tracking navigation events
 	 */
-	private readonly navigationEnd$: Signal<BreadcrumbItem[]> = toSignal(
+	private readonly navigationEnd$: Signal<BreadcrumbItem[]> =
+		toSignal(
 		this.router.events.pipe(
-			filter((event) => event instanceof NavigationEnd),
+			filter((event) =>
+				event instanceof NavigationEnd),
 			startWith(null),
-			map(() => this.buildBreadcrumbs())
-		),
-		{ initialValue: [] }
-	);
+			map(() => this.buildBreadcrumbs())),
+		{ initialValue: [] });
 
 	/**
 	 * Computed breadcrumb items
 	 */
-	readonly breadcrumbs: Signal<BreadcrumbItem[]> = computed(() =>
-		this.navigationEnd$());
+	readonly breadcrumbs: Signal<BreadcrumbItem[]> =
+		computed(() => this.navigationEnd$());
 
 	/**
 	 * Builds breadcrumb items from current route hierarchy
 	 */
 	private buildBreadcrumbs(): BreadcrumbItem[]
 	{
-		const breadcrumbs: BreadcrumbItem[] = [this.createHomeBreadcrumb()];
-		const urlSegments: string[] = this.getUrlSegments();
+		const breadcrumbs: BreadcrumbItem[] =
+			[this.createHomeBreadcrumb()];
+		const urlSegments: string[] =
+			this.getUrlSegments();
 
 		if (urlSegments.length === 0)
 		{
@@ -168,7 +173,9 @@ export class BreadcrumbComponent
 	 */
 	private getUrlSegments(): string[]
 	{
-		return this.router.url
+		return this
+			.router
+			.url
 			.split("/")
 			.filter((s) => s);
 	}
@@ -180,12 +187,11 @@ export class BreadcrumbComponent
 	 */
 	private addFeatureBreadcrumb(
 		breadcrumbs: BreadcrumbItem[],
-		firstSegment: string
-	): void
+		firstSegment: string): void
 	{
 		if (firstSegment in this.featureMap)
 		{
-			const feature: { label: string; url: string } =
+			const feature: { label: string; url: string; } =
 				this.featureMap[firstSegment];
 			breadcrumbs.push({
 				label: feature.label,
@@ -202,13 +208,13 @@ export class BreadcrumbComponent
 	 */
 	private addSubPageBreadcrumbs(
 		breadcrumbs: BreadcrumbItem[],
-		urlSegments: string[]
-	): void
+		urlSegments: string[]): void
 	{
 		let url: string = "";
 		for (let i: number = 0; i < urlSegments.length; i++)
 		{
-			const segment: string = urlSegments[i];
+			const segment: string =
+				urlSegments[i];
 			url += `/${segment}`;
 
 			// Skip if this is the feature root we already added
@@ -224,12 +230,12 @@ export class BreadcrumbComponent
 			}
 
 			// Get label from custom mappings or format the segment
-			const label: string = this.getSegmentLabel(
+			const label: string =
+				this.getSegmentLabel(
 				url,
 				segment,
 				urlSegments,
-				i
-			);
+				i);
 
 			// Skip empty labels
 			if (!label)
@@ -240,8 +246,7 @@ export class BreadcrumbComponent
 			breadcrumbs.push({
 				label,
 				url,
-				isActive:
-					this.router.url === url
+				isActive: this.router.url === url
 					|| this.router.url.startsWith(url + "?")
 			});
 		}
@@ -254,19 +259,19 @@ export class BreadcrumbComponent
 		url: string,
 		segment: string,
 		_allSegments: string[],
-		_index: number
-	): string
+		_index: number): string
 	{
 		// Custom labels for specific routes
-		const routeLabels: Record<string, string> = {
-			"/game": "World Map",
-			"/developer/style-guide": "Style Guide",
-			"/admin": "Dashboard",
-			"/admin/dashboard": "Dashboard",
-			"/admin/logs": "Logs",
-			"/admin/users": "Users",
-			"/admin/users/create": "Create User"
-		};
+		const routeLabels: Record<string, string> =
+			{
+				"/game": "World Map",
+				"/developer/style-guide": "Style Guide",
+				"/admin": "Dashboard",
+				"/admin/dashboard": "Dashboard",
+				"/admin/logs": "Logs",
+				"/admin/users": "Users",
+				"/admin/users/create": "Create User"
+			};
 
 		if (routeLabels[url])
 		{
@@ -289,7 +294,8 @@ export class BreadcrumbComponent
 	private formatPathSegment(segment: string): string
 	{
 		// Remove route parameters
-		const cleaned: string = segment.replace(/:\w+/g, "");
+		const cleaned: string =
+			segment.replace(/:\w+/g, "");
 
 		// Handle special cases
 		if (cleaned === "") return "Details";
@@ -297,7 +303,10 @@ export class BreadcrumbComponent
 		// Convert kebab-case to Title Case
 		return cleaned
 			.split("-")
-			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+			.map((word) =>
+				word
+					.charAt(0)
+					.toUpperCase() + word.slice(1))
 			.join(" ");
 	}
 }

@@ -25,7 +25,8 @@ import { NotificationService } from "@infrastructure/services/notification.servi
 })
 export class ForgotPasswordComponent
 {
-	private readonly authService: AuthService = inject(AuthService);
+	private readonly authService: AuthService =
+		inject(AuthService);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
@@ -41,7 +42,8 @@ export class ForgotPasswordComponent
 	 */
 	protected isValidEmail(): boolean
 	{
-		const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		const emailRegex: RegExp =
+			/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		return emailRegex.test(this.email);
 	}
 
@@ -64,22 +66,23 @@ export class ForgotPasswordComponent
 
 		this.isLoading.set(true);
 
-		this.authService.requestPasswordReset(this.email).subscribe({
-			next: () =>
-			{
-				this.submitted.set(true);
-				this.isLoading.set(false);
-				this.notification.success(
-					"If an account exists with this email, a reset link has been sent."
-				);
-			},
-			error: () =>
-			{
-				this.isLoading.set(false);
-				this.notification.error(
-					"Unable to process request. Please try again later."
-				);
-			}
-		});
+		this
+			.authService
+			.requestPasswordReset(this.email)
+			.subscribe({
+				next: () =>
+				{
+					this.submitted.set(true);
+					this.isLoading.set(false);
+					this.notification.success(
+						"If an account exists with this email, a reset link has been sent.");
+				},
+				error: () =>
+				{
+					this.isLoading.set(false);
+					this.notification.error(
+						"Unable to process request. Please try again later.");
+				}
+			});
 	}
 }

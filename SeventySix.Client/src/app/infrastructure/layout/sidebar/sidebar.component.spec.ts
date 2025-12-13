@@ -1,18 +1,18 @@
 import { ComponentFixture } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
-import { SidebarComponent } from "./sidebar.component";
-import { LayoutService } from "@infrastructure/services/layout.service";
 import { AuthService } from "@infrastructure/services/auth.service";
+import { LayoutService } from "@infrastructure/services/layout.service";
 import {
 	ComponentTestBed,
-	createMockLayoutService,
 	createMockAuthService,
-	MockLayoutService,
+	createMockLayoutService,
+	createMockUserProfile,
 	MockAuthService,
+	MockLayoutService,
 	TEST_ROLE_ADMIN,
-	TEST_ROLE_DEVELOPER,
-	createMockUserProfile
+	TEST_ROLE_DEVELOPER
 } from "@testing";
+import { SidebarComponent } from "./sidebar.component";
 
 describe("SidebarComponent", () =>
 {
@@ -23,10 +23,13 @@ describe("SidebarComponent", () =>
 
 	beforeEach(async () =>
 	{
-		mockLayoutService = createMockLayoutService();
-		mockAuthService = createMockAuthService();
+		mockLayoutService =
+			createMockLayoutService();
+		mockAuthService =
+			createMockAuthService();
 
-		fixture = await new ComponentTestBed<SidebarComponent>()
+		fixture =
+			await new ComponentTestBed<SidebarComponent>()
 			.withProvider(provideRouter([]))
 			.withProvider({
 				provide: LayoutService,
@@ -38,27 +41,31 @@ describe("SidebarComponent", () =>
 			})
 			.build(SidebarComponent);
 
-		component = fixture.componentInstance;
+		component =
+			fixture.componentInstance;
 		fixture.detectChanges();
 	});
 
 	it("should create", () =>
 	{
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	it("should have navigation sections", () =>
 	{
-		expect(component["visibleNavSections"]()).toBeDefined();
-		expect(component["visibleNavSections"]().length).toBeGreaterThan(0);
+		expect(component["visibleNavSections"]())
+			.toBeDefined();
+		expect(component["visibleNavSections"]().length)
+			.toBeGreaterThan(0);
 	});
 
 	it("should close sidebar", () =>
 	{
 		component.closeSidebar();
-		expect(mockLayoutService.setSidebarExpanded).toHaveBeenCalledWith(
-			false
-		);
+		expect(mockLayoutService.setSidebarExpanded)
+			.toHaveBeenCalledWith(
+				false);
 	});
 
 	it("should toggle sidebar on mobile when nav item clicked", () =>
@@ -67,7 +74,8 @@ describe("SidebarComponent", () =>
 
 		component.closeSidebarOnMobile();
 
-		expect(mockLayoutService.toggleSidebar).toHaveBeenCalled();
+		expect(mockLayoutService.toggleSidebar)
+			.toHaveBeenCalled();
 	});
 
 	it("should not toggle sidebar on desktop when nav item clicked", () =>
@@ -89,13 +97,14 @@ describe("SidebarComponent", () =>
 			fixture.detectChanges();
 
 			// Assert
-			const sections: { title: string }[] =
+			const sections: { title: string; }[] =
 				component["visibleNavSections"]();
-			const sectionTitles: string[] = sections.map(
-				(s: { title: string }) => s.title
-			);
+			const sectionTitles: string[] =
+				sections.map(
+				(s: { title: string; }) => s.title);
 
-			expect(sectionTitles).toContain("Main");
+			expect(sectionTitles)
+				.toContain("Main");
 			expect(sectionTitles).not.toContain("Developer");
 			expect(sectionTitles).not.toContain("Management");
 		});
@@ -109,21 +118,22 @@ describe("SidebarComponent", () =>
 					email: "dev@test.com",
 					fullName: "Test Developer",
 					roles: [TEST_ROLE_DEVELOPER]
-				})
-			);
+				}));
 
 			// Act
 			fixture.detectChanges();
 
 			// Assert
-			const sections: { title: string }[] =
+			const sections: { title: string; }[] =
 				component["visibleNavSections"]();
-			const sectionTitles: string[] = sections.map(
-				(s: { title: string }) => s.title
-			);
+			const sectionTitles: string[] =
+				sections.map(
+				(s: { title: string; }) => s.title);
 
-			expect(sectionTitles).toContain("Main");
-			expect(sectionTitles).toContain("Developer");
+			expect(sectionTitles)
+				.toContain("Main");
+			expect(sectionTitles)
+				.toContain("Developer");
 			expect(sectionTitles).not.toContain("Management");
 		});
 
@@ -136,31 +146,34 @@ describe("SidebarComponent", () =>
 					email: "admin@test.com",
 					fullName: "Test Admin",
 					roles: [TEST_ROLE_ADMIN]
-				})
-			);
+				}));
 
 			// Act
 			fixture.detectChanges();
 
 			// Assert
-			const sections: { title: string }[] =
+			const sections: { title: string; }[] =
 				component["visibleNavSections"]();
-			const sectionTitles: string[] = sections.map(
-				(s: { title: string }) => s.title
-			);
+			const sectionTitles: string[] =
+				sections.map(
+				(s: { title: string; }) => s.title);
 
-			expect(sectionTitles).toContain("Main");
-			expect(sectionTitles).toContain("Developer");
-			expect(sectionTitles).toContain("Management");
+			expect(sectionTitles)
+				.toContain("Main");
+			expect(sectionTitles)
+				.toContain("Developer");
+			expect(sectionTitles)
+				.toContain("Management");
 		});
 
 		it("should update visible sections when user logs in", () =>
 		{
 			// Arrange - start as guest
 			fixture.detectChanges();
-			let sections: { title: string }[] =
+			let sections: { title: string; }[] =
 				component["visibleNavSections"]();
-			expect(sections.length).toBe(1); // Only Main
+			expect(sections.length)
+				.toBe(1); // Only Main
 
 			// Act - log in as admin
 			mockAuthService.setUser(
@@ -169,19 +182,22 @@ describe("SidebarComponent", () =>
 					email: "admin@test.com",
 					fullName: "Test Admin",
 					roles: [TEST_ROLE_ADMIN]
-				})
-			);
+				}));
 			fixture.detectChanges();
 
 			// Assert
-			sections = component["visibleNavSections"]();
-			const sectionTitles: string[] = sections.map(
-				(s: { title: string }) => s.title
-			);
+			sections =
+				component["visibleNavSections"]();
+			const sectionTitles: string[] =
+				sections.map(
+				(s: { title: string; }) => s.title);
 
-			expect(sectionTitles).toContain("Main");
-			expect(sectionTitles).toContain("Developer");
-			expect(sectionTitles).toContain("Management");
+			expect(sectionTitles)
+				.toContain("Main");
+			expect(sectionTitles)
+				.toContain("Developer");
+			expect(sectionTitles)
+				.toContain("Management");
 		});
 
 		it("should update visible sections when user logs out", () =>
@@ -193,24 +209,26 @@ describe("SidebarComponent", () =>
 					email: "admin@test.com",
 					fullName: "Test Admin",
 					roles: [TEST_ROLE_ADMIN]
-				})
-			);
+				}));
 			fixture.detectChanges();
-			let sections: { title: string }[] =
+			let sections: { title: string; }[] =
 				component["visibleNavSections"]();
-			expect(sections.length).toBe(3); // All sections
+			expect(sections.length)
+				.toBe(3); // All sections
 
 			// Act - log out
 			mockAuthService.setUser(null);
 			fixture.detectChanges();
 
 			// Assert
-			sections = component["visibleNavSections"]();
-			const sectionTitles: string[] = sections.map(
-				(s: { title: string }) => s.title
-			);
+			sections =
+				component["visibleNavSections"]();
+			const sectionTitles: string[] =
+				sections.map(
+				(s: { title: string; }) => s.title);
 
-			expect(sectionTitles).toContain("Main");
+			expect(sectionTitles)
+				.toContain("Main");
 			expect(sectionTitles).not.toContain("Developer");
 			expect(sectionTitles).not.toContain("Management");
 		});
@@ -224,22 +242,24 @@ describe("SidebarComponent", () =>
 					email: "super@test.com",
 					fullName: "Super User",
 					roles: [TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN]
-				})
-			);
+				}));
 
 			// Act
 			fixture.detectChanges();
 
 			// Assert
-			const sections: { title: string }[] =
+			const sections: { title: string; }[] =
 				component["visibleNavSections"]();
-			const sectionTitles: string[] = sections.map(
-				(s: { title: string }) => s.title
-			);
+			const sectionTitles: string[] =
+				sections.map(
+				(s: { title: string; }) => s.title);
 
-			expect(sectionTitles).toContain("Main");
-			expect(sectionTitles).toContain("Developer");
-			expect(sectionTitles).toContain("Management");
+			expect(sectionTitles)
+				.toContain("Main");
+			expect(sectionTitles)
+				.toContain("Developer");
+			expect(sectionTitles)
+				.toContain("Management");
 		});
 	});
 });

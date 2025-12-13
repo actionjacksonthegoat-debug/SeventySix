@@ -46,10 +46,8 @@ h1 {
 .feature-card {
 	height: 100%;
 	transition:
-		transform vars.$transition-duration-base
-			vars.$transition-easing-standard,
-		box-shadow vars.$transition-duration-base
-			vars.$transition-easing-standard;
+		transform vars.$transition-duration-base vars.$transition-easing-standard,
+		box-shadow vars.$transition-duration-base vars.$transition-easing-standard;
 
 	&.theme-primary {
 		background-color: var(--mat-sys-primary-container);

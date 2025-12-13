@@ -7,8 +7,7 @@ export class AppError extends Error
 	constructor(
 		message: string,
 		public readonly code?: string,
-		public readonly statusCode?: number
-	)
+		public readonly statusCode?: number)
 	{
 		super(message);
 		this.name = "AppError";
@@ -26,8 +25,7 @@ export class HttpError extends AppError
 		message: string,
 		public override readonly statusCode: number,
 		public readonly url?: string,
-		public readonly method?: string
-	)
+		public readonly method?: string)
 	{
 		super(message, "HTTP_ERROR", statusCode);
 		this.name = "HttpError";
@@ -43,8 +41,7 @@ export class ValidationError extends AppError
 {
 	constructor(
 		message: string,
-		public readonly errors: Record<string, string[]>
-	)
+		public readonly errors: Record<string, string[]>)
 	{
 		super(message, "VALIDATION_ERROR", 400);
 		this.name = "ValidationError";
@@ -60,8 +57,7 @@ export class NotFoundError extends AppError
 {
 	constructor(
 		message: string = "Resource not found",
-		public readonly resource?: string
-	)
+		public readonly resource?: string)
 	{
 		super(message, "NOT_FOUND", 404);
 		this.name = "NotFoundError";

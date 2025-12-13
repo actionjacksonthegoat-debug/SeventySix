@@ -1,10 +1,10 @@
 import {
+	ChangeDetectionStrategy,
 	Component,
 	computed,
 	inject,
-	signal,
-	ChangeDetectionStrategy,
 	Signal,
+	signal,
 	WritableSignal
 } from "@angular/core";
 import {
@@ -13,16 +13,16 @@ import {
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { Router } from "@angular/router";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { AccountService } from "../services";
+import { Router } from "@angular/router";
 import { AvailableRoleDto, CreatePermissionRequestDto } from "../models";
+import { AccountService } from "../services";
 
 @Component({
 	selector: "app-request-permissions",
@@ -42,49 +42,61 @@ import { AvailableRoleDto, CreatePermissionRequestDto } from "../models";
 })
 export class RequestPermissionsPage
 {
-	private readonly accountService: AccountService = inject(AccountService);
-	private readonly formBuilder: FormBuilder = inject(FormBuilder);
-	private readonly router: Router = inject(Router);
-	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+	private readonly accountService: AccountService =
+		inject(AccountService);
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+	private readonly router: Router =
+		inject(Router);
+	private readonly snackBar: MatSnackBar =
+		inject(MatSnackBar);
 
 	readonly rolesQuery: ReturnType<AccountService["getAvailableRoles"]> =
 		this.accountService.getAvailableRoles();
 	readonly requestMutation: ReturnType<
-		AccountService["createPermissionRequest"]
-	> = this.accountService.createPermissionRequest();
+		AccountService["createPermissionRequest"]> =
+		this.accountService.createPermissionRequest();
 
-	readonly availableRoles: Signal<AvailableRoleDto[]> = computed(
-		() => this.rolesQuery.data() ?? []
-	);
-	readonly isLoading: Signal<boolean> = computed(() =>
-		this.rolesQuery.isLoading());
-	readonly isSubmitting: Signal<boolean> = computed(() =>
-		this.requestMutation.isPending());
+	readonly availableRoles: Signal<AvailableRoleDto[]> =
+		computed(
+		() => this.rolesQuery.data() ?? []);
+	readonly isLoading: Signal<boolean> =
+		computed(() => this.rolesQuery.isLoading());
+	readonly isSubmitting: Signal<boolean> =
+		computed(() => this.requestMutation.isPending());
 
-	readonly selectedRoles: WritableSignal<Set<string>> = signal(
-		new Set<string>()
-	);
+	readonly selectedRoles: WritableSignal<Set<string>> =
+		signal(
+		new Set<string>());
 
 	/** Pre-computed role selection map for template. */
-	readonly roleSelectionMap: Signal<Map<string, boolean>> = computed(() =>
+	readonly roleSelectionMap: Signal<Map<string, boolean>> =
+		computed(() =>
 	{
-		const selected: Set<string> = this.selectedRoles();
-		const map: Map<string, boolean> = new Map();
-		this.availableRoles().forEach((role: AvailableRoleDto) =>
-		{
-			map.set(role.name, selected.has(role.name));
-		});
+		const selected: Set<string> =
+			this.selectedRoles();
+		const map: Map<string, boolean> =
+			new Map();
+		this
+			.availableRoles()
+			.forEach((role: AvailableRoleDto) =>
+			{
+				map.set(role.name, selected.has(role.name));
+			});
 		return map;
 	});
 
-	readonly requestForm: FormGroup = this.formBuilder.group({
+	readonly requestForm: FormGroup =
+		this.formBuilder.group({
 		requestMessage: ["", [Validators.maxLength(500)]]
 	});
 
 	toggleRole(roleName: string): void
 	{
-		const current: Set<string> = this.selectedRoles();
-		const updated: Set<string> = new Set(current);
+		const current: Set<string> =
+			this.selectedRoles();
+		const updated: Set<string> =
+			new Set(current);
 
 		if (updated.has(roleName))
 		{
@@ -100,7 +112,8 @@ export class RequestPermissionsPage
 
 	async onSubmit(): Promise<void>
 	{
-		const roles: string[] = Array.from(this.selectedRoles());
+		const roles: string[] =
+			Array.from(this.selectedRoles());
 		if (roles.length === 0)
 		{
 			this.snackBar.open("Select at least one role", "Close", {
@@ -109,10 +122,11 @@ export class RequestPermissionsPage
 			return;
 		}
 
-		const request: CreatePermissionRequestDto = {
-			requestedRoles: roles,
-			requestMessage: this.requestForm.value.requestMessage || undefined
-		};
+		const request: CreatePermissionRequestDto =
+			{
+				requestedRoles: roles,
+				requestMessage: this.requestForm.value.requestMessage || undefined
+			};
 
 		try
 		{

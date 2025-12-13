@@ -1,14 +1,14 @@
 import { inject } from "@angular/core";
+import { getQueryConfig } from "@infrastructure/utils/query-config";
 import {
-	QueryClient,
+	CreateMutationResult,
 	injectMutation,
-	CreateMutationResult
+	QueryClient
 } from "@tanstack/angular-query-experimental";
 import {
-	Observable,
-	lastValueFrom
+	lastValueFrom,
+	Observable
 } from "rxjs";
-import { getQueryConfig } from "@infrastructure/utils/query-config";
 
 /**
  * Base class for services needing mutation support without filter state.
@@ -18,7 +18,8 @@ import { getQueryConfig } from "@infrastructure/utils/query-config";
 export abstract class BaseMutationService
 {
 	/** Query client for cache invalidation (DI) */
-	protected readonly queryClient: QueryClient = inject(QueryClient);
+	protected readonly queryClient: QueryClient =
+		inject(QueryClient);
 
 	/** Query key prefix for cache operations (must be overridden by subclasses) */
 	protected abstract readonly queryKeyPrefix: string;
@@ -50,9 +51,7 @@ export abstract class BaseMutationService
 		mutationFunction: (input: TInput) => Observable<TResult>,
 		onSuccessCallback?: (
 			result: TResult,
-			variables: TInput
-		) => void
-	): CreateMutationResult<TResult, Error, TInput>
+			variables: TInput) => void): CreateMutationResult<TResult, Error, TInput>
 	{
 		return injectMutation(() => ({
 			mutationFn: (input: TInput) =>

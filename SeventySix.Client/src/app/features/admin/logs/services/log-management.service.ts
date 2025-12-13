@@ -5,24 +5,24 @@
  * Extends BaseFilterService for filter state management
  */
 
+import { LogQueryRequest } from "@admin/logs/models";
+import { HttpContext, HttpParams } from "@angular/common/http";
 import {
+	computed,
 	inject,
 	Injectable,
-	signal,
-	computed,
 	Signal,
+	signal,
 	WritableSignal
 } from "@angular/core";
-import { HttpContext, HttpParams } from "@angular/common/http";
-import { DateService } from "@infrastructure/services";
-import { injectQuery } from "@tanstack/angular-query-experimental";
-import { lastValueFrom, Observable } from "rxjs";
-import { ApiService } from "@infrastructure/api-services/api.service";
-import { LogQueryRequest } from "@admin/logs/models";
 import { PagedResultOfLogDto } from "@infrastructure/api";
+import { ApiService } from "@infrastructure/api-services/api.service";
+import { DateService } from "@infrastructure/services";
+import { BaseQueryService } from "@infrastructure/services/base-query.service";
 import { buildHttpParams } from "@infrastructure/utils/http-params.utility";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
-import { BaseQueryService } from "@infrastructure/services/base-query.service";
+import { injectQuery } from "@tanstack/angular-query-experimental";
+import { lastValueFrom, Observable } from "rxjs";
 
 /**
  * Service for log management business logic
@@ -34,27 +34,32 @@ import { BaseQueryService } from "@infrastructure/services/base-query.service";
 export class LogManagementService extends BaseQueryService<LogQueryRequest>
 {
 	protected readonly queryKeyPrefix: string = "logs";
-	private readonly apiService: ApiService = inject(ApiService);
+	private readonly apiService: ApiService =
+		inject(ApiService);
 	private readonly endpoint: string = "logs";
 
 	// Selected log IDs using signals
-	readonly selectedIds: WritableSignal<Set<number>> = signal<Set<number>>(
-		new Set()
-	);
+	readonly selectedIds: WritableSignal<Set<number>> =
+		signal<Set<number>>(
+		new Set());
 
 	// Computed selected count
-	readonly selectedCount: Signal<number> = computed(
-		() => this.selectedIds().size
-	);
+	readonly selectedCount: Signal<number> =
+		computed(
+		() => this.selectedIds().size);
 
-	private readonly dateService: DateService = inject(DateService);
+	private readonly dateService: DateService =
+		inject(DateService);
 
 	constructor()
 	{
 		// Initialize with 24-hour date range as default
-		const dateService: DateService = new DateService();
-		const now: Date = dateService.parseUTC(dateService.now());
-		const startDate: Date = dateService.addHours(now, -24);
+		const dateService: DateService =
+			new DateService();
+		const now: Date =
+			dateService.parseUTC(dateService.now());
+		const startDate: Date =
+			dateService.addHours(now, -24);
 		super({
 			page: 1,
 			pageSize: 50,
@@ -73,7 +78,8 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	getLogs()
 	{
 		return injectQuery(() => ({
-			queryKey: QueryKeys.logs
+			queryKey: QueryKeys
+				.logs
 				.paged(this.getCurrentFilter())
 				.concat(this.forceRefreshTrigger()),
 			queryFn: () =>
@@ -87,8 +93,7 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	{
 		return this.createMutation<number, void>(
 			(logId) =>
-				this.apiService.delete<void>(`${this.endpoint}/${logId}`)
-);
+				this.apiService.delete<void>(`${this.endpoint}/${logId}`));
 	}
 
 	/**
@@ -105,8 +110,7 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 			{
 				this.clearSelection();
 				this.invalidateAll();
-			}
-);
+			});
 	}
 
 	/**
@@ -114,8 +118,10 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	 */
 	deleteSelected()
 	{
-		const mutation: ReturnType<typeof this.deleteLogs> = this.deleteLogs();
-		const ids: number[] = Array.from(this.selectedIds());
+		const mutation: ReturnType<typeof this.deleteLogs> =
+			this.deleteLogs();
+		const ids: number[] =
+			Array.from(this.selectedIds());
 		return mutation.mutate(ids);
 	}
 
@@ -137,7 +143,8 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	{
 		this.selectedIds.update((current) =>
 		{
-			const newSet: Set<number> = new Set(current);
+			const newSet: Set<number> =
+				new Set(current);
 			if (newSet.has(id))
 			{
 				newSet.delete(id);
@@ -178,8 +185,7 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	/** Gets paged logs with the given filter. */
 	private getPaged(
 		filter?: LogQueryRequest,
-		context?: HttpContext
-	): Observable<PagedResultOfLogDto>
+		context?: HttpContext): Observable<PagedResultOfLogDto>
 	{
 		const params: HttpParams | undefined =
 			filter

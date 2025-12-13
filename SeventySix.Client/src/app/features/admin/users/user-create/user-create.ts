@@ -1,44 +1,44 @@
+import { UserDto } from "@admin/users/models";
+import { UserService } from "@admin/users/services";
 import {
+	ChangeDetectionStrategy,
 	Component,
 	computed,
 	inject,
-	ChangeDetectionStrategy,
-	viewChild,
-	Signal
+	Signal,
+	viewChild
 } from "@angular/core";
-import { Router } from "@angular/router";
 import {
+	AbstractControl,
+	AsyncValidatorFn,
 	FormBuilder,
 	FormGroup,
 	ReactiveFormsModule,
-	Validators,
-	AbstractControl,
-	AsyncValidatorFn,
-	ValidationErrors
+	ValidationErrors,
+	Validators
 } from "@angular/forms";
-import { MatStepper } from "@angular/material/stepper";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatStepper } from "@angular/material/stepper";
+import { Router } from "@angular/router";
+import { LoggerService } from "@infrastructure/services";
 import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
 import {
-	of,
-	Observable,
-	from,
+	EMAIL_VALIDATION,
+	FULL_NAME_VALIDATION,
+	USERNAME_VALIDATION
+} from "@shared/constants/validation.constants";
+import { STEPPER_MATERIAL_MODULES } from "@shared/material-bundles";
+import { getValidationError } from "@shared/utilities";
+import {
+	catchError,
 	debounceTime,
 	distinctUntilChanged,
-	switchMap,
+	from,
 	map,
-	catchError
+	Observable,
+	of,
+	switchMap
 } from "rxjs";
-import { UserService } from "@admin/users/services";
-import { LoggerService } from "@infrastructure/services";
-import { UserDto } from "@admin/users/models";
-import { getValidationError } from "@shared/utilities";
-import { STEPPER_MATERIAL_MODULES } from "@shared/material-bundles";
-import {
-	USERNAME_VALIDATION,
-	EMAIL_VALIDATION,
-	FULL_NAME_VALIDATION
-} from "@shared/constants/validation.constants";
 
 /**
  * User creation wizard component.
@@ -58,11 +58,16 @@ import {
 })
 export class UserCreatePage
 {
-	private readonly userService: UserService = inject(UserService);
-	private readonly logger: LoggerService = inject(LoggerService);
-	private readonly router: Router = inject(Router);
-	private readonly formBuilder: FormBuilder = inject(FormBuilder);
-	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+	private readonly userService: UserService =
+		inject(UserService);
+	private readonly logger: LoggerService =
+		inject(LoggerService);
+	private readonly router: Router =
+		inject(Router);
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+	private readonly snackBar: MatSnackBar =
+		inject(MatSnackBar);
 
 	readonly stepper: Signal<MatStepper | undefined> =
 		viewChild<MatStepper>("stepper");
@@ -72,12 +77,13 @@ export class UserCreatePage
 		this.userService.createUser();
 
 	// State signals
-	readonly isSaving: Signal<boolean> = computed(() =>
-		this.createMutation.isPending());
-	readonly saveError: Signal<string | null> = computed(() =>
-		this.createMutation.error()
-			? "Failed to create user. Please try again."
-			: null);
+	readonly isSaving: Signal<boolean> =
+		computed(() => this.createMutation.isPending());
+	readonly saveError: Signal<string | null> =
+		computed(() =>
+			this.createMutation.error()
+				? "Failed to create user. Please try again."
+				: null);
 
 	/**
 	 * Async validator for username availability
@@ -85,28 +91,28 @@ export class UserCreatePage
 	private usernameAvailabilityValidator(): AsyncValidatorFn
 	{
 		return (
-			control: AbstractControl
-		): Observable<ValidationErrors | null> =>
+			control: AbstractControl): Observable<ValidationErrors | null> =>
 		{
 			if (isNullOrUndefined(control.value))
 			{
 				return of(null);
 			}
 
-			return of(control.value).pipe(
-				debounceTime(500),
-				distinctUntilChanged(),
-				switchMap((username: string) =>
-					from(this.userService.checkUsernameAvailability(username))),
-				map((exists: boolean) =>
-					exists ? { usernameTaken: true } : null),
-				catchError(() => of(null))
-			);
+			return of(control.value)
+				.pipe(
+					debounceTime(500),
+					distinctUntilChanged(),
+					switchMap((username: string) =>
+						from(this.userService.checkUsernameAvailability(username))),
+					map((exists: boolean) =>
+						exists ? { usernameTaken: true } : null),
+					catchError(() => of(null)));
 		};
 	}
 
 	// Form groups for each step
-	readonly basicInfoForm: FormGroup = this.formBuilder.group({
+	readonly basicInfoForm: FormGroup =
+		this.formBuilder.group({
 		username: [
 			"",
 			[
@@ -126,7 +132,8 @@ export class UserCreatePage
 		]
 	});
 
-	readonly accountDetailsForm: FormGroup = this.formBuilder.group({
+	readonly accountDetailsForm: FormGroup =
+		this.formBuilder.group({
 		fullName: [
 			"",
 			[
@@ -138,7 +145,8 @@ export class UserCreatePage
 	});
 
 	// Computed signal for complete form data
-	readonly formData: Signal<Partial<UserDto>> = computed(() => ({
+	readonly formData: Signal<Partial<UserDto>> =
+		computed(() => ({
 		...this.basicInfoForm.value,
 		...this.accountDetailsForm.value
 	}));
@@ -185,7 +193,8 @@ export class UserCreatePage
 			return;
 		}
 
-		const userData: Partial<UserDto> = this.formData();
+		const userData: Partial<UserDto> =
+			this.formData();
 
 		this.createMutation.mutate(userData, {
 			onSuccess: (createdUser) =>
@@ -194,9 +203,10 @@ export class UserCreatePage
 					id: createdUser.id
 				});
 
-				const message: string = createdUser.needsPendingEmail
-					? `User "${createdUser.username}" created. Email will be sent to ${createdUser.email} within 24 hours.`
-					: `User "${createdUser.username}" created. Welcome email sent to ${createdUser.email}.`;
+				const message: string =
+					createdUser.needsPendingEmail
+						? `User "${createdUser.username}" created. Email will be sent to ${createdUser.email} within 24 hours.`
+						: `User "${createdUser.username}" created. Welcome email sent to ${createdUser.email}.`;
 
 				this.snackBar.open(message, "Close", {
 					duration: 5000,
@@ -221,7 +231,4 @@ export class UserCreatePage
 	{
 		this.router.navigate(["/admin/users"]);
 	}
-
-	}
-
-
+}

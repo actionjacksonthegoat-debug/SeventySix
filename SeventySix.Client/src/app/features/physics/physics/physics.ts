@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 
@@ -16,6 +16,5 @@ import { MatIconModule } from "@angular/material/icon";
 export class Physics
 {
 	readonly title: string = "Physics Calculations";
-	readonly description: string =
-		"Electricity generation from buoyancy and future calculations";
+	readonly description: string = "Electricity generation from buoyancy and future calculations";
 }

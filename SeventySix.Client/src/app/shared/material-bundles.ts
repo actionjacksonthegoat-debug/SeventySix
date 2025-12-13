@@ -19,24 +19,24 @@
 import type { Type } from "@angular/core";
 
 // Form Field Imports
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
 import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
 import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatDatepickerModule } from "@angular/material/datepicker";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIconModule } from "@angular/material/icon";
+import { MatInputModule } from "@angular/material/input";
 import { MatRadioModule } from "@angular/material/radio";
 import { MatSelectModule } from "@angular/material/select";
-import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 
 // Table Imports
-import { MatTableModule } from "@angular/material/table";
-import { MatPaginatorModule } from "@angular/material/paginator";
-import { MatSortModule } from "@angular/material/sort";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatChipsModule } from "@angular/material/chips";
-import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatMenuModule } from "@angular/material/menu";
+import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatSortModule } from "@angular/material/sort";
+import { MatTableModule } from "@angular/material/table";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 // Dialog Imports
 import { MatDialogModule } from "@angular/material/dialog";
@@ -61,10 +61,10 @@ import { MatStepperModule } from "@angular/material/stepper";
  */
 const COMMON_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-		MatButtonModule,
-		MatIconModule,
-		MatProgressSpinnerModule
-	] as const;
+	MatButtonModule,
+	MatIconModule,
+	MatProgressSpinnerModule
+] as const;
 
 /**
  * Form Material Modules Bundle
@@ -81,16 +81,16 @@ const COMMON_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const FORM_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-		...COMMON_MATERIAL_MODULES,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCheckboxModule,
-		MatRadioModule,
-		MatSelectModule,
-		MatDatepickerModule,
-		MatSlideToggleModule,
-		MatCardModule
-	] as const;
+	...COMMON_MATERIAL_MODULES,
+	MatFormFieldModule,
+	MatInputModule,
+	MatCheckboxModule,
+	MatRadioModule,
+	MatSelectModule,
+	MatDatepickerModule,
+	MatSlideToggleModule,
+	MatCardModule
+] as const;
 
 /**
  * Table Material Modules Bundle
@@ -106,17 +106,17 @@ export const FORM_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const TABLE_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-		...COMMON_MATERIAL_MODULES,
-		MatTableModule,
-		MatPaginatorModule,
-		MatSortModule,
-		MatChipsModule,
-		MatTooltipModule,
-		MatMenuModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCheckboxModule
-	] as const;
+	...COMMON_MATERIAL_MODULES,
+	MatTableModule,
+	MatPaginatorModule,
+	MatSortModule,
+	MatChipsModule,
+	MatTooltipModule,
+	MatMenuModule,
+	MatFormFieldModule,
+	MatInputModule,
+	MatCheckboxModule
+] as const;
 
 /**
  * Dialog Material Modules Bundle
@@ -131,10 +131,10 @@ export const TABLE_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const DIALOG_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-		...COMMON_MATERIAL_MODULES,
-		MatDialogModule,
-		MatSnackBarModule
-	] as const;
+	...COMMON_MATERIAL_MODULES,
+	MatDialogModule,
+	MatSnackBarModule
+] as const;
 
 /**
  * Navigation Material Modules Bundle
@@ -149,10 +149,10 @@ export const DIALOG_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const NAVIGATION_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-		...COMMON_MATERIAL_MODULES,
-		MatTooltipModule,
-		MatMenuModule
-	] as const;
+	...COMMON_MATERIAL_MODULES,
+	MatTooltipModule,
+	MatMenuModule
+] as const;
 
 /**
  * Stepper Material Modules Bundle
@@ -167,13 +167,13 @@ export const NAVIGATION_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const STEPPER_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-		...COMMON_MATERIAL_MODULES,
-		MatStepperModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCheckboxModule,
-		MatCardModule
-	] as const;
+	...COMMON_MATERIAL_MODULES,
+	MatStepperModule,
+	MatFormFieldModule,
+	MatInputModule,
+	MatCheckboxModule,
+	MatCardModule
+] as const;
 
 /**
  * Card Material Modules Bundle
@@ -188,7 +188,7 @@ export const STEPPER_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const CARD_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-		...COMMON_MATERIAL_MODULES,
-		MatCardModule,
-		MatDividerModule
-	] as const;
+	...COMMON_MATERIAL_MODULES,
+	MatCardModule,
+	MatDividerModule
+] as const;

@@ -1,24 +1,26 @@
-import { Injectable, inject } from "@angular/core";
 import {
-	injectQuery,
-	QueryClient,
-	CreateQueryResult
-} from "@tanstack/angular-query-experimental";
-import { lastValueFrom } from "rxjs";
-import { ApiService } from "@infrastructure/api-services/api.service";
-import {
-	HealthStatusResponse,
 	DatabaseHealthResponse,
-	ExternalApiHealthResponse
+	ExternalApiHealthResponse,
+	HealthStatusResponse
 } from "@admin/admin-dashboard/models";
+import { inject, Injectable } from "@angular/core";
+import { ApiService } from "@infrastructure/api-services/api.service";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
+import {
+	CreateQueryResult,
+	injectQuery,
+	QueryClient
+} from "@tanstack/angular-query-experimental";
+import { lastValueFrom } from "rxjs";
 
 @Injectable()
 export class HealthApiService
 {
-	private readonly apiService: ApiService = inject(ApiService);
-	private readonly queryClient: QueryClient = inject(QueryClient);
+	private readonly apiService: ApiService =
+		inject(ApiService);
+	private readonly queryClient: QueryClient =
+		inject(QueryClient);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("health");
 	private readonly endpoint: string = "health";

@@ -184,9 +184,7 @@ html.light-theme {
 }
 
 // Link styles (for non-Material links)
-a:not([mat-button]):not([mat-raised-button]):not([mat-flat-button]):not(
-		[mat-stroked-button]
-	) {
+a:not([mat-button]):not([mat-raised-button]):not([mat-flat-button]):not([mat-stroked-button]) {
 	color: var(--mat-sys-primary);
 	text-decoration: none;
 	transition: color vars.$transition-duration-normal ease;

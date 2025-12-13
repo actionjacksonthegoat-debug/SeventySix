@@ -1,18 +1,18 @@
 import { Injectable } from "@angular/core";
 import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
 import {
-	format,
-	formatDistanceToNow,
-	parseISO,
-	isValid as isValidDate,
-	isBefore as isBeforeDate,
-	isAfter as isAfterDate,
-	isSameDay as isSameDayDate,
 	addDays as addDaysUtil,
 	addHours as addHoursUtil,
 	differenceInDays as differenceInDaysUtil,
-	startOfDay,
-	endOfDay
+	endOfDay,
+	format,
+	formatDistanceToNow,
+	isAfter as isAfterDate,
+	isBefore as isBeforeDate,
+	isSameDay as isSameDayDate,
+	isValid as isValidDate,
+	parseISO,
+	startOfDay
 } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
@@ -52,7 +52,8 @@ export class DateService
 	 */
 	now(): string
 	{
-		return new Date().toISOString();
+		return new Date()
+			.toISOString();
 	}
 
 	/**
@@ -85,8 +86,7 @@ export class DateService
 		return formatInTimeZone(
 			date,
 			this.UTC_ZONE,
-			"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-		);
+			"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 	}
 
 	/**
@@ -163,8 +163,10 @@ export class DateService
 			typeof utcDate === "string" ? this.parseUTC(utcDate) : utcDate;
 		return toZonedTime(
 			parsedDate,
-			Intl.DateTimeFormat().resolvedOptions().timeZone
-		);
+			Intl
+				.DateTimeFormat()
+				.resolvedOptions()
+				.timeZone);
 	}
 
 	// ========================================
@@ -319,8 +321,10 @@ export class DateService
 	{
 		const parsedDate: Date =
 			typeof date === "string" ? this.parseUTC(date) : date;
-		const utcDate: Date = toZonedTime(parsedDate, this.UTC_ZONE);
-		const startDate: Date = startOfDay(utcDate);
+		const utcDate: Date =
+			toZonedTime(parsedDate, this.UTC_ZONE);
+		const startDate: Date =
+			startOfDay(utcDate);
 		return new Date(
 			Date.UTC(
 				startDate.getFullYear(),
@@ -329,9 +333,7 @@ export class DateService
 				0,
 				0,
 				0,
-				0
-			)
-		);
+				0));
 	}
 
 	/**
@@ -344,8 +346,10 @@ export class DateService
 	{
 		const parsedDate: Date =
 			typeof date === "string" ? this.parseUTC(date) : date;
-		const utcDate: Date = toZonedTime(parsedDate, this.UTC_ZONE);
-		const endDate: Date = endOfDay(utcDate);
+		const utcDate: Date =
+			toZonedTime(parsedDate, this.UTC_ZONE);
+		const endDate: Date =
+			endOfDay(utcDate);
 		return new Date(
 			Date.UTC(
 				endDate.getFullYear(),
@@ -354,9 +358,7 @@ export class DateService
 				23,
 				59,
 				59,
-				999
-			)
-		);
+				999));
 	}
 
 	// ========================================
@@ -380,7 +382,9 @@ export class DateService
 			typeof timestamp === "string"
 				? this.parseUTC(timestamp)
 				: timestamp;
-		const diffMs: number = new Date().getTime() - parsedDate.getTime();
+		const diffMs: number =
+			new Date()
+			.getTime() - parsedDate.getTime();
 		return Math.floor(diffMs / 3600000);
 	}
 
@@ -396,7 +400,9 @@ export class DateService
 			typeof timestamp === "string"
 				? this.parseUTC(timestamp)
 				: timestamp;
-		const diffMs: number = new Date().getTime() - parsedDate.getTime();
+		const diffMs: number =
+			new Date()
+			.getTime() - parsedDate.getTime();
 		return Math.floor(diffMs / 60000);
 	}
 }

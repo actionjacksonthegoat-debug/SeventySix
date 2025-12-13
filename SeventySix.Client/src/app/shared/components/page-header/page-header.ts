@@ -1,6 +1,6 @@
 import {
-	Component,
 	ChangeDetectionStrategy,
+	Component,
 	input,
 	InputSignal
 } from "@angular/core";
@@ -19,7 +19,10 @@ import { MatIconModule } from "@angular/material/icon";
 })
 export class PageHeaderComponent
 {
-	readonly icon: InputSignal<string | undefined> = input<string>();
-	readonly title: InputSignal<string> = input.required<string>();
-	readonly subtitle: InputSignal<string | undefined> = input<string>();
+	readonly icon: InputSignal<string | undefined> =
+		input<string>();
+	readonly title: InputSignal<string> =
+		input.required<string>();
+	readonly subtitle: InputSignal<string | undefined> =
+		input<string>();
 }

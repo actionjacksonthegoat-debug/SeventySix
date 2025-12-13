@@ -1,14 +1,14 @@
-import { Injectable, inject } from "@angular/core";
 import { HttpErrorResponse } from "@angular/common/http";
-import { ErrorQueueService } from "./error-queue.service";
-import { LogLevel } from "./logger.service";
-import { DateService } from "./date.service";
+import { inject, Injectable } from "@angular/core";
 import { CreateLogRequest } from "@infrastructure/api";
 import {
-	extractRequestUrl,
 	extractRequestMethod,
+	extractRequestUrl,
 	extractStatusCode
 } from "@infrastructure/utils/http-error.utility";
+import { DateService } from "./date.service";
+import { ErrorQueueService } from "./error-queue.service";
+import { LogLevel } from "./logger.service";
 
 /**
  * Error details for logging.
@@ -31,16 +31,17 @@ export interface ErrorDetails
 })
 export class ClientErrorLoggerService
 {
-	private readonly errorQueue: ErrorQueueService = inject(ErrorQueueService);
-	private readonly dateService: DateService = inject(DateService);
+	private readonly errorQueue: ErrorQueueService =
+		inject(ErrorQueueService);
+	private readonly dateService: DateService =
+		inject(DateService);
 
 	/**
 	 * Logs a generic error.
 	 */
 	logError(
 		errorDetails: ErrorDetails,
-		logLevel: LogLevel = LogLevel.Error
-	): void
+		logLevel: LogLevel = LogLevel.Error): void
 	{
 		try
 		{
@@ -48,21 +49,23 @@ export class ClientErrorLoggerService
 				errorDetails.error ?? errorDetails.httpError;
 
 			// Prepend [Client] to the message
-			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
+			const formattedMessage: string =
+				`[Client] - ${errorDetails.message}`;
 
-			const logRequest: CreateLogRequest = {
-				logLevel: LogLevel[logLevel],
-				message: formattedMessage,
-				clientTimestamp: this.dateService.now(),
-				exceptionMessage: error?.message,
-				stackTrace: error instanceof Error ? error.stack : undefined,
-				sourceContext: this.extractSourceContext(error),
-				requestUrl: extractRequestUrl(error),
-				requestMethod: extractRequestMethod(error),
-				statusCode: extractStatusCode(error),
-				userAgent: navigator.userAgent,
-				additionalContext: errorDetails.context
-			};
+			const logRequest: CreateLogRequest =
+				{
+					logLevel: LogLevel[logLevel],
+					message: formattedMessage,
+					clientTimestamp: this.dateService.now(),
+					exceptionMessage: error?.message,
+					stackTrace: error instanceof Error ? error.stack : undefined,
+					sourceContext: this.extractSourceContext(error),
+					requestUrl: extractRequestUrl(error),
+					requestMethod: extractRequestMethod(error),
+					statusCode: extractStatusCode(error),
+					userAgent: navigator.userAgent,
+					additionalContext: errorDetails.context
+				};
 
 			this.errorQueue.enqueue(logRequest);
 		}
@@ -71,8 +74,7 @@ export class ClientErrorLoggerService
 			// Never throw - fallback to console
 			console.error(
 				"[ClientErrorLoggerService] Failed to log error:",
-				err
-			);
+				err);
 			console.error("Original error:", errorDetails);
 		}
 	}
@@ -81,32 +83,31 @@ export class ClientErrorLoggerService
 	 * Logs an HTTP error.
 	 */
 	logHttpError(
-		errorDetails: ErrorDetails & { httpError: HttpErrorResponse }
-	): void
+		errorDetails: ErrorDetails & { httpError: HttpErrorResponse; }): void
 	{
 		try
 		{
 			// Prepend [Client] to the message
-			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
+			const formattedMessage: string =
+				`[Client] - ${errorDetails.message}`;
 
-			const logRequest: CreateLogRequest = {
-				logLevel: LogLevel[LogLevel.Error],
-				message: formattedMessage,
-				clientTimestamp: this.dateService.now(),
-				exceptionMessage: errorDetails.httpError.message,
-				stackTrace:
-					errorDetails.httpError.error instanceof Error
+			const logRequest: CreateLogRequest =
+				{
+					logLevel: LogLevel[LogLevel.Error],
+					message: formattedMessage,
+					clientTimestamp: this.dateService.now(),
+					exceptionMessage: errorDetails.httpError.message,
+					stackTrace: errorDetails.httpError.error instanceof Error
 						? errorDetails.httpError.error.stack
 						: undefined,
-				sourceContext: this.extractSourceContext(
-					errorDetails.httpError.error
-				),
-				requestUrl: extractRequestUrl(errorDetails.httpError),
-				requestMethod: extractRequestMethod(errorDetails.httpError),
-				statusCode: extractStatusCode(errorDetails.httpError),
-				userAgent: navigator.userAgent,
-				additionalContext: errorDetails.context
-			};
+					sourceContext: this.extractSourceContext(
+					errorDetails.httpError.error),
+					requestUrl: extractRequestUrl(errorDetails.httpError),
+					requestMethod: extractRequestMethod(errorDetails.httpError),
+					statusCode: extractStatusCode(errorDetails.httpError),
+					userAgent: navigator.userAgent,
+					additionalContext: errorDetails.context
+				};
 
 			this.errorQueue.enqueue(logRequest);
 		}
@@ -114,31 +115,33 @@ export class ClientErrorLoggerService
 		{
 			console.error(
 				"[ClientErrorLoggerService] Failed to log HTTP error:",
-				err
-			);
+				err);
 			console.error("Original error:", errorDetails);
 		}
 	} /**
 	 * Logs a client-side error (not HTTP related).
 	 */
+
 	logClientError(errorDetails: ErrorDetails): void
 	{
 		try
 		{
 			// Prepend [Client] to the message
-			const formattedMessage: string = `[Client] - ${errorDetails.message}`;
+			const formattedMessage: string =
+				`[Client] - ${errorDetails.message}`;
 
-			const logRequest: CreateLogRequest = {
-				logLevel: LogLevel[LogLevel.Error],
-				message: formattedMessage,
-				clientTimestamp: this.dateService.now(),
-				exceptionMessage: errorDetails.error?.message,
-				stackTrace: errorDetails.error?.stack,
-				sourceContext: this.extractSourceContext(errorDetails.error),
-				requestUrl: extractRequestUrl(),
-				userAgent: navigator.userAgent,
-				additionalContext: errorDetails.context
-			};
+			const logRequest: CreateLogRequest =
+				{
+					logLevel: LogLevel[LogLevel.Error],
+					message: formattedMessage,
+					clientTimestamp: this.dateService.now(),
+					exceptionMessage: errorDetails.error?.message,
+					stackTrace: errorDetails.error?.stack,
+					sourceContext: this.extractSourceContext(errorDetails.error),
+					requestUrl: extractRequestUrl(),
+					userAgent: navigator.userAgent,
+					additionalContext: errorDetails.context
+				};
 
 			this.errorQueue.enqueue(logRequest);
 		}
@@ -146,8 +149,7 @@ export class ClientErrorLoggerService
 		{
 			console.error(
 				"[ClientErrorLoggerService] Failed to log client error:",
-				err
-			);
+				err);
 			console.error("Original error:", errorDetails);
 		}
 	}
@@ -160,16 +162,18 @@ export class ClientErrorLoggerService
 		try
 		{
 			// Prepend [Client] to the message
-			const formattedMessage: string = `[Client] - ${message}`;
+			const formattedMessage: string =
+				`[Client] - ${message}`;
 
-			const logRequest: CreateLogRequest = {
-				logLevel: LogLevel[LogLevel.Warning],
-				message: formattedMessage,
-				clientTimestamp: this.dateService.now(),
-				requestUrl: extractRequestUrl(),
-				userAgent: navigator.userAgent,
-				additionalContext: context
-			};
+			const logRequest: CreateLogRequest =
+				{
+					logLevel: LogLevel[LogLevel.Warning],
+					message: formattedMessage,
+					clientTimestamp: this.dateService.now(),
+					requestUrl: extractRequestUrl(),
+					userAgent: navigator.userAgent,
+					additionalContext: context
+				};
 
 			this.errorQueue.enqueue(logRequest);
 		}
@@ -177,8 +181,7 @@ export class ClientErrorLoggerService
 		{
 			console.error(
 				"[ClientErrorLoggerService] Failed to log warning:",
-				err
-			);
+				err);
 		}
 	}
 
@@ -190,16 +193,18 @@ export class ClientErrorLoggerService
 		try
 		{
 			// Prepend [Client] to the message
-			const formattedMessage: string = `[Client] - ${message}`;
+			const formattedMessage: string =
+				`[Client] - ${message}`;
 
-			const logRequest: CreateLogRequest = {
-				logLevel: LogLevel[LogLevel.Info],
-				message: formattedMessage,
-				clientTimestamp: this.dateService.now(),
-				requestUrl: extractRequestUrl(),
-				userAgent: navigator.userAgent,
-				additionalContext: context
-			};
+			const logRequest: CreateLogRequest =
+				{
+					logLevel: LogLevel[LogLevel.Info],
+					message: formattedMessage,
+					clientTimestamp: this.dateService.now(),
+					requestUrl: extractRequestUrl(),
+					userAgent: navigator.userAgent,
+					additionalContext: context
+				};
 
 			this.errorQueue.enqueue(logRequest);
 		}
@@ -207,8 +212,7 @@ export class ClientErrorLoggerService
 		{
 			console.error(
 				"[ClientErrorLoggerService] Failed to log info:",
-				err
-			);
+				err);
 		}
 	}
 
@@ -226,13 +230,14 @@ export class ClientErrorLoggerService
 
 		// Extract from Angular stack traces
 		// Format: "at ComponentName.methodName (file.ts:line:col)"
-		const stackLines: string[] = error.stack.split("\n");
+		const stackLines: string[] =
+			error.stack.split("\n");
 		for (const line of stackLines)
 		{
 			// Match Angular component/service patterns
-			const match: RegExpMatchArray | null = line.match(
-				/at\s+(\w+Component|\w+Service)\.(\w+)/
-			);
+			const match: RegExpMatchArray | null =
+				line.match(
+				/at\s+(\w+Component|\w+Service)\.(\w+)/);
 			if (match)
 			{
 				return `${match[1]}.${match[2]}`;

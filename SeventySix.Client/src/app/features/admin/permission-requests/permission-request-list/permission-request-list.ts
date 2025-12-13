@@ -1,20 +1,20 @@
-import {
-	Component,
-	inject,
-	ChangeDetectionStrategy,
-	Signal,
-	computed
-} from "@angular/core";
-import { DatePipe } from "@angular/common";
-import { PermissionRequestService } from "@admin/permission-requests/services";
 import { PermissionRequestDto } from "@admin/permission-requests/models";
+import { PermissionRequestService } from "@admin/permission-requests/services";
+import { DatePipe } from "@angular/common";
+import {
+	ChangeDetectionStrategy,
+	Component,
+	computed,
+	inject,
+	Signal
+} from "@angular/core";
 import { DataTableComponent, PageHeaderComponent } from "@shared/components";
 import type {
-	TableColumn,
-	RowAction,
 	BulkAction,
+	BulkActionEvent,
+	RowAction,
 	RowActionEvent,
-	BulkActionEvent
+	TableColumn
 } from "@shared/models";
 
 /**
@@ -31,124 +31,128 @@ import type {
 })
 export class PermissionRequestListPage
 {
-	private readonly service: PermissionRequestService = inject(
-		PermissionRequestService
-	);
-	private readonly datePipe: DatePipe = inject(DatePipe);
+	private readonly service: PermissionRequestService =
+		inject(PermissionRequestService);
+	private readonly datePipe: DatePipe =
+		inject(DatePipe);
 
 	readonly requestsQuery: ReturnType<
-		PermissionRequestService["getAllRequests"]
-	> = this.service.getAllRequests();
+		PermissionRequestService["getAllRequests"]> =
+		this.service.getAllRequests();
 
 	// Mutations
 	private readonly approveMutation: ReturnType<
-		PermissionRequestService["approveRequest"]
-	> = this.service.approveRequest();
+		PermissionRequestService["approveRequest"]> =
+		this.service.approveRequest();
 	private readonly rejectMutation: ReturnType<
-		PermissionRequestService["rejectRequest"]
-	> = this.service.rejectRequest();
+		PermissionRequestService["rejectRequest"]> =
+		this.service.rejectRequest();
 	private readonly bulkApproveMutation: ReturnType<
-		PermissionRequestService["bulkApproveRequests"]
-	> = this.service.bulkApproveRequests();
+		PermissionRequestService["bulkApproveRequests"]> =
+		this.service.bulkApproveRequests();
 	private readonly bulkRejectMutation: ReturnType<
-		PermissionRequestService["bulkRejectRequests"]
-	> = this.service.bulkRejectRequests();
+		PermissionRequestService["bulkRejectRequests"]> =
+		this.service.bulkRejectRequests();
 
-	readonly requests: Signal<PermissionRequestDto[]> = computed(
-		() => this.requestsQuery.data() ?? []
-	);
+	readonly requests: Signal<PermissionRequestDto[]> =
+		computed(
+		() => this.requestsQuery.data() ?? []);
 
-	readonly isLoading: Signal<boolean> = computed(() =>
-		this.requestsQuery.isLoading());
+	readonly isLoading: Signal<boolean> =
+		computed(() => this.requestsQuery.isLoading());
 
-	readonly error: Signal<string | null> = computed(() =>
-		this.requestsQuery.error()
-			? "Failed to load permission requests."
-			: null);
+	readonly error: Signal<string | null> =
+		computed(() =>
+			this.requestsQuery.error()
+				? "Failed to load permission requests."
+				: null);
 
 	// DataTable pagination (simple mode - show all items)
-	readonly totalCount: Signal<number> = computed(
-		() => this.requests().length
-	);
+	readonly totalCount: Signal<number> =
+		computed(
+		() => this.requests().length);
 	readonly pageIndex: number = 0;
 	readonly pageSize: number = 100;
 
 	// Column definitions
-	readonly columns: TableColumn<PermissionRequestDto>[] = [
-		{
-			key: "username",
-			label: "User",
-			type: "text",
-			sortable: true,
-			visible: true
-		},
-		{
-			key: "requestedRole",
-			label: "Role",
-			type: "text",
-			sortable: true,
-			visible: true
-		},
-		{
-			key: "requestMessage",
-			label: "Message",
-			type: "text",
-			sortable: false,
-			visible: true,
-			formatter: (value: unknown): string =>
-				(value as string | null) ?? "-"
-		},
-		{
-			key: "createdBy",
-			label: "Requested By",
-			type: "text",
-			sortable: true,
-			visible: true
-		},
-		{
-			key: "createDate",
-			label: "Date",
-			type: "date",
-			sortable: true,
-			visible: true,
-			formatter: (value: unknown): string =>
-				this.datePipe.transform(value as string, "short") ?? ""
-		}
-	];
+	readonly columns: TableColumn<PermissionRequestDto>[] =
+		[
+			{
+				key: "username",
+				label: "User",
+				type: "text",
+				sortable: true,
+				visible: true
+			},
+			{
+				key: "requestedRole",
+				label: "Role",
+				type: "text",
+				sortable: true,
+				visible: true
+			},
+			{
+				key: "requestMessage",
+				label: "Message",
+				type: "text",
+				sortable: false,
+				visible: true,
+				formatter: (value: unknown): string =>
+					(value as string | null) ?? "-"
+			},
+			{
+				key: "createdBy",
+				label: "Requested By",
+				type: "text",
+				sortable: true,
+				visible: true
+			},
+			{
+				key: "createDate",
+				label: "Date",
+				type: "date",
+				sortable: true,
+				visible: true,
+				formatter: (value: unknown): string =>
+					this.datePipe.transform(value as string, "short") ?? ""
+			}
+		];
 
 	// Row actions
-	readonly rowActions: RowAction<PermissionRequestDto>[] = [
-		{
-			key: "approve",
-			label: "Approve",
-			icon: "check_circle",
-			color: "primary"
-		},
-		{
-			key: "reject",
-			label: "Reject",
-			icon: "cancel",
-			color: "warn"
-		}
-	];
+	readonly rowActions: RowAction<PermissionRequestDto>[] =
+		[
+			{
+				key: "approve",
+				label: "Approve",
+				icon: "check_circle",
+				color: "primary"
+			},
+			{
+				key: "reject",
+				label: "Reject",
+				icon: "cancel",
+				color: "warn"
+			}
+		];
 
 	// Bulk actions
-	readonly bulkActions: BulkAction[] = [
-		{
-			key: "approve-all",
-			label: "Approve Selected",
-			icon: "check_circle",
-			color: "primary",
-			requiresSelection: true
-		},
-		{
-			key: "reject-all",
-			label: "Reject Selected",
-			icon: "cancel",
-			color: "warn",
-			requiresSelection: true
-		}
-	];
+	readonly bulkActions: BulkAction[] =
+		[
+			{
+				key: "approve-all",
+				label: "Approve Selected",
+				icon: "check_circle",
+				color: "primary",
+				requiresSelection: true
+			},
+			{
+				key: "reject-all",
+				label: "Reject Selected",
+				icon: "cancel",
+				color: "warn",
+				requiresSelection: true
+			}
+		];
 
 	onRefresh(): void
 	{
@@ -157,7 +161,8 @@ export class PermissionRequestListPage
 
 	onRowAction(event: RowActionEvent<PermissionRequestDto>): void
 	{
-		const requestId: number = event.row.id;
+		const requestId: number =
+			event.row.id;
 
 		if (event.action === "approve")
 		{
@@ -171,7 +176,8 @@ export class PermissionRequestListPage
 
 	onBulkAction(event: BulkActionEvent<PermissionRequestDto>): void
 	{
-		const selectedIds: number[] = event.selectedIds;
+		const selectedIds: number[] =
+			event.selectedIds;
 
 		if (event.action === "approve-all")
 		{

@@ -1,16 +1,16 @@
 import {
-	Directive,
-	ElementRef,
-	Renderer2,
 	afterNextRender,
+	Directive,
 	effect,
+	ElementRef,
 	inject,
 	input,
-	InputSignal
+	InputSignal,
+	Renderer2
 } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { fromEvent } from "rxjs";
 import { debounceTime } from "rxjs/operators";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 /**
  * Hardcoded table component heights (in pixels)
@@ -21,7 +21,8 @@ const TABLE_COMPONENT_HEIGHTS: {
 	readonly SEARCH_TOOLBAR: number;
 	readonly FILTER_CHIPS_TOOLBAR: number;
 	readonly STANDARD_TABLE_OFFSET: number;
-} = {
+} =
+	{
 	/** Search toolbar height: mat-form-field at density -1 (48px) + padding (12px top/bottom) = 72px */
 	SEARCH_TOOLBAR: 72,
 
@@ -77,19 +78,22 @@ export class TableHeightDirective
 	 * Minimum height for the table in pixels
 	 * Default: 400px
 	 */
-	readonly appTableHeight: InputSignal<number> = input<number>(400, {
+	readonly appTableHeight: InputSignal<number> =
+		input<number>(400, {
 		alias: "appTableHeight"
 	});
 
 	/**
 	 * Element reference for DOM manipulation
 	 */
-	private readonly elementRef: ElementRef = inject(ElementRef);
+	private readonly elementRef: ElementRef =
+		inject(ElementRef);
 
 	/**
 	 * Renderer for safe DOM manipulation
 	 */
-	private readonly renderer: Renderer2 = inject(Renderer2);
+	private readonly renderer: Renderer2 =
+		inject(Renderer2);
 
 	constructor()
 	{
@@ -129,8 +133,10 @@ export class TableHeightDirective
 	 */
 	private applyInitialHeight(): void
 	{
-		const element: HTMLElement = this.elementRef.nativeElement;
-		const minHeight: number = this.appTableHeight();
+		const element: HTMLElement =
+			this.elementRef.nativeElement;
+		const minHeight: number =
+			this.appTableHeight();
 		this.renderer.setStyle(element, "min-height", `${minHeight}px`);
 	}
 
@@ -154,19 +160,25 @@ export class TableHeightDirective
 	 */
 	private updateHeight(): void
 	{
-		const element: HTMLElement = this.elementRef.nativeElement;
-		const rect: DOMRect = element.getBoundingClientRect();
-		const elementTopPosition: number = rect.top;
+		const element: HTMLElement =
+			this.elementRef.nativeElement;
+		const rect: DOMRect =
+			element.getBoundingClientRect();
+		const elementTopPosition: number =
+			rect.top;
 
 		// Always use standard table offset (120px)
-		const offset: number = TABLE_COMPONENT_HEIGHTS.STANDARD_TABLE_OFFSET;
+		const offset: number =
+			TABLE_COMPONENT_HEIGHTS.STANDARD_TABLE_OFFSET;
 
 		// Calculate available height: viewport - element top - offset for table components
 		const adjustedHeight: number =
 			window.innerHeight - elementTopPosition - offset;
 
-		const minHeight: number = this.appTableHeight();
-		const finalHeight: number = Math.max(minHeight, adjustedHeight);
+		const minHeight: number =
+			this.appTableHeight();
+		const finalHeight: number =
+			Math.max(minHeight, adjustedHeight);
 
 		this.renderer.setStyle(element, "height", `${finalHeight}px`);
 

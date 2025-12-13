@@ -1,30 +1,30 @@
+import { LogDetailDialogComponent } from "@admin/logs/components/log-detail-dialog/log-detail-dialog.component";
+import { LogDto, LogLevel, parseLogLevel } from "@admin/logs/models";
+import { LogManagementService } from "@admin/logs/services";
+import { DatePipe } from "@angular/common";
 import {
+	ChangeDetectionStrategy,
 	Component,
 	computed,
 	inject,
-	Signal,
-	ChangeDetectionStrategy,
-	OutputRefSubscription
+	OutputRefSubscription,
+	Signal
 } from "@angular/core";
-import { DatePipe } from "@angular/common";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
-import { LogManagementService } from "@admin/logs/services";
-import { LogDto, parseLogLevel, LogLevel } from "@admin/logs/models";
-import { DataTableComponent } from "@shared/components";
-import {
-	TableColumn,
-	QuickFilter,
-	RowAction,
-	BulkAction,
-	RowActionEvent,
-	BulkActionEvent,
-	FilterChangeEvent,
-	DateRangeEvent,
-	SortChangeEvent
-} from "@shared/models";
-import { LogDetailDialogComponent } from "@admin/logs/components/log-detail-dialog/log-detail-dialog.component";
 import { DialogService } from "@infrastructure/services/dialog.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
+import { DataTableComponent } from "@shared/components";
+import {
+	BulkAction,
+	BulkActionEvent,
+	DateRangeEvent,
+	FilterChangeEvent,
+	QuickFilter,
+	RowAction,
+	RowActionEvent,
+	SortChangeEvent,
+	TableColumn
+} from "@shared/models";
 
 /**
  * Log list component using DataTableComponent
@@ -44,9 +44,12 @@ export class LogList
 {
 	private readonly logService: LogManagementService =
 		inject(LogManagementService);
-	private readonly datePipe: DatePipe = inject(DatePipe);
-	private readonly dialog: MatDialog = inject(MatDialog);
-	private readonly dialogService: DialogService = inject(DialogService);
+	private readonly datePipe: DatePipe =
+		inject(DatePipe);
+	private readonly dialog: MatDialog =
+		inject(MatDialog);
+	private readonly dialogService: DialogService =
+		inject(DialogService);
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
 
@@ -56,28 +59,31 @@ export class LogList
 
 	// Mutations
 	private readonly deleteLogMutation: ReturnType<
-		LogManagementService["deleteLog"]
-	> = this.logService.deleteLog();
+		LogManagementService["deleteLog"]> =
+		this.logService.deleteLog();
 	private readonly deleteLogsMutation: ReturnType<
-		LogManagementService["deleteLogs"]
-	> = this.logService.deleteLogs();
+		LogManagementService["deleteLogs"]> =
+		this.logService.deleteLogs();
 
 	// Table column definitions
-	readonly columns: TableColumn<LogDto>[] = [
-		{
-			key: "logLevel",
-			label: "Level",
-			sortable: true,
-			visible: true,
-			type: "badge",
-			formatter: (value: unknown): string =>
+	readonly columns: TableColumn<LogDto>[] =
+		[
 			{
-				const level: LogLevel = parseLogLevel(value as string);
+				key: "logLevel",
+				label: "Level",
+				sortable: true,
+				visible: true,
+				type: "badge",
+				formatter: (value: unknown): string =>
+			{
+				const level: LogLevel =
+					parseLogLevel(value as string);
 				return LogLevel[level];
 			},
-			badgeColor: (value: unknown): "primary" | "accent" | "warn" =>
+				badgeColor: (value: unknown): "primary" | "accent" | "warn" =>
 			{
-				const level: LogLevel = parseLogLevel(value as string);
+				const level: LogLevel =
+					parseLogLevel(value as string);
 				if (level === LogLevel.Error || level === LogLevel.Fatal)
 				{
 					return "warn";
@@ -88,118 +94,129 @@ export class LogList
 				}
 				return "primary";
 			}
-		},
-		{
-			key: "createDate",
-			label: "Create Date",
-			sortable: true,
-			visible: true,
-			type: "date",
-			formatter: (value: unknown): string =>
-				this.datePipe.transform(value as Date, "short") ?? ""
-		},
-		{
-			key: "message",
-			label: "Message",
-			sortable: false,
-			visible: true,
-			type: "text",
-			formatter: (_value: unknown, row?: LogDto): string =>
-				row?.exceptionMessage ?? row?.message ?? ""
-		},
-		{
-			key: "sourceContext",
-			label: "Source",
-			sortable: false,
-			visible: false,
-			type: "text"
-		},
-		{
-			key: "requestPath",
-			label: "Request Path",
-			sortable: false,
-			visible: false,
-			type: "text"
-		},
-		{
-			key: "stackTrace",
-			label: "Stack Trace",
-			sortable: false,
-			visible: false,
-			type: "text"
-		}
-	];
+			},
+			{
+				key: "createDate",
+				label: "Create Date",
+				sortable: true,
+				visible: true,
+				type: "date",
+				formatter: (value: unknown): string =>
+					this.datePipe.transform(value as Date, "short") ?? ""
+			},
+			{
+				key: "message",
+				label: "Message",
+				sortable: false,
+				visible: true,
+				type: "text",
+				formatter: (_value: unknown, row?: LogDto): string =>
+					row?.exceptionMessage ?? row?.message ?? ""
+			},
+			{
+				key: "sourceContext",
+				label: "Source",
+				sortable: false,
+				visible: false,
+				type: "text"
+			},
+			{
+				key: "requestPath",
+				label: "Request Path",
+				sortable: false,
+				visible: false,
+				type: "text"
+			},
+			{
+				key: "stackTrace",
+				label: "Stack Trace",
+				sortable: false,
+				visible: false,
+				type: "text"
+			}
+		];
 
 	// Quick filters
-	readonly quickFilters: QuickFilter<LogDto>[] = [
-		{
-			key: "all",
-			label: "All",
-			icon: "list",
-			filterFn: (): boolean => true // Show all logs
-		},
-		{
-			key: "warnings",
-			label: "Warnings",
-			icon: "warning",
-			filterFn: (item: LogDto): boolean =>
+	readonly quickFilters: QuickFilter<LogDto>[] =
+		[
 			{
-				const level: LogLevel = parseLogLevel(item.logLevel);
+				key: "all",
+				label: "All",
+				icon: "list",
+				filterFn: (): boolean => true // Show all logs
+			},
+			{
+				key: "warnings",
+				label: "Warnings",
+				icon: "warning",
+				filterFn: (item: LogDto): boolean =>
+			{
+				const level: LogLevel =
+					parseLogLevel(item.logLevel);
 				// Warning level and above: Warning (3), Error (4), Fatal (5)
 				return level >= LogLevel.Warning;
 			}
-		},
-		{
-			key: "errors",
-			label: "Errors",
-			icon: "error",
-			filterFn: (item: LogDto): boolean =>
+			},
 			{
-				const level: LogLevel = parseLogLevel(item.logLevel);
+				key: "errors",
+				label: "Errors",
+				icon: "error",
+				filterFn: (item: LogDto): boolean =>
+			{
+				const level: LogLevel =
+					parseLogLevel(item.logLevel);
 				// Error level and above: Error (4), Fatal (5)
 				return level >= LogLevel.Error;
 			}
-		}
-	];
+			}
+		];
 
 	// Row actions (view handled by rowClick)
-	readonly rowActions: RowAction<LogDto>[] = [
-		{
-			key: "delete",
-			label: "Delete",
-			icon: "delete",
-			color: "warn"
-		}
-	];
+	readonly rowActions: RowAction<LogDto>[] =
+		[
+			{
+				key: "delete",
+				label: "Delete",
+				icon: "delete",
+				color: "warn"
+			}
+		];
 
 	// Bulk actions
-	readonly bulkActions: BulkAction[] = [
-		{
-			key: "delete",
-			label: "Delete Selected",
-			icon: "delete",
-			color: "warn",
-			requiresSelection: true
-		}
-	];
+	readonly bulkActions: BulkAction[] =
+		[
+			{
+				key: "delete",
+				label: "Delete Selected",
+				icon: "delete",
+				color: "warn",
+				requiresSelection: true
+			}
+		];
 
 	// Computed signals
-	readonly data: Signal<LogDto[]> = computed(
-		(): LogDto[] => (this.logsQuery.data()?.items as LogDto[]) ?? []
-	);
-	readonly totalCount: Signal<number> = computed(
-		(): number => this.logsQuery.data()?.totalCount ?? 0
-	);
-	readonly pageIndex: Signal<number> = computed(
-		(): number => (this.logsQuery.data()?.page ?? 1) - 1
-	);
-	readonly pageSize: Signal<number> = computed(
-		(): number => this.logsQuery.data()?.pageSize ?? 25
-	);
-	readonly isLoading: Signal<boolean> = computed((): boolean =>
-		this.logsQuery.isLoading());
-	readonly error: Signal<string | null> = computed((): string | null =>
-		this.logsQuery.error() ? "Failed to load logs" : null);
+	readonly data: Signal<LogDto[]> =
+		computed(
+		(): LogDto[] =>
+			(this.logsQuery.data()?.items as LogDto[]) ?? []);
+	readonly totalCount: Signal<number> =
+		computed(
+		(): number =>
+			this.logsQuery.data()?.totalCount ?? 0);
+	readonly pageIndex: Signal<number> =
+		computed(
+		(): number =>
+			(this.logsQuery.data()?.page ?? 1) - 1);
+	readonly pageSize: Signal<number> =
+		computed(
+		(): number =>
+			this.logsQuery.data()?.pageSize ?? 25);
+	readonly isLoading: Signal<boolean> =
+		computed((): boolean =>
+			this.logsQuery.isLoading());
+	readonly error: Signal<string | null> =
+		computed((): string | null =>
+			this.logsQuery.error() ? "Failed to load logs" : null);
 
 	// Event handlers
 	onSearch(searchText: string): void
@@ -217,7 +234,8 @@ export class LogList
 		// Always apply the filter that was clicked (single selection mode)
 		// If trying to deactivate current filter, default to "all"
 		let logLevel: string | null = null;
-		const filterKey: string = event.active ? event.filterKey : "all";
+		const filterKey: string =
+			event.active ? event.filterKey : "all";
 
 		switch (filterKey)
 		{
@@ -305,27 +323,30 @@ export class LogList
 	{
 		const dialogRef: MatDialogRef<LogDetailDialogComponent> =
 			this.dialog.open(LogDetailDialogComponent, {
-				width: "900px",
-				maxWidth: "95vw",
-				maxHeight: "90vh",
-				data: log,
-				autoFocus: false,
-				restoreFocus: true
-			});
+			width: "900px",
+			maxWidth: "95vw",
+			maxHeight: "90vh",
+			data: log,
+			autoFocus: false,
+			restoreFocus: true
+		});
 
 		// Subscribe to delete event from dialog
-		const component: LogDetailDialogComponent = dialogRef.componentInstance;
+		const component: LogDetailDialogComponent =
+			dialogRef.componentInstance;
 		const subscription: OutputRefSubscription =
 			component.deleteLog.subscribe((id: number) =>
-			{
-				this.deleteLog(id);
-			});
+		{
+			this.deleteLog(id);
+		});
 
 		// Clean up subscription when dialog closes
-		dialogRef.afterClosed().subscribe(() =>
-		{
-			subscription.unsubscribe();
-		});
+		dialogRef
+			.afterClosed()
+			.subscribe(() =>
+			{
+				subscription.unsubscribe();
+			});
 	}
 
 	/**
@@ -335,7 +356,8 @@ export class LogList
 	 */
 	private deleteLog(id: number): void
 	{
-		this.dialogService
+		this
+			.dialogService
 			.confirmDelete("log")
 			.subscribe((confirmed: boolean) =>
 			{
@@ -348,14 +370,12 @@ export class LogList
 					onSuccess: () =>
 					{
 						this.notificationService.success(
-							"Log entry deleted successfully"
-						);
+							"Log entry deleted successfully");
 					},
 					onError: (error: Error) =>
 					{
 						this.notificationService.error(
-							`Failed to delete log entry: ${error.message}`
-						);
+							`Failed to delete log entry: ${error.message}`);
 					}
 				});
 			});
@@ -374,9 +394,11 @@ export class LogList
 			return;
 		}
 
-		const count: number = ids.length;
+		const count: number =
+			ids.length;
 
-		this.dialogService
+		this
+			.dialogService
 			.confirmDelete("log", count)
 			.subscribe((confirmed: boolean) =>
 			{
@@ -389,14 +411,12 @@ export class LogList
 					onSuccess: () =>
 					{
 						this.notificationService.success(
-							`Successfully deleted ${count} log ${count === 1 ? "entry" : "entries"}`
-						);
+							`Successfully deleted ${count} log ${count === 1 ? "entry" : "entries"}`);
 					},
 					onError: (error: Error) =>
 					{
 						this.notificationService.error(
-							`Failed to delete logs: ${error.message}`
-						);
+							`Failed to delete logs: ${error.message}`);
 					}
 				});
 			});

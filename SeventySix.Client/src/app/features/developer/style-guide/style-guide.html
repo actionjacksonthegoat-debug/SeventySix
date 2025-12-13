@@ -9,11 +9,8 @@
 			<button
 				mat-raised-button
 				(click)="themeService.toggleBrightness()"
-				aria-label="Toggle theme brightness"
-			>
-				<mat-icon>{{
-					themeService.isDark() ? "light_mode" : "dark_mode"
-				}}</mat-icon>
+				aria-label="Toggle theme brightness">
+				<mat-icon>{{ themeService.isDark() ? "light_mode" : "dark_mode" }}</mat-icon>
 				{{ themeService.isDark() ? "Light" : "Dark" }} Mode
 			</button>
 			<mat-form-field appearance="outline">
@@ -21,8 +18,7 @@
 				<mat-select
 					[value]="themeService.colorScheme()"
 					(valueChange)="themeService.setColorScheme($event)"
-					aria-label="Select color scheme"
-				>
+					aria-label="Select color scheme">
 					<mat-option value="blue">Blue</mat-option>
 					<mat-option value="cyan-orange">Cyan Orange</mat-option>
 				</mat-select>
@@ -33,14 +29,15 @@
 	<mat-divider></mat-divider>
 
 	<!-- Tabs for different sections -->
-	<mat-tab-group mat-stretch-tabs="false" animationDuration="200ms">
+	<mat-tab-group
+		mat-stretch-tabs="false"
+		animationDuration="200ms">
 		<!-- Colors Tab -->
 		<mat-tab label="Colors">
 			<div class="tab-content">
 				<h2>Material Theme Colors</h2>
 				<p class="mat-body-1">
-					Material Design 3 dynamic color system with primary,
-					secondary, tertiary, and error palettes.
+					Material Design 3 dynamic color system with primary, secondary, tertiary, and error palettes.
 				</p>
 
 				<div class="color-grid">
@@ -123,14 +120,13 @@
 
 				<h2>Semantic Status Colors</h2>
 				<p class="mat-body-1">
-					Theme-aware colors for notifications, badges, and status
-					indicators. These adapt automatically with theme changes.
+					Theme-aware colors for notifications, badges, and status indicators. These adapt automatically with
+					theme changes.
 					<br />
-					<strong>Dark:</strong> Info=primary-container,
-					Success=primary, Warning=error, Error=error-container
+					<strong>Dark:</strong> Info=primary-container, Success=primary, Warning=error, Error=error-container
 					<br />
-					<strong>Light:</strong> Info=primary-container,
-					Success=primary, Warning=error-container, Error=error
+					<strong>Light:</strong> Info=primary-container, Success=primary, Warning=error-container,
+					Error=error
 				</p>
 
 				<div class="color-grid">
@@ -177,8 +173,7 @@
 								</div>
 							</div>
 							<p class="mat-body-2">
-								<code>--color-warning</code> · Dark: Error |
-								Light: Error Container
+								<code>--color-warning</code> · Dark: Error | Light: Error Container
 							</p>
 						</mat-card-content>
 					</mat-card>
@@ -194,8 +189,7 @@
 								</div>
 							</div>
 							<p class="mat-body-2">
-								<code>--color-error</code> · Dark: Error
-								Container | Light: Error
+								<code>--color-error</code> · Dark: Error Container | Light: Error
 							</p>
 						</mat-card-content>
 					</mat-card>
@@ -241,68 +235,33 @@
 			<div class="tab-content">
 				<h2>Button Variants</h2>
 				<p class="mat-body-1">
-					Material Design 3 button styles for different emphasis
-					levels.
+					Material Design 3 button styles for different emphasis levels.
 				</p>
 
 				<mat-card class="button-card">
 					<mat-card-header>
-						<mat-card-title
-							>Filled Buttons (High Emphasis)</mat-card-title
-						>
+						<mat-card-title>Filled Buttons (High Emphasis)</mat-card-title>
 					</mat-card-header>
 					<mat-card-content>
 						<div class="button-group">
-							<button mat-raised-button color="primary">
+							<button
+								mat-raised-button
+								color="primary">
 								Primary
 							</button>
-							<button mat-raised-button color="accent">
+							<button
+								mat-raised-button
+								color="accent">
 								Accent
 							</button>
-							<button mat-raised-button color="warn">Warn</button>
-							<button mat-raised-button disabled>Disabled</button>
-						</div>
-					</mat-card-content>
-				</mat-card>
-
-				<mat-card class="button-card">
-					<mat-card-header>
-						<mat-card-title
-							>Flat Buttons (Medium Emphasis)</mat-card-title
-						>
-					</mat-card-header>
-					<mat-card-content>
-						<div class="button-group">
-							<button mat-flat-button color="primary">
-								Primary
-							</button>
-							<button mat-flat-button color="accent">
-								Accent
-							</button>
-							<button mat-flat-button color="warn">Warn</button>
-							<button mat-flat-button disabled>Disabled</button>
-						</div>
-					</mat-card-content>
-				</mat-card>
-
-				<mat-card class="button-card">
-					<mat-card-header>
-						<mat-card-title
-							>Stroked Buttons (Medium Emphasis)</mat-card-title
-						>
-					</mat-card-header>
-					<mat-card-content>
-						<div class="button-group">
-							<button mat-stroked-button color="primary">
-								Primary
-							</button>
-							<button mat-stroked-button color="accent">
-								Accent
-							</button>
-							<button mat-stroked-button color="warn">
+							<button
+								mat-raised-button
+								color="warn">
 								Warn
 							</button>
-							<button mat-stroked-button disabled>
+							<button
+								mat-raised-button
+								disabled>
 								Disabled
 							</button>
 						</div>
@@ -311,16 +270,90 @@
 
 				<mat-card class="button-card">
 					<mat-card-header>
-						<mat-card-title
-							>Text Buttons (Low Emphasis)</mat-card-title
-						>
+						<mat-card-title>Flat Buttons (Medium Emphasis)</mat-card-title>
 					</mat-card-header>
 					<mat-card-content>
 						<div class="button-group">
-							<button mat-button color="primary">Primary</button>
-							<button mat-button color="accent">Accent</button>
-							<button mat-button color="warn">Warn</button>
-							<button mat-button disabled>Disabled</button>
+							<button
+								mat-flat-button
+								color="primary">
+								Primary
+							</button>
+							<button
+								mat-flat-button
+								color="accent">
+								Accent
+							</button>
+							<button
+								mat-flat-button
+								color="warn">
+								Warn
+							</button>
+							<button
+								mat-flat-button
+								disabled>
+								Disabled
+							</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="button-card">
+					<mat-card-header>
+						<mat-card-title>Stroked Buttons (Medium Emphasis)</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button
+								mat-stroked-button
+								color="primary">
+								Primary
+							</button>
+							<button
+								mat-stroked-button
+								color="accent">
+								Accent
+							</button>
+							<button
+								mat-stroked-button
+								color="warn">
+								Warn
+							</button>
+							<button
+								mat-stroked-button
+								disabled>
+								Disabled
+							</button>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-card class="button-card">
+					<mat-card-header>
+						<mat-card-title>Text Buttons (Low Emphasis)</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="button-group">
+							<button
+								mat-button
+								color="primary">
+								Primary
+							</button>
+							<button
+								mat-button
+								color="accent">
+								Accent
+							</button>
+							<button
+								mat-button
+								color="warn">
+								Warn
+							</button>
+							<button
+								mat-button
+								disabled>
+								Disabled
+							</button>
 						</div>
 					</mat-card-content>
 				</mat-card>
@@ -334,29 +367,25 @@
 							<button
 								mat-icon-button
 								color="primary"
-								aria-label="Home"
-							>
+								aria-label="Home">
 								<mat-icon>home</mat-icon>
 							</button>
 							<button
 								mat-icon-button
 								color="accent"
-								aria-label="Favorite"
-							>
+								aria-label="Favorite">
 								<mat-icon>favorite</mat-icon>
 							</button>
 							<button
 								mat-icon-button
 								color="warn"
-								aria-label="Delete"
-							>
+								aria-label="Delete">
 								<mat-icon>delete</mat-icon>
 							</button>
 							<button
 								mat-icon-button
 								disabled
-								aria-label="Disabled"
-							>
+								aria-label="Disabled">
 								<mat-icon>block</mat-icon>
 							</button>
 						</div>
@@ -369,16 +398,28 @@
 					</mat-card-header>
 					<mat-card-content>
 						<div class="button-group">
-							<button mat-fab color="primary" aria-label="Add">
+							<button
+								mat-fab
+								color="primary"
+								aria-label="Add">
 								<mat-icon>add</mat-icon>
 							</button>
-							<button mat-fab color="accent" aria-label="Edit">
+							<button
+								mat-fab
+								color="accent"
+								aria-label="Edit">
 								<mat-icon>edit</mat-icon>
 							</button>
-							<button mat-fab color="warn" aria-label="Delete">
+							<button
+								mat-fab
+								color="warn"
+								aria-label="Delete">
 								<mat-icon>delete</mat-icon>
 							</button>
-							<button mat-fab disabled aria-label="Disabled">
+							<button
+								mat-fab
+								disabled
+								aria-label="Disabled">
 								<mat-icon>block</mat-icon>
 							</button>
 						</div>
@@ -403,7 +444,10 @@
 						<div class="form-grid">
 							<mat-form-field appearance="outline">
 								<mat-label>Outlined</mat-label>
-								<input matInput placeholder="Placeholder" />
+								<input
+									matInput
+									placeholder="Placeholder"
+								/>
 								<mat-hint>Hint text</mat-hint>
 							</mat-form-field>
 
@@ -419,7 +463,10 @@
 
 							<mat-form-field appearance="outline">
 								<mat-label>Required</mat-label>
-								<input matInput required />
+								<input
+									matInput
+									required
+								/>
 								<mat-error>This field is required</mat-error>
 							</mat-form-field>
 
@@ -444,30 +491,18 @@
 							<mat-form-field appearance="outline">
 								<mat-label>Basic Select</mat-label>
 								<mat-select>
-									<mat-option value="option1"
-										>Option 1</mat-option
-									>
-									<mat-option value="option2"
-										>Option 2</mat-option
-									>
-									<mat-option value="option3"
-										>Option 3</mat-option
-									>
+									<mat-option value="option1">Option 1</mat-option>
+									<mat-option value="option2">Option 2</mat-option>
+									<mat-option value="option3">Option 3</mat-option>
 								</mat-select>
 							</mat-form-field>
 
 							<mat-form-field appearance="outline">
 								<mat-label>Multiple Select</mat-label>
 								<mat-select multiple>
-									<mat-option value="option1"
-										>Option 1</mat-option
-									>
-									<mat-option value="option2"
-										>Option 2</mat-option
-									>
-									<mat-option value="option3"
-										>Option 3</mat-option
-									>
+									<mat-option value="option1">Option 1</mat-option>
+									<mat-option value="option2">Option 2</mat-option>
+									<mat-option value="option3">Option 3</mat-option>
 								</mat-select>
 							</mat-form-field>
 						</div>
@@ -476,32 +511,24 @@
 
 				<mat-card class="form-card">
 					<mat-card-header>
-						<mat-card-title
-							>Checkboxes & Radio Buttons</mat-card-title
-						>
+						<mat-card-title>Checkboxes & Radio Buttons</mat-card-title>
 					</mat-card-header>
 					<mat-card-content>
 						<div class="form-grid">
 							<div class="checkbox-group">
 								<mat-checkbox>Checkbox 1</mat-checkbox>
-								<mat-checkbox checked
-									>Checkbox 2 (Checked)</mat-checkbox
-								>
-								<mat-checkbox disabled
-									>Checkbox 3 (Disabled)</mat-checkbox
-								>
+								<mat-checkbox checked>Checkbox 2 (Checked)</mat-checkbox>
+								<mat-checkbox disabled>Checkbox 3 (Disabled)</mat-checkbox>
 							</div>
 
 							<mat-radio-group>
-								<mat-radio-button value="1"
-									>Radio 1</mat-radio-button
-								>
-								<mat-radio-button value="2" checked
-									>Radio 2 (Checked)</mat-radio-button
-								>
-								<mat-radio-button value="3" disabled
-									>Radio 3 (Disabled)</mat-radio-button
-								>
+								<mat-radio-button value="1">Radio 1</mat-radio-button>
+								<mat-radio-button
+									value="2"
+									checked>Radio 2 (Checked)</mat-radio-button>
+								<mat-radio-button
+									value="3"
+									disabled>Radio 3 (Disabled)</mat-radio-button>
 							</mat-radio-group>
 						</div>
 					</mat-card-content>
@@ -514,12 +541,8 @@
 					<mat-card-content>
 						<div class="toggle-group">
 							<mat-slide-toggle>Slide toggle 1</mat-slide-toggle>
-							<mat-slide-toggle checked
-								>Slide toggle 2 (Checked)</mat-slide-toggle
-							>
-							<mat-slide-toggle disabled
-								>Slide toggle 3 (Disabled)</mat-slide-toggle
-							>
+							<mat-slide-toggle checked>Slide toggle 2 (Checked)</mat-slide-toggle>
+							<mat-slide-toggle disabled>Slide toggle 3 (Disabled)</mat-slide-toggle>
 						</div>
 					</mat-card-content>
 				</mat-card>
@@ -542,48 +565,67 @@
 						<table
 							mat-table
 							[dataSource]="tableData"
-							class="example-table"
-						>
+							class="example-table">
 							<ng-container matColumnDef="id">
-								<th mat-header-cell *matHeaderCellDef>ID</th>
-								<td mat-cell *matCellDef="let element">
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
+									ID
+								</th>
+								<td
+									mat-cell
+									*matCellDef="let element">
 									{{ element.id }}
 								</td>
 							</ng-container>
 
 							<ng-container matColumnDef="name">
-								<th mat-header-cell *matHeaderCellDef>Name</th>
-								<td mat-cell *matCellDef="let element">
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
+									Name
+								</th>
+								<td
+									mat-cell
+									*matCellDef="let element">
 									{{ element.name }}
 								</td>
 							</ng-container>
 
 							<ng-container matColumnDef="weight">
-								<th mat-header-cell *matHeaderCellDef>
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
 									Weight
 								</th>
-								<td mat-cell *matCellDef="let element">
+								<td
+									mat-cell
+									*matCellDef="let element">
 									{{ element.weight }}
 								</td>
 							</ng-container>
 
 							<ng-container matColumnDef="symbol">
-								<th mat-header-cell *matHeaderCellDef>
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
 									Symbol
 								</th>
-								<td mat-cell *matCellDef="let element">
+								<td
+									mat-cell
+									*matCellDef="let element">
 									{{ element.symbol }}
 								</td>
 							</ng-container>
 
 							<tr
 								mat-header-row
-								*matHeaderRowDef="displayedColumns"
-							></tr>
+								*matHeaderRowDef="displayedColumns">
+							</tr>
 							<tr
 								mat-row
-								*matRowDef="let row; columns: displayedColumns"
-							></tr>
+								*matRowDef="let row; columns: displayedColumns">
+							</tr>
 						</table>
 					</mat-card-content>
 				</mat-card>
@@ -595,8 +637,7 @@
 			<div class="tab-content">
 				<h2>Feedback Components</h2>
 				<p class="mat-body-1">
-					Material Design 3 components for user feedback and loading
-					states.
+					Material Design 3 components for user feedback and loading states.
 				</p>
 
 				<mat-card class="feedback-card">
@@ -610,8 +651,7 @@
 								color="primary"
 								(click)="
 									showSnackbar('This is a success message!')
-								"
-							>
+								">
 								Show Snackbar
 							</button>
 						</div>
@@ -627,8 +667,7 @@
 							<button
 								mat-raised-button
 								color="primary"
-								(click)="showDialog()"
-							>
+								(click)="showDialog()">
 								Show Dialog
 							</button>
 						</div>
@@ -651,16 +690,13 @@
 								<p class="mat-body-2">Spinner (Determinate)</p>
 								<mat-spinner
 									diameter="40"
-									[value]="65"
-								></mat-spinner>
+									[value]="65"></mat-spinner>
 							</div>
 							<div class="progress-item progress-bar-item">
 								<p class="mat-body-2">
 									Progress Bar (Indeterminate)
 								</p>
-								<mat-progress-bar
-									mode="indeterminate"
-								></mat-progress-bar>
+								<mat-progress-bar mode="indeterminate"></mat-progress-bar>
 							</div>
 							<div class="progress-item progress-bar-item">
 								<p class="mat-body-2">
@@ -668,8 +704,7 @@
 								</p>
 								<mat-progress-bar
 									mode="determinate"
-									[value]="65"
-								></mat-progress-bar>
+									[value]="65"></mat-progress-bar>
 							</div>
 						</div>
 					</mat-card-content>
@@ -690,7 +725,9 @@
 							</mat-chip>
 							<mat-chip>
 								Chip with Remove
-								<button matChipRemove aria-label="Remove">
+								<button
+									matChipRemove
+									aria-label="Remove">
 									<mat-icon>cancel</mat-icon>
 								</button>
 							</mat-chip>
@@ -707,29 +744,25 @@
 							<button
 								mat-raised-button
 								matTooltip="Tooltip above"
-								matTooltipPosition="above"
-							>
+								matTooltipPosition="above">
 								Above
 							</button>
 							<button
 								mat-raised-button
 								matTooltip="Tooltip below"
-								matTooltipPosition="below"
-							>
+								matTooltipPosition="below">
 								Below
 							</button>
 							<button
 								mat-raised-button
 								matTooltip="Tooltip left"
-								matTooltipPosition="left"
-							>
+								matTooltipPosition="left">
 								Left
 							</button>
 							<button
 								mat-raised-button
 								matTooltip="Tooltip right"
-								matTooltipPosition="right"
-							>
+								matTooltipPosition="right">
 								Right
 							</button>
 						</div>

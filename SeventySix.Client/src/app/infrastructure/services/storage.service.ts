@@ -1,5 +1,5 @@
-import { Injectable, inject, PLATFORM_ID } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
+import { inject, Injectable, PLATFORM_ID } from "@angular/core";
 import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
 
 /**
@@ -12,8 +12,10 @@ import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
 })
 export class StorageService
 {
-	private readonly platformId: object = inject(PLATFORM_ID);
-	private readonly isBrowser: boolean = isPlatformBrowser(this.platformId);
+	private readonly platformId: object =
+		inject(PLATFORM_ID);
+	private readonly isBrowser: boolean =
+		isPlatformBrowser(this.platformId);
 
 	/**
 	 * Get item from localStorage (SSR-safe).
@@ -28,7 +30,8 @@ export class StorageService
 
 		try
 		{
-			const value: string | null = localStorage.getItem(key);
+			const value: string | null =
+				localStorage.getItem(key);
 			if (isNullOrUndefined(value))
 			{
 				return null;
@@ -74,8 +77,7 @@ export class StorageService
 			// Handle quota exceeded
 			if (
 				error instanceof DOMException
-				&& error.name === "QuotaExceededError"
-			)
+					&& error.name === "QuotaExceededError")
 			{
 				console.error("StorageService: Quota exceeded");
 			}
@@ -120,8 +122,7 @@ export class StorageService
 		{
 			console.error(
 				"StorageService: Failed to clear localStorage",
-				error
-			);
+				error);
 		}
 	}
 }

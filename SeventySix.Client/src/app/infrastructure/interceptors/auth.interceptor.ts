@@ -5,25 +5,26 @@
  */
 
 import {
-	HttpInterceptorFn,
-	HttpRequest,
+	HttpErrorResponse,
 	HttpHandlerFn,
-	HttpErrorResponse
+	HttpInterceptorFn,
+	HttpRequest
 } from "@angular/common/http";
 import { inject } from "@angular/core";
-import { switchMap, take, catchError, throwError } from "rxjs";
-import { AuthService } from "@infrastructure/services/auth.service";
 import {
-	HTTP_HEADER_AUTHORIZATION,
-	HTTP_BEARER_PREFIX
+	HTTP_BEARER_PREFIX,
+	HTTP_HEADER_AUTHORIZATION
 } from "@infrastructure/constants";
+import { AuthService } from "@infrastructure/services/auth.service";
+import { catchError, switchMap, take, throwError } from "rxjs";
 
-export const authInterceptor: HttpInterceptorFn = (
+export const authInterceptor: HttpInterceptorFn =
+	(
 	req: HttpRequest<unknown>,
-	next: HttpHandlerFn
-) =>
+	next: HttpHandlerFn) =>
 {
-	const authService: AuthService = inject(AuthService);
+	const authService: AuthService =
+		inject(AuthService);
 
 	// Skip auth header for public auth endpoints (login, refresh, logout, OAuth)
 	// Note: change-password requires authentication
@@ -32,7 +33,8 @@ export const authInterceptor: HttpInterceptorFn = (
 		return next(req);
 	}
 
-	const token: string | null = authService.getAccessToken();
+	const token: string | null =
+		authService.getAccessToken();
 
 	// No token - proceed without auth header (guest access)
 	if (!token)
@@ -43,25 +45,27 @@ export const authInterceptor: HttpInterceptorFn = (
 	// Token expired - refresh first
 	if (authService.isTokenExpired())
 	{
-		return authService.refreshToken().pipe(
-			take(1),
-			switchMap((response) =>
-			{
-				// If refresh failed (returned null), let the request proceed without token
-				// The server will return 401 which triggers login redirect
-				if (!response)
+		return authService
+			.refreshToken()
+			.pipe(
+				take(1),
+				switchMap((response) =>
 				{
-					return next(req);
-				}
-				const newToken: string | null = authService.getAccessToken();
-				return next(addAuthHeader(req, newToken));
-			}),
-			catchError((error: HttpErrorResponse) =>
-			{
-				// On refresh error, clear auth and let original request fail
-				return throwError(() => error);
-			})
-		);
+					// If refresh failed (returned null), let the request proceed without token
+					// The server will return 401 which triggers login redirect
+					if (!response)
+					{
+						return next(req);
+					}
+					const newToken: string | null =
+						authService.getAccessToken();
+					return next(addAuthHeader(req, newToken));
+				}),
+				catchError((error: HttpErrorResponse) =>
+				{
+					// On refresh error, clear auth and let original request fail
+					return throwError(() => error);
+				}));
 	}
 
 	return next(addAuthHeader(req, token));
@@ -73,21 +77,21 @@ export const authInterceptor: HttpInterceptorFn = (
  */
 function isPublicAuthEndpoint(url: string): boolean
 {
-	const publicAuthPaths: string[] = [
-		"/auth/login",
-		"/auth/refresh",
-		"/auth/logout",
-		"/auth/github",
-		"/auth/callback"
-	];
+	const publicAuthPaths: string[] =
+		[
+			"/auth/login",
+			"/auth/refresh",
+			"/auth/logout",
+			"/auth/github",
+			"/auth/callback"
+		];
 
 	return publicAuthPaths.some((path: string) => url.includes(path));
 }
 
 function addAuthHeader(
 	req: HttpRequest<unknown>,
-	token: string | null
-): HttpRequest<unknown>
+	token: string | null): HttpRequest<unknown>
 {
 	if (!token)
 	{
@@ -97,7 +101,6 @@ function addAuthHeader(
 	return req.clone({
 		headers: req.headers.set(
 			HTTP_HEADER_AUTHORIZATION,
-			`${HTTP_BEARER_PREFIX}${token}`
-		)
+			`${HTTP_BEARER_PREFIX}${token}`)
 	});
 }

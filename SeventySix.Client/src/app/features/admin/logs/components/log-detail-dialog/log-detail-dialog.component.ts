@@ -1,39 +1,39 @@
 import {
-	Component,
+	countStackFrames,
+	formatJsonProperties,
+	getLogLevelClassName,
+	getLogLevelIconName,
+	getLogLevelName,
+	getRelativeTime,
+	isRootSpanId,
+	LogDto,
+	LogLevel,
+	parseLogLevel
+} from "@admin/logs/models";
+import { Clipboard } from "@angular/cdk/clipboard";
+import {
 	ChangeDetectionStrategy,
+	Component,
+	computed,
 	inject,
-	signal,
 	output,
 	OutputEmitterRef,
-	WritableSignal,
 	Signal,
-	computed
+	signal,
+	WritableSignal
 } from "@angular/core";
+import { MatButtonModule } from "@angular/material/button";
 import {
 	MAT_DIALOG_DATA,
 	MatDialogModule,
 	MatDialogRef
 } from "@angular/material/dialog";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
 import { MatDividerModule } from "@angular/material/divider";
-import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatExpansionModule } from "@angular/material/expansion";
-import { Clipboard } from "@angular/cdk/clipboard";
-import { DateService } from "@infrastructure/services";
-import {
-	LogDto,
-	LogLevel,
-	parseLogLevel,
-	getLogLevelName,
-	getLogLevelClassName,
-	getLogLevelIconName,
-	getRelativeTime,
-	formatJsonProperties,
-	countStackFrames,
-	isRootSpanId
-} from "@admin/logs/models";
+import { MatIconModule } from "@angular/material/icon";
+import { MatTooltipModule } from "@angular/material/tooltip";
 import { environment } from "@environments/environment";
+import { DateService } from "@infrastructure/services";
 
 /** Dialog component for displaying detailed log information. */
 @Component({
@@ -52,15 +52,17 @@ import { environment } from "@environments/environment";
 })
 export class LogDetailDialogComponent
 {
-	private readonly dialogRef: MatDialogRef<LogDetailDialogComponent> = inject(
-		MatDialogRef<LogDetailDialogComponent>
-	);
-	private readonly clipboard: Clipboard = inject(Clipboard);
-	private readonly dateService: DateService = inject(DateService);
+	private readonly dialogRef: MatDialogRef<LogDetailDialogComponent> =
+		inject(
+		MatDialogRef<LogDetailDialogComponent>);
+	private readonly clipboard: Clipboard =
+		inject(Clipboard);
+	private readonly dateService: DateService =
+		inject(DateService);
 
-	readonly log: WritableSignal<LogDto> = signal<LogDto>(
-		inject<LogDto>(MAT_DIALOG_DATA)
-	);
+	readonly log: WritableSignal<LogDto> =
+		signal<LogDto>(
+		inject<LogDto>(MAT_DIALOG_DATA));
 	readonly stackTraceCollapsed: WritableSignal<boolean> =
 		signal<boolean>(false);
 	readonly propertiesCollapsed: WritableSignal<boolean> =
@@ -68,32 +70,42 @@ export class LogDetailDialogComponent
 	readonly exceptionCollapsed: WritableSignal<boolean> =
 		signal<boolean>(false);
 
-	readonly deleteLog: OutputEmitterRef<number> = output<number>();
+	readonly deleteLog: OutputEmitterRef<number> =
+		output<number>();
 
 	// Pre-computed values for template performance (memoized computed signals)
-	readonly levelClass: Signal<string> = computed((): string =>
-		getLogLevelClassName(this.log().logLevel));
-	readonly levelName: Signal<string> = computed((): string =>
-		getLogLevelName(this.log().logLevel));
-	readonly levelIcon: Signal<string> = computed((): string =>
-		getLogLevelIconName(this.log().logLevel));
-	readonly relativeTime: Signal<string> = computed((): string =>
-		getRelativeTime(
+	readonly levelClass: Signal<string> =
+		computed((): string =>
+			getLogLevelClassName(this.log().logLevel));
+	readonly levelName: Signal<string> =
+		computed((): string =>
+			getLogLevelName(this.log().logLevel));
+	readonly levelIcon: Signal<string> =
+		computed((): string =>
+			getLogLevelIconName(this.log().logLevel));
+	readonly relativeTime: Signal<string> =
+		computed((): string =>
+			getRelativeTime(
 			this.log().createDate,
-			this.dateService
-		));
-	readonly formattedProperties: Signal<string> = computed((): string =>
-		formatJsonProperties(this.log().properties));
-	readonly stackFrameCount: Signal<number> = computed((): number =>
-		countStackFrames(this.log().stackTrace));
-	readonly isRootSpan: Signal<boolean> = computed((): boolean =>
-		isRootSpanId(this.log().parentSpanId));
-	readonly hasCorrelationId: Signal<boolean> = computed(
-		(): boolean => !!this.log().correlationId
-	);
-	readonly isError: Signal<boolean> = computed((): boolean =>
+			this.dateService));
+	readonly formattedProperties: Signal<string> =
+		computed((): string =>
+			formatJsonProperties(this.log().properties));
+	readonly stackFrameCount: Signal<number> =
+		computed((): number =>
+			countStackFrames(this.log().stackTrace));
+	readonly isRootSpan: Signal<boolean> =
+		computed((): boolean =>
+			isRootSpanId(this.log().parentSpanId));
+	readonly hasCorrelationId: Signal<boolean> =
+		computed(
+		(): boolean =>
+			!!this.log().correlationId);
+	readonly isError: Signal<boolean> =
+		computed((): boolean =>
 	{
-		const level: LogLevel = parseLogLevel(this.log().logLevel);
+		const level: LogLevel =
+			parseLogLevel(this.log().logLevel);
 		return level === LogLevel.Error || level === LogLevel.Fatal;
 	});
 
@@ -114,7 +126,8 @@ export class LogDetailDialogComponent
 
 	copyToClipboard(): void
 	{
-		const logData: string = JSON.stringify(this.log(), null, 2);
+		const logData: string =
+			JSON.stringify(this.log(), null, 2);
 		this.clipboard.copy(logData);
 	}
 
@@ -140,7 +153,8 @@ export class LogDetailDialogComponent
 	 */
 	openInJaeger(): void
 	{
-		const log: LogDto = this.log();
+		const log: LogDto =
+			this.log();
 
 		if (!log.correlationId)
 		{
@@ -150,14 +164,14 @@ export class LogDetailDialogComponent
 					+ "1. Configure OpenTelemetry in your backend\n"
 					+ "2. Ensure trace IDs are propagated through requests\n"
 					+ "3. Verify Jaeger is running (npm run start:observability)\n"
-					+ "4. Check that your API is exporting traces to Jaeger"
-			);
+					+ "4. Check that your API is exporting traces to Jaeger");
 			return;
 		}
 
 		const jaegerUrl: string =
 			environment.observability.jaegerUrl || "http://localhost:16686";
-		const url: string = `${jaegerUrl}/trace/${log.correlationId}`;
+		const url: string =
+			`${jaegerUrl}/trace/${log.correlationId}`;
 		window.open(url, "_blank");
 	}
 }

@@ -1,14 +1,14 @@
 // Copyright (c) Aaron Slots. All rights reserved.
 
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
-import { provideRouter } from "@angular/router";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
+import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
-import { of, throwError } from "rxjs";
+import { provideRouter } from "@angular/router";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
+import { of, throwError } from "rxjs";
 import { ForgotPasswordComponent } from "./forgot-password";
 
 describe("ForgotPasswordComponent", () =>
@@ -20,40 +20,47 @@ describe("ForgotPasswordComponent", () =>
 
 	beforeEach(async () =>
 	{
-		authServiceSpy = jasmine.createSpyObj("AuthService", [
+		authServiceSpy =
+			jasmine.createSpyObj("AuthService", [
 			"requestPasswordReset"
 		]);
-		notificationSpy = jasmine.createSpyObj("NotificationService", [
+		notificationSpy =
+			jasmine.createSpyObj("NotificationService", [
 			"success",
 			"error"
 		]);
 
-		await TestBed.configureTestingModule({
-			imports: [ForgotPasswordComponent],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideNoopAnimations(),
-				provideRouter([]),
-				provideHttpClient(),
-				provideHttpClientTesting(),
-				{
-					provide: AuthService,
-					useValue: authServiceSpy
-				},
-				{
-					provide: NotificationService,
-					useValue: notificationSpy
-				}
-			]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [ForgotPasswordComponent],
+				providers: [
+					provideZonelessChangeDetection(),
+					provideNoopAnimations(),
+					provideRouter([]),
+					provideHttpClient(),
+					provideHttpClientTesting(),
+					{
+						provide: AuthService,
+						useValue: authServiceSpy
+					},
+					{
+						provide: NotificationService,
+						useValue: notificationSpy
+					}
+				]
+			})
+			.compileComponents();
 
-		fixture = TestBed.createComponent(ForgotPasswordComponent);
-		component = fixture.componentInstance;
+		fixture =
+			TestBed.createComponent(ForgotPasswordComponent);
+		component =
+			fixture.componentInstance;
 	});
 
 	it("should create", () =>
 	{
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	it("should show success message after submission", async () =>
@@ -68,8 +75,10 @@ describe("ForgotPasswordComponent", () =>
 		fixture.detectChanges();
 
 		// Assert
-		expect(component["submitted"]()).toBeTrue();
-		expect(notificationSpy.success).toHaveBeenCalled();
+		expect(component["submitted"]())
+			.toBeTrue();
+		expect(notificationSpy.success)
+			.toHaveBeenCalled();
 	});
 
 	it("should disable submit button when email is empty", () =>
@@ -79,13 +88,15 @@ describe("ForgotPasswordComponent", () =>
 		fixture.detectChanges();
 
 		// Act
-		const compiled: HTMLElement = fixture.nativeElement;
-		const submitButton: HTMLButtonElement | null = compiled.querySelector(
-			'button[type="submit"]'
-		);
+		const compiled: HTMLElement =
+			fixture.nativeElement;
+		const submitButton: HTMLButtonElement | null =
+			compiled.querySelector(
+			"button[type=\"submit\"]");
 
 		// Assert
-		expect(submitButton?.disabled).toBeTrue();
+		expect(submitButton?.disabled)
+			.toBeTrue();
 	});
 
 	it("should enable submit button when email is valid", () =>
@@ -95,13 +106,15 @@ describe("ForgotPasswordComponent", () =>
 		fixture.detectChanges();
 
 		// Act
-		const compiled: HTMLElement = fixture.nativeElement;
-		const submitButton: HTMLButtonElement | null = compiled.querySelector(
-			'button[type="submit"]'
-		);
+		const compiled: HTMLElement =
+			fixture.nativeElement;
+		const submitButton: HTMLButtonElement | null =
+			compiled.querySelector(
+			"button[type=\"submit\"]");
 
 		// Assert
-		expect(submitButton?.disabled).toBeFalse();
+		expect(submitButton?.disabled)
+			.toBeFalse();
 	});
 
 	it("should call requestPasswordReset with email", () =>
@@ -114,17 +127,16 @@ describe("ForgotPasswordComponent", () =>
 		component["onSubmit"]();
 
 		// Assert
-		expect(authServiceSpy.requestPasswordReset).toHaveBeenCalledWith(
-			"user@example.com"
-		);
+		expect(authServiceSpy.requestPasswordReset)
+			.toHaveBeenCalledWith(
+				"user@example.com");
 	});
 
 	it("should show error notification on API failure", async () =>
 	{
 		// Arrange
 		authServiceSpy.requestPasswordReset.and.returnValue(
-			throwError(() => new Error("Network error"))
-		);
+			throwError(() => new Error("Network error")));
 		component["email"] = "test@example.com";
 
 		// Act
@@ -133,8 +145,10 @@ describe("ForgotPasswordComponent", () =>
 		fixture.detectChanges();
 
 		// Assert
-		expect(component["isLoading"]()).toBeFalse();
-		expect(notificationSpy.error).toHaveBeenCalled();
+		expect(component["isLoading"]())
+			.toBeFalse();
+		expect(notificationSpy.error)
+			.toHaveBeenCalled();
 	});
 
 	it("should not submit when email format is invalid", () =>
@@ -148,8 +162,8 @@ describe("ForgotPasswordComponent", () =>
 
 		// Assert
 		expect(authServiceSpy.requestPasswordReset).not.toHaveBeenCalled();
-		expect(notificationSpy.error).toHaveBeenCalledWith(
-			"Please enter a valid email address."
-		);
+		expect(notificationSpy.error)
+			.toHaveBeenCalledWith(
+				"Please enter a valid email address.");
 	});
 });

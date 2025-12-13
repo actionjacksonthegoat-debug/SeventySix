@@ -1,13 +1,13 @@
-import { Component, inject, ChangeDetectionStrategy } from "@angular/core";
-import { MatToolbarModule } from "@angular/material/toolbar";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatTabsModule } from "@angular/material/tabs";
-import { GrafanaDashboardEmbedComponent } from "../components/grafana-dashboard-embed/grafana-dashboard-embed.component";
-import { ApiStatisticsTableComponent } from "../components/api-statistics-table/api-statistics-table.component";
-import { PageHeaderComponent } from "@shared/components";
+import { MatToolbarModule } from "@angular/material/toolbar";
 import { environment } from "@environments/environment";
-import { NotificationService } from "@infrastructure/services/notification.service";
 import { LoggerService } from "@infrastructure/services/logger.service";
+import { NotificationService } from "@infrastructure/services/notification.service";
+import { PageHeaderComponent } from "@shared/components";
 import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
+import { ApiStatisticsTableComponent } from "../components/api-statistics-table/api-statistics-table.component";
+import { GrafanaDashboardEmbedComponent } from "../components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 
 /**
  * Admin Dashboard page.
@@ -35,7 +35,8 @@ export class AdminDashboardPage
 {
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
-	private readonly loggerService: LoggerService = inject(LoggerService);
+	private readonly loggerService: LoggerService =
+		inject(LoggerService);
 
 	/**
 	 * System overview dashboard UID from environment configuration.
@@ -109,8 +110,7 @@ export class AdminDashboardPage
 	{
 		this.notificationService.warning("Sending Warn Log");
 		this.loggerService.forceWarning(
-			"Test Warning Log from Admin Dashboard"
-		);
+			"Test Warning Log from Admin Dashboard");
 	}
 
 	/**
@@ -121,7 +121,8 @@ export class AdminDashboardPage
 	sendErrorLog(): void
 	{
 		const zero: number = 0;
-		const result: number = 1 / zero;
+		const result: number =
+			1 / zero;
 		throw new Error(`Division by zero test error. Result: ${result}`);
 	}
 }

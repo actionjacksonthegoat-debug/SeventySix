@@ -1,9 +1,9 @@
-import { Injectable, inject } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import {
 	DomSanitizer,
 	SafeHtml,
-	SafeUrl,
-	SafeResourceUrl
+	SafeResourceUrl,
+	SafeUrl
 } from "@angular/platform-browser";
 
 /**
@@ -15,7 +15,8 @@ import {
 })
 export class SanitizationService
 {
-	private readonly sanitizer: DomSanitizer = inject(DomSanitizer);
+	private readonly sanitizer: DomSanitizer =
+		inject(DomSanitizer);
 
 	/**
 	 * Sanitizes HTML content to prevent XSS.
@@ -64,7 +65,8 @@ export class SanitizationService
 	 */
 	stripHtml(html: string): string
 	{
-		const div: HTMLDivElement = document.createElement("div");
+		const div: HTMLDivElement =
+			document.createElement("div");
 		div.innerHTML = html;
 		return div.textContent || div.innerText || "";
 	}
@@ -74,13 +76,14 @@ export class SanitizationService
 	 */
 	escapeHtml(text: string): string
 	{
-		const map: Record<string, string> = {
-			"&": "&amp;",
-			"<": "&lt;",
-			">": "&gt;",
-			'"': "&quot;",
-			"'": "&#039;"
-		};
+		const map: Record<string, string> =
+			{
+				"&": "&amp;",
+				"<": "&lt;",
+				">": "&gt;",
+				"\"": "&quot;",
+				"'": "&#039;"
+			};
 		return text.replace(/[&<>"']/g, (char) => map[char]);
 	}
 
@@ -91,7 +94,8 @@ export class SanitizationService
 	{
 		try
 		{
-			const parsed: URL = new URL(url);
+			const parsed: URL =
+				new URL(url);
 			// Only allow http/https protocols
 			if (parsed.protocol !== "http:" && parsed.protocol !== "https:")
 			{

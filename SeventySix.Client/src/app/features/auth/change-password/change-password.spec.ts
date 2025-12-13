@@ -3,22 +3,23 @@
  * Verifies required and voluntary password change flows.
  */
 
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection, signal } from "@angular/core";
-import { provideRouter, Router } from "@angular/router";
 import {
 	provideHttpClient,
 	withInterceptorsFromDi
 } from "@angular/common/http";
 import {
 	HttpTestingController,
-	provideHttpClientTesting
+	provideHttpClientTesting,
+	TestRequest
 } from "@angular/common/http/testing";
-import { ChangePasswordComponent } from "./change-password";
+import { provideZonelessChangeDetection, signal } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { provideRouter, Router } from "@angular/router";
+import { environment } from "@environments/environment";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
-import { environment } from "@environments/environment";
 import { createMockNotificationService } from "@testing";
+import { ChangePasswordComponent } from "./change-password";
 
 describe("ChangePasswordComponent", () =>
 {
@@ -31,37 +32,44 @@ describe("ChangePasswordComponent", () =>
 
 	beforeEach(async () =>
 	{
-		mockAuthService = jasmine.createSpyObj(
+		mockAuthService =
+			jasmine.createSpyObj(
 			"AuthService",
 			["clearPasswordChangeRequirement"],
 			{
 				isAuthenticated: signal<boolean>(true),
 				requiresPasswordChange: signal<boolean>(false)
-			}
-		);
-		mockNotificationService = createMockNotificationService();
+			});
+		mockNotificationService =
+			createMockNotificationService();
 
-		await TestBed.configureTestingModule({
-			imports: [ChangePasswordComponent],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideRouter([]),
-				provideHttpClient(withInterceptorsFromDi()),
-				provideHttpClientTesting(),
-				{ provide: AuthService, useValue: mockAuthService },
-				{
-					provide: NotificationService,
-					useValue: mockNotificationService
-				}
-			]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [ChangePasswordComponent],
+				providers: [
+					provideZonelessChangeDetection(),
+					provideRouter([]),
+					provideHttpClient(withInterceptorsFromDi()),
+					provideHttpClientTesting(),
+					{ provide: AuthService, useValue: mockAuthService },
+					{
+						provide: NotificationService,
+						useValue: mockNotificationService
+					}
+				]
+			})
+			.compileComponents();
 
-		fixture = TestBed.createComponent(ChangePasswordComponent);
-		component = fixture.componentInstance;
-		router = TestBed.inject(Router);
+		fixture =
+			TestBed.createComponent(ChangePasswordComponent);
+		component =
+			fixture.componentInstance;
+		router =
+			TestBed.inject(Router);
 		spyOn(router, "navigate");
 		spyOn(router, "navigateByUrl");
-		httpTestingController = TestBed.inject(HttpTestingController);
+		httpTestingController =
+			TestBed.inject(HttpTestingController);
 		fixture.detectChanges();
 	});
 
@@ -72,7 +80,8 @@ describe("ChangePasswordComponent", () =>
 
 	it("should create", () =>
 	{
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	describe("ngOnInit", () =>
@@ -90,55 +99,58 @@ describe("ChangePasswordComponent", () =>
 		it("should show error when passwords do not match", () =>
 		{
 			// Arrange
-			(component as any).currentPassword = "oldpassword";
-			(component as any).newPassword = "NewPassword1!";
-			(component as any).confirmPassword = "DifferentPassword1!";
+			(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
+			(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
+			(component as unknown as { confirmPassword: string; }).confirmPassword = "DifferentPassword1!";
 
 			// Act
-			(component as any).onSubmit();
+			(component as unknown as { onSubmit(): void; }).onSubmit();
 
 			// Assert
-			expect(mockNotificationService.error).toHaveBeenCalledWith(
-				"Passwords do not match."
-			);
+			expect(mockNotificationService.error)
+				.toHaveBeenCalledWith(
+					"Passwords do not match.");
 		});
 
 		it("should show error when password is too short", () =>
 		{
 			// Arrange
-			(component as any).currentPassword = "oldpassword";
-			(component as any).newPassword = "Short1!";
-			(component as any).confirmPassword = "Short1!";
+			(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
+			(component as unknown as { newPassword: string; }).newPassword = "Short1!";
+			(component as unknown as { confirmPassword: string; }).confirmPassword = "Short1!";
 
 			// Act
-			(component as any).onSubmit();
+			(component as unknown as { onSubmit(): void; }).onSubmit();
 
 			// Assert
-			expect(mockNotificationService.error).toHaveBeenCalledWith(
-				"Password must be at least 8 characters."
-			);
+			expect(mockNotificationService.error)
+				.toHaveBeenCalledWith(
+					"Password must be at least 8 characters.");
 		});
 
 		it("should call API with correct payload", () =>
 		{
 			// Arrange
-			(component as any).currentPassword = "oldpassword";
-			(component as any).newPassword = "NewPassword1!";
-			(component as any).confirmPassword = "NewPassword1!";
+			(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
+			(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
+			(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
 
 			// Act
-			(component as any).onSubmit();
+			(component as unknown as { onSubmit(): void; }).onSubmit();
 
 			// Assert
-			const req = httpTestingController.expectOne(
-				`${environment.apiUrl}/auth/change-password`
-			);
-			expect(req.request.method).toBe("POST");
-			expect(req.request.body).toEqual({
-				currentPassword: "oldpassword",
-				newPassword: "NewPassword1!"
-			});
-			expect(req.request.withCredentials).toBe(true);
+			const req: TestRequest =
+				httpTestingController.expectOne(
+				`${environment.apiUrl}/auth/change-password`);
+			expect(req.request.method)
+				.toBe("POST");
+			expect(req.request.body)
+				.toEqual({
+					currentPassword: "oldpassword",
+					newPassword: "NewPassword1!"
+				});
+			expect(req.request.withCredentials)
+				.toBe(true);
 
 			// Complete the request
 			req.flush(null);
@@ -147,116 +159,118 @@ describe("ChangePasswordComponent", () =>
 		it("should show success notification and navigate to login on success", () =>
 		{
 			// Arrange
-			(component as any).currentPassword = "oldpassword";
-			(component as any).newPassword = "NewPassword1!";
-			(component as any).confirmPassword = "NewPassword1!";
+			(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
+			(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
+			(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
 
 			// Act
-			(component as any).onSubmit();
+			(component as unknown as { onSubmit(): void; }).onSubmit();
 
 			// Complete the HTTP request
-			const req = httpTestingController.expectOne(
-				`${environment.apiUrl}/auth/change-password`
-			);
+			const req: TestRequest =
+				httpTestingController.expectOne(
+				`${environment.apiUrl}/auth/change-password`);
 			req.flush(null);
 
 			// Assert
-			expect(mockNotificationService.success).toHaveBeenCalledWith(
-				"Password changed successfully. Please log in again."
-			);
+			expect(mockNotificationService.success)
+				.toHaveBeenCalledWith(
+					"Password changed successfully. Please log in again.");
 			expect(
-				mockAuthService.clearPasswordChangeRequirement
-			).toHaveBeenCalled();
-			expect(router.navigate).toHaveBeenCalledWith(["/auth/login"], {
-				queryParams: { returnUrl: "/" }
-			});
+				mockAuthService.clearPasswordChangeRequirement)
+				.toHaveBeenCalled();
+			expect(router.navigate)
+				.toHaveBeenCalledWith(["/auth/login"], {
+					queryParams: { returnUrl: "/" }
+				});
 		});
 
 		it("should show error notification on API failure", () =>
 		{
 			// Arrange
-			(component as any).currentPassword = "oldpassword";
-			(component as any).newPassword = "NewPassword1!";
-			(component as any).confirmPassword = "NewPassword1!";
+			(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
+			(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
+			(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
 
 			// Act
-			(component as any).onSubmit();
+			(component as unknown as { onSubmit(): void; }).onSubmit();
 
 			// Complete the HTTP request with error
-			const req = httpTestingController.expectOne(
-				`${environment.apiUrl}/auth/change-password`
-			);
+			const req: TestRequest =
+				httpTestingController.expectOne(
+				`${environment.apiUrl}/auth/change-password`);
 			req.flush(
 				{ detail: "Current password is incorrect." },
-				{ status: 400, statusText: "Bad Request" }
-			);
+				{ status: 400, statusText: "Bad Request" });
 
 			// Assert
-			expect(mockNotificationService.error).toHaveBeenCalledWith(
-				"Current password is incorrect."
-			);
+			expect(mockNotificationService.error)
+				.toHaveBeenCalledWith(
+					"Current password is incorrect.");
 		});
 
 		it("should show default error message when API error has no detail", () =>
 		{
 			// Arrange
-			(component as any).currentPassword = "oldpassword";
-			(component as any).newPassword = "NewPassword1!";
-			(component as any).confirmPassword = "NewPassword1!";
+			(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
+			(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
+			(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
 
 			// Act
-			(component as any).onSubmit();
+			(component as unknown as { onSubmit(): void; }).onSubmit();
 
 			// Complete the HTTP request with error without detail
-			const req = httpTestingController.expectOne(
-				`${environment.apiUrl}/auth/change-password`
-			);
+			const req: TestRequest =
+				httpTestingController.expectOne(
+				`${environment.apiUrl}/auth/change-password`);
 			req.flush(null, { status: 500, statusText: "Server Error" });
 
 			// Assert
-			expect(mockNotificationService.error).toHaveBeenCalledWith(
-				"Failed to change password. Please try again."
-			);
+			expect(mockNotificationService.error)
+				.toHaveBeenCalledWith(
+					"Failed to change password. Please try again.");
 		});
 
 		it("should set isLoading to true during submission", () =>
 		{
 			// Arrange
-			(component as any).currentPassword = "oldpassword";
-			(component as any).newPassword = "NewPassword1!";
-			(component as any).confirmPassword = "NewPassword1!";
+			(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
+			(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
+			(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
 
 			// Act
-			(component as any).onSubmit();
+			(component as unknown as { onSubmit(): void; }).onSubmit();
 
 			// Assert - isLoading should be true while request is pending
-			expect((component as any).isLoading()).toBe(true);
+			expect((component as unknown as { isLoading(): boolean; }).isLoading())
+				.toBe(true);
 
 			// Complete the request
-			const req = httpTestingController.expectOne(
-				`${environment.apiUrl}/auth/change-password`
-			);
+			const req: TestRequest =
+				httpTestingController.expectOne(
+				`${environment.apiUrl}/auth/change-password`);
 			req.flush(null);
 		});
 
 		it("should reset isLoading to false on error", () =>
 		{
 			// Arrange
-			(component as any).currentPassword = "oldpassword";
-			(component as any).newPassword = "NewPassword1!";
-			(component as any).confirmPassword = "NewPassword1!";
+			(component as unknown as { currentPassword: string; }).currentPassword = "oldpassword";
+			(component as unknown as { newPassword: string; }).newPassword = "NewPassword1!";
+			(component as unknown as { confirmPassword: string; }).confirmPassword = "NewPassword1!";
 
 			// Act
-			(component as any).onSubmit();
+			(component as unknown as { onSubmit(): void; }).onSubmit();
 
 			// Complete the HTTP request with error
-			const req = httpTestingController.expectOne(
-				`${environment.apiUrl}/auth/change-password`
-			);
+			const req: TestRequest =
+				httpTestingController.expectOne(
+				`${environment.apiUrl}/auth/change-password`);
 			req.flush(null, { status: 500, statusText: "Server Error" });
 
 			// Assert
-			expect((component as any).isLoading()).toBe(false);
+			expect((component as unknown as { isLoading(): boolean; }).isLoading())
+				.toBe(false);
 		});
 	});
 
@@ -271,7 +285,8 @@ describe("ChangePasswordComponent", () =>
 			// Assert
 			const card: HTMLElement | null =
 				fixture.nativeElement.querySelector(".change-password-card");
-			expect(card).toBeTruthy();
+			expect(card)
+				.toBeTruthy();
 		});
 
 		it("should render current password input", async () =>
@@ -283,10 +298,11 @@ describe("ChangePasswordComponent", () =>
 			// Assert
 			const input: HTMLInputElement | null =
 				fixture.nativeElement.querySelector(
-					'input[name="currentPassword"]'
-				);
-			expect(input).toBeTruthy();
-			expect(input?.type).toBe("password");
+				"input[name=\"currentPassword\"]");
+			expect(input)
+				.toBeTruthy();
+			expect(input?.type)
+				.toBe("password");
 		});
 
 		it("should render new password input", async () =>
@@ -298,10 +314,11 @@ describe("ChangePasswordComponent", () =>
 			// Assert
 			const input: HTMLInputElement | null =
 				fixture.nativeElement.querySelector(
-					'input[name="newPassword"]'
-				);
-			expect(input).toBeTruthy();
-			expect(input?.type).toBe("password");
+				"input[name=\"newPassword\"]");
+			expect(input)
+				.toBeTruthy();
+			expect(input?.type)
+				.toBe("password");
 		});
 
 		it("should render confirm password input", async () =>
@@ -313,10 +330,11 @@ describe("ChangePasswordComponent", () =>
 			// Assert
 			const input: HTMLInputElement | null =
 				fixture.nativeElement.querySelector(
-					'input[name="confirmPassword"]'
-				);
-			expect(input).toBeTruthy();
-			expect(input?.type).toBe("password");
+				"input[name=\"confirmPassword\"]");
+			expect(input)
+				.toBeTruthy();
+			expect(input?.type)
+				.toBe("password");
 		});
 
 		it("should render submit button", async () =>
@@ -328,36 +346,39 @@ describe("ChangePasswordComponent", () =>
 			// Assert
 			const button: HTMLButtonElement | null =
 				fixture.nativeElement.querySelector(".submit-button");
-			expect(button).toBeTruthy();
+			expect(button)
+				.toBeTruthy();
 		});
 
 		it("should show required notice when isRequired is true", async () =>
 		{
 			// Arrange
-			(component as any).isRequired.set(true);
+			(component as unknown as { isRequired: { set(value: boolean): void; }; }).isRequired.set(true);
 			fixture.detectChanges();
 			await fixture.whenStable();
 
 			// Assert
 			const notice: HTMLElement | null =
 				fixture.nativeElement.querySelector(".required-notice");
-			expect(notice).toBeTruthy();
-			expect(notice?.textContent).toContain(
-				"You must change your password before continuing."
-			);
+			expect(notice)
+				.toBeTruthy();
+			expect(notice?.textContent)
+				.toContain(
+					"You must change your password before continuing.");
 		});
 
 		it("should not show required notice when isRequired is false", async () =>
 		{
 			// Arrange
-			(component as any).isRequired.set(false);
+			(component as unknown as { isRequired: { set(value: boolean): void; }; }).isRequired.set(false);
 			fixture.detectChanges();
 			await fixture.whenStable();
 
 			// Assert
 			const notice: HTMLElement | null =
 				fixture.nativeElement.querySelector(".required-notice");
-			expect(notice).toBeFalsy();
+			expect(notice)
+				.toBeFalsy();
 		});
 
 		it("should render password hint", async () =>
@@ -369,8 +390,10 @@ describe("ChangePasswordComponent", () =>
 			// Assert
 			const hint: HTMLElement | null =
 				fixture.nativeElement.querySelector(".hint");
-			expect(hint).toBeTruthy();
-			expect(hint?.textContent).toContain("At least 8 characters");
+			expect(hint)
+				.toBeTruthy();
+			expect(hint?.textContent)
+				.toContain("At least 8 characters");
 		});
 	});
 });

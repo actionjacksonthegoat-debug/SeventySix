@@ -1,6 +1,6 @@
 import { Component, signal, WritableSignal } from "@angular/core";
-import { TestBed, ComponentFixture } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { TableHeightDirective } from "./table-height.directive";
 
 @Component({
@@ -9,7 +9,8 @@ import { TableHeightDirective } from "./table-height.directive";
 })
 class TestComponent
 {
-	minHeight: WritableSignal<number> = signal(400);
+	minHeight: WritableSignal<number> =
+		signal(400);
 }
 
 describe("TableHeightDirective", () =>
@@ -25,23 +26,29 @@ describe("TableHeightDirective", () =>
 			providers: [provideZonelessChangeDetection()]
 		});
 
-		fixture = TestBed.createComponent(TestComponent);
-		component = fixture.componentInstance;
-		directiveElement = fixture.nativeElement.querySelector("div");
+		fixture =
+			TestBed.createComponent(TestComponent);
+		component =
+			fixture.componentInstance;
+		directiveElement =
+			fixture.nativeElement.querySelector("div");
 		fixture.detectChanges();
 	});
 
 	it("should create directive instance", () =>
 	{
-		expect(directiveElement).toBeTruthy();
+		expect(directiveElement)
+			.toBeTruthy();
 	});
 
 	it("should apply minimum height when available space is less than minimum", () =>
 	{
 		const style: CSSStyleDeclaration =
 			window.getComputedStyle(directiveElement);
-		const height: number = parseInt(style.height, 10);
-		expect(height).toBeGreaterThanOrEqual(400);
+		const height: number =
+			parseInt(style.height, 10);
+		expect(height)
+			.toBeGreaterThanOrEqual(400);
 	});
 
 	it("should update height when minHeight input changes", () =>
@@ -51,15 +58,20 @@ describe("TableHeightDirective", () =>
 
 		const style: CSSStyleDeclaration =
 			window.getComputedStyle(directiveElement);
-		const height: number = parseInt(style.height, 10);
-		expect(height).toBeGreaterThanOrEqual(600);
+		const height: number =
+			parseInt(style.height, 10);
+		expect(height)
+			.toBeGreaterThanOrEqual(600);
 	});
 
 	it("should apply height style to element", () =>
 	{
-		const heightStyle: string = directiveElement.style.height;
-		expect(heightStyle).toBeTruthy();
-		expect(heightStyle).toContain("px");
+		const heightStyle: string =
+			directiveElement.style.height;
+		expect(heightStyle)
+			.toBeTruthy();
+		expect(heightStyle)
+			.toContain("px");
 	});
 
 	it("should debounce window resize events", (done) =>
@@ -69,10 +81,14 @@ describe("TableHeightDirective", () =>
 			fixture.debugElement.children[0].injector.get(TableHeightDirective);
 
 		// Spy on private updateHeight method
-		const originalUpdateHeight: () => void = (directive as any)[
-			"updateHeight"
-		];
-		(directive as any)["updateHeight"] = () =>
+		const originalUpdateHeight: () => void =
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(directive as any)[
+				"updateHeight"
+			];
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		(directive as any)["updateHeight"] =
+			() =>
 		{
 			updateCount++;
 			originalUpdateHeight.call(directive);
@@ -85,12 +101,14 @@ describe("TableHeightDirective", () =>
 		}
 
 		// Immediately after, should not have called yet (still debouncing)
-		expect(updateCount).toBe(0);
+		expect(updateCount)
+			.toBe(0);
 
 		// After 500ms debounce, should only have called once
 		setTimeout(() =>
 		{
-			expect(updateCount).toBe(1);
+			expect(updateCount)
+				.toBe(1);
 			done();
 		}, 600);
 	});
@@ -106,9 +124,12 @@ describe("TableHeightDirective", () =>
 
 		fixture.detectChanges();
 
-		const heightStyle: string = directiveElement.style.height;
-		expect(heightStyle).toBeTruthy();
-		expect(heightStyle).toContain("px");
+		const heightStyle: string =
+			directiveElement.style.height;
+		expect(heightStyle)
+			.toBeTruthy();
+		expect(heightStyle)
+			.toContain("px");
 		// Height should be calculated with 120px offset subtracted
 	});
 
@@ -123,19 +144,26 @@ describe("TableHeightDirective", () =>
 				initFixture.nativeElement.querySelector("div");
 
 			// Check min-height is applied BEFORE detectChanges (synchronous)
-			const minHeightStyle: string = initElement.style.minHeight;
-			expect(minHeightStyle).toBeTruthy();
-			expect(minHeightStyle).toContain("px");
+			const minHeightStyle: string =
+				initElement.style.minHeight;
+			expect(minHeightStyle)
+				.toBeTruthy();
+			expect(minHeightStyle)
+				.toContain("px");
 
 			// Parse the min-height value
-			const minHeight: number = parseInt(minHeightStyle, 10);
-			expect(minHeight).toBeGreaterThan(0);
+			const minHeight: number =
+				parseInt(minHeightStyle, 10);
+			expect(minHeight)
+				.toBeGreaterThan(0);
 		});
 
 		it("should set min-height equal to minHeight input value", () =>
 		{
-			const minHeightStyle: string = directiveElement.style.minHeight;
-			expect(minHeightStyle).toBe("400px");
+			const minHeightStyle: string =
+				directiveElement.style.minHeight;
+			expect(minHeightStyle)
+				.toBe("400px");
 		});
 
 		it("should update min-height when minHeight input changes", () =>
@@ -143,8 +171,10 @@ describe("TableHeightDirective", () =>
 			component.minHeight.set(600);
 			fixture.detectChanges();
 
-			const minHeightStyle: string = directiveElement.style.minHeight;
-			expect(minHeightStyle).toBe("600px");
+			const minHeightStyle: string =
+				directiveElement.style.minHeight;
+			expect(minHeightStyle)
+				.toBe("600px");
 		});
 	});
 });

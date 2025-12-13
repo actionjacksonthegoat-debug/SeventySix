@@ -4,9 +4,9 @@
 
 // Re-export generated DTOs
 export type {
-	UserDto,
 	CreateUserRequest,
-	UpdateUserRequest
+	UpdateUserRequest,
+	UserDto
 } from "@infrastructure/api";
 
 // Query model extends BaseQueryRequest (client-side only)

@@ -3,16 +3,16 @@
  * Verifies token-based password reset flow (80/20 - core paths only).
  */
 
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { HttpErrorResponse } from "@angular/common/http";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
 import { ActivatedRoute } from "@angular/router";
-import { HttpErrorResponse } from "@angular/common/http";
-import { of, throwError } from "rxjs";
-import { SetPasswordComponent } from "./set-password";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import { createMockNotificationService } from "@testing";
+import { of, throwError } from "rxjs";
+import { SetPasswordComponent } from "./set-password";
 
 describe("SetPasswordComponent", () =>
 {
@@ -43,46 +43,53 @@ describe("SetPasswordComponent", () =>
 			]
 		});
 
-		fixture = TestBed.createComponent(SetPasswordComponent);
-		component = fixture.componentInstance;
-		router = TestBed.inject(Router);
+		fixture =
+			TestBed.createComponent(SetPasswordComponent);
+		component =
+			fixture.componentInstance;
+		router =
+			TestBed.inject(Router);
 		spyOn(router, "navigate");
 		fixture.detectChanges();
 	}
 
 	beforeEach(() =>
 	{
-		mockAuthService = jasmine.createSpyObj("AuthService", ["setPassword"]);
-		mockNotificationService = createMockNotificationService();
+		mockAuthService =
+			jasmine.createSpyObj("AuthService", ["setPassword"]);
+		mockNotificationService =
+			createMockNotificationService();
 	});
 
 	it("should create", () =>
 	{
 		setupTestBed({ token: validToken });
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	it("should show error when token is missing", () =>
 	{
 		setupTestBed({});
 
-		expect(mockNotificationService.error).toHaveBeenCalledWith(
-			"Invalid password reset link. Please request a new one."
-		);
-		expect((component as any).tokenValid()).toBeFalse();
+		expect(mockNotificationService.error)
+			.toHaveBeenCalledWith(
+				"Invalid password reset link. Please request a new one.");
+		expect((component as unknown as { tokenValid(): boolean; }).tokenValid())
+			.toBeFalse();
 	});
 
 	it("should show error when passwords do not match", () =>
 	{
 		setupTestBed({ token: validToken });
-		(component as any).newPassword = "Password123!";
-		(component as any).confirmPassword = "DifferentPassword123!";
+		(component as unknown as { newPassword: string; }).newPassword = "Password123!";
+		(component as unknown as { confirmPassword: string; }).confirmPassword = "DifferentPassword123!";
 
-		(component as any).onSubmit();
+		(component as unknown as { onSubmit(): void; }).onSubmit();
 
-		expect(mockNotificationService.error).toHaveBeenCalledWith(
-			"Passwords do not match."
-		);
+		expect(mockNotificationService.error)
+			.toHaveBeenCalledWith(
+				"Passwords do not match.");
 		expect(mockAuthService.setPassword).not.toHaveBeenCalled();
 	});
 
@@ -90,60 +97,62 @@ describe("SetPasswordComponent", () =>
 	{
 		setupTestBed({ token: validToken });
 		mockAuthService.setPassword.and.returnValue(of(undefined));
-		(component as any).newPassword = "ValidPassword123!";
-		(component as any).confirmPassword = "ValidPassword123!";
+		(component as unknown as { newPassword: string; }).newPassword = "ValidPassword123!";
+		(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
 
-		(component as any).onSubmit();
+		(component as unknown as { onSubmit(): void; }).onSubmit();
 
-		expect(mockAuthService.setPassword).toHaveBeenCalledWith(
-			validToken,
-			"ValidPassword123!"
-		);
-		expect(mockNotificationService.success).toHaveBeenCalledWith(
-			"Password set successfully. You can now sign in."
-		);
-		expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
+		expect(mockAuthService.setPassword)
+			.toHaveBeenCalledWith(
+				validToken,
+				"ValidPassword123!");
+		expect(mockNotificationService.success)
+			.toHaveBeenCalledWith(
+				"Password set successfully. You can now sign in.");
+		expect(router.navigate)
+			.toHaveBeenCalledWith(["/auth/login"]);
 	});
 
 	it("should show error for expired or invalid token", () =>
 	{
 		setupTestBed({ token: validToken });
-		const errorResponse: HttpErrorResponse = new HttpErrorResponse({
+		const errorResponse: HttpErrorResponse =
+			new HttpErrorResponse({
 			status: 404,
 			statusText: "Not Found"
 		});
 		mockAuthService.setPassword.and.returnValue(
-			throwError(() => errorResponse)
-		);
-		(component as any).newPassword = "ValidPassword123!";
-		(component as any).confirmPassword = "ValidPassword123!";
+			throwError(() => errorResponse));
+		(component as unknown as { newPassword: string; }).newPassword = "ValidPassword123!";
+		(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
 
-		(component as any).onSubmit();
+		(component as unknown as { onSubmit(): void; }).onSubmit();
 
-		expect(mockNotificationService.error).toHaveBeenCalledWith(
-			"Password reset link has expired or is invalid. Please request a new one."
-		);
-		expect((component as any).isLoading()).toBeFalse();
+		expect(mockNotificationService.error)
+			.toHaveBeenCalledWith(
+				"Password reset link has expired or is invalid. Please request a new one.");
+		expect((component as unknown as { isLoading(): boolean; }).isLoading())
+			.toBeFalse();
 	});
 
 	it("should show error for bad request", () =>
 	{
 		setupTestBed({ token: validToken });
-		const errorResponse: HttpErrorResponse = new HttpErrorResponse({
+		const errorResponse: HttpErrorResponse =
+			new HttpErrorResponse({
 			status: 400,
 			statusText: "Bad Request",
 			error: { detail: "Password does not meet requirements." }
 		});
 		mockAuthService.setPassword.and.returnValue(
-			throwError(() => errorResponse)
-		);
-		(component as any).newPassword = "ValidPassword123!";
-		(component as any).confirmPassword = "ValidPassword123!";
+			throwError(() => errorResponse));
+		(component as unknown as { newPassword: string; }).newPassword = "ValidPassword123!";
+		(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
 
-		(component as any).onSubmit();
+		(component as unknown as { onSubmit(): void; }).onSubmit();
 
-		expect(mockNotificationService.error).toHaveBeenCalledWith(
-			"Password does not meet requirements."
-		);
+		expect(mockNotificationService.error)
+			.toHaveBeenCalledWith(
+				"Password does not meet requirements.");
 	});
 });

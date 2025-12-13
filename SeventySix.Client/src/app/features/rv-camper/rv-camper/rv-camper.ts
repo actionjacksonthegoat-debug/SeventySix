@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 
@@ -12,6 +12,5 @@ import { MatIconModule } from "@angular/material/icon";
 export class RVCamper
 {
 	readonly title: string = "RV Camper Projects";
-	readonly description: string =
-		"Design and planning workspace for RV camper modifications and improvements.";
+	readonly description: string = "Design and planning workspace for RV camper modifications and improvements.";
 }

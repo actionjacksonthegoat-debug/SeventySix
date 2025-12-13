@@ -1,32 +1,32 @@
+import { UpdateUserRequest, UserDto } from "@admin/users/models";
+import { UserService } from "@admin/users/services";
+import { DatePipe } from "@angular/common";
 import {
+	ChangeDetectionStrategy,
 	Component,
 	computed,
-	inject,
-	ChangeDetectionStrategy,
 	effect,
+	inject,
 	Signal
 } from "@angular/core";
-import { ActivatedRoute, Router } from "@angular/router";
-import { DatePipe } from "@angular/common";
 import {
 	FormBuilder,
 	FormGroup,
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { MatExpansionModule } from "@angular/material/expansion";
 import { MatChipsModule } from "@angular/material/chips";
-import { UserService } from "@admin/users/services";
+import { MatExpansionModule } from "@angular/material/expansion";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { ActivatedRoute, Router } from "@angular/router";
 import { LoggerService } from "@infrastructure/services";
-import { UserDto, UpdateUserRequest } from "@admin/users/models";
-import { getValidationError } from "@shared/utilities";
-import { FORM_MATERIAL_MODULES } from "@shared/material-bundles";
 import {
-	USERNAME_VALIDATION,
 	EMAIL_VALIDATION,
-	FULL_NAME_VALIDATION
+	FULL_NAME_VALIDATION,
+	USERNAME_VALIDATION
 } from "@shared/constants/validation.constants";
+import { FORM_MATERIAL_MODULES } from "@shared/material-bundles";
+import { getValidationError } from "@shared/utilities";
 
 /**
  * User detail/edit page component.
@@ -50,12 +50,18 @@ import {
 })
 export class UserDetailPage
 {
-	private readonly userService: UserService = inject(UserService);
-	private readonly logger: LoggerService = inject(LoggerService);
-	private readonly route: ActivatedRoute = inject(ActivatedRoute);
-	private readonly router: Router = inject(Router);
-	private readonly formBuilder: FormBuilder = inject(FormBuilder);
-	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+	private readonly userService: UserService =
+		inject(UserService);
+	private readonly logger: LoggerService =
+		inject(LoggerService);
+	private readonly route: ActivatedRoute =
+		inject(ActivatedRoute);
+	private readonly router: Router =
+		inject(Router);
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+	private readonly snackBar: MatSnackBar =
+		inject(MatSnackBar);
 
 	// Get user ID from route
 	private readonly userId: string =
@@ -78,53 +84,61 @@ export class UserDetailPage
 		this.userService.removeRole();
 
 	// Available roles constant (matches backend ValidRoleNames)
-	readonly availableRoles: readonly string[] = ["Developer", "Admin"];
+	readonly availableRoles: readonly string[] =
+		["Developer", "Admin"];
 
 	// Computed signals for derived state
-	readonly user: Signal<UserDto | null> = computed(
-		() => this.userQuery.data() ?? null
-	);
-	readonly isLoading: Signal<boolean> = computed(() =>
-		this.userQuery.isLoading());
-	readonly isSaving: Signal<boolean> = computed(() =>
-		this.updateMutation.isPending());
-	readonly error: Signal<string | null> = computed(() =>
-		this.userQuery.error() ? "Failed to load user. Please try again." : null);
-	readonly saveError: Signal<string | null> = computed(() =>
-		this.updateMutation.error()
-			? "Failed to save user. Please try again."
-			: null);
+	readonly user: Signal<UserDto | null> =
+		computed(
+		() => this.userQuery.data() ?? null);
+	readonly isLoading: Signal<boolean> =
+		computed(() => this.userQuery.isLoading());
+	readonly isSaving: Signal<boolean> =
+		computed(() => this.updateMutation.isPending());
+	readonly error: Signal<string | null> =
+		computed(() =>
+			this.userQuery.error() ? "Failed to load user. Please try again." : null);
+	readonly saveError: Signal<string | null> =
+		computed(() =>
+			this.updateMutation.error()
+				? "Failed to save user. Please try again."
+				: null);
 
 	// Role computed signals
-	readonly userRoles: Signal<string[]> = computed(
-		() => this.rolesQuery.data() ?? []
-	);
-	readonly availableRolesToAdd: Signal<string[]> = computed(() =>
+	readonly userRoles: Signal<string[]> =
+		computed(
+		() => this.rolesQuery.data() ?? []);
+	readonly availableRolesToAdd: Signal<string[]> =
+		computed(() =>
 	{
-		const currentRoles: string[] = this.userRoles();
+		const currentRoles: string[] =
+			this.userRoles();
 		return this.availableRoles.filter(
-			(role: string) => !currentRoles.includes(role)
-		);
+			(role: string) =>
+				!currentRoles.includes(role));
 	});
-	readonly isRoleMutating: Signal<boolean> = computed(
+	readonly isRoleMutating: Signal<boolean> =
+		computed(
 		() =>
 			this.addRoleMutation.isPending()
-			|| this.removeRoleMutation.isPending()
-	);
+				|| this.removeRoleMutation.isPending());
 
 	// Computed signals
-	readonly pageTitle: Signal<string> = computed(() =>
+	readonly pageTitle: Signal<string> =
+		computed(() =>
 	{
-		const currentUser: UserDto | null = this.user();
+		const currentUser: UserDto | null =
+			this.user();
 		return currentUser ? `Edit User: ${currentUser.username}` : "Edit User";
 	});
 
-	readonly hasUnsavedChanges: Signal<boolean> = computed(
-		() => this.userForm.dirty
-	);
+	readonly hasUnsavedChanges: Signal<boolean> =
+		computed(
+		() => this.userForm.dirty);
 
 	// Reactive form
-	readonly userForm: FormGroup = this.formBuilder.group({
+	readonly userForm: FormGroup =
+		this.formBuilder.group({
 		username: [
 			"",
 			[
@@ -163,7 +177,8 @@ export class UserDetailPage
 		// Populate form when user data loads
 		effect(() =>
 		{
-			const currentUser: UserDto | null = this.user();
+			const currentUser: UserDto | null =
+				this.user();
 			if (currentUser && this.userForm.pristine)
 			{
 				this.populateForm(currentUser);
@@ -173,7 +188,8 @@ export class UserDetailPage
 		// Log errors when loading user fails
 		effect(() =>
 		{
-			const error: Error | null = this.userQuery.error();
+			const error: Error | null =
+				this.userQuery.error();
 			if (error)
 			{
 				this.logger.error("Failed to load user", error);
@@ -206,7 +222,8 @@ export class UserDetailPage
 	{
 		if (!this.validateFormAndMarkTouched()) return;
 
-		const updateRequest: UpdateUserRequest | null = this.buildUpdateRequest();
+		const updateRequest: UpdateUserRequest | null =
+			this.buildUpdateRequest();
 		if (!updateRequest) return;
 
 		this.executeMutation(updateRequest);
@@ -232,14 +249,16 @@ export class UserDetailPage
 	 */
 	private buildUpdateRequest(): UpdateUserRequest | null
 	{
-		const userId: string = this.userId;
+		const userId: string =
+			this.userId;
 		if (!userId)
 		{
 			this.showErrorSnackBar("Invalid user ID");
 			return null;
 		}
 
-		const currentUser: UserDto | null = this.user();
+		const currentUser: UserDto | null =
+			this.user();
 		if (!currentUser)
 		{
 			this.showErrorSnackBar("User data not loaded");
@@ -265,9 +284,9 @@ export class UserDetailPage
 			{ userId: this.userId, user: updateRequest },
 			{
 				onSuccess: () => this.handleMutationSuccess(),
-				onError: (error: unknown) => this.handleMutationError(error)
-			}
-		);
+				onError: (error: unknown) =>
+					this.handleMutationError(error)
+			});
 	}
 
 	/**
@@ -285,8 +304,8 @@ export class UserDetailPage
 	 */
 	private handleMutationError(error: unknown): void
 	{
-		const errorWithStatus: { status?: number } =
-			error as { status?: number };
+		const errorWithStatus: { status?: number; } =
+			error as { status?: number; };
 
 		if (errorWithStatus.status === 409)
 		{
@@ -296,8 +315,7 @@ export class UserDetailPage
 		{
 			this.logger.error(
 				"Failed to save user",
-				error instanceof Error ? error : undefined
-			);
+				error instanceof Error ? error : undefined);
 			this.showErrorSnackBar("Failed to save user");
 		}
 	}
@@ -307,7 +325,8 @@ export class UserDetailPage
 	 */
 	private handleConcurrencyError(): void
 	{
-		this.snackBar
+		this
+			.snackBar
 			.open(
 				"User was modified by another user. Please refresh and try again.",
 				"REFRESH",
@@ -315,8 +334,7 @@ export class UserDetailPage
 					duration: 10000,
 					horizontalPosition: "end",
 					verticalPosition: "top"
-				}
-			)
+				})
 			.onAction()
 			.subscribe(() => this.userQuery.refetch());
 	}
@@ -362,7 +380,8 @@ export class UserDetailPage
 	 */
 	onAddRole(role: string): void
 	{
-		const userIdNum: number = parseInt(this.userId);
+		const userIdNum: number =
+			parseInt(this.userId);
 		if (isNaN(userIdNum))
 		{
 			return;
@@ -371,10 +390,11 @@ export class UserDetailPage
 		this.addRoleMutation.mutate(
 			{ userId: userIdNum, roleName: role },
 			{
-				onSuccess: () => this.showSuccessSnackBar(`Role "${role}" added`),
-				onError: () => this.showErrorSnackBar(`Failed to add role "${role}"`)
-			}
-		);
+				onSuccess: () =>
+					this.showSuccessSnackBar(`Role "${role}" added`),
+				onError: () =>
+					this.showErrorSnackBar(`Failed to add role "${role}"`)
+			});
 	}
 
 	/**
@@ -383,7 +403,8 @@ export class UserDetailPage
 	 */
 	onRemoveRole(role: string): void
 	{
-		const userIdNum: number = parseInt(this.userId);
+		const userIdNum: number =
+			parseInt(this.userId);
 		if (isNaN(userIdNum))
 		{
 			return;
@@ -392,9 +413,10 @@ export class UserDetailPage
 		this.removeRoleMutation.mutate(
 			{ userId: userIdNum, roleName: role },
 			{
-				onSuccess: () => this.showSuccessSnackBar(`Role "${role}" removed`),
-				onError: () => this.showErrorSnackBar(`Failed to remove role "${role}"`)
-			}
-		);
+				onSuccess: () =>
+					this.showSuccessSnackBar(`Role "${role}" removed`),
+				onError: () =>
+					this.showErrorSnackBar(`Failed to remove role "${role}"`)
+			});
 	}
 }

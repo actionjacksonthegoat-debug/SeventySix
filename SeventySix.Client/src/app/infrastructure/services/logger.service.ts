@@ -1,9 +1,9 @@
-import { Injectable, inject, isDevMode } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
+import { inject, Injectable, isDevMode } from "@angular/core";
 import { Router } from "@angular/router";
-import { catchError, of } from "rxjs";
 import { environment } from "@environments/environment";
 import { CreateLogRequest } from "@infrastructure/api";
+import { catchError, of } from "rxjs";
 import { DateService } from "./date.service";
 
 /**
@@ -45,18 +45,24 @@ export interface LogEntry
 })
 export class LoggerService
 {
-	private readonly http: HttpClient = inject(HttpClient);
-	private readonly router: Router = inject(Router);
-	private readonly dateService: DateService = inject(DateService);
-	private readonly isDevMode: boolean = isDevMode();
-	private readonly logEndpoint: string = `${environment.apiUrl}/logs/client`;
+	private readonly http: HttpClient =
+		inject(HttpClient);
+	private readonly router: Router =
+		inject(Router);
+	private readonly dateService: DateService =
+		inject(DateService);
+	private readonly isDevMode: boolean =
+		isDevMode();
+	private readonly logEndpoint: string =
+		`${environment.apiUrl}/logs/client`;
 	private readonly consoleLogLevel: ConsoleLogLevel =
 		environment.logging.consoleLogLevel;
 
 	/**
 	 * Maps console log level config to minimum LogLevel enum.
 	 */
-	private readonly minLogLevel: LogLevel = this.getMinLogLevel();
+	private readonly minLogLevel: LogLevel =
+		this.getMinLogLevel();
 
 	private getMinLogLevel(): LogLevel
 	{
@@ -107,8 +113,7 @@ export class LoggerService
 	error(
 		message: string,
 		error?: Error,
-		context?: Record<string, unknown>
-	): void
+		context?: Record<string, unknown>): void
 	{
 		this.log(LogLevel.Error, message, context, error);
 	}
@@ -119,8 +124,7 @@ export class LoggerService
 	critical(
 		message: string,
 		error?: Error,
-		context?: Record<string, unknown>
-	): void
+		context?: Record<string, unknown>): void
 	{
 		this.log(LogLevel.Critical, message, context, error);
 	}
@@ -159,8 +163,7 @@ export class LoggerService
 	forceError(
 		message: string,
 		error?: Error,
-		context?: Record<string, unknown>
-	): void
+		context?: Record<string, unknown>): void
 	{
 		this.log(LogLevel.Error, message, context, error, true);
 	}
@@ -172,8 +175,7 @@ export class LoggerService
 	forceCritical(
 		message: string,
 		error?: Error,
-		context?: Record<string, unknown>
-	): void
+		context?: Record<string, unknown>): void
 	{
 		this.log(LogLevel.Critical, message, context, error, true);
 	}
@@ -187,16 +189,16 @@ export class LoggerService
 		message: string,
 		context?: Record<string, unknown>,
 		error?: Error,
-		force: boolean = false
-	): void
+		force: boolean = false): void
 	{
-		const logEntry: LogEntry = {
-			timestamp: this.dateService.now(),
-			level,
-			message,
-			context,
-			error
-		};
+		const logEntry: LogEntry =
+			{
+				timestamp: this.dateService.now(),
+				level,
+				message,
+				context,
+				error
+			};
 
 		// Log to console if level meets minimum threshold or force is true
 		if (force || level >= this.minLogLevel)
@@ -216,8 +218,10 @@ export class LoggerService
 	 */
 	private logToConsole(entry: LogEntry): void
 	{
-		const prefix: string = `[${LogLevel[entry.level]}] ${entry.timestamp}:`;
-		const args: unknown[] = [prefix, entry.message];
+		const prefix: string =
+			`[${LogLevel[entry.level]}] ${entry.timestamp}:`;
+		const args: unknown[] =
+			[prefix, entry.message];
 
 		if (entry.context)
 		{
@@ -252,25 +256,29 @@ export class LoggerService
 	private logToRemote(entry: LogEntry): void
 	{
 		// Convert LogLevel enum to string
-		const logLevelString: string = LogLevel[entry.level];
+		const logLevelString: string =
+			LogLevel[entry.level];
 
 		// Get current route URL
-		const currentUrl: string = this.router.url || window.location.pathname;
+		const currentUrl: string =
+			this.router.url || window.location.pathname;
 
 		// Prepare client log request matching backend DTO
-		const payload: CreateLogRequest = {
-			logLevel: logLevelString,
-			message: entry.message,
-			exceptionMessage: entry.error?.message,
-			stackTrace: entry.error?.stack,
-			sourceContext: "Client", // Set source as "Client" for all client-side logs
-			requestUrl: currentUrl,
-			userAgent: navigator.userAgent,
-			clientTimestamp: entry.timestamp,
-			additionalContext: entry.context
-		};
+		const payload: CreateLogRequest =
+			{
+				logLevel: logLevelString,
+				message: entry.message,
+				exceptionMessage: entry.error?.message,
+				stackTrace: entry.error?.stack,
+				sourceContext: "Client", // Set source as "Client" for all client-side logs
+				requestUrl: currentUrl,
+				userAgent: navigator.userAgent,
+				clientTimestamp: entry.timestamp,
+				additionalContext: entry.context
+			};
 
-		this.http
+		this
+			.http
 			.post(this.logEndpoint, payload)
 			.pipe(
 				catchError((err) =>
@@ -278,11 +286,9 @@ export class LoggerService
 					// Fallback: log to console if remote logging fails
 					console.error(
 						"Failed to send log to remote endpoint:",
-						err
-					);
+						err);
 					return of(null);
-				})
-			)
+				}))
 			.subscribe();
 	}
 }

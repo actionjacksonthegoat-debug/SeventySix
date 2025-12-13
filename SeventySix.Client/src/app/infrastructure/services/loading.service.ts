@@ -1,13 +1,13 @@
-import { Injectable, signal, inject } from "@angular/core";
+import { inject, Injectable, signal } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
-	Router,
-	NavigationStart,
-	NavigationEnd,
 	NavigationCancel,
-	NavigationError
+	NavigationEnd,
+	NavigationError,
+	NavigationStart,
+	Router
 } from "@angular/router";
 import { filter } from "rxjs/operators";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 /**
  * Loading indicator service.
@@ -19,7 +19,8 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 })
 export class LoadingService
 {
-	private readonly router: Router = inject(Router);
+	private readonly router: Router =
+		inject(Router);
 
 	/**
 	 * Global loading state signal
@@ -30,17 +31,17 @@ export class LoadingService
 	constructor()
 	{
 		// Subscribe to router events with automatic cleanup
-		this.router.events
+		this
+			.router
+			.events
 			.pipe(
 				filter(
 					(event) =>
 						event instanceof NavigationStart
-						|| event instanceof NavigationEnd
-						|| event instanceof NavigationCancel
-						|| event instanceof NavigationError
-				),
-				takeUntilDestroyed()
-			)
+							|| event instanceof NavigationEnd
+							|| event instanceof NavigationCancel
+							|| event instanceof NavigationError),
+				takeUntilDestroyed())
 			.subscribe((event) =>
 			{
 				if (event instanceof NavigationStart)
@@ -49,9 +50,8 @@ export class LoadingService
 				}
 				else if (
 					event instanceof NavigationEnd
-					|| event instanceof NavigationCancel
-					|| event instanceof NavigationError
-				)
+						|| event instanceof NavigationCancel
+						|| event instanceof NavigationError)
 				{
 					this.hide();
 				}

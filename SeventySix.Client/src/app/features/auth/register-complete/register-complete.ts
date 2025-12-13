@@ -4,6 +4,7 @@
  * User enters username and password to complete account creation.
  */
 
+import { HttpErrorResponse } from "@angular/common/http";
 import {
 	ChangeDetectionStrategy,
 	Component,
@@ -13,13 +14,12 @@ import {
 	WritableSignal
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { HttpErrorResponse } from "@angular/common/http";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import {
-	USERNAME_VALIDATION,
-	PASSWORD_VALIDATION
+	PASSWORD_VALIDATION,
+	USERNAME_VALIDATION
 } from "@shared/constants/validation.constants";
 
 @Component({
@@ -32,9 +32,12 @@ import {
 })
 export class RegisterCompleteComponent implements OnInit
 {
-	private readonly authService: AuthService = inject(AuthService);
-	private readonly router: Router = inject(Router);
-	private readonly route: ActivatedRoute = inject(ActivatedRoute);
+	private readonly authService: AuthService =
+		inject(AuthService);
+	private readonly router: Router =
+		inject(Router);
+	private readonly route: ActivatedRoute =
+		inject(ActivatedRoute);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
@@ -61,14 +64,14 @@ export class RegisterCompleteComponent implements OnInit
 
 	ngOnInit(): void
 	{
-		this.token = this.route.snapshot.queryParams["token"] ?? "";
+		this.token =
+			this.route.snapshot.queryParams["token"] ?? "";
 
 		if (!this.token)
 		{
 			this.tokenValid.set(false);
 			this.notification.error(
-				"Invalid registration link. Please request a new one."
-			);
+				"Invalid registration link. Please request a new one.");
 		}
 	}
 
@@ -84,7 +87,8 @@ export class RegisterCompleteComponent implements OnInit
 
 		this.isLoading.set(true);
 
-		this.authService
+		this
+			.authService
 			.completeRegistration(this.token, this.username, this.password)
 			.subscribe({
 				next: () =>
@@ -94,7 +98,8 @@ export class RegisterCompleteComponent implements OnInit
 				},
 				error: (error: HttpErrorResponse) =>
 				{
-					const message: string = this.getErrorMessage(error);
+					const message: string =
+						this.getErrorMessage(error);
 					this.notification.error(message);
 					this.isLoading.set(false);
 				}
@@ -105,31 +110,26 @@ export class RegisterCompleteComponent implements OnInit
 	{
 		if (
 			!this.username
-			|| this.username.length < USERNAME_VALIDATION.MIN_LENGTH
-		)
+				|| this.username.length < USERNAME_VALIDATION.MIN_LENGTH)
 		{
 			this.notification.error(
-				`Username must be at least ${USERNAME_VALIDATION.MIN_LENGTH} characters.`
-			);
+				`Username must be at least ${USERNAME_VALIDATION.MIN_LENGTH} characters.`);
 			return false;
 		}
 
 		if (!USERNAME_VALIDATION.PATTERN.test(this.username))
 		{
 			this.notification.error(
-				"Username can only contain letters, numbers, and underscores."
-			);
+				"Username can only contain letters, numbers, and underscores.");
 			return false;
 		}
 
 		if (
 			!this.password
-			|| this.password.length < PASSWORD_VALIDATION.MIN_LENGTH
-		)
+				|| this.password.length < PASSWORD_VALIDATION.MIN_LENGTH)
 		{
 			this.notification.error(
-				`Password must be at least ${PASSWORD_VALIDATION.MIN_LENGTH} characters.`
-			);
+				`Password must be at least ${PASSWORD_VALIDATION.MIN_LENGTH} characters.`);
 			return false;
 		}
 
@@ -146,7 +146,8 @@ export class RegisterCompleteComponent implements OnInit
 	{
 		if (error.status === 400)
 		{
-			const errorCode: string = error.error?.extensions?.errorCode;
+			const errorCode: string =
+				error.error?.extensions?.errorCode;
 
 			switch (errorCode)
 			{
@@ -159,8 +160,7 @@ export class RegisterCompleteComponent implements OnInit
 				default:
 					return (
 						error.error?.detail
-						?? "Invalid request. Please check your input."
-					);
+							?? "Invalid request. Please check your input.");
 			}
 		}
 

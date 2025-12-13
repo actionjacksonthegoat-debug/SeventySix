@@ -1,21 +1,22 @@
-import { Injectable, inject } from "@angular/core";
-import {
-	injectQuery,
-	CreateQueryResult
-} from "@tanstack/angular-query-experimental";
-import { lastValueFrom } from "rxjs";
-import { ApiService } from "@infrastructure/api-services/api.service";
 import {
 	ThirdPartyApiRequestResponse,
 	ThirdPartyApiStatisticsResponse
 } from "@admin/admin-dashboard/models";
+import { inject, Injectable } from "@angular/core";
+import { ApiService } from "@infrastructure/api-services/api.service";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
+import {
+	CreateQueryResult,
+	injectQuery
+} from "@tanstack/angular-query-experimental";
+import { lastValueFrom } from "rxjs";
 
 @Injectable()
 export class ThirdPartyApiService
 {
-	private readonly apiService: ApiService = inject(ApiService);
+	private readonly apiService: ApiService =
+		inject(ApiService);
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("thirdpartyrequests");
 	private readonly endpoint: string = "thirdpartyrequests";
@@ -31,17 +32,16 @@ export class ThirdPartyApiService
 	}
 
 	getByApiName(
-		apiName: string
-	): CreateQueryResult<ThirdPartyApiRequestResponse[], Error>
+		apiName: string): CreateQueryResult<ThirdPartyApiRequestResponse[], Error>
 	{
 		return injectQuery(() => ({
 			queryKey: QueryKeys.thirdPartyApi.byName(apiName),
 			queryFn: () =>
 			{
-				const encodedName: string = encodeURIComponent(apiName);
+				const encodedName: string =
+					encodeURIComponent(apiName);
 				return lastValueFrom(
-					this.apiService.get<ThirdPartyApiRequestResponse[]>(`${this.endpoint}/${encodedName}`)
-				);
+					this.apiService.get<ThirdPartyApiRequestResponse[]>(`${this.endpoint}/${encodedName}`));
 			},
 			...this.queryConfig
 		}));
@@ -53,8 +53,7 @@ export class ThirdPartyApiService
 			queryKey: QueryKeys.thirdPartyApi.statistics,
 			queryFn: () =>
 				lastValueFrom(
-					this.apiService.get<ThirdPartyApiStatisticsResponse>(`${this.endpoint}/statistics`)
-				),
+					this.apiService.get<ThirdPartyApiStatisticsResponse>(`${this.endpoint}/statistics`)),
 			...this.queryConfig
 		}));
 	}

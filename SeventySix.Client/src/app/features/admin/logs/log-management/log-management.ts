@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { LogList } from "@admin/logs/components";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { PageHeaderComponent } from "@shared/components";
 
 /**

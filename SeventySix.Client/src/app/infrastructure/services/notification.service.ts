@@ -1,4 +1,4 @@
-import { Injectable, signal, WritableSignal, Signal } from "@angular/core";
+import { Injectable, Signal, signal, WritableSignal } from "@angular/core";
 
 /**
  * Notification severity levels.
@@ -39,9 +39,9 @@ export class NotificationService
 	private readonly warningDurationMs: number = 7000;
 	private readonly errorDurationMs: number = 10000;
 
-	private readonly notifications: WritableSignal<Notification[]> = signal<
-		Notification[]
-	>([]);
+	private readonly notifications: WritableSignal<Notification[]> =
+		signal<
+		Notification[]>([]);
 	private idCounter: number = 0;
 
 	/**
@@ -60,8 +60,7 @@ export class NotificationService
 			message,
 			undefined,
 			undefined,
-			duration
-		);
+			duration);
 	}
 
 	/**
@@ -71,16 +70,14 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = this.successDurationMs
-	): void
+		duration: number = this.successDurationMs): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Success,
 			message,
 			details,
 			copyData,
-			duration
-		);
+			duration);
 	}
 
 	/**
@@ -93,8 +90,7 @@ export class NotificationService
 			message,
 			undefined,
 			undefined,
-			duration
-		);
+			duration);
 	}
 
 	/**
@@ -104,16 +100,14 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = this.infoDurationMs
-	): void
+		duration: number = this.infoDurationMs): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Info,
 			message,
 			details,
 			copyData,
-			duration
-		);
+			duration);
 	}
 
 	/**
@@ -126,8 +120,7 @@ export class NotificationService
 			message,
 			undefined,
 			undefined,
-			duration
-		);
+			duration);
 	}
 
 	/**
@@ -137,16 +130,14 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = this.warningDurationMs
-	): void
+		duration: number = this.warningDurationMs): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Warning,
 			message,
 			details,
 			copyData,
-			duration
-		);
+			duration);
 	}
 
 	/**
@@ -159,8 +150,7 @@ export class NotificationService
 			message,
 			undefined,
 			undefined,
-			duration
-		);
+			duration);
 	}
 
 	/**
@@ -187,16 +177,14 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = this.errorDurationMs
-	): void
+		duration: number = this.errorDurationMs): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Error,
 			message,
 			details,
 			copyData,
-			duration
-		);
+			duration);
 	}
 
 	/**
@@ -216,8 +204,7 @@ export class NotificationService
 			// eslint-disable-next-line no-console
 			console.info(
 				"Notification copied to clipboard:",
-				notification.copyData
-			);
+				notification.copyData);
 
 			return true;
 		}
@@ -236,17 +223,17 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration?: number
-	): void
+		duration?: number): void
 	{
-		const notification: Notification = {
-			id: `notification-${++this.idCounter}`,
-			level,
-			message,
-			duration: duration ?? 0,
-			details,
-			copyData
-		};
+		const notification: Notification =
+			{
+				id: `notification-${++this.idCounter}`,
+				level,
+				message,
+				duration: duration ?? 0,
+				details,
+				copyData
+			};
 
 		this.notifications.update((current) => [...current, notification]);
 

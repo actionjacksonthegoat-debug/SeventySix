@@ -1,74 +1,73 @@
 <div
 	class="api-statistics-table"
 	role="region"
-	aria-label="Third-party API statistics"
->
-	@if (isLoading())
-	{
-		<div class="loading-container" role="status" aria-live="polite">
+	aria-label="Third-party API statistics">
+	@if (isLoading()) {
+		<div
+			class="loading-container"
+			role="status"
+			aria-live="polite">
 			<mat-spinner
 				diameter="40"
-				aria-label="Loading API statistics"
-			></mat-spinner>
+				aria-label="Loading API statistics"></mat-spinner>
 			<p>Loading API statistics...</p>
 		</div>
-	}
-	@else if (error())
-	{
-		<div class="error-container" role="alert" aria-live="assertive">
-			<mat-icon color="warn" aria-hidden="true">error</mat-icon>
+	} @else if (error()) {
+		<div
+			class="error-container"
+			role="alert"
+			aria-live="assertive">
+			<mat-icon
+				color="warn"
+				aria-hidden="true">error</mat-icon>
 			<p>{{ error() }}</p>
 			<button
 				mat-raised-button
 				color="primary"
 				(click)="onRefresh()"
-				aria-label="Retry loading API statistics"
-			>
+				aria-label="Retry loading API statistics">
 				<mat-icon aria-hidden="true">refresh</mat-icon>
 				Retry
 			</button>
 		</div>
-	}
-	@else
-	{
+	} @else {
 		<mat-card>
 			<mat-card-header>
 				<mat-card-title>Third-Party API Statistics</mat-card-title>
 				<button
 					mat-icon-button
 					(click)="onRefresh()"
-					aria-label="Refresh API statistics"
-				>
+					aria-label="Refresh API statistics">
 					<mat-icon aria-hidden="true">refresh</mat-icon>
 				</button>
 			</mat-card-header>
 			<mat-card-content>
-				@if (dataSource().data.length === 0)
-				{
-					<div class="no-data" role="status">
+				@if (dataSource().data.length === 0) {
+					<div
+						class="no-data"
+						role="status">
 						<mat-icon aria-hidden="true">api</mat-icon>
 						<p>No API data available</p>
 					</div>
-				}
-				@else
-				{
+				} @else {
 					<div class="table-container">
 						<table
 							mat-table
 							[dataSource]="dataSource()"
 							class="api-table"
-							aria-label="API statistics table"
-						>
+							aria-label="API statistics table">
 							<!-- API Name Column -->
 							<ng-container matColumnDef="apiName">
-								<th mat-header-cell *matHeaderCellDef>
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
 									API Name
 								</th>
-								<td mat-cell *matCellDef="let element">
+								<td
+									mat-cell
+									*matCellDef="let element">
 									<div class="api-name-cell">
-										<mat-icon aria-hidden="true"
-											>api</mat-icon
-										>
+										<mat-icon aria-hidden="true">api</mat-icon>
 										<div>
 											<div class="api-name">
 												{{ element.apiName }}
@@ -83,35 +82,43 @@
 
 							<!-- Call Count Column -->
 							<ng-container matColumnDef="callCount">
-								<th mat-header-cell *matHeaderCellDef>
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
 									Calls Today
 								</th>
-								<td mat-cell *matCellDef="let element">
+								<td
+									mat-cell
+									*matCellDef="let element">
 									{{ element.callCount }}
 								</td>
 							</ng-container>
 
 							<!-- Last Called Column -->
 							<ng-container matColumnDef="lastCalledAt">
-								<th mat-header-cell *matHeaderCellDef>
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
 									Last Called
 								</th>
-								<td mat-cell *matCellDef="let element">
+								<td
+									mat-cell
+									*matCellDef="let element">
 									{{ element.formattedLastCalled }}
 								</td>
 							</ng-container>
 
 							<tr
 								mat-header-row
-								*matHeaderRowDef="displayedColumns()"
-							></tr>
+								*matHeaderRowDef="displayedColumns()">
+							</tr>
 							<tr
 								mat-row
 								*matRowDef="
 									let row;
 									columns: displayedColumns()
-								"
-							></tr>
+								">
+							</tr>
 						</table>
 					</div>
 				}

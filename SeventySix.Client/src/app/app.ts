@@ -1,18 +1,18 @@
-import { Component, inject, effect, Renderer2 } from "@angular/core";
 import { DOCUMENT } from "@angular/common";
-import { RouterOutlet } from "@angular/router";
-import { MatSidenavModule } from "@angular/material/sidenav";
+import { Component, effect, inject, Renderer2 } from "@angular/core";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { MatSidenavModule } from "@angular/material/sidenav";
+import { RouterOutlet } from "@angular/router";
 import {
-	ThemeService,
-	LayoutService,
-	LoadingService
-} from "@infrastructure/services";
-import {
+	FooterComponent,
 	HeaderComponent,
-	SidebarComponent,
-	FooterComponent
+	SidebarComponent
 } from "@infrastructure/layout";
+import {
+	LayoutService,
+	LoadingService,
+	ThemeService
+} from "@infrastructure/services";
 import { NotificationToastComponent } from "@shared/components";
 
 /**
@@ -35,18 +35,24 @@ import { NotificationToastComponent } from "@shared/components";
 })
 export class App
 {
-	protected readonly themeService: ThemeService = inject(ThemeService);
-	protected readonly layoutService: LayoutService = inject(LayoutService);
-	protected readonly loadingService: LoadingService = inject(LoadingService);
-	private readonly renderer: Renderer2 = inject(Renderer2);
-	private readonly document: Document = inject(DOCUMENT);
+	protected readonly themeService: ThemeService =
+		inject(ThemeService);
+	protected readonly layoutService: LayoutService =
+		inject(LayoutService);
+	protected readonly loadingService: LoadingService =
+		inject(LoadingService);
+	private readonly renderer: Renderer2 =
+		inject(Renderer2);
+	private readonly document: Document =
+		inject(DOCUMENT);
 
 	constructor()
 	{
 		// Sync sidebar state to body class for CSS targeting (dialogs, overlays)
 		effect(() =>
 		{
-			const isExpanded: boolean = this.layoutService.sidebarExpanded();
+			const isExpanded: boolean =
+				this.layoutService.sidebarExpanded();
 			const isSideMode: boolean =
 				this.layoutService.sidebarMode() === "side";
 
@@ -58,8 +64,7 @@ export class App
 			{
 				this.renderer.removeClass(
 					this.document.body,
-					"sidebar-expanded"
-				);
+					"sidebar-expanded");
 			}
 		});
 	}
@@ -72,8 +77,7 @@ export class App
 		// Only handle swipe on mobile/tablet (overlay mode)
 		if (
 			this.layoutService.sidebarMode() === "over"
-			&& this.layoutService.sidebarExpanded()
-		)
+				&& this.layoutService.sidebarExpanded())
 		{
 			this.layoutService.closeSidebar();
 		}
@@ -87,8 +91,7 @@ export class App
 		// Only handle swipe on mobile/tablet (overlay mode)
 		if (
 			this.layoutService.sidebarMode() === "over"
-			&& !this.layoutService.sidebarExpanded()
-		)
+				&& !this.layoutService.sidebarExpanded())
 		{
 			this.layoutService.openSidebar();
 		}

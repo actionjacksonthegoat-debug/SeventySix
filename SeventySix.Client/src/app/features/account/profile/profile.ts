@@ -1,32 +1,32 @@
+import { DatePipe } from "@angular/common";
 import {
+	ChangeDetectionStrategy,
 	Component,
 	computed,
 	effect,
 	inject,
-	ChangeDetectionStrategy,
 	Signal
 } from "@angular/core";
-import { DatePipe } from "@angular/common";
 import {
 	FormBuilder,
 	FormGroup,
 	ReactiveFormsModule,
 	Validators
 } from "@angular/forms";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { RouterLink } from "@angular/router";
-import { AccountService } from "../services";
-import { UserProfileDto, UpdateProfileRequest } from "../models";
-import { getValidationError } from "@shared/utilities";
 import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION
 } from "@shared/constants/validation.constants";
+import { getValidationError } from "@shared/utilities";
+import { UpdateProfileRequest, UserProfileDto } from "../models";
+import { AccountService } from "../services";
 
 @Component({
 	selector: "app-profile-page",
@@ -47,25 +47,30 @@ import {
 })
 export class ProfilePage
 {
-	private readonly accountService: AccountService = inject(AccountService);
-	private readonly formBuilder: FormBuilder = inject(FormBuilder);
-	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+	private readonly accountService: AccountService =
+		inject(AccountService);
+	private readonly formBuilder: FormBuilder =
+		inject(FormBuilder);
+	private readonly snackBar: MatSnackBar =
+		inject(MatSnackBar);
 
 	readonly profileQuery: ReturnType<AccountService["getProfile"]> =
 		this.accountService.getProfile();
 	readonly updateMutation: ReturnType<AccountService["updateProfile"]> =
 		this.accountService.updateProfile();
 
-	readonly profile: Signal<UserProfileDto | undefined> = computed(() =>
-		this.profileQuery.data());
-	readonly isLoading: Signal<boolean> = computed(() =>
-		this.profileQuery.isLoading());
-	readonly isSaving: Signal<boolean> = computed(() =>
-		this.updateMutation.isPending());
-	readonly error: Signal<string | null> = computed(() =>
-		this.profileQuery.error() ? "Failed to load profile" : null);
+	readonly profile: Signal<UserProfileDto | undefined> =
+		computed(() => this.profileQuery.data());
+	readonly isLoading: Signal<boolean> =
+		computed(() => this.profileQuery.isLoading());
+	readonly isSaving: Signal<boolean> =
+		computed(() => this.updateMutation.isPending());
+	readonly error: Signal<string | null> =
+		computed(() =>
+			this.profileQuery.error() ? "Failed to load profile" : null);
 
-	readonly profileForm: FormGroup = this.formBuilder.group({
+	readonly profileForm: FormGroup =
+		this.formBuilder.group({
 		email: [
 			"",
 			[
@@ -77,14 +82,16 @@ export class ProfilePage
 		fullName: ["", [Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)]]
 	});
 
-	readonly emailError: Signal<string | null> = computed(() =>
-		getValidationError(this.profileForm.get("email"), "Email"));
+	readonly emailError: Signal<string | null> =
+		computed(() =>
+			getValidationError(this.profileForm.get("email"), "Email"));
 
 	constructor()
 	{
 		effect(() =>
 		{
-			const currentProfile: UserProfileDto | undefined = this.profile();
+			const currentProfile: UserProfileDto | undefined =
+				this.profile();
 			if (currentProfile)
 			{
 				this.populateForm(currentProfile);
@@ -109,10 +116,11 @@ export class ProfilePage
 			return;
 		}
 
-		const request: UpdateProfileRequest = {
-			email: this.profileForm.value.email,
-			fullName: this.profileForm.value.fullName || undefined
-		};
+		const request: UpdateProfileRequest =
+			{
+				email: this.profileForm.value.email,
+				fullName: this.profileForm.value.fullName || undefined
+			};
 
 		try
 		{

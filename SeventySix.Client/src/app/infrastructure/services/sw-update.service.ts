@@ -1,7 +1,7 @@
-import { Injectable, inject, ApplicationRef } from "@angular/core";
-import { SwUpdate, VersionReadyEvent } from "@angular/service-worker";
-import { filter, first, concat, interval } from "rxjs";
+import { ApplicationRef, inject, Injectable } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { SwUpdate, VersionReadyEvent } from "@angular/service-worker";
+import { concat, filter, first, interval } from "rxjs";
 import { LoggerService } from "./logger.service";
 
 /**
@@ -19,9 +19,12 @@ import { LoggerService } from "./logger.service";
 })
 export class SwUpdateService
 {
-	private readonly swUpdate: SwUpdate = inject(SwUpdate);
-	private readonly appRef: ApplicationRef = inject(ApplicationRef);
-	private readonly logger: LoggerService = inject(LoggerService);
+	private readonly swUpdate: SwUpdate =
+		inject(SwUpdate);
+	private readonly appRef: ApplicationRef =
+		inject(ApplicationRef);
+	private readonly logger: LoggerService =
+		inject(LoggerService);
 
 	constructor()
 	{
@@ -43,14 +46,13 @@ export class SwUpdateService
 		// Wait for app to stabilize, then check for updates every 6 hours
 		const appIsStable$: import("rxjs").Observable<boolean> =
 			this.appRef.isStable.pipe(
-				first((isStable: boolean) => isStable === true)
-			);
-		const everySixHours$: import("rxjs").Observable<number> = interval(
-			6 * 60 * 60 * 1000
-		);
+			first((isStable: boolean) => isStable === true));
+		const everySixHours$: import("rxjs").Observable<number> =
+			interval(
+			6 * 60 * 60 * 1000);
 		const everySixHoursOnceAppIsStable$: import("rxjs").Observable<
-			boolean | number
-		> = concat(appIsStable$, everySixHours$);
+			boolean | number> =
+			concat(appIsStable$, everySixHours$);
 
 		everySixHoursOnceAppIsStable$
 			.pipe(takeUntilDestroyed())
@@ -64,8 +66,7 @@ export class SwUpdateService
 				{
 					this.logger.error(
 						"Failed to check for updates",
-						err instanceof Error ? err : undefined
-					);
+						err instanceof Error ? err : undefined);
 				}
 			});
 	}
@@ -76,14 +77,14 @@ export class SwUpdateService
 	 */
 	private handleVersionUpdates(): void
 	{
-		this.swUpdate.versionUpdates
+		this
+			.swUpdate
+			.versionUpdates
 			.pipe(
 				filter(
 					(evt): evt is VersionReadyEvent =>
-						evt.type === "VERSION_READY"
-				),
-				takeUntilDestroyed()
-			)
+						evt.type === "VERSION_READY"),
+				takeUntilDestroyed())
 			.subscribe(() =>
 			{
 				if (this.confirmUpdate())
@@ -99,7 +100,9 @@ export class SwUpdateService
 	 */
 	private handleUnrecoverableState(): void
 	{
-		this.swUpdate.unrecoverable
+		this
+			.swUpdate
+			.unrecoverable
 			.pipe(takeUntilDestroyed())
 			.subscribe((event) =>
 			{
@@ -108,13 +111,11 @@ export class SwUpdateService
 					undefined,
 					{
 						reason: event.reason
-					}
-				);
+					});
 
 				// Reload the page
 				this.notifyUnrecoverableState(
-					"An error occurred that requires reloading the page."
-				);
+					"An error occurred that requires reloading the page.");
 				window.location.reload();
 			});
 	}
@@ -126,8 +127,7 @@ export class SwUpdateService
 	private confirmUpdate(): boolean
 	{
 		return confirm(
-			"A new version is available. Would you like to update now?"
-		);
+			"A new version is available. Would you like to update now?");
 	}
 
 	/**
@@ -152,8 +152,7 @@ export class SwUpdateService
 		{
 			this.logger.error(
 				"Failed to activate update",
-				err instanceof Error ? err : undefined
-			);
+				err instanceof Error ? err : undefined);
 		}
 	}
 
@@ -170,7 +169,8 @@ export class SwUpdateService
 
 		try
 		{
-			const updateFound: boolean = await this.swUpdate.checkForUpdate();
+			const updateFound: boolean =
+				await this.swUpdate.checkForUpdate();
 			if (updateFound)
 			{
 				this.logger.info("Update found");
@@ -185,8 +185,7 @@ export class SwUpdateService
 		{
 			this.logger.error(
 				"Error checking for update",
-				err instanceof Error ? err : undefined
-			);
+				err instanceof Error ? err : undefined);
 			return false;
 		}
 	}
@@ -204,7 +203,8 @@ export class SwUpdateService
 
 		try
 		{
-			const updateFound: boolean = await this.swUpdate.checkForUpdate();
+			const updateFound: boolean =
+				await this.swUpdate.checkForUpdate();
 			if (updateFound)
 			{
 				await this.swUpdate.activateUpdate();
@@ -215,8 +215,7 @@ export class SwUpdateService
 		{
 			this.logger.error(
 				"Error forcing update",
-				err instanceof Error ? err : undefined
-			);
+				err instanceof Error ? err : undefined);
 		}
 	}
 }

@@ -1,70 +1,77 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection, signal } from "@angular/core";
+import { UserService } from "@admin/users/services";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
+import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { UserManagementPage } from "./user-management";
-import { UserService } from "@admin/users/services";
 
 describe("UserManagementPage", () =>
 {
 	let fixture: ComponentFixture<UserManagementPage>;
 
-	const mockUserService: Partial<UserService> = {
-		getPagedUsers: jasmine.createSpy("getPagedUsers").and.returnValue({
+	const mockUserService: Partial<UserService> =
+		{
+			getPagedUsers: jasmine.createSpy("getPagedUsers").and.returnValue({
 			data: () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 }),
 			isLoading: () => false,
 			error: () => null,
 			isSuccess: () => true
 		}),
-		updateUser: jasmine.createSpy("updateUser").and.returnValue({
+			updateUser: jasmine.createSpy("updateUser").and.returnValue({
 			mutate: jasmine.createSpy("mutate"),
 			isPending: () => false
 		}),
-		resetPassword: jasmine.createSpy("resetPassword").and.returnValue({
+			resetPassword: jasmine.createSpy("resetPassword").and.returnValue({
 			mutate: jasmine.createSpy("mutate"),
 			isPending: () => false
 		}),
-		restoreUser: jasmine.createSpy("restoreUser").and.returnValue({
+			restoreUser: jasmine.createSpy("restoreUser").and.returnValue({
 			mutate: jasmine.createSpy("mutate"),
 			isPending: () => false
 		}),
-		updateFilter: jasmine.createSpy("updateFilter"),
-		getCurrentFilter: jasmine
+			updateFilter: jasmine.createSpy("updateFilter"),
+			getCurrentFilter: jasmine
 			.createSpy("getCurrentFilter")
-			.and.returnValue({
+			.and
+			.returnValue({
 				page: 1,
 				pageSize: 50,
 				sortBy: "Id",
 				sortDescending: true
 			})
-	};
+		};
 
 	beforeEach(async () =>
 	{
-		await TestBed.configureTestingModule({
-			imports: [UserManagementPage],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideHttpClientTesting(),
-				provideRouter([]),
-				{ provide: UserService, useValue: mockUserService }
-			]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [UserManagementPage],
+				providers: [
+					provideZonelessChangeDetection(),
+					provideHttpClientTesting(),
+					provideRouter([]),
+					{ provide: UserService, useValue: mockUserService }
+				]
+			})
+			.compileComponents();
 
-		fixture = TestBed.createComponent(UserManagementPage);
+		fixture =
+			TestBed.createComponent(UserManagementPage);
 		fixture.detectChanges();
 	});
 
 	it("should create", () =>
 	{
-		expect(fixture.componentInstance).toBeTruthy();
+		expect(fixture.componentInstance)
+			.toBeTruthy();
 	});
 
 	it("should render page header with title", () =>
 	{
 		const header: HTMLElement | null =
 			fixture.nativeElement.querySelector("app-page-header");
-		expect(header).toBeTruthy();
+		expect(header)
+			.toBeTruthy();
 	});
 
 	describe("CLS Prevention", () =>
@@ -73,14 +80,17 @@ describe("UserManagementPage", () =>
 		{
 			const pageContent: HTMLElement | null =
 				fixture.nativeElement.querySelector(".page-content");
-			expect(pageContent).toBeTruthy();
+			expect(pageContent)
+				.toBeTruthy();
 
-			const styles: CSSStyleDeclaration = window.getComputedStyle(
-				pageContent!
-			);
-			const minHeight: string = styles.minHeight;
+			const styles: CSSStyleDeclaration =
+				window.getComputedStyle(
+				pageContent!);
+			const minHeight: string =
+				styles.minHeight;
 
-			expect(minHeight).toBeTruthy();
+			expect(minHeight)
+				.toBeTruthy();
 			expect(minHeight).not.toBe("0px");
 			expect(minHeight).not.toBe("auto");
 		});

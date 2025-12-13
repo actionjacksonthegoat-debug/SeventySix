@@ -1,5 +1,5 @@
-import { BaseQueryRequest } from "@shared/models";
 import { DateService } from "@infrastructure/services";
+import { BaseQueryRequest } from "@shared/models";
 
 /** Log query request DTO matching backend LogQueryRequest. */
 export interface LogQueryRequest extends BaseQueryRequest
@@ -25,32 +25,37 @@ export enum DateRangePreset
 /** Helper to get date range from preset. */
 export function getDateRangeFromPreset(
 	preset: DateRangePreset,
-	dateService: DateService
-): {
+	dateService: DateService): {
 	startDate: Date | null;
 	endDate: Date | null;
 }
 {
-	const now: Date = dateService.parseUTC(dateService.now());
+	const now: Date =
+		dateService.parseUTC(dateService.now());
 	const endDate: Date = now;
 	let startDate: Date | null = null;
 
 	switch (preset)
 	{
 		case DateRangePreset.Last1Hour:
-			startDate = dateService.addHours(now, -1);
+			startDate =
+				dateService.addHours(now, -1);
 			break;
 		case DateRangePreset.Last6Hours:
-			startDate = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+			startDate =
+				new Date(now.getTime() - 6 * 60 * 60 * 1000);
 			break;
 		case DateRangePreset.Last24Hours:
-			startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+			startDate =
+				new Date(now.getTime() - 24 * 60 * 60 * 1000);
 			break;
 		case DateRangePreset.Last7Days:
-			startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+			startDate =
+				new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 			break;
 		case DateRangePreset.Last30Days:
-			startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+			startDate =
+				new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 			break;
 		case DateRangePreset.Custom:
 			return { startDate: null, endDate: null };

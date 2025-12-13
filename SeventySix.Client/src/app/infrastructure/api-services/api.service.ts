@@ -7,12 +7,12 @@ import {
 } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
-import { catchError, Observable, throwError } from "rxjs";
 import {
 	HTTP_HEADER_CONTENT_TYPE,
 	MEDIA_TYPE_JSON
 } from "@infrastructure/constants";
 import { LoggerService } from "@infrastructure/services/logger.service";
+import { catchError, Observable, throwError } from "rxjs";
 
 /**
  * Low-level HTTP wrapper for API communication.
@@ -26,20 +26,24 @@ import { LoggerService } from "@infrastructure/services/logger.service";
 })
 export class ApiService
 {
-	private readonly baseUrl: string = environment.apiUrl;
-	private readonly http: HttpClient = inject(HttpClient);
-	private readonly logger: LoggerService = inject(LoggerService);
-	private defaultHeaders: HttpHeaders = new HttpHeaders({
+	private readonly baseUrl: string =
+		environment.apiUrl;
+	private readonly http: HttpClient =
+		inject(HttpClient);
+	private readonly logger: LoggerService =
+		inject(LoggerService);
+	private defaultHeaders: HttpHeaders =
+		new HttpHeaders({
 		[HTTP_HEADER_CONTENT_TYPE]: MEDIA_TYPE_JSON
 	});
 
 	get<T>(
 		endpoint: string,
 		params?: HttpParams,
-		context?: HttpContext
-	): Observable<T>
+		context?: HttpContext): Observable<T>
 	{
-		return this.http
+		return this
+			.http
 			.get<T>(`${this.baseUrl}/${endpoint}`, {
 				headers: this.defaultHeaders,
 				params,
@@ -50,7 +54,8 @@ export class ApiService
 
 	post<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
-		return this.http
+		return this
+			.http
 			.post<T>(`${this.baseUrl}/${endpoint}`, body, {
 				headers: this.defaultHeaders
 			})
@@ -59,7 +64,8 @@ export class ApiService
 
 	put<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
-		return this.http
+		return this
+			.http
 			.put<T>(`${this.baseUrl}/${endpoint}`, body, {
 				headers: this.defaultHeaders
 			})
@@ -68,7 +74,8 @@ export class ApiService
 
 	patch<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
-		return this.http
+		return this
+			.http
 			.patch<T>(`${this.baseUrl}/${endpoint}`, body, {
 				headers: this.defaultHeaders
 			})
@@ -77,7 +84,8 @@ export class ApiService
 
 	delete<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
-		return this.http
+		return this
+			.http
 			.request<T>("DELETE", `${this.baseUrl}/${endpoint}`, {
 				headers: this.defaultHeaders,
 				body
@@ -87,15 +95,18 @@ export class ApiService
 
 	addHeaders(headers: Record<string, string>): void
 	{
-		Object.entries(headers).forEach(([key, value]) =>
-		{
-			this.defaultHeaders = this.defaultHeaders.set(key, value);
-		});
+		Object
+			.entries(headers)
+			.forEach(([key, value]) =>
+			{
+				this.defaultHeaders =
+					this.defaultHeaders.set(key, value);
+			});
 	}
 
-	private handleError: (error: HttpErrorResponse) => Observable<never> = (
-		error: HttpErrorResponse
-	): Observable<never> =>
+	private handleError: (error: HttpErrorResponse) => Observable<never> =
+		(
+		error: HttpErrorResponse): Observable<never> =>
 	{
 		const errorMessage: string =
 			error.error instanceof ErrorEvent

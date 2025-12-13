@@ -1,16 +1,16 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
 import { provideRouter } from "@angular/router";
-import {
-	QueryClient,
-	provideAngularQuery
-} from "@tanstack/angular-query-experimental";
-import { of } from "rxjs";
-import { ProfilePage } from "./profile";
-import { AccountService } from "../services";
 import { ApiService } from "@infrastructure/api-services/api.service";
+import {
+	provideAngularQuery,
+	QueryClient
+} from "@tanstack/angular-query-experimental";
 import { createMockApiService } from "@testing";
+import { of } from "rxjs";
+import { AccountService } from "../services";
+import { ProfilePage } from "./profile";
 
 describe("ProfilePage", () =>
 {
@@ -27,32 +27,37 @@ describe("ProfilePage", () =>
 			of({
 				id: 1,
 				username: "testuser",
-				email: "test@example.com", fullName: "Test User",
+				email: "test@example.com",
+				fullName: "Test User",
 				roles: ["User"],
 				hasPassword: true,
 				linkedProviders: [],
 				lastLoginAt: "2024-01-01T12:00:00Z"
-			})
-		);
+			}));
 
-		queryClient = new QueryClient({
+		queryClient =
+			new QueryClient({
 			defaultOptions: { queries: { retry: false } }
 		});
 
-		await TestBed.configureTestingModule({
-			imports: [ProfilePage],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideNoopAnimations(),
-				provideRouter([]),
-				provideAngularQuery(queryClient),
-				AccountService,
-				{ provide: ApiService, useValue: mockApiService }
-			]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [ProfilePage],
+				providers: [
+					provideZonelessChangeDetection(),
+					provideNoopAnimations(),
+					provideRouter([]),
+					provideAngularQuery(queryClient),
+					AccountService,
+					{ provide: ApiService, useValue: mockApiService }
+				]
+			})
+			.compileComponents();
 
-		fixture = TestBed.createComponent(ProfilePage);
-		component = fixture.componentInstance;
+		fixture =
+			TestBed.createComponent(ProfilePage);
+		component =
+			fixture.componentInstance;
 		await fixture.whenStable();
 		fixture.detectChanges();
 	});
@@ -61,7 +66,8 @@ describe("ProfilePage", () =>
 
 	it("should create", () =>
 	{
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	it("should not submit invalid form", async () =>
@@ -75,19 +81,21 @@ describe("ProfilePage", () =>
 
 	it("should submit valid form", async () =>
 	{
-		mockApiService.put.and.returnValue(of({} as any));
+		mockApiService.put.and.returnValue(of({}));
 		component.profileForm.patchValue({
-			email: "new@example.com", fullName: "New Name"
+			email: "new@example.com",
+			fullName: "New Name"
 		});
 		component.profileForm.markAsDirty();
 
 		await component.onSubmit();
 
-		expect(mockApiService.put).toHaveBeenCalledWith(
-			"users/me",
-			{
-				email: "new@example.com", fullName: "New Name"
-			}
-		);
+		expect(mockApiService.put)
+			.toHaveBeenCalledWith(
+				"users/me",
+				{
+					email: "new@example.com",
+					fullName: "New Name"
+				});
 	});
 });

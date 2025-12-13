@@ -1,20 +1,21 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
 import { provideRouter, Routes } from "@angular/router";
-import {
-	QueryClient,
-	provideAngularQuery
-} from "@tanstack/angular-query-experimental";
-import { of } from "rxjs";
-import { RequestPermissionsPage } from "./request-permissions";
-import { AccountService } from "../services";
 import { ApiService } from "@infrastructure/api-services/api.service";
+import {
+	provideAngularQuery,
+	QueryClient
+} from "@tanstack/angular-query-experimental";
 import { createMockApiService } from "@testing";
+import { of } from "rxjs";
+import { AccountService } from "../services";
+import { RequestPermissionsPage } from "./request-permissions";
 
-const testRoutes: Routes = [
-	{ path: "account", component: RequestPermissionsPage }
-];
+const testRoutes: Routes =
+	[
+		{ path: "account", component: RequestPermissionsPage }
+	];
 
 describe("RequestPermissionsPage", () =>
 {
@@ -31,27 +32,31 @@ describe("RequestPermissionsPage", () =>
 			of([
 				{ name: "Admin", description: "Administrator access" },
 				{ name: "Developer", description: "Developer access" }
-			])
-		);
+			]));
 
-		queryClient = new QueryClient({
+		queryClient =
+			new QueryClient({
 			defaultOptions: { queries: { retry: false } }
 		});
 
-		await TestBed.configureTestingModule({
-			imports: [RequestPermissionsPage],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideNoopAnimations(),
-				provideRouter(testRoutes),
-				provideAngularQuery(queryClient),
-				AccountService,
-				{ provide: ApiService, useValue: mockApiService }
-			]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [RequestPermissionsPage],
+				providers: [
+					provideZonelessChangeDetection(),
+					provideNoopAnimations(),
+					provideRouter(testRoutes),
+					provideAngularQuery(queryClient),
+					AccountService,
+					{ provide: ApiService, useValue: mockApiService }
+				]
+			})
+			.compileComponents();
 
-		fixture = TestBed.createComponent(RequestPermissionsPage);
-		component = fixture.componentInstance;
+		fixture =
+			TestBed.createComponent(RequestPermissionsPage);
+		component =
+			fixture.componentInstance;
 		await fixture.whenStable();
 		fixture.detectChanges();
 	});
@@ -60,18 +65,31 @@ describe("RequestPermissionsPage", () =>
 
 	it("should create", () =>
 	{
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	it("should toggle role selection", () =>
 	{
-		expect(component.selectedRoles().has("Admin")).toBeFalse();
+		expect(
+			component
+				.selectedRoles()
+				.has("Admin"))
+			.toBeFalse();
 
 		component.toggleRole("Admin");
-		expect(component.selectedRoles().has("Admin")).toBeTrue();
+		expect(
+			component
+				.selectedRoles()
+				.has("Admin"))
+			.toBeTrue();
 
 		component.toggleRole("Admin");
-		expect(component.selectedRoles().has("Admin")).toBeFalse();
+		expect(
+			component
+				.selectedRoles()
+				.has("Admin"))
+			.toBeFalse();
 	});
 
 	it("should not submit without selected roles", async () =>
@@ -89,12 +107,12 @@ describe("RequestPermissionsPage", () =>
 
 		await component.onSubmit();
 
-		expect(mockApiService.post).toHaveBeenCalledWith(
-			"users/me/permission-requests",
-			{
-				requestedRoles: ["Admin"],
-				requestMessage: "Need access"
-			}
-		);
+		expect(mockApiService.post)
+			.toHaveBeenCalledWith(
+				"users/me/permission-requests",
+				{
+					requestedRoles: ["Admin"],
+					requestMessage: "Need access"
+				});
 	});
 });

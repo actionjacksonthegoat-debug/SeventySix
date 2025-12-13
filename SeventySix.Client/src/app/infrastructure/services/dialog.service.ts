@@ -1,8 +1,8 @@
-import { Injectable, inject } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { Observable, map } from "rxjs";
 import { ConfirmDialogComponent } from "@shared/components";
 import { ConfirmDialogData } from "@shared/models";
+import { map, Observable } from "rxjs";
 
 /**
  * Options for confirmation dialogs.
@@ -24,7 +24,8 @@ export interface ConfirmOptions
 })
 export class DialogService
 {
-	private readonly dialog: MatDialog = inject(MatDialog);
+	private readonly dialog: MatDialog =
+		inject(MatDialog);
 
 	/**
 	 * Shows a generic confirmation dialog.
@@ -33,20 +34,22 @@ export class DialogService
 	 */
 	confirm(options: ConfirmOptions): Observable<boolean>
 	{
-		const dialogData: ConfirmDialogData = {
-			title: options.title,
-			message: options.message,
-			confirmText: options.confirmText ?? "Confirm",
-			cancelText: options.cancelText ?? "Cancel",
-			confirmColor: "primary"
-		};
+		const dialogData: ConfirmDialogData =
+			{
+				title: options.title,
+				message: options.message,
+				confirmText: options.confirmText ?? "Confirm",
+				cancelText: options.cancelText ?? "Cancel",
+				confirmColor: "primary"
+			};
 
-		return this.dialog
+		return this
+			.dialog
 			.open(ConfirmDialogComponent, { data: dialogData })
 			.afterClosed()
 			.pipe(
-				map((result: boolean | undefined): boolean => result === true)
-			);
+				map((result: boolean | undefined): boolean =>
+					result === true));
 	}
 
 	/**
@@ -57,29 +60,32 @@ export class DialogService
 	 */
 	confirmDelete(
 		itemName: string,
-		itemCount: number = 1
-	): Observable<boolean>
+		itemCount: number = 1): Observable<boolean>
 	{
-		const plural: boolean = itemCount > 1;
-		const displayName: string = plural
-			? `${itemCount} ${itemName}s`
-			: itemName;
+		const plural: boolean =
+			itemCount > 1;
+		const displayName: string =
+			plural
+				? `${itemCount} ${itemName}s`
+				: itemName;
 
-		const dialogData: ConfirmDialogData = {
-			title: `Delete ${plural ? itemName + "s" : itemName}?`,
-			message: `Are you sure you want to delete ${displayName}? This action cannot be undone.`,
-			confirmText: "Delete",
-			cancelText: "Cancel",
-			confirmColor: "warn",
-			icon: "warning"
-		};
+		const dialogData: ConfirmDialogData =
+			{
+				title: `Delete ${plural ? itemName + "s" : itemName}?`,
+				message: `Are you sure you want to delete ${displayName}? This action cannot be undone.`,
+				confirmText: "Delete",
+				cancelText: "Cancel",
+				confirmColor: "warn",
+				icon: "warning"
+			};
 
-		return this.dialog
+		return this
+			.dialog
 			.open(ConfirmDialogComponent, { data: dialogData })
 			.afterClosed()
 			.pipe(
-				map((result: boolean | undefined): boolean => result === true)
-			);
+				map((result: boolean | undefined): boolean =>
+					result === true));
 	}
 
 	/**
@@ -89,20 +95,23 @@ export class DialogService
 	 */
 	confirmDeactivate(itemName: string): Observable<boolean>
 	{
-		const dialogData: ConfirmDialogData = {
-			title: `Deactivate ${itemName}?`,
-			message: `Are you sure you want to deactivate this ${itemName}? The ${itemName} will no longer be able to access the system.`,
-			confirmText: "Deactivate",
-			cancelText: "Cancel",
-			confirmColor: "warn",
-			icon: "person_off"
-		};
+		const dialogData: ConfirmDialogData =
+			{
+				title: `Deactivate ${itemName}?`,
+				message:
+				`Are you sure you want to deactivate this ${itemName}? The ${itemName} will no longer be able to access the system.`,
+				confirmText: "Deactivate",
+				cancelText: "Cancel",
+				confirmColor: "warn",
+				icon: "person_off"
+			};
 
-		return this.dialog
+		return this
+			.dialog
 			.open(ConfirmDialogComponent, { data: dialogData })
 			.afterClosed()
 			.pipe(
-				map((result: boolean | undefined): boolean => result === true)
-			);
+				map((result: boolean | undefined): boolean =>
+					result === true));
 	}
 }

@@ -1,8 +1,8 @@
-import { Component, ChangeDetectionStrategy, inject } from "@angular/core";
-import { MatToolbarModule } from "@angular/material/toolbar";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
-import { DateService } from "@infrastructure/services";
+import { MatToolbarModule } from "@angular/material/toolbar";
 import { environment } from "@environments/environment";
+import { DateService } from "@infrastructure/services";
 
 /**
  * Application footer component
@@ -17,8 +17,13 @@ import { environment } from "@environments/environment";
 })
 export class FooterComponent
 {
-	private readonly dateService: DateService = inject(DateService);
+	private readonly dateService: DateService =
+		inject(DateService);
 	protected readonly currentYear: number =
-		this.dateService.parseUTC(this.dateService.now()).getFullYear();
-	protected readonly version: string = environment.version;
+		this
+		.dateService
+		.parseUTC(this.dateService.now())
+		.getFullYear();
+	protected readonly version: string =
+		environment.version;
 }

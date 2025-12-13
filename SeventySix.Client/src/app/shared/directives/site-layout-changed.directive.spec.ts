@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
-import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { SiteLayoutChangedDirective } from "./site-layout-changed.directive";
 
 @Component({
@@ -12,7 +12,8 @@ import { SiteLayoutChangedDirective } from "./site-layout-changed.directive";
 })
 class TestLayoutChangedComponent
 {
-	layoutChanged = jasmine.createSpy("layoutChanged");
+	layoutChanged: jasmine.Spy =
+		jasmine.createSpy("layoutChanged");
 
 	onLayoutChanged(): void
 	{
@@ -27,19 +28,24 @@ describe("SiteLayoutChangedDirective", () =>
 
 	beforeEach(async () =>
 	{
-		await TestBed.configureTestingModule({
-			imports: [TestLayoutChangedComponent],
-			providers: [provideZonelessChangeDetection()]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [TestLayoutChangedComponent],
+				providers: [provideZonelessChangeDetection()]
+			})
+			.compileComponents();
 
-		fixture = TestBed.createComponent(TestLayoutChangedComponent);
-		component = fixture.componentInstance;
+		fixture =
+			TestBed.createComponent(TestLayoutChangedComponent);
+		component =
+			fixture.componentInstance;
 		fixture.detectChanges();
 	});
 
 	it("should create directive", () =>
 	{
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	it("should emit layoutChanged on window resize", (done) =>
@@ -48,7 +54,8 @@ describe("SiteLayoutChangedDirective", () =>
 
 		setTimeout(() =>
 		{
-			expect(component.layoutChanged).toHaveBeenCalled();
+			expect(component.layoutChanged)
+				.toHaveBeenCalled();
 			done();
 		}, 600);
 	});

@@ -4,18 +4,18 @@
  */
 import { Routes } from "@angular/router";
 
-export const DEVELOPER_ROUTES: Routes = [
-	{
-		path: "",
-		redirectTo: "style-guide",
-		pathMatch: "full"
-	},
-	{
-		path: "style-guide",
-		loadComponent: () =>
-			import("./style-guide/style-guide").then(
-				(m) => m.StyleGuideComponent
-			),
-		title: "Style Guide"
-	}
-];
+export const DEVELOPER_ROUTES: Routes =
+	[
+		{
+			path: "",
+			redirectTo: "style-guide",
+			pathMatch: "full"
+		},
+		{
+			path: "style-guide",
+			loadComponent: () =>
+				import("./style-guide/style-guide").then(
+				(m) => m.StyleGuideComponent),
+			title: "Style Guide"
+		}
+	];

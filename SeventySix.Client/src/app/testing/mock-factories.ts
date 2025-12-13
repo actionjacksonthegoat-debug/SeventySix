@@ -4,13 +4,13 @@
  * Eliminates duplication across 40+ spec files
  */
 
-import { LoggerService } from "@infrastructure/services/logger.service";
-import { NotificationService } from "@infrastructure/services/notification.service";
-import { ErrorQueueService } from "@infrastructure/services/error-queue.service";
-import { Router } from "@angular/router";
-import { ActivatedRoute } from "@angular/router";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { Router } from "@angular/router";
+import { ActivatedRoute } from "@angular/router";
+import { ErrorQueueService } from "@infrastructure/services/error-queue.service";
+import { LoggerService } from "@infrastructure/services/logger.service";
+import { NotificationService } from "@infrastructure/services/notification.service";
 import { of } from "rxjs";
 
 /**
@@ -73,10 +73,10 @@ export function createMockRouter(): jasmine.SpyObj<Router>
  * @returns Jasmine spy object for ActivatedRoute
  */
 export function createMockActivatedRoute(
-	params: Record<string, unknown> = {}
-): jasmine.SpyObj<ActivatedRoute>
+	params: Record<string, unknown> = {}): jasmine.SpyObj<ActivatedRoute>
 {
-	const mock: jasmine.SpyObj<ActivatedRoute> = jasmine.createSpyObj(
+	const mock: jasmine.SpyObj<ActivatedRoute> =
+		jasmine.createSpyObj(
 		"ActivatedRoute",
 		[],
 		{
@@ -86,11 +86,11 @@ export function createMockActivatedRoute(
 				queryParams: {},
 				data: {},
 				paramMap: {
-					get: (key: string): unknown => params[key] ?? null
+					get: (key: string): unknown =>
+						params[key] ?? null
 				}
 			}
-		}
-	);
+		});
 	return mock;
 }
 
@@ -237,7 +237,8 @@ export interface MockLayoutService
  */
 export function createMockLayoutService(): MockLayoutService
 {
-	const mock: MockLayoutService = jasmine.createSpyObj("LayoutService", [
+	const mock: MockLayoutService =
+		jasmine.createSpyObj("LayoutService", [
 		"setSidebarExpanded",
 		"toggleSidebar",
 		"openSidebar",
@@ -245,10 +246,13 @@ export function createMockLayoutService(): MockLayoutService
 	]) as MockLayoutService;
 
 	// Add signal-like computed properties
-	mock.sidebarMode = jasmine.createSpy("sidebarMode").and.returnValue("side");
-	mock.sidebarExpanded = jasmine
+	mock.sidebarMode =
+		jasmine.createSpy("sidebarMode").and.returnValue("side");
+	mock.sidebarExpanded =
+		jasmine
 		.createSpy("sidebarExpanded")
-		.and.returnValue(true);
+		.and
+		.returnValue(true);
 
 	return mock;
 }

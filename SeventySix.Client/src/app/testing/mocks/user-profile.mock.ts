@@ -10,8 +10,7 @@ import { UserProfileDto } from "@infrastructure/api";
  * Override any fields as needed in your tests.
  */
 export function createMockUserProfile(
-	overrides?: Partial<UserProfileDto>
-): UserProfileDto
+	overrides?: Partial<UserProfileDto>): UserProfileDto
 {
 	return {
 		id: 1,

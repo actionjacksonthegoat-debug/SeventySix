@@ -1,4 +1,6 @@
-<nav class="app-sidebar" aria-label="Main navigation">
+<nav
+	class="app-sidebar"
+	aria-label="Main navigation">
 	<!-- Close button for overlay mode -->
 	<div class="sidebar-header">
 		<button
@@ -6,47 +8,40 @@
 			class="close-sidebar-btn"
 			(click)="closeSidebar()"
 			matTooltip="Close menu"
-			aria-label="Close navigation menu"
-		>
+			aria-label="Close navigation menu">
 			<mat-icon aria-hidden="true">close</mat-icon>
 		</button>
 	</div>
 
-	@for (
-		section of visibleNavSections();
-		track section.title;
-		let idx = $index
-	)
-	{
+	@for (section of visibleNavSections(); track section.title; let idx = $index) {
 		<!-- Section Title -->
-		<h2 class="nav-section-title" [id]="'nav-section-' + idx">
+		<h2
+			class="nav-section-title"
+			[id]='"nav-section-" + idx'>
 			{{ section.title }}
 		</h2>
 
 		<!-- Navigation List -->
-		<mat-nav-list [attr.aria-labelledby]="'nav-section-' + idx">
-			@for (item of section.items; track item.route)
-			{
+		<mat-nav-list [attr.aria-labelledby]='"nav-section-" + idx'>
+			@for (item of section.items; track item.route) {
 				<a
 					mat-list-item
 					[routerLink]="item.route"
 					routerLinkActive="active"
 					#rla="routerLinkActive"
-					[routerLinkActiveOptions]="{ exact: item.route === '/' }"
+					[routerLinkActiveOptions]='{ exact: item.route === "/" }'
 					(click)="closeSidebarOnMobile()"
-					[attr.aria-current]="rla.isActive ? 'page' : null"
-				>
-					<mat-icon matListItemIcon aria-hidden="true">{{
-						item.icon
-					}}</mat-icon>
+					[attr.aria-current]='rla.isActive ? "page" : null'>
+					<mat-icon
+						matListItemIcon
+						aria-hidden="true">{{ item.icon }}</mat-icon>
 					<span matListItemTitle>{{ item.label }}</span>
 				</a>
 			}
 		</mat-nav-list>
 
 		<!-- Divider between sections -->
-		@if (!$last)
-		{
+		@if (!$last) {
 			<mat-divider role="separator"></mat-divider>
 		}
 	}

@@ -339,8 +339,7 @@ html.light-theme {
 	.interactive-row,
 	.data-row {
 		cursor: pointer;
-		transition: background-color vars.$transition-duration-fast
-			vars.$transition-easing-standard;
+		transition: background-color vars.$transition-duration-fast vars.$transition-easing-standard;
 
 		&:hover {
 			background-color: var(--color-hover);
@@ -357,8 +356,7 @@ html.dark-theme {
 	.interactive-row,
 	.data-row {
 		cursor: pointer;
-		transition: background-color vars.$transition-duration-fast
-			vars.$transition-easing-standard;
+		transition: background-color vars.$transition-duration-fast vars.$transition-easing-standard;
 
 		&:hover {
 			background-color: var(--color-hover);

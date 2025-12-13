@@ -14,8 +14,7 @@
 						<!-- System Health & Metrics (Grafana) -->
 						<app-grafana-dashboard-embed
 							[dashboardUid]="systemOverviewDashboard"
-							title="System Health & Metrics"
-						></app-grafana-dashboard-embed>
+							title="System Health & Metrics"></app-grafana-dashboard-embed>
 					</div>
 				</ng-template>
 			</mat-tab>
@@ -27,8 +26,7 @@
 						<!-- API Endpoint Metrics (Grafana) -->
 						<app-grafana-dashboard-embed
 							[dashboardUid]="apiEndpointsDashboard"
-							title="API Endpoint Metrics"
-						></app-grafana-dashboard-embed>
+							title="API Endpoint Metrics"></app-grafana-dashboard-embed>
 					</div>
 				</ng-template>
 			</mat-tab>
@@ -51,27 +49,20 @@
 							<div class="log-validation-links">
 								<button
 									mat-stroked-button
-									(click)="sendInfoLog()"
-								>
+									(click)="sendInfoLog()">
 									<mat-icon aria-hidden="true">info</mat-icon>
 									Info
 								</button>
 								<button
 									mat-stroked-button
-									(click)="sendWarnLog()"
-								>
-									<mat-icon aria-hidden="true"
-										>warning</mat-icon
-									>
+									(click)="sendWarnLog()">
+									<mat-icon aria-hidden="true">warning</mat-icon>
 									Warn
 								</button>
 								<button
 									mat-stroked-button
-									(click)="sendErrorLog()"
-								>
-									<mat-icon aria-hidden="true"
-										>error</mat-icon
-									>
+									(click)="sendErrorLog()">
+									<mat-icon aria-hidden="true">error</mat-icon>
 									Error
 								</button>
 							</div>
@@ -82,9 +73,7 @@
 					<mat-card>
 						<mat-card-header>
 							<mat-card-title>
-								<mat-icon aria-hidden="true"
-									>visibility</mat-icon
-								>
+								<mat-icon aria-hidden="true">visibility</mat-icon>
 								Observability Tools
 							</mat-card-title>
 						</mat-card-header>
@@ -93,31 +82,22 @@
 								<button
 									mat-raised-button
 									color="accent"
-									(click)="openJaeger()"
-								>
-									<mat-icon aria-hidden="true"
-										>bug_report</mat-icon
-									>
+									(click)="openJaeger()">
+									<mat-icon aria-hidden="true">bug_report</mat-icon>
 									Jaeger Tracing
 								</button>
 								<button
 									mat-raised-button
 									color="accent"
-									(click)="openPrometheus()"
-								>
-									<mat-icon aria-hidden="true"
-										>analytics</mat-icon
-									>
+									(click)="openPrometheus()">
+									<mat-icon aria-hidden="true">analytics</mat-icon>
 									Prometheus Metrics
 								</button>
 								<button
 									mat-raised-button
 									color="accent"
-									(click)="openGrafana()"
-								>
-									<mat-icon aria-hidden="true"
-										>open_in_new</mat-icon
-									>
+									(click)="openGrafana()">
+									<mat-icon aria-hidden="true">open_in_new</mat-icon>
 									Grafana Full View
 								</button>
 							</div>

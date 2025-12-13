@@ -21,340 +21,323 @@
 				[disabled]="
 					isSaving() || userForm.invalid || !hasUnsavedChanges()
 				">
-				@if (isSaving())
-				{
-					<mat-spinner diameter="20"></mat-spinner>
-				}
-				@else
-				{
-					<ng-container>
-						<mat-icon aria-hidden="true">
-							save
-						</mat-icon>
-						Save Changes
-					</ng-container>
+				@if (isSaving()) {
+				<mat-spinner diameter="20"></mat-spinner>
+				} @else {
+				<ng-container>
+					<mat-icon aria-hidden="true">
+						save
+					</mat-icon>
+					Save Changes
+				</ng-container>
 				}
 			</button>
 		</div>
 	</header>
 
 	<!-- Loading State -->
-	@if (isLoading())
-	{
-		<div class="loading-container">
-			<mat-spinner></mat-spinner>
-			<p class="mat-body-1">Loading user...</p>
-		</div>
+	@if (isLoading()) {
+	<div class="loading-container">
+		<mat-spinner></mat-spinner>
+		<p class="mat-body-1">Loading user...</p>
+	</div>
 	}
 
 	<!-- Error State -->
-	@if (error() && !isLoading())
-	{
-		<div class="error-container">
-			<mat-card appearance="outlined" class="error-card">
-				<mat-card-content>
-					<div class="error-content">
-						<mat-icon
-							color="warn"
-							class="error-icon"
-							aria-hidden="true">
-							error
+	@if (error() && !isLoading()) {
+	<div class="error-container">
+		<mat-card
+			appearance="outlined"
+			class="error-card">
+			<mat-card-content>
+				<div class="error-content">
+					<mat-icon
+						color="warn"
+						class="error-icon"
+						aria-hidden="true">
+						error
+					</mat-icon>
+					<p class="mat-body-1">{{ error() }}</p>
+					<button
+						mat-raised-button
+						type="button"
+						(click)="onCancel()">
+						<mat-icon aria-hidden="true">
+							arrow_back
 						</mat-icon>
-						<p class="mat-body-1">{{ error() }}</p>
-						<button
-							mat-raised-button
-							type="button"
-							(click)="onCancel()">
-							<mat-icon aria-hidden="true">
-								arrow_back
-							</mat-icon>
-							Back to Users
-						</button>
-					</div>
-				</mat-card-content>
-			</mat-card>
-		</div>
+						Back to Users
+					</button>
+				</div>
+			</mat-card-content>
+		</mat-card>
+	</div>
 	}
 
 	<!-- User Form -->
-	@if (!isLoading() && !error())
-	{
-		<main class="page-content">
-			<!-- Save Error Alert -->
-			@if (saveError())
-			{
-				<mat-card appearance="outlined" class="alert-card error">
-					<mat-card-content>
-						<div class="alert-content">
-							<mat-icon color="warn" aria-hidden="true">
-								warning
-							</mat-icon>
-							<span class="mat-body-1">{{ saveError() }}</span>
-						</div>
-					</mat-card-content>
-				</mat-card>
+	@if (!isLoading() && !error()) {
+	<main class="page-content">
+		<!-- Save Error Alert -->
+		@if (saveError()) {
+		<mat-card
+			appearance="outlined"
+			class="alert-card error">
+			<mat-card-content>
+				<div class="alert-content">
+					<mat-icon
+						color="warn"
+						aria-hidden="true">
+						warning
+					</mat-icon>
+					<span class="mat-body-1">{{ saveError() }}</span>
+				</div>
+			</mat-card-content>
+		</mat-card>
+		}
+
+		<form
+			[formGroup]="userForm"
+			class="user-form"
+			(ngSubmit)="onSubmit()">
+			<mat-card appearance="outlined">
+				<mat-card-header>
+					<mat-card-title>User Information</mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					<!-- Username Field -->
+					<mat-form-field
+						appearance="outline"
+						class="full-width">
+						<mat-label>Username</mat-label>
+						<input
+							matInput
+							formControlName="username"
+							placeholder="Enter username"
+							autocomplete="username"
+							required
+						/>
+						<mat-icon
+							matIconPrefix
+							aria-hidden="true">
+							person
+						</mat-icon>
+						<mat-error>
+							{{ usernameError() }}
+						</mat-error>
+					</mat-form-field>
+					<!-- Email Field -->
+					<mat-form-field
+						appearance="outline"
+						class="full-width">
+						<mat-label>Email</mat-label>
+						<input
+							matInput
+							type="email"
+							formControlName="email"
+							placeholder="Enter email address"
+							autocomplete="email"
+							required
+						/>
+						<mat-icon
+							matIconPrefix
+							aria-hidden="true">
+							email
+						</mat-icon>
+						<mat-error>
+							{{ emailError() }}
+						</mat-error>
+					</mat-form-field>
+					<!-- Full Name Field -->
+					<mat-form-field
+						appearance="outline"
+						class="full-width">
+						<mat-label>Full Name</mat-label>
+						<input
+							matInput
+							formControlName="fullName"
+							placeholder="Enter full name"
+							autocomplete="name"
+						/>
+						<mat-icon
+							matIconPrefix
+							aria-hidden="true">
+							badge
+						</mat-icon>
+						<mat-error>
+							{{ fullNameError() }}
+						</mat-error>
+						<mat-hint>Optional</mat-hint>
+					</mat-form-field>
+					<!-- Active Status Field -->
+					<div class="checkbox-field">
+						<mat-checkbox
+							formControlName="isActive"
+							color="primary">
+							Active User
+						</mat-checkbox>
+						<p class="mat-body-2 field-hint">
+							Inactive users cannot log in to the system
+						</p>
+					</div>
+				</mat-card-content>
+			</mat-card>
+
+			<!-- Audit Information -->
+			@if (user()) {
+			<mat-expansion-panel>
+				<mat-expansion-panel-header>
+					<mat-panel-title>
+						<mat-icon aria-hidden="true">info</mat-icon>
+						Audit Information
+					</mat-panel-title>
+				</mat-expansion-panel-header>
+
+				<div class="audit-info">
+					<div class="info-row">
+						<strong>Created:</strong>
+						<span>{{ user()!.createDate | date: "medium" }}</span>
+					</div>
+					@if (user()!.createdBy) {
+					<div class="info-row">
+						<strong>Created By:</strong>
+						<span>{{ user()!.createdBy }}</span>
+					</div>
+					} @if (user()!.modifyDate) {
+					<div class="info-row">
+						<strong>Last Modified:</strong>
+						<span>{{ user()!.modifyDate | date: "medium" }}</span>
+					</div>
+					} @if (user()!.modifiedBy) {
+					<div class="info-row">
+						<strong>Modified By:</strong>
+						<span>{{ user()!.modifiedBy }}</span>
+					</div>
+					} @if (user()!.lastLoginAt) {
+					<div class="info-row">
+						<strong>Last Login:</strong>
+						<span>{{ user()!.lastLoginAt | date: "medium" }}</span>
+					</div>
+					}
+				</div>
+			</mat-expansion-panel>
 			}
 
-			<form
-				[formGroup]="userForm"
-				class="user-form"
-				(ngSubmit)="onSubmit()"
-			>
-				<mat-card appearance="outlined">
-					<mat-card-header>
-						<mat-card-title>User Information</mat-card-title>
-					</mat-card-header>
-					<mat-card-content>
-						<!-- Username Field -->
-						<mat-form-field appearance="outline" class="full-width">
-							<mat-label>Username</mat-label>
-							<input
-								matInput
-								formControlName="username"
-								placeholder="Enter username"
-								autocomplete="username"
-								required/>
-							<mat-icon matIconPrefix aria-hidden="true">
-								person
-							</mat-icon>
-							<mat-error>
-								{{ usernameError() }}
-							</mat-error>
-						</mat-form-field>
-						<!-- Email Field -->
-						<mat-form-field appearance="outline" class="full-width">
-							<mat-label>Email</mat-label>
-							<input
-								matInput
-								type="email"
-								formControlName="email"
-								placeholder="Enter email address"
-								autocomplete="email"
-								required/>
-							<mat-icon matIconPrefix aria-hidden="true">
-								email
-							</mat-icon>
-							<mat-error>
-								{{ emailError() }}
-							</mat-error>
-						</mat-form-field>
-						<!-- Full Name Field -->
-						<mat-form-field appearance="outline" class="full-width">
-							<mat-label>Full Name</mat-label>
-							<input
-								matInput
-								formControlName="fullName"
-								placeholder="Enter full name"
-								autocomplete="name"/>
-							<mat-icon matIconPrefix aria-hidden="true">
-								badge
-							</mat-icon>
-							<mat-error>
-								{{ fullNameError() }}
-							</mat-error>
-							<mat-hint>Optional</mat-hint>
-						</mat-form-field>
-						<!-- Active Status Field -->
-						<div class="checkbox-field">
-							<mat-checkbox
-								formControlName="isActive"
-								color="primary">
-								Active User
-							</mat-checkbox>
-							<p class="mat-body-2 field-hint">
-								Inactive users cannot log in to the system
-							</p>
-						</div>
-					</mat-card-content>
-				</mat-card>
-
-				<!-- Audit Information -->
-				@if (user())
-				{
-					<mat-expansion-panel>
-						<mat-expansion-panel-header>
-							<mat-panel-title>
-								<mat-icon aria-hidden="true">info</mat-icon>
-								Audit Information
-							</mat-panel-title>
-						</mat-expansion-panel-header>
-
-						<div class="audit-info">
-							<div class="info-row">
-								<strong>Created:</strong>
-								<span>{{
-									user()!.createDate | date: "medium"
-								}}</span>
-							</div>
-							@if (user()!.createdBy)
-							{
-								<div class="info-row">
-									<strong>Created By:</strong>
-									<span>{{ user()!.createdBy }}</span>
-								</div>
-							}
-							@if (user()!.modifyDate)
-							{
-								<div class="info-row">
-									<strong>Last Modified:</strong>
-									<span>{{
-										user()!.modifyDate | date: "medium"
-									}}</span>
-								</div>
-							}
-							@if (user()!.modifiedBy)
-							{
-								<div class="info-row">
-									<strong>Modified By:</strong>
-									<span>{{ user()!.modifiedBy }}</span>
-								</div>
-							}
-							@if (user()!.lastLoginAt)
-							{
-								<div class="info-row">
-									<strong>Last Login:</strong>
-									<span>{{
-										user()!.lastLoginAt | date: "medium"
-									}}</span>
-								</div>
-							}
-						</div>
-					</mat-expansion-panel>
-				}
-
-				<!-- User Roles Section -->
-				@if (user())
-				{
-					<mat-card appearance="outlined" class="roles-card">
-						<mat-card-header>
-							<mat-card-title>
-								<mat-icon aria-hidden="true">
-									admin_panel_settings
-								</mat-icon>
-								User Roles
-							</mat-card-title>
-						</mat-card-header>
-						<mat-card-content>
-							<div class="roles-section">
-								<!-- Current Roles -->
-								<div class="current-roles">
-									<span class="section-label">
-										Current Roles:
-									</span>
-									@if (userRoles().length === 0)
-									{
-										<span class="no-roles">
-											No roles assigned
-										</span>
-									}
-									@else
-									{
-										<mat-chip-set>
-											@for (
-												role of userRoles();
-												track role
-											)
-											{
-												<mat-chip
-													[removable]="true"
-													(removed)="
+			<!-- User Roles Section -->
+			@if (user()) {
+			<mat-card
+				appearance="outlined"
+				class="roles-card">
+				<mat-card-header>
+					<mat-card-title>
+						<mat-icon aria-hidden="true">
+							admin_panel_settings
+						</mat-icon>
+						User Roles
+					</mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					<div class="roles-section">
+						<!-- Current Roles -->
+						<div class="current-roles">
+							<span class="section-label">
+								Current Roles:
+							</span>
+							@if (userRoles().length === 0) {
+							<span class="no-roles">
+								No roles assigned
+							</span>
+							} @else {
+							<mat-chip-set>
+								@for ( role of userRoles(); track role ) {
+								<mat-chip
+									[removable]="true"
+									(removed)="
 														onRemoveRole(role)
 													"
-													[disabled]="
+									[disabled]="
 														isRoleMutating()
 													">
-													{{ role }}
-													<button matChipRemove>
-														<mat-icon
-															aria-hidden="true">
-															cancel
-														</mat-icon>
-													</button>
-												</mat-chip>
-											}
-										</mat-chip-set>
-									}
-								</div>
-
-								<!-- Add Role -->
-								@if (availableRolesToAdd().length > 0)
-								{
-									<div class="add-role">
-										<span class="section-label">
-											Add Role:
-										</span>
-										@for (
-											role of availableRolesToAdd();
-											track role
-										)
-										{
-											<button
-												mat-stroked-button
-												color="primary"
-												(click)="onAddRole(role)"
-												[disabled]="isRoleMutating()">
-												<mat-icon aria-hidden="true">
-													add
-												</mat-icon>
-												{{ role }}
-											</button>
-										}
-									</div>
+									{{ role }}
+									<button matChipRemove>
+										<mat-icon aria-hidden="true">
+											cancel
+										</mat-icon>
+									</button>
+								</mat-chip>
 								}
-							</div>
-						</mat-card-content>
-					</mat-card>
-				}
+							</mat-chip-set>
+							}
+						</div>
 
-				<!-- Form Info Card -->
-				@if (user())
-				{
-					<mat-card appearance="outlined" class="info-card">
-						<mat-card-header>
-							<mat-card-title>Metadata</mat-card-title>
-						</mat-card-header>
-						<mat-card-content>
-							<div class="info-grid">
-								<div class="info-item">
-									<mat-icon
-										class="info-icon"
-										aria-hidden="true">
-										schedule
-									</mat-icon>
-									<div class="info-details">
-										<span class="mat-body-2 info-label">
-											Created
-										</span>
-										<span class="mat-body-1">
-											{{
-												user()!.createDate
-													| date: "medium"
-											}}
-										</span>
-									</div>
-								</div>
-								<div class="info-item">
-									<mat-icon
-										class="info-icon"
-										aria-hidden="true">
-										fingerprint
-									</mat-icon>
-									<div class="info-details">
-										<span class="mat-body-2 info-label">
-											User ID
-										</span>
-										<span class="mat-body-1">
-											{{
-												user()!.id
-											}}
-										</span>
-									</div>
-								</div>
+						<!-- Add Role -->
+						@if (availableRolesToAdd().length > 0) {
+						<div class="add-role">
+							<span class="section-label">
+								Add Role:
+							</span>
+							@for ( role of availableRolesToAdd(); track role ) {
+							<button
+								mat-stroked-button
+								color="primary"
+								(click)="onAddRole(role)"
+								[disabled]="isRoleMutating()">
+								<mat-icon aria-hidden="true">
+									add
+								</mat-icon>
+								{{ role }}
+							</button>
+							}
+						</div>
+						}
+					</div>
+				</mat-card-content>
+			</mat-card>
+			}
+
+			<!-- Form Info Card -->
+			@if (user()) {
+			<mat-card
+				appearance="outlined"
+				class="info-card">
+				<mat-card-header>
+					<mat-card-title>Metadata</mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					<div class="info-grid">
+						<div class="info-item">
+							<mat-icon
+								class="info-icon"
+								aria-hidden="true">
+								schedule
+							</mat-icon>
+							<div class="info-details">
+								<span class="mat-body-2 info-label">
+									Created
+								</span>
+								<span class="mat-body-1">
+									{{ user()!.createDate | date: "medium" }}
+								</span>
 							</div>
-						</mat-card-content>
-					</mat-card>
-				}
-			</form>
-		</main>
+						</div>
+						<div class="info-item">
+							<mat-icon
+								class="info-icon"
+								aria-hidden="true">
+								fingerprint
+							</mat-icon>
+							<div class="info-details">
+								<span class="mat-body-2 info-label">
+									User ID
+								</span>
+								<span class="mat-body-1">
+									{{ user()!.id }}
+								</span>
+							</div>
+						</div>
+					</div>
+				</mat-card-content>
+			</mat-card>
+			}
+		</form>
+	</main>
 	}
 </div>

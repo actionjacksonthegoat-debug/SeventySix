@@ -4,4 +4,4 @@
  */
 
 export * from "./api-client";
-export type { paths, components } from "./generated-api";
+export type { components, paths } from "./generated-api";

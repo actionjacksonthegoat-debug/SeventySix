@@ -1,4 +1,4 @@
-import { signal, WritableSignal, computed, Signal } from "@angular/core";
+import { computed, Signal, signal, WritableSignal } from "@angular/core";
 import { UserProfileDto } from "@infrastructure/api";
 
 /**
@@ -19,15 +19,17 @@ export class MockAuthService
 		signal<UserProfileDto | null>(null);
 
 	/** Read-only user state. */
-	readonly user: Signal<UserProfileDto | null> = this.userSignal.asReadonly();
+	readonly user: Signal<UserProfileDto | null> =
+		this.userSignal.asReadonly();
 
 	/** Computed authentication state. */
-	readonly isAuthenticated: Signal<boolean> = computed(
-		() => this.userSignal() !== null
-	);
+	readonly isAuthenticated: Signal<boolean> =
+		computed(
+		() => this.userSignal() !== null);
 
 	/** Spy-able logout method. */
-	logout: jasmine.Spy = jasmine.createSpy("logout");
+	logout: jasmine.Spy =
+		jasmine.createSpy("logout");
 
 	/**
 	 * Checks if the current user has a specific role.
@@ -36,7 +38,8 @@ export class MockAuthService
 	 */
 	hasRole(role: string): boolean
 	{
-		const user: UserProfileDto | null = this.userSignal();
+		const user: UserProfileDto | null =
+			this.userSignal();
 		return user?.roles.includes(role) ?? false;
 	}
 
@@ -47,10 +50,11 @@ export class MockAuthService
 	 */
 	hasAnyRole(...roles: string[]): boolean
 	{
-		const user: UserProfileDto | null = this.userSignal();
+		const user: UserProfileDto | null =
+			this.userSignal();
 		return roles.some(
-			(role: string) => user?.roles.includes(role) ?? false
-		);
+			(role: string) =>
+				user?.roles.includes(role) ?? false);
 	}
 
 	/**

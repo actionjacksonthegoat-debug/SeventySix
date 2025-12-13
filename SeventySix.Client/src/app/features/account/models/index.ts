@@ -1,7 +1,7 @@
 // Re-export generated DTOs
 export type {
-	UserProfileDto,
-	UpdateProfileRequest,
 	AvailableRoleDto,
-	CreatePermissionRequestDto
+	CreatePermissionRequestDto,
+	UpdateProfileRequest,
+	UserProfileDto
 } from "@infrastructure/api";

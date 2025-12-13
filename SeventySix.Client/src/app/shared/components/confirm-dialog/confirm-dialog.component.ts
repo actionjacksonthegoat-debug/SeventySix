@@ -1,10 +1,10 @@
 import { Component, inject } from "@angular/core";
-import {
-	MatDialogModule,
-	MatDialogRef,
-	MAT_DIALOG_DATA
-} from "@angular/material/dialog";
 import { MatButtonModule } from "@angular/material/button";
+import {
+	MAT_DIALOG_DATA,
+	MatDialogModule,
+	MatDialogRef
+} from "@angular/material/dialog";
 import { MatIconModule } from "@angular/material/icon";
 import { ConfirmDialogData } from "@shared/models";
 
@@ -64,9 +64,9 @@ import { ConfirmDialogData } from "@shared/models";
 })
 export class ConfirmDialogComponent
 {
-	private dialogRef: MatDialogRef<ConfirmDialogComponent> = inject(
-		MatDialogRef<ConfirmDialogComponent>
-	);
+	private dialogRef: MatDialogRef<ConfirmDialogComponent> =
+		inject(
+		MatDialogRef<ConfirmDialogComponent>);
 	protected data: ConfirmDialogData =
 		inject<ConfirmDialogData>(MAT_DIALOG_DATA);
 

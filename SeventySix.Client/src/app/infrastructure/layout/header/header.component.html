@@ -1,12 +1,14 @@
-<mat-toolbar color="primary" class="app-header" role="banner">
+<mat-toolbar
+	color="primary"
+	class="app-header"
+	role="banner">
 	<!-- Menu Toggle for Mobile -->
 	<button
 		mat-icon-button
 		(click)="toggleSidebar()"
 		matTooltip="Toggle menu"
 		aria-label="Toggle navigation menu"
-		class="menu-toggle"
-	>
+		class="menu-toggle">
 		<mat-icon aria-hidden="true">menu</mat-icon>
 	</button>
 
@@ -27,53 +29,47 @@
 	<button
 		mat-icon-button
 		(click)="toggleColorScheme()"
-		[matTooltip]="
-			'Color: ' +
-			(themeService.isBlue()
-				? 'Blue → Cyan/Orange'
-				: 'Cyan/Orange → Blue')
-		"
-		aria-label="Toggle color scheme"
-	>
-		<mat-icon aria-hidden="true">{{
-			themeService.isBlue() ? "water_drop" : "local_fire_department"
-		}}</mat-icon>
+		[matTooltip]='"Color: "
+			+ (themeService.isBlue()
+				? "Blue → Cyan/Orange"
+				: "Cyan/Orange → Blue")'
+		aria-label="Toggle color scheme">
+		<mat-icon aria-hidden="true">{{ themeService.isBlue() ? "water_drop" : "local_fire_department" }}</mat-icon>
 	</button>
 
 	<!-- Brightness Toggle -->
 	<button
 		mat-icon-button
 		(click)="toggleBrightness()"
-		[matTooltip]="
-			'Brightness: ' +
-			(themeService.isDark() ? 'Dark → Light' : 'Light → Dark')
-		"
-		aria-label="Toggle brightness"
-	>
-		<mat-icon aria-hidden="true">{{
-			themeService.isDark() ? "light_mode" : "dark_mode"
-		}}</mat-icon>
+		[matTooltip]='"Brightness: "
+			+ (themeService.isDark()
+				? "Dark → Light"
+				: "Light → Dark")'
+		aria-label="Toggle brightness">
+		<mat-icon aria-hidden="true">{{ themeService.isDark() ? "light_mode" : "dark_mode" }}</mat-icon>
 	</button>
 
 	<!-- Guest Menu (Unauthenticated) -->
-	@if (!authService.isAuthenticated())
-	{
+	@if (!authService.isAuthenticated()) {
 		<button
 			mat-icon-button
 			[matMenuTriggerFor]="guestMenu"
 			matTooltip="Account"
 			aria-label="Account options"
-			data-testid="guest-menu-button"
-		>
+			data-testid="guest-menu-button">
 			<mat-icon aria-hidden="true">person_outline</mat-icon>
 		</button>
 
 		<mat-menu #guestMenu="matMenu">
-			<button mat-menu-item (click)="navigateToLogin()">
+			<button
+				mat-menu-item
+				(click)="navigateToLogin()">
 				<mat-icon aria-hidden="true">login</mat-icon>
 				<span>Sign In</span>
 			</button>
-			<button mat-menu-item (click)="navigateToRegister()">
+			<button
+				mat-menu-item
+				(click)="navigateToRegister()">
 				<mat-icon aria-hidden="true">person_add</mat-icon>
 				<span>Create Account</span>
 			</button>
@@ -81,29 +77,34 @@
 	}
 
 	<!-- User Menu (Authenticated) -->
-	@if (authService.isAuthenticated())
-	{
+	@if (authService.isAuthenticated()) {
 		<button
 			mat-icon-button
 			[matMenuTriggerFor]="userMenu"
 			matTooltip="User menu"
 			aria-label="User menu"
-			data-testid="user-menu-button"
-		>
+			data-testid="user-menu-button">
 			<mat-icon aria-hidden="true">account_circle</mat-icon>
 		</button>
 
 		<mat-menu #userMenu="matMenu">
-			<div class="user-menu-header" mat-menu-item disabled>
+			<div
+				class="user-menu-header"
+				mat-menu-item
+				disabled>
 				<span data-testid="user-fullname">{{ displayName() }}</span>
 			</div>
 			<mat-divider role="separator"></mat-divider>
-			<button mat-menu-item (click)="navigateToAccount()">
+			<button
+				mat-menu-item
+				(click)="navigateToAccount()">
 				<mat-icon aria-hidden="true">person</mat-icon>
 				<span>Profile</span>
 			</button>
 			<mat-divider role="separator"></mat-divider>
-			<button mat-menu-item (click)="logout()">
+			<button
+				mat-menu-item
+				(click)="logout()">
 				<mat-icon aria-hidden="true">logout</mat-icon>
 				<span>Logout</span>
 			</button>

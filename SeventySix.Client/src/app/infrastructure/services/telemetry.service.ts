@@ -1,22 +1,22 @@
-import { Injectable, inject } from "@angular/core";
-import {
-	WebTracerProvider,
-	BatchSpanProcessor,
-	TraceIdRatioBasedSampler,
-	AlwaysOnSampler,
-	AlwaysOffSampler,
-	Sampler
-} from "@opentelemetry/sdk-trace-web";
-import { Resource } from "@opentelemetry/resources";
-import {
-	ATTR_SERVICE_NAME,
-	ATTR_SERVICE_VERSION
-} from "@opentelemetry/semantic-conventions";
+import { inject, Injectable } from "@angular/core";
+import { environment } from "@environments/environment";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
 import { DocumentLoadInstrumentation } from "@opentelemetry/instrumentation-document-load";
 import { FetchInstrumentation } from "@opentelemetry/instrumentation-fetch";
-import { environment } from "@environments/environment";
+import { Resource } from "@opentelemetry/resources";
+import {
+	AlwaysOffSampler,
+	AlwaysOnSampler,
+	BatchSpanProcessor,
+	Sampler,
+	TraceIdRatioBasedSampler,
+	WebTracerProvider
+} from "@opentelemetry/sdk-trace-web";
+import {
+	ATTR_SERVICE_NAME,
+	ATTR_SERVICE_VERSION
+} from "@opentelemetry/semantic-conventions";
 import { LoggerService } from "./logger.service";
 
 /**
@@ -29,7 +29,8 @@ import { LoggerService } from "./logger.service";
 })
 export class TelemetryService
 {
-	private readonly logger: LoggerService = inject(LoggerService);
+	private readonly logger: LoggerService =
+		inject(LoggerService);
 	private provider: WebTracerProvider | null = null;
 	private initialized: boolean = false;
 
@@ -56,8 +57,7 @@ export class TelemetryService
 		{
 			this.logger.error(
 				"Failed to initialize OpenTelemetry",
-				error instanceof Error ? error : undefined
-			);
+				error instanceof Error ? error : undefined);
 		}
 	}
 
@@ -67,18 +67,21 @@ export class TelemetryService
 	private setupTelemetryProvider(): void
 	{
 		// Create resource with service metadata
-		const resource: Resource = new Resource({
+		const resource: Resource =
+			new Resource({
 			[ATTR_SERVICE_NAME]: environment.telemetry.serviceName,
 			[ATTR_SERVICE_VERSION]: environment.telemetry.serviceVersion
 		});
 
 		// Create OTLP HTTP exporter for Jaeger
-		const exporter: OTLPTraceExporter = new OTLPTraceExporter({
+		const exporter: OTLPTraceExporter =
+			new OTLPTraceExporter({
 			url: environment.telemetry.otlpEndpoint
 		});
 
 		// Create tracer provider with batch processor
-		this.provider = new WebTracerProvider({
+		this.provider =
+			new WebTracerProvider({
 			resource,
 			sampler: this.createSampler()
 		});
@@ -108,7 +111,8 @@ export class TelemetryService
 	 */
 	private createSampler(): Sampler
 	{
-		const sampleRate: number = environment.telemetry.sampleRate;
+		const sampleRate: number =
+			environment.telemetry.sampleRate;
 
 		if (sampleRate >= 1.0)
 		{

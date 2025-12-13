@@ -1,8 +1,8 @@
-import { Component, ChangeDetectionStrategy } from "@angular/core";
-import { RouterLink } from "@angular/router";
-import { MatIconModule } from "@angular/material/icon";
-import { MatButtonModule } from "@angular/material/button";
 import { UserList } from "@admin/users/components/user-list/user-list";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { RouterLink } from "@angular/router";
 import { PageHeaderComponent } from "@shared/components";
 
 /**

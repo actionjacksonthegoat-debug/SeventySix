@@ -1,29 +1,29 @@
-import { TestBed } from "@angular/core/testing";
 import {
 	provideHttpClient,
 	withInterceptorsFromDi
 } from "@angular/common/http";
 import {
+	HttpTestingController,
 	provideHttpClientTesting,
-	HttpTestingController
+	TestRequest
 } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import {
-	TEST_ROLE_DEVELOPER,
-	TEST_ROLE_ADMIN
-} from "@testing/constants";
-import { provideRouter, Router } from "@angular/router";
-import { AuthService } from "./auth.service";
+import { TestBed } from "@angular/core/testing";
+import { provideRouter } from "@angular/router";
+import { environment } from "@environments/environment";
 import { AuthResponse } from "@infrastructure/api";
 import { DOTNET_ROLE_CLAIM } from "@infrastructure/models";
-import { environment } from "@environments/environment";
+import {
+	TEST_ROLE_ADMIN,
+	TEST_ROLE_DEVELOPER
+} from "@testing/constants";
+import { AuthService } from "./auth.service";
 
 /** AuthService Tests - focuses on authentication logic */
 describe("AuthService", () =>
 {
 	let service: AuthService;
 	let httpMock: HttpTestingController;
-	let router: Router;
 
 	/** Session marker key used by AuthService */
 	const SESSION_KEY: string = "auth_has_session";
@@ -43,9 +43,10 @@ describe("AuthService", () =>
 			]
 		});
 
-		service = TestBed.inject(AuthService);
-		httpMock = TestBed.inject(HttpTestingController);
-		router = TestBed.inject(Router);
+		service =
+			TestBed.inject(AuthService);
+		httpMock =
+			TestBed.inject(HttpTestingController);
 	});
 
 	afterEach(() =>
@@ -56,23 +57,16 @@ describe("AuthService", () =>
 
 	it("should be created", () =>
 	{
-		expect(service).toBeTruthy();
+		expect(service)
+			.toBeTruthy();
 	});
 
 	describe("login", () =>
 	{
 		it("should login with credentials and set user state", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "testuser",
-					email: "test@example.com",
-					[DOTNET_ROLE_CLAIM]: ["Developer"]
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse({ [DOTNET_ROLE_CLAIM]: ["Developer"] });
 
 			let result: AuthResponse | undefined;
 			service
@@ -86,18 +80,24 @@ describe("AuthService", () =>
 					result = response;
 				});
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-			expect(req.request.method).toBe("POST");
-			expect(req.request.body).toEqual({
-				usernameOrEmail: "testuser",
-				password: "Password123",
-				rememberMe: false
-			});
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			expect(req.request.method)
+				.toBe("POST");
+			expect(req.request.body)
+				.toEqual({
+					usernameOrEmail: "testuser",
+					password: "Password123",
+					rememberMe: false
+				});
 			req.flush(mockResponse);
 
-			expect(result).toBeDefined();
-			expect(result?.accessToken).toBe(mockResponse.accessToken);
-			expect(service.isAuthenticated()).toBeTrue();
+			expect(result)
+				.toBeDefined();
+			expect(result?.accessToken)
+				.toBe(mockResponse.accessToken);
+			expect(service.isAuthenticated())
+				.toBeTrue();
 		});
 
 		it("should not set user on login failure", () =>
@@ -115,26 +115,20 @@ describe("AuthService", () =>
 					}
 				});
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(
 				{ error: "Invalid credentials" },
-				{ status: 401, statusText: "Unauthorized" }
-			);
+				{ status: 401, statusText: "Unauthorized" });
 
-			expect(service.isAuthenticated()).toBeFalse();
+			expect(service.isAuthenticated())
+				.toBeFalse();
 		});
 
 		it("should include rememberMe in login request when true", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "testuser",
-					email: "test@example.com"
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse();
 
 			service
 				.login({
@@ -144,26 +138,21 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-			expect(req.request.body).toEqual({
-				usernameOrEmail: "testuser",
-				password: "Password123",
-				rememberMe: true
-			});
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			expect(req.request.body)
+				.toEqual({
+					usernameOrEmail: "testuser",
+					password: "Password123",
+					rememberMe: true
+				});
 			req.flush(mockResponse);
 		});
 
 		it("should include rememberMe in login request when false", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "testuser",
-					email: "test@example.com"
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse();
 
 			service
 				.login({
@@ -173,12 +162,14 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-			expect(req.request.body).toEqual({
-				usernameOrEmail: "testuser",
-				password: "Password123",
-				rememberMe: false
-			});
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			expect(req.request.body)
+				.toEqual({
+					usernameOrEmail: "testuser",
+					password: "Password123",
+					rememberMe: false
+				});
 			req.flush(mockResponse);
 		});
 	});
@@ -188,15 +179,8 @@ describe("AuthService", () =>
 		it("should clear user state on logout", () =>
 		{
 			// First login to set state
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "testuser",
-					email: "test@example.com"
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse();
 
 			service
 				.login({
@@ -206,24 +190,27 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const loginReq = httpMock.expectOne(
-				`${environment.apiUrl}/auth/login`
-			);
+			const loginReq: TestRequest =
+				httpMock.expectOne(
+				`${environment.apiUrl}/auth/login`);
 			loginReq.flush(mockResponse);
 
-			expect(service.isAuthenticated()).toBeTrue();
+			expect(service.isAuthenticated())
+				.toBeTrue();
 
 			// Now logout
 			service.logout();
 
 			// Expect logout API call
-			const logoutReq = httpMock.expectOne(
-				`${environment.apiUrl}/auth/logout`
-			);
+			const logoutReq: TestRequest =
+				httpMock.expectOne(
+				`${environment.apiUrl}/auth/logout`);
 			logoutReq.flush({});
 
-			expect(service.isAuthenticated()).toBeFalse();
-			expect(service.user()).toBeNull();
+			expect(service.isAuthenticated())
+				.toBeFalse();
+			expect(service.user())
+				.toBeNull();
 		});
 	});
 
@@ -231,16 +218,8 @@ describe("AuthService", () =>
 	{
 		it("should correctly check user role", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "testuser",
-					email: "test@example.com",
-					[DOTNET_ROLE_CLAIM]: ["Developer", "Admin"]
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse({ [DOTNET_ROLE_CLAIM]: ["Developer", "Admin"] });
 
 			service
 				.login({
@@ -250,26 +229,22 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(service.hasRole(TEST_ROLE_DEVELOPER)).toBeTrue();
-			expect(service.hasRole(TEST_ROLE_ADMIN)).toBeTrue();
-			expect(service.hasRole("SuperAdmin")).toBeFalse();
+			expect(service.hasRole(TEST_ROLE_DEVELOPER))
+				.toBeTrue();
+			expect(service.hasRole(TEST_ROLE_ADMIN))
+				.toBeTrue();
+			expect(service.hasRole("SuperAdmin"))
+				.toBeFalse();
 		});
 
 		it("should handle single role as string", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "testuser",
-					email: "test@example.com",
-					[DOTNET_ROLE_CLAIM]: "Developer"
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse({ [DOTNET_ROLE_CLAIM]: ["Developer"] });
 
 			service
 				.login({
@@ -279,11 +254,14 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(service.hasRole(TEST_ROLE_DEVELOPER)).toBeTrue();
-			expect(service.hasRole(TEST_ROLE_ADMIN)).toBeFalse();
+			expect(service.hasRole(TEST_ROLE_DEVELOPER))
+				.toBeTrue();
+			expect(service.hasRole(TEST_ROLE_ADMIN))
+				.toBeFalse();
 		});
 	});
 
@@ -291,16 +269,8 @@ describe("AuthService", () =>
 	{
 		it("should return true if user has any of the specified roles", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "testuser",
-					email: "test@example.com",
-					[DOTNET_ROLE_CLAIM]: "Developer"
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse({ [DOTNET_ROLE_CLAIM]: ["Developer"] });
 
 			service
 				.login({
@@ -310,11 +280,14 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(service.hasAnyRole(TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN)).toBeTrue();
-			expect(service.hasAnyRole(TEST_ROLE_ADMIN, "SuperAdmin")).toBeFalse();
+			expect(service.hasAnyRole(TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN))
+				.toBeTrue();
+			expect(service.hasAnyRole(TEST_ROLE_ADMIN, "SuperAdmin"))
+				.toBeFalse();
 		});
 	});
 
@@ -322,16 +295,12 @@ describe("AuthService", () =>
 	{
 		it("should set fullName from given_name claim", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "johndoe",
-					email: "john@example.com",
-					given_name: "John Doe"
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse({
+				unique_name: "johndoe",
+				email: "john@example.com",
+				given_name: "John Doe"
+			});
 
 			service
 				.login({
@@ -341,24 +310,21 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(service.user()?.fullName).toBe("John Doe");
+			expect(service.user()?.fullName)
+				.toBe("John Doe");
 		});
 
 		it("should set fullName to null when given_name not present", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "johndoe",
-					email: "john@example.com"
-					// No given_name
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse({
+				unique_name: "johndoe",
+				email: "john@example.com"
+			});
 
 			service
 				.login({
@@ -368,24 +334,22 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(service.user()?.fullName).toBeNull();
+			expect(service.user()?.fullName)
+				.toBeNull();
 		});
 
 		it("should set fullName to null when given_name is empty string", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "johndoe",
-					email: "john@example.com",
-					given_name: ""
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse({
+				unique_name: "johndoe",
+				email: "john@example.com",
+				given_name: ""
+			});
 
 			service
 				.login({
@@ -395,10 +359,12 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(service.user()?.fullName).toBeNull();
+			expect(service.user()?.fullName)
+				.toBeNull();
 		});
 	});
 
@@ -406,15 +372,8 @@ describe("AuthService", () =>
 	{
 		it("should refresh tokens successfully", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "testuser",
-					email: "test@example.com"
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse();
 
 			let result: AuthResponse | null = null;
 			service
@@ -424,15 +383,18 @@ describe("AuthService", () =>
 					result = response;
 				});
 
-			const req = httpMock.expectOne(
-				`${environment.apiUrl}/auth/refresh`
-			);
-			expect(req.request.method).toBe("POST");
+			const req: TestRequest =
+				httpMock.expectOne(
+				`${environment.apiUrl}/auth/refresh`);
+			expect(req.request.method)
+				.toBe("POST");
 			req.flush(mockResponse);
 
 			expect(result).not.toBeNull();
-			const authResult: AuthResponse = result!;
-			expect(authResult.accessToken).toBe(mockResponse.accessToken);
+			const authResult: AuthResponse =
+				result!;
+			expect(authResult.accessToken)
+				.toBe(mockResponse.accessToken);
 		});
 
 		it("should return null on refresh failure", () =>
@@ -445,15 +407,15 @@ describe("AuthService", () =>
 					result = response;
 				});
 
-			const req = httpMock.expectOne(
-				`${environment.apiUrl}/auth/refresh`
-			);
+			const req: TestRequest =
+				httpMock.expectOne(
+				`${environment.apiUrl}/auth/refresh`);
 			req.flush(
 				{ error: "Token expired" },
-				{ status: 401, statusText: "Unauthorized" }
-			);
+				{ status: 401, statusText: "Unauthorized" });
 
-			expect(result).toBeNull();
+			expect(result)
+				.toBeNull();
 		});
 	});
 
@@ -461,21 +423,19 @@ describe("AuthService", () =>
 	{
 		it("should return true when not authenticated", () =>
 		{
-			expect(service.isTokenExpired()).toBeTrue();
+			expect(service.isTokenExpired())
+				.toBeTrue();
 		});
 
 		it("should return false for valid token", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "testuser",
-					email: "test@example.com",
-					exp: Math.floor(Date.now() / 1000) + 3600 // Expires in 1 hour
-				}),
-				expiresAt: new Date(Date.now() + 3600000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse(
+				{ exp: String(Math.floor(Date.now() / 1000) + 3600) },
+				{
+					expiresAt: new Date(Date.now() + 3600000)
+						.toISOString()
+				});
 
 			service
 				.login({
@@ -485,10 +445,12 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(service.isTokenExpired()).toBeFalse();
+			expect(service.isTokenExpired())
+				.toBeFalse();
 		});
 	});
 
@@ -496,20 +458,14 @@ describe("AuthService", () =>
 	{
 		it("should return null when not authenticated", () =>
 		{
-			expect(service.getAccessToken()).toBeNull();
+			expect(service.getAccessToken())
+				.toBeNull();
 		});
 
 		it("should return token when authenticated", () =>
 		{
-			const mockResponse: AuthResponse = {
-				accessToken: createMockJwt({
-					sub: "1",
-					unique_name: "testuser",
-					email: "test@example.com"
-				}),
-				expiresAt: new Date(Date.now() + 900000).toISOString(),
-				requiresPasswordChange: false
-			};
+			const mockResponse: AuthResponse =
+				createMockAuthResponse();
 
 			service
 				.login({
@@ -519,12 +475,15 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			const token: string | null = service.getAccessToken();
+			const token: string | null =
+				service.getAccessToken();
 			expect(token).not.toBeNull();
-			expect(token).toBe(mockResponse.accessToken);
+			expect(token)
+				.toBe(mockResponse.accessToken);
 		});
 	});
 
@@ -538,9 +497,11 @@ describe("AuthService", () =>
 		it("should construct correct OAuth URL", () =>
 		{
 			// Test that the URL would be correct without triggering redirect
-			const expectedUrl: string = `${environment.apiUrl}/auth/github`;
+			const expectedUrl: string =
+				`${environment.apiUrl}/auth/github`;
 
-			expect(expectedUrl).toContain("/auth/github");
+			expect(expectedUrl)
+				.toContain("/auth/github");
 		});
 	});
 
@@ -549,11 +510,14 @@ describe("AuthService", () =>
 		it("should not attempt refresh without existing session", () =>
 		{
 			let completed: boolean = false;
-			service.initialize().subscribe(() => (completed = true));
+			service
+				.initialize()
+				.subscribe(() => (completed = true));
 
 			// No HTTP request should be made
 			httpMock.expectNone(`${environment.apiUrl}/auth/refresh`);
-			expect(completed).toBeTrue();
+			expect(completed)
+				.toBeTrue();
 		});
 
 		it("should attempt refresh when session marker exists", () =>
@@ -561,41 +525,50 @@ describe("AuthService", () =>
 			localStorage.setItem(SESSION_KEY, "true");
 
 			// Need fresh service instance to test initialize
-			service = TestBed.inject(AuthService);
+			service =
+				TestBed.inject(AuthService);
 			let completed: boolean = false;
-			service.initialize().subscribe(() => (completed = true));
+			service
+				.initialize()
+				.subscribe(() => (completed = true));
 
-			const req = httpMock.expectOne(
-				`${environment.apiUrl}/auth/refresh`
-			);
-			expect(req.request.method).toBe("POST");
+			const req: TestRequest =
+				httpMock.expectOne(
+				`${environment.apiUrl}/auth/refresh`);
+			expect(req.request.method)
+				.toBe("POST");
 			req.flush(
 				{ error: "No token" },
-				{ status: 401, statusText: "Unauthorized" }
-			);
-			expect(completed).toBeTrue();
+				{ status: 401, statusText: "Unauthorized" });
+			expect(completed)
+				.toBeTrue();
 		});
 
 		it("should only run once per service instance", () =>
 		{
 			localStorage.setItem(SESSION_KEY, "true");
-			service = TestBed.inject(AuthService);
+			service =
+				TestBed.inject(AuthService);
 
 			// First call - should attempt refresh
-			service.initialize().subscribe();
-			const req = httpMock.expectOne(
-				`${environment.apiUrl}/auth/refresh`
-			);
+			service
+				.initialize()
+				.subscribe();
+			const req: TestRequest =
+				httpMock.expectOne(
+				`${environment.apiUrl}/auth/refresh`);
 			req.flush(
 				{ error: "No token" },
-				{ status: 401, statusText: "Unauthorized" }
-			);
+				{ status: 401, statusText: "Unauthorized" });
 
 			// Second call - should not make another request
 			let secondCompleted: boolean = false;
-			service.initialize().subscribe(() => (secondCompleted = true));
+			service
+				.initialize()
+				.subscribe(() => (secondCompleted = true));
 			httpMock.expectNone(`${environment.apiUrl}/auth/refresh`);
-			expect(secondCompleted).toBeTrue();
+			expect(secondCompleted)
+				.toBeTrue();
 		});
 	});
 
@@ -603,7 +576,8 @@ describe("AuthService", () =>
 	{
 		it("should set session marker on login", () =>
 		{
-			const mockResponse: AuthResponse = createMockAuthResponse();
+			const mockResponse: AuthResponse =
+				createMockAuthResponse();
 
 			service
 				.login({
@@ -613,10 +587,12 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+			const req: TestRequest =
+				httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 			req.flush(mockResponse);
 
-			expect(localStorage.getItem(SESSION_KEY)).toBe("true");
+			expect(localStorage.getItem(SESSION_KEY))
+				.toBe("true");
 		});
 
 		it("should clear session marker on logout", () =>
@@ -624,7 +600,8 @@ describe("AuthService", () =>
 			localStorage.setItem(SESSION_KEY, "true");
 
 			// Login first
-			const mockResponse: AuthResponse = createMockAuthResponse();
+			const mockResponse: AuthResponse =
+				createMockAuthResponse();
 			service
 				.login({
 					usernameOrEmail: "testuser",
@@ -633,19 +610,20 @@ describe("AuthService", () =>
 				})
 				.subscribe();
 
-			const loginReq = httpMock.expectOne(
-				`${environment.apiUrl}/auth/login`
-			);
+			const loginReq: TestRequest =
+				httpMock.expectOne(
+				`${environment.apiUrl}/auth/login`);
 			loginReq.flush(mockResponse);
 
 			// Logout
 			service.logout();
-			const logoutReq = httpMock.expectOne(
-				`${environment.apiUrl}/auth/logout`
-			);
+			const logoutReq: TestRequest =
+				httpMock.expectOne(
+				`${environment.apiUrl}/auth/logout`);
 			logoutReq.flush({});
 
-			expect(localStorage.getItem(SESSION_KEY)).toBeNull();
+			expect(localStorage.getItem(SESSION_KEY))
+				.toBeNull();
 		});
 	});
 
@@ -657,22 +635,27 @@ describe("AuthService", () =>
 			const newPassword: string = "NewPassword123!";
 
 			let completed: boolean = false;
-			service.setPassword(token, newPassword).subscribe(() =>
-			{
-				completed = true;
-			});
+			service
+				.setPassword(token, newPassword)
+				.subscribe(() =>
+				{
+					completed = true;
+				});
 
-			const req = httpMock.expectOne(
-				`${environment.apiUrl}/auth/set-password`
-			);
-			expect(req.request.method).toBe("POST");
-			expect(req.request.body).toEqual({
-				token,
-				newPassword
-			});
+			const req: TestRequest =
+				httpMock.expectOne(
+				`${environment.apiUrl}/auth/set-password`);
+			expect(req.request.method)
+				.toBe("POST");
+			expect(req.request.body)
+				.toEqual({
+					token,
+					newPassword
+				});
 			req.flush(null);
 
-			expect(completed).toBeTrue();
+			expect(completed)
+				.toBeTrue();
 		});
 	});
 });
@@ -682,41 +665,47 @@ describe("AuthService", () =>
  * @param payload - JWT payload with claims
  * @returns Base64-encoded JWT string
  */
-function createMockJwt(payload: Record<string, unknown>): string
+function createMockJwt(payload: Record<string, string | string[] | number>): string
 {
-	const header: string = btoa(
+	const header: string =
+		btoa(
 		JSON.stringify({
 			alg: "HS256",
 			typ: "JWT"
-		})
-	);
-	const body: string = btoa(
+		}));
+	const body: string =
+		btoa(
 		JSON.stringify({
 			exp: Math.floor(Date.now() / 1000) + 3600,
 			iat: Math.floor(Date.now() / 1000),
 			...payload
-		})
-	);
+		}));
 	return `${header}.${body}.signature`;
 }
 
+/** Default JWT payload for test user */
+const DEFAULT_JWT_PAYLOAD: Record<string, string | string[]> =
+	{
+		sub: "1",
+		unique_name: "testuser",
+		email: "test@example.com"
+	};
+
 /**
  * Creates a standard mock auth response for testing.
- * @param overrides - Optional overrides for default values
+ * @param jwtOverrides - Optional JWT payload overrides
+ * @param responseOverrides - Optional response field overrides
  * @returns AuthResponse with default test values
  */
 function createMockAuthResponse(
-	overrides: Partial<AuthResponse> = {}
-): AuthResponse
+	jwtOverrides: Record<string, string | string[]> = {},
+	responseOverrides: Partial<Omit<AuthResponse, "accessToken">> = {}): AuthResponse
 {
 	return {
-		accessToken: createMockJwt({
-			sub: "1",
-			unique_name: "testuser",
-			email: "test@example.com"
-		}),
-		expiresAt: new Date(Date.now() + 900000).toISOString(),
+		accessToken: createMockJwt({ ...DEFAULT_JWT_PAYLOAD, ...jwtOverrides }),
+		expiresAt: new Date(Date.now() + 900000)
+			.toISOString(),
 		requiresPasswordChange: false,
-		...overrides
+		...responseOverrides
 	};
 }

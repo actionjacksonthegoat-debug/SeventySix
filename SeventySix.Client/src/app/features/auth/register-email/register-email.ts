@@ -26,7 +26,8 @@ import { NotificationService } from "@infrastructure/services/notification.servi
 })
 export class RegisterEmailComponent
 {
-	private readonly authService: AuthService = inject(AuthService);
+	private readonly authService: AuthService =
+		inject(AuthService);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
@@ -42,7 +43,8 @@ export class RegisterEmailComponent
 	 */
 	protected isValidEmail(): boolean
 	{
-		const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		const emailRegex: RegExp =
+			/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		return emailRegex.test(this.email);
 	}
 
@@ -65,18 +67,21 @@ export class RegisterEmailComponent
 
 		this.isLoading.set(true);
 
-		this.authService.initiateRegistration(this.email).subscribe({
-			next: () =>
-			{
-				this.submitted.set(true);
-				this.isLoading.set(false);
-			},
-			error: () =>
-			{
-				// Still show success to prevent email enumeration
-				this.submitted.set(true);
-				this.isLoading.set(false);
-			}
-		});
+		this
+			.authService
+			.initiateRegistration(this.email)
+			.subscribe({
+				next: () =>
+				{
+					this.submitted.set(true);
+					this.isLoading.set(false);
+				},
+				error: () =>
+				{
+					// Still show success to prevent email enumeration
+					this.submitted.set(true);
+					this.isLoading.set(false);
+				}
+			});
 	}
 }

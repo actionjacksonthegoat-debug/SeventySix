@@ -23,8 +23,10 @@ export function roleGuard(...requiredRoles: string[]): CanActivateFn
 {
 	return (route, state) =>
 	{
-		const authService: AuthService = inject(AuthService);
-		const router: Router = inject(Router);
+		const authService: AuthService =
+			inject(AuthService);
+		const router: Router =
+			inject(Router);
 
 		// Not authenticated - redirect to login
 		if (!authService.isAuthenticated())
@@ -41,9 +43,9 @@ export function roleGuard(...requiredRoles: string[]): CanActivateFn
 		}
 
 		// Check if user has ANY of the required roles (additive)
-		const hasRequiredRole: boolean = authService.hasAnyRole(
-			...requiredRoles
-		);
+		const hasRequiredRole: boolean =
+			authService.hasAnyRole(
+			...requiredRoles);
 
 		if (hasRequiredRole)
 		{

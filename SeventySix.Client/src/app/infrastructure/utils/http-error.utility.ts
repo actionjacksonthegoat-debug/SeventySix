@@ -5,22 +5,21 @@
  */
 
 import { HttpErrorResponse } from "@angular/common/http";
-import { isNonNullObject, isPresent } from "./null-check.utility";
 import {
 	HttpError,
-	ValidationError,
+	NetworkError,
 	NotFoundError,
 	UnauthorizedError,
-	NetworkError
+	ValidationError
 } from "@infrastructure/models/errors";
+import { isNonNullObject, isPresent } from "./null-check.utility";
 
 /**
  * Extracts validation errors from ASP.NET Core error response.
  * Returns array of field-level error messages.
  */
 export function extractValidationErrors(
-	error: HttpErrorResponse
-): string[]
+	error: HttpErrorResponse): string[]
 {
 	const errors: string[] = [];
 
@@ -35,8 +34,7 @@ export function extractValidationErrors(
 		{
 			messages.forEach(
 				(message: string) =>
-					errors.push(`${field}: ${message}`)
-			);
+					errors.push(`${field}: ${message}`));
 		}
 	}
 
@@ -47,8 +45,7 @@ export function extractValidationErrors(
  * Extracts HTTP status details for error messages.
  */
 export function extractHttpStatus(
-	error: HttpErrorResponse
-): string | null
+	error: HttpErrorResponse): string | null
 {
 	return error.status > 0
 		? `Status: ${error.status} ${error.statusText}`
@@ -60,10 +57,10 @@ export function extractHttpStatus(
  */
 export function extractErrorTitle(
 	error: HttpErrorResponse,
-	userMessage: string
-): string | null
+	userMessage: string): string | null
 {
-	const title: string | undefined = error.error?.title;
+	const title: string | undefined =
+		error.error?.title;
 	return isPresent(title) && title !== userMessage ? title : null;
 }
 
@@ -94,8 +91,7 @@ export function extractRequestUrl(error?: Error | HttpErrorResponse): string
  * Returns undefined if method cannot be determined.
  */
 export function extractRequestMethod(
-	error?: Error | HttpErrorResponse
-): string | undefined
+	error?: Error | HttpErrorResponse): string | undefined
 {
 	// Try HttpError (our custom error class)
 	if (error instanceof HttpError && error.method)
@@ -112,8 +108,7 @@ export function extractRequestMethod(
  * Returns undefined if status code cannot be determined.
  */
 export function extractStatusCode(
-	error?: Error | HttpErrorResponse
-): number | undefined
+	error?: Error | HttpErrorResponse): number | undefined
 {
 	// Try HttpErrorResponse first
 	if (error instanceof HttpErrorResponse)
@@ -137,8 +132,7 @@ export function extractStatusCode(
 export function convertToAppError(
 	error: HttpErrorResponse,
 	url: string,
-	method: string
-): Error
+	method: string): Error
 {
 	// Network errors (status 0)
 	if (error.status === 0)
@@ -162,8 +156,7 @@ export function convertToAppError(
 	if (error.status === 401 || error.status === 403)
 	{
 		return new UnauthorizedError(
-			error.error?.title || "Unauthorized access"
-		);
+			error.error?.title || "Unauthorized access");
 	}
 
 	// Generic HTTP errors
@@ -171,6 +164,5 @@ export function convertToAppError(
 		error.error?.title || error.message || "HTTP request failed",
 		error.status,
 		url,
-		method
-	);
+		method);
 }

@@ -1,9 +1,9 @@
 import { AbstractControl } from "@angular/forms";
+import { isNonNullObject } from "@infrastructure/utils/null-check.utility";
 import {
 	VALIDATION_ERROR_MESSAGES,
 	ValidationMessageTemplate
 } from "../constants/validation-error.constants";
-import { isNonNullObject } from "@infrastructure/utils/null-check.utility";
 
 /**
  * Gets the first validation error message for a form control.
@@ -22,22 +22,24 @@ import { isNonNullObject } from "@infrastructure/utils/null-check.utility";
  */
 export function getValidationError(
 	control: AbstractControl | null | undefined,
-	fieldLabel: string
-): string | null
+	fieldLabel: string): string | null
 {
 	if (!control?.errors)
 	{
 		return null;
 	}
 
-	const errorKeys: string[] = Object.keys(control.errors);
+	const errorKeys: string[] =
+		Object.keys(control.errors);
 	if (errorKeys.length === 0)
 	{
 		return null;
 	}
 
-	const firstErrorKey: string = errorKeys[0];
-	const errorValue: unknown = control.errors[firstErrorKey];
+	const firstErrorKey: string =
+		errorKeys[0];
+	const errorValue: unknown =
+		control.errors[firstErrorKey];
 	const messageTemplate: ValidationMessageTemplate | undefined =
 		VALIDATION_ERROR_MESSAGES[firstErrorKey];
 
@@ -46,7 +48,7 @@ export function getValidationError(
 		// Fallback for custom validators with message property
 		if (isNonNullObject(errorValue) && "message" in errorValue)
 		{
-			return (errorValue as { message: string }).message;
+			return (errorValue as { message: string; }).message;
 		}
 		return `${fieldLabel} is invalid`;
 	}
@@ -57,7 +59,8 @@ export function getValidationError(
 			isNonNullObject(errorValue)
 				? errorValue
 				: {};
-		return messageTemplate(params).replace("{field}", fieldLabel);
+		return messageTemplate(params)
+			.replace("{field}", fieldLabel);
 	}
 
 	return messageTemplate.replace("{field}", fieldLabel);

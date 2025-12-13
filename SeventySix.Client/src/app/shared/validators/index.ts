@@ -1,7 +1,7 @@
 export {
 	dateRangeValidator,
-	stringLengthValidator,
 	futureDateValidator,
+	matchFieldValidator,
 	requiredIfValidator,
-	matchFieldValidator
+	stringLengthValidator
 } from "./custom-validators";

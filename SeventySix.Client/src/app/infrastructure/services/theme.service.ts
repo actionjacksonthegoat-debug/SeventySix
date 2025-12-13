@@ -1,14 +1,14 @@
+import { isPlatformBrowser } from "@angular/common";
 import {
-	Injectable,
-	signal,
+	computed,
 	effect,
 	inject,
+	Injectable,
 	PLATFORM_ID,
-	computed,
-	WritableSignal,
-	Signal
+	Signal,
+	signal,
+	WritableSignal
 } from "@angular/core";
-import { isPlatformBrowser } from "@angular/common";
 import { StorageService } from "./storage.service";
 
 /**
@@ -31,33 +31,37 @@ export type ColorScheme = "blue" | "cyan-orange";
 })
 export class ThemeService
 {
-	private platformId: Object = inject(PLATFORM_ID);
-	private readonly storage: StorageService = inject(StorageService);
-	private readonly BRIGHTNESS_STORAGE_KEY: string =
-		"seventysix-theme-brightness";
+	private platformId: Object =
+		inject(PLATFORM_ID);
+	private readonly storage: StorageService =
+		inject(StorageService);
+	private readonly BRIGHTNESS_STORAGE_KEY: string = "seventysix-theme-brightness";
 	private readonly SCHEME_STORAGE_KEY: string = "seventysix-color-scheme";
 
 	/**
 	 * Current theme brightness (light/dark)
 	 */
-	brightness: WritableSignal<ThemeBrightness> = signal<ThemeBrightness>(
-		this.getInitialBrightness()
-	);
+	brightness: WritableSignal<ThemeBrightness> =
+		signal<ThemeBrightness>(
+		this.getInitialBrightness());
 
 	/**
 	 * Current color scheme (blue/cyan-orange)
 	 */
-	colorScheme: WritableSignal<ColorScheme> = signal<ColorScheme>(
-		this.getInitialColorScheme()
-	);
+	colorScheme: WritableSignal<ColorScheme> =
+		signal<ColorScheme>(
+		this.getInitialColorScheme());
 
 	/**
 	 * Computed full theme name for display
 	 */
-	themeName: Signal<string> = computed(() =>
+	themeName: Signal<string> =
+		computed(() =>
 	{
-		const brightness: ThemeBrightness = this.brightness();
-		const scheme: ColorScheme = this.colorScheme();
+		const brightness: ThemeBrightness =
+			this.brightness();
+		const scheme: ColorScheme =
+			this.colorScheme();
 		return `${brightness}-${scheme}`;
 	});
 
@@ -109,9 +113,9 @@ export class ThemeService
 	 */
 	private getInitialBrightness(): ThemeBrightness
 	{
-		const saved: string | null = this.storage.getItem<string>(
-			this.BRIGHTNESS_STORAGE_KEY
-		);
+		const saved: string | null =
+			this.storage.getItem<string>(
+			this.BRIGHTNESS_STORAGE_KEY);
 		return saved === "dark" || saved === "light" ? saved : "light";
 	}
 
@@ -120,9 +124,9 @@ export class ThemeService
 	 */
 	private getInitialColorScheme(): ColorScheme
 	{
-		const saved: string | null = this.storage.getItem<string>(
-			this.SCHEME_STORAGE_KEY
-		);
+		const saved: string | null =
+			this.storage.getItem<string>(
+			this.SCHEME_STORAGE_KEY);
 		return saved === "cyan-orange" ? "cyan-orange" : "blue";
 	}
 
@@ -136,15 +140,15 @@ export class ThemeService
 			return;
 		}
 
-		const html: HTMLElement = document.documentElement;
+		const html: HTMLElement =
+			document.documentElement;
 
 		// Remove all theme classes
 		html.classList.remove(
 			"light-theme",
 			"dark-theme",
 			"blue-scheme",
-			"cyan-orange-scheme"
-		);
+			"cyan-orange-scheme");
 
 		// Add current theme classes
 		html.classList.add(`${brightness}-theme`);

@@ -4,16 +4,16 @@
  * Follows KISS and DRY principles
  */
 
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import {
-	provideZonelessChangeDetection,
-	Type,
-	Provider,
-	EnvironmentProviders
-} from "@angular/core";
-import { provideNoopAnimations } from "@angular/platform-browser/animations";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
+import {
+	EnvironmentProviders,
+	Provider,
+	provideZonelessChangeDetection,
+	Type
+} from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { provideNoopAnimations } from "@angular/platform-browser/animations";
 import { provideRouter } from "@angular/router";
 import {
 	provideTanStackQuery,
@@ -33,7 +33,7 @@ import {
 export class ComponentTestBed<T>
 {
 	private providers: (Provider | EnvironmentProviders)[] = [];
-	private imports: unknown[] = [];
+	private imports: Type<object>[] = [];
 
 	/**
 	 * Add a mocked service to the test configuration
@@ -45,10 +45,10 @@ export class ComponentTestBed<T>
 	 */
 	withMockService<S>(token: Type<S>, methods: string[]): this
 	{
-		const mock: jasmine.SpyObj<S> = jasmine.createSpyObj(
+		const mock: jasmine.SpyObj<S> =
+			jasmine.createSpyObj(
 			token.name,
-			methods
-		);
+			methods);
 		this.providers.push({ provide: token, useValue: mock });
 		return this;
 	}
@@ -93,8 +93,7 @@ export class ComponentTestBed<T>
 	 */
 	withInputs(
 		fixture: ComponentFixture<T>,
-		inputs: Record<string, unknown>
-	): void
+		inputs: Record<string, unknown>): void
 	{
 		for (const [key, value] of Object.entries(inputs))
 		{
@@ -119,13 +118,16 @@ export class ComponentTestBed<T>
 	 */
 	withOutputSpy(
 		fixture: ComponentFixture<T>,
-		outputName: string
-	): jasmine.Spy
+		outputName: string): jasmine.Spy
 	{
-		const spy: jasmine.Spy = jasmine.createSpy(outputName);
-		const component: T = fixture.componentInstance as T;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const output: any = (component as any)[outputName];
+		const spy: jasmine.Spy =
+			jasmine.createSpy(outputName);
+		const component: T =
+			fixture.componentInstance as T;
+		const output: { subscribe?: (observer: jasmine.Spy) => void; } | undefined =
+			(component as Record<string, unknown>)[outputName] as
+				| { subscribe?: (observer: jasmine.Spy) => void; }
+				| undefined;
 		if (output && typeof output.subscribe === "function")
 		{
 			output.subscribe(spy);
@@ -149,13 +151,13 @@ export class ComponentTestBed<T>
 	 */
 	withAdminDefaults(): this
 	{
-		const queryClient: QueryClient = createTestQueryClient();
+		const queryClient: QueryClient =
+			createTestQueryClient();
 		this.providers.push(
 			provideHttpClient(withFetch()),
 			provideHttpClientTesting(),
 			provideRouter([]),
-			provideTanStackQuery(queryClient)
-		);
+			provideTanStackQuery(queryClient));
 		return this;
 	}
 
@@ -165,7 +167,7 @@ export class ComponentTestBed<T>
 	 * @param importItem - Module or standalone component
 	 * @returns this for chaining
 	 */
-	withImport(importItem: unknown): this
+	withImport(importItem: Type<object>): this
 	{
 		this.imports.push(importItem);
 		return this;
@@ -180,14 +182,16 @@ export class ComponentTestBed<T>
 	 */
 	async build(component: Type<T>): Promise<ComponentFixture<T>>
 	{
-		await TestBed.configureTestingModule({
-			imports: [component, ...this.imports],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideNoopAnimations(),
-				...this.providers
-			]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [component, ...this.imports],
+				providers: [
+					provideZonelessChangeDetection(),
+					provideNoopAnimations(),
+					...this.providers
+				]
+			})
+			.compileComponents();
 
 		return TestBed.createComponent(component);
 	}
@@ -254,10 +258,10 @@ export function createTestQueryClient(): QueryClient
  */
 export function setupServiceTest<T>(
 	service: Type<T>,
-	providers: Provider[] = []
-): { service: T; queryClient: QueryClient }
+	providers: Provider[] = []): { service: T; queryClient: QueryClient; }
 {
-	const queryClient: QueryClient = createTestQueryClient();
+	const queryClient: QueryClient =
+		createTestQueryClient();
 
 	TestBed.configureTestingModule({
 		providers: [
@@ -299,8 +303,7 @@ export function setupServiceTest<T>(
  */
 export function setupRepositoryTest<T>(
 	repository: Type<T>,
-	providers: (Provider | EnvironmentProviders)[] = []
-): T
+	providers: (Provider | EnvironmentProviders)[] = []): T
 {
 	TestBed.configureTestingModule({
 		providers: [provideZonelessChangeDetection(), repository, ...providers]
@@ -332,8 +335,7 @@ export function setupRepositoryTest<T>(
 export function setupSimpleServiceTest<T>(
 	service: Type<T>,
 	providers: (Provider | EnvironmentProviders)[] = [],
-	imports: unknown[] = []
-): T
+	imports: Type<object>[] = []): T
 {
 	TestBed.configureTestingModule({
 		imports,

@@ -5,10 +5,10 @@
 
 // Re-export generated DTOs
 export type {
-	HealthStatusResponse,
+	ApiHealthStatus,
 	DatabaseHealthResponse,
 	ExternalApiHealthResponse,
-	ApiHealthStatus,
+	HealthStatusResponse,
 	QueueHealthResponse,
 	SystemResourcesResponse,
 	ThirdPartyApiRequestResponse,

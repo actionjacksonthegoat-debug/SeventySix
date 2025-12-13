@@ -4,11 +4,12 @@
  */
 import { Routes } from "@angular/router";
 
-export const HOME_ROUTES: Routes = [
-	{
-		path: "",
-		loadComponent: () =>
-			import("./home-page/home.component").then((m) => m.HomeComponent),
-		title: "SeventySix - Home"
-	}
-];
+export const HOME_ROUTES: Routes =
+	[
+		{
+			path: "",
+			loadComponent: () =>
+				import("./home-page/home.component").then((m) => m.HomeComponent),
+			title: "SeventySix - Home"
+		}
+	];

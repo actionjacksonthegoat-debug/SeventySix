@@ -1,25 +1,24 @@
+import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import {
-	provideRouter,
-	Router,
 	ActivatedRouteSnapshot,
+	provideRouter,
 	RouterStateSnapshot,
 	UrlTree
 } from "@angular/router";
-import { provideZonelessChangeDetection } from "@angular/core";
-import { roleGuard } from "./role.guard";
-import { AuthService } from "@infrastructure/services/auth.service";
 import { CanActivateFn } from "@angular/router";
+import { AuthService } from "@infrastructure/services/auth.service";
+import { roleGuard } from "./role.guard";
 
 /** Role Guard Tests - DRY factory pattern */
 describe("roleGuard", () =>
 {
 	let authService: jasmine.SpyObj<AuthService>;
-	let router: Router;
 
 	beforeEach(() =>
 	{
-		authService = jasmine.createSpyObj("AuthService", [
+		authService =
+			jasmine.createSpyObj("AuthService", [
 			"isAuthenticated",
 			"hasAnyRole"
 		]);
@@ -31,8 +30,6 @@ describe("roleGuard", () =>
 				{ provide: AuthService, useValue: authService }
 			]
 		});
-
-		router = TestBed.inject(Router);
 	});
 
 	describe("roleGuard() - no roles required", () =>
@@ -41,34 +38,38 @@ describe("roleGuard", () =>
 		{
 			authService.isAuthenticated.and.returnValue(true);
 
-			const guard: CanActivateFn = roleGuard();
-			const result: boolean | UrlTree = TestBed.runInInjectionContext(
+			const guard: CanActivateFn =
+				roleGuard();
+			const result: boolean | UrlTree =
+				TestBed.runInInjectionContext(
 				() =>
 					guard(
 						{} as ActivatedRouteSnapshot,
-						{ url: "/protected" } as RouterStateSnapshot
-					)
-			) as boolean | UrlTree;
+						{ url: "/protected" } as RouterStateSnapshot)) as boolean | UrlTree;
 
-			expect(result).toBeTrue();
+			expect(result)
+				.toBeTrue();
 		});
 
 		it("should redirect unauthenticated user to login", () =>
 		{
 			authService.isAuthenticated.and.returnValue(false);
 
-			const guard: CanActivateFn = roleGuard();
-			const result: boolean | UrlTree = TestBed.runInInjectionContext(
+			const guard: CanActivateFn =
+				roleGuard();
+			const result: boolean | UrlTree =
+				TestBed.runInInjectionContext(
 				() =>
 					guard(
 						{} as ActivatedRouteSnapshot,
-						{ url: "/protected" } as RouterStateSnapshot
-					)
-			) as boolean | UrlTree;
+						{ url: "/protected" } as RouterStateSnapshot)) as boolean | UrlTree;
 
-			expect(result).toBeInstanceOf(UrlTree);
-			expect(result.toString()).toContain("/auth/login");
-			expect(result.toString()).toContain("returnUrl=%2Fprotected");
+			expect(result)
+				.toBeInstanceOf(UrlTree);
+			expect(result.toString())
+				.toContain("/auth/login");
+			expect(result.toString())
+				.toContain("returnUrl=%2Fprotected");
 		});
 	});
 
@@ -79,17 +80,19 @@ describe("roleGuard", () =>
 			authService.isAuthenticated.and.returnValue(true);
 			authService.hasAnyRole.and.returnValue(true);
 
-			const guard: CanActivateFn = roleGuard("Admin");
-			const result: boolean | UrlTree = TestBed.runInInjectionContext(
+			const guard: CanActivateFn =
+				roleGuard("Admin");
+			const result: boolean | UrlTree =
+				TestBed.runInInjectionContext(
 				() =>
 					guard(
 						{} as ActivatedRouteSnapshot,
-						{ url: "/admin" } as RouterStateSnapshot
-					)
-			) as boolean | UrlTree;
+						{ url: "/admin" } as RouterStateSnapshot)) as boolean | UrlTree;
 
-			expect(result).toBeTrue();
-			expect(authService.hasAnyRole).toHaveBeenCalledWith("Admin");
+			expect(result)
+				.toBeTrue();
+			expect(authService.hasAnyRole)
+				.toHaveBeenCalledWith("Admin");
 		});
 
 		it("should redirect non-admin to home", () =>
@@ -97,17 +100,19 @@ describe("roleGuard", () =>
 			authService.isAuthenticated.and.returnValue(true);
 			authService.hasAnyRole.and.returnValue(false);
 
-			const guard: CanActivateFn = roleGuard("Admin");
-			const result: boolean | UrlTree = TestBed.runInInjectionContext(
+			const guard: CanActivateFn =
+				roleGuard("Admin");
+			const result: boolean | UrlTree =
+				TestBed.runInInjectionContext(
 				() =>
 					guard(
 						{} as ActivatedRouteSnapshot,
-						{ url: "/admin" } as RouterStateSnapshot
-					)
-			) as boolean | UrlTree;
+						{ url: "/admin" } as RouterStateSnapshot)) as boolean | UrlTree;
 
-			expect(result).toBeInstanceOf(UrlTree);
-			expect(result.toString()).toBe("/");
+			expect(result)
+				.toBeInstanceOf(UrlTree);
+			expect(result.toString())
+				.toBe("/");
 		});
 	});
 
@@ -118,16 +123,17 @@ describe("roleGuard", () =>
 			authService.isAuthenticated.and.returnValue(true);
 			authService.hasAnyRole.and.returnValue(true);
 
-			const guard: CanActivateFn = roleGuard("Developer", "Admin");
-			const result: boolean | UrlTree = TestBed.runInInjectionContext(
+			const guard: CanActivateFn =
+				roleGuard("Developer", "Admin");
+			const result: boolean | UrlTree =
+				TestBed.runInInjectionContext(
 				() =>
 					guard(
 						{} as ActivatedRouteSnapshot,
-						{ url: "/style-guide" } as RouterStateSnapshot
-					)
-			) as boolean | UrlTree;
+						{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
-			expect(result).toBeTrue();
+			expect(result)
+				.toBeTrue();
 		});
 
 		it("should allow user with Admin role only", () =>
@@ -135,16 +141,17 @@ describe("roleGuard", () =>
 			authService.isAuthenticated.and.returnValue(true);
 			authService.hasAnyRole.and.returnValue(true);
 
-			const guard: CanActivateFn = roleGuard("Developer", "Admin");
-			const result: boolean | UrlTree = TestBed.runInInjectionContext(
+			const guard: CanActivateFn =
+				roleGuard("Developer", "Admin");
+			const result: boolean | UrlTree =
+				TestBed.runInInjectionContext(
 				() =>
 					guard(
 						{} as ActivatedRouteSnapshot,
-						{ url: "/style-guide" } as RouterStateSnapshot
-					)
-			) as boolean | UrlTree;
+						{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
-			expect(result).toBeTrue();
+			expect(result)
+				.toBeTrue();
 		});
 
 		it("should allow user with both roles", () =>
@@ -152,16 +159,17 @@ describe("roleGuard", () =>
 			authService.isAuthenticated.and.returnValue(true);
 			authService.hasAnyRole.and.returnValue(true);
 
-			const guard: CanActivateFn = roleGuard("Developer", "Admin");
-			const result: boolean | UrlTree = TestBed.runInInjectionContext(
+			const guard: CanActivateFn =
+				roleGuard("Developer", "Admin");
+			const result: boolean | UrlTree =
+				TestBed.runInInjectionContext(
 				() =>
 					guard(
 						{} as ActivatedRouteSnapshot,
-						{ url: "/style-guide" } as RouterStateSnapshot
-					)
-			) as boolean | UrlTree;
+						{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
-			expect(result).toBeTrue();
+			expect(result)
+				.toBeTrue();
 		});
 
 		it("should redirect user with neither role", () =>
@@ -169,17 +177,19 @@ describe("roleGuard", () =>
 			authService.isAuthenticated.and.returnValue(true);
 			authService.hasAnyRole.and.returnValue(false);
 
-			const guard: CanActivateFn = roleGuard("Developer", "Admin");
-			const result: boolean | UrlTree = TestBed.runInInjectionContext(
+			const guard: CanActivateFn =
+				roleGuard("Developer", "Admin");
+			const result: boolean | UrlTree =
+				TestBed.runInInjectionContext(
 				() =>
 					guard(
 						{} as ActivatedRouteSnapshot,
-						{ url: "/style-guide" } as RouterStateSnapshot
-					)
-			) as boolean | UrlTree;
+						{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
-			expect(result).toBeInstanceOf(UrlTree);
-			expect(result.toString()).toBe("/");
+			expect(result)
+				.toBeInstanceOf(UrlTree);
+			expect(result.toString())
+				.toBe("/");
 		});
 	});
 
@@ -189,17 +199,19 @@ describe("roleGuard", () =>
 		{
 			authService.isAuthenticated.and.returnValue(false);
 
-			const guard: CanActivateFn = roleGuard("Admin");
-			const result: boolean | UrlTree = TestBed.runInInjectionContext(
+			const guard: CanActivateFn =
+				roleGuard("Admin");
+			const result: boolean | UrlTree =
+				TestBed.runInInjectionContext(
 				() =>
 					guard(
 						{} as ActivatedRouteSnapshot,
-						{ url: "/admin/users" } as RouterStateSnapshot
-					)
-			) as boolean | UrlTree;
+						{ url: "/admin/users" } as RouterStateSnapshot)) as boolean | UrlTree;
 
-			expect(result).toBeInstanceOf(UrlTree);
-			expect(result.toString()).toContain("/login");
+			expect(result)
+				.toBeInstanceOf(UrlTree);
+			expect(result.toString())
+				.toContain("/login");
 			// Should NOT check roles if not authenticated
 			expect(authService.hasAnyRole).not.toHaveBeenCalled();
 		});

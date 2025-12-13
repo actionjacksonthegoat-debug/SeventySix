@@ -1,7 +1,7 @@
-import { signal, WritableSignal } from "@angular/core";
 import { HttpContext } from "@angular/common/http";
-import { BaseQueryRequest } from "@shared/models";
+import { signal, WritableSignal } from "@angular/core";
 import { FORCE_REFRESH } from "@infrastructure/interceptors/cache-bypass.interceptor";
+import { BaseQueryRequest } from "@shared/models";
 
 /**
  * Base class for filter state management in paginated data tables.
@@ -24,8 +24,10 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 	/** Initialize filter with default values and store for reset. */
 	protected constructor(initialFilter: TFilter)
 	{
-		this.initialFilter = { ...initialFilter };
-		this.filter = signal<TFilter>(initialFilter);
+		this.initialFilter =
+			{ ...initialFilter };
+		this.filter =
+			signal<TFilter>(initialFilter);
 	}
 
 	/** Get current filter value. */
@@ -43,8 +45,7 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 					...current,
 					...filter,
 					page: 1
-				}) as TFilter
-		);
+				}) as TFilter);
 	}
 
 	/** Set page number without resetting other filters. Use this for pagination navigation. */
@@ -55,8 +56,7 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 				({
 					...current,
 					page
-				}) as TFilter
-		);
+				}) as TFilter);
 	}
 
 	/** Set page size and reset to page 1. Resetting to page 1 prevents showing empty page if current page exceeds new total. */
@@ -68,8 +68,7 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 					...current,
 					pageSize,
 					page: 1
-				}) as TFilter
-		);
+				}) as TFilter);
 	}
 
 	/**
@@ -80,7 +79,8 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 	protected getForceRefreshContext(): HttpContext | undefined
 	{
 		return this.forceRefreshTrigger()
-			? new HttpContext().set(FORCE_REFRESH, true)
+			? new HttpContext()
+				.set(FORCE_REFRESH, true)
 			: undefined;
 	}
 

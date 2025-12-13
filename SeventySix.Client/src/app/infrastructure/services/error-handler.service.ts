@@ -1,22 +1,22 @@
-import { ErrorHandler, Injectable, inject } from "@angular/core";
 import { HttpErrorResponse } from "@angular/common/http";
-import { LoggerService } from "./logger.service";
-import { NotificationService } from "./notification.service";
-import { ClientErrorLoggerService } from "./client-error-logger.service";
-import { DateService } from "./date.service";
-import {
-	HttpError,
-	ValidationError,
-	NotFoundError,
-	UnauthorizedError,
-	NetworkError
-} from "@infrastructure/models/errors";
+import { ErrorHandler, inject, Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
 import {
-	extractValidationErrors,
+	HttpError,
+	NetworkError,
+	NotFoundError,
+	UnauthorizedError,
+	ValidationError
+} from "@infrastructure/models/errors";
+import {
+	extractErrorTitle,
 	extractHttpStatus,
-	extractErrorTitle
+	extractValidationErrors
 } from "@infrastructure/utils/http-error.utility";
+import { ClientErrorLoggerService } from "./client-error-logger.service";
+import { DateService } from "./date.service";
+import { LoggerService } from "./logger.service";
+import { NotificationService } from "./notification.service";
 
 interface ErrorDetails
 {
@@ -31,13 +31,15 @@ interface ErrorDetails
 })
 export class ErrorHandlerService implements ErrorHandler
 {
-	private readonly logger: LoggerService = inject(LoggerService);
+	private readonly logger: LoggerService =
+		inject(LoggerService);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
-	private readonly clientLogger: ClientErrorLoggerService = inject(
-		ClientErrorLoggerService
-	);
-	private readonly dateService: DateService = inject(DateService);
+	private readonly clientLogger: ClientErrorLoggerService =
+		inject(
+		ClientErrorLoggerService);
+	private readonly dateService: DateService =
+		inject(DateService);
 
 	private isHandlingError: boolean = false;
 
@@ -53,7 +55,8 @@ export class ErrorHandlerService implements ErrorHandler
 
 		try
 		{
-			const errorDetails: ErrorDetails = this.extractErrorDetails(error);
+			const errorDetails: ErrorDetails =
+				this.extractErrorDetails(error);
 
 			this.logToServer(errorDetails);
 			this.notifyUser(error, errorDetails);
@@ -94,32 +97,32 @@ export class ErrorHandlerService implements ErrorHandler
 
 	private notifyUser(
 		error: Error | HttpErrorResponse,
-		errorDetails: ErrorDetails
-	): void
+		errorDetails: ErrorDetails): void
 	{
-		const copyData: string = this.buildCopyData(error, errorDetails);
+		const copyData: string =
+			this.buildCopyData(error, errorDetails);
 		this.notification.errorWithDetails(
 			errorDetails.message,
 			errorDetails.details,
-			copyData
-		);
+			copyData);
 	}
 
 	private extractErrorDetails(
-		error: Error | HttpErrorResponse
-	): ErrorDetails
+		error: Error | HttpErrorResponse): ErrorDetails
 	{
 		const details: string[] = [];
 		let message: string;
 
 		if (error instanceof HttpErrorResponse)
 		{
-			message = this.getHttpMessage(error);
+			message =
+				this.getHttpMessage(error);
 			this.extractHttpErrorDetails(error, details, message);
 		}
 		else
 		{
-			message = this.getUserMessage(error);
+			message =
+				this.getUserMessage(error);
 			if (error.message && error.message !== message)
 			{
 				details.push(`Technical: ${error.message}`);
@@ -137,8 +140,7 @@ export class ErrorHandlerService implements ErrorHandler
 	private extractHttpErrorDetails(
 		error: HttpErrorResponse,
 		details: string[],
-		userMessage: string
-	): void
+		userMessage: string): void
 	{
 		details.push(...extractValidationErrors(error));
 
@@ -149,7 +151,8 @@ export class ErrorHandlerService implements ErrorHandler
 			details.push(title);
 		}
 
-		const status: string | null = extractHttpStatus(error);
+		const status: string | null =
+			extractHttpStatus(error);
 		if (status)
 		{
 			details.push(status);
@@ -165,10 +168,13 @@ export class ErrorHandlerService implements ErrorHandler
 	{
 		if (error instanceof ValidationError)
 		{
-			const errorCount: number = Object.keys(error.errors).length;
-			const firstError: string | undefined = Object.values(
-				error.errors
-			)[0]?.[0];
+			const errorCount: number =
+				Object.keys(error.errors).length;
+			const firstError: string | undefined =
+				Object
+				.values(
+					error.errors)[0]
+				?.[0];
 			return errorCount === 1 && firstError
 				? firstError
 				: `Validation failed: ${errorCount} error(s).`;
@@ -183,8 +189,7 @@ export class ErrorHandlerService implements ErrorHandler
 		{
 			return (
 				error.message
-				|| "You are not authorized to perform this action."
-			);
+					|| "You are not authorized to perform this action.");
 		}
 
 		if (error instanceof NetworkError)
@@ -204,56 +209,56 @@ export class ErrorHandlerService implements ErrorHandler
 
 	private getHttpMessage(error: HttpErrorResponse): string
 	{
-		const statusMessages: Record<number, string> = {
-			0: "Unable to connect to the server. Check your connection.",
-			400:
-				error.error?.title
-				|| "Invalid request. Please check your input.",
-			401: "Your session has expired. Please log in again.",
-			403: "You do not have permission to perform this action.",
-			404: error.error?.title || "The requested resource was not found.",
-			422:
-				error.error?.title
-				|| "Validation failed. Please check your input.",
-			429: "Too many requests. Please try again later.",
-			500: "Server error. Please try again later.",
-			502: "Server error. Please try again later.",
-			503: "Server error. Please try again later.",
-			504: "Server error. Please try again later."
-		};
+		const statusMessages: Record<number, string> =
+			{
+				0: "Unable to connect to the server. Check your connection.",
+				400: error.error?.title
+					|| "Invalid request. Please check your input.",
+				401: "Your session has expired. Please log in again.",
+				403: "You do not have permission to perform this action.",
+				404: error.error?.title || "The requested resource was not found.",
+				422: error.error?.title
+					|| "Validation failed. Please check your input.",
+				429: "Too many requests. Please try again later.",
+				500: "Server error. Please try again later.",
+				502: "Server error. Please try again later.",
+				503: "Server error. Please try again later.",
+				504: "Server error. Please try again later."
+			};
 
 		return (
 			statusMessages[error.status]
-			|| (environment.production
-				? "An error occurred."
-				: `HTTP ${error.status}: ${error.message}`)
-		);
+				|| (environment.production
+					? "An error occurred."
+					: `HTTP ${error.status}: ${error.message}`));
 	}
 
 	private buildCopyData(
 		error: Error | HttpErrorResponse,
-		errorDetails: ErrorDetails
-	): string
+		errorDetails: ErrorDetails): string
 	{
-		const data: Record<string, unknown> = {
-			timestamp: this.dateService.now(),
-			message: errorDetails.message,
-			details: errorDetails.details,
-			error: {
-				name: error.name,
-				message: error.message,
-				stack: error instanceof Error ? error.stack : undefined
-			}
-		};
+		const data: Record<string, unknown> =
+			{
+				timestamp: this.dateService.now(),
+				message: errorDetails.message,
+				details: errorDetails.details,
+				error: {
+					name: error.name,
+					message: error.message,
+					stack: error instanceof Error ? error.stack : undefined
+				}
+			};
 
 		if (error instanceof HttpErrorResponse)
 		{
-			data["request"] = {
-				url: error.url,
-				status: error.status,
-				statusText: error.statusText
-			};
-			data["response"] = error.error;
+			data["request"] =
+				{
+					url: error.url,
+					status: error.status,
+					statusText: error.statusText
+				};
+			data["response"] =
+				error.error;
 		}
 
 		return JSON.stringify(data, null, 2);

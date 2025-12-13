@@ -1,14 +1,14 @@
+import { isPlatformBrowser } from "@angular/common";
 import {
+	DestroyRef,
 	Directive,
-	output,
-	OnInit,
 	inject,
-	PLATFORM_ID,
+	OnInit,
+	output,
 	OutputEmitterRef,
-	DestroyRef
+	PLATFORM_ID
 } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { isPlatformBrowser } from "@angular/common";
 import { debounceTime, fromEvent } from "rxjs";
 
 /**
@@ -27,13 +27,16 @@ import { debounceTime, fromEvent } from "rxjs";
 })
 export class SiteLayoutChangedDirective implements OnInit
 {
-	private readonly platformId: Object = inject(PLATFORM_ID);
-	private readonly destroyRef: DestroyRef = inject(DestroyRef);
+	private readonly platformId: Object =
+		inject(PLATFORM_ID);
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 
 	/**
 	 * Event emitted when layout change is detected (after debounce)
 	 */
-	readonly layoutChanged: OutputEmitterRef<void> = output<void>();
+	readonly layoutChanged: OutputEmitterRef<void> =
+		output<void>();
 
 	/**
 	 * Debounce time in milliseconds (default: 500ms)
@@ -51,8 +54,7 @@ export class SiteLayoutChangedDirective implements OnInit
 		fromEvent(window, "resize")
 			.pipe(
 				debounceTime(this.DEBOUNCE_TIME),
-				takeUntilDestroyed(this.destroyRef)
-)
+				takeUntilDestroyed(this.destroyRef))
 			.subscribe(() =>
 			{
 				this.layoutChanged.emit();

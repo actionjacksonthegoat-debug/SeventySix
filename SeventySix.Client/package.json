@@ -6,21 +6,8 @@
 		"ng": "ng",
 		"start": "ng serve",
 		"build": "ng build",
-		"watch": "ng build --watch --configuration development",
 		"test": "node scripts/architecture-tests.mjs && ng test --no-watch",
-		"test:watch": "ng test",
-		"test:arch": "node scripts/architecture-tests.mjs",
-		"test:client": "node scripts/architecture-tests.mjs && ng test --no-watch",
-		"test:all": "node scripts/architecture-tests.mjs && ng test --no-watch && playwright test",
-		"test:e2e": "playwright test",
-		"test:e2e:ui": "playwright test --ui",
-		"test:e2e:headed": "playwright test --headed",
-		"gen:api": "openapi-typescript http://localhost:5085/openapi/v1.json --output src/app/infrastructure/api/generated-api.ts --export-type",
-		"format": "prettier --write \"src/**/*.{ts,html,scss,json}\"",
-		"format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\"",
-		"lint": "eslint \"src/**/*.ts\"",
-		"lint:fix": "eslint \"src/**/*.ts\" --fix",
-		"cleanup": "npm run lint:fix && npm run format"
+		"format": "eslint . --fix && dprint fmt && eslint . --fix"
 	},
 	"private": true,
 	"dependencies": {
@@ -56,6 +43,7 @@
 		"@angular/compiler-cli": "^20.3.0",
 		"@axe-core/playwright": "^4.11.0",
 		"@playwright/test": "^1.56.1",
+		"@stylistic/eslint-plugin": "^5.6.1",
 		"@types/jasmine": "~5.1.0",
 		"@typescript-eslint/eslint-plugin": "^8.0.0",
 		"@typescript-eslint/parser": "^8.0.0",
@@ -67,8 +55,6 @@
 		"karma-jasmine": "~5.1.0",
 		"karma-jasmine-html-reporter": "~2.1.0",
 		"openapi-typescript": "^7.10.1",
-		"prettier": "^3.6.2",
-		"prettier-plugin-brace-style": "^0.8.1",
 		"typescript": "~5.9.2"
 	}
 }

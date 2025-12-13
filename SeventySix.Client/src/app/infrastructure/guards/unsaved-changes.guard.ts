@@ -1,5 +1,5 @@
-import { CanDeactivateFn } from "@angular/router";
 import { inject } from "@angular/core";
+import { CanDeactivateFn } from "@angular/router";
 import { NotificationService } from "@infrastructure/services/notification.service";
 
 /**
@@ -14,17 +14,18 @@ export interface CanComponentDeactivate
  * Unsaved changes guard.
  * Prompts user before navigating away from a component with unsaved changes.
  */
-export const unsavedChangesGuard: CanDeactivateFn<CanComponentDeactivate> = (
-	component
-) =>
+export const unsavedChangesGuard: CanDeactivateFn<CanComponentDeactivate> =
+	(
+	component) =>
 {
-	const notification: NotificationService = inject(NotificationService);
+	const notification: NotificationService =
+		inject(NotificationService);
 
 	if (component.canDeactivate && !component.canDeactivate())
 	{
-		const confirmed: boolean = window.confirm(
-			"You have unsaved changes. Are you sure you want to leave?"
-		);
+		const confirmed: boolean =
+			window.confirm(
+			"You have unsaved changes. Are you sure you want to leave?");
 
 		if (!confirmed)
 		{

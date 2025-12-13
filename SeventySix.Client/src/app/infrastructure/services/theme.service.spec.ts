@@ -1,5 +1,5 @@
-import { ThemeService } from "./theme.service";
 import { setupSimpleServiceTest } from "@testing";
+import { ThemeService } from "./theme.service";
 
 describe("ThemeService", () =>
 {
@@ -11,22 +11,26 @@ describe("ThemeService", () =>
 		spyOn(localStorage, "getItem").and.returnValue(null);
 		spyOn(localStorage, "setItem");
 
-		service = setupSimpleServiceTest(ThemeService);
+		service =
+			setupSimpleServiceTest(ThemeService);
 	});
 
 	it("should be created", () =>
 	{
-		expect(service).toBeTruthy();
+		expect(service)
+			.toBeTruthy();
 	});
 
 	it("should initialize with light theme", () =>
 	{
-		expect(service.brightness()).toBe("light");
+		expect(service.brightness())
+			.toBe("light");
 	});
 
 	it("should initialize with blue scheme", () =>
 	{
-		expect(service.colorScheme()).toBe("blue");
+		expect(service.colorScheme())
+			.toBe("blue");
 	});
 
 	describe("toggleBrightness", () =>
@@ -35,14 +39,16 @@ describe("ThemeService", () =>
 		{
 			service.setBrightness("light");
 			service.toggleBrightness();
-			expect(service.brightness()).toBe("dark");
+			expect(service.brightness())
+				.toBe("dark");
 		});
 
 		it("should toggle from dark to light", () =>
 		{
 			service.setBrightness("dark");
 			service.toggleBrightness();
-			expect(service.brightness()).toBe("light");
+			expect(service.brightness())
+				.toBe("light");
 		});
 	});
 
@@ -52,14 +58,16 @@ describe("ThemeService", () =>
 		{
 			service.setColorScheme("blue");
 			service.toggleColorScheme();
-			expect(service.colorScheme()).toBe("cyan-orange");
+			expect(service.colorScheme())
+				.toBe("cyan-orange");
 		});
 
 		it("should toggle from cyan-orange to blue", () =>
 		{
 			service.setColorScheme("cyan-orange");
 			service.toggleColorScheme();
-			expect(service.colorScheme()).toBe("blue");
+			expect(service.colorScheme())
+				.toBe("blue");
 		});
 	});
 
@@ -68,7 +76,8 @@ describe("ThemeService", () =>
 		it("should set brightness", () =>
 		{
 			service.setBrightness("dark");
-			expect(service.brightness()).toBe("dark");
+			expect(service.brightness())
+				.toBe("dark");
 		});
 	});
 
@@ -77,7 +86,8 @@ describe("ThemeService", () =>
 		it("should set color scheme", () =>
 		{
 			service.setColorScheme("cyan-orange");
-			expect(service.colorScheme()).toBe("cyan-orange");
+			expect(service.colorScheme())
+				.toBe("cyan-orange");
 		});
 	});
 
@@ -87,11 +97,13 @@ describe("ThemeService", () =>
 		{
 			service.setBrightness("light");
 			service.setColorScheme("blue");
-			expect(service.themeName()).toBe("light-blue");
+			expect(service.themeName())
+				.toBe("light-blue");
 
 			service.setBrightness("dark");
 			service.setColorScheme("cyan-orange");
-			expect(service.themeName()).toBe("dark-cyan-orange");
+			expect(service.themeName())
+				.toBe("dark-cyan-orange");
 		});
 	});
 
@@ -100,37 +112,45 @@ describe("ThemeService", () =>
 		it("isDark should return correct value", () =>
 		{
 			service.setBrightness("dark");
-			expect(service.isDark()).toBe(true);
+			expect(service.isDark())
+				.toBe(true);
 
 			service.setBrightness("light");
-			expect(service.isDark()).toBe(false);
+			expect(service.isDark())
+				.toBe(false);
 		});
 
 		it("isLight should return correct value", () =>
 		{
 			service.setBrightness("light");
-			expect(service.isLight()).toBe(true);
+			expect(service.isLight())
+				.toBe(true);
 
 			service.setBrightness("dark");
-			expect(service.isLight()).toBe(false);
+			expect(service.isLight())
+				.toBe(false);
 		});
 
 		it("isBlue should return correct value", () =>
 		{
 			service.setColorScheme("blue");
-			expect(service.isBlue()).toBe(true);
+			expect(service.isBlue())
+				.toBe(true);
 
 			service.setColorScheme("cyan-orange");
-			expect(service.isBlue()).toBe(false);
+			expect(service.isBlue())
+				.toBe(false);
 		});
 
 		it("isCyanOrange should return correct value", () =>
 		{
 			service.setColorScheme("cyan-orange");
-			expect(service.isCyanOrange()).toBe(true);
+			expect(service.isCyanOrange())
+				.toBe(true);
 
 			service.setColorScheme("blue");
-			expect(service.isCyanOrange()).toBe(false);
+			expect(service.isCyanOrange())
+				.toBe(false);
 		});
 	});
 });

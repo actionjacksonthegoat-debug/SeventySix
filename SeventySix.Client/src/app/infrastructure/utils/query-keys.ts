@@ -1,17 +1,22 @@
+import { BaseQueryRequest } from "@shared/models";
+
+/** Query key element types for type-safe cache management */
+type QueryKeyElement = string | number | boolean | BaseQueryRequest;
+
 interface LogQueryKeys
 {
 	readonly all: readonly ["logs"];
-	readonly paged: (filter: unknown) => readonly unknown[];
-	readonly count: (filter: unknown) => readonly unknown[];
+	readonly paged: (filter: BaseQueryRequest) => QueryKeyElement[];
+	readonly count: (filter: BaseQueryRequest) => QueryKeyElement[];
 }
 
 interface UserQueryKeys
 {
 	readonly all: readonly ["users"];
-	readonly paged: (filter: unknown) => readonly unknown[];
-	readonly single: (id: number | string) => readonly unknown[];
-	readonly byUsername: (username: string) => readonly unknown[];
-	readonly roles: (userId: number | string) => readonly unknown[];
+	readonly paged: (filter: BaseQueryRequest) => QueryKeyElement[];
+	readonly single: (id: number | string) => QueryKeyElement[];
+	readonly byUsername: (username: string) => QueryKeyElement[];
+	readonly roles: (userId: number | string) => QueryKeyElement[];
 }
 
 interface HealthQueryKeys
@@ -26,7 +31,7 @@ interface ThirdPartyApiQueryKeys
 {
 	readonly all: readonly ["thirdPartyApi"];
 	readonly list: readonly ["thirdPartyApi", "all"];
-	readonly byName: (name: string) => readonly unknown[];
+	readonly byName: (name: string) => QueryKeyElement[];
 	readonly statistics: readonly ["thirdPartyApi", "statistics"];
 }
 
@@ -55,25 +60,26 @@ interface QueryKeysType
 	readonly permissionRequests: PermissionRequestQueryKeys;
 }
 
-export const QueryKeys: QueryKeysType = {
+export const QueryKeys: QueryKeysType =
+	{
 	logs: {
 		all: ["logs"] as const,
-		paged: (filter: unknown): readonly unknown[] =>
-			["logs", filter] as const,
-		count: (filter: unknown): readonly unknown[] =>
-			["logs", "count", filter] as const
+		paged: (filter: BaseQueryRequest): QueryKeyElement[] =>
+			["logs", filter],
+		count: (filter: BaseQueryRequest): QueryKeyElement[] =>
+			["logs", "count", filter]
 	},
 
 	users: {
 		all: ["users"] as const,
-		paged: (filter: unknown): readonly unknown[] =>
-			["users", "paged", filter] as const,
-		single: (id: number | string): readonly unknown[] =>
-			["users", "user", id] as const,
-		byUsername: (username: string): readonly unknown[] =>
-			["users", "username", username] as const,
-		roles: (userId: number | string): readonly unknown[] =>
-			["users", userId, "roles"] as const
+		paged: (filter: BaseQueryRequest): QueryKeyElement[] =>
+			["users", "paged", filter],
+		single: (id: number | string): QueryKeyElement[] =>
+			["users", "user", id],
+		byUsername: (username: string): QueryKeyElement[] =>
+			["users", "username", username],
+		roles: (userId: number | string): QueryKeyElement[] =>
+			["users", userId, "roles"]
 	},
 
 	health: {
@@ -86,8 +92,8 @@ export const QueryKeys: QueryKeysType = {
 	thirdPartyApi: {
 		all: ["thirdPartyApi"] as const,
 		list: ["thirdPartyApi", "all"] as const,
-		byName: (name: string): readonly unknown[] =>
-			["thirdPartyApi", "byName", name] as const,
+		byName: (name: string): QueryKeyElement[] =>
+			["thirdPartyApi", "byName", name],
 		statistics: ["thirdPartyApi", "statistics"] as const
 	},
 

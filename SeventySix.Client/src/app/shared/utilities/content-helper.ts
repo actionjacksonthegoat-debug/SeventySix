@@ -16,7 +16,8 @@ const LAYOUT_DIMENSIONS: {
 	readonly BREADCRUMB_HEIGHT: number;
 	readonly FOOTER_HEIGHT: number;
 	readonly TOTAL_FIXED_HEIGHT: number;
-} = {
+} =
+	{
 	/**
 	 * Header height (mat-toolbar primary)
 	 * Desktop: 64px, Mobile: 56px
@@ -66,7 +67,8 @@ const LAYOUT_DIMENSIONS: {
  */
 export function getAvailableContentHeight(offset: number = 0): number
 {
-	const viewportHeight: number = window.innerHeight;
+	const viewportHeight: number =
+		window.innerHeight;
 	const availableHeight: number =
 		viewportHeight - LAYOUT_DIMENSIONS.TOTAL_FIXED_HEIGHT - offset;
 
@@ -82,7 +84,8 @@ export const LayoutDimensions: {
 	readonly breadcrumbHeight: number;
 	readonly footerHeight: number;
 	readonly totalFixedHeight: number;
-} = {
+} =
+	{
 	headerHeight: LAYOUT_DIMENSIONS.HEADER_HEIGHT,
 	breadcrumbHeight: LAYOUT_DIMENSIONS.BREADCRUMB_HEIGHT,
 	footerHeight: LAYOUT_DIMENSIONS.FOOTER_HEIGHT,

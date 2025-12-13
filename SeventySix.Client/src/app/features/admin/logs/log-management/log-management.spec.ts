@@ -1,69 +1,76 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
-import { provideHttpClientTesting } from "@angular/common/http/testing";
-import { signal } from "@angular/core";
-import { LogManagementPage } from "./log-management";
 import { LogManagementService } from "@admin/logs/services";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
+import { provideZonelessChangeDetection } from "@angular/core";
+import { signal } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MatDialog } from "@angular/material/dialog";
+import { LogManagementPage } from "./log-management";
 
 describe("LogManagementPage", () =>
 {
 	let fixture: ComponentFixture<LogManagementPage>;
 
-	const mockLogService: Partial<LogManagementService> = {
-		selectedIds: signal(new Set<number>()),
-		selectedCount: signal(0),
-		getLogs: jasmine.createSpy("getLogs").and.returnValue({
+	const mockLogService: Partial<LogManagementService> =
+		{
+			selectedIds: signal(new Set<number>()),
+			selectedCount: signal(0),
+			getLogs: jasmine.createSpy("getLogs").and.returnValue({
 			data: () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 }),
 			isLoading: () => false,
 			error: () => null,
 			isSuccess: () => true
 		}),
-		deleteLog: jasmine.createSpy("deleteLog").and.returnValue({
+			deleteLog: jasmine.createSpy("deleteLog").and.returnValue({
 			mutate: jasmine.createSpy("mutate"),
 			isPending: () => false
 		}),
-		deleteLogs: jasmine.createSpy("deleteLogs").and.returnValue({
+			deleteLogs: jasmine.createSpy("deleteLogs").and.returnValue({
 			mutate: jasmine.createSpy("mutate"),
 			isPending: () => false
 		}),
-		updateFilter: jasmine.createSpy("updateFilter"),
-		getCurrentFilter: jasmine
+			updateFilter: jasmine.createSpy("updateFilter"),
+			getCurrentFilter: jasmine
 			.createSpy("getCurrentFilter")
-			.and.returnValue({
+			.and
+			.returnValue({
 				page: 1,
 				pageSize: 50,
 				sortBy: "Id",
 				sortDescending: true
 			}),
-		clearSelection: jasmine.createSpy("clearSelection"),
-		selectAll: jasmine.createSpy("selectAll"),
-		toggleSelection: jasmine.createSpy("toggleSelection")
-	};
+			clearSelection: jasmine.createSpy("clearSelection"),
+			selectAll: jasmine.createSpy("selectAll"),
+			toggleSelection: jasmine.createSpy("toggleSelection")
+		};
 
-	const mockDialog: Partial<MatDialog> = {
-		open: jasmine.createSpy("open")
-	};
+	const mockDialog: Partial<MatDialog> =
+		{
+			open: jasmine.createSpy("open")
+		};
 
 	beforeEach(async () =>
 	{
-		await TestBed.configureTestingModule({
-			imports: [LogManagementPage],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideHttpClientTesting(),
-				{ provide: LogManagementService, useValue: mockLogService },
-				{ provide: MatDialog, useValue: mockDialog }
-			]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [LogManagementPage],
+				providers: [
+					provideZonelessChangeDetection(),
+					provideHttpClientTesting(),
+					{ provide: LogManagementService, useValue: mockLogService },
+					{ provide: MatDialog, useValue: mockDialog }
+				]
+			})
+			.compileComponents();
 
-		fixture = TestBed.createComponent(LogManagementPage);
+		fixture =
+			TestBed.createComponent(LogManagementPage);
 	});
 
 	it("should create", async () =>
 	{
 		await fixture.whenStable();
-		expect(fixture.componentInstance).toBeTruthy();
+		expect(fixture.componentInstance)
+			.toBeTruthy();
 	});
 
 	it("should render page header", async () =>
@@ -73,7 +80,8 @@ describe("LogManagementPage", () =>
 
 		const header: HTMLElement | null =
 			fixture.nativeElement.querySelector("app-page-header");
-		expect(header).toBeTruthy();
+		expect(header)
+			.toBeTruthy();
 	});
 
 	describe("CLS Prevention", () =>
@@ -85,14 +93,17 @@ describe("LogManagementPage", () =>
 
 			const pageContent: HTMLElement | null =
 				fixture.nativeElement.querySelector(".page-content");
-			expect(pageContent).toBeTruthy();
+			expect(pageContent)
+				.toBeTruthy();
 
-			const styles: CSSStyleDeclaration = window.getComputedStyle(
-				pageContent!
-			);
-			const minHeight: string = styles.minHeight;
+			const styles: CSSStyleDeclaration =
+				window.getComputedStyle(
+				pageContent!);
+			const minHeight: string =
+				styles.minHeight;
 
-			expect(minHeight).toBeTruthy();
+			expect(minHeight)
+				.toBeTruthy();
 			expect(minHeight).not.toBe("0px");
 			expect(minHeight).not.toBe("auto");
 		});

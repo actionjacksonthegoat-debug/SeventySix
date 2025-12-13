@@ -1,22 +1,22 @@
-import { Component, inject, ChangeDetectionStrategy } from "@angular/core";
-import { MatCardModule } from "@angular/material/card";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
+import { MatCardModule } from "@angular/material/card";
+import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatChipsModule } from "@angular/material/chips";
+import { MatDialog } from "@angular/material/dialog";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
-import { MatSelectModule } from "@angular/material/select";
-import { MatCheckboxModule } from "@angular/material/checkbox";
-import { MatRadioModule } from "@angular/material/radio";
-import { MatSlideToggleModule } from "@angular/material/slide-toggle";
-import { MatTabsModule } from "@angular/material/tabs";
-import { MatTableModule } from "@angular/material/table";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatRadioModule } from "@angular/material/radio";
+import { MatSelectModule } from "@angular/material/select";
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { MatDialog } from "@angular/material/dialog";
+import { MatTableModule } from "@angular/material/table";
+import { MatTabsModule } from "@angular/material/tabs";
+import { MatTooltipModule } from "@angular/material/tooltip";
 import { ThemeService } from "@infrastructure/services";
 import { ConfirmDialogComponent } from "@shared/components";
 
@@ -50,9 +50,12 @@ import { ConfirmDialogComponent } from "@shared/components";
 })
 export class StyleGuideComponent
 {
-	protected readonly themeService: ThemeService = inject(ThemeService);
-	private readonly snackBar: MatSnackBar = inject(MatSnackBar);
-	private readonly dialog: MatDialog = inject(MatDialog);
+	protected readonly themeService: ThemeService =
+		inject(ThemeService);
+	private readonly snackBar: MatSnackBar =
+		inject(MatSnackBar);
+	private readonly dialog: MatDialog =
+		inject(MatDialog);
 
 	// Example table data
 	readonly tableData: Array<{
@@ -60,15 +63,17 @@ export class StyleGuideComponent
 		name: string;
 		weight: number;
 		symbol: string;
-	}> = [
-		{ id: 1, name: "Hydrogen", weight: 1.0079, symbol: "H" },
-		{ id: 2, name: "Helium", weight: 4.0026, symbol: "He" },
-		{ id: 3, name: "Lithium", weight: 6.941, symbol: "Li" },
-		{ id: 4, name: "Beryllium", weight: 9.0122, symbol: "Be" },
-		{ id: 5, name: "Boron", weight: 10.811, symbol: "B" }
-	];
+	}> =
+		[
+			{ id: 1, name: "Hydrogen", weight: 1.0079, symbol: "H" },
+			{ id: 2, name: "Helium", weight: 4.0026, symbol: "He" },
+			{ id: 3, name: "Lithium", weight: 6.941, symbol: "Li" },
+			{ id: 4, name: "Beryllium", weight: 9.0122, symbol: "Be" },
+			{ id: 5, name: "Boron", weight: 10.811, symbol: "B" }
+		];
 
-	readonly displayedColumns: string[] = ["id", "name", "weight", "symbol"];
+	readonly displayedColumns: string[] =
+		["id", "name", "weight", "symbol"];
 
 	showSnackbar(message: string): void
 	{
@@ -84,8 +89,7 @@ export class StyleGuideComponent
 		this.dialog.open(ConfirmDialogComponent, {
 			data: {
 				title: "Example Dialog",
-				message:
-					"This is an example confirmation dialog using Material Design.",
+				message: "This is an example confirmation dialog using Material Design.",
 				confirmText: "OK",
 				cancelText: "Cancel",
 				confirmColor: "primary",

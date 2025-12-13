@@ -4,10 +4,12 @@
  */
 import { Routes } from "@angular/router";
 
-export const PHYSICS_ROUTES: Routes = [
-	{
-		path: "",
-		loadComponent: () => import("./physics/physics").then((m) => m.Physics),
-		title: "Physics - Calculations"
-	}
-];
+export const PHYSICS_ROUTES: Routes =
+	[
+		{
+			path: "",
+			loadComponent: () =>
+				import("./physics/physics").then((m) => m.Physics),
+			title: "Physics - Calculations"
+		}
+	];

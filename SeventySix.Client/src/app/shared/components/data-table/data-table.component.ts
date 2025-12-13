@@ -1,48 +1,43 @@
+import { SelectionModel } from "@angular/cdk/collections";
+import { ScrollingModule } from "@angular/cdk/scrolling";
+import { DatePipe } from "@angular/common";
 import {
+	ChangeDetectionStrategy,
 	Component,
+	computed,
+	effect,
+	inject,
 	input,
 	InputSignal,
 	output,
 	OutputEmitterRef,
-	computed,
 	Signal,
 	signal,
-	WritableSignal,
-	effect,
-	ChangeDetectionStrategy,
-	inject
+	WritableSignal
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { map } from "rxjs/operators";
-import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { MatCard, MatCardContent } from "@angular/material/card";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
-import { SelectionModel } from "@angular/cdk/collections";
-import {
-	TableColumn,
-	QuickFilter,
-	RowAction,
-	BulkAction,
-	RowActionEvent,
-	BulkActionEvent,
-	FilterChangeEvent,
-	DateRangeEvent,
-	SortChangeEvent
-} from "@shared/models";
-import { MatCard, MatCardContent } from "@angular/material/card";
-import { ScrollingModule } from "@angular/cdk/scrolling";
-import { TableHeightDirective } from "@shared/directives";
-import { slideDown } from "@shared/animations/animations";
 import { environment } from "@environments/environment";
 import { DateService } from "@infrastructure/services";
+import { slideDown } from "@shared/animations/animations";
+import { TableHeightDirective } from "@shared/directives";
 import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles";
+import {
+	BulkAction,
+	BulkActionEvent,
+	DateRangeEvent,
+	FilterChangeEvent,
+	QuickFilter,
+	RowAction,
+	RowActionEvent,
+	SortChangeEvent,
+	TableColumn
+} from "@shared/models";
+import { map } from "rxjs/operators";
 
-/**
- * Generic data table component
- * Provides reusable table infrastructure for feature components
- * Follows Material Design 3 patterns with OnPush change detection
- */
 /**
  * Generic data table component
  * Provides reusable table infrastructure for feature components
@@ -65,83 +60,76 @@ import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles";
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	animations: [slideDown]
 })
-export class DataTableComponent<T extends { id: number }>
+export class DataTableComponent<T extends { id: number; }>
 {
-	// ========================================
-	// Required Inputs
-	// ========================================
+	// ===== Required Inputs =====
 
-	/**
-	 * Column definitions
-	 */
+	/** Column definitions */
 	readonly columns: InputSignal<TableColumn<T>[]> =
 		input.required<TableColumn<T>[]>();
 
-	/**
-	 * Table data (current page items)
-	 */
-	readonly data: InputSignal<T[]> = input.required<T[]>();
+	/** Table data (current page items) */
+	readonly data: InputSignal<T[]> =
+		input.required<T[]>();
 
-	/**
-	 * Loading state
-	 */
-	readonly isLoading: InputSignal<boolean> = input.required<boolean>();
+	/** Loading state */
+	readonly isLoading: InputSignal<boolean> =
+		input.required<boolean>();
 
-	/**
-	 * Total items across all pages
-	 */
-	readonly totalCount: InputSignal<number> = input.required<number>();
+	/** Total items across all pages */
+	readonly totalCount: InputSignal<number> =
+		input.required<number>();
 
-	/**
-	 * Current page (0-based)
-	 */
-	readonly pageIndex: InputSignal<number> = input.required<number>();
+	/** Current page (0-based) */
+	readonly pageIndex: InputSignal<number> =
+		input.required<number>();
 
-	/**
-	 * Items per page
-	 */
-	readonly pageSize: InputSignal<number> = input.required<number>();
+	/** Items per page */
+	readonly pageSize: InputSignal<number> =
+		input.required<number>();
 
-	// ========================================
-	// Optional Inputs
-	// ========================================
+	// ===== Optional Inputs =====
 
-	/**
-	 * Error message
-	 */
-	readonly error: InputSignal<string | null> = input<string | null>(null);
+	/** Error message */
+	readonly error: InputSignal<string | null> =
+		input<string | null>(null);
 
 	/**
 	 * Enable search
 	 */
-	readonly searchable: InputSignal<boolean> = input<boolean>(true);
+	readonly searchable: InputSignal<boolean> =
+		input<boolean>(true);
 
 	/**
 	 * Enable bulk selection (checkbox column)
 	 */
-	readonly selectable: InputSignal<boolean> = input<boolean>(false);
+	readonly selectable: InputSignal<boolean> =
+		input<boolean>(false);
 
 	/**
 	 * Show "Select All" checkbox in header
 	 */
-	readonly showSelectAll: InputSignal<boolean> = input<boolean>(false);
+	readonly showSelectAll: InputSignal<boolean> =
+		input<boolean>(false);
 
 	/**
 	 * Show create button
 	 */
-	readonly showCreate: InputSignal<boolean> = input<boolean>(false);
+	readonly showCreate: InputSignal<boolean> =
+		input<boolean>(false);
 
 	/**
 	 * Show refresh button
 	 */
-	readonly showRefresh: InputSignal<boolean> = input<boolean>(true);
+	readonly showRefresh: InputSignal<boolean> =
+		input<boolean>(true);
 
 	/**
 	 * Quick filters (status/level chips)
 	 */
-	readonly quickFilters: InputSignal<QuickFilter<T>[]> = input<
-		QuickFilter<T>[]
-	>([]);
+	readonly quickFilters: InputSignal<QuickFilter<T>[]> =
+		input<
+		QuickFilter<T>[]>([]);
 
 	/**
 	 * Single-selection mode for quick filters
@@ -153,40 +141,45 @@ export class DataTableComponent<T extends { id: number }>
 	/**
 	 * Enable date range filter
 	 */
-	readonly dateRangeEnabled: InputSignal<boolean> = input<boolean>(false);
+	readonly dateRangeEnabled: InputSignal<boolean> =
+		input<boolean>(false);
 
 	/**
 	 * Page size options
 	 */
-	readonly pageSizeOptions: InputSignal<number[]> = input<number[]>([
-		25, 50, 100
+	readonly pageSizeOptions: InputSignal<number[]> =
+		input<number[]>([
+		25,
+		50,
+		100
 	]);
 
 	/**
 	 * Virtual scroll item size (from environment config)
 	 */
-	readonly virtualScrollItemSize: InputSignal<number> = input<number>(
-		environment.ui.tables.virtualScrollItemSize
-	);
+	readonly virtualScrollItemSize: InputSignal<number> =
+		input<number>(
+		environment.ui.tables.virtualScrollItemSize);
 
 	/**
 	 * localStorage key for column preferences
 	 */
-	readonly storageKey: InputSignal<string | null> = input<string | null>(
-		null
-	);
+	readonly storageKey: InputSignal<string | null> =
+		input<string | null>(
+		null);
 
 	/**
 	 * Per-row action menu items
 	 */
-	readonly rowActions: InputSignal<RowAction<T>[]> = input<RowAction<T>[]>(
-		[]
-	);
+	readonly rowActions: InputSignal<RowAction<T>[]> =
+		input<RowAction<T>[]>(
+		[]);
 
 	/**
 	 * Bulk action menu items (shown when rows selected)
 	 */
-	readonly bulkActions: InputSignal<BulkAction[]> = input<BulkAction[]>([]);
+	readonly bulkActions: InputSignal<BulkAction[]> =
+		input<BulkAction[]>([]);
 
 	// ========================================
 	// Outputs
@@ -195,17 +188,20 @@ export class DataTableComponent<T extends { id: number }>
 	/**
 	 * Row clicked
 	 */
-	readonly rowClick: OutputEmitterRef<T> = output<T>();
+	readonly rowClick: OutputEmitterRef<T> =
+		output<T>();
 
 	/**
 	 * Create button clicked
 	 */
-	readonly createClick: OutputEmitterRef<void> = output<void>();
+	readonly createClick: OutputEmitterRef<void> =
+		output<void>();
 
 	/**
 	 * Refresh button clicked
 	 */
-	readonly refreshClick: OutputEmitterRef<void> = output<void>();
+	readonly refreshClick: OutputEmitterRef<void> =
+		output<void>();
 
 	/**
 	 * Per-row action triggered
@@ -222,7 +218,8 @@ export class DataTableComponent<T extends { id: number }>
 	/**
 	 * Search text changed (debounced)
 	 */
-	readonly searchChange: OutputEmitterRef<string> = output<string>();
+	readonly searchChange: OutputEmitterRef<string> =
+		output<string>();
 
 	/**
 	 * Quick filter changed
@@ -239,12 +236,14 @@ export class DataTableComponent<T extends { id: number }>
 	/**
 	 * Page changed (0-based index)
 	 */
-	readonly pageChange: OutputEmitterRef<number> = output<number>();
+	readonly pageChange: OutputEmitterRef<number> =
+		output<number>();
 
 	/**
 	 * Page size changed
 	 */
-	readonly pageSizeChange: OutputEmitterRef<number> = output<number>();
+	readonly pageSizeChange: OutputEmitterRef<number> =
+		output<number>();
 
 	/**
 	 * Sort column/direction changed
@@ -259,53 +258,59 @@ export class DataTableComponent<T extends { id: number }>
 	/**
 	 * Search text (debounced)
 	 */
-	readonly searchText: WritableSignal<string> = signal("");
+	readonly searchText: WritableSignal<string> =
+		signal("");
 
 	/**
 	 * Date service for date operations
 	 */
-	private readonly dateService: DateService = inject(DateService);
+	private readonly dateService: DateService =
+		inject(DateService);
 
 	/**
 	 * Active quick filters
 	 */
-	readonly activeFilters: WritableSignal<Set<string>> = signal(new Set());
+	readonly activeFilters: WritableSignal<Set<string>> =
+		signal(new Set());
 
 	/**
 	 * Selected date range
 	 */
-	readonly selectedDateRange: WritableSignal<string> = signal("24h");
+	readonly selectedDateRange: WritableSignal<string> =
+		signal("24h");
 
 	/**
 	 * Date range display configuration (DRY - single source of truth)
 	 */
 	private static readonly DATE_RANGE_CONFIG: Record<
 		string,
-		{ icon: string; label: string }
-	> = {
-		"1h": { icon: "schedule", label: "1 Hour" },
-		"24h": { icon: "today", label: "24 Hours" },
-		"7d": { icon: "date_range", label: "7 Days" },
-		"30d": { icon: "calendar_month", label: "30 Days" }
-	};
+		{ icon: string; label: string; }> =
+		{
+				"1h": { icon: "schedule", label: "1 Hour" },
+				"24h": { icon: "today", label: "24 Hours" },
+				"7d": { icon: "date_range", label: "7 Days" },
+				"30d": { icon: "calendar_month", label: "30 Days" }
+			};
 
 	/**
 	 * Computed date range icon (memoized for template performance)
 	 */
-	readonly dateRangeIcon: Signal<string> = computed(
+	readonly dateRangeIcon: Signal<string> =
+		computed(
 		(): string =>
-			DataTableComponent.DATE_RANGE_CONFIG[this.selectedDateRange()]
-				?.icon ?? "today"
-	);
+			DataTableComponent
+				.DATE_RANGE_CONFIG[this.selectedDateRange()]
+				?.icon ?? "today");
 
 	/**
 	 * Computed date range label (memoized for template performance)
 	 */
-	readonly dateRangeLabel: Signal<string> = computed(
+	readonly dateRangeLabel: Signal<string> =
+		computed(
 		(): string =>
-			DataTableComponent.DATE_RANGE_CONFIG[this.selectedDateRange()]
-				?.label ?? "24 Hours"
-	);
+			DataTableComponent
+				.DATE_RANGE_CONFIG[this.selectedDateRange()]
+				?.label ?? "24 Hours");
 
 	/**
 	 * Column visibility state
@@ -316,17 +321,18 @@ export class DataTableComponent<T extends { id: number }>
 	/**
 	 * Selection model for bulk actions
 	 */
-	readonly selection: SelectionModel<T> = new SelectionModel<T>(true, []);
+	readonly selection: SelectionModel<T> =
+		new SelectionModel<T>(true, []);
 
 	/**
 	 * Selection change signal - triggers when selection changes
 	 */
-	private readonly selectionChange: Signal<readonly T[]> = toSignal(
+	private readonly selectionChange: Signal<readonly T[]> =
+		toSignal(
 		this.selection.changed.pipe(
-			map(() => this.selection.selected as readonly T[])
-		),
-		{ initialValue: [] as readonly T[] }
-	);
+			map(() =>
+				this.selection.selected as readonly T[])),
+		{ initialValue: [] as readonly T[] });
 
 	// ========================================
 	// Computed Signals
@@ -335,20 +341,26 @@ export class DataTableComponent<T extends { id: number }>
 	/**
 	 * Visible columns
 	 */
-	readonly visibleColumns: Signal<TableColumn<T>[]> = computed(() =>
+	readonly visibleColumns: Signal<TableColumn<T>[]> =
+		computed(() =>
 	{
-		const visibility: Map<string, boolean> = this.columnVisibility();
-		return this.columns().filter((col) =>
-		{
-			const isVisible: boolean | undefined = visibility.get(col.key);
-			return isVisible !== undefined ? isVisible : col.visible;
-		});
+		const visibility: Map<string, boolean> =
+			this.columnVisibility();
+		return this
+			.columns()
+			.filter((col) =>
+			{
+				const isVisible: boolean | undefined =
+					visibility.get(col.key);
+				return isVisible !== undefined ? isVisible : col.visible;
+			});
 	});
 
 	/**
 	 * Displayed column keys for mat-table
 	 */
-	readonly displayedColumns: Signal<string[]> = computed(() =>
+	readonly displayedColumns: Signal<string[]> =
+		computed(() =>
 	{
 		const columns: string[] = [];
 
@@ -359,7 +371,10 @@ export class DataTableComponent<T extends { id: number }>
 		}
 
 		// Add visible data columns
-		columns.push(...this.visibleColumns().map((col) => col.key));
+		columns.push(
+			...this
+				.visibleColumns()
+				.map((col) => col.key));
 
 		// Add actions column if rowActions provided
 		if (this.rowActions().length > 0)
@@ -373,24 +388,27 @@ export class DataTableComponent<T extends { id: number }>
 	/**
 	 * Has selection
 	 */
-	readonly hasSelection: Signal<boolean> = computed(
-		() => this.selectionChange().length > 0
-	);
+	readonly hasSelection: Signal<boolean> =
+		computed(
+		() => this.selectionChange().length > 0);
 
 	/**
 	 * Number of selected items
 	 */
-	readonly selectedCount: Signal<number> = computed(
-		() => this.selectionChange().length
-	);
+	readonly selectedCount: Signal<number> =
+		computed(
+		() => this.selectionChange().length);
 
 	/**
 	 * Is all selected
 	 */
-	readonly isAllSelected: Signal<boolean> = computed(() =>
+	readonly isAllSelected: Signal<boolean> =
+		computed(() =>
 	{
-		const numSelected: number = this.selectionChange().length;
-		const numRows: number = this.data().length;
+		const numSelected: number =
+			this.selectionChange().length;
+		const numRows: number =
+			this.data().length;
 		return numSelected === numRows && numRows > 0;
 	});
 
@@ -416,19 +434,22 @@ export class DataTableComponent<T extends { id: number }>
 	 */
 	private initializeFirstQuickFilter(): void
 	{
-		const filters: QuickFilter<T>[] = this.quickFilters();
-		const singleSelection: boolean = this.quickFiltersSingleSelection();
-		const currentFilters: Set<string> = this.activeFilters();
+		const filters: QuickFilter<T>[] =
+			this.quickFilters();
+		const singleSelection: boolean =
+			this.quickFiltersSingleSelection();
+		const currentFilters: Set<string> =
+			this.activeFilters();
 
 		// Only initialize if single-selection mode, has filters, and no filter is active yet
 		if (
 			singleSelection
-			&& filters.length > 0
-			&& currentFilters.size === 0
-		)
+				&& filters.length > 0
+				&& currentFilters.size === 0)
 		{
 			// Activate the first filter (typically "All")
-			const firstFilterKey: string = filters[0].key;
+			const firstFilterKey: string =
+				filters[0].key;
 			this.activeFilters.set(new Set([firstFilterKey]));
 			// Emit the initial filter state
 			this.filterChange.emit({
@@ -443,12 +464,14 @@ export class DataTableComponent<T extends { id: number }>
 	 */
 	private emitInitialDateRange(): void
 	{
-		const enabled: boolean = this.dateRangeEnabled();
+		const enabled: boolean =
+			this.dateRangeEnabled();
 		if (enabled && !this.initialDateRangeEmitted)
 		{
 			this.initialDateRangeEmitted = true;
 			// Emit the default 24h date range on initialization
-			const range: string = this.selectedDateRange();
+			const range: string =
+				this.selectedDateRange();
 			this.onDateRangeChange(range);
 		}
 	}
@@ -458,24 +481,28 @@ export class DataTableComponent<T extends { id: number }>
 	 */
 	private loadColumnPreferences(): void
 	{
-		const key: string | null = this.storageKey();
+		const key: string | null =
+			this.storageKey();
 		if (key)
 		{
-			const stored: string | null = localStorage.getItem(key);
+			const stored: string | null =
+				localStorage.getItem(key);
 			if (stored)
 			{
 				try
 				{
 					const preferences: Record<string, unknown> =
 						JSON.parse(stored);
-					const visibility: Map<string, boolean> = new Map<
+					const visibility: Map<string, boolean> =
+						new Map<
 						string,
-						boolean
-					>();
-					Object.entries(preferences).forEach(([k, v]) =>
-					{
-						visibility.set(k, v as boolean);
-					});
+						boolean>();
+					Object
+						.entries(preferences)
+						.forEach(([k, v]) =>
+						{
+							visibility.set(k, v as boolean);
+						});
 					this.columnVisibility.set(visibility);
 				}
 				catch
@@ -512,7 +539,8 @@ export class DataTableComponent<T extends { id: number }>
 	 */
 	onSearch(): void
 	{
-		const searchText: string = this.searchText();
+		const searchText: string =
+			this.searchText();
 		this.searchChange.emit(searchText);
 	}
 
@@ -533,8 +561,10 @@ export class DataTableComponent<T extends { id: number }>
 	 */
 	onFilterToggle(filterKey: string): void
 	{
-		const filters: Set<string> = new Set(this.activeFilters());
-		const wasActive: boolean = filters.has(filterKey);
+		const filters: Set<string> =
+			new Set(this.activeFilters());
+		const wasActive: boolean =
+			filters.has(filterKey);
 		const active: boolean = !wasActive;
 
 		// Single-selection mode: clear all other filters
@@ -567,13 +597,15 @@ export class DataTableComponent<T extends { id: number }>
 	{
 		this.selectedDateRange.set(range);
 
-		const now: Date = this.dateService.parseUTC(this.dateService.now());
+		const now: Date =
+			this.dateService.parseUTC(this.dateService.now());
 		let startDate: Date | undefined;
 
 		switch (range)
 		{
 			case "1h":
-				startDate = new Date(now.getTime() - 60 * 60 * 1000);
+				startDate =
+					new Date(now.getTime() - 60 * 60 * 1000);
 				this.dateRangeChange.emit({
 					startDate,
 					endDate: now,
@@ -581,7 +613,8 @@ export class DataTableComponent<T extends { id: number }>
 				});
 				break;
 			case "24h":
-				startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+				startDate =
+					new Date(now.getTime() - 24 * 60 * 60 * 1000);
 				this.dateRangeChange.emit({
 					startDate,
 					endDate: now,
@@ -589,7 +622,8 @@ export class DataTableComponent<T extends { id: number }>
 				});
 				break;
 			case "7d":
-				startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+				startDate =
+					new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 				this.dateRangeChange.emit({
 					startDate,
 					endDate: now,
@@ -597,7 +631,8 @@ export class DataTableComponent<T extends { id: number }>
 				});
 				break;
 			case "30d":
-				startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+				startDate =
+					new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 				this.dateRangeChange.emit({
 					startDate,
 					endDate: now,
@@ -672,13 +707,16 @@ export class DataTableComponent<T extends { id: number }>
 	 */
 	toggleColumn(columnKey: string): void
 	{
-		const visibility: Map<string, boolean> = new Map(
-			this.columnVisibility()
-		);
-		const currentValue: boolean | undefined = visibility.get(columnKey);
-		const column: TableColumn<T> | undefined = this.columns().find(
-			(c) => c.key === columnKey
-		);
+		const visibility: Map<string, boolean> =
+			new Map(
+			this.columnVisibility());
+		const currentValue: boolean | undefined =
+			visibility.get(columnKey);
+		const column: TableColumn<T> | undefined =
+			this
+			.columns()
+			.find(
+				(c) => c.key === columnKey);
 
 		if (column)
 		{
@@ -688,7 +726,8 @@ export class DataTableComponent<T extends { id: number }>
 			this.columnVisibility.set(visibility);
 
 			// Save to localStorage if key provided
-			const key: string | null = this.storageKey();
+			const key: string | null =
+				this.storageKey();
 			if (key)
 			{
 				const preferences: Record<string, boolean> = {};
@@ -712,7 +751,9 @@ export class DataTableComponent<T extends { id: number }>
 		}
 		else
 		{
-			this.data().forEach((row) => this.selection.select(row));
+			this
+				.data()
+				.forEach((row) => this.selection.select(row));
 		}
 	}
 
@@ -731,10 +772,14 @@ export class DataTableComponent<T extends { id: number }>
 	 */
 	protected columnVisible(key: string): boolean
 	{
-		const visibility: Map<string, boolean> = this.columnVisibility();
-		const column: TableColumn<T> | undefined = this.columns().find(
-			(c: TableColumn<T>): boolean => c.key === key
-		);
+		const visibility: Map<string, boolean> =
+			this.columnVisibility();
+		const column: TableColumn<T> | undefined =
+			this
+			.columns()
+			.find(
+				(c: TableColumn<T>): boolean =>
+					c.key === key);
 		return visibility.get(key) ?? column?.visible ?? true;
 	}
 }

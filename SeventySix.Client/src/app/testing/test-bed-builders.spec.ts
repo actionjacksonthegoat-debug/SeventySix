@@ -3,19 +3,21 @@
  * Ensures test utilities work correctly
  */
 
-import { TestBed, ComponentFixture } from "@angular/core/testing";
 import {
 	Component,
 	Injectable,
 	InjectionToken,
 	input,
-	output
+	InputSignal,
+	output,
+	OutputEmitterRef
 } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { QueryClient } from "@tanstack/angular-query-experimental";
 import {
+	ComponentTestBed,
 	createTestQueryClient,
-	setupServiceTest,
-	ComponentTestBed
+	setupServiceTest
 } from "./test-bed-builders";
 
 // Mock service for testing
@@ -36,8 +38,10 @@ class MockTestService
 })
 class TestComponent
 {
-	testInput = input<string>();
-	testOutput = output<string>();
+	testInput: InputSignal<string | undefined> =
+		input<string>();
+	testOutput: OutputEmitterRef<string> =
+		output<string>();
 
 	emitOutput(): void
 	{
@@ -45,9 +49,9 @@ class TestComponent
 	}
 }
 
-const TEST_TOKEN: InjectionToken<string> = new InjectionToken<string>(
-	"TEST_TOKEN"
-);
+const TEST_TOKEN: InjectionToken<string> =
+	new InjectionToken<string>(
+	"TEST_TOKEN");
 
 describe("Test Bed Builders", () =>
 {
@@ -60,13 +64,16 @@ describe("Test Bed Builders", () =>
 	{
 		it("should create QueryClient with retry disabled", () =>
 		{
-			const queryClient: QueryClient = createTestQueryClient();
+			const queryClient: QueryClient =
+				createTestQueryClient();
 
-			expect(queryClient).toBeDefined();
-			expect(queryClient.getDefaultOptions().queries?.retry).toBe(false);
-			expect(queryClient.getDefaultOptions().mutations?.retry).toBe(
-				false
-			);
+			expect(queryClient)
+				.toBeDefined();
+			expect(queryClient.getDefaultOptions().queries?.retry)
+				.toBe(false);
+			expect(queryClient.getDefaultOptions().mutations?.retry)
+				.toBe(
+					false);
 		});
 	});
 
@@ -74,34 +81,46 @@ describe("Test Bed Builders", () =>
 	{
 		it("should setup service with default providers", () =>
 		{
-			const setup = setupServiceTest(MockTestService);
+			const setup: ReturnType<typeof setupServiceTest> =
+				setupServiceTest(MockTestService);
 
-			expect(setup.service).toBeDefined();
-			expect(setup.service).toBeInstanceOf(MockTestService);
-			expect(setup.queryClient).toBeDefined();
+			expect(setup.service)
+				.toBeDefined();
+			expect(setup.service)
+				.toBeInstanceOf(MockTestService);
+			expect(setup.queryClient)
+				.toBeDefined();
 		});
 
 		it("should include custom providers", () =>
 		{
 			const mockValue: string = "custom value";
-			const customProvider = {
-				provide: TEST_TOKEN,
-				useValue: mockValue
-			};
+			const customProvider: { provide: InjectionToken<string>; useValue: string; } =
+				{
+					provide: TEST_TOKEN,
+					useValue: mockValue
+				};
 
-			const setup = setupServiceTest(MockTestService, [customProvider]);
-			const injectedValue: string = TestBed.inject(TEST_TOKEN);
+			const setup: ReturnType<typeof setupServiceTest> =
+				setupServiceTest(MockTestService, [customProvider]);
+			const injectedValue: string =
+				TestBed.inject(TEST_TOKEN);
 
-			expect(setup.service).toBeDefined();
-			expect(injectedValue).toBe(mockValue);
+			expect(setup.service)
+				.toBeDefined();
+			expect(injectedValue)
+				.toBe(mockValue);
 		});
 
 		it("should return same QueryClient instance", () =>
 		{
-			const setup = setupServiceTest(MockTestService);
-			const injectedClient: QueryClient = TestBed.inject(QueryClient);
+			const setup: ReturnType<typeof setupServiceTest> =
+				setupServiceTest(MockTestService);
+			const injectedClient: QueryClient =
+				TestBed.inject(QueryClient);
 
-			expect(setup.queryClient).toBe(injectedClient);
+			expect(setup.queryClient)
+				.toBe(injectedClient);
 		});
 	});
 
@@ -116,7 +135,8 @@ describe("Test Bed Builders", () =>
 
 			builder.withInputs(fixture, { testInput: "test value" });
 
-			expect(fixture.componentInstance.testInput()).toBe("test value");
+			expect(fixture.componentInstance.testInput())
+				.toBe("test value");
 		});
 
 		it("should spy on component outputs with withOutputSpy", async () =>
@@ -126,29 +146,35 @@ describe("Test Bed Builders", () =>
 			const fixture: ComponentFixture<TestComponent> =
 				await builder.build(TestComponent);
 
-			const outputSpy: jasmine.Spy = builder.withOutputSpy(
+			const outputSpy: jasmine.Spy =
+				builder.withOutputSpy(
 				fixture,
-				"testOutput"
-			);
+				"testOutput");
 			fixture.componentInstance.emitOutput();
 
-		expect(outputSpy).toHaveBeenCalledWith("test output");
-	});
+			expect(outputSpy)
+				.toHaveBeenCalledWith("test output");
+		});
 
-	it("should configure admin defaults with withAdminDefaults", async () =>
-	{
-		const builder: ComponentTestBed<TestComponent> =
-			new ComponentTestBed<TestComponent>();
-		const result: ComponentTestBed<TestComponent> =
-			builder.withAdminDefaults();			expect(result).toBe(builder);
+		it("should configure admin defaults with withAdminDefaults", async () =>
+		{
+			const builder: ComponentTestBed<TestComponent> =
+				new ComponentTestBed<TestComponent>();
+			const result: ComponentTestBed<TestComponent> =
+				builder.withAdminDefaults();
+			expect(result)
+				.toBe(builder);
 
 			// Build and verify providers are configured
 			const fixture: ComponentFixture<TestComponent> =
 				await result.build(TestComponent);
-			const queryClient: QueryClient = TestBed.inject(QueryClient);
+			const queryClient: QueryClient =
+				TestBed.inject(QueryClient);
 
-			expect(fixture).toBeDefined();
-			expect(queryClient).toBeDefined();
+			expect(fixture)
+				.toBeDefined();
+			expect(queryClient)
+				.toBeDefined();
 		});
 	});
 });

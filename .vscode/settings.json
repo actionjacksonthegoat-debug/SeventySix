@@ -18,35 +18,51 @@
 	"typescript.preferences.quoteStyle": "double",
 	"javascript.preferences.quoteStyle": "double",
 
-	// Prettier settings - respect EditorConfig
-	"prettier.useEditorConfig": true,
-	"prettier.useTabs": true,
-	"prettier.tabWidth": 4,
-	"prettier.singleQuote": false,
-
-	// Default formatters
+	// Default formatters - dprint for all supported file types
 	"[typescript]": {
-		"editor.formatOnSave": false,
-		"editor.defaultFormatter": null,
+		"editor.defaultFormatter": "dprint.dprint",
+		"editor.formatOnSave": true,
 		"editor.codeActionsOnSave": {
 			"source.fixAll.eslint": "explicit"
-		}
+		},
+		"files.eol": "\n"
 	},
 	"[javascript]": {
-		"editor.formatOnSave": false,
-		"editor.defaultFormatter": null,
+		"editor.defaultFormatter": "dprint.dprint",
+		"editor.formatOnSave": true,
 		"editor.codeActionsOnSave": {
 			"source.fixAll.eslint": "explicit"
-		}
+		},
+		"files.eol": "\n"
 	},
 	"[json]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
+		"editor.defaultFormatter": "dprint.dprint",
+		"editor.formatOnSave": true,
+		"files.eol": "\n"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "dprint.dprint",
+		"editor.formatOnSave": true,
+		"files.eol": "\n"
 	},
 	"[scss]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
+		"editor.defaultFormatter": "dprint.dprint",
+		"editor.formatOnSave": true,
+		"files.eol": "\n"
+	},
+	"[css]": {
+		"editor.defaultFormatter": "dprint.dprint",
+		"editor.formatOnSave": true,
+		"files.eol": "\n"
 	},
 	"[html]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
+		"editor.defaultFormatter": "Angular.ng-template",
+		"editor.formatOnSave": true,
+		"files.eol": "\n"
+	},
+	"[csharp]": {
+		"editor.formatOnSave": true,
+		"files.eol": "\r\n"
 	},
 
 	// C# settings (OmniSharp)
@@ -56,6 +72,6 @@
 	"files.trimTrailingWhitespace": true,
 	"files.insertFinalNewline": false,
 
-	// Ensure consistent line endings
+	// Default line ending (LF for cross-platform, overridden per language above)
 	"files.eol": "\n"
 }

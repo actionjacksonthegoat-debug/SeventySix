@@ -1,20 +1,21 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
+import { UserDto } from "@admin/users/models";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
+import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { AbstractControl } from "@angular/forms";
 import { provideRouter } from "@angular/router";
-import { UserCreatePage } from "./user-create";
-import { UserService } from "@features/admin/users/services/user.service";
 import { Router } from "@angular/router";
-import { NotificationService } from "@infrastructure/services/notification.service";
+import { UserService } from "@features/admin/users/services/user.service";
 import { LoggerService } from "@infrastructure/services/logger.service";
-import { UserDto } from "@admin/users/models";
-import { createMockMutationResult } from "@testing/tanstack-query-helpers";
+import { NotificationService } from "@infrastructure/services/notification.service";
 import {
-	createMockRouter,
+	createMockLogger,
 	createMockNotificationService,
-	createMockLogger
+	createMockRouter
 } from "@testing";
+import { createMockMutationResult } from "@testing/tanstack-query-helpers";
+import { UserCreatePage } from "./user-create";
 
 describe("UserCreatePage", () =>
 {
@@ -27,109 +28,143 @@ describe("UserCreatePage", () =>
 
 	beforeEach(async () =>
 	{
-		mockUserService = jasmine.createSpyObj("UserService", [
+		mockUserService =
+			jasmine.createSpyObj("UserService", [
 			"createUser",
 			"checkUsernameAvailability"
 		]);
-		mockRouter = createMockRouter();
-		mockNotification = createMockNotificationService();
-		mockLogger = createMockLogger();
+		mockRouter =
+			createMockRouter();
+		mockNotification =
+			createMockNotificationService();
+		mockLogger =
+			createMockLogger();
 
-		const mockUser: UserDto = {
-			id: 1,
-			username: "test",
-			email: "test@test.com",
-			fullName: "Test User",
-			createDate: "2024-01-01T00:00:00Z",
-			isActive: true,
-			createdBy: "system",
-			modifiedBy: "system", needsPendingEmail: false, modifyDate: null, lastLoginAt: null, isDeleted: false, deletedAt: null, deletedBy: null
-		};
+		const mockUser: UserDto =
+			{
+				id: 1,
+				username: "test",
+				email: "test@test.com",
+				fullName: "Test User",
+				createDate: "2024-01-01T00:00:00Z",
+				isActive: true,
+				createdBy: "system",
+				modifiedBy: "system",
+				needsPendingEmail: false,
+				modifyDate: null,
+				lastLoginAt: null,
+				isDeleted: false,
+				deletedAt: null,
+				deletedBy: null
+			};
 		mockUserService.createUser.and.returnValue(
 			createMockMutationResult<UserDto, Error, Partial<UserDto>, unknown>({
 				data: mockUser,
 				isSuccess: true
-			})
-		);
+			}));
 
-		await TestBed.configureTestingModule({
-			imports: [UserCreatePage],
-			providers: [
-				provideHttpClient(withFetch()),
-				provideHttpClientTesting(),
-				provideZonelessChangeDetection(),
-				provideRouter([]),
-				{ provide: UserService, useValue: mockUserService },
-				{ provide: Router, useValue: mockRouter },
-				{ provide: NotificationService, useValue: mockNotification },
-				{ provide: LoggerService, useValue: mockLogger }
-			]
-		}).compileComponents();
-		fixture = TestBed.createComponent(UserCreatePage);
-		component = fixture.componentInstance;
+		await TestBed
+			.configureTestingModule({
+				imports: [UserCreatePage],
+				providers: [
+					provideHttpClient(withFetch()),
+					provideHttpClientTesting(),
+					provideZonelessChangeDetection(),
+					provideRouter([]),
+					{ provide: UserService, useValue: mockUserService },
+					{ provide: Router, useValue: mockRouter },
+					{ provide: NotificationService, useValue: mockNotification },
+					{ provide: LoggerService, useValue: mockLogger }
+				]
+			})
+			.compileComponents();
+		fixture =
+			TestBed.createComponent(UserCreatePage);
+		component =
+			fixture.componentInstance;
 		fixture.detectChanges();
 	});
 
 	it("should create", () =>
 	{
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	describe("Form Validation", () =>
 	{
 		it("should initialize forms with correct validators", () =>
 		{
-			expect(component.basicInfoForm).toBeDefined();
-			expect(component.accountDetailsForm).toBeDefined();
+			expect(component.basicInfoForm)
+				.toBeDefined();
+			expect(component.accountDetailsForm)
+				.toBeDefined();
 
 			// Basic info form validators
-			const usernameControl = component.basicInfoForm.get("username");
-			const emailControl = component.basicInfoForm.get("email");
+			const usernameControl: AbstractControl | null =
+				component.basicInfoForm.get("username");
+			const emailControl: AbstractControl | null =
+				component.basicInfoForm.get("email");
 
-			expect(usernameControl?.hasError("required")).toBe(true);
-			expect(emailControl?.hasError("required")).toBe(true);
+			expect(usernameControl?.hasError("required"))
+				.toBe(true);
+			expect(emailControl?.hasError("required"))
+				.toBe(true);
 		});
 
 		it("should validate username min length", () =>
 		{
-			const usernameControl = component.basicInfoForm.get("username");
+			const usernameControl: AbstractControl | null =
+				component.basicInfoForm.get("username");
 			usernameControl?.setValue("ab"); // Less than 3 chars
-			expect(usernameControl?.hasError("minlength")).toBe(true);
+			expect(usernameControl?.hasError("minlength"))
+				.toBe(true);
 		});
 
 		it("should validate username max length", () =>
 		{
-			const usernameControl = component.basicInfoForm.get("username");
-			const longUsername = "a".repeat(51); // More than 50 chars
+			const usernameControl: AbstractControl | null =
+				component.basicInfoForm.get("username");
+			const longUsername: string =
+				"a".repeat(51); // More than 50 chars
 			usernameControl?.setValue(longUsername);
-			expect(usernameControl?.hasError("maxlength")).toBe(true);
+			expect(usernameControl?.hasError("maxlength"))
+				.toBe(true);
 		});
 
 		it("should validate email format", () =>
 		{
-			const emailControl = component.basicInfoForm.get("email");
+			const emailControl: AbstractControl | null =
+				component.basicInfoForm.get("email");
 			emailControl?.setValue("invalid-email");
-			expect(emailControl?.hasError("email")).toBe(true);
+			expect(emailControl?.hasError("email"))
+				.toBe(true);
 
 			emailControl?.setValue("valid@example.com");
-			expect(emailControl?.hasError("email")).toBe(false);
+			expect(emailControl?.hasError("email"))
+				.toBe(false);
 		});
 
 		it("should validate email max length", () =>
 		{
-			const emailControl = component.basicInfoForm.get("email");
-			const longEmail = "a".repeat(250) + "@test.com"; // More than 255 chars
+			const emailControl: AbstractControl | null =
+				component.basicInfoForm.get("email");
+			const longEmail: string =
+				"a".repeat(250) + "@test.com"; // More than 255 chars
 			emailControl?.setValue(longEmail);
-			expect(emailControl?.hasError("maxlength")).toBe(true);
+			expect(emailControl?.hasError("maxlength"))
+				.toBe(true);
 		});
 
 		it("should validate fullName max length", () =>
 		{
-			const fullNameControl =
+			const fullNameControl: AbstractControl | null =
 				component.accountDetailsForm.get("fullName");
-			const longName = "a".repeat(101); // More than 100 chars
+			const longName: string =
+				"a".repeat(101); // More than 100 chars
 			fullNameControl?.setValue(longName);
-			expect(fullNameControl?.hasError("maxlength")).toBe(true);
+			expect(fullNameControl?.hasError("maxlength"))
+				.toBe(true);
 		});
 
 		it("should accept valid form data", () =>
@@ -143,8 +178,10 @@ describe("UserCreatePage", () =>
 				isActive: true
 			});
 
-			expect(component.basicInfoForm.valid).toBe(true);
-			expect(component.accountDetailsForm.valid).toBe(true);
+			expect(component.basicInfoForm.valid)
+				.toBe(true);
+			expect(component.accountDetailsForm.valid)
+				.toBe(true);
 		});
 	});
 
@@ -154,70 +191,77 @@ describe("UserCreatePage", () =>
 		{
 			// Mock username check to return false (username available)
 			mockUserService.checkUsernameAvailability.and.returnValue(
-				Promise.resolve(false)
-			);
+				Promise.resolve(false));
 
-			const usernameControl = component.basicInfoForm.get("username");
+			const usernameControl: AbstractControl | null =
+				component.basicInfoForm.get("username");
 			usernameControl?.setValue("newuser");
 
 			// Wait for async validation
 			await fixture.whenStable();
 
 			expect(
-				mockUserService.checkUsernameAvailability
-			).toHaveBeenCalledWith("newuser");
-			expect(usernameControl?.hasError("usernameTaken")).toBe(false);
-			expect(usernameControl?.valid).toBe(true);
+				mockUserService.checkUsernameAvailability)
+				.toHaveBeenCalledWith("newuser");
+			expect(usernameControl?.hasError("usernameTaken"))
+				.toBe(false);
+			expect(usernameControl?.valid)
+				.toBe(true);
 		});
 
 		it("should fail validation if username is taken", async () =>
 		{
 			// Mock username check to return true (username exists)
 			mockUserService.checkUsernameAvailability.and.returnValue(
-				Promise.resolve(true)
-			);
+				Promise.resolve(true));
 
-			const usernameControl = component.basicInfoForm.get("username");
+			const usernameControl: AbstractControl | null =
+				component.basicInfoForm.get("username");
 			usernameControl?.setValue("existinguser");
 
 			// Wait for async validation
 			await fixture.whenStable();
 
 			expect(
-				mockUserService.checkUsernameAvailability
-			).toHaveBeenCalledWith("existinguser");
-			expect(usernameControl?.hasError("usernameTaken")).toBe(true);
-			expect(usernameControl?.valid).toBe(false);
+				mockUserService.checkUsernameAvailability)
+				.toHaveBeenCalledWith("existinguser");
+			expect(usernameControl?.hasError("usernameTaken"))
+				.toBe(true);
+			expect(usernameControl?.valid)
+				.toBe(false);
 		});
 
 		it("should not validate empty username", async () =>
 		{
-			const usernameControl = component.basicInfoForm.get("username");
+			const usernameControl: AbstractControl | null =
+				component.basicInfoForm.get("username");
 			usernameControl?.setValue("");
 
 			// Wait for async validation
 			await fixture.whenStable();
 
 			expect(
-				mockUserService.checkUsernameAvailability
-			).not.toHaveBeenCalled();
+				mockUserService.checkUsernameAvailability)
+				.not
+				.toHaveBeenCalled();
 		});
 
 		it("should handle validation errors gracefully", async () =>
 		{
 			// Mock username check to reject
 			mockUserService.checkUsernameAvailability.and.returnValue(
-				Promise.reject(new Error("API Error"))
-			);
+				Promise.reject(new Error("API Error")));
 
-			const usernameControl = component.basicInfoForm.get("username");
+			const usernameControl: AbstractControl | null =
+				component.basicInfoForm.get("username");
 			usernameControl?.setValue("testuser");
 
 			// Wait for async validation
 			await fixture.whenStable();
 
 			// Should not set usernameTaken error on API failure
-			expect(usernameControl?.hasError("usernameTaken")).toBe(false);
+			expect(usernameControl?.hasError("usernameTaken"))
+				.toBe(false);
 		});
 	});
 
@@ -225,21 +269,22 @@ describe("UserCreatePage", () =>
 	{
 		it("should log draft save and show snackbar notification", () =>
 		{
-			const snackBarSpy = spyOn(component["snackBar"], "open");
+			const snackBarSpy: jasmine.Spy<jasmine.Func> =
+				spyOn(component["snackBar"], "open");
 
 			component.saveDraft();
 
 			// Check that logger was called with draft save message
-			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Draft save requested",
-				jasmine.any(Object)
-			);
+			expect(mockLogger.info)
+				.toHaveBeenCalledWith(
+					"Draft save requested",
+					jasmine.any(Object));
 
-			expect(snackBarSpy).toHaveBeenCalledWith(
-				"Draft saved locally",
-				"Close",
-				jasmine.objectContaining({ duration: 2000 })
-			);
+			expect(snackBarSpy)
+				.toHaveBeenCalledWith(
+					"Draft saved locally",
+					"Close",
+					jasmine.objectContaining({ duration: 2000 }));
 		});
 	});
 
@@ -252,15 +297,16 @@ describe("UserCreatePage", () =>
 				email: "test@example.com"
 			});
 
-			const snackBarSpy = spyOn(component["snackBar"], "open");
+			const snackBarSpy: jasmine.Spy<jasmine.Func> =
+				spyOn(component["snackBar"], "open");
 
 			await component.onSubmit();
 
-			expect(snackBarSpy).toHaveBeenCalledWith(
-				"Please complete all required fields",
-				"Close",
-				jasmine.objectContaining({ duration: 3000 })
-			);
+			expect(snackBarSpy)
+				.toHaveBeenCalledWith(
+					"Please complete all required fields",
+					"Close",
+					jasmine.objectContaining({ duration: 3000 }));
 			expect(component.createMutation.mutate).not.toHaveBeenCalled();
 		});
 
@@ -274,15 +320,16 @@ describe("UserCreatePage", () =>
 				fullName: "a".repeat(101) // Invalid: maxlength
 			});
 
-			const snackBarSpy = spyOn(component["snackBar"], "open");
+			const snackBarSpy: jasmine.Spy<jasmine.Func> =
+				spyOn(component["snackBar"], "open");
 
 			await component.onSubmit();
 
-			expect(snackBarSpy).toHaveBeenCalledWith(
-				"Please complete all required fields",
-				"Close",
-				jasmine.objectContaining({ duration: 3000 })
-			);
+			expect(snackBarSpy)
+				.toHaveBeenCalledWith(
+					"Please complete all required fields",
+					"Close",
+					jasmine.objectContaining({ duration: 3000 }));
 			expect(component.createMutation.mutate).not.toHaveBeenCalled();
 		});
 
@@ -300,20 +347,28 @@ describe("UserCreatePage", () =>
 			await component.onSubmit();
 
 			// Verify mutation was called
-			expect(component.createMutation.mutate).toHaveBeenCalled();
+			expect(component.createMutation.mutate)
+				.toHaveBeenCalled();
 		});
 		it("should handle successful user creation", async () =>
 		{
-			const createdUser: UserDto = {
-				id: 1,
-				username: "testuser",
-				email: "test@example.com",
-				fullName: "Test User",
-				createDate: "2024-01-01T00:00:00Z",
-				isActive: true,
-				createdBy: "system",
-				modifiedBy: "system", needsPendingEmail: false, modifyDate: null, lastLoginAt: null, isDeleted: false, deletedAt: null, deletedBy: null
-			};
+			const createdUser: UserDto =
+				{
+					id: 1,
+					username: "testuser",
+					email: "test@example.com",
+					fullName: "Test User",
+					createDate: "2024-01-01T00:00:00Z",
+					isActive: true,
+					createdBy: "system",
+					modifiedBy: "system",
+					needsPendingEmail: false,
+					modifyDate: null,
+					lastLoginAt: null,
+					isDeleted: false,
+					deletedAt: null,
+					deletedBy: null
+				};
 
 			component.basicInfoForm.patchValue({
 				username: "testuser",
@@ -324,32 +379,34 @@ describe("UserCreatePage", () =>
 			});
 			fixture.detectChanges();
 
-			const snackBarSpy = spyOn(component["snackBar"], "open");
+			const snackBarSpy: jasmine.Spy =
+				spyOn(component["snackBar"], "open");
 
 			// Mock mutate to call onSuccess
-			(component.createMutation.mutate as jasmine.Spy).and.callFake(
-				(data, options: { onSuccess: (user: UserDto) => void }) =>
+			(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
+				(data, options: { onSuccess: (user: UserDto) => void; }) =>
 				{
 					options.onSuccess(createdUser);
-				}
-			);
+				});
 
 			await component.onSubmit();
 
-			expect(mockLogger.info).toHaveBeenCalledWith(
-				"User created successfully",
-				{ id: 1 }
-			);
-			expect(snackBarSpy).toHaveBeenCalledWith(
-				`User "testuser" created. Welcome email sent to test@example.com.`,
-				"Close",
-				jasmine.objectContaining({ duration: 5000 })
-			);
-			expect(mockRouter.navigate).toHaveBeenCalledWith(["/admin/users"]);
+			expect(mockLogger.info)
+				.toHaveBeenCalledWith(
+					"User created successfully",
+					{ id: 1 });
+			expect(snackBarSpy)
+				.toHaveBeenCalledWith(
+					`User "testuser" created. Welcome email sent to test@example.com.`,
+					"Close",
+					jasmine.objectContaining({ duration: 5000 }));
+			expect(mockRouter.navigate)
+				.toHaveBeenCalledWith(["/admin/users"]);
 		});
 		it("should handle failed user creation", async () =>
 		{
-			const error: Error = new Error("Network error");
+			const error: Error =
+				new Error("Network error");
 
 			component.basicInfoForm.patchValue({
 				username: "testuser",
@@ -361,18 +418,17 @@ describe("UserCreatePage", () =>
 			fixture.detectChanges();
 
 			// Mock mutate to call onError
-			(component.createMutation.mutate as jasmine.Spy).and.callFake(
-				(data, options: any) =>
+			(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
+				(data, options: { onError: (error: Error) => void; }) =>
 				{
 					options.onError(error);
-				}
-			);
+				});
 			await component.onSubmit();
 
-			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to create user",
-				error
-			);
+			expect(mockLogger.error)
+				.toHaveBeenCalledWith(
+					"Failed to create user",
+					error);
 		});
 	});
 
@@ -382,7 +438,8 @@ describe("UserCreatePage", () =>
 		{
 			component.onCancel();
 
-			expect(mockRouter.navigate).toHaveBeenCalledWith(["/admin/users"]);
+			expect(mockRouter.navigate)
+				.toHaveBeenCalledWith(["/admin/users"]);
 		});
 	});
 
@@ -391,31 +448,37 @@ describe("UserCreatePage", () =>
 		it("should compute isSaving state", () =>
 		{
 			// Initially not pending
-			expect(component.isSaving()).toBe(false);
+			expect(component.isSaving())
+				.toBe(false);
 
 			// Mock pending state by modifying signal
-			(component.createMutation.isPending as any).set(true);
+			(component.createMutation.isPending as unknown as { set(value: boolean): void; }).set(true);
 
-			expect(component.isSaving()).toBe(true);
+			expect(component.isSaving())
+				.toBe(true);
 		});
 		it("should compute saveError when mutation fails", () =>
 		{
 			// Initially no error
-			expect(component.saveError()).toBeNull();
+			expect(component.saveError())
+				.toBeNull();
 
 			// Mock error state
-			(component.createMutation.error as any).set(new Error("API Error"));
+			(component.createMutation.error as unknown as { set(value: Error | null): void; }).set(
+				new Error("API Error"));
 
-			expect(component.saveError()).toBe(
-				"Failed to create user. Please try again."
-			);
+			expect(component.saveError())
+				.toBe(
+					"Failed to create user. Please try again.");
 		});
 		it("should have formData as a computed signal", () =>
 		{
 			// Verify formData is a function (computed signal)
-			expect(typeof component.formData).toBe("function");
+			expect(typeof component.formData)
+				.toBe("function");
 			// Verify it returns an object
-			expect(component.formData()).toEqual(jasmine.any(Object));
+			expect(component.formData())
+				.toEqual(jasmine.any(Object));
 		});
 	});
 });

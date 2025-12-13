@@ -190,12 +190,9 @@ $transition-easing-sharp: cubic-bezier(0.4, 0, 0.6, 1);
 // Common transitions
 $transition-all: all $transition-duration-base $transition-easing-standard;
 $transition-color: color $transition-duration-fast $transition-easing-standard;
-$transition-background: background-color $transition-duration-fast
-	$transition-easing-standard;
-$transition-transform: transform $transition-duration-base
-	$transition-easing-standard;
-$transition-opacity: opacity $transition-duration-fast
-	$transition-easing-standard;
+$transition-background: background-color $transition-duration-fast $transition-easing-standard;
+$transition-transform: transform $transition-duration-base $transition-easing-standard;
+$transition-opacity: opacity $transition-duration-fast $transition-easing-standard;
 
 // ============================================================================
 // COMPONENT-SPECIFIC SIZES (rem-based for root scaling)

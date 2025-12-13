@@ -1,9 +1,9 @@
 import { inject } from "@angular/core";
-import { QueryClient, injectMutation, CreateMutationResult } from "@tanstack/angular-query-experimental";
-import { Observable, lastValueFrom } from "rxjs";
-import { BaseFilterService } from "./base-filter.service";
 import { getQueryConfig } from "@infrastructure/utils/query-config";
 import { BaseQueryRequest } from "@shared/models";
+import { CreateMutationResult, injectMutation, QueryClient } from "@tanstack/angular-query-experimental";
+import { lastValueFrom, Observable } from "rxjs";
+import { BaseFilterService } from "./base-filter.service";
 
 /**
  * Base class for services that use TanStack Query.
@@ -11,11 +11,11 @@ import { BaseQueryRequest } from "@shared/models";
  * Extends BaseFilterService for filter state management (SRP, DRY).
  * @template TFilter - Filter type extending BaseQueryRequest
  */
-export abstract class BaseQueryService<TFilter extends BaseQueryRequest>
-	extends BaseFilterService<TFilter>
+export abstract class BaseQueryService<TFilter extends BaseQueryRequest> extends BaseFilterService<TFilter>
 {
 	/** Query client for cache invalidation (DI) */
-	protected readonly queryClient: QueryClient = inject(QueryClient);
+	protected readonly queryClient: QueryClient =
+		inject(QueryClient);
 
 	/** Query key prefix for cache operations (must be overridden by subclasses) */
 	protected abstract readonly queryKeyPrefix: string;
@@ -62,9 +62,7 @@ export abstract class BaseQueryService<TFilter extends BaseQueryRequest>
 		mutationFunction: (input: TInput) => Observable<TResult>,
 		onSuccessCallback?: (
 			result: TResult,
-			variables: TInput
-		) => void
-	): CreateMutationResult<TResult, Error, TInput>
+			variables: TInput) => void): CreateMutationResult<TResult, Error, TInput>
 	{
 		return injectMutation(() => ({
 			mutationFn: (input: TInput) =>

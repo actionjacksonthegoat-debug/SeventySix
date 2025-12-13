@@ -1,14 +1,14 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { App } from "./app";
 import { ActivatedRoute } from "@angular/router";
-import { of } from "rxjs";
-import { LayoutService, AuthService } from "@infrastructure/services";
+import { AuthService, LayoutService } from "@infrastructure/services";
 import {
+	createMockAuthService,
 	createMockLayoutService,
-	MockLayoutService,
-	createMockAuthService
+	MockLayoutService
 } from "@testing";
+import { of } from "rxjs";
+import { App } from "./app";
 
 describe("App", () =>
 {
@@ -18,7 +18,8 @@ describe("App", () =>
 
 	beforeEach(async () =>
 	{
-		mockActivatedRoute = jasmine.createSpyObj("ActivatedRoute", [], {
+		mockActivatedRoute =
+			jasmine.createSpyObj("ActivatedRoute", [], {
 			params: of({}),
 			root: {
 				firstChild: null,
@@ -26,47 +27,60 @@ describe("App", () =>
 			}
 		});
 
-		mockLayoutService = createMockLayoutService();
+		mockLayoutService =
+			createMockLayoutService();
 		mockLayoutService.sidebarMode.and.returnValue("over");
-		mockAuthService = createMockAuthService();
+		mockAuthService =
+			createMockAuthService();
 
-		await TestBed.configureTestingModule({
-			imports: [App],
-			providers: [
-				provideZonelessChangeDetection(),
-				{ provide: ActivatedRoute, useValue: mockActivatedRoute },
-				{ provide: LayoutService, useValue: mockLayoutService },
-				{ provide: AuthService, useValue: mockAuthService }
-			]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [App],
+				providers: [
+					provideZonelessChangeDetection(),
+					{ provide: ActivatedRoute, useValue: mockActivatedRoute },
+					{ provide: LayoutService, useValue: mockLayoutService },
+					{ provide: AuthService, useValue: mockAuthService }
+				]
+			})
+			.compileComponents();
 	});
 
 	it("should create the app", () =>
 	{
-		const fixture: ComponentFixture<App> = TestBed.createComponent(App);
-		const app: App = fixture.componentInstance;
+		const fixture: ComponentFixture<App> =
+			TestBed.createComponent(App);
+		const app: App =
+			fixture.componentInstance;
 
-		expect(app).toBeTruthy();
+		expect(app)
+			.toBeTruthy();
 	});
 
 	it("should render title", () =>
 	{
-		const fixture: ComponentFixture<App> = TestBed.createComponent(App);
+		const fixture: ComponentFixture<App> =
+			TestBed.createComponent(App);
 
 		fixture.detectChanges();
-		const compiled = fixture.nativeElement as HTMLElement;
+		const compiled: HTMLElement =
+			fixture.nativeElement as HTMLElement;
 
 		// Check for main content area instead of specific text
-		const mainContent = compiled.querySelector("#main-content");
-		expect(mainContent).toBeTruthy();
+		const mainContent: Element | null =
+			compiled.querySelector("#main-content");
+		expect(mainContent)
+			.toBeTruthy();
 	});
 
 	describe("onSwipeLeft", () =>
 	{
 		it("should close sidebar when in overlay mode and sidebar is expanded", () =>
 		{
-			const fixture: ComponentFixture<App> = TestBed.createComponent(App);
-			const app: App = fixture.componentInstance;
+			const fixture: ComponentFixture<App> =
+				TestBed.createComponent(App);
+			const app: App =
+				fixture.componentInstance;
 
 			// Setup: overlay mode, sidebar expanded
 			mockLayoutService.sidebarMode.and.returnValue("over");
@@ -74,13 +88,16 @@ describe("App", () =>
 
 			app.onSwipeLeft();
 
-			expect(mockLayoutService.closeSidebar).toHaveBeenCalled();
+			expect(mockLayoutService.closeSidebar)
+				.toHaveBeenCalled();
 		});
 
 		it("should NOT close sidebar when in overlay mode but sidebar is collapsed", () =>
 		{
-			const fixture: ComponentFixture<App> = TestBed.createComponent(App);
-			const app: App = fixture.componentInstance;
+			const fixture: ComponentFixture<App> =
+				TestBed.createComponent(App);
+			const app: App =
+				fixture.componentInstance;
 
 			// Setup: overlay mode, sidebar collapsed
 			mockLayoutService.sidebarMode.and.returnValue("over");
@@ -93,8 +110,10 @@ describe("App", () =>
 
 		it("should NOT close sidebar when NOT in overlay mode", () =>
 		{
-			const fixture: ComponentFixture<App> = TestBed.createComponent(App);
-			const app: App = fixture.componentInstance;
+			const fixture: ComponentFixture<App> =
+				TestBed.createComponent(App);
+			const app: App =
+				fixture.componentInstance;
 
 			// Setup: side mode (desktop), sidebar expanded
 			mockLayoutService.sidebarMode.and.returnValue("side");
@@ -110,8 +129,10 @@ describe("App", () =>
 	{
 		it("should open sidebar when in overlay mode and sidebar is collapsed", () =>
 		{
-			const fixture: ComponentFixture<App> = TestBed.createComponent(App);
-			const app: App = fixture.componentInstance;
+			const fixture: ComponentFixture<App> =
+				TestBed.createComponent(App);
+			const app: App =
+				fixture.componentInstance;
 
 			// Setup: overlay mode, sidebar collapsed
 			mockLayoutService.sidebarMode.and.returnValue("over");
@@ -119,13 +140,16 @@ describe("App", () =>
 
 			app.onSwipeRight();
 
-			expect(mockLayoutService.openSidebar).toHaveBeenCalled();
+			expect(mockLayoutService.openSidebar)
+				.toHaveBeenCalled();
 		});
 
 		it("should NOT open sidebar when in overlay mode but sidebar is already expanded", () =>
 		{
-			const fixture: ComponentFixture<App> = TestBed.createComponent(App);
-			const app: App = fixture.componentInstance;
+			const fixture: ComponentFixture<App> =
+				TestBed.createComponent(App);
+			const app: App =
+				fixture.componentInstance;
 
 			// Setup: overlay mode, sidebar already expanded
 			mockLayoutService.sidebarMode.and.returnValue("over");
@@ -138,8 +162,10 @@ describe("App", () =>
 
 		it("should NOT open sidebar when NOT in overlay mode", () =>
 		{
-			const fixture: ComponentFixture<App> = TestBed.createComponent(App);
-			const app: App = fixture.componentInstance;
+			const fixture: ComponentFixture<App> =
+				TestBed.createComponent(App);
+			const app: App =
+				fixture.componentInstance;
 
 			// Setup: side mode (desktop), sidebar collapsed
 			mockLayoutService.sidebarMode.and.returnValue("side");
@@ -155,12 +181,15 @@ describe("App", () =>
 	{
 		it("should close sidebar when backdrop is clicked", () =>
 		{
-			const fixture: ComponentFixture<App> = TestBed.createComponent(App);
-			const app: App = fixture.componentInstance;
+			const fixture: ComponentFixture<App> =
+				TestBed.createComponent(App);
+			const app: App =
+				fixture.componentInstance;
 
 			app.onBackdropClick();
 
-			expect(mockLayoutService.closeSidebar).toHaveBeenCalled();
+			expect(mockLayoutService.closeSidebar)
+				.toHaveBeenCalled();
 		});
 	});
 });

@@ -1,47 +1,50 @@
+import { LogLevel, LogQueryRequest } from "@admin/logs/models";
+import { WritableSignal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
-import { of } from "rxjs";
-import { QueryClient } from "@tanstack/angular-query-experimental";
-import { LogManagementService } from "./log-management.service";
-import { ApiService } from "@infrastructure/api-services/api.service";
-import { LogDto, LogLevel } from "@admin/logs/models";
 import { PagedResultOfLogDto } from "@infrastructure/api";
-import { setupServiceTest, createMockApiService } from "@testing";
+import { ApiService } from "@infrastructure/api-services/api.service";
+
+import { createMockApiService, setupServiceTest } from "@testing";
+import { of } from "rxjs";
+import { LogManagementService } from "./log-management.service";
 
 describe("LogManagementService", () =>
 {
 	let service: LogManagementService;
 	let mockApiService: jasmine.SpyObj<ApiService>;
 
-	const mockLog: LogDto = {
-		id: 1,
-		createDate: "2024-01-01T12:00:00Z",
-		logLevel: "Information",
-		message: "Test log",
-		exceptionMessage: null,
-		baseExceptionMessage: null,
-		stackTrace: null,
-		sourceContext: "Test",
-		requestMethod: null,
-		requestPath: null,
-		statusCode: null,
-		durationMs: null,
-		properties: null,
-		machineName: null,
-		environment: null,
-		correlationId: null,
-		spanId: null,
-		parentSpanId: null
-	};
+	const mockLog: PagedResultOfLogDto["items"][0] =
+		{
+			id: 1,
+			createDate: "2024-01-01T12:00:00Z",
+			logLevel: "Information",
+			message: "Test log",
+			exceptionMessage: null,
+			baseExceptionMessage: null,
+			stackTrace: null,
+			sourceContext: "Test",
+			requestMethod: null,
+			requestPath: null,
+			statusCode: 200,
+			durationMs: null,
+			properties: null,
+			machineName: null,
+			environment: null,
+			correlationId: null,
+			spanId: null,
+			parentSpanId: null
+		};
 
-	const mockPagedResponse: PagedResultOfLogDto = {
-		items: [mockLog as any],
-		totalCount: 1,
-		page: 1,
-		pageSize: 50,
-		totalPages: 1,
-		hasPrevious: false,
-		hasNext: false
-	};
+	const mockPagedResponse: PagedResultOfLogDto =
+		{
+			items: [mockLog],
+			totalCount: 1,
+			page: 1,
+			pageSize: 50,
+			totalPages: 1,
+			hasPrevious: false,
+			hasNext: false
+		};
 
 	beforeEach(() =>
 	{
@@ -52,12 +55,14 @@ describe("LogManagementService", () =>
 			{ provide: ApiService, useValue: mockApiService }
 		]);
 
-		service = TestBed.inject(LogManagementService);
+		service =
+			TestBed.inject(LogManagementService);
 	});
 
 	it("should be created", () =>
 	{
-		expect(service).toBeTruthy();
+		expect(service)
+			.toBeTruthy();
 	});
 
 	describe("getLogs", () =>
@@ -66,12 +71,13 @@ describe("LogManagementService", () =>
 		{
 			mockApiService.get.and.returnValue(of(mockPagedResponse));
 
-			const query = TestBed.runInInjectionContext(() =>
-				service.getLogs()
-			);
-			const result = await query.refetch();
+			const query: ReturnType<typeof service.getLogs> =
+				TestBed.runInInjectionContext(() => service.getLogs());
+			const result: Awaited<ReturnType<typeof query.refetch>> =
+				await query.refetch();
 
-			expect(result.data).toEqual(mockPagedResponse);
+			expect(result.data)
+				.toEqual(mockPagedResponse);
 		});
 	});
 
@@ -81,9 +87,12 @@ describe("LogManagementService", () =>
 		{
 			service.updateFilter({ logLevel: LogLevel.Error.toString() });
 
-			const filter = service.getCurrentFilter();
-			expect(filter.logLevel).toBe(LogLevel.Error.toString());
-			expect(filter.page).toBe(1);
+			const filter: LogQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.logLevel)
+				.toBe(LogLevel.Error.toString());
+			expect(filter.page)
+				.toBe(1);
 		});
 	});
 
@@ -94,9 +103,12 @@ describe("LogManagementService", () =>
 			service.updateFilter({ logLevel: LogLevel.Error.toString() });
 			service.setPage(3);
 
-			const filter = service.getCurrentFilter();
-			expect(filter.page).toBe(3);
-			expect(filter.logLevel).toBe(LogLevel.Error.toString());
+			const filter: LogQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.page)
+				.toBe(3);
+			expect(filter.logLevel)
+				.toBe(LogLevel.Error.toString());
 		});
 	});
 
@@ -107,9 +119,12 @@ describe("LogManagementService", () =>
 			service.setPage(5);
 			service.setPageSize(100);
 
-			const filter = service.getCurrentFilter();
-			expect(filter.pageSize).toBe(100);
-			expect(filter.page).toBe(1);
+			const filter: LogQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.pageSize)
+				.toBe(100);
+			expect(filter.page)
+				.toBe(1);
 		});
 	});
 
@@ -125,14 +140,21 @@ describe("LogManagementService", () =>
 
 			service.clearFilters();
 
-			const filter = service.getCurrentFilter();
-			expect(filter.logLevel).toBeUndefined();
+			const filter: LogQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.logLevel)
+				.toBeUndefined();
 			// startDate/endDate are reset to initial values (last 24 hours), not undefined
-			expect(filter.startDate).toBeDefined();
-			expect(filter.endDate).toBeDefined();
-			expect(filter.page).toBe(1);
-			expect(filter.pageSize).toBe(50);
-			expect(service.selectedIds().size).toBe(0);
+			expect(filter.startDate)
+				.toBeDefined();
+			expect(filter.endDate)
+				.toBeDefined();
+			expect(filter.page)
+				.toBe(1);
+			expect(filter.pageSize)
+				.toBe(50);
+			expect(service.selectedIds().size)
+				.toBe(0);
 		});
 	});
 
@@ -141,20 +163,32 @@ describe("LogManagementService", () =>
 		it("should toggle selection on and off", () =>
 		{
 			service.toggleSelection(1);
-			expect(service.selectedIds().has(1)).toBe(true);
-			expect(service.selectedCount()).toBe(1);
+			expect(
+				service
+					.selectedIds()
+					.has(1))
+				.toBe(true);
+			expect(service.selectedCount())
+				.toBe(1);
 
 			service.toggleSelection(1);
-			expect(service.selectedIds().has(1)).toBe(false);
-			expect(service.selectedCount()).toBe(0);
+			expect(
+				service
+					.selectedIds()
+					.has(1))
+				.toBe(false);
+			expect(service.selectedCount())
+				.toBe(0);
 		});
 
 		it("should select all visible logs", () =>
 		{
 			service.selectAll([1, 2, 3]);
 
-			expect(service.selectedIds().size).toBe(3);
-			expect(service.selectedCount()).toBe(3);
+			expect(service.selectedIds().size)
+				.toBe(3);
+			expect(service.selectedCount())
+				.toBe(3);
 		});
 
 		it("should clear selection", () =>
@@ -162,7 +196,8 @@ describe("LogManagementService", () =>
 			service.toggleSelection(1);
 			service.clearSelection();
 
-			expect(service.selectedIds().size).toBe(0);
+			expect(service.selectedIds().size)
+				.toBe(0);
 		});
 	});
 
@@ -172,12 +207,14 @@ describe("LogManagementService", () =>
 		{
 			mockApiService.delete.and.returnValue(of(void 0));
 
-			const mutation = TestBed.runInInjectionContext(() =>
-				service.deleteLog()
-			);
+			const mutation: ReturnType<typeof service.deleteLog> =
+				TestBed.runInInjectionContext(() =>
+					service.deleteLog());
+
 			await mutation.mutateAsync(1);
 
-			expect(mockApiService.delete).toHaveBeenCalledWith("logs/1");
+			expect(mockApiService.delete)
+				.toHaveBeenCalledWith("logs/1");
 		});
 	});
 
@@ -189,33 +226,40 @@ describe("LogManagementService", () =>
 			service.toggleSelection(1);
 			service.toggleSelection(2);
 
-			const mutation = TestBed.runInInjectionContext(() =>
-				service.deleteLogs()
-			);
+			const mutation: ReturnType<typeof service.deleteLogs> =
+				TestBed.runInInjectionContext(() =>
+					service.deleteLogs());
+
 			await mutation.mutateAsync([1, 2]);
 
-			expect(mockApiService.delete).toHaveBeenCalledWith("logs/batch", [1, 2]);
-			expect(service.selectedIds().size).toBe(0);
+			expect(mockApiService.delete)
+				.toHaveBeenCalledWith("logs/batch", [1, 2]);
+			expect(service.selectedIds().size)
+				.toBe(0);
 		});
 	});
 
 	describe("forceRefresh", () =>
 	{
-		it("should toggle force refresh trigger", async () =>
+		it("should toggle force refresh trigger", () =>
 		{
 			// Access the private signal via bracket notation for testing
-			const getSignalValue = (): boolean =>
-				(service as any)["forceRefreshTrigger"]();
+			const signal: WritableSignal<boolean> =
+				(service as unknown as { forceRefreshTrigger: WritableSignal<boolean>; })
+					.forceRefreshTrigger;
 
-			const initialValue: boolean = getSignalValue();
+			const initialValue: boolean =
+				signal();
 
-			// Force refresh
-			await TestBed.runInInjectionContext(() => service.forceRefresh());
+			// Force refresh - toggle the signal
+			TestBed.runInInjectionContext(() => service.forceRefresh());
 
-			const newValue: boolean = getSignalValue();
+			const newValue: boolean =
+				signal();
 
 			// Signal should have toggled
-			expect(newValue).toBe(!initialValue);
+			expect(newValue)
+				.toBe(!initialValue);
 		});
 	});
 });

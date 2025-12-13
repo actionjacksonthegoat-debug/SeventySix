@@ -5,21 +5,21 @@
  * Extends BaseFilterService for filter state management
  */
 
-import { inject, Injectable } from "@angular/core";
-import { HttpContext, HttpParams } from "@angular/common/http";
-import { injectQuery } from "@tanstack/angular-query-experimental";
-import { lastValueFrom, Observable } from "rxjs";
 import {
-	UserDto,
 	CreateUserRequest,
 	UpdateUserRequest,
+	UserDto,
 	UserQueryRequest
 } from "@admin/users/models";
+import { HttpContext, HttpParams } from "@angular/common/http";
+import { inject, Injectable } from "@angular/core";
 import { PagedResultOfUserDto } from "@infrastructure/api";
 import { ApiService } from "@infrastructure/api-services/api.service";
+import { BaseQueryService } from "@infrastructure/services/base-query.service";
 import { buildHttpParams } from "@infrastructure/utils/http-params.utility";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
-import { BaseQueryService } from "@infrastructure/services/base-query.service";
+import { injectQuery } from "@tanstack/angular-query-experimental";
+import { lastValueFrom, Observable } from "rxjs";
 
 /**
  * Service for User business logic
@@ -31,7 +31,8 @@ import { BaseQueryService } from "@infrastructure/services/base-query.service";
 export class UserService extends BaseQueryService<UserQueryRequest>
 {
 	protected readonly queryKeyPrefix: string = "users";
-	private readonly apiService: ApiService = inject(ApiService);
+	private readonly apiService: ApiService =
+		inject(ApiService);
 	private readonly endpoint: string = "users";
 
 	constructor()
@@ -54,7 +55,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	getPagedUsers()
 	{
 		return injectQuery(() => ({
-			queryKey: QueryKeys.users
+			queryKey: QueryKeys
+				.users
 				.paged(this.getCurrentFilter())
 				.concat(this.forceRefreshTrigger()),
 			queryFn: () =>
@@ -87,8 +89,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		return this.createMutation<Partial<UserDto>, UserDto>(
 			(user) =>
-				this.apiService.post<UserDto>(this.endpoint, user as CreateUserRequest)
-);
+				this.apiService.post<UserDto>(this.endpoint, user as CreateUserRequest));
 	}
 
 	/**
@@ -102,16 +103,14 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 				userId: number | string;
 				user: UpdateUserRequest;
 			},
-			UserDto
-		>(
+			UserDto>(
 			(variables) =>
 				this.apiService.put<UserDto>(`${this.endpoint}/${variables.userId}`, variables.user),
 			(result, variables) =>
 			{
 				this.invalidateSingle(variables.userId);
 				this.invalidateAll();
-			}
-);
+			});
 	}
 
 	/**
@@ -122,8 +121,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		return this.createMutation<number | string, void>(
 			(userId) =>
-				this.apiService.delete<void>(`${this.endpoint}/${userId}`)
-);
+				this.apiService.delete<void>(`${this.endpoint}/${userId}`));
 	}
 
 	/**
@@ -158,8 +156,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	checkUsernameAvailability(
 		username: string,
-		excludeUserId?: number
-	): Promise<boolean>
+		excludeUserId?: number): Promise<boolean>
 	{
 		const params: HttpParams | undefined =
 			excludeUserId
@@ -167,8 +164,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 				: undefined;
 
 		return lastValueFrom(
-			this.apiService.get<boolean>(`${this.endpoint}/check/username/${username}`, params)
-		);
+			this.apiService.get<boolean>(`${this.endpoint}/check/username/${username}`, params));
 	}
 
 	/**
@@ -181,9 +177,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 			(userId) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/${userId}/restore`,
-					{}
-)
-);
+					{}));
 	}
 
 	/**
@@ -194,8 +188,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		return this.createMutation<number[], number>(
 			(userIds) =>
-				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/activate`, userIds)
-);
+				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/activate`, userIds));
 	}
 
 	/**
@@ -206,8 +199,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		return this.createMutation<number[], number>(
 			(userIds) =>
-				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/deactivate`, userIds)
-);
+				this.apiService.post<number, number[]>(`${this.endpoint}/bulk/deactivate`, userIds));
 	}
 
 	/**
@@ -221,13 +213,11 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 			(userId) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/${userId}/reset-password`,
-					{}
-),
+					{}),
 			() =>
 			{
 				// No cache invalidation needed for password reset
-			}
-);
+			});
 	}
 
 	/**
@@ -256,20 +246,17 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 				userId: number;
 				roleName: string;
 			},
-			void
-		>(
+			void>(
 			(variables) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/${variables.userId}/roles/${variables.roleName}`,
-					{}
-),
+					{}),
 			(result, variables) =>
 			{
 				this.queryClient.invalidateQueries({
 					queryKey: QueryKeys.users.roles(variables.userId)
 				});
-			}
-);
+			});
 	}
 
 	/**
@@ -283,8 +270,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 				userId: number;
 				roleName: string;
 			},
-			void
-		>(
+			void>(
 			(variables) =>
 				this.apiService.delete<void>(`${this.endpoint}/${variables.userId}/roles/${variables.roleName}`),
 			(result, variables) =>
@@ -292,22 +278,20 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 				this.queryClient.invalidateQueries({
 					queryKey: QueryKeys.users.roles(variables.userId)
 				});
-			}
-);
+			});
 	}
 
 	/** Gets paged users with the given filter. */
 	private getPaged(
 		request: UserQueryRequest,
-		context?: HttpContext
-	): Observable<PagedResultOfUserDto>
+		context?: HttpContext): Observable<PagedResultOfUserDto>
 	{
-		const params: HttpParams = buildHttpParams(request);
+		const params: HttpParams =
+			buildHttpParams(request);
 
 		return this.apiService.get<PagedResultOfUserDto>(
 			`${this.endpoint}/paged`,
 			params,
-			context
-		);
+			context);
 	}
 }

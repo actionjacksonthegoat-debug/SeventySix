@@ -2,67 +2,51 @@
 	<mat-card>
 		<mat-card-header>
 			<mat-card-title>Request Permissions</mat-card-title>
-			<mat-card-subtitle
-				>Select roles you need access to</mat-card-subtitle
-			>
+			<mat-card-subtitle>Select roles you need access to</mat-card-subtitle>
 		</mat-card-header>
 
 		<mat-card-content>
-			@if (isLoading())
-			{
-				<mat-spinner diameter="40"></mat-spinner>
-			}
-			@else
-			{
-				<div class="roles-list">
-					@for (role of availableRoles(); track role.name)
-					{
-						<mat-checkbox
-							[checked]="roleSelectionMap().get(role.name)"
-							(change)="toggleRole(role.name)"
-						>
-							<strong>{{ role.name }}</strong>
-							<span class="role-description">{{
-								role.description
-							}}</span>
-						</mat-checkbox>
-					}
-					@empty
-					{
-						<p class="no-roles">No additional roles available</p>
-					}
-				</div>
+			@if (isLoading()) {
+			<mat-spinner diameter="40"></mat-spinner>
+			} @else {
+			<div class="roles-list">
+				@for (role of availableRoles(); track role.name) {
+				<mat-checkbox
+					[checked]="roleSelectionMap().get(role.name)"
+					(change)="toggleRole(role.name)">
+					<strong>{{ role.name }}</strong>
+					<span class="role-description">{{ role.description }}</span>
+				</mat-checkbox>
+				} @empty {
+				<p class="no-roles">No additional roles available</p>
+				}
+			</div>
 
-				<form [formGroup]="requestForm" (ngSubmit)="onSubmit()">
-					<mat-form-field appearance="outline">
-						<mat-label>Reason for request (optional)</mat-label>
-						<textarea
-							matInput
-							formControlName="requestMessage"
-							rows="3"
-						></textarea>
-					</mat-form-field>
+			<form
+				[formGroup]="requestForm"
+				(ngSubmit)="onSubmit()">
+				<mat-form-field appearance="outline">
+					<mat-label>Reason for request (optional)</mat-label>
+					<textarea
+						matInput
+						formControlName="requestMessage"
+						rows="3"></textarea>
+				</mat-form-field>
 
-					<div class="form-actions">
-						<button
-							mat-raised-button
-							color="primary"
-							type="submit"
-							[disabled]="
+				<div class="form-actions">
+					<button
+						mat-raised-button
+						color="primary"
+						type="submit"
+						[disabled]="
 								selectedRoles().size === 0 || isSubmitting()
-							"
-						>
-							@if (isSubmitting())
-							{
-								<mat-spinner diameter="20"></mat-spinner>
-							}
-							@else
-							{
-								Submit Request
-							}
-						</button>
-					</div>
-				</form>
+							">
+						@if (isSubmitting()) {
+						<mat-spinner diameter="20"></mat-spinner>
+						} @else { Submit Request }
+					</button>
+				</div>
+			</form>
 			}
 		</mat-card-content>
 	</mat-card>

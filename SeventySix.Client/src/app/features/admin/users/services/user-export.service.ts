@@ -4,8 +4,8 @@
  * Follows SRP - Single Responsibility: User data export
  */
 
-import { Injectable, inject } from "@angular/core";
 import { UserDto } from "@admin/users/models";
+import { inject, Injectable } from "@angular/core";
 import { DateService } from "@infrastructure/services";
 
 /**
@@ -14,7 +14,8 @@ import { DateService } from "@infrastructure/services";
 @Injectable()
 export class UserExportService
 {
-	private readonly dateService: DateService = inject(DateService);
+	private readonly dateService: DateService =
+		inject(DateService);
 
 	/**
 	 * Export users to CSV format
@@ -28,7 +29,8 @@ export class UserExportService
 			return;
 		}
 
-		const csvContent: string = this.generateCsvContent(users);
+		const csvContent: string =
+			this.generateCsvContent(users);
 		const csvFilename: string =
 			filename ?? `users_export_${this.dateService.now()}.csv`;
 
@@ -42,20 +44,23 @@ export class UserExportService
 	 */
 	private generateCsvContent(users: UserDto[]): string
 	{
-		const headers: string[] = [
-			"ID",
-			"Username",
-			"Email",
-			"Full Name",
-			"Status",
-			"Created At",
-			"Last Login",
-			"Modified At",
-			"Created By",
-			"Modified By"
-		];
+		const headers: string[] =
+			[
+				"ID",
+				"Username",
+				"Email",
+				"Full Name",
+				"Status",
+				"Created At",
+				"Last Login",
+				"Modified At",
+				"Created By",
+				"Modified By"
+			];
 
-		const rows: string[][] = users.map((user) => [
+		const rows: string[][] =
+			users.map((user) =>
+				[
 			user.id.toString(),
 			this.escapeCsvValue(user.username),
 			this.escapeCsvValue(user.email),
@@ -68,10 +73,11 @@ export class UserExportService
 			user.modifiedBy ?? ""
 		]);
 
-		const csvLines: string[] = [
-			headers.join(","),
-			...rows.map((row) => row.join(","))
-		];
+		const csvLines: string[] =
+			[
+				headers.join(","),
+				...rows.map((row) => row.join(","))
+			];
 
 		return csvLines.join("\n");
 	}
@@ -84,11 +90,12 @@ export class UserExportService
 	 */
 	private escapeCsvValue(value: string): string
 	{
-		if (value.includes(",")
-			|| value.includes('"')
-			|| value.includes("\n"))
+		if (
+			value.includes(",")
+				|| value.includes("\"")
+				|| value.includes("\n"))
 		{
-			return `"${value.replace(/"/g, '""')}"`;
+			return `"${value.replace(/"/g, "\"\"")}"`;
 		}
 		return value;
 	}
@@ -100,14 +107,17 @@ export class UserExportService
 	 */
 	private downloadCsv(content: string, filename: string): void
 	{
-		const blob: Blob = new Blob([content], {
+		const blob: Blob =
+			new Blob([content], {
 			type: "text/csv;charset=utf-8;"
 		});
-		const link: HTMLAnchorElement = document.createElement("a");
+		const link: HTMLAnchorElement =
+			document.createElement("a");
 
 		if (link.download !== undefined)
 		{
-			const url: string = URL.createObjectURL(blob);
+			const url: string =
+				URL.createObjectURL(blob);
 			link.setAttribute("href", url);
 			link.setAttribute("download", filename);
 			link.style.visibility = "hidden";

@@ -4,7 +4,7 @@
  * Follows Builder pattern for test data creation
  */
 
-import { TableColumn } from "@shared/models";
+import { CellValue, TableColumn } from "@shared/models";
 
 /**
  * Fluent builder for TableColumn test data
@@ -19,11 +19,12 @@ import { TableColumn } from "@shared/models";
  */
 export class TableColumnBuilder<T>
 {
-	private column: Partial<TableColumn<T>> = {
-		visible: true,
-		sortable: false,
-		type: "text"
-	};
+	private column: Partial<TableColumn<T>> =
+		{
+			visible: true,
+			sortable: false,
+			type: "text"
+		};
 
 	/**
 	 * Set the column key
@@ -101,8 +102,7 @@ export class TableColumnBuilder<T>
 	 * Set column type to badge
 	 */
 	asBadge(
-		badgeColor?: (value: unknown) => "primary" | "accent" | "warn"
-	): this
+		badgeColor?: (value: CellValue) => "primary" | "accent" | "warn"): this
 	{
 		this.column.type = "badge";
 		if (badgeColor)
@@ -135,10 +135,10 @@ export class TableColumnBuilder<T>
 export function createTextColumn<T>(
 	key: keyof T & string,
 	label: string,
-	isSortable: boolean = false
-): TableColumn<T>
+	isSortable: boolean = false): TableColumn<T>
 {
-	const builder: TableColumnBuilder<T> = new TableColumnBuilder<T>()
+	const builder: TableColumnBuilder<T> =
+		new TableColumnBuilder<T>()
 		.withKey(key)
 		.withLabel(label)
 		.asText();
@@ -157,10 +157,10 @@ export function createTextColumn<T>(
 export function createDateColumn<T>(
 	key: keyof T & string,
 	label: string,
-	sortable: boolean = true
-): TableColumn<T>
+	sortable: boolean = true): TableColumn<T>
 {
-	const builder: TableColumnBuilder<T> = new TableColumnBuilder<T>()
+	const builder: TableColumnBuilder<T> =
+		new TableColumnBuilder<T>()
 		.withKey(key)
 		.withLabel(label)
 		.asDate();
@@ -179,8 +179,7 @@ export function createDateColumn<T>(
 export function createBadgeColumn<T>(
 	key: keyof T & string,
 	label: string,
-	badgeColor: (value: unknown) => "primary" | "accent" | "warn"
-): TableColumn<T>
+	badgeColor: (value: CellValue) => "primary" | "accent" | "warn"): TableColumn<T>
 {
 	return new TableColumnBuilder<T>()
 		.withKey(key)

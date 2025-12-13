@@ -3,24 +3,13 @@
 		"@types/node": "^22.10.5"
 	},
 	"scripts": {
-		"docker:start": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\"",
-		"server:build": "cd SeventySix.Server && dotnet build",
-		"server:test:run": "cd SeventySix.Server && dotnet test",
-		"server:test": "npm run docker:start && npm run server:build && npm run server:test:run",
-		"client:test": "cd SeventySix.Client && npm test",
-		"test:all": "npm run docker:start && npm run server:build && npm run server:test:run && npm run client:test",
-		"test:server": "npm run server:test",
-		"test:client": "npm run client:test",
-		"test:e2e": "cd SeventySix.Client && npm run test:e2e",
-		"format": "dotnet format SeventySix.Server/SeventySix.Server.slnx && cd SeventySix.Client && npm run cleanup",
-		"client:start": "cd SeventySix.Client && npm start",
-		"start:client": "npm run client:start",
-		"start:docker": "npm run docker:start",
-		"start:api": "npm run server:build && cd SeventySix.Server/SeventySix.Api && dotnet run --launch-profile http",
-		"start:api-debug": "npm run server:build && cd SeventySix.Server && docker compose --env-file ../.env up -d postgres jaeger prometheus grafana --no-deps && start cmd /k \"cd SeventySix.Server/SeventySix.Api && dotnet run --launch-profile http\" && cd ../SeventySix.Client && npm start",
-		"stop:api-debug": "cd SeventySix.Server && docker compose stop postgres jaeger prometheus grafana",
-		"start:all": "npm run docker:start && cd SeventySix.Server && docker compose --env-file ../.env up -d --build --force-recreate && cd ../SeventySix.Client && npm start",
-		"stop:all": "cd SeventySix.Server && docker compose down",
-		"kill:api-ports": "powershell -Command \"$ports = @(5085, 7074); foreach($port in $ports) { $conn = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue; if($conn) { Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue } }\""
+		"format": "dotnet format SeventySix.Server/SeventySix.Server.slnx && cd SeventySix.Client && npx eslint \"src/**/*.ts\" --fix && npx dprint fmt && npx eslint \"src/**/*.ts\" --fix",
+		"test": "npm run test:server && npm run test:client",
+		"test:server": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && dotnet build && dotnet test",
+		"test:client": "cd SeventySix.Client && npm test",
+		"start": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && docker compose --env-file ../.env up -d --build --force-recreate && cd ../SeventySix.Client && npm start",
+		"start:client": "cd SeventySix.Client && npm start",
+		"start:api-debug": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && docker compose --env-file ../.env up -d postgres jaeger prometheus grafana --no-deps && cd ../SeventySix.Client && npm start",
+		"stop": "cd SeventySix.Server && docker compose down"
 	}
 }

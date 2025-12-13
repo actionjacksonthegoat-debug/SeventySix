@@ -3,6 +3,9 @@
  * Provides reusable table infrastructure for feature components
  */
 
+/** Cell value types supported in data tables */
+export type CellValue = string | number | boolean | Date | null | undefined;
+
 /**
  * Column definition for data table
  */
@@ -38,14 +41,14 @@ export interface TableColumn<T = unknown>
 	 * @param value - Cell value
 	 * @param row - Optional row context for cross-column formatting
 	 */
-	formatter?: (value: unknown, row?: T) => string;
+	formatter?: (value: CellValue, row?: T) => string;
 
 	/**
 	 * Badge color function (for type="badge" columns)
 	 * @param value - Cell value
 	 * @param row - Optional row context
 	 */
-	badgeColor?: (value: unknown, row?: T) => "primary" | "accent" | "warn";
+	badgeColor?: (value: CellValue, row?: T) => "primary" | "accent" | "warn";
 }
 
 /**

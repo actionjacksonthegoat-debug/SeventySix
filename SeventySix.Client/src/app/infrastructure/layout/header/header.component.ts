@@ -1,23 +1,23 @@
 import {
-	Component,
 	ChangeDetectionStrategy,
-	inject,
+	Component,
 	computed,
+	inject,
 	Signal
 } from "@angular/core";
-import { Router } from "@angular/router";
-import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { MatMenuModule } from "@angular/material/menu";
 import { MatDividerModule } from "@angular/material/divider";
-import {
-	ThemeService,
-	LayoutService,
-	AuthService
-} from "@infrastructure/services";
+import { MatIconModule } from "@angular/material/icon";
+import { MatMenuModule } from "@angular/material/menu";
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { Router } from "@angular/router";
 import { UserProfileDto } from "@infrastructure/api";
+import {
+	AuthService,
+	LayoutService,
+	ThemeService
+} from "@infrastructure/services";
 import { BreadcrumbComponent } from "@shared/components";
 
 /**
@@ -41,15 +41,21 @@ import { BreadcrumbComponent } from "@shared/components";
 })
 export class HeaderComponent
 {
-	protected readonly themeService: ThemeService = inject(ThemeService);
-	protected readonly layoutService: LayoutService = inject(LayoutService);
-	protected readonly authService: AuthService = inject(AuthService);
-	private readonly router: Router = inject(Router);
+	protected readonly themeService: ThemeService =
+		inject(ThemeService);
+	protected readonly layoutService: LayoutService =
+		inject(LayoutService);
+	protected readonly authService: AuthService =
+		inject(AuthService);
+	private readonly router: Router =
+		inject(Router);
 
 	/** Display name: fullName if available, otherwise username. */
-	protected readonly displayName: Signal<string> = computed(() =>
+	protected readonly displayName: Signal<string> =
+		computed(() =>
 	{
-		const user: UserProfileDto | null = this.authService.user();
+		const user: UserProfileDto | null =
+			this.authService.user();
 		if (!user)
 		{
 			return "";

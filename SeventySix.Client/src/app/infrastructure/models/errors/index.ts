@@ -1,8 +1,8 @@
 export {
 	AppError,
 	HttpError,
-	ValidationError,
+	NetworkError,
 	NotFoundError,
 	UnauthorizedError,
-	NetworkError
+	ValidationError
 } from "./app-error";

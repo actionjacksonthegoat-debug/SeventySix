@@ -3,17 +3,17 @@
  * Used when a user receives a password reset email from an admin.
  */
 
+import { HttpErrorResponse } from "@angular/common/http";
 import {
+	ChangeDetectionStrategy,
 	Component,
 	inject,
+	OnInit,
 	signal,
-	WritableSignal,
-	ChangeDetectionStrategy,
-	OnInit
+	WritableSignal
 } from "@angular/core";
-import { Router, ActivatedRoute } from "@angular/router";
 import { FormsModule } from "@angular/forms";
-import { HttpErrorResponse } from "@angular/common/http";
+import { ActivatedRoute, Router } from "@angular/router";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
@@ -28,9 +28,12 @@ import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 })
 export class SetPasswordComponent implements OnInit
 {
-	private readonly authService: AuthService = inject(AuthService);
-	private readonly router: Router = inject(Router);
-	private readonly route: ActivatedRoute = inject(ActivatedRoute);
+	private readonly authService: AuthService =
+		inject(AuthService);
+	private readonly router: Router =
+		inject(Router);
+	private readonly route: ActivatedRoute =
+		inject(ActivatedRoute);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
@@ -49,14 +52,14 @@ export class SetPasswordComponent implements OnInit
 
 	ngOnInit(): void
 	{
-		this.token = this.route.snapshot.queryParams["token"] ?? "";
+		this.token =
+			this.route.snapshot.queryParams["token"] ?? "";
 
 		if (!this.token)
 		{
 			this.tokenValid.set(false);
 			this.notification.error(
-				"Invalid password reset link. Please request a new one."
-			);
+				"Invalid password reset link. Please request a new one.");
 		}
 	}
 
@@ -82,21 +85,24 @@ export class SetPasswordComponent implements OnInit
 
 		this.isLoading.set(true);
 
-		this.authService.setPassword(this.token, this.newPassword).subscribe({
-			next: () =>
-			{
-				this.notification.success(
-					"Password set successfully. You can now sign in."
-				);
-				this.router.navigate(["/auth/login"]);
-			},
-			error: (error: HttpErrorResponse) =>
-			{
-				const message: string = this.getErrorMessage(error);
-				this.notification.error(message);
-				this.isLoading.set(false);
-			}
-		});
+		this
+			.authService
+			.setPassword(this.token, this.newPassword)
+			.subscribe({
+				next: () =>
+				{
+					this.notification.success(
+						"Password set successfully. You can now sign in.");
+					this.router.navigate(["/auth/login"]);
+				},
+				error: (error: HttpErrorResponse) =>
+				{
+					const message: string =
+						this.getErrorMessage(error);
+					this.notification.error(message);
+					this.isLoading.set(false);
+				}
+			});
 	}
 
 	/**
@@ -109,8 +115,7 @@ export class SetPasswordComponent implements OnInit
 			case 400:
 				return (
 					error.error?.detail
-					?? "Invalid request. Please check your password requirements."
-				);
+						?? "Invalid request. Please check your password requirements.");
 			case 404:
 				return "Password reset link has expired or is invalid. Please request a new one.";
 			case 0:

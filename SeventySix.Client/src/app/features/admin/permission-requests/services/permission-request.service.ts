@@ -2,16 +2,16 @@ import {
 	inject,
 	Injectable
 } from "@angular/core";
-import { injectQuery } from "@tanstack/angular-query-experimental";
-import { lastValueFrom } from "rxjs";
 import { ApiService } from "@infrastructure/api-services/api.service";
 import { BaseMutationService } from "@infrastructure/services";
-import {
-	CreatePermissionRequestDto,
-	PermissionRequestDto,
-	AvailableRoleDto
-} from "../models";
 import { QueryKeys } from "@infrastructure/utils/query-keys";
+import { injectQuery } from "@tanstack/angular-query-experimental";
+import { lastValueFrom } from "rxjs";
+import {
+	AvailableRoleDto,
+	CreatePermissionRequestDto,
+	PermissionRequestDto
+} from "../models";
 
 /**
  * Service for permission request business logic.
@@ -22,7 +22,8 @@ import { QueryKeys } from "@infrastructure/utils/query-keys";
 export class PermissionRequestService extends BaseMutationService
 {
 	protected readonly queryKeyPrefix: string = "permissionRequests";
-	private readonly apiService: ApiService = inject(ApiService);
+	private readonly apiService: ApiService =
+		inject(ApiService);
 	private readonly endpoint: string = "users";
 
 	/** Query for all permission requests (admin). */
@@ -32,8 +33,7 @@ export class PermissionRequestService extends BaseMutationService
 			queryKey: QueryKeys.permissionRequests.list,
 			queryFn: () =>
 				lastValueFrom(
-					this.apiService.get<PermissionRequestDto[]>(`${this.endpoint}/permission-requests`)
-				),
+					this.apiService.get<PermissionRequestDto[]>(`${this.endpoint}/permission-requests`)),
 			...this.queryConfig
 		}));
 	}
@@ -45,8 +45,7 @@ export class PermissionRequestService extends BaseMutationService
 			queryKey: QueryKeys.permissionRequests.availableRoles,
 			queryFn: () =>
 				lastValueFrom(
-					this.apiService.get<AvailableRoleDto[]>(`${this.endpoint}/me/available-roles`)
-				),
+					this.apiService.get<AvailableRoleDto[]>(`${this.endpoint}/me/available-roles`)),
 			...this.queryConfig
 		}));
 	}
@@ -58,9 +57,7 @@ export class PermissionRequestService extends BaseMutationService
 			(request) =>
 				this.apiService.post<void, CreatePermissionRequestDto>(
 					`${this.endpoint}/me/permission-requests`,
-					request
-				)
-		);
+					request));
 	}
 
 	/** Mutation for approving a single request. */
@@ -70,9 +67,7 @@ export class PermissionRequestService extends BaseMutationService
 			(requestId) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/permission-requests/${requestId}/approve`,
-					{}
-				)
-		);
+					{}));
 	}
 
 	/** Mutation for rejecting a single request. */
@@ -82,9 +77,7 @@ export class PermissionRequestService extends BaseMutationService
 			(requestId) =>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/permission-requests/${requestId}/reject`,
-					{}
-				)
-		);
+					{}));
 	}
 
 	/** Mutation for bulk approving requests. */
@@ -94,9 +87,7 @@ export class PermissionRequestService extends BaseMutationService
 			(requestIds) =>
 				this.apiService.post<number, number[]>(
 					`${this.endpoint}/permission-requests/bulk/approve`,
-					requestIds
-				)
-		);
+					requestIds));
 	}
 
 	/** Mutation for bulk rejecting requests. */
@@ -106,8 +97,6 @@ export class PermissionRequestService extends BaseMutationService
 			(requestIds) =>
 				this.apiService.post<number, number[]>(
 					`${this.endpoint}/permission-requests/bulk/reject`,
-					requestIds
-				)
-		);
+					requestIds));
 	}
 }

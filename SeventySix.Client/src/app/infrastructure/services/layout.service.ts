@@ -1,15 +1,15 @@
 import {
-	Injectable,
-	signal,
-	computed,
-	inject,
-	PLATFORM_ID
-} from "@angular/core";
-import {
 	BreakpointObserver,
 	Breakpoints,
 	BreakpointState
 } from "@angular/cdk/layout";
+import {
+	computed,
+	inject,
+	Injectable,
+	PLATFORM_ID,
+	signal
+} from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
 
@@ -22,8 +22,10 @@ import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
 })
 export class LayoutService
 {
-	private platformId: Object = inject(PLATFORM_ID);
-	private breakpointObserver: BreakpointObserver = inject(BreakpointObserver);
+	private platformId: Object =
+		inject(PLATFORM_ID);
+	private breakpointObserver: BreakpointObserver =
+		inject(BreakpointObserver);
 	private readonly SIDEBAR_SESSION_KEY: string = "seventysix-sidebar-session";
 
 	/**
@@ -31,9 +33,9 @@ export class LayoutService
 	 * Always starts open on fresh page load/refresh
 	 * Only persists closed state within the same session
 	 */
-	sidebarExpanded: ReturnType<typeof signal<boolean>> = signal<boolean>(
-		this.getSessionSidebarState()
-	);
+	sidebarExpanded: ReturnType<typeof signal<boolean>> =
+		signal<boolean>(
+		this.getSessionSidebarState());
 
 	/**
 	 * Observe responsive breakpoints
@@ -44,62 +46,78 @@ export class LayoutService
 	 */
 	private breakpoints$: ReturnType<typeof this.breakpointObserver.observe> =
 		this.breakpointObserver.observe([
-			Breakpoints.XSmall, // (max-width: 599.98px)
-			Breakpoints.Small, // (min-width: 600px) and (max-width: 959.98px)
-			Breakpoints.Medium, // (min-width: 960px) and (max-width: 1279.98px)
-			Breakpoints.Large, // (min-width: 1280px) and (max-width: 1919.98px)
-			Breakpoints.XLarge // (min-width: 1920px)
-		]);
+		Breakpoints.XSmall, // (max-width: 599.98px)
+		Breakpoints.Small, // (min-width: 600px) and (max-width: 959.98px)
+		Breakpoints.Medium, // (min-width: 960px) and (max-width: 1279.98px)
+		Breakpoints.Large, // (min-width: 1280px) and (max-width: 1919.98px)
+		Breakpoints.XLarge // (min-width: 1920px)
+	]);
 
-	breakpoints: ReturnType<typeof toSignal<BreakpointState>> = toSignal(
+	breakpoints: ReturnType<typeof toSignal<BreakpointState>> =
+		toSignal(
 		this.breakpoints$,
 		{
 			initialValue: { matches: false, breakpoints: {} }
-		}
-	);
+		});
 
 	/**
 	 * Computed values for responsive behavior
 	 */
-	isMobile: ReturnType<typeof computed<boolean>> = computed(() =>
+	isMobile: ReturnType<typeof computed<boolean>> =
+		computed(() =>
 	{
-		const bp: { [key: string]: boolean } = this.breakpoints()
-			.breakpoints as { [key: string]: boolean };
+		const bp: { [key: string]: boolean; } =
+			this
+			.breakpoints()
+			.breakpoints as { [key: string]: boolean; };
 		return !!bp[Breakpoints.XSmall];
 	});
 
-	isTablet: ReturnType<typeof computed<boolean>> = computed(() =>
+	isTablet: ReturnType<typeof computed<boolean>> =
+		computed(() =>
 	{
-		const bp: { [key: string]: boolean } = this.breakpoints()
-			.breakpoints as { [key: string]: boolean };
+		const bp: { [key: string]: boolean; } =
+			this
+			.breakpoints()
+			.breakpoints as { [key: string]: boolean; };
 		return !!bp[Breakpoints.Small];
 	});
 
-	isLaptop: ReturnType<typeof computed<boolean>> = computed(() =>
+	isLaptop: ReturnType<typeof computed<boolean>> =
+		computed(() =>
 	{
-		const bp: { [key: string]: boolean } = this.breakpoints()
-			.breakpoints as { [key: string]: boolean };
+		const bp: { [key: string]: boolean; } =
+			this
+			.breakpoints()
+			.breakpoints as { [key: string]: boolean; };
 		return !!bp[Breakpoints.Medium];
 	});
 
-	isDesktop: ReturnType<typeof computed<boolean>> = computed(() =>
+	isDesktop: ReturnType<typeof computed<boolean>> =
+		computed(() =>
 	{
-		const bp: { [key: string]: boolean } = this.breakpoints()
-			.breakpoints as { [key: string]: boolean };
+		const bp: { [key: string]: boolean; } =
+			this
+			.breakpoints()
+			.breakpoints as { [key: string]: boolean; };
 		return !!bp[Breakpoints.Large] || !!bp[Breakpoints.XLarge];
 	});
 
-	isXLarge: ReturnType<typeof computed<boolean>> = computed(() =>
+	isXLarge: ReturnType<typeof computed<boolean>> =
+		computed(() =>
 	{
-		const bp: { [key: string]: boolean } = this.breakpoints()
-			.breakpoints as { [key: string]: boolean };
+		const bp: { [key: string]: boolean; } =
+			this
+			.breakpoints()
+			.breakpoints as { [key: string]: boolean; };
 		return !!bp[Breakpoints.XLarge];
 	});
 
 	/**
 	 * Helper: Is screen size 600px or larger (tablet and above)
 	 */
-	isTabletOrLarger: ReturnType<typeof computed<boolean>> = computed(() =>
+	isTabletOrLarger: ReturnType<typeof computed<boolean>> =
+		computed(() =>
 	{
 		return !this.isMobile();
 	});
@@ -107,7 +125,8 @@ export class LayoutService
 	/**
 	 * Helper: Is screen size below 960px (mobile and tablet)
 	 */
-	isBelowLaptop: ReturnType<typeof computed<boolean>> = computed(() =>
+	isBelowLaptop: ReturnType<typeof computed<boolean>> =
+		computed(() =>
 	{
 		return this.isMobile() || this.isTablet();
 	});
@@ -115,7 +134,8 @@ export class LayoutService
 	/**
 	 * Helper: Is screen size 960px or larger (laptop and desktop)
 	 */
-	isLaptopOrLarger: ReturnType<typeof computed<boolean>> = computed(() =>
+	isLaptopOrLarger: ReturnType<typeof computed<boolean>> =
+		computed(() =>
 	{
 		return this.isLaptop() || this.isDesktop() || this.isXLarge();
 	});
@@ -125,7 +145,8 @@ export class LayoutService
 	 * - Below 960px: 'over' (overlay, full-width content)
 	 * - 960px and above: 'side' (push content)
 	 */
-	sidebarMode: ReturnType<typeof computed<"over" | "side">> = computed(() =>
+	sidebarMode: ReturnType<typeof computed<"over" | "side">> =
+		computed(() =>
 	{
 		if (this.isBelowLaptop())
 		{
@@ -139,7 +160,8 @@ export class LayoutService
 	 * On mobile/tablet: closed by default, managed by gestures/backdrop
 	 * On desktop: always starts open, only toggled via header
 	 */
-	sidebarOpened: ReturnType<typeof computed<boolean>> = computed(() =>
+	sidebarOpened: ReturnType<typeof computed<boolean>> =
+		computed(() =>
 	{
 		return this.sidebarExpanded();
 	});
@@ -190,15 +212,14 @@ export class LayoutService
 		// Check if browser environment
 		if (
 			typeof window === "undefined"
-			|| typeof sessionStorage === "undefined"
-		)
+				|| typeof sessionStorage === "undefined")
 		{
 			return true; // Default to open in SSR
 		}
 
-		const sessionValue: string | null = sessionStorage.getItem(
-			this.SIDEBAR_SESSION_KEY
-		);
+		const sessionValue: string | null =
+			sessionStorage.getItem(
+			this.SIDEBAR_SESSION_KEY);
 
 		// If no session value, this is a fresh load - start open
 		if (isNullOrUndefined(sessionValue))
@@ -218,8 +239,7 @@ export class LayoutService
 	{
 		if (
 			typeof window === "undefined"
-			|| typeof sessionStorage === "undefined"
-		)
+				|| typeof sessionStorage === "undefined")
 		{
 			return;
 		}

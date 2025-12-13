@@ -1,8 +1,8 @@
 import {
-	Injectable,
-	signal,
 	computed,
+	Injectable,
 	Signal,
+	signal,
 	WritableSignal
 } from "@angular/core";
 
@@ -46,20 +46,21 @@ export class PerformanceMonitorService
 		signal<boolean>(false);
 	private readonly _metrics: WritableSignal<PerformanceMetrics> =
 		signal<PerformanceMetrics>({
-			fps: 0,
-			frameTime: 0,
-			memoryUsed: 0,
-			memoryTotal: 0
-		});
+		fps: 0,
+		frameTime: 0,
+		memoryUsed: 0,
+		memoryTotal: 0
+	});
 
 	readonly currentMetrics: Signal<PerformanceMetrics> =
 		this._metrics.asReadonly();
-	readonly isHealthy: Signal<boolean> = computed(
-		() => this._metrics().fps >= 50
-	);
+	readonly isHealthy: Signal<boolean> =
+		computed(
+		() => this._metrics().fps >= 50);
 
 	private frameCount: number = 0;
-	private lastTime: number = performance.now();
+	private lastTime: number =
+		performance.now();
 	private animationFrameId: number | null = null;
 	private readonly MB: number = 1048576;
 
@@ -84,7 +85,8 @@ export class PerformanceMonitorService
 
 		this._isMonitoring.set(true);
 		this.frameCount = 0;
-		this.lastTime = performance.now();
+		this.lastTime =
+			performance.now();
 		this.monitorFrame();
 	}
 
@@ -106,34 +108,42 @@ export class PerformanceMonitorService
 	 * Monitors each frame for performance metrics.
 	 * Updates metrics every second.
 	 */
-	private monitorFrame: () => void = (): void =>
+	private monitorFrame: () => void =
+		(): void =>
 	{
 		if (!this._isMonitoring())
 		{
 			return;
 		}
 
-		const now: number = performance.now();
-		const delta: number = now - this.lastTime;
+		const now: number =
+			performance.now();
+		const delta: number =
+			now - this.lastTime;
 
 		this.frameCount++;
 
 		// Update metrics every second
 		if (delta >= 1000)
 		{
-			const fps: number = Math.round((this.frameCount * 1000) / delta);
-			const frameTime: number = delta / this.frameCount;
+			const fps: number =
+				Math.round((this.frameCount * 1000) / delta);
+			const frameTime: number =
+				delta / this.frameCount;
 
 			// Get memory info (Chrome only)
-			const memory: PerformanceMemory | undefined = (
-				performance as PerformanceWithMemory
-			).memory;
-			const memoryUsed: number = memory
-				? Math.round(memory.usedJSHeapSize / this.MB)
-				: 0;
-			const memoryTotal: number = memory
-				? Math.round(memory.totalJSHeapSize / this.MB)
-				: 0;
+			const memory: PerformanceMemory | undefined =
+				(
+				performance as PerformanceWithMemory)
+				.memory;
+			const memoryUsed: number =
+				memory
+					? Math.round(memory.usedJSHeapSize / this.MB)
+					: 0;
+			const memoryTotal: number =
+				memory
+					? Math.round(memory.totalJSHeapSize / this.MB)
+					: 0;
 
 			this._metrics.set({
 				fps,
@@ -146,6 +156,7 @@ export class PerformanceMonitorService
 			this.lastTime = now;
 		}
 
-		this.animationFrameId = requestAnimationFrame(this.monitorFrame);
+		this.animationFrameId =
+			requestAnimationFrame(this.monitorFrame);
 	};
 }

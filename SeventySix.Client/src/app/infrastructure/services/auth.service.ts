@@ -8,40 +8,44 @@
  * - Token refresh handled transparently by auth interceptor
  */
 
+import { HttpClient } from "@angular/common/http";
 import {
-	Injectable,
-	inject,
-	signal,
 	computed,
+	inject,
+	Injectable,
 	Signal,
+	signal,
 	WritableSignal
 } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
-import { Observable, tap, catchError, of } from "rxjs";
 import { environment } from "@environments/environment";
-import { DateService } from "@infrastructure/services";
 import {
-	LoginRequest,
 	AuthResponse,
+	LoginRequest,
 	UserProfileDto
 } from "@infrastructure/api";
 import {
-	OAuthProvider,
+	DOTNET_ROLE_CLAIM,
 	JwtClaims,
-	DOTNET_ROLE_CLAIM
+	OAuthProvider
 } from "@infrastructure/models";
+import { DateService } from "@infrastructure/services";
+import { catchError, Observable, of, tap } from "rxjs";
 
 @Injectable({
 	providedIn: "root"
 })
 export class AuthService
 {
-	private readonly httpClient: HttpClient = inject(HttpClient);
-	private readonly router: Router = inject(Router);
-	private readonly dateService: DateService = inject(DateService);
+	private readonly httpClient: HttpClient =
+		inject(HttpClient);
+	private readonly router: Router =
+		inject(Router);
+	private readonly dateService: DateService =
+		inject(DateService);
 
-	private readonly authUrl: string = `${environment.apiUrl}/auth`;
+	private readonly authUrl: string =
+		`${environment.apiUrl}/auth`;
 
 	/** Key for tracking if user has logged in before (for session restoration). */
 	private static readonly HAS_SESSION_KEY: string = "auth_has_session";
@@ -64,16 +68,17 @@ export class AuthService
 		signal<boolean>(false);
 
 	/** Read-only user state. */
-	readonly user: Signal<UserProfileDto | null> = this.userSignal.asReadonly();
+	readonly user: Signal<UserProfileDto | null> =
+		this.userSignal.asReadonly();
 
 	/** Read-only password change requirement state. */
 	readonly requiresPasswordChange: Signal<boolean> =
 		this.requiresPasswordChangeSignal.asReadonly();
 
 	/** Computed authentication state. */
-	readonly isAuthenticated: Signal<boolean> = computed(
-		() => this.userSignal() !== null
-	);
+	readonly isAuthenticated: Signal<boolean> =
+		computed(
+		() => this.userSignal() !== null);
 
 	/**
 	 * Initializes the service: handles OAuth callback and restores session.
@@ -113,7 +118,8 @@ export class AuthService
 	 */
 	login(credentials: LoginRequest): Observable<AuthResponse>
 	{
-		return this.httpClient
+		return this
+			.httpClient
 			.post<AuthResponse>(`${this.authUrl}/login`, credentials, {
 				withCredentials: true
 			})
@@ -122,14 +128,11 @@ export class AuthService
 				{
 					this.setAccessToken(
 						response.accessToken,
-						response.expiresAt
-					);
+						response.expiresAt);
 					this.requiresPasswordChangeSignal.set(
-						response.requiresPasswordChange
-					);
+						response.requiresPasswordChange);
 					this.markHasSession();
-				})
-			);
+				}));
 	}
 
 	/**
@@ -140,7 +143,8 @@ export class AuthService
 	{
 		// Store return URL for after OAuth callback
 		sessionStorage.setItem("auth_return_url", returnUrl);
-		window.location.href = `${this.authUrl}/${provider}`;
+		window.location.href =
+			`${this.authUrl}/${provider}`;
 	}
 
 	/**
@@ -148,30 +152,27 @@ export class AuthService
 	 */
 	refreshToken(): Observable<AuthResponse | null>
 	{
-		return this.httpClient
+		return this
+			.httpClient
 			.post<AuthResponse>(
 				`${this.authUrl}/refresh`,
 				{},
-				{ withCredentials: true }
-			)
+				{ withCredentials: true })
 			.pipe(
 				tap((response: AuthResponse) =>
 				{
 					this.setAccessToken(
 						response.accessToken,
-						response.expiresAt
-					);
+						response.expiresAt);
 					this.requiresPasswordChangeSignal.set(
-						response.requiresPasswordChange
-					);
+						response.requiresPasswordChange);
 					this.markHasSession();
 				}),
 				catchError(() =>
 				{
 					this.clearAuth();
 					return of(null);
-				})
-			);
+				}));
 	}
 
 	/**
@@ -179,7 +180,8 @@ export class AuthService
 	 */
 	logout(): void
 	{
-		this.httpClient
+		this
+			.httpClient
 			.post<void>(`${this.authUrl}/logout`, {}, { withCredentials: true })
 			.subscribe({
 				complete: () =>
@@ -243,25 +245,22 @@ export class AuthService
 	completeRegistration(
 		token: string,
 		username: string,
-		password: string
-	): Observable<AuthResponse>
+		password: string): Observable<AuthResponse>
 	{
-		return this.httpClient
+		return this
+			.httpClient
 			.post<AuthResponse>(
 				`${this.authUrl}/register/complete`,
 				{ token, username, password },
-				{ withCredentials: true }
-			)
+				{ withCredentials: true })
 			.pipe(
 				tap((response: AuthResponse) =>
 				{
 					this.setAccessToken(
 						response.accessToken,
-						response.expiresAt
-					);
+						response.expiresAt);
 					this.markHasSession();
-				})
-			);
+				}));
 	}
 
 	/**
@@ -293,7 +292,8 @@ export class AuthService
 	 */
 	hasRole(role: string): boolean
 	{
-		const user: UserProfileDto | null = this.userSignal();
+		const user: UserProfileDto | null =
+			this.userSignal();
 		return user?.roles.includes(role) ?? false;
 	}
 
@@ -311,7 +311,8 @@ export class AuthService
 	 */
 	private handleOAuthCallback(): boolean
 	{
-		const hash: string = window.location.hash;
+		const hash: string =
+			window.location.hash;
 
 		if (!hash.includes("access_token="))
 		{
@@ -319,9 +320,12 @@ export class AuthService
 		}
 
 		// Parse token from fragment: #access_token=xxx&expires_at=xxx
-		const params: URLSearchParams = new URLSearchParams(hash.substring(1));
-		const token: string | null = params.get("access_token");
-		const expiresAt: string | null = params.get("expires_at");
+		const params: URLSearchParams =
+			new URLSearchParams(hash.substring(1));
+		const token: string | null =
+			params.get("access_token");
+		const expiresAt: string | null =
+			params.get("expires_at");
 
 		if (token && expiresAt)
 		{
@@ -331,8 +335,7 @@ export class AuthService
 			window.history.replaceState(
 				null,
 				"",
-				window.location.pathname + window.location.search
-			);
+				window.location.pathname + window.location.search);
 
 			// Navigate to stored return URL
 			const returnUrl: string =
@@ -350,21 +353,26 @@ export class AuthService
 	private setAccessToken(token: string, expiresAt: string): void
 	{
 		this.accessToken = token;
-		this.tokenExpiresAt = new Date(expiresAt).getTime();
+		this.tokenExpiresAt =
+			new Date(expiresAt)
+			.getTime();
 
-		const claims: JwtClaims | null = this.parseJwt(token);
+		const claims: JwtClaims | null =
+			this.parseJwt(token);
 
 		if (claims)
 		{
 			// Handle role claim - .NET uses full ClaimTypes URI, can be string or array
-			const roleClaim: string | string[] | undefined = claims[
+			const roleClaim: string | string[] | undefined =
+				claims[
 				DOTNET_ROLE_CLAIM
 			] as string | string[] | undefined;
-			const roles: string[] = Array.isArray(roleClaim)
-				? roleClaim
-				: roleClaim
-					? [roleClaim]
-					: [];
+			const roles: string[] =
+				Array.isArray(roleClaim)
+					? roleClaim
+					: roleClaim
+						? [roleClaim]
+						: [];
 
 			// Note: Full profile data is available via
 			// AccountService.getProfile() which calls /auth/me.
@@ -408,27 +416,32 @@ export class AuthService
 	{
 		try
 		{
-			const parts: string[] = token.split(".");
+			const parts: string[] =
+				token.split(".");
 
 			if (parts.length !== 3)
 			{
 				return null;
 			}
 
-			const base64Url: string = parts[1];
-			const base64: string = base64Url
+			const base64Url: string =
+				parts[1];
+			const base64: string =
+				base64Url
 				.replace(/-/g, "+")
 				.replace(/_/g, "/");
-			const json: string = decodeURIComponent(
+			const json: string =
+				decodeURIComponent(
 				atob(base64)
 					.split("")
 					.map(
 						(c: string) =>
 							"%"
-							+ ("00" + c.charCodeAt(0).toString(16)).slice(-2)
-					)
-					.join("")
-			);
+								+ ("00" + c
+								.charCodeAt(0)
+								.toString(16))
+								.slice(-2))
+					.join(""));
 
 			return JSON.parse(json);
 		}

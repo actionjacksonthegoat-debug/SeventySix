@@ -1,15 +1,17 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { PageHeaderComponent } from "./page-header";
 
 describe("PageHeaderComponent", () =>
 {
 	beforeEach(async () =>
 	{
-		await TestBed.configureTestingModule({
-			imports: [PageHeaderComponent],
-			providers: [provideZonelessChangeDetection()]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [PageHeaderComponent],
+				providers: [provideZonelessChangeDetection()]
+			})
+			.compileComponents();
 	});
 
 	it("should display title", async () =>
@@ -20,7 +22,8 @@ describe("PageHeaderComponent", () =>
 		await fixture.whenStable();
 		fixture.detectChanges();
 
-		expect(fixture.nativeElement.textContent).toContain("Test Title");
+		expect(fixture.nativeElement.textContent)
+			.toContain("Test Title");
 	});
 
 	it("should display icon when provided", async () =>
@@ -34,6 +37,7 @@ describe("PageHeaderComponent", () =>
 
 		const icon: HTMLElement | null =
 			fixture.nativeElement.querySelector("mat-icon");
-		expect(icon).toBeTruthy();
+		expect(icon)
+			.toBeTruthy();
 	});
 });

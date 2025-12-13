@@ -1,7 +1,7 @@
 import { TestBed } from "@angular/core/testing";
-import { DomSanitizer } from "@angular/platform-browser";
-import { SanitizationService } from "./sanitization.service";
+import { DomSanitizer, SafeHtml, SafeUrl } from "@angular/platform-browser";
 import { setupSimpleServiceTest } from "@testing";
+import { SanitizationService } from "./sanitization.service";
 
 describe("SanitizationService", () =>
 {
@@ -10,43 +10,49 @@ describe("SanitizationService", () =>
 
 	beforeEach(() =>
 	{
-		const sanitizerSpy = jasmine.createSpyObj("DomSanitizer", [
+		const sanitizerSpy: jasmine.SpyObj<DomSanitizer> =
+			jasmine.createSpyObj("DomSanitizer", [
 			"sanitize",
 			"bypassSecurityTrustHtml",
 			"bypassSecurityTrustUrl"
 		]);
 
-		service = setupSimpleServiceTest(SanitizationService, [
+		service =
+			setupSimpleServiceTest(SanitizationService, [
 			{ provide: DomSanitizer, useValue: sanitizerSpy }
 		]);
 
-		sanitizer = TestBed.inject(
-			DomSanitizer
-		) as jasmine.SpyObj<DomSanitizer>;
+		sanitizer =
+			TestBed.inject(
+			DomSanitizer) as jasmine.SpyObj<DomSanitizer>;
 	});
 
 	describe("sanitizeHtml", () =>
 	{
 		it("should sanitize HTML content", () =>
 		{
-			const html = '<script>alert("xss")</script><p>Safe content</p>';
+			const html: string = "<script>alert(\"xss\")</script><p>Safe content</p>";
 			sanitizer.sanitize.and.returnValue("Safe content");
 
-			const result = service.sanitizeHtml(html);
+			const result: SafeHtml =
+				service.sanitizeHtml(html);
 
-			expect(sanitizer.sanitize).toHaveBeenCalledWith(1, html);
-			expect(result).toBe("Safe content");
+			expect(sanitizer.sanitize)
+				.toHaveBeenCalledWith(1, html);
+			expect(result)
+				.toBe("Safe content");
 		});
 
 		it("should return empty string if sanitization returns null", () =>
 		{
 			sanitizer.sanitize.and.returnValue(null);
 
-			const result = service.sanitizeHtml(
-				'<script>alert("xss")</script>'
-			);
+			const result: SafeHtml =
+				service.sanitizeHtml(
+				"<script>alert(\"xss\")</script>");
 
-			expect(result).toBe("");
+			expect(result)
+				.toBe("");
 		});
 	});
 
@@ -54,23 +60,28 @@ describe("SanitizationService", () =>
 	{
 		it("should sanitize URL", () =>
 		{
-			const url = 'javascript:alert("xss")';
+			const url: string = "javascript:alert(\"xss\")";
 			sanitizer.sanitize.and.returnValue("");
 
-			const result = service.sanitizeUrl(url);
+			const result: SafeUrl =
+				service.sanitizeUrl(url);
 
-			expect(sanitizer.sanitize).toHaveBeenCalledWith(4, url);
-			expect(result).toBe("");
+			expect(sanitizer.sanitize)
+				.toHaveBeenCalledWith(4, url);
+			expect(result)
+				.toBe("");
 		});
 
 		it("should allow safe URLs", () =>
 		{
-			const url = "https://example.com";
+			const url: string = "https://example.com";
 			sanitizer.sanitize.and.returnValue(url);
 
-			const result = service.sanitizeUrl(url);
+			const result: SafeUrl =
+				service.sanitizeUrl(url);
 
-			expect(result).toBe(url);
+			expect(result)
+				.toBe(url);
 		});
 	});
 
@@ -78,12 +89,13 @@ describe("SanitizationService", () =>
 	{
 		it("should sanitize resource URL", () =>
 		{
-			const url = "https://example.com/iframe";
+			const url: string = "https://example.com/iframe";
 			sanitizer.sanitize.and.returnValue(url);
 
-			const result = service.sanitizeResourceUrl(url);
+			service.sanitizeResourceUrl(url);
 
-			expect(sanitizer.sanitize).toHaveBeenCalledWith(5, url);
+			expect(sanitizer.sanitize)
+				.toHaveBeenCalledWith(5, url);
 		});
 	});
 
@@ -91,16 +103,20 @@ describe("SanitizationService", () =>
 	{
 		it("should bypass security for trusted HTML", () =>
 		{
-			const html = "<p>Trusted content</p>";
-			const trustedHtml = {} as any;
+			const html: string = "<p>Trusted content</p>";
+			const trustedHtml: ReturnType<typeof sanitizer.bypassSecurityTrustHtml> =
+				{} as ReturnType<
+				typeof sanitizer.bypassSecurityTrustHtml>;
 			sanitizer.bypassSecurityTrustHtml.and.returnValue(trustedHtml);
 
-			const result = service.trustHtml(html);
+			const result: ReturnType<typeof service.trustHtml> =
+				service.trustHtml(html);
 
-			expect(sanitizer.bypassSecurityTrustHtml).toHaveBeenCalledWith(
-				html
-			);
-			expect(result).toBe(trustedHtml);
+			expect(sanitizer.bypassSecurityTrustHtml)
+				.toHaveBeenCalledWith(
+					html);
+			expect(result)
+				.toBe(trustedHtml);
 		});
 	});
 
@@ -108,14 +124,19 @@ describe("SanitizationService", () =>
 	{
 		it("should bypass security for trusted URL", () =>
 		{
-			const url = "https://trusted.com";
-			const trustedUrl = {} as any;
+			const url: string = "https://trusted.com";
+			const trustedUrl: ReturnType<typeof sanitizer.bypassSecurityTrustUrl> =
+				{} as ReturnType<
+				typeof sanitizer.bypassSecurityTrustUrl>;
 			sanitizer.bypassSecurityTrustUrl.and.returnValue(trustedUrl);
 
-			const result = service.trustUrl(url);
+			const result: ReturnType<typeof service.trustUrl> =
+				service.trustUrl(url);
 
-			expect(sanitizer.bypassSecurityTrustUrl).toHaveBeenCalledWith(url);
-			expect(result).toBe(trustedUrl);
+			expect(sanitizer.bypassSecurityTrustUrl)
+				.toHaveBeenCalledWith(url);
+			expect(result)
+				.toBe(trustedUrl);
 		});
 	});
 
@@ -123,31 +144,37 @@ describe("SanitizationService", () =>
 	{
 		it("should remove all HTML tags", () =>
 		{
-			const html = "<p>Hello <strong>World</strong></p>";
+			const html: string = "<p>Hello <strong>World</strong></p>";
 
-			const result = service.stripHtml(html);
+			const result: string =
+				service.stripHtml(html);
 
-			expect(result).toBe("Hello World");
+			expect(result)
+				.toBe("Hello World");
 		});
 
 		it("should handle script tags", () =>
 		{
-			const html = '<script>alert("xss")</script>Text';
+			const html: string = "<script>alert(\"xss\")</script>Text";
 
-			const result = service.stripHtml(html);
+			const result: string =
+				service.stripHtml(html);
 
 			// Note: Script tags may or may not execute during parsing
 			// We just verify that tags are removed, content may vary
-			expect(result).toContain("Text");
+			expect(result)
+				.toContain("Text");
 			expect(result).not.toContain("<script>");
 			expect(result).not.toContain("</script>");
 		});
 
 		it("should return empty string for empty input", () =>
 		{
-			const result = service.stripHtml("");
+			const result: string =
+				service.stripHtml("");
 
-			expect(result).toBe("");
+			expect(result)
+				.toBe("");
 		});
 	});
 
@@ -155,40 +182,47 @@ describe("SanitizationService", () =>
 	{
 		it("should escape HTML special characters", () =>
 		{
-			const text = '<script>alert("xss")</script>';
+			const text: string = "<script>alert(\"xss\")</script>";
 
-			const result = service.escapeHtml(text);
+			const result: string =
+				service.escapeHtml(text);
 
-			expect(result).toBe(
-				"&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;"
-			);
+			expect(result)
+				.toBe(
+					"&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;");
 		});
 
 		it("should escape ampersands", () =>
 		{
-			const text = "Rock & Roll";
+			const text: string = "Rock & Roll";
 
-			const result = service.escapeHtml(text);
+			const result: string =
+				service.escapeHtml(text);
 
-			expect(result).toBe("Rock &amp; Roll");
+			expect(result)
+				.toBe("Rock &amp; Roll");
 		});
 
 		it("should escape single quotes", () =>
 		{
-			const text = "It's working";
+			const text: string = "It's working";
 
-			const result = service.escapeHtml(text);
+			const result: string =
+				service.escapeHtml(text);
 
-			expect(result).toBe("It&#039;s working");
+			expect(result)
+				.toBe("It&#039;s working");
 		});
 
 		it("should return original text if no special characters", () =>
 		{
-			const text = "Hello World";
+			const text: string = "Hello World";
 
-			const result = service.escapeHtml(text);
+			const result: string =
+				service.escapeHtml(text);
 
-			expect(result).toBe("Hello World");
+			expect(result)
+				.toBe("Hello World");
 		});
 	});
 
@@ -196,63 +230,77 @@ describe("SanitizationService", () =>
 	{
 		it("should validate and return valid HTTP URL", () =>
 		{
-			const url = "http://example.com";
+			const url: string = "http://example.com";
 
-			const result = service.validateUrl(url);
+			const result: string | null =
+				service.validateUrl(url);
 
-			expect(result).toBe("http://example.com/");
+			expect(result)
+				.toBe("http://example.com/");
 		});
 
 		it("should validate and return valid HTTPS URL", () =>
 		{
-			const url = "https://example.com/path?query=value";
+			const url: string = "https://example.com/path?query=value";
 
-			const result = service.validateUrl(url);
+			const result: string | null =
+				service.validateUrl(url);
 
-			expect(result).toBe(url);
+			expect(result)
+				.toBe(url);
 		});
 
 		it("should reject javascript: protocol", () =>
 		{
-			const url = 'javascript:alert("xss")';
+			const url: string = "javascript:alert(\"xss\")";
 
-			const result = service.validateUrl(url);
+			const result: string | null =
+				service.validateUrl(url);
 
-			expect(result).toBeNull();
+			expect(result)
+				.toBeNull();
 		});
 
 		it("should reject data: protocol", () =>
 		{
-			const url = 'data:text/html,<script>alert("xss")</script>';
+			const url: string = "data:text/html,<script>alert(\"xss\")</script>";
 
-			const result = service.validateUrl(url);
+			const result: string | null =
+				service.validateUrl(url);
 
-			expect(result).toBeNull();
+			expect(result)
+				.toBeNull();
 		});
 
 		it("should reject file: protocol", () =>
 		{
-			const url = "file:///etc/passwd";
+			const url: string = "file:///etc/passwd";
 
-			const result = service.validateUrl(url);
+			const result: string | null =
+				service.validateUrl(url);
 
-			expect(result).toBeNull();
+			expect(result)
+				.toBeNull();
 		});
 
 		it("should return null for invalid URLs", () =>
 		{
-			const url = "not-a-valid-url";
+			const url: string = "not-a-valid-url";
 
-			const result = service.validateUrl(url);
+			const result: string | null =
+				service.validateUrl(url);
 
-			expect(result).toBeNull();
+			expect(result)
+				.toBeNull();
 		});
 
 		it("should return null for empty string", () =>
 		{
-			const result = service.validateUrl("");
+			const result: string | null =
+				service.validateUrl("");
 
-			expect(result).toBeNull();
+			expect(result)
+				.toBeNull();
 		});
 	});
 });

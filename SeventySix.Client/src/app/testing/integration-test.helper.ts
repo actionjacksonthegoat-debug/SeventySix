@@ -26,8 +26,7 @@ import { environment } from "@environments/environment";
  */
 export function describeIntegration(
 	description: string,
-	specDefinitions: () => void
-): void
+	specDefinitions: () => void): void
 {
 	if (environment.testing.runIntegrationTests)
 	{
@@ -50,8 +49,7 @@ export function describeIntegration(
 export function itIntegration(
 	expectation: string,
 	assertion?: jasmine.ImplementationCallback,
-	timeout?: number
-): void
+	timeout?: number): void
 {
 	if (environment.testing.runIntegrationTests)
 	{
@@ -72,8 +70,7 @@ export function itIntegration(
  */
 export function fdescribeIntegration(
 	description: string,
-	specDefinitions: () => void
-): void
+	specDefinitions: () => void): void
 {
 	if (environment.testing.runIntegrationTests)
 	{
@@ -95,8 +92,7 @@ export function fdescribeIntegration(
 export function fitIntegration(
 	expectation: string,
 	assertion?: jasmine.ImplementationCallback,
-	timeout?: number
-): void
+	timeout?: number): void
 {
 	if (environment.testing.runIntegrationTests)
 	{

@@ -1,23 +1,23 @@
+import { UserDto } from "@admin/users/models";
+import { UserService } from "@admin/users/services";
+import { DatePipe } from "@angular/common";
 import {
-	Component,
-	inject,
-	computed,
 	ChangeDetectionStrategy,
+	Component,
+	computed,
+	inject,
 	Signal
 } from "@angular/core";
-import { DatePipe } from "@angular/common";
 import { Router } from "@angular/router";
-import { UserService } from "@admin/users/services";
 import { DialogService } from "@infrastructure/services/dialog.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
-import { UserDto } from "@admin/users/models";
 import { DataTableComponent } from "@shared/components";
 import type {
-	TableColumn,
 	QuickFilter,
 	RowAction,
 	RowActionEvent,
-	SortChangeEvent
+	SortChangeEvent,
+	TableColumn
 } from "@shared/models";
 
 /**
@@ -36,10 +36,14 @@ import type {
 })
 export class UserList
 {
-	private readonly userService: UserService = inject(UserService);
-	private readonly datePipe: DatePipe = inject(DatePipe);
-	private readonly router: Router = inject(Router);
-	private readonly dialogService: DialogService = inject(DialogService);
+	private readonly userService: UserService =
+		inject(UserService);
+	private readonly datePipe: DatePipe =
+		inject(DatePipe);
+	private readonly router: Router =
+		inject(Router);
+	private readonly dialogService: DialogService =
+		inject(DialogService);
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
 
@@ -50,67 +54,73 @@ export class UserList
 	private readonly updateUserMutation: ReturnType<UserService["updateUser"]> =
 		this.userService.updateUser();
 	private readonly resetPasswordMutation: ReturnType<
-		UserService["resetPassword"]
-	> = this.userService.resetPassword();
+		UserService["resetPassword"]> =
+		this.userService.resetPassword();
 	private readonly restoreUserMutation: ReturnType<
-		UserService["restoreUser"]
-	> = this.userService.restoreUser();
+		UserService["restoreUser"]> =
+		this.userService.restoreUser();
 
-	readonly data: Signal<UserDto[]> = computed(
-		() => (this.usersQuery.data()?.items as UserDto[]) ?? []
-	);
-	readonly isLoading: Signal<boolean> = computed(() =>
-		this.usersQuery.isLoading());
-	readonly error: Signal<string | null> = computed(() =>
-		this.usersQuery.error()
-			? "Failed to load users. Please try again."
-			: null);
-	readonly totalCount: Signal<number> = computed(
-		() => this.usersQuery.data()?.totalCount ?? 0
-	);
-	readonly pageIndex: Signal<number> = computed(
-		() => (this.userService.getCurrentFilter().page ?? 1) - 1
-	);
-	readonly pageSize: Signal<number> = computed(
-		() => this.userService.getCurrentFilter().pageSize ?? 50
-	);
+	readonly data: Signal<UserDto[]> =
+		computed(
+		() =>
+			(this.usersQuery.data()?.items as UserDto[]) ?? []);
+	readonly isLoading: Signal<boolean> =
+		computed(() => this.usersQuery.isLoading());
+	readonly error: Signal<string | null> =
+		computed(() =>
+			this.usersQuery.error()
+				? "Failed to load users. Please try again."
+				: null);
+	readonly totalCount: Signal<number> =
+		computed(
+		() =>
+			this.usersQuery.data()?.totalCount ?? 0);
+	readonly pageIndex: Signal<number> =
+		computed(
+		() =>
+			(this.userService.getCurrentFilter().page ?? 1) - 1);
+	readonly pageSize: Signal<number> =
+		computed(
+		() =>
+			this.userService.getCurrentFilter().pageSize ?? 50);
 
-	readonly columns: TableColumn<UserDto>[] = [
-		{
-			key: "id",
-			label: "ID",
-			type: "text",
-			sortable: true,
-			visible: false
-		},
-		{
-			key: "username",
-			label: "Username",
-			type: "text",
-			sortable: true,
-			visible: false
-		},
-		{
-			key: "email",
-			label: "Email",
-			type: "text",
-			sortable: true,
-			visible: false
-		},
-		{
-			key: "fullName",
-			label: "Full Name",
-			type: "text",
-			sortable: true,
-			visible: true
-		},
-		{
-			key: "isActive",
-			label: "Status",
-			type: "badge",
-			sortable: true,
-			visible: true,
-			formatter: (value: unknown, row?: UserDto): string =>
+	readonly columns: TableColumn<UserDto>[] =
+		[
+			{
+				key: "id",
+				label: "ID",
+				type: "text",
+				sortable: true,
+				visible: false
+			},
+			{
+				key: "username",
+				label: "Username",
+				type: "text",
+				sortable: true,
+				visible: false
+			},
+			{
+				key: "email",
+				label: "Email",
+				type: "text",
+				sortable: true,
+				visible: false
+			},
+			{
+				key: "fullName",
+				label: "Full Name",
+				type: "text",
+				sortable: true,
+				visible: true
+			},
+			{
+				key: "isActive",
+				label: "Status",
+				type: "badge",
+				sortable: true,
+				visible: true,
+				formatter: (value: unknown, row?: UserDto): string =>
 			{
 				if (row?.isDeleted)
 				{
@@ -118,10 +128,9 @@ export class UserList
 				}
 				return value === true ? "Active" : "Inactive";
 			},
-			badgeColor: (
+				badgeColor: (
 				value: unknown,
-				row?: UserDto
-			): "primary" | "accent" | "warn" =>
+				row?: UserDto): "primary" | "accent" | "warn" =>
 			{
 				if (row?.isDeleted)
 				{
@@ -129,86 +138,92 @@ export class UserList
 				}
 				return value === true ? "primary" : "accent";
 			}
-		},
-		{
-			key: "createDate",
-			label: "Created",
-			type: "date",
-			sortable: true,
-			visible: true,
-			formatter: (value: unknown): string =>
-				this.datePipe.transform(value as string, "short") ?? ""
-		},
-		{
-			key: "lastLoginAt",
-			label: "Last Login",
-			type: "date",
-			sortable: true,
-			visible: true,
-			formatter: (value: unknown): string =>
-				value
-					? (this.datePipe.transform(value as string, "short") ?? "")
-					: "Never"
-		}
-	];
+			},
+			{
+				key: "createDate",
+				label: "Created",
+				type: "date",
+				sortable: true,
+				visible: true,
+				formatter: (value: unknown): string =>
+					this.datePipe.transform(value as string, "short") ?? ""
+			},
+			{
+				key: "lastLoginAt",
+				label: "Last Login",
+				type: "date",
+				sortable: true,
+				visible: true,
+				formatter: (value: unknown): string =>
+					value
+						? (this.datePipe.transform(value as string, "short") ?? "")
+						: "Never"
+			}
+		];
 
-	readonly quickFilters: QuickFilter<UserDto>[] = [
-		{
-			key: "all",
-			label: "All Users",
-			icon: "people"
-		},
-		{
-			key: "active",
-			label: "Active",
-			icon: "check_circle"
-		},
-		{
-			key: "inactive",
-			label: "Inactive",
-			icon: "cancel"
-		},
-		{
-			key: "deleted",
-			label: "Show Deleted",
-			icon: "delete"
-		}
-	];
+	readonly quickFilters: QuickFilter<UserDto>[] =
+		[
+			{
+				key: "all",
+				label: "All Users",
+				icon: "people"
+			},
+			{
+				key: "active",
+				label: "Active",
+				icon: "check_circle"
+			},
+			{
+				key: "inactive",
+				label: "Inactive",
+				icon: "cancel"
+			},
+			{
+				key: "deleted",
+				label: "Show Deleted",
+				icon: "delete"
+			}
+		];
 
-	readonly rowActions: RowAction<UserDto>[] = [
-		{
-			key: "view",
-			label: "View Details",
-			icon: "visibility"
-		},
-		{
-			key: "edit",
-			label: "Edit",
-			icon: "edit",
-			showIf: (user: UserDto): boolean => !user.isDeleted
-		},
-		{
-			key: "resetPassword",
-			label: "Reset Password",
-			icon: "lock_reset",
-			color: "accent",
-			showIf: (user: UserDto): boolean => !user.isDeleted
-		},
-		{
-			key: "restore",
-			label: "Restore",
-			icon: "restore",
-			color: "primary",
-			showIf: (user: UserDto): boolean => user.isDeleted === true
-		},
-		{
-			key: "deactivate",
-			label: "Deactivate",
-			icon: "person_off",
-			color: "warn",
-			showIf: (user: UserDto): boolean => !user.isDeleted
-		}
-	];
+	readonly rowActions: RowAction<UserDto>[] =
+		[
+			{
+				key: "view",
+				label: "View Details",
+				icon: "visibility"
+			},
+			{
+				key: "edit",
+				label: "Edit",
+				icon: "edit",
+				showIf: (user: UserDto): boolean =>
+					!user.isDeleted
+			},
+			{
+				key: "resetPassword",
+				label: "Reset Password",
+				icon: "lock_reset",
+				color: "accent",
+				showIf: (user: UserDto): boolean =>
+					!user.isDeleted
+			},
+			{
+				key: "restore",
+				label: "Restore",
+				icon: "restore",
+				color: "primary",
+				showIf: (user: UserDto): boolean =>
+					user.isDeleted === true
+			},
+			{
+				key: "deactivate",
+				label: "Deactivate",
+				icon: "person_off",
+				color: "warn",
+				showIf: (user: UserDto): boolean =>
+					!user.isDeleted
+			}
+		];
 
 	onSearch(searchTerm: string): void
 	{
@@ -220,9 +235,10 @@ export class UserList
 		void this.userService.forceRefresh();
 	}
 
-	onFilterChange(event: { filterKey: string }): void
+	onFilterChange(event: { filterKey: string; }): void
 	{
-		const filterKey: string = event.filterKey;
+		const filterKey: string =
+			event.filterKey;
 		let isActive: boolean | undefined = undefined;
 		let includeDeleted: boolean | undefined = undefined;
 
@@ -245,7 +261,7 @@ export class UserList
 				break;
 			case "deleted":
 				// Toggle showing deleted users
-				const currentFilter: { includeDeleted?: boolean } =
+				const currentFilter: { includeDeleted?: boolean; } =
 					this.userService.getCurrentFilter();
 				const currentValue: boolean =
 					currentFilter.includeDeleted ?? false;
@@ -337,10 +353,12 @@ export class UserList
 	 */
 	private resetUserPassword(user: UserDto): void
 	{
-		this.dialogService
+		this
+			.dialogService
 			.confirm({
 				title: "Reset Password",
-				message: `Are you sure you want to reset the password for "${user.username}"? They will receive an email with instructions to set a new password.`,
+				message:
+					`Are you sure you want to reset the password for "${user.username}"? They will receive an email with instructions to set a new password.`,
 				confirmText: "Reset Password"
 			})
 			.subscribe((confirmed: boolean) =>
@@ -354,14 +372,12 @@ export class UserList
 					onSuccess: () =>
 					{
 						this.notificationService.success(
-							`Password reset email sent to ${user.email}`
-						);
+							`Password reset email sent to ${user.email}`);
 					},
 					onError: (error: Error) =>
 					{
 						this.notificationService.error(
-							`Failed to reset password: ${error.message}`
-						);
+							`Failed to reset password: ${error.message}`);
 					}
 				});
 			});
@@ -373,7 +389,8 @@ export class UserList
 	 */
 	private deactivateUser(user: UserDto): void
 	{
-		this.dialogService
+		this
+			.dialogService
 			.confirmDeactivate("user")
 			.subscribe((confirmed: boolean) =>
 			{
@@ -397,17 +414,14 @@ export class UserList
 						onSuccess: () =>
 						{
 							this.notificationService.success(
-								`User "${user.username}" deactivated successfully`
-							);
+								`User "${user.username}" deactivated successfully`);
 						},
 						onError: (error: Error) =>
 						{
 							this.notificationService.error(
-								`Failed to deactivate user: ${error.message}`
-							);
+								`Failed to deactivate user: ${error.message}`);
 						}
-					}
-				);
+					});
 			});
 	}
 
@@ -417,7 +431,8 @@ export class UserList
 	 */
 	private handleRestoreUser(user: UserDto): void
 	{
-		this.dialogService
+		this
+			.dialogService
 			.confirm({
 				title: "Restore User",
 				message: `Are you sure you want to restore user "${user.username}"?`,
@@ -435,14 +450,12 @@ export class UserList
 					onSuccess: () =>
 					{
 						this.notificationService.success(
-							`User "${user.username}" restored successfully`
-						);
+							`User "${user.username}" restored successfully`);
 					},
 					onError: (error: Error) =>
 					{
 						this.notificationService.error(
-							`Failed to restore user: ${error.message}`
-						);
+							`Failed to restore user: ${error.message}`);
 					}
 				});
 			});

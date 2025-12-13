@@ -15,7 +15,8 @@ export function dateRangeValidator(min?: Date, max?: Date): ValidatorFn
 			return null;
 		}
 
-		const value: Date = new Date(control.value);
+		const value: Date =
+			new Date(control.value);
 
 		if (min && value < min)
 		{
@@ -53,7 +54,8 @@ export function stringLengthValidator(min?: number, max?: number): ValidatorFn
 			return null;
 		}
 
-		const length: number = String(control.value).length;
+		const length: number =
+			String(control.value).length;
 
 		if (min !== undefined && length < min)
 		{
@@ -82,8 +84,10 @@ export function futureDateValidator(dateService: DateService): ValidatorFn
 			return null;
 		}
 
-		const value: Date = new Date(control.value);
-		const today: Date = dateService.parseUTC(dateService.now());
+		const value: Date =
+			new Date(control.value);
+		const today: Date =
+			dateService.parseUTC(dateService.now());
 		today.setHours(0, 0, 0, 0);
 
 		if (value < today)

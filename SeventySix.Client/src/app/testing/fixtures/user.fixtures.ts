@@ -16,43 +16,45 @@ export class UserFixtures
 	 * Standard test user - John Doe
 	 * Active user with admin privileges
 	 */
-	static readonly JOHN_DOE: UserDto = {
-		id: 1,
-		username: "john_doe",
-		email: "john@example.com",
-		fullName: "John Doe",
-		createDate: "2024-01-01T00:00:00Z",
-		isActive: true,
-		needsPendingEmail: false,
-		createdBy: "admin",
-		modifyDate: "2024-01-02T00:00:00Z",
-		modifiedBy: "admin",
-		lastLoginAt: "2024-01-03T00:00:00Z",
-		isDeleted: false,
-		deletedAt: null,
-		deletedBy: null
-	};
+	static readonly JOHN_DOE: UserDto =
+		{
+			id: 1,
+			username: "john_doe",
+			email: "john@example.com",
+			fullName: "John Doe",
+			createDate: "2024-01-01T00:00:00Z",
+			isActive: true,
+			needsPendingEmail: false,
+			createdBy: "admin",
+			modifyDate: "2024-01-02T00:00:00Z",
+			modifiedBy: "admin",
+			lastLoginAt: "2024-01-03T00:00:00Z",
+			isDeleted: false,
+			deletedAt: null,
+			deletedBy: null
+		};
 
 	/**
 	 * Standard test user - Jane Smith
 	 * Inactive user for testing filter states
 	 */
-	static readonly JANE_SMITH: UserDto = {
-		id: 2,
-		username: "jane_smith",
-		email: "jane@example.com",
-		fullName: "Jane Smith",
-		createDate: "2024-01-02T00:00:00Z",
-		isActive: false,
-		needsPendingEmail: false,
-		createdBy: "system",
-		modifyDate: "2024-01-03T00:00:00Z",
-		modifiedBy: "system",
-		lastLoginAt: "2024-01-04T00:00:00Z",
-		isDeleted: false,
-		deletedAt: null,
-		deletedBy: null
-	};
+	static readonly JANE_SMITH: UserDto =
+		{
+			id: 2,
+			username: "jane_smith",
+			email: "jane@example.com",
+			fullName: "Jane Smith",
+			createDate: "2024-01-02T00:00:00Z",
+			isActive: false,
+			needsPendingEmail: false,
+			createdBy: "system",
+			modifyDate: "2024-01-03T00:00:00Z",
+			modifiedBy: "system",
+			lastLoginAt: "2024-01-04T00:00:00Z",
+			isDeleted: false,
+			deletedAt: null,
+			deletedBy: null
+		};
 
 	/**
 	 * Create a custom user with optional overrides

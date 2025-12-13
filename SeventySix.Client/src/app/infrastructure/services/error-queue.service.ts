@@ -1,11 +1,11 @@
-import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, of, interval } from "rxjs";
+import { inject, Injectable } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { StorageService } from "./storage.service";
-import { DateService } from "./date.service";
-import { CreateLogRequest } from "@infrastructure/api";
 import { environment } from "@environments/environment";
+import { CreateLogRequest } from "@infrastructure/api";
+import { catchError, interval, of } from "rxjs";
+import { DateService } from "./date.service";
+import { StorageService } from "./storage.service";
 
 /**
  * Circuit breaker states.
@@ -22,16 +22,22 @@ type CircuitState = "closed" | "open";
 })
 export class ErrorQueueService
 {
-	private readonly storage: StorageService = inject(StorageService);
-	private readonly http: HttpClient = inject(HttpClient);
-	private readonly dateService: DateService = inject(DateService);
-	private readonly logEndpoint: string = `${environment.apiUrl}/logs/client/batch`;
+	private readonly storage: StorageService =
+		inject(StorageService);
+	private readonly http: HttpClient =
+		inject(HttpClient);
+	private readonly dateService: DateService =
+		inject(DateService);
+	private readonly logEndpoint: string =
+		`${environment.apiUrl}/logs/client/batch`;
 	private readonly localStorageKey: string = "error-queue";
 
 	// Queue management
 	private queue: CreateLogRequest[] = [];
-	private readonly batchSize: number = environment.logging.batchSize;
-	private readonly batchInterval: number = environment.logging.batchInterval;
+	private readonly batchSize: number =
+		environment.logging.batchSize;
+	private readonly batchInterval: number =
+		environment.logging.batchInterval;
 
 	// Circuit breaker
 	private circuitBreakerState: CircuitState = "closed";
@@ -43,7 +49,8 @@ export class ErrorQueueService
 	private circuitBreakerOpenTime: number = 0;
 
 	// Error deduplication
-	private recentErrors: Map<string, number> = new Map<string, number>(); // signature -> timestamp
+	private recentErrors: Map<string, number> =
+		new Map<string, number>(); // signature -> timestamp
 	private readonly dedupeWindowMs: number = 5000; // 5 seconds
 
 	constructor()
@@ -101,10 +108,12 @@ export class ErrorQueueService
 		}
 
 		// Get batch (already in server format)
-		const batch: CreateLogRequest[] = this.queue.slice(0, this.batchSize);
+		const batch: CreateLogRequest[] =
+			this.queue.slice(0, this.batchSize);
 
 		// Send to server
-		this.http
+		this
+			.http
 			.post(this.logEndpoint, batch, { observe: "response" })
 			.pipe(
 				catchError((err) =>
@@ -112,8 +121,7 @@ export class ErrorQueueService
 					// Handle failure
 					this.handleBatchFailure(err);
 					return of(null);
-				})
-			)
+				}))
 			.subscribe((response) =>
 			{
 				// Success if we got any response (including 204 No Content)
@@ -148,10 +156,10 @@ export class ErrorQueueService
 	private openCircuitBreaker(): void
 	{
 		this.circuitBreakerState = "open";
-		this.circuitBreakerOpenTime = this.dateService.nowTimestamp();
+		this.circuitBreakerOpenTime =
+			this.dateService.nowTimestamp();
 		console.error(
-			"Circuit breaker opened. Pausing error logging for 30 seconds."
-		);
+			"Circuit breaker opened. Pausing error logging for 30 seconds.");
 	}
 
 	/**
@@ -191,9 +199,9 @@ export class ErrorQueueService
 	 */
 	private loadQueueFromStorage(): void
 	{
-		const stored: CreateLogRequest[] | null = this.storage.getItem<
-			CreateLogRequest[]
-		>(this.localStorageKey);
+		const stored: CreateLogRequest[] | null =
+			this.storage.getItem<
+			CreateLogRequest[]>(this.localStorageKey);
 		if (stored)
 		{
 			this.queue = stored;
@@ -217,15 +225,17 @@ export class ErrorQueueService
 	 */
 	private generateErrorSignature(error: CreateLogRequest): string
 	{
-		const parts: string[] = [
-			error.message,
-			error.exceptionMessage || "",
-			error.statusCode?.toString() || "",
-			error.requestUrl || ""
-		];
+		const parts: string[] =
+			[
+				error.message,
+				error.exceptionMessage || "",
+				error.statusCode?.toString() || "",
+				error.requestUrl || ""
+			];
 
 		// Include first 100 chars of stack trace for uniqueness
-		const stackPreview: string = error.stackTrace?.substring(0, 100) || "";
+		const stackPreview: string =
+			error.stackTrace?.substring(0, 100) || "";
 		return `${parts.join("|")}|${stackPreview}`;
 	}
 
@@ -234,9 +244,12 @@ export class ErrorQueueService
 	 */
 	private isDuplicate(error: CreateLogRequest): boolean
 	{
-		const signature: string = this.generateErrorSignature(error);
-		const now: number = this.dateService.nowTimestamp();
-		const lastSeen: number | undefined = this.recentErrors.get(signature);
+		const signature: string =
+			this.generateErrorSignature(error);
+		const now: number =
+			this.dateService.nowTimestamp();
+		const lastSeen: number | undefined =
+			this.recentErrors.get(signature);
 
 		if (lastSeen && now - lastSeen < this.dedupeWindowMs)
 		{

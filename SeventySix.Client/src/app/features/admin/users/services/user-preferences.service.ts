@@ -4,7 +4,7 @@
  * Follows SRP - Single Responsibility: User preference persistence
  */
 
-import { Injectable, inject } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { StorageService } from "@infrastructure/services";
 
 export interface UserListPreferences
@@ -15,21 +15,22 @@ export interface UserListPreferences
 	chartExpanded: boolean;
 }
 
-const DEFAULT_PREFERENCES: UserListPreferences = {
-	displayedColumns: [
-		"select",
-		"id",
-		"username",
-		"email",
-		"fullName",
-		"isActive",
-		"createDate",
-		"actions"
-	],
-	searchFilter: "",
-	statusFilter: "all",
-	chartExpanded: true
-};
+const DEFAULT_PREFERENCES: UserListPreferences =
+	{
+		displayedColumns: [
+			"select",
+			"id",
+			"username",
+			"email",
+			"fullName",
+			"isActive",
+			"createDate",
+			"actions"
+		],
+		searchFilter: "",
+		statusFilter: "all",
+		chartExpanded: true
+	};
 
 const STORAGE_KEY: string = "user-list-preferences";
 
@@ -39,7 +40,8 @@ const STORAGE_KEY: string = "user-list-preferences";
 @Injectable()
 export class UserPreferencesService
 {
-	private readonly storageService: StorageService = inject(StorageService);
+	private readonly storageService: StorageService =
+		inject(StorageService);
 
 	/**
 	 * Load user preferences from storage
@@ -85,10 +87,10 @@ export class UserPreferencesService
 	 */
 	updatePreference<K extends keyof UserListPreferences>(
 		key: K,
-		value: UserListPreferences[K]
-	): void
+		value: UserListPreferences[K]): void
 	{
-		const current: UserListPreferences = this.loadPreferences();
+		const current: UserListPreferences =
+			this.loadPreferences();
 		current[key] = value;
 		this.savePreferences(current);
 	}

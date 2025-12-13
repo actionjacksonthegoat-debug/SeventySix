@@ -52,8 +52,7 @@
  */
 @mixin elevation-interactive($base-level: base, $hover-level: lg) {
 	@include elevation($base-level);
-	transition: box-shadow vars.$transition-duration-base
-		vars.$transition-easing-standard;
+	transition: box-shadow vars.$transition-duration-base vars.$transition-easing-standard;
 
 	&:hover {
 		@include elevation($hover-level);

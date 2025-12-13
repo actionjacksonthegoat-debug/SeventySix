@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 
@@ -16,6 +16,5 @@ import { MatIconModule } from "@angular/material/icon";
 export class WorldMap
 {
 	readonly title: string = "World Map";
-	readonly description: string =
-		"Interactive game world map and exploration features.";
+	readonly description: string = "Interactive game world map and exploration features.";
 }

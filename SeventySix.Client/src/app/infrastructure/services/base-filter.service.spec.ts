@@ -1,4 +1,5 @@
 import { HttpContext } from "@angular/common/http";
+import { Signal } from "@angular/core";
 import { FORCE_REFRESH } from "@infrastructure/interceptors/cache-bypass.interceptor";
 import { BaseQueryRequest } from "@shared/models";
 import { BaseFilterService } from "./base-filter.service";
@@ -39,24 +40,29 @@ class TestFilterService extends BaseFilterService<BaseQueryRequest>
 describe("BaseFilterService", () =>
 {
 	let service: TestFilterService;
-	const defaultFilter: BaseQueryRequest = {
-		page: 1,
-		pageSize: 50
-	};
+	const defaultFilter: BaseQueryRequest =
+		{
+			page: 1,
+			pageSize: 50
+		};
 
 	beforeEach(() =>
 	{
-		service = new TestFilterService(defaultFilter);
+		service =
+			new TestFilterService(defaultFilter);
 	});
 
 	describe("initialization", () =>
 	{
 		it("should initialize with default filter", () =>
 		{
-			const currentFilter: BaseQueryRequest = service.getCurrentFilter();
+			const currentFilter: BaseQueryRequest =
+				service.getCurrentFilter();
 
-			expect(currentFilter.page).toBe(1);
-			expect(currentFilter.pageSize).toBe(50);
+			expect(currentFilter.page)
+				.toBe(1);
+			expect(currentFilter.pageSize)
+				.toBe(50);
 		});
 	});
 
@@ -64,9 +70,11 @@ describe("BaseFilterService", () =>
 	{
 		it("should return current filter state", () =>
 		{
-			const filter: BaseQueryRequest = service.getCurrentFilter();
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
 
-			expect(filter).toEqual(defaultFilter);
+			expect(filter)
+				.toEqual(defaultFilter);
 		});
 	});
 
@@ -76,8 +84,10 @@ describe("BaseFilterService", () =>
 		{
 			service.updateFilter({ searchTerm: "test" });
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.searchTerm).toBe("test");
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.searchTerm)
+				.toBe("test");
 		});
 
 		it("should reset page to 1 when updating filter", () =>
@@ -85,8 +95,10 @@ describe("BaseFilterService", () =>
 			service.setPage(5);
 			service.updateFilter({ searchTerm: "test" });
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.page).toBe(1);
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.page)
+				.toBe(1);
 		});
 
 		it("should preserve existing filter properties", () =>
@@ -94,21 +106,29 @@ describe("BaseFilterService", () =>
 			service.updateFilter({ searchTerm: "test" });
 			service.updateFilter({ pageSize: 100 });
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.searchTerm).toBe("test");
-			expect(filter.pageSize).toBe(100);
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.searchTerm)
+				.toBe("test");
+			expect(filter.pageSize)
+				.toBe(100);
 		});
 
 		it("should handle date range updates", () =>
 		{
-			const startDate: Date = new Date("2025-01-01");
-			const endDate: Date = new Date("2025-12-31");
+			const startDate: Date =
+				new Date("2025-01-01");
+			const endDate: Date =
+				new Date("2025-12-31");
 
 			service.updateFilter({ startDate, endDate });
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.startDate).toBe(startDate);
-			expect(filter.endDate).toBe(endDate);
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.startDate)
+				.toBe(startDate);
+			expect(filter.endDate)
+				.toBe(endDate);
 		});
 	});
 
@@ -118,8 +138,10 @@ describe("BaseFilterService", () =>
 		{
 			service.setPage(3);
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.page).toBe(3);
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.page)
+				.toBe(3);
 		});
 
 		it("should preserve other filter properties", () =>
@@ -127,10 +149,14 @@ describe("BaseFilterService", () =>
 			service.updateFilter({ searchTerm: "test", pageSize: 100 });
 			service.setPage(2);
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.page).toBe(2);
-			expect(filter.searchTerm).toBe("test");
-			expect(filter.pageSize).toBe(100);
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.page)
+				.toBe(2);
+			expect(filter.searchTerm)
+				.toBe("test");
+			expect(filter.pageSize)
+				.toBe(100);
 		});
 	});
 
@@ -140,8 +166,10 @@ describe("BaseFilterService", () =>
 		{
 			service.setPageSize(100);
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.pageSize).toBe(100);
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.pageSize)
+				.toBe(100);
 		});
 
 		it("should reset page to 1", () =>
@@ -149,9 +177,12 @@ describe("BaseFilterService", () =>
 			service.setPage(5);
 			service.setPageSize(100);
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.page).toBe(1);
-			expect(filter.pageSize).toBe(100);
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.page)
+				.toBe(1);
+			expect(filter.pageSize)
+				.toBe(100);
 		});
 
 		it("should preserve other filter properties", () =>
@@ -159,9 +190,12 @@ describe("BaseFilterService", () =>
 			service.updateFilter({ searchTerm: "test" });
 			service.setPageSize(25);
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.searchTerm).toBe("test");
-			expect(filter.pageSize).toBe(25);
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.searchTerm)
+				.toBe("test");
+			expect(filter.pageSize)
+				.toBe(25);
 		});
 	});
 
@@ -173,10 +207,14 @@ describe("BaseFilterService", () =>
 			service.setPage(5);
 			service.clearFilters();
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter.page).toBe(1);
-			expect(filter.pageSize).toBe(50);
-			expect(filter.searchTerm).toBeUndefined();
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter.page)
+				.toBe(1);
+			expect(filter.pageSize)
+				.toBe(50);
+			expect(filter.searchTerm)
+				.toBeUndefined();
 		});
 	});
 
@@ -184,14 +222,18 @@ describe("BaseFilterService", () =>
 	{
 		it("should update signal when filter changes", () =>
 		{
-			const filterSignal = service.getFilterSignal();
-			const initialValue: BaseQueryRequest = filterSignal();
+			const filterSignal: Signal<BaseQueryRequest> =
+				service.getFilterSignal();
+			const initialValue: BaseQueryRequest =
+				filterSignal();
 
 			service.updateFilter({ searchTerm: "test" });
-			const updatedValue: BaseQueryRequest = filterSignal();
+			const updatedValue: BaseQueryRequest =
+				filterSignal();
 
 			expect(updatedValue).not.toBe(initialValue);
-			expect(updatedValue.searchTerm).toBe("test");
+			expect(updatedValue.searchTerm)
+				.toBe("test");
 		});
 	});
 
@@ -199,21 +241,25 @@ describe("BaseFilterService", () =>
 	{
 		it("should toggle forceRefreshTrigger signal", async () =>
 		{
-			const initialValue: boolean = service["forceRefreshTrigger"]();
+			const initialValue: boolean =
+				service["forceRefreshTrigger"]();
 
 			await service.forceRefresh();
 
-			expect(service["forceRefreshTrigger"]()).toBe(!initialValue);
+			expect(service["forceRefreshTrigger"]())
+				.toBe(!initialValue);
 		});
 
 		it("should toggle back on second call", async () =>
 		{
-			const initialValue: boolean = service["forceRefreshTrigger"]();
+			const initialValue: boolean =
+				service["forceRefreshTrigger"]();
 
 			await service.forceRefresh();
 			await service.forceRefresh();
 
-			expect(service["forceRefreshTrigger"]()).toBe(initialValue);
+			expect(service["forceRefreshTrigger"]())
+				.toBe(initialValue);
 		});
 	});
 
@@ -223,19 +269,24 @@ describe("BaseFilterService", () =>
 		{
 			service["forceRefreshTrigger"].set(false);
 
-			const context: HttpContext | undefined = service.getForceRefreshContext();
+			const context: HttpContext | undefined =
+				service.getForceRefreshContext();
 
-			expect(context).toBeUndefined();
+			expect(context)
+				.toBeUndefined();
 		});
 
 		it("should return HttpContext with FORCE_REFRESH when trigger is true", () =>
 		{
 			service["forceRefreshTrigger"].set(true);
 
-			const context: HttpContext | undefined = service.getForceRefreshContext();
+			const context: HttpContext | undefined =
+				service.getForceRefreshContext();
 
-			expect(context).toBeInstanceOf(HttpContext);
-			expect(context?.get(FORCE_REFRESH)).toBe(true);
+			expect(context)
+				.toBeInstanceOf(HttpContext);
+			expect(context?.get(FORCE_REFRESH))
+				.toBe(true);
 		});
 	});
 
@@ -248,28 +299,37 @@ describe("BaseFilterService", () =>
 
 			service.resetFilter();
 
-			const filter: BaseQueryRequest = service.getCurrentFilter();
-			expect(filter).toEqual(defaultFilter);
-			expect(filter.page).toBe(1);
-			expect(filter.pageSize).toBe(50);
-			expect(filter.searchTerm).toBeUndefined();
+			const filter: BaseQueryRequest =
+				service.getCurrentFilter();
+			expect(filter)
+				.toEqual(defaultFilter);
+			expect(filter.page)
+				.toBe(1);
+			expect(filter.pageSize)
+				.toBe(50);
+			expect(filter.searchTerm)
+				.toBeUndefined();
 		});
 
 		it("should restore initial filter values", () =>
 		{
-			const customInitialFilter: BaseQueryRequest = {
-				page: 2,
-				pageSize: 25,
-				searchTerm: "initial"
-			};
-			const customService: TestFilterService = new TestFilterService(customInitialFilter);
+			const customInitialFilter: BaseQueryRequest =
+				{
+					page: 2,
+					pageSize: 25,
+					searchTerm: "initial"
+				};
+			const customService: TestFilterService =
+				new TestFilterService(customInitialFilter);
 
 			customService.updateFilter({ searchTerm: "changed", pageSize: 100 });
 
 			customService.resetFilter();
 
-			const filter: BaseQueryRequest = customService.getCurrentFilter();
-			expect(filter).toEqual(customInitialFilter);
+			const filter: BaseQueryRequest =
+				customService.getCurrentFilter();
+			expect(filter)
+				.toEqual(customInitialFilter);
 		});
 	});
 });

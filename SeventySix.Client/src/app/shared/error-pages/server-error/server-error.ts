@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
 import { WindowUtilities } from "@shared/utilities";
@@ -17,7 +17,8 @@ import { WindowUtilities } from "@shared/utilities";
 })
 export class ServerErrorPage
 {
-	private readonly windowUtilities: WindowUtilities = inject(WindowUtilities);
+	private readonly windowUtilities: WindowUtilities =
+		inject(WindowUtilities);
 
 	/**
 	 * Reloads the current page

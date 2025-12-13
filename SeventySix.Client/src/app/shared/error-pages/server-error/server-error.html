@@ -1,36 +1,41 @@
-<div class="error-page" role="main">
+<div
+	class="error-page"
+	role="main">
 	<div class="error-container">
-		<mat-card appearance="outlined" class="error-card">
+		<mat-card
+			appearance="outlined"
+			class="error-card">
 			<mat-card-content>
 				<div
 					class="error-content"
 					role="alert"
-					aria-labelledby="error-title"
-				>
-					<mat-icon class="error-icon" color="warn" aria-hidden="true"
-						>warning</mat-icon
-					>
-					<h1 id="error-title" class="mat-headline-4">
+					aria-labelledby="error-title">
+					<mat-icon
+						class="error-icon"
+						color="warn"
+						aria-hidden="true">warning</mat-icon>
+					<h1
+						id="error-title"
+						class="mat-headline-4">
 						500 - Server Error
 					</h1>
 					<p class="mat-body-1">
-						Something went wrong on our end. We're working to fix
-						the issue.
+						Something went wrong on our end. We're working to fix the issue.
 					</p>
 					<p class="mat-body-2 error-detail">
-						Please try again in a few moments. If the problem
-						persists, contact support.
+						Please try again in a few moments. If the problem persists, contact support.
 					</p>
 					<div class="error-actions">
 						<button
 							mat-raised-button
 							color="primary"
-							routerLink="/"
-						>
+							routerLink="/">
 							<mat-icon aria-hidden="true">home</mat-icon>
 							Go to Home
 						</button>
-						<button mat-stroked-button (click)="reloadPage()">
+						<button
+							mat-stroked-button
+							(click)="reloadPage()">
 							<mat-icon aria-hidden="true">refresh</mat-icon>
 							Reload Page
 						</button>

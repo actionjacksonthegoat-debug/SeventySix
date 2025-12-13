@@ -493,10 +493,14 @@ test('test code should not use fakeAsync or tick', async () => {
 			.replace(/\/\*[\s\S]*?\*\//g, ''); // Remove multi-line comments
 
 		// Detect Angular's fakeAsync/tick imports (zoneful testing)
-		// Allow jasmine.clock().tick() (zoneless pattern)
+		// Allow jasmine.clock().tick() (zoneless pattern) - supports multiline chaining
+		const usesJasmineClock =
+			codeOnly.includes('jasmine.clock().tick')
+			|| /jasmine\s*\.\s*clock\s*\(\s*\)\s*\.\s*tick\s*\(/s.test(codeOnly);
+
 		if (
 			codeOnly.includes('fakeAsync')
-			|| (codeOnly.match(/\btick\s*\(/) && !codeOnly.includes('jasmine.clock().tick'))
+			|| (codeOnly.match(/\btick\s*\(/) && !usesJasmineClock)
 		) {
 			violations.push(path.relative(SRC_DIR, file));
 		}

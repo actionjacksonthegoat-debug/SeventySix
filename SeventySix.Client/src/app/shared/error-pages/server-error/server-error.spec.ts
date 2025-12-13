@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
-import { ServerErrorPage } from "./server-error";
 import { WindowUtilities } from "@shared/utilities";
+import { ServerErrorPage } from "./server-error";
 
 describe("ServerErrorPage", () =>
 {
@@ -12,27 +12,33 @@ describe("ServerErrorPage", () =>
 
 	beforeEach(async () =>
 	{
-		mockWindowUtilities = jasmine.createSpyObj("WindowUtilities", [
+		mockWindowUtilities =
+			jasmine.createSpyObj("WindowUtilities", [
 			"reload"
 		]);
 
-		await TestBed.configureTestingModule({
-			imports: [ServerErrorPage],
-			providers: [
-				provideZonelessChangeDetection(),
-				provideRouter([]),
-				{ provide: WindowUtilities, useValue: mockWindowUtilities }
-			]
-		}).compileComponents();
+		await TestBed
+			.configureTestingModule({
+				imports: [ServerErrorPage],
+				providers: [
+					provideZonelessChangeDetection(),
+					provideRouter([]),
+					{ provide: WindowUtilities, useValue: mockWindowUtilities }
+				]
+			})
+			.compileComponents();
 
-		fixture = TestBed.createComponent(ServerErrorPage);
-		component = fixture.componentInstance;
+		fixture =
+			TestBed.createComponent(ServerErrorPage);
+		component =
+			fixture.componentInstance;
 		fixture.detectChanges();
 	});
 
 	it("should create", () =>
 	{
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	it("should reload page", () =>
@@ -41,6 +47,7 @@ describe("ServerErrorPage", () =>
 		component.reloadPage();
 
 		// Assert
-		expect(mockWindowUtilities.reload).toHaveBeenCalled();
+		expect(mockWindowUtilities.reload)
+			.toHaveBeenCalled();
 	});
 });

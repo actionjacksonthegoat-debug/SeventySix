@@ -3,20 +3,20 @@
  * Handles both required (first login) and voluntary password changes.
  */
 
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import {
+	ChangeDetectionStrategy,
 	Component,
 	inject,
+	OnInit,
 	signal,
-	WritableSignal,
-	ChangeDetectionStrategy,
-	OnInit
+	WritableSignal
 } from "@angular/core";
-import { Router, ActivatedRoute } from "@angular/router";
 import { FormsModule } from "@angular/forms";
-import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { ActivatedRoute, Router } from "@angular/router";
+import { environment } from "@environments/environment";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
-import { environment } from "@environments/environment";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 
 interface ChangePasswordRequest
@@ -35,10 +35,14 @@ interface ChangePasswordRequest
 })
 export class ChangePasswordComponent implements OnInit
 {
-	private readonly http: HttpClient = inject(HttpClient);
-	private readonly authService: AuthService = inject(AuthService);
-	private readonly router: Router = inject(Router);
-	private readonly route: ActivatedRoute = inject(ActivatedRoute);
+	private readonly http: HttpClient =
+		inject(HttpClient);
+	private readonly authService: AuthService =
+		inject(AuthService);
+	private readonly router: Router =
+		inject(Router);
+	private readonly route: ActivatedRoute =
+		inject(ActivatedRoute);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
@@ -63,9 +67,9 @@ export class ChangePasswordComponent implements OnInit
 			this.route.snapshot.queryParams["required"];
 		this.isRequired.set(
 			requiredParam === "true"
-				|| this.authService.requiresPasswordChange()
-		);
-		this.returnUrl = this.route.snapshot.queryParams["returnUrl"] ?? "/";
+				|| this.authService.requiresPasswordChange());
+		this.returnUrl =
+			this.route.snapshot.queryParams["returnUrl"] ?? "/";
 
 		// Redirect if not authenticated
 		if (!this.authService.isAuthenticated())
@@ -90,12 +94,14 @@ export class ChangePasswordComponent implements OnInit
 
 		this.isLoading.set(true);
 
-		const request: ChangePasswordRequest = {
-			currentPassword: this.currentPassword,
-			newPassword: this.newPassword
-		};
+		const request: ChangePasswordRequest =
+			{
+				currentPassword: this.currentPassword,
+				newPassword: this.newPassword
+			};
 
-		this.http
+		this
+			.http
 			.post<void>(`${environment.apiUrl}/auth/change-password`, request, {
 				withCredentials: true
 			})
@@ -103,8 +109,7 @@ export class ChangePasswordComponent implements OnInit
 				next: () =>
 				{
 					this.notification.success(
-						"Password changed successfully. Please log in again."
-					);
+						"Password changed successfully. Please log in again.");
 					// Clear auth state and redirect to login
 					this.authService.clearPasswordChangeRequirement();
 					// The API clears the refresh token, so user needs to log in again
@@ -116,7 +121,7 @@ export class ChangePasswordComponent implements OnInit
 				{
 					const message: string =
 						error.error?.detail
-						?? "Failed to change password. Please try again.";
+							?? "Failed to change password. Please try again.";
 					this.notification.error(message);
 					this.isLoading.set(false);
 				}

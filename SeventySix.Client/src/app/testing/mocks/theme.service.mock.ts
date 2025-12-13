@@ -1,7 +1,7 @@
 import { signal, WritableSignal } from "@angular/core";
 import {
-	ThemeBrightness,
-	ColorScheme
+	ColorScheme,
+	ThemeBrightness
 } from "@infrastructure/services/theme.service";
 
 /**
@@ -19,7 +19,8 @@ export class MockThemeService
 {
 	brightness: WritableSignal<ThemeBrightness> =
 		signal<ThemeBrightness>("light");
-	colorScheme: WritableSignal<ColorScheme> = signal<ColorScheme>("blue");
+	colorScheme: WritableSignal<ColorScheme> =
+		signal<ColorScheme>("blue");
 
 	toggleBrightness(): void
 	{

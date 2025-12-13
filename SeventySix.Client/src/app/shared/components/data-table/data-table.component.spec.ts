@@ -1,21 +1,21 @@
 import { ComponentFixture } from "@angular/core/testing";
 import {
-	TableColumn,
+	BulkAction,
+	BulkActionEvent,
+	CellValue,
+	FilterChangeEvent,
 	QuickFilter,
 	RowAction,
-	BulkAction,
 	RowActionEvent,
-	BulkActionEvent,
-	FilterChangeEvent
+	TableColumn
 } from "@shared/models";
-import { DataTableComponent } from "./data-table.component";
 import {
 	ComponentTestBed,
-	TableColumnBuilder,
-	createTextColumn,
+	createBadgeColumn,
 	createDateColumn,
-	createBadgeColumn
+	createTextColumn
 } from "@testing";
+import { DataTableComponent } from "./data-table.component";
 
 interface TestEntity
 {
@@ -31,55 +31,64 @@ describe("DataTableComponent", () =>
 	let fixture: ComponentFixture<DataTableComponent<TestEntity>>;
 	let builder: ComponentTestBed<DataTableComponent<TestEntity>>;
 
-	const mockColumns: TableColumn<TestEntity>[] = [
-		createTextColumn<TestEntity>("id", "ID", true),
-		createTextColumn<TestEntity>("name", "Name", true),
-		createBadgeColumn<TestEntity>("status", "Status", (value: unknown) =>
-			value === "active" ? "primary" : "warn"
-		),
-		createDateColumn<TestEntity>("createdAt", "Created")
-	];
+	const mockColumns: TableColumn<TestEntity>[] =
+		[
+			createTextColumn<TestEntity>("id", "ID", true),
+			createTextColumn<TestEntity>("name", "Name", true),
+			createBadgeColumn<TestEntity>(
+			"status",
+			"Status",
+			(value: CellValue) =>
+				value === "active" ? "primary" : "warn"),
+			createDateColumn<TestEntity>("createdAt", "Created")
+		];
 
-	const mockData: TestEntity[] = [
-		{
-			id: 1,
-			name: "Test User 1",
-			status: "active",
-			createdAt: new Date("2024-01-01")
-		},
-		{
-			id: 2,
-			name: "Test User 2",
-			status: "inactive",
-			createdAt: new Date("2024-01-02")
-		},
-		{
-			id: 3,
-			name: "Test User 3",
-			status: "active",
-			createdAt: new Date("2024-01-03")
-		}
-	];
+	const mockData: TestEntity[] =
+		[
+			{
+				id: 1,
+				name: "Test User 1",
+				status: "active",
+				createdAt: new Date("2024-01-01")
+			},
+			{
+				id: 2,
+				name: "Test User 2",
+				status: "inactive",
+				createdAt: new Date("2024-01-02")
+			},
+			{
+				id: 3,
+				name: "Test User 3",
+				status: "active",
+				createdAt: new Date("2024-01-03")
+			}
+		];
 
-	const defaultInputs = {
-		columns: mockColumns,
-		data: mockData,
-		isLoading: false,
-		totalCount: 3,
-		pageIndex: 0,
-		pageSize: 25
-	};
+	const defaultInputs: Record<string, unknown> =
+		{
+			columns: mockColumns,
+			data: mockData,
+			isLoading: false,
+			totalCount: 3,
+			pageIndex: 0,
+			pageSize: 25
+		};
 
 	beforeEach(async () =>
 	{
-		builder = new ComponentTestBed<DataTableComponent<TestEntity>>();
-		fixture = await builder.build(DataTableComponent<TestEntity>);
-		component = fixture.componentInstance;
+		builder =
+			new ComponentTestBed<DataTableComponent<TestEntity>>();
+		fixture =
+			await builder.build(DataTableComponent<TestEntity>);
+		component =
+			fixture.componentInstance;
 	});
 
 	it("should create", () =>
 	{
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	describe("Component Inputs", () =>
@@ -88,30 +97,48 @@ describe("DataTableComponent", () =>
 		{
 			builder.withInputs(fixture, defaultInputs);
 
-			expect(component.columns()).toEqual(mockColumns);
-			expect(component.data()).toEqual(mockData);
-			expect(component.isLoading()).toBe(false);
-			expect(component.totalCount()).toBe(3);
-			expect(component.pageIndex()).toBe(0);
-			expect(component.pageSize()).toBe(25);
+			expect(component.columns())
+				.toEqual(mockColumns);
+			expect(component.data())
+				.toEqual(mockData);
+			expect(component.isLoading())
+				.toBe(false);
+			expect(component.totalCount())
+				.toBe(3);
+			expect(component.pageIndex())
+				.toBe(0);
+			expect(component.pageSize())
+				.toBe(25);
 		});
 
 		it("should have correct default values for optional inputs", () =>
 		{
 			builder.withInputs(fixture, defaultInputs);
 
-			expect(component.error()).toBeNull();
-			expect(component.searchable()).toBe(true);
-			expect(component.selectable()).toBe(false);
-			expect(component.showSelectAll()).toBe(false);
-			expect(component.showCreate()).toBe(false);
-			expect(component.showRefresh()).toBe(true);
-			expect(component.quickFilters()).toEqual([]);
-			expect(component.dateRangeEnabled()).toBe(false);
-			expect(component.pageSizeOptions()).toEqual([25, 50, 100]);
-			expect(component.storageKey()).toBeNull();
-			expect(component.rowActions()).toEqual([]);
-			expect(component.bulkActions()).toEqual([]);
+			expect(component.error())
+				.toBeNull();
+			expect(component.searchable())
+				.toBe(true);
+			expect(component.selectable())
+				.toBe(false);
+			expect(component.showSelectAll())
+				.toBe(false);
+			expect(component.showCreate())
+				.toBe(false);
+			expect(component.showRefresh())
+				.toBe(true);
+			expect(component.quickFilters())
+				.toEqual([]);
+			expect(component.dateRangeEnabled())
+				.toBe(false);
+			expect(component.pageSizeOptions())
+				.toEqual([25, 50, 100]);
+			expect(component.storageKey())
+				.toBeNull();
+			expect(component.rowActions())
+				.toEqual([]);
+			expect(component.bulkActions())
+				.toEqual([]);
 		});
 	});
 
@@ -126,21 +153,24 @@ describe("DataTableComponent", () =>
 		{
 			const visibleColumns: TableColumn<TestEntity>[] =
 				component.visibleColumns();
-			expect(visibleColumns.length).toBe(4);
+			expect(visibleColumns.length)
+				.toBe(4);
 			expect(
-				visibleColumns.map((c: TableColumn<TestEntity>) => c.key)
-			).toEqual(["id", "name", "status", "createdAt"]);
+				visibleColumns.map((c: TableColumn<TestEntity>) => c.key))
+				.toEqual(["id", "name", "status", "createdAt"]);
 		});
 
 		it("should compute display columns for table", () =>
 		{
-			const displayColumns: string[] = component.displayedColumns();
-			expect(displayColumns).toEqual([
-				"id",
-				"name",
-				"status",
-				"createdAt"
-			]);
+			const displayColumns: string[] =
+				component.displayedColumns();
+			expect(displayColumns)
+				.toEqual([
+					"id",
+					"name",
+					"status",
+					"createdAt"
+				]);
 		});
 
 		it("should add select column when selectable is true", () =>
@@ -148,24 +178,29 @@ describe("DataTableComponent", () =>
 			fixture.componentRef.setInput("selectable", true);
 			fixture.detectChanges();
 
-			const displayColumns: string[] = component.displayedColumns();
-			expect(displayColumns[0]).toBe("select");
+			const displayColumns: string[] =
+				component.displayedColumns();
+			expect(displayColumns[0])
+				.toBe("select");
 		});
 
 		it("should add actions column when rowActions provided", () =>
 		{
-			const actions: RowAction<TestEntity>[] = [
-				{
-					key: "edit",
-					label: "Edit",
-					icon: "edit"
-				}
-			];
+			const actions: RowAction<TestEntity>[] =
+				[
+					{
+						key: "edit",
+						label: "Edit",
+						icon: "edit"
+					}
+				];
 			fixture.componentRef.setInput("rowActions", actions);
 			fixture.detectChanges();
 
-			const displayColumns: string[] = component.displayedColumns();
-			expect(displayColumns[displayColumns.length - 1]).toBe("actions");
+			const displayColumns: string[] =
+				component.displayedColumns();
+			expect(displayColumns[displayColumns.length - 1])
+				.toBe("actions");
 		});
 	});
 
@@ -179,7 +214,8 @@ describe("DataTableComponent", () =>
 		it("should update search signal when input changes", () =>
 		{
 			component.onSearchChange("test");
-			expect(component.searchText()).toBe("test");
+			expect(component.searchText())
+				.toBe("test");
 		});
 
 		it("should emit searchChange when onSearch is called", () =>
@@ -193,7 +229,8 @@ describe("DataTableComponent", () =>
 			component.searchText.set("search term");
 			component.onSearch();
 
-			expect(emittedValue).toBe("search term");
+			expect(emittedValue)
+				.toBe("search term");
 		});
 
 		it("should update signal and not emit on input change", () =>
@@ -205,27 +242,32 @@ describe("DataTableComponent", () =>
 			});
 
 			component.onSearchChange("typing");
-			expect(component.searchText()).toBe("typing");
-			expect(emitted).toBe(false);
+			expect(component.searchText())
+				.toBe("typing");
+			expect(emitted)
+				.toBe(false);
 		});
 	});
 
 	describe("Quick Filters", () =>
 	{
-		const mockQuickFilters: QuickFilter<TestEntity>[] = [
-			{
-				key: "active",
-				label: "Active",
-				icon: "check_circle",
-				filterFn: (item: TestEntity) => item.status === "active"
-			},
-			{
-				key: "inactive",
-				label: "Inactive",
-				icon: "cancel",
-				filterFn: (item: TestEntity) => item.status === "inactive"
-			}
-		];
+		const mockQuickFilters: QuickFilter<TestEntity>[] =
+			[
+				{
+					key: "active",
+					label: "Active",
+					icon: "check_circle",
+					filterFn: (item: TestEntity) =>
+						item.status === "active"
+				},
+				{
+					key: "inactive",
+					label: "Inactive",
+					icon: "cancel",
+					filterFn: (item: TestEntity) =>
+						item.status === "inactive"
+				}
+			];
 
 		beforeEach(() =>
 		{
@@ -239,8 +281,10 @@ describe("DataTableComponent", () =>
 		{
 			component.filterChange.subscribe((event: FilterChangeEvent) =>
 			{
-				expect(event.filterKey).toBe("active");
-				expect(event.active).toBe(true);
+				expect(event.filterKey)
+					.toBe("active");
+				expect(event.active)
+					.toBe(true);
 				done();
 			});
 
@@ -250,29 +294,38 @@ describe("DataTableComponent", () =>
 		it("should track active filters", () =>
 		{
 			component.onFilterToggle("active");
-			expect(component.activeFilters().has("active")).toBe(true);
+			expect(
+				component
+					.activeFilters()
+					.has("active"))
+				.toBe(true);
 
 			component.onFilterToggle("active");
-			expect(component.activeFilters().has("active")).toBe(false);
+			expect(
+				component
+					.activeFilters()
+					.has("active"))
+				.toBe(false);
 		});
 	});
 
 	describe("Row Actions", () =>
 	{
-		const mockRowActions: RowAction<TestEntity>[] = [
-			{
-				key: "edit",
-				label: "Edit",
-				icon: "edit",
-				color: "primary"
-			},
-			{
-				key: "delete",
-				label: "Delete",
-				icon: "delete",
-				color: "warn"
-			}
-		];
+		const mockRowActions: RowAction<TestEntity>[] =
+			[
+				{
+					key: "edit",
+					label: "Edit",
+					icon: "edit",
+					color: "primary"
+				},
+				{
+					key: "delete",
+					label: "Delete",
+					icon: "delete",
+					color: "warn"
+				}
+			];
 
 		beforeEach(() =>
 		{
@@ -287,11 +340,12 @@ describe("DataTableComponent", () =>
 			component.rowAction.subscribe(
 				(event: RowActionEvent<TestEntity>) =>
 				{
-					expect(event.action).toBe("edit");
-					expect(event.row).toBe(mockData[0]);
+					expect(event.action)
+						.toBe("edit");
+					expect(event.row)
+						.toBe(mockData[0]);
 					done();
-				}
-			);
+				});
 
 			component.onRowAction("edit", mockData[0]);
 		});
@@ -300,7 +354,8 @@ describe("DataTableComponent", () =>
 		{
 			component.rowClick.subscribe((row: TestEntity) =>
 			{
-				expect(row).toBe(mockData[0]);
+				expect(row)
+					.toBe(mockData[0]);
 				done();
 			});
 
@@ -310,15 +365,16 @@ describe("DataTableComponent", () =>
 
 	describe("Bulk Actions", () =>
 	{
-		const mockBulkActions: BulkAction[] = [
-			{
-				key: "delete-all",
-				label: "Delete Selected",
-				icon: "delete",
-				color: "warn",
-				requiresSelection: true
-			}
-		];
+		const mockBulkActions: BulkAction[] =
+			[
+				{
+					key: "delete-all",
+					label: "Delete Selected",
+					icon: "delete",
+					color: "warn",
+					requiresSelection: true
+				}
+			];
 
 		beforeEach(() =>
 		{
@@ -337,34 +393,40 @@ describe("DataTableComponent", () =>
 			component.bulkAction.subscribe(
 				(event: BulkActionEvent<TestEntity>) =>
 				{
-					expect(event.action).toBe("delete-all");
-					expect(event.selectedRows.length).toBe(2);
-					expect(event.selectedIds).toEqual([1, 2]);
+					expect(event.action)
+						.toBe("delete-all");
+					expect(event.selectedRows.length)
+						.toBe(2);
+					expect(event.selectedIds)
+						.toEqual([1, 2]);
 					done();
-				}
-			);
+				});
 
 			component.onBulkAction("delete-all");
 		});
 
 		it("should compute selection state correctly", () =>
 		{
-			expect(component.hasSelection()).toBe(false);
+			expect(component.hasSelection())
+				.toBe(false);
 
 			component.selection.select(mockData[0]);
 			fixture.detectChanges();
-			expect(component.hasSelection()).toBe(true);
+			expect(component.hasSelection())
+				.toBe(true);
 		});
 
 		it("should toggle all rows selection", () =>
 		{
 			component.toggleAllRows();
 			fixture.detectChanges();
-			expect(component.selection.selected.length).toBe(3);
+			expect(component.selection.selected.length)
+				.toBe(3);
 
 			component.toggleAllRows();
 			fixture.detectChanges();
-			expect(component.selection.selected.length).toBe(0);
+			expect(component.selection.selected.length)
+				.toBe(0);
 		});
 	});
 
@@ -379,7 +441,8 @@ describe("DataTableComponent", () =>
 		{
 			component.pageChange.subscribe((pageIndex: number) =>
 			{
-				expect(pageIndex).toBe(1);
+				expect(pageIndex)
+					.toBe(1);
 				done();
 			});
 
@@ -390,7 +453,8 @@ describe("DataTableComponent", () =>
 		{
 			component.pageSizeChange.subscribe((pageSize: number) =>
 			{
-				expect(pageSize).toBe(50);
+				expect(pageSize)
+					.toBe(50);
 				done();
 			});
 
@@ -407,17 +471,20 @@ describe("DataTableComponent", () =>
 
 		it("should toggle column visibility", () =>
 		{
-			const initialVisible = component.visibleColumns().length;
+			const initialVisible: number =
+				component.visibleColumns().length;
 			component.toggleColumn("name");
-			expect(component.visibleColumns().length).toBe(initialVisible - 1);
+			expect(component.visibleColumns().length)
+				.toBe(initialVisible - 1);
 
 			component.toggleColumn("name");
-			expect(component.visibleColumns().length).toBe(initialVisible);
+			expect(component.visibleColumns().length)
+				.toBe(initialVisible);
 		});
 
 		it("should load column preferences from localStorage when storageKey provided", () =>
 		{
-			const storageKey = "test-table-columns";
+			const storageKey: string = "test-table-columns";
 			localStorage.setItem(
 				storageKey,
 				JSON.stringify({
@@ -425,13 +492,13 @@ describe("DataTableComponent", () =>
 					name: false,
 					status: true,
 					createdAt: true
-				})
-			);
+				}));
 
 			fixture.componentRef.setInput("storageKey", storageKey);
 			fixture.detectChanges();
 
-			const visibleKeys = component
+			const visibleKeys: string[] =
+				component
 				.visibleColumns()
 				.map((c: TableColumn<TestEntity>) => c.key);
 			expect(visibleKeys).not.toContain("name");
@@ -454,7 +521,8 @@ describe("DataTableComponent", () =>
 		{
 			component.refreshClick.subscribe(() =>
 			{
-				expect(true).toBe(true);
+				expect(true)
+					.toBe(true);
 				done();
 			});
 
@@ -473,7 +541,8 @@ describe("DataTableComponent", () =>
 		{
 			component.createClick.subscribe(() =>
 			{
-				expect(true).toBe(true);
+				expect(true)
+					.toBe(true);
 				done();
 			});
 
@@ -497,16 +566,19 @@ describe("DataTableComponent", () =>
 				fixture.nativeElement.querySelector(".table-content-wrapper");
 
 			// Verify container exists and has minimum height to prevent CLS
-			expect(wrapper).toBeTruthy();
+			expect(wrapper)
+				.toBeTruthy();
 
 			if (wrapper)
 			{
 				const computedStyle: CSSStyleDeclaration =
 					window.getComputedStyle(wrapper);
-				const minHeight: number = parseInt(computedStyle.minHeight, 10);
+				const minHeight: number =
+					parseInt(computedStyle.minHeight, 10);
 
 				// Should have reserved height (400px = 25rem at 16px base)
-				expect(minHeight).toBeGreaterThan(0);
+				expect(minHeight)
+					.toBeGreaterThan(0);
 			}
 		});
 
@@ -526,8 +598,10 @@ describe("DataTableComponent", () =>
 				fixture.nativeElement.querySelector(".table-content");
 
 			// Both should exist when loading
-			expect(loadingOverlay).toBeTruthy();
-			expect(tableContent).toBeTruthy();
+			expect(loadingOverlay)
+				.toBeTruthy();
+			expect(tableContent)
+				.toBeTruthy();
 		});
 	});
 });

@@ -1,44 +1,44 @@
 import {
-	ApplicationConfig,
-	ErrorHandler,
-	isDevMode,
-	provideBrowserGlobalErrorListeners,
-	provideZonelessChangeDetection,
-	APP_INITIALIZER
-} from "@angular/core";
-import {
-	provideRouter,
-	withPreloading,
-	PreloadAllModules
-} from "@angular/router";
-import {
 	provideHttpClient,
 	withInterceptors,
 	withXsrfConfiguration
 } from "@angular/common/http";
-import { provideServiceWorker } from "@angular/service-worker";
+import {
+	APP_INITIALIZER,
+	ApplicationConfig,
+	ErrorHandler,
+	isDevMode,
+	provideBrowserGlobalErrorListeners,
+	provideZonelessChangeDetection
+} from "@angular/core";
 import { provideAnimations } from "@angular/platform-browser/animations";
+import {
+	PreloadAllModules,
+	provideRouter,
+	withPreloading
+} from "@angular/router";
+import { provideServiceWorker } from "@angular/service-worker";
 import {
 	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 
-import { routes } from "./app.routes";
+import { environment } from "@environments/environment";
 import {
-	errorInterceptor,
-	loggingInterceptor,
 	authInterceptor,
+	cacheBypassInterceptor,
 	dateParserInterceptor,
-	cacheBypassInterceptor
+	errorInterceptor,
+	loggingInterceptor
 } from "@infrastructure/interceptors";
 import {
+	AuthService,
 	ErrorHandlerService,
-	ThemeService,
 	TelemetryService,
-	WebVitalsService,
-	AuthService
+	ThemeService,
+	WebVitalsService
 } from "@infrastructure/services";
-import { environment } from "@environments/environment";
+import { routes } from "./app.routes";
 
 /**
  * Initialize theme service on app startup
@@ -91,26 +91,27 @@ function initializeAuth(authService: AuthService)
 	};
 }
 
-export const appConfig: ApplicationConfig = {
-	providers: [
+export const appConfig: ApplicationConfig =
+	{
+		providers: [
 		// TanStack Query with environment-based configuration
-		provideTanStackQuery(
+			provideTanStackQuery(
 			new QueryClient({
 				defaultOptions: {
 					queries: {
 						staleTime: environment.cache.query.default.staleTime,
 						gcTime: environment.cache.query.default.gcTime,
 						retry: environment.cache.query.default.retry,
-						refetchOnWindowFocus:
-							environment.cache.query.default
-								.refetchOnWindowFocus,
-						refetchOnReconnect:
-							environment.cache.query.default.refetchOnReconnect
+						refetchOnWindowFocus: environment
+							.cache
+							.query
+							.default
+							.refetchOnWindowFocus,
+						refetchOnReconnect: environment.cache.query.default.refetchOnReconnect
 					}
 				}
-			})
-		),
-		provideHttpClient(
+			})),
+			provideHttpClient(
 			withInterceptors([
 				cacheBypassInterceptor,
 				dateParserInterceptor,
@@ -122,46 +123,45 @@ export const appConfig: ApplicationConfig = {
 			withXsrfConfiguration({
 				cookieName: "XSRF-TOKEN",
 				headerName: "X-XSRF-TOKEN"
-			})
-		),
-		provideBrowserGlobalErrorListeners(),
-		provideZonelessChangeDetection(),
-		provideRouter(routes, withPreloading(PreloadAllModules)),
-		provideAnimations(),
+			})),
+			provideBrowserGlobalErrorListeners(),
+			provideZonelessChangeDetection(),
+			provideRouter(routes, withPreloading(PreloadAllModules)),
+			provideAnimations(),
 		// Global error handler
-		{ provide: ErrorHandler, useClass: ErrorHandlerService },
+			{ provide: ErrorHandler, useClass: ErrorHandlerService },
 		// Initialize theme service on app startup
-		{
-			provide: APP_INITIALIZER,
-			useFactory: initializeTheme,
-			deps: [ThemeService],
-			multi: true
-		},
+			{
+				provide: APP_INITIALIZER,
+				useFactory: initializeTheme,
+				deps: [ThemeService],
+				multi: true
+			},
 		// Initialize OpenTelemetry on app startup
-		{
-			provide: APP_INITIALIZER,
-			useFactory: initializeTelemetry,
-			deps: [TelemetryService],
-			multi: true
-		},
+			{
+				provide: APP_INITIALIZER,
+				useFactory: initializeTelemetry,
+				deps: [TelemetryService],
+				multi: true
+			},
 		// Initialize Web Vitals monitoring on app startup
-		{
-			provide: APP_INITIALIZER,
-			useFactory: initializeWebVitals,
-			deps: [WebVitalsService],
-			multi: true
-		},
+			{
+				provide: APP_INITIALIZER,
+				useFactory: initializeWebVitals,
+				deps: [WebVitalsService],
+				multi: true
+			},
 		// Initialize auth service on app startup (handles OAuth callbacks)
-		{
-			provide: APP_INITIALIZER,
-			useFactory: initializeAuth,
-			deps: [AuthService],
-			multi: true
-		},
+			{
+				provide: APP_INITIALIZER,
+				useFactory: initializeAuth,
+				deps: [AuthService],
+				multi: true
+			},
 		// Service Worker for PWA support and asset caching only
-		provideServiceWorker("ngsw-worker.js", {
+			provideServiceWorker("ngsw-worker.js", {
 			enabled: !isDevMode(),
 			registrationStrategy: "registerWhenStable:30000"
 		})
-	]
-};
+		]
+	};

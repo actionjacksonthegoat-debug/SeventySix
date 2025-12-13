@@ -1,0 +1,47 @@
+{
+	"$schema": "https://dprint.dev/schemas/v0.json",
+	"lineWidth": 120,
+	"indentWidth": 4,
+	"useTabs": true,
+	"newLineKind": "lf",
+	"typescript": {
+		"quoteStyle": "alwaysDouble",
+		"semiColons": "always",
+		"trailingCommas": "never",
+		"operatorPosition": "nextLine",
+		"memberExpression.linePerExpression": true,
+		"binaryExpression.linePerExpression": true,
+		"arrowFunction.useParentheses": "force",
+		"preferSingleLine": false,
+		"bracePosition": "nextLine",
+		"nextControlFlowPosition": "nextLine",
+		"module.sortImportDeclarations": "caseInsensitive",
+		"module.sortExportDeclarations": "caseInsensitive"
+	},
+	"json": {
+		"trailingCommas": "never",
+		"indentWidth": 4,
+		"useTabs": true
+	},
+	"malva": {
+		"printWidth": 120,
+		"indentWidth": 4,
+		"useTabs": true,
+		"quotes": "alwaysDouble"
+	},
+	"includes": [
+		"src/**/*.{ts,js,json,scss,css}"
+	],
+	"excludes": [
+		"node_modules",
+		"dist",
+		"coverage",
+		".angular",
+		"src/app/infrastructure/api/generated-api.ts"
+	],
+	"plugins": [
+		"https://plugins.dprint.dev/typescript-0.95.13.wasm",
+		"https://plugins.dprint.dev/json-0.21.0.wasm",
+		"https://plugins.dprint.dev/g-plane/malva-v0.14.0.wasm"
+	]
+}

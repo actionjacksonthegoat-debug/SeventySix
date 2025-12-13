@@ -1,15 +1,15 @@
 import { ComponentFixture } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
-import { HeaderComponent } from "./header.component";
-import { ThemeService } from "@infrastructure/services/theme.service";
-import { LayoutService } from "@infrastructure/services/layout.service";
 import { AuthService } from "@infrastructure/services/auth.service";
+import { LayoutService } from "@infrastructure/services/layout.service";
+import { ThemeService } from "@infrastructure/services/theme.service";
+import { ComponentTestBed } from "@testing";
 import {
-	createMockThemeService,
 	createMockAuthService,
+	createMockThemeService,
 	createMockUserProfile
 } from "@testing/mocks";
-import { ComponentTestBed } from "@testing";
+import { HeaderComponent } from "./header.component";
 
 describe("HeaderComponent", () =>
 {
@@ -22,13 +22,17 @@ describe("HeaderComponent", () =>
 
 	beforeEach(async () =>
 	{
-		mockThemeService = createMockThemeService();
-		mockLayoutService = jasmine.createSpyObj("LayoutService", [
+		mockThemeService =
+			createMockThemeService();
+		mockLayoutService =
+			jasmine.createSpyObj("LayoutService", [
 			"toggleSidebar"
 		]);
-		mockAuthService = createMockAuthService();
+		mockAuthService =
+			createMockAuthService();
 
-		fixture = await new ComponentTestBed<HeaderComponent>()
+		fixture =
+			await new ComponentTestBed<HeaderComponent>()
 			.withProvider(provideRouter([]))
 			.withProvider({ provide: ThemeService, useValue: mockThemeService })
 			.withProvider({
@@ -38,35 +42,41 @@ describe("HeaderComponent", () =>
 			.withProvider({ provide: AuthService, useValue: mockAuthService })
 			.build(HeaderComponent);
 
-		component = fixture.componentInstance;
-		router = fixture.debugElement.injector.get(Router);
+		component =
+			fixture.componentInstance;
+		router =
+			fixture.debugElement.injector.get(Router);
 		spyOn(router, "navigate");
 		fixture.detectChanges();
 	});
 
 	it("should create", () =>
 	{
-		expect(component).toBeTruthy();
+		expect(component)
+			.toBeTruthy();
 	});
 
 	it("should toggle sidebar", () =>
 	{
 		component.toggleSidebar();
-		expect(mockLayoutService.toggleSidebar).toHaveBeenCalled();
+		expect(mockLayoutService.toggleSidebar)
+			.toHaveBeenCalled();
 	});
 
 	it("should toggle brightness", () =>
 	{
 		spyOn(mockThemeService, "toggleBrightness");
 		component.toggleBrightness();
-		expect(mockThemeService.toggleBrightness).toHaveBeenCalled();
+		expect(mockThemeService.toggleBrightness)
+			.toHaveBeenCalled();
 	});
 
 	it("should toggle color scheme", () =>
 	{
 		spyOn(mockThemeService, "toggleColorScheme");
 		component.toggleColorScheme();
-		expect(mockThemeService.toggleColorScheme).toHaveBeenCalled();
+		expect(mockThemeService.toggleColorScheme)
+			.toHaveBeenCalled();
 	});
 
 	describe("authentication", () =>
@@ -76,11 +86,14 @@ describe("HeaderComponent", () =>
 			mockAuthService.setUser(null);
 			fixture.detectChanges();
 
-			const compiled: HTMLElement = fixture.nativeElement;
+			const compiled: HTMLElement =
+				fixture.nativeElement;
 			const guestMenuButton: HTMLButtonElement | null =
-				compiled.querySelector("[data-testid='guest-menu-button']");
+				compiled.querySelector(
+				"[data-testid='guest-menu-button']");
 
-			expect(guestMenuButton).toBeTruthy();
+			expect(guestMenuButton)
+				.toBeTruthy();
 		});
 
 		it("should navigate to login when login button clicked", () =>
@@ -90,7 +103,8 @@ describe("HeaderComponent", () =>
 
 			component.navigateToLogin();
 
-			expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
+			expect(router.navigate)
+				.toHaveBeenCalledWith(["/auth/login"]);
 		});
 
 		it("should navigate to register when register method called", () =>
@@ -100,7 +114,8 @@ describe("HeaderComponent", () =>
 
 			component.navigateToRegister();
 
-			expect(router.navigate).toHaveBeenCalledWith(["/auth/register"]);
+			expect(router.navigate)
+				.toHaveBeenCalledWith(["/auth/register"]);
 		});
 
 		it("should show user menu when authenticated", () =>
@@ -111,15 +126,16 @@ describe("HeaderComponent", () =>
 					username: "testuser",
 					email: "test@example.com",
 					fullName: "John Doe"
-				})
-			);
+				}));
 			fixture.detectChanges();
 
-			const compiled: HTMLElement = fixture.nativeElement;
+			const compiled: HTMLElement =
+				fixture.nativeElement;
 			const userMenuButton: HTMLButtonElement | null =
 				compiled.querySelector("[data-testid='user-menu-button']");
 
-			expect(userMenuButton).toBeTruthy();
+			expect(userMenuButton)
+				.toBeTruthy();
 		});
 
 		it("should display user fullName in menu", async () =>
@@ -127,25 +143,24 @@ describe("HeaderComponent", () =>
 			mockAuthService.setUser(
 				createMockUserProfile({
 					fullName: "John Doe"
-				})
-			);
+				}));
 			fixture.detectChanges();
 
 			// Open the user menu
 			const userMenuButton: HTMLButtonElement | null =
 				fixture.nativeElement.querySelector(
-					"[data-testid='user-menu-button']"
-				);
+				"[data-testid='user-menu-button']");
 			userMenuButton?.click();
 			fixture.detectChanges();
 			await fixture.whenStable();
 
 			// Menu content is rendered in overlay, query from document
-			const userNameSpan: HTMLSpanElement | null = document.querySelector(
-				"[data-testid='user-fullname']"
-			);
+			const userNameSpan: HTMLSpanElement | null =
+				document.querySelector(
+				"[data-testid='user-fullname']");
 
-			expect(userNameSpan?.textContent?.trim()).toBe("John Doe");
+			expect(userNameSpan?.textContent?.trim())
+				.toBe("John Doe");
 		});
 
 		it("should display username when fullName is null", async () =>
@@ -154,25 +169,24 @@ describe("HeaderComponent", () =>
 				createMockUserProfile({
 					username: "testuser",
 					fullName: null
-				})
-			);
+				}));
 			fixture.detectChanges();
 
 			// Open the user menu
 			const userMenuButton: HTMLButtonElement | null =
 				fixture.nativeElement.querySelector(
-					"[data-testid='user-menu-button']"
-				);
+				"[data-testid='user-menu-button']");
 			userMenuButton?.click();
 			fixture.detectChanges();
 			await fixture.whenStable();
 
 			// Menu content is rendered in overlay, query from document
-			const userNameSpan: HTMLSpanElement | null = document.querySelector(
-				"[data-testid='user-fullname']"
-			);
+			const userNameSpan: HTMLSpanElement | null =
+				document.querySelector(
+				"[data-testid='user-fullname']");
 
-			expect(userNameSpan?.textContent?.trim()).toBe("testuser");
+			expect(userNameSpan?.textContent?.trim())
+				.toBe("testuser");
 		});
 
 		it("should call logout when logout clicked", () =>
@@ -180,20 +194,21 @@ describe("HeaderComponent", () =>
 			mockAuthService.setUser(
 				createMockUserProfile({
 					fullName: "John Doe"
-				})
-			);
+				}));
 			fixture.detectChanges();
 
 			component.logout();
 
-			expect(mockAuthService.logout).toHaveBeenCalled();
+			expect(mockAuthService.logout)
+				.toHaveBeenCalled();
 		});
 
 		it("should navigate to account page when navigateToAccount called", () =>
 		{
 			component.navigateToAccount();
 
-			expect(router.navigate).toHaveBeenCalledWith(["/account"]);
+			expect(router.navigate)
+				.toHaveBeenCalledWith(["/account"]);
 		});
 	});
 });

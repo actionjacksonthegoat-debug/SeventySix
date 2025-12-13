@@ -1,124 +1,118 @@
 <div class="register-container">
 	<div class="register-card">
-		@if (!tokenValid())
-		{
-			<div class="error-state" role="alert">
-				<h1>Link Expired</h1>
-				<p>
-					This registration link is invalid or has expired. Please
-					request a new one to continue.
-				</p>
-				<a routerLink="/auth/register" class="btn-primary">
-					Request New Link
-				</a>
-			</div>
-		}
-		@else
-		{
-			<h1>Complete Registration</h1>
-			<p class="description">
-				Choose a username and password to complete your account setup.
+		@if (!tokenValid()) {
+		<div
+			class="error-state"
+			role="alert">
+			<h1>Link Expired</h1>
+			<p>
+				This registration link is invalid or has expired. Please request a new one to continue.
 			</p>
+			<a
+				routerLink="/auth/register"
+				class="btn-primary">
+				Request New Link
+			</a>
+		</div>
+		} @else {
+		<h1>Complete Registration</h1>
+		<p class="description">
+			Choose a username and password to complete your account setup.
+		</p>
 
-			<form
-				(ngSubmit)="onSubmit()"
-				class="register-form"
-				#registerForm="ngForm"
-			>
-				<div class="form-group required">
-					<label for="username">Username</label>
-					<input
-						id="username"
-						type="text"
-						[(ngModel)]="username"
-						name="username"
-						#usernameField="ngModel"
-						required
-						autocomplete="username"
-						placeholder="Choose a username"
-						[minlength]="USERNAME_MIN_LENGTH"
-						[maxlength]="USERNAME_MAX_LENGTH"
-						[pattern]="USERNAME_PATTERN"
-						aria-required="true"
-						[attr.aria-invalid]="
+		<form
+			(ngSubmit)="onSubmit()"
+			class="register-form"
+			#registerForm="ngForm">
+			<div class="form-group required">
+				<label for="username">Username</label>
+				<input
+					id="username"
+					type="text"
+					[(ngModel)]="username"
+					name="username"
+					#usernameField="ngModel"
+					required
+					autocomplete="username"
+					placeholder="Choose a username"
+					[minlength]="USERNAME_MIN_LENGTH"
+					[maxlength]="USERNAME_MAX_LENGTH"
+					[pattern]="USERNAME_PATTERN"
+					aria-required="true"
+					[attr.aria-invalid]="
 							usernameField.invalid && usernameField.touched
 						"
-						aria-describedby="username-hint"
-					/>
-					<span id="username-hint" class="hint">
-						Letters, numbers, and underscores only
-					</span>
-				</div>
+					aria-describedby="username-hint"
+				/>
+				<span
+					id="username-hint"
+					class="hint">
+					Letters, numbers, and underscores only
+				</span>
+			</div>
 
-				<div class="form-group required">
-					<label for="password">Password</label>
-					<input
-						id="password"
-						type="password"
-						[(ngModel)]="password"
-						name="password"
-						#passwordField="ngModel"
-						required
-						autocomplete="new-password"
-						placeholder="Create a password"
-						[minlength]="PASSWORD_MIN_LENGTH"
-						aria-required="true"
-						[attr.aria-invalid]="
+			<div class="form-group required">
+				<label for="password">Password</label>
+				<input
+					id="password"
+					type="password"
+					[(ngModel)]="password"
+					name="password"
+					#passwordField="ngModel"
+					required
+					autocomplete="new-password"
+					placeholder="Create a password"
+					[minlength]="PASSWORD_MIN_LENGTH"
+					aria-required="true"
+					[attr.aria-invalid]="
 							passwordField.invalid && passwordField.touched
 						"
-						aria-describedby="password-hint"
-					/>
-					<span id="password-hint" class="hint">
-						At least 8 characters with uppercase, lowercase, digit,
-						and special character
-					</span>
-				</div>
+					aria-describedby="password-hint"
+				/>
+				<span
+					id="password-hint"
+					class="hint">
+					At least 8 characters with uppercase, lowercase, digit, and special character
+				</span>
+			</div>
 
-				<div class="form-group required">
-					<label for="confirmPassword">Confirm Password</label>
-					<input
-						id="confirmPassword"
-						type="password"
-						[(ngModel)]="confirmPassword"
-						name="confirmPassword"
-						#confirmPasswordField="ngModel"
-						required
-						autocomplete="new-password"
-						placeholder="Confirm your password"
-						aria-required="true"
-						[attr.aria-invalid]="
+			<div class="form-group required">
+				<label for="confirmPassword">Confirm Password</label>
+				<input
+					id="confirmPassword"
+					type="password"
+					[(ngModel)]="confirmPassword"
+					name="confirmPassword"
+					#confirmPasswordField="ngModel"
+					required
+					autocomplete="new-password"
+					placeholder="Confirm your password"
+					aria-required="true"
+					[attr.aria-invalid]="
 							confirmPasswordField.invalid &&
 							confirmPasswordField.touched
 						"
-					/>
-				</div>
+				/>
+			</div>
 
-				<button
-					type="submit"
-					class="btn-primary"
-					[disabled]="
+			<button
+				type="submit"
+				class="btn-primary"
+				[disabled]="
 						isLoading() ||
 						!username.trim() ||
 						!password.trim() ||
 						!confirmPassword.trim()
 					"
-					[attr.aria-busy]="isLoading()"
-				>
-					@if (isLoading())
-					{
-						Creating Account...
-					}
-					@else
-					{
-						Create Account
-					}
-				</button>
-			</form>
+				[attr.aria-busy]="isLoading()">
+				@if (isLoading()) { Creating Account... } @else { Create Account }
+			</button>
+		</form>
 
-			<div class="links">
-				<span>Already have an account?</span>
-				<a routerLink="/auth/login">Sign In</a>
-			</div>
+		<div class="links">
+			<span>Already have an account?</span>
+			<a routerLink="/auth/login">Sign In</a>
+		</div>
 		}
 	</div>
 </div>

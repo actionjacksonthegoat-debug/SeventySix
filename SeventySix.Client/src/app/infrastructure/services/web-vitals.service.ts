@@ -1,7 +1,7 @@
-import { Injectable, inject } from "@angular/core";
-import { onLCP, onINP, onCLS, onFCP, onTTFB, Metric } from "web-vitals";
-import { LoggerService } from "./logger.service";
+import { inject, Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
+import { Metric, onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
+import { LoggerService } from "./logger.service";
 
 /**
  * Web Vitals service for Core Web Vitals tracking.
@@ -13,7 +13,8 @@ import { environment } from "@environments/environment";
 })
 export class WebVitalsService
 {
-	private readonly logger: LoggerService = inject(LoggerService);
+	private readonly logger: LoggerService =
+		inject(LoggerService);
 
 	constructor()
 	{
@@ -69,8 +70,7 @@ export class WebVitalsService
 		{
 			this.logger.error(
 				"Failed to initialize Web Vitals",
-				error instanceof Error ? error : undefined
-			);
+				error instanceof Error ? error : undefined);
 		}
 	}
 
@@ -106,13 +106,14 @@ export class WebVitalsService
 	 */
 	private getThreshold(name: string): string
 	{
-		const thresholds: Record<string, string> = {
-			LCP: "2.5s (good) / 4.0s (poor)",
-			INP: "200ms (good) / 500ms (poor)",
-			CLS: "0.1 (good) / 0.25 (poor)",
-			FCP: "1.8s (good) / 3.0s (poor)",
-			TTFB: "800ms (good) / 1800ms (poor)"
-		};
+		const thresholds: Record<string, string> =
+			{
+				LCP: "2.5s (good) / 4.0s (poor)",
+				INP: "200ms (good) / 500ms (poor)",
+				CLS: "0.1 (good) / 0.25 (poor)",
+				FCP: "1.8s (good) / 3.0s (poor)",
+				TTFB: "800ms (good) / 1800ms (poor)"
+			};
 
 		return thresholds[name] || "unknown";
 	}

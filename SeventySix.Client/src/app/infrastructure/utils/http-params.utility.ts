@@ -10,7 +10,8 @@ import { HttpParams } from "@angular/common/http";
  */
 export function buildHttpParams(params: Record<string, unknown> | object): HttpParams
 {
-	let httpParams: HttpParams = new HttpParams();
+	let httpParams: HttpParams =
+		new HttpParams();
 
 	for (const [key, value] of Object.entries(params))
 	{
@@ -18,11 +19,13 @@ export function buildHttpParams(params: Record<string, unknown> | object): HttpP
 		{
 			if (value instanceof Date)
 			{
-				httpParams = httpParams.set(key, value.toISOString());
+				httpParams =
+					httpParams.set(key, value.toISOString());
 			}
 			else
 			{
-				httpParams = httpParams.set(key, String(value));
+				httpParams =
+					httpParams.set(key, String(value));
 			}
 		}
 	}

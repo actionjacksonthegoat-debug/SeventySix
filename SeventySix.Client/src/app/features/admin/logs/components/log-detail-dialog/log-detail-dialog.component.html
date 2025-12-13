@@ -2,21 +2,21 @@
 	class="log-detail-dialog"
 	role="dialog"
 	aria-labelledby="log-dialog-title"
-	aria-describedby="log-dialog-description"
->
+	aria-describedby="log-dialog-description">
 	<!-- Header -->
-	<div mat-dialog-title class="dialog-header">
-		<div class="header-content" id="log-dialog-title">
+	<div
+		mat-dialog-title
+		class="dialog-header">
+		<div
+			class="header-content"
+			id="log-dialog-title">
 			<mat-icon
 				[class]="levelClass()"
-				[attr.aria-label]="'Log level: ' + levelName()"
-				>{{ levelIcon() }}</mat-icon
-			>
-			<span class="level-name" [class]="levelClass()">{{
-				levelName()
-			}}</span>
-			@if (log().sourceContext)
-			{
+				[attr.aria-label]='"Log level: " + levelName()'>{{ levelIcon() }}</mat-icon>
+			<span
+				class="level-name"
+				[class]="levelClass()">{{ levelName() }}</span>
+			@if (log().sourceContext) {
 				<span class="source-context">• {{ log().sourceContext }}</span>
 			}
 			<span class="timestamp">• {{ relativeTime() }}</span>
@@ -25,23 +25,19 @@
 			<button
 				mat-icon-button
 				(click)="openInJaeger()"
-				[matTooltip]="
-					hasCorrelationId()
-						? 'View this trace in Jaeger'
-						: 'No trace ID available. Enable OpenTelemetry in your backend to track distributed traces.'
-				"
+				[matTooltip]='hasCorrelationId()
+	? "View this trace in Jaeger"
+	: "No trace ID available. Enable OpenTelemetry in your backend to track distributed traces."'
 				[disabled]="!hasCorrelationId()"
 				aria-label="Open this specific trace in Jaeger"
-				color="warn"
-			>
+				color="warn">
 				<mat-icon aria-hidden="true">bug_report</mat-icon>
 			</button>
 			<button
 				mat-icon-button
 				(click)="copyToClipboard()"
 				matTooltip="Copy to clipboard"
-				aria-label="Copy log details to clipboard"
-			>
+				aria-label="Copy log details to clipboard">
 				<mat-icon aria-hidden="true">content_copy</mat-icon>
 			</button>
 			<button
@@ -49,16 +45,14 @@
 				(click)="onDelete()"
 				matTooltip="Delete log"
 				color="warn"
-				aria-label="Delete this log entry"
-			>
+				aria-label="Delete this log entry">
 				<mat-icon aria-hidden="true">delete</mat-icon>
 			</button>
 			<button
 				mat-icon-button
 				(click)="onClose()"
 				matTooltip="Close (Esc)"
-				aria-label="Close dialog (Press Escape)"
-			>
+				aria-label="Close dialog (Press Escape)">
 				<mat-icon aria-hidden="true">close</mat-icon>
 			</button>
 		</div>
@@ -67,7 +61,10 @@
 	<mat-divider></mat-divider>
 
 	<!-- Content -->
-	<div mat-dialog-content class="dialog-content" id="log-dialog-description">
+	<div
+		mat-dialog-content
+		class="dialog-content"
+		id="log-dialog-description">
 		<!-- Message Section -->
 		<section class="detail-section">
 			<h3 class="section-title">Message</h3>
@@ -79,39 +76,27 @@
 		<mat-divider></mat-divider>
 
 		<!-- Exception Section -->
-		@if (log().exceptionMessage || log().baseExceptionMessage)
-		{
+		@if (log().exceptionMessage || log().baseExceptionMessage) {
 			<section class="detail-section error-section">
 				<div class="section-header">
 					<h3 class="section-title">
-						<mat-icon class="section-icon error-icon"
-							>error</mat-icon
-						>
+						<mat-icon class="section-icon error-icon">error</mat-icon>
 						Exception Details
 					</h3>
 					<button
 						mat-icon-button
 						(click)="toggleException()"
-						[matTooltip]="
-							exceptionCollapsed() ? 'Expand' : 'Collapse'
-						"
-					>
-						<mat-icon>{{
-							exceptionCollapsed() ? "expand_more" : "expand_less"
-						}}</mat-icon>
+						[matTooltip]='exceptionCollapsed() ? "Expand" : "Collapse"'>
+						<mat-icon>{{ exceptionCollapsed() ? "expand_more" : "expand_less" }}</mat-icon>
 					</button>
 				</div>
-				@if (!exceptionCollapsed())
-				{
+				@if (!exceptionCollapsed()) {
 					<div class="section-content">
 						<div class="error-breakdown">
-							@if (log().exceptionMessage)
-							{
+							@if (log().exceptionMessage) {
 								<div class="error-item exception-message">
 									<div class="error-label">
-										<mat-icon aria-hidden="true"
-											>message</mat-icon
-										>
+										<mat-icon aria-hidden="true">message</mat-icon>
 										<span>Exception Message</span>
 									</div>
 									<div class="error-value">
@@ -120,13 +105,10 @@
 								</div>
 							}
 
-							@if (log().baseExceptionMessage)
-							{
+							@if (log().baseExceptionMessage) {
 								<div class="error-item base-exception">
 									<div class="error-label">
-										<mat-icon aria-hidden="true"
-											>report</mat-icon
-										>
+										<mat-icon aria-hidden="true">report</mat-icon>
 										<span>Base Exception</span>
 									</div>
 									<div class="error-value">
@@ -143,40 +125,31 @@
 		}
 
 		<!-- Stack Trace Section -->
-		@if (log().stackTrace)
-		{
+		@if (log().stackTrace) {
 			<section class="detail-section stack-section">
 				<div class="section-header">
 					<h3 class="section-title">
-						<mat-icon class="section-icon stack-icon"
-							>code</mat-icon
-						>
+						<mat-icon class="section-icon stack-icon">code</mat-icon>
 						Stack Trace
 					</h3>
 					<button
 						mat-icon-button
 						(click)="toggleStackTrace()"
-						[matTooltip]="
-							stackTraceCollapsed() ? 'Expand' : 'Collapse'
-						"
-					>
+						[matTooltip]='stackTraceCollapsed() ? "Expand" : "Collapse"'>
 						<mat-icon>{{
-							stackTraceCollapsed()
+								stackTraceCollapsed()
 								? "expand_more"
 								: "expand_less"
-						}}</mat-icon>
+							}}</mat-icon>
 					</button>
 				</div>
-				@if (!stackTraceCollapsed())
-				{
+				@if (!stackTraceCollapsed()) {
 					<div class="section-content">
 						<div class="stack-breakdown">
 							<!-- Stack Frame Count -->
 							<div class="stack-info">
 								<mat-icon aria-hidden="true">info</mat-icon>
-								<span
-									>{{ stackFrameCount() }} stack frames</span
-								>
+								<span>{{ stackFrameCount() }} stack frames</span>
 							</div>
 
 							<!-- Stack Trace Content -->
@@ -192,79 +165,58 @@
 		}
 
 		<!-- Request Information Section -->
-		@if (log().requestPath || log().statusCode || log().durationMs)
-		{
+		@if (log().requestPath || log().statusCode || log().durationMs) {
 			<section class="detail-section">
 				<h3 class="section-title">Request Information</h3>
 				<div class="section-content info-grid">
-					@if (log().requestMethod)
-					{
+					@if (log().requestMethod) {
 						<div class="info-item">
 							<span class="info-label">Method:</span>
-							<span class="info-value">{{
-								log().requestMethod
-							}}</span>
+							<span class="info-value">{{ log().requestMethod }}</span>
 						</div>
 					}
-					@if (log().requestPath)
-					{
+					@if (log().requestPath) {
 						<div class="info-item">
 							<span class="info-label">Path:</span>
-							<span class="info-value">{{
-								log().requestPath
-							}}</span>
+							<span class="info-value">{{ log().requestPath }}</span>
 						</div>
 					}
-					@if (log().statusCode)
-					{
+					@if (log().statusCode) {
 						<div class="info-item">
 							<span class="info-label">Status Code:</span>
-							<span class="info-value">{{
-								log().statusCode
-							}}</span>
+							<span class="info-value">{{ log().statusCode }}</span>
 						</div>
 					}
-					@if (log().durationMs)
-					{
+					@if (log().durationMs) {
 						<div class="info-item">
 							<span class="info-label">Duration:</span>
-							<span class="info-value"
-								>{{ log().durationMs }} ms</span
-							>
+							<span class="info-value">{{ log().durationMs }} ms</span>
 						</div>
 					}
-					@if (log().correlationId)
-					{
+					@if (log().correlationId) {
 						<div class="info-item">
 							<span class="info-label">Correlation ID:</span>
-							<span class="info-value">{{
-								log().correlationId
-							}}</span>
+							<span class="info-value">{{ log().correlationId }}</span>
 						</div>
 					}
-					@if (log().spanId)
-					{
+					@if (log().spanId) {
 						<div class="info-item">
 							<span class="info-label">Span ID:</span>
 							<span class="info-value">{{ log().spanId }}</span>
 						</div>
 					}
-					@if (log().parentSpanId)
-					{
+					@if (log().parentSpanId) {
 						<div class="info-item">
 							<span class="info-label">Parent Span ID:</span>
 							<span
 								class="info-value"
-								[matTooltip]="
-									isRootSpan()
-										? 'All zeros indicates this is a root span (top-level request with no parent)'
-										: ''
-								"
-							>
+								[matTooltip]='isRootSpan()
+	? "All zeros indicates this is a root span (top-level request with no parent)"
+	: ""'>
 								{{
 									isRootSpan()
-										? log().parentSpanId + " (Root Span)"
-										: log().parentSpanId
+									? log().parentSpanId + " (Root Span)"
+									: log().parentSpanId
 								}}
 							</span>
 						</div>
@@ -276,27 +228,22 @@
 		}
 
 		<!-- Properties Section -->
-		@if (log().properties)
-		{
+		@if (log().properties) {
 			<section class="detail-section">
 				<div class="section-header">
 					<h3 class="section-title">Properties</h3>
 					<button
 						mat-icon-button
 						(click)="toggleProperties()"
-						[matTooltip]="
-							propertiesCollapsed() ? 'Expand' : 'Collapse'
-						"
-					>
+						[matTooltip]='propertiesCollapsed() ? "Expand" : "Collapse"'>
 						<mat-icon>{{
-							propertiesCollapsed()
+								propertiesCollapsed()
 								? "expand_more"
 								: "expand_less"
-						}}</mat-icon>
+							}}</mat-icon>
 					</button>
 				</div>
-				@if (!propertiesCollapsed())
-				{
+				@if (!propertiesCollapsed()) {
 					<div class="section-content properties-content">
 						<pre>{{ formattedProperties() }}</pre>
 					</div>
@@ -316,19 +263,15 @@
 				</div>
 				<div class="info-item">
 					<span class="info-label">Timestamp:</span>
-					<span class="info-value">{{
-						log().createDate.toLocaleString()
-					}}</span>
+					<span class="info-value">{{ log().createDate.toLocaleString() }}</span>
 				</div>
-				@if (log().machineName)
-				{
+				@if (log().machineName) {
 					<div class="info-item">
 						<span class="info-label">Machine:</span>
 						<span class="info-value">{{ log().machineName }}</span>
 					</div>
 				}
-				@if (log().environment)
-				{
+				@if (log().environment) {
 					<div class="info-item">
 						<span class="info-label">Environment:</span>
 						<span class="info-value">{{ log().environment }}</span>

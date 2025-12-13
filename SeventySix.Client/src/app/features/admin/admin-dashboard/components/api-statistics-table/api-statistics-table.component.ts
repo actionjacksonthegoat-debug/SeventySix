@@ -1,19 +1,19 @@
+import { ThirdPartyApiRequestResponse } from "@admin/admin-dashboard/models";
+import { ThirdPartyApiService } from "@admin/admin-dashboard/services";
 import {
-	Component,
-	signal,
-	WritableSignal,
 	ChangeDetectionStrategy,
-	inject,
+	Component,
 	computed,
-	Signal
+	inject,
+	Signal,
+	signal,
+	WritableSignal
 } from "@angular/core";
-import { MatTableModule, MatTableDataSource } from "@angular/material/table";
+import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatButtonModule } from "@angular/material/button";
-import { ThirdPartyApiService } from "@admin/admin-dashboard/services";
-import { ThirdPartyApiRequestResponse } from "@admin/admin-dashboard/models";
+import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 import { DateService } from "@infrastructure/services/date.service";
 
 /**
@@ -45,27 +45,30 @@ export class ApiStatisticsTableComponent
 {
 	private readonly thirdPartyApiService: ThirdPartyApiService =
 		inject(ThirdPartyApiService);
-	private readonly dateService: DateService = inject(DateService);
+	private readonly dateService: DateService =
+		inject(DateService);
 
 	/**
 	 * TanStack Query for API data
 	 */
 	readonly apiDataQuery: ReturnType<
-		ThirdPartyApiService["getAllThirdPartyApis"]
-	> = this.thirdPartyApiService.getAllThirdPartyApis();
+		ThirdPartyApiService["getAllThirdPartyApis"]> =
+		this.thirdPartyApiService.getAllThirdPartyApis();
 
 	/**
 	 * Loading state from query
 	 */
-	readonly isLoading: Signal<boolean> = computed(() =>
-		this.apiDataQuery.isLoading());
+	readonly isLoading: Signal<boolean> =
+		computed(() => this.apiDataQuery.isLoading());
 
 	/**
 	 * Error state from query
 	 */
-	readonly error: Signal<string | null> = computed(() =>
+	readonly error: Signal<string | null> =
+		computed(() =>
 	{
-		const err: Error | null = this.apiDataQuery.error();
+		const err: Error | null =
+			this.apiDataQuery.error();
 		return err ? err.message || "Failed to load API data" : null;
 	});
 
@@ -73,11 +76,13 @@ export class ApiStatisticsTableComponent
 	 * Data source with computed display properties
 	 */
 	readonly dataSource: Signal<
-		MatTableDataSource<ThirdPartyApiRequestDisplay>
-	> = computed(() =>
+		MatTableDataSource<ThirdPartyApiRequestDisplay>> =
+		computed(() =>
 	{
-		const data: ThirdPartyApiRequestResponse[] = this.apiDataQuery.data() ?? [];
-		const displayData: ThirdPartyApiRequestDisplay[] = data.map((item) => ({
+		const data: ThirdPartyApiRequestResponse[] =
+			this.apiDataQuery.data() ?? [];
+		const displayData: ThirdPartyApiRequestDisplay[] =
+			data.map((item) => ({
 			...item,
 			formattedLastCalled: this.formatLastCalled(item.lastCalledAt),
 			status: this.getStatus(item.lastCalledAt)
@@ -88,7 +93,8 @@ export class ApiStatisticsTableComponent
 	/**
 	 * Displayed columns
 	 */
-	readonly displayedColumns: WritableSignal<string[]> = signal<string[]>([
+	readonly displayedColumns: WritableSignal<string[]> =
+		signal<string[]>([
 		"apiName",
 		"callCount",
 		"lastCalledAt"
@@ -109,7 +115,8 @@ export class ApiStatisticsTableComponent
 	{
 		if (!timestamp) return "error";
 
-		const hoursSince: number = this.dateService.hoursSince(timestamp);
+		const hoursSince: number =
+			this.dateService.hoursSince(timestamp);
 
 		if (hoursSince < 1) return "ok";
 		if (hoursSince < 24) return "warning";

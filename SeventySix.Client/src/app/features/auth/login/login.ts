@@ -3,20 +3,20 @@
  * Most of the app works without login (guest access).
  */
 
+import { HttpErrorResponse } from "@angular/common/http";
 import {
+	ChangeDetectionStrategy,
 	Component,
 	inject,
+	OnInit,
 	signal,
-	WritableSignal,
-	ChangeDetectionStrategy,
-	OnInit
+	WritableSignal
 } from "@angular/core";
-import { Router, ActivatedRoute, RouterLink } from "@angular/router";
 import { FormsModule } from "@angular/forms";
-import { HttpErrorResponse } from "@angular/common/http";
+import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+import { AuthResponse, LoginRequest } from "@infrastructure/api";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
-import { LoginRequest, AuthResponse } from "@infrastructure/api";
 
 @Component({
 	selector: "app-login",
@@ -28,9 +28,12 @@ import { LoginRequest, AuthResponse } from "@infrastructure/api";
 })
 export class LoginComponent implements OnInit
 {
-	private readonly authService: AuthService = inject(AuthService);
-	private readonly router: Router = inject(Router);
-	private readonly route: ActivatedRoute = inject(ActivatedRoute);
+	private readonly authService: AuthService =
+		inject(AuthService);
+	private readonly router: Router =
+		inject(Router);
+	private readonly route: ActivatedRoute =
+		inject(ActivatedRoute);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
@@ -44,7 +47,8 @@ export class LoginComponent implements OnInit
 
 	ngOnInit(): void
 	{
-		this.returnUrl = this.route.snapshot.queryParams["returnUrl"] ?? "/";
+		this.returnUrl =
+			this.route.snapshot.queryParams["returnUrl"] ?? "/";
 
 		// Redirect if already authenticated
 		if (this.authService.isAuthenticated())
@@ -63,40 +67,44 @@ export class LoginComponent implements OnInit
 
 		this.isLoading.set(true);
 
-		const credentials: LoginRequest = {
-			usernameOrEmail: this.usernameOrEmail,
-			password: this.password,
-			rememberMe: this.rememberMe
-		};
+		const credentials: LoginRequest =
+			{
+				usernameOrEmail: this.usernameOrEmail,
+				password: this.password,
+				rememberMe: this.rememberMe
+			};
 
-		this.authService.login(credentials).subscribe({
-			next: (response: AuthResponse) =>
-			{
-				if (response.requiresPasswordChange)
+		this
+			.authService
+			.login(credentials)
+			.subscribe({
+				next: (response: AuthResponse) =>
 				{
-					// Redirect to password change page
-					this.notification.info(
-						"You must change your password before continuing."
-					);
-					this.router.navigate(["/auth/change-password"], {
-						queryParams: {
-							required: "true",
-							returnUrl: this.returnUrl
-						}
-					});
-				}
-				else
+					if (response.requiresPasswordChange)
+					{
+						// Redirect to password change page
+						this.notification.info(
+							"You must change your password before continuing.");
+						this.router.navigate(["/auth/change-password"], {
+							queryParams: {
+								required: "true",
+								returnUrl: this.returnUrl
+							}
+						});
+					}
+					else
+					{
+						this.router.navigateByUrl(this.returnUrl);
+					}
+				},
+				error: (error: HttpErrorResponse) =>
 				{
-					this.router.navigateByUrl(this.returnUrl);
+					const details: string[] =
+						this.getLoginErrorDetails(error);
+					this.notification.errorWithDetails("Login Failed", details);
+					this.isLoading.set(false);
 				}
-			},
-			error: (error: HttpErrorResponse) =>
-			{
-				const details: string[] = this.getLoginErrorDetails(error);
-				this.notification.errorWithDetails("Login Failed", details);
-				this.isLoading.set(false);
-			}
-		});
+			});
 	}
 
 	protected onGitHubLogin(): void

@@ -32,7 +32,8 @@ function parseDates(body: unknown): unknown
 		const parsed: Record<string, unknown> = {};
 		for (const [key, value] of Object.entries(body))
 		{
-			parsed[key] = parseDates(value);
+			parsed[key] =
+				parseDates(value);
 		}
 		return parsed;
 	}
@@ -50,16 +51,17 @@ function parseDates(body: unknown): unknown
  * // Before: { timestamp: "2024-04-29T15:45:12.123Z" }
  * // After:  { timestamp: Date(2024-04-29T15:45:12.123Z) }
  */
-export const dateParserInterceptor: HttpInterceptorFn = (req, next) =>
+export const dateParserInterceptor: HttpInterceptorFn =
+	(req, next) =>
 {
-	return next(req).pipe(
-		map((event) =>
-		{
-			if (event instanceof HttpResponse && event.body)
+	return next(req)
+		.pipe(
+			map((event) =>
 			{
-				return event.clone({ body: parseDates(event.body) });
-			}
-			return event;
-		})
-	);
+				if (event instanceof HttpResponse && event.body)
+				{
+					return event.clone({ body: parseDates(event.body) });
+				}
+				return event;
+			}));
 };

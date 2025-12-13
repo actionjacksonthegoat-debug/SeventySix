@@ -28,7 +28,8 @@ export const LOG_LEVEL_FATAL: string = "Fatal";
 export const LOG_LEVEL_CRITICAL: string = "Critical";
 
 /** Valid log levels for filtering. */
-export const VALID_LOG_LEVELS: readonly string[] = [
+export const VALID_LOG_LEVELS: readonly string[] =
+	[
 	LOG_LEVEL_VERBOSE,
 	LOG_LEVEL_DEBUG,
 	LOG_LEVEL_INFORMATION,

@@ -7,7 +7,8 @@ describe("ContentHelper", () =>
 	beforeEach(() =>
 	{
 		// Store original window.innerHeight
-		originalInnerHeight = window.innerHeight;
+		originalInnerHeight =
+			window.innerHeight;
 	});
 
 	afterEach(() =>
@@ -32,11 +33,13 @@ describe("ContentHelper", () =>
 			});
 
 			// Act
-			const result: number = getAvailableContentHeight();
+			const result: number =
+				getAvailableContentHeight();
 
 			// Assert
 			// 1000 viewport - 64 header - 52 breadcrumb - 48 footer = 836
-			expect(result).toBe(836);
+			expect(result)
+				.toBe(836);
 		});
 
 		it("should calculate available height with offset", () =>
@@ -50,11 +53,13 @@ describe("ContentHelper", () =>
 			const offset: number = 72; // Paginator (56) + padding (16)
 
 			// Act
-			const result: number = getAvailableContentHeight(offset);
+			const result: number =
+				getAvailableContentHeight(offset);
 
 			// Assert
 			// 1000 viewport - 64 header - 52 breadcrumb - 48 footer - 72 offset = 764
-			expect(result).toBe(764);
+			expect(result)
+				.toBe(764);
 		});
 
 		it("should return 0 when calculated height is negative", () =>
@@ -68,11 +73,13 @@ describe("ContentHelper", () =>
 			const offset: number = 200;
 
 			// Act
-			const result: number = getAvailableContentHeight(offset);
+			const result: number =
+				getAvailableContentHeight(offset);
 
 			// Assert
 			// Should never return negative values
-			expect(result).toBe(0);
+			expect(result)
+				.toBe(0);
 		});
 
 		it("should handle zero offset (default parameter)", () =>
@@ -85,11 +92,13 @@ describe("ContentHelper", () =>
 			});
 
 			// Act
-			const result: number = getAvailableContentHeight(0);
+			const result: number =
+				getAvailableContentHeight(0);
 
 			// Assert
 			// 800 viewport - 64 header - 52 breadcrumb - 48 footer = 636
-			expect(result).toBe(636);
+			expect(result)
+				.toBe(636);
 		});
 
 		it("should handle typical desktop viewport (1920x1080)", () =>
@@ -102,11 +111,13 @@ describe("ContentHelper", () =>
 			});
 
 			// Act
-			const result: number = getAvailableContentHeight(56); // Paginator only
+			const result: number =
+				getAvailableContentHeight(56); // Paginator only
 
 			// Assert
 			// 1080 viewport - 64 header - 52 breadcrumb - 48 footer - 56 paginator = 860
-			expect(result).toBe(860);
+			expect(result)
+				.toBe(860);
 		});
 
 		it("should handle typical mobile viewport (375x667)", () =>
@@ -119,11 +130,13 @@ describe("ContentHelper", () =>
 			});
 
 			// Act
-			const result: number = getAvailableContentHeight(56);
+			const result: number =
+				getAvailableContentHeight(56);
 
 			// Assert
 			// 667 viewport - 64 header - 52 breadcrumb - 48 footer - 56 paginator = 447
-			expect(result).toBe(447);
+			expect(result)
+				.toBe(447);
 		});
 	});
 
@@ -131,32 +144,40 @@ describe("ContentHelper", () =>
 	{
 		it("should expose correct header height", () =>
 		{
-			expect(LayoutDimensions.headerHeight).toBe(64);
+			expect(LayoutDimensions.headerHeight)
+				.toBe(64);
 		});
 
 		it("should expose correct breadcrumb height", () =>
 		{
-			expect(LayoutDimensions.breadcrumbHeight).toBe(52);
+			expect(LayoutDimensions.breadcrumbHeight)
+				.toBe(52);
 		});
 
 		it("should expose correct footer height", () =>
 		{
-			expect(LayoutDimensions.footerHeight).toBe(48);
+			expect(LayoutDimensions.footerHeight)
+				.toBe(48);
 		});
 
 		it("should expose correct total fixed height", () =>
 		{
-			expect(LayoutDimensions.totalFixedHeight).toBe(164); // 64 + 52 + 48
+			expect(LayoutDimensions.totalFixedHeight)
+				.toBe(164); // 64 + 52 + 48
 		});
 
 		it("should have immutable properties", () =>
 		{
 			// Verify the const assertion works by checking values are as expected
 			// TypeScript enforces readonly at compile time
-			expect(LayoutDimensions.headerHeight).toBe(64);
-			expect(LayoutDimensions.breadcrumbHeight).toBe(52);
-			expect(LayoutDimensions.footerHeight).toBe(48);
-			expect(LayoutDimensions.totalFixedHeight).toBe(164);
+			expect(LayoutDimensions.headerHeight)
+				.toBe(64);
+			expect(LayoutDimensions.breadcrumbHeight)
+				.toBe(52);
+			expect(LayoutDimensions.footerHeight)
+				.toBe(48);
+			expect(LayoutDimensions.totalFixedHeight)
+				.toBe(164);
 		});
 	});
 });
