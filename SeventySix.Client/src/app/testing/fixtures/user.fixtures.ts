@@ -84,13 +84,16 @@ export class UserFixtures
 	 */
 	static createUsers(count: number): UserDto[]
 	{
-		return Array.from({ length: count }, (_, i) =>
-			UserFixtures.createUser({
-				id: i + 1,
-				username: `user_${i + 1}`,
-				email: `user${i + 1}@example.com`,
-				fullName: `User ${i + 1}`
-			}));
+		return Array.from(
+			{ length: count },
+			(_, i) =>
+				UserFixtures.createUser(
+					{
+						id: i + 1,
+						username: `user_${i + 1}`,
+						email: `user${i + 1}@example.com`,
+						fullName: `User ${i + 1}`
+					}));
 	}
 
 	/**

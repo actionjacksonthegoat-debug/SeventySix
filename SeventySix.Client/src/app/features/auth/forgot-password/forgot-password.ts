@@ -15,14 +15,15 @@ import { RouterLink } from "@angular/router";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 
-@Component({
-	selector: "app-forgot-password",
-	standalone: true,
-	imports: [FormsModule, RouterLink],
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	templateUrl: "./forgot-password.html",
-	styleUrl: "./forgot-password.scss"
-})
+@Component(
+	{
+		selector: "app-forgot-password",
+		standalone: true,
+		imports: [FormsModule, RouterLink],
+		changeDetection: ChangeDetectionStrategy.OnPush,
+		templateUrl: "./forgot-password.html",
+		styleUrl: "./forgot-password.scss"
+	})
 export class ForgotPasswordComponent
 {
 	private readonly authService: AuthService =
@@ -67,9 +68,10 @@ export class ForgotPasswordComponent
 		this.isLoading.set(true);
 
 		this
-			.authService
-			.requestPasswordReset(this.email)
-			.subscribe({
+		.authService
+		.requestPasswordReset(this.email)
+		.subscribe(
+			{
 				next: () =>
 				{
 					this.submitted.set(true);

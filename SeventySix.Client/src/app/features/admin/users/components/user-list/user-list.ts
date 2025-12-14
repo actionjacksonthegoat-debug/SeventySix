@@ -26,14 +26,15 @@ import type {
  * Follows OnPush change detection for performance.
  * Uses signals for reactive state management.
  */
-@Component({
-	selector: "app-user-list",
-	imports: [DataTableComponent],
-	providers: [DatePipe],
-	templateUrl: "./user-list.html",
-	styleUrls: ["./user-list.scss"],
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-user-list",
+		imports: [DataTableComponent],
+		providers: [DatePipe],
+		templateUrl: "./user-list.html",
+		styleUrls: ["./user-list.scss"],
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class UserList
 {
 	private readonly userService: UserService =
@@ -62,27 +63,29 @@ export class UserList
 
 	readonly data: Signal<UserDto[]> =
 		computed(
-		() =>
-			(this.usersQuery.data()?.items as UserDto[]) ?? []);
+			() =>
+				(this.usersQuery.data()?.items as UserDto[]) ?? []);
 	readonly isLoading: Signal<boolean> =
-		computed(() => this.usersQuery.isLoading());
+		computed(
+			() => this.usersQuery.isLoading());
 	readonly error: Signal<string | null> =
-		computed(() =>
-			this.usersQuery.error()
-				? "Failed to load users. Please try again."
-				: null);
+		computed(
+			() =>
+				this.usersQuery.error()
+					? "Failed to load users. Please try again."
+					: null);
 	readonly totalCount: Signal<number> =
 		computed(
-		() =>
-			this.usersQuery.data()?.totalCount ?? 0);
+			() =>
+				this.usersQuery.data()?.totalCount ?? 0);
 	readonly pageIndex: Signal<number> =
 		computed(
-		() =>
-			(this.userService.getCurrentFilter().page ?? 1) - 1);
+			() =>
+				(this.userService.getCurrentFilter().page ?? 1) - 1);
 	readonly pageSize: Signal<number> =
 		computed(
-		() =>
-			this.userService.getCurrentFilter().pageSize ?? 50);
+			() =>
+				this.userService.getCurrentFilter().pageSize ?? 50);
 
 	readonly columns: TableColumn<UserDto>[] =
 		[
@@ -121,23 +124,23 @@ export class UserList
 				sortable: true,
 				visible: true,
 				formatter: (value: unknown, row?: UserDto): string =>
-			{
-				if (row?.isDeleted)
 				{
-					return "Deleted";
-				}
-				return value === true ? "Active" : "Inactive";
-			},
+					if (row?.isDeleted)
+					{
+						return "Deleted";
+					}
+					return value === true ? "Active" : "Inactive";
+				},
 				badgeColor: (
-				value: unknown,
-				row?: UserDto): "primary" | "accent" | "warn" =>
-			{
-				if (row?.isDeleted)
+					value: unknown,
+					row?: UserDto): "primary" | "accent" | "warn" =>
 				{
-					return "warn";
+					if (row?.isDeleted)
+					{
+						return "warn";
+					}
+					return value === true ? "primary" : "accent";
 				}
-				return value === true ? "primary" : "accent";
-			}
 			},
 			{
 				key: "createDate",
@@ -227,7 +230,8 @@ export class UserList
 
 	onSearch(searchTerm: string): void
 	{
-		this.userService.updateFilter({ searchTerm: searchTerm || undefined });
+		this.userService.updateFilter(
+			{ searchTerm: searchTerm || undefined });
 	}
 
 	onRefresh(): void
@@ -270,10 +274,11 @@ export class UserList
 				break;
 		}
 
-		this.userService.updateFilter({
-			isActive,
-			includeDeleted
-		});
+		this.userService.updateFilter(
+			{
+				isActive,
+				includeDeleted
+			});
 	}
 
 	/**
@@ -282,10 +287,11 @@ export class UserList
 	 */
 	onSortChange(event: SortChangeEvent): void
 	{
-		this.userService.updateFilter({
-			sortBy: event.sortBy,
-			sortDescending: event.sortDescending
-		});
+		this.userService.updateFilter(
+			{
+				sortBy: event.sortBy,
+				sortDescending: event.sortDescending
+			});
 	}
 
 	onRowAction(event: RowActionEvent<UserDto>): void
@@ -335,7 +341,8 @@ export class UserList
 	 */
 	private viewUser(userId: number): void
 	{
-		void this.router.navigate(["/admin/users", userId]);
+		void this.router.navigate(
+			["/admin/users", userId]);
 	}
 
 	/**
@@ -344,7 +351,8 @@ export class UserList
 	 */
 	private editUser(userId: number): void
 	{
-		void this.router.navigate(["/admin/users", userId, "edit"]);
+		void this.router.navigate(
+			["/admin/users", userId, "edit"]);
 	}
 
 	/**
@@ -354,32 +362,35 @@ export class UserList
 	private resetUserPassword(user: UserDto): void
 	{
 		this
-			.dialogService
-			.confirm({
+		.dialogService
+		.confirm(
+			{
 				title: "Reset Password",
 				message:
-					`Are you sure you want to reset the password for "${user.username}"? They will receive an email with instructions to set a new password.`,
+						`Are you sure you want to reset the password for "${user.username}"? They will receive an email with instructions to set a new password.`,
 				confirmText: "Reset Password"
 			})
-			.subscribe((confirmed: boolean) =>
+		.subscribe(
+			(confirmed: boolean) =>
 			{
 				if (!confirmed)
 				{
 					return;
 				}
 
-				this.resetPasswordMutation.mutate(user.id, {
-					onSuccess: () =>
+				this.resetPasswordMutation.mutate(user.id,
 					{
-						this.notificationService.success(
-							`Password reset email sent to ${user.email}`);
-					},
-					onError: (error: Error) =>
-					{
-						this.notificationService.error(
-							`Failed to reset password: ${error.message}`);
-					}
-				});
+						onSuccess: () =>
+						{
+							this.notificationService.success(
+								`Password reset email sent to ${user.email}`);
+						},
+						onError: (error: Error) =>
+						{
+							this.notificationService.error(
+								`Failed to reset password: ${error.message}`);
+						}
+					});
 			});
 	}
 
@@ -390,9 +401,10 @@ export class UserList
 	private deactivateUser(user: UserDto): void
 	{
 		this
-			.dialogService
-			.confirmDeactivate("user")
-			.subscribe((confirmed: boolean) =>
+		.dialogService
+		.confirmDeactivate("user")
+		.subscribe(
+			(confirmed: boolean) =>
 			{
 				if (!confirmed)
 				{
@@ -432,32 +444,35 @@ export class UserList
 	private handleRestoreUser(user: UserDto): void
 	{
 		this
-			.dialogService
-			.confirm({
+		.dialogService
+		.confirm(
+			{
 				title: "Restore User",
 				message: `Are you sure you want to restore user "${user.username}"?`,
 				confirmText: "Restore",
 				cancelText: "Cancel"
 			})
-			.subscribe((confirmed: boolean) =>
+		.subscribe(
+			(confirmed: boolean) =>
 			{
 				if (!confirmed)
 				{
 					return;
 				}
 
-				this.restoreUserMutation.mutate(user.id, {
-					onSuccess: () =>
+				this.restoreUserMutation.mutate(user.id,
 					{
-						this.notificationService.success(
-							`User "${user.username}" restored successfully`);
-					},
-					onError: (error: Error) =>
-					{
-						this.notificationService.error(
-							`Failed to restore user: ${error.message}`);
-					}
-				});
+						onSuccess: () =>
+						{
+							this.notificationService.success(
+								`User "${user.username}" restored successfully`);
+						},
+						onError: (error: Error) =>
+						{
+							this.notificationService.error(
+								`Failed to restore user: ${error.message}`);
+						}
+					});
 			});
 	}
 }

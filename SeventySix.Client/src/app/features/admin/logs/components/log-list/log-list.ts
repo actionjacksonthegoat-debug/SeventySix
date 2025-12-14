@@ -32,14 +32,15 @@ import {
  * Follows OnPush change detection for performance
  * Uses signals for reactive state management
  */
-@Component({
-	selector: "app-log-list",
-	imports: [DataTableComponent],
-	templateUrl: "./log-list.html",
-	styleUrl: "./log-list.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	providers: [DatePipe]
-})
+@Component(
+	{
+		selector: "app-log-list",
+		imports: [DataTableComponent],
+		templateUrl: "./log-list.html",
+		styleUrl: "./log-list.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush,
+		providers: [DatePipe]
+	})
 export class LogList
 {
 	private readonly logService: LogManagementService =
@@ -75,25 +76,25 @@ export class LogList
 				visible: true,
 				type: "badge",
 				formatter: (value: unknown): string =>
-			{
-				const level: LogLevel =
-					parseLogLevel(value as string);
-				return LogLevel[level];
-			},
+				{
+					const level: LogLevel =
+						parseLogLevel(value as string);
+					return LogLevel[level];
+				},
 				badgeColor: (value: unknown): "primary" | "accent" | "warn" =>
-			{
-				const level: LogLevel =
-					parseLogLevel(value as string);
-				if (level === LogLevel.Error || level === LogLevel.Fatal)
 				{
-					return "warn";
+					const level: LogLevel =
+						parseLogLevel(value as string);
+					if (level === LogLevel.Error || level === LogLevel.Fatal)
+					{
+						return "warn";
+					}
+					if (level === LogLevel.Warning)
+					{
+						return "accent";
+					}
+					return "primary";
 				}
-				if (level === LogLevel.Warning)
-				{
-					return "accent";
-				}
-				return "primary";
-			}
 			},
 			{
 				key: "createDate",
@@ -150,24 +151,24 @@ export class LogList
 				label: "Warnings",
 				icon: "warning",
 				filterFn: (item: LogDto): boolean =>
-			{
-				const level: LogLevel =
-					parseLogLevel(item.logLevel);
-				// Warning level and above: Warning (3), Error (4), Fatal (5)
-				return level >= LogLevel.Warning;
-			}
+				{
+					const level: LogLevel =
+						parseLogLevel(item.logLevel);
+					// Warning level and above: Warning (3), Error (4), Fatal (5)
+					return level >= LogLevel.Warning;
+				}
 			},
 			{
 				key: "errors",
 				label: "Errors",
 				icon: "error",
 				filterFn: (item: LogDto): boolean =>
-			{
-				const level: LogLevel =
-					parseLogLevel(item.logLevel);
-				// Error level and above: Error (4), Fatal (5)
-				return level >= LogLevel.Error;
-			}
+				{
+					const level: LogLevel =
+						parseLogLevel(item.logLevel);
+					// Error level and above: Error (4), Fatal (5)
+					return level >= LogLevel.Error;
+				}
 			}
 		];
 
@@ -197,31 +198,34 @@ export class LogList
 	// Computed signals
 	readonly data: Signal<LogDto[]> =
 		computed(
-		(): LogDto[] =>
-			(this.logsQuery.data()?.items as LogDto[]) ?? []);
+			(): LogDto[] =>
+				(this.logsQuery.data()?.items as LogDto[]) ?? []);
 	readonly totalCount: Signal<number> =
 		computed(
-		(): number =>
-			this.logsQuery.data()?.totalCount ?? 0);
+			(): number =>
+				this.logsQuery.data()?.totalCount ?? 0);
 	readonly pageIndex: Signal<number> =
 		computed(
-		(): number =>
-			(this.logsQuery.data()?.page ?? 1) - 1);
+			(): number =>
+				(this.logsQuery.data()?.page ?? 1) - 1);
 	readonly pageSize: Signal<number> =
 		computed(
-		(): number =>
-			this.logsQuery.data()?.pageSize ?? 25);
+			(): number =>
+				this.logsQuery.data()?.pageSize ?? 25);
 	readonly isLoading: Signal<boolean> =
-		computed((): boolean =>
-			this.logsQuery.isLoading());
+		computed(
+			(): boolean =>
+				this.logsQuery.isLoading());
 	readonly error: Signal<string | null> =
-		computed((): string | null =>
-			this.logsQuery.error() ? "Failed to load logs" : null);
+		computed(
+			(): string | null =>
+				this.logsQuery.error() ? "Failed to load logs" : null);
 
 	// Event handlers
 	onSearch(searchText: string): void
 	{
-		this.logService.updateFilter({ searchTerm: searchText || undefined });
+		this.logService.updateFilter(
+			{ searchTerm: searchText || undefined });
 	}
 
 	onRefresh(): void
@@ -253,24 +257,27 @@ export class LogList
 				break;
 		}
 
-		this.logService.updateFilter({ logLevel });
+		this.logService.updateFilter(
+			{ logLevel });
 	}
 
 	onDateRangeChange(event: DateRangeEvent): void
 	{
 		// Update filter with date range
-		this.logService.updateFilter({
-			startDate: event.startDate,
-			endDate: event.endDate
-		});
+		this.logService.updateFilter(
+			{
+				startDate: event.startDate,
+				endDate: event.endDate
+			});
 	}
 
 	onSortChange(event: SortChangeEvent): void
 	{
-		this.logService.updateFilter({
-			sortBy: event.sortBy,
-			sortDescending: event.sortDescending
-		});
+		this.logService.updateFilter(
+			{
+				sortBy: event.sortBy,
+				sortDescending: event.sortDescending
+			});
 	}
 
 	onRowAction(event: RowActionEvent<LogDto>): void
@@ -322,28 +329,31 @@ export class LogList
 	private viewLogDetails(log: LogDto): void
 	{
 		const dialogRef: MatDialogRef<LogDetailDialogComponent> =
-			this.dialog.open(LogDetailDialogComponent, {
-			width: "900px",
-			maxWidth: "95vw",
-			maxHeight: "90vh",
-			data: log,
-			autoFocus: false,
-			restoreFocus: true
-		});
+			this.dialog.open(LogDetailDialogComponent,
+				{
+					width: "900px",
+					maxWidth: "95vw",
+					maxHeight: "90vh",
+					data: log,
+					autoFocus: false,
+					restoreFocus: true
+				});
 
 		// Subscribe to delete event from dialog
 		const component: LogDetailDialogComponent =
 			dialogRef.componentInstance;
 		const subscription: OutputRefSubscription =
-			component.deleteLog.subscribe((id: number) =>
-		{
-			this.deleteLog(id);
-		});
+			component.deleteLog.subscribe(
+				(id: number) =>
+				{
+					this.deleteLog(id);
+				});
 
 		// Clean up subscription when dialog closes
 		dialogRef
-			.afterClosed()
-			.subscribe(() =>
+		.afterClosed()
+		.subscribe(
+			() =>
 			{
 				subscription.unsubscribe();
 			});
@@ -357,27 +367,29 @@ export class LogList
 	private deleteLog(id: number): void
 	{
 		this
-			.dialogService
-			.confirmDelete("log")
-			.subscribe((confirmed: boolean) =>
+		.dialogService
+		.confirmDelete("log")
+		.subscribe(
+			(confirmed: boolean) =>
 			{
 				if (!confirmed)
 				{
 					return;
 				}
 
-				this.deleteLogMutation.mutate(id, {
-					onSuccess: () =>
+				this.deleteLogMutation.mutate(id,
 					{
-						this.notificationService.success(
-							"Log entry deleted successfully");
-					},
-					onError: (error: Error) =>
-					{
-						this.notificationService.error(
-							`Failed to delete log entry: ${error.message}`);
-					}
-				});
+						onSuccess: () =>
+						{
+							this.notificationService.success(
+								"Log entry deleted successfully");
+						},
+						onError: (error: Error) =>
+						{
+							this.notificationService.error(
+								`Failed to delete log entry: ${error.message}`);
+						}
+					});
 			});
 	}
 
@@ -398,27 +410,29 @@ export class LogList
 			ids.length;
 
 		this
-			.dialogService
-			.confirmDelete("log", count)
-			.subscribe((confirmed: boolean) =>
+		.dialogService
+		.confirmDelete("log", count)
+		.subscribe(
+			(confirmed: boolean) =>
 			{
 				if (!confirmed)
 				{
 					return;
 				}
 
-				this.deleteLogsMutation.mutate(ids, {
-					onSuccess: () =>
+				this.deleteLogsMutation.mutate(ids,
 					{
-						this.notificationService.success(
-							`Successfully deleted ${count} log ${count === 1 ? "entry" : "entries"}`);
-					},
-					onError: (error: Error) =>
-					{
-						this.notificationService.error(
-							`Failed to delete logs: ${error.message}`);
-					}
-				});
+						onSuccess: () =>
+						{
+							this.notificationService.success(
+								`Successfully deleted ${count} log ${count === 1 ? "entry" : "entries"}`);
+						},
+						onError: (error: Error) =>
+						{
+							this.notificationService.error(
+								`Failed to delete logs: ${error.message}`);
+						}
+					});
 			});
 	}
 }

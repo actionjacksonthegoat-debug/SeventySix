@@ -12,7 +12,8 @@ import { Observable } from "rxjs";
  * When set to true, cache-busting headers will be added.
  */
 export const FORCE_REFRESH: HttpContextToken<boolean> =
-	new HttpContextToken<boolean>(() => false);
+	new HttpContextToken<boolean>(
+		() => false);
 
 /**
  * HTTP interceptor that adds cache-busting headers for force refresh requests.
@@ -24,25 +25,26 @@ export const FORCE_REFRESH: HttpContextToken<boolean> =
  */
 export const cacheBypassInterceptor: HttpInterceptorFn =
 	(
-	request: HttpRequest<unknown>,
-	next: HttpHandlerFn): Observable<HttpEvent<unknown>> =>
-{
-	const forceRefresh: boolean =
-		request.context.get(FORCE_REFRESH);
-
-	// If force refresh is requested, add cache-busting headers
-	if (forceRefresh)
+		request: HttpRequest<unknown>,
+		next: HttpHandlerFn): Observable<HttpEvent<unknown>> =>
 	{
-		const modifiedReq: HttpRequest<unknown> =
-			request.clone({
-			setHeaders: {
-				"Cache-Control": "no-cache, no-store, must-revalidate",
-				Pragma: "no-cache"
-			}
-		});
+		const forceRefresh: boolean =
+			request.context.get(FORCE_REFRESH);
 
-		return next(modifiedReq);
-	}
+		// If force refresh is requested, add cache-busting headers
+		if (forceRefresh)
+		{
+			const modifiedReq: HttpRequest<unknown> =
+				request.clone(
+					{
+						setHeaders: {
+							"Cache-Control": "no-cache, no-store, must-revalidate",
+							Pragma: "no-cache"
+						}
+					});
 
-	return next(request);
-};
+			return next(modifiedReq);
+		}
+
+		return next(request);
+	};

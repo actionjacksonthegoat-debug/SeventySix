@@ -6,239 +6,268 @@ import { ConfirmDialogData } from "@shared/models";
 import { of } from "rxjs";
 import { ConfirmOptions, DialogService } from "./dialog.service";
 
-describe("DialogService", () =>
-{
-	let service: DialogService;
-	let dialogSpy: jasmine.SpyObj<MatDialog>;
-	let dialogRefSpy: jasmine.SpyObj<MatDialogRef<ConfirmDialogComponent>>;
-
-	beforeEach(() =>
+describe("DialogService",
+	() =>
 	{
-		dialogRefSpy =
-			jasmine.createSpyObj("MatDialogRef", ["afterClosed"]);
-		dialogSpy =
-			jasmine.createSpyObj("MatDialog", ["open"]);
-		dialogSpy.open.and.returnValue(dialogRefSpy);
+		let service: DialogService;
+		let dialogSpy: jasmine.SpyObj<MatDialog>;
+		let dialogRefSpy: jasmine.SpyObj<MatDialogRef<ConfirmDialogComponent>>;
 
-		TestBed.configureTestingModule({
-			providers: [
-				provideZonelessChangeDetection(),
-				DialogService,
-				{ provide: MatDialog, useValue: dialogSpy }
-			]
-		});
+		beforeEach(
+			() =>
+			{
+				dialogRefSpy =
+					jasmine.createSpyObj("MatDialogRef",
+						["afterClosed"]);
+				dialogSpy =
+					jasmine.createSpyObj("MatDialog",
+						["open"]);
+				dialogSpy.open.and.returnValue(dialogRefSpy);
 
-		service =
-			TestBed.inject(DialogService);
-	});
-
-	describe("confirm", () =>
-	{
-		it("should open dialog with provided options", () =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(true));
-
-			const options: ConfirmOptions =
-				{
-					title: "Test Title",
-					message: "Test Message",
-					confirmText: "Yes",
-					cancelText: "No"
-				};
-
-			service
-				.confirm(options)
-				.subscribe();
-
-			expect(dialogSpy.open)
-				.toHaveBeenCalledWith(
-					ConfirmDialogComponent,
+				TestBed.configureTestingModule(
 					{
-						data: {
-							title: "Test Title",
-							message: "Test Message",
-							confirmText: "Yes",
-							cancelText: "No",
-							confirmColor: "primary"
-						} as ConfirmDialogData
+						providers: [
+							provideZonelessChangeDetection(),
+							DialogService,
+							{ provide: MatDialog, useValue: dialogSpy }
+						]
 					});
-		});
 
-		it("should return true when dialog is confirmed", (done: DoneFn) =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(true));
+				service =
+					TestBed.inject(DialogService);
+			});
 
-			service
-				.confirm({ title: "Test", message: "Message" })
-				.subscribe((result: boolean) =>
-				{
-					expect(result)
-						.toBeTrue();
-					done();
-				});
-		});
+		describe("confirm",
+			() =>
+			{
+				it("should open dialog with provided options",
+					() =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
-		it("should return false when dialog is cancelled", (done: DoneFn) =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(false));
+						const options: ConfirmOptions =
+							{
+								title: "Test Title",
+								message: "Test Message",
+								confirmText: "Yes",
+								cancelText: "No"
+							};
 
-			service
-				.confirm({ title: "Test", message: "Message" })
-				.subscribe((result: boolean) =>
-				{
-					expect(result)
-						.toBeFalse();
-					done();
-				});
-		});
+						service
+						.confirm(options)
+						.subscribe();
 
-		it("should return false when dialog is dismissed", (done: DoneFn) =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(undefined));
+						expect(dialogSpy.open)
+						.toHaveBeenCalledWith(
+							ConfirmDialogComponent,
+							{
+								data: {
+									title: "Test Title",
+									message: "Test Message",
+									confirmText: "Yes",
+									cancelText: "No",
+									confirmColor: "primary"
+								} as ConfirmDialogData
+							});
+					});
 
-			service
-				.confirm({ title: "Test", message: "Message" })
-				.subscribe((result: boolean) =>
-				{
-					expect(result)
-						.toBeFalse();
-					done();
-				});
-		});
-	});
+				it("should return true when dialog is confirmed",
+					(done: DoneFn) =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
-	describe("confirmDelete", () =>
-	{
-		it("should open dialog with delete styling for single item", () =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(true));
+						service
+						.confirm(
+							{ title: "Test", message: "Message" })
+						.subscribe(
+							(result: boolean) =>
+							{
+								expect(result)
+								.toBeTrue();
+								done();
+							});
+					});
 
-			service
-				.confirmDelete("log")
-				.subscribe();
+				it("should return false when dialog is cancelled",
+					(done: DoneFn) =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(false));
 
-			const expectedData: ConfirmDialogData =
-				{
-					title: "Delete log?",
-					message: "Are you sure you want to delete log? This action cannot be undone.",
-					confirmText: "Delete",
-					cancelText: "Cancel",
-					confirmColor: "warn",
-					icon: "warning"
-				};
+						service
+						.confirm(
+							{ title: "Test", message: "Message" })
+						.subscribe(
+							(result: boolean) =>
+							{
+								expect(result)
+								.toBeFalse();
+								done();
+							});
+					});
 
-			expect(dialogSpy.open)
-				.toHaveBeenCalledWith(
-					ConfirmDialogComponent,
-					{ data: expectedData });
-		});
+				it("should return false when dialog is dismissed",
+					(done: DoneFn) =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(undefined));
 
-		it("should open dialog with plural text for multiple items", () =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(true));
+						service
+						.confirm(
+							{ title: "Test", message: "Message" })
+						.subscribe(
+							(result: boolean) =>
+							{
+								expect(result)
+								.toBeFalse();
+								done();
+							});
+					});
+			});
 
-			service
-				.confirmDelete("log", 5)
-				.subscribe();
+		describe("confirmDelete",
+			() =>
+			{
+				it("should open dialog with delete styling for single item",
+					() =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
-			const expectedData: ConfirmDialogData =
-				{
-					title: "Delete logs?",
-					message: "Are you sure you want to delete 5 logs? This action cannot be undone.",
-					confirmText: "Delete",
-					cancelText: "Cancel",
-					confirmColor: "warn",
-					icon: "warning"
-				};
+						service
+						.confirmDelete("log")
+						.subscribe();
 
-			expect(dialogSpy.open)
-				.toHaveBeenCalledWith(
-					ConfirmDialogComponent,
-					{ data: expectedData });
-		});
+						const expectedData: ConfirmDialogData =
+							{
+								title: "Delete log?",
+								message: "Are you sure you want to delete log? This action cannot be undone.",
+								confirmText: "Delete",
+								cancelText: "Cancel",
+								confirmColor: "warn",
+								icon: "warning"
+							};
 
-		it("should return true when confirmed", (done: DoneFn) =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(true));
+						expect(dialogSpy.open)
+						.toHaveBeenCalledWith(
+							ConfirmDialogComponent,
+							{ data: expectedData });
+					});
 
-			service
-				.confirmDelete("log")
-				.subscribe((result: boolean) =>
-				{
-					expect(result)
-						.toBeTrue();
-					done();
-				});
-		});
+				it("should open dialog with plural text for multiple items",
+					() =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
-		it("should return false when cancelled", (done: DoneFn) =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(false));
+						service
+						.confirmDelete("log", 5)
+						.subscribe();
 
-			service
-				.confirmDelete("log")
-				.subscribe((result: boolean) =>
-				{
-					expect(result)
-						.toBeFalse();
-					done();
-				});
-		});
-	});
+						const expectedData: ConfirmDialogData =
+							{
+								title: "Delete logs?",
+								message: "Are you sure you want to delete 5 logs? This action cannot be undone.",
+								confirmText: "Delete",
+								cancelText: "Cancel",
+								confirmColor: "warn",
+								icon: "warning"
+							};
 
-	describe("confirmDeactivate", () =>
-	{
-		it("should open dialog with deactivate styling", () =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(true));
+						expect(dialogSpy.open)
+						.toHaveBeenCalledWith(
+							ConfirmDialogComponent,
+							{ data: expectedData });
+					});
 
-			service
-				.confirmDeactivate("user")
-				.subscribe();
+				it("should return true when confirmed",
+					(done: DoneFn) =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
-			const expectedData: ConfirmDialogData =
-				{
-					title: "Deactivate user?",
-					message:
+						service
+						.confirmDelete("log")
+						.subscribe(
+							(result: boolean) =>
+							{
+								expect(result)
+								.toBeTrue();
+								done();
+							});
+					});
+
+				it("should return false when cancelled",
+					(done: DoneFn) =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(false));
+
+						service
+						.confirmDelete("log")
+						.subscribe(
+							(result: boolean) =>
+							{
+								expect(result)
+								.toBeFalse();
+								done();
+							});
+					});
+			});
+
+		describe("confirmDeactivate",
+			() =>
+			{
+				it("should open dialog with deactivate styling",
+					() =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(true));
+
+						service
+						.confirmDeactivate("user")
+						.subscribe();
+
+						const expectedData: ConfirmDialogData =
+							{
+								title: "Deactivate user?",
+								message:
 					"Are you sure you want to deactivate this user? The user will no longer be able to access the system.",
-					confirmText: "Deactivate",
-					cancelText: "Cancel",
-					confirmColor: "warn",
-					icon: "person_off"
-				};
+								confirmText: "Deactivate",
+								cancelText: "Cancel",
+								confirmColor: "warn",
+								icon: "person_off"
+							};
 
-			expect(dialogSpy.open)
-				.toHaveBeenCalledWith(
-					ConfirmDialogComponent,
-					{ data: expectedData });
-		});
+						expect(dialogSpy.open)
+						.toHaveBeenCalledWith(
+							ConfirmDialogComponent,
+							{ data: expectedData });
+					});
 
-		it("should return true when confirmed", (done: DoneFn) =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(true));
+				it("should return true when confirmed",
+					(done: DoneFn) =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
-			service
-				.confirmDeactivate("user")
-				.subscribe((result: boolean) =>
-				{
-					expect(result)
-						.toBeTrue();
-					done();
-				});
-		});
+						service
+						.confirmDeactivate("user")
+						.subscribe(
+							(result: boolean) =>
+							{
+								expect(result)
+								.toBeTrue();
+								done();
+							});
+					});
 
-		it("should return false when cancelled", (done: DoneFn) =>
-		{
-			dialogRefSpy.afterClosed.and.returnValue(of(false));
+				it("should return false when cancelled",
+					(done: DoneFn) =>
+					{
+						dialogRefSpy.afterClosed.and.returnValue(of(false));
 
-			service
-				.confirmDeactivate("user")
-				.subscribe((result: boolean) =>
-				{
-					expect(result)
-						.toBeFalse();
-					done();
-				});
-		});
+						service
+						.confirmDeactivate("user")
+						.subscribe(
+							(result: boolean) =>
+							{
+								expect(result)
+								.toBeFalse();
+								done();
+							});
+					});
+			});
 	});
-});

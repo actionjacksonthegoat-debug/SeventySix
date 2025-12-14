@@ -12,90 +12,101 @@ import { of } from "rxjs";
 import { AccountService } from "../services";
 import { ProfilePage } from "./profile";
 
-describe("ProfilePage", () =>
-{
-	let component: ProfilePage;
-	let fixture: ComponentFixture<ProfilePage>;
-	let mockApiService: jasmine.SpyObj<ApiService>;
-	let queryClient: QueryClient;
-
-	beforeEach(async () =>
+describe("ProfilePage",
+	() =>
 	{
-		mockApiService =
-			createMockApiService() as jasmine.SpyObj<ApiService>;
-		mockApiService.get.and.returnValue(
-			of({
-				id: 1,
-				username: "testuser",
-				email: "test@example.com",
-				fullName: "Test User",
-				roles: ["User"],
-				hasPassword: true,
-				linkedProviders: [],
-				lastLoginAt: "2024-01-01T12:00:00Z"
-			}));
+		let component: ProfilePage;
+		let fixture: ComponentFixture<ProfilePage>;
+		let mockApiService: jasmine.SpyObj<ApiService>;
+		let queryClient: QueryClient;
 
-		queryClient =
-			new QueryClient({
-			defaultOptions: { queries: { retry: false } }
-		});
+		beforeEach(
+			async () =>
+			{
+				mockApiService =
+					createMockApiService() as jasmine.SpyObj<ApiService>;
+				mockApiService.get.and.returnValue(
+					of(
+						{
+							id: 1,
+							username: "testuser",
+							email: "test@example.com",
+							fullName: "Test User",
+							roles: ["User"],
+							hasPassword: true,
+							linkedProviders: [],
+							lastLoginAt: "2024-01-01T12:00:00Z"
+						}));
 
-		await TestBed
-			.configureTestingModule({
-				imports: [ProfilePage],
-				providers: [
-					provideZonelessChangeDetection(),
-					provideNoopAnimations(),
-					provideRouter([]),
-					provideAngularQuery(queryClient),
-					AccountService,
-					{ provide: ApiService, useValue: mockApiService }
-				]
-			})
-			.compileComponents();
+				queryClient =
+					new QueryClient(
+						{
+							defaultOptions: { queries: { retry: false } }
+						});
 
-		fixture =
-			TestBed.createComponent(ProfilePage);
-		component =
-			fixture.componentInstance;
-		await fixture.whenStable();
-		fixture.detectChanges();
+				await TestBed
+				.configureTestingModule(
+					{
+						imports: [ProfilePage],
+						providers: [
+							provideZonelessChangeDetection(),
+							provideNoopAnimations(),
+							provideRouter([]),
+							provideAngularQuery(queryClient),
+							AccountService,
+							{ provide: ApiService, useValue: mockApiService }
+						]
+					})
+				.compileComponents();
+
+				fixture =
+					TestBed.createComponent(ProfilePage);
+				component =
+					fixture.componentInstance;
+				await fixture.whenStable();
+				fixture.detectChanges();
+			});
+
+		afterEach(
+			() => queryClient.clear());
+
+		it("should create",
+			() =>
+			{
+				expect(component)
+				.toBeTruthy();
+			});
+
+		it("should not submit invalid form",
+			async () =>
+			{
+				component.profileForm.patchValue(
+					{ email: "invalid" });
+
+				await component.onSubmit();
+
+				expect(mockApiService.put).not.toHaveBeenCalled();
+			});
+
+		it("should submit valid form",
+			async () =>
+			{
+				mockApiService.put.and.returnValue(of({}));
+				component.profileForm.patchValue(
+					{
+						email: "new@example.com",
+						fullName: "New Name"
+					});
+				component.profileForm.markAsDirty();
+
+				await component.onSubmit();
+
+				expect(mockApiService.put)
+				.toHaveBeenCalledWith(
+					"users/me",
+					{
+						email: "new@example.com",
+						fullName: "New Name"
+					});
+			});
 	});
-
-	afterEach(() => queryClient.clear());
-
-	it("should create", () =>
-	{
-		expect(component)
-			.toBeTruthy();
-	});
-
-	it("should not submit invalid form", async () =>
-	{
-		component.profileForm.patchValue({ email: "invalid" });
-
-		await component.onSubmit();
-
-		expect(mockApiService.put).not.toHaveBeenCalled();
-	});
-
-	it("should submit valid form", async () =>
-	{
-		mockApiService.put.and.returnValue(of({}));
-		component.profileForm.patchValue({
-			email: "new@example.com",
-			fullName: "New Name"
-		});
-		component.profileForm.markAsDirty();
-
-		await component.onSubmit();
-
-		expect(mockApiService.put)
-			.toHaveBeenCalledWith(
-				"users/me",
-				{
-					email: "new@example.com",
-					fullName: "New Name"
-				});
-	});
-});

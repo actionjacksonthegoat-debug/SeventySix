@@ -25,7 +25,7 @@ export class MockAuthService
 	/** Computed authentication state. */
 	readonly isAuthenticated: Signal<boolean> =
 		computed(
-		() => this.userSignal() !== null);
+			() => this.userSignal() !== null);
 
 	/** Spy-able logout method. */
 	logout: jasmine.Spy =

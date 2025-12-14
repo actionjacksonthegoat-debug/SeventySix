@@ -17,9 +17,10 @@ type CircuitState = "closed" | "open";
  * Queues client-side errors and sends them in batches to the server.
  * Implements localStorage persistence and circuit breaker to prevent error loops.
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class ErrorQueueService
 {
 	private readonly storage: StorageService =
@@ -59,8 +60,9 @@ export class ErrorQueueService
 
 		// Start batch processing interval with automatic cleanup
 		interval(this.batchInterval)
-			.pipe(takeUntilDestroyed())
-			.subscribe(() =>
+		.pipe(takeUntilDestroyed())
+		.subscribe(
+			() =>
 			{
 				this.processBatch();
 			});
@@ -113,16 +115,19 @@ export class ErrorQueueService
 
 		// Send to server
 		this
-			.http
-			.post(this.logEndpoint, batch, { observe: "response" })
-			.pipe(
-				catchError((err) =>
+		.http
+		.post(this.logEndpoint, batch,
+			{ observe: "response" })
+		.pipe(
+			catchError(
+				(err) =>
 				{
 					// Handle failure
 					this.handleBatchFailure(err);
 					return of(null);
 				}))
-			.subscribe((response) =>
+		.subscribe(
+			(response) =>
 			{
 				// Success if we got any response (including 204 No Content)
 				if (response !== null)
@@ -201,7 +206,7 @@ export class ErrorQueueService
 	{
 		const stored: CreateLogRequest[] | null =
 			this.storage.getItem<
-			CreateLogRequest[]>(this.localStorageKey);
+				CreateLogRequest[]>(this.localStorageKey);
 		if (stored)
 		{
 			this.queue = stored;

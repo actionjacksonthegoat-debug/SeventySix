@@ -2,7 +2,9 @@
  * ESLint rule: arrow-body-newline
  *
  * Ensures that arrow function bodies with expressions (not blocks) that exceed
- * a certain length are placed on a new line with proper indentation.
+ * a certain length are placed on a new line.
+ *
+ * NOTE: Indentation is delegated to @stylistic/indent to avoid conflicts.
  *
  * WRONG:
  * switchMap((username: string) => from(this.userService.checkUsernameAvailability(username)))
@@ -97,40 +99,9 @@ export default {
 				const arrowLine = arrowToken.loc.end.line;
 				const bodyStartLine = node.body.loc.start.line;
 
-				// If body is already on new line, check indentation
+				// If body is already on new line, let @stylistic/indent handle indentation
 				if (bodyStartLine > arrowLine)
 				{
-					const arrowIndent = getLineIndent(arrowLine);
-					const arrowDepth = getIndentDepth(arrowIndent);
-					const bodyIndent = getLineIndent(bodyStartLine);
-					const bodyDepth = getIndentDepth(bodyIndent);
-					const expectedDepth = arrowDepth + 1;
-
-					if (bodyDepth !== expectedDepth)
-					{
-						const expectedIndent = "\t".repeat(expectedDepth);
-						const line = sourceCode.lines[bodyStartLine - 1];
-						const currentIndent = line.match(/^(\s*)/)[1];
-
-						context.report({
-							node: node.body,
-							message:
-								`Arrow function body should be indented ${expectedDepth} levels (found ${bodyDepth})`,
-							fix(fixer)
-							{
-								const lineStart = sourceCode.getIndexFromLoc({
-									line: bodyStartLine,
-									column: 0
-								});
-								const indentEnd = lineStart + currentIndent.length;
-
-								return fixer.replaceTextRange(
-									[lineStart, indentEnd],
-									expectedIndent);
-							}
-						});
-					}
-
 					return;
 				}
 

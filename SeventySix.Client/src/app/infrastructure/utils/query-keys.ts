@@ -62,51 +62,51 @@ interface QueryKeysType
 
 export const QueryKeys: QueryKeysType =
 	{
-	logs: {
-		all: ["logs"] as const,
-		paged: (filter: BaseQueryRequest): QueryKeyElement[] =>
-			["logs", filter],
-		count: (filter: BaseQueryRequest): QueryKeyElement[] =>
-			["logs", "count", filter]
-	},
+		logs: {
+			all: ["logs"] as const,
+			paged: (filter: BaseQueryRequest): QueryKeyElement[] =>
+				["logs", filter],
+			count: (filter: BaseQueryRequest): QueryKeyElement[] =>
+				["logs", "count", filter]
+		},
 
-	users: {
-		all: ["users"] as const,
-		paged: (filter: BaseQueryRequest): QueryKeyElement[] =>
-			["users", "paged", filter],
-		single: (id: number | string): QueryKeyElement[] =>
-			["users", "user", id],
-		byUsername: (username: string): QueryKeyElement[] =>
-			["users", "username", username],
-		roles: (userId: number | string): QueryKeyElement[] =>
-			["users", userId, "roles"]
-	},
+		users: {
+			all: ["users"] as const,
+			paged: (filter: BaseQueryRequest): QueryKeyElement[] =>
+				["users", "paged", filter],
+			single: (id: number | string): QueryKeyElement[] =>
+				["users", "user", id],
+			byUsername: (username: string): QueryKeyElement[] =>
+				["users", "username", username],
+			roles: (userId: number | string): QueryKeyElement[] =>
+				["users", userId, "roles"]
+		},
 
-	health: {
-		all: ["health"] as const,
-		status: ["health", "status"] as const,
-		database: ["health", "database"] as const,
-		externalApis: ["health", "externalApis"] as const
-	},
+		health: {
+			all: ["health"] as const,
+			status: ["health", "status"] as const,
+			database: ["health", "database"] as const,
+			externalApis: ["health", "externalApis"] as const
+		},
 
-	thirdPartyApi: {
-		all: ["thirdPartyApi"] as const,
-		list: ["thirdPartyApi", "all"] as const,
-		byName: (name: string): QueryKeyElement[] =>
-			["thirdPartyApi", "byName", name],
-		statistics: ["thirdPartyApi", "statistics"] as const
-	},
+		thirdPartyApi: {
+			all: ["thirdPartyApi"] as const,
+			list: ["thirdPartyApi", "all"] as const,
+			byName: (name: string): QueryKeyElement[] =>
+				["thirdPartyApi", "byName", name],
+			statistics: ["thirdPartyApi", "statistics"] as const
+		},
 
-	account: {
-		all: ["account"] as const,
-		profile: ["account", "profile"] as const,
-		availableRoles: ["account", "available-roles"] as const,
-		permissionRequest: ["account", "permission-request"] as const
-	},
+		account: {
+			all: ["account"] as const,
+			profile: ["account", "profile"] as const,
+			availableRoles: ["account", "available-roles"] as const,
+			permissionRequest: ["account", "permission-request"] as const
+		},
 
-	permissionRequests: {
-		all: ["permission-requests"] as const,
-		list: ["permission-requests", "all"] as const,
-		availableRoles: ["permission-requests", "available-roles"] as const
-	}
-} as const;
+		permissionRequests: {
+			all: ["permission-requests"] as const,
+			list: ["permission-requests", "all"] as const,
+			availableRoles: ["permission-requests", "available-roles"] as const
+		}
+	} as const;

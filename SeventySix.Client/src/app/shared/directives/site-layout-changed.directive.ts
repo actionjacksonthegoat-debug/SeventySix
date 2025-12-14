@@ -22,9 +22,10 @@ import { debounceTime, fromEvent } from "rxjs";
  * </div>
  * ```
  */
-@Directive({
-	selector: "[appSiteLayoutChanged]"
-})
+@Directive(
+	{
+		selector: "[appSiteLayoutChanged]"
+	})
 export class SiteLayoutChangedDirective implements OnInit
 {
 	private readonly platformId: Object =
@@ -52,10 +53,11 @@ export class SiteLayoutChangedDirective implements OnInit
 
 		// Listen to window resize events with debounce
 		fromEvent(window, "resize")
-			.pipe(
-				debounceTime(this.DEBOUNCE_TIME),
-				takeUntilDestroyed(this.destroyRef))
-			.subscribe(() =>
+		.pipe(
+			debounceTime(this.DEBOUNCE_TIME),
+			takeUntilDestroyed(this.destroyRef))
+		.subscribe(
+			() =>
 			{
 				this.layoutChanged.emit();
 			});

@@ -23,84 +23,89 @@ export const routes: Routes =
 		{
 			path: "",
 			loadChildren: () =>
-				import("./features/home/home.routes").then((m) => m.HOME_ROUTES)
+				import("./features/home/home.routes").then(
+					(m) => m.HOME_ROUTES)
 		},
 		{
 			path: "game",
 			loadChildren: () =>
-				import("./features/game/game.routes").then((m) => m.GAME_ROUTES),
+				import("./features/game/game.routes").then(
+					(m) => m.GAME_ROUTES),
 			data: { breadcrumb: "Game" }
 		},
 		{
 			path: "physics",
 			loadChildren: () =>
 				import("./features/physics/physics.routes").then(
-				(m) => m.PHYSICS_ROUTES),
+					(m) => m.PHYSICS_ROUTES),
 			data: { breadcrumb: "Physics" }
 		},
 		{
 			path: "rv-camper",
 			loadChildren: () =>
 				import("./features/rv-camper/rv-camper.routes").then(
-				(m) => m.RV_CAMPER_ROUTES),
+					(m) => m.RV_CAMPER_ROUTES),
 			data: { breadcrumb: "RV Camper" }
 		},
-	// Auth routes (login, change-password - public)
+		// Auth routes (login, change-password - public)
 		{
 			path: "auth",
 			loadChildren: () =>
-				import("./features/auth/auth.routes").then((m) => m.AUTH_ROUTES),
+				import("./features/auth/auth.routes").then(
+					(m) => m.AUTH_ROUTES),
 			data: { breadcrumb: "Authentication" }
 		},
 
-	// ══════════════════════════════════════════════════════════════
-	// USER ROUTES (Any Authenticated User - Own Account Only)
-	// ══════════════════════════════════════════════════════════════
+		// ══════════════════════════════════════════════════════════════
+		// USER ROUTES (Any Authenticated User - Own Account Only)
+		// ══════════════════════════════════════════════════════════════
 		{
 			path: "account",
 			loadChildren: () =>
 				import("./features/account/account.routes").then(
-				(m) => m.ACCOUNT_ROUTES),
+					(m) => m.ACCOUNT_ROUTES),
 			canActivate: [roleGuard()],
 			data: { breadcrumb: "Account" }
 		},
 
-	// ══════════════════════════════════════════════════════════════
-	// DEVELOPER ROUTES (Developer or Admin - ADDITIVE)
-	// ══════════════════════════════════════════════════════════════
+		// ══════════════════════════════════════════════════════════════
+		// DEVELOPER ROUTES (Developer or Admin - ADDITIVE)
+		// ══════════════════════════════════════════════════════════════
 		{
 			path: "developer",
 			loadChildren: () =>
 				import("./features/developer/developer.routes").then(
-				(m) => m.DEVELOPER_ROUTES),
+					(m) => m.DEVELOPER_ROUTES),
 			canActivate: [roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
 			data: { breadcrumb: "Developer" }
 		},
 
-	// ══════════════════════════════════════════════════════════════
-	// ADMIN ROUTES (Admin Only)
-	// ══════════════════════════════════════════════════════════════
+		// ══════════════════════════════════════════════════════════════
+		// ADMIN ROUTES (Admin Only)
+		// ══════════════════════════════════════════════════════════════
 		{
 			path: "admin",
 			loadChildren: () =>
-				import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES),
+				import("./features/admin/admin.routes").then(
+					(m) => m.ADMIN_ROUTES),
 			canActivate: [roleGuard(ROLE_ADMIN)],
 			data: { breadcrumb: "Admin" }
 		},
 
-	// Error pages
+		// Error pages
 		{
 			path: "error",
 			loadChildren: () =>
-				import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES)
+				import("./features/admin/admin.routes").then(
+					(m) => m.ADMIN_ROUTES)
 		},
 
-	// Fallback
+		// Fallback
 		{
 			path: "**",
 			loadComponent: () =>
 				import("@shared/error-pages/not-found/not-found").then(
-				(m) => m.NotFoundPage),
+					(m) => m.NotFoundPage),
 			title: "Page Not Found"
 		}
 	];

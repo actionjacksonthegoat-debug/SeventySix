@@ -30,9 +30,10 @@ import { formatInTimeZone, toZonedTime } from "date-fns-tz";
  * - Display: Use formatLocal() or Angular DatePipe
  * - Calculations: Use provided utilities (addDays, differenceInDays, etc.)
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class DateService
 {
 	private readonly UTC_ZONE: string = "UTC";
@@ -53,7 +54,7 @@ export class DateService
 	now(): string
 	{
 		return new Date()
-			.toISOString();
+		.toISOString();
 	}
 
 	/**
@@ -148,7 +149,8 @@ export class DateService
 	{
 		const parsedDate: Date =
 			typeof date === "string" ? this.parseUTC(date) : date;
-		return formatDistanceToNow(parsedDate, { addSuffix: true });
+		return formatDistanceToNow(parsedDate,
+			{ addSuffix: true });
 	}
 
 	/**
@@ -164,9 +166,9 @@ export class DateService
 		return toZonedTime(
 			parsedDate,
 			Intl
-				.DateTimeFormat()
-				.resolvedOptions()
-				.timeZone);
+			.DateTimeFormat()
+			.resolvedOptions()
+			.timeZone);
 	}
 
 	// ========================================

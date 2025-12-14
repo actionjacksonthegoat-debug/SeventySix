@@ -23,38 +23,41 @@ export class ThirdPartyApiService
 
 	getAllThirdPartyApis(): CreateQueryResult<ThirdPartyApiRequestResponse[], Error>
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.thirdPartyApi.list,
-			queryFn: () =>
-				lastValueFrom(this.apiService.get<ThirdPartyApiRequestResponse[]>(this.endpoint)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.thirdPartyApi.list,
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<ThirdPartyApiRequestResponse[]>(this.endpoint)),
+				...this.queryConfig
+			}));
 	}
 
 	getByApiName(
 		apiName: string): CreateQueryResult<ThirdPartyApiRequestResponse[], Error>
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.thirdPartyApi.byName(apiName),
-			queryFn: () =>
-			{
-				const encodedName: string =
-					encodeURIComponent(apiName);
-				return lastValueFrom(
-					this.apiService.get<ThirdPartyApiRequestResponse[]>(`${this.endpoint}/${encodedName}`));
-			},
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.thirdPartyApi.byName(apiName),
+				queryFn: () =>
+				{
+					const encodedName: string =
+						encodeURIComponent(apiName);
+					return lastValueFrom(
+						this.apiService.get<ThirdPartyApiRequestResponse[]>(`${this.endpoint}/${encodedName}`));
+				},
+				...this.queryConfig
+			}));
 	}
 
 	getStatistics(): CreateQueryResult<ThirdPartyApiStatisticsResponse, Error>
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.thirdPartyApi.statistics,
-			queryFn: () =>
-				lastValueFrom(
-					this.apiService.get<ThirdPartyApiStatisticsResponse>(`${this.endpoint}/statistics`)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.thirdPartyApi.statistics,
+				queryFn: () =>
+					lastValueFrom(
+						this.apiService.get<ThirdPartyApiStatisticsResponse>(`${this.endpoint}/statistics`)),
+				...this.queryConfig
+			}));
 	}
 }

@@ -182,8 +182,8 @@ export function createBadgeColumn<T>(
 	badgeColor: (value: CellValue) => "primary" | "accent" | "warn"): TableColumn<T>
 {
 	return new TableColumnBuilder<T>()
-		.withKey(key)
-		.withLabel(label)
-		.asBadge(badgeColor)
-		.build();
+	.withKey(key)
+	.withLabel(label)
+	.asBadge(badgeColor)
+	.build();
 }

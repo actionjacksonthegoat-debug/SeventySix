@@ -18,14 +18,15 @@ import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 
-@Component({
-	selector: "app-set-password",
-	standalone: true,
-	imports: [FormsModule],
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	templateUrl: "./set-password.html",
-	styleUrl: "./set-password.scss"
-})
+@Component(
+	{
+		selector: "app-set-password",
+		standalone: true,
+		imports: [FormsModule],
+		changeDetection: ChangeDetectionStrategy.OnPush,
+		templateUrl: "./set-password.html",
+		styleUrl: "./set-password.scss"
+	})
 export class SetPasswordComponent implements OnInit
 {
 	private readonly authService: AuthService =
@@ -86,14 +87,16 @@ export class SetPasswordComponent implements OnInit
 		this.isLoading.set(true);
 
 		this
-			.authService
-			.setPassword(this.token, this.newPassword)
-			.subscribe({
+		.authService
+		.setPassword(this.token, this.newPassword)
+		.subscribe(
+			{
 				next: () =>
 				{
 					this.notification.success(
 						"Password set successfully. You can now sign in.");
-					this.router.navigate(["/auth/login"]);
+					this.router.navigate(
+						["/auth/login"]);
 				},
 				error: (error: HttpErrorResponse) =>
 				{

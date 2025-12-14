@@ -9,7 +9,8 @@ export const PHYSICS_ROUTES: Routes =
 		{
 			path: "",
 			loadComponent: () =>
-				import("./physics/physics").then((m) => m.Physics),
+				import("./physics/physics").then(
+					(m) => m.Physics),
 			title: "Physics - Calculations"
 		}
 	];

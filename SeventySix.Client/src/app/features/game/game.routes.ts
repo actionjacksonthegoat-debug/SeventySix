@@ -9,7 +9,8 @@ export const GAME_ROUTES: Routes =
 		{
 			path: "",
 			loadComponent: () =>
-				import("./world-map/world-map").then((m) => m.WorldMap),
+				import("./world-map/world-map").then(
+					(m) => m.WorldMap),
 			title: "Game - World Map"
 		}
 	];

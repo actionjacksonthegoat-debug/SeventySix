@@ -31,9 +31,11 @@ export function roleGuard(...requiredRoles: string[]): CanActivateFn
 		// Not authenticated - redirect to login
 		if (!authService.isAuthenticated())
 		{
-			return router.createUrlTree(["/auth/login"], {
-				queryParams: { returnUrl: state.url }
-			});
+			return router.createUrlTree(
+				["/auth/login"],
+				{
+					queryParams: { returnUrl: state.url }
+				});
 		}
 
 		// No roles required - just needs auth
@@ -45,7 +47,7 @@ export function roleGuard(...requiredRoles: string[]): CanActivateFn
 		// Check if user has ANY of the required roles (additive)
 		const hasRequiredRole: boolean =
 			authService.hasAnyRole(
-			...requiredRoles);
+				...requiredRoles);
 
 		if (hasRequiredRole)
 		{
@@ -53,6 +55,7 @@ export function roleGuard(...requiredRoles: string[]): CanActivateFn
 		}
 
 		// Has auth but wrong role - redirect to home
-		return router.createUrlTree(["/"]);
+		return router.createUrlTree(
+			["/"]);
 	};
 }

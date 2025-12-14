@@ -1,6 +1,7 @@
 /**
- * Custom ESLint rule: Enforce newline after `=` in variable declarations and assignments,
- * with recursive nested object/array indentation support.
+ * Custom ESLint rule: Enforce newline after `=` in variable declarations and assignments.
+ *
+ * NOTE: Internal object/array indentation is delegated to @stylistic/indent to avoid conflicts.
  *
  * CORRECT:
  *   const user =
@@ -19,14 +20,6 @@
  * WRONG:
  *   const user = await repo.GetByIdAsync(id);
  *
- *   const data =
- *       {
- *       timestamp: now(),  // Missing indent
- *       error: {
- *       name: error.name   // Nested object not indented
- *       }
- *   };
- *
  * This rule skips:
  *   - Simple literals (strings, numbers, booleans)
  *   - Short identifiers (< 20 chars)
@@ -36,7 +29,7 @@ export default {
 	meta: {
 		type: "layout",
 		docs: {
-			description: "Enforce newline after assignment operator (=) with nested object support",
+			description: "Enforce newline after assignment operator (=)",
 			category: "Stylistic Issues"
 		},
 		fixable: "whitespace",
@@ -119,143 +112,8 @@ export default {
 			}
 		}
 
-		/**
-		 * Recursively check and fix indentation for all nested objects/arrays
-		 */
-		function checkNestedObjectIndentation(objectNode, baseIndent, depthFromAssignment = 1) {
-			if (!objectNode) return;
-			if (objectNode.type !== "ObjectExpression" && objectNode.type !== "ArrayExpression") return;
-
-			const items = objectNode.type === "ObjectExpression" ? objectNode.properties : objectNode.elements;
-			if (!items || items.length === 0) return;
-
-			const openBrace = sourceCode.getFirstToken(objectNode);
-			const closeBrace = sourceCode.getLastToken(objectNode);
-			if (!openBrace || !closeBrace) return;
-
-			// Check if this object spans multiple lines
-			if (openBrace.loc.start.line === closeBrace.loc.end.line) return; // Single line, skip
-
-			// Calculate expected indentation for content inside this object
-			// baseIndent + (depthFromAssignment tabs for the nesting)
-			const contentIndent = baseIndent + "\t".repeat(depthFromAssignment + 1);
-			const braceIndent = baseIndent + "\t".repeat(depthFromAssignment);
-
-			// Check each property/element
-			for (const item of items) {
-				if (!item) continue; // Skip sparse array elements
-
-				const itemFirstToken = sourceCode.getFirstToken(item);
-				if (!itemFirstToken) continue;
-
-				// Check if item is on its own line
-				const prevToken = sourceCode.getTokenBefore(itemFirstToken);
-				if (prevToken && itemFirstToken.loc.start.line !== prevToken.loc.end.line) {
-					const line = sourceCode.lines[itemFirstToken.loc.start.line - 1];
-					const currentIndent = line.match(/^\s*/)[0];
-
-					if (currentIndent !== contentIndent) {
-						context.report({
-							node: item,
-							loc: itemFirstToken.loc,
-							message: `Content should be indented ${depthFromAssignment + 1} level(s) from assignment`,
-							fix(fixer) {
-								const lineStart = sourceCode.getIndexFromLoc({
-									line: itemFirstToken.loc.start.line,
-									column: 0
-								});
-								return fixer.replaceTextRange(
-									[lineStart, lineStart + currentIndent.length],
-									contentIndent
-								);
-							}
-						});
-					}
-				}
-
-				// For object properties, check if value is a nested object/array
-				if (item.type === "Property" && item.value) {
-					if (item.value.type === "ObjectExpression" || item.value.type === "ArrayExpression") {
-						// Check if the nested object's opening brace is on a new line
-						const colonToken = sourceCode.getTokenAfter(item.key, t => t.value === ":");
-						const valueFirstToken = sourceCode.getFirstToken(item.value);
-
-						if (colonToken && valueFirstToken) {
-							const textAfterColon = sourceCode.getText().slice(colonToken.range[1], valueFirstToken.range[0]);
-
-							// If there's a newline after colon, recursively check the nested object
-							if (textAfterColon.includes("\n")) {
-								checkNestedObjectIndentation(item.value, baseIndent, depthFromAssignment + 1);
-							} else if (item.value.properties?.length > 0 || item.value.elements?.length > 0) {
-								// Nested object is on same line as colon but has content
-								// Check if it spans multiple lines
-								const nestedOpen = sourceCode.getFirstToken(item.value);
-								const nestedClose = sourceCode.getLastToken(item.value);
-								if (nestedOpen && nestedClose && nestedOpen.loc.start.line !== nestedClose.loc.end.line) {
-									// Multi-line nested object starting on same line - check its contents
-									checkNestedObjectIndentation(item.value, baseIndent, depthFromAssignment + 1);
-								}
-							}
-						}
-					}
-				}
-
-				// For array elements that are objects/arrays
-				if (item.type === "ObjectExpression" || item.type === "ArrayExpression") {
-					checkNestedObjectIndentation(item, baseIndent, depthFromAssignment + 1);
-				}
-			}
-
-			// Check closing brace indentation
-			const prevTokenBeforeClose = sourceCode.getTokenBefore(closeBrace);
-			if (prevTokenBeforeClose && closeBrace.loc.start.line !== prevTokenBeforeClose.loc.end.line) {
-				const line = sourceCode.lines[closeBrace.loc.start.line - 1];
-				const currentIndent = line.match(/^\s*/)[0];
-
-				if (currentIndent !== braceIndent) {
-					context.report({
-						loc: closeBrace.loc,
-						message: "Closing brace should align with opening brace",
-						fix(fixer) {
-							const lineStart = sourceCode.getIndexFromLoc({
-								line: closeBrace.loc.start.line,
-								column: 0
-							});
-							return fixer.replaceTextRange(
-								[lineStart, lineStart + currentIndent.length],
-								braceIndent
-							);
-						}
-					});
-				}
-			}
-		}
-
-		/**
-		 * Main check for object/array indentation after assignment
-		 */
-		function checkObjectIndentation(node, rightNode, operatorToken) {
-			if (!rightNode || !operatorToken) return;
-			if (rightNode.type !== "ObjectExpression" && rightNode.type !== "ArrayExpression") return;
-
-			const items = rightNode.type === "ObjectExpression" ? rightNode.properties : rightNode.elements;
-			if (!items || items.length === 0) return;
-
-			// Get the indentation of the declaration line
-			const declLine = sourceCode.lines[operatorToken.loc.start.line - 1];
-			const baseIndent = declLine.match(/^\s*/)[0];
-
-			// Get opening brace
-			const openBrace = sourceCode.getFirstToken(rightNode);
-			if (!openBrace) return;
-
-			// Check if the opening brace is on its own line (newline after =)
-			const textBefore = sourceCode.getText().slice(operatorToken.range[1], openBrace.range[0]);
-			if (!textBefore.includes("\n")) return; // No newline after =, skip
-
-			// Recursively check all nested objects starting from depth 1
-			checkNestedObjectIndentation(rightNode, baseIndent, 1);
-		}
+		// NOTE: Object/array internal indentation is handled by @stylistic/indent
+		// This rule only ensures newline after =
 
 		return {
 			VariableDeclarator(node) {
@@ -267,7 +125,6 @@ export default {
 				);
 
 				checkAssignment(node, node.init, equalsToken);
-				checkObjectIndentation(node, node.init, equalsToken);
 			},
 
 			AssignmentExpression(node) {
@@ -280,7 +137,6 @@ export default {
 				);
 
 				checkAssignment(node, node.right, operatorToken);
-				checkObjectIndentation(node, node.right, operatorToken);
 			},
 
 			// Class property definitions: readonly x = signal<T>(value);
@@ -293,7 +149,6 @@ export default {
 				);
 
 				checkAssignment(node, node.value, equalsToken);
-				checkObjectIndentation(node, node.value, equalsToken);
 			}
 		};
 	}

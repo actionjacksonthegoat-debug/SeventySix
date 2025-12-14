@@ -61,10 +61,10 @@ import { MatStepperModule } from "@angular/material/stepper";
  */
 const COMMON_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-	MatButtonModule,
-	MatIconModule,
-	MatProgressSpinnerModule
-] as const;
+		MatButtonModule,
+		MatIconModule,
+		MatProgressSpinnerModule
+	] as const;
 
 /**
  * Form Material Modules Bundle
@@ -81,16 +81,16 @@ const COMMON_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const FORM_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-	...COMMON_MATERIAL_MODULES,
-	MatFormFieldModule,
-	MatInputModule,
-	MatCheckboxModule,
-	MatRadioModule,
-	MatSelectModule,
-	MatDatepickerModule,
-	MatSlideToggleModule,
-	MatCardModule
-] as const;
+		...COMMON_MATERIAL_MODULES,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCheckboxModule,
+		MatRadioModule,
+		MatSelectModule,
+		MatDatepickerModule,
+		MatSlideToggleModule,
+		MatCardModule
+	] as const;
 
 /**
  * Table Material Modules Bundle
@@ -106,17 +106,17 @@ export const FORM_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const TABLE_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-	...COMMON_MATERIAL_MODULES,
-	MatTableModule,
-	MatPaginatorModule,
-	MatSortModule,
-	MatChipsModule,
-	MatTooltipModule,
-	MatMenuModule,
-	MatFormFieldModule,
-	MatInputModule,
-	MatCheckboxModule
-] as const;
+		...COMMON_MATERIAL_MODULES,
+		MatTableModule,
+		MatPaginatorModule,
+		MatSortModule,
+		MatChipsModule,
+		MatTooltipModule,
+		MatMenuModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCheckboxModule
+	] as const;
 
 /**
  * Dialog Material Modules Bundle
@@ -131,10 +131,10 @@ export const TABLE_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const DIALOG_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-	...COMMON_MATERIAL_MODULES,
-	MatDialogModule,
-	MatSnackBarModule
-] as const;
+		...COMMON_MATERIAL_MODULES,
+		MatDialogModule,
+		MatSnackBarModule
+	] as const;
 
 /**
  * Navigation Material Modules Bundle
@@ -149,10 +149,10 @@ export const DIALOG_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const NAVIGATION_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-	...COMMON_MATERIAL_MODULES,
-	MatTooltipModule,
-	MatMenuModule
-] as const;
+		...COMMON_MATERIAL_MODULES,
+		MatTooltipModule,
+		MatMenuModule
+	] as const;
 
 /**
  * Stepper Material Modules Bundle
@@ -167,13 +167,13 @@ export const NAVIGATION_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const STEPPER_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-	...COMMON_MATERIAL_MODULES,
-	MatStepperModule,
-	MatFormFieldModule,
-	MatInputModule,
-	MatCheckboxModule,
-	MatCardModule
-] as const;
+		...COMMON_MATERIAL_MODULES,
+		MatStepperModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCheckboxModule,
+		MatCardModule
+	] as const;
 
 /**
  * Card Material Modules Bundle
@@ -188,7 +188,7 @@ export const STEPPER_MATERIAL_MODULES: readonly Type<unknown>[] =
  */
 export const CARD_MATERIAL_MODULES: readonly Type<unknown>[] =
 	[
-	...COMMON_MATERIAL_MODULES,
-	MatCardModule,
-	MatDividerModule
-] as const;
+		...COMMON_MATERIAL_MODULES,
+		MatCardModule,
+		MatDividerModule
+	] as const;

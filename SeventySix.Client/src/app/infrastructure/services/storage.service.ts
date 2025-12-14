@@ -7,9 +7,10 @@ import { isNullOrUndefined } from "@infrastructure/utils/null-check.utility";
  * SSR-safe localStorage wrapper with minimal abstraction (KISS principle).
  * Based on official Angular SSR documentation pattern.
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class StorageService
 {
 	private readonly platformId: object =

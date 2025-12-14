@@ -7,7 +7,8 @@ export const ACCOUNT_ROUTES: Routes =
 			path: "",
 			providers: [AccountService],
 			loadComponent: () =>
-				import("./profile/profile").then((m) => m.ProfilePage),
+				import("./profile/profile").then(
+					(m) => m.ProfilePage),
 			title: "My Profile - SeventySix"
 		},
 		{
@@ -15,7 +16,7 @@ export const ACCOUNT_ROUTES: Routes =
 			providers: [AccountService],
 			loadComponent: () =>
 				import("./request-permissions/request-permissions").then(
-				(m) => m.RequestPermissionsPage),
+					(m) => m.RequestPermissionsPage),
 			title: "Request Permissions - SeventySix"
 		}
 	];

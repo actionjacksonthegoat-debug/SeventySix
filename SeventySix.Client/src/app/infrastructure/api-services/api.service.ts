@@ -21,9 +21,10 @@ import { catchError, Observable, throwError } from "rxjs";
  * NOTE: Request deduplication and caching are handled by TanStack Query
  * at the service layer. This service should remain a thin HTTP wrapper.
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class ApiService
 {
 	private readonly baseUrl: string =
@@ -33,9 +34,10 @@ export class ApiService
 	private readonly logger: LoggerService =
 		inject(LoggerService);
 	private defaultHeaders: HttpHeaders =
-		new HttpHeaders({
-		[HTTP_HEADER_CONTENT_TYPE]: MEDIA_TYPE_JSON
-	});
+		new HttpHeaders(
+			{
+				[HTTP_HEADER_CONTENT_TYPE]: MEDIA_TYPE_JSON
+			});
 
 	get<T>(
 		endpoint: string,
@@ -43,61 +45,67 @@ export class ApiService
 		context?: HttpContext): Observable<T>
 	{
 		return this
-			.http
-			.get<T>(`${this.baseUrl}/${endpoint}`, {
+		.http
+		.get<T>(`${this.baseUrl}/${endpoint}`,
+			{
 				headers: this.defaultHeaders,
 				params,
 				context
 			})
-			.pipe(catchError(this.handleError));
+		.pipe(catchError(this.handleError));
 	}
 
 	post<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
-			.http
-			.post<T>(`${this.baseUrl}/${endpoint}`, body, {
+		.http
+		.post<T>(`${this.baseUrl}/${endpoint}`, body,
+			{
 				headers: this.defaultHeaders
 			})
-			.pipe(catchError(this.handleError));
+		.pipe(catchError(this.handleError));
 	}
 
 	put<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
-			.http
-			.put<T>(`${this.baseUrl}/${endpoint}`, body, {
+		.http
+		.put<T>(`${this.baseUrl}/${endpoint}`, body,
+			{
 				headers: this.defaultHeaders
 			})
-			.pipe(catchError(this.handleError));
+		.pipe(catchError(this.handleError));
 	}
 
 	patch<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
-			.http
-			.patch<T>(`${this.baseUrl}/${endpoint}`, body, {
+		.http
+		.patch<T>(`${this.baseUrl}/${endpoint}`, body,
+			{
 				headers: this.defaultHeaders
 			})
-			.pipe(catchError(this.handleError));
+		.pipe(catchError(this.handleError));
 	}
 
 	delete<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
 		return this
-			.http
-			.request<T>("DELETE", `${this.baseUrl}/${endpoint}`, {
+		.http
+		.request<T>("DELETE", `${this.baseUrl}/${endpoint}`,
+			{
 				headers: this.defaultHeaders,
 				body
 			})
-			.pipe(catchError(this.handleError));
+		.pipe(catchError(this.handleError));
 	}
 
 	addHeaders(headers: Record<string, string>): void
 	{
 		Object
-			.entries(headers)
-			.forEach(([key, value]) =>
+		.entries(headers)
+		.forEach(
+			([key, value]) =>
 			{
 				this.defaultHeaders =
 					this.defaultHeaders.set(key, value);
@@ -106,15 +114,16 @@ export class ApiService
 
 	private handleError: (error: HttpErrorResponse) => Observable<never> =
 		(
-		error: HttpErrorResponse): Observable<never> =>
-	{
-		const errorMessage: string =
-			error.error instanceof ErrorEvent
-				? `Client-side error: ${error.error.message}`
-				: `Server-side error: ${error.status} ${error.message}`;
+			error: HttpErrorResponse): Observable<never> =>
+		{
+			const errorMessage: string =
+				error.error instanceof ErrorEvent
+					? `Client-side error: ${error.error.message}`
+					: `Server-side error: ${error.status} ${error.message}`;
 
-		this.logger.error(errorMessage, error);
+			this.logger.error(errorMessage, error);
 
-		return throwError(() => new Error(errorMessage));
-	};
+			return throwError(
+				() => new Error(errorMessage));
+		};
 }

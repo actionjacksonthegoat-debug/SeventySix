@@ -16,24 +16,24 @@ export interface CanComponentDeactivate
  */
 export const unsavedChangesGuard: CanDeactivateFn<CanComponentDeactivate> =
 	(
-	component) =>
-{
-	const notification: NotificationService =
-		inject(NotificationService);
-
-	if (component.canDeactivate && !component.canDeactivate())
+		component) =>
 	{
-		const confirmed: boolean =
-			window.confirm(
-			"You have unsaved changes. Are you sure you want to leave?");
+		const notification: NotificationService =
+			inject(NotificationService);
 
-		if (!confirmed)
+		if (component.canDeactivate && !component.canDeactivate())
 		{
-			notification.info("Navigation cancelled");
+			const confirmed: boolean =
+				window.confirm(
+					"You have unsaved changes. Are you sure you want to leave?");
+
+			if (!confirmed)
+			{
+				notification.info("Navigation cancelled");
+			}
+
+			return confirmed;
 		}
 
-		return confirmed;
-	}
-
-	return true;
-};
+		return true;
+	};

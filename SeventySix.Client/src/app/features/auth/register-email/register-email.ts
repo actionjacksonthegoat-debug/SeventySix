@@ -16,14 +16,15 @@ import { RouterLink } from "@angular/router";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 
-@Component({
-	selector: "app-register-email",
-	standalone: true,
-	imports: [FormsModule, RouterLink],
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	templateUrl: "./register-email.html",
-	styleUrl: "./register-email.scss"
-})
+@Component(
+	{
+		selector: "app-register-email",
+		standalone: true,
+		imports: [FormsModule, RouterLink],
+		changeDetection: ChangeDetectionStrategy.OnPush,
+		templateUrl: "./register-email.html",
+		styleUrl: "./register-email.scss"
+	})
 export class RegisterEmailComponent
 {
 	private readonly authService: AuthService =
@@ -68,9 +69,10 @@ export class RegisterEmailComponent
 		this.isLoading.set(true);
 
 		this
-			.authService
-			.initiateRegistration(this.email)
-			.subscribe({
+		.authService
+		.initiateRegistration(this.email)
+		.subscribe(
+			{
 				next: () =>
 				{
 					this.submitted.set(true);

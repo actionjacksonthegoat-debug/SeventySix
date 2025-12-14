@@ -3,30 +3,34 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { NotFoundPage } from "./not-found";
 
-describe("NotFoundPage", () =>
-{
-	let component: NotFoundPage;
-	let fixture: ComponentFixture<NotFoundPage>;
-
-	beforeEach(async () =>
+describe("NotFoundPage",
+	() =>
 	{
-		await TestBed
-			.configureTestingModule({
-				imports: [NotFoundPage],
-				providers: [provideZonelessChangeDetection(), provideRouter([])]
-			})
-			.compileComponents();
+		let component: NotFoundPage;
+		let fixture: ComponentFixture<NotFoundPage>;
 
-		fixture =
-			TestBed.createComponent(NotFoundPage);
-		component =
-			fixture.componentInstance;
-		fixture.detectChanges();
-	});
+		beforeEach(
+			async () =>
+			{
+				await TestBed
+				.configureTestingModule(
+					{
+						imports: [NotFoundPage],
+						providers: [provideZonelessChangeDetection(), provideRouter([])]
+					})
+				.compileComponents();
 
-	it("should create", () =>
-	{
-		expect(component)
-			.toBeTruthy();
+				fixture =
+					TestBed.createComponent(NotFoundPage);
+				component =
+					fixture.componentInstance;
+				fixture.detectChanges();
+			});
+
+		it("should create",
+			() =>
+			{
+				expect(component)
+				.toBeTruthy();
+			});
 	});
-});

@@ -21,14 +21,15 @@ import type {
  * Permission request list page.
  * Displays all permission requests with approve/reject actions.
  */
-@Component({
-	selector: "app-permission-request-list-page",
-	imports: [PageHeaderComponent, DataTableComponent],
-	providers: [DatePipe],
-	templateUrl: "./permission-request-list.html",
-	styleUrl: "./permission-request-list.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-permission-request-list-page",
+		imports: [PageHeaderComponent, DataTableComponent],
+		providers: [DatePipe],
+		templateUrl: "./permission-request-list.html",
+		styleUrl: "./permission-request-list.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class PermissionRequestListPage
 {
 	private readonly service: PermissionRequestService =
@@ -56,21 +57,23 @@ export class PermissionRequestListPage
 
 	readonly requests: Signal<PermissionRequestDto[]> =
 		computed(
-		() => this.requestsQuery.data() ?? []);
+			() => this.requestsQuery.data() ?? []);
 
 	readonly isLoading: Signal<boolean> =
-		computed(() => this.requestsQuery.isLoading());
+		computed(
+			() => this.requestsQuery.isLoading());
 
 	readonly error: Signal<string | null> =
-		computed(() =>
-			this.requestsQuery.error()
-				? "Failed to load permission requests."
-				: null);
+		computed(
+			() =>
+				this.requestsQuery.error()
+					? "Failed to load permission requests."
+					: null);
 
 	// DataTable pagination (simple mode - show all items)
 	readonly totalCount: Signal<number> =
 		computed(
-		() => this.requests().length);
+			() => this.requests().length);
 	readonly pageIndex: number = 0;
 	readonly pageSize: number = 100;
 

@@ -24,21 +24,22 @@ import { BreadcrumbComponent } from "@shared/components";
  * Application header component
  * Displays logo, navigation, search, user menu, and theme toggles
  */
-@Component({
-	selector: "app-header",
-	imports: [
-		MatToolbarModule,
-		MatButtonModule,
-		MatIconModule,
-		MatTooltipModule,
-		MatMenuModule,
-		MatDividerModule,
-		BreadcrumbComponent
-	],
-	templateUrl: "./header.component.html",
-	styleUrl: "./header.component.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-header",
+		imports: [
+			MatToolbarModule,
+			MatButtonModule,
+			MatIconModule,
+			MatTooltipModule,
+			MatMenuModule,
+			MatDividerModule,
+			BreadcrumbComponent
+		],
+		templateUrl: "./header.component.html",
+		styleUrl: "./header.component.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class HeaderComponent
 {
 	protected readonly themeService: ThemeService =
@@ -52,16 +53,17 @@ export class HeaderComponent
 
 	/** Display name: fullName if available, otherwise username. */
 	protected readonly displayName: Signal<string> =
-		computed(() =>
-	{
-		const user: UserProfileDto | null =
-			this.authService.user();
-		if (!user)
-		{
-			return "";
-		}
-		return user.fullName || user.username;
-	});
+		computed(
+			() =>
+			{
+				const user: UserProfileDto | null =
+					this.authService.user();
+				if (!user)
+				{
+					return "";
+				}
+				return user.fullName || user.username;
+			});
 
 	toggleSidebar(): void
 	{
@@ -80,17 +82,20 @@ export class HeaderComponent
 
 	navigateToLogin(): void
 	{
-		this.router.navigate(["/auth/login"]);
+		this.router.navigate(
+			["/auth/login"]);
 	}
 
 	navigateToRegister(): void
 	{
-		this.router.navigate(["/auth/register"]);
+		this.router.navigate(
+			["/auth/register"]);
 	}
 
 	navigateToAccount(): void
 	{
-		this.router.navigate(["/account"]);
+		this.router.navigate(
+			["/account"]);
 	}
 
 	logout(): void

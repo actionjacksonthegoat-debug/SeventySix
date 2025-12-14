@@ -15,54 +15,56 @@ import { finalize, tap } from "rxjs";
  */
 export const loggingInterceptor: HttpInterceptorFn =
 	(req, next) =>
-{
-	const dateService: DateService =
-		inject(DateService);
-	const startTime: number =
-		dateService.nowTimestamp();
-	const logLevel: string =
-		environment.logging.consoleLogLevel;
-
-	// Only log HTTP requests at debug/info level
-	// Skip logging if consoleLogLevel is warn, error, or none
-	const shouldLog: boolean =
-		logLevel === "debug" || logLevel === "info";
-
-	if (!shouldLog)
 	{
-		return next(req);
-	}
+		const dateService: DateService =
+			inject(DateService);
+		const startTime: number =
+			dateService.nowTimestamp();
+		const logLevel: string =
+			environment.logging.consoleLogLevel;
 
-	// eslint-disable-next-line no-console
-	console.log(`🔵 HTTP Request: ${req.method} ${req.url}`);
+		// Only log HTTP requests at debug/info level
+		// Skip logging if consoleLogLevel is warn, error, or none
+		const shouldLog: boolean =
+			logLevel === "debug" || logLevel === "info";
 
-	return next(req)
+		if (!shouldLog)
+		{
+			return next(req);
+		}
+
+		// eslint-disable-next-line no-console
+		console.log(`🔵 HTTP Request: ${req.method} ${req.url}`);
+
+		return next(req)
 		.pipe(
-			tap({
-				next: (event) =>
+			tap(
 				{
-					if (event.type !== 0)
+					next: (event) =>
 					{
+						if (event.type !== 0)
+						{
 						// Not a sent event
+							const duration: number =
+								dateService.nowTimestamp() - startTime;
+							// eslint-disable-next-line no-console
+							console.log(
+								`🟢 HTTP Response: ${req.method} ${req.url} (${duration}ms)`);
+						}
+					},
+					error: (error) =>
+					{
 						const duration: number =
 							dateService.nowTimestamp() - startTime;
-						// eslint-disable-next-line no-console
-						console.log(
-							`🟢 HTTP Response: ${req.method} ${req.url} (${duration}ms)`);
+						// Always log HTTP errors regardless of log level
+						console.error(
+							`🔴 HTTP Error: ${req.method} ${req.url} (${duration}ms)`,
+							error);
 					}
-				},
-				error: (error) =>
+				}),
+			finalize(
+				() =>
 				{
-					const duration: number =
-						dateService.nowTimestamp() - startTime;
-					// Always log HTTP errors regardless of log level
-					console.error(
-						`🔴 HTTP Error: ${req.method} ${req.url} (${duration}ms)`,
-						error);
-				}
-			}),
-			finalize(() =>
-			{
 				// Cleanup if needed
-			}));
-};
+				}));
+	};

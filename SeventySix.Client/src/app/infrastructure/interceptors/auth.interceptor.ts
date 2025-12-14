@@ -20,56 +20,59 @@ import { catchError, switchMap, take, throwError } from "rxjs";
 
 export const authInterceptor: HttpInterceptorFn =
 	(
-	req: HttpRequest<unknown>,
-	next: HttpHandlerFn) =>
-{
-	const authService: AuthService =
-		inject(AuthService);
-
-	// Skip auth header for public auth endpoints (login, refresh, logout, OAuth)
-	// Note: change-password requires authentication
-	if (isPublicAuthEndpoint(req.url))
+		req: HttpRequest<unknown>,
+		next: HttpHandlerFn) =>
 	{
-		return next(req);
-	}
+		const authService: AuthService =
+			inject(AuthService);
 
-	const token: string | null =
-		authService.getAccessToken();
+		// Skip auth header for public auth endpoints (login, refresh, logout, OAuth)
+		// Note: change-password requires authentication
+		if (isPublicAuthEndpoint(req.url))
+		{
+			return next(req);
+		}
 
-	// No token - proceed without auth header (guest access)
-	if (!token)
-	{
-		return next(req);
-	}
+		const token: string | null =
+			authService.getAccessToken();
 
-	// Token expired - refresh first
-	if (authService.isTokenExpired())
-	{
-		return authService
+		// No token - proceed without auth header (guest access)
+		if (!token)
+		{
+			return next(req);
+		}
+
+		// Token expired - refresh first
+		if (authService.isTokenExpired())
+		{
+			return authService
 			.refreshToken()
 			.pipe(
 				take(1),
-				switchMap((response) =>
-				{
+				switchMap(
+					(response) =>
+					{
 					// If refresh failed (returned null), let the request proceed without token
 					// The server will return 401 which triggers login redirect
-					if (!response)
+						if (!response)
+						{
+							return next(req);
+						}
+						const newToken: string | null =
+							authService.getAccessToken();
+						return next(addAuthHeader(req, newToken));
+					}),
+				catchError(
+					(error: HttpErrorResponse) =>
 					{
-						return next(req);
-					}
-					const newToken: string | null =
-						authService.getAccessToken();
-					return next(addAuthHeader(req, newToken));
-				}),
-				catchError((error: HttpErrorResponse) =>
-				{
 					// On refresh error, clear auth and let original request fail
-					return throwError(() => error);
-				}));
-	}
+						return throwError(
+							() => error);
+					}));
+		}
 
-	return next(addAuthHeader(req, token));
-};
+		return next(addAuthHeader(req, token));
+	};
 
 /**
  * Checks if the URL is a public auth endpoint that shouldn't have auth header.
@@ -86,7 +89,8 @@ function isPublicAuthEndpoint(url: string): boolean
 			"/auth/callback"
 		];
 
-	return publicAuthPaths.some((path: string) => url.includes(path));
+	return publicAuthPaths.some(
+		(path: string) => url.includes(path));
 }
 
 function addAuthHeader(
@@ -98,9 +102,10 @@ function addAuthHeader(
 		return req;
 	}
 
-	return req.clone({
-		headers: req.headers.set(
-			HTTP_HEADER_AUTHORIZATION,
-			`${HTTP_BEARER_PREFIX}${token}`)
-	});
+	return req.clone(
+		{
+			headers: req.headers.set(
+				HTTP_HEADER_AUTHORIZATION,
+				`${HTTP_BEARER_PREFIX}${token}`)
+		});
 }

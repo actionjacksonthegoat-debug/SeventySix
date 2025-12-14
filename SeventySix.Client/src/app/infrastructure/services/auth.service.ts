@@ -32,9 +32,10 @@ import {
 import { DateService } from "@infrastructure/services";
 import { catchError, Observable, of, tap } from "rxjs";
 
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class AuthService
 {
 	private readonly httpClient: HttpClient =
@@ -78,7 +79,7 @@ export class AuthService
 	/** Computed authentication state. */
 	readonly isAuthenticated: Signal<boolean> =
 		computed(
-		() => this.userSignal() !== null);
+			() => this.userSignal() !== null);
 
 	/**
 	 * Initializes the service: handles OAuth callback and restores session.
@@ -119,12 +120,14 @@ export class AuthService
 	login(credentials: LoginRequest): Observable<AuthResponse>
 	{
 		return this
-			.httpClient
-			.post<AuthResponse>(`${this.authUrl}/login`, credentials, {
+		.httpClient
+		.post<AuthResponse>(`${this.authUrl}/login`, credentials,
+			{
 				withCredentials: true
 			})
-			.pipe(
-				tap((response: AuthResponse) =>
+		.pipe(
+			tap(
+				(response: AuthResponse) =>
 				{
 					this.setAccessToken(
 						response.accessToken,
@@ -153,13 +156,14 @@ export class AuthService
 	refreshToken(): Observable<AuthResponse | null>
 	{
 		return this
-			.httpClient
-			.post<AuthResponse>(
-				`${this.authUrl}/refresh`,
-				{},
-				{ withCredentials: true })
-			.pipe(
-				tap((response: AuthResponse) =>
+		.httpClient
+		.post<AuthResponse>(
+			`${this.authUrl}/refresh`,
+			{},
+			{ withCredentials: true })
+		.pipe(
+			tap(
+				(response: AuthResponse) =>
 				{
 					this.setAccessToken(
 						response.accessToken,
@@ -168,7 +172,8 @@ export class AuthService
 						response.requiresPasswordChange);
 					this.markHasSession();
 				}),
-				catchError(() =>
+			catchError(
+				() =>
 				{
 					this.clearAuth();
 					return of(null);
@@ -181,19 +186,23 @@ export class AuthService
 	logout(): void
 	{
 		this
-			.httpClient
-			.post<void>(`${this.authUrl}/logout`, {}, { withCredentials: true })
-			.subscribe({
+		.httpClient
+		.post<void>(`${this.authUrl}/logout`, {},
+			{ withCredentials: true })
+		.subscribe(
+			{
 				complete: () =>
 				{
 					this.clearAuth();
-					this.router.navigate(["/"]);
+					this.router.navigate(
+						["/"]);
 				},
 				error: () =>
 				{
 					// Clear local state even if server call fails
 					this.clearAuth();
-					this.router.navigate(["/"]);
+					this.router.navigate(
+						["/"]);
 				}
 			});
 	}
@@ -206,10 +215,11 @@ export class AuthService
 	 */
 	setPassword(token: string, newPassword: string): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/set-password`, {
-			token,
-			newPassword
-		});
+		return this.httpClient.post<void>(`${this.authUrl}/set-password`,
+			{
+				token,
+				newPassword
+			});
 	}
 
 	/**
@@ -219,9 +229,10 @@ export class AuthService
 	 */
 	requestPasswordReset(email: string): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/forgot-password`, {
-			email
-		});
+		return this.httpClient.post<void>(`${this.authUrl}/forgot-password`,
+			{
+				email
+			});
 	}
 
 	/**
@@ -231,9 +242,10 @@ export class AuthService
 	 */
 	initiateRegistration(email: string): Observable<void>
 	{
-		return this.httpClient.post<void>(`${this.authUrl}/register/initiate`, {
-			email
-		});
+		return this.httpClient.post<void>(`${this.authUrl}/register/initiate`,
+			{
+				email
+			});
 	}
 
 	/**
@@ -248,13 +260,14 @@ export class AuthService
 		password: string): Observable<AuthResponse>
 	{
 		return this
-			.httpClient
-			.post<AuthResponse>(
-				`${this.authUrl}/register/complete`,
-				{ token, username, password },
-				{ withCredentials: true })
-			.pipe(
-				tap((response: AuthResponse) =>
+		.httpClient
+		.post<AuthResponse>(
+			`${this.authUrl}/register/complete`,
+			{ token, username, password },
+			{ withCredentials: true })
+		.pipe(
+			tap(
+				(response: AuthResponse) =>
 				{
 					this.setAccessToken(
 						response.accessToken,
@@ -302,7 +315,8 @@ export class AuthService
 	 */
 	hasAnyRole(...roles: string[]): boolean
 	{
-		return roles.some((role: string) => this.hasRole(role));
+		return roles.some(
+			(role: string) => this.hasRole(role));
 	}
 
 	/**
@@ -366,7 +380,7 @@ export class AuthService
 			const roleClaim: string | string[] | undefined =
 				claims[
 				DOTNET_ROLE_CLAIM
-			] as string | string[] | undefined;
+				] as string | string[] | undefined;
 			const roles: string[] =
 				Array.isArray(roleClaim)
 					? roleClaim
@@ -376,16 +390,17 @@ export class AuthService
 
 			// Note: Full profile data is available via
 			// AccountService.getProfile() which calls /auth/me.
-			this.userSignal.set({
-				id: parseInt(claims.sub, 10),
-				username: claims.unique_name,
-				email: claims.email,
-				roles,
-				fullName: claims.given_name || null,
-				hasPassword: true,
-				linkedProviders: [],
-				lastLoginAt: null
-			});
+			this.userSignal.set(
+				{
+					id: parseInt(claims.sub, 10),
+					username: claims.unique_name,
+					email: claims.email,
+					roles,
+					fullName: claims.given_name || null,
+					hasPassword: true,
+					linkedProviders: [],
+					lastLoginAt: null
+				});
 		}
 	}
 
@@ -432,7 +447,7 @@ export class AuthService
 				.replace(/_/g, "/");
 			const json: string =
 				decodeURIComponent(
-				atob(base64)
+					atob(base64)
 					.split("")
 					.map(
 						(c: string) =>

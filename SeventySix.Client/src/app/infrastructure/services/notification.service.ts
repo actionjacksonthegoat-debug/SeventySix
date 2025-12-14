@@ -29,9 +29,10 @@ export interface Notification
  * Uses signals for reactive state management.
  * Follows Single Responsibility Principle (SRP).
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class NotificationService
 {
 	private readonly successDurationMs: number = 5000;
@@ -41,7 +42,7 @@ export class NotificationService
 
 	private readonly notifications: WritableSignal<Notification[]> =
 		signal<
-		Notification[]>([]);
+			Notification[]>([]);
 	private idCounter: number = 0;
 
 	/**
@@ -158,8 +159,10 @@ export class NotificationService
 	 */
 	dismiss(id: string): void
 	{
-		this.notifications.update((current) =>
-			current.filter((n) => n.id !== id));
+		this.notifications.update(
+			(current) =>
+				current.filter(
+					(n) => n.id !== id));
 	}
 
 	/**
@@ -235,15 +238,18 @@ export class NotificationService
 				copyData
 			};
 
-		this.notifications.update((current) => [...current, notification]);
+		this.notifications.update(
+			(current) => [...current, notification]);
 
 		// Auto-dismiss if duration is set
 		if (duration)
 		{
-			setTimeout(() =>
-			{
-				this.dismiss(notification.id);
-			}, duration);
+			setTimeout(
+				() =>
+				{
+					this.dismiss(notification.id);
+				},
+				duration);
 		}
 	}
 }

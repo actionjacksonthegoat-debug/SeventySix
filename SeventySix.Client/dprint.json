@@ -16,7 +16,13 @@
 		"bracePosition": "nextLine",
 		"nextControlFlowPosition": "nextLine",
 		"module.sortImportDeclarations": "caseInsensitive",
-		"module.sortExportDeclarations": "caseInsensitive"
+		"module.sortExportDeclarations": "caseInsensitive",
+		"arguments.preferSingleLine": false,
+		"parameters.preferSingleLine": false,
+		"typeParameters.preferSingleLine": false,
+		"objectExpression.preferSingleLine": false,
+		"arrayExpression.preferSingleLine": false,
+		"functionExpression.spaceBeforeParentheses": false
 	},
 	"json": {
 		"trailingCommas": "never",

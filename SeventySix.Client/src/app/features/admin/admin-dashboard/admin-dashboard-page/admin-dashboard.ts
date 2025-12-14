@@ -17,20 +17,21 @@ import { GrafanaDashboardEmbedComponent } from "../components/grafana-dashboard-
  * Follows DRY principle by leveraging Grafana for metrics visualization.
  * Only displays data not available in Grafana (third-party API statistics).
  */
-@Component({
-	selector: "app-admin-dashboard",
-	imports: [
-		MatToolbarModule,
-		MatTabsModule,
-		GrafanaDashboardEmbedComponent,
-		ApiStatisticsTableComponent,
-		PageHeaderComponent,
-		...CARD_MATERIAL_MODULES
-	],
-	templateUrl: "./admin-dashboard.html",
-	styleUrl: "./admin-dashboard.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-admin-dashboard",
+		imports: [
+			MatToolbarModule,
+			MatTabsModule,
+			GrafanaDashboardEmbedComponent,
+			ApiStatisticsTableComponent,
+			PageHeaderComponent,
+			...CARD_MATERIAL_MODULES
+		],
+		templateUrl: "./admin-dashboard.html",
+		styleUrl: "./admin-dashboard.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class AdminDashboardPage
 {
 	private readonly notificationService: NotificationService =

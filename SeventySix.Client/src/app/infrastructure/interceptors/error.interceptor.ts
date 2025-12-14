@@ -20,47 +20,52 @@ import { catchError, throwError } from "rxjs";
  */
 export const errorInterceptor: HttpInterceptorFn =
 	(req, next) =>
-{
-	const logger: LoggerService =
-		inject(LoggerService);
-	const authService: AuthService =
-		inject(AuthService);
-	const router: Router =
-		inject(Router);
+	{
+		const logger: LoggerService =
+			inject(LoggerService);
+		const authService: AuthService =
+			inject(AuthService);
+		const router: Router =
+			inject(Router);
 
-	return next(req)
+		return next(req)
 		.pipe(
-			catchError((error: HttpErrorResponse) =>
-			{
+			catchError(
+				(error: HttpErrorResponse) =>
+				{
 				// Handle 401 on protected routes - redirect to login
 				// Don't check isAuthenticated() because auth may have been cleared
 				// by failed token refresh before we get here
-				if (error.status === 401 && !req.url.includes("/auth/"))
-				{
-					logger.warning("Unauthorized access, redirecting to login");
-					// Clear any remaining auth state
-					if (authService.isAuthenticated())
+					if (error.status === 401 && !req.url.includes("/auth/"))
 					{
-						authService.logout();
+						logger.warning("Unauthorized access, redirecting to login");
+						// Clear any remaining auth state
+						if (authService.isAuthenticated())
+						{
+							authService.logout();
+						}
+						router.navigate(
+							[environment.auth.loginUrl],
+							{
+								queryParams: { returnUrl: router.url }
+							});
 					}
-					router.navigate([environment.auth.loginUrl], {
-						queryParams: { returnUrl: router.url }
-					});
-				}
 
-				logger.warning("HTTP request failed", {
-					url: error.url,
-					status: error.status,
-					method: req.method
-				});
+					logger.warning("HTTP request failed",
+						{
+							url: error.url,
+							status: error.status,
+							method: req.method
+						});
 
-				// Convert to application-specific error using centralized utility
-				const appError: Error =
-					convertToAppError(
-					error,
-					req.url,
-					req.method);
+					// Convert to application-specific error using centralized utility
+					const appError: Error =
+						convertToAppError(
+							error,
+							req.url,
+							req.method);
 
-				return throwError(() => appError);
-			}));
-};
+					return throwError(
+						() => appError);
+				}));
+	};

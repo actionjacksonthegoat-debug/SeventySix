@@ -19,7 +19,7 @@ export const TEST_ROLE_USER: string = "User";
 /** All test roles array. */
 export const TEST_ROLES: readonly string[] =
 	[
-	TEST_ROLE_DEVELOPER,
-	TEST_ROLE_ADMIN,
-	TEST_ROLE_USER
-] as const;
+		TEST_ROLE_DEVELOPER,
+		TEST_ROLE_ADMIN,
+		TEST_ROLE_USER
+	] as const;

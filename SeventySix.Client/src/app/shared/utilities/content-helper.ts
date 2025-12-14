@@ -23,29 +23,29 @@ const LAYOUT_DIMENSIONS: {
 	 * Desktop: 64px, Mobile: 56px
 	 * Using desktop value as default
 	 */
-	HEADER_HEIGHT: 64,
+		HEADER_HEIGHT: 64,
 
-	/**
+		/**
 	 * Breadcrumb navigation height
 	 * Includes vertical padding (0.5rem * 2 = 16px) + content (~36px)
 	 * Total: ~52px
 	 */
-	BREADCRUMB_HEIGHT: 52,
+		BREADCRUMB_HEIGHT: 52,
 
-	/**
+		/**
 	 * Footer height (mat-toolbar)
 	 * Min-height: 48px (can be taller on mobile with wrapped content)
 	 */
-	FOOTER_HEIGHT: 48,
+		FOOTER_HEIGHT: 48,
 
-	/**
+		/**
 	 * Total fixed layout height (header + breadcrumb + footer)
 	 */
-	get TOTAL_FIXED_HEIGHT(): number
-	{
-		return this.HEADER_HEIGHT + this.BREADCRUMB_HEIGHT + this.FOOTER_HEIGHT;
-	}
-} as const;
+		get TOTAL_FIXED_HEIGHT(): number
+		{
+			return this.HEADER_HEIGHT + this.BREADCRUMB_HEIGHT + this.FOOTER_HEIGHT;
+		}
+	} as const;
 
 /**
  * Calculates the available content height for scrollable content areas.
@@ -86,8 +86,8 @@ export const LayoutDimensions: {
 	readonly totalFixedHeight: number;
 } =
 	{
-	headerHeight: LAYOUT_DIMENSIONS.HEADER_HEIGHT,
-	breadcrumbHeight: LAYOUT_DIMENSIONS.BREADCRUMB_HEIGHT,
-	footerHeight: LAYOUT_DIMENSIONS.FOOTER_HEIGHT,
-	totalFixedHeight: LAYOUT_DIMENSIONS.TOTAL_FIXED_HEIGHT
-} as const;
+		headerHeight: LAYOUT_DIMENSIONS.HEADER_HEIGHT,
+		breadcrumbHeight: LAYOUT_DIMENSIONS.BREADCRUMB_HEIGHT,
+		footerHeight: LAYOUT_DIMENSIONS.FOOTER_HEIGHT,
+		totalFixedHeight: LAYOUT_DIMENSIONS.TOTAL_FIXED_HEIGHT
+	} as const;

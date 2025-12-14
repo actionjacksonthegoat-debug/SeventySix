@@ -35,7 +35,7 @@ export const environment: Environment =
 					refetchOnWindowFocus: true,
 					refetchOnReconnect: true
 				},
-			// Resource-specific overrides
+				// Resource-specific overrides
 				users: {
 					staleTime: 60000, // 1min
 					gcTime: 300000, // 5min

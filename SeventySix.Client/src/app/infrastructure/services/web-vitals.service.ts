@@ -8,9 +8,10 @@ import { LoggerService } from "./logger.service";
  * Monitors LCP, INP, CLS, FCP, and TTFB metrics.
  * Follows KISS principle - logs metrics to console initially.
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class WebVitalsService
 {
 	private readonly logger: LoggerService =
@@ -35,34 +36,39 @@ export class WebVitalsService
 		try
 		{
 			// Largest Contentful Paint - measures loading performance
-			onLCP((metric: Metric): void =>
-			{
-				this.logMetric("LCP", metric);
-			});
+			onLCP(
+				(metric: Metric): void =>
+				{
+					this.logMetric("LCP", metric);
+				});
 
 			// Interaction to Next Paint - measures interactivity
-			onINP((metric: Metric): void =>
-			{
-				this.logMetric("INP", metric);
-			});
+			onINP(
+				(metric: Metric): void =>
+				{
+					this.logMetric("INP", metric);
+				});
 
 			// Cumulative Layout Shift - measures visual stability
-			onCLS((metric: Metric): void =>
-			{
-				this.logMetric("CLS", metric);
-			});
+			onCLS(
+				(metric: Metric): void =>
+				{
+					this.logMetric("CLS", metric);
+				});
 
 			// First Contentful Paint - measures perceived load speed
-			onFCP((metric: Metric): void =>
-			{
-				this.logMetric("FCP", metric);
-			});
+			onFCP(
+				(metric: Metric): void =>
+				{
+					this.logMetric("FCP", metric);
+				});
 
 			// Time to First Byte - measures server response time
-			onTTFB((metric: Metric): void =>
-			{
-				this.logMetric("TTFB", metric);
-			});
+			onTTFB(
+				(metric: Metric): void =>
+				{
+					this.logMetric("TTFB", metric);
+				});
 
 			this.logger.info("Web Vitals monitoring initialized");
 		}
@@ -82,22 +88,24 @@ export class WebVitalsService
 		const rating: "good" | "needs-improvement" | "poor" =
 			metric.rating || "good";
 
-		this.logger.info(`Web Vital: ${name}`, {
-			name: metric.name,
-			value: metric.value,
-			rating,
-			delta: metric.delta,
-			id: metric.id,
-			navigationType: metric.navigationType
-		});
+		this.logger.info(`Web Vital: ${name}`,
+			{
+				name: metric.name,
+				value: metric.value,
+				rating,
+				delta: metric.delta,
+				id: metric.id,
+				navigationType: metric.navigationType
+			});
 
 		// Log warning for poor metrics
 		if (rating === "poor")
 		{
-			this.logger.warning(`Poor ${name} detected`, {
-				value: metric.value,
-				threshold: this.getThreshold(name)
-			});
+			this.logger.warning(`Poor ${name} detected`,
+				{
+					value: metric.value,
+					threshold: this.getThreshold(name)
+				});
 		}
 	}
 

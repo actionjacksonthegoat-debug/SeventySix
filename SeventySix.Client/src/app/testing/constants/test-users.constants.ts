@@ -31,6 +31,6 @@ export const TEST_USER_EMAILS: {
 	readonly USER_2: string;
 } =
 	{
-	USER_1: "user1@example.com",
-	USER_2: "user2@example.com"
-} as const;
+		USER_1: "user1@example.com",
+		USER_2: "user2@example.com"
+	} as const;

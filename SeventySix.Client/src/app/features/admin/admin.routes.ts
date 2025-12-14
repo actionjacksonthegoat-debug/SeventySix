@@ -28,7 +28,7 @@ export const ADMIN_ROUTES: Routes =
 			providers: [LogManagementService],
 			loadComponent: () =>
 				import("./logs/log-management/log-management").then(
-				(m) => m.LogManagementPage),
+					(m) => m.LogManagementPage),
 			title: "Log Management - SeventySix"
 		},
 		{
@@ -39,8 +39,9 @@ export const ADMIN_ROUTES: Routes =
 			],
 			loadComponent: () =>
 				import(
-				"./admin-dashboard/admin-dashboard-page/admin-dashboard")
-				.then((m) => m.AdminDashboardPage),
+					"./admin-dashboard/admin-dashboard-page/admin-dashboard")
+				.then(
+					(m) => m.AdminDashboardPage),
 			title: "Admin Dashboard - SeventySix"
 		},
 		{
@@ -55,21 +56,21 @@ export const ADMIN_ROUTES: Routes =
 					path: "",
 					loadComponent: () =>
 						import("./users/user-management/user-management").then(
-						(m) => m.UserManagementPage),
+							(m) => m.UserManagementPage),
 					title: "User Management - SeventySix"
 				},
 				{
 					path: "create",
 					loadComponent: () =>
 						import("./users/user-create/user-create").then(
-						(m) => m.UserCreatePage),
+							(m) => m.UserCreatePage),
 					title: "Create User - SeventySix"
 				},
 				{
 					path: ":id",
 					loadComponent: () =>
 						import("./users/user-detail/user-detail").then(
-						(m) => m.UserDetailPage),
+							(m) => m.UserDetailPage),
 					title: "User Details - SeventySix"
 				}
 			]
@@ -79,22 +80,23 @@ export const ADMIN_ROUTES: Routes =
 			providers: [PermissionRequestService],
 			loadComponent: () =>
 				import(
-				"./permission-requests/permission-request-list/permission-request-list")
-				.then((m) => m.PermissionRequestListPage),
+					"./permission-requests/permission-request-list/permission-request-list")
+				.then(
+					(m) => m.PermissionRequestListPage),
 			title: "Permission Requests - SeventySix"
 		},
 		{
 			path: "not-found",
 			loadComponent: () =>
 				import("@shared/error-pages/not-found/not-found").then(
-				(m) => m.NotFoundPage),
+					(m) => m.NotFoundPage),
 			title: "Page Not Found - SeventySix"
 		},
 		{
 			path: "server-error",
 			loadComponent: () =>
 				import("@shared/error-pages/server-error/server-error").then(
-				(m) => m.ServerErrorPage),
+					(m) => m.ServerErrorPage),
 			title: "Server Error - SeventySix"
 		}
 	];

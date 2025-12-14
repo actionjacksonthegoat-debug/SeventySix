@@ -44,22 +44,23 @@ import { map } from "rxjs/operators";
  * Follows Material Design 3 patterns with OnPush change detection
  * Angular 20+ compliant: signals, zoneless, inject() pattern
  */
-@Component({
-	selector: "app-data-table",
-	imports: [
-		DatePipe,
-		FormsModule,
-		MatCard,
-		MatCardContent,
-		ScrollingModule,
-		TableHeightDirective,
-		...TABLE_MATERIAL_MODULES
-	],
-	templateUrl: "./data-table.component.html",
-	styleUrl: "./data-table.component.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	animations: [slideDown]
-})
+@Component(
+	{
+		selector: "app-data-table",
+		imports: [
+			DatePipe,
+			FormsModule,
+			MatCard,
+			MatCardContent,
+			ScrollingModule,
+			TableHeightDirective,
+			...TABLE_MATERIAL_MODULES
+		],
+		templateUrl: "./data-table.component.html",
+		styleUrl: "./data-table.component.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush,
+		animations: [slideDown]
+	})
 export class DataTableComponent<T extends { id: number; }>
 {
 	// ===== Required Inputs =====
@@ -129,7 +130,7 @@ export class DataTableComponent<T extends { id: number; }>
 	 */
 	readonly quickFilters: InputSignal<QuickFilter<T>[]> =
 		input<
-		QuickFilter<T>[]>([]);
+			QuickFilter<T>[]>([]);
 
 	/**
 	 * Single-selection mode for quick filters
@@ -148,32 +149,33 @@ export class DataTableComponent<T extends { id: number; }>
 	 * Page size options
 	 */
 	readonly pageSizeOptions: InputSignal<number[]> =
-		input<number[]>([
-		25,
-		50,
-		100
-	]);
+		input<number[]>(
+			[
+				25,
+				50,
+				100
+			]);
 
 	/**
 	 * Virtual scroll item size (from environment config)
 	 */
 	readonly virtualScrollItemSize: InputSignal<number> =
 		input<number>(
-		environment.ui.tables.virtualScrollItemSize);
+			environment.ui.tables.virtualScrollItemSize);
 
 	/**
 	 * localStorage key for column preferences
 	 */
 	readonly storageKey: InputSignal<string | null> =
 		input<string | null>(
-		null);
+			null);
 
 	/**
 	 * Per-row action menu items
 	 */
 	readonly rowActions: InputSignal<RowAction<T>[]> =
 		input<RowAction<T>[]>(
-		[]);
+			[]);
 
 	/**
 	 * Bulk action menu items (shown when rows selected)
@@ -282,23 +284,21 @@ export class DataTableComponent<T extends { id: number; }>
 	/**
 	 * Date range display configuration (DRY - single source of truth)
 	 */
-	private static readonly DATE_RANGE_CONFIG: Record<
-		string,
-		{ icon: string; label: string; }> =
+	private static readonly DATE_RANGE_CONFIG: Record<string, { icon: string; label: string; }> =
 		{
-				"1h": { icon: "schedule", label: "1 Hour" },
-				"24h": { icon: "today", label: "24 Hours" },
-				"7d": { icon: "date_range", label: "7 Days" },
-				"30d": { icon: "calendar_month", label: "30 Days" }
-			};
+			"1h": { icon: "schedule", label: "1 Hour" },
+			"24h": { icon: "today", label: "24 Hours" },
+			"7d": { icon: "date_range", label: "7 Days" },
+			"30d": { icon: "calendar_month", label: "30 Days" }
+		};
 
 	/**
 	 * Computed date range icon (memoized for template performance)
 	 */
 	readonly dateRangeIcon: Signal<string> =
 		computed(
-		(): string =>
-			DataTableComponent
+			(): string =>
+				DataTableComponent
 				.DATE_RANGE_CONFIG[this.selectedDateRange()]
 				?.icon ?? "today");
 
@@ -307,8 +307,8 @@ export class DataTableComponent<T extends { id: number; }>
 	 */
 	readonly dateRangeLabel: Signal<string> =
 		computed(
-		(): string =>
-			DataTableComponent
+			(): string =>
+				DataTableComponent
 				.DATE_RANGE_CONFIG[this.selectedDateRange()]
 				?.label ?? "24 Hours");
 
@@ -329,10 +329,11 @@ export class DataTableComponent<T extends { id: number; }>
 	 */
 	private readonly selectionChange: Signal<readonly T[]> =
 		toSignal(
-		this.selection.changed.pipe(
-			map(() =>
-				this.selection.selected as readonly T[])),
-		{ initialValue: [] as readonly T[] });
+			this.selection.changed.pipe(
+				map(
+					() =>
+						this.selection.selected as readonly T[])),
+			{ initialValue: [] as readonly T[] });
 
 	// ========================================
 	// Computed Signals
@@ -342,75 +343,80 @@ export class DataTableComponent<T extends { id: number; }>
 	 * Visible columns
 	 */
 	readonly visibleColumns: Signal<TableColumn<T>[]> =
-		computed(() =>
-	{
-		const visibility: Map<string, boolean> =
-			this.columnVisibility();
-		return this
-			.columns()
-			.filter((col) =>
+		computed(
+			() =>
 			{
-				const isVisible: boolean | undefined =
-					visibility.get(col.key);
-				return isVisible !== undefined ? isVisible : col.visible;
+				const visibility: Map<string, boolean> =
+					this.columnVisibility();
+				return this
+				.columns()
+				.filter(
+					(col) =>
+					{
+						const isVisible: boolean | undefined =
+							visibility.get(col.key);
+						return isVisible !== undefined ? isVisible : col.visible;
+					});
 			});
-	});
 
 	/**
 	 * Displayed column keys for mat-table
 	 */
 	readonly displayedColumns: Signal<string[]> =
-		computed(() =>
-	{
-		const columns: string[] = [];
+		computed(
+			() =>
+			{
+				const columns: string[] = [];
 
-		// Add select column if selectable
-		if (this.selectable())
-		{
-			columns.push("select");
-		}
+				// Add select column if selectable
+				if (this.selectable())
+				{
+					columns.push("select");
+				}
 
-		// Add visible data columns
-		columns.push(
-			...this
-				.visibleColumns()
-				.map((col) => col.key));
+				// Add visible data columns
+				columns.push(
+					...this
+					.visibleColumns()
+					.map(
+						(col) => col.key));
 
-		// Add actions column if rowActions provided
-		if (this.rowActions().length > 0)
-		{
-			columns.push("actions");
-		}
+				// Add actions column if rowActions provided
+				if (this.rowActions().length > 0)
+				{
+					columns.push("actions");
+				}
 
-		return columns;
-	});
+				return columns;
+			});
 
 	/**
 	 * Has selection
 	 */
 	readonly hasSelection: Signal<boolean> =
 		computed(
-		() => this.selectionChange().length > 0);
+			() => this.selectionChange().length > 0);
 
 	/**
 	 * Number of selected items
 	 */
 	readonly selectedCount: Signal<number> =
 		computed(
-		() => this.selectionChange().length);
+			() => this.selectionChange().length);
 
 	/**
 	 * Is all selected
 	 */
 	readonly isAllSelected: Signal<boolean> =
-		computed(() =>
-	{
-		const numSelected: number =
-			this.selectionChange().length;
-		const numRows: number =
-			this.data().length;
-		return numSelected === numRows && numRows > 0;
-	});
+		computed(
+			() =>
+			{
+				const numSelected: number =
+					this.selectionChange().length;
+				const numRows: number =
+					this.data().length;
+				return numSelected === numRows && numRows > 0;
+			});
 
 	// ========================================
 	// Constructor & Lifecycle
@@ -423,10 +429,14 @@ export class DataTableComponent<T extends { id: number; }>
 
 	constructor()
 	{
-		effect(() => this.initializeFirstQuickFilter());
-		effect(() => this.emitInitialDateRange());
-		effect(() => this.loadColumnPreferences());
-		effect(() => this.clearSelectionOnDataChange());
+		effect(
+			() => this.initializeFirstQuickFilter());
+		effect(
+			() => this.emitInitialDateRange());
+		effect(
+			() => this.loadColumnPreferences());
+		effect(
+			() => this.clearSelectionOnDataChange());
 	}
 
 	/**
@@ -450,12 +460,15 @@ export class DataTableComponent<T extends { id: number; }>
 			// Activate the first filter (typically "All")
 			const firstFilterKey: string =
 				filters[0].key;
-			this.activeFilters.set(new Set([firstFilterKey]));
+			this.activeFilters.set(
+				new Set(
+					[firstFilterKey]));
 			// Emit the initial filter state
-			this.filterChange.emit({
-				filterKey: firstFilterKey,
-				active: true
-			});
+			this.filterChange.emit(
+				{
+					filterKey: firstFilterKey,
+					active: true
+				});
 		}
 	}
 
@@ -495,11 +508,12 @@ export class DataTableComponent<T extends { id: number; }>
 						JSON.parse(stored);
 					const visibility: Map<string, boolean> =
 						new Map<
-						string,
-						boolean>();
+							string,
+							boolean>();
 					Object
-						.entries(preferences)
-						.forEach(([k, v]) =>
+					.entries(preferences)
+					.forEach(
+						([k, v]) =>
 						{
 							visibility.set(k, v as boolean);
 						});
@@ -550,10 +564,11 @@ export class DataTableComponent<T extends { id: number; }>
 	 */
 	onSortChange(sort: Sort): void
 	{
-		this.sortChange.emit({
-			sortBy: sort.active,
-			sortDescending: sort.direction === "desc"
-		});
+		this.sortChange.emit(
+			{
+				sortBy: sort.active,
+				sortDescending: sort.direction === "desc"
+			});
 	}
 
 	/**
@@ -587,7 +602,8 @@ export class DataTableComponent<T extends { id: number; }>
 		}
 
 		this.activeFilters.set(filters);
-		this.filterChange.emit({ filterKey, active });
+		this.filterChange.emit(
+			{ filterKey, active });
 	}
 
 	/**
@@ -599,46 +615,31 @@ export class DataTableComponent<T extends { id: number; }>
 
 		const now: Date =
 			this.dateService.parseUTC(this.dateService.now());
-		let startDate: Date | undefined;
 
-		switch (range)
+		const rangeMs: Record<string, number> =
+			{
+				"1h": 60 * 60 * 1000,
+				"24h": 24 * 60 * 60 * 1000,
+				"7d": 7 * 24 * 60 * 60 * 1000,
+				"30d": 30 * 24 * 60 * 60 * 1000
+			};
+
+		const presetMap: Record<string, "24h" | "7d" | "30d" | "all"> =
+			{
+				"1h": "24h",
+				"24h": "24h",
+				"7d": "7d",
+				"30d": "30d"
+			};
+
+		if (rangeMs[range])
 		{
-			case "1h":
-				startDate =
-					new Date(now.getTime() - 60 * 60 * 1000);
-				this.dateRangeChange.emit({
-					startDate,
+			this.dateRangeChange.emit(
+				{
+					startDate: new Date(now.getTime() - rangeMs[range]),
 					endDate: now,
-					preset: "24h" // Map to closest preset
+					preset: presetMap[range]
 				});
-				break;
-			case "24h":
-				startDate =
-					new Date(now.getTime() - 24 * 60 * 60 * 1000);
-				this.dateRangeChange.emit({
-					startDate,
-					endDate: now,
-					preset: "24h"
-				});
-				break;
-			case "7d":
-				startDate =
-					new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-				this.dateRangeChange.emit({
-					startDate,
-					endDate: now,
-					preset: "7d"
-				});
-				break;
-			case "30d":
-				startDate =
-					new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-				this.dateRangeChange.emit({
-					startDate,
-					endDate: now,
-					preset: "30d"
-				});
-				break;
 		}
 	}
 
@@ -655,7 +656,8 @@ export class DataTableComponent<T extends { id: number; }>
 	 */
 	onRowAction(action: string, row: T): void
 	{
-		this.rowAction.emit({ action, row });
+		this.rowAction.emit(
+			{ action, row });
 	}
 
 	/**
@@ -663,11 +665,13 @@ export class DataTableComponent<T extends { id: number; }>
 	 */
 	onBulkAction(action: string): void
 	{
-		this.bulkAction.emit({
-			action,
-			selectedRows: this.selection.selected,
-			selectedIds: this.selection.selected.map((row) => row.id)
-		});
+		this.bulkAction.emit(
+			{
+				action,
+				selectedRows: this.selection.selected,
+				selectedIds: this.selection.selected.map(
+					(row) => row.id)
+			});
 	}
 
 	/**
@@ -709,7 +713,7 @@ export class DataTableComponent<T extends { id: number; }>
 	{
 		const visibility: Map<string, boolean> =
 			new Map(
-			this.columnVisibility());
+				this.columnVisibility());
 		const currentValue: boolean | undefined =
 			visibility.get(columnKey);
 		const column: TableColumn<T> | undefined =
@@ -731,10 +735,11 @@ export class DataTableComponent<T extends { id: number; }>
 			if (key)
 			{
 				const preferences: Record<string, boolean> = {};
-				visibility.forEach((value, k) =>
-				{
-					preferences[k] = value;
-				});
+				visibility.forEach(
+					(value, k) =>
+					{
+						preferences[k] = value;
+					});
 				localStorage.setItem(key, JSON.stringify(preferences));
 			}
 		}
@@ -752,8 +757,9 @@ export class DataTableComponent<T extends { id: number; }>
 		else
 		{
 			this
-				.data()
-				.forEach((row) => this.selection.select(row));
+			.data()
+			.forEach(
+				(row) => this.selection.select(row));
 		}
 	}
 

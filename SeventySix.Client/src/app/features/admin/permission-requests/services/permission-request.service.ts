@@ -29,25 +29,27 @@ export class PermissionRequestService extends BaseMutationService
 	/** Query for all permission requests (admin). */
 	getAllRequests()
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.permissionRequests.list,
-			queryFn: () =>
-				lastValueFrom(
-					this.apiService.get<PermissionRequestDto[]>(`${this.endpoint}/permission-requests`)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.permissionRequests.list,
+				queryFn: () =>
+					lastValueFrom(
+						this.apiService.get<PermissionRequestDto[]>(`${this.endpoint}/permission-requests`)),
+				...this.queryConfig
+			}));
 	}
 
 	/** Query for available roles (current user). */
 	getAvailableRoles()
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.permissionRequests.availableRoles,
-			queryFn: () =>
-				lastValueFrom(
-					this.apiService.get<AvailableRoleDto[]>(`${this.endpoint}/me/available-roles`)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.permissionRequests.availableRoles,
+				queryFn: () =>
+					lastValueFrom(
+						this.apiService.get<AvailableRoleDto[]>(`${this.endpoint}/me/available-roles`)),
+				...this.queryConfig
+			}));
 	}
 
 	/** Mutation for creating permission requests. */

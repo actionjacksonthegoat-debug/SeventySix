@@ -53,15 +53,17 @@ function parseDates(body: unknown): unknown
  */
 export const dateParserInterceptor: HttpInterceptorFn =
 	(req, next) =>
-{
-	return next(req)
+	{
+		return next(req)
 		.pipe(
-			map((event) =>
-			{
-				if (event instanceof HttpResponse && event.body)
+			map(
+				(event) =>
 				{
-					return event.clone({ body: parseDates(event.body) });
-				}
-				return event;
-			}));
-};
+					if (event instanceof HttpResponse && event.body)
+					{
+						return event.clone(
+							{ body: parseDates(event.body) });
+					}
+					return event;
+				}));
+	};

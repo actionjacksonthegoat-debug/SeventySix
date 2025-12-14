@@ -6,6 +6,7 @@ import arrowBodyNewline from "./eslint-rules/arrow-body-newline.js";
 import closingAngleSameLine from "./eslint-rules/closing-angle-same-line.js";
 import closingParenSameLine from "./eslint-rules/closing-paren-same-line.js";
 import operatorContinuationIndent from "./eslint-rules/operator-continuation-indent.js";
+import callArgumentObjectNewline from "./eslint-rules/call-argument-object-newline.js";
 
 // Shared rules for all TypeScript files
 const sharedRules = {
@@ -42,7 +43,7 @@ const sharedRules = {
 			}
 		}
 	],
-	"@stylistic/function-call-argument-newline": ["error", "consistent"],
+	"@stylistic/function-call-argument-newline": "off",
 	"@stylistic/newline-per-chained-call": [
 		"error",
 		{
@@ -54,8 +55,9 @@ const sharedRules = {
 	"local/closing-angle-same-line": "error",
 	"local/closing-paren-same-line": "error",
 	"local/operator-continuation-indent": "error",
+	"local/call-argument-object-newline": "error",
 	"@stylistic/brace-style": ["error", "allman", { "allowSingleLine": false }],
-	"@stylistic/indent": "off",
+	"@stylistic/indent": ["error", "tab", { "SwitchCase": 1, "MemberExpression": 0 }],
 	"@stylistic/quotes": "off",
 	"@stylistic/semi": "off",
 	"@stylistic/comma-dangle": "off"
@@ -71,7 +73,8 @@ const sharedPlugins = {
 			"arrow-body-newline": arrowBodyNewline,
 			"closing-angle-same-line": closingAngleSameLine,
 			"closing-paren-same-line": closingParenSameLine,
-			"operator-continuation-indent": operatorContinuationIndent
+			"operator-continuation-indent": operatorContinuationIndent,
+			"call-argument-object-newline": callArgumentObjectNewline
 		}
 	}
 };

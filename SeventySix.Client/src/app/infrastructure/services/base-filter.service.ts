@@ -80,7 +80,7 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 	{
 		return this.forceRefreshTrigger()
 			? new HttpContext()
-				.set(FORCE_REFRESH, true)
+			.set(FORCE_REFRESH, true)
 			: undefined;
 	}
 
@@ -90,7 +90,8 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 	 */
 	forceRefresh(): void
 	{
-		this.forceRefreshTrigger.update((value: boolean) => !value);
+		this.forceRefreshTrigger.update(
+			(value: boolean) => !value);
 	}
 
 	/**
@@ -99,7 +100,8 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 	 */
 	protected resetFilter(): void
 	{
-		this.filter.set({ ...this.initialFilter });
+		this.filter.set(
+			{ ...this.initialFilter });
 	}
 
 	/** Clear all filters and reset to defaults. Subclasses must override to provide feature-specific cleanup. */

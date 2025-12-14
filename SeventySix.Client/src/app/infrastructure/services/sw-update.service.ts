@@ -14,9 +14,10 @@ import { LoggerService } from "./logger.service";
  * - Forced update on critical versions
  * - Update logging and monitoring
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class SwUpdateService
 {
 	private readonly swUpdate: SwUpdate =
@@ -46,17 +47,19 @@ export class SwUpdateService
 		// Wait for app to stabilize, then check for updates every 6 hours
 		const appIsStable$: import("rxjs").Observable<boolean> =
 			this.appRef.isStable.pipe(
-			first((isStable: boolean) => isStable === true));
+				first(
+					(isStable: boolean) => isStable === true));
 		const everySixHours$: import("rxjs").Observable<number> =
 			interval(
-			6 * 60 * 60 * 1000);
+				6 * 60 * 60 * 1000);
 		const everySixHoursOnceAppIsStable$: import("rxjs").Observable<
 			boolean | number> =
 			concat(appIsStable$, everySixHours$);
 
 		everySixHoursOnceAppIsStable$
-			.pipe(takeUntilDestroyed())
-			.subscribe(async () =>
+		.pipe(takeUntilDestroyed())
+		.subscribe(
+			async () =>
 			{
 				try
 				{
@@ -78,14 +81,15 @@ export class SwUpdateService
 	private handleVersionUpdates(): void
 	{
 		this
-			.swUpdate
-			.versionUpdates
-			.pipe(
-				filter(
-					(evt): evt is VersionReadyEvent =>
-						evt.type === "VERSION_READY"),
-				takeUntilDestroyed())
-			.subscribe(() =>
+		.swUpdate
+		.versionUpdates
+		.pipe(
+			filter(
+				(evt): evt is VersionReadyEvent =>
+					evt.type === "VERSION_READY"),
+			takeUntilDestroyed())
+		.subscribe(
+			() =>
 			{
 				if (this.confirmUpdate())
 				{
@@ -101,10 +105,11 @@ export class SwUpdateService
 	private handleUnrecoverableState(): void
 	{
 		this
-			.swUpdate
-			.unrecoverable
-			.pipe(takeUntilDestroyed())
-			.subscribe((event) =>
+		.swUpdate
+		.unrecoverable
+		.pipe(takeUntilDestroyed())
+		.subscribe(
+			(event) =>
 			{
 				this.logger.error(
 					"Service Worker unrecoverable state",

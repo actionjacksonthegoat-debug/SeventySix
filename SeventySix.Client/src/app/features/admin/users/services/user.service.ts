@@ -37,14 +37,15 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 
 	constructor()
 	{
-		super({
-			page: 1,
-			pageSize: 50,
-			sortBy: "Id",
-			sortDescending: true,
-			startDate: null,
-			endDate: null
-		});
+		super(
+			{
+				page: 1,
+				pageSize: 50,
+				sortBy: "Id",
+				sortDescending: true,
+				startDate: null,
+				endDate: null
+			});
 	}
 
 	/**
@@ -54,15 +55,16 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	getPagedUsers()
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys
 				.users
 				.paged(this.getCurrentFilter())
 				.concat(this.forceRefreshTrigger()),
-			queryFn: () =>
-				lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
-			...this.queryConfig
-		}));
+				queryFn: () =>
+					lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
+				...this.queryConfig
+			}));
 	}
 
 	/**
@@ -72,12 +74,13 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	getUserById(userId: number | string)
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.users.single(userId),
-			queryFn: () =>
-				lastValueFrom(this.apiService.get<UserDto>(`${this.endpoint}/${userId}`)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.users.single(userId),
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<UserDto>(`${this.endpoint}/${userId}`)),
+				...this.queryConfig
+			}));
 	}
 
 	/**
@@ -140,12 +143,13 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	getUserByUsername(username: string)
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.users.byUsername(username),
-			queryFn: () =>
-				lastValueFrom(this.apiService.get<UserDto>(`${this.endpoint}/username/${username}`)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.users.byUsername(username),
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<UserDto>(`${this.endpoint}/username/${username}`)),
+				...this.queryConfig
+			}));
 	}
 
 	/**
@@ -160,7 +164,8 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	{
 		const params: HttpParams | undefined =
 			excludeUserId
-				? buildHttpParams({ excludeId: excludeUserId })
+				? buildHttpParams(
+					{ excludeId: excludeUserId })
 				: undefined;
 
 		return lastValueFrom(
@@ -227,12 +232,13 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 */
 	getUserRoles(userId: number | string)
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.users.roles(userId),
-			queryFn: () =>
-				lastValueFrom(this.apiService.get<string[]>(`${this.endpoint}/${userId}/roles`)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.users.roles(userId),
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<string[]>(`${this.endpoint}/${userId}/roles`)),
+				...this.queryConfig
+			}));
 	}
 
 	/**
@@ -253,9 +259,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 					{}),
 			(result, variables) =>
 			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.users.roles(variables.userId)
-				});
+				this.queryClient.invalidateQueries(
+					{
+						queryKey: QueryKeys.users.roles(variables.userId)
+					});
 			});
 	}
 
@@ -275,9 +282,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 				this.apiService.delete<void>(`${this.endpoint}/${variables.userId}/roles/${variables.roleName}`),
 			(result, variables) =>
 			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.users.roles(variables.userId)
-				});
+				this.queryClient.invalidateQueries(
+					{
+						queryKey: QueryKeys.users.roles(variables.userId)
+					});
 			});
 	}
 

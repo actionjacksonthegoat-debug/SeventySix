@@ -19,20 +19,21 @@ import { NotificationToastComponent } from "@shared/components";
  * Root application component.
  * Main entry point for the Angular application.
  */
-@Component({
-	selector: "app-root",
-	imports: [
-		RouterOutlet,
-		MatSidenavModule,
-		MatProgressBarModule,
-		HeaderComponent,
-		SidebarComponent,
-		FooterComponent,
-		NotificationToastComponent
-	],
-	templateUrl: "./app.html",
-	styleUrl: "./app.scss"
-})
+@Component(
+	{
+		selector: "app-root",
+		imports: [
+			RouterOutlet,
+			MatSidenavModule,
+			MatProgressBarModule,
+			HeaderComponent,
+			SidebarComponent,
+			FooterComponent,
+			NotificationToastComponent
+		],
+		templateUrl: "./app.html",
+		styleUrl: "./app.scss"
+	})
 export class App
 {
 	protected readonly themeService: ThemeService =
@@ -49,24 +50,25 @@ export class App
 	constructor()
 	{
 		// Sync sidebar state to body class for CSS targeting (dialogs, overlays)
-		effect(() =>
-		{
-			const isExpanded: boolean =
-				this.layoutService.sidebarExpanded();
-			const isSideMode: boolean =
-				this.layoutService.sidebarMode() === "side";
+		effect(
+			() =>
+			{
+				const isExpanded: boolean =
+					this.layoutService.sidebarExpanded();
+				const isSideMode: boolean =
+					this.layoutService.sidebarMode() === "side";
 
-			if (isExpanded && isSideMode)
-			{
-				this.renderer.addClass(this.document.body, "sidebar-expanded");
-			}
-			else
-			{
-				this.renderer.removeClass(
-					this.document.body,
-					"sidebar-expanded");
-			}
-		});
+				if (isExpanded && isSideMode)
+				{
+					this.renderer.addClass(this.document.body, "sidebar-expanded");
+				}
+				else
+				{
+					this.renderer.removeClass(
+						this.document.body,
+						"sidebar-expanded");
+				}
+			});
 	}
 
 	/**

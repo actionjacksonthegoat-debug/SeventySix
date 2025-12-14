@@ -24,20 +24,20 @@ const TABLE_COMPONENT_HEIGHTS: {
 } =
 	{
 	/** Search toolbar height: mat-form-field at density -1 (48px) + padding (12px top/bottom) = 72px */
-	SEARCH_TOOLBAR: 72,
+		SEARCH_TOOLBAR: 72,
 
-	/** Filter chips toolbar height: chips at density -1 (24px) + padding (12px top/bottom) = 48px */
-	FILTER_CHIPS_TOOLBAR: 48,
+		/** Filter chips toolbar height: chips at density -1 (24px) + padding (12px top/bottom) = 48px */
+		FILTER_CHIPS_TOOLBAR: 48,
 
-	/**
+		/**
 	 * Calculate total offset for standard table with search and filters
 	 * Search (72) + Filters (48) = 120px
 	 */
-	get STANDARD_TABLE_OFFSET(): number
-	{
-		return this.SEARCH_TOOLBAR + this.FILTER_CHIPS_TOOLBAR;
-	}
-} as const;
+		get STANDARD_TABLE_OFFSET(): number
+		{
+			return this.SEARCH_TOOLBAR + this.FILTER_CHIPS_TOOLBAR;
+		}
+	} as const;
 
 /**
  * Directive to automatically calculate and apply table height based on available viewport space
@@ -69,9 +69,10 @@ const TABLE_COMPONENT_HEIGHTS: {
  *   <table mat-table [dataSource]="data">...</table>
  * </cdk-virtual-scroll-viewport>
  */
-@Directive({
-	selector: "[appTableHeight]"
-})
+@Directive(
+	{
+		selector: "[appTableHeight]"
+	})
 export class TableHeightDirective
 {
 	/**
@@ -79,9 +80,10 @@ export class TableHeightDirective
 	 * Default: 400px
 	 */
 	readonly appTableHeight: InputSignal<number> =
-		input<number>(400, {
-		alias: "appTableHeight"
-	});
+		input<number>(400,
+			{
+				alias: "appTableHeight"
+			});
 
 	/**
 	 * Element reference for DOM manipulation
@@ -101,27 +103,30 @@ export class TableHeightDirective
 		this.applyInitialHeight();
 
 		// Calculate actual height after element is rendered in DOM
-		afterNextRender(() =>
-		{
-			this.updateHeight();
-		});
+		afterNextRender(
+			() =>
+			{
+				this.updateHeight();
+			});
 
 		// Listen to window resize events (zoneless compatible)
 		// Debounced at 500ms to handle scenarios with hundreds of directives on same page
 		fromEvent(window, "resize")
-			.pipe(debounceTime(500), takeUntilDestroyed())
-			.subscribe(() =>
+		.pipe(debounceTime(500), takeUntilDestroyed())
+		.subscribe(
+			() =>
 			{
 				this.updateHeight();
 			});
 
 		// Update height when inputs change
 		// Effect runs immediately on change (no debounce needed for input changes)
-		effect(() =>
-		{
-			this.appTableHeight();
-			this.updateHeight();
-		});
+		effect(
+			() =>
+			{
+				this.appTableHeight();
+				this.updateHeight();
+			});
 	}
 
 	/**

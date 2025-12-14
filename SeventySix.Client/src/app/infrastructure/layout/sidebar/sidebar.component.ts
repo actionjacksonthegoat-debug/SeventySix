@@ -39,21 +39,22 @@ interface NavSection
  * Displays navigation menu with Material Design
  * Filters visible sections based on user roles
  */
-@Component({
-	selector: "app-sidebar",
-	imports: [
-		MatListModule,
-		MatIconModule,
-		MatDividerModule,
-		MatButtonModule,
-		MatTooltipModule,
-		RouterLink,
-		RouterLinkActive
-	],
-	templateUrl: "./sidebar.component.html",
-	styleUrl: "./sidebar.component.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-sidebar",
+		imports: [
+			MatListModule,
+			MatIconModule,
+			MatDividerModule,
+			MatButtonModule,
+			MatTooltipModule,
+			RouterLink,
+			RouterLinkActive
+		],
+		templateUrl: "./sidebar.component.html",
+		styleUrl: "./sidebar.component.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class SidebarComponent
 {
 	protected readonly layoutService: LayoutService =
@@ -110,9 +111,11 @@ export class SidebarComponent
 
 	/** Computed signal that filters sections based on current user's roles. */
 	protected readonly visibleNavSections: Signal<NavSection[]> =
-		computed(() =>
-			this.navSections.filter((section: NavSection) =>
-				this.hasAccess(section.requiredRoles)));
+		computed(
+			() =>
+				this.navSections.filter(
+					(section: NavSection) =>
+						this.hasAccess(section.requiredRoles)));
 
 	/**
 	 * Check if current user has access to a section.

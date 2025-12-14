@@ -87,14 +87,17 @@ export class LogFixtures
 	/** Create multiple logs with incremental IDs. Useful for testing pagination and lists. */
 	static createLogs(count: number, logLevel?: string): LogDto[]
 	{
-		return Array.from({ length: count }, (_, i) =>
-			LogFixtures.createLog({
-				id: i + 1,
-				createDate: new Date(Date.now() - i * 60000)
-					.toISOString(),
-				logLevel: logLevel || "Information",
-				message: `Test log message ${i + 1}`
-			}));
+		return Array.from(
+			{ length: count },
+			(_, i) =>
+				LogFixtures.createLog(
+					{
+						id: i + 1,
+						createDate: new Date(Date.now() - i * 60000)
+						.toISOString(),
+						logLevel: logLevel || "Information",
+						message: `Test log message ${i + 1}`
+					}));
 	}
 
 	/** Get array of predefined test logs. Includes error, warning, and info logs. */

@@ -18,14 +18,15 @@ import { AuthResponse, LoginRequest } from "@infrastructure/api";
 import { AuthService } from "@infrastructure/services/auth.service";
 import { NotificationService } from "@infrastructure/services/notification.service";
 
-@Component({
-	selector: "app-login",
-	standalone: true,
-	imports: [FormsModule, RouterLink],
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	templateUrl: "./login.html",
-	styleUrl: "./login.scss"
-})
+@Component(
+	{
+		selector: "app-login",
+		standalone: true,
+		imports: [FormsModule, RouterLink],
+		changeDetection: ChangeDetectionStrategy.OnPush,
+		templateUrl: "./login.html",
+		styleUrl: "./login.scss"
+	})
 export class LoginComponent implements OnInit
 {
 	private readonly authService: AuthService =
@@ -75,9 +76,10 @@ export class LoginComponent implements OnInit
 			};
 
 		this
-			.authService
-			.login(credentials)
-			.subscribe({
+		.authService
+		.login(credentials)
+		.subscribe(
+			{
 				next: (response: AuthResponse) =>
 				{
 					if (response.requiresPasswordChange)
@@ -85,12 +87,14 @@ export class LoginComponent implements OnInit
 						// Redirect to password change page
 						this.notification.info(
 							"You must change your password before continuing.");
-						this.router.navigate(["/auth/change-password"], {
-							queryParams: {
-								required: "true",
-								returnUrl: this.returnUrl
-							}
-						});
+						this.router.navigate(
+							["/auth/change-password"],
+							{
+								queryParams: {
+									required: "true",
+									returnUrl: this.returnUrl
+								}
+							});
 					}
 					else
 					{

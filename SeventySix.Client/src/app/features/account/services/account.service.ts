@@ -25,12 +25,13 @@ export class AccountService extends BaseMutationService
 
 	getProfile()
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.account.profile,
-			queryFn: () =>
-				lastValueFrom(this.apiService.get<UserProfileDto>("auth/me")),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.account.profile,
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<UserProfileDto>("auth/me")),
+				...this.queryConfig
+			}));
 	}
 
 	updateProfile()
@@ -42,12 +43,13 @@ export class AccountService extends BaseMutationService
 
 	getAvailableRoles()
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.account.availableRoles,
-			queryFn: () =>
-				lastValueFrom(this.apiService.get<AvailableRoleDto[]>(`${this.endpoint}/available-roles`)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.account.availableRoles,
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<AvailableRoleDto[]>(`${this.endpoint}/available-roles`)),
+				...this.queryConfig
+			}));
 	}
 
 	createPermissionRequest()
@@ -59,9 +61,10 @@ export class AccountService extends BaseMutationService
 					request),
 			() =>
 			{
-				this.queryClient.invalidateQueries({
-					queryKey: QueryKeys.account.availableRoles
-				});
+				this.queryClient.invalidateQueries(
+					{
+						queryKey: QueryKeys.account.availableRoles
+					});
 			});
 	}
 }

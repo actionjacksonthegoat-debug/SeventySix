@@ -80,55 +80,55 @@ import { ScrollingModule } from "@angular/cdk/scrolling";
 export const MATERIAL_MODULES: readonly (typeof MatCommonModule)[] =
 	[
 	// Core
-	MatCommonModule,
-	MatRippleModule,
+		MatCommonModule,
+		MatRippleModule,
 
-	// Layout
-	MatSidenavModule,
-	MatToolbarModule,
-	MatDividerModule,
-	MatListModule,
+		// Layout
+		MatSidenavModule,
+		MatToolbarModule,
+		MatDividerModule,
+		MatListModule,
 
-	// Buttons & Indicators
-	MatButtonModule,
-	MatIconModule,
-	MatBadgeModule,
-	MatChipsModule,
-	MatProgressBarModule,
-	MatProgressSpinnerModule,
+		// Buttons & Indicators
+		MatButtonModule,
+		MatIconModule,
+		MatBadgeModule,
+		MatChipsModule,
+		MatProgressBarModule,
+		MatProgressSpinnerModule,
 
-	// Form Controls
-	MatFormFieldModule,
-	MatInputModule,
-	MatSelectModule,
-	MatAutocompleteModule,
-	MatCheckboxModule,
-	MatRadioModule,
-	MatSlideToggleModule,
-	MatSliderModule,
-	MatDatepickerModule,
-	MatNativeDateModule,
+		// Form Controls
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatAutocompleteModule,
+		MatCheckboxModule,
+		MatRadioModule,
+		MatSlideToggleModule,
+		MatSliderModule,
+		MatDatepickerModule,
+		MatNativeDateModule,
 
-	// Navigation
-	MatMenuModule,
-	MatTabsModule,
-	MatStepperModule,
+		// Navigation
+		MatMenuModule,
+		MatTabsModule,
+		MatStepperModule,
 
-	// Data Table
-	MatTableModule,
-	MatSortModule,
-	MatPaginatorModule,
+		// Data Table
+		MatTableModule,
+		MatSortModule,
+		MatPaginatorModule,
 
-	// Popups & Modals
-	MatDialogModule,
-	MatSnackBarModule,
-	MatTooltipModule,
+		// Popups & Modals
+		MatDialogModule,
+		MatSnackBarModule,
+		MatTooltipModule,
 
-	// Cards & Expansion
-	MatCardModule,
-	MatExpansionModule,
+		// Cards & Expansion
+		MatCardModule,
+		MatExpansionModule,
 
-	// CDK
-	ScrollingModule,
-	DragDropModule
-] as const;
+		// CDK
+		ScrollingModule,
+		DragDropModule
+	] as const;

@@ -7,45 +7,49 @@ import { createMockDialog, createMockSnackBar } from "@testing";
 import { createMockThemeService } from "@testing/mocks/theme.service.mock";
 import { StyleGuideComponent } from "./style-guide";
 
-describe("StyleGuideComponent", () =>
-{
-	let component: StyleGuideComponent;
-	let fixture: ComponentFixture<StyleGuideComponent>;
-	let mockThemeService: ReturnType<typeof createMockThemeService>;
-	let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
-	let mockDialog: jasmine.SpyObj<MatDialog>;
-
-	beforeEach(async () =>
+describe("StyleGuideComponent",
+	() =>
 	{
-		mockThemeService =
-			createMockThemeService();
-		mockSnackBar =
-			createMockSnackBar();
-		mockDialog =
-			createMockDialog();
+		let component: StyleGuideComponent;
+		let fixture: ComponentFixture<StyleGuideComponent>;
+		let mockThemeService: ReturnType<typeof createMockThemeService>;
+		let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+		let mockDialog: jasmine.SpyObj<MatDialog>;
 
-		await TestBed
-			.configureTestingModule({
-				imports: [StyleGuideComponent],
-				providers: [
-					provideZonelessChangeDetection(),
-					{ provide: ThemeService, useValue: mockThemeService },
-					{ provide: MatSnackBar, useValue: mockSnackBar },
-					{ provide: MatDialog, useValue: mockDialog }
-				]
-			})
-			.compileComponents();
+		beforeEach(
+			async () =>
+			{
+				mockThemeService =
+					createMockThemeService();
+				mockSnackBar =
+					createMockSnackBar();
+				mockDialog =
+					createMockDialog();
 
-		fixture =
-			TestBed.createComponent(StyleGuideComponent);
-		component =
-			fixture.componentInstance;
-		fixture.detectChanges();
+				await TestBed
+				.configureTestingModule(
+					{
+						imports: [StyleGuideComponent],
+						providers: [
+							provideZonelessChangeDetection(),
+							{ provide: ThemeService, useValue: mockThemeService },
+							{ provide: MatSnackBar, useValue: mockSnackBar },
+							{ provide: MatDialog, useValue: mockDialog }
+						]
+					})
+				.compileComponents();
+
+				fixture =
+					TestBed.createComponent(StyleGuideComponent);
+				component =
+					fixture.componentInstance;
+				fixture.detectChanges();
+			});
+
+		it("should create",
+			() =>
+			{
+				expect(component)
+				.toBeTruthy();
+			});
 	});
-
-	it("should create", () =>
-	{
-		expect(component)
-			.toBeTruthy();
-	});
-});

@@ -36,20 +36,21 @@ import { environment } from "@environments/environment";
 import { DateService } from "@infrastructure/services";
 
 /** Dialog component for displaying detailed log information. */
-@Component({
-	selector: "app-log-detail-dialog",
-	imports: [
-		MatDialogModule,
-		MatButtonModule,
-		MatIconModule,
-		MatDividerModule,
-		MatTooltipModule,
-		MatExpansionModule
-	],
-	templateUrl: "./log-detail-dialog.component.html",
-	styleUrl: "./log-detail-dialog.component.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-log-detail-dialog",
+		imports: [
+			MatDialogModule,
+			MatButtonModule,
+			MatIconModule,
+			MatDividerModule,
+			MatTooltipModule,
+			MatExpansionModule
+		],
+		templateUrl: "./log-detail-dialog.component.html",
+		styleUrl: "./log-detail-dialog.component.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class LogDetailDialogComponent
 {
 	private readonly dialogRef: MatDialogRef<LogDetailDialogComponent> =
@@ -62,7 +63,7 @@ export class LogDetailDialogComponent
 
 	readonly log: WritableSignal<LogDto> =
 		signal<LogDto>(
-		inject<LogDto>(MAT_DIALOG_DATA));
+			inject<LogDto>(MAT_DIALOG_DATA));
 	readonly stackTraceCollapsed: WritableSignal<boolean> =
 		signal<boolean>(false);
 	readonly propertiesCollapsed: WritableSignal<boolean> =
@@ -75,39 +76,47 @@ export class LogDetailDialogComponent
 
 	// Pre-computed values for template performance (memoized computed signals)
 	readonly levelClass: Signal<string> =
-		computed((): string =>
-			getLogLevelClassName(this.log().logLevel));
+		computed(
+			(): string =>
+				getLogLevelClassName(this.log().logLevel));
 	readonly levelName: Signal<string> =
-		computed((): string =>
-			getLogLevelName(this.log().logLevel));
+		computed(
+			(): string =>
+				getLogLevelName(this.log().logLevel));
 	readonly levelIcon: Signal<string> =
-		computed((): string =>
-			getLogLevelIconName(this.log().logLevel));
+		computed(
+			(): string =>
+				getLogLevelIconName(this.log().logLevel));
 	readonly relativeTime: Signal<string> =
-		computed((): string =>
-			getRelativeTime(
-			this.log().createDate,
-			this.dateService));
+		computed(
+			(): string =>
+				getRelativeTime(
+					this.log().createDate,
+					this.dateService));
 	readonly formattedProperties: Signal<string> =
-		computed((): string =>
-			formatJsonProperties(this.log().properties));
+		computed(
+			(): string =>
+				formatJsonProperties(this.log().properties));
 	readonly stackFrameCount: Signal<number> =
-		computed((): number =>
-			countStackFrames(this.log().stackTrace));
+		computed(
+			(): number =>
+				countStackFrames(this.log().stackTrace));
 	readonly isRootSpan: Signal<boolean> =
-		computed((): boolean =>
-			isRootSpanId(this.log().parentSpanId));
+		computed(
+			(): boolean =>
+				isRootSpanId(this.log().parentSpanId));
 	readonly hasCorrelationId: Signal<boolean> =
 		computed(
-		(): boolean =>
-			!!this.log().correlationId);
+			(): boolean =>
+				!!this.log().correlationId);
 	readonly isError: Signal<boolean> =
-		computed((): boolean =>
-	{
-		const level: LogLevel =
-			parseLogLevel(this.log().logLevel);
-		return level === LogLevel.Error || level === LogLevel.Fatal;
-	});
+		computed(
+			(): boolean =>
+			{
+				const level: LogLevel =
+					parseLogLevel(this.log().logLevel);
+				return level === LogLevel.Error || level === LogLevel.Fatal;
+			});
 
 	toggleStackTrace(): void
 	{

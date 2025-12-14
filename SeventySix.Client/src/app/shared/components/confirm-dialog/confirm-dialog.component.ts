@@ -12,10 +12,11 @@ import { ConfirmDialogData } from "@shared/models";
  * Reusable confirmation dialog component
  * Used for critical actions like deletions
  */
-@Component({
-	selector: "app-confirm-dialog",
-	imports: [MatDialogModule, MatButtonModule, MatIconModule],
-	template: `
+@Component(
+	{
+		selector: "app-confirm-dialog",
+		imports: [MatDialogModule, MatButtonModule, MatIconModule],
+		template: `
 		<h2 mat-dialog-title>
 			@if (data.icon) {
 				<mat-icon [style.color]="getIconColor()">{{
@@ -41,8 +42,8 @@ import { ConfirmDialogData } from "@shared/models";
 			</button>
 		</mat-dialog-actions>
 	`,
-	styles: [
-		`
+		styles: [
+			`
 			h2 {
 				display: flex;
 				align-items: center;
@@ -60,8 +61,8 @@ import { ConfirmDialogData } from "@shared/models";
 				max-width: 500px;
 			}
 		`
-	]
-})
+		]
+	})
 export class ConfirmDialogComponent
 {
 	private dialogRef: MatDialogRef<ConfirmDialogComponent> =

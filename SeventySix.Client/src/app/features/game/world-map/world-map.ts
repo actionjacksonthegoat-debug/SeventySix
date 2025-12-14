@@ -6,13 +6,14 @@ import { MatIconModule } from "@angular/material/icon";
  * World map feature
  * Empty placeholder for game world map and future functionality
  */
-@Component({
-	selector: "app-world-map",
-	imports: [MatCardModule, MatIconModule],
-	templateUrl: "./world-map.html",
-	styleUrl: "./world-map.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-world-map",
+		imports: [MatCardModule, MatIconModule],
+		templateUrl: "./world-map.html",
+		styleUrl: "./world-map.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class WorldMap
 {
 	readonly title: string = "World Map";

@@ -22,14 +22,15 @@ import {
 	USERNAME_VALIDATION
 } from "@shared/constants/validation.constants";
 
-@Component({
-	selector: "app-register-complete",
-	standalone: true,
-	imports: [FormsModule, RouterLink],
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	templateUrl: "./register-complete.html",
-	styleUrl: "./register-complete.scss"
-})
+@Component(
+	{
+		selector: "app-register-complete",
+		standalone: true,
+		imports: [FormsModule, RouterLink],
+		changeDetection: ChangeDetectionStrategy.OnPush,
+		templateUrl: "./register-complete.html",
+		styleUrl: "./register-complete.scss"
+	})
 export class RegisterCompleteComponent implements OnInit
 {
 	private readonly authService: AuthService =
@@ -88,13 +89,15 @@ export class RegisterCompleteComponent implements OnInit
 		this.isLoading.set(true);
 
 		this
-			.authService
-			.completeRegistration(this.token, this.username, this.password)
-			.subscribe({
+		.authService
+		.completeRegistration(this.token, this.username, this.password)
+		.subscribe(
+			{
 				next: () =>
 				{
 					this.notification.success("Account created successfully!");
-					this.router.navigate(["/"]);
+					this.router.navigate(
+						["/"]);
 				},
 				error: (error: HttpErrorResponse) =>
 				{

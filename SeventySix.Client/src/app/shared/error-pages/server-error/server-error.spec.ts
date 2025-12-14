@@ -4,50 +4,56 @@ import { provideRouter } from "@angular/router";
 import { WindowUtilities } from "@shared/utilities";
 import { ServerErrorPage } from "./server-error";
 
-describe("ServerErrorPage", () =>
-{
-	let component: ServerErrorPage;
-	let fixture: ComponentFixture<ServerErrorPage>;
-	let mockWindowUtilities: jasmine.SpyObj<WindowUtilities>;
-
-	beforeEach(async () =>
+describe("ServerErrorPage",
+	() =>
 	{
-		mockWindowUtilities =
-			jasmine.createSpyObj("WindowUtilities", [
-			"reload"
-		]);
+		let component: ServerErrorPage;
+		let fixture: ComponentFixture<ServerErrorPage>;
+		let mockWindowUtilities: jasmine.SpyObj<WindowUtilities>;
 
-		await TestBed
-			.configureTestingModule({
-				imports: [ServerErrorPage],
-				providers: [
-					provideZonelessChangeDetection(),
-					provideRouter([]),
-					{ provide: WindowUtilities, useValue: mockWindowUtilities }
-				]
-			})
-			.compileComponents();
+		beforeEach(
+			async () =>
+			{
+				mockWindowUtilities =
+					jasmine.createSpyObj("WindowUtilities",
+						[
+							"reload"
+						]);
 
-		fixture =
-			TestBed.createComponent(ServerErrorPage);
-		component =
-			fixture.componentInstance;
-		fixture.detectChanges();
+				await TestBed
+				.configureTestingModule(
+					{
+						imports: [ServerErrorPage],
+						providers: [
+							provideZonelessChangeDetection(),
+							provideRouter([]),
+							{ provide: WindowUtilities, useValue: mockWindowUtilities }
+						]
+					})
+				.compileComponents();
+
+				fixture =
+					TestBed.createComponent(ServerErrorPage);
+				component =
+					fixture.componentInstance;
+				fixture.detectChanges();
+			});
+
+		it("should create",
+			() =>
+			{
+				expect(component)
+				.toBeTruthy();
+			});
+
+		it("should reload page",
+			() =>
+			{
+				// Act
+				component.reloadPage();
+
+				// Assert
+				expect(mockWindowUtilities.reload)
+				.toHaveBeenCalled();
+			});
 	});
-
-	it("should create", () =>
-	{
-		expect(component)
-			.toBeTruthy();
-	});
-
-	it("should reload page", () =>
-	{
-		// Act
-		component.reloadPage();
-
-		// Assert
-		expect(mockWindowUtilities.reload)
-			.toHaveBeenCalled();
-	});
-});

@@ -59,24 +59,26 @@ export class UserExportService
 			];
 
 		const rows: string[][] =
-			users.map((user) =>
-				[
-			user.id.toString(),
-			this.escapeCsvValue(user.username),
-			this.escapeCsvValue(user.email),
-			this.escapeCsvValue(user.fullName ?? ""),
-			user.isActive ? "Active" : "Inactive",
-			user.createDate,
-			user.lastLoginAt ?? "Never",
-			user.modifyDate ?? "",
-			user.createdBy ?? "",
-			user.modifiedBy ?? ""
-		]);
+			users.map(
+				(user) =>
+					[
+						user.id.toString(),
+						this.escapeCsvValue(user.username),
+						this.escapeCsvValue(user.email),
+						this.escapeCsvValue(user.fullName ?? ""),
+						user.isActive ? "Active" : "Inactive",
+						user.createDate,
+						user.lastLoginAt ?? "Never",
+						user.modifyDate ?? "",
+						user.createdBy ?? "",
+						user.modifiedBy ?? ""
+					]);
 
 		const csvLines: string[] =
 			[
 				headers.join(","),
-				...rows.map((row) => row.join(","))
+				...rows.map(
+					(row) => row.join(","))
 			];
 
 		return csvLines.join("\n");
@@ -108,9 +110,11 @@ export class UserExportService
 	private downloadCsv(content: string, filename: string): void
 	{
 		const blob: Blob =
-			new Blob([content], {
-			type: "text/csv;charset=utf-8;"
-		});
+			new Blob(
+				[content],
+				{
+					type: "text/csv;charset=utf-8;"
+				});
 		const link: HTMLAnchorElement =
 			document.createElement("a");
 

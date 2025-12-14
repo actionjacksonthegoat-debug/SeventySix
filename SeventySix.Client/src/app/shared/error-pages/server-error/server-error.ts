@@ -8,13 +8,14 @@ import { WindowUtilities } from "@shared/utilities";
  * Displays when server encounters an internal error.
  * Uses Material Design components for consistent styling.
  */
-@Component({
-	selector: "app-server-error",
-	imports: [RouterLink, ...CARD_MATERIAL_MODULES],
-	templateUrl: "./server-error.html",
-	styleUrls: ["./server-error.scss"],
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-server-error",
+		imports: [RouterLink, ...CARD_MATERIAL_MODULES],
+		templateUrl: "./server-error.html",
+		styleUrls: ["./server-error.scss"],
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class ServerErrorPage
 {
 	private readonly windowUtilities: WindowUtilities =

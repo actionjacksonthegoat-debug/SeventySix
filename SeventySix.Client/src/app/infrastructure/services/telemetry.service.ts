@@ -24,9 +24,10 @@ import { LoggerService } from "./logger.service";
  * Automatically instruments document load and fetch API calls.
  * Follows KISS principle with minimal configuration.
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class TelemetryService
 {
 	private readonly logger: LoggerService =
@@ -68,23 +69,26 @@ export class TelemetryService
 	{
 		// Create resource with service metadata
 		const resource: Resource =
-			new Resource({
-			[ATTR_SERVICE_NAME]: environment.telemetry.serviceName,
-			[ATTR_SERVICE_VERSION]: environment.telemetry.serviceVersion
-		});
+			new Resource(
+				{
+					[ATTR_SERVICE_NAME]: environment.telemetry.serviceName,
+					[ATTR_SERVICE_VERSION]: environment.telemetry.serviceVersion
+				});
 
 		// Create OTLP HTTP exporter for Jaeger
 		const exporter: OTLPTraceExporter =
-			new OTLPTraceExporter({
-			url: environment.telemetry.otlpEndpoint
-		});
+			new OTLPTraceExporter(
+				{
+					url: environment.telemetry.otlpEndpoint
+				});
 
 		// Create tracer provider with batch processor
 		this.provider =
-			new WebTracerProvider({
-			resource,
-			sampler: this.createSampler()
-		});
+			new WebTracerProvider(
+				{
+					resource,
+					sampler: this.createSampler()
+				});
 
 		// Add batch span processor for efficient export
 		this.provider.addSpanProcessor(new BatchSpanProcessor(exporter));
@@ -93,17 +97,19 @@ export class TelemetryService
 		this.provider.register();
 
 		// Register automatic instrumentations
-		registerInstrumentations({
-			instrumentations: [
-				new DocumentLoadInstrumentation(), // Page load timing
-				new FetchInstrumentation({
-					// Propagate trace context to backend
-					propagateTraceHeaderCorsUrls: [
-						new RegExp(environment.apiUrl)
-					]
-				})
-			]
-		});
+		registerInstrumentations(
+			{
+				instrumentations: [
+					new DocumentLoadInstrumentation(), // Page load timing
+					new FetchInstrumentation(
+						{
+							// Propagate trace context to backend
+							propagateTraceHeaderCorsUrls: [
+								new RegExp(environment.apiUrl)
+							]
+						})
+				]
+			});
 	}
 
 	/**

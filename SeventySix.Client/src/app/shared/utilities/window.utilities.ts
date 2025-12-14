@@ -4,9 +4,10 @@ import { Injectable } from "@angular/core";
  * Utility service for window operations
  * Wraps window methods to make them testable
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class WindowUtilities
 {
 	/**

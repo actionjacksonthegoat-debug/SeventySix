@@ -29,17 +29,19 @@ export abstract class BaseQueryService<TFilter extends BaseQueryRequest> extends
 	/** Invalidate all queries for this entity type */
 	protected invalidateAll(): void
 	{
-		this.queryClient.invalidateQueries({
-			queryKey: [this.queryKeyPrefix]
-		});
+		this.queryClient.invalidateQueries(
+			{
+				queryKey: [this.queryKeyPrefix]
+			});
 	}
 
 	/** Invalidate a specific entity query by ID */
 	protected invalidateSingle(entityId: number | string): void
 	{
-		this.queryClient.invalidateQueries({
-			queryKey: [this.queryKeyPrefix, entityId]
-		});
+		this.queryClient.invalidateQueries(
+			{
+				queryKey: [this.queryKeyPrefix, entityId]
+			});
 	}
 
 	/** Invalidate all queries and a specific entity */
@@ -64,20 +66,21 @@ export abstract class BaseQueryService<TFilter extends BaseQueryRequest> extends
 			result: TResult,
 			variables: TInput) => void): CreateMutationResult<TResult, Error, TInput>
 	{
-		return injectMutation(() => ({
-			mutationFn: (input: TInput) =>
-				lastValueFrom(mutationFunction(input)),
-			onSuccess: (result, variables) =>
-			{
-				if (onSuccessCallback)
+		return injectMutation(
+			() => ({
+				mutationFn: (input: TInput) =>
+					lastValueFrom(mutationFunction(input)),
+				onSuccess: (result, variables) =>
 				{
-					onSuccessCallback(result, variables);
+					if (onSuccessCallback)
+					{
+						onSuccessCallback(result, variables);
+					}
+					else
+					{
+						this.invalidateAll();
+					}
 				}
-				else
-				{
-					this.invalidateAll();
-				}
-			}
-		}));
+			}));
 	}
 }

@@ -9,7 +9,8 @@ export const RV_CAMPER_ROUTES: Routes =
 		{
 			path: "",
 			loadComponent: () =>
-				import("./rv-camper/rv-camper").then((m) => m.RVCamper),
+				import("./rv-camper/rv-camper").then(
+					(m) => m.RVCamper),
 			title: "RV Camper - Projects"
 		}
 	];

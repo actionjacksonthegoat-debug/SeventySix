@@ -27,31 +27,34 @@ export class HealthApiService
 
 	getHealth(): CreateQueryResult<HealthStatusResponse, Error>
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.health.status,
-			queryFn: () =>
-				lastValueFrom(this.apiService.get<HealthStatusResponse>(this.endpoint)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.health.status,
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<HealthStatusResponse>(this.endpoint)),
+				...this.queryConfig
+			}));
 	}
 
 	getDatabaseHealth(): CreateQueryResult<DatabaseHealthResponse, Error>
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.health.database,
-			queryFn: () =>
-				lastValueFrom(this.apiService.get<DatabaseHealthResponse>(`${this.endpoint}/database`)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.health.database,
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<DatabaseHealthResponse>(`${this.endpoint}/database`)),
+				...this.queryConfig
+			}));
 	}
 
 	getExternalApiHealth(): CreateQueryResult<ExternalApiHealthResponse, Error>
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys.health.externalApis,
-			queryFn: () =>
-				lastValueFrom(this.apiService.get<ExternalApiHealthResponse>(`${this.endpoint}/external-apis`)),
-			...this.queryConfig
-		}));
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.health.externalApis,
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<ExternalApiHealthResponse>(`${this.endpoint}/external-apis`)),
+				...this.queryConfig
+			}));
 	}
 }

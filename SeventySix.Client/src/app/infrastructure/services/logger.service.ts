@@ -40,9 +40,10 @@ export interface LogEntry
  * Logs to console based on configured log level, sends to remote endpoint in production.
  * Follows Single Responsibility Principle (SRP).
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class LoggerService
 {
 	private readonly http: HttpClient =
@@ -278,10 +279,11 @@ export class LoggerService
 			};
 
 		this
-			.http
-			.post(this.logEndpoint, payload)
-			.pipe(
-				catchError((err) =>
+		.http
+		.post(this.logEndpoint, payload)
+		.pipe(
+			catchError(
+				(err) =>
 				{
 					// Fallback: log to console if remote logging fails
 					console.error(
@@ -289,6 +291,6 @@ export class LoggerService
 						err);
 					return of(null);
 				}))
-			.subscribe();
+		.subscribe();
 	}
 }

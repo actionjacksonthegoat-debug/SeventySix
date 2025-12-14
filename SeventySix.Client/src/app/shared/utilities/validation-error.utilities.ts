@@ -60,7 +60,7 @@ export function getValidationError(
 				? errorValue
 				: {};
 		return messageTemplate(params)
-			.replace("{field}", fieldLabel);
+		.replace("{field}", fieldLabel);
 	}
 
 	return messageTemplate.replace("{field}", fieldLabel);

@@ -45,17 +45,18 @@ import {
  * Multi-step form for creating new users with validation.
  * Uses Material Stepper for guided user experience.
  */
-@Component({
-	selector: "app-user-create",
-	imports: [
-		ReactiveFormsModule,
-		MatSnackBarModule,
-		...STEPPER_MATERIAL_MODULES
-	],
-	templateUrl: "./user-create.html",
-	styleUrls: ["./user-create.scss"],
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-user-create",
+		imports: [
+			ReactiveFormsModule,
+			MatSnackBarModule,
+			...STEPPER_MATERIAL_MODULES
+		],
+		templateUrl: "./user-create.html",
+		styleUrls: ["./user-create.scss"],
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class UserCreatePage
 {
 	private readonly userService: UserService =
@@ -78,12 +79,14 @@ export class UserCreatePage
 
 	// State signals
 	readonly isSaving: Signal<boolean> =
-		computed(() => this.createMutation.isPending());
+		computed(
+			() => this.createMutation.isPending());
 	readonly saveError: Signal<string | null> =
-		computed(() =>
-			this.createMutation.error()
-				? "Failed to create user. Please try again."
-				: null);
+		computed(
+			() =>
+				this.createMutation.error()
+					? "Failed to create user. Please try again."
+					: null);
 
 	/**
 	 * Async validator for username availability
@@ -99,70 +102,79 @@ export class UserCreatePage
 			}
 
 			return of(control.value)
-				.pipe(
-					debounceTime(500),
-					distinctUntilChanged(),
-					switchMap((username: string) =>
+			.pipe(
+				debounceTime(500),
+				distinctUntilChanged(),
+				switchMap(
+					(username: string) =>
 						from(this.userService.checkUsernameAvailability(username))),
-					map((exists: boolean) =>
+				map(
+					(exists: boolean) =>
 						exists ? { usernameTaken: true } : null),
-					catchError(() => of(null)));
+				catchError(
+					() => of(null)));
 		};
 	}
 
 	// Form groups for each step
 	readonly basicInfoForm: FormGroup =
-		this.formBuilder.group({
-		username: [
-			"",
-			[
-				Validators.required,
-				Validators.minLength(USERNAME_VALIDATION.MIN_LENGTH),
-				Validators.maxLength(USERNAME_VALIDATION.MAX_LENGTH)
-			],
-			[this.usernameAvailabilityValidator()]
-		],
-		email: [
-			"",
-			[
-				Validators.required,
-				Validators.email,
-				Validators.maxLength(EMAIL_VALIDATION.MAX_LENGTH)
-			]
-		]
-	});
+		this.formBuilder.group(
+			{
+				username: [
+					"",
+					[
+						Validators.required,
+						Validators.minLength(USERNAME_VALIDATION.MIN_LENGTH),
+						Validators.maxLength(USERNAME_VALIDATION.MAX_LENGTH)
+					],
+					[this.usernameAvailabilityValidator()]
+				],
+				email: [
+					"",
+					[
+						Validators.required,
+						Validators.email,
+						Validators.maxLength(EMAIL_VALIDATION.MAX_LENGTH)
+					]
+				]
+			});
 
 	readonly accountDetailsForm: FormGroup =
-		this.formBuilder.group({
-		fullName: [
-			"",
-			[
-				Validators.required,
-				Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)
-			]
-		],
-		isActive: [true]
-	});
+		this.formBuilder.group(
+			{
+				fullName: [
+					"",
+					[
+						Validators.required,
+						Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)
+					]
+				],
+				isActive: [true]
+			});
 
 	// Computed signal for complete form data
 	readonly formData: Signal<Partial<UserDto>> =
-		computed(() => ({
-		...this.basicInfoForm.value,
-		...this.accountDetailsForm.value
-	}));
+		computed(
+			() => ({
+				...this.basicInfoForm.value,
+				...this.accountDetailsForm.value
+			}));
 
 	// Validation error signals
 	readonly usernameError: Signal<string | null> =
-		computed(() =>
-			getValidationError(this.basicInfoForm.get("username"), "Username"));
+		computed(
+			() =>
+				getValidationError(this.basicInfoForm.get("username"), "Username"));
 
 	readonly emailError: Signal<string | null> =
-		computed(() =>
-			getValidationError(this.basicInfoForm.get("email"), "Email"));
+		computed(
+			() =>
+				getValidationError(this.basicInfoForm.get("email"), "Email"));
 
 	readonly fullNameError: Signal<string | null> =
-		computed(() =>
-			getValidationError(this.accountDetailsForm.get("fullName"), "Full name"));
+		computed(
+			() =>
+				getValidationError(this.accountDetailsForm.get("fullName"), "Full name"));
 
 	/**
 	 * Save user as draft (partial save)
@@ -170,11 +182,12 @@ export class UserCreatePage
 	saveDraft(): void
 	{
 		this.logger.info("Draft save requested", this.formData());
-		this.snackBar.open("Draft saved locally", "Close", {
-			duration: 2000,
-			horizontalPosition: "end",
-			verticalPosition: "top"
-		});
+		this.snackBar.open("Draft saved locally", "Close",
+			{
+				duration: 2000,
+				horizontalPosition: "end",
+				verticalPosition: "top"
+			});
 	}
 
 	/**
@@ -185,43 +198,48 @@ export class UserCreatePage
 		// Validate all steps
 		if (this.basicInfoForm.invalid || this.accountDetailsForm.invalid)
 		{
-			this.snackBar.open("Please complete all required fields", "Close", {
-				duration: 3000,
-				horizontalPosition: "end",
-				verticalPosition: "top"
-			});
+			this.snackBar.open("Please complete all required fields", "Close",
+				{
+					duration: 3000,
+					horizontalPosition: "end",
+					verticalPosition: "top"
+				});
 			return;
 		}
 
 		const userData: Partial<UserDto> =
 			this.formData();
 
-		this.createMutation.mutate(userData, {
-			onSuccess: (createdUser) =>
+		this.createMutation.mutate(userData,
 			{
-				this.logger.info("User created successfully", {
-					id: createdUser.id
-				});
+				onSuccess: (createdUser) =>
+				{
+					this.logger.info("User created successfully",
+						{
+							id: createdUser.id
+						});
 
-				const message: string =
-					createdUser.needsPendingEmail
-						? `User "${createdUser.username}" created. Email will be sent to ${createdUser.email} within 24 hours.`
-						: `User "${createdUser.username}" created. Welcome email sent to ${createdUser.email}.`;
+					const message: string =
+						createdUser.needsPendingEmail
+							? `User "${createdUser.username}" created. Email will be sent to ${createdUser.email} within 24 hours.`
+							: `User "${createdUser.username}" created. Welcome email sent to ${createdUser.email}.`;
 
-				this.snackBar.open(message, "Close", {
-					duration: 5000,
-					horizontalPosition: "end",
-					verticalPosition: "top"
-				});
+					this.snackBar.open(message, "Close",
+						{
+							duration: 5000,
+							horizontalPosition: "end",
+							verticalPosition: "top"
+						});
 
-				// Navigate to user list
-				this.router.navigate(["/admin/users"]);
-			},
-			onError: (err) =>
-			{
-				this.logger.error("Failed to create user", err);
-			}
-		});
+					// Navigate to user list
+					this.router.navigate(
+						["/admin/users"]);
+				},
+				onError: (err) =>
+				{
+					this.logger.error("Failed to create user", err);
+				}
+			});
 	}
 
 	/**
@@ -229,6 +247,7 @@ export class UserCreatePage
 	 */
 	onCancel(): void
 	{
-		this.router.navigate(["/admin/users"]);
+		this.router.navigate(
+			["/admin/users"]);
 	}
 }

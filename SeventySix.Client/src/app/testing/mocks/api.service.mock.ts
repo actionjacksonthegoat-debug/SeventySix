@@ -30,8 +30,9 @@ export class MockApiService
 		{
 			return of(data as T);
 		}
-		return throwError(() =>
-			new Error(`No mock data for ${endpoint}`));
+		return throwError(
+			() =>
+				new Error(`No mock data for ${endpoint}`));
 	}
 
 	/**

@@ -19,9 +19,10 @@ export interface ConfirmOptions
  * Dialog service providing standardized confirmation dialogs.
  * Wraps MatDialog with convenience methods for common operations.
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class DialogService
 {
 	private readonly dialog: MatDialog =
@@ -44,11 +45,13 @@ export class DialogService
 			};
 
 		return this
-			.dialog
-			.open(ConfirmDialogComponent, { data: dialogData })
-			.afterClosed()
-			.pipe(
-				map((result: boolean | undefined): boolean =>
+		.dialog
+		.open(ConfirmDialogComponent,
+			{ data: dialogData })
+		.afterClosed()
+		.pipe(
+			map(
+				(result: boolean | undefined): boolean =>
 					result === true));
 	}
 
@@ -80,11 +83,13 @@ export class DialogService
 			};
 
 		return this
-			.dialog
-			.open(ConfirmDialogComponent, { data: dialogData })
-			.afterClosed()
-			.pipe(
-				map((result: boolean | undefined): boolean =>
+		.dialog
+		.open(ConfirmDialogComponent,
+			{ data: dialogData })
+		.afterClosed()
+		.pipe(
+			map(
+				(result: boolean | undefined): boolean =>
 					result === true));
 	}
 
@@ -107,11 +112,13 @@ export class DialogService
 			};
 
 		return this
-			.dialog
-			.open(ConfirmDialogComponent, { data: dialogData })
-			.afterClosed()
-			.pipe(
-				map((result: boolean | undefined): boolean =>
+		.dialog
+		.open(ConfirmDialogComponent,
+			{ data: dialogData })
+		.afterClosed()
+		.pipe(
+			map(
+				(result: boolean | undefined): boolean =>
 					result === true));
 	}
 }

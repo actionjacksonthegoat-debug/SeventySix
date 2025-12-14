@@ -26,9 +26,10 @@ export interface ErrorDetails
  * Centralizes client-side error logging with automatic context extraction.
  * Never throws errors - always falls back to console logging.
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class ClientErrorLoggerService
 {
 	private readonly errorQueue: ErrorQueueService =
@@ -101,7 +102,7 @@ export class ClientErrorLoggerService
 						? errorDetails.httpError.error.stack
 						: undefined,
 					sourceContext: this.extractSourceContext(
-					errorDetails.httpError.error),
+						errorDetails.httpError.error),
 					requestUrl: extractRequestUrl(errorDetails.httpError),
 					requestMethod: extractRequestMethod(errorDetails.httpError),
 					statusCode: extractStatusCode(errorDetails.httpError),
@@ -237,7 +238,7 @@ export class ClientErrorLoggerService
 			// Match Angular component/service patterns
 			const match: RegExpMatchArray | null =
 				line.match(
-				/at\s+(\w+Component|\w+Service)\.(\w+)/);
+					/at\s+(\w+Component|\w+Service)\.(\w+)/);
 			if (match)
 			{
 				return `${match[1]}.${match[2]}`;

@@ -8,13 +8,14 @@ import { DateService } from "@infrastructure/services";
  * Application footer component
  * Displays copyright, version info, and footer links
  */
-@Component({
-	selector: "app-footer",
-	imports: [MatToolbarModule, MatIconModule],
-	templateUrl: "./footer.component.html",
-	styleUrl: "./footer.component.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-footer",
+		imports: [MatToolbarModule, MatIconModule],
+		templateUrl: "./footer.component.html",
+		styleUrl: "./footer.component.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class FooterComponent
 {
 	private readonly dateService: DateService =

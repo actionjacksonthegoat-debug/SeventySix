@@ -24,30 +24,31 @@ import { ConfirmDialogComponent } from "@shared/components";
  * Style Guide Page
  * Showcases all Material Design 3 components and design tokens used in the app
  */
-@Component({
-	selector: "app-style-guide",
-	imports: [
-		MatCardModule,
-		MatButtonModule,
-		MatIconModule,
-		MatChipsModule,
-		MatDividerModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatSelectModule,
-		MatCheckboxModule,
-		MatRadioModule,
-		MatSlideToggleModule,
-		MatTabsModule,
-		MatTableModule,
-		MatTooltipModule,
-		MatProgressSpinnerModule,
-		MatProgressBarModule
-	],
-	templateUrl: "./style-guide.html",
-	styleUrl: "./style-guide.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-style-guide",
+		imports: [
+			MatCardModule,
+			MatButtonModule,
+			MatIconModule,
+			MatChipsModule,
+			MatDividerModule,
+			MatFormFieldModule,
+			MatInputModule,
+			MatSelectModule,
+			MatCheckboxModule,
+			MatRadioModule,
+			MatSlideToggleModule,
+			MatTabsModule,
+			MatTableModule,
+			MatTooltipModule,
+			MatProgressSpinnerModule,
+			MatProgressBarModule
+		],
+		templateUrl: "./style-guide.html",
+		styleUrl: "./style-guide.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class StyleGuideComponent
 {
 	protected readonly themeService: ThemeService =
@@ -77,24 +78,26 @@ export class StyleGuideComponent
 
 	showSnackbar(message: string): void
 	{
-		this.snackBar.open(message, "DISMISS", {
-			duration: 3000,
-			horizontalPosition: "end",
-			verticalPosition: "bottom"
-		});
+		this.snackBar.open(message, "DISMISS",
+			{
+				duration: 3000,
+				horizontalPosition: "end",
+				verticalPosition: "bottom"
+			});
 	}
 
 	showDialog(): void
 	{
-		this.dialog.open(ConfirmDialogComponent, {
-			data: {
-				title: "Example Dialog",
-				message: "This is an example confirmation dialog using Material Design.",
-				confirmText: "OK",
-				cancelText: "Cancel",
-				confirmColor: "primary",
-				icon: "info"
-			}
-		});
+		this.dialog.open(ConfirmDialogComponent,
+			{
+				data: {
+					title: "Example Dialog",
+					message: "This is an example confirmation dialog using Material Design.",
+					confirmText: "OK",
+					cancelText: "Cancel",
+					confirmColor: "primary",
+					icon: "info"
+				}
+			});
 	}
 }

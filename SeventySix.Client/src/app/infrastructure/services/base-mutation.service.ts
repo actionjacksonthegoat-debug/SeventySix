@@ -33,9 +33,10 @@ export abstract class BaseMutationService
 	/** Invalidate all queries for this entity type */
 	protected invalidateAll(): void
 	{
-		this.queryClient.invalidateQueries({
-			queryKey: [this.queryKeyPrefix]
-		});
+		this.queryClient.invalidateQueries(
+			{
+				queryKey: [this.queryKeyPrefix]
+			});
 	}
 
 	/**
@@ -53,20 +54,21 @@ export abstract class BaseMutationService
 			result: TResult,
 			variables: TInput) => void): CreateMutationResult<TResult, Error, TInput>
 	{
-		return injectMutation(() => ({
-			mutationFn: (input: TInput) =>
-				lastValueFrom(mutationFunction(input)),
-			onSuccess: (result, variables) =>
-			{
-				if (onSuccessCallback)
+		return injectMutation(
+			() => ({
+				mutationFn: (input: TInput) =>
+					lastValueFrom(mutationFunction(input)),
+				onSuccess: (result, variables) =>
 				{
-					onSuccessCallback(result, variables);
+					if (onSuccessCallback)
+					{
+						onSuccessCallback(result, variables);
+					}
+					else
+					{
+						this.invalidateAll();
+					}
 				}
-				else
-				{
-					this.invalidateAll();
-				}
-			}
-		}));
+			}));
 	}
 }

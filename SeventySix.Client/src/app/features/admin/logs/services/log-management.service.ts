@@ -41,12 +41,12 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	// Selected log IDs using signals
 	readonly selectedIds: WritableSignal<Set<number>> =
 		signal<Set<number>>(
-		new Set());
+			new Set());
 
 	// Computed selected count
 	readonly selectedCount: Signal<number> =
 		computed(
-		() => this.selectedIds().size);
+			() => this.selectedIds().size);
 
 	private readonly dateService: DateService =
 		inject(DateService);
@@ -60,14 +60,15 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 			dateService.parseUTC(dateService.now());
 		const startDate: Date =
 			dateService.addHours(now, -24);
-		super({
-			page: 1,
-			pageSize: 50,
-			startDate: startDate,
-			endDate: now,
-			sortBy: "Id",
-			sortDescending: true
-		});
+		super(
+			{
+				page: 1,
+				pageSize: 50,
+				startDate: startDate,
+				endDate: now,
+				sortBy: "Id",
+				sortDescending: true
+			});
 	}
 
 	/**
@@ -77,15 +78,16 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	 */
 	getLogs()
 	{
-		return injectQuery(() => ({
-			queryKey: QueryKeys
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys
 				.logs
 				.paged(this.getCurrentFilter())
 				.concat(this.forceRefreshTrigger()),
-			queryFn: () =>
-				lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
-			...this.queryConfig
-		}));
+				queryFn: () =>
+					lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
+				...this.queryConfig
+			}));
 	}
 
 	/** Mutation for deleting a single log. Automatically invalidates related queries on success. */
@@ -141,20 +143,21 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	 */
 	toggleSelection(id: number): void
 	{
-		this.selectedIds.update((current) =>
-		{
-			const newSet: Set<number> =
-				new Set(current);
-			if (newSet.has(id))
+		this.selectedIds.update(
+			(current) =>
 			{
-				newSet.delete(id);
-			}
-			else
-			{
-				newSet.add(id);
-			}
-			return newSet;
-		});
+				const newSet: Set<number> =
+					new Set(current);
+				if (newSet.has(id))
+				{
+					newSet.delete(id);
+				}
+				else
+				{
+					newSet.add(id);
+				}
+				return newSet;
+			});
 	}
 
 	/**

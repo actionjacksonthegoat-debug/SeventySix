@@ -211,11 +211,12 @@ export function countStackFrames(stackTrace: string | null): number
 	const lines: string[] =
 		stackTrace.split("\n");
 	return lines
-		.filter((line: string): boolean =>
+	.filter(
+		(line: string): boolean =>
 			line
-				.trim()
-				.startsWith("at "))
-		.length;
+			.trim()
+			.startsWith("at "))
+	.length;
 }
 
 // ============================================================

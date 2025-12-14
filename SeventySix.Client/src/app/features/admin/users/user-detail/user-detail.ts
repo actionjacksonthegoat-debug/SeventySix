@@ -34,20 +34,21 @@ import { getValidationError } from "@shared/utilities";
  * Navigated to via /users/:id route.
  * Implements reactive forms with validation following Angular best practices.
  */
-@Component({
-	selector: "app-user-detail-page",
-	imports: [
-		ReactiveFormsModule,
-		DatePipe,
-		MatSnackBarModule,
-		MatExpansionModule,
-		MatChipsModule,
-		...FORM_MATERIAL_MODULES
-	],
-	templateUrl: "./user-detail.html",
-	styleUrl: "./user-detail.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-user-detail-page",
+		imports: [
+			ReactiveFormsModule,
+			DatePipe,
+			MatSnackBarModule,
+			MatExpansionModule,
+			MatChipsModule,
+			...FORM_MATERIAL_MODULES
+		],
+		templateUrl: "./user-detail.html",
+		styleUrl: "./user-detail.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class UserDetailPage
 {
 	private readonly userService: UserService =
@@ -90,111 +91,123 @@ export class UserDetailPage
 	// Computed signals for derived state
 	readonly user: Signal<UserDto | null> =
 		computed(
-		() => this.userQuery.data() ?? null);
+			() => this.userQuery.data() ?? null);
 	readonly isLoading: Signal<boolean> =
-		computed(() => this.userQuery.isLoading());
+		computed(
+			() => this.userQuery.isLoading());
 	readonly isSaving: Signal<boolean> =
-		computed(() => this.updateMutation.isPending());
+		computed(
+			() => this.updateMutation.isPending());
 	readonly error: Signal<string | null> =
-		computed(() =>
-			this.userQuery.error() ? "Failed to load user. Please try again." : null);
+		computed(
+			() =>
+				this.userQuery.error() ? "Failed to load user. Please try again." : null);
 	readonly saveError: Signal<string | null> =
-		computed(() =>
-			this.updateMutation.error()
-				? "Failed to save user. Please try again."
-				: null);
+		computed(
+			() =>
+				this.updateMutation.error()
+					? "Failed to save user. Please try again."
+					: null);
 
 	// Role computed signals
 	readonly userRoles: Signal<string[]> =
 		computed(
-		() => this.rolesQuery.data() ?? []);
+			() => this.rolesQuery.data() ?? []);
 	readonly availableRolesToAdd: Signal<string[]> =
-		computed(() =>
-	{
-		const currentRoles: string[] =
-			this.userRoles();
-		return this.availableRoles.filter(
-			(role: string) =>
-				!currentRoles.includes(role));
-	});
+		computed(
+			() =>
+			{
+				const currentRoles: string[] =
+					this.userRoles();
+				return this.availableRoles.filter(
+					(role: string) =>
+						!currentRoles.includes(role));
+			});
 	readonly isRoleMutating: Signal<boolean> =
 		computed(
-		() =>
-			this.addRoleMutation.isPending()
-				|| this.removeRoleMutation.isPending());
+			() =>
+				this.addRoleMutation.isPending()
+					|| this.removeRoleMutation.isPending());
 
 	// Computed signals
 	readonly pageTitle: Signal<string> =
-		computed(() =>
-	{
-		const currentUser: UserDto | null =
-			this.user();
-		return currentUser ? `Edit User: ${currentUser.username}` : "Edit User";
-	});
+		computed(
+			() =>
+			{
+				const currentUser: UserDto | null =
+					this.user();
+				return currentUser ? `Edit User: ${currentUser.username}` : "Edit User";
+			});
 
 	readonly hasUnsavedChanges: Signal<boolean> =
 		computed(
-		() => this.userForm.dirty);
+			() => this.userForm.dirty);
 
 	// Reactive form
 	readonly userForm: FormGroup =
-		this.formBuilder.group({
-		username: [
-			"",
-			[
-				Validators.required,
-				Validators.minLength(USERNAME_VALIDATION.MIN_LENGTH),
-				Validators.maxLength(USERNAME_VALIDATION.MAX_LENGTH)
-			]
-		],
-		email: [
-			"",
-			[
-				Validators.required,
-				Validators.email,
-				Validators.maxLength(EMAIL_VALIDATION.MAX_LENGTH)
-			]
-		],
-		fullName: ["", [Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)]],
-		isActive: [true]
-	});
+		this.formBuilder.group(
+			{
+				username: [
+					"",
+					[
+						Validators.required,
+						Validators.minLength(USERNAME_VALIDATION.MIN_LENGTH),
+						Validators.maxLength(USERNAME_VALIDATION.MAX_LENGTH)
+					]
+				],
+				email: [
+					"",
+					[
+						Validators.required,
+						Validators.email,
+						Validators.maxLength(EMAIL_VALIDATION.MAX_LENGTH)
+					]
+				],
+				fullName: ["", [Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)]],
+				isActive: [true]
+			});
 
 	// Validation error signals
 	readonly usernameError: Signal<string | null> =
-		computed(() =>
-			getValidationError(this.userForm.get("username"), "Username"));
+		computed(
+			() =>
+				getValidationError(this.userForm.get("username"), "Username"));
 
 	readonly emailError: Signal<string | null> =
-		computed(() =>
-			getValidationError(this.userForm.get("email"), "Email"));
+		computed(
+			() =>
+				getValidationError(this.userForm.get("email"), "Email"));
 
 	readonly fullNameError: Signal<string | null> =
-		computed(() =>
-			getValidationError(this.userForm.get("fullName"), "Full name"));
+		computed(
+			() =>
+				getValidationError(this.userForm.get("fullName"), "Full name"));
 
 	constructor()
 	{
 		// Populate form when user data loads
-		effect(() =>
-		{
-			const currentUser: UserDto | null =
-				this.user();
-			if (currentUser && this.userForm.pristine)
+		effect(
+			() =>
 			{
-				this.populateForm(currentUser);
-			}
-		});
+				const currentUser: UserDto | null =
+					this.user();
+				if (currentUser && this.userForm.pristine)
+				{
+					this.populateForm(currentUser);
+				}
+			});
 
 		// Log errors when loading user fails
-		effect(() =>
-		{
-			const error: Error | null =
-				this.userQuery.error();
-			if (error)
+		effect(
+			() =>
 			{
-				this.logger.error("Failed to load user", error);
-			}
-		});
+				const error: Error | null =
+					this.userQuery.error();
+				if (error)
+				{
+					this.logger.error("Failed to load user", error);
+				}
+			});
 	}
 
 	/**
@@ -203,12 +216,13 @@ export class UserDetailPage
 	 */
 	private populateForm(user: UserDto): void
 	{
-		this.userForm.patchValue({
-			username: user.username,
-			email: user.email,
-			fullName: user.fullName || "",
-			isActive: user.isActive
-		});
+		this.userForm.patchValue(
+			{
+				username: user.username,
+				email: user.email,
+				fullName: user.fullName || "",
+				isActive: user.isActive
+			});
 
 		// Mark as pristine after initial load
 		this.userForm.markAsPristine();
@@ -326,17 +340,18 @@ export class UserDetailPage
 	private handleConcurrencyError(): void
 	{
 		this
-			.snackBar
-			.open(
-				"User was modified by another user. Please refresh and try again.",
-				"REFRESH",
-				{
-					duration: 10000,
-					horizontalPosition: "end",
-					verticalPosition: "top"
-				})
-			.onAction()
-			.subscribe(() => this.userQuery.refetch());
+		.snackBar
+		.open(
+			"User was modified by another user. Please refresh and try again.",
+			"REFRESH",
+			{
+				duration: 10000,
+				horizontalPosition: "end",
+				verticalPosition: "top"
+			})
+		.onAction()
+		.subscribe(
+			() => this.userQuery.refetch());
 	}
 
 	/**
@@ -345,11 +360,12 @@ export class UserDetailPage
 	 */
 	private showSuccessSnackBar(message: string): void
 	{
-		this.snackBar.open(message, "Close", {
-			duration: 3000,
-			horizontalPosition: "end",
-			verticalPosition: "top"
-		});
+		this.snackBar.open(message, "Close",
+			{
+				duration: 3000,
+				horizontalPosition: "end",
+				verticalPosition: "top"
+			});
 	}
 
 	/**
@@ -358,11 +374,12 @@ export class UserDetailPage
 	 */
 	private showErrorSnackBar(message: string): void
 	{
-		this.snackBar.open(message, "Close", {
-			duration: 3000,
-			horizontalPosition: "end",
-			verticalPosition: "top"
-		});
+		this.snackBar.open(message, "Close",
+			{
+				duration: 3000,
+				horizontalPosition: "end",
+				verticalPosition: "top"
+			});
 	}
 
 	/**
@@ -371,7 +388,8 @@ export class UserDetailPage
 	 */
 	onCancel(): void
 	{
-		this.router.navigate(["/admin/users"]);
+		this.router.navigate(
+			["/admin/users"]);
 	}
 
 	/**

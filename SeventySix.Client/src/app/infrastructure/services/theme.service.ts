@@ -26,9 +26,10 @@ export type ColorScheme = "blue" | "cyan-orange";
  * Supports multiple color schemes (blue, cyan-orange) with light/dark modes
  * Persists preferences to localStorage
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class ThemeService
 {
 	private platformId: Object =
@@ -43,35 +44,37 @@ export class ThemeService
 	 */
 	brightness: WritableSignal<ThemeBrightness> =
 		signal<ThemeBrightness>(
-		this.getInitialBrightness());
+			this.getInitialBrightness());
 
 	/**
 	 * Current color scheme (blue/cyan-orange)
 	 */
 	colorScheme: WritableSignal<ColorScheme> =
 		signal<ColorScheme>(
-		this.getInitialColorScheme());
+			this.getInitialColorScheme());
 
 	/**
 	 * Computed full theme name for display
 	 */
 	themeName: Signal<string> =
-		computed(() =>
-	{
-		const brightness: ThemeBrightness =
-			this.brightness();
-		const scheme: ColorScheme =
-			this.colorScheme();
-		return `${brightness}-${scheme}`;
-	});
+		computed(
+			() =>
+			{
+				const brightness: ThemeBrightness =
+					this.brightness();
+				const scheme: ColorScheme =
+					this.colorScheme();
+				return `${brightness}-${scheme}`;
+			});
 
 	constructor()
 	{
 		// Apply theme changes to document
-		effect(() =>
-		{
-			this.applyTheme(this.brightness(), this.colorScheme());
-		});
+		effect(
+			() =>
+			{
+				this.applyTheme(this.brightness(), this.colorScheme());
+			});
 	}
 
 	/**
@@ -79,8 +82,9 @@ export class ThemeService
 	 */
 	toggleBrightness(): void
 	{
-		this.brightness.update((current) =>
-			current === "light" ? "dark" : "light");
+		this.brightness.update(
+			(current) =>
+				current === "light" ? "dark" : "light");
 	}
 
 	/**
@@ -88,8 +92,9 @@ export class ThemeService
 	 */
 	toggleColorScheme(): void
 	{
-		this.colorScheme.update((current) =>
-			current === "blue" ? "cyan-orange" : "blue");
+		this.colorScheme.update(
+			(current) =>
+				current === "blue" ? "cyan-orange" : "blue");
 	}
 
 	/**
@@ -115,7 +120,7 @@ export class ThemeService
 	{
 		const saved: string | null =
 			this.storage.getItem<string>(
-			this.BRIGHTNESS_STORAGE_KEY);
+				this.BRIGHTNESS_STORAGE_KEY);
 		return saved === "dark" || saved === "light" ? saved : "light";
 	}
 
@@ -126,7 +131,7 @@ export class ThemeService
 	{
 		const saved: string | null =
 			this.storage.getItem<string>(
-			this.SCHEME_STORAGE_KEY);
+				this.SCHEME_STORAGE_KEY);
 		return saved === "cyan-orange" ? "cyan-orange" : "blue";
 	}
 

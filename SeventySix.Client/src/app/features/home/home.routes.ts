@@ -9,7 +9,8 @@ export const HOME_ROUTES: Routes =
 		{
 			path: "",
 			loadComponent: () =>
-				import("./home-page/home.component").then((m) => m.HomeComponent),
+				import("./home-page/home.component").then(
+					(m) => m.HomeComponent),
 			title: "SeventySix - Home"
 		}
 	];

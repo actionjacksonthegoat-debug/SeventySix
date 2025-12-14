@@ -37,26 +37,28 @@ interface PerformanceWithMemory extends Performance
  * Tracks FPS, frame time, and memory usage using requestAnimationFrame.
  * Dev-mode only - automatically disabled in production.
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class PerformanceMonitorService
 {
 	private readonly _isMonitoring: WritableSignal<boolean> =
 		signal<boolean>(false);
 	private readonly _metrics: WritableSignal<PerformanceMetrics> =
-		signal<PerformanceMetrics>({
-		fps: 0,
-		frameTime: 0,
-		memoryUsed: 0,
-		memoryTotal: 0
-	});
+		signal<PerformanceMetrics>(
+			{
+				fps: 0,
+				frameTime: 0,
+				memoryUsed: 0,
+				memoryTotal: 0
+			});
 
 	readonly currentMetrics: Signal<PerformanceMetrics> =
 		this._metrics.asReadonly();
 	readonly isHealthy: Signal<boolean> =
 		computed(
-		() => this._metrics().fps >= 50);
+			() => this._metrics().fps >= 50);
 
 	private frameCount: number = 0;
 	private lastTime: number =
@@ -110,53 +112,54 @@ export class PerformanceMonitorService
 	 */
 	private monitorFrame: () => void =
 		(): void =>
-	{
-		if (!this._isMonitoring())
 		{
-			return;
-		}
+			if (!this._isMonitoring())
+			{
+				return;
+			}
 
-		const now: number =
-			performance.now();
-		const delta: number =
-			now - this.lastTime;
+			const now: number =
+				performance.now();
+			const delta: number =
+				now - this.lastTime;
 
-		this.frameCount++;
+			this.frameCount++;
 
-		// Update metrics every second
-		if (delta >= 1000)
-		{
-			const fps: number =
-				Math.round((this.frameCount * 1000) / delta);
-			const frameTime: number =
-				delta / this.frameCount;
+			// Update metrics every second
+			if (delta >= 1000)
+			{
+				const fps: number =
+					Math.round((this.frameCount * 1000) / delta);
+				const frameTime: number =
+					delta / this.frameCount;
 
-			// Get memory info (Chrome only)
-			const memory: PerformanceMemory | undefined =
-				(
-				performance as PerformanceWithMemory)
-				.memory;
-			const memoryUsed: number =
-				memory
-					? Math.round(memory.usedJSHeapSize / this.MB)
-					: 0;
-			const memoryTotal: number =
-				memory
-					? Math.round(memory.totalJSHeapSize / this.MB)
-					: 0;
+				// Get memory info (Chrome only)
+				const memory: PerformanceMemory | undefined =
+					(
+						performance as PerformanceWithMemory)
+					.memory;
+				const memoryUsed: number =
+					memory
+						? Math.round(memory.usedJSHeapSize / this.MB)
+						: 0;
+				const memoryTotal: number =
+					memory
+						? Math.round(memory.totalJSHeapSize / this.MB)
+						: 0;
 
-			this._metrics.set({
-				fps,
-				frameTime: Math.round(frameTime * 100) / 100,
-				memoryUsed,
-				memoryTotal
-			});
+				this._metrics.set(
+					{
+						fps,
+						frameTime: Math.round(frameTime * 100) / 100,
+						memoryUsed,
+						memoryTotal
+					});
 
-			this.frameCount = 0;
-			this.lastTime = now;
-		}
+				this.frameCount = 0;
+				this.lastTime = now;
+			}
 
-		this.animationFrameId =
-			requestAnimationFrame(this.monitorFrame);
-	};
+			this.animationFrameId =
+				requestAnimationFrame(this.monitorFrame);
+		};
 }

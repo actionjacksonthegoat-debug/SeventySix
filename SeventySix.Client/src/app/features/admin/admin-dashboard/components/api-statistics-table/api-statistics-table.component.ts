@@ -28,19 +28,20 @@ interface ThirdPartyApiRequestDisplay extends ThirdPartyApiRequestResponse
 /**
  * Component for displaying third-party API statistics in a table
  */
-@Component({
-	selector: "app-api-statistics-table",
-	imports: [
-		MatTableModule,
-		MatCardModule,
-		MatIconModule,
-		MatProgressSpinnerModule,
-		MatButtonModule
-	],
-	templateUrl: "./api-statistics-table.component.html",
-	styleUrl: "./api-statistics-table.component.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-api-statistics-table",
+		imports: [
+			MatTableModule,
+			MatCardModule,
+			MatIconModule,
+			MatProgressSpinnerModule,
+			MatButtonModule
+		],
+		templateUrl: "./api-statistics-table.component.html",
+		styleUrl: "./api-statistics-table.component.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class ApiStatisticsTableComponent
 {
 	private readonly thirdPartyApiService: ThirdPartyApiService =
@@ -59,46 +60,51 @@ export class ApiStatisticsTableComponent
 	 * Loading state from query
 	 */
 	readonly isLoading: Signal<boolean> =
-		computed(() => this.apiDataQuery.isLoading());
+		computed(
+			() => this.apiDataQuery.isLoading());
 
 	/**
 	 * Error state from query
 	 */
 	readonly error: Signal<string | null> =
-		computed(() =>
-	{
-		const err: Error | null =
-			this.apiDataQuery.error();
-		return err ? err.message || "Failed to load API data" : null;
-	});
+		computed(
+			() =>
+			{
+				const err: Error | null =
+					this.apiDataQuery.error();
+				return err ? err.message || "Failed to load API data" : null;
+			});
 
 	/**
 	 * Data source with computed display properties
 	 */
 	readonly dataSource: Signal<
 		MatTableDataSource<ThirdPartyApiRequestDisplay>> =
-		computed(() =>
-	{
-		const data: ThirdPartyApiRequestResponse[] =
-			this.apiDataQuery.data() ?? [];
-		const displayData: ThirdPartyApiRequestDisplay[] =
-			data.map((item) => ({
-			...item,
-			formattedLastCalled: this.formatLastCalled(item.lastCalledAt),
-			status: this.getStatus(item.lastCalledAt)
-		}));
-		return new MatTableDataSource<ThirdPartyApiRequestDisplay>(displayData);
-	});
+		computed(
+			() =>
+			{
+				const data: ThirdPartyApiRequestResponse[] =
+					this.apiDataQuery.data() ?? [];
+				const displayData: ThirdPartyApiRequestDisplay[] =
+					data.map(
+						(item) => ({
+							...item,
+							formattedLastCalled: this.formatLastCalled(item.lastCalledAt),
+							status: this.getStatus(item.lastCalledAt)
+						}));
+				return new MatTableDataSource<ThirdPartyApiRequestDisplay>(displayData);
+			});
 
 	/**
 	 * Displayed columns
 	 */
 	readonly displayedColumns: WritableSignal<string[]> =
-		signal<string[]>([
-		"apiName",
-		"callCount",
-		"lastCalledAt"
-	]);
+		signal<string[]>(
+			[
+				"apiName",
+				"callCount",
+				"lastCalledAt"
+			]);
 
 	/**
 	 * Handle refresh button click

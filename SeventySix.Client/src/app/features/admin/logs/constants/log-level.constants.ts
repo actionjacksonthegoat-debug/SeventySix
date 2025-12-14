@@ -30,10 +30,10 @@ export const LOG_LEVEL_CRITICAL: string = "Critical";
 /** Valid log levels for filtering. */
 export const VALID_LOG_LEVELS: readonly string[] =
 	[
-	LOG_LEVEL_VERBOSE,
-	LOG_LEVEL_DEBUG,
-	LOG_LEVEL_INFORMATION,
-	LOG_LEVEL_WARNING,
-	LOG_LEVEL_ERROR,
-	LOG_LEVEL_FATAL
-] as const;
+		LOG_LEVEL_VERBOSE,
+		LOG_LEVEL_DEBUG,
+		LOG_LEVEL_INFORMATION,
+		LOG_LEVEL_WARNING,
+		LOG_LEVEL_ERROR,
+		LOG_LEVEL_FATAL
+	] as const;

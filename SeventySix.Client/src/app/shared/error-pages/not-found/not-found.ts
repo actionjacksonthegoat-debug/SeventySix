@@ -7,12 +7,13 @@ import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
  * Displays when user navigates to non-existent route.
  * Uses Material Design components for consistent styling.
  */
-@Component({
-	selector: "app-not-found",
-	imports: [RouterLink, ...CARD_MATERIAL_MODULES],
-	templateUrl: "./not-found.html",
-	styleUrls: ["./not-found.scss"],
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-not-found",
+		imports: [RouterLink, ...CARD_MATERIAL_MODULES],
+		templateUrl: "./not-found.html",
+		styleUrls: ["./not-found.scss"],
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class NotFoundPage
 {}

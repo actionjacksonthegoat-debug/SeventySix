@@ -25,14 +25,15 @@ interface ChangePasswordRequest
 	newPassword: string;
 }
 
-@Component({
-	selector: "app-change-password",
-	standalone: true,
-	imports: [FormsModule],
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	templateUrl: "./change-password.html",
-	styleUrl: "./change-password.scss"
-})
+@Component(
+	{
+		selector: "app-change-password",
+		standalone: true,
+		imports: [FormsModule],
+		changeDetection: ChangeDetectionStrategy.OnPush,
+		templateUrl: "./change-password.html",
+		styleUrl: "./change-password.scss"
+	})
 export class ChangePasswordComponent implements OnInit
 {
 	private readonly http: HttpClient =
@@ -74,7 +75,8 @@ export class ChangePasswordComponent implements OnInit
 		// Redirect if not authenticated
 		if (!this.authService.isAuthenticated())
 		{
-			this.router.navigate(["/auth/login"]);
+			this.router.navigate(
+				["/auth/login"]);
 		}
 	}
 
@@ -101,11 +103,13 @@ export class ChangePasswordComponent implements OnInit
 			};
 
 		this
-			.http
-			.post<void>(`${environment.apiUrl}/auth/change-password`, request, {
+		.http
+		.post<void>(`${environment.apiUrl}/auth/change-password`, request,
+			{
 				withCredentials: true
 			})
-			.subscribe({
+		.subscribe(
+			{
 				next: () =>
 				{
 					this.notification.success(
@@ -113,9 +117,11 @@ export class ChangePasswordComponent implements OnInit
 					// Clear auth state and redirect to login
 					this.authService.clearPasswordChangeRequirement();
 					// The API clears the refresh token, so user needs to log in again
-					this.router.navigate(["/auth/login"], {
-						queryParams: { returnUrl: this.returnUrl }
-					});
+					this.router.navigate(
+						["/auth/login"],
+						{
+							queryParams: { returnUrl: this.returnUrl }
+						});
 				},
 				error: (error: HttpErrorResponse) =>
 				{

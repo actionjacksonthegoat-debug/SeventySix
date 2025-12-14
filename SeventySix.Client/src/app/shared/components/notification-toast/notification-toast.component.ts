@@ -12,10 +12,11 @@ import {
  * Toast notification component that displays notifications from NotificationService.
  * Supports error details, copy-to-clipboard functionality, and manual dismissal.
  */
-@Component({
-	selector: "app-notification-toast",
-	imports: [MatIconModule, MatButtonModule, MatTooltipModule],
-	template: `
+@Component(
+	{
+		selector: "app-notification-toast",
+		imports: [MatIconModule, MatButtonModule, MatTooltipModule],
+		template: `
 		<div class="toast-container" role="region" aria-label="Notifications">
 			@for (
 				notification of notificationService.notifications$();
@@ -73,8 +74,8 @@ import {
 			}
 		</div>
 	`,
-	styleUrl: "./notification-toast.component.scss"
-})
+		styleUrl: "./notification-toast.component.scss"
+	})
 export class NotificationToastComponent
 {
 	protected readonly notificationService: NotificationService =

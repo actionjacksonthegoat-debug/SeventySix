@@ -21,18 +21,19 @@ import { of } from "rxjs";
  */
 export function createMockLogger(): jasmine.SpyObj<LoggerService>
 {
-	return jasmine.createSpyObj("LoggerService", [
-		"debug",
-		"info",
-		"warning",
-		"error",
-		"critical",
-		"forceDebug",
-		"forceInfo",
-		"forceWarning",
-		"forceError",
-		"forceCritical"
-	]);
+	return jasmine.createSpyObj("LoggerService",
+		[
+			"debug",
+			"info",
+			"warning",
+			"error",
+			"critical",
+			"forceDebug",
+			"forceInfo",
+			"forceWarning",
+			"forceError",
+			"forceCritical"
+		]);
 }
 
 /**
@@ -43,15 +44,16 @@ export function createMockLogger(): jasmine.SpyObj<LoggerService>
  */
 export function createMockNotificationService(): jasmine.SpyObj<NotificationService>
 {
-	return jasmine.createSpyObj("NotificationService", [
-		"success",
-		"info",
-		"warning",
-		"error",
-		"errorWithDetails",
-		"dismiss",
-		"clearAll"
-	]);
+	return jasmine.createSpyObj("NotificationService",
+		[
+			"success",
+			"info",
+			"warning",
+			"error",
+			"errorWithDetails",
+			"dismiss",
+			"clearAll"
+		]);
 }
 
 /**
@@ -62,7 +64,8 @@ export function createMockNotificationService(): jasmine.SpyObj<NotificationServ
  */
 export function createMockRouter(): jasmine.SpyObj<Router>
 {
-	return jasmine.createSpyObj("Router", ["navigate", "navigateByUrl"]);
+	return jasmine.createSpyObj("Router",
+		["navigate", "navigateByUrl"]);
 }
 
 /**
@@ -77,20 +80,20 @@ export function createMockActivatedRoute(
 {
 	const mock: jasmine.SpyObj<ActivatedRoute> =
 		jasmine.createSpyObj(
-		"ActivatedRoute",
-		[],
-		{
-			params: of(params),
-			snapshot: {
-				params,
-				queryParams: {},
-				data: {},
-				paramMap: {
-					get: (key: string): unknown =>
-						params[key] ?? null
+			"ActivatedRoute",
+			[],
+			{
+				params: of(params),
+				snapshot: {
+					params,
+					queryParams: {},
+					data: {},
+					paramMap: {
+						get: (key: string): unknown =>
+							params[key] ?? null
+					}
 				}
-			}
-		});
+			});
 	return mock;
 }
 
@@ -102,7 +105,8 @@ export function createMockActivatedRoute(
  */
 export function createMockDialog(): jasmine.SpyObj<MatDialog>
 {
-	return jasmine.createSpyObj("MatDialog", ["open", "closeAll"]);
+	return jasmine.createSpyObj("MatDialog",
+		["open", "closeAll"]);
 }
 
 /**
@@ -113,7 +117,8 @@ export function createMockDialog(): jasmine.SpyObj<MatDialog>
  */
 export function createMockDialogRef<T>(): jasmine.SpyObj<MatDialogRef<T>>
 {
-	return jasmine.createSpyObj("MatDialogRef", ["close", "afterClosed"]);
+	return jasmine.createSpyObj("MatDialogRef",
+		["close", "afterClosed"]);
 }
 
 /**
@@ -124,7 +129,8 @@ export function createMockDialogRef<T>(): jasmine.SpyObj<MatDialogRef<T>>
  */
 export function createMockSnackBar(): jasmine.SpyObj<MatSnackBar>
 {
-	return jasmine.createSpyObj("MatSnackBar", ["open", "dismiss"]);
+	return jasmine.createSpyObj("MatSnackBar",
+		["open", "dismiss"]);
 }
 
 /**
@@ -135,11 +141,12 @@ export function createMockSnackBar(): jasmine.SpyObj<MatSnackBar>
  */
 export function createMockErrorQueueService(): jasmine.SpyObj<ErrorQueueService>
 {
-	return jasmine.createSpyObj("ErrorQueueService", [
-		"enqueue",
-		"getQueueSize",
-		"clearQueue"
-	]);
+	return jasmine.createSpyObj("ErrorQueueService",
+		[
+			"enqueue",
+			"getQueueSize",
+			"clearQueue"
+		]);
 }
 
 /**
@@ -163,14 +170,15 @@ export interface MockUserRepository
  */
 export function createMockUserRepository(): jasmine.SpyObj<MockUserRepository>
 {
-	return jasmine.createSpyObj("UserRepository", [
-		"getAll",
-		"getById",
-		"create",
-		"update",
-		"delete",
-		"getPaged"
-	]);
+	return jasmine.createSpyObj("UserRepository",
+		[
+			"getAll",
+			"getById",
+			"create",
+			"update",
+			"delete",
+			"getPaged"
+		]);
 }
 
 /** Mock LogRepository type for testing. */
@@ -185,12 +193,13 @@ export interface MockLogRepository
 /** Create a mocked LogRepository. Used in log management feature tests. */
 export function createMockLogRepository(): jasmine.SpyObj<MockLogRepository>
 {
-	return jasmine.createSpyObj("LogRepository", [
-		"getAllPaged",
-		"getById",
-		"delete",
-		"deleteBatch"
-	]);
+	return jasmine.createSpyObj("LogRepository",
+		[
+			"getAllPaged",
+			"getById",
+			"delete",
+			"deleteBatch"
+		]);
 }
 
 /**
@@ -212,7 +221,8 @@ export interface MockApiService
  */
 export function createMockApiService(): jasmine.SpyObj<MockApiService>
 {
-	return jasmine.createSpyObj("ApiService", ["get", "post", "put", "delete"]);
+	return jasmine.createSpyObj("ApiService",
+		["get", "post", "put", "delete"]);
 }
 
 /**
@@ -238,12 +248,13 @@ export interface MockLayoutService
 export function createMockLayoutService(): MockLayoutService
 {
 	const mock: MockLayoutService =
-		jasmine.createSpyObj("LayoutService", [
-		"setSidebarExpanded",
-		"toggleSidebar",
-		"openSidebar",
-		"closeSidebar"
-	]) as MockLayoutService;
+		jasmine.createSpyObj("LayoutService",
+			[
+				"setSidebarExpanded",
+				"toggleSidebar",
+				"openSidebar",
+				"closeSidebar"
+			]) as MockLayoutService;
 
 	// Add signal-like computed properties
 	mock.sidebarMode =

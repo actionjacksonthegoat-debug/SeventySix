@@ -16,13 +16,14 @@ interface QuickAction
  * Home page
  * Displays navigation to 3 main features: WorldMap, Physics, RVCamper
  */
-@Component({
-	selector: "app-home",
-	imports: [MatCardModule, MatIconModule, RouterLink],
-	templateUrl: "./home.component.html",
-	styleUrl: "./home.component.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-home",
+		imports: [MatCardModule, MatIconModule, RouterLink],
+		templateUrl: "./home.component.html",
+		styleUrl: "./home.component.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class HomeComponent
 {
 	protected readonly quickActions: QuickAction[] =

@@ -10,18 +10,19 @@ import { PageHeaderComponent } from "@shared/components";
  * Smart container for user management functionality.
  * Provides page layout and hosts the UserList component.
  */
-@Component({
-	selector: "app-user-management-page",
-	imports: [
-		RouterLink,
-		MatIconModule,
-		MatButtonModule,
-		UserList,
-		PageHeaderComponent
-	],
-	templateUrl: "./user-management.html",
-	styleUrl: "./user-management.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-user-management-page",
+		imports: [
+			RouterLink,
+			MatIconModule,
+			MatButtonModule,
+			UserList,
+			PageHeaderComponent
+		],
+		templateUrl: "./user-management.html",
+		styleUrl: "./user-management.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class UserManagementPage
 {}

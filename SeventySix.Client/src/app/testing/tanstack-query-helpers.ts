@@ -27,7 +27,7 @@ export function createMockQueryResult<TData, TError = Error>(
 		signal(options.error ?? null);
 	const isSuccessSignal: Signal<boolean> =
 		signal(
-		!options.isLoading && !options.isError && data !== undefined);
+			!options.isLoading && !options.isError && data !== undefined);
 	const isPendingSignal: Signal<boolean> =
 		signal(options.isLoading ?? false);
 
@@ -36,12 +36,13 @@ export function createMockQueryResult<TData, TError = Error>(
 		.createSpy("refetch")
 		.and
 		.returnValue(
-			Promise.resolve({
-				data,
-				error: options.error ?? null,
-				isError: options.isError ?? false,
-				isSuccess: !options.isLoading && !options.isError && data !== undefined
-			}));
+			Promise.resolve(
+				{
+					data,
+					error: options.error ?? null,
+					isError: options.isError ?? false,
+					isSuccess: !options.isLoading && !options.isError && data !== undefined
+				}));
 
 	return {
 		data: dataSignal,
@@ -84,7 +85,7 @@ export function createMockMutationResult<
 		signal(options.data);
 	const isIdleSignal: Signal<boolean> =
 		signal(
-		!options.isPending && !options.isError && !options.isSuccess);
+			!options.isPending && !options.isError && !options.isSuccess);
 
 	const mutateSpy: jasmine.Spy =
 		jasmine.createSpy("mutate");

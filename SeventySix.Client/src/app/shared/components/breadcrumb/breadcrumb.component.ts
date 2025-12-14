@@ -27,10 +27,11 @@ export interface BreadcrumbItem
  * Automatically generates breadcrumbs from route hierarchy.
  * Uses Material buttons and icons for visual presentation.
  */
-@Component({
-	selector: "app-breadcrumb",
-	imports: [MatButtonModule, MatIconModule, RouterLink],
-	template: `
+@Component(
+	{
+		selector: "app-breadcrumb",
+		imports: [MatButtonModule, MatIconModule, RouterLink],
+		template: `
 		<nav class="breadcrumb" aria-label="Breadcrumb navigation">
 			@for (item of breadcrumbs(); track item.url; let isLast = $last) {
 				@if (!isLast) {
@@ -56,7 +57,7 @@ export interface BreadcrumbItem
 			}
 		</nav>
 	`,
-	styles: `
+		styles: `
 		.breadcrumb {
 			display: flex;
 			align-items: center;
@@ -96,8 +97,8 @@ export interface BreadcrumbItem
 			}
 		}
 	`,
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class BreadcrumbComponent
 {
 	private readonly router: Router =
@@ -120,18 +121,21 @@ export class BreadcrumbComponent
 	 */
 	private readonly navigationEnd$: Signal<BreadcrumbItem[]> =
 		toSignal(
-		this.router.events.pipe(
-			filter((event) =>
-				event instanceof NavigationEnd),
-			startWith(null),
-			map(() => this.buildBreadcrumbs())),
-		{ initialValue: [] });
+			this.router.events.pipe(
+				filter(
+					(event) =>
+						event instanceof NavigationEnd),
+				startWith(null),
+				map(
+					() => this.buildBreadcrumbs())),
+			{ initialValue: [] });
 
 	/**
 	 * Computed breadcrumb items
 	 */
 	readonly breadcrumbs: Signal<BreadcrumbItem[]> =
-		computed(() => this.navigationEnd$());
+		computed(
+			() => this.navigationEnd$());
 
 	/**
 	 * Builds breadcrumb items from current route hierarchy
@@ -174,10 +178,11 @@ export class BreadcrumbComponent
 	private getUrlSegments(): string[]
 	{
 		return this
-			.router
-			.url
-			.split("/")
-			.filter((s) => s);
+		.router
+		.url
+		.split("/")
+		.filter(
+			(s) => s);
 	}
 
 	/**
@@ -193,11 +198,12 @@ export class BreadcrumbComponent
 		{
 			const feature: { label: string; url: string; } =
 				this.featureMap[firstSegment];
-			breadcrumbs.push({
-				label: feature.label,
-				url: feature.url,
-				isActive: this.router.url === feature.url
-			});
+			breadcrumbs.push(
+				{
+					label: feature.label,
+					url: feature.url,
+					isActive: this.router.url === feature.url
+				});
 		}
 	}
 
@@ -224,7 +230,9 @@ export class BreadcrumbComponent
 			}
 
 			// Skip if this URL was already added as feature root
-			if (breadcrumbs.some((b) => b.url === url))
+			if (
+				breadcrumbs.some(
+					(b) => b.url === url))
 			{
 				continue;
 			}
@@ -232,10 +240,10 @@ export class BreadcrumbComponent
 			// Get label from custom mappings or format the segment
 			const label: string =
 				this.getSegmentLabel(
-				url,
-				segment,
-				urlSegments,
-				i);
+					url,
+					segment,
+					urlSegments,
+					i);
 
 			// Skip empty labels
 			if (!label)
@@ -243,12 +251,13 @@ export class BreadcrumbComponent
 				continue;
 			}
 
-			breadcrumbs.push({
-				label,
-				url,
-				isActive: this.router.url === url
-					|| this.router.url.startsWith(url + "?")
-			});
+			breadcrumbs.push(
+				{
+					label,
+					url,
+					isActive: this.router.url === url
+						|| this.router.url.startsWith(url + "?")
+				});
 		}
 	}
 
@@ -302,11 +311,12 @@ export class BreadcrumbComponent
 
 		// Convert kebab-case to Title Case
 		return cleaned
-			.split("-")
-			.map((word) =>
+		.split("-")
+		.map(
+			(word) =>
 				word
-					.charAt(0)
-					.toUpperCase() + word.slice(1))
-			.join(" ");
+				.charAt(0)
+				.toUpperCase() + word.slice(1))
+		.join(" ");
 	}
 }

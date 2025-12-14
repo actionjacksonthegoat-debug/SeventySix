@@ -26,9 +26,10 @@ interface ErrorDetails
 	httpError?: HttpErrorResponse;
 }
 
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class ErrorHandlerService implements ErrorHandler
 {
 	private readonly logger: LoggerService =
@@ -37,7 +38,7 @@ export class ErrorHandlerService implements ErrorHandler
 		inject(NotificationService);
 	private readonly clientLogger: ClientErrorLoggerService =
 		inject(
-		ClientErrorLoggerService);
+			ClientErrorLoggerService);
 	private readonly dateService: DateService =
 		inject(DateService);
 
@@ -81,17 +82,19 @@ export class ErrorHandlerService implements ErrorHandler
 	{
 		if (errorDetails.httpError)
 		{
-			this.clientLogger.logHttpError({
-				message: errorDetails.message,
-				httpError: errorDetails.httpError
-			});
+			this.clientLogger.logHttpError(
+				{
+					message: errorDetails.message,
+					httpError: errorDetails.httpError
+				});
 		}
 		else if (errorDetails.error)
 		{
-			this.clientLogger.logError({
-				message: errorDetails.message,
-				error: errorDetails.error
-			});
+			this.clientLogger.logError(
+				{
+					message: errorDetails.message,
+					error: errorDetails.error
+				});
 		}
 	}
 

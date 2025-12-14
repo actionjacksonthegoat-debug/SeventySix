@@ -24,22 +24,23 @@ import { Router } from "@angular/router";
 import { AvailableRoleDto, CreatePermissionRequestDto } from "../models";
 import { AccountService } from "../services";
 
-@Component({
-	selector: "app-request-permissions",
-	imports: [
-		ReactiveFormsModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatButtonModule,
-		MatCardModule,
-		MatCheckboxModule,
-		MatProgressSpinnerModule,
-		MatSnackBarModule
-	],
-	templateUrl: "./request-permissions.html",
-	styleUrl: "./request-permissions.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-request-permissions",
+		imports: [
+			ReactiveFormsModule,
+			MatFormFieldModule,
+			MatInputModule,
+			MatButtonModule,
+			MatCardModule,
+			MatCheckboxModule,
+			MatProgressSpinnerModule,
+			MatSnackBarModule
+		],
+		templateUrl: "./request-permissions.html",
+		styleUrl: "./request-permissions.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class RequestPermissionsPage
 {
 	private readonly accountService: AccountService =
@@ -59,37 +60,42 @@ export class RequestPermissionsPage
 
 	readonly availableRoles: Signal<AvailableRoleDto[]> =
 		computed(
-		() => this.rolesQuery.data() ?? []);
+			() => this.rolesQuery.data() ?? []);
 	readonly isLoading: Signal<boolean> =
-		computed(() => this.rolesQuery.isLoading());
+		computed(
+			() => this.rolesQuery.isLoading());
 	readonly isSubmitting: Signal<boolean> =
-		computed(() => this.requestMutation.isPending());
+		computed(
+			() => this.requestMutation.isPending());
 
 	readonly selectedRoles: WritableSignal<Set<string>> =
 		signal(
-		new Set<string>());
+			new Set<string>());
 
 	/** Pre-computed role selection map for template. */
 	readonly roleSelectionMap: Signal<Map<string, boolean>> =
-		computed(() =>
-	{
-		const selected: Set<string> =
-			this.selectedRoles();
-		const map: Map<string, boolean> =
-			new Map();
-		this
-			.availableRoles()
-			.forEach((role: AvailableRoleDto) =>
+		computed(
+			() =>
 			{
-				map.set(role.name, selected.has(role.name));
+				const selected: Set<string> =
+					this.selectedRoles();
+				const map: Map<string, boolean> =
+					new Map();
+				this
+				.availableRoles()
+				.forEach(
+					(role: AvailableRoleDto) =>
+					{
+						map.set(role.name, selected.has(role.name));
+					});
+				return map;
 			});
-		return map;
-	});
 
 	readonly requestForm: FormGroup =
-		this.formBuilder.group({
-		requestMessage: ["", [Validators.maxLength(500)]]
-	});
+		this.formBuilder.group(
+			{
+				requestMessage: ["", [Validators.maxLength(500)]]
+			});
 
 	toggleRole(roleName: string): void
 	{
@@ -116,9 +122,10 @@ export class RequestPermissionsPage
 			Array.from(this.selectedRoles());
 		if (roles.length === 0)
 		{
-			this.snackBar.open("Select at least one role", "Close", {
-				duration: 3000
-			});
+			this.snackBar.open("Select at least one role", "Close",
+				{
+					duration: 3000
+				});
 			return;
 		}
 
@@ -131,16 +138,19 @@ export class RequestPermissionsPage
 		try
 		{
 			await this.requestMutation.mutateAsync(request);
-			this.snackBar.open("Permission request submitted", "Close", {
-				duration: 3000
-			});
-			this.router.navigate(["/account"]);
+			this.snackBar.open("Permission request submitted", "Close",
+				{
+					duration: 3000
+				});
+			this.router.navigate(
+				["/account"]);
 		}
 		catch
 		{
-			this.snackBar.open("Failed to submit request", "Close", {
-				duration: 5000
-			});
+			this.snackBar.open("Failed to submit request", "Close",
+				{
+					duration: 5000
+				});
 		}
 	}
 }

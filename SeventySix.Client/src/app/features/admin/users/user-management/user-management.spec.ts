@@ -5,94 +5,106 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { UserManagementPage } from "./user-management";
 
-describe("UserManagementPage", () =>
-{
-	let fixture: ComponentFixture<UserManagementPage>;
-
-	const mockUserService: Partial<UserService> =
-		{
-			getPagedUsers: jasmine.createSpy("getPagedUsers").and.returnValue({
-			data: () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 }),
-			isLoading: () => false,
-			error: () => null,
-			isSuccess: () => true
-		}),
-			updateUser: jasmine.createSpy("updateUser").and.returnValue({
-			mutate: jasmine.createSpy("mutate"),
-			isPending: () => false
-		}),
-			resetPassword: jasmine.createSpy("resetPassword").and.returnValue({
-			mutate: jasmine.createSpy("mutate"),
-			isPending: () => false
-		}),
-			restoreUser: jasmine.createSpy("restoreUser").and.returnValue({
-			mutate: jasmine.createSpy("mutate"),
-			isPending: () => false
-		}),
-			updateFilter: jasmine.createSpy("updateFilter"),
-			getCurrentFilter: jasmine
-			.createSpy("getCurrentFilter")
-			.and
-			.returnValue({
-				page: 1,
-				pageSize: 50,
-				sortBy: "Id",
-				sortDescending: true
-			})
-		};
-
-	beforeEach(async () =>
+describe("UserManagementPage",
+	() =>
 	{
-		await TestBed
-			.configureTestingModule({
-				imports: [UserManagementPage],
-				providers: [
-					provideZonelessChangeDetection(),
-					provideHttpClientTesting(),
-					provideRouter([]),
-					{ provide: UserService, useValue: mockUserService }
-				]
-			})
-			.compileComponents();
+		let fixture: ComponentFixture<UserManagementPage>;
 
-		fixture =
-			TestBed.createComponent(UserManagementPage);
-		fixture.detectChanges();
-	});
+		const mockUserService: Partial<UserService> =
+			{
+				getPagedUsers: jasmine.createSpy("getPagedUsers").and.returnValue(
+					{
+						data: () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 }),
+						isLoading: () => false,
+						error: () => null,
+						isSuccess: () => true
+					}),
+				updateUser: jasmine.createSpy("updateUser").and.returnValue(
+					{
+						mutate: jasmine.createSpy("mutate"),
+						isPending: () => false
+					}),
+				resetPassword: jasmine.createSpy("resetPassword").and.returnValue(
+					{
+						mutate: jasmine.createSpy("mutate"),
+						isPending: () => false
+					}),
+				restoreUser: jasmine.createSpy("restoreUser").and.returnValue(
+					{
+						mutate: jasmine.createSpy("mutate"),
+						isPending: () => false
+					}),
+				updateFilter: jasmine.createSpy("updateFilter"),
+				getCurrentFilter: jasmine
+				.createSpy("getCurrentFilter")
+				.and
+				.returnValue(
+					{
+						page: 1,
+						pageSize: 50,
+						sortBy: "Id",
+						sortDescending: true
+					})
+			};
 
-	it("should create", () =>
-	{
-		expect(fixture.componentInstance)
-			.toBeTruthy();
-	});
+		beforeEach(
+			async () =>
+			{
+				await TestBed
+				.configureTestingModule(
+					{
+						imports: [UserManagementPage],
+						providers: [
+							provideZonelessChangeDetection(),
+							provideHttpClientTesting(),
+							provideRouter([]),
+							{ provide: UserService, useValue: mockUserService }
+						]
+					})
+				.compileComponents();
 
-	it("should render page header with title", () =>
-	{
-		const header: HTMLElement | null =
-			fixture.nativeElement.querySelector("app-page-header");
-		expect(header)
-			.toBeTruthy();
-	});
+				fixture =
+					TestBed.createComponent(UserManagementPage);
+				fixture.detectChanges();
+			});
 
-	describe("CLS Prevention", () =>
-	{
-		it("should apply min-height to page-content to prevent layout shift", () =>
-		{
-			const pageContent: HTMLElement | null =
-				fixture.nativeElement.querySelector(".page-content");
-			expect(pageContent)
+		it("should create",
+			() =>
+			{
+				expect(fixture.componentInstance)
 				.toBeTruthy();
+			});
 
-			const styles: CSSStyleDeclaration =
-				window.getComputedStyle(
-				pageContent!);
-			const minHeight: string =
-				styles.minHeight;
-
-			expect(minHeight)
+		it("should render page header with title",
+			() =>
+			{
+				const header: HTMLElement | null =
+					fixture.nativeElement.querySelector("app-page-header");
+				expect(header)
 				.toBeTruthy();
-			expect(minHeight).not.toBe("0px");
-			expect(minHeight).not.toBe("auto");
-		});
+			});
+
+		describe("CLS Prevention",
+			() =>
+			{
+				it("should apply min-height to page-content to prevent layout shift",
+					() =>
+					{
+						const pageContent: HTMLElement | null =
+							fixture.nativeElement.querySelector(".page-content");
+						expect(pageContent)
+						.toBeTruthy();
+
+						const styles: CSSStyleDeclaration =
+							window.getComputedStyle(
+								pageContent!);
+						const minHeight: string =
+							styles.minHeight;
+
+						expect(minHeight)
+						.toBeTruthy();
+						expect(minHeight).not.toBe("0px");
+						expect(minHeight).not.toBe("auto");
+					});
+			});
 	});
-});

@@ -14,9 +14,10 @@ import { filter } from "rxjs/operators";
  * Manages global loading state for route transitions.
  * Integrates with Material progress bar component.
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class LoadingService
 {
 	private readonly router: Router =
@@ -32,17 +33,18 @@ export class LoadingService
 	{
 		// Subscribe to router events with automatic cleanup
 		this
-			.router
-			.events
-			.pipe(
-				filter(
-					(event) =>
-						event instanceof NavigationStart
-							|| event instanceof NavigationEnd
-							|| event instanceof NavigationCancel
-							|| event instanceof NavigationError),
-				takeUntilDestroyed())
-			.subscribe((event) =>
+		.router
+		.events
+		.pipe(
+			filter(
+				(event) =>
+					event instanceof NavigationStart
+						|| event instanceof NavigationEnd
+						|| event instanceof NavigationCancel
+						|| event instanceof NavigationError),
+			takeUntilDestroyed())
+		.subscribe(
+			(event) =>
 			{
 				if (event instanceof NavigationStart)
 				{

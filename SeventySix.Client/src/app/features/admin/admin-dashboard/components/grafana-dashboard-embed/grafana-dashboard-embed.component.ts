@@ -20,13 +20,14 @@ import { environment } from "@environments/environment";
  * Uses DomSanitizer to safely embed external Grafana content.
  * Follows KISS principle by using simple iframe embedding.
  */
-@Component({
-	selector: "app-grafana-dashboard-embed",
-	imports: [MatCardModule, MatProgressSpinnerModule],
-	templateUrl: "./grafana-dashboard-embed.component.html",
-	styleUrl: "./grafana-dashboard-embed.component.scss",
-	changeDetection: ChangeDetectionStrategy.OnPush
-})
+@Component(
+	{
+		selector: "app-grafana-dashboard-embed",
+		imports: [MatCardModule, MatProgressSpinnerModule],
+		templateUrl: "./grafana-dashboard-embed.component.html",
+		styleUrl: "./grafana-dashboard-embed.component.scss",
+		changeDetection: ChangeDetectionStrategy.OnPush
+	})
 export class GrafanaDashboardEmbedComponent
 {
 	private readonly sanitizer: DomSanitizer =
@@ -76,24 +77,25 @@ export class GrafanaDashboardEmbedComponent
 	 * @returns Sanitized resource URL safe for iframe embedding
 	 */
 	readonly sanitizedUrl: Signal<SafeResourceUrl> =
-		computed(() =>
-	{
-		const baseUrl: string =
-			environment.observability.grafanaUrl;
-		const uid: string =
-			this.dashboardUid();
-		const refresh: string =
-			this.refreshInterval();
-		const themeValue: string =
-			this.theme();
+		computed(
+			() =>
+			{
+				const baseUrl: string =
+					environment.observability.grafanaUrl;
+				const uid: string =
+					this.dashboardUid();
+				const refresh: string =
+					this.refreshInterval();
+				const themeValue: string =
+					this.theme();
 
-		// Include the UID as the slug to match Grafana's expected URL format
-		// This prevents "not correct url correcting" console messages
-		const url: string =
-			`${baseUrl}/d/${uid}/${uid}?orgId=1&refresh=${refresh}&theme=${themeValue}&kiosk`;
+				// Include the UID as the slug to match Grafana's expected URL format
+				// This prevents "not correct url correcting" console messages
+				const url: string =
+					`${baseUrl}/d/${uid}/${uid}?orgId=1&refresh=${refresh}&theme=${themeValue}&kiosk`;
 
-		return this.sanitizer.bypassSecurityTrustResourceUrl(url);
-	});
+				return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+			});
 
 	/**
 	 * Loading state for showing spinner while iframe loads.
@@ -101,10 +103,11 @@ export class GrafanaDashboardEmbedComponent
 	 * @default false
 	 */
 	readonly isLoading: InputSignalWithTransform<boolean, boolean | string> =
-		input<boolean, boolean | string>(false, {
-		transform: (value: boolean | string) =>
-			value === true || value === "true"
-	});
+		input<boolean, boolean | string>(false,
+			{
+				transform: (value: boolean | string) =>
+					value === true || value === "true"
+			});
 
 	/**
 	 * Computed accessible title for the iframe.
@@ -112,5 +115,5 @@ export class GrafanaDashboardEmbedComponent
 	 */
 	readonly iframeTitle: Signal<string> =
 		computed(
-		() => `${this.title()} dashboard`);
+			() => `${this.title()} dashboard`);
 }

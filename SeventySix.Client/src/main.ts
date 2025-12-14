@@ -4,9 +4,11 @@ import { App } from "./app/app";
 import { appConfig } from "./app/app.config";
 
 bootstrapApplication(App, appConfig)
-	.then((appRef) =>
+.then(
+	(appRef) =>
 	{
 		// Trigger SW update service initialization via DI
 		appRef.injector.get(SwUpdateService);
 	})
-	.catch((err) => console.error(err));
+.catch(
+	(err) => console.error(err));

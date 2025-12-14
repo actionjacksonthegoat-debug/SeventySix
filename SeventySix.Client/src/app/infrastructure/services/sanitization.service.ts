@@ -10,9 +10,10 @@ import {
  * Sanitization service.
  * Provides methods for sanitizing user input to prevent XSS attacks.
  */
-@Injectable({
-	providedIn: "root"
-})
+@Injectable(
+	{
+		providedIn: "root"
+	})
 export class SanitizationService
 {
 	private readonly sanitizer: DomSanitizer =

@@ -47,9 +47,10 @@ export class ComponentTestBed<T>
 	{
 		const mock: jasmine.SpyObj<S> =
 			jasmine.createSpyObj(
-			token.name,
-			methods);
-		this.providers.push({ provide: token, useValue: mock });
+				token.name,
+				methods);
+		this.providers.push(
+			{ provide: token, useValue: mock });
 		return this;
 	}
 
@@ -183,7 +184,8 @@ export class ComponentTestBed<T>
 	async build(component: Type<T>): Promise<ComponentFixture<T>>
 	{
 		await TestBed
-			.configureTestingModule({
+		.configureTestingModule(
+			{
 				imports: [component, ...this.imports],
 				providers: [
 					provideZonelessChangeDetection(),
@@ -191,7 +193,7 @@ export class ComponentTestBed<T>
 					...this.providers
 				]
 			})
-			.compileComponents();
+		.compileComponents();
 
 		return TestBed.createComponent(component);
 	}
@@ -224,12 +226,13 @@ export class ComponentTestBed<T>
  */
 export function createTestQueryClient(): QueryClient
 {
-	return new QueryClient({
-		defaultOptions: {
-			queries: { retry: false },
-			mutations: { retry: false }
-		}
-	});
+	return new QueryClient(
+		{
+			defaultOptions: {
+				queries: { retry: false },
+				mutations: { retry: false }
+			}
+		});
 }
 
 /**
@@ -263,14 +266,15 @@ export function setupServiceTest<T>(
 	const queryClient: QueryClient =
 		createTestQueryClient();
 
-	TestBed.configureTestingModule({
-		providers: [
-			provideZonelessChangeDetection(),
-			provideTanStackQuery(queryClient),
-			service,
-			...providers
-		]
-	});
+	TestBed.configureTestingModule(
+		{
+			providers: [
+				provideZonelessChangeDetection(),
+				provideTanStackQuery(queryClient),
+				service,
+				...providers
+			]
+		});
 
 	return {
 		service: TestBed.inject(service),
@@ -305,9 +309,10 @@ export function setupRepositoryTest<T>(
 	repository: Type<T>,
 	providers: (Provider | EnvironmentProviders)[] = []): T
 {
-	TestBed.configureTestingModule({
-		providers: [provideZonelessChangeDetection(), repository, ...providers]
-	});
+	TestBed.configureTestingModule(
+		{
+			providers: [provideZonelessChangeDetection(), repository, ...providers]
+		});
 
 	return TestBed.inject(repository);
 }
@@ -337,10 +342,11 @@ export function setupSimpleServiceTest<T>(
 	providers: (Provider | EnvironmentProviders)[] = [],
 	imports: Type<object>[] = []): T
 {
-	TestBed.configureTestingModule({
-		imports,
-		providers: [provideZonelessChangeDetection(), service, ...providers]
-	});
+	TestBed.configureTestingModule(
+		{
+			imports,
+			providers: [provideZonelessChangeDetection(), service, ...providers]
+		});
 
 	return TestBed.inject(service);
 }
