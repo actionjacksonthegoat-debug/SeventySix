@@ -7,6 +7,16 @@ description: Generate Angular component following SeventySix patterns
 
 Create a new Angular component with these requirements:
 
+## Domain Selection (REQUIRED)
+
+Ask user which domain: admin, game, commerce (or shared for cross-cutting)
+
+## Import Boundaries (CRITICAL)
+
+-   Domain imports ONLY from `@shared/*` + own domain (`@{domain}/*`)
+-   NEVER import from another domain
+-   Cross-domain features → Use `integrations/` folder
+
 ## Required Patterns
 
 1. **Signal inputs/outputs**: `input.required<T>()`, `output<T>()`
@@ -15,7 +25,7 @@ Create a new Angular component with these requirements:
 4. **Computed state**: Derive with `computed()`
 5. **Host bindings**: Use `host: {}` object, not decorators
 6. **Control flow**: `@if`, `@for`, `@switch`
-7. **Explicit types**: `const x: string = ""` everywhere
+7. **Explicit types**: `const name: string = ""` everywhere
 8. **Zoneless**: Never use Zone.js
 
 ## Formatting Rules
@@ -28,33 +38,46 @@ Create a new Angular component with these requirements:
 ## Template
 
 ```typescript
+import { Component, ChangeDetectionStrategy, inject, input, output, computed } from '@angular/core';
+import { SomeService } from '@{{domain}}/services'; // ONLY @shared/* or own domain
+
 @Component({
-	selector: 'app-{{name}}',
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	template: `
-		@if (data()) {
-			<div [class.active]="isActive()">{{ data()!.name }}</div>
-		}
-	`,
-	host: {
-		'(click)': 'onClick()',
-		'[class.active]': 'isActive()',
-	},
+    selector: 'app-{{name}}',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
+        @if (data()) {
+            <div [class.active]="isActive()">{{ data()!.name }}</div>
+        }
+    `,
+    host: {
+        '(click)': 'onClick()',
+        '[class.active]': 'isActive()',
+    },
 })
 export class {{Name}}Component {
-	private readonly service: {{Service}} =
-		inject({{Service}});
+    private readonly service: {{Service}} =
+        inject({{Service}});
 
-	data =
-		input.required<{{Type}}>();
-	selected =
-		output<{{Type}}>();
+    data =
+        input.required<{{Type}}>();
+    selected =
+        output<{{Type}}>();
 
-	isActive =
-		computed(() =>
-			this.data()?.isActive ?? false);
+    isActive =
+        computed(() =>
+            this.data()?.isActive ?? false);
 }
 ```
+
+## Service Scoping (CRITICAL)
+
+| Location             | Injectable              |
+| -------------------- | ----------------------- |
+| `@shared/services`   | `providedIn: 'root'`    |
+| `@{domain}/core`     | `providedIn: 'root'` OK |
+| `@{domain}/services` | Route `providers` ONLY  |
+
+**Rule**: `@{domain}/services/` must NEVER use `providedIn: 'root'`
 
 ## Naming Convention
 

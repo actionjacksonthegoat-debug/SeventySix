@@ -15,57 +15,87 @@
 
 ### Formatting Examples
 
-**Assignment:**
-
 ```csharp
 // ✅ CORRECT
 User? user =
     await repo.GetByIdAsync(id);
 
-// ❌ WRONG
-User? user = await repo.GetByIdAsync(id);
-```
-
-**Method chains:**
-
-```csharp
-// ✅ CORRECT - lambda param on new line
 builder
     .Property(
         user => user.Username)
-    .HasMaxLength(100)
-    .IsRequired();
+    .HasMaxLength(100);
 
-// ❌ WRONG
-builder.Property(user => user.Username).HasMaxLength(100);
-```
-
-**Multi-params:**
-
-```csharp
-// ✅ CORRECT
 await bus.InvokeAsync<UserDto?>(
     new GetUserByIdQuery(id),
     cancellationToken);
-
-// ❌ WRONG
-await bus.InvokeAsync<UserDto?>(new GetUserByIdQuery(id), cancellationToken);
 ```
+
+---
+
+## Architecture Overview
+
+### Server Projects (SeventySix.Server/)
+
+```
+SeventySix.Shared     → Base abstractions (NO domain refs)
+SeventySix.Domains    → Bounded contexts (refs Shared only)
+SeventySix.Api        → HTTP layer (refs Domains)
+```
+
+**Bounded Contexts**: Identity, Logging, ApiTracking, ElectronicNotifications, Game (future)
+
+### Client Structure (SeventySix.Client/src/app/)
+
+```
+shared/     → @shared/*   (cross-cutting, NO domain refs)
+domains/    → @admin/*, @game/*, @commerce/*
+```
+
+### Import Rules (CRITICAL)
+
+**Server**: `Shared ← Domains ← Api` (never reverse)
+
+**Client**: Each domain imports ONLY `@shared/*` + itself. NEVER another domain.
+
+| From → To | @shared | @admin | @game | @commerce |
+| --------- | ------- | ------ | ----- | --------- |
+| @shared   | ✅      | ❌     | ❌    | ❌        |
+| @admin    | ✅      | ✅     | ❌    | ❌        |
+| @game     | ✅      | ❌     | ✅    | ❌        |
+| @commerce | ✅      | ❌     | ❌    | ✅        |
+
+**Cross-domain features** → Use `integrations/` folder (only place allowed to import multiple domains)
+
+---
 
 ## C# (.NET 10+)
 
-| Rule         | Pattern                                                      |
-| ------------ | ------------------------------------------------------------ |
-| Types        | `string name = ""` never `var`                               |
-| Constructors | `class UserService(IUserRepository repository)` primary only |
-| Collections  | `[1, 2, 3]` not `new List`                                   |
-| Async        | Suffix `*Async` always                                       |
-| DTOs         | `record UserDto(int Id)` positional                          |
-| Settings     | `record X { prop { get; init; } = default; }`                |
-| EF Config    | Fluent API, never attributes                                 |
-| Queries      | `AsNoTracking()` for reads                                   |
-| FK naming    | Suffix `*Id`: `UserId`, `RoleId`                             |
-| Audit fields | String `CreatedBy`, not FK                                   |
+| Rule         | Pattern                                       |
+| ------------ | --------------------------------------------- |
+| Types        | `string name = ""` never `var`                |
+| Constructors | `class UserService(IRepo repo)` primary only  |
+| Collections  | `[1, 2, 3]` not `new List`                    |
+| Async        | Suffix `*Async` always                        |
+| DTOs         | `record UserDto(int Id)` positional           |
+| Settings     | `record X { prop { get; init; } = default; }` |
+| EF Config    | Fluent API, never attributes                  |
+| Queries      | `AsNoTracking()` for reads                    |
+| FK naming    | Suffix `*Id`: `UserId`, `RoleId`              |
+| Audit fields | String `CreatedBy`, not FK                    |
+
+### Server File Locations
+
+| Type         | Location in Domain         | Namespace                     |
+| ------------ | -------------------------- | ----------------------------- |
+| Commands     | `{Domain}/Commands/`       | `SeventySix.{Domain}`         |
+| Queries      | `{Domain}/Queries/`        | `SeventySix.{Domain}`         |
+| DTOs         | `{Domain}/DTOs/`           | `SeventySix.{Domain}`         |
+| Entities     | `{Domain}/Entities/`       | `SeventySix.{Domain}`         |
+| DbContext    | `{Domain}/Infrastructure/` | `SeventySix.{Domain}`         |
+| Repositories | `{Domain}/Repositories/`   | `SeventySix.{Domain}`         |
+| Services     | `{Domain}/Services/`       | `SeventySix.{Domain}`         |
+| Settings     | `{Domain}/Settings/`       | `SeventySix.{Domain}`         |
+| Registration | `Api/Registration/`        | `SeventySix.Api.Registration` |
 
 ### Logging
 
@@ -82,24 +112,49 @@ await bus.InvokeAsync<UserDto?>(new GetUserByIdQuery(id), cancellationToken);
 -   Multiple entities: Consolidated `SaveChangesAsync`
 -   Read-then-write: `TransactionManager`
 
+---
+
 ## Angular (20+)
 
-| Rule             | Pattern                                    |
-| ---------------- | ------------------------------------------ |
-| Zone             | Zoneless only, never Zone.js               |
-| DI               | `inject(Service)` not constructor          |
-| Types            | `const name: string = ""` explicit         |
-| Detection        | `OnPush` always                            |
-| Inputs           | `input.required<T>()`                      |
-| Outputs          | `output<T>()`                              |
-| Control flow     | `@if`, `@for`, `@switch`                   |
-| Host             | `host: {}` not `@HostBinding`              |
-| Classes          | `[class.x]` not `ngClass`                  |
-| Styles           | `[style.x]` not `ngStyle`                  |
-| Templates        | `computed()` not method calls              |
-| Cleanup          | `takeUntilDestroyed()`                     |
-| Feature services | Route `providers` not `providedIn: 'root'` |
-| Component naming | `*Page` only if model conflict             |
+| Rule             | Pattern                            |
+| ---------------- | ---------------------------------- |
+| Zone             | Zoneless only, never Zone.js       |
+| DI               | `inject(Service)` not constructor  |
+| Types            | `const name: string = ""` explicit |
+| Detection        | `OnPush` always                    |
+| Inputs           | `input.required<T>()`              |
+| Outputs          | `output<T>()`                      |
+| Control flow     | `@if`, `@for`, `@switch`           |
+| Host             | `host: {}` not `@HostBinding`      |
+| Classes          | `[class.x]` not `ngClass`          |
+| Styles           | `[style.x]` not `ngStyle`          |
+| Templates        | `computed()` not method calls      |
+| Cleanup          | `takeUntilDestroyed()`             |
+| Component naming | `*Page` only if model conflict     |
+
+### Client File Locations
+
+| Type             | Location in Domain   | Import From             |
+| ---------------- | -------------------- | ----------------------- |
+| Domain DTOs      | `{domain}/api/`      | `@{domain}/api`         |
+| Shared DTOs      | `shared/api/`        | `@shared/api`           |
+| Domain Services  | `{domain}/services/` | Route `providers` array |
+| Persistent State | `{domain}/core/`     | `providedIn: 'root'` OK |
+| Domain Models    | `{domain}/models/`   | `@{domain}/models`      |
+| Domain Tests     | `{domain}/testing/`  | `@{domain}/testing`     |
+| Shared Services  | `shared/services/`   | `providedIn: 'root'`    |
+
+### Service Scoping (CRITICAL)
+
+| Type           | Location             | Injectable              |
+| -------------- | -------------------- | ----------------------- |
+| App Singleton  | `@shared/services`   | `providedIn: 'root'`    |
+| Domain Persist | `@{domain}/core`     | `providedIn: 'root'` OK |
+| Domain Scoped  | `@{domain}/services` | Route `providers` ONLY  |
+
+**Rule**: `@{domain}/services/` must NEVER use `providedIn: 'root'`
+
+---
 
 ## SCSS
 
@@ -110,6 +165,8 @@ await bus.InvokeAsync<UserDto?>(new GetUserByIdQuery(id), cancellationToken);
 | Colors    | `var(--color-info)` semantic        |
 | Variables | `vars.$spacing-lg` not `1rem`       |
 | Patterns  | Mixin after 3x repetition           |
+
+---
 
 ## Testing
 
@@ -125,29 +182,9 @@ await bus.InvokeAsync<UserDto?>(new GetUserByIdQuery(id), cancellationToken);
 | Libraries     | xUnit, NSubstitute, Shouldly       |
 | Forbidden     | Moq, FluentAssertions              |
 
-## Architecture
+---
 
-| Concept         | Pattern                                                 |
-| --------------- | ------------------------------------------------------- |
-| Contexts        | Identity, Logging, ApiTracking, ElectronicNotifications |
-| DbContext       | Separate per context                                    |
-| Repository      | Domain-specific, no generic                             |
-| CQRS            | Wolverine handlers                                      |
-| Validators      | Colocate with handlers                                  |
-| Path aliases    | `@infrastructure`, `@shared`, `@admin`, `@game`         |
-| Feature imports | From `@infrastructure` and `@shared` only               |
-
-### Type Organization
-
-| Type      | Location             | Record Pattern           |
-| --------- | -------------------- | ------------------------ |
-| DTOs      | `Context/DTOs/`      | Positional params        |
-| Entities  | `Context/Entities/`  | Class                    |
-| Models    | `Context/Models/`    | Varies                   |
-| Settings  | `Context/Settings/`  | Init props with defaults |
-| Constants | `Context/Constants/` | Static class             |
-
-### Constants
+## Constants
 
 -   C#: `RoleConstants.Developer` (PascalCase)
 -   TS: `ROLE_DEVELOPER` (SCREAMING_SNAKE)

@@ -7,10 +7,23 @@ description: Generate .NET service with repository following SeventySix patterns
 
 Create a new .NET service with repository following these requirements:
 
+## Domain Selection (REQUIRED)
+
+Ask user which domain: Identity, Logging, ApiTracking, ElectronicNotifications
+
+## File Locations
+
+| Type       | Path                                        | Namespace             |
+| ---------- | ------------------------------------------- | --------------------- |
+| Service    | `SeventySix.Domains/{Domain}/Services/`     | `SeventySix.{Domain}` |
+| Repository | `SeventySix.Domains/{Domain}/Repositories/` | `SeventySix.{Domain}` |
+| Entity     | `SeventySix.Domains/{Domain}/Entities/`     | `SeventySix.{Domain}` |
+| DTO        | `SeventySix.Domains/{Domain}/DTOs/`         | `SeventySix.{Domain}` |
+
 ## Required Patterns
 
 1. **Primary constructors**: `class Svc(IRepo repo)` not traditional
-2. **Explicit types**: `string x = ""` never `var`
+2. **Explicit types**: `string name = ""` never `var`
 3. **Async suffix**: All async methods end with `Async`
 4. **AsNoTracking**: For all read-only queries
 5. **Fluent API**: For EF Core configuration, never attributes
@@ -28,60 +41,66 @@ Create a new .NET service with repository following these requirements:
 ## Service Template
 
 ```csharp
+namespace SeventySix.{{Domain}};
+
 public class {{Name}}Service(
-	I{{Name}}Repository repo,
-	ILogger<{{Name}}Service> logger)
+    I{{Name}}Repository repository,
+    ILogger<{{Name}}Service> logger)
 {
-	public async Task<{{Name}}?> GetByIdAsync(int id) =>
-		await repo.GetByIdAsync(id);
+    public async Task<{{Name}}?> GetByIdAsync(int id) =>
+        await repository.GetByIdAsync(id);
 
-	public async Task<{{Name}}Dto> CreateAsync(Create{{Name}}Request request)
-	{
-		{{Name}} entity =
-			new()
-			{
-				Name =
-					request.Name,
-				CreatedBy =
-					request.Username,
-			};
+    public async Task<{{Name}}Dto> CreateAsync(Create{{Name}}Request request)
+    {
+        {{Name}} entity =
+            new()
+            {
+                Name =
+                    request.Name,
+                CreatedBy =
+                    request.Username,
+            };
 
-		await repo.AddAsync(entity);
-		return entity.ToDto();
-	}
+        await repository.AddAsync(entity);
+        return entity.ToDto();
+    }
 }
 ```
 
 ## Repository Template
 
 ```csharp
-public class {{Name}}Repository({{Context}}DbContext db)
-{
-	public async Task<{{Name}}?> GetByIdAsync(int id) =>
-		await db.{{Names}}
-			.AsNoTracking()
-			.FirstOrDefaultAsync(
-				item => item.Id == id);
+namespace SeventySix.{{Domain}};
 
-	public async Task AddAsync({{Name}} entity)
-	{
-		db.{{Names}}.Add(entity);
-		await db.SaveChangesAsync();
-	}
+public class {{Name}}Repository({{Domain}}DbContext dbContext)
+{
+    public async Task<{{Name}}?> GetByIdAsync(int id) =>
+        await dbContext.{{Names}}
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                item => item.Id == id);
+
+    public async Task AddAsync({{Name}} entity)
+    {
+        dbContext.{{Names}}.Add(entity);
+        await dbContext.SaveChangesAsync();
+    }
 }
 ```
 
 ## DTO Template
 
 ```csharp
+namespace SeventySix.{{Domain}};
+
 public record {{Name}}Dto(
-	int Id,
-	string Name,
-	DateTime CreatedAt);
+    int Id,
+    string Name,
+    DateTime CreatedAt);
 
 public record Create{{Name}}Request(
-	string Name,
-	string Username);
+    string Name,
+    string Username);
 ```
 
 ## Logging Rules
