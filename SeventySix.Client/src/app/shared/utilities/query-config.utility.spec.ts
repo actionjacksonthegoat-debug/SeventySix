@@ -1,5 +1,5 @@
 import { environment } from "@environments/environment";
-import { getQueryConfig } from "./query-config";
+import { getQueryConfig } from "./query-config.utility";
 
 describe("getQueryConfig",
 	() =>

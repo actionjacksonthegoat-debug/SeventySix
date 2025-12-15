@@ -2,7 +2,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { ApiService } from "@shared/services/api.service";
 import { createMockApiService } from "@shared/testing";
-import { QueryKeys } from "@shared/utilities/query-keys";
+import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	provideAngularQuery,
 	QueryClient

@@ -7,7 +7,7 @@ import {
 	NotFoundError,
 	UnauthorizedError,
 	ValidationError
-} from "@shared/models/errors";
+} from "@shared/models";
 import { createMockLogger, createMockNotificationService } from "@shared/testing";
 import { ClientErrorLoggerService } from "./client-error-logger.service";
 import { ErrorHandlerService } from "./error-handler.service";

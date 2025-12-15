@@ -289,19 +289,13 @@ describe("UserCreatePage",
 		describe("saveDraft",
 			() =>
 			{
-				it("should log draft save and show snackbar notification",
+				it("should show snackbar notification",
 					() =>
 					{
 						const snackBarSpy: jasmine.Spy<jasmine.Func> =
 							spyOn(component["snackBar"], "open");
 
 						component.saveDraft();
-
-						// Check that logger was called with draft save message
-						expect(mockLogger.info)
-						.toHaveBeenCalledWith(
-							"Draft save requested",
-							jasmine.any(Object));
 
 						expect(snackBarSpy)
 						.toHaveBeenCalledWith(
@@ -429,10 +423,6 @@ describe("UserCreatePage",
 
 						await component.onSubmit();
 
-						expect(mockLogger.info)
-						.toHaveBeenCalledWith(
-							"User created successfully",
-							{ id: 1 });
 						expect(snackBarSpy)
 						.toHaveBeenCalledWith(
 							`User "testuser" created. Welcome email sent to test@example.com.`,

@@ -1,7 +1,7 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { BaseQueryRequest } from "@shared/models";
-import { QueryOptions } from "@shared/utilities/query-config";
+import { QueryOptions } from "@shared/utilities/query-config.utility";
 import { QueryClient } from "@tanstack/angular-query-experimental";
 import { BaseQueryService } from "./base-query.service";
 

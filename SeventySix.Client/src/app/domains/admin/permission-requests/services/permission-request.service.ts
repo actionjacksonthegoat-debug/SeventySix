@@ -4,7 +4,7 @@ import {
 } from "@angular/core";
 import { BaseMutationService } from "@shared/services";
 import { ApiService } from "@shared/services/api.service";
-import { QueryKeys } from "@shared/utilities/query-keys";
+import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { injectQuery } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 import {

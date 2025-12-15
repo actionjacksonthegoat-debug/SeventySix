@@ -181,7 +181,6 @@ export class UserCreatePage
 	 */
 	saveDraft(): void
 	{
-		this.logger.info("Draft save requested", this.formData());
 		this.snackBar.open("Draft saved locally", "Close",
 			{
 				duration: 2000,
@@ -214,11 +213,6 @@ export class UserCreatePage
 			{
 				onSuccess: (createdUser) =>
 				{
-					this.logger.info("User created successfully",
-						{
-							id: createdUser.id
-						});
-
 					const message: string =
 						createdUser.needsPendingEmail
 							? `User "${createdUser.username}" created. Email will be sent to ${createdUser.email} within 24 hours.`

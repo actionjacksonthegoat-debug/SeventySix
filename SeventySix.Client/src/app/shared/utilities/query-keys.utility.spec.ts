@@ -3,7 +3,7 @@
  * Verifies centralized query key constants for TanStack Query
  */
 
-import { QueryKeys } from "./query-keys";
+import { QueryKeys } from "./query-keys.utility";
 
 describe("QueryKeys",
 	() =>

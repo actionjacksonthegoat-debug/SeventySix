@@ -11,7 +11,7 @@ import {
 	NotFoundError,
 	UnauthorizedError,
 	ValidationError
-} from "@shared/models/errors";
+} from "@shared/models";
 import { isNonNullObject, isPresent } from "@shared/utilities/null-check.utility";
 
 /**

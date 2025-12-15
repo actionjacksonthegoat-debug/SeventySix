@@ -22,7 +22,7 @@ import { DateService } from "@shared/services";
 import { ApiService } from "@shared/services/api.service";
 import { BaseQueryService } from "@shared/services/base-query.service";
 import { buildHttpParams } from "@shared/utilities/http-params.utility";
-import { QueryKeys } from "@shared/utilities/query-keys";
+import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { injectQuery } from "@tanstack/angular-query-experimental";
 import { lastValueFrom, Observable } from "rxjs";
 

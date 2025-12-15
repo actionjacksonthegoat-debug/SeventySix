@@ -143,7 +143,6 @@ export class TelemetryService
 		if (this.provider)
 		{
 			await this.provider.shutdown();
-			this.logger.info("OpenTelemetry shutdown complete");
 		}
 	}
 }

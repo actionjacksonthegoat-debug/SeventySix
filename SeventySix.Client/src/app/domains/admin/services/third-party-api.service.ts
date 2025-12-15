@@ -4,8 +4,8 @@ import {
 } from "@admin/models";
 import { inject, Injectable } from "@angular/core";
 import { ApiService } from "@shared/services/api.service";
-import { getQueryConfig } from "@shared/utilities/query-config";
-import { QueryKeys } from "@shared/utilities/query-keys";
+import { getQueryConfig } from "@shared/utilities/query-config.utility";
+import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	CreateQueryResult,
 	injectQuery

@@ -70,9 +70,9 @@ export class ApiStatisticsTableComponent
 		computed(
 			() =>
 			{
-				const err: Error | null =
+				const queryError: Error | null =
 					this.apiDataQuery.error();
-				return err ? err.message || "Failed to load API data" : null;
+				return queryError ? queryError.message || "Failed to load API data" : null;
 			});
 
 	/**

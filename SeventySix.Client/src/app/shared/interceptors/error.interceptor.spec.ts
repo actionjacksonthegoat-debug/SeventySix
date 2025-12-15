@@ -12,7 +12,7 @@ import {
 	NetworkError,
 	NotFoundError,
 	ValidationError
-} from "@shared/models/errors";
+} from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { LoggerService } from "@shared/services/logger.service";
 import { createMockLogger } from "@shared/testing";
@@ -73,9 +73,9 @@ describe("errorInterceptor",
 							mockHandler.handle.bind(mockHandler))
 						.subscribe(
 							{
-								error: (err: Error) =>
+								error: (receivedError: Error) =>
 								{
-									expect(err instanceof NetworkError)
+									expect(receivedError instanceof NetworkError)
 									.toBe(true);
 									done();
 								}
@@ -102,9 +102,9 @@ describe("errorInterceptor",
 							mockHandler.handle.bind(mockHandler))
 						.subscribe(
 							{
-								error: (err: Error) =>
+								error: (receivedError: Error) =>
 								{
-									expect(err instanceof NotFoundError)
+									expect(receivedError instanceof NotFoundError)
 									.toBe(true);
 									done();
 								}
@@ -134,9 +134,9 @@ describe("errorInterceptor",
 							mockHandler.handle.bind(mockHandler))
 						.subscribe(
 							{
-								error: (err: Error) =>
+								error: (receivedError: Error) =>
 								{
-									expect(err instanceof ValidationError)
+									expect(receivedError instanceof ValidationError)
 									.toBe(true);
 									done();
 								}

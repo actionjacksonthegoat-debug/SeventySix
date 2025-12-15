@@ -5,7 +5,7 @@ import {
 	NotFoundError,
 	UnauthorizedError,
 	ValidationError
-} from "@shared/models/errors";
+} from "@shared/models";
 import {
 	convertToAppError,
 	extractErrorTitle,

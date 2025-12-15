@@ -1,4 +1,4 @@
-import { getAvailableContentHeight, LayoutDimensions } from "./content-helper";
+import { getAvailableContentHeight, LayoutDimensions } from "./content-helper.utility";
 
 describe("ContentHelper",
 	() =>

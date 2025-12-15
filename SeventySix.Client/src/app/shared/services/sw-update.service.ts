@@ -65,11 +65,11 @@ export class SwUpdateService
 				{
 					await this.swUpdate.checkForUpdate();
 				}
-				catch (err)
+				catch (error)
 				{
 					this.logger.error(
 						"Failed to check for updates",
-						err instanceof Error ? err : undefined);
+						error instanceof Error ? error : undefined);
 				}
 			});
 	}
@@ -153,11 +153,11 @@ export class SwUpdateService
 			await this.swUpdate.activateUpdate();
 			window.location.reload();
 		}
-		catch (err)
+		catch (error)
 		{
 			this.logger.error(
 				"Failed to activate update",
-				err instanceof Error ? err : undefined);
+				error instanceof Error ? error : undefined);
 		}
 	}
 
@@ -186,11 +186,11 @@ export class SwUpdateService
 			}
 			return updateFound;
 		}
-		catch (err)
+		catch (error)
 		{
 			this.logger.error(
 				"Error checking for update",
-				err instanceof Error ? err : undefined);
+				error instanceof Error ? error : undefined);
 			return false;
 		}
 	}
@@ -216,11 +216,11 @@ export class SwUpdateService
 				window.location.reload();
 			}
 		}
-		catch (err)
+		catch (error)
 		{
 			this.logger.error(
 				"Error forcing update",
-				err instanceof Error ? err : undefined);
+				error instanceof Error ? error : undefined);
 		}
 	}
 }

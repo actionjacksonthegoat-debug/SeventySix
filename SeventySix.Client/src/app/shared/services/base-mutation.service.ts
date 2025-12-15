@@ -1,5 +1,5 @@
 import { inject } from "@angular/core";
-import { getQueryConfig } from "@shared/utilities/query-config";
+import { getQueryConfig } from "@shared/utilities/query-config.utility";
 import {
 	CreateMutationResult,
 	injectMutation,

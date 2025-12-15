@@ -69,8 +69,6 @@ export class WebVitalsService
 				{
 					this.logMetric("TTFB", metric);
 				});
-
-			this.logger.info("Web Vitals monitoring initialized");
 		}
 		catch (error: unknown)
 		{
@@ -82,23 +80,14 @@ export class WebVitalsService
 
 	/**
 	 * Logs a web vitals metric with context.
+	 * Only logs warning for poor metrics - good/needs-improvement are silent.
 	 */
 	private logMetric(name: string, metric: Metric): void
 	{
 		const rating: "good" | "needs-improvement" | "poor" =
 			metric.rating || "good";
 
-		this.logger.info(`Web Vital: ${name}`,
-			{
-				name: metric.name,
-				value: metric.value,
-				rating,
-				delta: metric.delta,
-				id: metric.id,
-				navigationType: metric.navigationType
-			});
-
-		// Log warning for poor metrics
+		// Only log warning for poor metrics
 		if (rating === "poor")
 		{
 			this.logger.warning(`Poor ${name} detected`,
