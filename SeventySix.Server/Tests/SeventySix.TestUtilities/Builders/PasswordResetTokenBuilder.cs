@@ -27,11 +27,23 @@ namespace SeventySix.TestUtilities.Builders;
 /// </remarks>
 public class PasswordResetTokenBuilder
 {
+	private readonly TimeProvider TimeProvider;
 	private int UserId;
 	private string Token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-	private DateTime ExpiresAt = DateTime.UtcNow.AddHours(24);
-	private DateTime CreateDate = DateTime.UtcNow;
+	private DateTime ExpiresAt;
+	private DateTime CreateDate;
 	private bool IsUsed;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="PasswordResetTokenBuilder"/> class.
+	/// </summary>
+	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	public PasswordResetTokenBuilder(TimeProvider timeProvider)
+	{
+		TimeProvider = timeProvider;
+		ExpiresAt = timeProvider.GetUtcNow().AddHours(24).UtcDateTime;
+		CreateDate = timeProvider.GetUtcNow().UtcDateTime;
+	}
 
 	/// <summary>
 	/// Sets the user ID this token belongs to.
@@ -72,7 +84,7 @@ public class PasswordResetTokenBuilder
 	/// <returns>The builder instance for method chaining.</returns>
 	public PasswordResetTokenBuilder AsExpired()
 	{
-		ExpiresAt = DateTime.UtcNow.AddHours(-1);
+		ExpiresAt = TimeProvider.GetUtcNow().AddHours(-1).UtcDateTime;
 		return this;
 	}
 

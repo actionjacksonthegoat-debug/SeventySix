@@ -1,4 +1,4 @@
-import { setupSimpleServiceTest } from "@shared/testing";
+import { delay, setupSimpleServiceTest } from "@shared/testing";
 import { PerformanceMonitorService } from "./performance-monitor.service";
 
 describe("PerformanceMonitorService",
@@ -69,7 +69,7 @@ describe("PerformanceMonitorService",
 			});
 
 		it("should compute isHealthy based on fps",
-			(done) =>
+			async () =>
 			{
 				service.startMonitoring();
 
@@ -78,43 +78,35 @@ describe("PerformanceMonitorService",
 					.toBe(false);
 
 				// Wait for metrics to update (1+ second)
-				setTimeout(
-					() =>
-					{
-						// After monitoring, fps should be > 0 and likely >= 50
-						const healthy: boolean =
-							service.isHealthy();
-						expect(typeof healthy)
-							.toBe("boolean");
-						service.stopMonitoring();
-						done();
-					},
-					1100);
+				await delay(1100);
+
+				// After monitoring, fps should be > 0 and likely >= 50
+				const healthy: boolean =
+					service.isHealthy();
+				expect(typeof healthy)
+					.toBe("boolean");
+				service.stopMonitoring();
 			});
 
 		it("should update metrics over time",
-			(done) =>
+			async () =>
 			{
 				service.currentMetrics();
 				service.startMonitoring();
 
 				// Wait longer for metrics to update (give enough time for multiple frames)
-				setTimeout(
-					() =>
-					{
-						service.currentMetrics();
-						// FPS should be updated (non-zero) after sufficient time
-						// Note: In test environment, requestAnimationFrame may not fire reliably
-						// so we check if monitoring started rather than requiring FPS > 0
-						expect(service.isMonitoring())
-							.toBe(true);
-						service.stopMonitoring();
-						// Verify monitoring stopped
-						expect(service.isMonitoring())
-							.toBe(false);
-						done();
-					},
-					1500);
+				await delay(1500);
+
+				service.currentMetrics();
+				// FPS should be updated (non-zero) after sufficient time
+				// Note: In test environment, requestAnimationFrame may not fire reliably
+				// so we check if monitoring started rather than requiring FPS > 0
+				expect(service.isMonitoring())
+					.toBe(true);
+				service.stopMonitoring();
+				// Verify monitoring stopped
+				expect(service.isMonitoring())
+					.toBe(false);
 			});
 
 		it("should handle memory metrics when available",

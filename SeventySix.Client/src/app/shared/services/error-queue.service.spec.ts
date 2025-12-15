@@ -7,6 +7,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
 import { CreateLogRequest } from "@shared/models";
+import { delay } from "@shared/testing";
 import { DateService } from "./date.service";
 import { ErrorQueueService } from "./error-queue.service";
 
@@ -134,7 +135,7 @@ describe("ErrorQueueService (Zoneless)",
 					});
 
 				it("should load queue from localStorage on initialization",
-					(done) =>
+					async () =>
 					{
 						// Pre-populate localStorage
 						const existingErrors: CreateLogRequest[] =
@@ -168,20 +169,16 @@ describe("ErrorQueueService (Zoneless)",
 						// Service will use environment.logging.batchInterval (250ms in tests)
 
 						// Wait for batch processor to attempt sending
-						setTimeout(
-							(): void =>
-							{
-								const req: ReturnType<typeof newHttpMock.expectOne> =
-									newHttpMock.expectOne(API_BATCH_URL);
-								expect(req.request.body.length)
-									.toBe(1);
-								expect(req.request.body[0].message)
-									.toBe("Persisted error");
-								req.flush({});
-								newHttpMock.verify();
-								done();
-							},
-							BATCH_INTERVAL + 50);
+						await delay(BATCH_INTERVAL + 50);
+
+						const req: ReturnType<typeof newHttpMock.expectOne> =
+							newHttpMock.expectOne(API_BATCH_URL);
+						expect(req.request.body.length)
+							.toBe(1);
+						expect(req.request.body[0].message)
+							.toBe("Persisted error");
+						req.flush({});
+						newHttpMock.verify();
 					});
 			});
 
@@ -189,7 +186,7 @@ describe("ErrorQueueService (Zoneless)",
 			() =>
 			{
 				it("should send batch after interval",
-					(done) =>
+					async () =>
 					{
 						const error: CreateLogRequest =
 							{
@@ -201,44 +198,36 @@ describe("ErrorQueueService (Zoneless)",
 						service.enqueue(error);
 
 						// Wait for batch interval
-						setTimeout(
-							(): void =>
-							{
-								const req: ReturnType<typeof httpMock.expectOne> =
-									httpMock.expectOne(API_BATCH_URL);
-								expect(req.request.method)
-									.toBe("POST");
-								expect(req.request.body.length)
-									.toBe(1);
-								expect(req.request.body[0].message)
-									.toBe("Batch test");
+						await delay(BATCH_INTERVAL + 50);
 
-								req.flush({});
-								done();
-							},
-							BATCH_INTERVAL + 50);
+						const req: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(API_BATCH_URL);
+						expect(req.request.method)
+							.toBe("POST");
+						expect(req.request.body.length)
+							.toBe(1);
+						expect(req.request.body[0].message)
+							.toBe("Batch test");
+
+						req.flush({});
 					});
 
 				it("should not send empty batches",
-					(done) =>
+					async () =>
 					{
 						// Don't enqueue anything, just wait
-						setTimeout(
-							() =>
-							{
-								// Verify no HTTP requests were made
-								httpMock.expectNone(API_BATCH_URL);
+						await delay(BATCH_INTERVAL + 50);
 
-								// Ensure we have a passing expectation
-								expect(true)
-									.toBe(true);
-								done();
-							},
-							BATCH_INTERVAL + 50);
+						// Verify no HTTP requests were made
+						httpMock.expectNone(API_BATCH_URL);
+
+						// Ensure we have a passing expectation
+						expect(true)
+							.toBe(true);
 					});
 
 				it("should send maximum 10 items per batch",
-					(done) =>
+					async () =>
 					{
 						// Enqueue 15 errors
 						for (let i: number = 0; i < 15; i++)
@@ -252,33 +241,26 @@ describe("ErrorQueueService (Zoneless)",
 						}
 
 						// First batch should have 10 items
-						setTimeout(
-							(): void =>
-							{
-								const req: ReturnType<typeof httpMock.expectOne> =
-									httpMock.expectOne(API_BATCH_URL);
-								expect(req.request.body.length)
-									.toBe(10);
-								req.flush({});
+						await delay(BATCH_INTERVAL + 50);
 
-								// Second batch should have 5 items
-								setTimeout(
-									(): void =>
-									{
-										const req2: ReturnType<typeof httpMock.expectOne> =
-											httpMock.expectOne(API_BATCH_URL);
-										expect(req2.request.body.length)
-											.toBe(5);
-										req2.flush({});
-										done();
-									},
-									BATCH_INTERVAL + 50);
-							},
-							BATCH_INTERVAL + 50);
+						const req: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(API_BATCH_URL);
+						expect(req.request.body.length)
+							.toBe(10);
+						req.flush({});
+
+						// Second batch should have 5 items
+						await delay(BATCH_INTERVAL + 50);
+
+						const req2: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(API_BATCH_URL);
+						expect(req2.request.body.length)
+							.toBe(5);
+						req2.flush({});
 					});
 
 				it("should remove sent items from queue after successful send",
-					(done) =>
+					async () =>
 					{
 						service.enqueue(
 							{
@@ -294,36 +276,29 @@ describe("ErrorQueueService (Zoneless)",
 								clientTimestamp: dateService.now()
 							});
 
-						setTimeout(
-							(): void =>
-							{
-								const req: ReturnType<typeof httpMock.expectOne> =
-									httpMock.expectOne(API_BATCH_URL);
-								expect(req.request.body.length)
-									.toBe(2);
+						await delay(BATCH_INTERVAL + 50);
 
-								// Successful response
-								req.flush({});
+						const req: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(API_BATCH_URL);
+						expect(req.request.body.length)
+							.toBe(2);
 
-								// Verify localStorage is cleared
-								setTimeout(
-									(): void =>
-									{
-										const stored: string | null =
-											localStorage.getItem("error-queue");
-										const parsed: CreateLogRequest[] =
-											stored ? JSON.parse(stored) : [];
-										expect(parsed.length)
-											.toBe(0);
-										done();
-									},
-									50);
-							},
-							BATCH_INTERVAL + 50);
+						// Successful response
+						req.flush({});
+
+						// Verify localStorage is cleared
+						await delay(50);
+
+						const stored: string | null =
+							localStorage.getItem("error-queue");
+						const parsed: CreateLogRequest[] =
+							stored ? JSON.parse(stored) : [];
+						expect(parsed.length)
+							.toBe(0);
 					});
 
 				it("should send errors in CreateLogRequest format",
-					(done) =>
+					async () =>
 					{
 						const error: CreateLogRequest =
 							{
@@ -342,43 +317,39 @@ describe("ErrorQueueService (Zoneless)",
 
 						service.enqueue(error);
 
-						setTimeout(
-							(): void =>
-							{
-								const req: ReturnType<typeof httpMock.expectOne> =
-									httpMock.expectOne(API_BATCH_URL);
-								const payload: CreateLogRequest =
-									req.request.body[0];
+						await delay(BATCH_INTERVAL + 50);
 
-								expect(payload.logLevel)
-									.toBe("Error");
-								expect(payload.message)
-									.toBe("Conversion test");
-								expect(payload.exceptionMessage)
-									.toBe("Exception details");
-								expect(payload.stackTrace)
-									.toBe("Stack trace here");
-								expect(payload.sourceContext)
-									.toBe("TestComponent");
-								expect(payload.requestUrl)
-									.toBe("/test");
-								expect(payload.requestMethod)
-									.toBe("GET");
-								expect(payload.statusCode)
-									.toBe(500);
-								expect(payload.clientTimestamp)
-									.toBe(
-										"2025-11-12T10:00:00.000Z");
-								expect(payload.additionalContext)
-									.toEqual(
-										{ key: "value" });
-								expect(payload.userAgent)
-									.toBeTruthy();
+						const req: ReturnType<typeof httpMock.expectOne> =
+							httpMock.expectOne(API_BATCH_URL);
+						const payload: CreateLogRequest =
+							req.request.body[0];
 
-								req.flush({});
-								done();
-							},
-							BATCH_INTERVAL + 50);
+						expect(payload.logLevel)
+							.toBe("Error");
+						expect(payload.message)
+							.toBe("Conversion test");
+						expect(payload.exceptionMessage)
+							.toBe("Exception details");
+						expect(payload.stackTrace)
+							.toBe("Stack trace here");
+						expect(payload.sourceContext)
+							.toBe("TestComponent");
+						expect(payload.requestUrl)
+							.toBe("/test");
+						expect(payload.requestMethod)
+							.toBe("GET");
+						expect(payload.statusCode)
+							.toBe(500);
+						expect(payload.clientTimestamp)
+							.toBe(
+								"2025-11-12T10:00:00.000Z");
+						expect(payload.additionalContext)
+							.toEqual(
+								{ key: "value" });
+						expect(payload.userAgent)
+							.toBeTruthy();
+
+						req.flush({});
 					});
 			});
 

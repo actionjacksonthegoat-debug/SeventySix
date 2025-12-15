@@ -13,7 +13,7 @@ import {
 	Type
 } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideNoopAnimations } from "@angular/platform-browser/animations";
+import { provideAnimations } from "@angular/platform-browser/animations"; // Replace by V23
 import { provideRouter } from "@angular/router";
 import {
 	provideTanStackQuery,
@@ -177,6 +177,7 @@ export class ComponentTestBed<T>
 	/**
 	 * Build and compile the test component
 	 * Automatically includes provideZonelessChangeDetection and provideNoopAnimations
+	 * for faster test execution without animation overhead
 	 *
 	 * @param component - Component class to test
 	 * @returns Promise resolving to ComponentFixture
@@ -189,7 +190,7 @@ export class ComponentTestBed<T>
 				imports: [component, ...this.imports],
 				providers: [
 					provideZonelessChangeDetection(),
-					provideNoopAnimations(),
+					provideAnimations(),
 					...this.providers
 				]
 			})
@@ -349,4 +350,49 @@ export function setupSimpleServiceTest<T>(
 		});
 
 	return TestBed.inject(service);
+}
+
+/**
+ * Utility to create a promise that resolves after specified milliseconds.
+ * Uses globalThis.setTimeout for compatibility with zoneless Angular tests.
+ * Prefer this over raw setTimeout with done() callback pattern.
+ *
+ * @param ms - Milliseconds to delay
+ * @returns Promise that resolves after the delay
+ *
+ * @example
+ * it("should debounce resize events", async () => {
+ *   window.dispatchEvent(new Event("resize"));
+ *   await delay(600); // Wait for 500ms debounce + buffer
+ *   expect(spy).toHaveBeenCalledTimes(1);
+ * });
+ */
+export function delay(ms: number): Promise<void>
+{
+	return new Promise(
+		(resolve: () => void) =>
+			globalThis.setTimeout(resolve, ms));
+}
+
+/**
+ * Utility to flush pending microtasks for TanStack Query tests.
+ * Uses setTimeout(0) to push to macrotask queue, allowing TanStack Query
+ * to complete HTTP request initiation in zoneless Angular.
+ *
+ * @returns Promise that resolves after microtasks and pending work are flushed
+ *
+ * @example
+ * it("should fetch data", async () => {
+ *   const query = service.getData();
+ *   await flushMicrotasks();
+ *   httpMock.expectOne(url).flush(mockData);
+ *   await flushMicrotasks();
+ *   expect(query.data()).toEqual(mockData);
+ * });
+ */
+export function flushMicrotasks(): Promise<void>
+{
+	return new Promise(
+		(resolve: () => void) =>
+			globalThis.setTimeout(resolve, 0));
 }

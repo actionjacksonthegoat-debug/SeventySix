@@ -1,6 +1,7 @@
 import { Component } from "@angular/core";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { delay } from "@shared/testing";
 import { SiteLayoutChangedDirective } from "./site-layout-changed.directive";
 
 @Component(
@@ -54,17 +55,14 @@ describe("SiteLayoutChangedDirective",
 			});
 
 		it("should emit layoutChanged on window resize",
-			(done) =>
+			async () =>
 			{
 				window.dispatchEvent(new Event("resize"));
 
-				setTimeout(
-					() =>
-					{
-						expect(component.layoutChanged)
-							.toHaveBeenCalled();
-						done();
-					},
-					600);
+				// Wait for directive's 500ms debounce + buffer
+				await delay(600);
+
+				expect(component.layoutChanged)
+					.toHaveBeenCalled();
 			});
 	});

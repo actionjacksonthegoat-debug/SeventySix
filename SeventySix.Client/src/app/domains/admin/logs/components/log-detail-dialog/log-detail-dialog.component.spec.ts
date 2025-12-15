@@ -13,6 +13,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { DateService } from "@shared/services";
+import { flushMicrotasks } from "@shared/testing";
 import { LogDetailDialogComponent } from "./log-detail-dialog.component";
 
 describe("LogDetailDialogComponent",
@@ -246,29 +247,25 @@ describe("LogDetailDialogComponent",
 			});
 
 		it("should copy log details to clipboard as JSON",
-			(done: DoneFn) =>
+			async () =>
 			{
 				mockClipboard.copy.and.returnValue(true);
 
 				component.copyToClipboard();
 
-				setTimeout(
-					(): void =>
-					{
-						expect(mockClipboard.copy)
-							.toHaveBeenCalledWith(
-								jasmine.any(String));
-						const copiedText: string =
-							mockClipboard.copy.calls.mostRecent().args[0];
-						const parsed: Record<string, unknown> =
-							JSON.parse(copiedText);
-						expect(parsed["id"])
-							.toBe(mockLog.id);
-						expect(parsed["message"])
-							.toBe(mockLog.message);
-						done();
-					},
-					0);
+				await flushMicrotasks();
+
+				expect(mockClipboard.copy)
+					.toHaveBeenCalledWith(
+						jasmine.any(String));
+				const copiedText: string =
+					mockClipboard.copy.calls.mostRecent().args[0];
+				const parsed: Record<string, unknown> =
+					JSON.parse(copiedText);
+				expect(parsed["id"])
+					.toBe(mockLog.id);
+				expect(parsed["message"])
+					.toBe(mockLog.message);
 			});
 
 		it("should emit delete event and close dialog",

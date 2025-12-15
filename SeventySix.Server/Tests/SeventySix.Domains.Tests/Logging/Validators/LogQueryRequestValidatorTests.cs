@@ -3,6 +3,7 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Logging;
 using SeventySix.Logging.Queries.GetLogsPaged;
 
@@ -16,12 +17,13 @@ public class LogQueryRequestValidatorTests
 	[Fact]
 	public async Task ValidRequest_PassesValidationAsync()
 	{
+		FakeTimeProvider timeProvider = new();
 		LogQueryRequest request = new()
 		{
 			SearchTerm = "error message",
 			LogLevel = LogLevelConstants.Error,
-			StartDate = DateTime.UtcNow.AddDays(-7),
-			EndDate = DateTime.UtcNow,
+			StartDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-7),
+			EndDate = timeProvider.GetUtcNow().UtcDateTime,
 			Page = 1,
 			PageSize = 50,
 		};

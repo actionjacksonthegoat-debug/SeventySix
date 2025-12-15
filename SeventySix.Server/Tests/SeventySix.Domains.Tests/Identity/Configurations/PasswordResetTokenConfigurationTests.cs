@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
@@ -29,17 +30,18 @@ public class PasswordResetTokenConfigurationTests : DataPostgreSqlTestBase
 	public async Task DeleteUser_CascadesDelete_ToPasswordResetTokensAsync()
 	{
 		// Arrange - Create user with password reset token
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"cascade_{testId}")
 			.WithEmail($"cascade_{testId}@example.com")
 			.Build();
 		await context.Users.AddAsync(user);
 		await context.SaveChangesAsync();
 
-		PasswordResetToken token = new PasswordResetTokenBuilder()
+		PasswordResetToken token = new PasswordResetTokenBuilder(timeProvider)
 			.WithUserId(user.Id)
 			.Build();
 		await context.PasswordResetTokens.AddAsync(token);
@@ -66,9 +68,10 @@ public class PasswordResetTokenConfigurationTests : DataPostgreSqlTestBase
 	public async Task CreatePasswordResetToken_Fails_WhenUserDoesNotExistAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 
-		PasswordResetToken token = new PasswordResetTokenBuilder()
+		PasswordResetToken token = new PasswordResetTokenBuilder(timeProvider)
 			.WithUserId(999999) // Non-existent user
 			.Build();
 
@@ -82,21 +85,22 @@ public class PasswordResetTokenConfigurationTests : DataPostgreSqlTestBase
 	public async Task DeleteUser_CascadesDelete_ToMultiplePasswordResetTokensAsync()
 	{
 		// Arrange - Create user with multiple password reset tokens
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"multi_{testId}")
 			.WithEmail($"multi_{testId}@example.com")
 			.Build();
 		await context.Users.AddAsync(user);
 		await context.SaveChangesAsync();
 
-		PasswordResetToken token1 = new PasswordResetTokenBuilder()
+		PasswordResetToken token1 = new PasswordResetTokenBuilder(timeProvider)
 			.WithUserId(user.Id)
 			.WithToken($"token1_{testId}")
 			.Build();
-		PasswordResetToken token2 = new PasswordResetTokenBuilder()
+		PasswordResetToken token2 = new PasswordResetTokenBuilder(timeProvider)
 			.WithUserId(user.Id)
 			.WithToken($"token2_{testId}")
 			.Build();

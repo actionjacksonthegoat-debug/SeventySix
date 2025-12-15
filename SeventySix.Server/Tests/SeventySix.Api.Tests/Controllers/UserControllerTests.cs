@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.Identity;
@@ -60,10 +61,11 @@ public class UsersControllerTests
 	public async Task GetAllAsync_ShouldReturnOkWithUsers_WhenUsersExistAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		List<UserDto> users =
 		[
-			new UserDtoBuilder().WithId(1).WithUsername("user1").WithEmail("user1@example.com").WithIsActive(true).Build(),
-			new UserDtoBuilder().WithId(2).WithUsername("user2").WithEmail("user2@example.com").WithIsActive(false).Build(),
+			new UserDtoBuilder(timeProvider).WithId(1).WithUsername("user1").WithEmail("user1@example.com").WithIsActive(true).Build(),
+			new UserDtoBuilder(timeProvider).WithId(2).WithUsername("user2").WithEmail("user2@example.com").WithIsActive(false).Build(),
 		];
 
 		MessageBus
@@ -112,8 +114,9 @@ public class UsersControllerTests
 	public async Task GetByIdAsync_ShouldReturnOkWithUser_WhenUserExistsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		UserDto userDto =
-			new UserDtoBuilder()
+			new UserDtoBuilder(timeProvider)
 				.WithId(123)
 				.WithUsername("john_doe")
 				.WithEmail("john@example.com")
@@ -164,6 +167,7 @@ public class UsersControllerTests
 	public async Task CreateAsync_ShouldReturnCreatedAtRoute_WhenUserIsCreatedAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		CreateUserRequest request = new()
 		{
 			Username = "new_user",
@@ -173,7 +177,7 @@ public class UsersControllerTests
 		};
 
 		UserDto createdUser =
-			new UserDtoBuilder()
+			new UserDtoBuilder(timeProvider)
 				.WithId(456)
 				.WithUsername("new_user")
 				.WithEmail("new@example.com")
@@ -204,6 +208,7 @@ public class UsersControllerTests
 	public async Task CreateAsync_ShouldCallServiceWithCorrectRequestAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		CreateUserRequest request = new()
 		{
 			Username = "test",
@@ -212,7 +217,7 @@ public class UsersControllerTests
 		};
 
 		UserDto createdUser =
-			new UserDtoBuilder()
+			new UserDtoBuilder(timeProvider)
 				.WithId(1)
 				.WithUsername("test")
 				.WithEmail("test@example.com")
@@ -244,6 +249,7 @@ public class UsersControllerTests
 	public async Task UpdateAsync_ValidRequest_ReturnsOkWithUpdatedUserAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		UpdateUserRequest request = new UpdateUserRequest
 		{
 			Id = 1,
@@ -254,14 +260,14 @@ public class UsersControllerTests
 		};
 
 		UserDto updatedUser =
-			new UserDtoBuilder()
+			new UserDtoBuilder(timeProvider)
 				.WithId(1)
 				.WithUsername("updateduser")
 				.WithEmail("updated@example.com")
 				.WithFullName("Updated User")
 				.WithIsActive(true)
-				.WithCreateDate(DateTime.UtcNow.AddDays(-1))
-				.WithModifyDate(DateTime.UtcNow)
+				.WithCreateDate(timeProvider.GetUtcNow().UtcDateTime.AddDays(-1))
+				.WithModifyDate(timeProvider.GetUtcNow().UtcDateTime)
 				.WithCreatedBy("System")
 				.WithModifiedBy("Admin")
 				.Build();
@@ -377,6 +383,7 @@ public class UsersControllerTests
 	public async Task GetPagedAsync_ValidRequest_ReturnsOkWithPagedResultAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		UserQueryRequest request = new UserQueryRequest
 		{
 			Page = 1,
@@ -386,8 +393,8 @@ public class UsersControllerTests
 
 		List<UserDto> users =
 		[
-			new UserDtoBuilder().WithId(1).WithUsername("testuser1").WithEmail("test1@example.com").WithIsActive(true).WithCreatedBy("System").WithModifiedBy("System").Build(),
-			new UserDtoBuilder().WithId(2).WithUsername("testuser2").WithEmail("test2@example.com").WithIsActive(true).WithCreatedBy("System").WithModifiedBy("System").Build(),
+			new UserDtoBuilder(timeProvider).WithId(1).WithUsername("testuser1").WithEmail("test1@example.com").WithIsActive(true).WithCreatedBy("System").WithModifiedBy("System").Build(),
+			new UserDtoBuilder(timeProvider).WithId(2).WithUsername("testuser2").WithEmail("test2@example.com").WithIsActive(true).WithCreatedBy("System").WithModifiedBy("System").Build(),
 		];
 
 		PagedResult<UserDto> pagedResult = new PagedResult<UserDto>
@@ -424,8 +431,9 @@ public class UsersControllerTests
 	public async Task GetByUsernameAsync_UserExists_ReturnsOkWithUserAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		UserDto user =
-			new UserDtoBuilder()
+			new UserDtoBuilder(timeProvider)
 				.WithId(1)
 				.WithUsername("testuser")
 				.WithEmail("test@example.com")

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
@@ -31,6 +32,7 @@ public class RefreshTokenCleanupJobTests : IDisposable
 	public RefreshTokenCleanupJobTests()
 	{
 		// Arrange DbContext - SQLite required for ExecuteDeleteAsync support
+		FakeTimeProvider timeProvider = new();
 		DbContextOptions<IdentityDbContext> options =
 			new DbContextOptionsBuilder<IdentityDbContext>()
 				.UseSqlite("DataSource=:memory:")
@@ -46,7 +48,7 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			{
 				Username = "testuser",
 				Email = "test@example.com",
-				CreateDate = DateTime.UtcNow,
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 				CreatedBy = "system"
 			};
 		this.DbContext.Users.Add(this.TestUser);

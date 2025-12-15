@@ -27,14 +27,26 @@ namespace SeventySix.TestUtilities.Builders;
 /// </remarks>
 public class ThirdPartyApiRequestBuilder
 {
+	private readonly TimeProvider TimeProvider;
 	private string ApiName = "TestApi";
 	private string BaseUrl = "https://api.test.com";
 	private int CallCount = 0;
 	private DateTime? LastCalledAt = null;
-	private DateOnly ResetDate = DateOnly.FromDateTime(DateTime.UtcNow);
-	private DateTime CreateDate = DateTime.UtcNow;
+	private DateOnly ResetDate;
+	private DateTime CreateDate;
 	private DateTime? ModifyDate = null;
 	private uint RowVersion = 1;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ThirdPartyApiRequestBuilder"/> class.
+	/// </summary>
+	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	public ThirdPartyApiRequestBuilder(TimeProvider timeProvider)
+	{
+		TimeProvider = timeProvider;
+		ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+		CreateDate = timeProvider.GetUtcNow().UtcDateTime;
+	}
 
 	/// <summary>
 	/// Sets the API name.
@@ -146,12 +158,13 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Creates a builder with active usage (non-zero call count).
 	/// </summary>
+	/// <param name="timeProvider">The time provider for timestamps.</param>
 	/// <param name="callCount">The number of API calls (default 100).</param>
 	/// <returns>A new ThirdPartyApiRequestBuilder with usage.</returns>
-	public static ThirdPartyApiRequestBuilder CreateWithUsage(int callCount = 100)
+	public static ThirdPartyApiRequestBuilder CreateWithUsage(TimeProvider timeProvider, int callCount = 100)
 	{
-		return new ThirdPartyApiRequestBuilder()
+		return new ThirdPartyApiRequestBuilder(timeProvider)
 			.WithCallCount(callCount)
-			.WithLastCalledAt(DateTime.UtcNow);
+			.WithLastCalledAt(timeProvider.GetUtcNow().UtcDateTime);
 	}
 }

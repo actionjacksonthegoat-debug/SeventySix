@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
@@ -27,6 +28,7 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByTokenAsync_ReturnsToken_WhenExistsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		EmailVerificationTokenRepository repository = new(context);
 		string testId = Guid.NewGuid().ToString("N")[..8];
@@ -36,8 +38,8 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 			{
 				Email = $"verify_{testId}@example.com",
 				Token = $"token_{testId}",
-				ExpiresAt = DateTime.UtcNow.AddHours(24),
-				CreateDate = DateTime.UtcNow,
+				ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 				IsUsed = false
 			};
 
@@ -75,6 +77,7 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 	public async Task CreateAsync_CreatesTokenAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		EmailVerificationTokenRepository repository = new(context);
 		string testId = Guid.NewGuid().ToString("N")[..8];
@@ -84,8 +87,8 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 			{
 				Email = $"create_{testId}@example.com",
 				Token = $"create_token_{testId}",
-				ExpiresAt = DateTime.UtcNow.AddHours(24),
-				CreateDate = DateTime.UtcNow,
+				ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 				IsUsed = false
 			};
 
@@ -106,6 +109,7 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 	public async Task InvalidateTokensForEmailAsync_InvalidatesAllUnusedTokensAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		EmailVerificationTokenRepository repository = new(context);
 		string testId = Guid.NewGuid().ToString("N")[..8];
@@ -117,8 +121,8 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 			{
 				Email = email,
 				Token = $"inv_token1_{testId}",
-				ExpiresAt = DateTime.UtcNow.AddHours(24),
-				CreateDate = DateTime.UtcNow,
+				ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 				IsUsed = false
 			};
 
@@ -127,8 +131,8 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 			{
 				Email = email,
 				Token = $"inv_token2_{testId}",
-				ExpiresAt = DateTime.UtcNow.AddHours(24),
-				CreateDate = DateTime.UtcNow,
+				ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 				IsUsed = false
 			};
 

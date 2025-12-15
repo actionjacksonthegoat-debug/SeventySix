@@ -1,6 +1,7 @@
 import { Component, signal, WritableSignal } from "@angular/core";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { delay } from "@shared/testing";
 import { TableHeightDirective } from "./table-height.directive";
 
 @Component(
@@ -83,7 +84,7 @@ describe("TableHeightDirective",
 			});
 
 		it("should debounce window resize events",
-			(done) =>
+			async () =>
 			{
 				let updateCount: number = 0;
 				const directive: TableHeightDirective =
@@ -113,15 +114,11 @@ describe("TableHeightDirective",
 				expect(updateCount)
 					.toBe(0);
 
-				// After 500ms debounce, should only have called once
-				setTimeout(
-					() =>
-					{
-						expect(updateCount)
-							.toBe(1);
-						done();
-					},
-					600);
+				// After 500ms debounce + buffer, should only have called once
+				await delay(600);
+
+				expect(updateCount)
+					.toBe(1);
 			});
 
 		it("should always apply standard table offset (120px at density -1)",

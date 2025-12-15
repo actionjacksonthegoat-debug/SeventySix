@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 
@@ -31,8 +32,9 @@ public class UserExtensionsTests
 	public void ToDto_ShouldMapUserEntityToDto()
 	{
 		// Arrange
-		DateTime createDate = DateTime.UtcNow.AddDays(-5);
-		User user = new UserBuilder()
+		FakeTimeProvider timeProvider = new();
+		DateTime createDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-5);
+		User user = new UserBuilder(timeProvider)
 			.WithUsername("john_doe")
 			.WithEmail("john@example.com")
 			.WithFullName("John Doe")
@@ -58,7 +60,8 @@ public class UserExtensionsTests
 	public void ToDto_ShouldHandleNullFullName()
 	{
 		// Arrange
-		User user = new UserBuilder()
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider)
 			.WithUsername("test_user")
 			.WithEmail("test@example.com")
 			.WithFullName(null)
@@ -78,7 +81,8 @@ public class UserExtensionsTests
 	public void ToDto_ShouldMapInactiveUser()
 	{
 		// Arrange
-		User user = UserBuilder.CreateInactive()
+		FakeTimeProvider timeProvider = new();
+		User user = UserBuilder.CreateInactive(timeProvider)
 			.WithUsername("inactive_user")
 			.WithEmail("inactive@example.com")
 			.Build();
@@ -106,11 +110,12 @@ public class UserExtensionsTests
 	public void ToDto_Collection_ShouldMapMultipleEntities()
 	{
 		// Arrange
-		User user1 = UserBuilder.CreateActive().WithUsername("user1").WithEmail("user1@example.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user1 = UserBuilder.CreateActive(timeProvider).WithUsername("user1").WithEmail("user1@example.com").Build();
 		user1.Id = 1;
-		User user2 = UserBuilder.CreateInactive().WithUsername("user2").WithEmail("user2@example.com").Build();
+		User user2 = UserBuilder.CreateInactive(timeProvider).WithUsername("user2").WithEmail("user2@example.com").Build();
 		user2.Id = 2;
-		User user3 = UserBuilder.CreateActive().WithUsername("user3").WithEmail("user3@example.com").Build();
+		User user3 = UserBuilder.CreateActive(timeProvider).WithUsername("user3").WithEmail("user3@example.com").Build();
 		user3.Id = 3;
 		List<User> users = [user1, user2, user3];
 
@@ -288,8 +293,9 @@ public class UserExtensionsTests
 	public void ToDto_ShouldIncludeSoftDeleteFields_WhenUserIsDeleted()
 	{
 		// Arrange
-		DateTime deletedAt = DateTime.UtcNow.AddHours(-2);
-		User user = new UserBuilder()
+		FakeTimeProvider timeProvider = new();
+		DateTime deletedAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(-2);
+		User user = new UserBuilder(timeProvider)
 			.WithUsername("deleted_user")
 			.WithEmail("deleted@example.com")
 			.WithFullName("Deleted User")
@@ -314,7 +320,8 @@ public class UserExtensionsTests
 	public void ToDto_ShouldHaveNullSoftDeleteFields_WhenUserIsNotDeleted()
 	{
 		// Arrange
-		User user = new UserBuilder()
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider)
 			.WithUsername("active_user")
 			.WithEmail("active@example.com")
 			.WithIsActive(true)

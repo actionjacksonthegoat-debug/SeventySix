@@ -13,11 +13,12 @@ namespace SeventySix.TestUtilities.Builders;
 /// </summary>
 public class UserDtoBuilder
 {
+	private readonly TimeProvider TimeProvider;
 	private int Id = 1;
 	private string Username = "testuser";
 	private string Email = "test@example.com";
 	private string? FullName = null;
-	private DateTime CreateDate = DateTime.UtcNow;
+	private DateTime CreateDate;
 	private bool IsActive = true;
 	private bool NeedsPendingEmail = false;
 	private string CreatedBy = TestAuditConstants.SystemUser;
@@ -27,6 +28,16 @@ public class UserDtoBuilder
 	private bool IsDeleted = false;
 	private DateTime? DeletedAt = null;
 	private string? DeletedBy = null;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="UserDtoBuilder"/> class.
+	/// </summary>
+	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	public UserDtoBuilder(TimeProvider timeProvider)
+	{
+		TimeProvider = timeProvider;
+		CreateDate = timeProvider.GetUtcNow().UtcDateTime;
+	}
 
 	/// <summary>
 	/// Sets the user ID.

@@ -10,7 +10,7 @@ import {
 } from "@angular/common/http/testing";
 import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
-import { setupSimpleServiceTest } from "@shared/testing";
+import { flushMicrotasks, setupSimpleServiceTest } from "@shared/testing";
 import {
 	provideTanStackQuery,
 	QueryClient
@@ -92,8 +92,7 @@ describe("ThirdPartyApiService",
 						const query: ReturnType<typeof service.getAllThirdPartyApis> =
 							TestBed.runInInjectionContext(
 								() => service.getAllThirdPartyApis()); // Wait for query to execute
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(apiUrl);
@@ -102,8 +101,7 @@ describe("ThirdPartyApiService",
 						req.flush(mockData);
 
 						// Wait for query to complete
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const data: ThirdPartyApiRequestResponse[] | undefined =
 							query.data();
@@ -122,15 +120,13 @@ describe("ThirdPartyApiService",
 							TestBed.runInInjectionContext(
 								() => service.getAllThirdPartyApis());
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(apiUrl);
 						req.flush([]);
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const data: ThirdPartyApiRequestResponse[] | undefined =
 							query.data();
@@ -148,8 +144,7 @@ describe("ThirdPartyApiService",
 							TestBed.runInInjectionContext(
 								() => service.getAllThirdPartyApis());
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 						const req: TestRequest =
 							httpMock.expectOne(apiUrl);
 						req.flush("Server error",
@@ -158,8 +153,7 @@ describe("ThirdPartyApiService",
 								statusText: "Internal Server Error"
 							});
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						expect(query.error())
 							.toBeTruthy();
@@ -190,16 +184,14 @@ describe("ThirdPartyApiService",
 							TestBed.runInInjectionContext(
 								() => service.getByApiName(apiName));
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/${apiName}`);
 						expect(req.request.method)
 							.toBe("GET");
 						req.flush(mockData);
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const data: ThirdPartyApiRequestResponse[] | undefined =
 							query.data();
@@ -221,8 +213,7 @@ describe("ThirdPartyApiService",
 						const query: ReturnType<typeof service.getByApiName> =
 							TestBed.runInInjectionContext(
 								() => service.getByApiName(apiName));
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/${encodedName}`);
@@ -230,8 +221,7 @@ describe("ThirdPartyApiService",
 							.toBe("GET");
 						req.flush([]);
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						expect(query.data())
 							.toEqual([]);
@@ -247,16 +237,14 @@ describe("ThirdPartyApiService",
 							TestBed.runInInjectionContext(
 								() => service.getByApiName(apiName));
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/${apiName}`);
 						req.flush("Not found",
 							{ status: 404, statusText: "Not Found" });
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						expect(query.error())
 							.toBeTruthy();
@@ -289,8 +277,7 @@ describe("ThirdPartyApiService",
 							TestBed.runInInjectionContext(
 								() => service.getStatistics());
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/statistics`);
@@ -298,8 +285,7 @@ describe("ThirdPartyApiService",
 							.toBe("GET");
 						req.flush(mockStats);
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const stats: ThirdPartyApiStatisticsResponse | undefined =
 							query.data();
@@ -326,15 +312,13 @@ describe("ThirdPartyApiService",
 						const query: ReturnType<typeof service.getStatistics> =
 							TestBed.runInInjectionContext(
 								() => service.getStatistics());
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/statistics`);
 						req.flush(mockStats);
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const stats: ThirdPartyApiStatisticsResponse | undefined =
 							query.data();
@@ -356,8 +340,7 @@ describe("ThirdPartyApiService",
 						const query: ReturnType<typeof service.getStatistics> =
 							TestBed.runInInjectionContext(
 								() => service.getStatistics());
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/statistics`);
@@ -367,8 +350,7 @@ describe("ThirdPartyApiService",
 								statusText: "Service Unavailable"
 							});
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						expect(query.error())
 							.toBeTruthy();

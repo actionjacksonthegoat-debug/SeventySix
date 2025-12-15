@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.Api.Infrastructure;
@@ -27,10 +28,11 @@ public class HealthControllerTests
 	public async Task GetHealthStatus_ReturnsOkResult_WithHealthStatusAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		HealthStatusResponse expectedStatus = new()
 		{
 			Status = "Healthy",
-			CheckedAt = DateTime.UtcNow,
+			CheckedAt = timeProvider.GetUtcNow().UtcDateTime,
 			Database = new DatabaseHealthResponse
 			{
 				IsConnected = true,
@@ -47,7 +49,7 @@ public class HealthControllerTests
 							ApiName = "ThirdPartyRateLimit",
 							IsAvailable = true,
 							ResponseTimeMs = 150.5,
-							LastChecked = DateTime.UtcNow.AddMinutes(-1),
+						LastChecked = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-1),
 						}
 					},
 				},
@@ -87,10 +89,11 @@ public class HealthControllerTests
 	public async Task GetHealthStatus_ReturnsDegradedStatus_WhenComponentsAreDegradedAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		HealthStatusResponse expectedStatus = new()
 		{
 			Status = "Degraded",
-			CheckedAt = DateTime.UtcNow,
+			CheckedAt = timeProvider.GetUtcNow().UtcDateTime,
 			Database = new DatabaseHealthResponse
 			{
 				IsConnected = true,
@@ -129,10 +132,11 @@ public class HealthControllerTests
 	public async Task GetHealthStatus_ReturnsUnhealthyStatus_WhenCriticalComponentsDownAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		HealthStatusResponse expectedStatus = new()
 		{
 			Status = "Unhealthy",
-			CheckedAt = DateTime.UtcNow,
+			CheckedAt = timeProvider.GetUtcNow().UtcDateTime,
 			Database = new DatabaseHealthResponse
 			{
 				IsConnected = false,

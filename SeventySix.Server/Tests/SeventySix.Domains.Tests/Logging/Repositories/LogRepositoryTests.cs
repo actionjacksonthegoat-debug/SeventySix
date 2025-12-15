@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Logging;
 using SeventySix.TestUtilities.TestBases;
@@ -41,11 +42,12 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task CreateAsync_CreatesLog_SuccessfullyAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		Log log = new()
 		{
 			LogLevel = "Error",
 			Message = "Test error message",
-			CreateDate = DateTime.UtcNow,
+			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 		};
 
 		// Act
@@ -69,7 +71,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_ReturnsAllLogs_WhenNoFiltersAsync()
 	{
 		// Arrange
-		await SeedTestLogsAsync();
+		FakeTimeProvider timeProvider = new();
+		await SeedTestLogsAsync(timeProvider);
 
 		// Act
 		LogQueryRequest request = new();
@@ -84,7 +87,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_FiltersByLogLevel_SuccessfullyAsync()
 	{
 		// Arrange
-		await SeedTestLogsAsync();
+		FakeTimeProvider timeProvider = new();
+		await SeedTestLogsAsync(timeProvider);
 
 		// Act
 		LogQueryRequest request = new() { LogLevel = "Error" };
@@ -98,9 +102,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_FiltersByDateRange_SuccessfullyAsync()
 	{
 		// Arrange
-		await SeedTestLogsAsync();
-		DateTime startDate = DateTime.UtcNow.AddHours(-1);
-		DateTime endDate = DateTime.UtcNow.AddHours(1);
+		FakeTimeProvider timeProvider = new();
+		await SeedTestLogsAsync(timeProvider);
+		DateTime startDate = timeProvider.GetUtcNow().UtcDateTime.AddHours(-1);
+		DateTime endDate = timeProvider.GetUtcNow().UtcDateTime.AddHours(1);
 
 		// Act
 		LogQueryRequest request = new() { StartDate = startDate, EndDate = endDate };
@@ -118,7 +123,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_FiltersBySourceContext_SuccessfullyAsync()
 	{
 		// Arrange
-		await SeedTestLogsAsync();
+		FakeTimeProvider timeProvider = new();
+		await SeedTestLogsAsync(timeProvider);
 
 		// Act
 		LogQueryRequest request = new() { SearchTerm = "UserService" };
@@ -132,7 +138,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_FiltersByRequestPath_SuccessfullyAsync()
 	{
 		// Arrange
-		await SeedTestLogsAsync();
+		FakeTimeProvider timeProvider = new();
+		await SeedTestLogsAsync(timeProvider);
 
 		// Act
 		LogQueryRequest request = new() { SearchTerm = "/api/users" };
@@ -146,8 +153,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_WithSearchTerm_FiltersMultipleFields_SuccessfullyAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		await SeedTestLogsForSearchAsync(testId);
+		await SeedTestLogsForSearchAsync(testId, timeProvider);
 
 		// Act - Search for unique marker which should match Message field
 		LogQueryRequest messageRequest = new() { SearchTerm = $"Authentication_{testId}" };
@@ -176,7 +184,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_SupportsPagination_SuccessfullyAsync()
 	{
 		// Arrange
-		await SeedTestLogsAsync();
+		FakeTimeProvider timeProvider = new();
+		await SeedTestLogsAsync(timeProvider);
 
 		// Act
 		LogQueryRequest page1Request = new() { Page = 1, PageSize = 2 };
@@ -195,7 +204,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_OrdersByIdDescending_ByDefaultAsync()
 	{
 		// Arrange
-		await SeedTestLogsAsync();
+		FakeTimeProvider timeProvider = new();
+		await SeedTestLogsAsync(timeProvider);
 
 		// Act
 		LogQueryRequest request = new();
@@ -213,13 +223,14 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_LimitsTo1000Records_MaximumAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		for (int i = 0; i < 1100; i++)
 		{
 			await Repository.CreateAsync(new Log
 			{
 				LogLevel = "Info",
 				Message = $"Log {i}",
-				CreateDate = DateTime.UtcNow,
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			});
 		}
 
@@ -235,7 +246,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_ReturnsCorrectCount_WhenNoFiltersAsync()
 	{
 		// Arrange
-		await SeedTestLogsAsync();
+		FakeTimeProvider timeProvider = new();
+		await SeedTestLogsAsync(timeProvider);
 
 		// Act
 		LogQueryRequest request = new();
@@ -249,8 +261,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_FiltersCorrectly_WithMultipleCriteriaAsync()
 	{
 		// Arrange
-		await SeedTestLogsAsync();
-		DateTime startDate = DateTime.UtcNow.AddHours(-1);
+		FakeTimeProvider timeProvider = new();
+		await SeedTestLogsAsync(timeProvider);
+		DateTime startDate = timeProvider.GetUtcNow().UtcDateTime.AddHours(-1);
 
 		// Act
 		LogQueryRequest request = new()
@@ -268,11 +281,12 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task DeleteOlderThanAsync_DeletesOldLogs_SuccessfullyAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		Log oldLog = new()
 		{
 			LogLevel = "Error",
 			Message = "Old log",
-			CreateDate = DateTime.UtcNow.AddDays(-40),
+			CreateDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-40),
 		};
 		await Repository.CreateAsync(oldLog);
 
@@ -280,11 +294,11 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		{
 			LogLevel = "Error",
 			Message = "Recent log",
-			CreateDate = DateTime.UtcNow,
+			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 		};
 		await Repository.CreateAsync(recentLog);
 
-		DateTime cutoffDate = DateTime.UtcNow.AddDays(-30);
+		DateTime cutoffDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-30);
 
 		// Act
 		int deletedCount = await Repository.DeleteOlderThanAsync(cutoffDate);
@@ -296,7 +310,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.All(remainingLogs, log => Assert.True(log.CreateDate >= cutoffDate));
 	}
 
-	private async Task SeedTestLogsAsync()
+	private async Task SeedTestLogsAsync(FakeTimeProvider timeProvider)
 	{
 		Log[] logs =
 		[
@@ -308,7 +322,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				RequestPath = "/api/users/1",
 				StatusCode = 500,
 				DurationMs = 150,
-				CreateDate = DateTime.UtcNow,
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			},
 			new Log
 			{
@@ -318,7 +332,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				RequestPath = "/api/health",
 				StatusCode = 200,
 				DurationMs = 75,
-				CreateDate = DateTime.UtcNow.AddMinutes(-5),
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
 			},
 			new Log
 			{
@@ -328,7 +342,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				RequestPath = "/api/users/2",
 				StatusCode = 404,
 				DurationMs = 50,
-				CreateDate = DateTime.UtcNow.AddMinutes(-10),
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10),
 			},
 		];
 
@@ -338,7 +352,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		}
 	}
 
-	private async Task SeedTestLogsForSearchAsync(string testId)
+	private async Task SeedTestLogsForSearchAsync(string testId, FakeTimeProvider timeProvider)
 	{
 		Log[] logs =
 		[
@@ -349,7 +363,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				SourceContext = $"SeventySix.Services.UserService_{testId}",
 				RequestPath = $"/api/users_{testId}/login",
 				ExceptionMessage = null,
-				CreateDate = DateTime.UtcNow,
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			},
 			new Log
 			{
@@ -358,7 +372,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				SourceContext = $"SeventySix.Services.UserService_{testId}",
 				RequestPath = $"/api/users_{testId}/profile",
 				ExceptionMessage = $"NullRef_{testId}: Object reference not set",
-				CreateDate = DateTime.UtcNow.AddMinutes(-5),
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
 			},
 			new Log
 			{
@@ -367,7 +381,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				SourceContext = "SeventySix.Services.ApiThrottlingService",
 				RequestPath = "/api/health",
 				ExceptionMessage = null,
-				CreateDate = DateTime.UtcNow.AddMinutes(-10),
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10),
 			},
 		];
 

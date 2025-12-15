@@ -46,6 +46,7 @@ public static class TestUserHelper
 	/// <param name="services">The service provider to resolve the DbContext.</param>
 	/// <param name="username">The username for the new user.</param>
 	/// <param name="email">The email for the new user.</param>
+	/// <param name="timeProvider">The time provider for setting CreateDate.</param>
 	/// <param name="passwordHash">
 	/// Optional custom password hash. Defaults to <see cref="TestPasswordHash"/>.
 	/// </param>
@@ -55,6 +56,7 @@ public static class TestUserHelper
 		IServiceProvider services,
 		string username,
 		string email,
+		TimeProvider timeProvider,
 		string? passwordHash = null,
 		bool isActive = true)
 	{
@@ -68,6 +70,7 @@ public static class TestUserHelper
 			context,
 			username,
 			email,
+			timeProvider,
 			passwordHash,
 			isActive);
 	}
@@ -77,6 +80,7 @@ public static class TestUserHelper
 	/// <param name="context">The identity database context.</param>
 	/// <param name="username">The username for the new user.</param>
 	/// <param name="email">The email for the new user.</param>
+	/// <param name="timeProvider">The time provider for setting CreateDate.</param>
 	/// <param name="passwordHash">
 	/// Optional custom password hash. Defaults to <see cref="TestPasswordHash"/>.
 	/// </param>
@@ -86,6 +90,7 @@ public static class TestUserHelper
 		IdentityDbContext context,
 		string username,
 		string email,
+		TimeProvider timeProvider,
 		string? passwordHash = null,
 		bool isActive = true)
 	{
@@ -95,7 +100,7 @@ public static class TestUserHelper
 				Username = username,
 				Email = email,
 				IsActive = isActive,
-				CreateDate = DateTime.UtcNow,
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 				CreatedBy = "Test",
 				ModifiedBy = "Test",
 			};
@@ -108,7 +113,7 @@ public static class TestUserHelper
 			{
 				UserId = user.Id,
 				PasswordHash = passwordHash ?? TestPasswordHash,
-				CreateDate = DateTime.UtcNow,
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			};
 
 		context.UserCredentials.Add(credential);
@@ -124,6 +129,7 @@ public static class TestUserHelper
 	/// <param name="username">The username for the new user.</param>
 	/// <param name="email">The email for the new user.</param>
 	/// <param name="roles">The roles to assign to the user.</param>
+	/// <param name="timeProvider">The time provider for setting CreateDate.</param>
 	/// <param name="passwordHash">
 	/// Optional custom password hash. Defaults to <see cref="TestPasswordHash"/>.
 	/// </param>
@@ -134,6 +140,7 @@ public static class TestUserHelper
 		string username,
 		string email,
 		IEnumerable<string> roles,
+		TimeProvider timeProvider,
 		string? passwordHash = null,
 		bool isActive = true)
 	{
@@ -148,6 +155,7 @@ public static class TestUserHelper
 				context,
 				username,
 				email,
+				timeProvider,
 				passwordHash,
 				isActive);
 
@@ -168,7 +176,7 @@ public static class TestUserHelper
 			{
 				UserId = user.Id,
 				RoleId = roleId.Value,
-				CreateDate = DateTime.UtcNow,
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 				CreatedBy = "test"
 			});
 		}

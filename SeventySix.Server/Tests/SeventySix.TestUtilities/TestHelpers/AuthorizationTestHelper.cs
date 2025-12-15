@@ -142,7 +142,8 @@ public class AuthorizationTestHelper
 			Services,
 			username,
 			email,
-			[role]);
+			[role],
+			TimeProvider.System);
 
 		string token =
 			await LoginAndGetTokenAsync(username);

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.ApiTracking;
 
 namespace SeventySix.Domains.Tests.ApiTracking.DTOs;
@@ -30,7 +31,8 @@ public class ThirdPartyApiStatisticsResponseTests
 	public void Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange
-		DateTime now = DateTime.UtcNow;
+		FakeTimeProvider timeProvider = new();
+		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
 		Dictionary<string, int> callsByApi = new()
 		{
 			{ "ExternalAPI", 150 },
@@ -65,9 +67,10 @@ public class ThirdPartyApiStatisticsResponseTests
 	public void LastCalledByApi_ShouldAllowNullValues()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		Dictionary<string, DateTime?> lastCalledByApi = new()
 		{
-			{ "Api1", DateTime.UtcNow },
+			{ "Api1", timeProvider.GetUtcNow().UtcDateTime },
 			{ "Api2", null },
 		};
 

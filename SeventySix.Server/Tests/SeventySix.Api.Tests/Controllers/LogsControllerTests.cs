@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.Logging;
 using SeventySix.Shared.DTOs;
@@ -51,16 +52,17 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		LogRepository = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 		// Seed minimal test data needed for remaining tests
+		FakeTimeProvider timeProvider = new();
 		Log[] testLogs =
 		[
-			LogBuilder.CreateWarning()
+			LogBuilder.CreateWarning(timeProvider)
 				.WithMessage("Test warning message")
 				.WithSourceContext("SeventySix.Api.Controllers.UsersController")
-				.WithTimestamp(DateTime.UtcNow.AddHours(-1))
+				.WithTimestamp(timeProvider.GetUtcNow().UtcDateTime.AddHours(-1))
 				.Build(),
-			LogBuilder.CreateError()
+			LogBuilder.CreateError(timeProvider)
 				.WithMessage("Test error message")
-				.WithTimestamp(DateTime.UtcNow.AddDays(-31)) // Older than 30 days for cleanup test
+				.WithTimestamp(timeProvider.GetUtcNow().UtcDateTime.AddDays(-31)) // Older than 30 days for cleanup test
 				.Build(),
 		];
 
@@ -116,7 +118,8 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task CleanupLogsAsync_WithCutoffDate_DeletesOldLogsAsync()
 	{
 		// Arrange
-		DateTime cutoffDate = DateTime.UtcNow.AddDays(-30);
+		FakeTimeProvider timeProvider = new();
+		DateTime cutoffDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-30);
 
 		// Act
 		HttpResponseMessage response = await Client!.DeleteAsync(
@@ -190,6 +193,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task DeleteLogAsync_WithValidId_ReturnsNoContentAsync()
 	{
 		// Arrange - Create a log to delete
+		FakeTimeProvider timeProvider = new();
 		int logId;
 		{
 			using IServiceScope scope = SharedFactory.Services.CreateScope();
@@ -202,7 +206,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 					{
 						LogLevel = "Error",
 						Message = "Test log for deletion",
-						CreateDate = DateTime.UtcNow,
+						CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 						MachineName = "test",
 						Environment = "Test",
 					});
@@ -241,6 +245,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task DeleteLogBatchAsync_WithValidIds_ReturnsDeletedCountAsync()
 	{
 		// Arrange - Create logs to delete
+		FakeTimeProvider timeProvider = new();
 		using IServiceScope scope = SharedFactory.Services.CreateScope();
 		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
@@ -248,7 +253,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		{
 			LogLevel = "Error",
 			Message = "Batch delete test 1",
-			CreateDate = DateTime.UtcNow,
+			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			MachineName = "test",
 			Environment = "Test",
 		});
@@ -257,7 +262,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		{
 			LogLevel = "Warning",
 			Message = "Batch delete test 2",
-			CreateDate = DateTime.UtcNow,
+			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			MachineName = "test",
 			Environment = "Test",
 		});
@@ -300,11 +305,13 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 
 	private async Task AuthenticateAsAdminAsync()
 	{
+		FakeTimeProvider timeProvider = new();
 		await TestUserHelper.CreateUserWithRolesAsync(
 			SharedFactory.Services,
 			$"admin_{TestId}",
 			$"admin_{TestId}@example.com",
-			["Admin"]);
+			["Admin"],
+			timeProvider);
 
 		LoginRequest request =
 			new(

@@ -16,9 +16,9 @@ namespace SeventySix.ArchitectureTests;
 /// </summary>
 /// <remarks>
 /// Per CLAUDE.md and copilot-instructions.md:
-/// - NEVER use DateTime.UtcNow directly in production code
+/// - NEVER use DateTime.UtcNow directly in any code (production or tests)
 /// - ALWAYS inject TimeProvider for testable time abstraction
-/// - Tests can use DateTime.UtcNow for test data
+/// - Tests should use TestTimeProvider or mock TimeProvider
 /// </remarks>
 public class TimeProviderUsageTests : SourceCodeArchitectureTest
 {
@@ -28,16 +28,16 @@ public class TimeProviderUsageTests : SourceCodeArchitectureTest
 	/// </summary>
 	private static readonly HashSet<string> AllowedExceptions =
 		[
-			// No exceptions - all production code must use TimeProvider
+			// This test file itself contains DateTime.UtcNow in regex patterns and documentation
+			"TimeProviderUsageTests.cs",
 		];
 
 	[Fact]
-	public void Production_Code_Should_Use_TimeProvider_Not_DateTime_UtcNow()
+	public void All_Code_Should_Use_TimeProvider_Not_DateTime_UtcNow()
 	{
-		// Arrange
+		// Arrange - check ALL code including tests using GetAllSourceFiles
 		IEnumerable<string> sourceFiles =
-			GetSourceFiles("*.cs")
-				.Where(filePath => !filePath.Contains("\\Tests\\"));
+			GetAllSourceFiles();
 
 		List<string> violations = [];
 

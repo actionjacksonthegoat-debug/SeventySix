@@ -3,6 +3,7 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Shared.DTOs;
 using SeventySix.Shared.Validators;
 
@@ -140,10 +141,11 @@ public class BaseQueryValidatorTests
 	public async Task DateRange_EndBeforeStart_FailsValidationAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		TestQueryRequest request = new()
 		{
-			StartDate = DateTime.UtcNow,
-			EndDate = DateTime.UtcNow.AddDays(-1)
+			StartDate = timeProvider.GetUtcNow().UtcDateTime,
+			EndDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-1)
 		};
 
 		// Act
@@ -158,10 +160,11 @@ public class BaseQueryValidatorTests
 	public async Task DateRange_ExceedsMaxDays_FailsValidationAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		TestQueryRequest request = new()
 		{
-			StartDate = DateTime.UtcNow,
-			EndDate = DateTime.UtcNow.AddDays(91)
+			StartDate = timeProvider.GetUtcNow().UtcDateTime,
+			EndDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(91)
 		};
 
 		// Act
@@ -176,10 +179,11 @@ public class BaseQueryValidatorTests
 	public async Task DateRange_Valid_PassesValidationAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		TestQueryRequest request = new()
 		{
-			StartDate = DateTime.UtcNow.AddDays(-30),
-			EndDate = DateTime.UtcNow
+			StartDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-30),
+			EndDate = timeProvider.GetUtcNow().UtcDateTime
 		};
 
 		// Act

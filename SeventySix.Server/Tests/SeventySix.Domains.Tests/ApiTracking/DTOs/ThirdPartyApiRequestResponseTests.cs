@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.ApiTracking;
 
 namespace SeventySix.Domains.Tests.ApiTracking.DTOs;
@@ -30,7 +31,8 @@ public class ThirdPartyApiRequestResponseTests
 	public void Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange
-		DateTime now = DateTime.UtcNow;
+		FakeTimeProvider timeProvider = new();
+		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
 		DateOnly resetDate = DateOnly.FromDateTime(now);
 		ThirdPartyApiRequestResponse response = new()
 		{

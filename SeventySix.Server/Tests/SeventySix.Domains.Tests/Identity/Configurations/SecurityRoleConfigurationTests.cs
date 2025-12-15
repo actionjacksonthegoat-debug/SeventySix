@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
@@ -68,10 +69,11 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 	public async Task DeleteSecurityRole_Fails_WhenUserRolesExistAsync()
 	{
 		// Arrange - Create user and assign role
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"restrict_{testId}")
 			.WithEmail($"restrict_{testId}@example.com")
 			.Build();
@@ -106,10 +108,11 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 	public async Task DeleteSecurityRole_Fails_WhenPermissionRequestsExistAsync()
 	{
 		// Arrange - Create user and permission request
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"request_{testId}")
 			.WithEmail($"request_{testId}@example.com")
 			.Build();
@@ -173,10 +176,11 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 	public async Task CreateUserRole_Fails_WhenRoleDoesNotExistAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"norole_{testId}")
 			.WithEmail($"norole_{testId}@example.com")
 			.Build();

@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
@@ -56,8 +57,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task CreateAsync_ShouldCreateUser_WithValidDataAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"create_{testId}")
 			.WithEmail($"create_{testId}@example.com")
 			.WithFullName("Test User")
@@ -74,15 +76,16 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		result.Email.ShouldBe($"create_{testId}@example.com");
 		result.FullName.ShouldBe("Test User");
 		result.IsActive.ShouldBeTrue();
-		result.CreateDate.ShouldBe(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+		result.CreateDate.ShouldBe(timeProvider.GetUtcNow().UtcDateTime, TimeSpan.FromSeconds(5));
 	}
 
 	[Fact]
 	public async Task GetByIdAsync_ShouldReturnUser_WhenUserExistsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"getbyid_{testId}")
 			.WithEmail($"getbyid_{testId}@example.com")
 			.Build();
@@ -111,8 +114,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task UpdateAsync_ShouldUpdateUser_WhenUserExistsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"update_{testId}")
 			.WithEmail($"update_{testId}@example.com")
 			.Build();
@@ -134,8 +138,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task DeleteAsync_ShouldReturnTrue_WhenUserExistsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"delete_{testId}")
 			.WithEmail($"delete_{testId}@example.com")
 			.Build();
@@ -166,10 +171,11 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetAllAsync_ShouldReturnMultipleUsers_WhenUsersExistAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user1 = new UserBuilder().WithUsername($"multi1_{testId}").WithEmail($"multi1_{testId}@example.com").Build();
-		User user2 = new UserBuilder().WithUsername($"multi2_{testId}").WithEmail($"multi2_{testId}@example.com").Build();
-		User user3 = new UserBuilder().WithUsername($"multi3_{testId}").WithEmail($"multi3_{testId}@example.com").Build();
+		User user1 = new UserBuilder(timeProvider).WithUsername($"multi1_{testId}").WithEmail($"multi1_{testId}@example.com").Build();
+		User user2 = new UserBuilder(timeProvider).WithUsername($"multi2_{testId}").WithEmail($"multi2_{testId}@example.com").Build();
+		User user3 = new UserBuilder(timeProvider).WithUsername($"multi3_{testId}").WithEmail($"multi3_{testId}@example.com").Build();
 
 		await Repository.CreateAsync(user1);
 		await Repository.CreateAsync(user2);
@@ -189,7 +195,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByUsernameAsync_ShouldReturnUser_WhenUsernameExistsAsync()
 	{
 		// Arrange
-		User user = new UserBuilder().WithUsername("uniqueuser").WithEmail("unique@example.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider).WithUsername("uniqueuser").WithEmail("unique@example.com").Build();
 		await Repository.CreateAsync(user);
 
 		// Act
@@ -214,8 +221,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByEmailAsync_ShouldReturnUser_WhenEmailExistsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder().WithUsername($"emailtest_{testId}").WithEmail($"emailtest_{testId}@example.com").Build();
+		User user = new UserBuilder(timeProvider).WithUsername($"emailtest_{testId}").WithEmail($"emailtest_{testId}@example.com").Build();
 		await Repository.CreateAsync(user);
 
 		// Act
@@ -230,7 +238,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByEmailAsync_ShouldBeCaseInsensitive_WhenSearchingAsync()
 	{
 		// Arrange
-		User user = new UserBuilder().WithUsername("casetest").WithEmail("Test@Example.Com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider).WithUsername("casetest").WithEmail("Test@Example.Com").Build();
 		await Repository.CreateAsync(user);
 
 		// Act
@@ -244,8 +253,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task UsernameExistsAsync_ShouldReturnTrue_WhenUsernameExistsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder().WithUsername($"exists_{testId}").WithEmail($"exists_{testId}@example.com").Build();
+		User user = new UserBuilder(timeProvider).WithUsername($"exists_{testId}").WithEmail($"exists_{testId}@example.com").Build();
 		await Repository.CreateAsync(user);
 
 		// Act
@@ -269,7 +279,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task UsernameExistsAsync_ShouldExcludeSpecifiedUser_WhenExcludeIdProvidedAsync()
 	{
 		// Arrange
-		User user = new UserBuilder().WithUsername("updatetest").WithEmail("update@example.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider).WithUsername("updatetest").WithEmail("update@example.com").Build();
 		User created = await Repository.CreateAsync(user);
 
 		// Act - Check if username exists, excluding the user itself (for update scenario)
@@ -283,7 +294,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task EmailExistsAsync_ShouldReturnTrue_WhenEmailExistsAsync()
 	{
 		// Arrange
-		User user = new UserBuilder().WithUsername("emailcheck").WithEmail("check@example.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider).WithUsername("emailcheck").WithEmail("check@example.com").Build();
 		await Repository.CreateAsync(user);
 
 		// Act
@@ -297,10 +309,11 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_ShouldReturnPagedResults_WithCorrectCountAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
 		for (int i = 1; i <= 25; i++)
 		{
-			await Repository.CreateAsync(new UserBuilder().WithUsername($"paged{i}_{testId}").WithEmail($"paged{i}_{testId}@example.com").Build());
+			await Repository.CreateAsync(new UserBuilder(timeProvider).WithUsername($"paged{i}_{testId}").WithEmail($"paged{i}_{testId}@example.com").Build());
 		}
 
 		// Act
@@ -316,9 +329,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_ShouldFilterBySearchTerm_WhenProvidedAsync()
 	{
 		// Arrange
-		await Repository.CreateAsync(new UserBuilder().WithUsername("alice").WithEmail("alice@example.com").Build());
-		await Repository.CreateAsync(new UserBuilder().WithUsername("bob").WithEmail("bob@example.com").Build());
-		await Repository.CreateAsync(new UserBuilder().WithUsername("charlie").WithEmail("alice@other.com").Build());
+		FakeTimeProvider timeProvider = new();
+		await Repository.CreateAsync(new UserBuilder(timeProvider).WithUsername("alice").WithEmail("alice@example.com").Build());
+		await Repository.CreateAsync(new UserBuilder(timeProvider).WithUsername("bob").WithEmail("bob@example.com").Build());
+		await Repository.CreateAsync(new UserBuilder(timeProvider).WithUsername("charlie").WithEmail("alice@other.com").Build());
 
 		// Act
 		UserQueryRequest request = new() { Page = 1, PageSize = 10, SearchTerm = "alice", StartDate = null };
@@ -333,9 +347,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_ShouldFilterByIsActive_WhenProvidedAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		await Repository.CreateAsync(UserBuilder.CreateActive().WithUsername($"active_{testId}").WithEmail($"active_{testId}@example.com").Build());
-		await Repository.CreateAsync(UserBuilder.CreateInactive().WithUsername($"inactive_{testId}").WithEmail($"inactive_{testId}@example.com").Build());
+		await Repository.CreateAsync(UserBuilder.CreateActive(timeProvider).WithUsername($"active_{testId}").WithEmail($"active_{testId}@example.com").Build());
+		await Repository.CreateAsync(UserBuilder.CreateInactive(timeProvider).WithUsername($"inactive_{testId}").WithEmail($"inactive_{testId}@example.com").Build());
 
 		// Act
 		UserQueryRequest request = new() { Page = 1, PageSize = 10, IsActive = true, StartDate = null, SearchTerm = testId };
@@ -350,8 +365,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetPagedAsync_ShouldExcludeDeletedUsers_ByDefaultAsync()
 	{
 		// Arrange
-		User user1 = new UserBuilder().WithUsername("visible").WithEmail("visible@example.com").Build();
-		User user2 = new UserBuilder().WithUsername("deleted").WithEmail("deleted@example.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user1 = new UserBuilder(timeProvider).WithUsername("visible").WithEmail("visible@example.com").Build();
+		User user2 = new UserBuilder(timeProvider).WithUsername("deleted").WithEmail("deleted@example.com").Build();
 		User created1 = await Repository.CreateAsync(user1);
 		User created2 = await Repository.CreateAsync(user2);
 
@@ -370,8 +386,9 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByIdsAsync_ShouldReturnMatchingUsers_WhenIdsExistAsync()
 	{
 		// Arrange
-		User user1 = new UserBuilder().WithUsername("bulk1").WithEmail("bulk1@example.com").Build();
-		User user2 = new UserBuilder().WithUsername("bulk2").WithEmail("bulk2@example.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user1 = new UserBuilder(timeProvider).WithUsername("bulk1").WithEmail("bulk1@example.com").Build();
+		User user2 = new UserBuilder(timeProvider).WithUsername("bulk2").WithEmail("bulk2@example.com").Build();
 		User created1 = await Repository.CreateAsync(user1);
 		User created2 = await Repository.CreateAsync(user2);
 
@@ -386,9 +403,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task BulkUpdateActiveStatusAsync_ShouldUpdateMultipleUsers_WhenIdsExistAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user1 = UserBuilder.CreateActive().WithUsername($"bulkupdate1_{testId}").WithEmail($"bulkupdate1_{testId}@example.com").Build();
-		User user2 = UserBuilder.CreateActive().WithUsername($"bulkupdate2_{testId}").WithEmail($"bulkupdate2_{testId}@example.com").Build();
+		User user1 = UserBuilder.CreateActive(timeProvider).WithUsername($"bulkupdate1_{testId}").WithEmail($"bulkupdate1_{testId}@example.com").Build();
+		User user2 = UserBuilder.CreateActive(timeProvider).WithUsername($"bulkupdate2_{testId}").WithEmail($"bulkupdate2_{testId}@example.com").Build();
 		User created1 = await Repository.CreateAsync(user1);
 		User created2 = await Repository.CreateAsync(user2);
 
@@ -405,7 +423,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task SoftDeleteAsync_ShouldSetIsDeletedFlag_WhenUserExistsAsync()
 	{
 		// Arrange
-		User user = new UserBuilder().WithUsername("softdelete").WithEmail("softdelete@example.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider).WithUsername("softdelete").WithEmail("softdelete@example.com").Build();
 		User created = await Repository.CreateAsync(user);
 
 		// Act
@@ -421,7 +440,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task SoftDeleteAsync_ShouldSetAuditFields_WhenDeletingAsync()
 	{
 		// Arrange
-		User user = new UserBuilder().WithUsername("auditdelete").WithEmail("audit@example.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider).WithUsername("auditdelete").WithEmail("audit@example.com").Build();
 		User created = await Repository.CreateAsync(user);
 
 		// Act
@@ -436,14 +456,15 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		softDeleted.ShouldNotBeNull();
 		softDeleted!.IsDeleted.ShouldBeTrue();
 		softDeleted.DeletedBy.ShouldBe("testuser");
-		Assert.True(softDeleted.DeletedAt.HasValue && (DateTime.UtcNow - softDeleted.DeletedAt.Value).TotalSeconds <= 5);
+		Assert.True(softDeleted.DeletedAt.HasValue && (timeProvider.GetUtcNow().UtcDateTime - softDeleted.DeletedAt.Value).TotalSeconds <= 5);
 	}
 
 	[Fact]
 	public async Task RestoreAsync_ShouldUnsetIsDeletedFlag_WhenUserWasDeletedAsync()
 	{
 		// Arrange
-		User user = new UserBuilder().WithUsername("restore").WithEmail("restore@example.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider).WithUsername("restore").WithEmail("restore@example.com").Build();
 		User created = await Repository.CreateAsync(user);
 		await Repository.SoftDeleteAsync(created.Id, "admin");
 
@@ -461,9 +482,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task CountAsync_ShouldReturnCorrectCount_WithNoFiltersAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		await Repository.CreateAsync(new UserBuilder().WithUsername($"count1_{testId}").WithEmail($"count1_{testId}@example.com").Build());
-		await Repository.CreateAsync(new UserBuilder().WithUsername($"count2_{testId}").WithEmail($"count2_{testId}@example.com").Build());
+		await Repository.CreateAsync(new UserBuilder(timeProvider).WithUsername($"count1_{testId}").WithEmail($"count1_{testId}@example.com").Build());
+		await Repository.CreateAsync(new UserBuilder(timeProvider).WithUsername($"count2_{testId}").WithEmail($"count2_{testId}@example.com").Build());
 
 		// Act
 		int result = await Repository.CountAsync(null, false, CancellationToken.None);
@@ -476,9 +498,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task CountAsync_ShouldFilterByIsActive_WhenProvidedAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		await Repository.CreateAsync(UserBuilder.CreateActive().WithUsername($"activecount_{testId}").WithEmail($"activecount_{testId}@example.com").Build());
-		await Repository.CreateAsync(UserBuilder.CreateInactive().WithUsername($"inactivecount_{testId}").WithEmail($"inactivecount_{testId}@example.com").Build());
+		await Repository.CreateAsync(UserBuilder.CreateActive(timeProvider).WithUsername($"activecount_{testId}").WithEmail($"activecount_{testId}@example.com").Build());
+		await Repository.CreateAsync(UserBuilder.CreateInactive(timeProvider).WithUsername($"inactivecount_{testId}").WithEmail($"inactivecount_{testId}@example.com").Build());
 
 		// Act
 		int result = await Repository.CountAsync(true, false, CancellationToken.None);
@@ -590,7 +613,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task DeleteAsync_LogsError_WhenDbUpdateExceptionOccursAsync()
 	{
 		// Arrange
-		User user = new UserBuilder().WithUsername("deletetest").WithEmail("delete@test.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider).WithUsername("deletetest").WithEmail("delete@test.com").Build();
 		User created = await Repository.CreateAsync(user);
 
 		// Manually corrupt the context to force a DbUpdateException
@@ -615,7 +639,8 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 	public async Task BulkUpdateActiveStatusAsync_LogsError_WhenDbUpdateExceptionOccursAsync()
 	{
 		// Arrange - This will be implemented when we add error handling
-		User user = new UserBuilder().WithUsername("bulktest").WithEmail("bulk@test.com").Build();
+		FakeTimeProvider timeProvider = new();
+		User user = new UserBuilder(timeProvider).WithUsername("bulktest").WithEmail("bulk@test.com").Build();
 		User created = await Repository.CreateAsync(user);
 
 		// For now, just verify the method works

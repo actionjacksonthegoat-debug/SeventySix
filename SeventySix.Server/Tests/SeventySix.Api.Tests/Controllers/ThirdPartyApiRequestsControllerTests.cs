@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.ApiTracking;
@@ -28,6 +29,7 @@ public class ThirdPartyApiRequestsControllerTests
 	public async Task GetAll_ReturnsOkResult_WithListOfApiRequestsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		List<ThirdPartyApiRequestResponse> expectedRequests =
 			[
 				new ThirdPartyApiRequestResponse
@@ -36,8 +38,8 @@ public class ThirdPartyApiRequestsControllerTests
 					ApiName = ExternalApiConstants.BrevoEmail,
 					BaseUrl = "smtp-relay.brevo.com",
 					CallCount = 150,
-					LastCalledAt = DateTime.UtcNow.AddMinutes(-5),
-					ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+					LastCalledAt = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
+					ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 				},
 				new ThirdPartyApiRequestResponse
 				{
@@ -45,8 +47,8 @@ public class ThirdPartyApiRequestsControllerTests
 					ApiName = "GoogleMaps",
 					BaseUrl = "https://maps.googleapis.com",
 					CallCount = 75,
-					LastCalledAt = DateTime.UtcNow.AddMinutes(-10),
-					ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+					LastCalledAt = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10),
+					ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 				},
 			];
 
@@ -95,6 +97,7 @@ public class ThirdPartyApiRequestsControllerTests
 	public async Task GetStatistics_ReturnsOkResult_WithStatisticsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiStatisticsResponse expectedStats =
 			new()
 			{
@@ -107,8 +110,8 @@ public class ThirdPartyApiRequestsControllerTests
 				},
 				LastCalledByApi = new Dictionary<string, DateTime?>
 				{
-					{ ExternalApiConstants.BrevoEmail, DateTime.UtcNow.AddMinutes(-5) },
-					{ "GoogleMaps", DateTime.UtcNow.AddMinutes(-10) },
+					{ ExternalApiConstants.BrevoEmail, timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5) },
+					{ "GoogleMaps", timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10) },
 				},
 			};
 

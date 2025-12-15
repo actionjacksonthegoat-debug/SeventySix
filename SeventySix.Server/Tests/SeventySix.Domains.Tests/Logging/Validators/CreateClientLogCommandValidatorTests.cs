@@ -3,6 +3,7 @@
 // </copyright>
 
 using FluentValidation.TestHelper;
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Logging;
 using SeventySix.Logging.Commands.CreateClientLog;
 
@@ -118,6 +119,7 @@ public class CreateClientLogCommandValidatorTests
 	[Fact]
 	public async Task AllFieldsPopulated_PassesValidationAsync()
 	{
+		FakeTimeProvider timeProvider = new();
 		CreateLogRequest request = new()
 		{
 			LogLevel = LogLevelConstants.Error,
@@ -129,7 +131,7 @@ public class CreateClientLogCommandValidatorTests
 			RequestMethod = "POST",
 			StatusCode = 500,
 			UserAgent = "Mozilla/5.0",
-			ClientTimestamp = DateTime.UtcNow.ToString("O"),
+			ClientTimestamp = timeProvider.GetUtcNow().UtcDateTime.ToString("O"),
 			AdditionalContext = new Dictionary<string, object>
 			{
 				{ "userId", 123 },

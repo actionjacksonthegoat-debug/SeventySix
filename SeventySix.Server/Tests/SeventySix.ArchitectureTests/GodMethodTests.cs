@@ -71,6 +71,9 @@ public class GodMethodTests : SourceCodeArchitectureTest
 			"SeventySix.Domains\\Identity\\Commands\\Login\\LoginCommandHandler.cs::ValidateCredentialAsync",
 			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\UpdateUser\\UpdateUserCommandHandler.cs::HandleAsync",
+
+			// Test utilities - requires multiple optional parameters for flexibility
+			"Tests\\SeventySix.TestUtilities\\TestHelpers\\TestUserHelper.cs::CreateUserWithRolesAsync",
 		];
 
 	[Fact]

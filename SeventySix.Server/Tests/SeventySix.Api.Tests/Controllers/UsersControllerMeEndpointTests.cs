@@ -5,6 +5,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -45,6 +46,7 @@ public class UsersControllerMeEndpointTests(TestcontainersPostgreSqlFixture fixt
 	public async Task UpdateCurrentUserAsync_ValidRequest_ReturnsUpdatedProfileAsync()
 	{
 		// Arrange - Create user and authenticate
+		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string username =
@@ -53,7 +55,8 @@ public class UsersControllerMeEndpointTests(TestcontainersPostgreSqlFixture fixt
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
 			username: username,
-			email: $"original_{testId}@example.com");
+			email: $"original_{testId}@example.com",
+			timeProvider);
 
 		string accessToken =
 			await AuthenticateUserAsync(
@@ -95,6 +98,7 @@ public class UsersControllerMeEndpointTests(TestcontainersPostgreSqlFixture fixt
 	public async Task UpdateCurrentUserAsync_InvalidEmail_ReturnsBadRequestAsync()
 	{
 		// Arrange - Create user and authenticate
+		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string username =
@@ -103,7 +107,8 @@ public class UsersControllerMeEndpointTests(TestcontainersPostgreSqlFixture fixt
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
 			username: username,
-			email: $"test_{testId}@example.com");
+			email: $"test_{testId}@example.com",
+			timeProvider);
 
 		string accessToken =
 			await AuthenticateUserAsync(

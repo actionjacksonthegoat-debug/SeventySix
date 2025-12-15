@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.ApiTracking;
 using SeventySix.Shared.Persistence;
 using Shouldly;
@@ -42,13 +43,14 @@ public class TransactionManagerTests : IDisposable
 	public async Task ExecuteInTransactionAsync_WithSuccessfulOperation_CommitsTransactionAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiRequest entity = new()
 		{
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",
-			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
+			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
 			CallCount = 0,
-			CreateDate = DateTime.UtcNow,
+			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			ModifyDate = null
 		};
 
@@ -71,13 +73,14 @@ public class TransactionManagerTests : IDisposable
 	public async Task ExecuteInTransactionAsync_WithException_RollsBackTransactionAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiRequest entity = new()
 		{
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",
-			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
+			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
 			CallCount = 2,
-			CreateDate = DateTime.UtcNow,
+			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			ModifyDate = null
 		};
 
@@ -111,13 +114,14 @@ public class TransactionManagerTests : IDisposable
 	public async Task ExecuteInTransactionAsync_VoidOverload_ExecutesSuccessfullyAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiRequest entity = new()
 		{
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",
-			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
+			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
 			CallCount = 1,
-			CreateDate = DateTime.UtcNow,
+			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			ModifyDate = null
 		};
 
@@ -138,13 +142,14 @@ public class TransactionManagerTests : IDisposable
 	public async Task ExecuteInTransactionAsync_WithConcurrencyException_RetriesOperationAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiRequest entity = new()
 		{
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",
-			ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
+			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
 			CallCount = 1,
-			CreateDate = DateTime.UtcNow,
+			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 			ModifyDate = null
 		};
 
@@ -243,16 +248,19 @@ public class TransactionManagerTests : IDisposable
 	[Fact]
 	public async Task ExecuteInTransactionAsync_MultipleOperations_IsolatesTransactionsAsync()
 	{
-		// Arrange & Act
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+
+		// Act
 		int result1 = await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
 		{
 			ThirdPartyApiRequest entity = new()
 			{
 				ApiName = "Api1",
 				BaseUrl = "https://api1.com",
-				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
+				ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
 				CallCount = 0,
-				CreateDate = DateTime.UtcNow,
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 				ModifyDate = null
 			};
 			DbContext.ThirdPartyApiRequests.Add(entity);
@@ -266,9 +274,9 @@ public class TransactionManagerTests : IDisposable
 			{
 				ApiName = "Api2",
 				BaseUrl = "https://api2.com",
-				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow),
+				ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
 				CallCount = 1,
-				CreateDate = DateTime.UtcNow,
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
 				ModifyDate = null
 			};
 			DbContext.ThirdPartyApiRequests.Add(entity);

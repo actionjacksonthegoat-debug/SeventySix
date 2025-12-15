@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 
@@ -45,7 +46,8 @@ public class UserTests
 	public void User_ShouldSetAndGetProperties()
 	{
 		// Arrange
-		DateTime createDate = DateTime.UtcNow.AddDays(-10);
+		FakeTimeProvider timeProvider = new();
+		DateTime createDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-10);
 		User user = new()
 		{
 			Id = 123,
@@ -207,7 +209,8 @@ public class UserTests
 	public void User_ShouldSetAndGetAuditFields()
 	{
 		// Arrange
-		DateTime modifyDate = DateTime.UtcNow.AddMinutes(-5);
+		FakeTimeProvider timeProvider = new();
+		DateTime modifyDate = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5);
 		User user = new()
 		{
 			CreatedBy = "admin",
@@ -237,7 +240,8 @@ public class UserTests
 	public void User_ShouldSetAndGetSoftDeleteFields()
 	{
 		// Arrange
-		DateTime deletedAt = DateTime.UtcNow;
+		FakeTimeProvider timeProvider = new();
+		DateTime deletedAt = timeProvider.GetUtcNow().UtcDateTime;
 		User user = new()
 		{
 			IsDeleted = true,
@@ -308,7 +312,8 @@ public class UserTests
 	public void User_ShouldSetAndGetLastLoginFields()
 	{
 		// Arrange
-		DateTime lastLoginAt = DateTime.UtcNow.AddHours(-2);
+		FakeTimeProvider timeProvider = new();
+		DateTime lastLoginAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(-2);
 		string lastLoginIp = "192.168.1.1";
 		User user = new()
 		{
@@ -336,13 +341,14 @@ public class UserTests
 	public void User_ShouldAllowUpdatingAllEnhancedFields()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		User user = new()
 		{
 			Username = "test",
 			Email = TestUserConstants.DefaultEmail,
 		};
 
-		DateTime now = DateTime.UtcNow;
+		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
 
 		// Act
 		user.CreatedBy = "admin";

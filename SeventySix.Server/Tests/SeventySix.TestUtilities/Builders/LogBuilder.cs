@@ -27,6 +27,7 @@ namespace SeventySix.TestUtilities.Builders;
 /// </remarks>
 public class LogBuilder
 {
+	private readonly TimeProvider TimeProvider;
 	private string LogLevel = LogLevelConstants.Information;
 	private string Message = "Test log message";
 	private string? ExceptionMessage = null;
@@ -38,12 +39,22 @@ public class LogBuilder
 	private int? StatusCode = null;
 	private long? DurationMs = null;
 	private string? Properties = null;
-	private DateTime CreateDate = DateTime.UtcNow;
+	private DateTime CreateDate;
 	private string? MachineName = "test-machine";
 	private string? Environment = "Test";
 	private string? CorrelationId = null;
 	private string? SpanId = null;
 	private string? ParentSpanId = null;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="LogBuilder"/> class.
+	/// </summary>
+	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	public LogBuilder(TimeProvider timeProvider)
+	{
+		TimeProvider = timeProvider;
+		CreateDate = timeProvider.GetUtcNow().UtcDateTime;
+	}
 
 	/// <summary>
 	/// Sets the log level.
@@ -227,19 +238,21 @@ public class LogBuilder
 	/// <summary>
 	/// Creates a default Warning level log.
 	/// </summary>
+	/// <param name="timeProvider">The time provider for generating timestamps.</param>
 	/// <returns>A new LogBuilder configured for a Warning log.</returns>
-	public static LogBuilder CreateWarning()
+	public static LogBuilder CreateWarning(TimeProvider timeProvider)
 	{
-		return new LogBuilder().WithLogLevel(LogLevelConstants.Warning);
+		return new LogBuilder(timeProvider).WithLogLevel(LogLevelConstants.Warning);
 	}
 
 	/// <summary>
 	/// Creates a default Error level log.
 	/// </summary>
+	/// <param name="timeProvider">The time provider for generating timestamps.</param>
 	/// <returns>A new LogBuilder configured for an Error log.</returns>
-	public static LogBuilder CreateError()
+	public static LogBuilder CreateError(TimeProvider timeProvider)
 	{
-		return new LogBuilder()
+		return new LogBuilder(timeProvider)
 			.WithLogLevel(LogLevelConstants.Error)
 			.WithExceptionMessage("Test exception");
 	}
@@ -247,10 +260,11 @@ public class LogBuilder
 	/// <summary>
 	/// Creates a default Fatal level log.
 	/// </summary>
+	/// <param name="timeProvider">The time provider for generating timestamps.</param>
 	/// <returns>A new LogBuilder configured for a Fatal log.</returns>
-	public static LogBuilder CreateFatal()
+	public static LogBuilder CreateFatal(TimeProvider timeProvider)
 	{
-		return new LogBuilder()
+		return new LogBuilder(timeProvider)
 			.WithLogLevel(LogLevelConstants.Fatal)
 			.WithExceptionMessage("Fatal exception")
 			.WithStackTrace("at SeventySix.Test.Method()");

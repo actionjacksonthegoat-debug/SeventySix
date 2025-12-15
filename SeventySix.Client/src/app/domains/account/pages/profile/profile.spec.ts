@@ -1,7 +1,6 @@
 import { AccountService } from "@account/services";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideNoopAnimations } from "@angular/platform-browser/animations";
 import { provideRouter } from "@angular/router";
 import { ApiService } from "@shared/services/api.service";
 import { createMockApiService } from "@shared/testing";
@@ -50,7 +49,6 @@ describe("ProfilePage",
 							imports: [ProfilePage],
 							providers: [
 								provideZonelessChangeDetection(),
-								provideNoopAnimations(),
 								provideRouter([]),
 								provideAngularQuery(queryClient),
 								AccountService,

@@ -1,4 +1,11 @@
-import { Injectable, Signal, signal, WritableSignal } from "@angular/core";
+import {
+	DestroyRef,
+	inject,
+	Injectable,
+	Signal,
+	signal,
+	WritableSignal
+} from "@angular/core";
 
 /**
  * Notification severity levels.
@@ -35,6 +42,8 @@ export interface Notification
 	})
 export class NotificationService
 {
+	private readonly destroyRef: DestroyRef =
+		inject(DestroyRef);
 	private readonly successDurationMs: number = 5000;
 	private readonly infoDurationMs: number = 5000;
 	private readonly warningDurationMs: number = 7000;
@@ -43,7 +52,20 @@ export class NotificationService
 	private readonly notifications: WritableSignal<Notification[]> =
 		signal<
 			Notification[]>([]);
+	private readonly dismissTimers: Map<string, ReturnType<typeof globalThis.setTimeout>> =
+		new Map();
 	private idCounter: number = 0;
+
+	constructor()
+	{
+		this.destroyRef.onDestroy(
+			() =>
+			{
+				this.dismissTimers.forEach(
+					(timer) => clearTimeout(timer));
+				this.dismissTimers.clear();
+			});
+	}
 
 	/**
 	 * Read-only signal of current notifications.
@@ -159,6 +181,13 @@ export class NotificationService
 	 */
 	dismiss(id: string): void
 	{
+		const timer: ReturnType<typeof globalThis.setTimeout> | undefined =
+			this.dismissTimers.get(id);
+		if (timer)
+		{
+			clearTimeout(timer);
+			this.dismissTimers.delete(id);
+		}
 		this.notifications.update(
 			(current) =>
 				current.filter(
@@ -170,6 +199,9 @@ export class NotificationService
 	 */
 	clearAll(): void
 	{
+		this.dismissTimers.forEach(
+			(timer) => clearTimeout(timer));
+		this.dismissTimers.clear();
 		this.notifications.set([]);
 	}
 
@@ -241,15 +273,19 @@ export class NotificationService
 		this.notifications.update(
 			(current) => [...current, notification]);
 
-		// Auto-dismiss if duration is set
+		// Auto-dismiss if duration is set using globalThis.setTimeout
+		// This is the appropriate pattern for service-level timers in Angular
 		if (duration)
 		{
-			setTimeout(
-				() =>
-				{
-					this.dismiss(notification.id);
-				},
-				duration);
+			const timer: ReturnType<typeof globalThis.setTimeout> =
+				globalThis.setTimeout(
+					() =>
+					{
+						this.dismissTimers.delete(notification.id);
+						this.dismiss(notification.id);
+					},
+					duration);
+			this.dismissTimers.set(notification.id, timer);
 		}
 	}
 }

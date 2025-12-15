@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
@@ -28,11 +29,12 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetUserByUsernameOrEmailForUpdateAsync_ReturnsUser_WhenFoundByUsernameAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		AuthRepository repository = new(context);
 		string testId = Guid.NewGuid().ToString("N")[..8];
 
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"authtest_{testId}")
 			.WithEmail($"authtest_{testId}@example.com")
 			.Build();
@@ -55,11 +57,12 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetUserByUsernameOrEmailForUpdateAsync_ReturnsUser_WhenFoundByEmailAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		AuthRepository repository = new(context);
 		string testId = Guid.NewGuid().ToString("N")[..8];
 
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"emailtest_{testId}")
 			.WithEmail($"emailtest_{testId}@example.com")
 			.Build();
@@ -97,11 +100,12 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 	public async Task UpdateLastLoginAsync_UpdatesTimestampAndIpAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		AuthRepository repository = new(context);
 		string testId = Guid.NewGuid().ToString("N")[..8];
 
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"logintest_{testId}")
 			.WithEmail($"logintest_{testId}@example.com")
 			.Build();
@@ -109,7 +113,7 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		context.Users.Add(user);
 		await context.SaveChangesAsync();
 
-		DateTime loginTime = DateTime.UtcNow;
+		DateTime loginTime = timeProvider.GetUtcNow().UtcDateTime;
 		string clientIp = "192.168.1.100";
 
 		// Act
@@ -133,11 +137,12 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetExternalLoginAsync_ReturnsLogin_WhenExistsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		AuthRepository repository = new(context);
 		string testId = Guid.NewGuid().ToString("N")[..8];
 
-		User user = new UserBuilder()
+		User user = new UserBuilder(timeProvider)
 			.WithUsername($"oauth_{testId}")
 			.WithEmail($"oauth_{testId}@example.com")
 			.Build();
@@ -151,7 +156,7 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 				UserId = user.Id,
 				Provider = "GitHub",
 				ProviderUserId = $"github_{testId}",
-				CreateDate = DateTime.UtcNow
+				CreateDate = timeProvider.GetUtcNow().UtcDateTime
 			};
 
 		context.ExternalLogins.Add(externalLogin);

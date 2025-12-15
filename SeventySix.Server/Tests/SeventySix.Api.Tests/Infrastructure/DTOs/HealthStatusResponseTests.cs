@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Shared.Constants;
 
@@ -31,7 +32,8 @@ public class HealthStatusResponseTests
 	public void HealthStatusResponse_Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange
-		DateTime now = DateTime.UtcNow;
+		FakeTimeProvider timeProvider = new();
+		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
 		HealthStatusResponse response = new()
 		{
 			Status = HealthStatusConstants.Degraded,
@@ -92,7 +94,8 @@ public class HealthStatusResponseTests
 	public void ExternalApiHealthResponse_Apis_ShouldStoreMultipleApis()
 	{
 		// Arrange
-		DateTime now = DateTime.UtcNow;
+		FakeTimeProvider timeProvider = new();
+		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
 		ExternalApiHealthResponse response = new()
 		{
 			Apis = new Dictionary<string, ApiHealthStatus>

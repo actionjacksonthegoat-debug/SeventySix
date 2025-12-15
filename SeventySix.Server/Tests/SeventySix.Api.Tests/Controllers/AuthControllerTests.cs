@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
@@ -27,7 +28,6 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private HttpClient? Client;
-	private IdentityDbContext? IdentityContext;
 
 	/// <inheritdoc/>
 	public override async Task InitializeAsync()
@@ -41,12 +41,6 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			{
 				AllowAutoRedirect = false // Don't follow redirects for OAuth tests
 			});
-
-		using IServiceScope scope =
-			SharedFactory.Services.CreateScope();
-
-		IdentityContext =
-			scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
 	}
 
 	/// <inheritdoc/>
@@ -95,6 +89,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		bool useEmail)
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
 		string username = $"testuser_{testId}";
 		string email = $"test_{testId}@example.com";
@@ -102,7 +97,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
 			username,
-			email);
+			email,
+			timeProvider);
 
 		LoginRequest request =
 			new(
@@ -121,7 +117,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		Assert.NotNull(authResponse);
 		Assert.NotEmpty(authResponse.AccessToken);
-		Assert.True(authResponse.ExpiresAt > DateTime.UtcNow);
+		Assert.True(authResponse.ExpiresAt > timeProvider.GetUtcNow().UtcDateTime);
 		Assert.True(response.Headers.Contains("Set-Cookie"));
 	}
 	#endregion
@@ -165,6 +161,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		bool duplicateUsername)
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
 		string existingUsername = $"existinguser_{testId}";
 		string existingEmail = $"existing_{testId}@example.com";
@@ -172,7 +169,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
 			existingUsername,
-			existingEmail);
+			existingEmail,
+			timeProvider);
 
 		RegisterRequest request =
 			new(
@@ -215,13 +213,15 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task LoginAsync_SetsSameSiteCookieStrict_WhenSuccessfulAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
 			username: $"testuser_{testId}",
-			email: $"test_{testId}@example.com");
+			email: $"test_{testId}@example.com",
+			timeProvider);
 
 		LoginRequest request =
 			new(
@@ -369,6 +369,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task ExchangeOAuthCode_ValidCode_ReturnsTokensAsync()
 	{
 		// Arrange - Store tokens and get code
+		FakeTimeProvider timeProvider = new();
 		using IServiceScope scope =
 			SharedFactory.Services.CreateScope();
 
@@ -376,7 +377,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			scope.ServiceProvider.GetRequiredService<IOAuthCodeExchangeService>();
 
 		DateTime expiresAt =
-			DateTime.UtcNow.AddMinutes(15);
+			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15);
 
 		string code =
 			exchangeService.StoreTokens(
@@ -429,6 +430,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task ExchangeOAuthCode_SameCodeTwice_SecondCallFailsAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		using IServiceScope scope =
 			SharedFactory.Services.CreateScope();
 
@@ -439,7 +441,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			exchangeService.StoreTokens(
 				"test-access-token",
 				"test-refresh-token",
-				DateTime.UtcNow.AddMinutes(15));
+				timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15));
 
 		// Act - First call should succeed
 		HttpResponseMessage firstResponse =
@@ -465,6 +467,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task ExchangeOAuthCode_ValidCode_SetsRefreshTokenCookieAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		using IServiceScope scope =
 			SharedFactory.Services.CreateScope();
 
@@ -475,7 +478,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			exchangeService.StoreTokens(
 				"test-access-token",
 				"test-refresh-token",
-				DateTime.UtcNow.AddMinutes(15));
+				timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15));
 
 		// Act
 		HttpResponseMessage response =
@@ -513,13 +516,15 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task GetCurrentUserAsync_Authenticated_ReturnsProfileAsync()
 	{
 		// Arrange - Login to get token
+		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
 			username: $"testuser_{testId}",
-			email: $"test_{testId}@example.com");
+			email: $"test_{testId}@example.com",
+			timeProvider);
 
 		HttpResponseMessage loginResponse =
 			await Client!.PostAsJsonAsync(
@@ -579,13 +584,15 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task ChangePasswordAsync_ReturnsBadRequest_WhenWeakPasswordAsync()
 	{
 		// Arrange - Login to get authenticated
+		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
 			username: $"weakpassuser_{testId}",
-			email: $"weakpass_{testId}@example.com");
+			email: $"weakpass_{testId}@example.com",
+			timeProvider);
 
 		HttpResponseMessage loginResponse =
 			await Client!.PostAsJsonAsync(
@@ -631,16 +638,19 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		bool useInvalidSignature)
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		string invalidToken =
 			useInvalidSignature
 				? JwtTestHelper.GenerateTokenWithWrongKey(
 					userId: 1,
 					username: "testuser",
-					email: "test@example.com")
+					email: "test@example.com",
+					timeProvider)
 				: JwtTestHelper.GenerateExpiredToken(
 					userId: 1,
 					username: "testuser",
-					email: "test@example.com");
+					email: "test@example.com",
+					timeProvider);
 
 		Client!.DefaultRequestHeaders.Authorization =
 			new System.Net.Http.Headers.AuthenticationHeaderValue(
@@ -687,13 +697,15 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	public async Task InitiateRegistrationAsync_ExistingEmail_ReturnsOkAsync()
 	{
 		// Arrange - Create existing user
+		FakeTimeProvider timeProvider = new();
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
 			username: $"existing_{testId}",
-			email: $"existing_{testId}@example.com");
+			email: $"existing_{testId}@example.com",
+			timeProvider);
 
 		InitiateRegistrationRequest request =
 			new($"existing_{testId}@example.com");
@@ -751,13 +763,17 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		{
 			IdentityDbContext context =
 				scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+			TimeProvider timeProvider =
+				scope.ServiceProvider.GetRequiredService<TimeProvider>();
+			DateTime now =
+				timeProvider.GetUtcNow().UtcDateTime;
 
 			context.EmailVerificationTokens.Add(new EmailVerificationToken
 			{
 				Email = email,
 				Token = token,
-				ExpiresAt = DateTime.UtcNow.AddHours(24),
-				CreateDate = DateTime.UtcNow,
+				ExpiresAt = now.AddHours(24),
+				CreateDate = now,
 				IsUsed = false,
 			});
 
@@ -783,6 +799,5 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		Assert.NotNull(authResponse);
 		Assert.NotEmpty(authResponse.AccessToken);
 	}
-
 	#endregion
 }

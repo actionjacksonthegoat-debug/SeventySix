@@ -5,6 +5,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Logging;
 using Shouldly;
@@ -126,9 +127,10 @@ public class LogCleanupServiceTests
 	public async Task ExecuteAsync_CalculatesCorrectCutoffDateAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		int retentionDays = 7;
 		DateTime testStart =
-			DateTime.UtcNow;
+			timeProvider.GetUtcNow().UtcDateTime;
 
 		LogCleanupSettings settings =
 			new()
@@ -155,7 +157,7 @@ public class LogCleanupServiceTests
 			new(
 				ScopeFactory,
 				options,
-				TimeProvider.System,
+				timeProvider,
 				Logger);
 
 		using CancellationTokenSource cts =

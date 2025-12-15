@@ -4,7 +4,6 @@ import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideNoopAnimations } from "@angular/platform-browser/animations";
 import { provideRouter } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
@@ -40,7 +39,7 @@ describe("ForgotPasswordComponent",
 							imports: [ForgotPasswordComponent],
 							providers: [
 								provideZonelessChangeDetection(),
-								provideNoopAnimations(),
+
 								provideRouter([]),
 								provideHttpClient(),
 								provideHttpClientTesting(),

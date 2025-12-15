@@ -12,6 +12,7 @@ import {
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
+import { flushMicrotasks } from "@shared/testing";
 import {
 	provideTanStackQuery,
 	QueryClient
@@ -112,9 +113,7 @@ describe("HealthApiService",
 							TestBed.runInInjectionContext(
 								() => service.getHealth());
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(apiUrl);
@@ -122,9 +121,7 @@ describe("HealthApiService",
 							.toBe("GET");
 						req.flush(mockHealth);
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const health: HealthStatusResponse | undefined =
 							query.data();
@@ -172,17 +169,13 @@ describe("HealthApiService",
 							TestBed.runInInjectionContext(
 								() => service.getHealth());
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(apiUrl);
 						req.flush(mockHealth);
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const health: HealthStatusResponse | undefined =
 							query.data();
@@ -202,9 +195,7 @@ describe("HealthApiService",
 							TestBed.runInInjectionContext(
 								() => service.getHealth());
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(apiUrl);
@@ -214,9 +205,7 @@ describe("HealthApiService",
 								statusText: "Service Unavailable"
 							});
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						expect(query.error())
 							.toBeTruthy();
@@ -241,9 +230,7 @@ describe("HealthApiService",
 							TestBed.runInInjectionContext(
 								() => service.getDatabaseHealth());
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/database`);
@@ -251,9 +238,7 @@ describe("HealthApiService",
 							.toBe("GET");
 						req.flush(mockDbHealth);
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const dbHealth: DatabaseHealthResponse | undefined =
 							query.data();
@@ -279,17 +264,13 @@ describe("HealthApiService",
 							TestBed.runInInjectionContext(
 								() => service.getDatabaseHealth());
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/database`);
 						req.flush(mockDbHealth);
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const dbHealth: DatabaseHealthResponse | undefined =
 							query.data();
@@ -307,9 +288,7 @@ describe("HealthApiService",
 							TestBed.runInInjectionContext(
 								() => service.getDatabaseHealth());
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/database`);
@@ -319,9 +298,7 @@ describe("HealthApiService",
 								statusText: "Internal Server Error"
 							});
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						expect(query.error())
 							.toBeTruthy();
@@ -358,18 +335,14 @@ describe("HealthApiService",
 							TestBed.runInInjectionContext(
 								() => service.getExternalApiHealth());
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/external-apis`);
 						expect(req.request.method)
 							.toBe("GET");
 						req.flush(mockApiHealth);
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const apiHealth: ExternalApiHealthResponse | undefined =
 							query.data();
@@ -399,17 +372,13 @@ describe("HealthApiService",
 						const query: ReturnType<typeof service.getExternalApiHealth> =
 							TestBed.runInInjectionContext(
 								() => service.getExternalApiHealth());
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/external-apis`);
 						req.flush(mockApiHealth);
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const apiHealth: ExternalApiHealthResponse | undefined =
 							query.data();
@@ -430,17 +399,13 @@ describe("HealthApiService",
 						const query: ReturnType<typeof service.getExternalApiHealth> =
 							TestBed.runInInjectionContext(
 								() => service.getExternalApiHealth());
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/external-apis`);
 						req.flush(mockExternalApis);
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const apiHealth: ExternalApiHealthResponse | undefined =
 							query.data();
@@ -456,9 +421,7 @@ describe("HealthApiService",
 							TestBed.runInInjectionContext(
 								() => service.getExternalApiHealth());
 
-						await new Promise<void>(
-							(resolve: () => void) =>
-								setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/external-apis`);
@@ -468,8 +431,7 @@ describe("HealthApiService",
 								statusText: "Bad Gateway"
 							});
 
-						await new Promise(
-							(resolve) => setTimeout(resolve, 0));
+						await flushMicrotasks();
 
 						expect(query.error())
 							.toBeTruthy();

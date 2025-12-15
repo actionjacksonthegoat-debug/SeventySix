@@ -38,11 +38,13 @@ public static class JwtTestHelper
 	/// <param name="userId">The user ID to include in claims.</param>
 	/// <param name="username">The username to include in claims.</param>
 	/// <param name="email">The email to include in claims.</param>
+	/// <param name="timeProvider">The time provider for generating expiration times.</param>
 	/// <returns>A JWT string signed with the wrong key.</returns>
 	public static string GenerateTokenWithWrongKey(
 		int userId,
 		string username,
-		string email)
+		string email,
+		TimeProvider timeProvider)
 	{
 		List<Claim> claims =
 		[
@@ -63,7 +65,7 @@ public static class JwtTestHelper
 				issuer: ValidIssuer,
 				audience: ValidAudience,
 				claims: claims,
-				expires: DateTime.UtcNow.AddMinutes(15),
+				expires: timeProvider.GetUtcNow().AddMinutes(15).UtcDateTime,
 				signingCredentials: credentials);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
@@ -74,8 +76,7 @@ public static class JwtTestHelper
 	/// The API should reject this token with 401 Unauthorized and set X-Token-Expired header.
 	/// </summary>
 	/// <param name="userId">The user ID to include in claims.</param>
-	/// <param name="username">The username to include in claims.</param>
-	/// <param name="email">The email to include in claims.</param>
+	/// <param name="timeProvider">The time provider for generating expiration times.</param>
 	/// <returns>A JWT string that has already expired.</returns>
 	/// <remarks>
 	/// Uses a wrong key to ensure the test doesn't require the real secret.
@@ -85,7 +86,8 @@ public static class JwtTestHelper
 	public static string GenerateExpiredToken(
 		int userId,
 		string username,
-		string email)
+		string email,
+		TimeProvider timeProvider)
 	{
 		List<Claim> claims =
 		[
@@ -103,14 +105,14 @@ public static class JwtTestHelper
 
 		// Create token that expired 1 hour ago
 		DateTime pastExpiration =
-			DateTime.UtcNow.AddHours(-1);
+			timeProvider.GetUtcNow().AddHours(-1).UtcDateTime;
 
 		JwtSecurityToken token =
 			new(
 				issuer: ValidIssuer,
 				audience: ValidAudience,
 				claims: claims,
-				notBefore: DateTime.UtcNow.AddHours(-2),
+				notBefore: timeProvider.GetUtcNow().AddHours(-2).UtcDateTime,
 				expires: pastExpiration,
 				signingCredentials: credentials);
 

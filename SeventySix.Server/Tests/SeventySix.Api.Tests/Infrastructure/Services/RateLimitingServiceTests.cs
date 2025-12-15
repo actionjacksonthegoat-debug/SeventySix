@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Api.Infrastructure;
 using SeventySix.ApiTracking;
@@ -62,7 +63,9 @@ public class RateLimitingServiceTests
 			});
 	}
 
-	private RateLimitingService CreateSut(ThirdPartyApiLimitSettings? settings = null)
+	private RateLimitingService CreateSut(
+		TimeProvider? timeProvider = null,
+		ThirdPartyApiLimitSettings? settings = null)
 	{
 		settings ??= new ThirdPartyApiLimitSettings
 		{
@@ -79,7 +82,7 @@ public class RateLimitingServiceTests
 			Repository,
 			TransactionManager,
 			options,
-			TimeProvider.System);
+			timeProvider ?? TimeProvider.System);
 	}
 
 	[Fact]
@@ -106,11 +109,12 @@ public class RateLimitingServiceTests
 	public async Task CanMakeRequestAsync_UnderLimit_ReturnsTrueAsync()
 	{
 		const string apiName = "TestApi";
+		FakeTimeProvider timeProvider = new();
 		RateLimitingService sut =
-			CreateSut();
+			CreateSut(timeProvider);
 
 		DateOnly today =
-			DateOnly.FromDateTime(DateTime.UtcNow);
+			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
 		ThirdPartyApiRequest request =
 			new()
@@ -139,11 +143,12 @@ public class RateLimitingServiceTests
 	public async Task CanMakeRequestAsync_AtLimit_ReturnsFalseAsync()
 	{
 		const string apiName = "TestApi";
+		FakeTimeProvider timeProvider = new();
 		RateLimitingService sut =
-			CreateSut();
+			CreateSut(timeProvider);
 
 		DateOnly today =
-			DateOnly.FromDateTime(DateTime.UtcNow);
+			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
 		ThirdPartyApiRequest request =
 			new()
@@ -173,11 +178,12 @@ public class RateLimitingServiceTests
 	{
 		const string apiName = "TestApi";
 		const string baseUrl = "https://api.test.com";
+		FakeTimeProvider timeProvider = new();
 		RateLimitingService sut =
-			CreateSut();
+			CreateSut(timeProvider);
 
 		DateOnly today =
-			DateOnly.FromDateTime(DateTime.UtcNow);
+			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -212,11 +218,12 @@ public class RateLimitingServiceTests
 	{
 		const string apiName = "TestApi";
 		const string baseUrl = "https://api.test.com";
+		FakeTimeProvider timeProvider = new();
 		RateLimitingService sut =
-			CreateSut();
+			CreateSut(timeProvider);
 
 		DateOnly today =
-			DateOnly.FromDateTime(DateTime.UtcNow);
+			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
 		ThirdPartyApiRequest request =
 			new()
@@ -258,11 +265,12 @@ public class RateLimitingServiceTests
 	{
 		const string apiName = "TestApi";
 		const string baseUrl = "https://api.test.com";
+		FakeTimeProvider timeProvider = new();
 		RateLimitingService sut =
-			CreateSut();
+			CreateSut(timeProvider);
 
 		DateOnly today =
-			DateOnly.FromDateTime(DateTime.UtcNow);
+			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
 		ThirdPartyApiRequest request =
 			new()
@@ -349,6 +357,7 @@ public class RateLimitingServiceTests
 	[Fact]
 	public async Task CanMakeRequestAsync_RespectsConfiguredLimit_WhenBrevoEmailHas250LimitAsync()
 	{
+		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiLimitSettings settings =
 			new()
 			{
@@ -369,10 +378,10 @@ public class RateLimitingServiceTests
 			};
 
 		RateLimitingService sut =
-			CreateSut(settings);
+			CreateSut(timeProvider, settings);
 
 		DateOnly today =
-			DateOnly.FromDateTime(DateTime.UtcNow);
+			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
 		ThirdPartyApiRequest existingRequest =
 			new()
@@ -380,7 +389,7 @@ public class RateLimitingServiceTests
 				ApiName = ExternalApiConstants.BrevoEmail,
 				BaseUrl = "smtp-relay.brevo.com",
 				CallCount = 249,
-				LastCalledAt = DateTime.UtcNow.AddMinutes(-5),
+				LastCalledAt = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
 				ResetDate = today
 			};
 
@@ -410,7 +419,7 @@ public class RateLimitingServiceTests
 			};
 
 		RateLimitingService sut =
-			CreateSut(settings);
+			CreateSut(null, settings);
 
 		bool canMake =
 			await sut.CanMakeRequestAsync(

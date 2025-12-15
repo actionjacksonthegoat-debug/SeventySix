@@ -28,10 +28,11 @@ namespace SeventySix.TestUtilities.Builders;
 /// </remarks>
 public class UserBuilder
 {
+	private readonly TimeProvider TimeProvider;
 	private string Username = TestUserConstants.DefaultUsername;
 	private string Email = TestUserConstants.DefaultEmail;
 	private string? FullName = TestUserConstants.DefaultFullName;
-	private DateTime CreateDate = DateTime.UtcNow;
+	private DateTime CreateDate;
 	private string? CreatedBy = TestAuditConstants.SystemUser;
 	private DateTime? ModifyDate = null;
 	private string? ModifiedBy = null;
@@ -43,6 +44,16 @@ public class UserBuilder
 	private string? Preferences = null;
 	private DateTime? LastLoginAt = null;
 	private string? LastLoginIp = null;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="UserBuilder"/> class.
+	/// </summary>
+	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	public UserBuilder(TimeProvider timeProvider)
+	{
+		TimeProvider = timeProvider;
+		CreateDate = timeProvider.GetUtcNow().UtcDateTime;
+	}
 
 	/// <summary>
 	/// Sets the username.
@@ -193,28 +204,31 @@ public class UserBuilder
 	/// <summary>
 	/// Creates a default active user.
 	/// </summary>
+	/// <param name="timeProvider">The time provider for timestamps.</param>
 	/// <returns>A new UserBuilder configured for an active user.</returns>
-	public static UserBuilder CreateActive()
+	public static UserBuilder CreateActive(TimeProvider timeProvider)
 	{
-		return new UserBuilder().WithIsActive(true);
+		return new UserBuilder(timeProvider).WithIsActive(true);
 	}
 
 	/// <summary>
 	/// Creates a default inactive user.
 	/// </summary>
+	/// <param name="timeProvider">The time provider for timestamps.</param>
 	/// <returns>A new UserBuilder configured for an inactive user.</returns>
-	public static UserBuilder CreateInactive()
+	public static UserBuilder CreateInactive(TimeProvider timeProvider)
 	{
-		return new UserBuilder().WithIsActive(false);
+		return new UserBuilder(timeProvider).WithIsActive(false);
 	}
 
 	/// <summary>
 	/// Creates a default deleted user.
 	/// </summary>
+	/// <param name="timeProvider">The time provider for timestamps.</param>
 	/// <returns>A new UserBuilder configured for a deleted user.</returns>
-	public static UserBuilder CreateDeleted()
+	public static UserBuilder CreateDeleted(TimeProvider timeProvider)
 	{
-		return new UserBuilder()
-			.WithDeletedInfo(true, DateTime.UtcNow, TestAuditConstants.SystemUser);
+		return new UserBuilder(timeProvider)
+			.WithDeletedInfo(true, timeProvider.GetUtcNow().UtcDateTime, TestAuditConstants.SystemUser);
 	}
 }

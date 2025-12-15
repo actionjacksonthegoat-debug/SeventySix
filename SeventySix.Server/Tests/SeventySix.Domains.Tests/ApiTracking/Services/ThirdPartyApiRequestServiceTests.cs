@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.ApiTracking;
 
@@ -25,6 +26,7 @@ public class ThirdPartyApiRequestServiceTests
 	public async Task GetAllAsync_ReturnsAllRequests_MappedToResponseAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		List<ThirdPartyApiRequest> entities =
 		[
 			new ThirdPartyApiRequest
@@ -33,8 +35,8 @@ public class ThirdPartyApiRequestServiceTests
 				ApiName = "ExternalAPI",
 				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 150,
-				LastCalledAt = DateTime.UtcNow.AddMinutes(-5),
-				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+				LastCalledAt = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
+				ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 			new ThirdPartyApiRequest
 			{
@@ -42,8 +44,8 @@ public class ThirdPartyApiRequestServiceTests
 				ApiName = "GoogleMaps",
 				BaseUrl = "https://maps.googleapis.com",
 				CallCount = 75,
-				LastCalledAt = DateTime.UtcNow.AddMinutes(-10),
-				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+				LastCalledAt = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10),
+				ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 		];
 
@@ -82,7 +84,8 @@ public class ThirdPartyApiRequestServiceTests
 	public async Task GetStatisticsAsync_ReturnsAggregatedStatisticsAsync()
 	{
 		// Arrange
-		DateTime now = DateTime.UtcNow;
+		FakeTimeProvider timeProvider = new();
+		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
 		List<ThirdPartyApiRequest> entities =
 		[
 			new ThirdPartyApiRequest
@@ -145,6 +148,7 @@ public class ThirdPartyApiRequestServiceTests
 	public async Task GetStatisticsAsync_HandlesNullLastCalledAtAsync()
 	{
 		// Arrange
+		FakeTimeProvider timeProvider = new();
 		List<ThirdPartyApiRequest> entities =
 		[
 			new ThirdPartyApiRequest
@@ -154,7 +158,7 @@ public class ThirdPartyApiRequestServiceTests
 				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 150,
 				LastCalledAt = null,
-				ResetDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+				ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 		];
 
