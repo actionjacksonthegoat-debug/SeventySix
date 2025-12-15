@@ -158,7 +158,7 @@ export default [
 				{
 					patterns: [
 						{
-							group: ["@admin/*", "@game/*", "@features/*", "../features/*", "../../features/*"],
+							group: ["@admin/*", "@sandbox/*", "@developer/*", "@features/*", "../features/*", "../../features/*"],
 							message:
 								"Infrastructure must not import from feature modules. Keep infrastructure independent (Dependency Inversion pattern)."
 						}

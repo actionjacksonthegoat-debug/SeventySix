@@ -2,16 +2,18 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 
+/**
+ * Architecture Guide Page
+ * Documentation for project architecture patterns and guidelines
+ */
 @Component(
 	{
-		selector: "app-rv-camper",
+		selector: "app-architecture-guide",
 		imports: [MatCardModule, MatIconModule],
-		templateUrl: "./rv-camper.html",
-		styleUrl: "./rv-camper.scss",
+		templateUrl: "./architecture-guide.html",
+		styleUrl: "./architecture-guide.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
 	})
-export class RVCamper
+export class ArchitectureGuideComponent
 {
-	readonly title: string = "RV Camper Projects";
-	readonly description: string = "Design and planning workspace for RV camper modifications and improvements.";
 }

@@ -16,7 +16,15 @@ export const DEVELOPER_ROUTES: Routes =
 			path: "style-guide",
 			loadComponent: () =>
 				import("./pages/style-guide/style-guide").then(
-					(m) => m.StyleGuideComponent),
+					(module) => module.StyleGuideComponent),
 			title: "Style Guide - SeventySix"
+		},
+		{
+			path: "architecture-guide",
+			loadComponent: () =>
+				import("./pages/architecture-guide/architecture-guide").then(
+					(module) =>
+						module.ArchitectureGuideComponent),
+			title: "Architecture Guide - SeventySix"
 		}
 	];

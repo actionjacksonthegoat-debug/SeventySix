@@ -14,7 +14,7 @@ interface QuickAction
 
 /**
  * Home page
- * Displays navigation to 3 main features: WorldMap, Physics, RVCamper
+ * Displays navigation to Sandbox feature
  */
 @Component(
 	{
@@ -29,25 +29,11 @@ export class HomeComponent
 	protected readonly quickActions: QuickAction[] =
 		[
 			{
-				title: "World Map",
-				description: "Interactive game world map and exploration features",
-				icon: "public",
-				route: "/game",
+				title: "Sandbox",
+				description: "Experimentation area for testing new features and ideas",
+				icon: "science",
+				route: "/sandbox",
 				themeClass: "theme-primary"
-			},
-			{
-				title: "Physics",
-				description: "Electricity generation from buoyancy and calculations",
-				icon: "bolt",
-				route: "/physics",
-				themeClass: "theme-secondary"
-			},
-			{
-				title: "RV Camper",
-				description: "Design and planning workspace for RV modifications",
-				icon: "rv_hookup",
-				route: "/rv-camper",
-				themeClass: "theme-tertiary"
 			}
 		];
 }

@@ -34,62 +34,31 @@ describe("HomeComponent",
 					.toBeTruthy();
 			});
 
-		it("should have 3 quick actions",
+		it("should have 1 quick action",
 			() =>
 			{
 				expect(component["quickActions"])
 					.toBeDefined();
 				expect(component["quickActions"].length)
-					.toBe(3);
+					.toBe(1);
 			});
 
-		it("should have WorldMap action with primary theme",
+		it("should have Sandbox action with primary theme",
 			() =>
 			{
-				const worldMapAction: { title: string; themeClass: string; route: string; } | undefined =
+				const sandboxAction: { title: string; themeClass: string; route: string; } | undefined =
 					component["quickActions"].find(
-						(a: { route: string; }) =>
-							a.route === "/game");
-				expect(worldMapAction)
+						(action: { route: string; }) =>
+							action.route === "/sandbox");
+				expect(sandboxAction)
 					.toBeDefined();
-				expect(worldMapAction?.title)
-					.toBe("World Map");
-				expect(worldMapAction?.themeClass)
+				expect(sandboxAction?.title)
+					.toBe("Sandbox");
+				expect(sandboxAction?.themeClass)
 					.toBe("theme-primary");
 			});
 
-		it("should have Physics action with secondary theme",
-			() =>
-			{
-				const physicsAction: { title: string; themeClass: string; route: string; } | undefined =
-					component["quickActions"].find(
-						(a: { route: string; }) =>
-							a.route === "/physics");
-				expect(physicsAction)
-					.toBeDefined();
-				expect(physicsAction?.title)
-					.toBe("Physics");
-				expect(physicsAction?.themeClass)
-					.toBe("theme-secondary");
-			});
-
-		it("should have RVCamper action with tertiary theme",
-			() =>
-			{
-				const rvAction: { title: string; themeClass: string; route: string; } | undefined =
-					component["quickActions"]
-						.find(
-							(a: { route: string; }) =>
-								a.route === "/rv-camper");
-				expect(rvAction)
-					.toBeDefined();
-				expect(rvAction?.title)
-					.toBe("RV Camper");
-				expect(rvAction?.themeClass)
-					.toBe("theme-tertiary");
-			});
-
-		it("should render all 3 feature cards",
+		it("should render the feature card",
 			() =>
 			{
 				fixture.detectChanges();
@@ -98,10 +67,10 @@ describe("HomeComponent",
 				const cards: NodeListOf<Element> =
 					compiled.querySelectorAll(".feature-card");
 				expect(cards.length)
-					.toBe(3);
+					.toBe(1);
 			});
 
-		it("should apply correct theme classes to cards",
+		it("should apply primary theme class to card",
 			() =>
 			{
 				fixture.detectChanges();
@@ -109,15 +78,7 @@ describe("HomeComponent",
 					fixture.nativeElement;
 				const primaryCard: Element | null =
 					compiled.querySelector(".theme-primary");
-				const secondaryCard: Element | null =
-					compiled.querySelector(".theme-secondary");
-				const tertiaryCard: Element | null =
-					compiled.querySelector(".theme-tertiary");
 				expect(primaryCard)
-					.toBeTruthy();
-				expect(secondaryCard)
-					.toBeTruthy();
-				expect(tertiaryCard)
 					.toBeTruthy();
 			});
 	});

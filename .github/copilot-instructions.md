@@ -42,13 +42,13 @@ SeventySix.Domains    → Bounded contexts (refs Shared only)
 SeventySix.Api        → HTTP layer (refs Domains)
 ```
 
-**Bounded Contexts**: Identity, Logging, ApiTracking, ElectronicNotifications, Game (future)
+**Bounded Contexts**: Identity, Logging, ApiTracking, ElectronicNotifications
 
 ### Client Structure (SeventySix.Client/src/app/)
 
 ```
 shared/     → @shared/*   (cross-cutting, NO domain refs)
-domains/    → @admin/*, @game/*, @commerce/*
+domains/    → @admin/*, @sandbox/*, @developer/*
 ```
 
 ### Import Rules (CRITICAL)
@@ -57,12 +57,12 @@ domains/    → @admin/*, @game/*, @commerce/*
 
 **Client**: Each domain imports ONLY `@shared/*` + itself. NEVER another domain.
 
-| From → To | @shared | @admin | @game | @commerce |
-| --------- | ------- | ------ | ----- | --------- |
-| @shared   | ✅      | ❌     | ❌    | ❌        |
-| @admin    | ✅      | ✅     | ❌    | ❌        |
-| @game     | ✅      | ❌     | ✅    | ❌        |
-| @commerce | ✅      | ❌     | ❌    | ✅        |
+| From → To  | @shared | @admin | @sandbox | @developer |
+| ---------- | ------- | ------ | -------- | ---------- |
+| @shared    | ✅      | ❌     | ❌       | ❌         |
+| @admin     | ✅      | ✅     | ❌       | ❌         |
+| @sandbox   | ✅      | ❌     | ✅       | ❌         |
+| @developer | ✅      | ❌     | ❌       | ✅         |
 
 **Cross-domain features** → Use `integrations/` folder (only place allowed to import multiple domains)
 

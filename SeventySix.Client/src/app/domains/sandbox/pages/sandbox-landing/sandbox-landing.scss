@@ -1,0 +1,22 @@
+@use "variables" as vars;
+@use "mixins" as mixins;
+
+.sandbox-container {
+	padding: vars.$spacing-2xl;
+	max-width: 50rem;
+	margin: 0 auto;
+}
+
+.sandbox-card {
+	background-color: var(--mat-sys-surface-container);
+}
+
+.sandbox-icon {
+	@include mixins.icon-size(vars.$icon-size-xl);
+	color: var(--mat-sys-primary);
+	margin-right: vars.$spacing-md;
+}
+
+h1 {
+	margin: 0;
+}

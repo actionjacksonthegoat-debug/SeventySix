@@ -9,7 +9,7 @@ Create a new Angular component with these requirements:
 
 ## Domain Selection (REQUIRED)
 
-Ask user which domain: admin, game, commerce (or shared for cross-cutting)
+Ask user which domain: admin, sandbox, developer (or shared for cross-cutting)
 
 ## Import Boundaries (CRITICAL)
 
