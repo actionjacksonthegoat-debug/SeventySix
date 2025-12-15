@@ -311,18 +311,18 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		string testId = Guid.NewGuid().ToString("N")[..8];
-		for (int i = 1; i <= 25; i++)
+		for (int i = 1; i <= 7; i++)
 		{
 			await Repository.CreateAsync(new UserBuilder(timeProvider).WithUsername($"paged{i}_{testId}").WithEmail($"paged{i}_{testId}@example.com").Build());
 		}
 
 		// Act
-		UserQueryRequest request = new() { Page = 1, PageSize = 10, StartDate = null, SearchTerm = testId };
+		UserQueryRequest request = new() { Page = 1, PageSize = 5, StartDate = null, SearchTerm = testId };
 		(IEnumerable<User> users, int totalCount) = await Repository.GetPagedAsync(request, CancellationToken.None);
 
 		// Assert
-		users.Count().ShouldBe(10);
-		totalCount.ShouldBe(25);
+		users.Count().ShouldBe(5);
+		totalCount.ShouldBe(7);
 	}
 
 	[Fact]

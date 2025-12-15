@@ -1,4 +1,4 @@
-// <copyright file="LoggingExtensions.cs" company="SeventySix">
+// <copyright file="LoggingRegistration.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -15,7 +15,7 @@ using SeventySix.Shared.Persistence;
 namespace SeventySix.Registration;
 
 /// <summary>DI extension methods for the Logging bounded context.</summary>
-public static class LoggingExtensions
+public static class LoggingRegistration
 {
 	/// <summary>Registers Logging bounded context services with the DI container.</summary>
 	/// <param name="services">The service collection to register services with.</param>

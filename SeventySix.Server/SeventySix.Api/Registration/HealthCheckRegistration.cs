@@ -1,4 +1,4 @@
-// <copyright file="HealthCheckExtensions.cs" company="SeventySix">
+// <copyright file="HealthCheckRegistration.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -8,16 +8,29 @@ using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
 
-namespace SeventySix.Api.Extensions;
+namespace SeventySix.Api.Registration;
 
 /// <summary>Extension methods for health check configuration.</summary>
 public static class HealthCheckExtensions
 {
 	/// <summary>Adds comprehensive health checks for all bounded contexts.</summary>
 	/// <param name="services">The service collection.</param>
+	/// <param name="configuration">The application configuration.</param>
 	/// <returns>The service collection for chaining.</returns>
-	public static IServiceCollection AddApplicationHealthChecks(this IServiceCollection services)
+	public static IServiceCollection AddApplicationHealthChecks(
+		this IServiceCollection services,
+		IConfiguration configuration)
 	{
+		// Skip health checks in Test environment for performance
+		bool enabled =
+			configuration.GetValue<bool?>("HealthChecks:Enabled") ?? true;
+		if (!enabled)
+		{
+			// Add minimal health checks service (required by some middleware)
+			services.AddHealthChecks();
+			return services;
+		}
+
 		services.AddHealthChecks()
 			.AddDbContextCheck<IdentityDbContext>(
 				name: "identity-database",

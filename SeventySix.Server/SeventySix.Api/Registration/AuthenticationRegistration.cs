@@ -1,4 +1,4 @@
-// <copyright file="AuthenticationExtensions.cs" company="SeventySix">
+// <copyright file="AuthenticationRegistration.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -9,7 +9,7 @@ using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
 
-namespace SeventySix.Api.Extensions;
+namespace SeventySix.Api.Registration;
 
 /// <summary>
 /// Extension methods for configuring JWT Bearer authentication.

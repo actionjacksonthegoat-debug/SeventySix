@@ -1,4 +1,4 @@
-// <copyright file="ApiTrackingExtensions.cs" company="SeventySix">
+// <copyright file="ApiTrackingRegistration.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -29,7 +29,7 @@ namespace SeventySix.Registration;
 /// - IThirdPartyApiRequestRepository → ThirdPartyApiRequestRepository: Data access layer
 /// - ApiTrackingHealthCheck: Health check implementation using Wolverine CQRS.
 /// </remarks>
-public static class ApiTrackingExtensions
+public static class ApiTrackingRegistration
 {
 	/// <summary>
 	/// Registers ApiTracking bounded context services with the dependency injection container.

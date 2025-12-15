@@ -1,4 +1,4 @@
-// <copyright file="ElectronicNotificationsExtensions.cs" company="SeventySix">
+// <copyright file="ElectronicNotificationsRegistration.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -25,7 +25,7 @@ namespace SeventySix.Registration;
 /// - EmailSettings: Email configuration from appsettings.json
 /// - IEmailService → EmailService: Email notification service using MailKit.
 /// </remarks>
-public static class ElectronicNotificationsExtensions
+public static class ElectronicNotificationsRegistration
 {
 	/// <summary>
 	/// Registers ElectronicNotifications bounded context services with the dependency injection container.

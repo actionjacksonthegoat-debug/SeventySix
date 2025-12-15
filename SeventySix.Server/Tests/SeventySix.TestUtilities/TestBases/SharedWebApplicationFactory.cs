@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
@@ -42,7 +42,9 @@ public sealed class SharedWebApplicationFactory<TProgram> : WebApplicationFactor
 	/// <inheritdoc/>
 	protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
 	{
-		// Set environment to Test to load appsettings.Test.json
+		// Set environment to Test - this triggers:
+		// - Silent logging in SerilogExtensions (Error+ only, no sinks)
+		// - Disabled OpenTelemetry, HealthChecks, BackgroundJobs, ResponseCompression
 		builder.UseEnvironment("Test");
 
 		// Skip migration checks in tests - fixture already applies migrations
@@ -56,29 +58,20 @@ public sealed class SharedWebApplicationFactory<TProgram> : WebApplicationFactor
 			});
 		});
 
+		// Suppress Microsoft.Extensions.Logging providers (fallback logging)
+		builder.ConfigureLogging(logging =>
+		{
+			logging.ClearProviders();
+			logging.SetMinimumLevel(LogLevel.Error);
+		});
+
 		builder.ConfigureServices(services =>
 		{
-			// Remove existing DbContext registrations
+			// Replace DbContexts with test database connection string
 			services.RemoveAll<DbContextOptions<IdentityDbContext>>();
-			services.RemoveAll<IdentityDbContext>();
 			services.RemoveAll<DbContextOptions<LoggingDbContext>>();
-			services.RemoveAll<LoggingDbContext>();
 			services.RemoveAll<DbContextOptions<ApiTrackingDbContext>>();
-			services.RemoveAll<ApiTrackingDbContext>();
 
-			// Remove Jaeger health check for tests (no Jaeger in test environment)
-			// This prevents 3-second timeout delays per integration test
-			services.Configure<HealthCheckServiceOptions>(options =>
-			{
-				HealthCheckRegistration? jaeger =
-					options.Registrations.FirstOrDefault(registration => registration.Name == "jaeger");
-				if (jaeger is not null)
-				{
-					options.Registrations.Remove(jaeger);
-				}
-			});
-
-			// Add DbContexts with test database connection string
 			services.AddDbContext<IdentityDbContext>(options =>
 				options.UseNpgsql(ConnectionString));
 			services.AddDbContext<LoggingDbContext>(options =>

@@ -5,7 +5,7 @@
  * - Account: User requests permissions for themselves
  * - Admin: Admins manage/approve permission requests
  *
- * Per Implementation.md §5: Cross-domain features use integration layer.
+ * Cross-domain features use integration layer.
  */
 
 import { components } from "@shared/generated-open-api/generated-open-api";

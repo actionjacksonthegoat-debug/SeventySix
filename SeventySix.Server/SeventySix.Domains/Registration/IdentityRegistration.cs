@@ -1,4 +1,4 @@
-// <copyright file="IdentityExtensions.cs" company="SeventySix">
+// <copyright file="IdentityRegistration.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -46,7 +46,7 @@ namespace SeventySix.Registration;
 /// - Traditional services: ITokenService, IOAuthService, IPermissionRequestService
 /// - Validators: Command/query validators with FluentValidation.
 /// </remarks>
-public static class IdentityExtensions
+public static class IdentityRegistration
 {
 	/// <summary>
 	/// Registers Identity bounded context services with the dependency injection container.

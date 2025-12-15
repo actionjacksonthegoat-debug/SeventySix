@@ -83,19 +83,6 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		// Note: Explicit DisposeAsync happens at end of scope
 	}
 
-	private async Task WaitForBatchProcessingAsync() => await Task.Delay(100); // Allow batch to complete
-
-	private async Task AssertSingleLogAsync(string expectedLevel, string expectedMessage)
-	{
-		await WaitForBatchProcessingAsync();
-		LogQueryRequest request = new();
-		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
-		Assert.Single(logs);
-		Log log = logs.First();
-		Assert.Equal(expectedLevel, log.LogLevel);
-		Assert.Equal(expectedMessage, log.Message);
-	}
-
 	[Fact]
 	public async Task Emit_WarningLevel_WritesToDatabase_VerifiedAsync()
 	{

@@ -2,22 +2,20 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
-using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
 
 /// <summary>
 /// Integration tests for TokenService.
-/// Tests JWT generation, refresh token lifecycle, and validation using real PostgreSQL.
+/// Tests refresh token lifecycle, validation, and database persistence using real PostgreSQL.
+/// Pure JWT generation tests are in TokenServiceUnitTests.cs.
 /// </summary>
 [Collection("DatabaseTests")]
 public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
@@ -63,133 +61,6 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 			TestTimeProviderBuilder.CreateDefault());
 	}
 
-	#region GenerateAccessToken Tests
-
-	[Fact]
-	public void GenerateAccessToken_ValidInput_ReturnsValidJwt()
-	{
-		// Arrange
-		using IdentityDbContext context = CreateIdentityDbContext();
-		TokenService service = CreateService(context);
-
-		// Act
-		string token =
-			GenerateTestAccessToken(
-				service,
-				roles: [TestRoleConstants.Developer, TestRoleConstants.Admin]);
-
-		// Assert
-		Assert.NotNull(token);
-		Assert.NotEmpty(token);
-
-		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
-
-		Assert.Equal(JwtOptions.Value.Issuer, jwt.Issuer);
-		Assert.Contains(JwtOptions.Value.Audience, jwt.Audiences);
-	}
-
-	[Fact]
-	public void GenerateAccessToken_ContainsUserIdClaim()
-	{
-		// Arrange
-		using IdentityDbContext context = CreateIdentityDbContext();
-		TokenService service = CreateService(context);
-
-		// Act
-		string token =
-			GenerateTestAccessToken(
-				service,
-				userId: 42,
-				roles: [TestRoleConstants.Developer]);
-
-		// Assert
-		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
-
-		Claim? subClaim =
-			jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
-
-		Assert.NotNull(subClaim);
-		Assert.Equal("42", subClaim.Value);
-	}
-
-	[Fact]
-	public void GenerateAccessToken_ContainsRoleClaims()
-	{
-		// Arrange
-		using IdentityDbContext context = CreateIdentityDbContext();
-		TokenService service = CreateService(context);
-
-		// Act
-		string token =
-			GenerateTestAccessToken(
-				service,
-				roles: [TestRoleConstants.Developer, TestRoleConstants.Admin]);
-
-		// Assert
-		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
-
-		List<string> roleClaims =
-			jwt.Claims
-				.Where(c => c.Type == ClaimTypes.Role)
-				.Select(c => c.Value)
-				.ToList();
-
-		Assert.Contains(TestRoleConstants.Developer, roleClaims);
-		Assert.Contains(TestRoleConstants.Admin, roleClaims);
-	}
-
-	[Fact]
-	public void GenerateAccessToken_ExpiresInConfiguredTime()
-	{
-		// Arrange
-		using IdentityDbContext context = CreateIdentityDbContext();
-		TokenService service = CreateService(context);
-
-		// Act
-		string token = GenerateTestAccessToken(service);
-
-		// Assert
-		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
-
-		DateTime expectedExpiry =
-			FixedTime
-				.AddMinutes(JwtOptions.Value.AccessTokenExpirationMinutes)
-				.UtcDateTime;
-
-		Assert.True(
-			Math.Abs((jwt.ValidTo - expectedExpiry).TotalSeconds) < 1,
-			$"Expected expiry around {expectedExpiry}, got {jwt.ValidTo}");
-	}
-
-	[Theory]
-	[InlineData("John Doe", "John Doe")]
-	[InlineData(null, "")]
-	public void GenerateAccessToken_ContainsGivenNameClaim_WithExpectedValue(
-		string? fullName,
-		string expectedClaimValue)
-	{
-		// Arrange
-		using IdentityDbContext context = CreateIdentityDbContext();
-		TokenService service = CreateService(context);
-
-		// Act
-		string token = GenerateTestAccessToken(service, fullName: fullName);
-
-		// Assert
-		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
-
-		Claim? givenNameClaim =
-			jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.GivenName);
-
-		Assert.NotNull(givenNameClaim);
-		Assert.Equal(expectedClaimValue, givenNameClaim.Value);
-	}
-	#endregion
 	#region GenerateRefreshTokenAsync Tests
 
 	[Theory]
@@ -686,23 +557,6 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture) : DataPo
 	}
 	#endregion
 	#region Helper Methods
-
-	/// <summary>
-	/// Helper to generate access token for tests.
-	/// </summary>
-	private string GenerateTestAccessToken(
-		TokenService service,
-		int userId = 1,
-		string username = "testuser",
-		string email = "test@example.com",
-		string? fullName = null,
-		List<string>? roles = null) =>
-		service.GenerateAccessToken(
-			userId,
-			username,
-			email,
-			fullName,
-			roles ?? []);
 
 	/// <summary>
 	/// Creates a service with a test user already created.

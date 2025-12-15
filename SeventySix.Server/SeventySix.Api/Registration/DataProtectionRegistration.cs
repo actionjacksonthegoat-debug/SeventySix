@@ -1,10 +1,10 @@
-// <copyright file="DataProtectionExtensions.cs" company="SeventySix">
+// <copyright file="DataProtectionRegistration.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
 using Microsoft.AspNetCore.DataProtection;
 
-namespace SeventySix.Api.Extensions;
+namespace SeventySix.Api.Registration;
 
 /// <summary>
 /// Extension methods for configuring ASP.NET Core Data Protection.

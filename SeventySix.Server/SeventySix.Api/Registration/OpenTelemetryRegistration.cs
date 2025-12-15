@@ -1,4 +1,4 @@
-// <copyright file="OpenTelemetryExtensions.cs" company="SeventySix">
+// <copyright file="OpenTelemetryRegistration.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -6,7 +6,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-namespace SeventySix.Api.Extensions;
+namespace SeventySix.Api.Registration;
 
 /// <summary>Extension methods for OpenTelemetry configuration.</summary>
 public static class OpenTelemetryExtensions
@@ -21,6 +21,14 @@ public static class OpenTelemetryExtensions
 		IConfiguration configuration,
 		string environment)
 	{
+		// Skip OpenTelemetry in Test environment for performance
+		bool enabled =
+			configuration.GetValue<bool?>("OpenTelemetry:Enabled") ?? true;
+		if (!enabled)
+		{
+			return services;
+		}
+
 		string serviceName =
 			configuration.GetValue<string>("OpenTelemetry:ServiceName")
 			?? "SeventySix.Api";

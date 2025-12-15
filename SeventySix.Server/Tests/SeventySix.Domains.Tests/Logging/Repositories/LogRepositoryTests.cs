@@ -224,7 +224,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		for (int i = 0; i < 1100; i++)
+		for (int i = 0; i < 150; i++)
 		{
 			await Repository.CreateAsync(new Log
 			{

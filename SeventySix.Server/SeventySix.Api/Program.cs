@@ -59,8 +59,11 @@ if (builder.Environment.IsDevelopment())
 // Configure Serilog for structured logging
 // Outputs: Console + Rolling file (daily rotation) + Database (Warning+ levels)
 // Note: Database sink is added after building the app to access IServiceProvider
+// In Test environment, configures silent logging (no sinks) for performance
 Serilog.Log.Logger = new LoggerConfiguration()
-	.ConfigureBaseSerilog(builder.Configuration)
+	.ConfigureBaseSerilog(
+		builder.Configuration,
+		builder.Environment.EnvironmentName)
 	.CreateLogger();
 
 builder.Host.UseSerilog();
@@ -77,7 +80,7 @@ builder.Host.UseWolverine(options =>
 
 // Services
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddApplicationHealthChecks();
+builder.Services.AddApplicationHealthChecks(builder.Configuration);
 builder.Services.AddConfiguredOpenTelemetry(
 	builder.Configuration,
 	builder.Environment.EnvironmentName);
@@ -109,7 +112,7 @@ builder.Services.AddElectronicNotificationsDomain(builder.Configuration);
 builder.Services.AddBackgroundJobs(builder.Configuration);
 
 // Add response compression (Brotli + Gzip)
-builder.Services.AddOptimizedResponseCompression();
+builder.Services.AddOptimizedResponseCompression(builder.Configuration);
 
 // Add output caching with auto-discovery from configuration
 builder.Services.AddConfiguredOutputCache(builder.Configuration);
@@ -170,7 +173,13 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseRateLimiter();
 
 // Enable response compression
-app.UseResponseCompression();
+bool responseCompressionEnabled =
+	builder.Configuration.GetValue<bool?>("ResponseCompression:Enabled") ?? true;
+
+if (responseCompressionEnabled)
+{
+	app.UseResponseCompression();
+}
 
 // Enable response caching
 app.UseResponseCaching();
@@ -200,7 +209,15 @@ app.UseAuthorization();
 
 // Endpoints
 app.MapHealthCheckEndpoints();
-app.MapPrometheusScrapingEndpoint();
+
+bool openTelemetryEnabled =
+	builder.Configuration.GetValue<bool?>("OpenTelemetry:Enabled") ?? true;
+
+if (openTelemetryEnabled)
+{
+	app.MapPrometheusScrapingEndpoint();
+}
+
 app.MapControllers();
 
 app.Run();

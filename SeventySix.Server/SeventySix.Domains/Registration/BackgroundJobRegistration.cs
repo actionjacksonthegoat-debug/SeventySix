@@ -1,4 +1,4 @@
-// <copyright file="BackgroundJobExtensions.cs" company="SeventySix">
+// <copyright file="BackgroundJobRegistration.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
@@ -32,7 +32,7 @@ namespace SeventySix.Registration;
 /// builder.Services.AddBackgroundJobs(builder.Configuration);
 /// </code>
 /// </remarks>
-public static class BackgroundJobExtensions
+public static class BackgroundJobRegistration
 {
 	/// <summary>
 	/// Registers all background jobs with their settings from configuration.
@@ -44,6 +44,14 @@ public static class BackgroundJobExtensions
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
+		// Skip all background jobs if disabled (e.g., in Test environment)
+		bool enabled =
+			configuration.GetValue<bool?>("BackgroundJobs:Enabled") ?? true;
+		if (!enabled)
+		{
+			return services;
+		}
+
 		// RefreshTokenCleanupJob - Periodic cleanup of expired refresh tokens
 		// Settings: RefreshTokenCleanup section in appsettings.json
 		services.Configure<RefreshTokenCleanupSettings>(

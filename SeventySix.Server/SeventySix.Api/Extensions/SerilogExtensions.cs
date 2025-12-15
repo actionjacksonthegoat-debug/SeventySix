@@ -27,14 +27,29 @@ public static class SerilogExtensions
 	/// <summary>
 	/// Configures base Serilog settings (enrichers, console, file sinks).
 	/// Use before app.Build() when database sink is not yet available.
+	/// In Test environment, configures silent logging (Error+ only, no sinks).
 	/// </summary>
 	/// <param name="config">The logger configuration.</param>
 	/// <param name="configuration">The application configuration.</param>
+	/// <param name="environment">The environment name (defaults to Production).</param>
 	/// <returns>The configured logger configuration.</returns>
 	public static LoggerConfiguration ConfigureBaseSerilog(
 		this LoggerConfiguration config,
-		IConfiguration configuration)
+		IConfiguration configuration,
+		string? environment = null)
 	{
+		// In Test environment, suppress all logging below Error to eliminate noise
+		if (string.Equals(environment, "Test", StringComparison.OrdinalIgnoreCase))
+		{
+			return config
+				.MinimumLevel.Error()
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Fatal)
+				.MinimumLevel.Override("System", LogEventLevel.Fatal)
+				.MinimumLevel.Override("Wolverine", LogEventLevel.Fatal)
+				.MinimumLevel.Override("JasperFx", LogEventLevel.Fatal);
+			// No sinks in Test - avoids console/file I/O overhead
+		}
+
 		return config
 			.ReadFrom.Configuration(configuration)
 			.ConfigureEnrichers()
@@ -55,6 +70,12 @@ public static class SerilogExtensions
 		IServiceProvider serviceProvider,
 		string environment)
 	{
+		// Skip database sink in Test environment - tests control their own logging
+		if (string.Equals(environment, "Test", StringComparison.OrdinalIgnoreCase))
+		{
+			return;
+		}
+
 		Serilog.Log.Logger = new LoggerConfiguration()
 			.ReadFrom.Configuration(configuration)
 			.ConfigureEnrichers()
@@ -93,8 +114,9 @@ public static class SerilogExtensions
 
 	private static LoggerConfiguration ConfigureMinimumLevels(this LoggerConfiguration config)
 	{
+		// NOTE: MinimumLevel.Default is controlled by appsettings.json via ReadFrom.Configuration()
+		// Only set overrides here for framework namespaces that are too verbose at default levels
 		return config
-			.MinimumLevel.Information()
 			.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
 			.MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
 			.MinimumLevel.Override("System", LogEventLevel.Warning);
