@@ -13,17 +13,16 @@ namespace SeventySix.Identity;
 /// Encapsulates DbContext operations for email verification tokens.
 /// Internal visibility enforces service facade pattern.
 /// </remarks>
-internal class EmailVerificationTokenRepository(
-	IdentityDbContext context) : IEmailVerificationTokenRepository
+internal class EmailVerificationTokenRepository(IdentityDbContext context)
+	: IEmailVerificationTokenRepository
 {
 	/// <inheritdoc/>
 	public async Task<EmailVerificationToken?> GetByTokenAsync(
 		string token,
 		CancellationToken cancellationToken = default) =>
-		await context.EmailVerificationTokens
-			.FirstOrDefaultAsync(
-				verificationToken => verificationToken.Token == token,
-				cancellationToken);
+		await context.EmailVerificationTokens.FirstOrDefaultAsync(
+			verificationToken => verificationToken.Token == token,
+			cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task CreateAsync(
@@ -39,11 +38,12 @@ internal class EmailVerificationTokenRepository(
 		string email,
 		CancellationToken cancellationToken = default)
 	{
-		string lowerEmail =
-			email.ToLower();
+		string lowerEmail = email.ToLower();
 
-		return await context.EmailVerificationTokens
-			.Where(token => token.Email.ToLower() == lowerEmail)
+		return await context
+			.EmailVerificationTokens
+			.Where(token =>
+				token.Email.ToLower() == lowerEmail)
 			.Where(token => !token.IsUsed)
 			.ExecuteUpdateAsync(
 				setters => setters.SetProperty(token => token.IsUsed, true),
@@ -53,6 +53,5 @@ internal class EmailVerificationTokenRepository(
 	/// <inheritdoc/>
 	public async Task SaveChangesAsync(
 		EmailVerificationToken token,
-		CancellationToken cancellationToken = default) =>
-		await context.SaveChangesAsync(cancellationToken);
+		CancellationToken cancellationToken = default) => await context.SaveChangesAsync(cancellationToken);
 }

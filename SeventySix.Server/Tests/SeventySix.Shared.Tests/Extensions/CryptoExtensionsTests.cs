@@ -47,7 +47,8 @@ public class CryptoExtensionsTests
 			CryptoExtensions.GenerateSecureToken(sizeInBytes);
 
 		// Assert - Base64 encodes 3 bytes into 4 chars, with potential padding
-		byte[] decoded = Convert.FromBase64String(token);
+		byte[] decoded =
+			Convert.FromBase64String(token);
 		Assert.Equal(sizeInBytes, decoded.Length);
 	}
 
@@ -146,7 +147,8 @@ public class CryptoExtensionsTests
 	{
 		try
 		{
-			_ = Convert.FromBase64String(input);
+			_ =
+				Convert.FromBase64String(input);
 			return true;
 		}
 		catch (FormatException)

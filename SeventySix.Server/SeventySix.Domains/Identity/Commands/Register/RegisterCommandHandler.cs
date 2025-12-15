@@ -55,7 +55,8 @@ public static class RegisterCommandHandler
 				rememberMe: false,
 				cancellationToken);
 		}
-		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
+		catch (DbUpdateException exception)
+			when (exception.IsDuplicateKeyViolation())
 		{
 			return DuplicateKeyViolationHandler.HandleAsAuthResult(
 				exception,

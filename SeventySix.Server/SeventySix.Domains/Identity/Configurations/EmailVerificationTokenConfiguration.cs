@@ -10,44 +10,31 @@ namespace SeventySix.Identity;
 /// <summary>
 /// EF Core configuration for EmailVerificationToken entity.
 /// </summary>
-public class EmailVerificationTokenConfiguration : IEntityTypeConfiguration<EmailVerificationToken>
+public class EmailVerificationTokenConfiguration
+	: IEntityTypeConfiguration<EmailVerificationToken>
 {
 	/// <inheritdoc/>
 	public void Configure(EntityTypeBuilder<EmailVerificationToken> builder)
 	{
-		builder.ToTable(
-			"EmailVerificationTokens",
-			"identity");
+		builder.ToTable("EmailVerificationTokens", "identity");
 
 		builder.HasKey(token => token.Id);
 
-		builder
-			.Property(token => token.Email)
-			.HasMaxLength(255)
-			.IsRequired();
+		builder.Property(token => token.Email).HasMaxLength(255).IsRequired();
 
-		builder
-			.Property(token => token.Token)
-			.HasMaxLength(128)
-			.IsRequired();
+		builder.Property(token => token.Token).HasMaxLength(128).IsRequired();
 
 		// ExpiresAt - Required
-		builder.Property(token => token.ExpiresAt)
-			.IsRequired();
+		builder.Property(token => token.ExpiresAt).IsRequired();
 
 		// CreateDate - Required (auto-set by AuditInterceptor for ICreatableEntity)
-		builder.Property(token => token.CreateDate)
-			.IsRequired();
+		builder.Property(token => token.CreateDate).IsRequired();
 
 		// IsUsed - Required
-		builder.Property(token => token.IsUsed)
-			.IsRequired();
+		builder.Property(token => token.IsUsed).IsRequired();
 
-		builder
-			.HasIndex(token => token.Token)
-			.IsUnique();
+		builder.HasIndex(token => token.Token).IsUnique();
 
-		builder
-			.HasIndex(token => token.Email);
+		builder.HasIndex(token => token.Email);
 	}
 }

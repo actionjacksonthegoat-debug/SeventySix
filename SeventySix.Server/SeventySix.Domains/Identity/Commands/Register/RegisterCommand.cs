@@ -9,6 +9,4 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <param name="Request">Registration details.</param>
 /// <param name="ClientIp">Client IP for token tracking.</param>
-public record RegisterCommand(
-	RegisterRequest Request,
-	string? ClientIp);
+public record RegisterCommand(RegisterRequest Request, string? ClientIp);

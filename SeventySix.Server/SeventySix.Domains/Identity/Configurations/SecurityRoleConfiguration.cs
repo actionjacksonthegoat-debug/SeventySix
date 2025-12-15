@@ -31,16 +31,10 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 
 		builder.HasKey(role => role.Id);
 
-		builder
-			.Property(role => role.Id)
-			.UseIdentityColumn()
-			.IsRequired();
+		builder.Property(role => role.Id).UseIdentityColumn().IsRequired();
 
 		// Name - Required, unique
-		builder
-			.Property(role => role.Name)
-			.IsRequired()
-			.HasMaxLength(50);
+		builder.Property(role => role.Name).IsRequired().HasMaxLength(50);
 
 		builder
 			.HasIndex(role => role.Name)
@@ -48,9 +42,7 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 			.HasDatabaseName("IX_SecurityRoles_Name");
 
 		// Description - Optional
-		builder
-			.Property(role => role.Description)
-			.HasMaxLength(256);
+		builder.Property(role => role.Description).HasMaxLength(256);
 
 		// IsActive - Required, defaults to true
 		builder
@@ -73,14 +65,15 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 				Name = RoleConstants.User,
 				Description = "Standard user access",
 				IsActive = true,
-				CreateDate = new DateTime(
-					2025,
-					1,
-					1,
-					0,
-					0,
-					0,
-					DateTimeKind.Utc),
+				CreateDate =
+			new DateTime(
+				2025,
+				1,
+				1,
+				0,
+				0,
+				0,
+				DateTimeKind.Utc),
 			},
 			new SecurityRole
 			{
@@ -88,14 +81,15 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 				Name = RoleConstants.Developer,
 				Description = "Access to developer tools and APIs",
 				IsActive = true,
-				CreateDate = new DateTime(
-					2025,
-					1,
-					1,
-					0,
-					0,
-					0,
-					DateTimeKind.Utc),
+				CreateDate =
+			new DateTime(
+				2025,
+				1,
+				1,
+				0,
+				0,
+				0,
+				DateTimeKind.Utc),
 			},
 			new SecurityRole
 			{
@@ -103,14 +97,15 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 				Name = RoleConstants.Admin,
 				Description = "Full administrative access",
 				IsActive = true,
-				CreateDate = new DateTime(
-					2025,
-					1,
-					1,
-					0,
-					0,
-					0,
-					DateTimeKind.Utc),
+				CreateDate =
+			new DateTime(
+				2025,
+				1,
+				1,
+				0,
+				0,
+				0,
+				DateTimeKind.Utc),
 			});
 	}
 }

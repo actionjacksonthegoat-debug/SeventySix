@@ -9,6 +9,4 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <param name="UserId">The user ID.</param>
 /// <param name="Request">The update profile request.</param>
-public record UpdateProfileCommand(
-	int UserId,
-	UpdateProfileRequest Request);
+public record UpdateProfileCommand(int UserId, UpdateProfileRequest Request);

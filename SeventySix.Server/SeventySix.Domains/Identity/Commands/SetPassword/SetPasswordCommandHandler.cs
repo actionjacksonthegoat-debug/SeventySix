@@ -30,22 +30,21 @@ public static class SetPasswordCommandHandler
 		ILogger<SetPasswordCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
 
 		PasswordResetToken? resetToken =
 			await passwordResetTokenRepository.GetByHashAsync(
 				command.Request.Token,
 				cancellationToken);
-		ValidateResetToken(
-			resetToken,
-			now,
-			logger);
+		ValidateResetToken(resetToken, now, logger);
 
-		UserDto user = await GetActiveUserAsync(
-			messageBus,
-			resetToken!.UserId,
-			logger,
-			cancellationToken);
+		UserDto user =
+			await GetActiveUserAsync(
+				messageBus,
+				resetToken!.UserId,
+				logger,
+				cancellationToken);
 		await passwordResetTokenRepository.MarkAsUsedAsync(
 			resetToken,
 			cancellationToken);
@@ -70,24 +69,37 @@ public static class SetPasswordCommandHandler
 			cancellationToken);
 	}
 
-	private static void ValidateResetToken(PasswordResetToken? token, DateTime now, ILogger logger)
+	private static void ValidateResetToken(
+		PasswordResetToken? token,
+		DateTime now,
+		ILogger logger)
 	{
 		if (token is null)
 		{
 			logger.LogWarning("Password reset token not found");
-			throw new ArgumentException("Invalid or expired password reset token", "Token");
+			throw new ArgumentException(
+				"Invalid or expired password reset token",
+				"Token");
 		}
 
 		if (token.IsUsed)
 		{
-			logger.LogWarning("Password reset token already used for user {UserId}", token.UserId);
-			throw new ArgumentException("Invalid or expired password reset token", "Token");
+			logger.LogWarning(
+				"Password reset token already used for user {UserId}",
+				token.UserId);
+			throw new ArgumentException(
+				"Invalid or expired password reset token",
+				"Token");
 		}
 
 		if (token.ExpiresAt < now)
 		{
-			logger.LogWarning("Password reset token expired for user {UserId}", token.UserId);
-			throw new ArgumentException("Invalid or expired password reset token", "Token");
+			logger.LogWarning(
+				"Password reset token expired for user {UserId}",
+				token.UserId);
+			throw new ArgumentException(
+				"Invalid or expired password reset token",
+				"Token");
 		}
 	}
 
@@ -97,12 +109,18 @@ public static class SetPasswordCommandHandler
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
-		UserDto? user = await messageBus.InvokeAsync<UserDto?>(new GetUserByIdQuery(userId), cancellationToken);
+		UserDto? user =
+			await messageBus.InvokeAsync<UserDto?>(
+				new GetUserByIdQuery(userId),
+				cancellationToken);
 
 		if (user is null || !user.IsActive)
 		{
-			logger.LogError("User with ID {UserId} not found or inactive", userId);
-			throw new InvalidOperationException($"User with ID {userId} not found or inactive");
+			logger.LogError(
+				"User with ID {UserId} not found or inactive",
+				userId);
+			throw new InvalidOperationException(
+				$"User with ID {userId} not found or inactive");
 		}
 
 		return user;
@@ -116,24 +134,34 @@ public static class SetPasswordCommandHandler
 		DateTime now,
 		CancellationToken cancellationToken)
 	{
-		UserCredential? credential = await credentialRepository.GetByUserIdForUpdateAsync(userId, cancellationToken);
-		string passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword, authSettings.Value.Password.WorkFactor);
+		UserCredential? credential =
+			await credentialRepository.GetByUserIdForUpdateAsync(
+				userId,
+				cancellationToken);
+		string passwordHash =
+			BCrypt.Net.BCrypt.HashPassword(
+				newPassword,
+				authSettings.Value.Password.WorkFactor);
 
 		if (credential is null)
 		{
-			await credentialRepository.CreateAsync(new UserCredential
-			{
-				UserId = userId,
-				PasswordHash = passwordHash,
-				CreateDate = now,
-				PasswordChangedAt = now,
-			}, cancellationToken);
+			await credentialRepository.CreateAsync(
+				new UserCredential
+				{
+					UserId = userId,
+					PasswordHash = passwordHash,
+					CreateDate = now,
+					PasswordChangedAt = now,
+				},
+				cancellationToken);
 		}
 		else
 		{
 			credential.PasswordHash = passwordHash;
 			credential.PasswordChangedAt = now;
-			await credentialRepository.UpdateAsync(credential, cancellationToken);
+			await credentialRepository.UpdateAsync(
+				credential,
+				cancellationToken);
 		}
 	}
 }

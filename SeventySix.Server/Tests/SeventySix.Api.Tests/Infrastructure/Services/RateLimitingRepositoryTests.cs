@@ -32,8 +32,12 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 	public RateLimitingRepositoryTests(TestcontainersPostgreSqlFixture fixture)
 		: base(fixture)
 	{
-		LoggerMock = Substitute.For<ILogger<RateLimitingService>>();
-		RepoLoggerMock = Substitute.For<ILogger<ThirdPartyApiRequestRepository>>();
+		LoggerMock =
+			Substitute.For<ILogger<RateLimitingService>>();
+		RepoLoggerMock =
+			Substitute.For<
+			ILogger<ThirdPartyApiRequestRepository>
+		>();
 	}
 
 	private static IOptions<ThirdPartyApiLimitSettings> CreateSettings(
@@ -45,7 +49,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 			{
 				DefaultDailyLimit = defaultDailyLimit,
 				Enabled = enabled,
-				Limits = []
+				Limits = [],
 			});
 	}
 
@@ -53,21 +57,28 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 	public async Task CanMakeRequestAsync_WhenNoRecordExists_ReturnsTrueAsync()
 	{
 		// Arrange
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"CanMakeApi_{testId}";
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"CanMakeApi_{testId}";
 		await using ApiTrackingDbContext context = CreateApiTrackingDbContext();
-		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock);
-		TransactionManager transactionManager = new(context);
+		ThirdPartyApiRequestRepository repository =
+			new(
+			context,
+			RepoLoggerMock);
+		TransactionManager transactionManager =
+			new(context);
 		RateLimitingService sut =
 			new(
-				LoggerMock,
-				repository,
-				transactionManager,
-				CreateSettings(),
-				TimeProvider.System);
+			LoggerMock,
+			repository,
+			transactionManager,
+			CreateSettings(),
+			TimeProvider.System);
 
 		// Act
-		bool result = await sut.CanMakeRequestAsync(apiName);
+		bool result =
+			await sut.CanMakeRequestAsync(apiName);
 
 		// Assert
 		result.ShouldBeTrue();
@@ -77,55 +88,77 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 	public async Task TryIncrementRequestCountAsync_FirstCall_CreatesNewRecordAsync()
 	{
 		// Arrange
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"TestApi_{testId}";
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"TestApi_{testId}";
 		await using ApiTrackingDbContext context = CreateApiTrackingDbContext();
-		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock);
-		TransactionManager transactionManager = new(context);
+		ThirdPartyApiRequestRepository repository =
+			new(
+			context,
+			RepoLoggerMock);
+		TransactionManager transactionManager =
+			new(context);
 		RateLimitingService sut =
 			new(
-				LoggerMock,
-				repository,
-				transactionManager,
-				CreateSettings(),
-				TimeProvider.System);
+			LoggerMock,
+			repository,
+			transactionManager,
+			CreateSettings(),
+			TimeProvider.System);
 
 		// Act
-		bool result = await sut.TryIncrementRequestCountAsync(
+		bool result =
+			await sut.TryIncrementRequestCountAsync(
 			apiName,
-			"https://api.test.com");        // Assert
+			"https://api.test.com"); // Assert
 		result.ShouldBeTrue();
 
-		ThirdPartyApiRequest? record = await repository.GetByApiNameAndDateAsync(
-			apiName,
-		DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
-		record.BaseUrl.ShouldBe("https://api.test.com");
+		ThirdPartyApiRequest? record =
+			await repository.GetByApiNameAndDateAsync(
+				apiName,
+				DateOnly.FromDateTime(
+					TimeProvider.System.GetUtcNow().UtcDateTime));
+		record!.BaseUrl.ShouldBe("https://api.test.com");
 	}
 
 	[Fact]
 	public async Task TryIncrementRequestCountAsync_MultipleCalls_IncrementsCounterAsync()
 	{
 		// Arrange
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"MultipleCallsApi_{testId}";
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"MultipleCallsApi_{testId}";
 		await using ApiTrackingDbContext context = CreateApiTrackingDbContext();
-		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock);
-		TransactionManager transactionManager = new(context);
+		ThirdPartyApiRequestRepository repository =
+			new(
+			context,
+			RepoLoggerMock);
+		TransactionManager transactionManager =
+			new(context);
 		RateLimitingService sut =
 			new(
-				LoggerMock,
-				repository,
-				transactionManager,
-				CreateSettings(),
-				TimeProvider.System);
+			LoggerMock,
+			repository,
+			transactionManager,
+			CreateSettings(),
+			TimeProvider.System);
 
 		// Act
-		await sut.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
-		await sut.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
-		await sut.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
+		await sut.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
+		await sut.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
+		await sut.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
 
 		// Assert
-		int count = await sut.GetRequestCountAsync(apiName);
+		int count =
+			await sut.GetRequestCountAsync(apiName);
 		count.ShouldBe(3);
 	}
 
@@ -133,27 +166,38 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 	public async Task TryIncrementRequestCountAsync_AtLimit_ReturnsFalseAsync()
 	{
 		// Arrange
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"AtLimitApi_{testId}";
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"AtLimitApi_{testId}";
 		await using ApiTrackingDbContext context = CreateApiTrackingDbContext();
-		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock);
-		TransactionManager transactionManager = new(context);
+		ThirdPartyApiRequestRepository repository =
+			new(
+			context,
+			RepoLoggerMock);
+		TransactionManager transactionManager =
+			new(context);
 		RateLimitingService sut =
 			new(
-				LoggerMock,
-				repository,
-				transactionManager,
-				CreateSettings(),
-				TimeProvider.System);
+			LoggerMock,
+			repository,
+			transactionManager,
+			CreateSettings(),
+			TimeProvider.System);
 
 		// Consume all quota
 		for (int i = 0; i < 1000; i++)
 		{
-			await sut.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
+			await sut.TryIncrementRequestCountAsync(
+				apiName,
+				"https://api.test.com");
 		}
 
 		// Act
-		bool result = await sut.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
+		bool result =
+			await sut.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
 
 		// Assert
 		result.ShouldBeFalse();
@@ -163,25 +207,38 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetRemainingQuotaAsync_AfterIncrements_ReturnsCorrectValueAsync()
 	{
 		// Arrange
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"TestApi_{testId}";
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"TestApi_{testId}";
 		await using ApiTrackingDbContext context = CreateApiTrackingDbContext();
-		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock);
-		TransactionManager transactionManager = new(context);
+		ThirdPartyApiRequestRepository repository =
+			new(
+			context,
+			RepoLoggerMock);
+		TransactionManager transactionManager =
+			new(context);
 		RateLimitingService sut =
 			new(
-				LoggerMock,
-				repository,
-				transactionManager,
-				CreateSettings(),
-				TimeProvider.System);
+			LoggerMock,
+			repository,
+			transactionManager,
+			CreateSettings(),
+			TimeProvider.System);
 
 		// Act
-		await sut.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
-		await sut.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
-		await sut.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
+		await sut.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
+		await sut.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
+		await sut.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
 
-		int remaining = await sut.GetRemainingQuotaAsync(apiName);
+		int remaining =
+			await sut.GetRemainingQuotaAsync(apiName);
 
 		// Assert
 		remaining.ShouldBe(997);
@@ -191,27 +248,38 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 	public async Task ResetCounterAsync_ResetsCallCountToZeroAsync()
 	{
 		// Arrange
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"TestApi_{testId}";
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"TestApi_{testId}";
 		await using ApiTrackingDbContext context = CreateApiTrackingDbContext();
-		ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock);
-		TransactionManager transactionManager = new(context);
+		ThirdPartyApiRequestRepository repository =
+			new(
+			context,
+			RepoLoggerMock);
+		TransactionManager transactionManager =
+			new(context);
 		RateLimitingService sut =
 			new(
-				LoggerMock,
-				repository,
-				transactionManager,
-				CreateSettings(),
-				TimeProvider.System);
+			LoggerMock,
+			repository,
+			transactionManager,
+			CreateSettings(),
+			TimeProvider.System);
 
-		await sut.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
-		await sut.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
+		await sut.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
+		await sut.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
 
 		// Act
 		await sut.ResetCounterAsync(apiName);
 
 		// Assert
-		int count = await sut.GetRequestCountAsync(apiName);
+		int count =
+			await sut.GetRequestCountAsync(apiName);
 		count.ShouldBe(0);
 	}
 
@@ -219,98 +287,156 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 	public async Task RateLimiting_PersistsAcrossServiceInstancesAsync()
 	{
 		// Arrange - First service instance
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"PersistApi_{testId}";
-		await using ApiTrackingDbContext context1 = CreateApiTrackingDbContext();
-		ThirdPartyApiRequestRepository repository1 = new(context1, RepoLoggerMock);
-		TransactionManager transactionManager1 = new(context1);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"PersistApi_{testId}";
+		await using ApiTrackingDbContext context1 =
+			CreateApiTrackingDbContext();
+		ThirdPartyApiRequestRepository repository1 =
+			new(
+			context1,
+			RepoLoggerMock);
+		TransactionManager transactionManager1 =
+			new(context1);
 		RateLimitingService service1 =
 			new(
-				LoggerMock,
-				repository1,
-				transactionManager1,
-				CreateSettings(),
-				TimeProvider.System);
+			LoggerMock,
+			repository1,
+			transactionManager1,
+			CreateSettings(),
+			TimeProvider.System);
 
-		await service1.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
-		await service1.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
+		await service1.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
+		await service1.TryIncrementRequestCountAsync(
+			apiName,
+			"https://api.test.com");
 
 		// Act - Second service instance (simulates application restart)
-		await using ApiTrackingDbContext context2 = CreateApiTrackingDbContext();
-		ThirdPartyApiRequestRepository repository2 = new(context2, RepoLoggerMock);
-		TransactionManager transactionManager2 = new(context2);
+		await using ApiTrackingDbContext context2 =
+			CreateApiTrackingDbContext();
+		ThirdPartyApiRequestRepository repository2 =
+			new(
+			context2,
+			RepoLoggerMock);
+		TransactionManager transactionManager2 =
+			new(context2);
 		RateLimitingService service2 =
 			new(
-				LoggerMock,
-				repository2,
-				transactionManager2,
-				CreateSettings(),
-				TimeProvider.System);
+			LoggerMock,
+			repository2,
+			transactionManager2,
+			CreateSettings(),
+			TimeProvider.System);
 
-		int count = await service2.GetRequestCountAsync(apiName);
-		int remaining = await service2.GetRemainingQuotaAsync(apiName);
+		int count =
+			await service2.GetRequestCountAsync(apiName);
+		int remaining =
+			await service2.GetRemainingQuotaAsync(apiName);
 
 		// Assert
 		count.ShouldBe(2, "state should persist across service instances");
-		remaining.ShouldBe(998, "remaining quota should be calculated from persisted state");
+		remaining.ShouldBe(
+			998,
+			"remaining quota should be calculated from persisted state");
 	}
 
 	[Fact]
 	public async Task ConcurrentRequests_HandledCorrectlyAsync()
 	{
 		// Arrange & Act - Each concurrent request gets its own DbContext scope
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"ConcurrentApi_{testId}";
-		Task<(bool Success, bool Result, int Index, string? Error)>[] tasks = [.. Enumerable.Range(0, 10)
-			.Select(async i =>
-			{
-				try
-				{
-					await using ApiTrackingDbContext context = CreateApiTrackingDbContext();
-					ThirdPartyApiRequestRepository repository = new(context, RepoLoggerMock);
-					TransactionManager transactionManager = new(context);
-				RateLimitingService service =
-					new(
-						LoggerMock,
-						repository,
-						transactionManager,
-						CreateSettings(),
-						TimeProvider.System);
-				bool result = await service.TryIncrementRequestCountAsync(apiName, "https://api.test.com");
-					return (Success: true, Result: result, Index: i, Error: (string?)null);
-				}
-				catch (Exception ex)
-				{
-					return (Success: false, Result: false, Index: i, Error: ex.Message);
-				}
-			})];
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"ConcurrentApi_{testId}";
+		Task<(bool Success, bool Result, int Index, string? Error)>[] tasks =
+		[
+			.. Enumerable
+				.Range(0, 10)
+				.Select(i => ExecuteConcurrentIncrementAsync(i, apiName)),
+		];
 
-		(bool Success, bool Result, int Index, string? Error)[] results = await Task.WhenAll(tasks);
+		(bool Success, bool Result, int Index, string? Error)[] results =
+			await Task.WhenAll(tasks);
 
-		// Log results for debugging
-		int successCount = results.Count(r => r.Success && r.Result);
-		int failureCount = results.Count(r => !r.Success);
-		int falseCount = results.Count(r => r.Success && !r.Result);
-
-		// Assert
-		foreach ((bool Success, bool Result, int Index, string? Error) r in results)
-		{
-			r.Success.ShouldBeTrue($"operation {r.Index} should not throw exceptions, but got: {r.Error}");
-			r.Result.ShouldBeTrue($"operation {r.Index} should return true");
-		}
+		AssertConcurrentResults(results);
 
 		// Verify final count with a fresh context
-		await using ApiTrackingDbContext verifyContext = CreateApiTrackingDbContext();
-		ThirdPartyApiRequestRepository verifyRepository = new(verifyContext, RepoLoggerMock);
-		TransactionManager verifyTransactionManager = new(verifyContext);
-		RateLimitingService verifyService =
+		(
+			RateLimitingService verifyService,
+			ApiTrackingDbContext verifyContext
+		) = CreateRateLimitingService();
+		await using (verifyContext)
+		{
+			int count =
+				await verifyService.GetRequestCountAsync(apiName);
+			int successCount =
+				results.Count(r => r.Success && r.Result);
+			count.ShouldBe(
+				10,
+				$"all concurrent increments should be persisted. Success: {successCount}");
+		}
+	}
+
+	private async Task<(
+		bool Success,
+		bool Result,
+		int Index,
+		string? Error
+	)> ExecuteConcurrentIncrementAsync(int index, string apiName)
+	{
+		try
+		{
+			(RateLimitingService service, ApiTrackingDbContext context) =
+				CreateRateLimitingService();
+			await using (context)
+			{
+				bool result =
+					await service.TryIncrementRequestCountAsync(
+					apiName,
+					"https://api.test.com");
+				return (true, result, index, null);
+			}
+		}
+		catch (Exception ex)
+		{
+			return (false, false, index, ex.Message);
+		}
+	}
+
+	private static void AssertConcurrentResults(
+		(bool Success, bool Result, int Index, string? Error)[] results)
+	{
+		foreach (
+			(bool Success, bool Result, int Index, string? Error) r in results)
+		{
+			r.Success.ShouldBeTrue(
+				$"operation {r.Index} should not throw exceptions, but got: {r.Error}");
+			r.Result.ShouldBeTrue($"operation {r.Index} should return true");
+		}
+	}
+
+	private (
+		RateLimitingService Service,
+		ApiTrackingDbContext Context
+	) CreateRateLimitingService()
+	{
+		ApiTrackingDbContext context = CreateApiTrackingDbContext();
+		ThirdPartyApiRequestRepository repository =
 			new(
-				LoggerMock,
-				verifyRepository,
-				verifyTransactionManager,
-				CreateSettings(),
-				TimeProvider.System);
-		int count = await verifyService.GetRequestCountAsync(apiName);
-		count.ShouldBe(10, $"all concurrent increments should be persisted. Success: {successCount}, Failures: {failureCount}, False: {falseCount}");
+			context,
+			RepoLoggerMock);
+		TransactionManager transactionManager =
+			new(context);
+		RateLimitingService service =
+			new(
+			LoggerMock,
+			repository,
+			transactionManager,
+			CreateSettings(),
+			TimeProvider.System);
+		return (service, context);
 	}
 }

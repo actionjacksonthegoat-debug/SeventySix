@@ -32,14 +32,13 @@ public class ApiTrackingDbContext : BaseDbContext<ApiTrackingDbContext>
 	/// </summary>
 	/// <param name="options">The options for this context.</param>
 	public ApiTrackingDbContext(DbContextOptions<ApiTrackingDbContext> options)
-		: base(options)
-	{
-	}
+		: base(options) { }
 
 	/// <summary>
 	/// Gets or sets the ThirdPartyApiRequests DbSet.
 	/// </summary>
-	public DbSet<ThirdPartyApiRequest> ThirdPartyApiRequests => Set<ThirdPartyApiRequest>();
+	public DbSet<ThirdPartyApiRequest> ThirdPartyApiRequests =>
+		Set<ThirdPartyApiRequest>();
 
 	/// <summary>
 	/// Gets the schema name for ApiTracking bounded context.

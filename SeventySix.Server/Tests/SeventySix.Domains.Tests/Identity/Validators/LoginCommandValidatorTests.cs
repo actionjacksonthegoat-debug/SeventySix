@@ -28,8 +28,8 @@ public class LoginCommandValidatorTests
 		// Arrange
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "testuser",
-				Password: "Password123!");
+			UsernameOrEmail: "testuser",
+			Password: "Password123!");
 
 		// Act
 		TestValidationResult<LoginRequest> result =
@@ -45,8 +45,8 @@ public class LoginCommandValidatorTests
 		// Arrange
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "test@example.com",
-				Password: "SecureP@ss1");
+			UsernameOrEmail: "test@example.com",
+			Password: "SecureP@ss1");
 
 		// Act
 		TestValidationResult<LoginRequest> result =
@@ -66,8 +66,8 @@ public class LoginCommandValidatorTests
 		// Arrange
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "",
-				Password: "Password123!");
+			UsernameOrEmail: "",
+			Password: "Password123!");
 
 		// Act
 		TestValidationResult<LoginRequest> result =
@@ -83,11 +83,12 @@ public class LoginCommandValidatorTests
 	public async Task UsernameOrEmail_ExceedsMaxLength_FailsValidationAsync()
 	{
 		// Arrange
-		string longUsername = new('a', 256);
+		string longUsername =
+			new('a', 256);
 		LoginRequest request =
 			new(
-				UsernameOrEmail: longUsername,
-				Password: "Password123!");
+			UsernameOrEmail: longUsername,
+			Password: "Password123!");
 
 		// Act
 		TestValidationResult<LoginRequest> result =
@@ -96,18 +97,20 @@ public class LoginCommandValidatorTests
 		// Assert
 		result
 			.ShouldHaveValidationErrorFor(x => x.UsernameOrEmail)
-			.WithErrorMessage("Username or email must not exceed 255 characters");
+			.WithErrorMessage(
+				"Username or email must not exceed 255 characters");
 	}
 
 	[Fact]
 	public async Task UsernameOrEmail_AtMaxLength_PassesValidationAsync()
 	{
 		// Arrange
-		string maxLengthUsername = new('a', 255);
+		string maxLengthUsername =
+			new('a', 255);
 		LoginRequest request =
 			new(
-				UsernameOrEmail: maxLengthUsername,
-				Password: "Password123!");
+			UsernameOrEmail: maxLengthUsername,
+			Password: "Password123!");
 
 		// Act
 		TestValidationResult<LoginRequest> result =
@@ -126,9 +129,7 @@ public class LoginCommandValidatorTests
 	{
 		// Arrange
 		LoginRequest request =
-			new(
-				UsernameOrEmail: "testuser",
-				Password: "");
+			new(UsernameOrEmail: "testuser", Password: "");
 
 		// Act
 		TestValidationResult<LoginRequest> result =
@@ -144,11 +145,12 @@ public class LoginCommandValidatorTests
 	public async Task Password_ExceedsMaxLength_FailsValidationAsync()
 	{
 		// Arrange - 101 characters exceeds the 100 character max (DoS protection)
-		string longPassword = new('P', 101);
+		string longPassword =
+			new('P', 101);
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "testuser",
-				Password: longPassword);
+			UsernameOrEmail: "testuser",
+			Password: longPassword);
 
 		// Act
 		TestValidationResult<LoginRequest> result =
@@ -164,11 +166,12 @@ public class LoginCommandValidatorTests
 	public async Task Password_AtMaxLength_PassesValidationAsync()
 	{
 		// Arrange - 100 characters is exactly at max
-		string maxLengthPassword = new('P', 100);
+		string maxLengthPassword =
+			new('P', 100);
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "testuser",
-				Password: maxLengthPassword);
+			UsernameOrEmail: "testuser",
+			Password: maxLengthPassword);
 
 		// Act
 		TestValidationResult<LoginRequest> result =

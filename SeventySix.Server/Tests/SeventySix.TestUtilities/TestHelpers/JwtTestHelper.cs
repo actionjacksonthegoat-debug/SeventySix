@@ -29,7 +29,8 @@ public static class JwtTestHelper
 	/// A secret key different from the application's secret key.
 	/// Used to generate tokens with invalid signatures.
 	/// </summary>
-	private const string WrongSecretKey = "ThisIsADifferentSecretKeyThatIs32CharsOrMore!";
+	private const string WrongSecretKey =
+		"ThisIsADifferentSecretKeyThatIs32CharsOrMore!";
 
 	/// <summary>
 	/// Generates a JWT signed with the wrong secret key.
@@ -58,15 +59,17 @@ public static class JwtTestHelper
 			new(Encoding.UTF8.GetBytes(WrongSecretKey));
 
 		SigningCredentials credentials =
-			new(key, SecurityAlgorithms.HmacSha256);
+			new(
+			key,
+			SecurityAlgorithms.HmacSha256);
 
 		JwtSecurityToken token =
 			new(
-				issuer: ValidIssuer,
-				audience: ValidAudience,
-				claims: claims,
-				expires: timeProvider.GetUtcNow().AddMinutes(15).UtcDateTime,
-				signingCredentials: credentials);
+			issuer: ValidIssuer,
+			audience: ValidAudience,
+			claims: claims,
+			expires: timeProvider.GetUtcNow().AddMinutes(15).UtcDateTime,
+			signingCredentials: credentials);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
@@ -101,20 +104,25 @@ public static class JwtTestHelper
 			new(Encoding.UTF8.GetBytes(WrongSecretKey));
 
 		SigningCredentials credentials =
-			new(key, SecurityAlgorithms.HmacSha256);
+			new(
+			key,
+			SecurityAlgorithms.HmacSha256);
 
 		// Create token that expired 1 hour ago
 		DateTime pastExpiration =
-			timeProvider.GetUtcNow().AddHours(-1).UtcDateTime;
+			timeProvider
+			.GetUtcNow()
+			.AddHours(-1)
+			.UtcDateTime;
 
 		JwtSecurityToken token =
 			new(
-				issuer: ValidIssuer,
-				audience: ValidAudience,
-				claims: claims,
-				notBefore: timeProvider.GetUtcNow().AddHours(-2).UtcDateTime,
-				expires: pastExpiration,
-				signingCredentials: credentials);
+			issuer: ValidIssuer,
+			audience: ValidAudience,
+			claims: claims,
+			notBefore: timeProvider.GetUtcNow().AddHours(-2).UtcDateTime,
+			expires: pastExpiration,
+			signingCredentials: credentials);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}

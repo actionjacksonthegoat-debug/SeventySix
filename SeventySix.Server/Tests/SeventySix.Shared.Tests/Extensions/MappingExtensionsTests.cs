@@ -19,14 +19,15 @@ public class MappingExtensionsTests
 		[
 			new TestEntity { Id = 1, Name = "First" },
 			new TestEntity { Id = 2, Name = "Second" },
-			new TestEntity { Id = 3, Name = "Third" }
+			new TestEntity { Id = 3, Name = "Third" },
 		];
 
 		// Act
-		IEnumerable<TestDto> result = entities.MapToDto(e => new TestDto
+		IEnumerable<TestDto> result =
+			entities.MapToDto(e => new TestDto
 		{
 			Id = e.Id,
-			DisplayName = e.Name.ToUpper()
+			DisplayName = e.Name.ToUpper(),
 		});
 
 		// Assert
@@ -45,10 +46,11 @@ public class MappingExtensionsTests
 		List<TestEntity> entities = [];
 
 		// Act
-		IEnumerable<TestDto> result = entities.MapToDto(e => new TestDto
+		IEnumerable<TestDto> result =
+			entities.MapToDto(e => new TestDto
 		{
 			Id = e.Id,
-			DisplayName = e.Name
+			DisplayName = e.Name,
 		});
 
 		// Assert
@@ -63,14 +65,19 @@ public class MappingExtensionsTests
 
 		// Act & Assert
 		Assert.Throws<ArgumentNullException>(() =>
-			entities!.MapToDto(e => new TestDto { Id = e.Id, DisplayName = e.Name }));
+			entities!.MapToDto(e => new TestDto
+			{
+				Id = e.Id,
+				DisplayName = e.Name,
+			}));
 	}
 
 	[Fact]
 	public void MapToDto_NullMapper_ThrowsArgumentNullException()
 	{
 		// Arrange
-		List<TestEntity> entities = [new TestEntity { Id = 1, Name = "Test" }];
+		List<TestEntity> entities =
+			[new TestEntity { Id = 1, Name = "Test" }];
 		Func<TestEntity, TestDto>? mapper = null;
 
 		// Act & Assert
@@ -82,10 +89,12 @@ public class MappingExtensionsTests
 	{
 		// Arrange
 		int mapperCallCount = 0;
-		List<TestEntity> entities = [new TestEntity { Id = 1, Name = "Test" }];
+		List<TestEntity> entities =
+			[new TestEntity { Id = 1, Name = "Test" }];
 
 		// Act - just calling MapToDto shouldn't execute mapper
-		IEnumerable<TestDto> result = entities.MapToDto(e =>
+		IEnumerable<TestDto> result =
+			entities.MapToDto(e =>
 		{
 			mapperCallCount++;
 			return new TestDto { Id = e.Id, DisplayName = e.Name };
@@ -104,19 +113,13 @@ public class MappingExtensionsTests
 
 	private class TestEntity
 	{
-		public int Id
-		{
-			get; set;
-		}
+		public int Id { get; set; }
 		public string Name { get; set; } = string.Empty;
 	}
 
 	private class TestDto
 	{
-		public int Id
-		{
-			get; set;
-		}
+		public int Id { get; set; }
 		public string DisplayName { get; set; } = string.Empty;
 	}
 }

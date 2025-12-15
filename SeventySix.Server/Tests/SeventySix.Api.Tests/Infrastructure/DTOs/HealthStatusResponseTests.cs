@@ -33,12 +33,16 @@ public class HealthStatusResponseTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
-		HealthStatusResponse response = new()
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+		HealthStatusResponse response =
+			new()
 		{
-			Status = HealthStatusConstants.Degraded,
+			Status =
+			HealthStatusConstants.Degraded,
 			CheckedAt = now,
-			Database = new DatabaseHealthResponse { IsConnected = true },
+			Database =
+			new DatabaseHealthResponse { IsConnected = true },
 			ExternalApis = new ExternalApiHealthResponse(),
 			ErrorQueue = new QueueHealthResponse(),
 			System = new SystemResourcesResponse(),
@@ -66,11 +70,13 @@ public class HealthStatusResponseTests
 	public void DatabaseHealthResponse_Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange & Act
-		DatabaseHealthResponse response = new()
+		DatabaseHealthResponse response =
+			new()
 		{
 			IsConnected = true,
 			ResponseTimeMs = 25.5,
-			Status = HealthStatusConstants.Healthy,
+			Status =
+			HealthStatusConstants.Healthy,
 		};
 
 		// Assert
@@ -95,13 +101,17 @@ public class HealthStatusResponseTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
-		ExternalApiHealthResponse response = new()
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+		ExternalApiHealthResponse response =
+			new()
 		{
-			Apis = new Dictionary<string, ApiHealthStatus>
+			Apis =
+			new Dictionary<string, ApiHealthStatus>
 			{
 				{
-					"ExternalAPI", new ApiHealthStatus
+					"ExternalAPI",
+					new ApiHealthStatus
 					{
 						ApiName = "ExternalAPI",
 						IsAvailable = true,
@@ -110,7 +120,8 @@ public class HealthStatusResponseTests
 					}
 				},
 				{
-					"GoogleMaps", new ApiHealthStatus
+					"GoogleMaps",
+					new ApiHealthStatus
 					{
 						ApiName = "GoogleMaps",
 						IsAvailable = false,
@@ -160,12 +171,14 @@ public class HealthStatusResponseTests
 	public void QueueHealthResponse_Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange & Act
-		QueueHealthResponse response = new()
+		QueueHealthResponse response =
+			new()
 		{
 			QueuedItems = 5,
 			FailedItems = 2,
 			CircuitBreakerOpen = true,
-			Status = HealthStatusConstants.Degraded,
+			Status =
+			HealthStatusConstants.Degraded,
 		};
 
 		// Assert
@@ -192,7 +205,8 @@ public class HealthStatusResponseTests
 	public void SystemResourcesResponse_Properties_ShouldSetAndGetCorrectly()
 	{
 		// Arrange & Act
-		SystemResourcesResponse response = new()
+		SystemResourcesResponse response =
+			new()
 		{
 			CpuUsagePercent = 45.5,
 			MemoryUsedMb = 2048,

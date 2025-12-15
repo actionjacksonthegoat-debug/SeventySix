@@ -12,7 +12,8 @@ namespace SeventySix.Identity.Infrastructure;
 /// Provides access to the current authenticated user from HttpContext.
 /// Falls back to "System" for unauthenticated requests (background jobs, etc.).
 /// </summary>
-public class UserContextAccessor(IHttpContextAccessor httpContextAccessor) : IUserContextAccessor
+public class UserContextAccessor(IHttpContextAccessor httpContextAccessor)
+	: IUserContextAccessor
 {
 	private const string SystemUser = "System";
 
@@ -23,7 +24,11 @@ public class UserContextAccessor(IHttpContextAccessor httpContextAccessor) : IUs
 	public string GetCurrentUser()
 	{
 		string? username =
-			httpContextAccessor.HttpContext?.User?.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value;
+			httpContextAccessor
+				.HttpContext?
+				.User?
+				.FindFirst(JwtRegisteredClaimNames.UniqueName)
+				?.Value;
 
 		return username ?? SystemUser;
 	}

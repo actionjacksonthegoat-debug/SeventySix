@@ -35,10 +35,7 @@ public class CachePolicyConfig
 	/// <summary>
 	/// Gets or sets the cache duration in seconds.
 	/// </summary>
-	public int DurationSeconds
-	{
-		get; set;
-	}
+	public int DurationSeconds { get; set; }
 
 	/// <summary>
 	/// Gets or sets the query string parameters that vary the cache.

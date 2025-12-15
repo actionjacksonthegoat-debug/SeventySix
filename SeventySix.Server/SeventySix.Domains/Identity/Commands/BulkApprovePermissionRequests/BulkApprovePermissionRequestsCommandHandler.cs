@@ -23,16 +23,12 @@ public static class BulkApprovePermissionRequestsCommandHandler
 		IUserCommandRepository userCommandRepository,
 		CancellationToken cancellationToken)
 	{
-		List<int> idList =
-			command.RequestIds.ToList();
+		List<int> idList = command.RequestIds.ToList();
 
 		IEnumerable<PermissionRequest> requests =
-			await repository.GetByIdsAsync(
-				idList,
-				cancellationToken);
+			await repository.GetByIdsAsync(idList, cancellationToken);
 
-		int approvedCount =
-			0;
+		int approvedCount = 0;
 
 		foreach (PermissionRequest request in requests)
 		{
@@ -43,9 +39,7 @@ public static class BulkApprovePermissionRequestsCommandHandler
 			approvedCount++;
 		}
 
-		await repository.DeleteRangeAsync(
-			idList,
-			cancellationToken);
+		await repository.DeleteRangeAsync(idList, cancellationToken);
 
 		return approvedCount;
 	}

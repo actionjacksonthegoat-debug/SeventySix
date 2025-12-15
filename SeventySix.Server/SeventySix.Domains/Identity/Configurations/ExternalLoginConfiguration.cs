@@ -15,7 +15,8 @@ namespace SeventySix.Identity;
 /// - Composite unique index on (Provider, ProviderUserId) prevents duplicate links
 /// - Index on UserId for finding user's linked providers
 /// </remarks>
-public class ExternalLoginConfiguration : IEntityTypeConfiguration<ExternalLogin>
+public class ExternalLoginConfiguration
+	: IEntityTypeConfiguration<ExternalLogin>
 {
 	/// <summary>
 	/// Configures the entity mapping for ExternalLogin.
@@ -28,43 +29,39 @@ public class ExternalLoginConfiguration : IEntityTypeConfiguration<ExternalLogin
 		builder.ToTable("ExternalLogins");
 
 		builder.HasKey(e => e.Id);
-		builder.Property(e => e.Id)
-			.UseIdentityColumn()
-			.IsRequired();
+		builder.Property(e => e.Id).UseIdentityColumn().IsRequired();
 
 		// UserId - Required
-		builder.Property(e => e.UserId)
-			.IsRequired();
-		builder.HasIndex(e => e.UserId)
+		builder.Property(e => e.UserId).IsRequired();
+		builder
+			.HasIndex(e => e.UserId)
 			.HasDatabaseName("IX_ExternalLogins_UserId");
 
 		// Provider - Required, e.g., "GitHub"
-		builder.Property(e => e.Provider)
-			.IsRequired()
-			.HasMaxLength(50);
+		builder.Property(e => e.Provider).IsRequired().HasMaxLength(50);
 
 		// ProviderUserId - Required, external ID from provider
-		builder.Property(e => e.ProviderUserId)
-			.IsRequired()
-			.HasMaxLength(255);
+		builder.Property(e => e.ProviderUserId).IsRequired().HasMaxLength(255);
 
 		// Composite unique index - each provider user can only link once
-		builder.HasIndex(e => new { e.Provider, e.ProviderUserId })
+		builder
+			.HasIndex(e => new { e.Provider, e.ProviderUserId })
 			.IsUnique()
 			.HasDatabaseName("IX_ExternalLogins_Provider_ProviderUserId");
 
 		// ProviderEmail - Optional
-		builder.Property(e => e.ProviderEmail)
-			.HasMaxLength(255);
+		builder.Property(e => e.ProviderEmail).HasMaxLength(255);
 
 		// CreateDate - Required (auto-set by AuditInterceptor for ICreatableEntity)
-		builder.Property(e => e.CreateDate)
+		builder
+			.Property(e => e.CreateDate)
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");
 
 		// LastUsedAt - Optional
-		builder.Property(e => e.LastUsedAt)
+		builder
+			.Property(e => e.LastUsedAt)
 			.HasColumnType("timestamp with time zone");
 
 		// FK relationship to User - cascade delete external logins when user is deleted

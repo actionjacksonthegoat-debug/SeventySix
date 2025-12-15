@@ -15,10 +15,7 @@ public abstract class BasePostgreSqlFixture : IAsyncLifetime
 	/// <summary>
 	/// Gets the connection string for the PostgreSQL database.
 	/// </summary>
-	public abstract string ConnectionString
-	{
-		get;
-	}
+	public abstract string ConnectionString { get; }
 
 	/// <summary>
 	/// Gets or creates a cached SharedWebApplicationFactory for the specified program type.

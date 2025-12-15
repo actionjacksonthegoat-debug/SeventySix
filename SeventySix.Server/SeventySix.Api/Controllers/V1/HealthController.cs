@@ -25,7 +25,6 @@ namespace SeventySix.Api.Controllers;
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/health")]
 public class HealthController(IHealthCheckService service) : ControllerBase
 {
-
 	/// <summary>
 	/// Retrieves comprehensive system health status.
 	/// </summary>
@@ -33,11 +32,17 @@ public class HealthController(IHealthCheckService service) : ControllerBase
 	/// <returns>System health status including all components.</returns>
 	/// <response code="200">Returns the system health status.</response>
 	[HttpGet]
-	[ProducesResponseType(typeof(HealthStatusResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(HealthStatusResponse),
+		StatusCodes.Status200OK
+	)]
 	[OutputCache(PolicyName = CachePolicyConstants.Health)]
-	public async Task<ActionResult<HealthStatusResponse>> GetHealthStatusAsync(CancellationToken cancellationToken)
+	public async Task<ActionResult<HealthStatusResponse>> GetHealthStatusAsync(
+		CancellationToken cancellationToken)
 	{
-		HealthStatusResponse status = await service.GetHealthStatusAsync(cancellationToken);
+		HealthStatusResponse status =
+			await service.GetHealthStatusAsync(
+				cancellationToken);
 		return Ok(status);
 	}
 }

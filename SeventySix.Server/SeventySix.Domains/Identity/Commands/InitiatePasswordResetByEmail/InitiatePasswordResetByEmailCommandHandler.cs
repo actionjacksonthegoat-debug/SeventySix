@@ -28,8 +28,7 @@ public static class InitiatePasswordResetByEmailCommandHandler
 	{
 		UserDto? user =
 			await messageBus.InvokeAsync<UserDto?>(
-				new GetUserByEmailQuery(
-					email),
+				new GetUserByEmailQuery(email),
 				cancellationToken);
 
 		if (user is null || !user.IsActive)
@@ -38,9 +37,7 @@ public static class InitiatePasswordResetByEmailCommandHandler
 		}
 
 		await messageBus.InvokeAsync(
-			new InitiatePasswordResetCommand(
-				user.Id,
-				IsNewUser: false),
+			new InitiatePasswordResetCommand(user.Id, IsNewUser: false),
 			cancellationToken);
 	}
 }

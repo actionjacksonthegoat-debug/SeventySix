@@ -23,19 +23,19 @@ public class NamingConventionTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> entityFiles =
 			GetSourceFiles("*.cs")
-				.Where(f =>
-					f.Contains("\\Models\\")
-					&& !f.Contains("Dto")
-					&& !f.Contains("Request")
-					&& !f.Contains("Response"))
-				.ToList();
+			.Where(f =>
+				f.Contains("\\Models\\")
+				&& !f.Contains("Dto")
+				&& !f.Contains("Request")
+				&& !f.Contains("Response"))
+			.ToList();
 
 		// Match: public int PropertyName { get; set; }
 		// Look for navigation property patterns (User, Role, Parent, etc.)
 		Regex navigationPropertyPattern =
 			new Regex(
-				@"public\s+int\s+(\w+)\s*\{\s*get;\s*set;\s*\}",
-				RegexOptions.Compiled);
+			@"public\s+int\s+(\w+)\s*\{\s*get;\s*set;\s*\}",
+			RegexOptions.Compiled);
 
 		List<string> violations = [];
 
@@ -46,12 +46,12 @@ public class NamingConventionTests : SourceCodeArchitectureTest
 				ReadFileContent(file);
 
 			MatchCollection matches =
-				navigationPropertyPattern.Matches(content);
+				navigationPropertyPattern.Matches(
+				content);
 
 			foreach (Match match in matches)
 			{
-				string propertyName =
-					match.Groups[1].Value;
+				string propertyName = match.Groups[1].Value;
 
 				// Skip if it's Id property itself or already ends with Id
 				if (propertyName == "Id" || propertyName.EndsWith("Id"))
@@ -71,7 +71,8 @@ public class NamingConventionTests : SourceCodeArchitectureTest
 					string relativePath =
 						GetRelativePath(file);
 
-					violations.Add($"{relativePath}: Property '{propertyName}' (should be '{propertyName}Id')");
+					violations.Add(
+						$"{relativePath}: Property '{propertyName}' (should be '{propertyName}Id')");
 				}
 			}
 		}

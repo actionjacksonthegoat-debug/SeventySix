@@ -19,10 +19,7 @@ public class UserCredential
 	/// <summary>
 	/// Gets or sets the user ID (FK to identity.users).
 	/// </summary>
-	public int UserId
-	{
-		get; set;
-	}
+	public int UserId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the password hash.
@@ -34,16 +31,10 @@ public class UserCredential
 	/// Gets or sets when the password was last changed.
 	/// Null = force password change on first login.
 	/// </summary>
-	public DateTime? PasswordChangedAt
-	{
-		get; set;
-	}
+	public DateTime? PasswordChangedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets when this credential was created.
 	/// </summary>
-	public DateTime CreateDate
-	{
-		get; set;
-	}
+	public DateTime CreateDate { get; set; }
 }

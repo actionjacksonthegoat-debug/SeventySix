@@ -22,7 +22,8 @@ namespace SeventySix.Api.Tests.Controllers;
 /// </remarks>
 [Collection("PostgreSQL")]
 public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
-	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+	: ApiPostgreSqlTestBase<Program>(fixture),
+		IAsyncLifetime
 {
 	private SharedWebApplicationFactory<Program>? IsolatedFactory;
 	private HttpClient? Client;
@@ -38,12 +39,13 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 		// UseSetting provides configuration at the host level, overriding appsettings
 		IsolatedFactory =
 			CreateIsolatedFactory(builder =>
-			{
-				builder.UseSetting("Auth:RateLimit:LoginAttemptsPerMinute", "5");
-				builder.UseSetting("Auth:RateLimit:RegisterAttemptsPerHour", "3");
-				builder.UseSetting("Auth:RateLimit:TokenRefreshPerMinute", "10");
-			});
-		Client = IsolatedFactory.CreateClient();
+		{
+			builder.UseSetting("Auth:RateLimit:LoginAttemptsPerMinute", "5");
+			builder.UseSetting("Auth:RateLimit:RegisterAttemptsPerHour", "3");
+			builder.UseSetting("Auth:RateLimit:TokenRefreshPerMinute", "10");
+		});
+		Client =
+			IsolatedFactory.CreateClient();
 	}
 
 	/// <inheritdoc/>
@@ -63,21 +65,27 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 		// Arrange - Rate limit is 5 per minute
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "testuser",
-				Password: "wrongpassword");
+			UsernameOrEmail: "testuser",
+			Password: "wrongpassword");
 
 		// Act - Make 6 requests (limit is 5)
 		List<HttpResponseMessage> responses = [];
 		for (int i = 0; i < 6; i++)
 		{
 			HttpResponseMessage response =
-				await Client!.PostAsJsonAsync("/api/v1/auth/login", request);
+				await Client!.PostAsJsonAsync(
+				"/api/v1/auth/login",
+				request);
 			responses.Add(response);
 		}
 
 		// Assert - First 5 should be 401 (invalid creds), 6th should be 429
-		Assert.Equal(5, responses.Count(r => r.StatusCode == HttpStatusCode.Unauthorized));
-		Assert.Single(responses, r => r.StatusCode == HttpStatusCode.TooManyRequests);
+		Assert.Equal(
+			5,
+			responses.Count(r => r.StatusCode == HttpStatusCode.Unauthorized));
+		Assert.Single(
+			responses,
+			r => r.StatusCode == HttpStatusCode.TooManyRequests);
 	}
 
 	/// <summary>
@@ -93,19 +101,25 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 		{
 			RegisterRequest request =
 				new(
-					Username: $"testuser{i}",
-					Email: $"test{i}@example.com",
-					Password: "Password123!",
-					FullName: $"Test User {i}");
+				Username: $"testuser{i}",
+				Email: $"test{i}@example.com",
+				Password: "Password123!",
+				FullName: $"Test User {i}");
 
 			HttpResponseMessage response =
-				await Client!.PostAsJsonAsync("/api/v1/auth/register", request);
+				await Client!.PostAsJsonAsync(
+				"/api/v1/auth/register",
+				request);
 			responses.Add(response);
 		}
 
 		// Assert - First 3 should succeed (201), 4th should be 429
-		Assert.Equal(3, responses.Count(r => r.StatusCode == HttpStatusCode.Created));
-		Assert.Single(responses, r => r.StatusCode == HttpStatusCode.TooManyRequests);
+		Assert.Equal(
+			3,
+			responses.Count(r => r.StatusCode == HttpStatusCode.Created));
+		Assert.Single(
+			responses,
+			r => r.StatusCode == HttpStatusCode.TooManyRequests);
 	}
 
 	/// <summary>
@@ -117,15 +131,17 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 		// Arrange
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "testuser",
-				Password: "wrongpassword");
+			UsernameOrEmail: "testuser",
+			Password: "wrongpassword");
 
 		// Act - Exceed limit
 		HttpResponseMessage? rateLimitedResponse = null;
 		for (int i = 0; i < 6; i++)
 		{
 			HttpResponseMessage response =
-				await Client!.PostAsJsonAsync("/api/v1/auth/login", request);
+				await Client!.PostAsJsonAsync(
+				"/api/v1/auth/login",
+				request);
 
 			if (response.StatusCode == HttpStatusCode.TooManyRequests)
 			{

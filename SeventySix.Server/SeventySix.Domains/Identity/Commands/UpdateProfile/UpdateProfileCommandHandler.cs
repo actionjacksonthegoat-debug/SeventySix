@@ -43,23 +43,20 @@ public static class UpdateProfileCommandHandler
 			return null;
 		}
 
-		user.Email =
-			command.Request.Email;
-		user.FullName =
-			command.Request.FullName;
+		user.Email = command.Request.Email;
+		user.FullName = command.Request.FullName;
 
 		try
 		{
-			await userCommandRepository.UpdateAsync(
-				user,
-				cancellationToken);
+			await userCommandRepository.UpdateAsync(user, cancellationToken);
 
 			// Query full profile after successful update
 			return await messageBus.InvokeAsync<UserProfileDto?>(
 				new GetUserProfileQuery(command.UserId),
 				cancellationToken);
 		}
-		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
+		catch (DbUpdateException exception)
+			when (exception.IsDuplicateKeyViolation())
 		{
 			// Database unique constraint violation on email
 			throw new DuplicateUserException(

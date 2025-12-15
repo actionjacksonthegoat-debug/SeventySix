@@ -25,15 +25,16 @@ public class DatabaseHealthCheckTests
 	{
 		// Find all DbContext implementations
 		Type[] dbContextTypes =
-			typeof(BaseDbContext<>).Assembly
-				.GetTypes()
-				.Where(type =>
-					type.IsClass
-					&& !type.IsAbstract
-					&& type.BaseType != null
-					&& type.BaseType.IsGenericType
-					&& type.BaseType.GetGenericTypeDefinition() == typeof(BaseDbContext<>))
-				.ToArray();
+			typeof(BaseDbContext<>)
+			.Assembly.GetTypes()
+			.Where(type =>
+				type.IsClass
+				&& !type.IsAbstract
+				&& type.BaseType != null
+				&& type.BaseType.IsGenericType
+				&& type.BaseType.GetGenericTypeDefinition()
+					== typeof(BaseDbContext<>))
+			.ToArray();
 
 		// For each DbContext, find the primary service in its bounded context
 		List<string> violations = [];
@@ -41,23 +42,33 @@ public class DatabaseHealthCheckTests
 		foreach (Type dbContextType in dbContextTypes)
 		{
 			string contextName =
-				dbContextType.Name.Replace("DbContext", string.Empty);
+				dbContextType.Name.Replace(
+				"DbContext",
+				string.Empty);
 
 			// Find service interface OR health check class that implements IDatabaseHealthCheck
 			Type? healthCheckImplementation =
-				dbContextType.Assembly
-					.GetTypes()
-					.FirstOrDefault(type =>
-						type.Namespace != null
-						&& type.Namespace.Contains(contextName)
-						&& ((type.IsInterface && type.GetInterfaces().Contains(typeof(IDatabaseHealthCheck)))
-							|| (type.IsClass && !type.IsAbstract && type.GetInterfaces().Contains(typeof(IDatabaseHealthCheck)))));
+				dbContextType
+				.Assembly.GetTypes()
+				.FirstOrDefault(type =>
+					type.Namespace != null
+					&& type.Namespace.Contains(contextName)
+					&& (
+						(
+							type.IsInterface
+							&& type.GetInterfaces()
+								.Contains(typeof(IDatabaseHealthCheck)))
+						|| (
+							type.IsClass
+							&& !type.IsAbstract
+							&& type.GetInterfaces()
+								.Contains(typeof(IDatabaseHealthCheck)))));
 
 			if (healthCheckImplementation == null)
 			{
 				violations.Add(
 					$"{contextName} bounded context has {dbContextType.Name} "
-					+ $"but no service interface or health check class implements IDatabaseHealthCheck");
+						+ $"but no service interface or health check class implements IDatabaseHealthCheck");
 			}
 		}
 

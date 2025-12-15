@@ -44,33 +44,50 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task InitializeAsync()
 	{
 		// Configure DbContext with shared PostgreSQL container
-		DbContextOptions<LoggingDbContext> options = new DbContextOptionsBuilder<LoggingDbContext>()
-			.UseNpgsql(Fixture.ConnectionString)
-			.Options;
+		DbContextOptions<LoggingDbContext> options =
+			new DbContextOptionsBuilder<LoggingDbContext>()
+				.UseNpgsql(Fixture.ConnectionString)
+				.Options;
 
-		Context = new LoggingDbContext(options);
+		Context =
+			new LoggingDbContext(options);
 
 		// Clear logs table before each test for isolation
-		await Context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"Logging\".\"Logs\" CASCADE");
+		await Context.Database.ExecuteSqlRawAsync(
+			"TRUNCATE TABLE \"Logging\".\"Logs\" CASCADE");
 
 		// Create service provider for dependency injection
 		ServiceCollection services = new();
 		services.AddScoped<ILogRepository>(_ => new LogRepository(
 			Context,
-			Microsoft.Extensions.Logging.Abstractions.NullLogger<LogRepository>.Instance));
+			Microsoft
+				.Extensions
+				.Logging
+				.Abstractions
+				.NullLogger<LogRepository>
+				.Instance));
 		services.AddScoped(_ => Context);
-		ServiceProvider = services.BuildServiceProvider();
+		ServiceProvider =
+			services.BuildServiceProvider();
 
-		LogRepository = ServiceProvider.GetRequiredService<ILogRepository>();
+		LogRepository =
+			ServiceProvider.GetRequiredService<ILogRepository>();
 	}
 
 	[Fact]
 	public async Task Emit_WarningLevel_WritesToDatabaseAsync()
 	{
 		// Arrange
-		await using DatabaseLogSink sink = new(ServiceProvider!, "Test", "TestMachine");
-		MessageTemplate messageTemplate = new MessageTemplateParser().Parse("Test warning message");
-		LogEvent logEvent = new(
+		await using DatabaseLogSink sink =
+			new(
+			ServiceProvider!,
+			"Test",
+			"TestMachine");
+		MessageTemplate messageTemplate =
+			new MessageTemplateParser().Parse(
+			"Test warning message");
+		LogEvent logEvent =
+			new(
 			DateTimeOffset.UtcNow,
 			LogEventLevel.Warning,
 			null,
@@ -87,9 +104,16 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task Emit_WarningLevel_WritesToDatabase_VerifiedAsync()
 	{
 		// Arrange
-		await using DatabaseLogSink sink = new(ServiceProvider!, "Test", "TestMachine");
-		MessageTemplate messageTemplate = new MessageTemplateParser().Parse("Test warning message");
-		LogEvent logEvent = new(
+		await using DatabaseLogSink sink =
+			new(
+			ServiceProvider!,
+			"Test",
+			"TestMachine");
+		MessageTemplate messageTemplate =
+			new MessageTemplateParser().Parse(
+			"Test warning message");
+		LogEvent logEvent =
+			new(
 			DateTimeOffset.UtcNow,
 			LogEventLevel.Warning,
 			null,
@@ -102,8 +126,11 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogQueryRequest request = new() { SearchTerm = "Test warning message" };
-		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
+		LogQueryRequest request =
+			new() { SearchTerm = "Test warning message" };
+		(IEnumerable<Log> logs, int _) =
+			await LogRepository!.GetPagedAsync(
+			request);
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal("Warning", log.LogLevel);
@@ -116,9 +143,16 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task Emit_ErrorLevel_WritesToDatabaseAsync()
 	{
 		// Arrange
-		await using DatabaseLogSink sink = new(ServiceProvider!, "Test", "TestMachine");
-		MessageTemplate messageTemplate = new MessageTemplateParser().Parse("Test error message");
-		LogEvent logEvent = new(
+		await using DatabaseLogSink sink =
+			new(
+			ServiceProvider!,
+			"Test",
+			"TestMachine");
+		MessageTemplate messageTemplate =
+			new MessageTemplateParser().Parse(
+			"Test error message");
+		LogEvent logEvent =
+			new(
 			DateTimeOffset.UtcNow,
 			LogEventLevel.Error,
 			null,
@@ -130,8 +164,11 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogQueryRequest request = new() { SearchTerm = "Test error message" };
-		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
+		LogQueryRequest request =
+			new() { SearchTerm = "Test error message" };
+		(IEnumerable<Log> logs, int _) =
+			await LogRepository!.GetPagedAsync(
+			request);
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal("Error", log.LogLevel);
@@ -142,9 +179,16 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task Emit_InformationLevel_DoesNotWriteToDatabaseAsync()
 	{
 		// Arrange
-		await using DatabaseLogSink sink = new(ServiceProvider!, "Test", "TestMachine");
-		MessageTemplate messageTemplate = new MessageTemplateParser().Parse("Test info message");
-		LogEvent logEvent = new(
+		await using DatabaseLogSink sink =
+			new(
+			ServiceProvider!,
+			"Test",
+			"TestMachine");
+		MessageTemplate messageTemplate =
+			new MessageTemplateParser().Parse(
+			"Test info message");
+		LogEvent logEvent =
+			new(
 			DateTimeOffset.UtcNow,
 			LogEventLevel.Information,
 			null,
@@ -156,8 +200,11 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogQueryRequest request = new() { SearchTerm = "Test info message" };
-		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
+		LogQueryRequest request =
+			new() { SearchTerm = "Test info message" };
+		(IEnumerable<Log> logs, int _) =
+			await LogRepository!.GetPagedAsync(
+			request);
 		Assert.Empty(logs); // Information level should not be persisted
 	}
 
@@ -165,7 +212,11 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task Emit_WithException_FormatsExceptionProperlyAsync()
 	{
 		// Arrange
-		await using DatabaseLogSink sink = new(ServiceProvider!, "Test", "TestMachine");
+		await using DatabaseLogSink sink =
+			new(
+			ServiceProvider!,
+			"Test",
+			"TestMachine");
 		Exception caughtException;
 		try
 		{
@@ -176,8 +227,11 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			caughtException = exception;
 		}
 
-		MessageTemplate messageTemplate = new MessageTemplateParser().Parse("Error occurred");
-		LogEvent logEvent = new(
+		MessageTemplate messageTemplate =
+			new MessageTemplateParser().Parse(
+			"Error occurred");
+		LogEvent logEvent =
+			new(
 			DateTimeOffset.UtcNow,
 			LogEventLevel.Error,
 			caughtException,
@@ -189,8 +243,11 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogQueryRequest request = new() { SearchTerm = "Error occurred" };
-		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
+		LogQueryRequest request =
+			new() { SearchTerm = "Error occurred" };
+		(IEnumerable<Log> logs, int _) =
+			await LogRepository!.GetPagedAsync(
+			request);
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal("Test exception message", log.ExceptionMessage);
@@ -201,7 +258,11 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	public async Task Emit_WithNestedException_CapturesBaseExceptionAsync()
 	{
 		// Arrange
-		await using DatabaseLogSink sink = new(ServiceProvider!, "Test", "TestMachine");
+		await using DatabaseLogSink sink =
+			new(
+			ServiceProvider!,
+			"Test",
+			"TestMachine");
 
 		Exception nestedException;
 		try
@@ -220,8 +281,11 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			nestedException = ex;
 		}
 
-		MessageTemplate messageTemplate = new MessageTemplateParser().Parse("Nested error occurred");
-		LogEvent logEvent = new(
+		MessageTemplate messageTemplate =
+			new MessageTemplateParser().Parse(
+			"Nested error occurred");
+		LogEvent logEvent =
+			new(
 			DateTimeOffset.UtcNow,
 			LogEventLevel.Error,
 			nestedException,
@@ -233,8 +297,14 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		await ((IAsyncDisposable)sink).DisposeAsync();
 
 		// Assert
-		LogQueryRequest request = new() { SearchTerm = "Nested error occurred" };
-		(IEnumerable<Log> logs, int _) = await LogRepository!.GetPagedAsync(request);
+		LogQueryRequest request =
+			new()
+		{
+			SearchTerm = "Nested error occurred",
+		};
+		(IEnumerable<Log> logs, int _) =
+			await LogRepository!.GetPagedAsync(
+			request);
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal("Outer exception", log.ExceptionMessage);

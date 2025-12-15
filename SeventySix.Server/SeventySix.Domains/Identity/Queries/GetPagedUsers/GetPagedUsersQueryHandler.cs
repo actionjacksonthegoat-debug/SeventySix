@@ -19,14 +19,10 @@ public static class GetPagedUsersQueryHandler
 
 		return new PagedResult<UserDto>
 		{
-			Items =
-				users.ToList(),
-			TotalCount =
-				totalCount,
-			Page =
-				query.Request.Page,
-			PageSize =
-				query.Request.PageSize
+			Items = users.ToList(),
+			TotalCount = totalCount,
+			Page = query.Request.Page,
+			PageSize = query.Request.PageSize,
 		};
 	}
 }

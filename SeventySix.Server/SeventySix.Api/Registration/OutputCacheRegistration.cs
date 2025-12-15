@@ -24,16 +24,22 @@ public static class OutputCacheRegistration
 	{
 		services.AddOutputCache(options =>
 		{
-			OutputCacheOptions? cacheConfig = configuration
-				.GetSection(OutputCacheOptions.SECTION_NAME)
-				.Get<OutputCacheOptions>();
+			OutputCacheOptions? cacheConfig =
+				configuration
+					.GetSection(OutputCacheOptions.SECTION_NAME)
+					.Get<OutputCacheOptions>();
 
 			if (cacheConfig?.Policies == null)
 			{
 				return;
 			}
 
-			foreach ((string? name, CachePolicyConfig? config) in cacheConfig.Policies)
+			foreach (
+				(
+					string? name,
+					CachePolicyConfig? config
+				) in cacheConfig.Policies
+			)
 			{
 				if (!config.Enabled)
 				{
@@ -42,17 +48,20 @@ public static class OutputCacheRegistration
 
 				string policyName = name.ToLowerInvariant();
 
-				options.AddPolicy(policyName, policyBuilder =>
-				{
-					policyBuilder
-						.Expire(TimeSpan.FromSeconds(config.DurationSeconds))
-						.Tag(config.Tag);
-
-					if (config.VaryByQuery.Length > 0)
+				options.AddPolicy(
+					policyName,
+					policyBuilder =>
 					{
-						policyBuilder.SetVaryByQuery(config.VaryByQuery);
-					}
-				});
+						policyBuilder
+							.Expire(
+								TimeSpan.FromSeconds(config.DurationSeconds))
+							.Tag(config.Tag);
+
+						if (config.VaryByQuery.Length > 0)
+						{
+							policyBuilder.SetVaryByQuery(config.VaryByQuery);
+						}
+					});
 			}
 		});
 

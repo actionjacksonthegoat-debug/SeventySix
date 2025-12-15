@@ -44,8 +44,10 @@ public class ThirdPartyApiRequestBuilder
 	public ThirdPartyApiRequestBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;
-		ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		CreateDate = timeProvider.GetUtcNow().UtcDateTime;
+		ResetDate =
+			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+		CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime;
 	}
 
 	/// <summary>
@@ -161,7 +163,9 @@ public class ThirdPartyApiRequestBuilder
 	/// <param name="timeProvider">The time provider for timestamps.</param>
 	/// <param name="callCount">The number of API calls (default 100).</param>
 	/// <returns>A new ThirdPartyApiRequestBuilder with usage.</returns>
-	public static ThirdPartyApiRequestBuilder CreateWithUsage(TimeProvider timeProvider, int callCount = 100)
+	public static ThirdPartyApiRequestBuilder CreateWithUsage(
+		TimeProvider timeProvider,
+		int callCount = 100)
 	{
 		return new ThirdPartyApiRequestBuilder(timeProvider)
 			.WithCallCount(callCount)

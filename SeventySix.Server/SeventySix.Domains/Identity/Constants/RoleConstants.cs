@@ -26,12 +26,8 @@ public static class RoleConstants
 	/// </remarks>
 	public static readonly IReadOnlyList<AvailableRoleDto> AllRequestableRoles =
 	[
-		new AvailableRoleDto(
-			Developer,
-			"Access to developer tools and APIs"),
-		new AvailableRoleDto(
-			Admin,
-			"Full administrative access")
+		new AvailableRoleDto(Developer, "Access to developer tools and APIs"),
+		new AvailableRoleDto(Admin, "Full administrative access"),
 	];
 
 	/// <summary>Valid role names for admin assignment and validation.</summary>

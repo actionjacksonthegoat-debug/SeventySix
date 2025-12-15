@@ -31,9 +31,7 @@ public static class RejectPermissionRequestCommandHandler
 			return false;
 		}
 
-		await repository.DeleteAsync(
-			command.RequestId,
-			cancellationToken);
+		await repository.DeleteAsync(command.RequestId, cancellationToken);
 
 		return true;
 	}

@@ -28,8 +28,7 @@ public class SetPasswordCommandValidator : AbstractValidator<SetPasswordRequest>
 			.Must(BeValidBase64)
 			.WithMessage("Reset token is invalid.");
 
-		RuleFor(request => request.NewPassword)
-			.ApplyPasswordRules();
+		RuleFor(request => request.NewPassword).ApplyPasswordRules();
 	}
 
 	private static bool BeValidBase64(string token)

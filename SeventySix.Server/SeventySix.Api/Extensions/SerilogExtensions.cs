@@ -39,19 +39,29 @@ public static class SerilogExtensions
 		string? environment = null)
 	{
 		// In Test environment, suppress all logging below Error to eliminate noise
-		if (string.Equals(environment, "Test", StringComparison.OrdinalIgnoreCase))
+		if (
+			string.Equals(
+				environment,
+				"Test",
+				StringComparison.OrdinalIgnoreCase))
 		{
 			return config
-				.MinimumLevel.Error()
-				.MinimumLevel.Override("Microsoft", LogEventLevel.Fatal)
-				.MinimumLevel.Override("System", LogEventLevel.Fatal)
-				.MinimumLevel.Override("Wolverine", LogEventLevel.Fatal)
-				.MinimumLevel.Override("JasperFx", LogEventLevel.Fatal);
+				.MinimumLevel
+				.Error()
+				.MinimumLevel
+				.Override("Microsoft", LogEventLevel.Fatal)
+				.MinimumLevel
+				.Override("System", LogEventLevel.Fatal)
+				.MinimumLevel
+				.Override("Wolverine", LogEventLevel.Fatal)
+				.MinimumLevel
+				.Override("JasperFx", LogEventLevel.Fatal);
 			// No sinks in Test - avoids console/file I/O overhead
 		}
 
 		return config
-			.ReadFrom.Configuration(configuration)
+			.ReadFrom
+			.Configuration(configuration)
 			.ConfigureEnrichers()
 			.ConfigureConsoleSink()
 			.ConfigureFileSink()
@@ -71,39 +81,53 @@ public static class SerilogExtensions
 		string environment)
 	{
 		// Skip database sink in Test environment - tests control their own logging
-		if (string.Equals(environment, "Test", StringComparison.OrdinalIgnoreCase))
+		if (
+			string.Equals(
+				environment,
+				"Test",
+				StringComparison.OrdinalIgnoreCase))
 		{
 			return;
 		}
 
-		Serilog.Log.Logger = new LoggerConfiguration()
-			.ReadFrom.Configuration(configuration)
-			.ConfigureEnrichers()
-			.ConfigureConsoleSink()
-			.ConfigureFileSink()
-			.WriteTo.Database(
-				serviceProvider: serviceProvider,
-				environment: environment,
-				machineName: Environment.MachineName)
-			.ConfigureMinimumLevels()
-			.CreateLogger();
+		Serilog.Log.Logger =
+			new LoggerConfiguration()
+				.ReadFrom
+				.Configuration(configuration)
+				.ConfigureEnrichers()
+				.ConfigureConsoleSink()
+				.ConfigureFileSink()
+				.WriteTo
+				.Database(
+					serviceProvider: serviceProvider,
+					environment: environment,
+					machineName: Environment.MachineName)
+				.ConfigureMinimumLevels()
+				.CreateLogger();
 	}
 
-	private static LoggerConfiguration ConfigureEnrichers(this LoggerConfiguration config)
+	private static LoggerConfiguration ConfigureEnrichers(
+		this LoggerConfiguration config)
 	{
 		return config
-			.Enrich.FromLogContext()
-			.Enrich.WithMachineName()
-			.Enrich.WithThreadId()
-			.Enrich.WithExceptionDetails();
+			.Enrich
+			.FromLogContext()
+			.Enrich
+			.WithMachineName()
+			.Enrich
+			.WithThreadId()
+			.Enrich
+			.WithExceptionDetails();
 	}
 
-	private static LoggerConfiguration ConfigureConsoleSink(this LoggerConfiguration config)
+	private static LoggerConfiguration ConfigureConsoleSink(
+		this LoggerConfiguration config)
 	{
 		return config.WriteTo.Console(outputTemplate: ConsoleOutputTemplate);
 	}
 
-	private static LoggerConfiguration ConfigureFileSink(this LoggerConfiguration config)
+	private static LoggerConfiguration ConfigureFileSink(
+		this LoggerConfiguration config)
 	{
 		return config.WriteTo.File(
 			path: LogFilePath,
@@ -112,13 +136,21 @@ public static class SerilogExtensions
 			outputTemplate: FileOutputTemplate);
 	}
 
-	private static LoggerConfiguration ConfigureMinimumLevels(this LoggerConfiguration config)
+	private static LoggerConfiguration ConfigureMinimumLevels(
+		this LoggerConfiguration config)
 	{
 		// NOTE: MinimumLevel.Default is controlled by appsettings.json via ReadFrom.Configuration()
 		// Only set overrides here for framework namespaces that are too verbose at default levels
 		return config
-			.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-			.MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-			.MinimumLevel.Override("System", LogEventLevel.Warning);
+			.MinimumLevel
+			.Override(
+				"Microsoft.AspNetCore",
+				LogEventLevel.Warning)
+			.MinimumLevel
+			.Override(
+				"Microsoft.EntityFrameworkCore",
+				LogEventLevel.Warning)
+			.MinimumLevel
+			.Override("System", LogEventLevel.Warning);
 	}
 }

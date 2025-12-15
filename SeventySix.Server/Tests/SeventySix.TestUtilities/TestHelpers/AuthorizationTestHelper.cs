@@ -26,9 +26,7 @@ public class AuthorizationTestHelper
 	/// </summary>
 	/// <param name="client">The HTTP client to use for requests.</param>
 	/// <param name="services">The service provider to resolve dependencies.</param>
-	public AuthorizationTestHelper(
-		HttpClient client,
-		IServiceProvider services)
+	public AuthorizationTestHelper(HttpClient client, IServiceProvider services)
 	{
 		Client = client;
 		Services = services;
@@ -49,7 +47,10 @@ public class AuthorizationTestHelper
 		Client.DefaultRequestHeaders.Authorization = null;
 
 		HttpResponseMessage response =
-			await SendRequestAsync(method, endpoint, content);
+			await SendRequestAsync(
+			method,
+			endpoint,
+			content);
 
 		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 	}
@@ -70,7 +71,10 @@ public class AuthorizationTestHelper
 		await AuthenticateAsRoleAsync(role);
 
 		HttpResponseMessage response =
-			await SendRequestAsync(method, endpoint, content);
+			await SendRequestAsync(
+			method,
+			endpoint,
+			content);
 
 		Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 	}
@@ -92,7 +96,10 @@ public class AuthorizationTestHelper
 		await AuthenticateAsRoleAsync(role);
 
 		HttpResponseMessage response =
-			await SendRequestAsync(method, endpoint, content);
+			await SendRequestAsync(
+			method,
+			endpoint,
+			content);
 
 		// Accept any 2xx status code as success (200, 201, 204, etc.)
 		Assert.True(
@@ -118,7 +125,10 @@ public class AuthorizationTestHelper
 		await AuthenticateAsRoleAsync(role);
 
 		HttpResponseMessage response =
-			await SendRequestAsync(method, endpoint, content);
+			await SendRequestAsync(
+			method,
+			endpoint,
+			content);
 
 		Assert.Equal(expectedStatusCode, response.StatusCode);
 	}
@@ -161,11 +171,13 @@ public class AuthorizationTestHelper
 	{
 		LoginRequest request =
 			new(
-				UsernameOrEmail: username,
-				Password: TestUserHelper.TestPassword);
+			UsernameOrEmail: username,
+			Password: TestUserHelper.TestPassword);
 
 		HttpResponseMessage response =
-			await Client.PostAsJsonAsync(ApiEndpoints.Auth.Login, request);
+			await Client.PostAsJsonAsync(
+			ApiEndpoints.Auth.Login,
+			request);
 
 		response.EnsureSuccessStatusCode();
 
@@ -185,15 +197,17 @@ public class AuthorizationTestHelper
 	{
 		HttpRequestMessage request =
 			new(method, endpoint)
-			{
-				Content = content,
-			};
+		{
+			Content = content,
+		};
 
 		// Copy Authorization header - DefaultRequestHeaders are NOT auto-applied when using SendAsync with HttpRequestMessage
 		if (Client.DefaultRequestHeaders.Authorization != null)
 		{
 			request.Headers.Authorization =
-				Client.DefaultRequestHeaders.Authorization;
+				Client
+				.DefaultRequestHeaders
+				.Authorization;
 		}
 
 		return await Client.SendAsync(request);

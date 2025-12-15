@@ -21,14 +21,18 @@ public class ThirdPartyApiRequestTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest request = new()
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = "ExternalAPI",
 			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 5,
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 		};
-		DateTime beforeTimestamp = timeProvider.GetUtcNow().UtcDateTime;
+		DateTime beforeTimestamp =
+			timeProvider.GetUtcNow().UtcDateTime;
 
 		// Act
 		request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
@@ -37,7 +41,6 @@ public class ThirdPartyApiRequestTests
 		Assert.Equal(6, request.CallCount);
 		Assert.NotNull(request.LastCalledAt);
 		Assert.True(request.LastCalledAt >= beforeTimestamp);
-
 	}
 
 	[Fact]
@@ -45,12 +48,15 @@ public class ThirdPartyApiRequestTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest request = new()
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = "ExternalAPI",
 			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 0,
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 		};
 
 		// Act
@@ -74,16 +80,21 @@ public class ThirdPartyApiRequestTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest request = new()
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = "ExternalAPI",
 			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 50,
-			LastCalledAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(-1),
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			LastCalledAt =
+			timeProvider.GetUtcNow().UtcDateTime.AddHours(-1),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 		};
 		DateTime? lastCalledBefore = request.LastCalledAt;
-		DateTime beforeTimestamp = timeProvider.GetUtcNow().UtcDateTime;
+		DateTime beforeTimestamp =
+			timeProvider.GetUtcNow().UtcDateTime;
 
 		// Act
 		request.ResetCallCount();
@@ -91,7 +102,6 @@ public class ThirdPartyApiRequestTests
 		// Assert
 		Assert.Equal(0, request.CallCount);
 		Assert.Equal(lastCalledBefore, request.LastCalledAt); // LastCalledAt preserved for history
-
 	}
 
 	[Fact]
@@ -99,19 +109,24 @@ public class ThirdPartyApiRequestTests
 	{
 		// Arrange & Act
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest request = new()
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = "ExternalAPI",
 			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 10,
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 		};
 
 		// Assert
 		Assert.Equal("ExternalAPI", request.ApiName);
 		Assert.Equal("https://api.ExternalAPImap.org", request.BaseUrl);
 		Assert.Equal(10, request.CallCount);
-		Assert.Equal(DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime), request.ResetDate);
+		Assert.Equal(
+			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			request.ResetDate);
 	}
 
 	[Fact]
@@ -119,11 +134,14 @@ public class ThirdPartyApiRequestTests
 	{
 		// Arrange & Act
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest request = new()
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = "ExternalAPI",
 			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 		};
 
 		// Assert
@@ -135,11 +153,14 @@ public class ThirdPartyApiRequestTests
 	{
 		// Arrange & Act
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest request = new()
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = "ExternalAPI",
 			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 		};
 
 		// Assert
@@ -151,11 +172,14 @@ public class ThirdPartyApiRequestTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest request = new()
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = "ExternalAPI",
 			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 		};
 
 		// Act

@@ -40,25 +40,17 @@ public class TokenService(
 	{
 		List<Claim> claims =
 		[
-			new Claim(
-				JwtRegisteredClaimNames.Sub,
-				userId.ToString()),
-			new Claim(
-				JwtRegisteredClaimNames.UniqueName,
-				username),
-			new Claim(
-				JwtRegisteredClaimNames.Email,
-				email),
+			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+			new Claim(JwtRegisteredClaimNames.UniqueName, username),
+			new Claim(JwtRegisteredClaimNames.Email, email),
 			new Claim(
 				JwtRegisteredClaimNames.GivenName,
 				fullName ?? string.Empty),
-			new Claim(
-				JwtRegisteredClaimNames.Jti,
-				Guid.NewGuid().ToString()),
+			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 			new Claim(
 				JwtRegisteredClaimNames.Iat,
 				timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(),
-				ClaimValueTypes.Integer64)
+				ClaimValueTypes.Integer64),
 		];
 
 		// Add role claims
@@ -68,15 +60,19 @@ public class TokenService(
 		}
 
 		SymmetricSecurityKey key =
-			new(Encoding.UTF8.GetBytes(jwtSettings.Value.SecretKey));
+			new(
+				Encoding.UTF8.GetBytes(jwtSettings.Value.SecretKey));
 
 		SigningCredentials credentials =
-			new(key, SecurityAlgorithms.HmacSha256);
+			new(
+				key,
+				SecurityAlgorithms.HmacSha256);
 
 		DateTime expires =
-			timeProvider.GetUtcNow()
-				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
-				.UtcDateTime;
+			timeProvider
+			.GetUtcNow()
+			.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
+			.UtcDateTime;
 
 		JwtSecurityToken token =
 			new(
@@ -138,8 +134,8 @@ public class TokenService(
 
 		// Check absolute session timeout (30 days from session start)
 		DateTime absoluteTimeout =
-			existingToken.SessionStartedAt
-				.AddDays(jwtSettings.Value.AbsoluteSessionTimeoutDays);
+			existingToken.SessionStartedAt.AddDays(
+				jwtSettings.Value.AbsoluteSessionTimeoutDays);
 
 		if (now >= absoluteTimeout)
 		{
@@ -176,7 +172,9 @@ public class TokenService(
 
 		// Calculate rememberMe from token expiration to preserve original setting
 		int tokenLifetimeDays =
-			(int)(existingToken.ExpiresAt - existingToken.SessionStartedAt).TotalDays;
+			(int)
+			(
+				existingToken.ExpiresAt - existingToken.SessionStartedAt).TotalDays;
 
 		bool rememberMe =
 			tokenLifetimeDays > jwtSettings.Value.RefreshTokenExpirationDays;
@@ -212,10 +210,7 @@ public class TokenService(
 			timeProvider.GetUtcNow().UtcDateTime;
 
 		// Enforce session limit - revoke oldest if at max
-		await EnforceSessionLimitAsync(
-			userId,
-			now,
-			cancellationToken);
+		await EnforceSessionLimitAsync(userId, now, cancellationToken);
 
 		// Generate cryptographically secure random token using shared utility
 		string plainTextToken =
@@ -226,25 +221,25 @@ public class TokenService(
 
 		int expirationDays =
 			rememberMe
-				? jwtSettings.Value.RefreshTokenRememberMeExpirationDays
-				: jwtSettings.Value.RefreshTokenExpirationDays;
+			? jwtSettings.Value.RefreshTokenRememberMeExpirationDays
+			: jwtSettings.Value.RefreshTokenExpirationDays;
 
 		RefreshToken refreshToken =
 			new()
-			{
-				TokenHash = tokenHash,
-				UserId = userId,
-				FamilyId = familyId,
-				ExpiresAt = now.AddDays(expirationDays),
-				SessionStartedAt = sessionStartedAt ?? now,
-				CreateDate = now,
-				IsRevoked = false,
-				CreatedByIp = clientIp
-			};
+		{
+			TokenHash = tokenHash,
+			UserId = userId,
+			FamilyId = familyId,
+			ExpiresAt =
+			now.AddDays(expirationDays),
+			SessionStartedAt =
+			sessionStartedAt ?? now,
+			CreateDate = now,
+			IsRevoked = false,
+			CreatedByIp = clientIp,
+		};
 
-		await tokenRepository.CreateAsync(
-			refreshToken,
-			cancellationToken);
+		await tokenRepository.CreateAsync(refreshToken, cancellationToken);
 
 		return plainTextToken;
 	}

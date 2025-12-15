@@ -17,30 +17,20 @@ public class ExternalServiceException : DomainException
 	/// Initializes a new instance of the <see cref="ExternalServiceException"/> class.
 	/// </summary>
 	public ExternalServiceException()
-		: base("An external service error occurred.")
-	{
-	}
+		: base("An external service error occurred.") { }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ExternalServiceException"/> class with a specified error message.
 	/// </summary>
 	/// <param name="message">The message that describes the error.</param>
 	public ExternalServiceException(string message)
-		: base(message)
-	{
-	}
+		: base(message) { }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ExternalServiceException"/> class with a specified error message and inner exception.
 	/// </summary>
 	/// <param name="message">The message that describes the error.</param>
 	/// <param name="innerException">The exception that is the cause of the current exception.</param>
-	public ExternalServiceException(
-		string message,
-		Exception innerException)
-		: base(
-			message,
-			innerException)
-	{
-	}
+	public ExternalServiceException(string message, Exception innerException)
+		: base(message, innerException) { }
 }

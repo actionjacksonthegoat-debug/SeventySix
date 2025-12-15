@@ -28,7 +28,8 @@ namespace SeventySix.TestUtilities.Builders;
 public class LogBuilder
 {
 	private readonly TimeProvider TimeProvider;
-	private string LogLevel = LogLevelConstants.Information;
+	private string LogLevel =
+		LogLevelConstants.Information;
 	private string Message = "Test log message";
 	private string? ExceptionMessage = null;
 	private string? BaseExceptionMessage = null;
@@ -53,7 +54,8 @@ public class LogBuilder
 	public LogBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;
-		CreateDate = timeProvider.GetUtcNow().UtcDateTime;
+		CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime;
 	}
 
 	/// <summary>
@@ -96,7 +98,8 @@ public class LogBuilder
 	/// <returns>The builder instance for method chaining.</returns>
 	public LogBuilder WithBaseExceptionMessage(string? baseExceptionMessage)
 	{
-		BaseExceptionMessage = baseExceptionMessage;
+		BaseExceptionMessage =
+			baseExceptionMessage;
 		return this;
 	}
 
@@ -130,7 +133,11 @@ public class LogBuilder
 	/// <param name="statusCode">The HTTP status code.</param>
 	/// <param name="durationMs">The request duration in milliseconds.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public LogBuilder WithHttpRequest(string? method, string? path, int? statusCode = null, long? durationMs = null)
+	public LogBuilder WithHttpRequest(
+		string? method,
+		string? path,
+		int? statusCode = null,
+		long? durationMs = null)
 	{
 		RequestMethod = method;
 		RequestPath = path;
@@ -218,7 +225,8 @@ public class LogBuilder
 			LogLevel = LogLevel,
 			Message = Message,
 			ExceptionMessage = ExceptionMessage,
-			BaseExceptionMessage = BaseExceptionMessage,
+			BaseExceptionMessage =
+			BaseExceptionMessage,
 			StackTrace = StackTrace,
 			SourceContext = SourceContext,
 			RequestMethod = RequestMethod,
@@ -242,7 +250,8 @@ public class LogBuilder
 	/// <returns>A new LogBuilder configured for a Warning log.</returns>
 	public static LogBuilder CreateWarning(TimeProvider timeProvider)
 	{
-		return new LogBuilder(timeProvider).WithLogLevel(LogLevelConstants.Warning);
+		return new LogBuilder(timeProvider).WithLogLevel(
+			LogLevelConstants.Warning);
 	}
 
 	/// <summary>

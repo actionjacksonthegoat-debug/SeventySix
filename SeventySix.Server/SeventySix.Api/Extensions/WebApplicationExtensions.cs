@@ -29,25 +29,25 @@ public static class WebApplicationExtensions
 		IConfiguration configuration)
 	{
 		bool skipMigrationCheck =
-			configuration.GetValue<bool>("SkipMigrationCheck");
+			configuration.GetValue<bool>(
+				"SkipMigrationCheck");
 
 		if (skipMigrationCheck)
 		{
 			return;
 		}
 
-		using IServiceScope scope =
-			app.Services.CreateScope();
+		using IServiceScope scope = app.Services.CreateScope();
 
-		IServiceProvider services =
-			scope.ServiceProvider;
+		IServiceProvider services = scope.ServiceProvider;
 
 		ILogger logger =
 			services.GetRequiredService<ILogger<WebApplication>>();
 
 		try
 		{
-			logger.LogInformation("Checking for pending database migrations...");
+			logger.LogInformation(
+				"Checking for pending database migrations...");
 
 			await ApplyContextMigrationsAsync<IdentityDbContext>(
 				services,
@@ -64,7 +64,8 @@ public static class WebApplicationExtensions
 				logger,
 				"ApiTracking");
 
-			logger.LogInformation("Database initialization completed successfully");
+			logger.LogInformation(
+				"Database initialization completed successfully");
 		}
 		catch (Exception ex)
 		{
@@ -91,18 +92,16 @@ public static class WebApplicationExtensions
 
 		ForwardedHeadersOptions options =
 			new()
-			{
-				ForwardedHeaders =
-					ForwardedHeaders.XForwardedFor
-					| ForwardedHeaders.XForwardedProto,
-				ForwardLimit = settings.ForwardLimit
-			};
+		{
+			ForwardedHeaders =
+				ForwardedHeaders.XForwardedFor
+				| ForwardedHeaders.XForwardedProto,
+			ForwardLimit = settings.ForwardLimit,
+		};
 
 		foreach (string proxy in settings.KnownProxies)
 		{
-			if (IPAddress.TryParse(
-				proxy,
-				out IPAddress? ip))
+			if (IPAddress.TryParse(proxy, out IPAddress? ip))
 			{
 				options.KnownProxies.Add(ip);
 			}
@@ -113,17 +112,13 @@ public static class WebApplicationExtensions
 			string[] parts =
 				network.Split('/');
 
-			if (parts.Length == 2
-				&& IPAddress.TryParse(
-					parts[0],
-					out IPAddress? prefix)
-				&& int.TryParse(
-					parts[1],
-					out int prefixLength))
+			if (
+				parts.Length == 2
+				&& IPAddress.TryParse(parts[0], out IPAddress? prefix)
+				&& int.TryParse(parts[1], out int prefixLength))
 			{
-				options.KnownIPNetworks.Add(new System.Net.IPNetwork(
-					prefix,
-					prefixLength));
+				options.KnownIPNetworks.Add(
+					new System.Net.IPNetwork(prefix, prefixLength));
 			}
 		}
 
@@ -135,29 +130,35 @@ public static class WebApplicationExtensions
 	/// <summary>Maps health check endpoints following Kubernetes best practices.</summary>
 	/// <param name="app">The web application.</param>
 	/// <returns>The web application for chaining.</returns>
-	public static WebApplication MapHealthCheckEndpoints(this WebApplication app)
+	public static WebApplication MapHealthCheckEndpoints(
+		this WebApplication app)
 	{
 		app.MapHealthChecks(
 			"/health/live",
 			new HealthCheckOptions
 			{
-				Predicate = _ => false,
-				ResponseWriter = WriteLivenessResponseAsync
+				Predicate =
+			_ => false,
+				ResponseWriter =
+			WriteLivenessResponseAsync,
 			});
 
 		app.MapHealthChecks(
 			"/health/ready",
 			new HealthCheckOptions
 			{
-				Predicate = check => check.Tags.Contains("ready"),
-				ResponseWriter = WriteHealthCheckResponseAsync
+				Predicate =
+			check => check.Tags.Contains("ready"),
+				ResponseWriter =
+			WriteHealthCheckResponseAsync,
 			});
 
 		app.MapHealthChecks(
 			"/health",
 			new HealthCheckOptions
 			{
-				ResponseWriter = WriteHealthCheckResponseAsync
+				ResponseWriter =
+			WriteHealthCheckResponseAsync,
 			});
 
 		return app;
@@ -193,14 +194,12 @@ public static class WebApplicationExtensions
 		TimeProvider timeProvider =
 			context.RequestServices.GetRequiredService<TimeProvider>();
 
-		await context.Response.WriteAsJsonAsync(new
-		{
-			status = HealthStatusConstants.Healthy,
-			timestamp =
-				timeProvider
-					.GetUtcNow()
-					.UtcDateTime
-		});
+		await context.Response.WriteAsJsonAsync(
+			new
+			{
+				status = HealthStatusConstants.Healthy,
+				timestamp = timeProvider.GetUtcNow().UtcDateTime,
+			});
 	}
 
 	private static async Task WriteHealthCheckResponseAsync(
@@ -214,23 +213,20 @@ public static class WebApplicationExtensions
 
 		object response =
 			new
-			{
-				status = report.Status.ToString(),
-				timestamp =
-					timeProvider
-						.GetUtcNow()
-						.UtcDateTime,
-				duration = report.TotalDuration,
-				checks = report.Entries.Select(entry => new
+		{
+			status = report.Status.ToString(),
+			timestamp = timeProvider.GetUtcNow().UtcDateTime,
+			duration = report.TotalDuration,
+			checks = report.Entries.Select(entry => new
 				{
 					name = entry.Key,
 					status = entry.Value.Status.ToString(),
 					description = entry.Value.Description,
 					duration = entry.Value.Duration,
 					exception = entry.Value.Exception?.Message,
-					data = entry.Value.Data
-				})
-			};
+					data = entry.Value.Data,
+				}),
+		};
 
 		string result =
 			JsonSerializer.Serialize(

@@ -20,11 +20,10 @@ public static class ClaimsPrincipalExtensions
 	public static int? GetUserId(this ClaimsPrincipal principal)
 	{
 		string? userIdClaim =
-			principal.FindFirstValue(JwtRegisteredClaimNames.Sub);
+			principal.FindFirstValue(
+				JwtRegisteredClaimNames.Sub);
 
-		return int.TryParse(userIdClaim, out int userId)
-			? userId
-			: null;
+		return int.TryParse(userIdClaim, out int userId) ? userId : null;
 	}
 
 	/// <summary>
@@ -36,7 +35,8 @@ public static class ClaimsPrincipalExtensions
 	public static int GetRequiredUserId(this ClaimsPrincipal principal)
 	{
 		return principal.GetUserId()
-			?? throw new UnauthorizedAccessException("User ID not found in claims");
+			?? throw new UnauthorizedAccessException(
+				"User ID not found in claims");
 	}
 
 	/// <summary>
@@ -58,6 +58,7 @@ public static class ClaimsPrincipalExtensions
 	public static string GetRequiredUsername(this ClaimsPrincipal principal)
 	{
 		return principal.GetUsername()
-			?? throw new UnauthorizedAccessException("Username not found in claims");
+			?? throw new UnauthorizedAccessException(
+				"Username not found in claims");
 	}
 }

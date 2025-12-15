@@ -16,7 +16,8 @@ namespace SeventySix.Identity;
 /// - UserId indexed for finding user's tokens
 /// - All datetime fields required for audit trail.
 /// </remarks>
-public class PasswordResetTokenConfiguration : IEntityTypeConfiguration<PasswordResetToken>
+public class PasswordResetTokenConfiguration
+	: IEntityTypeConfiguration<PasswordResetToken>
 {
 	/// <summary>
 	/// Configures the entity mapping for PasswordResetToken.
@@ -26,29 +27,22 @@ public class PasswordResetTokenConfiguration : IEntityTypeConfiguration<Password
 	{
 		ArgumentNullException.ThrowIfNull(builder);
 
-		builder.ToTable(
-			"PasswordResetTokens",
-			"identity");
+		builder.ToTable("PasswordResetTokens", "identity");
 
 		builder.HasKey(token => token.Id);
 
-		builder.Property(token => token.Id)
-			.UseIdentityColumn()
-			.IsRequired();
+		builder.Property(token => token.Id).UseIdentityColumn().IsRequired();
 
 		// Token - Required, base64 encoded 64 bytes = ~88 chars (allow 128 for safety)
-		builder.Property(token => token.Token)
-			.HasMaxLength(128)
-			.IsRequired();
+		builder.Property(token => token.Token).HasMaxLength(128).IsRequired();
 
-		builder.HasIndex(token => token.Token)
+		builder
+			.HasIndex(token => token.Token)
 			.IsUnique()
 			.HasDatabaseName("IX_PasswordResetTokens_Token");
 
 		// UserId - for finding tokens by user
-		builder
-			.Property(token => token.UserId)
-			.IsRequired();
+		builder.Property(token => token.UserId).IsRequired();
 
 		builder
 			.HasIndex(token => token.UserId)
@@ -62,15 +56,12 @@ public class PasswordResetTokenConfiguration : IEntityTypeConfiguration<Password
 			.OnDelete(DeleteBehavior.Cascade);
 
 		// ExpiresAt - Required
-		builder.Property(token => token.ExpiresAt)
-			.IsRequired();
+		builder.Property(token => token.ExpiresAt).IsRequired();
 
 		// CreateDate - Required (auto-set by AuditInterceptor for ICreatableEntity)
-		builder.Property(token => token.CreateDate)
-			.IsRequired();
+		builder.Property(token => token.CreateDate).IsRequired();
 
 		// IsUsed - Required, defaults to false
-		builder.Property(token => token.IsUsed)
-			.IsRequired();
+		builder.Property(token => token.IsUsed).IsRequired();
 	}
 }

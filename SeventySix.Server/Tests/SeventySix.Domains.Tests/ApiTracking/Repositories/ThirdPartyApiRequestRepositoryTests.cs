@@ -30,11 +30,13 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 {
 	private readonly ThirdPartyApiRequestRepository Repository;
 
-	public ThirdPartyApiRequestRepositoryTests(TestcontainersPostgreSqlFixture fixture)
+	public ThirdPartyApiRequestRepositoryTests(
+		TestcontainersPostgreSqlFixture fixture)
 		: base(fixture)
 	{
 		ApiTrackingDbContext context = CreateApiTrackingDbContext();
-		Repository = new ThirdPartyApiRequestRepository(
+		Repository =
+			new ThirdPartyApiRequestRepository(
 			context,
 			Substitute.For<ILogger<ThirdPartyApiRequestRepository>>());
 	}
@@ -44,10 +46,15 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"GetByDate_{testId}";
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		ThirdPartyApiRequest request = new()
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"GetByDate_{testId}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = apiName,
 			BaseUrl = "https://api.ExternalAPImap.org",
@@ -57,7 +64,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		await Repository.CreateAsync(request);
 
 		// Act
-		ThirdPartyApiRequest? result = await Repository.GetByApiNameAndDateAsync(apiName, today);
+		ThirdPartyApiRequest? result =
+			await Repository.GetByApiNameAndDateAsync(apiName, today);
 
 		// Assert
 		Assert.NotNull(result);
@@ -71,10 +79,13 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
 
 		// Act
-		ThirdPartyApiRequest? result = await Repository.GetByApiNameAndDateAsync("NonExistent", today);
+		ThirdPartyApiRequest? result =
+			await Repository.GetByApiNameAndDateAsync("NonExistent", today);
 
 		// Assert
 		Assert.Null(result);
@@ -85,10 +96,14 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		DateOnly yesterday = today.AddDays(-1);
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
+		DateOnly yesterday =
+			today.AddDays(-1);
 
-		ThirdPartyApiRequest request = new()
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = "ExternalAPI",
 			BaseUrl = "https://api.ExternalAPImap.org",
@@ -98,7 +113,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		await Repository.CreateAsync(request);
 
 		// Act
-		ThirdPartyApiRequest? result = await Repository.GetByApiNameAndDateAsync("ExternalAPI", yesterday);
+		ThirdPartyApiRequest? result =
+			await Repository.GetByApiNameAndDateAsync("ExternalAPI", yesterday);
 
 		// Assert
 		Assert.Null(result);
@@ -109,10 +125,15 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"Create_{testId}";
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		ThirdPartyApiRequest request = new()
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"Create_{testId}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = apiName,
 			BaseUrl = "https://api.ExternalAPImap.org",
@@ -121,7 +142,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		};
 
 		// Act
-		ThirdPartyApiRequest result = await Repository.CreateAsync(request);
+		ThirdPartyApiRequest result =
+			await Repository.CreateAsync(request);
 
 		// Assert
 		Assert.NotEqual(0, result.Id); // Id should be generated
@@ -136,10 +158,15 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		// Note: Timestamp auto-setting is tested in AuditInterceptorTests
 		// This test verifies repository CreateAsync behavior without interceptor
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"CreateTest_{testId}";
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		ThirdPartyApiRequest request = new()
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"CreateTest_{testId}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = apiName,
 			BaseUrl = "https://api.example.org",
@@ -147,7 +174,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		};
 
 		// Act
-		ThirdPartyApiRequest result = await Repository.CreateAsync(request);
+		ThirdPartyApiRequest result =
+			await Repository.CreateAsync(request);
 
 		// Assert
 		Assert.NotEqual(0, result.Id); // Id should be generated by database
@@ -162,10 +190,15 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"DupCheck_{testId}";
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		ThirdPartyApiRequest request1 = new()
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"DupCheck_{testId}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
+		ThirdPartyApiRequest request1 =
+			new()
 		{
 			ApiName = apiName,
 			BaseUrl = "https://api.ExternalAPImap.org",
@@ -173,7 +206,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		};
 		await Repository.CreateAsync(request1);
 
-		ThirdPartyApiRequest request2 = new()
+		ThirdPartyApiRequest request2 =
+			new()
 		{
 			ApiName = apiName, // Same API
 			BaseUrl = "https://api.ExternalAPImap.org",
@@ -181,7 +215,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		};
 
 		// Act & Assert
-		await Assert.ThrowsAsync<DbUpdateException>(() => Repository.CreateAsync(request2));
+		await Assert.ThrowsAsync<DbUpdateException>(() =>
+			Repository.CreateAsync(request2));
 	}
 
 	[Fact]
@@ -189,19 +224,26 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"DiffDate_{testId}";
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		DateOnly yesterday = today.AddDays(-1);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"DiffDate_{testId}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
+		DateOnly yesterday =
+			today.AddDays(-1);
 
-		ThirdPartyApiRequest request1 = new()
+		ThirdPartyApiRequest request1 =
+			new()
 		{
 			ApiName = apiName,
 			BaseUrl = "https://api.ExternalAPImap.org",
 			ResetDate = today,
 		};
 
-		ThirdPartyApiRequest request2 = new()
+		ThirdPartyApiRequest request2 =
+			new()
 		{
 			ApiName = apiName, // Same API
 			BaseUrl = "https://api.ExternalAPImap.org",
@@ -210,7 +252,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 
 		// Act
 		await Repository.CreateAsync(request1);
-		ThirdPartyApiRequest result = await Repository.CreateAsync(request2);
+		ThirdPartyApiRequest result =
+			await Repository.CreateAsync(request2);
 
 		// Assert
 		Assert.NotNull(result);
@@ -222,21 +265,28 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"Update_{testId}";
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		ThirdPartyApiRequest request = new()
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"Update_{testId}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
+		ThirdPartyApiRequest request =
+			new()
 		{
 			ApiName = apiName,
 			BaseUrl = "https://api.ExternalAPImap.org",
 			CallCount = 5,
 			ResetDate = today,
 		};
-		ThirdPartyApiRequest created = await Repository.CreateAsync(request);
+		ThirdPartyApiRequest created =
+			await Repository.CreateAsync(request);
 
 		// Act
 		created.CallCount = 10;
-		ThirdPartyApiRequest result = await Repository.UpdateAsync(created);
+		ThirdPartyApiRequest result =
+			await Repository.UpdateAsync(created);
 
 		// Assert
 		Assert.Equal(10, result.CallCount);
@@ -247,50 +297,63 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"GetByName_{testId}";
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		DateOnly yesterday = today.AddDays(-1);
-		DateOnly twoDaysAgo = today.AddDays(-2);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"GetByName_{testId}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
+		DateOnly yesterday =
+			today.AddDays(-1);
+		DateOnly twoDaysAgo =
+			today.AddDays(-2);
 
-		await Repository.CreateAsync(new ThirdPartyApiRequest
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			CallCount = 10,
-			ResetDate = today,
-		});
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 10,
+				ResetDate = today,
+			});
 
-		await Repository.CreateAsync(new ThirdPartyApiRequest
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			CallCount = 20,
-			ResetDate = yesterday,
-		});
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 20,
+				ResetDate = yesterday,
+			});
 
-		await Repository.CreateAsync(new ThirdPartyApiRequest
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			CallCount = 15,
-			ResetDate = twoDaysAgo,
-		});
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 15,
+				ResetDate = twoDaysAgo,
+			});
 
 		// Different API
-		await Repository.CreateAsync(new ThirdPartyApiRequest
-		{
-			ApiName = $"DifferentApi_{testId}",
-			BaseUrl = "https://api.example.com",
-			CallCount = 5,
-			ResetDate = today,
-		});
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName =
+			$"DifferentApi_{testId}",
+				BaseUrl = "https://api.example.com",
+				CallCount = 5,
+				ResetDate = today,
+			});
 
 		// Act
-		IEnumerable<ThirdPartyApiRequest> results = await Repository.GetByApiNameAsync(apiName);
+		IEnumerable<ThirdPartyApiRequest> results =
+			await Repository.GetByApiNameAsync(apiName);
 
 		// Assert
-		List<ThirdPartyApiRequest> resultList = [.. results];
+		List<ThirdPartyApiRequest> resultList =
+			[.. results];
 		Assert.Equal(3, resultList.Count);
 		Assert.All(resultList, r => Assert.Equal(apiName, r.ApiName));
 	}
@@ -299,7 +362,8 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	public async Task GetByApiNameAsync_ReturnsEmptyCollection_WhenNoRecordsExistAsync()
 	{
 		// Act
-		IEnumerable<ThirdPartyApiRequest> results = await Repository.GetByApiNameAsync("NonExistent");
+		IEnumerable<ThirdPartyApiRequest> results =
+			await Repository.GetByApiNameAsync("NonExistent");
 
 		// Assert
 		Assert.Empty(results);
@@ -310,47 +374,60 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"Delete_{testId}";
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		DateOnly tenDaysAgo = today.AddDays(-10);
-		DateOnly thirtyDaysAgo = today.AddDays(-30);
-		DateOnly fortyDaysAgo = today.AddDays(-40);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"Delete_{testId}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
+		DateOnly tenDaysAgo =
+			today.AddDays(-10);
+		DateOnly thirtyDaysAgo =
+			today.AddDays(-30);
+		DateOnly fortyDaysAgo =
+			today.AddDays(-40);
 
-		await Repository.CreateAsync(new ThirdPartyApiRequest
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = today,
-		});
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				ResetDate = today,
+			});
 
-		await Repository.CreateAsync(new ThirdPartyApiRequest
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = tenDaysAgo,
-		});
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				ResetDate = tenDaysAgo,
+			});
 
-		await Repository.CreateAsync(new ThirdPartyApiRequest
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = thirtyDaysAgo,
-		});
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				ResetDate = thirtyDaysAgo,
+			});
 
-		await Repository.CreateAsync(new ThirdPartyApiRequest
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = fortyDaysAgo,
-		});
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				ResetDate = fortyDaysAgo,
+			});
 
 		// Act
-		int deletedCount = await Repository.DeleteOlderThanAsync(thirtyDaysAgo);
+		int deletedCount =
+			await Repository.DeleteOlderThanAsync(thirtyDaysAgo);
 
 		// Assert
 		Assert.True(deletedCount >= 1); // At least fortyDaysAgo should be deleted (other tests may add old records too)
-		IEnumerable<ThirdPartyApiRequest> remaining = await Repository.GetByApiNameAsync(apiName);
+		IEnumerable<ThirdPartyApiRequest> remaining =
+			await Repository.GetByApiNameAsync(apiName);
 		Assert.Equal(3, remaining.Count());
 	}
 
@@ -359,36 +436,47 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string apiName = $"NoDelete_{testId}";
-		DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-		DateOnly yesterday = today.AddDays(-1);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string apiName =
+			$"NoDelete_{testId}";
+		DateOnly today =
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
+		DateOnly yesterday =
+			today.AddDays(-1);
 
-		await Repository.CreateAsync(new ThirdPartyApiRequest
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = today,
-		});
+		await Repository.CreateAsync(
+			new ThirdPartyApiRequest
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				ResetDate = today,
+			});
 
 		// Act - delete records older than 100 days ago (none should exist for this specific test)
-		DateOnly cutoffDate = today.AddDays(-100);
-		int deletedCount = await Repository.DeleteOlderThanAsync(cutoffDate);
+		DateOnly cutoffDate =
+			today.AddDays(-100);
+		int deletedCount =
+			await Repository.DeleteOlderThanAsync(cutoffDate);
 
 		// Assert - We can only verify our specific record wasn't deleted
-		IEnumerable<ThirdPartyApiRequest> remaining = await Repository.GetByApiNameAsync(apiName);
+		IEnumerable<ThirdPartyApiRequest> remaining =
+			await Repository.GetByApiNameAsync(apiName);
 		Assert.Single(remaining);
 	}
 
 	[Fact]
 	public async Task CreateAsync_ThrowsException_WhenEntityIsNullAsync() =>
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.CreateAsync(null!));
+		await Assert.ThrowsAsync<ArgumentNullException>(() =>
+			Repository.CreateAsync(null!));
 
 	[Fact]
 	public async Task UpdateAsync_ThrowsException_WhenEntityIsNullAsync() =>
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.UpdateAsync(null!));
+		await Assert.ThrowsAsync<ArgumentNullException>(() =>
+			Repository.UpdateAsync(null!));
 
 	[Fact]
 	public async Task GetByApiNameAndDateAsync_ThrowsException_WhenApiNameIsNullAsync()
@@ -397,8 +485,10 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		FakeTimeProvider timeProvider = new();
 
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(
-			() => Repository.GetByApiNameAndDateAsync(null!, DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime)));
+		await Assert.ThrowsAsync<ArgumentNullException>(() =>
+			Repository.GetByApiNameAndDateAsync(
+				null!,
+				DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime)));
 	}
 
 	[Fact]
@@ -408,7 +498,9 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 		FakeTimeProvider timeProvider = new();
 
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentException>(
-			() => Repository.GetByApiNameAndDateAsync(string.Empty, DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime)));
+		await Assert.ThrowsAsync<ArgumentException>(() =>
+			Repository.GetByApiNameAndDateAsync(
+				string.Empty,
+				DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime)));
 	}
 }

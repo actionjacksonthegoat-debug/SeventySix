@@ -5,6 +5,7 @@
 using FluentValidation.TestHelper;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
+
 namespace SeventySix.Domains.Tests.Identity.Validators;
 
 /// <summary>
@@ -43,11 +44,16 @@ public class JwtSettingsValidatorTests
 		int? refreshTokenDays = null) =>
 		new()
 		{
-			SecretKey = secretKey ?? ValidTestSecretKey,
-			Issuer = issuer ?? TestIssuer,
-			Audience = audience ?? TestAudience,
-			AccessTokenExpirationMinutes = accessTokenMinutes ?? 15,
-			RefreshTokenExpirationDays = refreshTokenDays ?? 7,
+			SecretKey =
+		secretKey ?? ValidTestSecretKey,
+			Issuer =
+		issuer ?? TestIssuer,
+			Audience =
+		audience ?? TestAudience,
+			AccessTokenExpirationMinutes =
+		accessTokenMinutes ?? 15,
+			RefreshTokenExpirationDays =
+		refreshTokenDays ?? 7,
 		};
 
 	#region SecretKey Validation Tests
@@ -65,7 +71,8 @@ public class JwtSettingsValidatorTests
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(s => s.SecretKey);
@@ -77,20 +84,26 @@ public class JwtSettingsValidatorTests
 	{
 		// Arrange
 		JwtSettings settings =
-			CreateValidSettings(secretKey: new string('x', 31));
+			CreateValidSettings(
+			secretKey: new string('x', 31));
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(s => s.SecretKey)
-			.WithErrorMessage("SecretKey must be at least 32 characters (256 bits) for HS256");
+		result
+			.ShouldHaveValidationErrorFor(s => s.SecretKey)
+			.WithErrorMessage(
+				"SecretKey must be at least 32 characters (256 bits) for HS256");
 	}
 
 	[Theory]
 	[InlineData("Kj8#mP2$vN5@xQ9&wL4*hR7!cT3^bF6%")] // Exactly 32 chars, high entropy
-	[InlineData("Kj8#mP2$vN5@xQ9&wL4*hR7!cT3^bF6%Kj8#mP2$vN5@xQ9&wL4*hR7!cT3^bF6%")] // 64 chars
+	[InlineData(
+		"Kj8#mP2$vN5@xQ9&wL4*hR7!cT3^bF6%Kj8#mP2$vN5@xQ9&wL4*hR7!cT3^bF6%"
+	)] // 64 chars
 	[InlineData("aB3$cD4%eF5^gH6&iJ7*kL8!mN9@oP0#")] // Different high entropy pattern
 	public void Validate_ReturnsSuccess_WhenSecretKeyValid(string secretKey)
 	{
@@ -100,7 +113,8 @@ public class JwtSettingsValidatorTests
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(s => s.SecretKey);
@@ -119,20 +133,21 @@ public class JwtSettingsValidatorTests
 	{
 		// Arrange - Pad to 32 chars if needed
 		string paddedKey =
-			weakKey.Length < 32
-				? weakKey.PadRight(32, weakKey[0])
-				: weakKey;
+			weakKey.Length < 32 ? weakKey.PadRight(32, weakKey[0]) : weakKey;
 
 		JwtSettings settings =
 			CreateValidSettings(secretKey: paddedKey);
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(s => s.SecretKey)
-			.WithErrorMessage("SecretKey appears weak. Use cryptographically random 256-bit key.");
+		result
+			.ShouldHaveValidationErrorFor(s => s.SecretKey)
+			.WithErrorMessage(
+				"SecretKey appears weak. Use cryptographically random 256-bit key.");
 	}
 
 	[Theory]
@@ -140,7 +155,8 @@ public class JwtSettingsValidatorTests
 	[InlineData("my-super-secret-key-for-jwt-min!")] // Contains "secret"
 	[InlineData("password123456789012345678901234")] // Contains "password"
 	[InlineData("changeme-changeme-changeme-12345")] // Contains "changeme"
-	public void Validate_ReturnsFailure_WhenSecretKeyContainsWeakPatterns(string weakKey)
+	public void Validate_ReturnsFailure_WhenSecretKeyContainsWeakPatterns(
+		string weakKey)
 	{
 		// Arrange
 		JwtSettings settings =
@@ -148,11 +164,14 @@ public class JwtSettingsValidatorTests
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(s => s.SecretKey)
-			.WithErrorMessage("SecretKey appears weak. Use cryptographically random 256-bit key.");
+		result
+			.ShouldHaveValidationErrorFor(s => s.SecretKey)
+			.WithErrorMessage(
+				"SecretKey appears weak. Use cryptographically random 256-bit key.");
 	}
 
 	#endregion
@@ -170,22 +189,25 @@ public class JwtSettingsValidatorTests
 		// Arrange
 		JwtSettings settings =
 			CreateValidSettings(
-				issuer: issuer ?? TestIssuer,
-				audience: audience ?? TestAudience);
+			issuer: issuer ?? TestIssuer,
+			audience: audience ?? TestAudience);
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
 		if (fieldName == "Issuer")
 		{
-			result.ShouldHaveValidationErrorFor(s => s.Issuer)
+			result
+				.ShouldHaveValidationErrorFor(s => s.Issuer)
 				.WithErrorMessage("Issuer is required");
 		}
 		else
 		{
-			result.ShouldHaveValidationErrorFor(s => s.Audience)
+			result
+				.ShouldHaveValidationErrorFor(s => s.Audience)
 				.WithErrorMessage("Audience is required");
 		}
 	}
@@ -200,12 +222,13 @@ public class JwtSettingsValidatorTests
 		// Arrange
 		JwtSettings settings =
 			CreateValidSettings(
-				issuer: issuer,
-				audience: audience);
+			issuer: issuer,
+			audience: audience);
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(s => s.Issuer);
@@ -230,10 +253,12 @@ public class JwtSettingsValidatorTests
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(s => s.AccessTokenExpirationMinutes);
+		result.ShouldHaveValidationErrorFor(s =>
+			s.AccessTokenExpirationMinutes);
 		_ = fieldName; // Used for test name readability
 	}
 
@@ -242,7 +267,8 @@ public class JwtSettingsValidatorTests
 	[InlineData(15)]
 	[InlineData(30)]
 	[InlineData(60)]
-	public void Validate_ReturnsSuccess_WhenAccessTokenExpirationValid(int minutes)
+	public void Validate_ReturnsSuccess_WhenAccessTokenExpirationValid(
+		int minutes)
 	{
 		// Arrange
 		JwtSettings settings =
@@ -250,17 +276,20 @@ public class JwtSettingsValidatorTests
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
-		result.ShouldNotHaveValidationErrorFor(s => s.AccessTokenExpirationMinutes);
+		result.ShouldNotHaveValidationErrorFor(s =>
+			s.AccessTokenExpirationMinutes);
 	}
 
 	[Theory]
 	[InlineData(0)]
 	[InlineData(-1)]
 	[InlineData(31)]
-	public void Validate_ReturnsFailure_WhenRefreshTokenExpirationInvalid(int days)
+	public void Validate_ReturnsFailure_WhenRefreshTokenExpirationInvalid(
+		int days)
 	{
 		// Arrange
 		JwtSettings settings =
@@ -268,7 +297,8 @@ public class JwtSettingsValidatorTests
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(s => s.RefreshTokenExpirationDays);
@@ -279,7 +309,8 @@ public class JwtSettingsValidatorTests
 	[InlineData(7)]
 	[InlineData(14)]
 	[InlineData(30)]
-	public void Validate_ReturnsSuccess_WhenRefreshTokenExpirationValid(int days)
+	public void Validate_ReturnsSuccess_WhenRefreshTokenExpirationValid(
+		int days)
 	{
 		// Arrange
 		JwtSettings settings =
@@ -287,10 +318,12 @@ public class JwtSettingsValidatorTests
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
-		result.ShouldNotHaveValidationErrorFor(s => s.RefreshTokenExpirationDays);
+		result.ShouldNotHaveValidationErrorFor(s =>
+			s.RefreshTokenExpirationDays);
 	}
 
 	#endregion
@@ -303,12 +336,13 @@ public class JwtSettingsValidatorTests
 		// Arrange
 		JwtSettings settings =
 			CreateValidSettings(
-				issuer: "https://api.seventysix.com",
-				audience: "https://app.seventysix.com");
+			issuer: "https://api.seventysix.com",
+			audience: "https://app.seventysix.com");
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
 		result.ShouldNotHaveAnyValidationErrors();
@@ -320,23 +354,25 @@ public class JwtSettingsValidatorTests
 		// Arrange
 		JwtSettings settings =
 			new()
-			{
-				SecretKey = "short",
-				Issuer = string.Empty,
-				Audience = string.Empty,
-				AccessTokenExpirationMinutes = 0,
-				RefreshTokenExpirationDays = 0,
-			};
+		{
+			SecretKey = "short",
+			Issuer = string.Empty,
+			Audience = string.Empty,
+			AccessTokenExpirationMinutes = 0,
+			RefreshTokenExpirationDays = 0,
+		};
 
 		// Act
 		TestValidationResult<JwtSettings> result =
-			Validator.TestValidate(settings);
+			Validator.TestValidate(
+			settings);
 
 		// Assert
 		result.ShouldHaveValidationErrorFor(s => s.SecretKey);
 		result.ShouldHaveValidationErrorFor(s => s.Issuer);
 		result.ShouldHaveValidationErrorFor(s => s.Audience);
-		result.ShouldHaveValidationErrorFor(s => s.AccessTokenExpirationMinutes);
+		result.ShouldHaveValidationErrorFor(s =>
+			s.AccessTokenExpirationMinutes);
 		result.ShouldHaveValidationErrorFor(s => s.RefreshTokenExpirationDays);
 	}
 

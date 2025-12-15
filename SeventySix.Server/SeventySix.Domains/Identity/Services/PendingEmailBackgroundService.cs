@@ -34,14 +34,11 @@ public class PendingEmailBackgroundService(
 
 		while (!stoppingToken.IsCancellationRequested)
 		{
-			TimeSpan delay =
-				CalculateDelayUntilNextRun();
+			TimeSpan delay = CalculateDelayUntilNextRun();
 
 			try
 			{
-				await Task.Delay(
-					delay,
-					stoppingToken);
+				await Task.Delay(delay, stoppingToken);
 
 				await ProcessPendingEmailsAsync(stoppingToken);
 			}
@@ -51,13 +48,9 @@ public class PendingEmailBackgroundService(
 			}
 			catch (Exception ex)
 			{
-				logger.LogError(
-					ex,
-					"Error in PendingEmailBackgroundService");
+				logger.LogError(ex, "Error in PendingEmailBackgroundService");
 
-				await Task.Delay(
-					TimeSpan.FromHours(1),
-					stoppingToken);
+				await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
 			}
 		}
 	}
@@ -65,20 +58,17 @@ public class PendingEmailBackgroundService(
 	private TimeSpan CalculateDelayUntilNextRun()
 	{
 		DateTime now =
-			timeProvider
-				.GetUtcNow()
-				.UtcDateTime;
+			timeProvider.GetUtcNow().UtcDateTime;
 		DateTime todayRun =
 			now.Date.Add(RunTime.ToTimeSpan());
 		DateTime nextRun =
-			now < todayRun
-			? todayRun
-			: todayRun.AddDays(1);
+			now < todayRun ? todayRun : todayRun.AddDays(1);
 
 		return nextRun - now;
 	}
 
-	private async Task ProcessPendingEmailsAsync(CancellationToken cancellationToken)
+	private async Task ProcessPendingEmailsAsync(
+		CancellationToken cancellationToken)
 	{
 		await using AsyncServiceScope scope =
 			scopeFactory.CreateAsyncScope();
@@ -87,9 +77,10 @@ public class PendingEmailBackgroundService(
 			scope.ServiceProvider.GetRequiredService<IMessageBus>();
 
 		IEnumerable<UserDto> pendingUsers =
-			await messageBus.InvokeAsync<IEnumerable<UserDto>>(
-				new GetUsersNeedingEmailQuery(),
-				cancellationToken); int successCount = 0;
+			await messageBus.InvokeAsync<
+				IEnumerable<UserDto>
+		>(new GetUsersNeedingEmailQuery(), cancellationToken);
+		int successCount = 0;
 		int failCount = 0;
 
 		foreach (UserDto user in pendingUsers)
@@ -97,14 +88,11 @@ public class PendingEmailBackgroundService(
 			try
 			{
 				await messageBus.InvokeAsync(
-					new InitiatePasswordResetCommand(
-						user.Id,
-						IsNewUser: true),
+					new InitiatePasswordResetCommand(user.Id, IsNewUser: true),
 					cancellationToken);
 
-				await messageBus.InvokeAsync(
-					user.Id,
-					cancellationToken); successCount++;
+				await messageBus.InvokeAsync(user.Id, cancellationToken);
+				successCount++;
 			}
 			catch (EmailRateLimitException)
 			{
@@ -123,9 +111,7 @@ public class PendingEmailBackgroundService(
 			}
 		}
 
-		if (
-			successCount > 0
-			|| failCount > 0)
+		if (successCount > 0 || failCount > 0)
 		{
 			logger.LogWarning(
 				"Pending email processing complete. Success: {Success}, Failed: {Failed}",

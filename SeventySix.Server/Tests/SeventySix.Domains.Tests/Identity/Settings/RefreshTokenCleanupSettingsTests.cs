@@ -45,10 +45,7 @@ public class RefreshTokenCleanupSettingsTests
 	{
 		// Arrange & Act
 		RefreshTokenCleanupSettings settings =
-			new()
-			{
-				IntervalHours = 12
-			};
+			new() { IntervalHours = 12 };
 
 		// Assert
 		settings.IntervalHours.ShouldBe(12);
@@ -59,10 +56,7 @@ public class RefreshTokenCleanupSettingsTests
 	{
 		// Arrange & Act
 		RefreshTokenCleanupSettings settings =
-			new()
-			{
-				RetentionDays = 30
-			};
+			new() { RetentionDays = 30 };
 
 		// Assert
 		settings.RetentionDays.ShouldBe(30);

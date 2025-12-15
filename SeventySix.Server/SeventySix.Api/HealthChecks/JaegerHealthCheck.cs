@@ -18,7 +18,9 @@ namespace SeventySix.Api.HealthChecks;
 /// </remarks>
 /// <param name="configuration">Application configuration.</param>
 /// <param name="logger">Logger instance.</param>
-public class JaegerHealthCheck(IConfiguration configuration, ILogger<JaegerHealthCheck> logger) : IHealthCheck
+public class JaegerHealthCheck(
+	IConfiguration configuration,
+	ILogger<JaegerHealthCheck> logger) : IHealthCheck
 {
 	/// <summary>
 	/// Checks the health of the Jaeger OTLP endpoint.
@@ -32,23 +34,34 @@ public class JaegerHealthCheck(IConfiguration configuration, ILogger<JaegerHealt
 	{
 		try
 		{
-			string otlpEndpoint = configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint")
+			string otlpEndpoint =
+				configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint")
 				?? "http://localhost:4317";
 
-			Uri uri = new Uri(otlpEndpoint);
+			Uri uri =
+				new Uri(otlpEndpoint);
 			string host = uri.Host;
 			int port = uri.Port;
 
 			// Test TCP connectivity to Jaeger OTLP endpoint
 			using TcpClient tcpClient = new TcpClient();
-			Task connectTask = tcpClient.ConnectAsync(host, port, cancellationToken).AsTask();
-			Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
+			Task connectTask =
+				tcpClient
+					.ConnectAsync(host, port, cancellationToken)
+					.AsTask();
+			Task timeoutTask =
+				Task.Delay(
+					TimeSpan.FromSeconds(3),
+					cancellationToken);
 
-			Task completedTask = await Task.WhenAny(connectTask, timeoutTask);
+			Task completedTask =
+				await Task.WhenAny(connectTask, timeoutTask);
 
 			if (completedTask == timeoutTask)
 			{
-				logger.LogWarning("Jaeger health check timeout connecting to {Endpoint}", otlpEndpoint);
+				logger.LogWarning(
+					"Jaeger health check timeout connecting to {Endpoint}",
+					otlpEndpoint);
 				return HealthCheckResult.Degraded(
 					description: $"Timeout connecting to Jaeger at {otlpEndpoint}",
 					data: new Dictionary<string, object>
@@ -71,7 +84,9 @@ public class JaegerHealthCheck(IConfiguration configuration, ILogger<JaegerHealt
 					});
 			}
 
-			logger.LogWarning("Jaeger health check failed to connect to {Endpoint}", otlpEndpoint);
+			logger.LogWarning(
+				"Jaeger health check failed to connect to {Endpoint}",
+				otlpEndpoint);
 			return HealthCheckResult.Degraded(
 				description: $"Cannot connect to Jaeger at {otlpEndpoint}",
 				data: new Dictionary<string, object>

@@ -17,8 +17,7 @@ public static class TestUserHelper
 	/// <summary>
 	/// The standard test password used across API integration tests.
 	/// </summary>
-	public const string TestPassword =
-		"TestPassword123!";
+	public const string TestPassword = "TestPassword123!";
 
 	/// <summary>
 	/// Pre-computed BCrypt hash for "TestPassword123!" with work factor 4.
@@ -30,8 +29,7 @@ public static class TestUserHelper
 	/// <summary>
 	/// The standard test password used across unit tests.
 	/// </summary>
-	public const string SimplePassword =
-		"Password123";
+	public const string SimplePassword = "Password123";
 
 	/// <summary>
 	/// Pre-computed BCrypt hash for "Password123" with work factor 4.
@@ -60,8 +58,7 @@ public static class TestUserHelper
 		string? passwordHash = null,
 		bool isActive = true)
 	{
-		using IServiceScope scope =
-			services.CreateScope();
+		using IServiceScope scope = services.CreateScope();
 
 		IdentityDbContext context =
 			scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
@@ -74,6 +71,7 @@ public static class TestUserHelper
 			passwordHash,
 			isActive);
 	}
+
 	/// <summary>
 	/// Creates a test user with credentials using the pre-computed password hash.
 	/// </summary>
@@ -96,25 +94,28 @@ public static class TestUserHelper
 	{
 		User user =
 			new()
-			{
-				Username = username,
-				Email = email,
-				IsActive = isActive,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-				CreatedBy = "Test",
-				ModifiedBy = "Test",
-			};
+		{
+			Username = username,
+			Email = email,
+			IsActive = isActive,
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			CreatedBy = "Test",
+			ModifiedBy = "Test",
+		};
 
 		context.Users.Add(user);
 		await context.SaveChangesAsync();
 
 		UserCredential credential =
 			new()
-			{
-				UserId = user.Id,
-				PasswordHash = passwordHash ?? TestPasswordHash,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-			};
+		{
+			UserId = user.Id,
+			PasswordHash =
+			passwordHash ?? TestPasswordHash,
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+		};
 
 		context.UserCredentials.Add(credential);
 		await context.SaveChangesAsync();
@@ -144,41 +145,43 @@ public static class TestUserHelper
 		string? passwordHash = null,
 		bool isActive = true)
 	{
-		using IServiceScope scope =
-			services.CreateScope();
+		using IServiceScope scope = services.CreateScope();
 
 		IdentityDbContext context =
 			scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
 
 		User user =
 			await CreateUserWithPasswordAsync(
-				context,
-				username,
-				email,
-				timeProvider,
-				passwordHash,
-				isActive);
+			context,
+			username,
+			email,
+			timeProvider,
+			passwordHash,
+			isActive);
 
 		foreach (string role in roles)
 		{
 			int? roleId =
-				await context.SecurityRoles
-					.Where(securityRole => securityRole.Name == role)
-					.Select(securityRole => (int?)securityRole.Id)
-					.FirstOrDefaultAsync();
+				await context
+				.SecurityRoles.Where(securityRole => securityRole.Name == role)
+				.Select(securityRole => (int?)securityRole.Id)
+				.FirstOrDefaultAsync();
 
 			if (roleId is null)
 			{
-				throw new InvalidOperationException($"Role '{role}' not found in SecurityRoles");
+				throw new InvalidOperationException(
+					$"Role '{role}' not found in SecurityRoles");
 			}
 
-			context.UserRoles.Add(new UserRole
-			{
-				UserId = user.Id,
-				RoleId = roleId.Value,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-				CreatedBy = "test"
-			});
+			context.UserRoles.Add(
+				new UserRole
+				{
+					UserId = user.Id,
+					RoleId = roleId.Value,
+					CreateDate =
+				timeProvider.GetUtcNow().UtcDateTime,
+					CreatedBy = "test",
+				});
 		}
 
 		await context.SaveChangesAsync();

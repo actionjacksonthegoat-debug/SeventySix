@@ -29,22 +29,18 @@ public static class GetAvailableRolesQueryHandler
 				cancellationToken);
 
 		IEnumerable<PermissionRequest> pendingRequests =
-			await repository.GetByUserIdAsync(
-				query.UserId,
-				cancellationToken);
+			await repository.GetByUserIdAsync(query.UserId, cancellationToken);
 
 		HashSet<string> excludedRoles =
 			existingRoles
 				.Concat(
-					pendingRequests.Select(
-						request =>
-							request.RequestedRole!.Name))
+					pendingRequests.Select(request => request.RequestedRole!.Name))
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-		return RoleConstants.AllRequestableRoles
-			.Where(
-				role =>
-					!excludedRoles.Contains(role.Name))
+		return RoleConstants
+			.AllRequestableRoles
+			.Where(role =>
+				!excludedRoles.Contains(role.Name))
 			.ToList();
 	}
 }

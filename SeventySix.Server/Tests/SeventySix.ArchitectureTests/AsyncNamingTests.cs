@@ -25,8 +25,8 @@ public class AsyncNamingTests : SourceCodeArchitectureTest
 		// Exclude: interface definitions, test methods
 		Regex asyncMethodPattern =
 			new Regex(
-				@"(public|private|protected|internal)\s+(?:async\s+)?Task(?:<[^>]+>)?\s+(\w+)\s*\(",
-				RegexOptions.Compiled);
+			@"(public|private|protected|internal)\s+(?:async\s+)?Task(?:<[^>]+>)?\s+(\w+)\s*\(",
+			RegexOptions.Compiled);
 
 		List<string> violations = [];
 
@@ -47,11 +47,11 @@ public class AsyncNamingTests : SourceCodeArchitectureTest
 
 			foreach (Match match in matches)
 			{
-				string methodName =
-					match.Groups[2].Value;
+				string methodName = match.Groups[2].Value;
 
 				// Skip Main, Dispose, event handlers, test methods
-				if (methodName == "Main"
+				if (
+					methodName == "Main"
 					|| methodName == "Dispose"
 					|| methodName == "DisposeAsync"
 					|| methodName.StartsWith("On")
@@ -67,7 +67,8 @@ public class AsyncNamingTests : SourceCodeArchitectureTest
 					string relativePath =
 						GetRelativePath(file);
 
-					violations.Add($"{relativePath}: {methodName} (should end with Async)");
+					violations.Add(
+						$"{relativePath}: {methodName} (should end with Async)");
 				}
 			}
 		}

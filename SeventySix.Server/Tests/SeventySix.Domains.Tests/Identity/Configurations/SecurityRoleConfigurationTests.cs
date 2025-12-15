@@ -22,10 +22,9 @@ namespace SeventySix.Domains.Tests.Identity.Configurations;
 [Collection("DatabaseTests")]
 public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 {
-	public SecurityRoleConfigurationTests(TestcontainersPostgreSqlFixture fixture)
-		: base(fixture)
-	{
-	}
+	public SecurityRoleConfigurationTests(
+		TestcontainersPostgreSqlFixture fixture)
+		: base(fixture) { }
 
 	[Fact]
 	public async Task SecurityRoles_SeedsStandardRoles_OnMigrationAsync()
@@ -35,9 +34,9 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		// Act
 		List<SecurityRole> roles =
-			await context.SecurityRoles
-				.OrderBy(r => r.Id)
-				.ToListAsync();
+			await context
+			.SecurityRoles.OrderBy(r => r.Id)
+			.ToListAsync();
 
 		// Assert - Three standard roles should be seeded
 		roles.Count.ShouldBe(3);
@@ -54,15 +53,16 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		SecurityRole duplicateRole =
 			new()
-			{
-				Name = TestRoleConstants.Developer, // Already seeded
-				Description = "Duplicate attempt",
-			};
+		{
+			Name =
+			TestRoleConstants.Developer, // Already seeded
+			Description = "Duplicate attempt",
+		};
 
 		// Act & Assert - Unique constraint should prevent insert
 		context.SecurityRoles.Add(duplicateRole);
-		await Should.ThrowAsync<DbUpdateException>(
-			() => context.SaveChangesAsync());
+		await Should.ThrowAsync<DbUpdateException>(() =>
+			context.SaveChangesAsync());
 	}
 
 	[Fact]
@@ -72,8 +72,10 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder(timeProvider)
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername($"restrict_{testId}")
 			.WithEmail($"restrict_{testId}@example.com")
 			.Build();
@@ -82,17 +84,17 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		// Get the seeded Developer role
 		SecurityRole? developerRole =
-			await context.SecurityRoles
-				.FirstOrDefaultAsync(r => r.Name == TestRoleConstants.Developer);
+			await context.SecurityRoles.FirstOrDefaultAsync(r =>
+				r.Name == TestRoleConstants.Developer);
 		developerRole.ShouldNotBeNull();
 
 		// Assign role to user
 		UserRole userRole =
 			new()
-			{
-				UserId = user.Id,
-				RoleId = developerRole.Id,
-			};
+		{
+			UserId = user.Id,
+			RoleId = developerRole.Id,
+		};
 		await context.UserRoles.AddAsync(userRole);
 		await context.SaveChangesAsync();
 
@@ -111,8 +113,10 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder(timeProvider)
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername($"request_{testId}")
 			.WithEmail($"request_{testId}@example.com")
 			.Build();
@@ -121,18 +125,18 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		// Get the seeded Admin role
 		SecurityRole? adminRole =
-			await context.SecurityRoles
-				.FirstOrDefaultAsync(r => r.Name == TestRoleConstants.Admin);
+			await context.SecurityRoles.FirstOrDefaultAsync(r =>
+				r.Name == TestRoleConstants.Admin);
 		adminRole.ShouldNotBeNull();
 
 		// Create permission request for that role
 		PermissionRequest request =
 			new()
-			{
-				UserId = user.Id,
-				RequestedRoleId = adminRole.Id,
-				CreatedBy = user.Username,
-			};
+		{
+			UserId = user.Id,
+			RequestedRoleId = adminRole.Id,
+			CreatedBy = user.Username,
+		};
 		await context.PermissionRequests.AddAsync(request);
 		await context.SaveChangesAsync();
 
@@ -152,11 +156,11 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		SecurityRole testRole =
 			new()
-			{
-				Name = "TestRole",
-				Description = "Temporary test role",
-				IsActive = false,
-			};
+		{
+			Name = "TestRole",
+			Description = "Temporary test role",
+			IsActive = false,
+		};
 		await context.SecurityRoles.AddAsync(testRole);
 		await context.SaveChangesAsync();
 
@@ -168,7 +172,8 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		// Assert
 		SecurityRole? deletedRole =
-			await context.SecurityRoles.FindAsync(roleId);
+			await context.SecurityRoles.FindAsync(
+			roleId);
 		deletedRole.ShouldBeNull();
 	}
 
@@ -179,8 +184,10 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
 
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		User user = new UserBuilder(timeProvider)
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername($"norole_{testId}")
 			.WithEmail($"norole_{testId}@example.com")
 			.Build();
@@ -189,14 +196,14 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		UserRole userRole =
 			new()
-			{
-				UserId = user.Id,
-				RoleId = 999999, // Non-existent role
-			};
+		{
+			UserId = user.Id,
+			RoleId = 999999, // Non-existent role
+		};
 
 		// Act & Assert - FK constraint should prevent insert
 		context.UserRoles.Add(userRole);
-		await Should.ThrowAsync<DbUpdateException>(
-			() => context.SaveChangesAsync());
+		await Should.ThrowAsync<DbUpdateException>(() =>
+			context.SaveChangesAsync());
 	}
 }

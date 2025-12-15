@@ -11,7 +11,8 @@ namespace SeventySix.Identity;
 /// Design-time factory for creating IdentityDbContext instances.
 /// Used by EF Core tools for migrations and scaffolding.
 /// </summary>
-public class IdentityDbContextFactory : IDesignTimeDbContextFactory<IdentityDbContext>
+public class IdentityDbContextFactory
+	: IDesignTimeDbContextFactory<IdentityDbContext>
 {
 	/// <summary>
 	/// Creates a new instance of IdentityDbContext for design-time operations.
@@ -20,11 +21,13 @@ public class IdentityDbContextFactory : IDesignTimeDbContextFactory<IdentityDbCo
 	/// <returns>A configured IdentityDbContext instance.</returns>
 	public IdentityDbContext CreateDbContext(string[] args)
 	{
-		DbContextOptionsBuilder<IdentityDbContext> optionsBuilder = new DbContextOptionsBuilder<IdentityDbContext>();
+		DbContextOptionsBuilder<IdentityDbContext> optionsBuilder =
+			new DbContextOptionsBuilder<IdentityDbContext>();
 
 		// Use a placeholder connection string for design-time operations
 		// The actual connection string comes from appsettings.json at runtime
-		optionsBuilder.UseNpgsql("Host=localhost;Database=seventysix;Username=postgres;Password=postgres");
+		optionsBuilder.UseNpgsql(
+			"Host=localhost;Database=seventysix;Username=postgres;Password=postgres");
 
 		return new IdentityDbContext(optionsBuilder.Options);
 	}

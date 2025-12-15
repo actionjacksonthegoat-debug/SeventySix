@@ -44,7 +44,8 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	/// This factory is cached and reused across all tests in the collection,
 	/// significantly reducing test execution time.
 	/// </summary>
-	protected SharedWebApplicationFactory<TProgram> SharedFactory => Fixture.GetOrCreateFactory<TProgram>();
+	protected SharedWebApplicationFactory<TProgram> SharedFactory =>
+		Fixture.GetOrCreateFactory<TProgram>();
 
 	/// <summary>
 	/// Creates an HttpClient from the shared WebApplicationFactory.
@@ -58,7 +59,8 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	/// </summary>
 	/// <param name="options">Options for configuring the HttpClient.</param>
 	/// <returns>An HttpClient configured to use the shared test server.</returns>
-	protected HttpClient CreateClient(WebApplicationFactoryClientOptions options) => SharedFactory.CreateClient(options);
+	protected HttpClient CreateClient(
+		WebApplicationFactoryClientOptions options) => SharedFactory.CreateClient(options);
 
 	/// <summary>
 	/// Creates a new isolated WebApplicationFactory that is NOT shared.
@@ -66,7 +68,8 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	/// The caller is responsible for disposing the returned factory.
 	/// </summary>
 	/// <returns>A new WebApplicationFactory instance.</returns>
-	protected SharedWebApplicationFactory<TProgram> CreateIsolatedFactory() => new(ConnectionString);
+	protected SharedWebApplicationFactory<TProgram> CreateIsolatedFactory() =>
+		new(ConnectionString);
 
 	/// <summary>
 	/// Creates a new isolated WebApplicationFactory with additional configuration.
@@ -75,10 +78,8 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	/// </summary>
 	/// <param name="configureAdditional">Additional web host builder configuration.</param>
 	/// <returns>A new WebApplicationFactory instance.</returns>
-	protected SharedWebApplicationFactory<TProgram> CreateIsolatedFactory(Action<IWebHostBuilder> configureAdditional)
-		=> new(
-			ConnectionString,
-			configureAdditional);
+	protected SharedWebApplicationFactory<TProgram> CreateIsolatedFactory(
+		Action<IWebHostBuilder> configureAdditional) => new(ConnectionString, configureAdditional);
 
 	/// <summary>
 	/// Called before each test. Clears all data from the database to ensure test isolation.

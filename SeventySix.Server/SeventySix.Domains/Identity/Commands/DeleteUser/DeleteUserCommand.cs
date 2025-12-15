@@ -9,6 +9,4 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <param name="UserId">The user ID to delete.</param>
 /// <param name="DeletedBy">Username of the person deleting the user.</param>
-public record DeleteUserCommand(
-	int UserId,
-	string DeletedBy);
+public record DeleteUserCommand(int UserId, string DeletedBy);

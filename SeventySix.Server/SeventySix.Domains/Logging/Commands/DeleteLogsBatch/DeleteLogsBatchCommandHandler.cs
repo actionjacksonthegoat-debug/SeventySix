@@ -21,8 +21,6 @@ public static class DeleteLogsBatchCommandHandler
 		ILogRepository repository,
 		CancellationToken cancellationToken)
 	{
-		return await repository.DeleteBatchAsync(
-			logIds,
-			cancellationToken);
+		return await repository.DeleteBatchAsync(logIds, cancellationToken);
 	}
 }

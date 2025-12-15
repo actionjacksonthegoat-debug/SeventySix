@@ -24,19 +24,16 @@ public static class GetLogsPagedQueryHandler
 		CancellationToken cancellationToken)
 	{
 		(IEnumerable<Log> logs, int totalCount) =
-			await repository.GetPagedAsync(
-				query.Request,
-				cancellationToken);
+			await repository.GetPagedAsync(query.Request, cancellationToken);
 
-		IEnumerable<LogDto> logDtos =
-			logs.ToDto();
+		IEnumerable<LogDto> logDtos = logs.ToDto();
 
 		return new PagedResult<LogDto>
 		{
 			Items = logDtos.ToList(),
 			TotalCount = totalCount,
 			Page = query.Request.Page,
-			PageSize = query.Request.PageSize
+			PageSize = query.Request.PageSize,
 		};
 	}
 }

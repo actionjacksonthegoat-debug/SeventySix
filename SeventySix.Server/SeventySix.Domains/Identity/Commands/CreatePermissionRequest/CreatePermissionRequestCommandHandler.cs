@@ -43,7 +43,9 @@ public static class CreatePermissionRequestCommandHandler
 
 		HashSet<string> alreadyHasOrRequested =
 			existingRoles
-				.Concat(pendingRequests.Select(pendingRequest => pendingRequest.RequestedRole!.Name))
+				.Concat(
+					pendingRequests.Select(pendingRequest =>
+						pendingRequest.RequestedRole!.Name))
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
 		// Get user email once for whitelist checking
@@ -68,10 +70,9 @@ public static class CreatePermissionRequestCommandHandler
 			}
 
 			// Check whitelist for auto-approval
-			if (userEmail != null
-				&& whitelistedSettings.IsWhitelisted(
-					userEmail,
-					role))
+			if (
+				userEmail != null
+				&& whitelistedSettings.IsWhitelisted(userEmail, role))
 			{
 				// Auto-approve: add role directly, skip creating request
 				// Uses AddRoleWithoutAuditAsync - CreatedBy remains empty for whitelisted
@@ -90,22 +91,22 @@ public static class CreatePermissionRequestCommandHandler
 
 			if (roleId is null)
 			{
-				throw new InvalidOperationException($"Role '{role}' not found in SecurityRoles");
+				throw new InvalidOperationException(
+					$"Role '{role}' not found in SecurityRoles");
 			}
 
 			// Create request as normal
 			PermissionRequest entity =
 				new()
-				{
-					UserId = command.UserId,
-					RequestedRoleId = roleId.Value,
-					RequestMessage = command.Request.RequestMessage,
-					CreatedBy = command.Username
-				};
+			{
+				UserId = command.UserId,
+				RequestedRoleId = roleId.Value,
+				RequestMessage =
+				command.Request.RequestMessage,
+				CreatedBy = command.Username,
+			};
 
-			await repository.CreateAsync(
-				entity,
-				cancellationToken);
+			await repository.CreateAsync(entity, cancellationToken);
 		}
 	}
 }

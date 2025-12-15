@@ -16,6 +16,7 @@ public class LogService(
 {
 	/// <inheritdoc/>
 	public string ContextName => "Logging";
+
 	/// <inheritdoc/>
 	public async Task<PagedResult<LogDto>> GetPagedLogsAsync(
 		LogQueryRequest request,
@@ -23,51 +24,60 @@ public class LogService(
 	{
 		await queryValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-		(IEnumerable<Log> logs, int totalCount) = await repository.GetPagedAsync(
-			request,
-			cancellationToken);
+		(IEnumerable<Log> logs, int totalCount) =
+			await repository.GetPagedAsync(request, cancellationToken);
 
 		return new PagedResult<LogDto>
 		{
 			Items = logs.ToDto().ToList(),
 			Page = request.Page,
 			PageSize = request.PageSize,
-			TotalCount = totalCount
+			TotalCount = totalCount,
 		};
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> DeleteLogByIdAsync(int id, CancellationToken cancellationToken = default)
+	public async Task<bool> DeleteLogByIdAsync(
+		int id,
+		CancellationToken cancellationToken = default)
 	{
 		return await repository.DeleteByIdAsync(id, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> DeleteLogsBatchAsync(int[] ids, CancellationToken cancellationToken = default)
+	public async Task<int> DeleteLogsBatchAsync(
+		int[] ids,
+		CancellationToken cancellationToken = default)
 	{
 		return await repository.DeleteBatchAsync(ids, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> DeleteLogsOlderThanAsync(DateTime cutoffDate, CancellationToken cancellationToken = default)
+	public async Task<int> DeleteLogsOlderThanAsync(
+		DateTime cutoffDate,
+		CancellationToken cancellationToken = default)
 	{
-		return await repository.DeleteOlderThanAsync(cutoffDate, cancellationToken);
+		return await repository.DeleteOlderThanAsync(
+			cutoffDate,
+			cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public async Task<bool> CheckHealthAsync(CancellationToken cancellationToken = default)
+	public async Task<bool> CheckHealthAsync(
+		CancellationToken cancellationToken = default)
 	{
 		try
 		{
 			LogQueryRequest healthCheckRequest =
 				new()
-				{
-					Page = 1,
-					PageSize = 1
-				};
-			_ = await repository.GetPagedAsync(
-				healthCheckRequest,
-				cancellationToken);
+			{
+				Page = 1,
+				PageSize = 1,
+			};
+			_ =
+				await repository.GetPagedAsync(
+					healthCheckRequest,
+					cancellationToken);
 			return true;
 		}
 		catch
@@ -77,15 +87,21 @@ public class LogService(
 	}
 
 	/// <inheritdoc/>
-	public async Task CreateClientLogAsync(CreateLogRequest request, CancellationToken cancellationToken = default)
+	public async Task CreateClientLogAsync(
+		CreateLogRequest request,
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
-		string? traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
-		string? spanId = System.Diagnostics.Activity.Current?.SpanId.ToString();
-		string? parentSpanId = System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
+		string? traceId =
+			System.Diagnostics.Activity.Current?.TraceId.ToString();
+		string? spanId =
+			System.Diagnostics.Activity.Current?.SpanId.ToString();
+		string? parentSpanId =
+			System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
 
-		Log log = new()
+		Log log =
+			new()
 		{
 			LogLevel = request.LogLevel,
 			Message = request.Message,
@@ -95,15 +111,18 @@ public class LogService(
 			RequestPath = request.RequestUrl,
 			RequestMethod = request.RequestMethod,
 			StatusCode = request.StatusCode,
-			CorrelationId = request.CorrelationId ?? traceId,
+			CorrelationId =
+			request.CorrelationId ?? traceId,
 			SpanId = spanId,
 			ParentSpanId = parentSpanId,
-			Properties = System.Text.Json.JsonSerializer.Serialize(new
-			{
-				request.UserAgent,
-				request.ClientTimestamp,
-				request.AdditionalContext,
-			}),
+			Properties =
+			System.Text.Json.JsonSerializer.Serialize(
+				new
+				{
+					request.UserAgent,
+					request.ClientTimestamp,
+					request.AdditionalContext,
+				}),
 			MachineName = "Browser",
 			Environment = "Client",
 		};
@@ -112,7 +131,9 @@ public class LogService(
 	}
 
 	/// <inheritdoc/>
-	public async Task CreateClientLogBatchAsync(CreateLogRequest[] requests, CancellationToken cancellationToken = default)
+	public async Task CreateClientLogBatchAsync(
+		CreateLogRequest[] requests,
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(requests);
 
@@ -121,13 +142,17 @@ public class LogService(
 			return;
 		}
 
-		string? traceId = System.Diagnostics.Activity.Current?.TraceId.ToString();
-		string? spanId = System.Diagnostics.Activity.Current?.SpanId.ToString();
-		string? parentSpanId = System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
+		string? traceId =
+			System.Diagnostics.Activity.Current?.TraceId.ToString();
+		string? spanId =
+			System.Diagnostics.Activity.Current?.SpanId.ToString();
+		string? parentSpanId =
+			System.Diagnostics.Activity.Current?.ParentSpanId.ToString();
 
 		foreach (CreateLogRequest request in requests)
 		{
-			Log log = new()
+			Log log =
+				new()
 			{
 				LogLevel = request.LogLevel,
 				Message = request.Message,
@@ -137,15 +162,18 @@ public class LogService(
 				RequestPath = request.RequestUrl,
 				RequestMethod = request.RequestMethod,
 				StatusCode = request.StatusCode,
-				CorrelationId = request.CorrelationId ?? traceId,
+				CorrelationId =
+				request.CorrelationId ?? traceId,
 				SpanId = spanId,
 				ParentSpanId = parentSpanId,
-				Properties = System.Text.Json.JsonSerializer.Serialize(new
-				{
-					request.UserAgent,
-					request.ClientTimestamp,
-					request.AdditionalContext,
-				}),
+				Properties =
+				System.Text.Json.JsonSerializer.Serialize(
+					new
+					{
+						request.UserAgent,
+						request.ClientTimestamp,
+						request.AdditionalContext,
+					}),
 				MachineName = "Browser",
 				Environment = "Client",
 			};

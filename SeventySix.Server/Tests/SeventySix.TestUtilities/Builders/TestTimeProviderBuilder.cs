@@ -29,13 +29,13 @@ public class TestTimeProviderBuilder
 	/// </summary>
 	public static readonly DateTimeOffset DefaultTime =
 		new(
-			2025,
-			1,
-			1,
-			12,
-			0,
-			0,
-			TimeSpan.Zero);
+		2025,
+		1,
+		1,
+		12,
+		0,
+		0,
+		TimeSpan.Zero);
 
 	private DateTimeOffset UtcNow = DefaultTime;
 
@@ -52,9 +52,7 @@ public class TestTimeProviderBuilder
 	/// <param name="fixedTime">The fixed time to return.</param>
 	/// <returns>A TimeProvider mock returning the specified time.</returns>
 	public static TimeProvider Create(DateTimeOffset fixedTime) =>
-		new TestTimeProviderBuilder()
-			.WithUtcNow(fixedTime)
-			.Build();
+		new TestTimeProviderBuilder().WithUtcNow(fixedTime).Build();
 
 	/// <summary>
 	/// Sets the UTC time the mock will return.
@@ -73,7 +71,8 @@ public class TestTimeProviderBuilder
 	/// <returns>A configured TimeProvider mock.</returns>
 	public TimeProvider Build()
 	{
-		TimeProvider mock = Substitute.For<TimeProvider>();
+		TimeProvider mock =
+			Substitute.For<TimeProvider>();
 		mock.GetUtcNow().Returns(UtcNow);
 		return mock;
 	}

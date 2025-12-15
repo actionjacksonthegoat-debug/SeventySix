@@ -27,68 +27,44 @@ public class ThirdPartyApiRequest : IModifiableEntity
 	/// <summary>
 	/// Gets or sets the unique identifier.
 	/// </summary>
-	public int Id
-	{
-		get; set;
-	}
+	public int Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the name of the external API.
 	/// </summary>
 	/// <example>BrevoEmail</example>
-	public required string ApiName
-	{
-		get; set;
-	}
+	public required string ApiName { get; set; }
 
 	/// <summary>
 	/// Gets or sets the base URL of the third-party API.
 	/// </summary>
 	/// <example>https://api.example.com</example>
-	public required string BaseUrl
-	{
-		get; set;
-	}
+	public required string BaseUrl { get; set; }
 
 	/// <summary>
 	/// Gets or sets the number of API calls made on the ResetDate.
 	/// </summary>
-	public int CallCount
-	{
-		get; set;
-	}
+	public int CallCount { get; set; }
 
 	/// <summary>
 	/// Gets or sets the timestamp of the most recent API call.
 	/// </summary>
-	public DateTime? LastCalledAt
-	{
-		get; set;
-	}
+	public DateTime? LastCalledAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the date for which this counter is tracking (allows daily reset logic).
 	/// </summary>
-	public DateOnly ResetDate
-	{
-		get; set;
-	}
+	public DateOnly ResetDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets the date and time when the request was created.
 	/// </summary>
-	public DateTime CreateDate
-	{
-		get; set;
-	}
+	public DateTime CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets the date and time when the request was last modified.
 	/// </summary>
-	public DateTime? ModifyDate
-	{
-		get; set;
-	}
+	public DateTime? ModifyDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets the row version for optimistic concurrency control.
@@ -98,10 +74,7 @@ public class ThirdPartyApiRequest : IModifiableEntity
 	/// EF Core will automatically check this value during updates to detect concurrent modifications.
 	/// If another transaction modified the row, DbUpdateConcurrencyException will be thrown.
 	/// </remarks>
-	public uint RowVersion
-	{
-		get; set;
-	}
+	public uint RowVersion { get; set; }
 
 	/// <summary>
 	/// Increments the call counter and updates the last called timestamp.

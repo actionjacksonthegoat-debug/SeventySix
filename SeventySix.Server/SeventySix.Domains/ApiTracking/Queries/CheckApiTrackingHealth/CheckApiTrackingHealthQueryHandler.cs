@@ -23,7 +23,8 @@ public static class CheckApiTrackingHealthQueryHandler
 	{
 		try
 		{
-			_ = await repository.GetAllAsync(cancellationToken);
+			_ =
+				await repository.GetAllAsync(cancellationToken);
 			return true;
 		}
 		catch

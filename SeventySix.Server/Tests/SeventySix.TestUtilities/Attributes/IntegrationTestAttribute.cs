@@ -31,7 +31,8 @@ public sealed class IntegrationTestAttribute : FactAttribute
 
 	static IntegrationTestAttribute()
 	{
-		IConfigurationRoot configuration = new ConfigurationBuilder()
+		IConfigurationRoot configuration =
+			new ConfigurationBuilder()
 			.SetBasePath(Directory.GetCurrentDirectory())
 			.AddJsonFile("appsettings.json", optional: true)
 			.AddJsonFile("appsettings.Test.json", optional: true)
@@ -39,7 +40,10 @@ public sealed class IntegrationTestAttribute : FactAttribute
 			.AddEnvironmentVariables()
 			.Build();
 
-		RunIntegrationTests = configuration.GetValue("Testing:RunIntegrationTests", defaultValue: false);
+		RunIntegrationTests =
+			configuration.GetValue(
+			"Testing:RunIntegrationTests",
+			defaultValue: false);
 	}
 
 	/// <summary>
@@ -49,7 +53,8 @@ public sealed class IntegrationTestAttribute : FactAttribute
 	{
 		if (!RunIntegrationTests)
 		{
-			Skip = "Integration tests are disabled. Set 'Testing:RunIntegrationTests' to true in appsettings to enable.";
+			Skip =
+				"Integration tests are disabled. Set 'Testing:RunIntegrationTests' to true in appsettings to enable.";
 		}
 	}
 }

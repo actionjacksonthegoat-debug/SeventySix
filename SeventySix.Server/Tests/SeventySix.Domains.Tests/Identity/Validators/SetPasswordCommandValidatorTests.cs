@@ -31,8 +31,8 @@ public class SetPasswordCommandValidatorTests
 
 		SetPasswordRequest request =
 			new(
-				Token: validToken,
-				NewPassword: "Password123!");
+			Token: validToken,
+			NewPassword: "Password123!");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -52,8 +52,8 @@ public class SetPasswordCommandValidatorTests
 		// Arrange
 		SetPasswordRequest request =
 			new(
-				Token: "",
-				NewPassword: "Password123!");
+			Token: "",
+			NewPassword: "Password123!");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -71,8 +71,8 @@ public class SetPasswordCommandValidatorTests
 		// Arrange
 		SetPasswordRequest request =
 			new(
-				Token: null!,
-				NewPassword: "Password123!");
+			Token: null!,
+			NewPassword: "Password123!");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -90,8 +90,8 @@ public class SetPasswordCommandValidatorTests
 		// Arrange
 		SetPasswordRequest request =
 			new(
-				Token: "not-valid-base64!!!",
-				NewPassword: "Password123!");
+			Token: "not-valid-base64!!!",
+			NewPassword: "Password123!");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -108,12 +108,13 @@ public class SetPasswordCommandValidatorTests
 	{
 		// Arrange
 		string validToken =
-			Convert.ToBase64String("some-random-bytes"u8.ToArray());
+			Convert.ToBase64String(
+			"some-random-bytes"u8.ToArray());
 
 		SetPasswordRequest request =
 			new(
-				Token: validToken,
-				NewPassword: "Password123!");
+			Token: validToken,
+			NewPassword: "Password123!");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -135,9 +136,7 @@ public class SetPasswordCommandValidatorTests
 			Convert.ToBase64String(new byte[64]);
 
 		SetPasswordRequest request =
-			new(
-				Token: validToken,
-				NewPassword: "");
+			new(Token: validToken, NewPassword: "");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -156,8 +155,8 @@ public class SetPasswordCommandValidatorTests
 
 		SetPasswordRequest request =
 			new(
-				Token: validToken,
-				NewPassword: "Pass1!");
+			Token: validToken,
+			NewPassword: "Pass1!");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -176,8 +175,8 @@ public class SetPasswordCommandValidatorTests
 
 		SetPasswordRequest request =
 			new(
-				Token: validToken,
-				NewPassword: "password123!");
+			Token: validToken,
+			NewPassword: "password123!");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -196,8 +195,8 @@ public class SetPasswordCommandValidatorTests
 
 		SetPasswordRequest request =
 			new(
-				Token: validToken,
-				NewPassword: "PASSWORD123!");
+			Token: validToken,
+			NewPassword: "PASSWORD123!");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =
@@ -216,8 +215,8 @@ public class SetPasswordCommandValidatorTests
 
 		SetPasswordRequest request =
 			new(
-				Token: validToken,
-				NewPassword: "PasswordABC!");
+			Token: validToken,
+			NewPassword: "PasswordABC!");
 
 		// Act
 		TestValidationResult<SetPasswordRequest> result =

@@ -12,15 +12,22 @@ public interface IThirdPartyApiRequestRepository
 		DateOnly resetDate,
 		CancellationToken cancellationToken = default);
 
-	public Task<ThirdPartyApiRequest> CreateAsync(ThirdPartyApiRequest entity, CancellationToken cancellationToken = default);
+	public Task<ThirdPartyApiRequest> CreateAsync(
+		ThirdPartyApiRequest entity,
+		CancellationToken cancellationToken = default);
 
-	public Task<ThirdPartyApiRequest> UpdateAsync(ThirdPartyApiRequest entity, CancellationToken cancellationToken = default);
+	public Task<ThirdPartyApiRequest> UpdateAsync(
+		ThirdPartyApiRequest entity,
+		CancellationToken cancellationToken = default);
 
 	public Task<IEnumerable<ThirdPartyApiRequest>> GetByApiNameAsync(
 		string apiName,
 		CancellationToken cancellationToken = default);
 
-	public Task<IEnumerable<ThirdPartyApiRequest>> GetAllAsync(CancellationToken cancellationToken = default);
+	public Task<IEnumerable<ThirdPartyApiRequest>> GetAllAsync(
+		CancellationToken cancellationToken = default);
 
-	public Task<int> DeleteOlderThanAsync(DateOnly cutoffDate, CancellationToken cancellationToken = default);
+	public Task<int> DeleteOlderThanAsync(
+		DateOnly cutoffDate,
+		CancellationToken cancellationToken = default);
 }

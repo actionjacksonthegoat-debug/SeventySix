@@ -27,9 +27,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 	/// <response code="200">Returns the list of roles.</response>
 	/// <response code="404">If the user is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
-	[HttpGet(
-		"{id}/roles",
-		Name = "GetUserRoles")]
+	[HttpGet("{id}/roles", Name = "GetUserRoles")]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -49,9 +47,9 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 		}
 
 		IEnumerable<string> roles =
-			await messageBus.InvokeAsync<IEnumerable<string>>(
-				new GetUserRolesQuery(id),
-				cancellationToken);
+			await messageBus.InvokeAsync<
+				IEnumerable<string>
+		>(new GetUserRolesQuery(id), cancellationToken);
 
 		return Ok(roles);
 	}
@@ -66,9 +64,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 	/// <response code="404">If the user is not found.</response>
 	/// <response code="409">If the user already has this role.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
-	[HttpPost(
-		"{id}/roles/{role}",
-		Name = "AddUserRole")]
+	[HttpPost("{id}/roles/{role}", Name = "AddUserRole")]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -94,9 +90,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 		{
 			bool added =
 				await messageBus.InvokeAsync<bool>(
-					new AddUserRoleCommand(
-						id,
-						role),
+					new AddUserRoleCommand(id, role),
 					cancellationToken);
 
 			if (!added)
@@ -120,9 +114,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 	/// <response code="204">Role removed successfully.</response>
 	/// <response code="404">If the user or role is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
-	[HttpDelete(
-		"{id}/roles/{role}",
-		Name = "RemoveUserRole")]
+	[HttpDelete("{id}/roles/{role}", Name = "RemoveUserRole")]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -144,9 +136,7 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 
 		bool removed =
 			await messageBus.InvokeAsync<bool>(
-				new RemoveUserRoleCommand(
-					id,
-					role),
+				new RemoveUserRoleCommand(id, role),
 				cancellationToken);
 
 		if (!removed)

@@ -25,8 +25,8 @@ public class DtoPatternTests : SourceCodeArchitectureTest
 
 		Regex dtoClassPattern =
 			new Regex(
-				@"public\s+class\s+\w+Dto\b",
-				RegexOptions.Compiled);
+			@"public\s+class\s+\w+Dto\b",
+			RegexOptions.Compiled);
 
 		List<string> violations = [];
 
@@ -65,8 +65,8 @@ public class DtoPatternTests : SourceCodeArchitectureTest
 		// Match: "public record SomeDto" but NOT "public record SomeDto("
 		Regex dtoRecordWithoutParamsPattern =
 			new Regex(
-				@"public\s+record\s+(\w+Dto)\s*\{",
-				RegexOptions.Compiled);
+			@"public\s+record\s+(\w+Dto)\s*\{",
+			RegexOptions.Compiled);
 
 		List<string> violations = [];
 
@@ -77,7 +77,8 @@ public class DtoPatternTests : SourceCodeArchitectureTest
 				ReadFileContent(file);
 
 			MatchCollection matches =
-				dtoRecordWithoutParamsPattern.Matches(content);
+				dtoRecordWithoutParamsPattern.Matches(
+				content);
 
 			if (matches.Count > 0)
 			{
@@ -86,10 +87,10 @@ public class DtoPatternTests : SourceCodeArchitectureTest
 
 				foreach (Match match in matches)
 				{
-					string dtoName =
-						match.Groups[1].Value;
+					string dtoName = match.Groups[1].Value;
 
-					violations.Add($"{relativePath}: {dtoName} (should use positional parameters)");
+					violations.Add(
+						$"{relativePath}: {dtoName} (should use positional parameters)");
 				}
 			}
 		}

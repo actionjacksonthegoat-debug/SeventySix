@@ -64,7 +64,8 @@ public class SmartHttpsRedirectionMiddleware(
 		}
 
 		// Check for exempted endpoints
-		string path = context.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
+		string path =
+			context.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
 
 		// Metrics endpoint exemption
 		if (path.StartsWith("/metrics") && settings.AllowHttpForMetrics)
@@ -81,22 +82,26 @@ public class SmartHttpsRedirectionMiddleware(
 		}
 
 		// OpenAPI/Swagger endpoint exemption
-		if ((path.StartsWith("/openapi") || path.StartsWith("/scalar")) &&
-			settings.AllowHttpForOpenApi)
+		if (
+			(path.StartsWith("/openapi") || path.StartsWith("/scalar"))
+			&& settings.AllowHttpForOpenApi)
 		{
 			await next(context);
 			return;
 		}
 
 		// Not exempted - redirect to HTTPS
-		string host = context.Request.Host.Host;
-		string? queryString = context.Request.QueryString.HasValue
+		string host =
+			context.Request.Host.Host;
+		string? queryString =
+			context.Request.QueryString.HasValue
 			? context.Request.QueryString.Value
 			: null;
 
-		string redirectUrl = settings.HttpsPort == 443
-			? $"https://{host}{path}{queryString}"
-			: $"https://{host}:{settings.HttpsPort}{path}{queryString}";
+		string redirectUrl =
+			settings.HttpsPort == 443
+				? $"https://{host}{path}{queryString}"
+				: $"https://{host}:{settings.HttpsPort}{path}{queryString}";
 
 		context.Response.Redirect(redirectUrl, permanent: false); // 307 Temporary Redirect
 	}

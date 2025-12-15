@@ -57,8 +57,7 @@ public static class ApiEndpoints
 		/// <returns>Full callback URL with query string.</returns>
 		public static string GitHubCallbackWithParams(
 			string code,
-			string state) =>
-			$"{GitHubCallback}?code={code}&state={state}";
+			string state) => $"{GitHubCallback}?code={code}&state={state}";
 	}
 
 	/// <summary>User management endpoints.</summary>
@@ -71,29 +70,30 @@ public static class ApiEndpoints
 		public const string Me = "/api/v1/users/me";
 
 		/// <summary>Permission requests list endpoint (admin).</summary>
-		public const string PermissionRequests = "/api/v1/users/permission-requests";
+		public const string PermissionRequests =
+			"/api/v1/users/permission-requests";
 
 		/// <summary>Available roles for current user.</summary>
-		public const string MeAvailableRoles = "/api/v1/users/me/available-roles";
+		public const string MeAvailableRoles =
+			"/api/v1/users/me/available-roles";
 
 		/// <summary>Current user's permission requests.</summary>
-		public const string MePermissionRequests = "/api/v1/users/me/permission-requests";
+		public const string MePermissionRequests =
+			"/api/v1/users/me/permission-requests";
 
 		/// <summary>
 		/// Gets user by ID endpoint.
 		/// </summary>
 		/// <param name="id">User ID.</param>
 		/// <returns>Endpoint URL.</returns>
-		public static string ById(int id) =>
-			$"{Base}/{id}";
+		public static string ById(int id) => $"{Base}/{id}";
 
 		/// <summary>
 		/// Gets user roles endpoint.
 		/// </summary>
 		/// <param name="id">User ID.</param>
 		/// <returns>Endpoint URL.</returns>
-		public static string Roles(int id) =>
-			$"{Base}/{id}/roles";
+		public static string Roles(int id) => $"{Base}/{id}/roles";
 
 		/// <summary>
 		/// Gets approve permission request endpoint.
@@ -135,8 +135,7 @@ public static class ApiEndpoints
 		/// </summary>
 		/// <param name="id">Log ID.</param>
 		/// <returns>Endpoint URL.</returns>
-		public static string ById(int id) =>
-			$"{Base}/{id}";
+		public static string ById(int id) => $"{Base}/{id}";
 
 		/// <summary>
 		/// Gets cleanup endpoint with cutoff date.

@@ -29,22 +29,27 @@ public class AuditInterceptorTests : IDisposable
 
 	public AuditInterceptorTests()
 	{
-		MockUserContextAccessor = Substitute.For<IUserContextAccessor>();
+		MockUserContextAccessor =
+			Substitute.For<IUserContextAccessor>();
 		MockUserContextAccessor.GetCurrentUser().Returns(TestUser);
 
 		TimeProvider = new TestTimeProvider();
-		TimeProvider.SetUtcNow(new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero));
+		TimeProvider.SetUtcNow(
+			new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero));
 
-		Interceptor = new AuditInterceptor(
+		Interceptor =
+			new AuditInterceptor(
 			MockUserContextAccessor,
 			TimeProvider);
 
-		DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
-			.UseSqlite("DataSource=:memory:")
-			.AddInterceptors(Interceptor)
-			.Options;
+		DbContextOptions<TestDbContext> options =
+			new DbContextOptionsBuilder<TestDbContext>()
+				.UseSqlite("DataSource=:memory:")
+				.AddInterceptors(Interceptor)
+				.Options;
 
-		Context = new TestDbContext(options);
+		Context =
+			new TestDbContext(options);
 		Context.Database.OpenConnection();
 		Context.Database.EnsureCreated();
 	}
@@ -61,10 +66,8 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewAuditableEntity_SetsCreateDateAsync()
 	{
 		// Arrange
-		TestAuditableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestAuditableEntity entity =
+			new() { Name = "Test" };
 
 		// Act
 		Context.AuditableEntities.Add(entity);
@@ -78,10 +81,8 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewAuditableEntity_SetsCreatedByAsync()
 	{
 		// Arrange
-		TestAuditableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestAuditableEntity entity =
+			new() { Name = "Test" };
 
 		// Act
 		Context.AuditableEntities.Add(entity);
@@ -96,10 +97,8 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewAuditableEntity_SetsModifiedByAsync()
 	{
 		// Arrange
-		TestAuditableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestAuditableEntity entity =
+			new() { Name = "Test" };
 
 		// Act
 		Context.AuditableEntities.Add(entity);
@@ -113,10 +112,8 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewAuditableEntity_DoesNotSetModifyDateAsync()
 	{
 		// Arrange
-		TestAuditableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestAuditableEntity entity =
+			new() { Name = "Test" };
 
 		// Act
 		Context.AuditableEntities.Add(entity);
@@ -130,15 +127,14 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_ModifiedAuditableEntity_SetsModifyDateAsync()
 	{
 		// Arrange
-		TestAuditableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestAuditableEntity entity =
+			new() { Name = "Test" };
 		Context.AuditableEntities.Add(entity);
 		await Context.SaveChangesAsync();
 
 		// Advance time for modification
-		TimeProvider.SetUtcNow(new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
+		TimeProvider.SetUtcNow(
+			new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
 
 		// Act
 		entity.Name = "Updated";
@@ -153,10 +149,8 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_ModifiedAuditableEntity_SetsModifiedByAsync()
 	{
 		// Arrange
-		TestAuditableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestAuditableEntity entity =
+			new() { Name = "Test" };
 		Context.AuditableEntities.Add(entity);
 		await Context.SaveChangesAsync();
 
@@ -175,16 +169,15 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_ModifiedAuditableEntity_DoesNotChangeCreateDateAsync()
 	{
 		// Arrange
-		TestAuditableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestAuditableEntity entity =
+			new() { Name = "Test" };
 		Context.AuditableEntities.Add(entity);
 		await Context.SaveChangesAsync();
 		DateTime originalCreateDate = entity.CreateDate;
 
 		// Advance time for modification
-		TimeProvider.SetUtcNow(new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
+		TimeProvider.SetUtcNow(
+			new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
 
 		// Act
 		entity.Name = "Updated";
@@ -198,10 +191,8 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_ModifiedAuditableEntity_DoesNotChangeCreatedByAsync()
 	{
 		// Arrange
-		TestAuditableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestAuditableEntity entity =
+			new() { Name = "Test" };
 		Context.AuditableEntities.Add(entity);
 		await Context.SaveChangesAsync();
 		string originalCreatedBy = entity.CreatedBy;
@@ -221,11 +212,20 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewAuditableEntityWithPresetCreateDate_PreservesCreateDateAsync()
 	{
 		// Arrange
-		DateTime presetDate = new DateTime(2020, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-		TestAuditableEntity entity = new()
+		DateTime presetDate =
+			new DateTime(
+			2020,
+			1,
+			1,
+			12,
+			0,
+			0,
+			DateTimeKind.Utc);
+		TestAuditableEntity entity =
+			new()
 		{
 			Name = "Test",
-			CreateDate = presetDate
+			CreateDate = presetDate,
 		};
 
 		// Act
@@ -240,10 +240,11 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewAuditableEntityWithPresetCreatedBy_PreservesCreatedByAsync()
 	{
 		// Arrange
-		TestAuditableEntity entity = new()
+		TestAuditableEntity entity =
+			new()
 		{
 			Name = "Test",
-			CreatedBy = "OriginalCreator"
+			CreatedBy = "OriginalCreator",
 		};
 
 		// Act
@@ -262,10 +263,8 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewModifiableEntity_SetsCreateDateAsync()
 	{
 		// Arrange
-		TestModifiableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestModifiableEntity entity =
+			new() { Name = "Test" };
 
 		// Act
 		Context.ModifiableEntities.Add(entity);
@@ -279,10 +278,8 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewModifiableEntity_DoesNotSetModifyDateAsync()
 	{
 		// Arrange
-		TestModifiableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestModifiableEntity entity =
+			new() { Name = "Test" };
 
 		// Act
 		Context.ModifiableEntities.Add(entity);
@@ -296,15 +293,14 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_ModifiedModifiableEntity_SetsModifyDateAsync()
 	{
 		// Arrange
-		TestModifiableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestModifiableEntity entity =
+			new() { Name = "Test" };
 		Context.ModifiableEntities.Add(entity);
 		await Context.SaveChangesAsync();
 
 		// Advance time for modification
-		TimeProvider.SetUtcNow(new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
+		TimeProvider.SetUtcNow(
+			new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
 
 		// Act
 		entity.Name = "Updated";
@@ -319,16 +315,15 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_ModifiedModifiableEntity_DoesNotChangeCreateDateAsync()
 	{
 		// Arrange
-		TestModifiableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestModifiableEntity entity =
+			new() { Name = "Test" };
 		Context.ModifiableEntities.Add(entity);
 		await Context.SaveChangesAsync();
 		DateTime originalCreateDate = entity.CreateDate;
 
 		// Advance time for modification
-		TimeProvider.SetUtcNow(new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
+		TimeProvider.SetUtcNow(
+			new DateTimeOffset(2024, 1, 16, 12, 0, 0, TimeSpan.Zero));
 
 		// Act
 		entity.Name = "Updated";
@@ -342,11 +337,20 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewModifiableEntityWithPresetCreateDate_PreservesCreateDateAsync()
 	{
 		// Arrange
-		DateTime presetDate = new DateTime(2020, 6, 15, 10, 30, 0, DateTimeKind.Utc);
-		TestModifiableEntity entity = new()
+		DateTime presetDate =
+			new DateTime(
+			2020,
+			6,
+			15,
+			10,
+			30,
+			0,
+			DateTimeKind.Utc);
+		TestModifiableEntity entity =
+			new()
 		{
 			Name = "Test",
-			CreateDate = presetDate
+			CreateDate = presetDate,
 		};
 
 		// Act
@@ -365,10 +369,8 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewCreatableEntity_SetsCreateDateAsync()
 	{
 		// Arrange
-		TestCreatableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestCreatableEntity entity =
+			new() { Name = "Test" };
 
 		// Act
 		Context.CreatableEntities.Add(entity);
@@ -382,11 +384,20 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_NewCreatableEntityWithPresetCreateDate_PreservesCreateDateAsync()
 	{
 		// Arrange
-		DateTime presetDate = new DateTime(2021, 3, 10, 14, 0, 0, DateTimeKind.Utc);
-		TestCreatableEntity entity = new()
+		DateTime presetDate =
+			new DateTime(
+			2021,
+			3,
+			10,
+			14,
+			0,
+			0,
+			DateTimeKind.Utc);
+		TestCreatableEntity entity =
+			new()
 		{
 			Name = "Test",
-			CreateDate = presetDate
+			CreateDate = presetDate,
 		};
 
 		// Act
@@ -405,8 +416,10 @@ public class AuditInterceptorTests : IDisposable
 	public async Task SavingChangesAsync_MultipleEntities_SetsAuditPropertiesForAllAsync()
 	{
 		// Arrange
-		TestAuditableEntity entity1 = new() { Name = "Entity1" };
-		TestAuditableEntity entity2 = new() { Name = "Entity2" };
+		TestAuditableEntity entity1 =
+			new() { Name = "Entity1" };
+		TestAuditableEntity entity2 =
+			new() { Name = "Entity2" };
 
 		// Act
 		Context.AuditableEntities.AddRange(entity1, entity2);
@@ -425,10 +438,8 @@ public class AuditInterceptorTests : IDisposable
 	{
 		// Arrange
 		MockUserContextAccessor.GetCurrentUser().Returns(SystemUser);
-		TestAuditableEntity entity = new()
-		{
-			Name = "Test"
-		};
+		TestAuditableEntity entity =
+			new() { Name = "Test" };
 
 		// Act
 		Context.AuditableEntities.Add(entity);
@@ -445,58 +456,38 @@ public class AuditInterceptorTests : IDisposable
 
 	private class TestAuditableEntity : IAuditableEntity
 	{
-		public int Id
-		{
-			get; set;
-		}
+		public int Id { get; set; }
 		public string Name { get; set; } = string.Empty;
-		public DateTime CreateDate
-		{
-			get; set;
-		}
-		public DateTime? ModifyDate
-		{
-			get; set;
-		}
+		public DateTime CreateDate { get; set; }
+		public DateTime? ModifyDate { get; set; }
 		public string CreatedBy { get; set; } = string.Empty;
 		public string ModifiedBy { get; set; } = string.Empty;
 	}
 
 	private class TestModifiableEntity : IModifiableEntity
 	{
-		public int Id
-		{
-			get; set;
-		}
+		public int Id { get; set; }
 		public string Name { get; set; } = string.Empty;
-		public DateTime CreateDate
-		{
-			get; set;
-		}
-		public DateTime? ModifyDate
-		{
-			get; set;
-		}
+		public DateTime CreateDate { get; set; }
+		public DateTime? ModifyDate { get; set; }
 	}
 
 	private class TestCreatableEntity : ICreatableEntity
 	{
-		public int Id
-		{
-			get; set;
-		}
+		public int Id { get; set; }
 		public string Name { get; set; } = string.Empty;
-		public DateTime CreateDate
-		{
-			get; set;
-		}
+		public DateTime CreateDate { get; set; }
 	}
 
-	private class TestDbContext(DbContextOptions<TestDbContext> options) : DbContext(options)
+	private class TestDbContext(DbContextOptions<TestDbContext> options)
+		: DbContext(options)
 	{
-		public DbSet<TestAuditableEntity> AuditableEntities { get; set; } = null!;
-		public DbSet<TestModifiableEntity> ModifiableEntities { get; set; } = null!;
-		public DbSet<TestCreatableEntity> CreatableEntities { get; set; } = null!;
+		public DbSet<TestAuditableEntity> AuditableEntities { get; set; } =
+			null!;
+		public DbSet<TestModifiableEntity> ModifiableEntities { get; set; } =
+			null!;
+		public DbSet<TestCreatableEntity> CreatableEntities { get; set; } =
+			null!;
 	}
 
 	#endregion

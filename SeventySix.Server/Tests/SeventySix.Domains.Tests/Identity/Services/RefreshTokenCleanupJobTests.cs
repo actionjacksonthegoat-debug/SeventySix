@@ -38,50 +38,55 @@ public class RefreshTokenCleanupJobTests : IDisposable
 				.UseSqlite("DataSource=:memory:")
 				.Options;
 
-		this.DbContext = new IdentityDbContext(options);
+		this.DbContext =
+			new IdentityDbContext(options);
 		this.DbContext.Database.OpenConnection();
 		this.DbContext.Database.EnsureCreated();
 
 		// Create test user for FK constraints
 		this.TestUser =
 			new User
-			{
-				Username = "testuser",
-				Email = "test@example.com",
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-				CreatedBy = "system"
-			};
+		{
+			Username = "testuser",
+			Email = "test@example.com",
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			CreatedBy = "system",
+		};
 		this.DbContext.Users.Add(this.TestUser);
 		this.DbContext.SaveChanges();
 
 		// Arrange ServiceScope mocking
 		IServiceScope scope =
 			Substitute.For<IServiceScope>();
-		scope.ServiceProvider.GetService(typeof(IdentityDbContext))
+		scope
+			.ServiceProvider.GetService(typeof(IdentityDbContext))
 			.Returns(this.DbContext);
 
-		this.ServiceScopeFactory = Substitute.For<IServiceScopeFactory>();
-		this.ServiceScopeFactory.CreateScope()
-			.Returns(scope);
+		this.ServiceScopeFactory =
+			Substitute.For<IServiceScopeFactory>();
+		this.ServiceScopeFactory.CreateScope().Returns(scope);
 
 		// Arrange settings
-		this.Settings = Options.Create(
+		this.Settings =
+			Options.Create(
 			new RefreshTokenCleanupSettings
 			{
 				IntervalHours = 24,
-				RetentionDays = 7
+				RetentionDays = 7,
 			});
 
-		this.Logger = Substitute.For<ILogger<RefreshTokenCleanupService>>();
+		this.Logger =
+			Substitute.For<ILogger<RefreshTokenCleanupService>>();
 		this.TimeProvider = TimeProvider.System;
 
 		// Act
 		this.CleanupJob =
 			new RefreshTokenCleanupService(
-				this.ServiceScopeFactory,
-				this.Settings,
-				this.Logger,
-				this.TimeProvider);
+			this.ServiceScopeFactory,
+			this.Settings,
+			this.Logger,
+			this.TimeProvider);
 	}
 
 	[Fact]
@@ -89,47 +94,53 @@ public class RefreshTokenCleanupJobTests : IDisposable
 	{
 		// Arrange - Create tokens at different expiration times
 		DateTime now =
-			this.TimeProvider.GetUtcNow()
-				.UtcDateTime;
+			this.TimeProvider.GetUtcNow().UtcDateTime;
 
 		// Token expired 10 days ago (should be deleted - older than 7 days retention)
 		RefreshToken oldExpiredToken =
 			new()
-			{
-				TokenHash = "old-token-hash",
-				FamilyId = Guid.NewGuid(),
-				UserId = this.TestUser.Id,
-				ExpiresAt = now.AddDays(-10),
-				SessionStartedAt = now.AddDays(-40),
-				CreateDate = now.AddDays(-40),
-				IsRevoked = false
-			};
+		{
+			TokenHash = "old-token-hash",
+			FamilyId = Guid.NewGuid(),
+			UserId = this.TestUser.Id,
+			ExpiresAt =
+			now.AddDays(-10),
+			SessionStartedAt =
+			now.AddDays(-40),
+			CreateDate =
+			now.AddDays(-40),
+			IsRevoked = false,
+		};
 
 		// Token expired 5 days ago (should NOT be deleted - within 7 days retention)
 		RefreshToken recentExpiredToken =
 			new()
-			{
-				TokenHash = "recent-token-hash",
-				FamilyId = Guid.NewGuid(),
-				UserId = this.TestUser.Id,
-				ExpiresAt = now.AddDays(-5),
-				SessionStartedAt = now.AddDays(-35),
-				CreateDate = now.AddDays(-35),
-				IsRevoked = false
-			};
+		{
+			TokenHash = "recent-token-hash",
+			FamilyId = Guid.NewGuid(),
+			UserId = this.TestUser.Id,
+			ExpiresAt =
+			now.AddDays(-5),
+			SessionStartedAt =
+			now.AddDays(-35),
+			CreateDate =
+			now.AddDays(-35),
+			IsRevoked = false,
+		};
 
 		// Token not yet expired (should NOT be deleted)
 		RefreshToken activeToken =
 			new()
-			{
-				TokenHash = "active-token-hash",
-				FamilyId = Guid.NewGuid(),
-				UserId = this.TestUser.Id,
-				ExpiresAt = now.AddDays(7),
-				SessionStartedAt = now,
-				CreateDate = now,
-				IsRevoked = false
-			};
+		{
+			TokenHash = "active-token-hash",
+			FamilyId = Guid.NewGuid(),
+			UserId = this.TestUser.Id,
+			ExpiresAt =
+			now.AddDays(7),
+			SessionStartedAt = now,
+			CreateDate = now,
+			IsRevoked = false,
+		};
 
 		this.DbContext.RefreshTokens.AddRange(
 			oldExpiredToken,
@@ -145,15 +156,9 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			await this.DbContext.RefreshTokens.ToListAsync();
 
 		remainingTokens.Count.ShouldBe(2);
-		remainingTokens.ShouldNotContain(
-			t =>
-				t.Id == oldExpiredToken.Id);
-		remainingTokens.ShouldContain(
-			t =>
-				t.Id == recentExpiredToken.Id);
-		remainingTokens.ShouldContain(
-			t =>
-				t.Id == activeToken.Id);
+		remainingTokens.ShouldNotContain(t => t.Id == oldExpiredToken.Id);
+		remainingTokens.ShouldContain(t => t.Id == recentExpiredToken.Id);
+		remainingTokens.ShouldContain(t => t.Id == activeToken.Id);
 	}
 
 	[Fact]
@@ -161,20 +166,22 @@ public class RefreshTokenCleanupJobTests : IDisposable
 	{
 		// Arrange
 		DateTime now =
-			this.TimeProvider.GetUtcNow()
-				.UtcDateTime;
+			this.TimeProvider.GetUtcNow().UtcDateTime;
 
 		RefreshToken expiredToken =
 			new()
-			{
-				TokenHash = "expired-token-hash",
-				FamilyId = Guid.NewGuid(),
-				UserId = this.TestUser.Id,
-				ExpiresAt = now.AddDays(-10),
-				SessionStartedAt = now.AddDays(-40),
-				CreateDate = now.AddDays(-40),
-				IsRevoked = false
-			};
+		{
+			TokenHash = "expired-token-hash",
+			FamilyId = Guid.NewGuid(),
+			UserId = this.TestUser.Id,
+			ExpiresAt =
+			now.AddDays(-10),
+			SessionStartedAt =
+			now.AddDays(-40),
+			CreateDate =
+			now.AddDays(-40),
+			IsRevoked = false,
+		};
 
 		this.DbContext.RefreshTokens.Add(expiredToken);
 		await this.DbContext.SaveChangesAsync();
@@ -187,10 +194,7 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			.Log(
 				LogLevel.Warning,
 				Arg.Any<EventId>(),
-				Arg.Is<object>(
-					o =>
-						o.ToString()!
-							.Contains("Cleaned up")),
+				Arg.Is<object>(o => o.ToString()!.Contains("Cleaned up")),
 				null,
 				Arg.Any<Func<object, Exception?, string>>());
 	}
@@ -200,20 +204,20 @@ public class RefreshTokenCleanupJobTests : IDisposable
 	{
 		// Arrange - No expired tokens
 		DateTime now =
-			this.TimeProvider.GetUtcNow()
-				.UtcDateTime;
+			this.TimeProvider.GetUtcNow().UtcDateTime;
 
 		RefreshToken activeToken =
 			new()
-			{
-				TokenHash = "active-token-hash",
-				FamilyId = Guid.NewGuid(),
-				UserId = this.TestUser.Id,
-				ExpiresAt = now.AddDays(7),
-				SessionStartedAt = now,
-				CreateDate = now,
-				IsRevoked = false
-			};
+		{
+			TokenHash = "active-token-hash",
+			FamilyId = Guid.NewGuid(),
+			UserId = this.TestUser.Id,
+			ExpiresAt =
+			now.AddDays(7),
+			SessionStartedAt = now,
+			CreateDate = now,
+			IsRevoked = false,
+		};
 
 		this.DbContext.RefreshTokens.Add(activeToken);
 		await this.DbContext.SaveChangesAsync();
@@ -247,20 +251,20 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			new(failingOptions);
 
 		// Don't open connection - this will cause errors when trying to query
-		failingScope.ServiceProvider.GetService(typeof(IdentityDbContext))
+		failingScope
+			.ServiceProvider.GetService(typeof(IdentityDbContext))
 			.Returns(failingContext);
 
 		IServiceScopeFactory failingFactory =
 			Substitute.For<IServiceScopeFactory>();
-		failingFactory.CreateAsyncScope()
-			.Returns(failingScope);
+		failingFactory.CreateAsyncScope().Returns(failingScope);
 
 		RefreshTokenCleanupService failingJob =
 			new(
-				failingFactory,
-				this.Settings,
-				this.Logger,
-				this.TimeProvider);
+			failingFactory,
+			this.Settings,
+			this.Logger,
+			this.TimeProvider);
 
 		// Act - Should not throw (exception caught internally)
 		await failingJob.CleanupExpiredTokensAsync();
@@ -270,10 +274,8 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			.Log(
 				LogLevel.Error,
 				Arg.Any<EventId>(),
-				Arg.Is<object>(
-					o =>
-						o.ToString()!
-							.Contains("Error during refresh token cleanup")),
+				Arg.Is<object>(o =>
+					o.ToString()!.Contains("Error during refresh token cleanup")),
 				Arg.Any<Exception>(),
 				Arg.Any<Func<object, Exception?, string>>());
 
@@ -286,9 +288,8 @@ public class RefreshTokenCleanupJobTests : IDisposable
 		// Arrange - Empty database
 
 		// Act & Assert - Should not throw
-		await Should.NotThrowAsync(
-			async () =>
-				await this.CleanupJob.CleanupExpiredTokensAsync());
+		await Should.NotThrowAsync(async () =>
+			await this.CleanupJob.CleanupExpiredTokensAsync());
 
 		// Assert - No tokens should exist
 		int count =

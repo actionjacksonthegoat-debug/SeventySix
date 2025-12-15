@@ -41,8 +41,7 @@ public class CommandValidatorFactoryTests
 	public async Task CreateFor_ReturnsValidator_ThatValidatesRequestAsync()
 	{
 		// Arrange
-		IValidator<TestRequest> requestValidator =
-			new TestRequestValidator();
+		IValidator<TestRequest> requestValidator = new TestRequestValidator();
 
 		IValidator<TestCommand> commandValidator =
 			CommandValidatorFactory.CreateFor<TestCommand, TestRequest>(
@@ -54,7 +53,8 @@ public class CommandValidatorFactoryTests
 
 		// Act
 		ValidationResult result =
-			await commandValidator.ValidateAsync(validCommand);
+			await commandValidator.ValidateAsync(
+			validCommand);
 
 		// Assert
 		Assert.True(result.IsValid);
@@ -64,8 +64,7 @@ public class CommandValidatorFactoryTests
 	public async Task CreateFor_ReturnsValidator_ThatFailsWhenRequestInvalidAsync()
 	{
 		// Arrange
-		IValidator<TestRequest> requestValidator =
-			new TestRequestValidator();
+		IValidator<TestRequest> requestValidator = new TestRequestValidator();
 
 		IValidator<TestCommand> commandValidator =
 			CommandValidatorFactory.CreateFor<TestCommand, TestRequest>(
@@ -77,7 +76,8 @@ public class CommandValidatorFactoryTests
 
 		// Act
 		ValidationResult result =
-			await commandValidator.ValidateAsync(invalidCommand);
+			await commandValidator.ValidateAsync(
+			invalidCommand);
 
 		// Assert
 		Assert.False(result.IsValid);
@@ -90,8 +90,7 @@ public class CommandValidatorFactoryTests
 	public async Task CreateFor_PreservesValidationContext_WithNestedPropertyPathAsync()
 	{
 		// Arrange
-		IValidator<TestRequest> requestValidator =
-			new TestRequestValidator();
+		IValidator<TestRequest> requestValidator = new TestRequestValidator();
 
 		IValidator<TestCommand> commandValidator =
 			CommandValidatorFactory.CreateFor<TestCommand, TestRequest>(
@@ -103,7 +102,8 @@ public class CommandValidatorFactoryTests
 
 		// Act
 		ValidationResult result =
-			await commandValidator.ValidateAsync(invalidCommand);
+			await commandValidator.ValidateAsync(
+			invalidCommand);
 
 		// Assert
 		// Property path should be "Request.Value" not just "Value"

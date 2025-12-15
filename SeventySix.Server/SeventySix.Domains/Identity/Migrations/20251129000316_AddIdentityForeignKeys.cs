@@ -11,15 +11,18 @@ namespace SeventySix.Identity.Migrations
 		/// <inheritdoc />
 		protected override void Up(MigrationBuilder migrationBuilder)
 		{
-			migrationBuilder.AlterColumn<int>(
-				name: "UserId",
-				schema: "Identity",
-				table: "UserCredentials",
-				type: "integer",
-				nullable: false,
-				oldClrType: typeof(int),
-				oldType: "integer")
-				.OldAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+			migrationBuilder
+				.AlterColumn<int>(
+					name: "UserId",
+					schema: "Identity",
+					table: "UserCredentials",
+					type: "integer",
+					nullable: false,
+					oldClrType: typeof(int),
+					oldType: "integer")
+				.OldAnnotation(
+					"Npgsql:ValueGenerationStrategy",
+					NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
 			migrationBuilder.AddForeignKey(
 				name: "FK_ExternalLogins_Users_UserId",
@@ -85,15 +88,18 @@ namespace SeventySix.Identity.Migrations
 				schema: "Identity",
 				table: "UserRoles");
 
-			migrationBuilder.AlterColumn<int>(
-				name: "UserId",
-				schema: "Identity",
-				table: "UserCredentials",
-				type: "integer",
-				nullable: false,
-				oldClrType: typeof(int),
-				oldType: "integer")
-				.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+			migrationBuilder
+				.AlterColumn<int>(
+					name: "UserId",
+					schema: "Identity",
+					table: "UserCredentials",
+					type: "integer",
+					nullable: false,
+					oldClrType: typeof(int),
+					oldType: "integer")
+				.Annotation(
+					"Npgsql:ValueGenerationStrategy",
+					NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 		}
 	}
 }

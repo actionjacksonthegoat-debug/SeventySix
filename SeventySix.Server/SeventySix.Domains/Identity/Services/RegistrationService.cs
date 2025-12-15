@@ -44,7 +44,8 @@ public sealed class RegistrationService(
 			logger.LogError(
 				"Role '{RoleName}' not found in SecurityRoles",
 				roleName);
-			throw new InvalidOperationException($"Role '{roleName}' not found in SecurityRoles");
+			throw new InvalidOperationException(
+				$"Role '{roleName}' not found in SecurityRoles");
 		}
 
 		return roleId.Value;
@@ -64,18 +65,19 @@ public sealed class RegistrationService(
 		bool requiresPasswordChange,
 		CancellationToken cancellationToken)
 	{
-		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
 
 		User newUser =
 			new()
-			{
-				Username = username,
-				Email = email,
-				FullName = fullName,
-				IsActive = true,
-				CreateDate = now,
-				CreatedBy = createdBy,
-			};
+		{
+			Username = username,
+			Email = email,
+			FullName = fullName,
+			IsActive = true,
+			CreateDate = now,
+			CreatedBy = createdBy,
+		};
 
 		User createdUser =
 			await authRepository.CreateUserWithRoleAsync(
@@ -90,16 +92,15 @@ public sealed class RegistrationService(
 
 		UserCredential credential =
 			new()
-			{
-				UserId = createdUser.Id,
-				PasswordHash = passwordHash,
-				CreateDate = now,
-				PasswordChangedAt = requiresPasswordChange ? null : now,
-			};
+		{
+			UserId = createdUser.Id,
+			PasswordHash = passwordHash,
+			CreateDate = now,
+			PasswordChangedAt =
+			requiresPasswordChange ? null : now,
+		};
 
-		await credentialRepository.CreateAsync(
-			credential,
-			cancellationToken);
+		await credentialRepository.CreateAsync(credential, cancellationToken);
 
 		return createdUser;
 	}
@@ -138,7 +139,10 @@ public sealed class RegistrationService(
 		return AuthResult.Succeeded(
 			accessToken,
 			refreshToken,
-			timeProvider.GetUtcNow().AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes).UtcDateTime,
+			timeProvider
+				.GetUtcNow()
+				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
+				.UtcDateTime,
 			requiresPasswordChange);
 	}
 }

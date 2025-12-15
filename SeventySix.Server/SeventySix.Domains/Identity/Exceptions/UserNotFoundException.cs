@@ -48,9 +48,7 @@ public class UserNotFoundException : EntityNotFoundException
 	/// Consider using the overload with user ID for better error messages.
 	/// </remarks>
 	public UserNotFoundException()
-		: base("User", "unknown")
-	{
-	}
+		: base("User", "unknown") { }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserNotFoundException"/> class
@@ -62,9 +60,7 @@ public class UserNotFoundException : EntityNotFoundException
 	/// Example message: "User with id '123' was not found."
 	/// </remarks>
 	public UserNotFoundException(int userId)
-		: base("User", userId)
-	{
-	}
+		: base("User", userId) { }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserNotFoundException"/> class with a custom message.
@@ -76,7 +72,5 @@ public class UserNotFoundException : EntityNotFoundException
 	/// "User with username 'johndoe' was not found."
 	/// </remarks>
 	public UserNotFoundException(string message)
-		: base(message)
-	{
-	}
+		: base(message) { }
 }

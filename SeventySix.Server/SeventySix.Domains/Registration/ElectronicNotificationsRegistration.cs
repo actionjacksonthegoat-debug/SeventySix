@@ -43,8 +43,7 @@ public static class ElectronicNotificationsRegistration
 		IConfiguration configuration)
 	{
 		// Bind email settings from configuration
-		services.Configure<EmailSettings>(
-			configuration.GetSection("Email"));
+		services.Configure<EmailSettings>(configuration.GetSection("Email"));
 
 		// Register email service
 		services.AddScoped<IEmailService, EmailService>();

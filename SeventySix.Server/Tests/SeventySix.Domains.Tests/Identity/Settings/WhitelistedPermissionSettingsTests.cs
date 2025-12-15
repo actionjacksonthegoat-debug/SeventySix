@@ -20,22 +20,23 @@ public class WhitelistedPermissionSettingsTests
 		// Arrange
 		WhitelistedPermissionSettings settings =
 			new()
-			{
-				Grants =
-				[
-					new WhitelistedGrant
-					{
-						Email = "dev@company.com",
-						Roles = [TestRoleConstants.Developer]
-					}
-				]
-			};
+		{
+			Grants =
+			[
+				new WhitelistedGrant
+				{
+					Email = "dev@company.com",
+					Roles =
+			[TestRoleConstants.Developer],
+				},
+			],
+		};
 
 		// Act
 		bool result =
 			settings.IsWhitelisted(
-				"dev@company.com",
-				TestRoleConstants.Developer);
+			"dev@company.com",
+			TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeTrue();
@@ -47,22 +48,23 @@ public class WhitelistedPermissionSettingsTests
 		// Arrange
 		WhitelistedPermissionSettings settings =
 			new()
-			{
-				Grants =
-				[
-					new WhitelistedGrant
-					{
-						Email = "dev@company.com",
-						Roles = [TestRoleConstants.Developer]
-					}
-				]
-			};
+		{
+			Grants =
+			[
+				new WhitelistedGrant
+				{
+					Email = "dev@company.com",
+					Roles =
+			[TestRoleConstants.Developer],
+				},
+			],
+		};
 
 		// Act
 		bool result =
 			settings.IsWhitelisted(
-				"DEV@COMPANY.COM",
-				TestRoleConstants.Developer);
+			"DEV@COMPANY.COM",
+			TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeTrue();
@@ -74,22 +76,21 @@ public class WhitelistedPermissionSettingsTests
 		// Arrange
 		WhitelistedPermissionSettings settings =
 			new()
-			{
-				Grants =
-				[
-					new WhitelistedGrant
-					{
-						Email = "dev@company.com",
-						Roles = [TestRoleConstants.Developer]
-					}
-				]
-			};
+		{
+			Grants =
+			[
+				new WhitelistedGrant
+				{
+					Email = "dev@company.com",
+					Roles =
+			[TestRoleConstants.Developer],
+				},
+			],
+		};
 
 		// Act
 		bool result =
-			settings.IsWhitelisted(
-				"dev@company.com",
-				"DEVELOPER");
+			settings.IsWhitelisted("dev@company.com", "DEVELOPER");
 
 		// Assert
 		result.ShouldBeTrue();
@@ -101,22 +102,23 @@ public class WhitelistedPermissionSettingsTests
 		// Arrange
 		WhitelistedPermissionSettings settings =
 			new()
-			{
-				Grants =
-				[
-					new WhitelistedGrant
-					{
-						Email = "dev@company.com",
-						Roles = [TestRoleConstants.Developer]
-					}
-				]
-			};
+		{
+			Grants =
+			[
+				new WhitelistedGrant
+				{
+					Email = "dev@company.com",
+					Roles =
+			[TestRoleConstants.Developer],
+				},
+			],
+		};
 
 		// Act
 		bool result =
 			settings.IsWhitelisted(
-				"other@company.com",
-				TestRoleConstants.Developer);
+			"other@company.com",
+			TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeFalse();
@@ -128,22 +130,23 @@ public class WhitelistedPermissionSettingsTests
 		// Arrange
 		WhitelistedPermissionSettings settings =
 			new()
-			{
-				Grants =
-				[
-					new WhitelistedGrant
-					{
-						Email = "dev@company.com",
-						Roles = [TestRoleConstants.Developer]
-					}
-				]
-			};
+		{
+			Grants =
+			[
+				new WhitelistedGrant
+				{
+					Email = "dev@company.com",
+					Roles =
+			[TestRoleConstants.Developer],
+				},
+			],
+		};
 
 		// Act
 		bool result =
 			settings.IsWhitelisted(
-				"dev@company.com",
-				TestRoleConstants.Admin);
+			"dev@company.com",
+			TestRoleConstants.Admin);
 
 		// Assert
 		result.ShouldBeFalse();
@@ -154,16 +157,13 @@ public class WhitelistedPermissionSettingsTests
 	{
 		// Arrange
 		WhitelistedPermissionSettings settings =
-			new()
-			{
-				Grants = []
-			};
+			new() { Grants = [] };
 
 		// Act
 		bool result =
 			settings.IsWhitelisted(
-				"dev@company.com",
-				TestRoleConstants.Developer);
+			"dev@company.com",
+			TestRoleConstants.Developer);
 
 		// Assert
 		result.ShouldBeFalse();
@@ -175,26 +175,30 @@ public class WhitelistedPermissionSettingsTests
 		// Arrange
 		WhitelistedPermissionSettings settings =
 			new()
-			{
-				Grants =
-				[
-					new WhitelistedGrant
-					{
-						Email = "admin@company.com",
-						Roles = [TestRoleConstants.Developer, TestRoleConstants.Admin]
-					}
-				]
-			};
+		{
+			Grants =
+			[
+				new WhitelistedGrant
+				{
+					Email = "admin@company.com",
+					Roles =
+					[
+						TestRoleConstants.Developer,
+						TestRoleConstants.Admin,
+					],
+				},
+			],
+		};
 
 		// Act
 		bool developerResult =
 			settings.IsWhitelisted(
-				"admin@company.com",
-				TestRoleConstants.Developer);
+			"admin@company.com",
+			TestRoleConstants.Developer);
 		bool adminResult =
 			settings.IsWhitelisted(
-				"admin@company.com",
-				TestRoleConstants.Admin);
+			"admin@company.com",
+			TestRoleConstants.Admin);
 
 		// Assert
 		developerResult.ShouldBeTrue();

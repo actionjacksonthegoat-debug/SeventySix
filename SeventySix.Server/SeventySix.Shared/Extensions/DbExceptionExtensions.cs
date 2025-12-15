@@ -28,9 +28,6 @@ public static class DbExceptionExtensions
 
 		return message.Contains(
 			"duplicate key",
-			StringComparison.OrdinalIgnoreCase)
-			|| message.Contains(
-				"23505",
-				StringComparison.Ordinal);
+			StringComparison.OrdinalIgnoreCase) || message.Contains("23505", StringComparison.Ordinal);
 	}
 }

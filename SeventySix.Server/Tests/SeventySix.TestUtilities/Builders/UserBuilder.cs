@@ -29,11 +29,15 @@ namespace SeventySix.TestUtilities.Builders;
 public class UserBuilder
 {
 	private readonly TimeProvider TimeProvider;
-	private string Username = TestUserConstants.DefaultUsername;
-	private string Email = TestUserConstants.DefaultEmail;
-	private string? FullName = TestUserConstants.DefaultFullName;
+	private string Username =
+		TestUserConstants.DefaultUsername;
+	private string Email =
+		TestUserConstants.DefaultEmail;
+	private string? FullName =
+		TestUserConstants.DefaultFullName;
 	private DateTime CreateDate;
-	private string? CreatedBy = TestAuditConstants.SystemUser;
+	private string? CreatedBy =
+		TestAuditConstants.SystemUser;
 	private DateTime? ModifyDate = null;
 	private string? ModifiedBy = null;
 	private bool IsActive = true;
@@ -52,7 +56,8 @@ public class UserBuilder
 	public UserBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;
-		CreateDate = timeProvider.GetUtcNow().UtcDateTime;
+		CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime;
 	}
 
 	/// <summary>
@@ -94,7 +99,9 @@ public class UserBuilder
 	/// <param name="createDate">The creation CreateDate.</param>
 	/// <param name="createdBy">The creator identifier.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public UserBuilder WithCreatedInfo(DateTime createDate, string? createdBy = TestAuditConstants.SystemUser)
+	public UserBuilder WithCreatedInfo(
+		DateTime createDate,
+		string? createdBy = TestAuditConstants.SystemUser)
 	{
 		CreateDate = createDate;
 		CreatedBy = createdBy;
@@ -107,7 +114,9 @@ public class UserBuilder
 	/// <param name="modifyDate">The modification CreateDate.</param>
 	/// <param name="modifiedBy">The modifier identifier.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public UserBuilder WithModifiedInfo(DateTime modifyDate, string? modifiedBy = TestAuditConstants.SystemUser)
+	public UserBuilder WithModifiedInfo(
+		DateTime modifyDate,
+		string? modifiedBy = TestAuditConstants.SystemUser)
 	{
 		ModifyDate = modifyDate;
 		ModifiedBy = modifiedBy;
@@ -132,7 +141,10 @@ public class UserBuilder
 	/// <param name="deletedAt">The deletion CreateDate.</param>
 	/// <param name="deletedBy">The deleter identifier.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public UserBuilder WithDeletedInfo(bool isDeleted, DateTime? deletedAt = null, string? deletedBy = null)
+	public UserBuilder WithDeletedInfo(
+		bool isDeleted,
+		DateTime? deletedAt = null,
+		string? deletedBy = null)
 	{
 		IsDeleted = isDeleted;
 		DeletedAt = deletedAt;
@@ -168,7 +180,9 @@ public class UserBuilder
 	/// <param name="lastLoginAt">The last login CreateDate.</param>
 	/// <param name="lastLoginIp">The last login IP address.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public UserBuilder WithLastLogin(DateTime lastLoginAt, string? lastLoginIp = null)
+	public UserBuilder WithLastLogin(
+		DateTime lastLoginAt,
+		string? lastLoginIp = null)
 	{
 		LastLoginAt = lastLoginAt;
 		LastLoginIp = lastLoginIp;
@@ -187,9 +201,11 @@ public class UserBuilder
 			Email = Email,
 			FullName = FullName,
 			CreateDate = CreateDate,
-			CreatedBy = CreatedBy ?? string.Empty,
+			CreatedBy =
+			CreatedBy ?? string.Empty,
 			ModifyDate = ModifyDate,
-			ModifiedBy = ModifiedBy ?? string.Empty,
+			ModifiedBy =
+			ModifiedBy ?? string.Empty,
 			IsActive = IsActive,
 			IsDeleted = IsDeleted,
 			DeletedAt = DeletedAt,
@@ -228,7 +244,9 @@ public class UserBuilder
 	/// <returns>A new UserBuilder configured for a deleted user.</returns>
 	public static UserBuilder CreateDeleted(TimeProvider timeProvider)
 	{
-		return new UserBuilder(timeProvider)
-			.WithDeletedInfo(true, timeProvider.GetUtcNow().UtcDateTime, TestAuditConstants.SystemUser);
+		return new UserBuilder(timeProvider).WithDeletedInfo(
+			true,
+			timeProvider.GetUtcNow().UtcDateTime,
+			TestAuditConstants.SystemUser);
 	}
 }

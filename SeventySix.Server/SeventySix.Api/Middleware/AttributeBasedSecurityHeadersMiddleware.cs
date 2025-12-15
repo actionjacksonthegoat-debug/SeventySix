@@ -46,29 +46,29 @@ public class AttributeBasedSecurityHeadersMiddleware(
 	// - style-src 'unsafe-inline': Required for Angular style bindings ([style.x])
 	// - frame-src: Allows Grafana dashboard embeds
 	private const string PRODUCTION_CSP =
-		"default-src 'self'; " +
-		"script-src 'self'; " +
-		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-		"font-src 'self' https://fonts.gstatic.com; " +
-		"img-src 'self' data: https:; " +
-		"connect-src 'self'; " +
-		"frame-src 'self' http://localhost:3000; " +
-		"frame-ancestors 'none'; " +
-		"base-uri 'self'; " +
-		"form-action 'self'";
+		"default-src 'self'; "
+		+ "script-src 'self'; "
+		+ "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+		+ "font-src 'self' https://fonts.gstatic.com; "
+		+ "img-src 'self' data: https:; "
+		+ "connect-src 'self'; "
+		+ "frame-src 'self' http://localhost:3000; "
+		+ "frame-ancestors 'none'; "
+		+ "base-uri 'self'; "
+		+ "form-action 'self'";
 
 	// Development CSP: Relaxed for debugging, hot reload, etc.
 	private const string DEVELOPMENT_CSP =
-		"default-src 'self'; " +
-		"script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-		"font-src 'self' https://fonts.gstatic.com; " +
-		"img-src 'self' data: https:; " +
-		"connect-src 'self' ws: wss:; " +
-		"frame-src 'self' http://localhost:3000; " +
-		"frame-ancestors 'none'; " +
-		"base-uri 'self'; " +
-		"form-action 'self'";
+		"default-src 'self'; "
+		+ "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+		+ "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+		+ "font-src 'self' https://fonts.gstatic.com; "
+		+ "img-src 'self' data: https:; "
+		+ "connect-src 'self' ws: wss:; "
+		+ "frame-src 'self' http://localhost:3000; "
+		+ "frame-ancestors 'none'; "
+		+ "base-uri 'self'; "
+		+ "form-action 'self'";
 
 	/// <summary>
 	/// Invokes the security headers middleware.
@@ -78,24 +78,32 @@ public class AttributeBasedSecurityHeadersMiddleware(
 	public async Task InvokeAsync(HttpContext context)
 	{
 		// Get security header configuration from attributes
-		SecurityHeadersAttribute config = GetSecurityHeadersConfig(context);
+		SecurityHeadersAttribute config =
+			GetSecurityHeadersConfig(context);
 
 		// Apply security headers
-		context.Response.Headers.XContentTypeOptions = config.XContentTypeOptions;
+		context.Response.Headers.XContentTypeOptions =
+			config.XContentTypeOptions;
 		context.Response.Headers.XFrameOptions = config.XFrameOptions;
 		context.Response.Headers.XXSSProtection = "1; mode=block";
 		context.Response.Headers["Referrer-Policy"] = config.ReferrerPolicy;
-		context.Response.Headers["Permissions-Policy"] = config.PermissionsPolicy;
+		context.Response.Headers["Permissions-Policy"] =
+			config.PermissionsPolicy;
 
 		// Content Security Policy - use environment-appropriate default
-		string defaultCsp = environment.IsDevelopment() ? DEVELOPMENT_CSP : PRODUCTION_CSP;
-		string csp = config.ContentSecurityPolicy ?? defaultCsp;
+		string defaultCsp =
+			environment.IsDevelopment()
+			? DEVELOPMENT_CSP
+			: PRODUCTION_CSP;
+		string csp =
+			config.ContentSecurityPolicy ?? defaultCsp;
 		context.Response.Headers.ContentSecurityPolicy = csp;
 
 		// HSTS only in production to avoid development certificate issues
 		if (config.EnableHsts && !environment.IsDevelopment())
 		{
-			string hstsValue = $"max-age={config.HstsMaxAge}";
+			string hstsValue =
+				$"max-age={config.HstsMaxAge}";
 			if (config.HstsIncludeSubDomains)
 			{
 				hstsValue += "; includeSubDomains";
@@ -111,7 +119,8 @@ public class AttributeBasedSecurityHeadersMiddleware(
 	/// </summary>
 	/// <param name="context">The HTTP context.</param>
 	/// <returns>Security headers configuration.</returns>
-	private static SecurityHeadersAttribute GetSecurityHeadersConfig(HttpContext context)
+	private static SecurityHeadersAttribute GetSecurityHeadersConfig(
+		HttpContext context)
 	{
 		Endpoint? endpoint = context.GetEndpoint();
 		if (endpoint == null)
@@ -120,18 +129,31 @@ public class AttributeBasedSecurityHeadersMiddleware(
 		}
 
 		// Check for action-level attribute first
-		ControllerActionDescriptor? actionDescriptor = endpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
+		ControllerActionDescriptor? actionDescriptor =
+			endpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
 
-		if (actionDescriptor?.MethodInfo.GetCustomAttributes(typeof(SecurityHeadersAttribute), true)
-			.FirstOrDefault() is SecurityHeadersAttribute actionAttribute)
+		if (
+			actionDescriptor
+				?.MethodInfo
+				.GetCustomAttributes(
+					typeof(SecurityHeadersAttribute),
+					true)
+				.FirstOrDefault()
+			is SecurityHeadersAttribute actionAttribute)
 		{
 			return actionAttribute;
 		}
 
 		// Check for controller-level attribute
 
-		if (actionDescriptor?.ControllerTypeInfo.GetCustomAttributes(typeof(SecurityHeadersAttribute), true)
-			.FirstOrDefault() is SecurityHeadersAttribute controllerAttribute)
+		if (
+			actionDescriptor
+				?.ControllerTypeInfo
+				.GetCustomAttributes(
+					typeof(SecurityHeadersAttribute),
+					true)
+				.FirstOrDefault()
+			is SecurityHeadersAttribute controllerAttribute)
 		{
 			return controllerAttribute;
 		}

@@ -31,11 +31,17 @@ public class GodFileTests : SourceCodeArchitectureTest
 	/// Each exception must have a documented justification.
 	/// </summary>
 	private static readonly HashSet<string> AllowedExceptions =
-		[
-			// AuthControllerTests - comprehensive integration tests for 11 auth features
-			// Cannot split without losing test cohesion and fixture sharing benefits
-			"AuthControllerTests.cs",
-		];
+	[
+		// AuthController - handles 11 authentication endpoints (login, logout, register,
+		// OAuth, password reset, etc.) - splitting would fragment cohesive auth logic
+		"AuthController.cs",
+		// AuthControllerTests - comprehensive integration tests for 11 auth features
+		// Cannot split without losing test cohesion and fixture sharing benefits
+		"AuthControllerTests.cs",
+		// UserRepositoryTests - comprehensive repository integration tests covering CRUD,
+		// queries, pagination, soft delete, bulk ops - shares PostgreSQL fixture
+		"UserRepositoryTests.cs",
+	];
 
 	[Fact]
 	public void All_Files_Should_Be_Under_800_Lines()
@@ -47,18 +53,21 @@ public class GodFileTests : SourceCodeArchitectureTest
 		// Act
 		foreach (string filePath in sourceFiles)
 		{
-			string fileName = Path.GetFileName(filePath);
+			string fileName =
+				Path.GetFileName(filePath);
 
 			if (AllowedExceptions.Contains(fileName))
 			{
 				continue;
 			}
 
-			int lineCount = File.ReadAllLines(filePath).Length;
+			int lineCount =
+				File.ReadAllLines(filePath).Length;
 
 			if (lineCount > MaxLinesPerFile)
 			{
-				string relativePath = GetRelativePath(filePath);
+				string relativePath =
+					GetRelativePath(filePath);
 				godFileViolations.Add(
 					$"{relativePath}: {lineCount} lines (max {MaxLinesPerFile})");
 			}

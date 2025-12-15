@@ -48,7 +48,8 @@ public class GlobalExceptionMiddleware(
 	private static readonly JsonSerializerOptions ProblemDetailsJsonOptions =
 		new()
 		{
-			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			PropertyNamingPolicy =
+		JsonNamingPolicy.CamelCase,
 			WriteIndented = true,
 		};
 
@@ -72,7 +73,10 @@ public class GlobalExceptionMiddleware(
 			}
 			else
 			{
-				logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);
+				logger.LogError(
+					ex,
+					"Unhandled exception occurred: {Message}",
+					ex.Message);
 			}
 
 			await HandleExceptionAsync(context, ex);
@@ -85,37 +89,84 @@ public class GlobalExceptionMiddleware(
 	/// <param name="context">The HTTP context.</param>
 	/// <param name="exception">The exception that occurred.</param>
 	/// <returns>A task that represents the asynchronous operation.</returns>
-	private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+	private async Task HandleExceptionAsync(
+		HttpContext context,
+		Exception exception)
 	{
 		context.Response.ContentType = "application/problem+json";
 
-		ProblemDetails problemDetails = MapExceptionToProblemDetails(context, exception);
-		context.Response.StatusCode = problemDetails.Status ?? (int)HttpStatusCode.InternalServerError;
+		ProblemDetails problemDetails =
+			MapExceptionToProblemDetails(
+				context,
+				exception);
+		context.Response.StatusCode =
+			problemDetails.Status ?? (int)HttpStatusCode.InternalServerError;
 
-		await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, ProblemDetailsJsonOptions));
+		await context.Response.WriteAsync(
+			JsonSerializer.Serialize(problemDetails, ProblemDetailsJsonOptions));
 	}
 
-	private ProblemDetails MapExceptionToProblemDetails(HttpContext context, Exception exception) =>
+	private ProblemDetails MapExceptionToProblemDetails(
+		HttpContext context,
+		Exception exception) =>
 		exception switch
 		{
-			ValidationException validationEx => CreateValidationProblemDetails(context, validationEx),
-			EntityNotFoundException ex => CreateProblemDetails(context, HttpStatusCode.NotFound, "Resource Not Found", ex.Message),
-			BusinessRuleViolationException ex => CreateProblemDetails(context, HttpStatusCode.UnprocessableEntity, "Business Rule Violation", ex.Message),
-			ExternalServiceException ex => CreateProblemDetails(context, HttpStatusCode.ServiceUnavailable, "External Service Error", ex.Message),
-			DomainException ex => CreateProblemDetails(context, HttpStatusCode.BadRequest, "Domain Error", ex.Message),
-			ArgumentNullException => CreateProblemDetails(context, HttpStatusCode.BadRequest, "Bad Request", exception.Message),
-			ArgumentException => CreateProblemDetails(context, HttpStatusCode.BadRequest, "Bad Request", exception.Message),
-			KeyNotFoundException => CreateProblemDetails(context, HttpStatusCode.NotFound, "Not Found", exception.Message),
-			UnauthorizedAccessException => CreateProblemDetails(context, HttpStatusCode.Unauthorized, "Unauthorized", exception.Message),
-			_ => CreateDefaultProblemDetails(context, exception)
+			ValidationException validationEx => CreateValidationProblemDetails(
+				context,
+				validationEx),
+			EntityNotFoundException ex => CreateProblemDetails(
+				context,
+				HttpStatusCode.NotFound,
+				"Resource Not Found",
+				ex.Message),
+			BusinessRuleViolationException ex => CreateProblemDetails(
+				context,
+				HttpStatusCode.UnprocessableEntity,
+				"Business Rule Violation",
+				ex.Message),
+			ExternalServiceException ex => CreateProblemDetails(
+				context,
+				HttpStatusCode.ServiceUnavailable,
+				"External Service Error",
+				ex.Message),
+			DomainException ex => CreateProblemDetails(
+				context,
+				HttpStatusCode.BadRequest,
+				"Domain Error",
+				ex.Message),
+			ArgumentNullException => CreateProblemDetails(
+				context,
+				HttpStatusCode.BadRequest,
+				"Bad Request",
+				exception.Message),
+			ArgumentException => CreateProblemDetails(
+				context,
+				HttpStatusCode.BadRequest,
+				"Bad Request",
+				exception.Message),
+			KeyNotFoundException => CreateProblemDetails(
+				context,
+				HttpStatusCode.NotFound,
+				"Not Found",
+				exception.Message),
+			UnauthorizedAccessException => CreateProblemDetails(
+				context,
+				HttpStatusCode.Unauthorized,
+				"Unauthorized",
+				exception.Message),
+			_ => CreateDefaultProblemDetails(context, exception),
 		};
 
-	private ProblemDetails CreateDefaultProblemDetails(HttpContext context, Exception exception) =>
+	private ProblemDetails CreateDefaultProblemDetails(
+		HttpContext context,
+		Exception exception) =>
 		CreateProblemDetails(
 			context,
 			HttpStatusCode.InternalServerError,
 			"Internal Server Error",
-			environment.IsDevelopment() ? exception.Message : "An error occurred processing your request.");
+			environment.IsDevelopment()
+				? exception.Message
+				: "An error occurred processing your request.");
 
 	/// <summary>
 	/// Creates a ProblemDetails object for a given exception.
@@ -133,11 +184,13 @@ public class GlobalExceptionMiddleware(
 	{
 		return new ProblemDetails
 		{
-			Status = (int)statusCode,
+			Status =
+			(int)statusCode,
 			Title = title,
 			Detail = detail,
 			Instance = context.Request.Path,
-			Type = $"https://httpstatuses.com/{(int)statusCode}",
+			Type =
+			$"https://httpstatuses.com/{(int)statusCode}",
 		};
 	}
 
@@ -151,15 +204,18 @@ public class GlobalExceptionMiddleware(
 		HttpContext context,
 		ValidationException validationException)
 	{
-		Dictionary<string, string[]> errors = validationException.Errors
-			.GroupBy(e => e.PropertyName)
-			.ToDictionary(
-				g => g.Key,
-				g => g.Select(e => e.ErrorMessage).ToArray());
+		Dictionary<string, string[]> errors =
+			validationException
+				.Errors
+				.GroupBy(e => e.PropertyName)
+				.ToDictionary(
+					g => g.Key,
+					g => g.Select(e => e.ErrorMessage).ToArray());
 
 		return new ValidationProblemDetails(errors)
 		{
-			Status = (int)HttpStatusCode.BadRequest,
+			Status =
+			(int)HttpStatusCode.BadRequest,
 			Title = "Validation Error",
 			Detail = "One or more validation errors occurred.",
 			Instance = context.Request.Path,

@@ -13,14 +13,15 @@ namespace SeventySix.Identity;
 /// Encapsulates all DbContext operations for user credentials.
 /// Internal visibility enforces service facade pattern.
 /// </remarks>
-internal class CredentialRepository(
-	IdentityDbContext context) : ICredentialRepository
+internal class CredentialRepository(IdentityDbContext context)
+	: ICredentialRepository
 {
 	/// <inheritdoc/>
 	public async Task<UserCredential?> GetByUserIdAsync(
 		int userId,
 		CancellationToken cancellationToken = default) =>
-		await context.UserCredentials
+		await context
+			.UserCredentials
 			.AsNoTracking()
 			.FirstOrDefaultAsync(
 				credential => credential.UserId == userId,
@@ -30,10 +31,9 @@ internal class CredentialRepository(
 	public async Task<UserCredential?> GetByUserIdForUpdateAsync(
 		int userId,
 		CancellationToken cancellationToken = default) =>
-		await context.UserCredentials
-			.FirstOrDefaultAsync(
-				credential => credential.UserId == userId,
-				cancellationToken);
+		await context.UserCredentials.FirstOrDefaultAsync(
+			credential => credential.UserId == userId,
+			cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task CreateAsync(

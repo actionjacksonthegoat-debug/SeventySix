@@ -11,7 +11,8 @@ namespace SeventySix.Api.Tests;
 /// All tests in this collection share the same TestcontainersPostgreSqlFixture instance.
 /// </summary>
 [CollectionDefinition("PostgreSQL")]
-public class PostgreSqlCollectionDefinition : ICollectionFixture<TestcontainersPostgreSqlFixture>
+public class PostgreSqlCollectionDefinition
+	: ICollectionFixture<TestcontainersPostgreSqlFixture>
 {
 	// This class has no code, and is never instantiated. Its purpose is simply
 	// to be the place to apply [CollectionDefinition] and all the ICollectionFixture<> interfaces.

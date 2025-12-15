@@ -10,7 +10,6 @@ public class GetPagedUsersQueryValidator : AbstractValidator<GetPagedUsersQuery>
 	public GetPagedUsersQueryValidator(
 		IValidator<UserQueryRequest> requestValidator)
 	{
-		RuleFor(query => query.Request)
-			.SetValidator(requestValidator);
+		RuleFor(query => query.Request).SetValidator(requestValidator);
 	}
 }

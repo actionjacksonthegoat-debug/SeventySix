@@ -36,7 +36,8 @@ using SeventySix.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder =
+			WebApplication.CreateBuilder(args);
 
 // Bind centralized security settings (single source of truth for HTTPS enforcement)
 builder.Services.Configure<SecuritySettings>(
@@ -60,11 +61,12 @@ if (builder.Environment.IsDevelopment())
 // Outputs: Console + Rolling file (daily rotation) + Database (Warning+ levels)
 // Note: Database sink is added after building the app to access IServiceProvider
 // In Test environment, configures silent logging (no sinks) for performance
-Serilog.Log.Logger = new LoggerConfiguration()
-	.ConfigureBaseSerilog(
-		builder.Configuration,
-		builder.Environment.EnvironmentName)
-	.CreateLogger();
+Serilog.Log.Logger =
+			new LoggerConfiguration()
+				.ConfigureBaseSerilog(
+					builder.Configuration,
+					builder.Environment.EnvironmentName)
+				.CreateLogger();
 
 builder.Host.UseSerilog();
 
@@ -95,17 +97,14 @@ builder.Services.AddApplicationServices(builder.Configuration);
 // Add bounded context domains
 string connectionString =
 	builder.Configuration.GetConnectionString("DefaultConnection")
-	?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+	?? throw new InvalidOperationException(
+		"Connection string 'DefaultConnection' not found.");
 
 // Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
 builder.Services.AddInfrastructure();
 builder.Services.AddIdentityDomain(connectionString);
-builder.Services.AddLoggingDomain(
-	connectionString,
-	builder.Configuration);
-builder.Services.AddApiTrackingDomain(
-	connectionString,
-	builder.Configuration);
+builder.Services.AddLoggingDomain(connectionString, builder.Configuration);
+builder.Services.AddApiTrackingDomain(connectionString, builder.Configuration);
 builder.Services.AddElectronicNotificationsDomain(builder.Configuration);
 
 // Register all background jobs (single registration point)
@@ -148,13 +147,21 @@ SerilogExtensions.ReconfigureWithDatabaseSink(
 // Enriches logs with RequestMethod, RequestPath, StatusCode, Elapsed time
 app.UseSerilogRequestLogging(options =>
 {
-	options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-	options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+	options.MessageTemplate =
+		"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+	options.EnrichDiagnosticContext =
+		(diagnosticContext, httpContext) =>
 	{
-		diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value ?? "unknown");
+		diagnosticContext.Set(
+			"RequestHost",
+			httpContext.Request.Host.Value ?? "unknown");
 		diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
-		diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
-		diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
+		diagnosticContext.Set(
+			"RemoteIpAddress",
+			httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+		diagnosticContext.Set(
+			"UserAgent",
+			httpContext.Request.Headers.UserAgent.ToString());
 	};
 });
 
@@ -174,7 +181,8 @@ app.UseRateLimiter();
 
 // Enable response compression
 bool responseCompressionEnabled =
-	builder.Configuration.GetValue<bool?>("ResponseCompression:Enabled") ?? true;
+	builder.Configuration.GetValue<bool?>("ResponseCompression:Enabled")
+	?? true;
 
 if (responseCompressionEnabled)
 {

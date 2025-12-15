@@ -22,10 +22,7 @@ public class RefreshToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the unique identifier.
 	/// </summary>
-	public int Id
-	{
-		get; set;
-	}
+	public int Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the hashed token value (SHA256).
@@ -38,65 +35,41 @@ public class RefreshToken : ICreatableEntity
 	/// Used to detect token reuse attacks - if a revoked token is used,
 	/// revoke the entire family.
 	/// </summary>
-	public Guid FamilyId
-	{
-		get; set;
-	}
+	public Guid FamilyId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the user ID (FK to identity.users).
 	/// </summary>
-	public int UserId
-	{
-		get; set;
-	}
+	public int UserId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the expiration date.
 	/// </summary>
-	public DateTime ExpiresAt
-	{
-		get; set;
-	}
+	public DateTime ExpiresAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the session start date.
 	/// Used to enforce absolute session timeout regardless of token rotation.
 	/// </summary>
-	public DateTime SessionStartedAt
-	{
-		get; set;
-	}
+	public DateTime SessionStartedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the creation date.
 	/// </summary>
-	public DateTime CreateDate
-	{
-		get; set;
-	}
+	public DateTime CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether this token is revoked.
 	/// </summary>
-	public bool IsRevoked
-	{
-		get; set;
-	}
+	public bool IsRevoked { get; set; }
 
 	/// <summary>
 	/// Gets or sets when this token was revoked.
 	/// </summary>
-	public DateTime? RevokedAt
-	{
-		get; set;
-	}
+	public DateTime? RevokedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the client IP that created this token.
 	/// </summary>
-	public string? CreatedByIp
-	{
-		get; set;
-	}
+	public string? CreatedByIp { get; set; }
 }

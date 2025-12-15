@@ -55,15 +55,13 @@ public static class BackgroundJobRegistration
 		// RefreshTokenCleanupJob - Periodic cleanup of expired refresh tokens
 		// Settings: RefreshTokenCleanup section in appsettings.json
 		services.Configure<RefreshTokenCleanupSettings>(
-			configuration.GetSection(
-				RefreshTokenCleanupSettings.SectionName));
+			configuration.GetSection(RefreshTokenCleanupSettings.SectionName));
 		services.AddHostedService<RefreshTokenCleanupService>();
 
 		// AdminSeederService - One-time admin user seeding at startup
 		// Settings: AdminSeeder section in appsettings.json
 		services.Configure<AdminSeederSettings>(
-			configuration.GetSection(
-				AdminSeederSettings.SectionName));
+			configuration.GetSection(AdminSeederSettings.SectionName));
 		services.AddHostedService<AdminSeederService>();
 
 		// PendingEmailBackgroundService - Daily processing of pending welcome emails
@@ -73,8 +71,7 @@ public static class BackgroundJobRegistration
 		// LogCleanupService - Periodic cleanup of old log files and database entries
 		// Settings: Logging:Cleanup section in appsettings.json
 		services.Configure<LogCleanupSettings>(
-			configuration.GetSection(
-				LogCleanupSettings.SectionName));
+			configuration.GetSection(LogCleanupSettings.SectionName));
 		services.AddHostedService<LogCleanupService>();
 
 		return services;

@@ -16,25 +16,32 @@ namespace SeventySix.Api.Infrastructure;
 /// </remarks>
 public class MetricsService : IMetricsService
 {
-	private static readonly Meter ApplicationMeter = new("SeventySix.Api", "1.0.0");
+	private static readonly Meter ApplicationMeter =
+		new(
+			"SeventySix.Api",
+			"1.0.0");
 
-	private static readonly Histogram<double> DatabaseQueryDuration = ApplicationMeter.CreateHistogram<double>(
-		"db_query_duration_ms",
-		unit: "milliseconds",
-		description: "Duration of database queries");
+	private static readonly Histogram<double> DatabaseQueryDuration =
+		ApplicationMeter.CreateHistogram<double>(
+			"db_query_duration_ms",
+			unit: "milliseconds",
+			description: "Duration of database queries");
 
-	private static readonly Histogram<double> ApiCallDuration = ApplicationMeter.CreateHistogram<double>(
-		"api_call_duration_ms",
-		unit: "milliseconds",
-		description: "Duration of external API calls");
+	private static readonly Histogram<double> ApiCallDuration =
+		ApplicationMeter.CreateHistogram<double>(
+			"api_call_duration_ms",
+			unit: "milliseconds",
+			description: "Duration of external API calls");
 
-	private static readonly Counter<long> ApiCallCounter = ApplicationMeter.CreateCounter<long>(
-		"api_call_total",
-		description: "Total number of external API calls");
+	private static readonly Counter<long> ApiCallCounter =
+		ApplicationMeter.CreateCounter<long>(
+			"api_call_total",
+			description: "Total number of external API calls");
 
-	private static readonly Counter<long> ApiCallFailures = ApplicationMeter.CreateCounter<long>(
-		"api_call_failures_total",
-		description: "Total number of failed external API calls");
+	private static readonly Counter<long> ApiCallFailures =
+		ApplicationMeter.CreateCounter<long>(
+			"api_call_failures_total",
+			description: "Total number of failed external API calls");
 
 	private static int QueuedItems;
 	private static int FailedItems;
@@ -77,7 +84,9 @@ public class MetricsService : IMetricsService
 
 		if (!success)
 		{
-			ApiCallFailures.Add(1, new KeyValuePair<string, object?>("api_name", apiName));
+			ApiCallFailures.Add(
+				1,
+				new KeyValuePair<string, object?>("api_name", apiName));
 		}
 	}
 

@@ -13,17 +13,16 @@ namespace SeventySix.Identity;
 /// Encapsulates all DbContext operations for password reset tokens.
 /// Internal visibility enforces service facade pattern.
 /// </remarks>
-internal class PasswordResetTokenRepository(
-	IdentityDbContext context) : IPasswordResetTokenRepository
+internal class PasswordResetTokenRepository(IdentityDbContext context)
+	: IPasswordResetTokenRepository
 {
 	/// <inheritdoc/>
 	public async Task<PasswordResetToken?> GetByHashAsync(
 		string tokenHash,
 		CancellationToken cancellationToken = default) =>
-		await context.PasswordResetTokens
-			.FirstOrDefaultAsync(
-				token => token.Token == tokenHash,
-				cancellationToken);
+		await context.PasswordResetTokens.FirstOrDefaultAsync(
+			token => token.Token == tokenHash,
+			cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task CreateAsync(
@@ -48,12 +47,12 @@ internal class PasswordResetTokenRepository(
 		int userId,
 		DateTime invalidatedAt,
 		CancellationToken cancellationToken = default) =>
-		await context.PasswordResetTokens
+		await context
+			.PasswordResetTokens
 			.Where(token => token.UserId == userId)
 			.Where(token => !token.IsUsed)
 			.Where(token => token.ExpiresAt > invalidatedAt)
 			.ExecuteUpdateAsync(
-				setters => setters
-					.SetProperty(token => token.IsUsed, true),
+				setters => setters.SetProperty(token => token.IsUsed, true),
 				cancellationToken);
 }

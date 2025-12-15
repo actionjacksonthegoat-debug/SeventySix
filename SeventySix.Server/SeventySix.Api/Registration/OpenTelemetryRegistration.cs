@@ -41,30 +41,36 @@ public static class OpenTelemetryExtensions
 			configuration.GetValue<string>("OpenTelemetry:OtlpEndpoint")
 			?? "http://localhost:4317";
 
-		services.AddOpenTelemetry()
-			.ConfigureResource(resource => resource
-				.AddService(
-					serviceName: serviceName,
-					serviceVersion: serviceVersion)
-				.AddAttributes(new Dictionary<string, object>
-				{
-					["deployment.environment"] = environment,
-				}))
-			.WithTracing(tracing => tracing
-				.AddAspNetCoreInstrumentation(options =>
-				{
-					options.RecordException = true;
-				})
-				.AddHttpClientInstrumentation()
-				.AddOtlpExporter(options =>
-				{
-					options.Endpoint = new Uri(otlpEndpoint);
-				}))
-			.WithMetrics(metrics => metrics
-				.AddAspNetCoreInstrumentation()
-				.AddHttpClientInstrumentation()
-				.AddRuntimeInstrumentation()
-				.AddPrometheusExporter());
+		services
+			.AddOpenTelemetry()
+			.ConfigureResource(resource =>
+				resource
+					.AddService(
+						serviceName: serviceName,
+						serviceVersion: serviceVersion)
+					.AddAttributes(
+						new Dictionary<string, object>
+						{
+							["deployment.environment"] = environment,
+						}))
+			.WithTracing(tracing =>
+				tracing
+					.AddAspNetCoreInstrumentation(options =>
+					{
+						options.RecordException = true;
+					})
+					.AddHttpClientInstrumentation()
+					.AddOtlpExporter(options =>
+					{
+						options.Endpoint =
+							new Uri(otlpEndpoint);
+					}))
+			.WithMetrics(metrics =>
+				metrics
+					.AddAspNetCoreInstrumentation()
+					.AddHttpClientInstrumentation()
+					.AddRuntimeInstrumentation()
+					.AddPrometheusExporter());
 
 		return services;
 	}

@@ -14,7 +14,8 @@ namespace SeventySix.ApiTracking;
 /// Initializes a new instance of the <see cref="ApiTrackingHealthCheck"/> class.
 /// </remarks>
 /// <param name="messageBus">The Wolverine message bus for executing health check query.</param>
-public class ApiTrackingHealthCheck(IMessageBus messageBus) : IDatabaseHealthCheck
+public class ApiTrackingHealthCheck(IMessageBus messageBus)
+	: IDatabaseHealthCheck
 {
 	/// <inheritdoc/>
 	public string ContextName => "ApiTracking";

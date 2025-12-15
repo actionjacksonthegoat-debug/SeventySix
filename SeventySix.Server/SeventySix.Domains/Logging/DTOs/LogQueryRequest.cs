@@ -10,8 +10,5 @@ namespace SeventySix.Logging;
 public record LogQueryRequest : BaseQueryRequest
 {
 	/// <summary>Gets the log level filter (Error, Warning, Information, etc.).</summary>
-	public string? LogLevel
-	{
-		get; init;
-	}
+	public string? LogLevel { get; init; }
 }

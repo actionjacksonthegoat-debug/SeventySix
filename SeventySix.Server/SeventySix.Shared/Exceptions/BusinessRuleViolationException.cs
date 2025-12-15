@@ -17,18 +17,14 @@ public class BusinessRuleViolationException : DomainException
 	/// Initializes a new instance of the <see cref="BusinessRuleViolationException"/> class.
 	/// </summary>
 	public BusinessRuleViolationException()
-		: base("A business rule was violated.")
-	{
-	}
+		: base("A business rule was violated.") { }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BusinessRuleViolationException"/> class with a specified error message.
 	/// </summary>
 	/// <param name="message">The message that describes the error.</param>
 	public BusinessRuleViolationException(string message)
-		: base(message)
-	{
-	}
+		: base(message) { }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BusinessRuleViolationException"/> class with a specified error message and inner exception.
@@ -38,9 +34,5 @@ public class BusinessRuleViolationException : DomainException
 	public BusinessRuleViolationException(
 		string message,
 		Exception innerException)
-		: base(
-			message,
-			innerException)
-	{
-	}
+		: base(message, innerException) { }
 }

@@ -15,13 +15,13 @@ public class OAuthCodeExchangeServiceTests
 {
 	private readonly DateTime FixedExpiresAt =
 		new(
-			2025,
-			11,
-			28,
-			12,
-			15,
-			0,
-			DateTimeKind.Utc);
+		2025,
+		11,
+		28,
+		12,
+		15,
+		0,
+		DateTimeKind.Utc);
 
 	private OAuthCodeExchangeService CreateService()
 	{
@@ -37,15 +37,14 @@ public class OAuthCodeExchangeServiceTests
 	public void StoreTokens_ValidInput_ReturnsNonEmptyCode()
 	{
 		// Arrange
-		OAuthCodeExchangeService service =
-			CreateService();
+		OAuthCodeExchangeService service = CreateService();
 
 		// Act
 		string code =
 			service.StoreTokens(
-				"access-token",
-				"refresh-token",
-				FixedExpiresAt);
+			"access-token",
+			"refresh-token",
+			FixedExpiresAt);
 
 		// Assert
 		Assert.NotNull(code);
@@ -56,21 +55,20 @@ public class OAuthCodeExchangeServiceTests
 	public void StoreTokens_MultipleInvocations_ReturnsDifferentCodes()
 	{
 		// Arrange
-		OAuthCodeExchangeService service =
-			CreateService();
+		OAuthCodeExchangeService service = CreateService();
 
 		// Act
 		string code1 =
 			service.StoreTokens(
-				"access-token-1",
-				"refresh-token-1",
-				FixedExpiresAt);
+			"access-token-1",
+			"refresh-token-1",
+			FixedExpiresAt);
 
 		string code2 =
 			service.StoreTokens(
-				"access-token-2",
-				"refresh-token-2",
-				FixedExpiresAt);
+			"access-token-2",
+			"refresh-token-2",
+			FixedExpiresAt);
 
 		// Assert
 		Assert.NotEqual(code1, code2);
@@ -80,20 +78,17 @@ public class OAuthCodeExchangeServiceTests
 	public void StoreTokens_GeneratesBase64UrlSafeCode()
 	{
 		// Arrange
-		OAuthCodeExchangeService service =
-			CreateService();
+		OAuthCodeExchangeService service = CreateService();
 
 		// Act
 		string code =
 			service.StoreTokens(
-				"access-token",
-				"refresh-token",
-				FixedExpiresAt);
+			"access-token",
+			"refresh-token",
+			FixedExpiresAt);
 
 		// Assert - Base64url uses only these characters
-		Assert.Matches(
-			"^[A-Za-z0-9_-]+$",
-			code);
+		Assert.Matches("^[A-Za-z0-9_-]+$", code);
 	}
 
 	#endregion
@@ -104,19 +99,16 @@ public class OAuthCodeExchangeServiceTests
 	public void ExchangeCode_ValidCode_ReturnsTokens()
 	{
 		// Arrange
-		OAuthCodeExchangeService service =
-			CreateService();
+		OAuthCodeExchangeService service = CreateService();
 
-		string accessToken =
-			"test-access-token";
-		string refreshToken =
-			"test-refresh-token";
+		string accessToken = "test-access-token";
+		string refreshToken = "test-refresh-token";
 
 		string code =
 			service.StoreTokens(
-				accessToken,
-				refreshToken,
-				FixedExpiresAt);
+			accessToken,
+			refreshToken,
+			FixedExpiresAt);
 
 		// Act
 		OAuthCodeExchangeResult? result =
@@ -133,8 +125,7 @@ public class OAuthCodeExchangeServiceTests
 	public void ExchangeCode_InvalidCode_ReturnsNull()
 	{
 		// Arrange
-		OAuthCodeExchangeService service =
-			CreateService();
+		OAuthCodeExchangeService service = CreateService();
 
 		// Act
 		OAuthCodeExchangeResult? result =
@@ -148,14 +139,13 @@ public class OAuthCodeExchangeServiceTests
 	public void ExchangeCode_SameCodeTwice_SecondCallReturnsNull()
 	{
 		// Arrange
-		OAuthCodeExchangeService service =
-			CreateService();
+		OAuthCodeExchangeService service = CreateService();
 
 		string code =
 			service.StoreTokens(
-				"access-token",
-				"refresh-token",
-				FixedExpiresAt);
+			"access-token",
+			"refresh-token",
+			FixedExpiresAt);
 
 		// Act
 		OAuthCodeExchangeResult? firstResult =
@@ -173,8 +163,7 @@ public class OAuthCodeExchangeServiceTests
 	public void ExchangeCode_EmptyCode_ReturnsNull()
 	{
 		// Arrange
-		OAuthCodeExchangeService service =
-			CreateService();
+		OAuthCodeExchangeService service = CreateService();
 
 		// Act
 		OAuthCodeExchangeResult? result =
@@ -192,8 +181,7 @@ public class OAuthCodeExchangeServiceTests
 	public async Task ExchangeCode_ExpiredCode_ReturnsNullAsync()
 	{
 		// Arrange
-		MemoryCacheOptions cacheOptions =
-			new();
+		MemoryCacheOptions cacheOptions = new();
 
 		MemoryCache cache =
 			new(cacheOptions);
@@ -203,9 +191,9 @@ public class OAuthCodeExchangeServiceTests
 
 		string code =
 			service.StoreTokens(
-				"access-token",
-				"refresh-token",
-				FixedExpiresAt);
+			"access-token",
+			"refresh-token",
+			FixedExpiresAt);
 
 		// Wait for cache expiration (codes expire after 60 seconds)
 		// Use a longer delay to ensure expiration
@@ -231,15 +219,14 @@ public class OAuthCodeExchangeServiceTests
 	public void StoreTokens_CodeLengthIsSecure()
 	{
 		// Arrange
-		OAuthCodeExchangeService service =
-			CreateService();
+		OAuthCodeExchangeService service = CreateService();
 
 		// Act
 		string code =
 			service.StoreTokens(
-				"access-token",
-				"refresh-token",
-				FixedExpiresAt);
+			"access-token",
+			"refresh-token",
+			FixedExpiresAt);
 
 		// Assert - 32 bytes = 43 base64url characters (no padding)
 		Assert.Equal(43, code.Length);
@@ -249,20 +236,18 @@ public class OAuthCodeExchangeServiceTests
 	public void StoreTokens_DifferentTokens_ProduceDistinctCodes()
 	{
 		// Arrange
-		OAuthCodeExchangeService service =
-			CreateService();
+		OAuthCodeExchangeService service = CreateService();
 
-		HashSet<string> codes =
-			[];
+		HashSet<string> codes = [];
 
 		// Act - Generate many codes to verify uniqueness
 		for (int i = 0; i < 100; i++)
 		{
 			string code =
 				service.StoreTokens(
-					$"access-token-{i}",
-					$"refresh-token-{i}",
-					FixedExpiresAt);
+				$"access-token-{i}",
+				$"refresh-token-{i}",
+				FixedExpiresAt);
 
 			codes.Add(code);
 		}

@@ -18,7 +18,8 @@ namespace SeventySix.ApiTracking;
 /// The connection string here is a placeholder - migrations are schema-only.
 /// Actual database connection is configured in appsettings.json.
 /// </remarks>
-public class ApiTrackingDbContextFactory : IDesignTimeDbContextFactory<ApiTrackingDbContext>
+public class ApiTrackingDbContextFactory
+	: IDesignTimeDbContextFactory<ApiTrackingDbContext>
 {
 	/// <summary>
 	/// Creates a new instance of ApiTrackingDbContext for design-time operations.
@@ -33,7 +34,10 @@ public class ApiTrackingDbContextFactory : IDesignTimeDbContextFactory<ApiTracki
 		// Actual connection string comes from appsettings.json at runtime
 		optionsBuilder.UseNpgsql(
 			"Host=localhost;Database=seventysix;Username=postgres;Password=postgres",
-			options => options.MigrationsHistoryTable("__EFMigrationsHistory", "ApiTracking"));
+			options =>
+				options.MigrationsHistoryTable(
+					"__EFMigrationsHistory",
+					"ApiTracking"));
 
 		return new ApiTrackingDbContext(optionsBuilder.Options);
 	}

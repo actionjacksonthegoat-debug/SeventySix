@@ -1,5 +1,3 @@
 namespace SeventySix.Identity;
 
-public record CheckEmailExistsQuery(
-	string Email,
-	int? ExcludeUserId);
+public record CheckEmailExistsQuery(string Email, int? ExcludeUserId);

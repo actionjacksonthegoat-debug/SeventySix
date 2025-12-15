@@ -28,9 +28,8 @@ public class ConcurrencyException : DomainException
 	/// Initializes a new instance of the <see cref="ConcurrencyException"/> class with a default message.
 	/// </summary>
 	public ConcurrencyException()
-		: base("The entity was modified by another user. Please refresh and try again.")
-	{
-	}
+		: base(
+			"The entity was modified by another user. Please refresh and try again.") { }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ConcurrencyException"/> class
@@ -38,9 +37,7 @@ public class ConcurrencyException : DomainException
 	/// </summary>
 	/// <param name="message">A custom error message describing the concurrency conflict.</param>
 	public ConcurrencyException(string message)
-		: base(message)
-	{
-	}
+		: base(message) { }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ConcurrencyException"/> class
@@ -48,12 +45,6 @@ public class ConcurrencyException : DomainException
 	/// </summary>
 	/// <param name="message">A custom error message describing the concurrency conflict.</param>
 	/// <param name="innerException">The exception that caused this concurrency exception.</param>
-	public ConcurrencyException(
-		string message,
-		Exception innerException)
-		: base(
-			message,
-			innerException)
-	{
-	}
+	public ConcurrencyException(string message, Exception innerException)
+		: base(message, innerException) { }
 }

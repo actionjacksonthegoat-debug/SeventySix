@@ -24,14 +24,11 @@ public class RegisterCommandValidator : AbstractValidator<RegisterRequest>
 	/// </summary>
 	public RegisterCommandValidator()
 	{
-		RuleFor(request => request.Username)
-			.ApplyUsernameRules();
+		RuleFor(request => request.Username).ApplyUsernameRules();
 
-		RuleFor(request => request.Email)
-			.ApplyEmailRules();
+		RuleFor(request => request.Email).ApplyEmailRules();
 
-		RuleFor(request => request.Password)
-			.ApplyPasswordRules();
+		RuleFor(request => request.Password).ApplyPasswordRules();
 
 		RuleFor(request => request.FullName)
 			.ApplyFullNameRules(required: false);

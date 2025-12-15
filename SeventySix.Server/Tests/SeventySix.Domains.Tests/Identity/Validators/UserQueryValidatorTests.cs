@@ -30,7 +30,8 @@ public class UserQueryValidatorTests
 	public async Task ValidRequest_PassesValidationAsync()
 	{
 		// Arrange
-		UserQueryRequest request = new()
+		UserQueryRequest request =
+			new()
 		{
 			SearchTerm = "john doe",
 			IsActive = true,
@@ -39,7 +40,8 @@ public class UserQueryValidatorTests
 		};
 
 		// Act
-		TestValidationResult<UserQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<UserQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveAnyValidationErrors();

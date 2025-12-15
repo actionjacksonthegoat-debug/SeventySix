@@ -28,8 +28,7 @@ public record AuthResult(
 	/// Creates a successful result without tokens (e.g., password change).
 	/// </summary>
 	/// <returns>Success result.</returns>
-	public static AuthResult Succeeded() =>
-		new(Success: true);
+	public static AuthResult Succeeded() => new(Success: true);
 
 	/// <summary>
 	/// Creates a successful authentication result.
@@ -57,13 +56,8 @@ public record AuthResult(
 	/// <param name="error">Error message.</param>
 	/// <param name="errorCode">Error code for client handling.</param>
 	/// <returns>Failure result with error details.</returns>
-	public static AuthResult Failed(
-		string error,
-		string? errorCode = null) =>
-		new(
-			Success: false,
-			Error: error,
-			ErrorCode: errorCode);
+	public static AuthResult Failed(string error, string? errorCode = null) =>
+		new(Success: false, Error: error, ErrorCode: errorCode);
 }
 
 /// <summary>

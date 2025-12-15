@@ -1,0 +1,17 @@
+# Build outputs
+**/bin/**
+**/obj/**
+
+# NuGet packages
+**/packages/**
+
+# Generated files
+**/*.Designer.cs
+**/*.designer.cs
+**/*.generated.cs
+
+# Test results
+**/TestResults/**
+
+# Logs
+**/logs/**

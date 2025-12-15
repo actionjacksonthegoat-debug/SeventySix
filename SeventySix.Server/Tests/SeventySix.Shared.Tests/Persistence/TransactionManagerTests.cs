@@ -22,15 +22,18 @@ public class TransactionManagerTests : IDisposable
 	public TransactionManagerTests()
 	{
 		// Use in-memory SQLite database for fast unit tests
-		DbContextOptions<ApiTrackingDbContext> options = new DbContextOptionsBuilder<ApiTrackingDbContext>()
-			.UseSqlite("DataSource=:memory:")
-			.Options;
+		DbContextOptions<ApiTrackingDbContext> options =
+			new DbContextOptionsBuilder<ApiTrackingDbContext>()
+				.UseSqlite("DataSource=:memory:")
+				.Options;
 
-		DbContext = new ApiTrackingDbContext(options);
+		DbContext =
+			new ApiTrackingDbContext(options);
 		DbContext.Database.OpenConnection();
 		DbContext.Database.EnsureCreated();
 
-		TransactionManager = new TransactionManager(DbContext);
+		TransactionManager =
+			new TransactionManager(DbContext);
 	}
 
 	public void Dispose()
@@ -44,27 +47,34 @@ public class TransactionManagerTests : IDisposable
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest entity = new()
+		ThirdPartyApiRequest entity =
+			new()
 		{
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 			CallCount = 0,
-			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-			ModifyDate = null
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			ModifyDate = null,
 		};
 
 		// Act
-		int result = await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
-		{
-			DbContext.ThirdPartyApiRequests.Add(entity);
-			await DbContext.SaveChangesAsync(cancellationToken);
-			return entity.Id;
-		});
+		int result =
+			await TransactionManager.ExecuteInTransactionAsync(
+			async cancellationToken =>
+			{
+				DbContext.ThirdPartyApiRequests.Add(entity);
+				await DbContext.SaveChangesAsync(cancellationToken);
+				return entity.Id;
+			});
 
 		// Assert
 		result.ShouldBeGreaterThan(0);
-		ThirdPartyApiRequest? savedEntity = await DbContext.ThirdPartyApiRequests.FindAsync(result);
+		ThirdPartyApiRequest? savedEntity =
+			await DbContext.ThirdPartyApiRequests.FindAsync(result);
 		savedEntity.ShouldNotBeNull();
 		savedEntity!.ApiName.ShouldBe("TestApi");
 	}
@@ -74,29 +84,38 @@ public class TransactionManagerTests : IDisposable
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest entity = new()
+		ThirdPartyApiRequest entity =
+			new()
 		{
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 			CallCount = 2,
-			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-			ModifyDate = null
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			ModifyDate = null,
 		};
 
 		// Act
-		Func<Task> act = async () => await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
-		{
-			DbContext.ThirdPartyApiRequests.Add(entity);
-			await DbContext.SaveChangesAsync(cancellationToken);
-			throw new InvalidOperationException("Simulated error");
-		});
+		Func<Task> act =
+			async () =>
+			await TransactionManager.ExecuteInTransactionAsync(
+				async cancellationToken =>
+				{
+					DbContext.ThirdPartyApiRequests.Add(entity);
+					await DbContext.SaveChangesAsync(cancellationToken);
+					throw new InvalidOperationException("Simulated error");
+				});
 
 		// Assert
-		InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(act);
+		InvalidOperationException exception =
+			await Should.ThrowAsync<InvalidOperationException>(act);
 		exception.Message.ShouldBe("Simulated error");
 
-		List<ThirdPartyApiRequest> allEntities = await DbContext.ThirdPartyApiRequests.ToListAsync();
+		List<ThirdPartyApiRequest> allEntities =
+			await DbContext.ThirdPartyApiRequests.ToListAsync();
 		allEntities.ShouldBeEmpty(); // Transaction was rolled back
 	}
 
@@ -104,7 +123,9 @@ public class TransactionManagerTests : IDisposable
 	public async Task ExecuteInTransactionAsync_WithNullOperation_ThrowsArgumentNullExceptionAsync()
 	{
 		// Act
-		Func<Task<int>> act = async () => await TransactionManager.ExecuteInTransactionAsync<int>(null!);
+		Func<Task<int>> act =
+			async () =>
+			await TransactionManager.ExecuteInTransactionAsync<int>(null!);
 
 		// Assert
 		await Should.ThrowAsync<ArgumentNullException>(act);
@@ -115,25 +136,31 @@ public class TransactionManagerTests : IDisposable
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest entity = new()
+		ThirdPartyApiRequest entity =
+			new()
 		{
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 			CallCount = 1,
-			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-			ModifyDate = null
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			ModifyDate = null,
 		};
 
 		// Act
-		await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
-		{
-			DbContext.ThirdPartyApiRequests.Add(entity);
-			await DbContext.SaveChangesAsync(cancellationToken);
-		});
+		await TransactionManager.ExecuteInTransactionAsync(
+			async cancellationToken =>
+			{
+				DbContext.ThirdPartyApiRequests.Add(entity);
+				await DbContext.SaveChangesAsync(cancellationToken);
+			});
 
 		// Assert
-		List<ThirdPartyApiRequest> allEntities = await DbContext.ThirdPartyApiRequests.ToListAsync();
+		List<ThirdPartyApiRequest> allEntities =
+			await DbContext.ThirdPartyApiRequests.ToListAsync();
 		allEntities.Count.ShouldBe(1);
 		allEntities[0].ApiName.ShouldBe("TestApi");
 	}
@@ -143,14 +170,18 @@ public class TransactionManagerTests : IDisposable
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		ThirdPartyApiRequest entity = new()
+		ThirdPartyApiRequest entity =
+			new()
 		{
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",
-			ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+			ResetDate =
+			DateOnly.FromDateTime(
+				timeProvider.GetUtcNow().UtcDateTime),
 			CallCount = 1,
-			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-			ModifyDate = null
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			ModifyDate = null,
 		};
 
 		DbContext.ThirdPartyApiRequests.Add(entity);
@@ -159,24 +190,32 @@ public class TransactionManagerTests : IDisposable
 		int attemptCount = 0;
 
 		// Act
-		int result = await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
-		{
-			attemptCount++;
-			ThirdPartyApiRequest? trackedEntity = await DbContext.ThirdPartyApiRequests.FindAsync([entity.Id], cancellationToken);
-
-			if (attemptCount == 1)
+		int result =
+			await TransactionManager.ExecuteInTransactionAsync(
+			async cancellationToken =>
 			{
-				// Simulate concurrency conflict on first attempt by detaching and modifying
-				DbContext.Entry(trackedEntity!).State = EntityState.Detached;
-				throw new DbUpdateConcurrencyException("Simulated concurrency conflict");
-			}
+				attemptCount++;
+				ThirdPartyApiRequest? trackedEntity =
+					await DbContext.ThirdPartyApiRequests.FindAsync(
+						[entity.Id],
+						cancellationToken);
 
-			// Succeed on retry
-			trackedEntity!.CallCount = 50;
-			await DbContext.SaveChangesAsync(cancellationToken);
+				if (attemptCount == 1)
+				{
+					// Simulate concurrency conflict on first attempt by detaching and modifying
+					DbContext.Entry(trackedEntity!).State =
+						EntityState.Detached;
+					throw new DbUpdateConcurrencyException(
+						"Simulated concurrency conflict");
+				}
 
-			return trackedEntity.CallCount;
-		}, maxRetries: 3);
+				// Succeed on retry
+				trackedEntity!.CallCount = 50;
+				await DbContext.SaveChangesAsync(cancellationToken);
+
+				return trackedEntity.CallCount;
+			},
+			maxRetries: 3);
 
 		// Assert
 		result.ShouldBe(50);
@@ -190,15 +229,21 @@ public class TransactionManagerTests : IDisposable
 		int attemptCount = 0;
 
 		// Act
-		Func<Task> act = async () => await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
-		{
-			attemptCount++;
-			// Always throw concurrency exception
-			throw new DbUpdateConcurrencyException("Simulated concurrency conflict");
-		}, maxRetries: 2);
+		Func<Task> act =
+			async () =>
+			await TransactionManager.ExecuteInTransactionAsync(
+				async cancellationToken =>
+				{
+					attemptCount++;
+					// Always throw concurrency exception
+					throw new DbUpdateConcurrencyException(
+						"Simulated concurrency conflict");
+				},
+				maxRetries: 2);
 
 		// Assert
-		InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(act);
+		InvalidOperationException exception =
+			await Should.ThrowAsync<InvalidOperationException>(act);
 		exception.Message.ShouldContain("failed after 2 retries");
 
 		attemptCount.ShouldBe(3); // Initial attempt + 2 retries
@@ -211,14 +256,19 @@ public class TransactionManagerTests : IDisposable
 		int attemptCount = 0;
 
 		// Act
-		Func<Task> act = async () => await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
-		{
-			attemptCount++;
-			throw new InvalidOperationException("Non-retryable error");
-		}, maxRetries: 3);
+		Func<Task> act =
+			async () =>
+			await TransactionManager.ExecuteInTransactionAsync(
+				async cancellationToken =>
+				{
+					attemptCount++;
+					throw new InvalidOperationException("Non-retryable error");
+				},
+				maxRetries: 3);
 
 		// Assert
-		InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(act);
+		InvalidOperationException exception =
+			await Should.ThrowAsync<InvalidOperationException>(act);
 		exception.Message.ShouldBe("Non-retryable error");
 
 		attemptCount.ShouldBe(1); // No retries for non-retryable exceptions
@@ -232,14 +282,16 @@ public class TransactionManagerTests : IDisposable
 		cancellationTokenSource.Cancel();
 
 		// Act
-		Func<Task<int>> act = async () => await TransactionManager.ExecuteInTransactionAsync(
-			async cancellationToken =>
-			{
-				cancellationToken.ThrowIfCancellationRequested();
-				await Task.Delay(100, cancellationToken);
-				return 42;
-			},
-			cancellationToken: cancellationTokenSource.Token);
+		Func<Task<int>> act =
+			async () =>
+			await TransactionManager.ExecuteInTransactionAsync(
+				async cancellationToken =>
+				{
+					cancellationToken.ThrowIfCancellationRequested();
+					await Task.Delay(100, cancellationToken);
+					return 42;
+				},
+				cancellationToken: cancellationTokenSource.Token);
 
 		// Assert
 		await Should.ThrowAsync<OperationCanceledException>(act);
@@ -252,41 +304,54 @@ public class TransactionManagerTests : IDisposable
 		FakeTimeProvider timeProvider = new();
 
 		// Act
-		int result1 = await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
-		{
-			ThirdPartyApiRequest entity = new()
+		int result1 =
+			await TransactionManager.ExecuteInTransactionAsync(
+			async cancellationToken =>
 			{
-				ApiName = "Api1",
-				BaseUrl = "https://api1.com",
-				ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
-				CallCount = 0,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-				ModifyDate = null
-			};
-			DbContext.ThirdPartyApiRequests.Add(entity);
-			await DbContext.SaveChangesAsync(cancellationToken);
-			return entity.Id;
-		});
+				ThirdPartyApiRequest entity =
+					new()
+				{
+					ApiName = "Api1",
+					BaseUrl = "https://api1.com",
+					ResetDate =
+					DateOnly.FromDateTime(
+						timeProvider.GetUtcNow().UtcDateTime),
+					CallCount = 0,
+					CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+					ModifyDate = null,
+				};
+				DbContext.ThirdPartyApiRequests.Add(entity);
+				await DbContext.SaveChangesAsync(cancellationToken);
+				return entity.Id;
+			});
 
-		int result2 = await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
-		{
-			ThirdPartyApiRequest entity = new()
+		int result2 =
+			await TransactionManager.ExecuteInTransactionAsync(
+			async cancellationToken =>
 			{
-				ApiName = "Api2",
-				BaseUrl = "https://api2.com",
-				ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
-				CallCount = 1,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-				ModifyDate = null
-			};
-			DbContext.ThirdPartyApiRequests.Add(entity);
-			await DbContext.SaveChangesAsync(cancellationToken);
-			return entity.Id;
-		});
+				ThirdPartyApiRequest entity =
+					new()
+				{
+					ApiName = "Api2",
+					BaseUrl = "https://api2.com",
+					ResetDate =
+					DateOnly.FromDateTime(
+						timeProvider.GetUtcNow().UtcDateTime),
+					CallCount = 1,
+					CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+					ModifyDate = null,
+				};
+				DbContext.ThirdPartyApiRequests.Add(entity);
+				await DbContext.SaveChangesAsync(cancellationToken);
+				return entity.Id;
+			});
 
 		// Assert
 		result1.ShouldNotBe(result2);
-		List<ThirdPartyApiRequest> allEntities = await DbContext.ThirdPartyApiRequests.ToListAsync();
+		List<ThirdPartyApiRequest> allEntities =
+			await DbContext.ThirdPartyApiRequests.ToListAsync();
 		allEntities.Count.ShouldBe(2);
 		allEntities.ShouldContain(e => e.ApiName == "Api1");
 		allEntities.ShouldContain(e => e.ApiName == "Api2");
@@ -310,15 +375,19 @@ public class TransactionManagerTests : IDisposable
 		int attemptCount = 0;
 
 		// Act
-		int result = await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
-		{
-			attemptCount++;
-			if (attemptCount < 2)
+		int result =
+			await TransactionManager.ExecuteInTransactionAsync(
+			async cancellationToken =>
 			{
-				throw new DbUpdateConcurrencyException("Simulated concurrency conflict");
-			}
-			return 42;
-		}, maxRetries: 3);
+				attemptCount++;
+				if (attemptCount < 2)
+				{
+					throw new DbUpdateConcurrencyException(
+						"Simulated concurrency conflict");
+				}
+				return 42;
+			},
+			maxRetries: 3);
 
 		// Assert
 		result.ShouldBe(42);

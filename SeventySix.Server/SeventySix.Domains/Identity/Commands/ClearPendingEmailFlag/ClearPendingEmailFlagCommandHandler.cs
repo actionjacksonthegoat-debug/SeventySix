@@ -32,9 +32,7 @@ public static class ClearPendingEmailFlagCommandHandler
 		{
 			user.NeedsPendingEmail = false;
 
-			await userCommandRepository.UpdateAsync(
-				user,
-				cancellationToken);
+			await userCommandRepository.UpdateAsync(user, cancellationToken);
 		}
 	}
 }

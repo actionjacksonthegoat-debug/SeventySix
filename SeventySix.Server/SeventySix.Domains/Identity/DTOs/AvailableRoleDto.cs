@@ -5,6 +5,4 @@
 namespace SeventySix.Identity;
 
 /// <summary>DTO for available requestable roles.</summary>
-public record AvailableRoleDto(
-	string Name,
-	string Description);
+public record AvailableRoleDto(string Name, string Description);

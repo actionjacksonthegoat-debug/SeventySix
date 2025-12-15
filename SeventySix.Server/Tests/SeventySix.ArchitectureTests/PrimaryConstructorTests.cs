@@ -40,16 +40,20 @@ public class PrimaryConstructorTests
 	public void All_Production_Classes_Should_Use_Primary_Constructors()
 	{
 		// Scan both domain and API assemblies
-		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
-		Assembly apiAssembly = typeof(SeventySix.Api.Controllers.UsersController).Assembly;
+		Assembly domainAssembly =
+			typeof(SeventySix.Identity.User).Assembly;
+		Assembly apiAssembly =
+			typeof(SeventySix.Api.Controllers.UsersController).Assembly;
 
 		List<Type> allProductionTypes = [];
 		allProductionTypes.AddRange(domainAssembly.GetTypes());
 		allProductionTypes.AddRange(apiAssembly.GetTypes());
 
 		// Filter to only production classes (exclude test artifacts, interfaces, DTOs, etc.)
-		Type[] productionClasses = allProductionTypes
-			.Where(type => !type.IsInterface
+		Type[] productionClasses =
+			allProductionTypes
+			.Where(type =>
+				!type.IsInterface
 				&& !type.IsAbstract
 				&& type.IsClass
 				&& type.Namespace != null
@@ -63,19 +67,22 @@ public class PrimaryConstructorTests
 		{
 			// Check for private readonly fields (potential anti-pattern with primary constructors)
 			FieldInfo[] privateReadonlyFields =
-				productionClass.GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-					.Where(field => field.IsPrivate && field.IsInitOnly)
-					.ToArray();
+				productionClass
+				.GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
+				.Where(field => field.IsPrivate && field.IsInitOnly)
+				.ToArray();
 
 			if (privateReadonlyFields.Length > 0)
 			{
 				// Check if class has a traditional constructor with parameters
 				ConstructorInfo[] constructors =
-					productionClass.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+					productionClass.GetConstructors(
+						BindingFlags.Public | BindingFlags.Instance);
 
 				foreach (ConstructorInfo constructor in constructors)
 				{
-					ParameterInfo[] constructorParameters = constructor.GetParameters();
+					ParameterInfo[] constructorParameters =
+						constructor.GetParameters();
 
 					if (constructorParameters.Length > 0)
 					{
@@ -84,15 +91,24 @@ public class PrimaryConstructorTests
 						foreach (FieldInfo field in privateReadonlyFields)
 						{
 							// Check if field name matches any constructor parameter (case-insensitive)
-							bool matchesParameter = constructorParameters.Any(param =>
-								field.Name.Equals(param.Name, StringComparison.OrdinalIgnoreCase) ||
-								field.Name.TrimStart('_').Equals(param.Name, StringComparison.OrdinalIgnoreCase));
+							bool matchesParameter =
+								constructorParameters.Any(
+								param =>
+									field.Name.Equals(
+										param.Name,
+										StringComparison.OrdinalIgnoreCase)
+									|| field
+										.Name.TrimStart('_')
+										.Equals(
+											param.Name,
+											StringComparison.OrdinalIgnoreCase));
 
 							if (matchesParameter)
 							{
-								violations.Add($"{productionClass.FullName} has private readonly field "
-									+ $"'{field.Name}' matching constructor parameter. "
-									+ "Use primary constructor pattern instead.");
+								violations.Add(
+									$"{productionClass.FullName} has private readonly field "
+										+ $"'{field.Name}' matching constructor parameter. "
+										+ "Use primary constructor pattern instead.");
 							}
 						}
 					}
@@ -111,21 +127,24 @@ public class PrimaryConstructorTests
 	private static bool ShouldExcludeClass(Type type)
 	{
 		// Exclude DTOs, Requests, Responses (data transfer objects - no constructor logic)
-		if (type.Name.EndsWith("Dto") ||
-			type.Name.EndsWith("Request") ||
-			type.Name.EndsWith("Response") ||
-			type.Name.EndsWith("Options") ||
-			type.Name.EndsWith("Settings") ||
-			type.Name.EndsWith("Configuration"))
+		if (
+			type.Name.EndsWith("Dto")
+			|| type.Name.EndsWith("Request")
+			|| type.Name.EndsWith("Response")
+			|| type.Name.EndsWith("Options")
+			|| type.Name.EndsWith("Settings")
+			|| type.Name.EndsWith("Configuration"))
 		{
 			return true;
 		}
 
 		// Exclude entity/model classes (database models)
-		if (type.Namespace != null &&
-			(type.Namespace.EndsWith(".Entities") ||
-			 type.Namespace.EndsWith(".Models") ||
-			 type.Namespace.EndsWith(".DTOs")))
+		if (
+			type.Namespace != null
+			&& (
+				type.Namespace.EndsWith(".Entities")
+				|| type.Namespace.EndsWith(".Models")
+				|| type.Namespace.EndsWith(".DTOs")))
 		{
 			return true;
 		}
@@ -149,7 +168,10 @@ public class PrimaryConstructorTests
 		}
 
 		// Exclude validators (FluentValidation pattern - no DI in constructor usually)
-		if (type.Name.EndsWith("Validator") && type.Namespace != null && type.Namespace.Contains(".Validators"))
+		if (
+			type.Name.EndsWith("Validator")
+			&& type.Namespace != null
+			&& type.Namespace.Contains(".Validators"))
 		{
 			return true;
 		}

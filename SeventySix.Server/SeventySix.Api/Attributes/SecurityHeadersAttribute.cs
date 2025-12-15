@@ -23,17 +23,18 @@ namespace SeventySix.Api.Attributes;
 /// public async Task&lt;IActionResult&gt; UploadImage() { }
 /// </code>
 /// </remarks>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+[AttributeUsage(
+	AttributeTargets.Class | AttributeTargets.Method,
+	AllowMultiple = false,
+	Inherited = true
+)]
 public sealed class SecurityHeadersAttribute : Attribute
 {
 	/// <summary>
 	/// Gets or sets the Content Security Policy header value.
 	/// Set to null to use the default global CSP.
 	/// </summary>
-	public string? ContentSecurityPolicy
-	{
-		get; set;
-	}
+	public string? ContentSecurityPolicy { get; set; }
 
 	/// <summary>
 	/// Gets or sets the X-Frame-Options header value.
@@ -51,13 +52,15 @@ public sealed class SecurityHeadersAttribute : Attribute
 	/// Gets or sets the Referrer-Policy header value.
 	/// </summary>
 	/// <value>Default: "strict-origin-when-cross-origin".</value>
-	public string ReferrerPolicy { get; set; } = "strict-origin-when-cross-origin";
+	public string ReferrerPolicy { get; set; } =
+		"strict-origin-when-cross-origin";
 
 	/// <summary>
 	/// Gets or sets the Permissions-Policy header value.
 	/// </summary>
 	/// <value>Default: "geolocation=(), microphone=(), camera=()".</value>
-	public string PermissionsPolicy { get; set; } = "geolocation=(), microphone=(), camera=()";
+	public string PermissionsPolicy { get; set; } =
+		"geolocation=(), microphone=(), camera=()";
 
 	/// <summary>
 	/// Gets or sets a value indicating whether HSTS should be enabled.
@@ -81,7 +84,5 @@ public sealed class SecurityHeadersAttribute : Attribute
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SecurityHeadersAttribute"/> class.
 	/// </summary>
-	public SecurityHeadersAttribute()
-	{
-	}
+	public SecurityHeadersAttribute() { }
 }

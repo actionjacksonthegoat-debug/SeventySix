@@ -20,40 +20,22 @@ namespace SeventySix.Identity;
 public class UserRole : IAuditableEntity
 {
 	/// <summary>Gets or sets the unique identifier.</summary>
-	public int Id
-	{
-		get; set;
-	}
+	public int Id { get; set; }
 
 	/// <summary>Gets or sets the user ID (FK to identity.users).</summary>
-	public int UserId
-	{
-		get; set;
-	}
+	public int UserId { get; set; }
 
 	/// <summary>Gets or sets the role ID (FK to SecurityRoles).</summary>
-	public int RoleId
-	{
-		get; set;
-	}
+	public int RoleId { get; set; }
 
 	/// <summary>Gets or sets the security role (navigation property).</summary>
-	public SecurityRole? Role
-	{
-		get; set;
-	}
+	public SecurityRole? Role { get; set; }
 
 	/// <summary>Gets or sets when this role was created (null for whitelisted).</summary>
-	public DateTime CreateDate
-	{
-		get; set;
-	}
+	public DateTime CreateDate { get; set; }
 
 	/// <summary>Gets or sets when this role was last modified.</summary>
-	public DateTime? ModifyDate
-	{
-		get; set;
-	}
+	public DateTime? ModifyDate { get; set; }
 
 	/// <summary>Gets or sets who created this role (empty for whitelisted auto-approval).</summary>
 	public string CreatedBy { get; set; } = string.Empty;

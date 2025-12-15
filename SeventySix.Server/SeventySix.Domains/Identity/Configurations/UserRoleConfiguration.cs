@@ -35,14 +35,10 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 			.IsRequired();
 
 		// UserId - Required
-		builder
-			.Property(userRole => userRole.UserId)
-			.IsRequired();
+		builder.Property(userRole => userRole.UserId).IsRequired();
 
 		// RoleId - Required, FK to SecurityRoles
-		builder
-			.Property(userRole => userRole.RoleId)
-			.IsRequired();
+		builder.Property(userRole => userRole.RoleId).IsRequired();
 
 		// Composite unique index - each user can only have each role once
 		builder

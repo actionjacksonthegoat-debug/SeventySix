@@ -25,11 +25,17 @@ public class UserValidationTestDataTests
 	}
 
 	[Theory]
-	[MemberData(nameof(UserValidationTestData.TooShortUsernames), MemberType = typeof(UserValidationTestData))]
-	public void TooShortUsernames_ShouldAllBeLessThanThreeCharacters(string username)
+	[MemberData(
+		nameof(UserValidationTestData.TooShortUsernames),
+		MemberType = typeof(UserValidationTestData)
+	)]
+	public void TooShortUsernames_ShouldAllBeLessThanThreeCharacters(
+		string username)
 	{
 		// Assert - Usernames must be < 3 chars to be "too short"
-		Assert.True(username.Length < 3, $"Username '{username}' should be less than 3 characters");
+		Assert.True(
+			username.Length < 3,
+			$"Username '{username}' should be less than 3 characters");
 	}
 
 	#endregion
@@ -44,12 +50,20 @@ public class UserValidationTestDataTests
 	}
 
 	[Theory]
-	[MemberData(nameof(UserValidationTestData.InvalidUsernameCharacters), MemberType = typeof(UserValidationTestData))]
-	public void InvalidUsernameCharacters_ShouldContainNonAlphanumericOrUnderscore(string username)
+	[MemberData(
+		nameof(UserValidationTestData.InvalidUsernameCharacters),
+		MemberType = typeof(UserValidationTestData)
+	)]
+	public void InvalidUsernameCharacters_ShouldContainNonAlphanumericOrUnderscore(
+		string username)
 	{
 		// Assert - Each username should contain at least one character that's not alphanumeric or underscore
-		bool hasInvalidChar = username.Any(c => !char.IsLetterOrDigit(c) && c != '_');
-		Assert.True(hasInvalidChar, $"Username '{username}' should contain invalid characters");
+		bool hasInvalidChar =
+			username.Any(c =>
+			!char.IsLetterOrDigit(c) && c != '_');
+		Assert.True(
+			hasInvalidChar,
+			$"Username '{username}' should contain invalid characters");
 	}
 
 	#endregion
@@ -64,12 +78,17 @@ public class UserValidationTestDataTests
 	}
 
 	[Theory]
-	[MemberData(nameof(UserValidationTestData.ValidUsernames), MemberType = typeof(UserValidationTestData))]
+	[MemberData(
+		nameof(UserValidationTestData.ValidUsernames),
+		MemberType = typeof(UserValidationTestData)
+	)]
 	public void ValidUsernames_ShouldMeetAllRequirements(string username)
 	{
 		// Assert - Must be 3-50 chars and only alphanumeric/underscore
 		Assert.InRange(username.Length, 3, 50);
-		Assert.All(username, c => Assert.True(char.IsLetterOrDigit(c) || c == '_'));
+		Assert.All(
+			username,
+			c => Assert.True(char.IsLetterOrDigit(c) || c == '_'));
 	}
 
 	#endregion
@@ -84,19 +103,24 @@ public class UserValidationTestDataTests
 	}
 
 	[Theory]
-	[MemberData(nameof(UserValidationTestData.InvalidEmails), MemberType = typeof(UserValidationTestData))]
+	[MemberData(
+		nameof(UserValidationTestData.InvalidEmails),
+		MemberType = typeof(UserValidationTestData)
+	)]
 	public void InvalidEmails_ShouldNotMatchValidEmailPattern(string email)
 	{
 		// Assert - Basic check that these are intentionally invalid
 		// Either missing @, has multiple @, or has spaces
 		bool isObviouslyInvalid =
-			!email.Contains('@') ||
-			email.Count(c => c == '@') > 1 ||
-			email.Contains(' ') ||
-			email.StartsWith('@') ||
-			email.EndsWith('@');
+			!email.Contains('@')
+			|| email.Count(c => c == '@') > 1
+			|| email.Contains(' ')
+			|| email.StartsWith('@')
+			|| email.EndsWith('@');
 
-		Assert.True(isObviouslyInvalid, $"Email '{email}' should be obviously invalid");
+		Assert.True(
+			isObviouslyInvalid,
+			$"Email '{email}' should be obviously invalid");
 	}
 
 	#endregion
@@ -111,20 +135,29 @@ public class UserValidationTestDataTests
 	}
 
 	[Theory]
-	[MemberData(nameof(UserValidationTestData.ValidEmails), MemberType = typeof(UserValidationTestData))]
+	[MemberData(
+		nameof(UserValidationTestData.ValidEmails),
+		MemberType = typeof(UserValidationTestData)
+	)]
 	public void ValidEmails_ShouldContainExactlyOneAtSymbol(string email)
 	{
 		// Assert - Basic structural requirement
-		int atCount = email.Count(c => c == '@');
+		int atCount =
+			email.Count(c => c == '@');
 		Assert.Equal(1, atCount);
 	}
 
 	[Theory]
-	[MemberData(nameof(UserValidationTestData.ValidEmails), MemberType = typeof(UserValidationTestData))]
+	[MemberData(
+		nameof(UserValidationTestData.ValidEmails),
+		MemberType = typeof(UserValidationTestData)
+	)]
 	public void ValidEmails_ShouldNotExceedMaxLength(string email)
 	{
 		// Assert - Max length is 255
-		Assert.True(email.Length <= 255, $"Email '{email}' exceeds 255 characters");
+		Assert.True(
+			email.Length <= 255,
+			$"Email '{email}' exceeds 255 characters");
 	}
 
 	#endregion

@@ -16,7 +16,9 @@ public static class GetAllApiRequestsQueryHandler
 	/// <param name="repository">The repository for accessing API request data.</param>
 	/// <param name="cancellationToken">Cancellation token for async operation.</param>
 	/// <returns>Collection of API request response DTOs.</returns>
-	public static async Task<IEnumerable<ThirdPartyApiRequestResponse>> HandleAsync(
+	public static async Task<
+		IEnumerable<ThirdPartyApiRequestResponse>
+	> HandleAsync(
 		GetAllApiRequestsQuery query,
 		IThirdPartyApiRequestRepository repository,
 		CancellationToken cancellationToken)
@@ -24,16 +26,14 @@ public static class GetAllApiRequestsQueryHandler
 		IEnumerable<ThirdPartyApiRequest> requests =
 			await repository.GetAllAsync(cancellationToken);
 
-		return requests.Select(
-			request =>
-				new ThirdPartyApiRequestResponse
-				{
-					Id = request.Id,
-					ApiName = request.ApiName,
-					BaseUrl = request.BaseUrl,
-					CallCount = request.CallCount,
-					LastCalledAt = request.LastCalledAt,
-					ResetDate = request.ResetDate,
-				});
+		return requests.Select(request => new ThirdPartyApiRequestResponse
+		{
+			Id = request.Id,
+			ApiName = request.ApiName,
+			BaseUrl = request.BaseUrl,
+			CallCount = request.CallCount,
+			LastCalledAt = request.LastCalledAt,
+			ResetDate = request.ResetDate,
+		});
 	}
 }

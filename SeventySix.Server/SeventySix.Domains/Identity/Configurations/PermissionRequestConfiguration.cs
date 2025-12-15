@@ -13,7 +13,8 @@ namespace SeventySix.Identity;
 /// - RequestedRoleId FK to SecurityRoles with RESTRICT delete
 /// - Composite unique index prevents duplicate pending requests per user per role
 /// </remarks>
-public class PermissionRequestConfiguration : IEntityTypeConfiguration<PermissionRequest>
+public class PermissionRequestConfiguration
+	: IEntityTypeConfiguration<PermissionRequest>
 {
 	/// <inheritdoc/>
 	public void Configure(EntityTypeBuilder<PermissionRequest> builder)
@@ -28,17 +29,11 @@ public class PermissionRequestConfiguration : IEntityTypeConfiguration<Permissio
 			.UseIdentityColumn()
 			.IsRequired();
 
-		builder
-			.Property(request => request.UserId)
-			.IsRequired();
+		builder.Property(request => request.UserId).IsRequired();
 
-		builder
-			.Property(request => request.RequestedRoleId)
-			.IsRequired();
+		builder.Property(request => request.RequestedRoleId).IsRequired();
 
-		builder
-			.Property(request => request.RequestMessage)
-			.HasMaxLength(500);
+		builder.Property(request => request.RequestMessage).HasMaxLength(500);
 
 		builder
 			.Property(request => request.CreatedBy)
@@ -52,7 +47,11 @@ public class PermissionRequestConfiguration : IEntityTypeConfiguration<Permissio
 
 		// Composite unique: one pending request per user per role
 		builder
-			.HasIndex(request => new { request.UserId, request.RequestedRoleId })
+			.HasIndex(request => new
+				{
+					request.UserId,
+					request.RequestedRoleId,
+				})
 			.IsUnique()
 			.HasDatabaseName("IX_PermissionRequests_UserId_RoleId");
 

@@ -40,10 +40,10 @@ public static class ChangePasswordCommandHandler
 		{
 			credential =
 				new UserCredential
-				{
-					UserId = command.UserId,
-					CreateDate = now,
-				};
+			{
+				UserId = command.UserId,
+				CreateDate = now,
+			};
 		}
 		else
 		{
@@ -66,7 +66,8 @@ public static class ChangePasswordCommandHandler
 				authSettings.Value.Password.WorkFactor);
 		credential.PasswordChangedAt = now;
 
-		if (credential.UserId == command.UserId
+		if (
+			credential.UserId == command.UserId
 			&& credential.PasswordHash != string.Empty)
 		{
 			await credentialRepository.UpdateAsync(
@@ -87,8 +88,7 @@ public static class ChangePasswordCommandHandler
 
 		UserDto? user =
 			await messageBus.InvokeAsync<UserDto?>(
-				new GetUserByIdQuery(
-					command.UserId),
+				new GetUserByIdQuery(command.UserId),
 				cancellationToken);
 
 		if (user is null)
@@ -96,7 +96,8 @@ public static class ChangePasswordCommandHandler
 			logger.LogError(
 				"User with ID {UserId} not found after password change",
 				command.UserId);
-			throw new InvalidOperationException($"User with ID {command.UserId} not found");
+			throw new InvalidOperationException(
+				$"User with ID {command.UserId} not found");
 		}
 
 		return await registrationService.GenerateAuthResultAsync(

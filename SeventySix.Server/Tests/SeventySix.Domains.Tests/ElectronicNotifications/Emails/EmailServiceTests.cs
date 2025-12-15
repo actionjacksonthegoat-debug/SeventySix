@@ -25,7 +25,9 @@ namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails;
 public class EmailServiceTests
 {
 	private readonly ILogger<EmailService> Logger =
-		Substitute.For<ILogger<EmailService>>();
+		Substitute.For<
+		ILogger<EmailService>
+	>();
 
 	private readonly IRateLimitingService RateLimitingService =
 		Substitute.For<IRateLimitingService>();
@@ -56,10 +58,7 @@ public class EmailServiceTests
 		IOptions<EmailSettings> options =
 			CreateOptions(enabled: false);
 		EmailService service =
-			new(
-				options,
-				RateLimitingService,
-				Logger);
+			new(options, RateLimitingService, Logger);
 
 		// Act
 		await service.SendWelcomeEmailAsync(
@@ -69,25 +68,20 @@ public class EmailServiceTests
 			CancellationToken.None);
 
 		// Assert - should log but not throw
-		Logger.ReceivedWithAnyArgs(1)
-			.LogWarning(default!);
+		Logger.ReceivedWithAnyArgs(1).LogWarning(default!);
 	}
 
 	[Fact]
 	public async Task SendWelcomeEmailAsync_ThrowsArgumentException_WhenEmailEmptyAsync()
 	{
 		// Arrange
-		IOptions<EmailSettings> options =
-			CreateOptions();
+		IOptions<EmailSettings> options = CreateOptions();
 		EmailService service =
-			new(
-				options,
-				RateLimitingService,
-				Logger);
+			new(options, RateLimitingService, Logger);
 
 		// Act & Assert
-		await Should.ThrowAsync<ArgumentException>(
-			() => service.SendWelcomeEmailAsync(
+		await Should.ThrowAsync<ArgumentException>(() =>
+			service.SendWelcomeEmailAsync(
 				"",
 				"testuser",
 				"token",
@@ -98,17 +92,13 @@ public class EmailServiceTests
 	public async Task SendWelcomeEmailAsync_ThrowsArgumentException_WhenUsernameEmptyAsync()
 	{
 		// Arrange
-		IOptions<EmailSettings> options =
-			CreateOptions();
+		IOptions<EmailSettings> options = CreateOptions();
 		EmailService service =
-			new(
-				options,
-				RateLimitingService,
-				Logger);
+			new(options, RateLimitingService, Logger);
 
 		// Act & Assert
-		await Should.ThrowAsync<ArgumentException>(
-			() => service.SendWelcomeEmailAsync(
+		await Should.ThrowAsync<ArgumentException>(() =>
+			service.SendWelcomeEmailAsync(
 				"user@example.com",
 				"",
 				"token",
@@ -119,17 +109,13 @@ public class EmailServiceTests
 	public async Task SendWelcomeEmailAsync_ThrowsArgumentException_WhenTokenEmptyAsync()
 	{
 		// Arrange
-		IOptions<EmailSettings> options =
-			CreateOptions();
+		IOptions<EmailSettings> options = CreateOptions();
 		EmailService service =
-			new(
-				options,
-				RateLimitingService,
-				Logger);
+			new(options, RateLimitingService, Logger);
 
 		// Act & Assert
-		await Should.ThrowAsync<ArgumentException>(
-			() => service.SendWelcomeEmailAsync(
+		await Should.ThrowAsync<ArgumentException>(() =>
+			service.SendWelcomeEmailAsync(
 				"user@example.com",
 				"testuser",
 				"",
@@ -147,10 +133,7 @@ public class EmailServiceTests
 		IOptions<EmailSettings> options =
 			CreateOptions(enabled: false);
 		EmailService service =
-			new(
-				options,
-				RateLimitingService,
-				Logger);
+			new(options, RateLimitingService, Logger);
 
 		// Act
 		await service.SendPasswordResetEmailAsync(
@@ -160,25 +143,20 @@ public class EmailServiceTests
 			CancellationToken.None);
 
 		// Assert - should log but not throw
-		Logger.ReceivedWithAnyArgs(1)
-			.LogWarning(default!);
+		Logger.ReceivedWithAnyArgs(1).LogWarning(default!);
 	}
 
 	[Fact]
 	public async Task SendPasswordResetEmailAsync_ThrowsArgumentException_WhenEmailEmptyAsync()
 	{
 		// Arrange
-		IOptions<EmailSettings> options =
-			CreateOptions();
+		IOptions<EmailSettings> options = CreateOptions();
 		EmailService service =
-			new(
-				options,
-				RateLimitingService,
-				Logger);
+			new(options, RateLimitingService, Logger);
 
 		// Act & Assert
-		await Should.ThrowAsync<ArgumentException>(
-			() => service.SendPasswordResetEmailAsync(
+		await Should.ThrowAsync<ArgumentException>(() =>
+			service.SendPasswordResetEmailAsync(
 				"",
 				"testuser",
 				"token",
@@ -189,17 +167,13 @@ public class EmailServiceTests
 	public async Task SendPasswordResetEmailAsync_ThrowsArgumentException_WhenUsernameEmptyAsync()
 	{
 		// Arrange
-		IOptions<EmailSettings> options =
-			CreateOptions();
+		IOptions<EmailSettings> options = CreateOptions();
 		EmailService service =
-			new(
-				options,
-				RateLimitingService,
-				Logger);
+			new(options, RateLimitingService, Logger);
 
 		// Act & Assert
-		await Should.ThrowAsync<ArgumentException>(
-			() => service.SendPasswordResetEmailAsync(
+		await Should.ThrowAsync<ArgumentException>(() =>
+			service.SendPasswordResetEmailAsync(
 				"user@example.com",
 				"",
 				"token",
@@ -210,17 +184,13 @@ public class EmailServiceTests
 	public async Task SendPasswordResetEmailAsync_ThrowsArgumentException_WhenTokenEmptyAsync()
 	{
 		// Arrange
-		IOptions<EmailSettings> options =
-			CreateOptions();
+		IOptions<EmailSettings> options = CreateOptions();
 		EmailService service =
-			new(
-				options,
-				RateLimitingService,
-				Logger);
+			new(options, RateLimitingService, Logger);
 
 		// Act & Assert
-		await Should.ThrowAsync<ArgumentException>(
-			() => service.SendPasswordResetEmailAsync(
+		await Should.ThrowAsync<ArgumentException>(() =>
+			service.SendPasswordResetEmailAsync(
 				"user@example.com",
 				"testuser",
 				"",
@@ -248,15 +218,12 @@ public class EmailServiceTests
 			.Returns(false);
 
 		EmailService service =
-			new(
-				options,
-				rateLimiterMock,
-				Logger);
+			new(options, rateLimiterMock, Logger);
 
 		// Act & Assert
 		EmailRateLimitException ex =
-			await Should.ThrowAsync<EmailRateLimitException>(
-				() => service.SendWelcomeEmailAsync(
+			await Should.ThrowAsync<EmailRateLimitException>(() =>
+				service.SendWelcomeEmailAsync(
 					"test@example.com",
 					"testuser",
 					"token123",

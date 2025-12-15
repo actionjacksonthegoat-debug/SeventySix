@@ -29,10 +29,7 @@ public interface IDatabaseHealthCheck
 	/// Used to identify which database failed in health check responses.
 	/// Examples: "Identity", "Logging", "ApiTracking"
 	/// </remarks>
-	public string ContextName
-	{
-		get;
-	}
+	public string ContextName { get; }
 
 	/// <summary>
 	/// Checks database connectivity and health for this bounded context.
@@ -47,5 +44,6 @@ public interface IDatabaseHealthCheck
 	/// <item>Complete within 5 seconds (timeout)</item>
 	/// </list>
 	/// </remarks>
-	public Task<bool> CheckHealthAsync(CancellationToken cancellationToken = default);
+	public Task<bool> CheckHealthAsync(
+		CancellationToken cancellationToken = default);
 }

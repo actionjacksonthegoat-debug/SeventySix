@@ -33,8 +33,10 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime createDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-5);
-		User user = new UserBuilder(timeProvider)
+		DateTime createDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddDays(-5);
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername("john_doe")
 			.WithEmail("john@example.com")
 			.WithFullName("John Doe")
@@ -61,7 +63,8 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		User user = new UserBuilder(timeProvider)
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername("test_user")
 			.WithEmail("test@example.com")
 			.WithFullName(null)
@@ -82,7 +85,9 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		User user = UserBuilder.CreateInactive(timeProvider)
+		User user =
+			UserBuilder
+			.CreateInactive(timeProvider)
 			.WithUsername("inactive_user")
 			.WithEmail("inactive@example.com")
 			.Build();
@@ -111,16 +116,33 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		User user1 = UserBuilder.CreateActive(timeProvider).WithUsername("user1").WithEmail("user1@example.com").Build();
+		User user1 =
+			UserBuilder
+			.CreateActive(timeProvider)
+			.WithUsername("user1")
+			.WithEmail("user1@example.com")
+			.Build();
 		user1.Id = 1;
-		User user2 = UserBuilder.CreateInactive(timeProvider).WithUsername("user2").WithEmail("user2@example.com").Build();
+		User user2 =
+			UserBuilder
+			.CreateInactive(timeProvider)
+			.WithUsername("user2")
+			.WithEmail("user2@example.com")
+			.Build();
 		user2.Id = 2;
-		User user3 = UserBuilder.CreateActive(timeProvider).WithUsername("user3").WithEmail("user3@example.com").Build();
+		User user3 =
+			UserBuilder
+			.CreateActive(timeProvider)
+			.WithUsername("user3")
+			.WithEmail("user3@example.com")
+			.Build();
 		user3.Id = 3;
-		List<User> users = [user1, user2, user3];
+		List<User> users =
+			[user1, user2, user3];
 
 		// Act
-		List<UserDto> dtos = [.. users.ToDto()];
+		List<UserDto> dtos =
+			[.. users.ToDto()];
 
 		// Assert
 		Assert.NotNull(dtos);
@@ -137,7 +159,8 @@ public class UserExtensionsTests
 		List<User> users = [];
 
 		// Act
-		List<UserDto> dtos = [.. users.ToDto()];
+		List<UserDto> dtos =
+			[.. users.ToDto()];
 
 		// Assert
 		Assert.NotNull(dtos);
@@ -158,7 +181,8 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldMapCreateRequestToEntity()
 	{
 		// Arrange
-		CreateUserRequest request = new()
+		CreateUserRequest request =
+			new()
 		{
 			Username = "new_user",
 			Email = "new@example.com",
@@ -184,7 +208,8 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldHandleEmptyFullName()
 	{
 		// Arrange
-		CreateUserRequest request = new()
+		CreateUserRequest request =
+			new()
 		{
 			Username = "test_user",
 			Email = "test@example.com",
@@ -204,7 +229,8 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldSetIsActiveFalse_WhenRequested()
 	{
 		// Arrange
-		CreateUserRequest request = new()
+		CreateUserRequest request =
+			new()
 		{
 			Username = "inactive_new",
 			Email = "inactive@example.com",
@@ -224,7 +250,8 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldNotSetCreateDate_InterceptorHandlesIt()
 	{
 		// Arrange - CreateDate is set by AuditInterceptor, not during mapping
-		CreateUserRequest request = new()
+		CreateUserRequest request =
+			new()
 		{
 			Username = "test",
 			Email = "test@example.com",
@@ -252,7 +279,8 @@ public class UserExtensionsTests
 	public void ToEntity_ShouldNotSetId()
 	{
 		// Arrange
-		CreateUserRequest request = new()
+		CreateUserRequest request =
+			new()
 		{
 			Username = "test",
 			Email = "test@example.com",
@@ -271,10 +299,13 @@ public class UserExtensionsTests
 	[InlineData("", "")]
 	[InlineData("a", "a@b.com")]
 	[InlineData("very_long_username_here", "very.long.email@example.com")]
-	public void ToEntity_ShouldHandleVariousInputFormats(string username, string email)
+	public void ToEntity_ShouldHandleVariousInputFormats(
+		string username,
+		string email)
 	{
 		// Arrange
-		CreateUserRequest request = new()
+		CreateUserRequest request =
+			new()
 		{
 			Username = username,
 			Email = email,
@@ -294,8 +325,10 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime deletedAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(-2);
-		User user = new UserBuilder(timeProvider)
+		DateTime deletedAt =
+			timeProvider.GetUtcNow().UtcDateTime.AddHours(-2);
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername("deleted_user")
 			.WithEmail("deleted@example.com")
 			.WithFullName("Deleted User")
@@ -321,7 +354,8 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		User user = new UserBuilder(timeProvider)
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername("active_user")
 			.WithEmail("active@example.com")
 			.WithIsActive(true)

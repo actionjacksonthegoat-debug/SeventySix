@@ -11,8 +11,12 @@ namespace SeventySix.ApiTracking;
 /// <summary>EF Core implementation for ThirdPartyApiRequest data access.</summary>
 internal class ThirdPartyApiRequestRepository(
 	ApiTrackingDbContext context,
-	ILogger<ThirdPartyApiRequestRepository> logger) :
-	BaseRepository<ThirdPartyApiRequest, ApiTrackingDbContext>(context, logger), IThirdPartyApiRequestRepository
+	ILogger<ThirdPartyApiRequestRepository> logger)
+	:
+		BaseRepository<ThirdPartyApiRequest, ApiTrackingDbContext>(
+			context,
+			logger),
+		IThirdPartyApiRequestRepository
 {
 	/// <inheritdoc/>
 	protected override string GetEntityIdentifier(ThirdPartyApiRequest entity)
@@ -31,10 +35,11 @@ internal class ThirdPartyApiRequestRepository(
 		try
 		{
 			// Uses composite index on (ApiName, ResetDate) for O(log n) lookup
-			ThirdPartyApiRequest? request = await GetQueryable()
-				.FirstOrDefaultAsync(
-				r => r.ApiName == apiName && r.ResetDate == resetDate,
-				cancellationToken);
+			ThirdPartyApiRequest? request =
+				await GetQueryable()
+					.FirstOrDefaultAsync(
+						r => r.ApiName == apiName && r.ResetDate == resetDate,
+						cancellationToken);
 
 			return request;
 		}
@@ -70,12 +75,16 @@ internal class ThirdPartyApiRequestRepository(
 		try
 		{
 			// Use QueryBuilder for read-only query with ordering
-			QueryBuilder<ThirdPartyApiRequest> queryBuilder = new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
+			QueryBuilder<ThirdPartyApiRequest> queryBuilder =
+				new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
 			queryBuilder
 				.Where(r => r.ApiName == apiName)
 				.OrderByDescending(r => r.ResetDate);
 
-			List<ThirdPartyApiRequest> requests = await queryBuilder.Build().ToListAsync(cancellationToken);
+			List<ThirdPartyApiRequest> requests =
+				await queryBuilder
+					.Build()
+					.ToListAsync(cancellationToken);
 
 			return requests;
 		}
@@ -96,10 +105,14 @@ internal class ThirdPartyApiRequestRepository(
 		try
 		{
 			// Use QueryBuilder for read-only query with ordering
-			QueryBuilder<ThirdPartyApiRequest> queryBuilder = new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
+			QueryBuilder<ThirdPartyApiRequest> queryBuilder =
+				new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
 			queryBuilder.OrderBy(r => r.ApiName);
 
-			List<ThirdPartyApiRequest> requests = await queryBuilder.Build().ToListAsync(cancellationToken);
+			List<ThirdPartyApiRequest> requests =
+				await queryBuilder
+					.Build()
+					.ToListAsync(cancellationToken);
 
 			return requests;
 		}
@@ -120,9 +133,11 @@ internal class ThirdPartyApiRequestRepository(
 		try
 		{
 			// Batch delete operation
-			int deletedCount = await context.ThirdPartyApiRequests
-				.Where(r => r.ResetDate < cutoffDate)
-				.ExecuteDeleteAsync(cancellationToken);
+			int deletedCount =
+				await context
+					.ThirdPartyApiRequests
+					.Where(r => r.ResetDate < cutoffDate)
+					.ExecuteDeleteAsync(cancellationToken);
 
 			return deletedCount;
 		}

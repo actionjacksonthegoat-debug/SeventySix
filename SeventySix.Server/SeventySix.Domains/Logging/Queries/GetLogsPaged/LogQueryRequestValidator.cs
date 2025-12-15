@@ -20,11 +20,15 @@ public class LogQueryRequestValidator : BaseQueryValidator<LogQueryRequest, Log>
 	public LogQueryRequestValidator()
 		: base()
 	{
-		When(request => !string.IsNullOrWhiteSpace(request.LogLevel), () =>
-		{
-			RuleFor(request => request.LogLevel)
-				.Must(level => LogLevelConstants.QueryLevels.Contains(level!))
-				.WithMessage($"LogLevel must be one of: {string.Join(", ", LogLevelConstants.QueryLevels)}");
-		});
+		When(
+			request => !string.IsNullOrWhiteSpace(request.LogLevel),
+			() =>
+			{
+				RuleFor(request => request.LogLevel)
+					.Must(level =>
+						LogLevelConstants.QueryLevels.Contains(level!))
+					.WithMessage(
+						$"LogLevel must be one of: {string.Join(", ", LogLevelConstants.QueryLevels)}");
+			});
 	}
 }

@@ -15,41 +15,39 @@ public static class TestTables
 	/// All Identity bounded context tables in dependency order (children first).
 	/// </summary>
 	public static readonly string[] Identity =
-		[
-			"\"Identity\".\"PermissionRequests\"",
-			"\"Identity\".\"RefreshTokens\"",
-			"\"Identity\".\"ExternalLogins\"",
-			"\"Identity\".\"UserCredentials\"",
-			"\"Identity\".\"UserRoles\"",
-			"\"Identity\".\"PasswordResetTokens\"",
-			"\"Identity\".\"EmailVerificationTokens\"",
-			"\"Identity\".\"Users\""
-		];
+	[
+		"\"Identity\".\"PermissionRequests\"",
+		"\"Identity\".\"RefreshTokens\"",
+		"\"Identity\".\"ExternalLogins\"",
+		"\"Identity\".\"UserCredentials\"",
+		"\"Identity\".\"UserRoles\"",
+		"\"Identity\".\"PasswordResetTokens\"",
+		"\"Identity\".\"EmailVerificationTokens\"",
+		"\"Identity\".\"Users\"",
+	];
 
 	/// <summary>
 	/// All Logging bounded context tables.
 	/// </summary>
 	public static readonly string[] Logging =
-		[
-			"\"Logging\".\"Logs\""
-		];
+		["\"Logging\".\"Logs\""];
 
 	/// <summary>
 	/// All ApiTracking bounded context tables.
 	/// </summary>
 	public static readonly string[] ApiTracking =
-		[
-			"\"ApiTracking\".\"ThirdPartyApiRequests\""
-		];
+	[
+		"\"ApiTracking\".\"ThirdPartyApiRequests\"",
+	];
 
 	/// <summary>
 	/// All tables across all bounded contexts.
 	/// Use for full database cleanup between tests.
 	/// </summary>
 	public static readonly string[] All =
-		[
-			..Identity,
-			..Logging,
-			..ApiTracking
-		];
+	[
+		.. Identity,
+		.. Logging,
+		.. ApiTracking,
+	];
 }

@@ -11,21 +11,34 @@ namespace SeventySix.Identity.Migrations
 		/// <inheritdoc />
 		protected override void Up(MigrationBuilder migrationBuilder)
 		{
-			migrationBuilder.EnsureSchema(
-				name: "identity");
+			migrationBuilder.EnsureSchema(name: "identity");
 
 			migrationBuilder.CreateTable(
 				name: "PasswordResetTokens",
 				schema: "identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					Token = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-					ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					IsUsed = table.Column<bool>(type: "boolean", nullable: false)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					Token = table.Column<string>(
+						type: "character varying(128)",
+						maxLength: 128,
+						nullable: false),
+					ExpiresAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
+					CreatedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
+					IsUsed = table.Column<bool>(
+						type: "boolean",
+						nullable: false),
 				},
 				constraints: table =>
 				{

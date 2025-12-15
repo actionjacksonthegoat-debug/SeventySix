@@ -59,12 +59,10 @@ public static class DataProtectionExtensions
 		// In containers, /app/keys should be mounted as a volume
 		string keysDirectory =
 			environment.IsDevelopment()
-				? Path.Combine(
-					Directory.GetCurrentDirectory(),
-					DEFAULT_KEYS_DIRECTORY)
-				: Path.Combine(
-					"/app",
-					DEFAULT_KEYS_DIRECTORY);
+			? Path.Combine(
+				Directory.GetCurrentDirectory(),
+				DEFAULT_KEYS_DIRECTORY)
+			: Path.Combine("/app", DEFAULT_KEYS_DIRECTORY);
 
 		// Ensure the directory exists
 		if (!Directory.Exists(keysDirectory))

@@ -26,7 +26,8 @@ namespace SeventySix.Api.Controllers;
 /// <param name="messageBus">The Wolverine message bus.</param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
-public class PermissionRequestsController(IMessageBus messageBus) : ControllerBase
+public class PermissionRequestsController(IMessageBus messageBus)
+	: ControllerBase
 {
 	/// <summary>
 	/// Gets all pending permission requests (Admin only).
@@ -37,10 +38,14 @@ public class PermissionRequestsController(IMessageBus messageBus) : ControllerBa
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpGet("permission-requests", Name = "GetPermissionRequests")]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
-	[ProducesResponseType(typeof(IEnumerable<PermissionRequestDto>), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(IEnumerable<PermissionRequestDto>),
+		StatusCodes.Status200OK
+	)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<IEnumerable<PermissionRequestDto>>> GetPermissionRequestsAsync(
-		CancellationToken cancellationToken)
+	public async Task<
+		ActionResult<IEnumerable<PermissionRequestDto>>
+	> GetPermissionRequestsAsync(CancellationToken cancellationToken)
 	{
 		IEnumerable<PermissionRequestDto> requests =
 			await messageBus.InvokeAsync<IEnumerable<PermissionRequestDto>>(
@@ -64,19 +69,22 @@ public class PermissionRequestsController(IMessageBus messageBus) : ControllerBa
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpGet("me/available-roles", Name = "GetAvailableRoles")]
 	[Authorize]
-	[ProducesResponseType(typeof(IEnumerable<AvailableRoleDto>), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(IEnumerable<AvailableRoleDto>),
+		StatusCodes.Status200OK
+	)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<IEnumerable<AvailableRoleDto>>> GetAvailableRolesAsync(
-		CancellationToken cancellationToken)
+	public async Task<
+		ActionResult<IEnumerable<AvailableRoleDto>>
+	> GetAvailableRolesAsync(CancellationToken cancellationToken)
 	{
-		int userId =
-			User.GetRequiredUserId();
+		int userId = User.GetRequiredUserId();
 
 		IEnumerable<AvailableRoleDto> roles =
-			await messageBus.InvokeAsync<IEnumerable<AvailableRoleDto>>(
-				new GetAvailableRolesQuery(userId),
-				cancellationToken);
+			await messageBus.InvokeAsync<
+				IEnumerable<AvailableRoleDto>
+		>(new GetAvailableRolesQuery(userId), cancellationToken);
 
 		return Ok(roles);
 	}
@@ -105,21 +113,14 @@ public class PermissionRequestsController(IMessageBus messageBus) : ControllerBa
 		[FromBody] CreatePermissionRequestDto request,
 		CancellationToken cancellationToken)
 	{
-		int userId =
-			User.GetRequiredUserId();
+		int userId = User.GetRequiredUserId();
 
-		string username =
-			User.GetRequiredUsername();
+		string username = User.GetRequiredUsername();
 
 		CreatePermissionRequestCommand command =
-			new(
-				userId,
-				username,
-				request);
+			new(userId, username, request);
 
-		await messageBus.InvokeAsync(
-			command,
-			cancellationToken);
+		await messageBus.InvokeAsync(command, cancellationToken);
 
 		return NoContent();
 	}
@@ -133,7 +134,8 @@ public class PermissionRequestsController(IMessageBus messageBus) : ControllerBa
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPost(
 		"permission-requests/{id}/approve",
-		Name = "ApprovePermissionRequest")]
+		Name = "ApprovePermissionRequest"
+	)]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -164,7 +166,8 @@ public class PermissionRequestsController(IMessageBus messageBus) : ControllerBa
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPost(
 		"permission-requests/{id}/reject",
-		Name = "RejectPermissionRequest")]
+		Name = "RejectPermissionRequest"
+	)]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -194,7 +197,8 @@ public class PermissionRequestsController(IMessageBus messageBus) : ControllerBa
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPost(
 		"permission-requests/bulk/approve",
-		Name = "BulkApprovePermissionRequests")]
+		Name = "BulkApprovePermissionRequests"
+	)]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -218,7 +222,8 @@ public class PermissionRequestsController(IMessageBus messageBus) : ControllerBa
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPost(
 		"permission-requests/bulk/reject",
-		Name = "BulkRejectPermissionRequests")]
+		Name = "BulkRejectPermissionRequests"
+	)]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]

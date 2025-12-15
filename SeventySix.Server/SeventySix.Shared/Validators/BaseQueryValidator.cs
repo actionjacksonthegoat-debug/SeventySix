@@ -33,7 +33,8 @@ namespace SeventySix.Shared.Validators;
 /// - No manual field lists needed - entity changes automatically reflected
 /// - Type-safe validation against actual entity structure
 /// </remarks>
-public abstract class BaseQueryValidator<TRequest, TEntity> : AbstractValidator<TRequest>
+public abstract class BaseQueryValidator<TRequest, TEntity>
+	: AbstractValidator<TRequest>
 	where TRequest : BaseQueryRequest
 	where TEntity : class
 {
@@ -64,9 +65,11 @@ public abstract class BaseQueryValidator<TRequest, TEntity> : AbstractValidator<
 			{
 				RuleFor(request => request.SearchTerm)
 					.MinimumLength(MinSearchTermLength)
-					.WithMessage($"Search term must be at least {MinSearchTermLength} characters")
+					.WithMessage(
+						$"Search term must be at least {MinSearchTermLength} characters")
 					.MaximumLength(MaxSearchTermLength)
-					.WithMessage($"Search term must not exceed {MaxSearchTermLength} characters");
+					.WithMessage(
+						$"Search term must not exceed {MaxSearchTermLength} characters");
 			});
 
 		// Pagination validation
@@ -78,7 +81,8 @@ public abstract class BaseQueryValidator<TRequest, TEntity> : AbstractValidator<
 			.GreaterThan(0)
 			.WithMessage("PageSize must be greater than 0")
 			.LessThanOrEqualTo(PaginationConstants.MaxPageSize)
-			.WithMessage($"PageSize must not exceed {PaginationConstants.MaxPageSize}");
+			.WithMessage(
+				$"PageSize must not exceed {PaginationConstants.MaxPageSize}");
 
 		// Date range validation: Prevent excessive queries (when both dates provided)
 		When(
@@ -86,10 +90,15 @@ public abstract class BaseQueryValidator<TRequest, TEntity> : AbstractValidator<
 			() =>
 			{
 				RuleFor(request => request)
-					.Must(request => request.EndDate!.Value >= request.StartDate!.Value)
-					.WithMessage("EndDate must be greater than or equal to StartDate")
-					.Must(request => (request.EndDate!.Value - request.StartDate!.Value).TotalDays <= MaxDateRangeDays)
-					.WithMessage($"Date range must not exceed {MaxDateRangeDays} days");
+					.Must(request =>
+						request.EndDate!.Value >= request.StartDate!.Value)
+					.WithMessage(
+						"EndDate must be greater than or equal to StartDate")
+					.Must(request =>
+						(
+							request.EndDate!.Value - request.StartDate!.Value).TotalDays <= MaxDateRangeDays)
+					.WithMessage(
+						$"Date range must not exceed {MaxDateRangeDays} days");
 			});
 
 		// SortBy validation: Automatically validate against entity properties (convention over configuration)
@@ -101,7 +110,10 @@ public abstract class BaseQueryValidator<TRequest, TEntity> : AbstractValidator<
 					.Must(BeValidEntityProperty)
 					.WithMessage(request =>
 					{
-						string validFields = string.Join(", ", GetEntityPropertyNames());
+						string validFields =
+							string.Join(
+								", ",
+								GetEntityPropertyNames());
 						return $"SortBy must be one of the following fields: {validFields}";
 					});
 			});
@@ -124,8 +136,11 @@ public abstract class BaseQueryValidator<TRequest, TEntity> : AbstractValidator<
 			return true; // Null/empty handled by separate validation
 		}
 
-		PropertyInfo[] properties = typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-		return properties.Any(property => property.Name.Equals(sortBy, StringComparison.OrdinalIgnoreCase));
+		PropertyInfo[] properties =
+			typeof(TEntity).GetProperties(
+				BindingFlags.Public | BindingFlags.Instance);
+		return properties.Any(property =>
+			property.Name.Equals(sortBy, StringComparison.OrdinalIgnoreCase));
 	}
 
 	/// <summary>
@@ -138,7 +153,12 @@ public abstract class BaseQueryValidator<TRequest, TEntity> : AbstractValidator<
 	/// </remarks>
 	private static string[] GetEntityPropertyNames()
 	{
-		PropertyInfo[] properties = typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-		return properties.Select(property => property.Name).OrderBy(name => name).ToArray();
+		PropertyInfo[] properties =
+			typeof(TEntity).GetProperties(
+				BindingFlags.Public | BindingFlags.Instance);
+		return properties
+			.Select(property => property.Name)
+			.OrderBy(name => name)
+			.ToArray();
 	}
 }

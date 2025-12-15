@@ -42,9 +42,11 @@ public class AuditInterceptor(
 
 		IEnumerable<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry> entries =
 			eventData.Context.ChangeTracker.Entries();
-		string currentUser = userContextAccessor.GetCurrentUser();
+		string currentUser =
+			userContextAccessor.GetCurrentUser();
 
-		foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry in entries)
+		foreach (
+			Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry in entries)
 		{
 			// IAuditableEntity: Set CreateDate, ModifyDate, CreatedBy, ModifiedBy
 			// (User entity only - has timestamps + user tracking)
@@ -56,8 +58,8 @@ public class AuditInterceptor(
 					{
 						auditable.CreateDate =
 							timeProvider
-								.GetUtcNow()
-								.UtcDateTime;
+							.GetUtcNow()
+							.UtcDateTime;
 					}
 					if (string.IsNullOrWhiteSpace(auditable.CreatedBy))
 					{
@@ -71,9 +73,7 @@ public class AuditInterceptor(
 				if (entry.State == EntityState.Modified)
 				{
 					auditable.ModifyDate =
-						timeProvider
-							.GetUtcNow()
-							.UtcDateTime;
+						timeProvider.GetUtcNow().UtcDateTime;
 					auditable.ModifiedBy = currentUser;
 				}
 			}
@@ -87,35 +87,32 @@ public class AuditInterceptor(
 					{
 						modifiable.CreateDate =
 							timeProvider
-								.GetUtcNow()
-								.UtcDateTime;
+							.GetUtcNow()
+							.UtcDateTime;
 					}
 				}
 				if (entry.State == EntityState.Modified)
 				{
 					modifiable.ModifyDate =
 						timeProvider
-							.GetUtcNow()
-							.UtcDateTime;
+						.GetUtcNow()
+						.UtcDateTime;
 				}
 			}
 			// ICreatableEntity: Set CreateDate only (no modify, no user tracking)
 			// (Log entity - always gets CreateDate = NOW() if not set)
 			else if (entry.Entity is ICreatableEntity creatable)
 			{
-				if (entry.State == EntityState.Added && creatable.CreateDate == default)
+				if (
+					entry.State == EntityState.Added
+					&& creatable.CreateDate == default)
 				{
 					creatable.CreateDate =
-						timeProvider
-							.GetUtcNow()
-							.UtcDateTime;
+						timeProvider.GetUtcNow().UtcDateTime;
 				}
 			}
 		}
 
-		return base.SavingChangesAsync(
-			eventData,
-			result,
-			cancellationToken);
+		return base.SavingChangesAsync(eventData, result, cancellationToken);
 	}
 }

@@ -16,13 +16,29 @@ namespace SeventySix.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					RequestedRole = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-					RequestMessage = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-					CreatedBy = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					RequestedRole = table.Column<string>(
+						type: "character varying(50)",
+						maxLength: 50,
+						nullable: false),
+					RequestMessage = table.Column<string>(
+						type: "character varying(500)",
+						maxLength: 500,
+						nullable: true),
+					CreatedBy = table.Column<string>(
+						type: "character varying(50)",
+						maxLength: 50,
+						nullable: false),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
 				},
 				constraints: table =>
 				{

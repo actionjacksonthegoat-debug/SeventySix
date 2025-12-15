@@ -31,7 +31,8 @@ public static class HealthCheckExtensions
 			return services;
 		}
 
-		services.AddHealthChecks()
+		services
+			.AddHealthChecks()
 			.AddDbContextCheck<IdentityDbContext>(
 				name: "identity-database",
 				failureStatus: HealthStatus.Unhealthy,

@@ -14,6 +14,4 @@ namespace SeventySix.Identity;
 /// </remarks>
 /// <param name="Token">The password reset token (base64 encoded).</param>
 /// <param name="NewPassword">The new password to set.</param>
-public record SetPasswordRequest(
-	string Token,
-	string NewPassword);
+public record SetPasswordRequest(string Token, string NewPassword);

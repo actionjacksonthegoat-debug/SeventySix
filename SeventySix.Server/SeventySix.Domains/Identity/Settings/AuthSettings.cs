@@ -163,7 +163,8 @@ public record AuthCookieSettings
 	/// <summary>
 	/// Gets OAuth code verifier cookie name for PKCE.
 	/// </summary>
-	public string OAuthCodeVerifierCookieName { get; init; } = "X-OAuth-CodeVerifier";
+	public string OAuthCodeVerifierCookieName { get; init; } =
+		"X-OAuth-CodeVerifier";
 
 	/// <summary>
 	/// Gets a value indicating whether to use secure cookies.

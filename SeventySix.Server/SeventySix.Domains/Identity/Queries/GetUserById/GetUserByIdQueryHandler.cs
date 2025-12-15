@@ -11,9 +11,7 @@ public static class GetUserByIdQueryHandler
 		CancellationToken cancellationToken)
 	{
 		User? user =
-			await repository.GetByIdAsync(
-				query.Id,
-				cancellationToken);
+			await repository.GetByIdAsync(query.Id, cancellationToken);
 
 		return user?.ToDto();
 	}

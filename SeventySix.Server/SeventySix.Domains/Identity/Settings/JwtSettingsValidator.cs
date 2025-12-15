@@ -50,7 +50,13 @@ public class JwtSettingsValidator : AbstractValidator<JwtSettings>
 	/// Common weak patterns that indicate non-random secrets.
 	/// </summary>
 	private static readonly string[] WeakPatterns =
-		["placeholder", "secret", "password", "changeme", "123456"];
+	[
+		"placeholder",
+		"secret",
+		"password",
+		"changeme",
+		"123456",
+	];
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="JwtSettingsValidator"/> class.
@@ -61,9 +67,11 @@ public class JwtSettingsValidator : AbstractValidator<JwtSettings>
 			.NotEmpty()
 			.WithMessage("SecretKey is required")
 			.MinimumLength(MinSecretKeyLength)
-			.WithMessage($"SecretKey must be at least {MinSecretKeyLength} characters (256 bits) for HS256")
+			.WithMessage(
+				$"SecretKey must be at least {MinSecretKeyLength} characters (256 bits) for HS256")
 			.Must(key => !IsWeakKey(key))
-			.WithMessage("SecretKey appears weak. Use cryptographically random 256-bit key.");
+			.WithMessage(
+				"SecretKey appears weak. Use cryptographically random 256-bit key.");
 
 		RuleFor(settings => settings.Issuer)
 			.NotEmpty()
@@ -75,11 +83,13 @@ public class JwtSettingsValidator : AbstractValidator<JwtSettings>
 
 		RuleFor(settings => settings.AccessTokenExpirationMinutes)
 			.InclusiveBetween(1, MaxAccessTokenExpirationMinutes)
-			.WithMessage($"AccessTokenExpirationMinutes must be between 1 and {MaxAccessTokenExpirationMinutes}");
+			.WithMessage(
+				$"AccessTokenExpirationMinutes must be between 1 and {MaxAccessTokenExpirationMinutes}");
 
 		RuleFor(settings => settings.RefreshTokenExpirationDays)
 			.InclusiveBetween(1, MaxRefreshTokenExpirationDays)
-			.WithMessage($"RefreshTokenExpirationDays must be between 1 and {MaxRefreshTokenExpirationDays}");
+			.WithMessage(
+				$"RefreshTokenExpirationDays must be between 1 and {MaxRefreshTokenExpirationDays}");
 	}
 
 	/// <summary>
@@ -102,8 +112,6 @@ public class JwtSettingsValidator : AbstractValidator<JwtSettings>
 
 		// Reject common weak patterns
 		return WeakPatterns.Any(pattern =>
-			key.Contains(
-				pattern,
-				StringComparison.OrdinalIgnoreCase));
+			key.Contains(pattern, StringComparison.OrdinalIgnoreCase));
 	}
 }

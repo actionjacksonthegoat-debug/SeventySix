@@ -38,9 +38,9 @@ public class LogsController(
 		CancellationToken cancellationToken = default)
 	{
 		PagedResult<LogDto> result =
-			await messageBus.InvokeAsync<PagedResult<LogDto>>(
-				new GetLogsPagedQuery(request),
-				cancellationToken);
+			await messageBus.InvokeAsync<
+				PagedResult<LogDto>
+		>(new GetLogsPagedQuery(request), cancellationToken);
 
 		return Ok(result);
 	}
@@ -68,9 +68,7 @@ public class LogsController(
 			return NotFound();
 		}
 
-		await outputCacheStore.EvictByTagAsync(
-			"logs",
-			cancellationToken);
+		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 		return NoContent();
 	}
@@ -98,9 +96,7 @@ public class LogsController(
 				ids,
 				cancellationToken);
 
-		await outputCacheStore.EvictByTagAsync(
-			"logs",
-			cancellationToken);
+		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 		return Ok(deletedCount);
 	}
@@ -128,9 +124,7 @@ public class LogsController(
 				cutoffDate.Value,
 				cancellationToken);
 
-		await outputCacheStore.EvictByTagAsync(
-			"logs",
-			cancellationToken);
+		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 		return Ok(deletedCount);
 	}
@@ -148,13 +142,9 @@ public class LogsController(
 		[FromBody] CreateLogRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		await messageBus.InvokeAsync(
-			request,
-			cancellationToken);
+		await messageBus.InvokeAsync(request, cancellationToken);
 
-		await outputCacheStore.EvictByTagAsync(
-			"logs",
-			cancellationToken);
+		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 		return NoContent();
 	}
@@ -172,13 +162,9 @@ public class LogsController(
 		[FromBody] CreateLogRequest[] requests,
 		CancellationToken cancellationToken = default)
 	{
-		await messageBus.InvokeAsync(
-			requests,
-			cancellationToken);
+		await messageBus.InvokeAsync(requests, cancellationToken);
 
-		await outputCacheStore.EvictByTagAsync(
-			"logs",
-			cancellationToken);
+		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
 
 		return NoContent();
 	}

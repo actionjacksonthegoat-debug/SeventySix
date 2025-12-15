@@ -20,13 +20,7 @@ public abstract class SourceCodeArchitectureTest
 	/// </summary>
 	protected static readonly string SolutionRoot =
 		Path.GetFullPath(
-			Path.Combine(
-				AppContext.BaseDirectory,
-				"..",
-				"..",
-				"..",
-				"..",
-				".."));
+		Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
 
 	/// <summary>
 	/// Gets source files matching the specified pattern.
@@ -41,16 +35,17 @@ public abstract class SourceCodeArchitectureTest
 	{
 		string[] files =
 			Directory.GetFiles(
-				SolutionRoot,
-				pattern,
-				SearchOption.AllDirectories);
+			SolutionRoot,
+			pattern,
+			SearchOption.AllDirectories);
 
 		return files.Where(file =>
 			!file.Contains("\\bin\\")
 			&& !file.Contains("\\obj\\")
 			&& !file.Contains("\\Tests\\")
 			&& !file.Contains("\\Migrations\\")
-			&& (string.IsNullOrEmpty(excludePath) || !file.Contains(excludePath)));
+			&& (
+				string.IsNullOrEmpty(excludePath) || !file.Contains(excludePath)));
 	}
 
 	/// <summary>
@@ -67,9 +62,7 @@ public abstract class SourceCodeArchitectureTest
 	/// <param name="fullPath">Full file path.</param>
 	/// <returns>Relative path from solution root.</returns>
 	protected static string GetRelativePath(string fullPath) =>
-		Path.GetRelativePath(
-			SolutionRoot,
-			fullPath);
+		Path.GetRelativePath(SolutionRoot, fullPath);
 
 	/// <summary>
 	/// Gets all C# source files including tests.
@@ -80,9 +73,9 @@ public abstract class SourceCodeArchitectureTest
 	{
 		string[] allFiles =
 			Directory.GetFiles(
-				SolutionRoot,
-				"*.cs",
-				SearchOption.AllDirectories);
+			SolutionRoot,
+			"*.cs",
+			SearchOption.AllDirectories);
 
 		return allFiles.Where(filePath =>
 			!filePath.Contains("\\bin\\")

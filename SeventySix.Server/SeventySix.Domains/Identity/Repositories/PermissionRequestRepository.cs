@@ -7,18 +7,20 @@ using Microsoft.EntityFrameworkCore;
 namespace SeventySix.Identity;
 
 /// <summary>Repository for permission request data access.</summary>
-internal class PermissionRequestRepository(
-	IdentityDbContext dbContext) : IPermissionRequestRepository
+internal class PermissionRequestRepository(IdentityDbContext dbContext)
+	: IPermissionRequestRepository
 {
 	/// <inheritdoc/>
 	public async Task<IEnumerable<PermissionRequestDto>> GetAllAsync(
 		CancellationToken cancellationToken = default)
 	{
-		return await dbContext.PermissionRequests
+		return await dbContext
+			.PermissionRequests
 			.AsNoTracking()
 			.Include(permissionRequest => permissionRequest.User)
 			.Include(permissionRequest => permissionRequest.RequestedRole)
-			.OrderByDescending(permissionRequest => permissionRequest.CreateDate)
+			.OrderByDescending(permissionRequest =>
+				permissionRequest.CreateDate)
 			.Select(permissionRequest => new PermissionRequestDto(
 				permissionRequest.Id,
 				permissionRequest.UserId,
@@ -35,8 +37,10 @@ internal class PermissionRequestRepository(
 		int id,
 		CancellationToken cancellationToken = default)
 	{
-		return await dbContext.PermissionRequests
-			.Include(permissionRequest => permissionRequest.User)
+		return await dbContext
+			.PermissionRequests
+			.Include(permissionRequest =>
+				permissionRequest.User)
 			.Include(permissionRequest => permissionRequest.RequestedRole)
 			.FirstOrDefaultAsync(
 				permissionRequest => permissionRequest.Id == id,
@@ -48,11 +52,12 @@ internal class PermissionRequestRepository(
 		IEnumerable<int> ids,
 		CancellationToken cancellationToken = default)
 	{
-		List<int> idList =
-			ids.ToList();
+		List<int> idList = ids.ToList();
 
-		return await dbContext.PermissionRequests
-			.Include(permissionRequest => permissionRequest.User)
+		return await dbContext
+			.PermissionRequests
+			.Include(permissionRequest =>
+				permissionRequest.User)
 			.Include(permissionRequest => permissionRequest.RequestedRole)
 			.Where(permissionRequest => idList.Contains(permissionRequest.Id))
 			.ToListAsync(cancellationToken);
@@ -63,7 +68,8 @@ internal class PermissionRequestRepository(
 		int userId,
 		CancellationToken cancellationToken = default)
 	{
-		return await dbContext.PermissionRequests
+		return await dbContext
+			.PermissionRequests
 			.AsNoTracking()
 			.Include(permissionRequest => permissionRequest.RequestedRole)
 			.Where(permissionRequest => permissionRequest.UserId == userId)
@@ -75,7 +81,8 @@ internal class PermissionRequestRepository(
 		int userId,
 		CancellationToken cancellationToken = default)
 	{
-		return await dbContext.UserRoles
+		return await dbContext
+			.UserRoles
 			.AsNoTracking()
 			.Where(userRole => userRole.UserId == userId)
 			.Include(userRole => userRole.Role)
@@ -88,7 +95,8 @@ internal class PermissionRequestRepository(
 		int userId,
 		CancellationToken cancellationToken = default)
 	{
-		return await dbContext.Users
+		return await dbContext
+			.Users
 			.AsNoTracking()
 			.Where(user => user.Id == userId)
 			.Select(user => user.Email)
@@ -109,8 +117,10 @@ internal class PermissionRequestRepository(
 		int id,
 		CancellationToken cancellationToken = default)
 	{
-		await dbContext.PermissionRequests
-			.Where(permissionRequest => permissionRequest.Id == id)
+		await dbContext
+			.PermissionRequests
+			.Where(permissionRequest =>
+				permissionRequest.Id == id)
 			.ExecuteDeleteAsync(cancellationToken);
 	}
 
@@ -119,11 +129,12 @@ internal class PermissionRequestRepository(
 		IEnumerable<int> ids,
 		CancellationToken cancellationToken = default)
 	{
-		List<int> idList =
-			ids.ToList();
+		List<int> idList = ids.ToList();
 
-		await dbContext.PermissionRequests
-			.Where(permissionRequest => idList.Contains(permissionRequest.Id))
+		await dbContext
+			.PermissionRequests
+			.Where(permissionRequest =>
+				idList.Contains(permissionRequest.Id))
 			.ExecuteDeleteAsync(cancellationToken);
 	}
 
@@ -133,8 +144,10 @@ internal class PermissionRequestRepository(
 		string role,
 		CancellationToken cancellationToken = default)
 	{
-		await dbContext.PermissionRequests
-			.Include(permissionRequest => permissionRequest.RequestedRole)
+		await dbContext
+			.PermissionRequests
+			.Include(permissionRequest =>
+				permissionRequest.RequestedRole)
 			.Where(permissionRequest =>
 				permissionRequest.UserId == userId
 				&& permissionRequest.RequestedRole!.Name == role)
@@ -146,7 +159,8 @@ internal class PermissionRequestRepository(
 		string roleName,
 		CancellationToken cancellationToken = default)
 	{
-		return await dbContext.SecurityRoles
+		return await dbContext
+			.SecurityRoles
 			.AsNoTracking()
 			.Where(securityRole => securityRole.Name == roleName)
 			.Select(securityRole => (int?)securityRole.Id)

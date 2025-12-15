@@ -32,9 +32,12 @@ public class ThirdPartyApiRequestResponseTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
-		DateOnly resetDate = DateOnly.FromDateTime(now);
-		ThirdPartyApiRequestResponse response = new()
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+		DateOnly resetDate =
+			DateOnly.FromDateTime(now);
+		ThirdPartyApiRequestResponse response =
+			new()
 		{
 			Id = 42,
 			ApiName = "ExternalAPI",
@@ -57,7 +60,8 @@ public class ThirdPartyApiRequestResponseTests
 	public void LastCalledAt_ShouldAllowNull()
 	{
 		// Arrange
-		ThirdPartyApiRequestResponse response = new()
+		ThirdPartyApiRequestResponse response =
+			new()
 		{
 			ApiName = "TestApi",
 			BaseUrl = "https://test.api",

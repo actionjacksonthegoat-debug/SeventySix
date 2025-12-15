@@ -10,7 +10,7 @@
 | Binary ops     | `\|\|` on LEFT of new line                | End of line                    |
 | Assignment `=` | ALWAYS new line after `=`, value indented | Value on same line             |
 | Chains         | New line BEFORE `.`, indented             | One line                       |
-| Closing `)`    | With last param                           | Alone on line                  |
+| Closing `)`    | On same line as last param/arg            | Alone on its own line          |
 | Nulls (C#)     | `user?.ToDto()`                           | `if (user == null)`            |
 
 ### Formatting Examples

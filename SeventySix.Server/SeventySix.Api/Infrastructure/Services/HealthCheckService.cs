@@ -21,13 +21,18 @@ public class HealthCheckService(
 	TimeProvider timeProvider) : IHealthCheckService
 {
 	/// <inheritdoc/>
-	public async Task<HealthStatusResponse> GetHealthStatusAsync(CancellationToken cancellationToken)
+	public async Task<HealthStatusResponse> GetHealthStatusAsync(
+		CancellationToken cancellationToken)
 	{
 		// Run health checks in parallel for better performance
-		Task<DatabaseHealthResponse> databaseHealthTask = CheckDatabaseHealthAsync(cancellationToken);
-		Task<ExternalApiHealthResponse> externalApisHealthTask = CheckExternalApisHealthAsync(cancellationToken);
-		Task<QueueHealthResponse> errorQueueHealthTask = CheckErrorQueueHealthAsync(cancellationToken);
-		Task<SystemResourcesResponse> systemHealthTask = CheckSystemResourcesAsync(cancellationToken);
+		Task<DatabaseHealthResponse> databaseHealthTask =
+			CheckDatabaseHealthAsync(cancellationToken);
+		Task<ExternalApiHealthResponse> externalApisHealthTask =
+			CheckExternalApisHealthAsync(cancellationToken);
+		Task<QueueHealthResponse> errorQueueHealthTask =
+			CheckErrorQueueHealthAsync(cancellationToken);
+		Task<SystemResourcesResponse> systemHealthTask =
+			CheckSystemResourcesAsync(cancellationToken);
 
 		await Task.WhenAll(
 			databaseHealthTask,
@@ -35,23 +40,26 @@ public class HealthCheckService(
 			errorQueueHealthTask,
 			systemHealthTask);
 
-		DatabaseHealthResponse databaseHealth = await databaseHealthTask;
-		ExternalApiHealthResponse externalApisHealth = await externalApisHealthTask;
-		QueueHealthResponse errorQueueHealth = await errorQueueHealthTask;
-		SystemResourcesResponse systemHealth = await systemHealthTask;
+		DatabaseHealthResponse databaseHealth =
+			await databaseHealthTask;
+		ExternalApiHealthResponse externalApisHealth =
+			await externalApisHealthTask;
+		QueueHealthResponse errorQueueHealth =
+			await errorQueueHealthTask;
+		SystemResourcesResponse systemHealth =
+			await systemHealthTask;
 
 		// Determine overall status based on component statuses
-		string overallStatus = DetermineOverallStatus(
-			databaseHealth.Status,
-			errorQueueHealth.Status);
+		string overallStatus =
+			DetermineOverallStatus(
+				databaseHealth.Status,
+				errorQueueHealth.Status);
 
 		return new HealthStatusResponse
 		{
 			Status = overallStatus,
 			CheckedAt =
-				timeProvider
-					.GetUtcNow()
-					.UtcDateTime,
+			timeProvider.GetUtcNow().UtcDateTime,
 			Database = databaseHealth,
 			ExternalApis = externalApisHealth,
 			ErrorQueue = errorQueueHealth,
@@ -62,7 +70,8 @@ public class HealthCheckService(
 	/// <summary>
 	/// Checks database health and connectivity.
 	/// </summary>
-	private async Task<DatabaseHealthResponse> CheckDatabaseHealthAsync(CancellationToken cancellationToken)
+	private async Task<DatabaseHealthResponse> CheckDatabaseHealthAsync(
+		CancellationToken cancellationToken)
 	{
 		Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -82,13 +91,16 @@ public class HealthCheckService(
 				kvp => kvp.Key,
 				kvp => kvp.Value.Result);
 
-		bool allHealthy = results.Values.All(healthy => healthy);
+		bool allHealthy =
+			results.Values.All(healthy => healthy);
 
 		return new DatabaseHealthResponse
 		{
 			IsConnected = allHealthy,
-			ResponseTimeMs = stopwatch.Elapsed.TotalMilliseconds,
-			Status = allHealthy ? "Healthy" : "Unhealthy",
+			ResponseTimeMs =
+			stopwatch.Elapsed.TotalMilliseconds,
+			Status =
+			allHealthy ? "Healthy" : "Unhealthy",
 			ContextResults = results,
 		};
 	}
@@ -96,13 +108,12 @@ public class HealthCheckService(
 	/// <summary>
 	/// Checks external API health and availability.
 	/// </summary>
-	private static Task<ExternalApiHealthResponse> CheckExternalApisHealthAsync(CancellationToken cancellationToken)
+	private static Task<ExternalApiHealthResponse> CheckExternalApisHealthAsync(
+		CancellationToken cancellationToken)
 	{
 		// Placeholder - implement actual external API checks as needed
-		ExternalApiHealthResponse response = new()
-		{
-			Apis = [],
-		};
+		ExternalApiHealthResponse response =
+			new() { Apis = [] };
 
 		return Task.FromResult(response);
 	}
@@ -110,9 +121,11 @@ public class HealthCheckService(
 	/// <summary>
 	/// Checks error queue health and item counts.
 	/// </summary>
-	private Task<QueueHealthResponse> CheckErrorQueueHealthAsync(CancellationToken cancellationToken)
+	private Task<QueueHealthResponse> CheckErrorQueueHealthAsync(
+		CancellationToken cancellationToken)
 	{
-		(int queuedItems, int failedItems) = metricsService.GetQueueStats();
+		(int queuedItems, int failedItems) =
+			metricsService.GetQueueStats();
 
 		string status = "Healthy";
 		if (failedItems > 10)
@@ -124,11 +137,13 @@ public class HealthCheckService(
 			status = "Degraded";
 		}
 
-		QueueHealthResponse response = new()
+		QueueHealthResponse response =
+			new()
 		{
 			QueuedItems = queuedItems,
 			FailedItems = failedItems,
-			CircuitBreakerOpen = failedItems > 10,
+			CircuitBreakerOpen =
+			failedItems > 10,
 			Status = status,
 		};
 
@@ -138,16 +153,20 @@ public class HealthCheckService(
 	/// <summary>
 	/// Checks system resource health.
 	/// </summary>
-	private static async Task<SystemResourcesResponse> CheckSystemResourcesAsync(CancellationToken cancellationToken)
+	private static async Task<SystemResourcesResponse> CheckSystemResourcesAsync(
+		CancellationToken cancellationToken)
 	{
 		// Get actual system resource metrics
 		Process process = Process.GetCurrentProcess();
 
-		long memoryUsedMb = process.WorkingSet64 / 1024 / 1024;
-		long totalMemoryMb = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024;
+		long memoryUsedMb =
+			process.WorkingSet64 / 1024 / 1024;
+		long totalMemoryMb =
+			GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024;
 
 		// Get CPU usage - works on both Linux containers and Windows
-		double cpuUsage = await GetCpuUsageAsync(process, cancellationToken);
+		double cpuUsage =
+			await GetCpuUsageAsync(process, cancellationToken);
 
 		// Get disk usage - works on both Linux containers and Windows
 		double diskUsage = GetDiskUsage();
@@ -161,22 +180,29 @@ public class HealthCheckService(
 		};
 	}
 
-	private static async Task<double> GetCpuUsageAsync(Process process, CancellationToken cancellationToken)
+	private static async Task<double> GetCpuUsageAsync(
+		Process process,
+		CancellationToken cancellationToken)
 	{
 		try
 		{
 			// Take two measurements with a short interval to calculate CPU percentage
-			TimeSpan startCpuTime = process.TotalProcessorTime;
+			TimeSpan startCpuTime =
+				process.TotalProcessorTime;
 			long startTime = Stopwatch.GetTimestamp();
 
 			await Task.Delay(100, cancellationToken);
 
-			TimeSpan endCpuTime = process.TotalProcessorTime;
+			TimeSpan endCpuTime =
+				process.TotalProcessorTime;
 			long endTime = Stopwatch.GetTimestamp();
 
-			double cpuUsedMs = (endCpuTime - startCpuTime).TotalMilliseconds;
-			double totalMs = (endTime - startTime) * 1000.0 / Stopwatch.Frequency;
-			double cpuUsagePercent = (cpuUsedMs / (Environment.ProcessorCount * totalMs)) * 100.0;
+			double cpuUsedMs =
+				(endCpuTime - startCpuTime).TotalMilliseconds;
+			double totalMs =
+				(endTime - startTime) * 1000.0 / Stopwatch.Frequency;
+			double cpuUsagePercent =
+				(cpuUsedMs / (Environment.ProcessorCount * totalMs)) * 100.0;
 
 			return Math.Round(Math.Min(cpuUsagePercent, 100.0), 2);
 		}
@@ -194,26 +220,34 @@ public class HealthCheckService(
 			if (OperatingSystem.IsLinux())
 			{
 				// Get the root filesystem usage
-				DriveInfo rootDrive = new("/");
+				DriveInfo rootDrive =
+					new("/");
 				if (rootDrive.IsReady)
 				{
 					long totalBytes = rootDrive.TotalSize;
-					long freeBytes = rootDrive.AvailableFreeSpace;
-					long usedBytes = totalBytes - freeBytes;
-					double usagePercent = (double)usedBytes / totalBytes * 100.0;
+					long freeBytes =
+						rootDrive.AvailableFreeSpace;
+					long usedBytes =
+						totalBytes - freeBytes;
+					double usagePercent =
+						(double)usedBytes / totalBytes * 100.0;
 					return Math.Round(usagePercent, 2);
 				}
 			}
 			else if (OperatingSystem.IsWindows())
 			{
 				// For Windows, get C: drive usage
-				DriveInfo cDrive = new("C");
+				DriveInfo cDrive =
+					new("C");
 				if (cDrive.IsReady)
 				{
 					long totalBytes = cDrive.TotalSize;
-					long freeBytes = cDrive.AvailableFreeSpace;
-					long usedBytes = totalBytes - freeBytes;
-					double usagePercent = (double)usedBytes / totalBytes * 100.0;
+					long freeBytes =
+						cDrive.AvailableFreeSpace;
+					long usedBytes =
+						totalBytes - freeBytes;
+					double usagePercent =
+						(double)usedBytes / totalBytes * 100.0;
 					return Math.Round(usagePercent, 2);
 				}
 			}
@@ -226,7 +260,8 @@ public class HealthCheckService(
 		}
 	}
 
-	private static string DetermineOverallStatus(params string[] componentStatuses)
+	private static string DetermineOverallStatus(
+		params string[] componentStatuses)
 	{
 		// If any component is Unhealthy, overall is Unhealthy
 		if (componentStatuses.Any(status => status == "Unhealthy"))

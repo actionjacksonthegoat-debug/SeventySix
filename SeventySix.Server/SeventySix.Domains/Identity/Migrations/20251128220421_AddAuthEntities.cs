@@ -16,14 +16,33 @@ namespace SeventySix.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					Provider = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-					ProviderUserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-					ProviderEmail = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-					CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-					LastUsedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					Provider = table.Column<string>(
+						type: "character varying(50)",
+						maxLength: 50,
+						nullable: false),
+					ProviderUserId = table.Column<string>(
+						type: "character varying(255)",
+						maxLength: 255,
+						nullable: false),
+					ProviderEmail = table.Column<string>(
+						type: "character varying(255)",
+						maxLength: 255,
+						nullable: true),
+					CreatedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
+					LastUsedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
 				},
 				constraints: table =>
 				{
@@ -35,15 +54,36 @@ namespace SeventySix.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					TokenHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-					IsRevoked = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-					RevokedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					CreatedByIp = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					TokenHash = table.Column<string>(
+						type: "character varying(64)",
+						maxLength: 64,
+						nullable: false),
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					ExpiresAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
+					CreatedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
+					IsRevoked = table.Column<bool>(
+						type: "boolean",
+						nullable: false,
+						defaultValue: false),
+					RevokedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					CreatedByIp = table.Column<string>(
+						type: "character varying(45)",
+						maxLength: 45,
+						nullable: true),
 				},
 				constraints: table =>
 				{
@@ -55,11 +95,22 @@ namespace SeventySix.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					UserId = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					PasswordHash = table.Column<string>(type: "character varying(72)", maxLength: 72, nullable: false),
-					PasswordChangedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+					UserId = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					PasswordHash = table.Column<string>(
+						type: "character varying(72)",
+						maxLength: 72,
+						nullable: false),
+					PasswordChangedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					CreatedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
 				},
 				constraints: table =>
 				{
@@ -71,11 +122,22 @@ namespace SeventySix.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					Role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-					AssignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					Role = table.Column<string>(
+						type: "character varying(50)",
+						maxLength: 50,
+						nullable: false),
+					AssignedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
 				},
 				constraints: table =>
 				{
@@ -137,9 +199,7 @@ namespace SeventySix.Identity.Migrations
 				name: "UserCredentials",
 				schema: "Identity");
 
-			migrationBuilder.DropTable(
-				name: "UserRoles",
-				schema: "Identity");
+			migrationBuilder.DropTable(name: "UserRoles", schema: "Identity");
 		}
 	}
 }

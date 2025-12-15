@@ -21,9 +21,7 @@ namespace SeventySix.Domains.Tests.Identity.Repositories;
 public class AuthRepositoryTests : DataPostgreSqlTestBase
 {
 	public AuthRepositoryTests(TestcontainersPostgreSqlFixture fixture)
-		: base(fixture)
-	{
-	}
+		: base(fixture) { }
 
 	[Fact]
 	public async Task GetUserByUsernameOrEmailForUpdateAsync_ReturnsUser_WhenFoundByUsernameAsync()
@@ -31,10 +29,13 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository = new(context);
-		string testId = Guid.NewGuid().ToString("N")[..8];
+		AuthRepository repository =
+			new(context);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
 
-		User user = new UserBuilder(timeProvider)
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername($"authtest_{testId}")
 			.WithEmail($"authtest_{testId}@example.com")
 			.Build();
@@ -43,7 +44,8 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		await context.SaveChangesAsync();
 
 		// Act
-		User? result = await repository.GetUserByUsernameOrEmailForUpdateAsync(
+		User? result =
+			await repository.GetUserByUsernameOrEmailForUpdateAsync(
 			user.Username,
 			CancellationToken.None);
 
@@ -59,10 +61,13 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository = new(context);
-		string testId = Guid.NewGuid().ToString("N")[..8];
+		AuthRepository repository =
+			new(context);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
 
-		User user = new UserBuilder(timeProvider)
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername($"emailtest_{testId}")
 			.WithEmail($"emailtest_{testId}@example.com")
 			.Build();
@@ -71,7 +76,8 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		await context.SaveChangesAsync();
 
 		// Act
-		User? result = await repository.GetUserByUsernameOrEmailForUpdateAsync(
+		User? result =
+			await repository.GetUserByUsernameOrEmailForUpdateAsync(
 			user.Email,
 			CancellationToken.None);
 
@@ -85,10 +91,12 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository = new(context);
+		AuthRepository repository =
+			new(context);
 
 		// Act
-		User? result = await repository.GetUserByUsernameOrEmailForUpdateAsync(
+		User? result =
+			await repository.GetUserByUsernameOrEmailForUpdateAsync(
 			"nonexistent_user",
 			CancellationToken.None);
 
@@ -102,10 +110,13 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository = new(context);
-		string testId = Guid.NewGuid().ToString("N")[..8];
+		AuthRepository repository =
+			new(context);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
 
-		User user = new UserBuilder(timeProvider)
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername($"logintest_{testId}")
 			.WithEmail($"logintest_{testId}@example.com")
 			.Build();
@@ -113,7 +124,8 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		context.Users.Add(user);
 		await context.SaveChangesAsync();
 
-		DateTime loginTime = timeProvider.GetUtcNow().UtcDateTime;
+		DateTime loginTime =
+			timeProvider.GetUtcNow().UtcDateTime;
 		string clientIp = "192.168.1.100";
 
 		// Act
@@ -125,11 +137,14 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 
 		// Assert - use fresh context to verify
 		await using IdentityDbContext verifyContext = CreateIdentityDbContext();
-		User? updatedUser = await verifyContext.Users.FindAsync(user.Id);
+		User? updatedUser =
+			await verifyContext.Users.FindAsync(user.Id);
 
 		updatedUser.ShouldNotBeNull();
 		updatedUser.LastLoginAt.ShouldNotBeNull();
-		updatedUser.LastLoginAt.Value.ShouldBe(loginTime, TimeSpan.FromSeconds(1));
+		updatedUser.LastLoginAt.Value.ShouldBe(
+			loginTime,
+			TimeSpan.FromSeconds(1));
 		updatedUser.LastLoginIp.ShouldBe(clientIp);
 	}
 
@@ -139,10 +154,13 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository = new(context);
-		string testId = Guid.NewGuid().ToString("N")[..8];
+		AuthRepository repository =
+			new(context);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
 
-		User user = new UserBuilder(timeProvider)
+		User user =
+			new UserBuilder(timeProvider)
 			.WithUsername($"oauth_{testId}")
 			.WithEmail($"oauth_{testId}@example.com")
 			.Build();
@@ -152,18 +170,21 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 
 		ExternalLogin externalLogin =
 			new()
-			{
-				UserId = user.Id,
-				Provider = "GitHub",
-				ProviderUserId = $"github_{testId}",
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime
-			};
+		{
+			UserId = user.Id,
+			Provider = "GitHub",
+			ProviderUserId =
+			$"github_{testId}",
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+		};
 
 		context.ExternalLogins.Add(externalLogin);
 		await context.SaveChangesAsync();
 
 		// Act
-		ExternalLogin? result = await repository.GetExternalLoginAsync(
+		ExternalLogin? result =
+			await repository.GetExternalLoginAsync(
 			"GitHub",
 			$"github_{testId}",
 			CancellationToken.None);
@@ -178,11 +199,13 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository = new(context);
+		AuthRepository repository =
+			new(context);
 
 		// SecurityRoles should be seeded - check for User role
 		// Act
-		int? roleId = await repository.GetRoleIdByNameAsync(
+		int? roleId =
+			await repository.GetRoleIdByNameAsync(
 			"User",
 			CancellationToken.None);
 
@@ -196,10 +219,12 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository = new(context);
+		AuthRepository repository =
+			new(context);
 
 		// Act
-		int? roleId = await repository.GetRoleIdByNameAsync(
+		int? roleId =
+			await repository.GetRoleIdByNameAsync(
 			"NonExistentRole",
 			CancellationToken.None);
 

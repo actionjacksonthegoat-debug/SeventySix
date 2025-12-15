@@ -23,7 +23,8 @@ public class TokenServiceUnitTests
 	/// <summary>
 	/// Fixed time for deterministic tests.
 	/// </summary>
-	private static DateTimeOffset FixedTime => TestTimeProviderBuilder.DefaultTime;
+	private static DateTimeOffset FixedTime =>
+		TestTimeProviderBuilder.DefaultTime;
 
 	private readonly ITokenRepository TokenRepository;
 	private readonly IOptions<JwtSettings> JwtOptions;
@@ -33,37 +34,37 @@ public class TokenServiceUnitTests
 
 	public TokenServiceUnitTests()
 	{
-		TokenRepository = Substitute.For<ITokenRepository>();
+		TokenRepository =
+			Substitute.For<ITokenRepository>();
 		JwtOptions =
 			Options.Create(
-				new JwtSettings
-				{
-					SecretKey = "TestSecretKeyThatIsAtLeast32CharactersLong!",
-					Issuer = "SeventySix.Api",
-					Audience = "SeventySix.Client",
-					AccessTokenExpirationMinutes = 15,
-					RefreshTokenExpirationDays = 1,
-					RefreshTokenRememberMeExpirationDays = 14,
-					AbsoluteSessionTimeoutDays = 30
-				});
+			new JwtSettings
+			{
+				SecretKey = "TestSecretKeyThatIsAtLeast32CharactersLong!",
+				Issuer = "SeventySix.Api",
+				Audience = "SeventySix.Client",
+				AccessTokenExpirationMinutes = 15,
+				RefreshTokenExpirationDays = 1,
+				RefreshTokenRememberMeExpirationDays = 14,
+				AbsoluteSessionTimeoutDays = 30,
+			});
 		AuthOptions =
 			Options.Create(
-				new AuthSettings
-				{
-					Token = new TokenSettings
-					{
-						MaxActiveSessionsPerUser = 5
-					}
-				});
-		TimeProvider = new FakeTimeProvider(FixedTime);
+			new AuthSettings
+			{
+				Token =
+			new TokenSettings { MaxActiveSessionsPerUser = 5 },
+			});
+		TimeProvider =
+			new FakeTimeProvider(FixedTime);
 
 		Service =
 			new TokenService(
-				TokenRepository,
-				JwtOptions,
-				AuthOptions,
-				NullLogger<TokenService>.Instance,
-				TimeProvider);
+			TokenRepository,
+			JwtOptions,
+			AuthOptions,
+			NullLogger<TokenService>.Instance,
+			TimeProvider);
 	}
 
 	#region GenerateAccessToken Tests
@@ -74,14 +75,15 @@ public class TokenServiceUnitTests
 		// Act
 		string token =
 			GenerateTestAccessToken(
-				roles: [TestRoleConstants.Developer, TestRoleConstants.Admin]);
+			roles: [TestRoleConstants.Developer, TestRoleConstants.Admin]);
 
 		// Assert
 		Assert.NotNull(token);
 		Assert.NotEmpty(token);
 
 		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
 
 		Assert.Equal(JwtOptions.Value.Issuer, jwt.Issuer);
 		Assert.Contains(JwtOptions.Value.Audience, jwt.Audiences);
@@ -93,15 +95,17 @@ public class TokenServiceUnitTests
 		// Act
 		string token =
 			GenerateTestAccessToken(
-				userId: 42,
-				roles: [TestRoleConstants.Developer]);
+			userId: 42,
+			roles: [TestRoleConstants.Developer]);
 
 		// Assert
 		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
 
 		Claim? subClaim =
-			jwt.Claims.FirstOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Sub);
+			jwt.Claims.FirstOrDefault(claim =>
+			claim.Type == JwtRegisteredClaimNames.Sub);
 
 		Assert.NotNull(subClaim);
 		Assert.Equal("42", subClaim.Value);
@@ -113,17 +117,18 @@ public class TokenServiceUnitTests
 		// Act
 		string token =
 			GenerateTestAccessToken(
-				roles: [TestRoleConstants.Developer, TestRoleConstants.Admin]);
+			roles: [TestRoleConstants.Developer, TestRoleConstants.Admin]);
 
 		// Assert
 		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
 
 		List<string> roleClaims =
-			jwt.Claims
-				.Where(claim => claim.Type == ClaimTypes.Role)
-				.Select(claim => claim.Value)
-				.ToList();
+			jwt
+			.Claims.Where(claim => claim.Type == ClaimTypes.Role)
+			.Select(claim => claim.Value)
+			.ToList();
 
 		Assert.Contains(TestRoleConstants.Developer, roleClaims);
 		Assert.Contains(TestRoleConstants.Admin, roleClaims);
@@ -137,12 +142,13 @@ public class TokenServiceUnitTests
 
 		// Assert
 		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
 
 		DateTime expectedExpiry =
 			FixedTime
-				.AddMinutes(JwtOptions.Value.AccessTokenExpirationMinutes)
-				.UtcDateTime;
+			.AddMinutes(JwtOptions.Value.AccessTokenExpirationMinutes)
+			.UtcDateTime;
 
 		Assert.True(
 			Math.Abs((jwt.ValidTo - expectedExpiry).TotalSeconds) < 1,
@@ -157,14 +163,17 @@ public class TokenServiceUnitTests
 		string expectedClaimValue)
 	{
 		// Act
-		string token = GenerateTestAccessToken(fullName: fullName);
+		string token =
+			GenerateTestAccessToken(fullName: fullName);
 
 		// Assert
 		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt = handler.ReadJwtToken(token);
+		JwtSecurityToken jwt =
+			handler.ReadJwtToken(token);
 
 		Claim? givenNameClaim =
-			jwt.Claims.FirstOrDefault(claim => claim.Type == JwtRegisteredClaimNames.GivenName);
+			jwt.Claims.FirstOrDefault(claim =>
+			claim.Type == JwtRegisteredClaimNames.GivenName);
 
 		Assert.NotNull(givenNameClaim);
 		Assert.Equal(expectedClaimValue, givenNameClaim.Value);

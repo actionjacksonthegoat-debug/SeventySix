@@ -48,21 +48,27 @@ public class AuthController(
 	[HttpPost("login")]
 	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status401Unauthorized
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
 	public async Task<ActionResult<AuthResponse>> LoginAsync(
 		[FromBody] LoginRequest request,
 		CancellationToken cancellationToken)
 	{
-		string? clientIp =
-			GetClientIpAddress();
+		string? clientIp = GetClientIpAddress();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new LoginCommand(
-					request,
-					clientIp),
+				new LoginCommand(request, clientIp),
 				cancellationToken);
 
 		if (!result.Success)
@@ -72,21 +78,25 @@ public class AuthController(
 				result.Error,
 				result.ErrorCode);
 
-			return Unauthorized(new ProblemDetails
-			{
-				Title = "Authentication Failed",
-				Detail = result.Error,
-				Status = StatusCodes.Status401Unauthorized,
-				Extensions = { ["errorCode"] = result.ErrorCode }
-			});
+			return Unauthorized(
+				new ProblemDetails
+				{
+					Title = "Authentication Failed",
+					Detail = result.Error,
+					Status =
+				StatusCodes.Status401Unauthorized,
+					Extensions =
+				{ ["errorCode"] = result.ErrorCode },
+				});
 		}
 
 		SetRefreshTokenCookie(result.RefreshToken!);
 
-		return Ok(new AuthResponse(
-			AccessToken: result.AccessToken!,
-			ExpiresAt: result.ExpiresAt!.Value,
-			RequiresPasswordChange: result.RequiresPasswordChange));
+		return Ok(
+			new AuthResponse(
+				AccessToken: result.AccessToken!,
+				ExpiresAt: result.ExpiresAt!.Value,
+				RequiresPasswordChange: result.RequiresPasswordChange));
 	}
 
 	/// <summary>
@@ -101,20 +111,23 @@ public class AuthController(
 	[HttpPost("register")]
 	[EnableRateLimiting(RateLimitPolicyConstants.AuthRegister)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
 	public async Task<ActionResult<AuthResponse>> RegisterAsync(
 		[FromBody] RegisterRequest request,
 		CancellationToken cancellationToken)
 	{
-		string? clientIp =
-			GetClientIpAddress();
+		string? clientIp = GetClientIpAddress();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new RegisterCommand(
-					request,
-					clientIp),
+				new RegisterCommand(request, clientIp),
 				cancellationToken);
 
 		if (!result.Success)
@@ -124,13 +137,16 @@ public class AuthController(
 				result.Error,
 				result.ErrorCode);
 
-			return BadRequest(new ProblemDetails
-			{
-				Title = "Registration Failed",
-				Detail = result.Error,
-				Status = StatusCodes.Status400BadRequest,
-				Extensions = { ["errorCode"] = result.ErrorCode }
-			});
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Registration Failed",
+					Detail = result.Error,
+					Status =
+				StatusCodes.Status400BadRequest,
+					Extensions =
+				{ ["errorCode"] = result.ErrorCode },
+				});
 		}
 
 		SetRefreshTokenCookie(result.RefreshToken!);
@@ -154,53 +170,64 @@ public class AuthController(
 	[HttpPost("refresh")]
 	[EnableRateLimiting(RateLimitPolicyConstants.AuthRefresh)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status401Unauthorized
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
 	public async Task<ActionResult<AuthResponse>> RefreshAsync(
 		CancellationToken cancellationToken)
 	{
 		string? refreshToken =
-			Request.Cookies[authSettings.Value.Cookie.RefreshTokenCookieName];
+			Request.Cookies[
+				authSettings.Value.Cookie.RefreshTokenCookieName
+		];
 
 		if (string.IsNullOrEmpty(refreshToken))
 		{
-			return Unauthorized(new ProblemDetails
-			{
-				Title = "Authentication Failed",
-				Detail = "No refresh token provided.",
-				Status = StatusCodes.Status401Unauthorized
-			});
+			return Unauthorized(
+				new ProblemDetails
+				{
+					Title = "Authentication Failed",
+					Detail = "No refresh token provided.",
+					Status =
+				StatusCodes.Status401Unauthorized,
+				});
 		}
 
-		string? clientIp =
-			GetClientIpAddress();
+		string? clientIp = GetClientIpAddress();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new RefreshTokensCommand(
-					refreshToken,
-					clientIp),
+				new RefreshTokensCommand(refreshToken, clientIp),
 				cancellationToken);
 
 		if (!result.Success)
 		{
 			ClearRefreshTokenCookie();
 
-			return Unauthorized(new ProblemDetails
-			{
-				Title = "Authentication Failed",
-				Detail = result.Error,
-				Status = StatusCodes.Status401Unauthorized,
-				Extensions = { ["errorCode"] = result.ErrorCode }
-			});
+			return Unauthorized(
+				new ProblemDetails
+				{
+					Title = "Authentication Failed",
+					Detail = result.Error,
+					Status =
+				StatusCodes.Status401Unauthorized,
+					Extensions =
+				{ ["errorCode"] = result.ErrorCode },
+				});
 		}
 
 		SetRefreshTokenCookie(result.RefreshToken!);
 
-		return Ok(new AuthResponse(
-			AccessToken: result.AccessToken!,
-			ExpiresAt: result.ExpiresAt!.Value,
-			RequiresPasswordChange: result.RequiresPasswordChange));
+		return Ok(
+			new AuthResponse(
+				AccessToken: result.AccessToken!,
+				ExpiresAt: result.ExpiresAt!.Value,
+				RequiresPasswordChange: result.RequiresPasswordChange));
 	}
 
 	/// <summary>
@@ -215,13 +242,13 @@ public class AuthController(
 		CancellationToken cancellationToken)
 	{
 		string? refreshToken =
-			Request.Cookies[authSettings.Value.Cookie.RefreshTokenCookieName];
+			Request.Cookies[
+				authSettings.Value.Cookie.RefreshTokenCookieName
+		];
 
 		if (!string.IsNullOrEmpty(refreshToken))
 		{
-			await messageBus.InvokeAsync<bool>(
-				refreshToken,
-				cancellationToken);
+			await messageBus.InvokeAsync<bool>(refreshToken, cancellationToken);
 		}
 
 		ClearRefreshTokenCookie();
@@ -274,7 +301,9 @@ public class AuthController(
 	{
 		// Validate state
 		string? storedState =
-			Request.Cookies[authSettings.Value.Cookie.OAuthStateCookieName];
+			Request.Cookies[
+				authSettings.Value.Cookie.OAuthStateCookieName
+		];
 
 		if (string.IsNullOrEmpty(storedState) || storedState != state)
 		{
@@ -284,7 +313,9 @@ public class AuthController(
 
 		// Get code verifier
 		string? codeVerifier =
-			Request.Cookies[authSettings.Value.Cookie.OAuthCodeVerifierCookieName];
+			Request.Cookies[
+				authSettings.Value.Cookie.OAuthCodeVerifierCookieName
+		];
 
 		if (string.IsNullOrEmpty(codeVerifier))
 		{
@@ -292,8 +323,7 @@ public class AuthController(
 			return CreateOAuthErrorResponse("Missing code verifier");
 		}
 
-		string? clientIp =
-			GetClientIpAddress();
+		string? clientIp = GetClientIpAddress();
 
 		AuthResult result =
 			await oAuthService.HandleGitHubCallbackAsync(
@@ -331,30 +361,39 @@ public class AuthController(
 	[HttpPost("oauth/exchange")]
 	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
 	public ActionResult<AuthResponse> ExchangeOAuthCode(
 		[FromBody] OAuthCodeExchangeRequest request)
 	{
 		OAuthCodeExchangeResult? result =
-			oauthCodeExchange.ExchangeCode(request.Code);
+			oauthCodeExchange.ExchangeCode(
+				request.Code);
 
 		if (result is null)
 		{
-			logger.LogWarning("OAuth code exchange failed - invalid or expired code");
-			return BadRequest(new ProblemDetails
-			{
-				Title = "Invalid Code",
-				Detail = "The authorization code is invalid or has expired.",
-				Status = StatusCodes.Status400BadRequest
-			});
+			logger.LogWarning(
+				"OAuth code exchange failed - invalid or expired code");
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Invalid Code",
+					Detail =
+						"The authorization code is invalid or has expired.",
+					Status =
+				StatusCodes.Status400BadRequest,
+				});
 		}
 
 		SetRefreshTokenCookie(result.RefreshToken);
 
-		return Ok(new AuthResponse(
-			AccessToken: result.AccessToken,
-			ExpiresAt: result.ExpiresAt,
-			RequiresPasswordChange: false));
+		return Ok(
+			new AuthResponse(
+				AccessToken: result.AccessToken,
+				ExpiresAt: result.ExpiresAt,
+				RequiresPasswordChange: false));
 	}
 
 	/// <summary>
@@ -403,7 +442,10 @@ public class AuthController(
 	[HttpPost("change-password")]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> ChangePasswordAsync(
 		[FromBody] ChangePasswordRequest request,
@@ -416,20 +458,21 @@ public class AuthController(
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new ChangePasswordCommand(
-					userId,
-					request),
+				new ChangePasswordCommand(userId, request),
 				cancellationToken);
 
 		if (!result.Success)
 		{
-			return BadRequest(new ProblemDetails
-			{
-				Title = "Password Change Failed",
-				Detail = result.Error,
-				Status = StatusCodes.Status400BadRequest,
-				Extensions = { ["errorCode"] = result.ErrorCode }
-			});
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Password Change Failed",
+					Detail = result.Error,
+					Status =
+				StatusCodes.Status400BadRequest,
+					Extensions =
+				{ ["errorCode"] = result.ErrorCode },
+				});
 		}
 
 		// Clear refresh token after password change
@@ -454,18 +497,26 @@ public class AuthController(
 	[HttpPost("forgot-password")]
 	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
 	public async Task<IActionResult> ForgotPasswordAsync(
 		[FromBody] ForgotPasswordRequest request,
 		CancellationToken cancellationToken)
 	{
-		await messageBus.InvokeAsync(
-			request.Email,
-			cancellationToken);
+		await messageBus.InvokeAsync(request.Email, cancellationToken);
 
 		// Always return OK to prevent email enumeration
-		return Ok(new { message = "If an account exists with this email, a reset link has been sent." });
+		return Ok(
+			new
+			{
+				message = "If an account exists with this email, a reset link has been sent.",
+			});
 	}
 
 	/// <summary>
@@ -485,19 +536,19 @@ public class AuthController(
 	/// <response code="400">Invalid token, expired token, or validation error.</response>
 	[HttpPost("set-password")]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
 	public async Task<ActionResult<AuthResponse>> SetPasswordAsync(
 		[FromBody] SetPasswordRequest request,
 		CancellationToken cancellationToken)
 	{
-		string? clientIp =
-			GetClientIpAddress();
+		string? clientIp = GetClientIpAddress();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new SetPasswordCommand(
-					request,
-					clientIp),
+				new SetPasswordCommand(request, clientIp),
 				cancellationToken);
 
 		if (!result.Success)
@@ -507,21 +558,25 @@ public class AuthController(
 				result.Error,
 				result.ErrorCode);
 
-			return BadRequest(new ProblemDetails
-			{
-				Title = "Set Password Failed",
-				Detail = result.Error,
-				Status = StatusCodes.Status400BadRequest,
-				Extensions = { ["errorCode"] = result.ErrorCode }
-			});
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Set Password Failed",
+					Detail = result.Error,
+					Status =
+				StatusCodes.Status400BadRequest,
+					Extensions =
+				{ ["errorCode"] = result.ErrorCode },
+				});
 		}
 
 		SetRefreshTokenCookie(result.RefreshToken!);
 
-		return Ok(new AuthResponse(
-			AccessToken: result.AccessToken!,
-			ExpiresAt: result.ExpiresAt!.Value,
-			RequiresPasswordChange: false));
+		return Ok(
+			new AuthResponse(
+				AccessToken: result.AccessToken!,
+				ExpiresAt: result.ExpiresAt!.Value,
+				RequiresPasswordChange: false));
 	}
 
 	/// <summary>
@@ -541,18 +596,26 @@ public class AuthController(
 	[HttpPost("register/initiate")]
 	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status429TooManyRequests
+	)]
 	public async Task<IActionResult> InitiateRegistrationAsync(
 		[FromBody] InitiateRegistrationRequest request,
 		CancellationToken cancellationToken)
 	{
-		await messageBus.InvokeAsync(
-			request,
-			cancellationToken);
+		await messageBus.InvokeAsync(request, cancellationToken);
 
 		// Always return OK to prevent email enumeration
-		return Ok(new { message = "If this email is available, a verification link has been sent." });
+		return Ok(
+			new
+			{
+				message = "If this email is available, a verification link has been sent.",
+			});
 	}
 
 	/// <summary>
@@ -570,19 +633,19 @@ public class AuthController(
 	[HttpPost("register/complete")]
 	[EnableRateLimiting(RateLimitPolicyConstants.AuthLogin)]
 	[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(
+		typeof(ProblemDetails),
+		StatusCodes.Status400BadRequest
+	)]
 	public async Task<ActionResult<AuthResponse>> CompleteRegistrationAsync(
 		[FromBody] CompleteRegistrationRequest request,
 		CancellationToken cancellationToken)
 	{
-		string? clientIp =
-			GetClientIpAddress();
+		string? clientIp = GetClientIpAddress();
 
 		AuthResult result =
 			await messageBus.InvokeAsync<AuthResult>(
-				new CompleteRegistrationCommand(
-					request,
-					clientIp),
+				new CompleteRegistrationCommand(request, clientIp),
 				cancellationToken);
 
 		if (!result.Success)
@@ -592,13 +655,16 @@ public class AuthController(
 				result.Error,
 				result.ErrorCode);
 
-			return BadRequest(new ProblemDetails
-			{
-				Title = "Registration Failed",
-				Detail = result.Error,
-				Status = StatusCodes.Status400BadRequest,
-				Extensions = { ["errorCode"] = result.ErrorCode }
-			});
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Registration Failed",
+					Detail = result.Error,
+					Status =
+				StatusCodes.Status400BadRequest,
+					Extensions =
+				{ ["errorCode"] = result.ErrorCode },
+				});
 		}
 
 		SetRefreshTokenCookie(result.RefreshToken!);
@@ -629,24 +695,22 @@ public class AuthController(
 	{
 		CookieOptions options =
 			new()
-			{
-				HttpOnly = true,
-				Secure = authSettings.Value.Cookie.SecureCookie,
-				SameSite = sameSite,
-				Expires = DateTimeOffset.UtcNow.Add(expiration)
-			};
+		{
+			HttpOnly = true,
+			Secure =
+			authSettings.Value.Cookie.SecureCookie,
+			SameSite = sameSite,
+			Expires =
+			DateTimeOffset.UtcNow.Add(expiration),
+		};
 
-		Response.Cookies.Append(
-			name,
-			value,
-			options);
+		Response.Cookies.Append(name, value, options);
 	}
 
 	/// <summary>
 	/// Deletes a cookie by name.
 	/// </summary>
-	private void DeleteCookie(string name) =>
-		Response.Cookies.Delete(name);
+	private void DeleteCookie(string name) => Response.Cookies.Delete(name);
 
 	/// <summary>
 	/// Sets the refresh token cookie.
@@ -712,8 +776,7 @@ public class AuthController(
 		string refreshToken,
 		DateTime expiresAt)
 	{
-		string origin =
-			GetAllowedOrigin();
+		string origin = GetAllowedOrigin();
 
 		// Store tokens and get one-time code (60 second TTL)
 		string code =
@@ -742,9 +805,7 @@ public class AuthController(
 			</html>
 			""";
 
-		return Content(
-			html,
-			"text/html");
+		return Content(html, "text/html");
 	}
 
 	/// <summary>
@@ -752,8 +813,7 @@ public class AuthController(
 	/// </summary>
 	private ContentResult CreateOAuthErrorResponse(string error)
 	{
-		string origin =
-			GetAllowedOrigin();
+		string origin = GetAllowedOrigin();
 
 		string escapedError =
 			Uri.EscapeDataString(error);
@@ -778,8 +838,6 @@ public class AuthController(
 			</html>
 			""";
 
-		return Content(
-			html,
-			"text/html");
+		return Content(html, "text/html");
 	}
 }

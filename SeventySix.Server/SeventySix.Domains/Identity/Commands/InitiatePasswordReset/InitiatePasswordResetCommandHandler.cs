@@ -34,8 +34,7 @@ public static class InitiatePasswordResetCommandHandler
 
 		UserDto? user =
 			await messageBus.InvokeAsync<UserDto?>(
-				new GetUserByIdQuery(
-					command.UserId),
+				new GetUserByIdQuery(command.UserId),
 				cancellationToken);
 
 		if (user is null || !user.IsActive)
@@ -43,7 +42,8 @@ public static class InitiatePasswordResetCommandHandler
 			logger.LogError(
 				"User with ID {UserId} not found or inactive",
 				command.UserId);
-			throw new InvalidOperationException($"User with ID {command.UserId} not found or inactive");
+			throw new InvalidOperationException(
+				$"User with ID {command.UserId} not found or inactive");
 		}
 
 		await passwordResetTokenRepository.InvalidateAllUserTokensAsync(
@@ -58,13 +58,15 @@ public static class InitiatePasswordResetCommandHandler
 
 		PasswordResetToken resetToken =
 			new()
-			{
-				UserId = command.UserId,
-				Token = token,
-				ExpiresAt = now.AddMinutes(jwtSettings.Value.RefreshTokenExpirationDays * 24 * 60),
-				IsUsed = false,
-				CreateDate = now,
-			};
+		{
+			UserId = command.UserId,
+			Token = token,
+			ExpiresAt =
+			now.AddMinutes(
+				jwtSettings.Value.RefreshTokenExpirationDays * 24 * 60),
+			IsUsed = false,
+			CreateDate = now,
+		};
 
 		await passwordResetTokenRepository.CreateAsync(
 			resetToken,

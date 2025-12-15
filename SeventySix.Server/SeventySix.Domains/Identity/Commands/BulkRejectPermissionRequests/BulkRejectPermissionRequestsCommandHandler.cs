@@ -21,12 +21,9 @@ public static class BulkRejectPermissionRequestsCommandHandler
 		IPermissionRequestRepository repository,
 		CancellationToken cancellationToken)
 	{
-		List<int> idList =
-			command.RequestIds.ToList();
+		List<int> idList = command.RequestIds.ToList();
 
-		await repository.DeleteRangeAsync(
-			idList,
-			cancellationToken);
+		await repository.DeleteRangeAsync(idList, cancellationToken);
 
 		return idList.Count;
 	}

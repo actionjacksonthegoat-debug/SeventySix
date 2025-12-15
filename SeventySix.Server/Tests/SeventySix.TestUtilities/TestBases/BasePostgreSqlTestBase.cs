@@ -21,10 +21,7 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// <summary>
 	/// Gets the connection string for the shared test database.
 	/// </summary>
-	protected abstract string ConnectionString
-	{
-		get;
-	}
+	protected abstract string ConnectionString { get; }
 
 	/// <summary>
 	/// Creates a new IdentityDbContext configured for the shared test database.
@@ -32,9 +29,10 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// <returns>A configured IdentityDbContext instance.</returns>
 	protected IdentityDbContext CreateIdentityDbContext()
 	{
-		DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
-			.UseNpgsql(ConnectionString)
-			.Options;
+		DbContextOptions<IdentityDbContext> options =
+			new DbContextOptionsBuilder<IdentityDbContext>()
+				.UseNpgsql(ConnectionString)
+				.Options;
 		return new IdentityDbContext(options);
 	}
 
@@ -44,9 +42,10 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// <returns>A configured LoggingDbContext instance.</returns>
 	protected LoggingDbContext CreateLoggingDbContext()
 	{
-		DbContextOptions<LoggingDbContext> options = new DbContextOptionsBuilder<LoggingDbContext>()
-			.UseNpgsql(ConnectionString)
-			.Options;
+		DbContextOptions<LoggingDbContext> options =
+			new DbContextOptionsBuilder<LoggingDbContext>()
+				.UseNpgsql(ConnectionString)
+				.Options;
 		return new LoggingDbContext(options);
 	}
 
@@ -56,9 +55,10 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// <returns>A configured ApiTrackingDbContext instance.</returns>
 	protected ApiTrackingDbContext CreateApiTrackingDbContext()
 	{
-		DbContextOptions<ApiTrackingDbContext> options = new DbContextOptionsBuilder<ApiTrackingDbContext>()
-			.UseNpgsql(ConnectionString)
-			.Options;
+		DbContextOptions<ApiTrackingDbContext> options =
+			new DbContextOptionsBuilder<ApiTrackingDbContext>()
+				.UseNpgsql(ConnectionString)
+				.Options;
 		return new ApiTrackingDbContext(options);
 	}
 
@@ -77,7 +77,8 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 		services.AddDbContext<ApiTrackingDbContext>(options =>
 			options.UseNpgsql(ConnectionString));
 
-		ServiceProvider serviceProvider = services.BuildServiceProvider();
+		ServiceProvider serviceProvider =
+			services.BuildServiceProvider();
 		return serviceProvider.CreateScope();
 	}
 
@@ -98,9 +99,7 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 		// Single TRUNCATE with RESTART IDENTITY CASCADE is faster than multiple statements
 		// CASCADE handles foreign key dependencies automatically
 		string tableList =
-			string.Join(
-				", ",
-				tables);
+			string.Join(", ", tables);
 		string sql =
 			$"TRUNCATE TABLE {tableList} RESTART IDENTITY CASCADE";
 
@@ -110,9 +109,7 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 				new(ConnectionString);
 			await connection.OpenAsync();
 			await using NpgsqlCommand command =
-				new(
-					sql,
-					connection);
+				new(sql, connection);
 			await command.ExecuteNonQueryAsync();
 		}
 		catch (PostgresException ex) when (ex.SqlState is "42P01" or "3F000")

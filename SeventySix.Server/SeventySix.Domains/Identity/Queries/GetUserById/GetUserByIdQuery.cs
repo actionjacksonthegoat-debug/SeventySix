@@ -4,5 +4,4 @@ namespace SeventySix.Identity;
 /// Query to retrieve a user by ID.
 /// </summary>
 /// <param name="Id">The user's unique identifier.</param>
-public record GetUserByIdQuery(
-	int Id);
+public record GetUserByIdQuery(int Id);

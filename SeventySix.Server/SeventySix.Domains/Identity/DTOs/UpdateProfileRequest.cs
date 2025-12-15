@@ -9,6 +9,4 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <param name="Email">New email address.</param>
 /// <param name="FullName">New full name (optional).</param>
-public record UpdateProfileRequest(
-	string Email,
-	string? FullName);
+public record UpdateProfileRequest(string Email, string? FullName);

@@ -17,20 +17,30 @@ public class ServiceFacadeTests
 	[Fact]
 	public void Controllers_Should_Not_Depend_On_Any_Repository_Namespace()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
-		string[] boundedContextNames = domainAssembly.GetTypes()
+		Assembly domainAssembly =
+			typeof(SeventySix.Identity.User).Assembly;
+		string[] boundedContextNames =
+			domainAssembly
+			.GetTypes()
 			.Select(type => type.Namespace)
-			.Where(ns => ns != null && ns.StartsWith("SeventySix.") && !ns.Contains("Shared") && !ns.Contains("Infrastructure"))
+			.Where(ns =>
+				ns != null
+				&& ns.StartsWith("SeventySix.")
+				&& !ns.Contains("Shared")
+				&& !ns.Contains("Infrastructure"))
 			.Select(ns => ns!.Split('.')[1])
 			.Distinct()
 			.ToArray();
 
 		foreach (string contextName in boundedContextNames)
 		{
-			string repositoryNamespace = $"SeventySix.{contextName}.Repositories";
+			string repositoryNamespace =
+				$"SeventySix.{contextName}.Repositories";
 
-			TestResult architectureTestResult = Types
-				.InAssembly(typeof(SeventySix.Api.Controllers.UsersController).Assembly)
+			TestResult architectureTestResult =
+				Types
+				.InAssembly(
+					typeof(SeventySix.Api.Controllers.UsersController).Assembly)
 				.That()
 				.ResideInNamespace("SeventySix.Api.Controllers")
 				.ShouldNot()
@@ -46,9 +56,13 @@ public class ServiceFacadeTests
 	[Fact]
 	public void Repositories_Should_Not_Be_Public()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
-		Type[] repositoryTypes = domainAssembly.GetTypes()
-			.Where(type => type.Name.EndsWith("Repository")
+		Assembly domainAssembly =
+			typeof(SeventySix.Identity.User).Assembly;
+		Type[] repositoryTypes =
+			domainAssembly
+			.GetTypes()
+			.Where(type =>
+				type.Name.EndsWith("Repository")
 				&& !type.IsInterface
 				&& !type.IsAbstract
 				&& type.Namespace != null
@@ -61,7 +75,8 @@ public class ServiceFacadeTests
 		{
 			if (repositoryType.IsPublic)
 			{
-				publicRepositoryNames.Add($"{repositoryType.Namespace}.{repositoryType.Name}");
+				publicRepositoryNames.Add(
+					$"{repositoryType.Namespace}.{repositoryType.Name}");
 			}
 		}
 
@@ -71,30 +86,38 @@ public class ServiceFacadeTests
 	[Fact]
 	public void Controllers_Should_Only_Depend_On_Service_Interfaces()
 	{
-		Type[] controllerTypes = Types
-			.InAssembly(typeof(SeventySix.Api.Controllers.UsersController).Assembly)
+		Type[] controllerTypes =
+			Types
+			.InAssembly(
+				typeof(SeventySix.Api.Controllers.UsersController).Assembly)
 			.That()
 			.ResideInNamespace("SeventySix.Api.Controllers")
 			.GetTypes()
 			.ToArray();
 
-		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
-		Type[] repositoryInterfaces = domainAssembly.GetTypes()
+		Assembly domainAssembly =
+			typeof(SeventySix.Identity.User).Assembly;
+		Type[] repositoryInterfaces =
+			domainAssembly
+			.GetTypes()
 			.Where(type => type.IsInterface && type.Name.EndsWith("Repository"))
 			.ToArray();
 
 		List<string> dependencyViolations = [];
 		foreach (Type controllerType in controllerTypes)
 		{
-			ConstructorInfo[] constructors = controllerType.GetConstructors();
+			ConstructorInfo[] constructors =
+				controllerType.GetConstructors();
 			foreach (ConstructorInfo constructor in constructors)
 			{
-				ParameterInfo[] constructorParameters = constructor.GetParameters();
+				ParameterInfo[] constructorParameters =
+					constructor.GetParameters();
 				foreach (ParameterInfo parameter in constructorParameters)
 				{
 					if (repositoryInterfaces.Contains(parameter.ParameterType))
 					{
-						dependencyViolations.Add($"{controllerType.Name} injects {parameter.ParameterType.Name} (repository) instead of a service");
+						dependencyViolations.Add(
+							$"{controllerType.Name} injects {parameter.ParameterType.Name} (repository) instead of a service");
 					}
 				}
 			}

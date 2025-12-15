@@ -26,10 +26,7 @@ public class HealthStatusResponse
 	/// <summary>
 	/// Gets or sets the timestamp when the health check was performed.
 	/// </summary>
-	public DateTime CheckedAt
-	{
-		get; set;
-	}
+	public DateTime CheckedAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the database health information.
@@ -60,18 +57,12 @@ public class DatabaseHealthResponse
 	/// <summary>
 	/// Gets or sets a value indicating whether the database is connected.
 	/// </summary>
-	public bool IsConnected
-	{
-		get; set;
-	}
+	public bool IsConnected { get; set; }
 
 	/// <summary>
 	/// Gets or sets the database response time in milliseconds.
 	/// </summary>
-	public double ResponseTimeMs
-	{
-		get; set;
-	}
+	public double ResponseTimeMs { get; set; }
 
 	/// <summary>
 	/// Gets or sets the database health status.
@@ -111,18 +102,12 @@ public class ApiHealthStatus
 	/// <summary>
 	/// Gets or sets a value indicating whether the API is available.
 	/// </summary>
-	public bool IsAvailable
-	{
-		get; set;
-	}
+	public bool IsAvailable { get; set; }
 
 	/// <summary>
 	/// Gets or sets the API response time in milliseconds.
 	/// </summary>
-	public double ResponseTimeMs
-	{
-		get; set;
-	}
+	public double ResponseTimeMs { get; set; }
 
 	/// <summary>
 	/// Gets or sets the timestamp of the last health check.
@@ -130,10 +115,7 @@ public class ApiHealthStatus
 	/// <value>
 	/// Null if the API has never been checked.
 	/// </value>
-	public DateTime? LastChecked
-	{
-		get; set;
-	}
+	public DateTime? LastChecked { get; set; }
 }
 
 /// <summary>
@@ -144,18 +126,12 @@ public class QueueHealthResponse
 	/// <summary>
 	/// Gets or sets the number of items currently in the queue.
 	/// </summary>
-	public int QueuedItems
-	{
-		get; set;
-	}
+	public int QueuedItems { get; set; }
 
 	/// <summary>
 	/// Gets or sets the number of failed items in the queue.
 	/// </summary>
-	public int FailedItems
-	{
-		get; set;
-	}
+	public int FailedItems { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the circuit breaker is open.
@@ -163,10 +139,7 @@ public class QueueHealthResponse
 	/// <value>
 	/// True if circuit breaker is open (blocking requests), false otherwise.
 	/// </value>
-	public bool CircuitBreakerOpen
-	{
-		get; set;
-	}
+	public bool CircuitBreakerOpen { get; set; }
 
 	/// <summary>
 	/// Gets or sets the queue health status.
@@ -188,26 +161,17 @@ public class SystemResourcesResponse
 	/// <value>
 	/// Percentage from 0 to 100.
 	/// </value>
-	public double CpuUsagePercent
-	{
-		get; set;
-	}
+	public double CpuUsagePercent { get; set; }
 
 	/// <summary>
 	/// Gets or sets the memory used in megabytes.
 	/// </summary>
-	public long MemoryUsedMb
-	{
-		get; set;
-	}
+	public long MemoryUsedMb { get; set; }
 
 	/// <summary>
 	/// Gets or sets the total available memory in megabytes.
 	/// </summary>
-	public long MemoryTotalMb
-	{
-		get; set;
-	}
+	public long MemoryTotalMb { get; set; }
 
 	/// <summary>
 	/// Gets or sets the disk usage percentage.
@@ -215,8 +179,5 @@ public class SystemResourcesResponse
 	/// <value>
 	/// Percentage from 0 to 100.
 	/// </value>
-	public double DiskUsagePercent
-	{
-		get; set;
-	}
+	public double DiskUsagePercent { get; set; }
 }

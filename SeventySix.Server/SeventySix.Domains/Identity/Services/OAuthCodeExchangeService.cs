@@ -17,19 +17,18 @@ namespace SeventySix.Identity;
 /// - One-time use: code removed from cache after exchange
 /// - Memory-only: codes never persisted to disk/database
 /// </remarks>
-public class OAuthCodeExchangeService(IMemoryCache cache) : IOAuthCodeExchangeService
+public class OAuthCodeExchangeService(IMemoryCache cache)
+	: IOAuthCodeExchangeService
 {
 	/// <summary>
 	/// Cache key prefix for OAuth codes.
 	/// </summary>
-	private const string CacheKeyPrefix =
-		"oauth_code_";
+	private const string CacheKeyPrefix = "oauth_code_";
 
 	/// <summary>
 	/// Code expiration time in seconds.
 	/// </summary>
-	private const int CodeExpirationSeconds =
-		60;
+	private const int CodeExpirationSeconds = 60;
 
 	/// <inheritdoc/>
 	public string StoreTokens(
@@ -37,8 +36,7 @@ public class OAuthCodeExchangeService(IMemoryCache cache) : IOAuthCodeExchangeSe
 		string refreshToken,
 		DateTime expiresAt)
 	{
-		string code =
-			GenerateSecureCode();
+		string code = GenerateSecureCode();
 
 		OAuthCodeExchangeResult tokenData =
 			new(
@@ -51,10 +49,7 @@ public class OAuthCodeExchangeService(IMemoryCache cache) : IOAuthCodeExchangeSe
 				.SetAbsoluteExpiration(TimeSpan.FromSeconds(CodeExpirationSeconds))
 				.SetPriority(CacheItemPriority.High);
 
-		cache.Set(
-			$"{CacheKeyPrefix}{code}",
-			tokenData,
-			options);
+		cache.Set($"{CacheKeyPrefix}{code}", tokenData, options);
 
 		return code;
 	}
@@ -65,7 +60,8 @@ public class OAuthCodeExchangeService(IMemoryCache cache) : IOAuthCodeExchangeSe
 		string cacheKey =
 			$"{CacheKeyPrefix}{code}";
 
-		if (!cache.TryGetValue(cacheKey, out OAuthCodeExchangeResult? tokenData))
+		if (
+			!cache.TryGetValue(cacheKey, out OAuthCodeExchangeResult? tokenData))
 		{
 			return null;
 		}
@@ -86,7 +82,8 @@ public class OAuthCodeExchangeService(IMemoryCache cache) : IOAuthCodeExchangeSe
 			RandomNumberGenerator.GetBytes(32);
 
 		// Base64url encoding (no padding, URL-safe)
-		return Convert.ToBase64String(bytes)
+		return Convert
+			.ToBase64String(bytes)
 			.Replace("+", "-")
 			.Replace("/", "_")
 			.TrimEnd('=');

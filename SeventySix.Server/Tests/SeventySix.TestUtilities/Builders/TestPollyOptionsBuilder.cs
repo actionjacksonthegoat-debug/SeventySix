@@ -78,14 +78,16 @@ public class TestPollyOptionsBuilder
 	/// </summary>
 	/// <returns>Configured IOptions&lt;PollyOptions&gt;.</returns>
 	public IOptions<PollyOptions> Build() =>
-		Options.Create(new PollyOptions
-		{
-			RetryCount = RetryCountValue,
-			RetryDelaySeconds = 0,  // Always zero for tests
-			CircuitBreakerFailureThreshold = CircuitBreakerFailureThresholdValue,
-			CircuitBreakerSamplingDurationSeconds = 60,
-			CircuitBreakerBreakDurationSeconds = 1,  // Polly minimum is 0.5s
-			TimeoutSeconds = TimeoutSecondsValue,
-			UseJitter = false,  // Disabled for deterministic tests
-		});
+		Options.Create(
+			new PollyOptions
+			{
+				RetryCount = RetryCountValue,
+				RetryDelaySeconds = 0, // Always zero for tests
+				CircuitBreakerFailureThreshold =
+					CircuitBreakerFailureThresholdValue,
+				CircuitBreakerSamplingDurationSeconds = 60,
+				CircuitBreakerBreakDurationSeconds = 1, // Polly minimum is 0.5s
+				TimeoutSeconds = TimeoutSecondsValue,
+				UseJitter = false, // Disabled for deterministic tests
+			});
 }

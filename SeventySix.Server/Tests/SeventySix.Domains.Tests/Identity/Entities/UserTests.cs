@@ -47,8 +47,10 @@ public class UserTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime createDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-10);
-		User user = new()
+		DateTime createDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddDays(-10);
+		User user =
+			new()
 		{
 			Id = 123,
 			Username = "john_doe",
@@ -71,7 +73,8 @@ public class UserTests
 	public void User_ShouldAllowNullFullName()
 	{
 		// Arrange & Act
-		User user = new()
+		User user =
+			new()
 		{
 			Username = "test_user",
 			Email = "test@example.com",
@@ -86,7 +89,8 @@ public class UserTests
 	public void User_ShouldAllowEmptyFullName()
 	{
 		// Arrange & Act
-		User user = new()
+		User user =
+			new()
 		{
 			Username = "test_user",
 			Email = "test@example.com",
@@ -111,7 +115,8 @@ public class UserTests
 	public void User_ShouldAllowSettingIsActiveToFalse()
 	{
 		// Arrange & Act
-		User user = new() { IsActive = false };
+		User user =
+			new() { IsActive = false };
 
 		// Assert
 		Assert.False(user.IsActive);
@@ -131,10 +136,12 @@ public class UserTests
 	public void User_ShouldAllowOverridingCreatedAt()
 	{
 		// Arrange
-		DateTime specificDate = new(2024, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+		DateTime specificDate =
+			new(2024, 1, 1, 12, 0, 0, DateTimeKind.Utc);
 
 		// Act
-		User user = new() { CreateDate = specificDate };
+		User user =
+			new() { CreateDate = specificDate };
 
 		// Assert
 		Assert.Equal(specificDate, user.CreateDate);
@@ -149,7 +156,8 @@ public class UserTests
 	public void User_ShouldAcceptVariousUsernameFormats(string username)
 	{
 		// Arrange & Act
-		User user = new() { Username = username };
+		User user =
+			new() { Username = username };
 
 		// Assert
 		Assert.Equal(username, user.Username);
@@ -164,7 +172,8 @@ public class UserTests
 	{
 		// Arrange & Act
 		// Note: Entity doesn't validate format; that's validation layer's job
-		User user = new() { Email = email };
+		User user =
+			new() { Email = email };
 
 		// Assert
 		Assert.Equal(email, user.Email);
@@ -174,7 +183,8 @@ public class UserTests
 	public void User_ShouldSupportPropertyUpdates()
 	{
 		// Arrange
-		User user = new()
+		User user =
+			new()
 		{
 			Username = "old_username",
 			Email = "old@example.com",
@@ -200,9 +210,9 @@ public class UserTests
 
 		// Assert - CreateDate/CreateBy/ModifiedBy default to empty/default, interceptor sets them on SaveChanges
 		Assert.Equal(default(DateTime), user.CreateDate);
-		Assert.Equal(string.Empty, user.CreatedBy);  // Non-nullable, defaults to empty string
+		Assert.Equal(string.Empty, user.CreatedBy); // Non-nullable, defaults to empty string
 		Assert.Null(user.ModifyDate);
-		Assert.Equal(string.Empty, user.ModifiedBy);  // Non-nullable, defaults to empty string
+		Assert.Equal(string.Empty, user.ModifiedBy); // Non-nullable, defaults to empty string
 	}
 
 	[Fact]
@@ -210,12 +220,17 @@ public class UserTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime modifyDate = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5);
-		User user = new()
+		DateTime modifyDate =
+			timeProvider
+			.GetUtcNow()
+			.UtcDateTime.AddMinutes(-5);
+		User user =
+			new()
 		{
 			CreatedBy = "admin",
 			ModifyDate = modifyDate,
-			ModifiedBy = TestAuditConstants.SystemUser,
+			ModifiedBy =
+			TestAuditConstants.SystemUser,
 		};
 
 		// Assert
@@ -241,8 +256,10 @@ public class UserTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime deletedAt = timeProvider.GetUtcNow().UtcDateTime;
-		User user = new()
+		DateTime deletedAt =
+			timeProvider.GetUtcNow().UtcDateTime;
+		User user =
+			new()
 		{
 			IsDeleted = true,
 			DeletedAt = deletedAt,
@@ -270,7 +287,8 @@ public class UserTests
 	{
 		// Arrange
 		uint rowVersion = 12345;
-		User user = new() { RowVersion = rowVersion };
+		User user =
+			new() { RowVersion = rowVersion };
 
 		// Assert
 		Assert.Equal(rowVersion, user.RowVersion);
@@ -291,7 +309,8 @@ public class UserTests
 	{
 		// Arrange
 		string preferences = "{\"theme\":\"dark\",\"notifications\":true}";
-		User user = new() { Preferences = preferences };
+		User user =
+			new() { Preferences = preferences };
 
 		// Assert
 		Assert.Equal(preferences, user.Preferences);
@@ -313,9 +332,13 @@ public class UserTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime lastLoginAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(-2);
+		DateTime lastLoginAt =
+			timeProvider
+			.GetUtcNow()
+			.UtcDateTime.AddHours(-2);
 		string lastLoginIp = "192.168.1.1";
-		User user = new()
+		User user =
+			new()
 		{
 			LastLoginAt = lastLoginAt,
 			LastLoginIp = lastLoginIp,
@@ -331,7 +354,8 @@ public class UserTests
 	{
 		// Arrange
 		string ipv6Address = "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
-		User user = new() { LastLoginIp = ipv6Address };
+		User user =
+			new() { LastLoginIp = ipv6Address };
 
 		// Assert
 		Assert.Equal(ipv6Address, user.LastLoginIp);
@@ -342,18 +366,22 @@ public class UserTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		User user = new()
+		User user =
+			new()
 		{
 			Username = "test",
-			Email = TestUserConstants.DefaultEmail,
+			Email =
+			TestUserConstants.DefaultEmail,
 		};
 
-		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
 
 		// Act
 		user.CreatedBy = "admin";
 		user.ModifyDate = now;
-		user.ModifiedBy = TestAuditConstants.SystemUser;
+		user.ModifiedBy =
+			TestAuditConstants.SystemUser;
 		user.IsDeleted = true;
 		user.DeletedAt = now;
 		user.DeletedBy = "admin";

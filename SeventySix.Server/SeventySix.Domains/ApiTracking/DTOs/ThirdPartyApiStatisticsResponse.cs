@@ -22,18 +22,12 @@ public class ThirdPartyApiStatisticsResponse
 	/// <summary>
 	/// Gets or sets the total number of API calls made today across all APIs.
 	/// </summary>
-	public int TotalCallsToday
-	{
-		get; set;
-	}
+	public int TotalCallsToday { get; set; }
 
 	/// <summary>
 	/// Gets or sets the total number of distinct APIs being tracked.
 	/// </summary>
-	public int TotalApisTracked
-	{
-		get; set;
-	}
+	public int TotalApisTracked { get; set; }
 
 	/// <summary>
 	/// Gets or sets the number of calls made to each API today.

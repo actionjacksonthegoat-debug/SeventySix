@@ -33,10 +33,8 @@ public static class AuthenticationExtensions
 		IConfiguration configuration)
 	{
 		// Bind configuration sections
-		services.Configure<JwtSettings>(
-			configuration.GetSection("Jwt"));
-		services.Configure<AuthSettings>(
-			configuration.GetSection("Auth"));
+		services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+		services.Configure<AuthSettings>(configuration.GetSection("Auth"));
 		services.Configure<AdminSeederSettings>(
 			configuration.GetSection(AdminSeederSettings.SectionName));
 		services.Configure<WhitelistedPermissionSettings>(
@@ -74,28 +72,31 @@ public static class AuthenticationExtensions
 						ValidIssuer = jwtSettings.Issuer,
 						ValidAudience = jwtSettings.Audience,
 						IssuerSigningKey =
-							new SymmetricSecurityKey(
-								Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
-						ClockSkew = TimeSpan.FromMinutes(1),
+					new SymmetricSecurityKey(
+						Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+						ClockSkew =
+					TimeSpan.FromMinutes(1),
 						// Explicit algorithm validation (defense-in-depth against alg:none attacks)
-						ValidAlgorithms = [SecurityAlgorithms.HmacSha256]
+						ValidAlgorithms =
+					[SecurityAlgorithms.HmacSha256],
 					};
 
 				options.Events =
 					new JwtBearerEvents
+				{
+					OnAuthenticationFailed =
+					context =>
 					{
-						OnAuthenticationFailed = context =>
+						if (context.Exception is SecurityTokenExpiredException)
 						{
-							if (context.Exception is SecurityTokenExpiredException)
-							{
-								context.Response.Headers.Append(
-									"X-Token-Expired",
-									"true");
-							}
-
-							return Task.CompletedTask;
+							context.Response.Headers.Append(
+								"X-Token-Expired",
+								"true");
 						}
-					};
+
+						return Task.CompletedTask;
+					},
+				};
 			});
 
 		services.AddAuthorization(options =>
@@ -106,7 +107,10 @@ public static class AuthenticationExtensions
 
 			options.AddPolicy(
 				"DeveloperOrAdmin",
-				policy => policy.RequireRole(RoleConstants.Developer, RoleConstants.Admin));
+				policy =>
+					policy.RequireRole(
+						RoleConstants.Developer,
+						RoleConstants.Admin));
 
 			options.AddPolicy(
 				"Authenticated",
@@ -115,7 +119,6 @@ public static class AuthenticationExtensions
 
 		// Add HttpClientFactory for OAuth
 		services.AddHttpClient();
-
 
 		return services;
 	}

@@ -23,9 +23,7 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 	/// </summary>
 	/// <param name="options">The options for this context.</param>
 	public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
-		: base(options)
-	{
-	}
+		: base(options) { }
 
 	/// <summary>
 	/// Gets or sets the Users DbSet.
@@ -55,17 +53,20 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 	/// <summary>
 	/// Gets or sets the PasswordResetTokens DbSet.
 	/// </summary>
-	public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+	public DbSet<PasswordResetToken> PasswordResetTokens =>
+		Set<PasswordResetToken>();
 
 	/// <summary>
 	/// Gets or sets the EmailVerificationTokens DbSet.
 	/// </summary>
-	public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
+	public DbSet<EmailVerificationToken> EmailVerificationTokens =>
+		Set<EmailVerificationToken>();
 
 	/// <summary>
 	/// Gets or sets the PermissionRequests DbSet.
 	/// </summary>
-	public DbSet<PermissionRequest> PermissionRequests => Set<PermissionRequest>();
+	public DbSet<PermissionRequest> PermissionRequests =>
+		Set<PermissionRequest>();
 
 	/// <summary>
 	/// Gets or sets the SecurityRoles DbSet.

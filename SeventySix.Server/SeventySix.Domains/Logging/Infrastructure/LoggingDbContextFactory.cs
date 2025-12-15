@@ -18,7 +18,8 @@ namespace SeventySix.Logging;
 /// The connection string here is a placeholder - migrations are schema-only.
 /// Actual database connection is configured in appsettings.json.
 /// </remarks>
-public class LoggingDbContextFactory : IDesignTimeDbContextFactory<LoggingDbContext>
+public class LoggingDbContextFactory
+	: IDesignTimeDbContextFactory<LoggingDbContext>
 {
 	/// <summary>
 	/// Creates a new instance of LoggingDbContext for design-time operations.
@@ -33,7 +34,10 @@ public class LoggingDbContextFactory : IDesignTimeDbContextFactory<LoggingDbCont
 		// Actual connection string comes from appsettings.json at runtime
 		optionsBuilder.UseNpgsql(
 			"Host=localhost;Database=seventysix;Username=postgres;Password=postgres",
-			options => options.MigrationsHistoryTable("__EFMigrationsHistory", "Logging"));
+			options =>
+				options.MigrationsHistoryTable(
+					"__EFMigrationsHistory",
+					"Logging"));
 
 		return new LoggingDbContext(optionsBuilder.Options);
 	}

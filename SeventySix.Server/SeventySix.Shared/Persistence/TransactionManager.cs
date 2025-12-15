@@ -52,21 +52,24 @@ public class TransactionManager(DbContext context) : ITransactionManager
 			{
 				// Use the database's execution strategy to handle transactions
 				// This is required when EnableRetryOnFailure is configured
-				IExecutionStrategy strategy = context.Database.CreateExecutionStrategy();
+				IExecutionStrategy strategy =
+					context.Database.CreateExecutionStrategy();
 
 				return await strategy.ExecuteAsync(
 					async cancellation =>
 					{
 						// Start a new transaction with ReadCommitted isolation
 						// PostgreSQL will automatically detect conflicts and throw exceptions
-						using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync(
-							System.Data.IsolationLevel.ReadCommitted,
-							cancellation);
+						using IDbContextTransaction transaction =
+							await context.Database.BeginTransactionAsync(
+								System.Data.IsolationLevel.ReadCommitted,
+								cancellation);
 
 						try
 						{
 							// Execute the operation
-							T? result = await operation(cancellation);
+							T? result =
+								await operation(cancellation);
 
 							// Commit the transaction
 							await transaction.CommitAsync(cancellation);
@@ -90,7 +93,8 @@ public class TransactionManager(DbContext context) : ITransactionManager
 				// Clear change tracker to avoid tracking stale entities
 				context.ChangeTracker.Clear();
 			}
-			catch (DbUpdateException exception) when (IsConcurrencyRelated(exception))
+			catch (DbUpdateException exception)
+				when (IsConcurrencyRelated(exception))
 			{
 				// Database constraint violation (duplicate key, etc.) - likely race condition
 				lastException = exception;
@@ -109,14 +113,15 @@ public class TransactionManager(DbContext context) : ITransactionManager
 			if (retryCount <= maxRetries)
 			{
 				// Exponential backoff with jitter
-				int delayMs = CalculateBackoff(retryCount);
+				int delayMs =
+					CalculateBackoff(retryCount);
 				await Task.Delay(delayMs, cancellationToken);
 			}
 		}
 
 		throw new InvalidOperationException(
-			$"Transaction failed after {maxRetries} retries due to concurrency conflicts. " +
-			"This may indicate high contention or a systematic issue.",
+			$"Transaction failed after {maxRetries} retries due to concurrency conflicts. "
+				+ "This may indicate high contention or a systematic issue.",
 			lastException);
 	}
 
@@ -143,12 +148,15 @@ public class TransactionManager(DbContext context) : ITransactionManager
 	/// <returns>True if the exception indicates a concurrency conflict.</returns>
 	private static bool IsConcurrencyRelated(DbUpdateException exception)
 	{
-		string message = exception.InnerException?.Message ?? exception.Message;
+		string message =
+			exception.InnerException?.Message ?? exception.Message;
 
 		// PostgreSQL-specific error codes and messages
-		return message.Contains("duplicate key", StringComparison.OrdinalIgnoreCase)
-			|| message.Contains("23505", StringComparison.Ordinal)  // Unique violation
-			|| message.Contains("40001", StringComparison.Ordinal)  // Serialization failure
+		return message.Contains(
+			"duplicate key",
+			StringComparison.OrdinalIgnoreCase)
+			|| message.Contains("23505", StringComparison.Ordinal) // Unique violation
+			|| message.Contains("40001", StringComparison.Ordinal) // Serialization failure
 			|| message.Contains("40P01", StringComparison.Ordinal); // Deadlock detected
 	}
 
@@ -160,11 +168,14 @@ public class TransactionManager(DbContext context) : ITransactionManager
 	private static int CalculateBackoff(int retryCount)
 	{
 		// Base delay: 50ms, 100ms, 200ms, 400ms, etc.
-		double baseDelay = 50 * Math.Pow(2, retryCount - 1);
+		double baseDelay =
+			50 * Math.Pow(2, retryCount - 1);
 
 		// Add jitter (±25%) to prevent thundering herd
-		double jitter = Random.Shared.Next(-25, 26) / 100.0;
-		int delayMs = (int)(baseDelay * (1 + jitter));
+		double jitter =
+			Random.Shared.Next(-25, 26) / 100.0;
+		int delayMs =
+			(int)(baseDelay * (1 + jitter));
 
 		// Cap at 2 seconds
 		return Math.Min(delayMs, 2000);

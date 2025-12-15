@@ -23,18 +23,18 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> entityFiles =
 			GetSourceFiles("*.cs")
-				.Where(f =>
-					f.Contains("\\Models\\")
-					&& !f.Contains("Dto")
-					&& !f.Contains("Request")
-					&& !f.Contains("Response"))
-				.ToList();
+			.Where(f =>
+				f.Contains("\\Models\\")
+				&& !f.Contains("Dto")
+				&& !f.Contains("Request")
+				&& !f.Contains("Response"))
+			.ToList();
 
 		// Match: public int CreatedBy or public int ModifiedBy
 		Regex intAuditFieldPattern =
 			new Regex(
-				@"public\s+int\s+(CreatedBy|ModifiedBy)",
-				RegexOptions.Compiled);
+			@"public\s+int\s+(CreatedBy|ModifiedBy)",
+			RegexOptions.Compiled);
 
 		List<string> violations = [];
 
@@ -53,12 +53,14 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 					GetRelativePath(file);
 
 				string[] fields =
-					matches.Cast<Match>()
-						.Select(m => m.Groups[1].Value)
-						.Distinct()
-						.ToArray();
+					matches
+					.Cast<Match>()
+					.Select(m => m.Groups[1].Value)
+					.Distinct()
+					.ToArray();
 
-				violations.Add($"{relativePath}: {string.Join(", ", fields)} (should be string, not int FK)");
+				violations.Add(
+					$"{relativePath}: {string.Join(", ", fields)} (should be string, not int FK)");
 			}
 		}
 
@@ -72,18 +74,18 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> entityFiles =
 			GetSourceFiles("*.cs")
-				.Where(f =>
-					f.Contains("\\Models\\")
-					&& !f.Contains("Dto")
-					&& !f.Contains("Request")
-					&& !f.Contains("Response"))
-				.ToList();
+			.Where(f =>
+				f.Contains("\\Models\\")
+				&& !f.Contains("Dto")
+				&& !f.Contains("Request")
+				&& !f.Contains("Response"))
+			.ToList();
 
 		// Check for inconsistent patterns like CreatedDate vs CreateDate
 		Regex inconsistentDatePattern =
 			new Regex(
-				@"public\s+DateTime\??\s+(CreatedDate|ModifiedDate)",
-				RegexOptions.Compiled);
+			@"public\s+DateTime\??\s+(CreatedDate|ModifiedDate)",
+			RegexOptions.Compiled);
 
 		List<string> violations = [];
 
@@ -102,13 +104,15 @@ public class AuditFieldTests : SourceCodeArchitectureTest
 					GetRelativePath(file);
 
 				string[] fields =
-					matches.Cast<Match>()
-						.Select(m => m.Groups[1].Value)
-						.Distinct()
-						.ToArray();
+					matches
+					.Cast<Match>()
+					.Select(m => m.Groups[1].Value)
+					.Distinct()
+					.ToArray();
 
-				violations.Add($"{relativePath}: {string.Join(", ", fields)}"
-					+ " (use CreateDate/ModifyDate, not CreatedDate/ModifiedDate)");
+				violations.Add(
+					$"{relativePath}: {string.Join(", ", fields)}"
+						+ " (use CreateDate/ModifyDate, not CreatedDate/ModifiedDate)");
 			}
 		}
 

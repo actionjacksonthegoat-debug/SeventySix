@@ -11,31 +11,76 @@ namespace SeventySix.Identity.Migrations
 		/// <inheritdoc />
 		protected override void Up(MigrationBuilder migrationBuilder)
 		{
-			migrationBuilder.EnsureSchema(
-				name: "Identity");
+			migrationBuilder.EnsureSchema(name: "Identity");
 
 			migrationBuilder.CreateTable(
 				name: "Users",
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					Username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-					Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-					FullName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-					CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-					CreatedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false, defaultValue: "System"),
-					ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					ModifiedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false, defaultValue: "System"),
-					IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-					IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-					DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					DeletedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-					xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: true),
-					Preferences = table.Column<string>(type: "jsonb", nullable: true),
-					LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					LastLoginIp = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					Username = table.Column<string>(
+						type: "character varying(50)",
+						maxLength: 50,
+						nullable: false),
+					Email = table.Column<string>(
+						type: "character varying(255)",
+						maxLength: 255,
+						nullable: false),
+					FullName = table.Column<string>(
+						type: "character varying(100)",
+						maxLength: 100,
+						nullable: true),
+					CreatedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
+					CreatedBy = table.Column<string>(
+						type: "character varying(100)",
+						maxLength: 100,
+						nullable: false,
+						defaultValue: "System"),
+					ModifiedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					ModifiedBy = table.Column<string>(
+						type: "character varying(100)",
+						maxLength: 100,
+						nullable: false,
+						defaultValue: "System"),
+					IsActive = table.Column<bool>(
+						type: "boolean",
+						nullable: false,
+						defaultValue: true),
+					IsDeleted = table.Column<bool>(
+						type: "boolean",
+						nullable: false,
+						defaultValue: false),
+					DeletedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					DeletedBy = table.Column<string>(
+						type: "character varying(100)",
+						maxLength: 100,
+						nullable: true),
+					xmin = table.Column<uint>(
+						type: "xid",
+						rowVersion: true,
+						nullable: true),
+					Preferences = table.Column<string>(
+						type: "jsonb",
+						nullable: true),
+					LastLoginAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					LastLoginIp = table.Column<string>(
+						type: "character varying(45)",
+						maxLength: 45,
+						nullable: true),
 				},
 				constraints: table =>
 				{
@@ -80,9 +125,7 @@ namespace SeventySix.Identity.Migrations
 		/// <inheritdoc />
 		protected override void Down(MigrationBuilder migrationBuilder)
 		{
-			migrationBuilder.DropTable(
-				name: "Users",
-				schema: "Identity");
+			migrationBuilder.DropTable(name: "Users", schema: "Identity");
 		}
 	}
 }

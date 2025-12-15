@@ -59,14 +59,17 @@ public static class UpdateUserCommandHandler
 
 			return updated.ToDto();
 		}
-		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
+		catch (DbUpdateException exception)
+			when (exception.IsDuplicateKeyViolation())
 		{
 			// Database unique constraint violation - check which field caused it
-			string message = exception.InnerException?.Message ?? exception.Message;
+			string message =
+				exception.InnerException?.Message ?? exception.Message;
 
-			if (message.Contains(
-				"IX_Users_Username",
-				StringComparison.OrdinalIgnoreCase))
+			if (
+				message.Contains(
+					"IX_Users_Username",
+					StringComparison.OrdinalIgnoreCase))
 			{
 				logger.LogWarning(
 					"Duplicate username detected during user update. Username: {Username}, UserId: {UserId}",
@@ -77,9 +80,10 @@ public static class UpdateUserCommandHandler
 					$"Failed to update user: Username '{request.Username}' is already taken by another user");
 			}
 
-			if (message.Contains(
-				"IX_Users_Email",
-				StringComparison.OrdinalIgnoreCase))
+			if (
+				message.Contains(
+					"IX_Users_Email",
+					StringComparison.OrdinalIgnoreCase))
 			{
 				logger.LogWarning(
 					"Duplicate email detected during user update. Email: {Email}, UserId: {UserId}, Username: {Username}",

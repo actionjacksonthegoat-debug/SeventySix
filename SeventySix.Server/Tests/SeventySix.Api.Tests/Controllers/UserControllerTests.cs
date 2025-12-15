@@ -41,10 +41,10 @@ public class UsersControllerTests
 	public UsersControllerTests()
 	{
 		MessageBus = Substitute.For<IMessageBus>();
-		Logger = Substitute.For<ILogger<UsersController>>();
-		Controller = new UsersController(
-			MessageBus,
-			Logger);
+		Logger =
+			Substitute.For<ILogger<UsersController>>();
+		Controller =
+			new UsersController(MessageBus, Logger);
 	}
 
 	#region Constructor Tests
@@ -64,8 +64,18 @@ public class UsersControllerTests
 		FakeTimeProvider timeProvider = new();
 		List<UserDto> users =
 		[
-			new UserDtoBuilder(timeProvider).WithId(1).WithUsername("user1").WithEmail("user1@example.com").WithIsActive(true).Build(),
-			new UserDtoBuilder(timeProvider).WithId(2).WithUsername("user2").WithEmail("user2@example.com").WithIsActive(false).Build(),
+			new UserDtoBuilder(timeProvider)
+				.WithId(1)
+				.WithUsername("user1")
+				.WithEmail("user1@example.com")
+				.WithIsActive(true)
+				.Build(),
+			new UserDtoBuilder(timeProvider)
+				.WithId(2)
+				.WithUsername("user2")
+				.WithEmail("user2@example.com")
+				.WithIsActive(false)
+				.Build(),
 		];
 
 		MessageBus
@@ -75,16 +85,23 @@ public class UsersControllerTests
 			.Returns(users);
 
 		// Act
-		ActionResult<IEnumerable<UserDto>> result = await Controller.GetAllAsync(CancellationToken.None);
+		ActionResult<IEnumerable<UserDto>> result =
+			await Controller.GetAllAsync(CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		IEnumerable<UserDto> returnedUsers = Assert.IsAssignableFrom<IEnumerable<UserDto>>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		IEnumerable<UserDto> returnedUsers =
+			Assert.IsAssignableFrom<
+			IEnumerable<UserDto>
+		>(okResult.Value);
 		Assert.Equal(2, returnedUsers.Count());
 
-		await MessageBus.Received(1).InvokeAsync<IEnumerable<UserDto>>(
-			Arg.Any<GetAllUsersQuery>(),
-			Arg.Any<CancellationToken>());
+		await MessageBus
+			.Received(1)
+			.InvokeAsync<IEnumerable<UserDto>>(
+				Arg.Any<GetAllUsersQuery>(),
+				Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -98,11 +115,16 @@ public class UsersControllerTests
 			.Returns([]);
 
 		// Act
-		ActionResult<IEnumerable<UserDto>> result = await Controller.GetAllAsync(CancellationToken.None);
+		ActionResult<IEnumerable<UserDto>> result =
+			await Controller.GetAllAsync(CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		IEnumerable<UserDto> returnedUsers = Assert.IsAssignableFrom<IEnumerable<UserDto>>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		IEnumerable<UserDto> returnedUsers =
+			Assert.IsAssignableFrom<
+			IEnumerable<UserDto>
+		>(okResult.Value);
 		Assert.Empty(returnedUsers);
 	}
 
@@ -117,14 +139,14 @@ public class UsersControllerTests
 		FakeTimeProvider timeProvider = new();
 		UserDto userDto =
 			new UserDtoBuilder(timeProvider)
-				.WithId(123)
-				.WithUsername("john_doe")
-				.WithEmail("john@example.com")
-				.WithFullName("John Doe")
-				.WithIsActive(true)
-				.WithCreatedBy("System")
-				.WithModifiedBy("System")
-				.Build();
+			.WithId(123)
+			.WithUsername("john_doe")
+			.WithEmail("john@example.com")
+			.WithFullName("John Doe")
+			.WithIsActive(true)
+			.WithCreatedBy("System")
+			.WithModifiedBy("System")
+			.Build();
 
 		MessageBus
 			.InvokeAsync<UserDto?>(
@@ -133,11 +155,16 @@ public class UsersControllerTests
 			.Returns(userDto);
 
 		// Act
-		ActionResult<UserDto> result = await Controller.GetByIdAsync(123, CancellationToken.None);
+		ActionResult<UserDto> result =
+			await Controller.GetByIdAsync(
+			123,
+			CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		UserDto returnedUser = Assert.IsType<UserDto>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		UserDto returnedUser =
+			Assert.IsType<UserDto>(okResult.Value);
 		Assert.Equal(123, returnedUser.Id);
 		Assert.Equal("john_doe", returnedUser.Username);
 	}
@@ -153,7 +180,10 @@ public class UsersControllerTests
 			.Returns((UserDto?)null);
 
 		// Act
-		ActionResult<UserDto> result = await Controller.GetByIdAsync(999, CancellationToken.None);
+		ActionResult<UserDto> result =
+			await Controller.GetByIdAsync(
+			999,
+			CancellationToken.None);
 
 		// Assert
 		Assert.IsType<NotFoundResult>(result.Result);
@@ -168,7 +198,8 @@ public class UsersControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		CreateUserRequest request = new()
+		CreateUserRequest request =
+			new()
 		{
 			Username = "new_user",
 			Email = "new@example.com",
@@ -178,28 +209,35 @@ public class UsersControllerTests
 
 		UserDto createdUser =
 			new UserDtoBuilder(timeProvider)
-				.WithId(456)
-				.WithUsername("new_user")
-				.WithEmail("new@example.com")
-				.WithFullName("New User")
-				.WithIsActive(true)
-				.WithCreatedBy("System")
-				.WithModifiedBy("System")
-				.Build();
+			.WithId(456)
+			.WithUsername("new_user")
+			.WithEmail("new@example.com")
+			.WithFullName("New User")
+			.WithIsActive(true)
+			.WithCreatedBy("System")
+			.WithModifiedBy("System")
+			.Build();
 
 		MessageBus
-			.InvokeAsync<UserDto>(Arg.Any<CreateUserRequest>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<UserDto>(
+				Arg.Any<CreateUserRequest>(),
+				Arg.Any<CancellationToken>())
 			.Returns(createdUser);
 
 		// Act
-		ActionResult<UserDto> result = await Controller.CreateAsync(request, CancellationToken.None);
+		ActionResult<UserDto> result =
+			await Controller.CreateAsync(
+			request,
+			CancellationToken.None);
 
 		// Assert
-		CreatedAtRouteResult createdResult = Assert.IsType<CreatedAtRouteResult>(result.Result);
+		CreatedAtRouteResult createdResult =
+			Assert.IsType<CreatedAtRouteResult>(result.Result);
 		Assert.Equal("GetUserById", createdResult.RouteName);
 		Assert.Equal(456, createdResult.RouteValues!["id"]);
 
-		UserDto returnedUser = Assert.IsType<UserDto>(createdResult.Value);
+		UserDto returnedUser =
+			Assert.IsType<UserDto>(createdResult.Value);
 		Assert.Equal(456, returnedUser.Id);
 		Assert.Equal("new_user", returnedUser.Username);
 	}
@@ -209,7 +247,8 @@ public class UsersControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		CreateUserRequest request = new()
+		CreateUserRequest request =
+			new()
 		{
 			Username = "test",
 			Email = "test@example.com",
@@ -218,27 +257,30 @@ public class UsersControllerTests
 
 		UserDto createdUser =
 			new UserDtoBuilder(timeProvider)
-				.WithId(1)
-				.WithUsername("test")
-				.WithEmail("test@example.com")
-				.WithIsActive(true)
-				.WithCreatedBy("System")
-				.WithModifiedBy("System")
-				.Build();
+			.WithId(1)
+			.WithUsername("test")
+			.WithEmail("test@example.com")
+			.WithIsActive(true)
+			.WithCreatedBy("System")
+			.WithModifiedBy("System")
+			.Build();
 
 		MessageBus
-			.InvokeAsync<UserDto>(Arg.Any<CreateUserRequest>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<UserDto>(
+				Arg.Any<CreateUserRequest>(),
+				Arg.Any<CancellationToken>())
 			.Returns(createdUser);
 
 		// Act
 		await Controller.CreateAsync(request, CancellationToken.None);
 
 		// Assert
-		await MessageBus.Received(1).InvokeAsync<UserDto>(
-			Arg.Is<CreateUserRequest>(req =>
-				req.Username == "test" &&
-				req.Email == "test@example.com"),
-			Arg.Any<CancellationToken>());
+		await MessageBus
+			.Received(1)
+			.InvokeAsync<UserDto>(
+				Arg.Is<CreateUserRequest>(req =>
+					req.Username == "test" && req.Email == "test@example.com"),
+				Arg.Any<CancellationToken>());
 	}
 
 	#endregion
@@ -250,7 +292,8 @@ public class UsersControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		UpdateUserRequest request = new UpdateUserRequest
+		UpdateUserRequest request =
+			new UpdateUserRequest
 		{
 			Id = 1,
 			Username = "updateduser",
@@ -261,25 +304,34 @@ public class UsersControllerTests
 
 		UserDto updatedUser =
 			new UserDtoBuilder(timeProvider)
-				.WithId(1)
-				.WithUsername("updateduser")
-				.WithEmail("updated@example.com")
-				.WithFullName("Updated User")
-				.WithIsActive(true)
-				.WithCreateDate(timeProvider.GetUtcNow().UtcDateTime.AddDays(-1))
-				.WithModifyDate(timeProvider.GetUtcNow().UtcDateTime)
-				.WithCreatedBy("System")
-				.WithModifiedBy("Admin")
-				.Build();
+			.WithId(1)
+			.WithUsername("updateduser")
+			.WithEmail("updated@example.com")
+			.WithFullName("Updated User")
+			.WithIsActive(true)
+			.WithCreateDate(timeProvider.GetUtcNow().UtcDateTime.AddDays(-1))
+			.WithModifyDate(timeProvider.GetUtcNow().UtcDateTime)
+			.WithCreatedBy("System")
+			.WithModifiedBy("Admin")
+			.Build();
 
 		MessageBus
-			.InvokeAsync<UserDto>(Arg.Any<UpdateUserRequest>(), Arg.Any<CancellationToken>()).Returns(updatedUser);
+			.InvokeAsync<UserDto>(
+				Arg.Any<UpdateUserRequest>(),
+				Arg.Any<CancellationToken>())
+			.Returns(updatedUser);
 
 		// Act
-		ActionResult<UserDto> result = await Controller.UpdateAsync(1, request, CancellationToken.None);
+		ActionResult<UserDto> result =
+			await Controller.UpdateAsync(
+			1,
+			request,
+			CancellationToken.None);
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		UserDto returnedUser = Assert.IsType<UserDto>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		UserDto returnedUser =
+			Assert.IsType<UserDto>(okResult.Value);
 		Assert.Equal(1, returnedUser.Id);
 		Assert.Equal("updateduser", returnedUser.Username);
 		Assert.NotNull(returnedUser.ModifyDate);
@@ -289,7 +341,8 @@ public class UsersControllerTests
 	public async Task UpdateAsync_MismatchedId_ReturnsBadRequestAsync()
 	{
 		// Arrange
-		UpdateUserRequest request = new UpdateUserRequest
+		UpdateUserRequest request =
+			new UpdateUserRequest
 		{
 			Id = 1,
 			Username = "test",
@@ -298,13 +351,24 @@ public class UsersControllerTests
 		};
 
 		// Act
-		ActionResult<UserDto> result = await Controller.UpdateAsync(2, request, CancellationToken.None);
+		ActionResult<UserDto> result =
+			await Controller.UpdateAsync(
+			2,
+			request,
+			CancellationToken.None);
 
 		// Assert
-		BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-		Assert.Equal("ID in URL does not match ID in request body", badRequestResult.Value);
+		BadRequestObjectResult badRequestResult =
+			Assert.IsType<BadRequestObjectResult>(result.Result);
+		Assert.Equal(
+			"ID in URL does not match ID in request body",
+			badRequestResult.Value);
 
-		await MessageBus.DidNotReceive().InvokeAsync<UserDto>(Arg.Any<UpdateUserRequest>(), Arg.Any<CancellationToken>());
+		await MessageBus
+			.DidNotReceive()
+			.InvokeAsync<UserDto>(
+				Arg.Any<UpdateUserRequest>(),
+				Arg.Any<CancellationToken>());
 	}
 
 	#endregion
@@ -316,11 +380,16 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MessageBus
-			.InvokeAsync<bool>(Arg.Any<DeleteUserCommand>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<bool>(
+				Arg.Any<DeleteUserCommand>(),
+				Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		// Act
-		IActionResult result = await Controller.DeleteAsync(1, CancellationToken.None);
+		IActionResult result =
+			await Controller.DeleteAsync(
+			1,
+			CancellationToken.None);
 
 		// Assert
 		Assert.IsType<NoContentResult>(result);
@@ -331,11 +400,16 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MessageBus
-			.InvokeAsync<bool>(Arg.Any<DeleteUserCommand>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<bool>(
+				Arg.Any<DeleteUserCommand>(),
+				Arg.Any<CancellationToken>())
 			.Returns(false);
 
 		// Act
-		IActionResult result = await Controller.DeleteAsync(999, CancellationToken.None);
+		IActionResult result =
+			await Controller.DeleteAsync(
+			999,
+			CancellationToken.None);
 
 		// Assert
 		Assert.IsType<NotFoundResult>(result);
@@ -350,11 +424,16 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MessageBus
-			.InvokeAsync<bool>(Arg.Any<RestoreUserCommand>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<bool>(
+				Arg.Any<RestoreUserCommand>(),
+				Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		// Act
-		IActionResult result = await Controller.RestoreAsync(1, CancellationToken.None);
+		IActionResult result =
+			await Controller.RestoreAsync(
+			1,
+			CancellationToken.None);
 
 		// Assert
 		Assert.IsType<NoContentResult>(result);
@@ -365,11 +444,16 @@ public class UsersControllerTests
 	{
 		// Arrange
 		MessageBus
-			.InvokeAsync<bool>(Arg.Any<RestoreUserCommand>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<bool>(
+				Arg.Any<RestoreUserCommand>(),
+				Arg.Any<CancellationToken>())
 			.Returns(false);
 
 		// Act
-		IActionResult result = await Controller.RestoreAsync(999, CancellationToken.None);
+		IActionResult result =
+			await Controller.RestoreAsync(
+			999,
+			CancellationToken.None);
 
 		// Assert
 		Assert.IsType<NotFoundResult>(result);
@@ -384,7 +468,8 @@ public class UsersControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		UserQueryRequest request = new UserQueryRequest
+		UserQueryRequest request =
+			new UserQueryRequest
 		{
 			Page = 1,
 			PageSize = 10,
@@ -393,11 +478,26 @@ public class UsersControllerTests
 
 		List<UserDto> users =
 		[
-			new UserDtoBuilder(timeProvider).WithId(1).WithUsername("testuser1").WithEmail("test1@example.com").WithIsActive(true).WithCreatedBy("System").WithModifiedBy("System").Build(),
-			new UserDtoBuilder(timeProvider).WithId(2).WithUsername("testuser2").WithEmail("test2@example.com").WithIsActive(true).WithCreatedBy("System").WithModifiedBy("System").Build(),
+			new UserDtoBuilder(timeProvider)
+				.WithId(1)
+				.WithUsername("testuser1")
+				.WithEmail("test1@example.com")
+				.WithIsActive(true)
+				.WithCreatedBy("System")
+				.WithModifiedBy("System")
+				.Build(),
+			new UserDtoBuilder(timeProvider)
+				.WithId(2)
+				.WithUsername("testuser2")
+				.WithEmail("test2@example.com")
+				.WithIsActive(true)
+				.WithCreatedBy("System")
+				.WithModifiedBy("System")
+				.Build(),
 		];
 
-		PagedResult<UserDto> pagedResult = new PagedResult<UserDto>
+		PagedResult<UserDto> pagedResult =
+			new PagedResult<UserDto>
 		{
 			Items = users,
 			Page = 1,
@@ -412,11 +512,16 @@ public class UsersControllerTests
 			.Returns(pagedResult);
 
 		// Act
-		ActionResult<PagedResult<UserDto>> result = await Controller.GetPagedAsync(request, CancellationToken.None);
+		ActionResult<PagedResult<UserDto>> result =
+			await Controller.GetPagedAsync(request, CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		PagedResult<UserDto> returnedResult = Assert.IsType<PagedResult<UserDto>>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		PagedResult<UserDto> returnedResult =
+			Assert.IsType<
+			PagedResult<UserDto>
+		>(okResult.Value);
 		Assert.Equal(2, returnedResult.Items.Count());
 		Assert.Equal(1, returnedResult.Page);
 		Assert.Equal(10, returnedResult.PageSize);
@@ -434,13 +539,13 @@ public class UsersControllerTests
 		FakeTimeProvider timeProvider = new();
 		UserDto user =
 			new UserDtoBuilder(timeProvider)
-				.WithId(1)
-				.WithUsername("testuser")
-				.WithEmail("test@example.com")
-				.WithIsActive(true)
-				.WithCreatedBy("System")
-				.WithModifiedBy("System")
-				.Build();
+			.WithId(1)
+			.WithUsername("testuser")
+			.WithEmail("test@example.com")
+			.WithIsActive(true)
+			.WithCreatedBy("System")
+			.WithModifiedBy("System")
+			.Build();
 
 		MessageBus
 			.InvokeAsync<UserDto?>(
@@ -449,11 +554,16 @@ public class UsersControllerTests
 			.Returns(user);
 
 		// Act
-		ActionResult<UserDto> result = await Controller.GetByUsernameAsync("testuser", CancellationToken.None);
+		ActionResult<UserDto> result =
+			await Controller.GetByUsernameAsync(
+			"testuser",
+			CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		UserDto returnedUser = Assert.IsType<UserDto>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		UserDto returnedUser =
+			Assert.IsType<UserDto>(okResult.Value);
 		Assert.Equal("testuser", returnedUser.Username);
 	}
 
@@ -468,7 +578,10 @@ public class UsersControllerTests
 			.Returns((UserDto?)null);
 
 		// Act
-		ActionResult<UserDto> result = await Controller.GetByUsernameAsync("nonexistent", CancellationToken.None);
+		ActionResult<UserDto> result =
+			await Controller.GetByUsernameAsync(
+			"nonexistent",
+			CancellationToken.None);
 
 		// Assert
 		Assert.IsType<NotFoundResult>(result.Result);
@@ -485,18 +598,23 @@ public class UsersControllerTests
 		MessageBus
 			.InvokeAsync<bool>(
 				Arg.Is<CheckUsernameExistsQuery>(q =>
-					q.Username == "existinguser"
-					&& q.ExcludeUserId == null),
+					q.Username == "existinguser" && q.ExcludeUserId == null),
 				Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		// Act
-		ActionResult<bool> result = await Controller.CheckUsernameAsync("existinguser", null, CancellationToken.None);
+		ActionResult<bool> result =
+			await Controller.CheckUsernameAsync(
+			"existinguser",
+			null,
+			CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
 		Assert.NotNull(okResult.Value);
-		bool exists = (bool)okResult.Value;
+		bool exists =
+			(bool)okResult.Value;
 		Assert.True(exists);
 	}
 
@@ -507,18 +625,23 @@ public class UsersControllerTests
 		MessageBus
 			.InvokeAsync<bool>(
 				Arg.Is<CheckUsernameExistsQuery>(q =>
-					q.Username == "newuser"
-					&& q.ExcludeUserId == null),
+					q.Username == "newuser" && q.ExcludeUserId == null),
 				Arg.Any<CancellationToken>())
 			.Returns(false);
 
 		// Act
-		ActionResult<bool> result = await Controller.CheckUsernameAsync("newuser", null, CancellationToken.None);
+		ActionResult<bool> result =
+			await Controller.CheckUsernameAsync(
+			"newuser",
+			null,
+			CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
 		Assert.NotNull(okResult.Value);
-		bool exists = (bool)okResult.Value;
+		bool exists =
+			(bool)okResult.Value;
 		Assert.False(exists);
 	}
 
@@ -530,17 +653,25 @@ public class UsersControllerTests
 	public async Task BulkActivateAsync_ValidRequest_ReturnsOkWithCountAsync()
 	{
 		// Arrange
-		List<int> ids = [1, 2, 3];
+		List<int> ids =
+			[1, 2, 3];
 		int expectedCount = 3;
 
 		MessageBus
-			.InvokeAsync<int>(Arg.Any<BulkUpdateActiveStatusCommand>(), Arg.Any<CancellationToken>())
-			.Returns(expectedCount);        // Act
-		ActionResult<int> result = await Controller.BulkActivateAsync(ids, CancellationToken.None);
+			.InvokeAsync<int>(
+				Arg.Any<BulkUpdateActiveStatusCommand>(),
+				Arg.Any<CancellationToken>())
+			.Returns(expectedCount); // Act
+		ActionResult<int> result =
+			await Controller.BulkActivateAsync(
+			ids,
+			CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		int count = Assert.IsType<int>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		int count =
+			Assert.IsType<int>(okResult.Value);
 		Assert.Equal(3, count);
 	}
 
@@ -548,17 +679,25 @@ public class UsersControllerTests
 	public async Task BulkDeactivateAsync_ValidRequest_ReturnsOkWithCountAsync()
 	{
 		// Arrange
-		List<int> ids = [1, 2, 3];
+		List<int> ids =
+			[1, 2, 3];
 		int expectedCount = 3;
 
 		MessageBus
-			.InvokeAsync<int>(Arg.Any<BulkUpdateActiveStatusCommand>(), Arg.Any<CancellationToken>())
-			.Returns(expectedCount);        // Act
-		ActionResult<int> result = await Controller.BulkDeactivateAsync(ids, CancellationToken.None);
+			.InvokeAsync<int>(
+				Arg.Any<BulkUpdateActiveStatusCommand>(),
+				Arg.Any<CancellationToken>())
+			.Returns(expectedCount); // Act
+		ActionResult<int> result =
+			await Controller.BulkDeactivateAsync(
+			ids,
+			CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		int count = Assert.IsType<int>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		int count =
+			Assert.IsType<int>(okResult.Value);
 		Assert.Equal(3, count);
 	}
 

@@ -20,7 +20,8 @@ namespace SeventySix.TestUtilities.TestBases;
 /// Reduces test execution time by avoiding repeated factory creation and disposal overhead.
 /// </summary>
 /// <typeparam name="TProgram">The entry point type for the application.</typeparam>
-public sealed class SharedWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram>
+public sealed class SharedWebApplicationFactory<TProgram>
+	: WebApplicationFactory<TProgram>
 	where TProgram : class
 {
 	private readonly string ConnectionString;
@@ -40,7 +41,8 @@ public sealed class SharedWebApplicationFactory<TProgram> : WebApplicationFactor
 	}
 
 	/// <inheritdoc/>
-	protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
+	protected override void ConfigureWebHost(
+		Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
 	{
 		// Set environment to Test - this triggers:
 		// - Silent logging in SerilogExtensions (Error+ only, no sinks)
@@ -48,15 +50,15 @@ public sealed class SharedWebApplicationFactory<TProgram> : WebApplicationFactor
 		builder.UseEnvironment("Test");
 
 		// Skip migration checks in tests - fixture already applies migrations
-		builder.ConfigureAppConfiguration((
-			context,
-			config) =>
-		{
-			config.AddInMemoryCollection(new Dictionary<string, string?>
+		builder.ConfigureAppConfiguration(
+			(context, config) =>
 			{
-				["SkipMigrationCheck"] = "true",
+				config.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["SkipMigrationCheck"] = "true",
+					});
 			});
-		});
 
 		// Suppress Microsoft.Extensions.Logging providers (fallback logging)
 		builder.ConfigureLogging(logging =>

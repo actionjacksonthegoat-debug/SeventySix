@@ -19,10 +19,11 @@ namespace SeventySix.Api.Tests.Controllers;
 /// 80/20 Rule: Only critical happy paths tested.
 /// </summary>
 [Collection("PostgreSQL")]
-public class UsersControllerMeEndpointTests(TestcontainersPostgreSqlFixture fixture)
-	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+public class UsersControllerMeEndpointTests(
+	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
-	private HttpClient Client = null!;
+	private HttpClient Client =
+		null!;
 
 	/// <inheritdoc/>
 	public override async Task InitializeAsync()
@@ -60,24 +61,22 @@ public class UsersControllerMeEndpointTests(TestcontainersPostgreSqlFixture fixt
 
 		string accessToken =
 			await AuthenticateUserAsync(
-				username,
-				TestUserHelper.TestPassword);
+			username,
+			TestUserHelper.TestPassword);
 
 		Client.DefaultRequestHeaders.Authorization =
-			new AuthenticationHeaderValue(
-				"Bearer",
-				accessToken);
+			new AuthenticationHeaderValue("Bearer", accessToken);
 
 		UpdateProfileRequest updateRequest =
 			new(
-				Email: $"updated_{testId}@example.com",
-				FullName: "Updated Full Name");
+			Email: $"updated_{testId}@example.com",
+			FullName: "Updated Full Name");
 
 		// Act
 		HttpResponseMessage response =
 			await Client.PutAsJsonAsync(
-				ApiEndpoints.Users.Me,
-				updateRequest);
+			ApiEndpoints.Users.Me,
+			updateRequest);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -112,24 +111,22 @@ public class UsersControllerMeEndpointTests(TestcontainersPostgreSqlFixture fixt
 
 		string accessToken =
 			await AuthenticateUserAsync(
-				username,
-				TestUserHelper.TestPassword);
+			username,
+			TestUserHelper.TestPassword);
 
 		Client.DefaultRequestHeaders.Authorization =
-			new AuthenticationHeaderValue(
-				"Bearer",
-				accessToken);
+			new AuthenticationHeaderValue("Bearer", accessToken);
 
 		UpdateProfileRequest updateRequest =
 			new(
-				Email: "not-a-valid-email",
-				FullName: null);
+			Email: "not-a-valid-email",
+			FullName: null);
 
 		// Act
 		HttpResponseMessage response =
 			await Client.PutAsJsonAsync(
-				ApiEndpoints.Users.Me,
-				updateRequest);
+			ApiEndpoints.Users.Me,
+			updateRequest);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -144,13 +141,13 @@ public class UsersControllerMeEndpointTests(TestcontainersPostgreSqlFixture fixt
 	{
 		LoginRequest loginRequest =
 			new(
-				UsernameOrEmail: username,
-				Password: password);
+			UsernameOrEmail: username,
+			Password: password);
 
 		HttpResponseMessage loginResponse =
 			await Client.PostAsJsonAsync(
-				ApiEndpoints.Auth.Login,
-				loginRequest);
+			ApiEndpoints.Auth.Login,
+			loginRequest);
 
 		loginResponse.EnsureSuccessStatusCode();
 

@@ -29,60 +29,58 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 		builder.ToTable("RefreshTokens");
 
 		builder.HasKey(e => e.Id);
-		builder.Property(e => e.Id)
-			.UseIdentityColumn()
-			.IsRequired();
+		builder.Property(e => e.Id).UseIdentityColumn().IsRequired();
 
 		// TokenHash - Required, SHA256 hex = 64 chars
-		builder.Property(e => e.TokenHash)
-			.IsRequired()
-			.HasMaxLength(64);
-		builder.HasIndex(e => e.TokenHash)
+		builder.Property(e => e.TokenHash).IsRequired().HasMaxLength(64);
+		builder
+			.HasIndex(e => e.TokenHash)
 			.IsUnique()
 			.HasDatabaseName("IX_RefreshTokens_TokenHash");
 
 		// UserId - Required
-		builder.Property(e => e.UserId)
-			.IsRequired();
+		builder.Property(e => e.UserId).IsRequired();
 
 		// Composite index for finding valid tokens by user
-		builder.HasIndex(e => new { e.UserId, e.IsRevoked })
+		builder
+			.HasIndex(e => new { e.UserId, e.IsRevoked })
 			.HasDatabaseName("IX_RefreshTokens_UserId_IsRevoked");
 
 		// FamilyId - Required, for token rotation reuse detection
-		builder.Property(e => e.FamilyId)
-			.IsRequired();
-		builder.HasIndex(e => e.FamilyId)
+		builder.Property(e => e.FamilyId).IsRequired();
+		builder
+			.HasIndex(e => e.FamilyId)
 			.HasDatabaseName("IX_RefreshTokens_FamilyId");
 
 		// ExpiresAt - Required
-		builder.Property(e => e.ExpiresAt)
+		builder
+			.Property(e => e.ExpiresAt)
 			.IsRequired()
 			.HasColumnType("timestamp with time zone");
 
 		// SessionStartedAt - Required, for absolute session timeout enforcement
-		builder.Property(e => e.SessionStartedAt)
+		builder
+			.Property(e => e.SessionStartedAt)
 			.IsRequired()
 			.HasColumnType("timestamp with time zone");
 
 		// CreateDate - Required (auto-set by AuditInterceptor for ICreatableEntity)
-		builder.Property(e => e.CreateDate)
+		builder
+			.Property(e => e.CreateDate)
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");
 
 		// IsRevoked - Required
-		builder.Property(e => e.IsRevoked)
-			.IsRequired()
-			.HasDefaultValue(false);
+		builder.Property(e => e.IsRevoked).IsRequired().HasDefaultValue(false);
 
 		// RevokedAt - Optional
-		builder.Property(e => e.RevokedAt)
+		builder
+			.Property(e => e.RevokedAt)
 			.HasColumnType("timestamp with time zone");
 
 		// CreatedByIp - Optional, IPv6 max 45 chars
-		builder.Property(e => e.CreatedByIp)
-			.HasMaxLength(45);
+		builder.Property(e => e.CreatedByIp).HasMaxLength(45);
 
 		// FK relationship to User - cascade delete tokens when user is deleted
 		builder

@@ -18,8 +18,10 @@ public class ThirdPartyApiRequestServiceTests
 
 	public ThirdPartyApiRequestServiceTests()
 	{
-		Repository = Substitute.For<IThirdPartyApiRequestRepository>();
-		Service = new ThirdPartyApiRequestService(Repository);
+		Repository =
+			Substitute.For<IThirdPartyApiRequestRepository>();
+		Service =
+			new ThirdPartyApiRequestService(Repository);
 	}
 
 	[Fact]
@@ -35,8 +37,13 @@ public class ThirdPartyApiRequestServiceTests
 				ApiName = "ExternalAPI",
 				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 150,
-				LastCalledAt = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
-				ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
+				LastCalledAt =
+			timeProvider
+					.GetUtcNow()
+					.UtcDateTime.AddMinutes(-5),
+				ResetDate =
+			DateOnly.FromDateTime(
+					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 			new ThirdPartyApiRequest
 			{
@@ -44,20 +51,26 @@ public class ThirdPartyApiRequestServiceTests
 				ApiName = "GoogleMaps",
 				BaseUrl = "https://maps.googleapis.com",
 				CallCount = 75,
-				LastCalledAt = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10),
-				ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
+				LastCalledAt =
+			timeProvider
+					.GetUtcNow()
+					.UtcDateTime.AddMinutes(-10),
+				ResetDate =
+			DateOnly.FromDateTime(
+					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 		];
 
-		Repository.GetAllAsync(Arg.Any<CancellationToken>())
-			.Returns(entities);
+		Repository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(entities);
 
 		// Act
-		IEnumerable<ThirdPartyApiRequestResponse> result = await Service.GetAllAsync(CancellationToken.None);
+		IEnumerable<ThirdPartyApiRequestResponse> result =
+			await Service.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
-		List<ThirdPartyApiRequestResponse> resultList = [.. result];
+		List<ThirdPartyApiRequestResponse> resultList =
+			[.. result];
 		Assert.Equal(2, resultList.Count);
 		Assert.Equal("ExternalAPI", resultList[0].ApiName);
 		Assert.Equal(150, resultList[0].CallCount);
@@ -69,11 +82,11 @@ public class ThirdPartyApiRequestServiceTests
 	public async Task GetAllAsync_ReturnsEmptyList_WhenNoRequestsAsync()
 	{
 		// Arrange
-		Repository.GetAllAsync(Arg.Any<CancellationToken>())
-			.Returns([]);
+		Repository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([]);
 
 		// Act
-		IEnumerable<ThirdPartyApiRequestResponse> result = await Service.GetAllAsync(CancellationToken.None);
+		IEnumerable<ThirdPartyApiRequestResponse> result =
+			await Service.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -85,7 +98,8 @@ public class ThirdPartyApiRequestServiceTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
 		List<ThirdPartyApiRequest> entities =
 		[
 			new ThirdPartyApiRequest
@@ -94,8 +108,10 @@ public class ThirdPartyApiRequestServiceTests
 				ApiName = "ExternalAPI",
 				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 150,
-				LastCalledAt = now.AddMinutes(-5),
-				ResetDate = DateOnly.FromDateTime(now.Date.AddDays(1)),
+				LastCalledAt =
+			now.AddMinutes(-5),
+				ResetDate =
+			DateOnly.FromDateTime(now.Date.AddDays(1)),
 			},
 			new ThirdPartyApiRequest
 			{
@@ -103,16 +119,18 @@ public class ThirdPartyApiRequestServiceTests
 				ApiName = "GoogleMaps",
 				BaseUrl = "https://maps.googleapis.com",
 				CallCount = 75,
-				LastCalledAt = now.AddMinutes(-10),
-				ResetDate = DateOnly.FromDateTime(now.Date.AddDays(1)),
+				LastCalledAt =
+			now.AddMinutes(-10),
+				ResetDate =
+			DateOnly.FromDateTime(now.Date.AddDays(1)),
 			},
 		];
 
-		Repository.GetAllAsync(Arg.Any<CancellationToken>())
-			.Returns(entities);
+		Repository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(entities);
 
 		// Act
-		ThirdPartyApiStatisticsResponse result = await Service.GetStatisticsAsync(CancellationToken.None);
+		ThirdPartyApiStatisticsResponse result =
+			await Service.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -130,11 +148,11 @@ public class ThirdPartyApiRequestServiceTests
 	public async Task GetStatisticsAsync_ReturnsZeroStats_WhenNoRequestsAsync()
 	{
 		// Arrange
-		Repository.GetAllAsync(Arg.Any<CancellationToken>())
-			.Returns([]);
+		Repository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([]);
 
 		// Act
-		ThirdPartyApiStatisticsResponse result = await Service.GetStatisticsAsync(CancellationToken.None);
+		ThirdPartyApiStatisticsResponse result =
+			await Service.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -158,15 +176,17 @@ public class ThirdPartyApiRequestServiceTests
 				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 150,
 				LastCalledAt = null,
-				ResetDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
+				ResetDate =
+			DateOnly.FromDateTime(
+					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 		];
 
-		Repository.GetAllAsync(Arg.Any<CancellationToken>())
-			.Returns(entities);
+		Repository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(entities);
 
 		// Act
-		ThirdPartyApiStatisticsResponse result = await Service.GetStatisticsAsync(CancellationToken.None);
+		ThirdPartyApiStatisticsResponse result =
+			await Service.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);

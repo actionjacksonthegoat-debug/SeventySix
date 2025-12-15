@@ -19,13 +19,13 @@ namespace SeventySix.TestUtilities.TestBases;
 public static class SharedContainerManager
 {
 	private static readonly SemaphoreSlim InitLock =
-		new(
-			1,
-			1);
+		new(1, 1);
 	private static PostgreSqlContainer? Container;
 	private static string? MasterConnectionString;
-	private static readonly ConcurrentDictionary<string, string> DatabaseConnections =
-		new();
+	private static readonly ConcurrentDictionary<
+		string,
+		string
+	> DatabaseConnections = new();
 
 	/// <summary>
 	/// Gets or creates the shared PostgreSQL container.
@@ -49,12 +49,12 @@ public static class SharedContainerManager
 
 			Container =
 				new PostgreSqlBuilder()
-					.WithImage("postgres:16-alpine")
-					.WithDatabase("postgres")
-					.WithUsername("postgres")
-					.WithPassword("test_password")
-					.WithCleanUp(true)
-					.Build();
+				.WithImage("postgres:16-alpine")
+				.WithDatabase("postgres")
+				.WithUsername("postgres")
+				.WithPassword("test_password")
+				.WithCleanUp(true)
+				.Build();
 
 			await Container.StartAsync();
 			MasterConnectionString =
@@ -74,9 +74,10 @@ public static class SharedContainerManager
 	/// <returns>Connection string for the isolated database.</returns>
 	public static async Task<string> CreateDatabaseAsync(string databaseName)
 	{
-		if (DatabaseConnections.TryGetValue(
-			databaseName,
-			out string? existingConnection))
+		if (
+			DatabaseConnections.TryGetValue(
+				databaseName,
+				out string? existingConnection))
 		{
 			return existingConnection;
 		}
@@ -84,29 +85,27 @@ public static class SharedContainerManager
 		string masterConnection =
 			await GetOrCreateContainerAsync();
 
-		await using (NpgsqlConnection connection = new(masterConnection))
+		await using (NpgsqlConnection connection =
+			new(masterConnection))
 		{
 			await connection.OpenAsync();
 			await using NpgsqlCommand command =
 				new(
-					$"CREATE DATABASE \"{databaseName}\"",
-					connection);
+				$"CREATE DATABASE \"{databaseName}\"",
+				connection);
 			await command.ExecuteNonQueryAsync();
 		}
 
 		NpgsqlConnectionStringBuilder builder =
 			new(masterConnection)
-			{
-				Database = databaseName
-			};
-		string connectionString =
-			builder.ToString();
+		{
+			Database = databaseName,
+		};
+		string connectionString = builder.ToString();
 
 		await ApplyMigrationsAsync(connectionString);
 
-		DatabaseConnections.TryAdd(
-			databaseName,
-			connectionString);
+		DatabaseConnections.TryAdd(databaseName, connectionString);
 		return connectionString;
 	}
 
@@ -116,7 +115,8 @@ public static class SharedContainerManager
 			new DbContextOptionsBuilder<IdentityDbContext>()
 				.UseNpgsql(connectionString)
 				.Options;
-		await using (IdentityDbContext context = new(identityOptions))
+		await using (IdentityDbContext context =
+			new(identityOptions))
 		{
 			await context.Database.MigrateAsync();
 		}
@@ -125,7 +125,8 @@ public static class SharedContainerManager
 			new DbContextOptionsBuilder<LoggingDbContext>()
 				.UseNpgsql(connectionString)
 				.Options;
-		await using (LoggingDbContext context = new(loggingOptions))
+		await using (LoggingDbContext context =
+			new(loggingOptions))
 		{
 			await context.Database.MigrateAsync();
 		}
@@ -134,7 +135,8 @@ public static class SharedContainerManager
 			new DbContextOptionsBuilder<ApiTrackingDbContext>()
 				.UseNpgsql(connectionString)
 				.Options;
-		await using (ApiTrackingDbContext context = new(apiTrackingOptions))
+		await using (ApiTrackingDbContext context =
+			new(apiTrackingOptions))
 		{
 			await context.Database.MigrateAsync();
 		}

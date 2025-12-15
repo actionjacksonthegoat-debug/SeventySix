@@ -19,16 +19,16 @@ namespace SeventySix.ArchitectureTests;
 public class EntityConfigurationTests : SourceCodeArchitectureTest
 {
 	private static readonly string[] DataAnnotations =
-		[
-			"[Key]",
-			"[Required]",
-			"[MaxLength",
-			"[StringLength",
-			"[Column",
-			"[Table",
-			"[ForeignKey",
-			"[Index"
-		];
+	[
+		"[Key]",
+		"[Required]",
+		"[MaxLength",
+		"[StringLength",
+		"[Column",
+		"[Table",
+		"[ForeignKey",
+		"[Index",
+	];
 
 	[Fact]
 	public void Entities_ShouldNotUseDataAnnotations()
@@ -36,12 +36,12 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> entityFiles =
 			GetSourceFiles("*.cs")
-				.Where(f =>
-					f.Contains("\\Models\\")
-					&& !f.Contains("Dto")
-					&& !f.Contains("Request")
-					&& !f.Contains("Response")
-					&& !f.EndsWith("Settings.cs"));
+			.Where(f =>
+				f.Contains("\\Models\\")
+				&& !f.Contains("Dto")
+				&& !f.Contains("Request")
+				&& !f.Contains("Response")
+				&& !f.EndsWith("Settings.cs"));
 
 		List<string> violations = [];
 
@@ -73,15 +73,15 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> entityFiles =
 			GetSourceFiles("*.cs")
-				.Where(f =>
-					f.Contains("\\Models\\")
-					&& !f.Contains("Dto")
-					&& !f.Contains("Request")
-					&& !f.Contains("Response")
-					&& !f.Contains("Result")
-					&& !f.Contains("OAuth")
-					&& !f.EndsWith("Settings.cs"))
-				.ToList();
+			.Where(f =>
+				f.Contains("\\Models\\")
+				&& !f.Contains("Dto")
+				&& !f.Contains("Request")
+				&& !f.Contains("Response")
+				&& !f.Contains("Result")
+				&& !f.Contains("OAuth")
+				&& !f.EndsWith("Settings.cs"))
+			.ToList();
 
 		List<string> violations = [];
 
@@ -106,15 +106,16 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 
 			string expectedConfigFile =
 				entityFile
-					.Replace("\\Models\\", "\\Data\\Configurations\\")
-					.Replace($"{entityName}.cs", $"{entityName}Configuration.cs");
+				.Replace("\\Models\\", "\\Data\\Configurations\\")
+				.Replace($"{entityName}.cs", $"{entityName}Configuration.cs");
 
 			if (!File.Exists(expectedConfigFile))
 			{
 				string relativePath =
 					GetRelativePath(entityFile);
 
-				violations.Add($"{relativePath}: Missing {entityName}Configuration.cs");
+				violations.Add(
+					$"{relativePath}: Missing {entityName}Configuration.cs");
 			}
 		}
 

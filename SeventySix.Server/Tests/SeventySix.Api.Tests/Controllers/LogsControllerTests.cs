@@ -27,9 +27,12 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Service-layer logic is tested separately in repository/service tests.
 /// </remarks>
 [Collection("PostgreSQL")]
-public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
+	: ApiPostgreSqlTestBase<Program>(fixture),
+		IAsyncLifetime
 {
-	private readonly string TestId = Guid.NewGuid().ToString("N")[..8];
+	private readonly string TestId =
+		Guid.NewGuid().ToString("N")[..8];
 	private HttpClient? Client;
 	private ILogRepository? LogRepository;
 
@@ -39,7 +42,10 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		// DO NOT call base.InitializeAsync() to avoid truncating logs
 		// These tests expect logs from API requests to accumulate
 		// Only truncate non-logging tables for isolation
-		await TruncateTablesAsync([.. TestTables.ApiTracking, .. TestTables.Identity]);
+		await TruncateTablesAsync([
+			.. TestTables.ApiTracking,
+			.. TestTables.Identity,
+		]);
 
 		// Use shared factory's client for better performance
 		Client = CreateClient();
@@ -48,21 +54,27 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		await AuthenticateAsAdminAsync();
 
 		// Get repository to seed test data from shared factory
-		using IServiceScope scope = SharedFactory.Services.CreateScope();
-		LogRepository = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		using IServiceScope scope =
+			SharedFactory.Services.CreateScope();
+		LogRepository =
+			scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 		// Seed minimal test data needed for remaining tests
 		FakeTimeProvider timeProvider = new();
 		Log[] testLogs =
 		[
-			LogBuilder.CreateWarning(timeProvider)
+			LogBuilder
+				.CreateWarning(timeProvider)
 				.WithMessage("Test warning message")
 				.WithSourceContext("SeventySix.Api.Controllers.UsersController")
-				.WithTimestamp(timeProvider.GetUtcNow().UtcDateTime.AddHours(-1))
+				.WithTimestamp(
+					timeProvider.GetUtcNow().UtcDateTime.AddHours(-1))
 				.Build(),
-			LogBuilder.CreateError(timeProvider)
+			LogBuilder
+				.CreateError(timeProvider)
 				.WithMessage("Test error message")
-				.WithTimestamp(timeProvider.GetUtcNow().UtcDateTime.AddDays(-31)) // Older than 30 days for cleanup test
+				.WithTimestamp(
+					timeProvider.GetUtcNow().UtcDateTime.AddDays(-31)) // Older than 30 days for cleanup test
 				.Build(),
 		];
 
@@ -87,15 +99,20 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task GetPagedAsync_NoFilters_ReturnsLogsAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client!.GetAsync(ApiEndpoints.Logs.Base);
+		HttpResponseMessage response =
+			await Client!.GetAsync(
+			ApiEndpoints.Logs.Base);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		PagedResult<LogDto>? pagedResponse = await response.Content.ReadFromJsonAsync<PagedResult<LogDto>>();
+		PagedResult<LogDto>? pagedResponse =
+			await response.Content.ReadFromJsonAsync<PagedResult<LogDto>>();
 		Assert.NotNull(pagedResponse);
 		Assert.NotNull(pagedResponse.Items);
-		Assert.True(pagedResponse.Items.Count >= 2, "Should return at least the 2 seeded logs");
+		Assert.True(
+			pagedResponse.Items.Count >= 2,
+			"Should return at least the 2 seeded logs");
 	}
 
 	/// <summary>
@@ -105,7 +122,9 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task GetPagedAsync_ExceedsMaxPageSize_ReturnsBadRequestAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client!.GetAsync($"{ApiEndpoints.Logs.Base}?pageSize=200");
+		HttpResponseMessage response =
+			await Client!.GetAsync(
+			$"{ApiEndpoints.Logs.Base}?pageSize=200");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -119,17 +138,22 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		DateTime cutoffDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-30);
+		DateTime cutoffDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddDays(-30);
 
 		// Act
-		HttpResponseMessage response = await Client!.DeleteAsync(
+		HttpResponseMessage response =
+			await Client!.DeleteAsync(
 			ApiEndpoints.Logs.CleanupWithDate(cutoffDate));
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		int deletedCount = await response.Content.ReadFromJsonAsync<int>();
-		Assert.True(deletedCount >= 1, "Should delete at least the 31-day-old log");
+		int deletedCount =
+			await response.Content.ReadFromJsonAsync<int>();
+		Assert.True(
+			deletedCount >= 1,
+			"Should delete at least the 31-day-old log");
 	}
 
 	/// <summary>
@@ -139,7 +163,9 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task CleanupLogsAsync_NoCutoffDate_ReturnsBadRequestAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client!.DeleteAsync(ApiEndpoints.Logs.Cleanup);
+		HttpResponseMessage response =
+			await Client!.DeleteAsync(
+			ApiEndpoints.Logs.Cleanup);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -152,7 +178,8 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task LogClientErrorAsync_WithValidRequest_ReturnsNoContentAsync()
 	{
 		// Arrange
-		CreateLogRequest request = new()
+		CreateLogRequest request =
+			new()
 		{
 			LogLevel = "Error",
 			Message = "Client-side error occurred",
@@ -160,7 +187,10 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		};
 
 		// Act
-		HttpResponseMessage response = await Client!.PostAsJsonAsync(ApiEndpoints.Logs.Client, request);
+		HttpResponseMessage response =
+			await Client!.PostAsJsonAsync(
+			ApiEndpoints.Logs.Client,
+			request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -175,12 +205,23 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		// Arrange
 		CreateLogRequest[] requests =
 		[
-			new CreateLogRequest { LogLevel = "Error", Message = "Batch error 1" },
-			new CreateLogRequest { LogLevel = "Warning", Message = "Batch warning 2" },
+			new CreateLogRequest
+			{
+				LogLevel = "Error",
+				Message = "Batch error 1",
+			},
+			new CreateLogRequest
+			{
+				LogLevel = "Warning",
+				Message = "Batch warning 2",
+			},
 		];
 
 		// Act
-		HttpResponseMessage response = await Client!.PostAsJsonAsync(ApiEndpoints.Logs.ClientBatch, requests);
+		HttpResponseMessage response =
+			await Client!.PostAsJsonAsync(
+			ApiEndpoints.Logs.ClientBatch,
+			requests);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -196,20 +237,22 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		FakeTimeProvider timeProvider = new();
 		int logId;
 		{
-			using IServiceScope scope = SharedFactory.Services.CreateScope();
+			using IServiceScope scope =
+				SharedFactory.Services.CreateScope();
 			ILogRepository logRepo =
 				scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 			Log log =
 				await logRepo.CreateAsync(
-					new Log
-					{
-						LogLevel = "Error",
-						Message = "Test log for deletion",
-						CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-						MachineName = "test",
-						Environment = "Test",
-					});
+				new Log
+				{
+					LogLevel = "Error",
+					Message = "Test log for deletion",
+					CreateDate =
+				timeProvider.GetUtcNow().UtcDateTime,
+					MachineName = "test",
+					Environment = "Test",
+				});
 
 			logId = log.Id;
 		} // Dispose scope to ensure transaction is committed
@@ -217,12 +260,10 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		// Act
 		HttpResponseMessage response =
 			await Client!.DeleteAsync(
-				$"/api/v1/logs/{logId}");
+			$"/api/v1/logs/{logId}");
 
 		// Assert
-		Assert.Equal(
-			HttpStatusCode.NoContent,
-			response.StatusCode);
+		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 	}
 
 	/// <summary>
@@ -232,7 +273,9 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	public async Task DeleteLogAsync_WithInvalidId_ReturnsNotFoundAsync()
 	{
 		// Act
-		HttpResponseMessage response = await Client!.DeleteAsync("/api/v1/logs/999999999");
+		HttpResponseMessage response =
+			await Client!.DeleteAsync(
+			"/api/v1/logs/999999999");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -246,40 +289,55 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 	{
 		// Arrange - Create logs to delete
 		FakeTimeProvider timeProvider = new();
-		using IServiceScope scope = SharedFactory.Services.CreateScope();
-		ILogRepository logRepo = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+		using IServiceScope scope =
+			SharedFactory.Services.CreateScope();
+		ILogRepository logRepo =
+			scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
-		Log log1 = await logRepo.CreateAsync(new Log
-		{
-			LogLevel = "Error",
-			Message = "Batch delete test 1",
-			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-			MachineName = "test",
-			Environment = "Test",
-		});
+		Log log1 =
+			await logRepo.CreateAsync(
+			new Log
+			{
+				LogLevel = "Error",
+				Message = "Batch delete test 1",
+				CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+				MachineName = "test",
+				Environment = "Test",
+			});
 
-		Log log2 = await logRepo.CreateAsync(new Log
-		{
-			LogLevel = "Warning",
-			Message = "Batch delete test 2",
-			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-			MachineName = "test",
-			Environment = "Test",
-		});
+		Log log2 =
+			await logRepo.CreateAsync(
+			new Log
+			{
+				LogLevel = "Warning",
+				Message = "Batch delete test 2",
+				CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+				MachineName = "test",
+				Environment = "Test",
+			});
 
-		int[] idsToDelete = [log1.Id, log2.Id];
+		int[] idsToDelete =
+			[log1.Id, log2.Id];
 
 		// Act
-		HttpRequestMessage deleteRequest = new(HttpMethod.Delete, "/api/v1/logs/batch")
+		HttpRequestMessage deleteRequest =
+			new(
+			HttpMethod.Delete,
+			"/api/v1/logs/batch")
 		{
-			Content = JsonContent.Create(idsToDelete),
+			Content =
+			JsonContent.Create(idsToDelete),
 		};
-		HttpResponseMessage response = await Client!.SendAsync(deleteRequest);
+		HttpResponseMessage response =
+			await Client!.SendAsync(deleteRequest);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		int deletedCount = await response.Content.ReadFromJsonAsync<int>();
+		int deletedCount =
+			await response.Content.ReadFromJsonAsync<int>();
 		Assert.Equal(2, deletedCount);
 	}
 
@@ -293,11 +351,16 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 		int[] emptyIds = [];
 
 		// Act
-		HttpRequestMessage deleteRequest = new(HttpMethod.Delete, "/api/v1/logs/batch")
+		HttpRequestMessage deleteRequest =
+			new(
+			HttpMethod.Delete,
+			"/api/v1/logs/batch")
 		{
-			Content = JsonContent.Create(emptyIds),
+			Content =
+			JsonContent.Create(emptyIds),
 		};
-		HttpResponseMessage response = await Client!.SendAsync(deleteRequest);
+		HttpResponseMessage response =
+			await Client!.SendAsync(deleteRequest);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -315,11 +378,13 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture) : ApiP
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: $"admin_{TestId}",
-				Password: TestUserHelper.TestPassword);
+			UsernameOrEmail: $"admin_{TestId}",
+			Password: TestUserHelper.TestPassword);
 
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync(ApiEndpoints.Auth.Login, request);
+			await Client!.PostAsJsonAsync(
+			ApiEndpoints.Auth.Login,
+			request);
 
 		response.EnsureSuccessStatusCode();
 

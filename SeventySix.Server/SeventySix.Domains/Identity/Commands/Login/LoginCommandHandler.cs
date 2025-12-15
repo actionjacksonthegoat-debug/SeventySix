@@ -27,18 +27,38 @@ public static class LoginCommandHandler
 		ILogger<LoginCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		User? user = await authRepository.GetUserByUsernameOrEmailForUpdateAsync(command.Request.UsernameOrEmail, cancellationToken);
+		User? user =
+			await authRepository.GetUserByUsernameOrEmailForUpdateAsync(
+				command.Request.UsernameOrEmail,
+				cancellationToken);
 
-		AuthResult? userError = ValidateUserCanLogin(user, command.Request.UsernameOrEmail, authSettings, timeProvider, logger);
+		AuthResult? userError =
+			ValidateUserCanLogin(
+				user,
+				command.Request.UsernameOrEmail,
+				authSettings,
+				timeProvider,
+				logger);
 		if (userError != null)
 		{
 			return userError;
 		}
 
-		UserCredential? credential = await credentialRepository.GetByUserIdAsync(user!.Id, cancellationToken);
+		UserCredential? credential =
+			await credentialRepository.GetByUserIdAsync(
+				user!.Id,
+				cancellationToken);
 
-		AuthResult? credentialError = await ValidateCredentialAsync(
-			user, credential, command.Request.Password, authRepository, authSettings, timeProvider, logger, cancellationToken);
+		AuthResult? credentialError =
+			await ValidateCredentialAsync(
+				user,
+				credential,
+				command.Request.Password,
+				authRepository,
+				authSettings,
+				timeProvider,
+				logger,
+				cancellationToken);
 		if (credentialError != null)
 		{
 			return credentialError;
@@ -46,7 +66,8 @@ public static class LoginCommandHandler
 
 		await ResetLockoutAsync(user, authRepository, cancellationToken);
 
-		bool requiresPasswordChange = credential!.PasswordChangedAt == null;
+		bool requiresPasswordChange =
+			credential!.PasswordChangedAt == null;
 		return await authenticationService.GenerateAuthResultAsync(
 			user,
 			command.ClientIp,
@@ -82,24 +103,41 @@ public static class LoginCommandHandler
 	}
 
 	private static AuthResult? ValidateUserCanLogin(
-		User? user, string usernameOrEmail, IOptions<AuthSettings> authSettings, TimeProvider timeProvider, ILogger<LoginCommand> logger)
+		User? user,
+		string usernameOrEmail,
+		IOptions<AuthSettings> authSettings,
+		TimeProvider timeProvider,
+		ILogger<LoginCommand> logger)
 	{
 		if (user == null)
 		{
-			logger.LogWarning("Login attempt with invalid credentials. UsernameOrEmail: {UsernameOrEmail}", usernameOrEmail);
-			return AuthResult.Failed("Invalid username/email or password.", AuthErrorCodes.InvalidCredentials);
+			logger.LogWarning(
+				"Login attempt with invalid credentials. UsernameOrEmail: {UsernameOrEmail}",
+				usernameOrEmail);
+			return AuthResult.Failed(
+				"Invalid username/email or password.",
+				AuthErrorCodes.InvalidCredentials);
 		}
 
 		if (IsAccountLockedOut(user, authSettings, timeProvider))
 		{
-			logger.LogWarning("Login attempt for locked account. UserId: {UserId}, LockoutEnd: {LockoutEnd}", user.Id, user.LockoutEndUtc);
-			return AuthResult.Failed("Account is temporarily locked. Please try again later.", AuthErrorCodes.AccountLocked);
+			logger.LogWarning(
+				"Login attempt for locked account. UserId: {UserId}, LockoutEnd: {LockoutEnd}",
+				user.Id,
+				user.LockoutEndUtc);
+			return AuthResult.Failed(
+				"Account is temporarily locked. Please try again later.",
+				AuthErrorCodes.AccountLocked);
 		}
 
 		if (!user.IsActive)
 		{
-			logger.LogWarning("Login attempt for inactive account. UserId: {UserId}", user.Id);
-			return AuthResult.Failed("Account is inactive.", AuthErrorCodes.AccountInactive);
+			logger.LogWarning(
+				"Login attempt for inactive account. UserId: {UserId}",
+				user.Id);
+			return AuthResult.Failed(
+				"Account is inactive.",
+				AuthErrorCodes.AccountInactive);
 		}
 
 		return null;
@@ -117,15 +155,30 @@ public static class LoginCommandHandler
 	{
 		if (credential == null)
 		{
-			logger.LogWarning("Login attempt for user without password. UserId: {UserId}", user.Id);
-			return AuthResult.Failed("Invalid username/email or password.", AuthErrorCodes.InvalidCredentials);
+			logger.LogWarning(
+				"Login attempt for user without password. UserId: {UserId}",
+				user.Id);
+			return AuthResult.Failed(
+				"Invalid username/email or password.",
+				AuthErrorCodes.InvalidCredentials);
 		}
 
 		if (!BCrypt.Net.BCrypt.Verify(password, credential.PasswordHash))
 		{
-			await HandleFailedLoginAttemptAsync(user, authRepository, authSettings, timeProvider, logger, cancellationToken);
-			logger.LogWarning("Login attempt with wrong password. UserId: {UserId}, FailedAttempts: {FailedAttempts}", user.Id, user.FailedLoginCount);
-			return AuthResult.Failed("Invalid username/email or password.", AuthErrorCodes.InvalidCredentials);
+			await HandleFailedLoginAttemptAsync(
+				user,
+				authRepository,
+				authSettings,
+				timeProvider,
+				logger,
+				cancellationToken);
+			logger.LogWarning(
+				"Login attempt with wrong password. UserId: {UserId}, FailedAttempts: {FailedAttempts}",
+				user.Id,
+				user.FailedLoginCount);
+			return AuthResult.Failed(
+				"Invalid username/email or password.",
+				AuthErrorCodes.InvalidCredentials);
 		}
 
 		return null;
@@ -146,12 +199,15 @@ public static class LoginCommandHandler
 
 		user.FailedLoginCount++;
 
-		if (user.FailedLoginCount >= authSettings.Value.Lockout.MaxFailedAttempts)
+		if (
+			user.FailedLoginCount
+			>= authSettings.Value.Lockout.MaxFailedAttempts)
 		{
 			DateTime lockoutEnd =
-				timeProvider.GetUtcNow()
-					.AddMinutes(authSettings.Value.Lockout.LockoutDurationMinutes)
-					.UtcDateTime;
+				timeProvider
+				.GetUtcNow()
+				.AddMinutes(authSettings.Value.Lockout.LockoutDurationMinutes)
+				.UtcDateTime;
 
 			user.LockoutEndUtc = lockoutEnd;
 
@@ -162,9 +218,7 @@ public static class LoginCommandHandler
 				lockoutEnd);
 		}
 
-		await authRepository.SaveUserChangesAsync(
-			user,
-			cancellationToken);
+		await authRepository.SaveUserChangesAsync(user, cancellationToken);
 	}
 
 	private static async Task ResetLockoutAsync(
@@ -172,8 +226,7 @@ public static class LoginCommandHandler
 		IAuthRepository authRepository,
 		CancellationToken cancellationToken)
 	{
-		if (user.FailedLoginCount == 0
-			&& user.LockoutEndUtc == null)
+		if (user.FailedLoginCount == 0 && user.LockoutEndUtc == null)
 		{
 			return;
 		}
@@ -181,8 +234,6 @@ public static class LoginCommandHandler
 		user.FailedLoginCount = 0;
 		user.LockoutEndUtc = null;
 
-		await authRepository.SaveUserChangesAsync(
-			user,
-			cancellationToken);
+		await authRepository.SaveUserChangesAsync(user, cancellationToken);
 	}
 }

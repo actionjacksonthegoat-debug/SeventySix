@@ -7,9 +7,16 @@ namespace SeventySix.TestUtilities.TestHelpers;
 /// <summary>
 /// Test helper for mocking HttpMessageHandler without Moq.Protected().
 /// </summary>
-public class MockHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler) : HttpMessageHandler
+public class MockHttpMessageHandler(
+	Func<
+		HttpRequestMessage,
+		CancellationToken,
+		Task<HttpResponseMessage>
+	> handler) : HttpMessageHandler
 {
-	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+	protected override Task<HttpResponseMessage> SendAsync(
+		HttpRequestMessage request,
+		CancellationToken cancellationToken)
 	{
 		return handler(request, cancellationToken);
 	}

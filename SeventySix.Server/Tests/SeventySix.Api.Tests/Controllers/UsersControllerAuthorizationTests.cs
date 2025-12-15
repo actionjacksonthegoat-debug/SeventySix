@@ -15,18 +15,21 @@ namespace SeventySix.Api.Tests.Controllers;
 /// Tests that admin endpoints require proper authentication and admin role.
 /// </summary>
 [Collection("PostgreSQL")]
-public class UsersControllerAuthorizationTests(TestcontainersPostgreSqlFixture fixture)
-	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+public class UsersControllerAuthorizationTests(
+	TestcontainersPostgreSqlFixture fixture) : ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
 {
 	private const string Endpoint = ApiEndpoints.Users.Base;
-	private AuthorizationTestHelper AuthHelper = null!;
+	private AuthorizationTestHelper AuthHelper =
+		null!;
 
 	/// <inheritdoc/>
 	public override async Task InitializeAsync()
 	{
 		await base.InitializeAsync();
 		AuthHelper =
-			new AuthorizationTestHelper(CreateClient(), SharedFactory.Services);
+			new AuthorizationTestHelper(
+			CreateClient(),
+			SharedFactory.Services);
 	}
 
 	#region Unauthenticated Access Tests (401)
@@ -35,51 +38,49 @@ public class UsersControllerAuthorizationTests(TestcontainersPostgreSqlFixture f
 	/// Tests that GET /api/v1/users returns 401 without authentication.
 	/// </summary>
 	[Fact]
-	public Task GetAllAsync_WithoutAuth_ReturnsUnauthorizedAsync()
-		=> AuthHelper.AssertUnauthorizedAsync(HttpMethod.Get, Endpoint);
+	public Task GetAllAsync_WithoutAuth_ReturnsUnauthorizedAsync() =>
+		AuthHelper.AssertUnauthorizedAsync(HttpMethod.Get, Endpoint);
 
 	/// <summary>
 	/// Tests that GET /api/v1/users/{id} returns 401 without authentication.
 	/// </summary>
 	[Fact]
-	public Task GetByIdAsync_WithoutAuth_ReturnsUnauthorizedAsync()
-		=> AuthHelper.AssertUnauthorizedAsync(HttpMethod.Get, $"{Endpoint}/1");
+	public Task GetByIdAsync_WithoutAuth_ReturnsUnauthorizedAsync() =>
+		AuthHelper.AssertUnauthorizedAsync(HttpMethod.Get, $"{Endpoint}/1");
 
 	/// <summary>
 	/// Tests that POST /api/v1/users returns 401 without authentication.
 	/// </summary>
 	[Fact]
-	public Task CreateAsync_WithoutAuth_ReturnsUnauthorizedAsync()
-		=> AuthHelper.AssertUnauthorizedAsync(
+	public Task CreateAsync_WithoutAuth_ReturnsUnauthorizedAsync() =>
+		AuthHelper.AssertUnauthorizedAsync(
 			HttpMethod.Post,
 			Endpoint,
-			JsonContent.Create(new
-			{
-				Username = "test",
-				Email = "test@test.com",
-				Password = "Test123!"
-			}));
+			JsonContent.Create(
+				new
+				{
+					Username = "test",
+					Email = "test@test.com",
+					Password = "Test123!",
+				}));
 
 	/// <summary>
 	/// Tests that PUT /api/v1/users/{id} returns 401 without authentication.
 	/// </summary>
 	[Fact]
-	public Task UpdateAsync_WithoutAuth_ReturnsUnauthorizedAsync()
-		=> AuthHelper.AssertUnauthorizedAsync(
+	public Task UpdateAsync_WithoutAuth_ReturnsUnauthorizedAsync() =>
+		AuthHelper.AssertUnauthorizedAsync(
 			HttpMethod.Put,
 			$"{Endpoint}/1",
-			JsonContent.Create(new
-			{
-				Username = "test",
-				Email = "test@test.com"
-			}));
+			JsonContent.Create(
+				new { Username = "test", Email = "test@test.com" }));
 
 	/// <summary>
 	/// Tests that DELETE /api/v1/users/{id} returns 401 without authentication.
 	/// </summary>
 	[Fact]
-	public Task DeleteAsync_WithoutAuth_ReturnsUnauthorizedAsync()
-		=> AuthHelper.AssertUnauthorizedAsync(HttpMethod.Delete, $"{Endpoint}/1");
+	public Task DeleteAsync_WithoutAuth_ReturnsUnauthorizedAsync() =>
+		AuthHelper.AssertUnauthorizedAsync(HttpMethod.Delete, $"{Endpoint}/1");
 
 	#endregion
 
@@ -89,15 +90,21 @@ public class UsersControllerAuthorizationTests(TestcontainersPostgreSqlFixture f
 	/// Tests that GET /api/v1/users returns 403 for Developer role.
 	/// </summary>
 	[Fact]
-	public Task GetAllAsync_WithDeveloperRole_ReturnsForbiddenAsync()
-		=> AuthHelper.AssertForbiddenForRoleAsync(TestRoleConstants.Developer, HttpMethod.Get, Endpoint);
+	public Task GetAllAsync_WithDeveloperRole_ReturnsForbiddenAsync() =>
+		AuthHelper.AssertForbiddenForRoleAsync(
+			TestRoleConstants.Developer,
+			HttpMethod.Get,
+			Endpoint);
 
 	/// <summary>
 	/// Tests that DELETE /api/v1/users/{id} returns 403 for Developer role.
 	/// </summary>
 	[Fact]
-	public Task DeleteAsync_WithDeveloperRole_ReturnsForbiddenAsync()
-		=> AuthHelper.AssertForbiddenForRoleAsync(TestRoleConstants.Developer, HttpMethod.Delete, $"{Endpoint}/1");
+	public Task DeleteAsync_WithDeveloperRole_ReturnsForbiddenAsync() =>
+		AuthHelper.AssertForbiddenForRoleAsync(
+			TestRoleConstants.Developer,
+			HttpMethod.Delete,
+			$"{Endpoint}/1");
 
 	#endregion
 
@@ -107,15 +114,18 @@ public class UsersControllerAuthorizationTests(TestcontainersPostgreSqlFixture f
 	/// Tests that GET /api/v1/users returns 200 for Admin role.
 	/// </summary>
 	[Fact]
-	public Task GetAllAsync_WithAdminRole_ReturnsOkAsync()
-		=> AuthHelper.AssertAuthorizedForRoleAsync(TestRoleConstants.Admin, HttpMethod.Get, Endpoint);
+	public Task GetAllAsync_WithAdminRole_ReturnsOkAsync() =>
+		AuthHelper.AssertAuthorizedForRoleAsync(
+			TestRoleConstants.Admin,
+			HttpMethod.Get,
+			Endpoint);
 
 	/// <summary>
 	/// Tests that GET /api/v1/users/{id} returns 404 for Admin role (auth passed, resource not found).
 	/// </summary>
 	[Fact]
-	public Task GetByIdAsync_WithAdminRole_ReturnsNotFoundAsync()
-		=> AuthHelper.AssertStatusCodeForRoleAsync(
+	public Task GetByIdAsync_WithAdminRole_ReturnsNotFoundAsync() =>
+		AuthHelper.AssertStatusCodeForRoleAsync(
 			TestRoleConstants.Admin,
 			HttpMethod.Get,
 			$"{Endpoint}/99999",

@@ -22,11 +22,11 @@ public class LogCleanupService(
 	/// <inheritdoc/>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
-		LogCleanupSettings config =
-			settings.Value;
+		LogCleanupSettings config = settings.Value;
 
 		TimeSpan initialDelay =
-			TimeSpan.FromMinutes(config.InitialDelayMinutes);
+			TimeSpan.FromMinutes(
+				config.InitialDelayMinutes);
 
 		TimeSpan cleanupInterval =
 			TimeSpan.FromHours(config.IntervalHours);
@@ -34,9 +34,7 @@ public class LogCleanupService(
 		// Initial delay to let app fully start
 		if (initialDelay > TimeSpan.Zero)
 		{
-			await Task.Delay(
-				initialDelay,
-				stoppingToken);
+			await Task.Delay(initialDelay, stoppingToken);
 		}
 
 		while (!stoppingToken.IsCancellationRequested)
@@ -46,37 +44,34 @@ public class LogCleanupService(
 				await CleanupDatabaseLogsAsync(stoppingToken);
 				CleanupFileLogs();
 			}
-			catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+			catch (OperationCanceledException)
+				when (stoppingToken.IsCancellationRequested)
 			{
 				// Graceful shutdown - don't log as error
 				break;
 			}
 			catch (Exception ex)
 			{
-				logger.LogError(
-					ex,
-					"Error during log cleanup");
+				logger.LogError(ex, "Error during log cleanup");
 			}
 
-			await Task.Delay(
-				cleanupInterval,
-				stoppingToken);
+			await Task.Delay(cleanupInterval, stoppingToken);
 		}
 	}
 
-	private async Task CleanupDatabaseLogsAsync(CancellationToken cancellationToken)
+	private async Task CleanupDatabaseLogsAsync(
+		CancellationToken cancellationToken)
 	{
-		using IServiceScope scope =
-			scopeFactory.CreateScope();
+		using IServiceScope scope = scopeFactory.CreateScope();
 
 		ILogRepository repository =
 			scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 		DateTime cutoff =
 			timeProvider
-				.GetUtcNow()
-				.AddDays(-settings.Value.RetentionDays)
-				.UtcDateTime;
+			.GetUtcNow()
+			.AddDays(-settings.Value.RetentionDays)
+			.UtcDateTime;
 
 		int deletedCount =
 			await repository.DeleteOlderThanAsync(
@@ -94,8 +89,7 @@ public class LogCleanupService(
 
 	private void CleanupFileLogs()
 	{
-		LogCleanupSettings config =
-			settings.Value;
+		LogCleanupSettings config = settings.Value;
 
 		string logDirectory =
 			Path.Combine(
@@ -109,9 +103,9 @@ public class LogCleanupService(
 
 		DateTime cutoff =
 			timeProvider
-				.GetUtcNow()
-				.AddDays(-config.RetentionDays)
-				.UtcDateTime;
+			.GetUtcNow()
+			.AddDays(-config.RetentionDays)
+			.UtcDateTime;
 
 		int deletedCount = 0;
 

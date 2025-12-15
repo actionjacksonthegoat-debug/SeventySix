@@ -40,7 +40,8 @@ public class DatabaseLogSink(
 	string? machineName = null) : ILogEventSink, IAsyncDisposable
 {
 	private readonly ConcurrentQueue<LogEvent> LogQueue = new();
-	private readonly SemaphoreSlim ProcessingSemaphore = new(1, 1);
+	private readonly SemaphoreSlim ProcessingSemaphore =
+		new(1, 1);
 	private Timer? BatchTimer;
 	private const int BatchSize = 50;
 	private const int BatchIntervalMs = 5000;
@@ -57,11 +58,12 @@ public class DatabaseLogSink(
 			{
 				if (BatchTimer == null)
 				{
-					BatchTimer = new Timer(
-						callback: _ => _ = ProcessBatchAsync(),
-						state: null,
-						dueTime: TimeSpan.FromMilliseconds(BatchIntervalMs),
-						period: TimeSpan.FromMilliseconds(BatchIntervalMs));
+					BatchTimer =
+						new Timer(
+							callback: _ => _ = ProcessBatchAsync(),
+							state: null,
+							dueTime: TimeSpan.FromMilliseconds(BatchIntervalMs),
+							period: TimeSpan.FromMilliseconds(BatchIntervalMs));
 				}
 			}
 		}
@@ -88,24 +90,41 @@ public class DatabaseLogSink(
 
 		// Capture Activity context NOW (before queueing) since Activity.Current is AsyncLocal
 		// and won't be available in the background thread
-		System.Diagnostics.Activity? activity = System.Diagnostics.Activity.Current;
-		if (activity != null && !logEvent.Properties.ContainsKey("__ActivityTraceId"))
+		System.Diagnostics.Activity? activity =
+			System
+			.Diagnostics
+			.Activity
+			.Current;
+		if (
+			activity != null
+			&& !logEvent.Properties.ContainsKey("__ActivityTraceId"))
 		{
 			// Create enriched properties dictionary
-			Dictionary<string, LogEventPropertyValue> enrichedProperties = new(logEvent.Properties)
+			Dictionary<string, LogEventPropertyValue> enrichedProperties =
+				new(
+					logEvent.Properties)
 			{
-				["__ActivityTraceId"] = new ScalarValue(activity.TraceId.ToString()),
-				["__ActivitySpanId"] = new ScalarValue(activity.SpanId.ToString()),
-				["__ActivityParentSpanId"] = new ScalarValue(activity.ParentSpanId.ToString())
+				["__ActivityTraceId"] =
+				new ScalarValue(
+					activity.TraceId.ToString()),
+				["__ActivitySpanId"] =
+				new ScalarValue(
+					activity.SpanId.ToString()),
+				["__ActivityParentSpanId"] =
+				new ScalarValue(
+					activity.ParentSpanId.ToString()),
 			};
 
 			// Create new log event with enriched properties
-			logEvent = new LogEvent(
-				logEvent.Timestamp,
-				logEvent.Level,
-				logEvent.Exception,
-				logEvent.MessageTemplate,
-				enrichedProperties.Select(kvp => new LogEventProperty(kvp.Key, kvp.Value)));
+			logEvent =
+				new LogEvent(
+					logEvent.Timestamp,
+					logEvent.Level,
+					logEvent.Exception,
+					logEvent.MessageTemplate,
+					enrichedProperties.Select(kvp => new LogEventProperty(
+						kvp.Key,
+						kvp.Value)));
 		}
 
 		// Add to queue for batch processing
@@ -124,7 +143,8 @@ public class DatabaseLogSink(
 	private async Task ProcessBatchAsync(bool isDisposing = false)
 	{
 		// Wait for semaphore - if disposing, wait indefinitely, otherwise return if busy
-		bool acquired = isDisposing
+		bool acquired =
+			isDisposing
 			? await ProcessingSemaphore.WaitAsync(TimeSpan.FromSeconds(10))
 			: await ProcessingSemaphore.WaitAsync(0);
 
@@ -135,10 +155,13 @@ public class DatabaseLogSink(
 
 		try
 		{
-			List<LogEvent> batch = new(BatchSize);
+			List<LogEvent> batch =
+				new(BatchSize);
 
 			// Dequeue up to BatchSize events
-			while (batch.Count < BatchSize && LogQueue.TryDequeue(out LogEvent? logEvent))
+			while (
+				batch.Count < BatchSize
+				&& LogQueue.TryDequeue(out LogEvent? logEvent))
 			{
 				batch.Add(logEvent);
 			}
@@ -150,7 +173,8 @@ public class DatabaseLogSink(
 
 			// Create a single scope for the entire batch
 			using IServiceScope scope = serviceProvider.CreateScope();
-			ILogRepository logRepository = scope.ServiceProvider.GetRequiredService<ILogRepository>();
+			ILogRepository logRepository =
+				scope.ServiceProvider.GetRequiredService<ILogRepository>();
 
 			// Process all events in a batch
 			foreach (LogEvent logEvent in batch)
@@ -169,89 +193,169 @@ public class DatabaseLogSink(
 	/// </summary>
 	/// <param name="logEvent">The log event to persist.</param>
 	/// <param name="logRepository">The log repository to use (shared within batch).</param>
-	private async Task EmitAsync(LogEvent logEvent, ILogRepository logRepository)
+	private async Task EmitAsync(
+		LogEvent logEvent,
+		ILogRepository logRepository)
 	{
-		Log log = new()
+		Log log =
+			new()
 		{
 			LogLevel = logEvent.Level.ToString(),
 			Message = logEvent.RenderMessage(),
-			CreateDate = logEvent.Timestamp.UtcDateTime,
+			CreateDate =
+			logEvent.Timestamp.UtcDateTime,
 			Environment = environment,
 			MachineName = machineName,
 		};
 
-		// Capture OpenTelemetry trace context from Activity or enriched properties
-		if (logEvent.Properties.TryGetValue("__ActivityTraceId", out LogEventPropertyValue? traceIdProp))
+		ExtractTraceContext(logEvent, log);
+		ExtractExceptionInfo(logEvent, log);
+		ExtractHttpContextProperties(logEvent, log);
+		ExtractAdditionalProperties(logEvent, log);
+
+		await logRepository.CreateAsync(log);
+	}
+
+	/// <summary>
+	/// Extracts OpenTelemetry trace context from log event properties.
+	/// </summary>
+	private static void ExtractTraceContext(LogEvent logEvent, Log log)
+	{
+		if (
+			logEvent.Properties.TryGetValue(
+				"__ActivityTraceId",
+				out LogEventPropertyValue? traceIdProp))
 		{
-			log.CorrelationId = traceIdProp.ToString().Trim('"');
+			log.CorrelationId =
+				traceIdProp.ToString().Trim('"');
 		}
 
-		if (logEvent.Properties.TryGetValue("__ActivitySpanId", out LogEventPropertyValue? spanIdProp))
+		if (
+			logEvent.Properties.TryGetValue(
+				"__ActivitySpanId",
+				out LogEventPropertyValue? spanIdProp))
 		{
-			log.SpanId = spanIdProp.ToString().Trim('"');
+			log.SpanId =
+				spanIdProp.ToString().Trim('"');
 		}
 
-		if (logEvent.Properties.TryGetValue("__ActivityParentSpanId", out LogEventPropertyValue? parentSpanIdProp))
+		if (
+			logEvent.Properties.TryGetValue(
+				"__ActivityParentSpanId",
+				out LogEventPropertyValue? parentSpanIdProp))
 		{
-			log.ParentSpanId = parentSpanIdProp.ToString().Trim('"');
+			log.ParentSpanId =
+				parentSpanIdProp.ToString().Trim('"');
 		}
 
 		// Fallback: check for explicitly logged properties
-		if (string.IsNullOrEmpty(log.CorrelationId) && logEvent.Properties.TryGetValue("TraceId", out LogEventPropertyValue? traceIdProperty))
+		if (
+			string.IsNullOrEmpty(log.CorrelationId)
+			&& logEvent.Properties.TryGetValue(
+				"TraceId",
+				out LogEventPropertyValue? traceIdProperty))
 		{
-			log.CorrelationId = traceIdProperty.ToString().Trim('"');
+			log.CorrelationId =
+				traceIdProperty.ToString().Trim('"');
 		}
 
-		if (string.IsNullOrEmpty(log.SpanId) && logEvent.Properties.TryGetValue("SpanId", out LogEventPropertyValue? spanIdProperty))
+		if (
+			string.IsNullOrEmpty(log.SpanId)
+			&& logEvent.Properties.TryGetValue(
+				"SpanId",
+				out LogEventPropertyValue? spanIdProperty))
 		{
-			log.SpanId = spanIdProperty.ToString().Trim('"');
+			log.SpanId =
+				spanIdProperty.ToString().Trim('"');
 		}
+	}
 
-		// Extract exception information
+	/// <summary>
+	/// Extracts exception information from log event.
+	/// </summary>
+	private static void ExtractExceptionInfo(LogEvent logEvent, Log log)
+	{
 		if (logEvent.Exception != null)
 		{
-			(string? exceptionMessage, string? baseExceptionMessage, string? stackTrace) = FormatException(logEvent.Exception);
+			(
+				string? exceptionMessage,
+				string? baseExceptionMessage,
+				string? stackTrace
+			) =
+				FormatException(logEvent.Exception);
 			log.ExceptionMessage = exceptionMessage;
-			log.BaseExceptionMessage = baseExceptionMessage;
+			log.BaseExceptionMessage =
+				baseExceptionMessage;
 			log.StackTrace = stackTrace;
 		}
+	}
 
-		// Extract HTTP context properties if available
-		if (logEvent.Properties.TryGetValue("RequestMethod", out LogEventPropertyValue? requestMethod))
+	/// <summary>
+	/// Extracts HTTP context properties from log event.
+	/// </summary>
+	private static void ExtractHttpContextProperties(LogEvent logEvent, Log log)
+	{
+		if (
+			logEvent.Properties.TryGetValue(
+				"RequestMethod",
+				out LogEventPropertyValue? requestMethod))
 		{
-			log.RequestMethod = requestMethod.ToString().Trim('"');
+			log.RequestMethod =
+				requestMethod.ToString().Trim('"');
 		}
 
-		if (logEvent.Properties.TryGetValue("RequestPath", out LogEventPropertyValue? requestPath))
+		if (
+			logEvent.Properties.TryGetValue(
+				"RequestPath",
+				out LogEventPropertyValue? requestPath))
 		{
-			log.RequestPath = requestPath.ToString().Trim('"');
+			log.RequestPath =
+				requestPath.ToString().Trim('"');
 		}
 
-		if (logEvent.Properties.TryGetValue("StatusCode", out LogEventPropertyValue? statusCode) &&
-			int.TryParse(statusCode.ToString(), out int statusCodeValue))
+		if (
+			logEvent.Properties.TryGetValue(
+				"StatusCode",
+				out LogEventPropertyValue? statusCode) && int.TryParse(statusCode.ToString(), out int statusCodeValue))
 		{
 			log.StatusCode = statusCodeValue;
 		}
 
-		if (logEvent.Properties.TryGetValue("Elapsed", out LogEventPropertyValue? elapsed) &&
-			double.TryParse(elapsed.ToString(), out double elapsedValue))
+		if (
+			logEvent.Properties.TryGetValue(
+				"Elapsed",
+				out LogEventPropertyValue? elapsed) && double.TryParse(elapsed.ToString(), out double elapsedValue))
 		{
-			log.DurationMs = (long)elapsedValue;
+			log.DurationMs =
+				(long)elapsedValue;
 		}
 
-		if (logEvent.Properties.TryGetValue("SourceContext", out LogEventPropertyValue? sourceContext))
+		if (
+			logEvent.Properties.TryGetValue(
+				"SourceContext",
+				out LogEventPropertyValue? sourceContext))
 		{
-			log.SourceContext = sourceContext.ToString().Trim('"');
+			log.SourceContext =
+				sourceContext.ToString().Trim('"');
 		}
+	}
 
-		// Store additional properties as JSON
+	/// <summary>
+	/// Extracts additional properties and stores them as JSON.
+	/// </summary>
+	private static void ExtractAdditionalProperties(LogEvent logEvent, Log log)
+	{
 		if (logEvent.Properties.Count > 0)
 		{
 			StringBuilder properties = new();
 			properties.Append('{');
 			bool first = true;
 
-			foreach (KeyValuePair<string, LogEventPropertyValue> property in logEvent.Properties)
+			foreach (
+				KeyValuePair<
+					string,
+					LogEventPropertyValue
+				> property in logEvent.Properties)
 			{
 				if (!IsStandardProperty(property.Key))
 				{
@@ -268,9 +372,6 @@ public class DatabaseLogSink(
 			properties.Append('}');
 			log.Properties = properties.ToString();
 		}
-
-		// Persist to database (using shared DbContext from batch scope)
-		await logRepository.CreateAsync(log);
 	}
 
 	/// <summary>
@@ -278,7 +379,11 @@ public class DatabaseLogSink(
 	/// </summary>
 	/// <param name="exception">The exception to format.</param>
 	/// <returns>Tuple of (ExceptionMessage, BaseExceptionMessage, StackTrace).</returns>
-	private static (string? ExceptionMessage, string? BaseExceptionMessage, string? StackTrace) FormatException(Exception exception)
+	private static (
+		string? ExceptionMessage,
+		string? BaseExceptionMessage,
+		string? StackTrace
+	) FormatException(Exception exception)
 	{
 		string exceptionMessage = exception.Message;
 		string? baseExceptionMessage = null;
@@ -286,7 +391,9 @@ public class DatabaseLogSink(
 
 		// Get base exception if different
 		Exception baseException = exception.GetBaseException();
-		if (baseException != exception && baseException.Message != exception.Message)
+		if (
+			baseException != exception
+			&& baseException.Message != exception.Message)
 		{
 			baseExceptionMessage = baseException.Message;
 		}
@@ -294,12 +401,19 @@ public class DatabaseLogSink(
 		// Filter stack trace to only show our code (SeventySix namespace)
 		if (exception.StackTrace != null)
 		{
-			string[] lines = exception.StackTrace.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-			List<string> ourLines = [.. lines.Where(line => line.Contains("SeventySix"))];
+			string[] lines =
+				exception.StackTrace.Split(
+					['\r', '\n'],
+					StringSplitOptions.RemoveEmptyEntries);
+			List<string> ourLines =
+			[
+				.. lines.Where(line => line.Contains("SeventySix")),
+			];
 
 			if (ourLines.Count > 0)
 			{
-				stackTrace = string.Join(System.Environment.NewLine, ourLines);
+				stackTrace =
+					string.Join(System.Environment.NewLine, ourLines);
 			}
 			else
 			{

@@ -24,16 +24,20 @@ public static class GetApiRequestStatisticsQueryHandler
 		IEnumerable<ThirdPartyApiRequest> requests =
 			await repository.GetAllAsync(cancellationToken);
 
-		List<ThirdPartyApiRequest> requestList = [.. requests];
+		List<ThirdPartyApiRequest> requestList =
+			[.. requests];
 
 		return new ThirdPartyApiStatisticsResponse
 		{
-			TotalCallsToday = requestList.Sum(request => request.CallCount),
+			TotalCallsToday =
+			requestList.Sum(request => request.CallCount),
 			TotalApisTracked = requestList.Count,
-			CallsByApi = requestList.ToDictionary(
+			CallsByApi =
+			requestList.ToDictionary(
 				request => request.ApiName,
 				request => request.CallCount),
-			LastCalledByApi = requestList.ToDictionary(
+			LastCalledByApi =
+			requestList.ToDictionary(
 				request => request.ApiName,
 				request => request.LastCalledAt),
 		};

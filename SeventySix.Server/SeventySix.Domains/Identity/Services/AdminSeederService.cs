@@ -42,23 +42,21 @@ public class AdminSeederService(
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(
-				ex,
-				"Failed to seed admin user");
+			logger.LogError(ex, "Failed to seed admin user");
 		}
 	}
 
 	private async Task SeedAdminUserAsync(CancellationToken cancellationToken)
 	{
-		using IServiceScope scope =
-			scopeFactory.CreateScope();
+		using IServiceScope scope = scopeFactory.CreateScope();
 
 		IdentityDbContext context =
 			scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
 
 		// Check if admin user already exists
 		bool adminExists =
-			await context.Users
+			await context
+				.Users
 				.IgnoreQueryFilters()
 				.AnyAsync(
 					u => u.Username == settings.Value.Username,
@@ -71,7 +69,8 @@ public class AdminSeederService(
 
 		// Check if any admin role exists (may have been created through other means)
 		bool anyAdminRoleExists =
-			await context.UserRoles
+			await context
+				.UserRoles
 				.Include(userRole => userRole.Role)
 				.AnyAsync(
 					userRole => userRole.Role!.Name == RoleConstants.Admin,
@@ -83,21 +82,21 @@ public class AdminSeederService(
 		}
 
 		DateTime now =
-			timeProvider
-				.GetUtcNow()
-				.UtcDateTime;
+			timeProvider.GetUtcNow().UtcDateTime;
 
 		// Create admin user
 		User adminUser =
 			new()
-			{
-				Username = settings.Value.Username,
-				Email = settings.Value.Email,
-				FullName = settings.Value.FullName ?? "System Administrator",
-				IsActive = true,
-				CreateDate = now,
-				CreatedBy = AuditConstants.SystemUser
-			};
+		{
+			Username = settings.Value.Username,
+			Email = settings.Value.Email,
+			FullName =
+			settings.Value.FullName ?? "System Administrator",
+			IsActive = true,
+			CreateDate = now,
+			CreatedBy =
+			AuditConstants.SystemUser,
+		};
 
 		context.Users.Add(adminUser);
 		await context.SaveChangesAsync(cancellationToken);
@@ -111,35 +110,38 @@ public class AdminSeederService(
 
 		UserCredential credential =
 			new()
-			{
-				UserId = adminUser.Id,
-				PasswordHash = passwordHash,
-				PasswordChangedAt = null, // Forces password change on first login
-				CreateDate = now
-			};
+		{
+			UserId = adminUser.Id,
+			PasswordHash = passwordHash,
+			PasswordChangedAt = null, // Forces password change on first login
+			CreateDate = now,
+		};
 
 		context.UserCredentials.Add(credential);
 
 		// Look up Admin role ID from SecurityRoles
 		int? adminRoleId =
-			await context.SecurityRoles
-				.Where(securityRole => securityRole.Name == RoleConstants.Admin)
+			await context
+				.SecurityRoles
+				.Where(securityRole =>
+					securityRole.Name == RoleConstants.Admin)
 				.Select(securityRole => (int?)securityRole.Id)
 				.FirstOrDefaultAsync(cancellationToken);
 
 		if (adminRoleId is null)
 		{
-			logger.LogError("Admin role not found in SecurityRoles - cannot assign role to seeded admin user");
+			logger.LogError(
+				"Admin role not found in SecurityRoles - cannot assign role to seeded admin user");
 			return;
 		}
 
 		// Assign Admin role - CreateDate/CreatedBy set by AuditInterceptor
 		UserRole adminRole =
 			new()
-			{
-				UserId = adminUser.Id,
-				RoleId = adminRoleId.Value
-			};
+		{
+			UserId = adminUser.Id,
+			RoleId = adminRoleId.Value,
+		};
 
 		context.UserRoles.Add(adminRole);
 		await context.SaveChangesAsync(cancellationToken);

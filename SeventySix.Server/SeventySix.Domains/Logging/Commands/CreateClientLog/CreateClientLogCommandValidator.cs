@@ -7,7 +7,8 @@ using FluentValidation;
 namespace SeventySix.Logging.Commands.CreateClientLog;
 
 /// <summary>FluentValidation validator for CreateLogRequest.</summary>
-public class CreateClientLogCommandValidator : AbstractValidator<CreateLogRequest>
+public class CreateClientLogCommandValidator
+	: AbstractValidator<CreateLogRequest>
 {
 	/// <summary>Initializes a new instance of the <see cref="CreateClientLogCommandValidator"/> class.</summary>
 	public CreateClientLogCommandValidator()
@@ -16,7 +17,8 @@ public class CreateClientLogCommandValidator : AbstractValidator<CreateLogReques
 			.NotEmpty()
 			.WithMessage("LogLevel is required")
 			.Must(level => LogLevelConstants.CreateLevels.Contains(level))
-			.WithMessage($"LogLevel must be one of: {string.Join(", ", LogLevelConstants.CreateLevels)}");
+			.WithMessage(
+				$"LogLevel must be one of: {string.Join(", ", LogLevelConstants.CreateLevels)}");
 
 		RuleFor(request => request.Message)
 			.NotEmpty()

@@ -10,7 +10,6 @@ public static class GetAllUsersQueryHandler
 		IUserQueryRepository repository,
 		CancellationToken cancellationToken)
 	{
-		return await repository.GetAllProjectedAsync(
-			cancellationToken);
+		return await repository.GetAllProjectedAsync(cancellationToken);
 	}
 }

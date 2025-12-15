@@ -33,8 +33,7 @@ public static class InitiateRegistrationCommandHandler
 		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
-		string email =
-			request.Email;
+		string email = request.Email;
 
 		// Check if email is already registered
 		bool emailExists =
@@ -64,13 +63,14 @@ public static class InitiateRegistrationCommandHandler
 
 		EmailVerificationToken verificationToken =
 			new()
-			{
-				Email = email,
-				Token = token,
-				ExpiresAt = now.AddHours(24),
-				CreateDate = now,
-				IsUsed = false,
-			};
+		{
+			Email = email,
+			Token = token,
+			ExpiresAt =
+			now.AddHours(24),
+			CreateDate = now,
+			IsUsed = false,
+		};
 
 		await emailVerificationTokenRepository.CreateAsync(
 			verificationToken,

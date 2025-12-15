@@ -17,7 +17,8 @@ namespace SeventySix.Domains.Tests.Identity.Validators;
 /// </remarks>
 public class InitiatePasswordResetByEmailCommandValidatorTests
 {
-	private readonly InitiatePasswordResetByEmailCommandValidator Validator = new();
+	private readonly InitiatePasswordResetByEmailCommandValidator Validator =
+		new();
 
 	#region Valid Request Tests
 
@@ -41,7 +42,8 @@ public class InitiatePasswordResetByEmailCommandValidatorTests
 	{
 		// Arrange
 		ForgotPasswordRequest request =
-			new(Email: "user@mail.subdomain.example.com");
+			new(
+			Email: "user@mail.subdomain.example.com");
 
 		// Act
 		TestValidationResult<ForgotPasswordRequest> result =
@@ -94,7 +96,8 @@ public class InitiatePasswordResetByEmailCommandValidatorTests
 	[InlineData("@nodomain.com")]
 	[InlineData("nodomain@")]
 	[InlineData("no@@double.com")]
-	public async Task Email_InvalidFormat_FailsValidationAsync(string invalidEmail)
+	public async Task Email_InvalidFormat_FailsValidationAsync(
+		string invalidEmail)
 	{
 		// Arrange
 		ForgotPasswordRequest request =

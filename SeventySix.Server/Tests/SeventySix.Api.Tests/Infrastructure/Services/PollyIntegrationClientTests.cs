@@ -27,31 +27,43 @@ public class PollyIntegrationClientTests : IDisposable
 
 	public PollyIntegrationClientTests()
 	{
-		RateLimiter = Substitute.For<IRateLimitingService>();
-		LoggerFactory = Substitute.For<ILoggerFactory>();
-		LoggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
-		Cache = new MemoryCache(new MemoryCacheOptions());
-		Options = new PollyOptions
+		RateLimiter =
+			Substitute.For<IRateLimitingService>();
+		LoggerFactory =
+			Substitute.For<ILoggerFactory>();
+		LoggerFactory
+			.CreateLogger(Arg.Any<string>())
+			.Returns(Substitute.For<ILogger>());
+		Cache =
+			new MemoryCache(new MemoryCacheOptions());
+		Options =
+			new PollyOptions
 		{
 			RetryCount = 2,
-			RetryDelaySeconds = 0,  // Zero delay for fast test execution
+			RetryDelaySeconds = 0, // Zero delay for fast test execution
 			TimeoutSeconds = 5,
 			CircuitBreakerFailureThreshold = 3,
-			CircuitBreakerBreakDurationSeconds = 1,  // Polly minimum is 0.5s
+			CircuitBreakerBreakDurationSeconds = 1, // Polly minimum is 0.5s
 			CircuitBreakerSamplingDurationSeconds = 60,
 			UseJitter = false,
 		};
 
-		MockHttpMessageHandler handler = new((request, cancellationToken) =>
-			Task.FromResult(new HttpResponseMessage
-			{
-				StatusCode = HttpStatusCode.OK,
-				Content = new StringContent("{\"value\":\"success\"}"),
-			}));
+		MockHttpMessageHandler handler =
+			new(
+			(request, cancellationToken) =>
+				Task.FromResult(
+					new HttpResponseMessage
+					{
+						StatusCode = HttpStatusCode.OK,
+						Content =
+			new StringContent("{\"value\":\"success\"}"),
+					}));
 
-		HttpClient = new HttpClient(handler)
+		HttpClient =
+			new HttpClient(handler)
 		{
-			BaseAddress = new Uri("https://api.test.com"),
+			BaseAddress =
+			new Uri("https://api.test.com"),
 		};
 	}
 
@@ -62,19 +74,28 @@ public class PollyIntegrationClientTests : IDisposable
 		const string url = "/test";
 		const string apiName = "TestApi";
 		const string cacheKey = "test-key";
-		TestResponse expectedData = new() { Value = "cached" };
+		TestResponse expectedData =
+			new() { Value = "cached" };
 
 		Cache.Set(cacheKey, expectedData);
 
 		PollyIntegrationClient sut = CreateSut();
 
 		// Act
-		TestResponse? result = await sut.GetAsync<TestResponse>(url, apiName, cacheKey);
+		TestResponse? result =
+			await sut.GetAsync<TestResponse>(
+			url,
+			apiName,
+			cacheKey);
 
 		// Assert
 		Assert.NotNull(result);
 		Assert.Equal("cached", result.Value);
-		await RateLimiter.DidNotReceive().CanMakeRequestAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+		await RateLimiter
+			.DidNotReceive()
+			.CanMakeRequestAsync(
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -84,14 +105,16 @@ public class PollyIntegrationClientTests : IDisposable
 		const string url = "/test";
 		const string apiName = "TestApi";
 
-		RateLimiter.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>()).Returns(false);
+		RateLimiter
+			.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>())
+			.Returns(false);
 		RateLimiter.GetTimeUntilReset().Returns(TimeSpan.FromHours(1));
 
 		PollyIntegrationClient sut = CreateSut();
 
 		// Act & Assert
-		await Assert.ThrowsAsync<InvalidOperationException>(
-			async () => await sut.GetAsync<TestResponse>(url, apiName));
+		await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+			await sut.GetAsync<TestResponse>(url, apiName));
 	}
 
 	[Fact]
@@ -102,18 +125,34 @@ public class PollyIntegrationClientTests : IDisposable
 		const string apiName = "TestApi";
 		const string cacheKey = "test-key";
 
-		RateLimiter.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>()).Returns(true);
-		RateLimiter.TryIncrementRequestCountAsync(apiName, Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+		RateLimiter
+			.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>())
+			.Returns(true);
+		RateLimiter
+			.TryIncrementRequestCountAsync(
+				apiName,
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>())
+			.Returns(true);
 
 		PollyIntegrationClient sut = CreateSut();
 
 		// Act
-		TestResponse? result = await sut.GetAsync<TestResponse>(url, apiName, cacheKey);
+		TestResponse? result =
+			await sut.GetAsync<TestResponse>(
+			url,
+			apiName,
+			cacheKey);
 
 		// Assert
 		Assert.NotNull(result);
 		Assert.Equal("success", result.Value);
-		await RateLimiter.Received(1).TryIncrementRequestCountAsync(apiName, Arg.Any<string>(), Arg.Any<CancellationToken>());
+		await RateLimiter
+			.Received(1)
+			.TryIncrementRequestCountAsync(
+				apiName,
+				Arg.Any<string>(),
+				Arg.Any<CancellationToken>());
 
 		// Verify cached
 		Assert.True(Cache.TryGetValue(cacheKey, out TestResponse? cached));
@@ -127,8 +166,8 @@ public class PollyIntegrationClientTests : IDisposable
 		PollyIntegrationClient sut = CreateSut();
 
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(
-			async () => await sut.GetAsync<TestResponse>(null!, "TestApi"));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+			await sut.GetAsync<TestResponse>(null!, "TestApi"));
 	}
 
 	[Fact]
@@ -138,8 +177,8 @@ public class PollyIntegrationClientTests : IDisposable
 		PollyIntegrationClient sut = CreateSut();
 
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(
-			async () => await sut.GetAsync<TestResponse>("/test", null!));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+			await sut.GetAsync<TestResponse>("/test", null!));
 	}
 
 	[Fact]
@@ -147,16 +186,21 @@ public class PollyIntegrationClientTests : IDisposable
 	{
 		// Arrange
 		const string apiName = "TestApi";
-		RateLimiter.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>()).Returns(true);
+		RateLimiter
+			.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>())
+			.Returns(true);
 
 		PollyIntegrationClient sut = CreateSut();
 
 		// Act
-		bool result = await sut.CanMakeRequestAsync(apiName);
+		bool result =
+			await sut.CanMakeRequestAsync(apiName);
 
 		// Assert
 		Assert.True(result);
-		await RateLimiter.Received(1).CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>());
+		await RateLimiter
+			.Received(1)
+			.CanMakeRequestAsync(apiName, Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -164,16 +208,21 @@ public class PollyIntegrationClientTests : IDisposable
 	{
 		// Arrange
 		const string apiName = "TestApi";
-		RateLimiter.GetRemainingQuotaAsync(apiName, Arg.Any<CancellationToken>()).Returns(500);
+		RateLimiter
+			.GetRemainingQuotaAsync(apiName, Arg.Any<CancellationToken>())
+			.Returns(500);
 
 		PollyIntegrationClient sut = CreateSut();
 
 		// Act
-		int result = await sut.GetRemainingQuotaAsync(apiName);
+		int result =
+			await sut.GetRemainingQuotaAsync(apiName);
 
 		// Assert
 		Assert.Equal(500, result);
-		await RateLimiter.Received(1).GetRemainingQuotaAsync(apiName, Arg.Any<CancellationToken>());
+		await RateLimiter
+			.Received(1)
+			.GetRemainingQuotaAsync(apiName, Arg.Any<CancellationToken>());
 	}
 
 	public void Dispose()

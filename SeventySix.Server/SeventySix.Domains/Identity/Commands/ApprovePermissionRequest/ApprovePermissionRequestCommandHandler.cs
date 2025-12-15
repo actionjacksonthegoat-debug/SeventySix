@@ -38,9 +38,7 @@ public static class ApprovePermissionRequestCommandHandler
 			request.RequestedRole!.Name,
 			cancellationToken);
 
-		await repository.DeleteAsync(
-			command.RequestId,
-			cancellationToken);
+		await repository.DeleteAsync(command.RequestId, cancellationToken);
 
 		return true;
 	}

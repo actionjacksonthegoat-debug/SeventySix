@@ -9,6 +9,4 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <param name="UserId">The user ID.</param>
 /// <param name="Role">The role name to add.</param>
-public record AddUserRoleCommand(
-	int UserId,
-	string Role);
+public record AddUserRoleCommand(int UserId, string Role);

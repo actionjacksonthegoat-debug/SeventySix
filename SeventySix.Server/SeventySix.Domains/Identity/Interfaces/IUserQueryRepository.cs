@@ -60,7 +60,10 @@ public interface IUserQueryRepository
 	/// <summary>
 	/// Gets paged users projected to DTOs.
 	/// </summary>
-	public Task<(IEnumerable<UserDto> Users, int TotalCount)> GetPagedProjectedAsync(
+	public Task<(
+		IEnumerable<UserDto> Users,
+		int TotalCount
+	)> GetPagedProjectedAsync(
 		UserQueryRequest request,
 		CancellationToken cancellationToken = default);
 

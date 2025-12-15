@@ -8,15 +8,34 @@ public sealed class QueryBuilderTests
 	public void Where_SingleCondition_AppliesFilter()
 	{
 		// Arrange
-		List<TestEntity> entities = [
-			new TestEntity { Id = 1, Name = "Alice", Age = 30 },
-			new TestEntity { Id = 2, Name = "Bob", Age = 25 },
-			new TestEntity { Id = 3, Name = "Charlie", Age = 35 }
+		List<TestEntity> entities =
+		[
+			new TestEntity
+			{
+				Id = 1,
+				Name = "Alice",
+				Age = 30,
+			},
+			new TestEntity
+			{
+				Id = 2,
+				Name = "Bob",
+				Age = 25,
+			},
+			new TestEntity
+			{
+				Id = 3,
+				Name = "Charlie",
+				Age = 35,
+			},
 		];
 
 		// Act
-		List<TestEntity> result = entities.AsQueryable()
-			.ApplyQueryBuilder(builder => builder.Where(entity => entity.Age > 28))
+		List<TestEntity> result =
+			entities
+			.AsQueryable()
+			.ApplyQueryBuilder(builder =>
+				builder.Where(entity => entity.Age > 28))
 			.ToList();
 
 		// Assert
@@ -29,18 +48,46 @@ public sealed class QueryBuilderTests
 	public void Where_MultipleConditions_AppliesAllFilters()
 	{
 		// Arrange
-		List<TestEntity> entities = [
-			new TestEntity { Id = 1, Name = "Alice", Age = 30, IsActive = true },
-			new TestEntity { Id = 2, Name = "Bob", Age = 25, IsActive = false },
-			new TestEntity { Id = 3, Name = "Charlie", Age = 35, IsActive = true },
-			new TestEntity { Id = 4, Name = "Diana", Age = 32, IsActive = false }
+		List<TestEntity> entities =
+		[
+			new TestEntity
+			{
+				Id = 1,
+				Name = "Alice",
+				Age = 30,
+				IsActive = true,
+			},
+			new TestEntity
+			{
+				Id = 2,
+				Name = "Bob",
+				Age = 25,
+				IsActive = false,
+			},
+			new TestEntity
+			{
+				Id = 3,
+				Name = "Charlie",
+				Age = 35,
+				IsActive = true,
+			},
+			new TestEntity
+			{
+				Id = 4,
+				Name = "Diana",
+				Age = 32,
+				IsActive = false,
+			},
 		];
 
 		// Act
-		List<TestEntity> result = entities.AsQueryable()
-			.ApplyQueryBuilder(builder => builder
-				.Where(entity => entity.Age > 28)
-				.Where(entity => entity.IsActive))
+		List<TestEntity> result =
+			entities
+			.AsQueryable()
+			.ApplyQueryBuilder(builder =>
+				builder
+					.Where(entity => entity.Age > 28)
+					.Where(entity => entity.IsActive))
 			.ToList();
 
 		// Assert
@@ -53,15 +100,34 @@ public sealed class QueryBuilderTests
 	public void OrderBy_AscendingOrder_SortsCorrectly()
 	{
 		// Arrange
-		List<TestEntity> entities = [
-			new TestEntity { Id = 1, Name = "Charlie", Age = 35 },
-			new TestEntity { Id = 2, Name = "Alice", Age = 30 },
-			new TestEntity { Id = 3, Name = "Bob", Age = 25 }
+		List<TestEntity> entities =
+		[
+			new TestEntity
+			{
+				Id = 1,
+				Name = "Charlie",
+				Age = 35,
+			},
+			new TestEntity
+			{
+				Id = 2,
+				Name = "Alice",
+				Age = 30,
+			},
+			new TestEntity
+			{
+				Id = 3,
+				Name = "Bob",
+				Age = 25,
+			},
 		];
 
 		// Act
-		List<TestEntity> result = entities.AsQueryable()
-			.ApplyQueryBuilder(builder => builder.OrderBy(entity => entity.Name))
+		List<TestEntity> result =
+			entities
+			.AsQueryable()
+			.ApplyQueryBuilder(builder =>
+				builder.OrderBy(entity => entity.Name))
 			.ToList();
 
 		// Assert
@@ -75,15 +141,34 @@ public sealed class QueryBuilderTests
 	public void OrderByDescending_DescendingOrder_SortsCorrectly()
 	{
 		// Arrange
-		List<TestEntity> entities = [
-			new TestEntity { Id = 1, Name = "Alice", Age = 30 },
-			new TestEntity { Id = 2, Name = "Bob", Age = 25 },
-			new TestEntity { Id = 3, Name = "Charlie", Age = 35 }
+		List<TestEntity> entities =
+		[
+			new TestEntity
+			{
+				Id = 1,
+				Name = "Alice",
+				Age = 30,
+			},
+			new TestEntity
+			{
+				Id = 2,
+				Name = "Bob",
+				Age = 25,
+			},
+			new TestEntity
+			{
+				Id = 3,
+				Name = "Charlie",
+				Age = 35,
+			},
 		];
 
 		// Act
-		List<TestEntity> result = entities.AsQueryable()
-			.ApplyQueryBuilder(builder => builder.OrderByDescending(entity => entity.Age))
+		List<TestEntity> result =
+			entities
+			.AsQueryable()
+			.ApplyQueryBuilder(builder =>
+				builder.OrderByDescending(entity => entity.Age))
 			.ToList();
 
 		// Assert
@@ -97,17 +182,36 @@ public sealed class QueryBuilderTests
 	public void ThenBy_SecondarySort_AppliesTieBreaker()
 	{
 		// Arrange
-		List<TestEntity> entities = [
-			new TestEntity { Id = 1, Name = "Alice", Age = 30 },
-			new TestEntity { Id = 2, Name = "Charlie", Age = 30 },
-			new TestEntity { Id = 3, Name = "Bob", Age = 30 }
+		List<TestEntity> entities =
+		[
+			new TestEntity
+			{
+				Id = 1,
+				Name = "Alice",
+				Age = 30,
+			},
+			new TestEntity
+			{
+				Id = 2,
+				Name = "Charlie",
+				Age = 30,
+			},
+			new TestEntity
+			{
+				Id = 3,
+				Name = "Bob",
+				Age = 30,
+			},
 		];
 
 		// Act
-		List<TestEntity> result = entities.AsQueryable()
-			.ApplyQueryBuilder(builder => builder
-				.OrderBy(entity => entity.Age)
-				.ThenBy(entity => entity.Name))
+		List<TestEntity> result =
+			entities
+			.AsQueryable()
+			.ApplyQueryBuilder(builder =>
+				builder
+					.OrderBy(entity => entity.Age)
+					.ThenBy(entity => entity.Name))
 			.ToList();
 
 		// Assert
@@ -121,15 +225,38 @@ public sealed class QueryBuilderTests
 	public void Skip_ValidCount_SkipsItems()
 	{
 		// Arrange
-		List<TestEntity> entities = [
-			new TestEntity { Id = 1, Name = "Alice", Age = 30 },
-			new TestEntity { Id = 2, Name = "Bob", Age = 25 },
-			new TestEntity { Id = 3, Name = "Charlie", Age = 35 },
-			new TestEntity { Id = 4, Name = "Diana", Age = 28 }
+		List<TestEntity> entities =
+		[
+			new TestEntity
+			{
+				Id = 1,
+				Name = "Alice",
+				Age = 30,
+			},
+			new TestEntity
+			{
+				Id = 2,
+				Name = "Bob",
+				Age = 25,
+			},
+			new TestEntity
+			{
+				Id = 3,
+				Name = "Charlie",
+				Age = 35,
+			},
+			new TestEntity
+			{
+				Id = 4,
+				Name = "Diana",
+				Age = 28,
+			},
 		];
 
 		// Act
-		List<TestEntity> result = entities.AsQueryable()
+		List<TestEntity> result =
+			entities
+			.AsQueryable()
 			.ApplyQueryBuilder(builder => builder.Skip(2))
 			.ToList();
 
@@ -143,15 +270,38 @@ public sealed class QueryBuilderTests
 	public void Take_ValidCount_LimitsResults()
 	{
 		// Arrange
-		List<TestEntity> entities = [
-			new TestEntity { Id = 1, Name = "Alice", Age = 30 },
-			new TestEntity { Id = 2, Name = "Bob", Age = 25 },
-			new TestEntity { Id = 3, Name = "Charlie", Age = 35 },
-			new TestEntity { Id = 4, Name = "Diana", Age = 28 }
+		List<TestEntity> entities =
+		[
+			new TestEntity
+			{
+				Id = 1,
+				Name = "Alice",
+				Age = 30,
+			},
+			new TestEntity
+			{
+				Id = 2,
+				Name = "Bob",
+				Age = 25,
+			},
+			new TestEntity
+			{
+				Id = 3,
+				Name = "Charlie",
+				Age = 35,
+			},
+			new TestEntity
+			{
+				Id = 4,
+				Name = "Diana",
+				Age = 28,
+			},
 		];
 
 		// Act
-		List<TestEntity> result = entities.AsQueryable()
+		List<TestEntity> result =
+			entities
+			.AsQueryable()
 			.ApplyQueryBuilder(builder => builder.Take(2))
 			.ToList();
 
@@ -163,16 +313,44 @@ public sealed class QueryBuilderTests
 	public void Paginate_ValidPageAndSize_ReturnsPaginatedResults()
 	{
 		// Arrange
-		List<TestEntity> entities = [
-			new TestEntity { Id = 1, Name = "Alice", Age = 30 },
-			new TestEntity { Id = 2, Name = "Bob", Age = 25 },
-			new TestEntity { Id = 3, Name = "Charlie", Age = 35 },
-			new TestEntity { Id = 4, Name = "Diana", Age = 28 },
-			new TestEntity { Id = 5, Name = "Eve", Age = 32 }
+		List<TestEntity> entities =
+		[
+			new TestEntity
+			{
+				Id = 1,
+				Name = "Alice",
+				Age = 30,
+			},
+			new TestEntity
+			{
+				Id = 2,
+				Name = "Bob",
+				Age = 25,
+			},
+			new TestEntity
+			{
+				Id = 3,
+				Name = "Charlie",
+				Age = 35,
+			},
+			new TestEntity
+			{
+				Id = 4,
+				Name = "Diana",
+				Age = 28,
+			},
+			new TestEntity
+			{
+				Id = 5,
+				Name = "Eve",
+				Age = 32,
+			},
 		];
 
 		// Act
-		List<TestEntity> result = entities.AsQueryable()
+		List<TestEntity> result =
+			entities
+			.AsQueryable()
 			.ApplyQueryBuilder(builder => builder.Paginate(2, 2))
 			.ToList();
 
@@ -186,24 +364,64 @@ public sealed class QueryBuilderTests
 	public void FluentChaining_ComplexQuery_AppliesAllOperations()
 	{
 		// Arrange
-		List<TestEntity> entities = [
-			new TestEntity { Id = 1, Name = "Alice", Age = 30, IsActive = true },
-			new TestEntity { Id = 2, Name = "Bob", Age = 25, IsActive = false },
-			new TestEntity { Id = 3, Name = "Charlie", Age = 35, IsActive = true },
-			new TestEntity { Id = 4, Name = "Diana", Age = 28, IsActive = true },
-			new TestEntity { Id = 5, Name = "Eve", Age = 32, IsActive = true },
-			new TestEntity { Id = 6, Name = "Frank", Age = 27, IsActive = false }
+		List<TestEntity> entities =
+		[
+			new TestEntity
+			{
+				Id = 1,
+				Name = "Alice",
+				Age = 30,
+				IsActive = true,
+			},
+			new TestEntity
+			{
+				Id = 2,
+				Name = "Bob",
+				Age = 25,
+				IsActive = false,
+			},
+			new TestEntity
+			{
+				Id = 3,
+				Name = "Charlie",
+				Age = 35,
+				IsActive = true,
+			},
+			new TestEntity
+			{
+				Id = 4,
+				Name = "Diana",
+				Age = 28,
+				IsActive = true,
+			},
+			new TestEntity
+			{
+				Id = 5,
+				Name = "Eve",
+				Age = 32,
+				IsActive = true,
+			},
+			new TestEntity
+			{
+				Id = 6,
+				Name = "Frank",
+				Age = 27,
+				IsActive = false,
+			},
 		];
 
 		// Act
-		List<TestEntity> result = entities.AsQueryable()
-			.ApplyQueryBuilder(builder => builder
-				.Where(entity => entity.IsActive)
-				.Where(entity => entity.Age >= 28)
-				.OrderByDescending(entity => entity.Age)
-				.ThenBy(entity => entity.Name)
-				.Skip(1)
-				.Take(2))
+		List<TestEntity> result =
+			entities
+			.AsQueryable()
+			.ApplyQueryBuilder(builder =>
+				builder
+					.Where(entity => entity.IsActive)
+					.Where(entity => entity.Age >= 28)
+					.OrderByDescending(entity => entity.Age)
+					.ThenBy(entity => entity.Name)
+					.Skip(1)
+					.Take(2))
 			.ToList();
 
 		// Assert
@@ -216,13 +434,26 @@ public sealed class QueryBuilderTests
 	public void EmptyBuilder_NoOperations_ReturnsAllItems()
 	{
 		// Arrange
-		List<TestEntity> entities = [
-			new TestEntity { Id = 1, Name = "Alice", Age = 30 },
-			new TestEntity { Id = 2, Name = "Bob", Age = 25 }
+		List<TestEntity> entities =
+		[
+			new TestEntity
+			{
+				Id = 1,
+				Name = "Alice",
+				Age = 30,
+			},
+			new TestEntity
+			{
+				Id = 2,
+				Name = "Bob",
+				Age = 25,
+			},
 		];
 
 		// Act
-		List<TestEntity> result = entities.AsQueryable()
+		List<TestEntity> result =
+			entities
+			.AsQueryable()
 			.ApplyQueryBuilder(builder => builder)
 			.ToList();
 
@@ -233,17 +464,8 @@ public sealed class QueryBuilderTests
 
 public sealed class TestEntity
 {
-	public int Id
-	{
-		get; set;
-	}
+	public int Id { get; set; }
 	public string Name { get; set; } = string.Empty;
-	public int Age
-	{
-		get; set;
-	}
-	public bool IsActive
-	{
-		get; set;
-	}
+	public int Age { get; set; }
+	public bool IsActive { get; set; }
 }

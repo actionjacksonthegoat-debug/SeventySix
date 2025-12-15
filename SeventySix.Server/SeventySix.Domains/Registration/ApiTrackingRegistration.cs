@@ -57,18 +57,20 @@ public static class ApiTrackingRegistration
 			configuration.GetSection(ThirdPartyApiLimitSettings.SECTION_NAME));
 
 		// Register ApiTrackingDbContext with PostgreSQL and AuditInterceptor
-		services.AddDbContext<ApiTrackingDbContext>((
-			serviceProvider,
-			options) =>
-		{
-			AuditInterceptor auditInterceptor =
-				serviceProvider.GetRequiredService<AuditInterceptor>();
-			options.UseNpgsql(connectionString);
-			options.AddInterceptors(auditInterceptor);
-		});
+		services.AddDbContext<ApiTrackingDbContext>(
+			(serviceProvider, options) =>
+			{
+				AuditInterceptor auditInterceptor =
+					serviceProvider.GetRequiredService<AuditInterceptor>();
+				options.UseNpgsql(connectionString);
+				options.AddInterceptors(auditInterceptor);
+			});
 
 		// Register repositories
-		services.AddScoped<IThirdPartyApiRequestRepository, ThirdPartyApiRequestRepository>();
+		services.AddScoped<
+			IThirdPartyApiRequestRepository,
+			ThirdPartyApiRequestRepository
+		>();
 
 		// Register health check for multi-db health monitoring
 		services.AddScoped<IDatabaseHealthCheck, ApiTrackingHealthCheck>();

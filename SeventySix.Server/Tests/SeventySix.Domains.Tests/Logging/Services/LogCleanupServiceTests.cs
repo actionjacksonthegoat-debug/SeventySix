@@ -28,14 +28,14 @@ public class LogCleanupServiceTests
 		Substitute.For<ILogRepository>();
 
 	private readonly ILogger<LogCleanupService> Logger =
-		Substitute.For<ILogger<LogCleanupService>>();
+		Substitute.For<
+		ILogger<LogCleanupService>
+	>();
 
 	public LogCleanupServiceTests()
 	{
 		// Setup scope factory chain
-		ServiceProvider
-			.GetService(typeof(ILogRepository))
-			.Returns(Repository);
+		ServiceProvider.GetService(typeof(ILogRepository)).Returns(Repository);
 
 		Scope.ServiceProvider.Returns(ServiceProvider);
 		ScopeFactory.CreateScope().Returns(Scope);
@@ -46,26 +46,23 @@ public class LogCleanupServiceTests
 	{
 		// Arrange
 		LogCleanupSettings settings =
-			new()
-			{
-				Enabled = false
-			};
+			new() { Enabled = false };
 
 		IOptions<LogCleanupSettings> options =
-		Options.Create(settings);
+			Options.Create(settings);
 
 		LogCleanupService service =
 			new(
-				ScopeFactory,
-				options,
-				TimeProvider.System,
-				Logger);
+			ScopeFactory,
+			options,
+			TimeProvider.System,
+			Logger);
 
-		using CancellationTokenSource cts =
-			new();
+		using CancellationTokenSource cts = new();
 
 		// Act - Start and immediately cancel
-		cts.CancelAfter(TimeSpan.FromMilliseconds(100)); await service.StartAsync(cts.Token);
+		cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+		await service.StartAsync(cts.Token);
 		await Task.Delay(50);
 		await service.StopAsync(cts.Token);
 
@@ -83,12 +80,12 @@ public class LogCleanupServiceTests
 		// Arrange
 		LogCleanupSettings settings =
 			new()
-			{
-				Enabled = true,
-				InitialDelayMinutes = 0, // No delay for test
-				IntervalHours = 24,
-				RetentionDays = 7
-			};
+		{
+			Enabled = true,
+			InitialDelayMinutes = 0, // No delay for test
+			IntervalHours = 24,
+			RetentionDays = 7,
+		};
 
 		IOptions<LogCleanupSettings> options =
 			Options.Create(settings);
@@ -99,19 +96,18 @@ public class LogCleanupServiceTests
 				Arg.Any<CancellationToken>())
 			.Returns(5);
 
-
 		LogCleanupService service =
 			new(
-				ScopeFactory,
-				options,
-				TimeProvider.System,
-				Logger);
+			ScopeFactory,
+			options,
+			TimeProvider.System,
+			Logger);
 
-		using CancellationTokenSource cts =
-			new();
+		using CancellationTokenSource cts = new();
 
 		// Act - Run briefly then cancel
-		cts.CancelAfter(TimeSpan.FromMilliseconds(200)); await service.StartAsync(cts.Token);
+		cts.CancelAfter(TimeSpan.FromMilliseconds(200));
+		await service.StartAsync(cts.Token);
 		await Task.Delay(100);
 		await service.StopAsync(cts.Token);
 
@@ -134,18 +130,17 @@ public class LogCleanupServiceTests
 
 		LogCleanupSettings settings =
 			new()
-			{
-				Enabled = true,
-				InitialDelayMinutes = 0,
-				IntervalHours = 24,
-				RetentionDays = retentionDays
-			};
+		{
+			Enabled = true,
+			InitialDelayMinutes = 0,
+			IntervalHours = 24,
+			RetentionDays = retentionDays,
+		};
 
 		IOptions<LogCleanupSettings> options =
 			Options.Create(settings);
 
-		DateTime capturedCutoff =
-			DateTime.MinValue;
+		DateTime capturedCutoff = DateTime.MinValue;
 
 		Repository
 			.DeleteOlderThanAsync(
@@ -155,13 +150,12 @@ public class LogCleanupServiceTests
 
 		LogCleanupService service =
 			new(
-				ScopeFactory,
-				options,
-				timeProvider,
-				Logger);
+			ScopeFactory,
+			options,
+			timeProvider,
+			Logger);
 
-		using CancellationTokenSource cts =
-			new();
+		using CancellationTokenSource cts = new();
 
 		// Act
 		cts.CancelAfter(TimeSpan.FromMilliseconds(200));
@@ -185,12 +179,12 @@ public class LogCleanupServiceTests
 		// Arrange
 		LogCleanupSettings settings =
 			new()
-			{
-				Enabled = true,
-				InitialDelayMinutes = 0,
-				IntervalHours = 24,
-				RetentionDays = 7
-			};
+		{
+			Enabled = true,
+			InitialDelayMinutes = 0,
+			IntervalHours = 24,
+			RetentionDays = 7,
+		};
 
 		IOptions<LogCleanupSettings> options =
 			Options.Create(settings);
@@ -214,13 +208,12 @@ public class LogCleanupServiceTests
 
 		LogCleanupService service =
 			new(
-				ScopeFactory,
-				options,
-				TimeProvider.System,
-				Logger);
+			ScopeFactory,
+			options,
+			TimeProvider.System,
+			Logger);
 
-		using CancellationTokenSource cts =
-			new();
+		using CancellationTokenSource cts = new();
 
 		// Act - Service should not crash after exception
 		cts.CancelAfter(TimeSpan.FromMilliseconds(100));

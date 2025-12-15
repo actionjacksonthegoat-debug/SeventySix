@@ -45,110 +45,113 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
 		// Primary key
 		builder.HasKey(e => e.Id);
-		builder.Property(e => e.Id)
+		builder
+			.Property(e => e.Id)
 			.UseIdentityColumn() // PostgreSQL SERIAL
 			.IsRequired();
 
 		// Username - Required, max length 50, unique (non-deleted only)
-		builder.Property(e => e.Username)
-			.IsRequired()
-			.HasMaxLength(50);
-		builder.HasIndex(e => e.Username)
+		builder.Property(e => e.Username).IsRequired().HasMaxLength(50);
+		builder
+			.HasIndex(e => e.Username)
 			.IsUnique()
 			.HasFilter("\"IsDeleted\" = false") // Unique only for non-deleted users
 			.HasDatabaseName("IX_Users_Username");
 
 		// Email - Required, max length 255, unique (non-deleted only)
-		builder.Property(e => e.Email)
-			.IsRequired()
-			.HasMaxLength(255);
-		builder.HasIndex(e => e.Email)
+		builder.Property(e => e.Email).IsRequired().HasMaxLength(255);
+		builder
+			.HasIndex(e => e.Email)
 			.IsUnique()
 			.HasFilter("\"IsDeleted\" = false") // Unique only for non-deleted users
 			.HasDatabaseName("IX_Users_Email");
 
 		// FullName - Optional, max length 100
-		builder.Property(e => e.FullName)
-			.HasMaxLength(100);
+		builder.Property(e => e.FullName).HasMaxLength(100);
 
 		// Audit fields - CreateDate (maps to CreatedAt column for backward compatibility)
-		builder.Property(e => e.CreateDate)
+		builder
+			.Property(e => e.CreateDate)
 			.HasColumnName("CreatedAt")
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");
 
 		// Audit fields - CreatedBy (required, max length 100)
-		builder.Property(e => e.CreatedBy)
+		builder
+			.Property(e => e.CreatedBy)
 			.IsRequired()
 			.HasMaxLength(100)
 			.HasDefaultValue("System");
 
 		// Audit fields - ModifyDate (maps to ModifiedAt column for backward compatibility)
-		builder.Property(e => e.ModifyDate)
+		builder
+			.Property(e => e.ModifyDate)
 			.HasColumnName("ModifiedAt")
 			.HasColumnType("timestamp with time zone");
 
 		// Audit fields - ModifiedBy (required, max length 100)
-		builder.Property(e => e.ModifiedBy)
+		builder
+			.Property(e => e.ModifiedBy)
 			.IsRequired()
 			.HasMaxLength(100)
 			.HasDefaultValue("System");
 
 		// IsActive - Required, default true
-		builder.Property(e => e.IsActive)
-			.IsRequired()
-			.HasDefaultValue(true);
+		builder.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
 
 		// Soft delete - IsDeleted (required, default false)
-		builder.Property(e => e.IsDeleted)
-			.IsRequired()
-			.HasDefaultValue(false);
-		builder.HasIndex(e => e.IsDeleted)
+		builder.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
+		builder
+			.HasIndex(e => e.IsDeleted)
 			.HasDatabaseName("IX_Users_IsDeleted");
 
 		// Soft delete - DeletedAt (optional)
-		builder.Property(e => e.DeletedAt)
+		builder
+			.Property(e => e.DeletedAt)
 			.HasColumnType("timestamp with time zone");
 
 		// Soft delete - DeletedBy (optional, max length 100)
-		builder.Property(e => e.DeletedBy)
-			.HasMaxLength(100);
+		builder.Property(e => e.DeletedBy).HasMaxLength(100);
 
 		// Concurrency control - RowVersion
 		// Note: PostgreSQL uses xmin system column for concurrency
 		// This will be configured in ApplicationDbContext.OnModelCreating
 		// For SQLite tests, this will be a nullable uint column
-		builder.Property(e => e.RowVersion)
+		builder
+			.Property(e => e.RowVersion)
 			.IsRowVersion()
 			.IsRequired(false);
 
 		// Preferences - JSON column (jsonb in PostgreSQL)
-		builder.Property(e => e.Preferences)
-			.HasColumnType("jsonb");
+		builder.Property(e => e.Preferences).HasColumnType("jsonb");
 
 		// Last activity - LastLoginAt (optional)
-		builder.Property(e => e.LastLoginAt)
+		builder
+			.Property(e => e.LastLoginAt)
 			.HasColumnType("timestamp with time zone");
 
 		// Last activity - LastLoginIp (optional, max length 45 for IPv6 support)
-		builder.Property(e => e.LastLoginIp)
-			.HasMaxLength(45);
+		builder.Property(e => e.LastLoginIp).HasMaxLength(45);
 
 		// Account lockout - FailedLoginCount (required, default 0)
-		builder.Property(e => e.FailedLoginCount)
+		builder
+			.Property(e => e.FailedLoginCount)
 			.IsRequired()
 			.HasDefaultValue(0);
 
 		// Account lockout - LockoutEndUtc (optional)
-		builder.Property(e => e.LockoutEndUtc)
+		builder
+			.Property(e => e.LockoutEndUtc)
 			.HasColumnType("timestamp with time zone");
 
 		// Performance indexes
-		builder.HasIndex(e => new { e.IsActive, e.CreateDate })
+		builder
+			.HasIndex(e => new { e.IsActive, e.CreateDate })
 			.HasDatabaseName("IX_Users_IsActive_CreateDate");
 
-		builder.HasIndex(e => e.CreateDate)
+		builder
+			.HasIndex(e => e.CreateDate)
 			.HasDatabaseName("IX_Users_CreateDate");
 
 		// Global query filter - Exclude soft-deleted users by default

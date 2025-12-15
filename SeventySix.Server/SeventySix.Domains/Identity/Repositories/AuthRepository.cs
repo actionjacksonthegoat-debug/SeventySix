@@ -13,23 +13,23 @@ namespace SeventySix.Identity;
 /// Encapsulates DbContext operations for authentication flows.
 /// Internal visibility enforces service facade pattern.
 /// </remarks>
-internal class AuthRepository(
-	IdentityDbContext context) : IAuthRepository
+internal class AuthRepository(IdentityDbContext context) : IAuthRepository
 {
 	/// <inheritdoc/>
 	public async Task<User?> GetUserByUsernameOrEmailForUpdateAsync(
 		string usernameOrEmail,
 		CancellationToken cancellationToken = default) =>
-		await context.Users
-			.Where(user => user.Username == usernameOrEmail
+		await context
+			.Users
+			.Where(user =>
+				user.Username == usernameOrEmail
 				|| user.Email == usernameOrEmail)
 			.FirstOrDefaultAsync(cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task SaveUserChangesAsync(
 		User user,
-		CancellationToken cancellationToken = default) =>
-		await context.SaveChangesAsync(cancellationToken);
+		CancellationToken cancellationToken = default) => await context.SaveChangesAsync(cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task UpdateLastLoginAsync(
@@ -37,12 +37,14 @@ internal class AuthRepository(
 		DateTime loginTime,
 		string? clientIp,
 		CancellationToken cancellationToken = default) =>
-		await context.Users
+		await context
+			.Users
 			.Where(user => user.Id == userId)
 			.ExecuteUpdateAsync(
-				setters => setters
-					.SetProperty(user => user.LastLoginAt, loginTime)
-					.SetProperty(user => user.LastLoginIp, clientIp),
+				setters =>
+					setters
+						.SetProperty(user => user.LastLoginAt, loginTime)
+						.SetProperty(user => user.LastLoginIp, clientIp),
 				cancellationToken);
 
 	/// <inheritdoc/>
@@ -50,9 +52,12 @@ internal class AuthRepository(
 		string provider,
 		string providerUserId,
 		CancellationToken cancellationToken = default) =>
-		await context.ExternalLogins
-			.Where(externalLogin => externalLogin.Provider == provider)
-			.Where(externalLogin => externalLogin.ProviderUserId == providerUserId)
+		await context
+			.ExternalLogins
+			.Where(externalLogin =>
+				externalLogin.Provider == provider)
+			.Where(externalLogin =>
+				externalLogin.ProviderUserId == providerUserId)
 			.FirstOrDefaultAsync(cancellationToken);
 
 	/// <inheritdoc/>
@@ -67,17 +72,15 @@ internal class AuthRepository(
 	/// <inheritdoc/>
 	public async Task UpdateExternalLoginAsync(
 		ExternalLogin externalLogin,
-		CancellationToken cancellationToken = default) =>
-		await context.SaveChangesAsync(cancellationToken);
+		CancellationToken cancellationToken = default) => await context.SaveChangesAsync(cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task<bool> UsernameExistsAsync(
 		string username,
 		CancellationToken cancellationToken = default) =>
-		await context.Users
-			.AnyAsync(
-				user => user.Username == username,
-				cancellationToken);
+		await context.Users.AnyAsync(
+			user => user.Username == username,
+			cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task<User> CreateUserWithRoleAsync(
@@ -89,11 +92,7 @@ internal class AuthRepository(
 		await context.SaveChangesAsync(cancellationToken);
 
 		UserRole userRole =
-			new()
-			{
-				UserId = user.Id,
-				RoleId = roleId
-			};
+			new() { UserId = user.Id, RoleId = roleId };
 
 		context.UserRoles.Add(userRole);
 		await context.SaveChangesAsync(cancellationToken);
@@ -105,7 +104,8 @@ internal class AuthRepository(
 	public async Task<int?> GetRoleIdByNameAsync(
 		string roleName,
 		CancellationToken cancellationToken = default) =>
-		await context.SecurityRoles
+		await context
+			.SecurityRoles
 			.Where(role => role.Name == roleName)
 			.Select(role => (int?)role.Id)
 			.FirstOrDefaultAsync(cancellationToken);

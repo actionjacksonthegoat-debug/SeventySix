@@ -16,7 +16,8 @@ internal class LoggingHealthCheck(IMessageBus messageBus) : IDatabaseHealthCheck
 	public string ContextName => "Logging";
 
 	/// <inheritdoc/>
-	public async Task<bool> CheckHealthAsync(CancellationToken cancellationToken = default)
+	public async Task<bool> CheckHealthAsync(
+		CancellationToken cancellationToken = default)
 	{
 		return await messageBus.InvokeAsync<bool>(
 			new CheckLoggingHealthQuery(),

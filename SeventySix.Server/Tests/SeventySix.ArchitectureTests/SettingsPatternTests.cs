@@ -31,8 +31,8 @@ public class SettingsPatternTests : SourceCodeArchitectureTest
 
 		Regex classPattern =
 			new Regex(
-				@"public\s+class\s+(\w+Settings)\b",
-				RegexOptions.Compiled);
+			@"public\s+class\s+(\w+Settings)\b",
+			RegexOptions.Compiled);
 
 		List<string> violations = [];
 
@@ -52,10 +52,10 @@ public class SettingsPatternTests : SourceCodeArchitectureTest
 
 				foreach (Match match in matches)
 				{
-					string className =
-						match.Groups[1].Value;
+					string className = match.Groups[1].Value;
 
-					violations.Add($"{relativePath}: {className} (should be record)");
+					violations.Add(
+						$"{relativePath}: {className} (should be record)");
 				}
 			}
 		}
@@ -88,12 +88,14 @@ public class SettingsPatternTests : SourceCodeArchitectureTest
 
 			bool isInApiConfiguration =
 				relativePath.Contains("SeventySix.Api")
-				&& (relativePath.Contains("\\Configuration\\")
+				&& (
+					relativePath.Contains("\\Configuration\\")
 					|| relativePath.Contains("/Configuration/"));
 
 			if (!isInSettingsFolder && !isInApiConfiguration)
 			{
-				violations.Add($"{relativePath}: Settings must be in Settings/ folder (or Api/Configuration/)");
+				violations.Add(
+					$"{relativePath}: Settings must be in Settings/ folder (or Api/Configuration/)");
 			}
 		}
 

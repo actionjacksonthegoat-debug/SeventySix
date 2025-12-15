@@ -19,7 +19,8 @@ public static class CorsRegistration
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
-		string[] allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+		string[] allowedOrigins =
+			configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
 			?? ["http://localhost:4200"];
 
 		services.AddCors(options =>
@@ -28,11 +29,12 @@ public static class CorsRegistration
 				name: "AllowedOrigins",
 				policy =>
 				{
-					_ = policy
-						.WithOrigins(allowedOrigins)
-						.AllowAnyHeader()
-						.AllowAnyMethod()
-						.AllowCredentials();
+					_ =
+						policy
+							.WithOrigins(allowedOrigins)
+							.AllowAnyHeader()
+							.AllowAnyMethod()
+							.AllowCredentials();
 				});
 		});
 

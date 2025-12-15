@@ -50,7 +50,8 @@ public sealed class QueryBuilder<T>
 	/// <returns>The QueryBuilder for method chaining.</returns>
 	public QueryBuilder<T> Where(Expression<Func<T, bool>> predicate)
 	{
-		Query = Query.Where(predicate);
+		Query =
+			Query.Where(predicate);
 		return this;
 	}
 
@@ -62,7 +63,8 @@ public sealed class QueryBuilder<T>
 	/// <returns>The QueryBuilder for method chaining.</returns>
 	public QueryBuilder<T> OrderBy<TKey>(Expression<Func<T, TKey>> keySelector)
 	{
-		Query = Query.OrderBy(keySelector);
+		Query =
+			Query.OrderBy(keySelector);
 		IsOrdered = true;
 		return this;
 	}
@@ -73,9 +75,11 @@ public sealed class QueryBuilder<T>
 	/// <typeparam name="TKey">The type of the property to order by.</typeparam>
 	/// <param name="keySelector">The property selector.</param>
 	/// <returns>The QueryBuilder for method chaining.</returns>
-	public QueryBuilder<T> OrderByDescending<TKey>(Expression<Func<T, TKey>> keySelector)
+	public QueryBuilder<T> OrderByDescending<TKey>(
+		Expression<Func<T, TKey>> keySelector)
 	{
-		Query = Query.OrderByDescending(keySelector);
+		Query =
+			Query.OrderByDescending(keySelector);
 		IsOrdered = true;
 		return this;
 	}
@@ -91,9 +95,11 @@ public sealed class QueryBuilder<T>
 	{
 		if (!IsOrdered)
 		{
-			throw new InvalidOperationException("ThenBy requires an OrderBy or OrderByDescending call first.");
+			throw new InvalidOperationException(
+				"ThenBy requires an OrderBy or OrderByDescending call first.");
 		}
-		Query = ((IOrderedQueryable<T>)Query).ThenBy(keySelector);
+		Query =
+			((IOrderedQueryable<T>)Query).ThenBy(keySelector);
 		return this;
 	}
 
@@ -104,13 +110,16 @@ public sealed class QueryBuilder<T>
 	/// <param name="keySelector">The property selector.</param>
 	/// <returns>The QueryBuilder for method chaining.</returns>
 	/// <exception cref="InvalidOperationException">Thrown when ThenByDescending is called before OrderBy or OrderByDescending.</exception>
-	public QueryBuilder<T> ThenByDescending<TKey>(Expression<Func<T, TKey>> keySelector)
+	public QueryBuilder<T> ThenByDescending<TKey>(
+		Expression<Func<T, TKey>> keySelector)
 	{
 		if (!IsOrdered)
 		{
-			throw new InvalidOperationException("ThenByDescending requires an OrderBy or OrderByDescending call first.");
+			throw new InvalidOperationException(
+				"ThenByDescending requires an OrderBy or OrderByDescending call first.");
 		}
-		Query = ((IOrderedQueryable<T>)Query).ThenByDescending(keySelector);
+		Query =
+			((IOrderedQueryable<T>)Query).ThenByDescending(keySelector);
 		return this;
 	}
 
@@ -128,7 +137,8 @@ public sealed class QueryBuilder<T>
 				nameof(count),
 				"Skip count cannot be negative.");
 		}
-		Query = Query.Skip(count);
+		Query =
+			Query.Skip(count);
 		return this;
 	}
 
@@ -146,7 +156,8 @@ public sealed class QueryBuilder<T>
 				nameof(count),
 				"Take count cannot be negative.");
 		}
-		Query = Query.Take(count);
+		Query =
+			Query.Take(count);
 		return this;
 	}
 
@@ -157,9 +168,7 @@ public sealed class QueryBuilder<T>
 	/// <param name="pageSize">The number of items per page.</param>
 	/// <returns>The QueryBuilder for method chaining.</returns>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown when page or pageSize is less than 1.</exception>
-	public QueryBuilder<T> Paginate(
-		int page,
-		int pageSize)
+	public QueryBuilder<T> Paginate(int page, int pageSize)
 	{
 		if (page < 1)
 		{
@@ -173,7 +182,8 @@ public sealed class QueryBuilder<T>
 				nameof(pageSize),
 				"Page size must be greater than or equal to 1.");
 		}
-		Query = Query.Skip((page - 1) * pageSize).Take(pageSize);
+		Query =
+			Query.Skip((page - 1) * pageSize).Take(pageSize);
 		return this;
 	}
 
@@ -203,7 +213,8 @@ public static class QueryBuilderExtensions
 		this IQueryable<T> initialQuery,
 		Func<QueryBuilder<T>, QueryBuilder<T>> builderAction)
 	{
-		QueryBuilder<T> builder = QueryBuilder<T>.For(initialQuery);
+		QueryBuilder<T> builder =
+			QueryBuilder<T>.For(initialQuery);
 		return builderAction(builder).Build();
 	}
 }

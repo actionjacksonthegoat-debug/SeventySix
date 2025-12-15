@@ -57,8 +57,10 @@ public abstract class BaseRepository<TEntity, TContext>(
 	/// </remarks>
 	protected IQueryable<TEntity> GetQueryable()
 	{
-		bool hasActiveTransaction = context.Database.CurrentTransaction != null;
-		IQueryable<TEntity> query = context.Set<TEntity>().AsQueryable();
+		bool hasActiveTransaction =
+			context.Database.CurrentTransaction != null;
+		IQueryable<TEntity> query =
+			context.Set<TEntity>().AsQueryable();
 
 		if (!hasActiveTransaction)
 		{
@@ -176,13 +178,19 @@ public abstract class BaseRepository<TEntity, TContext>(
 			async () =>
 			{
 				// Check if entity is already tracked by change tracker
-				TEntity? trackedEntity = context.Set<TEntity>().Local
-					.FirstOrDefault(tracked => tracked.Id == entity.Id);
+				TEntity? trackedEntity =
+					context
+						.Set<TEntity>()
+						.Local
+						.FirstOrDefault(tracked => tracked.Id == entity.Id);
 
 				if (trackedEntity != null)
 				{
 					// Entity is already tracked, update its properties
-					context.Entry(trackedEntity).CurrentValues.SetValues(entity);
+					context
+						.Entry(trackedEntity)
+						.CurrentValues
+						.SetValues(entity);
 				}
 				else
 				{

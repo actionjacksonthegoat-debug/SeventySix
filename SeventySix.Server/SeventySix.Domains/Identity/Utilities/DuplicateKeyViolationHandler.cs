@@ -137,8 +137,7 @@ public static class DuplicateKeyViolationHandler
 	/// </summary>
 	/// <param name="exception">The database update exception.</param>
 	/// <returns>The constraint name, or null if not a PostgreSQL constraint violation.</returns>
-	private static string? GetConstraintName(
-		DbUpdateException exception)
+	private static string? GetConstraintName(DbUpdateException exception)
 	{
 		if (exception.InnerException is PostgresException postgresException)
 		{

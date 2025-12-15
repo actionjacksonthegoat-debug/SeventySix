@@ -25,9 +25,12 @@ public class RateLimitingServiceTests
 
 	public RateLimitingServiceTests()
 	{
-		Logger = Substitute.For<ILogger<RateLimitingService>>();
-		Repository = Substitute.For<IThirdPartyApiRequestRepository>();
-		TransactionManager = Substitute.For<ITransactionManager>();
+		Logger =
+			Substitute.For<ILogger<RateLimitingService>>();
+		Repository =
+			Substitute.For<IThirdPartyApiRequestRepository>();
+		TransactionManager =
+			Substitute.For<ITransactionManager>();
 
 		// Setup TransactionManager to execute operations directly (pass-through)
 		TransactionManager
@@ -38,7 +41,9 @@ public class RateLimitingServiceTests
 			.Returns(async callInfo =>
 			{
 				Func<CancellationToken, Task<bool>> operation =
-					callInfo.ArgAt<Func<CancellationToken, Task<bool>>>(0);
+					callInfo.ArgAt<
+					Func<CancellationToken, Task<bool>>
+				>(0);
 
 				CancellationToken ct =
 					callInfo.ArgAt<CancellationToken>(2);
@@ -54,7 +59,9 @@ public class RateLimitingServiceTests
 			.Returns(async callInfo =>
 			{
 				Func<CancellationToken, Task> operation =
-					callInfo.ArgAt<Func<CancellationToken, Task>>(0);
+					callInfo.ArgAt<
+					Func<CancellationToken, Task>
+				>(0);
 
 				CancellationToken ct =
 					callInfo.ArgAt<CancellationToken>(2);
@@ -71,7 +78,7 @@ public class RateLimitingServiceTests
 		{
 			DefaultDailyLimit = 1000,
 			Enabled = true,
-			Limits = []
+			Limits = [],
 		};
 
 		IOptions<ThirdPartyApiLimitSettings> options =
@@ -89,8 +96,7 @@ public class RateLimitingServiceTests
 	public async Task CanMakeRequestAsync_WithNoRecord_ReturnsTrueAsync()
 	{
 		const string apiName = "TestApi";
-		RateLimitingService sut =
-			CreateSut();
+		RateLimitingService sut = CreateSut();
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -114,17 +120,18 @@ public class RateLimitingServiceTests
 			CreateSut(timeProvider);
 
 		DateOnly today =
-			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
 
 		ThirdPartyApiRequest request =
 			new()
-			{
-				Id = 1,
-				ApiName = apiName,
-				BaseUrl = "https://api.test.com",
-				CallCount = 5,
-				ResetDate = today
-			};
+		{
+			Id = 1,
+			ApiName = apiName,
+			BaseUrl = "https://api.test.com",
+			CallCount = 5,
+			ResetDate = today,
+		};
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -148,17 +155,18 @@ public class RateLimitingServiceTests
 			CreateSut(timeProvider);
 
 		DateOnly today =
-			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
 
 		ThirdPartyApiRequest request =
 			new()
-			{
-				Id = 1,
-				ApiName = apiName,
-				BaseUrl = "https://api.test.com",
-				CallCount = 1000,
-				ResetDate = today
-			};
+		{
+			Id = 1,
+			ApiName = apiName,
+			BaseUrl = "https://api.test.com",
+			CallCount = 1000,
+			ResetDate = today,
+		};
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -183,7 +191,8 @@ public class RateLimitingServiceTests
 			CreateSut(timeProvider);
 
 		DateOnly today =
-			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -199,18 +208,18 @@ public class RateLimitingServiceTests
 			.Returns(callInfo => callInfo.ArgAt<ThirdPartyApiRequest>(0));
 
 		bool result =
-			await sut.TryIncrementRequestCountAsync(
-				apiName,
-				baseUrl);
+			await sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
 		Assert.True(result);
-		await Repository.Received(1).CreateAsync(
-			Arg.Is<ThirdPartyApiRequest>(
-				req => req.ApiName == apiName
+		await Repository
+			.Received(1)
+			.CreateAsync(
+				Arg.Is<ThirdPartyApiRequest>(req =>
+					req.ApiName == apiName
 					&& req.BaseUrl == baseUrl
 					&& req.CallCount == 1
 					&& req.ResetDate == today),
-			Arg.Any<CancellationToken>());
+				Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -223,17 +232,18 @@ public class RateLimitingServiceTests
 			CreateSut(timeProvider);
 
 		DateOnly today =
-			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
 
 		ThirdPartyApiRequest request =
 			new()
-			{
-				Id = 1,
-				ApiName = apiName,
-				BaseUrl = baseUrl,
-				CallCount = 5,
-				ResetDate = today
-			};
+		{
+			Id = 1,
+			ApiName = apiName,
+			BaseUrl = baseUrl,
+			CallCount = 5,
+			ResetDate = today,
+		};
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -249,15 +259,13 @@ public class RateLimitingServiceTests
 			.Returns(callInfo => callInfo.ArgAt<ThirdPartyApiRequest>(0));
 
 		bool result =
-			await sut.TryIncrementRequestCountAsync(
-				apiName,
-				baseUrl);
+			await sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
 		Assert.True(result);
 		Assert.Equal(6, request.CallCount);
-		await Repository.Received(1).UpdateAsync(
-			request,
-			Arg.Any<CancellationToken>());
+		await Repository
+			.Received(1)
+			.UpdateAsync(request, Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -270,17 +278,18 @@ public class RateLimitingServiceTests
 			CreateSut(timeProvider);
 
 		DateOnly today =
-			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
 
 		ThirdPartyApiRequest request =
 			new()
-			{
-				Id = 1,
-				ApiName = apiName,
-				BaseUrl = baseUrl,
-				CallCount = 1000,
-				ResetDate = today
-			};
+		{
+			Id = 1,
+			ApiName = apiName,
+			BaseUrl = baseUrl,
+			CallCount = 1000,
+			ResetDate = today,
+		};
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -290,23 +299,22 @@ public class RateLimitingServiceTests
 			.Returns(request);
 
 		bool result =
-			await sut.TryIncrementRequestCountAsync(
-				apiName,
-				baseUrl);
+			await sut.TryIncrementRequestCountAsync(apiName, baseUrl);
 
 		Assert.False(result);
 		Assert.Equal(1000, request.CallCount);
-		await Repository.DidNotReceive().UpdateAsync(
-			Arg.Any<ThirdPartyApiRequest>(),
-			Arg.Any<CancellationToken>());
+		await Repository
+			.DidNotReceive()
+			.UpdateAsync(
+				Arg.Any<ThirdPartyApiRequest>(),
+				Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
 	public async Task GetRequestCountAsync_NoRecord_ReturnsZeroAsync()
 	{
 		const string apiName = "TestApi";
-		RateLimitingService sut =
-			CreateSut();
+		RateLimitingService sut = CreateSut();
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -325,8 +333,7 @@ public class RateLimitingServiceTests
 	public async Task GetRemainingQuotaAsync_NoRecord_ReturnsFullLimitAsync()
 	{
 		const string apiName = "TestApi";
-		RateLimitingService sut =
-			CreateSut();
+		RateLimitingService sut = CreateSut();
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -344,11 +351,9 @@ public class RateLimitingServiceTests
 	[Fact]
 	public void GetTimeUntilReset_ReturnsPositiveTimeSpan()
 	{
-		RateLimitingService sut =
-			CreateSut();
+		RateLimitingService sut = CreateSut();
 
-		TimeSpan timeUntilReset =
-			sut.GetTimeUntilReset();
+		TimeSpan timeUntilReset = sut.GetTimeUntilReset();
 
 		Assert.True(timeUntilReset.TotalSeconds > 0);
 		Assert.True(timeUntilReset.TotalHours <= 24);
@@ -360,38 +365,37 @@ public class RateLimitingServiceTests
 		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiLimitSettings settings =
 			new()
+		{
+			Enabled = true,
+			DefaultDailyLimit = 1000,
+			Limits =
+			new Dictionary<string, ThirdPartyApiLimit>
 			{
-				Enabled = true,
-				DefaultDailyLimit = 1000,
-				Limits =
-					new Dictionary<string, ThirdPartyApiLimit>
-					{
-						{
-							ExternalApiConstants.BrevoEmail,
-							new ThirdPartyApiLimit
-							{
-								DailyLimit = 250,
-								Enabled = true
-							}
-						}
-					}
-			};
+				{
+					ExternalApiConstants.BrevoEmail,
+					new ThirdPartyApiLimit { DailyLimit = 250, Enabled = true }
+				},
+			},
+		};
 
 		RateLimitingService sut =
 			CreateSut(timeProvider, settings);
 
 		DateOnly today =
-			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+			DateOnly.FromDateTime(
+			timeProvider.GetUtcNow().UtcDateTime);
 
 		ThirdPartyApiRequest existingRequest =
 			new()
-			{
-				ApiName = ExternalApiConstants.BrevoEmail,
-				BaseUrl = "smtp-relay.brevo.com",
-				CallCount = 249,
-				LastCalledAt = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
-				ResetDate = today
-			};
+		{
+			ApiName =
+			ExternalApiConstants.BrevoEmail,
+			BaseUrl = "smtp-relay.brevo.com",
+			CallCount = 249,
+			LastCalledAt =
+			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
+			ResetDate = today,
+		};
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -402,8 +406,8 @@ public class RateLimitingServiceTests
 
 		bool canMake =
 			await sut.CanMakeRequestAsync(
-				ExternalApiConstants.BrevoEmail,
-				CancellationToken.None);
+			ExternalApiConstants.BrevoEmail,
+			CancellationToken.None);
 
 		Assert.True(canMake);
 	}
@@ -413,18 +417,18 @@ public class RateLimitingServiceTests
 	{
 		ThirdPartyApiLimitSettings settings =
 			new()
-			{
-				Enabled = false,
-				DefaultDailyLimit = 1000
-			};
+		{
+			Enabled = false,
+			DefaultDailyLimit = 1000,
+		};
 
 		RateLimitingService sut =
 			CreateSut(null, settings);
 
 		bool canMake =
 			await sut.CanMakeRequestAsync(
-				ExternalApiConstants.BrevoEmail,
-				CancellationToken.None);
+			ExternalApiConstants.BrevoEmail,
+			CancellationToken.None);
 
 		Assert.True(canMake);
 	}

@@ -21,25 +21,22 @@ public class TransactionUsageTests
 	[Fact]
 	public void Services_Should_Not_Wrap_Single_Repository_Calls_In_Transactions()
 	{
-		List<string> violations =
-			[];
+		List<string> violations = [];
 		Type[] serviceTypes =
 			Assembly
-				.GetTypes()
-				.Where(
-					type =>
-						type.IsClass
-						&& !type.IsAbstract
-						&& type.Name.EndsWith("Service")
-						&& type.Namespace != null
-						&& !type.Namespace.Contains("Infrastructure"))
-				.ToArray();
+			.GetTypes()
+			.Where(type =>
+				type.IsClass
+				&& !type.IsAbstract
+				&& type.Name.EndsWith("Service")
+				&& type.Namespace != null
+				&& !type.Namespace.Contains("Infrastructure"))
+			.ToArray();
 
 		foreach (Type serviceType in serviceTypes)
 		{
 			string? filePath =
-				FindSourceFile(
-					serviceType.Name);
+				FindSourceFile(serviceType.Name);
 
 			if (filePath == null)
 			{
@@ -60,36 +57,34 @@ public class TransactionUsageTests
 
 			MatchCollection transactionBlocks =
 				Regex.Matches(
-					sourceCode,
-					@"ExecuteInTransactionAsync\s*\(\s*(?:async\s+\w+\s*=>)?\s*await\s+repository\.\w+Async\([^)]*\)",
-					RegexOptions.Singleline);
+				sourceCode,
+				@"ExecuteInTransactionAsync\s*\(\s*(?:async\s+\w+\s*=>)?\s*await\s+repository\.\w+Async\([^)]*\)",
+				RegexOptions.Singleline);
 
 			foreach (Match match in transactionBlocks)
 			{
 				// Extract method name from surrounding context
 				int methodStart =
-					sourceCode
-						.LastIndexOf(
-							"public async Task",
-							match.Index);
+					sourceCode.LastIndexOf(
+					"public async Task",
+					match.Index);
 
 				if (methodStart != -1)
 				{
 					int methodNameEnd =
-						sourceCode
-							.IndexOf(
-								'(',
-								methodStart);
+						sourceCode.IndexOf('(', methodStart);
 
 					string methodSignature =
-						sourceCode[methodStart..methodNameEnd];
+						sourceCode[
+						methodStart..methodNameEnd
+					];
 
 					Regex methodNameRegex =
-						new(
-							@"Task(?:<[^>]+>)?\s+(\w+)");
+						new(@"Task(?:<[^>]+>)?\s+(\w+)");
 
 					Match methodNameMatch =
-						methodNameRegex.Match(methodSignature);
+						methodNameRegex.Match(
+						methodSignature);
 
 					if (methodNameMatch.Success)
 					{
@@ -97,9 +92,9 @@ public class TransactionUsageTests
 							methodNameMatch.Groups[1].Value;
 
 						violations.Add(
-							$"{serviceType.Name}.{methodName}: " +
-							$"Wraps single repository call in transaction (unnecessary - " +
-							$"EF Core's SaveChangesAsync is already atomic)");
+							$"{serviceType.Name}.{methodName}: "
+								+ $"Wraps single repository call in transaction (unnecessary - "
+								+ $"EF Core's SaveChangesAsync is already atomic)");
 					}
 				}
 			}
@@ -113,11 +108,11 @@ public class TransactionUsageTests
 	{
 		// This test documents WHEN to use TransactionManager (positive cases)
 		List<string> documentedPatterns =
-			[
-				"Read-then-write with uniqueness checks (prevents race conditions)",
-				"Multi-entity operations requiring all-or-nothing atomicity",
-				"Operations spanning multiple repository calls",
-			];
+		[
+			"Read-then-write with uniqueness checks (prevents race conditions)",
+			"Multi-entity operations requiring all-or-nothing atomicity",
+			"Operations spanning multiple repository calls",
+		];
 
 		// No assertion - just documentation
 		Assert.NotEmpty(documentedPatterns);
@@ -127,14 +122,14 @@ public class TransactionUsageTests
 	{
 		string baseDir =
 			Path.GetFullPath(
-				Path.Combine(
-					AppContext.BaseDirectory,
-					"..",
-					"..",
-					"..",
-					"..",
-					"..",
-					"SeventySix"));
+			Path.Combine(
+				AppContext.BaseDirectory,
+				"..",
+				"..",
+				"..",
+				"..",
+				"..",
+				"SeventySix"));
 
 		if (!Directory.Exists(baseDir))
 		{
@@ -143,9 +138,9 @@ public class TransactionUsageTests
 
 		string[] files =
 			Directory.GetFiles(
-				baseDir,
-				$"{typeName}.cs",
-				SearchOption.AllDirectories);
+			baseDir,
+			$"{typeName}.cs",
+			SearchOption.AllDirectories);
 
 		return files.FirstOrDefault();
 	}

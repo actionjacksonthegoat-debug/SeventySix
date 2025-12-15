@@ -15,8 +15,7 @@ namespace SeventySix.TestUtilities.TestBases;
 public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 {
 	private readonly string DatabaseName;
-	private readonly ConcurrentDictionary<Type, object> CachedFactories =
-		new();
+	private readonly ConcurrentDictionary<Type, object> CachedFactories = new();
 	private string? ConnectionStringValue;
 
 	/// <summary>
@@ -34,7 +33,8 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 	/// </summary>
 	public override string ConnectionString =>
 		ConnectionStringValue
-		?? throw new InvalidOperationException("Fixture not initialized. Call InitializeAsync first.");
+		?? throw new InvalidOperationException(
+			"Fixture not initialized. Call InitializeAsync first.");
 
 	/// <summary>
 	/// Gets or creates a cached SharedWebApplicationFactory for the specified program type.
@@ -44,9 +44,10 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 	/// <returns>A cached or newly created SharedWebApplicationFactory instance.</returns>
 	public override SharedWebApplicationFactory<TProgram> GetOrCreateFactory<TProgram>()
 	{
-		return (SharedWebApplicationFactory<TProgram>)CachedFactories.GetOrAdd(
-			typeof(TProgram),
-			_ => new SharedWebApplicationFactory<TProgram>(ConnectionString));
+		return (SharedWebApplicationFactory<TProgram>)
+			CachedFactories.GetOrAdd(
+				typeof(TProgram),
+				_ => new SharedWebApplicationFactory<TProgram>(ConnectionString));
 	}
 
 	/// <summary>

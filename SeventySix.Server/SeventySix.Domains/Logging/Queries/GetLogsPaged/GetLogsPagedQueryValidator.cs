@@ -18,7 +18,6 @@ public class GetLogsPagedQueryValidator : AbstractValidator<GetLogsPagedQuery>
 	public GetLogsPagedQueryValidator(
 		IValidator<LogQueryRequest> requestValidator)
 	{
-		RuleFor(query => query.Request)
-			.SetValidator(requestValidator);
+		RuleFor(query => query.Request).SetValidator(requestValidator);
 	}
 }

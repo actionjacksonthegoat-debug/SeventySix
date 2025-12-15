@@ -25,7 +25,11 @@ namespace SeventySix.Api.Attributes;
 /// public async Task&lt;IActionResult&gt; GetLargeDataset() { }
 /// </code>
 /// </remarks>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+[AttributeUsage(
+	AttributeTargets.Class | AttributeTargets.Method,
+	AllowMultiple = false,
+	Inherited = true
+)]
 public sealed class CompressResponseAttribute : Attribute
 {
 	/// <summary>
@@ -50,9 +54,7 @@ public sealed class CompressResponseAttribute : Attribute
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CompressResponseAttribute"/> class.
 	/// </summary>
-	public CompressResponseAttribute()
-	{
-	}
+	public CompressResponseAttribute() { }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CompressResponseAttribute"/> class.

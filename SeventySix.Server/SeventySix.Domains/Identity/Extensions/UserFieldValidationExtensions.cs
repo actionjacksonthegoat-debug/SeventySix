@@ -44,7 +44,8 @@ public static class UserFieldValidationExtensions
 			.Length(3, 50)
 			.WithMessage("Username must be between 3 and 50 characters")
 			.Matches(@"^[a-zA-Z0-9_]+$")
-			.WithMessage("Username must contain only alphanumeric characters and underscores");
+			.WithMessage(
+				"Username must contain only alphanumeric characters and underscores");
 	}
 
 	/// <summary>

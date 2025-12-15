@@ -19,10 +19,9 @@ namespace SeventySix.Domains.Tests.Identity.Repositories;
 [Collection("DatabaseTests")]
 public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 {
-	public EmailVerificationTokenRepositoryTests(TestcontainersPostgreSqlFixture fixture)
-		: base(fixture)
-	{
-	}
+	public EmailVerificationTokenRepositoryTests(
+		TestcontainersPostgreSqlFixture fixture)
+		: base(fixture) { }
 
 	[Fact]
 	public async Task GetByTokenAsync_ReturnsToken_WhenExistsAsync()
@@ -30,24 +29,31 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		EmailVerificationTokenRepository repository = new(context);
-		string testId = Guid.NewGuid().ToString("N")[..8];
+		EmailVerificationTokenRepository repository =
+			new(context);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
 
 		EmailVerificationToken token =
 			new()
-			{
-				Email = $"verify_{testId}@example.com",
-				Token = $"token_{testId}",
-				ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-				IsUsed = false
-			};
+		{
+			Email =
+			$"verify_{testId}@example.com",
+			Token =
+			$"token_{testId}",
+			ExpiresAt =
+			timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			IsUsed = false,
+		};
 
 		context.EmailVerificationTokens.Add(token);
 		await context.SaveChangesAsync();
 
 		// Act
-		EmailVerificationToken? result = await repository.GetByTokenAsync(
+		EmailVerificationToken? result =
+			await repository.GetByTokenAsync(
 			token.Token,
 			CancellationToken.None);
 
@@ -62,10 +68,12 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		EmailVerificationTokenRepository repository = new(context);
+		EmailVerificationTokenRepository repository =
+			new(context);
 
 		// Act
-		EmailVerificationToken? result = await repository.GetByTokenAsync(
+		EmailVerificationToken? result =
+			await repository.GetByTokenAsync(
 			"nonexistent_token",
 			CancellationToken.None);
 
@@ -79,18 +87,24 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		EmailVerificationTokenRepository repository = new(context);
-		string testId = Guid.NewGuid().ToString("N")[..8];
+		EmailVerificationTokenRepository repository =
+			new(context);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
 
 		EmailVerificationToken token =
 			new()
-			{
-				Email = $"create_{testId}@example.com",
-				Token = $"create_token_{testId}",
-				ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-				IsUsed = false
-			};
+		{
+			Email =
+			$"create_{testId}@example.com",
+			Token =
+			$"create_token_{testId}",
+			ExpiresAt =
+			timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			IsUsed = false,
+		};
 
 		// Act
 		await repository.CreateAsync(token, CancellationToken.None);
@@ -100,7 +114,8 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 
 		// Verify in fresh context
 		await using IdentityDbContext verifyContext = CreateIdentityDbContext();
-		EmailVerificationToken? created = await verifyContext.EmailVerificationTokens.FindAsync(token.Id);
+		EmailVerificationToken? created =
+			await verifyContext.EmailVerificationTokens.FindAsync(token.Id);
 		created.ShouldNotBeNull();
 		created.Token.ShouldBe(token.Token);
 	}
@@ -111,36 +126,46 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		EmailVerificationTokenRepository repository = new(context);
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string email = $"invalidate_{testId}@example.com";
+		EmailVerificationTokenRepository repository =
+			new(context);
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string email =
+			$"invalidate_{testId}@example.com";
 
 		// Create multiple unused tokens
 		EmailVerificationToken token1 =
 			new()
-			{
-				Email = email,
-				Token = $"inv_token1_{testId}",
-				ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-				IsUsed = false
-			};
+		{
+			Email = email,
+			Token =
+			$"inv_token1_{testId}",
+			ExpiresAt =
+			timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			IsUsed = false,
+		};
 
 		EmailVerificationToken token2 =
 			new()
-			{
-				Email = email,
-				Token = $"inv_token2_{testId}",
-				ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-				IsUsed = false
-			};
+		{
+			Email = email,
+			Token =
+			$"inv_token2_{testId}",
+			ExpiresAt =
+			timeProvider.GetUtcNow().UtcDateTime.AddHours(24),
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			IsUsed = false,
+		};
 
 		context.EmailVerificationTokens.AddRange(token1, token2);
 		await context.SaveChangesAsync();
 
 		// Act
-		int invalidatedCount = await repository.InvalidateTokensForEmailAsync(
+		int invalidatedCount =
+			await repository.InvalidateTokensForEmailAsync(
 			email,
 			CancellationToken.None);
 
@@ -149,8 +174,10 @@ public class EmailVerificationTokenRepositoryTests : DataPostgreSqlTestBase
 
 		// Verify tokens are marked as used
 		await using IdentityDbContext verifyContext = CreateIdentityDbContext();
-		EmailVerificationToken? verifiedToken1 = await verifyContext.EmailVerificationTokens.FindAsync(token1.Id);
-		EmailVerificationToken? verifiedToken2 = await verifyContext.EmailVerificationTokens.FindAsync(token2.Id);
+		EmailVerificationToken? verifiedToken1 =
+			await verifyContext.EmailVerificationTokens.FindAsync(token1.Id);
+		EmailVerificationToken? verifiedToken2 =
+			await verifyContext.EmailVerificationTokens.FindAsync(token2.Id);
 
 		verifiedToken1!.IsUsed.ShouldBeTrue();
 		verifiedToken2!.IsUsed.ShouldBeTrue();

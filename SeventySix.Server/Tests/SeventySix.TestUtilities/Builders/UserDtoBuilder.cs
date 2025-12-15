@@ -21,9 +21,11 @@ public class UserDtoBuilder
 	private DateTime CreateDate;
 	private bool IsActive = true;
 	private bool NeedsPendingEmail = false;
-	private string CreatedBy = TestAuditConstants.SystemUser;
+	private string CreatedBy =
+		TestAuditConstants.SystemUser;
 	private DateTime? ModifyDate = null;
-	private string ModifiedBy = TestAuditConstants.SystemUser;
+	private string ModifiedBy =
+		TestAuditConstants.SystemUser;
 	private DateTime? LastLoginAt = null;
 	private bool IsDeleted = false;
 	private DateTime? DeletedAt = null;
@@ -36,7 +38,8 @@ public class UserDtoBuilder
 	public UserDtoBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;
-		CreateDate = timeProvider.GetUtcNow().UtcDateTime;
+		CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime;
 	}
 
 	/// <summary>

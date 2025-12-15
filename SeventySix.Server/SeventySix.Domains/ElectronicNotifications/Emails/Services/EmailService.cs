@@ -29,6 +29,7 @@ public class EmailService(
 {
 	private const string BREVO_API_NAME = "BrevoEmail";
 	private const string BREVO_BASE_URL = "smtp-relay.brevo.com";
+
 	/// <inheritdoc/>
 	public async Task SendWelcomeEmailAsync(
 		string email,
@@ -43,19 +44,12 @@ public class EmailService(
 		string resetUrl =
 			BuildPasswordResetUrl(resetToken);
 
-		string subject =
-			"Welcome to SeventySix - Set Your Password";
+		string subject = "Welcome to SeventySix - Set Your Password";
 
 		string body =
-			BuildWelcomeEmailBody(
-				username,
-				resetUrl);
+			BuildWelcomeEmailBody(username, resetUrl);
 
-		await SendEmailAsync(
-			email,
-			subject,
-			body,
-			cancellationToken);
+		await SendEmailAsync(email, subject, body, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -72,19 +66,12 @@ public class EmailService(
 		string resetUrl =
 			BuildPasswordResetUrl(resetToken);
 
-		string subject =
-			"SeventySix - Password Reset Request";
+		string subject = "SeventySix - Password Reset Request";
 
 		string body =
-			BuildPasswordResetEmailBody(
-				username,
-				resetUrl);
+			BuildPasswordResetEmailBody(username, resetUrl);
 
-		await SendEmailAsync(
-			email,
-			subject,
-			body,
-			cancellationToken);
+		await SendEmailAsync(email, subject, body, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -99,17 +86,12 @@ public class EmailService(
 		string verificationUrl =
 			BuildEmailVerificationUrl(verificationToken);
 
-		string subject =
-			"SeventySix - Verify Your Email";
+		string subject = "SeventySix - Verify Your Email";
 
 		string body =
 			BuildVerificationEmailBody(verificationUrl);
 
-		await SendEmailAsync(
-			email,
-			subject,
-			body,
-			cancellationToken);
+		await SendEmailAsync(email, subject, body, cancellationToken);
 	}
 
 	/// <summary>
@@ -144,54 +126,88 @@ public class EmailService(
 	{
 		if (!settings.Value.Enabled)
 		{
-			logger.LogWarning("[EMAIL DISABLED] Would send to {To}: {Subject}", to, subject);
+			logger.LogWarning(
+				"[EMAIL DISABLED] Would send to {To}: {Subject}",
+				to,
+				subject);
 			return;
 		}
 
 		await EnsureRateLimitNotExceededAsync(cancellationToken);
 
-		using MimeMessage message = BuildMimeMessage(to, subject, htmlBody);
+		using MimeMessage message =
+			BuildMimeMessage(to, subject, htmlBody);
 		await SendViaSMtpAsync(message, cancellationToken);
 		await TrackRateLimitAsync(cancellationToken);
 
 		logger.LogWarning("Email sent to {To}: {Subject}", to, subject);
 	}
 
-	private async Task EnsureRateLimitNotExceededAsync(CancellationToken cancellationToken)
+	private async Task EnsureRateLimitNotExceededAsync(
+		CancellationToken cancellationToken)
 	{
-		bool canSend = await rateLimitingService.CanMakeRequestAsync(BREVO_API_NAME, cancellationToken);
+		bool canSend =
+			await rateLimitingService.CanMakeRequestAsync(
+				BREVO_API_NAME,
+				cancellationToken);
 		if (canSend)
 		{
 			return;
 		}
 
-		int remaining = await rateLimitingService.GetRemainingQuotaAsync(BREVO_API_NAME, cancellationToken);
-		TimeSpan resetTime = rateLimitingService.GetTimeUntilReset();
+		int remaining =
+			await rateLimitingService.GetRemainingQuotaAsync(
+				BREVO_API_NAME,
+				cancellationToken);
+		TimeSpan resetTime =
+			rateLimitingService.GetTimeUntilReset();
 
-		logger.LogError("Email daily limit exceeded. Remaining: {Remaining}. Resets in: {TimeUntilReset}", remaining, resetTime);
+		logger.LogError(
+			"Email daily limit exceeded. Remaining: {Remaining}. Resets in: {TimeUntilReset}",
+			remaining,
+			resetTime);
 		throw new EmailRateLimitException(resetTime, remaining);
 	}
 
-	private MimeMessage BuildMimeMessage(string to, string subject, string htmlBody)
+	private MimeMessage BuildMimeMessage(
+		string to,
+		string subject,
+		string htmlBody)
 	{
 		MimeMessage message = new();
-		message.From.Add(new MailboxAddress(settings.Value.FromName, settings.Value.FromAddress));
+		message.From.Add(
+			new MailboxAddress(
+				settings.Value.FromName,
+				settings.Value.FromAddress));
 		message.To.Add(MailboxAddress.Parse(to));
 		message.Subject = subject;
-		message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
+		message.Body =
+			new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
 		return message;
 	}
 
-	private async Task SendViaSMtpAsync(MimeMessage message, CancellationToken cancellationToken)
+	private async Task SendViaSMtpAsync(
+		MimeMessage message,
+		CancellationToken cancellationToken)
 	{
 		using SmtpClient client = new();
-		SecureSocketOptions securityOptions = settings.Value.UseSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None;
+		SecureSocketOptions securityOptions =
+			settings.Value.UseSsl
+			? SecureSocketOptions.StartTls
+			: SecureSocketOptions.None;
 
-		await client.ConnectAsync(settings.Value.SmtpHost, settings.Value.SmtpPort, securityOptions, cancellationToken);
+		await client.ConnectAsync(
+			settings.Value.SmtpHost,
+			settings.Value.SmtpPort,
+			securityOptions,
+			cancellationToken);
 
 		if (!string.IsNullOrEmpty(settings.Value.SmtpUsername))
 		{
-			await client.AuthenticateAsync(settings.Value.SmtpUsername, settings.Value.SmtpPassword, cancellationToken);
+			await client.AuthenticateAsync(
+				settings.Value.SmtpUsername,
+				settings.Value.SmtpPassword,
+				cancellationToken);
 		}
 
 		await client.SendAsync(message, cancellationToken);
@@ -200,10 +216,16 @@ public class EmailService(
 
 	private async Task TrackRateLimitAsync(CancellationToken cancellationToken)
 	{
-		bool success = await rateLimitingService.TryIncrementRequestCountAsync(BREVO_API_NAME, BREVO_BASE_URL, cancellationToken);
+		bool success =
+			await rateLimitingService.TryIncrementRequestCountAsync(
+				BREVO_API_NAME,
+				BREVO_BASE_URL,
+				cancellationToken);
 		if (!success)
 		{
-			logger.LogWarning("Email sent successfully but failed to increment rate limit counter for {ApiName}", BREVO_API_NAME);
+			logger.LogWarning(
+				"Email sent successfully but failed to increment rate limit counter for {ApiName}",
+				BREVO_API_NAME);
 		}
 	}
 
@@ -214,26 +236,26 @@ public class EmailService(
 		string username,
 		string resetUrl) =>
 		$$"""
-		<!DOCTYPE html>
-		<html>
-		<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-			<h1>Welcome to SeventySix!</h1>
-			<p>Hello {{username}},</p>
-			<p>Your account has been created. Please set your password to complete registration:</p>
-			<p style="margin: 24px 0;">
-				<a href="{{resetUrl}}"
-				   style="background: #4CAF50; color: white; padding: 12px 24px;
-				          text-decoration: none; border-radius: 4px;">
-					Set Your Password
-				</a>
-			</p>
-			<p>This link expires in 24 hours.</p>
-			<p>If you did not request this account, please ignore this email.</p>
-			<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
-			<p style="color: #666; font-size: 12px;">SeventySix Team</p>
-		</body>
-		</html>
-		""";
+			<!DOCTYPE html>
+			<html>
+			<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+				<h1>Welcome to SeventySix!</h1>
+				<p>Hello {{username}},</p>
+				<p>Your account has been created. Please set your password to complete registration:</p>
+				<p style="margin: 24px 0;">
+					<a href="{{resetUrl}}"
+					   style="background: #4CAF50; color: white; padding: 12px 24px;
+					          text-decoration: none; border-radius: 4px;">
+						Set Your Password
+					</a>
+				</p>
+				<p>This link expires in 24 hours.</p>
+				<p>If you did not request this account, please ignore this email.</p>
+				<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
+				<p style="color: #666; font-size: 12px;">SeventySix Team</p>
+			</body>
+			</html>
+			""";
 
 	/// <summary>
 	/// Builds HTML body for password reset email.
@@ -242,50 +264,50 @@ public class EmailService(
 		string username,
 		string resetUrl) =>
 		$$"""
-		<!DOCTYPE html>
-		<html>
-		<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-			<h1>Password Reset Request</h1>
-			<p>Hello {{username}},</p>
-			<p>We received a request to reset your password. Click the button below to set a new password:</p>
-			<p style="margin: 24px 0;">
-				<a href="{{resetUrl}}"
-				   style="background: #2196F3; color: white; padding: 12px 24px;
-				          text-decoration: none; border-radius: 4px;">
-					Reset Password
-				</a>
-			</p>
-			<p>This link expires in 24 hours.</p>
-			<p>If you did not request this password reset, please ignore this email. Your password will remain unchanged.</p>
-			<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
-			<p style="color: #666; font-size: 12px;">SeventySix Team</p>
-		</body>
-		</html>
-		""";
+			<!DOCTYPE html>
+			<html>
+			<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+				<h1>Password Reset Request</h1>
+				<p>Hello {{username}},</p>
+				<p>We received a request to reset your password. Click the button below to set a new password:</p>
+				<p style="margin: 24px 0;">
+					<a href="{{resetUrl}}"
+					   style="background: #2196F3; color: white; padding: 12px 24px;
+					          text-decoration: none; border-radius: 4px;">
+						Reset Password
+					</a>
+				</p>
+				<p>This link expires in 24 hours.</p>
+				<p>If you did not request this password reset, please ignore this email. Your password will remain unchanged.</p>
+				<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
+				<p style="color: #666; font-size: 12px;">SeventySix Team</p>
+			</body>
+			</html>
+			""";
 
 	/// <summary>
 	/// Builds HTML body for email verification email.
 	/// </summary>
 	private static string BuildVerificationEmailBody(string verificationUrl) =>
 		$$"""
-		<!DOCTYPE html>
-		<html>
-		<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-			<h1>Verify Your Email</h1>
-			<p>Thank you for registering with SeventySix!</p>
-			<p>Please click the button below to verify your email address and complete your registration:</p>
-			<p style="margin: 24px 0;">
-				<a href="{{verificationUrl}}"
-				   style="background: #9C27B0; color: white; padding: 12px 24px;
-				          text-decoration: none; border-radius: 4px;">
-					Verify Email
-				</a>
-			</p>
-			<p>This link expires in 24 hours.</p>
-			<p>If you did not create an account with SeventySix, please ignore this email.</p>
-			<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
-			<p style="color: #666; font-size: 12px;">SeventySix Team</p>
-		</body>
-		</html>
-		""";
+			<!DOCTYPE html>
+			<html>
+			<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+				<h1>Verify Your Email</h1>
+				<p>Thank you for registering with SeventySix!</p>
+				<p>Please click the button below to verify your email address and complete your registration:</p>
+				<p style="margin: 24px 0;">
+					<a href="{{verificationUrl}}"
+					   style="background: #9C27B0; color: white; padding: 12px 24px;
+					          text-decoration: none; border-radius: 4px;">
+						Verify Email
+					</a>
+				</p>
+				<p>This link expires in 24 hours.</p>
+				<p>If you did not create an account with SeventySix, please ignore this email.</p>
+				<hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
+				<p style="color: #666; font-size: 12px;">SeventySix Team</p>
+			</body>
+			</html>
+			""";
 }

@@ -9,6 +9,4 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <param name="RefreshToken">The current refresh token.</param>
 /// <param name="ClientIp">Client IP for token tracking.</param>
-public record RefreshTokensCommand(
-	string RefreshToken,
-	string? ClientIp);
+public record RefreshTokensCommand(string RefreshToken, string? ClientIp);

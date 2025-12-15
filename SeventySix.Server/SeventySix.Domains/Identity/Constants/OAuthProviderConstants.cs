@@ -24,7 +24,8 @@ public static class OAuthProviderConstants
 		public const string GitHubUserApi = "https://api.github.com/user";
 
 		/// <summary>Google user info endpoint URL.</summary>
-		public const string GoogleUserInfo = "https://www.googleapis.com/oauth2/v2/userinfo";
+		public const string GoogleUserInfo =
+			"https://www.googleapis.com/oauth2/v2/userinfo";
 	}
 
 	/// <summary>
@@ -33,16 +34,20 @@ public static class OAuthProviderConstants
 	public static class ErrorMessages
 	{
 		/// <summary>GitHub OAuth provider not configured error message.</summary>
-		public const string GitHubNotConfigured = "GitHub OAuth provider is not configured.";
+		public const string GitHubNotConfigured =
+			"GitHub OAuth provider is not configured.";
 
 		/// <summary>GitHub OAuth disabled error message.</summary>
-		public const string GitHubOAuthDisabled = "GitHub OAuth is not configured.";
+		public const string GitHubOAuthDisabled =
+			"GitHub OAuth is not configured.";
 
 		/// <summary>GitHub authentication failed error message.</summary>
-		public const string GitHubAuthenticationFailed = "GitHub authentication failed.";
+		public const string GitHubAuthenticationFailed =
+			"GitHub authentication failed.";
 
 		/// <summary>GitHub OAuth callback failed log message.</summary>
-		public const string GitHubCallbackFailed = "GitHub OAuth callback failed.";
+		public const string GitHubCallbackFailed =
+			"GitHub OAuth callback failed.";
 	}
 
 	/// <summary>
@@ -54,6 +59,7 @@ public static class OAuthProviderConstants
 		public const string GitHubOAuthCreatedBy = "GitHub OAuth";
 
 		/// <summary>Placeholder email domain for GitHub users without public email.</summary>
-		public const string GitHubPlaceholderEmailDomain = "@github.placeholder";
+		public const string GitHubPlaceholderEmailDomain =
+			"@github.placeholder";
 	}
 }

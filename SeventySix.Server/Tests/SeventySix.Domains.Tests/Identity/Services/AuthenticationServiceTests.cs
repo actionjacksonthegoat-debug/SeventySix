@@ -30,26 +30,30 @@ public class AuthenticationServiceTests
 
 	public AuthenticationServiceTests()
 	{
-		AuthRepository = Substitute.For<IAuthRepository>();
-		UserQueryRepository = Substitute.For<IUserQueryRepository>();
-		TokenService = Substitute.For<ITokenService>();
-		TimeProvider = Substitute.For<TimeProvider>();
+		AuthRepository =
+			Substitute.For<IAuthRepository>();
+		UserQueryRepository =
+			Substitute.For<IUserQueryRepository>();
+		TokenService =
+			Substitute.For<ITokenService>();
+		TimeProvider =
+			Substitute.For<TimeProvider>();
 
 		JwtSettings =
 			Options.Create(
-				new JwtSettings
-				{
-					AccessTokenExpirationMinutes = 15,
-					RefreshTokenExpirationDays = 7,
-				});
+			new JwtSettings
+			{
+				AccessTokenExpirationMinutes = 15,
+				RefreshTokenExpirationDays = 7,
+			});
 
 		ServiceUnderTest =
 			new AuthenticationService(
-				AuthRepository,
-				UserQueryRepository,
-				TokenService,
-				JwtSettings,
-				TimeProvider);
+			AuthRepository,
+			UserQueryRepository,
+			TokenService,
+			JwtSettings,
+			TimeProvider);
 	}
 
 	[Fact]
@@ -58,25 +62,27 @@ public class AuthenticationServiceTests
 		// Arrange
 		User user =
 			new()
-			{
-				Id = 1,
-				Username = "testuser",
-				Email = "test@example.com",
-				FullName = "Test User",
-			};
+		{
+			Id = 1,
+			Username = "testuser",
+			Email = "test@example.com",
+			FullName = "Test User",
+		};
 
-		string[] roles = [RoleConstants.User];
+		string[] roles =
+			[RoleConstants.User];
 		string expectedAccessToken = "access_token_123";
 		string expectedRefreshToken = "refresh_token_456";
 		string clientIp = "192.168.1.1";
-		DateTime utcNow = new(2025, 12, 9, 10, 0, 0, DateTimeKind.Utc);
+		DateTime utcNow =
+			new(2025, 12, 9, 10, 0, 0, DateTimeKind.Utc);
 
-		UserQueryRepository.GetUserRolesAsync(
-				user.Id,
-				Arg.Any<CancellationToken>())
+		UserQueryRepository
+			.GetUserRolesAsync(user.Id, Arg.Any<CancellationToken>())
 			.Returns(roles);
 
-		TokenService.GenerateAccessToken(
+		TokenService
+			.GenerateAccessToken(
 				user.Id,
 				user.Username,
 				user.Email,
@@ -84,39 +90,34 @@ public class AuthenticationServiceTests
 				Arg.Any<List<string>>())
 			.Returns(expectedAccessToken);
 
-		TokenService.GenerateRefreshTokenAsync(
+		TokenService
+			.GenerateRefreshTokenAsync(
 				user.Id,
 				clientIp,
 				false,
 				Arg.Any<CancellationToken>())
 			.Returns(expectedRefreshToken);
 
-		TimeProvider.GetUtcNow()
-			.Returns(new DateTimeOffset(utcNow));
+		TimeProvider.GetUtcNow().Returns(new DateTimeOffset(utcNow));
 
 		// Act
 		AuthResult result =
 			await ServiceUnderTest.GenerateAuthResultAsync(
-				user,
-				clientIp,
-				requiresPasswordChange: false,
-				rememberMe: false,
-				CancellationToken.None);
+			user,
+			clientIp,
+			requiresPasswordChange: false,
+			rememberMe: false,
+			CancellationToken.None);
 
 		// Assert
 		Assert.True(result.Success);
-		Assert.Equal(
-			expectedAccessToken,
-			result.AccessToken);
-		Assert.Equal(
-			expectedRefreshToken,
-			result.RefreshToken);
-		Assert.Equal(
-			utcNow.AddMinutes(15),
-			result.ExpiresAt);
+		Assert.Equal(expectedAccessToken, result.AccessToken);
+		Assert.Equal(expectedRefreshToken, result.RefreshToken);
+		Assert.Equal(utcNow.AddMinutes(15), result.ExpiresAt);
 		Assert.False(result.RequiresPasswordChange);
 
-		await AuthRepository.Received(1)
+		await AuthRepository
+			.Received(1)
 			.UpdateLastLoginAsync(
 				user.Id,
 				utcNow,
@@ -130,18 +131,18 @@ public class AuthenticationServiceTests
 		// Arrange
 		User user =
 			new()
-			{
-				Id = 2,
-				Username = "rememberuser",
-				Email = "remember@example.com",
-			};
+		{
+			Id = 2,
+			Username = "rememberuser",
+			Email = "remember@example.com",
+		};
 
-		UserQueryRepository.GetUserRolesAsync(
-				Arg.Any<int>(),
-				Arg.Any<CancellationToken>())
+		UserQueryRepository
+			.GetUserRolesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
 			.Returns(Array.Empty<string>());
 
-		TokenService.GenerateAccessToken(
+		TokenService
+			.GenerateAccessToken(
 				Arg.Any<int>(),
 				Arg.Any<string>(),
 				Arg.Any<string>(),
@@ -149,15 +150,15 @@ public class AuthenticationServiceTests
 				Arg.Any<List<string>>())
 			.Returns("token");
 
-		TokenService.GenerateRefreshTokenAsync(
+		TokenService
+			.GenerateRefreshTokenAsync(
 				Arg.Any<int>(),
 				Arg.Any<string?>(),
 				true, // rememberMe
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
 
-		TimeProvider.GetUtcNow()
-			.Returns(DateTimeOffset.UtcNow);
+		TimeProvider.GetUtcNow().Returns(DateTimeOffset.UtcNow);
 
 		// Act
 		await ServiceUnderTest.GenerateAuthResultAsync(
@@ -168,7 +169,8 @@ public class AuthenticationServiceTests
 			CancellationToken.None);
 
 		// Assert
-		await TokenService.Received(1)
+		await TokenService
+			.Received(1)
 			.GenerateRefreshTokenAsync(
 				user.Id,
 				"127.0.0.1",
@@ -182,18 +184,18 @@ public class AuthenticationServiceTests
 		// Arrange
 		User user =
 			new()
-			{
-				Id = 3,
-				Username = "newuser",
-				Email = "new@example.com",
-			};
+		{
+			Id = 3,
+			Username = "newuser",
+			Email = "new@example.com",
+		};
 
-		UserQueryRepository.GetUserRolesAsync(
-				Arg.Any<int>(),
-				Arg.Any<CancellationToken>())
+		UserQueryRepository
+			.GetUserRolesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
 			.Returns(Array.Empty<string>());
 
-		TokenService.GenerateAccessToken(
+		TokenService
+			.GenerateAccessToken(
 				Arg.Any<int>(),
 				Arg.Any<string>(),
 				Arg.Any<string>(),
@@ -201,24 +203,24 @@ public class AuthenticationServiceTests
 				Arg.Any<List<string>>())
 			.Returns("token");
 
-		TokenService.GenerateRefreshTokenAsync(
+		TokenService
+			.GenerateRefreshTokenAsync(
 				Arg.Any<int>(),
 				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
 
-		TimeProvider.GetUtcNow()
-			.Returns(DateTimeOffset.UtcNow);
+		TimeProvider.GetUtcNow().Returns(DateTimeOffset.UtcNow);
 
 		// Act
 		AuthResult result =
 			await ServiceUnderTest.GenerateAuthResultAsync(
-				user,
-				null,
-				requiresPasswordChange: true,
-				rememberMe: false,
-				CancellationToken.None);
+			user,
+			null,
+			requiresPasswordChange: true,
+			rememberMe: false,
+			CancellationToken.None);
 
 		// Assert
 		Assert.True(result.RequiresPasswordChange);
@@ -230,11 +232,11 @@ public class AuthenticationServiceTests
 		// Arrange
 		User user =
 			new()
-			{
-				Id = 4,
-				Username = "admin",
-				Email = "admin@example.com",
-			};
+		{
+			Id = 4,
+			Username = "admin",
+			Email = "admin@example.com",
+		};
 
 		string[] roles =
 		[
@@ -243,13 +245,13 @@ public class AuthenticationServiceTests
 			RoleConstants.Developer,
 		];
 
-		UserQueryRepository.GetUserRolesAsync(
-				user.Id,
-				Arg.Any<CancellationToken>())
+		UserQueryRepository
+			.GetUserRolesAsync(user.Id, Arg.Any<CancellationToken>())
 			.Returns(roles);
 
 		List<string>? capturedRoles = null;
-		TokenService.GenerateAccessToken(
+		TokenService
+			.GenerateAccessToken(
 				Arg.Any<int>(),
 				Arg.Any<string>(),
 				Arg.Any<string>(),
@@ -257,15 +259,15 @@ public class AuthenticationServiceTests
 				Arg.Do<List<string>>(r => capturedRoles = r))
 			.Returns("token");
 
-		TokenService.GenerateRefreshTokenAsync(
+		TokenService
+			.GenerateRefreshTokenAsync(
 				Arg.Any<int>(),
 				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns("refresh");
 
-		TimeProvider.GetUtcNow()
-			.Returns(DateTimeOffset.UtcNow);
+		TimeProvider.GetUtcNow().Returns(DateTimeOffset.UtcNow);
 
 		// Act
 		await ServiceUnderTest.GenerateAuthResultAsync(
@@ -277,17 +279,9 @@ public class AuthenticationServiceTests
 
 		// Assert
 		Assert.NotNull(capturedRoles);
-		Assert.Equal(
-			3,
-			capturedRoles.Count);
-		Assert.Contains(
-			RoleConstants.User,
-			capturedRoles);
-		Assert.Contains(
-			RoleConstants.Admin,
-			capturedRoles);
-		Assert.Contains(
-			RoleConstants.Developer,
-			capturedRoles);
+		Assert.Equal(3, capturedRoles.Count);
+		Assert.Contains(RoleConstants.User, capturedRoles);
+		Assert.Contains(RoleConstants.Admin, capturedRoles);
+		Assert.Contains(RoleConstants.Developer, capturedRoles);
 	}
 }

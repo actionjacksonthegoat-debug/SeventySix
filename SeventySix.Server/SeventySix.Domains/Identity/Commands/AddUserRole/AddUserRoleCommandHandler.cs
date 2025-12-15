@@ -30,10 +30,11 @@ public static class AddUserRoleCommandHandler
 				nameof(command));
 		}
 
-		if (await userQueryRepository.HasRoleAsync(
-			command.UserId,
-			command.Role,
-			cancellationToken))
+		if (
+			await userQueryRepository.HasRoleAsync(
+				command.UserId,
+				command.Role,
+				cancellationToken))
 		{
 			return false;
 		}

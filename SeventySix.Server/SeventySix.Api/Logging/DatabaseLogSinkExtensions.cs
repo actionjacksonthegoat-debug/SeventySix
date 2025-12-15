@@ -27,9 +27,6 @@ public static class DatabaseLogSinkExtensions
 		string? machineName = null)
 	{
 		return loggerConfiguration.Sink(
-			new DatabaseLogSink(
-				serviceProvider,
-				environment,
-				machineName));
+			new DatabaseLogSink(serviceProvider, environment, machineName));
 	}
 }

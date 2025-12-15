@@ -28,10 +28,10 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 	/// Note: "User" excluded - ambiguous with entity name usage.
 	/// </summary>
 	private static readonly string[] HardcodedRoles =
-		[
-			"\"Admin\"",
-			"\"Developer\""
-		];
+	[
+		"\"Admin\"",
+		"\"Developer\"",
+	];
 
 	[Fact]
 	public void Production_Code_Should_Not_Have_Hardcoded_Role_Strings()
@@ -39,7 +39,7 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> csFiles =
 			GetSourceFiles("*.cs")
-				.Where(file => !file.Contains("Configuration.cs")); // Exclude seed data definitions
+			.Where(file => !file.Contains("Configuration.cs")); // Exclude seed data definitions
 
 		List<string> violations = [];
 
@@ -58,10 +58,10 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 			// Remove XML documentation comments before checking
 			string codeWithoutComments =
 				Regex.Replace(
-					content,
-					@"^\s*///.*$",
-					string.Empty,
-					RegexOptions.Multiline);
+				content,
+				@"^\s*///.*$",
+				string.Empty,
+				RegexOptions.Multiline);
 
 			foreach (string hardcodedRole in HardcodedRoles)
 			{
@@ -70,7 +70,8 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 					string relativePath =
 						GetRelativePath(file);
 
-					violations.Add($"{relativePath}: Contains {hardcodedRole} (use RoleConstants)");
+					violations.Add(
+						$"{relativePath}: Contains {hardcodedRole} (use RoleConstants)");
 					break; // Only report once per file
 				}
 			}
@@ -86,14 +87,14 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 		// Arrange
 		IEnumerable<string> testFiles =
 			GetSourceFiles("*.cs")
-				.Where(f => f.Contains("\\Tests\\") && f.EndsWith("Tests.cs"))
-				.ToList();
+			.Where(f => f.Contains("\\Tests\\") && f.EndsWith("Tests.cs"))
+			.ToList();
 
 		// Match: "/api/something" or "/auth/something"
 		Regex endpointPattern =
 			new Regex(
-				@"""/(api|auth|admin|health)/[^""]+""",
-				RegexOptions.Compiled | RegexOptions.IgnoreCase);
+			@"""/(api|auth|admin|health)/[^""]+""",
+			RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 		List<string> violations = [];
 
@@ -104,7 +105,9 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 				ReadFileContent(file);
 
 			// Skip if file uses ApiEndpoints (it's compliant)
-			if (content.Contains("ApiEndpoints.") || content.Contains("TestEndpoints."))
+			if (
+				content.Contains("ApiEndpoints.")
+				|| content.Contains("TestEndpoints."))
 			{
 				continue;
 			}
@@ -118,10 +121,11 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 					GetRelativePath(file);
 
 				string[] endpoints =
-					matches.Cast<Match>()
-						.Select(m => m.Value)
-						.Distinct()
-						.ToArray();
+					matches
+					.Cast<Match>()
+					.Select(m => m.Value)
+					.Distinct()
+					.ToArray();
 
 				violations.Add(
 					$"{relativePath}: {string.Join(", ", endpoints)}"

@@ -48,8 +48,7 @@ public class DuplicateUserException : DomainException
 	/// </remarks>
 	public DuplicateUserException()
 		: base("A user with the specified username or email already exists.")
-	{
-	}
+	{ }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DuplicateUserException"/> class
@@ -64,9 +63,7 @@ public class DuplicateUserException : DomainException
 	/// - "A user with username 'johndoe' or email 'john@example.com' already exists."
 	/// </remarks>
 	public DuplicateUserException(string message)
-		: base(message)
-	{
-	}
+		: base(message) { }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DuplicateUserException"/> class
@@ -80,7 +77,5 @@ public class DuplicateUserException : DomainException
 	/// Example: Wrapping DbUpdateException for unique constraint violations.
 	/// </remarks>
 	public DuplicateUserException(string message, Exception innerException)
-		: base(message, innerException)
-	{
-	}
+		: base(message, innerException) { }
 }

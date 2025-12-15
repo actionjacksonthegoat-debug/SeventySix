@@ -13,20 +13,11 @@ public record BaseQueryRequest
 
 	public int PageSize { get; init; } = PaginationConstants.DefaultPageSize;
 
-	public string? SearchTerm
-	{
-		get; init;
-	}
+	public string? SearchTerm { get; init; }
 
-	public DateTime? StartDate
-	{
-		get; init;
-	}
+	public DateTime? StartDate { get; init; }
 
-	public DateTime? EndDate
-	{
-		get; init;
-	}
+	public DateTime? EndDate { get; init; }
 
 	public string? SortBy { get; init; } = "Id";
 
@@ -34,5 +25,6 @@ public record BaseQueryRequest
 
 	public int GetSkip() => (Page - 1) * PageSize;
 
-	public int GetValidatedPageSize() => Math.Min(PageSize, PaginationConstants.MaxPageSize);
+	public int GetValidatedPageSize() =>
+		Math.Min(PageSize, PaginationConstants.MaxPageSize);
 }

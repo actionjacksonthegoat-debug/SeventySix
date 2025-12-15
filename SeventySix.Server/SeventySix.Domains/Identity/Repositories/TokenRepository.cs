@@ -13,24 +13,23 @@ namespace SeventySix.Identity;
 /// Encapsulates all DbContext operations for refresh tokens.
 /// Internal visibility enforces service facade pattern.
 /// </remarks>
-internal class TokenRepository(
-	IdentityDbContext context) : ITokenRepository
+internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 {
 	/// <inheritdoc/>
 	public async Task<RefreshToken?> GetByTokenHashAsync(
 		string tokenHash,
 		CancellationToken cancellationToken = default) =>
-		await context.RefreshTokens
-			.FirstOrDefaultAsync(
-				token => token.TokenHash == tokenHash,
-				cancellationToken);
+		await context.RefreshTokens.FirstOrDefaultAsync(
+			token => token.TokenHash == tokenHash,
+			cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task<int> GetActiveSessionCountAsync(
 		int userId,
 		DateTime currentTime,
 		CancellationToken cancellationToken = default) =>
-		await context.RefreshTokens
+		await context
+			.RefreshTokens
 			.Where(token => token.UserId == userId)
 			.Where(token => !token.IsRevoked)
 			.Where(token => token.ExpiresAt > currentTime)
@@ -61,13 +60,15 @@ internal class TokenRepository(
 		int userId,
 		DateTime revokedAt,
 		CancellationToken cancellationToken = default) =>
-		await context.RefreshTokens
+		await context
+			.RefreshTokens
 			.Where(token => token.UserId == userId)
 			.Where(token => !token.IsRevoked)
 			.ExecuteUpdateAsync(
-				setters => setters
-					.SetProperty(token => token.IsRevoked, true)
-					.SetProperty(token => token.RevokedAt, revokedAt),
+				setters =>
+					setters
+						.SetProperty(token => token.IsRevoked, true)
+						.SetProperty(token => token.RevokedAt, revokedAt),
 				cancellationToken);
 
 	/// <inheritdoc/>
@@ -75,13 +76,15 @@ internal class TokenRepository(
 		Guid familyId,
 		DateTime revokedAt,
 		CancellationToken cancellationToken = default) =>
-		await context.RefreshTokens
+		await context
+			.RefreshTokens
 			.Where(token => token.FamilyId == familyId)
 			.Where(token => !token.IsRevoked)
 			.ExecuteUpdateAsync(
-				setters => setters
-					.SetProperty(token => token.IsRevoked, true)
-					.SetProperty(token => token.RevokedAt, revokedAt),
+				setters =>
+					setters
+						.SetProperty(token => token.IsRevoked, true)
+						.SetProperty(token => token.RevokedAt, revokedAt),
 				cancellationToken);
 
 	/// <inheritdoc/>
@@ -90,16 +93,18 @@ internal class TokenRepository(
 		DateTime currentTime,
 		DateTime revokedAt,
 		CancellationToken cancellationToken = default) =>
-		await context.RefreshTokens
+		await context
+			.RefreshTokens
 			.Where(token => token.UserId == userId)
 			.Where(token => !token.IsRevoked)
 			.Where(token => token.ExpiresAt > currentTime)
 			.OrderBy(token => token.CreateDate)
 			.Take(1)
 			.ExecuteUpdateAsync(
-				setters => setters
-					.SetProperty(token => token.IsRevoked, true)
-					.SetProperty(token => token.RevokedAt, revokedAt),
+				setters =>
+					setters
+						.SetProperty(token => token.IsRevoked, true)
+						.SetProperty(token => token.RevokedAt, revokedAt),
 				cancellationToken);
 
 	/// <inheritdoc/>
@@ -109,7 +114,8 @@ internal class TokenRepository(
 		CancellationToken cancellationToken = default)
 	{
 		RefreshToken? token =
-			await context.RefreshTokens
+			await context
+				.RefreshTokens
 				.AsNoTracking()
 				.Where(t => t.TokenHash == tokenHash)
 				.Where(t => !t.IsRevoked)
@@ -126,13 +132,15 @@ internal class TokenRepository(
 		CancellationToken cancellationToken = default)
 	{
 		int rowsAffected =
-			await context.RefreshTokens
+			await context
+				.RefreshTokens
 				.Where(token => token.TokenHash == tokenHash)
 				.Where(token => !token.IsRevoked)
 				.ExecuteUpdateAsync(
-					setters => setters
-						.SetProperty(token => token.IsRevoked, true)
-						.SetProperty(token => token.RevokedAt, revokedAt),
+					setters =>
+						setters
+							.SetProperty(token => token.IsRevoked, true)
+							.SetProperty(token => token.RevokedAt, revokedAt),
 					cancellationToken);
 
 		return rowsAffected > 0;

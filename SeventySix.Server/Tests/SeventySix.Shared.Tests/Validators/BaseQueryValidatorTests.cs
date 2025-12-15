@@ -25,16 +25,18 @@ public class BaseQueryValidatorTests
 	public async Task ValidRequest_PassesValidationAsync()
 	{
 		// Arrange
-		TestQueryRequest request = new()
+		TestQueryRequest request =
+			new()
 		{
 			Page = 1,
 			PageSize = 20,
 			SearchTerm = "test",
-			SortBy = "Id"
+			SortBy = "Id",
 		};
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveAnyValidationErrors();
@@ -44,13 +46,16 @@ public class BaseQueryValidatorTests
 	public async Task Page_Zero_FailsValidationAsync()
 	{
 		// Arrange
-		TestQueryRequest request = new() { Page = 0 };
+		TestQueryRequest request =
+			new() { Page = 0 };
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(r => r.Page)
+		result
+			.ShouldHaveValidationErrorFor(r => r.Page)
 			.WithErrorMessage("Page must be greater than 0");
 	}
 
@@ -58,13 +63,16 @@ public class BaseQueryValidatorTests
 	public async Task Page_Negative_FailsValidationAsync()
 	{
 		// Arrange
-		TestQueryRequest request = new() { Page = -1 };
+		TestQueryRequest request =
+			new() { Page = -1 };
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(r => r.Page)
+		result
+			.ShouldHaveValidationErrorFor(r => r.Page)
 			.WithErrorMessage("Page must be greater than 0");
 	}
 
@@ -72,13 +80,16 @@ public class BaseQueryValidatorTests
 	public async Task PageSize_Zero_FailsValidationAsync()
 	{
 		// Arrange
-		TestQueryRequest request = new() { PageSize = 0 };
+		TestQueryRequest request =
+			new() { PageSize = 0 };
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(r => r.PageSize)
+		result
+			.ShouldHaveValidationErrorFor(r => r.PageSize)
 			.WithErrorMessage("PageSize must be greater than 0");
 	}
 
@@ -86,13 +97,16 @@ public class BaseQueryValidatorTests
 	public async Task PageSize_ExceedsMax_FailsValidationAsync()
 	{
 		// Arrange
-		TestQueryRequest request = new() { PageSize = 150 };
+		TestQueryRequest request =
+			new() { PageSize = 150 };
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(r => r.PageSize)
+		result
+			.ShouldHaveValidationErrorFor(r => r.PageSize)
 			.WithErrorMessage("PageSize must not exceed 100");
 	}
 
@@ -100,13 +114,16 @@ public class BaseQueryValidatorTests
 	public async Task SearchTerm_TooShort_FailsValidationAsync()
 	{
 		// Arrange
-		TestQueryRequest request = new() { SearchTerm = "ab" };
+		TestQueryRequest request =
+			new() { SearchTerm = "ab" };
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(r => r.SearchTerm)
+		result
+			.ShouldHaveValidationErrorFor(r => r.SearchTerm)
 			.WithErrorMessage("Search term must be at least 3 characters");
 	}
 
@@ -114,13 +131,17 @@ public class BaseQueryValidatorTests
 	public async Task SearchTerm_TooLong_FailsValidationAsync()
 	{
 		// Arrange
-		TestQueryRequest request = new() { SearchTerm = new string('a', 201) };
+		TestQueryRequest request =
+			new() { SearchTerm =
+			new string('a', 201) };
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(r => r.SearchTerm)
+		result
+			.ShouldHaveValidationErrorFor(r => r.SearchTerm)
 			.WithErrorMessage("Search term must not exceed 200 characters");
 	}
 
@@ -128,10 +149,12 @@ public class BaseQueryValidatorTests
 	public async Task SearchTerm_Null_PassesValidationAsync()
 	{
 		// Arrange
-		TestQueryRequest request = new() { SearchTerm = null };
+		TestQueryRequest request =
+			new() { SearchTerm = null };
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(r => r.SearchTerm);
@@ -142,18 +165,24 @@ public class BaseQueryValidatorTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		TestQueryRequest request = new()
+		TestQueryRequest request =
+			new()
 		{
-			StartDate = timeProvider.GetUtcNow().UtcDateTime,
-			EndDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-1)
+			StartDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			EndDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddDays(-1),
 		};
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(r => r)
-			.WithErrorMessage("EndDate must be greater than or equal to StartDate");
+		result
+			.ShouldHaveValidationErrorFor(r => r)
+			.WithErrorMessage(
+				"EndDate must be greater than or equal to StartDate");
 	}
 
 	[Fact]
@@ -161,17 +190,22 @@ public class BaseQueryValidatorTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		TestQueryRequest request = new()
+		TestQueryRequest request =
+			new()
 		{
-			StartDate = timeProvider.GetUtcNow().UtcDateTime,
-			EndDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(91)
+			StartDate =
+			timeProvider.GetUtcNow().UtcDateTime,
+			EndDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddDays(91),
 		};
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(r => r)
+		result
+			.ShouldHaveValidationErrorFor(r => r)
 			.WithErrorMessage("Date range must not exceed 90 days");
 	}
 
@@ -180,14 +214,18 @@ public class BaseQueryValidatorTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		TestQueryRequest request = new()
+		TestQueryRequest request =
+			new()
 		{
-			StartDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-30),
-			EndDate = timeProvider.GetUtcNow().UtcDateTime
+			StartDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddDays(-30),
+			EndDate =
+			timeProvider.GetUtcNow().UtcDateTime,
 		};
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(r => r);
@@ -197,10 +235,12 @@ public class BaseQueryValidatorTests
 	public async Task SortBy_ValidEntityProperty_PassesValidationAsync()
 	{
 		// Arrange
-		TestQueryRequest request = new() { SortBy = "Name" };
+		TestQueryRequest request =
+			new() { SortBy = "Name" };
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
 		result.ShouldNotHaveValidationErrorFor(r => r.SortBy);
@@ -210,14 +250,18 @@ public class BaseQueryValidatorTests
 	public async Task SortBy_InvalidProperty_FailsValidationAsync()
 	{
 		// Arrange
-		TestQueryRequest request = new() { SortBy = "InvalidField" };
+		TestQueryRequest request =
+			new() { SortBy = "InvalidField" };
 
 		// Act
-		TestValidationResult<TestQueryRequest> result = await Validator.TestValidateAsync(request);
+		TestValidationResult<TestQueryRequest> result =
+			await Validator.TestValidateAsync(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(r => r.SortBy)
-			.WithErrorMessage("SortBy must be one of the following fields: CreateDate, Id, Name");
+		result
+			.ShouldHaveValidationErrorFor(r => r.SortBy)
+			.WithErrorMessage(
+				"SortBy must be one of the following fields: CreateDate, Id, Name");
 	}
 }
 
@@ -226,27 +270,18 @@ public class BaseQueryValidatorTests
 /// </summary>
 public class TestEntity
 {
-	public int Id
-	{
-		get; set;
-	}
+	public int Id { get; set; }
 	public string Name { get; set; } = string.Empty;
-	public DateTime CreateDate
-	{
-		get; set;
-	}
+	public DateTime CreateDate { get; set; }
 }
 
 /// <summary>
 /// Test query request inheriting from BaseQueryRequest.
 /// </summary>
-public record TestQueryRequest : BaseQueryRequest
-{
-}
+public record TestQueryRequest : BaseQueryRequest { }
 
 /// <summary>
 /// Test validator inheriting from BaseQueryValidator.
 /// </summary>
-public class TestQueryValidator : BaseQueryValidator<TestQueryRequest, TestEntity>
-{
-}
+public class TestQueryValidator
+	: BaseQueryValidator<TestQueryRequest, TestEntity> { }

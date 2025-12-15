@@ -21,18 +21,12 @@ public class ExternalLogin : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the unique identifier.
 	/// </summary>
-	public int Id
-	{
-		get; set;
-	}
+	public int Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the user ID (FK to identity.users).
 	/// </summary>
-	public int UserId
-	{
-		get; set;
-	}
+	public int UserId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the OAuth provider name (e.g., "GitHub").
@@ -47,24 +41,15 @@ public class ExternalLogin : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the email from the external provider.
 	/// </summary>
-	public string? ProviderEmail
-	{
-		get; set;
-	}
+	public string? ProviderEmail { get; set; }
 
 	/// <summary>
 	/// Gets or sets when this login was created.
 	/// </summary>
-	public DateTime CreateDate
-	{
-		get; set;
-	}
+	public DateTime CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets when this login was last used.
 	/// </summary>
-	public DateTime? LastUsedAt
-	{
-		get; set;
-	}
+	public DateTime? LastUsedAt { get; set; }
 }

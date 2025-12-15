@@ -29,7 +29,8 @@ public class PasswordResetTokenBuilder
 {
 	private readonly TimeProvider TimeProvider;
 	private int UserId;
-	private string Token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+	private string Token =
+		Convert.ToBase64String(Guid.NewGuid().ToByteArray());
 	private DateTime ExpiresAt;
 	private DateTime CreateDate;
 	private bool IsUsed;
@@ -41,8 +42,10 @@ public class PasswordResetTokenBuilder
 	public PasswordResetTokenBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;
-		ExpiresAt = timeProvider.GetUtcNow().AddHours(24).UtcDateTime;
-		CreateDate = timeProvider.GetUtcNow().UtcDateTime;
+		ExpiresAt =
+			timeProvider.GetUtcNow().AddHours(24).UtcDateTime;
+		CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime;
 	}
 
 	/// <summary>
@@ -84,7 +87,8 @@ public class PasswordResetTokenBuilder
 	/// <returns>The builder instance for method chaining.</returns>
 	public PasswordResetTokenBuilder AsExpired()
 	{
-		ExpiresAt = TimeProvider.GetUtcNow().AddHours(-1).UtcDateTime;
+		ExpiresAt =
+			TimeProvider.GetUtcNow().AddHours(-1).UtcDateTime;
 		return this;
 	}
 

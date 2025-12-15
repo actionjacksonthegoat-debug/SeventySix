@@ -9,6 +9,4 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <param name="Request">The set password request.</param>
 /// <param name="ClientIp">The client IP address.</param>
-public record SetPasswordCommand(
-	SetPasswordRequest Request,
-	string? ClientIp);
+public record SetPasswordCommand(SetPasswordRequest Request, string? ClientIp);

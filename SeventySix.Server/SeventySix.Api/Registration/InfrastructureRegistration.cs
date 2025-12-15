@@ -31,7 +31,8 @@ public static class InfrastructureRegistration
 	/// - IRateLimitingService as scoped (per-request rate limit tracking)
 	/// - AuditInterceptor as scoped (per-request audit tracking).
 	/// </remarks>
-	public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+	public static IServiceCollection AddInfrastructure(
+		this IServiceCollection services)
 	{
 		// Register TimeProvider (enables testable time abstraction)
 		services.AddSingleton(TimeProvider.System);

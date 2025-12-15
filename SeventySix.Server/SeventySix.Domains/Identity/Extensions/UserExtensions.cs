@@ -17,24 +17,22 @@ public static class UserExtensions
 	/// EF Core-compatible projection expression for database-level DTO selection.
 	/// Use with .Select() for server-side projection (avoids loading full entities).
 	/// </summary>
-	public static Expression<Func<User, UserDto>> ToDtoProjection
-	{
-		get;
-	} = user => new UserDto(
-		user.Id,
-		user.Username,
-		user.Email,
-		user.FullName,
-		user.CreateDate,
-		user.IsActive,
-		user.NeedsPendingEmail,
-		user.CreatedBy,
-		user.ModifyDate,
-		user.ModifiedBy,
-		user.LastLoginAt,
-		user.IsDeleted,
-		user.DeletedAt,
-		user.DeletedBy);
+	public static Expression<Func<User, UserDto>> ToDtoProjection { get; } =
+		user => new UserDto(
+			user.Id,
+			user.Username,
+			user.Email,
+			user.FullName,
+			user.CreateDate,
+			user.IsActive,
+			user.NeedsPendingEmail,
+			user.CreatedBy,
+			user.ModifyDate,
+			user.ModifiedBy,
+			user.LastLoginAt,
+			user.IsDeleted,
+			user.DeletedAt,
+			user.DeletedBy);
 
 	/// <summary>
 	/// Compiled delegate for in-memory mapping.
@@ -76,7 +74,7 @@ public static class UserExtensions
 			LastLoginAt = dto.LastLoginAt,
 			IsDeleted = dto.IsDeleted,
 			DeletedAt = dto.DeletedAt,
-			DeletedBy = dto.DeletedBy
+			DeletedBy = dto.DeletedBy,
 		};
 	}
 
@@ -115,6 +113,7 @@ public static class UserExtensions
 			IsActive = request.IsActive,
 		};
 	}
+
 	/// <summary>
 	/// Converts an UpdateUserRequest to update an existing domain entity.
 	/// </summary>

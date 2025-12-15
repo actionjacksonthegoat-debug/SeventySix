@@ -27,16 +27,15 @@ public static class LoggingRegistration
 		string connectionString,
 		IConfiguration configuration)
 	{
-		services.AddDbContext<LoggingDbContext>((
-			serviceProvider,
-			options) =>
-		{
-			AuditInterceptor auditInterceptor =
-				serviceProvider.GetRequiredService<AuditInterceptor>();
+		services.AddDbContext<LoggingDbContext>(
+			(serviceProvider, options) =>
+			{
+				AuditInterceptor auditInterceptor =
+					serviceProvider.GetRequiredService<AuditInterceptor>();
 
-			options.UseNpgsql(connectionString);
-			options.AddInterceptors(auditInterceptor);
-		});
+				options.UseNpgsql(connectionString);
+				options.AddInterceptors(auditInterceptor);
+			});
 
 		services.AddScoped<ILogRepository, LogRepository>();
 
@@ -44,9 +43,18 @@ public static class LoggingRegistration
 		services.AddScoped<IDatabaseHealthCheck, LoggingHealthCheck>();
 
 		// Validators - Singleton (stateless, thread-safe)
-		services.AddSingleton<IValidator<LogQueryRequest>, LogQueryRequestValidator>();
-		services.AddSingleton<IValidator<CreateLogRequest>, CreateClientLogCommandValidator>();
-		services.AddSingleton<IValidator<GetLogsPagedQuery>, GetLogsPagedQueryValidator>();
+		services.AddSingleton<
+			IValidator<LogQueryRequest>,
+			LogQueryRequestValidator
+		>();
+		services.AddSingleton<
+			IValidator<CreateLogRequest>,
+			CreateClientLogCommandValidator
+		>();
+		services.AddSingleton<
+			IValidator<GetLogsPagedQuery>,
+			GetLogsPagedQueryValidator
+		>();
 
 		return services;
 	}

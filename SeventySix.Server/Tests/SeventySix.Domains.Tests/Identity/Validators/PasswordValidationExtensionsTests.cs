@@ -85,7 +85,8 @@ public class PasswordValidationExtensionsTests
 			Validator.TestValidate(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.Password)
+		result
+			.ShouldHaveValidationErrorFor(x => x.Password)
 			.WithErrorMessage("Password is required");
 	}
 
@@ -101,7 +102,8 @@ public class PasswordValidationExtensionsTests
 			Validator.TestValidate(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.Password)
+		result
+			.ShouldHaveValidationErrorFor(x => x.Password)
 			.WithErrorMessage("Password is required");
 	}
 
@@ -117,7 +119,8 @@ public class PasswordValidationExtensionsTests
 			Validator.TestValidate(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.Password)
+		result
+			.ShouldHaveValidationErrorFor(x => x.Password)
 			.WithErrorMessage("Password must be at least 8 characters");
 	}
 
@@ -136,7 +139,8 @@ public class PasswordValidationExtensionsTests
 			Validator.TestValidate(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.Password)
+		result
+			.ShouldHaveValidationErrorFor(x => x.Password)
 			.WithErrorMessage("Password must not exceed 100 characters");
 	}
 
@@ -152,8 +156,10 @@ public class PasswordValidationExtensionsTests
 			Validator.TestValidate(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.Password)
-			.WithErrorMessage("Password must contain at least one uppercase letter");
+		result
+			.ShouldHaveValidationErrorFor(x => x.Password)
+			.WithErrorMessage(
+				"Password must contain at least one uppercase letter");
 	}
 
 	[Fact]
@@ -168,8 +174,10 @@ public class PasswordValidationExtensionsTests
 			Validator.TestValidate(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.Password)
-			.WithErrorMessage("Password must contain at least one lowercase letter");
+		result
+			.ShouldHaveValidationErrorFor(x => x.Password)
+			.WithErrorMessage(
+				"Password must contain at least one lowercase letter");
 	}
 
 	[Fact]
@@ -184,7 +192,8 @@ public class PasswordValidationExtensionsTests
 			Validator.TestValidate(request);
 
 		// Assert
-		result.ShouldHaveValidationErrorFor(x => x.Password)
+		result
+			.ShouldHaveValidationErrorFor(x => x.Password)
 			.WithErrorMessage("Password must contain at least one digit");
 	}
 
@@ -197,12 +206,12 @@ public class PasswordValidationExtensionsTests
 	/// <summary>
 	/// Test validator using password validation extensions.
 	/// </summary>
-	private sealed class TestPasswordValidator : AbstractValidator<TestPasswordRequest>
+	private sealed class TestPasswordValidator
+		: AbstractValidator<TestPasswordRequest>
 	{
 		public TestPasswordValidator()
 		{
-			RuleFor(x => x.Password)
-				.ApplyPasswordRules();
+			RuleFor(x => x.Password).ApplyPasswordRules();
 		}
 	}
 }

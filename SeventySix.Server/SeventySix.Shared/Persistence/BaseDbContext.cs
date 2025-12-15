@@ -41,9 +41,7 @@ public abstract class BaseDbContext<TContext> : DbContext
 	/// </summary>
 	/// <param name="options">The options for this context.</param>
 	protected BaseDbContext(DbContextOptions<TContext> options)
-		: base(options)
-	{
-	}
+		: base(options) { }
 
 	/// <summary>
 	/// Gets the schema name for this bounded context.
@@ -95,7 +93,9 @@ public abstract class BaseDbContext<TContext> : DbContext
 		string namespacePrefix = GetNamespacePrefix();
 		modelBuilder.ApplyConfigurationsFromAssembly(
 			typeof(TContext).Assembly,
-			type => type.Namespace != null && type.Namespace.StartsWith(namespacePrefix));
+			type =>
+				type.Namespace != null
+				&& type.Namespace.StartsWith(namespacePrefix));
 
 		// Allow derived classes to configure entity-specific settings
 		ConfigureEntities(modelBuilder);

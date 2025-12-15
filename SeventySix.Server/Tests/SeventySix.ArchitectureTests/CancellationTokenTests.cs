@@ -18,8 +18,28 @@ namespace SeventySix.ArchitectureTests;
 /// </summary>
 public class CancellationTokenTests
 {
-	private static readonly string[] QueryPrefixes = ["Get", "List", "Search", "Count", "Check", "Find", "Exists"];
-	private static readonly string[] MutationPrefixes = ["Create", "Update", "Delete", "Restore", "Soft", "Add", "Remove", "Bulk", "Set"];
+	private static readonly string[] QueryPrefixes =
+	[
+		"Get",
+		"List",
+		"Search",
+		"Count",
+		"Check",
+		"Find",
+		"Exists",
+	];
+	private static readonly string[] MutationPrefixes =
+	[
+		"Create",
+		"Update",
+		"Delete",
+		"Restore",
+		"Soft",
+		"Add",
+		"Remove",
+		"Bulk",
+		"Set",
+	];
 
 	[Fact]
 	public void Query_Methods_Should_Have_CancellationToken()
@@ -29,18 +49,25 @@ public class CancellationTokenTests
 
 		foreach (Type serviceType in serviceTypes)
 		{
-			MethodInfo[] queryMethods = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-				.Where(method => IsQueryMethod(method.Name) || method.Name.Contains("Exists"))
+			MethodInfo[] queryMethods =
+				serviceType
+				.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+				.Where(method =>
+					IsQueryMethod(method.Name) || method.Name.Contains("Exists"))
 				.ToArray();
 
 			foreach (MethodInfo queryMethod in queryMethods)
 			{
-				bool hasCancellationToken = queryMethod.GetParameters()
-					.Any(parameter => parameter.ParameterType == typeof(CancellationToken));
+				bool hasCancellationToken =
+					queryMethod
+					.GetParameters()
+					.Any(parameter =>
+						parameter.ParameterType == typeof(CancellationToken));
 
 				if (!hasCancellationToken)
 				{
-					missingCancellationTokenViolations.Add($"{serviceType.Name}.{queryMethod.Name} should have CancellationToken parameter");
+					missingCancellationTokenViolations.Add(
+						$"{serviceType.Name}.{queryMethod.Name} should have CancellationToken parameter");
 				}
 			}
 		}
@@ -56,18 +83,24 @@ public class CancellationTokenTests
 
 		foreach (Type repositoryType in repositoryTypes)
 		{
-			MethodInfo[] queryMethods = repositoryType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+			MethodInfo[] queryMethods =
+				repositoryType
+				.GetMethods(BindingFlags.Public | BindingFlags.Instance)
 				.Where(method => IsQueryMethod(method.Name))
 				.ToArray();
 
 			foreach (MethodInfo queryMethod in queryMethods)
 			{
-				bool hasCancellationToken = queryMethod.GetParameters()
-					.Any(parameter => parameter.ParameterType == typeof(CancellationToken));
+				bool hasCancellationToken =
+					queryMethod
+					.GetParameters()
+					.Any(parameter =>
+						parameter.ParameterType == typeof(CancellationToken));
 
 				if (!hasCancellationToken)
 				{
-					missingCancellationTokenViolations.Add($"{repositoryType.Name}.{queryMethod.Name} should have CancellationToken parameter");
+					missingCancellationTokenViolations.Add(
+						$"{repositoryType.Name}.{queryMethod.Name} should have CancellationToken parameter");
 				}
 			}
 		}
@@ -83,26 +116,38 @@ public class CancellationTokenTests
 
 		foreach (Type serviceType in serviceTypes)
 		{
-			MethodInfo[] mutationMethods = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-				.Where(method => IsMutationMethod(method.Name) && method.Name.EndsWith("Async"))
+			MethodInfo[] mutationMethods =
+				serviceType
+				.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+				.Where(method =>
+					IsMutationMethod(method.Name)
+					&& method.Name.EndsWith("Async"))
 				.ToArray();
 
 			foreach (MethodInfo mutationMethod in mutationMethods)
 			{
-				bool hasCancellationToken = mutationMethod.GetParameters()
-					.Any(parameter => parameter.ParameterType == typeof(CancellationToken));
+				bool hasCancellationToken =
+					mutationMethod
+					.GetParameters()
+					.Any(parameter =>
+						parameter.ParameterType == typeof(CancellationToken));
 
 				if (!hasCancellationToken)
 				{
-					missingCancellationTokenViolations.Add($"{serviceType.Name}.{mutationMethod.Name} should have CancellationToken parameter for proper I/O cancellation");
+					missingCancellationTokenViolations.Add(
+						$"{serviceType.Name}.{mutationMethod.Name} should have CancellationToken parameter for proper I/O cancellation");
 				}
 			}
 		}
 
 		if (missingCancellationTokenViolations.Any())
 		{
-			string violations = string.Join("\n", missingCancellationTokenViolations);
-			Assert.Fail($"Service mutation methods missing CancellationToken:\n{violations}");
+			string violations =
+				string.Join(
+				"\n",
+				missingCancellationTokenViolations);
+			Assert.Fail(
+				$"Service mutation methods missing CancellationToken:\n{violations}");
 		}
 	}
 
@@ -114,34 +159,51 @@ public class CancellationTokenTests
 
 		foreach (Type repositoryType in repositoryTypes)
 		{
-			MethodInfo[] mutationMethods = repositoryType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-				.Where(method => IsMutationMethod(method.Name) && method.Name.EndsWith("Async"))
+			MethodInfo[] mutationMethods =
+				repositoryType
+				.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+				.Where(method =>
+					IsMutationMethod(method.Name)
+					&& method.Name.EndsWith("Async"))
 				.ToArray();
 
 			foreach (MethodInfo mutationMethod in mutationMethods)
 			{
-				bool hasCancellationToken = mutationMethod.GetParameters()
-					.Any(parameter => parameter.ParameterType == typeof(CancellationToken));
+				bool hasCancellationToken =
+					mutationMethod
+					.GetParameters()
+					.Any(parameter =>
+						parameter.ParameterType == typeof(CancellationToken));
 
 				if (!hasCancellationToken)
 				{
-					missingCancellationTokenViolations.Add($"{repositoryType.Name}.{mutationMethod.Name} should have CancellationToken parameter for proper I/O cancellation");
+					missingCancellationTokenViolations.Add(
+						$"{repositoryType.Name}.{mutationMethod.Name} should have CancellationToken parameter for proper I/O cancellation");
 				}
 			}
 		}
 
 		if (missingCancellationTokenViolations.Any())
 		{
-			string violations = string.Join("\n", missingCancellationTokenViolations);
-			Assert.Fail($"Repository mutation methods missing CancellationToken:\n{violations}");
+			string violations =
+				string.Join(
+				"\n",
+				missingCancellationTokenViolations);
+			Assert.Fail(
+				$"Repository mutation methods missing CancellationToken:\n{violations}");
 		}
 	}
+
 	private static Type[] GetAllServiceInterfaces()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
+		Assembly domainAssembly =
+			typeof(SeventySix.Identity.User).Assembly;
 
-		Type[] serviceInterfaces = domainAssembly.GetTypes()
-			.Where(serviceType => serviceType.IsInterface
+		Type[] serviceInterfaces =
+			domainAssembly
+			.GetTypes()
+			.Where(serviceType =>
+				serviceType.IsInterface
 				&& serviceType.Name.EndsWith("Service")
 				&& serviceType.Namespace != null
 				&& serviceType.Namespace.StartsWith("SeventySix.")
@@ -154,10 +216,14 @@ public class CancellationTokenTests
 
 	private static Type[] GetAllRepositoryInterfaces()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
+		Assembly domainAssembly =
+			typeof(SeventySix.Identity.User).Assembly;
 
-		Type[] repositoryInterfaces = domainAssembly.GetTypes()
-			.Where(repositoryType => repositoryType.IsInterface
+		Type[] repositoryInterfaces =
+			domainAssembly
+			.GetTypes()
+			.Where(repositoryType =>
+				repositoryType.IsInterface
 				&& repositoryType.Name.EndsWith("Repository")
 				&& repositoryType.Namespace != null
 				&& repositoryType.Namespace.StartsWith("SeventySix.")

@@ -9,6 +9,4 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <param name="Request">Login credentials.</param>
 /// <param name="ClientIp">Client IP for token tracking.</param>
-public record LoginCommand(
-	LoginRequest Request,
-	string? ClientIp);
+public record LoginCommand(LoginRequest Request, string? ClientIp);

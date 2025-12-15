@@ -33,9 +33,24 @@ public static class LogLevelConstants
 
 	/// <summary>Valid log levels for query filtering (Serilog levels only).</summary>
 	public static readonly string[] QueryLevels =
-		[Verbose, Debug, Information, Warning, Error, Fatal];
+	[
+		Verbose,
+		Debug,
+		Information,
+		Warning,
+		Error,
+		Fatal,
+	];
 
 	/// <summary>Valid log levels for creating logs (includes Critical alias).</summary>
 	public static readonly string[] CreateLevels =
-		[Verbose, Debug, Information, Warning, Error, Fatal, Critical];
+	[
+		Verbose,
+		Debug,
+		Information,
+		Warning,
+		Error,
+		Fatal,
+		Critical,
+	];
 }

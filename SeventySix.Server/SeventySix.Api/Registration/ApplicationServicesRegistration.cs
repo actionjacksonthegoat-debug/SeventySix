@@ -30,11 +30,13 @@ public static class ApplicationServicesRegistration
 		services.Configure<OutputCacheOptions>(
 			configuration.GetSection(OutputCacheOptions.SECTION_NAME));
 
-		services.AddOptions<PollyOptions>()
+		services
+			.AddOptions<PollyOptions>()
 			.Bind(configuration.GetSection(PollyOptions.SECTION_NAME))
 			.ValidateOnStart();
 
-		services.AddOptions<OutputCacheOptions>()
+		services
+			.AddOptions<OutputCacheOptions>()
 			.Bind(configuration.GetSection(OutputCacheOptions.SECTION_NAME))
 			.ValidateOnStart();
 

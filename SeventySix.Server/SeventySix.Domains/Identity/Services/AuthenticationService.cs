@@ -58,9 +58,10 @@ public sealed class AuthenticationService(
 				cancellationToken);
 
 		DateTime expiresAt =
-			timeProvider.GetUtcNow()
-				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
-				.UtcDateTime;
+			timeProvider
+			.GetUtcNow()
+			.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
+			.UtcDateTime;
 
 		await authRepository.UpdateLastLoginAsync(
 			user.Id,

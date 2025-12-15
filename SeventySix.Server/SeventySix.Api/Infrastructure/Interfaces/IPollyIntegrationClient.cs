@@ -32,8 +32,12 @@ public interface IPollyIntegrationClient
 		CancellationToken cancellationToken = default);
 
 	/// <summary>Checks if request is allowed under rate limits.</summary>
-	public Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default);
+	public Task<bool> CanMakeRequestAsync(
+		string apiName,
+		CancellationToken cancellationToken = default);
 
 	/// <summary>Gets remaining API quota.</summary>
-	public Task<int> GetRemainingQuotaAsync(string apiName, CancellationToken cancellationToken = default);
+	public Task<int> GetRemainingQuotaAsync(
+		string apiName,
+		CancellationToken cancellationToken = default);
 }

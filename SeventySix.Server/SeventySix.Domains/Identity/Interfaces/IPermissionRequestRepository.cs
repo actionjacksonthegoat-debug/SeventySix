@@ -8,7 +8,8 @@ namespace SeventySix.Identity;
 public interface IPermissionRequestRepository
 {
 	/// <summary>Gets all permission requests with user info.</summary>
-	public Task<IEnumerable<PermissionRequestDto>> GetAllAsync(CancellationToken cancellationToken = default);
+	public Task<IEnumerable<PermissionRequestDto>> GetAllAsync(
+		CancellationToken cancellationToken = default);
 
 	/// <summary>Gets a permission request by ID.</summary>
 	public Task<PermissionRequest?> GetByIdAsync(

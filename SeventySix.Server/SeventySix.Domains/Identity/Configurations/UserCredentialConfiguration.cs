@@ -16,7 +16,8 @@ namespace SeventySix.Identity;
 /// - One credential per user (1:1 relationship)
 /// - Index on UserId for fast lookups during login
 /// </remarks>
-public class UserCredentialConfiguration : IEntityTypeConfiguration<UserCredential>
+public class UserCredentialConfiguration
+	: IEntityTypeConfiguration<UserCredential>
 {
 	/// <summary>
 	/// Configures the entity mapping for UserCredential.
@@ -30,20 +31,19 @@ public class UserCredentialConfiguration : IEntityTypeConfiguration<UserCredenti
 
 		// UserId is the primary key (1:1 with User)
 		builder.HasKey(e => e.UserId);
-		builder.Property(e => e.UserId)
-			.IsRequired();
+		builder.Property(e => e.UserId).IsRequired();
 
 		// PasswordHash - Required, BCrypt hash is 60 chars
-		builder.Property(e => e.PasswordHash)
-			.IsRequired()
-			.HasMaxLength(72);
+		builder.Property(e => e.PasswordHash).IsRequired().HasMaxLength(72);
 
 		// PasswordChangedAt - Optional
-		builder.Property(e => e.PasswordChangedAt)
+		builder
+			.Property(e => e.PasswordChangedAt)
 			.HasColumnType("timestamp with time zone");
 
 		// CreateDate - Required
-		builder.Property(e => e.CreateDate)
+		builder
+			.Property(e => e.CreateDate)
 			.IsRequired()
 			.HasDefaultValueSql("NOW()")
 			.HasColumnType("timestamp with time zone");

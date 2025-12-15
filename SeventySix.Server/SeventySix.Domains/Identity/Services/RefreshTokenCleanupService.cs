@@ -29,8 +29,7 @@ public class RefreshTokenCleanupService(
 	/// </summary>
 	/// <param name="stoppingToken">Cancellation token for graceful shutdown.</param>
 	/// <returns>A task that represents the asynchronous operation.</returns>
-	protected override async Task ExecuteAsync(
-		CancellationToken stoppingToken)
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		TimeSpan interval =
 			TimeSpan.FromHours(settings.Value.IntervalHours);
@@ -54,13 +53,12 @@ public class RefreshTokenCleanupService(
 	{
 		try
 		{
-			await this.CleanupExpiredTokensInternalAsync(CancellationToken.None);
+			await this.CleanupExpiredTokensInternalAsync(
+				CancellationToken.None);
 		}
 		catch (Exception exception)
 		{
-			logger.LogError(
-				exception,
-				"Error during refresh token cleanup");
+			logger.LogError(exception, "Error during refresh token cleanup");
 		}
 	}
 
@@ -73,9 +71,7 @@ public class RefreshTokenCleanupService(
 		}
 		catch (Exception exception)
 		{
-			logger.LogError(
-				exception,
-				"Error during refresh token cleanup");
+			logger.LogError(exception, "Error during refresh token cleanup");
 		}
 	}
 
@@ -89,15 +85,15 @@ public class RefreshTokenCleanupService(
 			scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
 
 		DateTime cutoffDate =
-			timeProvider.GetUtcNow()
-				.AddDays(-settings.Value.RetentionDays)
-				.UtcDateTime;
+			timeProvider
+			.GetUtcNow()
+			.AddDays(-settings.Value.RetentionDays)
+			.UtcDateTime;
 
 		int deletedCount =
-			await dbContext.RefreshTokens
-				.Where(
-					rt =>
-						rt.ExpiresAt < cutoffDate)
+			await dbContext
+				.RefreshTokens
+				.Where(rt => rt.ExpiresAt < cutoffDate)
 				.ExecuteDeleteAsync(cancellationToken);
 
 		if (deletedCount > 0)

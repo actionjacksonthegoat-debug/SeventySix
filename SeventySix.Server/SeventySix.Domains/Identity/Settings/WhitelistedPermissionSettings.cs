@@ -26,17 +26,11 @@ public record WhitelistedPermissionSettings
 	/// <param name="email">User email address.</param>
 	/// <param name="role">Role being requested.</param>
 	/// <returns>True if the combination is whitelisted.</returns>
-	public bool IsWhitelisted(
-		string email,
-		string role)
+	public bool IsWhitelisted(string email, string role)
 	{
 		return Grants.Any(grant =>
-			grant.Email.Equals(
-				email,
-				StringComparison.OrdinalIgnoreCase)
-			&& grant.Roles.Contains(
-				role,
-				StringComparer.OrdinalIgnoreCase));
+			grant.Email.Equals(email, StringComparison.OrdinalIgnoreCase)
+			&& grant.Roles.Contains(role, StringComparer.OrdinalIgnoreCase));
 	}
 }
 

@@ -74,14 +74,10 @@ public class UsersController(
 
 		UserProfileDto? profile =
 			await messageBus.InvokeAsync<UserProfileDto?>(
-				new UpdateProfileCommand(
-					userId,
-					request),
+				new UpdateProfileCommand(userId, request),
 				cancellationToken);
 
-		return profile is null
-			? NotFound()
-			: Ok(profile);
+		return profile is null ? NotFound() : Ok(profile);
 	}
 
 	#endregion
@@ -104,15 +100,19 @@ public class UsersController(
 	/// </remarks>
 	[HttpGet(Name = "GetUsers")]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
-	[ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(IEnumerable<UserDto>),
+		StatusCodes.Status200OK
+	)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	[OutputCache(PolicyName = CachePolicyConstants.Users)]
-	public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAsync(CancellationToken cancellationToken)
+	public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAsync(
+		CancellationToken cancellationToken)
 	{
 		IEnumerable<UserDto> users =
-			await messageBus.InvokeAsync<IEnumerable<UserDto>>(
-				new GetAllUsersQuery(),
-				cancellationToken);
+			await messageBus.InvokeAsync<
+				IEnumerable<UserDto>
+		>(new GetAllUsersQuery(), cancellationToken);
 
 		return Ok(users);
 	}
@@ -139,7 +139,9 @@ public class UsersController(
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	[OutputCache(PolicyName = CachePolicyConstants.Users)]
-	public async Task<ActionResult<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
+	public async Task<ActionResult<UserDto>> GetByIdAsync(
+		int id,
+		CancellationToken cancellationToken)
 	{
 		UserDto? user =
 			await messageBus.InvokeAsync<UserDto?>(
@@ -200,13 +202,7 @@ public class UsersController(
 					request,
 					cancellationToken);
 
-			return CreatedAtRoute(
-				"GetUserById",
-				new
-				{
-					id = user.Id
-				},
-				user);
+			return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
 		}
 		catch (EmailRateLimitException)
 		{
@@ -231,13 +227,7 @@ public class UsersController(
 				"User {UserId} created but email rate limited",
 				user.Id);
 
-			return AcceptedAtRoute(
-				"GetUserById",
-				new
-				{
-					id = user.Id
-				},
-				user);
+			return AcceptedAtRoute("GetUserById", new { id = user.Id }, user);
 		}
 	}
 
@@ -298,14 +288,10 @@ public class UsersController(
 	{
 		bool result =
 			await messageBus.InvokeAsync<bool>(
-				new DeleteUserCommand(
-					id,
-					AuditConstants.SystemUser),
+				new DeleteUserCommand(id, AuditConstants.SystemUser),
 				cancellationToken);
 
-		return result
-			? NoContent()
-			: NotFound();
+		return result ? NoContent() : NotFound();
 	}
 
 	/// <summary>
@@ -331,9 +317,7 @@ public class UsersController(
 				new RestoreUserCommand(id),
 				cancellationToken);
 
-		return result
-			? NoContent()
-			: NotFound();
+		return result ? NoContent() : NotFound();
 	}
 
 	/// <summary>
@@ -347,7 +331,10 @@ public class UsersController(
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpGet("paged", Name = "GetPagedUsers")]
 	[Authorize(Policy = PolicyConstants.AdminOnly)]
-	[ProducesResponseType(typeof(PagedResult<UserDto>), StatusCodes.Status200OK)]
+	[ProducesResponseType(
+		typeof(PagedResult<UserDto>),
+		StatusCodes.Status200OK
+	)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	[OutputCache(PolicyName = CachePolicyConstants.Users)]
@@ -356,9 +343,9 @@ public class UsersController(
 		CancellationToken cancellationToken)
 	{
 		PagedResult<UserDto> result =
-			await messageBus.InvokeAsync<PagedResult<UserDto>>(
-				new GetPagedUsersQuery(request),
-				cancellationToken);
+			await messageBus.InvokeAsync<
+				PagedResult<UserDto>
+		>(new GetPagedUsersQuery(request), cancellationToken);
 
 		return Ok(result);
 	}
@@ -416,9 +403,7 @@ public class UsersController(
 	{
 		bool exists =
 			await messageBus.InvokeAsync<bool>(
-				new CheckUsernameExistsQuery(
-					username,
-					excludeId),
+				new CheckUsernameExistsQuery(username, excludeId),
 				cancellationToken);
 		return Ok(exists);
 	}
@@ -515,14 +500,11 @@ public class UsersController(
 		}
 
 		await messageBus.InvokeAsync(
-			new InitiatePasswordResetCommand(
-				id,
-				IsNewUser: false),
+			new InitiatePasswordResetCommand(id, IsNewUser: false),
 			cancellationToken);
 
 		return NoContent();
 	}
 
 	#endregion
-
 }

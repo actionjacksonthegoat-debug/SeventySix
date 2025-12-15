@@ -23,10 +23,13 @@ public class RateLimitingService(
 	IOptions<ThirdPartyApiLimitSettings> settings,
 	TimeProvider timeProvider) : IRateLimitingService
 {
-	private readonly ThirdPartyApiLimitSettings RateLimitSettings = settings.Value;
+	private readonly ThirdPartyApiLimitSettings RateLimitSettings =
+		settings.Value;
 
 	/// <inheritdoc/>
-	public async Task<bool> CanMakeRequestAsync(string apiName, CancellationToken cancellationToken = default)
+	public async Task<bool> CanMakeRequestAsync(
+		string apiName,
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
@@ -36,13 +39,16 @@ public class RateLimitingService(
 			return true;
 		}
 
-		int dailyLimit = RateLimitSettings.GetDailyLimit(apiName);
+		int dailyLimit =
+			RateLimitSettings.GetDailyLimit(apiName);
 		DateOnly today =
 			DateOnly.FromDateTime(
-				timeProvider
-					.GetUtcNow()
-					.UtcDateTime);
-		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+				timeProvider.GetUtcNow().UtcDateTime);
+		ThirdPartyApiRequest? request =
+			await repository.GetByApiNameAndDateAsync(
+				apiName,
+				today,
+				cancellationToken);
 
 		// If no record exists for today, we can make a request
 		if (request == null)
@@ -50,7 +56,8 @@ public class RateLimitingService(
 			return true;
 		}
 
-		bool canMakeRequest = request.CallCount < dailyLimit;
+		bool canMakeRequest =
+			request.CallCount < dailyLimit;
 
 		if (!canMakeRequest)
 		{
@@ -80,103 +87,116 @@ public class RateLimitingService(
 			return true;
 		}
 
-		int dailyLimit = RateLimitSettings.GetDailyLimit(apiName);
+		int dailyLimit =
+			RateLimitSettings.GetDailyLimit(apiName);
 
 		// Execute the entire operation in a transaction with automatic retry on conflicts
-		return await transactionManager.ExecuteInTransactionAsync(async cancellation =>
-		{
-			DateOnly today =
-				DateOnly.FromDateTime(
-					timeProvider
-						.GetUtcNow()
-						.UtcDateTime);
-
-			ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellation);
-
-			if (request == null)
+		return await transactionManager.ExecuteInTransactionAsync(
+			async cancellation =>
 			{
-				request = new ThirdPartyApiRequest
+				DateOnly today =
+					DateOnly.FromDateTime(
+						timeProvider.GetUtcNow().UtcDateTime);
+
+				ThirdPartyApiRequest? request =
+					await repository.GetByApiNameAndDateAsync(
+						apiName,
+						today,
+						cancellation);
+
+				if (request == null)
 				{
-					ApiName = apiName,
-					BaseUrl = baseUrl,
-					ResetDate = today
-				};
+					request =
+						new ThirdPartyApiRequest
+					{
+						ApiName = apiName,
+						BaseUrl = baseUrl,
+						ResetDate = today,
+					};
 
-				// Use domain method to increment (sets CallCount = 1 and LastCalledAt = now)
+					// Use domain method to increment (sets CallCount = 1 and LastCalledAt = now)
+					request.IncrementCallCount(
+						timeProvider.GetUtcNow().UtcDateTime);
+
+					await repository.CreateAsync(request);
+					return true;
+				}
+
+				// Record exists - check limit before incrementing
+				if (request.CallCount >= dailyLimit)
+				{
+					logger.LogWarning(
+						"Cannot increment request count for {ApiName}. Limit reached: {Count}/{Limit}",
+						apiName,
+						request.CallCount,
+						dailyLimit);
+
+					return false;
+				}
+
+				// Increment counter using domain logic
 				request.IncrementCallCount(
-					timeProvider
-						.GetUtcNow()
-						.UtcDateTime);
+					timeProvider.GetUtcNow().UtcDateTime);
 
-				await repository.CreateAsync(request);
+				// Update the record
+				await repository.UpdateAsync(request);
+
+				// Warn when approaching limit (90%)
+				if (request.CallCount >= dailyLimit * 0.9)
+				{
+					logger.LogWarning(
+						"Approaching rate limit for {ApiName}: {Count}/{Limit} ({Percentage:F1}%)",
+						apiName,
+						request.CallCount,
+						dailyLimit,
+						(double)request.CallCount / dailyLimit * 100);
+				}
+
 				return true;
-			}
-
-			// Record exists - check limit before incrementing
-			if (request.CallCount >= dailyLimit)
-			{
-				logger.LogWarning(
-					"Cannot increment request count for {ApiName}. Limit reached: {Count}/{Limit}",
-					apiName,
-					request.CallCount,
-					dailyLimit);
-
-				return false;
-			}
-
-			// Increment counter using domain logic
-			request.IncrementCallCount(
-				timeProvider
-					.GetUtcNow()
-					.UtcDateTime);
-
-			// Update the record
-			await repository.UpdateAsync(request);
-
-			// Warn when approaching limit (90%)
-			if (request.CallCount >= dailyLimit * 0.9)
-			{
-				logger.LogWarning(
-					"Approaching rate limit for {ApiName}: {Count}/{Limit} ({Percentage:F1}%)",
-					apiName,
-					request.CallCount,
-					dailyLimit,
-					(double)request.CallCount / dailyLimit * 100);
-			}
-
-			return true;
-		}, maxRetries: 5, cancellationToken); // Allow up to 5 retries for high-concurrency scenarios
+			},
+			maxRetries: 5,
+			cancellationToken); // Allow up to 5 retries for high-concurrency scenarios
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> GetRequestCountAsync(string apiName, CancellationToken cancellationToken = default)
+	public async Task<int> GetRequestCountAsync(
+		string apiName,
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		DateOnly today =
 			DateOnly.FromDateTime(
-				timeProvider
-					.GetUtcNow()
-					.UtcDateTime);
-		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+				timeProvider.GetUtcNow().UtcDateTime);
+		ThirdPartyApiRequest? request =
+			await repository.GetByApiNameAndDateAsync(
+				apiName,
+				today,
+				cancellationToken);
 
 		return request?.CallCount ?? 0;
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> GetRemainingQuotaAsync(string apiName, CancellationToken cancellationToken = default)
+	public async Task<int> GetRemainingQuotaAsync(
+		string apiName,
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		int dailyLimit = RateLimitSettings.GetDailyLimit(apiName);
+		int dailyLimit =
+			RateLimitSettings.GetDailyLimit(apiName);
 		DateOnly today =
 			DateOnly.FromDateTime(
-				timeProvider
-					.GetUtcNow()
-					.UtcDateTime);
-		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+				timeProvider.GetUtcNow().UtcDateTime);
+		ThirdPartyApiRequest? request =
+			await repository.GetByApiNameAndDateAsync(
+				apiName,
+				today,
+				cancellationToken);
 
-		int currentCount = request?.CallCount ?? 0;
+		int currentCount =
+			request?.CallCount ?? 0;
 		return Math.Max(0, dailyLimit - currentCount);
 	}
 
@@ -184,24 +204,27 @@ public class RateLimitingService(
 	public TimeSpan GetTimeUntilReset()
 	{
 		DateTime now =
-			timeProvider
-				.GetUtcNow()
-				.UtcDateTime;
-		DateTime nextMidnight = now.Date.AddDays(1);
+			timeProvider.GetUtcNow().UtcDateTime;
+		DateTime nextMidnight =
+			now.Date.AddDays(1);
 		return nextMidnight - now;
 	}
 
 	/// <inheritdoc/>
-	public async Task ResetCounterAsync(string apiName, CancellationToken cancellationToken = default)
+	public async Task ResetCounterAsync(
+		string apiName,
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
 		DateOnly today =
 			DateOnly.FromDateTime(
-				timeProvider
-					.GetUtcNow()
-					.UtcDateTime);
-		ThirdPartyApiRequest? request = await repository.GetByApiNameAndDateAsync(apiName, today, cancellationToken);
+				timeProvider.GetUtcNow().UtcDateTime);
+		ThirdPartyApiRequest? request =
+			await repository.GetByApiNameAndDateAsync(
+				apiName,
+				today,
+				cancellationToken);
 
 		if (request == null)
 		{

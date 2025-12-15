@@ -22,18 +22,12 @@ public class PasswordResetToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the unique identifier.
 	/// </summary>
-	public int Id
-	{
-		get; set;
-	}
+	public int Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the user this token belongs to.
 	/// </summary>
-	public int UserId
-	{
-		get; set;
-	}
+	public int UserId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the cryptographically random token (base64 encoded, 64 bytes).
@@ -43,24 +37,15 @@ public class PasswordResetToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets when this token expires (24 hours from creation).
 	/// </summary>
-	public DateTime ExpiresAt
-	{
-		get; set;
-	}
+	public DateTime ExpiresAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets when this token was created.
 	/// </summary>
-	public DateTime CreateDate
-	{
-		get; set;
-	}
+	public DateTime CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether this token has been used.
 	/// </summary>
-	public bool IsUsed
-	{
-		get; set;
-	}
+	public bool IsUsed { get; set; }
 }

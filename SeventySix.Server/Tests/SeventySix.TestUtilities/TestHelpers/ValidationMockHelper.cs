@@ -16,12 +16,15 @@ public static class ValidationMockHelper
 	/// <summary>
 	/// Sets up a validator substitute to return successful validation (no errors).
 	/// </summary>
-	public static void SetupSuccessfulValidation<T>(this IValidator<T> validator)
+	public static void SetupSuccessfulValidation<T>(
+		this IValidator<T> validator)
 	{
 		ValidationResult successResult = new();
 
 		validator
-			.ValidateAsync(Arg.Any<ValidationContext<T>>(), Arg.Any<CancellationToken>())
+			.ValidateAsync(
+				Arg.Any<ValidationContext<T>>(),
+				Arg.Any<CancellationToken>())
 			.Returns(successResult);
 	}
 
@@ -33,11 +36,17 @@ public static class ValidationMockHelper
 		string propertyName,
 		string errorMessage)
 	{
-		List<ValidationFailure> failures = [new ValidationFailure(propertyName, errorMessage)];
-		ValidationResult failedResult = new(failures);
+		List<ValidationFailure> failures =
+		[
+			new ValidationFailure(propertyName, errorMessage),
+		];
+		ValidationResult failedResult =
+			new(failures);
 
 		validator
-			.ValidateAsync(Arg.Any<ValidationContext<T>>(), Arg.Any<CancellationToken>())
+			.ValidateAsync(
+				Arg.Any<ValidationContext<T>>(),
+				Arg.Any<CancellationToken>())
 			.Returns(failedResult);
 	}
 
@@ -48,10 +57,13 @@ public static class ValidationMockHelper
 		this IValidator<T> validator,
 		params ValidationFailure[] failures)
 	{
-		ValidationResult failedResult = new(failures);
+		ValidationResult failedResult =
+			new(failures);
 
 		validator
-			.ValidateAsync(Arg.Any<ValidationContext<T>>(), Arg.Any<CancellationToken>())
+			.ValidateAsync(
+				Arg.Any<ValidationContext<T>>(),
+				Arg.Any<CancellationToken>())
 			.Returns(failedResult);
 	}
 
@@ -62,14 +74,18 @@ public static class ValidationMockHelper
 		this IValidator<T> validator,
 		Dictionary<string, string> errors)
 	{
-		List<ValidationFailure> failures = errors
+		List<ValidationFailure> failures =
+			errors
 			.Select(kvp => new ValidationFailure(kvp.Key, kvp.Value))
 			.ToList();
 
-		ValidationResult failedResult = new(failures);
+		ValidationResult failedResult =
+			new(failures);
 
 		validator
-			.ValidateAsync(Arg.Any<ValidationContext<T>>(), Arg.Any<CancellationToken>())
+			.ValidateAsync(
+				Arg.Any<ValidationContext<T>>(),
+				Arg.Any<CancellationToken>())
 			.Returns(failedResult);
 	}
 }

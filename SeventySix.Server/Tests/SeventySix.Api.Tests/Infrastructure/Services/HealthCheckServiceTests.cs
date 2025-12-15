@@ -22,22 +22,29 @@ public class HealthCheckServiceTests
 
 	public HealthCheckServiceTests()
 	{
-		MetricsService = Substitute.For<IMetricsService>();
-		IdentityHealthCheck = Substitute.For<IDatabaseHealthCheck>();
-		LoggingHealthCheck = Substitute.For<IDatabaseHealthCheck>();
-		ApiTrackingHealthCheck = Substitute.For<IDatabaseHealthCheck>();
+		MetricsService =
+			Substitute.For<IMetricsService>();
+		IdentityHealthCheck =
+			Substitute.For<IDatabaseHealthCheck>();
+		LoggingHealthCheck =
+			Substitute.For<IDatabaseHealthCheck>();
+		ApiTrackingHealthCheck =
+			Substitute.For<IDatabaseHealthCheck>();
 
 		// Setup default mock behaviors
 		IdentityHealthCheck.ContextName.Returns("Identity");
-		IdentityHealthCheck.CheckHealthAsync(Arg.Any<CancellationToken>())
+		IdentityHealthCheck
+			.CheckHealthAsync(Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		LoggingHealthCheck.ContextName.Returns("Logging");
-		LoggingHealthCheck.CheckHealthAsync(Arg.Any<CancellationToken>())
+		LoggingHealthCheck
+			.CheckHealthAsync(Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		ApiTrackingHealthCheck.ContextName.Returns("ApiTracking");
-		ApiTrackingHealthCheck.CheckHealthAsync(Arg.Any<CancellationToken>())
+		ApiTrackingHealthCheck
+			.CheckHealthAsync(Arg.Any<CancellationToken>())
 			.Returns(true);
 	}
 
@@ -47,7 +54,7 @@ public class HealthCheckServiceTests
 		[
 			IdentityHealthCheck,
 			LoggingHealthCheck,
-			ApiTrackingHealthCheck
+			ApiTrackingHealthCheck,
 		];
 
 		return new HealthCheckService(
@@ -66,7 +73,8 @@ public class HealthCheckServiceTests
 
 		// Act
 		HealthStatusResponse result =
-			await service.GetHealthStatusAsync(CancellationToken.None);
+			await service.GetHealthStatusAsync(
+			CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
@@ -76,19 +84,21 @@ public class HealthCheckServiceTests
 		Assert.NotNull(result.ErrorQueue);
 		Assert.NotNull(result.System);
 		Assert.True(result.CheckedAt <= timeProvider.GetUtcNow().UtcDateTime);
-		Assert.True(result.CheckedAt > timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-5));
+		Assert.True(
+			result.CheckedAt
+				> timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-5));
 	}
 
 	[Fact]
 	public async Task GetHealthStatusAsync_DatabaseIsConnectedAsync()
 	{
 		// Arrange
-		HealthCheckService service =
-			CreateSut();
+		HealthCheckService service = CreateSut();
 
 		// Act
 		HealthStatusResponse result =
-			await service.GetHealthStatusAsync(CancellationToken.None);
+			await service.GetHealthStatusAsync(
+			CancellationToken.None);
 
 		// Assert
 		Assert.True(result.Database.IsConnected);
@@ -110,12 +120,12 @@ public class HealthCheckServiceTests
 	public async Task GetHealthStatusAsync_ExternalApisInitializedAsync()
 	{
 		// Arrange
-		HealthCheckService service =
-			CreateSut();
+		HealthCheckService service = CreateSut();
 
 		// Act
 		HealthStatusResponse result =
-			await service.GetHealthStatusAsync(CancellationToken.None);
+			await service.GetHealthStatusAsync(
+			CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result.ExternalApis);
@@ -126,12 +136,12 @@ public class HealthCheckServiceTests
 	public async Task GetHealthStatusAsync_ErrorQueueHealthyAsync()
 	{
 		// Arrange
-		HealthCheckService service =
-			CreateSut();
+		HealthCheckService service = CreateSut();
 
 		// Act
 		HealthStatusResponse result =
-			await service.GetHealthStatusAsync(CancellationToken.None);
+			await service.GetHealthStatusAsync(
+			CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result.ErrorQueue);
@@ -145,12 +155,12 @@ public class HealthCheckServiceTests
 	public async Task GetHealthStatusAsync_SystemResourcesPopulatedAsync()
 	{
 		// Arrange
-		HealthCheckService service =
-			CreateSut();
+		HealthCheckService service = CreateSut();
 
 		// Act
 		HealthStatusResponse result =
-			await service.GetHealthStatusAsync(CancellationToken.None);
+			await service.GetHealthStatusAsync(
+			CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result.System);

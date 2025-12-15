@@ -50,9 +50,11 @@ public class BulkOperationExecutor<TEntity>(DbContext context)
 		Action<TEntity> updateAction,
 		CancellationToken cancellationToken = default)
 	{
-		List<TEntity> entities = await context.Set<TEntity>()
-			.Where(entity => ids.Contains(EF.Property<int>(entity, "Id")))
-			.ToListAsync(cancellationToken);
+		List<TEntity> entities =
+			await context
+				.Set<TEntity>()
+				.Where(entity => ids.Contains(EF.Property<int>(entity, "Id")))
+				.ToListAsync(cancellationToken);
 
 		if (entities.Count == 0)
 		{

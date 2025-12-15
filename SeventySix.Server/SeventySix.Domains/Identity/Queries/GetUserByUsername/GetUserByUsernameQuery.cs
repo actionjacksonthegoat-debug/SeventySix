@@ -4,5 +4,4 @@ namespace SeventySix.Identity;
 /// Query to retrieve a user by username.
 /// </summary>
 /// <param name="Username">The username to search for.</param>
-public record GetUserByUsernameQuery(
-	string Username);
+public record GetUserByUsernameQuery(string Username);

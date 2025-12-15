@@ -27,8 +27,8 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 
 		Regex logDebugPattern =
 			new Regex(
-				@"\.LogDebug\(",
-				RegexOptions.Compiled);
+			@"\.LogDebug\(",
+			RegexOptions.Compiled);
 
 		List<string> violations = [];
 
@@ -63,8 +63,8 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 
 		Regex logInformationPattern =
 			new Regex(
-				@"\.LogInformation\(",
-				RegexOptions.Compiled);
+			@"\.LogInformation\(",
+			RegexOptions.Compiled);
 
 		List<string> violations = [];
 
@@ -73,8 +73,7 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 		{
 			// Allow in background services and startup/configuration
 			bool isBackgroundService =
-				file.EndsWith("Service.cs")
-				|| file.EndsWith("Job.cs");
+				file.EndsWith("Service.cs") || file.EndsWith("Job.cs");
 
 			bool isStartupConfig =
 				file.Contains("\\Extensions\\WebApplicationExtensions.cs")
@@ -84,11 +83,15 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 			string content =
 				ReadFileContent(file);
 
-			if (logInformationPattern.IsMatch(content) && !isBackgroundService && !isStartupConfig)
+			if (
+				logInformationPattern.IsMatch(content)
+				&& !isBackgroundService
+				&& !isStartupConfig)
 			{
 				// Additional check: is it actually a BackgroundService class?
 				bool inheritsBackgroundService =
-					content.Contains("BackgroundService");
+					content.Contains(
+					"BackgroundService");
 
 				if (!inheritsBackgroundService)
 				{

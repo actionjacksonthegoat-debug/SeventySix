@@ -34,17 +34,14 @@ public class OAuthService(
 	TimeProvider timeProvider,
 	ITransactionManager transactionManager,
 	AuthenticationService authenticationService,
-	ILogger<OAuthService> logger) :
-	IOAuthService
+	ILogger<OAuthService> logger) : IOAuthService
 {
 	/// <inheritdoc/>
-	public string BuildGitHubAuthorizationUrl(
-		string state,
-		string codeVerifier)
+	public string BuildGitHubAuthorizationUrl(string state, string codeVerifier)
 	{
 		OAuthProviderSettings? github =
-			authSettings.Value.OAuth.Providers
-				.FirstOrDefault(p => p.Provider == OAuthProviderConstants.GitHub);
+			authSettings.Value.OAuth.Providers.FirstOrDefault(p =>
+				p.Provider == OAuthProviderConstants.GitHub);
 
 		if (github == null)
 		{
@@ -54,7 +51,8 @@ public class OAuthService(
 
 		// Generate PKCE code challenge
 		string codeChallenge =
-			CryptoExtensions.ComputePkceCodeChallenge(codeVerifier);
+			CryptoExtensions.ComputePkceCodeChallenge(
+				codeVerifier);
 
 		string url =
 			$"{github.AuthorizationEndpoint}"
@@ -76,8 +74,8 @@ public class OAuthService(
 		CancellationToken cancellationToken = default)
 	{
 		OAuthProviderSettings? github =
-			authSettings.Value.OAuth.Providers
-				.FirstOrDefault(p => p.Provider == OAuthProviderConstants.GitHub);
+			authSettings.Value.OAuth.Providers.FirstOrDefault(p =>
+				p.Provider == OAuthProviderConstants.GitHub);
 
 		if (github == null)
 		{
@@ -138,13 +136,15 @@ public class OAuthService(
 		string roleName,
 		CancellationToken cancellationToken)
 	{
-		int? roleId = await authRepository.GetRoleIdByNameAsync(
-			roleName,
-			cancellationToken);
+		int? roleId =
+			await authRepository.GetRoleIdByNameAsync(
+				roleName,
+				cancellationToken);
 
 		if (roleId is null)
 		{
-			throw new InvalidOperationException($"Role '{roleName}' not found in SecurityRoles");
+			throw new InvalidOperationException(
+				$"Role '{roleName}' not found in SecurityRoles");
 		}
 
 		return roleId.Value;
@@ -164,13 +164,13 @@ public class OAuthService(
 
 		Dictionary<string, string> parameters =
 			new()
-			{
-				["client_id"] = provider.ClientId,
-				["client_secret"] = provider.ClientSecret,
-				["code"] = code,
-				["redirect_uri"] = provider.RedirectUri,
-				["code_verifier"] = codeVerifier
-			};
+		{
+			["client_id"] = provider.ClientId,
+			["client_secret"] = provider.ClientSecret,
+			["code"] = code,
+			["redirect_uri"] = provider.RedirectUri,
+			["code_verifier"] = codeVerifier,
+		};
 
 		using FormUrlEncodedContent content =
 			new(parameters);
@@ -187,14 +187,13 @@ public class OAuthService(
 		response.EnsureSuccessStatusCode();
 
 		string json =
-			await response.Content.ReadAsStringAsync(cancellationToken);
+			await response.Content.ReadAsStringAsync(
+				cancellationToken);
 
 		using JsonDocument doc =
 			JsonDocument.Parse(json);
 
-		return doc.RootElement
-			.GetProperty("access_token")
-			.GetString()
+		return doc.RootElement.GetProperty("access_token").GetString()
 			?? throw new InvalidOperationException(
 				"No access_token in response");
 	}
@@ -223,7 +222,8 @@ public class OAuthService(
 		response.EnsureSuccessStatusCode();
 
 		string json =
-			await response.Content.ReadAsStringAsync(cancellationToken);
+			await response.Content.ReadAsStringAsync(
+				cancellationToken);
 
 		using JsonDocument doc =
 			JsonDocument.Parse(json);
@@ -249,10 +249,11 @@ public class OAuthService(
 		CancellationToken cancellationToken)
 	{
 		// Look for existing external login
-		ExternalLogin? existingLogin = await authRepository.GetExternalLoginAsync(
-			OAuthProviderConstants.GitHub,
-			userInfo.Id,
-			cancellationToken);
+		ExternalLogin? existingLogin =
+			await authRepository.GetExternalLoginAsync(
+				OAuthProviderConstants.GitHub,
+				userInfo.Id,
+				cancellationToken);
 
 		if (existingLogin != null)
 		{
@@ -264,12 +265,14 @@ public class OAuthService(
 				existingLogin,
 				cancellationToken);
 
-			User? existingUser = await userQueryRepository.GetByIdAsync(
-							existingLogin.UserId,
-							cancellationToken);
+			User? existingUser =
+				await userQueryRepository.GetByIdAsync(
+					existingLogin.UserId,
+					cancellationToken);
 
 			return existingUser
-				?? throw new InvalidOperationException($"User with ID {existingLogin.UserId} not found for external login.");
+				?? throw new InvalidOperationException(
+					$"User with ID {existingLogin.UserId} not found for external login.");
 		}
 
 		DateTime now =
@@ -286,46 +289,53 @@ public class OAuthService(
 			async transactionCancellationToken =>
 			{
 				// Create new user - ensure unique username
-				string username =
-					userInfo.Login;
-				int counter =
-					1;
+				string username = userInfo.Login;
+				int counter = 1;
 
-				while (await authRepository.UsernameExistsAsync(
-					username,
-					transactionCancellationToken))
+				while (
+					await authRepository.UsernameExistsAsync(
+						username,
+						transactionCancellationToken))
 				{
-					username = $"{userInfo.Login}{counter++}";
+					username =
+						$"{userInfo.Login}{counter++}";
 				}
 
 				User user =
 					new()
-					{
-						Username = username,
-						Email = userInfo.Email ?? $"{userInfo.Login}{OAuthProviderConstants.AuditValues.GitHubPlaceholderEmailDomain}",
-						FullName = userInfo.Name,
-						IsActive = true,
-						CreateDate = now,
-						CreatedBy = OAuthProviderConstants.AuditValues.GitHubOAuthCreatedBy
-					};
+				{
+					Username = username,
+					Email =
+						userInfo.Email
+						?? $"{userInfo.Login}{OAuthProviderConstants.AuditValues.GitHubPlaceholderEmailDomain}",
+					FullName = userInfo.Name,
+					IsActive = true,
+					CreateDate = now,
+					CreatedBy =
+					OAuthProviderConstants
+						.AuditValues
+						.GitHubOAuthCreatedBy,
+				};
 
 				// Create user with role assignment
-				User createdUser = await authRepository.CreateUserWithRoleAsync(
-					user,
-					userRoleId,
-					transactionCancellationToken);
+				User createdUser =
+					await authRepository.CreateUserWithRoleAsync(
+						user,
+						userRoleId,
+						transactionCancellationToken);
 
 				// Create external login with user ID
 				ExternalLogin externalLogin =
 					new()
-					{
-						UserId = createdUser.Id,
-						Provider = OAuthProviderConstants.GitHub,
-						ProviderUserId = userInfo.Id,
-						ProviderEmail = userInfo.Email,
-						CreateDate = now,
-						LastUsedAt = now
-					};
+				{
+					UserId = createdUser.Id,
+					Provider =
+					OAuthProviderConstants.GitHub,
+					ProviderUserId = userInfo.Id,
+					ProviderEmail = userInfo.Email,
+					CreateDate = now,
+					LastUsedAt = now,
+				};
 
 				await authRepository.CreateExternalLoginAsync(
 					externalLogin,

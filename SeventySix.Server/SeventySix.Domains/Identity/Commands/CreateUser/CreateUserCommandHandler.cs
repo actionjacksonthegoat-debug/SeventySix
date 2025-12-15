@@ -38,8 +38,7 @@ public static class CreateUserCommandHandler
 		CancellationToken cancellationToken)
 	{
 		// Create user entity
-		User entity =
-			request.ToEntity();
+		User entity = request.ToEntity();
 
 		UserDto createdUser;
 
@@ -50,10 +49,10 @@ public static class CreateUserCommandHandler
 					entity,
 					cancellationToken);
 
-			createdUser =
-				created.ToDto();
+			createdUser = created.ToDto();
 		}
-		catch (DbUpdateException exception) when (exception.IsDuplicateKeyViolation())
+		catch (DbUpdateException exception)
+			when (exception.IsDuplicateKeyViolation())
 		{
 			DuplicateKeyViolationHandler.HandleAsException(
 				exception,
@@ -126,8 +125,6 @@ public static class CreateUserCommandHandler
 
 		user.NeedsPendingEmail = true;
 
-		await userCommandRepository.UpdateAsync(
-			user,
-			cancellationToken);
+		await userCommandRepository.UpdateAsync(user, cancellationToken);
 	}
 }

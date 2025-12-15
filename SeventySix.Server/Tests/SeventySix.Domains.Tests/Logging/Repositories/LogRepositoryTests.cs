@@ -33,7 +33,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		: base(fixture)
 	{
 		LoggingDbContext context = CreateLoggingDbContext();
-		Repository = new LogRepository(
+		Repository =
+			new LogRepository(
 			context,
 			Substitute.For<ILogger<LogRepository>>());
 	}
@@ -43,15 +44,18 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		Log log = new()
+		Log log =
+			new()
 		{
 			LogLevel = "Error",
 			Message = "Test error message",
-			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
 		};
 
 		// Act
-		Log result = await Repository.CreateAsync(log);
+		Log result =
+			await Repository.CreateAsync(log);
 
 		// Assert
 		Assert.NotEqual(0, result.Id);
@@ -63,8 +67,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task CreateAsync_ThrowsArgumentNullException_WhenEntityIsNullAsync()
 	{
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(
-			async () => await Repository.CreateAsync(null!));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+			await Repository.CreateAsync(null!));
 	}
 
 	[Fact]
@@ -76,7 +80,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 
 		// Act
 		LogQueryRequest request = new();
-		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
+		(IEnumerable<Log> logs, int _) =
+			await Repository.GetPagedAsync(
+			request);
 
 		// Assert
 		Assert.NotEmpty(logs);
@@ -91,8 +97,11 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		await SeedTestLogsAsync(timeProvider);
 
 		// Act
-		LogQueryRequest request = new() { LogLevel = "Error" };
-		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
+		LogQueryRequest request =
+			new() { LogLevel = "Error" };
+		(IEnumerable<Log> logs, int _) =
+			await Repository.GetPagedAsync(
+			request);
 
 		// Assert
 		Assert.All(logs, log => Assert.Equal("Error", log.LogLevel));
@@ -104,19 +113,30 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await SeedTestLogsAsync(timeProvider);
-		DateTime startDate = timeProvider.GetUtcNow().UtcDateTime.AddHours(-1);
-		DateTime endDate = timeProvider.GetUtcNow().UtcDateTime.AddHours(1);
+		DateTime startDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddHours(-1);
+		DateTime endDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddHours(1);
 
 		// Act
-		LogQueryRequest request = new() { StartDate = startDate, EndDate = endDate };
-		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
+		LogQueryRequest request =
+			new()
+		{
+			StartDate = startDate,
+			EndDate = endDate,
+		};
+		(IEnumerable<Log> logs, int _) =
+			await Repository.GetPagedAsync(
+			request);
 
 		// Assert
-		Assert.All(logs, log =>
-		{
-			Assert.True(log.CreateDate >= startDate);
-			Assert.True(log.CreateDate <= endDate);
-		});
+		Assert.All(
+			logs,
+			log =>
+			{
+				Assert.True(log.CreateDate >= startDate);
+				Assert.True(log.CreateDate <= endDate);
+			});
 	}
 
 	[Fact]
@@ -127,11 +147,19 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		await SeedTestLogsAsync(timeProvider);
 
 		// Act
-		LogQueryRequest request = new() { SearchTerm = "UserService" };
-		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
+		LogQueryRequest request =
+			new() { SearchTerm = "UserService" };
+		(IEnumerable<Log> logs, int _) =
+			await Repository.GetPagedAsync(
+			request);
 
 		// Assert
-		Assert.All(logs, log => Assert.Contains("UserService", log.SourceContext ?? string.Empty));
+		Assert.All(
+			logs,
+			log =>
+				Assert.Contains(
+					"UserService",
+					log.SourceContext ?? string.Empty));
 	}
 
 	[Fact]
@@ -142,11 +170,17 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		await SeedTestLogsAsync(timeProvider);
 
 		// Act
-		LogQueryRequest request = new() { SearchTerm = "/api/users" };
-		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
+		LogQueryRequest request =
+			new() { SearchTerm = "/api/users" };
+		(IEnumerable<Log> logs, int _) =
+			await Repository.GetPagedAsync(
+			request);
 
 		// Assert
-		Assert.All(logs, log => Assert.Contains("/api/users", log.RequestPath ?? string.Empty));
+		Assert.All(
+			logs,
+			log =>
+				Assert.Contains("/api/users", log.RequestPath ?? string.Empty));
 	}
 
 	[Fact]
@@ -154,24 +188,49 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
 		await SeedTestLogsForSearchAsync(testId, timeProvider);
 
 		// Act - Search for unique marker which should match Message field
-		LogQueryRequest messageRequest = new() { SearchTerm = $"Authentication_{testId}" };
-		(IEnumerable<Log> messageLogs, int _) = await Repository.GetPagedAsync(messageRequest);
+		LogQueryRequest messageRequest =
+			new()
+		{
+			SearchTerm =
+			$"Authentication_{testId}",
+		};
+		(IEnumerable<Log> messageLogs, int _) =
+			await Repository.GetPagedAsync(
+			messageRequest);
 
 		// Act - Search for unique marker in SourceContext
-		LogQueryRequest sourceRequest = new() { SearchTerm = $"UserService_{testId}" };
-		(IEnumerable<Log> sourceLogs, int _) = await Repository.GetPagedAsync(sourceRequest);
+		LogQueryRequest sourceRequest =
+			new()
+		{
+			SearchTerm =
+			$"UserService_{testId}",
+		};
+		(IEnumerable<Log> sourceLogs, int _) =
+			await Repository.GetPagedAsync(
+			sourceRequest);
 
 		// Act - Search for unique marker in RequestPath
-		LogQueryRequest pathRequest = new() { SearchTerm = $"users_{testId}" };
-		(IEnumerable<Log> pathLogs, int _) = await Repository.GetPagedAsync(pathRequest);
+		LogQueryRequest pathRequest =
+			new() { SearchTerm =
+			$"users_{testId}" };
+		(IEnumerable<Log> pathLogs, int _) =
+			await Repository.GetPagedAsync(
+			pathRequest);
 
 		// Act - Search for unique marker in ExceptionMessage
-		LogQueryRequest exceptionRequest = new() { SearchTerm = $"NullRef_{testId}" };
-		(IEnumerable<Log> exceptionLogs, int _) = await Repository.GetPagedAsync(exceptionRequest);
+		LogQueryRequest exceptionRequest =
+			new()
+		{
+			SearchTerm =
+			$"NullRef_{testId}",
+		};
+		(IEnumerable<Log> exceptionLogs, int _) =
+			await Repository.GetPagedAsync(exceptionRequest);
 
 		// Assert - Verify search works across all fields
 		Assert.Single(messageLogs); // Only one log with "Authentication_{testId}" message
@@ -188,11 +247,17 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		await SeedTestLogsAsync(timeProvider);
 
 		// Act
-		LogQueryRequest page1Request = new() { Page = 1, PageSize = 2 };
-		(IEnumerable<Log> page1Logs, int _) = await Repository.GetPagedAsync(page1Request);
+		LogQueryRequest page1Request =
+			new() { Page = 1, PageSize = 2 };
+		(IEnumerable<Log> page1Logs, int _) =
+			await Repository.GetPagedAsync(
+			page1Request);
 
-		LogQueryRequest page2Request = new() { Page = 2, PageSize = 2 };
-		(IEnumerable<Log> page2Logs, int _) = await Repository.GetPagedAsync(page2Request);
+		LogQueryRequest page2Request =
+			new() { Page = 2, PageSize = 2 };
+		(IEnumerable<Log> page2Logs, int _) =
+			await Repository.GetPagedAsync(
+			page2Request);
 
 		// Assert
 		Assert.Equal(2, page1Logs.Count());
@@ -209,8 +274,11 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 
 		// Act
 		LogQueryRequest request = new();
-		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
-		List<Log> result = [.. logs];
+		(IEnumerable<Log> logs, int _) =
+			await Repository.GetPagedAsync(
+			request);
+		List<Log> result =
+			[.. logs];
 
 		// Assert - Default is now Id descending (newest first)
 		for (int i = 0; i < result.Count - 1; i++)
@@ -226,17 +294,23 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		FakeTimeProvider timeProvider = new();
 		for (int i = 0; i < 150; i++)
 		{
-			await Repository.CreateAsync(new Log
-			{
-				LogLevel = "Info",
-				Message = $"Log {i}",
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
-			});
+			await Repository.CreateAsync(
+				new Log
+				{
+					LogLevel = "Info",
+					Message =
+				$"Log {i}",
+					CreateDate =
+				timeProvider.GetUtcNow().UtcDateTime,
+				});
 		}
 
 		// Act
-		LogQueryRequest request = new() { PageSize = 100 }; // Note: PageSize max is 100, not 1000
-		(IEnumerable<Log> logs, int _) = await Repository.GetPagedAsync(request);
+		LogQueryRequest request =
+			new() { PageSize = 100 }; // Note: PageSize max is 100, not 1000
+		(IEnumerable<Log> logs, int _) =
+			await Repository.GetPagedAsync(
+			request);
 
 		// Assert
 		Assert.True(logs.Count() <= 100); // PageSize is capped at 100
@@ -251,7 +325,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 
 		// Act
 		LogQueryRequest request = new();
-		(IEnumerable<Log> _, int count) = await Repository.GetPagedAsync(request);
+		(IEnumerable<Log> _, int count) =
+			await Repository.GetPagedAsync(
+			request);
 
 		// Assert
 		Assert.True(count >= 3);
@@ -263,15 +339,19 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		await SeedTestLogsAsync(timeProvider);
-		DateTime startDate = timeProvider.GetUtcNow().UtcDateTime.AddHours(-1);
+		DateTime startDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddHours(-1);
 
 		// Act
-		LogQueryRequest request = new()
+		LogQueryRequest request =
+			new()
 		{
 			LogLevel = "Error",
 			StartDate = startDate,
 		};
-		(IEnumerable<Log> _, int count) = await Repository.GetPagedAsync(request);
+		(IEnumerable<Log> _, int count) =
+			await Repository.GetPagedAsync(
+			request);
 
 		// Assert
 		Assert.True(count >= 1); // At least one Error log exists
@@ -282,32 +362,42 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		Log oldLog = new()
+		Log oldLog =
+			new()
 		{
 			LogLevel = "Error",
 			Message = "Old log",
-			CreateDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-40),
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddDays(-40),
 		};
 		await Repository.CreateAsync(oldLog);
 
-		Log recentLog = new()
+		Log recentLog =
+			new()
 		{
 			LogLevel = "Error",
 			Message = "Recent log",
-			CreateDate = timeProvider.GetUtcNow().UtcDateTime,
+			CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
 		};
 		await Repository.CreateAsync(recentLog);
 
-		DateTime cutoffDate = timeProvider.GetUtcNow().UtcDateTime.AddDays(-30);
+		DateTime cutoffDate =
+			timeProvider.GetUtcNow().UtcDateTime.AddDays(-30);
 
 		// Act
-		int deletedCount = await Repository.DeleteOlderThanAsync(cutoffDate);
+		int deletedCount =
+			await Repository.DeleteOlderThanAsync(cutoffDate);
 
 		// Assert
 		Assert.True(deletedCount > 0);
-		LogQueryRequest request = new() { PageSize = 100 };
-		(IEnumerable<Log> remainingLogs, int _) = await Repository.GetPagedAsync(request);
-		Assert.All(remainingLogs, log => Assert.True(log.CreateDate >= cutoffDate));
+		LogQueryRequest request =
+			new() { PageSize = 100 };
+		(IEnumerable<Log> remainingLogs, int _) =
+			await Repository.GetPagedAsync(request);
+		Assert.All(
+			remainingLogs,
+			log => Assert.True(log.CreateDate >= cutoffDate));
 	}
 
 	private async Task SeedTestLogsAsync(FakeTimeProvider timeProvider)
@@ -322,7 +412,8 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				RequestPath = "/api/users/1",
 				StatusCode = 500,
 				DurationMs = 150,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
+				CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
 			},
 			new Log
 			{
@@ -332,7 +423,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				RequestPath = "/api/health",
 				StatusCode = 200,
 				DurationMs = 75,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
+				CreateDate =
+			timeProvider
+					.GetUtcNow()
+					.UtcDateTime.AddMinutes(-5),
 			},
 			new Log
 			{
@@ -342,7 +436,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				RequestPath = "/api/users/2",
 				StatusCode = 404,
 				DurationMs = 50,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10),
+				CreateDate =
+			timeProvider
+					.GetUtcNow()
+					.UtcDateTime.AddMinutes(-10),
 			},
 		];
 
@@ -352,27 +449,39 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		}
 	}
 
-	private async Task SeedTestLogsForSearchAsync(string testId, FakeTimeProvider timeProvider)
+	private async Task SeedTestLogsForSearchAsync(
+		string testId,
+		FakeTimeProvider timeProvider)
 	{
 		Log[] logs =
 		[
 			new Log
 			{
 				LogLevel = "Error",
-				Message = $"Authentication_{testId} failed for user",
-				SourceContext = $"SeventySix.Services.UserService_{testId}",
-				RequestPath = $"/api/users_{testId}/login",
+				Message =
+			$"Authentication_{testId} failed for user",
+				SourceContext =
+			$"SeventySix.Services.UserService_{testId}",
+				RequestPath =
+			$"/api/users_{testId}/login",
 				ExceptionMessage = null,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime,
+				CreateDate =
+			timeProvider.GetUtcNow().UtcDateTime,
 			},
 			new Log
 			{
 				LogLevel = "Error",
 				Message = "Database connection timeout",
-				SourceContext = $"SeventySix.Services.UserService_{testId}",
-				RequestPath = $"/api/users_{testId}/profile",
-				ExceptionMessage = $"NullRef_{testId}: Object reference not set",
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
+				SourceContext =
+			$"SeventySix.Services.UserService_{testId}",
+				RequestPath =
+			$"/api/users_{testId}/profile",
+				ExceptionMessage =
+					$"NullRef_{testId}: Object reference not set",
+				CreateDate =
+			timeProvider
+					.GetUtcNow()
+					.UtcDateTime.AddMinutes(-5),
 			},
 			new Log
 			{
@@ -381,7 +490,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				SourceContext = "SeventySix.Services.ApiThrottlingService",
 				RequestPath = "/api/health",
 				ExceptionMessage = null,
-				CreateDate = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10),
+				CreateDate =
+			timeProvider
+					.GetUtcNow()
+					.UtcDateTime.AddMinutes(-10),
 			},
 		];
 
@@ -397,8 +509,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task DeleteByIdAsync_ThrowsArgumentOutOfRangeException_WhenIdIsZeroAsync()
 	{
 		// Arrange & Act & Assert
-		ArgumentOutOfRangeException exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-			async () => await Repository.DeleteByIdAsync(0));
+		ArgumentOutOfRangeException exception =
+			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+				await Repository.DeleteByIdAsync(0));
 		Assert.Equal("id", exception.ParamName);
 	}
 
@@ -406,8 +519,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task DeleteByIdAsync_ThrowsArgumentOutOfRangeException_WhenIdIsNegativeAsync()
 	{
 		// Arrange & Act & Assert
-		ArgumentOutOfRangeException exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-			async () => await Repository.DeleteByIdAsync(-1));
+		ArgumentOutOfRangeException exception =
+			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+				await Repository.DeleteByIdAsync(-1));
 		Assert.Equal("id", exception.ParamName);
 	}
 
@@ -415,8 +529,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task DeleteBatchAsync_ThrowsArgumentNullException_WhenIdsIsNullAsync()
 	{
 		// Arrange & Act & Assert
-		ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-			async () => await Repository.DeleteBatchAsync(null!));
+		ArgumentNullException exception =
+			await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+				await Repository.DeleteBatchAsync(null!));
 		Assert.Equal("ids", exception.ParamName);
 	}
 
@@ -424,8 +539,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	public async Task DeleteBatchAsync_ThrowsArgumentOutOfRangeException_WhenIdsIsEmptyAsync()
 	{
 		// Arrange & Act & Assert
-		ArgumentOutOfRangeException exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-			async () => await Repository.DeleteBatchAsync([]));
+		ArgumentOutOfRangeException exception =
+			await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+				await Repository.DeleteBatchAsync([]));
 		Assert.Equal("ids.Length", exception.ParamName);
 	}
 

@@ -27,9 +27,11 @@ public static class CryptoExtensions
 	/// </summary>
 	/// <param name="sizeInBytes">Size of random data in bytes. Default: 32.</param>
 	/// <returns>Base64-encoded random token.</returns>
-	public static string GenerateSecureToken(int sizeInBytes = DefaultTokenSizeBytes)
+	public static string GenerateSecureToken(
+		int sizeInBytes = DefaultTokenSizeBytes)
 	{
-		byte[] randomBytes = new byte[sizeInBytes];
+		byte[] randomBytes =
+			new byte[sizeInBytes];
 		RandomNumberGenerator.Fill(randomBytes);
 		return Convert.ToBase64String(randomBytes);
 	}
@@ -44,13 +46,16 @@ public static class CryptoExtensions
 	/// PKCE (Proof Key for Code Exchange) requires URL-safe characters.
 	/// See RFC 7636: https://tools.ietf.org/html/rfc7636
 	/// </remarks>
-	public static string GeneratePkceCodeVerifier(int sizeInBytes = DefaultTokenSizeBytes)
+	public static string GeneratePkceCodeVerifier(
+		int sizeInBytes = DefaultTokenSizeBytes)
 	{
-		byte[] randomBytes = new byte[sizeInBytes];
+		byte[] randomBytes =
+			new byte[sizeInBytes];
 		RandomNumberGenerator.Fill(randomBytes);
 
 		// Base64URL encoding (no padding, URL-safe)
-		return Convert.ToBase64String(randomBytes)
+		return Convert
+			.ToBase64String(randomBytes)
 			.TrimEnd('=')
 			.Replace('+', '-')
 			.Replace('/', '_');
@@ -84,7 +89,8 @@ public static class CryptoExtensions
 			SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier));
 
 		// Base64URL encoding (no padding, URL-safe)
-		return Convert.ToBase64String(hash)
+		return Convert
+			.ToBase64String(hash)
 			.TrimEnd('=')
 			.Replace('+', '-')
 			.Replace('/', '_');

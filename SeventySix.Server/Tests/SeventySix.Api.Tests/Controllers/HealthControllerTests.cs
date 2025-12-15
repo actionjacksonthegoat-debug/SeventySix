@@ -20,8 +20,10 @@ public class HealthControllerTests
 
 	public HealthControllerTests()
 	{
-		Service = Substitute.For<IHealthCheckService>();
-		Controller = new HealthController(Service);
+		Service =
+			Substitute.For<IHealthCheckService>();
+		Controller =
+			new HealthController(Service);
 	}
 
 	[Fact]
@@ -29,39 +31,50 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		HealthStatusResponse expectedStatus = new()
+		HealthStatusResponse expectedStatus =
+			new()
 		{
 			Status = "Healthy",
-			CheckedAt = timeProvider.GetUtcNow().UtcDateTime,
-			Database = new DatabaseHealthResponse
+			CheckedAt =
+			timeProvider.GetUtcNow().UtcDateTime,
+			Database =
+			new DatabaseHealthResponse
 			{
 				IsConnected = true,
 				ResponseTimeMs = 25.5,
 				Status = "Healthy",
 			},
-			ExternalApis = new ExternalApiHealthResponse
+			ExternalApis =
+			new ExternalApiHealthResponse
 			{
-				Apis = new Dictionary<string, ApiHealthStatus>
+				Apis =
+			new Dictionary<string, ApiHealthStatus>
 				{
 					{
-						"ThirdPartyRateLimit", new ApiHealthStatus
+						"ThirdPartyRateLimit",
+						new ApiHealthStatus
 						{
 							ApiName = "ThirdPartyRateLimit",
 							IsAvailable = true,
 							ResponseTimeMs = 150.5,
-						LastChecked = timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-1),
+							LastChecked =
+			timeProvider
+								.GetUtcNow()
+								.UtcDateTime.AddMinutes(-1),
 						}
 					},
 				},
 			},
-			ErrorQueue = new QueueHealthResponse
+			ErrorQueue =
+			new QueueHealthResponse
 			{
 				QueuedItems = 5,
 				FailedItems = 0,
 				CircuitBreakerOpen = false,
 				Status = "Healthy",
 			},
-			System = new SystemResourcesResponse
+			System =
+			new SystemResourcesResponse
 			{
 				CpuUsagePercent = 45.5,
 				MemoryUsedMb = 2048,
@@ -70,19 +83,25 @@ public class HealthControllerTests
 			},
 		};
 
-		Service.GetHealthStatusAsync(Arg.Any<CancellationToken>())
+		Service
+			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
 			.Returns(expectedStatus);
 
 		// Act
-		ActionResult<HealthStatusResponse> result = await Controller.GetHealthStatusAsync(CancellationToken.None);
+		ActionResult<HealthStatusResponse> result =
+			await Controller.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		HealthStatusResponse returnedStatus = Assert.IsType<HealthStatusResponse>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		HealthStatusResponse returnedStatus =
+			Assert.IsType<HealthStatusResponse>(okResult.Value);
 		Assert.Equal("Healthy", returnedStatus.Status);
 		Assert.True(returnedStatus.Database.IsConnected);
 		Assert.Equal(5, returnedStatus.ErrorQueue.QueuedItems);
-		await Service.Received(1).GetHealthStatusAsync(Arg.Any<CancellationToken>());
+		await Service
+			.Received(1)
+			.GetHealthStatusAsync(Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
@@ -90,21 +109,23 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		HealthStatusResponse expectedStatus = new()
+		HealthStatusResponse expectedStatus =
+			new()
 		{
 			Status = "Degraded",
-			CheckedAt = timeProvider.GetUtcNow().UtcDateTime,
-			Database = new DatabaseHealthResponse
+			CheckedAt =
+			timeProvider.GetUtcNow().UtcDateTime,
+			Database =
+			new DatabaseHealthResponse
 			{
 				IsConnected = true,
 				ResponseTimeMs = 500,
 				Status = "Degraded",
 			},
-			ExternalApis = new ExternalApiHealthResponse
-			{
-				Apis = [],
-			},
-			ErrorQueue = new QueueHealthResponse
+			ExternalApis =
+			new ExternalApiHealthResponse { Apis = [] },
+			ErrorQueue =
+			new QueueHealthResponse
 			{
 				QueuedItems = 100,
 				FailedItems = 10,
@@ -114,15 +135,19 @@ public class HealthControllerTests
 			System = new SystemResourcesResponse(),
 		};
 
-		Service.GetHealthStatusAsync(Arg.Any<CancellationToken>())
+		Service
+			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
 			.Returns(expectedStatus);
 
 		// Act
-		ActionResult<HealthStatusResponse> result = await Controller.GetHealthStatusAsync(CancellationToken.None);
+		ActionResult<HealthStatusResponse> result =
+			await Controller.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		HealthStatusResponse returnedStatus = Assert.IsType<HealthStatusResponse>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		HealthStatusResponse returnedStatus =
+			Assert.IsType<HealthStatusResponse>(okResult.Value);
 		Assert.Equal("Degraded", returnedStatus.Status);
 		Assert.Equal("Degraded", returnedStatus.Database.Status);
 		Assert.Equal(100, returnedStatus.ErrorQueue.QueuedItems);
@@ -133,21 +158,23 @@ public class HealthControllerTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		HealthStatusResponse expectedStatus = new()
+		HealthStatusResponse expectedStatus =
+			new()
 		{
 			Status = "Unhealthy",
-			CheckedAt = timeProvider.GetUtcNow().UtcDateTime,
-			Database = new DatabaseHealthResponse
+			CheckedAt =
+			timeProvider.GetUtcNow().UtcDateTime,
+			Database =
+			new DatabaseHealthResponse
 			{
 				IsConnected = false,
 				ResponseTimeMs = 0,
 				Status = "Unhealthy",
 			},
-			ExternalApis = new ExternalApiHealthResponse
-			{
-				Apis = [],
-			},
-			ErrorQueue = new QueueHealthResponse
+			ExternalApis =
+			new ExternalApiHealthResponse { Apis = [] },
+			ErrorQueue =
+			new QueueHealthResponse
 			{
 				QueuedItems = 0,
 				FailedItems = 0,
@@ -157,15 +184,19 @@ public class HealthControllerTests
 			System = new SystemResourcesResponse(),
 		};
 
-		Service.GetHealthStatusAsync(Arg.Any<CancellationToken>())
+		Service
+			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
 			.Returns(expectedStatus);
 
 		// Act
-		ActionResult<HealthStatusResponse> result = await Controller.GetHealthStatusAsync(CancellationToken.None);
+		ActionResult<HealthStatusResponse> result =
+			await Controller.GetHealthStatusAsync(CancellationToken.None);
 
 		// Assert
-		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		HealthStatusResponse returnedStatus = Assert.IsType<HealthStatusResponse>(okResult.Value);
+		OkObjectResult okResult =
+			Assert.IsType<OkObjectResult>(result.Result);
+		HealthStatusResponse returnedStatus =
+			Assert.IsType<HealthStatusResponse>(okResult.Value);
 		Assert.Equal("Unhealthy", returnedStatus.Status);
 		Assert.False(returnedStatus.Database.IsConnected);
 		Assert.True(returnedStatus.ErrorQueue.CircuitBreakerOpen);

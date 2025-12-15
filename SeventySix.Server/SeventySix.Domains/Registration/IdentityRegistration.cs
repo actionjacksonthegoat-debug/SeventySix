@@ -71,82 +71,144 @@ public static class IdentityRegistration
 		services.AddScoped<IUserContextAccessor, UserContextAccessor>();
 
 		// Register IdentityDbContext with PostgreSQL and AuditInterceptor
-		services.AddDbContext<IdentityDbContext>((
-			serviceProvider,
-			options) =>
-		{
-			AuditInterceptor auditInterceptor =
-				serviceProvider.GetRequiredService<AuditInterceptor>();
-			options.UseNpgsql(connectionString);
-			options.AddInterceptors(auditInterceptor);
-		});
+		services.AddDbContext<IdentityDbContext>(
+			(serviceProvider, options) =>
+			{
+				AuditInterceptor auditInterceptor =
+					serviceProvider.GetRequiredService<AuditInterceptor>();
+				options.UseNpgsql(connectionString);
+				options.AddInterceptors(auditInterceptor);
+			});
 
 		// Register transaction manager for Identity context
 		services.AddScoped<ITransactionManager>(
-			serviceProvider =>
-				new TransactionManager(
-					serviceProvider.GetRequiredService<IdentityDbContext>()));
+			serviceProvider => new TransactionManager(
+				serviceProvider.GetRequiredService<IdentityDbContext>()));
 
 		// Register repositories (CQRS pattern - Query + Command)
 		services.AddScoped<UserRepository>();
-		services.AddScoped<IUserQueryRepository>(
-			serviceProvider =>
-				serviceProvider.GetRequiredService<UserRepository>());
-		services.AddScoped<IUserCommandRepository>(
-			serviceProvider =>
-				serviceProvider.GetRequiredService<UserRepository>());
-		services.AddScoped<IPermissionRequestRepository, PermissionRequestRepository>();
+		services.AddScoped<IUserQueryRepository>(serviceProvider =>
+			serviceProvider.GetRequiredService<UserRepository>());
+		services.AddScoped<IUserCommandRepository>(serviceProvider =>
+			serviceProvider.GetRequiredService<UserRepository>());
+		services.AddScoped<
+			IPermissionRequestRepository,
+			PermissionRequestRepository
+		>();
 		services.AddScoped<ITokenRepository, TokenRepository>();
 		services.AddScoped<ICredentialRepository, CredentialRepository>();
-		services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+		services.AddScoped<
+			IPasswordResetTokenRepository,
+			PasswordResetTokenRepository
+		>();
 		services.AddScoped<IAuthRepository, AuthRepository>();
-		services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
+		services.AddScoped<
+			IEmailVerificationTokenRepository,
+			EmailVerificationTokenRepository
+		>();
 
 		// Register services - focused interfaces only (no composite IUserService)
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
 		services.AddScoped<OAuthService>();
-		services.AddScoped<IOAuthService>(
-			serviceProvider =>
-				serviceProvider.GetRequiredService<OAuthService>());
-		services.AddScoped<IOAuthCodeExchangeService, OAuthCodeExchangeService>();
+		services.AddScoped<IOAuthService>(serviceProvider =>
+			serviceProvider.GetRequiredService<OAuthService>());
+		services.AddScoped<
+			IOAuthCodeExchangeService,
+			OAuthCodeExchangeService
+		>();
 		services.AddScoped<RegistrationService>();
 
 		// Register health check
 		services.AddScoped<IDatabaseHealthCheck, IdentityHealthCheck>();
 
 		// Register validators
-		services.AddSingleton<IValidator<CreateUserRequest>, CreateUserCommandValidator>();
-		services.AddSingleton<IValidator<CreatePermissionRequestCommand>, CreatePermissionRequestValidator>();
-		services.AddSingleton<IValidator<UpdateUserRequest>, UpdateUserCommandValidator>();
-		services.AddSingleton<IValidator<UpdateProfileRequest>, UpdateProfileCommandValidator>();
+		services.AddSingleton<
+			IValidator<CreateUserRequest>,
+			CreateUserCommandValidator
+		>();
+		services.AddSingleton<
+			IValidator<CreatePermissionRequestCommand>,
+			CreatePermissionRequestValidator
+		>();
+		services.AddSingleton<
+			IValidator<UpdateUserRequest>,
+			UpdateUserCommandValidator
+		>();
+		services.AddSingleton<
+			IValidator<UpdateProfileRequest>,
+			UpdateProfileCommandValidator
+		>();
 		services.AddSingleton<IValidator<UpdateProfileCommand>>(
 			serviceProvider =>
-				CommandValidatorFactory.CreateFor<UpdateProfileCommand, UpdateProfileRequest>(
-					serviceProvider.GetRequiredService<IValidator<UpdateProfileRequest>>(),
+				CommandValidatorFactory.CreateFor<
+					UpdateProfileCommand,
+					UpdateProfileRequest
+				>(
+					serviceProvider.GetRequiredService<
+						IValidator<UpdateProfileRequest>
+					>(),
 					command => command.Request));
-		services.AddSingleton<IValidator<UserQueryRequest>, UserQueryValidator>();
-		services.AddSingleton<IValidator<LoginRequest>, LoginCommandValidator>();
-		services.AddSingleton<IValidator<RegisterRequest>, RegisterCommandValidator>();
-		services.AddSingleton<IValidator<ChangePasswordRequest>, ChangePasswordCommandValidator>();
+		services.AddSingleton<
+			IValidator<UserQueryRequest>,
+			UserQueryValidator
+		>();
+		services.AddSingleton<
+			IValidator<LoginRequest>,
+			LoginCommandValidator
+		>();
+		services.AddSingleton<
+			IValidator<RegisterRequest>,
+			RegisterCommandValidator
+		>();
+		services.AddSingleton<
+			IValidator<ChangePasswordRequest>,
+			ChangePasswordCommandValidator
+		>();
 		services.AddSingleton<IValidator<ChangePasswordCommand>>(
 			serviceProvider =>
-				CommandValidatorFactory.CreateFor<ChangePasswordCommand, ChangePasswordRequest>(
-					serviceProvider.GetRequiredService<IValidator<ChangePasswordRequest>>(),
+				CommandValidatorFactory.CreateFor<
+					ChangePasswordCommand,
+					ChangePasswordRequest
+				>(
+					serviceProvider.GetRequiredService<
+						IValidator<ChangePasswordRequest>
+					>(),
 					command => command.Request));
-		services.AddSingleton<IValidator<SetPasswordRequest>, SetPasswordCommandValidator>();
-		services.AddSingleton<IValidator<SetPasswordCommand>>(
-			serviceProvider =>
-				CommandValidatorFactory.CreateFor<SetPasswordCommand, SetPasswordRequest>(
-					serviceProvider.GetRequiredService<IValidator<SetPasswordRequest>>(),
-					command => command.Request));
-		services.AddSingleton<IValidator<ForgotPasswordRequest>, InitiatePasswordResetByEmailCommandValidator>();
-		services.AddSingleton<IValidator<InitiateRegistrationRequest>, InitiateRegistrationCommandValidator>();
-		services.AddSingleton<IValidator<CompleteRegistrationRequest>, CompleteRegistrationCommandValidator>();
+		services.AddSingleton<
+			IValidator<SetPasswordRequest>,
+			SetPasswordCommandValidator
+		>();
+		services.AddSingleton<IValidator<SetPasswordCommand>>(serviceProvider =>
+			CommandValidatorFactory.CreateFor<
+				SetPasswordCommand,
+				SetPasswordRequest
+			>(
+				serviceProvider.GetRequiredService<
+					IValidator<SetPasswordRequest>
+				>(),
+				command => command.Request));
+		services.AddSingleton<
+			IValidator<ForgotPasswordRequest>,
+			InitiatePasswordResetByEmailCommandValidator
+		>();
+		services.AddSingleton<
+			IValidator<InitiateRegistrationRequest>,
+			InitiateRegistrationCommandValidator
+		>();
+		services.AddSingleton<
+			IValidator<CompleteRegistrationRequest>,
+			CompleteRegistrationCommandValidator
+		>();
 		services.AddSingleton<IValidator<CompleteRegistrationCommand>>(
 			serviceProvider =>
-				CommandValidatorFactory.CreateFor<CompleteRegistrationCommand, CompleteRegistrationRequest>(
-					serviceProvider.GetRequiredService<IValidator<CompleteRegistrationRequest>>(),
+				CommandValidatorFactory.CreateFor<
+					CompleteRegistrationCommand,
+					CompleteRegistrationRequest
+				>(
+					serviceProvider.GetRequiredService<
+						IValidator<CompleteRegistrationRequest>
+					>(),
 					command => command.Request));
 
 		return services;

@@ -31,10 +31,10 @@ public static class UserValidationTestData
 	/// Validation rule: Username must be between 3 and 50 characters.
 	/// </remarks>
 	public static TheoryData<string> TooShortUsernames =>
-	[
-		"ab",  // 2 chars
-		"a",   // 1 char
-	];
+		[
+			"ab", // 2 chars
+			"a", // 1 char
+		];
 
 	/// <summary>
 	/// Gets usernames containing invalid characters.
@@ -43,14 +43,14 @@ public static class UserValidationTestData
 	/// Validation rule: Username must contain only alphanumeric characters and underscores.
 	/// </remarks>
 	public static TheoryData<string> InvalidUsernameCharacters =>
-	[
-		"user name",   // Contains space
-		"user-name",   // Contains hyphen
-		"user.name",   // Contains dot
-		"user@name",   // Contains @
-		"user#name",   // Contains special char
-		"user!name",   // Contains exclamation
-	];
+		[
+			"user name", // Contains space
+			"user-name", // Contains hyphen
+			"user.name", // Contains dot
+			"user@name", // Contains @
+			"user#name", // Contains special char
+			"user!name", // Contains exclamation
+		];
 
 	/// <summary>
 	/// Gets valid usernames that should pass all validation rules.
@@ -59,13 +59,13 @@ public static class UserValidationTestData
 	/// Valid usernames: 3-50 chars, alphanumeric and underscore only.
 	/// </remarks>
 	public static TheoryData<string> ValidUsernames =>
-	[
-		"abc",         // Min length (3 chars)
-		"user123",     // Alphanumeric
-		"john_doe",    // With underscore
-		"User_123",    // Mixed case with number and underscore
-		"A1_b2_C3",    // Complex valid format
-	];
+		[
+			"abc", // Min length (3 chars)
+			"user123", // Alphanumeric
+			"john_doe", // With underscore
+			"User_123", // Mixed case with number and underscore
+			"A1_b2_C3", // Complex valid format
+		];
 
 	/// <summary>
 	/// Gets invalid email formats.
@@ -74,14 +74,14 @@ public static class UserValidationTestData
 	/// Validation rule: Email must be a valid email address.
 	/// </remarks>
 	public static TheoryData<string> InvalidEmails =>
-	[
-		"notanemail",       // No @ symbol
-		"@example.com",     // Missing local part
-		"user@",            // Missing domain
-		"user @example.com", // Space in local part
-		"user@exam ple.com", // Space in domain
-		"user@@example.com", // Double @
-	];
+		[
+			"notanemail", // No @ symbol
+			"@example.com", // Missing local part
+			"user@", // Missing domain
+			"user @example.com", // Space in local part
+			"user@exam ple.com", // Space in domain
+			"user@@example.com", // Double @
+		];
 
 	/// <summary>
 	/// Gets valid email formats.
@@ -90,11 +90,11 @@ public static class UserValidationTestData
 	/// Various valid email formats that should pass validation.
 	/// </remarks>
 	public static TheoryData<string> ValidEmails =>
-	[
-		"user@example.com",
-		"john.doe@example.com",
-		"user+tag@example.co.uk",
-		"test_user123@sub.example.com",
-		"a@b.co",
-	];
+		[
+			"user@example.com",
+			"john.doe@example.com",
+			"user+tag@example.co.uk",
+			"test_user123@sub.example.com",
+			"a@b.co",
+		];
 }

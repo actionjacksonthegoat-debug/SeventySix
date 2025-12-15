@@ -16,7 +16,15 @@ namespace SeventySix.Identity.Migrations
 				table: "RefreshTokens",
 				type: "timestamp with time zone",
 				nullable: false,
-				defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+				defaultValue: new DateTime(
+					1,
+					1,
+					1,
+					0,
+					0,
+					0,
+					0,
+					DateTimeKind.Unspecified));
 		}
 
 		/// <inheritdoc />

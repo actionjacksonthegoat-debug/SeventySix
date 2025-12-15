@@ -25,7 +25,8 @@ namespace SeventySix.Api.Tests.Controllers;
 /// </remarks>
 [Collection("PostgreSQL")]
 public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
-	: ApiPostgreSqlTestBase<Program>(fixture), IAsyncLifetime
+	: ApiPostgreSqlTestBase<Program>(fixture),
+		IAsyncLifetime
 {
 	private HttpClient? Client;
 
@@ -37,9 +38,10 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		// Use shared factory with custom client options
 		Client =
-			CreateClient(new WebApplicationFactoryClientOptions
+			CreateClient(
+			new WebApplicationFactoryClientOptions
 			{
-				AllowAutoRedirect = false // Don't follow redirects for OAuth tests
+				AllowAutoRedirect = false, // Don't follow redirects for OAuth tests
 			});
 	}
 
@@ -62,12 +64,14 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Arrange
 		LoginRequest request =
 			new(
-				UsernameOrEmail: "nonexistent",
-				Password: "wrongpassword");
+			UsernameOrEmail: "nonexistent",
+			Password: "wrongpassword");
 
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/login", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/login",
+			request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -90,9 +94,12 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string username = $"testuser_{testId}";
-		string email = $"test_{testId}@example.com";
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string username =
+			$"testuser_{testId}";
+		string email =
+			$"test_{testId}@example.com";
 
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
@@ -102,12 +109,14 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: useEmail ? email : username,
-				Password: TestUserHelper.TestPassword);
+			UsernameOrEmail: useEmail ? email : username,
+			Password: TestUserHelper.TestPassword);
 
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/login", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/login",
+			request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -117,7 +126,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		Assert.NotNull(authResponse);
 		Assert.NotEmpty(authResponse.AccessToken);
-		Assert.True(authResponse.ExpiresAt > timeProvider.GetUtcNow().UtcDateTime);
+		Assert.True(
+			authResponse.ExpiresAt > timeProvider.GetUtcNow().UtcDateTime);
 		Assert.True(response.Headers.Contains("Set-Cookie"));
 	}
 	#endregion
@@ -132,14 +142,16 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Arrange
 		RegisterRequest request =
 			new(
-				Username: "newuser",
-				Email: "newuser@example.com",
-				Password: "SecurePassword123!",
-				FullName: "New User");
+			Username: "newuser",
+			Email: "newuser@example.com",
+			Password: "SecurePassword123!",
+			FullName: "New User");
 
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/register", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/register",
+			request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -162,9 +174,12 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		string testId = Guid.NewGuid().ToString("N")[..8];
-		string existingUsername = $"existinguser_{testId}";
-		string existingEmail = $"existing_{testId}@example.com";
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string existingUsername =
+			$"existinguser_{testId}";
+		string existingEmail =
+			$"existing_{testId}@example.com";
 
 		await TestUserHelper.CreateUserWithPasswordAsync(
 			SharedFactory.Services,
@@ -174,14 +189,20 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		RegisterRequest request =
 			new(
-				Username: duplicateUsername ? existingUsername : $"newusername_{testId}",
-				Email: duplicateUsername ? $"new_{testId}@example.com" : existingEmail,
-				Password: "SecurePassword123!",
-				FullName: null);
+			Username: duplicateUsername
+				? existingUsername
+				: $"newusername_{testId}",
+			Email: duplicateUsername
+				? $"new_{testId}@example.com"
+				: existingEmail,
+			Password: "SecurePassword123!",
+			FullName: null);
 
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/register", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/register",
+			request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -197,7 +218,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsync("/api/v1/auth/refresh", null);
+			await Client!.PostAsync(
+			"/api/v1/auth/refresh",
+			null);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -225,12 +248,14 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		LoginRequest request =
 			new(
-				UsernameOrEmail: $"testuser_{testId}",
-				Password: TestUserHelper.TestPassword);
+			UsernameOrEmail: $"testuser_{testId}",
+			Password: TestUserHelper.TestPassword);
 
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/login", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/login",
+			request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -241,12 +266,15 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		// Find the refresh token cookie
 		string? refreshTokenCookie =
-			cookies.FirstOrDefault(cookie => cookie.Contains("X-Refresh-Token="));
+			cookies.FirstOrDefault(cookie =>
+			cookie.Contains("X-Refresh-Token="));
 
 		Assert.NotNull(refreshTokenCookie);
 
 		// Verify SameSite=Strict is set (critical for CSRF protection)
-		Assert.Contains("samesite=strict", refreshTokenCookie.ToLowerInvariant());
+		Assert.Contains(
+			"samesite=strict",
+			refreshTokenCookie.ToLowerInvariant());
 
 		// Verify HttpOnly is set (critical for XSS protection)
 		Assert.Contains("httponly", refreshTokenCookie.ToLowerInvariant());
@@ -262,7 +290,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsync("/api/v1/auth/logout", null);
+			await Client!.PostAsync(
+			"/api/v1/auth/logout",
+			null);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -278,7 +308,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Act
 		HttpResponseMessage response =
-			await Client!.GetAsync("/api/v1/auth/github");
+			await Client!.GetAsync(
+			"/api/v1/auth/github");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
@@ -296,7 +327,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Act
 		HttpResponseMessage response =
-			await Client!.GetAsync("/api/v1/auth/github");
+			await Client!.GetAsync(
+			"/api/v1/auth/github");
 
 		// Assert
 		Assert.True(response.Headers.Contains("Set-Cookie"));
@@ -317,7 +349,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Act - Call callback without setting up OAuth state
 		HttpResponseMessage response =
-			await Client!.GetAsync("/api/v1/auth/github/callback?code=test&state=invalid");
+			await Client!.GetAsync(
+			"/api/v1/auth/github/callback?code=test&state=invalid");
 
 		// Assert - Now returns HTML with postMessage instead of redirect
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -340,10 +373,13 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Arrange
 		string validState = "valid-state-value";
-		string queryState = stateTampered ? "tampered-state" : validState;
+		string queryState =
+			stateTampered ? "tampered-state" : validState;
 
 		HttpRequestMessage request =
-			new(HttpMethod.Get, $"/api/v1/auth/github/callback?code=test&state={queryState}");
+			new(
+			HttpMethod.Get,
+			$"/api/v1/auth/github/callback?code=test&state={queryState}");
 		request.Headers.Add("Cookie", $"X-OAuth-State={validState}");
 
 		// Act
@@ -377,19 +413,21 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			scope.ServiceProvider.GetRequiredService<IOAuthCodeExchangeService>();
 
 		DateTime expiresAt =
-			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15);
+			timeProvider
+			.GetUtcNow()
+			.UtcDateTime.AddMinutes(15);
 
 		string code =
 			exchangeService.StoreTokens(
-				"test-access-token",
-				"test-refresh-token",
-				expiresAt);
+			"test-access-token",
+			"test-refresh-token",
+			expiresAt);
 
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-				"/api/v1/auth/oauth/exchange",
-				new OAuthCodeExchangeRequest(code));
+			"/api/v1/auth/oauth/exchange",
+			new OAuthCodeExchangeRequest(code));
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -410,8 +448,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-				"/api/v1/auth/oauth/exchange",
-				new OAuthCodeExchangeRequest("invalid-code"));
+			"/api/v1/auth/oauth/exchange",
+			new OAuthCodeExchangeRequest("invalid-code"));
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -439,21 +477,21 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		string code =
 			exchangeService.StoreTokens(
-				"test-access-token",
-				"test-refresh-token",
-				timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15));
+			"test-access-token",
+			"test-refresh-token",
+			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15));
 
 		// Act - First call should succeed
 		HttpResponseMessage firstResponse =
 			await Client!.PostAsJsonAsync(
-				"/api/v1/auth/oauth/exchange",
-				new OAuthCodeExchangeRequest(code));
+			"/api/v1/auth/oauth/exchange",
+			new OAuthCodeExchangeRequest(code));
 
 		// Second call with same code should fail
 		HttpResponseMessage secondResponse =
 			await Client!.PostAsJsonAsync(
-				"/api/v1/auth/oauth/exchange",
-				new OAuthCodeExchangeRequest(code));
+			"/api/v1/auth/oauth/exchange",
+			new OAuthCodeExchangeRequest(code));
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
@@ -476,15 +514,15 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		string code =
 			exchangeService.StoreTokens(
-				"test-access-token",
-				"test-refresh-token",
-				timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15));
+			"test-access-token",
+			"test-refresh-token",
+			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15));
 
 		// Act
 		HttpResponseMessage response =
 			await Client!.PostAsJsonAsync(
-				"/api/v1/auth/oauth/exchange",
-				new OAuthCodeExchangeRequest(code));
+			"/api/v1/auth/oauth/exchange",
+			new OAuthCodeExchangeRequest(code));
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -503,7 +541,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Act
 		HttpResponseMessage response =
-			await Client!.GetAsync("/api/v1/auth/me");
+			await Client!.GetAsync(
+			"/api/v1/auth/me");
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -528,8 +567,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		HttpResponseMessage loginResponse =
 			await Client!.PostAsJsonAsync(
-				"/api/v1/auth/login",
-				new LoginRequest($"testuser_{testId}", TestUserHelper.TestPassword));
+			"/api/v1/auth/login",
+			new LoginRequest($"testuser_{testId}", TestUserHelper.TestPassword));
 
 		AuthResponse? authResponse =
 			await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
@@ -565,12 +604,14 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Arrange
 		ChangePasswordRequest request =
 			new(
-				CurrentPassword: "old",
-				NewPassword: "new");
+			CurrentPassword: "old",
+			NewPassword: "new");
 
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/change-password", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/change-password",
+			request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -596,8 +637,10 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		HttpResponseMessage loginResponse =
 			await Client!.PostAsJsonAsync(
-				"/api/v1/auth/login",
-				new LoginRequest($"weakpassuser_{testId}", TestUserHelper.TestPassword));
+			"/api/v1/auth/login",
+			new LoginRequest(
+				$"weakpassuser_{testId}",
+				TestUserHelper.TestPassword));
 
 		AuthResponse? authResponse =
 			await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
@@ -610,11 +653,13 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Act - Try to change to a weak password (no uppercase)
 		ChangePasswordRequest request =
 			new(
-				CurrentPassword: TestUserHelper.TestPassword,
-				NewPassword: "weak123!");
+			CurrentPassword: TestUserHelper.TestPassword,
+			NewPassword: "weak123!");
 
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/change-password", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/change-password",
+			request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -641,16 +686,16 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		FakeTimeProvider timeProvider = new();
 		string invalidToken =
 			useInvalidSignature
-				? JwtTestHelper.GenerateTokenWithWrongKey(
-					userId: 1,
-					username: "testuser",
-					email: "test@example.com",
-					timeProvider)
-				: JwtTestHelper.GenerateExpiredToken(
-					userId: 1,
-					username: "testuser",
-					email: "test@example.com",
-					timeProvider);
+			? JwtTestHelper.GenerateTokenWithWrongKey(
+				userId: 1,
+				username: "testuser",
+				email: "test@example.com",
+				timeProvider)
+			: JwtTestHelper.GenerateExpiredToken(
+				userId: 1,
+				username: "testuser",
+				email: "test@example.com",
+				timeProvider);
 
 		Client!.DefaultRequestHeaders.Authorization =
 			new System.Net.Http.Headers.AuthenticationHeaderValue(
@@ -679,11 +724,14 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			Guid.NewGuid().ToString("N")[..8];
 
 		InitiateRegistrationRequest request =
-			new($"newuser_{testId}@example.com");
+			new(
+			$"newuser_{testId}@example.com");
 
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/register/initiate", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/register/initiate",
+			request);
 
 		// Assert - Should return OK regardless
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -708,11 +756,14 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			timeProvider);
 
 		InitiateRegistrationRequest request =
-			new($"existing_{testId}@example.com");
+			new(
+			$"existing_{testId}@example.com");
 
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/register/initiate", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/register/initiate",
+			request);
 
 		// Assert - Should return OK to prevent enumeration
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -727,13 +778,15 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-				Token: "invalid-token",
-				Username: "newuser",
-				Password: "SecurePass123!");
+			Token: "invalid-token",
+			Username: "newuser",
+			Password: "SecurePass123!");
 
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/register/complete", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/register/complete",
+			request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -757,9 +810,11 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		string email =
 			$"newuser_{testId}@example.com";
 		string token =
-			Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+			Convert.ToBase64String(
+			RandomNumberGenerator.GetBytes(64));
 
-		using (IServiceScope scope = SharedFactory.Services.CreateScope())
+		using (IServiceScope scope =
+			SharedFactory.Services.CreateScope())
 		{
 			IdentityDbContext context =
 				scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
@@ -768,27 +823,31 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			DateTime now =
 				timeProvider.GetUtcNow().UtcDateTime;
 
-			context.EmailVerificationTokens.Add(new EmailVerificationToken
-			{
-				Email = email,
-				Token = token,
-				ExpiresAt = now.AddHours(24),
-				CreateDate = now,
-				IsUsed = false,
-			});
+			context.EmailVerificationTokens.Add(
+				new EmailVerificationToken
+				{
+					Email = email,
+					Token = token,
+					ExpiresAt =
+				now.AddHours(24),
+					CreateDate = now,
+					IsUsed = false,
+				});
 
 			await context.SaveChangesAsync();
 		}
 
 		CompleteRegistrationRequest request =
 			new(
-				Token: token,
-				Username: $"newuser_{testId}",
-				Password: "SecurePass123!");
+			Token: token,
+			Username: $"newuser_{testId}",
+			Password: "SecurePass123!");
 
 		// Act
 		HttpResponseMessage response =
-			await Client!.PostAsJsonAsync("/api/v1/auth/register/complete", request);
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/register/complete",
+			request);
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Created, response.StatusCode);

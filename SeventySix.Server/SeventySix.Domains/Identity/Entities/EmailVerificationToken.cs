@@ -22,10 +22,7 @@ public class EmailVerificationToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the unique identifier.
 	/// </summary>
-	public int Id
-	{
-		get; set;
-	}
+	public int Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the email being verified (account not yet created).
@@ -40,24 +37,15 @@ public class EmailVerificationToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the expiration time (24 hours from creation).
 	/// </summary>
-	public DateTime ExpiresAt
-	{
-		get; set;
-	}
+	public DateTime ExpiresAt { get; set; }
 
 	/// <summary>
 	/// Gets or sets the creation timestamp.
 	/// </summary>
-	public DateTime CreateDate
-	{
-		get; set;
-	}
+	public DateTime CreateDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether this token has been used.
 	/// </summary>
-	public bool IsUsed
-	{
-		get; set;
-	}
+	public bool IsUsed { get; set; }
 }

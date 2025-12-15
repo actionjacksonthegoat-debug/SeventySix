@@ -20,7 +20,7 @@ public class BoundedContextTests
 	/// </summary>
 	private static readonly string[] ServiceOnlyContexts =
 	[
-		"ElectronicNotifications"
+		"ElectronicNotifications",
 	];
 
 	/// <summary>
@@ -28,16 +28,18 @@ public class BoundedContextTests
 	/// Key = dependent context, Value = contexts it can depend on.
 	/// Service-only contexts are typically safe to depend on.
 	/// </summary>
-	private static readonly Dictionary<string, string[]> AllowedDependencies = new()
-	{
-		["Identity"] = ["ElectronicNotifications"]
-	};
+	private static readonly Dictionary<string, string[]> AllowedDependencies =
+		new() { ["Identity"] =
+		["ElectronicNotifications"] };
 
 	[Fact]
 	public void Bounded_Contexts_Should_Not_Reference_Each_Other()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
-		string[] boundedContextNames = domainAssembly.GetTypes()
+		Assembly domainAssembly =
+			typeof(SeventySix.Identity.User).Assembly;
+		string[] boundedContextNames =
+			domainAssembly
+			.GetTypes()
 			.Select(type => type.Namespace)
 			.Where(namespaceName =>
 				namespaceName != null
@@ -62,15 +64,16 @@ public class BoundedContextTests
 				}
 
 				// Check if this dependency is explicitly allowed
-				if (AllowedDependencies.TryGetValue(
+				if (
+					AllowedDependencies.TryGetValue(
 						sourceContextName,
-						out string[]? allowed)
-					&& allowed.Contains(targetContextName))
+						out string[]? allowed) && allowed.Contains(targetContextName))
 				{
 					continue;
 				}
 
-				TestResult architectureTestResult = Types
+				TestResult architectureTestResult =
+					Types
 					.InNamespace($"SeventySix.{sourceContextName}")
 					.ShouldNot()
 					.HaveDependencyOn($"SeventySix.{targetContextName}")
@@ -90,8 +93,11 @@ public class BoundedContextTests
 	[Fact]
 	public void Each_Bounded_Context_Should_Have_DbContext()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
-		string[] boundedContextNames = domainAssembly.GetTypes()
+		Assembly domainAssembly =
+			typeof(SeventySix.Identity.User).Assembly;
+		string[] boundedContextNames =
+			domainAssembly
+			.GetTypes()
 			.Select(type => type.Namespace)
 			.Where(namespaceName =>
 				namespaceName != null
@@ -114,8 +120,11 @@ public class BoundedContextTests
 				continue;
 			}
 
-			Type? dbContextType = domainAssembly.GetTypes()
-				.FirstOrDefault(type => type.Namespace == $"SeventySix.{contextName}"
+			Type? dbContextType =
+				domainAssembly
+				.GetTypes()
+				.FirstOrDefault(type =>
+					type.Namespace == $"SeventySix.{contextName}"
 					&& type.Name.EndsWith("DbContext")
 					&& InheritsFromDbContext(type));
 
@@ -146,7 +155,8 @@ public class BoundedContextTests
 			// Handle generic base types like BaseDbContext<T>
 			if (baseType.IsGenericType)
 			{
-				Type genericDefinition = baseType.GetGenericTypeDefinition();
+				Type genericDefinition =
+					baseType.GetGenericTypeDefinition();
 				if (genericDefinition.Name.StartsWith("BaseDbContext"))
 				{
 					return true;

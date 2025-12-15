@@ -359,35 +359,12 @@ csharp_space_after_semicolon_in_for_statement = true
 # Remove space before semicolon in for statement
 csharp_space_before_semicolon_in_for_statement = false
 
-# --- Wrapping Settings ---
-# Allow statements and declarations to wrap to multiple lines
-csharp_preserve_single_line_blocks = false
+# --- Wrapping/Preserve Settings (dotnet format supported) ---
+# Allow simple blocks to stay on single lines
+csharp_preserve_single_line_blocks = true
 
-# Wrap parameters in method declarations when 2+ parameters (ALWAYS, not just when long)
-csharp_wrap_parameters_style = chop_always
-
-# Wrap arguments in method calls when 2+ arguments (ALWAYS, not just when long)
-csharp_wrap_arguments_style = chop_always
-
-# --- Binary Operator Wrapping (CRITICAL) ---
-# Operators (+, ||, &&, etc.) on LEFT side of new lines (wrap before operator)
-csharp_wrap_before_binary_opsign = true
-
-# --- Chained Method Calls (CRITICAL) ---
-# New line BEFORE every dot delimiter in method chains
-csharp_wrap_chained_method_calls = chop_always
-csharp_wrap_before_dot = true
-
-# --- Assignment Wrapping (CRITICAL) ---
-# New line AFTER = sign with continuation indented
-csharp_place_simple_embedded_statement_on_same_line = false
-
-# --- Closing Parenthesis Placement (CRITICAL) ---
-# NEVER have ) on its own line - keep with last parameter
-csharp_wrap_after_declaration_lpar = true
-csharp_wrap_before_declaration_rpar = false
-csharp_wrap_after_invocation_lpar = true
-csharp_wrap_before_invocation_rpar = false
+# Do not allow statements on single lines (e.g., if (x) return;)
+csharp_preserve_single_line_statements = false
 
 # --- Expression Preferences ---
 # Prefer expression bodies for methods when they fit on a single line
@@ -585,3 +562,15 @@ dotnet_sort_system_directives_first = true
 
 # Do not separate using directive groups with blank lines
 dotnet_separate_import_directive_groups = false
+
+# ========================================
+# ROSLYNATOR FORMATTING RULES
+# ========================================
+# RCS0054: Fix formatting of call chains - each method call on separate line with proper indentation
+dotnet_diagnostic.RCS0054.severity = warning
+
+# RCS0052: Place newline after/before equals token (aligns with SS001)
+dotnet_diagnostic.RCS0052.severity = warning
+
+# RCS0053: Fix formatting of a list (proper indentation for multi-line lists)
+dotnet_diagnostic.RCS0053.severity = warning

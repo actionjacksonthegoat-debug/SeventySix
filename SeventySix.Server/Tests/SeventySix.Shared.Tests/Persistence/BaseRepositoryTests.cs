@@ -22,13 +22,17 @@ public class BaseRepositoryTests
 
 	public BaseRepositoryTests()
 	{
-		DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
-			.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-			.Options;
+		DbContextOptions<TestDbContext> options =
+			new DbContextOptionsBuilder<TestDbContext>()
+				.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+				.Options;
 
-		Context = new TestDbContext(options);
-		Logger = Substitute.For<ILogger<TestRepository>>();
-		Repository = new TestRepository(Context, Logger);
+		Context =
+			new TestDbContext(options);
+		Logger =
+			Substitute.For<ILogger<TestRepository>>();
+		Repository =
+			new TestRepository(Context, Logger);
 	}
 
 	[Fact]
@@ -38,95 +42,114 @@ public class BaseRepositoryTests
 		int expectedResult = 42;
 
 		// Act
-		int result = await Repository.TestExecuteWithErrorHandlingAsync(
+		int result =
+			await Repository.TestExecuteWithErrorHandlingAsync(
 			async () => await Task.FromResult(expectedResult),
 			"TestOperation",
 			"TestEntity");
 
 		// Assert
 		Assert.Equal(expectedResult, result);
-		Logger.DidNotReceive().Log(
-			LogLevel.Error,
-			Arg.Any<EventId>(),
-			Arg.Any<object>(),
-			Arg.Any<Exception>(),
-			Arg.Any<Func<object, Exception?, string>>());
+		Logger
+			.DidNotReceive()
+			.Log(
+				LogLevel.Error,
+				Arg.Any<EventId>(),
+				Arg.Any<object>(),
+				Arg.Any<Exception>(),
+				Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]
 	public async Task ExecuteWithErrorHandlingAsync_DbUpdateException_LogsAndRethrowsAsync()
 	{
 		// Arrange
-		DbUpdateException exception = new DbUpdateException("Database error");
+		DbUpdateException exception =
+			new DbUpdateException("Database error");
 
 		// Act & Assert
-		DbUpdateException thrown = await Assert.ThrowsAsync<DbUpdateException>(
-			async () => await Repository.TestExecuteWithErrorHandlingAsync<int>(
-				() => throw exception,
-				"TestOperation",
-				"TestEntity"));
+		DbUpdateException thrown =
+			await Assert.ThrowsAsync<DbUpdateException>(
+			async () =>
+				await Repository.TestExecuteWithErrorHandlingAsync<int>(
+					() => throw exception,
+					"TestOperation",
+					"TestEntity"));
 
 		Assert.Same(exception, thrown);
-		Logger.Received().Log(
-			LogLevel.Error,
-			Arg.Any<EventId>(),
-			Arg.Is<object>(v => v.ToString()!.Contains("Database error")),
-			Arg.Any<Exception>(),
-			Arg.Any<Func<object, Exception?, string>>());
+		Logger
+			.Received()
+			.Log(
+				LogLevel.Error,
+				Arg.Any<EventId>(),
+				Arg.Is<object>(v => v.ToString()!.Contains("Database error")),
+				Arg.Any<Exception>(),
+				Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]
 	public async Task ExecuteWithErrorHandlingAsync_DbUpdateConcurrencyException_LogsAndRethrowsAsync()
 	{
 		// Arrange
-		DbUpdateConcurrencyException exception = new DbUpdateConcurrencyException("Concurrency conflict");
+		DbUpdateConcurrencyException exception =
+			new DbUpdateConcurrencyException("Concurrency conflict");
 
 		// Act & Assert
-		DbUpdateConcurrencyException thrown = await Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-			async () => await Repository.TestExecuteWithErrorHandlingAsync<int>(
-				() => throw exception,
-				"TestOperation",
-				"TestEntity"));
+		DbUpdateConcurrencyException thrown =
+			await Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () =>
+				await Repository.TestExecuteWithErrorHandlingAsync<int>(
+					() => throw exception,
+					"TestOperation",
+					"TestEntity"));
 
 		Assert.Same(exception, thrown);
-		Logger.Received().Log(
-			LogLevel.Error,
-			Arg.Any<EventId>(),
-			Arg.Is<object>(v => v.ToString()!.Contains("Concurrency conflict")),
-			Arg.Any<Exception>(),
-			Arg.Any<Func<object, Exception?, string>>());
+		Logger
+			.Received()
+			.Log(
+				LogLevel.Error,
+				Arg.Any<EventId>(),
+				Arg.Is<object>(v =>
+					v.ToString()!.Contains("Concurrency conflict")),
+				Arg.Any<Exception>(),
+				Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]
 	public async Task ExecuteWithErrorHandlingAsync_GenericException_LogsAndRethrowsAsync()
 	{
 		// Arrange
-		Exception exception = new Exception("Unexpected error");
+		Exception exception =
+			new Exception("Unexpected error");
 
 		// Act & Assert
-		Exception thrown = await Assert.ThrowsAsync<Exception>(
-			async () => await Repository.TestExecuteWithErrorHandlingAsync<int>(
+		Exception thrown =
+			await Assert.ThrowsAsync<Exception>(async () =>
+			await Repository.TestExecuteWithErrorHandlingAsync<int>(
 				() => throw exception,
 				"TestOperation",
 				"TestEntity"));
 
 		Assert.Same(exception, thrown);
-		Logger.Received().Log(
-			LogLevel.Error,
-			Arg.Any<EventId>(),
-			Arg.Is<object>(v => v.ToString()!.Contains("Unexpected error")),
-			Arg.Any<Exception>(),
-			Arg.Any<Func<object, Exception?, string>>());
+		Logger
+			.Received()
+			.Log(
+				LogLevel.Error,
+				Arg.Any<EventId>(),
+				Arg.Is<object>(v => v.ToString()!.Contains("Unexpected error")),
+				Arg.Any<Exception>(),
+				Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]
 	public async Task CreateAsync_ValidEntity_AddsToContextAndSavesAsync()
 	{
 		// Arrange
-		TestEntity entity = new TestEntity { Id = 1, Name = "Test" };
+		TestEntity entity =
+			new TestEntity { Id = 1, Name = "Test" };
 
 		// Act
-		TestEntity result = await Repository.TestCreateAsync(entity);
+		TestEntity result =
+			await Repository.TestCreateAsync(entity);
 
 		// Assert
 		Assert.Equal(entity, result);
@@ -137,15 +160,19 @@ public class BaseRepositoryTests
 	/// <summary>
 	/// Test repository implementation for testing BaseRepository.
 	/// </summary>
-	public class TestRepository(TestDbContext context, ILogger<TestRepository> logger)
-		: BaseRepository<TestEntity, TestDbContext>(context, logger)
+	public class TestRepository(
+		TestDbContext context,
+		ILogger<TestRepository> logger) : BaseRepository<TestEntity, TestDbContext>(context, logger)
 	{
 		public Task<T> TestExecuteWithErrorHandlingAsync<T>(
 			Func<Task<T>> operation,
 			string operationName,
 			string entityIdentifier)
 		{
-			return ExecuteWithErrorHandlingAsync(operation, operationName, entityIdentifier);
+			return ExecuteWithErrorHandlingAsync(
+				operation,
+				operationName,
+				entityIdentifier);
 		}
 
 		public Task<TestEntity> TestCreateAsync(TestEntity entity)
@@ -164,17 +191,15 @@ public class BaseRepositoryTests
 	/// </summary>
 	public class TestEntity : IEntity
 	{
-		public int Id
-		{
-			get; set;
-		}
+		public int Id { get; set; }
 		public string Name { get; set; } = string.Empty;
 	}
 
 	/// <summary>
 	/// Test DbContext for repository tests.
 	/// </summary>
-	public class TestDbContext(DbContextOptions<TestDbContext> options) : DbContext(options)
+	public class TestDbContext(DbContextOptions<TestDbContext> options)
+		: DbContext(options)
 	{
 		public DbSet<TestEntity> TestEntities { get; set; } = null!;
 	}

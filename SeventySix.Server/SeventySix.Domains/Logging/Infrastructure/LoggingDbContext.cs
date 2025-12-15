@@ -32,9 +32,7 @@ public class LoggingDbContext : BaseDbContext<LoggingDbContext>
 	/// </summary>
 	/// <param name="options">The options for this context.</param>
 	public LoggingDbContext(DbContextOptions<LoggingDbContext> options)
-		: base(options)
-	{
-	}
+		: base(options) { }
 
 	/// <summary>
 	/// Gets or sets the Logs DbSet.

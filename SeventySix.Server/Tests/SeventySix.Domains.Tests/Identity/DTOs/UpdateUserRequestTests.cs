@@ -16,7 +16,8 @@ public class UpdateUserRequestTests
 	public void UpdateUserRequest_ShouldCreateInstance_WithValidData()
 	{
 		// Arrange & Act
-		UpdateUserRequest request = new()
+		UpdateUserRequest request =
+			new()
 		{
 			Id = 1,
 			Username = "testuser",
@@ -37,7 +38,8 @@ public class UpdateUserRequestTests
 	public void UpdateUserRequest_ShouldAllowNullFullName()
 	{
 		// Arrange & Act
-		UpdateUserRequest request = new()
+		UpdateUserRequest request =
+			new()
 		{
 			Id = 1,
 			Username = "testuser",

@@ -25,13 +25,10 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserRequest>
 	/// </summary>
 	public CreateUserCommandValidator()
 	{
-		RuleFor(request => request.Username)
-			.ApplyUsernameRules();
+		RuleFor(request => request.Username).ApplyUsernameRules();
 
-		RuleFor(request => request.Email)
-			.ApplyEmailRules();
+		RuleFor(request => request.Email).ApplyEmailRules();
 
-		RuleFor(request => request.FullName)
-			.ApplyFullNameRules(required: true);
+		RuleFor(request => request.FullName).ApplyFullNameRules(required: true);
 	}
 }
