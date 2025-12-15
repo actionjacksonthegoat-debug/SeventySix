@@ -1,8 +1,8 @@
-import { TestBed } from "@angular/core/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
-import { UserExportService } from "./user-export.service";
-import { DateService } from "@shared/services";
 import { UserFixtures } from "@admin/testing";
+import { provideZonelessChangeDetection } from "@angular/core";
+import { TestBed } from "@angular/core/testing";
+import { DateService } from "@shared/services";
+import { UserExportService } from "./user-export.service";
 
 describe("UserExportService",
 	() =>
@@ -17,8 +17,10 @@ describe("UserExportService",
 					jasmine.createSpyObj(
 						"DateService",
 						["now"]);
-				mockDateService.now
-				.and.returnValue("2024-01-15T12:00:00Z");
+				mockDateService
+					.now
+					.and
+					.returnValue("2024-01-15T12:00:00Z");
 
 				TestBed.configureTestingModule(
 					{
@@ -37,7 +39,7 @@ describe("UserExportService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("exportToCsv",
@@ -55,7 +57,8 @@ describe("UserExportService",
 
 						// Assert - no download should be triggered
 						expect(createElementSpy)
-						.not.toHaveBeenCalled();
+							.not
+							.toHaveBeenCalled();
 					});
 
 				it("should generate CSV with headers and user data",
@@ -77,24 +80,26 @@ describe("UserExportService",
 								click: jasmine.createSpy("click")
 							};
 						spyOn(document, "createElement")
-						.and.returnValue(mockLink as HTMLAnchorElement);
+							.and
+							.returnValue(mockLink as HTMLAnchorElement);
 						spyOn(document.body, "appendChild");
 						spyOn(document.body, "removeChild");
 						spyOn(URL, "createObjectURL")
-						.and.callFake(
-							(blob: Blob) =>
-							{
-								const reader: FileReader =
-									new FileReader();
-								reader.readAsText(blob);
-								reader.onload =
-									(): void =>
-									{
-										downloadedContent =
-											reader.result as string;
-									};
-								return "blob:test";
-							});
+							.and
+							.callFake(
+								(blob: Blob) =>
+								{
+									const reader: FileReader =
+										new FileReader();
+									reader.readAsText(blob);
+									reader.onload =
+										(): void =>
+										{
+											downloadedContent =
+												reader.result as string;
+										};
+									return "blob:test";
+								});
 						spyOn(URL, "revokeObjectURL");
 
 						// Act
@@ -102,11 +107,11 @@ describe("UserExportService",
 
 						// Assert
 						expect(document.createElement)
-						.toHaveBeenCalledWith("a");
+							.toHaveBeenCalledWith("a");
 						expect(mockLink.setAttribute)
-						.toHaveBeenCalledWith("download", jasmine.stringMatching(/users_export_.*\.csv/));
+							.toHaveBeenCalledWith("download", jasmine.stringMatching(/users_export_.*\.csv/));
 						expect(mockLink.click)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 
 				it("should use provided filename when specified",
@@ -126,11 +131,13 @@ describe("UserExportService",
 								click: jasmine.createSpy("click")
 							};
 						spyOn(document, "createElement")
-						.and.returnValue(mockLink as HTMLAnchorElement);
+							.and
+							.returnValue(mockLink as HTMLAnchorElement);
 						spyOn(document.body, "appendChild");
 						spyOn(document.body, "removeChild");
 						spyOn(URL, "createObjectURL")
-						.and.returnValue("blob:test");
+							.and
+							.returnValue("blob:test");
 						spyOn(URL, "revokeObjectURL");
 
 						// Act
@@ -140,9 +147,9 @@ describe("UserExportService",
 
 						// Assert
 						expect(mockLink.setAttribute)
-						.toHaveBeenCalledWith(
-							"download",
-							customFilename);
+							.toHaveBeenCalledWith(
+								"download",
+								customFilename);
 					});
 			});
 	});

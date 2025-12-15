@@ -1,3 +1,4 @@
+import { AccountService } from "@account/services";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
@@ -9,7 +10,6 @@ import {
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { of } from "rxjs";
-import { AccountService } from "@account/services";
 import { RequestPermissionsPage } from "./request-permissions";
 
 const testRoutes: Routes =
@@ -44,19 +44,19 @@ describe("RequestPermissionsPage",
 						});
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [RequestPermissionsPage],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideNoopAnimations(),
-							provideRouter(testRoutes),
-							provideAngularQuery(queryClient),
-							AccountService,
-							{ provide: ApiService, useValue: mockApiService }
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [RequestPermissionsPage],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideNoopAnimations(),
+								provideRouter(testRoutes),
+								provideAngularQuery(queryClient),
+								AccountService,
+								{ provide: ApiService, useValue: mockApiService }
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(RequestPermissionsPage);
@@ -73,7 +73,7 @@ describe("RequestPermissionsPage",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should toggle role selection",
@@ -81,23 +81,23 @@ describe("RequestPermissionsPage",
 			{
 				expect(
 					component
-					.selectedRoles()
-					.has("Admin"))
-				.toBeFalse();
+						.selectedRoles()
+						.has("Admin"))
+					.toBeFalse();
 
 				component.toggleRole("Admin");
 				expect(
 					component
-					.selectedRoles()
-					.has("Admin"))
-				.toBeTrue();
+						.selectedRoles()
+						.has("Admin"))
+					.toBeTrue();
 
 				component.toggleRole("Admin");
 				expect(
 					component
-					.selectedRoles()
-					.has("Admin"))
-				.toBeFalse();
+						.selectedRoles()
+						.has("Admin"))
+					.toBeFalse();
 			});
 
 		it("should not submit without selected roles",
@@ -119,11 +119,11 @@ describe("RequestPermissionsPage",
 				await component.onSubmit();
 
 				expect(mockApiService.post)
-				.toHaveBeenCalledWith(
-					"users/me/permission-requests",
-					{
-						requestedRoles: ["Admin"],
-						requestMessage: "Need access"
-					});
+					.toHaveBeenCalledWith(
+						"users/me/permission-requests",
+						{
+							requestedRoles: ["Admin"],
+							requestMessage: "Need access"
+						});
 			});
 	});

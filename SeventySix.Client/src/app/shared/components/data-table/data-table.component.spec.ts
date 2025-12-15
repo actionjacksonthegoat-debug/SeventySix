@@ -91,7 +91,7 @@ describe("DataTableComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("Component Inputs",
@@ -103,17 +103,17 @@ describe("DataTableComponent",
 						builder.withInputs(fixture, defaultInputs);
 
 						expect(component.columns())
-						.toEqual(mockColumns);
+							.toEqual(mockColumns);
 						expect(component.data())
-						.toEqual(mockData);
+							.toEqual(mockData);
 						expect(component.isLoading())
-						.toBe(false);
+							.toBe(false);
 						expect(component.totalCount())
-						.toBe(3);
+							.toBe(3);
 						expect(component.pageIndex())
-						.toBe(0);
+							.toBe(0);
 						expect(component.pageSize())
-						.toBe(25);
+							.toBe(25);
 					});
 
 				it("should have correct default values for optional inputs",
@@ -122,30 +122,30 @@ describe("DataTableComponent",
 						builder.withInputs(fixture, defaultInputs);
 
 						expect(component.error())
-						.toBeNull();
+							.toBeNull();
 						expect(component.searchable())
-						.toBe(true);
+							.toBe(true);
 						expect(component.selectable())
-						.toBe(false);
+							.toBe(false);
 						expect(component.showSelectAll())
-						.toBe(false);
+							.toBe(false);
 						expect(component.showCreate())
-						.toBe(false);
+							.toBe(false);
 						expect(component.showRefresh())
-						.toBe(true);
+							.toBe(true);
 						expect(component.quickFilters())
-						.toEqual([]);
+							.toEqual([]);
 						expect(component.dateRangeEnabled())
-						.toBe(false);
+							.toBe(false);
 						expect(component.pageSizeOptions())
-						.toEqual(
-							[25, 50, 100]);
+							.toEqual(
+								[25, 50, 100]);
 						expect(component.storageKey())
-						.toBeNull();
+							.toBeNull();
 						expect(component.rowActions())
-						.toEqual([]);
+							.toEqual([]);
 						expect(component.bulkActions())
-						.toEqual([]);
+							.toEqual([]);
 					});
 			});
 
@@ -164,12 +164,12 @@ describe("DataTableComponent",
 						const visibleColumns: TableColumn<TestEntity>[] =
 							component.visibleColumns();
 						expect(visibleColumns.length)
-						.toBe(4);
+							.toBe(4);
 						expect(
 							visibleColumns.map(
 								(c: TableColumn<TestEntity>) => c.key))
-						.toEqual(
-							["id", "name", "status", "createdAt"]);
+							.toEqual(
+								["id", "name", "status", "createdAt"]);
 					});
 
 				it("should compute display columns for table",
@@ -178,13 +178,13 @@ describe("DataTableComponent",
 						const displayColumns: string[] =
 							component.displayedColumns();
 						expect(displayColumns)
-						.toEqual(
-							[
-								"id",
-								"name",
-								"status",
-								"createdAt"
-							]);
+							.toEqual(
+								[
+									"id",
+									"name",
+									"status",
+									"createdAt"
+								]);
 					});
 
 				it("should add select column when selectable is true",
@@ -196,7 +196,7 @@ describe("DataTableComponent",
 						const displayColumns: string[] =
 							component.displayedColumns();
 						expect(displayColumns[0])
-						.toBe("select");
+							.toBe("select");
 					});
 
 				it("should add actions column when rowActions provided",
@@ -216,7 +216,7 @@ describe("DataTableComponent",
 						const displayColumns: string[] =
 							component.displayedColumns();
 						expect(displayColumns[displayColumns.length - 1])
-						.toBe("actions");
+							.toBe("actions");
 					});
 			});
 
@@ -235,7 +235,7 @@ describe("DataTableComponent",
 					{
 						component.onSearchChange("test");
 						expect(component.searchText())
-						.toBe("test");
+							.toBe("test");
 					});
 
 				it("should emit searchChange when onSearch is called",
@@ -252,7 +252,7 @@ describe("DataTableComponent",
 						component.onSearch();
 
 						expect(emittedValue)
-						.toBe("search term");
+							.toBe("search term");
 					});
 
 				it("should update signal and not emit on input change",
@@ -267,9 +267,9 @@ describe("DataTableComponent",
 
 						component.onSearchChange("typing");
 						expect(component.searchText())
-						.toBe("typing");
+							.toBe("typing");
 						expect(emitted)
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -311,9 +311,9 @@ describe("DataTableComponent",
 							(event: FilterChangeEvent) =>
 							{
 								expect(event.filterKey)
-								.toBe("active");
+									.toBe("active");
 								expect(event.active)
-								.toBe(true);
+									.toBe(true);
 								done();
 							});
 
@@ -326,16 +326,16 @@ describe("DataTableComponent",
 						component.onFilterToggle("active");
 						expect(
 							component
-							.activeFilters()
-							.has("active"))
-						.toBe(true);
+								.activeFilters()
+								.has("active"))
+							.toBe(true);
 
 						component.onFilterToggle("active");
 						expect(
 							component
-							.activeFilters()
-							.has("active"))
-						.toBe(false);
+								.activeFilters()
+								.has("active"))
+							.toBe(false);
 					});
 			});
 
@@ -375,9 +375,9 @@ describe("DataTableComponent",
 							(event: RowActionEvent<TestEntity>) =>
 							{
 								expect(event.action)
-								.toBe("edit");
+									.toBe("edit");
 								expect(event.row)
-								.toBe(mockData[0]);
+									.toBe(mockData[0]);
 								done();
 							});
 
@@ -391,7 +391,7 @@ describe("DataTableComponent",
 							(row: TestEntity) =>
 							{
 								expect(row)
-								.toBe(mockData[0]);
+									.toBe(mockData[0]);
 								done();
 							});
 
@@ -434,12 +434,12 @@ describe("DataTableComponent",
 							(event: BulkActionEvent<TestEntity>) =>
 							{
 								expect(event.action)
-								.toBe("delete-all");
+									.toBe("delete-all");
 								expect(event.selectedRows.length)
-								.toBe(2);
+									.toBe(2);
 								expect(event.selectedIds)
-								.toEqual(
-									[1, 2]);
+									.toEqual(
+										[1, 2]);
 								done();
 							});
 
@@ -450,12 +450,12 @@ describe("DataTableComponent",
 					() =>
 					{
 						expect(component.hasSelection())
-						.toBe(false);
+							.toBe(false);
 
 						component.selection.select(mockData[0]);
 						fixture.detectChanges();
 						expect(component.hasSelection())
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should toggle all rows selection",
@@ -464,12 +464,12 @@ describe("DataTableComponent",
 						component.toggleAllRows();
 						fixture.detectChanges();
 						expect(component.selection.selected.length)
-						.toBe(3);
+							.toBe(3);
 
 						component.toggleAllRows();
 						fixture.detectChanges();
 						expect(component.selection.selected.length)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -490,7 +490,7 @@ describe("DataTableComponent",
 							(pageIndex: number) =>
 							{
 								expect(pageIndex)
-								.toBe(1);
+									.toBe(1);
 								done();
 							});
 
@@ -505,7 +505,7 @@ describe("DataTableComponent",
 							(pageSize: number) =>
 							{
 								expect(pageSize)
-								.toBe(50);
+									.toBe(50);
 								done();
 							});
 
@@ -530,11 +530,11 @@ describe("DataTableComponent",
 							component.visibleColumns().length;
 						component.toggleColumn("name");
 						expect(component.visibleColumns().length)
-						.toBe(initialVisible - 1);
+							.toBe(initialVisible - 1);
 
 						component.toggleColumn("name");
 						expect(component.visibleColumns().length)
-						.toBe(initialVisible);
+							.toBe(initialVisible);
 					});
 
 				it("should load column preferences from localStorage when storageKey provided",
@@ -556,9 +556,9 @@ describe("DataTableComponent",
 
 						const visibleKeys: string[] =
 							component
-							.visibleColumns()
-							.map(
-								(c: TableColumn<TestEntity>) => c.key);
+								.visibleColumns()
+								.map(
+									(c: TableColumn<TestEntity>) => c.key);
 						expect(visibleKeys).not.toContain("name");
 
 						localStorage.removeItem(storageKey);
@@ -585,7 +585,7 @@ describe("DataTableComponent",
 							() =>
 							{
 								expect(true)
-								.toBe(true);
+									.toBe(true);
 								done();
 							});
 
@@ -610,7 +610,7 @@ describe("DataTableComponent",
 							() =>
 							{
 								expect(true)
-								.toBe(true);
+									.toBe(true);
 								done();
 							});
 
@@ -638,7 +638,7 @@ describe("DataTableComponent",
 
 						// Verify container exists and has minimum height to prevent CLS
 						expect(wrapper)
-						.toBeTruthy();
+							.toBeTruthy();
 
 						if (wrapper)
 						{
@@ -649,7 +649,7 @@ describe("DataTableComponent",
 
 							// Should have reserved height (400px = 25rem at 16px base)
 							expect(minHeight)
-							.toBeGreaterThan(0);
+								.toBeGreaterThan(0);
 						}
 					});
 
@@ -672,9 +672,9 @@ describe("DataTableComponent",
 
 						// Both should exist when loading
 						expect(loadingOverlay)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(tableContent)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 			});
 	});

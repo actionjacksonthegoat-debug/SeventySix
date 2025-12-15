@@ -29,11 +29,11 @@ describe("ConfirmDialogComponent",
 
 				fixture =
 					await new ComponentTestBed<ConfirmDialogComponent>()
-					.withProvider(
-						{ provide: MatDialogRef, useValue: mockDialogRef })
-					.withProvider(
-						{ provide: MAT_DIALOG_DATA, useValue: mockData })
-					.build(ConfirmDialogComponent);
+						.withProvider(
+							{ provide: MatDialogRef, useValue: mockDialogRef })
+						.withProvider(
+							{ provide: MAT_DIALOG_DATA, useValue: mockData })
+						.build(ConfirmDialogComponent);
 
 				component =
 					fixture.componentInstance;
@@ -44,7 +44,7 @@ describe("ConfirmDialogComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should display title and message",
@@ -53,9 +53,9 @@ describe("ConfirmDialogComponent",
 				const compiled: HTMLElement =
 					fixture.nativeElement;
 				expect(compiled.textContent)
-				.toContain("Confirm Action");
+					.toContain("Confirm Action");
 				expect(compiled.textContent)
-				.toContain("Are you sure?");
+					.toContain("Are you sure?");
 			});
 
 		it("should close dialog with true on confirm",
@@ -63,7 +63,7 @@ describe("ConfirmDialogComponent",
 			{
 				component.onConfirm();
 				expect(mockDialogRef.close)
-				.toHaveBeenCalledWith(true);
+					.toHaveBeenCalledWith(true);
 			});
 
 		it("should close dialog with false on cancel",
@@ -71,7 +71,7 @@ describe("ConfirmDialogComponent",
 			{
 				component.onCancel();
 				expect(mockDialogRef.close)
-				.toHaveBeenCalledWith(false);
+					.toHaveBeenCalledWith(false);
 			});
 
 		it("should get correct icon color for warn",
@@ -80,7 +80,7 @@ describe("ConfirmDialogComponent",
 				const color: string =
 					component.getIconColor();
 				expect(color)
-				.toBe("var(--mat-sys-error)");
+					.toBe("var(--mat-sys-error)");
 			});
 
 		it("should display custom button text when provided",
@@ -89,8 +89,8 @@ describe("ConfirmDialogComponent",
 				const compiled: HTMLElement =
 					fixture.nativeElement;
 				expect(compiled.textContent)
-				.toContain("Yes");
+					.toContain("Yes");
 				expect(compiled.textContent)
-				.toContain("No");
+					.toContain("No");
 			});
 	});

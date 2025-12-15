@@ -46,22 +46,22 @@ describe("ChangePasswordComponent",
 					createMockNotificationService();
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [ChangePasswordComponent],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideRouter([]),
-							provideHttpClient(withInterceptorsFromDi()),
-							provideHttpClientTesting(),
-							{ provide: AuthService, useValue: mockAuthService },
-							{
-								provide: NotificationService,
-								useValue: mockNotificationService
-							}
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [ChangePasswordComponent],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideRouter([]),
+								provideHttpClient(withInterceptorsFromDi()),
+								provideHttpClientTesting(),
+								{ provide: AuthService, useValue: mockAuthService },
+								{
+									provide: NotificationService,
+									useValue: mockNotificationService
+								}
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(ChangePasswordComponent);
@@ -86,7 +86,7 @@ describe("ChangePasswordComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("ngOnInit",
@@ -118,8 +118,8 @@ describe("ChangePasswordComponent",
 
 						// Assert
 						expect(mockNotificationService.error)
-						.toHaveBeenCalledWith(
-							"Passwords do not match.");
+							.toHaveBeenCalledWith(
+								"Passwords do not match.");
 					});
 
 				it("should show error when password is too short",
@@ -135,8 +135,8 @@ describe("ChangePasswordComponent",
 
 						// Assert
 						expect(mockNotificationService.error)
-						.toHaveBeenCalledWith(
-							"Password must be at least 8 characters.");
+							.toHaveBeenCalledWith(
+								"Password must be at least 8 characters.");
 					});
 
 				it("should call API with correct payload",
@@ -155,15 +155,15 @@ describe("ChangePasswordComponent",
 							httpTestingController.expectOne(
 								`${environment.apiUrl}/auth/change-password`);
 						expect(req.request.method)
-						.toBe("POST");
+							.toBe("POST");
 						expect(req.request.body)
-						.toEqual(
-							{
-								currentPassword: "oldpassword",
-								newPassword: "NewPassword1!"
-							});
+							.toEqual(
+								{
+									currentPassword: "oldpassword",
+									newPassword: "NewPassword1!"
+								});
 						expect(req.request.withCredentials)
-						.toBe(true);
+							.toBe(true);
 
 						// Complete the request
 						req.flush(null);
@@ -188,17 +188,17 @@ describe("ChangePasswordComponent",
 
 						// Assert
 						expect(mockNotificationService.success)
-						.toHaveBeenCalledWith(
-							"Password changed successfully. Please log in again.");
+							.toHaveBeenCalledWith(
+								"Password changed successfully. Please log in again.");
 						expect(
 							mockAuthService.clearPasswordChangeRequirement)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						expect(router.navigate)
-						.toHaveBeenCalledWith(
-							["/auth/login"],
-							{
-								queryParams: { returnUrl: "/" }
-							});
+							.toHaveBeenCalledWith(
+								["/auth/login"],
+								{
+									queryParams: { returnUrl: "/" }
+								});
 					});
 
 				it("should show error notification on API failure",
@@ -222,8 +222,8 @@ describe("ChangePasswordComponent",
 
 						// Assert
 						expect(mockNotificationService.error)
-						.toHaveBeenCalledWith(
-							"Current password is incorrect.");
+							.toHaveBeenCalledWith(
+								"Current password is incorrect.");
 					});
 
 				it("should show default error message when API error has no detail",
@@ -246,8 +246,8 @@ describe("ChangePasswordComponent",
 
 						// Assert
 						expect(mockNotificationService.error)
-						.toHaveBeenCalledWith(
-							"Failed to change password. Please try again.");
+							.toHaveBeenCalledWith(
+								"Failed to change password. Please try again.");
 					});
 
 				it("should set isLoading to true during submission",
@@ -263,7 +263,7 @@ describe("ChangePasswordComponent",
 
 						// Assert - isLoading should be true while request is pending
 						expect((component as unknown as { isLoading(): boolean; }).isLoading())
-						.toBe(true);
+							.toBe(true);
 
 						// Complete the request
 						const req: TestRequest =
@@ -292,7 +292,7 @@ describe("ChangePasswordComponent",
 
 						// Assert
 						expect((component as unknown as { isLoading(): boolean; }).isLoading())
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -310,7 +310,7 @@ describe("ChangePasswordComponent",
 						const card: HTMLElement | null =
 							fixture.nativeElement.querySelector(".change-password-card");
 						expect(card)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 
 				it("should render current password input",
@@ -325,9 +325,9 @@ describe("ChangePasswordComponent",
 							fixture.nativeElement.querySelector(
 								"input[name=\"currentPassword\"]");
 						expect(input)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(input?.type)
-						.toBe("password");
+							.toBe("password");
 					});
 
 				it("should render new password input",
@@ -342,9 +342,9 @@ describe("ChangePasswordComponent",
 							fixture.nativeElement.querySelector(
 								"input[name=\"newPassword\"]");
 						expect(input)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(input?.type)
-						.toBe("password");
+							.toBe("password");
 					});
 
 				it("should render confirm password input",
@@ -359,9 +359,9 @@ describe("ChangePasswordComponent",
 							fixture.nativeElement.querySelector(
 								"input[name=\"confirmPassword\"]");
 						expect(input)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(input?.type)
-						.toBe("password");
+							.toBe("password");
 					});
 
 				it("should render submit button",
@@ -375,7 +375,7 @@ describe("ChangePasswordComponent",
 						const button: HTMLButtonElement | null =
 							fixture.nativeElement.querySelector(".submit-button");
 						expect(button)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 
 				it("should show required notice when isRequired is true",
@@ -390,10 +390,10 @@ describe("ChangePasswordComponent",
 						const notice: HTMLElement | null =
 							fixture.nativeElement.querySelector(".required-notice");
 						expect(notice)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(notice?.textContent)
-						.toContain(
-							"You must change your password before continuing.");
+							.toContain(
+								"You must change your password before continuing.");
 					});
 
 				it("should not show required notice when isRequired is false",
@@ -408,7 +408,7 @@ describe("ChangePasswordComponent",
 						const notice: HTMLElement | null =
 							fixture.nativeElement.querySelector(".required-notice");
 						expect(notice)
-						.toBeFalsy();
+							.toBeFalsy();
 					});
 
 				it("should render password hint",
@@ -422,9 +422,9 @@ describe("ChangePasswordComponent",
 						const hint: HTMLElement | null =
 							fixture.nativeElement.querySelector(".hint");
 						expect(hint)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(hint?.textContent)
-						.toContain("At least 8 characters");
+							.toContain("At least 8 characters");
 					});
 			});
 	});

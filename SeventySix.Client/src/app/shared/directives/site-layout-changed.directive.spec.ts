@@ -32,12 +32,12 @@ describe("SiteLayoutChangedDirective",
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [TestLayoutChangedComponent],
-						providers: [provideZonelessChangeDetection()]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [TestLayoutChangedComponent],
+							providers: [provideZonelessChangeDetection()]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(TestLayoutChangedComponent);
@@ -50,7 +50,7 @@ describe("SiteLayoutChangedDirective",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should emit layoutChanged on window resize",
@@ -62,7 +62,7 @@ describe("SiteLayoutChangedDirective",
 					() =>
 					{
 						expect(component.layoutChanged)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						done();
 					},
 					600);

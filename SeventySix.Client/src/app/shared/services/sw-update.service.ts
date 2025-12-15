@@ -1,8 +1,8 @@
 import { ApplicationRef, inject, Injectable } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { SwUpdate, VersionReadyEvent } from "@angular/service-worker";
-import { concat, filter, first, interval } from "rxjs";
 import { LoggerService } from "@shared/services/logger.service";
+import { concat, filter, first, interval } from "rxjs";
 
 /**
  * Service Worker update service.

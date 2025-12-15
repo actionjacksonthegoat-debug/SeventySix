@@ -43,7 +43,7 @@ describe("UserService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("filter management",
@@ -58,9 +58,9 @@ describe("UserService",
 						const filter: import("@admin/users/models").UserQueryRequest =
 							service.getCurrentFilter();
 						expect(filter.searchTerm)
-						.toBe("test");
+							.toBe("test");
 						expect(filter.page)
-						.toBe(1);
+							.toBe(1);
 					});
 
 				it("should set page",
@@ -71,7 +71,7 @@ describe("UserService",
 						const filter: import("@admin/users/models").UserQueryRequest =
 							service.getCurrentFilter();
 						expect(filter.page)
-						.toBe(3);
+							.toBe(3);
 					});
 
 				it("should set page size and reset to page 1",
@@ -83,9 +83,9 @@ describe("UserService",
 						const filter: import("@admin/users/models").UserQueryRequest =
 							service.getCurrentFilter();
 						expect(filter.pageSize)
-						.toBe(100);
+							.toBe(100);
 						expect(filter.page)
-						.toBe(1);
+							.toBe(1);
 					});
 
 				it("should clear filters",
@@ -98,11 +98,11 @@ describe("UserService",
 						const filter: import("@admin/users/models").UserQueryRequest =
 							service.getCurrentFilter();
 						expect(filter.searchTerm)
-						.toBeUndefined();
+							.toBeUndefined();
 						expect(filter.isActive)
-						.toBeUndefined();
+							.toBeUndefined();
 						expect(filter.page)
-						.toBe(1);
+							.toBe(1);
 					});
 
 				it("should initialize with no date filters",
@@ -112,9 +112,9 @@ describe("UserService",
 							service.getCurrentFilter();
 
 						expect(filter.startDate)
-						.toBeNull();
+							.toBeNull();
 						expect(filter.endDate)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should update isActive filter",
@@ -126,7 +126,7 @@ describe("UserService",
 						const filter: import("@admin/users/models").UserQueryRequest =
 							service.getCurrentFilter();
 						expect(filter.isActive)
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should update includeDeleted filter",
@@ -138,7 +138,7 @@ describe("UserService",
 						const filter: import("@admin/users/models").UserQueryRequest =
 							service.getCurrentFilter();
 						expect(filter.includeDeleted)
-						.toBe(true);
+							.toBe(true);
 					});
 			});
 
@@ -157,9 +157,9 @@ describe("UserService",
 							await query.refetch();
 
 						expect(result.data)
-						.toEqual(mockUser);
+							.toEqual(mockUser);
 						expect(mockApiService.get)
-						.toHaveBeenCalledWith("users/1");
+							.toHaveBeenCalledWith("users/1");
 					});
 			});
 
@@ -182,13 +182,13 @@ describe("UserService",
 						await mutation.mutateAsync(newUser);
 
 						expect(mockApiService.post)
-						.toHaveBeenCalledWith(
-							"users",
-							jasmine.objectContaining(
-								{
-									username: "newuser",
-									email: "new@example.com"
-								}));
+							.toHaveBeenCalledWith(
+								"users",
+								jasmine.objectContaining(
+									{
+										username: "newuser",
+										email: "new@example.com"
+									}));
 					});
 			});
 
@@ -214,9 +214,9 @@ describe("UserService",
 							{ userId: 1, user: updateRequest });
 
 						expect(mockApiService.put)
-						.toHaveBeenCalledWith(
-							"users/1",
-							updateRequest);
+							.toHaveBeenCalledWith(
+								"users/1",
+								updateRequest);
 					});
 			});
 
@@ -234,7 +234,7 @@ describe("UserService",
 						await mutation.mutateAsync(1);
 
 						expect(mockApiService.delete)
-						.toHaveBeenCalledWith("users/1");
+							.toHaveBeenCalledWith("users/1");
 					});
 			});
 
@@ -269,7 +269,7 @@ describe("UserService",
 							await query.refetch();
 
 						expect(result.data)
-						.toEqual(pagedResult);
+							.toEqual(pagedResult);
 					});
 			});
 
@@ -289,9 +289,9 @@ describe("UserService",
 							await query.refetch();
 
 						expect(result.data)
-						.toEqual(mockUser);
+							.toEqual(mockUser);
 						expect(mockApiService.get)
-						.toHaveBeenCalledWith("users/username/testuser");
+							.toHaveBeenCalledWith("users/username/testuser");
 					});
 			});
 
@@ -309,7 +309,7 @@ describe("UserService",
 						await mutation.mutateAsync(1);
 
 						expect(mockApiService.post)
-						.toHaveBeenCalledWith("users/1/restore", {});
+							.toHaveBeenCalledWith("users/1/restore", {});
 					});
 			});
 
@@ -327,7 +327,7 @@ describe("UserService",
 						await mutation.mutateAsync(1);
 
 						expect(mockApiService.post)
-						.toHaveBeenCalledWith("users/1/reset-password", {});
+							.toHaveBeenCalledWith("users/1/reset-password", {});
 					});
 			});
 
@@ -367,7 +367,7 @@ describe("UserService",
 
 						// Signal should have toggled
 						expect(newValue)
-						.toBe(!initialValue);
+							.toBe(!initialValue);
 					});
 			});
 	});

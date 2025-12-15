@@ -1,4 +1,10 @@
 import {
+	AvailableRoleDto,
+	CreatePermissionRequestDto,
+	UpdateProfileRequest,
+	UserProfileDto
+} from "@account/models";
+import {
 	inject,
 	Injectable
 } from "@angular/core";
@@ -7,12 +13,6 @@ import { ApiService } from "@shared/services/api.service";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { injectQuery } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
-import {
-	AvailableRoleDto,
-	CreatePermissionRequestDto,
-	UpdateProfileRequest,
-	UserProfileDto
-} from "@account/models";
 
 /** Service for current user's account operations. Provided at route level. */
 @Injectable()

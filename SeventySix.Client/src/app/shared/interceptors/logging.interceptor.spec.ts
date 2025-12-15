@@ -40,14 +40,14 @@ describe("loggingInterceptor",
 						loggingInterceptor(
 							req,
 							mockHandler.handle.bind(mockHandler))
-						.subscribe(
-							(): void =>
-							{
-								// eslint-disable-next-line no-console
-								expect(console.log)
-								.toHaveBeenCalled();
-								done();
-							});
+							.subscribe(
+								(): void =>
+								{
+									// eslint-disable-next-line no-console
+									expect(console.log)
+										.toHaveBeenCalled();
+									done();
+								});
 					});
 			});
 
@@ -63,13 +63,13 @@ describe("loggingInterceptor",
 						loggingInterceptor(
 							req,
 							mockHandler.handle.bind(mockHandler))
-						.subscribe(
-							(): void =>
-							{
-								expect(mockHandler.handle)
-								.toHaveBeenCalled();
-								done();
-							});
+							.subscribe(
+								(): void =>
+								{
+									expect(mockHandler.handle)
+										.toHaveBeenCalled();
+									done();
+								});
 					});
 			});
 	});

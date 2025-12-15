@@ -1,3 +1,5 @@
+import { AvailableRoleDto, CreatePermissionRequestDto } from "@account/models";
+import { AccountService } from "@account/services";
 import {
 	ChangeDetectionStrategy,
 	Component,
@@ -21,8 +23,6 @@ import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
-import { AvailableRoleDto, CreatePermissionRequestDto } from "@account/models";
-import { AccountService } from "@account/services";
 
 @Component(
 	{

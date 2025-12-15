@@ -24,8 +24,9 @@ describe("cacheBypassInterceptor",
 					(request: HttpRequest<unknown>): Observable<HttpEvent<unknown>> =>
 					{
 						capturedRequest = request;
-						return of(new HttpResponse(
-							{ status: 200 }));
+						return of(
+							new HttpResponse(
+								{ status: 200 }));
 					};
 			});
 
@@ -35,9 +36,9 @@ describe("cacheBypassInterceptor",
 				// Arrange
 				const context: HttpContext =
 					new HttpContext()
-					.set(
-						FORCE_REFRESH,
-						true);
+						.set(
+							FORCE_REFRESH,
+							true);
 				const request: HttpRequest<unknown> =
 					new HttpRequest(
 						"GET",
@@ -51,9 +52,9 @@ describe("cacheBypassInterceptor",
 
 				// Assert
 				expect(capturedRequest.headers.get("Cache-Control"))
-				.toBe("no-cache, no-store, must-revalidate");
+					.toBe("no-cache, no-store, must-revalidate");
 				expect(capturedRequest.headers.get("Pragma"))
-				.toBe("no-cache");
+					.toBe("no-cache");
 			});
 
 		it("should not modify request when FORCE_REFRESH is false",
@@ -62,9 +63,9 @@ describe("cacheBypassInterceptor",
 				// Arrange
 				const context: HttpContext =
 					new HttpContext()
-					.set(
-						FORCE_REFRESH,
-						false);
+						.set(
+							FORCE_REFRESH,
+							false);
 				const request: HttpRequest<unknown> =
 					new HttpRequest(
 						"GET",
@@ -78,9 +79,9 @@ describe("cacheBypassInterceptor",
 
 				// Assert
 				expect(capturedRequest.headers.has("Cache-Control"))
-				.toBe(false);
+					.toBe(false);
 				expect(capturedRequest.headers.has("Pragma"))
-				.toBe(false);
+					.toBe(false);
 			});
 
 		it("should not modify request when FORCE_REFRESH context is not set",
@@ -99,8 +100,8 @@ describe("cacheBypassInterceptor",
 
 				// Assert - default is false, so no headers should be added
 				expect(capturedRequest.headers.has("Cache-Control"))
-				.toBe(false);
+					.toBe(false);
 				expect(capturedRequest.headers.has("Pragma"))
-				.toBe(false);
+					.toBe(false);
 			});
 	});

@@ -105,7 +105,11 @@ export default [
 			}
 		},
 		plugins: sharedPlugins,
-		rules: sharedRules
+		rules: {
+			...sharedRules,
+			// Override indent for spec files to properly indent expect() chains
+			"@stylistic/indent": ["error", "tab", { "SwitchCase": 1, "MemberExpression": 1 }]
+		}
 	},
 	{
 		files: ["src/**/*.component.ts"],

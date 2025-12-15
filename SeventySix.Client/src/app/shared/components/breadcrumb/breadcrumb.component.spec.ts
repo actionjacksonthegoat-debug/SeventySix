@@ -24,38 +24,38 @@ describe("BreadcrumbComponent",
 			{
 				fixture =
 					await new ComponentTestBed<BreadcrumbComponent>()
-					.withProvider(
-						provideRouter(
-							[
-								{ path: "", component: TestComponent },
-								{
-									path: "admin",
-									component: TestComponent,
-									data: { breadcrumb: "Administration" },
-									children: [
-										{
-											path: "users",
-											component: TestComponent,
-											data: { breadcrumb: "User Management" },
-											children: [
-												{
-													path: ":id",
-													component: TestComponent
-												}
-											]
-										}
-									]
-								},
-								{
-									path: "user-profile",
-									component: TestComponent
-								},
-								{
-									path: "log-management",
-									component: TestComponent
-								}
-							]))
-					.build(BreadcrumbComponent);
+						.withProvider(
+							provideRouter(
+								[
+									{ path: "", component: TestComponent },
+									{
+										path: "admin",
+										component: TestComponent,
+										data: { breadcrumb: "Administration" },
+										children: [
+											{
+												path: "users",
+												component: TestComponent,
+												data: { breadcrumb: "User Management" },
+												children: [
+													{
+														path: ":id",
+														component: TestComponent
+													}
+												]
+											}
+										]
+									},
+									{
+										path: "user-profile",
+										component: TestComponent
+									},
+									{
+										path: "log-management",
+										component: TestComponent
+									}
+								]))
+						.build(BreadcrumbComponent);
 
 				component =
 					fixture.componentInstance;
@@ -68,14 +68,14 @@ describe("BreadcrumbComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should have breadcrumbs signal",
 			() =>
 			{
 				expect(component.breadcrumbs)
-				.toBeDefined();
+					.toBeDefined();
 			});
 
 		it("should compute breadcrumbs",
@@ -84,7 +84,7 @@ describe("BreadcrumbComponent",
 				const breadcrumbs: BreadcrumbItem[] =
 					component.breadcrumbs();
 				expect(Array.isArray(breadcrumbs))
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("should include home in breadcrumbs",
@@ -96,7 +96,7 @@ describe("BreadcrumbComponent",
 					breadcrumbs.some(
 						(b: { label: string; }) =>
 							b.label === "Home"))
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("should use custom breadcrumb label from route data",
@@ -114,7 +114,7 @@ describe("BreadcrumbComponent",
 							b.label === "Admin" || b.label === "Dashboard");
 
 				expect(adminCrumb)
-				.toBeDefined();
+					.toBeDefined();
 			});
 
 		it("should handle route parameters by showing Details",
@@ -129,15 +129,15 @@ describe("BreadcrumbComponent",
 
 				// Should have: Home, Admin, Users, Details (for :id)
 				expect(breadcrumbs.length)
-				.toBe(4);
+					.toBe(4);
 				expect(breadcrumbs[0].label)
-				.toBe("Home");
+					.toBe("Home");
 				expect(breadcrumbs[1].label)
-				.toBe("Admin");
+					.toBe("Admin");
 				expect(breadcrumbs[2].label)
-				.toBe("Users");
+					.toBe("Users");
 				expect(breadcrumbs[3].label)
-				.toBe("Details");
+					.toBe("Details");
 			});
 
 		it("should skip routes with empty paths",
@@ -153,9 +153,9 @@ describe("BreadcrumbComponent",
 
 				// Should only have Home breadcrumb
 				expect(breadcrumbs.length)
-				.toBe(1);
+					.toBe(1);
 				expect(breadcrumbs[0].label)
-				.toBe("Home");
+					.toBe("Home");
 			});
 
 		it("should mark current route as active",
@@ -172,9 +172,9 @@ describe("BreadcrumbComponent",
 						(b) => b.isActive);
 
 				expect(activeCrumb)
-				.toBeDefined();
+					.toBeDefined();
 				expect(activeCrumb?.label)
-				.toBe("Log Management");
+					.toBe("Log Management");
 			});
 
 		it("should build correct URL paths for nested routes",
@@ -191,7 +191,7 @@ describe("BreadcrumbComponent",
 						(b) => b.label === "Users");
 
 				expect(usersCrumb?.url)
-				.toBe("/admin/users");
+					.toBe("/admin/users");
 			});
 
 		it("should handle navigation events and update breadcrumbs",
@@ -204,6 +204,6 @@ describe("BreadcrumbComponent",
 				const breadcrumbs: BreadcrumbItem[] =
 					component.breadcrumbs();
 				expect(breadcrumbs.length)
-				.toBeGreaterThanOrEqual(2);
+					.toBeGreaterThanOrEqual(2);
 			});
 	});

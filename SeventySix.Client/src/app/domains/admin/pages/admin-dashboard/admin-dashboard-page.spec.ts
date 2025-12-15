@@ -1,4 +1,7 @@
+import { ApiStatisticsTableComponent } from "@admin/components/api-statistics-table/api-statistics-table.component";
+import { GrafanaDashboardEmbedComponent } from "@admin/components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 import { ThirdPartyApiRequestResponse } from "@admin/models";
+import { ThirdPartyApiService } from "@admin/services";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
@@ -10,9 +13,6 @@ import {
 	createMockNotificationService,
 	createMockQueryResult
 } from "@shared/testing";
-import { ApiStatisticsTableComponent } from "@admin/components/api-statistics-table/api-statistics-table.component";
-import { GrafanaDashboardEmbedComponent } from "@admin/components/grafana-dashboard-embed/grafana-dashboard-embed.component";
-import { ThirdPartyApiService } from "@admin/services";
 import { AdminDashboardPage } from "./admin-dashboard";
 
 describe("AdminDashboardPage",
@@ -41,33 +41,33 @@ describe("AdminDashboardPage",
 					createMockLogger();
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [
-							AdminDashboardPage,
-							GrafanaDashboardEmbedComponent,
-							ApiStatisticsTableComponent
-						],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideNoopAnimations(),
-							provideHttpClient(),
-							provideHttpClientTesting(),
-							{
-								provide: ThirdPartyApiService,
-								useValue: thirdPartyApiServiceSpy
-							},
-							{
-								provide: NotificationService,
-								useValue: mockNotificationService
-							},
-							{
-								provide: LoggerService,
-								useValue: mockLoggerService
-							}
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [
+								AdminDashboardPage,
+								GrafanaDashboardEmbedComponent,
+								ApiStatisticsTableComponent
+							],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideNoopAnimations(),
+								provideHttpClient(),
+								provideHttpClientTesting(),
+								{
+									provide: ThirdPartyApiService,
+									useValue: thirdPartyApiServiceSpy
+								},
+								{
+									provide: NotificationService,
+									useValue: mockNotificationService
+								},
+								{
+									provide: LoggerService,
+									useValue: mockLoggerService
+								}
+							]
+						})
+					.compileComponents();
 			});
 
 		function createComponent(): void
@@ -85,7 +85,7 @@ describe("AdminDashboardPage",
 				createComponent();
 
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should render page header",
@@ -96,7 +96,7 @@ describe("AdminDashboardPage",
 				const compiled: HTMLElement =
 					fixture.nativeElement as HTMLElement;
 				expect(compiled.querySelector("app-page-header"))
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should have system overview dashboard UID",
@@ -105,8 +105,8 @@ describe("AdminDashboardPage",
 				createComponent();
 
 				expect(component.systemOverviewDashboard)
-				.toBe(
-					"seventysix-system-overview");
+					.toBe(
+						"seventysix-system-overview");
 			});
 
 		it("should have API endpoints dashboard UID",
@@ -115,8 +115,8 @@ describe("AdminDashboardPage",
 				createComponent();
 
 				expect(component.apiEndpointsDashboard)
-				.toBe(
-					"seventysix-api-endpoints");
+					.toBe(
+						"seventysix-api-endpoints");
 			});
 
 		it("should display admin dashboard with appropriate content",
@@ -129,12 +129,12 @@ describe("AdminDashboardPage",
 
 				// Dashboard title should always be present
 				expect(compiled.querySelector("h1")?.textContent)
-				.toContain(
-					"Admin Dashboard");
+					.toContain(
+						"Admin Dashboard");
 
 				// Tabs should always be present (observability always enabled)
 				expect(compiled.querySelector("mat-tab-group"))
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should open Jaeger in new tab",
@@ -146,9 +146,9 @@ describe("AdminDashboardPage",
 				component.openJaeger();
 
 				expect(window.open)
-				.toHaveBeenCalledWith(
-					"http://localhost:16686/search?service=SeventySix.Api",
-					"_blank");
+					.toHaveBeenCalledWith(
+						"http://localhost:16686/search?service=SeventySix.Api",
+						"_blank");
 			});
 
 		it("should open Prometheus in new tab",
@@ -160,9 +160,9 @@ describe("AdminDashboardPage",
 				component.openPrometheus();
 
 				expect(window.open)
-				.toHaveBeenCalledWith(
-					"http://localhost:9090/targets",
-					"_blank");
+					.toHaveBeenCalledWith(
+						"http://localhost:9090/targets",
+						"_blank");
 			});
 
 		it("should open Grafana in new tab",
@@ -174,9 +174,9 @@ describe("AdminDashboardPage",
 				component.openGrafana();
 
 				expect(window.open)
-				.toHaveBeenCalledWith(
-					"http://localhost:3000/dashboards",
-					"_blank");
+					.toHaveBeenCalledWith(
+						"http://localhost:3000/dashboards",
+						"_blank");
 			});
 
 		it("should send info log and show notification",
@@ -187,11 +187,11 @@ describe("AdminDashboardPage",
 				component.sendInfoLog();
 
 				expect(mockNotificationService.info)
-				.toHaveBeenCalledWith(
-					"Sending Info Log");
+					.toHaveBeenCalledWith(
+						"Sending Info Log");
 				expect(mockLoggerService.forceInfo)
-				.toHaveBeenCalledWith(
-					"Test Info Log from Admin Dashboard");
+					.toHaveBeenCalledWith(
+						"Test Info Log from Admin Dashboard");
 			});
 
 		it("should send warn log and show notification",
@@ -202,11 +202,11 @@ describe("AdminDashboardPage",
 				component.sendWarnLog();
 
 				expect(mockNotificationService.warning)
-				.toHaveBeenCalledWith(
-					"Sending Warn Log");
+					.toHaveBeenCalledWith(
+						"Sending Warn Log");
 				expect(mockLoggerService.forceWarning)
-				.toHaveBeenCalledWith(
-					"Test Warning Log from Admin Dashboard");
+					.toHaveBeenCalledWith(
+						"Test Warning Log from Admin Dashboard");
 			});
 
 		it("should send error log, show notification, and throw error",
@@ -218,7 +218,7 @@ describe("AdminDashboardPage",
 				// It does NOT call notification.error - the error is thrown for error handling validation
 				expect(
 					() => component.sendErrorLog())
-				.toThrowError(
-					/Division by zero test error/);
+					.toThrowError(
+						/Division by zero test error/);
 			});
 	});

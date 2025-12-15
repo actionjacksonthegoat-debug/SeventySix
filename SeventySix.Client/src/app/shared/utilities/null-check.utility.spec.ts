@@ -27,49 +27,49 @@ describe("Null Check Utilities",
 					() =>
 					{
 						expect(isNullOrUndefined(null))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for undefined",
 					() =>
 					{
 						expect(isNullOrUndefined(undefined))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return false for empty string",
 					() =>
 					{
 						expect(isNullOrUndefined(""))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for zero",
 					() =>
 					{
 						expect(isNullOrUndefined(0))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for boolean false",
 					() =>
 					{
 						expect(isNullOrUndefined(false))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for non-empty string",
 					() =>
 					{
 						expect(isNullOrUndefined("test"))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for object",
 					() =>
 					{
 						expect(isNullOrUndefined({}))
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -80,49 +80,49 @@ describe("Null Check Utilities",
 					() =>
 					{
 						expect(isPresent(null))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for undefined",
 					() =>
 					{
 						expect(isPresent(undefined))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return true for empty string",
 					() =>
 					{
 						expect(isPresent(""))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for zero",
 					() =>
 					{
 						expect(isPresent(0))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for boolean false",
 					() =>
 					{
 						expect(isPresent(false))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for non-empty string",
 					() =>
 					{
 						expect(isPresent("test"))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for object",
 					() =>
 					{
 						expect(isPresent({}))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should narrow type correctly",
@@ -135,7 +135,7 @@ describe("Null Check Utilities",
 							const length: number =
 								value.length;
 							expect(length)
-							.toBe(4);
+								.toBe(4);
 						}
 					});
 			});
@@ -147,35 +147,35 @@ describe("Null Check Utilities",
 					() =>
 					{
 						expect(isNullOrEmpty(null))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for undefined",
 					() =>
 					{
 						expect(isNullOrEmpty(undefined))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for empty string",
 					() =>
 					{
 						expect(isNullOrEmpty(""))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return false for non-empty string",
 					() =>
 					{
 						expect(isNullOrEmpty("test"))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for whitespace string",
 					() =>
 					{
 						expect(isNullOrEmpty(" "))
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -186,56 +186,56 @@ describe("Null Check Utilities",
 					() =>
 					{
 						expect(isNullOrWhitespace(null))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for undefined",
 					() =>
 					{
 						expect(isNullOrWhitespace(undefined))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for empty string",
 					() =>
 					{
 						expect(isNullOrWhitespace(""))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for whitespace-only string",
 					() =>
 					{
 						expect(isNullOrWhitespace(" "))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for multiple whitespace characters",
 					() =>
 					{
 						expect(isNullOrWhitespace("   "))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for tabs and newlines",
 					() =>
 					{
 						expect(isNullOrWhitespace("\t\n  "))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return false for non-empty string",
 					() =>
 					{
 						expect(isNullOrWhitespace("test"))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for string with content and whitespace",
 					() =>
 					{
 						expect(isNullOrWhitespace(" test "))
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -246,49 +246,49 @@ describe("Null Check Utilities",
 					() =>
 					{
 						expect(isNonNullObject(null))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for undefined",
 					() =>
 					{
 						expect(isNonNullObject(undefined))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for string",
 					() =>
 					{
 						expect(isNonNullObject("test"))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for number",
 					() =>
 					{
 						expect(isNonNullObject(123))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for boolean",
 					() =>
 					{
 						expect(isNonNullObject(true))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false for array",
 					() =>
 					{
 						expect(isNonNullObject([]))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return true for plain object",
 					() =>
 					{
 						expect(isNonNullObject({}))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for object with properties",
@@ -296,7 +296,7 @@ describe("Null Check Utilities",
 					{
 						expect(isNonNullObject(
 							{ name: "test" }))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should narrow type correctly",
@@ -308,9 +308,9 @@ describe("Null Check Utilities",
 						{
 							// TypeScript knows value is Record<string, unknown> here
 							expect("message" in value)
-							.toBe(true);
+								.toBe(true);
 							expect(value["message"])
-							.toBe("error");
+								.toBe("error");
 						}
 					});
 			});

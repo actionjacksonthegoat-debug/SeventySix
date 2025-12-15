@@ -35,26 +35,26 @@ describe("ForgotPasswordComponent",
 						]);
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [ForgotPasswordComponent],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideNoopAnimations(),
-							provideRouter([]),
-							provideHttpClient(),
-							provideHttpClientTesting(),
-							{
-								provide: AuthService,
-								useValue: authServiceSpy
-							},
-							{
-								provide: NotificationService,
-								useValue: notificationSpy
-							}
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [ForgotPasswordComponent],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideNoopAnimations(),
+								provideRouter([]),
+								provideHttpClient(),
+								provideHttpClientTesting(),
+								{
+									provide: AuthService,
+									useValue: authServiceSpy
+								},
+								{
+									provide: NotificationService,
+									useValue: notificationSpy
+								}
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(ForgotPasswordComponent);
@@ -66,7 +66,7 @@ describe("ForgotPasswordComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should show success message after submission",
@@ -83,9 +83,9 @@ describe("ForgotPasswordComponent",
 
 				// Assert
 				expect(component["submitted"]())
-				.toBeTrue();
+					.toBeTrue();
 				expect(notificationSpy.success)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		it("should disable submit button when email is empty",
@@ -104,7 +104,7 @@ describe("ForgotPasswordComponent",
 
 				// Assert
 				expect(submitButton?.disabled)
-				.toBeTrue();
+					.toBeTrue();
 			});
 
 		it("should enable submit button when email is valid",
@@ -123,7 +123,7 @@ describe("ForgotPasswordComponent",
 
 				// Assert
 				expect(submitButton?.disabled)
-				.toBeFalse();
+					.toBeFalse();
 			});
 
 		it("should call requestPasswordReset with email",
@@ -138,8 +138,8 @@ describe("ForgotPasswordComponent",
 
 				// Assert
 				expect(authServiceSpy.requestPasswordReset)
-				.toHaveBeenCalledWith(
-					"user@example.com");
+					.toHaveBeenCalledWith(
+						"user@example.com");
 			});
 
 		it("should show error notification on API failure",
@@ -158,9 +158,9 @@ describe("ForgotPasswordComponent",
 
 				// Assert
 				expect(component["isLoading"]())
-				.toBeFalse();
+					.toBeFalse();
 				expect(notificationSpy.error)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		it("should not submit when email format is invalid",
@@ -176,7 +176,7 @@ describe("ForgotPasswordComponent",
 				// Assert
 				expect(authServiceSpy.requestPasswordReset).not.toHaveBeenCalled();
 				expect(notificationSpy.error)
-				.toHaveBeenCalledWith(
-					"Please enter a valid email address.");
+					.toHaveBeenCalledWith(
+						"Please enter a valid email address.");
 			});
 	});

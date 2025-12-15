@@ -1,14 +1,14 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { CreateLogRequest } from "@shared/models";
+import { DateService } from "@shared/services/date.service";
+import { ErrorQueueService } from "@shared/services/error-queue.service";
+import { LogLevel } from "@shared/services/logger.service";
 import {
 	extractRequestMethod,
 	extractRequestUrl,
 	extractStatusCode
 } from "@shared/utilities/http-error.utility";
-import { DateService } from "@shared/services/date.service";
-import { ErrorQueueService } from "@shared/services/error-queue.service";
-import { LogLevel } from "@shared/services/logger.service";
 
 /**
  * Error details for logging.

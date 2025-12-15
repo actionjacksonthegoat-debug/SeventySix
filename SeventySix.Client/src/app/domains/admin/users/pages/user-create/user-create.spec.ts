@@ -68,21 +68,21 @@ describe("UserCreatePage",
 						}));
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [UserCreatePage],
-						providers: [
-							provideHttpClient(withFetch()),
-							provideHttpClientTesting(),
-							provideZonelessChangeDetection(),
-							provideRouter([]),
-							{ provide: UserService, useValue: mockUserService },
-							{ provide: Router, useValue: mockRouter },
-							{ provide: NotificationService, useValue: mockNotification },
-							{ provide: LoggerService, useValue: mockLogger }
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [UserCreatePage],
+							providers: [
+								provideHttpClient(withFetch()),
+								provideHttpClientTesting(),
+								provideZonelessChangeDetection(),
+								provideRouter([]),
+								{ provide: UserService, useValue: mockUserService },
+								{ provide: Router, useValue: mockRouter },
+								{ provide: NotificationService, useValue: mockNotification },
+								{ provide: LoggerService, useValue: mockLogger }
+							]
+						})
+					.compileComponents();
 				fixture =
 					TestBed.createComponent(UserCreatePage);
 				component =
@@ -94,7 +94,7 @@ describe("UserCreatePage",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("Form Validation",
@@ -104,9 +104,9 @@ describe("UserCreatePage",
 					() =>
 					{
 						expect(component.basicInfoForm)
-						.toBeDefined();
+							.toBeDefined();
 						expect(component.accountDetailsForm)
-						.toBeDefined();
+							.toBeDefined();
 
 						// Basic info form validators
 						const usernameControl: AbstractControl | null =
@@ -115,9 +115,9 @@ describe("UserCreatePage",
 							component.basicInfoForm.get("email");
 
 						expect(usernameControl?.hasError("required"))
-						.toBe(true);
+							.toBe(true);
 						expect(emailControl?.hasError("required"))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should validate username min length",
@@ -127,7 +127,7 @@ describe("UserCreatePage",
 							component.basicInfoForm.get("username");
 						usernameControl?.setValue("ab"); // Less than 3 chars
 						expect(usernameControl?.hasError("minlength"))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should validate username max length",
@@ -139,7 +139,7 @@ describe("UserCreatePage",
 							"a".repeat(51); // More than 50 chars
 						usernameControl?.setValue(longUsername);
 						expect(usernameControl?.hasError("maxlength"))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should validate email format",
@@ -149,11 +149,11 @@ describe("UserCreatePage",
 							component.basicInfoForm.get("email");
 						emailControl?.setValue("invalid-email");
 						expect(emailControl?.hasError("email"))
-						.toBe(true);
+							.toBe(true);
 
 						emailControl?.setValue("valid@example.com");
 						expect(emailControl?.hasError("email"))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should validate email max length",
@@ -165,7 +165,7 @@ describe("UserCreatePage",
 							"a".repeat(250) + "@test.com"; // More than 255 chars
 						emailControl?.setValue(longEmail);
 						expect(emailControl?.hasError("maxlength"))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should validate fullName max length",
@@ -177,7 +177,7 @@ describe("UserCreatePage",
 							"a".repeat(101); // More than 100 chars
 						fullNameControl?.setValue(longName);
 						expect(fullNameControl?.hasError("maxlength"))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should accept valid form data",
@@ -195,9 +195,9 @@ describe("UserCreatePage",
 							});
 
 						expect(component.basicInfoForm.valid)
-						.toBe(true);
+							.toBe(true);
 						expect(component.accountDetailsForm.valid)
-						.toBe(true);
+							.toBe(true);
 					});
 			});
 
@@ -220,11 +220,11 @@ describe("UserCreatePage",
 
 						expect(
 							mockUserService.checkUsernameAvailability)
-						.toHaveBeenCalledWith("newuser");
+							.toHaveBeenCalledWith("newuser");
 						expect(usernameControl?.hasError("usernameTaken"))
-						.toBe(false);
+							.toBe(false);
 						expect(usernameControl?.valid)
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should fail validation if username is taken",
@@ -243,11 +243,11 @@ describe("UserCreatePage",
 
 						expect(
 							mockUserService.checkUsernameAvailability)
-						.toHaveBeenCalledWith("existinguser");
+							.toHaveBeenCalledWith("existinguser");
 						expect(usernameControl?.hasError("usernameTaken"))
-						.toBe(true);
+							.toBe(true);
 						expect(usernameControl?.valid)
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should not validate empty username",
@@ -262,8 +262,8 @@ describe("UserCreatePage",
 
 						expect(
 							mockUserService.checkUsernameAvailability)
-						.not
-						.toHaveBeenCalled();
+							.not
+							.toHaveBeenCalled();
 					});
 
 				it("should handle validation errors gracefully",
@@ -282,7 +282,7 @@ describe("UserCreatePage",
 
 						// Should not set usernameTaken error on API failure
 						expect(usernameControl?.hasError("usernameTaken"))
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -298,11 +298,11 @@ describe("UserCreatePage",
 						component.saveDraft();
 
 						expect(snackBarSpy)
-						.toHaveBeenCalledWith(
-							"Draft saved locally",
-							"Close",
-							jasmine.objectContaining(
-								{ duration: 2000 }));
+							.toHaveBeenCalledWith(
+								"Draft saved locally",
+								"Close",
+								jasmine.objectContaining(
+									{ duration: 2000 }));
 					});
 			});
 
@@ -324,11 +324,11 @@ describe("UserCreatePage",
 						await component.onSubmit();
 
 						expect(snackBarSpy)
-						.toHaveBeenCalledWith(
-							"Please complete all required fields",
-							"Close",
-							jasmine.objectContaining(
-								{ duration: 3000 }));
+							.toHaveBeenCalledWith(
+								"Please complete all required fields",
+								"Close",
+								jasmine.objectContaining(
+									{ duration: 3000 }));
 						expect(component.createMutation.mutate).not.toHaveBeenCalled();
 					});
 
@@ -351,11 +351,11 @@ describe("UserCreatePage",
 						await component.onSubmit();
 
 						expect(snackBarSpy)
-						.toHaveBeenCalledWith(
-							"Please complete all required fields",
-							"Close",
-							jasmine.objectContaining(
-								{ duration: 3000 }));
+							.toHaveBeenCalledWith(
+								"Please complete all required fields",
+								"Close",
+								jasmine.objectContaining(
+									{ duration: 3000 }));
 						expect(component.createMutation.mutate).not.toHaveBeenCalled();
 					});
 
@@ -377,7 +377,7 @@ describe("UserCreatePage",
 
 						// Verify mutation was called
 						expect(component.createMutation.mutate)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 				it("should handle successful user creation",
 					async () =>
@@ -424,14 +424,14 @@ describe("UserCreatePage",
 						await component.onSubmit();
 
 						expect(snackBarSpy)
-						.toHaveBeenCalledWith(
-							`User "testuser" created. Welcome email sent to test@example.com.`,
-							"Close",
-							jasmine.objectContaining(
-								{ duration: 5000 }));
+							.toHaveBeenCalledWith(
+								`User "testuser" created. Welcome email sent to test@example.com.`,
+								"Close",
+								jasmine.objectContaining(
+									{ duration: 5000 }));
 						expect(mockRouter.navigate)
-						.toHaveBeenCalledWith(
-							["/admin/users"]);
+							.toHaveBeenCalledWith(
+								["/admin/users"]);
 					});
 				it("should handle failed user creation",
 					async () =>
@@ -459,9 +459,9 @@ describe("UserCreatePage",
 						await component.onSubmit();
 
 						expect(mockLogger.error)
-						.toHaveBeenCalledWith(
-							"Failed to create user",
-							error);
+							.toHaveBeenCalledWith(
+								"Failed to create user",
+								error);
 					});
 			});
 
@@ -474,8 +474,8 @@ describe("UserCreatePage",
 						component.onCancel();
 
 						expect(mockRouter.navigate)
-						.toHaveBeenCalledWith(
-							["/admin/users"]);
+							.toHaveBeenCalledWith(
+								["/admin/users"]);
 					});
 			});
 
@@ -487,38 +487,38 @@ describe("UserCreatePage",
 					{
 						// Initially not pending
 						expect(component.isSaving())
-						.toBe(false);
+							.toBe(false);
 
 						// Mock pending state by modifying signal
 						(component.createMutation.isPending as unknown as { set(value: boolean): void; }).set(true);
 
 						expect(component.isSaving())
-						.toBe(true);
+							.toBe(true);
 					});
 				it("should compute saveError when mutation fails",
 					() =>
 					{
 						// Initially no error
 						expect(component.saveError())
-						.toBeNull();
+							.toBeNull();
 
 						// Mock error state
 						(component.createMutation.error as unknown as { set(value: Error | null): void; }).set(
 							new Error("API Error"));
 
 						expect(component.saveError())
-						.toBe(
-							"Failed to create user. Please try again.");
+							.toBe(
+								"Failed to create user. Please try again.");
 					});
 				it("should have formData as a computed signal",
 					() =>
 					{
 						// Verify formData is a function (computed signal)
 						expect(typeof component.formData)
-						.toBe("function");
+							.toBe("function");
 						// Verify it returns an object
 						expect(component.formData())
-						.toEqual(jasmine.any(Object));
+							.toEqual(jasmine.any(Object));
 					});
 			});
 	});

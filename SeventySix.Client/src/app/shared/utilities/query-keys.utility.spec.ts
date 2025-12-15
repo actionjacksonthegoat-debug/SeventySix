@@ -17,8 +17,8 @@ describe("QueryKeys",
 						const key: readonly string[] =
 							QueryKeys.logs.all;
 						expect(key)
-						.toEqual(
-							["logs"]);
+							.toEqual(
+								["logs"]);
 					});
 
 				it("should generate correct paged key with filter",
@@ -29,8 +29,8 @@ describe("QueryKeys",
 						const key: readonly unknown[] =
 							QueryKeys.logs.paged(filter);
 						expect(key)
-						.toEqual(
-							["logs", filter]);
+							.toEqual(
+								["logs", filter]);
 					});
 
 				it("should generate correct count key with filter",
@@ -41,8 +41,8 @@ describe("QueryKeys",
 						const key: readonly unknown[] =
 							QueryKeys.logs.count(filter);
 						expect(key)
-						.toEqual(
-							["logs", "count", filter]);
+							.toEqual(
+								["logs", "count", filter]);
 					});
 			});
 
@@ -55,8 +55,8 @@ describe("QueryKeys",
 						const key: readonly string[] =
 							QueryKeys.users.all;
 						expect(key)
-						.toEqual(
-							["users"]);
+							.toEqual(
+								["users"]);
 					});
 
 				it("should generate correct paged key with filter",
@@ -67,8 +67,8 @@ describe("QueryKeys",
 						const key: readonly unknown[] =
 							QueryKeys.users.paged(filter);
 						expect(key)
-						.toEqual(
-							["users", "paged", filter]);
+							.toEqual(
+								["users", "paged", filter]);
 					});
 
 				it("should generate correct single key with number id",
@@ -77,8 +77,8 @@ describe("QueryKeys",
 						const key: readonly unknown[] =
 							QueryKeys.users.single(123);
 						expect(key)
-						.toEqual(
-							["users", "user", 123]);
+							.toEqual(
+								["users", "user", 123]);
 					});
 
 				it("should generate correct single key with string id",
@@ -87,8 +87,8 @@ describe("QueryKeys",
 						const key: readonly unknown[] =
 							QueryKeys.users.single("abc");
 						expect(key)
-						.toEqual(
-							["users", "user", "abc"]);
+							.toEqual(
+								["users", "user", "abc"]);
 					});
 
 				it("should generate correct byUsername key",
@@ -97,8 +97,8 @@ describe("QueryKeys",
 						const key: readonly unknown[] =
 							QueryKeys.users.byUsername("testuser");
 						expect(key)
-						.toEqual(
-							["users", "username", "testuser"]);
+							.toEqual(
+								["users", "username", "testuser"]);
 					});
 			});
 
@@ -115,9 +115,9 @@ describe("QueryKeys",
 							QueryKeys.users.all;
 
 						expect(logsAll)
-						.toBeDefined();
+							.toBeDefined();
 						expect(usersAll)
-						.toBeDefined();
+							.toBeDefined();
 					});
 			});
 	});

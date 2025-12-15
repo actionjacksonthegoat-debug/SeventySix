@@ -43,7 +43,7 @@ describe("ApiService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("GET requests",
@@ -60,20 +60,20 @@ describe("ApiService",
 						const endpoint: string = "test";
 
 						service
-						.get<typeof testData>(endpoint)
-						.subscribe(
-							(data: typeof testData) =>
-							{
-								expect(data)
-								.toEqual(testData);
-							});
+							.get<typeof testData>(endpoint)
+							.subscribe(
+								(data: typeof testData) =>
+								{
+									expect(data)
+										.toEqual(testData);
+								});
 
 						const req: import("@angular/common/http/testing").TestRequest =
 							httpMock.expectOne(
 								`${baseUrl}/${endpoint}`);
 
 						expect(req.request.method)
-						.toBe("GET");
+							.toBe("GET");
 						req.flush(testData);
 					});
 
@@ -88,25 +88,25 @@ describe("ApiService",
 						const endpoint: string = "test";
 						const params: HttpParams =
 							new HttpParams()
-							.set("key", "value");
+								.set("key", "value");
 
 						service
-						.get<typeof testData>(endpoint, params)
-						.subscribe(
-							(data: typeof testData) =>
-							{
-								expect(data)
-								.toEqual(testData);
-							});
+							.get<typeof testData>(endpoint, params)
+							.subscribe(
+								(data: typeof testData) =>
+								{
+									expect(data)
+										.toEqual(testData);
+								});
 
 						const req: import("@angular/common/http/testing").TestRequest =
 							httpMock.expectOne(
 								`${baseUrl}/${endpoint}?key=value`);
 
 						expect(req.request.method)
-						.toBe("GET");
+							.toBe("GET");
 						expect(req.request.params.get("key"))
-						.toBe("value");
+							.toBe("value");
 						req.flush(testData);
 					});
 			});
@@ -124,23 +124,23 @@ describe("ApiService",
 						const endpoint: string = "test";
 
 						service
-						.post(endpoint, testData)
-						.subscribe(
-							{
-								next(data: unknown)
+							.post(endpoint, testData)
+							.subscribe(
 								{
-									expect(data)
-									.toEqual(testData);
-								}
-							});
+									next(data: unknown)
+									{
+										expect(data)
+											.toEqual(testData);
+									}
+								});
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
 
 						expect(request.request.method)
-						.toBe("POST");
+							.toBe("POST");
 						expect(request.request.body)
-						.toEqual(testData);
+							.toEqual(testData);
 						request.flush(testData);
 					});
 			});
@@ -159,21 +159,21 @@ describe("ApiService",
 						const endpoint: string = "test/1";
 
 						service
-						.put<typeof testData>(endpoint, testData)
-						.subscribe(
-							(data: { id: number; name: string; }) =>
-							{
-								expect(data)
-								.toEqual(testData);
-							});
+							.put<typeof testData>(endpoint, testData)
+							.subscribe(
+								(data: { id: number; name: string; }) =>
+								{
+									expect(data)
+										.toEqual(testData);
+								});
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
 
 						expect(request.request.method)
-						.toBe("PUT");
+							.toBe("PUT");
 						expect(request.request.body)
-						.toEqual(testData);
+							.toEqual(testData);
 						request.flush(testData);
 					});
 			});
@@ -191,21 +191,21 @@ describe("ApiService",
 						const endpoint: string = "test/1";
 
 						service
-						.patch<typeof testData>(endpoint, testData)
-						.subscribe(
-							(data: { name: string; }) =>
-							{
-								expect(data)
-								.toEqual(testData);
-							});
+							.patch<typeof testData>(endpoint, testData)
+							.subscribe(
+								(data: { name: string; }) =>
+								{
+									expect(data)
+										.toEqual(testData);
+								});
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
 
 						expect(request.request.method)
-						.toBe("PATCH");
+							.toBe("PATCH");
 						expect(request.request.body)
-						.toEqual(testData);
+							.toEqual(testData);
 						request.flush(testData);
 					});
 			});
@@ -223,21 +223,21 @@ describe("ApiService",
 							};
 
 						service
-						.delete<{
+							.delete<{
 							success: boolean;
 						}>(endpoint)
-						.subscribe(
-							(data: { success: boolean; }) =>
-							{
-								expect(data)
-								.toEqual(response);
-							});
+							.subscribe(
+								(data: { success: boolean; }) =>
+								{
+									expect(data)
+										.toEqual(response);
+								});
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
 
 						expect(request.request.method)
-						.toBe("DELETE");
+							.toBe("DELETE");
 						request.flush(response);
 					});
 			});
@@ -255,15 +255,15 @@ describe("ApiService",
 							};
 
 						service
-						.get<typeof testData>(endpoint)
-						.subscribe();
+							.get<typeof testData>(endpoint)
+							.subscribe();
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
 
 						expect(request.request.headers.get("Content-Type"))
-						.toBe(
-							"application/json");
+							.toBe(
+								"application/json");
 						request.flush(testData);
 					});
 
@@ -282,18 +282,18 @@ describe("ApiService",
 
 						service.addHeaders(customHeaders);
 						service
-						.get<typeof testData>(endpoint)
-						.subscribe();
+							.get<typeof testData>(endpoint)
+							.subscribe();
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
 
 						expect(request.request.headers.get("Authorization"))
-						.toBe(
-							"Bearer token");
+							.toBe(
+								"Bearer token");
 						expect(request.request.headers.get("Content-Type"))
-						.toBe(
-							"application/json");
+							.toBe(
+								"application/json");
 						request.flush(testData);
 					});
 			});
@@ -313,19 +313,19 @@ describe("ApiService",
 								});
 
 						service
-						.get(endpoint)
-						.subscribe(
-							{
-								next: () =>
-									fail("should have failed with error"),
-								error: (error: Error) =>
+							.get(endpoint)
+							.subscribe(
 								{
-									expect(error.message)
-									.toContain("Client-side error");
-									expect(error.message)
-									.toContain(errorMessage);
-								}
-							});
+									next: () =>
+										fail("should have failed with error"),
+									error: (error: Error) =>
+									{
+										expect(error.message)
+											.toContain("Client-side error");
+										expect(error.message)
+											.toContain(errorMessage);
+									}
+								});
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
@@ -341,19 +341,19 @@ describe("ApiService",
 						const errorStatusText: string = "Not Found";
 
 						service
-						.get(endpoint)
-						.subscribe(
-							{
-								next: () =>
-									fail("should have failed with error"),
-								error: (error: Error) =>
+							.get(endpoint)
+							.subscribe(
 								{
-									expect(error.message)
-									.toContain("Server-side error");
-									expect(error.message)
-									.toContain(errorStatus.toString());
-								}
-							});
+									next: () =>
+										fail("should have failed with error"),
+									error: (error: Error) =>
+									{
+										expect(error.message)
+											.toContain("Server-side error");
+										expect(error.message)
+											.toContain(errorStatus.toString());
+									}
+								});
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
@@ -373,19 +373,19 @@ describe("ApiService",
 							{ name: "Test" };
 
 						service
-						.post(endpoint, testData)
-						.subscribe(
-							{
-								next: () =>
-									fail("should have failed with error"),
-								error: (error: Error) =>
+							.post(endpoint, testData)
+							.subscribe(
 								{
-									expect(error.message)
-									.toContain("Server-side error");
-									expect(error.message)
-									.toContain("500");
-								}
-							});
+									next: () =>
+										fail("should have failed with error"),
+									error: (error: Error) =>
+									{
+										expect(error.message)
+											.toContain("Server-side error");
+										expect(error.message)
+											.toContain("500");
+									}
+								});
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
@@ -405,17 +405,17 @@ describe("ApiService",
 							{ id: 1, name: "Test" };
 
 						service
-						.put(endpoint, testData)
-						.subscribe(
-							{
-								next: () =>
-									fail("should have failed with error"),
-								error: (error: Error) =>
+							.put(endpoint, testData)
+							.subscribe(
 								{
-									expect(error.message)
-									.toContain("Server-side error");
-								}
-							});
+									next: () =>
+										fail("should have failed with error"),
+									error: (error: Error) =>
+									{
+										expect(error.message)
+											.toContain("Server-side error");
+									}
+								});
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
@@ -435,17 +435,17 @@ describe("ApiService",
 							{ name: "Updated" };
 
 						service
-						.patch(endpoint, testData)
-						.subscribe(
-							{
-								next: () =>
-									fail("should have failed with error"),
-								error: (error: Error) =>
+							.patch(endpoint, testData)
+							.subscribe(
 								{
-									expect(error.message)
-									.toContain("Server-side error");
-								}
-							});
+									next: () =>
+										fail("should have failed with error"),
+									error: (error: Error) =>
+									{
+										expect(error.message)
+											.toContain("Server-side error");
+									}
+								});
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);
@@ -463,17 +463,17 @@ describe("ApiService",
 						const endpoint: string = "test/1";
 
 						service
-						.delete(endpoint)
-						.subscribe(
-							{
-								next: () =>
-									fail("should have failed with error"),
-								error: (error: Error) =>
+							.delete(endpoint)
+							.subscribe(
 								{
-									expect(error.message)
-									.toContain("Server-side error");
-								}
-							});
+									next: () =>
+										fail("should have failed with error"),
+									error: (error: Error) =>
+									{
+										expect(error.message)
+											.toContain("Server-side error");
+									}
+								});
 
 						const request: TestRequest =
 							httpMock.expectOne(`${baseUrl}/${endpoint}`);

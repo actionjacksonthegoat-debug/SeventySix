@@ -32,18 +32,18 @@ describe("SidebarComponent",
 
 				fixture =
 					await new ComponentTestBed<SidebarComponent>()
-					.withProvider(provideRouter([]))
-					.withProvider(
-						{
-							provide: LayoutService,
-							useValue: mockLayoutService
-						})
-					.withProvider(
-						{
-							provide: AuthService,
-							useValue: mockAuthService
-						})
-					.build(SidebarComponent);
+						.withProvider(provideRouter([]))
+						.withProvider(
+							{
+								provide: LayoutService,
+								useValue: mockLayoutService
+							})
+						.withProvider(
+							{
+								provide: AuthService,
+								useValue: mockAuthService
+							})
+						.build(SidebarComponent);
 
 				component =
 					fixture.componentInstance;
@@ -54,16 +54,16 @@ describe("SidebarComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should have navigation sections",
 			() =>
 			{
 				expect(component["visibleNavSections"]())
-				.toBeDefined();
+					.toBeDefined();
 				expect(component["visibleNavSections"]().length)
-				.toBeGreaterThan(0);
+					.toBeGreaterThan(0);
 			});
 
 		it("should close sidebar",
@@ -71,8 +71,8 @@ describe("SidebarComponent",
 			{
 				component.closeSidebar();
 				expect(mockLayoutService.setSidebarExpanded)
-				.toHaveBeenCalledWith(
-					false);
+					.toHaveBeenCalledWith(
+						false);
 			});
 
 		it("should toggle sidebar on mobile when nav item clicked",
@@ -83,7 +83,7 @@ describe("SidebarComponent",
 				component.closeSidebarOnMobile();
 
 				expect(mockLayoutService.toggleSidebar)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		it("should not toggle sidebar on desktop when nav item clicked",
@@ -115,7 +115,7 @@ describe("SidebarComponent",
 								(s: { title: string; }) => s.title);
 
 						expect(sectionTitles)
-						.toContain("Main");
+							.toContain("Main");
 						expect(sectionTitles).not.toContain("Developer");
 						expect(sectionTitles).not.toContain("Management");
 					});
@@ -144,9 +144,9 @@ describe("SidebarComponent",
 								(s: { title: string; }) => s.title);
 
 						expect(sectionTitles)
-						.toContain("Main");
+							.toContain("Main");
 						expect(sectionTitles)
-						.toContain("Developer");
+							.toContain("Developer");
 						expect(sectionTitles).not.toContain("Management");
 					});
 
@@ -174,11 +174,11 @@ describe("SidebarComponent",
 								(s: { title: string; }) => s.title);
 
 						expect(sectionTitles)
-						.toContain("Main");
+							.toContain("Main");
 						expect(sectionTitles)
-						.toContain("Developer");
+							.toContain("Developer");
 						expect(sectionTitles)
-						.toContain("Management");
+							.toContain("Management");
 					});
 
 				it("should update visible sections when user logs in",
@@ -189,7 +189,7 @@ describe("SidebarComponent",
 						let sections: { title: string; }[] =
 							component["visibleNavSections"]();
 						expect(sections.length)
-						.toBe(1); // Only Main
+							.toBe(1); // Only Main
 
 						// Act - log in as admin
 						mockAuthService.setUser(
@@ -210,11 +210,11 @@ describe("SidebarComponent",
 								(s: { title: string; }) => s.title);
 
 						expect(sectionTitles)
-						.toContain("Main");
+							.toContain("Main");
 						expect(sectionTitles)
-						.toContain("Developer");
+							.toContain("Developer");
 						expect(sectionTitles)
-						.toContain("Management");
+							.toContain("Management");
 					});
 
 				it("should update visible sections when user logs out",
@@ -233,7 +233,7 @@ describe("SidebarComponent",
 						let sections: { title: string; }[] =
 							component["visibleNavSections"]();
 						expect(sections.length)
-						.toBe(3); // All sections
+							.toBe(3); // All sections
 
 						// Act - log out
 						mockAuthService.setUser(null);
@@ -247,7 +247,7 @@ describe("SidebarComponent",
 								(s: { title: string; }) => s.title);
 
 						expect(sectionTitles)
-						.toContain("Main");
+							.toContain("Main");
 						expect(sectionTitles).not.toContain("Developer");
 						expect(sectionTitles).not.toContain("Management");
 					});
@@ -276,11 +276,11 @@ describe("SidebarComponent",
 								(s: { title: string; }) => s.title);
 
 						expect(sectionTitles)
-						.toContain("Main");
+							.toContain("Main");
 						expect(sectionTitles)
-						.toContain("Developer");
+							.toContain("Developer");
 						expect(sectionTitles)
-						.toContain("Management");
+							.toContain("Management");
 					});
 			});
 	});

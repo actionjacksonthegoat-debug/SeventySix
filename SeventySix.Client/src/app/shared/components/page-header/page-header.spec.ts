@@ -9,12 +9,12 @@ describe("PageHeaderComponent",
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [PageHeaderComponent],
-						providers: [provideZonelessChangeDetection()]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [PageHeaderComponent],
+							providers: [provideZonelessChangeDetection()]
+						})
+					.compileComponents();
 			});
 
 		it("should display title",
@@ -27,7 +27,7 @@ describe("PageHeaderComponent",
 				fixture.detectChanges();
 
 				expect(fixture.nativeElement.textContent)
-				.toContain("Test Title");
+					.toContain("Test Title");
 			});
 
 		it("should display icon when provided",
@@ -43,6 +43,6 @@ describe("PageHeaderComponent",
 				const icon: HTMLElement | null =
 					fixture.nativeElement.querySelector("mat-icon");
 				expect(icon)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 	});

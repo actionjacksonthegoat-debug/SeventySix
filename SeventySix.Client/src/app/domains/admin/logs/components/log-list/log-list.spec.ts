@@ -64,13 +64,13 @@ describe("LogList",
 
 				fixture =
 					await new ComponentTestBed<LogList>()
-					.withAdminDefaults()
-					.withProvider(
-						{
-							provide: LogManagementService,
-							useValue: mockLogService
-						})
-					.build(LogList);
+						.withAdminDefaults()
+						.withProvider(
+							{
+								provide: LogManagementService,
+								useValue: mockLogService
+							})
+						.build(LogList);
 
 				component =
 					fixture.componentInstance;
@@ -81,7 +81,7 @@ describe("LogList",
 			{
 				fixture.detectChanges();
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should define column configuration",
@@ -89,13 +89,13 @@ describe("LogList",
 			{
 				fixture.detectChanges();
 				expect(component.columns)
-				.toBeDefined();
+					.toBeDefined();
 				expect(component.columns.length as number)
-				.toBe(6);
+					.toBe(6);
 				expect(component.columns[0].key as string)
-				.toBe("logLevel");
+					.toBe("logLevel");
 				expect(component.columns[1].key as string)
-				.toBe("createDate");
+					.toBe("createDate");
 			});
 
 		it("should define quick filters",
@@ -103,15 +103,15 @@ describe("LogList",
 			{
 				fixture.detectChanges();
 				expect(component.quickFilters)
-				.toBeDefined();
+					.toBeDefined();
 				expect(component.quickFilters.length as number)
-				.toBe(3);
+					.toBe(3);
 				expect(component.quickFilters[0].key as string)
-				.toBe("all");
+					.toBe("all");
 				expect(component.quickFilters[1].key as string)
-				.toBe("warnings");
+					.toBe("warnings");
 				expect(component.quickFilters[2].key as string)
-				.toBe("errors");
+					.toBe("errors");
 			});
 
 		it("should define row actions",
@@ -119,11 +119,11 @@ describe("LogList",
 			{
 				fixture.detectChanges();
 				expect(component.rowActions)
-				.toBeDefined();
+					.toBeDefined();
 				expect(component.rowActions.length as number)
-				.toBe(1);
+					.toBe(1);
 				expect(component.rowActions[0].key as string)
-				.toBe("delete");
+					.toBe("delete");
 			});
 
 		it("should define bulk actions",
@@ -131,10 +131,10 @@ describe("LogList",
 			{
 				fixture.detectChanges();
 				expect(component.bulkActions)
-				.toBeDefined();
+					.toBeDefined();
 				expect(component.bulkActions.length as number)
-				.toBe(1);
+					.toBe(1);
 				expect(component.bulkActions[0].key as string)
-				.toBe("delete");
+					.toBe("delete");
 			});
 	});

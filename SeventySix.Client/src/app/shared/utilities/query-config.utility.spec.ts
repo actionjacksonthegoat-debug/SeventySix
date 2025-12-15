@@ -11,11 +11,11 @@ describe("getQueryConfig",
 					getQueryConfig("users");
 
 				expect(config.staleTime)
-				.toBe(environment.cache.query.users.staleTime);
+					.toBe(environment.cache.query.users.staleTime);
 				expect(config.gcTime)
-				.toBe(environment.cache.query.users.gcTime);
+					.toBe(environment.cache.query.users.gcTime);
 				expect(config.retry)
-				.toBe(environment.cache.query.users.retry);
+					.toBe(environment.cache.query.users.retry);
 			});
 
 		it("should return logs-specific config",
@@ -25,11 +25,11 @@ describe("getQueryConfig",
 					getQueryConfig("logs");
 
 				expect(config.staleTime)
-				.toBe(environment.cache.query.logs.staleTime);
+					.toBe(environment.cache.query.logs.staleTime);
 				expect(config.gcTime)
-				.toBe(environment.cache.query.logs.gcTime);
+					.toBe(environment.cache.query.logs.gcTime);
 				expect(config.retry)
-				.toBe(environment.cache.query.logs.retry);
+					.toBe(environment.cache.query.logs.retry);
 			});
 
 		it("should return health-specific config",
@@ -39,11 +39,11 @@ describe("getQueryConfig",
 					getQueryConfig("health");
 
 				expect(config.staleTime)
-				.toBe(environment.cache.query.health.staleTime);
+					.toBe(environment.cache.query.health.staleTime);
 				expect(config.gcTime)
-				.toBe(environment.cache.query.health.gcTime);
+					.toBe(environment.cache.query.health.gcTime);
 				expect(config.retry)
-				.toBe(environment.cache.query.health.retry);
+					.toBe(environment.cache.query.health.retry);
 			});
 
 		it("should return default config for unknown resource",
@@ -53,12 +53,12 @@ describe("getQueryConfig",
 					getQueryConfig("unknown");
 
 				expect(config.staleTime)
-				.toBe(
-					environment.cache.query.default.staleTime);
+					.toBe(
+						environment.cache.query.default.staleTime);
 				expect(config.gcTime)
-				.toBe(environment.cache.query.default.gcTime);
+					.toBe(environment.cache.query.default.gcTime);
 				expect(config.retry)
-				.toBe(environment.cache.query.default.retry);
+					.toBe(environment.cache.query.default.retry);
 			});
 
 		it("should handle empty string as unknown resource",
@@ -68,12 +68,12 @@ describe("getQueryConfig",
 					getQueryConfig("");
 
 				expect(config.staleTime)
-				.toBe(
-					environment.cache.query.default.staleTime);
+					.toBe(
+						environment.cache.query.default.staleTime);
 				expect(config.gcTime)
-				.toBe(environment.cache.query.default.gcTime);
+					.toBe(environment.cache.query.default.gcTime);
 				expect(config.retry)
-				.toBe(environment.cache.query.default.retry);
+					.toBe(environment.cache.query.default.retry);
 			});
 
 		it("should return complete QueryOptions object",
@@ -83,16 +83,16 @@ describe("getQueryConfig",
 					getQueryConfig("users");
 
 				expect(config.staleTime)
-				.toBeDefined();
+					.toBeDefined();
 				expect(config.gcTime)
-				.toBeDefined();
+					.toBeDefined();
 				expect(config.retry)
-				.toBeDefined();
+					.toBeDefined();
 				expect(typeof config.staleTime)
-				.toBe("number");
+					.toBe("number");
 				expect(typeof config.gcTime)
-				.toBe("number");
+					.toBe("number");
 				expect(typeof config.retry)
-				.toBe("number");
+					.toBe("number");
 			});
 	});

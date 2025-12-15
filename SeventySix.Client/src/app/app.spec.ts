@@ -37,17 +37,17 @@ describe("App",
 					createMockAuthService();
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [App],
-						providers: [
-							provideZonelessChangeDetection(),
-							{ provide: ActivatedRoute, useValue: mockActivatedRoute },
-							{ provide: LayoutService, useValue: mockLayoutService },
-							{ provide: AuthService, useValue: mockAuthService }
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [App],
+							providers: [
+								provideZonelessChangeDetection(),
+								{ provide: ActivatedRoute, useValue: mockActivatedRoute },
+								{ provide: LayoutService, useValue: mockLayoutService },
+								{ provide: AuthService, useValue: mockAuthService }
+							]
+						})
+					.compileComponents();
 			});
 
 		it("should create the app",
@@ -59,7 +59,7 @@ describe("App",
 					fixture.componentInstance;
 
 				expect(app)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should render title",
@@ -76,7 +76,7 @@ describe("App",
 				const mainContent: Element | null =
 					compiled.querySelector("#main-content");
 				expect(mainContent)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("onSwipeLeft",
@@ -97,7 +97,7 @@ describe("App",
 						app.onSwipeLeft();
 
 						expect(mockLayoutService.closeSidebar)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 
 				it("should NOT close sidebar when in overlay mode but sidebar is collapsed",
@@ -153,7 +153,7 @@ describe("App",
 						app.onSwipeRight();
 
 						expect(mockLayoutService.openSidebar)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 
 				it("should NOT open sidebar when in overlay mode but sidebar is already expanded",
@@ -205,7 +205,7 @@ describe("App",
 						app.onBackdropClick();
 
 						expect(mockLayoutService.closeSidebar)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 	});

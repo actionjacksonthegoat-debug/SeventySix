@@ -1,10 +1,10 @@
-import { TestBed } from "@angular/core/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
-import {
-	UserPreferencesService,
-	UserListPreferences
-} from "./user-preferences.service";
+import { TestBed } from "@angular/core/testing";
 import { StorageService } from "@shared/services";
+import {
+	UserListPreferences,
+	UserPreferencesService
+} from "./user-preferences.service";
 
 describe("UserPreferencesService",
 	() =>
@@ -58,7 +58,7 @@ describe("UserPreferencesService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("loadPreferences",
@@ -75,8 +75,10 @@ describe("UserPreferencesService",
 								statusFilter: "active",
 								chartExpanded: false
 							};
-						mockStorageService.getItem
-						.and.returnValue(storedPreferences);
+						mockStorageService
+							.getItem
+							.and
+							.returnValue(storedPreferences);
 
 						// Act
 						const result: UserListPreferences =
@@ -84,17 +86,19 @@ describe("UserPreferencesService",
 
 						// Assert
 						expect(result)
-						.toEqual(storedPreferences);
+							.toEqual(storedPreferences);
 						expect(mockStorageService.getItem)
-						.toHaveBeenCalledWith("user-list-preferences");
+							.toHaveBeenCalledWith("user-list-preferences");
 					});
 
 				it("should return default preferences when storage is empty",
 					() =>
 					{
 						// Arrange
-						mockStorageService.getItem
-						.and.returnValue(null);
+						mockStorageService
+							.getItem
+							.and
+							.returnValue(null);
 
 						// Act
 						const result: UserListPreferences =
@@ -102,7 +106,7 @@ describe("UserPreferencesService",
 
 						// Assert
 						expect(result)
-						.toEqual(defaultPreferences);
+							.toEqual(defaultPreferences);
 					});
 			});
 
@@ -126,9 +130,9 @@ describe("UserPreferencesService",
 
 						// Assert
 						expect(mockStorageService.setItem)
-						.toHaveBeenCalledWith(
-							"user-list-preferences",
-							preferences);
+							.toHaveBeenCalledWith(
+								"user-list-preferences",
+								preferences);
 					});
 			});
 
@@ -143,7 +147,7 @@ describe("UserPreferencesService",
 
 						// Assert
 						expect(mockStorageService.removeItem)
-						.toHaveBeenCalledWith("user-list-preferences");
+							.toHaveBeenCalledWith("user-list-preferences");
 					});
 			});
 
@@ -154,9 +158,11 @@ describe("UserPreferencesService",
 					() =>
 					{
 						// Arrange
-						mockStorageService.getItem
-						.and.returnValue(
-							{ ...defaultPreferences });
+						mockStorageService
+							.getItem
+							.and
+							.returnValue(
+								{ ...defaultPreferences });
 
 						// Act
 						service.updatePreference(
@@ -165,10 +171,10 @@ describe("UserPreferencesService",
 
 						// Assert
 						expect(mockStorageService.setItem)
-						.toHaveBeenCalledWith(
-							"user-list-preferences",
-							jasmine.objectContaining(
-								{ chartExpanded: false }));
+							.toHaveBeenCalledWith(
+								"user-list-preferences",
+								jasmine.objectContaining(
+									{ chartExpanded: false }));
 					});
 			});
 	});

@@ -55,21 +55,21 @@ describe("PermissionRequestListPage",
 						refetch: jasmine.createSpy("refetch")
 					}),
 				approveRequest: jasmine
-				.createSpy("approveRequest")
-				.and
-				.returnValue(mockApproveMutation),
+					.createSpy("approveRequest")
+					.and
+					.returnValue(mockApproveMutation),
 				rejectRequest: jasmine
-				.createSpy("rejectRequest")
-				.and
-				.returnValue(mockRejectMutation),
+					.createSpy("rejectRequest")
+					.and
+					.returnValue(mockRejectMutation),
 				bulkApproveRequests: jasmine
-				.createSpy("bulkApproveRequests")
-				.and
-				.returnValue(mockBulkApproveMutation),
+					.createSpy("bulkApproveRequests")
+					.and
+					.returnValue(mockBulkApproveMutation),
 				bulkRejectRequests: jasmine
-				.createSpy("bulkRejectRequests")
-				.and
-				.returnValue(mockBulkRejectMutation)
+					.createSpy("bulkRejectRequests")
+					.and
+					.returnValue(mockBulkRejectMutation)
 			};
 
 		beforeEach(
@@ -82,13 +82,13 @@ describe("PermissionRequestListPage",
 
 				fixture =
 					await new ComponentTestBed<PermissionRequestListPage>()
-					.withAdminDefaults()
-					.withProvider(
-						{
-							provide: PermissionRequestService,
-							useValue: mockService
-						})
-					.build(PermissionRequestListPage);
+						.withAdminDefaults()
+						.withProvider(
+							{
+								provide: PermissionRequestService,
+								useValue: mockService
+							})
+						.build(PermissionRequestListPage);
 				component =
 					fixture.componentInstance;
 				fixture.detectChanges();
@@ -98,7 +98,7 @@ describe("PermissionRequestListPage",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should render page header",
@@ -107,7 +107,7 @@ describe("PermissionRequestListPage",
 				const header: HTMLElement | null =
 					fixture.nativeElement.querySelector("app-page-header");
 				expect(header)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should render data table",
@@ -116,7 +116,7 @@ describe("PermissionRequestListPage",
 				const dataTable: HTMLElement | null =
 					fixture.nativeElement.querySelector("app-data-table");
 				expect(dataTable)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should call approve mutation on row action approve",
@@ -131,7 +131,7 @@ describe("PermissionRequestListPage",
 				component.onRowAction(event);
 
 				expect(mockApproveMutation.mutate)
-				.toHaveBeenCalledWith(1);
+					.toHaveBeenCalledWith(1);
 			});
 
 		it("should call reject mutation on row action reject",
@@ -146,6 +146,6 @@ describe("PermissionRequestListPage",
 				component.onRowAction(event);
 
 				expect(mockRejectMutation.mutate)
-				.toHaveBeenCalledWith(1);
+					.toHaveBeenCalledWith(1);
 			});
 	});

@@ -12,12 +12,12 @@ describe("FooterComponent",
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [FooterComponent],
-						providers: [provideZonelessChangeDetection()]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [FooterComponent],
+							providers: [provideZonelessChangeDetection()]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(FooterComponent);
@@ -30,7 +30,7 @@ describe("FooterComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should have current year",
@@ -38,17 +38,17 @@ describe("FooterComponent",
 			{
 				const currentYear: number =
 					new Date()
-					.getFullYear();
+						.getFullYear();
 				expect(component["currentYear"])
-				.toBe(currentYear);
+					.toBe(currentYear);
 			});
 
 		it("should have version",
 			() =>
 			{
 				expect(component["version"])
-				.toBeDefined();
+					.toBeDefined();
 				expect(typeof component["version"])
-				.toBe("string");
+					.toBe("string");
 			});
 	});

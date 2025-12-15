@@ -27,17 +27,17 @@ describe("StyleGuideComponent",
 					createMockDialog();
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [StyleGuideComponent],
-						providers: [
-							provideZonelessChangeDetection(),
-							{ provide: ThemeService, useValue: mockThemeService },
-							{ provide: MatSnackBar, useValue: mockSnackBar },
-							{ provide: MatDialog, useValue: mockDialog }
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [StyleGuideComponent],
+							providers: [
+								provideZonelessChangeDetection(),
+								{ provide: ThemeService, useValue: mockThemeService },
+								{ provide: MatSnackBar, useValue: mockSnackBar },
+								{ provide: MatDialog, useValue: mockDialog }
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(StyleGuideComponent);
@@ -50,6 +50,6 @@ describe("StyleGuideComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 	});

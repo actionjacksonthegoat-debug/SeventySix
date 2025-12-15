@@ -46,7 +46,7 @@ describe("ContentHelper",
 						// Assert
 						// 1000 viewport - 64 header - 52 breadcrumb - 48 footer = 836
 						expect(result)
-						.toBe(836);
+							.toBe(836);
 					});
 
 				it("should calculate available height with offset",
@@ -68,7 +68,7 @@ describe("ContentHelper",
 						// Assert
 						// 1000 viewport - 64 header - 52 breadcrumb - 48 footer - 72 offset = 764
 						expect(result)
-						.toBe(764);
+							.toBe(764);
 					});
 
 				it("should return 0 when calculated height is negative",
@@ -90,7 +90,7 @@ describe("ContentHelper",
 						// Assert
 						// Should never return negative values
 						expect(result)
-						.toBe(0);
+							.toBe(0);
 					});
 
 				it("should handle zero offset (default parameter)",
@@ -111,7 +111,7 @@ describe("ContentHelper",
 						// Assert
 						// 800 viewport - 64 header - 52 breadcrumb - 48 footer = 636
 						expect(result)
-						.toBe(636);
+							.toBe(636);
 					});
 
 				it("should handle typical desktop viewport (1920x1080)",
@@ -132,7 +132,7 @@ describe("ContentHelper",
 						// Assert
 						// 1080 viewport - 64 header - 52 breadcrumb - 48 footer - 56 paginator = 860
 						expect(result)
-						.toBe(860);
+							.toBe(860);
 					});
 
 				it("should handle typical mobile viewport (375x667)",
@@ -153,7 +153,7 @@ describe("ContentHelper",
 						// Assert
 						// 667 viewport - 64 header - 52 breadcrumb - 48 footer - 56 paginator = 447
 						expect(result)
-						.toBe(447);
+							.toBe(447);
 					});
 			});
 
@@ -164,28 +164,28 @@ describe("ContentHelper",
 					() =>
 					{
 						expect(LayoutDimensions.headerHeight)
-						.toBe(64);
+							.toBe(64);
 					});
 
 				it("should expose correct breadcrumb height",
 					() =>
 					{
 						expect(LayoutDimensions.breadcrumbHeight)
-						.toBe(52);
+							.toBe(52);
 					});
 
 				it("should expose correct footer height",
 					() =>
 					{
 						expect(LayoutDimensions.footerHeight)
-						.toBe(48);
+							.toBe(48);
 					});
 
 				it("should expose correct total fixed height",
 					() =>
 					{
 						expect(LayoutDimensions.totalFixedHeight)
-						.toBe(164); // 64 + 52 + 48
+							.toBe(164); // 64 + 52 + 48
 					});
 
 				it("should have immutable properties",
@@ -194,13 +194,13 @@ describe("ContentHelper",
 						// Verify the const assertion works by checking values are as expected
 						// TypeScript enforces readonly at compile time
 						expect(LayoutDimensions.headerHeight)
-						.toBe(64);
+							.toBe(64);
 						expect(LayoutDimensions.breadcrumbHeight)
-						.toBe(52);
+							.toBe(52);
 						expect(LayoutDimensions.footerHeight)
-						.toBe(48);
+							.toBe(48);
 						expect(LayoutDimensions.totalFixedHeight)
-						.toBe(164);
+							.toBe(164);
 					});
 			});
 	});

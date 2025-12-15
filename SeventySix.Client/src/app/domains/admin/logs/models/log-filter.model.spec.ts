@@ -33,9 +33,9 @@ describe("Log Filter Model",
 							Date.now();
 
 						expect(result.endDate)
-						.toBeDefined();
+							.toBeDefined();
 						expect(result.startDate)
-						.toBeDefined();
+							.toBeDefined();
 
 						if (result.startDate && result.endDate)
 						{
@@ -43,11 +43,11 @@ describe("Log Filter Model",
 								(result.endDate.getTime() - result.startDate.getTime())
 									/ (1000 * 60 * 60);
 							expect(hourDiff)
-							.toBeCloseTo(1, 0);
+								.toBeCloseTo(1, 0);
 							expect(result.endDate.getTime())
-							.toBeGreaterThanOrEqual(before);
+								.toBeGreaterThanOrEqual(before);
 							expect(result.endDate.getTime())
-							.toBeLessThanOrEqual(after);
+								.toBeLessThanOrEqual(after);
 						}
 					});
 
@@ -60,9 +60,9 @@ describe("Log Filter Model",
 								dateService);
 
 						expect(result.endDate)
-						.toBeDefined();
+							.toBeDefined();
 						expect(result.startDate)
-						.toBeDefined();
+							.toBeDefined();
 
 						if (result.startDate && result.endDate)
 						{
@@ -70,7 +70,7 @@ describe("Log Filter Model",
 								(result.endDate.getTime() - result.startDate.getTime())
 									/ (1000 * 60 * 60);
 							expect(hourDiff)
-							.toBeCloseTo(6, 0);
+								.toBeCloseTo(6, 0);
 						}
 					});
 
@@ -83,9 +83,9 @@ describe("Log Filter Model",
 								dateService);
 
 						expect(result.endDate)
-						.toBeDefined();
+							.toBeDefined();
 						expect(result.startDate)
-						.toBeDefined();
+							.toBeDefined();
 
 						if (result.startDate && result.endDate)
 						{
@@ -93,7 +93,7 @@ describe("Log Filter Model",
 								(result.endDate.getTime() - result.startDate.getTime())
 									/ (1000 * 60 * 60);
 							expect(hourDiff)
-							.toBeCloseTo(24, 0);
+								.toBeCloseTo(24, 0);
 						}
 					});
 
@@ -106,9 +106,9 @@ describe("Log Filter Model",
 								dateService);
 
 						expect(result.endDate)
-						.toBeDefined();
+							.toBeDefined();
 						expect(result.startDate)
-						.toBeDefined();
+							.toBeDefined();
 
 						if (result.startDate && result.endDate)
 						{
@@ -116,7 +116,7 @@ describe("Log Filter Model",
 								(result.endDate.getTime() - result.startDate.getTime())
 									/ (1000 * 60 * 60 * 24);
 							expect(dayDiff)
-							.toBeCloseTo(7, 0);
+								.toBeCloseTo(7, 0);
 						}
 					});
 
@@ -129,9 +129,9 @@ describe("Log Filter Model",
 								dateService);
 
 						expect(result.endDate)
-						.toBeDefined();
+							.toBeDefined();
 						expect(result.startDate)
-						.toBeDefined();
+							.toBeDefined();
 
 						if (result.startDate && result.endDate)
 						{
@@ -139,7 +139,7 @@ describe("Log Filter Model",
 								(result.endDate.getTime() - result.startDate.getTime())
 									/ (1000 * 60 * 60 * 24);
 							expect(dayDiff)
-							.toBeCloseTo(30, 0);
+								.toBeCloseTo(30, 0);
 						}
 					});
 
@@ -152,9 +152,9 @@ describe("Log Filter Model",
 								dateService);
 
 						expect(result.startDate)
-						.toBeNull();
+							.toBeNull();
 						expect(result.endDate)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should return null dates for invalid preset",
@@ -166,9 +166,9 @@ describe("Log Filter Model",
 								dateService);
 
 						expect(result.startDate)
-						.toBeNull();
+							.toBeNull();
 						expect(result.endDate)
-						.toBeNull();
+							.toBeNull();
 					});
 			});
 
@@ -179,56 +179,56 @@ describe("Log Filter Model",
 					() =>
 					{
 						expect(getDateRangePresetLabel(DateRangePreset.Last1Hour))
-						.toBe(
-							"Last 1 Hour");
+							.toBe(
+								"Last 1 Hour");
 					});
 
 				it("should return 'Last 6 Hours' for Last6Hours preset",
 					() =>
 					{
 						expect(getDateRangePresetLabel(DateRangePreset.Last6Hours))
-						.toBe(
-							"Last 6 Hours");
+							.toBe(
+								"Last 6 Hours");
 					});
 
 				it("should return 'Last 24 Hours' for Last24Hours preset",
 					() =>
 					{
 						expect(getDateRangePresetLabel(DateRangePreset.Last24Hours))
-						.toBe(
-							"Last 24 Hours");
+							.toBe(
+								"Last 24 Hours");
 					});
 
 				it("should return 'Last 7 Days' for Last7Days preset",
 					() =>
 					{
 						expect(getDateRangePresetLabel(DateRangePreset.Last7Days))
-						.toBe(
-							"Last 7 Days");
+							.toBe(
+								"Last 7 Days");
 					});
 
 				it("should return 'Last 30 Days' for Last30Days preset",
 					() =>
 					{
 						expect(getDateRangePresetLabel(DateRangePreset.Last30Days))
-						.toBe(
-							"Last 30 Days");
+							.toBe(
+								"Last 30 Days");
 					});
 
 				it("should return 'Custom Range' for Custom preset",
 					() =>
 					{
 						expect(getDateRangePresetLabel(DateRangePreset.Custom))
-						.toBe(
-							"Custom Range");
+							.toBe(
+								"Custom Range");
 					});
 
 				it("should return 'All Time' for invalid preset",
 					() =>
 					{
 						expect(getDateRangePresetLabel("invalid" as DateRangePreset))
-						.toBe(
-							"All Time");
+							.toBe(
+								"All Time");
 					});
 			});
 	});

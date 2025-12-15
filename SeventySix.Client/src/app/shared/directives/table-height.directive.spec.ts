@@ -43,7 +43,7 @@ describe("TableHeightDirective",
 			() =>
 			{
 				expect(directiveElement)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should apply minimum height when available space is less than minimum",
@@ -54,7 +54,7 @@ describe("TableHeightDirective",
 				const height: number =
 					parseInt(style.height, 10);
 				expect(height)
-				.toBeGreaterThanOrEqual(400);
+					.toBeGreaterThanOrEqual(400);
 			});
 
 		it("should update height when minHeight input changes",
@@ -68,7 +68,7 @@ describe("TableHeightDirective",
 				const height: number =
 					parseInt(style.height, 10);
 				expect(height)
-				.toBeGreaterThanOrEqual(600);
+					.toBeGreaterThanOrEqual(600);
 			});
 
 		it("should apply height style to element",
@@ -77,9 +77,9 @@ describe("TableHeightDirective",
 				const heightStyle: string =
 					directiveElement.style.height;
 				expect(heightStyle)
-				.toBeTruthy();
+					.toBeTruthy();
 				expect(heightStyle)
-				.toContain("px");
+					.toContain("px");
 			});
 
 		it("should debounce window resize events",
@@ -93,7 +93,7 @@ describe("TableHeightDirective",
 				const originalUpdateHeight: () => void =
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					(directive as any)[
-					"updateHeight"
+						"updateHeight"
 					];
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				(directive as any)["updateHeight"] =
@@ -111,14 +111,14 @@ describe("TableHeightDirective",
 
 				// Immediately after, should not have called yet (still debouncing)
 				expect(updateCount)
-				.toBe(0);
+					.toBe(0);
 
 				// After 500ms debounce, should only have called once
 				setTimeout(
 					() =>
 					{
 						expect(updateCount)
-						.toBe(1);
+							.toBe(1);
 						done();
 					},
 					600);
@@ -140,9 +140,9 @@ describe("TableHeightDirective",
 				const heightStyle: string =
 					directiveElement.style.height;
 				expect(heightStyle)
-				.toBeTruthy();
+					.toBeTruthy();
 				expect(heightStyle)
-				.toContain("px");
+					.toContain("px");
 				// Height should be calculated with 120px offset subtracted
 			});
 
@@ -162,15 +162,15 @@ describe("TableHeightDirective",
 						const minHeightStyle: string =
 							initElement.style.minHeight;
 						expect(minHeightStyle)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(minHeightStyle)
-						.toContain("px");
+							.toContain("px");
 
 						// Parse the min-height value
 						const minHeight: number =
 							parseInt(minHeightStyle, 10);
 						expect(minHeight)
-						.toBeGreaterThan(0);
+							.toBeGreaterThan(0);
 					});
 
 				it("should set min-height equal to minHeight input value",
@@ -179,7 +179,7 @@ describe("TableHeightDirective",
 						const minHeightStyle: string =
 							directiveElement.style.minHeight;
 						expect(minHeightStyle)
-						.toBe("400px");
+							.toBe("400px");
 					});
 
 				it("should update min-height when minHeight input changes",
@@ -191,7 +191,7 @@ describe("TableHeightDirective",
 						const minHeightStyle: string =
 							directiveElement.style.minHeight;
 						expect(minHeightStyle)
-						.toBe("600px");
+							.toBe("600px");
 					});
 			});
 	});

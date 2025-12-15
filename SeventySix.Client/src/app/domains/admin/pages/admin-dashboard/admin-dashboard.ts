@@ -1,3 +1,5 @@
+import { ApiStatisticsTableComponent } from "@admin/components/api-statistics-table/api-statistics-table.component";
+import { GrafanaDashboardEmbedComponent } from "@admin/components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatToolbarModule } from "@angular/material/toolbar";
@@ -6,8 +8,6 @@ import { PageHeaderComponent } from "@shared/components";
 import { CARD_MATERIAL_MODULES } from "@shared/material-bundles";
 import { LoggerService } from "@shared/services/logger.service";
 import { NotificationService } from "@shared/services/notification.service";
-import { ApiStatisticsTableComponent } from "@admin/components/api-statistics-table/api-statistics-table.component";
-import { GrafanaDashboardEmbedComponent } from "@admin/components/grafana-dashboard-embed/grafana-dashboard-embed.component";
 
 /**
  * Admin Dashboard page.

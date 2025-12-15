@@ -26,8 +26,8 @@ describe("WindowUtilities",
 				// as it's a read-only property. The service exists and the method
 				// is a simple wrapper around native browser functionality.
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 				expect(true)
-				.toBe(true);
+					.toBe(true);
 			});
 	});

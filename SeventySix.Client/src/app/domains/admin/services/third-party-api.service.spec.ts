@@ -60,7 +60,7 @@ describe("ThirdPartyApiService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("getAllThirdPartyApis",
@@ -98,7 +98,7 @@ describe("ThirdPartyApiService",
 						const req: TestRequest =
 							httpMock.expectOne(apiUrl);
 						expect(req.request.method)
-						.toBe("GET");
+							.toBe("GET");
 						req.flush(mockData);
 
 						// Wait for query to complete
@@ -108,11 +108,11 @@ describe("ThirdPartyApiService",
 						const data: ThirdPartyApiRequestResponse[] | undefined =
 							query.data();
 						expect(data)
-						.toEqual(mockData);
+							.toEqual(mockData);
 						expect(data?.length)
-						.toBe(2);
+							.toBe(2);
 						expect(data?.[0].apiName)
-						.toBe("ExternalAPI");
+							.toBe("ExternalAPI");
 					});
 
 				it("should handle empty array response",
@@ -135,9 +135,9 @@ describe("ThirdPartyApiService",
 						const data: ThirdPartyApiRequestResponse[] | undefined =
 							query.data();
 						expect(data)
-						.toEqual([]);
+							.toEqual([]);
 						expect(data?.length)
-						.toBe(0);
+							.toBe(0);
 					});
 
 				it("should handle HTTP errors",
@@ -162,9 +162,9 @@ describe("ThirdPartyApiService",
 							(resolve) => setTimeout(resolve, 0));
 
 						expect(query.error())
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(query.data())
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 			});
 		describe("getByApiName",
@@ -196,7 +196,7 @@ describe("ThirdPartyApiService",
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/${apiName}`);
 						expect(req.request.method)
-						.toBe("GET");
+							.toBe("GET");
 						req.flush(mockData);
 						await new Promise(
 							(resolve) => setTimeout(resolve, 0));
@@ -204,11 +204,11 @@ describe("ThirdPartyApiService",
 						const data: ThirdPartyApiRequestResponse[] | undefined =
 							query.data();
 						expect(data)
-						.toEqual(mockData);
+							.toEqual(mockData);
 						expect(data?.length)
-						.toBe(1);
+							.toBe(1);
 						expect(data?.[0].apiName)
-						.toBe(apiName);
+							.toBe(apiName);
 					});
 
 				it("should handle API name with special characters",
@@ -227,14 +227,14 @@ describe("ThirdPartyApiService",
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/${encodedName}`);
 						expect(req.request.method)
-						.toBe("GET");
+							.toBe("GET");
 						req.flush([]);
 
 						await new Promise(
 							(resolve) => setTimeout(resolve, 0));
 
 						expect(query.data())
-						.toEqual([]);
+							.toEqual([]);
 					});
 
 				it("should handle HTTP errors",
@@ -259,9 +259,9 @@ describe("ThirdPartyApiService",
 							(resolve) => setTimeout(resolve, 0));
 
 						expect(query.error())
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(query.data())
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 			});
 
@@ -295,7 +295,7 @@ describe("ThirdPartyApiService",
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/statistics`);
 						expect(req.request.method)
-						.toBe("GET");
+							.toBe("GET");
 						req.flush(mockStats);
 
 						await new Promise(
@@ -304,12 +304,12 @@ describe("ThirdPartyApiService",
 						const stats: ThirdPartyApiStatisticsResponse | undefined =
 							query.data();
 						expect(stats?.totalCallsToday)
-						.toBe(mockStats.totalCallsToday);
+							.toBe(mockStats.totalCallsToday);
 						expect(stats?.totalApisTracked)
-						.toBe(mockStats.totalApisTracked);
+							.toBe(mockStats.totalApisTracked);
 						expect(
 							(stats?.callsByApi as Record<string, number>)["ExternalAPI"])
-						.toBe(1234);
+							.toBe(1234);
 					});
 
 				it("should handle empty statistics",
@@ -339,14 +339,14 @@ describe("ThirdPartyApiService",
 						const stats: ThirdPartyApiStatisticsResponse | undefined =
 							query.data();
 						expect(stats?.totalCallsToday)
-						.toBe(0);
+							.toBe(0);
 						expect(stats?.totalApisTracked)
-						.toBe(0);
+							.toBe(0);
 						expect(
 							Object
-							.keys((stats?.callsByApi as Record<string, number>) ?? {})
-							.length)
-						.toBe(0);
+								.keys((stats?.callsByApi as Record<string, number>) ?? {})
+								.length)
+							.toBe(0);
 					});
 
 				it("should handle HTTP errors",
@@ -371,9 +371,9 @@ describe("ThirdPartyApiService",
 							(resolve) => setTimeout(resolve, 0));
 
 						expect(query.error())
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(query.data())
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 			});
 	});

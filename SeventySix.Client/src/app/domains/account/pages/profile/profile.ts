@@ -1,3 +1,5 @@
+import { UpdateProfileRequest, UserProfileDto } from "@account/models";
+import { AccountService } from "@account/services";
 import { DatePipe } from "@angular/common";
 import {
 	ChangeDetectionStrategy,
@@ -25,8 +27,6 @@ import {
 	FULL_NAME_VALIDATION
 } from "@shared/constants/validation.constants";
 import { getValidationError } from "@shared/utilities";
-import { UpdateProfileRequest, UserProfileDto } from "@account/models";
-import { AccountService } from "@account/services";
 
 @Component(
 	{

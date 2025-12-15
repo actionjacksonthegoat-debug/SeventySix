@@ -13,12 +13,12 @@ describe("NotFoundPage",
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [NotFoundPage],
-						providers: [provideZonelessChangeDetection(), provideRouter([])]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [NotFoundPage],
+							providers: [provideZonelessChangeDetection(), provideRouter([])]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(NotFoundPage);
@@ -31,6 +31,6 @@ describe("NotFoundPage",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 	});

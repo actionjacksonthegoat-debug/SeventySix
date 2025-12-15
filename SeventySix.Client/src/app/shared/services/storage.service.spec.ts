@@ -34,7 +34,7 @@ describe("StorageService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("getItem",
@@ -46,7 +46,7 @@ describe("StorageService",
 						const value: string | null =
 							service.getItem("non-existent");
 						expect(value)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should retrieve string value",
@@ -56,7 +56,7 @@ describe("StorageService",
 						const value: string | null =
 							service.getItem<string>("test-string");
 						expect(value)
-						.toBe("hello");
+							.toBe("hello");
 					});
 
 				it("should retrieve and parse JSON object",
@@ -68,7 +68,7 @@ describe("StorageService",
 						const retrieved: { name: string; value: number; } | null =
 							service.getItem<typeof data>("test-object");
 						expect(retrieved)
-						.toEqual(data);
+							.toEqual(data);
 					});
 
 				it("should retrieve and parse JSON array",
@@ -81,7 +81,7 @@ describe("StorageService",
 						const retrieved: number[] | null =
 							service.getItem<number[]>("test-array");
 						expect(retrieved)
-						.toEqual(data);
+							.toEqual(data);
 					});
 
 				it("should return string if JSON parse fails",
@@ -91,7 +91,7 @@ describe("StorageService",
 						const value: string | null =
 							service.getItem("test-invalid");
 						expect(value)
-						.toBe("not-json-{{{");
+							.toBe("not-json-{{{");
 					});
 
 				it("should return null on localStorage error",
@@ -105,9 +105,9 @@ describe("StorageService",
 						const value: string | null =
 							service.getItem("error-key");
 						expect(value)
-						.toBeNull();
+							.toBeNull();
 						expect(consoleErrorSpy)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 
@@ -120,9 +120,9 @@ describe("StorageService",
 						const success: boolean =
 							service.setItem("test-key", "test-value");
 						expect(success)
-						.toBe(true);
+							.toBe(true);
 						expect(localStorage.getItem("test-key"))
-						.toBe("test-value");
+							.toBe("test-value");
 					});
 
 				it("should store and stringify object",
@@ -133,11 +133,11 @@ describe("StorageService",
 						const success: boolean =
 							service.setItem("test-object", data);
 						expect(success)
-						.toBe(true);
+							.toBe(true);
 						const stored: string | null =
 							localStorage.getItem("test-object");
 						expect(JSON.parse(stored!))
-						.toEqual(data);
+							.toEqual(data);
 					});
 
 				it("should store and stringify array",
@@ -148,11 +148,11 @@ describe("StorageService",
 						const success: boolean =
 							service.setItem("test-array", data);
 						expect(success)
-						.toBe(true);
+							.toBe(true);
 						const stored: string | null =
 							localStorage.getItem("test-array");
 						expect(JSON.parse(stored!))
-						.toEqual(data);
+							.toEqual(data);
 					});
 
 				it("should return false on quota exceeded error",
@@ -170,10 +170,10 @@ describe("StorageService",
 						const success: boolean =
 							service.setItem("test-key", "value");
 						expect(success)
-						.toBe(false);
+							.toBe(false);
 						expect(consoleErrorSpy)
-						.toHaveBeenCalledWith(
-							"StorageService: Quota exceeded");
+							.toHaveBeenCalledWith(
+								"StorageService: Quota exceeded");
 					});
 
 				it("should return false on other storage errors",
@@ -187,9 +187,9 @@ describe("StorageService",
 						const success: boolean =
 							service.setItem("test-key", "value");
 						expect(success)
-						.toBe(false);
+							.toBe(false);
 						expect(consoleErrorSpy)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 
@@ -202,7 +202,7 @@ describe("StorageService",
 						localStorage.setItem("test-key", "test-value");
 						service.removeItem("test-key");
 						expect(localStorage.getItem("test-key"))
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should handle removing non-existent item",
@@ -210,8 +210,8 @@ describe("StorageService",
 					{
 						expect(
 							() => service.removeItem("non-existent"))
-						.not
-						.toThrow();
+							.not
+							.toThrow();
 					});
 
 				it("should handle localStorage errors silently",
@@ -224,10 +224,10 @@ describe("StorageService",
 							});
 						expect(
 							() => service.removeItem("test-key"))
-						.not
-						.toThrow();
+							.not
+							.toThrow();
 						expect(consoleErrorSpy)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 
@@ -241,7 +241,7 @@ describe("StorageService",
 						localStorage.setItem("key2", "value2");
 						service.clear();
 						expect(localStorage.length)
-						.toBe(0);
+							.toBe(0);
 					});
 
 				it("should handle localStorage errors silently",
@@ -254,10 +254,10 @@ describe("StorageService",
 							});
 						expect(
 							() => service.clear())
-						.not
-						.toThrow();
+							.not
+							.toThrow();
 						expect(consoleErrorSpy)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 	});

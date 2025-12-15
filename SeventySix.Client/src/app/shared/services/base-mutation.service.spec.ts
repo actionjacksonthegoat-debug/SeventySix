@@ -54,16 +54,16 @@ describe("BaseMutationService",
 					() =>
 					{
 						expect(service["queryClient"])
-						.toBeDefined();
+							.toBeDefined();
 						expect(service["queryClient"])
-						.toBeInstanceOf(QueryClient);
+							.toBeInstanceOf(QueryClient);
 					});
 
 				it("should set queryKeyPrefix",
 					() =>
 					{
 						expect(service["queryKeyPrefix"])
-						.toBe("test-entities");
+							.toBe("test-entities");
 					});
 
 				it("should provide queryConfig based on queryKeyPrefix",
@@ -73,11 +73,11 @@ describe("BaseMutationService",
 							service.getQueryConfig();
 
 						expect(config)
-						.toBeDefined();
+							.toBeDefined();
 						expect(config.staleTime)
-						.toBeDefined();
+							.toBeDefined();
 						expect(config.gcTime)
-						.toBeDefined();
+							.toBeDefined();
 					});
 			});
 
@@ -93,10 +93,10 @@ describe("BaseMutationService",
 						service.testInvalidateAll();
 
 						expect(invalidateSpy)
-						.toHaveBeenCalledWith(
-							{
-								queryKey: ["test-entities"]
-							});
+							.toHaveBeenCalledWith(
+								{
+									queryKey: ["test-entities"]
+								});
 					});
 			});
 	});

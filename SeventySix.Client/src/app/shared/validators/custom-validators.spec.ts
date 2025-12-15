@@ -42,7 +42,7 @@ describe("Custom Validators",
 							new FormControl(new Date("2024-06-15"));
 
 						expect(validator(control))
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should return error for date before minimum",
@@ -67,7 +67,7 @@ describe("Custom Validators",
 							new FormControl(null);
 
 						expect(validator(control))
-						.toBeNull();
+							.toBeNull();
 					});
 			});
 
@@ -83,7 +83,7 @@ describe("Custom Validators",
 							new FormControl("valid");
 
 						expect(validator(control))
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should return error for string too short",
@@ -117,7 +117,7 @@ describe("Custom Validators",
 							new FormControl(null);
 
 						expect(validator(control))
-						.toBeNull();
+							.toBeNull();
 					});
 			});
 
@@ -136,7 +136,7 @@ describe("Custom Validators",
 							new FormControl(futureDate);
 
 						expect(validator(control))
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should return error for past date",
@@ -161,7 +161,7 @@ describe("Custom Validators",
 							new FormControl(null);
 
 						expect(validator(control))
-						.toBeNull();
+							.toBeNull();
 					});
 			});
 
@@ -196,7 +196,7 @@ describe("Custom Validators",
 							new FormControl("");
 
 						expect(validator(control))
-						.toBeNull();
+							.toBeNull();
 					});
 			});
 
@@ -231,7 +231,7 @@ describe("Custom Validators",
 							new FormControl("value");
 
 						expect(validator(control))
-						.toBeNull();
+							.toBeNull();
 					});
 			});
 	});

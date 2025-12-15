@@ -44,9 +44,9 @@ describe("SanitizationService",
 							service.sanitizeHtml(html);
 
 						expect(sanitizer.sanitize)
-						.toHaveBeenCalledWith(1, html);
+							.toHaveBeenCalledWith(1, html);
 						expect(result)
-						.toBe("Safe content");
+							.toBe("Safe content");
 					});
 
 				it("should return empty string if sanitization returns null",
@@ -59,7 +59,7 @@ describe("SanitizationService",
 								"<script>alert(\"xss\")</script>");
 
 						expect(result)
-						.toBe("");
+							.toBe("");
 					});
 			});
 
@@ -76,9 +76,9 @@ describe("SanitizationService",
 							service.sanitizeUrl(url);
 
 						expect(sanitizer.sanitize)
-						.toHaveBeenCalledWith(4, url);
+							.toHaveBeenCalledWith(4, url);
 						expect(result)
-						.toBe("");
+							.toBe("");
 					});
 
 				it("should allow safe URLs",
@@ -91,7 +91,7 @@ describe("SanitizationService",
 							service.sanitizeUrl(url);
 
 						expect(result)
-						.toBe(url);
+							.toBe(url);
 					});
 			});
 
@@ -107,7 +107,7 @@ describe("SanitizationService",
 						service.sanitizeResourceUrl(url);
 
 						expect(sanitizer.sanitize)
-						.toHaveBeenCalledWith(5, url);
+							.toHaveBeenCalledWith(5, url);
 					});
 			});
 
@@ -127,10 +127,10 @@ describe("SanitizationService",
 							service.trustHtml(html);
 
 						expect(sanitizer.bypassSecurityTrustHtml)
-						.toHaveBeenCalledWith(
-							html);
+							.toHaveBeenCalledWith(
+								html);
 						expect(result)
-						.toBe(trustedHtml);
+							.toBe(trustedHtml);
 					});
 			});
 
@@ -150,9 +150,9 @@ describe("SanitizationService",
 							service.trustUrl(url);
 
 						expect(sanitizer.bypassSecurityTrustUrl)
-						.toHaveBeenCalledWith(url);
+							.toHaveBeenCalledWith(url);
 						expect(result)
-						.toBe(trustedUrl);
+							.toBe(trustedUrl);
 					});
 			});
 
@@ -168,7 +168,7 @@ describe("SanitizationService",
 							service.stripHtml(html);
 
 						expect(result)
-						.toBe("Hello World");
+							.toBe("Hello World");
 					});
 
 				it("should handle script tags",
@@ -182,7 +182,7 @@ describe("SanitizationService",
 						// Note: Script tags may or may not execute during parsing
 						// We just verify that tags are removed, content may vary
 						expect(result)
-						.toContain("Text");
+							.toContain("Text");
 						expect(result).not.toContain("<script>");
 						expect(result).not.toContain("</script>");
 					});
@@ -194,7 +194,7 @@ describe("SanitizationService",
 							service.stripHtml("");
 
 						expect(result)
-						.toBe("");
+							.toBe("");
 					});
 			});
 
@@ -210,8 +210,8 @@ describe("SanitizationService",
 							service.escapeHtml(text);
 
 						expect(result)
-						.toBe(
-							"&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;");
+							.toBe(
+								"&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;");
 					});
 
 				it("should escape ampersands",
@@ -223,7 +223,7 @@ describe("SanitizationService",
 							service.escapeHtml(text);
 
 						expect(result)
-						.toBe("Rock &amp; Roll");
+							.toBe("Rock &amp; Roll");
 					});
 
 				it("should escape single quotes",
@@ -235,7 +235,7 @@ describe("SanitizationService",
 							service.escapeHtml(text);
 
 						expect(result)
-						.toBe("It&#039;s working");
+							.toBe("It&#039;s working");
 					});
 
 				it("should return original text if no special characters",
@@ -247,7 +247,7 @@ describe("SanitizationService",
 							service.escapeHtml(text);
 
 						expect(result)
-						.toBe("Hello World");
+							.toBe("Hello World");
 					});
 			});
 
@@ -263,7 +263,7 @@ describe("SanitizationService",
 							service.validateUrl(url);
 
 						expect(result)
-						.toBe("http://example.com/");
+							.toBe("http://example.com/");
 					});
 
 				it("should validate and return valid HTTPS URL",
@@ -275,7 +275,7 @@ describe("SanitizationService",
 							service.validateUrl(url);
 
 						expect(result)
-						.toBe(url);
+							.toBe(url);
 					});
 
 				it("should reject javascript: protocol",
@@ -287,7 +287,7 @@ describe("SanitizationService",
 							service.validateUrl(url);
 
 						expect(result)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should reject data: protocol",
@@ -299,7 +299,7 @@ describe("SanitizationService",
 							service.validateUrl(url);
 
 						expect(result)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should reject file: protocol",
@@ -311,7 +311,7 @@ describe("SanitizationService",
 							service.validateUrl(url);
 
 						expect(result)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should return null for invalid URLs",
@@ -323,7 +323,7 @@ describe("SanitizationService",
 							service.validateUrl(url);
 
 						expect(result)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should return null for empty string",
@@ -333,7 +333,7 @@ describe("SanitizationService",
 							service.validateUrl("");
 
 						expect(result)
-						.toBeNull();
+							.toBeNull();
 					});
 			});
 	});

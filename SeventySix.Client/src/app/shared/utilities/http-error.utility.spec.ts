@@ -36,7 +36,7 @@ describe("HTTP Error Utilities",
 							extractValidationErrors(error);
 
 						expect(result)
-						.toEqual([]);
+							.toEqual([]);
 					});
 
 				it("should extract validation errors for single field",
@@ -57,11 +57,11 @@ describe("HTTP Error Utilities",
 							extractValidationErrors(error);
 
 						expect(result)
-						.toEqual(
-							[
-								"Email: Email is required",
-								"Email: Invalid format"
-							]);
+							.toEqual(
+								[
+									"Email: Email is required",
+									"Email: Invalid format"
+								]);
 					});
 
 				it("should extract validation errors for multiple fields",
@@ -83,11 +83,11 @@ describe("HTTP Error Utilities",
 							extractValidationErrors(error);
 
 						expect(result)
-						.toContain("Email: Email is required");
+							.toContain("Email: Email is required");
 						expect(result)
-						.toContain("Password: Password is too short");
+							.toContain("Password: Password is too short");
 						expect(result.length)
-						.toBe(2);
+							.toBe(2);
 					});
 
 				it("should return empty array for non-array error messages",
@@ -108,7 +108,7 @@ describe("HTTP Error Utilities",
 							extractValidationErrors(error);
 
 						expect(result)
-						.toEqual([]);
+							.toEqual([]);
 					});
 			});
 
@@ -129,7 +129,7 @@ describe("HTTP Error Utilities",
 							extractHttpStatus(error);
 
 						expect(result)
-						.toBe("Status: 404 Not Found");
+							.toBe("Status: 404 Not Found");
 					});
 
 				it("should return null for status 0",
@@ -146,7 +146,7 @@ describe("HTTP Error Utilities",
 							extractHttpStatus(error);
 
 						expect(result)
-						.toBeNull();
+							.toBeNull();
 					});
 			});
 
@@ -166,7 +166,7 @@ describe("HTTP Error Utilities",
 							extractErrorTitle(error, "User message");
 
 						expect(result)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should return null if title equals user message",
@@ -184,7 +184,7 @@ describe("HTTP Error Utilities",
 							extractErrorTitle(error, "Same message");
 
 						expect(result)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should return title if different from user message",
@@ -202,7 +202,7 @@ describe("HTTP Error Utilities",
 							extractErrorTitle(error, "User-friendly message");
 
 						expect(result)
-						.toBe("Technical error");
+							.toBe("Technical error");
 					});
 			});
 
@@ -223,7 +223,7 @@ describe("HTTP Error Utilities",
 							extractRequestUrl(error);
 
 						expect(result)
-						.toBe("https://api.example.com/users");
+							.toBe("https://api.example.com/users");
 					});
 
 				it("should extract URL from HttpError",
@@ -240,7 +240,7 @@ describe("HTTP Error Utilities",
 							extractRequestUrl(error);
 
 						expect(result)
-						.toBe("https://api.example.com/posts");
+							.toBe("https://api.example.com/posts");
 					});
 
 				it("should return window.location.href when HttpErrorResponse has no URL",
@@ -256,7 +256,7 @@ describe("HTTP Error Utilities",
 							extractRequestUrl(error);
 
 						expect(result)
-						.toBe(window.location.href);
+							.toBe(window.location.href);
 					});
 
 				it("should return window.location.href for generic Error",
@@ -269,7 +269,7 @@ describe("HTTP Error Utilities",
 							extractRequestUrl(error);
 
 						expect(result)
-						.toBe(window.location.href);
+							.toBe(window.location.href);
 					});
 
 				it("should return window.location.href when no error provided",
@@ -279,7 +279,7 @@ describe("HTTP Error Utilities",
 							extractRequestUrl();
 
 						expect(result)
-						.toBe(window.location.href);
+							.toBe(window.location.href);
 					});
 			});
 
@@ -300,7 +300,7 @@ describe("HTTP Error Utilities",
 							extractRequestMethod(error);
 
 						expect(result)
-						.toBe("POST");
+							.toBe("POST");
 					});
 
 				it("should return undefined for HttpErrorResponse",
@@ -317,7 +317,7 @@ describe("HTTP Error Utilities",
 							extractRequestMethod(error);
 
 						expect(result)
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 
 				it("should return undefined for generic Error",
@@ -330,7 +330,7 @@ describe("HTTP Error Utilities",
 							extractRequestMethod(error);
 
 						expect(result)
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 
 				it("should return undefined when no error provided",
@@ -340,7 +340,7 @@ describe("HTTP Error Utilities",
 							extractRequestMethod();
 
 						expect(result)
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 			});
 
@@ -361,7 +361,7 @@ describe("HTTP Error Utilities",
 							extractStatusCode(error);
 
 						expect(result)
-						.toBe(404);
+							.toBe(404);
 					});
 
 				it("should extract status code from HttpError",
@@ -378,7 +378,7 @@ describe("HTTP Error Utilities",
 							extractStatusCode(error);
 
 						expect(result)
-						.toBe(500);
+							.toBe(500);
 					});
 
 				it("should return undefined for generic Error",
@@ -391,7 +391,7 @@ describe("HTTP Error Utilities",
 							extractStatusCode(error);
 
 						expect(result)
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 
 				it("should return undefined when no error provided",
@@ -401,7 +401,7 @@ describe("HTTP Error Utilities",
 							extractStatusCode();
 
 						expect(result)
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 			});
 
@@ -425,9 +425,9 @@ describe("HTTP Error Utilities",
 								"GET");
 
 						expect(result)
-						.toBeInstanceOf(NetworkError);
+							.toBeInstanceOf(NetworkError);
 						expect(result.message)
-						.toBe("Unable to connect to the server");
+							.toBe("Unable to connect to the server");
 					});
 
 				it("should convert validation error (status 400 with errors)",
@@ -452,15 +452,15 @@ describe("HTTP Error Utilities",
 								"POST");
 
 						expect(result)
-						.toBeInstanceOf(ValidationError);
+							.toBeInstanceOf(ValidationError);
 						expect(result.message)
-						.toBe("Validation failed");
+							.toBe("Validation failed");
 						expect((result as ValidationError).errors)
-						.toEqual(
-							{
-								email: ["Invalid email format"],
-								password: ["Password too short"]
-							});
+							.toEqual(
+								{
+									email: ["Invalid email format"],
+									password: ["Password too short"]
+								});
 					});
 
 				it("should convert not found error (status 404)",
@@ -480,9 +480,9 @@ describe("HTTP Error Utilities",
 								"GET");
 
 						expect(result)
-						.toBeInstanceOf(NotFoundError);
+							.toBeInstanceOf(NotFoundError);
 						expect(result.message)
-						.toBe("User not found");
+							.toBe("User not found");
 					});
 
 				it("should use default message for 404 without title",
@@ -501,9 +501,9 @@ describe("HTTP Error Utilities",
 								"GET");
 
 						expect(result)
-						.toBeInstanceOf(NotFoundError);
+							.toBeInstanceOf(NotFoundError);
 						expect(result.message)
-						.toBe("Resource not found");
+							.toBe("Resource not found");
 					});
 
 				it("should convert unauthorized error (status 401)",
@@ -523,9 +523,9 @@ describe("HTTP Error Utilities",
 								"POST");
 
 						expect(result)
-						.toBeInstanceOf(UnauthorizedError);
+							.toBeInstanceOf(UnauthorizedError);
 						expect(result.message)
-						.toBe("Invalid credentials");
+							.toBe("Invalid credentials");
 					});
 
 				it("should convert forbidden error (status 403)",
@@ -545,9 +545,9 @@ describe("HTTP Error Utilities",
 								"GET");
 
 						expect(result)
-						.toBeInstanceOf(UnauthorizedError);
+							.toBeInstanceOf(UnauthorizedError);
 						expect(result.message)
-						.toBe("Access denied");
+							.toBe("Access denied");
 					});
 
 				it("should use default message for 401/403 without title",
@@ -566,9 +566,9 @@ describe("HTTP Error Utilities",
 								"POST");
 
 						expect(result)
-						.toBeInstanceOf(UnauthorizedError);
+							.toBeInstanceOf(UnauthorizedError);
 						expect(result.message)
-						.toBe("Unauthorized access");
+							.toBe("Unauthorized access");
 					});
 
 				it("should convert generic HTTP error (status 500)",
@@ -589,16 +589,16 @@ describe("HTTP Error Utilities",
 								"POST");
 
 						expect(result)
-						.toBeInstanceOf(HttpError);
+							.toBeInstanceOf(HttpError);
 						expect(result.message)
-						.toBe("Internal server error");
+							.toBe("Internal server error");
 						expect((result as HttpError).statusCode)
-						.toBe(500);
+							.toBe(500);
 						expect((result as HttpError).url)
-						.toBe(
-							"https://api.example.com/users");
+							.toBe(
+								"https://api.example.com/users");
 						expect((result as HttpError).method)
-						.toBe("POST");
+							.toBe("POST");
 					});
 
 				it("should use error.message as fallback for generic HTTP error",
@@ -618,10 +618,10 @@ describe("HTTP Error Utilities",
 								"GET");
 
 						expect(result)
-						.toBeInstanceOf(HttpError);
+							.toBeInstanceOf(HttpError);
 						// Error message will be the default since no title is provided
 						expect(result.message)
-						.toBeDefined();
+							.toBeDefined();
 					});
 
 				it("should use default message when no title or message available",
@@ -640,10 +640,10 @@ describe("HTTP Error Utilities",
 								"GET");
 
 						expect(result)
-						.toBeInstanceOf(HttpError);
+							.toBeInstanceOf(HttpError);
 						// HttpErrorResponse generates its own default message
 						expect(result.message)
-						.toContain("Http failure response");
+							.toContain("Http failure response");
 					});
 			});
 	});

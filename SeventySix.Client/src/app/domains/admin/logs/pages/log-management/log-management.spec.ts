@@ -34,15 +34,15 @@ describe("LogManagementPage",
 					}),
 				updateFilter: jasmine.createSpy("updateFilter"),
 				getCurrentFilter: jasmine
-				.createSpy("getCurrentFilter")
-				.and
-				.returnValue(
-					{
-						page: 1,
-						pageSize: 50,
-						sortBy: "Id",
-						sortDescending: true
-					}),
+					.createSpy("getCurrentFilter")
+					.and
+					.returnValue(
+						{
+							page: 1,
+							pageSize: 50,
+							sortBy: "Id",
+							sortDescending: true
+						}),
 				clearSelection: jasmine.createSpy("clearSelection"),
 				selectAll: jasmine.createSpy("selectAll"),
 				toggleSelection: jasmine.createSpy("toggleSelection")
@@ -57,17 +57,17 @@ describe("LogManagementPage",
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [LogManagementPage],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideHttpClientTesting(),
-							{ provide: LogManagementService, useValue: mockLogService },
-							{ provide: MatDialog, useValue: mockDialog }
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [LogManagementPage],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideHttpClientTesting(),
+								{ provide: LogManagementService, useValue: mockLogService },
+								{ provide: MatDialog, useValue: mockDialog }
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(LogManagementPage);
@@ -78,7 +78,7 @@ describe("LogManagementPage",
 			{
 				await fixture.whenStable();
 				expect(fixture.componentInstance)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should render page header",
@@ -90,7 +90,7 @@ describe("LogManagementPage",
 				const header: HTMLElement | null =
 					fixture.nativeElement.querySelector("app-page-header");
 				expect(header)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("CLS Prevention",
@@ -105,7 +105,7 @@ describe("LogManagementPage",
 						const pageContent: HTMLElement | null =
 							fixture.nativeElement.querySelector(".page-content");
 						expect(pageContent)
-						.toBeTruthy();
+							.toBeTruthy();
 
 						const styles: CSSStyleDeclaration =
 							window.getComputedStyle(
@@ -114,7 +114,7 @@ describe("LogManagementPage",
 							styles.minHeight;
 
 						expect(minHeight)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(minHeight).not.toBe("0px");
 						expect(minHeight).not.toBe("auto");
 					});

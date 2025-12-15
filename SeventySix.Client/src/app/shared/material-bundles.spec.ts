@@ -20,66 +20,66 @@ describe("Material Bundles",
 			() =>
 			{
 				expect(FORM_MATERIAL_MODULES)
-				.toBeDefined();
+					.toBeDefined();
 				expect(Array.isArray(FORM_MATERIAL_MODULES))
-				.toBe(true);
+					.toBe(true);
 				expect(FORM_MATERIAL_MODULES.length)
-				.toBeGreaterThan(0);
+					.toBeGreaterThan(0);
 			});
 
 		it("should export TABLE_MATERIAL_MODULES as readonly array",
 			() =>
 			{
 				expect(TABLE_MATERIAL_MODULES)
-				.toBeDefined();
+					.toBeDefined();
 				expect(Array.isArray(TABLE_MATERIAL_MODULES))
-				.toBe(true);
+					.toBe(true);
 				expect(TABLE_MATERIAL_MODULES.length)
-				.toBeGreaterThan(0);
+					.toBeGreaterThan(0);
 			});
 
 		it("should export DIALOG_MATERIAL_MODULES as readonly array",
 			() =>
 			{
 				expect(DIALOG_MATERIAL_MODULES)
-				.toBeDefined();
+					.toBeDefined();
 				expect(Array.isArray(DIALOG_MATERIAL_MODULES))
-				.toBe(true);
+					.toBe(true);
 				expect(DIALOG_MATERIAL_MODULES.length)
-				.toBeGreaterThan(0);
+					.toBeGreaterThan(0);
 			});
 
 		it("should export NAVIGATION_MATERIAL_MODULES as readonly array",
 			() =>
 			{
 				expect(NAVIGATION_MATERIAL_MODULES)
-				.toBeDefined();
+					.toBeDefined();
 				expect(Array.isArray(NAVIGATION_MATERIAL_MODULES))
-				.toBe(true);
+					.toBe(true);
 				expect(NAVIGATION_MATERIAL_MODULES.length)
-				.toBeGreaterThan(0);
+					.toBeGreaterThan(0);
 			});
 
 		it("should export STEPPER_MATERIAL_MODULES as readonly array",
 			() =>
 			{
 				expect(STEPPER_MATERIAL_MODULES)
-				.toBeDefined();
+					.toBeDefined();
 				expect(Array.isArray(STEPPER_MATERIAL_MODULES))
-				.toBe(true);
+					.toBe(true);
 				expect(STEPPER_MATERIAL_MODULES.length)
-				.toBeGreaterThan(0);
+					.toBeGreaterThan(0);
 			});
 
 		it("should export CARD_MATERIAL_MODULES as readonly array",
 			() =>
 			{
 				expect(CARD_MATERIAL_MODULES)
-				.toBeDefined();
+					.toBeDefined();
 				expect(Array.isArray(CARD_MATERIAL_MODULES))
-				.toBe(true);
+					.toBe(true);
 				expect(CARD_MATERIAL_MODULES.length)
-				.toBeGreaterThan(0);
+					.toBeGreaterThan(0);
 			});
 
 		it("FORM_MATERIAL_MODULES should include form essentials",
@@ -94,14 +94,14 @@ describe("Material Bundles",
 				expect(moduleNames.some(
 					(name: string) =>
 						name.includes("FormField")))
-				.toBe(true);
+					.toBe(true);
 				expect(moduleNames.some(
 					(name: string) => name.includes("Input")))
-				.toBe(true);
+					.toBe(true);
 				expect(moduleNames.some(
 					(name: string) =>
 						name.includes("Button")))
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("TABLE_MATERIAL_MODULES should include table essentials",
@@ -115,13 +115,13 @@ describe("Material Bundles",
 				// Should include core table modules
 				expect(moduleNames.some(
 					(name: string) => name.includes("Table")))
-				.toBe(true);
+					.toBe(true);
 				expect(moduleNames.some(
 					(name: string) =>
 						name.includes("Paginator")))
-				.toBe(true);
+					.toBe(true);
 				expect(moduleNames.some(
 					(name: string) => name.includes("Sort")))
-				.toBe(true);
+					.toBe(true);
 			});
 	});

@@ -54,21 +54,21 @@ describe("DialogService",
 							};
 
 						service
-						.confirm(options)
-						.subscribe();
+							.confirm(options)
+							.subscribe();
 
 						expect(dialogSpy.open)
-						.toHaveBeenCalledWith(
-							ConfirmDialogComponent,
-							{
-								data: {
-									title: "Test Title",
-									message: "Test Message",
-									confirmText: "Yes",
-									cancelText: "No",
-									confirmColor: "primary"
-								} as ConfirmDialogData
-							});
+							.toHaveBeenCalledWith(
+								ConfirmDialogComponent,
+								{
+									data: {
+										title: "Test Title",
+										message: "Test Message",
+										confirmText: "Yes",
+										cancelText: "No",
+										confirmColor: "primary"
+									} as ConfirmDialogData
+								});
 					});
 
 				it("should return true when dialog is confirmed",
@@ -77,15 +77,15 @@ describe("DialogService",
 						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
 						service
-						.confirm(
-							{ title: "Test", message: "Message" })
-						.subscribe(
-							(result: boolean) =>
-							{
-								expect(result)
-								.toBeTrue();
-								done();
-							});
+							.confirm(
+								{ title: "Test", message: "Message" })
+							.subscribe(
+								(result: boolean) =>
+								{
+									expect(result)
+										.toBeTrue();
+									done();
+								});
 					});
 
 				it("should return false when dialog is cancelled",
@@ -94,15 +94,15 @@ describe("DialogService",
 						dialogRefSpy.afterClosed.and.returnValue(of(false));
 
 						service
-						.confirm(
-							{ title: "Test", message: "Message" })
-						.subscribe(
-							(result: boolean) =>
-							{
-								expect(result)
-								.toBeFalse();
-								done();
-							});
+							.confirm(
+								{ title: "Test", message: "Message" })
+							.subscribe(
+								(result: boolean) =>
+								{
+									expect(result)
+										.toBeFalse();
+									done();
+								});
 					});
 
 				it("should return false when dialog is dismissed",
@@ -111,15 +111,15 @@ describe("DialogService",
 						dialogRefSpy.afterClosed.and.returnValue(of(undefined));
 
 						service
-						.confirm(
-							{ title: "Test", message: "Message" })
-						.subscribe(
-							(result: boolean) =>
-							{
-								expect(result)
-								.toBeFalse();
-								done();
-							});
+							.confirm(
+								{ title: "Test", message: "Message" })
+							.subscribe(
+								(result: boolean) =>
+								{
+									expect(result)
+										.toBeFalse();
+									done();
+								});
 					});
 			});
 
@@ -132,8 +132,8 @@ describe("DialogService",
 						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
 						service
-						.confirmDelete("log")
-						.subscribe();
+							.confirmDelete("log")
+							.subscribe();
 
 						const expectedData: ConfirmDialogData =
 							{
@@ -146,9 +146,9 @@ describe("DialogService",
 							};
 
 						expect(dialogSpy.open)
-						.toHaveBeenCalledWith(
-							ConfirmDialogComponent,
-							{ data: expectedData });
+							.toHaveBeenCalledWith(
+								ConfirmDialogComponent,
+								{ data: expectedData });
 					});
 
 				it("should open dialog with plural text for multiple items",
@@ -157,8 +157,8 @@ describe("DialogService",
 						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
 						service
-						.confirmDelete("log", 5)
-						.subscribe();
+							.confirmDelete("log", 5)
+							.subscribe();
 
 						const expectedData: ConfirmDialogData =
 							{
@@ -171,9 +171,9 @@ describe("DialogService",
 							};
 
 						expect(dialogSpy.open)
-						.toHaveBeenCalledWith(
-							ConfirmDialogComponent,
-							{ data: expectedData });
+							.toHaveBeenCalledWith(
+								ConfirmDialogComponent,
+								{ data: expectedData });
 					});
 
 				it("should return true when confirmed",
@@ -182,14 +182,14 @@ describe("DialogService",
 						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
 						service
-						.confirmDelete("log")
-						.subscribe(
-							(result: boolean) =>
-							{
-								expect(result)
-								.toBeTrue();
-								done();
-							});
+							.confirmDelete("log")
+							.subscribe(
+								(result: boolean) =>
+								{
+									expect(result)
+										.toBeTrue();
+									done();
+								});
 					});
 
 				it("should return false when cancelled",
@@ -198,14 +198,14 @@ describe("DialogService",
 						dialogRefSpy.afterClosed.and.returnValue(of(false));
 
 						service
-						.confirmDelete("log")
-						.subscribe(
-							(result: boolean) =>
-							{
-								expect(result)
-								.toBeFalse();
-								done();
-							});
+							.confirmDelete("log")
+							.subscribe(
+								(result: boolean) =>
+								{
+									expect(result)
+										.toBeFalse();
+									done();
+								});
 					});
 			});
 
@@ -218,8 +218,8 @@ describe("DialogService",
 						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
 						service
-						.confirmDeactivate("user")
-						.subscribe();
+							.confirmDeactivate("user")
+							.subscribe();
 
 						const expectedData: ConfirmDialogData =
 							{
@@ -233,9 +233,9 @@ describe("DialogService",
 							};
 
 						expect(dialogSpy.open)
-						.toHaveBeenCalledWith(
-							ConfirmDialogComponent,
-							{ data: expectedData });
+							.toHaveBeenCalledWith(
+								ConfirmDialogComponent,
+								{ data: expectedData });
 					});
 
 				it("should return true when confirmed",
@@ -244,14 +244,14 @@ describe("DialogService",
 						dialogRefSpy.afterClosed.and.returnValue(of(true));
 
 						service
-						.confirmDeactivate("user")
-						.subscribe(
-							(result: boolean) =>
-							{
-								expect(result)
-								.toBeTrue();
-								done();
-							});
+							.confirmDeactivate("user")
+							.subscribe(
+								(result: boolean) =>
+								{
+									expect(result)
+										.toBeTrue();
+									done();
+								});
 					});
 
 				it("should return false when cancelled",
@@ -260,14 +260,14 @@ describe("DialogService",
 						dialogRefSpy.afterClosed.and.returnValue(of(false));
 
 						service
-						.confirmDeactivate("user")
-						.subscribe(
-							(result: boolean) =>
-							{
-								expect(result)
-								.toBeFalse();
-								done();
-							});
+							.confirmDeactivate("user")
+							.subscribe(
+								(result: boolean) =>
+								{
+									expect(result)
+										.toBeFalse();
+									done();
+								});
 					});
 			});
 	});

@@ -69,7 +69,7 @@ describe("LogManagementService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("getLogs",
@@ -87,7 +87,7 @@ describe("LogManagementService",
 							await query.refetch();
 
 						expect(result.data)
-						.toEqual(mockPagedResponse);
+							.toEqual(mockPagedResponse);
 					});
 			});
 
@@ -103,9 +103,9 @@ describe("LogManagementService",
 						const filter: LogQueryRequest =
 							service.getCurrentFilter();
 						expect(filter.logLevel)
-						.toBe(LogLevel.Error.toString());
+							.toBe(LogLevel.Error.toString());
 						expect(filter.page)
-						.toBe(1);
+							.toBe(1);
 					});
 			});
 
@@ -122,9 +122,9 @@ describe("LogManagementService",
 						const filter: LogQueryRequest =
 							service.getCurrentFilter();
 						expect(filter.page)
-						.toBe(3);
+							.toBe(3);
 						expect(filter.logLevel)
-						.toBe(LogLevel.Error.toString());
+							.toBe(LogLevel.Error.toString());
 					});
 			});
 
@@ -140,9 +140,9 @@ describe("LogManagementService",
 						const filter: LogQueryRequest =
 							service.getCurrentFilter();
 						expect(filter.pageSize)
-						.toBe(100);
+							.toBe(100);
 						expect(filter.page)
-						.toBe(1);
+							.toBe(1);
 					});
 			});
 
@@ -164,18 +164,18 @@ describe("LogManagementService",
 						const filter: LogQueryRequest =
 							service.getCurrentFilter();
 						expect(filter.logLevel)
-						.toBeUndefined();
+							.toBeUndefined();
 						// startDate/endDate are reset to initial values (last 24 hours), not undefined
 						expect(filter.startDate)
-						.toBeDefined();
+							.toBeDefined();
 						expect(filter.endDate)
-						.toBeDefined();
+							.toBeDefined();
 						expect(filter.page)
-						.toBe(1);
+							.toBe(1);
 						expect(filter.pageSize)
-						.toBe(50);
+							.toBe(50);
 						expect(service.selectedIds().size)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -188,20 +188,20 @@ describe("LogManagementService",
 						service.toggleSelection(1);
 						expect(
 							service
-							.selectedIds()
-							.has(1))
-						.toBe(true);
+								.selectedIds()
+								.has(1))
+							.toBe(true);
 						expect(service.selectedCount())
-						.toBe(1);
+							.toBe(1);
 
 						service.toggleSelection(1);
 						expect(
 							service
-							.selectedIds()
-							.has(1))
-						.toBe(false);
+								.selectedIds()
+								.has(1))
+							.toBe(false);
 						expect(service.selectedCount())
-						.toBe(0);
+							.toBe(0);
 					});
 
 				it("should select all visible logs",
@@ -211,9 +211,9 @@ describe("LogManagementService",
 							[1, 2, 3]);
 
 						expect(service.selectedIds().size)
-						.toBe(3);
+							.toBe(3);
 						expect(service.selectedCount())
-						.toBe(3);
+							.toBe(3);
 					});
 
 				it("should clear selection",
@@ -223,7 +223,7 @@ describe("LogManagementService",
 						service.clearSelection();
 
 						expect(service.selectedIds().size)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -242,7 +242,7 @@ describe("LogManagementService",
 						await mutation.mutateAsync(1);
 
 						expect(mockApiService.delete)
-						.toHaveBeenCalledWith("logs/1");
+							.toHaveBeenCalledWith("logs/1");
 					});
 			});
 
@@ -264,10 +264,10 @@ describe("LogManagementService",
 							[1, 2]);
 
 						expect(mockApiService.delete)
-						.toHaveBeenCalledWith("logs/batch",
-							[1, 2]);
+							.toHaveBeenCalledWith("logs/batch",
+								[1, 2]);
 						expect(service.selectedIds().size)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -280,7 +280,7 @@ describe("LogManagementService",
 						// Access the private signal via bracket notation for testing
 						const signal: WritableSignal<boolean> =
 							(service as unknown as { forceRefreshTrigger: WritableSignal<boolean>; })
-							.forceRefreshTrigger;
+								.forceRefreshTrigger;
 
 						const initialValue: boolean =
 							signal();
@@ -294,7 +294,7 @@ describe("LogManagementService",
 
 						// Signal should have toggled
 						expect(newValue)
-						.toBe(!initialValue);
+							.toBe(!initialValue);
 					});
 			});
 	});

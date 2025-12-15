@@ -25,12 +25,12 @@ import {
 	UserProfileDto
 } from "@shared/models";
 import { DateService } from "@shared/services";
-import { catchError, Observable, of, tap } from "rxjs";
 import {
 	DOTNET_ROLE_CLAIM,
 	JwtClaims,
 	OAuthProvider
 } from "@shared/services/auth.types";
+import { catchError, Observable, of, tap } from "rxjs";
 
 @Injectable(
 	{

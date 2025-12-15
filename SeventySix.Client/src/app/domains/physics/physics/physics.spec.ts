@@ -12,12 +12,12 @@ describe("Physics",
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [Physics],
-						providers: [provideZonelessChangeDetection()]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [Physics],
+							providers: [provideZonelessChangeDetection()]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(Physics);
@@ -30,22 +30,22 @@ describe("Physics",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should have title property",
 			() =>
 			{
 				expect(component.title)
-				.toBe("Physics Calculations");
+					.toBe("Physics Calculations");
 			});
 
 		it("should have description property",
 			() =>
 			{
 				expect(component.description)
-				.toBe(
-					"Electricity generation from buoyancy and future calculations");
+					.toBe(
+						"Electricity generation from buoyancy and future calculations");
 			});
 
 		it("should render title in template",
@@ -56,7 +56,7 @@ describe("Physics",
 				const title: HTMLElement | null =
 					compiled.querySelector("h1");
 				expect(title?.textContent)
-				.toContain("Physics Calculations");
+					.toContain("Physics Calculations");
 			});
 
 		it("should render coming soon message",
@@ -67,7 +67,7 @@ describe("Physics",
 				const comingSoon: HTMLElement | null =
 					compiled.querySelector(".coming-soon");
 				expect(comingSoon?.textContent)
-				.toContain("Coming Soon");
+					.toContain("Coming Soon");
 			});
 
 		it("should have physics-theme class",
@@ -78,6 +78,6 @@ describe("Physics",
 				const card: HTMLElement | null =
 					compiled.querySelector(".physics-theme");
 				expect(card)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 	});

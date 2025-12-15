@@ -46,11 +46,11 @@ describe("LoggerService",
 						service.debug("Debug message");
 
 						expect(console.log)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> =
 							(console.log as jasmine.Spy).calls.mostRecent();
 						expect(call.args[1])
-						.toBe("Debug message");
+							.toBe("Debug message");
 					});
 
 				it("should include context in debug log",
@@ -62,11 +62,11 @@ describe("LoggerService",
 						service.debug("Debug with context", context);
 
 						expect(console.log)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> =
 							(console.log as jasmine.Spy).calls.mostRecent();
 						expect(call.args[2])
-						.toBe(context);
+							.toBe(context);
 					});
 			});
 
@@ -79,11 +79,11 @@ describe("LoggerService",
 						service.info("Info message");
 
 						expect(console.log)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> | undefined =
 							(console.log as jasmine.Spy).calls.mostRecent();
 						expect(call?.args[1])
-						.toBe("Info message");
+							.toBe("Info message");
 					});
 
 				it("should include context in info log",
@@ -95,11 +95,11 @@ describe("LoggerService",
 						service.info("Info with context", context);
 
 						expect(console.log)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> | undefined =
 							(console.log as jasmine.Spy).calls.mostRecent();
 						expect(call?.args[2])
-						.toBe(context);
+							.toBe(context);
 					});
 			});
 
@@ -112,11 +112,11 @@ describe("LoggerService",
 						service.warning("Warning message");
 
 						expect(console.warn)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> =
 							(console.warn as jasmine.Spy).calls.mostRecent();
 						expect(call.args[1])
-						.toBe("Warning message");
+							.toBe("Warning message");
 					});
 
 				it("should include context in warning log",
@@ -128,11 +128,11 @@ describe("LoggerService",
 						service.warning("Warning with context", context);
 
 						expect(console.warn)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> =
 							(console.warn as jasmine.Spy).calls.mostRecent();
 						expect(call.args[2])
-						.toBe(context);
+							.toBe(context);
 					});
 			});
 
@@ -145,11 +145,11 @@ describe("LoggerService",
 						service.error("Error message");
 
 						expect(console.error)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> | undefined =
 							(console.error as jasmine.Spy).calls.mostRecent();
 						expect(call?.args[1])
-						.toBe("Error message");
+							.toBe("Error message");
 					});
 
 				it("should include error object in log",
@@ -161,11 +161,11 @@ describe("LoggerService",
 						service.error("Error with exception", error);
 
 						expect(console.error)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> =
 							(console.error as jasmine.Spy).calls.mostRecent();
 						expect(call.args[2])
-						.toBe(error);
+							.toBe(error);
 					});
 
 				it("should include both error and context",
@@ -179,13 +179,13 @@ describe("LoggerService",
 						service.error("Error with context", error, context);
 
 						expect(console.error)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> | undefined =
 							(console.error as jasmine.Spy).calls.mostRecent();
 						expect(call?.args[2])
-						.toBe(context);
+							.toBe(context);
 						expect(call?.args[3])
-						.toBe(error);
+							.toBe(error);
 					});
 			});
 
@@ -198,11 +198,11 @@ describe("LoggerService",
 						service.critical("Critical error");
 
 						expect(console.error)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> | undefined =
 							(console.error as jasmine.Spy).calls.mostRecent();
 						expect(call?.args[1])
-						.toBe("Critical error");
+							.toBe("Critical error");
 					});
 
 				it("should include error object in critical log",
@@ -214,11 +214,11 @@ describe("LoggerService",
 						service.critical("Critical failure occurred", error);
 
 						expect(console.error)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> | undefined =
 							(console.error as jasmine.Spy).calls.mostRecent();
 						expect(call?.args[2])
-						.toBe(error);
+							.toBe(error);
 					});
 			});
 
@@ -232,7 +232,7 @@ describe("LoggerService",
 						service.info("Info");
 
 						expect(console.log)
-						.toHaveBeenCalledTimes(2);
+							.toHaveBeenCalledTimes(2);
 						expect(console.warn).not.toHaveBeenCalled();
 						expect(console.error).not.toHaveBeenCalled();
 					});
@@ -243,7 +243,7 @@ describe("LoggerService",
 						service.warning("Warning");
 
 						expect(console.warn)
-						.toHaveBeenCalledTimes(1);
+							.toHaveBeenCalledTimes(1);
 						expect(console.log).not.toHaveBeenCalled();
 						expect(console.error).not.toHaveBeenCalled();
 					});
@@ -255,7 +255,7 @@ describe("LoggerService",
 						service.critical("Critical");
 
 						expect(console.error)
-						.toHaveBeenCalledTimes(2);
+							.toHaveBeenCalledTimes(2);
 						expect(console.log).not.toHaveBeenCalled();
 						expect(console.warn).not.toHaveBeenCalled();
 					});
@@ -274,9 +274,9 @@ describe("LoggerService",
 						const prefix: string =
 							call.args[0] as string;
 						expect(prefix)
-						.toContain("[Info]");
+							.toContain("[Info]");
 						expect(prefix)
-						.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+							.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
 					});
 			});
 
@@ -297,25 +297,25 @@ describe("LoggerService",
 						service.error("Login error", error, context);
 
 						expect(console.error)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> =
 							(console.error as jasmine.Spy).calls.mostRecent();
 
 						// Verify prefix includes level
 						expect(call.args[0])
-						.toContain("[Error]");
+							.toContain("[Error]");
 
 						// Verify message
 						expect(call.args[1])
-						.toBe("Login error");
+							.toBe("Login error");
 
 						// Verify context
 						expect(call.args[2])
-						.toBe(context);
+							.toBe(context);
 
 						// Verify error
 						expect(call.args[3])
-						.toBe(error);
+							.toBe(error);
 					});
 			});
 
@@ -334,11 +334,11 @@ describe("LoggerService",
 						req.flush({});
 
 						expect(console.log)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> | undefined =
 							(console.log as jasmine.Spy).calls.mostRecent();
 						expect(call?.args[1])
-						.toBe("Force debug message");
+							.toBe("Force debug message");
 					});
 
 				it("should force log info message regardless of level filtering",
@@ -353,11 +353,11 @@ describe("LoggerService",
 						req.flush({});
 
 						expect(console.log)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> | undefined =
 							(console.log as jasmine.Spy).calls.mostRecent();
 						expect(call?.args[1])
-						.toBe("Force info message");
+							.toBe("Force info message");
 					});
 
 				it("should force log warning message regardless of level filtering",
@@ -372,11 +372,11 @@ describe("LoggerService",
 						req.flush({});
 
 						expect(console.warn)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> =
 							(console.warn as jasmine.Spy).calls.mostRecent();
 						expect(call.args[1])
-						.toBe("Force warning message");
+							.toBe("Force warning message");
 					});
 
 				it("should force log error message regardless of level filtering",
@@ -394,13 +394,13 @@ describe("LoggerService",
 						req.flush({});
 
 						expect(console.error)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> | undefined =
 							(console.error as jasmine.Spy).calls.mostRecent();
 						expect(call?.args[1])
-						.toBe("Force error message");
+							.toBe("Force error message");
 						expect(call?.args[2])
-						.toBe(error);
+							.toBe(error);
 					});
 
 				it("should include context in force log methods",
@@ -418,11 +418,11 @@ describe("LoggerService",
 						req.flush({});
 
 						expect(console.log)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						const call: jasmine.CallInfo<jasmine.Func> | undefined =
 							(console.log as jasmine.Spy).calls.mostRecent();
 						expect(call?.args[2])
-						.toBe(context);
+							.toBe(context);
 					});
 			});
 	});

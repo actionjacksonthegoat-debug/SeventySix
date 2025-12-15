@@ -3,8 +3,8 @@ import { inject, Injectable, isDevMode } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from "@environments/environment";
 import { CreateLogRequest } from "@shared/models";
-import { catchError, of } from "rxjs";
 import { DateService } from "@shared/services/date.service";
+import { catchError, of } from "rxjs";
 
 /**
  * Log levels for structured logging.

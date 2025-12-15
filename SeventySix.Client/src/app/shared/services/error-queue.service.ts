@@ -3,9 +3,9 @@ import { inject, Injectable } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { environment } from "@environments/environment";
 import { CreateLogRequest } from "@shared/models";
-import { catchError, interval, of } from "rxjs";
 import { DateService } from "@shared/services/date.service";
 import { StorageService } from "@shared/services/storage.service";
+import { catchError, interval, of } from "rxjs";
 
 /**
  * Circuit breaker states.

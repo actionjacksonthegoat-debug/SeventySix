@@ -54,14 +54,14 @@ describe("ClientErrorLoggerService",
 							});
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									logLevel: "Error",
-									message: "[Client] - Something went wrong",
-									exceptionMessage: "Test error",
-									stackTrace: jasmine.stringContaining("Error: Test error")
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										logLevel: "Error",
+										message: "[Client] - Something went wrong",
+										exceptionMessage: "Test error",
+										stackTrace: jasmine.stringContaining("Error: Test error")
+									}));
 					});
 
 				it("should default to Error log level",
@@ -71,11 +71,11 @@ describe("ClientErrorLoggerService",
 							{ message: "Test error" });
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									logLevel: "Error"
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										logLevel: "Error"
+									}));
 					});
 
 				it("should accept custom log level",
@@ -86,11 +86,11 @@ describe("ClientErrorLoggerService",
 							LogLevel.Warning);
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									logLevel: "Warning"
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										logLevel: "Warning"
+									}));
 					});
 
 				it("should extract source context from error stack",
@@ -104,11 +104,11 @@ describe("ClientErrorLoggerService",
 							{ message: "Error", error });
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									sourceContext: jasmine.stringContaining("UserComponent")
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										sourceContext: jasmine.stringContaining("UserComponent")
+									}));
 					});
 
 				it("should include user agent",
@@ -118,11 +118,11 @@ describe("ClientErrorLoggerService",
 							{ message: "Test error" });
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									userAgent: jasmine.any(String)
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										userAgent: jasmine.any(String)
+									}));
 					});
 
 				it("should include current timestamp",
@@ -138,18 +138,18 @@ describe("ClientErrorLoggerService",
 							new Date();
 						const call: jasmine.CallInfo<(error: CreateLogRequest) => void> =
 							errorQueueService
-							.enqueue
-							.calls
-							.mostRecent();
+								.enqueue
+								.calls
+								.mostRecent();
 						const timestamp: Date =
 							new Date(call.args[0].clientTimestamp!);
 
 						expect(timestamp.getTime())
-						.toBeGreaterThanOrEqual(
-							beforeTime.getTime());
+							.toBeGreaterThanOrEqual(
+								beforeTime.getTime());
 						expect(timestamp.getTime())
-						.toBeLessThanOrEqual(
-							afterTime.getTime());
+							.toBeLessThanOrEqual(
+								afterTime.getTime());
 					});
 			});
 
@@ -175,12 +175,12 @@ describe("ClientErrorLoggerService",
 							});
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									requestUrl: "https://example.com/api/users/123",
-									statusCode: 404
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										requestUrl: "https://example.com/api/users/123",
+										statusCode: 404
+									}));
 					});
 
 				it("should extract request method from HttpErrorResponse headers",
@@ -209,7 +209,7 @@ describe("ClientErrorLoggerService",
 							});
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 
 				it("should include status code from HttpErrorResponse",
@@ -231,11 +231,11 @@ describe("ClientErrorLoggerService",
 							});
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									statusCode: 500
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										statusCode: 500
+									}));
 					});
 
 				it("should handle network errors (status 0)",
@@ -257,12 +257,12 @@ describe("ClientErrorLoggerService",
 							});
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									statusCode: 0,
-									message: "[Client] - Network error"
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										statusCode: 0,
+										message: "[Client] - Network error"
+									}));
 					});
 			});
 
@@ -283,11 +283,11 @@ describe("ClientErrorLoggerService",
 							});
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									requestUrl: jasmine.any(String)
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										requestUrl: jasmine.any(String)
+									}));
 					});
 
 				it("should include additional context",
@@ -304,15 +304,15 @@ describe("ClientErrorLoggerService",
 							});
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									additionalContext: {
-										userId: 123,
-										action: "save",
-										formValid: false
-									}
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										additionalContext: {
+											userId: 123,
+											action: "save",
+											formValid: false
+										}
+									}));
 					});
 
 				it("should handle errors without stack traces",
@@ -324,12 +324,12 @@ describe("ClientErrorLoggerService",
 							});
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									message: "[Client] - Simple error",
-									stackTrace: undefined
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										message: "[Client] - Simple error",
+										stackTrace: undefined
+									}));
 					});
 			});
 
@@ -342,12 +342,12 @@ describe("ClientErrorLoggerService",
 						service.logWarning("This is a warning");
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									logLevel: "Warning",
-									message: "[Client] - This is a warning"
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										logLevel: "Warning",
+										message: "[Client] - This is a warning"
+									}));
 					});
 
 				it("should accept context",
@@ -359,13 +359,13 @@ describe("ClientErrorLoggerService",
 							});
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									logLevel: "Warning",
-									message: "[Client] - Warning message",
-									additionalContext: { component: "TestComponent" }
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										logLevel: "Warning",
+										message: "[Client] - Warning message",
+										additionalContext: { component: "TestComponent" }
+									}));
 					});
 			});
 
@@ -378,12 +378,12 @@ describe("ClientErrorLoggerService",
 						service.logInfo("This is info");
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									logLevel: "Info",
-									message: "[Client] - This is info"
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										logLevel: "Info",
+										message: "[Client] - This is info"
+									}));
 					});
 			});
 
@@ -402,11 +402,11 @@ describe("ClientErrorLoggerService",
 
 						const call: jasmine.CallInfo<(log: CreateLogRequest) => void> =
 							errorQueueService
-							.enqueue
-							.calls
-							.mostRecent();
+								.enqueue
+								.calls
+								.mostRecent();
 						expect(call.args[0].sourceContext)
-						.toContain("UserComponent");
+							.toContain("UserComponent");
 					});
 
 				it("should extract service name from error stack",
@@ -421,11 +421,11 @@ describe("ClientErrorLoggerService",
 
 						const call: jasmine.CallInfo<(log: CreateLogRequest) => void> =
 							errorQueueService
-							.enqueue
-							.calls
-							.mostRecent();
+								.enqueue
+								.calls
+								.mostRecent();
 						expect(call.args[0].sourceContext)
-						.toContain("UserService");
+							.toContain("UserService");
 					});
 
 				it("should handle errors without source context",
@@ -439,7 +439,7 @@ describe("ClientErrorLoggerService",
 							{ message: "Error", error });
 
 						expect(errorQueueService.enqueue)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 
@@ -457,8 +457,8 @@ describe("ClientErrorLoggerService",
 								service.logError(
 									{ message: "Test error" });
 							})
-						.not
-						.toThrow();
+							.not
+							.toThrow();
 					});
 
 				it("should fallback to console.error when enqueue fails",
@@ -470,7 +470,7 @@ describe("ClientErrorLoggerService",
 							{ message: "Test error" });
 
 						expect(consoleSpy)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 	});

@@ -15,8 +15,8 @@ describe("NotificationToastComponent",
 			{
 				fixture =
 					await new ComponentTestBed<NotificationToastComponent>()
-					.withRealService(NotificationService)
-					.build(NotificationToastComponent);
+						.withRealService(NotificationService)
+						.build(NotificationToastComponent);
 
 				component =
 					fixture.componentInstance;
@@ -28,7 +28,7 @@ describe("NotificationToastComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("notification display",
@@ -44,7 +44,7 @@ describe("NotificationToastComponent",
 							fixture.nativeElement;
 						expect(
 							compiled.querySelector(".toast-message")?.textContent)
-						.toContain("Test message");
+							.toContain("Test message");
 					});
 
 				it("should display multiple notifications",
@@ -57,7 +57,7 @@ describe("NotificationToastComponent",
 						const toasts: NodeListOf<HTMLElement> =
 							fixture.nativeElement.querySelectorAll(".toast");
 						expect(toasts.length)
-						.toBe(2);
+							.toBe(2);
 					});
 
 				it("should apply correct CSS class for error level",
@@ -69,7 +69,7 @@ describe("NotificationToastComponent",
 						const toast: HTMLElement | null =
 							fixture.nativeElement.querySelector(".toast");
 						expect(toast?.classList.contains("toast-error"))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should apply correct CSS class for warning level",
@@ -81,7 +81,7 @@ describe("NotificationToastComponent",
 						const toast: HTMLElement | null =
 							fixture.nativeElement.querySelector(".toast");
 						expect(toast?.classList.contains("toast-warning"))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should apply correct CSS class for info level",
@@ -93,7 +93,7 @@ describe("NotificationToastComponent",
 						const toast: HTMLElement | null =
 							fixture.nativeElement.querySelector(".toast");
 						expect(toast?.classList.contains("toast-info"))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should apply correct CSS class for success level",
@@ -105,7 +105,7 @@ describe("NotificationToastComponent",
 						const toast: HTMLElement | null =
 							fixture.nativeElement.querySelector(".toast");
 						expect(toast?.classList.contains("toast-success"))
-						.toBe(true);
+							.toBe(true);
 					});
 			});
 
@@ -121,7 +121,7 @@ describe("NotificationToastComponent",
 						const icon: HTMLElement | null =
 							fixture.nativeElement.querySelector("mat-icon");
 						expect(icon?.textContent?.trim())
-						.toBe("cancel");
+							.toBe("cancel");
 					});
 
 				it("should show warning icon for warning notifications",
@@ -133,7 +133,7 @@ describe("NotificationToastComponent",
 						const icon: HTMLElement | null =
 							fixture.nativeElement.querySelector("mat-icon");
 						expect(icon?.textContent?.trim())
-						.toBe("warning");
+							.toBe("warning");
 					});
 
 				it("should show lightbulb icon for info notifications",
@@ -145,7 +145,7 @@ describe("NotificationToastComponent",
 						const icon: HTMLElement | null =
 							fixture.nativeElement.querySelector("mat-icon");
 						expect(icon?.textContent?.trim())
-						.toBe("lightbulb");
+							.toBe("lightbulb");
 					});
 
 				it("should show check_circle icon for success notifications",
@@ -157,7 +157,7 @@ describe("NotificationToastComponent",
 						const icon: HTMLElement | null =
 							fixture.nativeElement.querySelector("mat-icon");
 						expect(icon?.textContent?.trim())
-						.toBe("check_circle");
+							.toBe("check_circle");
 					});
 			});
 
@@ -177,11 +177,11 @@ describe("NotificationToastComponent",
 						const details: NodeListOf<HTMLLIElement> =
 							fixture.nativeElement.querySelectorAll(".toast-details li");
 						expect(details.length)
-						.toBe(2);
+							.toBe(2);
 						expect(details[0].textContent)
-						.toBe("Detail 1");
+							.toBe("Detail 1");
 						expect(details[1].textContent)
-						.toBe("Detail 2");
+							.toBe("Detail 2");
 					});
 
 				it("should not show details section when details are empty",
@@ -193,7 +193,7 @@ describe("NotificationToastComponent",
 						const detailsSection: HTMLElement | null =
 							fixture.nativeElement.querySelector(".toast-details");
 						expect(detailsSection)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should not show details section when details are undefined",
@@ -205,7 +205,7 @@ describe("NotificationToastComponent",
 						const detailsSection: HTMLElement | null =
 							fixture.nativeElement.querySelector(".toast-details");
 						expect(detailsSection)
-						.toBeNull();
+							.toBeNull();
 					});
 			});
 
@@ -225,7 +225,7 @@ describe("NotificationToastComponent",
 							fixture.nativeElement.querySelector(
 								"[aria-label='Copy error details']");
 						expect(copyButton)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 
 				it("should not show copy button when copyData is absent",
@@ -238,7 +238,7 @@ describe("NotificationToastComponent",
 							fixture.nativeElement.querySelector(
 								"[aria-label='Copy error details']");
 						expect(copyButton)
-						.toBeNull();
+							.toBeNull();
 					});
 
 				it("should call copyToClipboard when copy button is clicked",
@@ -248,8 +248,8 @@ describe("NotificationToastComponent",
 							spyOn(
 								notificationService,
 								"copyToClipboard")
-							.and
-							.returnValue(Promise.resolve(true));
+								.and
+								.returnValue(Promise.resolve(true));
 						notificationService.errorWithDetails(
 							"Error",
 							undefined,
@@ -262,7 +262,7 @@ describe("NotificationToastComponent",
 						copyButton.click();
 
 						expect(copySpy)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 
@@ -278,7 +278,7 @@ describe("NotificationToastComponent",
 						const dismissButton: HTMLElement | null =
 							fixture.nativeElement.querySelector("[aria-label='Dismiss']");
 						expect(dismissButton)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 
 				it("should dismiss notification when dismiss button is clicked",
@@ -288,7 +288,7 @@ describe("NotificationToastComponent",
 						fixture.detectChanges();
 						expect(
 							fixture.nativeElement.querySelectorAll(".toast").length)
-						.toBe(1);
+							.toBe(1);
 
 						const dismissButton: HTMLButtonElement =
 							fixture.nativeElement.querySelector(
@@ -298,7 +298,7 @@ describe("NotificationToastComponent",
 
 						expect(
 							fixture.nativeElement.querySelectorAll(".toast").length)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 	});

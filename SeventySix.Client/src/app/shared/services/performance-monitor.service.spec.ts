@@ -24,7 +24,7 @@ describe("PerformanceMonitorService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should have initial metrics",
@@ -33,13 +33,13 @@ describe("PerformanceMonitorService",
 				const metrics: ReturnType<PerformanceMonitorService["currentMetrics"]> =
 					service.currentMetrics();
 				expect(metrics.fps)
-				.toBe(0);
+					.toBe(0);
 				expect(metrics.frameTime)
-				.toBe(0);
+					.toBe(0);
 				expect(metrics.memoryUsed)
-				.toBeGreaterThanOrEqual(0);
+					.toBeGreaterThanOrEqual(0);
 				expect(metrics.memoryTotal)
-				.toBeGreaterThanOrEqual(0);
+					.toBeGreaterThanOrEqual(0);
 			});
 
 		it("should start monitoring",
@@ -47,7 +47,7 @@ describe("PerformanceMonitorService",
 			{
 				service.startMonitoring();
 				expect(service.isMonitoring())
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("should stop monitoring",
@@ -56,7 +56,7 @@ describe("PerformanceMonitorService",
 				service.startMonitoring();
 				service.stopMonitoring();
 				expect(service.isMonitoring())
-				.toBe(false);
+					.toBe(false);
 			});
 
 		it("should not start monitoring twice",
@@ -65,7 +65,7 @@ describe("PerformanceMonitorService",
 				service.startMonitoring();
 				service.startMonitoring();
 				expect(service.isMonitoring())
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("should compute isHealthy based on fps",
@@ -75,7 +75,7 @@ describe("PerformanceMonitorService",
 
 				// Initially false (fps = 0)
 				expect(service.isHealthy())
-				.toBe(false);
+					.toBe(false);
 
 				// Wait for metrics to update (1+ second)
 				setTimeout(
@@ -85,7 +85,7 @@ describe("PerformanceMonitorService",
 						const healthy: boolean =
 							service.isHealthy();
 						expect(typeof healthy)
-						.toBe("boolean");
+							.toBe("boolean");
 						service.stopMonitoring();
 						done();
 					},
@@ -107,11 +107,11 @@ describe("PerformanceMonitorService",
 						// Note: In test environment, requestAnimationFrame may not fire reliably
 						// so we check if monitoring started rather than requiring FPS > 0
 						expect(service.isMonitoring())
-						.toBe(true);
+							.toBe(true);
 						service.stopMonitoring();
 						// Verify monitoring stopped
 						expect(service.isMonitoring())
-						.toBe(false);
+							.toBe(false);
 						done();
 					},
 					1500);
@@ -124,9 +124,9 @@ describe("PerformanceMonitorService",
 					service.currentMetrics();
 				// Memory might be 0 if not supported, but should be a number
 				expect(typeof metrics.memoryUsed)
-				.toBe("number");
+					.toBe("number");
 				expect(typeof metrics.memoryTotal)
-				.toBe("number");
+					.toBe("number");
 			});
 
 		it("should cancel animation frame on stop",
@@ -136,6 +136,6 @@ describe("PerformanceMonitorService",
 				service.startMonitoring();
 				service.stopMonitoring();
 				expect(window.cancelAnimationFrame)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 	});

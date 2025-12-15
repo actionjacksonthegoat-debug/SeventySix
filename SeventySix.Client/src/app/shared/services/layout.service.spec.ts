@@ -39,7 +39,7 @@ describe("LayoutService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("toggleSidebar",
@@ -52,7 +52,7 @@ describe("LayoutService",
 							service.sidebarExpanded();
 						service.toggleSidebar();
 						expect(service.sidebarExpanded())
-						.toBe(!initialState);
+							.toBe(!initialState);
 					});
 
 				it("should persist state to sessionStorage",
@@ -60,7 +60,7 @@ describe("LayoutService",
 					{
 						service.toggleSidebar();
 						expect(sessionStorage.setItem)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 
@@ -72,11 +72,11 @@ describe("LayoutService",
 					{
 						service.setSidebarExpanded(false);
 						expect(service.sidebarExpanded())
-						.toBe(false);
+							.toBe(false);
 
 						service.setSidebarExpanded(true);
 						expect(service.sidebarExpanded())
-						.toBe(true);
+							.toBe(true);
 					});
 			});
 
@@ -88,7 +88,7 @@ describe("LayoutService",
 					{
 						service.closeSidebar();
 						expect(service.sidebarExpanded())
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -100,7 +100,7 @@ describe("LayoutService",
 					{
 						service.openSidebar();
 						expect(service.sidebarExpanded())
-						.toBe(true);
+							.toBe(true);
 					});
 			});
 
@@ -112,7 +112,7 @@ describe("LayoutService",
 					{
 						// Already mocked sessionStorage.getItem to return null
 						expect(service.sidebarExpanded())
-						.toBe(true);
+							.toBe(true);
 					});
 			});
 	});

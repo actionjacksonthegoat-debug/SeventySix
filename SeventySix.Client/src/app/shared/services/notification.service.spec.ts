@@ -16,16 +16,16 @@ describe("NotificationService",
 				service =
 					setupSimpleServiceTest(NotificationService);
 				jasmine
-				.clock()
-				.install();
+					.clock()
+					.install();
 			});
 
 		afterEach(
 			() =>
 			{
 				jasmine
-				.clock()
-				.uninstall();
+					.clock()
+					.uninstall();
 			});
 
 		describe("success",
@@ -39,11 +39,11 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications.length)
-						.toBe(1);
+							.toBe(1);
 						expect(notifications[0].level)
-						.toBe(NotificationLevel.Success);
+							.toBe(NotificationLevel.Success);
 						expect(notifications[0].message)
-						.toBe("Success message");
+							.toBe("Success message");
 					});
 
 				it("should auto-dismiss after default duration",
@@ -51,14 +51,14 @@ describe("NotificationService",
 					{
 						service.success("Success message");
 						expect(service.notifications$().length)
-						.toBe(1);
+							.toBe(1);
 
 						jasmine
-						.clock()
-						.tick(5000);
+							.clock()
+							.tick(5000);
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 
 				it("should use custom duration",
@@ -66,14 +66,14 @@ describe("NotificationService",
 					{
 						service.success("Success message", 3000);
 						expect(service.notifications$().length)
-						.toBe(1);
+							.toBe(1);
 
 						jasmine
-						.clock()
-						.tick(3000);
+							.clock()
+							.tick(3000);
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -88,11 +88,11 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications.length)
-						.toBe(1);
+							.toBe(1);
 						expect(notifications[0].level)
-						.toBe(NotificationLevel.Info);
+							.toBe(NotificationLevel.Info);
 						expect(notifications[0].message)
-						.toBe("Info message");
+							.toBe("Info message");
 					});
 
 				it("should auto-dismiss after 5 seconds",
@@ -100,14 +100,14 @@ describe("NotificationService",
 					{
 						service.info("Info message");
 						expect(service.notifications$().length)
-						.toBe(1);
+							.toBe(1);
 
 						jasmine
-						.clock()
-						.tick(5000);
+							.clock()
+							.tick(5000);
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -122,11 +122,11 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications.length)
-						.toBe(1);
+							.toBe(1);
 						expect(notifications[0].level)
-						.toBe(NotificationLevel.Warning);
+							.toBe(NotificationLevel.Warning);
 						expect(notifications[0].message)
-						.toBe("Warning message");
+							.toBe("Warning message");
 					});
 
 				it("should auto-dismiss after 7 seconds",
@@ -134,14 +134,14 @@ describe("NotificationService",
 					{
 						service.warning("Warning message");
 						expect(service.notifications$().length)
-						.toBe(1);
+							.toBe(1);
 
 						jasmine
-						.clock()
-						.tick(7000);
+							.clock()
+							.tick(7000);
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -156,11 +156,11 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications.length)
-						.toBe(1);
+							.toBe(1);
 						expect(notifications[0].level)
-						.toBe(NotificationLevel.Error);
+							.toBe(NotificationLevel.Error);
 						expect(notifications[0].message)
-						.toBe("Error message");
+							.toBe("Error message");
 					});
 
 				it("should auto-dismiss after 10 seconds",
@@ -168,14 +168,14 @@ describe("NotificationService",
 					{
 						service.error("Error message");
 						expect(service.notifications$().length)
-						.toBe(1);
+							.toBe(1);
 
 						jasmine
-						.clock()
-						.tick(10000);
+							.clock()
+							.tick(10000);
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -192,7 +192,7 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications.length)
-						.toBe(3);
+							.toBe(3);
 
 						const idToRemove: string =
 							notifications[1].id;
@@ -201,11 +201,11 @@ describe("NotificationService",
 						const updatedNotifications: Notification[] =
 							service.notifications$();
 						expect(updatedNotifications.length)
-						.toBe(2);
+							.toBe(2);
 						expect(
 							updatedNotifications.find(
 								(n) => n.id === idToRemove))
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 
 				it("should do nothing if ID does not exist",
@@ -216,7 +216,7 @@ describe("NotificationService",
 						service.dismiss("non-existent-id");
 
 						expect(service.notifications$().length)
-						.toBe(1);
+							.toBe(1);
 					});
 			});
 
@@ -231,12 +231,12 @@ describe("NotificationService",
 						service.warning("Message 3");
 
 						expect(service.notifications$().length)
-						.toBe(3);
+							.toBe(3);
 
 						service.clearAll();
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 
 				it("should do nothing when no notifications exist",
@@ -245,7 +245,7 @@ describe("NotificationService",
 						service.clearAll();
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -262,13 +262,13 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications.length)
-						.toBe(3);
+							.toBe(3);
 						expect(notifications[0].level)
-						.toBe(NotificationLevel.Success);
+							.toBe(NotificationLevel.Success);
 						expect(notifications[1].level)
-						.toBe(NotificationLevel.Error);
+							.toBe(NotificationLevel.Error);
 						expect(notifications[2].level)
-						.toBe(NotificationLevel.Warning);
+							.toBe(NotificationLevel.Warning);
 					});
 
 				it("should generate unique IDs for each notification",
@@ -287,7 +287,7 @@ describe("NotificationService",
 							new Set(ids);
 
 						expect(uniqueIds.size)
-						.toBe(3);
+							.toBe(3);
 					});
 			});
 
@@ -302,7 +302,7 @@ describe("NotificationService",
 						const notification: Notification =
 							service.notifications$()[0];
 						expect(notification.duration)
-						.toBe(3000);
+							.toBe(3000);
 					});
 
 				it("should include message in notification",
@@ -314,7 +314,7 @@ describe("NotificationService",
 						const notification: Notification =
 							service.notifications$()[0];
 						expect(notification.message)
-						.toBe(message);
+							.toBe(message);
 					});
 			});
 
@@ -332,13 +332,13 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications.length)
-						.toBe(1);
+							.toBe(1);
 						expect(notifications[0].level)
-						.toBe(NotificationLevel.Success);
+							.toBe(NotificationLevel.Success);
 						expect(notifications[0].message)
-						.toBe("Test success");
+							.toBe("Test success");
 						expect(notifications[0].details)
-						.toEqual(details);
+							.toEqual(details);
 					});
 
 				it("should auto-dismiss after 5 seconds",
@@ -348,14 +348,14 @@ describe("NotificationService",
 							["Detail"]);
 
 						expect(service.notifications$().length)
-						.toBe(1);
+							.toBe(1);
 
 						jasmine
-						.clock()
-						.tick(5001);
+							.clock()
+							.tick(5001);
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -373,13 +373,13 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications.length)
-						.toBe(1);
+							.toBe(1);
 						expect(notifications[0].level)
-						.toBe(NotificationLevel.Info);
+							.toBe(NotificationLevel.Info);
 						expect(notifications[0].message)
-						.toBe("Test info");
+							.toBe("Test info");
 						expect(notifications[0].details)
-						.toEqual(details);
+							.toEqual(details);
 					});
 
 				it("should auto-dismiss after 5 seconds",
@@ -389,14 +389,14 @@ describe("NotificationService",
 							["Detail"]);
 
 						expect(service.notifications$().length)
-						.toBe(1);
+							.toBe(1);
 
 						jasmine
-						.clock()
-						.tick(5001);
+							.clock()
+							.tick(5001);
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -414,13 +414,13 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications.length)
-						.toBe(1);
+							.toBe(1);
 						expect(notifications[0].level)
-						.toBe(NotificationLevel.Warning);
+							.toBe(NotificationLevel.Warning);
 						expect(notifications[0].message)
-						.toBe("Test warning");
+							.toBe("Test warning");
 						expect(notifications[0].details)
-						.toEqual(details);
+							.toEqual(details);
 					});
 
 				it("should auto-dismiss after 7 seconds",
@@ -430,14 +430,14 @@ describe("NotificationService",
 							["Detail"]);
 
 						expect(service.notifications$().length)
-						.toBe(1);
+							.toBe(1);
 
 						jasmine
-						.clock()
-						.tick(7001);
+							.clock()
+							.tick(7001);
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -454,13 +454,13 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications.length)
-						.toBe(1);
+							.toBe(1);
 						expect(notifications[0].level)
-						.toBe(NotificationLevel.Error);
+							.toBe(NotificationLevel.Error);
 						expect(notifications[0].message)
-						.toBe("Error message");
+							.toBe("Error message");
 						expect(notifications[0].details)
-						.toEqual(details);
+							.toEqual(details);
 					});
 
 				it("should create error notification with copy data",
@@ -478,7 +478,7 @@ describe("NotificationService",
 						const notifications: Notification[] =
 							service.notifications$();
 						expect(notifications[0].copyData)
-						.toBe(copyData);
+							.toBe(copyData);
 					});
 
 				it("should create error notification with both details and copy data",
@@ -495,9 +495,9 @@ describe("NotificationService",
 						const notification: Notification =
 							service.notifications$()[0];
 						expect(notification.details)
-						.toEqual(details);
+							.toEqual(details);
 						expect(notification.copyData)
-						.toBe(copyData);
+							.toBe(copyData);
 					});
 
 				it("should auto-dismiss after custom duration",
@@ -506,14 +506,14 @@ describe("NotificationService",
 						service.errorWithDetails("Error",
 							["Detail 1"], undefined, 5000);
 						expect(service.notifications$().length)
-						.toBe(1);
+							.toBe(1);
 
 						jasmine
-						.clock()
-						.tick(5000);
+							.clock()
+							.tick(5000);
 
 						expect(service.notifications$().length)
-						.toBe(0);
+							.toBe(0);
 					});
 
 				it("should work without details or copy data",
@@ -524,11 +524,11 @@ describe("NotificationService",
 						const notification: Notification =
 							service.notifications$()[0];
 						expect(notification.message)
-						.toBe("Simple error");
+							.toBe("Simple error");
 						expect(notification.details)
-						.toBeUndefined();
+							.toBeUndefined();
 						expect(notification.copyData)
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 			});
 
@@ -543,9 +543,9 @@ describe("NotificationService",
 						// Mock navigator.clipboard
 						clipboardSpy =
 							jasmine
-							.createSpy("writeText")
-							.and
-							.returnValue(Promise.resolve());
+								.createSpy("writeText")
+								.and
+								.returnValue(Promise.resolve());
 						Object.defineProperty(navigator, "clipboard",
 							{
 								value: {
@@ -568,9 +568,9 @@ describe("NotificationService",
 							await service.copyToClipboard(notification);
 
 						expect(result)
-						.toBe(true);
+							.toBe(true);
 						expect(clipboardSpy)
-						.toHaveBeenCalledWith(copyData);
+							.toHaveBeenCalledWith(copyData);
 					});
 
 				it("should return false if notification has no copy data",
@@ -584,7 +584,7 @@ describe("NotificationService",
 							await service.copyToClipboard(notification);
 
 						expect(result)
-						.toBe(false);
+							.toBe(false);
 						expect(clipboardSpy).not.toHaveBeenCalled();
 					});
 
@@ -604,9 +604,9 @@ describe("NotificationService",
 							await service.copyToClipboard(notification);
 
 						expect(result)
-						.toBe(false);
+							.toBe(false);
 						expect(consoleErrorSpy)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 
 				it("should copy successfully and return true",
@@ -621,7 +621,7 @@ describe("NotificationService",
 							await service.copyToClipboard(notification);
 
 						expect(result)
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should log copy data to console.info when copying",
@@ -638,9 +638,9 @@ describe("NotificationService",
 						await service.copyToClipboard(notification);
 
 						expect(consoleInfoSpy)
-						.toHaveBeenCalledWith(
-							"Notification copied to clipboard:",
-							copyData);
+							.toHaveBeenCalledWith(
+								"Notification copied to clipboard:",
+								copyData);
 					});
 			});
 	});

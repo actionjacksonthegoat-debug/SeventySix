@@ -52,7 +52,7 @@ describe("unsavedChangesGuard",
 								{} as RouterStateSnapshot)) as boolean;
 
 				expect(result)
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("should allow navigation when component has no canDeactivate method",
@@ -71,7 +71,7 @@ describe("unsavedChangesGuard",
 								{} as RouterStateSnapshot)) as boolean;
 
 				expect(result)
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("should show confirm dialog when canDeactivate returns false",
@@ -93,9 +93,9 @@ describe("unsavedChangesGuard",
 								{} as RouterStateSnapshot)) as boolean;
 
 				expect(window.confirm)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 				expect(result)
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("should prevent navigation when user cancels confirm dialog",
@@ -117,11 +117,11 @@ describe("unsavedChangesGuard",
 								{} as RouterStateSnapshot)) as boolean;
 
 				expect(window.confirm)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 				expect(mockNotification.info)
-				.toHaveBeenCalledWith(
-					"Navigation cancelled");
+					.toHaveBeenCalledWith(
+						"Navigation cancelled");
 				expect(result)
-				.toBe(false);
+					.toBe(false);
 			});
 	});

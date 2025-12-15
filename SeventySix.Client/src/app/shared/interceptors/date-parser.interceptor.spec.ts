@@ -49,16 +49,16 @@ describe("dateParserInterceptor",
 				const isoString: string = "2024-04-29T15:45:12.123Z";
 
 				httpClient
-				.get<{ timestamp: Date; }>("/api/test")
-				.subscribe(
-					(response) =>
-					{
-						expect(response.timestamp)
-						.toBeInstanceOf(Date);
-						expect(response.timestamp.toISOString())
-						.toBe(isoString);
-						done();
-					});
+					.get<{ timestamp: Date; }>("/api/test")
+					.subscribe(
+						(response) =>
+						{
+							expect(response.timestamp)
+								.toBeInstanceOf(Date);
+							expect(response.timestamp.toISOString())
+								.toBe(isoString);
+							done();
+						});
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
@@ -72,16 +72,16 @@ describe("dateParserInterceptor",
 				const isoString: string = "2024-04-29T15:45:12.123Z";
 
 				httpClient
-				.get<{ data: { createdAt: Date; }; }>("/api/test")
-				.subscribe(
-					(response) =>
-					{
-						expect(response.data.createdAt)
-						.toBeInstanceOf(Date);
-						expect(response.data.createdAt.toISOString())
-						.toBe(isoString);
-						done();
-					});
+					.get<{ data: { createdAt: Date; }; }>("/api/test")
+					.subscribe(
+						(response) =>
+						{
+							expect(response.data.createdAt)
+								.toBeInstanceOf(Date);
+							expect(response.data.createdAt.toISOString())
+								.toBe(isoString);
+							done();
+						});
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
@@ -96,20 +96,20 @@ describe("dateParserInterceptor",
 				const isoString2: string = "2024-04-30T10:30:00.000Z";
 
 				httpClient
-				.get<{ timestamp: Date; }[]>("/api/test")
-				.subscribe(
-					(response) =>
-					{
-						expect(response[0].timestamp)
-						.toBeInstanceOf(Date);
-						expect(response[0].timestamp.toISOString())
-						.toBe(isoString1);
-						expect(response[1].timestamp)
-						.toBeInstanceOf(Date);
-						expect(response[1].timestamp.toISOString())
-						.toBe(isoString2);
-						done();
-					});
+					.get<{ timestamp: Date; }[]>("/api/test")
+					.subscribe(
+						(response) =>
+						{
+							expect(response[0].timestamp)
+								.toBeInstanceOf(Date);
+							expect(response[0].timestamp.toISOString())
+								.toBe(isoString1);
+							expect(response[1].timestamp)
+								.toBeInstanceOf(Date);
+							expect(response[1].timestamp.toISOString())
+								.toBe(isoString2);
+							done();
+						});
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
@@ -128,18 +128,18 @@ describe("dateParserInterceptor",
 					};
 
 				httpClient
-				.get<typeof testData>("/api/test")
-				.subscribe(
-					(response) =>
-					{
-						expect(response.name)
-						.toBe("John Doe");
-						expect(response.email)
-						.toBe("john@example.com");
-						expect(response.id)
-						.toBe("12345");
-						done();
-					});
+					.get<typeof testData>("/api/test")
+					.subscribe(
+						(response) =>
+						{
+							expect(response.name)
+								.toBe("John Doe");
+							expect(response.email)
+								.toBe("john@example.com");
+							expect(response.id)
+								.toBe("12345");
+							done();
+						});
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
@@ -157,18 +157,18 @@ describe("dateParserInterceptor",
 					};
 
 				httpClient
-				.get<typeof testData>("/api/test")
-				.subscribe(
-					(response) =>
-					{
-						expect(response.timestamp)
-						.toBeNull();
-						expect(response.createdAt)
-						.toBeUndefined();
-						expect(response.name)
-						.toBe("Test");
-						done();
-					});
+					.get<typeof testData>("/api/test")
+					.subscribe(
+						(response) =>
+						{
+							expect(response.timestamp)
+								.toBeNull();
+							expect(response.createdAt)
+								.toBeUndefined();
+							expect(response.name)
+								.toBe("Test");
+							done();
+						});
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
@@ -179,14 +179,14 @@ describe("dateParserInterceptor",
 			(done: DoneFn) =>
 			{
 				httpClient
-				.get("/api/test")
-				.subscribe(
-					(response) =>
-					{
-						expect(response)
-						.toBeNull();
-						done();
-					});
+					.get("/api/test")
+					.subscribe(
+						(response) =>
+						{
+							expect(response)
+								.toBeNull();
+							done();
+						});
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
@@ -199,17 +199,17 @@ describe("dateParserInterceptor",
 				const isoString: string = "2024-04-29T15:45:12Z";
 
 				httpClient
-				.get<{ timestamp: Date; }>("/api/test")
-				.subscribe(
-					(response) =>
-					{
-						expect(response.timestamp)
-						.toBeInstanceOf(Date);
-						expect(response.timestamp.toISOString())
-						.toBe(
-							"2024-04-29T15:45:12.000Z");
-						done();
-					});
+					.get<{ timestamp: Date; }>("/api/test")
+					.subscribe(
+						(response) =>
+						{
+							expect(response.timestamp)
+								.toBeInstanceOf(Date);
+							expect(response.timestamp.toISOString())
+								.toBe(
+									"2024-04-29T15:45:12.000Z");
+							done();
+						});
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
@@ -241,21 +241,21 @@ describe("dateParserInterceptor",
 					};
 
 				httpClient
-				.get<typeof complexData>("/api/test")
-				.subscribe(
-					(response) =>
-					{
-						expect(response.user.profile.createdAt)
-						.toBeInstanceOf(Date);
-						expect(response.user.profile.settings.lastLogin)
-						.toBeInstanceOf(
-							Date);
-						expect(response.logs[0].timestamp)
-						.toBeInstanceOf(Date);
-						expect(response.logs[1].timestamp)
-						.toBeInstanceOf(Date);
-						done();
-					});
+					.get<typeof complexData>("/api/test")
+					.subscribe(
+						(response) =>
+						{
+							expect(response.user.profile.createdAt)
+								.toBeInstanceOf(Date);
+							expect(response.user.profile.settings.lastLogin)
+								.toBeInstanceOf(
+									Date);
+							expect(response.logs[0].timestamp)
+								.toBeInstanceOf(Date);
+							expect(response.logs[1].timestamp)
+								.toBeInstanceOf(Date);
+							done();
+						});
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
@@ -273,18 +273,18 @@ describe("dateParserInterceptor",
 					};
 
 				httpClient
-				.get<typeof testData>("/api/test")
-				.subscribe(
-					(response) =>
-					{
-						expect(typeof response.invalidDate)
-						.toBe("string");
-						expect(typeof response.partialDate)
-						.toBe("string");
-						expect(typeof response.description)
-						.toBe("string");
-						done();
-					});
+					.get<typeof testData>("/api/test")
+					.subscribe(
+						(response) =>
+						{
+							expect(typeof response.invalidDate)
+								.toBe("string");
+							expect(typeof response.partialDate)
+								.toBe("string");
+							expect(typeof response.description)
+								.toBe("string");
+							done();
+						});
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");

@@ -56,7 +56,7 @@ describe("SwUpdateService",
 				service =
 					TestBed.inject(SwUpdateService);
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("checkForUpdate",
@@ -84,7 +84,7 @@ describe("SwUpdateService",
 						const result: boolean =
 							await service.checkForUpdate();
 						expect(result)
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return true when update is found",
@@ -111,9 +111,9 @@ describe("SwUpdateService",
 							await service.checkForUpdate();
 
 						expect(result)
-						.toBe(true);
+							.toBe(true);
 						expect(loggerSpy.info)
-						.toHaveBeenCalledWith("Update found");
+							.toHaveBeenCalledWith("Update found");
 					});
 
 				it("should return false when no update is available",
@@ -140,9 +140,9 @@ describe("SwUpdateService",
 							await service.checkForUpdate();
 
 						expect(result)
-						.toBe(false);
+							.toBe(false);
 						expect(loggerSpy.info)
-						.toHaveBeenCalledWith("No update available");
+							.toHaveBeenCalledWith("No update available");
 					});
 
 				it("should handle errors and return false",
@@ -170,9 +170,9 @@ describe("SwUpdateService",
 							await service.checkForUpdate();
 
 						expect(result)
-						.toBe(false);
+							.toBe(false);
 						expect(loggerSpy.error)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 
@@ -226,7 +226,7 @@ describe("SwUpdateService",
 						await service.forceUpdate();
 
 						expect(loggerSpy.error)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 	});

@@ -12,12 +12,12 @@ describe("RVCamper",
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [RVCamper],
-						providers: [provideZonelessChangeDetection()]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [RVCamper],
+							providers: [provideZonelessChangeDetection()]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(RVCamper);
@@ -30,21 +30,21 @@ describe("RVCamper",
 			{
 				fixture.detectChanges();
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should have title property",
 			() =>
 			{
 				expect(component.title)
-				.toBe("RV Camper Projects");
+					.toBe("RV Camper Projects");
 			});
 
 		it("should have description property",
 			() =>
 			{
 				expect(component.description)
-				.toContain("RV camper");
+					.toContain("RV camper");
 			});
 
 		it("should render title in template",
@@ -56,7 +56,7 @@ describe("RVCamper",
 				const titleElement: HTMLElement | null =
 					compiled.querySelector("mat-card-title");
 				expect(titleElement?.textContent?.trim())
-				.toBe("RV Camper Projects");
+					.toBe("RV Camper Projects");
 			});
 
 		it("should render description in template",
@@ -68,7 +68,7 @@ describe("RVCamper",
 				const descriptionElement: HTMLElement | null =
 					compiled.querySelector("p");
 				expect(descriptionElement?.textContent?.trim())
-				.toContain("RV camper");
+					.toContain("RV camper");
 			});
 
 		it("should apply tertiary color theme class",
@@ -80,6 +80,6 @@ describe("RVCamper",
 				const card: HTMLElement | null =
 					compiled.querySelector(".rv-camper-card");
 				expect(card)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 	});

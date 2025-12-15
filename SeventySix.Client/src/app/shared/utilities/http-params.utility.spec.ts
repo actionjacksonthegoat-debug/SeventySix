@@ -11,7 +11,7 @@ describe("buildHttpParams",
 					buildHttpParams({});
 
 				expect(result.keys().length)
-				.toBe(0);
+					.toBe(0);
 			});
 
 		it("should handle string values",
@@ -22,7 +22,7 @@ describe("buildHttpParams",
 						{ name: "test" });
 
 				expect(result.get("name"))
-				.toBe("test");
+					.toBe("test");
 			});
 
 		it("should handle number values",
@@ -33,9 +33,9 @@ describe("buildHttpParams",
 						{ page: 1, size: 10 });
 
 				expect(result.get("page"))
-				.toBe("1");
+					.toBe("1");
 				expect(result.get("size"))
-				.toBe("10");
+					.toBe("10");
 			});
 
 		it("should handle boolean values",
@@ -49,9 +49,9 @@ describe("buildHttpParams",
 						});
 
 				expect(result.get("active"))
-				.toBe("true");
+					.toBe("true");
 				expect(result.get("deleted"))
-				.toBe("false");
+					.toBe("false");
 			});
 
 		it("should handle Date values as ISO strings",
@@ -64,7 +64,7 @@ describe("buildHttpParams",
 						{ createdAt: date });
 
 				expect(result.get("createdAt"))
-				.toBe("2024-01-15T10:30:00.000Z");
+					.toBe("2024-01-15T10:30:00.000Z");
 			});
 
 		it("should skip null values",
@@ -78,9 +78,9 @@ describe("buildHttpParams",
 						});
 
 				expect(result.has("name"))
-				.toBe(true);
+					.toBe(true);
 				expect(result.has("nullValue"))
-				.toBe(false);
+					.toBe(false);
 			});
 
 		it("should skip undefined values",
@@ -94,9 +94,9 @@ describe("buildHttpParams",
 						});
 
 				expect(result.has("name"))
-				.toBe(true);
+					.toBe(true);
 				expect(result.has("undefinedValue"))
-				.toBe(false);
+					.toBe(false);
 			});
 
 		it("should handle mixed types",
@@ -116,16 +116,16 @@ describe("buildHttpParams",
 						});
 
 				expect(result.get("page"))
-				.toBe("1");
+					.toBe("1");
 				expect(result.get("search"))
-				.toBe("test");
+					.toBe("test");
 				expect(result.get("active"))
-				.toBe("true");
+					.toBe("true");
 				expect(result.get("startDate"))
-				.toBe("2024-06-01T00:00:00.000Z");
+					.toBe("2024-06-01T00:00:00.000Z");
 				expect(result.has("nullValue"))
-				.toBe(false);
+					.toBe(false);
 				expect(result.has("undefinedValue"))
-				.toBe(false);
+					.toBe(false);
 			});
 	});

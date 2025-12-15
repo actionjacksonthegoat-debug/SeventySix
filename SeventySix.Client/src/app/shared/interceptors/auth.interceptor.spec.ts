@@ -55,12 +55,12 @@ describe("authInterceptor",
 
 				const callArgs: HttpRequest<unknown> =
 					mockHandler
-					.handle
-					.calls
-					.mostRecent()
-					.args[0] as HttpRequest<unknown>;
+						.handle
+						.calls
+						.mostRecent()
+						.args[0] as HttpRequest<unknown>;
 				expect(callArgs.headers.get("Authorization"))
-				.toBe("Bearer test-token");
+					.toBe("Bearer test-token");
 			});
 
 		it("should not add header for public endpoints",
@@ -78,12 +78,12 @@ describe("authInterceptor",
 
 				const callArgs: HttpRequest<unknown> =
 					mockHandler
-					.handle
-					.calls
-					.mostRecent()
-					.args[0] as HttpRequest<unknown>;
+						.handle
+						.calls
+						.mostRecent()
+						.args[0] as HttpRequest<unknown>;
 				expect(callArgs.headers.get("Authorization"))
-				.toBeNull();
+					.toBeNull();
 			});
 
 		it("should add header for change-password endpoint",
@@ -105,12 +105,12 @@ describe("authInterceptor",
 
 				const callArgs: HttpRequest<unknown> =
 					mockHandler
-					.handle
-					.calls
-					.mostRecent()
-					.args[0] as HttpRequest<unknown>;
+						.handle
+						.calls
+						.mostRecent()
+						.args[0] as HttpRequest<unknown>;
 				expect(callArgs.headers.get("Authorization"))
-				.toBe("Bearer test-token");
+					.toBe("Bearer test-token");
 			});
 
 		it("should not add header when no token",
@@ -128,11 +128,11 @@ describe("authInterceptor",
 
 				const callArgs: HttpRequest<unknown> =
 					mockHandler
-					.handle
-					.calls
-					.mostRecent()
-					.args[0] as HttpRequest<unknown>;
+						.handle
+						.calls
+						.mostRecent()
+						.args[0] as HttpRequest<unknown>;
 				expect(callArgs.headers.get("Authorization"))
-				.toBeNull();
+					.toBeNull();
 			});
 	});

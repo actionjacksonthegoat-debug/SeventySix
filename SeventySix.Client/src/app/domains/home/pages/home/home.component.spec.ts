@@ -13,12 +13,12 @@ describe("HomeComponent",
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [HomeComponent],
-						providers: [provideZonelessChangeDetection(), provideRouter([])]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [HomeComponent],
+							providers: [provideZonelessChangeDetection(), provideRouter([])]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(HomeComponent);
@@ -31,16 +31,16 @@ describe("HomeComponent",
 			{
 				fixture.detectChanges();
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should have 3 quick actions",
 			() =>
 			{
 				expect(component["quickActions"])
-				.toBeDefined();
+					.toBeDefined();
 				expect(component["quickActions"].length)
-				.toBe(3);
+					.toBe(3);
 			});
 
 		it("should have WorldMap action with primary theme",
@@ -51,11 +51,11 @@ describe("HomeComponent",
 						(a: { route: string; }) =>
 							a.route === "/game");
 				expect(worldMapAction)
-				.toBeDefined();
+					.toBeDefined();
 				expect(worldMapAction?.title)
-				.toBe("World Map");
+					.toBe("World Map");
 				expect(worldMapAction?.themeClass)
-				.toBe("theme-primary");
+					.toBe("theme-primary");
 			});
 
 		it("should have Physics action with secondary theme",
@@ -66,11 +66,11 @@ describe("HomeComponent",
 						(a: { route: string; }) =>
 							a.route === "/physics");
 				expect(physicsAction)
-				.toBeDefined();
+					.toBeDefined();
 				expect(physicsAction?.title)
-				.toBe("Physics");
+					.toBe("Physics");
 				expect(physicsAction?.themeClass)
-				.toBe("theme-secondary");
+					.toBe("theme-secondary");
 			});
 
 		it("should have RVCamper action with tertiary theme",
@@ -78,15 +78,15 @@ describe("HomeComponent",
 			{
 				const rvAction: { title: string; themeClass: string; route: string; } | undefined =
 					component["quickActions"]
-					.find(
-						(a: { route: string; }) =>
-							a.route === "/rv-camper");
+						.find(
+							(a: { route: string; }) =>
+								a.route === "/rv-camper");
 				expect(rvAction)
-				.toBeDefined();
+					.toBeDefined();
 				expect(rvAction?.title)
-				.toBe("RV Camper");
+					.toBe("RV Camper");
 				expect(rvAction?.themeClass)
-				.toBe("theme-tertiary");
+					.toBe("theme-tertiary");
 			});
 
 		it("should render all 3 feature cards",
@@ -98,7 +98,7 @@ describe("HomeComponent",
 				const cards: NodeListOf<Element> =
 					compiled.querySelectorAll(".feature-card");
 				expect(cards.length)
-				.toBe(3);
+					.toBe(3);
 			});
 
 		it("should apply correct theme classes to cards",
@@ -114,10 +114,10 @@ describe("HomeComponent",
 				const tertiaryCard: Element | null =
 					compiled.querySelector(".theme-tertiary");
 				expect(primaryCard)
-				.toBeTruthy();
+					.toBeTruthy();
 				expect(secondaryCard)
-				.toBeTruthy();
+					.toBeTruthy();
 				expect(tertiaryCard)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 	});

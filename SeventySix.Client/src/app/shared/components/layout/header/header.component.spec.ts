@@ -36,17 +36,17 @@ describe("HeaderComponent",
 
 				fixture =
 					await new ComponentTestBed<HeaderComponent>()
-					.withProvider(provideRouter([]))
-					.withProvider(
-						{ provide: ThemeService, useValue: mockThemeService })
-					.withProvider(
-						{
-							provide: LayoutService,
-							useValue: mockLayoutService
-						})
-					.withProvider(
-						{ provide: AuthService, useValue: mockAuthService })
-					.build(HeaderComponent);
+						.withProvider(provideRouter([]))
+						.withProvider(
+							{ provide: ThemeService, useValue: mockThemeService })
+						.withProvider(
+							{
+								provide: LayoutService,
+								useValue: mockLayoutService
+							})
+						.withProvider(
+							{ provide: AuthService, useValue: mockAuthService })
+						.build(HeaderComponent);
 
 				component =
 					fixture.componentInstance;
@@ -60,7 +60,7 @@ describe("HeaderComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should toggle sidebar",
@@ -68,7 +68,7 @@ describe("HeaderComponent",
 			{
 				component.toggleSidebar();
 				expect(mockLayoutService.toggleSidebar)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		it("should toggle brightness",
@@ -77,7 +77,7 @@ describe("HeaderComponent",
 				spyOn(mockThemeService, "toggleBrightness");
 				component.toggleBrightness();
 				expect(mockThemeService.toggleBrightness)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		it("should toggle color scheme",
@@ -86,7 +86,7 @@ describe("HeaderComponent",
 				spyOn(mockThemeService, "toggleColorScheme");
 				component.toggleColorScheme();
 				expect(mockThemeService.toggleColorScheme)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		describe("authentication",
@@ -105,7 +105,7 @@ describe("HeaderComponent",
 								"[data-testid='guest-menu-button']");
 
 						expect(guestMenuButton)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 
 				it("should navigate to login when login button clicked",
@@ -117,8 +117,8 @@ describe("HeaderComponent",
 						component.navigateToLogin();
 
 						expect(router.navigate)
-						.toHaveBeenCalledWith(
-							["/auth/login"]);
+							.toHaveBeenCalledWith(
+								["/auth/login"]);
 					});
 
 				it("should navigate to register when register method called",
@@ -130,8 +130,8 @@ describe("HeaderComponent",
 						component.navigateToRegister();
 
 						expect(router.navigate)
-						.toHaveBeenCalledWith(
-							["/auth/register"]);
+							.toHaveBeenCalledWith(
+								["/auth/register"]);
 					});
 
 				it("should show user menu when authenticated",
@@ -153,7 +153,7 @@ describe("HeaderComponent",
 							compiled.querySelector("[data-testid='user-menu-button']");
 
 						expect(userMenuButton)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 
 				it("should display user fullName in menu",
@@ -180,7 +180,7 @@ describe("HeaderComponent",
 								"[data-testid='user-fullname']");
 
 						expect(userNameSpan?.textContent?.trim())
-						.toBe("John Doe");
+							.toBe("John Doe");
 					});
 
 				it("should display username when fullName is null",
@@ -208,7 +208,7 @@ describe("HeaderComponent",
 								"[data-testid='user-fullname']");
 
 						expect(userNameSpan?.textContent?.trim())
-						.toBe("testuser");
+							.toBe("testuser");
 					});
 
 				it("should call logout when logout clicked",
@@ -224,7 +224,7 @@ describe("HeaderComponent",
 						component.logout();
 
 						expect(mockAuthService.logout)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 
 				it("should navigate to account page when navigateToAccount called",
@@ -233,8 +233,8 @@ describe("HeaderComponent",
 						component.navigateToAccount();
 
 						expect(router.navigate)
-						.toHaveBeenCalledWith(
-							["/account"]);
+							.toHaveBeenCalledWith(
+								["/account"]);
 					});
 			});
 	});

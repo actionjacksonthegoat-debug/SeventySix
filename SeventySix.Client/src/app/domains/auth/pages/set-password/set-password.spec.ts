@@ -71,7 +71,7 @@ describe("SetPasswordComponent",
 				setupTestBed(
 					{ token: validToken });
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should show error when token is missing",
@@ -80,10 +80,10 @@ describe("SetPasswordComponent",
 				setupTestBed({});
 
 				expect(mockNotificationService.error)
-				.toHaveBeenCalledWith(
-					"Invalid password reset link. Please request a new one.");
+					.toHaveBeenCalledWith(
+						"Invalid password reset link. Please request a new one.");
 				expect((component as unknown as { tokenValid(): boolean; }).tokenValid())
-				.toBeFalse();
+					.toBeFalse();
 			});
 
 		it("should show error when passwords do not match",
@@ -97,8 +97,8 @@ describe("SetPasswordComponent",
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 
 				expect(mockNotificationService.error)
-				.toHaveBeenCalledWith(
-					"Passwords do not match.");
+					.toHaveBeenCalledWith(
+						"Passwords do not match.");
 				expect(mockAuthService.setPassword).not.toHaveBeenCalled();
 			});
 
@@ -114,15 +114,15 @@ describe("SetPasswordComponent",
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 
 				expect(mockAuthService.setPassword)
-				.toHaveBeenCalledWith(
-					validToken,
-					"ValidPassword123!");
+					.toHaveBeenCalledWith(
+						validToken,
+						"ValidPassword123!");
 				expect(mockNotificationService.success)
-				.toHaveBeenCalledWith(
-					"Password set successfully. You can now sign in.");
+					.toHaveBeenCalledWith(
+						"Password set successfully. You can now sign in.");
 				expect(router.navigate)
-				.toHaveBeenCalledWith(
-					["/auth/login"]);
+					.toHaveBeenCalledWith(
+						["/auth/login"]);
 			});
 
 		it("should show error for expired or invalid token",
@@ -145,10 +145,10 @@ describe("SetPasswordComponent",
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 
 				expect(mockNotificationService.error)
-				.toHaveBeenCalledWith(
-					"Password reset link has expired or is invalid. Please request a new one.");
+					.toHaveBeenCalledWith(
+						"Password reset link has expired or is invalid. Please request a new one.");
 				expect((component as unknown as { isLoading(): boolean; }).isLoading())
-				.toBeFalse();
+					.toBeFalse();
 			});
 
 		it("should show error for bad request",
@@ -172,7 +172,7 @@ describe("SetPasswordComponent",
 				(component as unknown as { onSubmit(): void; }).onSubmit();
 
 				expect(mockNotificationService.error)
-				.toHaveBeenCalledWith(
-					"Password does not meet requirements.");
+					.toHaveBeenCalledWith(
+						"Password does not meet requirements.");
 			});
 	});

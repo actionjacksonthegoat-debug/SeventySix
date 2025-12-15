@@ -21,21 +21,21 @@ describe("ThemeService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should initialize with light theme",
 			() =>
 			{
 				expect(service.brightness())
-				.toBe("light");
+					.toBe("light");
 			});
 
 		it("should initialize with blue scheme",
 			() =>
 			{
 				expect(service.colorScheme())
-				.toBe("blue");
+					.toBe("blue");
 			});
 
 		describe("toggleBrightness",
@@ -47,7 +47,7 @@ describe("ThemeService",
 						service.setBrightness("light");
 						service.toggleBrightness();
 						expect(service.brightness())
-						.toBe("dark");
+							.toBe("dark");
 					});
 
 				it("should toggle from dark to light",
@@ -56,7 +56,7 @@ describe("ThemeService",
 						service.setBrightness("dark");
 						service.toggleBrightness();
 						expect(service.brightness())
-						.toBe("light");
+							.toBe("light");
 					});
 			});
 
@@ -69,7 +69,7 @@ describe("ThemeService",
 						service.setColorScheme("blue");
 						service.toggleColorScheme();
 						expect(service.colorScheme())
-						.toBe("cyan-orange");
+							.toBe("cyan-orange");
 					});
 
 				it("should toggle from cyan-orange to blue",
@@ -78,7 +78,7 @@ describe("ThemeService",
 						service.setColorScheme("cyan-orange");
 						service.toggleColorScheme();
 						expect(service.colorScheme())
-						.toBe("blue");
+							.toBe("blue");
 					});
 			});
 
@@ -90,7 +90,7 @@ describe("ThemeService",
 					{
 						service.setBrightness("dark");
 						expect(service.brightness())
-						.toBe("dark");
+							.toBe("dark");
 					});
 			});
 
@@ -102,7 +102,7 @@ describe("ThemeService",
 					{
 						service.setColorScheme("cyan-orange");
 						expect(service.colorScheme())
-						.toBe("cyan-orange");
+							.toBe("cyan-orange");
 					});
 			});
 
@@ -115,12 +115,12 @@ describe("ThemeService",
 						service.setBrightness("light");
 						service.setColorScheme("blue");
 						expect(service.themeName())
-						.toBe("light-blue");
+							.toBe("light-blue");
 
 						service.setBrightness("dark");
 						service.setColorScheme("cyan-orange");
 						expect(service.themeName())
-						.toBe("dark-cyan-orange");
+							.toBe("dark-cyan-orange");
 					});
 			});
 
@@ -132,11 +132,11 @@ describe("ThemeService",
 					{
 						service.setBrightness("dark");
 						expect(service.isDark())
-						.toBe(true);
+							.toBe(true);
 
 						service.setBrightness("light");
 						expect(service.isDark())
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("isLight should return correct value",
@@ -144,11 +144,11 @@ describe("ThemeService",
 					{
 						service.setBrightness("light");
 						expect(service.isLight())
-						.toBe(true);
+							.toBe(true);
 
 						service.setBrightness("dark");
 						expect(service.isLight())
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("isBlue should return correct value",
@@ -156,11 +156,11 @@ describe("ThemeService",
 					{
 						service.setColorScheme("blue");
 						expect(service.isBlue())
-						.toBe(true);
+							.toBe(true);
 
 						service.setColorScheme("cyan-orange");
 						expect(service.isBlue())
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("isCyanOrange should return correct value",
@@ -168,11 +168,11 @@ describe("ThemeService",
 					{
 						service.setColorScheme("cyan-orange");
 						expect(service.isCyanOrange())
-						.toBe(true);
+							.toBe(true);
 
 						service.setColorScheme("blue");
 						expect(service.isCyanOrange())
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 	});

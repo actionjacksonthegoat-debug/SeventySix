@@ -80,16 +80,16 @@ describe("BaseQueryService",
 					() =>
 					{
 						expect(service["queryClient"])
-						.toBeDefined();
+							.toBeDefined();
 						expect(service["queryClient"])
-						.toBeInstanceOf(QueryClient);
+							.toBeInstanceOf(QueryClient);
 					});
 
 				it("should set queryKeyPrefix",
 					() =>
 					{
 						expect(service["queryKeyPrefix"])
-						.toBe("test-entities");
+							.toBe("test-entities");
 					});
 
 				it("should provide queryConfig based on queryKeyPrefix",
@@ -99,11 +99,11 @@ describe("BaseQueryService",
 							service["queryConfig"];
 
 						expect(config)
-						.toBeDefined();
+							.toBeDefined();
 						expect(config.staleTime)
-						.toBeDefined();
+							.toBeDefined();
 						expect(config.gcTime)
-						.toBeDefined();
+							.toBeDefined();
 					});
 			});
 
@@ -122,10 +122,10 @@ describe("BaseQueryService",
 						service.testInvalidateAll();
 
 						expect(queryClient.invalidateQueries)
-						.toHaveBeenCalledWith(
-							{
-								queryKey: ["test-entities"]
-							});
+							.toHaveBeenCalledWith(
+								{
+									queryKey: ["test-entities"]
+								});
 					});
 
 				it("should invalidate single entity query",
@@ -134,10 +134,10 @@ describe("BaseQueryService",
 						service.testInvalidateSingle(42);
 
 						expect(queryClient.invalidateQueries)
-						.toHaveBeenCalledWith(
-							{
-								queryKey: ["test-entities", 42]
-							});
+							.toHaveBeenCalledWith(
+								{
+									queryKey: ["test-entities", 42]
+								});
 					});
 
 				it("should invalidate all and single entity queries",
@@ -146,17 +146,17 @@ describe("BaseQueryService",
 						service.testInvalidateAllAndSingle(99);
 
 						expect(queryClient.invalidateQueries)
-						.toHaveBeenCalledTimes(2);
+							.toHaveBeenCalledTimes(2);
 						expect(queryClient.invalidateQueries)
-						.toHaveBeenCalledWith(
-							{
-								queryKey: ["test-entities"]
-							});
+							.toHaveBeenCalledWith(
+								{
+									queryKey: ["test-entities"]
+								});
 						expect(queryClient.invalidateQueries)
-						.toHaveBeenCalledWith(
-							{
-								queryKey: ["test-entities", 99]
-							});
+							.toHaveBeenCalledWith(
+								{
+									queryKey: ["test-entities", 99]
+								});
 					});
 			});
 
@@ -170,9 +170,9 @@ describe("BaseQueryService",
 							service.getCurrentFilter();
 
 						expect(currentFilter.page)
-						.toBe(1);
+							.toBe(1);
 						expect(currentFilter.pageSize)
-						.toBe(25);
+							.toBe(25);
 					});
 
 				it("should support updateFilter",
@@ -185,9 +185,9 @@ describe("BaseQueryService",
 							service.getCurrentFilter();
 
 						expect(filter.pageSize)
-						.toBe(50);
+							.toBe(50);
 						expect(filter.page)
-						.toBe(1); // Reset to page 1
+							.toBe(1); // Reset to page 1
 					});
 
 				it("should support setPage",
@@ -196,7 +196,7 @@ describe("BaseQueryService",
 						service.setPage(3);
 
 						expect(service.getCurrentFilter().page)
-						.toBe(3);
+							.toBe(3);
 					});
 			});
 	});

@@ -63,7 +63,7 @@ describe("ErrorHandlerService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("handleError",
@@ -82,9 +82,9 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockClientLogger.logError)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 
 				it("should handle HTTP 404 errors",
@@ -107,10 +107,10 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalledWith(
-							jasmine.stringContaining("not found"),
-							jasmine.anything(),
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								jasmine.stringContaining("not found"),
+								jasmine.anything(),
+								jasmine.any(String));
 					});
 
 				it("should handle HTTP 401 errors",
@@ -133,10 +133,10 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalledWith(
-							jasmine.stringContaining("session"),
-							jasmine.anything(),
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								jasmine.stringContaining("session"),
+								jasmine.anything(),
+								jasmine.any(String));
 					});
 
 				it("should handle HTTP 500 errors",
@@ -159,10 +159,10 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalledWith(
-							jasmine.stringContaining("Server error"),
-							jasmine.anything(),
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								jasmine.stringContaining("Server error"),
+								jasmine.anything(),
+								jasmine.any(String));
 					});
 
 				it("should handle ValidationError",
@@ -183,10 +183,10 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalledWith(
-							"Error 1",
-							jasmine.anything(),
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								"Error 1",
+								jasmine.anything(),
+								jasmine.any(String));
 					});
 
 				it("should handle NotFoundError",
@@ -206,10 +206,10 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalledWith(
-							"Resource not found",
-							undefined,
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								"Resource not found",
+								undefined,
+								jasmine.any(String));
 					});
 
 				it("should handle UnauthorizedError",
@@ -229,10 +229,10 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalledWith(
-							"Not authorized",
-							undefined,
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								"Not authorized",
+								undefined,
+								jasmine.any(String));
 					});
 
 				it("should handle NetworkError",
@@ -251,13 +251,13 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalledWith(
-							jasmine.stringContaining("Network error"),
-							jasmine.arrayContaining(
-								[
-									jasmine.stringContaining("Technical:")
-								]),
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								jasmine.stringContaining("Network error"),
+								jasmine.arrayContaining(
+									[
+										jasmine.stringContaining("Technical:")
+									]),
+								jasmine.any(String));
 					});
 
 				it("should handle HttpError",
@@ -276,10 +276,10 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalledWith(
-							"Custom HTTP error",
-							undefined,
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								"Custom HTTP error",
+								undefined,
+								jasmine.any(String));
 					});
 			});
 
@@ -299,7 +299,7 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockClientLogger.logError)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 
 				it("should log HTTP errors to ClientErrorLoggerService",
@@ -323,12 +323,12 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockClientLogger.logHttpError)
-						.toHaveBeenCalledWith(
-							jasmine.objectContaining(
-								{
-									message: jasmine.any(String),
-									httpError: error
-								}));
+							.toHaveBeenCalledWith(
+								jasmine.objectContaining(
+									{
+										message: jasmine.any(String),
+										httpError: error
+									}));
 					});
 			});
 
@@ -353,7 +353,7 @@ describe("ErrorHandlerService",
 						const copyData: string =
 							call.args[2] as string;
 						expect(copyData)
-						.toContain("timestamp");
+							.toContain("timestamp");
 					});
 
 				it("should include stack trace in copy data",
@@ -378,7 +378,7 @@ describe("ErrorHandlerService",
 						const copyData: string =
 							call.args[2] as string;
 						expect(copyData)
-						.toContain("stack");
+							.toContain("stack");
 					});
 
 				it("should include request details in copy data for HTTP errors",
@@ -407,9 +407,9 @@ describe("ErrorHandlerService",
 						const copyData: string =
 							call.args[2] as string;
 						expect(copyData)
-						.toContain("url");
+							.toContain("url");
 						expect(copyData)
-						.toContain("status");
+							.toContain("status");
 					});
 
 				it("should include details in copy data",
@@ -439,7 +439,7 @@ describe("ErrorHandlerService",
 						const copyData: string =
 							call.args[2] as string;
 						expect(copyData)
-						.toContain("details");
+							.toContain("details");
 					});
 			});
 
@@ -474,11 +474,11 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalledWith(
-							jasmine.any(String),
-							jasmine.arrayContaining(
-								[jasmine.stringContaining("email")]),
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								jasmine.any(String),
+								jasmine.arrayContaining(
+									[jasmine.stringContaining("email")]),
+								jasmine.any(String));
 					});
 
 				it("should include status and URL in details for HTTP errors",
@@ -502,14 +502,14 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockNotification.errorWithDetails)
-						.toHaveBeenCalledWith(
-							jasmine.any(String),
-							jasmine.arrayContaining(
-								[
-									jasmine.stringContaining("Status:"),
-									jasmine.stringContaining("URL:")
-								]),
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								jasmine.any(String),
+								jasmine.arrayContaining(
+									[
+										jasmine.stringContaining("Status:"),
+										jasmine.stringContaining("URL:")
+									]),
+								jasmine.any(String));
 					});
 			});
 
@@ -534,9 +534,9 @@ describe("ErrorHandlerService",
 						service.handleError(new Error("First error"));
 
 						expect(consoleErrorSpy)
-						.toHaveBeenCalledWith(
-							"[ErrorHandler] Failed:",
-							jasmine.any(Error));
+							.toHaveBeenCalledWith(
+								"[ErrorHandler] Failed:",
+								jasmine.any(Error));
 					});
 
 				it("should gracefully handle errors during notification",
@@ -550,11 +550,11 @@ describe("ErrorHandlerService",
 							{
 								service.handleError(new Error("Test error"));
 							})
-						.not
-						.toThrow();
+							.not
+							.toThrow();
 
 						expect(consoleErrorSpy)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 
 				it("should reset guard flag after handling error",
@@ -579,7 +579,7 @@ describe("ErrorHandlerService",
 						}
 
 						expect(mockClientLogger.logError)
-						.toHaveBeenCalledTimes(2);
+							.toHaveBeenCalledTimes(2);
 					});
 			});
 	});

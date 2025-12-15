@@ -71,15 +71,15 @@ describe("errorInterceptor",
 						errorInterceptor(
 							req,
 							mockHandler.handle.bind(mockHandler))
-						.subscribe(
-							{
-								error: (receivedError: Error) =>
+							.subscribe(
 								{
-									expect(receivedError instanceof NetworkError)
-									.toBe(true);
-									done();
-								}
-							});
+									error: (receivedError: Error) =>
+									{
+										expect(receivedError instanceof NetworkError)
+											.toBe(true);
+										done();
+									}
+								});
 					});
 			});
 
@@ -100,15 +100,15 @@ describe("errorInterceptor",
 						errorInterceptor(
 							req,
 							mockHandler.handle.bind(mockHandler))
-						.subscribe(
-							{
-								error: (receivedError: Error) =>
+							.subscribe(
 								{
-									expect(receivedError instanceof NotFoundError)
-									.toBe(true);
-									done();
-								}
-							});
+									error: (receivedError: Error) =>
+									{
+										expect(receivedError instanceof NotFoundError)
+											.toBe(true);
+										done();
+									}
+								});
 					});
 			});
 
@@ -132,15 +132,15 @@ describe("errorInterceptor",
 						errorInterceptor(
 							req,
 							mockHandler.handle.bind(mockHandler))
-						.subscribe(
-							{
-								error: (receivedError: Error) =>
+							.subscribe(
 								{
-									expect(receivedError instanceof ValidationError)
-									.toBe(true);
-									done();
-								}
-							});
+									error: (receivedError: Error) =>
+									{
+										expect(receivedError instanceof ValidationError)
+											.toBe(true);
+										done();
+									}
+								});
 					});
 			});
 	});

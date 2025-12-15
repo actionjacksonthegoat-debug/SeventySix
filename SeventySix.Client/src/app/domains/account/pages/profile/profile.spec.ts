@@ -1,3 +1,4 @@
+import { AccountService } from "@account/services";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
@@ -9,7 +10,6 @@ import {
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { of } from "rxjs";
-import { AccountService } from "@account/services";
 import { ProfilePage } from "./profile";
 
 describe("ProfilePage",
@@ -45,19 +45,19 @@ describe("ProfilePage",
 						});
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [ProfilePage],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideNoopAnimations(),
-							provideRouter([]),
-							provideAngularQuery(queryClient),
-							AccountService,
-							{ provide: ApiService, useValue: mockApiService }
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [ProfilePage],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideNoopAnimations(),
+								provideRouter([]),
+								provideAngularQuery(queryClient),
+								AccountService,
+								{ provide: ApiService, useValue: mockApiService }
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(ProfilePage);
@@ -74,7 +74,7 @@ describe("ProfilePage",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should not submit invalid form",
@@ -102,11 +102,11 @@ describe("ProfilePage",
 				await component.onSubmit();
 
 				expect(mockApiService.put)
-				.toHaveBeenCalledWith(
-					"users/me",
-					{
-						email: "new@example.com",
-						fullName: "New Name"
-					});
+					.toHaveBeenCalledWith(
+						"users/me",
+						{
+							email: "new@example.com",
+							fullName: "New Name"
+						});
 			});
 	});

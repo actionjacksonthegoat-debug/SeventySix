@@ -36,32 +36,32 @@ describe("UserManagementPage",
 					}),
 				updateFilter: jasmine.createSpy("updateFilter"),
 				getCurrentFilter: jasmine
-				.createSpy("getCurrentFilter")
-				.and
-				.returnValue(
-					{
-						page: 1,
-						pageSize: 50,
-						sortBy: "Id",
-						sortDescending: true
-					})
+					.createSpy("getCurrentFilter")
+					.and
+					.returnValue(
+						{
+							page: 1,
+							pageSize: 50,
+							sortBy: "Id",
+							sortDescending: true
+						})
 			};
 
 		beforeEach(
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [UserManagementPage],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideHttpClientTesting(),
-							provideRouter([]),
-							{ provide: UserService, useValue: mockUserService }
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [UserManagementPage],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideHttpClientTesting(),
+								provideRouter([]),
+								{ provide: UserService, useValue: mockUserService }
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(UserManagementPage);
@@ -72,7 +72,7 @@ describe("UserManagementPage",
 			() =>
 			{
 				expect(fixture.componentInstance)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should render page header with title",
@@ -81,7 +81,7 @@ describe("UserManagementPage",
 				const header: HTMLElement | null =
 					fixture.nativeElement.querySelector("app-page-header");
 				expect(header)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("CLS Prevention",
@@ -93,7 +93,7 @@ describe("UserManagementPage",
 						const pageContent: HTMLElement | null =
 							fixture.nativeElement.querySelector(".page-content");
 						expect(pageContent)
-						.toBeTruthy();
+							.toBeTruthy();
 
 						const styles: CSSStyleDeclaration =
 							window.getComputedStyle(
@@ -102,7 +102,7 @@ describe("UserManagementPage",
 							styles.minHeight;
 
 						expect(minHeight)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(minHeight).not.toBe("0px");
 						expect(minHeight).not.toBe("auto");
 					});

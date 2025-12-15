@@ -54,7 +54,7 @@ describe("roleGuard",
 										{ url: "/protected" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-						.toBeTrue();
+							.toBeTrue();
 					});
 
 				it("should redirect unauthenticated user to login",
@@ -72,11 +72,11 @@ describe("roleGuard",
 										{ url: "/protected" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-						.toBeInstanceOf(UrlTree);
+							.toBeInstanceOf(UrlTree);
 						expect(result.toString())
-						.toContain("/auth/login");
+							.toContain("/auth/login");
 						expect(result.toString())
-						.toContain("returnUrl=%2Fprotected");
+							.toContain("returnUrl=%2Fprotected");
 					});
 			});
 
@@ -99,9 +99,9 @@ describe("roleGuard",
 										{ url: "/admin" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-						.toBeTrue();
+							.toBeTrue();
 						expect(authService.hasAnyRole)
-						.toHaveBeenCalledWith("Admin");
+							.toHaveBeenCalledWith("Admin");
 					});
 
 				it("should redirect non-admin to home",
@@ -120,9 +120,9 @@ describe("roleGuard",
 										{ url: "/admin" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-						.toBeInstanceOf(UrlTree);
+							.toBeInstanceOf(UrlTree);
 						expect(result.toString())
-						.toBe("/");
+							.toBe("/");
 					});
 			});
 
@@ -145,7 +145,7 @@ describe("roleGuard",
 										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-						.toBeTrue();
+							.toBeTrue();
 					});
 
 				it("should allow user with Admin role only",
@@ -164,7 +164,7 @@ describe("roleGuard",
 										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-						.toBeTrue();
+							.toBeTrue();
 					});
 
 				it("should allow user with both roles",
@@ -183,7 +183,7 @@ describe("roleGuard",
 										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-						.toBeTrue();
+							.toBeTrue();
 					});
 
 				it("should redirect user with neither role",
@@ -202,9 +202,9 @@ describe("roleGuard",
 										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-						.toBeInstanceOf(UrlTree);
+							.toBeInstanceOf(UrlTree);
 						expect(result.toString())
-						.toBe("/");
+							.toBe("/");
 					});
 			});
 
@@ -226,9 +226,9 @@ describe("roleGuard",
 										{ url: "/admin/users" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-						.toBeInstanceOf(UrlTree);
+							.toBeInstanceOf(UrlTree);
 						expect(result.toString())
-						.toContain("/login");
+							.toContain("/login");
 						// Should NOT check roles if not authenticated
 						expect(authService.hasAnyRole).not.toHaveBeenCalled();
 					});

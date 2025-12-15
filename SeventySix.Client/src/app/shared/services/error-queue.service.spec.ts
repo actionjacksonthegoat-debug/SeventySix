@@ -43,8 +43,8 @@ describe("ErrorQueueService (Zoneless)",
 					(window as any).navigator,
 					"userAgent",
 					"get")
-				.and
-				.returnValue("TestBrowser/1.0");
+					.and
+					.returnValue("TestBrowser/1.0");
 
 				TestBed.configureTestingModule(
 					{
@@ -88,7 +88,7 @@ describe("ErrorQueueService (Zoneless)",
 					() =>
 					{
 						expect(service)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 
 				it("should enqueue an error",
@@ -105,7 +105,7 @@ describe("ErrorQueueService (Zoneless)",
 
 						// Should log to console for every enqueued error (1:1 with DB)
 						expect(console.error)
-						.toHaveBeenCalledWith("[Client Error]", error);
+							.toHaveBeenCalledWith("[Client Error]", error);
 					});
 
 				it("should save enqueued errors to localStorage",
@@ -123,14 +123,14 @@ describe("ErrorQueueService (Zoneless)",
 						const stored: string | null =
 							localStorage.getItem("error-queue");
 						expect(stored)
-						.toBeTruthy();
+							.toBeTruthy();
 
 						const parsed: CreateLogRequest[] =
 							JSON.parse(stored!);
 						expect(parsed.length)
-						.toBe(1);
+							.toBe(1);
 						expect(parsed[0].message)
-						.toBe("Test error");
+							.toBe("Test error");
 					});
 
 				it("should load queue from localStorage on initialization",
@@ -174,9 +174,9 @@ describe("ErrorQueueService (Zoneless)",
 								const req: ReturnType<typeof newHttpMock.expectOne> =
 									newHttpMock.expectOne(API_BATCH_URL);
 								expect(req.request.body.length)
-								.toBe(1);
+									.toBe(1);
 								expect(req.request.body[0].message)
-								.toBe("Persisted error");
+									.toBe("Persisted error");
 								req.flush({});
 								newHttpMock.verify();
 								done();
@@ -207,11 +207,11 @@ describe("ErrorQueueService (Zoneless)",
 								const req: ReturnType<typeof httpMock.expectOne> =
 									httpMock.expectOne(API_BATCH_URL);
 								expect(req.request.method)
-								.toBe("POST");
+									.toBe("POST");
 								expect(req.request.body.length)
-								.toBe(1);
+									.toBe(1);
 								expect(req.request.body[0].message)
-								.toBe("Batch test");
+									.toBe("Batch test");
 
 								req.flush({});
 								done();
@@ -231,7 +231,7 @@ describe("ErrorQueueService (Zoneless)",
 
 								// Ensure we have a passing expectation
 								expect(true)
-								.toBe(true);
+									.toBe(true);
 								done();
 							},
 							BATCH_INTERVAL + 50);
@@ -258,7 +258,7 @@ describe("ErrorQueueService (Zoneless)",
 								const req: ReturnType<typeof httpMock.expectOne> =
 									httpMock.expectOne(API_BATCH_URL);
 								expect(req.request.body.length)
-								.toBe(10);
+									.toBe(10);
 								req.flush({});
 
 								// Second batch should have 5 items
@@ -268,7 +268,7 @@ describe("ErrorQueueService (Zoneless)",
 										const req2: ReturnType<typeof httpMock.expectOne> =
 											httpMock.expectOne(API_BATCH_URL);
 										expect(req2.request.body.length)
-										.toBe(5);
+											.toBe(5);
 										req2.flush({});
 										done();
 									},
@@ -300,7 +300,7 @@ describe("ErrorQueueService (Zoneless)",
 								const req: ReturnType<typeof httpMock.expectOne> =
 									httpMock.expectOne(API_BATCH_URL);
 								expect(req.request.body.length)
-								.toBe(2);
+									.toBe(2);
 
 								// Successful response
 								req.flush({});
@@ -314,7 +314,7 @@ describe("ErrorQueueService (Zoneless)",
 										const parsed: CreateLogRequest[] =
 											stored ? JSON.parse(stored) : [];
 										expect(parsed.length)
-										.toBe(0);
+											.toBe(0);
 										done();
 									},
 									50);
@@ -351,29 +351,29 @@ describe("ErrorQueueService (Zoneless)",
 									req.request.body[0];
 
 								expect(payload.logLevel)
-								.toBe("Error");
+									.toBe("Error");
 								expect(payload.message)
-								.toBe("Conversion test");
+									.toBe("Conversion test");
 								expect(payload.exceptionMessage)
-								.toBe("Exception details");
+									.toBe("Exception details");
 								expect(payload.stackTrace)
-								.toBe("Stack trace here");
+									.toBe("Stack trace here");
 								expect(payload.sourceContext)
-								.toBe("TestComponent");
+									.toBe("TestComponent");
 								expect(payload.requestUrl)
-								.toBe("/test");
+									.toBe("/test");
 								expect(payload.requestMethod)
-								.toBe("GET");
+									.toBe("GET");
 								expect(payload.statusCode)
-								.toBe(500);
+									.toBe(500);
 								expect(payload.clientTimestamp)
-								.toBe(
-									"2025-11-12T10:00:00.000Z");
+									.toBe(
+										"2025-11-12T10:00:00.000Z");
 								expect(payload.additionalContext)
-								.toEqual(
-									{ key: "value" });
+									.toEqual(
+										{ key: "value" });
 								expect(payload.userAgent)
-								.toBeTruthy();
+									.toBeTruthy();
 
 								req.flush({});
 								done();
@@ -398,12 +398,12 @@ describe("ErrorQueueService (Zoneless)",
 						const stored: string | null =
 							localStorage.getItem("error-queue");
 						expect(stored)
-						.toBeTruthy();
+							.toBeTruthy();
 
 						const parsed: CreateLogRequest[] =
 							JSON.parse(stored!);
 						expect(parsed[0].message)
-						.toBe("Persist test");
+							.toBe("Persist test");
 					});
 
 				it("should handle localStorage errors gracefully",
@@ -427,7 +427,7 @@ describe("ErrorQueueService (Zoneless)",
 								(call) =>
 									call.args[0]?.includes("StorageService"));
 						expect(storageErrorCall)
-						.toBeDefined();
+							.toBeDefined();
 					});
 
 				it("should handle corrupted localStorage data",
@@ -456,7 +456,7 @@ describe("ErrorQueueService (Zoneless)",
 						// The queue will be initialized as empty since getItem returns string, not array
 						// Queue size is private, so just verify service was created successfully
 						expect(newService)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 			});
 
@@ -485,7 +485,7 @@ describe("ErrorQueueService (Zoneless)",
 						const queue: CreateLogRequest[] =
 							(service as unknown as { queue: CreateLogRequest[]; }).queue;
 						expect(queue.length)
-						.toBe(1);
+							.toBe(1);
 					});
 
 				it("should allow different errors",
@@ -512,7 +512,7 @@ describe("ErrorQueueService (Zoneless)",
 						const queue: CreateLogRequest[] =
 							(service as unknown as { queue: CreateLogRequest[]; }).queue;
 						expect(queue.length)
-						.toBe(2);
+							.toBe(2);
 					});
 			});
 	});

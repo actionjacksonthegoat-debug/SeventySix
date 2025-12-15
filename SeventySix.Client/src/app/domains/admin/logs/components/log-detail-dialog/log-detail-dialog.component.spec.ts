@@ -61,17 +61,17 @@ describe("LogDetailDialogComponent",
 					new DateService();
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [LogDetailDialogComponent],
-						providers: [
-							provideZonelessChangeDetection(),
-							{ provide: MAT_DIALOG_DATA, useValue: mockLog },
-							{ provide: MatDialogRef, useValue: mockDialogRef },
-							{ provide: Clipboard, useValue: mockClipboard }
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [LogDetailDialogComponent],
+							providers: [
+								provideZonelessChangeDetection(),
+								{ provide: MAT_DIALOG_DATA, useValue: mockLog },
+								{ provide: MatDialogRef, useValue: mockDialogRef },
+								{ provide: Clipboard, useValue: mockClipboard }
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(LogDetailDialogComponent);
@@ -84,55 +84,55 @@ describe("LogDetailDialogComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should initialize with log data",
 			() =>
 			{
 				expect(component.log())
-				.toEqual(mockLog);
+					.toEqual(mockLog);
 			});
 
 		it("should display log level name via utility",
 			() =>
 			{
 				expect(getLogLevelName("Error"))
-				.toBe("Error");
+					.toBe("Error");
 				expect(getLogLevelName("Warning"))
-				.toBe("Warning");
+					.toBe("Warning");
 				expect(getLogLevelName("Fatal"))
-				.toBe("Fatal");
+					.toBe("Fatal");
 				expect(getLogLevelName("Information"))
-				.toBe("Info");
+					.toBe("Info");
 				expect(getLogLevelName("Debug"))
-				.toBe("Debug");
+					.toBe("Debug");
 				expect(getLogLevelName("Verbose"))
-				.toBe("Verbose");
+					.toBe("Verbose");
 			});
 
 		it("should display log level icon via utility",
 			() =>
 			{
 				expect(getLogLevelIconName("Error"))
-				.toBe("cancel");
+					.toBe("cancel");
 				expect(getLogLevelIconName("Warning"))
-				.toBe("warning");
+					.toBe("warning");
 				expect(getLogLevelIconName("Fatal"))
-				.toBe("cancel");
+					.toBe("cancel");
 				expect(getLogLevelIconName("Information"))
-				.toBe("lightbulb");
+					.toBe("lightbulb");
 			});
 
 		it("should display log level CSS class via utility",
 			() =>
 			{
 				expect(getLogLevelClassName("Error"))
-				.toBe("level-error");
+					.toBe("level-error");
 				expect(getLogLevelClassName("Warning"))
-				.toBe("level-warning");
+					.toBe("level-warning");
 				expect(getLogLevelClassName("Fatal"))
-				.toBe("level-fatal");
+					.toBe("level-fatal");
 			});
 
 		it("should format relative time correctly via utility",
@@ -149,11 +149,11 @@ describe("LogDetailDialogComponent",
 						now.getTime() - 2 * 24 * 60 * 60 * 1000);
 
 				expect(getRelativeTime(twoMinutesAgo, dateService))
-				.toBe("2 minutes ago");
+					.toBe("2 minutes ago");
 				expect(getRelativeTime(twoHoursAgo, dateService))
-				.toBe("2 hours ago");
+					.toBe("2 hours ago");
 				expect(getRelativeTime(twoDaysAgo, dateService))
-				.toBe("2 days ago");
+					.toBe("2 days ago");
 			});
 
 		it("should format relative time as 'just now' for recent logs via utility",
@@ -162,7 +162,7 @@ describe("LogDetailDialogComponent",
 				const now: Date =
 					new Date();
 				expect(getRelativeTime(now, dateService))
-				.toBe("just now");
+					.toBe("just now");
 			});
 
 		it("should count stack frames via utility",
@@ -174,14 +174,14 @@ describe("LogDetailDialogComponent",
 					countStackFrames(stackTrace);
 
 				expect(count)
-				.toBe(2);
+					.toBe(2);
 			});
 
 		it("should return 0 when stack trace is null via utility",
 			() =>
 			{
 				expect(countStackFrames(null))
-				.toBe(0);
+					.toBe(0);
 			});
 
 		it("should format properties as JSON via utility",
@@ -197,18 +197,18 @@ describe("LogDetailDialogComponent",
 					formatJsonProperties(properties);
 
 				expect(formatted)
-				.toContain("\"key\"");
+					.toContain("\"key\"");
 				expect(formatted)
-				.toContain("\"value\"");
+					.toContain("\"value\"");
 				expect(formatted)
-				.toContain("\"nested\"");
+					.toContain("\"nested\"");
 			});
 
 		it("should return empty string when properties is null via utility",
 			() =>
 			{
 				expect(formatJsonProperties(null))
-				.toBe("");
+					.toBe("");
 			});
 
 		it("should return original string when properties is invalid JSON via utility",
@@ -216,33 +216,33 @@ describe("LogDetailDialogComponent",
 			{
 				const invalidJson: string = "not valid json";
 				expect(formatJsonProperties(invalidJson))
-				.toBe(invalidJson);
+					.toBe(invalidJson);
 			});
 
 		it("should toggle stack trace collapse state",
 			() =>
 			{
 				expect(component.stackTraceCollapsed())
-				.toBe(false);
+					.toBe(false);
 				component.toggleStackTrace();
 				expect(component.stackTraceCollapsed())
-				.toBe(true);
+					.toBe(true);
 				component.toggleStackTrace();
 				expect(component.stackTraceCollapsed())
-				.toBe(false);
+					.toBe(false);
 			});
 
 		it("should toggle properties collapse state",
 			() =>
 			{
 				expect(component.propertiesCollapsed())
-				.toBe(true);
+					.toBe(true);
 				component.toggleProperties();
 				expect(component.propertiesCollapsed())
-				.toBe(false);
+					.toBe(false);
 				component.toggleProperties();
 				expect(component.propertiesCollapsed())
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("should copy log details to clipboard as JSON",
@@ -256,16 +256,16 @@ describe("LogDetailDialogComponent",
 					(): void =>
 					{
 						expect(mockClipboard.copy)
-						.toHaveBeenCalledWith(
-							jasmine.any(String));
+							.toHaveBeenCalledWith(
+								jasmine.any(String));
 						const copiedText: string =
 							mockClipboard.copy.calls.mostRecent().args[0];
 						const parsed: Record<string, unknown> =
 							JSON.parse(copiedText);
 						expect(parsed["id"])
-						.toBe(mockLog.id);
+							.toBe(mockLog.id);
 						expect(parsed["message"])
-						.toBe(mockLog.message);
+							.toBe(mockLog.message);
 						done();
 					},
 					0);
@@ -278,14 +278,14 @@ describe("LogDetailDialogComponent",
 					(id: number) =>
 					{
 						expect(id)
-						.toBe(mockLog.id);
+							.toBe(mockLog.id);
 						done();
 					});
 
 				component.onDelete();
 
 				expect(mockDialogRef.close)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		it("should close dialog when close is called",
@@ -293,36 +293,36 @@ describe("LogDetailDialogComponent",
 			{
 				component.onClose();
 				expect(mockDialogRef.close)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		it("should display formatted request information",
 			() =>
 			{
 				expect(component.log().requestPath)
-				.toBe("/api/test");
+					.toBe("/api/test");
 				expect(component.log().statusCode)
-				.toBe(500);
+					.toBe(500);
 				expect(component.log().durationMs)
-				.toBe(1500);
+					.toBe(1500);
 			});
 
 		it("should display formatted source context",
 			() =>
 			{
 				expect(component.log().sourceContext)
-				.toBe("TestService");
+					.toBe("TestService");
 				expect(component.log().requestMethod)
-				.toBe("GET");
+					.toBe("GET");
 			});
 
 		it("should display formatted metadata",
 			() =>
 			{
 				expect(component.log().machineName)
-				.toBe("TEST-MACHINE");
+					.toBe("TEST-MACHINE");
 				expect(component.log().environment)
-				.toBe("Test");
+					.toBe("Test");
 			});
 
 		it("should handle log with null fields gracefully via utilities",
@@ -330,16 +330,16 @@ describe("LogDetailDialogComponent",
 			{
 				// Test that utilities handle null values
 				expect(countStackFrames(null))
-				.toBe(0);
+					.toBe(0);
 				expect(formatJsonProperties(null))
-				.toBe("");
+					.toBe("");
 			});
 
 		it("should display duration in milliseconds",
 			() =>
 			{
 				expect(component.log().durationMs)
-				.toBe(1500);
+					.toBe(1500);
 			});
 
 		it("should format HTTP method from request info",
@@ -349,16 +349,16 @@ describe("LogDetailDialogComponent",
 				const requestPath: string | null =
 					component.log().requestPath;
 				expect(requestPath)
-				.toBe("/api/test");
+					.toBe("/api/test");
 			});
 
 		it("should show correlation ID for request tracking",
 			() =>
 			{
 				expect(component.log().correlationId)
-				.toBe("corr-123");
+					.toBe("corr-123");
 				expect(component.log().spanId)
-				.toBe("span-456");
+					.toBe("span-456");
 			});
 
 		describe("isError computed signal",
@@ -370,7 +370,7 @@ describe("LogDetailDialogComponent",
 						component.log.set(
 							{ ...mockLog, logLevel: "Error" });
 						expect(component.isError())
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return true for Fatal level",
@@ -379,7 +379,7 @@ describe("LogDetailDialogComponent",
 						component.log.set(
 							{ ...mockLog, logLevel: "Fatal" });
 						expect(component.isError())
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return false for non-error levels",
@@ -388,12 +388,12 @@ describe("LogDetailDialogComponent",
 						component.log.set(
 							{ ...mockLog, logLevel: "Warning" });
 						expect(component.isError())
-						.toBe(false);
+							.toBe(false);
 
 						component.log.set(
 							{ ...mockLog, logLevel: "Information" });
 						expect(component.isError())
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -406,7 +406,7 @@ describe("LogDetailDialogComponent",
 						component.log.set(
 							{ ...mockLog, correlationId: "test-123" });
 						expect(component.hasCorrelationId())
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return false when correlation ID is null",
@@ -415,7 +415,7 @@ describe("LogDetailDialogComponent",
 						component.log.set(
 							{ ...mockLog, correlationId: null });
 						expect(component.hasCorrelationId())
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return false when correlation ID is empty string",
@@ -424,7 +424,7 @@ describe("LogDetailDialogComponent",
 						component.log.set(
 							{ ...mockLog, correlationId: "" });
 						expect(component.hasCorrelationId())
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -435,25 +435,25 @@ describe("LogDetailDialogComponent",
 					() =>
 					{
 						expect(isRootSpanId(null))
-						.toBe(false);
+							.toBe(false);
 					});
 
 				it("should return true when parentSpanId is all zeros",
 					() =>
 					{
 						expect(isRootSpanId("0000000000000000"))
-						.toBe(true);
+							.toBe(true);
 						expect(isRootSpanId("00000000"))
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should return false when parentSpanId has non-zero values",
 					() =>
 					{
 						expect(isRootSpanId("parent-789"))
-						.toBe(false);
+							.toBe(false);
 						expect(isRootSpanId("1234567890abcdef"))
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -469,7 +469,7 @@ describe("LogDetailDialogComponent",
 							new Date(
 								now.getTime() - 3 * 24 * 60 * 60 * 1000);
 						expect(getRelativeTime(threeDaysAgo, dateService))
-						.toBe("3 days ago");
+							.toBe("3 days ago");
 					});
 
 				it("should return singular day when difference is 1 day",
@@ -481,7 +481,7 @@ describe("LogDetailDialogComponent",
 							new Date(
 								now.getTime() - 1 * 24 * 60 * 60 * 1000);
 						expect(getRelativeTime(oneDayAgo, dateService))
-						.toBe("1 day ago");
+							.toBe("1 day ago");
 					});
 
 				it("should return hours ago when difference is in hours",
@@ -493,7 +493,7 @@ describe("LogDetailDialogComponent",
 							new Date(
 								now.getTime() - 3 * 60 * 60 * 1000);
 						expect(getRelativeTime(threeHoursAgo, dateService))
-						.toBe("3 hours ago");
+							.toBe("3 hours ago");
 					});
 
 				it("should return singular hour when difference is 1 hour",
@@ -505,7 +505,7 @@ describe("LogDetailDialogComponent",
 							new Date(
 								now.getTime() - 1 * 60 * 60 * 1000);
 						expect(getRelativeTime(oneHourAgo, dateService))
-						.toBe("1 hour ago");
+							.toBe("1 hour ago");
 					});
 
 				it("should return minutes ago when difference is in minutes",
@@ -517,7 +517,7 @@ describe("LogDetailDialogComponent",
 							new Date(
 								now.getTime() - 5 * 60 * 1000);
 						expect(getRelativeTime(fiveMinutesAgo, dateService))
-						.toBe("5 minutes ago");
+							.toBe("5 minutes ago");
 					});
 
 				it("should return singular minute when difference is 1 minute",
@@ -528,7 +528,7 @@ describe("LogDetailDialogComponent",
 						const oneMinuteAgo: Date =
 							new Date(now.getTime() - 1 * 60 * 1000);
 						expect(getRelativeTime(oneMinuteAgo, dateService))
-						.toBe("1 minute ago");
+							.toBe("1 minute ago");
 					});
 			});
 
@@ -539,7 +539,7 @@ describe("LogDetailDialogComponent",
 					() =>
 					{
 						expect(countStackFrames(null))
-						.toBe(0);
+							.toBe(0);
 					});
 
 				it("should count stack frames starting with 'at '",
@@ -547,7 +547,7 @@ describe("LogDetailDialogComponent",
 					{
 						const stackTrace: string = "   at Method1()\n   at Method2()\n   at Method3()\nOther line";
 						expect(countStackFrames(stackTrace))
-						.toBe(3);
+							.toBe(3);
 					});
 
 				it("should return 0 when no frames match pattern",
@@ -555,7 +555,7 @@ describe("LogDetailDialogComponent",
 					{
 						const stackTrace: string = "No frames here\nJust text";
 						expect(countStackFrames(stackTrace))
-						.toBe(0);
+							.toBe(0);
 					});
 			});
 
@@ -572,8 +572,8 @@ describe("LogDetailDialogComponent",
 						component.openInJaeger();
 
 						expect(window.alert)
-						.toHaveBeenCalledWith(
-							jasmine.stringContaining("No trace ID available"));
+							.toHaveBeenCalledWith(
+								jasmine.stringContaining("No trace ID available"));
 					});
 
 				it("should open Jaeger URL when correlation ID exists",
@@ -586,9 +586,9 @@ describe("LogDetailDialogComponent",
 						component.openInJaeger();
 
 						expect(window.open)
-						.toHaveBeenCalledWith(
-							jasmine.stringContaining("trace-123"),
-							"_blank");
+							.toHaveBeenCalledWith(
+								jasmine.stringContaining("trace-123"),
+								"_blank");
 					});
 			});
 
@@ -599,13 +599,13 @@ describe("LogDetailDialogComponent",
 					() =>
 					{
 						expect(component.exceptionCollapsed())
-						.toBe(false);
+							.toBe(false);
 						component.toggleException();
 						expect(component.exceptionCollapsed())
-						.toBe(true);
+							.toBe(true);
 						component.toggleException();
 						expect(component.exceptionCollapsed())
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -617,7 +617,7 @@ describe("LogDetailDialogComponent",
 					{
 						component.handleEscape();
 						expect(mockDialogRef.close)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 			});
 	});

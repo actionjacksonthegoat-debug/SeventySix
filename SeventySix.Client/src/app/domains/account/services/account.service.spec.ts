@@ -50,7 +50,7 @@ describe("AccountService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should invalidate account queries on updateProfile success",
@@ -72,18 +72,18 @@ describe("AccountService",
 					});
 
 				expect(mockApiService.put)
-				.toHaveBeenCalledWith(
-					"users/me",
-					jasmine.objectContaining(
-						{
-							email: "test@example.com",
-							fullName: "Test User"
-						}));
+					.toHaveBeenCalledWith(
+						"users/me",
+						jasmine.objectContaining(
+							{
+								email: "test@example.com",
+								fullName: "Test User"
+							}));
 				expect(invalidateSpy)
-				.toHaveBeenCalledWith(
-					{
-						queryKey: QueryKeys.account.all
-					});
+					.toHaveBeenCalledWith(
+						{
+							queryKey: QueryKeys.account.all
+						});
 			});
 
 		it("should invalidate available roles on createPermissionRequest success",
@@ -105,17 +105,17 @@ describe("AccountService",
 					});
 
 				expect(mockApiService.post)
-				.toHaveBeenCalledWith(
-					"users/me/permission-requests",
-					jasmine.objectContaining(
-						{
-							requestedRoles: ["Admin"],
-							requestMessage: "Test"
-						}));
+					.toHaveBeenCalledWith(
+						"users/me/permission-requests",
+						jasmine.objectContaining(
+							{
+								requestedRoles: ["Admin"],
+								requestMessage: "Test"
+							}));
 				expect(invalidateSpy)
-				.toHaveBeenCalledWith(
-					{
-						queryKey: QueryKeys.account.availableRoles
-					});
+					.toHaveBeenCalledWith(
+						{
+							queryKey: QueryKeys.account.availableRoles
+						});
 			});
 	});

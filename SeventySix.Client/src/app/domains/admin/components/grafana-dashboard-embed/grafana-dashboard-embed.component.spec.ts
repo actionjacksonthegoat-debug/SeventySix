@@ -12,12 +12,12 @@ describe("GrafanaDashboardEmbedComponent",
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [GrafanaDashboardEmbedComponent],
-						providers: [provideZonelessChangeDetection()]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [GrafanaDashboardEmbedComponent],
+							providers: [provideZonelessChangeDetection()]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(GrafanaDashboardEmbedComponent);
@@ -34,7 +34,7 @@ describe("GrafanaDashboardEmbedComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should generate correct Grafana URL",
@@ -42,17 +42,17 @@ describe("GrafanaDashboardEmbedComponent",
 			{
 				const url: string =
 					component
-					.sanitizedUrl()
-					.toString();
+						.sanitizedUrl()
+						.toString();
 
 				expect(url)
-				.toContain("http://localhost:3000/d/test-dashboard");
+					.toContain("http://localhost:3000/d/test-dashboard");
 				expect(url)
-				.toContain("refresh=30s");
+					.toContain("refresh=30s");
 				expect(url)
-				.toContain("theme=dark");
+					.toContain("theme=dark");
 				expect(url)
-				.toContain("kiosk");
+					.toContain("kiosk");
 			});
 
 		it("should use custom refresh interval",
@@ -63,10 +63,10 @@ describe("GrafanaDashboardEmbedComponent",
 
 				const url: string =
 					component
-					.sanitizedUrl()
-					.toString();
+						.sanitizedUrl()
+						.toString();
 				expect(url)
-				.toContain("refresh=30s");
+					.toContain("refresh=30s");
 			});
 
 		it("should use custom theme",
@@ -77,24 +77,24 @@ describe("GrafanaDashboardEmbedComponent",
 
 				const url: string =
 					component
-					.sanitizedUrl()
-					.toString();
+						.sanitizedUrl()
+						.toString();
 				expect(url)
-				.toContain("theme=light");
+					.toContain("theme=light");
 			});
 
 		it("should have default loading state as false",
 			() =>
 			{
 				expect(component.isLoading())
-				.toBe(false);
+					.toBe(false);
 			});
 
 		it("should use default title when not provided",
 			() =>
 			{
 				expect(component.title())
-				.toBe("Dashboard");
+					.toBe("Dashboard");
 			});
 
 		it("should use custom title when provided",
@@ -104,14 +104,14 @@ describe("GrafanaDashboardEmbedComponent",
 				fixture.detectChanges();
 
 				expect(component.title())
-				.toBe("System Health");
+					.toBe("System Health");
 			});
 
 		it("should use default height when not provided",
 			() =>
 			{
 				expect(component.height())
-				.toBe("600px");
+					.toBe("600px");
 			});
 
 		it("should use custom height when provided",
@@ -121,7 +121,7 @@ describe("GrafanaDashboardEmbedComponent",
 				fixture.detectChanges();
 
 				expect(component.height())
-				.toBe("800px");
+					.toBe("800px");
 			});
 
 		describe("Accessibility",
@@ -137,7 +137,7 @@ describe("GrafanaDashboardEmbedComponent",
 							fixture.nativeElement.querySelector("iframe");
 
 						expect(iframe.title)
-						.toBe("System Overview dashboard");
+							.toBe("System Overview dashboard");
 					});
 
 				it("should have role=status on loading container when loading",
@@ -151,11 +151,11 @@ describe("GrafanaDashboardEmbedComponent",
 							fixture.nativeElement.querySelector(".loading-container");
 
 						expect(loadingContainer)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(loadingContainer.getAttribute("role"))
-						.toBe("status");
+							.toBe("status");
 						expect(loadingContainer.getAttribute("aria-live"))
-						.toBe("polite");
+							.toBe("polite");
 					});
 
 				it("should have visually hidden loading text for screen readers",
@@ -169,9 +169,9 @@ describe("GrafanaDashboardEmbedComponent",
 								".loading-container .visually-hidden");
 
 						expect(loadingText)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(loadingText.textContent)
-						.toContain("Loading");
+							.toContain("Loading");
 					});
 
 				it("should have aria-label on progress spinner",
@@ -185,8 +185,8 @@ describe("GrafanaDashboardEmbedComponent",
 								"mat-progress-spinner");
 
 						expect(spinner.getAttribute("aria-label"))
-						.toBe(
-							"Loading dashboard");
+							.toBe(
+								"Loading dashboard");
 					});
 			});
 	});

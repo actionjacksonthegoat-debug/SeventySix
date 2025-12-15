@@ -1,4 +1,9 @@
 import {
+	AvailableRoleDto,
+	CreatePermissionRequestDto,
+	PermissionRequestDto
+} from "@admin/permission-requests/models";
+import {
 	inject,
 	Injectable
 } from "@angular/core";
@@ -7,11 +12,6 @@ import { ApiService } from "@shared/services/api.service";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import { injectQuery } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
-import {
-	AvailableRoleDto,
-	CreatePermissionRequestDto,
-	PermissionRequestDto
-} from "@admin/permission-requests/models";
 
 /**
  * Service for permission request business logic.

@@ -1,9 +1,9 @@
 import { inject } from "@angular/core";
 import { BaseQueryRequest } from "@shared/models";
+import { BaseFilterService } from "@shared/services/base-filter.service";
 import { getQueryConfig } from "@shared/utilities/query-config.utility";
 import { CreateMutationResult, injectMutation, QueryClient } from "@tanstack/angular-query-experimental";
 import { lastValueFrom, Observable } from "rxjs";
-import { BaseFilterService } from "@shared/services/base-filter.service";
 
 /**
  * Base class for services that use TanStack Query.

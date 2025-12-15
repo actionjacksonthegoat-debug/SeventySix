@@ -8,15 +8,15 @@ import {
 	UnauthorizedError,
 	ValidationError
 } from "@shared/models";
+import { ClientErrorLoggerService } from "@shared/services/client-error-logger.service";
+import { DateService } from "@shared/services/date.service";
+import { LoggerService } from "@shared/services/logger.service";
+import { NotificationService } from "@shared/services/notification.service";
 import {
 	extractErrorTitle,
 	extractHttpStatus,
 	extractValidationErrors
 } from "@shared/utilities/http-error.utility";
-import { ClientErrorLoggerService } from "@shared/services/client-error-logger.service";
-import { DateService } from "@shared/services/date.service";
-import { LoggerService } from "@shared/services/logger.service";
-import { NotificationService } from "@shared/services/notification.service";
 
 interface ErrorDetails
 {

@@ -66,7 +66,7 @@ describe("HealthApiService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("getHealth",
@@ -119,7 +119,7 @@ describe("HealthApiService",
 						const req: TestRequest =
 							httpMock.expectOne(apiUrl);
 						expect(req.request.method)
-						.toBe("GET");
+							.toBe("GET");
 						req.flush(mockHealth);
 
 						await new Promise<void>(
@@ -129,14 +129,14 @@ describe("HealthApiService",
 						const health: HealthStatusResponse | undefined =
 							query.data();
 						expect(health)
-						.toEqual(mockHealth);
+							.toEqual(mockHealth);
 						expect(health?.status)
-						.toBe("Healthy");
+							.toBe("Healthy");
 						expect(health?.database?.isConnected)
-						.toBe(true);
+							.toBe(true);
 						expect(health?.externalApis?.apis?.["ExternalAPI"].isAvailable)
-						.toBe(
-							true);
+							.toBe(
+								true);
 					});
 
 				it("should handle degraded system status",
@@ -187,11 +187,11 @@ describe("HealthApiService",
 						const health: HealthStatusResponse | undefined =
 							query.data();
 						expect(health?.status)
-						.toBe("Degraded");
+							.toBe("Degraded");
 						expect(health?.database?.status)
-						.toBe("Degraded");
+							.toBe("Degraded");
 						expect(health?.system?.cpuUsagePercent)
-						.toBeGreaterThan(80);
+							.toBeGreaterThan(80);
 					});
 
 				it("should handle HTTP errors",
@@ -219,9 +219,9 @@ describe("HealthApiService",
 								setTimeout(resolve, 0));
 
 						expect(query.error())
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(query.data())
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 			});
 		describe("getDatabaseHealth",
@@ -248,7 +248,7 @@ describe("HealthApiService",
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/database`);
 						expect(req.request.method)
-						.toBe("GET");
+							.toBe("GET");
 						req.flush(mockDbHealth);
 
 						await new Promise<void>(
@@ -258,11 +258,11 @@ describe("HealthApiService",
 						const dbHealth: DatabaseHealthResponse | undefined =
 							query.data();
 						expect(dbHealth)
-						.toEqual(mockDbHealth);
+							.toEqual(mockDbHealth);
 						expect(dbHealth?.isConnected)
-						.toBe(true);
+							.toBe(true);
 						expect(dbHealth?.responseTimeMs)
-						.toBeLessThan(50);
+							.toBeLessThan(50);
 					});
 
 				it("should handle database connection failure",
@@ -294,9 +294,9 @@ describe("HealthApiService",
 						const dbHealth: DatabaseHealthResponse | undefined =
 							query.data();
 						expect(dbHealth?.isConnected)
-						.toBe(false);
+							.toBe(false);
 						expect(dbHealth?.status)
-						.toBe("Unhealthy");
+							.toBe("Unhealthy");
 					});
 
 				it("should handle HTTP errors",
@@ -324,9 +324,9 @@ describe("HealthApiService",
 								setTimeout(resolve, 0));
 
 						expect(query.error())
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(query.data())
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 			});
 
@@ -365,7 +365,7 @@ describe("HealthApiService",
 						const req: TestRequest =
 							httpMock.expectOne(`${apiUrl}/external-apis`);
 						expect(req.request.method)
-						.toBe("GET");
+							.toBe("GET");
 						req.flush(mockApiHealth);
 						await new Promise<void>(
 							(resolve: () => void) =>
@@ -374,11 +374,11 @@ describe("HealthApiService",
 						const apiHealth: ExternalApiHealthResponse | undefined =
 							query.data();
 						expect(apiHealth)
-						.toEqual(mockApiHealth);
+							.toEqual(mockApiHealth);
 						expect(Object.keys(apiHealth?.apis ?? {}).length)
-						.toBe(2);
+							.toBe(2);
 						expect(apiHealth?.apis?.["ExternalAPI"].isAvailable)
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should handle APIs with unavailable status",
@@ -414,9 +414,9 @@ describe("HealthApiService",
 						const apiHealth: ExternalApiHealthResponse | undefined =
 							query.data();
 						expect(apiHealth?.apis?.["ExternalAPI"].isAvailable)
-						.toBe(false);
+							.toBe(false);
 						expect(apiHealth?.apis?.["ExternalAPI"].responseTimeMs)
-						.toBe(0);
+							.toBe(0);
 					});
 
 				it("should handle empty APIs list",
@@ -445,7 +445,7 @@ describe("HealthApiService",
 						const apiHealth: ExternalApiHealthResponse | undefined =
 							query.data();
 						expect(Object.keys(apiHealth?.apis ?? {}).length)
-						.toBe(0);
+							.toBe(0);
 					});
 
 				it("should handle HTTP errors",
@@ -472,9 +472,9 @@ describe("HealthApiService",
 							(resolve) => setTimeout(resolve, 0));
 
 						expect(query.error())
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(query.data())
-						.toBeUndefined();
+							.toBeUndefined();
 					});
 			});
 	});

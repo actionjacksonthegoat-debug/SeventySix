@@ -12,12 +12,12 @@ describe("WorldMap",
 			async () =>
 			{
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [WorldMap],
-						providers: [provideZonelessChangeDetection()]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [WorldMap],
+							providers: [provideZonelessChangeDetection()]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(WorldMap);
@@ -30,21 +30,21 @@ describe("WorldMap",
 			{
 				fixture.detectChanges();
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should have title property",
 			() =>
 			{
 				expect(component.title)
-				.toBe("World Map");
+					.toBe("World Map");
 			});
 
 		it("should have description property",
 			() =>
 			{
 				expect(component.description)
-				.toContain("world map");
+					.toContain("world map");
 			});
 
 		it("should render title in template",
@@ -56,7 +56,7 @@ describe("WorldMap",
 				const titleElement: HTMLElement | null =
 					compiled.querySelector("mat-card-title");
 				expect(titleElement?.textContent?.trim())
-				.toBe("World Map");
+					.toBe("World Map");
 			});
 
 		it("should render description in template",
@@ -68,7 +68,7 @@ describe("WorldMap",
 				const descriptionElement: HTMLElement | null =
 					compiled.querySelector("p");
 				expect(descriptionElement?.textContent?.trim())
-				.toContain("world map");
+					.toContain("world map");
 			});
 
 		it("should apply primary color theme class",
@@ -80,6 +80,6 @@ describe("WorldMap",
 				const card: HTMLElement | null =
 					compiled.querySelector(".world-map-card");
 				expect(card)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 	});

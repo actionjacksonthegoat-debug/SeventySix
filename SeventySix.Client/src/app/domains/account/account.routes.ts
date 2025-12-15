@@ -1,5 +1,5 @@
-import { Routes } from "@angular/router";
 import { AccountService } from "@account/services";
+import { Routes } from "@angular/router";
 
 export const ACCOUNT_ROUTES: Routes =
 	[

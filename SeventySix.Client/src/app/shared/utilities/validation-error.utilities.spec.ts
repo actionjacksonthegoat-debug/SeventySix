@@ -17,7 +17,7 @@ describe("getValidationError",
 
 				// Assert
 				expect(result)
-				.toBeNull();
+					.toBeNull();
 			});
 
 		it("should return required message with field label",
@@ -33,7 +33,7 @@ describe("getValidationError",
 
 				// Assert
 				expect(result)
-				.toBe("Email is required");
+					.toBe("Email is required");
 			});
 
 		it("should return minlength message with character count",
@@ -51,6 +51,6 @@ describe("getValidationError",
 
 				// Assert
 				expect(result)
-				.toBe("Username must be at least 3 characters");
+					.toBe("Username must be at least 3 characters");
 			});
 	});

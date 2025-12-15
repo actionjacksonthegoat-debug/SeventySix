@@ -21,16 +21,16 @@ describe("ServerErrorPage",
 						]);
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [ServerErrorPage],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideRouter([]),
-							{ provide: WindowUtilities, useValue: mockWindowUtilities }
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [ServerErrorPage],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideRouter([]),
+								{ provide: WindowUtilities, useValue: mockWindowUtilities }
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(ServerErrorPage);
@@ -43,7 +43,7 @@ describe("ServerErrorPage",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should reload page",
@@ -54,6 +54,6 @@ describe("ServerErrorPage",
 
 				// Assert
 				expect(mockWindowUtilities.reload)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 	});

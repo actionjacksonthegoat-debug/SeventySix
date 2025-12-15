@@ -43,20 +43,20 @@ describe("ApiStatisticsTableComponent",
 						["getAllThirdPartyApis"]);
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [ApiStatisticsTableComponent],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideHttpClient(),
-							provideHttpClientTesting(),
-							{
-								provide: ThirdPartyApiService,
-								useValue: thirdPartyApiServiceSpy
-							}
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [ApiStatisticsTableComponent],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideHttpClient(),
+								provideHttpClientTesting(),
+								{
+									provide: ThirdPartyApiService,
+									useValue: thirdPartyApiServiceSpy
+								}
+							]
+						})
+					.compileComponents();
 
 				thirdPartyApiService =
 					TestBed.inject(
@@ -81,7 +81,7 @@ describe("ApiStatisticsTableComponent",
 				createComponent();
 
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should load API data on init",
@@ -93,11 +93,11 @@ describe("ApiStatisticsTableComponent",
 				createComponent();
 
 				expect(thirdPartyApiService.getAllThirdPartyApis)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 				expect(component.isLoading())
-				.toBe(false);
+					.toBe(false);
 				expect(component.dataSource().data.length)
-				.toBe(2);
+					.toBe(2);
 			});
 
 		it("should display API names",
@@ -109,9 +109,9 @@ describe("ApiStatisticsTableComponent",
 				createComponent();
 
 				expect(component.dataSource().data[0].apiName)
-				.toBe("ExternalAPI");
+					.toBe("ExternalAPI");
 				expect(component.dataSource().data[1].apiName)
-				.toBe("GeocodeAPI");
+					.toBe("GeocodeAPI");
 			});
 
 		it("should display call counts",
@@ -123,9 +123,9 @@ describe("ApiStatisticsTableComponent",
 				createComponent();
 
 				expect(component.dataSource().data[0].callCount)
-				.toBe(1234);
+					.toBe(1234);
 				expect(component.dataSource().data[1].callCount)
-				.toBe(567);
+					.toBe(567);
 			});
 
 		it("should handle loading state",
@@ -140,7 +140,7 @@ describe("ApiStatisticsTableComponent",
 				createComponent();
 
 				expect(component.isLoading())
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("should display error message when API data query fails",
@@ -157,11 +157,11 @@ describe("ApiStatisticsTableComponent",
 				createComponent();
 
 				expect(component.isLoading())
-				.toBe(false);
+					.toBe(false);
 				expect(component.error())
-				.toBeTruthy();
+					.toBeTruthy();
 				expect(component.dataSource().data.length)
-				.toBe(0);
+					.toBe(0);
 			});
 
 		it("should reload data when refresh is called",
@@ -173,13 +173,13 @@ describe("ApiStatisticsTableComponent",
 
 				createComponent();
 				expect(thirdPartyApiService.getAllThirdPartyApis)
-				.toHaveBeenCalledTimes(
-					1);
+					.toHaveBeenCalledTimes(
+						1);
 
 				component.onRefresh();
 
 				expect(mockQuery.refetch)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		it("should display table with correct columns",
@@ -191,12 +191,12 @@ describe("ApiStatisticsTableComponent",
 				createComponent();
 
 				expect(component.displayedColumns())
-				.toEqual(
-					[
-						"apiName",
-						"callCount",
-						"lastCalledAt"
-					]);
+					.toEqual(
+						[
+							"apiName",
+							"callCount",
+							"lastCalledAt"
+						]);
 			});
 
 		it("should handle empty data",
@@ -208,7 +208,7 @@ describe("ApiStatisticsTableComponent",
 				createComponent();
 
 				expect(component.dataSource().data.length)
-				.toBe(0);
+					.toBe(0);
 			});
 
 		describe("CLS Prevention",
@@ -225,7 +225,7 @@ describe("ApiStatisticsTableComponent",
 						const container: HTMLElement | null =
 							fixture.nativeElement.querySelector(".api-statistics-table");
 						expect(container)
-						.toBeTruthy();
+							.toBeTruthy();
 
 						const styles: CSSStyleDeclaration =
 							window.getComputedStyle(
@@ -234,7 +234,7 @@ describe("ApiStatisticsTableComponent",
 							styles.minHeight;
 
 						expect(minHeight)
-						.toBeTruthy();
+							.toBeTruthy();
 						expect(minHeight).not.toBe("0px");
 						expect(minHeight).not.toBe("auto");
 					});

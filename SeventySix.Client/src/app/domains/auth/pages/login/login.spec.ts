@@ -27,7 +27,7 @@ describe("LoginComponent",
 			{
 				accessToken: "test-token",
 				expiresAt: new Date(Date.now() + 3600000)
-				.toISOString(),
+					.toISOString(),
 				requiresPasswordChange: false
 			};
 
@@ -45,20 +45,20 @@ describe("LoginComponent",
 					createMockNotificationService();
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [LoginComponent],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideRouter([]),
-							{ provide: AuthService, useValue: mockAuthService },
-							{
-								provide: NotificationService,
-								useValue: mockNotificationService
-							}
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [LoginComponent],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideRouter([]),
+								{ provide: AuthService, useValue: mockAuthService },
+								{
+									provide: NotificationService,
+									useValue: mockNotificationService
+								}
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(LoginComponent);
@@ -75,7 +75,7 @@ describe("LoginComponent",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		describe("ngOnInit",
@@ -105,8 +105,8 @@ describe("LoginComponent",
 
 						// Assert
 						expect(mockNotificationService.error)
-						.toHaveBeenCalledWith(
-							"Please enter username and password.");
+							.toHaveBeenCalledWith(
+								"Please enter username and password.");
 						expect(mockAuthService.login).not.toHaveBeenCalled();
 					});
 
@@ -122,8 +122,8 @@ describe("LoginComponent",
 
 						// Assert
 						expect(mockNotificationService.error)
-						.toHaveBeenCalledWith(
-							"Please enter username and password.");
+							.toHaveBeenCalledWith(
+								"Please enter username and password.");
 						expect(mockAuthService.login).not.toHaveBeenCalled();
 					});
 
@@ -141,12 +141,12 @@ describe("LoginComponent",
 
 						// Assert
 						expect(mockAuthService.login)
-						.toHaveBeenCalledWith(
-							{
-								usernameOrEmail: "testuser",
-								password: "password123",
-								rememberMe: false
-							});
+							.toHaveBeenCalledWith(
+								{
+									usernameOrEmail: "testuser",
+									password: "password123",
+									rememberMe: false
+								});
 					});
 
 				it("should navigate to return URL on successful login",
@@ -162,7 +162,7 @@ describe("LoginComponent",
 
 						// Assert
 						expect(router.navigateByUrl)
-						.toHaveBeenCalledWith("/");
+							.toHaveBeenCalledWith("/");
 					});
 
 				it("should include rememberMe when checked",
@@ -179,12 +179,12 @@ describe("LoginComponent",
 
 						// Assert
 						expect(mockAuthService.login)
-						.toHaveBeenCalledWith(
-							{
-								usernameOrEmail: "testuser",
-								password: "password123",
-								rememberMe: true
-							});
+							.toHaveBeenCalledWith(
+								{
+									usernameOrEmail: "testuser",
+									password: "password123",
+									rememberMe: true
+								});
 					});
 
 				it("should redirect to change-password when requiresPasswordChange is true",
@@ -206,12 +206,12 @@ describe("LoginComponent",
 
 						// Assert
 						expect(mockNotificationService.info)
-						.toHaveBeenCalledWith(
-							"You must change your password before continuing.");
+							.toHaveBeenCalledWith(
+								"You must change your password before continuing.");
 						expect(router.navigate)
-						.toHaveBeenCalledWith(
-							["/auth/change-password"],
-							{ queryParams: { required: "true", returnUrl: "/" } });
+							.toHaveBeenCalledWith(
+								["/auth/change-password"],
+								{ queryParams: { required: "true", returnUrl: "/" } });
 					});
 
 				it("should show detailed error for 401 unauthorized",
@@ -236,11 +236,11 @@ describe("LoginComponent",
 						// Assert
 						expect(
 							mockNotificationService.errorWithDetails)
-						.toHaveBeenCalledWith("Login Failed",
-							[
-								"Invalid username or password",
-								"Check your credentials and try again"
-							]);
+							.toHaveBeenCalledWith("Login Failed",
+								[
+									"Invalid username or password",
+									"Check your credentials and try again"
+								]);
 					});
 
 				it("should show connection error for status 0",
@@ -265,11 +265,11 @@ describe("LoginComponent",
 						// Assert
 						expect(
 							mockNotificationService.errorWithDetails)
-						.toHaveBeenCalledWith("Login Failed",
-							[
-								"Unable to connect to server",
-								"Check your internet connection"
-							]);
+							.toHaveBeenCalledWith("Login Failed",
+								[
+									"Unable to connect to server",
+									"Check your internet connection"
+								]);
 					});
 
 				it("should show rate limit error for 429",
@@ -294,11 +294,11 @@ describe("LoginComponent",
 						// Assert
 						expect(
 							mockNotificationService.errorWithDetails)
-						.toHaveBeenCalledWith("Login Failed",
-							[
-								"Too many login attempts",
-								"Please wait before trying again"
-							]);
+							.toHaveBeenCalledWith("Login Failed",
+								[
+									"Too many login attempts",
+									"Please wait before trying again"
+								]);
 					});
 
 				it("should show generic error for unexpected status codes",
@@ -323,10 +323,10 @@ describe("LoginComponent",
 						// Assert
 						expect(
 							mockNotificationService.errorWithDetails)
-						.toHaveBeenCalledWith("Login Failed",
-							[
-								"An unexpected error occurred"
-							]);
+							.toHaveBeenCalledWith("Login Failed",
+								[
+									"An unexpected error occurred"
+								]);
 					});
 
 				it("should use server error detail if available",
@@ -352,10 +352,10 @@ describe("LoginComponent",
 						// Assert
 						expect(
 							mockNotificationService.errorWithDetails)
-						.toHaveBeenCalledWith("Login Failed",
-							[
-								"Custom server error message"
-							]);
+							.toHaveBeenCalledWith("Login Failed",
+								[
+									"Custom server error message"
+								]);
 					});
 
 				it("should set isLoading to true during login",
@@ -372,7 +372,7 @@ describe("LoginComponent",
 						// Assert - isLoading is set to true during the request
 						// Note: It's reset in the subscribe callback, so we verify login was called
 						expect(mockAuthService.login)
-						.toHaveBeenCalled();
+							.toHaveBeenCalled();
 					});
 
 				it("should reset isLoading to false on login error",
@@ -396,7 +396,7 @@ describe("LoginComponent",
 
 						// Assert
 						expect((component as unknown as { isLoading(): boolean; }).isLoading())
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -411,9 +411,9 @@ describe("LoginComponent",
 
 						// Assert
 						expect(mockAuthService.loginWithProvider)
-						.toHaveBeenCalledWith(
-							"github",
-							"/");
+							.toHaveBeenCalledWith(
+								"github",
+								"/");
 					});
 
 				it("should set isLoading to true",
@@ -424,7 +424,7 @@ describe("LoginComponent",
 
 						// Assert
 						expect((component as unknown as { isLoading(): boolean; }).isLoading())
-						.toBe(true);
+							.toBe(true);
 					});
 			});
 
@@ -442,7 +442,7 @@ describe("LoginComponent",
 						const loginCard: HTMLElement | null =
 							fixture.nativeElement.querySelector(".login-card");
 						expect(loginCard)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 
 				it("should render username input",
@@ -457,7 +457,7 @@ describe("LoginComponent",
 							fixture.nativeElement.querySelector(
 								"input[name=\"usernameOrEmail\"]");
 						expect(usernameInput)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 
 				it("should render password input",
@@ -472,7 +472,7 @@ describe("LoginComponent",
 							fixture.nativeElement.querySelector(
 								"input[name=\"password\"]");
 						expect(passwordInput)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 
 				it("should render GitHub login button",
@@ -486,7 +486,7 @@ describe("LoginComponent",
 						const githubButton: HTMLButtonElement | null =
 							fixture.nativeElement.querySelector(".btn-github");
 						expect(githubButton)
-						.toBeTruthy();
+							.toBeTruthy();
 					});
 			});
 	});

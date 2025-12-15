@@ -84,20 +84,20 @@ describe("UserDetailPage",
 				mockUserService.removeRole.and.returnValue(createMockMutationResult());
 
 				await TestBed
-				.configureTestingModule(
-					{
-						imports: [UserDetailPage],
-						providers: [
-							provideZonelessChangeDetection(),
-							provideHttpClient(),
-							provideHttpClientTesting(),
-							{ provide: UserService, useValue: mockUserService },
-							{ provide: LoggerService, useValue: mockLogger },
-							{ provide: Router, useValue: mockRouter },
-							{ provide: ActivatedRoute, useValue: mockActivatedRoute }
-						]
-					})
-				.compileComponents();
+					.configureTestingModule(
+						{
+							imports: [UserDetailPage],
+							providers: [
+								provideZonelessChangeDetection(),
+								provideHttpClient(),
+								provideHttpClientTesting(),
+								{ provide: UserService, useValue: mockUserService },
+								{ provide: LoggerService, useValue: mockLogger },
+								{ provide: Router, useValue: mockRouter },
+								{ provide: ActivatedRoute, useValue: mockActivatedRoute }
+							]
+						})
+					.compileComponents();
 
 				fixture =
 					TestBed.createComponent(UserDetailPage);
@@ -116,7 +116,7 @@ describe("UserDetailPage",
 			() =>
 			{
 				expect(component)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should load user on initialization",
@@ -125,11 +125,11 @@ describe("UserDetailPage",
 				await fixture.whenStable();
 
 				expect(mockUserService.getUserById)
-				.toHaveBeenCalledWith("1");
+					.toHaveBeenCalledWith("1");
 				expect(component.user())
-				.toEqual(mockUser);
+					.toEqual(mockUser);
 				expect(component.isLoading())
-				.toBe(false);
+					.toBe(false);
 			});
 
 		it("should initialize form with user data",
@@ -138,13 +138,13 @@ describe("UserDetailPage",
 				await fixture.whenStable();
 
 				expect(component.userForm.value)
-				.toEqual(
-					{
-						username: "john_doe",
-						email: "john@example.com",
-						fullName: "John Doe",
-						isActive: true
-					});
+					.toEqual(
+						{
+							username: "john_doe",
+							email: "john@example.com",
+							fullName: "John Doe",
+							isActive: true
+						});
 			});
 
 		it("should handle error when loading user fails",
@@ -172,12 +172,12 @@ describe("UserDetailPage",
 				await errorFixture.whenStable();
 
 				expect(errorComponent.error())
-				.toBe(
-					"Failed to load user. Please try again.");
+					.toBe(
+						"Failed to load user. Please try again.");
 				expect(errorComponent.isLoading())
-				.toBe(false);
+					.toBe(false);
 				expect(mockLogger.error)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		it("should validate required fields",
@@ -194,13 +194,13 @@ describe("UserDetailPage",
 					});
 
 				expect(component.userForm.valid)
-				.toBe(false);
+					.toBe(false);
 				expect(component.userForm.get("username")?.errors?.["required"])
-				.toBe(
-					true);
+					.toBe(
+						true);
 				expect(component.userForm.get("email")?.errors?.["required"])
-				.toBe(
-					true);
+					.toBe(
+						true);
 			});
 
 		it("should validate email format",
@@ -214,7 +214,7 @@ describe("UserDetailPage",
 					});
 
 				expect(component.userForm.get("email")?.errors?.["email"])
-				.toBe(true);
+					.toBe(true);
 			});
 
 		it("should update user on valid form submission",
@@ -230,16 +230,16 @@ describe("UserDetailPage",
 						unknown>();
 				localMockMutationResult.mutate =
 					jasmine
-					.createSpy("mutate")
-					.and
-					.callFake(
-						(variables, options) =>
-						{
-							if (options?.onSuccess)
+						.createSpy("mutate")
+						.and
+						.callFake(
+							(variables, options) =>
 							{
-								options.onSuccess(updatedUser, variables, undefined);
-							}
-						});
+								if (options?.onSuccess)
+								{
+									options.onSuccess(updatedUser, variables, undefined);
+								}
+							});
 				mockUserService.updateUser.and.returnValue(localMockMutationResult);
 
 				// Recreate component to get new mutation instance
@@ -260,13 +260,13 @@ describe("UserDetailPage",
 				await component.onSubmit();
 
 				expect(component.updateMutation.mutate)
-				.toHaveBeenCalledWith(
-					{
-						userId: "1",
-						user: jasmine.objectContaining(
-							{ fullName: "Jane Doe" })
-					},
-					jasmine.any(Object));
+					.toHaveBeenCalledWith(
+						{
+							userId: "1",
+							user: jasmine.objectContaining(
+								{ fullName: "Jane Doe" })
+						},
+						jasmine.any(Object));
 			});
 
 		it("should not submit invalid form",
@@ -297,16 +297,16 @@ describe("UserDetailPage",
 				// Setup mutate to call onError callback
 				errorMutation.mutate =
 					jasmine
-					.createSpy("mutate")
-					.and
-					.callFake(
-						(variables, options) =>
-						{
-							if (options?.onError)
+						.createSpy("mutate")
+						.and
+						.callFake(
+							(variables, options) =>
 							{
-								options.onError(error, variables, undefined);
-							}
-						});
+								if (options?.onError)
+								{
+									options.onError(error, variables, undefined);
+								}
+							});
 
 				mockUserService.updateUser.and.returnValue(errorMutation);
 
@@ -326,10 +326,10 @@ describe("UserDetailPage",
 				await component.onSubmit();
 
 				expect(component.saveError())
-				.toBe(
-					"Failed to save user. Please try again.");
+					.toBe(
+						"Failed to save user. Please try again.");
 				expect(mockLogger.error)
-				.toHaveBeenCalled();
+					.toHaveBeenCalled();
 			});
 
 		it("should navigate back to users list on cancel",
@@ -338,8 +338,8 @@ describe("UserDetailPage",
 				component.onCancel();
 
 				expect(mockRouter.navigate)
-				.toHaveBeenCalledWith(
-					["/admin/users"]);
+					.toHaveBeenCalledWith(
+						["/admin/users"]);
 			});
 
 		it("should compute page title with username",
@@ -348,7 +348,7 @@ describe("UserDetailPage",
 				await fixture.whenStable();
 
 				expect(component.pageTitle())
-				.toBe("Edit User: john_doe");
+					.toBe("Edit User: john_doe");
 			});
 
 		it("should mark form as pristine after successful save",
@@ -364,16 +364,16 @@ describe("UserDetailPage",
 						unknown>();
 				localMockMutationResult.mutate =
 					jasmine
-					.createSpy("mutate")
-					.and
-					.callFake(
-						(variables, options) =>
-						{
-							if (options?.onSuccess)
+						.createSpy("mutate")
+						.and
+						.callFake(
+							(variables, options) =>
 							{
-								options.onSuccess(updatedUser, variables, undefined);
-							}
-						});
+								if (options?.onSuccess)
+								{
+									options.onSuccess(updatedUser, variables, undefined);
+								}
+							});
 				mockUserService.updateUser.and.returnValue(localMockMutationResult);
 
 				// Recreate component to get new mutation instance
@@ -395,7 +395,7 @@ describe("UserDetailPage",
 				await component.onSubmit();
 
 				expect(component.userForm.pristine)
-				.toBe(true);
+					.toBe(true);
 			});
 
 		describe("UpdateUserRequest",
@@ -414,16 +414,16 @@ describe("UserDetailPage",
 								unknown>();
 						localMockMutationResult.mutate =
 							jasmine
-							.createSpy("mutate")
-							.and
-							.callFake(
-								(variables, options) =>
-								{
-									if (options?.onSuccess)
+								.createSpy("mutate")
+								.and
+								.callFake(
+									(variables, options) =>
 									{
-										options.onSuccess(updatedUser, variables, undefined);
-									}
-								});
+										if (options?.onSuccess)
+										{
+											options.onSuccess(updatedUser, variables, undefined);
+										}
+									});
 						mockUserService.updateUser.and.returnValue(localMockMutationResult);
 
 						// Recreate component to get new mutation instance
@@ -444,16 +444,16 @@ describe("UserDetailPage",
 						await component.onSubmit();
 
 						expect(component.updateMutation.mutate)
-						.toHaveBeenCalledWith(
-							{
-								userId: "1",
-								user: jasmine.objectContaining(
-									{
-										id: 1,
-										username: "john_doe"
-									})
-							},
-							jasmine.any(Object));
+							.toHaveBeenCalledWith(
+								{
+									userId: "1",
+									user: jasmine.objectContaining(
+										{
+											id: 1,
+											username: "john_doe"
+										})
+								},
+								jasmine.any(Object));
 					});
 				it("should handle 409 conflict error with refresh option",
 					async () =>
@@ -473,16 +473,16 @@ describe("UserDetailPage",
 
 						errorMutation.mutate =
 							jasmine
-							.createSpy("mutate")
-							.and
-							.callFake(
-								(variables, options) =>
-								{
-									if (options?.onError)
+								.createSpy("mutate")
+								.and
+								.callFake(
+									(variables, options) =>
 									{
-										options.onError(conflictError, variables, undefined);
-									}
-								});
+										if (options?.onError)
+										{
+											options.onError(conflictError, variables, undefined);
+										}
+									});
 
 						mockUserService.updateUser.and.returnValue(errorMutation);
 
@@ -503,8 +503,8 @@ describe("UserDetailPage",
 						spyOn(
 							component["snackBar" as keyof UserDetailPage] as unknown as { open: jasmine.Spy; },
 							"open")
-						.and
-						.returnValue(snackBarSpy);
+							.and
+							.returnValue(snackBarSpy);
 
 						TestBed.runInInjectionContext(
 							() =>
@@ -520,10 +520,10 @@ describe("UserDetailPage",
 
 						expect(
 							(component["snackBar" as keyof UserDetailPage] as unknown as { open: jasmine.Spy; }).open)
-						.toHaveBeenCalledWith(
-							jasmine.stringContaining("User was modified by another user"),
-							"REFRESH",
-							jasmine.any(Object));
+							.toHaveBeenCalledWith(
+								jasmine.stringContaining("User was modified by another user"),
+								"REFRESH",
+								jasmine.any(Object));
 					});
 
 				it("should not submit if user data not loaded",
@@ -553,8 +553,8 @@ describe("UserDetailPage",
 
 						expect(
 							loadingComponent.updateMutation.mutate)
-						.not
-						.toHaveBeenCalled();
+							.not
+							.toHaveBeenCalled();
 					});
 
 				it("should include all required fields in UpdateUserRequest",
@@ -576,16 +576,16 @@ describe("UserDetailPage",
 								unknown>();
 						localMockMutationResult.mutate =
 							jasmine
-							.createSpy("mutate")
-							.and
-							.callFake(
-								(variables, options) =>
-								{
-									if (options?.onSuccess)
+								.createSpy("mutate")
+								.and
+								.callFake(
+									(variables, options) =>
 									{
-										options.onSuccess(updatedUser, variables, undefined);
-									}
-								});
+										if (options?.onSuccess)
+										{
+											options.onSuccess(updatedUser, variables, undefined);
+										}
+									});
 						mockUserService.updateUser.and.returnValue(localMockMutationResult);
 
 						// Recreate component to get new mutation instance
@@ -611,18 +611,18 @@ describe("UserDetailPage",
 						await component.onSubmit();
 
 						expect(component.updateMutation.mutate)
-						.toHaveBeenCalledWith(
-							{
-								userId: "1",
-								user: {
-									id: 1,
-									username: "new_username",
-									email: "new@example.com",
-									fullName: "New Full Name",
-									isActive: false
-								}
-							},
-							jasmine.any(Object));
+							.toHaveBeenCalledWith(
+								{
+									userId: "1",
+									user: {
+										id: 1,
+										username: "new_username",
+										email: "new@example.com",
+										fullName: "New Full Name",
+										isActive: false
+									}
+								},
+								jasmine.any(Object));
 					});
 			});
 	});

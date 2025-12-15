@@ -28,14 +28,14 @@ describe("LoadingService",
 			() =>
 			{
 				expect(service)
-				.toBeTruthy();
+					.toBeTruthy();
 			});
 
 		it("should start with isLoading false",
 			() =>
 			{
 				expect(service.isLoading())
-				.toBe(false);
+					.toBe(false);
 			});
 
 		describe("show",
@@ -46,7 +46,7 @@ describe("LoadingService",
 					{
 						service.show();
 						expect(service.isLoading())
-						.toBe(true);
+							.toBe(true);
 					});
 			});
 
@@ -59,7 +59,7 @@ describe("LoadingService",
 						service.show();
 						service.hide();
 						expect(service.isLoading())
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 
@@ -71,7 +71,7 @@ describe("LoadingService",
 					{
 						mockRouter.events.next(new NavigationStart(1, "/test"));
 						expect(service.isLoading())
-						.toBe(true);
+							.toBe(true);
 					});
 
 				it("should hide loading on NavigationEnd",
@@ -80,7 +80,7 @@ describe("LoadingService",
 						mockRouter.events.next(new NavigationStart(1, "/test"));
 						mockRouter.events.next(new NavigationEnd(1, "/test", "/test"));
 						expect(service.isLoading())
-						.toBe(false);
+							.toBe(false);
 					});
 			});
 	});

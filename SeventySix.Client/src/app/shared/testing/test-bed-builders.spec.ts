@@ -73,12 +73,12 @@ describe("Test Bed Builders",
 							createTestQueryClient();
 
 						expect(queryClient)
-						.toBeDefined();
+							.toBeDefined();
 						expect(queryClient.getDefaultOptions().queries?.retry)
-						.toBe(false);
+							.toBe(false);
 						expect(queryClient.getDefaultOptions().mutations?.retry)
-						.toBe(
-							false);
+							.toBe(
+								false);
 					});
 			});
 
@@ -92,11 +92,11 @@ describe("Test Bed Builders",
 							setupServiceTest(MockTestService);
 
 						expect(setup.service)
-						.toBeDefined();
+							.toBeDefined();
 						expect(setup.service)
-						.toBeInstanceOf(MockTestService);
+							.toBeInstanceOf(MockTestService);
 						expect(setup.queryClient)
-						.toBeDefined();
+							.toBeDefined();
 					});
 
 				it("should include custom providers",
@@ -116,9 +116,9 @@ describe("Test Bed Builders",
 							TestBed.inject(TEST_TOKEN);
 
 						expect(setup.service)
-						.toBeDefined();
+							.toBeDefined();
 						expect(injectedValue)
-						.toBe(mockValue);
+							.toBe(mockValue);
 					});
 
 				it("should return same QueryClient instance",
@@ -130,7 +130,7 @@ describe("Test Bed Builders",
 							TestBed.inject(QueryClient);
 
 						expect(setup.queryClient)
-						.toBe(injectedClient);
+							.toBe(injectedClient);
 					});
 			});
 
@@ -149,7 +149,7 @@ describe("Test Bed Builders",
 							{ testInput: "test value" });
 
 						expect(fixture.componentInstance.testInput())
-						.toBe("test value");
+							.toBe("test value");
 					});
 
 				it("should spy on component outputs with withOutputSpy",
@@ -167,7 +167,7 @@ describe("Test Bed Builders",
 						fixture.componentInstance.emitOutput();
 
 						expect(outputSpy)
-						.toHaveBeenCalledWith("test output");
+							.toHaveBeenCalledWith("test output");
 					});
 
 				it("should configure admin defaults with withAdminDefaults",
@@ -178,7 +178,7 @@ describe("Test Bed Builders",
 						const result: ComponentTestBed<TestComponent> =
 							builder.withAdminDefaults();
 						expect(result)
-						.toBe(builder);
+							.toBe(builder);
 
 						// Build and verify providers are configured
 						const fixture: ComponentFixture<TestComponent> =
@@ -187,9 +187,9 @@ describe("Test Bed Builders",
 							TestBed.inject(QueryClient);
 
 						expect(fixture)
-						.toBeDefined();
+							.toBeDefined();
 						expect(queryClient)
-						.toBeDefined();
+							.toBeDefined();
 					});
 			});
 	});
