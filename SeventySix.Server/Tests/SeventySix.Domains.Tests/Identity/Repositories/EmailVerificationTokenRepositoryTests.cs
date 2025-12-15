@@ -6,7 +6,7 @@ using SeventySix.Identity;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
-namespace SeventySix.Domains.Tests.Identity;
+namespace SeventySix.Domains.Tests.Identity.Repositories;
 
 /// <summary>
 /// Integration tests for <see cref="EmailVerificationTokenRepository"/>.

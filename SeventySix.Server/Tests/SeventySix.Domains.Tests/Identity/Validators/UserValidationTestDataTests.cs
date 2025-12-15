@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Domains.Tests.Identity;
+namespace SeventySix.Domains.Tests.Identity.Validators;
 
 /// <summary>
 /// Tests for <see cref="UserValidationTestData"/> to ensure test data integrity.

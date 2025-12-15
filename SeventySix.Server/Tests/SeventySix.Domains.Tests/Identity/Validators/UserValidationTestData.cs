@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Domains.Tests.Identity;
+namespace SeventySix.Domains.Tests.Identity.Validators;
 
 /// <summary>
 /// Reusable test data for user validation tests using TheoryData.

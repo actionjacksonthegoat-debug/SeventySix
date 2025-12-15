@@ -6,7 +6,7 @@ using FluentValidation.TestHelper;
 using SeventySix.Logging;
 using SeventySix.Logging.Commands.CreateClientLog;
 
-namespace SeventySix.Domains.Tests.Logging;
+namespace SeventySix.Domains.Tests.Logging.Validators;
 
 /// <summary>Unit tests for CreateClientLogCommandValidator.</summary>
 public class CreateClientLogCommandValidatorTests

@@ -6,7 +6,7 @@ using FluentValidation.TestHelper;
 using SeventySix.Shared.DTOs;
 using SeventySix.Shared.Validators;
 
-namespace SeventySix.Shared.Tests.Shared;
+namespace SeventySix.Shared.Tests.Validators;
 
 /// <summary>
 /// Unit tests for BaseQueryValidator using a test entity and request.

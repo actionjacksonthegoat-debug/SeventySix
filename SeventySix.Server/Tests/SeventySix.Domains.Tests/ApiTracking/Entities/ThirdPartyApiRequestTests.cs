@@ -4,7 +4,7 @@
 
 using SeventySix.ApiTracking;
 
-namespace SeventySix.Domains.Tests.ApiTracking;
+namespace SeventySix.Domains.Tests.ApiTracking.Entities;
 
 /// <summary>
 /// Unit tests for <see cref="ThirdPartyApiRequest"/> entity.

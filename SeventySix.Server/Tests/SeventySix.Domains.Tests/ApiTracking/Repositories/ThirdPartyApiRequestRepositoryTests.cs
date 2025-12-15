@@ -8,7 +8,7 @@ using NSubstitute;
 using SeventySix.ApiTracking;
 using SeventySix.TestUtilities.TestBases;
 
-namespace SeventySix.Domains.Tests.ApiTracking;
+namespace SeventySix.Domains.Tests.ApiTracking.Repositories;
 
 /// <summary>
 /// Integration tests for <see cref="ThirdPartyApiRequestRepository"/>.

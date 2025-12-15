@@ -8,7 +8,7 @@ using NSubstitute;
 using SeventySix.Shared.Entities;
 using SeventySix.Shared.Persistence;
 
-namespace SeventySix.Shared.Tests.Shared.Infrastructure;
+namespace SeventySix.Shared.Tests.Persistence;
 
 /// <summary>
 /// Unit tests for BaseRepository template method pattern.

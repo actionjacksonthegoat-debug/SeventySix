@@ -6,7 +6,7 @@ using FluentValidation.TestHelper;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.Login;
 
-namespace SeventySix.Domains.Tests.Identity;
+namespace SeventySix.Domains.Tests.Identity.Validators;
 
 /// <summary>
 /// Unit tests for LoginCommandValidator.

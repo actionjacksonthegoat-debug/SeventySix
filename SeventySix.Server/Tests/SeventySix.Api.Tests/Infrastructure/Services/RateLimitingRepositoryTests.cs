@@ -12,7 +12,7 @@ using SeventySix.Shared.Persistence;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 
-namespace SeventySix.Api.Tests.Infrastructure;
+namespace SeventySix.Api.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Tests for RateLimitingService using real PostgreSQL database.

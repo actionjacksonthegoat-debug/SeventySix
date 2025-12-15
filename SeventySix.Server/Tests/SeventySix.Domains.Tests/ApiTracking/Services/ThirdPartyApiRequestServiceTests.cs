@@ -5,7 +5,7 @@
 using NSubstitute;
 using SeventySix.ApiTracking;
 
-namespace SeventySix.Domains.Tests.ApiTracking;
+namespace SeventySix.Domains.Tests.ApiTracking.Services;
 
 /// <summary>
 /// Unit tests for ThirdPartyApiRequestService.

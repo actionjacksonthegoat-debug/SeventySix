@@ -6,7 +6,7 @@ using FluentValidation.TestHelper;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.SetPassword;
 
-namespace SeventySix.Domains.Tests.Identity;
+namespace SeventySix.Domains.Tests.Identity.Validators;
 
 /// <summary>
 /// Unit tests for SetPasswordCommandValidator.

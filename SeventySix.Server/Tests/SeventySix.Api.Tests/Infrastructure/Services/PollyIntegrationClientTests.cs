@@ -11,7 +11,7 @@ using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Settings;
 using SeventySix.TestUtilities.TestHelpers;
 
-namespace SeventySix.Api.Tests.Infrastructure;
+namespace SeventySix.Api.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for PollyIntegrationClient.

@@ -1,6 +1,6 @@
 using SeventySix.Shared.Persistence;
 
-namespace SeventySix.Shared.Tests.Shared.Infrastructure;
+namespace SeventySix.Shared.Tests.Persistence;
 
 public sealed class QueryBuilderTests
 {

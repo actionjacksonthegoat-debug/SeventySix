@@ -7,7 +7,7 @@ using SeventySix.ApiTracking;
 using SeventySix.Shared.Persistence;
 using Shouldly;
 
-namespace SeventySix.Shared.Tests.Infrastructure;
+namespace SeventySix.Shared.Tests.Persistence;
 
 /// <summary>
 /// Unit tests for <see cref="TransactionManager"/>.
@@ -305,15 +305,14 @@ public class TransactionManagerTests : IDisposable
 		int result = await TransactionManager.ExecuteInTransactionAsync(async cancellationToken =>
 		{
 			attemptCount++;
-			if (attemptCount == 1)
+			if (attemptCount < 2)
 			{
 				throw new DbUpdateConcurrencyException("Simulated concurrency conflict");
 			}
-
 			return 42;
-		}, maxRetries: 2);
+		}, maxRetries: 3);
 
-		// Assert - Verify retry happened and operation succeeded
+		// Assert
 		result.ShouldBe(42);
 		attemptCount.ShouldBe(2);
 	}

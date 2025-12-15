@@ -5,7 +5,7 @@
 using System.Net;
 using SeventySix.TestUtilities.TestBases;
 
-namespace SeventySix.Api.Tests.Integration;
+namespace SeventySix.Api.Tests.HealthChecks;
 
 /// <summary>
 /// Integration tests for the /health endpoint.

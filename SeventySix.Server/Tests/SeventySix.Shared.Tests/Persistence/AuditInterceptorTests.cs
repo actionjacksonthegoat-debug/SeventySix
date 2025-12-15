@@ -10,7 +10,7 @@ using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;
 using Shouldly;
 
-namespace SeventySix.Shared.Tests.Infrastructure;
+namespace SeventySix.Shared.Tests.Persistence;
 
 /// <summary>
 /// Unit tests for <see cref="AuditInterceptor"/>.

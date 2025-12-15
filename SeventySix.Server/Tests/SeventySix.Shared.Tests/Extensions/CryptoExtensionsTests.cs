@@ -4,7 +4,7 @@
 
 using SeventySix.Shared.Extensions;
 
-namespace SeventySix.Shared.Tests.Shared.Extensions;
+namespace SeventySix.Shared.Tests.Extensions;
 
 /// <summary>
 /// Unit tests for CryptoExtensions utility methods.

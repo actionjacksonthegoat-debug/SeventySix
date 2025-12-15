@@ -6,7 +6,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using SeventySix.Shared.Validators;
 
-namespace SeventySix.Shared.Tests.Shared.Validators;
+namespace SeventySix.Shared.Tests.Validators;
 
 /// <summary>
 /// Unit tests for <see cref="CommandValidatorFactory"/>.

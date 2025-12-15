@@ -13,7 +13,7 @@ using SeventySix.Shared.Settings;
 using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
 
-namespace SeventySix.Api.Tests.Resilience;
+namespace SeventySix.Api.Tests.Infrastructure;
 
 /// <summary>
 /// Tests for Polly resilience policies (retry, circuit breaker, timeout).

@@ -5,7 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using SeventySix.Shared.Persistence;
 
-namespace SeventySix.Shared.Tests.Shared.Infrastructure;
+namespace SeventySix.Shared.Tests.Persistence;
 
 /// <summary>
 /// Unit tests for BulkOperationExecutor.

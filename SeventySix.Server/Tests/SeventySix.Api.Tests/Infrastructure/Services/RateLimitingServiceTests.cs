@@ -9,7 +9,7 @@ using SeventySix.Api.Infrastructure;
 using SeventySix.ApiTracking;
 using SeventySix.Shared.Interfaces;
 
-namespace SeventySix.Api.Tests.Infrastructure;
+namespace SeventySix.Api.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Unit tests for RateLimitingService with database-backed implementation.

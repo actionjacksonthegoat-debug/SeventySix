@@ -7,7 +7,7 @@ using NSubstitute;
 using SeventySix.Logging;
 using SeventySix.TestUtilities.TestBases;
 
-namespace SeventySix.Domains.Tests.Logging;
+namespace SeventySix.Domains.Tests.Logging.Repositories;
 
 /// <summary>
 /// Integration tests for <see cref="LogRepository"/>.

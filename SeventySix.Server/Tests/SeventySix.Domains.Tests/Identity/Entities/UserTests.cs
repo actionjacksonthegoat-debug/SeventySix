@@ -5,7 +5,7 @@
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Constants;
 
-namespace SeventySix.Domains.Tests.Identity;
+namespace SeventySix.Domains.Tests.Identity.Entities;
 
 /// <summary>
 /// Unit tests for the User domain entity.

@@ -5,7 +5,7 @@
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Builders;
 
-namespace SeventySix.Domains.Tests.Identity;
+namespace SeventySix.Domains.Tests.Identity.Extensions;
 
 /// <summary>
 /// Unit tests for UserExtensions mapping methods.
