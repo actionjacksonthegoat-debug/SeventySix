@@ -103,17 +103,17 @@ public class DatabaseLogSink(
 			Dictionary<string, LogEventPropertyValue> enrichedProperties =
 				new(
 					logEvent.Properties)
-			{
-				["__ActivityTraceId"] =
+				{
+					["__ActivityTraceId"] =
 				new ScalarValue(
 					activity.TraceId.ToString()),
-				["__ActivitySpanId"] =
+					["__ActivitySpanId"] =
 				new ScalarValue(
 					activity.SpanId.ToString()),
-				["__ActivityParentSpanId"] =
+					["__ActivityParentSpanId"] =
 				new ScalarValue(
 					activity.ParentSpanId.ToString()),
-			};
+				};
 
 			// Create new log event with enriched properties
 			logEvent =
@@ -199,14 +199,14 @@ public class DatabaseLogSink(
 	{
 		Log log =
 			new()
-		{
-			LogLevel = logEvent.Level.ToString(),
-			Message = logEvent.RenderMessage(),
-			CreateDate =
+			{
+				LogLevel = logEvent.Level.ToString(),
+				Message = logEvent.RenderMessage(),
+				CreateDate =
 			logEvent.Timestamp.UtcDateTime,
-			Environment = environment,
-			MachineName = machineName,
-		};
+				Environment = environment,
+				MachineName = machineName,
+			};
 
 		ExtractTraceContext(logEvent, log);
 		ExtractExceptionInfo(logEvent, log);
