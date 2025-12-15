@@ -16,51 +16,55 @@
 		"module": "preserve",
 	"baseUrl": "./",
 	"paths": {
-		"@infrastructure/*": ["src/app/infrastructure/*"],
-		"@assets/*": ["src/app/assets/*"],
-		"@features/*": ["src/app/features/*"],
+		// ============================================================
+		// INTEGRATION ALIASES (cross-domain features)
+		// ============================================================
+		"@integration/*": ["src/app/integrations/*"],
+
+		// ============================================================
+		// DOMAIN ALIASES (bounded contexts in domains/)
+		// ============================================================
+		"@admin": ["src/app/domains/admin"],
+		"@admin/*": ["src/app/domains/admin/*"],
+		"@game": ["src/app/domains/game"],
+		"@game/*": ["src/app/domains/game/*"],
+		"@commerce": ["src/app/domains/commerce"],
+		"@commerce/*": ["src/app/domains/commerce/*"],
+		"@auth": ["src/app/domains/auth"],
+		"@auth/*": ["src/app/domains/auth/*"],
+		"@account": ["src/app/domains/account"],
+		"@account/*": ["src/app/domains/account/*"],
+		"@home": ["src/app/domains/home"],
+		"@home/*": ["src/app/domains/home/*"],
+		"@physics": ["src/app/domains/physics"],
+		"@physics/*": ["src/app/domains/physics/*"],
+		"@developer": ["src/app/domains/developer"],
+		"@developer/*": ["src/app/domains/developer/*"],
+
+		// ============================================================
+		// SHARED ALIAS (truly shared code only)
+		// ============================================================
 		"@shared/*": ["src/app/shared/*"],
-		"@environments/*": ["src/environments/*"],
-		"@testing": ["src/app/testing"],
-		"@testing/*": ["src/app/testing/*"],
+		"@shared/pages": ["src/app/shared/pages"],
+		"@shared/pages/*": ["src/app/shared/pages/*"],
+		"@shared/generated-open-api": ["src/app/shared/generated-open-api"],
+		"@shared/generated-open-api/*": ["src/app/shared/generated-open-api/*"],
+		"@shared/layout": ["src/app/shared/components/layout"],
+		"@shared/layout/*": ["src/app/shared/components/layout/*"],
+		"@shared/services": ["src/app/shared/services"],
+		"@shared/services/*": ["src/app/shared/services/*"],
 
-		// Admin feature and sub-features
-		"@admin": ["src/app/features/admin"],
-		"@admin/*": ["src/app/features/admin/*"],
-		"@admin/logs": ["src/app/features/admin/logs"],
-		"@admin/logs/*": ["src/app/features/admin/logs/*"],
-		"@admin/users": ["src/app/features/admin/users"],
-		"@admin/users/*": ["src/app/features/admin/users/*"],
-		"@admin/permission-requests": ["src/app/features/admin/permission-requests"],
-		"@admin/permission-requests/*": ["src/app/features/admin/permission-requests/*"],
-		"@admin/admin-dashboard": ["src/app/features/admin/admin-dashboard"],
-		"@admin/admin-dashboard/*": ["src/app/features/admin/admin-dashboard/*"],
+		// ============================================================
+		// TESTING (convenience alias for @shared/testing)
+		// ============================================================
+		"@testing": ["src/app/shared/testing"],
+		"@testing/*": ["src/app/shared/testing/*"],
 
-		// Shared error pages
-		"@shared/error-pages": ["src/app/shared/error-pages"],
-		"@shared/error-pages/*": ["src/app/shared/error-pages/*"],
-
-		// Home feature and sub-features
-		"@home": ["src/app/features/home"],
-		"@home/*": ["src/app/features/home/*"],
-		"@home/home-page": ["src/app/features/home/home-page"],
-		"@home/home-page/*": ["src/app/features/home/home-page/*"],
-
-		// Game feature
-		"@game": ["src/app/features/game"],
-		"@game/*": ["src/app/features/game/*"],
-
-		// Developer feature
-		"@developer": ["src/app/features/developer"],
-		"@developer/*": ["src/app/features/developer/*"],
-
-		// Sandbox feature
-		"@sandbox": ["src/app/features/sandbox"],
-		"@sandbox/*": ["src/app/features/sandbox/*"],
-
-		// Account feature (user's own account)
-		"@account": ["src/app/features/account"],
-		"@account/*": ["src/app/features/account/*"]
+		// ============================================================
+		// UTILITY ALIASES
+		// ============================================================
+		"@assets/*": ["src/app/assets/*"],
+		"@environments/*": ["src/environments/*"]
 	}
 	},
 	"angularCompilerOptions": {

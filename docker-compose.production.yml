@@ -22,7 +22,7 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-seventysix}
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-TestPassword}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
@@ -60,16 +60,16 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       # PostgreSQL Connection
-      - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=${DB_NAME:-seventysix};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-TestPassword};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
+      - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=${DB_NAME:-seventysix};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:?DB_PASSWORD must be set in .env};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
       # JWT Authentication
-      - Jwt__SecretKey=${JWT_SECRET_KEY}
+      - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set in .env}
       # GitHub OAuth
-      - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID}
-      - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET}
+      - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID:?GITHUB_CLIENT_ID must be set in .env}
+      - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET:?GITHUB_CLIENT_SECRET must be set in .env}
       # Email Configuration
-      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME}
-      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD}
-      - Email__FromAddress=${EMAIL_FROM_ADDRESS}
+      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME:?EMAIL_SMTP_USERNAME must be set in .env}
+      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD:?EMAIL_SMTP_PASSWORD must be set in .env}
+      - Email__FromAddress=${EMAIL_FROM_ADDRESS:?EMAIL_FROM_ADDRESS must be set in .env}
       # CORS
       - Cors__AllowedOrigins__0=http://localhost:8080
       - Cors__AllowedOrigins__1=http://localhost:4200
@@ -187,7 +187,7 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set in .env}
       - GF_USERS_DEFAULT_THEME=dark
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer

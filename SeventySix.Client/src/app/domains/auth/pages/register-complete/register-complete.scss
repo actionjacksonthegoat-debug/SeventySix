@@ -1,0 +1,131 @@
+@use "../../shared/styles/variables" as vars;
+
+.register-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100%;
+	padding: vars.$spacing-lg;
+	background: var(--mat-app-background-color);
+}
+
+.register-card {
+	width: 100%;
+	max-width: 25rem;
+	padding: vars.$spacing-2xl;
+	background: var(--mat-sys-surface);
+	border-radius: 1rem;
+	box-shadow: var(--mat-sys-level2);
+
+	h1 {
+		margin: 0 0 vars.$spacing-md;
+		font-size: 1.5rem;
+		font-weight: 500;
+		text-align: center;
+		color: var(--mat-sys-on-surface);
+	}
+}
+
+.description {
+	margin: 0 0 vars.$spacing-xl;
+	font-size: 0.875rem;
+	color: var(--mat-sys-on-surface-variant);
+	text-align: center;
+	line-height: 1.5;
+}
+
+.register-form {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-lg;
+}
+
+.form-group {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-xs;
+
+	label {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--mat-sys-on-surface);
+	}
+
+	input {
+		padding: vars.$spacing-md;
+		border: 1px solid var(--mat-sys-outline);
+		border-radius: 0.5rem;
+		background: var(--mat-sys-surface);
+		color: var(--mat-sys-on-surface);
+		font-size: 1rem;
+
+		&:focus {
+			outline: none;
+			border-color: var(--mat-sys-primary);
+			box-shadow: 0 0 0 2px rgb(var(--mat-sys-primary-rgb) / 20%);
+		}
+
+		&::placeholder {
+			color: var(--mat-sys-on-surface-variant);
+		}
+	}
+
+	.hint {
+		font-size: 0.75rem;
+		color: var(--mat-sys-on-surface-variant);
+	}
+}
+
+.btn-primary {
+	display: block;
+	width: 100%;
+	padding: vars.$spacing-md vars.$spacing-lg;
+	border: none;
+	border-radius: 0.5rem;
+	background: var(--mat-sys-primary);
+	color: var(--mat-sys-on-primary);
+	font-size: 1rem;
+	font-weight: 500;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	transition: background-color 0.2s;
+
+	&:hover:not(:disabled) {
+		background: var(--mat-sys-primary-container);
+		color: var(--mat-sys-on-primary-container);
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+}
+
+.links {
+	margin-top: vars.$spacing-xl;
+	text-align: center;
+	font-size: 0.875rem;
+	color: var(--mat-sys-on-surface-variant);
+
+	a {
+		margin-left: vars.$spacing-xs;
+		color: var(--mat-sys-primary);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+.error-state {
+	text-align: center;
+
+	p {
+		margin: 0 0 vars.$spacing-xl;
+		font-size: 0.875rem;
+		color: var(--mat-sys-on-surface-variant);
+		line-height: 1.5;
+	}
+}

@@ -138,7 +138,7 @@ public class CancellationTokenTests
 	}
 	private static Type[] GetAllServiceInterfaces()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
 
 		Type[] serviceInterfaces = domainAssembly.GetTypes()
 			.Where(serviceType => serviceType.IsInterface
@@ -154,7 +154,7 @@ public class CancellationTokenTests
 
 	private static Type[] GetAllRepositoryInterfaces()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
 
 		Type[] repositoryInterfaces = domainAssembly.GetTypes()
 			.Where(repositoryType => repositoryType.IsInterface

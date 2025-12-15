@@ -3,17 +3,17 @@ import { Component, effect, inject, Renderer2 } from "@angular/core";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { RouterOutlet } from "@angular/router";
+import { NotificationToastComponent } from "@shared/components";
 import {
 	FooterComponent,
 	HeaderComponent,
 	SidebarComponent
-} from "@infrastructure/layout";
+} from "@shared/components/layout";
 import {
 	LayoutService,
 	LoadingService,
 	ThemeService
-} from "@infrastructure/services";
-import { NotificationToastComponent } from "@shared/components";
+} from "@shared/services";
 
 /**
  * Root application component.

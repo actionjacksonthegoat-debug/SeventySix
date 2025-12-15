@@ -2,8 +2,8 @@ import { Routes } from "@angular/router";
 import {
 	ROLE_ADMIN,
 	ROLE_DEVELOPER
-} from "@infrastructure/constants/role.constants";
-import { roleGuard } from "@infrastructure/guards/role.guard";
+} from "@shared/constants/role.constants";
+import { roleGuard } from "@shared/guards/role.guard";
 
 /**
  * Application routes with lazy loading.
@@ -23,27 +23,27 @@ export const routes: Routes =
 		{
 			path: "",
 			loadChildren: () =>
-				import("./features/home/home.routes").then(
+				import("./domains/home/home.routes").then(
 					(m) => m.HOME_ROUTES)
 		},
 		{
 			path: "game",
 			loadChildren: () =>
-				import("./features/game/game.routes").then(
+				import("./domains/game/game.routes").then(
 					(m) => m.GAME_ROUTES),
 			data: { breadcrumb: "Game" }
 		},
 		{
 			path: "physics",
 			loadChildren: () =>
-				import("./features/physics/physics.routes").then(
+				import("./domains/physics/physics.routes").then(
 					(m) => m.PHYSICS_ROUTES),
 			data: { breadcrumb: "Physics" }
 		},
 		{
 			path: "rv-camper",
 			loadChildren: () =>
-				import("./features/rv-camper/rv-camper.routes").then(
+				import("./domains/commerce/rv-camper.routes").then(
 					(m) => m.RV_CAMPER_ROUTES),
 			data: { breadcrumb: "RV Camper" }
 		},
@@ -51,7 +51,7 @@ export const routes: Routes =
 		{
 			path: "auth",
 			loadChildren: () =>
-				import("./features/auth/auth.routes").then(
+				import("./domains/auth/auth.routes").then(
 					(m) => m.AUTH_ROUTES),
 			data: { breadcrumb: "Authentication" }
 		},
@@ -62,22 +62,10 @@ export const routes: Routes =
 		{
 			path: "account",
 			loadChildren: () =>
-				import("./features/account/account.routes").then(
+				import("./domains/account/account.routes").then(
 					(m) => m.ACCOUNT_ROUTES),
 			canActivate: [roleGuard()],
 			data: { breadcrumb: "Account" }
-		},
-
-		// ══════════════════════════════════════════════════════════════
-		// DEVELOPER ROUTES (Developer or Admin - ADDITIVE)
-		// ══════════════════════════════════════════════════════════════
-		{
-			path: "developer",
-			loadChildren: () =>
-				import("./features/developer/developer.routes").then(
-					(m) => m.DEVELOPER_ROUTES),
-			canActivate: [roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
-			data: { breadcrumb: "Developer" }
 		},
 
 		// ══════════════════════════════════════════════════════════════
@@ -86,25 +74,31 @@ export const routes: Routes =
 		{
 			path: "admin",
 			loadChildren: () =>
-				import("./features/admin/admin.routes").then(
+				import("./domains/admin/admin.routes").then(
 					(m) => m.ADMIN_ROUTES),
 			canActivate: [roleGuard(ROLE_ADMIN)],
 			data: { breadcrumb: "Admin" }
 		},
 
-		// Error pages
+		// ══════════════════════════════════════════════════════════════
+		// DEVELOPER ROUTES (Developer Role Required)
+		// ══════════════════════════════════════════════════════════════
 		{
-			path: "error",
+			path: "developer",
 			loadChildren: () =>
-				import("./features/admin/admin.routes").then(
-					(m) => m.ADMIN_ROUTES)
+				import("./domains/developer/developer.routes").then(
+					(m) => m.DEVELOPER_ROUTES),
+			canActivate: [roleGuard(ROLE_DEVELOPER)],
+			data: { breadcrumb: "Developer" }
 		},
+
+		// Error pages route removed - handled by wildcard fallback
 
 		// Fallback
 		{
 			path: "**",
 			loadComponent: () =>
-				import("@shared/error-pages/not-found/not-found").then(
+				import("@shared/pages/not-found/not-found").then(
 					(m) => m.NotFoundPage),
 			title: "Page Not Found"
 		}

@@ -1,6 +1,6 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
-import { DateService } from "@infrastructure/services";
-import { isNullOrUndefined, isNullOrWhitespace } from "@infrastructure/utils/null-check.utility";
+import { DateService } from "@shared/services";
+import { isNullOrUndefined, isNullOrWhitespace } from "@shared/utilities/null-check.utility";
 
 /**
  * Validator for date ranges.

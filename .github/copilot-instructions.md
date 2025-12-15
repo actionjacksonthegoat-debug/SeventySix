@@ -134,15 +134,30 @@ domains/    → @admin/*, @game/*, @commerce/*
 
 ### Client File Locations
 
-| Type             | Location in Domain   | Import From             |
-| ---------------- | -------------------- | ----------------------- |
-| Domain DTOs      | `{domain}/api/`      | `@{domain}/api`         |
-| Shared DTOs      | `shared/api/`        | `@shared/api`           |
-| Domain Services  | `{domain}/services/` | Route `providers` array |
-| Persistent State | `{domain}/core/`     | `providedIn: 'root'` OK |
-| Domain Models    | `{domain}/models/`   | `@{domain}/models`      |
-| Domain Tests     | `{domain}/testing/`  | `@{domain}/testing`     |
-| Shared Services  | `shared/services/`   | `providedIn: 'root'`    |
+| Type             | Location in Domain      | Import From             |
+| ---------------- | ----------------------- | ----------------------- |
+| Route Pages      | `{domain}/pages/`       | Route `loadComponent`   |
+| Subdomain Pages  | `{domain}/{sub}/pages/` | Route `loadComponent`   |
+| Error Pages      | `shared/pages/`         | `@shared/pages`         |
+| Domain DTOs      | `{domain}/models/`      | `@{domain}/models`      |
+| Shared DTOs      | `shared/models/`        | `@shared/models`        |
+| Domain Services  | `{domain}/services/`    | Route `providers` array |
+| Persistent State | `{domain}/core/`        | `providedIn: 'root'` OK |
+| Domain Models    | `{domain}/models/`      | `@{domain}/models`      |
+| Domain Tests     | `{domain}/testing/`     | `@{domain}/testing`     |
+| Shared Services  | `shared/services/`      | `providedIn: 'root'`    |
+
+### Page Organization (CRITICAL)
+
+**Rule**: All full route-level pages live in `pages/` folders
+
+| Page Type      | Location                | Example                              |
+| -------------- | ----------------------- | ------------------------------------ |
+| Domain Page    | `{domain}/pages/`       | `admin/pages/admin-dashboard/`       |
+| Subdomain Page | `{domain}/{sub}/pages/` | `admin/users/pages/user-management/` |
+| Error Page     | `shared/pages/`         | `shared/pages/not-found/`            |
+
+**Why**: Separates route-level pages from reusable components. Components folder contains composable UI pieces; pages folder contains full route destinations.
 
 ### Service Scoping (CRITICAL)
 

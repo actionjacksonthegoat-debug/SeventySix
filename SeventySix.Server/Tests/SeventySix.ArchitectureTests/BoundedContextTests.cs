@@ -36,7 +36,7 @@ public class BoundedContextTests
 	[Fact]
 	public void Bounded_Contexts_Should_Not_Reference_Each_Other()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
 		string[] boundedContextNames = domainAssembly.GetTypes()
 			.Select(type => type.Namespace)
 			.Where(namespaceName =>
@@ -44,7 +44,8 @@ public class BoundedContextTests
 				&& namespaceName.StartsWith("SeventySix.")
 				&& !namespaceName.Contains("Shared")
 				&& !namespaceName.Contains("Infrastructure")
-				&& !namespaceName.Contains("Extensions"))
+				&& !namespaceName.Contains("Extensions")
+				&& !namespaceName.Contains("Registration"))
 			.Select(namespaceName => namespaceName!.Split('.')[1])
 			.Distinct()
 			.ToArray();
@@ -89,7 +90,7 @@ public class BoundedContextTests
 	[Fact]
 	public void Each_Bounded_Context_Should_Have_DbContext()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
 		string[] boundedContextNames = domainAssembly.GetTypes()
 			.Select(type => type.Namespace)
 			.Where(namespaceName =>
@@ -97,7 +98,8 @@ public class BoundedContextTests
 				&& namespaceName.StartsWith("SeventySix.")
 				&& !namespaceName.Contains("Shared")
 				&& !namespaceName.Contains("Infrastructure")
-				&& !namespaceName.Contains("Extensions"))
+				&& !namespaceName.Contains("Extensions")
+				&& !namespaceName.Contains("Registration"))
 			.Select(namespaceName => namespaceName!.Split('.')[1])
 			.Distinct()
 			.ToArray();

@@ -1,9 +1,9 @@
 import { AbstractControl } from "@angular/forms";
-import { isNonNullObject } from "@infrastructure/utils/null-check.utility";
+import { isNonNullObject } from "@shared/utilities/null-check.utility";
 import {
 	VALIDATION_ERROR_MESSAGES,
 	ValidationMessageTemplate
-} from "../constants/validation-error.constants";
+} from "@shared/constants/validation-error.constants";
 
 /**
  * Gets the first validation error message for a form control.

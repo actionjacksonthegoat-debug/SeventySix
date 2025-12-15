@@ -3,7 +3,7 @@
 // </copyright>
 
 using Microsoft.Extensions.Options;
-using SeventySix.Shared;
+using SeventySix.Shared.Settings;
 
 namespace SeventySix.TestUtilities.Builders;
 

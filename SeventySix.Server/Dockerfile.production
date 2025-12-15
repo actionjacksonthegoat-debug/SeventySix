@@ -4,11 +4,10 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy solution and project files
+# Copy solution and project files (using layer caching)
 COPY ["SeventySix.Server.slnx", "./"]
-COPY ["SeventySix.Core/SeventySix.Core.csproj", "SeventySix.Core/"]
-COPY ["SeventySix.BusinessLogic/SeventySix.BusinessLogic.csproj", "SeventySix.BusinessLogic/"]
-COPY ["SeventySix.DataAccess/SeventySix.DataAccess.csproj", "SeventySix.DataAccess/"]
+COPY ["SeventySix.Shared/SeventySix.Shared.csproj", "SeventySix.Shared/"]
+COPY ["SeventySix.Domains/SeventySix.Domains.csproj", "SeventySix.Domains/"]
 COPY ["SeventySix.Api/SeventySix.Api.csproj", "SeventySix.Api/"]
 
 # Restore dependencies
@@ -30,14 +29,24 @@ RUN dotnet publish "SeventySix.Api.csproj" \
 	-o /app/publish \
 	/p:UseAppHost=false
 
-# Generate SQL migration script
+# Generate SQL migration scripts for all DbContexts
 WORKDIR /src
-RUN dotnet tool install --global dotnet-ef --version 9.0.0
-ENV PATH="${PATH}:/root/.dotnet/tools"
-RUN dotnet ef migrations script --project SeventySix.DataAccess/SeventySix.DataAccess.csproj \
+RUN dotnet tool install --global dotnet-ef --version 10.0.0 && \
+	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains/SeventySix.Domains.csproj \
 	--startup-project SeventySix.Api/SeventySix.Api.csproj \
+	--context IdentityDbContext \
 	--idempotent \
-	--output /app/migrations.sql
+	--output /app/identity-migrations.sql && \
+	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains/SeventySix.Domains.csproj \
+	--startup-project SeventySix.Api/SeventySix.Api.csproj \
+	--context LoggingDbContext \
+	--idempotent \
+	--output /app/logging-migrations.sql && \
+	/root/.dotnet/tools/dotnet-ef migrations script --project SeventySix.Domains/SeventySix.Domains.csproj \
+	--startup-project SeventySix.Api/SeventySix.Api.csproj \
+	--context ApiTrackingDbContext \
+	--idempotent \
+	--output /app/apitracking-migrations.sql
 
 # Stage 3: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
@@ -52,9 +61,11 @@ RUN apt-get update && \
 # Create a non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Copy published files and migration script
+# Copy published files and migration scripts
 COPY --from=publish /app/publish .
-COPY --from=publish /app/migrations.sql .
+COPY --from=publish /app/identity-migrations.sql .
+COPY --from=publish /app/logging-migrations.sql .
+COPY --from=publish /app/apitracking-migrations.sql .
 
 # Create logs and data protection keys directories with proper permissions
 # The keys directory should be mounted as a Docker volume for persistence across container restarts
@@ -71,7 +82,9 @@ RUN echo '#!/bin/bash\n\
 	done\n\
 	\n\
 	echo "PostgreSQL is up - executing migrations"\n\
-	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/migrations.sql\n\
+	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/identity-migrations.sql\n\
+	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/logging-migrations.sql\n\
+	PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /app/apitracking-migrations.sql\n\
 	\n\
 	echo "Starting application"\n\
 	exec dotnet SeventySix.Api.dll' > /app/entrypoint.sh
@@ -89,12 +102,12 @@ EXPOSE 8081
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 	CMD curl -f http://localhost:8080/health || exit 1
 
-# Set environment variables
+# Set environment variables (non-sensitive defaults only)
+# Sensitive values (DB_PASSWORD) must be provided at runtime via docker-compose or secrets
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV DB_HOST=postgres
 ENV DB_NAME=seventysix
 ENV DB_USER=postgres
-ENV DB_PASSWORD=TestPassword
 
 ENTRYPOINT ["/app/entrypoint.sh"]

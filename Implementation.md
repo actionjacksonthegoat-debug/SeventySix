@@ -105,28 +105,16 @@ The name "GameStateService" is misleading in this case - it should perhaps be `P
 ```
 src/app/
 ├── shared/                         # @shared/* - Truly shared code ONLY
-│   ├── api/                        # @shared/api - Generated DTOs + API client
-│   │   ├── generated/              # Auto-generated from OpenAPI (NEVER import directly)
-│   │   │   └── api.generated.ts    # Raw output from code generator
-│   │   ├── index.ts                # Re-exports ONLY shared DTOs
-│   │   └── api.service.ts          # HTTP wrapper
+│   ├── generated-open-api/         # @shared/generated-open-api - OpenAPI paste location
+│   │   └── generated-open-api.ts   # Raw output from code generator (NEVER import directly)
 │   │
-│   ├── auth/                       # @shared/auth - Authentication
-│   │   ├── auth.service.ts
-│   │   ├── guards/
-│   │   └── index.ts
+│   ├── pages/                      # @shared/pages - Error pages ONLY
+│   │   ├── not-found/              # 404 error page
+│   │   └── server-error/           # 500 error page
 │   │
-│   ├── layout/                     # @shared/layout - App shell (header, sidebar, footer)
-│   │   ├── header/
-│   │   ├── sidebar/
-│   │   ├── footer/
-│   │   └── index.ts
-│   │
-│   ├── ui/                         # @shared/ui - Generic UI components
-│   │   ├── data-table/
-│   │   ├── loading-spinner/
-│   │   ├── confirm-dialog/
-│   │   └── index.ts
+│   ├── components/                 # Shared UI components
+│   │   ├── layout/                 # App shell (header, sidebar, footer)
+│   │   └── ...                     # Other shared components
 │   │
 │   ├── services/                   # @shared/services - App-wide singletons
 │   │   ├── date.service.ts
@@ -134,12 +122,8 @@ src/app/
 │   │   ├── notification.service.ts
 │   │   └── index.ts
 │   │
-│   ├── util/                       # @shared/util - Pure functions
-│   │   ├── date.utils.ts
-│   │   ├── string.utils.ts
-│   │   └── index.ts
-│   │
-│   ├── models/                     # @shared/models - Shared client models
+│   ├── models/                     # @shared/models - Shared client models + DTOs
+│   │   ├── api.model.ts            # Shared DTOs re-exported from generated-open-api
 │   │   ├── base-query.model.ts
 │   │   ├── table-column.model.ts
 │   │   └── index.ts
@@ -147,70 +131,84 @@ src/app/
 │   └── testing/                    # @shared/testing - Generic test infra
 │       ├── setup/                  # TestBed configuration
 │       ├── mocks/                  # Generic mocks (HttpClient, Router)
-│       ├── helpers/                # Test assertion helpers
-│       ├── fixtures/               # Base fixture classes for extension
-│       │   └── base.fixtures.ts    # UserFixtureBase, etc.
 │       └── index.ts
 │
 └── domains/                        # Domain bounded contexts
     │
     ├── admin/                      # @admin/* - Admin bounded context
-    │   ├── api/                    # @admin/api - Admin-only DTOs
-    │   │   └── index.ts            # Re-exports from shared/api/generated
+    │   ├── pages/                  # Domain-level route pages
+    │   │   └── admin-dashboard/    # Admin dashboard page
     │   │
-    │   ├── services/               # @admin/services - Admin services
-    │   │   ├── user.service.ts
-    │   │   ├── permission.service.ts
-    │   │   └── index.ts
+    │   ├── users/                  # Sub-domain: User management
+    │   │   ├── pages/              # Sub-domain route pages
+    │   │   │   ├── user-management/
+    │   │   │   ├── user-create/
+    │   │   │   └── user-detail/
+    │   │   ├── components/         # Reusable components within sub-domain
+    │   │   ├── services/           # Sub-domain services
+    │   │   └── models/
     │   │
-    │   ├── models/                 # @admin/models - Admin client models
-    │   │   ├── user-query.model.ts
-    │   │   ├── log-filter.model.ts
-    │   │   └── index.ts
+    │   ├── logs/                   # Sub-domain: Log viewer
+    │   │   ├── pages/
+    │   │   │   └── log-management/
+    │   │   ├── components/
+    │   │   └── services/
     │   │
+    │   ├── models/                 # @admin/models - Admin DTOs from generated-open-api
     │   ├── testing/                # @admin/testing - Admin test utilities
-    │   │   ├── fixtures/
-    │   │   │   └── user.fixtures.ts    # Extends UserFixtureBase
-    │   │   ├── mocks/
-    │   │   │   └── user.service.mock.ts
-    │   │   └── index.ts
-    │   │
-    │   ├── users/                  # Feature: User management
-    │   ├── logs/                   # Feature: Log viewer
-    │   ├── permissions/            # Feature: Permission management
     │   └── admin.routes.ts
     │
-    ├── game/                       # @game/* - Game bounded context
-    │   ├── api/                    # @game/api - Game-only DTOs
-    │   │   └── index.ts            # Re-exports GameStateDto, LobbyDto, etc.
-    │   │
-    │   ├── core/                   # @game/core - Persistent game services
-    │   │   ├── game-state.service.ts   # providedIn: 'root' (persistent!)
-    │   │   ├── websocket.service.ts    # providedIn: 'root' (persistent!)
-    │   │   └── index.ts
-    │   │
-    │   ├── services/               # @game/services - Route-scoped services
-    │   │   ├── lobby.service.ts
-    │   │   ├── combat.service.ts
-    │   │   └── index.ts
-    │   │
+    ├── auth/                       # @auth/* - Authentication bounded context
+    │   ├── pages/                  # All auth route pages
+    │   │   ├── login/
+    │   │   ├── register-email/
+    │   │   ├── register-complete/
+    │   │   ├── forgot-password/
+    │   │   ├── change-password/
+    │   │   └── set-password/
     │   ├── models/
-    │   ├── testing/
-    │   ├── lobby/
-    │   ├── play/
+    │   └── auth.routes.ts
+    │
+    ├── account/                    # @account/* - User account bounded context
+    │   ├── pages/
+    │   │   ├── profile/
+    │   │   └── request-permissions/
+    │   ├── services/
+    │   ├── models/
+    │   └── account.routes.ts
+    │
+    ├── game/                       # @game/* - Game bounded context
+    │   ├── pages/
+    │   │   └── world-map/
+    │   ├── core/                   # Persistent game services (providedIn: 'root')
+    │   ├── services/               # Route-scoped services
+    │   ├── models/
     │   └── game.routes.ts
     │
     └── commerce/                   # @commerce/* - Commerce bounded context
-        ├── api/
+        ├── pages/
         ├── services/
         ├── models/
-        ├── testing/
-        ├── cart/
-        ├── checkout/
         └── commerce.routes.ts
 ```
 
-### 3.2 Path Aliases (4 Total)
+### 3.2 Page Organization (CRITICAL)
+
+**Rule**: All full route-level pages live in `pages/` folders. This separates route destinations from reusable components.
+
+| Page Type      | Location                | Example                              |
+| -------------- | ----------------------- | ------------------------------------ |
+| Domain Page    | `{domain}/pages/`       | `admin/pages/admin-dashboard/`       |
+| Subdomain Page | `{domain}/{sub}/pages/` | `admin/users/pages/user-management/` |
+| Error Page     | `shared/pages/`         | `shared/pages/not-found/`            |
+
+**Why this pattern?**
+
+-   **Clarity**: Immediately identify what's a full route vs a composable component
+-   **Scalability**: As domains grow, pages stay organized at each level
+-   **Consistency**: Same pattern at domain and sub-domain levels
+
+### 3.3 Path Aliases
 
 ```json
 // tsconfig.json
@@ -229,11 +227,7 @@ src/app/
 }
 ```
 
-**Total: 4 aliases** (vs 30+ currently)
-
--   `@layout` merged into `@shared/layout` - it's shared UI, no special treatment needed
-
-### 3.3 Import Rules Matrix
+### 3.4 Import Rules Matrix
 
 | From → To        | @shared/\* | @admin/\* | @game/\* | @commerce/\* |
 | ---------------- | ---------- | --------- | -------- | ------------ |
@@ -253,56 +247,63 @@ src/app/
 OpenAPI generates ALL DTOs into one file. But not all DTOs are used by all domains:
 
 ```typescript
-// shared/api/generated/api.generated.ts (auto-generated, 500+ types)
+// shared/generated-open-api/generated-open-api.ts (auto-generated, 2000+ lines)
+// This is a PASTE location - output from OpenAPI code generator
 export interface UserDto { ... }        // Used everywhere
 export interface GameStateDto { ... }   // Game only
 export interface CartDto { ... }        // Commerce only
-export interface LobbyDto { ... }       // Game only
-export interface CheckoutDto { ... }    // Commerce only
 ```
 
-### The Solution: Domain API Re-exports
+### The Solution: Domain Models Re-export
 
-**Rule**: Never import from `shared/api/generated/` directly. Each domain re-exports what it needs.
+**Rule**: Never import from `generated-open-api.ts` directly. Each domain's `models/index.ts` re-exports what it needs.
 
 ```typescript
-// shared/api/index.ts - ONLY truly shared DTOs
-export type { UserDto, AuthTokenDto, ApiErrorDto } from "./generated/api.generated";
+// shared/models/api.model.ts - ONLY truly shared DTOs
+import { components } from "@shared/generated-open-api/generated-open-api";
+export type LoginRequest = components["schemas"]["LoginRequest"];
+export type AuthResponse = components["schemas"]["AuthResponse"];
+export type UserProfileDto = components["schemas"]["UserProfileDto"];
 
-// domains/game/api/index.ts - Game-specific DTOs
-export type { GameStateDto, LobbyDto, PlayerDto, CombatDto } from "@shared/api/generated/api.generated";
+// domains/game/models/index.ts - Game-specific DTOs
+import { components } from "@shared/generated-open-api/generated-open-api";
+export type GameStateDto = components["schemas"]["GameStateDto"];
+export type LobbyDto = components["schemas"]["LobbyDto"];
 
-// domains/commerce/api/index.ts - Commerce-specific DTOs
-export type { CartDto, CheckoutDto, OrderDto, ProductDto } from "@shared/api/generated/api.generated";
+// domains/admin/users/models/index.ts - User management DTOs
+import { components } from "@shared/generated-open-api/generated-open-api";
+export type UserDto = components["schemas"]["UserDto"];
+export type CreateUserRequest = components["schemas"]["CreateUserRequest"];
 ```
 
 ### Import Patterns
 
 ```typescript
 // In Game domain code
-import { GameStateDto, LobbyDto } from "@game/api"; // ✅ Domain-specific
-import { UserDto } from "@shared/api"; // ✅ Shared
+import { GameStateDto, LobbyDto } from "@game/models"; // ✅ Domain-specific
+import { UserProfileDto } from "@shared/models"; // ✅ Shared
 
-// In Commerce domain code
-import { CartDto, CheckoutDto } from "@commerce/api"; // ✅ Domain-specific
-import { UserDto } from "@shared/api"; // ✅ Shared
+// In Admin domain code
+import { UserDto } from "@admin/users/models"; // ✅ Sub-domain specific
+import { AuthResponse } from "@shared/models"; // ✅ Shared
 
 // NEVER do this
-import { GameStateDto } from "@shared/api/generated/api.generated"; // ❌ Direct import
-import { CartDto } from "@game/api"; // ❌ Cross-domain
+import { components } from "@shared/generated-open-api/generated-open-api"; // ❌ Direct import (except in models/index.ts)
+import { UserDto } from "@game/models"; // ❌ Cross-domain
 ```
 
 ### DTOs vs Models: The Distinction
 
 | Type      | Definition                     | Location    | Mutability                   |
 | --------- | ------------------------------ | ----------- | ---------------------------- |
-| **DTO**   | Server-defined, auto-generated | `*/api/`    | Immutable (from server)      |
+| **DTO**   | Server-defined, auto-generated | `*/models/` | Immutable (from server)      |
 | **Model** | Client-defined, hand-written   | `*/models/` | Can be mutable, has behavior |
 
 ```typescript
-// DTO - from server, immutable shape
-// domains/game/api/index.ts
-export type { GameStateDto } from "@shared/api/generated/api.generated";
+// DTO - from server, re-exported in models
+// domains/game/models/index.ts
+import { components } from "@shared/generated-open-api/generated-open-api";
+export type GameStateDto = components["schemas"]["GameStateDto"];
 
 // Model - client-specific, can have methods/computed
 // domains/game/models/game-state.model.ts
@@ -317,22 +318,23 @@ export interface GameViewModel {
 
 ```javascript
 // scripts/architecture-tests.mjs
-test("generated API should only be imported by api/index.ts files", async () => {
+test("generated API should only be imported by models/index.ts files", async () => {
 	const violations = [];
 	const files = await getFiles(SRC_DIR, ".ts");
 
 	for (const file of files) {
 		// Skip the allowed re-export files
-		if (file.endsWith("/api/index.ts")) continue;
+		if (file.endsWith("/models/index.ts")) continue;
+		if (file.endsWith("generated-open-api.ts")) continue;
 
 		const content = await fs.readFile(file, "utf-8");
 
-		if (content.includes("@shared/api/generated") || content.includes("shared/api/generated")) {
+		if (content.includes("@shared/generated-open-api") || content.includes("generated-open-api.ts")) {
 			violations.push(`${path.relative(SRC_DIR, file)} imports directly from generated API`);
 		}
 	}
 
-	assertEmpty(violations, "Direct imports from generated API (use @domain/api or @shared/api instead)");
+	assertEmpty(violations, "Direct imports from generated API (use @domain/models or @shared/models instead)");
 });
 ```
 
@@ -793,18 +795,19 @@ test("only integrations can import from multiple domains", async () => {
 
 ## Part 11: Comparison Summary
 
-| Aspect                    | Current                       | v2.0                                  |
-| ------------------------- | ----------------------------- | ------------------------------------- |
-| **Path aliases**          | 30+                           | 4                                     |
-| **Shared location**       | `infrastructure/` + `shared/` | Single `shared/`                      |
-| **Layout**                | Separate alias                | Merged into `@shared/layout`          |
-| **Domain services**       | Mixed in shared               | In `domain/services/` or `core/`      |
-| **Domain DTOs**           | All in shared                 | Re-exported from `domain/api/`        |
-| **Cross-domain features** | Not addressed                 | `integrations/` layer                 |
-| **Sub-domain boundaries** | Not addressed                 | `_shared/` + architecture tests       |
-| **Persistent services**   | All `providedIn: 'root'`      | Only in `shared/` or `domain/core/`   |
-| **Test fixtures**         | Duplicated                    | Base classes + domain extensions      |
-| **Migration**             | Big bang                      | Coexistence with deprecation warnings |
+| Aspect                    | Current                       | v2.0                                 |
+| ------------------------- | ----------------------------- | ------------------------------------ |
+| **Path aliases**          | 30+                           | Streamlined domain-based aliases     |
+| **Shared location**       | `infrastructure/` + `shared/` | Single `shared/`                     |
+| **Route pages**           | Mixed with components         | Dedicated `pages/` folders           |
+| **Error pages**           | `shared/error-pages/`         | `shared/pages/`                      |
+| **Domain services**       | Mixed in shared               | In `domain/services/` or `core/`     |
+| **Domain DTOs**           | All in shared                 | Re-exported from `domain/models/`    |
+| **Generated API**         | Direct imports allowed        | Only `models/index.ts` imports       |
+| **Cross-domain features** | Not addressed                 | `integrations/` layer                |
+| **Sub-domain boundaries** | Not addressed                 | `{domain}/{sub}/pages/` + arch tests |
+| **Persistent services**   | All `providedIn: 'root'`      | Only in `shared/` or `domain/core/`  |
+| **Test fixtures**         | Duplicated                    | Base classes + domain extensions     |
 
 ---
 
@@ -812,13 +815,14 @@ test("only integrations can import from multiple domains", async () => {
 
 This architecture follows enterprise patterns (Amazon, Google, Nx) while remaining practical:
 
-1. **4 meaningful aliases**: `@shared/*`, `@admin/*`, `@game/*`, `@commerce/*`
+1. **Meaningful aliases**: `@shared/*`, `@admin/*`, `@game/*`, `@commerce/*`, etc.
 2. **True bounded contexts**: Each domain owns services, models, DTOs, and testing
-3. **Clear DTO strategy**: Generated → re-exported through `domain/api/`
-4. **Cross-domain handled explicitly**: `integrations/` layer for orchestration
-5. **Sub-domains scale**: Large domains use internal `_shared/` and sub-domain boundaries
-6. **Persistent state allowed**: `domain/core/` for `providedIn: 'root'` services
-7. **Testing scales**: Base fixtures in shared, domain-specific extensions
-8. **Gradual migration**: Old imports work via aliases during transition
+3. **Clear DTO strategy**: Generated → re-exported through `domain/models/`
+4. **Page organization**: All route pages in `pages/` folders (domain and sub-domain level)
+5. **Cross-domain handled explicitly**: `integrations/` layer for orchestration
+6. **Sub-domains scale**: Large domains use internal `_shared/` and sub-domain boundaries
+7. **Sub-domains scale**: Large domains use internal `_shared/` and sub-domain boundaries
+8. **Persistent state allowed**: `domain/core/` for `providedIn: 'root'` services
+9. **Testing scales**: Base fixtures in shared, domain-specific extensions
 
-The key insight: **Shared code should be truly shared. Domain code should be truly domain-owned. Cross-domain orchestration goes in integrations.**
+The key insight: **Shared code should be truly shared. Domain code should be truly domain-owned. Route pages live in `pages/` folders. Cross-domain orchestration goes in integrations.**

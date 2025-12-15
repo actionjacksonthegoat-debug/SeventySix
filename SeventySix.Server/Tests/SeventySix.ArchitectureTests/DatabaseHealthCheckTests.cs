@@ -5,8 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SeventySix.Shared;
-using SeventySix.Shared.Infrastructure;
+using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Persistence;
 using Xunit;
 
 namespace SeventySix.ArchitectureTests;

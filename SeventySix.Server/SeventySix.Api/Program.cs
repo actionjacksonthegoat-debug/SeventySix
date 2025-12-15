@@ -31,7 +31,8 @@ using Serilog;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Middleware;
-using SeventySix.DependencyExtensions;
+using SeventySix.Api.Registration;
+using SeventySix.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;
 
@@ -94,7 +95,7 @@ string connectionString =
 	?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 // Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
-builder.Services.AddInfrastructureDomain();
+builder.Services.AddInfrastructure();
 builder.Services.AddIdentityDomain(connectionString);
 builder.Services.AddLoggingDomain(
 	connectionString,

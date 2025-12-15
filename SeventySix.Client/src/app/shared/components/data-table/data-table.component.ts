@@ -21,7 +21,6 @@ import { MatCard, MatCardContent } from "@angular/material/card";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { environment } from "@environments/environment";
-import { DateService } from "@infrastructure/services";
 import { slideDown } from "@shared/animations/animations";
 import { TableHeightDirective } from "@shared/directives";
 import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles";
@@ -36,6 +35,7 @@ import {
 	SortChangeEvent,
 	TableColumn
 } from "@shared/models";
+import { DateService } from "@shared/services";
 import { map } from "rxjs/operators";
 
 /**

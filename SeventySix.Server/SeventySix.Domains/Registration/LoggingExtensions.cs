@@ -1,0 +1,53 @@
+// <copyright file="LoggingExtensions.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
+
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using SeventySix.Logging;
+using SeventySix.Logging.Commands.CreateClientLog;
+using SeventySix.Logging.Queries.GetLogsPaged;
+using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Persistence;
+
+namespace SeventySix.Registration;
+
+/// <summary>DI extension methods for the Logging bounded context.</summary>
+public static class LoggingExtensions
+{
+	/// <summary>Registers Logging bounded context services with the DI container.</summary>
+	/// <param name="services">The service collection to register services with.</param>
+	/// <param name="connectionString">The database connection string for LoggingDbContext.</param>
+	/// <param name="configuration">The application configuration for settings binding.</param>
+	/// <returns>The service collection for method chaining.</returns>
+	public static IServiceCollection AddLoggingDomain(
+		this IServiceCollection services,
+		string connectionString,
+		IConfiguration configuration)
+	{
+		services.AddDbContext<LoggingDbContext>((
+			serviceProvider,
+			options) =>
+		{
+			AuditInterceptor auditInterceptor =
+				serviceProvider.GetRequiredService<AuditInterceptor>();
+
+			options.UseNpgsql(connectionString);
+			options.AddInterceptors(auditInterceptor);
+		});
+
+		services.AddScoped<ILogRepository, LogRepository>();
+
+		// Register health check for multi-db health monitoring
+		services.AddScoped<IDatabaseHealthCheck, LoggingHealthCheck>();
+
+		// Validators - Singleton (stateless, thread-safe)
+		services.AddSingleton<IValidator<LogQueryRequest>, LogQueryRequestValidator>();
+		services.AddSingleton<IValidator<CreateLogRequest>, CreateClientLogCommandValidator>();
+		services.AddSingleton<IValidator<GetLogsPagedQuery>, GetLogsPagedQueryValidator>();
+
+		return services;
+	}
+}

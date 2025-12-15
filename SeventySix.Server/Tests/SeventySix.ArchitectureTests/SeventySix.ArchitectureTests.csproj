@@ -13,7 +13,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\SeventySix\SeventySix.csproj" />
+		<ProjectReference Include="..\..\SeventySix.Domains\SeventySix.Domains.csproj" />
 		<ProjectReference Include="..\..\SeventySix.Api\SeventySix.Api.csproj" />
 	</ItemGroup>
 </Project>

@@ -7,8 +7,9 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using SeventySix.Infrastructure;
-using SeventySix.Shared;
+using SeventySix.Api.Infrastructure;
+using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Settings;
 using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
 

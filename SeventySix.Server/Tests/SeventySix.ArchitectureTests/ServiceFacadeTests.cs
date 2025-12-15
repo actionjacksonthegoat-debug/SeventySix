@@ -17,7 +17,7 @@ public class ServiceFacadeTests
 	[Fact]
 	public void Controllers_Should_Not_Depend_On_Any_Repository_Namespace()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
 		string[] boundedContextNames = domainAssembly.GetTypes()
 			.Select(type => type.Namespace)
 			.Where(ns => ns != null && ns.StartsWith("SeventySix.") && !ns.Contains("Shared") && !ns.Contains("Infrastructure"))
@@ -46,7 +46,7 @@ public class ServiceFacadeTests
 	[Fact]
 	public void Repositories_Should_Not_Be_Public()
 	{
-		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
 		Type[] repositoryTypes = domainAssembly.GetTypes()
 			.Where(type => type.Name.EndsWith("Repository")
 				&& !type.IsInterface
@@ -78,7 +78,7 @@ public class ServiceFacadeTests
 			.GetTypes()
 			.ToArray();
 
-		Assembly domainAssembly = typeof(SeventySix.Shared.TransactionManager).Assembly;
+		Assembly domainAssembly = typeof(SeventySix.Identity.User).Assembly;
 		Type[] repositoryInterfaces = domainAssembly.GetTypes()
 			.Where(type => type.IsInterface && type.Name.EndsWith("Repository"))
 			.ToArray();

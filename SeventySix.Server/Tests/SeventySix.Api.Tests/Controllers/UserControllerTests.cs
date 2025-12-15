@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.Identity;
-using SeventySix.Shared;
+using SeventySix.Shared.DTOs;
 using SeventySix.TestUtilities.Builders;
 using Wolverine;
 

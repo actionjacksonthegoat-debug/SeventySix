@@ -1,7 +1,7 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { FormControl, ValidationErrors, ValidatorFn } from "@angular/forms";
-import { DateService } from "@infrastructure/services";
+import { DateService } from "@shared/services";
 import {
 	dateRangeValidator,
 	futureDateValidator,

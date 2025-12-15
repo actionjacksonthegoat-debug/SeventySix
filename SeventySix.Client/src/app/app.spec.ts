@@ -1,12 +1,12 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ActivatedRoute } from "@angular/router";
-import { AuthService, LayoutService } from "@infrastructure/services";
+import { AuthService, LayoutService } from "@shared/services";
 import {
 	createMockAuthService,
 	createMockLayoutService,
 	MockLayoutService
-} from "@testing";
+} from "@shared/testing";
 import { of } from "rxjs";
 import { App } from "./app";
 

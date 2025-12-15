@@ -30,14 +30,14 @@ import {
 	dateParserInterceptor,
 	errorInterceptor,
 	loggingInterceptor
-} from "@infrastructure/interceptors";
+} from "@shared/interceptors";
 import {
 	AuthService,
 	ErrorHandlerService,
 	TelemetryService,
 	ThemeService,
 	WebVitalsService
-} from "@infrastructure/services";
+} from "@shared/services";
 import { routes } from "./app.routes";
 
 /**

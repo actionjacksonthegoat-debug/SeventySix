@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Configuration;
 using SeventySix.Identity.Constants;
 using SeventySix.Logging;
-using SeventySix.Shared;
+using SeventySix.Shared.DTOs;
 using Wolverine;
 
 namespace SeventySix.Api.Controllers;

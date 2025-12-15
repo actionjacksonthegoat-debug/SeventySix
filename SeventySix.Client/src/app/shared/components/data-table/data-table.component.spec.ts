@@ -14,7 +14,7 @@ import {
 	createBadgeColumn,
 	createDateColumn,
 	createTextColumn
-} from "@testing";
+} from "@shared/testing";
 import { DataTableComponent } from "./data-table.component";
 
 interface TestEntity

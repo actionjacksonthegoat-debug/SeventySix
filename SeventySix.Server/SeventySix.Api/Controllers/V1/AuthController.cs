@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Identity;
-using SeventySix.Shared;
+using SeventySix.Shared.Extensions;
 using Wolverine;
 
 namespace SeventySix.Api.Controllers;

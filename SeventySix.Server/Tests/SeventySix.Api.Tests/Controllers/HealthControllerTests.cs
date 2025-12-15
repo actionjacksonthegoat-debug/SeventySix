@@ -5,7 +5,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using SeventySix.Api.Controllers;
-using SeventySix.Infrastructure;
+using SeventySix.Api.Infrastructure;
 
 namespace SeventySix.Api.Tests.Controllers;
 

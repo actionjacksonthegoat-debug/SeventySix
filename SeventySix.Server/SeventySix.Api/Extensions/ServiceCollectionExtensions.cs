@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 using SeventySix.Api.Configuration;
 using SeventySix.Identity;
-using SeventySix.Shared;
+using SeventySix.Shared.Settings;
 
 namespace SeventySix.Api.Extensions;
 

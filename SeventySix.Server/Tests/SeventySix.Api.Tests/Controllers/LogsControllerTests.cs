@@ -8,7 +8,7 @@ using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
 using SeventySix.Logging;
-using SeventySix.Shared;
+using SeventySix.Shared.DTOs;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;

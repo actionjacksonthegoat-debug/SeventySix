@@ -24,7 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\SeventySix\SeventySix.csproj" />
+		<ProjectReference Include="..\..\SeventySix.Domains\SeventySix.Domains.csproj" />
 	</ItemGroup>
 
 </Project>

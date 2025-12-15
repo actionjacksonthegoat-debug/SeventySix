@@ -58,19 +58,19 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	private static readonly HashSet<string> AllowedParameterExceptions =
 		[
 			// RegistrationService - encapsulates registration workflows
-			"SeventySix\\Identity\\Services\\RegistrationService.cs::CreateUserWithCredentialAsync",
+			"SeventySix.Domains\\Identity\\Services\\RegistrationService.cs::CreateUserWithCredentialAsync",
 
 			// Authentication handlers - Wolverine Injected dependencies
-			"SeventySix\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::CreateUserAndMarkTokenUsedAsync",
-			"SeventySix\\Identity\\Commands\\CreateUser\\CreateUserCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\InitiatePasswordReset\\InitiatePasswordResetCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\InitiateRegistration\\InitiateRegistrationCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync",  // 7 params (reduced from 10 via AuthenticationService)
-			"SeventySix\\Identity\\Commands\\Login\\LoginCommandHandler.cs::ValidateCredentialAsync",
-			"SeventySix\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
-			"SeventySix\\Identity\\Commands\\UpdateUser\\UpdateUserCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::CreateUserAndMarkTokenUsedAsync",
+			"SeventySix.Domains\\Identity\\Commands\\CreateUser\\CreateUserCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\InitiatePasswordReset\\InitiatePasswordResetCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\InitiateRegistration\\InitiateRegistrationCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync",  // 7 params (reduced from 10 via AuthenticationService)
+			"SeventySix.Domains\\Identity\\Commands\\Login\\LoginCommandHandler.cs::ValidateCredentialAsync",
+			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\UpdateUser\\UpdateUserCommandHandler.cs::HandleAsync",
 		];
 
 	[Fact]

@@ -21,8 +21,9 @@
  * - Method Structure (2 tests): Methods under 50 lines and 6 parameters (SOLID principles)
  * - Class Structure (2 tests): Services/components with 12+ methods violate SRP
  * - Date Handling (1 test): Use DateService not native Date constructors
+ * - Domain Boundary (6 tests): Bounded context isolation, shared independence, API imports, relative imports
  *
- * Total: 20 architecture guardrails
+ * Total: 27 architecture guardrails
  * Complemented by ESLint rules in eslint.config.js for real-time feedback
  */
 
@@ -423,12 +424,14 @@ console.log('\n🔍 Service Scoping Tests');
 
 test('feature services should not use providedIn root', async () => {
 	const serviceFiles = await getFiles(SRC_DIR, '.service.ts');
+	// App-wide singleton services directories (these SHOULD use providedIn: 'root')
+	const sharedServicesDir = path.join(SRC_DIR, 'shared', 'services');
 	const infrastructureDir = path.join(SRC_DIR, 'infrastructure');
 	const violations = [];
 
 	for (const file of serviceFiles) {
-		// Skip infrastructure services
-		if (file.startsWith(infrastructureDir)) {
+		// Skip app-wide singleton services (shared/services or legacy infrastructure)
+		if (file.startsWith(sharedServicesDir) || file.startsWith(infrastructureDir)) {
 			continue;
 		}
 
@@ -441,11 +444,11 @@ test('feature services should not use providedIn root', async () => {
 	assertEmpty(violations, 'Feature services using providedIn: \'root\' (scope to route providers instead)');
 });
 
-test('infrastructure services should use providedIn root', async () => {
-	const infrastructureDir = path.join(SRC_DIR, 'infrastructure');
+test('shared services should use providedIn root', async () => {
+	const sharedServicesDir = path.join(SRC_DIR, 'shared', 'services');
 
 	try {
-		const serviceFiles = await getFiles(infrastructureDir, '.service.ts');
+		const serviceFiles = await getFiles(sharedServicesDir, '.service.ts');
 		const violations = [];
 
 		for (const file of serviceFiles) {
@@ -455,9 +458,9 @@ test('infrastructure services should use providedIn root', async () => {
 			}
 		}
 
-		assertEmpty(violations, 'Infrastructure services not using providedIn: \'root\'');
+		assertEmpty(violations, 'Shared services not using providedIn: \'root\' (app singletons require root)');
 	} catch (error) {
-		// Infrastructure folder may not exist yet - skip test
+		// Shared services folder may not exist yet - skip test
 		if (error.code !== 'ENOENT') {
 			throw error;
 		}
@@ -594,7 +597,7 @@ test('all files should have less than 800 lines', async () => {
 	// Exceptions with documented justification
 	// NOTE: Test files are NOT automatically excepted - apply 80/20 and DRY
 	const allowedExceptions = [
-		'generated-api.ts' // Auto-generated from OpenAPI spec
+		'generated-open-api.ts' // Auto-generated from OpenAPI spec
 	];
 
 	for (const file of sourceFiles) {
@@ -766,6 +769,250 @@ test('components should have less than 12 public methods', async () => {
 	}
 
 	assertEmpty(violations, 'Components with 12+ methods violate SRP (extract to services or split)');
+});
+
+// ============================================================================
+// DOMAIN BOUNDARY TESTS (Bounded Context Enforcement)
+// ============================================================================
+
+console.log('\n🔍 Domain Boundary Tests');
+
+// Domain constants for architecture enforcement
+const DOMAINS = ['admin', 'game', 'commerce', 'auth', 'account', 'home', 'physics', 'developer'];
+const DOMAINS_DIR = path.join(SRC_DIR, 'domains');
+const INTEGRATIONS_DIR = path.join(SRC_DIR, 'integrations');
+
+/**
+ * Helper: Check if a directory exists
+ */
+async function directoryExists(dirPath) {
+	try {
+		const stats = await fs.stat(dirPath);
+		return stats.isDirectory();
+	} catch {
+		return false;
+	}
+}
+
+test('domains should not import from other domains', async () => {
+	// Skip if domains folder doesn't exist yet (pre-migration)
+	if (!(await directoryExists(DOMAINS_DIR))) {
+		return;
+	}
+
+	const violations = [];
+
+	for (const domain of DOMAINS) {
+		const domainPath = path.join(DOMAINS_DIR, domain);
+		if (!(await directoryExists(domainPath))) {
+			continue;
+		}
+
+		const files = await getFiles(domainPath, '.ts');
+
+		for (const file of files) {
+			const content = await fs.readFile(file, 'utf-8');
+
+			for (const otherDomain of DOMAINS) {
+				if (otherDomain === domain) {
+					continue;
+				}
+
+				// Check for imports from other domains
+				const importPattern = new RegExp(`from\\s+["']@${otherDomain}/`, 'g');
+				if (importPattern.test(content)) {
+					violations.push(
+						`${path.relative(SRC_DIR, file)} imports from @${otherDomain}/ (domains must be isolated)`
+					);
+				}
+			}
+		}
+	}
+
+	assertEmpty(violations, 'Domain cross-imports (each domain can only import @shared/* and itself)');
+});
+
+test('shared should not import from any domain', async () => {
+	const sharedDir = path.join(SRC_DIR, 'shared');
+	if (!(await directoryExists(sharedDir))) {
+		return;
+	}
+
+	const violations = [];
+	const files = await getFiles(sharedDir, '.ts');
+
+	for (const file of files) {
+		const content = await fs.readFile(file, 'utf-8');
+		const lines = content.split('\n');
+
+		for (const domain of DOMAINS) {
+			// Check each line for imports, excluding comments
+			for (const line of lines) {
+				const trimmedLine = line.trim();
+				// Skip if line starts with // or is inside /* */ block
+				if (trimmedLine.startsWith('//') || trimmedLine.startsWith('*')) {
+					continue;
+				}
+
+				const importPattern = new RegExp(`from\\s+["']@${domain}/`);
+				if (importPattern.test(line)) {
+					violations.push(
+						`${path.relative(SRC_DIR, file)} imports from @${domain}/ (shared cannot depend on domains)`
+					);
+					break; // One violation per file per domain is enough
+				}
+			}
+		}
+	}
+
+	assertEmpty(violations, 'Shared importing from domains (shared must be domain-agnostic)');
+});
+
+test('generated API should only be imported by models/index.ts files', async () => {
+	const violations = [];
+	const files = await getFiles(SRC_DIR, '.ts');
+
+	for (const file of files) {
+		// Skip the allowed re-export files:
+		// - models/index.ts (shared and domain model barrel exports)
+		// - api.model.ts (shared models that re-export from generated)
+		// - integrations/*/api/index.ts (cross-domain integrations)
+		const relativePath = path.relative(SRC_DIR, file);
+		const normalizedPath = relativePath.split(path.sep).join('/');
+
+		if (
+			normalizedPath.endsWith('models/index.ts')
+			|| normalizedPath.endsWith('api.model.ts')
+			|| normalizedPath.startsWith('integrations/')
+		) {
+			continue;
+		}
+
+		const content = await fs.readFile(file, 'utf-8');
+
+		// Check for direct imports from generated OpenAPI
+		if (
+			content.includes('@shared/generated-open-api/')
+			|| content.includes('generated-open-api/generated-open-api')
+			|| content.includes('@shared/api/generated')
+			|| content.includes('@infrastructure/api/generated')
+		) {
+			violations.push(
+				`${relativePath} imports directly from generated API (use @shared/models or domain models instead)`
+			);
+		}
+	}
+
+	assertEmpty(violations, 'Direct imports from generated API (use @shared/models or domain models)');
+});
+
+test('domain route-scoped services should not use providedIn root', async () => {
+	// Skip if domains folder doesn't exist yet (pre-migration)
+	if (!(await directoryExists(DOMAINS_DIR))) {
+		return;
+	}
+
+	const violations = [];
+
+	for (const domain of DOMAINS) {
+		const servicesPath = path.join(DOMAINS_DIR, domain, 'services');
+		if (!(await directoryExists(servicesPath))) {
+			continue;
+		}
+
+		const files = await getFiles(servicesPath, '.service.ts');
+
+		for (const file of files) {
+			if (file.endsWith('.spec.ts')) {
+				continue;
+			}
+
+			const content = await fs.readFile(file, 'utf-8');
+
+			if (content.includes("providedIn: 'root'") || content.includes('providedIn: "root"')) {
+				violations.push(
+					`${path.relative(SRC_DIR, file)} uses providedIn: 'root' (move to domain/core/ if persistent)`
+				);
+			}
+		}
+	}
+
+	assertEmpty(violations, 'Route-scoped services with providedIn: root (use route providers or move to core/)');
+});
+
+test('only integrations can import from multiple domains', async () => {
+	// Skip if domains folder doesn't exist yet (pre-migration)
+	if (!(await directoryExists(DOMAINS_DIR))) {
+		return;
+	}
+
+	const violations = [];
+	const files = await getFiles(DOMAINS_DIR, '.ts');
+
+	for (const file of files) {
+		const content = await fs.readFile(file, 'utf-8');
+		const domainImports = DOMAINS.filter((domain) =>
+			new RegExp(`from\\s+["']@${domain}/`).test(content)
+		);
+
+		if (domainImports.length > 1) {
+			violations.push(
+				`${path.relative(SRC_DIR, file)} imports from multiple domains: ${domainImports.join(', ')} (use integrations/)`
+			);
+		}
+	}
+
+	assertEmpty(violations, 'Domain files importing from multiple domains (use integrations/ for cross-domain)');
+});
+
+test('relative imports should only be used in index.ts barrel files', async () => {
+	const violations = [];
+	const files = await getFiles(SRC_DIR, '.ts');
+
+	// Pattern to detect relative imports: from "./" or from "../"
+	const relativeImportPattern = /from\s+["']\.\.?\/[^"']*["']/g;
+
+	// Pattern to detect same-folder relative import: from "./<filename>" (no directory traversal)
+	const sameFolderPattern = /from\s+["']\.\/[^/"']+["']/;
+
+	// Root app files that are allowed to use relative imports (no barrel to export from)
+	const rootAppFiles = ['app.config.ts', 'app.routes.ts', 'app.ts'];
+
+	for (const file of files) {
+		const fileName = path.basename(file);
+
+		// index.ts files are allowed to use relative imports for barrel exports
+		if (fileName === 'index.ts') {
+			continue;
+		}
+
+		// Root app files can use same-folder relative imports (no barrel available)
+		if (rootAppFiles.includes(fileName)) {
+			continue;
+		}
+
+		const content = await fs.readFile(file, 'utf-8');
+		const matches = content.match(relativeImportPattern);
+
+		if (matches && matches.length > 0) {
+			// For spec files, allow same-folder relative imports (e.g., './auth.service')
+			// This is the standard Angular pattern where test file imports its subject
+			if (fileName.endsWith('.spec.ts')) {
+				const nonLocalMatches = matches.filter((match) => !sameFolderPattern.test(match));
+				if (nonLocalMatches.length > 0) {
+					violations.push(
+						`${path.relative(SRC_DIR, file)}: ${nonLocalMatches.length} relative import(s) (use @alias imports instead)`
+					);
+				}
+			} else {
+				violations.push(
+					`${path.relative(SRC_DIR, file)}: ${matches.length} relative import(s) (use @alias imports instead)`
+				);
+			}
+		}
+	}
+
+	assertEmpty(violations, 'Relative imports outside index.ts (use @shared/*, @admin/*, etc. alias imports)');
 });
 
 // ============================================================================

@@ -5,7 +5,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using SeventySix.Api.Configuration;
-using SeventySix.Infrastructure;
+using SeventySix.Api.Infrastructure;
 
 namespace SeventySix.Api.Controllers;
 
