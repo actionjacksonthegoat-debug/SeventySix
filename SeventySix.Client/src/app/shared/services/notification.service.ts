@@ -191,7 +191,7 @@ export class NotificationService
 		this.notifications.update(
 			(current) =>
 				current.filter(
-					(n) => n.id !== id));
+					(notification) => notification.id !== id));
 	}
 
 	/**

@@ -207,10 +207,10 @@ public class GlobalExceptionMiddleware(
 		Dictionary<string, string[]> errors =
 			validationException
 				.Errors
-				.GroupBy(e => e.PropertyName)
+				.GroupBy(error => error.PropertyName)
 				.ToDictionary(
-					g => g.Key,
-					g => g.Select(e => e.ErrorMessage).ToArray());
+					group => group.Key,
+					group => group.Select(error => error.ErrorMessage).ToArray());
 
 		return new ValidationProblemDetails(errors)
 		{

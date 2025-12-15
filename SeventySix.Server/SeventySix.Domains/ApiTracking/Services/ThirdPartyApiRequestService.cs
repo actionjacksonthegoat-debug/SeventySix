@@ -45,14 +45,14 @@ public class ThirdPartyApiRequestService(
 		IEnumerable<ThirdPartyApiRequest> requests =
 			await repository.GetAllAsync(cancellationToken);
 
-		return requests.Select(r => new ThirdPartyApiRequestResponse
+		return requests.Select(request => new ThirdPartyApiRequestResponse
 		{
-			Id = r.Id,
-			ApiName = r.ApiName,
-			BaseUrl = r.BaseUrl,
-			CallCount = r.CallCount,
-			LastCalledAt = r.LastCalledAt,
-			ResetDate = r.ResetDate,
+			Id = request.Id,
+			ApiName = request.ApiName,
+			BaseUrl = request.BaseUrl,
+			CallCount = request.CallCount,
+			LastCalledAt = request.LastCalledAt,
+			ResetDate = request.ResetDate,
 		});
 	}
 
@@ -68,16 +68,16 @@ public class ThirdPartyApiRequestService(
 		return new ThirdPartyApiStatisticsResponse
 		{
 			TotalCallsToday =
-			requestList.Sum(r => r.CallCount),
+			requestList.Sum(request => request.CallCount),
 			TotalApisTracked = requestList.Count,
 			CallsByApi =
 			requestList.ToDictionary(
-				r => r.ApiName,
-				r => r.CallCount),
+				request => request.ApiName,
+				request => request.CallCount),
 			LastCalledByApi =
 			requestList.ToDictionary(
-				r => r.ApiName,
-				r => r.LastCalledAt),
+				request => request.ApiName,
+				request => request.LastCalledAt),
 		};
 	}
 }

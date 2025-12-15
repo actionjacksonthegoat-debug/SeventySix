@@ -120,8 +120,8 @@ internal class LogRepository(
 
 		query =
 			request.SortDescending
-			? query.OrderByDescending(e => EF.Property<object>(e, sortProperty))
-			: query.OrderBy(e => EF.Property<object>(e, sortProperty));
+			? query.OrderByDescending(logEntry => EF.Property<object>(logEntry, sortProperty))
+			: query.OrderBy(logEntry => EF.Property<object>(logEntry, sortProperty));
 
 		return query
 			.Skip(request.GetSkip())
@@ -136,7 +136,7 @@ internal class LogRepository(
 		int deletedCount =
 			await context
 				.Logs
-				.Where(l => l.CreateDate < cutoffDate)
+				.Where(logEntry => logEntry.CreateDate < cutoffDate)
 				.ExecuteDeleteAsync(cancellationToken);
 
 		return deletedCount;
@@ -177,7 +177,7 @@ internal class LogRepository(
 		List<Log> logsToDelete =
 			await context
 				.Logs
-				.Where(l => idList.Contains(l.Id))
+				.Where(logEntry => idList.Contains(logEntry.Id))
 				.ToListAsync(cancellationToken);
 
 		if (logsToDelete.Count == 0)

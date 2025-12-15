@@ -720,7 +720,7 @@ export class DataTableComponent<T extends { id: number; }>
 			this
 			.columns()
 			.find(
-				(c) => c.key === columnKey);
+				(column) => column.key === columnKey);
 
 		if (column)
 		{

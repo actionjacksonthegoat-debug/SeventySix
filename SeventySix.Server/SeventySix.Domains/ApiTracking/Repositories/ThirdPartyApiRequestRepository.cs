@@ -38,7 +38,7 @@ internal class ThirdPartyApiRequestRepository(
 			ThirdPartyApiRequest? request =
 				await GetQueryable()
 					.FirstOrDefaultAsync(
-						r => r.ApiName == apiName && r.ResetDate == resetDate,
+						request => request.ApiName == apiName && request.ResetDate == resetDate,
 						cancellationToken);
 
 			return request;
@@ -78,8 +78,8 @@ internal class ThirdPartyApiRequestRepository(
 			QueryBuilder<ThirdPartyApiRequest> queryBuilder =
 				new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
 			queryBuilder
-				.Where(r => r.ApiName == apiName)
-				.OrderByDescending(r => r.ResetDate);
+				.Where(request => request.ApiName == apiName)
+				.OrderByDescending(request => request.ResetDate);
 
 			List<ThirdPartyApiRequest> requests =
 				await queryBuilder
@@ -107,7 +107,7 @@ internal class ThirdPartyApiRequestRepository(
 			// Use QueryBuilder for read-only query with ordering
 			QueryBuilder<ThirdPartyApiRequest> queryBuilder =
 				new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
-			queryBuilder.OrderBy(r => r.ApiName);
+			queryBuilder.OrderBy(request => request.ApiName);
 
 			List<ThirdPartyApiRequest> requests =
 				await queryBuilder
@@ -136,7 +136,7 @@ internal class ThirdPartyApiRequestRepository(
 			int deletedCount =
 				await context
 					.ThirdPartyApiRequests
-					.Where(r => r.ResetDate < cutoffDate)
+					.Where(request => request.ResetDate < cutoffDate)
 					.ExecuteDeleteAsync(cancellationToken);
 
 			return deletedCount;

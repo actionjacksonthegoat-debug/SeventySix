@@ -117,9 +117,9 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 			await context
 				.RefreshTokens
 				.AsNoTracking()
-				.Where(t => t.TokenHash == tokenHash)
-				.Where(t => !t.IsRevoked)
-				.Where(t => t.ExpiresAt > currentTime)
+				.Where(token => token.TokenHash == tokenHash)
+				.Where(token => !token.IsRevoked)
+				.Where(token => token.ExpiresAt > currentTime)
 				.FirstOrDefaultAsync(cancellationToken);
 
 		return token?.UserId;

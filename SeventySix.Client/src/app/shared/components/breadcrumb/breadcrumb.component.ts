@@ -182,7 +182,7 @@ export class BreadcrumbComponent
 		.url
 		.split("/")
 		.filter(
-			(s) => s);
+			(segment) => segment);
 	}
 
 	/**
@@ -232,7 +232,7 @@ export class BreadcrumbComponent
 			// Skip if this URL was already added as feature root
 			if (
 				breadcrumbs.some(
-					(b) => b.url === url))
+					(breadcrumb) => breadcrumb.url === url))
 			{
 				continue;
 			}

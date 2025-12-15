@@ -1,5 +1,23 @@
 # SeventySix Copilot Instructions
 
+## ⚠️ CRITICAL: Variable Naming (NEVER VIOLATE - CHECK FIRST)
+
+**RULE:** All variable names MUST be 3+ characters and descriptive. Single/two-letter variables are code smells.
+
+| Context          | ❌ NEVER                         | ✅ ALWAYS                                                 |
+| ---------------- | -------------------------------- | --------------------------------------------------------- |
+| C# Lambdas       | `x => x.Id`, `t => t.Name`       | `user => user.Id`, `token => token.Name`                  |
+| C# Lambdas       | `u => u.IsActive`, `l => l.Date` | `user => user.IsActive`, `logEntry => logEntry.Date`      |
+| C# LINQ          | `.Where(r => r.ApiName)`         | `.Where(request => request.ApiName)`                      |
+| TS Arrow Funcs   | `n => n.id`, `c => c.key`        | `notification => notification.id`, `column => column.key` |
+| TS Array Methods | `.filter(s => s.title)`          | `.filter(section => section.title)`                       |
+| Loop Variables   | `for (int i = 0; ...)`           | `foreach` OR `for (int index = 0; ...)`                   |
+| Destructuring    | `const { n, c } = obj`           | `const { name, config } = obj`                            |
+
+**Only Exception:** Angular dynamic imports `(m) => m.Component` - framework idiom.
+
+---
+
 ## Code Formatting (CRITICAL - .ts and .cs)
 
 | Rule           | Do                                        | Don't                          |

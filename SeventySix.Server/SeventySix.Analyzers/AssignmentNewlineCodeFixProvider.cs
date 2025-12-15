@@ -131,9 +131,9 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 			// Find whitespace trivia (search in reverse for efficiency)
 			SyntaxTriviaList leadingTrivia = node.GetLeadingTrivia();
 
-			for (int i = leadingTrivia.Count - 1; i >= 0; i--)
+			for (int index = leadingTrivia.Count - 1; index >= 0; index--)
 			{
-				SyntaxTrivia trivia = leadingTrivia[i];
+				SyntaxTrivia trivia = leadingTrivia[index];
 
 				if (trivia.RawKind == (int)SyntaxKind.WhitespaceTrivia)
 				{

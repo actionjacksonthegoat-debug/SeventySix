@@ -1016,6 +1016,106 @@ test('relative imports should only be used in index.ts barrel files', async () =
 });
 
 // ============================================================================
+// Variable Naming Tests
+// ============================================================================
+
+console.log('\n🔍 Variable Naming Tests');
+
+test('production code should not have single-letter lambda parameters', async () =>
+{
+	const productionFiles =
+		await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+
+	// Allowed exceptions
+	const allowedShortParams =
+		new Set([
+			'm', // Angular dynamic import: (m) => m.Component
+			'e' // Event handlers: (e) => e.preventDefault()
+		]);
+
+	// Pattern to find arrow functions with single-letter params in common array methods
+	// Matches: .filter(x => or .map(n => or (c) => etc.
+	const arrowFunctionPattern =
+		/\.(?:filter|map|find|some|every|forEach|reduce|findIndex|sort)\s*\(\s*\(?([a-z])\)?(?:\s*:\s*\w+)?\s*=>/gi;
+
+	for (const file of productionFiles)
+	{
+		const content = await fs.readFile(file, 'utf-8');
+			await fs.readFile(file, 'utf-8');
+		const relativePath =
+			path.relative(SRC_DIR, file);
+
+		let match;
+		while ((match = arrowFunctionPattern.exec(content)) !== null)
+		{
+			const paramName = match[1];
+
+			// Skip allowed exceptions
+			if (allowedShortParams.has(paramName))
+			{
+				continue;
+			}
+
+			// Extract code context for violation message
+			const contextStart =
+				Math.max(0, match.index - 30);
+			const contextEnd =
+				Math.min(content.length, match.index + 30);
+			const context =
+				content
+					.substring(contextStart, contextEnd)
+					.replace(/\s+/g, ' ')
+					.trim();
+
+			violations.push(
+				`${relativePath}: '${paramName}' in ${context}`);
+		}
+
+		// Reset regex for next file
+		arrowFunctionPattern.lastIndex = 0;
+	}
+
+	assertEmpty(
+		violations,
+		'Single-letter lambda parameters (use descriptive names)');
+});
+
+test('all code should not have for loop counters', async () =>
+{
+	const productionFiles =
+		await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+
+	// Pattern: for (let i = or for (const index =
+	const forLoopPattern =
+		/for\s*\(\s*(?:let|const|var)\s+([a-z])\s*=/gi;
+
+	for (const file of productionFiles)
+	{
+		const content =
+			await fs.readFile(file, 'utf-8');
+		const relativePath =
+			path.relative(SRC_DIR, file);
+
+		let match;
+		while ((match = forLoopPattern.exec(content)) !== null)
+		{
+			const loopVariable = match[1];
+
+			violations.push(
+				`${relativePath}: for loop with '${loopVariable}' (use forEach/map or descriptive name)`);
+		}
+
+		forLoopPattern.lastIndex = 0;
+	}
+
+	assertEmpty(
+		violations,
+		'For loop counters in production code (use functional methods or descriptive names)');
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 

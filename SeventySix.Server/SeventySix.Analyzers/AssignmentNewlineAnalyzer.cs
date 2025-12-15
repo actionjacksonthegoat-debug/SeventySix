@@ -69,9 +69,9 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 			declaration.Variables;
 
 		// Use indexed for loop - faster than foreach for SeparatedSyntaxList
-		for (int i = 0; i < variables.Count; i++)
+		for (int index = 0; index < variables.Count; index++)
 		{
-			VariableDeclaratorSyntax declarator = variables[i];
+			VariableDeclaratorSyntax declarator = variables[index];
 			EqualsValueClauseSyntax? initializer = declarator.Initializer;
 
 			if (initializer is null)

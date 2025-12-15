@@ -110,8 +110,8 @@ describe("BreadcrumbComponent",
 					component.breadcrumbs();
 				const adminCrumb: BreadcrumbItem | undefined =
 					breadcrumbs.find(
-						(b) =>
-							b.label === "Admin" || b.label === "Dashboard");
+						(breadcrumb) =>
+							breadcrumb.label === "Admin" || breadcrumb.label === "Dashboard");
 
 				expect(adminCrumb)
 					.toBeDefined();
@@ -169,7 +169,7 @@ describe("BreadcrumbComponent",
 					component.breadcrumbs();
 				const activeCrumb: BreadcrumbItem | undefined =
 					breadcrumbs.find(
-						(b) => b.isActive);
+						(breadcrumb) => breadcrumb.isActive);
 
 				expect(activeCrumb)
 					.toBeDefined();
@@ -188,7 +188,8 @@ describe("BreadcrumbComponent",
 					component.breadcrumbs();
 				const usersCrumb: BreadcrumbItem | undefined =
 					breadcrumbs.find(
-						(b) => b.label === "Users");
+						(breadcrumb) =>
+							breadcrumb.label === "Users");
 
 				expect(usersCrumb?.url)
 					.toBe("/admin/users");

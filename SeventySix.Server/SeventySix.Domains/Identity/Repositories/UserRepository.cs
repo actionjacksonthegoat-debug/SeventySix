@@ -51,7 +51,7 @@ internal class UserRepository(
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
 
 		return await GetQueryable()
-			.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+			.FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -111,7 +111,7 @@ internal class UserRepository(
 
 		return await GetQueryable()
 			.FirstOrDefaultAsync(
-				u => u.Username == username,
+				user => user.Username == username,
 				cancellationToken);
 	}
 
@@ -124,7 +124,7 @@ internal class UserRepository(
 
 		return await GetQueryable()
 			.FirstOrDefaultAsync(
-				u => u.Email.ToLower() == email.ToLower(),
+				user => user.Email.ToLower() == email.ToLower(),
 				cancellationToken);
 	}
 
@@ -137,12 +137,12 @@ internal class UserRepository(
 		if (excludeId.HasValue)
 		{
 			return await context.Users.AnyAsync(
-				u => u.Username == username && u.Id != excludeId.Value,
+				user => user.Username == username && user.Id != excludeId.Value,
 				cancellationToken);
 		}
 
 		return await context.Users.AnyAsync(
-			u => u.Username == username,
+			user => user.Username == username,
 			cancellationToken);
 	}
 
@@ -157,12 +157,12 @@ internal class UserRepository(
 		if (excludeId.HasValue)
 		{
 			return await context.Users.AnyAsync(
-				u => u.Email.ToLower() == lowerEmail && u.Id != excludeId.Value,
+				user => user.Email.ToLower() == lowerEmail && user.Id != excludeId.Value,
 				cancellationToken);
 		}
 
 		return await context.Users.AnyAsync(
-			u => u.Email.ToLower() == lowerEmail,
+			user => user.Email.ToLower() == lowerEmail,
 			cancellationToken);
 	}
 
@@ -229,30 +229,30 @@ internal class UserRepository(
 		if (!string.IsNullOrWhiteSpace(request.SearchTerm))
 		{
 			query =
-				query.Where(u =>
-					u.Username.Contains(request.SearchTerm)
-					|| u.Email.Contains(request.SearchTerm)
+				query.Where(user =>
+					user.Username.Contains(request.SearchTerm)
+					|| user.Email.Contains(request.SearchTerm)
 					|| (
-						u.FullName != null
-						&& u.FullName.Contains(request.SearchTerm)));
+						user.FullName != null
+						&& user.FullName.Contains(request.SearchTerm)));
 		}
 
 		if (request.IsActive.HasValue)
 		{
 			query =
-				query.Where(u => u.IsActive == request.IsActive.Value);
+				query.Where(user => user.IsActive == request.IsActive.Value);
 		}
 
 		if (request.StartDate.HasValue)
 		{
 			query =
-				query.Where(u => u.LastLoginAt >= request.StartDate.Value);
+				query.Where(user => user.LastLoginAt >= request.StartDate.Value);
 		}
 
 		if (request.EndDate.HasValue)
 		{
 			query =
-				query.Where(u => u.LastLoginAt <= request.EndDate.Value);
+				query.Where(user => user.LastLoginAt <= request.EndDate.Value);
 		}
 
 		return query;
@@ -269,8 +269,8 @@ internal class UserRepository(
 
 		query =
 			request.SortDescending
-			? query.OrderByDescending(u => EF.Property<object>(u, sortProperty))
-			: query.OrderBy(u => EF.Property<object>(u, sortProperty));
+			? query.OrderByDescending(user => EF.Property<object>(user, sortProperty))
+			: query.OrderBy(user => EF.Property<object>(user, sortProperty));
 
 		return query
 			.Skip(request.GetSkip())
@@ -283,7 +283,7 @@ internal class UserRepository(
 		CancellationToken cancellationToken = default)
 	{
 		return await GetQueryable()
-			.Where(u => ids.Contains(u.Id))
+			.Where(user => ids.Contains(user.Id))
 			.ToListAsync(cancellationToken);
 	}
 
@@ -315,7 +315,7 @@ internal class UserRepository(
 						.Users
 						.IgnoreQueryFilters()
 						.FirstOrDefaultAsync(
-							u => u.Id == id && !u.IsDeleted,
+							user => user.Id == id && !user.IsDeleted,
 							cancellationToken);
 
 				if (user is null)
@@ -348,7 +348,7 @@ internal class UserRepository(
 						.Users
 						.IgnoreQueryFilters()
 						.FirstOrDefaultAsync(
-							u => u.Id == id && u.IsDeleted,
+							user => user.Id == id && user.IsDeleted,
 							cancellationToken);
 
 				if (user is null)
@@ -385,7 +385,7 @@ internal class UserRepository(
 		if (isActive.HasValue)
 		{
 			query =
-				query.Where(u => u.IsActive == isActive.Value);
+				query.Where(user => user.IsActive == isActive.Value);
 		}
 
 		return await query.CountAsync(cancellationToken);
@@ -517,7 +517,7 @@ internal class UserRepository(
 			await context
 				.Users
 				.AsNoTracking()
-				.Where(u => u.Id == userId)
+				.Where(user => user.Id == userId)
 				.FirstOrDefaultAsync(cancellationToken);
 
 		if (user == null)
@@ -529,9 +529,9 @@ internal class UserRepository(
 			await context
 				.UserRoles
 				.AsNoTracking()
-				.Where(r => r.UserId == userId)
-				.Include(r => r.Role)
-				.Select(r => r.Role!.Name)
+				.Where(userRole => userRole.UserId == userId)
+				.Include(userRole => userRole.Role)
+				.Select(userRole => userRole.Role!.Name)
 				.ToListAsync(cancellationToken);
 
 		bool hasPassword =
@@ -543,8 +543,8 @@ internal class UserRepository(
 			await context
 				.ExternalLogins
 				.AsNoTracking()
-				.Where(e => e.UserId == userId)
-				.Select(e => e.Provider)
+				.Where(externalLogin => externalLogin.UserId == userId)
+				.Select(externalLogin => externalLogin.Provider)
 				.ToListAsync(cancellationToken);
 
 		return new UserProfileDto(
@@ -565,7 +565,7 @@ internal class UserRepository(
 		return await context
 			.Users
 			.AsNoTracking()
-			.Where(u => u.NeedsPendingEmail)
+			.Where(user => user.NeedsPendingEmail)
 			.Select(UserExtensions.ToDtoProjection)
 			.ToListAsync(cancellationToken);
 	}

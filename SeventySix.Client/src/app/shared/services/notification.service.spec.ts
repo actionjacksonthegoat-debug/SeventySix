@@ -204,7 +204,8 @@ describe("NotificationService",
 							.toBe(2);
 						expect(
 							updatedNotifications.find(
-								(n) => n.id === idToRemove))
+								(notification) =>
+									notification.id === idToRemove))
 							.toBeUndefined();
 					});
 
@@ -282,7 +283,7 @@ describe("NotificationService",
 							service.notifications$();
 						const ids: string[] =
 							notifications.map(
-								(n) => n.id);
+								(notification) => notification.id);
 						const uniqueIds: Set<string> =
 							new Set(ids);
 
