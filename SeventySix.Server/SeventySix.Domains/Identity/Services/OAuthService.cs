@@ -164,13 +164,13 @@ public class OAuthService(
 
 		Dictionary<string, string> parameters =
 			new()
-		{
-			["client_id"] = provider.ClientId,
-			["client_secret"] = provider.ClientSecret,
-			["code"] = code,
-			["redirect_uri"] = provider.RedirectUri,
-			["code_verifier"] = codeVerifier,
-		};
+			{
+				["client_id"] = provider.ClientId,
+				["client_secret"] = provider.ClientSecret,
+				["code"] = code,
+				["redirect_uri"] = provider.RedirectUri,
+				["code_verifier"] = codeVerifier,
+			};
 
 		using FormUrlEncodedContent content =
 			new(parameters);
@@ -303,19 +303,19 @@ public class OAuthService(
 
 				User user =
 					new()
-				{
-					Username = username,
-					Email =
-						userInfo.Email
+					{
+						Username = username,
+						Email =
+							userInfo.Email
 						?? $"{userInfo.Login}{OAuthProviderConstants.AuditValues.GitHubPlaceholderEmailDomain}",
-					FullName = userInfo.Name,
-					IsActive = true,
-					CreateDate = now,
-					CreatedBy =
-					OAuthProviderConstants
+						FullName = userInfo.Name,
+						IsActive = true,
+						CreateDate = now,
+						CreatedBy =
+							OAuthProviderConstants
 						.AuditValues
 						.GitHubOAuthCreatedBy,
-				};
+					};
 
 				// Create user with role assignment
 				User createdUser =
@@ -327,15 +327,15 @@ public class OAuthService(
 				// Create external login with user ID
 				ExternalLogin externalLogin =
 					new()
-				{
-					UserId = createdUser.Id,
-					Provider =
-					OAuthProviderConstants.GitHub,
-					ProviderUserId = userInfo.Id,
-					ProviderEmail = userInfo.Email,
-					CreateDate = now,
-					LastUsedAt = now,
-				};
+					{
+						UserId = createdUser.Id,
+						Provider =
+							OAuthProviderConstants.GitHub,
+						ProviderUserId = userInfo.Id,
+						ProviderEmail = userInfo.Email,
+						CreateDate = now,
+						LastUsedAt = now,
+					};
 
 				await authRepository.CreateExternalLoginAsync(
 					externalLogin,

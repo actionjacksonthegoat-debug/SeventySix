@@ -226,7 +226,7 @@ public class LogBuilder
 			Message = Message,
 			ExceptionMessage = ExceptionMessage,
 			BaseExceptionMessage =
-			BaseExceptionMessage,
+				BaseExceptionMessage,
 			StackTrace = StackTrace,
 			SourceContext = SourceContext,
 			RequestMethod = RequestMethod,

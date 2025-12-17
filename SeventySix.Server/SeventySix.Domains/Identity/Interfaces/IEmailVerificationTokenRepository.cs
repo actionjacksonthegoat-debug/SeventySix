@@ -14,13 +14,13 @@ namespace SeventySix.Identity;
 public interface IEmailVerificationTokenRepository
 {
 	/// <summary>
-	/// Gets a verification token by its value.
+	/// Gets a verification token by its hash.
 	/// </summary>
-	/// <param name="token">The token value.</param>
+	/// <param name="tokenHash">The SHA256 hash of the token.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>The token if found; otherwise, null.</returns>
-	public Task<EmailVerificationToken?> GetByTokenAsync(
-		string token,
+	public Task<EmailVerificationToken?> GetByHashAsync(
+		string tokenHash,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

@@ -51,7 +51,7 @@ public class HealthCheckServiceTests
 	private HealthCheckService CreateSut(TimeProvider? timeProvider = null)
 	{
 		IEnumerable<IDatabaseHealthCheck> databaseHealthChecks =
-		[
+			[
 			IdentityHealthCheck,
 			LoggingHealthCheck,
 			ApiTrackingHealthCheck,

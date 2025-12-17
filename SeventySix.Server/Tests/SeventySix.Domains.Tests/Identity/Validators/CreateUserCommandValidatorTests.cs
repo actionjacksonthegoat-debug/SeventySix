@@ -31,11 +31,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = string.Empty,
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username = string.Empty,
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -54,12 +54,12 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username =
-			null!,
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username =
+					null!,
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -80,11 +80,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = username,
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username = username,
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -103,12 +103,12 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username =
-			new string('a', 51), // 51 chars
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username =
+					new string('a', 51), // 51 chars
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -132,11 +132,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = username,
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username = username,
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -160,11 +160,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = username,
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username = username,
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -181,12 +181,12 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username =
-			new string('a', 50), // Exactly 50 chars
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username =
+					new string('a', 50), // Exactly 50 chars
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -207,11 +207,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = string.Empty,
-			FullName = "Test User",
-		};
+			{
+				Username = "testuser",
+				Email = string.Empty,
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -230,12 +230,12 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email =
-			null!,
-			FullName = "Test User",
-		};
+			{
+				Username = "testuser",
+				Email =
+					null!,
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -256,11 +256,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = email,
-			FullName = "Test User",
-		};
+			{
+				Username = "testuser",
+				Email = email,
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -281,11 +281,11 @@ public class CreateUserCommandValidatorTests
 			new string('a', 244) + "@example.com"; // 256 chars total
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = longEmail,
-			FullName = "Test User",
-		};
+			{
+				Username = "testuser",
+				Email = longEmail,
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -308,11 +308,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = email,
-			FullName = "Test User",
-		};
+			{
+				Username = "testuser",
+				Email = email,
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -331,11 +331,11 @@ public class CreateUserCommandValidatorTests
 			new string('a', 240) + "@example.co"; // Exactly 255 chars
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = email,
-			FullName = "Test User",
-		};
+			{
+				Username = "testuser",
+				Email = email,
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -356,11 +356,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = string.Empty,
-		};
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = string.Empty,
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -379,11 +379,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = "   ",
-		};
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = "   ",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -402,12 +402,12 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName =
-			new string('a', 101), // 101 chars
-		};
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName =
+					new string('a', 101), // 101 chars
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -430,11 +430,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = fullName,
-		};
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = fullName,
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -451,12 +451,12 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName =
-			new string('a', 100), // Exactly 100 chars
-		};
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName =
+					new string('a', 100), // Exactly 100 chars
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -479,12 +479,12 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = "Test User",
-			IsActive = isActive,
-		};
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = "Test User",
+				IsActive = isActive,
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -505,12 +505,12 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "john_doe",
-			Email = "john@example.com",
-			FullName = "John Doe",
-			IsActive = true,
-		};
+			{
+				Username = "john_doe",
+				Email = "john@example.com",
+				FullName = "John Doe",
+				IsActive = true,
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -527,11 +527,11 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =
@@ -548,12 +548,12 @@ public class CreateUserCommandValidatorTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "ab", // Too short
-			Email = "invalid-email", // Invalid format
-			FullName =
-			new string('a', 101), // Too long
-		};
+			{
+				Username = "ab", // Too short
+				Email = "invalid-email", // Invalid format
+				FullName =
+					new string('a', 101), // Too long
+			};
 
 		// Act
 		TestValidationResult<CreateUserRequest> result =

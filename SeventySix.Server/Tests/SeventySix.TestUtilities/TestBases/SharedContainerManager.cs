@@ -98,9 +98,9 @@ public static class SharedContainerManager
 
 		NpgsqlConnectionStringBuilder builder =
 			new(masterConnection)
-		{
-			Database = databaseName,
-		};
+			{
+				Database = databaseName,
+			};
 		string connectionString = builder.ToString();
 
 		await ApplyMigrationsAsync(connectionString);

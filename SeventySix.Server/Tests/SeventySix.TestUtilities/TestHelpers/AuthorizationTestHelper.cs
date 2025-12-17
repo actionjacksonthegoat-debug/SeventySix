@@ -197,9 +197,9 @@ public class AuthorizationTestHelper
 	{
 		HttpRequestMessage request =
 			new(method, endpoint)
-		{
-			Content = content,
-		};
+			{
+				Content = content,
+			};
 
 		// Copy Authorization header - DefaultRequestHeaders are NOT auto-applied when using SendAsync with HttpRequestMessage
 		if (Client.DefaultRequestHeaders.Authorization != null)

@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
+using SeventySix.Shared.Extensions;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
@@ -104,12 +105,14 @@ public class PasswordResetTokenConfigurationTests : DataPostgreSqlTestBase
 		PasswordResetToken token1 =
 			new PasswordResetTokenBuilder(timeProvider)
 			.WithUserId(user.Id)
-			.WithToken($"token1_{testId}")
+			.WithTokenHash(
+				CryptoExtensions.ComputeSha256Hash($"token1_{testId}"))
 			.Build();
 		PasswordResetToken token2 =
 			new PasswordResetTokenBuilder(timeProvider)
 			.WithUserId(user.Id)
-			.WithToken($"token2_{testId}")
+			.WithTokenHash(
+				CryptoExtensions.ComputeSha256Hash($"token2_{testId}"))
 			.Build();
 
 		await context.PasswordResetTokens.AddRangeAsync(token1, token2);

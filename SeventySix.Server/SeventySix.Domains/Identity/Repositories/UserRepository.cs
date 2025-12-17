@@ -157,7 +157,9 @@ internal class UserRepository(
 		if (excludeId.HasValue)
 		{
 			return await context.Users.AnyAsync(
-				user => user.Email.ToLower() == lowerEmail && user.Id != excludeId.Value,
+				user =>
+					user.Email.ToLower() == lowerEmail
+					&& user.Id != excludeId.Value,
 				cancellationToken);
 		}
 
@@ -240,19 +242,22 @@ internal class UserRepository(
 		if (request.IsActive.HasValue)
 		{
 			query =
-				query.Where(user => user.IsActive == request.IsActive.Value);
+				query.Where(user =>
+					user.IsActive == request.IsActive.Value);
 		}
 
 		if (request.StartDate.HasValue)
 		{
 			query =
-				query.Where(user => user.LastLoginAt >= request.StartDate.Value);
+				query.Where(user =>
+					user.LastLoginAt >= request.StartDate.Value);
 		}
 
 		if (request.EndDate.HasValue)
 		{
 			query =
-				query.Where(user => user.LastLoginAt <= request.EndDate.Value);
+				query.Where(user =>
+					user.LastLoginAt <= request.EndDate.Value);
 		}
 
 		return query;
@@ -269,7 +274,8 @@ internal class UserRepository(
 
 		query =
 			request.SortDescending
-			? query.OrderByDescending(user => EF.Property<object>(user, sortProperty))
+			? query.OrderByDescending(user =>
+				EF.Property<object>(user, sortProperty))
 			: query.OrderBy(user => EF.Property<object>(user, sortProperty));
 
 		return query

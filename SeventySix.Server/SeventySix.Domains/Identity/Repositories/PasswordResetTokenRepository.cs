@@ -21,24 +21,24 @@ internal class PasswordResetTokenRepository(IdentityDbContext context)
 		string tokenHash,
 		CancellationToken cancellationToken = default) =>
 		await context.PasswordResetTokens.FirstOrDefaultAsync(
-			token => token.Token == tokenHash,
+			resetToken => resetToken.TokenHash == tokenHash,
 			cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task CreateAsync(
-		PasswordResetToken token,
+		PasswordResetToken resetToken,
 		CancellationToken cancellationToken = default)
 	{
-		context.PasswordResetTokens.Add(token);
+		context.PasswordResetTokens.Add(resetToken);
 		await context.SaveChangesAsync(cancellationToken);
 	}
 
 	/// <inheritdoc/>
 	public async Task MarkAsUsedAsync(
-		PasswordResetToken token,
+		PasswordResetToken resetToken,
 		CancellationToken cancellationToken = default)
 	{
-		token.IsUsed = true;
+		resetToken.IsUsed = true;
 		await context.SaveChangesAsync(cancellationToken);
 	}
 
@@ -49,10 +49,12 @@ internal class PasswordResetTokenRepository(IdentityDbContext context)
 		CancellationToken cancellationToken = default) =>
 		await context
 			.PasswordResetTokens
-			.Where(token => token.UserId == userId)
-			.Where(token => !token.IsUsed)
-			.Where(token => token.ExpiresAt > invalidatedAt)
+			.Where(resetToken =>
+				resetToken.UserId == userId)
+			.Where(resetToken => !resetToken.IsUsed)
+			.Where(resetToken => resetToken.ExpiresAt > invalidatedAt)
 			.ExecuteUpdateAsync(
-				setters => setters.SetProperty(token => token.IsUsed, true),
+				setters =>
+					setters.SetProperty(resetToken => resetToken.IsUsed, true),
 				cancellationToken);
 }

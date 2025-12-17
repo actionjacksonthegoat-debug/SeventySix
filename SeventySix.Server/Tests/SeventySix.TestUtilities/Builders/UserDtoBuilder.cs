@@ -20,7 +20,6 @@ public class UserDtoBuilder
 	private string? FullName = null;
 	private DateTime CreateDate;
 	private bool IsActive = true;
-	private bool NeedsPendingEmail = false;
 	private string CreatedBy =
 		TestAuditConstants.SystemUser;
 	private DateTime? ModifyDate = null;
@@ -93,15 +92,6 @@ public class UserDtoBuilder
 	public UserDtoBuilder WithIsActive(bool value)
 	{
 		IsActive = value;
-		return this;
-	}
-
-	/// <summary>
-	/// Sets whether user needs pending email.
-	/// </summary>
-	public UserDtoBuilder WithNeedsPendingEmail(bool value)
-	{
-		NeedsPendingEmail = value;
 		return this;
 	}
 
@@ -179,7 +169,6 @@ public class UserDtoBuilder
 			FullName,
 			CreateDate,
 			IsActive,
-			NeedsPendingEmail,
 			CreatedBy,
 			ModifyDate,
 			ModifiedBy,

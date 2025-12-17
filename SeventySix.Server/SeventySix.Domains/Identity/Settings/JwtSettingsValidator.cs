@@ -50,7 +50,7 @@ public class JwtSettingsValidator : AbstractValidator<JwtSettings>
 	/// Common weak patterns that indicate non-random secrets.
 	/// </summary>
 	private static readonly string[] WeakPatterns =
-	[
+		[
 		"placeholder",
 		"secret",
 		"password",

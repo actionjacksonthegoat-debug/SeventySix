@@ -40,10 +40,10 @@ public static class ChangePasswordCommandHandler
 		{
 			credential =
 				new UserCredential
-			{
-				UserId = command.UserId,
-				CreateDate = now,
-			};
+				{
+					UserId = command.UserId,
+					CreateDate = now,
+				};
 		}
 		else
 		{

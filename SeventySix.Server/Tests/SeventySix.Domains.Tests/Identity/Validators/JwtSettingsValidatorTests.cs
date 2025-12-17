@@ -45,15 +45,15 @@ public class JwtSettingsValidatorTests
 		new()
 		{
 			SecretKey =
-		secretKey ?? ValidTestSecretKey,
+				secretKey ?? ValidTestSecretKey,
 			Issuer =
-		issuer ?? TestIssuer,
+				issuer ?? TestIssuer,
 			Audience =
-		audience ?? TestAudience,
+				audience ?? TestAudience,
 			AccessTokenExpirationMinutes =
-		accessTokenMinutes ?? 15,
+				accessTokenMinutes ?? 15,
 			RefreshTokenExpirationDays =
-		refreshTokenDays ?? 7,
+				refreshTokenDays ?? 7,
 		};
 
 	#region SecretKey Validation Tests
@@ -354,13 +354,13 @@ public class JwtSettingsValidatorTests
 		// Arrange
 		JwtSettings settings =
 			new()
-		{
-			SecretKey = "short",
-			Issuer = string.Empty,
-			Audience = string.Empty,
-			AccessTokenExpirationMinutes = 0,
-			RefreshTokenExpirationDays = 0,
-		};
+			{
+				SecretKey = "short",
+				Issuer = string.Empty,
+				Audience = string.Empty,
+				AccessTokenExpirationMinutes = 0,
+				RefreshTokenExpirationDays = 0,
+			};
 
 		// Act
 		TestValidationResult<JwtSettings> result =

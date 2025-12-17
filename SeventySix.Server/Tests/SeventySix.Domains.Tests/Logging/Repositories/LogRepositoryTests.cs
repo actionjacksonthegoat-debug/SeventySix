@@ -46,12 +46,12 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		FakeTimeProvider timeProvider = new();
 		Log log =
 			new()
-		{
-			LogLevel = "Error",
-			Message = "Test error message",
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-		};
+			{
+				LogLevel = "Error",
+				Message = "Test error message",
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+			};
 
 		// Act
 		Log result =
@@ -121,10 +121,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Act
 		LogQueryRequest request =
 			new()
-		{
-			StartDate = startDate,
-			EndDate = endDate,
-		};
+			{
+				StartDate = startDate,
+				EndDate = endDate,
+			};
 		(IEnumerable<Log> logs, int _) =
 			await Repository.GetPagedAsync(
 			request);
@@ -195,10 +195,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Act - Search for unique marker which should match Message field
 		LogQueryRequest messageRequest =
 			new()
-		{
-			SearchTerm =
-			$"Authentication_{testId}",
-		};
+			{
+				SearchTerm =
+					$"Authentication_{testId}",
+			};
 		(IEnumerable<Log> messageLogs, int _) =
 			await Repository.GetPagedAsync(
 			messageRequest);
@@ -206,18 +206,21 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Act - Search for unique marker in SourceContext
 		LogQueryRequest sourceRequest =
 			new()
-		{
-			SearchTerm =
-			$"UserService_{testId}",
-		};
+			{
+				SearchTerm =
+					$"UserService_{testId}",
+			};
 		(IEnumerable<Log> sourceLogs, int _) =
 			await Repository.GetPagedAsync(
 			sourceRequest);
 
 		// Act - Search for unique marker in RequestPath
 		LogQueryRequest pathRequest =
-			new() { SearchTerm =
-			$"users_{testId}" };
+			new()
+			{
+				SearchTerm =
+					$"users_{testId}"
+			};
 		(IEnumerable<Log> pathLogs, int _) =
 			await Repository.GetPagedAsync(
 			pathRequest);
@@ -225,10 +228,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Act - Search for unique marker in ExceptionMessage
 		LogQueryRequest exceptionRequest =
 			new()
-		{
-			SearchTerm =
-			$"NullRef_{testId}",
-		};
+			{
+				SearchTerm =
+					$"NullRef_{testId}",
+			};
 		(IEnumerable<Log> exceptionLogs, int _) =
 			await Repository.GetPagedAsync(exceptionRequest);
 
@@ -299,9 +302,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				{
 					LogLevel = "Info",
 					Message =
-				$"Log {i}",
+						$"Log {i}",
 					CreateDate =
-				timeProvider.GetUtcNow().UtcDateTime,
+						timeProvider.GetUtcNow().UtcDateTime,
 				});
 		}
 
@@ -345,10 +348,10 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		// Act
 		LogQueryRequest request =
 			new()
-		{
-			LogLevel = "Error",
-			StartDate = startDate,
-		};
+			{
+				LogLevel = "Error",
+				StartDate = startDate,
+			};
 		(IEnumerable<Log> _, int count) =
 			await Repository.GetPagedAsync(
 			request);
@@ -364,22 +367,22 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		FakeTimeProvider timeProvider = new();
 		Log oldLog =
 			new()
-		{
-			LogLevel = "Error",
-			Message = "Old log",
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddDays(-40),
-		};
+			{
+				LogLevel = "Error",
+				Message = "Old log",
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime.AddDays(-40),
+			};
 		await Repository.CreateAsync(oldLog);
 
 		Log recentLog =
 			new()
-		{
-			LogLevel = "Error",
-			Message = "Recent log",
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-		};
+			{
+				LogLevel = "Error",
+				Message = "Recent log",
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+			};
 		await Repository.CreateAsync(recentLog);
 
 		DateTime cutoffDate =
@@ -403,7 +406,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	private async Task SeedTestLogsAsync(FakeTimeProvider timeProvider)
 	{
 		Log[] logs =
-		[
+			[
 			new Log
 			{
 				LogLevel = "Error",
@@ -413,7 +416,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				StatusCode = 500,
 				DurationMs = 150,
 				CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow().UtcDateTime,
 			},
 			new Log
 			{
@@ -424,7 +427,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				StatusCode = 200,
 				DurationMs = 75,
 				CreateDate =
-			timeProvider
+					timeProvider
 					.GetUtcNow()
 					.UtcDateTime.AddMinutes(-5),
 			},
@@ -437,7 +440,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				StatusCode = 404,
 				DurationMs = 50,
 				CreateDate =
-			timeProvider
+					timeProvider
 					.GetUtcNow()
 					.UtcDateTime.AddMinutes(-10),
 			},
@@ -454,32 +457,32 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		FakeTimeProvider timeProvider)
 	{
 		Log[] logs =
-		[
+			[
 			new Log
 			{
 				LogLevel = "Error",
 				Message =
-			$"Authentication_{testId} failed for user",
+					$"Authentication_{testId} failed for user",
 				SourceContext =
-			$"SeventySix.Services.UserService_{testId}",
+					$"SeventySix.Services.UserService_{testId}",
 				RequestPath =
-			$"/api/users_{testId}/login",
+					$"/api/users_{testId}/login",
 				ExceptionMessage = null,
 				CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow().UtcDateTime,
 			},
 			new Log
 			{
 				LogLevel = "Error",
 				Message = "Database connection timeout",
 				SourceContext =
-			$"SeventySix.Services.UserService_{testId}",
+					$"SeventySix.Services.UserService_{testId}",
 				RequestPath =
-			$"/api/users_{testId}/profile",
+					$"/api/users_{testId}/profile",
 				ExceptionMessage =
 					$"NullRef_{testId}: Object reference not set",
 				CreateDate =
-			timeProvider
+					timeProvider
 					.GetUtcNow()
 					.UtcDateTime.AddMinutes(-5),
 			},
@@ -491,7 +494,7 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				RequestPath = "/api/health",
 				ExceptionMessage = null,
 				CreateDate =
-			timeProvider
+					timeProvider
 					.GetUtcNow()
 					.UtcDateTime.AddMinutes(-10),
 			},

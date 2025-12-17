@@ -38,14 +38,14 @@ public class ThirdPartyApiRequestResponseTests
 			DateOnly.FromDateTime(now);
 		ThirdPartyApiRequestResponse response =
 			new()
-		{
-			Id = 42,
-			ApiName = "ExternalAPI",
-			BaseUrl = "https://api.ExternalAPImap.org",
-			CallCount = 150,
-			LastCalledAt = now,
-			ResetDate = resetDate,
-		};
+			{
+				Id = 42,
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 150,
+				LastCalledAt = now,
+				ResetDate = resetDate,
+			};
 
 		// Assert
 		Assert.Equal(42, response.Id);
@@ -62,11 +62,11 @@ public class ThirdPartyApiRequestResponseTests
 		// Arrange
 		ThirdPartyApiRequestResponse response =
 			new()
-		{
-			ApiName = "TestApi",
-			BaseUrl = "https://test.api",
-			LastCalledAt = null,
-		};
+			{
+				ApiName = "TestApi",
+				BaseUrl = "https://test.api",
+				LastCalledAt = null,
+			};
 
 		// Assert
 		Assert.Null(response.LastCalledAt);

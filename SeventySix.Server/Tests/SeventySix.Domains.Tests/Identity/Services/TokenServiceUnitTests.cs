@@ -53,7 +53,7 @@ public class TokenServiceUnitTests
 			new AuthSettings
 			{
 				Token =
-			new TokenSettings { MaxActiveSessionsPerUser = 5 },
+					new TokenSettings { MaxActiveSessionsPerUser = 5 },
 			});
 		TimeProvider =
 			new FakeTimeProvider(FixedTime);

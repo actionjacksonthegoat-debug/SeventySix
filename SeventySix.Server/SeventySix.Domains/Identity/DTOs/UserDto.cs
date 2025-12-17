@@ -24,11 +24,22 @@ namespace SeventySix.Identity;
 /// </remarks>
 /// <param name="Id">The unique identifier for the user.</param>
 /// <param name="Username">The username.</param>
-/// <param name="Email">The user's email address.</param>
-/// <param name="FullName">The user's full name (null if not provided).</param>
+/// <param name="Email">
+/// The user's email address.
+/// <para>
+/// PII Classification: Personal Data (GDPR Article 4)
+/// Data Protection: Retention (30 days post-deletion), Encryption (TLS, at-rest), Access (Admin-only)
+/// </para>
+/// </param>
+/// <param name="FullName">
+/// The user's full name (null if not provided).
+/// <para>
+/// PII Classification: Personal Data (GDPR Article 4)
+/// Data Protection: Retention (30 days post-deletion), Encryption (TLS, at-rest), Access (Admin + Self)
+/// </para>
+/// </param>
 /// <param name="CreateDate">The date and time when the user was created (UTC).</param>
 /// <param name="IsActive">Whether the user account is active.</param>
-/// <param name="NeedsPendingEmail">Whether the user needs a pending password reset email.</param>
 /// <param name="CreatedBy">The username of the user who created this user.</param>
 /// <param name="ModifyDate">The date and time when the user was last modified.</param>
 /// <param name="ModifiedBy">The username of the user who last modified this user.</param>
@@ -43,7 +54,6 @@ public record UserDto(
 	string? FullName,
 	DateTime CreateDate,
 	bool IsActive,
-	bool NeedsPendingEmail,
 	string CreatedBy,
 	DateTime? ModifyDate,
 	string ModifiedBy,

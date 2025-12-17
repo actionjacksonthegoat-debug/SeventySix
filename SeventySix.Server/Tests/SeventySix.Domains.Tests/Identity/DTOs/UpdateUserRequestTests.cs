@@ -18,13 +18,13 @@ public class UpdateUserRequestTests
 		// Arrange & Act
 		UpdateUserRequest request =
 			new()
-		{
-			Id = 1,
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = "Test User",
-			IsActive = true,
-		};
+			{
+				Id = 1,
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = "Test User",
+				IsActive = true,
+			};
 
 		// Assert
 		request.Id.ShouldBe(1);
@@ -40,13 +40,13 @@ public class UpdateUserRequestTests
 		// Arrange & Act
 		UpdateUserRequest request =
 			new()
-		{
-			Id = 1,
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = null,
-			IsActive = true,
-		};
+			{
+				Id = 1,
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = null,
+				IsActive = true,
+			};
 
 		// Assert
 		request.FullName.ShouldBeNull();

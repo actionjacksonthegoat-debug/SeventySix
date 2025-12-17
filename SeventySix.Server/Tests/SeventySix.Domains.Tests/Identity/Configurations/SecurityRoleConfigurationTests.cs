@@ -53,11 +53,11 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		SecurityRole duplicateRole =
 			new()
-		{
-			Name =
-			TestRoleConstants.Developer, // Already seeded
-			Description = "Duplicate attempt",
-		};
+			{
+				Name =
+					TestRoleConstants.Developer, // Already seeded
+				Description = "Duplicate attempt",
+			};
 
 		// Act & Assert - Unique constraint should prevent insert
 		context.SecurityRoles.Add(duplicateRole);
@@ -91,10 +91,10 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		// Assign role to user
 		UserRole userRole =
 			new()
-		{
-			UserId = user.Id,
-			RoleId = developerRole.Id,
-		};
+			{
+				UserId = user.Id,
+				RoleId = developerRole.Id,
+			};
 		await context.UserRoles.AddAsync(userRole);
 		await context.SaveChangesAsync();
 
@@ -132,11 +132,11 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		// Create permission request for that role
 		PermissionRequest request =
 			new()
-		{
-			UserId = user.Id,
-			RequestedRoleId = adminRole.Id,
-			CreatedBy = user.Username,
-		};
+			{
+				UserId = user.Id,
+				RequestedRoleId = adminRole.Id,
+				CreatedBy = user.Username,
+			};
 		await context.PermissionRequests.AddAsync(request);
 		await context.SaveChangesAsync();
 
@@ -156,11 +156,11 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		SecurityRole testRole =
 			new()
-		{
-			Name = "TestRole",
-			Description = "Temporary test role",
-			IsActive = false,
-		};
+			{
+				Name = "TestRole",
+				Description = "Temporary test role",
+				IsActive = false,
+			};
 		await context.SecurityRoles.AddAsync(testRole);
 		await context.SaveChangesAsync();
 
@@ -196,10 +196,10 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 
 		UserRole userRole =
 			new()
-		{
-			UserId = user.Id,
-			RoleId = 999999, // Non-existent role
-		};
+			{
+				UserId = user.Id,
+				RoleId = 999999, // Non-existent role
+			};
 
 		// Act & Assert - FK constraint should prevent insert
 		context.UserRoles.Add(userRole);

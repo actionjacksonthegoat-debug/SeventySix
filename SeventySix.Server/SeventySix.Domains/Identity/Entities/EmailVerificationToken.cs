@@ -30,9 +30,9 @@ public class EmailVerificationToken : ICreatableEntity
 	public string Email { get; set; } = string.Empty;
 
 	/// <summary>
-	/// Gets or sets the cryptographically random token (base64, 64 bytes).
+	/// Gets or sets the SHA256 hash of the cryptographically random token.
 	/// </summary>
-	public string Token { get; set; } = string.Empty;
+	public string TokenHash { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets or sets the expiration time (24 hours from creation).

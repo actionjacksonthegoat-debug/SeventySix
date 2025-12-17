@@ -20,16 +20,16 @@ public class LogQueryRequestValidatorTests
 		FakeTimeProvider timeProvider = new();
 		LogQueryRequest request =
 			new()
-		{
-			SearchTerm = "error message",
-			LogLevel = LogLevelConstants.Error,
-			StartDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddDays(-7),
-			EndDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-			Page = 1,
-			PageSize = 50,
-		};
+			{
+				SearchTerm = "error message",
+				LogLevel = LogLevelConstants.Error,
+				StartDate =
+					timeProvider.GetUtcNow().UtcDateTime.AddDays(-7),
+				EndDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				Page = 1,
+				PageSize = 50,
+			};
 
 		TestValidationResult<LogQueryRequest> result =
 			await Validator.TestValidateAsync(request);
@@ -45,11 +45,11 @@ public class LogQueryRequestValidatorTests
 	{
 		LogQueryRequest request =
 			new()
-		{
-			LogLevel = invalidLogLevel,
-			Page = 1,
-			PageSize = 50,
-		};
+			{
+				LogLevel = invalidLogLevel,
+				Page = 1,
+				PageSize = 50,
+			};
 
 		TestValidationResult<LogQueryRequest> result =
 			await Validator.TestValidateAsync(request);
@@ -68,11 +68,11 @@ public class LogQueryRequestValidatorTests
 	{
 		LogQueryRequest request =
 			new()
-		{
-			LogLevel = validLogLevel,
-			Page = 1,
-			PageSize = 50,
-		};
+			{
+				LogLevel = validLogLevel,
+				Page = 1,
+				PageSize = 50,
+			};
 
 		TestValidationResult<LogQueryRequest> result =
 			await Validator.TestValidateAsync(request);

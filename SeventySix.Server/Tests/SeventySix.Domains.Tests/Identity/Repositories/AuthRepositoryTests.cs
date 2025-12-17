@@ -170,14 +170,14 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 
 		ExternalLogin externalLogin =
 			new()
-		{
-			UserId = user.Id,
-			Provider = "GitHub",
-			ProviderUserId =
-			$"github_{testId}",
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-		};
+			{
+				UserId = user.Id,
+				Provider = "GitHub",
+				ProviderUserId =
+					$"github_{testId}",
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+			};
 
 		context.ExternalLogins.Add(externalLogin);
 		await context.SaveChangesAsync();

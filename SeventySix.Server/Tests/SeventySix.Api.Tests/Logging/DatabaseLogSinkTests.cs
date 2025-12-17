@@ -299,9 +299,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		// Assert
 		LogQueryRequest request =
 			new()
-		{
-			SearchTerm = "Nested error occurred",
-		};
+			{
+				SearchTerm = "Nested error occurred",
+			};
 		(IEnumerable<Log> logs, int _) =
 			await LogRepository!.GetPagedAsync(
 			request);

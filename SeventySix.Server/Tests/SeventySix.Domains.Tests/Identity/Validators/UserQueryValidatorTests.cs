@@ -32,12 +32,12 @@ public class UserQueryValidatorTests
 		// Arrange
 		UserQueryRequest request =
 			new()
-		{
-			SearchTerm = "john doe",
-			IsActive = true,
-			Page = 1,
-			PageSize = 50,
-		};
+			{
+				SearchTerm = "john doe",
+				IsActive = true,
+				Page = 1,
+				PageSize = 50,
+			};
 
 		// Act
 		TestValidationResult<UserQueryRequest> result =

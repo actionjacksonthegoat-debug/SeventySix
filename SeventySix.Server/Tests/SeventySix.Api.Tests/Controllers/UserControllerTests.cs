@@ -63,7 +63,7 @@ public class UsersControllerTests
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		List<UserDto> users =
-		[
+			[
 			new UserDtoBuilder(timeProvider)
 				.WithId(1)
 				.WithUsername("user1")
@@ -200,12 +200,12 @@ public class UsersControllerTests
 		FakeTimeProvider timeProvider = new();
 		CreateUserRequest request =
 			new()
-		{
-			Username = "new_user",
-			Email = "new@example.com",
-			FullName = "New User",
-			IsActive = true,
-		};
+			{
+				Username = "new_user",
+				Email = "new@example.com",
+				FullName = "New User",
+				IsActive = true,
+			};
 
 		UserDto createdUser =
 			new UserDtoBuilder(timeProvider)
@@ -249,11 +249,11 @@ public class UsersControllerTests
 		FakeTimeProvider timeProvider = new();
 		CreateUserRequest request =
 			new()
-		{
-			Username = "test",
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username = "test",
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		UserDto createdUser =
 			new UserDtoBuilder(timeProvider)
@@ -294,13 +294,13 @@ public class UsersControllerTests
 		FakeTimeProvider timeProvider = new();
 		UpdateUserRequest request =
 			new UpdateUserRequest
-		{
-			Id = 1,
-			Username = "updateduser",
-			Email = "updated@example.com",
-			FullName = "Updated User",
-			IsActive = true,
-		};
+			{
+				Id = 1,
+				Username = "updateduser",
+				Email = "updated@example.com",
+				FullName = "Updated User",
+				IsActive = true,
+			};
 
 		UserDto updatedUser =
 			new UserDtoBuilder(timeProvider)
@@ -343,12 +343,12 @@ public class UsersControllerTests
 		// Arrange
 		UpdateUserRequest request =
 			new UpdateUserRequest
-		{
-			Id = 1,
-			Username = "test",
-			Email = "test@example.com",
-			IsActive = true,
-		};
+			{
+				Id = 1,
+				Username = "test",
+				Email = "test@example.com",
+				IsActive = true,
+			};
 
 		// Act
 		ActionResult<UserDto> result =
@@ -470,14 +470,14 @@ public class UsersControllerTests
 		FakeTimeProvider timeProvider = new();
 		UserQueryRequest request =
 			new UserQueryRequest
-		{
-			Page = 1,
-			PageSize = 10,
-			SearchTerm = "test",
-		};
+			{
+				Page = 1,
+				PageSize = 10,
+				SearchTerm = "test",
+			};
 
 		List<UserDto> users =
-		[
+			[
 			new UserDtoBuilder(timeProvider)
 				.WithId(1)
 				.WithUsername("testuser1")
@@ -498,12 +498,12 @@ public class UsersControllerTests
 
 		PagedResult<UserDto> pagedResult =
 			new PagedResult<UserDto>
-		{
-			Items = users,
-			Page = 1,
-			PageSize = 10,
-			TotalCount = 2,
-		};
+			{
+				Items = users,
+				Page = 1,
+				PageSize = 10,
+				TotalCount = 2,
+			};
 
 		MessageBus
 			.InvokeAsync<PagedResult<UserDto>>(

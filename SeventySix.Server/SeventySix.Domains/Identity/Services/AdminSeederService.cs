@@ -87,16 +87,16 @@ public class AdminSeederService(
 		// Create admin user
 		User adminUser =
 			new()
-		{
-			Username = settings.Value.Username,
-			Email = settings.Value.Email,
-			FullName =
-			settings.Value.FullName ?? "System Administrator",
-			IsActive = true,
-			CreateDate = now,
-			CreatedBy =
-			AuditConstants.SystemUser,
-		};
+			{
+				Username = settings.Value.Username,
+				Email = settings.Value.Email,
+				FullName =
+					settings.Value.FullName ?? "System Administrator",
+				IsActive = true,
+				CreateDate = now,
+				CreatedBy =
+					AuditConstants.SystemUser,
+			};
 
 		context.Users.Add(adminUser);
 		await context.SaveChangesAsync(cancellationToken);
@@ -110,12 +110,12 @@ public class AdminSeederService(
 
 		UserCredential credential =
 			new()
-		{
-			UserId = adminUser.Id,
-			PasswordHash = passwordHash,
-			PasswordChangedAt = null, // Forces password change on first login
-			CreateDate = now,
-		};
+			{
+				UserId = adminUser.Id,
+				PasswordHash = passwordHash,
+				PasswordChangedAt = null, // Forces password change on first login
+				CreateDate = now,
+			};
 
 		context.UserCredentials.Add(credential);
 
@@ -138,10 +138,10 @@ public class AdminSeederService(
 		// Assign Admin role - CreateDate/CreatedBy set by AuditInterceptor
 		UserRole adminRole =
 			new()
-		{
-			UserId = adminUser.Id,
-			RoleId = adminRoleId.Value,
-		};
+			{
+				UserId = adminUser.Id,
+				RoleId = adminRoleId.Value,
+			};
 
 		context.UserRoles.Add(adminRole);
 		await context.SaveChangesAsync(cancellationToken);

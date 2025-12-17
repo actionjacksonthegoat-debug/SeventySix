@@ -19,7 +19,7 @@ public class BoundedContextTests
 	/// These provide cross-cutting services (email, notifications, etc.).
 	/// </summary>
 	private static readonly string[] ServiceOnlyContexts =
-	[
+		[
 		"ElectronicNotifications",
 	];
 
@@ -29,8 +29,11 @@ public class BoundedContextTests
 	/// Service-only contexts are typically safe to depend on.
 	/// </summary>
 	private static readonly Dictionary<string, string[]> AllowedDependencies =
-		new() { ["Identity"] =
-		["ElectronicNotifications"] };
+		new()
+		{
+			["Identity"] =
+				["ElectronicNotifications"]
+		};
 
 	[Fact]
 	public void Bounded_Contexts_Should_Not_Reference_Each_Other()

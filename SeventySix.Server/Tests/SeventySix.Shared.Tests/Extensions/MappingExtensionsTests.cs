@@ -16,7 +16,7 @@ public class MappingExtensionsTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity { Id = 1, Name = "First" },
 			new TestEntity { Id = 2, Name = "Second" },
 			new TestEntity { Id = 3, Name = "Third" },
@@ -25,10 +25,10 @@ public class MappingExtensionsTests
 		// Act
 		IEnumerable<TestDto> result =
 			entities.MapToDto(e => new TestDto
-		{
-			Id = e.Id,
-			DisplayName = e.Name.ToUpper(),
-		});
+			{
+				Id = e.Id,
+				DisplayName = e.Name.ToUpper(),
+			});
 
 		// Assert
 		List<TestDto> resultList = result.ToList();
@@ -48,10 +48,10 @@ public class MappingExtensionsTests
 		// Act
 		IEnumerable<TestDto> result =
 			entities.MapToDto(e => new TestDto
-		{
-			Id = e.Id,
-			DisplayName = e.Name,
-		});
+			{
+				Id = e.Id,
+				DisplayName = e.Name,
+			});
 
 		// Assert
 		Assert.Empty(result);

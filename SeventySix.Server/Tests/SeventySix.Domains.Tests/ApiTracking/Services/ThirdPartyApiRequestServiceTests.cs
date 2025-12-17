@@ -30,7 +30,7 @@ public class ThirdPartyApiRequestServiceTests
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		List<ThirdPartyApiRequest> entities =
-		[
+			[
 			new ThirdPartyApiRequest
 			{
 				Id = 1,
@@ -38,11 +38,11 @@ public class ThirdPartyApiRequestServiceTests
 				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 150,
 				LastCalledAt =
-			timeProvider
+					timeProvider
 					.GetUtcNow()
 					.UtcDateTime.AddMinutes(-5),
 				ResetDate =
-			DateOnly.FromDateTime(
+					DateOnly.FromDateTime(
 					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 			new ThirdPartyApiRequest
@@ -52,11 +52,11 @@ public class ThirdPartyApiRequestServiceTests
 				BaseUrl = "https://maps.googleapis.com",
 				CallCount = 75,
 				LastCalledAt =
-			timeProvider
+					timeProvider
 					.GetUtcNow()
 					.UtcDateTime.AddMinutes(-10),
 				ResetDate =
-			DateOnly.FromDateTime(
+					DateOnly.FromDateTime(
 					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 		];
@@ -101,7 +101,7 @@ public class ThirdPartyApiRequestServiceTests
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 		List<ThirdPartyApiRequest> entities =
-		[
+			[
 			new ThirdPartyApiRequest
 			{
 				Id = 1,
@@ -109,9 +109,9 @@ public class ThirdPartyApiRequestServiceTests
 				BaseUrl = "https://api.ExternalAPImap.org",
 				CallCount = 150,
 				LastCalledAt =
-			now.AddMinutes(-5),
+					now.AddMinutes(-5),
 				ResetDate =
-			DateOnly.FromDateTime(now.Date.AddDays(1)),
+					DateOnly.FromDateTime(now.Date.AddDays(1)),
 			},
 			new ThirdPartyApiRequest
 			{
@@ -120,9 +120,9 @@ public class ThirdPartyApiRequestServiceTests
 				BaseUrl = "https://maps.googleapis.com",
 				CallCount = 75,
 				LastCalledAt =
-			now.AddMinutes(-10),
+					now.AddMinutes(-10),
 				ResetDate =
-			DateOnly.FromDateTime(now.Date.AddDays(1)),
+					DateOnly.FromDateTime(now.Date.AddDays(1)),
 			},
 		];
 
@@ -168,7 +168,7 @@ public class ThirdPartyApiRequestServiceTests
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		List<ThirdPartyApiRequest> entities =
-		[
+			[
 			new ThirdPartyApiRequest
 			{
 				Id = 1,
@@ -177,7 +177,7 @@ public class ThirdPartyApiRequestServiceTests
 				CallCount = 150,
 				LastCalledAt = null,
 				ResetDate =
-			DateOnly.FromDateTime(
+					DateOnly.FromDateTime(
 					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 		];

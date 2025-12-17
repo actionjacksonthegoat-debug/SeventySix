@@ -25,10 +25,10 @@ public static class CheckIdentityHealthQueryHandler
 		{
 			UserQueryRequest healthCheckRequest =
 				new()
-			{
-				Page = 1,
-				PageSize = 1,
-			};
+				{
+					Page = 1,
+					PageSize = 1,
+				};
 
 			_ =
 				await repository.GetPagedAsync(

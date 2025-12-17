@@ -108,7 +108,7 @@ public class TransactionUsageTests
 	{
 		// This test documents WHEN to use TransactionManager (positive cases)
 		List<string> documentedPatterns =
-		[
+			[
 			"Read-then-write with uniqueness checks (prevents race conditions)",
 			"Multi-entity operations requiring all-or-nothing atomicity",
 			"Operations spanning multiple repository calls",

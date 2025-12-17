@@ -104,9 +104,9 @@ public static class RateLimitingRegistration
 				{
 					PermitLimit = settings.PermitLimit,
 					Window =
-		TimeSpan.FromSeconds(settings.WindowSeconds),
+						TimeSpan.FromSeconds(settings.WindowSeconds),
 					QueueProcessingOrder =
-		QueueProcessingOrder.OldestFirst,
+						QueueProcessingOrder.OldestFirst,
 					QueueLimit = 0,
 				}));
 
@@ -149,7 +149,7 @@ public static class RateLimitingRegistration
 				PermitLimit = permitLimit,
 				Window = window,
 				QueueProcessingOrder =
-		QueueProcessingOrder.OldestFirst,
+					QueueProcessingOrder.OldestFirst,
 				QueueLimit = 0,
 			});
 

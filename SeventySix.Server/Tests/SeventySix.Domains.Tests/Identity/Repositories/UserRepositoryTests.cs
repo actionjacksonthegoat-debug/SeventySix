@@ -423,12 +423,12 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		// Act
 		UserQueryRequest request =
 			new()
-		{
-			Page = 1,
-			PageSize = 5,
-			StartDate = null,
-			SearchTerm = testId,
-		};
+			{
+				Page = 1,
+				PageSize = 5,
+				StartDate = null,
+				SearchTerm = testId,
+			};
 		(IEnumerable<User> users, int totalCount) =
 			await Repository.GetPagedAsync(request, CancellationToken.None);
 
@@ -461,12 +461,12 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		// Act
 		UserQueryRequest request =
 			new()
-		{
-			Page = 1,
-			PageSize = 10,
-			SearchTerm = "alice",
-			StartDate = null,
-		};
+			{
+				Page = 1,
+				PageSize = 10,
+				SearchTerm = "alice",
+				StartDate = null,
+			};
 		(IEnumerable<User> users, int totalCount) =
 			await Repository.GetPagedAsync(request, CancellationToken.None);
 
@@ -498,13 +498,13 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		// Act
 		UserQueryRequest request =
 			new()
-		{
-			Page = 1,
-			PageSize = 10,
-			IsActive = true,
-			StartDate = null,
-			SearchTerm = testId,
-		};
+			{
+				Page = 1,
+				PageSize = 10,
+				IsActive = true,
+				StartDate = null,
+				SearchTerm = testId,
+			};
 		(IEnumerable<User> users, int totalCount) =
 			await Repository.GetPagedAsync(request, CancellationToken.None);
 
@@ -538,12 +538,12 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		// Act
 		UserQueryRequest request =
 			new()
-		{
-			Page = 1,
-			PageSize = 10,
-			IncludeDeleted = false,
-			StartDate = null,
-		};
+			{
+				Page = 1,
+				PageSize = 10,
+				IncludeDeleted = false,
+				StartDate = null,
+			};
 		(IEnumerable<User> users, int totalCount) =
 			await Repository.GetPagedAsync(request, CancellationToken.None);
 

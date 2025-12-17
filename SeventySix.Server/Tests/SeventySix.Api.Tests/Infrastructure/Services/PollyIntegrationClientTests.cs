@@ -38,15 +38,15 @@ public class PollyIntegrationClientTests : IDisposable
 			new MemoryCache(new MemoryCacheOptions());
 		Options =
 			new PollyOptions
-		{
-			RetryCount = 2,
-			RetryDelaySeconds = 0, // Zero delay for fast test execution
-			TimeoutSeconds = 5,
-			CircuitBreakerFailureThreshold = 3,
-			CircuitBreakerBreakDurationSeconds = 1, // Polly minimum is 0.5s
-			CircuitBreakerSamplingDurationSeconds = 60,
-			UseJitter = false,
-		};
+			{
+				RetryCount = 2,
+				RetryDelaySeconds = 0, // Zero delay for fast test execution
+				TimeoutSeconds = 5,
+				CircuitBreakerFailureThreshold = 3,
+				CircuitBreakerBreakDurationSeconds = 1, // Polly minimum is 0.5s
+				CircuitBreakerSamplingDurationSeconds = 60,
+				UseJitter = false,
+			};
 
 		MockHttpMessageHandler handler =
 			new(
@@ -56,15 +56,15 @@ public class PollyIntegrationClientTests : IDisposable
 					{
 						StatusCode = HttpStatusCode.OK,
 						Content =
-			new StringContent("{\"value\":\"success\"}"),
+							new StringContent("{\"value\":\"success\"}"),
 					}));
 
 		HttpClient =
 			new HttpClient(handler)
-		{
-			BaseAddress =
-			new Uri("https://api.test.com"),
-		};
+			{
+				BaseAddress =
+					new Uri("https://api.test.com"),
+			};
 	}
 
 	[Fact]

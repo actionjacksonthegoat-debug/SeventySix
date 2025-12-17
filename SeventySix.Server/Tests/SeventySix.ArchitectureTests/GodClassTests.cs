@@ -32,7 +32,7 @@ public class GodClassTests
 	/// These should be rare exceptions with documented justification.
 	/// </summary>
 	private static readonly HashSet<string> AllowedInterfaceExceptions =
-	[
+		[
 		// IUserQueryRepository (15 methods): Logical split of read-only CQRS query operations.
 		// Methods are cohesive user query operations - splitting would fragment the query contract
 		// and introduce artificial boundaries. The interface follows ISP by being read-only only.
@@ -45,7 +45,7 @@ public class GodClassTests
 	/// The focused interfaces themselves follow the 12-method rule.
 	/// </summary>
 	private static readonly HashSet<string> AllowedImplementationExceptions =
-	[
+		[
 		// No exceptions - all implementations must follow the 12-method rule
 	];
 

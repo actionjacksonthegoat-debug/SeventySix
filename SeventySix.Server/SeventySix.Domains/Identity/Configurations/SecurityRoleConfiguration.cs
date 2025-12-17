@@ -66,14 +66,14 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 				Description = "Standard user access",
 				IsActive = true,
 				CreateDate =
-			new DateTime(
-				2025,
-				1,
-				1,
-				0,
-				0,
-				0,
-				DateTimeKind.Utc),
+					new DateTime(
+						2025,
+						1,
+						1,
+						0,
+						0,
+						0,
+						DateTimeKind.Utc),
 			},
 			new SecurityRole
 			{
@@ -82,14 +82,14 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 				Description = "Access to developer tools and APIs",
 				IsActive = true,
 				CreateDate =
-			new DateTime(
-				2025,
-				1,
-				1,
-				0,
-				0,
-				0,
-				DateTimeKind.Utc),
+					new DateTime(
+						2025,
+						1,
+						1,
+						0,
+						0,
+						0,
+						DateTimeKind.Utc),
 			},
 			new SecurityRole
 			{
@@ -98,14 +98,14 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 				Description = "Full administrative access",
 				IsActive = true,
 				CreateDate =
-			new DateTime(
-				2025,
-				1,
-				1,
-				0,
-				0,
-				0,
-				DateTimeKind.Utc),
+					new DateTime(
+						2025,
+						1,
+						1,
+						0,
+						0,
+						0,
+						DateTimeKind.Utc),
 			});
 	}
 }

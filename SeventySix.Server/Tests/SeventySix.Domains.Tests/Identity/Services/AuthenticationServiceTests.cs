@@ -62,12 +62,12 @@ public class AuthenticationServiceTests
 		// Arrange
 		User user =
 			new()
-		{
-			Id = 1,
-			Username = "testuser",
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Id = 1,
+				Username = "testuser",
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		string[] roles =
 			[RoleConstants.User];
@@ -131,11 +131,11 @@ public class AuthenticationServiceTests
 		// Arrange
 		User user =
 			new()
-		{
-			Id = 2,
-			Username = "rememberuser",
-			Email = "remember@example.com",
-		};
+			{
+				Id = 2,
+				Username = "rememberuser",
+				Email = "remember@example.com",
+			};
 
 		UserQueryRepository
 			.GetUserRolesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
@@ -184,11 +184,11 @@ public class AuthenticationServiceTests
 		// Arrange
 		User user =
 			new()
-		{
-			Id = 3,
-			Username = "newuser",
-			Email = "new@example.com",
-		};
+			{
+				Id = 3,
+				Username = "newuser",
+				Email = "new@example.com",
+			};
 
 		UserQueryRepository
 			.GetUserRolesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
@@ -232,14 +232,14 @@ public class AuthenticationServiceTests
 		// Arrange
 		User user =
 			new()
-		{
-			Id = 4,
-			Username = "admin",
-			Email = "admin@example.com",
-		};
+			{
+				Id = 4,
+				Username = "admin",
+				Email = "admin@example.com",
+			};
 
 		string[] roles =
-		[
+			[
 			RoleConstants.User,
 			RoleConstants.Admin,
 			RoleConstants.Developer,

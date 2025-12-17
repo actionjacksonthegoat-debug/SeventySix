@@ -49,7 +49,7 @@ public class GlobalExceptionMiddleware(
 		new()
 		{
 			PropertyNamingPolicy =
-		JsonNamingPolicy.CamelCase,
+				JsonNamingPolicy.CamelCase,
 			WriteIndented = true,
 		};
 
@@ -185,12 +185,12 @@ public class GlobalExceptionMiddleware(
 		return new ProblemDetails
 		{
 			Status =
-			(int)statusCode,
+				(int)statusCode,
 			Title = title,
 			Detail = detail,
 			Instance = context.Request.Path,
 			Type =
-			$"https://httpstatuses.com/{(int)statusCode}",
+				$"https://httpstatuses.com/{(int)statusCode}",
 		};
 	}
 
@@ -215,7 +215,7 @@ public class GlobalExceptionMiddleware(
 		return new ValidationProblemDetails(errors)
 		{
 			Status =
-			(int)HttpStatusCode.BadRequest,
+				(int)HttpStatusCode.BadRequest,
 			Title = "Validation Error",
 			Detail = "One or more validation errors occurred.",
 			Instance = context.Request.Path,

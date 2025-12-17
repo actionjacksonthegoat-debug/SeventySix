@@ -352,7 +352,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 		string apiName =
 			$"ConcurrentApi_{testId}";
 		Task<(bool Success, bool Result, int Index, string? Error)>[] tasks =
-		[
+			[
 			.. Enumerable
 				.Range(0, 10)
 				.Select(i => ExecuteConcurrentIncrementAsync(i, apiName)),

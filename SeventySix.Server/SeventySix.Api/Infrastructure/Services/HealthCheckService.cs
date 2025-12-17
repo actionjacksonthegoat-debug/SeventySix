@@ -59,7 +59,7 @@ public class HealthCheckService(
 		{
 			Status = overallStatus,
 			CheckedAt =
-			timeProvider.GetUtcNow().UtcDateTime,
+				timeProvider.GetUtcNow().UtcDateTime,
 			Database = databaseHealth,
 			ExternalApis = externalApisHealth,
 			ErrorQueue = errorQueueHealth,
@@ -98,9 +98,9 @@ public class HealthCheckService(
 		{
 			IsConnected = allHealthy,
 			ResponseTimeMs =
-			stopwatch.Elapsed.TotalMilliseconds,
+				stopwatch.Elapsed.TotalMilliseconds,
 			Status =
-			allHealthy ? "Healthy" : "Unhealthy",
+				allHealthy ? "Healthy" : "Unhealthy",
 			ContextResults = results,
 		};
 	}
@@ -139,13 +139,13 @@ public class HealthCheckService(
 
 		QueueHealthResponse response =
 			new()
-		{
-			QueuedItems = queuedItems,
-			FailedItems = failedItems,
-			CircuitBreakerOpen =
-			failedItems > 10,
-			Status = status,
-		};
+			{
+				QueuedItems = queuedItems,
+				FailedItems = failedItems,
+				CircuitBreakerOpen =
+					failedItems > 10,
+				Status = status,
+			};
 
 		return Task.FromResult(response);
 	}

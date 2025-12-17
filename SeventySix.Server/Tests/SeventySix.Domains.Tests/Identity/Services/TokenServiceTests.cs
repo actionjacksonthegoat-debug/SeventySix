@@ -45,7 +45,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 			new AuthSettings
 			{
 				Token =
-		new TokenSettings { MaxActiveSessionsPerUser = 5 },
+					new TokenSettings { MaxActiveSessionsPerUser = 5 },
 			});
 
 	private TokenService CreateService(IdentityDbContext context)
@@ -149,16 +149,16 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 					$"expired-validate-{testId}";
 				RefreshToken expiredToken =
 					new()
-				{
-					TokenHash =
-					ComputeSha256Hash(tokenValue),
-					UserId = user.Id,
-					ExpiresAt =
-					FixedTime.AddDays(-1).UtcDateTime,
-					CreateDate =
-					FixedTime.AddDays(-8).UtcDateTime,
-					IsRevoked = false,
-				};
+					{
+						TokenHash =
+							ComputeSha256Hash(tokenValue),
+						UserId = user.Id,
+						ExpiresAt =
+							FixedTime.AddDays(-1).UtcDateTime,
+						CreateDate =
+							FixedTime.AddDays(-8).UtcDateTime,
+						IsRevoked = false,
+					};
 				context.RefreshTokens.Add(expiredToken);
 				await context.SaveChangesAsync();
 				break;
@@ -318,7 +318,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 			new AuthSettings
 			{
 				Token =
-			new TokenSettings { MaxActiveSessionsPerUser = 2 },
+					new TokenSettings { MaxActiveSessionsPerUser = 2 },
 			});
 
 		await using IdentityDbContext context = CreateIdentityDbContext();
@@ -632,15 +632,15 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		User user =
 			new()
-		{
-			Username =
-			$"testuser_{Guid.NewGuid():N}",
-			Email =
-			$"test_{Guid.NewGuid():N}@example.com",
-			IsActive = true,
-			CreateDate = FixedTime.UtcDateTime,
-			CreatedBy = "Test",
-		};
+			{
+				Username =
+					$"testuser_{Guid.NewGuid():N}",
+				Email =
+					$"test_{Guid.NewGuid():N}@example.com",
+				IsActive = true,
+				CreateDate = FixedTime.UtcDateTime,
+				CreatedBy = "Test",
+			};
 
 		context.Users.Add(user);
 		await context.SaveChangesAsync();

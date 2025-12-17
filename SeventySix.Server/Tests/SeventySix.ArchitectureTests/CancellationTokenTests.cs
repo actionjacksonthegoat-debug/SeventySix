@@ -19,7 +19,7 @@ namespace SeventySix.ArchitectureTests;
 public class CancellationTokenTests
 {
 	private static readonly string[] QueryPrefixes =
-	[
+		[
 		"Get",
 		"List",
 		"Search",
@@ -29,7 +29,7 @@ public class CancellationTokenTests
 		"Exists",
 	];
 	private static readonly string[] MutationPrefixes =
-	[
+		[
 		"Create",
 		"Update",
 		"Delete",

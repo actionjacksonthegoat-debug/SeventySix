@@ -39,7 +39,7 @@ public class TokenService(
 		IEnumerable<string> roles)
 	{
 		List<Claim> claims =
-		[
+			[
 			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
 			new Claim(JwtRegisteredClaimNames.UniqueName, username),
 			new Claim(JwtRegisteredClaimNames.Email, email),
@@ -226,18 +226,18 @@ public class TokenService(
 
 		RefreshToken refreshToken =
 			new()
-		{
-			TokenHash = tokenHash,
-			UserId = userId,
-			FamilyId = familyId,
-			ExpiresAt =
-			now.AddDays(expirationDays),
-			SessionStartedAt =
-			sessionStartedAt ?? now,
-			CreateDate = now,
-			IsRevoked = false,
-			CreatedByIp = clientIp,
-		};
+			{
+				TokenHash = tokenHash,
+				UserId = userId,
+				FamilyId = familyId,
+				ExpiresAt =
+					now.AddDays(expirationDays),
+				SessionStartedAt =
+					sessionStartedAt ?? now,
+				CreateDate = now,
+				IsRevoked = false,
+				CreatedByIp = clientIp,
+			};
 
 		await tokenRepository.CreateAsync(refreshToken, cancellationToken);
 

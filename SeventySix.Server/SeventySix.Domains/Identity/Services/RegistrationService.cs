@@ -16,7 +16,7 @@ namespace SeventySix.Identity;
 /// credential setup, role assignment, and token generation.
 /// Extracted from static RegistrationHelpers to reduce parameter coupling.
 /// </remarks>
-public sealed class RegistrationService(
+public class RegistrationService(
 	IAuthRepository authRepository,
 	ICredentialRepository credentialRepository,
 	IUserQueryRepository userQueryRepository,
@@ -70,14 +70,14 @@ public sealed class RegistrationService(
 
 		User newUser =
 			new()
-		{
-			Username = username,
-			Email = email,
-			FullName = fullName,
-			IsActive = true,
-			CreateDate = now,
-			CreatedBy = createdBy,
-		};
+			{
+				Username = username,
+				Email = email,
+				FullName = fullName,
+				IsActive = true,
+				CreateDate = now,
+				CreatedBy = createdBy,
+			};
 
 		User createdUser =
 			await authRepository.CreateUserWithRoleAsync(
@@ -92,13 +92,13 @@ public sealed class RegistrationService(
 
 		UserCredential credential =
 			new()
-		{
-			UserId = createdUser.Id,
-			PasswordHash = passwordHash,
-			CreateDate = now,
-			PasswordChangedAt =
-			requiresPasswordChange ? null : now,
-		};
+			{
+				UserId = createdUser.Id,
+				PasswordHash = passwordHash,
+				CreateDate = now,
+				PasswordChangedAt =
+					requiresPasswordChange ? null : now,
+			};
 
 		await credentialRepository.CreateAsync(credential, cancellationToken);
 
@@ -108,7 +108,7 @@ public sealed class RegistrationService(
 	/// <summary>
 	/// Generates authentication result with access and refresh tokens.
 	/// </summary>
-	public async Task<AuthResult> GenerateAuthResultAsync(
+	public virtual async Task<AuthResult> GenerateAuthResultAsync(
 		User user,
 		string? clientIp,
 		bool requiresPasswordChange,

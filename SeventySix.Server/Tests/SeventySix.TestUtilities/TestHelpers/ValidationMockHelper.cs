@@ -37,7 +37,7 @@ public static class ValidationMockHelper
 		string errorMessage)
 	{
 		List<ValidationFailure> failures =
-		[
+			[
 			new ValidationFailure(propertyName, errorMessage),
 		];
 		ValidationResult failedResult =

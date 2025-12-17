@@ -294,8 +294,8 @@ public class PollyIntegrationClient(
 				{
 					HttpResponseMessage httpResponse =
 						await httpClient.GetAsync(
-						url,
-						cancellation);
+							url,
+							cancellation);
 					await rateLimitingService.TryIncrementRequestCountAsync(
 						apiName,
 						baseUrl,
@@ -354,10 +354,10 @@ public class PollyIntegrationClient(
 		// Configure telemetry - suppress Debug/Info noise - only log Warning+ events
 		TelemetryOptions telemetryOptions =
 			new()
-		{
-			LoggerFactory = loggerFactory,
-			SeverityProvider =
-			args =>
+			{
+				LoggerFactory = loggerFactory,
+				SeverityProvider =
+					args =>
 				args.Event.Severity switch
 				{
 					ResilienceEventSeverity.Debug =>
@@ -366,7 +366,7 @@ public class PollyIntegrationClient(
 						ResilienceEventSeverity.None,
 					_ => args.Event.Severity,
 				},
-		};
+			};
 
 		return new ResiliencePipelineBuilder<HttpResponseMessage>()
 			.AddRetry(
@@ -375,19 +375,19 @@ public class PollyIntegrationClient(
 					Name = "HttpRetry",
 					MaxRetryAttempts = pollyOptions.RetryCount,
 					Delay =
-			TimeSpan.FromSeconds(
-				pollyOptions.RetryDelaySeconds),
+						TimeSpan.FromSeconds(
+							pollyOptions.RetryDelaySeconds),
 					BackoffType =
-			DelayBackoffType.Exponential,
+						DelayBackoffType.Exponential,
 					UseJitter = pollyOptions.UseJitter,
 					ShouldHandle =
-			new PredicateBuilder<HttpResponseMessage>()
-				.Handle<HttpRequestException>()
-				.Handle<TimeoutException>()
-				.HandleResult(response =>
-					response.StatusCode
-						is HttpStatusCode.TooManyRequests
-							or HttpStatusCode.ServiceUnavailable),
+						new PredicateBuilder<HttpResponseMessage>()
+							.Handle<HttpRequestException>()
+							.Handle<TimeoutException>()
+							.HandleResult(response =>
+								response.StatusCode
+									is HttpStatusCode.TooManyRequests
+										or HttpStatusCode.ServiceUnavailable),
 				})
 			.AddCircuitBreaker(
 				new CircuitBreakerStrategyOptions<HttpResponseMessage>
@@ -397,23 +397,23 @@ public class PollyIntegrationClient(
 					MinimumThroughput =
 						pollyOptions.CircuitBreakerFailureThreshold,
 					SamplingDuration =
-			TimeSpan.FromSeconds(
-				pollyOptions.CircuitBreakerSamplingDurationSeconds),
+						TimeSpan.FromSeconds(
+							pollyOptions.CircuitBreakerSamplingDurationSeconds),
 					BreakDuration =
-			TimeSpan.FromSeconds(
-				pollyOptions.CircuitBreakerBreakDurationSeconds),
+						TimeSpan.FromSeconds(
+							pollyOptions.CircuitBreakerBreakDurationSeconds),
 					ShouldHandle =
-			new PredicateBuilder<HttpResponseMessage>()
-				.Handle<HttpRequestException>()
-				.HandleResult(response =>
-					(int)response.StatusCode >= 500),
+						new PredicateBuilder<HttpResponseMessage>()
+							.Handle<HttpRequestException>()
+							.HandleResult(response =>
+								(int)response.StatusCode >= 500),
 				})
 			.AddTimeout(
 				new TimeoutStrategyOptions
 				{
 					Name = "HttpTimeout",
 					Timeout =
-			TimeSpan.FromSeconds(pollyOptions.TimeoutSeconds),
+						TimeSpan.FromSeconds(pollyOptions.TimeoutSeconds),
 				})
 			.ConfigureTelemetry(telemetryOptions)
 			.Build();

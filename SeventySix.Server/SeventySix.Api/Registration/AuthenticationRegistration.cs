@@ -72,20 +72,20 @@ public static class AuthenticationExtensions
 						ValidIssuer = jwtSettings.Issuer,
 						ValidAudience = jwtSettings.Audience,
 						IssuerSigningKey =
-					new SymmetricSecurityKey(
-						Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+							new SymmetricSecurityKey(
+								Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
 						ClockSkew =
-					TimeSpan.FromMinutes(1),
+							TimeSpan.FromMinutes(1),
 						// Explicit algorithm validation (defense-in-depth against alg:none attacks)
 						ValidAlgorithms =
-					[SecurityAlgorithms.HmacSha256],
+							[SecurityAlgorithms.HmacSha256],
 					};
 
 				options.Events =
 					new JwtBearerEvents
-				{
-					OnAuthenticationFailed =
-					context =>
+					{
+						OnAuthenticationFailed =
+							context =>
 					{
 						if (context.Exception is SecurityTokenExpiredException)
 						{
@@ -96,7 +96,7 @@ public static class AuthenticationExtensions
 
 						return Task.CompletedTask;
 					},
-				};
+					};
 			});
 
 		services.AddAuthorization(options =>

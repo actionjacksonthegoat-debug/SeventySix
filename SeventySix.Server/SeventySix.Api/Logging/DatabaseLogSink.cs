@@ -105,14 +105,14 @@ public class DatabaseLogSink(
 					logEvent.Properties)
 				{
 					["__ActivityTraceId"] =
-				new ScalarValue(
-					activity.TraceId.ToString()),
+						new ScalarValue(
+							activity.TraceId.ToString()),
 					["__ActivitySpanId"] =
-				new ScalarValue(
-					activity.SpanId.ToString()),
+						new ScalarValue(
+							activity.SpanId.ToString()),
 					["__ActivityParentSpanId"] =
-				new ScalarValue(
-					activity.ParentSpanId.ToString()),
+						new ScalarValue(
+							activity.ParentSpanId.ToString()),
 				};
 
 			// Create new log event with enriched properties
@@ -203,7 +203,7 @@ public class DatabaseLogSink(
 				LogLevel = logEvent.Level.ToString(),
 				Message = logEvent.RenderMessage(),
 				CreateDate =
-			logEvent.Timestamp.UtcDateTime,
+					logEvent.Timestamp.UtcDateTime,
 				Environment = environment,
 				MachineName = machineName,
 			};
@@ -406,7 +406,7 @@ public class DatabaseLogSink(
 					['\r', '\n'],
 					StringSplitOptions.RemoveEmptyEntries);
 			List<string> ourLines =
-			[
+				[
 				.. lines.Where(line => line.Contains("SeventySix")),
 			];
 

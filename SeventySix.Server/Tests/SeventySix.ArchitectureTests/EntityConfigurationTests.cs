@@ -19,7 +19,7 @@ namespace SeventySix.ArchitectureTests;
 public class EntityConfigurationTests : SourceCodeArchitectureTest
 {
 	private static readonly string[] DataAnnotations =
-	[
+		[
 		"[Key]",
 		"[Required]",
 		"[MaxLength",

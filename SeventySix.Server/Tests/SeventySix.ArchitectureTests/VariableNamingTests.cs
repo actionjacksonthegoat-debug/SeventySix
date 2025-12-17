@@ -22,7 +22,7 @@ public class VariableNamingTests : SourceCodeArchitectureTest
 {
 	// FluentValidation idiomatic pattern - allowed in test files ONLY
 	private static readonly HashSet<string> AllowedInTestsOnly =
-	[
+		[
 		"x", // FluentValidation: x => x.Property
 	];
 
@@ -30,8 +30,7 @@ public class VariableNamingTests : SourceCodeArchitectureTest
 	public void Production_Code_Should_Not_Have_Single_Letter_Lambda_Parameters()
 	{
 		IEnumerable<string> allFiles =
-			GetSourceFiles("*.cs")
-			.ToList();
+			GetSourceFiles("*.cs").ToList();
 
 		// Lambda patterns - more precise to avoid false positives like copyright (c)
 		// Matches: .Where(x => or .Select(t => or (u) => or => x. etc.
@@ -55,8 +54,7 @@ public class VariableNamingTests : SourceCodeArchitectureTest
 
 			foreach (Match match in matches)
 			{
-				string variableName =
-					match.Groups[1].Value;
+				string variableName = match.Groups[1].Value;
 
 				// Single letter found - violation
 				if (variableName.Length == 1)
@@ -89,8 +87,7 @@ public class VariableNamingTests : SourceCodeArchitectureTest
 	{
 		// Arrange - Includes all files (production and test) for consistent naming
 		IEnumerable<string> allFiles =
-			GetSourceFiles("*.cs")
-			.ToList();
+			GetSourceFiles("*.cs").ToList();
 
 		// Pattern: for (int i = or for (var i =
 		Regex forLoopPattern =
@@ -113,8 +110,7 @@ public class VariableNamingTests : SourceCodeArchitectureTest
 
 			foreach (Match match in matches)
 			{
-				string loopVariable =
-					match.Groups[1].Value;
+				string loopVariable = match.Groups[1].Value;
 
 				violations.Add(
 					$"{relativePath}: for loop with '{loopVariable}' (use foreach or descriptive name)");
@@ -133,17 +129,13 @@ public class VariableNamingTests : SourceCodeArchitectureTest
 		Assert.Empty(violations);
 	}
 
-	private static string GetCodeContext(
-		string content,
-		int matchIndex)
+	private static string GetCodeContext(string content, int matchIndex)
 	{
 		int contextLength = 50;
 		int startIndex =
 			Math.Max(0, matchIndex - contextLength);
 		int endIndex =
-			Math.Min(
-			content.Length,
-			matchIndex + contextLength);
+			Math.Min(content.Length, matchIndex + contextLength);
 
 		return content
 			.Substring(startIndex, endIndex - startIndex)

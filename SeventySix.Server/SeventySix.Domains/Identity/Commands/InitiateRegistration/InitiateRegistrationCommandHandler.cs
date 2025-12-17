@@ -4,6 +4,7 @@
 
 using System.Security.Cryptography;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
 
@@ -58,19 +59,22 @@ public static class InitiateRegistrationCommandHandler
 		string token =
 			Convert.ToBase64String(tokenBytes);
 
+		string tokenHash =
+			CryptoExtensions.ComputeSha256Hash(token);
+
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
 		EmailVerificationToken verificationToken =
 			new()
-		{
-			Email = email,
-			Token = token,
-			ExpiresAt =
-			now.AddHours(24),
-			CreateDate = now,
-			IsUsed = false,
-		};
+			{
+				Email = email,
+				TokenHash = tokenHash,
+				ExpiresAt =
+					now.AddHours(24),
+				CreateDate = now,
+				IsUsed = false,
+			};
 
 		await emailVerificationTokenRepository.CreateAsync(
 			verificationToken,

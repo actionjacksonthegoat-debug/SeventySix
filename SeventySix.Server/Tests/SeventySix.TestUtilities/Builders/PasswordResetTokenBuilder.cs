@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Identity;
+using SeventySix.Shared.Extensions;
 
 namespace SeventySix.TestUtilities.Builders;
 
@@ -29,8 +30,9 @@ public class PasswordResetTokenBuilder
 {
 	private readonly TimeProvider TimeProvider;
 	private int UserId;
-	private string Token =
-		Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+	private string TokenHash =
+		CryptoExtensions.ComputeSha256Hash(
+		Convert.ToBase64String(Guid.NewGuid().ToByteArray()));
 	private DateTime ExpiresAt;
 	private DateTime CreateDate;
 	private bool IsUsed;
@@ -60,13 +62,13 @@ public class PasswordResetTokenBuilder
 	}
 
 	/// <summary>
-	/// Sets the token value.
+	/// Sets the token hash value.
 	/// </summary>
-	/// <param name="token">The token value.</param>
+	/// <param name="tokenHash">The SHA256 hash of the raw token.</param>
 	/// <returns>The builder instance for method chaining.</returns>
-	public PasswordResetTokenBuilder WithToken(string token)
+	public PasswordResetTokenBuilder WithTokenHash(string tokenHash)
 	{
-		Token = token;
+		TokenHash = tokenHash;
 		return this;
 	}
 
@@ -132,7 +134,7 @@ public class PasswordResetTokenBuilder
 		new()
 		{
 			UserId = UserId,
-			Token = Token,
+			TokenHash = TokenHash,
 			ExpiresAt = ExpiresAt,
 			CreateDate = CreateDate,
 			IsUsed = IsUsed,

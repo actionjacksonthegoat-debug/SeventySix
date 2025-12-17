@@ -37,17 +37,17 @@ public class PollyResiliencePolicyTests
 						: new HttpResponseMessage(HttpStatusCode.OK)
 						{
 							Content =
-					new StringContent(
+								new StringContent(
 								"{\"lat\":40.71,\"lon\":-74.01}"),
 						});
 			});
 
 		HttpClient httpClient =
 			new(handler)
-		{
-			BaseAddress =
-			new Uri("https://api.example.com/"),
-		};
+			{
+				BaseAddress =
+					new Uri("https://api.example.com/"),
+			};
 		MemoryCache cache =
 			new(new MemoryCacheOptions());
 
@@ -115,10 +115,10 @@ public class PollyResiliencePolicyTests
 
 		HttpClient httpClient =
 			new(handler)
-		{
-			BaseAddress =
-			new Uri("https://api.example.com/"),
-		};
+			{
+				BaseAddress =
+					new Uri("https://api.example.com/"),
+			};
 		MemoryCache cache =
 			new(new MemoryCacheOptions());
 
@@ -201,10 +201,10 @@ public class PollyResiliencePolicyTests
 
 		HttpClient httpClient =
 			new(handler)
-		{
-			BaseAddress =
-			new Uri("https://api.example.com/"),
-		};
+			{
+				BaseAddress =
+					new Uri("https://api.example.com/"),
+			};
 		MemoryCache cache =
 			new(new MemoryCacheOptions());
 

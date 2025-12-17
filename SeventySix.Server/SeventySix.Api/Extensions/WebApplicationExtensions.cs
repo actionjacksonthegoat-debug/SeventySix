@@ -92,12 +92,12 @@ public static class WebApplicationExtensions
 
 		ForwardedHeadersOptions options =
 			new()
-		{
-			ForwardedHeaders =
-				ForwardedHeaders.XForwardedFor
+			{
+				ForwardedHeaders =
+					ForwardedHeaders.XForwardedFor
 				| ForwardedHeaders.XForwardedProto,
-			ForwardLimit = settings.ForwardLimit,
-		};
+				ForwardLimit = settings.ForwardLimit,
+			};
 
 		foreach (string proxy in settings.KnownProxies)
 		{
@@ -138,9 +138,9 @@ public static class WebApplicationExtensions
 			new HealthCheckOptions
 			{
 				Predicate =
-			_ => false,
+					_ => false,
 				ResponseWriter =
-			WriteLivenessResponseAsync,
+					WriteLivenessResponseAsync,
 			});
 
 		app.MapHealthChecks(
@@ -148,9 +148,9 @@ public static class WebApplicationExtensions
 			new HealthCheckOptions
 			{
 				Predicate =
-			check => check.Tags.Contains("ready"),
+					check => check.Tags.Contains("ready"),
 				ResponseWriter =
-			WriteHealthCheckResponseAsync,
+					WriteHealthCheckResponseAsync,
 			});
 
 		app.MapHealthChecks(
@@ -158,7 +158,7 @@ public static class WebApplicationExtensions
 			new HealthCheckOptions
 			{
 				ResponseWriter =
-			WriteHealthCheckResponseAsync,
+					WriteHealthCheckResponseAsync,
 			});
 
 		return app;
@@ -213,20 +213,20 @@ public static class WebApplicationExtensions
 
 		object response =
 			new
-		{
-			status = report.Status.ToString(),
-			timestamp = timeProvider.GetUtcNow().UtcDateTime,
-			duration = report.TotalDuration,
-			checks = report.Entries.Select(entry => new
-				{
-					name = entry.Key,
-					status = entry.Value.Status.ToString(),
-					description = entry.Value.Description,
-					duration = entry.Value.Duration,
-					exception = entry.Value.Exception?.Message,
-					data = entry.Value.Data,
-				}),
-		};
+			{
+				status = report.Status.ToString(),
+				timestamp = timeProvider.GetUtcNow().UtcDateTime,
+				duration = report.TotalDuration,
+				checks = report.Entries.Select(entry => new
+					{
+						name = entry.Key,
+						status = entry.Value.Status.ToString(),
+						description = entry.Value.Description,
+						duration = entry.Value.Duration,
+						exception = entry.Value.Exception?.Message,
+						data = entry.Value.Data,
+					}),
+			};
 
 		string result =
 			JsonSerializer.Serialize(

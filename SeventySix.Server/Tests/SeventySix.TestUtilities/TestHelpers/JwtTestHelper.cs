@@ -48,7 +48,7 @@ public static class JwtTestHelper
 		TimeProvider timeProvider)
 	{
 		List<Claim> claims =
-		[
+			[
 			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
 			new Claim(JwtRegisteredClaimNames.UniqueName, username),
 			new Claim(JwtRegisteredClaimNames.Email, email),
@@ -93,7 +93,7 @@ public static class JwtTestHelper
 		TimeProvider timeProvider)
 	{
 		List<Claim> claims =
-		[
+			[
 			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
 			new Claim(JwtRegisteredClaimNames.UniqueName, username),
 			new Claim(JwtRegisteredClaimNames.Email, email),

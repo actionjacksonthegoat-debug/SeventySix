@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SeventySix.Shared.Extensions;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -33,9 +34,13 @@ public static class SetPasswordCommandHandler
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
+		string tokenHash =
+			CryptoExtensions.ComputeSha256Hash(
+				command.Request.Token);
+
 		PasswordResetToken? resetToken =
 			await passwordResetTokenRepository.GetByHashAsync(
-				command.Request.Token,
+				tokenHash,
 				cancellationToken);
 		ValidateResetToken(resetToken, now, logger);
 

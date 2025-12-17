@@ -51,14 +51,14 @@ public class UserTests
 			timeProvider.GetUtcNow().UtcDateTime.AddDays(-10);
 		User user =
 			new()
-		{
-			Id = 123,
-			Username = "john_doe",
-			Email = "john@example.com",
-			FullName = "John Doe",
-			CreateDate = createDate,
-			IsActive = false,
-		};
+			{
+				Id = 123,
+				Username = "john_doe",
+				Email = "john@example.com",
+				FullName = "John Doe",
+				CreateDate = createDate,
+				IsActive = false,
+			};
 
 		// Assert
 		Assert.Equal(123, user.Id);
@@ -75,11 +75,11 @@ public class UserTests
 		// Arrange & Act
 		User user =
 			new()
-		{
-			Username = "test_user",
-			Email = "test@example.com",
-			FullName = null,
-		};
+			{
+				Username = "test_user",
+				Email = "test@example.com",
+				FullName = null,
+			};
 
 		// Assert
 		Assert.Null(user.FullName);
@@ -91,11 +91,11 @@ public class UserTests
 		// Arrange & Act
 		User user =
 			new()
-		{
-			Username = "test_user",
-			Email = "test@example.com",
-			FullName = string.Empty,
-		};
+			{
+				Username = "test_user",
+				Email = "test@example.com",
+				FullName = string.Empty,
+			};
 
 		// Assert
 		Assert.Equal(string.Empty, user.FullName);
@@ -185,11 +185,11 @@ public class UserTests
 		// Arrange
 		User user =
 			new()
-		{
-			Username = "old_username",
-			Email = "old@example.com",
-			IsActive = true,
-		};
+			{
+				Username = "old_username",
+				Email = "old@example.com",
+				IsActive = true,
+			};
 
 		// Act
 		user.Username = "new_username";
@@ -226,12 +226,12 @@ public class UserTests
 			.UtcDateTime.AddMinutes(-5);
 		User user =
 			new()
-		{
-			CreatedBy = "admin",
-			ModifyDate = modifyDate,
-			ModifiedBy =
-			TestAuditConstants.SystemUser,
-		};
+			{
+				CreatedBy = "admin",
+				ModifyDate = modifyDate,
+				ModifiedBy =
+					TestAuditConstants.SystemUser,
+			};
 
 		// Assert
 		Assert.Equal("admin", user.CreatedBy);
@@ -260,11 +260,11 @@ public class UserTests
 			timeProvider.GetUtcNow().UtcDateTime;
 		User user =
 			new()
-		{
-			IsDeleted = true,
-			DeletedAt = deletedAt,
-			DeletedBy = "admin",
-		};
+			{
+				IsDeleted = true,
+				DeletedAt = deletedAt,
+				DeletedBy = "admin",
+			};
 
 		// Assert
 		Assert.True(user.IsDeleted);
@@ -339,10 +339,10 @@ public class UserTests
 		string lastLoginIp = "192.168.1.1";
 		User user =
 			new()
-		{
-			LastLoginAt = lastLoginAt,
-			LastLoginIp = lastLoginIp,
-		};
+			{
+				LastLoginAt = lastLoginAt,
+				LastLoginIp = lastLoginIp,
+			};
 
 		// Assert
 		Assert.Equal(lastLoginAt, user.LastLoginAt);
@@ -368,11 +368,11 @@ public class UserTests
 		FakeTimeProvider timeProvider = new();
 		User user =
 			new()
-		{
-			Username = "test",
-			Email =
-			TestUserConstants.DefaultEmail,
-		};
+			{
+				Username = "test",
+				Email =
+					TestUserConstants.DefaultEmail,
+			};
 
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;

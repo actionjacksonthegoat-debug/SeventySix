@@ -19,10 +19,10 @@ public class CreateClientLogCommandValidatorTests
 	{
 		CreateLogRequest request =
 			new()
-		{
-			LogLevel = LogLevelConstants.Error,
-			Message = "Test error message",
-		};
+			{
+				LogLevel = LogLevelConstants.Error,
+				Message = "Test error message",
+			};
 
 		TestValidationResult<CreateLogRequest> result =
 			await Validator.TestValidateAsync(request);
@@ -35,10 +35,10 @@ public class CreateClientLogCommandValidatorTests
 	{
 		CreateLogRequest request =
 			new()
-		{
-			LogLevel = "",
-			Message = "Test message",
-		};
+			{
+				LogLevel = "",
+				Message = "Test message",
+			};
 
 		TestValidationResult<CreateLogRequest> result =
 			await Validator.TestValidateAsync(request);
@@ -51,10 +51,10 @@ public class CreateClientLogCommandValidatorTests
 	{
 		CreateLogRequest request =
 			new()
-		{
-			LogLevel = LogLevelConstants.Error,
-			Message = "",
-		};
+			{
+				LogLevel = LogLevelConstants.Error,
+				Message = "",
+			};
 
 		TestValidationResult<CreateLogRequest> result =
 			await Validator.TestValidateAsync(request);
@@ -70,10 +70,10 @@ public class CreateClientLogCommandValidatorTests
 	{
 		CreateLogRequest request =
 			new()
-		{
-			LogLevel = invalidLogLevel,
-			Message = "Test message",
-		};
+			{
+				LogLevel = invalidLogLevel,
+				Message = "Test message",
+			};
 
 		TestValidationResult<CreateLogRequest> result =
 			await Validator.TestValidateAsync(request);
@@ -92,10 +92,10 @@ public class CreateClientLogCommandValidatorTests
 	{
 		CreateLogRequest request =
 			new()
-		{
-			LogLevel = validLogLevel,
-			Message = "Test message",
-		};
+			{
+				LogLevel = validLogLevel,
+				Message = "Test message",
+			};
 
 		TestValidationResult<CreateLogRequest> result =
 			await Validator.TestValidateAsync(request);
@@ -108,20 +108,20 @@ public class CreateClientLogCommandValidatorTests
 	{
 		CreateLogRequest request =
 			new()
-		{
-			LogLevel = LogLevelConstants.Error,
-			Message = "Test message",
-			ExceptionMessage = null,
-			StackTrace = null,
-			SourceContext = null,
-			RequestUrl = null,
-			RequestMethod = null,
-			StatusCode = null,
-			UserAgent = null,
-			ClientTimestamp = null,
-			AdditionalContext = null,
-			CorrelationId = null,
-		};
+			{
+				LogLevel = LogLevelConstants.Error,
+				Message = "Test message",
+				ExceptionMessage = null,
+				StackTrace = null,
+				SourceContext = null,
+				RequestUrl = null,
+				RequestMethod = null,
+				StatusCode = null,
+				UserAgent = null,
+				ClientTimestamp = null,
+				AdditionalContext = null,
+				CorrelationId = null,
+			};
 
 		TestValidationResult<CreateLogRequest> result =
 			await Validator.TestValidateAsync(request);
@@ -135,28 +135,28 @@ public class CreateClientLogCommandValidatorTests
 		FakeTimeProvider timeProvider = new();
 		CreateLogRequest request =
 			new()
-		{
-			LogLevel = LogLevelConstants.Error,
-			Message = "Test error message",
-			ExceptionMessage = "Test exception",
-			StackTrace = "at TestComponent.method()",
-			SourceContext = "TestComponent",
-			RequestUrl = "/api/test",
-			RequestMethod = "POST",
-			StatusCode = 500,
-			UserAgent = "Mozilla/5.0",
-			ClientTimestamp =
-			timeProvider
+			{
+				LogLevel = LogLevelConstants.Error,
+				Message = "Test error message",
+				ExceptionMessage = "Test exception",
+				StackTrace = "at TestComponent.method()",
+				SourceContext = "TestComponent",
+				RequestUrl = "/api/test",
+				RequestMethod = "POST",
+				StatusCode = 500,
+				UserAgent = "Mozilla/5.0",
+				ClientTimestamp =
+					timeProvider
 				.GetUtcNow()
 				.UtcDateTime.ToString("O"),
-			AdditionalContext =
-			new Dictionary<string, object>
-			{
-				{ "userId", 123 },
-				{ "action", "test" },
-			},
-			CorrelationId = "abc123",
-		};
+				AdditionalContext =
+					new Dictionary<string, object>
+					{
+						{ "userId", 123 },
+						{ "action", "test" },
+					},
+				CorrelationId = "abc123",
+			};
 
 		TestValidationResult<CreateLogRequest> result =
 			await Validator.TestValidateAsync(request);
@@ -169,11 +169,11 @@ public class CreateClientLogCommandValidatorTests
 	{
 		CreateLogRequest request =
 			new()
-		{
-			LogLevel = LogLevelConstants.Error,
-			Message =
-			new string('x', 4001),
-		};
+			{
+				LogLevel = LogLevelConstants.Error,
+				Message =
+					new string('x', 4001),
+			};
 
 		TestValidationResult<CreateLogRequest> result =
 			await Validator.TestValidateAsync(request);

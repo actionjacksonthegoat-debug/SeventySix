@@ -33,55 +33,55 @@ public class HealthControllerTests
 		FakeTimeProvider timeProvider = new();
 		HealthStatusResponse expectedStatus =
 			new()
-		{
-			Status = "Healthy",
-			CheckedAt =
-			timeProvider.GetUtcNow().UtcDateTime,
-			Database =
-			new DatabaseHealthResponse
 			{
-				IsConnected = true,
-				ResponseTimeMs = 25.5,
 				Status = "Healthy",
-			},
-			ExternalApis =
-			new ExternalApiHealthResponse
-			{
-				Apis =
-			new Dictionary<string, ApiHealthStatus>
-				{
+				CheckedAt =
+					timeProvider.GetUtcNow().UtcDateTime,
+				Database =
+					new DatabaseHealthResponse
 					{
-						"ThirdPartyRateLimit",
-						new ApiHealthStatus
-						{
-							ApiName = "ThirdPartyRateLimit",
-							IsAvailable = true,
-							ResponseTimeMs = 150.5,
-							LastChecked =
-			timeProvider
-								.GetUtcNow()
-								.UtcDateTime.AddMinutes(-1),
-						}
+						IsConnected = true,
+						ResponseTimeMs = 25.5,
+						Status = "Healthy",
 					},
-				},
-			},
-			ErrorQueue =
-			new QueueHealthResponse
-			{
-				QueuedItems = 5,
-				FailedItems = 0,
-				CircuitBreakerOpen = false,
-				Status = "Healthy",
-			},
-			System =
-			new SystemResourcesResponse
-			{
-				CpuUsagePercent = 45.5,
-				MemoryUsedMb = 2048,
-				MemoryTotalMb = 8192,
-				DiskUsagePercent = 67.3,
-			},
-		};
+				ExternalApis =
+					new ExternalApiHealthResponse
+					{
+						Apis =
+							new Dictionary<string, ApiHealthStatus>
+							{
+								{
+									"ThirdPartyRateLimit",
+									new ApiHealthStatus
+										{
+											ApiName = "ThirdPartyRateLimit",
+											IsAvailable = true,
+											ResponseTimeMs = 150.5,
+											LastChecked =
+												timeProvider
+												.GetUtcNow()
+												.UtcDateTime.AddMinutes(-1),
+										}
+									},
+							},
+					},
+				ErrorQueue =
+					new QueueHealthResponse
+					{
+						QueuedItems = 5,
+						FailedItems = 0,
+						CircuitBreakerOpen = false,
+						Status = "Healthy",
+					},
+				System =
+					new SystemResourcesResponse
+					{
+						CpuUsagePercent = 45.5,
+						MemoryUsedMb = 2048,
+						MemoryTotalMb = 8192,
+						DiskUsagePercent = 67.3,
+					},
+			};
 
 		Service
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
@@ -111,29 +111,29 @@ public class HealthControllerTests
 		FakeTimeProvider timeProvider = new();
 		HealthStatusResponse expectedStatus =
 			new()
-		{
-			Status = "Degraded",
-			CheckedAt =
-			timeProvider.GetUtcNow().UtcDateTime,
-			Database =
-			new DatabaseHealthResponse
 			{
-				IsConnected = true,
-				ResponseTimeMs = 500,
 				Status = "Degraded",
-			},
-			ExternalApis =
-			new ExternalApiHealthResponse { Apis = [] },
-			ErrorQueue =
-			new QueueHealthResponse
-			{
-				QueuedItems = 100,
-				FailedItems = 10,
-				CircuitBreakerOpen = false,
-				Status = "Degraded",
-			},
-			System = new SystemResourcesResponse(),
-		};
+				CheckedAt =
+					timeProvider.GetUtcNow().UtcDateTime,
+				Database =
+					new DatabaseHealthResponse
+					{
+						IsConnected = true,
+						ResponseTimeMs = 500,
+						Status = "Degraded",
+					},
+				ExternalApis =
+					new ExternalApiHealthResponse { Apis = [] },
+				ErrorQueue =
+					new QueueHealthResponse
+					{
+						QueuedItems = 100,
+						FailedItems = 10,
+						CircuitBreakerOpen = false,
+						Status = "Degraded",
+					},
+				System = new SystemResourcesResponse(),
+			};
 
 		Service
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
@@ -160,29 +160,29 @@ public class HealthControllerTests
 		FakeTimeProvider timeProvider = new();
 		HealthStatusResponse expectedStatus =
 			new()
-		{
-			Status = "Unhealthy",
-			CheckedAt =
-			timeProvider.GetUtcNow().UtcDateTime,
-			Database =
-			new DatabaseHealthResponse
 			{
-				IsConnected = false,
-				ResponseTimeMs = 0,
 				Status = "Unhealthy",
-			},
-			ExternalApis =
-			new ExternalApiHealthResponse { Apis = [] },
-			ErrorQueue =
-			new QueueHealthResponse
-			{
-				QueuedItems = 0,
-				FailedItems = 0,
-				CircuitBreakerOpen = true,
-				Status = "Unhealthy",
-			},
-			System = new SystemResourcesResponse(),
-		};
+				CheckedAt =
+					timeProvider.GetUtcNow().UtcDateTime,
+				Database =
+					new DatabaseHealthResponse
+					{
+						IsConnected = false,
+						ResponseTimeMs = 0,
+						Status = "Unhealthy",
+					},
+				ExternalApis =
+					new ExternalApiHealthResponse { Apis = [] },
+				ErrorQueue =
+					new QueueHealthResponse
+					{
+						QueuedItems = 0,
+						FailedItems = 0,
+						CircuitBreakerOpen = true,
+						Status = "Unhealthy",
+					},
+				System = new SystemResourcesResponse(),
+			};
 
 		Service
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>())

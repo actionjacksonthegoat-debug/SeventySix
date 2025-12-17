@@ -27,12 +27,12 @@ public class BaseQueryValidatorTests
 		// Arrange
 		TestQueryRequest request =
 			new()
-		{
-			Page = 1,
-			PageSize = 20,
-			SearchTerm = "test",
-			SortBy = "Id",
-		};
+			{
+				Page = 1,
+				PageSize = 20,
+				SearchTerm = "test",
+				SortBy = "Id",
+			};
 
 		// Act
 		TestValidationResult<TestQueryRequest> result =
@@ -132,8 +132,11 @@ public class BaseQueryValidatorTests
 	{
 		// Arrange
 		TestQueryRequest request =
-			new() { SearchTerm =
-			new string('a', 201) };
+			new()
+			{
+				SearchTerm =
+					new string('a', 201)
+			};
 
 		// Act
 		TestValidationResult<TestQueryRequest> result =
@@ -167,12 +170,12 @@ public class BaseQueryValidatorTests
 		FakeTimeProvider timeProvider = new();
 		TestQueryRequest request =
 			new()
-		{
-			StartDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-			EndDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddDays(-1),
-		};
+			{
+				StartDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				EndDate =
+					timeProvider.GetUtcNow().UtcDateTime.AddDays(-1),
+			};
 
 		// Act
 		TestValidationResult<TestQueryRequest> result =
@@ -192,12 +195,12 @@ public class BaseQueryValidatorTests
 		FakeTimeProvider timeProvider = new();
 		TestQueryRequest request =
 			new()
-		{
-			StartDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-			EndDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddDays(91),
-		};
+			{
+				StartDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				EndDate =
+					timeProvider.GetUtcNow().UtcDateTime.AddDays(91),
+			};
 
 		// Act
 		TestValidationResult<TestQueryRequest> result =
@@ -216,12 +219,12 @@ public class BaseQueryValidatorTests
 		FakeTimeProvider timeProvider = new();
 		TestQueryRequest request =
 			new()
-		{
-			StartDate =
-			timeProvider.GetUtcNow().UtcDateTime.AddDays(-30),
-			EndDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-		};
+			{
+				StartDate =
+					timeProvider.GetUtcNow().UtcDateTime.AddDays(-30),
+				EndDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+			};
 
 		// Act
 		TestValidationResult<TestQueryRequest> result =
@@ -284,4 +287,5 @@ public record TestQueryRequest : BaseQueryRequest { }
 /// Test validator inheriting from BaseQueryValidator.
 /// </summary>
 public class TestQueryValidator
-	: BaseQueryValidator<TestQueryRequest, TestEntity> { }
+	: BaseQueryValidator<TestQueryRequest, TestEntity>
+{ }

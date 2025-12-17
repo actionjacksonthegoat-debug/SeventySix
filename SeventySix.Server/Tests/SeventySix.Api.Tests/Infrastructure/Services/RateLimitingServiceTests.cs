@@ -125,13 +125,13 @@ public class RateLimitingServiceTests
 
 		ThirdPartyApiRequest request =
 			new()
-		{
-			Id = 1,
-			ApiName = apiName,
-			BaseUrl = "https://api.test.com",
-			CallCount = 5,
-			ResetDate = today,
-		};
+			{
+				Id = 1,
+				ApiName = apiName,
+				BaseUrl = "https://api.test.com",
+				CallCount = 5,
+				ResetDate = today,
+			};
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -160,13 +160,13 @@ public class RateLimitingServiceTests
 
 		ThirdPartyApiRequest request =
 			new()
-		{
-			Id = 1,
-			ApiName = apiName,
-			BaseUrl = "https://api.test.com",
-			CallCount = 1000,
-			ResetDate = today,
-		};
+			{
+				Id = 1,
+				ApiName = apiName,
+				BaseUrl = "https://api.test.com",
+				CallCount = 1000,
+				ResetDate = today,
+			};
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -237,13 +237,13 @@ public class RateLimitingServiceTests
 
 		ThirdPartyApiRequest request =
 			new()
-		{
-			Id = 1,
-			ApiName = apiName,
-			BaseUrl = baseUrl,
-			CallCount = 5,
-			ResetDate = today,
-		};
+			{
+				Id = 1,
+				ApiName = apiName,
+				BaseUrl = baseUrl,
+				CallCount = 5,
+				ResetDate = today,
+			};
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -283,13 +283,13 @@ public class RateLimitingServiceTests
 
 		ThirdPartyApiRequest request =
 			new()
-		{
-			Id = 1,
-			ApiName = apiName,
-			BaseUrl = baseUrl,
-			CallCount = 1000,
-			ResetDate = today,
-		};
+			{
+				Id = 1,
+				ApiName = apiName,
+				BaseUrl = baseUrl,
+				CallCount = 1000,
+				ResetDate = today,
+			};
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -365,18 +365,18 @@ public class RateLimitingServiceTests
 		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiLimitSettings settings =
 			new()
-		{
-			Enabled = true,
-			DefaultDailyLimit = 1000,
-			Limits =
-			new Dictionary<string, ThirdPartyApiLimit>
 			{
-				{
-					ExternalApiConstants.BrevoEmail,
-					new ThirdPartyApiLimit { DailyLimit = 250, Enabled = true }
-				},
-			},
-		};
+				Enabled = true,
+				DefaultDailyLimit = 1000,
+				Limits =
+					new Dictionary<string, ThirdPartyApiLimit>
+					{
+						{
+							ExternalApiConstants.BrevoEmail,
+							new ThirdPartyApiLimit { DailyLimit = 250, Enabled = true }
+						},
+					},
+			};
 
 		RateLimitingService sut =
 			CreateSut(timeProvider, settings);
@@ -387,15 +387,15 @@ public class RateLimitingServiceTests
 
 		ThirdPartyApiRequest existingRequest =
 			new()
-		{
-			ApiName =
-			ExternalApiConstants.BrevoEmail,
-			BaseUrl = "smtp-relay.brevo.com",
-			CallCount = 249,
-			LastCalledAt =
-			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
-			ResetDate = today,
-		};
+			{
+				ApiName =
+					ExternalApiConstants.BrevoEmail,
+				BaseUrl = "smtp-relay.brevo.com",
+				CallCount = 249,
+				LastCalledAt =
+					timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5),
+				ResetDate = today,
+			};
 
 		Repository
 			.GetByApiNameAndDateAsync(
@@ -417,10 +417,10 @@ public class RateLimitingServiceTests
 	{
 		ThirdPartyApiLimitSettings settings =
 			new()
-		{
-			Enabled = false,
-			DefaultDailyLimit = 1000,
-		};
+			{
+				Enabled = false,
+				DefaultDailyLimit = 1000,
+			};
 
 		RateLimitingService sut =
 			CreateSut(null, settings);

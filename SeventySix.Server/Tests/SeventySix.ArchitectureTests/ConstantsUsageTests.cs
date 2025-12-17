@@ -28,7 +28,7 @@ public class ConstantsUsageTests : SourceCodeArchitectureTest
 	/// Note: "User" excluded - ambiguous with entity name usage.
 	/// </summary>
 	private static readonly string[] HardcodedRoles =
-	[
+		[
 		"\"Admin\"",
 		"\"Developer\"",
 	];

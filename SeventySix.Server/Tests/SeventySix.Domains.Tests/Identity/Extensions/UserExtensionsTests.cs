@@ -183,12 +183,12 @@ public class UserExtensionsTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "new_user",
-			Email = "new@example.com",
-			FullName = "New User",
-			IsActive = true,
-		};
+			{
+				Username = "new_user",
+				Email = "new@example.com",
+				FullName = "New User",
+				IsActive = true,
+			};
 
 		// Act
 		User entity = request.ToEntity();
@@ -210,12 +210,12 @@ public class UserExtensionsTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "test_user",
-			Email = "test@example.com",
-			FullName = string.Empty,
-			IsActive = true,
-		};
+			{
+				Username = "test_user",
+				Email = "test@example.com",
+				FullName = string.Empty,
+				IsActive = true,
+			};
 
 		// Act
 		User entity = request.ToEntity();
@@ -231,12 +231,12 @@ public class UserExtensionsTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "inactive_new",
-			Email = "inactive@example.com",
-			FullName = "Inactive User",
-			IsActive = false,
-		};
+			{
+				Username = "inactive_new",
+				Email = "inactive@example.com",
+				FullName = "Inactive User",
+				IsActive = false,
+			};
 
 		// Act
 		User entity = request.ToEntity();
@@ -252,11 +252,11 @@ public class UserExtensionsTests
 		// Arrange - CreateDate is set by AuditInterceptor, not during mapping
 		CreateUserRequest request =
 			new()
-		{
-			Username = "test",
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username = "test",
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		// Act
 		User entity = request.ToEntity();
@@ -281,11 +281,11 @@ public class UserExtensionsTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = "test",
-			Email = "test@example.com",
-			FullName = "Test User",
-		};
+			{
+				Username = "test",
+				Email = "test@example.com",
+				FullName = "Test User",
+			};
 
 		// Act
 		User entity = request.ToEntity();
@@ -306,11 +306,11 @@ public class UserExtensionsTests
 		// Arrange
 		CreateUserRequest request =
 			new()
-		{
-			Username = username,
-			Email = email,
-			FullName = "Test User",
-		};
+			{
+				Username = username,
+				Email = email,
+				FullName = "Test User",
+			};
 
 		// Act
 		User entity = request.ToEntity();

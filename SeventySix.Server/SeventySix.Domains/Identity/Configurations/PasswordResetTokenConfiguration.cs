@@ -31,37 +31,43 @@ public class PasswordResetTokenConfiguration
 
 		builder.HasKey(token => token.Id);
 
-		builder.Property(token => token.Id).UseIdentityColumn().IsRequired();
+		builder
+			.Property(resetToken => resetToken.Id)
+			.UseIdentityColumn()
+			.IsRequired();
 
-		// Token - Required, base64 encoded 64 bytes = ~88 chars (allow 128 for safety)
-		builder.Property(token => token.Token).HasMaxLength(128).IsRequired();
+		// TokenHash - Required, SHA256 hex = 64 chars
+		builder
+			.Property(resetToken => resetToken.TokenHash)
+			.HasMaxLength(64)
+			.IsRequired();
 
 		builder
-			.HasIndex(token => token.Token)
+			.HasIndex(resetToken => resetToken.TokenHash)
 			.IsUnique()
-			.HasDatabaseName("IX_PasswordResetTokens_Token");
+			.HasDatabaseName("IX_PasswordResetTokens_TokenHash");
 
 		// UserId - for finding tokens by user
-		builder.Property(token => token.UserId).IsRequired();
+		builder.Property(resetToken => resetToken.UserId).IsRequired();
 
 		builder
-			.HasIndex(token => token.UserId)
+			.HasIndex(resetToken => resetToken.UserId)
 			.HasDatabaseName("IX_PasswordResetTokens_UserId");
 
 		// FK relationship to User - cascade delete tokens when user is deleted
 		builder
 			.HasOne<User>()
 			.WithMany()
-			.HasForeignKey(token => token.UserId)
+			.HasForeignKey(resetToken => resetToken.UserId)
 			.OnDelete(DeleteBehavior.Cascade);
 
 		// ExpiresAt - Required
-		builder.Property(token => token.ExpiresAt).IsRequired();
+		builder.Property(resetToken => resetToken.ExpiresAt).IsRequired();
 
 		// CreateDate - Required (auto-set by AuditInterceptor for ICreatableEntity)
-		builder.Property(token => token.CreateDate).IsRequired();
+		builder.Property(resetToken => resetToken.CreateDate).IsRequired();
 
 		// IsUsed - Required, defaults to false
-		builder.Property(token => token.IsUsed).IsRequired();
+		builder.Property(resetToken => resetToken.IsUsed).IsRequired();
 	}
 }

@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Shared.Extensions;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -53,20 +54,23 @@ public static class InitiatePasswordResetCommandHandler
 
 		byte[] tokenBytes =
 			RandomNumberGenerator.GetBytes(64);
-		string token =
+		string rawToken =
 			Convert.ToBase64String(tokenBytes);
+
+		string tokenHash =
+			CryptoExtensions.ComputeSha256Hash(rawToken);
 
 		PasswordResetToken resetToken =
 			new()
-		{
-			UserId = command.UserId,
-			Token = token,
-			ExpiresAt =
-			now.AddMinutes(
-				jwtSettings.Value.RefreshTokenExpirationDays * 24 * 60),
-			IsUsed = false,
-			CreateDate = now,
-		};
+			{
+				UserId = command.UserId,
+				TokenHash = tokenHash,
+				ExpiresAt =
+					now.AddMinutes(
+						jwtSettings.Value.RefreshTokenExpirationDays * 24 * 60),
+				IsUsed = false,
+				CreateDate = now,
+			};
 
 		await passwordResetTokenRepository.CreateAsync(
 			resetToken,
@@ -77,7 +81,7 @@ public static class InitiatePasswordResetCommandHandler
 			await emailService.SendWelcomeEmailAsync(
 				user.Email,
 				user.Username,
-				token,
+				rawToken,
 				cancellationToken);
 		}
 		else
@@ -85,7 +89,7 @@ public static class InitiatePasswordResetCommandHandler
 			await emailService.SendPasswordResetEmailAsync(
 				user.Email,
 				user.Username,
-				token,
+				rawToken,
 				cancellationToken);
 		}
 	}

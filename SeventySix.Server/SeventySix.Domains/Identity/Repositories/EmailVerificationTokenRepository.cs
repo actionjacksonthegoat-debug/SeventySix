@@ -17,11 +17,11 @@ internal class EmailVerificationTokenRepository(IdentityDbContext context)
 	: IEmailVerificationTokenRepository
 {
 	/// <inheritdoc/>
-	public async Task<EmailVerificationToken?> GetByTokenAsync(
-		string token,
+	public async Task<EmailVerificationToken?> GetByHashAsync(
+		string tokenHash,
 		CancellationToken cancellationToken = default) =>
 		await context.EmailVerificationTokens.FirstOrDefaultAsync(
-			verificationToken => verificationToken.Token == token,
+			verificationToken => verificationToken.TokenHash == tokenHash,
 			cancellationToken);
 
 	/// <inheritdoc/>

@@ -37,16 +37,16 @@ public class HealthStatusResponseTests
 			timeProvider.GetUtcNow().UtcDateTime;
 		HealthStatusResponse response =
 			new()
-		{
-			Status =
-			HealthStatusConstants.Degraded,
-			CheckedAt = now,
-			Database =
-			new DatabaseHealthResponse { IsConnected = true },
-			ExternalApis = new ExternalApiHealthResponse(),
-			ErrorQueue = new QueueHealthResponse(),
-			System = new SystemResourcesResponse(),
-		};
+			{
+				Status =
+					HealthStatusConstants.Degraded,
+				CheckedAt = now,
+				Database =
+					new DatabaseHealthResponse { IsConnected = true },
+				ExternalApis = new ExternalApiHealthResponse(),
+				ErrorQueue = new QueueHealthResponse(),
+				System = new SystemResourcesResponse(),
+			};
 
 		// Assert
 		Assert.Equal(HealthStatusConstants.Degraded, response.Status);
@@ -72,12 +72,12 @@ public class HealthStatusResponseTests
 		// Arrange & Act
 		DatabaseHealthResponse response =
 			new()
-		{
-			IsConnected = true,
-			ResponseTimeMs = 25.5,
-			Status =
-			HealthStatusConstants.Healthy,
-		};
+			{
+				IsConnected = true,
+				ResponseTimeMs = 25.5,
+				Status =
+					HealthStatusConstants.Healthy,
+			};
 
 		// Assert
 		Assert.True(response.IsConnected);
@@ -105,32 +105,32 @@ public class HealthStatusResponseTests
 			timeProvider.GetUtcNow().UtcDateTime;
 		ExternalApiHealthResponse response =
 			new()
-		{
-			Apis =
-			new Dictionary<string, ApiHealthStatus>
 			{
-				{
-					"ExternalAPI",
-					new ApiHealthStatus
+				Apis =
+					new Dictionary<string, ApiHealthStatus>
 					{
-						ApiName = "ExternalAPI",
-						IsAvailable = true,
-						ResponseTimeMs = 150.5,
-						LastChecked = now,
-					}
-				},
-				{
-					"GoogleMaps",
-					new ApiHealthStatus
-					{
-						ApiName = "GoogleMaps",
-						IsAvailable = false,
-						ResponseTimeMs = 0,
-						LastChecked = null,
-					}
-				},
-			},
-		};
+						{
+							"ExternalAPI",
+							new ApiHealthStatus
+							{
+								ApiName = "ExternalAPI",
+								IsAvailable = true,
+								ResponseTimeMs = 150.5,
+								LastChecked = now,
+							}
+						},
+						{
+							"GoogleMaps",
+							new ApiHealthStatus
+							{
+								ApiName = "GoogleMaps",
+								IsAvailable = false,
+								ResponseTimeMs = 0,
+								LastChecked = null,
+							}
+						},
+					},
+			};
 
 		// Assert
 		Assert.Equal(2, response.Apis.Count);
@@ -173,13 +173,13 @@ public class HealthStatusResponseTests
 		// Arrange & Act
 		QueueHealthResponse response =
 			new()
-		{
-			QueuedItems = 5,
-			FailedItems = 2,
-			CircuitBreakerOpen = true,
-			Status =
-			HealthStatusConstants.Degraded,
-		};
+			{
+				QueuedItems = 5,
+				FailedItems = 2,
+				CircuitBreakerOpen = true,
+				Status =
+					HealthStatusConstants.Degraded,
+			};
 
 		// Assert
 		Assert.Equal(5, response.QueuedItems);
@@ -207,12 +207,12 @@ public class HealthStatusResponseTests
 		// Arrange & Act
 		SystemResourcesResponse response =
 			new()
-		{
-			CpuUsagePercent = 45.5,
-			MemoryUsedMb = 2048,
-			MemoryTotalMb = 8192,
-			DiskUsagePercent = 67.3,
-		};
+			{
+				CpuUsagePercent = 45.5,
+				MemoryUsedMb = 2048,
+				MemoryTotalMb = 8192,
+				DiskUsagePercent = 67.3,
+			};
 
 		// Assert
 		Assert.Equal(45.5, response.CpuUsagePercent);

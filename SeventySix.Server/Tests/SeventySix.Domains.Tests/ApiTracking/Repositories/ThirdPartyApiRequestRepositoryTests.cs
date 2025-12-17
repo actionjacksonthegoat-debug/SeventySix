@@ -55,12 +55,12 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 			timeProvider.GetUtcNow().UtcDateTime);
 		ThirdPartyApiRequest request =
 			new()
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			CallCount = 10,
-			ResetDate = today,
-		};
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 10,
+				ResetDate = today,
+			};
 		await Repository.CreateAsync(request);
 
 		// Act
@@ -104,12 +104,12 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 
 		ThirdPartyApiRequest request =
 			new()
-		{
-			ApiName = "ExternalAPI",
-			BaseUrl = "https://api.ExternalAPImap.org",
-			CallCount = 10,
-			ResetDate = today,
-		};
+			{
+				ApiName = "ExternalAPI",
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 10,
+				ResetDate = today,
+			};
 		await Repository.CreateAsync(request);
 
 		// Act
@@ -134,12 +134,12 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 			timeProvider.GetUtcNow().UtcDateTime);
 		ThirdPartyApiRequest request =
 			new()
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			CallCount = 5,
-			ResetDate = today,
-		};
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 5,
+				ResetDate = today,
+			};
 
 		// Act
 		ThirdPartyApiRequest result =
@@ -167,11 +167,11 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 			timeProvider.GetUtcNow().UtcDateTime);
 		ThirdPartyApiRequest request =
 			new()
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.example.org",
-			ResetDate = today,
-		};
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.example.org",
+				ResetDate = today,
+			};
 
 		// Act
 		ThirdPartyApiRequest result =
@@ -199,20 +199,20 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 			timeProvider.GetUtcNow().UtcDateTime);
 		ThirdPartyApiRequest request1 =
 			new()
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = today,
-		};
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				ResetDate = today,
+			};
 		await Repository.CreateAsync(request1);
 
 		ThirdPartyApiRequest request2 =
 			new()
-		{
-			ApiName = apiName, // Same API
-			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = today, // Same date
-		};
+			{
+				ApiName = apiName, // Same API
+				BaseUrl = "https://api.ExternalAPImap.org",
+				ResetDate = today, // Same date
+			};
 
 		// Act & Assert
 		await Assert.ThrowsAsync<DbUpdateException>(() =>
@@ -236,19 +236,19 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 
 		ThirdPartyApiRequest request1 =
 			new()
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = today,
-		};
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				ResetDate = today,
+			};
 
 		ThirdPartyApiRequest request2 =
 			new()
-		{
-			ApiName = apiName, // Same API
-			BaseUrl = "https://api.ExternalAPImap.org",
-			ResetDate = yesterday, // Different date
-		};
+			{
+				ApiName = apiName, // Same API
+				BaseUrl = "https://api.ExternalAPImap.org",
+				ResetDate = yesterday, // Different date
+			};
 
 		// Act
 		await Repository.CreateAsync(request1);
@@ -274,12 +274,12 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 			timeProvider.GetUtcNow().UtcDateTime);
 		ThirdPartyApiRequest request =
 			new()
-		{
-			ApiName = apiName,
-			BaseUrl = "https://api.ExternalAPImap.org",
-			CallCount = 5,
-			ResetDate = today,
-		};
+			{
+				ApiName = apiName,
+				BaseUrl = "https://api.ExternalAPImap.org",
+				CallCount = 5,
+				ResetDate = today,
+			};
 		ThirdPartyApiRequest created =
 			await Repository.CreateAsync(request);
 
@@ -341,7 +341,7 @@ public class ThirdPartyApiRequestRepositoryTests : DataPostgreSqlTestBase
 			new ThirdPartyApiRequest
 			{
 				ApiName =
-			$"DifferentApi_{testId}",
+					$"DifferentApi_{testId}",
 				BaseUrl = "https://api.example.com",
 				CallCount = 5,
 				ResetDate = today,

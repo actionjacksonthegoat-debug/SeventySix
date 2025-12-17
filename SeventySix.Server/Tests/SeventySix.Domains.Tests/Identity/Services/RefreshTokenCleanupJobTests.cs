@@ -46,13 +46,13 @@ public class RefreshTokenCleanupJobTests : IDisposable
 		// Create test user for FK constraints
 		this.TestUser =
 			new User
-		{
-			Username = "testuser",
-			Email = "test@example.com",
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-			CreatedBy = "system",
-		};
+			{
+				Username = "testuser",
+				Email = "test@example.com",
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				CreatedBy = "system",
+			};
 		this.DbContext.Users.Add(this.TestUser);
 		this.DbContext.SaveChanges();
 
@@ -99,48 +99,48 @@ public class RefreshTokenCleanupJobTests : IDisposable
 		// Token expired 10 days ago (should be deleted - older than 7 days retention)
 		RefreshToken oldExpiredToken =
 			new()
-		{
-			TokenHash = "old-token-hash",
-			FamilyId = Guid.NewGuid(),
-			UserId = this.TestUser.Id,
-			ExpiresAt =
-			now.AddDays(-10),
-			SessionStartedAt =
-			now.AddDays(-40),
-			CreateDate =
-			now.AddDays(-40),
-			IsRevoked = false,
-		};
+			{
+				TokenHash = "old-token-hash",
+				FamilyId = Guid.NewGuid(),
+				UserId = this.TestUser.Id,
+				ExpiresAt =
+					now.AddDays(-10),
+				SessionStartedAt =
+					now.AddDays(-40),
+				CreateDate =
+					now.AddDays(-40),
+				IsRevoked = false,
+			};
 
 		// Token expired 5 days ago (should NOT be deleted - within 7 days retention)
 		RefreshToken recentExpiredToken =
 			new()
-		{
-			TokenHash = "recent-token-hash",
-			FamilyId = Guid.NewGuid(),
-			UserId = this.TestUser.Id,
-			ExpiresAt =
-			now.AddDays(-5),
-			SessionStartedAt =
-			now.AddDays(-35),
-			CreateDate =
-			now.AddDays(-35),
-			IsRevoked = false,
-		};
+			{
+				TokenHash = "recent-token-hash",
+				FamilyId = Guid.NewGuid(),
+				UserId = this.TestUser.Id,
+				ExpiresAt =
+					now.AddDays(-5),
+				SessionStartedAt =
+					now.AddDays(-35),
+				CreateDate =
+					now.AddDays(-35),
+				IsRevoked = false,
+			};
 
 		// Token not yet expired (should NOT be deleted)
 		RefreshToken activeToken =
 			new()
-		{
-			TokenHash = "active-token-hash",
-			FamilyId = Guid.NewGuid(),
-			UserId = this.TestUser.Id,
-			ExpiresAt =
-			now.AddDays(7),
-			SessionStartedAt = now,
-			CreateDate = now,
-			IsRevoked = false,
-		};
+			{
+				TokenHash = "active-token-hash",
+				FamilyId = Guid.NewGuid(),
+				UserId = this.TestUser.Id,
+				ExpiresAt =
+					now.AddDays(7),
+				SessionStartedAt = now,
+				CreateDate = now,
+				IsRevoked = false,
+			};
 
 		this.DbContext.RefreshTokens.AddRange(
 			oldExpiredToken,
@@ -170,18 +170,18 @@ public class RefreshTokenCleanupJobTests : IDisposable
 
 		RefreshToken expiredToken =
 			new()
-		{
-			TokenHash = "expired-token-hash",
-			FamilyId = Guid.NewGuid(),
-			UserId = this.TestUser.Id,
-			ExpiresAt =
-			now.AddDays(-10),
-			SessionStartedAt =
-			now.AddDays(-40),
-			CreateDate =
-			now.AddDays(-40),
-			IsRevoked = false,
-		};
+			{
+				TokenHash = "expired-token-hash",
+				FamilyId = Guid.NewGuid(),
+				UserId = this.TestUser.Id,
+				ExpiresAt =
+					now.AddDays(-10),
+				SessionStartedAt =
+					now.AddDays(-40),
+				CreateDate =
+					now.AddDays(-40),
+				IsRevoked = false,
+			};
 
 		this.DbContext.RefreshTokens.Add(expiredToken);
 		await this.DbContext.SaveChangesAsync();
@@ -208,16 +208,16 @@ public class RefreshTokenCleanupJobTests : IDisposable
 
 		RefreshToken activeToken =
 			new()
-		{
-			TokenHash = "active-token-hash",
-			FamilyId = Guid.NewGuid(),
-			UserId = this.TestUser.Id,
-			ExpiresAt =
-			now.AddDays(7),
-			SessionStartedAt = now,
-			CreateDate = now,
-			IsRevoked = false,
-		};
+			{
+				TokenHash = "active-token-hash",
+				FamilyId = Guid.NewGuid(),
+				UserId = this.TestUser.Id,
+				ExpiresAt =
+					now.AddDays(7),
+				SessionStartedAt = now,
+				CreateDate = now,
+				IsRevoked = false,
+			};
 
 		this.DbContext.RefreshTokens.Add(activeToken);
 		await this.DbContext.SaveChangesAsync();

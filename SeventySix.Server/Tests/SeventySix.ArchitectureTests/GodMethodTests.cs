@@ -45,7 +45,7 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	/// These are technical debt items to be refactored.
 	/// </summary>
 	private static readonly HashSet<string> AllowedLineExceptions =
-	[
+		[
 		// Architecture test self-detection issue - method parser incorrectly counts helper methods
 		"Tests\\SeventySix.ArchitectureTests\\GodMethodTests.cs::FindOpeningBrace",
 		// Registration method - DI registration is inherently long, split would reduce readability
@@ -58,7 +58,7 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	/// GREENFIELD CODE: As these are refactored, remove them from this list immediately.
 	/// </summary>
 	private static readonly HashSet<string> AllowedParameterExceptions =
-	[
+		[
 		// RegistrationService - encapsulates registration workflows
 		"SeventySix.Domains\\Identity\\Services\\RegistrationService.cs::CreateUserWithCredentialAsync",
 		// Authentication handlers - Wolverine Injected dependencies

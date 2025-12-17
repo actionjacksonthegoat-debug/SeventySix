@@ -15,7 +15,7 @@ public static class TestTables
 	/// All Identity bounded context tables in dependency order (children first).
 	/// </summary>
 	public static readonly string[] Identity =
-	[
+		[
 		"\"Identity\".\"PermissionRequests\"",
 		"\"Identity\".\"RefreshTokens\"",
 		"\"Identity\".\"ExternalLogins\"",
@@ -36,7 +36,7 @@ public static class TestTables
 	/// All ApiTracking bounded context tables.
 	/// </summary>
 	public static readonly string[] ApiTracking =
-	[
+		[
 		"\"ApiTracking\".\"ThirdPartyApiRequests\"",
 	];
 
@@ -45,7 +45,7 @@ public static class TestTables
 	/// Use for full database cleanup between tests.
 	/// </summary>
 	public static readonly string[] All =
-	[
+		[
 		.. Identity,
 		.. Logging,
 		.. ApiTracking,

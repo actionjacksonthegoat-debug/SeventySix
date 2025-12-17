@@ -38,14 +38,14 @@ public class LogCleanupSettingsTests
 		// Arrange & Act
 		LogCleanupSettings settings =
 			new()
-		{
-			Enabled = false,
-			IntervalHours = 12,
-			RetentionDays = 14,
-			InitialDelayMinutes = 10,
-			LogDirectory = "custom-logs",
-			LogFilePattern = "app-*.log",
-		};
+			{
+				Enabled = false,
+				IntervalHours = 12,
+				RetentionDays = 14,
+				InitialDelayMinutes = 10,
+				LogDirectory = "custom-logs",
+				LogFilePattern = "app-*.log",
+			};
 
 		// Assert
 		settings.Enabled.ShouldBeFalse();

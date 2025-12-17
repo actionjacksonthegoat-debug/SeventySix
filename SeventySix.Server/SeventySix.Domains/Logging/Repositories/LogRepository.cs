@@ -120,8 +120,10 @@ internal class LogRepository(
 
 		query =
 			request.SortDescending
-			? query.OrderByDescending(logEntry => EF.Property<object>(logEntry, sortProperty))
-			: query.OrderBy(logEntry => EF.Property<object>(logEntry, sortProperty));
+			? query.OrderByDescending(logEntry =>
+				EF.Property<object>(logEntry, sortProperty))
+			: query.OrderBy(logEntry =>
+				EF.Property<object>(logEntry, sortProperty));
 
 		return query
 			.Skip(request.GetSkip())

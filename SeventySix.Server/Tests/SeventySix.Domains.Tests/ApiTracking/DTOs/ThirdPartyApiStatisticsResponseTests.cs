@@ -36,25 +36,25 @@ public class ThirdPartyApiStatisticsResponseTests
 			timeProvider.GetUtcNow().UtcDateTime;
 		Dictionary<string, int> callsByApi =
 			new()
-		{
-			{ "ExternalAPI", 150 },
-			{ "GoogleMaps", 75 },
-		};
+			{
+				{ "ExternalAPI", 150 },
+				{ "GoogleMaps", 75 },
+			};
 		Dictionary<string, DateTime?> lastCalledByApi =
 			new()
-		{
-			{ "ExternalAPI", now },
-			{ "GoogleMaps", now.AddMinutes(-30) },
-		};
+			{
+				{ "ExternalAPI", now },
+				{ "GoogleMaps", now.AddMinutes(-30) },
+			};
 
 		ThirdPartyApiStatisticsResponse response =
 			new()
-		{
-			TotalCallsToday = 225,
-			TotalApisTracked = 2,
-			CallsByApi = callsByApi,
-			LastCalledByApi = lastCalledByApi,
-		};
+			{
+				TotalCallsToday = 225,
+				TotalApisTracked = 2,
+				CallsByApi = callsByApi,
+				LastCalledByApi = lastCalledByApi,
+			};
 
 		// Assert
 		Assert.Equal(225, response.TotalCallsToday);
@@ -76,16 +76,16 @@ public class ThirdPartyApiStatisticsResponseTests
 		FakeTimeProvider timeProvider = new();
 		Dictionary<string, DateTime?> lastCalledByApi =
 			new()
-		{
-			{ "Api1", timeProvider.GetUtcNow().UtcDateTime },
-			{ "Api2", null },
-		};
+			{
+				{ "Api1", timeProvider.GetUtcNow().UtcDateTime },
+				{ "Api2", null },
+			};
 
 		ThirdPartyApiStatisticsResponse response =
 			new()
-		{
-			LastCalledByApi = lastCalledByApi,
-		};
+			{
+				LastCalledByApi = lastCalledByApi,
+			};
 
 		// Assert
 		Assert.NotNull(response.LastCalledByApi["Api1"]);

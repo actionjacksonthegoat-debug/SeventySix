@@ -202,10 +202,10 @@ public class UserBuilder
 			FullName = FullName,
 			CreateDate = CreateDate,
 			CreatedBy =
-			CreatedBy ?? string.Empty,
+				CreatedBy ?? string.Empty,
 			ModifyDate = ModifyDate,
 			ModifiedBy =
-			ModifiedBy ?? string.Empty,
+				ModifiedBy ?? string.Empty,
 			IsActive = IsActive,
 			IsDeleted = IsDeleted,
 			DeletedAt = DeletedAt,

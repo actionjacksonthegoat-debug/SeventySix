@@ -27,7 +27,7 @@ public class TimeProviderUsageTests : SourceCodeArchitectureTest
 	/// These should be empty - no exceptions allowed per YAGNI.
 	/// </summary>
 	private static readonly HashSet<string> AllowedExceptions =
-	[
+		[
 		// This test file itself contains DateTime.UtcNow in regex patterns and documentation
 		"TimeProviderUsageTests.cs",
 	];

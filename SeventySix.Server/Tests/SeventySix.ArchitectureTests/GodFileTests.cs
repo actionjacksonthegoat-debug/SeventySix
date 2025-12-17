@@ -31,7 +31,7 @@ public class GodFileTests : SourceCodeArchitectureTest
 	/// Each exception must have a documented justification.
 	/// </summary>
 	private static readonly HashSet<string> AllowedExceptions =
-	[
+		[
 		// AuthController - handles 11 authentication endpoints (login, logout, register,
 		// OAuth, password reset, etc.) - splitting would fragment cohesive auth logic
 		"AuthController.cs",

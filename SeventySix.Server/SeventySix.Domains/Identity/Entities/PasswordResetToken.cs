@@ -30,9 +30,11 @@ public class PasswordResetToken : ICreatableEntity
 	public int UserId { get; set; }
 
 	/// <summary>
-	/// Gets or sets the cryptographically random token (base64 encoded, 64 bytes).
+	/// Gets or sets the SHA256 hash of the cryptographically random token.
+	/// Token is generated as 64 bytes, base64 encoded, then SHA256 hashed (64 hex chars).
+	/// Never store tokens in plaintext to protect against database breaches.
 	/// </summary>
-	public string Token { get; set; } = string.Empty;
+	public string TokenHash { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets or sets when this token expires (24 hours from creation).

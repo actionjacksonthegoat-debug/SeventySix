@@ -3,7 +3,9 @@
 		"@types/node": "^22.10.5"
 	},
 	"scripts": {
-		"format": "cd SeventySix.Server && dotnet format && dotnet csharpier format . && dotnet format analyzers --severity warn && cd ../SeventySix.Client && npx eslint \"src/**/*.ts\" --fix && npx dprint fmt && npx eslint \"src/**/*.ts\" --fix",
+		"format": "npm run format:server && npm run format:client",
+		"format:server": "cd SeventySix.Server && dotnet csharpier format . && dotnet format analyzers --severity warn && dotnet format && dotnet format",
+		"format:client": "cd SeventySix.Client && npx eslint \"src/**/*.ts\" --fix && npx dprint fmt && npx eslint \"src/**/*.ts\" --fix",
 		"test": "npm run test:server && npm run test:client",
 		"test:server": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && dotnet build && dotnet test",
 		"test:client": "cd SeventySix.Client && npm test",

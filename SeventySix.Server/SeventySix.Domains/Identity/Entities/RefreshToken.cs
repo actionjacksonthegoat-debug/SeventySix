@@ -71,5 +71,17 @@ public class RefreshToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the client IP that created this token.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// PII Classification: Personal Data (GDPR Article 4 - IP addresses)
+	/// </para>
+	/// <para>
+	/// Data Protection:
+	/// - Retention: Tied to token lifetime (30 days), automatically deleted with parent token
+	/// - Storage: Plaintext (required for security monitoring and anomaly detection)
+	/// - Purpose: Security auditing, suspicious login detection, device fingerprinting
+	/// - Access Control: Admin-only, used for security incident investigation
+	/// </para>
+	/// </remarks>
 	public string? CreatedByIp { get; set; }
 }

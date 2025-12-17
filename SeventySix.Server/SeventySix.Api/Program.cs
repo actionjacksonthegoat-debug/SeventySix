@@ -96,7 +96,7 @@ builder.Services.AddApplicationServices(builder.Configuration);
 
 // Add bounded context domains
 string connectionString =
-	builder.Configuration.GetConnectionString("DefaultConnection")
+			builder.Configuration.GetConnectionString("DefaultConnection")
 	?? throw new InvalidOperationException(
 		"Connection string 'DefaultConnection' not found.");
 
@@ -181,7 +181,7 @@ app.UseRateLimiter();
 
 // Enable response compression
 bool responseCompressionEnabled =
-	builder.Configuration.GetValue<bool?>("ResponseCompression:Enabled")
+			builder.Configuration.GetValue<bool?>("ResponseCompression:Enabled")
 	?? true;
 
 if (responseCompressionEnabled)
@@ -219,7 +219,7 @@ app.UseAuthorization();
 app.MapHealthCheckEndpoints();
 
 bool openTelemetryEnabled =
-	builder.Configuration.GetValue<bool?>("OpenTelemetry:Enabled") ?? true;
+			builder.Configuration.GetValue<bool?>("OpenTelemetry:Enabled") ?? true;
 
 if (openTelemetryEnabled)
 {

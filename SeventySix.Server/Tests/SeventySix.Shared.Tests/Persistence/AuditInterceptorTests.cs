@@ -223,10 +223,10 @@ public class AuditInterceptorTests : IDisposable
 			DateTimeKind.Utc);
 		TestAuditableEntity entity =
 			new()
-		{
-			Name = "Test",
-			CreateDate = presetDate,
-		};
+			{
+				Name = "Test",
+				CreateDate = presetDate,
+			};
 
 		// Act
 		Context.AuditableEntities.Add(entity);
@@ -242,10 +242,10 @@ public class AuditInterceptorTests : IDisposable
 		// Arrange
 		TestAuditableEntity entity =
 			new()
-		{
-			Name = "Test",
-			CreatedBy = "OriginalCreator",
-		};
+			{
+				Name = "Test",
+				CreatedBy = "OriginalCreator",
+			};
 
 		// Act
 		Context.AuditableEntities.Add(entity);
@@ -348,10 +348,10 @@ public class AuditInterceptorTests : IDisposable
 			DateTimeKind.Utc);
 		TestModifiableEntity entity =
 			new()
-		{
-			Name = "Test",
-			CreateDate = presetDate,
-		};
+			{
+				Name = "Test",
+				CreateDate = presetDate,
+			};
 
 		// Act
 		Context.ModifiableEntities.Add(entity);
@@ -395,10 +395,10 @@ public class AuditInterceptorTests : IDisposable
 			DateTimeKind.Utc);
 		TestCreatableEntity entity =
 			new()
-		{
-			Name = "Test",
-			CreateDate = presetDate,
-		};
+			{
+				Name = "Test",
+				CreateDate = presetDate,
+			};
 
 		// Act
 		Context.CreatableEntities.Add(entity);

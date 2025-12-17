@@ -9,7 +9,7 @@ public sealed class QueryBuilderTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity
 			{
 				Id = 1,
@@ -49,7 +49,7 @@ public sealed class QueryBuilderTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity
 			{
 				Id = 1,
@@ -101,7 +101,7 @@ public sealed class QueryBuilderTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity
 			{
 				Id = 1,
@@ -142,7 +142,7 @@ public sealed class QueryBuilderTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity
 			{
 				Id = 1,
@@ -183,7 +183,7 @@ public sealed class QueryBuilderTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity
 			{
 				Id = 1,
@@ -226,7 +226,7 @@ public sealed class QueryBuilderTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity
 			{
 				Id = 1,
@@ -271,7 +271,7 @@ public sealed class QueryBuilderTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity
 			{
 				Id = 1,
@@ -314,7 +314,7 @@ public sealed class QueryBuilderTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity
 			{
 				Id = 1,
@@ -365,7 +365,7 @@ public sealed class QueryBuilderTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity
 			{
 				Id = 1,
@@ -435,7 +435,7 @@ public sealed class QueryBuilderTests
 	{
 		// Arrange
 		List<TestEntity> entities =
-		[
+			[
 			new TestEntity
 			{
 				Id = 1,

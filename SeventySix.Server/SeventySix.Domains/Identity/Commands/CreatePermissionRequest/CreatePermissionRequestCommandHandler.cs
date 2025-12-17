@@ -98,13 +98,13 @@ public static class CreatePermissionRequestCommandHandler
 			// Create request as normal
 			PermissionRequest entity =
 				new()
-			{
-				UserId = command.UserId,
-				RequestedRoleId = roleId.Value,
-				RequestMessage =
-				command.Request.RequestMessage,
-				CreatedBy = command.Username,
-			};
+				{
+					UserId = command.UserId,
+					RequestedRoleId = roleId.Value,
+					RequestMessage =
+						command.Request.RequestMessage,
+					CreatedBy = command.Username,
+				};
 
 			await repository.CreateAsync(entity, cancellationToken);
 		}

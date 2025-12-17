@@ -32,20 +32,20 @@ public class ThirdPartyApiRequestsControllerTests
 		// Arrange
 		FakeTimeProvider timeProvider = new();
 		List<ThirdPartyApiRequestResponse> expectedRequests =
-		[
+			[
 			new ThirdPartyApiRequestResponse
 			{
 				Id = 1,
 				ApiName =
-			ExternalApiConstants.BrevoEmail,
+					ExternalApiConstants.BrevoEmail,
 				BaseUrl = "smtp-relay.brevo.com",
 				CallCount = 150,
 				LastCalledAt =
-			timeProvider
+					timeProvider
 					.GetUtcNow()
 					.UtcDateTime.AddMinutes(-5),
 				ResetDate =
-			DateOnly.FromDateTime(
+					DateOnly.FromDateTime(
 					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 			new ThirdPartyApiRequestResponse
@@ -55,11 +55,11 @@ public class ThirdPartyApiRequestsControllerTests
 				BaseUrl = "https://maps.googleapis.com",
 				CallCount = 75,
 				LastCalledAt =
-			timeProvider
+					timeProvider
 					.GetUtcNow()
 					.UtcDateTime.AddMinutes(-10),
 				ResetDate =
-			DateOnly.FromDateTime(
+					DateOnly.FromDateTime(
 					timeProvider.GetUtcNow().UtcDateTime.AddDays(1)),
 			},
 		];
@@ -119,28 +119,28 @@ public class ThirdPartyApiRequestsControllerTests
 		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiStatisticsResponse expectedStats =
 			new()
-		{
-			TotalCallsToday = 225,
-			TotalApisTracked = 2,
-			CallsByApi =
-			new Dictionary<string, int>
 			{
-				{ ExternalApiConstants.BrevoEmail, 150 },
-				{ "GoogleMaps", 75 },
-			},
-			LastCalledByApi =
-			new Dictionary<string, DateTime?>
-			{
-				{
-					ExternalApiConstants.BrevoEmail,
-					timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5)
-				},
-				{
-					"GoogleMaps",
-					timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10)
-				},
-			},
-		};
+				TotalCallsToday = 225,
+				TotalApisTracked = 2,
+				CallsByApi =
+					new Dictionary<string, int>
+					{
+						{ ExternalApiConstants.BrevoEmail, 150 },
+						{ "GoogleMaps", 75 },
+					},
+				LastCalledByApi =
+					new Dictionary<string, DateTime?>
+					{
+						{
+							ExternalApiConstants.BrevoEmail,
+							timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-5)
+						},
+						{
+							"GoogleMaps",
+							timeProvider.GetUtcNow().UtcDateTime.AddMinutes(-10)
+						},
+					},
+			};
 
 		MessageBus
 			.InvokeAsync<ThirdPartyApiStatisticsResponse>(
@@ -174,12 +174,12 @@ public class ThirdPartyApiRequestsControllerTests
 		// Arrange
 		ThirdPartyApiStatisticsResponse expectedStats =
 			new()
-		{
-			TotalCallsToday = 0,
-			TotalApisTracked = 0,
-			CallsByApi = [],
-			LastCalledByApi = [],
-		};
+			{
+				TotalCallsToday = 0,
+				TotalApisTracked = 0,
+				CallsByApi = [],
+				LastCalledByApi = [],
+			};
 
 		MessageBus
 			.InvokeAsync<ThirdPartyApiStatisticsResponse>(

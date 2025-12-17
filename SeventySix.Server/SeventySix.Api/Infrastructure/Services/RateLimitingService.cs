@@ -108,11 +108,11 @@ public class RateLimitingService(
 				{
 					request =
 						new ThirdPartyApiRequest
-					{
-						ApiName = apiName,
-						BaseUrl = baseUrl,
-						ResetDate = today,
-					};
+						{
+							ApiName = apiName,
+							BaseUrl = baseUrl,
+							ResetDate = today,
+						};
 
 					// Use domain method to increment (sets CallCount = 1 and LastCalledAt = now)
 					request.IncrementCallCount(

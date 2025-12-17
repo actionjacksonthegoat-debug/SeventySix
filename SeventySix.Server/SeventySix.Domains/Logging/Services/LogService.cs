@@ -70,10 +70,10 @@ public class LogService(
 		{
 			LogQueryRequest healthCheckRequest =
 				new()
-			{
-				Page = 1,
-				PageSize = 1,
-			};
+				{
+					Page = 1,
+					PageSize = 1,
+				};
 			_ =
 				await repository.GetPagedAsync(
 					healthCheckRequest,
@@ -102,30 +102,30 @@ public class LogService(
 
 		Log log =
 			new()
-		{
-			LogLevel = request.LogLevel,
-			Message = request.Message,
-			ExceptionMessage = request.ExceptionMessage,
-			StackTrace = request.StackTrace,
-			SourceContext = request.SourceContext,
-			RequestPath = request.RequestUrl,
-			RequestMethod = request.RequestMethod,
-			StatusCode = request.StatusCode,
-			CorrelationId =
-			request.CorrelationId ?? traceId,
-			SpanId = spanId,
-			ParentSpanId = parentSpanId,
-			Properties =
-			System.Text.Json.JsonSerializer.Serialize(
-				new
-				{
-					request.UserAgent,
-					request.ClientTimestamp,
-					request.AdditionalContext,
-				}),
-			MachineName = "Browser",
-			Environment = "Client",
-		};
+			{
+				LogLevel = request.LogLevel,
+				Message = request.Message,
+				ExceptionMessage = request.ExceptionMessage,
+				StackTrace = request.StackTrace,
+				SourceContext = request.SourceContext,
+				RequestPath = request.RequestUrl,
+				RequestMethod = request.RequestMethod,
+				StatusCode = request.StatusCode,
+				CorrelationId =
+					request.CorrelationId ?? traceId,
+				SpanId = spanId,
+				ParentSpanId = parentSpanId,
+				Properties =
+					System.Text.Json.JsonSerializer.Serialize(
+						new
+						{
+							request.UserAgent,
+							request.ClientTimestamp,
+							request.AdditionalContext,
+						}),
+				MachineName = "Browser",
+				Environment = "Client",
+			};
 
 		await repository.CreateAsync(log, cancellationToken);
 	}
@@ -153,30 +153,30 @@ public class LogService(
 		{
 			Log log =
 				new()
-			{
-				LogLevel = request.LogLevel,
-				Message = request.Message,
-				ExceptionMessage = request.ExceptionMessage,
-				StackTrace = request.StackTrace,
-				SourceContext = request.SourceContext,
-				RequestPath = request.RequestUrl,
-				RequestMethod = request.RequestMethod,
-				StatusCode = request.StatusCode,
-				CorrelationId =
-				request.CorrelationId ?? traceId,
-				SpanId = spanId,
-				ParentSpanId = parentSpanId,
-				Properties =
-				System.Text.Json.JsonSerializer.Serialize(
-					new
-					{
-						request.UserAgent,
-						request.ClientTimestamp,
-						request.AdditionalContext,
-					}),
-				MachineName = "Browser",
-				Environment = "Client",
-			};
+				{
+					LogLevel = request.LogLevel,
+					Message = request.Message,
+					ExceptionMessage = request.ExceptionMessage,
+					StackTrace = request.StackTrace,
+					SourceContext = request.SourceContext,
+					RequestPath = request.RequestUrl,
+					RequestMethod = request.RequestMethod,
+					StatusCode = request.StatusCode,
+					CorrelationId =
+						request.CorrelationId ?? traceId,
+					SpanId = spanId,
+					ParentSpanId = parentSpanId,
+					Properties =
+						System.Text.Json.JsonSerializer.Serialize(
+							new
+							{
+								request.UserAgent,
+								request.ClientTimestamp,
+								request.AdditionalContext,
+							}),
+					MachineName = "Browser",
+					Environment = "Client",
+				};
 
 			await repository.CreateAsync(log, cancellationToken);
 		}

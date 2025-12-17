@@ -80,12 +80,12 @@ public class LogCleanupServiceTests
 		// Arrange
 		LogCleanupSettings settings =
 			new()
-		{
-			Enabled = true,
-			InitialDelayMinutes = 0, // No delay for test
-			IntervalHours = 24,
-			RetentionDays = 7,
-		};
+			{
+				Enabled = true,
+				InitialDelayMinutes = 0, // No delay for test
+				IntervalHours = 24,
+				RetentionDays = 7,
+			};
 
 		IOptions<LogCleanupSettings> options =
 			Options.Create(settings);
@@ -130,12 +130,12 @@ public class LogCleanupServiceTests
 
 		LogCleanupSettings settings =
 			new()
-		{
-			Enabled = true,
-			InitialDelayMinutes = 0,
-			IntervalHours = 24,
-			RetentionDays = retentionDays,
-		};
+			{
+				Enabled = true,
+				InitialDelayMinutes = 0,
+				IntervalHours = 24,
+				RetentionDays = retentionDays,
+			};
 
 		IOptions<LogCleanupSettings> options =
 			Options.Create(settings);
@@ -179,12 +179,12 @@ public class LogCleanupServiceTests
 		// Arrange
 		LogCleanupSettings settings =
 			new()
-		{
-			Enabled = true,
-			InitialDelayMinutes = 0,
-			IntervalHours = 24,
-			RetentionDays = 7,
-		};
+			{
+				Enabled = true,
+				InitialDelayMinutes = 0,
+				IntervalHours = 24,
+				RetentionDays = 7,
+			};
 
 		IOptions<LogCleanupSettings> options =
 			Options.Create(settings);

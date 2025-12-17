@@ -94,28 +94,28 @@ public static class TestUserHelper
 	{
 		User user =
 			new()
-		{
-			Username = username,
-			Email = email,
-			IsActive = isActive,
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-			CreatedBy = "Test",
-			ModifiedBy = "Test",
-		};
+			{
+				Username = username,
+				Email = email,
+				IsActive = isActive,
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				CreatedBy = "Test",
+				ModifiedBy = "Test",
+			};
 
 		context.Users.Add(user);
 		await context.SaveChangesAsync();
 
 		UserCredential credential =
 			new()
-		{
-			UserId = user.Id,
-			PasswordHash =
-			passwordHash ?? TestPasswordHash,
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-		};
+			{
+				UserId = user.Id,
+				PasswordHash =
+					passwordHash ?? TestPasswordHash,
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+			};
 
 		context.UserCredentials.Add(credential);
 		await context.SaveChangesAsync();
@@ -179,7 +179,7 @@ public static class TestUserHelper
 					UserId = user.Id,
 					RoleId = roleId.Value,
 					CreateDate =
-				timeProvider.GetUtcNow().UtcDateTime,
+						timeProvider.GetUtcNow().UtcDateTime,
 					CreatedBy = "test",
 				});
 		}

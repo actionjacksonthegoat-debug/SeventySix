@@ -30,9 +30,13 @@ public static class CompleteRegistrationCommandHandler
 		ILogger<CompleteRegistrationCommand> logger,
 		CancellationToken cancellationToken)
 	{
+		string tokenHash =
+			CryptoExtensions.ComputeSha256Hash(
+				command.Request.Token);
+
 		EmailVerificationToken? verificationToken =
-			await emailVerificationTokenRepository.GetByTokenAsync(
-				command.Request.Token,
+			await emailVerificationTokenRepository.GetByHashAsync(
+				tokenHash,
 				cancellationToken);
 
 		DateTime now =

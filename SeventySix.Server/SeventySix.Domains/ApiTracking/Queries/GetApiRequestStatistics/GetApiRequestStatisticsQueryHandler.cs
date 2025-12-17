@@ -30,16 +30,16 @@ public static class GetApiRequestStatisticsQueryHandler
 		return new ThirdPartyApiStatisticsResponse
 		{
 			TotalCallsToday =
-			requestList.Sum(request => request.CallCount),
+				requestList.Sum(request => request.CallCount),
 			TotalApisTracked = requestList.Count,
 			CallsByApi =
-			requestList.ToDictionary(
-				request => request.ApiName,
-				request => request.CallCount),
+				requestList.ToDictionary(
+					request => request.ApiName,
+					request => request.CallCount),
 			LastCalledByApi =
-			requestList.ToDictionary(
-				request => request.ApiName,
-				request => request.LastCalledAt),
+				requestList.ToDictionary(
+					request => request.ApiName,
+					request => request.LastCalledAt),
 		};
 	}
 }

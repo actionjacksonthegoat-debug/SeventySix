@@ -74,7 +74,7 @@ public class MetricsService : IMetricsService
 	public void RecordApiCall(double durationMs, string apiName, bool success)
 	{
 		KeyValuePair<string, object?>[] tags =
-		[
+			[
 			new KeyValuePair<string, object?>("api_name", apiName),
 			new KeyValuePair<string, object?>("success", success),
 		];

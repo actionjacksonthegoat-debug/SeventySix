@@ -84,9 +84,9 @@ public class AuthController(
 					Title = "Authentication Failed",
 					Detail = result.Error,
 					Status =
-				StatusCodes.Status401Unauthorized,
+						StatusCodes.Status401Unauthorized,
 					Extensions =
-				{ ["errorCode"] = result.ErrorCode },
+						{ ["errorCode"] = result.ErrorCode },
 				});
 		}
 
@@ -143,9 +143,9 @@ public class AuthController(
 					Title = "Registration Failed",
 					Detail = result.Error,
 					Status =
-				StatusCodes.Status400BadRequest,
+						StatusCodes.Status400BadRequest,
 					Extensions =
-				{ ["errorCode"] = result.ErrorCode },
+						{ ["errorCode"] = result.ErrorCode },
 				});
 		}
 
@@ -194,7 +194,7 @@ public class AuthController(
 					Title = "Authentication Failed",
 					Detail = "No refresh token provided.",
 					Status =
-				StatusCodes.Status401Unauthorized,
+						StatusCodes.Status401Unauthorized,
 				});
 		}
 
@@ -215,9 +215,9 @@ public class AuthController(
 					Title = "Authentication Failed",
 					Detail = result.Error,
 					Status =
-				StatusCodes.Status401Unauthorized,
+						StatusCodes.Status401Unauthorized,
 					Extensions =
-				{ ["errorCode"] = result.ErrorCode },
+						{ ["errorCode"] = result.ErrorCode },
 				});
 		}
 
@@ -383,7 +383,7 @@ public class AuthController(
 					Detail =
 						"The authorization code is invalid or has expired.",
 					Status =
-				StatusCodes.Status400BadRequest,
+						StatusCodes.Status400BadRequest,
 				});
 		}
 
@@ -469,9 +469,9 @@ public class AuthController(
 					Title = "Password Change Failed",
 					Detail = result.Error,
 					Status =
-				StatusCodes.Status400BadRequest,
+						StatusCodes.Status400BadRequest,
 					Extensions =
-				{ ["errorCode"] = result.ErrorCode },
+						{ ["errorCode"] = result.ErrorCode },
 				});
 		}
 
@@ -564,9 +564,9 @@ public class AuthController(
 					Title = "Set Password Failed",
 					Detail = result.Error,
 					Status =
-				StatusCodes.Status400BadRequest,
+						StatusCodes.Status400BadRequest,
 					Extensions =
-				{ ["errorCode"] = result.ErrorCode },
+						{ ["errorCode"] = result.ErrorCode },
 				});
 		}
 
@@ -661,9 +661,9 @@ public class AuthController(
 					Title = "Registration Failed",
 					Detail = result.Error,
 					Status =
-				StatusCodes.Status400BadRequest,
+						StatusCodes.Status400BadRequest,
 					Extensions =
-				{ ["errorCode"] = result.ErrorCode },
+						{ ["errorCode"] = result.ErrorCode },
 				});
 		}
 
@@ -695,14 +695,14 @@ public class AuthController(
 	{
 		CookieOptions options =
 			new()
-		{
-			HttpOnly = true,
-			Secure =
-			authSettings.Value.Cookie.SecureCookie,
-			SameSite = sameSite,
-			Expires =
-			DateTimeOffset.UtcNow.Add(expiration),
-		};
+			{
+				HttpOnly = true,
+				Secure =
+					authSettings.Value.Cookie.SecureCookie,
+				SameSite = sameSite,
+				Expires =
+					DateTimeOffset.UtcNow.Add(expiration),
+			};
 
 		Response.Cookies.Append(name, value, options);
 	}

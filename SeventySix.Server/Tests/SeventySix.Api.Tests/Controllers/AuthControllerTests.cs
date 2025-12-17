@@ -823,13 +823,17 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			DateTime now =
 				timeProvider.GetUtcNow().UtcDateTime;
 
+			string tokenHash =
+				SeventySix.Shared.Extensions.CryptoExtensions.ComputeSha256Hash(
+					token);
+
 			context.EmailVerificationTokens.Add(
 				new EmailVerificationToken
 				{
 					Email = email,
-					Token = token,
+					TokenHash = tokenHash,
 					ExpiresAt =
-				now.AddHours(24),
+						now.AddHours(24),
 					CreateDate = now,
 					IsUsed = false,
 				});

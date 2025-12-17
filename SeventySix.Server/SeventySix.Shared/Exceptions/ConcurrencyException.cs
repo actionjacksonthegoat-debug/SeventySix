@@ -29,7 +29,8 @@ public class ConcurrencyException : DomainException
 	/// </summary>
 	public ConcurrencyException()
 		: base(
-			"The entity was modified by another user. Please refresh and try again.") { }
+			"The entity was modified by another user. Please refresh and try again.")
+	{ }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ConcurrencyException"/> class

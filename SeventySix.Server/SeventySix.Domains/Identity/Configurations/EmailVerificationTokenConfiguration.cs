@@ -22,7 +22,10 @@ public class EmailVerificationTokenConfiguration
 
 		builder.Property(token => token.Email).HasMaxLength(255).IsRequired();
 
-		builder.Property(token => token.Token).HasMaxLength(128).IsRequired();
+		builder
+			.Property(token => token.TokenHash)
+			.HasMaxLength(64)
+			.IsRequired();
 
 		// ExpiresAt - Required
 		builder.Property(token => token.ExpiresAt).IsRequired();
@@ -33,7 +36,7 @@ public class EmailVerificationTokenConfiguration
 		// IsUsed - Required
 		builder.Property(token => token.IsUsed).IsRequired();
 
-		builder.HasIndex(token => token.Token).IsUnique();
+		builder.HasIndex(token => token.TokenHash).IsUnique();
 
 		builder.HasIndex(token => token.Email);
 	}

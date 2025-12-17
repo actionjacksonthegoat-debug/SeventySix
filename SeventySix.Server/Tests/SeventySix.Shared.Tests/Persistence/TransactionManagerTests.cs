@@ -49,17 +49,17 @@ public class TransactionManagerTests : IDisposable
 		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiRequest entity =
 			new()
-		{
-			ApiName = "TestApi",
-			BaseUrl = "https://test.api",
-			ResetDate =
-			DateOnly.FromDateTime(
+			{
+				ApiName = "TestApi",
+				BaseUrl = "https://test.api",
+				ResetDate =
+					DateOnly.FromDateTime(
 				timeProvider.GetUtcNow().UtcDateTime),
-			CallCount = 0,
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-			ModifyDate = null,
-		};
+				CallCount = 0,
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				ModifyDate = null,
+			};
 
 		// Act
 		int result =
@@ -86,17 +86,17 @@ public class TransactionManagerTests : IDisposable
 		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiRequest entity =
 			new()
-		{
-			ApiName = "TestApi",
-			BaseUrl = "https://test.api",
-			ResetDate =
-			DateOnly.FromDateTime(
+			{
+				ApiName = "TestApi",
+				BaseUrl = "https://test.api",
+				ResetDate =
+					DateOnly.FromDateTime(
 				timeProvider.GetUtcNow().UtcDateTime),
-			CallCount = 2,
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-			ModifyDate = null,
-		};
+				CallCount = 2,
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				ModifyDate = null,
+			};
 
 		// Act
 		Func<Task> act =
@@ -138,17 +138,17 @@ public class TransactionManagerTests : IDisposable
 		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiRequest entity =
 			new()
-		{
-			ApiName = "TestApi",
-			BaseUrl = "https://test.api",
-			ResetDate =
-			DateOnly.FromDateTime(
+			{
+				ApiName = "TestApi",
+				BaseUrl = "https://test.api",
+				ResetDate =
+					DateOnly.FromDateTime(
 				timeProvider.GetUtcNow().UtcDateTime),
-			CallCount = 1,
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-			ModifyDate = null,
-		};
+				CallCount = 1,
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				ModifyDate = null,
+			};
 
 		// Act
 		await TransactionManager.ExecuteInTransactionAsync(
@@ -172,17 +172,17 @@ public class TransactionManagerTests : IDisposable
 		FakeTimeProvider timeProvider = new();
 		ThirdPartyApiRequest entity =
 			new()
-		{
-			ApiName = "TestApi",
-			BaseUrl = "https://test.api",
-			ResetDate =
-			DateOnly.FromDateTime(
+			{
+				ApiName = "TestApi",
+				BaseUrl = "https://test.api",
+				ResetDate =
+					DateOnly.FromDateTime(
 				timeProvider.GetUtcNow().UtcDateTime),
-			CallCount = 1,
-			CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
-			ModifyDate = null,
-		};
+				CallCount = 1,
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				ModifyDate = null,
+			};
 
 		DbContext.ThirdPartyApiRequests.Add(entity);
 		await DbContext.SaveChangesAsync();
@@ -310,17 +310,17 @@ public class TransactionManagerTests : IDisposable
 			{
 				ThirdPartyApiRequest entity =
 					new()
-				{
-					ApiName = "Api1",
-					BaseUrl = "https://api1.com",
-					ResetDate =
-					DateOnly.FromDateTime(
+					{
+						ApiName = "Api1",
+						BaseUrl = "https://api1.com",
+						ResetDate =
+							DateOnly.FromDateTime(
 						timeProvider.GetUtcNow().UtcDateTime),
-					CallCount = 0,
-					CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
-					ModifyDate = null,
-				};
+						CallCount = 0,
+						CreateDate =
+							timeProvider.GetUtcNow().UtcDateTime,
+						ModifyDate = null,
+					};
 				DbContext.ThirdPartyApiRequests.Add(entity);
 				await DbContext.SaveChangesAsync(cancellationToken);
 				return entity.Id;
@@ -332,17 +332,17 @@ public class TransactionManagerTests : IDisposable
 			{
 				ThirdPartyApiRequest entity =
 					new()
-				{
-					ApiName = "Api2",
-					BaseUrl = "https://api2.com",
-					ResetDate =
-					DateOnly.FromDateTime(
+					{
+						ApiName = "Api2",
+						BaseUrl = "https://api2.com",
+						ResetDate =
+							DateOnly.FromDateTime(
 						timeProvider.GetUtcNow().UtcDateTime),
-					CallCount = 1,
-					CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
-					ModifyDate = null,
-				};
+						CallCount = 1,
+						CreateDate =
+							timeProvider.GetUtcNow().UtcDateTime,
+						ModifyDate = null,
+					};
 				DbContext.ThirdPartyApiRequests.Add(entity);
 				await DbContext.SaveChangesAsync(cancellationToken);
 				return entity.Id;

@@ -73,8 +73,20 @@ public class User : IAuditableEntity
 	/// A string representing the user's email address.
 	/// </value>
 	/// <remarks>
+	/// <para>
+	/// PII Classification: Personal Data (GDPR Article 4)
+	/// </para>
+	/// <para>
+	/// Data Protection:
+	/// - Retention: Retained until account deletion + 30 days for audit compliance
+	/// - Storage: Plaintext (required for email communication and password reset)
+	/// - Encryption: Database encryption at rest, TLS in transit
+	/// - Access Control: Admin-only via user management endpoints
+	/// </para>
+	/// <para>
 	/// Business Rule: Must be a valid email format.
 	/// Maximum length: 255 characters (enforced by validation layer).
+	/// </para>
 	/// </remarks>
 	public string Email { get; set; } = string.Empty;
 
@@ -86,8 +98,19 @@ public class User : IAuditableEntity
 	/// Null if not provided.
 	/// </value>
 	/// <remarks>
+	/// <para>
+	/// PII Classification: Personal Data (GDPR Article 4)
+	/// </para>
+	/// <para>
+	/// Data Protection:
+	/// - Retention: Retained until account deletion + 30 days for audit compliance
+	/// - Storage: Plaintext (optional user-provided field)
+	/// - Access Control: Admin-only via user management endpoints, user can view their own
+	/// </para>
+	/// <para>
 	/// Optional field that provides additional context about the user.
 	/// Maximum length: 100 characters (enforced by validation layer).
+	/// </para>
 	/// </remarks>
 	public string? FullName { get; set; }
 
@@ -262,10 +285,22 @@ public class User : IAuditableEntity
 	/// Null if never logged in.
 	/// </value>
 	/// <remarks>
+	/// <para>
+	/// PII Classification: Personal Data (GDPR Article 4 - IP addresses)
+	/// </para>
+	/// <para>
+	/// Data Protection:
+	/// - Retention: 90 days recommended, then anonymized or deleted for privacy compliance
+	/// - Storage: Plaintext (required for security monitoring and anomaly detection)
+	/// - Purpose: Security auditing, suspicious login detection, rate limiting
+	/// - Access Control: Admin-only, used for security incident investigation
+	/// </para>
+	/// <para>
 	/// Activity tracking and security field.
 	/// Updated automatically on successful authentication.
 	/// Supports both IPv4 and IPv6 addresses.
 	/// Maximum length: 45 characters (IPv6 support).
+	/// </para>
 	/// </remarks>
 	public string? LastLoginIp { get; set; }
 

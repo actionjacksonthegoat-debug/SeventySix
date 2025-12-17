@@ -62,7 +62,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Seed minimal test data needed for remaining tests
 		FakeTimeProvider timeProvider = new();
 		Log[] testLogs =
-		[
+			[
 			LogBuilder
 				.CreateWarning(timeProvider)
 				.WithMessage("Test warning message")
@@ -180,11 +180,11 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Arrange
 		CreateLogRequest request =
 			new()
-		{
-			LogLevel = "Error",
-			Message = "Client-side error occurred",
-			SourceContext = "TestComponent",
-		};
+			{
+				LogLevel = "Error",
+				Message = "Client-side error occurred",
+				SourceContext = "TestComponent",
+			};
 
 		// Act
 		HttpResponseMessage response =
@@ -204,7 +204,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Arrange
 		CreateLogRequest[] requests =
-		[
+			[
 			new CreateLogRequest
 			{
 				LogLevel = "Error",
@@ -249,7 +249,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 					LogLevel = "Error",
 					Message = "Test log for deletion",
 					CreateDate =
-				timeProvider.GetUtcNow().UtcDateTime,
+						timeProvider.GetUtcNow().UtcDateTime,
 					MachineName = "test",
 					Environment = "Test",
 				});
@@ -301,7 +301,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 				LogLevel = "Error",
 				Message = "Batch delete test 1",
 				CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow().UtcDateTime,
 				MachineName = "test",
 				Environment = "Test",
 			});
@@ -313,7 +313,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 				LogLevel = "Warning",
 				Message = "Batch delete test 2",
 				CreateDate =
-			timeProvider.GetUtcNow().UtcDateTime,
+					timeProvider.GetUtcNow().UtcDateTime,
 				MachineName = "test",
 				Environment = "Test",
 			});
@@ -326,10 +326,10 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 			new(
 			HttpMethod.Delete,
 			"/api/v1/logs/batch")
-		{
-			Content =
-			JsonContent.Create(idsToDelete),
-		};
+			{
+				Content =
+					JsonContent.Create(idsToDelete),
+			};
 		HttpResponseMessage response =
 			await Client!.SendAsync(deleteRequest);
 
@@ -355,10 +355,10 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 			new(
 			HttpMethod.Delete,
 			"/api/v1/logs/batch")
-		{
-			Content =
-			JsonContent.Create(emptyIds),
-		};
+			{
+				Content =
+					JsonContent.Create(emptyIds),
+			};
 		HttpResponseMessage response =
 			await Client!.SendAsync(deleteRequest);
 
