@@ -53,16 +53,16 @@ public class HealthControllerTests
 								{
 									"ThirdPartyRateLimit",
 									new ApiHealthStatus
-										{
-											ApiName = "ThirdPartyRateLimit",
-											IsAvailable = true,
-											ResponseTimeMs = 150.5,
-											LastChecked =
-												timeProvider
-												.GetUtcNow()
-												.UtcDateTime.AddMinutes(-1),
-										}
-									},
+									{
+										ApiName = "ThirdPartyRateLimit",
+										IsAvailable = true,
+										ResponseTimeMs = 150.5,
+										LastChecked =
+											timeProvider
+											.GetUtcNow()
+											.UtcDateTime.AddMinutes(-1),
+									}
+								},
 							},
 					},
 				ErrorQueue =

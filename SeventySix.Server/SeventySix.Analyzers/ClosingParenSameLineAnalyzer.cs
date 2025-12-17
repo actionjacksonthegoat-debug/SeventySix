@@ -37,8 +37,7 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 		"Formatting",
 		DiagnosticSeverity.Warning,
 		isEnabledByDefault: true,
-		description: "Closing parentheses should not be alone on their own line. Multiple consecutive ) should all be on the same line as the last argument."
-	);
+		description: "Closing parentheses should not be alone on their own line. Multiple consecutive ) should all be on the same line as the last argument.");
 
 	/// <inheritdoc/>
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
@@ -53,38 +52,31 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 		// Register for argument lists (method calls, object creation)
 		context.RegisterSyntaxNodeAction(
 			AnalyzeArgumentList,
-			SyntaxKind.ArgumentList
-		);
+			SyntaxKind.ArgumentList);
 
 		// Register for parameter lists (method/constructor declarations)
 		context.RegisterSyntaxNodeAction(
 			AnalyzeParameterList,
-			SyntaxKind.ParameterList
-		);
+			SyntaxKind.ParameterList);
 
 		// Register for parenthesized expressions: if (...), while (...), etc.
 		context.RegisterSyntaxNodeAction(
 			AnalyzeParenthesizedExpression,
-			SyntaxKind.ParenthesizedExpression
-		);
+			SyntaxKind.ParenthesizedExpression);
 
 		// Register for if/while/for/foreach condition parentheses
 		context.RegisterSyntaxNodeAction(
 			AnalyzeIfStatement,
-			SyntaxKind.IfStatement
-		);
+			SyntaxKind.IfStatement);
 		context.RegisterSyntaxNodeAction(
 			AnalyzeWhileStatement,
-			SyntaxKind.WhileStatement
-		);
+			SyntaxKind.WhileStatement);
 		context.RegisterSyntaxNodeAction(
 			AnalyzeForStatement,
-			SyntaxKind.ForStatement
-		);
+			SyntaxKind.ForStatement);
 		context.RegisterSyntaxNodeAction(
 			AnalyzeForEachStatement,
-			SyntaxKind.ForEachStatement
-		);
+			SyntaxKind.ForEachStatement);
 	}
 
 	private static void AnalyzeArgumentList(SyntaxNodeAnalysisContext context)
@@ -114,8 +106,7 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 	}
 
 	private static void AnalyzeParenthesizedExpression(
-		SyntaxNodeAnalysisContext context
-	)
+		SyntaxNodeAnalysisContext context)
 	{
 		ParenthesizedExpressionSyntax parenExpr =
 			(ParenthesizedExpressionSyntax)context.Node;
@@ -146,8 +137,7 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 	}
 
 	private static void AnalyzeForEachStatement(
-		SyntaxNodeAnalysisContext context
-	)
+		SyntaxNodeAnalysisContext context)
 	{
 		ForEachStatementSyntax forEachStatement = (ForEachStatementSyntax)
 			context.Node;
@@ -161,8 +151,7 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 	/// </summary>
 	private static void CheckCloseParenAloneOnLine(
 		SyntaxNodeAnalysisContext context,
-		SyntaxToken closeParenToken
-	)
+		SyntaxToken closeParenToken)
 	{
 		// Get the previous token (could be ), an argument, parameter, etc.)
 		SyntaxToken previousToken = closeParenToken.GetPreviousToken();
@@ -193,8 +182,7 @@ public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 		if (IsTokenAloneOnLine(closeParenToken))
 		{
 			context.ReportDiagnostic(
-				Diagnostic.Create(Rule, closeParenToken.GetLocation())
-			);
+				Diagnostic.Create(Rule, closeParenToken.GetLocation()));
 		}
 	}
 

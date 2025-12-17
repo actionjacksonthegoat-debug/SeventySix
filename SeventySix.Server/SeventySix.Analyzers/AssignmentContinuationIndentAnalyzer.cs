@@ -29,8 +29,7 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 		"Formatting",
 		DiagnosticSeverity.Warning,
 		isEnabledByDefault: true,
-		description: "When a value starts on a new line after '=', it should be indented one tab deeper than the containing statement."
-	);
+		description: "When a value starts on a new line after '=', it should be indented one tab deeper than the containing statement.");
 
 	/// <inheritdoc/>
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
@@ -44,24 +43,27 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 
 		context.RegisterSyntaxNodeAction(
 			AnalyzeVariableDeclaration,
-			SyntaxKind.VariableDeclaration
-		);
+			SyntaxKind.VariableDeclaration);
 
 		context.RegisterSyntaxNodeAction(
 			AnalyzeAssignmentExpression,
-			SyntaxKind.SimpleAssignmentExpression
-		);
+			SyntaxKind.SimpleAssignmentExpression);
 
 		// Dictionary initializer entries: { key, value }
 		context.RegisterSyntaxNodeAction(
 			AnalyzeComplexElementInitializer,
-			SyntaxKind.ComplexElementInitializerExpression
-		);
+			SyntaxKind.ComplexElementInitializerExpression);
+
+		// Object/collection creation with initializer brace on separate line
+		context.RegisterSyntaxNodeAction(
+			AnalyzeObjectCreationInitializerBrace,
+			SyntaxKind.ImplicitObjectCreationExpression,
+			SyntaxKind.ObjectCreationExpression);
 	}
 
 	private static void AnalyzeVariableDeclaration(
 		SyntaxNodeAnalysisContext context
-	)
+)
 	{
 		VariableDeclarationSyntax declaration = (VariableDeclarationSyntax)
 			context.Node;
@@ -78,14 +80,138 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 			CheckContinuationIndent(
 				context,
 				initializer.EqualsToken,
-				initializer.Value
-			);
+				initializer.Value);
+		}
+	}
+
+	/// <summary>
+	/// Analyzes object/collection creation to ensure initializer braces have
+	/// correct indentation when on a separate line from 'new'.
+	/// Pattern: Dictionary&lt;K,V&gt; x = new() { ... } where { is on different line.
+	/// Only catches cases where dotnet format has REDUCED the indent incorrectly.
+	/// </summary>
+	private static void AnalyzeObjectCreationInitializerBrace(
+		SyntaxNodeAnalysisContext context
+)
+	{
+		// Get the initializer and new keyword based on node type
+		InitializerExpressionSyntax? initializer;
+		SyntaxToken newKeyword;
+
+		if (
+			context.Node
+			is ImplicitObjectCreationExpressionSyntax implicitCreation)
+		{
+			initializer = implicitCreation.Initializer;
+			newKeyword = implicitCreation.NewKeyword;
+		}
+		else if (context.Node is ObjectCreationExpressionSyntax objectCreation)
+		{
+			// Skip anonymous object creation: new { ... }
+			// These have no Type - they're anonymous
+			if (objectCreation.Type is null)
+			{
+				return;
+			}
+
+			// Also skip if the type is IdentifierName starting with lowercase
+			// which could be anonymous-like patterns
+			if (
+				objectCreation.Type is IdentifierNameSyntax identifier
+				&& char.IsLower(identifier.Identifier.ValueText[0]))
+			{
+				return;
+			}
+
+			initializer = objectCreation.Initializer;
+			newKeyword = objectCreation.NewKeyword;
+		}
+		else
+		{
+			return;
+		}
+
+		if (initializer is null)
+		{
+			return;
+		}
+
+		// Skip if this is inside a nested context (method argument, etc.)
+		// Only process top-level variable assignments
+		SyntaxNode? parent = context.Node.Parent;
+
+		while (parent is not null)
+		{
+			// If we find an argument or another object creation before a statement,
+			// this is a nested context - skip it
+			if (parent is ArgumentSyntax or ObjectCreationExpressionSyntax)
+			{
+				return;
+			}
+
+			// If we find a variable declaration or statement, we're at top level
+			if (
+				parent
+				is VariableDeclarationSyntax
+					or LocalDeclarationStatementSyntax
+					or ExpressionStatementSyntax)
+			{
+				break;
+			}
+
+			// For property assignments in object initializers, allow processing
+			if (
+				parent is AssignmentExpressionSyntax assignmentParent
+				&& assignmentParent.Parent is InitializerExpressionSyntax)
+			{
+				break;
+			}
+
+			parent = parent.Parent;
+		}
+
+		SyntaxToken openBrace = initializer.OpenBraceToken;
+
+		// Get line numbers to check if brace is on different line than 'new'
+		int newKeywordLine = newKeyword
+			.GetLocation()
+			.GetLineSpan()
+			.StartLinePosition.Line;
+		int braceKeywordLine = openBrace
+			.GetLocation()
+			.GetLineSpan()
+			.StartLinePosition.Line;
+
+		// Only check if brace is on a DIFFERENT line than 'new'
+		if (braceKeywordLine == newKeywordLine)
+		{
+			return; // Same line, no check needed
+		}
+
+		// Get indentation of 'new' keyword
+		string newKeywordIndent = GetLeadingWhitespaceFromToken(newKeyword);
+
+		// Get indentation of open brace
+		string braceIndent = GetLeadingWhitespaceFromToken(openBrace);
+
+		// Flag brace if it's at wrong indent (less than 'new' keyword)
+		bool braceNeedsFixing = braceIndent.Length < newKeywordIndent.Length;
+
+		if (braceNeedsFixing)
+		{
+			context.ReportDiagnostic(
+				Diagnostic.Create(
+					Rule,
+					openBrace.GetLocation(),
+					ImmutableDictionary<string, string?>.Empty.Add(
+						"ExpectedIndent",
+						newKeywordIndent)));
 		}
 	}
 
 	private static void AnalyzeAssignmentExpression(
 		SyntaxNodeAnalysisContext context
-	)
+)
 	{
 		AssignmentExpressionSyntax assignment = (AssignmentExpressionSyntax)
 			context.Node;
@@ -99,13 +225,12 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 		CheckContinuationIndent(
 			context,
 			assignment.OperatorToken,
-			assignment.Right
-		);
+			assignment.Right);
 	}
 
 	private static void AnalyzeComplexElementInitializer(
 		SyntaxNodeAnalysisContext context
-	)
+)
 	{
 		InitializerExpressionSyntax initializer = (InitializerExpressionSyntax)
 			context.Node;
@@ -149,10 +274,7 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 					valueExpression.GetLocation(),
 					ImmutableDictionary<string, string?>.Empty.Add(
 						"ExpectedIndent",
-						expectedIndent
-					)
-				)
-			);
+						expectedIndent)));
 		}
 	}
 
@@ -160,7 +282,7 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 		SyntaxNodeAnalysisContext context,
 		SyntaxToken equalsToken,
 		ExpressionSyntax valueExpression
-	)
+)
 	{
 		// Check if there's a newline after the equals token
 		if (!HasNewlineAfterToken(equalsToken))
@@ -184,10 +306,7 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 					valueExpression.GetLocation(),
 					ImmutableDictionary<string, string?>.Empty.Add(
 						"ExpectedIndent",
-						expectedIndent
-					)
-				)
-			);
+						expectedIndent)));
 		}
 	}
 
@@ -226,13 +345,11 @@ public sealed class AssignmentContinuationIndentAnalyzer : DiagnosticAnalyzer
 		// For property assignments in object initializers, use the property's indent
 		if (
 			node is AssignmentExpressionSyntax assignment
-			&& assignment.Parent is InitializerExpressionSyntax
-		)
+			&& assignment.Parent is InitializerExpressionSyntax)
 		{
 			// Get the indentation of the property name (left side of assignment)
 			string propertyIndent = GetLeadingWhitespaceFromToken(
-				assignment.Left.GetFirstToken()
-			);
+				assignment.Left.GetFirstToken());
 
 			if (!string.IsNullOrEmpty(propertyIndent))
 			{

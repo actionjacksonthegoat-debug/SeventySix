@@ -34,8 +34,7 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 
 	/// <inheritdoc/>
 	public sealed override async Task RegisterCodeFixesAsync(
-		CodeFixContext context
-	)
+		CodeFixContext context)
 	{
 		SyntaxNode? root = await context
 			.Document.GetSyntaxRootAsync(context.CancellationToken)
@@ -61,8 +60,7 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 					),
 				equivalenceKey: nameof(AssignmentNewlineCodeFixProvider)
 			),
-			diagnostic
-		);
+			diagnostic);
 	}
 
 	private static async Task<Document> AddNewlineAfterEqualsAsync(
@@ -87,26 +85,22 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 		// Create new trailing trivia for equals token: newline + indentation
 		SyntaxTriviaList newEqualsTrailingTrivia = SyntaxFactory.TriviaList(
 			SyntaxFactory.EndOfLine("\r\n"),
-			SyntaxFactory.Whitespace(newIndent)
-		);
+			SyntaxFactory.Whitespace(newIndent));
 
 		SyntaxToken newEqualsToken = equalsToken.WithTrailingTrivia(
-			newEqualsTrailingTrivia
-		);
+			newEqualsTrailingTrivia);
 
 		// Get and clean next token's leading trivia
 		SyntaxToken nextToken = equalsToken.GetNextToken();
 		SyntaxTriviaList cleanedLeading = RemoveWhitespaceTrivia(
-			nextToken.LeadingTrivia
-		);
+			nextToken.LeadingTrivia);
 		SyntaxToken newNextToken = nextToken.WithLeadingTrivia(cleanedLeading);
 
 		// Replace both tokens efficiently
 		SyntaxNode newRoot = root.ReplaceTokens(
 			new[] { equalsToken, nextToken },
 			(original, _) =>
-				original == equalsToken ? newEqualsToken : newNextToken
-		);
+				original == equalsToken ? newEqualsToken : newNextToken);
 
 		return document.WithSyntaxRoot(newRoot);
 	}
@@ -115,13 +109,29 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 	{
 		SyntaxNode? node = token.Parent;
 
+		// For property assignments in object initializers, use the property's indent
+		if (
+			node is AssignmentExpressionSyntax assignment
+			&& assignment.Parent is InitializerExpressionSyntax)
+		{
+			// Get the indentation of the property name (left side of assignment)
+			SyntaxToken leftToken = assignment.Left.GetFirstToken();
+
+			foreach (SyntaxTrivia trivia in leftToken.LeadingTrivia)
+			{
+				if (trivia.RawKind == (int)SyntaxKind.WhitespaceTrivia)
+				{
+					return trivia.ToString();
+				}
+			}
+		}
+
 		// Walk up to find containing statement or member
 		while (
 			node
 				is not null
 					and not StatementSyntax
-					and not MemberDeclarationSyntax
-		)
+					and not MemberDeclarationSyntax)
 		{
 			node = node.Parent;
 		}
@@ -158,8 +168,7 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 			if (
 				kind
 				is not ((int)SyntaxKind.WhitespaceTrivia)
-					and not ((int)SyntaxKind.EndOfLineTrivia)
-			)
+					and not ((int)SyntaxKind.EndOfLineTrivia))
 			{
 				kept ??= new List<SyntaxTrivia>();
 				kept.Add(t);

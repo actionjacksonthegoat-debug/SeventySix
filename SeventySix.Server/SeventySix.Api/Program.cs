@@ -71,14 +71,15 @@ Serilog.Log.Logger =
 builder.Host.UseSerilog();
 
 // Configure Wolverine for CQRS handlers
-builder.Host.UseWolverine(options =>
-{
-	// Auto-discover handlers from SeventySix assembly
-	options.Discovery.IncludeAssembly(typeof(SeventySix.Logging.Log).Assembly);
+builder.Host.UseWolverine(
+	options =>
+	{
+		// Auto-discover handlers from SeventySix assembly
+		options.Discovery.IncludeAssembly(typeof(SeventySix.Logging.Log).Assembly);
 
-	// Use FluentValidation for command validation
-	options.UseFluentValidation();
-});
+		// Use FluentValidation for command validation
+		options.UseFluentValidation();
+	});
 
 // Services
 builder.Services.AddHttpContextAccessor();
@@ -145,25 +146,26 @@ SerilogExtensions.ReconfigureWithDatabaseSink(
 
 // Serilog HTTP request logging - Captures request details
 // Enriches logs with RequestMethod, RequestPath, StatusCode, Elapsed time
-app.UseSerilogRequestLogging(options =>
-{
-	options.MessageTemplate =
-		"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-	options.EnrichDiagnosticContext =
-		(diagnosticContext, httpContext) =>
+app.UseSerilogRequestLogging(
+	options =>
 	{
-		diagnosticContext.Set(
-			"RequestHost",
-			httpContext.Request.Host.Value ?? "unknown");
-		diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
-		diagnosticContext.Set(
-			"RemoteIpAddress",
-			httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
-		diagnosticContext.Set(
-			"UserAgent",
-			httpContext.Request.Headers.UserAgent.ToString());
-	};
-});
+		options.MessageTemplate =
+			"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+		options.EnrichDiagnosticContext =
+			(diagnosticContext, httpContext) =>
+		{
+			diagnosticContext.Set(
+				"RequestHost",
+				httpContext.Request.Host.Value ?? "unknown");
+			diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+			diagnosticContext.Set(
+				"RemoteIpAddress",
+				httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+			diagnosticContext.Set(
+				"UserAgent",
+				httpContext.Request.Headers.UserAgent.ToString());
+		};
+	});
 
 // Middleware pipeline
 app.UseConfiguredForwardedHeaders(builder.Configuration);

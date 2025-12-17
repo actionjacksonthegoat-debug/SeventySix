@@ -8,6 +8,7 @@
 	<Project Path="SeventySix.Domains/SeventySix.Domains.csproj" />
 	<Project Path="SeventySix.Api/SeventySix.Api.csproj" />
 	<Folder Name="/Tests/">
+		<Project Path="Tests/SeventySix.Analyzers.Tests/SeventySix.Analyzers.Tests.csproj" />
 		<Project Path="Tests/SeventySix.Api.Tests/SeventySix.Api.Tests.csproj" />
 		<Project Path="Tests/SeventySix.ArchitectureTests/SeventySix.ArchitectureTests.csproj" />
 		<Project Path="Tests/SeventySix.Domains.Tests/SeventySix.Domains.Tests.csproj" />
