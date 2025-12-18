@@ -11,7 +11,7 @@ namespace SeventySix.Identity;
 /// <remarks>
 /// Design Principles:
 /// - Separate from User entity for security (credentials are loaded separately)
-/// - BCrypt password hash with configurable work factor
+/// - Argon2id password hash (OWASP 2024 recommended)
 /// - PasswordChangedAt = null forces password change on first login
 /// </remarks>
 public class UserCredential
@@ -23,8 +23,11 @@ public class UserCredential
 
 	/// <summary>
 	/// Gets or sets the password hash.
-	/// Stored using BCrypt with configurable work factor.
+	/// Stored using Argon2id with configurable parameters.
 	/// </summary>
+	/// <remarks>
+	/// Format: $argon2id$v=19$m={memory},t={iterations},p={parallelism}${salt}${hash}
+	/// </remarks>
 	public string PasswordHash { get; set; } = string.Empty;
 
 	/// <summary>

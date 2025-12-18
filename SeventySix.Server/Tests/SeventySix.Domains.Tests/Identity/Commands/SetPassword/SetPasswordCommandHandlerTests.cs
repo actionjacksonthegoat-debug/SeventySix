@@ -9,6 +9,7 @@ using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Shared.Extensions;
 using SeventySix.TestUtilities.TestBases;
+using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
 using Wolverine;
 
@@ -27,9 +28,9 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 	private readonly IMessageBus MessageBus;
 	private readonly ICredentialRepository CredentialRepository;
 	private readonly ITokenRepository TokenRepository;
+	private readonly IPasswordHasher PasswordHasher;
 	private readonly RegistrationService RegistrationService;
 	private readonly FakeTimeProvider TimeProvider;
-	private readonly IOptions<AuthSettings> AuthSettings;
 
 	public SetPasswordCommandHandlerTests(
 		TestcontainersPostgreSqlFixture fixture)
@@ -40,29 +41,21 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 			Substitute.For<ICredentialRepository>();
 		TokenRepository =
 			Substitute.For<ITokenRepository>();
+		PasswordHasher =
+			Substitute.For<IPasswordHasher>();
 		RegistrationService =
 			Substitute.ForPartsOf<RegistrationService>(
 			Substitute.For<IAuthRepository>(),
 			Substitute.For<ICredentialRepository>(),
 			Substitute.For<IUserQueryRepository>(),
 			Substitute.For<ITokenService>(),
-			Options.Create(new AuthSettings()),
+			PasswordHasher,
 			Options.Create(new JwtSettings()),
 			new FakeTimeProvider(),
 			NullLogger<RegistrationService>.Instance);
 		TimeProvider = new FakeTimeProvider();
 		TimeProvider.SetUtcNow(
 			new DateTime(2025, 12, 15, 0, 0, 0, DateTimeKind.Utc));
-
-		AuthSettings =
-			Options.Create(
-			new AuthSettings
-			{
-				Password =
-					new PasswordSettings { MinLength = 8 },
-				Lockout =
-					new LockoutSettings { Enabled = true },
-			});
 	}
 
 	[Fact]
@@ -73,6 +66,14 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 		PasswordResetTokenRepository repository =
 			new(context);
 
+		// Create user first to satisfy FK constraint
+		User testUser =
+			await TestUserHelper.CreateUserWithPasswordAsync(
+				context,
+				"testuser",
+				"test@example.com",
+				TimeProvider);
+
 		string rawToken = "base64-encoded-random-token-12345";
 		string hashedToken =
 			CryptoExtensions.ComputeSha256Hash(rawToken);
@@ -80,7 +81,7 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 		PasswordResetToken resetToken =
 			new()
 			{
-				UserId = 1,
+				UserId = testUser.Id,
 				TokenHash = hashedToken,
 				ExpiresAt =
 					TimeProvider.GetUtcNow().UtcDateTime.AddHours(24),
@@ -92,9 +93,9 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 		context.PasswordResetTokens.Add(resetToken);
 		await context.SaveChangesAsync();
 
-		UserDto testUser =
+		UserDto userDto =
 			new(
-			Id: 1,
+			Id: testUser.Id,
 			Username: "testuser",
 			Email: "test@example.com",
 			FullName: "Test User",
@@ -112,7 +113,7 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 			.InvokeAsync<UserDto?>(
 				Arg.Any<GetUserByIdQuery>(),
 				Arg.Any<CancellationToken>())
-			.Returns(testUser);
+			.Returns(userDto);
 
 		RegistrationService
 			.GenerateAuthResultAsync(
@@ -122,7 +123,7 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns(
-				AuthResult.Succeeded("token", "refresh", DateTime.UtcNow, false));
+				AuthResult.Succeeded("token", "refresh", TimeProvider.GetUtcNow().UtcDateTime, false));
 
 		SetPasswordRequest passwordRequest =
 			new(rawToken, "NewPassword123!");
@@ -138,8 +139,8 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 			CredentialRepository,
 			MessageBus,
 			TokenRepository,
+			PasswordHasher,
 			RegistrationService,
-			AuthSettings,
 			TimeProvider,
 			NullLogger<SetPasswordCommand>.Instance,
 			CancellationToken.None);
@@ -162,6 +163,14 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 		PasswordResetTokenRepository repository =
 			new(context);
 
+		// Create user first to satisfy FK constraint
+		User testUser =
+			await TestUserHelper.CreateUserWithPasswordAsync(
+				context,
+				"expiredtokenuser",
+				"expired@example.com",
+				TimeProvider);
+
 		string rawToken = "expired-token-12345";
 		string hashedToken =
 			CryptoExtensions.ComputeSha256Hash(rawToken);
@@ -169,7 +178,7 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 		PasswordResetToken expiredToken =
 			new()
 			{
-				UserId = 1,
+				UserId = testUser.Id,
 				TokenHash = hashedToken,
 				ExpiresAt =
 					TimeProvider.GetUtcNow().UtcDateTime.AddHours(-1), // Expired 1 hour ago
@@ -195,8 +204,8 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 				CredentialRepository,
 				MessageBus,
 				TokenRepository,
+				PasswordHasher,
 				RegistrationService,
-				AuthSettings,
 				TimeProvider,
 				NullLogger<SetPasswordCommand>.Instance,
 				CancellationToken.None));
@@ -210,6 +219,14 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 		PasswordResetTokenRepository repository =
 			new(context);
 
+		// Create user first to satisfy FK constraint
+		User testUser =
+			await TestUserHelper.CreateUserWithPasswordAsync(
+				context,
+				"usedtokenuser",
+				"used@example.com",
+				TimeProvider);
+
 		string rawToken = "used-token-12345";
 		string hashedToken =
 			CryptoExtensions.ComputeSha256Hash(rawToken);
@@ -217,7 +234,7 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 		PasswordResetToken usedToken =
 			new()
 			{
-				UserId = 1,
+				UserId = testUser.Id,
 				TokenHash = hashedToken,
 				ExpiresAt =
 					TimeProvider.GetUtcNow().UtcDateTime.AddHours(24),
@@ -243,8 +260,8 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 				CredentialRepository,
 				MessageBus,
 				TokenRepository,
+				PasswordHasher,
 				RegistrationService,
-				AuthSettings,
 				TimeProvider,
 				NullLogger<SetPasswordCommand>.Instance,
 				CancellationToken.None));

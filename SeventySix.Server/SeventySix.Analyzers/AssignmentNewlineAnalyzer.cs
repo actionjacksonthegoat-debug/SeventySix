@@ -50,11 +50,13 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 		// Register for specific syntax kinds - most efficient approach
 		context.RegisterSyntaxNodeAction(
 			AnalyzeVariableDeclaration,
-			SyntaxKind.VariableDeclaration);
+			SyntaxKind.VariableDeclaration
+		);
 
 		context.RegisterSyntaxNodeAction(
 			AnalyzeAssignmentExpression,
-			SyntaxKind.SimpleAssignmentExpression);
+			SyntaxKind.SimpleAssignmentExpression
+		);
 	}
 
 	private static void AnalyzeVariableDeclaration(
@@ -88,7 +90,8 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 			if (!HasNewlineAfterToken(equalsToken))
 			{
 				context.ReportDiagnostic(
-					Diagnostic.Create(Rule, equalsToken.GetLocation()));
+					Diagnostic.Create(Rule, equalsToken.GetLocation())
+				);
 			}
 		}
 	}
@@ -152,14 +155,16 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 					(ObjectCreationExpressionSyntax)expression;
 				return IsEmptyObjectCreation(
 					objCreate.ArgumentList,
-					objCreate.Initializer);
+					objCreate.Initializer
+				);
 
 			case SyntaxKind.ImplicitObjectCreationExpression:
 				ImplicitObjectCreationExpressionSyntax implCreate =
 					(ImplicitObjectCreationExpressionSyntax)expression;
 				return IsEmptyObjectCreation(
 					implCreate.ArgumentList,
-					implCreate.Initializer);
+					implCreate.Initializer
+				);
 
 			// Unary expressions - recurse on operand
 			case SyntaxKind.UnaryMinusExpression:
@@ -167,12 +172,14 @@ public sealed class AssignmentNewlineAnalyzer : DiagnosticAnalyzer
 			case SyntaxKind.LogicalNotExpression:
 			case SyntaxKind.BitwiseNotExpression:
 				return IsSimpleValueFast(
-					((PrefixUnaryExpressionSyntax)expression).Operand);
+					((PrefixUnaryExpressionSyntax)expression).Operand
+				);
 
 			// Parenthesized - recurse on inner
 			case SyntaxKind.ParenthesizedExpression:
 				return IsSimpleValueFast(
-					((ParenthesizedExpressionSyntax)expression).Expression);
+					((ParenthesizedExpressionSyntax)expression).Expression
+				);
 
 			// Member access - use Span.Length to avoid ToString allocation
 			case SyntaxKind.SimpleMemberAccessExpression:

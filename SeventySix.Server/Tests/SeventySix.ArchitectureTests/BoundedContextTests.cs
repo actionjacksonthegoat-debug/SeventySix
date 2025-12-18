@@ -50,7 +50,8 @@ public class BoundedContextTests
 				&& !namespaceName.Contains("Shared")
 				&& !namespaceName.Contains("Infrastructure")
 				&& !namespaceName.Contains("Extensions")
-				&& !namespaceName.Contains("Registration"))
+				&& !namespaceName.Contains("Registration")
+				&& !namespaceName.Contains("Domains"))
 			.Select(namespaceName => namespaceName!.Split('.')[1])
 			.Distinct()
 			.ToArray();
@@ -108,7 +109,8 @@ public class BoundedContextTests
 				&& !namespaceName.Contains("Shared")
 				&& !namespaceName.Contains("Infrastructure")
 				&& !namespaceName.Contains("Extensions")
-				&& !namespaceName.Contains("Registration"))
+				&& !namespaceName.Contains("Registration")
+				&& !namespaceName.Contains("Domains"))
 			.Select(namespaceName => namespaceName!.Split('.')[1])
 			.Distinct()
 			.ToArray();

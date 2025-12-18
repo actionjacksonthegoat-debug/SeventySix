@@ -30,6 +30,8 @@ public class TimeProviderUsageTests : SourceCodeArchitectureTest
 		[
 		// This test file itself contains DateTime.UtcNow in regex patterns and documentation
 		"TimeProviderUsageTests.cs",
+		// Analyzer tests contain DateTime.UtcNow in test code strings being analyzed (not actual usage)
+		"AssignmentContinuationIndentCodeFixTests.cs",
 	];
 
 	[Fact]

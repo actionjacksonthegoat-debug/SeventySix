@@ -22,8 +22,8 @@ public static class ChangePasswordCommandHandler
 		ICredentialRepository credentialRepository,
 		IMessageBus messageBus,
 		ITokenRepository tokenRepository,
+		IPasswordHasher passwordHasher,
 		RegistrationService registrationService,
-		IOptions<AuthSettings> authSettings,
 		TimeProvider timeProvider,
 		ILogger<ChangePasswordCommand> logger,
 		CancellationToken cancellationToken)
@@ -47,8 +47,15 @@ public static class ChangePasswordCommandHandler
 		}
 		else
 		{
+			if (command.Request.CurrentPassword is null)
+			{
+				throw new ArgumentException(
+					"Current password is required when changing password",
+					nameof(command.Request.CurrentPassword));
+			}
+
 			bool isCurrentPasswordValid =
-				BCrypt.Net.BCrypt.Verify(
+				passwordHasher.VerifyPassword(
 					command.Request.CurrentPassword,
 					credential.PasswordHash);
 
@@ -61,9 +68,8 @@ public static class ChangePasswordCommandHandler
 		}
 
 		credential.PasswordHash =
-			BCrypt.Net.BCrypt.HashPassword(
-				command.Request.NewPassword,
-				authSettings.Value.Password.WorkFactor);
+			passwordHasher.HashPassword(
+				command.Request.NewPassword);
 		credential.PasswordChangedAt = now;
 
 		if (

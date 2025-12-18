@@ -27,7 +27,7 @@ public class PasswordResetTokenConfiguration
 	{
 		ArgumentNullException.ThrowIfNull(builder);
 
-		builder.ToTable("PasswordResetTokens", "identity");
+		builder.ToTable("PasswordResetTokens");
 
 		builder.HasKey(token => token.Id);
 

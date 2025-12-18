@@ -203,9 +203,54 @@ public record PasswordSettings
 	public bool RequireSpecialChar { get; init; } = false;
 
 	/// <summary>
-	/// Gets BCrypt work factor. Default: 12.
+	/// Gets Argon2id hashing configuration.
 	/// </summary>
-	public int WorkFactor { get; init; } = 12;
+	public Argon2Settings Argon2 { get; init; } = new();
+}
+
+/// <summary>
+/// Argon2id password hashing configuration.
+/// </summary>
+/// <remarks>
+/// <para>
+/// OWASP 2024 Recommendations for interactive logins:
+/// - Memory: 64 MB (65536 KB) minimum
+/// - Iterations: 3 minimum
+/// - Parallelism: Match available CPU cores (4 is a good default)
+/// </para>
+/// <para>
+/// These defaults provide ~100ms hash time on modern hardware,
+/// balancing security and user experience.
+/// </para>
+/// </remarks>
+public record Argon2Settings
+{
+	/// <summary>
+	/// Gets memory size in KB. Default: 65536 (64 MB).
+	/// </summary>
+	/// <remarks>
+	/// Higher values increase GPU attack resistance.
+	/// OWASP minimum: 19456 KB (19 MB).
+	/// </remarks>
+	public int MemorySize { get; init; } = 65536;
+
+	/// <summary>
+	/// Gets number of iterations. Default: 3.
+	/// </summary>
+	/// <remarks>
+	/// Higher values increase computation time linearly.
+	/// OWASP minimum: 2.
+	/// </remarks>
+	public int Iterations { get; init; } = 3;
+
+	/// <summary>
+	/// Gets degree of parallelism (threads). Default: 4.
+	/// </summary>
+	/// <remarks>
+	/// Should match available CPU cores for optimal performance.
+	/// Higher values may not improve security if hardware limited.
+	/// </remarks>
+	public int DegreeOfParallelism { get; init; } = 4;
 }
 
 /// <summary>

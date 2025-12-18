@@ -12,8 +12,8 @@ using SeventySix.Identity;
 namespace SeventySix.Domains.Identity.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20251216192437_HashEmailVerificationTokens")]
-    partial class HashEmailVerificationTokens
+    [Migration("20251218000927_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,7 +60,7 @@ namespace SeventySix.Domains.Identity.Migrations
                     b.HasIndex("TokenHash")
                         .IsUnique();
 
-                    b.ToTable("EmailVerificationTokens", "identity");
+                    b.ToTable("EmailVerificationTokens", "Identity");
                 });
 
             modelBuilder.Entity("SeventySix.Identity.ExternalLogin", b =>
@@ -142,7 +142,7 @@ namespace SeventySix.Domains.Identity.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("IX_PasswordResetTokens_UserId");
 
-                    b.ToTable("PasswordResetTokens", "identity");
+                    b.ToTable("PasswordResetTokens", "Identity");
                 });
 
             modelBuilder.Entity("SeventySix.Identity.PermissionRequest", b =>
@@ -430,8 +430,8 @@ namespace SeventySix.Domains.Identity.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasMaxLength(72)
-                        .HasColumnType("character varying(72)");
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
                     b.HasKey("UserId");
 

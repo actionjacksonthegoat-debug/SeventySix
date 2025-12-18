@@ -28,7 +28,8 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 	/// <inheritdoc/>
 	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
 		ImmutableArray.Create(
-			AssignmentContinuationIndentAnalyzer.DiagnosticId);
+			AssignmentContinuationIndentAnalyzer.DiagnosticId
+		);
 
 	/// <inheritdoc/>
 	public sealed override FixAllProvider GetFixAllProvider() =>
@@ -63,8 +64,10 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 					),
 				equivalenceKey: nameof(
 					AssignmentContinuationIndentCodeFixProvider
-				)),
-			diagnostic);
+				)
+			),
+			diagnostic
+		);
 	}
 
 	private static async Task<Document> FixContinuationIndentAsync(
@@ -94,7 +97,8 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 			if (
 				trivia.RawKind
 				is not ((int)SyntaxKind.WhitespaceTrivia)
-					and not ((int)SyntaxKind.EndOfLineTrivia))
+					and not ((int)SyntaxKind.EndOfLineTrivia)
+			)
 			{
 				newLeadingTrivia.Add(trivia);
 			}
@@ -104,7 +108,8 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		newLeadingTrivia.Add(SyntaxFactory.Whitespace(expectedIndent));
 
 		SyntaxToken newValueToken = valueToken.WithLeadingTrivia(
-			SyntaxFactory.TriviaList(newLeadingTrivia));
+			SyntaxFactory.TriviaList(newLeadingTrivia)
+		);
 
 		SyntaxNode newRoot = root.ReplaceToken(valueToken, newValueToken);
 
@@ -121,14 +126,16 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		// Handle closing brace of initializer
 		if (
 			valueToken.IsKind(SyntaxKind.CloseBraceToken)
-			&& node is InitializerExpressionSyntax initializerForClose)
+			&& node is InitializerExpressionSyntax initializerForClose
+		)
 		{
 			// Closing brace should match the 'new' keyword indent
 			SyntaxNode? creationParent = initializerForClose.Parent;
 
 			if (
 				creationParent
-				is ImplicitObjectCreationExpressionSyntax implicitForClose)
+				is ImplicitObjectCreationExpressionSyntax implicitForClose
+			)
 			{
 				return GetLeadingWhitespace(implicitForClose.NewKeyword);
 			}
@@ -143,13 +150,15 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		// Pattern: new() { ... } or new Type() { ... } where { is on separate line
 		if (
 			valueToken.IsKind(SyntaxKind.OpenBraceToken)
-			&& node is InitializerExpressionSyntax initializerForBrace)
+			&& node is InitializerExpressionSyntax initializerForBrace
+		)
 		{
 			SyntaxNode? creationParent = initializerForBrace.Parent;
 
 			if (
 				creationParent
-				is ImplicitObjectCreationExpressionSyntax implicitCreation)
+				is ImplicitObjectCreationExpressionSyntax implicitCreation
+			)
 			{
 				// Brace should match 'new' keyword indent
 				return GetLeadingWhitespace(implicitCreation.NewKeyword);
@@ -166,7 +175,8 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 			if (creationParent is AssignmentExpressionSyntax assignmentParent)
 			{
 				string propertyIndent = GetLeadingWhitespace(
-					assignmentParent.Left.GetFirstToken());
+					assignmentParent.Left.GetFirstToken()
+				);
 
 				if (!string.IsNullOrEmpty(propertyIndent))
 				{
@@ -184,9 +194,13 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 				is InitializerExpressionSyntax containerInitializer
 			&& (
 				containerInitializer.IsKind(
-					SyntaxKind.CollectionInitializerExpression)
-					|| containerInitializer.IsKind(
-						SyntaxKind.ObjectInitializerExpression)))
+					SyntaxKind.CollectionInitializerExpression
+				)
+				|| containerInitializer.IsKind(
+					SyntaxKind.ObjectInitializerExpression
+				)
+			)
+		)
 		{
 			// Need to find the object creation to get the 'new' keyword indent
 			// because the brace indent might not be correct yet
@@ -194,7 +208,8 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 
 			if (
 				creationNode
-				is ImplicitObjectCreationExpressionSyntax implicitContent)
+				is ImplicitObjectCreationExpressionSyntax implicitContent
+			)
 			{
 				// Contents should be new keyword indent + 1 tab
 				return GetLeadingWhitespace(implicitContent.NewKeyword) + "\t";
@@ -212,7 +227,8 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 			node
 				is not null
 					and not AssignmentExpressionSyntax
-					and not InitializerExpressionSyntax)
+					and not InitializerExpressionSyntax
+		)
 		{
 			node = node.Parent;
 		}
@@ -221,13 +237,16 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		if (
 			node is InitializerExpressionSyntax initializer
 			&& initializer.IsKind(
-				SyntaxKind.ComplexElementInitializerExpression)
-			&& initializer.Expressions.Count >= 2)
+				SyntaxKind.ComplexElementInitializerExpression
+			)
+			&& initializer.Expressions.Count >= 2
+		)
 		{
 			// Get the indentation of the key (first element)
 			// Value should be at SAME level as key in dictionary entries
 			string keyIndent = GetLeadingWhitespace(
-				initializer.Expressions[0].GetFirstToken());
+				initializer.Expressions[0].GetFirstToken()
+			);
 
 			if (!string.IsNullOrEmpty(keyIndent))
 			{
@@ -238,11 +257,13 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		// For property assignments in object initializers
 		if (
 			node is AssignmentExpressionSyntax assignment
-			&& assignment.Parent is InitializerExpressionSyntax)
+			&& assignment.Parent is InitializerExpressionSyntax
+		)
 		{
 			// Get the indentation of the property name (left side)
 			string propertyIndent = GetLeadingWhitespace(
-				assignment.Left.GetFirstToken());
+				assignment.Left.GetFirstToken()
+			);
 
 			if (!string.IsNullOrEmpty(propertyIndent))
 			{
@@ -262,7 +283,8 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 				if (node is StatementSyntax or MemberDeclarationSyntax)
 				{
 					string statementIndent = GetLeadingWhitespace(
-						node.GetFirstToken());
+						node.GetFirstToken()
+					);
 
 					if (!string.IsNullOrEmpty(statementIndent))
 					{
@@ -297,7 +319,8 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 		{
 			if (
 				current.IsKind(SyntaxKind.EqualsToken)
-				|| current.IsKind(SyntaxKind.EqualsGreaterThanToken))
+				|| current.IsKind(SyntaxKind.EqualsGreaterThanToken)
+			)
 			{
 				return current;
 			}
@@ -305,7 +328,8 @@ public sealed class AssignmentContinuationIndentCodeFixProvider
 			// Don't go past statement boundaries
 			if (
 				current.IsKind(SyntaxKind.SemicolonToken)
-				|| current.IsKind(SyntaxKind.OpenBraceToken))
+				|| current.IsKind(SyntaxKind.OpenBraceToken)
+			)
 			{
 				break;
 			}

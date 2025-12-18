@@ -21,7 +21,7 @@ public class RegistrationService(
 	ICredentialRepository credentialRepository,
 	IUserQueryRepository userQueryRepository,
 	ITokenService tokenService,
-	IOptions<AuthSettings> authSettings,
+	IPasswordHasher passwordHasher,
 	IOptions<JwtSettings> jwtSettings,
 	TimeProvider timeProvider,
 	ILogger<RegistrationService> logger)
@@ -86,9 +86,7 @@ public class RegistrationService(
 				cancellationToken);
 
 		string passwordHash =
-			BCrypt.Net.BCrypt.HashPassword(
-				password,
-				authSettings.Value.Password.WorkFactor);
+			passwordHasher.HashPassword(password);
 
 		UserCredential credential =
 			new()

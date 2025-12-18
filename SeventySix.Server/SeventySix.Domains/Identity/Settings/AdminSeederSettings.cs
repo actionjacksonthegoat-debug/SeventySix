@@ -47,9 +47,4 @@ public record AdminSeederSettings
 	/// AdminSeeder__InitialPassword=YourSecurePassword
 	/// </remarks>
 	public string InitialPassword { get; set; } = "Admin123!";
-
-	/// <summary>
-	/// Gets or sets the BCrypt work factor for password hashing.
-	/// </summary>
-	public int WorkFactor { get; set; } = 12;
 }

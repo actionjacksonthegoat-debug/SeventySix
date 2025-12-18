@@ -1,9 +1,10 @@
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace SeventySix.ApiTracking.Migrations
+namespace SeventySix.Domains.ApiTracking.Migrations
 {
 	/// <inheritdoc />
 	public partial class InitialCreate : Migration

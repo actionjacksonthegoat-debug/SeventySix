@@ -25,8 +25,8 @@ public static class SetPasswordCommandHandler
 		ICredentialRepository credentialRepository,
 		IMessageBus messageBus,
 		ITokenRepository tokenRepository,
+		IPasswordHasher passwordHasher,
 		RegistrationService registrationService,
-		IOptions<AuthSettings> authSettings,
 		TimeProvider timeProvider,
 		ILogger<SetPasswordCommand> logger,
 		CancellationToken cancellationToken)
@@ -56,9 +56,9 @@ public static class SetPasswordCommandHandler
 
 		await UpdateCredentialAsync(
 			credentialRepository,
+			passwordHasher,
 			user.Id,
 			command.Request.NewPassword,
-			authSettings,
 			now,
 			cancellationToken);
 		await tokenRepository.RevokeAllUserTokensAsync(
@@ -133,9 +133,9 @@ public static class SetPasswordCommandHandler
 
 	private static async Task UpdateCredentialAsync(
 		ICredentialRepository credentialRepository,
+		IPasswordHasher passwordHasher,
 		int userId,
 		string newPassword,
-		IOptions<AuthSettings> authSettings,
 		DateTime now,
 		CancellationToken cancellationToken)
 	{
@@ -144,9 +144,7 @@ public static class SetPasswordCommandHandler
 				userId,
 				cancellationToken);
 		string passwordHash =
-			BCrypt.Net.BCrypt.HashPassword(
-				newPassword,
-				authSettings.Value.Password.WorkFactor);
+			passwordHasher.HashPassword(newPassword);
 
 		if (credential is null)
 		{

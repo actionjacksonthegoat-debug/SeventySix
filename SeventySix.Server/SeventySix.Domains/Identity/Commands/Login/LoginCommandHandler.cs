@@ -21,6 +21,7 @@ public static class LoginCommandHandler
 		LoginCommand command,
 		IAuthRepository authRepository,
 		ICredentialRepository credentialRepository,
+		IPasswordHasher passwordHasher,
 		AuthenticationService authenticationService,
 		IOptions<AuthSettings> authSettings,
 		TimeProvider timeProvider,
@@ -54,6 +55,7 @@ public static class LoginCommandHandler
 				user,
 				credential,
 				command.Request.Password,
+				passwordHasher,
 				authRepository,
 				authSettings,
 				timeProvider,
@@ -147,6 +149,7 @@ public static class LoginCommandHandler
 		User user,
 		UserCredential? credential,
 		string password,
+		IPasswordHasher passwordHasher,
 		IAuthRepository authRepository,
 		IOptions<AuthSettings> authSettings,
 		TimeProvider timeProvider,
@@ -163,7 +166,7 @@ public static class LoginCommandHandler
 				AuthErrorCodes.InvalidCredentials);
 		}
 
-		if (!BCrypt.Net.BCrypt.Verify(password, credential.PasswordHash))
+		if (!passwordHasher.VerifyPassword(password, credential.PasswordHash))
 		{
 			await HandleFailedLoginAttemptAsync(
 				user,

@@ -10,21 +10,38 @@ namespace SeventySix.TestUtilities.TestHelpers;
 
 /// <summary>
 /// Helper methods for creating test users with pre-computed password hashes.
-/// Eliminates runtime BCrypt computation overhead in tests.
+/// Eliminates runtime Argon2id computation overhead in tests.
 /// </summary>
 public static class TestUserHelper
 {
+	/// <summary>
+	/// Lazily-initialized password hasher for generating test hashes.
+	/// </summary>
+	private static readonly Lazy<TestPasswordHasher> PasswordHasher =
+		new(() =>
+			new TestPasswordHasher());
+
 	/// <summary>
 	/// The standard test password used across API integration tests.
 	/// </summary>
 	public const string TestPassword = "TestPassword123!";
 
 	/// <summary>
-	/// Pre-computed BCrypt hash for "TestPassword123!" with work factor 4.
-	/// Generated once to avoid ~100ms BCrypt computation per test.
+	/// Lazily-initialized Argon2id hash for <see cref="TestPassword"/>.
+	/// Generated once per test run to ensure correctness.
 	/// </summary>
-	public const string TestPasswordHash =
-		"$2a$04$z.knZZg2NqE7j/WNpjmQG.4x9SBBGW67NKAfH1TelgON4z11y8d6q";
+	/// <remarks>
+	/// Parameters: m=4096 (4MB), t=2, p=1 (optimized for fast tests).
+	/// Production uses m=65536 (64MB), t=3, p=4.
+	/// </remarks>
+	private static readonly Lazy<string> LazyTestPasswordHash =
+		new(() =>
+			PasswordHasher.Value.HashPassword(TestPassword));
+
+	/// <summary>
+	/// Gets the Argon2id hash for <see cref="TestPassword"/>.
+	/// </summary>
+	public static string TestPasswordHash => LazyTestPasswordHash.Value;
 
 	/// <summary>
 	/// The standard test password used across unit tests.
@@ -32,11 +49,17 @@ public static class TestUserHelper
 	public const string SimplePassword = "Password123";
 
 	/// <summary>
-	/// Pre-computed BCrypt hash for "Password123" with work factor 4.
-	/// Generated once to avoid ~100ms BCrypt computation per test.
+	/// Lazily-initialized Argon2id hash for <see cref="SimplePassword"/>.
+	/// Generated once per test run to ensure correctness.
 	/// </summary>
-	public const string SimplePasswordHash =
-		"$2a$04$tO662pJeY/vqJgOJ7agNIexUD73RZNZniBMD0lFjnboJlzd4UhGDe";
+	private static readonly Lazy<string> LazySimplePasswordHash =
+		new(() =>
+			PasswordHasher.Value.HashPassword(SimplePassword));
+
+	/// <summary>
+	/// Gets the Argon2id hash for <see cref="SimplePassword"/>.
+	/// </summary>
+	public static string SimplePasswordHash => LazySimplePasswordHash.Value;
 
 	/// <summary>
 	/// Creates a test user with credentials using the pre-computed password hash.

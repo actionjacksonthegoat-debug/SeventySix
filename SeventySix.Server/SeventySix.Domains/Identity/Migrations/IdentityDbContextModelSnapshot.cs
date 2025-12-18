@@ -8,7 +8,7 @@ using SeventySix.Identity;
 
 #nullable disable
 
-namespace SeventySix.Identity.Migrations
+namespace SeventySix.Domains.Identity.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
     partial class IdentityDbContextModelSnapshot : ModelSnapshot
@@ -57,7 +57,7 @@ namespace SeventySix.Identity.Migrations
                     b.HasIndex("TokenHash")
                         .IsUnique();
 
-                    b.ToTable("EmailVerificationTokens", "identity");
+                    b.ToTable("EmailVerificationTokens", "Identity");
                 });
 
             modelBuilder.Entity("SeventySix.Identity.ExternalLogin", b =>
@@ -139,7 +139,7 @@ namespace SeventySix.Identity.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("IX_PasswordResetTokens_UserId");
 
-                    b.ToTable("PasswordResetTokens", "identity");
+                    b.ToTable("PasswordResetTokens", "Identity");
                 });
 
             modelBuilder.Entity("SeventySix.Identity.PermissionRequest", b =>
@@ -427,8 +427,8 @@ namespace SeventySix.Identity.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasMaxLength(72)
-                        .HasColumnType("character varying(72)");
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
                     b.HasKey("UserId");
 

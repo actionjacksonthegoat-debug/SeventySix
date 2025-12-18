@@ -108,6 +108,7 @@ public static class IdentityRegistration
 		>();
 
 		// Register services - focused interfaces only (no composite IUserService)
+		services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
 		services.AddScoped<OAuthService>();

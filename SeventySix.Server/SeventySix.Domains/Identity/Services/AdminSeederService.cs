@@ -25,6 +25,7 @@ namespace SeventySix.Identity;
 public class AdminSeederService(
 	IServiceScopeFactory scopeFactory,
 	IOptions<AdminSeederSettings> settings,
+	IPasswordHasher passwordHasher,
 	TimeProvider timeProvider,
 	ILogger<AdminSeederService> logger) : BackgroundService
 {
@@ -104,9 +105,8 @@ public class AdminSeederService(
 		// Create credential with temporary password
 		// PasswordChangedAt = null forces password change on first login
 		string passwordHash =
-			BCrypt.Net.BCrypt.HashPassword(
-				settings.Value.InitialPassword,
-				settings.Value.WorkFactor);
+			passwordHasher.HashPassword(
+				settings.Value.InitialPassword);
 
 		UserCredential credential =
 			new()

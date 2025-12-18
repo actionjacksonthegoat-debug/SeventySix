@@ -16,7 +16,7 @@ public class EmailVerificationTokenConfiguration
 	/// <inheritdoc/>
 	public void Configure(EntityTypeBuilder<EmailVerificationToken> builder)
 	{
-		builder.ToTable("EmailVerificationTokens", "identity");
+		builder.ToTable("EmailVerificationTokens");
 
 		builder.HasKey(token => token.Id);
 

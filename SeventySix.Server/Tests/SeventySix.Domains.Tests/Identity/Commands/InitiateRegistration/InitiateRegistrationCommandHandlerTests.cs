@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using SeventySix.Identity;
 using SeventySix.Shared.Extensions;
+using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
 using Xunit;
@@ -37,7 +38,7 @@ public class InitiateRegistrationCommandHandlerTests(
 				Email = uniqueEmail,
 				TokenHash = expectedHash,
 				ExpiresAt =
-					DateTime.UtcNow.AddHours(24),
+					TestTimeProviderBuilder.DefaultTime.AddHours(24).UtcDateTime,
 				IsUsed = false,
 			};
 
@@ -71,7 +72,7 @@ public class InitiateRegistrationCommandHandlerTests(
 				Email = "first@example.com",
 				TokenHash = hashedToken,
 				ExpiresAt =
-					DateTime.UtcNow.AddHours(24),
+					TestTimeProviderBuilder.DefaultTime.AddHours(24).UtcDateTime,
 				IsUsed = false,
 			};
 
@@ -81,7 +82,7 @@ public class InitiateRegistrationCommandHandlerTests(
 				Email = "second@example.com",
 				TokenHash = hashedToken, // Same hash
 				ExpiresAt =
-					DateTime.UtcNow.AddHours(24),
+					TestTimeProviderBuilder.DefaultTime.AddHours(24).UtcDateTime,
 				IsUsed = false,
 			};
 

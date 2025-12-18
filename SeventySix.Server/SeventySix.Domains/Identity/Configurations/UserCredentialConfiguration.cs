@@ -33,8 +33,8 @@ public class UserCredentialConfiguration
 		builder.HasKey(e => e.UserId);
 		builder.Property(e => e.UserId).IsRequired();
 
-		// PasswordHash - Required, BCrypt hash is 60 chars
-		builder.Property(e => e.PasswordHash).IsRequired().HasMaxLength(72);
+		// PasswordHash - Required, Argon2id hash can be ~130 chars
+		builder.Property(e => e.PasswordHash).IsRequired().HasMaxLength(150);
 
 		// PasswordChangedAt - Optional
 		builder
