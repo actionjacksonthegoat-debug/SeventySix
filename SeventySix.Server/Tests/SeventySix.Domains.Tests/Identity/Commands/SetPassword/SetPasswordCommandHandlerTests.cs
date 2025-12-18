@@ -94,20 +94,7 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 		await context.SaveChangesAsync();
 
 		UserDto userDto =
-			new(
-			Id: testUser.Id,
-			Username: "testuser",
-			Email: "test@example.com",
-			FullName: "Test User",
-			CreateDate: TimeProvider.GetUtcNow().UtcDateTime,
-			IsActive: true,
-			CreatedBy: "System",
-			ModifyDate: null,
-			ModifiedBy: "System",
-			LastLoginAt: null,
-			IsDeleted: false,
-			DeletedAt: null,
-			DeletedBy: null);
+			CreateTestUserDto(testUser);
 
 		MessageBus
 			.InvokeAsync<UserDto?>(
@@ -123,7 +110,13 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
 			.Returns(
-				AuthResult.Succeeded("token", "refresh", TimeProvider.GetUtcNow().UtcDateTime, false));
+				AuthResult.Succeeded(
+					"token",
+					"refresh",
+					TimeProvider.GetUtcNow().UtcDateTime,
+					"test@example.com",
+					null,
+					false));
 
 		SetPasswordRequest passwordRequest =
 			new(rawToken, "NewPassword123!");
@@ -266,4 +259,24 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 				NullLogger<SetPasswordCommand>.Instance,
 				CancellationToken.None));
 	}
+
+	#region Helper Methods
+
+	private UserDto CreateTestUserDto(User user) =>
+		new(
+			Id: user.Id,
+			Username: user.Username,
+			Email: user.Email,
+			FullName: user.FullName,
+			CreateDate: user.CreateDate,
+			IsActive: user.IsActive,
+			CreatedBy: user.CreatedBy,
+			ModifyDate: user.ModifyDate,
+			ModifiedBy: user.ModifiedBy,
+			LastLoginAt: user.LastLoginAt,
+			IsDeleted: user.IsDeleted,
+			DeletedAt: user.DeletedAt,
+			DeletedBy: user.DeletedBy);
+
+	#endregion
 }

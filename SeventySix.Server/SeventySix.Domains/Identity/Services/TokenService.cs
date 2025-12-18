@@ -22,6 +22,7 @@ namespace SeventySix.Identity;
 /// - Refresh tokens are random bytes, SHA256 hashed before storage
 /// - Token rotation: old refresh token revoked when new one issued
 /// - Session limits: oldest token revoked when max sessions exceeded
+/// - PII (email, fullName) is NOT included in JWT for GDPR compliance
 /// </remarks>
 public class TokenService(
 	ITokenRepository tokenRepository,
@@ -34,18 +35,12 @@ public class TokenService(
 	public string GenerateAccessToken(
 		int userId,
 		string username,
-		string email,
-		string? fullName,
 		IEnumerable<string> roles)
 	{
 		List<Claim> claims =
 			[
 			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
 			new Claim(JwtRegisteredClaimNames.UniqueName, username),
-			new Claim(JwtRegisteredClaimNames.Email, email),
-			new Claim(
-				JwtRegisteredClaimNames.GivenName,
-				fullName ?? string.Empty),
 			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 			new Claim(
 				JwtRegisteredClaimNames.Iat,

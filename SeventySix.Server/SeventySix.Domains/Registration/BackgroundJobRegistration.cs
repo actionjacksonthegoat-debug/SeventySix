@@ -22,6 +22,7 @@ namespace SeventySix.Registration;
 /// <para><strong>Background Jobs Inventory:</strong></para>
 /// <list type="bullet">
 ///   <item><see cref="RefreshTokenCleanupService"/> - Periodic cleanup of expired refresh tokens (Identity)</item>
+///   <item><see cref="IpAnonymizationService"/> - Periodic anonymization of old IP addresses for GDPR compliance (Identity)</item>
 ///   <item><see cref="AdminSeederService"/> - One-time admin user seeding at startup (Identity)</item>
 ///   <item><see cref="PendingEmailBackgroundService"/> - Daily processing of pending welcome emails (Identity)</item>
 ///   <item><see cref="LogCleanupService"/> - Periodic cleanup of old log files and database entries (Logging)</item>
@@ -57,6 +58,12 @@ public static class BackgroundJobRegistration
 		services.Configure<RefreshTokenCleanupSettings>(
 			configuration.GetSection(RefreshTokenCleanupSettings.SectionName));
 		services.AddHostedService<RefreshTokenCleanupService>();
+
+		// IpAnonymizationService - Periodic anonymization of old IP addresses for GDPR compliance
+		// Settings: IpAnonymization section in appsettings.json
+		services.Configure<IpAnonymizationSettings>(
+			configuration.GetSection(IpAnonymizationSettings.SectionName));
+		services.AddHostedService<IpAnonymizationService>();
 
 		// AdminSeederService - One-time admin user seeding at startup
 		// Settings: AdminSeeder section in appsettings.json

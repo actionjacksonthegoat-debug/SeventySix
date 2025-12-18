@@ -1448,6 +1448,8 @@ export type components = {
 			accessToken: string;
 			/** Format: date-time */
 			expiresAt: string;
+			email: string;
+			fullName: string | null;
 			/** @default false */
 			requiresPasswordChange: boolean;
 		};

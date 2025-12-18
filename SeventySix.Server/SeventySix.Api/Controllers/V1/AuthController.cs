@@ -96,6 +96,8 @@ public class AuthController(
 			new AuthResponse(
 				AccessToken: result.AccessToken!,
 				ExpiresAt: result.ExpiresAt!.Value,
+				Email: result.Email!,
+				FullName: result.FullName,
 				RequiresPasswordChange: result.RequiresPasswordChange));
 	}
 
@@ -156,6 +158,8 @@ public class AuthController(
 			new AuthResponse(
 				AccessToken: result.AccessToken!,
 				ExpiresAt: result.ExpiresAt!.Value,
+				Email: result.Email!,
+				FullName: result.FullName,
 				RequiresPasswordChange: result.RequiresPasswordChange));
 	}
 
@@ -227,6 +231,8 @@ public class AuthController(
 			new AuthResponse(
 				AccessToken: result.AccessToken!,
 				ExpiresAt: result.ExpiresAt!.Value,
+				Email: result.Email!,
+				FullName: result.FullName,
 				RequiresPasswordChange: result.RequiresPasswordChange));
 	}
 
@@ -347,7 +353,9 @@ public class AuthController(
 		return CreateOAuthSuccessResponse(
 			result.AccessToken!,
 			result.RefreshToken!,
-			result.ExpiresAt!.Value);
+			result.ExpiresAt!.Value,
+			result.Email!,
+			result.FullName);
 	}
 
 	/// <summary>
@@ -393,6 +401,8 @@ public class AuthController(
 			new AuthResponse(
 				AccessToken: result.AccessToken,
 				ExpiresAt: result.ExpiresAt,
+				Email: result.Email,
+				FullName: result.FullName,
 				RequiresPasswordChange: false));
 	}
 
@@ -576,6 +586,8 @@ public class AuthController(
 			new AuthResponse(
 				AccessToken: result.AccessToken!,
 				ExpiresAt: result.ExpiresAt!.Value,
+				Email: result.Email!,
+				FullName: result.FullName,
 				RequiresPasswordChange: false));
 	}
 
@@ -674,6 +686,8 @@ public class AuthController(
 			new AuthResponse(
 				AccessToken: result.AccessToken!,
 				ExpiresAt: result.ExpiresAt!.Value,
+				Email: result.Email!,
+				FullName: result.FullName,
 				RequiresPasswordChange: false));
 	}
 
@@ -774,7 +788,9 @@ public class AuthController(
 	private ContentResult CreateOAuthSuccessResponse(
 		string accessToken,
 		string refreshToken,
-		DateTime expiresAt)
+		DateTime expiresAt,
+		string email,
+		string? fullName)
 	{
 		string origin = GetAllowedOrigin();
 
@@ -783,7 +799,9 @@ public class AuthController(
 			oauthCodeExchange.StoreTokens(
 				accessToken,
 				refreshToken,
-				expiresAt);
+				expiresAt,
+				email,
+				fullName);
 
 		string html =
 			$$"""

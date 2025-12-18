@@ -28,6 +28,8 @@ describe("LoginComponent",
 				accessToken: "test-token",
 				expiresAt: new Date(Date.now() + 3600000)
 					.toISOString(),
+				email: "test@example.com",
+				fullName: "Test User",
 				requiresPasswordChange: false
 			};
 

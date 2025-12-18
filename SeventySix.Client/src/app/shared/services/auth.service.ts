@@ -131,7 +131,9 @@ export class AuthService
 				{
 					this.setAccessToken(
 						response.accessToken,
-						response.expiresAt);
+						response.expiresAt,
+						response.email,
+						response.fullName);
 					this.requiresPasswordChangeSignal.set(
 						response.requiresPasswordChange);
 					this.markHasSession();
@@ -167,7 +169,9 @@ export class AuthService
 				{
 					this.setAccessToken(
 						response.accessToken,
-						response.expiresAt);
+						response.expiresAt,
+						response.email,
+						response.fullName);
 					this.requiresPasswordChangeSignal.set(
 						response.requiresPasswordChange);
 					this.markHasSession();
@@ -271,7 +275,9 @@ export class AuthService
 				{
 					this.setAccessToken(
 						response.accessToken,
-						response.expiresAt);
+						response.expiresAt,
+						response.email,
+						response.fullName);
 					this.markHasSession();
 				}));
 	}
@@ -322,6 +328,7 @@ export class AuthService
 	/**
 	 * Handles OAuth callback - token in URL fragment.
 	 * @returns true if OAuth callback was handled, false otherwise.
+	 * @remarks The server may also provide email and fullName in the hash params.
 	 */
 	private handleOAuthCallback(): boolean
 	{
@@ -333,17 +340,25 @@ export class AuthService
 			return false;
 		}
 
-		// Parse token from fragment: #access_token=xxx&expires_at=xxx
+		// Parse token from fragment: #access_token=xxx&expires_at=xxx&email=xxx&full_name=xxx
 		const params: URLSearchParams =
 			new URLSearchParams(hash.substring(1));
 		const token: string | null =
 			params.get("access_token");
 		const expiresAt: string | null =
 			params.get("expires_at");
+		const email: string | null =
+			params.get("email");
+		const fullName: string | null =
+			params.get("full_name");
 
-		if (token && expiresAt)
+		if (token && expiresAt && email)
 		{
-			this.setAccessToken(token, expiresAt);
+			this.setAccessToken(
+				token,
+				expiresAt,
+				email,
+				fullName);
 
 			// Clean URL fragment
 			window.history.replaceState(
@@ -362,9 +377,18 @@ export class AuthService
 	}
 
 	/**
-	 * Sets the access token and extracts user info.
+	 * Sets the access token and user info from response.
+	 * Email and fullName are now in the response body, not JWT claims.
+	 * @param token - The JWT access token
+	 * @param expiresAt - Token expiration time
+	 * @param email - User's email from response (required)
+	 * @param fullName - User's full name from response (optional)
 	 */
-	private setAccessToken(token: string, expiresAt: string): void
+	private setAccessToken(
+		token: string,
+		expiresAt: string,
+		email: string,
+		fullName: string | null): void
 	{
 		this.accessToken = token;
 		this.tokenExpiresAt =
@@ -388,15 +412,14 @@ export class AuthService
 						? [roleClaim]
 						: [];
 
-			// Note: Full profile data is available via
-			// AccountService.getProfile() which calls /auth/me.
+			// Email and fullName now come from response body, not JWT claims
 			this.userSignal.set(
 				{
 					id: parseInt(claims.sub, 10),
 					username: claims.unique_name,
-					email: claims.email,
+					email,
 					roles,
-					fullName: claims.given_name || null,
+					fullName,
 					hasPassword: true,
 					linkedProviders: [],
 					lastLoginAt: null

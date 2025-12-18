@@ -25,4 +25,11 @@ public record RefreshTokenCleanupSettings
 	/// Default is 7 days.
 	/// </summary>
 	public int RetentionDays { get; set; } = 7;
+
+	/// <summary>
+	/// Gets or sets the number of hours to retain used tokens before deletion.
+	/// Applies to PasswordResetToken and EmailVerificationToken entities.
+	/// Default is 24 hours.
+	/// </summary>
+	public int UsedTokenRetentionHours { get; set; } = 24;
 }

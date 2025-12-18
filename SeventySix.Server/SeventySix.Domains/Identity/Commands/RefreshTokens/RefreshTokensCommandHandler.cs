@@ -83,6 +83,8 @@ public static class RefreshTokensCommandHandler
 			result.AccessToken!,
 			newRefreshToken,
 			result.ExpiresAt!.Value,
+			result.Email!,
+			result.FullName,
 			requiresPasswordChange);
 	}
 }

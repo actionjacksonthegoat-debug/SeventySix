@@ -46,8 +46,6 @@ public sealed class AuthenticationService(
 			tokenService.GenerateAccessToken(
 				user.Id,
 				user.Username,
-				user.Email,
-				user.FullName,
 				roles.ToList());
 
 		string refreshToken =
@@ -73,6 +71,8 @@ public sealed class AuthenticationService(
 			accessToken,
 			refreshToken,
 			expiresAt,
+			user.Email,
+			user.FullName,
 			requiresPasswordChange);
 	}
 }

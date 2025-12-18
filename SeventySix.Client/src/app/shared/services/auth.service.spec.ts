@@ -328,15 +328,17 @@ describe("AuthService",
 		describe("fullName parsing",
 			() =>
 			{
-				it("should set fullName from given_name claim",
+				it("should set fullName from response body",
 					() =>
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
 								{
-									unique_name: "johndoe",
+									unique_name: "johndoe"
+								},
+								{
 									email: "john@example.com",
-									given_name: "John Doe"
+									fullName: "John Doe"
 								});
 
 						service
@@ -356,14 +358,17 @@ describe("AuthService",
 							.toBe("John Doe");
 					});
 
-				it("should set fullName to null when given_name not present",
+				it("should set fullName to null when fullName is null in response",
 					() =>
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
 								{
-									unique_name: "johndoe",
-									email: "john@example.com"
+									unique_name: "johndoe"
+								},
+								{
+									email: "john@example.com",
+									fullName: null
 								});
 
 						service
@@ -383,15 +388,17 @@ describe("AuthService",
 							.toBeNull();
 					});
 
-				it("should set fullName to null when given_name is empty string",
+				it("should set email from response body",
 					() =>
 					{
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
 								{
-									unique_name: "johndoe",
+									unique_name: "johndoe"
+								},
+								{
 									email: "john@example.com",
-									given_name: ""
+									fullName: "John Doe"
 								});
 
 						service
@@ -407,8 +414,8 @@ describe("AuthService",
 							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 						req.flush(mockResponse);
 
-						expect(service.user()?.fullName)
-							.toBeNull();
+						expect(service.user()?.email)
+							.toBe("john@example.com");
 					});
 			});
 
@@ -783,6 +790,8 @@ function createMockAuthResponse(
 			{ ...DEFAULT_JWT_PAYLOAD, ...jwtOverrides }),
 		expiresAt: new Date(Date.now() + 900000)
 			.toISOString(),
+		email: "test@example.com",
+		fullName: "Test User",
 		requiresPasswordChange: false,
 		...responseOverrides
 	};

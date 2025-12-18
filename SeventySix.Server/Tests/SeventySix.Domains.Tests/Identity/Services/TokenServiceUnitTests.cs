@@ -155,30 +155,6 @@ public class TokenServiceUnitTests
 			$"Expected expiry around {expectedExpiry}, got {jwt.ValidTo}");
 	}
 
-	[Theory]
-	[InlineData("John Doe", "John Doe")]
-	[InlineData(null, "")]
-	public void GenerateAccessToken_ContainsGivenNameClaim_WithExpectedValueAsync(
-		string? fullName,
-		string expectedClaimValue)
-	{
-		// Act
-		string token =
-			GenerateTestAccessToken(fullName: fullName);
-
-		// Assert
-		JwtSecurityTokenHandler handler = new();
-		JwtSecurityToken jwt =
-			handler.ReadJwtToken(token);
-
-		Claim? givenNameClaim =
-			jwt.Claims.FirstOrDefault(claim =>
-			claim.Type == JwtRegisteredClaimNames.GivenName);
-
-		Assert.NotNull(givenNameClaim);
-		Assert.Equal(expectedClaimValue, givenNameClaim.Value);
-	}
-
 	#endregion
 
 	#region Helper Methods
@@ -189,14 +165,10 @@ public class TokenServiceUnitTests
 	private string GenerateTestAccessToken(
 		int userId = 1,
 		string username = "testuser",
-		string email = "test@example.com",
-		string? fullName = null,
 		List<string>? roles = null) =>
 		Service.GenerateAccessToken(
 			userId,
 			username,
-			email,
-			fullName,
 			roles ?? []);
 
 	#endregion

@@ -20,11 +20,15 @@ public interface IOAuthCodeExchangeService
 	/// <param name="accessToken">The JWT access token.</param>
 	/// <param name="refreshToken">The refresh token.</param>
 	/// <param name="expiresAt">Access token expiration time.</param>
+	/// <param name="email">User's email address.</param>
+	/// <param name="fullName">User's full name (optional).</param>
 	/// <returns>A one-time authorization code (60 seconds TTL).</returns>
 	public string StoreTokens(
 		string accessToken,
 		string refreshToken,
-		DateTime expiresAt);
+		DateTime expiresAt,
+		string email,
+		string? fullName);
 
 	/// <summary>
 	/// Exchanges a one-time code for tokens.

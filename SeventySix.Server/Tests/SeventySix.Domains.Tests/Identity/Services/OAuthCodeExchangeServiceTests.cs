@@ -23,6 +23,9 @@ public class OAuthCodeExchangeServiceTests
 		0,
 		DateTimeKind.Utc);
 
+	private const string TestEmail = "test@example.com";
+	private const string? TestFullName = null;
+
 	private OAuthCodeExchangeService CreateService()
 	{
 		MemoryCache cache =
@@ -44,7 +47,9 @@ public class OAuthCodeExchangeServiceTests
 			service.StoreTokens(
 			"access-token",
 			"refresh-token",
-			FixedExpiresAt);
+			FixedExpiresAt,
+			TestEmail,
+			TestFullName);
 
 		// Assert
 		Assert.NotNull(code);
@@ -62,13 +67,17 @@ public class OAuthCodeExchangeServiceTests
 			service.StoreTokens(
 			"access-token-1",
 			"refresh-token-1",
-			FixedExpiresAt);
+			FixedExpiresAt,
+			TestEmail,
+			TestFullName);
 
 		string code2 =
 			service.StoreTokens(
 			"access-token-2",
 			"refresh-token-2",
-			FixedExpiresAt);
+			FixedExpiresAt,
+			TestEmail,
+			TestFullName);
 
 		// Assert
 		Assert.NotEqual(code1, code2);
@@ -85,7 +94,9 @@ public class OAuthCodeExchangeServiceTests
 			service.StoreTokens(
 			"access-token",
 			"refresh-token",
-			FixedExpiresAt);
+			FixedExpiresAt,
+			TestEmail,
+			TestFullName);
 
 		// Assert - Base64url uses only these characters
 		Assert.Matches("^[A-Za-z0-9_-]+$", code);
@@ -108,7 +119,9 @@ public class OAuthCodeExchangeServiceTests
 			service.StoreTokens(
 			accessToken,
 			refreshToken,
-			FixedExpiresAt);
+			FixedExpiresAt,
+			TestEmail,
+			TestFullName);
 
 		// Act
 		OAuthCodeExchangeResult? result =
@@ -119,6 +132,8 @@ public class OAuthCodeExchangeServiceTests
 		Assert.Equal(accessToken, result.AccessToken);
 		Assert.Equal(refreshToken, result.RefreshToken);
 		Assert.Equal(FixedExpiresAt, result.ExpiresAt);
+		Assert.Equal(TestEmail, result.Email);
+		Assert.Equal(TestFullName, result.FullName);
 	}
 
 	[Fact]
@@ -145,7 +160,9 @@ public class OAuthCodeExchangeServiceTests
 			service.StoreTokens(
 			"access-token",
 			"refresh-token",
-			FixedExpiresAt);
+			FixedExpiresAt,
+			TestEmail,
+			TestFullName);
 
 		// Act
 		OAuthCodeExchangeResult? firstResult =
@@ -193,7 +210,9 @@ public class OAuthCodeExchangeServiceTests
 			service.StoreTokens(
 			"access-token",
 			"refresh-token",
-			FixedExpiresAt);
+			FixedExpiresAt,
+			TestEmail,
+			TestFullName);
 
 		// Wait for cache expiration (codes expire after 60 seconds)
 		// Use a longer delay to ensure expiration
@@ -226,7 +245,9 @@ public class OAuthCodeExchangeServiceTests
 			service.StoreTokens(
 			"access-token",
 			"refresh-token",
-			FixedExpiresAt);
+			FixedExpiresAt,
+			TestEmail,
+			TestFullName);
 
 		// Assert - 32 bytes = 43 base64url characters (no padding)
 		Assert.Equal(43, code.Length);
@@ -241,13 +262,15 @@ public class OAuthCodeExchangeServiceTests
 		HashSet<string> codes = [];
 
 		// Act - Generate many codes to verify uniqueness
-		for (int i = 0; i < 100; i++)
+		for (int index = 0; index < 100; index++)
 		{
 			string code =
 				service.StoreTokens(
-				$"access-token-{i}",
-				$"refresh-token-{i}",
-				FixedExpiresAt);
+				$"access-token-{index}",
+				$"refresh-token-{index}",
+				FixedExpiresAt,
+				TestEmail,
+				TestFullName);
 
 			codes.Add(code);
 		}

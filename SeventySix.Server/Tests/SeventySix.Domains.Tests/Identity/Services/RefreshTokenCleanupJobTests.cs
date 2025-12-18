@@ -10,6 +10,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
+using SeventySix.TestUtilities.Builders;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
@@ -74,6 +75,7 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			{
 				IntervalHours = 24,
 				RetentionDays = 7,
+				UsedTokenRetentionHours = 24,
 			});
 
 		this.Logger =
@@ -162,7 +164,7 @@ public class RefreshTokenCleanupJobTests : IDisposable
 	}
 
 	[Fact]
-	public async Task CleanupExpiredTokensAsync_LogsWarning_WhenTokensAreDeletedAsync()
+	public async Task CleanupExpiredTokensAsync_LogsInformation_WhenTokensAreDeletedAsync()
 	{
 		// Arrange
 		DateTime now =
@@ -189,12 +191,12 @@ public class RefreshTokenCleanupJobTests : IDisposable
 		// Act
 		await this.CleanupJob.CleanupExpiredTokensAsync();
 
-		// Assert - Verify LogWarning was called
+		// Assert - Verify LogInformation was called
 		this.Logger.Received(1)
 			.Log(
-				LogLevel.Warning,
+				LogLevel.Information,
 				Arg.Any<EventId>(),
-				Arg.Is<object>(o => o.ToString()!.Contains("Cleaned up")),
+				Arg.Is<object>(logMessage => logMessage.ToString()!.Contains("Token cleanup completed")),
 				null,
 				Arg.Any<Func<object, Exception?, string>>());
 	}
@@ -225,10 +227,10 @@ public class RefreshTokenCleanupJobTests : IDisposable
 		// Act
 		await this.CleanupJob.CleanupExpiredTokensAsync();
 
-		// Assert - No LogWarning should be called
+		// Assert - No LogInformation should be called
 		this.Logger.DidNotReceive()
 			.Log(
-				LogLevel.Warning,
+				LogLevel.Information,
 				Arg.Any<EventId>(),
 				Arg.Any<object>(),
 				null,
@@ -295,6 +297,117 @@ public class RefreshTokenCleanupJobTests : IDisposable
 		int count =
 			await this.DbContext.RefreshTokens.CountAsync();
 		count.ShouldBe(0);
+	}
+
+	[Fact]
+	public async Task CleanupExpiredTokensAsync_DeletesUsedPasswordResetTokensOlderThan24HoursAsync()
+	{
+		// Arrange
+		DateTime now =
+			this.TimeProvider.GetUtcNow().UtcDateTime;
+
+		PasswordResetToken usedOldToken =
+			new PasswordResetTokenBuilder(this.TimeProvider)
+				.WithUserId(this.TestUser.Id)
+				.AsUsed()
+				.WithCreateDate(now.AddHours(-48))
+				.Build();
+
+		PasswordResetToken usedRecentToken =
+			new PasswordResetTokenBuilder(this.TimeProvider)
+				.WithUserId(this.TestUser.Id)
+				.AsUsed()
+				.WithCreateDate(now.AddHours(-12))
+				.Build();
+
+		PasswordResetToken unusedOldToken =
+			new PasswordResetTokenBuilder(this.TimeProvider)
+				.WithUserId(this.TestUser.Id)
+				.WithIsUsed(false)
+				.WithCreateDate(now.AddHours(-48))
+				.Build();
+
+		this.DbContext.PasswordResetTokens.AddRange(
+			usedOldToken,
+			usedRecentToken,
+			unusedOldToken);
+		await this.DbContext.SaveChangesAsync();
+
+		// Act
+		await this.CleanupJob.CleanupExpiredTokensAsync();
+
+		// Assert
+		List<PasswordResetToken> remainingTokens =
+			await this.DbContext.PasswordResetTokens.ToListAsync();
+
+		remainingTokens.Count.ShouldBe(2); // Recent used + unused old
+		remainingTokens.ShouldNotContain(
+			passwordResetToken => passwordResetToken.Id == usedOldToken.Id);
+	}
+
+	[Fact]
+	public async Task CleanupExpiredTokensAsync_DeletesUsedEmailVerificationTokensOlderThan24HoursAsync()
+	{
+		// Arrange
+		DateTime now =
+			this.TimeProvider.GetUtcNow().UtcDateTime;
+
+		EmailVerificationToken usedOldToken =
+			new EmailVerificationTokenBuilder(this.TimeProvider)
+				.WithEmail("old@test.com")
+				.AsUsed()
+				.WithCreateDate(now.AddHours(-48))
+				.Build();
+
+		EmailVerificationToken usedRecentToken =
+			new EmailVerificationTokenBuilder(this.TimeProvider)
+				.WithEmail("recent@test.com")
+				.AsUsed()
+				.WithCreateDate(now.AddHours(-12))
+				.Build();
+
+		this.DbContext.EmailVerificationTokens.AddRange(
+			usedOldToken,
+			usedRecentToken);
+		await this.DbContext.SaveChangesAsync();
+
+		// Act
+		await this.CleanupJob.CleanupExpiredTokensAsync();
+
+		// Assert
+		List<EmailVerificationToken> remainingTokens =
+			await this.DbContext.EmailVerificationTokens.ToListAsync();
+
+		remainingTokens.Count.ShouldBe(1);
+		remainingTokens.Single().Email.ShouldBe("recent@test.com");
+	}
+
+	[Fact]
+	public async Task CleanupExpiredTokensAsync_DoesNotDeleteUnusedPasswordResetTokensAsync()
+	{
+		// Arrange
+		DateTime now =
+			this.TimeProvider.GetUtcNow().UtcDateTime;
+
+		PasswordResetToken unusedOldToken =
+			new PasswordResetTokenBuilder(this.TimeProvider)
+				.WithUserId(this.TestUser.Id)
+				.WithIsUsed(false)
+				.WithCreateDate(now.AddHours(-72))
+				.Build();
+
+		this.DbContext.PasswordResetTokens.Add(unusedOldToken);
+		await this.DbContext.SaveChangesAsync();
+
+		// Act
+		await this.CleanupJob.CleanupExpiredTokensAsync();
+
+		// Assert
+		bool tokenExists =
+			await this.DbContext.PasswordResetTokens.AnyAsync(
+				passwordResetToken => passwordResetToken.Id == unusedOldToken.Id);
+
+		tokenExists.ShouldBeTrue(); // Unused tokens preserved
 	}
 
 	public void Dispose()

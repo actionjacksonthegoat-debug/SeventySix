@@ -9,6 +9,19 @@ using SeventySix.Identity;
 namespace SeventySix.TestUtilities.TestHelpers;
 
 /// <summary>
+/// Options for creating test users.
+/// </summary>
+/// <param name="PasswordHash">
+/// Optional custom password hash. Defaults to <see cref="TestUserHelper.TestPasswordHash"/>.
+/// </param>
+/// <param name="IsActive">Whether the user should be active. Defaults to true.</param>
+/// <param name="FullName">Optional full name for the user.</param>
+public record CreateUserOptions(
+	string? PasswordHash = null,
+	bool IsActive = true,
+	string? FullName = null);
+
+/// <summary>
 /// Helper methods for creating test users with pre-computed password hashes.
 /// Eliminates runtime Argon2id computation overhead in tests.
 /// </summary>
@@ -68,18 +81,14 @@ public static class TestUserHelper
 	/// <param name="username">The username for the new user.</param>
 	/// <param name="email">The email for the new user.</param>
 	/// <param name="timeProvider">The time provider for setting CreateDate.</param>
-	/// <param name="passwordHash">
-	/// Optional custom password hash. Defaults to <see cref="TestPasswordHash"/>.
-	/// </param>
-	/// <param name="isActive">Whether the user should be active. Defaults to true.</param>
+	/// <param name="options">Optional configuration for the user.</param>
 	/// <returns>The created user.</returns>
 	public static async Task<User> CreateUserWithPasswordAsync(
 		IServiceProvider services,
 		string username,
 		string email,
 		TimeProvider timeProvider,
-		string? passwordHash = null,
-		bool isActive = true)
+		CreateUserOptions? options = null)
 	{
 		using IServiceScope scope = services.CreateScope();
 
@@ -91,8 +100,7 @@ public static class TestUserHelper
 			username,
 			email,
 			timeProvider,
-			passwordHash,
-			isActive);
+			options);
 	}
 
 	/// <summary>
@@ -102,25 +110,25 @@ public static class TestUserHelper
 	/// <param name="username">The username for the new user.</param>
 	/// <param name="email">The email for the new user.</param>
 	/// <param name="timeProvider">The time provider for setting CreateDate.</param>
-	/// <param name="passwordHash">
-	/// Optional custom password hash. Defaults to <see cref="TestPasswordHash"/>.
-	/// </param>
-	/// <param name="isActive">Whether the user should be active. Defaults to true.</param>
+	/// <param name="options">Optional configuration for the user.</param>
 	/// <returns>The created user.</returns>
 	public static async Task<User> CreateUserWithPasswordAsync(
 		IdentityDbContext context,
 		string username,
 		string email,
 		TimeProvider timeProvider,
-		string? passwordHash = null,
-		bool isActive = true)
+		CreateUserOptions? options = null)
 	{
+		CreateUserOptions opts =
+			options ?? new CreateUserOptions();
+
 		User user =
 			new()
 			{
 				Username = username,
 				Email = email,
-				IsActive = isActive,
+				FullName = opts.FullName,
+				IsActive = opts.IsActive,
 				CreateDate =
 					timeProvider.GetUtcNow().UtcDateTime,
 				CreatedBy = "Test",
@@ -135,7 +143,7 @@ public static class TestUserHelper
 			{
 				UserId = user.Id,
 				PasswordHash =
-					passwordHash ?? TestPasswordHash,
+					opts.PasswordHash ?? TestPasswordHash,
 				CreateDate =
 					timeProvider.GetUtcNow().UtcDateTime,
 			};
@@ -154,10 +162,7 @@ public static class TestUserHelper
 	/// <param name="email">The email for the new user.</param>
 	/// <param name="roles">The roles to assign to the user.</param>
 	/// <param name="timeProvider">The time provider for setting CreateDate.</param>
-	/// <param name="passwordHash">
-	/// Optional custom password hash. Defaults to <see cref="TestPasswordHash"/>.
-	/// </param>
-	/// <param name="isActive">Whether the user should be active. Defaults to true.</param>
+	/// <param name="options">Optional configuration for the user.</param>
 	/// <returns>The created user.</returns>
 	public static async Task<User> CreateUserWithRolesAsync(
 		IServiceProvider services,
@@ -165,8 +170,7 @@ public static class TestUserHelper
 		string email,
 		IEnumerable<string> roles,
 		TimeProvider timeProvider,
-		string? passwordHash = null,
-		bool isActive = true)
+		CreateUserOptions? options = null)
 	{
 		using IServiceScope scope = services.CreateScope();
 
@@ -179,8 +183,7 @@ public static class TestUserHelper
 			username,
 			email,
 			timeProvider,
-			passwordHash,
-			isActive);
+			options);
 
 		foreach (string role in roles)
 		{

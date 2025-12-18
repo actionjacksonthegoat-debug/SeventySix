@@ -85,8 +85,6 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				user.Id,
 				user.Username,
-				user.Email,
-				user.FullName,
 				Arg.Any<List<string>>())
 			.Returns(expectedAccessToken);
 
@@ -114,6 +112,8 @@ public class AuthenticationServiceTests
 		Assert.Equal(expectedAccessToken, result.AccessToken);
 		Assert.Equal(expectedRefreshToken, result.RefreshToken);
 		Assert.Equal(utcNow.AddMinutes(15), result.ExpiresAt);
+		Assert.Equal(user.Email, result.Email);
+		Assert.Equal(user.FullName, result.FullName);
 		Assert.False(result.RequiresPasswordChange);
 
 		await AuthRepository
@@ -145,8 +145,6 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				Arg.Any<int>(),
 				Arg.Any<string>(),
-				Arg.Any<string>(),
-				Arg.Any<string?>(),
 				Arg.Any<List<string>>())
 			.Returns("token");
 
@@ -198,8 +196,6 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				Arg.Any<int>(),
 				Arg.Any<string>(),
-				Arg.Any<string>(),
-				Arg.Any<string?>(),
 				Arg.Any<List<string>>())
 			.Returns("token");
 
@@ -254,9 +250,7 @@ public class AuthenticationServiceTests
 			.GenerateAccessToken(
 				Arg.Any<int>(),
 				Arg.Any<string>(),
-				Arg.Any<string>(),
-				Arg.Any<string?>(),
-				Arg.Do<List<string>>(r => capturedRoles = r))
+				Arg.Do<List<string>>(roleList => capturedRoles = roleList))
 			.Returns("token");
 
 		TokenService

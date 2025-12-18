@@ -123,8 +123,6 @@ public class RegistrationService(
 			tokenService.GenerateAccessToken(
 				user.Id,
 				user.Username,
-				user.Email,
-				user.FullName,
 				roles.ToList());
 
 		string refreshToken =
@@ -141,6 +139,8 @@ public class RegistrationService(
 				.GetUtcNow()
 				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
 				.UtcDateTime,
+			user.Email,
+			user.FullName,
 			requiresPasswordChange);
 	}
 }

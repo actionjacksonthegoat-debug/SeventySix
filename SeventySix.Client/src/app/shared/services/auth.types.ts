@@ -14,8 +14,6 @@ export interface JwtClaims
 {
 	sub: string;
 	unique_name: string;
-	email: string;
-	given_name?: string;
 	exp: number;
 	iat: number;
 	jti: string;

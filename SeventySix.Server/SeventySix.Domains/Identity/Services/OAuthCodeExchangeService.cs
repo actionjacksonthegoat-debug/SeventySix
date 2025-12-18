@@ -34,7 +34,9 @@ public class OAuthCodeExchangeService(IMemoryCache cache)
 	public string StoreTokens(
 		string accessToken,
 		string refreshToken,
-		DateTime expiresAt)
+		DateTime expiresAt,
+		string email,
+		string? fullName)
 	{
 		string code = GenerateSecureCode();
 
@@ -42,7 +44,9 @@ public class OAuthCodeExchangeService(IMemoryCache cache)
 			new(
 				accessToken,
 				refreshToken,
-				expiresAt);
+				expiresAt,
+				email,
+				fullName);
 
 		MemoryCacheEntryOptions options =
 			new MemoryCacheEntryOptions()

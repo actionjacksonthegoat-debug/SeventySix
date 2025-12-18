@@ -18,15 +18,15 @@ public interface ITokenService
 	/// </summary>
 	/// <param name="userId">The user's ID.</param>
 	/// <param name="username">The user's username.</param>
-	/// <param name="email">The user's email.</param>
-	/// <param name="fullName">The user's full name (optional).</param>
 	/// <param name="roles">The user's roles.</param>
 	/// <returns>The JWT access token string.</returns>
+	/// <remarks>
+	/// PII (email, fullName) is NOT included in JWT claims for GDPR compliance.
+	/// This data is returned in the AuthResponse body instead.
+	/// </remarks>
 	public string GenerateAccessToken(
 		int userId,
 		string username,
-		string email,
-		string? fullName,
 		IEnumerable<string> roles);
 
 	/// <summary>

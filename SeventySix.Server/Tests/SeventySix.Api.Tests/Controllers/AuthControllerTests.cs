@@ -129,6 +129,56 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		Assert.True(
 			authResponse.ExpiresAt > timeProvider.GetUtcNow().UtcDateTime);
 		Assert.True(response.Headers.Contains("Set-Cookie"));
+
+		// Verify PII is in response body (not extracted from JWT)
+		Assert.Equal(email, authResponse.Email);
+		Assert.Null(authResponse.FullName);
+	}
+
+	/// <summary>
+	/// Tests that login returns user's full name in response when present.
+	/// </summary>
+	[Fact]
+	public async Task LoginAsync_UserWithFullName_ReturnsFullNameInResponseAsync()
+	{
+		// Arrange
+		FakeTimeProvider timeProvider = new();
+		string testId =
+			Guid.NewGuid().ToString("N")[..8];
+		string username =
+			$"testuser_{testId}";
+		string email =
+			$"test_{testId}@example.com";
+		string fullName =
+			"Test User";
+
+		await TestUserHelper.CreateUserWithPasswordAsync(
+			SharedFactory.Services,
+			username,
+			email,
+			timeProvider,
+			new CreateUserOptions(FullName: fullName));
+
+		LoginRequest request =
+			new(
+			UsernameOrEmail: username,
+			Password: TestUserHelper.TestPassword);
+
+		// Act
+		HttpResponseMessage response =
+			await Client!.PostAsJsonAsync(
+			"/api/v1/auth/login",
+			request);
+
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		AuthResponse? authResponse =
+			await response.Content.ReadFromJsonAsync<AuthResponse>();
+
+		Assert.NotNull(authResponse);
+		Assert.Equal(email, authResponse.Email);
+		Assert.Equal(fullName, authResponse.FullName);
 	}
 	#endregion
 	#region Register Tests
@@ -421,7 +471,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			exchangeService.StoreTokens(
 			"test-access-token",
 			"test-refresh-token",
-			expiresAt);
+			expiresAt,
+			"oauth@example.com",
+			null);
 
 		// Act
 		HttpResponseMessage response =
@@ -437,6 +489,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 
 		Assert.NotNull(authResponse);
 		Assert.Equal("test-access-token", authResponse.AccessToken);
+		Assert.Equal("oauth@example.com", authResponse.Email);
 	}
 
 	/// <summary>
@@ -479,7 +532,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			exchangeService.StoreTokens(
 			"test-access-token",
 			"test-refresh-token",
-			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15));
+			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15),
+			"oauth@example.com",
+			null);
 
 		// Act - First call should succeed
 		HttpResponseMessage firstResponse =
@@ -516,7 +571,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			exchangeService.StoreTokens(
 			"test-access-token",
 			"test-refresh-token",
-			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15));
+			timeProvider.GetUtcNow().UtcDateTime.AddMinutes(15),
+			"oauth@example.com",
+			null);
 
 		// Act
 		HttpResponseMessage response =
@@ -528,7 +585,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 		Assert.Contains(
 			response.Headers.GetValues("Set-Cookie"),
-			c => c.Contains("X-Refresh-Token"));
+			cookieValue => cookieValue.Contains("X-Refresh-Token"));
 	}
 	#endregion
 	#region Me Endpoint Tests
