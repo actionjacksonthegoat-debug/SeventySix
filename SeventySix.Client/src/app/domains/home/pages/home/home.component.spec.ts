@@ -124,17 +124,17 @@ describe("HomeComponent",
 							.toBeTruthy();
 					});
 
-			it("should render RouterLinks for all actions",
-				() =>
-				{
-					fixture.detectChanges();
-					const compiled: HTMLElement =
-						fixture.nativeElement;
-					const links: NodeListOf<HTMLAnchorElement> =
-						compiled.querySelectorAll("a.feature-card-link");
+				it("should render RouterLinks for all actions",
+					() =>
+					{
+						fixture.detectChanges();
+						const compiled: HTMLElement =
+							fixture.nativeElement;
+						const links: NodeListOf<HTMLAnchorElement> =
+							compiled.querySelectorAll("a.feature-card-link");
 
-					expect(links.length)
-						.toBe(2);
+						expect(links.length)
+							.toBe(2);
 					});
 			});
 	});
