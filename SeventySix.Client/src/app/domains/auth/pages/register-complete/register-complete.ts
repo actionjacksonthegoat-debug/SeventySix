@@ -15,10 +15,12 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+import { AUTH_ERROR_CODE } from "@auth/constants";
 import {
+	HTTP_STATUS,
 	PASSWORD_VALIDATION,
 	USERNAME_VALIDATION
-} from "@shared/constants/validation.constants";
+} from "@shared/constants";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 
@@ -147,18 +149,18 @@ export class RegisterCompleteComponent implements OnInit
 
 	private getErrorMessage(error: HttpErrorResponse): string
 	{
-		if (error.status === 400)
+		if (error.status === HTTP_STATUS.BAD_REQUEST)
 		{
 			const errorCode: string =
 				error.error?.extensions?.errorCode;
 
 			switch (errorCode)
 			{
-				case "INVALID_TOKEN":
-				case "TOKEN_EXPIRED":
+				case AUTH_ERROR_CODE.INVALID_TOKEN:
+				case AUTH_ERROR_CODE.TOKEN_EXPIRED:
 					this.tokenValid.set(false);
 					return "This link has expired. Please request a new one.";
-				case "USERNAME_EXISTS":
+				case AUTH_ERROR_CODE.USERNAME_EXISTS:
 					return "This username is already taken. Please choose another.";
 				default:
 					return (

@@ -19,7 +19,7 @@ import {
 import { MatChipsModule } from "@angular/material/chips";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { ActivatedRoute, Router } from "@angular/router";
-import { REQUESTABLE_ROLES } from "@shared/constants";
+import { HTTP_STATUS, REQUESTABLE_ROLES } from "@shared/constants";
 import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION,
@@ -325,7 +325,7 @@ export class UserDetailPage
 		const errorWithStatus: { status?: number; } =
 			error as { status?: number; };
 
-		if (errorWithStatus.status === 409)
+		if (errorWithStatus.status === HTTP_STATUS.CONFLICT)
 		{
 			this.handleConcurrencyError();
 		}

@@ -5,6 +5,7 @@
  */
 
 import { HttpErrorResponse } from "@angular/common/http";
+import { HTTP_STATUS } from "@shared/constants";
 import {
 	HttpError,
 	NetworkError,
@@ -135,25 +136,25 @@ export function convertToAppError(
 	method: string): Error
 {
 	// Network errors (status 0)
-	if (error.status === 0)
+	if (error.status === HTTP_STATUS.NETWORK_ERROR)
 	{
 		return new NetworkError("Unable to connect to the server");
 	}
 
 	// Validation errors (400 with validation details)
-	if (error.status === 400 && error.error?.errors)
+	if (error.status === HTTP_STATUS.BAD_REQUEST && error.error?.errors)
 	{
 		return new ValidationError("Validation failed", error.error.errors);
 	}
 
 	// Not found errors
-	if (error.status === 404)
+	if (error.status === HTTP_STATUS.NOT_FOUND)
 	{
 		return new NotFoundError(error.error?.title || "Resource not found");
 	}
 
 	// Unauthorized errors
-	if (error.status === 401 || error.status === 403)
+	if (error.status === HTTP_STATUS.UNAUTHORIZED || error.status === HTTP_STATUS.FORBIDDEN)
 	{
 		return new UnauthorizedError(
 			error.error?.title || "Unauthorized access");
