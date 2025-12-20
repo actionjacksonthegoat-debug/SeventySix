@@ -2,38 +2,15 @@ import { HttpClient } from "@angular/common/http";
 import { inject, Injectable, isDevMode } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from "@environments/environment";
-import { CreateLogRequest } from "@shared/models";
+import { LogLevel } from "@shared/constants";
+import { CreateLogRequest, LogEntry } from "@shared/models";
 import { DateService } from "@shared/services/date.service";
 import { catchError, of } from "rxjs";
-
-/**
- * Log levels for structured logging.
- */
-export enum LogLevel
-{
-	Debug = 0,
-	Info = 1,
-	Warning = 2,
-	Error = 3,
-	Critical = 4
-}
 
 /**
  * Console log level configuration type.
  */
 type ConsoleLogLevel = "debug" | "info" | "warn" | "error" | "none";
-
-/**
- * Log entry structure for remote logging.
- */
-export interface LogEntry
-{
-	timestamp: string;
-	level: LogLevel;
-	message: string;
-	context?: Record<string, unknown>;
-	error?: Error;
-}
 
 /**
  * Logger service for application-wide logging.

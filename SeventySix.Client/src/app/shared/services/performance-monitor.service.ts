@@ -5,17 +5,7 @@ import {
 	signal,
 	WritableSignal
 } from "@angular/core";
-
-/**
- * Performance metrics tracked by the monitor.
- */
-export interface PerformanceMetrics
-{
-	fps: number;
-	frameTime: number; // ms
-	memoryUsed: number; // MB
-	memoryTotal: number; // MB
-}
+import { PerformanceMetrics } from "@shared/models";
 
 /**
  * Extended Performance interface with memory property (Chrome-specific).

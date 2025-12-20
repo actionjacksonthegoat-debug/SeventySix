@@ -1,10 +1,8 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { StorageService } from "@shared/services";
-import {
-	UserListPreferences,
-	UserPreferencesService
-} from "./user-preferences.service";
+import { UserListPreferences } from "@admin/users/models";
+import { UserPreferencesService } from "./user-preferences.service";
 
 describe("UserPreferencesService",
 	() =>

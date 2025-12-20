@@ -1,11 +1,11 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { LogLevel } from "@shared/constants";
 import { CreateLogRequest } from "@shared/models";
 import { createMockErrorQueueService } from "@shared/testing";
 import { ClientErrorLoggerService } from "./client-error-logger.service";
 import { ErrorQueueService } from "./error-queue.service";
-import { LogLevel } from "./logger.service";
 
 describe("ClientErrorLoggerService",
 	() =>

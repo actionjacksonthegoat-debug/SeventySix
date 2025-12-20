@@ -5,15 +5,8 @@
  */
 
 import { inject, Injectable } from "@angular/core";
+import { UserListPreferences } from "@admin/users/models";
 import { StorageService } from "@shared/services";
-
-export interface UserListPreferences
-{
-	displayedColumns: string[];
-	searchFilter: string;
-	statusFilter: "all" | "active" | "inactive";
-	chartExpanded: boolean;
-}
 
 const DEFAULT_PREFERENCES: UserListPreferences =
 	{

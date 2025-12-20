@@ -1,8 +1,9 @@
 import { Component } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
+import { BreadcrumbItem } from "@shared/models";
 import { ComponentTestBed } from "@testing/test-bed-builders";
-import { BreadcrumbComponent, BreadcrumbItem } from "./breadcrumb.component";
+import { BreadcrumbComponent } from "./breadcrumb.component";
 
 @Component(
 	{

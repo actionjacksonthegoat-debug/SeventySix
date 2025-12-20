@@ -1,19 +1,8 @@
 import { inject, Injectable } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ConfirmDialogComponent } from "@shared/components";
-import { ConfirmDialogData } from "@shared/models";
+import { ConfirmDialogData, ConfirmOptions } from "@shared/models";
 import { map, Observable } from "rxjs";
-
-/**
- * Options for confirmation dialogs.
- */
-export interface ConfirmOptions
-{
-	title: string;
-	message: string;
-	confirmText?: string;
-	cancelText?: string;
-}
 
 /**
  * Dialog service providing standardized confirmation dialogs.

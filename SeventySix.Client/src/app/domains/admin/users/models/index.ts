@@ -3,6 +3,7 @@
  */
 
 import { components } from "@shared/generated-open-api/generated-open-api";
+import { BaseQueryRequest } from "@shared/models";
 
 // User DTOs with type corrections for numeric IDs
 export type UserDto =
@@ -13,7 +14,8 @@ export type UserDto =
 		id: number;
 		statusCode?: number | null;
 	};
-export type CreateUserRequest = components["schemas"]["CreateUserRequest"];
+export type CreateUserRequest =
+	components["schemas"]["CreateUserRequest"];
 export type UpdateUserRequest =
 	& Omit<
 		components["schemas"]["UpdateUserRequest"],
@@ -32,9 +34,6 @@ export type PagedResultOfUserDto =
 		totalPages: number;
 	};
 
-// Query model extends BaseQueryRequest (client-side only)
-import { BaseQueryRequest } from "@shared/models";
-
 /** User Query Request - query parameters for paginated user requests. */
 export interface UserQueryRequest extends BaseQueryRequest
 {
@@ -44,3 +43,5 @@ export interface UserQueryRequest extends BaseQueryRequest
 	/** Include soft-deleted users in results. Default false. */
 	includeDeleted?: boolean;
 }
+
+export * from "./user-list-preferences.model";

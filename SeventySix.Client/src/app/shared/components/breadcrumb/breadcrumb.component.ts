@@ -10,17 +10,8 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { RouterLink } from "@angular/router";
+import { BreadcrumbItem } from "@shared/models";
 import { filter, map, startWith } from "rxjs/operators";
-
-/**
- * Breadcrumb item interface
- */
-export interface BreadcrumbItem
-{
-	label: string;
-	url: string;
-	isActive: boolean;
-}
 
 /**
  * Breadcrumb navigation component.

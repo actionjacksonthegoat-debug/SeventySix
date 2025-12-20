@@ -4,12 +4,10 @@ import {
 	ActivatedRouteSnapshot,
 	RouterStateSnapshot
 } from "@angular/router";
+import { CanComponentDeactivate } from "@shared/interfaces";
 import { NotificationService } from "@shared/services/notification.service";
 import { createMockNotificationService } from "@shared/testing";
-import {
-	CanComponentDeactivate,
-	unsavedChangesGuard
-} from "./unsaved-changes.guard";
+import { unsavedChangesGuard } from "./unsaved-changes.guard";
 
 describe("unsavedChangesGuard",
 	() =>

@@ -1,6 +1,6 @@
 import { DateService } from "@shared/services";
+import { DateRangePreset } from "@admin/logs/constants";
 import {
-	DateRangePreset,
 	getDateRangeFromPreset,
 	getDateRangePresetLabel
 } from "./log-filter.model";

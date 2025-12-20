@@ -1,14 +1,7 @@
 import { inject } from "@angular/core";
 import { CanDeactivateFn } from "@angular/router";
+import { CanComponentDeactivate } from "@shared/interfaces";
 import { NotificationService } from "@shared/services/notification.service";
-
-/**
- * Interface for components that can have unsaved changes.
- */
-export interface CanComponentDeactivate
-{
-	canDeactivate: () => boolean;
-}
 
 /**
  * Unsaved changes guard.

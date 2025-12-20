@@ -9,17 +9,9 @@ import {
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { ColorScheme } from "@shared/models/color-scheme.model";
+import { ThemeBrightness } from "@shared/models/theme.model";
 import { StorageService } from "@shared/services/storage.service";
-
-/**
- * Theme brightness types
- */
-export type ThemeBrightness = "light" | "dark";
-
-/**
- * Color scheme types
- */
-export type ColorScheme = "blue" | "cyan-orange";
 
 /**
  * Service for managing application theme

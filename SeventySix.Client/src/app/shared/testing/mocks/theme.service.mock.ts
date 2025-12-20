@@ -1,8 +1,6 @@
 import { signal, WritableSignal } from "@angular/core";
-import {
-	ColorScheme,
-	ThemeBrightness
-} from "@shared/services/theme.service";
+import { ColorScheme } from "@shared/models/color-scheme.model";
+import { ThemeBrightness } from "@shared/models/theme.model";
 
 /**
  * Mock ThemeService for testing

@@ -1116,6 +1116,100 @@ test('all code should not have for loop counters', async () =>
 });
 
 // ============================================================================
+// SINGLE EXPORT PER FILE
+// ============================================================================
+
+/**
+ * Single Export Per File Rule
+ * Each .ts file should export only one primary item.
+ * Enforces separation of concerns and improves tree-shaking.
+ *
+ * Exceptions:
+ * - index.ts barrel exports
+ * - Type re-exports from generated code
+ * - Error class hierarchies (shared inheritance)
+ * - Environment configuration (hierarchical structure)
+ * - Animation constants (related visual effects)
+ * - Cohesive type sets (table.model.ts)
+ * - Utility function collections
+ * - Test data builders with factories
+ * - Cohesive constant sets
+ * - All testing/ folder files
+ */
+test('Files should have single primary export (with approved exceptions)', async () =>
+{
+	const tsFiles =
+		await getFiles(SRC_DIR, '.ts');
+	const violations = [];
+
+	const excludedPatterns =
+		[
+			/index\.ts$/,
+			/\.spec\.ts$/,
+			/generated-open-api/,
+			/app-error\.model\.ts$/,
+			/environment\.interface\.ts$/,
+			/animations\.ts$/,
+			/material-bundles\.ts$/,
+			/\.utility\.ts$/,
+			/\.utilities\.ts$/,
+			/\.builder\.ts$/,
+			/\.types\.ts$/,
+			/test-.*\.constants\.ts$/,
+			/http\.constants\.ts$/,
+			/role\.constants\.ts$/,
+			/health\.constants\.ts$/,
+			/validation\.constants\.ts$/,
+			/validation-error\.constants\.ts$/,
+			/log-level\.constants\.ts$/,
+			/query-keys\.utility\.ts$/,
+			/table\.model\.ts$/,
+			/log-filter\.model\.ts$/,
+			/testing[/\\]/,
+			/custom-validators\.ts$/,
+			/cache-bypass\.interceptor\.ts$/
+		];
+
+	for (const file of tsFiles)
+	{
+		const relativePath =
+			path.relative(SRC_DIR, file);
+
+		if (excludedPatterns.some(
+			pattern => pattern.test(relativePath)))
+		{
+			continue;
+		}
+
+		const content =
+			await fs.readFile(file, 'utf-8');
+
+		const exportMatches =
+			content.match(
+				/^export\s+(class|interface|enum|const|function|type)\s+\w+/gm)
+			|| [];
+
+		if (exportMatches.length > 1)
+		{
+			const exportTypes =
+				exportMatches
+					.map(
+						match => match
+							.replace(/^export\s+/, '')
+							.split(' ')[0])
+					.join(', ');
+
+			violations.push(
+				`${relativePath} has ${exportMatches.length} exports: [${exportTypes}]`);
+		}
+	}
+
+	assertEmpty(
+		violations,
+		'Files should export only one primary item');
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 

@@ -2,9 +2,9 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { ConfirmDialogComponent } from "@shared/components";
-import { ConfirmDialogData } from "@shared/models";
+import { ConfirmDialogData, ConfirmOptions } from "@shared/models";
 import { of } from "rxjs";
-import { ConfirmOptions, DialogService } from "./dialog.service";
+import { DialogService } from "./dialog.service";
 
 describe("DialogService",
 	() =>

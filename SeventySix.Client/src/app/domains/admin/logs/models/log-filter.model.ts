@@ -1,5 +1,6 @@
 import { BaseQueryRequest } from "@shared/models";
 import { DateService } from "@shared/services";
+import { DateRangePreset } from "@admin/logs/constants";
 
 /** Log query request DTO matching backend LogQueryRequest. */
 export interface LogQueryRequest extends BaseQueryRequest
@@ -9,17 +10,6 @@ export interface LogQueryRequest extends BaseQueryRequest
 
 	/** Additional context information for filtering logs. */
 	sourceContext?: string | null;
-}
-
-/** Date range preset options for log filtering. */
-export enum DateRangePreset
-{
-	Last1Hour = "last1h",
-	Last6Hours = "last6h",
-	Last24Hours = "last24h",
-	Last7Days = "last7d",
-	Last30Days = "last30d",
-	Custom = "custom"
 }
 
 /** Helper to get date range from preset. */

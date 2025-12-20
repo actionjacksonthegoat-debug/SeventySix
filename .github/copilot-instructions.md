@@ -152,18 +152,29 @@ domains/    → @admin/*, @sandbox/*, @developer/*
 
 ### Client File Locations
 
-| Type             | Location in Domain      | Import From             |
-| ---------------- | ----------------------- | ----------------------- |
-| Route Pages      | `{domain}/pages/`       | Route `loadComponent`   |
-| Subdomain Pages  | `{domain}/{sub}/pages/` | Route `loadComponent`   |
-| Error Pages      | `shared/pages/`         | `@shared/pages`         |
-| Domain DTOs      | `{domain}/models/`      | `@{domain}/models`      |
-| Shared DTOs      | `shared/models/`        | `@shared/models`        |
-| Domain Services  | `{domain}/services/`    | Route `providers` array |
-| Persistent State | `{domain}/core/`        | `providedIn: 'root'` OK |
-| Domain Models    | `{domain}/models/`      | `@{domain}/models`      |
-| Domain Tests     | `{domain}/testing/`     | `@{domain}/testing`     |
-| Shared Services  | `shared/services/`      | `providedIn: 'root'`    |
+| Type                | Location in Domain      | Import From             |
+| ------------------- | ----------------------- | ----------------------- |
+| Route Pages         | `{domain}/pages/`       | Route `loadComponent`   |
+| Subdomain Pages     | `{domain}/{sub}/pages/` | Route `loadComponent`   |
+| Error Pages         | `shared/pages/`         | `@shared/pages`         |
+| Domain DTOs         | `{domain}/models/`      | `@{domain}/models`      |
+| Shared DTOs         | `shared/models/`        | `@shared/models`        |
+| Contract Interfaces | `shared/interfaces/`    | `@shared/interfaces`    |
+| Domain Services     | `{domain}/services/`    | Route `providers` array |
+| Persistent State    | `{domain}/core/`        | `providedIn: 'root'` OK |
+| Domain Models       | `{domain}/models/`      | `@{domain}/models`      |
+| Domain Tests        | `{domain}/testing/`     | `@{domain}/testing`     |
+| Shared Services     | `shared/services/`      | `providedIn: 'root'`    |
+
+### Models vs Interfaces (CLIENT CRITICAL)
+
+| Type       | Location      | File Naming           | Example                         |
+| ---------- | ------------- | --------------------- | ------------------------------- |
+| DTOs/POCOs | `models/`     | `{name}.model.ts`     | `user.model.ts`, `log.model.ts` |
+| Contracts  | `interfaces/` | `{name}.interface.ts` | `can-deactivate.interface.ts`   |
+
+**DTOs/POCOs** (`models/`): Data transfer objects, response types, state shapes
+**Contracts** (`interfaces/`): Component/class behavioral contracts (e.g., `CanComponentDeactivate`)
 
 ### Page Organization (CRITICAL)
 
@@ -186,6 +197,30 @@ domains/    → @admin/*, @sandbox/*, @developer/*
 | Domain Scoped  | `@{domain}/services` | Route `providers` ONLY  |
 
 **Rule**: `@{domain}/services/` must NEVER use `providedIn: 'root'`
+
+### Single Export Per File (CLIENT CRITICAL)
+
+**RULE**: Each `.ts` file exports ONE primary item.
+
+| ❌ NEVER                                | ✅ ALWAYS                                  |
+| --------------------------------------- | ------------------------------------------ |
+| `export interface X` + `export class Y` | Separate: `x.model.ts` + `y.service.ts`    |
+| `export enum E` + `export class S`      | Separate: `e.constant.ts` + `s.service.ts` |
+
+**Exceptions** (approved patterns):
+
+-   `index.ts` barrel exports
+-   Type re-exports from generated code (`generated-open-api.model.ts`)
+-   Error class hierarchies (`app-error.model.ts`)
+-   Environment config interfaces (`environment.interface.ts`)
+-   Animation constants (`*.animations.ts`)
+-   Cohesive type sets (`table.model.ts`)
+-   Utility function collections (`*.utility.ts`)
+-   Test data builders with factories (`*.builder.ts`)
+-   Cohesive constant sets (`http.constants.ts`, `role.constants.ts`)
+-   All `testing/` folder files
+
+**File Naming**: `{name}.model.ts` (interface/type), `{name}.constant.ts` (enum/const), `{name}.service.ts` (class)
 
 ---
 
