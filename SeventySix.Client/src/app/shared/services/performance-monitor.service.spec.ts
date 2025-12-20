@@ -30,7 +30,7 @@ describe("PerformanceMonitorService",
 		it("should have initial metrics",
 			() =>
 			{
-				const metrics: ReturnType<PerformanceMonitorService["currentMetrics"]> =
+				const metrics: ReturnType<typeof service.currentMetrics> =
 					service.currentMetrics();
 				expect(metrics.fps)
 					.toBe(0);
@@ -112,7 +112,7 @@ describe("PerformanceMonitorService",
 		it("should handle memory metrics when available",
 			() =>
 			{
-				const metrics: ReturnType<PerformanceMonitorService["currentMetrics"]> =
+				const metrics: ReturnType<typeof service.currentMetrics> =
 					service.currentMetrics();
 				// Memory might be 0 if not supported, but should be a number
 				expect(typeof metrics.memoryUsed)

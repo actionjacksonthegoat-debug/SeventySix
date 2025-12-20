@@ -23,6 +23,7 @@ import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
+import { SNACKBAR_DURATION } from "@shared/constants";
 
 @Component(
 	{
@@ -52,10 +53,10 @@ export class RequestPermissionsPage
 	private readonly snackBar: MatSnackBar =
 		inject(MatSnackBar);
 
-	readonly rolesQuery: ReturnType<AccountService["getAvailableRoles"]> =
+	readonly rolesQuery: ReturnType<typeof this.accountService.getAvailableRoles> =
 		this.accountService.getAvailableRoles();
 	readonly requestMutation: ReturnType<
-		AccountService["createPermissionRequest"]> =
+		typeof this.accountService.createPermissionRequest> =
 		this.accountService.createPermissionRequest();
 
 	readonly availableRoles: Signal<AvailableRoleDto[]> =
@@ -124,7 +125,7 @@ export class RequestPermissionsPage
 		{
 			this.snackBar.open("Select at least one role", "Close",
 				{
-					duration: 3000
+					duration: SNACKBAR_DURATION.warning
 				});
 			return;
 		}
@@ -140,7 +141,7 @@ export class RequestPermissionsPage
 			await this.requestMutation.mutateAsync(request);
 			this.snackBar.open("Permission request submitted", "Close",
 				{
-					duration: 3000
+					duration: SNACKBAR_DURATION.success
 				});
 			this.router.navigate(
 				["/account"]);
@@ -149,7 +150,7 @@ export class RequestPermissionsPage
 		{
 			this.snackBar.open("Failed to submit request", "Close",
 				{
-					duration: 5000
+					duration: SNACKBAR_DURATION.error
 				});
 		}
 	}

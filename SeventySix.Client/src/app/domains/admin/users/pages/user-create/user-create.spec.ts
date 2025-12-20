@@ -8,6 +8,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { AbstractControl } from "@angular/forms";
 import { provideRouter } from "@angular/router";
 import { Router } from "@angular/router";
+import { SNACKBAR_DURATION } from "@shared/constants";
 import { LoggerService } from "@shared/services/logger.service";
 import { NotificationService } from "@shared/services/notification.service";
 import {
@@ -306,7 +307,7 @@ describe("UserCreatePage",
 								"Please complete all required fields",
 								"Close",
 								jasmine.objectContaining(
-									{ duration: 5000 }));
+									{ duration: SNACKBAR_DURATION.error }));
 						expect(component.createMutation.mutate).not.toHaveBeenCalled();
 					});
 
@@ -333,7 +334,7 @@ describe("UserCreatePage",
 								"Please complete all required fields",
 								"Close",
 								jasmine.objectContaining(
-									{ duration: 5000 }));
+									{ duration: SNACKBAR_DURATION.error }));
 						expect(component.createMutation.mutate).not.toHaveBeenCalled();
 					});
 
@@ -406,7 +407,7 @@ describe("UserCreatePage",
 								`User "testuser" created. Welcome email sent to test@example.com.`,
 								"Close",
 								jasmine.objectContaining(
-									{ duration: 3000 }));
+									{ duration: SNACKBAR_DURATION.success }));
 						expect(mockRouter.navigate)
 							.toHaveBeenCalledWith(
 								["/admin/users"]);
@@ -663,7 +664,7 @@ describe("UserCreatePage",
 								"Failed to assign role \"Developer\"",
 								"Close",
 								jasmine.objectContaining(
-									{ duration: 5000 }));
+									{ duration: SNACKBAR_DURATION.error }));
 					});
 			});
 	});

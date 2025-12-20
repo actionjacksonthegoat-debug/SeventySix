@@ -8,4 +8,5 @@
 export * from "./health.constants";
 export * from "./http.constants";
 export * from "./role.constants";
+export * from "./snackbar.constants";
 export * from "./validation-error.constants";

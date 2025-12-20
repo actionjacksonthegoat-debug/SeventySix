@@ -22,6 +22,7 @@ import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { RouterLink } from "@angular/router";
+import { SNACKBAR_DURATION } from "@shared/constants";
 import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION
@@ -55,11 +56,11 @@ export class ProfilePage
 	private readonly snackBar: MatSnackBar =
 		inject(MatSnackBar);
 
-	readonly profileQuery: ReturnType<AccountService["getProfile"]> =
+	readonly profileQuery: ReturnType<typeof this.accountService.getProfile> =
 		this.accountService.getProfile();
-	readonly updateMutation: ReturnType<AccountService["updateProfile"]> =
+	readonly updateMutation: ReturnType<typeof this.accountService.updateProfile> =
 		this.accountService.updateProfile();
-	readonly availableRolesQuery: ReturnType<AccountService["getAvailableRoles"]> =
+	readonly availableRolesQuery: ReturnType<typeof this.accountService.getAvailableRoles> =
 		this.accountService.getAvailableRoles();
 
 	readonly profile: Signal<UserProfileDto | undefined> =
@@ -145,14 +146,14 @@ export class ProfilePage
 		{
 			await this.updateMutation.mutateAsync(request);
 			this.snackBar.open("Profile updated", "Close",
-				{ duration: 3000 });
+				{ duration: SNACKBAR_DURATION.success });
 			this.profileForm.markAsPristine();
 		}
 		catch
 		{
 			this.snackBar.open("Failed to update profile", "Close",
 				{
-					duration: 5000
+					duration: SNACKBAR_DURATION.error
 				});
 		}
 	}

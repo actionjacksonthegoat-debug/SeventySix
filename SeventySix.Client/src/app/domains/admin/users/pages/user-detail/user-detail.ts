@@ -19,7 +19,7 @@ import {
 import { MatChipsModule } from "@angular/material/chips";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { REQUESTABLE_ROLES } from "@shared/constants/role.constants";
+import { REQUESTABLE_ROLES, SNACKBAR_DURATION } from "@shared/constants";
 import { SnackbarType } from "@shared/constants/snackbar.constants";
 import { showSnackbar } from "@shared/utilities/snackbar.utility";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -74,19 +74,19 @@ export class UserDetailPage
 		this.route.snapshot.paramMap.get("id") || "";
 
 	// TanStack Query for loading user data
-	readonly userQuery: ReturnType<UserService["getUserById"]> =
+	readonly userQuery: ReturnType<typeof this.userService.getUserById> =
 		this.userService.getUserById(this.userId);
 
 	// TanStack Query mutation for updating user
-	readonly updateMutation: ReturnType<UserService["updateUser"]> =
+	readonly updateMutation: ReturnType<typeof this.userService.updateUser> =
 		this.userService.updateUser();
 
 	// Role management queries and mutations
-	readonly rolesQuery: ReturnType<UserService["getUserRoles"]> =
+	readonly rolesQuery: ReturnType<typeof this.userService.getUserRoles> =
 		this.userService.getUserRoles(this.userId);
-	readonly addRoleMutation: ReturnType<UserService["addRole"]> =
+	readonly addRoleMutation: ReturnType<typeof this.userService.addRole> =
 		this.userService.addRole();
-	readonly removeRoleMutation: ReturnType<UserService["removeRole"]> =
+	readonly removeRoleMutation: ReturnType<typeof this.userService.removeRole> =
 		this.userService.removeRole();
 
 	// Available roles constant (matches backend ValidRoleNames)
@@ -365,7 +365,7 @@ export class UserDetailPage
 			"User was modified by another user. Please refresh and try again.",
 			"REFRESH",
 			{
-				duration: 10000,
+				duration: SNACKBAR_DURATION.concurrencyError,
 				horizontalPosition: "end",
 				verticalPosition: "top"
 			})

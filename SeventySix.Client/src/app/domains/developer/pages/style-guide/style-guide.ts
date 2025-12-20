@@ -18,6 +18,7 @@ import { MatTableModule } from "@angular/material/table";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { ConfirmDialogComponent } from "@shared/components";
+import { SNACKBAR_DURATION } from "@shared/constants";
 import { ThemeService } from "@shared/services";
 
 /**
@@ -80,7 +81,7 @@ export class StyleGuideComponent
 	{
 		this.snackBar.open(message, "DISMISS",
 			{
-				duration: 3000,
+				duration: SNACKBAR_DURATION.success,
 				horizontalPosition: "end",
 				verticalPosition: "bottom"
 			});

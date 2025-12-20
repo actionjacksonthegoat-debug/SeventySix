@@ -4,7 +4,7 @@
  */
 
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { SnackbarType } from "@shared/constants/snackbar.constants";
+import { SNACKBAR_DURATION, SnackbarType } from "@shared/constants/snackbar.constants";
 import { showSnackbar } from "@shared/utilities/snackbar.utility";
 
 describe("showSnackbar",
@@ -54,7 +54,7 @@ describe("showSnackbar",
 						"Close",
 						jasmine.objectContaining(
 							{
-								duration: 5000,
+								duration: SNACKBAR_DURATION.error,
 								horizontalPosition: "end",
 								verticalPosition: "top"
 							}));
@@ -70,7 +70,7 @@ describe("showSnackbar",
 						"Default message",
 						"Close",
 						jasmine.objectContaining(
-							{ duration: 3000 }));
+							{ duration: SNACKBAR_DURATION.success }));
 			});
 
 		it("should use consistent positioning for all messages",

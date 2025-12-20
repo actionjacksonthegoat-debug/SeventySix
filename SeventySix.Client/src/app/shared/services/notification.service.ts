@@ -6,6 +6,7 @@ import {
 	signal,
 	WritableSignal
 } from "@angular/core";
+import { SNACKBAR_DURATION } from "@shared/constants";
 
 /**
  * Notification severity levels.
@@ -44,10 +45,6 @@ export class NotificationService
 {
 	private readonly destroyRef: DestroyRef =
 		inject(DestroyRef);
-	private readonly successDurationMs: number = 5000;
-	private readonly infoDurationMs: number = 5000;
-	private readonly warningDurationMs: number = 7000;
-	private readonly errorDurationMs: number = 10000;
 
 	private readonly notifications: WritableSignal<Notification[]> =
 		signal<
@@ -76,7 +73,7 @@ export class NotificationService
 	/**
 	 * Shows a success notification.
 	 */
-	success(message: string, duration: number = this.successDurationMs): void
+	success(message: string, duration: number = SNACKBAR_DURATION.success): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Success,
@@ -93,7 +90,7 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = this.successDurationMs): void
+		duration: number = SNACKBAR_DURATION.success): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Success,
@@ -106,7 +103,7 @@ export class NotificationService
 	/**
 	 * Shows an info notification.
 	 */
-	info(message: string, duration: number = this.infoDurationMs): void
+	info(message: string, duration: number = SNACKBAR_DURATION.info): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Info,
@@ -123,7 +120,7 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = this.infoDurationMs): void
+		duration: number = SNACKBAR_DURATION.info): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Info,
@@ -136,7 +133,7 @@ export class NotificationService
 	/**
 	 * Shows a warning notification.
 	 */
-	warning(message: string, duration: number = this.warningDurationMs): void
+	warning(message: string, duration: number = SNACKBAR_DURATION.warning): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Warning,
@@ -153,7 +150,7 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = this.warningDurationMs): void
+		duration: number = SNACKBAR_DURATION.warning): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Warning,
@@ -166,7 +163,7 @@ export class NotificationService
 	/**
 	 * Shows an error notification.
 	 */
-	error(message: string, duration: number = this.errorDurationMs): void
+	error(message: string, duration: number = SNACKBAR_DURATION.error): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Error,
@@ -212,7 +209,7 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = this.errorDurationMs): void
+		duration: number = SNACKBAR_DURATION.error): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Error,

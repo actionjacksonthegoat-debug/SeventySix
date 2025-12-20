@@ -48,17 +48,17 @@ export class UserList
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
 
-	readonly usersQuery: ReturnType<UserService["getPagedUsers"]> =
+	readonly usersQuery: ReturnType<typeof this.userService.getPagedUsers> =
 		this.userService.getPagedUsers();
 
 	// Mutations
-	private readonly updateUserMutation: ReturnType<UserService["updateUser"]> =
+	private readonly updateUserMutation: ReturnType<typeof this.userService.updateUser> =
 		this.userService.updateUser();
 	private readonly resetPasswordMutation: ReturnType<
-		UserService["resetPassword"]> =
+		typeof this.userService.resetPassword> =
 		this.userService.resetPassword();
 	private readonly restoreUserMutation: ReturnType<
-		UserService["restoreUser"]> =
+		typeof this.userService.restoreUser> =
 		this.userService.restoreUser();
 
 	readonly data: Signal<UserDto[]> =

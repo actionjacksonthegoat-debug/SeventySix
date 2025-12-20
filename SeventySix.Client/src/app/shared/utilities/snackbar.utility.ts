@@ -4,7 +4,7 @@
  */
 
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { SnackbarType } from "@shared/constants/snackbar.constants";
+import { SNACKBAR_DURATION, SnackbarType } from "@shared/constants/snackbar.constants";
 
 /**
  * Shows a snackbar notification with consistent configuration.
@@ -19,7 +19,9 @@ export function showSnackbar(
 		SnackbarType.Success): void
 {
 	const duration: number =
-		type === SnackbarType.Error ? 5000 : 3000;
+		type === SnackbarType.Error
+			? SNACKBAR_DURATION.error
+			: SNACKBAR_DURATION.success;
 
 	snackBar.open(
 		message,

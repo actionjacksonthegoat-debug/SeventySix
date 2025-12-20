@@ -55,15 +55,15 @@ export class LogList
 		inject(NotificationService);
 
 	// TanStack Query
-	readonly logsQuery: ReturnType<LogManagementService["getLogs"]> =
+	readonly logsQuery: ReturnType<typeof this.logService.getLogs> =
 		this.logService.getLogs();
 
 	// Mutations
 	private readonly deleteLogMutation: ReturnType<
-		LogManagementService["deleteLog"]> =
+		typeof this.logService.deleteLog> =
 		this.logService.deleteLog();
 	private readonly deleteLogsMutation: ReturnType<
-		LogManagementService["deleteLogs"]> =
+		typeof this.logService.deleteLogs> =
 		this.logService.deleteLogs();
 
 	// Table column definitions

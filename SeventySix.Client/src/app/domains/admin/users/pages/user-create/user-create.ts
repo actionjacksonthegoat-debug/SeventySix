@@ -81,7 +81,7 @@ export class UserCreatePage
 		viewChild<MatStepper>("stepper");
 
 	// TanStack Query mutation for creating users
-	readonly createMutation: ReturnType<UserService["createUser"]> =
+	readonly createMutation: ReturnType<typeof this.userService.createUser> =
 		this.userService.createUser();
 
 	// Role selection state
@@ -94,7 +94,7 @@ export class UserCreatePage
 	readonly selectedRoles: Signal<string[]> =
 		this.selectedRolesSignal.asReadonly();
 
-	readonly addRoleMutation: ReturnType<UserService["addRole"]> =
+	readonly addRoleMutation: ReturnType<typeof this.userService.addRole> =
 		this.userService.addRole();
 
 	// State signals
