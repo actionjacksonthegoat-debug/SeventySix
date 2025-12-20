@@ -14,7 +14,7 @@ interface QuickAction
 
 /**
  * Home page
- * Displays navigation to Sandbox feature
+ * Displays navigation to key features
  */
 @Component(
 	{
@@ -34,6 +34,13 @@ export class HomeComponent
 				icon: "science",
 				route: "/sandbox",
 				themeClass: "theme-primary"
+			},
+			{
+				title: "Architecture Guide",
+				description: "Documentation for project architecture patterns and guidelines",
+				icon: "architecture",
+				route: "/developer/architecture-guide",
+				themeClass: "theme-secondary"
 			}
 		];
 }

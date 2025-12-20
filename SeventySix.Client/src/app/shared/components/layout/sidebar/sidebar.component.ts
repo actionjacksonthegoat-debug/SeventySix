@@ -77,6 +77,11 @@ export class SidebarComponent
 						label: "Style Guide",
 						icon: "palette",
 						route: "/developer/style-guide"
+					},
+					{
+						label: "Architecture Guide",
+						icon: "architecture",
+						route: "/developer/architecture-guide"
 					}
 				],
 				requiredRoles: [ROLE_DEVELOPER, ROLE_ADMIN]
