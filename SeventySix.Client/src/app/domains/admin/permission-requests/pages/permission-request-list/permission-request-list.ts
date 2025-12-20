@@ -16,6 +16,7 @@ import type {
 	RowActionEvent,
 	TableColumn
 } from "@shared/models";
+import { NotificationService } from "@shared/services";
 
 /**
  * Permission request list page.
@@ -36,6 +37,8 @@ export class PermissionRequestListPage
 		inject(PermissionRequestService);
 	private readonly datePipe: DatePipe =
 		inject(DatePipe);
+	private readonly notificationService: NotificationService =
+		inject(NotificationService);
 
 	readonly requestsQuery: ReturnType<
 		PermissionRequestService["getAllRequests"]> =
@@ -169,11 +172,33 @@ export class PermissionRequestListPage
 
 		if (event.action === "approve")
 		{
-			this.approveMutation.mutate(requestId);
+			this.approveMutation.mutate(requestId,
+				{
+					onSuccess: () =>
+					{
+						this.notificationService.success("Request approved");
+					},
+					onError: (error: Error) =>
+					{
+						this.notificationService.error(
+							`Failed to approve request: ${error.message}`);
+					}
+				});
 		}
 		else if (event.action === "reject")
 		{
-			this.rejectMutation.mutate(requestId);
+			this.rejectMutation.mutate(requestId,
+				{
+					onSuccess: () =>
+					{
+						this.notificationService.success("Request rejected");
+					},
+					onError: (error: Error) =>
+					{
+						this.notificationService.error(
+							`Failed to reject request: ${error.message}`);
+					}
+				});
 		}
 	}
 
@@ -184,11 +209,35 @@ export class PermissionRequestListPage
 
 		if (event.action === "approve-all")
 		{
-			this.bulkApproveMutation.mutate(selectedIds);
+			this.bulkApproveMutation.mutate(selectedIds,
+				{
+					onSuccess: (approvedCount: number) =>
+					{
+						this.notificationService.success(
+							`${approvedCount} requests approved`);
+					},
+					onError: (error: Error) =>
+					{
+						this.notificationService.error(
+							`Failed to approve requests: ${error.message}`);
+					}
+				});
 		}
 		else if (event.action === "reject-all")
 		{
-			this.bulkRejectMutation.mutate(selectedIds);
+			this.bulkRejectMutation.mutate(selectedIds,
+				{
+					onSuccess: (rejectedCount: number) =>
+					{
+						this.notificationService.success(
+							`${rejectedCount} requests rejected`);
+					},
+					onError: (error: Error) =>
+					{
+						this.notificationService.error(
+							`Failed to reject requests: ${error.message}`);
+					}
+				});
 		}
 	}
 }

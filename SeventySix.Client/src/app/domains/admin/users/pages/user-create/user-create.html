@@ -95,13 +95,6 @@
 					</mat-card>
 
 					<div class="step-actions">
-						<button
-							mat-stroked-button
-							type="button"
-							(click)="saveDraft()">
-							<mat-icon aria-hidden="true">save</mat-icon>
-							Save Draft
-						</button>
 						<div class="flex-1"></div>
 						<button
 							mat-raised-button
@@ -171,13 +164,6 @@
 							<mat-icon aria-hidden="true">arrow_back</mat-icon>
 							Back
 						</button>
-						<button
-							mat-stroked-button
-							type="button"
-							(click)="saveDraft()">
-							<mat-icon aria-hidden="true">save</mat-icon>
-							Save Draft
-						</button>
 						<div class="flex-1"></div>
 						<button
 							mat-raised-button
@@ -192,7 +178,75 @@
 				</form>
 			</mat-step>
 
-			<!-- Step 3: Review & Submit -->
+			<!-- Step 3: Role Selection -->
+			<mat-step label="Roles (Optional)">
+				<mat-card appearance="outlined">
+					<mat-card-header>
+						<mat-card-title>Assign Roles</mat-card-title>
+						<mat-card-subtitle>
+							Select roles for this user (optional)
+						</mat-card-subtitle>
+					</mat-card-header>
+					<mat-card-content>
+					<p class="mat-body-1 role-hint">
+						Select one or more roles to assign to the user.
+						Roles can be added or removed later.
+					</p>
+
+					<mat-chip-listbox
+						aria-label="Role selection"
+						class="role-chips">
+						@for (roleName of availableRoles; track roleName) {
+								<mat-chip-option
+									[selected]="selectedRoles().includes(roleName)"
+									(click)="toggleRole(roleName)">
+									<mat-icon
+										aria-hidden="true"
+										matChipAvatar>
+										{{ selectedRoles().includes(roleName) ? "check_circle" : "radio_button_unchecked" }}
+									</mat-icon>
+									{{ roleName }}
+								</mat-chip-option>
+							}
+						</mat-chip-listbox>
+
+						@if (selectedRoles().length > 0) {
+							<div class="selected-roles-summary">
+								<p class="mat-body-2">Selected roles:</p>
+								<mat-chip-set>
+									@for (role of selectedRoles(); track role) {
+										<mat-chip>
+											{{ role }}
+										</mat-chip>
+									}
+								</mat-chip-set>
+							</div>
+						}
+					</mat-card-content>
+				</mat-card>
+
+				<div class="step-actions">
+					<button
+						mat-stroked-button
+						type="button"
+						matStepperPrevious>
+						<mat-icon aria-hidden="true">arrow_back</mat-icon>
+						Back
+					</button>
+					<div class="flex-1"></div>
+					<button
+						mat-raised-button
+						color="primary"
+						matStepperNext>
+						Next
+						<mat-icon aria-hidden="true">
+							arrow_forward
+						</mat-icon>
+					</button>
+				</div>
+			</mat-step>
+
+			<!-- Step 4: Review & Submit -->
 			<mat-step label="Review & Submit">
 				<mat-card appearance="outlined">
 					<mat-card-header>
@@ -259,6 +313,31 @@
 									<span class="mat-body-1">
 										{{ formData().isActive ? "Active" : "Inactive" }}
 									</span>
+								</div>
+							</div>
+							<div class="review-item">
+								<mat-icon
+									class="review-icon"
+									aria-hidden="true">
+									admin_panel_settings
+								</mat-icon>
+								<div class="review-details">
+									<span class="mat-body-2 review-label">
+										Roles
+									</span>
+									@if (selectedRoles().length > 0) {
+										<mat-chip-set>
+											@for (role of selectedRoles(); track role) {
+												<mat-chip>
+													{{ role }}
+												</mat-chip>
+											}
+										</mat-chip-set>
+									} @else {
+										<span class="mat-body-1 text-muted">
+											No roles selected
+										</span>
+									}
 								</div>
 							</div>
 						</div>

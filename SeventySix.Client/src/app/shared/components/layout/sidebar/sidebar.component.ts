@@ -24,6 +24,8 @@ interface NavItem
 	icon: string;
 	route: string;
 	disabled?: boolean;
+	/** Roles required to see this item. Inherits from section if not specified. */
+	requiredRoles?: string[];
 }
 
 interface NavSection
@@ -114,13 +116,24 @@ export class SidebarComponent
 			}
 		];
 
-	/** Computed signal that filters sections based on current user's roles. */
+	/** Computed signal that filters sections and items based on current user's roles. */
 	protected readonly visibleNavSections: Signal<NavSection[]> =
 		computed(
 			() =>
-				this.navSections.filter(
+				this.navSections
+				.filter(
 					(section: NavSection) =>
-						this.hasAccess(section.requiredRoles)));
+						this.hasAccess(section.requiredRoles))
+				.map(
+					(section: NavSection) => ({
+						...section,
+						items: section.items.filter(
+							(navItem: NavItem) =>
+								this.hasAccess(navItem.requiredRoles ?? section.requiredRoles))
+					}))
+				.filter(
+					(section: NavSection) =>
+						section.items.length > 0));
 
 	/**
 	 * Check if current user has access to a section.
@@ -134,6 +147,7 @@ export class SidebarComponent
 		{
 			return true;
 		}
+
 		return this.authService.hasAnyRole(...requiredRoles);
 	}
 

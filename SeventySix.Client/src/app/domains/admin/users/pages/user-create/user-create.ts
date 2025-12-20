@@ -6,7 +6,9 @@ import {
 	computed,
 	inject,
 	Signal,
-	viewChild
+	signal,
+	viewChild,
+	WritableSignal
 } from "@angular/core";
 import {
 	AbstractControl,
@@ -18,6 +20,10 @@ import {
 	Validators
 } from "@angular/forms";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatChipsModule } from "@angular/material/chips";
+import { REQUESTABLE_ROLES } from "@shared/constants/role.constants";
+import { SnackbarType } from "@shared/constants/snackbar.constants";
+import { showSnackbar } from "@shared/utilities/snackbar.utility";
 import { MatStepper } from "@angular/material/stepper";
 import { Router } from "@angular/router";
 import {
@@ -51,6 +57,7 @@ import {
 		imports: [
 			ReactiveFormsModule,
 			MatSnackBarModule,
+			MatChipsModule,
 			...STEPPER_MATERIAL_MODULES
 		],
 		templateUrl: "./user-create.html",
@@ -76,6 +83,19 @@ export class UserCreatePage
 	// TanStack Query mutation for creating users
 	readonly createMutation: ReturnType<UserService["createUser"]> =
 		this.userService.createUser();
+
+	// Role selection state
+	readonly availableRoles: readonly string[] =
+		REQUESTABLE_ROLES;
+
+	private readonly selectedRolesSignal: WritableSignal<string[]> =
+		signal<string[]>([]);
+
+	readonly selectedRoles: Signal<string[]> =
+		this.selectedRolesSignal.asReadonly();
+
+	readonly addRoleMutation: ReturnType<UserService["addRole"]> =
+		this.userService.addRole();
 
 	// State signals
 	readonly isSaving: Signal<boolean> =
@@ -177,19 +197,6 @@ export class UserCreatePage
 				getValidationError(this.accountDetailsForm.get("fullName"), "Full name"));
 
 	/**
-	 * Save user as draft (partial save)
-	 */
-	saveDraft(): void
-	{
-		this.snackBar.open("Draft saved locally", "Close",
-			{
-				duration: 2000,
-				horizontalPosition: "end",
-				verticalPosition: "top"
-			});
-	}
-
-	/**
 	 * Submit the complete form
 	 */
 	async onSubmit(): Promise<void>
@@ -197,12 +204,10 @@ export class UserCreatePage
 		// Validate all steps
 		if (this.basicInfoForm.invalid || this.accountDetailsForm.invalid)
 		{
-			this.snackBar.open("Please complete all required fields", "Close",
-				{
-					duration: 3000,
-					horizontalPosition: "end",
-					verticalPosition: "top"
-				});
+			showSnackbar(
+				this.snackBar,
+				"Please complete all required fields",
+				SnackbarType.Error);
 			return;
 		}
 
@@ -213,17 +218,18 @@ export class UserCreatePage
 			{
 				onSuccess: (createdUser) =>
 				{
+					// Assign selected roles to the newly created user
+					this.assignRoles(createdUser.id);
+
 					const message: string =
 						createdUser.needsPendingEmail
 							? `User "${createdUser.username}" created. Email will be sent to ${createdUser.email} within 24 hours.`
 							: `User "${createdUser.username}" created. Welcome email sent to ${createdUser.email}.`;
 
-					this.snackBar.open(message, "Close",
-						{
-							duration: 5000,
-							horizontalPosition: "end",
-							verticalPosition: "top"
-						});
+					showSnackbar(
+						this.snackBar,
+						message,
+						SnackbarType.Success);
 
 					// Navigate to user list
 					this.router.navigate(
@@ -237,11 +243,58 @@ export class UserCreatePage
 	}
 
 	/**
+	 * Assign selected roles to the user
+	 * @param userId - The ID of the newly created user
+	 */
+	private assignRoles(userId: number): void
+	{
+		const rolesToAssign: string[] =
+			this.selectedRoles();
+
+		for (const roleName of rolesToAssign)
+		{
+			this.addRoleMutation.mutate(
+				{ userId, roleName },
+				{
+					onError: () =>
+					{
+						showSnackbar(
+							this.snackBar,
+							`Failed to assign role "${roleName}"`,
+							SnackbarType.Error);
+					}
+				});
+		}
+	}
+
+	/**
 	 * Cancel and return to users list
 	 */
 	onCancel(): void
 	{
 		this.router.navigate(
 			["/admin/users"]);
+	}
+
+	/**
+	 * Toggles role selection on/off
+	 * @param roleName - The role to toggle
+	 */
+	toggleRole(roleName: string): void
+	{
+		const currentRoles: string[] =
+			this.selectedRolesSignal();
+		if (currentRoles.includes(roleName))
+		{
+			this.selectedRolesSignal.set(
+				currentRoles.filter(
+					(selectedRole: string) =>
+						selectedRole !== roleName));
+		}
+		else
+		{
+			this.selectedRolesSignal.set(
+				[...currentRoles, roleName]);
+		}
 	}
 }

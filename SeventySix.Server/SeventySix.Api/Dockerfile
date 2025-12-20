@@ -13,6 +13,8 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["SeventySix.Api/SeventySix.Api.csproj", "SeventySix.Api/"]
+COPY ["SeventySix.Domains/SeventySix.Domains.csproj", "SeventySix.Domains/"]
+COPY ["SeventySix.Shared/SeventySix.Shared.csproj", "SeventySix.Shared/"]
 RUN dotnet restore "./SeventySix.Api/SeventySix.Api.csproj"
 COPY . .
 WORKDIR "/src/SeventySix.Api"

@@ -51,11 +51,13 @@
 						<mat-spinner diameter="20"></mat-spinner>
 						} @else { Save Changes }
 					</button>
+					@if (hasAvailableRoles()) {
 					<a
 						mat-button
 						routerLink="permissions">
 						Request Permissions
 					</a>
+					}
 				</div>
 			</form>
 		</mat-card-content>

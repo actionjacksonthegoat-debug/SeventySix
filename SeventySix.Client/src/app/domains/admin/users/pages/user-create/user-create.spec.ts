@@ -1,5 +1,6 @@
 import { UserDto } from "@admin/users/models";
 import { UserService } from "@admin/users/services/user.service";
+import { createMockUserDto } from "@admin/users/testing";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
@@ -34,7 +35,8 @@ describe("UserCreatePage",
 					jasmine.createSpyObj("UserService",
 						[
 							"createUser",
-							"checkUsernameAvailability"
+							"checkUsernameAvailability",
+							"addRole"
 						]);
 				mockRouter =
 					createMockRouter();
@@ -44,26 +46,22 @@ describe("UserCreatePage",
 					createMockLogger();
 
 				const mockUser: UserDto =
-					{
-						id: 1,
-						username: "test",
-						email: "test@test.com",
-						fullName: "Test User",
-						createDate: "2024-01-01T00:00:00Z",
-						isActive: true,
-						createdBy: "system",
-						modifiedBy: "system",
-						needsPendingEmail: false,
-						modifyDate: null,
-						lastLoginAt: null,
-						isDeleted: false,
-						deletedAt: null,
-						deletedBy: null
-					};
+					createMockUserDto(
+						{
+							username: "test",
+							email: "test@test.com"
+						});
+
 				mockUserService.createUser.and.returnValue(
 					createMockMutationResult<UserDto, Error, Partial<UserDto>, unknown>(
 						{
 							data: mockUser,
+							isSuccess: true
+						}));
+
+				mockUserService.addRole.and.returnValue(
+					createMockMutationResult<void, Error, { userId: number; roleName: string }, unknown>(
+						{
 							isSuccess: true
 						}));
 
@@ -286,26 +284,6 @@ describe("UserCreatePage",
 					});
 			});
 
-		describe("saveDraft",
-			() =>
-			{
-				it("should show snackbar notification",
-					() =>
-					{
-						const snackBarSpy: jasmine.Spy<jasmine.Func> =
-							spyOn(component["snackBar"], "open");
-
-						component.saveDraft();
-
-						expect(snackBarSpy)
-							.toHaveBeenCalledWith(
-								"Draft saved locally",
-								"Close",
-								jasmine.objectContaining(
-									{ duration: 2000 }));
-					});
-			});
-
 		describe("onSubmit",
 			() =>
 			{
@@ -328,7 +306,7 @@ describe("UserCreatePage",
 								"Please complete all required fields",
 								"Close",
 								jasmine.objectContaining(
-									{ duration: 3000 }));
+									{ duration: 5000 }));
 						expect(component.createMutation.mutate).not.toHaveBeenCalled();
 					});
 
@@ -355,7 +333,7 @@ describe("UserCreatePage",
 								"Please complete all required fields",
 								"Close",
 								jasmine.objectContaining(
-									{ duration: 3000 }));
+									{ duration: 5000 }));
 						expect(component.createMutation.mutate).not.toHaveBeenCalled();
 					});
 
@@ -428,7 +406,7 @@ describe("UserCreatePage",
 								`User "testuser" created. Welcome email sent to test@example.com.`,
 								"Close",
 								jasmine.objectContaining(
-									{ duration: 5000 }));
+									{ duration: 3000 }));
 						expect(mockRouter.navigate)
 							.toHaveBeenCalledWith(
 								["/admin/users"]);
@@ -519,6 +497,173 @@ describe("UserCreatePage",
 						// Verify it returns an object
 						expect(component.formData())
 							.toEqual(jasmine.any(Object));
+					});
+			});
+
+		describe("Role Selection",
+			() =>
+			{
+				it("should initialize with empty selected roles",
+					() =>
+					{
+						expect(component.selectedRoles())
+							.toEqual([]);
+					});
+
+				it("should add role when toggled on",
+					() =>
+					{
+						component.toggleRole("Developer");
+
+						expect(component.selectedRoles())
+							.toEqual(
+								["Developer"]);
+					});
+
+				it("should remove role when toggled off",
+					() =>
+					{
+					// Add role first
+						component.toggleRole("Developer");
+						expect(component.selectedRoles())
+							.toEqual(
+								["Developer"]);
+
+						// Toggle again to remove
+						component.toggleRole("Developer");
+						expect(component.selectedRoles())
+							.toEqual([]);
+					});
+
+				it("should allow multiple roles",
+					() =>
+					{
+						component.toggleRole("Developer");
+						component.toggleRole("Admin");
+
+						expect(component.selectedRoles())
+							.toContain("Developer");
+						expect(component.selectedRoles())
+							.toContain("Admin");
+					});
+
+				it("should have available roles defined",
+					() =>
+					{
+						expect(component.availableRoles.length)
+							.toBeGreaterThan(0);
+						expect(component.availableRoles)
+							.toContain("Developer");
+						expect(component.availableRoles)
+							.toContain("Admin");
+					});
+
+				it("should assign roles after user creation",
+					async () =>
+					{
+						// Arrange - fill forms and select roles
+						component.basicInfoForm.patchValue(
+							{
+								username: "newuser",
+								email: "newuser@test.com"
+							});
+						component.accountDetailsForm.patchValue(
+							{
+								fullName: "New User",
+								isActive: true
+							});
+						component.toggleRole("Developer");
+						component.toggleRole("Admin");
+
+						// Mock createMutation to trigger onSuccess with created user
+						const createdUser: UserDto =
+							createMockUserDto(
+								{
+									username: "newuser",
+									email: "newuser@test.com",
+									fullName: "New User"
+								});
+						(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
+							(
+								data: Partial<UserDto>,
+								options: { onSuccess: (user: UserDto) => void }) =>
+							{
+								options.onSuccess(createdUser);
+							});
+
+						// Act
+						await component.onSubmit();
+
+						// Assert - addRole mutation should be called for each role
+						expect(component.addRoleMutation.mutate)
+							.toHaveBeenCalledTimes(2);
+						expect(component.addRoleMutation.mutate)
+							.toHaveBeenCalledWith(
+								{ userId: 1, roleName: "Developer" },
+								jasmine.objectContaining(
+									{ onError: jasmine.any(Function) }));
+						expect(component.addRoleMutation.mutate)
+							.toHaveBeenCalledWith(
+								{ userId: 1, roleName: "Admin" },
+								jasmine.objectContaining(
+									{ onError: jasmine.any(Function) }));
+					});
+
+				it("should show error snackbar when role assignment fails",
+					async () =>
+					{
+						// Arrange - fill forms and select a role
+						component.basicInfoForm.patchValue(
+							{
+								username: "newuser",
+								email: "newuser@test.com"
+							});
+						component.accountDetailsForm.patchValue(
+							{
+								fullName: "New User",
+								isActive: true
+							});
+						component.toggleRole("Developer");
+
+						const createdUser: UserDto =
+							createMockUserDto(
+								{
+									username: "newuser",
+									email: "newuser@test.com",
+									fullName: "New User"
+								});
+
+						// Mock createMutation to trigger onSuccess
+						(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
+							(
+								data: Partial<UserDto>,
+								options: { onSuccess: (user: UserDto) => void }) =>
+							{
+								options.onSuccess(createdUser);
+							});
+
+						// Mock addRoleMutation to trigger onError
+						(component.addRoleMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
+							(
+								data: { userId: number; roleName: string },
+								options: { onError: (error: Error) => void }) =>
+							{
+								options.onError(new Error("Role assignment failed"));
+							});
+
+						const snackBarSpy: jasmine.Spy =
+							spyOn(component["snackBar"], "open");
+
+						// Act
+						await component.onSubmit();
+
+						// Assert - error snackbar should be shown
+						expect(snackBarSpy)
+							.toHaveBeenCalledWith(
+								"Failed to assign role \"Developer\"",
+								"Close",
+								jasmine.objectContaining(
+									{ duration: 5000 }));
 					});
 			});
 	});

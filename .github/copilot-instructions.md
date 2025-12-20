@@ -217,11 +217,39 @@ domains/    → @admin/*, @sandbox/*, @developer/*
 
 ---
 
-## Constants
+## Constants & Type Safety (CRITICAL)
 
--   C#: `RoleConstants.Developer` (PascalCase)
--   TS: `ROLE_DEVELOPER` (SCREAMING_SNAKE)
--   Never hardcode repeated strings
+| Rule            | ❌ NEVER                            | ✅ ALWAYS                               |
+| --------------- | ----------------------------------- | --------------------------------------- |
+| Magic numbers   | `{ duration: 5000 }`                | `{ duration: SNACKBAR_DURATION.error }` |
+| Magic strings   | `ReturnType<Service["methodName"]>` | `ReturnType<typeof service.methodName>` |
+| C# constants    | `"Developer"` inline                | `RoleConstants.Developer` (PascalCase)  |
+| TS constants    | `"DEVELOPER"` inline                | `ROLE_DEVELOPER` (SCREAMING_SNAKE)      |
+| Repeated values | Same literal 2+ times               | Extract to constant                     |
+
+### ReturnType Pattern (CRITICAL)
+
+```typescript
+// ❌ NEVER - String-based access, no compile-time safety
+readonly userQuery: ReturnType<UserService["getUserById"]> =
+    this.userService.getUserById(this.userId);
+
+// ✅ ALWAYS - typeof provides compile-time type checking
+readonly userQuery: ReturnType<typeof this.userService.getUserById> =
+    this.userService.getUserById(this.userId);
+```
+
+**Why**: String-based property access (`Service["method"]`) bypasses TypeScript's type system. If method is renamed, no compile error occurs. Using `typeof` ensures refactoring safety.
+
+### Duration/Timing Constants
+
+```typescript
+// ❌ NEVER - Magic numbers
+snackBar.open(message, "Close", { duration: 5000 });
+
+// ✅ ALWAYS - Named constants
+snackBar.open(message, "Close", { duration: SNACKBAR_DURATION.error });
+```
 
 ## Documentation
 

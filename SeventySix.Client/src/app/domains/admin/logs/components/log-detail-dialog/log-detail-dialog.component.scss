@@ -94,7 +94,7 @@
 		&.error-section {
 			background-color: rgba(var(--mat-sys-error-rgb, 179, 38, 30), 0.05);
 			padding: vars.$spacing-lg;
-			border-radius: vars.$border-radius-md;
+			border-radius: 0;
 			border-left: 4px solid var(--mat-sys-error);
 
 			.error-breakdown {
@@ -113,7 +113,7 @@
 				.error-value {
 					padding: vars.$spacing-md;
 					background-color: var(--mat-table-background-color);
-					border-radius: vars.$border-radius-sm;
+					border-radius: 0;
 					font-family: vars.$font-family-monospace;
 					word-break: break-word;
 

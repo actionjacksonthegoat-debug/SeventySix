@@ -1,4 +1,4 @@
-import { UpdateProfileRequest, UserProfileDto } from "@account/models";
+import { AvailableRoleDto, UpdateProfileRequest, UserProfileDto } from "@account/models";
 import { AccountService } from "@account/services";
 import { DatePipe } from "@angular/common";
 import {
@@ -59,6 +59,8 @@ export class ProfilePage
 		this.accountService.getProfile();
 	readonly updateMutation: ReturnType<AccountService["updateProfile"]> =
 		this.accountService.updateProfile();
+	readonly availableRolesQuery: ReturnType<AccountService["getAvailableRoles"]> =
+		this.accountService.getAvailableRoles();
 
 	readonly profile: Signal<UserProfileDto | undefined> =
 		computed(
@@ -73,6 +75,14 @@ export class ProfilePage
 		computed(
 			() =>
 				this.profileQuery.error() ? "Failed to load profile" : null);
+	readonly hasAvailableRoles: Signal<boolean> =
+		computed(
+			() =>
+			{
+				const roles: AvailableRoleDto[] | undefined =
+					this.availableRolesQuery.data();
+				return (roles?.length ?? 0) > 0;
+			});
 
 	readonly profileForm: FormGroup =
 		this.formBuilder.group(

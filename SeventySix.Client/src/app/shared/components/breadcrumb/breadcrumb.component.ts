@@ -112,7 +112,7 @@ export class BreadcrumbComponent
 	private readonly featureMap: Record<string, { label: string; url: string; }> =
 		{
 			game: { label: "Game", url: "/game" },
-			developer: { label: "Developer", url: "/developer/style-guide" },
+			developer: { label: "Developer", url: "/developer" },
 			admin: { label: "Admin", url: "/admin" }
 		};
 

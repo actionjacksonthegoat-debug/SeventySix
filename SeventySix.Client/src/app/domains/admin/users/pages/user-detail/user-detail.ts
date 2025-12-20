@@ -9,6 +9,7 @@ import {
 	inject,
 	Signal
 } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
 import {
 	FormBuilder,
 	FormGroup,
@@ -18,6 +19,9 @@ import {
 import { MatChipsModule } from "@angular/material/chips";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { REQUESTABLE_ROLES } from "@shared/constants/role.constants";
+import { SnackbarType } from "@shared/constants/snackbar.constants";
+import { showSnackbar } from "@shared/utilities/snackbar.utility";
 import { ActivatedRoute, Router } from "@angular/router";
 import {
 	EMAIL_VALIDATION,
@@ -27,6 +31,7 @@ import {
 import { FORM_MATERIAL_MODULES } from "@shared/material-bundles";
 import { LoggerService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
+import { map } from "rxjs";
 
 /**
  * User detail/edit page component.
@@ -86,7 +91,7 @@ export class UserDetailPage
 
 	// Available roles constant (matches backend ValidRoleNames)
 	readonly availableRoles: readonly string[] =
-		["Developer", "Admin"];
+		REQUESTABLE_ROLES;
 
 	// Computed signals for derived state
 	readonly user: Signal<UserDto | null> =
@@ -139,10 +144,6 @@ export class UserDetailPage
 				return currentUser ? `Edit User: ${currentUser.username}` : "Edit User";
 			});
 
-	readonly hasUnsavedChanges: Signal<boolean> =
-		computed(
-			() => this.userForm.dirty);
-
 	// Reactive form
 	readonly userForm: FormGroup =
 		this.formBuilder.group(
@@ -166,6 +167,13 @@ export class UserDetailPage
 				fullName: ["", [Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)]],
 				isActive: [true]
 			});
+
+	readonly hasUnsavedChanges: Signal<boolean> =
+		toSignal(
+			this.userForm.statusChanges.pipe(
+				map(
+					() => this.userForm.dirty)),
+			{ initialValue: false });
 
 	// Validation error signals
 	readonly usernameError: Signal<string | null> =
@@ -267,7 +275,10 @@ export class UserDetailPage
 			this.userId;
 		if (!userId)
 		{
-			this.showErrorSnackBar("Invalid user ID");
+			showSnackbar(
+				this.snackBar,
+				"Invalid user ID",
+				SnackbarType.Error);
 			return null;
 		}
 
@@ -275,7 +286,10 @@ export class UserDetailPage
 			this.user();
 		if (!currentUser)
 		{
-			this.showErrorSnackBar("User data not loaded");
+			showSnackbar(
+				this.snackBar,
+				"User data not loaded",
+				SnackbarType.Error);
 			return null;
 		}
 
@@ -309,7 +323,10 @@ export class UserDetailPage
 	private handleMutationSuccess(): void
 	{
 		this.userForm.markAsPristine();
-		this.showSuccessSnackBar("User updated successfully");
+		showSnackbar(
+			this.snackBar,
+			"User updated successfully",
+			SnackbarType.Success);
 	}
 
 	/**
@@ -330,7 +347,10 @@ export class UserDetailPage
 			this.logger.error(
 				"Failed to save user",
 				error instanceof Error ? error : undefined);
-			this.showErrorSnackBar("Failed to save user");
+			showSnackbar(
+				this.snackBar,
+				"Failed to save user",
+				SnackbarType.Error);
 		}
 	}
 
@@ -352,34 +372,6 @@ export class UserDetailPage
 		.onAction()
 		.subscribe(
 			() => this.userQuery.refetch());
-	}
-
-	/**
-	 * Shows a success snack bar message.
-	 * @param message The message to display
-	 */
-	private showSuccessSnackBar(message: string): void
-	{
-		this.snackBar.open(message, "Close",
-			{
-				duration: 3000,
-				horizontalPosition: "end",
-				verticalPosition: "top"
-			});
-	}
-
-	/**
-	 * Shows an error snack bar message.
-	 * @param message The message to display
-	 */
-	private showErrorSnackBar(message: string): void
-	{
-		this.snackBar.open(message, "Close",
-			{
-				duration: 3000,
-				horizontalPosition: "end",
-				verticalPosition: "top"
-			});
 	}
 
 	/**
@@ -409,9 +401,15 @@ export class UserDetailPage
 			{ userId: userIdNum, roleName: role },
 			{
 				onSuccess: () =>
-					this.showSuccessSnackBar(`Role "${role}" added`),
+					showSnackbar(
+						this.snackBar,
+						`Role "${role}" added`,
+						SnackbarType.Success),
 				onError: () =>
-					this.showErrorSnackBar(`Failed to add role "${role}"`)
+					showSnackbar(
+						this.snackBar,
+						`Failed to add role "${role}"`,
+						SnackbarType.Error)
 			});
 	}
 
@@ -432,9 +430,15 @@ export class UserDetailPage
 			{ userId: userIdNum, roleName: role },
 			{
 				onSuccess: () =>
-					this.showSuccessSnackBar(`Role "${role}" removed`),
+					showSnackbar(
+						this.snackBar,
+						`Role "${role}" removed`,
+						SnackbarType.Success),
 				onError: () =>
-					this.showErrorSnackBar(`Failed to remove role "${role}"`)
+					showSnackbar(
+						this.snackBar,
+						`Failed to remove role "${role}"`,
+						SnackbarType.Error)
 			});
 	}
 }

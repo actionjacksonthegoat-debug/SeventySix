@@ -17,7 +17,8 @@ export const DEVELOPER_ROUTES: Routes =
 			loadComponent: () =>
 				import("./pages/style-guide/style-guide").then(
 					(module) => module.StyleGuideComponent),
-			title: "Style Guide - SeventySix"
+			title: "Style Guide - SeventySix",
+			data: { breadcrumb: "Style Guide" }
 		},
 		{
 			path: "architecture-guide",
@@ -25,6 +26,7 @@ export const DEVELOPER_ROUTES: Routes =
 				import("./pages/architecture-guide/architecture-guide").then(
 					(module) =>
 						module.ArchitectureGuideComponent),
-			title: "Architecture Guide - SeventySix"
+			title: "Architecture Guide - SeventySix",
+			data: { breadcrumb: "Architecture Guide" }
 		}
 	];
