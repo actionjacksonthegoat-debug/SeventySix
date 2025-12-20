@@ -32,9 +32,9 @@ import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION
 } from "@shared/constants/validation.constants";
-import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 import { NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
+import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
 @Component(
 	{

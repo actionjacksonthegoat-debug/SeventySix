@@ -60,7 +60,7 @@ describe("UserCreatePage",
 						}));
 
 				mockUserService.addRole.and.returnValue(
-					createMockMutationResult<void, Error, { userId: number; roleName: string }, unknown>(
+					createMockMutationResult<void, Error, { userId: number; roleName: string; }, unknown>(
 						{
 							isSuccess: true
 						}));
@@ -505,7 +505,7 @@ describe("UserCreatePage",
 				it("should remove role when toggled off",
 					() =>
 					{
-					// Add role first
+						// Add role first
 						component.toggleRole("Developer");
 						expect(component.selectedRoles())
 							.toEqual(
@@ -568,7 +568,7 @@ describe("UserCreatePage",
 						(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
 							(
 								data: Partial<UserDto>,
-								options: { onSuccess: (user: UserDto) => void }) =>
+								options: { onSuccess: (user: UserDto) => void; }) =>
 							{
 								options.onSuccess(createdUser);
 							});
@@ -619,7 +619,7 @@ describe("UserCreatePage",
 						(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
 							(
 								data: Partial<UserDto>,
-								options: { onSuccess: (user: UserDto) => void }) =>
+								options: { onSuccess: (user: UserDto) => void; }) =>
 							{
 								options.onSuccess(createdUser);
 							});
@@ -627,8 +627,8 @@ describe("UserCreatePage",
 						// Mock addRoleMutation to trigger onError
 						(component.addRoleMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
 							(
-								data: { userId: number; roleName: string },
-								options: { onError: (error: Error) => void }) =>
+								data: { userId: number; roleName: string; },
+								options: { onError: (error: Error) => void; }) =>
 							{
 								options.onError(new Error("Role assignment failed"));
 							});

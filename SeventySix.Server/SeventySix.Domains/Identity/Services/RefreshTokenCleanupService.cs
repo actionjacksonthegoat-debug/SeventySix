@@ -89,41 +89,49 @@ public class RefreshTokenCleanupService(
 
 		// Delete expired refresh tokens older than retention period
 		DateTime expiredTokenCutoff =
-			now.AddDays(-settings.Value.RetentionDays);
+			now.AddDays(
+				-settings.Value.RetentionDays);
 
 		int deletedRefreshTokens =
 			await dbContext
 				.RefreshTokens
-				.Where(refreshToken => refreshToken.ExpiresAt < expiredTokenCutoff)
+				.Where(refreshToken =>
+					refreshToken.ExpiresAt < expiredTokenCutoff)
 				.ExecuteDeleteAsync(cancellationToken);
 
 		// Delete used password reset tokens older than retention period
 		DateTime usedTokenCutoff =
-			now.AddHours(-settings.Value.UsedTokenRetentionHours);
+			now.AddHours(
+				-settings.Value.UsedTokenRetentionHours);
 
 		int deletedResetTokens =
 			await dbContext
 				.PasswordResetTokens
-				.Where(passwordResetToken => passwordResetToken.IsUsed)
-				.Where(passwordResetToken => passwordResetToken.CreateDate < usedTokenCutoff)
+				.Where(passwordResetToken =>
+					passwordResetToken.IsUsed)
+				.Where(passwordResetToken =>
+					passwordResetToken.CreateDate < usedTokenCutoff)
 				.ExecuteDeleteAsync(cancellationToken);
 
 		// Delete used email verification tokens older than retention period
 		int deletedVerificationTokens =
 			await dbContext
 				.EmailVerificationTokens
-				.Where(emailVerificationToken => emailVerificationToken.IsUsed)
-				.Where(emailVerificationToken => emailVerificationToken.CreateDate < usedTokenCutoff)
+				.Where(emailVerificationToken =>
+					emailVerificationToken.IsUsed)
+				.Where(emailVerificationToken =>
+					emailVerificationToken.CreateDate < usedTokenCutoff)
 				.ExecuteDeleteAsync(cancellationToken);
 
 		// Log summary (Information level - background job completion)
-		if (deletedRefreshTokens > 0
+		if (
+			deletedRefreshTokens > 0
 			|| deletedResetTokens > 0
 			|| deletedVerificationTokens > 0)
 		{
 			logger.LogInformation(
-				"Token cleanup completed. Deleted: {RefreshTokens} refresh, " +
-				"{ResetTokens} password reset, {VerificationTokens} email verification",
+				"Token cleanup completed. Deleted: {RefreshTokens} refresh, "
+					+ "{ResetTokens} password reset, {VerificationTokens} email verification",
 				deletedRefreshTokens,
 				deletedResetTokens,
 				deletedVerificationTokens);

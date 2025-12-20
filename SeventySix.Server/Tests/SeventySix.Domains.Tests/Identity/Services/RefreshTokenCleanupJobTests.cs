@@ -196,7 +196,8 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			.Log(
 				LogLevel.Information,
 				Arg.Any<EventId>(),
-				Arg.Is<object>(logMessage => logMessage.ToString()!.Contains("Token cleanup completed")),
+				Arg.Is<object>(logMessage =>
+					logMessage.ToString()!.Contains("Token cleanup completed")),
 				null,
 				Arg.Any<Func<object, Exception?, string>>());
 	}
@@ -307,21 +308,24 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			this.TimeProvider.GetUtcNow().UtcDateTime;
 
 		PasswordResetToken usedOldToken =
-			new PasswordResetTokenBuilder(this.TimeProvider)
+			new PasswordResetTokenBuilder(
+				this.TimeProvider)
 				.WithUserId(this.TestUser.Id)
 				.AsUsed()
 				.WithCreateDate(now.AddHours(-48))
 				.Build();
 
 		PasswordResetToken usedRecentToken =
-			new PasswordResetTokenBuilder(this.TimeProvider)
+			new PasswordResetTokenBuilder(
+				this.TimeProvider)
 				.WithUserId(this.TestUser.Id)
 				.AsUsed()
 				.WithCreateDate(now.AddHours(-12))
 				.Build();
 
 		PasswordResetToken unusedOldToken =
-			new PasswordResetTokenBuilder(this.TimeProvider)
+			new PasswordResetTokenBuilder(
+				this.TimeProvider)
 				.WithUserId(this.TestUser.Id)
 				.WithIsUsed(false)
 				.WithCreateDate(now.AddHours(-48))
@@ -341,8 +345,8 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			await this.DbContext.PasswordResetTokens.ToListAsync();
 
 		remainingTokens.Count.ShouldBe(2); // Recent used + unused old
-		remainingTokens.ShouldNotContain(
-			passwordResetToken => passwordResetToken.Id == usedOldToken.Id);
+		remainingTokens.ShouldNotContain(passwordResetToken =>
+			passwordResetToken.Id == usedOldToken.Id);
 	}
 
 	[Fact]
@@ -353,7 +357,8 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			this.TimeProvider.GetUtcNow().UtcDateTime;
 
 		EmailVerificationToken usedOldToken =
-			new EmailVerificationTokenBuilder(this.TimeProvider)
+			new EmailVerificationTokenBuilder(
+				this.TimeProvider)
 				.WithEmail("old@test.com")
 				.AsUsed()
 				.WithCreateDate(now.AddHours(-48))
@@ -390,7 +395,8 @@ public class RefreshTokenCleanupJobTests : IDisposable
 			this.TimeProvider.GetUtcNow().UtcDateTime;
 
 		PasswordResetToken unusedOldToken =
-			new PasswordResetTokenBuilder(this.TimeProvider)
+			new PasswordResetTokenBuilder(
+				this.TimeProvider)
 				.WithUserId(this.TestUser.Id)
 				.WithIsUsed(false)
 				.WithCreateDate(now.AddHours(-72))
@@ -405,7 +411,7 @@ public class RefreshTokenCleanupJobTests : IDisposable
 		// Assert
 		bool tokenExists =
 			await this.DbContext.PasswordResetTokens.AnyAsync(
-				passwordResetToken => passwordResetToken.Id == unusedOldToken.Id);
+			passwordResetToken => passwordResetToken.Id == unusedOldToken.Id);
 
 		tokenExists.ShouldBeTrue(); // Unused tokens preserved
 	}

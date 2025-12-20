@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -14,21 +14,35 @@ namespace SeventySix.Domains.Identity.Migrations
 		/// <inheritdoc />
 		protected override void Up(MigrationBuilder migrationBuilder)
 		{
-			migrationBuilder.EnsureSchema(
-				name: "Identity");
+			migrationBuilder.EnsureSchema(name: "Identity");
 
 			migrationBuilder.CreateTable(
 				name: "EmailVerificationTokens",
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-					TokenHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-					ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					IsUsed = table.Column<bool>(type: "boolean", nullable: false)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					Email = table.Column<string>(
+						type: "character varying(255)",
+						maxLength: 255,
+						nullable: false),
+					TokenHash = table.Column<string>(
+						type: "character varying(64)",
+						maxLength: 64,
+						nullable: false),
+					ExpiresAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
+					IsUsed = table.Column<bool>(
+						type: "boolean",
+						nullable: false),
 				},
 				constraints: table =>
 				{
@@ -40,12 +54,27 @@ namespace SeventySix.Domains.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-					Description = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-					IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					Name = table.Column<string>(
+						type: "character varying(50)",
+						maxLength: 50,
+						nullable: false),
+					Description = table.Column<string>(
+						type: "character varying(256)",
+						maxLength: 256,
+						nullable: true),
+					IsActive = table.Column<bool>(
+						type: "boolean",
+						nullable: false,
+						defaultValue: true),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
 				},
 				constraints: table =>
 				{
@@ -57,26 +86,79 @@ namespace SeventySix.Domains.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					Username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-					Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-					FullName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-					CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-					CreatedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false, defaultValue: "System"),
-					ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					ModifiedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false, defaultValue: "System"),
-					IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-					NeedsPendingEmail = table.Column<bool>(type: "boolean", nullable: false),
-					IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-					DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					DeletedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-					xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: true),
-					Preferences = table.Column<string>(type: "jsonb", nullable: true),
-					LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					LastLoginIp = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
-					FailedLoginCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-					LockoutEndUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					Username = table.Column<string>(
+						type: "character varying(50)",
+						maxLength: 50,
+						nullable: false),
+					Email = table.Column<string>(
+						type: "character varying(255)",
+						maxLength: 255,
+						nullable: false),
+					FullName = table.Column<string>(
+						type: "character varying(100)",
+						maxLength: 100,
+						nullable: true),
+					CreatedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
+					CreatedBy = table.Column<string>(
+						type: "character varying(100)",
+						maxLength: 100,
+						nullable: false,
+						defaultValue: "System"),
+					ModifiedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					ModifiedBy = table.Column<string>(
+						type: "character varying(100)",
+						maxLength: 100,
+						nullable: false,
+						defaultValue: "System"),
+					IsActive = table.Column<bool>(
+						type: "boolean",
+						nullable: false,
+						defaultValue: true),
+					NeedsPendingEmail = table.Column<bool>(
+						type: "boolean",
+						nullable: false),
+					IsDeleted = table.Column<bool>(
+						type: "boolean",
+						nullable: false,
+						defaultValue: false),
+					DeletedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					DeletedBy = table.Column<string>(
+						type: "character varying(100)",
+						maxLength: 100,
+						nullable: true),
+					xmin = table.Column<uint>(
+						type: "xid",
+						rowVersion: true,
+						nullable: true),
+					Preferences = table.Column<string>(
+						type: "jsonb",
+						nullable: true),
+					LastLoginAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					LastLoginIp = table.Column<string>(
+						type: "character varying(45)",
+						maxLength: 45,
+						nullable: true),
+					FailedLoginCount = table.Column<int>(
+						type: "integer",
+						nullable: false,
+						defaultValue: 0),
+					LockoutEndUtc = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
 				},
 				constraints: table =>
 				{
@@ -88,14 +170,33 @@ namespace SeventySix.Domains.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					Provider = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-					ProviderUserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-					ProviderEmail = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-					LastUsedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					Provider = table.Column<string>(
+						type: "character varying(50)",
+						maxLength: 50,
+						nullable: false),
+					ProviderUserId = table.Column<string>(
+						type: "character varying(255)",
+						maxLength: 255,
+						nullable: false),
+					ProviderEmail = table.Column<string>(
+						type: "character varying(255)",
+						maxLength: 255,
+						nullable: true),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
+					LastUsedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
 				},
 				constraints: table =>
 				{
@@ -114,13 +215,27 @@ namespace SeventySix.Domains.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					TokenHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-					ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					IsUsed = table.Column<bool>(type: "boolean", nullable: false)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					TokenHash = table.Column<string>(
+						type: "character varying(64)",
+						maxLength: 64,
+						nullable: false),
+					ExpiresAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
+					IsUsed = table.Column<bool>(
+						type: "boolean",
+						nullable: false),
 				},
 				constraints: table =>
 				{
@@ -139,13 +254,28 @@ namespace SeventySix.Domains.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					RequestedRoleId = table.Column<int>(type: "integer", nullable: false),
-					RequestMessage = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-					CreatedBy = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					RequestedRoleId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					RequestMessage = table.Column<string>(
+						type: "character varying(500)",
+						maxLength: 500,
+						nullable: true),
+					CreatedBy = table.Column<string>(
+						type: "character varying(50)",
+						maxLength: 50,
+						nullable: false),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
 				},
 				constraints: table =>
 				{
@@ -171,17 +301,42 @@ namespace SeventySix.Domains.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					TokenHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-					FamilyId = table.Column<Guid>(type: "uuid", nullable: false),
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					SessionStartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-					IsRevoked = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-					RevokedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					CreatedByIp = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					TokenHash = table.Column<string>(
+						type: "character varying(64)",
+						maxLength: 64,
+						nullable: false),
+					FamilyId = table.Column<Guid>(
+						type: "uuid",
+						nullable: false),
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					ExpiresAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
+					SessionStartedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
+					IsRevoked = table.Column<bool>(
+						type: "boolean",
+						nullable: false,
+						defaultValue: false),
+					RevokedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					CreatedByIp = table.Column<string>(
+						type: "character varying(45)",
+						maxLength: 45,
+						nullable: true),
 				},
 				constraints: table =>
 				{
@@ -200,10 +355,20 @@ namespace SeventySix.Domains.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					PasswordHash = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-					PasswordChangedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					PasswordHash = table.Column<string>(
+						type: "character varying(150)",
+						maxLength: 150,
+						nullable: false),
+					PasswordChangedAt = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
 				},
 				constraints: table =>
 				{
@@ -222,14 +387,32 @@ namespace SeventySix.Domains.Identity.Migrations
 				schema: "Identity",
 				columns: table => new
 				{
-					Id = table.Column<int>(type: "integer", nullable: false)
-						.Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-					UserId = table.Column<int>(type: "integer", nullable: false),
-					RoleId = table.Column<int>(type: "integer", nullable: false),
-					CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-					ModifyDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-					CreatedBy = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-					ModifiedBy = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true)
+					Id = table
+						.Column<int>(type: "integer", nullable: false)
+						.Annotation(
+							"Npgsql:ValueGenerationStrategy",
+							NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+					UserId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					RoleId = table.Column<int>(
+						type: "integer",
+						nullable: false),
+					CreateDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: false,
+						defaultValueSql: "NOW()"),
+					ModifyDate = table.Column<DateTime>(
+						type: "timestamp with time zone",
+						nullable: true),
+					CreatedBy = table.Column<string>(
+						type: "character varying(256)",
+						maxLength: 256,
+						nullable: true),
+					ModifiedBy = table.Column<string>(
+						type: "character varying(256)",
+						maxLength: 256,
+						nullable: true),
 				},
 				constraints: table =>
 				{
@@ -253,12 +436,37 @@ namespace SeventySix.Domains.Identity.Migrations
 			migrationBuilder.InsertData(
 				schema: "Identity",
 				table: "SecurityRoles",
-				columns: new[] { "Id", "CreateDate", "Description", "IsActive", "Name" },
+				columns: new[]
+				{
+					"Id",
+					"CreateDate",
+					"Description",
+					"IsActive",
+					"Name",
+				},
 				values: new object[,]
 				{
-					{ 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Standard user access", true, "User" },
-					{ 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Access to developer tools and APIs", true, "Developer" },
-					{ 3, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Full administrative access", true, "Admin" }
+					{
+						1,
+						new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+						"Standard user access",
+						true,
+						"User",
+					},
+					{
+						2,
+						new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+						"Access to developer tools and APIs",
+						true,
+						"Developer",
+					},
+					{
+						3,
+						new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+						"Full administrative access",
+						true,
+						"Admin",
+					},
 				});
 
 			migrationBuilder.CreateIndex(
@@ -414,17 +622,13 @@ namespace SeventySix.Domains.Identity.Migrations
 				name: "UserCredentials",
 				schema: "Identity");
 
-			migrationBuilder.DropTable(
-				name: "UserRoles",
-				schema: "Identity");
+			migrationBuilder.DropTable(name: "UserRoles", schema: "Identity");
 
 			migrationBuilder.DropTable(
 				name: "SecurityRoles",
 				schema: "Identity");
 
-			migrationBuilder.DropTable(
-				name: "Users",
-				schema: "Identity");
+			migrationBuilder.DropTable(name: "Users", schema: "Identity");
 		}
 	}
 }

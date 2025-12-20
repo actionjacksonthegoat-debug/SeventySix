@@ -51,8 +51,7 @@ public class IpAnonymizationService(
 	/// <returns>A task that represents the asynchronous operation.</returns>
 	public async Task AnonymizeIpAddressesAsync()
 	{
-		await this.AnonymizeIpAddressesInternalAsync(
-			CancellationToken.None);
+		await this.AnonymizeIpAddressesInternalAsync(CancellationToken.None);
 	}
 
 	private async Task AnonymizeIpAddressesInternalAsync(
@@ -66,9 +65,9 @@ public class IpAnonymizationService(
 
 		DateTime cutoff =
 			timeProvider
-			.GetUtcNow()
-			.AddDays(-settings.Value.RetentionDays)
-			.UtcDateTime;
+				.GetUtcNow()
+				.AddDays(-settings.Value.RetentionDays)
+				.UtcDateTime;
 
 		// Anonymize User.LastLoginIp where LastLoginAt is at or older than cutoff
 		int anonymizedCount =
@@ -77,9 +76,8 @@ public class IpAnonymizationService(
 				.Where(user => user.LastLoginIp != null)
 				.Where(user => user.LastLoginAt <= cutoff)
 				.ExecuteUpdateAsync(
-					setter => setter.SetProperty(
-						user => user.LastLoginIp,
-						(string?)null),
+					setter =>
+						setter.SetProperty(user => user.LastLoginIp, (string?)null),
 					cancellationToken);
 
 		// Log summary (Information level - background job completion)

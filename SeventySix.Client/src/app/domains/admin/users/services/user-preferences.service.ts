@@ -4,8 +4,8 @@
  * Follows SRP - Single Responsibility: User preference persistence
  */
 
-import { inject, Injectable } from "@angular/core";
 import { UserListPreferences } from "@admin/users/models";
+import { inject, Injectable } from "@angular/core";
 import { StorageService } from "@shared/services";
 
 const DEFAULT_PREFERENCES: UserListPreferences =

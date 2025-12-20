@@ -1,6 +1,6 @@
+import { DateRangePreset } from "@admin/logs/constants";
 import { BaseQueryRequest } from "@shared/models";
 import { DateService } from "@shared/services";
-import { DateRangePreset } from "@admin/logs/constants";
 
 /** Log query request DTO matching backend LogQueryRequest. */
 export interface LogQueryRequest extends BaseQueryRequest

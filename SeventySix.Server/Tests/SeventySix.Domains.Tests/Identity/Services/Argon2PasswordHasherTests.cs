@@ -144,8 +144,7 @@ public class Argon2PasswordHasherTests
 		string? password)
 	{
 		// Act & Assert
-		Should.Throw<ArgumentException>(() =>
-			Hasher.HashPassword(password!));
+		Should.Throw<ArgumentException>(() => Hasher.HashPassword(password!));
 	}
 
 	[Theory]

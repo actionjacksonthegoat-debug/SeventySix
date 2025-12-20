@@ -38,7 +38,9 @@ public class InitiateRegistrationCommandHandlerTests(
 				Email = uniqueEmail,
 				TokenHash = expectedHash,
 				ExpiresAt =
-					TestTimeProviderBuilder.DefaultTime.AddHours(24).UtcDateTime,
+					TestTimeProviderBuilder
+						.DefaultTime.AddHours(24)
+						.UtcDateTime,
 				IsUsed = false,
 			};
 
@@ -72,7 +74,9 @@ public class InitiateRegistrationCommandHandlerTests(
 				Email = "first@example.com",
 				TokenHash = hashedToken,
 				ExpiresAt =
-					TestTimeProviderBuilder.DefaultTime.AddHours(24).UtcDateTime,
+					TestTimeProviderBuilder
+						.DefaultTime.AddHours(24)
+						.UtcDateTime,
 				IsUsed = false,
 			};
 
@@ -82,7 +86,9 @@ public class InitiateRegistrationCommandHandlerTests(
 				Email = "second@example.com",
 				TokenHash = hashedToken, // Same hash
 				ExpiresAt =
-					TestTimeProviderBuilder.DefaultTime.AddHours(24).UtcDateTime,
+					TestTimeProviderBuilder
+						.DefaultTime.AddHours(24)
+						.UtcDateTime,
 				IsUsed = false,
 			};
 

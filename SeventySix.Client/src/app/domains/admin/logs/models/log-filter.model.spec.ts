@@ -1,5 +1,5 @@
-import { DateService } from "@shared/services";
 import { DateRangePreset } from "@admin/logs/constants";
+import { DateService } from "@shared/services";
 import {
 	getDateRangeFromPreset,
 	getDateRangePresetLabel

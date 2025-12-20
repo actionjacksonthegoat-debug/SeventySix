@@ -32,7 +32,7 @@ public static class TestUserHelper
 	/// </summary>
 	private static readonly Lazy<TestPasswordHasher> PasswordHasher =
 		new(() =>
-			new TestPasswordHasher());
+		new TestPasswordHasher());
 
 	/// <summary>
 	/// The standard test password used across API integration tests.
@@ -49,7 +49,7 @@ public static class TestUserHelper
 	/// </remarks>
 	private static readonly Lazy<string> LazyTestPasswordHash =
 		new(() =>
-			PasswordHasher.Value.HashPassword(TestPassword));
+		PasswordHasher.Value.HashPassword(TestPassword));
 
 	/// <summary>
 	/// Gets the Argon2id hash for <see cref="TestPassword"/>.
@@ -67,7 +67,7 @@ public static class TestUserHelper
 	/// </summary>
 	private static readonly Lazy<string> LazySimplePasswordHash =
 		new(() =>
-			PasswordHasher.Value.HashPassword(SimplePassword));
+		PasswordHasher.Value.HashPassword(SimplePassword));
 
 	/// <summary>
 	/// Gets the Argon2id hash for <see cref="SimplePassword"/>.

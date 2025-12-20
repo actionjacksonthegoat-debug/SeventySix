@@ -20,9 +20,9 @@ import {
 	Validators
 } from "@angular/forms";
 import { MatChipsModule } from "@angular/material/chips";
-import { REQUESTABLE_ROLES } from "@shared/constants/role.constants";
 import { MatStepper } from "@angular/material/stepper";
 import { Router } from "@angular/router";
+import { REQUESTABLE_ROLES } from "@shared/constants/role.constants";
 import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION,

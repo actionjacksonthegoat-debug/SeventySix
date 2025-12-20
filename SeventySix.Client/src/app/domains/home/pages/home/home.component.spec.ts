@@ -49,7 +49,13 @@ describe("HomeComponent",
 				it("should have Sandbox action with correct properties",
 					() =>
 					{
-						const sandboxAction: { title: string; description: string; icon: string; route: string; themeClass: string; } | undefined =
+						const sandboxAction: {
+							title: string;
+							description: string;
+							icon: string;
+							route: string;
+							themeClass: string;
+						} | undefined =
 							component["quickActions"].find(
 								(action: { route: string; }) =>
 									action.route === "/sandbox");
@@ -71,7 +77,13 @@ describe("HomeComponent",
 				it("should have Architecture Guide action with correct properties",
 					() =>
 					{
-						const architectureAction: { title: string; description: string; icon: string; route: string; themeClass: string; } | undefined =
+						const architectureAction: {
+							title: string;
+							description: string;
+							icon: string;
+							route: string;
+							themeClass: string;
+						} | undefined =
 							component["quickActions"].find(
 								(action: { route: string; }) =>
 									action.route === "/developer/architecture-guide");

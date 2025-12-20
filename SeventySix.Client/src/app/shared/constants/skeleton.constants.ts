@@ -104,4 +104,3 @@ export const SKELETON_TEXTAREA: SkeletonTheme =
 		width: "100%",
 		borderRadius: "4px"
 	};
-
