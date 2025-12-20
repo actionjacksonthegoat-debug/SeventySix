@@ -22,6 +22,7 @@ import {
 	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
+import { provideNgxSkeletonLoader } from "ngx-skeleton-loader";
 
 import { environment } from "@environments/environment";
 import {
@@ -166,6 +167,14 @@ export const appConfig: ApplicationConfig =
 				{
 					enabled: !isDevMode(),
 					registrationStrategy: "registerWhenStable:30000"
+				}),
+			// Skeleton loader for loading states
+			provideNgxSkeletonLoader(
+				{
+					animation: "pulse",
+					theme: {
+						extendsFromRoot: true
+					}
 				})
 		]
 	};

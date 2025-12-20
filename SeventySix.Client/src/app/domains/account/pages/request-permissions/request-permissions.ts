@@ -22,7 +22,14 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { Router } from "@angular/router";
+import {
+	SKELETON_CHECKBOX,
+	SKELETON_TEXT_MEDIUM,
+	SKELETON_TEXT_SHORT,
+	SkeletonTheme
+} from "@shared/constants";
 import { NotificationService } from "@shared/services";
+import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
 @Component(
 	{
@@ -34,7 +41,8 @@ import { NotificationService } from "@shared/services";
 			MatButtonModule,
 			MatCardModule,
 			MatCheckboxModule,
-			MatProgressSpinnerModule
+			MatProgressSpinnerModule,
+			NgxSkeletonLoaderModule
 		],
 		templateUrl: "./request-permissions.html",
 		styleUrl: "./request-permissions.scss",
@@ -66,6 +74,14 @@ export class RequestPermissionsPage
 	readonly isSubmitting: Signal<boolean> =
 		computed(
 			() => this.requestMutation.isPending());
+
+	// Skeleton theme constants
+	readonly skeletonCheckbox: SkeletonTheme =
+		SKELETON_CHECKBOX;
+	readonly skeletonTextShort: SkeletonTheme =
+		SKELETON_TEXT_SHORT;
+	readonly skeletonTextMedium: SkeletonTheme =
+		SKELETON_TEXT_MEDIUM;
 
 	readonly selectedRoles: WritableSignal<Set<string>> =
 		signal(

@@ -1,5 +1,6 @@
 @use "variables" as vars;
 @use "@angular/material" as mat;
+@use "skeleton";
 
 .style-guide {
 	display: flex;
@@ -356,5 +357,190 @@ mat-radio-group {
 
 	.icon-grid {
 		grid-template-columns: repeat(auto-fill, minmax(6.25rem, 1fr));
+	}
+}
+
+// ============================================================================
+// LOADING STATES TAB
+// ============================================================================
+
+// Skeleton vs Spinner Comparison
+.loading-comparison {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+	gap: vars.$spacing-lg;
+	margin-bottom: vars.$spacing-xl;
+}
+
+.comparison-card {
+	.comparison-icon {
+		background-color: var(--mat-sys-primary-container);
+		color: var(--mat-sys-on-primary-container);
+		border-radius: 50%;
+		padding: vars.$spacing-sm;
+
+		&.skeleton-icon {
+			background-color: var(--mat-sys-tertiary-container);
+			color: var(--mat-sys-on-tertiary-container);
+		}
+
+		&.spinner-icon {
+			background-color: var(--mat-sys-secondary-container);
+			color: var(--mat-sys-on-secondary-container);
+		}
+	}
+
+	.comparison-list {
+		margin: 0 0 vars.$spacing-md 0;
+		padding-left: vars.$spacing-lg;
+
+		li {
+			margin-bottom: vars.$spacing-xs;
+			color: var(--mat-sys-on-surface);
+		}
+	}
+
+	.comparison-reason {
+		margin: 0;
+		padding: vars.$spacing-sm;
+		background-color: var(--mat-sys-surface-variant);
+		border-radius: vars.$border-radius-base;
+		font-size: vars.$font-size-sm;
+	}
+}
+
+// Skeleton Showcase
+.skeleton-card {
+	margin-bottom: vars.$spacing-lg;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+
+.skeleton-showcase {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+	gap: vars.$spacing-xl;
+}
+
+.skeleton-item {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-xs;
+
+	&.wide {
+		grid-column: 1 / -1;
+	}
+
+	.mat-label-large {
+		font-weight: 500;
+		color: var(--mat-sys-on-surface);
+	}
+
+	.mat-body-2 {
+		color: var(--mat-sys-on-surface-variant);
+		margin-bottom: vars.$spacing-sm;
+	}
+
+	.skeleton-demo {
+		padding: vars.$spacing-md;
+		background-color: var(--mat-sys-surface-variant);
+		border-radius: vars.$border-radius-base;
+		min-height: 3.5rem;
+		display: flex;
+		align-items: center;
+
+		&.full-width {
+			ngx-skeleton-loader {
+				width: 100%;
+			}
+		}
+	}
+
+	.skeleton-code {
+		font-family: vars.$font-family-monospace;
+		font-size: vars.$font-size-xs;
+		color: var(--mat-sys-primary);
+		background-color: var(--mat-sys-surface-container);
+		padding: vars.$spacing-xs vars.$spacing-sm;
+		border-radius: vars.$border-radius-base;
+		align-self: flex-start;
+	}
+}
+
+// Layout Classes Grid
+.layout-classes-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+	gap: vars.$spacing-md;
+}
+
+.layout-class-item {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-xs;
+	padding: vars.$spacing-md;
+	background-color: var(--mat-sys-surface-variant);
+	border-radius: vars.$border-radius-base;
+
+	code {
+		font-family: vars.$font-family-monospace;
+		font-size: vars.$font-size-sm;
+		color: var(--mat-sys-primary);
+		font-weight: 500;
+	}
+
+	.mat-body-2 {
+		color: var(--mat-sys-on-surface-variant);
+		margin: 0;
+	}
+}
+
+// Composite Examples
+.composite-examples {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+	gap: vars.$spacing-lg;
+}
+
+.example-card {
+	mat-card-content {
+		padding-top: vars.$spacing-md;
+	}
+}
+
+// Spinner Reference
+.spinner-reference-card {
+	margin-top: vars.$spacing-lg;
+}
+
+.spinner-examples {
+	display: flex;
+	gap: vars.$spacing-xl;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+
+.spinner-example {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-md;
+	align-items: center;
+
+	.mat-label-large {
+		font-weight: 500;
+		color: var(--mat-sys-on-surface);
+		text-align: center;
+	}
+
+	.saving-button {
+		display: flex;
+		align-items: center;
+		gap: vars.$spacing-sm;
+
+		mat-spinner {
+			display: inline-flex;
+		}
 	}
 }

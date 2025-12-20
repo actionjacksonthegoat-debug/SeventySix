@@ -233,7 +233,15 @@
 				role="status"
 				aria-label="Loading table data"
 			>
-				<mat-spinner diameter="50"></mat-spinner>
+				<div class="skeleton-table">
+					@for (row of [1, 2, 3, 4, 5]; track row) {
+					<div class="skeleton-table-row">
+						@for (col of [1, 2, 3, 4]; track col) {
+						<ngx-skeleton-loader [theme]="skeletonTableCell" />
+						}
+					</div>
+					}
+				</div>
 			</div>
 		}
 

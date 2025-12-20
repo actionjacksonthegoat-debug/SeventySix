@@ -35,12 +35,22 @@
 		</div>
 	</header>
 
-	<!-- Loading State -->
+	<!-- Loading State - Form Skeleton -->
 	@if (isLoading()) {
-	<div class="loading-container">
-		<mat-spinner></mat-spinner>
-		<p class="mat-body-1">Loading user...</p>
-	</div>
+	<mat-card appearance="outlined">
+		<mat-card-header>
+			<ngx-skeleton-loader [theme]="skeletonTextShort" />
+		</mat-card-header>
+		<mat-card-content class="skeleton-form">
+			<ngx-skeleton-loader [theme]="skeletonInput" />
+			<ngx-skeleton-loader [theme]="skeletonInput" />
+			<ngx-skeleton-loader [theme]="skeletonInput" />
+			<div class="skeleton-checkbox-row">
+				<ngx-skeleton-loader [theme]="skeletonCheckbox" />
+				<ngx-skeleton-loader [theme]="skeletonTextShort" />
+			</div>
+		</mat-card-content>
+	</mat-card>
 	}
 
 	<!-- Error State -->

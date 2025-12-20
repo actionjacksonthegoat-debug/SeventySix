@@ -3,15 +3,22 @@
 	role="region"
 	aria-label="Third-party API statistics">
 	@if (isLoading()) {
-		<div
-			class="loading-container"
-			role="status"
-			aria-live="polite">
-			<mat-spinner
-				diameter="40"
-				aria-label="Loading API statistics"></mat-spinner>
-			<p>Loading API statistics...</p>
-		</div>
+	<mat-card>
+		<mat-card-header>
+			<mat-card-title>Third-Party API Statistics</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div class="skeleton-table">
+				@for (row of [1, 2, 3]; track row) {
+				<div class="skeleton-table-row">
+					<ngx-skeleton-loader [theme]="skeletonTableCell" />
+					<ngx-skeleton-loader [theme]="skeletonTableCell" />
+					<ngx-skeleton-loader [theme]="skeletonTableCell" />
+				</div>
+				}
+			</div>
+		</mat-card-content>
+	</mat-card>
 	} @else if (error()) {
 		<div
 			class="error-container"

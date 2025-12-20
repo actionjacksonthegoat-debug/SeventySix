@@ -16,8 +16,9 @@ This document outlines the design patterns, architectural decisions, and Materia
 6. [Data Presentation Patterns](#data-presentation-patterns)
 7. [Form Patterns](#form-patterns)
 8. [Feedback Patterns](#feedback-patterns)
-9. [Responsive Patterns](#responsive-patterns)
-10. [Accessibility Patterns](#accessibility-patterns)
+9. [Loading States](#loading-states)
+10. [Responsive Patterns](#responsive-patterns)
+11. [Accessibility Patterns](#accessibility-patterns)
 
 ---
 
@@ -574,21 +575,7 @@ ngAfterViewInit(): void {
 -   Responsive sizing
 -   Theme-aware colors
 
-### 3. Loading States
-
-**Pattern**: Show Material spinner during data fetching.
-
-```html
-@if (isLoading()) {
-<mat-spinner></mat-spinner>
-} @else if (error()) {
-<mat-card>Error: {{ error() }}</mat-card>
-} @else {
-<!-- Data display -->
-}
-```
-
-### 4. Table Height Management
+### 3. Table Height Management
 
 **Pattern**: Use `appTableHeight` directive for dynamic table heights.
 
@@ -741,6 +728,191 @@ this.snackBar.open("User created successfully", "UNDO", {
 
 **Global**: mat-progress-bar at top of app
 **Local**: mat-spinner in components
+
+---
+
+## Loading States
+
+### 🚨 CRITICAL: Skeletons for Load Events, Spinners for Save Events
+
+**Core Principle**: Use the appropriate loading indicator based on the type of operation.
+
+| Operation Type       | Indicator        | Example Use Cases                                           |
+| -------------------- | ---------------- | ----------------------------------------------------------- |
+| **Load/Fetch (GET)** | Skeleton Loaders | Initial page load, data fetching, lazy content, iframe load |
+| **Save/Action**      | Spinners         | Form submit, save, update, delete, user-triggered actions   |
+
+**Why This Matters**:
+
+-   **Skeletons** preview content layout, reducing perceived wait time and preventing layout shifts
+-   **Spinners** indicate ongoing user action without implying content structure
+
+### 1. Skeleton Loaders (Load Events)
+
+**Library**: `ngx-skeleton-loader` (globally configured with pulse animation)
+
+**When to Use**:
+
+-   ✅ Initial page/component load
+-   ✅ Data fetching (GET requests)
+-   ✅ Lazy-loaded content
+-   ✅ Image/media loading
+-   ✅ Iframe content loading
+
+**Skeleton Presets** (`@shared/constants/skeleton.constants.ts`):
+
+| Constant               | Dimensions   | Use Case                  |
+| ---------------------- | ------------ | ------------------------- |
+| `SKELETON_INPUT`       | 56px height  | Material form fields      |
+| `SKELETON_TEXTAREA`    | 120px height | Multiline inputs          |
+| `SKELETON_CHECKBOX`    | 24px square  | Checkboxes, radio buttons |
+| `SKELETON_BUTTON`      | 36px × 120px | Buttons                   |
+| `SKELETON_TITLE`       | 32px × 200px | Page/section titles       |
+| `SKELETON_TEXT_SHORT`  | 16px × 120px | Labels, names             |
+| `SKELETON_TEXT_MEDIUM` | 16px × 200px | Descriptions              |
+| `SKELETON_TEXT_LONG`   | 16px × 100%  | Full-width content        |
+| `SKELETON_AVATAR`      | 40px circle  | Profile images            |
+| `SKELETON_TABLE_CELL`  | 20px × 100%  | Table cell content        |
+| `SKELETON_CARD`        | 200px × 100% | Card/panel placeholders   |
+
+**Usage Pattern**:
+
+```typescript
+import { SKELETON_INPUT, SkeletonTheme } from "@shared/constants";
+import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
+
+@Component({
+	imports: [NgxSkeletonLoaderModule],
+	// ...
+})
+export class MyComponent {
+	protected readonly skeletonInput: SkeletonTheme = SKELETON_INPUT;
+}
+```
+
+```html
+@if (isLoading()) {
+<ngx-skeleton-loader [count]="1" [theme]="skeletonInput" aria-label="Form field loading"> </ngx-skeleton-loader>
+} @else {
+<mat-form-field><!-- actual content --></mat-form-field>
+}
+```
+
+**Layout Classes** (`@use "skeleton"` in component SCSS):
+
+| Class                    | Purpose                   |
+| ------------------------ | ------------------------- |
+| `.skeleton-form`         | Vertical stack for forms  |
+| `.skeleton-row`          | Horizontal items with gap |
+| `.skeleton-list`         | Vertical list items       |
+| `.skeleton-grid`         | Responsive grid layout    |
+| `.skeleton-table-row`    | Table row simulation      |
+| `.skeleton-checkbox-row` | Checkbox with label       |
+| `.skeleton-header`       | Title with actions        |
+| `.skeleton-actions`      | Right-aligned buttons     |
+
+### 2. Spinners (Save/Action Events)
+
+**Component**: `mat-spinner` from Angular Material
+
+**When to Use**:
+
+-   ✅ Form submissions
+-   ✅ Save/Update operations
+-   ✅ Delete confirmations
+-   ✅ User-triggered actions
+-   ✅ Background processing
+
+**Usage Patterns**:
+
+```html
+<!-- Button with inline spinner (saving state) -->
+<button mat-raised-button color="primary" [disabled]="isSaving()">
+	@if (isSaving()) {
+	<mat-spinner diameter="20"></mat-spinner>
+	Saving... } @else { Save }
+</button>
+
+<!-- Standalone spinner for blocking operations -->
+@if (isProcessing()) {
+<mat-spinner diameter="40"></mat-spinner>
+}
+```
+
+**Spinner Sizes**:
+
+| Diameter | Use Case                   |
+| -------- | -------------------------- |
+| `20px`   | Inline with buttons        |
+| `24px`   | Small action indicators    |
+| `40px`   | Standalone, modal blocking |
+
+### 3. Combined Pattern Example
+
+```html
+<!-- Initial load: Skeleton -->
+@if (isInitialLoad()) {
+<div class="skeleton-form">
+	<ngx-skeleton-loader [theme]="skeletonInput"></ngx-skeleton-loader>
+	<ngx-skeleton-loader [theme]="skeletonInput"></ngx-skeleton-loader>
+	<ngx-skeleton-loader [theme]="skeletonButton"></ngx-skeleton-loader>
+</div>
+} @else {
+<!-- Form with save spinner -->
+<form (ngSubmit)="onSave()">
+	<mat-form-field>
+		<input matInput formControlName="name" />
+	</mat-form-field>
+	<button mat-raised-button [disabled]="isSaving()">
+		@if (isSaving()) {
+		<mat-spinner diameter="20"></mat-spinner>
+		} Save
+	</button>
+</form>
+}
+```
+
+### 4. Iframe Loading Pattern
+
+For iframe content (e.g., embedded dashboards), use skeleton with native `load` event:
+
+```typescript
+export class EmbedComponent {
+	isLoading = signal<boolean>(true);
+	protected readonly skeletonCard: SkeletonTheme = SKELETON_CARD;
+
+	onIframeLoad(): void {
+		this.isLoading.set(false);
+	}
+}
+```
+
+```html
+@if (isLoading()) {
+<div class="skeleton-container">
+	<ngx-skeleton-loader [theme]="skeletonCard"></ngx-skeleton-loader>
+</div>
+}
+<iframe [src]="embedUrl()" [class.iframe-loading]="isLoading()" [class.iframe-ready]="!isLoading()" (load)="onIframeLoad()"> </iframe>
+```
+
+```scss
+.skeleton-container {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+}
+
+.iframe-loading {
+	visibility: hidden;
+	position: absolute;
+}
+
+.iframe-ready {
+	visibility: visible;
+	position: relative;
+}
+```
 
 ---
 

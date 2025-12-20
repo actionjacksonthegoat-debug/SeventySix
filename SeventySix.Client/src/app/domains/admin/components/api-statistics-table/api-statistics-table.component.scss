@@ -1,11 +1,15 @@
 @use "variables" as vars;
 @use "mixins" as mixins;
+@use "skeleton";
 
 .api-statistics-table {
 	width: 100%;
 	min-height: vars.$cls-card-min-height; // Prevent CLS during load
 
-	.loading-container,
+	.skeleton-table {
+		padding: vars.$spacing-md;
+	}
+
 	.error-container {
 		@include mixins.loading-state($padding: 0);
 		min-height: vars.$min-height-container-lg;

@@ -22,9 +22,17 @@ import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { RouterLink } from "@angular/router";
 import {
+	SKELETON_BUTTON,
+	SKELETON_INPUT,
+	SKELETON_TEXT_MEDIUM,
+	SKELETON_TEXT_SHORT,
+	SkeletonTheme
+} from "@shared/constants";
+import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION
 } from "@shared/constants/validation.constants";
+import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 import { NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
 
@@ -39,7 +47,8 @@ import { getValidationError } from "@shared/utilities";
 			MatButtonModule,
 			MatCardModule,
 			MatProgressSpinnerModule,
-			RouterLink
+			RouterLink,
+			NgxSkeletonLoaderModule
 		],
 		templateUrl: "./profile.html",
 		styleUrl: "./profile.scss",
@@ -60,6 +69,16 @@ export class ProfilePage
 		this.accountService.updateProfile();
 	readonly availableRolesQuery: ReturnType<typeof this.accountService.getAvailableRoles> =
 		this.accountService.getAvailableRoles();
+
+	// Skeleton theme constants
+	readonly skeletonInput: SkeletonTheme =
+		SKELETON_INPUT;
+	readonly skeletonButton: SkeletonTheme =
+		SKELETON_BUTTON;
+	readonly skeletonTextShort: SkeletonTheme =
+		SKELETON_TEXT_SHORT;
+	readonly skeletonTextMedium: SkeletonTheme =
+		SKELETON_TEXT_MEDIUM;
 
 	readonly profile: Signal<UserProfileDto | undefined> =
 		computed(

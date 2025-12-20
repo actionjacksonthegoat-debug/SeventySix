@@ -22,6 +22,7 @@ import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { environment } from "@environments/environment";
 import { slideDown } from "@shared/animations/animations";
+import { SKELETON_TABLE_CELL, SkeletonTheme } from "@shared/constants";
 import { TableHeightDirective } from "@shared/directives";
 import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles";
 import {
@@ -36,6 +37,7 @@ import {
 	TableColumn
 } from "@shared/models";
 import { DateService } from "@shared/services";
+import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 import { map } from "rxjs/operators";
 
 /**
@@ -52,6 +54,7 @@ import { map } from "rxjs/operators";
 			FormsModule,
 			MatCard,
 			MatCardContent,
+			NgxSkeletonLoaderModule,
 			ScrollingModule,
 			TableHeightDirective,
 			...TABLE_MATERIAL_MODULES
@@ -63,6 +66,10 @@ import { map } from "rxjs/operators";
 	})
 export class DataTableComponent<T extends { id: number; }>
 {
+	/** Skeleton theme for table cells. */
+	readonly skeletonTableCell: SkeletonTheme =
+		SKELETON_TABLE_CELL;
+
 	// ===== Required Inputs =====
 
 	/** Column definitions */

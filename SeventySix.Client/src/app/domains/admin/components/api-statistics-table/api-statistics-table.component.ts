@@ -14,7 +14,9 @@ import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatTableDataSource, MatTableModule } from "@angular/material/table";
+import { SKELETON_TABLE_CELL, SkeletonTheme } from "@shared/constants";
 import { DateService } from "@shared/services/date.service";
+import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
 /**
  * Extended interface with computed display properties
@@ -36,7 +38,8 @@ interface ThirdPartyApiRequestDisplay extends ThirdPartyApiRequestResponse
 			MatCardModule,
 			MatIconModule,
 			MatProgressSpinnerModule,
-			MatButtonModule
+			MatButtonModule,
+			NgxSkeletonLoaderModule
 		],
 		templateUrl: "./api-statistics-table.component.html",
 		styleUrl: "./api-statistics-table.component.scss",
@@ -48,6 +51,10 @@ export class ApiStatisticsTableComponent
 		inject(ThirdPartyApiService);
 	private readonly dateService: DateService =
 		inject(DateService);
+
+	/** Skeleton theme for table cells. */
+	readonly skeletonTableCell: SkeletonTheme =
+		SKELETON_TABLE_CELL;
 
 	/**
 	 * TanStack Query for API data

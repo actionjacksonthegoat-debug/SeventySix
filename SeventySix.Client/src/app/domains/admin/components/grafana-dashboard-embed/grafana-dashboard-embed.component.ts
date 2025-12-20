@@ -5,13 +5,15 @@ import {
 	inject,
 	input,
 	InputSignal,
-	InputSignalWithTransform,
-	Signal
+	Signal,
+	signal,
+	WritableSignal
 } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { environment } from "@environments/environment";
+import { SKELETON_CARD, SkeletonTheme } from "@shared/constants";
+import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
 /**
  * Component for embedding Grafana dashboards via iframe.
@@ -23,7 +25,7 @@ import { environment } from "@environments/environment";
 @Component(
 	{
 		selector: "app-grafana-dashboard-embed",
-		imports: [MatCardModule, MatProgressSpinnerModule],
+		imports: [MatCardModule, NgxSkeletonLoaderModule],
 		templateUrl: "./grafana-dashboard-embed.component.html",
 		styleUrl: "./grafana-dashboard-embed.component.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
@@ -98,16 +100,15 @@ export class GrafanaDashboardEmbedComponent
 			});
 
 	/**
-	 * Loading state for showing spinner while iframe loads.
-	 * Can be controlled by parent component.
-	 * @default false
+	 * Loading state - true until iframe fires load event.
+	 * Managed internally via onIframeLoad() method.
 	 */
-	readonly isLoading: InputSignalWithTransform<boolean, boolean | string> =
-		input<boolean, boolean | string>(false,
-			{
-				transform: (value: boolean | string) =>
-					value === true || value === "true"
-			});
+	readonly isLoading: WritableSignal<boolean> =
+		signal(true);
+
+	/** Skeleton theme for dashboard placeholder. */
+	readonly skeletonCard: SkeletonTheme =
+		SKELETON_CARD;
 
 	/**
 	 * Computed accessible title for the iframe.
@@ -116,4 +117,13 @@ export class GrafanaDashboardEmbedComponent
 	readonly iframeTitle: Signal<string> =
 		computed(
 			() => `${this.title()} dashboard`);
+
+	/**
+	 * Handle iframe load event.
+	 * Called when Grafana content has fully loaded.
+	 */
+	onIframeLoad(): void
+	{
+		this.isLoading.set(false);
+	}
 }

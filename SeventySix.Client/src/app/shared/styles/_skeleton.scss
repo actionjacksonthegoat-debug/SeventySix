@@ -1,0 +1,81 @@
+/**
+ * SeventySix - Skeleton Loader Layout Utilities
+ * Reusable layout classes for skeleton loading states.
+ * Import alongside _variables.scss in component styles.
+ */
+@use "variables" as vars;
+
+// ============================================================================
+// SKELETON CONTAINER LAYOUTS
+// ============================================================================
+
+/** Form layout - vertical stack with consistent gaps. */
+.skeleton-form {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-lg;
+}
+
+/** Row layout - horizontal items with gap. */
+.skeleton-row {
+	display: flex;
+	gap: vars.$spacing-md;
+	align-items: center;
+}
+
+/** List layout - vertical items with smaller gap. */
+.skeleton-list {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-sm;
+}
+
+/** Grid layout - responsive grid for cards/items. */
+.skeleton-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: vars.$spacing-lg;
+}
+
+/** Card container - padded container for skeleton content. */
+.skeleton-card {
+	padding: vars.$spacing-lg;
+}
+
+/** Table row - horizontal layout for table cell skeletons. */
+.skeleton-table-row {
+	display: flex;
+	gap: vars.$spacing-md;
+	padding: vars.$spacing-sm 0;
+}
+
+/** Checkbox row - checkbox with adjacent label text. */
+.skeleton-checkbox-row {
+	display: flex;
+	gap: vars.$spacing-sm;
+	align-items: center;
+}
+
+/** Text block - stacked text lines. */
+.skeleton-text-block {
+	display: flex;
+	flex-direction: column;
+	gap: vars.$spacing-xs;
+}
+
+/** Header row - title with actions on right. */
+.skeleton-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: vars.$spacing-lg;
+}
+
+/** Actions row - right-aligned buttons. */
+.skeleton-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: vars.$spacing-sm;
+	margin-top: vars.$spacing-lg;
+}
+

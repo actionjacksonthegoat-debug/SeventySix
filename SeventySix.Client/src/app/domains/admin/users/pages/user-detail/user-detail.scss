@@ -1,5 +1,6 @@
 @use "variables" as vars;
 @use "mixins" as mixins;
+@use "skeleton";
 
 .user-page {
 	display: flex;
@@ -27,11 +28,6 @@
 		max-width: 50rem;
 		width: 100%;
 		margin: 0 auto;
-	}
-
-	// Loading state
-	.loading-container {
-		@include mixins.loading-state(vars.$spacing-3xl, vars.$spacing-xl);
 	}
 
 	// Error state

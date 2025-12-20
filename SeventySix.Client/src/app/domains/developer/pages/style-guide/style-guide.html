@@ -882,5 +882,428 @@
 				</mat-card>
 			</div>
 		</mat-tab>
+
+		<!-- Loading States Tab -->
+		<mat-tab label="Loading States">
+			<div class="tab-content">
+				<h2>Loading State Guidelines</h2>
+				<p class="mat-body-1">
+					Use <strong>Skeleton Loaders</strong> for data fetching (read operations) and
+					<strong>Spinners</strong> for user actions (write operations like save, submit, delete).
+				</p>
+
+				<!-- Skeletons vs Spinners Comparison -->
+				<div class="loading-comparison">
+					<mat-card class="comparison-card">
+						<mat-card-header>
+							<mat-icon
+								matCardAvatar
+								class="comparison-icon skeleton-icon">view_day</mat-icon>
+							<mat-card-title>Skeleton Loaders</mat-card-title>
+							<mat-card-subtitle>For Load/Fetch Events</mat-card-subtitle>
+						</mat-card-header>
+						<mat-card-content>
+							<ul class="comparison-list">
+								<li>✓ Initial page/component load</li>
+								<li>✓ Data fetching (GET requests)</li>
+								<li>✓ Lazy-loaded content</li>
+								<li>✓ Image/media loading</li>
+								<li>✓ Iframe content loading</li>
+							</ul>
+							<p class="mat-body-2 comparison-reason">
+								<strong>Why:</strong> Skeletons preview content layout, reducing perceived wait time
+								and preventing layout shifts.
+							</p>
+						</mat-card-content>
+					</mat-card>
+
+					<mat-card class="comparison-card">
+						<mat-card-header>
+							<mat-icon
+								matCardAvatar
+								class="comparison-icon spinner-icon">sync</mat-icon>
+							<mat-card-title>Spinners</mat-card-title>
+							<mat-card-subtitle>For Save/Action Events</mat-card-subtitle>
+						</mat-card-header>
+						<mat-card-content>
+							<ul class="comparison-list">
+								<li>✓ Form submissions</li>
+								<li>✓ Save/Update operations</li>
+								<li>✓ Delete confirmations</li>
+								<li>✓ User-triggered actions</li>
+								<li>✓ Background processing</li>
+							</ul>
+							<p class="mat-body-2 comparison-reason">
+								<strong>Why:</strong> Spinners indicate ongoing user action without implying
+								content structure, appropriate for write operations.
+							</p>
+						</mat-card-content>
+					</mat-card>
+				</div>
+
+				<mat-divider></mat-divider>
+
+				<h2>Skeleton Presets</h2>
+				<p class="mat-body-1">
+					Pre-configured skeleton themes from <code>&#64;shared/constants/skeleton.constants.ts</code>.
+					Import and use with <code>[theme]</code> binding on <code>ngx-skeleton-loader</code>.
+				</p>
+
+				<!-- Form Elements -->
+				<mat-card class="skeleton-card">
+					<mat-card-header>
+						<mat-card-title>Form Elements</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="skeleton-showcase">
+							<div class="skeleton-item">
+								<span class="mat-label-large">SKELETON_INPUT</span>
+								<span class="mat-body-2">Material form field (56px)</span>
+								<div class="skeleton-demo">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonInput"
+										aria-label="Input field loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_INPUT</code>
+							</div>
+
+							<div class="skeleton-item">
+								<span class="mat-label-large">SKELETON_TEXTAREA</span>
+								<span class="mat-body-2">Multiline input (120px)</span>
+								<div class="skeleton-demo">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTextarea"
+										aria-label="Textarea loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_TEXTAREA</code>
+							</div>
+
+							<div class="skeleton-item">
+								<span class="mat-label-large">SKELETON_CHECKBOX</span>
+								<span class="mat-body-2">Checkbox/radio (24px square)</span>
+								<div class="skeleton-demo">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonCheckbox"
+										aria-label="Checkbox loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_CHECKBOX</code>
+							</div>
+
+							<div class="skeleton-item">
+								<span class="mat-label-large">SKELETON_BUTTON</span>
+								<span class="mat-body-2">Button (36px × 120px)</span>
+								<div class="skeleton-demo">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonButton"
+										aria-label="Button loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_BUTTON</code>
+							</div>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<!-- Text Elements -->
+				<mat-card class="skeleton-card">
+					<mat-card-header>
+						<mat-card-title>Text Elements</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="skeleton-showcase">
+							<div class="skeleton-item">
+								<span class="mat-label-large">SKELETON_TITLE</span>
+								<span class="mat-body-2">Page/section title (32px)</span>
+								<div class="skeleton-demo">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTitle"
+										aria-label="Title loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_TITLE</code>
+							</div>
+
+							<div class="skeleton-item">
+								<span class="mat-label-large">SKELETON_TEXT_SHORT</span>
+								<span class="mat-body-2">Labels, names (120px)</span>
+								<div class="skeleton-demo">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTextShort"
+										aria-label="Short text loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_TEXT_SHORT</code>
+							</div>
+
+							<div class="skeleton-item">
+								<span class="mat-label-large">SKELETON_TEXT_MEDIUM</span>
+								<span class="mat-body-2">Descriptions (200px)</span>
+								<div class="skeleton-demo">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTextMedium"
+										aria-label="Medium text loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_TEXT_MEDIUM</code>
+							</div>
+
+							<div class="skeleton-item">
+								<span class="mat-label-large">SKELETON_TEXT_LONG</span>
+								<span class="mat-body-2">Full-width content</span>
+								<div class="skeleton-demo full-width">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTextLong"
+										aria-label="Long text loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_TEXT_LONG</code>
+							</div>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<!-- Container Elements -->
+				<mat-card class="skeleton-card">
+					<mat-card-header>
+						<mat-card-title>Container Elements</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="skeleton-showcase">
+							<div class="skeleton-item">
+								<span class="mat-label-large">SKELETON_AVATAR</span>
+								<span class="mat-body-2">Profile image (40px circle)</span>
+								<div class="skeleton-demo">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonAvatar"
+										aria-label="Avatar loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_AVATAR</code>
+							</div>
+
+							<div class="skeleton-item">
+								<span class="mat-label-large">SKELETON_TABLE_CELL</span>
+								<span class="mat-body-2">Table cell content (20px)</span>
+								<div class="skeleton-demo">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTableCell"
+										aria-label="Table cell loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_TABLE_CELL</code>
+							</div>
+
+							<div class="skeleton-item wide">
+								<span class="mat-label-large">SKELETON_CARD</span>
+								<span class="mat-body-2">Card/panel placeholder (200px)</span>
+								<div class="skeleton-demo full-width">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonCard"
+										aria-label="Card loading"></ngx-skeleton-loader>
+								</div>
+								<code class="skeleton-code">SKELETON_CARD</code>
+							</div>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<!-- Layout Classes -->
+				<mat-card class="skeleton-card">
+					<mat-card-header>
+						<mat-card-title>Layout Classes</mat-card-title>
+						<mat-card-subtitle>From <code>_skeleton.scss</code> partial</mat-card-subtitle>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="layout-classes-grid">
+							<div class="layout-class-item">
+								<code>.skeleton-form</code>
+								<span class="mat-body-2">Vertical stack for form layouts</span>
+							</div>
+							<div class="layout-class-item">
+								<code>.skeleton-row</code>
+								<span class="mat-body-2">Horizontal items with gap</span>
+							</div>
+							<div class="layout-class-item">
+								<code>.skeleton-list</code>
+								<span class="mat-body-2">Vertical list items</span>
+							</div>
+							<div class="layout-class-item">
+								<code>.skeleton-grid</code>
+								<span class="mat-body-2">Responsive grid layout</span>
+							</div>
+							<div class="layout-class-item">
+								<code>.skeleton-table-row</code>
+								<span class="mat-body-2">Table row simulation</span>
+							</div>
+							<div class="layout-class-item">
+								<code>.skeleton-checkbox-row</code>
+								<span class="mat-body-2">Checkbox with label</span>
+							</div>
+							<div class="layout-class-item">
+								<code>.skeleton-header</code>
+								<span class="mat-body-2">Title with actions</span>
+							</div>
+							<div class="layout-class-item">
+								<code>.skeleton-actions</code>
+								<span class="mat-body-2">Right-aligned buttons</span>
+							</div>
+						</div>
+					</mat-card-content>
+				</mat-card>
+
+				<mat-divider></mat-divider>
+
+				<!-- Composite Examples -->
+				<h2>Composite Examples</h2>
+				<p class="mat-body-1">
+					Combine skeleton presets with layout classes to build loading states that match your UI.
+				</p>
+
+				<div class="composite-examples">
+					<!-- Form Skeleton Example -->
+					<mat-card class="example-card">
+						<mat-card-header>
+							<mat-card-title>Form Loading State</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="skeleton-form">
+								<ngx-skeleton-loader
+									[count]="1"
+									[theme]="skeletonInput"
+									aria-label="Form field loading"></ngx-skeleton-loader>
+								<ngx-skeleton-loader
+									[count]="1"
+									[theme]="skeletonInput"
+									aria-label="Form field loading"></ngx-skeleton-loader>
+								<ngx-skeleton-loader
+									[count]="1"
+									[theme]="skeletonTextarea"
+									aria-label="Textarea loading"></ngx-skeleton-loader>
+								<div class="skeleton-checkbox-row">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonCheckbox"
+										aria-label="Checkbox loading"></ngx-skeleton-loader>
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTextShort"
+										aria-label="Checkbox label loading"></ngx-skeleton-loader>
+								</div>
+								<div class="skeleton-actions">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonButton"
+										aria-label="Button loading"></ngx-skeleton-loader>
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonButton"
+										aria-label="Button loading"></ngx-skeleton-loader>
+								</div>
+							</div>
+						</mat-card-content>
+					</mat-card>
+
+					<!-- User Profile Card Example -->
+					<mat-card class="example-card">
+						<mat-card-header>
+							<mat-card-title>Profile Card Loading State</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="skeleton-row">
+								<ngx-skeleton-loader
+									[count]="1"
+									[theme]="skeletonAvatar"
+									aria-label="Avatar loading"></ngx-skeleton-loader>
+								<div class="skeleton-text-block">
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTextShort"
+										aria-label="Name loading"></ngx-skeleton-loader>
+									<ngx-skeleton-loader
+										[count]="1"
+										[theme]="skeletonTextMedium"
+										aria-label="Email loading"></ngx-skeleton-loader>
+								</div>
+							</div>
+						</mat-card-content>
+					</mat-card>
+
+					<!-- Table Row Example -->
+					<mat-card class="example-card">
+						<mat-card-header>
+							<mat-card-title>Table Loading State</mat-card-title>
+						</mat-card-header>
+						<mat-card-content>
+							<div class="skeleton-list">
+								@for (row of [1, 2, 3]; track row) {
+									<div class="skeleton-table-row">
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+										<ngx-skeleton-loader
+											[count]="1"
+											[theme]="skeletonTableCell"
+											aria-label="Table cell loading"></ngx-skeleton-loader>
+									</div>
+								}
+							</div>
+						</mat-card-content>
+					</mat-card>
+				</div>
+
+				<mat-divider></mat-divider>
+
+				<!-- Spinner Reference -->
+				<h2>Spinner Reference</h2>
+				<p class="mat-body-1">
+					Material spinners for save/action operations. Use inline spinners on buttons or standalone
+					for modal blocking states.
+				</p>
+
+				<mat-card class="spinner-reference-card">
+					<mat-card-header>
+						<mat-card-title>Spinner Usage Patterns</mat-card-title>
+					</mat-card-header>
+					<mat-card-content>
+						<div class="spinner-examples">
+							<div class="spinner-example">
+								<span class="mat-label-large">Button with Spinner</span>
+								<button
+									mat-raised-button
+									color="primary"
+									disabled
+									class="saving-button">
+									<mat-spinner diameter="20"></mat-spinner>
+									Saving...
+								</button>
+							</div>
+
+							<div class="spinner-example">
+								<span class="mat-label-large">Standalone Spinner</span>
+								<mat-spinner diameter="40"></mat-spinner>
+							</div>
+
+							<div class="spinner-example">
+								<span class="mat-label-large">Small Spinner (Actions)</span>
+								<mat-spinner diameter="24"></mat-spinner>
+							</div>
+						</div>
+					</mat-card-content>
+				</mat-card>
+			</div>
+		</mat-tab>
 	</mat-tab-group>
 </div>

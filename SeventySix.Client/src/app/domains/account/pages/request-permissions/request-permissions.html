@@ -7,7 +7,17 @@
 
 		<mat-card-content>
 			@if (isLoading()) {
-			<mat-spinner diameter="40"></mat-spinner>
+			<div class="skeleton-list">
+				@for (index of [1, 2, 3]; track index) {
+				<div class="skeleton-checkbox-row">
+					<ngx-skeleton-loader [theme]="skeletonCheckbox" />
+					<div class="skeleton-text-block">
+						<ngx-skeleton-loader [theme]="skeletonTextShort" />
+						<ngx-skeleton-loader [theme]="skeletonTextMedium" />
+					</div>
+				</div>
+				}
+			</div>
 			} @else {
 			<div class="roles-list">
 				@for (role of availableRoles(); track role.name) {

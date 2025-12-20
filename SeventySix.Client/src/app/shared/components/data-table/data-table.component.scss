@@ -1,11 +1,17 @@
 @use "variables" as vars;
 @use "mixins" as mixins;
+@use "skeleton";
 
 .data-table-container {
 	display: flex;
 	flex-direction: column;
 	gap: 0;
 	height: 100%;
+}
+
+.skeleton-table {
+	padding: vars.$spacing-md;
+	width: 100%;
 }
 
 .table-toolbar {

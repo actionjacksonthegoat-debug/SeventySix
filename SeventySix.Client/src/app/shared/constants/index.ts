@@ -11,5 +11,6 @@ export * from "./http.constants";
 export * from "./log-level.constant";
 export * from "./notification.constants";
 export * from "./role.constants";
+export * from "./skeleton.constants";
 export * from "./validation-error.constants";
 export * from "./validation.constants";

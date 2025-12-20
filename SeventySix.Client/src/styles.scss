@@ -367,3 +367,27 @@ html.dark-theme {
 		}
 	}
 }
+
+// =============================================================================
+// SKELETON LOADER THEME
+// =============================================================================
+// Theme ngx-skeleton-loader to use Material Design colors
+// Uses color-mix for transparency without requiring RGB values
+
+:root {
+	--skeleton-background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+	--skeleton-highlight: color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent);
+}
+
+ngx-skeleton-loader .skeleton-loader {
+	background: var(--skeleton-background) !important;
+
+	&::after {
+		background: linear-gradient(
+			90deg,
+			transparent,
+			var(--skeleton-highlight),
+			transparent
+		) !important;
+	}
+}

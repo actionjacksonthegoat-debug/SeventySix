@@ -19,7 +19,14 @@ import {
 import { MatChipsModule } from "@angular/material/chips";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { ActivatedRoute, Router } from "@angular/router";
-import { HTTP_STATUS, REQUESTABLE_ROLES } from "@shared/constants";
+import {
+	HTTP_STATUS,
+	REQUESTABLE_ROLES,
+	SKELETON_CHECKBOX,
+	SKELETON_INPUT,
+	SKELETON_TEXT_SHORT,
+	SkeletonTheme
+} from "@shared/constants";
 import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION,
@@ -28,6 +35,7 @@ import {
 import { FORM_MATERIAL_MODULES } from "@shared/material-bundles";
 import { LoggerService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
+import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 import { map } from "rxjs";
 
 /**
@@ -44,6 +52,7 @@ import { map } from "rxjs";
 			DatePipe,
 			MatExpansionModule,
 			MatChipsModule,
+			NgxSkeletonLoaderModule,
 			...FORM_MATERIAL_MODULES
 		],
 		templateUrl: "./user-detail.html",
@@ -88,6 +97,14 @@ export class UserDetailPage
 	// Available roles constant (matches backend ValidRoleNames)
 	readonly availableRoles: readonly string[] =
 		REQUESTABLE_ROLES;
+
+	// Skeleton theme constants
+	readonly skeletonInput: SkeletonTheme =
+		SKELETON_INPUT;
+	readonly skeletonCheckbox: SkeletonTheme =
+		SKELETON_CHECKBOX;
+	readonly skeletonTextShort: SkeletonTheme =
+		SKELETON_TEXT_SHORT;
 
 	// Computed signals for derived state
 	readonly user: Signal<UserDto | null> =

@@ -3,22 +3,27 @@
 		<mat-card-title>{{ title() }}</mat-card-title>
 	</mat-card-header>
 	<mat-card-content>
+		<!-- Skeleton shown while iframe loads -->
 		@if (isLoading()) {
-			<div
-				class="loading-container"
-				role="status"
-				aria-live="polite">
-				<mat-progress-spinner
-					mode="indeterminate"
-					aria-label="Loading dashboard"></mat-progress-spinner>
-				<span class="visually-hidden">Loading {{ title() }} dashboard...</span>
-			</div>
+		<div
+			class="skeleton-container"
+			role="status"
+			aria-live="polite">
+			<ngx-skeleton-loader
+				[theme]="{ height: '100%', width: '100%', borderRadius: '4px' }"
+				aria-label="Loading dashboard" />
+			<span class="visually-hidden">Loading {{ title() }} dashboard...</span>
+		</div>
 		}
+		<!-- Iframe rendered off-screen until loaded -->
 		<iframe
 			[src]="sanitizedUrl()"
 			[title]="iframeTitle()"
+			[class.iframe-loading]="isLoading()"
+			[class.iframe-ready]="!isLoading()"
 			sandbox="allow-scripts allow-same-origin"
 			class="grafana-embed"
-			loading="lazy"></iframe>
+			loading="lazy"
+			(load)="onIframeLoad()"></iframe>
 	</mat-card-content>
 </mat-card>
