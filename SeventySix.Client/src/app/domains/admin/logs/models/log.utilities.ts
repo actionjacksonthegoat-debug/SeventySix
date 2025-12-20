@@ -1,67 +1,29 @@
+import { LogLevel } from "@shared/constants";
 import { DateService } from "@shared/services";
+import { parseLogLevel } from "@shared/utilities";
+
+// Re-export for consumers
+export { LogLevel, parseLogLevel };
 
 // ============================================================
-// Log Level Enumeration
-// ============================================================
-
-/**
- * Log level enumeration
- */
-export enum LogLevel
-{
-	Verbose = 0,
-	Debug = 1,
-	Information = 2,
-	Warning = 3,
-	Error = 4,
-	Fatal = 5
-}
-
-/**
- * Convert string log level from API to LogLevel enum
- */
-export function parseLogLevel(logLevel: string): LogLevel
-{
-	switch (logLevel?.toLowerCase())
-	{
-		case "verbose":
-			return LogLevel.Verbose;
-		case "debug":
-			return LogLevel.Debug;
-		case "information":
-		case "info":
-			return LogLevel.Information;
-		case "warning":
-		case "warn":
-			return LogLevel.Warning;
-		case "error":
-			return LogLevel.Error;
-		case "fatal":
-		case "critical":
-			return LogLevel.Fatal;
-		default:
-			return LogLevel.Information;
-	}
-}
-
-// ============================================================
-// Time Constants (avoid magic numbers)
+// Time Constants
 // ============================================================
 const MILLISECONDS_PER_MINUTE: number = 60_000;
 const MILLISECONDS_PER_HOUR: number = 3_600_000;
 const MILLISECONDS_PER_DAY: number = 86_400_000;
 
 // ============================================================
-// Log Level Mappings (DRY - single source of truth)
+// Log Level Mappings
 // ============================================================
 const LOG_LEVEL_NAMES: Record<LogLevel, string> =
 	{
 		[LogLevel.Verbose]: "Verbose",
 		[LogLevel.Debug]: "Debug",
-		[LogLevel.Information]: "Info",
+		[LogLevel.Information]: "Information",
 		[LogLevel.Warning]: "Warning",
 		[LogLevel.Error]: "Error",
-		[LogLevel.Fatal]: "Fatal"
+		[LogLevel.Fatal]: "Fatal",
+		[LogLevel.Critical]: "Critical"
 	};
 
 const LOG_LEVEL_CLASSES: Record<LogLevel, string> =
@@ -71,7 +33,8 @@ const LOG_LEVEL_CLASSES: Record<LogLevel, string> =
 		[LogLevel.Information]: "level-info",
 		[LogLevel.Warning]: "level-warning",
 		[LogLevel.Error]: "level-error",
-		[LogLevel.Fatal]: "level-fatal"
+		[LogLevel.Fatal]: "level-fatal",
+		[LogLevel.Critical]: "level-critical"
 	};
 
 const LOG_LEVEL_ICONS: Record<LogLevel, string> =
@@ -81,7 +44,8 @@ const LOG_LEVEL_ICONS: Record<LogLevel, string> =
 		[LogLevel.Information]: "lightbulb",
 		[LogLevel.Warning]: "warning",
 		[LogLevel.Error]: "cancel",
-		[LogLevel.Fatal]: "cancel"
+		[LogLevel.Fatal]: "cancel",
+		[LogLevel.Critical]: "cancel"
 	};
 
 // ============================================================

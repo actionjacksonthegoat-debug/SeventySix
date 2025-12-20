@@ -173,6 +173,7 @@ export const shake: AnimationTriggerMetadata =
 /**
  * Slide down animation for panels
  * Used for selection panels, notification bars, etc.
+ * Note: Apply overflow: hidden via CSS on the animated element
  */
 export const slideDown: AnimationTriggerMetadata =
 	trigger("slideDown",
@@ -182,8 +183,7 @@ export const slideDown: AnimationTriggerMetadata =
 					style(
 						{
 							height: "0",
-							opacity: 0,
-							overflow: "hidden"
+							opacity: 0
 						}),
 					animate(
 						"200ms cubic-bezier(0.4, 0, 0.2, 1)",
@@ -200,8 +200,7 @@ export const slideDown: AnimationTriggerMetadata =
 						style(
 							{
 								height: "0",
-								opacity: 0,
-								overflow: "hidden"
+								opacity: 0
 							}))
 				])
 		]);

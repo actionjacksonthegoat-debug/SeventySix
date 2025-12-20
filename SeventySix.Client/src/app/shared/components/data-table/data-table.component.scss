@@ -115,6 +115,7 @@
 	color: var(--mat-sys-on-primary-container);
 	border-radius: vars.$border-radius-md;
 	margin: 0 vars.$spacing-md vars.$spacing-md;
+	overflow: hidden;
 
 	.selection-info {
 		display: flex;

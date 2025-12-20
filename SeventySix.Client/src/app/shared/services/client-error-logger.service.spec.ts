@@ -372,7 +372,7 @@ describe("ClientErrorLoggerService",
 		describe("logInfo",
 			() =>
 			{
-				it("should log with Info level",
+				it("should log with Information level",
 					() =>
 					{
 						service.logInfo("This is info");
@@ -381,7 +381,7 @@ describe("ClientErrorLoggerService",
 							.toHaveBeenCalledWith(
 								jasmine.objectContaining(
 									{
-										logLevel: "Info",
+										logLevel: "Information",
 										message: "[Client] - This is info"
 									}));
 					});

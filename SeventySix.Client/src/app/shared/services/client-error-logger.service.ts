@@ -9,6 +9,7 @@ import {
 	extractRequestUrl,
 	extractStatusCode
 } from "@shared/utilities/http-error.utility";
+import { logLevelToString } from "@shared/utilities/log-level.utility";
 
 /**
  * Client error logger service.
@@ -44,7 +45,7 @@ export class ClientErrorLoggerService
 
 			const logRequest: CreateLogRequest =
 				{
-					logLevel: LogLevel[logLevel],
+					logLevel: logLevelToString(logLevel),
 					message: formattedMessage,
 					clientTimestamp: this.dateService.now(),
 					exceptionMessage: error?.message,
@@ -83,7 +84,7 @@ export class ClientErrorLoggerService
 
 			const logRequest: CreateLogRequest =
 				{
-					logLevel: LogLevel[LogLevel.Error],
+					logLevel: logLevelToString(LogLevel.Error),
 					message: formattedMessage,
 					clientTimestamp: this.dateService.now(),
 					exceptionMessage: errorDetails.httpError.message,
@@ -122,7 +123,7 @@ export class ClientErrorLoggerService
 
 			const logRequest: CreateLogRequest =
 				{
-					logLevel: LogLevel[LogLevel.Error],
+					logLevel: logLevelToString(LogLevel.Error),
 					message: formattedMessage,
 					clientTimestamp: this.dateService.now(),
 					exceptionMessage: errorDetails.error?.message,
@@ -157,7 +158,7 @@ export class ClientErrorLoggerService
 
 			const logRequest: CreateLogRequest =
 				{
-					logLevel: LogLevel[LogLevel.Warning],
+					logLevel: logLevelToString(LogLevel.Warning),
 					message: formattedMessage,
 					clientTimestamp: this.dateService.now(),
 					requestUrl: extractRequestUrl(),
@@ -188,7 +189,7 @@ export class ClientErrorLoggerService
 
 			const logRequest: CreateLogRequest =
 				{
-					logLevel: LogLevel[LogLevel.Info],
+					logLevel: logLevelToString(LogLevel.Information),
 					message: formattedMessage,
 					clientTimestamp: this.dateService.now(),
 					requestUrl: extractRequestUrl(),

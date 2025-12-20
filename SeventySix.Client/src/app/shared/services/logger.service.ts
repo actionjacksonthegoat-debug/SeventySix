@@ -5,6 +5,7 @@ import { environment } from "@environments/environment";
 import { LogLevel } from "@shared/constants";
 import { CreateLogRequest, LogEntry } from "@shared/models";
 import { DateService } from "@shared/services/date.service";
+import { logLevelToString } from "@shared/utilities";
 import { catchError, of } from "rxjs";
 
 /**
@@ -49,7 +50,7 @@ export class LoggerService
 			case "debug":
 				return LogLevel.Debug;
 			case "info":
-				return LogLevel.Info;
+				return LogLevel.Information;
 			case "warn":
 				return LogLevel.Warning;
 			case "error":
@@ -74,7 +75,7 @@ export class LoggerService
 	 */
 	info(message: string, context?: Record<string, unknown>): void
 	{
-		this.log(LogLevel.Info, message, context);
+		this.log(LogLevel.Information, message, context);
 	}
 
 	/**
@@ -122,7 +123,7 @@ export class LoggerService
 	 */
 	forceInfo(message: string, context?: Record<string, unknown>): void
 	{
-		this.log(LogLevel.Info, message, context, undefined, true);
+		this.log(LogLevel.Information, message, context, undefined, true);
 	}
 
 	/**
@@ -197,7 +198,7 @@ export class LoggerService
 	private logToConsole(entry: LogEntry): void
 	{
 		const prefix: string =
-			`[${LogLevel[entry.level]}] ${entry.timestamp}:`;
+			`[${logLevelToString(entry.level)}] ${entry.timestamp}:`;
 		const args: unknown[] =
 			[prefix, entry.message];
 
@@ -213,8 +214,9 @@ export class LoggerService
 
 		switch (entry.level)
 		{
+			case LogLevel.Verbose:
 			case LogLevel.Debug:
-			case LogLevel.Info:
+			case LogLevel.Information:
 				// eslint-disable-next-line no-console
 				console.log(...args);
 				break;
@@ -222,6 +224,7 @@ export class LoggerService
 				console.warn(...args);
 				break;
 			case LogLevel.Error:
+			case LogLevel.Fatal:
 			case LogLevel.Critical:
 				console.error(...args);
 				break;
@@ -233,9 +236,9 @@ export class LoggerService
 	 */
 	private logToRemote(entry: LogEntry): void
 	{
-		// Convert LogLevel enum to string
+		// Convert LogLevel enum to string using utility
 		const logLevelString: string =
-			LogLevel[entry.level];
+			logLevelToString(entry.level);
 
 		// Get current route URL
 		const currentUrl: string =

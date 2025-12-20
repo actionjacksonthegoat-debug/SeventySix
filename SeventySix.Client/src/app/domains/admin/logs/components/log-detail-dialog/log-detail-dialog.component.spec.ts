@@ -105,7 +105,7 @@ describe("LogDetailDialogComponent",
 				expect(getLogLevelName("Fatal"))
 					.toBe("Fatal");
 				expect(getLogLevelName("Information"))
-					.toBe("Info");
+					.toBe("Information");
 				expect(getLogLevelName("Debug"))
 					.toBe("Debug");
 				expect(getLogLevelName("Verbose"))
