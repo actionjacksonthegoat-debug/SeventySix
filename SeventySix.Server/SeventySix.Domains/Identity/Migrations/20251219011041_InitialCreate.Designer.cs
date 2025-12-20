@@ -12,7 +12,7 @@ using SeventySix.Identity;
 namespace SeventySix.Domains.Identity.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20251218000927_InitialCreate")]
+    [Migration("20251219011041_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

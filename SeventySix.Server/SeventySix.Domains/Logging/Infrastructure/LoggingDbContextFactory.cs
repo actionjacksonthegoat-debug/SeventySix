@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Logging;
 
@@ -33,11 +34,11 @@ public class LoggingDbContextFactory
 		// Use placeholder connection string for migrations (schema generation only)
 		// Actual connection string comes from appsettings.json at runtime
 		optionsBuilder.UseNpgsql(
-			"Host=localhost;Database=seventysix;Username=postgres;Password=postgres",
+			DatabaseConstants.DesignTimeConnectionString,
 			options =>
 				options.MigrationsHistoryTable(
-					"__EFMigrationsHistory",
-					"Logging"));
+					DatabaseConstants.MigrationsHistoryTableName,
+					SchemaConstants.Logging));
 
 		return new LoggingDbContext(optionsBuilder.Options);
 	}

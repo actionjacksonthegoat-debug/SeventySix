@@ -9,9 +9,9 @@
 		"test": "npm run test:server && npm run test:client",
 		"test:server": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && dotnet build && dotnet test",
 		"test:client": "cd SeventySix.Client && npm test",
-		"start": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && docker compose --env-file ../.env up -d --build --force-recreate && cd ../SeventySix.Client && npm start",
+		"start": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && docker compose build --no-cache seventysix-api && docker compose --env-file ../.env up -d --force-recreate && cd ../SeventySix.Client && npm start",
 		"start:client": "cd SeventySix.Client && npm start",
-		"start:api-debug": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && docker compose --env-file ../.env up -d postgres jaeger prometheus grafana --no-deps && cd ../SeventySix.Client && npm start",
+		"start:api-debug": "powershell -Command \"if (-not (Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue)) { Start-Process 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'; Start-Sleep -Seconds 10 }\" && cd SeventySix.Server && docker compose build --no-cache seventysix-api && docker compose --env-file ../.env up -d postgres jaeger prometheus grafana --no-deps && cd ../SeventySix.Client && npm start",
 		"stop": "cd SeventySix.Server && docker compose down"
 	}
 }

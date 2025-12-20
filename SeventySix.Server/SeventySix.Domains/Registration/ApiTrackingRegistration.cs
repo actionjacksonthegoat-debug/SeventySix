@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ApiTracking;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;
 
@@ -62,10 +63,15 @@ public static class ApiTrackingRegistration
 			{
 				AuditInterceptor auditInterceptor =
 					serviceProvider.GetRequiredService<AuditInterceptor>();
-				options.UseNpgsql(connectionString);
+
+				options.UseNpgsql(
+					connectionString,
+					npgsqlOptions =>
+						npgsqlOptions.MigrationsHistoryTable(
+							DatabaseConstants.MigrationsHistoryTableName,
+							SchemaConstants.ApiTracking));
 				options.AddInterceptors(auditInterceptor);
 			});
-
 		// Register repositories
 		services.AddScoped<
 			IThirdPartyApiRequestRepository,

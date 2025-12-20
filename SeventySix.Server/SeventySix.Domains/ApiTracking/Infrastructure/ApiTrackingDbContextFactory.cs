@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.ApiTracking;
 
@@ -33,11 +34,11 @@ public class ApiTrackingDbContextFactory
 		// Use placeholder connection string for migrations (schema generation only)
 		// Actual connection string comes from appsettings.json at runtime
 		optionsBuilder.UseNpgsql(
-			"Host=localhost;Database=seventysix;Username=postgres;Password=postgres",
+			DatabaseConstants.DesignTimeConnectionString,
 			options =>
 				options.MigrationsHistoryTable(
-					"__EFMigrationsHistory",
-					"ApiTracking"));
+					DatabaseConstants.MigrationsHistoryTableName,
+					SchemaConstants.ApiTracking));
 
 		return new ApiTrackingDbContext(optionsBuilder.Options);
 	}

@@ -53,15 +53,7 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
       # PostgreSQL Connection
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${DB_NAME:-seventysix};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-TestPassword};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
-      # JWT Authentication
-      - Jwt__SecretKey=${JWT_SECRET_KEY}
-      # GitHub OAuth
-      - Auth__OAuth__Providers__0__ClientId=${GITHUB_CLIENT_ID}
-      - Auth__OAuth__Providers__0__ClientSecret=${GITHUB_CLIENT_SECRET}
-      # Email Configuration
-      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME}
-      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD}
-      - Email__FromAddress=${EMAIL_FROM_ADDRESS}
+      # OpenTelemetry - using container network DNS name
     volumes:
       - ~/.aspnet/https:/https:ro
       - dataprotection_keys:/app/keys

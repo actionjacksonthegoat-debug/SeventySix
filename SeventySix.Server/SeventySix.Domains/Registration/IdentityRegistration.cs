@@ -20,6 +20,7 @@ using SeventySix.Identity.Commands.UpdateUser;
 using SeventySix.Identity.Infrastructure;
 using SeventySix.Identity.Queries.GetPagedUsers;
 using SeventySix.Identity.Settings;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;
 using SeventySix.Shared.Validators;
@@ -76,7 +77,12 @@ public static class IdentityRegistration
 			{
 				AuditInterceptor auditInterceptor =
 					serviceProvider.GetRequiredService<AuditInterceptor>();
-				options.UseNpgsql(connectionString);
+				options.UseNpgsql(
+					connectionString,
+					npgsqlOptions =>
+						npgsqlOptions.MigrationsHistoryTable(
+							DatabaseConstants.MigrationsHistoryTableName,
+							SchemaConstants.Identity));
 				options.AddInterceptors(auditInterceptor);
 			});
 

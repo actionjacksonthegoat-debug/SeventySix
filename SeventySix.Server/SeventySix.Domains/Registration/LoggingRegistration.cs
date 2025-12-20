@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Logging;
 using SeventySix.Logging.Commands.CreateClientLog;
 using SeventySix.Logging.Queries.GetLogsPaged;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;
 
@@ -33,7 +34,12 @@ public static class LoggingRegistration
 				AuditInterceptor auditInterceptor =
 					serviceProvider.GetRequiredService<AuditInterceptor>();
 
-				options.UseNpgsql(connectionString);
+				options.UseNpgsql(
+					connectionString,
+					npgsqlOptions =>
+						npgsqlOptions.MigrationsHistoryTable(
+							DatabaseConstants.MigrationsHistoryTableName,
+							SchemaConstants.Logging));
 				options.AddInterceptors(auditInterceptor);
 			});
 
