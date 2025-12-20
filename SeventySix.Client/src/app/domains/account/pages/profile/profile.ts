@@ -20,13 +20,12 @@ import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { RouterLink } from "@angular/router";
-import { SNACKBAR_DURATION } from "@shared/constants";
 import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION
 } from "@shared/constants/validation.constants";
+import { NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
 
 @Component(
@@ -40,7 +39,6 @@ import { getValidationError } from "@shared/utilities";
 			MatButtonModule,
 			MatCardModule,
 			MatProgressSpinnerModule,
-			MatSnackBarModule,
 			RouterLink
 		],
 		templateUrl: "./profile.html",
@@ -53,8 +51,8 @@ export class ProfilePage
 		inject(AccountService);
 	private readonly formBuilder: FormBuilder =
 		inject(FormBuilder);
-	private readonly snackBar: MatSnackBar =
-		inject(MatSnackBar);
+	private readonly notificationService: NotificationService =
+		inject(NotificationService);
 
 	readonly profileQuery: ReturnType<typeof this.accountService.getProfile> =
 		this.accountService.getProfile();
@@ -145,16 +143,12 @@ export class ProfilePage
 		try
 		{
 			await this.updateMutation.mutateAsync(request);
-			this.snackBar.open("Profile updated", "Close",
-				{ duration: SNACKBAR_DURATION.success });
+			this.notificationService.success("Profile updated");
 			this.profileForm.markAsPristine();
 		}
 		catch
 		{
-			this.snackBar.open("Failed to update profile", "Close",
-				{
-					duration: SNACKBAR_DURATION.error
-				});
+			this.notificationService.error("Failed to update profile");
 		}
 	}
 }

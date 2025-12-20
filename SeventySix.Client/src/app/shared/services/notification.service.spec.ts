@@ -1,9 +1,7 @@
+import { NotificationLevel } from "@shared/constants";
+import { Notification } from "@shared/models";
 import { setupSimpleServiceTest } from "@shared/testing";
-import {
-	Notification,
-	NotificationLevel,
-	NotificationService
-} from "./notification.service";
+import { NotificationService } from "./notification.service";
 
 describe("NotificationService",
 	() =>
@@ -37,7 +35,7 @@ describe("NotificationService",
 						service.success("Success message");
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications.length)
 							.toBe(1);
 						expect(notifications[0].level)
@@ -50,14 +48,14 @@ describe("NotificationService",
 					() =>
 					{
 						service.success("Success message");
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
 						jasmine
 							.clock()
 							.tick(5000);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 
@@ -65,14 +63,14 @@ describe("NotificationService",
 					() =>
 					{
 						service.success("Success message", 3000);
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
 						jasmine
 							.clock()
 							.tick(3000);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 			});
@@ -86,7 +84,7 @@ describe("NotificationService",
 						service.info("Info message");
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications.length)
 							.toBe(1);
 						expect(notifications[0].level)
@@ -99,14 +97,14 @@ describe("NotificationService",
 					() =>
 					{
 						service.info("Info message");
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
 						jasmine
 							.clock()
 							.tick(5000);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 			});
@@ -120,7 +118,7 @@ describe("NotificationService",
 						service.warning("Warning message");
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications.length)
 							.toBe(1);
 						expect(notifications[0].level)
@@ -133,14 +131,14 @@ describe("NotificationService",
 					() =>
 					{
 						service.warning("Warning message");
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
 						jasmine
 							.clock()
 							.tick(7000);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 			});
@@ -154,7 +152,7 @@ describe("NotificationService",
 						service.error("Error message");
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications.length)
 							.toBe(1);
 						expect(notifications[0].level)
@@ -167,14 +165,14 @@ describe("NotificationService",
 					() =>
 					{
 						service.error("Error message");
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
 						jasmine
 							.clock()
 							.tick(10000);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 			});
@@ -190,7 +188,7 @@ describe("NotificationService",
 						service.warning("Message 3");
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications.length)
 							.toBe(3);
 
@@ -199,7 +197,7 @@ describe("NotificationService",
 						service.dismiss(idToRemove);
 
 						const updatedNotifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(updatedNotifications.length)
 							.toBe(2);
 						expect(
@@ -216,7 +214,7 @@ describe("NotificationService",
 
 						service.dismiss("non-existent-id");
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(1);
 					});
 			});
@@ -231,12 +229,12 @@ describe("NotificationService",
 						service.info("Message 2");
 						service.warning("Message 3");
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(3);
 
 						service.clearAll();
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 
@@ -245,7 +243,7 @@ describe("NotificationService",
 					{
 						service.clearAll();
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 			});
@@ -261,7 +259,7 @@ describe("NotificationService",
 						service.warning("Warning 1");
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications.length)
 							.toBe(3);
 						expect(notifications[0].level)
@@ -280,7 +278,7 @@ describe("NotificationService",
 						service.success("Message 3");
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						const ids: string[] =
 							notifications.map(
 								(notification) => notification.id);
@@ -301,7 +299,7 @@ describe("NotificationService",
 						service.success("Message", 3000);
 
 						const notification: Notification =
-							service.notifications$()[0];
+							service.readonlyNotifications()[0];
 						expect(notification.duration)
 							.toBe(3000);
 					});
@@ -313,7 +311,7 @@ describe("NotificationService",
 						service.info(message);
 
 						const notification: Notification =
-							service.notifications$()[0];
+							service.readonlyNotifications()[0];
 						expect(notification.message)
 							.toBe(message);
 					});
@@ -331,7 +329,7 @@ describe("NotificationService",
 						service.successWithDetails("Test success", details);
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications.length)
 							.toBe(1);
 						expect(notifications[0].level)
@@ -348,14 +346,14 @@ describe("NotificationService",
 						service.successWithDetails("Test success",
 							["Detail"]);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
 						jasmine
 							.clock()
 							.tick(5001);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 			});
@@ -372,7 +370,7 @@ describe("NotificationService",
 						service.infoWithDetails("Test info", details);
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications.length)
 							.toBe(1);
 						expect(notifications[0].level)
@@ -389,14 +387,14 @@ describe("NotificationService",
 						service.infoWithDetails("Test info",
 							["Detail"]);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
 						jasmine
 							.clock()
 							.tick(5001);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 			});
@@ -413,7 +411,7 @@ describe("NotificationService",
 						service.warningWithDetails("Test warning", details);
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications.length)
 							.toBe(1);
 						expect(notifications[0].level)
@@ -430,14 +428,14 @@ describe("NotificationService",
 						service.warningWithDetails("Test warning",
 							["Detail"]);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
 						jasmine
 							.clock()
 							.tick(7001);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 			});
@@ -453,7 +451,7 @@ describe("NotificationService",
 						service.errorWithDetails("Error message", details);
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications.length)
 							.toBe(1);
 						expect(notifications[0].level)
@@ -477,7 +475,7 @@ describe("NotificationService",
 						service.errorWithDetails("Error message", undefined, copyData);
 
 						const notifications: Notification[] =
-							service.notifications$();
+							service.readonlyNotifications();
 						expect(notifications[0].copyData)
 							.toBe(copyData);
 					});
@@ -494,7 +492,7 @@ describe("NotificationService",
 						service.errorWithDetails("Form error", details, copyData);
 
 						const notification: Notification =
-							service.notifications$()[0];
+							service.readonlyNotifications()[0];
 						expect(notification.details)
 							.toEqual(details);
 						expect(notification.copyData)
@@ -506,14 +504,14 @@ describe("NotificationService",
 					{
 						service.errorWithDetails("Error",
 							["Detail 1"], undefined, 5000);
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
 						jasmine
 							.clock()
 							.tick(5000);
 
-						expect(service.notifications$().length)
+						expect(service.readonlyNotifications().length)
 							.toBe(0);
 					});
 
@@ -523,7 +521,7 @@ describe("NotificationService",
 						service.errorWithDetails("Simple error");
 
 						const notification: Notification =
-							service.notifications$()[0];
+							service.readonlyNotifications()[0];
 						expect(notification.message)
 							.toBe("Simple error");
 						expect(notification.details)
@@ -563,7 +561,7 @@ describe("NotificationService",
 						const copyData: string = "Error details to copy";
 						service.errorWithDetails("Error", undefined, copyData);
 						const notification: Notification =
-							service.notifications$()[0];
+							service.readonlyNotifications()[0];
 
 						const result: boolean =
 							await service.copyToClipboard(notification);
@@ -579,7 +577,7 @@ describe("NotificationService",
 					{
 						service.error("Error without copy data");
 						const notification: Notification =
-							service.notifications$()[0];
+							service.readonlyNotifications()[0];
 
 						const result: boolean =
 							await service.copyToClipboard(notification);
@@ -599,7 +597,7 @@ describe("NotificationService",
 
 						service.errorWithDetails("Error", undefined, "Copy data");
 						const notification: Notification =
-							service.notifications$()[0];
+							service.readonlyNotifications()[0];
 
 						const result: boolean =
 							await service.copyToClipboard(notification);
@@ -616,7 +614,7 @@ describe("NotificationService",
 						spyOn(console, "info");
 						service.errorWithDetails("Error", undefined, "Copy data");
 						const notification: Notification =
-							service.notifications$()[0];
+							service.readonlyNotifications()[0];
 
 						const result: boolean =
 							await service.copyToClipboard(notification);
@@ -634,7 +632,7 @@ describe("NotificationService",
 
 						service.errorWithDetails("Error", undefined, copyData);
 						const notification: Notification =
-							service.notifications$()[0];
+							service.readonlyNotifications()[0];
 
 						await service.copyToClipboard(notification);
 

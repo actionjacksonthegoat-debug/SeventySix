@@ -5,7 +5,6 @@
  */
 
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
 import { ActivatedRoute } from "@angular/router";
 import { ErrorQueueService } from "@shared/services/error-queue.service";
@@ -49,6 +48,7 @@ export function createMockNotificationService(): jasmine.SpyObj<NotificationServ
 			"success",
 			"info",
 			"warning",
+			"warningWithAction",
 			"error",
 			"errorWithDetails",
 			"dismiss",
@@ -119,18 +119,6 @@ export function createMockDialogRef<T>(): jasmine.SpyObj<MatDialogRef<T>>
 {
 	return jasmine.createSpyObj("MatDialogRef",
 		["close", "afterClosed"]);
-}
-
-/**
- * Create a mocked MatSnackBar
- * Used in 3+ test files
- *
- * @returns Jasmine spy object for MatSnackBar
- */
-export function createMockSnackBar(): jasmine.SpyObj<MatSnackBar>
-{
-	return jasmine.createSpyObj("MatSnackBar",
-		["open", "dismiss"]);
 }
 
 /**

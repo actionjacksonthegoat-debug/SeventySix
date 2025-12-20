@@ -18,18 +18,15 @@ import {
 } from "@angular/forms";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatExpansionModule } from "@angular/material/expansion";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { REQUESTABLE_ROLES, SNACKBAR_DURATION } from "@shared/constants";
-import { SnackbarType } from "@shared/constants/snackbar.constants";
-import { showSnackbar } from "@shared/utilities/snackbar.utility";
 import { ActivatedRoute, Router } from "@angular/router";
+import { REQUESTABLE_ROLES } from "@shared/constants";
 import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants/validation.constants";
 import { FORM_MATERIAL_MODULES } from "@shared/material-bundles";
-import { LoggerService } from "@shared/services";
+import { LoggerService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
 import { map } from "rxjs";
 
@@ -45,7 +42,6 @@ import { map } from "rxjs";
 		imports: [
 			ReactiveFormsModule,
 			DatePipe,
-			MatSnackBarModule,
 			MatExpansionModule,
 			MatChipsModule,
 			...FORM_MATERIAL_MODULES
@@ -66,8 +62,8 @@ export class UserDetailPage
 		inject(Router);
 	private readonly formBuilder: FormBuilder =
 		inject(FormBuilder);
-	private readonly snackBar: MatSnackBar =
-		inject(MatSnackBar);
+	private readonly notificationService: NotificationService =
+		inject(NotificationService);
 
 	// Get user ID from route
 	private readonly userId: string =
@@ -275,10 +271,7 @@ export class UserDetailPage
 			this.userId;
 		if (!userId)
 		{
-			showSnackbar(
-				this.snackBar,
-				"Invalid user ID",
-				SnackbarType.Error);
+			this.notificationService.error("Invalid user ID");
 			return null;
 		}
 
@@ -286,10 +279,7 @@ export class UserDetailPage
 			this.user();
 		if (!currentUser)
 		{
-			showSnackbar(
-				this.snackBar,
-				"User data not loaded",
-				SnackbarType.Error);
+			this.notificationService.error("User data not loaded");
 			return null;
 		}
 
@@ -323,10 +313,7 @@ export class UserDetailPage
 	private handleMutationSuccess(): void
 	{
 		this.userForm.markAsPristine();
-		showSnackbar(
-			this.snackBar,
-			"User updated successfully",
-			SnackbarType.Success);
+		this.notificationService.success("User updated successfully");
 	}
 
 	/**
@@ -347,10 +334,7 @@ export class UserDetailPage
 			this.logger.error(
 				"Failed to save user",
 				error instanceof Error ? error : undefined);
-			showSnackbar(
-				this.snackBar,
-				"Failed to save user",
-				SnackbarType.Error);
+			this.notificationService.error("Failed to save user");
 		}
 	}
 
@@ -359,18 +343,9 @@ export class UserDetailPage
 	 */
 	private handleConcurrencyError(): void
 	{
-		this
-		.snackBar
-		.open(
+		this.notificationService.warningWithAction(
 			"User was modified by another user. Please refresh and try again.",
 			"REFRESH",
-			{
-				duration: SNACKBAR_DURATION.concurrencyError,
-				horizontalPosition: "end",
-				verticalPosition: "top"
-			})
-		.onAction()
-		.subscribe(
 			() => this.userQuery.refetch());
 	}
 
@@ -401,15 +376,9 @@ export class UserDetailPage
 			{ userId: userIdNum, roleName: role },
 			{
 				onSuccess: () =>
-					showSnackbar(
-						this.snackBar,
-						`Role "${role}" added`,
-						SnackbarType.Success),
+					this.notificationService.success(`Role "${role}" added`),
 				onError: () =>
-					showSnackbar(
-						this.snackBar,
-						`Failed to add role "${role}"`,
-						SnackbarType.Error)
+					this.notificationService.error(`Failed to add role "${role}"`)
 			});
 	}
 
@@ -430,15 +399,9 @@ export class UserDetailPage
 			{ userId: userIdNum, roleName: role },
 			{
 				onSuccess: () =>
-					showSnackbar(
-						this.snackBar,
-						`Role "${role}" removed`,
-						SnackbarType.Success),
+					this.notificationService.success(`Role "${role}" removed`),
 				onError: () =>
-					showSnackbar(
-						this.snackBar,
-						`Failed to remove role "${role}"`,
-						SnackbarType.Error)
+					this.notificationService.error(`Failed to remove role "${role}"`)
 			});
 	}
 }

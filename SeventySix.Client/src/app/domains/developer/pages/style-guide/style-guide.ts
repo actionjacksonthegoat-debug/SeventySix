@@ -13,13 +13,11 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatRadioModule } from "@angular/material/radio";
 import { MatSelectModule } from "@angular/material/select";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatTableModule } from "@angular/material/table";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { ConfirmDialogComponent } from "@shared/components";
-import { SNACKBAR_DURATION } from "@shared/constants";
-import { ThemeService } from "@shared/services";
+import { NotificationService, ThemeService } from "@shared/services";
 
 /**
  * Style Guide Page
@@ -54,8 +52,8 @@ export class StyleGuideComponent
 {
 	protected readonly themeService: ThemeService =
 		inject(ThemeService);
-	private readonly snackBar: MatSnackBar =
-		inject(MatSnackBar);
+	private readonly notificationService: NotificationService =
+		inject(NotificationService);
 	private readonly dialog: MatDialog =
 		inject(MatDialog);
 
@@ -79,12 +77,7 @@ export class StyleGuideComponent
 
 	showSnackbar(message: string): void
 	{
-		this.snackBar.open(message, "DISMISS",
-			{
-				duration: SNACKBAR_DURATION.success,
-				horizontalPosition: "end",
-				verticalPosition: "bottom"
-			});
+		this.notificationService.success(message);
 	}
 
 	showDialog(): void

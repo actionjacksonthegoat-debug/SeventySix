@@ -6,16 +6,17 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ActivatedRoute, Router } from "@angular/router";
 import { LoggerService } from "@shared/services/logger.service";
+import { NotificationService } from "@shared/services/notification.service";
 import {
 	createMockActivatedRoute,
 	createMockLogger,
+	createMockNotificationService,
 	createMockRouter
 } from "@shared/testing";
 import {
 	createMockMutationResult,
 	createMockQueryResult
 } from "@testing/tanstack-query-helpers";
-import { Subject } from "rxjs";
 import { UserDetailPage } from "./user-detail";
 
 /** Type alias for mock mutation result - DRY */
@@ -35,6 +36,7 @@ describe("UserDetailPage",
 		let mockLogger: jasmine.SpyObj<LoggerService>;
 		let mockRouter: jasmine.SpyObj<Router>;
 		let mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
+		let mockNotificationService: jasmine.SpyObj<NotificationService>;
 
 		const mockUser: UserDto =
 			{
@@ -73,6 +75,8 @@ describe("UserDetailPage",
 				mockActivatedRoute =
 					createMockActivatedRoute(
 						{ id: "1" });
+				mockNotificationService =
+					createMockNotificationService();
 
 				mockUserService.getUserById.and.returnValue(
 					createMockQueryResult(mockUser));
@@ -94,7 +98,8 @@ describe("UserDetailPage",
 								{ provide: UserService, useValue: mockUserService },
 								{ provide: LoggerService, useValue: mockLogger },
 								{ provide: Router, useValue: mockRouter },
-								{ provide: ActivatedRoute, useValue: mockActivatedRoute }
+								{ provide: ActivatedRoute, useValue: mockActivatedRoute },
+								{ provide: NotificationService, useValue: mockNotificationService }
 							]
 						})
 					.compileComponents();
@@ -455,7 +460,7 @@ describe("UserDetailPage",
 								},
 								jasmine.any(Object));
 					});
-				it("should handle 409 conflict error with refresh option",
+				it("should handle 409 conflict error with refresh action",
 					async () =>
 					{
 						const conflictError: Error & { status: number; } =
@@ -486,25 +491,11 @@ describe("UserDetailPage",
 
 						mockUserService.updateUser.and.returnValue(errorMutation);
 
-						// Spy on snackBar to verify it was called
-						const snackBarSpy: jasmine.SpyObj<{ onAction: () => Subject<void>; }> =
-							jasmine.createSpyObj<
-								{ onAction: () => Subject<void>; }>("MatSnackBarRef",
-								["onAction"]);
-						snackBarSpy.onAction.and.returnValue(new Subject());
-
 						// Recreate component to get new mutation
 						fixture =
 							TestBed.createComponent(UserDetailPage);
 						component =
 							fixture.componentInstance;
-
-						// Spy on the component's snackbar
-						spyOn(
-							component["snackBar" as keyof UserDetailPage] as unknown as { open: jasmine.Spy; },
-							"open")
-							.and
-							.returnValue(snackBarSpy);
 
 						TestBed.runInInjectionContext(
 							() =>
@@ -518,12 +509,11 @@ describe("UserDetailPage",
 							{ fullName: "Modified" });
 						await component.onSubmit();
 
-						expect(
-							(component["snackBar" as keyof UserDetailPage] as unknown as { open: jasmine.Spy; }).open)
+						expect(mockNotificationService.warningWithAction)
 							.toHaveBeenCalledWith(
 								jasmine.stringContaining("User was modified by another user"),
 								"REFRESH",
-								jasmine.any(Object));
+								jasmine.any(Function));
 					});
 
 				it("should not submit if user data not loaded",

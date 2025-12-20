@@ -8,7 +8,6 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { AbstractControl } from "@angular/forms";
 import { provideRouter } from "@angular/router";
 import { Router } from "@angular/router";
-import { SNACKBAR_DURATION } from "@shared/constants";
 import { LoggerService } from "@shared/services/logger.service";
 import { NotificationService } from "@shared/services/notification.service";
 import {
@@ -297,17 +296,11 @@ describe("UserCreatePage",
 								email: "test@example.com"
 							});
 
-						const snackBarSpy: jasmine.Spy<jasmine.Func> =
-							spyOn(component["snackBar"], "open");
-
 						await component.onSubmit();
 
-						expect(snackBarSpy)
+						expect(mockNotification.error)
 							.toHaveBeenCalledWith(
-								"Please complete all required fields",
-								"Close",
-								jasmine.objectContaining(
-									{ duration: SNACKBAR_DURATION.error }));
+								"Please complete all required fields");
 						expect(component.createMutation.mutate).not.toHaveBeenCalled();
 					});
 
@@ -324,17 +317,11 @@ describe("UserCreatePage",
 								fullName: "a".repeat(101) // Invalid: maxlength
 							});
 
-						const snackBarSpy: jasmine.Spy<jasmine.Func> =
-							spyOn(component["snackBar"], "open");
-
 						await component.onSubmit();
 
-						expect(snackBarSpy)
+						expect(mockNotification.error)
 							.toHaveBeenCalledWith(
-								"Please complete all required fields",
-								"Close",
-								jasmine.objectContaining(
-									{ duration: SNACKBAR_DURATION.error }));
+								"Please complete all required fields");
 						expect(component.createMutation.mutate).not.toHaveBeenCalled();
 					});
 
@@ -390,9 +377,6 @@ describe("UserCreatePage",
 							});
 						fixture.detectChanges();
 
-						const snackBarSpy: jasmine.Spy =
-							spyOn(component["snackBar"], "open");
-
 						// Mock mutate to call onSuccess
 						(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
 							(data, options: { onSuccess: (user: UserDto) => void; }) =>
@@ -402,12 +386,9 @@ describe("UserCreatePage",
 
 						await component.onSubmit();
 
-						expect(snackBarSpy)
+						expect(mockNotification.success)
 							.toHaveBeenCalledWith(
-								`User "testuser" created. Welcome email sent to test@example.com.`,
-								"Close",
-								jasmine.objectContaining(
-									{ duration: SNACKBAR_DURATION.success }));
+								`User "testuser" created. Welcome email sent to test@example.com.`);
 						expect(mockRouter.navigate)
 							.toHaveBeenCalledWith(
 								["/admin/users"]);
@@ -652,19 +633,13 @@ describe("UserCreatePage",
 								options.onError(new Error("Role assignment failed"));
 							});
 
-						const snackBarSpy: jasmine.Spy =
-							spyOn(component["snackBar"], "open");
-
 						// Act
 						await component.onSubmit();
 
-						// Assert - error snackbar should be shown
-						expect(snackBarSpy)
+						// Assert - error notification should be shown
+						expect(mockNotification.error)
 							.toHaveBeenCalledWith(
-								"Failed to assign role \"Developer\"",
-								"Close",
-								jasmine.objectContaining(
-									{ duration: SNACKBAR_DURATION.error }));
+								"Failed to assign role \"Developer\"");
 					});
 			});
 	});

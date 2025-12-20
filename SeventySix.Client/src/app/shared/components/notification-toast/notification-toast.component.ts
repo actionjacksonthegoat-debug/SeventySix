@@ -2,11 +2,9 @@ import { Component, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import {
-	type Notification,
-	NotificationLevel,
-	NotificationService
-} from "@shared/services";
+import { NotificationLevel } from "@shared/constants";
+import { Notification } from "@shared/models";
+import { NotificationService } from "@shared/services";
 
 /**
  * Toast notification component that displays notifications from NotificationService.
@@ -19,7 +17,7 @@ import {
 		template: `
 		<div class="toast-container" role="region" aria-label="Notifications">
 			@for (
-				notification of notificationService.notifications$();
+				notification of notificationService.readonlyNotifications();
 				track notification.id
 			) {
 				<div
@@ -35,6 +33,16 @@ import {
 							notification.message
 						}}</span>
 						<div class="toast-actions">
+							@if (notification.actionLabel && notification.onAction) {
+								<button
+									mat-stroked-button
+									class="action-button"
+									(click)="executeAction(notification)"
+									[attr.aria-label]="notification.actionLabel"
+								>
+									{{ notification.actionLabel }}
+								</button>
+							}
 							@if (notification.copyData) {
 								<button
 									mat-icon-button
@@ -107,6 +115,18 @@ export class NotificationToastComponent
 	dismiss(id: string): void
 	{
 		this.notificationService.dismiss(id);
+	}
+
+	/**
+	 * Execute the notification action and dismiss.
+	 */
+	executeAction(notification: Notification): void
+	{
+		if (notification.onAction)
+		{
+			notification.onAction();
+		}
+		this.dismiss(notification.id);
 	}
 
 	/**

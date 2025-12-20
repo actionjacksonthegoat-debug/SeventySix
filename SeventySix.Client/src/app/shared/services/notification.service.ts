@@ -6,31 +6,38 @@ import {
 	signal,
 	WritableSignal
 } from "@angular/core";
-import { SNACKBAR_DURATION } from "@shared/constants";
+import { NotificationLevel } from "@shared/constants";
+import { Notification } from "@shared/models";
 
 /**
- * Notification severity levels.
+ * Notification system configuration.
+ * Private to NotificationService - implementation detail.
  */
-export enum NotificationLevel
-{
-	Success = "success",
-	Info = "info",
-	Warning = "warning",
-	Error = "error"
-}
+const NOTIFICATION_CONFIG: Readonly<{
+	maxVisible: number;
+}> =
+	{
+		maxVisible: 5
+	} as const;
 
 /**
- * Notification message structure.
+ * Notification duration constants (milliseconds).
+ * Private to NotificationService - external code should not need to know about timing.
  */
-export interface Notification
-{
-	id: string;
-	level: NotificationLevel;
-	message: string;
-	duration: number;
-	details?: string[];
-	copyData?: string;
-}
+const NOTIFICATION_DURATION: Readonly<{
+	success: number;
+	error: number;
+	warning: number;
+	info: number;
+	concurrencyError: number;
+}> =
+	{
+		success: 3000,
+		error: 5000,
+		warning: 7000,
+		info: 5000,
+		concurrencyError: 10000
+	} as const;
 
 /**
  * Notification service for displaying user-facing messages.
@@ -67,13 +74,13 @@ export class NotificationService
 	/**
 	 * Read-only signal of current notifications.
 	 */
-	readonly notifications$: Signal<Notification[]> =
+	readonly readonlyNotifications: Signal<Notification[]> =
 		this.notifications.asReadonly();
 
 	/**
 	 * Shows a success notification.
 	 */
-	success(message: string, duration: number = SNACKBAR_DURATION.success): void
+	success(message: string, duration: number = NOTIFICATION_DURATION.success): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Success,
@@ -90,7 +97,7 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = SNACKBAR_DURATION.success): void
+		duration: number = NOTIFICATION_DURATION.success): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Success,
@@ -103,7 +110,7 @@ export class NotificationService
 	/**
 	 * Shows an info notification.
 	 */
-	info(message: string, duration: number = SNACKBAR_DURATION.info): void
+	info(message: string, duration: number = NOTIFICATION_DURATION.info): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Info,
@@ -120,7 +127,7 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = SNACKBAR_DURATION.info): void
+		duration: number = NOTIFICATION_DURATION.info): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Info,
@@ -133,7 +140,7 @@ export class NotificationService
 	/**
 	 * Shows a warning notification.
 	 */
-	warning(message: string, duration: number = SNACKBAR_DURATION.warning): void
+	warning(message: string, duration: number = NOTIFICATION_DURATION.warning): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Warning,
@@ -150,7 +157,7 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = SNACKBAR_DURATION.warning): void
+		duration: number = NOTIFICATION_DURATION.warning): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Warning,
@@ -161,9 +168,27 @@ export class NotificationService
 	}
 
 	/**
+	 * Shows a warning notification with an action button.
+	 * Used for scenarios like concurrency errors that require user action.
+	 */
+	warningWithAction(
+		message: string,
+		actionLabel: string,
+		onAction: () => void,
+		duration: number = NOTIFICATION_DURATION.concurrencyError): void
+	{
+		this.showWithAction(
+			NotificationLevel.Warning,
+			message,
+			actionLabel,
+			onAction,
+			duration);
+	}
+
+	/**
 	 * Shows an error notification.
 	 */
-	error(message: string, duration: number = SNACKBAR_DURATION.error): void
+	error(message: string, duration: number = NOTIFICATION_DURATION.error): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Error,
@@ -209,7 +234,7 @@ export class NotificationService
 		message: string,
 		details?: string[],
 		copyData?: string,
-		duration: number = SNACKBAR_DURATION.error): void
+		duration: number = NOTIFICATION_DURATION.error): void
 	{
 		this.showWithDetails(
 			NotificationLevel.Error,
@@ -257,6 +282,14 @@ export class NotificationService
 		copyData?: string,
 		duration?: number): void
 	{
+		// Enforce max visible limit - dismiss oldest notification if at capacity
+		if (this.readonlyNotifications().length >= NOTIFICATION_CONFIG.maxVisible)
+		{
+			const oldestNotification: Notification =
+				this.readonlyNotifications()[0];
+			this.dismiss(oldestNotification.id);
+		}
+
 		const notification: Notification =
 			{
 				id: `notification-${++this.idCounter}`,
@@ -272,6 +305,52 @@ export class NotificationService
 
 		// Auto-dismiss if duration is set using globalThis.setTimeout
 		// This is the appropriate pattern for service-level timers in Angular
+		if (duration)
+		{
+			const timer: ReturnType<typeof globalThis.setTimeout> =
+				globalThis.setTimeout(
+					() =>
+					{
+						this.dismissTimers.delete(notification.id);
+						this.dismiss(notification.id);
+					},
+					duration);
+			this.dismissTimers.set(notification.id, timer);
+		}
+	}
+
+	/**
+	 * Core notification display logic with action callback.
+	 */
+	private showWithAction(
+		level: NotificationLevel,
+		message: string,
+		actionLabel: string,
+		onAction: () => void,
+		duration?: number): void
+	{
+		// Enforce max visible limit - dismiss oldest notification if at capacity
+		if (this.readonlyNotifications().length >= NOTIFICATION_CONFIG.maxVisible)
+		{
+			const oldestNotification: Notification =
+				this.readonlyNotifications()[0];
+			this.dismiss(oldestNotification.id);
+		}
+
+		const notification: Notification =
+			{
+				id: `notification-${++this.idCounter}`,
+				level,
+				message,
+				duration: duration ?? 0,
+				actionLabel,
+				onAction
+			};
+
+		this.notifications.update(
+			(current) => [...current, notification]);
+
+		// Auto-dismiss if duration is set
 		if (duration)
 		{
 			const timer: ReturnType<typeof globalThis.setTimeout> =

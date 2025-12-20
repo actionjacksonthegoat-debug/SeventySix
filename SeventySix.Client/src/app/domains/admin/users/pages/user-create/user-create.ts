@@ -19,11 +19,8 @@ import {
 	ValidationErrors,
 	Validators
 } from "@angular/forms";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatChipsModule } from "@angular/material/chips";
 import { REQUESTABLE_ROLES } from "@shared/constants/role.constants";
-import { SnackbarType } from "@shared/constants/snackbar.constants";
-import { showSnackbar } from "@shared/utilities/snackbar.utility";
 import { MatStepper } from "@angular/material/stepper";
 import { Router } from "@angular/router";
 import {
@@ -32,7 +29,7 @@ import {
 	USERNAME_VALIDATION
 } from "@shared/constants/validation.constants";
 import { STEPPER_MATERIAL_MODULES } from "@shared/material-bundles";
-import { LoggerService } from "@shared/services";
+import { LoggerService, NotificationService } from "@shared/services";
 import { getValidationError } from "@shared/utilities";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 import {
@@ -56,7 +53,6 @@ import {
 		selector: "app-user-create",
 		imports: [
 			ReactiveFormsModule,
-			MatSnackBarModule,
 			MatChipsModule,
 			...STEPPER_MATERIAL_MODULES
 		],
@@ -74,8 +70,8 @@ export class UserCreatePage
 		inject(Router);
 	private readonly formBuilder: FormBuilder =
 		inject(FormBuilder);
-	private readonly snackBar: MatSnackBar =
-		inject(MatSnackBar);
+	private readonly notificationService: NotificationService =
+		inject(NotificationService);
 
 	readonly stepper: Signal<MatStepper | undefined> =
 		viewChild<MatStepper>("stepper");
@@ -204,10 +200,7 @@ export class UserCreatePage
 		// Validate all steps
 		if (this.basicInfoForm.invalid || this.accountDetailsForm.invalid)
 		{
-			showSnackbar(
-				this.snackBar,
-				"Please complete all required fields",
-				SnackbarType.Error);
+			this.notificationService.error("Please complete all required fields");
 			return;
 		}
 
@@ -226,10 +219,7 @@ export class UserCreatePage
 							? `User "${createdUser.username}" created. Email will be sent to ${createdUser.email} within 24 hours.`
 							: `User "${createdUser.username}" created. Welcome email sent to ${createdUser.email}.`;
 
-					showSnackbar(
-						this.snackBar,
-						message,
-						SnackbarType.Success);
+					this.notificationService.success(message);
 
 					// Navigate to user list
 					this.router.navigate(
@@ -258,10 +248,7 @@ export class UserCreatePage
 				{
 					onError: () =>
 					{
-						showSnackbar(
-							this.snackBar,
-							`Failed to assign role "${roleName}"`,
-							SnackbarType.Error);
+						this.notificationService.error(`Failed to assign role "${roleName}"`);
 					}
 				});
 		}

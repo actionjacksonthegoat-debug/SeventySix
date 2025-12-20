@@ -21,9 +21,8 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
-import { SNACKBAR_DURATION } from "@shared/constants";
+import { NotificationService } from "@shared/services";
 
 @Component(
 	{
@@ -35,8 +34,7 @@ import { SNACKBAR_DURATION } from "@shared/constants";
 			MatButtonModule,
 			MatCardModule,
 			MatCheckboxModule,
-			MatProgressSpinnerModule,
-			MatSnackBarModule
+			MatProgressSpinnerModule
 		],
 		templateUrl: "./request-permissions.html",
 		styleUrl: "./request-permissions.scss",
@@ -50,8 +48,8 @@ export class RequestPermissionsPage
 		inject(FormBuilder);
 	private readonly router: Router =
 		inject(Router);
-	private readonly snackBar: MatSnackBar =
-		inject(MatSnackBar);
+	private readonly notificationService: NotificationService =
+		inject(NotificationService);
 
 	readonly rolesQuery: ReturnType<typeof this.accountService.getAvailableRoles> =
 		this.accountService.getAvailableRoles();
@@ -123,10 +121,7 @@ export class RequestPermissionsPage
 			Array.from(this.selectedRoles());
 		if (roles.length === 0)
 		{
-			this.snackBar.open("Select at least one role", "Close",
-				{
-					duration: SNACKBAR_DURATION.warning
-				});
+			this.notificationService.warning("Select at least one role");
 			return;
 		}
 
@@ -139,19 +134,13 @@ export class RequestPermissionsPage
 		try
 		{
 			await this.requestMutation.mutateAsync(request);
-			this.snackBar.open("Permission request submitted", "Close",
-				{
-					duration: SNACKBAR_DURATION.success
-				});
+			this.notificationService.success("Permission request submitted");
 			this.router.navigate(
 				["/account"]);
 		}
 		catch
 		{
-			this.snackBar.open("Failed to submit request", "Close",
-				{
-					duration: SNACKBAR_DURATION.error
-				});
+			this.notificationService.error("Failed to submit request");
 		}
 	}
 }
