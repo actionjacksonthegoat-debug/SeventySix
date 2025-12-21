@@ -6,7 +6,6 @@
 // =============================================================================
 
 // Material Core
-import { MatCommonModule } from "@angular/material/core";
 import { MatRippleModule } from "@angular/material/core";
 
 // Layout Components
@@ -77,10 +76,9 @@ import { ScrollingModule } from "@angular/cdk/scrolling";
  * export class MyComponent {}
  * ```
  */
-export const MATERIAL_MODULES: readonly (typeof MatCommonModule)[] =
+export const MATERIAL_MODULES: readonly (typeof MatRippleModule)[] =
 	[
 	// Core
-		MatCommonModule,
 		MatRippleModule,
 
 		// Layout
