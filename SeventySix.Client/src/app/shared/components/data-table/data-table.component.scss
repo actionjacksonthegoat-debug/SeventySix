@@ -9,11 +9,6 @@
 	height: 100%;
 }
 
-.skeleton-table {
-	padding: vars.$spacing-md;
-	width: 100%;
-}
-
 .table-toolbar {
 	display: flex;
 	align-items: center;
@@ -134,25 +129,15 @@
 	}
 }
 
-// CLS Prevention: Reserve minimum height and use overlay pattern
+// CLS Prevention: Reserve minimum height and use overlay pattern for errors only
 .table-content-wrapper {
 	position: relative;
 	min-height: vars.$cls-table-min-height;
 	display: flex;
 	flex-direction: column;
 
-	.loading-overlay,
 	.error-overlay {
 		@include mixins.cls-loading-overlay();
-	}
-
-	.table-content {
-		opacity: 1;
-		transition: opacity 0.2s ease-in-out;
-
-		&.loading {
-			opacity: 0.5;
-		}
 	}
 }
 

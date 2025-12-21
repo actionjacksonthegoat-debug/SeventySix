@@ -5,15 +5,11 @@ import {
 	inject,
 	input,
 	InputSignal,
-	Signal,
-	signal,
-	WritableSignal
+	Signal
 } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { environment } from "@environments/environment";
-import { SKELETON_CARD, SkeletonTheme } from "@shared/constants";
-import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 
 /**
  * Component for embedding Grafana dashboards via iframe.
@@ -25,7 +21,7 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 @Component(
 	{
 		selector: "app-grafana-dashboard-embed",
-		imports: [MatCardModule, NgxSkeletonLoaderModule],
+		imports: [MatCardModule],
 		templateUrl: "./grafana-dashboard-embed.component.html",
 		styleUrl: "./grafana-dashboard-embed.component.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
@@ -100,30 +96,10 @@ export class GrafanaDashboardEmbedComponent
 			});
 
 	/**
-	 * Loading state - true until iframe fires load event.
-	 * Managed internally via onIframeLoad() method.
-	 */
-	readonly isLoading: WritableSignal<boolean> =
-		signal(true);
-
-	/** Skeleton theme for dashboard placeholder. */
-	readonly skeletonCard: SkeletonTheme =
-		SKELETON_CARD;
-
-	/**
 	 * Computed accessible title for the iframe.
 	 * Appends 'dashboard' suffix for screen reader context.
 	 */
 	readonly iframeTitle: Signal<string> =
 		computed(
 			() => `${this.title()} dashboard`);
-
-	/**
-	 * Handle iframe load event.
-	 * Called when Grafana content has fully loaded.
-	 */
-	onIframeLoad(): void
-	{
-		this.isLoading.set(false);
-	}
 }

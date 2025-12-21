@@ -26,19 +26,6 @@ mat-card-content {
 	min-height: 0;
 	overflow: hidden;
 	padding: 0 !important;
-	position: relative;
-}
-
-.skeleton-container {
-	position: absolute;
-	inset: 0;
-	z-index: 1;
-
-	ngx-skeleton-loader {
-		height: 100%;
-		width: 100%;
-		display: block;
-	}
 }
 
 .grafana-embed {
@@ -46,16 +33,4 @@ mat-card-content {
 	height: 100%;
 	border: none;
 	border-radius: vars.$border-radius-base;
-
-	// Hidden while loading - keeps in DOM for load event
-	&.iframe-loading {
-		visibility: hidden;
-		position: absolute;
-	}
-
-	// Visible when ready
-	&.iframe-ready {
-		visibility: visible;
-		position: relative;
-	}
 }

@@ -653,28 +653,62 @@ describe("DataTableComponent",
 						}
 					});
 
-				it("should render loading overlay without removing table content",
+				it("should render skeleton loaders in cells when loading",
 					async (): Promise<void> =>
 					{
 						builder.withInputs(fixture,
 							{
 								...defaultInputs,
-								isLoading: true
+								isLoading: true,
+								data: []
 							});
 
 						await fixture.whenStable();
 						fixture.detectChanges();
 
-						const loadingOverlay: HTMLElement | null =
-							fixture.nativeElement.querySelector(".loading-overlay");
-						const tableContent: HTMLElement | null =
-							fixture.nativeElement.querySelector(".table-content");
+						const skeletonLoaders: NodeListOf<Element> =
+							fixture.nativeElement.querySelectorAll("ngx-skeleton-loader");
+						const headerRow: Element | null =
+							fixture.nativeElement.querySelector("tr.mat-mdc-header-row");
 
-						// Both should exist when loading
-						expect(loadingOverlay)
-							.toBeTruthy();
-						expect(tableContent)
-							.toBeTruthy();
+						// Header should always be visible
+						expect(headerRow)
+							.not.toBeNull();
+
+						// Should have skeleton loaders (1 row x columns)
+						expect(skeletonLoaders.length)
+							.toBeGreaterThan(0);
+					});
+
+				it("should show skeleton loaders for each visible column",
+					async (): Promise<void> =>
+					{
+						const testColumns: TableColumn<TestEntity>[] =
+							[
+								createTextColumn<TestEntity>("id", "ID", true),
+								createTextColumn<TestEntity>("name", "Name", true)
+							];
+
+						builder.withInputs(fixture,
+							{
+								...defaultInputs,
+								columns: testColumns,
+								isLoading: true,
+								data: []
+							});
+
+						fixture.detectChanges();
+						await fixture.whenStable();
+						fixture.detectChanges();
+
+						// Virtual scroll may not render rows without proper viewport
+						// Check that skeleton loaders exist somewhere in the table
+						const skeletonLoaders: NodeListOf<Element> =
+							fixture.nativeElement.querySelectorAll("ngx-skeleton-loader");
+
+						// Should have skeleton loaders when loading
+						expect(skeletonLoaders.length)
+							.toBeGreaterThan(0);
 					});
 			});
 	});

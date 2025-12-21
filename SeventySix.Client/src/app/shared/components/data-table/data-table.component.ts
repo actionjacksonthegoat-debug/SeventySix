@@ -22,7 +22,7 @@ import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { environment } from "@environments/environment";
 import { slideDown } from "@shared/animations/animations";
-import { SKELETON_TABLE_CELL, SkeletonTheme } from "@shared/constants";
+import { SKELETON_CHECKBOX, SKELETON_ICON_BUTTON, SKELETON_TABLE_CELL, SkeletonTheme } from "@shared/constants";
 import { TableHeightDirective } from "@shared/directives";
 import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles";
 import {
@@ -37,6 +37,7 @@ import {
 	TableColumn
 } from "@shared/models";
 import { DateService } from "@shared/services";
+import { DataTableUtilities } from "@shared/utilities";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 import { map } from "rxjs/operators";
 
@@ -66,9 +67,30 @@ import { map } from "rxjs/operators";
 	})
 export class DataTableComponent<T extends { id: number; }>
 {
-	/** Skeleton theme for table cells. */
-	readonly skeletonTableCell: SkeletonTheme =
-		SKELETON_TABLE_CELL;
+	// Skeleton themes for table loading states
+	readonly skeletonTableCell: SkeletonTheme = SKELETON_TABLE_CELL;
+	readonly skeletonCheckbox: SkeletonTheme = SKELETON_CHECKBOX;
+	readonly skeletonIconButton: SkeletonTheme =
+		SKELETON_ICON_BUTTON;
+
+	/**
+	 * Skeleton placeholder ID - must be negative to trigger skeleton rendering.
+	 */
+	private static readonly SKELETON_ROW_ID: number = -1;
+
+	/**
+	 * Table data source - shows skeleton placeholder row when loading
+	 */
+	readonly tableDataSource: Signal<T[]> =
+		computed(
+			() =>
+			{
+				if (this.isLoading())
+				{
+					return [{ id: DataTableComponent.SKELETON_ROW_ID } as T];
+				}
+				return this.data();
+			});
 
 	// ===== Required Inputs =====
 
@@ -289,35 +311,18 @@ export class DataTableComponent<T extends { id: number; }>
 		signal("24h");
 
 	/**
-	 * Date range display configuration (DRY - single source of truth)
-	 */
-	private static readonly DATE_RANGE_CONFIG: Record<string, { icon: string; label: string; }> =
-		{
-			"1h": { icon: "schedule", label: "1 Hour" },
-			"24h": { icon: "today", label: "24 Hours" },
-			"7d": { icon: "date_range", label: "7 Days" },
-			"30d": { icon: "calendar_month", label: "30 Days" }
-		};
-
-	/**
 	 * Computed date range icon (memoized for template performance)
 	 */
 	readonly dateRangeIcon: Signal<string> =
-		computed(
-			(): string =>
-				DataTableComponent
-				.DATE_RANGE_CONFIG[this.selectedDateRange()]
-				?.icon ?? "today");
+		computed((): string =>
+			DataTableUtilities.getDateRangeIcon(this.selectedDateRange()));
 
 	/**
 	 * Computed date range label (memoized for template performance)
 	 */
 	readonly dateRangeLabel: Signal<string> =
-		computed(
-			(): string =>
-				DataTableComponent
-				.DATE_RANGE_CONFIG[this.selectedDateRange()]
-				?.label ?? "24 Hours");
+		computed((): string =>
+			DataTableUtilities.getDateRangeLabel(this.selectedDateRange()));
 
 	/**
 	 * Column visibility state
@@ -509,26 +514,11 @@ export class DataTableComponent<T extends { id: number; }>
 				localStorage.getItem(key);
 			if (stored)
 			{
-				try
+				const visibility: Map<string, boolean> | null =
+					DataTableUtilities.parseColumnPreferences(stored);
+				if (visibility)
 				{
-					const preferences: Record<string, unknown> =
-						JSON.parse(stored);
-					const visibility: Map<string, boolean> =
-						new Map<
-							string,
-							boolean>();
-					Object
-					.entries(preferences)
-					.forEach(
-						([k, v]) =>
-						{
-							visibility.set(k, v as boolean);
-						});
 					this.columnVisibility.set(visibility);
-				}
-				catch
-				{
-					// Invalid JSON, ignore
 				}
 			}
 		}
@@ -583,34 +573,15 @@ export class DataTableComponent<T extends { id: number; }>
 	 */
 	onFilterToggle(filterKey: string): void
 	{
-		const filters: Set<string> =
-			new Set(this.activeFilters());
-		const wasActive: boolean =
-			filters.has(filterKey);
-		const active: boolean = !wasActive;
+		const result: { filters: Set<string>; active: boolean; } =
+			DataTableUtilities.updateFilters(
+				this.activeFilters(),
+				filterKey,
+				this.quickFiltersSingleSelection());
 
-		// Single-selection mode: clear all other filters
-		if (this.quickFiltersSingleSelection() && active)
-		{
-			filters.clear();
-			filters.add(filterKey);
-		}
-		else
-		{
-			// Multi-selection mode
-			if (active)
-			{
-				filters.add(filterKey);
-			}
-			else
-			{
-				filters.delete(filterKey);
-			}
-		}
-
-		this.activeFilters.set(filters);
+		this.activeFilters.set(result.filters);
 		this.filterChange.emit(
-			{ filterKey, active });
+			{ filterKey, active: result.active });
 	}
 
 	/**
@@ -619,34 +590,13 @@ export class DataTableComponent<T extends { id: number; }>
 	onDateRangeChange(range: string): void
 	{
 		this.selectedDateRange.set(range);
-
 		const now: Date =
 			this.dateService.parseUTC(this.dateService.now());
-
-		const rangeMs: Record<string, number> =
-			{
-				"1h": 60 * 60 * 1000,
-				"24h": 24 * 60 * 60 * 1000,
-				"7d": 7 * 24 * 60 * 60 * 1000,
-				"30d": 30 * 24 * 60 * 60 * 1000
-			};
-
-		const presetMap: Record<string, "24h" | "7d" | "30d" | "all"> =
-			{
-				"1h": "24h",
-				"24h": "24h",
-				"7d": "7d",
-				"30d": "30d"
-			};
-
-		if (rangeMs[range])
+		const event: DateRangeEvent | null =
+			DataTableUtilities.calculateDateRange(range, now);
+		if (event)
 		{
-			this.dateRangeChange.emit(
-				{
-					startDate: new Date(now.getTime() - rangeMs[range]),
-					endDate: now,
-					preset: presetMap[range]
-				});
+			this.dateRangeChange.emit(event);
 		}
 	}
 
@@ -719,15 +669,12 @@ export class DataTableComponent<T extends { id: number; }>
 	toggleColumn(columnKey: string): void
 	{
 		const visibility: Map<string, boolean> =
-			new Map(
-				this.columnVisibility());
+			new Map(this.columnVisibility());
 		const currentValue: boolean | undefined =
 			visibility.get(columnKey);
 		const column: TableColumn<T> | undefined =
-			this
-			.columns()
-			.find(
-				(column) => column.key === columnKey);
+			this.columns()
+			.find((col) => col.key === columnKey);
 
 		if (column)
 		{
@@ -736,18 +683,11 @@ export class DataTableComponent<T extends { id: number; }>
 			visibility.set(columnKey, newValue);
 			this.columnVisibility.set(visibility);
 
-			// Save to localStorage if key provided
 			const key: string | null =
 				this.storageKey();
 			if (key)
 			{
-				const preferences: Record<string, boolean> = {};
-				visibility.forEach(
-					(value, k) =>
-					{
-						preferences[k] = value;
-					});
-				localStorage.setItem(key, JSON.stringify(preferences));
+				localStorage.setItem(key, DataTableUtilities.serializeColumnPreferences(visibility));
 			}
 		}
 	}

@@ -223,28 +223,8 @@
 		</div>
 	}
 
-	<!-- Table with Loading/Error Overlay (CLS Prevention) -->
+	<!-- Table with Error Overlay (CLS Prevention) -->
 	<div class="table-content-wrapper">
-		<!-- Loading Overlay -->
-		@if (isLoading())
-		{
-			<div
-				class="loading-overlay"
-				role="status"
-				aria-label="Loading table data"
-			>
-				<div class="skeleton-table">
-					@for (row of [1, 2, 3, 4, 5]; track row) {
-					<div class="skeleton-table-row">
-						@for (col of [1, 2, 3, 4]; track col) {
-						<ngx-skeleton-loader [theme]="skeletonTableCell" />
-						}
-					</div>
-					}
-				</div>
-			</div>
-		}
-
 		<!-- Error Overlay -->
 		@if (error() && !isLoading())
 		{
@@ -270,7 +250,7 @@
 				>
 					<table
 						mat-table
-						[dataSource]="data()"
+						[dataSource]="tableDataSource()"
 						matSort
 						(matSortChange)="onSortChange($event)"
 					>
@@ -294,12 +274,19 @@
 									}
 								</th>
 								<td mat-cell *matCellDef="let row">
+									@if (row.id < 0) {
+									<ngx-skeleton-loader
+										[theme]="skeletonCheckbox"
+										[animation]="'progress'"
+									/>
+									} @else {
 									<mat-checkbox
 										[checked]="selection.isSelected(row)"
 										(change)="selection.toggle(row)"
 										[aria-label]="'Select row ' + row.id"
 									>
 									</mat-checkbox>
+									}
 								</td>
 							</ng-container>
 						}
@@ -319,8 +306,12 @@
 									{{ column.label }}
 								</th>
 								<td mat-cell *matCellDef="let row">
-									@if (column.type === "badge")
-									{
+									@if (row.id < 0) {
+									<ngx-skeleton-loader
+										[theme]="skeletonTableCell"
+										[animation]="'progress'"
+									/>
+									} @else if (column.type === "badge") {
 										<mat-chip>
 											{{
 												column.formatter
@@ -367,8 +358,12 @@
 									Actions
 								</th>
 								<td mat-cell *matCellDef="let row">
-									@if (rowActions().length === 1)
-									{
+									@if (row.id < 0) {
+									<ngx-skeleton-loader
+										[theme]="skeletonIconButton"
+										[animation]="'progress'"
+									/>
+									} @else if (rowActions().length === 1) {
 										<!-- Single action: show icon directly -->
 										<button
 											mat-icon-button
@@ -449,6 +444,8 @@
 							mat-header-row
 							*matHeaderRowDef="displayedColumns()"
 						></tr>
+
+						<!-- Data Rows (with inline skeleton support via tableDataSource) -->
 						<tr
 							mat-row
 							*matRowDef="let row; columns: displayedColumns()"

@@ -69,7 +69,18 @@ export class SidebarComponent
 		[
 			{
 				title: "Main",
-				items: [{ label: "Dashboard", icon: "dashboard", route: "/" }],
+				items: [
+					{
+						label: "Dashboard",
+						icon: "dashboard",
+						route: "/"
+					},
+					{
+						label: "Sandbox",
+						icon: "science",
+						route: "/sandbox"
+					}
+				],
 				requiredRoles: [] // Visible to all including guests
 			},
 			{

@@ -83,19 +83,18 @@ describe("GrafanaDashboardEmbedComponent",
 					.toContain("theme=light");
 			});
 
-		it("should have onIframeLoad method that sets loading to false",
+		it("should render iframe with fetchpriority='low' for LCP optimization",
 			() =>
 			{
-				// Manually set loading to true to test the method
-				component.isLoading.set(true);
-				expect(component.isLoading())
-					.toBe(true);
+				const iframe: HTMLIFrameElement =
+					fixture.nativeElement.querySelector("iframe");
 
-				// Simulate iframe load
-				component.onIframeLoad();
-
-				expect(component.isLoading())
-					.toBe(false);
+				expect(iframe)
+					.toBeTruthy();
+				expect(iframe.getAttribute("fetchpriority"))
+					.toBe("low");
+				expect(iframe.getAttribute("loading"))
+					.toBe("lazy");
 			});
 
 		it("should use default title when not provided",
@@ -146,68 +145,6 @@ describe("GrafanaDashboardEmbedComponent",
 
 						expect(iframe.title)
 							.toBe("System Overview dashboard");
-					});
-
-				it("should show skeleton container when loading",
-					() =>
-					{
-						// Set loading state to true
-						component.isLoading.set(true);
-						fixture.detectChanges();
-
-						const loadingContainer: HTMLElement =
-							fixture.nativeElement.querySelector(".skeleton-container");
-
-						expect(loadingContainer)
-							.toBeTruthy();
-						expect(loadingContainer.getAttribute("role"))
-							.toBe("status");
-						expect(loadingContainer.getAttribute("aria-live"))
-							.toBe("polite");
-					});
-
-				it("should have visually hidden loading text for screen readers",
-					() =>
-					{
-						// Set loading state to true
-						component.isLoading.set(true);
-						fixture.detectChanges();
-
-						const loadingText: HTMLElement =
-							fixture.nativeElement.querySelector(
-								".skeleton-container .visually-hidden");
-
-						expect(loadingText)
-							.toBeTruthy();
-						expect(loadingText.textContent)
-							.toContain("Loading");
-					});
-
-				it("should have aria-label on skeleton loader",
-					() =>
-					{
-						// Set loading state to true
-						component.isLoading.set(true);
-						fixture.detectChanges();
-
-						const skeleton: HTMLElement =
-							fixture.nativeElement.querySelector(
-								"ngx-skeleton-loader");
-
-						expect(skeleton.getAttribute("aria-label"))
-							.toBe(
-								"Loading dashboard");
-					});
-
-				it("should hide skeleton after iframe loads",
-					() =>
-					{
-						const skeleton: HTMLElement =
-							fixture.nativeElement.querySelector(".skeleton-container");
-
-						// After load event has fired (in beforeEach), skeleton should be gone
-						expect(skeleton)
-							.toBeFalsy();
 					});
 			});
 	});

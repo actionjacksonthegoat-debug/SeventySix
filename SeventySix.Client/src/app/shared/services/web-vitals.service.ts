@@ -4,6 +4,36 @@ import { LoggerService } from "@shared/services/logger.service";
 import { Metric, onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
 
 /**
+ * LCP entry details for diagnostic logging.
+ */
+interface LcpEntryDetails
+{
+	element: string;
+	url?: string;
+	size: number;
+	loadTime: number;
+}
+
+/**
+ * Extended Metric type with optional entries array for LCP diagnostics.
+ */
+interface MetricWithEntries
+{
+	entries?: PerformanceEntry[];
+}
+
+/**
+ * LargestContentfulPaint entry interface.
+ */
+interface LargestContentfulPaintEntry extends PerformanceEntry
+{
+	element?: Element;
+	url?: string;
+	size: number;
+	loadTime: number;
+}
+
+/**
  * Web Vitals service for Core Web Vitals tracking.
  * Monitors LCP, INP, CLS, FCP, and TTFB metrics.
  * Follows KISS principle - logs metrics to console initially.
@@ -90,12 +120,42 @@ export class WebVitalsService
 		// Only log warning for poor metrics
 		if (rating === "poor")
 		{
-			this.logger.warning(`Poor ${name} detected`,
+			const diagnosticData: Record<string, unknown> =
 				{
 					value: metric.value,
 					threshold: this.getThreshold(name)
-				});
+				};
+
+			// Add LCP element details for diagnosis
+			if (name === "LCP")
+			{
+				const metricEntries: PerformanceEntry[] =
+					(metric as MetricWithEntries).entries ?? [];
+
+				diagnosticData["lcpElements"] =
+					metricEntries.map(
+						(entry: PerformanceEntry) =>
+							this.extractLcpEntryDetails(entry));
+			}
+
+			this.logger.warning(`Poor ${name} detected`, diagnosticData);
 		}
+	}
+
+	/**
+	 * Extracts diagnostic details from an LCP performance entry.
+	 */
+	private extractLcpEntryDetails(entry: PerformanceEntry): LcpEntryDetails
+	{
+		const lcpEntry: LargestContentfulPaintEntry =
+			entry as LargestContentfulPaintEntry;
+
+		return {
+			element: lcpEntry.element?.tagName ?? "unknown",
+			url: lcpEntry.url ?? undefined,
+			size: lcpEntry.size,
+			loadTime: lcpEntry.loadTime
+		};
 	}
 
 	/**

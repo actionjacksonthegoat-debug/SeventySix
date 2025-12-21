@@ -81,6 +81,14 @@ export const SKELETON_TABLE_CELL: SkeletonTheme =
 		margin: "0"
 	};
 
+/** Icon button skeleton (for action columns). */
+export const SKELETON_ICON_BUTTON: SkeletonTheme =
+	{
+		height: "24px",
+		width: "24px",
+		borderRadius: "50%"
+	};
+
 /** Card/panel skeleton. */
 export const SKELETON_CARD: SkeletonTheme =
 	{
