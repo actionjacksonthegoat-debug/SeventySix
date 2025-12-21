@@ -6,6 +6,9 @@
 // Core API service
 export * from "./api.service";
 
+// Routing
+export * from "./selective-preloading.strategy";
+
 // Infrastructure services
 export * from "./auth.service";
 export * from "./base-filter.service";

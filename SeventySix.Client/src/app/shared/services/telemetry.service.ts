@@ -1,28 +1,53 @@
-import { inject, Injectable } from "@angular/core";
+import {
+	inject,
+	Injectable
+} from "@angular/core";
+import { timer } from "rxjs";
 import { environment } from "@environments/environment";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { registerInstrumentations } from "@opentelemetry/instrumentation";
-import { DocumentLoadInstrumentation } from "@opentelemetry/instrumentation-document-load";
-import { FetchInstrumentation } from "@opentelemetry/instrumentation-fetch";
-import { Resource } from "@opentelemetry/resources";
-import {
-	AlwaysOffSampler,
-	AlwaysOnSampler,
-	BatchSpanProcessor,
-	Sampler,
-	TraceIdRatioBasedSampler,
-	WebTracerProvider
-} from "@opentelemetry/sdk-trace-web";
-import {
-	ATTR_SERVICE_NAME,
-	ATTR_SERVICE_VERSION
-} from "@opentelemetry/semantic-conventions";
 import { LoggerService } from "@shared/services/logger.service";
 
 /**
- * OpenTelemetry service for distributed tracing in Angular 20.
+ * Delay before initializing telemetry (milliseconds).
+ * Allows initial render to complete first.
+ */
+const TELEMETRY_INIT_DELAY_MS: number =
+	1000;
+
+/**
+ * Aggregated OpenTelemetry module exports from dynamic imports.
+ * Using unknown for constructor types to allow dynamic imports.
+ */
+interface TelemetryModules
+{
+	OTLPTraceExporter: unknown;
+	registerInstrumentations: unknown;
+	DocumentLoadInstrumentation: unknown;
+	FetchInstrumentation: unknown;
+	Resource: unknown;
+	AlwaysOffSampler: unknown;
+	AlwaysOnSampler: unknown;
+	BatchSpanProcessor: unknown;
+	TraceIdRatioBasedSampler: unknown;
+	WebTracerProvider: unknown;
+	ATTR_SERVICE_NAME: string;
+	ATTR_SERVICE_VERSION: string;
+}
+
+/**
+ * WebTracerProvider instance interface.
+ */
+interface WebTracerProviderInstance
+{
+	addSpanProcessor(processor: unknown): void;
+	register(): void;
+}
+
+/**
+ * OpenTelemetry service for distributed tracing in Angular.
+ * Dynamically imports OpenTelemetry packages to reduce initial bundle.
  * Automatically instruments document load and fetch API calls.
- * Follows KISS principle with minimal configuration.
+ *
+ * Supports: Grafana, Prometheus, Jaeger integration via OTLP export.
  */
 @Injectable(
 	{
@@ -32,16 +57,20 @@ export class TelemetryService
 {
 	private readonly logger: LoggerService =
 		inject(LoggerService);
-	private provider: WebTracerProvider | null = null;
-	private initialized: boolean = false;
+	private initialized: boolean =
+		false;
 
 	/**
 	 * Initializes OpenTelemetry tracing with automatic instrumentation.
 	 * Called by APP_INITIALIZER during application bootstrap.
+	 * Defers actual initialization to not block initial render.
 	 */
 	public initialize(): void
 	{
-		if (!environment.telemetry.enabled) return;
+		if (!environment.telemetry.enabled)
+		{
+			return;
+		}
 
 		if (this.initialized)
 		{
@@ -49,9 +78,33 @@ export class TelemetryService
 			return;
 		}
 
+		// Defer telemetry setup to not block initial render
+		timer(TELEMETRY_INIT_DELAY_MS)
+		.subscribe(
+			() =>
+			{
+				this.initializeTelemetryAsync();
+			});
+	}
+
+	/**
+	 * Performs async telemetry initialization with dynamic imports.
+	 * This moves OpenTelemetry packages out of the initial bundle.
+	 */
+	private async initializeTelemetryAsync(): Promise<void>
+	{
 		try
 		{
-			this.setupTelemetryProvider();
+			const modules: TelemetryModules =
+				await this.loadTelemetryModules();
+
+			const provider: WebTracerProviderInstance =
+				this.createTracerProvider(modules);
+
+			provider.register();
+
+			this.registerInstrumentations(modules);
+
 			this.initialized = true;
 		}
 		catch (error: unknown)
@@ -63,86 +116,138 @@ export class TelemetryService
 	}
 
 	/**
-	 * Sets up the OpenTelemetry provider with instrumentation.
+	 * Loads all OpenTelemetry modules via dynamic imports.
 	 */
-	private setupTelemetryProvider(): void
+	private async loadTelemetryModules(): Promise<TelemetryModules>
 	{
-		// Create resource with service metadata
-		const resource: Resource =
-			new Resource(
+		const [
+			otlpModule,
+			instrModule,
+			docLoadModule,
+			fetchModule,
+			resourceModule,
+			sdkModule,
+			convModule
+		] =
+			await Promise.all(
+				[
+					import("@opentelemetry/exporter-trace-otlp-http"),
+					import("@opentelemetry/instrumentation"),
+					import("@opentelemetry/instrumentation-document-load"),
+					import("@opentelemetry/instrumentation-fetch"),
+					import("@opentelemetry/resources"),
+					import("@opentelemetry/sdk-trace-web"),
+					import("@opentelemetry/semantic-conventions")
+				]);
+
+		return {
+			OTLPTraceExporter: otlpModule.OTLPTraceExporter,
+			registerInstrumentations: instrModule.registerInstrumentations,
+			DocumentLoadInstrumentation: docLoadModule.DocumentLoadInstrumentation,
+			FetchInstrumentation: fetchModule.FetchInstrumentation,
+			Resource: resourceModule.Resource,
+			AlwaysOffSampler: sdkModule.AlwaysOffSampler,
+			AlwaysOnSampler: sdkModule.AlwaysOnSampler,
+			BatchSpanProcessor: sdkModule.BatchSpanProcessor,
+			TraceIdRatioBasedSampler: sdkModule.TraceIdRatioBasedSampler,
+			WebTracerProvider: sdkModule.WebTracerProvider,
+			ATTR_SERVICE_NAME: convModule.ATTR_SERVICE_NAME,
+			ATTR_SERVICE_VERSION: convModule.ATTR_SERVICE_VERSION
+		};
+	}
+
+	/**
+	 * Creates the WebTracerProvider with resource and sampler.
+	 */
+	private createTracerProvider(modules: TelemetryModules): WebTracerProviderInstance
+	{
+		const ResourceConstructor: new (attributes: unknown) => unknown =
+			modules.Resource as new (attributes: unknown) => unknown;
+		const resource: unknown =
+			new ResourceConstructor(
 				{
-					[ATTR_SERVICE_NAME]: environment.telemetry.serviceName,
-					[ATTR_SERVICE_VERSION]: environment.telemetry.serviceVersion
+					[modules.ATTR_SERVICE_NAME]: environment.telemetry.serviceName,
+					[modules.ATTR_SERVICE_VERSION]: environment.telemetry.serviceVersion
 				});
 
-		// Create OTLP HTTP exporter for Jaeger
-		const exporter: OTLPTraceExporter =
-			new OTLPTraceExporter(
+		const ExporterConstructor: new (config: unknown) => unknown =
+			modules.OTLPTraceExporter as new (config: unknown) => unknown;
+		const exporter: unknown =
+			new ExporterConstructor(
 				{
 					url: environment.telemetry.otlpEndpoint
 				});
 
-		// Create tracer provider with batch processor
-		this.provider =
-			new WebTracerProvider(
+		const sampler: unknown =
+			this.createSampler(
+				modules.AlwaysOffSampler as new () => unknown,
+				modules.AlwaysOnSampler as new () => unknown,
+				modules.TraceIdRatioBasedSampler as new (ratio: number) => unknown);
+
+		const ProviderConstructor: new (config: unknown) => WebTracerProviderInstance =
+			modules.WebTracerProvider as new (config: unknown) => WebTracerProviderInstance;
+		const provider: WebTracerProviderInstance =
+			new ProviderConstructor(
 				{
 					resource,
-					sampler: this.createSampler()
+					sampler
 				});
 
-		// Add batch span processor for efficient export
-		this.provider.addSpanProcessor(new BatchSpanProcessor(exporter));
+		const ProcessorConstructor: new (exporter: unknown) => unknown =
+			modules.BatchSpanProcessor as new (exporter: unknown) => unknown;
+		provider.addSpanProcessor(new ProcessorConstructor(exporter));
 
-		// Register provider globally
-		this.provider.register();
+		return provider;
+	}
 
-		// Register automatic instrumentations
-		registerInstrumentations(
+	/**
+	 * Registers automatic instrumentations for document load and fetch.
+	 */
+	private registerInstrumentations(modules: TelemetryModules): void
+	{
+		const registerFunction: (config: unknown) => void =
+			modules.registerInstrumentations as (config: unknown) => void;
+		const DocLoadConstructor: new () => unknown =
+			modules.DocumentLoadInstrumentation as new () => unknown;
+		const FetchConstructor: new (config: unknown) => unknown =
+			modules.FetchInstrumentation as new (config: unknown) => unknown;
+
+		registerFunction(
 			{
 				instrumentations: [
-					new DocumentLoadInstrumentation(), // Page load timing
-					new FetchInstrumentation(
+					new DocLoadConstructor(),
+					new FetchConstructor(
 						{
-							// Propagate trace context to backend
 							propagateTraceHeaderCorsUrls: [
 								new RegExp(environment.apiUrl)
-							]
+							],
+							clearTimingResources: true
 						})
 				]
 			});
 	}
 
 	/**
-	 * Creates a sampler based on configuration.
+	 * Creates the appropriate sampler based on environment configuration.
 	 */
-	private createSampler(): Sampler
+	private createSampler(
+		AlwaysOffSampler: new () => unknown,
+		AlwaysOnSampler: new () => unknown,
+		TraceIdRatioBasedSampler: new (ratio: number) => unknown): unknown
 	{
 		const sampleRate: number =
 			environment.telemetry.sampleRate;
 
-		if (sampleRate >= 1.0)
-		{
-			return new AlwaysOnSampler();
-		}
-		else if (sampleRate <= 0)
+		if (sampleRate <= 0)
 		{
 			return new AlwaysOffSampler();
 		}
-		else
-		{
-			return new TraceIdRatioBasedSampler(sampleRate);
-		}
-	}
 
-	/**
-	 * Shuts down the telemetry provider.
-	 * Called during application cleanup.
-	 */
-	public async shutdown(): Promise<void>
-	{
-		if (this.provider)
+		if (sampleRate >= 1)
 		{
-			await this.provider.shutdown();
+			return new AlwaysOnSampler();
 		}
+
+		return new TraceIdRatioBasedSampler(sampleRate);
 	}
 }

@@ -24,14 +24,18 @@ export const routes: Routes =
 			path: "",
 			loadChildren: () =>
 				import("./domains/home/home.routes").then(
-					(module) => module.HOME_ROUTES)
+					(module) => module.HOME_ROUTES),
+			data: { preload: true }
 		},
 		{
 			path: "sandbox",
 			loadChildren: () =>
 				import("./domains/sandbox/sandbox.routes").then(
 					(module) => module.SANDBOX_ROUTES),
-			data: { breadcrumb: "Sandbox" }
+			data: {
+				preload: true,
+				breadcrumb: "Sandbox"
+			}
 		},
 		// Auth routes (login, change-password - public)
 		{

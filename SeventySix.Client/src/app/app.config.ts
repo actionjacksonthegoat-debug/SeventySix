@@ -13,7 +13,6 @@ import {
 } from "@angular/core";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import {
-	PreloadAllModules,
 	provideRouter,
 	withPreloading
 } from "@angular/router";
@@ -35,6 +34,7 @@ import {
 import {
 	AuthService,
 	ErrorHandlerService,
+	SelectivePreloadingStrategy,
 	TelemetryService,
 	ThemeService,
 	WebVitalsService
@@ -130,7 +130,7 @@ export const appConfig: ApplicationConfig =
 					})),
 			provideBrowserGlobalErrorListeners(),
 			provideZonelessChangeDetection(),
-			provideRouter(routes, withPreloading(PreloadAllModules)),
+			provideRouter(routes, withPreloading(SelectivePreloadingStrategy)),
 			provideAnimations(),
 			// Global error handler
 			{ provide: ErrorHandler, useClass: ErrorHandlerService },

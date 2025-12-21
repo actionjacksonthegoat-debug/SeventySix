@@ -12,7 +12,20 @@
 			"installMode": "prefetch",
 			"updateMode": "prefetch",
 			"resources": {
-				"files": ["/favicon.ico", "/index.html", "/*.css", "/*.js"]
+				"files": [
+					"/favicon.ico",
+					"/index.html",
+					"/main*.js",
+					"/styles*.css"
+				]
+			}
+		},
+		{
+			"name": "lazy-chunks",
+			"installMode": "lazy",
+			"updateMode": "lazy",
+			"resources": {
+				"files": ["/chunk-*.js"]
 			}
 		},
 		{
