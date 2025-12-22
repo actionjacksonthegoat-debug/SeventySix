@@ -31,6 +31,12 @@ describe("HealthApiService",
 		beforeEach(
 			() =>
 			{
+				// Suppress expected console.error output from error handling tests
+				vi.spyOn(console, "error")
+					.mockImplementation(
+						() =>
+						{});
+
 				queryClient =
 					new QueryClient(
 						{
@@ -190,7 +196,6 @@ describe("HealthApiService",
 				it("should handle HTTP errors",
 					async () =>
 					{
-						vi.spyOn(console, "error"); // Suppress expected error logs
 						const query: ReturnType<typeof service.getHealth> =
 							TestBed.runInInjectionContext(
 								() => service.getHealth());
@@ -283,7 +288,6 @@ describe("HealthApiService",
 				it("should handle HTTP errors",
 					async () =>
 					{
-						vi.spyOn(console, "error"); // Suppress expected error logs
 						const query: ReturnType<typeof service.getDatabaseHealth> =
 							TestBed.runInInjectionContext(
 								() => service.getDatabaseHealth());
@@ -416,7 +420,6 @@ describe("HealthApiService",
 				it("should handle HTTP errors",
 					async () =>
 					{
-						vi.spyOn(console, "error"); // Suppress expected error logs
 						const query: ReturnType<typeof service.getExternalApiHealth> =
 							TestBed.runInInjectionContext(
 								() => service.getExternalApiHealth());

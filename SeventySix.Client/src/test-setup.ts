@@ -24,6 +24,10 @@ if (typeof window !== "undefined")
 			(): void =>
 			{};
 	}
+
+	// Mock window.open to prevent navigation during tests
+	window.open =
+		vi.fn();
 }
 
 setupTestBed(

@@ -72,6 +72,26 @@ export default defineConfig(({ mode }) => {
 		globals: true,
 		setupFiles: ["src/test-setup.ts"],
 		environment: "happy-dom",
+		environmentOptions:
+		{
+			happyDOM:
+			{
+				// Disable Happy-DOM navigation/fetch for iframes to prevent network errors
+				settings:
+				{
+					navigation:
+					{
+						disableMainFrameNavigation: true,
+						disableChildFrameNavigation: true,
+						disableFallbackToSetURL: true,
+					},
+					fetch:
+					{
+						disableSameOriginPolicy: true,
+					},
+				},
+			},
+		},
 		include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
 		exclude: [
 			"e2e/**/*",
@@ -80,6 +100,21 @@ export default defineConfig(({ mode }) => {
 			"src/environments/environment.test.ts",
 		],
 		reporters: ["default"],
+		onConsoleLog(log: string): boolean | void
+		{
+			// Suppress IFrame Navigation Errors.
+			const suppressPatterns: string[] =
+				[
+					"localhost:3000",
+					"localhost:16686"
+				];
+
+			if (suppressPatterns.some(
+				(pattern: string) => log.includes(pattern)))
+			{
+				return false;
+			}
+		},
 		coverage: {
 			provider: "v8",
 			reporter: [

@@ -22,8 +22,11 @@ describe("ApiService",
 		beforeEach(
 			() =>
 			{
-			// Suppress console.error during tests to avoid cluttering test output
-				vi.spyOn(console, "error");
+				// Suppress expected console.error output from error handling tests
+				vi.spyOn(console, "error")
+					.mockImplementation(
+						() =>
+						{});
 
 				service =
 					setupSimpleServiceTest(ApiService,

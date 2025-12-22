@@ -1,4 +1,8 @@
+import { describe, it } from "vitest";
 import { environment } from "@environments/environment";
+
+/** Type for test implementation callback compatible with Vitest */
+type TestCallback = () => void | Promise<void>;
 
 /**
  * Helper function to conditionally run integration tests based on environment configuration
@@ -35,7 +39,7 @@ export function describeIntegration(
 	else
 	{
 		// Skip entire suite when integration tests are disabled
-		xdescribe(`[SKIPPED] ${description}`, specDefinitions);
+		describe.skip(`[SKIPPED] ${description}`, specDefinitions);
 	}
 }
 
@@ -48,7 +52,7 @@ export function describeIntegration(
  */
 export function itIntegration(
 	expectation: string,
-	assertion?: jasmine.ImplementationCallback,
+	assertion?: TestCallback,
 	timeout?: number): void
 {
 	if (environment.testing.runIntegrationTests)
@@ -58,7 +62,7 @@ export function itIntegration(
 	else
 	{
 		// Skip individual test when integration tests are disabled
-		xit(`[SKIPPED] ${expectation}`, assertion, timeout);
+		it.skip(`[SKIPPED] ${expectation}`, assertion, timeout);
 	}
 }
 
@@ -74,11 +78,11 @@ export function fdescribeIntegration(
 {
 	if (environment.testing.runIntegrationTests)
 	{
-		fdescribe(description, specDefinitions);
+		describe.only(description, specDefinitions);
 	}
 	else
 	{
-		xdescribe(`[SKIPPED] ${description}`, specDefinitions);
+		describe.skip(`[SKIPPED] ${description}`, specDefinitions);
 	}
 }
 
@@ -91,16 +95,16 @@ export function fdescribeIntegration(
  */
 export function fitIntegration(
 	expectation: string,
-	assertion?: jasmine.ImplementationCallback,
+	assertion?: TestCallback,
 	timeout?: number): void
 {
 	if (environment.testing.runIntegrationTests)
 	{
-		fit(expectation, assertion, timeout);
+		it.only(expectation, assertion, timeout);
 	}
 	else
 	{
-		xit(`[SKIPPED] ${expectation}`, assertion, timeout);
+		it.skip(`[SKIPPED] ${expectation}`, assertion, timeout);
 	}
 }
 
