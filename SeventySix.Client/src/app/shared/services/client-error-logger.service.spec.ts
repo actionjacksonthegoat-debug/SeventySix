@@ -4,25 +4,34 @@ import { TestBed } from "@angular/core/testing";
 import { LogLevel } from "@shared/constants";
 import { CreateLogRequest } from "@shared/models";
 import { createMockErrorQueueService } from "@shared/testing";
-import { ClientErrorLoggerService } from "./client-error-logger.service";
-import { ErrorQueueService } from "./error-queue.service";
+import { vi } from "vitest";
+import { ClientErrorLoggerService } from "@shared/services/client-error-logger.service";
+import { ErrorQueueService } from "@shared/services/error-queue.service";
+
+interface MockErrorQueueService
+{
+	enqueue: ReturnType<typeof vi.fn>;
+}
 
 describe("ClientErrorLoggerService",
 	() =>
 	{
 		let service: ClientErrorLoggerService;
-		let errorQueueService: jasmine.SpyObj<ErrorQueueService>;
-		let consoleSpy: jasmine.Spy;
+		let errorQueueService: MockErrorQueueService;
+		let consoleSpy: ReturnType<typeof vi.spyOn>;
 
 		beforeEach(
 			() =>
 			{
 			// Suppress console.error output during tests while still allowing verification
 				consoleSpy =
-					spyOn(console, "error");
+					vi.spyOn(console, "error")
+						.mockImplementation(
+							() =>
+							{});
 
 				errorQueueService =
-					createMockErrorQueueService();
+					createMockErrorQueueService() as unknown as MockErrorQueueService;
 
 				TestBed.configureTestingModule(
 					{
@@ -55,12 +64,12 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										logLevel: "Error",
 										message: "[Client] - Something went wrong",
 										exceptionMessage: "Test error",
-										stackTrace: jasmine.stringContaining("Error: Test error")
+										stackTrace: expect.stringContaining("Error: Test error")
 									}));
 					});
 
@@ -72,7 +81,7 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										logLevel: "Error"
 									}));
@@ -87,7 +96,7 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										logLevel: "Warning"
 									}));
@@ -105,9 +114,9 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
-										sourceContext: jasmine.stringContaining("UserComponent")
+										sourceContext: expect.stringContaining("UserComponent")
 									}));
 					});
 
@@ -119,9 +128,9 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
-										userAgent: jasmine.any(String)
+										userAgent: expect.any(String)
 									}));
 					});
 
@@ -136,13 +145,10 @@ describe("ClientErrorLoggerService",
 
 						const afterTime: Date =
 							new Date();
-						const call: jasmine.CallInfo<(error: CreateLogRequest) => void> =
-							errorQueueService
-								.enqueue
-								.calls
-								.mostRecent();
+						const lastCall: unknown[] | undefined =
+							errorQueueService.enqueue.mock.lastCall;
 						const timestamp: Date =
-							new Date(call.args[0].clientTimestamp!);
+							new Date((lastCall?.[0] as CreateLogRequest).clientTimestamp!);
 
 						expect(timestamp.getTime())
 							.toBeGreaterThanOrEqual(
@@ -176,7 +182,7 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										requestUrl: "https://example.com/api/users/123",
 										statusCode: 404
@@ -232,7 +238,7 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										statusCode: 500
 									}));
@@ -258,7 +264,7 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										statusCode: 0,
 										message: "[Client] - Network error"
@@ -284,9 +290,9 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
-										requestUrl: jasmine.any(String)
+										requestUrl: expect.any(String)
 									}));
 					});
 
@@ -305,7 +311,7 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										additionalContext: {
 											userId: 123,
@@ -325,7 +331,7 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										message: "[Client] - Simple error",
 										stackTrace: undefined
@@ -343,7 +349,7 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										logLevel: "Warning",
 										message: "[Client] - This is a warning"
@@ -360,7 +366,7 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										logLevel: "Warning",
 										message: "[Client] - Warning message",
@@ -379,7 +385,7 @@ describe("ClientErrorLoggerService",
 
 						expect(errorQueueService.enqueue)
 							.toHaveBeenCalledWith(
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										logLevel: "Information",
 										message: "[Client] - This is info"
@@ -400,12 +406,9 @@ describe("ClientErrorLoggerService",
 						service.logError(
 							{ message: "Error", error });
 
-						const call: jasmine.CallInfo<(log: CreateLogRequest) => void> =
-							errorQueueService
-								.enqueue
-								.calls
-								.mostRecent();
-						expect(call.args[0].sourceContext)
+						const lastCall: unknown[] | undefined =
+							errorQueueService.enqueue.mock.lastCall;
+						expect((lastCall?.[0] as CreateLogRequest).sourceContext)
 							.toContain("UserComponent");
 					});
 
@@ -419,12 +422,9 @@ describe("ClientErrorLoggerService",
 						service.logError(
 							{ message: "Error", error });
 
-						const call: jasmine.CallInfo<(log: CreateLogRequest) => void> =
-							errorQueueService
-								.enqueue
-								.calls
-								.mostRecent();
-						expect(call.args[0].sourceContext)
+						const lastCall: unknown[] | undefined =
+							errorQueueService.enqueue.mock.lastCall;
+						expect((lastCall?.[0] as CreateLogRequest).sourceContext)
 							.toContain("UserService");
 					});
 
@@ -449,7 +449,11 @@ describe("ClientErrorLoggerService",
 				it("should never throw even if enqueue fails",
 					() =>
 					{
-						errorQueueService.enqueue.and.throwError("Queue error");
+						errorQueueService.enqueue.mockImplementation(
+							() =>
+							{
+								throw new Error("Queue error");
+							});
 
 						expect(
 							() =>
@@ -464,7 +468,11 @@ describe("ClientErrorLoggerService",
 				it("should fallback to console.error when enqueue fails",
 					() =>
 					{
-						errorQueueService.enqueue.and.throwError("Queue error");
+						errorQueueService.enqueue.mockImplementation(
+							() =>
+							{
+								throw new Error("Queue error");
+							});
 
 						service.logError(
 							{ message: "Test error" });

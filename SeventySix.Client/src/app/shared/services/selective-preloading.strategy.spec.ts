@@ -1,9 +1,13 @@
 import { Route } from "@angular/router";
 import {
 	firstValueFrom,
+	Observable,
 	of
 } from "rxjs";
+import { Mock, vi } from "vitest";
 import { SelectivePreloadingStrategy } from "./selective-preloading.strategy";
+
+type LoadFn = () => Observable<unknown>;
 
 describe("SelectivePreloadingStrategy",
 	() =>
@@ -23,8 +27,8 @@ describe("SelectivePreloadingStrategy",
 				// Arrange
 				const route: Route =
 					{ data: { preload: true } };
-				const loadFunction: jasmine.Spy =
-					jasmine.createSpy("loadFunction").and.returnValue(of({}));
+				const loadFunction: Mock<LoadFn> =
+					vi.fn(() => of({}));
 
 				// Act
 				const result: unknown =
@@ -46,8 +50,8 @@ describe("SelectivePreloadingStrategy",
 				// Arrange
 				const route: Route =
 					{ data: { breadcrumb: "Test" } };
-				const loadFunction: jasmine.Spy =
-					jasmine.createSpy("loadFunction");
+				const loadFunction: Mock<LoadFn> =
+					vi.fn();
 
 				// Act
 				const result: unknown =
@@ -68,8 +72,8 @@ describe("SelectivePreloadingStrategy",
 				// Arrange
 				const route: Route =
 					{ data: { preload: false } };
-				const loadFunction: jasmine.Spy =
-					jasmine.createSpy("loadFunction");
+				const loadFunction: Mock<LoadFn> =
+					vi.fn();
 
 				// Act
 				const result: unknown =

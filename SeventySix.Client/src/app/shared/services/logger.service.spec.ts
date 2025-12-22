@@ -6,6 +6,7 @@ import {
 } from "@angular/common/http/testing";
 import { TestBed } from "@angular/core/testing";
 import { setupSimpleServiceTest } from "@shared/testing";
+import { vi } from "vitest";
 import { LoggerService } from "./logger.service";
 
 describe("LoggerService",
@@ -13,10 +14,15 @@ describe("LoggerService",
 	{
 		let service: LoggerService;
 		let httpMock: HttpTestingController;
+		let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+		let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
+		let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
 		beforeEach(
 			() =>
 			{
+				vi.clearAllMocks();
+
 				service =
 					setupSimpleServiceTest(
 						LoggerService,
@@ -25,10 +31,21 @@ describe("LoggerService",
 				httpMock =
 					TestBed.inject(HttpTestingController);
 
-				// Mock console methods
-				spyOn(console, "log");
-				spyOn(console, "warn");
-				spyOn(console, "error");
+				consoleLogSpy =
+					vi.spyOn(console, "log")
+						.mockImplementation(
+							() =>
+							{});
+				consoleWarnSpy =
+					vi.spyOn(console, "warn")
+						.mockImplementation(
+							() =>
+							{});
+				consoleErrorSpy =
+					vi.spyOn(console, "error")
+						.mockImplementation(
+							() =>
+							{});
 			});
 
 		afterEach(
@@ -47,9 +64,9 @@ describe("LoggerService",
 
 						expect(console.log)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> =
-							(console.log as jasmine.Spy).calls.mostRecent();
-						expect(call.args[1])
+						const lastCall: unknown[] | undefined =
+							consoleLogSpy.mock.lastCall;
+						expect(lastCall?.[1])
 							.toBe("Debug message");
 					});
 
@@ -63,9 +80,9 @@ describe("LoggerService",
 
 						expect(console.log)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> =
-							(console.log as jasmine.Spy).calls.mostRecent();
-						expect(call.args[2])
+						const lastCall: unknown[] | undefined =
+							consoleLogSpy.mock.lastCall;
+						expect(lastCall?.[2])
 							.toBe(context);
 					});
 			});
@@ -80,9 +97,9 @@ describe("LoggerService",
 
 						expect(console.log)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> | undefined =
-							(console.log as jasmine.Spy).calls.mostRecent();
-						expect(call?.args[1])
+						const lastCall: unknown[] | undefined =
+							consoleLogSpy.mock.lastCall;
+						expect(lastCall?.[1])
 							.toBe("Info message");
 					});
 
@@ -96,9 +113,9 @@ describe("LoggerService",
 
 						expect(console.log)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> | undefined =
-							(console.log as jasmine.Spy).calls.mostRecent();
-						expect(call?.args[2])
+						const lastCall: unknown[] | undefined =
+							consoleLogSpy.mock.lastCall;
+						expect(lastCall?.[2])
 							.toBe(context);
 					});
 			});
@@ -113,9 +130,9 @@ describe("LoggerService",
 
 						expect(console.warn)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> =
-							(console.warn as jasmine.Spy).calls.mostRecent();
-						expect(call.args[1])
+						const lastCall: unknown[] | undefined =
+							consoleWarnSpy.mock.lastCall;
+						expect(lastCall?.[1])
 							.toBe("Warning message");
 					});
 
@@ -129,9 +146,9 @@ describe("LoggerService",
 
 						expect(console.warn)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> =
-							(console.warn as jasmine.Spy).calls.mostRecent();
-						expect(call.args[2])
+						const lastCall: unknown[] | undefined =
+							consoleWarnSpy.mock.lastCall;
+						expect(lastCall?.[2])
 							.toBe(context);
 					});
 			});
@@ -146,9 +163,9 @@ describe("LoggerService",
 
 						expect(console.error)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> | undefined =
-							(console.error as jasmine.Spy).calls.mostRecent();
-						expect(call?.args[1])
+						const lastCall: unknown[] | undefined =
+							consoleErrorSpy.mock.lastCall;
+						expect(lastCall?.[1])
 							.toBe("Error message");
 					});
 
@@ -162,9 +179,9 @@ describe("LoggerService",
 
 						expect(console.error)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> =
-							(console.error as jasmine.Spy).calls.mostRecent();
-						expect(call.args[2])
+						const lastCall: unknown[] | undefined =
+							consoleErrorSpy.mock.lastCall;
+						expect(lastCall?.[2])
 							.toBe(error);
 					});
 
@@ -180,11 +197,11 @@ describe("LoggerService",
 
 						expect(console.error)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> | undefined =
-							(console.error as jasmine.Spy).calls.mostRecent();
-						expect(call?.args[2])
+						const lastCall: unknown[] | undefined =
+							consoleErrorSpy.mock.lastCall;
+						expect(lastCall?.[2])
 							.toBe(context);
-						expect(call?.args[3])
+						expect(lastCall?.[3])
 							.toBe(error);
 					});
 			});
@@ -199,9 +216,9 @@ describe("LoggerService",
 
 						expect(console.error)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> | undefined =
-							(console.error as jasmine.Spy).calls.mostRecent();
-						expect(call?.args[1])
+						const lastCall: unknown[] | undefined =
+							consoleErrorSpy.mock.lastCall;
+						expect(lastCall?.[1])
 							.toBe("Critical error");
 					});
 
@@ -215,9 +232,9 @@ describe("LoggerService",
 
 						expect(console.error)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> | undefined =
-							(console.error as jasmine.Spy).calls.mostRecent();
-						expect(call?.args[2])
+						const lastCall: unknown[] | undefined =
+							consoleErrorSpy.mock.lastCall;
+						expect(lastCall?.[2])
 							.toBe(error);
 					});
 			});
@@ -269,10 +286,10 @@ describe("LoggerService",
 					{
 						service.info("Test message");
 
-						const call: jasmine.CallInfo<jasmine.Func> =
-							(console.log as jasmine.Spy).calls.mostRecent();
+						const lastCall: unknown[] | undefined =
+							consoleLogSpy.mock.lastCall;
 						const prefix: string =
-							call.args[0] as string;
+							lastCall?.[0] as string;
 						expect(prefix)
 							.toContain("[Information]");
 						expect(prefix)
@@ -298,23 +315,23 @@ describe("LoggerService",
 
 						expect(console.error)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> =
-							(console.error as jasmine.Spy).calls.mostRecent();
+						const lastCall: unknown[] | undefined =
+							consoleErrorSpy.mock.lastCall;
 
 						// Verify prefix includes level
-						expect(call.args[0])
+						expect(lastCall?.[0])
 							.toContain("[Error]");
 
 						// Verify message
-						expect(call.args[1])
+						expect(lastCall?.[1])
 							.toBe("Login error");
 
 						// Verify context
-						expect(call.args[2])
+						expect(lastCall?.[2])
 							.toBe(context);
 
 						// Verify error
-						expect(call.args[3])
+						expect(lastCall?.[3])
 							.toBe(error);
 					});
 			});
@@ -335,9 +352,9 @@ describe("LoggerService",
 
 						expect(console.log)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> | undefined =
-							(console.log as jasmine.Spy).calls.mostRecent();
-						expect(call?.args[1])
+						const lastCall: unknown[] | undefined =
+							consoleLogSpy.mock.lastCall;
+						expect(lastCall?.[1])
 							.toBe("Force debug message");
 					});
 
@@ -354,9 +371,9 @@ describe("LoggerService",
 
 						expect(console.log)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> | undefined =
-							(console.log as jasmine.Spy).calls.mostRecent();
-						expect(call?.args[1])
+						const lastCall: unknown[] | undefined =
+							consoleLogSpy.mock.lastCall;
+						expect(lastCall?.[1])
 							.toBe("Force info message");
 					});
 
@@ -373,9 +390,9 @@ describe("LoggerService",
 
 						expect(console.warn)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> =
-							(console.warn as jasmine.Spy).calls.mostRecent();
-						expect(call.args[1])
+						const lastCall: unknown[] | undefined =
+							consoleWarnSpy.mock.lastCall;
+						expect(lastCall?.[1])
 							.toBe("Force warning message");
 					});
 
@@ -395,11 +412,11 @@ describe("LoggerService",
 
 						expect(console.error)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> | undefined =
-							(console.error as jasmine.Spy).calls.mostRecent();
-						expect(call?.args[1])
+						const lastCall: unknown[] | undefined =
+							consoleErrorSpy.mock.lastCall;
+						expect(lastCall?.[1])
 							.toBe("Force error message");
-						expect(call?.args[2])
+						expect(lastCall?.[2])
 							.toBe(error);
 					});
 
@@ -419,9 +436,9 @@ describe("LoggerService",
 
 						expect(console.log)
 							.toHaveBeenCalled();
-						const call: jasmine.CallInfo<jasmine.Func> | undefined =
-							(console.log as jasmine.Spy).calls.mostRecent();
-						expect(call?.args[2])
+						const lastCall: unknown[] | undefined =
+							consoleLogSpy.mock.lastCall;
+						expect(lastCall?.[2])
 							.toBe(context);
 					});
 			});

@@ -8,12 +8,22 @@ import {
 	MockLayoutService
 } from "@shared/testing";
 import { of } from "rxjs";
+import { vi } from "vitest";
 import { App } from "./app";
+
+interface MockActivatedRouteWithRoot
+{
+	params: ReturnType<typeof of>;
+	root: {
+		firstChild: null;
+		snapshot: { data: Record<string, unknown>; };
+	};
+}
 
 describe("App",
 	() =>
 	{
-		let mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
+		let mockActivatedRoute: MockActivatedRouteWithRoot;
 		let mockLayoutService: MockLayoutService;
 		let mockAuthService: ReturnType<typeof createMockAuthService>;
 
@@ -21,18 +31,16 @@ describe("App",
 			async () =>
 			{
 				mockActivatedRoute =
-					jasmine.createSpyObj("ActivatedRoute", [],
-						{
-							params: of({}),
-							root: {
-								firstChild: null,
-								snapshot: { data: {} }
-							}
-						});
-
+				{
+					params: of({}),
+					root: {
+						firstChild: null,
+						snapshot: { data: {} }
+					}
+				};
 				mockLayoutService =
 					createMockLayoutService();
-				mockLayoutService.sidebarMode.and.returnValue("over");
+				mockLayoutService.sidebarMode.mockReturnValue("over");
 				mockAuthService =
 					createMockAuthService();
 
@@ -91,8 +99,8 @@ describe("App",
 							fixture.componentInstance;
 
 						// Setup: overlay mode, sidebar expanded
-						mockLayoutService.sidebarMode.and.returnValue("over");
-						mockLayoutService.sidebarExpanded.and.returnValue(true);
+						mockLayoutService.sidebarMode.mockReturnValue("over");
+						mockLayoutService.sidebarExpanded.mockReturnValue(true);
 
 						app.onSwipeLeft();
 
@@ -109,8 +117,8 @@ describe("App",
 							fixture.componentInstance;
 
 						// Setup: overlay mode, sidebar collapsed
-						mockLayoutService.sidebarMode.and.returnValue("over");
-						mockLayoutService.sidebarExpanded.and.returnValue(false);
+						mockLayoutService.sidebarMode.mockReturnValue("over");
+						mockLayoutService.sidebarExpanded.mockReturnValue(false);
 
 						app.onSwipeLeft();
 
@@ -126,8 +134,8 @@ describe("App",
 							fixture.componentInstance;
 
 						// Setup: side mode (desktop), sidebar expanded
-						mockLayoutService.sidebarMode.and.returnValue("side");
-						mockLayoutService.sidebarExpanded.and.returnValue(true);
+						mockLayoutService.sidebarMode.mockReturnValue("side");
+						mockLayoutService.sidebarExpanded.mockReturnValue(true);
 
 						app.onSwipeLeft();
 
@@ -147,8 +155,8 @@ describe("App",
 							fixture.componentInstance;
 
 						// Setup: overlay mode, sidebar collapsed
-						mockLayoutService.sidebarMode.and.returnValue("over");
-						mockLayoutService.sidebarExpanded.and.returnValue(false);
+						mockLayoutService.sidebarMode.mockReturnValue("over");
+						mockLayoutService.sidebarExpanded.mockReturnValue(false);
 
 						app.onSwipeRight();
 
@@ -165,8 +173,8 @@ describe("App",
 							fixture.componentInstance;
 
 						// Setup: overlay mode, sidebar already expanded
-						mockLayoutService.sidebarMode.and.returnValue("over");
-						mockLayoutService.sidebarExpanded.and.returnValue(true);
+						mockLayoutService.sidebarMode.mockReturnValue("over");
+						mockLayoutService.sidebarExpanded.mockReturnValue(true);
 
 						app.onSwipeRight();
 
@@ -182,8 +190,8 @@ describe("App",
 							fixture.componentInstance;
 
 						// Setup: side mode (desktop), sidebar collapsed
-						mockLayoutService.sidebarMode.and.returnValue("side");
-						mockLayoutService.sidebarExpanded.and.returnValue(false);
+						mockLayoutService.sidebarMode.mockReturnValue("side");
+						mockLayoutService.sidebarExpanded.mockReturnValue(false);
 
 						app.onSwipeRight();
 

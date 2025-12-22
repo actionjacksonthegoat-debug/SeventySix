@@ -14,14 +14,16 @@ describe("ApiService",
 	{
 		let service: ApiService;
 		let httpMock: HttpTestingController;
-		const baseUrl: string =
-			environment.apiUrl;
+
+		// baseUrl is defined as a getter to ensure environment is resolved after module load
+		const getBaseUrl: () => string =
+			() => environment.apiUrl;
 
 		beforeEach(
 			() =>
 			{
 			// Suppress console.error during tests to avoid cluttering test output
-				spyOn(console, "error");
+				vi.spyOn(console, "error");
 
 				service =
 					setupSimpleServiceTest(ApiService,
@@ -70,7 +72,7 @@ describe("ApiService",
 
 						const req: import("@angular/common/http/testing").TestRequest =
 							httpMock.expectOne(
-								`${baseUrl}/${endpoint}`);
+								`${getBaseUrl()}/${endpoint}`);
 
 						expect(req.request.method)
 							.toBe("GET");
@@ -101,7 +103,7 @@ describe("ApiService",
 
 						const req: import("@angular/common/http/testing").TestRequest =
 							httpMock.expectOne(
-								`${baseUrl}/${endpoint}?key=value`);
+								`${getBaseUrl()}/${endpoint}?key=value`);
 
 						expect(req.request.method)
 							.toBe("GET");
@@ -135,7 +137,7 @@ describe("ApiService",
 								});
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						expect(request.request.method)
 							.toBe("POST");
@@ -168,7 +170,7 @@ describe("ApiService",
 								});
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						expect(request.request.method)
 							.toBe("PUT");
@@ -200,7 +202,7 @@ describe("ApiService",
 								});
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						expect(request.request.method)
 							.toBe("PATCH");
@@ -234,7 +236,7 @@ describe("ApiService",
 								});
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						expect(request.request.method)
 							.toBe("DELETE");
@@ -259,7 +261,7 @@ describe("ApiService",
 							.subscribe();
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						expect(request.request.headers.get("Content-Type"))
 							.toBe(
@@ -286,7 +288,7 @@ describe("ApiService",
 							.subscribe();
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						expect(request.request.headers.get("Authorization"))
 							.toBe(
@@ -317,7 +319,7 @@ describe("ApiService",
 							.subscribe(
 								{
 									next: () =>
-										fail("should have failed with error"),
+										expect.fail("should have failed with error"),
 									error: (error: Error) =>
 									{
 										expect(error.message)
@@ -328,7 +330,7 @@ describe("ApiService",
 								});
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						request.error(errorEvent);
 					});
@@ -345,7 +347,7 @@ describe("ApiService",
 							.subscribe(
 								{
 									next: () =>
-										fail("should have failed with error"),
+										expect.fail("should have failed with error"),
 									error: (error: Error) =>
 									{
 										expect(error.message)
@@ -356,7 +358,7 @@ describe("ApiService",
 								});
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						request.flush("Not Found",
 							{
@@ -377,7 +379,7 @@ describe("ApiService",
 							.subscribe(
 								{
 									next: () =>
-										fail("should have failed with error"),
+										expect.fail("should have failed with error"),
 									error: (error: Error) =>
 									{
 										expect(error.message)
@@ -388,7 +390,7 @@ describe("ApiService",
 								});
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						request.flush("Internal Server Error",
 							{
@@ -409,7 +411,7 @@ describe("ApiService",
 							.subscribe(
 								{
 									next: () =>
-										fail("should have failed with error"),
+										expect.fail("should have failed with error"),
 									error: (error: Error) =>
 									{
 										expect(error.message)
@@ -418,7 +420,7 @@ describe("ApiService",
 								});
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						request.flush("Unauthorized",
 							{
@@ -439,7 +441,7 @@ describe("ApiService",
 							.subscribe(
 								{
 									next: () =>
-										fail("should have failed with error"),
+										expect.fail("should have failed with error"),
 									error: (error: Error) =>
 									{
 										expect(error.message)
@@ -448,7 +450,7 @@ describe("ApiService",
 								});
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						request.flush("Bad Request",
 							{
@@ -467,7 +469,7 @@ describe("ApiService",
 							.subscribe(
 								{
 									next: () =>
-										fail("should have failed with error"),
+										expect.fail("should have failed with error"),
 									error: (error: Error) =>
 									{
 										expect(error.message)
@@ -476,7 +478,7 @@ describe("ApiService",
 								});
 
 						const request: TestRequest =
-							httpMock.expectOne(`${baseUrl}/${endpoint}`);
+							httpMock.expectOne(`${getBaseUrl()}/${endpoint}`);
 
 						request.flush("Forbidden",
 							{ status: 403, statusText: "Forbidden" });

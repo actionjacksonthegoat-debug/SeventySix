@@ -8,23 +8,29 @@ import {
 } from "@angular/router";
 import { CanActivateFn } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
+import { vi, type Mock } from "vitest";
 import { roleGuard } from "./role.guard";
+
+interface MockAuthService
+{
+	isAuthenticated: Mock;
+	hasAnyRole: Mock;
+}
 
 /** Role Guard Tests - DRY factory pattern */
 describe("roleGuard",
 	() =>
 	{
-		let authService: jasmine.SpyObj<AuthService>;
+		let authService: MockAuthService;
 
 		beforeEach(
 			() =>
 			{
 				authService =
-					jasmine.createSpyObj("AuthService",
-						[
-							"isAuthenticated",
-							"hasAnyRole"
-						]);
+					{
+						isAuthenticated: vi.fn(),
+						hasAnyRole: vi.fn()
+					};
 
 				TestBed.configureTestingModule(
 					{
@@ -42,7 +48,7 @@ describe("roleGuard",
 				it("should allow authenticated user",
 					() =>
 					{
-						authService.isAuthenticated.and.returnValue(true);
+						authService.isAuthenticated.mockReturnValue(true);
 
 						const guard: CanActivateFn =
 							roleGuard();
@@ -54,13 +60,13 @@ describe("roleGuard",
 										{ url: "/protected" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-							.toBeTrue();
+							.toBe(true);
 					});
 
 				it("should redirect unauthenticated user to login",
 					() =>
 					{
-						authService.isAuthenticated.and.returnValue(false);
+						authService.isAuthenticated.mockReturnValue(false);
 
 						const guard: CanActivateFn =
 							roleGuard();
@@ -86,8 +92,8 @@ describe("roleGuard",
 				it("should allow admin user",
 					() =>
 					{
-						authService.isAuthenticated.and.returnValue(true);
-						authService.hasAnyRole.and.returnValue(true);
+						authService.isAuthenticated.mockReturnValue(true);
+						authService.hasAnyRole.mockReturnValue(true);
 
 						const guard: CanActivateFn =
 							roleGuard("Admin");
@@ -99,7 +105,7 @@ describe("roleGuard",
 										{ url: "/admin" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-							.toBeTrue();
+							.toBe(true);
 						expect(authService.hasAnyRole)
 							.toHaveBeenCalledWith("Admin");
 					});
@@ -107,8 +113,8 @@ describe("roleGuard",
 				it("should redirect non-admin to home",
 					() =>
 					{
-						authService.isAuthenticated.and.returnValue(true);
-						authService.hasAnyRole.and.returnValue(false);
+						authService.isAuthenticated.mockReturnValue(true);
+						authService.hasAnyRole.mockReturnValue(false);
 
 						const guard: CanActivateFn =
 							roleGuard("Admin");
@@ -132,8 +138,8 @@ describe("roleGuard",
 				it("should allow user with Developer role only",
 					() =>
 					{
-						authService.isAuthenticated.and.returnValue(true);
-						authService.hasAnyRole.and.returnValue(true);
+						authService.isAuthenticated.mockReturnValue(true);
+						authService.hasAnyRole.mockReturnValue(true);
 
 						const guard: CanActivateFn =
 							roleGuard("Developer", "Admin");
@@ -145,14 +151,14 @@ describe("roleGuard",
 										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-							.toBeTrue();
+							.toBe(true);
 					});
 
 				it("should allow user with Admin role only",
 					() =>
 					{
-						authService.isAuthenticated.and.returnValue(true);
-						authService.hasAnyRole.and.returnValue(true);
+						authService.isAuthenticated.mockReturnValue(true);
+						authService.hasAnyRole.mockReturnValue(true);
 
 						const guard: CanActivateFn =
 							roleGuard("Developer", "Admin");
@@ -164,14 +170,14 @@ describe("roleGuard",
 										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-							.toBeTrue();
+							.toBe(true);
 					});
 
 				it("should allow user with both roles",
 					() =>
 					{
-						authService.isAuthenticated.and.returnValue(true);
-						authService.hasAnyRole.and.returnValue(true);
+						authService.isAuthenticated.mockReturnValue(true);
+						authService.hasAnyRole.mockReturnValue(true);
 
 						const guard: CanActivateFn =
 							roleGuard("Developer", "Admin");
@@ -183,14 +189,14 @@ describe("roleGuard",
 										{ url: "/style-guide" } as RouterStateSnapshot)) as boolean | UrlTree;
 
 						expect(result)
-							.toBeTrue();
+							.toBe(true);
 					});
 
 				it("should redirect user with neither role",
 					() =>
 					{
-						authService.isAuthenticated.and.returnValue(true);
-						authService.hasAnyRole.and.returnValue(false);
+						authService.isAuthenticated.mockReturnValue(true);
+						authService.hasAnyRole.mockReturnValue(false);
 
 						const guard: CanActivateFn =
 							roleGuard("Developer", "Admin");
@@ -214,7 +220,7 @@ describe("roleGuard",
 				it("should redirect to login even when checking roles",
 					() =>
 					{
-						authService.isAuthenticated.and.returnValue(false);
+						authService.isAuthenticated.mockReturnValue(false);
 
 						const guard: CanActivateFn =
 							roleGuard("Admin");

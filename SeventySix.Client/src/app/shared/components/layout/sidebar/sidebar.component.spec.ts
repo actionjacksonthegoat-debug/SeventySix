@@ -78,7 +78,7 @@ describe("SidebarComponent",
 		it("should toggle sidebar on mobile when nav item clicked",
 			() =>
 			{
-				mockLayoutService.sidebarMode.and.returnValue("over");
+				mockLayoutService.sidebarMode.mockReturnValue("over");
 
 				component.closeSidebarOnMobile();
 
@@ -89,7 +89,7 @@ describe("SidebarComponent",
 		it("should not toggle sidebar on desktop when nav item clicked",
 			() =>
 			{
-				mockLayoutService.sidebarMode.and.returnValue("side");
+				mockLayoutService.sidebarMode.mockReturnValue("side");
 
 				component.closeSidebarOnMobile();
 

@@ -2,13 +2,21 @@ import { UserListPreferences } from "@admin/users/models";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { StorageService } from "@shared/services";
+import { vi } from "vitest";
 import { UserPreferencesService } from "./user-preferences.service";
 
 describe("UserPreferencesService",
 	() =>
 	{
 		let service: UserPreferencesService;
-		let mockStorageService: jasmine.SpyObj<StorageService>;
+
+		interface MockStorageService {
+			getItem: ReturnType<typeof vi.fn>;
+			setItem: ReturnType<typeof vi.fn>;
+			removeItem: ReturnType<typeof vi.fn>;
+		}
+
+		let mockStorageService: MockStorageService;
 
 		const defaultPreferences: UserListPreferences =
 			{
@@ -31,13 +39,11 @@ describe("UserPreferencesService",
 			() =>
 			{
 				mockStorageService =
-					jasmine.createSpyObj(
-						"StorageService",
-						[
-							"getItem",
-							"setItem",
-							"removeItem"
-						]);
+					{
+						getItem: vi.fn(),
+						setItem: vi.fn(),
+						removeItem: vi.fn()
+					};
 
 				TestBed.configureTestingModule(
 					{
@@ -75,8 +81,7 @@ describe("UserPreferencesService",
 							};
 						mockStorageService
 							.getItem
-							.and
-							.returnValue(storedPreferences);
+							.mockReturnValue(storedPreferences);
 
 						// Act
 						const result: UserListPreferences =
@@ -95,8 +100,7 @@ describe("UserPreferencesService",
 						// Arrange
 						mockStorageService
 							.getItem
-							.and
-							.returnValue(null);
+							.mockReturnValue(null);
 
 						// Act
 						const result: UserListPreferences =
@@ -158,8 +162,7 @@ describe("UserPreferencesService",
 						// Arrange
 						mockStorageService
 							.getItem
-							.and
-							.returnValue(
+							.mockReturnValue(
 								{ ...defaultPreferences });
 
 						// Act
@@ -171,7 +174,7 @@ describe("UserPreferencesService",
 						expect(mockStorageService.setItem)
 							.toHaveBeenCalledWith(
 								"user-list-preferences",
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{ chartExpanded: false }));
 					});
 			});

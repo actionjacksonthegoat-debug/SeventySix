@@ -2,7 +2,12 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MatDialog } from "@angular/material/dialog";
 import { NotificationService, ThemeService } from "@shared/services";
-import { createMockDialog, createMockNotificationService } from "@shared/testing";
+import {
+	createMockDialog,
+	createMockNotificationService,
+	MockDialog,
+	MockNotificationService
+} from "@shared/testing";
 import { createMockThemeService } from "@testing/mocks/theme.service.mock";
 import { StyleGuideComponent } from "./style-guide";
 
@@ -12,8 +17,8 @@ describe("StyleGuideComponent",
 		let component: StyleGuideComponent;
 		let fixture: ComponentFixture<StyleGuideComponent>;
 		let mockThemeService: ReturnType<typeof createMockThemeService>;
-		let mockNotificationService: jasmine.SpyObj<NotificationService>;
-		let mockDialog: jasmine.SpyObj<MatDialog>;
+		let mockNotificationService: MockNotificationService;
+		let mockDialog: MockDialog;
 
 		beforeEach(
 			async () =>

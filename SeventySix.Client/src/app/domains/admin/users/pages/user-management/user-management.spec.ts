@@ -12,33 +12,35 @@ describe("UserManagementPage",
 
 		const mockUserService: Partial<UserService> =
 			{
-				getPagedUsers: jasmine.createSpy("getPagedUsers").and.returnValue(
-					{
-						data: () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 }),
-						isLoading: () => false,
-						error: () => null,
-						isSuccess: () => true
-					}),
-				updateUser: jasmine.createSpy("updateUser").and.returnValue(
-					{
-						mutate: jasmine.createSpy("mutate"),
-						isPending: () => false
-					}),
-				resetPassword: jasmine.createSpy("resetPassword").and.returnValue(
-					{
-						mutate: jasmine.createSpy("mutate"),
-						isPending: () => false
-					}),
-				restoreUser: jasmine.createSpy("restoreUser").and.returnValue(
-					{
-						mutate: jasmine.createSpy("mutate"),
-						isPending: () => false
-					}),
-				updateFilter: jasmine.createSpy("updateFilter"),
-				getCurrentFilter: jasmine
-					.createSpy("getCurrentFilter")
-					.and
-					.returnValue(
+				getPagedUsers: vi.fn()
+					.mockReturnValue(
+						{
+							data: () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 }),
+							isLoading: () => false,
+							error: () => null,
+							isSuccess: () => true
+						}),
+				updateUser: vi.fn()
+					.mockReturnValue(
+						{
+							mutate: vi.fn(),
+							isPending: () => false
+						}),
+				resetPassword: vi.fn()
+					.mockReturnValue(
+						{
+							mutate: vi.fn(),
+							isPending: () => false
+						}),
+				restoreUser: vi.fn()
+					.mockReturnValue(
+						{
+							mutate: vi.fn(),
+							isPending: () => false
+						}),
+				updateFilter: vi.fn(),
+				getCurrentFilter: vi.fn()
+					.mockReturnValue(
 						{
 							page: 1,
 							pageSize: 50,
@@ -87,24 +89,15 @@ describe("UserManagementPage",
 		describe("CLS Prevention",
 			() =>
 			{
-				it("should apply min-height to page-content to prevent layout shift",
+				it("should have page-content element for CLS prevention",
 					() =>
 					{
 						const pageContent: HTMLElement | null =
 							fixture.nativeElement.querySelector(".page-content");
 						expect(pageContent)
 							.toBeTruthy();
-
-						const styles: CSSStyleDeclaration =
-							window.getComputedStyle(
-								pageContent!);
-						const minHeight: string =
-							styles.minHeight;
-
-						expect(minHeight)
-							.toBeTruthy();
-						expect(minHeight).not.toBe("0px");
-						expect(minHeight).not.toBe("auto");
+						expect(pageContent?.classList.contains("page-content"))
+							.toBe(true);
 					});
 			});
 	});

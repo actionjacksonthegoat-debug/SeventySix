@@ -14,6 +14,7 @@ import {
 } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { QueryClient } from "@tanstack/angular-query-experimental";
+import { type Mock } from "vitest";
 import {
 	ComponentTestBed,
 	createTestQueryClient,
@@ -160,7 +161,7 @@ describe("Test Bed Builders",
 						const fixture: ComponentFixture<TestComponent> =
 							await builder.build(TestComponent);
 
-						const outputSpy: jasmine.Spy =
+						const outputSpy: Mock =
 							builder.withOutputSpy(
 								fixture,
 								"testOutput");

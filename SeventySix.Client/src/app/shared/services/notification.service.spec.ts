@@ -1,3 +1,5 @@
+import { vi } from "vitest";
+
 import { NotificationLevel } from "@shared/constants";
 import { Notification } from "@shared/models";
 import { setupSimpleServiceTest } from "@shared/testing";
@@ -13,17 +15,13 @@ describe("NotificationService",
 			{
 				service =
 					setupSimpleServiceTest(NotificationService);
-				jasmine
-					.clock()
-					.install();
+				vi.useFakeTimers();
 			});
 
 		afterEach(
 			() =>
 			{
-				jasmine
-					.clock()
-					.uninstall();
+				vi.useRealTimers();
 			});
 
 		describe("success",
@@ -51,9 +49,7 @@ describe("NotificationService",
 						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
-						jasmine
-							.clock()
-							.tick(5000);
+						vi.advanceTimersByTime(5000);
 
 						expect(service.readonlyNotifications().length)
 							.toBe(0);
@@ -66,9 +62,7 @@ describe("NotificationService",
 						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
-						jasmine
-							.clock()
-							.tick(3000);
+						vi.advanceTimersByTime(3000);
 
 						expect(service.readonlyNotifications().length)
 							.toBe(0);
@@ -100,9 +94,7 @@ describe("NotificationService",
 						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
-						jasmine
-							.clock()
-							.tick(5000);
+						vi.advanceTimersByTime(5000);
 
 						expect(service.readonlyNotifications().length)
 							.toBe(0);
@@ -134,9 +126,7 @@ describe("NotificationService",
 						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
-						jasmine
-							.clock()
-							.tick(7000);
+						vi.advanceTimersByTime(7000);
 
 						expect(service.readonlyNotifications().length)
 							.toBe(0);
@@ -168,9 +158,7 @@ describe("NotificationService",
 						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
-						jasmine
-							.clock()
-							.tick(10000);
+						vi.advanceTimersByTime(10000);
 
 						expect(service.readonlyNotifications().length)
 							.toBe(0);
@@ -349,9 +337,7 @@ describe("NotificationService",
 						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
-						jasmine
-							.clock()
-							.tick(5001);
+						vi.advanceTimersByTime(5001);
 
 						expect(service.readonlyNotifications().length)
 							.toBe(0);
@@ -390,9 +376,7 @@ describe("NotificationService",
 						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
-						jasmine
-							.clock()
-							.tick(5001);
+						vi.advanceTimersByTime(5001);
 
 						expect(service.readonlyNotifications().length)
 							.toBe(0);
@@ -431,9 +415,7 @@ describe("NotificationService",
 						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
-						jasmine
-							.clock()
-							.tick(7001);
+						vi.advanceTimersByTime(7001);
 
 						expect(service.readonlyNotifications().length)
 							.toBe(0);
@@ -507,9 +489,7 @@ describe("NotificationService",
 						expect(service.readonlyNotifications().length)
 							.toBe(1);
 
-						jasmine
-							.clock()
-							.tick(5000);
+						vi.advanceTimersByTime(5000);
 
 						expect(service.readonlyNotifications().length)
 							.toBe(0);
@@ -534,17 +514,15 @@ describe("NotificationService",
 		describe("copyToClipboard",
 			() =>
 			{
-				let clipboardSpy: jasmine.Spy;
+				let clipboardSpy: ReturnType<typeof vi.fn>;
 
 				beforeEach(
 					() =>
 					{
 						// Mock navigator.clipboard
 						clipboardSpy =
-							jasmine
-								.createSpy("writeText")
-								.and
-								.returnValue(Promise.resolve());
+							vi.fn()
+								.mockResolvedValue(undefined);
 						Object.defineProperty(navigator, "clipboard",
 							{
 								value: {
@@ -557,7 +535,10 @@ describe("NotificationService",
 				it("should copy notification data to clipboard",
 					async () =>
 					{
-						spyOn(console, "info");
+						vi.spyOn(console, "info")
+							.mockImplementation(
+								() =>
+								{});
 						const copyData: string = "Error details to copy";
 						service.errorWithDetails("Error", undefined, copyData);
 						const notification: Notification =
@@ -590,10 +571,12 @@ describe("NotificationService",
 				it("should return false and log error if clipboard write fails",
 					async () =>
 					{
-						const consoleErrorSpy: jasmine.Spy =
-							spyOn(console, "error");
-						clipboardSpy.and.returnValue(
-							Promise.reject(new Error("Clipboard error")));
+						const consoleErrorSpy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(console, "error")
+								.mockImplementation(
+									() =>
+									{});
+						clipboardSpy.mockRejectedValue(new Error("Clipboard error"));
 
 						service.errorWithDetails("Error", undefined, "Copy data");
 						const notification: Notification =
@@ -611,7 +594,10 @@ describe("NotificationService",
 				it("should copy successfully and return true",
 					async () =>
 					{
-						spyOn(console, "info");
+						vi.spyOn(console, "info")
+							.mockImplementation(
+								() =>
+								{});
 						service.errorWithDetails("Error", undefined, "Copy data");
 						const notification: Notification =
 							service.readonlyNotifications()[0];
@@ -626,8 +612,11 @@ describe("NotificationService",
 				it("should log copy data to console.info when copying",
 					async () =>
 					{
-						const consoleInfoSpy: jasmine.Spy =
-							spyOn(console, "info");
+						const consoleInfoSpy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(console, "info")
+								.mockImplementation(
+									() =>
+									{});
 						const copyData: string = "Error details to copy";
 
 						service.errorWithDetails("Error", undefined, copyData);

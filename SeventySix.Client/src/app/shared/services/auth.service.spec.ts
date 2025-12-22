@@ -108,7 +108,7 @@ describe("AuthService",
 						expect(result?.accessToken)
 							.toBe(mockResponse.accessToken);
 						expect(service.isAuthenticated())
-							.toBeTrue();
+							.toBe(true);
 					});
 
 				it("should not set user on login failure",
@@ -136,7 +136,7 @@ describe("AuthService",
 							{ status: 401, statusText: "Unauthorized" });
 
 						expect(service.isAuthenticated())
-							.toBeFalse();
+							.toBe(false);
 					});
 
 				it("should include rememberMe in login request when true",
@@ -219,7 +219,7 @@ describe("AuthService",
 						loginReq.flush(mockResponse);
 
 						expect(service.isAuthenticated())
-							.toBeTrue();
+							.toBe(true);
 
 						// Now logout
 						service.logout();
@@ -231,7 +231,7 @@ describe("AuthService",
 						logoutReq.flush({});
 
 						expect(service.isAuthenticated())
-							.toBeFalse();
+							.toBe(false);
 						expect(service.user())
 							.toBeNull();
 					});
@@ -261,11 +261,11 @@ describe("AuthService",
 						req.flush(mockResponse);
 
 						expect(service.hasRole(TEST_ROLE_DEVELOPER))
-							.toBeTrue();
+							.toBe(true);
 						expect(service.hasRole(TEST_ROLE_ADMIN))
-							.toBeTrue();
+							.toBe(true);
 						expect(service.hasRole("SuperAdmin"))
-							.toBeFalse();
+							.toBe(false);
 					});
 
 				it("should handle single role as string",
@@ -289,9 +289,9 @@ describe("AuthService",
 						req.flush(mockResponse);
 
 						expect(service.hasRole(TEST_ROLE_DEVELOPER))
-							.toBeTrue();
+							.toBe(true);
 						expect(service.hasRole(TEST_ROLE_ADMIN))
-							.toBeFalse();
+							.toBe(false);
 					});
 			});
 
@@ -319,9 +319,9 @@ describe("AuthService",
 						req.flush(mockResponse);
 
 						expect(service.hasAnyRole(TEST_ROLE_DEVELOPER, TEST_ROLE_ADMIN))
-							.toBeTrue();
+							.toBe(true);
 						expect(service.hasAnyRole(TEST_ROLE_ADMIN, "SuperAdmin"))
-							.toBeFalse();
+							.toBe(false);
 					});
 			});
 
@@ -482,7 +482,7 @@ describe("AuthService",
 					() =>
 					{
 						expect(service.isTokenExpired())
-							.toBeTrue();
+							.toBe(true);
 					});
 
 				it("should return false for valid token",
@@ -510,7 +510,7 @@ describe("AuthService",
 						req.flush(mockResponse);
 
 						expect(service.isTokenExpired())
-							.toBeFalse();
+							.toBe(false);
 					});
 			});
 
@@ -586,7 +586,7 @@ describe("AuthService",
 						// No HTTP request should be made
 						httpMock.expectNone(`${environment.apiUrl}/auth/refresh`);
 						expect(completed)
-							.toBeTrue();
+							.toBe(true);
 					});
 
 				it("should attempt refresh when session marker exists",
@@ -612,7 +612,7 @@ describe("AuthService",
 							{ error: "No token" },
 							{ status: 401, statusText: "Unauthorized" });
 						expect(completed)
-							.toBeTrue();
+							.toBe(true);
 					});
 
 				it("should only run once per service instance",
@@ -641,7 +641,7 @@ describe("AuthService",
 								() => (secondCompleted = true));
 						httpMock.expectNone(`${environment.apiUrl}/auth/refresh`);
 						expect(secondCompleted)
-							.toBeTrue();
+							.toBe(true);
 					});
 			});
 
@@ -737,7 +737,7 @@ describe("AuthService",
 						req.flush(null);
 
 						expect(completed)
-							.toBeTrue();
+							.toBe(true);
 					});
 			});
 	});

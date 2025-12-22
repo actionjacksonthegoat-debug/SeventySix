@@ -19,6 +19,7 @@ import {
 	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
+import { vi, type Mock } from "vitest";
 
 /**
  * Fluent builder for component test configuration
@@ -37,7 +38,7 @@ export class ComponentTestBed<T>
 
 	/**
 	 * Add a mocked service to the test configuration
-	 * Automatically creates jasmine spy object
+	 * Automatically creates Vitest mock functions
 	 *
 	 * @param token - Service class or injection token
 	 * @param methods - Array of method names to spy on
@@ -45,12 +46,15 @@ export class ComponentTestBed<T>
 	 */
 	withMockService<S>(token: Type<S>, methods: string[]): this
 	{
-		const mock: jasmine.SpyObj<S> =
-			jasmine.createSpyObj(
-				token.name,
-				methods);
+		const mock: Record<string, Mock> =
+			{};
+		for (const methodName of methods)
+		{
+			mock[methodName] =
+				vi.fn();
+		}
 		this.providers.push(
-			{ provide: token, useValue: mock });
+			{ provide: token, useValue: mock as unknown as S });
 		return this;
 	}
 
@@ -109,7 +113,7 @@ export class ComponentTestBed<T>
 	 *
 	 * @param fixture - Component fixture
 	 * @param outputName - Name of the output property
-	 * @returns Jasmine spy that can be used for assertions
+	 * @returns Vitest mock that can be used for assertions
 	 *
 	 * @example
 	 * const fixture = await builder.build(DataTableComponent);
@@ -119,15 +123,15 @@ export class ComponentTestBed<T>
 	 */
 	withOutputSpy(
 		fixture: ComponentFixture<T>,
-		outputName: string): jasmine.Spy
+		outputName: string): Mock
 	{
-		const spy: jasmine.Spy =
-			jasmine.createSpy(outputName);
+		const spy: Mock =
+			vi.fn();
 		const component: T =
 			fixture.componentInstance as T;
-		const output: { subscribe?: (observer: jasmine.Spy) => void; } | undefined =
+		const output: { subscribe?: (observer: Mock) => void; } | undefined =
 			(component as Record<string, unknown>)[outputName] as
-				| { subscribe?: (observer: jasmine.Spy) => void; }
+				| { subscribe?: (observer: Mock) => void; }
 				| undefined;
 		if (output && typeof output.subscribe === "function")
 		{
@@ -249,10 +253,10 @@ export function createTestQueryClient(): QueryClient
  * @example
  * describe("UserService", () => {
  *   let service: UserService;
- *   let mockRepository: jasmine.SpyObj<UserRepository>;
+ *   let mockRepository: { getAll: Mock; getById: Mock; };
  *
  *   beforeEach(() => {
- *     mockRepository = createMockUserRepository();
+ *     mockRepository = { getAll: vi.fn(), getById: vi.fn() };
  *     const setup = setupServiceTest(UserService, [
  *       { provide: UserRepository, useValue: mockRepository }
  *     ]);
@@ -296,10 +300,10 @@ export function setupServiceTest<T>(
  * @example
  * describe("UserRepository", () => {
  *   let repository: UserRepository;
- *   let mockApiService: jasmine.SpyObj<ApiService>;
+ *   let mockApiService: { get: Mock; post: Mock; put: Mock; delete: Mock; };
  *
  *   beforeEach(() => {
- *     mockApiService = jasmine.createSpyObj("ApiService", ["get", "post", "put", "delete"]);
+ *     mockApiService = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() };
  *     repository = setupRepositoryTest(UserRepository, [
  *       { provide: ApiService, useValue: mockApiService }
  *     ]);

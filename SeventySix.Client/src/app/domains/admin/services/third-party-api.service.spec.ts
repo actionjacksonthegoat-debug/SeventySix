@@ -139,7 +139,7 @@ describe("ThirdPartyApiService",
 				it("should handle HTTP errors",
 					async () =>
 					{
-						spyOn(console, "error"); // Suppress expected error logs
+						vi.spyOn(console, "error"); // Suppress expected error logs
 						const query: ReturnType<typeof service.getAllThirdPartyApis> =
 							TestBed.runInInjectionContext(
 								() => service.getAllThirdPartyApis());
@@ -230,7 +230,7 @@ describe("ThirdPartyApiService",
 				it("should handle HTTP errors",
 					async () =>
 					{
-						spyOn(console, "error"); // Suppress expected error logs
+						vi.spyOn(console, "error"); // Suppress expected error logs
 						const apiName: string = "NonExistent";
 
 						const query: ReturnType<typeof service.getByApiName> =
@@ -336,7 +336,7 @@ describe("ThirdPartyApiService",
 				it("should handle HTTP errors",
 					async () =>
 					{
-						spyOn(console, "error"); // Suppress expected error logs
+						vi.spyOn(console, "error"); // Suppress expected error logs
 						const query: ReturnType<typeof service.getStatistics> =
 							TestBed.runInInjectionContext(
 								() => service.getStatistics());

@@ -3,8 +3,9 @@ import { PermissionRequestService } from "@admin/permission-requests/services";
 import { ComponentFixture } from "@angular/core/testing";
 import type { BulkActionEvent, RowActionEvent } from "@shared/models";
 import { NotificationService } from "@shared/services";
-import { createMockNotificationService } from "@shared/testing";
+import { createMockNotificationService, MockNotificationService } from "@shared/testing";
 import { ComponentTestBed } from "@testing/test-bed-builders";
+import { Mock, vi } from "vitest";
 import { PermissionRequestListPage } from "./permission-request-list";
 
 describe("PermissionRequestListPage",
@@ -12,7 +13,7 @@ describe("PermissionRequestListPage",
 	{
 		let fixture: ComponentFixture<PermissionRequestListPage>;
 		let component: PermissionRequestListPage;
-		let mockNotificationService: jasmine.SpyObj<NotificationService>;
+		let mockNotificationService: MockNotificationService;
 
 		const mockPermissionRequests: PermissionRequestDto[] =
 			[
@@ -27,52 +28,45 @@ describe("PermissionRequestListPage",
 				}
 			];
 
-		const mockApproveMutation: { mutate: jasmine.Spy; } =
+		const mockApproveMutation: { mutate: Mock; } =
 			{
-				mutate: jasmine.createSpy("approveMutate")
+				mutate: vi.fn()
 			};
 
-		const mockRejectMutation: { mutate: jasmine.Spy; } =
+		const mockRejectMutation: { mutate: Mock; } =
 			{
-				mutate: jasmine.createSpy("rejectMutate")
+				mutate: vi.fn()
 			};
 
-		const mockBulkApproveMutation: { mutate: jasmine.Spy; } =
+		const mockBulkApproveMutation: { mutate: Mock; } =
 			{
-				mutate: jasmine.createSpy("bulkApproveMutate")
+				mutate: vi.fn()
 			};
 
-		const mockBulkRejectMutation: { mutate: jasmine.Spy; } =
+		const mockBulkRejectMutation: { mutate: Mock; } =
 			{
-				mutate: jasmine.createSpy("bulkRejectMutate")
+				mutate: vi.fn()
 			};
 
 		const mockService: Partial<PermissionRequestService> =
 			{
-				getAllRequests: jasmine.createSpy("getAllRequests").and.returnValue(
-					{
-						data: () => mockPermissionRequests,
-						isLoading: () => false,
-						error: () => null,
-						isSuccess: () => true,
-						refetch: jasmine.createSpy("refetch")
-					}),
-				approveRequest: jasmine
-					.createSpy("approveRequest")
-					.and
-					.returnValue(mockApproveMutation),
-				rejectRequest: jasmine
-					.createSpy("rejectRequest")
-					.and
-					.returnValue(mockRejectMutation),
-				bulkApproveRequests: jasmine
-					.createSpy("bulkApproveRequests")
-					.and
-					.returnValue(mockBulkApproveMutation),
-				bulkRejectRequests: jasmine
-					.createSpy("bulkRejectRequests")
-					.and
-					.returnValue(mockBulkRejectMutation)
+				getAllRequests: vi.fn()
+					.mockReturnValue(
+						{
+							data: () => mockPermissionRequests,
+							isLoading: () => false,
+							error: () => null,
+							isSuccess: () => true,
+							refetch: vi.fn()
+						}),
+				approveRequest: vi.fn()
+					.mockReturnValue(mockApproveMutation),
+				rejectRequest: vi.fn()
+					.mockReturnValue(mockRejectMutation),
+				bulkApproveRequests: vi.fn()
+					.mockReturnValue(mockBulkApproveMutation),
+				bulkRejectRequests: vi.fn()
+					.mockReturnValue(mockBulkRejectMutation)
 			};
 
 		beforeEach(
@@ -81,10 +75,10 @@ describe("PermissionRequestListPage",
 				mockNotificationService =
 					createMockNotificationService();
 
-				mockApproveMutation.mutate.calls.reset();
-				mockRejectMutation.mutate.calls.reset();
-				mockBulkApproveMutation.mutate.calls.reset();
-				mockBulkRejectMutation.mutate.calls.reset();
+				mockApproveMutation.mutate.mockClear();
+				mockRejectMutation.mutate.mockClear();
+				mockBulkApproveMutation.mutate.mockClear();
+				mockBulkRejectMutation.mutate.mockClear();
 
 				fixture =
 					await new ComponentTestBed<PermissionRequestListPage>()
@@ -142,7 +136,7 @@ describe("PermissionRequestListPage",
 				component.onRowAction(event);
 
 				expect(mockApproveMutation.mutate)
-					.toHaveBeenCalledWith(1, jasmine.any(Object));
+					.toHaveBeenCalledWith(1, expect.any(Object));
 			});
 
 		it("should call reject mutation on row action reject",
@@ -157,7 +151,7 @@ describe("PermissionRequestListPage",
 				component.onRowAction(event);
 
 				expect(mockRejectMutation.mutate)
-					.toHaveBeenCalledWith(1, jasmine.any(Object));
+					.toHaveBeenCalledWith(1, expect.any(Object));
 			});
 
 		it("should show success notification when approve succeeds",
@@ -171,10 +165,10 @@ describe("PermissionRequestListPage",
 
 				component.onRowAction(event);
 
-				const mutateCall: jasmine.Spy =
+				const mutateCall: Mock =
 					mockApproveMutation.mutate;
 				const callbackArg: { onSuccess: () => void; } =
-					mutateCall.calls.mostRecent().args[1];
+					mutateCall.mock.calls.at(-1)![1];
 				callbackArg.onSuccess();
 
 				expect(mockNotificationService.success)
@@ -192,10 +186,10 @@ describe("PermissionRequestListPage",
 
 				component.onRowAction(event);
 
-				const mutateCall: jasmine.Spy =
+				const mutateCall: Mock =
 					mockApproveMutation.mutate;
 				const callbackArg: { onError: (error: Error) => void; } =
-					mutateCall.calls.mostRecent().args[1];
+					mutateCall.mock.calls.at(-1)![1];
 				callbackArg.onError(new Error("Network failure"));
 
 				expect(mockNotificationService.error)
@@ -213,10 +207,10 @@ describe("PermissionRequestListPage",
 
 				component.onRowAction(event);
 
-				const mutateCall: jasmine.Spy =
+				const mutateCall: Mock =
 					mockRejectMutation.mutate;
 				const callbackArg: { onSuccess: () => void; } =
-					mutateCall.calls.mostRecent().args[1];
+					mutateCall.mock.calls.at(-1)![1];
 				callbackArg.onSuccess();
 
 				expect(mockNotificationService.success)
@@ -234,10 +228,10 @@ describe("PermissionRequestListPage",
 
 				component.onRowAction(event);
 
-				const mutateCall: jasmine.Spy =
+				const mutateCall: Mock =
 					mockRejectMutation.mutate;
 				const callbackArg: { onError: (error: Error) => void; } =
-					mutateCall.calls.mostRecent().args[1];
+					mutateCall.mock.calls.at(-1)![1];
 				callbackArg.onError(new Error("Database error"));
 
 				expect(mockNotificationService.error)
@@ -256,10 +250,10 @@ describe("PermissionRequestListPage",
 
 				component.onBulkAction(event);
 
-				const mutateCall: jasmine.Spy =
+				const mutateCall: Mock =
 					mockBulkApproveMutation.mutate;
 				const callbackArg: { onSuccess: (count: number) => void; } =
-					mutateCall.calls.mostRecent().args[1];
+					mutateCall.mock.calls.at(-1)![1];
 				callbackArg.onSuccess(3);
 
 				expect(mockNotificationService.success)
@@ -278,10 +272,10 @@ describe("PermissionRequestListPage",
 
 				component.onBulkAction(event);
 
-				const mutateCall: jasmine.Spy =
+				const mutateCall: Mock =
 					mockBulkApproveMutation.mutate;
 				const callbackArg: { onError: (error: Error) => void; } =
-					mutateCall.calls.mostRecent().args[1];
+					mutateCall.mock.calls.at(-1)![1];
 				callbackArg.onError(new Error("Permission denied"));
 
 				expect(mockNotificationService.error)
@@ -300,10 +294,10 @@ describe("PermissionRequestListPage",
 
 				component.onBulkAction(event);
 
-				const mutateCall: jasmine.Spy =
+				const mutateCall: Mock =
 					mockBulkRejectMutation.mutate;
 				const callbackArg: { onSuccess: (count: number) => void; } =
-					mutateCall.calls.mostRecent().args[1];
+					mutateCall.mock.calls.at(-1)![1];
 				callbackArg.onSuccess(2);
 
 				expect(mockNotificationService.success)
@@ -322,10 +316,10 @@ describe("PermissionRequestListPage",
 
 				component.onBulkAction(event);
 
-				const mutateCall: jasmine.Spy =
+				const mutateCall: Mock =
 					mockBulkRejectMutation.mutate;
 				const callbackArg: { onError: (error: Error) => void; } =
-					mutateCall.calls.mostRecent().args[1];
+					mutateCall.mock.calls.at(-1)![1];
 				callbackArg.onError(new Error("Timeout"));
 
 				expect(mockNotificationService.error)

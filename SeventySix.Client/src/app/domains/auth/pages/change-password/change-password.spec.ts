@@ -19,15 +19,30 @@ import { environment } from "@environments/environment";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { createMockNotificationService } from "@shared/testing";
+import { vi } from "vitest";
 import { ChangePasswordComponent } from "./change-password";
+
+interface MockAuthService {
+	clearPasswordChangeRequirement: ReturnType<typeof vi.fn>;
+	isAuthenticated: ReturnType<typeof signal<boolean>>;
+	requiresPasswordChange: ReturnType<typeof signal<boolean>>;
+}
+
+interface MockNotificationService {
+	success: ReturnType<typeof vi.fn>;
+	error: ReturnType<typeof vi.fn>;
+	info: ReturnType<typeof vi.fn>;
+	warning: ReturnType<typeof vi.fn>;
+	errorWithDetails: ReturnType<typeof vi.fn>;
+}
 
 describe("ChangePasswordComponent",
 	() =>
 	{
 		let component: ChangePasswordComponent;
 		let fixture: ComponentFixture<ChangePasswordComponent>;
-		let mockAuthService: jasmine.SpyObj<AuthService>;
-		let mockNotificationService: jasmine.SpyObj<NotificationService>;
+		let mockAuthService: MockAuthService;
+		let mockNotificationService: MockNotificationService;
 		let router: Router;
 		let httpTestingController: HttpTestingController;
 
@@ -35,13 +50,11 @@ describe("ChangePasswordComponent",
 			async () =>
 			{
 				mockAuthService =
-					jasmine.createSpyObj(
-						"AuthService",
-						["clearPasswordChangeRequirement"],
-						{
-							isAuthenticated: signal<boolean>(true),
-							requiresPasswordChange: signal<boolean>(false)
-						});
+					{
+						clearPasswordChangeRequirement: vi.fn(),
+						isAuthenticated: signal<boolean>(true),
+						requiresPasswordChange: signal<boolean>(false)
+					};
 				mockNotificationService =
 					createMockNotificationService();
 
@@ -69,8 +82,8 @@ describe("ChangePasswordComponent",
 					fixture.componentInstance;
 				router =
 					TestBed.inject(Router);
-				spyOn(router, "navigate");
-				spyOn(router, "navigateByUrl");
+				vi.spyOn(router, "navigate");
+				vi.spyOn(router, "navigateByUrl");
 				httpTestingController =
 					TestBed.inject(HttpTestingController);
 				fixture.detectChanges();

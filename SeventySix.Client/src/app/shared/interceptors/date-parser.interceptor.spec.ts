@@ -10,6 +10,7 @@ import {
 } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { firstValueFrom } from "rxjs";
 import { dateParserInterceptor } from "./date-parser.interceptor";
 
 describe("dateParserInterceptor",
@@ -44,81 +45,81 @@ describe("dateParserInterceptor",
 			});
 
 		it("should parse ISO date strings to Date objects",
-			(done: DoneFn) =>
+			async () =>
 			{
 				const isoString: string = "2024-04-29T15:45:12.123Z";
 
-				httpClient
-					.get<{ timestamp: Date; }>("/api/test")
-					.subscribe(
-						(response) =>
-						{
-							expect(response.timestamp)
-								.toBeInstanceOf(Date);
-							expect(response.timestamp.toISOString())
-								.toBe(isoString);
-							done();
-						});
+				const responsePromise: Promise<{ timestamp: Date; }> =
+					firstValueFrom(
+						httpClient
+							.get<{ timestamp: Date; }>("/api/test"));
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
 				req.flush(
 					{ timestamp: isoString });
+
+				const response: { timestamp: Date; } =
+					await responsePromise;
+				expect(response.timestamp)
+					.toBeInstanceOf(Date);
+				expect(response.timestamp.toISOString())
+					.toBe(isoString);
 			});
 
 		it("should parse nested ISO date strings",
-			(done: DoneFn) =>
+			async () =>
 			{
 				const isoString: string = "2024-04-29T15:45:12.123Z";
 
-				httpClient
-					.get<{ data: { createdAt: Date; }; }>("/api/test")
-					.subscribe(
-						(response) =>
-						{
-							expect(response.data.createdAt)
-								.toBeInstanceOf(Date);
-							expect(response.data.createdAt.toISOString())
-								.toBe(isoString);
-							done();
-						});
+				const responsePromise: Promise<{ data: { createdAt: Date; }; }> =
+					firstValueFrom(
+						httpClient
+							.get<{ data: { createdAt: Date; }; }>("/api/test"));
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
 				req.flush(
 					{ data: { createdAt: isoString } });
+
+				const response: { data: { createdAt: Date; }; } =
+					await responsePromise;
+				expect(response.data.createdAt)
+					.toBeInstanceOf(Date);
+				expect(response.data.createdAt.toISOString())
+					.toBe(isoString);
 			});
 
 		it("should parse dates in arrays",
-			(done: DoneFn) =>
+			async () =>
 			{
 				const isoString1: string = "2024-04-29T15:45:12.123Z";
 				const isoString2: string = "2024-04-30T10:30:00.000Z";
 
-				httpClient
-					.get<{ timestamp: Date; }[]>("/api/test")
-					.subscribe(
-						(response) =>
-						{
-							expect(response[0].timestamp)
-								.toBeInstanceOf(Date);
-							expect(response[0].timestamp.toISOString())
-								.toBe(isoString1);
-							expect(response[1].timestamp)
-								.toBeInstanceOf(Date);
-							expect(response[1].timestamp.toISOString())
-								.toBe(isoString2);
-							done();
-						});
+				const responsePromise: Promise<{ timestamp: Date; }[]> =
+					firstValueFrom(
+						httpClient
+							.get<{ timestamp: Date; }[]>("/api/test"));
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
 				req.flush(
 					[{ timestamp: isoString1 }, { timestamp: isoString2 }]);
+
+				const response: { timestamp: Date; }[] =
+					await responsePromise;
+				expect(response[0].timestamp)
+					.toBeInstanceOf(Date);
+				expect(response[0].timestamp.toISOString())
+					.toBe(isoString1);
+				expect(response[1].timestamp)
+					.toBeInstanceOf(Date);
+				expect(response[1].timestamp.toISOString())
+					.toBe(isoString2);
 			});
 
 		it("should not modify non-date strings",
-			(done: DoneFn) =>
+			async () =>
 			{
 				const testData: { name: string; email: string; id: string; } =
 					{
@@ -127,27 +128,27 @@ describe("dateParserInterceptor",
 						id: "12345"
 					};
 
-				httpClient
-					.get<typeof testData>("/api/test")
-					.subscribe(
-						(response) =>
-						{
-							expect(response.name)
-								.toBe("John Doe");
-							expect(response.email)
-								.toBe("john@example.com");
-							expect(response.id)
-								.toBe("12345");
-							done();
-						});
+				const responsePromise: Promise<typeof testData> =
+					firstValueFrom(
+						httpClient
+							.get<typeof testData>("/api/test"));
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
 				req.flush(testData);
+
+				const response: typeof testData =
+					await responsePromise;
+				expect(response.name)
+					.toBe("John Doe");
+				expect(response.email)
+					.toBe("john@example.com");
+				expect(response.id)
+					.toBe("12345");
 			});
 
 		it("should handle null and undefined values",
-			(done: DoneFn) =>
+			async () =>
 			{
 				const testData: { timestamp: Date | null; createdAt: Date | undefined; name: string; } =
 					{
@@ -156,69 +157,69 @@ describe("dateParserInterceptor",
 						name: "Test"
 					};
 
-				httpClient
-					.get<typeof testData>("/api/test")
-					.subscribe(
-						(response) =>
-						{
-							expect(response.timestamp)
-								.toBeNull();
-							expect(response.createdAt)
-								.toBeUndefined();
-							expect(response.name)
-								.toBe("Test");
-							done();
-						});
+				const responsePromise: Promise<typeof testData> =
+					firstValueFrom(
+						httpClient
+							.get<typeof testData>("/api/test"));
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
 				req.flush(testData);
+
+				const response: typeof testData =
+					await responsePromise;
+				expect(response.timestamp)
+					.toBeNull();
+				expect(response.createdAt)
+					.toBeUndefined();
+				expect(response.name)
+					.toBe("Test");
 			});
 
 		it("should handle empty response body",
-			(done: DoneFn) =>
+			async () =>
 			{
-				httpClient
-					.get("/api/test")
-					.subscribe(
-						(response) =>
-						{
-							expect(response)
-								.toBeNull();
-							done();
-						});
+				const responsePromise: Promise<unknown> =
+					firstValueFrom(
+						httpClient
+							.get("/api/test"));
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
 				req.flush(null);
+
+				const response: unknown =
+					await responsePromise;
+				expect(response)
+					.toBeNull();
 			});
 
 		it("should parse ISO dates without milliseconds",
-			(done: DoneFn) =>
+			async () =>
 			{
 				const isoString: string = "2024-04-29T15:45:12Z";
 
-				httpClient
-					.get<{ timestamp: Date; }>("/api/test")
-					.subscribe(
-						(response) =>
-						{
-							expect(response.timestamp)
-								.toBeInstanceOf(Date);
-							expect(response.timestamp.toISOString())
-								.toBe(
-									"2024-04-29T15:45:12.000Z");
-							done();
-						});
+				const responsePromise: Promise<{ timestamp: Date; }> =
+					firstValueFrom(
+						httpClient
+							.get<{ timestamp: Date; }>("/api/test"));
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
 				req.flush(
 					{ timestamp: isoString });
+
+				const response: { timestamp: Date; } =
+					await responsePromise;
+				expect(response.timestamp)
+					.toBeInstanceOf(Date);
+				expect(response.timestamp.toISOString())
+					.toBe(
+						"2024-04-29T15:45:12.000Z");
 			});
 
 		it("should handle complex nested structures",
-			(done: DoneFn) =>
+			async () =>
 			{
 				const isoString: string = "2024-04-29T15:45:12.123Z";
 				const complexData: {
@@ -240,30 +241,30 @@ describe("dateParserInterceptor",
 						]
 					};
 
-				httpClient
-					.get<typeof complexData>("/api/test")
-					.subscribe(
-						(response) =>
-						{
-							expect(response.user.profile.createdAt)
-								.toBeInstanceOf(Date);
-							expect(response.user.profile.settings.lastLogin)
-								.toBeInstanceOf(
-									Date);
-							expect(response.logs[0].timestamp)
-								.toBeInstanceOf(Date);
-							expect(response.logs[1].timestamp)
-								.toBeInstanceOf(Date);
-							done();
-						});
+				const responsePromise: Promise<typeof complexData> =
+					firstValueFrom(
+						httpClient
+							.get<typeof complexData>("/api/test"));
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
 				req.flush(complexData);
+
+				const response: typeof complexData =
+					await responsePromise;
+				expect(response.user.profile.createdAt)
+					.toBeInstanceOf(Date);
+				expect(response.user.profile.settings.lastLogin)
+					.toBeInstanceOf(
+						Date);
+				expect(response.logs[0].timestamp)
+					.toBeInstanceOf(Date);
+				expect(response.logs[1].timestamp)
+					.toBeInstanceOf(Date);
 			});
 
 		it("should preserve non-ISO date-like strings",
-			(done: DoneFn) =>
+			async () =>
 			{
 				const testData: { invalidDate: string; partialDate: string; description: string; } =
 					{
@@ -272,22 +273,22 @@ describe("dateParserInterceptor",
 						description: "Meeting at 2024-04-29"
 					};
 
-				httpClient
-					.get<typeof testData>("/api/test")
-					.subscribe(
-						(response) =>
-						{
-							expect(typeof response.invalidDate)
-								.toBe("string");
-							expect(typeof response.partialDate)
-								.toBe("string");
-							expect(typeof response.description)
-								.toBe("string");
-							done();
-						});
+				const responsePromise: Promise<typeof testData> =
+					firstValueFrom(
+						httpClient
+							.get<typeof testData>("/api/test"));
 
 				const req: TestRequest =
 					httpTestingController.expectOne("/api/test");
 				req.flush(testData);
+
+				const response: typeof testData =
+					await responsePromise;
+				expect(typeof response.invalidDate)
+					.toBe("string");
+				expect(typeof response.partialDate)
+					.toBe("string");
+				expect(typeof response.description)
+					.toBe("string");
 			});
 	});

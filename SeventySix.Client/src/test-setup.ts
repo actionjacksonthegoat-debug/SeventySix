@@ -1,0 +1,32 @@
+import "@angular/compiler";
+import "@analogjs/vitest-angular/setup-snapshots";
+import { setupTestBed } from "@analogjs/vitest-angular/setup-testbed";
+import { vi } from "vitest";
+
+vi.mock("@environments/environment",
+	async () =>
+	{
+		const testEnv: typeof import("./environments/environment.test") =
+			await import("./environments/environment.test");
+		return testEnv;
+	});
+
+if (typeof window !== "undefined")
+{
+	if (typeof window.confirm === "undefined")
+	{
+		window.confirm =
+			(): boolean => true;
+	}
+	if (typeof window.alert === "undefined")
+	{
+		window.alert =
+			(): void =>
+			{};
+	}
+}
+
+setupTestBed(
+	{
+		zoneless: true,
+	});

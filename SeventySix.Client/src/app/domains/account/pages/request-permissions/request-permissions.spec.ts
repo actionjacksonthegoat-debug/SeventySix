@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Routes } from "@angular/router";
 import { ApiService } from "@shared/services/api.service";
-import { createMockApiService } from "@shared/testing";
+import { createMockApiService, MockApiService } from "@shared/testing";
 import {
 	provideAngularQuery,
 	QueryClient
@@ -21,15 +21,15 @@ describe("RequestPermissionsPage",
 	{
 		let component: RequestPermissionsPage;
 		let fixture: ComponentFixture<RequestPermissionsPage>;
-		let mockApiService: jasmine.SpyObj<ApiService>;
+		let mockApiService: MockApiService;
 		let queryClient: QueryClient;
 
 		beforeEach(
 			async () =>
 			{
 				mockApiService =
-					createMockApiService() as jasmine.SpyObj<ApiService>;
-				mockApiService.get.and.returnValue(
+					createMockApiService();
+				mockApiService.get.mockReturnValue(
 					of(
 						[
 							{ name: "Admin", description: "Administrator access" },
@@ -81,21 +81,21 @@ describe("RequestPermissionsPage",
 					component
 						.selectedRoles()
 						.has("Admin"))
-					.toBeFalse();
+					.toBe(false);
 
 				component.toggleRole("Admin");
 				expect(
 					component
 						.selectedRoles()
 						.has("Admin"))
-					.toBeTrue();
+					.toBe(true);
 
 				component.toggleRole("Admin");
 				expect(
 					component
 						.selectedRoles()
 						.has("Admin"))
-					.toBeFalse();
+					.toBe(false);
 			});
 
 		it("should not submit without selected roles",
@@ -109,7 +109,7 @@ describe("RequestPermissionsPage",
 		it("should submit with selected roles",
 			async () =>
 			{
-				mockApiService.post.and.returnValue(of(undefined));
+				mockApiService.post.mockReturnValue(of(undefined));
 				component.toggleRole("Admin");
 				component.requestForm.patchValue(
 					{ requestMessage: "Need access" });

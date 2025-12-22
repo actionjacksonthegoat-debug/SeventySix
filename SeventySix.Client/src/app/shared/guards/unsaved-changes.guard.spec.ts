@@ -6,19 +6,26 @@ import {
 } from "@angular/router";
 import { CanComponentDeactivate } from "@shared/interfaces";
 import { NotificationService } from "@shared/services/notification.service";
-import { createMockNotificationService } from "@shared/testing";
+import {
+	createMockNotificationService,
+	type MockNotificationService
+} from "@shared/testing";
+import { vi, type Mock } from "vitest";
 import { unsavedChangesGuard } from "./unsaved-changes.guard";
 
 describe("unsavedChangesGuard",
 	() =>
 	{
-		let mockNotification: jasmine.SpyObj<NotificationService>;
+		let mockNotification: MockNotificationService;
+		let mockConfirm: Mock;
 
 		beforeEach(
 			() =>
 			{
 				mockNotification =
 					createMockNotificationService();
+				mockConfirm =
+					vi.fn();
 
 				TestBed.configureTestingModule(
 					{
@@ -29,7 +36,8 @@ describe("unsavedChangesGuard",
 					});
 
 				// Mock window.confirm
-				spyOn(window, "confirm");
+				vi.spyOn(window, "confirm")
+					.mockImplementation(mockConfirm);
 			});
 
 		it("should allow navigation when canDeactivate returns true",
@@ -79,7 +87,7 @@ describe("unsavedChangesGuard",
 					{
 						canDeactivate: () => false
 					};
-				(window.confirm as jasmine.Spy).and.returnValue(true);
+				mockConfirm.mockReturnValue(true);
 
 				const result: boolean =
 					TestBed.runInInjectionContext(
@@ -103,7 +111,7 @@ describe("unsavedChangesGuard",
 					{
 						canDeactivate: () => false
 					};
-				(window.confirm as jasmine.Spy).and.returnValue(false);
+				mockConfirm.mockReturnValue(false);
 
 				const result: boolean =
 					TestBed.runInInjectionContext(

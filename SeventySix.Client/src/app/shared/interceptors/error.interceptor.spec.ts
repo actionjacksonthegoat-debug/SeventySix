@@ -1,6 +1,5 @@
 import {
 	HttpErrorResponse,
-	HttpHandler,
 	HttpRequest
 } from "@angular/common/http";
 import { provideHttpClient } from "@angular/common/http";
@@ -15,16 +14,32 @@ import {
 } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { LoggerService } from "@shared/services/logger.service";
-import { createMockLogger } from "@shared/testing";
+import {
+	createMockLogger,
+	type MockLoggerService
+} from "@shared/testing";
+import { firstValueFrom } from "rxjs";
 import { throwError } from "rxjs";
+import { vi, type Mock } from "vitest";
 import { errorInterceptor } from "./error.interceptor";
+
+interface MockAuthService
+{
+	isAuthenticated: Mock;
+	logout: Mock;
+}
+
+interface MockHttpHandler
+{
+	handle: Mock;
+}
 
 describe("errorInterceptor",
 	() =>
 	{
-		let mockLogger: jasmine.SpyObj<LoggerService>;
-		let mockAuthService: jasmine.SpyObj<AuthService>;
-		let mockHandler: jasmine.SpyObj<HttpHandler>;
+		let mockLogger: MockLoggerService;
+		let mockAuthService: MockAuthService;
+		let mockHandler: MockHttpHandler;
 
 		beforeEach(
 			() =>
@@ -32,14 +47,14 @@ describe("errorInterceptor",
 				mockLogger =
 					createMockLogger();
 				mockAuthService =
-					jasmine.createSpyObj("AuthService",
-						[
-							"isAuthenticated",
-							"logout"
-						]);
+					{
+						isAuthenticated: vi.fn(),
+						logout: vi.fn()
+					};
 				mockHandler =
-					jasmine.createSpyObj("HttpHandler",
-						["handle"]);
+					{
+						handle: vi.fn()
+					};
 
 				TestBed.configureTestingModule(
 					{
@@ -55,65 +70,65 @@ describe("errorInterceptor",
 			});
 
 		it("should convert network errors (status 0)",
-			(done) =>
+			async () =>
 			{
 				const error: HttpErrorResponse =
 					new HttpErrorResponse(
 						{ status: 0 });
-				mockHandler.handle.and.returnValue(throwError(
+				mockHandler.handle.mockReturnValue(throwError(
 					() => error));
 				const req: HttpRequest<unknown> =
 					new HttpRequest("GET", "/api/data");
 
-				TestBed.runInInjectionContext(
-					() =>
+				await TestBed.runInInjectionContext(
+					async () =>
 					{
-						errorInterceptor(
-							req,
-							mockHandler.handle.bind(mockHandler))
-							.subscribe(
-								{
-									error: (receivedError: Error) =>
-									{
-										expect(receivedError instanceof NetworkError)
-											.toBe(true);
-										done();
-									}
-								});
+						try
+						{
+							await firstValueFrom(
+								errorInterceptor(
+									req,
+									mockHandler.handle.bind(mockHandler)));
+						}
+						catch (receivedError)
+						{
+							expect(receivedError instanceof NetworkError)
+								.toBe(true);
+						}
 					});
 			});
 
 		it("should convert 404 errors to NotFoundError",
-			(done) =>
+			async () =>
 			{
 				const error: HttpErrorResponse =
 					new HttpErrorResponse(
 						{ status: 404 });
-				mockHandler.handle.and.returnValue(throwError(
+				mockHandler.handle.mockReturnValue(throwError(
 					() => error));
 				const req: HttpRequest<unknown> =
 					new HttpRequest("GET", "/api/data");
 
-				TestBed.runInInjectionContext(
-					() =>
+				await TestBed.runInInjectionContext(
+					async () =>
 					{
-						errorInterceptor(
-							req,
-							mockHandler.handle.bind(mockHandler))
-							.subscribe(
-								{
-									error: (receivedError: Error) =>
-									{
-										expect(receivedError instanceof NotFoundError)
-											.toBe(true);
-										done();
-									}
-								});
+						try
+						{
+							await firstValueFrom(
+								errorInterceptor(
+									req,
+									mockHandler.handle.bind(mockHandler)));
+						}
+						catch (receivedError)
+						{
+							expect(receivedError instanceof NotFoundError)
+								.toBe(true);
+						}
 					});
 			});
 
 		it("should convert validation errors",
-			(done) =>
+			async () =>
 			{
 				const error: HttpErrorResponse =
 					new HttpErrorResponse(
@@ -121,26 +136,26 @@ describe("errorInterceptor",
 							status: 400,
 							error: { errors: { field: ["error"] } }
 						});
-				mockHandler.handle.and.returnValue(throwError(
+				mockHandler.handle.mockReturnValue(throwError(
 					() => error));
 				const req: HttpRequest<unknown> =
 					new HttpRequest("GET", "/api/data");
 
-				TestBed.runInInjectionContext(
-					() =>
+				await TestBed.runInInjectionContext(
+					async () =>
 					{
-						errorInterceptor(
-							req,
-							mockHandler.handle.bind(mockHandler))
-							.subscribe(
-								{
-									error: (receivedError: Error) =>
-									{
-										expect(receivedError instanceof ValidationError)
-											.toBe(true);
-										done();
-									}
-								});
+						try
+						{
+							await firstValueFrom(
+								errorInterceptor(
+									req,
+									mockHandler.handle.bind(mockHandler)));
+						}
+						catch (receivedError)
+						{
+							expect(receivedError instanceof ValidationError)
+								.toBe(true);
+						}
 					});
 			});
 	});

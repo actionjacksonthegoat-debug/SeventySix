@@ -305,20 +305,22 @@ describe("DataTableComponent",
 					});
 
 				it("should emit filterChange event when filter toggled",
-					(done) =>
-					{
-						component.filterChange.subscribe(
-							(event: FilterChangeEvent) =>
+					() =>
+						new Promise<void>(
+							(resolve) =>
 							{
-								expect(event.filterKey)
-									.toBe("active");
-								expect(event.active)
-									.toBe(true);
-								done();
-							});
+								component.filterChange.subscribe(
+									(event: FilterChangeEvent) =>
+									{
+										expect(event.filterKey)
+											.toBe("active");
+										expect(event.active)
+											.toBe(true);
+										resolve();
+									});
 
-						component.onFilterToggle("active");
-					});
+								component.onFilterToggle("active");
+							}));
 
 				it("should track active filters",
 					() =>
@@ -369,34 +371,38 @@ describe("DataTableComponent",
 					});
 
 				it("should emit rowAction event when action triggered",
-					(done) =>
-					{
-						component.rowAction.subscribe(
-							(event: RowActionEvent<TestEntity>) =>
+					() =>
+						new Promise<void>(
+							(resolve) =>
 							{
-								expect(event.action)
-									.toBe("edit");
-								expect(event.row)
-									.toBe(mockData[0]);
-								done();
-							});
+								component.rowAction.subscribe(
+									(event: RowActionEvent<TestEntity>) =>
+									{
+										expect(event.action)
+											.toBe("edit");
+										expect(event.row)
+											.toBe(mockData[0]);
+										resolve();
+									});
 
-						component.onRowAction("edit", mockData[0]);
-					});
+								component.onRowAction("edit", mockData[0]);
+							}));
 
 				it("should emit rowClick event when row clicked",
-					(done) =>
-					{
-						component.rowClick.subscribe(
-							(row: TestEntity) =>
+					() =>
+						new Promise<void>(
+							(resolve) =>
 							{
-								expect(row)
-									.toBe(mockData[0]);
-								done();
-							});
+								component.rowClick.subscribe(
+									(row: TestEntity) =>
+									{
+										expect(row)
+											.toBe(mockData[0]);
+										resolve();
+									});
 
-						component.onRowClick(mockData[0]);
-					});
+								component.onRowClick(mockData[0]);
+							}));
 			});
 
 		describe("Bulk Actions",
@@ -425,26 +431,28 @@ describe("DataTableComponent",
 					});
 
 				it("should emit bulkAction event when action triggered",
-					(done) =>
-					{
-						component.selection.select(mockData[0]);
-						component.selection.select(mockData[1]);
-
-						component.bulkAction.subscribe(
-							(event: BulkActionEvent<TestEntity>) =>
+					() =>
+						new Promise<void>(
+							(resolve) =>
 							{
-								expect(event.action)
-									.toBe("delete-all");
-								expect(event.selectedRows.length)
-									.toBe(2);
-								expect(event.selectedIds)
-									.toEqual(
-										[1, 2]);
-								done();
-							});
+								component.selection.select(mockData[0]);
+								component.selection.select(mockData[1]);
 
-						component.onBulkAction("delete-all");
-					});
+								component.bulkAction.subscribe(
+									(event: BulkActionEvent<TestEntity>) =>
+									{
+										expect(event.action)
+											.toBe("delete-all");
+										expect(event.selectedRows.length)
+											.toBe(2);
+										expect(event.selectedIds)
+											.toEqual(
+												[1, 2]);
+										resolve();
+									});
+
+								component.onBulkAction("delete-all");
+							}));
 
 				it("should compute selection state correctly",
 					() =>
@@ -484,34 +492,38 @@ describe("DataTableComponent",
 					});
 
 				it("should emit pageChange event when page changed",
-					(done) =>
-					{
-						component.pageChange.subscribe(
-							(pageIndex: number) =>
+					() =>
+						new Promise<void>(
+							(resolve) =>
 							{
-								expect(pageIndex)
-									.toBe(1);
-								done();
-							});
+								component.pageChange.subscribe(
+									(pageIndex: number) =>
+									{
+										expect(pageIndex)
+											.toBe(1);
+										resolve();
+									});
 
-						component.onPageChange(
-							{ pageIndex: 1, pageSize: 25, length: 100 });
-					});
+								component.onPageChange(
+									{ pageIndex: 1, pageSize: 25, length: 100 });
+							}));
 
 				it("should emit pageSizeChange event when page size changed",
-					(done) =>
-					{
-						component.pageSizeChange.subscribe(
-							(pageSize: number) =>
+					() =>
+						new Promise<void>(
+							(resolve) =>
 							{
-								expect(pageSize)
-									.toBe(50);
-								done();
-							});
+								component.pageSizeChange.subscribe(
+									(pageSize: number) =>
+									{
+										expect(pageSize)
+											.toBe(50);
+										resolve();
+									});
 
-						component.onPageChange(
-							{ pageIndex: 0, pageSize: 50, length: 100 });
-					});
+								component.onPageChange(
+									{ pageIndex: 0, pageSize: 50, length: 100 });
+							}));
 			});
 
 		describe("Column Visibility",
@@ -579,18 +591,20 @@ describe("DataTableComponent",
 					});
 
 				it("should emit refreshClick event when refresh button clicked",
-					(done) =>
-					{
-						component.refreshClick.subscribe(
-							() =>
+					() =>
+						new Promise<void>(
+							(resolve) =>
 							{
-								expect(true)
-									.toBe(true);
-								done();
-							});
+								component.refreshClick.subscribe(
+									() =>
+									{
+										expect(true)
+											.toBe(true);
+										resolve();
+									});
 
-						component.onRefresh();
-					});
+								component.onRefresh();
+							}));
 			});
 
 		describe("Create Button",
@@ -604,23 +618,53 @@ describe("DataTableComponent",
 					});
 
 				it("should emit createClick event when create button clicked",
-					(done) =>
-					{
-						component.createClick.subscribe(
-							() =>
+					() =>
+						new Promise<void>(
+							(resolve) =>
 							{
-								expect(true)
-									.toBe(true);
-								done();
-							});
+								component.createClick.subscribe(
+									() =>
+									{
+										expect(true)
+											.toBe(true);
+										resolve();
+									});
 
-						component.onCreate();
-					});
+								component.onCreate();
+							}));
 			});
 
 		describe("CLS Prevention",
 			() =>
 			{
+				function getHeightStyle(element: HTMLElement): string
+				{
+					const directStyle: string =
+						element.style.height || element.style.minHeight || "";
+					if (directStyle)
+					{
+						return directStyle;
+					}
+					const styleAttr: string | null =
+						element.getAttribute("style");
+					if (styleAttr)
+					{
+						const minMatch: RegExpMatchArray | null =
+							styleAttr.match(/min-height:\s*([^;]+)/);
+						if (minMatch)
+						{
+							return minMatch[1].trim();
+						}
+						const heightMatch: RegExpMatchArray | null =
+							styleAttr.match(/height:\s*([^;]+)/);
+						if (heightMatch)
+						{
+							return heightMatch[1].trim();
+						}
+					}
+					return "";
+				}
+
 				it("should reserve minimum height to prevent CLS",
 					async (): Promise<void> =>
 					{
@@ -633,23 +677,20 @@ describe("DataTableComponent",
 						await fixture.whenStable();
 						fixture.detectChanges();
 
-						const wrapper: HTMLElement | null =
-							fixture.nativeElement.querySelector(".table-content-wrapper");
+						const viewport: HTMLElement | null =
+							fixture.nativeElement.querySelector("cdk-virtual-scroll-viewport");
 
-						// Verify container exists and has minimum height to prevent CLS
-						expect(wrapper)
+						expect(viewport)
 							.toBeTruthy();
 
-						if (wrapper)
+						if (viewport)
 						{
-							const computedStyle: CSSStyleDeclaration =
-								window.getComputedStyle(wrapper);
-							const minHeight: number =
-								parseInt(computedStyle.minHeight, 10);
-
-							// Should have reserved height (400px = 25rem at 16px base)
-							expect(minHeight)
-								.toBeGreaterThan(0);
+							const heightStyle: string =
+								getHeightStyle(viewport);
+							expect(heightStyle)
+								.toBeTruthy();
+							expect(heightStyle)
+								.toContain("px");
 						}
 					});
 

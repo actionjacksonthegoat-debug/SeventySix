@@ -8,6 +8,7 @@ import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
 import { CreateLogRequest } from "@shared/models";
 import { delay } from "@shared/testing";
+import { vi } from "vitest";
 import { DateService } from "./date.service";
 import { ErrorQueueService } from "./error-queue.service";
 
@@ -21,31 +22,28 @@ describe("ErrorQueueService (Zoneless)",
 			environment.logging.batchInterval; // Use environment config
 		const API_BATCH_URL: string =
 			`${environment.apiUrl}/logs/client/batch`; // Dynamic URL from environment
-		let originalTimeout: number;
-		let consoleSpy: jasmine.Spy;
+		let consoleSpy: ReturnType<typeof vi.spyOn>;
 
 		beforeEach(
 			() =>
 			{
-			// Save original timeout
-				originalTimeout =
-					jasmine.DEFAULT_TIMEOUT_INTERVAL;
-
 				// Clear localStorage before each test
 				localStorage.clear();
 
 				// Suppress console.error output during tests while still allowing verification
 				consoleSpy =
-					spyOn(console, "error");
+					vi.spyOn(console, "error")
+						.mockImplementation(
+							() =>
+							{});
 
 				// Mock environment configuration for faster tests
-				spyOnProperty(
+				vi.spyOn(
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					(window as any).navigator,
 					"userAgent",
 					"get")
-					.and
-					.returnValue("TestBrowser/1.0");
+					.mockReturnValue("TestBrowser/1.0");
 
 				TestBed.configureTestingModule(
 					{
@@ -70,9 +68,6 @@ describe("ErrorQueueService (Zoneless)",
 		afterEach(
 			() =>
 			{
-			// Reset timeout
-				jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-
 				// Verify no outstanding HTTP requests
 				httpMock.verify();
 
@@ -380,7 +375,31 @@ describe("ErrorQueueService (Zoneless)",
 				it("should handle localStorage errors gracefully",
 					() =>
 					{
-						spyOn(localStorage, "setItem").and.throwError("Storage full");
+						// Mock localStorage.setItem to throw an error
+						const originalLocalStorage: Storage =
+							window.localStorage;
+						const mockStorage: Storage =
+							{
+								length: 0,
+								key: () => null,
+								getItem: (key: string) =>
+									originalLocalStorage.getItem(key),
+								setItem: () =>
+								{
+									throw new Error("Storage full");
+								},
+								removeItem: (key: string) =>
+									originalLocalStorage.removeItem(key),
+								clear: () => originalLocalStorage.clear()
+							};
+
+						Object.defineProperty(
+							window,
+							"localStorage",
+							{
+								value: mockStorage,
+								writable: true
+							});
 
 						service.enqueue(
 							{
@@ -389,14 +408,22 @@ describe("ErrorQueueService (Zoneless)",
 								clientTimestamp: dateService.now()
 							});
 
-						// StorageService handles errors internally, returns false on failure
-						// No error should propagate to console from error-queue service
-						const calls: readonly jasmine.CallInfo<jasmine.Func>[] =
-							consoleSpy.calls.all();
-						const storageErrorCall: jasmine.CallInfo<jasmine.Func> | undefined =
+						// Restore original localStorage
+						Object.defineProperty(
+							window,
+							"localStorage",
+							{
+								value: originalLocalStorage,
+								writable: true
+							});
+
+						// StorageService handles errors internally, logging to console.error
+						const calls: unknown[][] =
+							consoleSpy.mock.calls;
+						const storageErrorCall: unknown[] | undefined =
 							calls.find(
 								(call) =>
-									call.args[0]?.includes("StorageService"));
+									(call[0] as string)?.includes?.("StorageService"));
 						expect(storageErrorCall)
 							.toBeDefined();
 					});

@@ -1,32 +1,45 @@
-import { HttpEvent, HttpHandler, HttpRequest } from "@angular/common/http";
+import { HttpEvent, HttpRequest } from "@angular/common/http";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { AuthService } from "@shared/services/auth.service";
 import { of } from "rxjs";
+import { vi, type Mock } from "vitest";
 import { authInterceptor } from "./auth.interceptor";
+
+interface MockAuthService
+{
+	getAccessToken: Mock;
+	isTokenExpired: Mock;
+	refreshToken: Mock;
+}
+
+interface MockHttpHandler
+{
+	handle: Mock;
+}
 
 describe("authInterceptor",
 	() =>
 	{
-		let mockAuthService: jasmine.SpyObj<AuthService>;
-		let mockHandler: jasmine.SpyObj<HttpHandler>;
+		let mockAuthService: MockAuthService;
+		let mockHandler: MockHttpHandler;
 
 		beforeEach(
 			() =>
 			{
 				mockAuthService =
-					jasmine.createSpyObj("AuthService",
-						[
-							"getAccessToken",
-							"isTokenExpired",
-							"refreshToken"
-						]);
+					{
+						getAccessToken: vi.fn(),
+						isTokenExpired: vi.fn(),
+						refreshToken: vi.fn()
+					};
 				mockHandler =
-					jasmine.createSpyObj("HttpHandler",
-						["handle"]);
-				mockHandler.handle.and.returnValue(of({} as HttpEvent<unknown>));
+					{
+						handle: vi.fn()
+					};
+				mockHandler.handle.mockReturnValue(of({} as HttpEvent<unknown>));
 
 				TestBed.configureTestingModule(
 					{
@@ -42,8 +55,8 @@ describe("authInterceptor",
 		it("should add authorization header when token exists",
 			() =>
 			{
-				mockAuthService.getAccessToken.and.returnValue("test-token");
-				mockAuthService.isTokenExpired.and.returnValue(false);
+				mockAuthService.getAccessToken.mockReturnValue("test-token");
+				mockAuthService.isTokenExpired.mockReturnValue(false);
 				const req: HttpRequest<unknown> =
 					new HttpRequest("GET", "/api/data");
 
@@ -56,9 +69,9 @@ describe("authInterceptor",
 				const callArgs: HttpRequest<unknown> =
 					mockHandler
 						.handle
+						.mock
 						.calls
-						.mostRecent()
-						.args[0] as HttpRequest<unknown>;
+						.at(-1)![0] as HttpRequest<unknown>;
 				expect(callArgs.headers.get("Authorization"))
 					.toBe("Bearer test-token");
 			});
@@ -66,7 +79,7 @@ describe("authInterceptor",
 		it("should not add header for public endpoints",
 			() =>
 			{
-				mockAuthService.getAccessToken.and.returnValue("test-token");
+				mockAuthService.getAccessToken.mockReturnValue("test-token");
 				const req: HttpRequest<unknown> =
 					new HttpRequest("GET", "/auth/login");
 
@@ -79,9 +92,9 @@ describe("authInterceptor",
 				const callArgs: HttpRequest<unknown> =
 					mockHandler
 						.handle
+						.mock
 						.calls
-						.mostRecent()
-						.args[0] as HttpRequest<unknown>;
+						.at(-1)![0] as HttpRequest<unknown>;
 				expect(callArgs.headers.get("Authorization"))
 					.toBeNull();
 			});
@@ -89,8 +102,8 @@ describe("authInterceptor",
 		it("should add header for change-password endpoint",
 			() =>
 			{
-				mockAuthService.getAccessToken.and.returnValue("test-token");
-				mockAuthService.isTokenExpired.and.returnValue(false);
+				mockAuthService.getAccessToken.mockReturnValue("test-token");
+				mockAuthService.isTokenExpired.mockReturnValue(false);
 				const req: HttpRequest<unknown> =
 					new HttpRequest(
 						"POST",
@@ -106,9 +119,9 @@ describe("authInterceptor",
 				const callArgs: HttpRequest<unknown> =
 					mockHandler
 						.handle
+						.mock
 						.calls
-						.mostRecent()
-						.args[0] as HttpRequest<unknown>;
+						.at(-1)![0] as HttpRequest<unknown>;
 				expect(callArgs.headers.get("Authorization"))
 					.toBe("Bearer test-token");
 			});
@@ -116,7 +129,7 @@ describe("authInterceptor",
 		it("should not add header when no token",
 			() =>
 			{
-				mockAuthService.getAccessToken.and.returnValue(null);
+				mockAuthService.getAccessToken.mockReturnValue(null);
 				const req: HttpRequest<unknown> =
 					new HttpRequest("GET", "/api/data");
 
@@ -129,9 +142,9 @@ describe("authInterceptor",
 				const callArgs: HttpRequest<unknown> =
 					mockHandler
 						.handle
+						.mock
 						.calls
-						.mostRecent()
-						.args[0] as HttpRequest<unknown>;
+						.at(-1)![0] as HttpRequest<unknown>;
 				expect(callArgs.headers.get("Authorization"))
 					.toBeNull();
 			});

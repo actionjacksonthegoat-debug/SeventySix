@@ -1,21 +1,28 @@
-import { HttpHandler, HttpRequest, HttpResponse } from "@angular/common/http";
+import { HttpRequest, HttpResponse } from "@angular/common/http";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
-import { of } from "rxjs";
+import { firstValueFrom, of } from "rxjs";
+import { vi, type Mock } from "vitest";
 import { loggingInterceptor } from "./logging.interceptor";
+
+interface MockHttpHandler
+{
+	handle: Mock;
+}
 
 describe("loggingInterceptor",
 	() =>
 	{
-		let mockHandler: jasmine.SpyObj<HttpHandler>;
+		let mockHandler: MockHttpHandler;
 
 		beforeEach(
 			() =>
 			{
 				mockHandler =
-					jasmine.createSpyObj("HttpHandler",
-						["handle"]);
-				mockHandler.handle.and.returnValue(
+					{
+						handle: vi.fn()
+					};
+				mockHandler.handle.mockReturnValue(
 					of(
 						new HttpResponse(
 							{ status: 200 })));
@@ -25,51 +32,46 @@ describe("loggingInterceptor",
 						providers: [provideZonelessChangeDetection()]
 					});
 
-				spyOn(console, "log");
+				vi.spyOn(console, "log")
+					.mockImplementation(
+						() =>
+						{});
 			});
 
 		it("should log HTTP requests in development",
-			(done: DoneFn) =>
+			async () =>
 			{
 				const req: HttpRequest<unknown> =
 					new HttpRequest<unknown>("GET", "/api/data");
 
-				TestBed.runInInjectionContext(
-					() =>
+				await TestBed.runInInjectionContext(
+					async () =>
 					{
-						loggingInterceptor(
-							req,
-							mockHandler.handle.bind(mockHandler))
-							.subscribe(
-								(): void =>
-								{
-									// eslint-disable-next-line no-console
-									expect(console.log)
-										.toHaveBeenCalled();
-									done();
-								});
+						await firstValueFrom(
+							loggingInterceptor(
+								req,
+								mockHandler.handle.bind(mockHandler)));
+						// eslint-disable-next-line no-console
+						expect(console.log)
+							.toHaveBeenCalled();
 					});
 			});
 
 		it("should pass through requests",
-			(done: DoneFn) =>
+			async () =>
 			{
 				const req: HttpRequest<unknown> =
 					new HttpRequest<unknown>("GET", "/api/data");
 
-				TestBed.runInInjectionContext(
-					() =>
+				await TestBed.runInInjectionContext(
+					async () =>
 					{
-						loggingInterceptor(
-							req,
-							mockHandler.handle.bind(mockHandler))
-							.subscribe(
-								(): void =>
-								{
-									expect(mockHandler.handle)
-										.toHaveBeenCalled();
-									done();
-								});
+						await firstValueFrom(
+							loggingInterceptor(
+								req,
+								mockHandler.handle.bind(mockHandler)));
+						expect(mockHandler.handle)
+							.toHaveBeenCalled();
 					});
 			});
 	});

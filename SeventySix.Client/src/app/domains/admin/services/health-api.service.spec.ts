@@ -190,7 +190,7 @@ describe("HealthApiService",
 				it("should handle HTTP errors",
 					async () =>
 					{
-						spyOn(console, "error"); // Suppress expected error logs
+						vi.spyOn(console, "error"); // Suppress expected error logs
 						const query: ReturnType<typeof service.getHealth> =
 							TestBed.runInInjectionContext(
 								() => service.getHealth());
@@ -283,7 +283,7 @@ describe("HealthApiService",
 				it("should handle HTTP errors",
 					async () =>
 					{
-						spyOn(console, "error"); // Suppress expected error logs
+						vi.spyOn(console, "error"); // Suppress expected error logs
 						const query: ReturnType<typeof service.getDatabaseHealth> =
 							TestBed.runInInjectionContext(
 								() => service.getDatabaseHealth());
@@ -416,7 +416,7 @@ describe("HealthApiService",
 				it("should handle HTTP errors",
 					async () =>
 					{
-						spyOn(console, "error"); // Suppress expected error logs
+						vi.spyOn(console, "error"); // Suppress expected error logs
 						const query: ReturnType<typeof service.getExternalApiHealth> =
 							TestBed.runInInjectionContext(
 								() => service.getExternalApiHealth());

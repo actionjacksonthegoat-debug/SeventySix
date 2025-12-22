@@ -9,6 +9,7 @@ import { ApiService } from "@shared/services/api.service";
 // QueryClient not used in these tests
 import {
 	createMockApiService,
+	MockApiService,
 	setupServiceTest
 } from "@shared/testing";
 import { of } from "rxjs";
@@ -19,7 +20,7 @@ describe("UserService",
 	() =>
 	{
 		let service: UserService;
-		let mockApiService: jasmine.SpyObj<ApiService>;
+		let mockApiService: MockApiService;
 
 		const mockUser: UserDto =
 			UserFixtures.JOHN_DOE;
@@ -28,8 +29,7 @@ describe("UserService",
 			() =>
 			{
 				mockApiService =
-					createMockApiService() as jasmine.SpyObj<ApiService>;
-
+					createMockApiService();
 				const setup: { service: UserService; } =
 					setupServiceTest(UserService,
 						[
@@ -148,7 +148,7 @@ describe("UserService",
 				it("should fetch user by id",
 					async () =>
 					{
-						mockApiService.get.and.returnValue(of(mockUser));
+						mockApiService.get.mockReturnValue(of(mockUser));
 
 						const query: ReturnType<typeof service.getUserById> =
 							TestBed.runInInjectionContext(
@@ -174,7 +174,7 @@ describe("UserService",
 								username: "newuser",
 								email: "new@example.com"
 							};
-						mockApiService.post.and.returnValue(of(mockUser));
+						mockApiService.post.mockReturnValue(of(mockUser));
 
 						const mutation: ReturnType<typeof service.createUser> =
 							TestBed.runInInjectionContext(
@@ -184,7 +184,7 @@ describe("UserService",
 						expect(mockApiService.post)
 							.toHaveBeenCalledWith(
 								"users",
-								jasmine.objectContaining(
+								expect.objectContaining(
 									{
 										username: "newuser",
 										email: "new@example.com"
@@ -205,7 +205,7 @@ describe("UserService",
 								email: "updated@example.com",
 								isActive: true
 							};
-						mockApiService.put.and.returnValue(of(mockUser));
+						mockApiService.put.mockReturnValue(of(mockUser));
 
 						const mutation: ReturnType<typeof service.updateUser> =
 							TestBed.runInInjectionContext(
@@ -226,7 +226,7 @@ describe("UserService",
 				it("should delete user",
 					async () =>
 					{
-						mockApiService.delete.and.returnValue(of(undefined));
+						mockApiService.delete.mockReturnValue(of(undefined));
 
 						const mutation: ReturnType<typeof service.deleteUser> =
 							TestBed.runInInjectionContext(
@@ -260,7 +260,7 @@ describe("UserService",
 								hasPrevious: false,
 								hasNext: false
 							};
-						mockApiService.get.and.returnValue(of(pagedResult));
+						mockApiService.get.mockReturnValue(of(pagedResult));
 
 						const query: ReturnType<typeof service.getPagedUsers> =
 							TestBed.runInInjectionContext(
@@ -279,7 +279,7 @@ describe("UserService",
 				it("should fetch user by username",
 					async () =>
 					{
-						mockApiService.get.and.returnValue(of(mockUser));
+						mockApiService.get.mockReturnValue(of(mockUser));
 
 						const query: ReturnType<typeof service.getUserByUsername> =
 							TestBed.runInInjectionContext(
@@ -301,7 +301,7 @@ describe("UserService",
 				it("should restore user",
 					async () =>
 					{
-						mockApiService.post.and.returnValue(of(undefined));
+						mockApiService.post.mockReturnValue(of(undefined));
 
 						const mutation: ReturnType<typeof service.restoreUser> =
 							TestBed.runInInjectionContext(
@@ -319,7 +319,7 @@ describe("UserService",
 				it("should reset user password",
 					async () =>
 					{
-						mockApiService.post.and.returnValue(of(undefined));
+						mockApiService.post.mockReturnValue(of(undefined));
 
 						const mutation: ReturnType<typeof service.resetPassword> =
 							TestBed.runInInjectionContext(
@@ -348,7 +348,7 @@ describe("UserService",
 								hasNext: false
 							};
 
-						mockApiService.get.and.returnValue(of(mockPagedResponse));
+						mockApiService.get.mockReturnValue(of(mockPagedResponse));
 
 						// Access the private signal via bracket notation for testing
 						const getSignalValue: () => boolean =

@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { ApiService } from "@shared/services/api.service";
-import { createMockApiService } from "@shared/testing";
+import { createMockApiService, MockApiService } from "@shared/testing";
 import {
 	provideAngularQuery,
 	QueryClient
@@ -16,15 +16,15 @@ describe("ProfilePage",
 	{
 		let component: ProfilePage;
 		let fixture: ComponentFixture<ProfilePage>;
-		let mockApiService: jasmine.SpyObj<ApiService>;
+		let mockApiService: MockApiService;
 		let queryClient: QueryClient;
 
 		beforeEach(
 			async () =>
 			{
 				mockApiService =
-					createMockApiService() as jasmine.SpyObj<ApiService>;
-				mockApiService.get.and.returnValue(
+					createMockApiService();
+				mockApiService.get.mockReturnValue(
 					of(
 						{
 							id: 1,
@@ -89,7 +89,7 @@ describe("ProfilePage",
 		it("should submit valid form",
 			async () =>
 			{
-				mockApiService.put.and.returnValue(of({}));
+				mockApiService.put.mockReturnValue(of({}));
 				component.profileForm.patchValue(
 					{
 						email: "new@example.com",

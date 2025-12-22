@@ -2,25 +2,28 @@ import { UserFixtures } from "@admin/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { DateService } from "@shared/services";
+import { vi } from "vitest";
 import { UserExportService } from "./user-export.service";
 
 describe("UserExportService",
 	() =>
 	{
 		let service: UserExportService;
-		let mockDateService: jasmine.SpyObj<DateService>;
+
+		interface MockDateService {
+			now: ReturnType<typeof vi.fn>;
+		}
+
+		let mockDateService: MockDateService;
 
 		beforeEach(
 			() =>
 			{
 				mockDateService =
-					jasmine.createSpyObj(
-						"DateService",
-						["now"]);
+					{ now: vi.fn() };
 				mockDateService
 					.now
-					.and
-					.returnValue("2024-01-15T12:00:00Z");
+					.mockReturnValue("2024-01-15T12:00:00Z");
 
 				TestBed.configureTestingModule(
 					{
@@ -49,8 +52,8 @@ describe("UserExportService",
 					() =>
 					{
 						// Arrange
-						const createElementSpy: jasmine.Spy =
-							spyOn(document, "createElement");
+						const createElementSpy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(document, "createElement");
 
 						// Act
 						service.exportToCsv([]);
@@ -67,40 +70,32 @@ describe("UserExportService",
 						// Arrange
 						const users: ReturnType<typeof UserFixtures.createUsers> =
 							UserFixtures.createUsers(2);
-						// eslint-disable-next-line @typescript-eslint/no-unused-vars
-						let downloadedContent: string = "";
 
-						// Mock the download mechanism
-						const mockLink: Partial<HTMLAnchorElement> =
-							{
-								download: "",
-								href: "",
-								style: { visibility: "" } as CSSStyleDeclaration,
-								setAttribute: jasmine.createSpy("setAttribute"),
-								click: jasmine.createSpy("click")
-							};
-						spyOn(document, "createElement")
-							.and
-							.returnValue(mockLink as HTMLAnchorElement);
-						spyOn(document.body, "appendChild");
-						spyOn(document.body, "removeChild");
-						spyOn(URL, "createObjectURL")
-							.and
-							.callFake(
-								(blob: Blob) =>
-								{
-									const reader: FileReader =
-										new FileReader();
-									reader.readAsText(blob);
-									reader.onload =
-										(): void =>
-										{
-											downloadedContent =
-												reader.result as string;
-										};
-									return "blob:test";
-								});
-						spyOn(URL, "revokeObjectURL");
+						// Create a real anchor element for appendChild to work
+						const mockLink: HTMLAnchorElement =
+							document.createElement("a");
+						const setAttributeSpy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(mockLink, "setAttribute");
+						const clickSpy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(mockLink, "click")
+								.mockImplementation(
+									() =>
+									{});
+
+						vi.spyOn(document, "createElement")
+							.mockReturnValue(mockLink);
+						vi.spyOn(document.body, "appendChild")
+							.mockImplementation(
+								(node: Node) => node);
+						vi.spyOn(document.body, "removeChild")
+							.mockImplementation(
+								(node: Node) => node);
+						vi.spyOn(URL, "createObjectURL")
+							.mockReturnValue("blob:test");
+						vi.spyOn(URL, "revokeObjectURL")
+							.mockImplementation(
+								() =>
+								{});
 
 						// Act
 						service.exportToCsv(users);
@@ -108,9 +103,9 @@ describe("UserExportService",
 						// Assert
 						expect(document.createElement)
 							.toHaveBeenCalledWith("a");
-						expect(mockLink.setAttribute)
-							.toHaveBeenCalledWith("download", jasmine.stringMatching(/users_export_.*\.csv/));
-						expect(mockLink.click)
+						expect(setAttributeSpy)
+							.toHaveBeenCalledWith("download", expect.stringMatching(/users_export_.*\.csv/));
+						expect(clickSpy)
 							.toHaveBeenCalled();
 					});
 
@@ -122,23 +117,30 @@ describe("UserExportService",
 							UserFixtures.createUsers(1);
 						const customFilename: string = "my-custom-export.csv";
 
-						const mockLink: Partial<HTMLAnchorElement> =
-							{
-								download: "",
-								href: "",
-								style: { visibility: "" } as CSSStyleDeclaration,
-								setAttribute: jasmine.createSpy("setAttribute"),
-								click: jasmine.createSpy("click")
-							};
-						spyOn(document, "createElement")
-							.and
-							.returnValue(mockLink as HTMLAnchorElement);
-						spyOn(document.body, "appendChild");
-						spyOn(document.body, "removeChild");
-						spyOn(URL, "createObjectURL")
-							.and
-							.returnValue("blob:test");
-						spyOn(URL, "revokeObjectURL");
+						// Create a real anchor element for appendChild to work
+						const mockLink: HTMLAnchorElement =
+							document.createElement("a");
+						const setAttributeSpy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(mockLink, "setAttribute");
+						vi.spyOn(mockLink, "click")
+							.mockImplementation(
+								() =>
+								{});
+
+						vi.spyOn(document, "createElement")
+							.mockReturnValue(mockLink);
+						vi.spyOn(document.body, "appendChild")
+							.mockImplementation(
+								(node: Node) => node);
+						vi.spyOn(document.body, "removeChild")
+							.mockImplementation(
+								(node: Node) => node);
+						vi.spyOn(URL, "createObjectURL")
+							.mockReturnValue("blob:test");
+						vi.spyOn(URL, "revokeObjectURL")
+							.mockImplementation(
+								() =>
+								{});
 
 						// Act
 						service.exportToCsv(
@@ -146,7 +148,7 @@ describe("UserExportService",
 							customFilename);
 
 						// Assert
-						expect(mockLink.setAttribute)
+						expect(setAttributeSpy)
 							.toHaveBeenCalledWith(
 								"download",
 								customFilename);

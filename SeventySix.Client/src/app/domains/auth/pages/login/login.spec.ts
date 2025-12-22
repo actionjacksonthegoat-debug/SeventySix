@@ -12,15 +12,30 @@ import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { createMockNotificationService } from "@shared/testing";
 import { of, throwError } from "rxjs";
+import { vi } from "vitest";
 import { LoginComponent } from "./login";
+
+interface MockAuthService {
+	login: ReturnType<typeof vi.fn>;
+	loginWithProvider: ReturnType<typeof vi.fn>;
+	isAuthenticated: ReturnType<typeof signal<boolean>>;
+}
+
+interface MockNotificationService {
+	success: ReturnType<typeof vi.fn>;
+	error: ReturnType<typeof vi.fn>;
+	info: ReturnType<typeof vi.fn>;
+	warning: ReturnType<typeof vi.fn>;
+	errorWithDetails: ReturnType<typeof vi.fn>;
+}
 
 describe("LoginComponent",
 	() =>
 	{
 		let component: LoginComponent;
 		let fixture: ComponentFixture<LoginComponent>;
-		let mockAuthService: jasmine.SpyObj<AuthService>;
-		let mockNotificationService: jasmine.SpyObj<NotificationService>;
+		let mockAuthService: MockAuthService;
+		let mockNotificationService: MockNotificationService;
 		let router: Router;
 
 		const mockAuthResponse: AuthResponse =
@@ -37,12 +52,11 @@ describe("LoginComponent",
 			async () =>
 			{
 				mockAuthService =
-					jasmine.createSpyObj(
-						"AuthService",
-						["login", "loginWithProvider"],
-						{
-							isAuthenticated: signal<boolean>(false)
-						});
+					{
+						login: vi.fn(),
+						loginWithProvider: vi.fn(),
+						isAuthenticated: signal<boolean>(false)
+					};
 				mockNotificationService =
 					createMockNotificationService();
 
@@ -68,8 +82,8 @@ describe("LoginComponent",
 					fixture.componentInstance;
 				router =
 					TestBed.inject(Router);
-				spyOn(router, "navigate");
-				spyOn(router, "navigateByUrl");
+				vi.spyOn(router, "navigate");
+				vi.spyOn(router, "navigateByUrl");
 				fixture.detectChanges();
 			});
 
@@ -133,7 +147,7 @@ describe("LoginComponent",
 					() =>
 					{
 						// Arrange
-						mockAuthService.login.and.returnValue(of(mockAuthResponse));
+						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
 						(component as unknown as { password: string; }).password = "password123";
 						(component as unknown as { rememberMe: boolean; }).rememberMe = false;
@@ -155,7 +169,7 @@ describe("LoginComponent",
 					() =>
 					{
 						// Arrange
-						mockAuthService.login.and.returnValue(of(mockAuthResponse));
+						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
 						(component as unknown as { password: string; }).password = "password123";
 
@@ -171,7 +185,7 @@ describe("LoginComponent",
 					() =>
 					{
 						// Arrange
-						mockAuthService.login.and.returnValue(of(mockAuthResponse));
+						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
 						(component as unknown as { password: string; }).password = "password123";
 						(component as unknown as { rememberMe: boolean; }).rememberMe = true;
@@ -198,7 +212,7 @@ describe("LoginComponent",
 								...mockAuthResponse,
 								requiresPasswordChange: true
 							};
-						mockAuthService.login.and.returnValue(
+						mockAuthService.login.mockReturnValue(
 							of(responseWithPasswordChange));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
 						(component as unknown as { password: string; }).password = "password123";
@@ -226,7 +240,7 @@ describe("LoginComponent",
 									status: 401,
 									statusText: "Unauthorized"
 								});
-						mockAuthService.login.and.returnValue(
+						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
@@ -255,7 +269,7 @@ describe("LoginComponent",
 									status: 0,
 									statusText: "Unknown Error"
 								});
-						mockAuthService.login.and.returnValue(
+						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
@@ -284,7 +298,7 @@ describe("LoginComponent",
 									status: 429,
 									statusText: "Too Many Requests"
 								});
-						mockAuthService.login.and.returnValue(
+						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
@@ -313,7 +327,7 @@ describe("LoginComponent",
 									status: 500,
 									statusText: "Internal Server Error"
 								});
-						mockAuthService.login.and.returnValue(
+						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
@@ -342,7 +356,7 @@ describe("LoginComponent",
 									statusText: "Internal Server Error",
 									error: { detail: "Custom server error message" }
 								});
-						mockAuthService.login.and.returnValue(
+						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
@@ -364,7 +378,7 @@ describe("LoginComponent",
 					() =>
 					{
 						// Arrange
-						mockAuthService.login.and.returnValue(of(mockAuthResponse));
+						mockAuthService.login.mockReturnValue(of(mockAuthResponse));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";
 						(component as unknown as { password: string; }).password = "password123";
 
@@ -387,7 +401,7 @@ describe("LoginComponent",
 									status: 401,
 									statusText: "Unauthorized"
 								});
-						mockAuthService.login.and.returnValue(
+						mockAuthService.login.mockReturnValue(
 							throwError(
 								() => errorResponse));
 						(component as unknown as { usernameOrEmail: string; }).usernameOrEmail = "testuser";

@@ -1,29 +1,54 @@
 import { BreakpointObserver } from "@angular/cdk/layout";
 import { setupSimpleServiceTest } from "@shared/testing";
 import { of } from "rxjs";
+import { Mock, vi } from "vitest";
 import { LayoutService } from "./layout.service";
+
+interface MockBreakpointObserver
+{
+	observe: Mock;
+}
 
 describe("LayoutService",
 	() =>
 	{
 		let service: LayoutService;
-		let mockBreakpointObserver: jasmine.SpyObj<BreakpointObserver>;
+		let mockBreakpointObserver: MockBreakpointObserver;
+		let sessionStorageSetItemSpy: Mock<(key: string, value: string) => void>;
 
 		beforeEach(
 			() =>
 			{
 				mockBreakpointObserver =
-					jasmine.createSpyObj("BreakpointObserver",
-						[
-							"observe"
-						]);
-				mockBreakpointObserver.observe.and.returnValue(
+					{
+						observe: vi.fn()
+					};
+				mockBreakpointObserver.observe.mockReturnValue(
 					of(
 						{ matches: false, breakpoints: {} }));
 
-				// Mock sessionStorage (sidebar uses sessionStorage for session-only persistence)
-				spyOn(sessionStorage, "getItem").and.returnValue(null);
-				spyOn(sessionStorage, "setItem");
+				// Create spy functions for sessionStorage
+				sessionStorageSetItemSpy =
+					vi.fn<(key: string, value: string) => void>();
+
+				// Mock sessionStorage using Object.defineProperty
+				const mockSessionStorage: Storage =
+					{
+						length: 0,
+						key: vi.fn(() => null),
+						getItem: vi.fn(() => null),
+						setItem: sessionStorageSetItemSpy,
+						removeItem: vi.fn(),
+						clear: vi.fn()
+					};
+
+				Object.defineProperty(
+					window,
+					"sessionStorage",
+					{
+						value: mockSessionStorage,
+						writable: true
+					});
 
 				service =
 					setupSimpleServiceTest(LayoutService,
@@ -59,7 +84,7 @@ describe("LayoutService",
 					() =>
 					{
 						service.toggleSidebar();
-						expect(sessionStorage.setItem)
+						expect(sessionStorageSetItemSpy)
 							.toHaveBeenCalled();
 					});
 			});

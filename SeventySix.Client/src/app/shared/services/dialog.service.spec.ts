@@ -1,28 +1,41 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
-import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { MatDialog } from "@angular/material/dialog";
 import { ConfirmDialogComponent } from "@shared/components";
 import { ConfirmDialogData, ConfirmOptions } from "@shared/models";
-import { of } from "rxjs";
+import { firstValueFrom, of } from "rxjs";
+import { vi, Mock } from "vitest";
 import { DialogService } from "./dialog.service";
+
+interface MockMatDialogRef
+{
+	afterClosed: Mock;
+}
+
+interface MockMatDialog
+{
+	open: Mock;
+}
 
 describe("DialogService",
 	() =>
 	{
 		let service: DialogService;
-		let dialogSpy: jasmine.SpyObj<MatDialog>;
-		let dialogRefSpy: jasmine.SpyObj<MatDialogRef<ConfirmDialogComponent>>;
+		let dialogSpy: MockMatDialog;
+		let dialogRefSpy: MockMatDialogRef;
 
 		beforeEach(
 			() =>
 			{
 				dialogRefSpy =
-					jasmine.createSpyObj("MatDialogRef",
-						["afterClosed"]);
+					{
+						afterClosed: vi.fn(),
+					};
 				dialogSpy =
-					jasmine.createSpyObj("MatDialog",
-						["open"]);
-				dialogSpy.open.and.returnValue(dialogRefSpy);
+					{
+						open: vi.fn()
+							.mockReturnValue(dialogRefSpy),
+					};
 
 				TestBed.configureTestingModule(
 					{
@@ -43,7 +56,7 @@ describe("DialogService",
 				it("should open dialog with provided options",
 					() =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(true));
+						dialogRefSpy.afterClosed.mockReturnValue(of(true));
 
 						const options: ConfirmOptions =
 							{
@@ -72,54 +85,45 @@ describe("DialogService",
 					});
 
 				it("should return true when dialog is confirmed",
-					(done: DoneFn) =>
+					async () =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(true));
+						dialogRefSpy.afterClosed.mockReturnValue(of(true));
 
-						service
-							.confirm(
-								{ title: "Test", message: "Message" })
-							.subscribe(
-								(result: boolean) =>
-								{
-									expect(result)
-										.toBeTrue();
-									done();
-								});
+						const result: boolean =
+							await firstValueFrom(
+								service.confirm(
+									{ title: "Test", message: "Message" }));
+
+						expect(result)
+							.toBe(true);
 					});
 
 				it("should return false when dialog is cancelled",
-					(done: DoneFn) =>
+					async () =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(false));
+						dialogRefSpy.afterClosed.mockReturnValue(of(false));
 
-						service
-							.confirm(
-								{ title: "Test", message: "Message" })
-							.subscribe(
-								(result: boolean) =>
-								{
-									expect(result)
-										.toBeFalse();
-									done();
-								});
+						const result: boolean =
+							await firstValueFrom(
+								service.confirm(
+									{ title: "Test", message: "Message" }));
+
+						expect(result)
+							.toBe(false);
 					});
 
 				it("should return false when dialog is dismissed",
-					(done: DoneFn) =>
+					async () =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(undefined));
+						dialogRefSpy.afterClosed.mockReturnValue(of(undefined));
 
-						service
-							.confirm(
-								{ title: "Test", message: "Message" })
-							.subscribe(
-								(result: boolean) =>
-								{
-									expect(result)
-										.toBeFalse();
-									done();
-								});
+						const result: boolean =
+							await firstValueFrom(
+								service.confirm(
+									{ title: "Test", message: "Message" }));
+
+						expect(result)
+							.toBe(false);
 					});
 			});
 
@@ -129,7 +133,7 @@ describe("DialogService",
 				it("should open dialog with delete styling for single item",
 					() =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(true));
+						dialogRefSpy.afterClosed.mockReturnValue(of(true));
 
 						service
 							.confirmDelete("log")
@@ -154,7 +158,7 @@ describe("DialogService",
 				it("should open dialog with plural text for multiple items",
 					() =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(true));
+						dialogRefSpy.afterClosed.mockReturnValue(of(true));
 
 						service
 							.confirmDelete("log", 5)
@@ -177,35 +181,29 @@ describe("DialogService",
 					});
 
 				it("should return true when confirmed",
-					(done: DoneFn) =>
+					async () =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(true));
+						dialogRefSpy.afterClosed.mockReturnValue(of(true));
 
-						service
-							.confirmDelete("log")
-							.subscribe(
-								(result: boolean) =>
-								{
-									expect(result)
-										.toBeTrue();
-									done();
-								});
+						const result: boolean =
+							await firstValueFrom(
+								service.confirmDelete("log"));
+
+						expect(result)
+							.toBe(true);
 					});
 
 				it("should return false when cancelled",
-					(done: DoneFn) =>
+					async () =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(false));
+						dialogRefSpy.afterClosed.mockReturnValue(of(false));
 
-						service
-							.confirmDelete("log")
-							.subscribe(
-								(result: boolean) =>
-								{
-									expect(result)
-										.toBeFalse();
-									done();
-								});
+						const result: boolean =
+							await firstValueFrom(
+								service.confirmDelete("log"));
+
+						expect(result)
+							.toBe(false);
 					});
 			});
 
@@ -215,7 +213,7 @@ describe("DialogService",
 				it("should open dialog with deactivate styling",
 					() =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(true));
+						dialogRefSpy.afterClosed.mockReturnValue(of(true));
 
 						service
 							.confirmDeactivate("user")
@@ -239,35 +237,29 @@ describe("DialogService",
 					});
 
 				it("should return true when confirmed",
-					(done: DoneFn) =>
+					async () =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(true));
+						dialogRefSpy.afterClosed.mockReturnValue(of(true));
 
-						service
-							.confirmDeactivate("user")
-							.subscribe(
-								(result: boolean) =>
-								{
-									expect(result)
-										.toBeTrue();
-									done();
-								});
+						const result: boolean =
+							await firstValueFrom(
+								service.confirmDeactivate("user"));
+
+						expect(result)
+							.toBe(true);
 					});
 
 				it("should return false when cancelled",
-					(done: DoneFn) =>
+					async () =>
 					{
-						dialogRefSpy.afterClosed.and.returnValue(of(false));
+						dialogRefSpy.afterClosed.mockReturnValue(of(false));
 
-						service
-							.confirmDeactivate("user")
-							.subscribe(
-								(result: boolean) =>
-								{
-									expect(result)
-										.toBeFalse();
-									done();
-								});
+						const result: boolean =
+							await firstValueFrom(
+								service.confirmDeactivate("user"));
+
+						expect(result)
+							.toBe(false);
 					});
 			});
 	});

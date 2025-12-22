@@ -1,25 +1,99 @@
+import { TestBed } from "@angular/core/testing";
 import { setupSimpleServiceTest } from "@shared/testing";
+import { vi } from "vitest";
 import { StorageService } from "./storage.service";
+
+/**
+ * Creates a mock localStorage/sessionStorage that can throw errors.
+ * jsdom's Storage implementation doesn't allow vi.spyOn to intercept calls,
+ * so we need to replace the entire Storage object.
+ *
+ * @param throwOnMethod - The method that should throw an error
+ * @param errorToThrow - Optional custom error to throw
+ * @returns A mock Storage object
+ */
+function createMockStorage(throwOnMethod?: "getItem" | "setItem" | "removeItem" | "clear", errorToThrow?: Error): Storage
+{
+	const store: Map<string, string> =
+		new Map();
+
+	return {
+		get length(): number
+		{
+			return store.size;
+		},
+		key(index: number): string | null
+		{
+			return Array.from(store.keys())[index] ?? null;
+		},
+		getItem(key: string): string | null
+		{
+			if (throwOnMethod === "getItem")
+			{
+				throw errorToThrow ?? new Error("Storage error");
+			}
+			return store.get(key) ?? null;
+		},
+		setItem(key: string, value: string): void
+		{
+			if (throwOnMethod === "setItem")
+			{
+				throw errorToThrow ?? new Error("Storage error");
+			}
+			store.set(key, value);
+		},
+		removeItem(key: string): void
+		{
+			if (throwOnMethod === "removeItem")
+			{
+				throw errorToThrow ?? new Error("Storage error");
+			}
+			store.delete(key);
+		},
+		clear(): void
+		{
+			if (throwOnMethod === "clear")
+			{
+				throw errorToThrow ?? new Error("Storage error");
+			}
+			store.clear();
+		}
+	};
+}
 
 describe("StorageService",
 	() =>
 	{
 		let service: StorageService;
-		let consoleErrorSpy: jasmine.Spy;
+		let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+		let originalLocalStorage: Storage;
 
 		beforeEach(
 			() =>
 			{
+				originalLocalStorage =
+					window.localStorage;
 				service =
 					setupSimpleServiceTest(StorageService);
 				localStorage.clear();
 				consoleErrorSpy =
-					spyOn(console, "error");
+					vi.spyOn(console, "error")
+						.mockImplementation(
+							() =>
+							{});
 			});
 
 		afterEach(
 			() =>
 			{
+				// Restore original localStorage
+				Object.defineProperty(
+					window,
+					"localStorage",
+					{
+						value: originalLocalStorage,
+						writable: true
+					});
 				try
 				{
 					localStorage.clear();
@@ -97,13 +171,22 @@ describe("StorageService",
 				it("should return null on localStorage error",
 					() =>
 					{
-						spyOn(localStorage, "getItem").and.callFake(
-							() =>
+						const mockStorage: Storage =
+							createMockStorage("getItem");
+						Object.defineProperty(
+							window,
+							"localStorage",
 							{
-								throw new Error("Storage error");
+								value: mockStorage,
+								writable: true
 							});
+
+						// Reset TestBed and create a new service instance to use the mocked localStorage
+						TestBed.resetTestingModule();
+						const errorService: StorageService =
+							setupSimpleServiceTest(StorageService);
 						const value: string | null =
-							service.getItem("error-key");
+							errorService.getItem("error-key");
 						expect(value)
 							.toBeNull();
 						expect(consoleErrorSpy)
@@ -158,17 +241,26 @@ describe("StorageService",
 				it("should return false on quota exceeded error",
 					() =>
 					{
-						const error: DOMException =
+						const quotaError: DOMException =
 							new DOMException(
 								"Quota exceeded",
 								"QuotaExceededError");
-						spyOn(localStorage, "setItem").and.callFake(
-							() =>
+						const mockStorage: Storage =
+							createMockStorage("setItem", quotaError);
+						Object.defineProperty(
+							window,
+							"localStorage",
 							{
-								throw error;
+								value: mockStorage,
+								writable: true
 							});
+
+						// Reset TestBed and create a new service instance to use the mocked localStorage
+						TestBed.resetTestingModule();
+						const errorService: StorageService =
+							setupSimpleServiceTest(StorageService);
 						const success: boolean =
-							service.setItem("test-key", "value");
+							errorService.setItem("test-key", "value");
 						expect(success)
 							.toBe(false);
 						expect(consoleErrorSpy)
@@ -179,13 +271,22 @@ describe("StorageService",
 				it("should return false on other storage errors",
 					() =>
 					{
-						spyOn(localStorage, "setItem").and.callFake(
-							() =>
+						const mockStorage: Storage =
+							createMockStorage("setItem");
+						Object.defineProperty(
+							window,
+							"localStorage",
 							{
-								throw new Error("Storage error");
+								value: mockStorage,
+								writable: true
 							});
+
+						// Reset TestBed and create a new service instance to use the mocked localStorage
+						TestBed.resetTestingModule();
+						const errorService: StorageService =
+							setupSimpleServiceTest(StorageService);
 						const success: boolean =
-							service.setItem("test-key", "value");
+							errorService.setItem("test-key", "value");
 						expect(success)
 							.toBe(false);
 						expect(consoleErrorSpy)
@@ -217,13 +318,23 @@ describe("StorageService",
 				it("should handle localStorage errors silently",
 					() =>
 					{
-						spyOn(localStorage, "removeItem").and.callFake(
-							() =>
+						const mockStorage: Storage =
+							createMockStorage("removeItem");
+						Object.defineProperty(
+							window,
+							"localStorage",
 							{
-								throw new Error("Storage error");
+								value: mockStorage,
+								writable: true
 							});
+
+						// Reset TestBed and create a new service instance to use the mocked localStorage
+						TestBed.resetTestingModule();
+						const errorService: StorageService =
+							setupSimpleServiceTest(StorageService);
 						expect(
-							() => service.removeItem("test-key"))
+							() =>
+								errorService.removeItem("test-key"))
 							.not
 							.toThrow();
 						expect(consoleErrorSpy)
@@ -247,13 +358,22 @@ describe("StorageService",
 				it("should handle localStorage errors silently",
 					() =>
 					{
-						spyOn(localStorage, "clear").and.callFake(
-							() =>
+						const mockStorage: Storage =
+							createMockStorage("clear");
+						Object.defineProperty(
+							window,
+							"localStorage",
 							{
-								throw new Error("Storage error");
+								value: mockStorage,
+								writable: true
 							});
+
+						// Reset TestBed and create a new service instance to use the mocked localStorage
+						TestBed.resetTestingModule();
+						const errorService: StorageService =
+							setupSimpleServiceTest(StorageService);
 						expect(
-							() => service.clear())
+							() => errorService.clear())
 							.not
 							.toThrow();
 						expect(consoleErrorSpy)

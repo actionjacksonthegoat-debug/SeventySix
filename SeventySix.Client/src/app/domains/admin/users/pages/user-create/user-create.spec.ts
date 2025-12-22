@@ -16,6 +16,7 @@ import {
 	createMockRouter
 } from "@shared/testing";
 import { createMockMutationResult } from "@testing/tanstack-query-helpers";
+import { vi } from "vitest";
 import { UserCreatePage } from "./user-create";
 
 describe("UserCreatePage",
@@ -23,21 +24,27 @@ describe("UserCreatePage",
 	{
 		let component: UserCreatePage;
 		let fixture: ComponentFixture<UserCreatePage>;
-		let mockUserService: jasmine.SpyObj<UserService>;
-		let mockRouter: jasmine.SpyObj<Router>;
-		let mockNotification: jasmine.SpyObj<NotificationService>;
-		let mockLogger: jasmine.SpyObj<LoggerService>;
+
+		interface MockUserService {
+			createUser: ReturnType<typeof vi.fn>;
+			checkUsernameAvailability: ReturnType<typeof vi.fn>;
+			addRole: ReturnType<typeof vi.fn>;
+		}
+
+		let mockUserService: MockUserService;
+		let mockRouter: ReturnType<typeof createMockRouter>;
+		let mockNotification: ReturnType<typeof createMockNotificationService>;
+		let mockLogger: ReturnType<typeof createMockLogger>;
 
 		beforeEach(
 			async () =>
 			{
 				mockUserService =
-					jasmine.createSpyObj("UserService",
-						[
-							"createUser",
-							"checkUsernameAvailability",
-							"addRole"
-						]);
+					{
+						createUser: vi.fn(),
+						checkUsernameAvailability: vi.fn(),
+						addRole: vi.fn()
+					};
 				mockRouter =
 					createMockRouter();
 				mockNotification =
@@ -52,14 +59,14 @@ describe("UserCreatePage",
 							email: "test@test.com"
 						});
 
-				mockUserService.createUser.and.returnValue(
+				mockUserService.createUser.mockReturnValue(
 					createMockMutationResult<UserDto, Error, Partial<UserDto>, unknown>(
 						{
 							data: mockUser,
 							isSuccess: true
 						}));
 
-				mockUserService.addRole.and.returnValue(
+				mockUserService.addRole.mockReturnValue(
 					createMockMutationResult<void, Error, { userId: number; roleName: string; }, unknown>(
 						{
 							isSuccess: true
@@ -206,7 +213,7 @@ describe("UserCreatePage",
 					async () =>
 					{
 						// Mock username check to return false (username available)
-						mockUserService.checkUsernameAvailability.and.returnValue(
+						mockUserService.checkUsernameAvailability.mockReturnValue(
 							Promise.resolve(false));
 
 						const usernameControl: AbstractControl | null =
@@ -229,7 +236,7 @@ describe("UserCreatePage",
 					async () =>
 					{
 						// Mock username check to return true (username exists)
-						mockUserService.checkUsernameAvailability.and.returnValue(
+						mockUserService.checkUsernameAvailability.mockReturnValue(
 							Promise.resolve(true));
 
 						const usernameControl: AbstractControl | null =
@@ -268,7 +275,7 @@ describe("UserCreatePage",
 					async () =>
 					{
 						// Mock username check to reject
-						mockUserService.checkUsernameAvailability.and.returnValue(
+						mockUserService.checkUsernameAvailability.mockReturnValue(
 							Promise.reject(new Error("API Error")));
 
 						const usernameControl: AbstractControl | null =
@@ -378,7 +385,7 @@ describe("UserCreatePage",
 						fixture.detectChanges();
 
 						// Mock mutate to call onSuccess
-						(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
+						(component.createMutation.mutate as ReturnType<typeof vi.fn>).mockImplementation(
 							(data, options: { onSuccess: (user: UserDto) => void; }) =>
 							{
 								options.onSuccess(createdUser);
@@ -411,7 +418,7 @@ describe("UserCreatePage",
 						fixture.detectChanges();
 
 						// Mock mutate to call onError
-						(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
+						(component.createMutation.mutate as ReturnType<typeof vi.fn>).mockImplementation(
 							(data, options: { onError: (error: Error) => void; }) =>
 							{
 								options.onError(error);
@@ -478,7 +485,7 @@ describe("UserCreatePage",
 							.toBe("function");
 						// Verify it returns an object
 						expect(component.formData())
-							.toEqual(jasmine.any(Object));
+							.toEqual(expect.any(Object));
 					});
 			});
 
@@ -565,7 +572,7 @@ describe("UserCreatePage",
 									email: "newuser@test.com",
 									fullName: "New User"
 								});
-						(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
+						(component.createMutation.mutate as ReturnType<typeof vi.fn>).mockImplementation(
 							(
 								data: Partial<UserDto>,
 								options: { onSuccess: (user: UserDto) => void; }) =>
@@ -582,13 +589,13 @@ describe("UserCreatePage",
 						expect(component.addRoleMutation.mutate)
 							.toHaveBeenCalledWith(
 								{ userId: 1, roleName: "Developer" },
-								jasmine.objectContaining(
-									{ onError: jasmine.any(Function) }));
+								expect.objectContaining(
+									{ onError: expect.any(Function) }));
 						expect(component.addRoleMutation.mutate)
 							.toHaveBeenCalledWith(
 								{ userId: 1, roleName: "Admin" },
-								jasmine.objectContaining(
-									{ onError: jasmine.any(Function) }));
+								expect.objectContaining(
+									{ onError: expect.any(Function) }));
 					});
 
 				it("should show error snackbar when role assignment fails",
@@ -616,7 +623,7 @@ describe("UserCreatePage",
 								});
 
 						// Mock createMutation to trigger onSuccess
-						(component.createMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
+						(component.createMutation.mutate as ReturnType<typeof vi.fn>).mockImplementation(
 							(
 								data: Partial<UserDto>,
 								options: { onSuccess: (user: UserDto) => void; }) =>
@@ -625,7 +632,7 @@ describe("UserCreatePage",
 							});
 
 						// Mock addRoleMutation to trigger onError
-						(component.addRoleMutation.mutate as jasmine.Spy<jasmine.Func>).and.callFake(
+						(component.addRoleMutation.mutate as ReturnType<typeof vi.fn>).mockImplementation(
 							(
 								data: { userId: number; roleName: string; },
 								options: { onError: (error: Error) => void; }) =>

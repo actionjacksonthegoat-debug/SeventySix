@@ -1,7 +1,7 @@
 import { ComponentFixture } from "@angular/core/testing";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { ConfirmDialogData } from "@shared/models";
-import { createMockDialogRef } from "@testing/mock-factories";
+import { createMockDialogRef, MockDialogRef } from "@testing/mock-factories";
 import { ComponentTestBed } from "@testing/test-bed-builders";
 import { ConfirmDialogComponent } from "./confirm-dialog.component";
 
@@ -10,7 +10,7 @@ describe("ConfirmDialogComponent",
 	{
 		let component: ConfirmDialogComponent;
 		let fixture: ComponentFixture<ConfirmDialogComponent>;
-		let mockDialogRef: jasmine.SpyObj<MatDialogRef<ConfirmDialogComponent>>;
+		let mockDialogRef: MockDialogRef<ConfirmDialogComponent>;
 		const mockData: ConfirmDialogData =
 			{
 				title: "Confirm Action",

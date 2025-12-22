@@ -3,38 +3,55 @@ import { TestBed } from "@angular/core/testing";
 import { SwUpdate, VersionReadyEvent } from "@angular/service-worker";
 import { createMockLogger } from "@shared/testing";
 import { Subject } from "rxjs";
+import { vi } from "vitest";
 import { LoggerService } from "./logger.service";
 import { SwUpdateService } from "./sw-update.service";
+
+interface MockSwUpdate
+{
+	checkForUpdate: ReturnType<typeof vi.fn>;
+	activateUpdate: ReturnType<typeof vi.fn>;
+	isEnabled: boolean;
+	versionUpdates: ReturnType<typeof Subject.prototype.asObservable>;
+	unrecoverable: Subject<unknown>;
+}
+
+interface MockLoggerService
+{
+	info: ReturnType<typeof vi.fn>;
+	error: ReturnType<typeof vi.fn>;
+	warning: ReturnType<typeof vi.fn>;
+	debug: ReturnType<typeof vi.fn>;
+}
 
 describe("SwUpdateService",
 	() =>
 	{
 		let service: SwUpdateService;
-		let swUpdateSpy: jasmine.SpyObj<SwUpdate>;
-		let loggerSpy: jasmine.SpyObj<LoggerService>;
+		let swUpdateSpy: MockSwUpdate;
+		let loggerSpy: MockLoggerService;
 		let versionUpdatesSubject: Subject<VersionReadyEvent>;
 
-		const createSwUpdateSpy: (isEnabled: boolean) => jasmine.SpyObj<SwUpdate> =
+		const createSwUpdateSpy: (isEnabled: boolean) => MockSwUpdate =
 			(isEnabled: boolean) =>
 			{
 				versionUpdatesSubject =
 					new Subject<VersionReadyEvent>();
 
-				return jasmine.createSpyObj(
-					"SwUpdate",
-					["checkForUpdate", "activateUpdate"],
-					{
-						isEnabled,
-						versionUpdates: versionUpdatesSubject.asObservable(),
-						unrecoverable: new Subject()
-					});
+				return {
+					checkForUpdate: vi.fn(),
+					activateUpdate: vi.fn(),
+					isEnabled,
+					versionUpdates: versionUpdatesSubject.asObservable(),
+					unrecoverable: new Subject()
+				};
 			};
 
 		beforeEach(
 			() =>
 			{
 				loggerSpy =
-					createMockLogger();
+					createMockLogger() as unknown as MockLoggerService;
 			});
 
 		it("should be created",
@@ -92,7 +109,7 @@ describe("SwUpdateService",
 					{
 						swUpdateSpy =
 							createSwUpdateSpy(true);
-						swUpdateSpy.checkForUpdate.and.returnValue(Promise.resolve(true));
+						swUpdateSpy.checkForUpdate.mockResolvedValue(true);
 
 						TestBed.resetTestingModule();
 						TestBed.configureTestingModule(
@@ -121,7 +138,7 @@ describe("SwUpdateService",
 					{
 						swUpdateSpy =
 							createSwUpdateSpy(true);
-						swUpdateSpy.checkForUpdate.and.returnValue(Promise.resolve(false));
+						swUpdateSpy.checkForUpdate.mockResolvedValue(false);
 
 						TestBed.resetTestingModule();
 						TestBed.configureTestingModule(
@@ -150,8 +167,7 @@ describe("SwUpdateService",
 					{
 						swUpdateSpy =
 							createSwUpdateSpy(true);
-						swUpdateSpy.checkForUpdate.and.returnValue(
-							Promise.reject(new Error("Test error")));
+						swUpdateSpy.checkForUpdate.mockRejectedValue(new Error("Test error"));
 
 						TestBed.resetTestingModule();
 						TestBed.configureTestingModule(
@@ -207,8 +223,7 @@ describe("SwUpdateService",
 					{
 						swUpdateSpy =
 							createSwUpdateSpy(true);
-						swUpdateSpy.checkForUpdate.and.returnValue(
-							Promise.reject(new Error("Test error")));
+						swUpdateSpy.checkForUpdate.mockRejectedValue(new Error("Test error"));
 
 						TestBed.resetTestingModule();
 						TestBed.configureTestingModule(

@@ -8,30 +8,36 @@ import { provideRouter } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { of, throwError } from "rxjs";
+import { vi } from "vitest";
 import { ForgotPasswordComponent } from "./forgot-password";
+
+interface MockAuthService {
+	requestPasswordReset: ReturnType<typeof vi.fn>;
+}
+
+interface MockNotificationService {
+	success: ReturnType<typeof vi.fn>;
+	error: ReturnType<typeof vi.fn>;
+}
 
 describe("ForgotPasswordComponent",
 	() =>
 	{
 		let fixture: ComponentFixture<ForgotPasswordComponent>;
 		let component: ForgotPasswordComponent;
-		let authServiceSpy: jasmine.SpyObj<AuthService>;
-		let notificationSpy: jasmine.SpyObj<NotificationService>;
+		let authServiceSpy: MockAuthService;
+		let notificationSpy: MockNotificationService;
 
 		beforeEach(
 			async () =>
 			{
 				authServiceSpy =
-					jasmine.createSpyObj("AuthService",
-						[
-							"requestPasswordReset"
-						]);
+					{ requestPasswordReset: vi.fn() };
 				notificationSpy =
-					jasmine.createSpyObj("NotificationService",
-						[
-							"success",
-							"error"
-						]);
+					{
+						success: vi.fn(),
+						error: vi.fn()
+					};
 
 				await TestBed
 					.configureTestingModule(
@@ -72,7 +78,7 @@ describe("ForgotPasswordComponent",
 			async () =>
 			{
 				// Arrange
-				authServiceSpy.requestPasswordReset.and.returnValue(of(undefined));
+				authServiceSpy.requestPasswordReset.mockReturnValue(of(undefined));
 				component["email"] = "test@example.com";
 
 				// Act
@@ -82,7 +88,7 @@ describe("ForgotPasswordComponent",
 
 				// Assert
 				expect(component["submitted"]())
-					.toBeTrue();
+					.toBe(true);
 				expect(notificationSpy.success)
 					.toHaveBeenCalled();
 			});
@@ -103,7 +109,7 @@ describe("ForgotPasswordComponent",
 
 				// Assert
 				expect(submitButton?.disabled)
-					.toBeTrue();
+					.toBe(true);
 			});
 
 		it("should enable submit button when email is valid",
@@ -122,14 +128,14 @@ describe("ForgotPasswordComponent",
 
 				// Assert
 				expect(submitButton?.disabled)
-					.toBeFalse();
+					.toBe(false);
 			});
 
 		it("should call requestPasswordReset with email",
 			() =>
 			{
 				// Arrange
-				authServiceSpy.requestPasswordReset.and.returnValue(of(undefined));
+				authServiceSpy.requestPasswordReset.mockReturnValue(of(undefined));
 				component["email"] = "user@example.com";
 
 				// Act
@@ -145,7 +151,7 @@ describe("ForgotPasswordComponent",
 			async () =>
 			{
 				// Arrange
-				authServiceSpy.requestPasswordReset.and.returnValue(
+				authServiceSpy.requestPasswordReset.mockReturnValue(
 					throwError(
 						() => new Error("Network error")));
 				component["email"] = "test@example.com";
@@ -157,7 +163,7 @@ describe("ForgotPasswordComponent",
 
 				// Assert
 				expect(component["isLoading"]())
-					.toBeFalse();
+					.toBe(false);
 				expect(notificationSpy.error)
 					.toHaveBeenCalled();
 			});

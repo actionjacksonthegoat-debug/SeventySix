@@ -6,14 +6,26 @@ import {
 	createMockQueryResult
 } from "@testing/tanstack-query-helpers";
 import { ComponentTestBed } from "@testing/test-bed-builders";
+import { vi } from "vitest";
 import { LogList } from "./log-list";
+
+interface MockLogManagementService
+{
+	getLogs: ReturnType<typeof vi.fn>;
+	deleteLog: ReturnType<typeof vi.fn>;
+	deleteLogs: ReturnType<typeof vi.fn>;
+	updateFilter: ReturnType<typeof vi.fn>;
+	clearSelection: ReturnType<typeof vi.fn>;
+	selectAll: ReturnType<typeof vi.fn>;
+	deleteSelected: ReturnType<typeof vi.fn>;
+}
 
 describe("LogList",
 	() =>
 	{
 		let component: LogList;
 		let fixture: ComponentFixture<LogList>;
-		let mockLogService: jasmine.SpyObj<LogManagementService>;
+		let mockLogService: MockLogManagementService;
 
 		beforeEach(
 			async () =>
@@ -46,21 +58,20 @@ describe("LogList",
 
 				// Create mock service with all required methods
 				mockLogService =
-					jasmine.createSpyObj("LogManagementService",
-						[
-							"getLogs",
-							"deleteLog",
-							"deleteLogs",
-							"updateFilter",
-							"clearSelection",
-							"selectAll",
-							"deleteSelected"
-						]);
+					{
+						getLogs: vi.fn(),
+						deleteLog: vi.fn(),
+						deleteLogs: vi.fn(),
+						updateFilter: vi.fn(),
+						clearSelection: vi.fn(),
+						selectAll: vi.fn(),
+						deleteSelected: vi.fn()
+					};
 
 				// Configure mock return values
-				mockLogService.getLogs.and.returnValue(mockQuery);
-				mockLogService.deleteLog.and.returnValue(mockDeleteMutation);
-				mockLogService.deleteLogs.and.returnValue(mockBatchDeleteMutation);
+				mockLogService.getLogs.mockReturnValue(mockQuery);
+				mockLogService.deleteLog.mockReturnValue(mockDeleteMutation);
+				mockLogService.deleteLogs.mockReturnValue(mockBatchDeleteMutation);
 
 				fixture =
 					await new ComponentTestBed<LogList>()

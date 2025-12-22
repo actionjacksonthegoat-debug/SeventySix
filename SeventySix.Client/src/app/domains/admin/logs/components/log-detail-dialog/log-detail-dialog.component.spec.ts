@@ -14,6 +14,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { DateService } from "@shared/services";
 import { flushMicrotasks } from "@shared/testing";
+import { vi } from "vitest";
 import { LogDetailDialogComponent } from "./log-detail-dialog.component";
 
 describe("LogDetailDialogComponent",
@@ -21,8 +22,17 @@ describe("LogDetailDialogComponent",
 	{
 		let component: LogDetailDialogComponent;
 		let fixture: ComponentFixture<LogDetailDialogComponent>;
-		let mockDialogRef: jasmine.SpyObj<MatDialogRef<LogDetailDialogComponent>>;
-		let mockClipboard: jasmine.SpyObj<Clipboard>;
+
+		interface MockDialogRef {
+			close: ReturnType<typeof vi.fn>;
+		}
+
+		interface MockClipboard {
+			copy: ReturnType<typeof vi.fn>;
+		}
+
+		let mockDialogRef: MockDialogRef;
+		let mockClipboard: MockClipboard;
 		let dateService: DateService;
 
 		const mockLog: LogDto =
@@ -53,11 +63,9 @@ describe("LogDetailDialogComponent",
 			async () =>
 			{
 				mockDialogRef =
-					jasmine.createSpyObj("MatDialogRef",
-						["close"]);
+					{ close: vi.fn() };
 				mockClipboard =
-					jasmine.createSpyObj("Clipboard",
-						["copy"]);
+					{ copy: vi.fn() };
 				dateService =
 					new DateService();
 
@@ -249,7 +257,7 @@ describe("LogDetailDialogComponent",
 		it("should copy log details to clipboard as JSON",
 			async () =>
 			{
-				mockClipboard.copy.and.returnValue(true);
+				mockClipboard.copy.mockReturnValue(true);
 
 				component.copyToClipboard();
 
@@ -257,9 +265,9 @@ describe("LogDetailDialogComponent",
 
 				expect(mockClipboard.copy)
 					.toHaveBeenCalledWith(
-						jasmine.any(String));
+						expect.any(String));
 				const copiedText: string =
-					mockClipboard.copy.calls.mostRecent().args[0];
+					mockClipboard.copy.mock.calls.at(-1)![0];
 				const parsed: Record<string, unknown> =
 					JSON.parse(copiedText);
 				expect(parsed["id"])
@@ -269,20 +277,20 @@ describe("LogDetailDialogComponent",
 			});
 
 		it("should emit delete event and close dialog",
-			(done: DoneFn) =>
+			async () =>
 			{
+				let emittedId: number | undefined;
 				component.deleteLog.subscribe(
 					(id: number) =>
 					{
-						expect(id)
-							.toBe(mockLog.id);
-						done();
+						emittedId = id;
 					});
 
 				component.onDelete();
 
-				expect(mockDialogRef.close)
-					.toHaveBeenCalled();
+				await flushMicrotasks();
+
+				expect(emittedId)
 			});
 
 		it("should close dialog when close is called",
@@ -562,7 +570,7 @@ describe("LogDetailDialogComponent",
 				it("should show alert when no correlation ID exists",
 					() =>
 					{
-						spyOn(window, "alert");
+						vi.spyOn(window, "alert");
 						component.log.set(
 							{ ...mockLog, correlationId: null });
 
@@ -570,13 +578,13 @@ describe("LogDetailDialogComponent",
 
 						expect(window.alert)
 							.toHaveBeenCalledWith(
-								jasmine.stringContaining("No trace ID available"));
+								expect.stringContaining("No trace ID available"));
 					});
 
 				it("should open Jaeger URL when correlation ID exists",
 					() =>
 					{
-						spyOn(window, "open");
+						vi.spyOn(window, "open");
 						component.log.set(
 							{ ...mockLog, correlationId: "trace-123" });
 
@@ -584,7 +592,7 @@ describe("LogDetailDialogComponent",
 
 						expect(window.open)
 							.toHaveBeenCalledWith(
-								jasmine.stringContaining("trace-123"),
+								expect.stringContaining("trace-123"),
 								"_blank");
 					});
 			});

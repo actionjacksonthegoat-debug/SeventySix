@@ -3,7 +3,7 @@ import type {
 	CreateMutationResult,
 	CreateQueryResult
 } from "@tanstack/angular-query-experimental";
-import type {} from "jasmine";
+import { vi, type Mock } from "vitest";
 
 /**
  * Creates a mock query result for testing
@@ -31,18 +31,16 @@ export function createMockQueryResult<TData, TError = Error>(
 	const isPendingSignal: Signal<boolean> =
 		signal(options.isLoading ?? false);
 
-	const refetchSpy: jasmine.Spy =
-		jasmine
-		.createSpy("refetch")
-		.and
-		.returnValue(
-			Promise.resolve(
-				{
-					data,
-					error: options.error ?? null,
-					isError: options.isError ?? false,
-					isSuccess: !options.isLoading && !options.isError && data !== undefined
-				}));
+	const refetchSpy: Mock =
+		vi
+		.fn()
+		.mockResolvedValue(
+			{
+				data,
+				error: options.error ?? null,
+				isError: options.isError ?? false,
+				isSuccess: !options.isLoading && !options.isError && data !== undefined
+			});
 
 	return {
 		data: dataSignal,
@@ -87,15 +85,14 @@ export function createMockMutationResult<
 		signal(
 			!options.isPending && !options.isError && !options.isSuccess);
 
-	const mutateSpy: jasmine.Spy =
-		jasmine.createSpy("mutate");
-	const mutateAsyncSpy: jasmine.Spy =
-		jasmine
-		.createSpy("mutateAsync")
-		.and
-		.returnValue(Promise.resolve(options.data));
-	const resetSpy: jasmine.Spy =
-		jasmine.createSpy("reset");
+	const mutateSpy: Mock =
+		vi.fn();
+	const mutateAsyncSpy: Mock =
+		vi
+		.fn()
+		.mockResolvedValue(options.data);
+	const resetSpy: Mock =
+		vi.fn();
 
 	return {
 		mutate: mutateSpy,

@@ -2,6 +2,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { QueryOptions } from "@shared/utilities/query-config.utility";
 import { QueryClient } from "@tanstack/angular-query-experimental";
+import { vi } from "vitest";
 import { BaseMutationService } from "./base-mutation.service";
 
 /**
@@ -87,8 +88,8 @@ describe("BaseMutationService",
 				it("should invalidate all queries with queryKeyPrefix",
 					() =>
 					{
-						const invalidateSpy: jasmine.Spy =
-							spyOn(queryClient, "invalidateQueries");
+						const invalidateSpy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(queryClient, "invalidateQueries");
 
 						service.testInvalidateAll();
 

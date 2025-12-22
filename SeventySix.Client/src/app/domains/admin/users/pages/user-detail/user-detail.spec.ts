@@ -17,6 +17,7 @@ import {
 	createMockMutationResult,
 	createMockQueryResult
 } from "@testing/tanstack-query-helpers";
+import { vi } from "vitest";
 import { UserDetailPage } from "./user-detail";
 
 /** Type alias for mock mutation result - DRY */
@@ -32,11 +33,20 @@ describe("UserDetailPage",
 	{
 		let component: UserDetailPage;
 		let fixture: ComponentFixture<UserDetailPage>;
-		let mockUserService: jasmine.SpyObj<UserService>;
-		let mockLogger: jasmine.SpyObj<LoggerService>;
-		let mockRouter: jasmine.SpyObj<Router>;
-		let mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
-		let mockNotificationService: jasmine.SpyObj<NotificationService>;
+
+		interface MockUserService {
+			getUserById: ReturnType<typeof vi.fn>;
+			updateUser: ReturnType<typeof vi.fn>;
+			getUserRoles: ReturnType<typeof vi.fn>;
+			addRole: ReturnType<typeof vi.fn>;
+			removeRole: ReturnType<typeof vi.fn>;
+		}
+
+		let mockUserService: MockUserService;
+		let mockLogger: ReturnType<typeof createMockLogger>;
+		let mockRouter: ReturnType<typeof createMockRouter>;
+		let mockActivatedRoute: ReturnType<typeof createMockActivatedRoute>;
+		let mockNotificationService: ReturnType<typeof createMockNotificationService>;
 
 		const mockUser: UserDto =
 			{
@@ -60,14 +70,13 @@ describe("UserDetailPage",
 			async () =>
 			{
 				mockUserService =
-					jasmine.createSpyObj("UserService",
-						[
-							"getUserById",
-							"updateUser",
-							"getUserRoles",
-							"addRole",
-							"removeRole"
-						]);
+					{
+						getUserById: vi.fn(),
+						updateUser: vi.fn(),
+						getUserRoles: vi.fn(),
+						addRole: vi.fn(),
+						removeRole: vi.fn()
+					};
 				mockLogger =
 					createMockLogger();
 				mockRouter =
@@ -78,14 +87,14 @@ describe("UserDetailPage",
 				mockNotificationService =
 					createMockNotificationService();
 
-				mockUserService.getUserById.and.returnValue(
+				mockUserService.getUserById.mockReturnValue(
 					createMockQueryResult(mockUser));
-				mockUserService.updateUser.and.returnValue(createMockMutationResult());
-				mockUserService.getUserRoles.and.returnValue(
+				mockUserService.updateUser.mockReturnValue(createMockMutationResult());
+				mockUserService.getUserRoles.mockReturnValue(
 					createMockQueryResult(
 						["Developer"]));
-				mockUserService.addRole.and.returnValue(createMockMutationResult());
-				mockUserService.removeRole.and.returnValue(createMockMutationResult());
+				mockUserService.addRole.mockReturnValue(createMockMutationResult());
+				mockUserService.removeRole.mockReturnValue(createMockMutationResult());
 
 				await TestBed
 					.configureTestingModule(
@@ -157,7 +166,7 @@ describe("UserDetailPage",
 			{
 				const error: Error =
 					new Error("Not found");
-				mockUserService.getUserById.and.returnValue(
+				mockUserService.getUserById.mockReturnValue(
 					createMockQueryResult<UserDto, Error>(undefined,
 						{
 							isError: true,
@@ -234,10 +243,9 @@ describe("UserDetailPage",
 						{ userId: string | number; user: UpdateUserRequest; },
 						unknown>();
 				localMockMutationResult.mutate =
-					jasmine
-						.createSpy("mutate")
-						.and
-						.callFake(
+					vi
+						.fn()
+						.mockImplementation(
 							(variables, options) =>
 							{
 								if (options?.onSuccess)
@@ -245,7 +253,7 @@ describe("UserDetailPage",
 									options.onSuccess(updatedUser, variables, undefined);
 								}
 							});
-				mockUserService.updateUser.and.returnValue(localMockMutationResult);
+				mockUserService.updateUser.mockReturnValue(localMockMutationResult);
 
 				// Recreate component to get new mutation instance
 				fixture =
@@ -268,10 +276,10 @@ describe("UserDetailPage",
 					.toHaveBeenCalledWith(
 						{
 							userId: "1",
-							user: jasmine.objectContaining(
+							user: expect.objectContaining(
 								{ fullName: "Jane Doe" })
 						},
-						jasmine.any(Object));
+						expect.any(Object));
 			});
 
 		it("should not submit invalid form",
@@ -301,10 +309,9 @@ describe("UserDetailPage",
 
 				// Setup mutate to call onError callback
 				errorMutation.mutate =
-					jasmine
-						.createSpy("mutate")
-						.and
-						.callFake(
+					vi
+						.fn()
+						.mockImplementation(
 							(variables, options) =>
 							{
 								if (options?.onError)
@@ -313,7 +320,7 @@ describe("UserDetailPage",
 								}
 							});
 
-				mockUserService.updateUser.and.returnValue(errorMutation);
+				mockUserService.updateUser.mockReturnValue(errorMutation);
 
 				// Recreate component to get new mutation
 				fixture =
@@ -368,10 +375,9 @@ describe("UserDetailPage",
 						{ userId: string | number; user: UpdateUserRequest; },
 						unknown>();
 				localMockMutationResult.mutate =
-					jasmine
-						.createSpy("mutate")
-						.and
-						.callFake(
+					vi
+						.fn()
+						.mockImplementation(
 							(variables, options) =>
 							{
 								if (options?.onSuccess)
@@ -379,7 +385,7 @@ describe("UserDetailPage",
 									options.onSuccess(updatedUser, variables, undefined);
 								}
 							});
-				mockUserService.updateUser.and.returnValue(localMockMutationResult);
+				mockUserService.updateUser.mockReturnValue(localMockMutationResult);
 
 				// Recreate component to get new mutation instance
 				fixture =
@@ -418,10 +424,9 @@ describe("UserDetailPage",
 								{ userId: string | number; user: UpdateUserRequest; },
 								unknown>();
 						localMockMutationResult.mutate =
-							jasmine
-								.createSpy("mutate")
-								.and
-								.callFake(
+							vi
+								.fn()
+								.mockImplementation(
 									(variables, options) =>
 									{
 										if (options?.onSuccess)
@@ -429,7 +434,7 @@ describe("UserDetailPage",
 											options.onSuccess(updatedUser, variables, undefined);
 										}
 									});
-						mockUserService.updateUser.and.returnValue(localMockMutationResult);
+						mockUserService.updateUser.mockReturnValue(localMockMutationResult);
 
 						// Recreate component to get new mutation instance
 						fixture =
@@ -452,13 +457,13 @@ describe("UserDetailPage",
 							.toHaveBeenCalledWith(
 								{
 									userId: "1",
-									user: jasmine.objectContaining(
+									user: expect.objectContaining(
 										{
 											id: 1,
 											username: "john_doe"
 										})
 								},
-								jasmine.any(Object));
+								expect.any(Object));
 					});
 				it("should handle 409 conflict error with refresh action",
 					async () =>
@@ -477,10 +482,9 @@ describe("UserDetailPage",
 								{ isError: true, error: conflictError });
 
 						errorMutation.mutate =
-							jasmine
-								.createSpy("mutate")
-								.and
-								.callFake(
+							vi
+								.fn()
+								.mockImplementation(
 									(variables, options) =>
 									{
 										if (options?.onError)
@@ -489,7 +493,7 @@ describe("UserDetailPage",
 										}
 									});
 
-						mockUserService.updateUser.and.returnValue(errorMutation);
+						mockUserService.updateUser.mockReturnValue(errorMutation);
 
 						// Recreate component to get new mutation
 						fixture =
@@ -511,15 +515,15 @@ describe("UserDetailPage",
 
 						expect(mockNotificationService.warningWithAction)
 							.toHaveBeenCalledWith(
-								jasmine.stringContaining("User was modified by another user"),
+								expect.stringContaining("User was modified by another user"),
 								"REFRESH",
-								jasmine.any(Function));
+								expect.any(Function));
 					});
 
 				it("should not submit if user data not loaded",
 					async () =>
 					{
-						mockUserService.getUserById.and.returnValue(
+						mockUserService.getUserById.mockReturnValue(
 							createMockQueryResult<UserDto, Error>(undefined,
 								{
 									isLoading: true
@@ -565,10 +569,9 @@ describe("UserDetailPage",
 								{ userId: string | number; user: UpdateUserRequest; },
 								unknown>();
 						localMockMutationResult.mutate =
-							jasmine
-								.createSpy("mutate")
-								.and
-								.callFake(
+							vi
+								.fn()
+								.mockImplementation(
 									(variables, options) =>
 									{
 										if (options?.onSuccess)
@@ -576,7 +579,7 @@ describe("UserDetailPage",
 											options.onSuccess(updatedUser, variables, undefined);
 										}
 									});
-						mockUserService.updateUser.and.returnValue(localMockMutationResult);
+						mockUserService.updateUser.mockReturnValue(localMockMutationResult);
 
 						// Recreate component to get new mutation instance
 						fixture =
@@ -612,7 +615,7 @@ describe("UserDetailPage",
 										isActive: false
 									}
 								},
-								jasmine.any(Object));
+								expect.any(Object));
 					});
 			});
 	});

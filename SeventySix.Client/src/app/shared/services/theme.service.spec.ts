@@ -1,4 +1,5 @@
 import { setupSimpleServiceTest } from "@shared/testing";
+import { vi } from "vitest";
 import { ThemeService } from "./theme.service";
 
 describe("ThemeService",
@@ -10,8 +11,9 @@ describe("ThemeService",
 			() =>
 			{
 			// Mock localStorage
-				spyOn(localStorage, "getItem").and.returnValue(null);
-				spyOn(localStorage, "setItem");
+				vi.spyOn(localStorage, "getItem")
+					.mockReturnValue(null);
+				vi.spyOn(localStorage, "setItem");
 
 				service =
 					setupSimpleServiceTest(ThemeService);

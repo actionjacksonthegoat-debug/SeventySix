@@ -7,7 +7,7 @@ import { WritableSignal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { ApiService } from "@shared/services/api.service";
 
-import { createMockApiService, setupServiceTest } from "@shared/testing";
+import { createMockApiService, MockApiService, setupServiceTest } from "@shared/testing";
 import { of } from "rxjs";
 import { LogManagementService } from "./log-management.service";
 
@@ -15,7 +15,7 @@ describe("LogManagementService",
 	() =>
 	{
 		let service: LogManagementService;
-		let mockApiService: jasmine.SpyObj<ApiService>;
+		let mockApiService: MockApiService;
 
 		const mockLog: PagedResultOfLogDto["items"][0] =
 			{
@@ -54,8 +54,7 @@ describe("LogManagementService",
 			() =>
 			{
 				mockApiService =
-					createMockApiService() as jasmine.SpyObj<ApiService>;
-
+					createMockApiService();
 				setupServiceTest(LogManagementService,
 					[
 						{ provide: ApiService, useValue: mockApiService }
@@ -78,7 +77,7 @@ describe("LogManagementService",
 				it("should fetch logs from api",
 					async () =>
 					{
-						mockApiService.get.and.returnValue(of(mockPagedResponse));
+						mockApiService.get.mockReturnValue(of(mockPagedResponse));
 
 						const query: ReturnType<typeof service.getLogs> =
 							TestBed.runInInjectionContext(
@@ -233,7 +232,7 @@ describe("LogManagementService",
 				it("should delete single log",
 					async () =>
 					{
-						mockApiService.delete.and.returnValue(of(void 0));
+						mockApiService.delete.mockReturnValue(of(void 0));
 
 						const mutation: ReturnType<typeof service.deleteLog> =
 							TestBed.runInInjectionContext(
@@ -252,7 +251,7 @@ describe("LogManagementService",
 				it("should delete multiple logs and clear selection",
 					async () =>
 					{
-						mockApiService.delete.and.returnValue(of(2));
+						mockApiService.delete.mockReturnValue(of(2));
 						service.toggleSelection(1);
 						service.toggleSelection(2);
 

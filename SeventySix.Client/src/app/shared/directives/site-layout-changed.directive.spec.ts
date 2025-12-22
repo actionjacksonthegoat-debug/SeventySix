@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { delay } from "@shared/testing";
+import { Mock, vi } from "vitest";
 import { SiteLayoutChangedDirective } from "./site-layout-changed.directive";
 
 @Component(
@@ -14,8 +15,8 @@ import { SiteLayoutChangedDirective } from "./site-layout-changed.directive";
 	})
 class TestLayoutChangedComponent
 {
-	layoutChanged: jasmine.Spy =
-		jasmine.createSpy("layoutChanged");
+	layoutChanged: Mock<() => void> =
+		vi.fn();
 
 	onLayoutChanged(): void
 	{

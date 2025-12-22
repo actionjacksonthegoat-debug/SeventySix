@@ -1,4 +1,5 @@
 import { delay, setupSimpleServiceTest } from "@shared/testing";
+import { vi } from "vitest";
 import { PerformanceMonitorService } from "./performance-monitor.service";
 
 describe("PerformanceMonitorService",
@@ -124,7 +125,7 @@ describe("PerformanceMonitorService",
 		it("should cancel animation frame on stop",
 			() =>
 			{
-				spyOn(window, "cancelAnimationFrame");
+				vi.spyOn(window, "cancelAnimationFrame");
 				service.startMonitoring();
 				service.stopMonitoring();
 				expect(window.cancelAnimationFrame)

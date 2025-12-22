@@ -9,7 +9,13 @@ import {
 	createMockThemeService,
 	createMockUserProfile
 } from "@testing/mocks";
+import { vi } from "vitest";
 import { HeaderComponent } from "./header.component";
+
+interface MockLayoutService
+{
+	toggleSidebar: ReturnType<typeof vi.fn>;
+}
 
 describe("HeaderComponent",
 	() =>
@@ -17,7 +23,7 @@ describe("HeaderComponent",
 		let component: HeaderComponent;
 		let fixture: ComponentFixture<HeaderComponent>;
 		let mockThemeService: ReturnType<typeof createMockThemeService>;
-		let mockLayoutService: jasmine.SpyObj<LayoutService>;
+		let mockLayoutService: MockLayoutService;
 		let mockAuthService: ReturnType<typeof createMockAuthService>;
 		let router: Router;
 
@@ -27,13 +33,11 @@ describe("HeaderComponent",
 				mockThemeService =
 					createMockThemeService();
 				mockLayoutService =
-					jasmine.createSpyObj("LayoutService",
-						[
-							"toggleSidebar"
-						]);
+					{
+						toggleSidebar: vi.fn()
+					};
 				mockAuthService =
 					createMockAuthService();
-
 				fixture =
 					await new ComponentTestBed<HeaderComponent>()
 						.withProvider(provideRouter([]))
@@ -52,7 +56,7 @@ describe("HeaderComponent",
 					fixture.componentInstance;
 				router =
 					fixture.debugElement.injector.get(Router);
-				spyOn(router, "navigate");
+				vi.spyOn(router, "navigate");
 				fixture.detectChanges();
 			});
 
@@ -74,7 +78,7 @@ describe("HeaderComponent",
 		it("should toggle brightness",
 			() =>
 			{
-				spyOn(mockThemeService, "toggleBrightness");
+				vi.spyOn(mockThemeService, "toggleBrightness");
 				component.toggleBrightness();
 				expect(mockThemeService.toggleBrightness)
 					.toHaveBeenCalled();
@@ -83,7 +87,7 @@ describe("HeaderComponent",
 		it("should toggle color scheme",
 			() =>
 			{
-				spyOn(mockThemeService, "toggleColorScheme");
+				vi.spyOn(mockThemeService, "toggleColorScheme");
 				component.toggleColorScheme();
 				expect(mockThemeService.toggleColorScheme)
 					.toHaveBeenCalled();

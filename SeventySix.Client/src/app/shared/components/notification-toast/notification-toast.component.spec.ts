@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { NotificationService } from "@shared/services";
 import { ComponentTestBed } from "@testing/test-bed-builders";
+import { vi } from "vitest";
 import { NotificationToastComponent } from "./notification-toast.component";
 
 describe("NotificationToastComponent",
@@ -244,12 +245,11 @@ describe("NotificationToastComponent",
 				it("should call copyToClipboard when copy button is clicked",
 					async () =>
 					{
-						const copySpy: jasmine.Spy =
-							spyOn(
+						const copySpy: ReturnType<typeof vi.spyOn> =
+							vi.spyOn(
 								notificationService,
 								"copyToClipboard")
-								.and
-								.returnValue(Promise.resolve(true));
+								.mockReturnValue(Promise.resolve(true));
 						notificationService.errorWithDetails(
 							"Error",
 							undefined,

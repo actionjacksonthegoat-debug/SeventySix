@@ -1,13 +1,14 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { ApiService } from "@shared/services/api.service";
-import { createMockApiService } from "@shared/testing";
+import { createMockApiService, MockApiService } from "@shared/testing";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	provideAngularQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { of } from "rxjs";
+import { vi } from "vitest";
 import { AccountService } from "./account.service";
 
 describe("AccountService",
@@ -15,14 +16,13 @@ describe("AccountService",
 	{
 		let service: AccountService;
 		let queryClient: QueryClient;
-		let mockApiService: jasmine.SpyObj<ApiService>;
+		let mockApiService: MockApiService;
 
 		beforeEach(
 			() =>
 			{
 				mockApiService =
-					createMockApiService() as jasmine.SpyObj<ApiService>;
-
+					createMockApiService();
 				queryClient =
 					new QueryClient(
 						{
@@ -56,9 +56,9 @@ describe("AccountService",
 		it("should invalidate account queries on updateProfile success",
 			async () =>
 			{
-				mockApiService.put.and.returnValue(of({}));
-				const invalidateSpy: jasmine.Spy =
-					spyOn(
+				mockApiService.put.mockReturnValue(of({}));
+				const invalidateSpy: ReturnType<typeof vi.fn> =
+					vi.spyOn(
 						queryClient,
 						"invalidateQueries");
 
@@ -74,7 +74,7 @@ describe("AccountService",
 				expect(mockApiService.put)
 					.toHaveBeenCalledWith(
 						"users/me",
-						jasmine.objectContaining(
+						expect.objectContaining(
 							{
 								email: "test@example.com",
 								fullName: "Test User"
@@ -89,9 +89,9 @@ describe("AccountService",
 		it("should invalidate available roles on createPermissionRequest success",
 			async () =>
 			{
-				mockApiService.post.and.returnValue(of(undefined));
-				const invalidateSpy: jasmine.Spy =
-					spyOn(
+				mockApiService.post.mockReturnValue(of(undefined));
+				const invalidateSpy: ReturnType<typeof vi.fn> =
+					vi.spyOn(
 						queryClient,
 						"invalidateQueries");
 
@@ -107,7 +107,7 @@ describe("AccountService",
 				expect(mockApiService.post)
 					.toHaveBeenCalledWith(
 						"users/me/permission-requests",
-						jasmine.objectContaining(
+						expect.objectContaining(
 							{
 								requestedRoles: ["Admin"],
 								requestMessage: "Test"

@@ -12,6 +12,7 @@ import {
 	createMockNotificationService,
 	createMockQueryResult
 } from "@shared/testing";
+import { vi } from "vitest";
 import { AdminDashboardPage } from "./admin-dashboard";
 
 describe("AdminDashboardPage",
@@ -19,19 +20,21 @@ describe("AdminDashboardPage",
 	{
 		let component: AdminDashboardPage;
 		let fixture: ComponentFixture<AdminDashboardPage>;
-		let mockNotificationService: jasmine.SpyObj<NotificationService>;
-		let mockLoggerService: jasmine.SpyObj<LoggerService>;
+		let mockNotificationService: ReturnType<typeof createMockNotificationService>;
+		let mockLoggerService: ReturnType<typeof createMockLogger>;
+
+		interface MockThirdPartyApiService {
+			getAllThirdPartyApis: ReturnType<typeof vi.fn>;
+		}
 
 		beforeEach(
 			async () =>
 			{
-				const thirdPartyApiServiceSpy: jasmine.SpyObj<ThirdPartyApiService> =
-					jasmine.createSpyObj(
-						"ThirdPartyApiService",
-						["getAllThirdPartyApis"]);
+				const thirdPartyApiServiceSpy: MockThirdPartyApiService =
+					{ getAllThirdPartyApis: vi.fn() };
 
 				// Set up TanStack Query mocks for child components
-				thirdPartyApiServiceSpy.getAllThirdPartyApis.and.returnValue(
+				thirdPartyApiServiceSpy.getAllThirdPartyApis.mockReturnValue(
 					createMockQueryResult<ThirdPartyApiRequestResponse[]>([]));
 
 				mockNotificationService =
@@ -139,7 +142,7 @@ describe("AdminDashboardPage",
 			() =>
 			{
 				createComponent();
-				spyOn(window, "open");
+				vi.spyOn(window, "open");
 
 				component.openJaeger();
 
@@ -153,7 +156,7 @@ describe("AdminDashboardPage",
 			() =>
 			{
 				createComponent();
-				spyOn(window, "open");
+				vi.spyOn(window, "open");
 
 				component.openPrometheus();
 
@@ -167,7 +170,7 @@ describe("AdminDashboardPage",
 			() =>
 			{
 				createComponent();
-				spyOn(window, "open");
+				vi.spyOn(window, "open");
 
 				component.openGrafana();
 

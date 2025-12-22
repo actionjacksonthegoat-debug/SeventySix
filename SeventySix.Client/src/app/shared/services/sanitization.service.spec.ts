@@ -1,24 +1,31 @@
 import { TestBed } from "@angular/core/testing";
 import { DomSanitizer, SafeHtml, SafeUrl } from "@angular/platform-browser";
 import { setupSimpleServiceTest } from "@shared/testing";
+import { Mock, vi } from "vitest";
 import { SanitizationService } from "./sanitization.service";
+
+interface MockDomSanitizer
+{
+	sanitize: Mock;
+	bypassSecurityTrustHtml: Mock;
+	bypassSecurityTrustUrl: Mock;
+}
 
 describe("SanitizationService",
 	() =>
 	{
 		let service: SanitizationService;
-		let sanitizer: jasmine.SpyObj<DomSanitizer>;
+		let sanitizer: MockDomSanitizer;
 
 		beforeEach(
 			() =>
 			{
-				const sanitizerSpy: jasmine.SpyObj<DomSanitizer> =
-					jasmine.createSpyObj("DomSanitizer",
-						[
-							"sanitize",
-							"bypassSecurityTrustHtml",
-							"bypassSecurityTrustUrl"
-						]);
+				const sanitizerSpy: MockDomSanitizer =
+					{
+						sanitize: vi.fn(),
+						bypassSecurityTrustHtml: vi.fn(),
+						bypassSecurityTrustUrl: vi.fn()
+					};
 
 				service =
 					setupSimpleServiceTest(SanitizationService,
@@ -28,7 +35,7 @@ describe("SanitizationService",
 
 				sanitizer =
 					TestBed.inject(
-						DomSanitizer) as jasmine.SpyObj<DomSanitizer>;
+						DomSanitizer) as unknown as MockDomSanitizer;
 			});
 
 		describe("sanitizeHtml",
@@ -38,7 +45,7 @@ describe("SanitizationService",
 					() =>
 					{
 						const html: string = "<script>alert(\"xss\")</script><p>Safe content</p>";
-						sanitizer.sanitize.and.returnValue("Safe content");
+						sanitizer.sanitize.mockReturnValue("Safe content");
 
 						const result: SafeHtml =
 							service.sanitizeHtml(html);
@@ -52,7 +59,7 @@ describe("SanitizationService",
 				it("should return empty string if sanitization returns null",
 					() =>
 					{
-						sanitizer.sanitize.and.returnValue(null);
+						sanitizer.sanitize.mockReturnValue(null);
 
 						const result: SafeHtml =
 							service.sanitizeHtml(
@@ -70,7 +77,7 @@ describe("SanitizationService",
 					() =>
 					{
 						const url: string = "javascript:alert(\"xss\")";
-						sanitizer.sanitize.and.returnValue("");
+						sanitizer.sanitize.mockReturnValue("");
 
 						const result: SafeUrl =
 							service.sanitizeUrl(url);
@@ -85,7 +92,7 @@ describe("SanitizationService",
 					() =>
 					{
 						const url: string = "https://example.com";
-						sanitizer.sanitize.and.returnValue(url);
+						sanitizer.sanitize.mockReturnValue(url);
 
 						const result: SafeUrl =
 							service.sanitizeUrl(url);
@@ -102,7 +109,7 @@ describe("SanitizationService",
 					() =>
 					{
 						const url: string = "https://example.com/iframe";
-						sanitizer.sanitize.and.returnValue(url);
+						sanitizer.sanitize.mockReturnValue(url);
 
 						service.sanitizeResourceUrl(url);
 
@@ -118,12 +125,11 @@ describe("SanitizationService",
 					() =>
 					{
 						const html: string = "<p>Trusted content</p>";
-						const trustedHtml: ReturnType<typeof sanitizer.bypassSecurityTrustHtml> =
-							{} as ReturnType<
-				typeof sanitizer.bypassSecurityTrustHtml>;
-						sanitizer.bypassSecurityTrustHtml.and.returnValue(trustedHtml);
+						const trustedHtml: SafeHtml =
+							{} as SafeHtml;
+						sanitizer.bypassSecurityTrustHtml.mockReturnValue(trustedHtml);
 
-						const result: ReturnType<typeof service.trustHtml> =
+						const result: SafeHtml =
 							service.trustHtml(html);
 
 						expect(sanitizer.bypassSecurityTrustHtml)
@@ -141,12 +147,11 @@ describe("SanitizationService",
 					() =>
 					{
 						const url: string = "https://trusted.com";
-						const trustedUrl: ReturnType<typeof sanitizer.bypassSecurityTrustUrl> =
-							{} as ReturnType<
-				typeof sanitizer.bypassSecurityTrustUrl>;
-						sanitizer.bypassSecurityTrustUrl.and.returnValue(trustedUrl);
+						const trustedUrl: SafeUrl =
+							{} as SafeUrl;
+						sanitizer.bypassSecurityTrustUrl.mockReturnValue(trustedUrl);
 
-						const result: ReturnType<typeof service.trustUrl> =
+						const result: SafeUrl =
 							service.trustUrl(url);
 
 						expect(sanitizer.bypassSecurityTrustUrl)

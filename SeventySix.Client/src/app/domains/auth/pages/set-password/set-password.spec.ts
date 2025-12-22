@@ -12,15 +12,28 @@ import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { createMockNotificationService } from "@shared/testing";
 import { of, throwError } from "rxjs";
+import { vi } from "vitest";
 import { SetPasswordComponent } from "./set-password";
+
+interface MockAuthService {
+	setPassword: ReturnType<typeof vi.fn>;
+}
+
+interface MockNotificationService {
+	success: ReturnType<typeof vi.fn>;
+	error: ReturnType<typeof vi.fn>;
+	info: ReturnType<typeof vi.fn>;
+	warning: ReturnType<typeof vi.fn>;
+	errorWithDetails: ReturnType<typeof vi.fn>;
+}
 
 describe("SetPasswordComponent",
 	() =>
 	{
 		let component: SetPasswordComponent;
 		let fixture: ComponentFixture<SetPasswordComponent>;
-		let mockAuthService: jasmine.SpyObj<AuthService>;
-		let mockNotificationService: jasmine.SpyObj<NotificationService>;
+		let mockAuthService: MockAuthService;
+		let mockNotificationService: MockNotificationService;
 		let router: Router;
 
 		const validToken: string = "valid-reset-token-12345";
@@ -51,7 +64,7 @@ describe("SetPasswordComponent",
 				fixture.componentInstance;
 			router =
 				TestBed.inject(Router);
-			spyOn(router, "navigate");
+			vi.spyOn(router, "navigate");
 			fixture.detectChanges();
 		}
 
@@ -59,8 +72,7 @@ describe("SetPasswordComponent",
 			() =>
 			{
 				mockAuthService =
-					jasmine.createSpyObj("AuthService",
-						["setPassword"]);
+					{ setPassword: vi.fn() };
 				mockNotificationService =
 					createMockNotificationService();
 			});
@@ -83,7 +95,7 @@ describe("SetPasswordComponent",
 					.toHaveBeenCalledWith(
 						"Invalid password reset link. Please request a new one.");
 				expect((component as unknown as { tokenValid(): boolean; }).tokenValid())
-					.toBeFalse();
+					.toBe(false);
 			});
 
 		it("should show error when passwords do not match",
@@ -107,7 +119,7 @@ describe("SetPasswordComponent",
 			{
 				setupTestBed(
 					{ token: validToken });
-				mockAuthService.setPassword.and.returnValue(of(undefined));
+				mockAuthService.setPassword.mockReturnValue(of(undefined));
 				(component as unknown as { newPassword: string; }).newPassword = "ValidPassword123!";
 				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
 
@@ -136,7 +148,7 @@ describe("SetPasswordComponent",
 							status: 404,
 							statusText: "Not Found"
 						});
-				mockAuthService.setPassword.and.returnValue(
+				mockAuthService.setPassword.mockReturnValue(
 					throwError(
 						() => errorResponse));
 				(component as unknown as { newPassword: string; }).newPassword = "ValidPassword123!";
@@ -148,7 +160,7 @@ describe("SetPasswordComponent",
 					.toHaveBeenCalledWith(
 						"Password reset link has expired or is invalid. Please request a new one.");
 				expect((component as unknown as { isLoading(): boolean; }).isLoading())
-					.toBeFalse();
+					.toBe(false);
 			});
 
 		it("should show error for bad request",
@@ -163,7 +175,7 @@ describe("SetPasswordComponent",
 							statusText: "Bad Request",
 							error: { detail: "Password does not meet requirements." }
 						});
-				mockAuthService.setPassword.and.returnValue(
+				mockAuthService.setPassword.mockReturnValue(
 					throwError(
 						() => errorResponse));
 				(component as unknown as { newPassword: string; }).newPassword = "ValidPassword123!";

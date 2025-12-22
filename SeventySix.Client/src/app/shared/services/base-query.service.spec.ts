@@ -3,6 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { BaseQueryRequest } from "@shared/models";
 import { QueryOptions } from "@shared/utilities/query-config.utility";
 import { QueryClient } from "@tanstack/angular-query-experimental";
+import { vi } from "vitest";
 import { BaseQueryService } from "./base-query.service";
 
 interface TestQueryRequest extends BaseQueryRequest
@@ -113,7 +114,7 @@ describe("BaseQueryService",
 				beforeEach(
 					() =>
 					{
-						spyOn(queryClient, "invalidateQueries");
+						vi.spyOn(queryClient, "invalidateQueries");
 					});
 
 				it("should invalidate all queries with queryKeyPrefix",

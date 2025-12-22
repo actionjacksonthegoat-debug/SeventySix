@@ -1,5 +1,6 @@
 import { computed, Signal, signal, WritableSignal } from "@angular/core";
 import { UserProfileDto } from "@shared/models";
+import { vi, type Mock } from "vitest";
 
 /**
  * Mock AuthService for testing.
@@ -9,8 +10,8 @@ import { UserProfileDto } from "@shared/models";
  * ```typescript
  * const mockAuthService = createMockAuthService();
  * mockAuthService.setUser({ id: 1, username: "test", email: "test@test.com", roles: ["Admin"], fullName: "Test User" });
- * expect(mockAuthService.hasRole("Admin")).toBeTrue();
- * expect(mockAuthService.hasAnyRole("Admin", "Developer")).toBeTrue();
+ * expect(mockAuthService.hasRole("Admin")).toBe(true);
+ * expect(mockAuthService.hasAnyRole("Admin", "Developer")).toBe(true);
  * ```
  */
 export class MockAuthService
@@ -28,8 +29,8 @@ export class MockAuthService
 			() => this.userSignal() !== null);
 
 	/** Spy-able logout method. */
-	logout: jasmine.Spy =
-		jasmine.createSpy("logout");
+	logout: Mock =
+		vi.fn();
 
 	/**
 	 * Checks if the current user has a specific role.

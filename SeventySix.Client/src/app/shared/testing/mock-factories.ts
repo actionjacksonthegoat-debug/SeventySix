@@ -4,68 +4,111 @@
  * Eliminates duplication across 40+ spec files
  */
 
-import { MatDialog, MatDialogRef } from "@angular/material/dialog";
-import { Router } from "@angular/router";
-import { ActivatedRoute } from "@angular/router";
-import { ErrorQueueService } from "@shared/services/error-queue.service";
-import { LoggerService } from "@shared/services/logger.service";
-import { NotificationService } from "@shared/services/notification.service";
-import { of } from "rxjs";
+
+import { of, Observable } from "rxjs";
+import { vi, type Mock } from "vitest";
+
+/** Mock LoggerService interface for testing. */
+export interface MockLoggerService
+{
+	debug: Mock;
+	info: Mock;
+	warning: Mock;
+	error: Mock;
+	critical: Mock;
+	forceDebug: Mock;
+	forceInfo: Mock;
+	forceWarning: Mock;
+	forceError: Mock;
+	forceCritical: Mock;
+}
 
 /**
  * Create a mocked LoggerService
  * Used in 15+ test files
  *
- * @returns Jasmine spy object for LoggerService
+ * @returns Vitest mock object for LoggerService
  */
-export function createMockLogger(): jasmine.SpyObj<LoggerService>
+export function createMockLogger(): MockLoggerService
 {
-	return jasmine.createSpyObj("LoggerService",
-		[
-			"debug",
-			"info",
-			"warning",
-			"error",
-			"critical",
-			"forceDebug",
-			"forceInfo",
-			"forceWarning",
-			"forceError",
-			"forceCritical"
-		]);
+	return {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warning: vi.fn(),
+		error: vi.fn(),
+		critical: vi.fn(),
+		forceDebug: vi.fn(),
+		forceInfo: vi.fn(),
+		forceWarning: vi.fn(),
+		forceError: vi.fn(),
+		forceCritical: vi.fn(),
+	};
+}
+
+/** Mock NotificationService interface for testing. */
+export interface MockNotificationService
+{
+	success: Mock;
+	info: Mock;
+	warning: Mock;
+	warningWithAction: Mock;
+	error: Mock;
+	errorWithDetails: Mock;
+	dismiss: Mock;
+	clearAll: Mock;
 }
 
 /**
  * Create a mocked NotificationService
  * Used in 10+ test files
  *
- * @returns Jasmine spy object for NotificationService
+ * @returns Vitest mock object for NotificationService
  */
-export function createMockNotificationService(): jasmine.SpyObj<NotificationService>
+export function createMockNotificationService(): MockNotificationService
 {
-	return jasmine.createSpyObj("NotificationService",
-		[
-			"success",
-			"info",
-			"warning",
-			"warningWithAction",
-			"error",
-			"errorWithDetails",
-			"dismiss",
-			"clearAll"
-		]);
+	return {
+		success: vi.fn(),
+		info: vi.fn(),
+		warning: vi.fn(),
+		warningWithAction: vi.fn(),
+		error: vi.fn(),
+		errorWithDetails: vi.fn(),
+		dismiss: vi.fn(),
+		clearAll: vi.fn(),
+	};
+}
+
+/** Mock Router interface for testing. */
+export interface MockRouter
+{
+	navigate: Mock;
+	navigateByUrl: Mock;
 }
 
 /**
  * Create a mocked Router
  * Used in 8+ test files
  *
- * @returns Jasmine spy object for Router
+ * @returns Vitest mock object for Router
  */
-export function createMockRouter(): jasmine.SpyObj<Router>
+export function createMockRouter(): MockRouter
 {
-	return jasmine.createSpyObj("Router",
-		["navigate", "navigateByUrl"]);
+	return {
+		navigate: vi.fn(),
+		navigateByUrl: vi.fn(),
+	};
+}
+
+/** Mock ActivatedRoute interface for testing. */
+export interface MockActivatedRoute
+{
+	params: Observable<Record<string, unknown>>;
+	snapshot: {
+		params: Record<string, unknown>;
+		queryParams: Record<string, unknown>;
+		data: Record<string, unknown>;
+		paramMap: { get: (key: string) => unknown; };
+	};
 }
 
 /**
@@ -73,68 +116,89 @@ export function createMockRouter(): jasmine.SpyObj<Router>
  * Used in 5+ test files
  *
  * @param params - Optional route params
- * @returns Jasmine spy object for ActivatedRoute
+ * @returns Mock object for ActivatedRoute
  */
 export function createMockActivatedRoute(
-	params: Record<string, unknown> = {}): jasmine.SpyObj<ActivatedRoute>
+	params: Record<string, unknown> = {}): MockActivatedRoute
 {
-	const mock: jasmine.SpyObj<ActivatedRoute> =
-		jasmine.createSpyObj(
-			"ActivatedRoute",
-			[],
-			{
-				params: of(params),
-				snapshot: {
-					params,
-					queryParams: {},
-					data: {},
-					paramMap: {
-						get: (key: string): unknown =>
-							params[key] ?? null
-					}
-				}
-			});
-	return mock;
+	return {
+		params: of(params),
+		snapshot: {
+			params,
+			queryParams: {},
+			data: {},
+			paramMap: {
+				get: (key: string): unknown =>
+					params[key] ?? null
+			}
+		}
+	};
+}
+
+/** Mock MatDialog interface for testing. */
+export interface MockDialog
+{
+	open: Mock;
+	closeAll: Mock;
 }
 
 /**
  * Create a mocked MatDialog
  * Used in 4+ test files
  *
- * @returns Jasmine spy object for MatDialog
+ * @returns Vitest mock object for MatDialog
  */
-export function createMockDialog(): jasmine.SpyObj<MatDialog>
+export function createMockDialog(): MockDialog
 {
-	return jasmine.createSpyObj("MatDialog",
-		["open", "closeAll"]);
+	return {
+		open: vi.fn(),
+		closeAll: vi.fn(),
+	};
+}
+
+/** Mock MatDialogRef interface for testing. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface MockDialogRef<T>
+{
+	close: Mock;
+	afterClosed: Mock;
 }
 
 /**
  * Create a mocked MatDialogRef
  * Used in dialog component tests
  *
- * @returns Jasmine spy object for MatDialogRef
+ * @returns Vitest mock object for MatDialogRef
  */
-export function createMockDialogRef<T>(): jasmine.SpyObj<MatDialogRef<T>>
+export function createMockDialogRef<T>(): MockDialogRef<T>
 {
-	return jasmine.createSpyObj("MatDialogRef",
-		["close", "afterClosed"]);
+	return {
+		close: vi.fn(),
+		afterClosed: vi.fn(),
+	};
+}
+
+/** Mock ErrorQueueService interface for testing. */
+export interface MockErrorQueueService
+{
+	enqueue: Mock;
+	getQueueSize: Mock;
+	clearQueue: Mock;
 }
 
 /**
  * Create a mocked ErrorQueueService
  * Used in error handling tests
  *
- * @returns Jasmine spy object for ErrorQueueService
+ * @returns Vitest mock object for ErrorQueueService
  */
-export function createMockErrorQueueService(): jasmine.SpyObj<ErrorQueueService>
+export function createMockErrorQueueService(): MockErrorQueueService
 {
-	return jasmine.createSpyObj("ErrorQueueService",
-		[
-			"enqueue",
-			"getQueueSize",
-			"clearQueue"
-		]);
+	return {
+		enqueue: vi.fn(),
+		getQueueSize: vi.fn(),
+		clearQueue: vi.fn(),
+	};
 }
 
 /**
@@ -142,52 +206,50 @@ export function createMockErrorQueueService(): jasmine.SpyObj<ErrorQueueService>
  */
 export interface MockUserRepository
 {
-	getAll: jasmine.Spy;
-	getById: jasmine.Spy;
-	create: jasmine.Spy;
-	update: jasmine.Spy;
-	delete: jasmine.Spy;
-	getPaged: jasmine.Spy;
+	getAll: Mock;
+	getById: Mock;
+	create: Mock;
+	update: Mock;
+	delete: Mock;
+	getPaged: Mock;
 }
 
 /**
  * Create a mocked UserRepository
  * Used in user feature tests
  *
- * @returns Jasmine spy object for UserRepository
+ * @returns Vitest mock object for UserRepository
  */
-export function createMockUserRepository(): jasmine.SpyObj<MockUserRepository>
+export function createMockUserRepository(): MockUserRepository
 {
-	return jasmine.createSpyObj("UserRepository",
-		[
-			"getAll",
-			"getById",
-			"create",
-			"update",
-			"delete",
-			"getPaged"
-		]);
+	return {
+		getAll: vi.fn(),
+		getById: vi.fn(),
+		create: vi.fn(),
+		update: vi.fn(),
+		delete: vi.fn(),
+		getPaged: vi.fn(),
+	};
 }
 
 /** Mock LogRepository type for testing. */
 export interface MockLogRepository
 {
-	getAllPaged: jasmine.Spy;
-	getById: jasmine.Spy;
-	delete: jasmine.Spy;
-	deleteBatch: jasmine.Spy;
+	getAllPaged: Mock;
+	getById: Mock;
+	delete: Mock;
+	deleteBatch: Mock;
 }
 
 /** Create a mocked LogRepository. Used in log management feature tests. */
-export function createMockLogRepository(): jasmine.SpyObj<MockLogRepository>
+export function createMockLogRepository(): MockLogRepository
 {
-	return jasmine.createSpyObj("LogRepository",
-		[
-			"getAllPaged",
-			"getById",
-			"delete",
-			"deleteBatch"
-		]);
+	return {
+		getAllPaged: vi.fn(),
+		getById: vi.fn(),
+		delete: vi.fn(),
+		deleteBatch: vi.fn(),
+	};
 }
 
 /**
@@ -195,36 +257,40 @@ export function createMockLogRepository(): jasmine.SpyObj<MockLogRepository>
  */
 export interface MockApiService
 {
-	get: jasmine.Spy;
-	post: jasmine.Spy;
-	put: jasmine.Spy;
-	delete: jasmine.Spy;
+	get: Mock;
+	post: Mock;
+	put: Mock;
+	delete: Mock;
 }
 
 /**
  * Create a mocked ApiService
  * Used in repository tests
  *
- * @returns Jasmine spy object for ApiService
+ * @returns Vitest mock object for ApiService
  */
-export function createMockApiService(): jasmine.SpyObj<MockApiService>
+export function createMockApiService(): MockApiService
 {
-	return jasmine.createSpyObj("ApiService",
-		["get", "post", "put", "delete"]);
+	return {
+		get: vi.fn(),
+		post: vi.fn(),
+		put: vi.fn(),
+		delete: vi.fn(),
+	};
 }
 
 /**
  * Mock LayoutService interface for testing
- * Simulates signal-based properties with jasmine spies
+ * Simulates signal-based properties with Vitest mocks
  */
 export interface MockLayoutService
 {
-	setSidebarExpanded: jasmine.Spy;
-	toggleSidebar: jasmine.Spy;
-	openSidebar: jasmine.Spy;
-	closeSidebar: jasmine.Spy;
-	sidebarMode: jasmine.Spy;
-	sidebarExpanded: jasmine.Spy;
+	setSidebarExpanded: Mock;
+	toggleSidebar: Mock;
+	openSidebar: Mock;
+	closeSidebar: Mock;
+	sidebarMode: Mock;
+	sidebarExpanded: Mock;
 }
 
 /**
@@ -235,23 +301,14 @@ export interface MockLayoutService
  */
 export function createMockLayoutService(): MockLayoutService
 {
-	const mock: MockLayoutService =
-		jasmine.createSpyObj("LayoutService",
-			[
-				"setSidebarExpanded",
-				"toggleSidebar",
-				"openSidebar",
-				"closeSidebar"
-			]) as MockLayoutService;
-
-	// Add signal-like computed properties
-	mock.sidebarMode =
-		jasmine.createSpy("sidebarMode").and.returnValue("side");
-	mock.sidebarExpanded =
-		jasmine
-		.createSpy("sidebarExpanded")
-		.and
-		.returnValue(true);
-
-	return mock;
+	return {
+		setSidebarExpanded: vi.fn(),
+		toggleSidebar: vi.fn(),
+		openSidebar: vi.fn(),
+		closeSidebar: vi.fn(),
+		sidebarMode: vi.fn()
+		.mockReturnValue("side"),
+		sidebarExpanded: vi.fn()
+		.mockReturnValue(true),
+	};
 }

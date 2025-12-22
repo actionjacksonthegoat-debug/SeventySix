@@ -10,7 +10,6 @@ import { ThemeBrightness } from "@shared/models/theme.model";
  * Usage in tests:
  * ```typescript
  * const mockThemeService = createMockThemeService();
- * // Then use jasmine.createSpyObj to wrap it if needed
  * ```
  */
 export class MockThemeService
