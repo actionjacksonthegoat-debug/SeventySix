@@ -41,7 +41,9 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 	/// Reusing the factory across tests significantly reduces test execution time.
 	/// </summary>
 	/// <typeparam name="TProgram">The entry point type for the application.</typeparam>
-	/// <returns>A cached or newly created SharedWebApplicationFactory instance.</returns>
+	/// <returns>
+	/// A cached or newly created SharedWebApplicationFactory instance.
+	/// </returns>
 	public override SharedWebApplicationFactory<TProgram> GetOrCreateFactory<TProgram>()
 	{
 		return (SharedWebApplicationFactory<TProgram>)
@@ -54,7 +56,9 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 	/// Creates an isolated database using SharedContainerManager and applies migrations.
 	/// Uses SharedContainerManager to ensure only one container across all test assemblies.
 	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <returns>
+	/// A <see cref="Task"/> representing the asynchronous operation.
+	/// </returns>
 	public override async Task InitializeAsync()
 	{
 		ConnectionStringValue =
@@ -64,7 +68,9 @@ public sealed class TestcontainersPostgreSqlFixture : BasePostgreSqlFixture
 	/// <summary>
 	/// Disposes cached factories. Container cleanup handled by SharedContainerManager.
 	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <returns>
+	/// A <see cref="Task"/> representing the asynchronous operation.
+	/// </returns>
 	public override async Task DisposeAsync()
 	{
 		// Dispose all cached WebApplicationFactory instances

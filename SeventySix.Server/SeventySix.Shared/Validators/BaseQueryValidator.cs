@@ -122,8 +122,12 @@ public abstract class BaseQueryValidator<TRequest, TEntity>
 	/// <summary>
 	/// Validates that the sort field exists as a property on the entity.
 	/// </summary>
-	/// <param name="sortBy">The field name to validate.</param>
-	/// <returns>True if the field exists on TEntity; otherwise false.</returns>
+	/// <param name="sortBy">
+	/// The field name to validate.
+	/// </param>
+	/// <returns>
+	/// True if the field exists on TEntity; otherwise false.
+	/// </returns>
 	/// <remarks>
 	/// Uses reflection to discover entity properties at runtime.
 	/// Convention over configuration: no manual field lists needed.
@@ -146,7 +150,9 @@ public abstract class BaseQueryValidator<TRequest, TEntity>
 	/// <summary>
 	/// Gets all public property names from the entity for error messages.
 	/// </summary>
-	/// <returns>Array of property names.</returns>
+	/// <returns>
+	/// Array of property names.
+	/// </returns>
 	/// <remarks>
 	/// Sorted alphabetically for consistent error messages.
 	/// Used to provide helpful feedback when invalid SortBy value provided.

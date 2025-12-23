@@ -42,23 +42,33 @@ public class TestTimeProviderBuilder
 	/// <summary>
 	/// Creates a TimeProvider mock with default fixed time.
 	/// </summary>
-	/// <returns>A TimeProvider mock returning 2025-01-01 12:00:00 UTC.</returns>
+	/// <returns>
+	/// A TimeProvider mock returning 2025-01-01 12:00:00 UTC.
+	/// </returns>
 	public static TimeProvider CreateDefault() =>
 		new TestTimeProviderBuilder().Build();
 
 	/// <summary>
 	/// Creates a TimeProvider mock for a specific fixed time.
 	/// </summary>
-	/// <param name="fixedTime">The fixed time to return.</param>
-	/// <returns>A TimeProvider mock returning the specified time.</returns>
+	/// <param name="fixedTime">
+	/// The fixed time to return.
+	/// </param>
+	/// <returns>
+	/// A TimeProvider mock returning the specified time.
+	/// </returns>
 	public static TimeProvider Create(DateTimeOffset fixedTime) =>
 		new TestTimeProviderBuilder().WithUtcNow(fixedTime).Build();
 
 	/// <summary>
 	/// Sets the UTC time the mock will return.
 	/// </summary>
-	/// <param name="time">The fixed time to return from GetUtcNow().</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="time">
+	/// The fixed time to return from GetUtcNow().
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public TestTimeProviderBuilder WithUtcNow(DateTimeOffset time)
 	{
 		UtcNow = time;
@@ -68,7 +78,9 @@ public class TestTimeProviderBuilder
 	/// <summary>
 	/// Builds the TimeProvider mock.
 	/// </summary>
-	/// <returns>A configured TimeProvider mock.</returns>
+	/// <returns>
+	/// A configured TimeProvider mock.
+	/// </returns>
 	public TimeProvider Build()
 	{
 		TimeProvider mock =

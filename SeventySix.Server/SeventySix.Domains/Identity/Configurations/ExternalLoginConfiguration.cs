@@ -21,7 +21,9 @@ public class ExternalLoginConfiguration
 	/// <summary>
 	/// Configures the entity mapping for ExternalLogin.
 	/// </summary>
-	/// <param name="builder">The builder to be used to configure the entity type.</param>
+	/// <param name="builder">
+	/// The builder to be used to configure the entity type.
+	/// </param>
 	public void Configure(EntityTypeBuilder<ExternalLogin> builder)
 	{
 		ArgumentNullException.ThrowIfNull(builder);

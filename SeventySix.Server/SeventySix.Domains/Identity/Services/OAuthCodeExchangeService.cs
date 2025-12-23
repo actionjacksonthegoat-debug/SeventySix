@@ -79,7 +79,9 @@ public class OAuthCodeExchangeService(IMemoryCache cache)
 	/// <summary>
 	/// Generates a cryptographically secure random code.
 	/// </summary>
-	/// <returns>Base64url encoded random code.</returns>
+	/// <returns>
+	/// Base64url encoded random code.
+	/// </returns>
 	private static string GenerateSecureCode()
 	{
 		byte[] bytes =

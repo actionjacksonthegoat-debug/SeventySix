@@ -31,10 +31,18 @@ public class BulkOperationExecutor<TEntity>(DbContext context)
 	/// <summary>
 	/// Executes a bulk update operation on entities matching the provided IDs.
 	/// </summary>
-	/// <param name="ids">The collection of entity IDs to update.</param>
-	/// <param name="updateAction">The action to apply to each entity.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The number of entities updated.</returns>
+	/// <param name="ids">
+	/// The collection of entity IDs to update.
+	/// </param>
+	/// <param name="updateAction">
+	/// The action to apply to each entity.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The number of entities updated.
+	/// </returns>
 	/// <remarks>
 	/// This method:
 	/// 1. Queries entities matching the provided IDs

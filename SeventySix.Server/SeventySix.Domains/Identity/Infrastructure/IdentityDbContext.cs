@@ -21,7 +21,9 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 	/// <summary>
 	/// Initializes a new instance of the <see cref="IdentityDbContext"/> class.
 	/// </summary>
-	/// <param name="options">The options for this context.</param>
+	/// <param name="options">
+	/// The options for this context.
+	/// </param>
 	public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
 		: base(options) { }
 
@@ -76,13 +78,17 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 	/// <summary>
 	/// Gets the schema name for Identity bounded context.
 	/// </summary>
-	/// <returns>"Identity".</returns>
+	/// <returns>
+	/// "Identity".
+	/// </returns>
 	protected override string GetSchemaName() => SchemaConstants.Identity;
 
 	/// <summary>
 	/// Configures entity-specific settings for Identity domain.
 	/// </summary>
-	/// <param name="modelBuilder">The model builder.</param>
+	/// <param name="modelBuilder">
+	/// The model builder.
+	/// </param>
 	/// <remarks>
 	/// Applies global query filter for soft delete on User entities.
 	/// </remarks>

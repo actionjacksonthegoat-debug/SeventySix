@@ -24,8 +24,12 @@ public static class PasswordValidationExtensions
 	/// Applies standard password validation rules to a string property.
 	/// </summary>
 	/// <typeparam name="T">The type being validated.</typeparam>
-	/// <param name="ruleBuilder">The rule builder.</param>
-	/// <returns>Rule builder options for chaining.</returns>
+	/// <param name="ruleBuilder">
+	/// The rule builder.
+	/// </param>
+	/// <returns>
+	/// Rule builder options for chaining.
+	/// </returns>
 	public static IRuleBuilderOptions<T, string> ApplyPasswordRules<T>(
 		this IRuleBuilder<T, string> ruleBuilder)
 	{

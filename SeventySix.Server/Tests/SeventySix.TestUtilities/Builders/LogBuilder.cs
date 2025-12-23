@@ -50,7 +50,9 @@ public class LogBuilder
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LogBuilder"/> class.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	/// <param name="timeProvider">
+	/// The time provider for default timestamps.
+	/// </param>
 	public LogBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;
@@ -61,8 +63,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the log level.
 	/// </summary>
-	/// <param name="logLevel">The log level (Warning, Error, Fatal, etc.).</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="logLevel">
+	/// The log level (Warning, Error, Fatal, etc.).
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithLogLevel(string logLevel)
 	{
 		LogLevel = logLevel;
@@ -72,8 +78,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the log message.
 	/// </summary>
-	/// <param name="message">The log message.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="message">
+	/// The log message.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithMessage(string message)
 	{
 		Message = message;
@@ -83,8 +93,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the exception message.
 	/// </summary>
-	/// <param name="exceptionMessage">The exception message.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="exceptionMessage">
+	/// The exception message.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithExceptionMessage(string? exceptionMessage)
 	{
 		ExceptionMessage = exceptionMessage;
@@ -94,8 +108,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the base exception message.
 	/// </summary>
-	/// <param name="baseExceptionMessage">The base exception message.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="baseExceptionMessage">
+	/// The base exception message.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithBaseExceptionMessage(string? baseExceptionMessage)
 	{
 		BaseExceptionMessage =
@@ -106,8 +124,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the stack trace.
 	/// </summary>
-	/// <param name="stackTrace">The stack trace.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="stackTrace">
+	/// The stack trace.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithStackTrace(string? stackTrace)
 	{
 		StackTrace = stackTrace;
@@ -117,8 +139,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the source context.
 	/// </summary>
-	/// <param name="sourceContext">The source context (class name).</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="sourceContext">
+	/// The source context (class name).
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithSourceContext(string? sourceContext)
 	{
 		SourceContext = sourceContext;
@@ -128,11 +154,21 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the HTTP request details.
 	/// </summary>
-	/// <param name="method">The HTTP method.</param>
-	/// <param name="path">The request path.</param>
-	/// <param name="statusCode">The HTTP status code.</param>
-	/// <param name="durationMs">The request duration in milliseconds.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="method">
+	/// The HTTP method.
+	/// </param>
+	/// <param name="path">
+	/// The request path.
+	/// </param>
+	/// <param name="statusCode">
+	/// The HTTP status code.
+	/// </param>
+	/// <param name="durationMs">
+	/// The request duration in milliseconds.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithHttpRequest(
 		string? method,
 		string? path,
@@ -149,8 +185,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the CreateDate.
 	/// </summary>
-	/// <param name="timestamp">The log CreateDate.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="timestamp">
+	/// The log CreateDate.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithTimestamp(DateTime createDate)
 	{
 		CreateDate = createDate;
@@ -160,8 +200,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the machine name.
 	/// </summary>
-	/// <param name="machineName">The machine name.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="machineName">
+	/// The machine name.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithMachineName(string? machineName)
 	{
 		MachineName = machineName;
@@ -171,8 +215,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the environment.
 	/// </summary>
-	/// <param name="environment">The environment (Development, Production, etc.).</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="environment">
+	/// The environment (Development, Production, etc.).
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithEnvironment(string? environment)
 	{
 		Environment = environment;
@@ -182,8 +230,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the correlation ID.
 	/// </summary>
-	/// <param name="correlationId">The correlation ID.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="correlationId">
+	/// The correlation ID.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithCorrelationId(string? correlationId)
 	{
 		CorrelationId = correlationId;
@@ -193,9 +245,15 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the distributed tracing span IDs.
 	/// </summary>
-	/// <param name="spanId">The span ID.</param>
-	/// <param name="parentSpanId">The parent span ID.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="spanId">
+	/// The span ID.
+	/// </param>
+	/// <param name="parentSpanId">
+	/// The parent span ID.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithSpanIds(string? spanId, string? parentSpanId = null)
 	{
 		SpanId = spanId;
@@ -206,8 +264,12 @@ public class LogBuilder
 	/// <summary>
 	/// Sets the additional properties as JSON.
 	/// </summary>
-	/// <param name="properties">The additional properties.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="properties">
+	/// The additional properties.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public LogBuilder WithProperties(string? properties)
 	{
 		Properties = properties;
@@ -217,7 +279,9 @@ public class LogBuilder
 	/// <summary>
 	/// Builds the Log entity with the configured values.
 	/// </summary>
-	/// <returns>A new Log instance.</returns>
+	/// <returns>
+	/// A new Log instance.
+	/// </returns>
 	public Log Build()
 	{
 		return new Log
@@ -246,8 +310,12 @@ public class LogBuilder
 	/// <summary>
 	/// Creates a default Warning level log.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for generating timestamps.</param>
-	/// <returns>A new LogBuilder configured for a Warning log.</returns>
+	/// <param name="timeProvider">
+	/// The time provider for generating timestamps.
+	/// </param>
+	/// <returns>
+	/// A new LogBuilder configured for a Warning log.
+	/// </returns>
 	public static LogBuilder CreateWarning(TimeProvider timeProvider)
 	{
 		return new LogBuilder(timeProvider).WithLogLevel(
@@ -257,8 +325,12 @@ public class LogBuilder
 	/// <summary>
 	/// Creates a default Error level log.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for generating timestamps.</param>
-	/// <returns>A new LogBuilder configured for an Error log.</returns>
+	/// <param name="timeProvider">
+	/// The time provider for generating timestamps.
+	/// </param>
+	/// <returns>
+	/// A new LogBuilder configured for an Error log.
+	/// </returns>
 	public static LogBuilder CreateError(TimeProvider timeProvider)
 	{
 		return new LogBuilder(timeProvider)
@@ -269,8 +341,12 @@ public class LogBuilder
 	/// <summary>
 	/// Creates a default Fatal level log.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for generating timestamps.</param>
-	/// <returns>A new LogBuilder configured for a Fatal log.</returns>
+	/// <param name="timeProvider">
+	/// The time provider for generating timestamps.
+	/// </param>
+	/// <returns>
+	/// A new LogBuilder configured for a Fatal log.
+	/// </returns>
 	public static LogBuilder CreateFatal(TimeProvider timeProvider)
 	{
 		return new LogBuilder(timeProvider)

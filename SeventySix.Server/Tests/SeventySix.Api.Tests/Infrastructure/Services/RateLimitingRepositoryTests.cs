@@ -28,7 +28,9 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RateLimitingRepositoryTests"/> class.
 	/// </summary>
-	/// <param name="fixture">PostgreSQL fixture.</param>
+	/// <param name="fixture">
+	/// PostgreSQL fixture.
+	/// </param>
 	public RateLimitingRepositoryTests(TestcontainersPostgreSqlFixture fixture)
 		: base(fixture)
 	{

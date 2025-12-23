@@ -16,8 +16,12 @@ namespace SeventySix.Api.HealthChecks;
 /// is an observability concern and should not prevent the application from serving traffic.
 /// The app can continue to function without tracing, but telemetry data will be lost.
 /// </remarks>
-/// <param name="configuration">Application configuration.</param>
-/// <param name="logger">Logger instance.</param>
+/// <param name="configuration">
+/// Application configuration.
+/// </param>
+/// <param name="logger">
+/// Logger instance.
+/// </param>
 public class JaegerHealthCheck(
 	IConfiguration configuration,
 	ILogger<JaegerHealthCheck> logger) : IHealthCheck
@@ -25,9 +29,15 @@ public class JaegerHealthCheck(
 	/// <summary>
 	/// Checks the health of the Jaeger OTLP endpoint.
 	/// </summary>
-	/// <param name="context">Health check context.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Health check result indicating endpoint reachability.</returns>
+	/// <param name="context">
+	/// Health check context.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Health check result indicating endpoint reachability.
+	/// </returns>
 	public async Task<HealthCheckResult> CheckHealthAsync(
 		HealthCheckContext context,
 		CancellationToken cancellationToken = default)

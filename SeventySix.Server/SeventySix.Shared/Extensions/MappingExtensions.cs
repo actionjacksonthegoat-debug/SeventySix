@@ -23,11 +23,21 @@ public static class MappingExtensions
 	/// <summary>
 	/// Maps a collection of entities to DTOs using the provided mapper function.
 	/// </summary>
-	/// <typeparam name="TEntity">The source entity type.</typeparam>
-	/// <typeparam name="TDto">The destination DTO type.</typeparam>
-	/// <param name="entities">The collection of entities to map.</param>
-	/// <param name="mapper">The function to map each entity to a DTO.</param>
-	/// <returns>A lazily-evaluated collection of mapped DTOs.</returns>
+	/// <typeparam name="TEntity">
+	/// The source entity type.
+	/// </typeparam>
+	/// <typeparam name="TDto">
+	/// The destination DTO type.
+	/// </typeparam>
+	/// <param name="entities">
+	/// The collection of entities to map.
+	/// </param>
+	/// <param name="mapper">
+	/// The function to map each entity to a DTO.
+	/// </param>
+	/// <returns>
+	/// A lazily-evaluated collection of mapped DTOs.
+	/// </returns>
 	/// <exception cref="ArgumentNullException">
 	/// Thrown when entities or mapper is null.
 	/// </exception>

@@ -26,7 +26,9 @@ public sealed class QueryBuilder<T>
 	/// <summary>
 	/// Initializes a new instance of the QueryBuilder class.
 	/// </summary>
-	/// <param name="initialQuery">The initial query.</param>
+	/// <param name="initialQuery">
+	/// The initial query.
+	/// </param>
 	public QueryBuilder(IQueryable<T> initialQuery)
 	{
 		Query = initialQuery;
@@ -36,8 +38,12 @@ public sealed class QueryBuilder<T>
 	/// <summary>
 	/// Creates a new QueryBuilder for the specified query.
 	/// </summary>
-	/// <param name="initialQuery">The initial query.</param>
-	/// <returns>A new QueryBuilder instance.</returns>
+	/// <param name="initialQuery">
+	/// The initial query.
+	/// </param>
+	/// <returns>
+	/// A new QueryBuilder instance.
+	/// </returns>
 	public static QueryBuilder<T> For(IQueryable<T> initialQuery)
 	{
 		return new QueryBuilder<T>(initialQuery);
@@ -46,8 +52,12 @@ public sealed class QueryBuilder<T>
 	/// <summary>
 	/// Applies a filter condition to the query.
 	/// </summary>
-	/// <param name="predicate">The filter predicate.</param>
-	/// <returns>The QueryBuilder for method chaining.</returns>
+	/// <param name="predicate">
+	/// The filter predicate.
+	/// </param>
+	/// <returns>
+	/// The QueryBuilder for method chaining.
+	/// </returns>
 	public QueryBuilder<T> Where(Expression<Func<T, bool>> predicate)
 	{
 		Query =
@@ -59,8 +69,12 @@ public sealed class QueryBuilder<T>
 	/// Applies ascending ordering to the query.
 	/// </summary>
 	/// <typeparam name="TKey">The type of the property to order by.</typeparam>
-	/// <param name="keySelector">The property selector.</param>
-	/// <returns>The QueryBuilder for method chaining.</returns>
+	/// <param name="keySelector">
+	/// The property selector.
+	/// </param>
+	/// <returns>
+	/// The QueryBuilder for method chaining.
+	/// </returns>
 	public QueryBuilder<T> OrderBy<TKey>(Expression<Func<T, TKey>> keySelector)
 	{
 		Query =
@@ -73,8 +87,12 @@ public sealed class QueryBuilder<T>
 	/// Applies descending ordering to the query.
 	/// </summary>
 	/// <typeparam name="TKey">The type of the property to order by.</typeparam>
-	/// <param name="keySelector">The property selector.</param>
-	/// <returns>The QueryBuilder for method chaining.</returns>
+	/// <param name="keySelector">
+	/// The property selector.
+	/// </param>
+	/// <returns>
+	/// The QueryBuilder for method chaining.
+	/// </returns>
 	public QueryBuilder<T> OrderByDescending<TKey>(
 		Expression<Func<T, TKey>> keySelector)
 	{
@@ -88,8 +106,12 @@ public sealed class QueryBuilder<T>
 	/// Applies a secondary ascending sort to an already ordered query.
 	/// </summary>
 	/// <typeparam name="TKey">The type of the property to order by.</typeparam>
-	/// <param name="keySelector">The property selector.</param>
-	/// <returns>The QueryBuilder for method chaining.</returns>
+	/// <param name="keySelector">
+	/// The property selector.
+	/// </param>
+	/// <returns>
+	/// The QueryBuilder for method chaining.
+	/// </returns>
 	/// <exception cref="InvalidOperationException">Thrown when ThenBy is called before OrderBy or OrderByDescending.</exception>
 	public QueryBuilder<T> ThenBy<TKey>(Expression<Func<T, TKey>> keySelector)
 	{
@@ -107,8 +129,12 @@ public sealed class QueryBuilder<T>
 	/// Applies a secondary descending sort to an already ordered query.
 	/// </summary>
 	/// <typeparam name="TKey">The type of the property to order by.</typeparam>
-	/// <param name="keySelector">The property selector.</param>
-	/// <returns>The QueryBuilder for method chaining.</returns>
+	/// <param name="keySelector">
+	/// The property selector.
+	/// </param>
+	/// <returns>
+	/// The QueryBuilder for method chaining.
+	/// </returns>
 	/// <exception cref="InvalidOperationException">Thrown when ThenByDescending is called before OrderBy or OrderByDescending.</exception>
 	public QueryBuilder<T> ThenByDescending<TKey>(
 		Expression<Func<T, TKey>> keySelector)
@@ -126,8 +152,12 @@ public sealed class QueryBuilder<T>
 	/// <summary>
 	/// Skips the specified number of elements.
 	/// </summary>
-	/// <param name="count">The number of elements to skip.</param>
-	/// <returns>The QueryBuilder for method chaining.</returns>
+	/// <param name="count">
+	/// The number of elements to skip.
+	/// </param>
+	/// <returns>
+	/// The QueryBuilder for method chaining.
+	/// </returns>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown when count is negative.</exception>
 	public QueryBuilder<T> Skip(int count)
 	{
@@ -145,8 +175,12 @@ public sealed class QueryBuilder<T>
 	/// <summary>
 	/// Takes the specified number of elements.
 	/// </summary>
-	/// <param name="count">The number of elements to take.</param>
-	/// <returns>The QueryBuilder for method chaining.</returns>
+	/// <param name="count">
+	/// The number of elements to take.
+	/// </param>
+	/// <returns>
+	/// The QueryBuilder for method chaining.
+	/// </returns>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown when count is negative.</exception>
 	public QueryBuilder<T> Take(int count)
 	{
@@ -164,9 +198,15 @@ public sealed class QueryBuilder<T>
 	/// <summary>
 	/// Applies pagination to the query (Skip and Take combined).
 	/// </summary>
-	/// <param name="page">The page number (1-based).</param>
-	/// <param name="pageSize">The number of items per page.</param>
-	/// <returns>The QueryBuilder for method chaining.</returns>
+	/// <param name="page">
+	/// The page number (1-based).
+	/// </param>
+	/// <param name="pageSize">
+	/// The number of items per page.
+	/// </param>
+	/// <returns>
+	/// The QueryBuilder for method chaining.
+	/// </returns>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown when page or pageSize is less than 1.</exception>
 	public QueryBuilder<T> Paginate(int page, int pageSize)
 	{
@@ -190,7 +230,9 @@ public sealed class QueryBuilder<T>
 	/// <summary>
 	/// Builds and returns the final query.
 	/// </summary>
-	/// <returns>The constructed IQueryable.</returns>
+	/// <returns>
+	/// The constructed IQueryable.
+	/// </returns>
 	public IQueryable<T> Build()
 	{
 		return Query;
@@ -205,10 +247,18 @@ public static class QueryBuilderExtensions
 	/// <summary>
 	/// Applies a QueryBuilder configuration to an IQueryable.
 	/// </summary>
-	/// <typeparam name="T">The entity type.</typeparam>
-	/// <param name="initialQuery">The query to apply the builder to.</param>
-	/// <param name="builderAction">The builder configuration action.</param>
-	/// <returns>The configured query.</returns>
+	/// <typeparam name="T">
+	/// The entity type.
+	/// </typeparam>
+	/// <param name="initialQuery">
+	/// The query to apply the builder to.
+	/// </param>
+	/// <param name="builderAction">
+	/// The builder configuration action.
+	/// </param>
+	/// <returns>
+	/// The configured query.
+	/// </returns>
 	public static IQueryable<T> ApplyQueryBuilder<T>(
 		this IQueryable<T> initialQuery,
 		Func<QueryBuilder<T>, QueryBuilder<T>> builderAction)

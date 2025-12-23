@@ -12,10 +12,18 @@ public static class BulkUpdateActiveStatusCommandHandler
 	/// <summary>
 	/// Handles bulk update of user active status.
 	/// </summary>
-	/// <param name="command">The bulk update command.</param>
-	/// <param name="repository">User repository.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>The number of users updated.</returns>
+	/// <param name="command">
+	/// The bulk update command.
+	/// </param>
+	/// <param name="repository">
+	/// User repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The number of users updated.
+	/// </returns>
 	/// <remarks>
 	/// Repository call is already atomic via EF Core's SaveChangesAsync.
 	/// No explicit transaction needed for single operation.

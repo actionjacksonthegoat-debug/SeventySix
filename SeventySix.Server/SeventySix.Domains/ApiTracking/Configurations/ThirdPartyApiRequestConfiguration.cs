@@ -28,7 +28,9 @@ public class ThirdPartyApiRequestConfiguration
 	/// <summary>
 	/// Configures the entity mapping for ThirdPartyApiRequest.
 	/// </summary>
-	/// <param name="builder">The builder to be used to configure the entity type.</param>
+	/// <param name="builder">
+	/// The builder to be used to configure the entity type.
+	/// </param>
 	public void Configure(EntityTypeBuilder<ThirdPartyApiRequest> builder)
 	{
 		ArgumentNullException.ThrowIfNull(builder);

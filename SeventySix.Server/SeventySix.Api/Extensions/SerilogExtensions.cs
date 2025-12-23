@@ -29,10 +29,18 @@ public static class SerilogExtensions
 	/// Use before app.Build() when database sink is not yet available.
 	/// In Test environment, configures silent logging (Error+ only, no sinks).
 	/// </summary>
-	/// <param name="config">The logger configuration.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <param name="environment">The environment name (defaults to Production).</param>
-	/// <returns>The configured logger configuration.</returns>
+	/// <param name="config">
+	/// The logger configuration.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <param name="environment">
+	/// The environment name (defaults to Production).
+	/// </param>
+	/// <returns>
+	/// The configured logger configuration.
+	/// </returns>
 	public static LoggerConfiguration ConfigureBaseSerilog(
 		this LoggerConfiguration config,
 		IConfiguration configuration,
@@ -72,9 +80,15 @@ public static class SerilogExtensions
 	/// Reconfigures Serilog with database sink after app.Build().
 	/// This allows resolving scoped services (DbContext) for logging.
 	/// </summary>
-	/// <param name="configuration">The application configuration.</param>
-	/// <param name="serviceProvider">The service provider for resolving dependencies.</param>
-	/// <param name="environment">The current environment name.</param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <param name="serviceProvider">
+	/// The service provider for resolving dependencies.
+	/// </param>
+	/// <param name="environment">
+	/// The current environment name.
+	/// </param>
 	public static void ReconfigureWithDatabaseSink(
 		IConfiguration configuration,
 		IServiceProvider serviceProvider,

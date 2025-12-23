@@ -20,7 +20,9 @@ namespace SeventySix.Api.Controllers;
 /// <remarks>
 /// Initializes a new instance of the <see cref="HealthController"/> class.
 /// </remarks>
-/// <param name="service">The health check service.</param>
+/// <param name="service">
+/// The health check service.
+/// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/health")]
 public class HealthController(IHealthCheckService service) : ControllerBase
@@ -28,8 +30,12 @@ public class HealthController(IHealthCheckService service) : ControllerBase
 	/// <summary>
 	/// Retrieves comprehensive system health status.
 	/// </summary>
-	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
-	/// <returns>System health status including all components.</returns>
+	/// <param name="cancellationToken">
+	/// Cancellation token for the async operation.
+	/// </param>
+	/// <returns>
+	/// System health status including all components.
+	/// </returns>
 	/// <response code="200">Returns the system health status.</response>
 	[HttpGet]
 	[ProducesResponseType(

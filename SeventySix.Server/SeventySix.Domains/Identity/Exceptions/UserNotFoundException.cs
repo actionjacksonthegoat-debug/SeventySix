@@ -54,7 +54,9 @@ public class UserNotFoundException : EntityNotFoundException
 	/// Initializes a new instance of the <see cref="UserNotFoundException"/> class
 	/// with specific user identifier.
 	/// </summary>
-	/// <param name="userId">The user identifier that was used in the failed lookup.</param>
+	/// <param name="userId">
+	/// The user identifier that was used in the failed lookup.
+	/// </param>
 	/// <remarks>
 	/// Preferred constructor for most cases as it provides specific, actionable error information.
 	/// Example message: "User with id '123' was not found."
@@ -65,7 +67,9 @@ public class UserNotFoundException : EntityNotFoundException
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserNotFoundException"/> class with a custom message.
 	/// </summary>
-	/// <param name="message">A custom error message describing what wasn't found.</param>
+	/// <param name="message">
+	/// A custom error message describing what wasn't found.
+	/// </param>
 	/// <remarks>
 	/// Use this constructor when the default message format doesn't fit your scenario.
 	/// For example, when looking up by username or email:

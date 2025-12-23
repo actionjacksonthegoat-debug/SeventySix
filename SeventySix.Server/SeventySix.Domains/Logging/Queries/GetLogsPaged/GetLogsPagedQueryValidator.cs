@@ -14,7 +14,9 @@ public class GetLogsPagedQueryValidator : AbstractValidator<GetLogsPagedQuery>
 	/// <summary>
 	/// Initializes a new instance of the <see cref="GetLogsPagedQueryValidator"/> class.
 	/// </summary>
-	/// <param name="requestValidator">The validator for LogQueryRequest.</param>
+	/// <param name="requestValidator">
+	/// The validator for LogQueryRequest.
+	/// </param>
 	public GetLogsPagedQueryValidator(
 		IValidator<LogQueryRequest> requestValidator)
 	{

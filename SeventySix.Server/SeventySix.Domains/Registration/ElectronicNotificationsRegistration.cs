@@ -30,9 +30,15 @@ public static class ElectronicNotificationsRegistration
 	/// <summary>
 	/// Registers ElectronicNotifications bounded context services with the dependency injection container.
 	/// </summary>
-	/// <param name="services">The service collection to register services with.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <returns>The service collection for method chaining.</returns>
+	/// <param name="services">
+	/// The service collection to register services with.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <returns>
+	/// The service collection for method chaining.
+	/// </returns>
 	/// <remarks>
 	/// Service Lifetimes:
 	/// - EmailSettings: Singleton (bound from configuration)

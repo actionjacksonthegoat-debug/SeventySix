@@ -23,7 +23,9 @@ namespace SeventySix.Api.Controllers;
 /// <remarks>
 /// Initializes a new instance of the <see cref="ThirdPartyApiRequestsController"/> class.
 /// </remarks>
-/// <param name="messageBus">The Wolverine message bus for executing queries.</param>
+/// <param name="messageBus">
+/// The Wolverine message bus for executing queries.
+/// </param>
 [ApiController]
 [Authorize(Policy = PolicyConstants.AdminOnly)]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/thirdpartyrequests")]
@@ -33,8 +35,12 @@ public class ThirdPartyApiRequestsController(IMessageBus messageBus)
 	/// <summary>
 	/// Retrieves all third-party API request tracking records.
 	/// </summary>
-	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
-	/// <returns>A list of API request tracking records.</returns>
+	/// <param name="cancellationToken">
+	/// Cancellation token for the async operation.
+	/// </param>
+	/// <returns>
+	/// A list of API request tracking records.
+	/// </returns>
 	/// <response code="200">Returns the list of API request records.</response>
 	[HttpGet]
 	[ProducesResponseType(
@@ -57,8 +63,12 @@ public class ThirdPartyApiRequestsController(IMessageBus messageBus)
 	/// <summary>
 	/// Retrieves aggregated statistics for third-party API requests.
 	/// </summary>
-	/// <param name="cancellationToken">Cancellation token for the async operation.</param>
-	/// <returns>Aggregated API request statistics.</returns>
+	/// <param name="cancellationToken">
+	/// Cancellation token for the async operation.
+	/// </param>
+	/// <returns>
+	/// Aggregated API request statistics.
+	/// </returns>
 	/// <response code="200">Returns the aggregated statistics.</response>
 	[HttpGet("statistics")]
 	[ProducesResponseType(

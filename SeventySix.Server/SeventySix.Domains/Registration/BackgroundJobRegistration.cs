@@ -38,9 +38,15 @@ public static class BackgroundJobRegistration
 	/// <summary>
 	/// Registers all background jobs with their settings from configuration.
 	/// </summary>
-	/// <param name="services">The service collection to register background jobs with.</param>
-	/// <param name="configuration">The application configuration for binding settings.</param>
-	/// <returns>The service collection for method chaining.</returns>
+	/// <param name="services">
+	/// The service collection to register background jobs with.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration for binding settings.
+	/// </param>
+	/// <returns>
+	/// The service collection for method chaining.
+	/// </returns>
 	public static IServiceCollection AddBackgroundJobs(
 		this IServiceCollection services,
 		IConfiguration configuration)

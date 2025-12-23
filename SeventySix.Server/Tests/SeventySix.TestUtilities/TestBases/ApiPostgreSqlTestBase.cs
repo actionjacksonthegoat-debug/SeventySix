@@ -28,7 +28,9 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ApiPostgreSqlTestBase{TProgram}"/> class.
 	/// </summary>
-	/// <param name="fixture">The shared PostgreSQL fixture.</param>
+	/// <param name="fixture">
+	/// The shared PostgreSQL fixture.
+	/// </param>
 	protected ApiPostgreSqlTestBase(BasePostgreSqlFixture fixture)
 	{
 		Fixture = fixture;
@@ -51,14 +53,20 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	/// Creates an HttpClient from the shared WebApplicationFactory.
 	/// Use this for most tests instead of creating a new factory.
 	/// </summary>
-	/// <returns>An HttpClient configured to use the shared test server.</returns>
+	/// <returns>
+	/// An HttpClient configured to use the shared test server.
+	/// </returns>
 	protected HttpClient CreateClient() => SharedFactory.CreateClient();
 
 	/// <summary>
 	/// Creates an HttpClient from the shared WebApplicationFactory with custom options.
 	/// </summary>
-	/// <param name="options">Options for configuring the HttpClient.</param>
-	/// <returns>An HttpClient configured to use the shared test server.</returns>
+	/// <param name="options">
+	/// Options for configuring the HttpClient.
+	/// </param>
+	/// <returns>
+	/// An HttpClient configured to use the shared test server.
+	/// </returns>
 	protected HttpClient CreateClient(
 		WebApplicationFactoryClientOptions options) => SharedFactory.CreateClient(options);
 
@@ -67,7 +75,9 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	/// Use this for tests that require isolated in-memory state, such as rate limiting tests.
 	/// The caller is responsible for disposing the returned factory.
 	/// </summary>
-	/// <returns>A new WebApplicationFactory instance.</returns>
+	/// <returns>
+	/// A new WebApplicationFactory instance.
+	/// </returns>
 	protected SharedWebApplicationFactory<TProgram> CreateIsolatedFactory() =>
 		new(ConnectionString);
 
@@ -76,15 +86,21 @@ public abstract class ApiPostgreSqlTestBase<TProgram> : BasePostgreSqlTestBase
 	/// Use this for tests that require isolated in-memory state with custom configuration.
 	/// The caller is responsible for disposing the returned factory.
 	/// </summary>
-	/// <param name="configureAdditional">Additional web host builder configuration.</param>
-	/// <returns>A new WebApplicationFactory instance.</returns>
+	/// <param name="configureAdditional">
+	/// Additional web host builder configuration.
+	/// </param>
+	/// <returns>
+	/// A new WebApplicationFactory instance.
+	/// </returns>
 	protected SharedWebApplicationFactory<TProgram> CreateIsolatedFactory(
 		Action<IWebHostBuilder> configureAdditional) => new(ConnectionString, configureAdditional);
 
 	/// <summary>
 	/// Called before each test. Clears all data from the database to ensure test isolation.
 	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <returns>
+	/// A <see cref="Task"/> representing the asynchronous operation.
+	/// </returns>
 	public override async Task InitializeAsync()
 	{
 		// Clean up all tables before each test to ensure isolation

@@ -26,7 +26,9 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// <summary>
 	/// Creates a new IdentityDbContext configured for the shared test database.
 	/// </summary>
-	/// <returns>A configured IdentityDbContext instance.</returns>
+	/// <returns>
+	/// A configured IdentityDbContext instance.
+	/// </returns>
 	protected IdentityDbContext CreateIdentityDbContext()
 	{
 		DbContextOptions<IdentityDbContext> options =
@@ -39,7 +41,9 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// <summary>
 	/// Creates a new LoggingDbContext configured for the shared test database.
 	/// </summary>
-	/// <returns>A configured LoggingDbContext instance.</returns>
+	/// <returns>
+	/// A configured LoggingDbContext instance.
+	/// </returns>
 	protected LoggingDbContext CreateLoggingDbContext()
 	{
 		DbContextOptions<LoggingDbContext> options =
@@ -52,7 +56,9 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// <summary>
 	/// Creates a new ApiTrackingDbContext configured for the shared test database.
 	/// </summary>
-	/// <returns>A configured ApiTrackingDbContext instance.</returns>
+	/// <returns>
+	/// A configured ApiTrackingDbContext instance.
+	/// </returns>
 	protected ApiTrackingDbContext CreateApiTrackingDbContext()
 	{
 		DbContextOptions<ApiTrackingDbContext> options =
@@ -66,7 +72,9 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// Creates a service scope with all bounded context DbContexts configured.
 	/// Useful for testing services that depend on DbContext.
 	/// </summary>
-	/// <returns>A service scope with all DbContexts registered.</returns>
+	/// <returns>
+	/// A service scope with all DbContexts registered.
+	/// </returns>
 	protected IServiceScope CreateServiceScope()
 	{
 		ServiceCollection services = new();
@@ -87,8 +95,12 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// Uses CASCADE to handle foreign key dependencies automatically.
 	/// Silently skips if tables don't exist yet (before migrations run).
 	/// </summary>
-	/// <param name="tables">The table names to truncate (with schema prefix, e.g., "Identity"."Users").</param>
-	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <param name="tables">
+	/// The table names to truncate (with schema prefix, e.g., "Identity"."Users").
+	/// </param>
+	/// <returns>
+	/// A <see cref="Task"/> representing the asynchronous operation.
+	/// </returns>
 	protected virtual async Task TruncateTablesAsync(params string[] tables)
 	{
 		if (tables.Length == 0)
@@ -123,13 +135,17 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// <summary>
 	/// Called before each test. Subclasses override to define which tables to truncate.
 	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <returns>
+	/// A <see cref="Task"/> representing the asynchronous operation.
+	/// </returns>
 	public abstract Task InitializeAsync();
 
 	/// <summary>
 	/// Called after each test. Cleanup is handled by InitializeAsync of the next test.
 	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <returns>
+	/// A <see cref="Task"/> representing the asynchronous operation.
+	/// </returns>
 	public virtual Task DisposeAsync() =>
 		// No per-test cleanup needed - InitializeAsync handles it
 		Task.CompletedTask;

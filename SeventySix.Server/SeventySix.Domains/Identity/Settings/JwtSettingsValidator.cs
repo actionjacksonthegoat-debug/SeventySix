@@ -95,8 +95,12 @@ public class JwtSettingsValidator : AbstractValidator<JwtSettings>
 	/// <summary>
 	/// Determines if a secret key appears weak based on entropy and common patterns.
 	/// </summary>
-	/// <param name="key">The secret key to evaluate.</param>
-	/// <returns>True if the key appears weak; otherwise, false.</returns>
+	/// <param name="key">
+	/// The secret key to evaluate.
+	/// </param>
+	/// <returns>
+	/// True if the key appears weak; otherwise, false.
+	/// </returns>
 	private static bool IsWeakKey(string key)
 	{
 		if (string.IsNullOrEmpty(key))

@@ -12,10 +12,18 @@ public static class CheckIdentityHealthQueryHandler
 	/// <summary>
 	/// Handles the health check query for the Identity database.
 	/// </summary>
-	/// <param name="query">The health check query.</param>
-	/// <param name="repository">The user repository for data access.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>True if database is healthy, false otherwise.</returns>
+	/// <param name="query">
+	/// The health check query.
+	/// </param>
+	/// <param name="repository">
+	/// The user repository for data access.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// True if database is healthy, false otherwise.
+	/// </returns>
 	public static async Task<bool> HandleAsync(
 		CheckIdentityHealthQuery query,
 		IUserQueryRepository repository,

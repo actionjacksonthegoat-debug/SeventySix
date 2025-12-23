@@ -10,8 +10,12 @@ namespace SeventySix.Logging;
 public static class LogExtensions
 {
 	/// <summary>Converts a Log domain entity to a DTO.</summary>
-	/// <param name="entity">The domain entity to convert.</param>
-	/// <returns>A LogDto containing the entity's data.</returns>
+	/// <param name="entity">
+	/// The domain entity to convert.
+	/// </param>
+	/// <returns>
+	/// A LogDto containing the entity's data.
+	/// </returns>
 	public static LogDto ToDto(this Log entity)
 	{
 		ArgumentNullException.ThrowIfNull(entity);
@@ -38,8 +42,12 @@ public static class LogExtensions
 	}
 
 	/// <summary>Converts a collection of Log entities to a collection of DTOs.</summary>
-	/// <param name="entities">The domain entities to convert.</param>
-	/// <returns>A collection of LogDto DTOs.</returns>
+	/// <param name="entities">
+	/// The domain entities to convert.
+	/// </param>
+	/// <returns>
+	/// A collection of LogDto DTOs.
+	/// </returns>
 	public static IEnumerable<LogDto> ToDto(this IEnumerable<Log> entities) =>
 		entities.MapToDto(e => e.ToDto());
 }

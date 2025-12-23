@@ -7,5 +7,7 @@ namespace SeventySix.Identity;
 /// <summary>
 /// Command to restore a soft-deleted user.
 /// </summary>
-/// <param name="UserId">The ID of the user to restore.</param>
+/// <param name="UserId">
+/// The ID of the user to restore.
+/// </param>
 public record RestoreUserCommand(int UserId);

@@ -15,9 +15,15 @@ public static class ResponseCompressionRegistration
 	/// <summary>
 	/// Adds response compression with optimized settings.
 	/// </summary>
-	/// <param name="services">The service collection.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <returns>The service collection for chaining.</returns>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	public static IServiceCollection AddOptimizedResponseCompression(
 		this IServiceCollection services,
 		IConfiguration configuration)

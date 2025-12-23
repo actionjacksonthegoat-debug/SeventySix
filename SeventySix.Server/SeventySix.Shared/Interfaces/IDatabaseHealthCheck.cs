@@ -34,8 +34,12 @@ public interface IDatabaseHealthCheck
 	/// <summary>
 	/// Checks database connectivity and health for this bounded context.
 	/// </summary>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>True if database is healthy, false otherwise.</returns>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// True if database is healthy, false otherwise.
+	/// </returns>
 	/// <remarks>
 	/// <para>Implementation requirements:</para>
 	/// <list type="bullet">

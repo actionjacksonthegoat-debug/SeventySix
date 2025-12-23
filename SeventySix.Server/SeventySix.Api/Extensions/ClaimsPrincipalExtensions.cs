@@ -15,8 +15,12 @@ public static class ClaimsPrincipalExtensions
 	/// <summary>
 	/// Gets the user ID from the JWT 'sub' claim.
 	/// </summary>
-	/// <param name="principal">The claims principal.</param>
-	/// <returns>The user ID if present and valid; otherwise, null.</returns>
+	/// <param name="principal">
+	/// The claims principal.
+	/// </param>
+	/// <returns>
+	/// The user ID if present and valid; otherwise, null.
+	/// </returns>
 	public static int? GetUserId(this ClaimsPrincipal principal)
 	{
 		string? userIdClaim =
@@ -29,8 +33,12 @@ public static class ClaimsPrincipalExtensions
 	/// <summary>
 	/// Gets the user ID from the JWT 'sub' claim, throwing if not present.
 	/// </summary>
-	/// <param name="principal">The claims principal.</param>
-	/// <returns>The user ID.</returns>
+	/// <param name="principal">
+	/// The claims principal.
+	/// </param>
+	/// <returns>
+	/// The user ID.
+	/// </returns>
 	/// <exception cref="UnauthorizedAccessException">If user ID claim is missing or invalid.</exception>
 	public static int GetRequiredUserId(this ClaimsPrincipal principal)
 	{
@@ -42,8 +50,12 @@ public static class ClaimsPrincipalExtensions
 	/// <summary>
 	/// Gets the username from the JWT 'unique_name' claim.
 	/// </summary>
-	/// <param name="principal">The claims principal.</param>
-	/// <returns>The username if present; otherwise, null.</returns>
+	/// <param name="principal">
+	/// The claims principal.
+	/// </param>
+	/// <returns>
+	/// The username if present; otherwise, null.
+	/// </returns>
 	public static string? GetUsername(this ClaimsPrincipal principal)
 	{
 		return principal.FindFirstValue(JwtRegisteredClaimNames.UniqueName);
@@ -52,8 +64,12 @@ public static class ClaimsPrincipalExtensions
 	/// <summary>
 	/// Gets the username from the JWT 'unique_name' claim, throwing if not present.
 	/// </summary>
-	/// <param name="principal">The claims principal.</param>
-	/// <returns>The username.</returns>
+	/// <param name="principal">
+	/// The claims principal.
+	/// </param>
+	/// <returns>
+	/// The username.
+	/// </returns>
 	/// <exception cref="UnauthorizedAccessException">If username claim is missing.</exception>
 	public static string GetRequiredUsername(this ClaimsPrincipal principal)
 	{

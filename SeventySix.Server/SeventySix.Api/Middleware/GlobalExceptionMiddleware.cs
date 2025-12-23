@@ -36,9 +36,15 @@ namespace SeventySix.Api.Middleware;
 /// <remarks>
 /// Initializes a new instance of the <see cref="GlobalExceptionMiddleware"/> class.
 /// </remarks>
-/// <param name="next">Next middleware in pipeline.</param>
-/// <param name="logger">Logger instance.</param>
-/// <param name="environment">Host environment.</param>
+/// <param name="next">
+/// Next middleware in pipeline.
+/// </param>
+/// <param name="logger">
+/// Logger instance.
+/// </param>
+/// <param name="environment">
+/// Host environment.
+/// </param>
 public class GlobalExceptionMiddleware(
 	RequestDelegate next,
 	ILogger<GlobalExceptionMiddleware> logger,
@@ -56,8 +62,12 @@ public class GlobalExceptionMiddleware(
 	/// <summary>
 	/// Invokes the middleware to process the HTTP request.
 	/// </summary>
-	/// <param name="context">The HTTP context for the current request.</param>
-	/// <returns>A task that represents the asynchronous operation.</returns>
+	/// <param name="context">
+	/// The HTTP context for the current request.
+	/// </param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
 	public async Task InvokeAsync(HttpContext context)
 	{
@@ -86,9 +96,15 @@ public class GlobalExceptionMiddleware(
 	/// <summary>
 	/// Handles exceptions and converts them to appropriate ProblemDetails responses.
 	/// </summary>
-	/// <param name="context">The HTTP context.</param>
-	/// <param name="exception">The exception that occurred.</param>
-	/// <returns>A task that represents the asynchronous operation.</returns>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	/// <param name="exception">
+	/// The exception that occurred.
+	/// </param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// </returns>
 	private async Task HandleExceptionAsync(
 		HttpContext context,
 		Exception exception)
@@ -171,11 +187,21 @@ public class GlobalExceptionMiddleware(
 	/// <summary>
 	/// Creates a ProblemDetails object for a given exception.
 	/// </summary>
-	/// <param name="context">The HTTP context.</param>
-	/// <param name="statusCode">The HTTP status code.</param>
-	/// <param name="title">A short, human-readable summary of the problem type.</param>
-	/// <param name="detail">A human-readable explanation specific to this occurrence of the problem.</param>
-	/// <returns>A ProblemDetails object following RFC 7807.</returns>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	/// <param name="statusCode">
+	/// The HTTP status code.
+	/// </param>
+	/// <param name="title">
+	/// A short, human-readable summary of the problem type.
+	/// </param>
+	/// <param name="detail">
+	/// A human-readable explanation specific to this occurrence of the problem.
+	/// </param>
+	/// <returns>
+	/// A ProblemDetails object following RFC 7807.
+	/// </returns>
 	private static ProblemDetails CreateProblemDetails(
 		HttpContext context,
 		HttpStatusCode statusCode,
@@ -197,9 +223,15 @@ public class GlobalExceptionMiddleware(
 	/// <summary>
 	/// Creates a ValidationProblemDetails object for FluentValidation exceptions.
 	/// </summary>
-	/// <param name="context">The HTTP context.</param>
-	/// <param name="validationException">The FluentValidation exception.</param>
-	/// <returns>A ValidationProblemDetails object with grouped validation errors.</returns>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	/// <param name="validationException">
+	/// The FluentValidation exception.
+	/// </param>
+	/// <returns>
+	/// A ValidationProblemDetails object with grouped validation errors.
+	/// </returns>
 	private static ValidationProblemDetails CreateValidationProblemDetails(
 		HttpContext context,
 		ValidationException validationException)

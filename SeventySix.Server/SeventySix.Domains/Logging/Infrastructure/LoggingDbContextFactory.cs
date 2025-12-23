@@ -25,8 +25,12 @@ public class LoggingDbContextFactory
 	/// <summary>
 	/// Creates a new instance of LoggingDbContext for design-time operations.
 	/// </summary>
-	/// <param name="args">Arguments passed from EF Core tools.</param>
-	/// <returns>A configured LoggingDbContext instance.</returns>
+	/// <param name="args">
+	/// Arguments passed from EF Core tools.
+	/// </param>
+	/// <returns>
+	/// A configured LoggingDbContext instance.
+	/// </returns>
 	public LoggingDbContext CreateDbContext(string[] args)
 	{
 		DbContextOptionsBuilder<LoggingDbContext> optionsBuilder = new();

@@ -16,12 +16,24 @@ public static class UpdateProfileCommandHandler
 	/// <summary>
 	/// Handles user profile update with duplicate email check.
 	/// </summary>
-	/// <param name="command">The update profile command.</param>
-	/// <param name="messageBus">Message bus for querying updated profile.</param>
-	/// <param name="validator">Request validator.</param>
-	/// <param name="repository">User repository.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>The updated user profile or null if user not found.</returns>
+	/// <param name="command">
+	/// The update profile command.
+	/// </param>
+	/// <param name="messageBus">
+	/// Message bus for querying updated profile.
+	/// </param>
+	/// <param name="validator">
+	/// Request validator.
+	/// </param>
+	/// <param name="repository">
+	/// User repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The updated user profile or null if user not found.
+	/// </returns>
 	/// <remarks>
 	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
 	/// Database unique constraint on Email provides atomicity - no manual transaction management needed.

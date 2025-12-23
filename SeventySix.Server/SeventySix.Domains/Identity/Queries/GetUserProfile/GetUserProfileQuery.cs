@@ -7,5 +7,7 @@ namespace SeventySix.Identity;
 /// <summary>
 /// Query to get a user's complete profile with roles and authentication details.
 /// </summary>
-/// <param name="UserId">The user ID.</param>
+/// <param name="UserId">
+/// The user ID.
+/// </param>
 public record GetUserProfileQuery(int UserId);

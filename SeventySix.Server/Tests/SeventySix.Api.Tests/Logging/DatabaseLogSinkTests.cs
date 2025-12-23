@@ -35,7 +35,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DatabaseLogSinkTests"/> class.
 	/// </summary>
-	/// <param name="fixture">The shared PostgreSQL fixture.</param>
+	/// <param name="fixture">
+	/// The shared PostgreSQL fixture.
+	/// </param>
 	public DatabaseLogSinkTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		Fixture = fixture;

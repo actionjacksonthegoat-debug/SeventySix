@@ -16,9 +16,15 @@ public interface IOAuthService
 	/// <summary>
 	/// Generates the OAuth authorization URL for GitHub.
 	/// </summary>
-	/// <param name="state">CSRF state parameter.</param>
-	/// <param name="codeVerifier">PKCE code verifier.</param>
-	/// <returns>GitHub authorization URL.</returns>
+	/// <param name="state">
+	/// CSRF state parameter.
+	/// </param>
+	/// <param name="codeVerifier">
+	/// PKCE code verifier.
+	/// </param>
+	/// <returns>
+	/// GitHub authorization URL.
+	/// </returns>
 	public string BuildGitHubAuthorizationUrl(
 		string state,
 		string codeVerifier);
@@ -26,11 +32,21 @@ public interface IOAuthService
 	/// <summary>
 	/// Handles the OAuth callback and authenticates/registers the user.
 	/// </summary>
-	/// <param name="code">Authorization code from GitHub.</param>
-	/// <param name="codeVerifier">PKCE code verifier.</param>
-	/// <param name="clientIp">Client IP for token tracking.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Authentication result with tokens or error.</returns>
+	/// <param name="code">
+	/// Authorization code from GitHub.
+	/// </param>
+	/// <param name="codeVerifier">
+	/// PKCE code verifier.
+	/// </param>
+	/// <param name="clientIp">
+	/// Client IP for token tracking.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Authentication result with tokens or error.
+	/// </returns>
 	public Task<AuthResult> HandleGitHubCallbackAsync(
 		string code,
 		string codeVerifier,

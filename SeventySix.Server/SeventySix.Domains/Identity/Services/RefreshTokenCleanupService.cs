@@ -27,8 +27,12 @@ public class RefreshTokenCleanupService(
 	/// <summary>
 	/// Executes the background cleanup job on a periodic timer.
 	/// </summary>
-	/// <param name="stoppingToken">Cancellation token for graceful shutdown.</param>
-	/// <returns>A task that represents the asynchronous operation.</returns>
+	/// <param name="stoppingToken">
+	/// Cancellation token for graceful shutdown.
+	/// </param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// </returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		TimeSpan interval =
@@ -48,7 +52,9 @@ public class RefreshTokenCleanupService(
 	/// <summary>
 	/// Public method for testing purposes - delegates to internal cleanup with default cancellation.
 	/// </summary>
-	/// <returns>A task that represents the asynchronous operation.</returns>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// </returns>
 	public async Task CleanupExpiredTokensAsync()
 	{
 		try

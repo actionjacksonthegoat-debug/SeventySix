@@ -18,11 +18,21 @@ public interface IEmailService
 	/// <summary>
 	/// Sends a welcome email with password setup link to a new user.
 	/// </summary>
-	/// <param name="email">The recipient's email address.</param>
-	/// <param name="username">The user's username.</param>
-	/// <param name="resetToken">The password reset token for the setup link.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>A task representing the async operation.</returns>
+	/// <param name="email">
+	/// The recipient's email address.
+	/// </param>
+	/// <param name="username">
+	/// The user's username.
+	/// </param>
+	/// <param name="resetToken">
+	/// The password reset token for the setup link.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
 	public Task SendWelcomeEmailAsync(
 		string email,
 		string username,
@@ -32,11 +42,21 @@ public interface IEmailService
 	/// <summary>
 	/// Sends a password reset email with reset link.
 	/// </summary>
-	/// <param name="email">The recipient's email address.</param>
-	/// <param name="username">The user's username.</param>
-	/// <param name="resetToken">The password reset token for the reset link.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>A task representing the async operation.</returns>
+	/// <param name="email">
+	/// The recipient's email address.
+	/// </param>
+	/// <param name="username">
+	/// The user's username.
+	/// </param>
+	/// <param name="resetToken">
+	/// The password reset token for the reset link.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
 	public Task SendPasswordResetEmailAsync(
 		string email,
 		string username,
@@ -46,10 +66,18 @@ public interface IEmailService
 	/// <summary>
 	/// Sends email verification link for self-registration.
 	/// </summary>
-	/// <param name="email">The email address to verify.</param>
-	/// <param name="verificationToken">The verification token for the link.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>A task representing the async operation.</returns>
+	/// <param name="email">
+	/// The email address to verify.
+	/// </param>
+	/// <param name="verificationToken">
+	/// The verification token for the link.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
 	public Task SendVerificationEmailAsync(
 		string email,
 		string verificationToken,

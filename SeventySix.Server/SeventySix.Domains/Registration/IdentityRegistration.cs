@@ -52,9 +52,15 @@ public static class IdentityRegistration
 	/// <summary>
 	/// Registers Identity bounded context services with the dependency injection container.
 	/// </summary>
-	/// <param name="services">The service collection to register services with.</param>
-	/// <param name="connectionString">The database connection string for IdentityDbContext.</param>
-	/// <returns>The service collection for method chaining.</returns>
+	/// <param name="services">
+	/// The service collection to register services with.
+	/// </param>
+	/// <param name="connectionString">
+	/// The database connection string for IdentityDbContext.
+	/// </param>
+	/// <returns>
+	/// The service collection for method chaining.
+	/// </returns>
 	/// <remarks>
 	/// Service Lifetimes:
 	/// - DbContext: Scoped (per request)

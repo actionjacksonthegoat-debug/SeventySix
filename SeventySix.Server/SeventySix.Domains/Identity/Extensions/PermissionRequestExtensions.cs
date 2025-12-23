@@ -8,9 +8,15 @@ namespace SeventySix.Identity;
 public static class PermissionRequestExtensions
 {
 	/// <summary>Maps entity to DTO.</summary>
-	/// <param name="request">The permission request entity.</param>
-	/// <param name="username">The username of the requester.</param>
-	/// <returns>The mapped DTO.</returns>
+	/// <param name="request">
+	/// The permission request entity.
+	/// </param>
+	/// <param name="username">
+	/// The username of the requester.
+	/// </param>
+	/// <returns>
+	/// The mapped DTO.
+	/// </returns>
 	public static PermissionRequestDto ToDto(
 		this PermissionRequest request,
 		string username)

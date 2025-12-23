@@ -23,8 +23,12 @@ public interface IPasswordHasher
 	/// <summary>
 	/// Hashes a password using Argon2id algorithm.
 	/// </summary>
-	/// <param name="password">The plaintext password to hash.</param>
-	/// <returns>The hashed password with embedded parameters and salt.</returns>
+	/// <param name="password">
+	/// The plaintext password to hash.
+	/// </param>
+	/// <returns>
+	/// The hashed password with embedded parameters and salt.
+	/// </returns>
 	/// <remarks>
 	/// The returned hash includes all parameters needed for verification:
 	/// algorithm identifier, version, memory cost, iterations, parallelism, salt, and hash.
@@ -34,9 +38,15 @@ public interface IPasswordHasher
 	/// <summary>
 	/// Verifies a password against a stored hash.
 	/// </summary>
-	/// <param name="password">The plaintext password to verify.</param>
-	/// <param name="passwordHash">The stored password hash.</param>
-	/// <returns>True if the password matches the hash; otherwise, false.</returns>
+	/// <param name="password">
+	/// The plaintext password to verify.
+	/// </param>
+	/// <param name="passwordHash">
+	/// The stored password hash.
+	/// </param>
+	/// <returns>
+	/// True if the password matches the hash; otherwise, false.
+	/// </returns>
 	/// <remarks>
 	/// Uses constant-time comparison to prevent timing attacks.
 	/// </remarks>

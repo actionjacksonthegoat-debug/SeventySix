@@ -35,8 +35,12 @@ namespace SeventySix.Api.Middleware;
 /// <remarks>
 /// Initializes a new instance of the <see cref="AttributeBasedSecurityHeadersMiddleware"/> class.
 /// </remarks>
-/// <param name="next">The next middleware in the pipeline.</param>
-/// <param name="environment">The web host environment.</param>
+/// <param name="next">
+/// The next middleware in the pipeline.
+/// </param>
+/// <param name="environment">
+/// The web host environment.
+/// </param>
 public class AttributeBasedSecurityHeadersMiddleware(
 	RequestDelegate next,
 	IWebHostEnvironment environment)
@@ -73,8 +77,12 @@ public class AttributeBasedSecurityHeadersMiddleware(
 	/// <summary>
 	/// Invokes the security headers middleware.
 	/// </summary>
-	/// <param name="context">The HTTP context.</param>
-	/// <returns>A task representing the asynchronous operation.</returns>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
 	public async Task InvokeAsync(HttpContext context)
 	{
 		// Get security header configuration from attributes
@@ -117,8 +125,12 @@ public class AttributeBasedSecurityHeadersMiddleware(
 	/// <summary>
 	/// Gets security headers configuration from attributes or defaults.
 	/// </summary>
-	/// <param name="context">The HTTP context.</param>
-	/// <returns>Security headers configuration.</returns>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	/// <returns>
+	/// Security headers configuration.
+	/// </returns>
 	private static SecurityHeadersAttribute GetSecurityHeadersConfig(
 		HttpContext context)
 	{

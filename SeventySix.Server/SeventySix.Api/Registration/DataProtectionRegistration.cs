@@ -34,9 +34,15 @@ public static class DataProtectionExtensions
 	/// <summary>
 	/// Adds configured Data Protection services with key persistence and encryption.
 	/// </summary>
-	/// <param name="services">The service collection.</param>
-	/// <param name="environment">The web host environment.</param>
-	/// <returns>The service collection for chaining.</returns>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="environment">
+	/// The web host environment.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	/// <remarks>
 	/// Key storage location:
 	/// - Development: ./keys (relative to app root)

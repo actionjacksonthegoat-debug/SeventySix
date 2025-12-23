@@ -191,8 +191,12 @@ public class DatabaseLogSink(
 	/// <summary>
 	/// Asynchronously persists log event to database using provided repository.
 	/// </summary>
-	/// <param name="logEvent">The log event to persist.</param>
-	/// <param name="logRepository">The log repository to use (shared within batch).</param>
+	/// <param name="logEvent">
+	/// The log event to persist.
+	/// </param>
+	/// <param name="logRepository">
+	/// The log repository to use (shared within batch).
+	/// </param>
 	private async Task EmitAsync(
 		LogEvent logEvent,
 		ILogRepository logRepository)
@@ -377,8 +381,12 @@ public class DatabaseLogSink(
 	/// <summary>
 	/// Formats exception information according to requirements.
 	/// </summary>
-	/// <param name="exception">The exception to format.</param>
-	/// <returns>Tuple of (ExceptionMessage, BaseExceptionMessage, StackTrace).</returns>
+	/// <param name="exception">
+	/// The exception to format.
+	/// </param>
+	/// <returns>
+	/// Tuple of (ExceptionMessage, BaseExceptionMessage, StackTrace).
+	/// </returns>
 	private static (
 		string? ExceptionMessage,
 		string? BaseExceptionMessage,
@@ -428,8 +436,12 @@ public class DatabaseLogSink(
 	/// <summary>
 	/// Checks if a property is a standard HTTP/logging property.
 	/// </summary>
-	/// <param name="propertyName">The property name to check.</param>
-	/// <returns>True if standard property, false otherwise.</returns>
+	/// <param name="propertyName">
+	/// The property name to check.
+	/// </param>
+	/// <returns>
+	/// True if standard property, false otherwise.
+	/// </returns>
 	private static bool IsStandardProperty(string propertyName)
 	{
 		return propertyName switch

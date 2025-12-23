@@ -19,10 +19,18 @@ namespace SeventySix.Registration;
 public static class LoggingRegistration
 {
 	/// <summary>Registers Logging bounded context services with the DI container.</summary>
-	/// <param name="services">The service collection to register services with.</param>
-	/// <param name="connectionString">The database connection string for LoggingDbContext.</param>
-	/// <param name="configuration">The application configuration for settings binding.</param>
-	/// <returns>The service collection for method chaining.</returns>
+	/// <param name="services">
+	/// The service collection to register services with.
+	/// </param>
+	/// <param name="connectionString">
+	/// The database connection string for LoggingDbContext.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration for settings binding.
+	/// </param>
+	/// <returns>
+	/// The service collection for method chaining.
+	/// </returns>
 	public static IServiceCollection AddLoggingDomain(
 		this IServiceCollection services,
 		string connectionString,

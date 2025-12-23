@@ -12,7 +12,9 @@ public static class RemoveUserRoleCommandHandler
 	/// <summary>
 	/// Handles the RemoveUserRoleCommand request.
 	/// </summary>
-	/// <returns>True if role was removed, false if role not found on user.</returns>
+	/// <returns>
+	/// True if role was removed, false if role not found on user.
+	/// </returns>
 	public static async Task<bool> HandleAsync(
 		RemoveUserRoleCommand command,
 		IUserCommandRepository repository,

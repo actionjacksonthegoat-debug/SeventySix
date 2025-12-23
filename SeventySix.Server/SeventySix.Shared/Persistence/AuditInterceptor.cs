@@ -12,6 +12,12 @@ namespace SeventySix.Shared.Persistence;
 /// <summary>
 /// EF Core interceptor for automatic audit property management.
 /// </summary>
+/// <param name="userContextAccessor">
+/// Accessor used to determine the current user for audit fields.
+/// </param>
+/// <param name="timeProvider">
+/// Provides the current time used for date/time audit fields.
+/// </param>
 /// <remarks>
 /// Automatically sets CreateDate, ModifyDate, CreatedBy, and ModifiedBy
 /// based on entity interface implementation (IAuditableEntity, IModifiableEntity, ICreatableEntity).
@@ -23,10 +29,18 @@ public class AuditInterceptor(
 	/// <summary>
 	/// Intercepts SaveChangesAsync to set audit properties on entities.
 	/// </summary>
-	/// <param name="eventData">Contextual information about the DbContext operation.</param>
-	/// <param name="result">Represents the current result if one exists.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>A task that represents the asynchronous save operation.</returns>
+	/// <param name="eventData">
+	/// Contextual information about the DbContext operation.
+	/// </param>
+	/// <param name="result">
+	/// Represents the current result if one exists.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task that represents the asynchronous save operation.
+	/// </returns>
 	public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
 		DbContextEventData eventData,
 		InterceptionResult<int> result,

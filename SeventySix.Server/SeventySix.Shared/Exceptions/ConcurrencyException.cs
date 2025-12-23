@@ -36,7 +36,9 @@ public class ConcurrencyException : DomainException
 	/// Initializes a new instance of the <see cref="ConcurrencyException"/> class
 	/// with a specific error message.
 	/// </summary>
-	/// <param name="message">A custom error message describing the concurrency conflict.</param>
+	/// <param name="message">
+	/// A custom error message describing the concurrency conflict.
+	/// </param>
 	public ConcurrencyException(string message)
 		: base(message) { }
 
@@ -44,8 +46,12 @@ public class ConcurrencyException : DomainException
 	/// Initializes a new instance of the <see cref="ConcurrencyException"/> class
 	/// with a specific error message and inner exception.
 	/// </summary>
-	/// <param name="message">A custom error message describing the concurrency conflict.</param>
-	/// <param name="innerException">The exception that caused this concurrency exception.</param>
+	/// <param name="message">
+	/// A custom error message describing the concurrency conflict.
+	/// </param>
+	/// <param name="innerException">
+	/// The exception that caused this concurrency exception.
+	/// </param>
 	public ConcurrencyException(string message, Exception innerException)
 		: base(message, innerException) { }
 }

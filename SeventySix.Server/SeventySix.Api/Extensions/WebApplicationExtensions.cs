@@ -21,9 +21,15 @@ namespace SeventySix.Api.Extensions;
 public static class WebApplicationExtensions
 {
 	/// <summary>Applies pending database migrations for all bounded contexts.</summary>
-	/// <param name="app">The web application.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <returns>A task representing the asynchronous operation.</returns>
+	/// <param name="app">
+	/// The web application.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
 	public static async Task ApplyMigrationsAsync(
 		this WebApplication app,
 		IConfiguration configuration)
@@ -77,9 +83,15 @@ public static class WebApplicationExtensions
 	}
 
 	/// <summary>Configures forwarded headers for reverse proxy scenarios.</summary>
-	/// <param name="app">The web application.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <returns>The web application for chaining.</returns>
+	/// <param name="app">
+	/// The web application.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <returns>
+	/// The web application for chaining.
+	/// </returns>
 	public static WebApplication UseConfiguredForwardedHeaders(
 		this WebApplication app,
 		IConfiguration configuration)
@@ -128,8 +140,12 @@ public static class WebApplicationExtensions
 	}
 
 	/// <summary>Maps health check endpoints following Kubernetes best practices.</summary>
-	/// <param name="app">The web application.</param>
-	/// <returns>The web application for chaining.</returns>
+	/// <param name="app">
+	/// The web application.
+	/// </param>
+	/// <returns>
+	/// The web application for chaining.
+	/// </returns>
 	public static WebApplication MapHealthCheckEndpoints(
 		this WebApplication app)
 	{

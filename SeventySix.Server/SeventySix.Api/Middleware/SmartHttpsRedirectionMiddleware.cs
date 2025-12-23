@@ -34,8 +34,12 @@ namespace SeventySix.Api.Middleware;
 /// - If not exempted, redirect to HTTPS with 307 (Temporary Redirect)
 /// </para>
 /// </remarks>
-/// <param name="next">The next middleware in the pipeline.</param>
-/// <param name="securitySettings">Security settings from configuration.</param>
+/// <param name="next">
+/// The next middleware in the pipeline.
+/// </param>
+/// <param name="securitySettings">
+/// Security settings from configuration.
+/// </param>
 public class SmartHttpsRedirectionMiddleware(
 	RequestDelegate next,
 	IOptions<SecuritySettings> securitySettings)
@@ -43,8 +47,12 @@ public class SmartHttpsRedirectionMiddleware(
 	/// <summary>
 	/// Invokes the HTTPS redirection middleware.
 	/// </summary>
-	/// <param name="context">The HTTP context.</param>
-	/// <returns>A task representing the asynchronous operation.</returns>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
 	public async Task InvokeAsync(HttpContext context)
 	{
 		SecuritySettings settings = securitySettings.Value;

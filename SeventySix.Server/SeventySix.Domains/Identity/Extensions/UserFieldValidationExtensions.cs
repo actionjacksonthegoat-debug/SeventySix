@@ -27,8 +27,12 @@ public static class UserFieldValidationExtensions
 	/// Applies standard username validation rules.
 	/// </summary>
 	/// <typeparam name="T">The type being validated.</typeparam>
-	/// <param name="ruleBuilder">The rule builder.</param>
-	/// <returns>Rule builder options for chaining.</returns>
+	/// <param name="ruleBuilder">
+	/// The rule builder.
+	/// </param>
+	/// <returns>
+	/// Rule builder options for chaining.
+	/// </returns>
 	/// <remarks>
 	/// Validation rules:
 	/// - Required (not empty)
@@ -52,8 +56,12 @@ public static class UserFieldValidationExtensions
 	/// Applies standard email validation rules.
 	/// </summary>
 	/// <typeparam name="T">The type being validated.</typeparam>
-	/// <param name="ruleBuilder">The rule builder.</param>
-	/// <returns>Rule builder options for chaining.</returns>
+	/// <param name="ruleBuilder">
+	/// The rule builder.
+	/// </param>
+	/// <returns>
+	/// Rule builder options for chaining.
+	/// </returns>
 	/// <remarks>
 	/// Validation rules:
 	/// - Required (not empty)
@@ -79,9 +87,15 @@ public static class UserFieldValidationExtensions
 	/// Applies standard full name validation rules.
 	/// </summary>
 	/// <typeparam name="T">The type being validated.</typeparam>
-	/// <param name="ruleBuilder">The rule builder.</param>
-	/// <param name="required">If true, field is required; if false, field is optional.</param>
-	/// <returns>Rule builder options for chaining.</returns>
+	/// <param name="ruleBuilder">
+	/// The rule builder.
+	/// </param>
+	/// <param name="required">
+	/// If true, field is required; if false, field is optional.
+	/// </param>
+	/// <returns>
+	/// Rule builder options for chaining.
+	/// </returns>
 	/// <remarks>
 	/// Validation rules:
 	/// - Optional or required based on parameter

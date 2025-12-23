@@ -12,10 +12,18 @@ public static class GetAllPermissionRequestsQueryHandler
 	/// <summary>
 	/// Handles the query to get all permission requests.
 	/// </summary>
-	/// <param name="query">The query.</param>
-	/// <param name="repository">The permission request repository.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>List of all permission requests.</returns>
+	/// <param name="query">
+	/// The query.
+	/// </param>
+	/// <param name="repository">
+	/// The permission request repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// List of all permission requests.
+	/// </returns>
 	public static async Task<IEnumerable<PermissionRequestDto>> HandleAsync(
 		GetAllPermissionRequestsQuery query,
 		IPermissionRequestRepository repository,

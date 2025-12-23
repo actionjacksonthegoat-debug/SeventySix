@@ -21,8 +21,12 @@ public static class InfrastructureRegistration
 	/// <summary>
 	/// Adds Infrastructure services to the dependency injection container.
 	/// </summary>
-	/// <param name="services">The service collection to add services to.</param>
-	/// <returns>The service collection for method chaining.</returns>
+	/// <param name="services">
+	/// The service collection to add services to.
+	/// </param>
+	/// <returns>
+	/// The service collection for method chaining.
+	/// </returns>
 	/// <remarks>
 	/// Registers:
 	/// - TimeProvider as singleton (System.TimeProvider for production, mockable for tests)

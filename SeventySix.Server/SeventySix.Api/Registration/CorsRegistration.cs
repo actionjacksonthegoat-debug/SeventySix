@@ -12,9 +12,15 @@ public static class CorsRegistration
 	/// <summary>
 	/// Adds CORS policies from configuration.
 	/// </summary>
-	/// <param name="services">The service collection.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <returns>The service collection for chaining.</returns>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	public static IServiceCollection AddConfiguredCors(
 		this IServiceCollection services,
 		IConfiguration configuration)

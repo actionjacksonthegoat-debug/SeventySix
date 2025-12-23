@@ -18,7 +18,9 @@ public abstract class DataPostgreSqlTestBase : BasePostgreSqlTestBase
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DataPostgreSqlTestBase"/> class.
 	/// </summary>
-	/// <param name="fixture">The PostgreSQL fixture that provides an isolated database for this test class.</param>
+	/// <param name="fixture">
+	/// The PostgreSQL fixture that provides an isolated database for this test class.
+	/// </param>
 	protected DataPostgreSqlTestBase(TestcontainersPostgreSqlFixture fixture)
 	{
 		Fixture = fixture;
@@ -33,7 +35,9 @@ public abstract class DataPostgreSqlTestBase : BasePostgreSqlTestBase
 	/// Called before each test. Cleans up data to ensure test isolation within the class.
 	/// Override in derived classes if additional per-test setup is needed.
 	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <returns>
+	/// A <see cref="Task"/> representing the asynchronous operation.
+	/// </returns>
 	public override async Task InitializeAsync()
 	{
 		// Clean up all tables before each test to ensure isolation

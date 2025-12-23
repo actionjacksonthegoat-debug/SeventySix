@@ -22,7 +22,9 @@ public class SecurityRoleConfiguration : IEntityTypeConfiguration<SecurityRole>
 	/// <summary>
 	/// Configures the entity mapping for SecurityRole.
 	/// </summary>
-	/// <param name="builder">The builder to be used to configure the entity type.</param>
+	/// <param name="builder">
+	/// The builder to be used to configure the entity type.
+	/// </param>
 	public void Configure(EntityTypeBuilder<SecurityRole> builder)
 	{
 		ArgumentNullException.ThrowIfNull(builder);

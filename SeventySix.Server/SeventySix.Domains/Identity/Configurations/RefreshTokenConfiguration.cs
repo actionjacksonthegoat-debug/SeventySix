@@ -21,7 +21,9 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 	/// <summary>
 	/// Configures the entity mapping for RefreshToken.
 	/// </summary>
-	/// <param name="builder">The builder to be used to configure the entity type.</param>
+	/// <param name="builder">
+	/// The builder to be used to configure the entity type.
+	/// </param>
 	public void Configure(EntityTypeBuilder<RefreshToken> builder)
 	{
 		ArgumentNullException.ThrowIfNull(builder);

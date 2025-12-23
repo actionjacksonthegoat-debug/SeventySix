@@ -30,7 +30,9 @@ public class LoggingDbContext : BaseDbContext<LoggingDbContext>
 	/// <summary>
 	/// Initializes a new instance of the <see cref="LoggingDbContext"/> class.
 	/// </summary>
-	/// <param name="options">The options for this context.</param>
+	/// <param name="options">
+	/// The options for this context.
+	/// </param>
 	public LoggingDbContext(DbContextOptions<LoggingDbContext> options)
 		: base(options) { }
 
@@ -42,6 +44,8 @@ public class LoggingDbContext : BaseDbContext<LoggingDbContext>
 	/// <summary>
 	/// Gets the schema name for Logging bounded context.
 	/// </summary>
-	/// <returns>"Logging".</returns>
+	/// <returns>
+	/// "Logging".
+	/// </returns>
 	protected override string GetSchemaName() => SchemaConstants.Logging;
 }

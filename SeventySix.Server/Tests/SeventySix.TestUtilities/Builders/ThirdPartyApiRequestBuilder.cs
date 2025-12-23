@@ -40,7 +40,9 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ThirdPartyApiRequestBuilder"/> class.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	/// <param name="timeProvider">
+	/// The time provider for default timestamps.
+	/// </param>
 	public ThirdPartyApiRequestBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;
@@ -53,8 +55,12 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Sets the API name.
 	/// </summary>
-	/// <param name="apiName">The API name.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="apiName">
+	/// The API name.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public ThirdPartyApiRequestBuilder WithApiName(string apiName)
 	{
 		ApiName = apiName;
@@ -64,8 +70,12 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Sets the base URL.
 	/// </summary>
-	/// <param name="baseUrl">The base URL.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="baseUrl">
+	/// The base URL.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public ThirdPartyApiRequestBuilder WithBaseUrl(string baseUrl)
 	{
 		BaseUrl = baseUrl;
@@ -75,8 +85,12 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Sets the call count.
 	/// </summary>
-	/// <param name="callCount">The number of API calls.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="callCount">
+	/// The number of API calls.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public ThirdPartyApiRequestBuilder WithCallCount(int callCount)
 	{
 		CallCount = callCount;
@@ -86,8 +100,12 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Sets the last called CreateDate.
 	/// </summary>
-	/// <param name="lastCalledAt">The last called CreateDate.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="lastCalledAt">
+	/// The last called CreateDate.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public ThirdPartyApiRequestBuilder WithLastCalledAt(DateTime? lastCalledAt)
 	{
 		LastCalledAt = lastCalledAt;
@@ -97,8 +115,12 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Sets the reset date.
 	/// </summary>
-	/// <param name="resetDate">The reset date.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="resetDate">
+	/// The reset date.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public ThirdPartyApiRequestBuilder WithResetDate(DateOnly resetDate)
 	{
 		ResetDate = resetDate;
@@ -108,8 +130,12 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Sets the created CreateDate.
 	/// </summary>
-	/// <param name="createDate">The created CreateDate.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="createDate">
+	/// The created CreateDate.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public ThirdPartyApiRequestBuilder WithCreatedAt(DateTime createDate)
 	{
 		CreateDate = createDate;
@@ -119,8 +145,12 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Sets the updated CreateDate.
 	/// </summary>
-	/// <param name="modifyDate">The modified CreateDate.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="modifyDate">
+	/// The modified CreateDate.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public ThirdPartyApiRequestBuilder WithModifiedAt(DateTime? modifyDate)
 	{
 		ModifyDate = modifyDate;
@@ -130,8 +160,12 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Sets the row version for concurrency control.
 	/// </summary>
-	/// <param name="rowVersion">The row version.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="rowVersion">
+	/// The row version.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public ThirdPartyApiRequestBuilder WithRowVersion(uint rowVersion)
 	{
 		RowVersion = rowVersion;
@@ -141,7 +175,9 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Builds the ThirdPartyApiRequest entity with the configured values.
 	/// </summary>
-	/// <returns>A new ThirdPartyApiRequest instance.</returns>
+	/// <returns>
+	/// A new ThirdPartyApiRequest instance.
+	/// </returns>
 	public ThirdPartyApiRequest Build()
 	{
 		return new ThirdPartyApiRequest
@@ -160,9 +196,15 @@ public class ThirdPartyApiRequestBuilder
 	/// <summary>
 	/// Creates a builder with active usage (non-zero call count).
 	/// </summary>
-	/// <param name="timeProvider">The time provider for timestamps.</param>
-	/// <param name="callCount">The number of API calls (default 100).</param>
-	/// <returns>A new ThirdPartyApiRequestBuilder with usage.</returns>
+	/// <param name="timeProvider">
+	/// The time provider for timestamps.
+	/// </param>
+	/// <param name="callCount">
+	/// The number of API calls (default 100).
+	/// </param>
+	/// <returns>
+	/// A new ThirdPartyApiRequestBuilder with usage.
+	/// </returns>
 	public static ThirdPartyApiRequestBuilder CreateWithUsage(
 		TimeProvider timeProvider,
 		int callCount = 100)

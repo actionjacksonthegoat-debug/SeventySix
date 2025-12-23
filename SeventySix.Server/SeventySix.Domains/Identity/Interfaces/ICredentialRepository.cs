@@ -16,9 +16,15 @@ public interface ICredentialRepository
 	/// <summary>
 	/// Gets a user credential by user ID (read-only).
 	/// </summary>
-	/// <param name="userId">The user ID.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>The credential if found; otherwise, null.</returns>
+	/// <param name="userId">
+	/// The user ID.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The credential if found; otherwise, null.
+	/// </returns>
 	public Task<UserCredential?> GetByUserIdAsync(
 		int userId,
 		CancellationToken cancellationToken = default);
@@ -26,9 +32,15 @@ public interface ICredentialRepository
 	/// <summary>
 	/// Gets a user credential by user ID (tracked for updates).
 	/// </summary>
-	/// <param name="userId">The user ID.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>The credential if found; otherwise, null.</returns>
+	/// <param name="userId">
+	/// The user ID.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The credential if found; otherwise, null.
+	/// </returns>
 	public Task<UserCredential?> GetByUserIdForUpdateAsync(
 		int userId,
 		CancellationToken cancellationToken = default);
@@ -36,8 +48,12 @@ public interface ICredentialRepository
 	/// <summary>
 	/// Creates a new user credential.
 	/// </summary>
-	/// <param name="credential">The credential entity.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <param name="credential">
+	/// The credential entity.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
 	public Task CreateAsync(
 		UserCredential credential,
 		CancellationToken cancellationToken = default);
@@ -45,8 +61,12 @@ public interface ICredentialRepository
 	/// <summary>
 	/// Updates an existing user credential.
 	/// </summary>
-	/// <param name="credential">The credential entity (must be tracked).</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <param name="credential">
+	/// The credential entity (must be tracked).
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
 	public Task UpdateAsync(
 		UserCredential credential,
 		CancellationToken cancellationToken = default);

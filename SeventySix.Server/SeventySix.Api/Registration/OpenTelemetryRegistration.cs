@@ -12,10 +12,18 @@ namespace SeventySix.Api.Registration;
 public static class OpenTelemetryExtensions
 {
 	/// <summary>Adds OpenTelemetry with Jaeger tracing and Prometheus metrics.</summary>
-	/// <param name="services">The service collection.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <param name="environment">The current environment name.</param>
-	/// <returns>The service collection for chaining.</returns>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <param name="environment">
+	/// The current environment name.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	public static IServiceCollection AddConfiguredOpenTelemetry(
 		this IServiceCollection services,
 		IConfiguration configuration,

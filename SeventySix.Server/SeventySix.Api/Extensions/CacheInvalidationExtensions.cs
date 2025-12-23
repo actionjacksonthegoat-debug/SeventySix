@@ -18,10 +18,18 @@ public static class CacheInvalidationExtensions
 	/// <summary>
 	/// Invalidates all cache entries with the specified tag.
 	/// </summary>
-	/// <param name="services">The service provider.</param>
-	/// <param name="tag">The cache tag to invalidate.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>A task representing the asynchronous operation.</returns>
+	/// <param name="services">
+	/// The service provider.
+	/// </param>
+	/// <param name="tag">
+	/// The cache tag to invalidate.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when services or tag is null.</exception>
 	public static async Task InvalidateCacheByTagAsync(
 		this IServiceProvider services,
@@ -39,10 +47,18 @@ public static class CacheInvalidationExtensions
 	/// <summary>
 	/// Invalidates cache entries for multiple tags.
 	/// </summary>
-	/// <param name="services">The service provider.</param>
-	/// <param name="tags">Array of cache tags to invalidate.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>A task representing the asynchronous operation.</returns>
+	/// <param name="services">
+	/// The service provider.
+	/// </param>
+	/// <param name="tags">
+	/// Array of cache tags to invalidate.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when services or tags is null.</exception>
 	public static async Task InvalidateMultipleTagsAsync(
 		this IServiceProvider services,

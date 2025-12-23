@@ -79,8 +79,12 @@ public static class UserExtensions
 	/// <summary>
 	/// Converts a collection of User entities to DTOs.
 	/// </summary>
-	/// <param name="entities">The collection of entities to convert.</param>
-	/// <returns>An enumerable collection of UserDto objects.</returns>
+	/// <param name="entities">
+	/// The collection of entities to convert.
+	/// </param>
+	/// <returns>
+	/// An enumerable collection of UserDto objects.
+	/// </returns>
 	/// <remarks>
 	/// Uses generic MapToDto utility for efficient transformation with deferred execution.
 	/// </remarks>
@@ -90,8 +94,12 @@ public static class UserExtensions
 	/// <summary>
 	/// Converts a CreateUserRequest to a domain entity.
 	/// </summary>
-	/// <param name="request">The request object containing creation data.</param>
-	/// <returns>A new User entity initialized with request data.</returns>
+	/// <param name="request">
+	/// The request object containing creation data.
+	/// </param>
+	/// <returns>
+	/// A new User entity initialized with request data.
+	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when request is null.</exception>
 	/// <remarks>
 	/// This method creates a new entity instance and maps properties from the request.
@@ -115,9 +123,15 @@ public static class UserExtensions
 	/// <summary>
 	/// Converts an UpdateUserRequest to update an existing domain entity.
 	/// </summary>
-	/// <param name="request">The request object containing update data.</param>
-	/// <param name="existing">The existing entity to update.</param>
-	/// <returns>The updated User entity.</returns>
+	/// <param name="request">
+	/// The request object containing update data.
+	/// </param>
+	/// <param name="existing">
+	/// The existing entity to update.
+	/// </param>
+	/// <returns>
+	/// The updated User entity.
+	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when request or existing is null.</exception>
 	/// <remarks>
 	/// This method updates an existing entity with values from the request.

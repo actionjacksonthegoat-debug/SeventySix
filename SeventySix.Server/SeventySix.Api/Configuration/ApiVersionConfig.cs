@@ -37,8 +37,12 @@ public static class ApiVersionConfig
 	/// <summary>
 	/// Gets the route template for versioned controllers.
 	/// </summary>
-	/// <param name="controllerName">Optional controller name placeholder. Default is [controller].</param>
-	/// <returns>The route template (e.g., "api/v1/[controller]").</returns>
+	/// <param name="controllerName">
+	/// Optional controller name placeholder. Default is [controller].
+	/// </param>
+	/// <returns>
+	/// The route template (e.g., "api/v1/[controller]").
+	/// </returns>
 	public static string GetVersionedRoute(
 		string controllerName = "[controller]")
 	{

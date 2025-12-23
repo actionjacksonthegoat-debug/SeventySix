@@ -12,10 +12,18 @@ public static class DeleteUserCommandHandler
 	/// <summary>
 	/// Handles soft deletion of a user.
 	/// </summary>
-	/// <param name="command">The delete user command.</param>
-	/// <param name="repository">User repository.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>True if the user was deleted; otherwise false.</returns>
+	/// <param name="command">
+	/// The delete user command.
+	/// </param>
+	/// <param name="repository">
+	/// User repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// True if the user was deleted; otherwise false.
+	/// </returns>
 	public static async Task<bool> HandleAsync(
 		DeleteUserCommand command,
 		IUserCommandRepository repository,

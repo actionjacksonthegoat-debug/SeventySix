@@ -35,10 +35,18 @@ public static class ApiTrackingRegistration
 	/// <summary>
 	/// Registers ApiTracking bounded context services with the dependency injection container.
 	/// </summary>
-	/// <param name="services">The service collection to register services with.</param>
-	/// <param name="connectionString">The database connection string for ApiTrackingDbContext.</param>
-	/// <param name="configuration">The application configuration for binding settings.</param>
-	/// <returns>The service collection for method chaining.</returns>
+	/// <param name="services">
+	/// The service collection to register services with.
+	/// </param>
+	/// <param name="connectionString">
+	/// The database connection string for ApiTrackingDbContext.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration for binding settings.
+	/// </param>
+	/// <returns>
+	/// The service collection for method chaining.
+	/// </returns>
 	/// <remarks>
 	/// Service Lifetimes:
 	/// - DbContext: Scoped (per request)

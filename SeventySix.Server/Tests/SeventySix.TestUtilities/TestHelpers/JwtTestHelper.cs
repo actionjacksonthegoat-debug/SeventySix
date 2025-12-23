@@ -36,11 +36,21 @@ public static class JwtTestHelper
 	/// Generates a JWT signed with the wrong secret key.
 	/// The API should reject this token with 401 Unauthorized.
 	/// </summary>
-	/// <param name="userId">The user ID to include in claims.</param>
-	/// <param name="username">The username to include in claims.</param>
-	/// <param name="email">The email to include in claims.</param>
-	/// <param name="timeProvider">The time provider for generating expiration times.</param>
-	/// <returns>A JWT string signed with the wrong key.</returns>
+	/// <param name="userId">
+	/// The user ID to include in claims.
+	/// </param>
+	/// <param name="username">
+	/// The username to include in claims.
+	/// </param>
+	/// <param name="email">
+	/// The email to include in claims.
+	/// </param>
+	/// <param name="timeProvider">
+	/// The time provider for generating expiration times.
+	/// </param>
+	/// <returns>
+	/// A JWT string signed with the wrong key.
+	/// </returns>
 	public static string GenerateTokenWithWrongKey(
 		int userId,
 		string username,
@@ -78,9 +88,15 @@ public static class JwtTestHelper
 	/// Generates an expired JWT signed with the wrong secret key.
 	/// The API should reject this token with 401 Unauthorized and set X-Token-Expired header.
 	/// </summary>
-	/// <param name="userId">The user ID to include in claims.</param>
-	/// <param name="timeProvider">The time provider for generating expiration times.</param>
-	/// <returns>A JWT string that has already expired.</returns>
+	/// <param name="userId">
+	/// The user ID to include in claims.
+	/// </param>
+	/// <param name="timeProvider">
+	/// The time provider for generating expiration times.
+	/// </param>
+	/// <returns>
+	/// A JWT string that has already expired.
+	/// </returns>
 	/// <remarks>
 	/// Uses a wrong key to ensure the test doesn't require the real secret.
 	/// The API validates expiration before signature in most JWT libraries,

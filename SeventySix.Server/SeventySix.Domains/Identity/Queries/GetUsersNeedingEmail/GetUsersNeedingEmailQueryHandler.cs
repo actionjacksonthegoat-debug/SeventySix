@@ -12,10 +12,18 @@ public static class GetUsersNeedingEmailQueryHandler
 	/// <summary>
 	/// Handles retrieval of users who need pending emails.
 	/// </summary>
-	/// <param name="query">The query.</param>
-	/// <param name="repository">User repository.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Collection of users needing emails.</returns>
+	/// <param name="query">
+	/// The query.
+	/// </param>
+	/// <param name="repository">
+	/// User repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Collection of users needing emails.
+	/// </returns>
 	public static async Task<IEnumerable<UserDto>> HandleAsync(
 		GetUsersNeedingEmailQuery query,
 		IUserQueryRepository repository,

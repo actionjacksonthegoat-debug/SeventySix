@@ -25,9 +25,15 @@ public static class AuthenticationExtensions
 	/// <summary>
 	/// Adds JWT Bearer authentication services.
 	/// </summary>
-	/// <param name="services">The service collection.</param>
-	/// <param name="configuration">The configuration.</param>
-	/// <returns>The service collection for chaining.</returns>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="configuration">
+	/// The configuration.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	public static IServiceCollection AddAuthenticationServices(
 		this IServiceCollection services,
 		IConfiguration configuration)

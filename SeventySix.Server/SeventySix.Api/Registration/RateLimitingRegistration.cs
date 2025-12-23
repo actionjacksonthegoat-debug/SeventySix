@@ -27,9 +27,15 @@ public static class RateLimitingRegistration
 	/// Configures a fixed window rate limiter partitioned by client IP.
 	/// Includes global limits and auth-specific stricter policies.
 	/// </summary>
-	/// <param name="services">The service collection.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <returns>The service collection for chaining.</returns>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	public static IServiceCollection AddConfiguredRateLimiting(
 		this IServiceCollection services,
 		IConfiguration configuration)

@@ -59,6 +59,8 @@ public sealed class CompressResponseAttribute : Attribute
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CompressResponseAttribute"/> class.
 	/// </summary>
-	/// <param name="enabled">Whether compression is enabled.</param>
+	/// <param name="enabled">
+	/// Whether compression is enabled.
+	/// </param>
 	public CompressResponseAttribute(bool enabled) => Enabled = enabled;
 }

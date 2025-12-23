@@ -12,10 +12,18 @@ public static class RestoreUserCommandHandler
 	/// <summary>
 	/// Handles restoration of a soft-deleted user.
 	/// </summary>
-	/// <param name="command">The restore user command.</param>
-	/// <param name="repository">User command repository.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>True if the user was restored; otherwise false.</returns>
+	/// <param name="command">
+	/// The restore user command.
+	/// </param>
+	/// <param name="repository">
+	/// User command repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// True if the user was restored; otherwise false.
+	/// </returns>
 	public static async Task<bool> HandleAsync(
 		RestoreUserCommand command,
 		IUserCommandRepository repository,

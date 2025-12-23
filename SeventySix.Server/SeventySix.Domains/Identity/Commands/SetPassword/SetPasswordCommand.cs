@@ -7,6 +7,10 @@ namespace SeventySix.Identity;
 /// <summary>
 /// Command to set password using a reset token.
 /// </summary>
-/// <param name="Request">The set password request.</param>
-/// <param name="ClientIp">The client IP address.</param>
+/// <param name="Request">
+/// The set password request.
+/// </param>
+/// <param name="ClientIp">
+/// The client IP address.
+/// </param>
 public record SetPasswordCommand(SetPasswordRequest Request, string? ClientIp);

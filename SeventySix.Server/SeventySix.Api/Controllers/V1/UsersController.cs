@@ -36,8 +36,12 @@ namespace SeventySix.Api.Controllers;
 /// <remarks>
 /// Initializes a new instance of the <see cref="UsersController"/> class.
 /// </remarks>
-/// <param name="messageBus">The Wolverine message bus for dispatching commands and queries.</param>
-/// <param name="logger">The logger instance for recording controller operations.</param>
+/// <param name="messageBus">
+/// The Wolverine message bus for dispatching commands and queries.
+/// </param>
+/// <param name="logger">
+/// The logger instance for recording controller operations.
+/// </param>
 /// <exception cref="ArgumentNullException">Thrown when messageBus or logger is null.</exception>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
@@ -50,9 +54,15 @@ public class UsersController(
 	/// <summary>
 	/// Updates the current authenticated user's profile.
 	/// </summary>
-	/// <param name="request">The profile update request.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The updated user profile.</returns>
+	/// <param name="request">
+	/// The profile update request.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The updated user profile.
+	/// </returns>
 	/// <response code="200">Returns the updated profile.</response>
 	/// <response code="400">If the request is invalid.</response>
 	/// <response code="401">If the user is not authenticated.</response>
@@ -87,8 +97,12 @@ public class UsersController(
 	/// <summary>
 	/// Gets all users.
 	/// </summary>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>A list of all users.</returns>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// A list of all users.
+	/// </returns>
 	/// <response code="200">Returns the list of users.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	/// <remarks>
@@ -120,9 +134,15 @@ public class UsersController(
 	/// <summary>
 	/// Gets a user by their identifier.
 	/// </summary>
-	/// <param name="id">The unique identifier of the user.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The user if found; otherwise, 404 Not Found.</returns>
+	/// <param name="id">
+	/// The unique identifier of the user.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The user if found; otherwise, 404 Not Found.
+	/// </returns>
 	/// <response code="200">Returns the user.</response>
 	/// <response code="404">If the user is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -159,9 +179,15 @@ public class UsersController(
 	/// <summary>
 	/// Creates a new user.
 	/// </summary>
-	/// <param name="request">The user creation request containing user data.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The created user with location header.</returns>
+	/// <param name="request">
+	/// The user creation request containing user data.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The created user with location header.
+	/// </returns>
 	/// <response code="201">Returns the newly created user.</response>
 	/// <response code="400">If the request is invalid or validation fails.</response>
 	/// <response code="422">If a business rule is violated.</response>
@@ -234,10 +260,18 @@ public class UsersController(
 	/// <summary>
 	/// Updates an existing user.
 	/// </summary>
-	/// <param name="id">The unique identifier of the user to update.</param>
-	/// <param name="request">The user update request containing updated user data.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The updated user.</returns>
+	/// <param name="id">
+	/// The unique identifier of the user to update.
+	/// </param>
+	/// <param name="request">
+	/// The user update request containing updated user data.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The updated user.
+	/// </returns>
 	/// <response code="200">Returns the updated user.</response>
 	/// <response code="400">If the request is invalid or ID mismatch.</response>
 	/// <response code="404">If the user is not found.</response>
@@ -271,9 +305,15 @@ public class UsersController(
 	/// <summary>
 	/// Soft deletes a user by their identifier.
 	/// </summary>
-	/// <param name="id">The unique identifier of the user to delete.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>No content if successful.</returns>
+	/// <param name="id">
+	/// The unique identifier of the user to delete.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// No content if successful.
+	/// </returns>
 	/// <response code="204">If the user was successfully deleted.</response>
 	/// <response code="404">If the user is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -297,9 +337,15 @@ public class UsersController(
 	/// <summary>
 	/// Restores a previously soft-deleted user.
 	/// </summary>
-	/// <param name="id">The unique identifier of the user to restore.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>No content if successful.</returns>
+	/// <param name="id">
+	/// The unique identifier of the user to restore.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// No content if successful.
+	/// </returns>
 	/// <response code="204">If the user was successfully restored.</response>
 	/// <response code="404">If the user is not found or not deleted.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -323,9 +369,15 @@ public class UsersController(
 	/// <summary>
 	/// Gets users with pagination and filtering.
 	/// </summary>
-	/// <param name="request">The query request containing pagination and filter parameters.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>A paged result containing users and metadata.</returns>
+	/// <param name="request">
+	/// The query request containing pagination and filter parameters.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// A paged result containing users and metadata.
+	/// </returns>
 	/// <response code="200">Returns the paged result.</response>
 	/// <response code="400">If the request is invalid.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -353,9 +405,15 @@ public class UsersController(
 	/// <summary>
 	/// Gets a user by their username.
 	/// </summary>
-	/// <param name="username">The username of the user.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The user if found; otherwise, 404 Not Found.</returns>
+	/// <param name="username">
+	/// The username of the user.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The user if found; otherwise, 404 Not Found.
+	/// </returns>
 	/// <response code="200">Returns the user.</response>
 	/// <response code="404">If the user is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -385,10 +443,18 @@ public class UsersController(
 	/// <summary>
 	/// Checks if a username already exists.
 	/// </summary>
-	/// <param name="username">The username to check.</param>
-	/// <param name="excludeId">Optional user ID to exclude from the check (for updates).</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>True if the username exists; otherwise, false.</returns>
+	/// <param name="username">
+	/// The username to check.
+	/// </param>
+	/// <param name="excludeId">
+	/// Optional user ID to exclude from the check (for updates).
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// True if the username exists; otherwise, false.
+	/// </returns>
 	/// <response code="200">Returns whether the username exists.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpGet("check/username/{username}", Name = "CheckUsername")]
@@ -411,9 +477,15 @@ public class UsersController(
 	/// <summary>
 	/// Bulk activates multiple users.
 	/// </summary>
-	/// <param name="ids">The collection of user IDs to activate.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The number of users activated.</returns>
+	/// <param name="ids">
+	/// The collection of user IDs to activate.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The number of users activated.
+	/// </returns>
 	/// <response code="200">Returns the count of activated users.</response>
 	/// <response code="400">If the request is invalid.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -440,9 +512,15 @@ public class UsersController(
 	/// <summary>
 	/// Bulk deactivates multiple users.
 	/// </summary>
-	/// <param name="ids">The collection of user IDs to deactivate.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The number of users deactivated.</returns>
+	/// <param name="ids">
+	/// The collection of user IDs to deactivate.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The number of users deactivated.
+	/// </returns>
 	/// <response code="200">Returns the count of deactivated users.</response>
 	/// <response code="400">If the request is invalid.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -473,9 +551,15 @@ public class UsersController(
 	/// Admin action to send a password reset email to a user.
 	/// The user will receive an email with a link to set their new password.
 	/// </remarks>
-	/// <param name="id">The unique identifier of the user.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>No content if email sent successfully.</returns>
+	/// <param name="id">
+	/// The unique identifier of the user.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// No content if email sent successfully.
+	/// </returns>
 	/// <response code="204">Password reset email sent successfully.</response>
 	/// <response code="404">If the user is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>

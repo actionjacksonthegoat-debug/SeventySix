@@ -14,9 +14,15 @@ namespace SeventySix.Api.Registration;
 public static class HealthCheckExtensions
 {
 	/// <summary>Adds comprehensive health checks for all bounded contexts.</summary>
-	/// <param name="services">The service collection.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <returns>The service collection for chaining.</returns>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	public static IServiceCollection AddApplicationHealthChecks(
 		this IServiceCollection services,
 		IConfiguration configuration)

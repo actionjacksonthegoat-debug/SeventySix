@@ -52,7 +52,9 @@ public class UserBuilder
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserBuilder"/> class.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	/// <param name="timeProvider">
+	/// The time provider for default timestamps.
+	/// </param>
 	public UserBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;
@@ -63,8 +65,12 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the username.
 	/// </summary>
-	/// <param name="username">The username.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="username">
+	/// The username.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public UserBuilder WithUsername(string username)
 	{
 		Username = username;
@@ -74,8 +80,12 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the email address.
 	/// </summary>
-	/// <param name="email">The email address.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="email">
+	/// The email address.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public UserBuilder WithEmail(string email)
 	{
 		Email = email;
@@ -85,8 +95,12 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the full name.
 	/// </summary>
-	/// <param name="fullName">The full name.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="fullName">
+	/// The full name.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public UserBuilder WithFullName(string? fullName)
 	{
 		FullName = fullName;
@@ -96,9 +110,15 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the created audit fields.
 	/// </summary>
-	/// <param name="createDate">The creation CreateDate.</param>
-	/// <param name="createdBy">The creator identifier.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="createDate">
+	/// The creation CreateDate.
+	/// </param>
+	/// <param name="createdBy">
+	/// The creator identifier.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public UserBuilder WithCreatedInfo(
 		DateTime createDate,
 		string? createdBy = TestAuditConstants.SystemUser)
@@ -111,9 +131,15 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the modified audit fields.
 	/// </summary>
-	/// <param name="modifyDate">The modification CreateDate.</param>
-	/// <param name="modifiedBy">The modifier identifier.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="modifyDate">
+	/// The modification CreateDate.
+	/// </param>
+	/// <param name="modifiedBy">
+	/// The modifier identifier.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public UserBuilder WithModifiedInfo(
 		DateTime modifyDate,
 		string? modifiedBy = TestAuditConstants.SystemUser)
@@ -126,8 +152,12 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the active status.
 	/// </summary>
-	/// <param name="isActive">Whether the user is active.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="isActive">
+	/// Whether the user is active.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public UserBuilder WithIsActive(bool isActive)
 	{
 		IsActive = isActive;
@@ -137,10 +167,18 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the deleted status and audit fields.
 	/// </summary>
-	/// <param name="isDeleted">Whether the user is deleted.</param>
-	/// <param name="deletedAt">The deletion CreateDate.</param>
-	/// <param name="deletedBy">The deleter identifier.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="isDeleted">
+	/// Whether the user is deleted.
+	/// </param>
+	/// <param name="deletedAt">
+	/// The deletion CreateDate.
+	/// </param>
+	/// <param name="deletedBy">
+	/// The deleter identifier.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public UserBuilder WithDeletedInfo(
 		bool isDeleted,
 		DateTime? deletedAt = null,
@@ -155,8 +193,12 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the row version for concurrency control.
 	/// </summary>
-	/// <param name="rowVersion">The row version.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="rowVersion">
+	/// The row version.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public UserBuilder WithRowVersion(uint? rowVersion)
 	{
 		RowVersion = rowVersion;
@@ -166,8 +208,12 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the user preferences as JSON.
 	/// </summary>
-	/// <param name="preferences">The preferences JSON.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="preferences">
+	/// The preferences JSON.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public UserBuilder WithPreferences(string? preferences)
 	{
 		Preferences = preferences;
@@ -177,9 +223,15 @@ public class UserBuilder
 	/// <summary>
 	/// Sets the last login information.
 	/// </summary>
-	/// <param name="lastLoginAt">The last login CreateDate.</param>
-	/// <param name="lastLoginIp">The last login IP address.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="lastLoginAt">
+	/// The last login CreateDate.
+	/// </param>
+	/// <param name="lastLoginIp">
+	/// The last login IP address.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public UserBuilder WithLastLogin(
 		DateTime lastLoginAt,
 		string? lastLoginIp = null)
@@ -192,7 +244,9 @@ public class UserBuilder
 	/// <summary>
 	/// Builds the User entity with the configured values.
 	/// </summary>
-	/// <returns>A new User instance.</returns>
+	/// <returns>
+	/// A new User instance.
+	/// </returns>
 	public User Build()
 	{
 		return new User
@@ -220,8 +274,12 @@ public class UserBuilder
 	/// <summary>
 	/// Creates a default active user.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for timestamps.</param>
-	/// <returns>A new UserBuilder configured for an active user.</returns>
+	/// <param name="timeProvider">
+	/// The time provider for timestamps.
+	/// </param>
+	/// <returns>
+	/// A new UserBuilder configured for an active user.
+	/// </returns>
 	public static UserBuilder CreateActive(TimeProvider timeProvider)
 	{
 		return new UserBuilder(timeProvider).WithIsActive(true);
@@ -230,8 +288,12 @@ public class UserBuilder
 	/// <summary>
 	/// Creates a default inactive user.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for timestamps.</param>
-	/// <returns>A new UserBuilder configured for an inactive user.</returns>
+	/// <param name="timeProvider">
+	/// The time provider for timestamps.
+	/// </param>
+	/// <returns>
+	/// A new UserBuilder configured for an inactive user.
+	/// </returns>
 	public static UserBuilder CreateInactive(TimeProvider timeProvider)
 	{
 		return new UserBuilder(timeProvider).WithIsActive(false);
@@ -240,8 +302,12 @@ public class UserBuilder
 	/// <summary>
 	/// Creates a default deleted user.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for timestamps.</param>
-	/// <returns>A new UserBuilder configured for a deleted user.</returns>
+	/// <param name="timeProvider">
+	/// The time provider for timestamps.
+	/// </param>
+	/// <returns>
+	/// A new UserBuilder configured for a deleted user.
+	/// </returns>
 	public static UserBuilder CreateDeleted(TimeProvider timeProvider)
 	{
 		return new UserBuilder(timeProvider).WithDeletedInfo(

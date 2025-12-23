@@ -20,7 +20,9 @@ public class UserContextAccessor(IHttpContextAccessor httpContextAccessor)
 	/// <summary>
 	/// Gets the current user's username from JWT claims.
 	/// </summary>
-	/// <returns>The authenticated username or "System" if not authenticated.</returns>
+	/// <returns>
+	/// The authenticated username or "System" if not authenticated.
+	/// </returns>
 	public string GetCurrentUser()
 	{
 		string? username =

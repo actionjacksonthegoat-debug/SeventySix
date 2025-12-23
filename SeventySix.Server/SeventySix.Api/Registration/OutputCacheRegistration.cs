@@ -15,9 +15,15 @@ public static class OutputCacheRegistration
 	/// Adds output caching with dynamic policy registration from configuration.
 	/// Automatically discovers and registers all policies defined in appsettings.json.
 	/// </summary>
-	/// <param name="services">The service collection.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <returns>The service collection for chaining.</returns>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	public static IServiceCollection AddConfiguredOutputCache(
 		this IServiceCollection services,
 		IConfiguration configuration)

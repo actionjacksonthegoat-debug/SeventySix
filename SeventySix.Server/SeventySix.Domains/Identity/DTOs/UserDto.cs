@@ -22,8 +22,12 @@ namespace SeventySix.Identity;
 ///
 /// This record is serialized to JSON for HTTP responses.
 /// </remarks>
-/// <param name="Id">The unique identifier for the user.</param>
-/// <param name="Username">The username.</param>
+/// <param name="Id">
+/// The unique identifier for the user.
+/// </param>
+/// <param name="Username">
+/// The username.
+/// </param>
 /// <param name="Email">
 /// The user's email address.
 /// <para>
@@ -38,15 +42,33 @@ namespace SeventySix.Identity;
 /// Data Protection: Retention (30 days post-deletion), Encryption (TLS, at-rest), Access (Admin + Self)
 /// </para>
 /// </param>
-/// <param name="CreateDate">The date and time when the user was created (UTC).</param>
-/// <param name="IsActive">Whether the user account is active.</param>
-/// <param name="CreatedBy">The username of the user who created this user.</param>
-/// <param name="ModifyDate">The date and time when the user was last modified.</param>
-/// <param name="ModifiedBy">The username of the user who last modified this user.</param>
-/// <param name="LastLoginAt">The date and time of the user's last login.</param>
-/// <param name="IsDeleted">Whether the user has been soft-deleted.</param>
-/// <param name="DeletedAt">The date and time when the user was soft-deleted.</param>
-/// <param name="DeletedBy">The username of the user who deleted this user.</param>
+/// <param name="CreateDate">
+/// The date and time when the user was created (UTC).
+/// </param>
+/// <param name="IsActive">
+/// Whether the user account is active.
+/// </param>
+/// <param name="CreatedBy">
+/// The username of the user who created this user.
+/// </param>
+/// <param name="ModifyDate">
+/// The date and time when the user was last modified.
+/// </param>
+/// <param name="ModifiedBy">
+/// The username of the user who last modified this user.
+/// </param>
+/// <param name="LastLoginAt">
+/// The date and time of the user's last login.
+/// </param>
+/// <param name="IsDeleted">
+/// Whether the user has been soft-deleted.
+/// </param>
+/// <param name="DeletedAt">
+/// The date and time when the user was soft-deleted.
+/// </param>
+/// <param name="DeletedBy">
+/// The username of the user who deleted this user.
+/// </param>
 public record UserDto(
 	int Id,
 	string Username,

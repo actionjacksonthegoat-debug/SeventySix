@@ -36,8 +36,12 @@ public record ThirdPartyApiLimitSettings
 	/// Gets the configured daily limit for a specific API.
 	/// Returns DefaultDailyLimit if API not explicitly configured.
 	/// </summary>
-	/// <param name="apiName">The API name from ExternalApiConstants.</param>
-	/// <returns>The daily limit for the API.</returns>
+	/// <param name="apiName">
+	/// The API name from ExternalApiConstants.
+	/// </param>
+	/// <returns>
+	/// The daily limit for the API.
+	/// </returns>
 	public int GetDailyLimit(string apiName)
 	{
 		ThirdPartyApiLimit? config =
@@ -50,8 +54,12 @@ public record ThirdPartyApiLimitSettings
 	/// Checks if rate limiting is enabled for a specific API.
 	/// Returns false if master Enabled is false OR API-specific Enabled is false.
 	/// </summary>
-	/// <param name="apiName">The API name from ExternalApiConstants.</param>
-	/// <returns>True if rate limiting should be enforced for this API.</returns>
+	/// <param name="apiName">
+	/// The API name from ExternalApiConstants.
+	/// </param>
+	/// <returns>
+	/// True if rate limiting should be enforced for this API.
+	/// </returns>
 	public bool IsApiRateLimitEnabled(string apiName)
 	{
 		if (!Enabled)

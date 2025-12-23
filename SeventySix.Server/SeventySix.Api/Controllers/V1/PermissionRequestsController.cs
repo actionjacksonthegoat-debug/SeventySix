@@ -23,7 +23,9 @@ namespace SeventySix.Api.Controllers;
 /// Permission requests API endpoints.
 /// Provides RESTful operations for managing user permission/role requests.
 /// </summary>
-/// <param name="messageBus">The Wolverine message bus.</param>
+/// <param name="messageBus">
+/// The Wolverine message bus.
+/// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
 public class PermissionRequestsController(IMessageBus messageBus)
@@ -32,8 +34,12 @@ public class PermissionRequestsController(IMessageBus messageBus)
 	/// <summary>
 	/// Gets all pending permission requests (Admin only).
 	/// </summary>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>A list of all pending permission requests.</returns>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// A list of all pending permission requests.
+	/// </returns>
 	/// <response code="200">Returns the list of permission requests.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpGet("permission-requests", Name = "GetPermissionRequests")]
@@ -62,8 +68,12 @@ public class PermissionRequestsController(IMessageBus messageBus)
 	/// Excludes roles the user already has and roles with pending requests.
 	/// Available to authenticated users (not just admins).
 	/// </remarks>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>A list of available roles the user can request.</returns>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// A list of available roles the user can request.
+	/// </returns>
 	/// <response code="200">Returns the list of available roles.</response>
 	/// <response code="401">If the user is not authenticated.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -96,9 +106,15 @@ public class PermissionRequestsController(IMessageBus messageBus)
 	/// Creates one request per requested role. Idempotent: skips roles
 	/// the user already has or has already requested.
 	/// </remarks>
-	/// <param name="request">The permission request containing roles and optional message.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>No content if successful.</returns>
+	/// <param name="request">
+	/// The permission request containing roles and optional message.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// No content if successful.
+	/// </returns>
 	/// <response code="204">Permission requests created successfully.</response>
 	/// <response code="400">If the request is invalid.</response>
 	/// <response code="401">If the user is not authenticated.</response>
@@ -126,9 +142,15 @@ public class PermissionRequestsController(IMessageBus messageBus)
 	}
 
 	/// <summary>Approves a permission request.</summary>
-	/// <param name="id">The ID of the permission request to approve.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>No content if successful; 404 if request not found.</returns>
+	/// <param name="id">
+	/// The ID of the permission request to approve.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// No content if successful; 404 if request not found.
+	/// </returns>
 	/// <response code="204">Permission request approved successfully.</response>
 	/// <response code="404">If the permission request is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -158,9 +180,15 @@ public class PermissionRequestsController(IMessageBus messageBus)
 	}
 
 	/// <summary>Rejects a permission request.</summary>
-	/// <param name="id">The ID of the permission request to reject.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>No content if successful; 404 if request not found.</returns>
+	/// <param name="id">
+	/// The ID of the permission request to reject.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// No content if successful; 404 if request not found.
+	/// </returns>
 	/// <response code="204">Permission request rejected successfully.</response>
 	/// <response code="404">If the permission request is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -190,9 +218,15 @@ public class PermissionRequestsController(IMessageBus messageBus)
 	}
 
 	/// <summary>Bulk approves permission requests.</summary>
-	/// <param name="ids">The IDs of permission requests to approve.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The count of approved requests.</returns>
+	/// <param name="ids">
+	/// The IDs of permission requests to approve.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The count of approved requests.
+	/// </returns>
 	/// <response code="200">Returns the count of approved requests.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPost(
@@ -215,9 +249,15 @@ public class PermissionRequestsController(IMessageBus messageBus)
 	}
 
 	/// <summary>Bulk rejects permission requests.</summary>
-	/// <param name="ids">The IDs of permission requests to reject.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The count of rejected requests.</returns>
+	/// <param name="ids">
+	/// The IDs of permission requests to reject.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The count of rejected requests.
+	/// </returns>
 	/// <response code="200">Returns the count of rejected requests.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
 	[HttpPost(

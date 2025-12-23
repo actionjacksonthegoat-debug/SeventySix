@@ -7,5 +7,7 @@ namespace SeventySix.Identity;
 /// <summary>
 /// Command to clear the pending email flag for a user.
 /// </summary>
-/// <param name="UserId">The ID of the user to clear the flag for.</param>
+/// <param name="UserId">
+/// The ID of the user to clear the flag for.
+/// </param>
 public record ClearPendingEmailFlagCommand(int UserId);

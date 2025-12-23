@@ -22,7 +22,9 @@ public abstract class BasePostgreSqlFixture : IAsyncLifetime
 	/// Reusing the factory across tests significantly reduces test execution time.
 	/// </summary>
 	/// <typeparam name="TProgram">The entry point type for the application.</typeparam>
-	/// <returns>A cached or newly created SharedWebApplicationFactory instance.</returns>
+	/// <returns>
+	/// A cached or newly created SharedWebApplicationFactory instance.
+	/// </returns>
 	public abstract SharedWebApplicationFactory<TProgram> GetOrCreateFactory<TProgram>()
 		where TProgram : class;
 
@@ -30,12 +32,16 @@ public abstract class BasePostgreSqlFixture : IAsyncLifetime
 	/// Initializes the PostgreSQL database and applies migrations.
 	/// Called once before all tests in the collection.
 	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <returns>
+	/// A <see cref="Task"/> representing the asynchronous operation.
+	/// </returns>
 	public abstract Task InitializeAsync();
 
 	/// <summary>
 	/// Cleanup after all tests complete.
 	/// </summary>
-	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <returns>
+	/// A <see cref="Task"/> representing the asynchronous operation.
+	/// </returns>
 	public abstract Task DisposeAsync();
 }

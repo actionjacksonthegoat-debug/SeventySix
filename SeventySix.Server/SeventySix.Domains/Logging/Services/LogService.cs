@@ -8,8 +8,12 @@ using SeventySix.Shared.DTOs;
 namespace SeventySix.Logging;
 
 /// <summary>Log service implementation.</summary>
-/// <param name="repository">The repository for data access operations.</param>
-/// <param name="queryValidator">The validator for query requests.</param>
+/// <param name="repository">
+/// The repository for data access operations.
+/// </param>
+/// <param name="queryValidator">
+/// The validator for query requests.
+/// </param>
 public class LogService(
 	ILogRepository repository,
 	IValidator<LogQueryRequest> queryValidator) : ILogService

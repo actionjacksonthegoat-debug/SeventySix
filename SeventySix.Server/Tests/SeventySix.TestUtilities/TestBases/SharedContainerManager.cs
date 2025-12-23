@@ -31,7 +31,9 @@ public static class SharedContainerManager
 	/// Gets or creates the shared PostgreSQL container.
 	/// Thread-safe - only one container created regardless of how many fixtures call this.
 	/// </summary>
-	/// <returns>The connection string for the master database.</returns>
+	/// <returns>
+	/// The connection string for the master database.
+	/// </returns>
 	public static async Task<string> GetOrCreateContainerAsync()
 	{
 		if (MasterConnectionString is not null)
@@ -70,8 +72,12 @@ public static class SharedContainerManager
 	/// <summary>
 	/// Creates an isolated database for a test fixture and applies migrations.
 	/// </summary>
-	/// <param name="databaseName">Unique database name for the fixture.</param>
-	/// <returns>Connection string for the isolated database.</returns>
+	/// <param name="databaseName">
+	/// Unique database name for the fixture.
+	/// </param>
+	/// <returns>
+	/// Connection string for the isolated database.
+	/// </returns>
 	public static async Task<string> CreateDatabaseAsync(string databaseName)
 	{
 		if (
@@ -145,7 +151,9 @@ public static class SharedContainerManager
 	/// <summary>
 	/// Disposes the shared container. Called by test assembly cleanup.
 	/// </summary>
-	/// <returns>A task representing the async operation.</returns>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
 	public static async Task DisposeAsync()
 	{
 		if (Container is not null)

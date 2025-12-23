@@ -12,6 +12,10 @@ namespace SeventySix.Identity;
 /// - New user welcome flow (initial password setup)
 /// - Forgot password flow (password reset).
 /// </remarks>
-/// <param name="Token">The password reset token (base64 encoded).</param>
-/// <param name="NewPassword">The new password to set.</param>
+/// <param name="Token">
+/// The password reset token (base64 encoded).
+/// </param>
+/// <param name="NewPassword">
+/// The new password to set.
+/// </param>
 public record SetPasswordRequest(string Token, string NewPassword);

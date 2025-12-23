@@ -14,10 +14,18 @@ public static class GetAvailableRolesQueryHandler
 	/// <summary>
 	/// Handles the query to get available roles for a user.
 	/// </summary>
-	/// <param name="query">The query containing user ID.</param>
-	/// <param name="repository">The permission request repository.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>List of available roles the user can request.</returns>
+	/// <param name="query">
+	/// The query containing user ID.
+	/// </param>
+	/// <param name="repository">
+	/// The permission request repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// List of available roles the user can request.
+	/// </returns>
 	public static async Task<IEnumerable<AvailableRoleDto>> HandleAsync(
 		GetAvailableRolesQuery query,
 		IPermissionRequestRepository repository,

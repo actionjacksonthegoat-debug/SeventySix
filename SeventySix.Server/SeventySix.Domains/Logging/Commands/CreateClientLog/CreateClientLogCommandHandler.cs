@@ -15,10 +15,18 @@ public static class CreateClientLogCommandHandler
 	/// <summary>
 	/// Handles the request to create a client log entry.
 	/// </summary>
-	/// <param name="request">The client log creation request.</param>
-	/// <param name="repository">The log repository for data access.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>A task representing the asynchronous operation.</returns>
+	/// <param name="request">
+	/// The client log creation request.
+	/// </param>
+	/// <param name="repository">
+	/// The log repository for data access.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
 	public static async Task HandleAsync(
 		CreateLogRequest request,
 		ILogRepository repository,

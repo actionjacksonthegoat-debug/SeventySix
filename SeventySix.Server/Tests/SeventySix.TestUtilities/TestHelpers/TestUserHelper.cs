@@ -14,8 +14,12 @@ namespace SeventySix.TestUtilities.TestHelpers;
 /// <param name="PasswordHash">
 /// Optional custom password hash. Defaults to <see cref="TestUserHelper.TestPasswordHash"/>.
 /// </param>
-/// <param name="IsActive">Whether the user should be active. Defaults to true.</param>
-/// <param name="FullName">Optional full name for the user.</param>
+/// <param name="IsActive">
+/// Whether the user should be active. Defaults to true.
+/// </param>
+/// <param name="FullName">
+/// Optional full name for the user.
+/// </param>
 public record CreateUserOptions(
 	string? PasswordHash = null,
 	bool IsActive = true,
@@ -77,12 +81,24 @@ public static class TestUserHelper
 	/// <summary>
 	/// Creates a test user with credentials using the pre-computed password hash.
 	/// </summary>
-	/// <param name="services">The service provider to resolve the DbContext.</param>
-	/// <param name="username">The username for the new user.</param>
-	/// <param name="email">The email for the new user.</param>
-	/// <param name="timeProvider">The time provider for setting CreateDate.</param>
-	/// <param name="options">Optional configuration for the user.</param>
-	/// <returns>The created user.</returns>
+	/// <param name="services">
+	/// The service provider to resolve the DbContext.
+	/// </param>
+	/// <param name="username">
+	/// The username for the new user.
+	/// </param>
+	/// <param name="email">
+	/// The email for the new user.
+	/// </param>
+	/// <param name="timeProvider">
+	/// The time provider for setting CreateDate.
+	/// </param>
+	/// <param name="options">
+	/// Optional configuration for the user.
+	/// </param>
+	/// <returns>
+	/// The created user.
+	/// </returns>
 	public static async Task<User> CreateUserWithPasswordAsync(
 		IServiceProvider services,
 		string username,
@@ -106,12 +122,24 @@ public static class TestUserHelper
 	/// <summary>
 	/// Creates a test user with credentials using the pre-computed password hash.
 	/// </summary>
-	/// <param name="context">The identity database context.</param>
-	/// <param name="username">The username for the new user.</param>
-	/// <param name="email">The email for the new user.</param>
-	/// <param name="timeProvider">The time provider for setting CreateDate.</param>
-	/// <param name="options">Optional configuration for the user.</param>
-	/// <returns>The created user.</returns>
+	/// <param name="context">
+	/// The identity database context.
+	/// </param>
+	/// <param name="username">
+	/// The username for the new user.
+	/// </param>
+	/// <param name="email">
+	/// The email for the new user.
+	/// </param>
+	/// <param name="timeProvider">
+	/// The time provider for setting CreateDate.
+	/// </param>
+	/// <param name="options">
+	/// Optional configuration for the user.
+	/// </param>
+	/// <returns>
+	/// The created user.
+	/// </returns>
 	public static async Task<User> CreateUserWithPasswordAsync(
 		IdentityDbContext context,
 		string username,
@@ -157,13 +185,27 @@ public static class TestUserHelper
 	/// <summary>
 	/// Creates a test user with credentials and optional roles.
 	/// </summary>
-	/// <param name="services">The service provider to resolve the DbContext.</param>
-	/// <param name="username">The username for the new user.</param>
-	/// <param name="email">The email for the new user.</param>
-	/// <param name="roles">The roles to assign to the user.</param>
-	/// <param name="timeProvider">The time provider for setting CreateDate.</param>
-	/// <param name="options">Optional configuration for the user.</param>
-	/// <returns>The created user.</returns>
+	/// <param name="services">
+	/// The service provider to resolve the DbContext.
+	/// </param>
+	/// <param name="username">
+	/// The username for the new user.
+	/// </param>
+	/// <param name="email">
+	/// The email for the new user.
+	/// </param>
+	/// <param name="roles">
+	/// The roles to assign to the user.
+	/// </param>
+	/// <param name="timeProvider">
+	/// The time provider for setting CreateDate.
+	/// </param>
+	/// <param name="options">
+	/// Optional configuration for the user.
+	/// </param>
+	/// <returns>
+	/// The created user.
+	/// </returns>
 	public static async Task<User> CreateUserWithRolesAsync(
 		IServiceProvider services,
 		string username,

@@ -32,7 +32,9 @@ namespace SeventySix.Shared.Persistence;
 /// <remarks>
 /// Initializes a new instance of the <see cref="TransactionManager"/> class.
 /// </remarks>
-/// <param name="context">The database context.</param>
+/// <param name="context">
+/// The database context.
+/// </param>
 public class TransactionManager(DbContext context) : ITransactionManager
 {
 	/// <inheritdoc/>
@@ -144,8 +146,12 @@ public class TransactionManager(DbContext context) : ITransactionManager
 	/// <summary>
 	/// Determines if an exception is related to concurrency issues.
 	/// </summary>
-	/// <param name="exception">The exception to check.</param>
-	/// <returns>True if the exception indicates a concurrency conflict.</returns>
+	/// <param name="exception">
+	/// The exception to check.
+	/// </param>
+	/// <returns>
+	/// True if the exception indicates a concurrency conflict.
+	/// </returns>
 	private static bool IsConcurrencyRelated(DbUpdateException exception)
 	{
 		string message =
@@ -163,8 +169,12 @@ public class TransactionManager(DbContext context) : ITransactionManager
 	/// <summary>
 	/// Calculates exponential backoff delay with jitter.
 	/// </summary>
-	/// <param name="retryCount">The current retry attempt (1-based).</param>
-	/// <returns>Delay in milliseconds.</returns>
+	/// <param name="retryCount">
+	/// The current retry attempt (1-based).
+	/// </param>
+	/// <returns>
+	/// Delay in milliseconds.
+	/// </returns>
 	private static int CalculateBackoff(int retryCount)
 	{
 		// Base delay: 50ms, 100ms, 200ms, 400ms, etc.

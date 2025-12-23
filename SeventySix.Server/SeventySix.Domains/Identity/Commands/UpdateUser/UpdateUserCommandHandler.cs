@@ -17,13 +17,27 @@ public static class UpdateUserCommandHandler
 	/// <summary>
 	/// Handles user updates with duplicate checks and concurrency handling.
 	/// </summary>
-	/// <param name="request">The update user request.</param>
-	/// <param name="messageBus">Message bus for querying users.</param>
-	/// <param name="userQueryRepository">User query repository.</param>
-	/// <param name="userCommandRepository">User command repository.</param>
-	/// <param name="logger">Logger instance.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>The updated user DTO.</returns>
+	/// <param name="request">
+	/// The update user request.
+	/// </param>
+	/// <param name="messageBus">
+	/// Message bus for querying users.
+	/// </param>
+	/// <param name="userQueryRepository">
+	/// User query repository.
+	/// </param>
+	/// <param name="userCommandRepository">
+	/// User command repository.
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The updated user DTO.
+	/// </returns>
 	/// <remarks>
 	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
 	/// Database unique constraints on Username and Email provide atomicity - no manual transaction management needed.

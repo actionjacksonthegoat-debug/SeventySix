@@ -36,15 +36,21 @@ public class TestPollyOptionsBuilder
 	/// <summary>
 	/// Creates default fast test options with zero delays.
 	/// </summary>
-	/// <returns>IOptions&lt;PollyOptions&gt; configured for tests.</returns>
+	/// <returns>
+	/// IOptions&lt;PollyOptions&gt; configured for tests.
+	/// </returns>
 	public static IOptions<PollyOptions> CreateDefault() =>
 		new TestPollyOptionsBuilder().Build();
 
 	/// <summary>
 	/// Sets the retry count.
 	/// </summary>
-	/// <param name="count">Number of retries.</param>
-	/// <returns>The builder for chaining.</returns>
+	/// <param name="count">
+	/// Number of retries.
+	/// </param>
+	/// <returns>
+	/// The builder for chaining.
+	/// </returns>
 	public TestPollyOptionsBuilder WithRetryCount(int count)
 	{
 		RetryCountValue = count;
@@ -54,8 +60,12 @@ public class TestPollyOptionsBuilder
 	/// <summary>
 	/// Sets the circuit breaker failure threshold.
 	/// </summary>
-	/// <param name="threshold">Failure threshold.</param>
-	/// <returns>The builder for chaining.</returns>
+	/// <param name="threshold">
+	/// Failure threshold.
+	/// </param>
+	/// <returns>
+	/// The builder for chaining.
+	/// </returns>
 	public TestPollyOptionsBuilder WithCircuitBreakerThreshold(int threshold)
 	{
 		CircuitBreakerFailureThresholdValue = threshold;
@@ -65,8 +75,12 @@ public class TestPollyOptionsBuilder
 	/// <summary>
 	/// Sets the timeout in seconds.
 	/// </summary>
-	/// <param name="seconds">Timeout duration.</param>
-	/// <returns>The builder for chaining.</returns>
+	/// <param name="seconds">
+	/// Timeout duration.
+	/// </param>
+	/// <returns>
+	/// The builder for chaining.
+	/// </returns>
 	public TestPollyOptionsBuilder WithTimeout(int seconds)
 	{
 		TimeoutSecondsValue = seconds;
@@ -76,7 +90,9 @@ public class TestPollyOptionsBuilder
 	/// <summary>
 	/// Builds the PollyOptions with zero delays for fast test execution.
 	/// </summary>
-	/// <returns>Configured IOptions&lt;PollyOptions&gt;.</returns>
+	/// <returns>
+	/// Configured IOptions&lt;PollyOptions&gt;.
+	/// </returns>
 	public IOptions<PollyOptions> Build() =>
 		Options.Create(
 			new PollyOptions

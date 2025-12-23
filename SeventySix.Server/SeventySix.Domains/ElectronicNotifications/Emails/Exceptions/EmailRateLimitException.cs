@@ -30,8 +30,12 @@ public class EmailRateLimitException : DomainException
 	/// <summary>
 	/// Initializes a new instance of the <see cref="EmailRateLimitException"/> class.
 	/// </summary>
-	/// <param name="timeUntilReset">Time until rate limit resets.</param>
-	/// <param name="remainingQuota">Current remaining quota.</param>
+	/// <param name="timeUntilReset">
+	/// Time until rate limit resets.
+	/// </param>
+	/// <param name="remainingQuota">
+	/// Current remaining quota.
+	/// </param>
 	public EmailRateLimitException(TimeSpan timeUntilReset, int remainingQuota)
 		: base(
 			$"Email daily limit exceeded. Resets in: {timeUntilReset:hh\\:mm\\:ss}")
@@ -43,8 +47,12 @@ public class EmailRateLimitException : DomainException
 	/// <summary>
 	/// Initializes a new instance of the <see cref="EmailRateLimitException"/> class.
 	/// </summary>
-	/// <param name="message">The error message.</param>
-	/// <param name="innerException">The inner exception.</param>
+	/// <param name="message">
+	/// The error message.
+	/// </param>
+	/// <param name="innerException">
+	/// The inner exception.
+	/// </param>
 	public EmailRateLimitException(string message, Exception innerException)
 		: base(message, innerException) { }
 }

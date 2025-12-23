@@ -19,9 +19,15 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// When Enabled=true, sends via configured SMTP server.
 /// Enforces daily rate limit via IRateLimitingService to prevent exceeding external API quotas.
 /// </remarks>
-/// <param name="settings">Email configuration settings.</param>
-/// <param name="rateLimitingService">Rate limiting service for API quota management.</param>
-/// <param name="logger">Logger for email operations.</param>
+/// <param name="settings">
+/// Email configuration settings.
+/// </param>
+/// <param name="rateLimitingService">
+/// Rate limiting service for API quota management.
+/// </param>
+/// <param name="logger">
+/// Logger for email operations.
+/// </param>
 public class EmailService(
 	IOptions<EmailSettings> settings,
 	IRateLimitingService rateLimitingService,
@@ -97,26 +103,42 @@ public class EmailService(
 	/// <summary>
 	/// Builds the password reset URL with encoded token.
 	/// </summary>
-	/// <param name="resetToken">The reset token.</param>
-	/// <returns>Full URL for password reset.</returns>
+	/// <param name="resetToken">
+	/// The reset token.
+	/// </param>
+	/// <returns>
+	/// Full URL for password reset.
+	/// </returns>
 	private string BuildPasswordResetUrl(string resetToken) =>
 		$"{settings.Value.ClientBaseUrl}/auth/set-password?token={Uri.EscapeDataString(resetToken)}";
 
 	/// <summary>
 	/// Builds the email verification URL with encoded token.
 	/// </summary>
-	/// <param name="verificationToken">The verification token.</param>
-	/// <returns>Full URL for email verification.</returns>
+	/// <param name="verificationToken">
+	/// The verification token.
+	/// </param>
+	/// <returns>
+	/// Full URL for email verification.
+	/// </returns>
 	private string BuildEmailVerificationUrl(string verificationToken) =>
 		$"{settings.Value.ClientBaseUrl}/auth/register/complete?token={Uri.EscapeDataString(verificationToken)}";
 
 	/// <summary>
 	/// Sends an email with the specified parameters.
 	/// </summary>
-	/// <param name="to">Recipient email address.</param>
-	/// <param name="subject">Email subject.</param>
-	/// <param name="htmlBody">HTML email body.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <param name="to">
+	/// Recipient email address.
+	/// </param>
+	/// <param name="subject">
+	/// Email subject.
+	/// </param>
+	/// <param name="htmlBody">
+	/// HTML email body.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
 	/// <exception cref="InvalidOperationException">Thrown when email daily limit is exceeded.</exception>
 	private async Task SendEmailAsync(
 		string to,

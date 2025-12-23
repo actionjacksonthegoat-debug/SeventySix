@@ -15,10 +15,18 @@ public static class CreateClientLogBatchCommandHandler
 	/// <summary>
 	/// Handles the request to create multiple client log entries.
 	/// </summary>
-	/// <param name="requests">The array of client log creation requests.</param>
-	/// <param name="repository">The log repository for data access.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>A task representing the asynchronous operation.</returns>
+	/// <param name="requests">
+	/// The array of client log creation requests.
+	/// </param>
+	/// <param name="repository">
+	/// The log repository for data access.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
 	public static async Task HandleAsync(
 		CreateLogRequest[] requests,
 		ILogRepository repository,

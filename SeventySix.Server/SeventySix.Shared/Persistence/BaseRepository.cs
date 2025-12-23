@@ -73,11 +73,21 @@ public abstract class BaseRepository<TEntity, TContext>(
 	/// <summary>
 	/// Executes a repository operation with consistent error handling and logging.
 	/// </summary>
-	/// <typeparam name="T">The return type of the operation.</typeparam>
-	/// <param name="operation">The async operation to execute.</param>
-	/// <param name="operationName">The name of the operation for logging.</param>
-	/// <param name="entityIdentifier">A string identifying the entity for logging.</param>
-	/// <returns>The result of the operation.</returns>
+	/// <typeparam name="T">
+	/// The return type of the operation.
+	/// </typeparam>
+	/// <param name="operation">
+	/// The async operation to execute.
+	/// </param>
+	/// <param name="operationName">
+	/// The name of the operation for logging.
+	/// </param>
+	/// <param name="entityIdentifier">
+	/// A string identifying the entity for logging.
+	/// </param>
+	/// <returns>
+	/// The result of the operation.
+	/// </returns>
 	/// <exception cref="DbUpdateConcurrencyException">Rethrown after logging.</exception>
 	/// <exception cref="DbUpdateException">Rethrown after logging.</exception>
 	/// <exception cref="Exception">Rethrown after logging.</exception>
@@ -126,9 +136,15 @@ public abstract class BaseRepository<TEntity, TContext>(
 	/// <summary>
 	/// Creates a new entity in the database.
 	/// </summary>
-	/// <param name="entity">The entity to create.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The created entity.</returns>
+	/// <param name="entity">
+	/// The entity to create.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The created entity.
+	/// </returns>
 	/// <exception cref="DbUpdateException">If a database constraint is violated.</exception>
 	/// <exception cref="Exception">If an unexpected error occurs.</exception>
 	/// <remarks>
@@ -155,9 +171,15 @@ public abstract class BaseRepository<TEntity, TContext>(
 	/// <summary>
 	/// Updates an existing entity in the database.
 	/// </summary>
-	/// <param name="entity">The entity to update.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>The updated entity.</returns>
+	/// <param name="entity">
+	/// The entity to update.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The updated entity.
+	/// </returns>
 	/// <exception cref="DbUpdateConcurrencyException">If a concurrency conflict occurs.</exception>
 	/// <exception cref="DbUpdateException">If a database constraint is violated.</exception>
 	/// <exception cref="Exception">If an unexpected error occurs.</exception>
@@ -208,8 +230,12 @@ public abstract class BaseRepository<TEntity, TContext>(
 	/// <summary>
 	/// Gets a string identifier for an entity for logging purposes.
 	/// </summary>
-	/// <param name="entity">The entity to identify.</param>
-	/// <returns>A string describing the entity.</returns>
+	/// <param name="entity">
+	/// The entity to identify.
+	/// </param>
+	/// <returns>
+	/// A string describing the entity.
+	/// </returns>
 	/// <remarks>
 	/// Derived classes must implement this to provide meaningful entity identification
 	/// in error logs. Example: "Id=123, Username=john.doe"

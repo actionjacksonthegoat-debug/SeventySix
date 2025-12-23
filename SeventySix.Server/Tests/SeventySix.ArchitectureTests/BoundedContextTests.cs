@@ -145,8 +145,12 @@ public class BoundedContextTests
 	/// <summary>
 	/// Checks if a type inherits from DbContext (directly or indirectly).
 	/// </summary>
-	/// <param name="type">The type to check.</param>
-	/// <returns>True if the type inherits from DbContext.</returns>
+	/// <param name="type">
+	/// The type to check.
+	/// </param>
+	/// <returns>
+	/// True if the type inherits from DbContext.
+	/// </returns>
 	private static bool InheritsFromDbContext(Type type)
 	{
 		Type? baseType = type.BaseType;

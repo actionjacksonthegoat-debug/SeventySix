@@ -25,8 +25,12 @@ public class IdentityDbContextFactory
 	/// <summary>
 	/// Creates a new instance of IdentityDbContext for design-time operations.
 	/// </summary>
-	/// <param name="args">Arguments passed from EF Core tools.</param>
-	/// <returns>A configured IdentityDbContext instance.</returns>
+	/// <param name="args">
+	/// Arguments passed from EF Core tools.
+	/// </param>
+	/// <returns>
+	/// A configured IdentityDbContext instance.
+	/// </returns>
 	public IdentityDbContext CreateDbContext(string[] args)
 	{
 		DbContextOptionsBuilder<IdentityDbContext> optionsBuilder = new();

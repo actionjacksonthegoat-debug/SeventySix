@@ -122,8 +122,12 @@ public class PrimaryConstructorTests
 	/// <summary>
 	/// Determines if a class should be excluded from primary constructor enforcement.
 	/// </summary>
-	/// <param name="type">The type to evaluate.</param>
-	/// <returns>True if the class should be excluded from the test.</returns>
+	/// <param name="type">
+	/// The type to evaluate.
+	/// </param>
+	/// <returns>
+	/// True if the class should be excluded from the test.
+	/// </returns>
 	private static bool ShouldExcludeClass(Type type)
 	{
 		// Exclude DTOs, Requests, Responses (data transfer objects - no constructor logic)

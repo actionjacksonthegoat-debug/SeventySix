@@ -21,7 +21,9 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 	/// <summary>
 	/// Configures the entity mapping for UserRole.
 	/// </summary>
-	/// <param name="builder">The builder to be used to configure the entity type.</param>
+	/// <param name="builder">
+	/// The builder to be used to configure the entity type.
+	/// </param>
 	public void Configure(EntityTypeBuilder<UserRole> builder)
 	{
 		ArgumentNullException.ThrowIfNull(builder);

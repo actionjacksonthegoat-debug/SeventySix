@@ -15,8 +15,12 @@ public static class ValidationExtensions
 	/// <summary>
 	/// Converts validation errors to single error message string.
 	/// </summary>
-	/// <param name="result">The validation result containing errors.</param>
-	/// <returns>Space-separated error messages from all validation failures.</returns>
+	/// <param name="result">
+	/// The validation result containing errors.
+	/// </param>
+	/// <returns>
+	/// Space-separated error messages from all validation failures.
+	/// </returns>
 	/// <example>
 	/// <code>
 	/// ValidationResult result = await validator.ValidateAsync(request);

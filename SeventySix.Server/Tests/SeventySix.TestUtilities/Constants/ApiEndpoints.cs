@@ -52,9 +52,15 @@ public static class ApiEndpoints
 		/// <summary>
 		/// Builds GitHub callback URL with query parameters.
 		/// </summary>
-		/// <param name="code">OAuth code.</param>
-		/// <param name="state">OAuth state.</param>
-		/// <returns>Full callback URL with query string.</returns>
+		/// <param name="code">
+		/// OAuth code.
+		/// </param>
+		/// <param name="state">
+		/// OAuth state.
+		/// </param>
+		/// <returns>
+		/// Full callback URL with query string.
+		/// </returns>
 		public static string GitHubCallbackWithParams(
 			string code,
 			string state) => $"{GitHubCallback}?code={code}&state={state}";
@@ -84,30 +90,46 @@ public static class ApiEndpoints
 		/// <summary>
 		/// Gets user by ID endpoint.
 		/// </summary>
-		/// <param name="id">User ID.</param>
-		/// <returns>Endpoint URL.</returns>
+		/// <param name="id">
+		/// User ID.
+		/// </param>
+		/// <returns>
+		/// Endpoint URL.
+		/// </returns>
 		public static string ById(int id) => $"{Base}/{id}";
 
 		/// <summary>
 		/// Gets user roles endpoint.
 		/// </summary>
-		/// <param name="id">User ID.</param>
-		/// <returns>Endpoint URL.</returns>
+		/// <param name="id">
+		/// User ID.
+		/// </param>
+		/// <returns>
+		/// Endpoint URL.
+		/// </returns>
 		public static string Roles(int id) => $"{Base}/{id}/roles";
 
 		/// <summary>
 		/// Gets approve permission request endpoint.
 		/// </summary>
-		/// <param name="requestId">Permission request ID.</param>
-		/// <returns>Endpoint URL.</returns>
+		/// <param name="requestId">
+		/// Permission request ID.
+		/// </param>
+		/// <returns>
+		/// Endpoint URL.
+		/// </returns>
 		public static string ApprovePermission(int requestId) =>
 			$"{PermissionRequests}/{requestId}/approve";
 
 		/// <summary>
 		/// Gets deny permission request endpoint.
 		/// </summary>
-		/// <param name="requestId">Permission request ID.</param>
-		/// <returns>Endpoint URL.</returns>
+		/// <param name="requestId">
+		/// Permission request ID.
+		/// </param>
+		/// <returns>
+		/// Endpoint URL.
+		/// </returns>
 		public static string DenyPermission(int requestId) =>
 			$"{PermissionRequests}/{requestId}/deny";
 	}
@@ -133,15 +155,23 @@ public static class ApiEndpoints
 		/// <summary>
 		/// Gets log by ID endpoint.
 		/// </summary>
-		/// <param name="id">Log ID.</param>
-		/// <returns>Endpoint URL.</returns>
+		/// <param name="id">
+		/// Log ID.
+		/// </param>
+		/// <returns>
+		/// Endpoint URL.
+		/// </returns>
 		public static string ById(int id) => $"{Base}/{id}";
 
 		/// <summary>
 		/// Gets cleanup endpoint with cutoff date.
 		/// </summary>
-		/// <param name="cutoffDate">Cutoff date.</param>
-		/// <returns>Endpoint URL with query string.</returns>
+		/// <param name="cutoffDate">
+		/// Cutoff date.
+		/// </param>
+		/// <returns>
+		/// Endpoint URL with query string.
+		/// </returns>
 		public static string CleanupWithDate(DateTime cutoffDate) =>
 			$"{Cleanup}?cutoffDate={cutoffDate:O}";
 	}

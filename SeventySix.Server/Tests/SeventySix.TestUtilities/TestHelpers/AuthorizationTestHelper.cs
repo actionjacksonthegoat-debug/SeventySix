@@ -24,8 +24,12 @@ public class AuthorizationTestHelper
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AuthorizationTestHelper"/> class.
 	/// </summary>
-	/// <param name="client">The HTTP client to use for requests.</param>
-	/// <param name="services">The service provider to resolve dependencies.</param>
+	/// <param name="client">
+	/// The HTTP client to use for requests.
+	/// </param>
+	/// <param name="services">
+	/// The service provider to resolve dependencies.
+	/// </param>
 	public AuthorizationTestHelper(HttpClient client, IServiceProvider services)
 	{
 		Client = client;
@@ -35,9 +39,15 @@ public class AuthorizationTestHelper
 	/// <summary>
 	/// Asserts that the endpoint returns 401 Unauthorized without authentication.
 	/// </summary>
-	/// <param name="method">The HTTP method.</param>
-	/// <param name="endpoint">The endpoint URL.</param>
-	/// <param name="content">Optional request content for POST/PUT.</param>
+	/// <param name="method">
+	/// The HTTP method.
+	/// </param>
+	/// <param name="endpoint">
+	/// The endpoint URL.
+	/// </param>
+	/// <param name="content">
+	/// Optional request content for POST/PUT.
+	/// </param>
 	public async Task AssertUnauthorizedAsync(
 		HttpMethod method,
 		string endpoint,
@@ -58,10 +68,18 @@ public class AuthorizationTestHelper
 	/// <summary>
 	/// Asserts that the endpoint returns 403 Forbidden for the specified role.
 	/// </summary>
-	/// <param name="role">The role that should be forbidden.</param>
-	/// <param name="method">The HTTP method.</param>
-	/// <param name="endpoint">The endpoint URL.</param>
-	/// <param name="content">Optional request content for POST/PUT.</param>
+	/// <param name="role">
+	/// The role that should be forbidden.
+	/// </param>
+	/// <param name="method">
+	/// The HTTP method.
+	/// </param>
+	/// <param name="endpoint">
+	/// The endpoint URL.
+	/// </param>
+	/// <param name="content">
+	/// Optional request content for POST/PUT.
+	/// </param>
 	public async Task AssertForbiddenForRoleAsync(
 		string role,
 		HttpMethod method,
@@ -83,10 +101,18 @@ public class AuthorizationTestHelper
 	/// Asserts that the endpoint returns a successful status code for the specified role.
 	/// Accepts 200, 201, or 204 as success.
 	/// </summary>
-	/// <param name="role">The role that should have access.</param>
-	/// <param name="method">The HTTP method.</param>
-	/// <param name="endpoint">The endpoint URL.</param>
-	/// <param name="content">Optional request content for POST/PUT.</param>
+	/// <param name="role">
+	/// The role that should have access.
+	/// </param>
+	/// <param name="method">
+	/// The HTTP method.
+	/// </param>
+	/// <param name="endpoint">
+	/// The endpoint URL.
+	/// </param>
+	/// <param name="content">
+	/// Optional request content for POST/PUT.
+	/// </param>
 	public async Task AssertAuthorizedForRoleAsync(
 		string role,
 		HttpMethod method,
@@ -110,11 +136,21 @@ public class AuthorizationTestHelper
 	/// <summary>
 	/// Asserts that the endpoint returns the expected status code for the specified role.
 	/// </summary>
-	/// <param name="role">The role to authenticate as.</param>
-	/// <param name="method">The HTTP method.</param>
-	/// <param name="endpoint">The endpoint URL.</param>
-	/// <param name="expectedStatusCode">The expected HTTP status code.</param>
-	/// <param name="content">Optional request content for POST/PUT.</param>
+	/// <param name="role">
+	/// The role to authenticate as.
+	/// </param>
+	/// <param name="method">
+	/// The HTTP method.
+	/// </param>
+	/// <param name="endpoint">
+	/// The endpoint URL.
+	/// </param>
+	/// <param name="expectedStatusCode">
+	/// The expected HTTP status code.
+	/// </param>
+	/// <param name="content">
+	/// Optional request content for POST/PUT.
+	/// </param>
 	public async Task AssertStatusCodeForRoleAsync(
 		string role,
 		HttpMethod method,
@@ -136,7 +172,9 @@ public class AuthorizationTestHelper
 	/// <summary>
 	/// Creates a user with the specified role and authenticates the client.
 	/// </summary>
-	/// <param name="role">The role to assign to the user.</param>
+	/// <param name="role">
+	/// The role to assign to the user.
+	/// </param>
 	private async Task AuthenticateAsRoleAsync(string role)
 	{
 		string uniqueSuffix =
@@ -165,8 +203,12 @@ public class AuthorizationTestHelper
 	/// <summary>
 	/// Logs in and returns the access token.
 	/// </summary>
-	/// <param name="username">The username to log in with.</param>
-	/// <returns>The JWT access token.</returns>
+	/// <param name="username">
+	/// The username to log in with.
+	/// </param>
+	/// <returns>
+	/// The JWT access token.
+	/// </returns>
 	private async Task<string> LoginAndGetTokenAsync(string username)
 	{
 		LoginRequest request =

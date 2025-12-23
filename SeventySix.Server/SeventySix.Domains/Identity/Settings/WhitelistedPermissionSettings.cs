@@ -23,9 +23,15 @@ public record WhitelistedPermissionSettings
 	/// <summary>
 	/// Checks if an email/role combination is whitelisted for auto-approval.
 	/// </summary>
-	/// <param name="email">User email address.</param>
-	/// <param name="role">Role being requested.</param>
-	/// <returns>True if the combination is whitelisted.</returns>
+	/// <param name="email">
+	/// User email address.
+	/// </param>
+	/// <param name="role">
+	/// Role being requested.
+	/// </param>
+	/// <returns>
+	/// True if the combination is whitelisted.
+	/// </returns>
 	public bool IsWhitelisted(string email, string role)
 	{
 		return Grants.Any(grant =>

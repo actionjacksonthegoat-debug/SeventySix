@@ -25,8 +25,12 @@ public class ApiTrackingDbContextFactory
 	/// <summary>
 	/// Creates a new instance of ApiTrackingDbContext for design-time operations.
 	/// </summary>
-	/// <param name="args">Arguments passed from EF Core tools.</param>
-	/// <returns>A configured ApiTrackingDbContext instance.</returns>
+	/// <param name="args">
+	/// Arguments passed from EF Core tools.
+	/// </param>
+	/// <returns>
+	/// A configured ApiTrackingDbContext instance.
+	/// </returns>
 	public ApiTrackingDbContext CreateDbContext(string[] args)
 	{
 		DbContextOptionsBuilder<ApiTrackingDbContext> optionsBuilder = new();

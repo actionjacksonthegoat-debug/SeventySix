@@ -14,7 +14,9 @@ public static class AddUserRoleCommandHandler
 	/// <summary>
 	/// Handles the AddUserRoleCommand request.
 	/// </summary>
-	/// <returns>True if role was added, false if user already has the role.</returns>
+	/// <returns>
+	/// True if role was added, false if user already has the role.
+	/// </returns>
 	/// <exception cref="ArgumentException">Thrown when role is invalid.</exception>
 	public static async Task<bool> HandleAsync(
 		AddUserRoleCommand command,

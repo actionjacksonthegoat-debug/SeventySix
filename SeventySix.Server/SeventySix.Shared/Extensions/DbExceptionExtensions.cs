@@ -14,8 +14,12 @@ public static class DbExceptionExtensions
 	/// <summary>
 	/// Determines if a DbUpdateException is caused by a unique constraint violation.
 	/// </summary>
-	/// <param name="exception">The exception to check.</param>
-	/// <returns>True if the exception indicates a unique constraint violation (PostgreSQL error code 23505).</returns>
+	/// <param name="exception">
+	/// The exception to check.
+	/// </param>
+	/// <returns>
+	/// True if the exception indicates a unique constraint violation (PostgreSQL error code 23505).
+	/// </returns>
 	/// <remarks>
 	/// PostgreSQL error codes:
 	/// - 23505: Unique violation (duplicate key)

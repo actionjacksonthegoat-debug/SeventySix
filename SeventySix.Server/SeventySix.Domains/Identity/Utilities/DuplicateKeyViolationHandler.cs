@@ -32,11 +32,21 @@ public static class DuplicateKeyViolationHandler
 	/// Handles duplicate key violation and returns AuthResult.Failed.
 	/// Use for authentication/registration flows.
 	/// </summary>
-	/// <param name="exception">The database update exception.</param>
-	/// <param name="username">The username attempted (for logging).</param>
-	/// <param name="email">The email attempted (for logging).</param>
-	/// <param name="logger">Logger instance.</param>
-	/// <returns>AuthResult.Failed with appropriate error message and code.</returns>
+	/// <param name="exception">
+	/// The database update exception.
+	/// </param>
+	/// <param name="username">
+	/// The username attempted (for logging).
+	/// </param>
+	/// <param name="email">
+	/// The email attempted (for logging).
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance.
+	/// </param>
+	/// <returns>
+	/// AuthResult.Failed with appropriate error message and code.
+	/// </returns>
 	public static AuthResult HandleAsAuthResult(
 		DbUpdateException exception,
 		string username,
@@ -84,10 +94,18 @@ public static class DuplicateKeyViolationHandler
 	/// Handles duplicate key violation and throws DuplicateUserException.
 	/// Use for admin/user management flows.
 	/// </summary>
-	/// <param name="exception">The database update exception.</param>
-	/// <param name="username">The username attempted (for logging and exception message).</param>
-	/// <param name="email">The email attempted (for logging and exception message).</param>
-	/// <param name="logger">Logger instance.</param>
+	/// <param name="exception">
+	/// The database update exception.
+	/// </param>
+	/// <param name="username">
+	/// The username attempted (for logging and exception message).
+	/// </param>
+	/// <param name="email">
+	/// The email attempted (for logging and exception message).
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance.
+	/// </param>
 	/// <exception cref="DuplicateUserException">Always thrown with appropriate message.</exception>
 	public static void HandleAsException(
 		DbUpdateException exception,
@@ -135,8 +153,12 @@ public static class DuplicateKeyViolationHandler
 	/// Extracts the constraint name from PostgreSQL exception.
 	/// Uses PostgresException.ConstraintName for reliable detection.
 	/// </summary>
-	/// <param name="exception">The database update exception.</param>
-	/// <returns>The constraint name, or null if not a PostgreSQL constraint violation.</returns>
+	/// <param name="exception">
+	/// The database update exception.
+	/// </param>
+	/// <returns>
+	/// The constraint name, or null if not a PostgreSQL constraint violation.
+	/// </returns>
 	private static string? GetConstraintName(DbUpdateException exception)
 	{
 		if (exception.InnerException is PostgresException postgresException)

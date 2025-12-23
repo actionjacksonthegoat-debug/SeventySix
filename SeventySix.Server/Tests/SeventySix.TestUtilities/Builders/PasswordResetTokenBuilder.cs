@@ -40,7 +40,9 @@ public class PasswordResetTokenBuilder
 	/// <summary>
 	/// Initializes a new instance of the <see cref="PasswordResetTokenBuilder"/> class.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	/// <param name="timeProvider">
+	/// The time provider for default timestamps.
+	/// </param>
 	public PasswordResetTokenBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;
@@ -53,8 +55,12 @@ public class PasswordResetTokenBuilder
 	/// <summary>
 	/// Sets the user ID this token belongs to.
 	/// </summary>
-	/// <param name="userId">The user ID.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="userId">
+	/// The user ID.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public PasswordResetTokenBuilder WithUserId(int userId)
 	{
 		UserId = userId;
@@ -64,8 +70,12 @@ public class PasswordResetTokenBuilder
 	/// <summary>
 	/// Sets the token hash value.
 	/// </summary>
-	/// <param name="tokenHash">The SHA256 hash of the raw token.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="tokenHash">
+	/// The SHA256 hash of the raw token.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public PasswordResetTokenBuilder WithTokenHash(string tokenHash)
 	{
 		TokenHash = tokenHash;
@@ -75,8 +85,12 @@ public class PasswordResetTokenBuilder
 	/// <summary>
 	/// Sets the expiration date.
 	/// </summary>
-	/// <param name="expiresAt">The expiration date.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="expiresAt">
+	/// The expiration date.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public PasswordResetTokenBuilder WithExpiresAt(DateTime expiresAt)
 	{
 		ExpiresAt = expiresAt;
@@ -86,7 +100,9 @@ public class PasswordResetTokenBuilder
 	/// <summary>
 	/// Sets the token as expired.
 	/// </summary>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public PasswordResetTokenBuilder AsExpired()
 	{
 		ExpiresAt =
@@ -97,8 +113,12 @@ public class PasswordResetTokenBuilder
 	/// <summary>
 	/// Sets the creation date.
 	/// </summary>
-	/// <param name="createDate">The creation date.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="createDate">
+	/// The creation date.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public PasswordResetTokenBuilder WithCreateDate(DateTime createDate)
 	{
 		CreateDate = createDate;
@@ -108,8 +128,12 @@ public class PasswordResetTokenBuilder
 	/// <summary>
 	/// Sets whether the token has been used.
 	/// </summary>
-	/// <param name="isUsed">Whether the token has been used.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="isUsed">
+	/// Whether the token has been used.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public PasswordResetTokenBuilder WithIsUsed(bool isUsed)
 	{
 		IsUsed = isUsed;
@@ -119,7 +143,9 @@ public class PasswordResetTokenBuilder
 	/// <summary>
 	/// Marks the token as already used.
 	/// </summary>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public PasswordResetTokenBuilder AsUsed()
 	{
 		IsUsed = true;
@@ -129,7 +155,9 @@ public class PasswordResetTokenBuilder
 	/// <summary>
 	/// Builds the PasswordResetToken entity.
 	/// </summary>
-	/// <returns>A new PasswordResetToken instance.</returns>
+	/// <returns>
+	/// A new PasswordResetToken instance.
+	/// </returns>
 	public PasswordResetToken Build() =>
 		new()
 		{

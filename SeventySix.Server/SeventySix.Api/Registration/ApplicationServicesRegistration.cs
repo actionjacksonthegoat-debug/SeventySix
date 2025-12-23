@@ -16,9 +16,15 @@ public static class ApplicationServicesRegistration
 	/// Adds application-specific services to the service collection.
 	/// Includes configuration options, validators, and memory cache.
 	/// </summary>
-	/// <param name="services">The service collection.</param>
-	/// <param name="configuration">The application configuration.</param>
-	/// <returns>The service collection for chaining.</returns>
+	/// <param name="services">
+	/// The service collection.
+	/// </param>
+	/// <param name="configuration">
+	/// The application configuration.
+	/// </param>
+	/// <returns>
+	/// The service collection for chaining.
+	/// </returns>
 	public static IServiceCollection AddApplicationServices(
 		this IServiceCollection services,
 		IConfiguration configuration)

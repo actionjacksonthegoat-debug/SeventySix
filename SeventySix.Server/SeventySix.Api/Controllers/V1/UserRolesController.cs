@@ -15,15 +15,23 @@ namespace SeventySix.Api.Controllers;
 /// User roles API endpoints.
 /// Provides RESTful operations for managing user role assignments.
 /// </summary>
-/// <param name="messageBus">The Wolverine message bus for dispatching commands and queries.</param>
+/// <param name="messageBus">
+/// The Wolverine message bus for dispatching commands and queries.
+/// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/users")]
 public class UserRolesController(IMessageBus messageBus) : ControllerBase
 {
 	/// <summary>Gets roles for a user.</summary>
-	/// <param name="id">The user ID.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>A list of role names.</returns>
+	/// <param name="id">
+	/// The user ID.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// A list of role names.
+	/// </returns>
 	/// <response code="200">Returns the list of roles.</response>
 	/// <response code="404">If the user is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>
@@ -55,10 +63,18 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 	}
 
 	/// <summary>Adds a role to a user.</summary>
-	/// <param name="id">The user ID.</param>
-	/// <param name="role">The role name to add.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>No content if successful; 404 if user not found; 409 if user already has role.</returns>
+	/// <param name="id">
+	/// The user ID.
+	/// </param>
+	/// <param name="role">
+	/// The role name to add.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// No content if successful; 404 if user not found; 409 if user already has role.
+	/// </returns>
 	/// <response code="204">Role added successfully.</response>
 	/// <response code="400">If the role name is invalid.</response>
 	/// <response code="404">If the user is not found.</response>
@@ -107,10 +123,18 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 	}
 
 	/// <summary>Removes a role from a user.</summary>
-	/// <param name="id">The user ID.</param>
-	/// <param name="role">The role name to remove.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>No content if successful; 404 if user or role not found.</returns>
+	/// <param name="id">
+	/// The user ID.
+	/// </param>
+	/// <param name="role">
+	/// The role name to remove.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// No content if successful; 404 if user or role not found.
+	/// </returns>
 	/// <response code="204">Role removed successfully.</response>
 	/// <response code="404">If the user or role is not found.</response>
 	/// <response code="500">If an unexpected error occurs.</response>

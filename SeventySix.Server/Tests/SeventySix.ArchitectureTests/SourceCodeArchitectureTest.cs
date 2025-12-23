@@ -26,9 +26,15 @@ public abstract class SourceCodeArchitectureTest
 	/// Gets source files matching the specified pattern.
 	/// Excludes bin, obj, and test directories.
 	/// </summary>
-	/// <param name="pattern">File search pattern (e.g., "*.cs").</param>
-	/// <param name="excludePath">Additional path to exclude (optional).</param>
-	/// <returns>Enumerable of matching file paths.</returns>
+	/// <param name="pattern">
+	/// File search pattern (e.g., "*.cs").
+	/// </param>
+	/// <param name="excludePath">
+	/// Additional path to exclude (optional).
+	/// </param>
+	/// <returns>
+	/// Enumerable of matching file paths.
+	/// </returns>
 	protected static IEnumerable<string> GetSourceFiles(
 		string pattern,
 		string excludePath = "")
@@ -51,16 +57,24 @@ public abstract class SourceCodeArchitectureTest
 	/// <summary>
 	/// Reads the content of a file.
 	/// </summary>
-	/// <param name="path">File path to read.</param>
-	/// <returns>File content as string.</returns>
+	/// <param name="path">
+	/// File path to read.
+	/// </param>
+	/// <returns>
+	/// File content as string.
+	/// </returns>
 	protected static string ReadFileContent(string path) =>
 		File.ReadAllText(path);
 
 	/// <summary>
 	/// Gets relative path from solution root for cleaner error messages.
 	/// </summary>
-	/// <param name="fullPath">Full file path.</param>
-	/// <returns>Relative path from solution root.</returns>
+	/// <param name="fullPath">
+	/// Full file path.
+	/// </param>
+	/// <returns>
+	/// Relative path from solution root.
+	/// </returns>
 	protected static string GetRelativePath(string fullPath) =>
 		Path.GetRelativePath(SolutionRoot, fullPath);
 
@@ -68,7 +82,9 @@ public abstract class SourceCodeArchitectureTest
 	/// Gets all C# source files including tests.
 	/// Excludes bin, obj, and Migrations folders.
 	/// </summary>
-	/// <returns>Enumerable of all .cs file paths.</returns>
+	/// <returns>
+	/// Enumerable of all .cs file paths.
+	/// </returns>
 	protected static IEnumerable<string> GetAllSourceFiles()
 	{
 		string[] allFiles =

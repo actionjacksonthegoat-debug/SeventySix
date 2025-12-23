@@ -12,11 +12,21 @@ public static class ApprovePermissionRequestCommandHandler
 	/// <summary>
 	/// Handles the approval of a permission request.
 	/// </summary>
-	/// <param name="command">The approve command.</param>
-	/// <param name="repository">The permission request repository.</param>
-	/// <param name="userCommandRepository">The user command repository.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>True if approved successfully; false if request not found.</returns>
+	/// <param name="command">
+	/// The approve command.
+	/// </param>
+	/// <param name="repository">
+	/// The permission request repository.
+	/// </param>
+	/// <param name="userCommandRepository">
+	/// The user command repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// True if approved successfully; false if request not found.
+	/// </returns>
 	public static async Task<bool> HandleAsync(
 		ApprovePermissionRequestCommand command,
 		IPermissionRequestRepository repository,

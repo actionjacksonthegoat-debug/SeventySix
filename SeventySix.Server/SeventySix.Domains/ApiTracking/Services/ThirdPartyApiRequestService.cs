@@ -15,7 +15,9 @@ namespace SeventySix.ApiTracking;
 /// <remarks>
 /// Initializes a new instance of the <see cref="ThirdPartyApiRequestService"/> class.
 /// </remarks>
-/// <param name="repository">The third-party API request repository.</param>
+/// <param name="repository">
+/// The third-party API request repository.
+/// </param>
 public class ThirdPartyApiRequestService(
 	IThirdPartyApiRequestRepository repository) : IThirdPartyApiRequestService
 {

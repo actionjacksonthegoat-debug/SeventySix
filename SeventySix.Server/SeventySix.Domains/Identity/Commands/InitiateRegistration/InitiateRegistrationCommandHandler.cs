@@ -16,13 +16,27 @@ public static class InitiateRegistrationCommandHandler
 	/// <summary>
 	/// Handles the registration initiation request.
 	/// </summary>
-	/// <param name="request">The initiate registration request.</param>
-	/// <param name="userQueryRepository">User query repository.</param>
-	/// <param name="emailVerificationTokenRepository">Email verification token repository.</param>
-	/// <param name="emailService">Email service.</param>
-	/// <param name="timeProvider">Time provider.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>A task representing the async operation.</returns>
+	/// <param name="request">
+	/// The initiate registration request.
+	/// </param>
+	/// <param name="userQueryRepository">
+	/// User query repository.
+	/// </param>
+	/// <param name="emailVerificationTokenRepository">
+	/// Email verification token repository.
+	/// </param>
+	/// <param name="emailService">
+	/// Email service.
+	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
 	/// <remarks>
 	/// Always succeeds to prevent email enumeration.
 	/// </remarks>

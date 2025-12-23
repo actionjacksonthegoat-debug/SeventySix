@@ -54,7 +54,9 @@ public class DuplicateUserException : DomainException
 	/// Initializes a new instance of the <see cref="DuplicateUserException"/> class
 	/// with a specific error message.
 	/// </summary>
-	/// <param name="message">A custom error message describing the duplicate constraint.</param>
+	/// <param name="message">
+	/// A custom error message describing the duplicate constraint.
+	/// </param>
 	/// <remarks>
 	/// Preferred constructor for most cases as it provides specific, actionable error information.
 	/// Example messages:
@@ -69,8 +71,12 @@ public class DuplicateUserException : DomainException
 	/// Initializes a new instance of the <see cref="DuplicateUserException"/> class
 	/// with a specific error message and inner exception.
 	/// </summary>
-	/// <param name="message">A custom error message describing the duplicate constraint.</param>
-	/// <param name="innerException">The exception that caused this duplicate user exception.</param>
+	/// <param name="message">
+	/// A custom error message describing the duplicate constraint.
+	/// </param>
+	/// <param name="innerException">
+	/// The exception that caused this duplicate user exception.
+	/// </param>
 	/// <remarks>
 	/// Use this constructor when wrapping database constraint violations or other lower-level exceptions.
 	/// Preserves the full exception stack for logging and debugging.

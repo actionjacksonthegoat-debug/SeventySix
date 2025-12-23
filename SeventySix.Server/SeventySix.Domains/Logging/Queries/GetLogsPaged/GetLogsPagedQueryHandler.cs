@@ -14,10 +14,18 @@ public static class GetLogsPagedQueryHandler
 	/// <summary>
 	/// Handles the query to retrieve paginated logs with optional filtering.
 	/// </summary>
-	/// <param name="query">The query containing filter and pagination parameters.</param>
-	/// <param name="repository">The log repository for data access.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>A paged result containing log DTOs.</returns>
+	/// <param name="query">
+	/// The query containing filter and pagination parameters.
+	/// </param>
+	/// <param name="repository">
+	/// The log repository for data access.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A paged result containing log DTOs.
+	/// </returns>
 	public static async Task<PagedResult<LogDto>> HandleAsync(
 		GetLogsPagedQuery query,
 		ILogRepository repository,

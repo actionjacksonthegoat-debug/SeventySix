@@ -36,7 +36,9 @@ public class EmailVerificationTokenBuilder
 	/// <summary>
 	/// Initializes a new instance of the <see cref="EmailVerificationTokenBuilder"/> class.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	/// <param name="timeProvider">
+	/// The time provider for default timestamps.
+	/// </param>
 	public EmailVerificationTokenBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;
@@ -49,8 +51,12 @@ public class EmailVerificationTokenBuilder
 	/// <summary>
 	/// Sets the email address being verified.
 	/// </summary>
-	/// <param name="email">The email address.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="email">
+	/// The email address.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public EmailVerificationTokenBuilder WithEmail(string email)
 	{
 		Email = email;
@@ -60,8 +66,12 @@ public class EmailVerificationTokenBuilder
 	/// <summary>
 	/// Sets the token hash value.
 	/// </summary>
-	/// <param name="tokenHash">The SHA256 hash of the raw token.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="tokenHash">
+	/// The SHA256 hash of the raw token.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public EmailVerificationTokenBuilder WithTokenHash(string tokenHash)
 	{
 		TokenHash = tokenHash;
@@ -71,8 +81,12 @@ public class EmailVerificationTokenBuilder
 	/// <summary>
 	/// Sets the expiration date.
 	/// </summary>
-	/// <param name="expiresAt">The expiration date.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="expiresAt">
+	/// The expiration date.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public EmailVerificationTokenBuilder WithExpiresAt(DateTime expiresAt)
 	{
 		ExpiresAt = expiresAt;
@@ -82,7 +96,9 @@ public class EmailVerificationTokenBuilder
 	/// <summary>
 	/// Sets the token as expired.
 	/// </summary>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public EmailVerificationTokenBuilder AsExpired()
 	{
 		ExpiresAt =
@@ -93,8 +109,12 @@ public class EmailVerificationTokenBuilder
 	/// <summary>
 	/// Sets the creation date.
 	/// </summary>
-	/// <param name="createDate">The creation date.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="createDate">
+	/// The creation date.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public EmailVerificationTokenBuilder WithCreateDate(DateTime createDate)
 	{
 		CreateDate = createDate;
@@ -104,8 +124,12 @@ public class EmailVerificationTokenBuilder
 	/// <summary>
 	/// Sets whether the token has been used.
 	/// </summary>
-	/// <param name="isUsed">Whether the token has been used.</param>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <param name="isUsed">
+	/// Whether the token has been used.
+	/// </param>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public EmailVerificationTokenBuilder WithIsUsed(bool isUsed)
 	{
 		IsUsed = isUsed;
@@ -115,7 +139,9 @@ public class EmailVerificationTokenBuilder
 	/// <summary>
 	/// Marks the token as already used.
 	/// </summary>
-	/// <returns>The builder instance for method chaining.</returns>
+	/// <returns>
+	/// The builder instance for method chaining.
+	/// </returns>
 	public EmailVerificationTokenBuilder AsUsed()
 	{
 		IsUsed = true;
@@ -125,7 +151,9 @@ public class EmailVerificationTokenBuilder
 	/// <summary>
 	/// Builds the EmailVerificationToken entity.
 	/// </summary>
-	/// <returns>A new EmailVerificationToken instance.</returns>
+	/// <returns>
+	/// A new EmailVerificationToken instance.
+	/// </returns>
 	public EmailVerificationToken Build() =>
 		new()
 		{

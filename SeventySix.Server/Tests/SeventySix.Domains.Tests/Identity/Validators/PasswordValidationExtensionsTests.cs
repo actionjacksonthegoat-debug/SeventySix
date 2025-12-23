@@ -200,7 +200,9 @@ public class PasswordValidationExtensionsTests
 	/// <summary>
 	/// Test request record for password validation.
 	/// </summary>
-	/// <param name="Password">The password to validate.</param>
+	/// <param name="Password">
+	/// The password to validate.
+	/// </param>
 	private sealed record TestPasswordRequest(string Password);
 
 	/// <summary>

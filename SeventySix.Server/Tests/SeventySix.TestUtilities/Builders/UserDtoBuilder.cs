@@ -33,7 +33,9 @@ public class UserDtoBuilder
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserDtoBuilder"/> class.
 	/// </summary>
-	/// <param name="timeProvider">The time provider for default timestamps.</param>
+	/// <param name="timeProvider">
+	/// The time provider for default timestamps.
+	/// </param>
 	public UserDtoBuilder(TimeProvider timeProvider)
 	{
 		TimeProvider = timeProvider;

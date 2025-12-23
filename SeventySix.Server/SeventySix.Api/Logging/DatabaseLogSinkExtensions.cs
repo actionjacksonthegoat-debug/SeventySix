@@ -15,11 +15,21 @@ public static class DatabaseLogSinkExtensions
 	/// <summary>
 	/// Adds the custom database sink to Serilog configuration.
 	/// </summary>
-	/// <param name="loggerConfiguration">The logger configuration.</param>
-	/// <param name="serviceProvider">Service provider for dependency injection.</param>
-	/// <param name="environment">Application environment.</param>
-	/// <param name="machineName">Machine/container name.</param>
-	/// <returns>Logger configuration for method chaining.</returns>
+	/// <param name="loggerConfiguration">
+	/// The logger configuration.
+	/// </param>
+	/// <param name="serviceProvider">
+	/// Service provider for dependency injection.
+	/// </param>
+	/// <param name="environment">
+	/// Application environment.
+	/// </param>
+	/// <param name="machineName">
+	/// Machine/container name.
+	/// </param>
+	/// <returns>
+	/// Logger configuration for method chaining.
+	/// </returns>
 	public static LoggerConfiguration Database(
 		this LoggerSinkConfiguration loggerConfiguration,
 		IServiceProvider serviceProvider,

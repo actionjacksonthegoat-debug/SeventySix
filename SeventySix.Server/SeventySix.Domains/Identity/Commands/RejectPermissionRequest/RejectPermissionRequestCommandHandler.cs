@@ -12,10 +12,18 @@ public static class RejectPermissionRequestCommandHandler
 	/// <summary>
 	/// Handles the rejection of a permission request.
 	/// </summary>
-	/// <param name="command">The reject command.</param>
-	/// <param name="repository">The permission request repository.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>True if rejected successfully; false if request not found.</returns>
+	/// <param name="command">
+	/// The reject command.
+	/// </param>
+	/// <param name="repository">
+	/// The permission request repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// True if rejected successfully; false if request not found.
+	/// </returns>
 	public static async Task<bool> HandleAsync(
 		RejectPermissionRequestCommand command,
 		IPermissionRequestRepository repository,

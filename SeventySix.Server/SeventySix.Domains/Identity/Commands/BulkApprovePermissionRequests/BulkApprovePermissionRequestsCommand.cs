@@ -7,6 +7,8 @@ namespace SeventySix.Identity.Commands.BulkApprovePermissionRequests;
 /// <summary>
 /// Command to approve multiple permission requests in bulk.
 /// </summary>
-/// <param name="RequestIds">The IDs of permission requests to approve.</param>
+/// <param name="RequestIds">
+/// The IDs of permission requests to approve.
+/// </param>
 public sealed record BulkApprovePermissionRequestsCommand(
 	IEnumerable<int> RequestIds);

@@ -30,8 +30,12 @@ public sealed class SharedWebApplicationFactory<TProgram>
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SharedWebApplicationFactory{TProgram}"/> class.
 	/// </summary>
-	/// <param name="connectionString">The PostgreSQL connection string to use for DbContexts.</param>
-	/// <param name="configureAdditional">Optional additional configuration for the web host builder.</param>
+	/// <param name="connectionString">
+	/// The PostgreSQL connection string to use for DbContexts.
+	/// </param>
+	/// <param name="configureAdditional">
+	/// Optional additional configuration for the web host builder.
+	/// </param>
 	public SharedWebApplicationFactory(
 		string connectionString,
 		Action<IWebHostBuilder>? configureAdditional = null)

@@ -128,9 +128,15 @@ public class OAuthService(
 	/// <summary>
 	/// Gets the RoleId for a given role name from SecurityRoles table.
 	/// </summary>
-	/// <param name="roleName">The role name to look up.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>The role ID.</returns>
+	/// <param name="roleName">
+	/// The role name to look up.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The role ID.
+	/// </returns>
 	/// <exception cref="InvalidOperationException">Thrown if role not found.</exception>
 	private async Task<int> GetRoleIdByNameAsync(
 		string roleName,

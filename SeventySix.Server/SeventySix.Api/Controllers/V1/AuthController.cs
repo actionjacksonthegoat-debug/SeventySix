@@ -38,9 +38,15 @@ public class AuthController(
 	/// <summary>
 	/// Authenticates a user with username/email and password.
 	/// </summary>
-	/// <param name="request">Login credentials.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Access token and sets refresh token cookie.</returns>
+	/// <param name="request">
+	/// Login credentials.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Access token and sets refresh token cookie.
+	/// </returns>
 	/// <response code="200">Authentication successful.</response>
 	/// <response code="400">Invalid credentials or validation error.</response>
 	/// <response code="401">Authentication failed.</response>
@@ -104,9 +110,15 @@ public class AuthController(
 	/// <summary>
 	/// Registers a new user account.
 	/// </summary>
-	/// <param name="request">Registration details.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Access token and sets refresh token cookie.</returns>
+	/// <param name="request">
+	/// Registration details.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Access token and sets refresh token cookie.
+	/// </returns>
 	/// <response code="201">Registration successful.</response>
 	/// <response code="400">Validation error or username/email taken.</response>
 	/// <response code="429">Too many registration attempts.</response>
@@ -166,8 +178,12 @@ public class AuthController(
 	/// <summary>
 	/// Refreshes the access token using the refresh token cookie.
 	/// </summary>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>New access token and rotates refresh token cookie.</returns>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// New access token and rotates refresh token cookie.
+	/// </returns>
 	/// <response code="200">Token refresh successful.</response>
 	/// <response code="401">Invalid or expired refresh token.</response>
 	/// <response code="429">Too many refresh attempts.</response>
@@ -239,8 +255,12 @@ public class AuthController(
 	/// <summary>
 	/// Logs out the user by revoking the refresh token.
 	/// </summary>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>No content on success.</returns>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// No content on success.
+	/// </returns>
 	/// <response code="204">Logout successful.</response>
 	[HttpPost("logout")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -266,7 +286,9 @@ public class AuthController(
 	/// <summary>
 	/// Initiates GitHub OAuth login flow.
 	/// </summary>
-	/// <returns>Redirect to GitHub authorization page.</returns>
+	/// <returns>
+	/// Redirect to GitHub authorization page.
+	/// </returns>
 	/// <response code="302">Redirect to GitHub.</response>
 	[HttpGet("github")]
 	[ProducesResponseType(StatusCodes.Status302Found)]
@@ -293,10 +315,18 @@ public class AuthController(
 	/// <summary>
 	/// Handles GitHub OAuth callback.
 	/// </summary>
-	/// <param name="code">Authorization code from GitHub.</param>
-	/// <param name="state">CSRF state parameter.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>HTML page that posts result to parent window via postMessage.</returns>
+	/// <param name="code">
+	/// Authorization code from GitHub.
+	/// </param>
+	/// <param name="state">
+	/// CSRF state parameter.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// HTML page that posts result to parent window via postMessage.
+	/// </returns>
 	/// <response code="200">HTML response with postMessage to parent window.</response>
 	[HttpGet("github/callback")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
@@ -362,8 +392,12 @@ public class AuthController(
 	/// Exchanges an OAuth authorization code for tokens.
 	/// The code is a one-time use token from the OAuth callback.
 	/// </summary>
-	/// <param name="request">The authorization code.</param>
-	/// <returns>Access token and sets refresh token cookie.</returns>
+	/// <param name="request">
+	/// The authorization code.
+	/// </param>
+	/// <returns>
+	/// Access token and sets refresh token cookie.
+	/// </returns>
 	/// <response code="200">Exchange successful.</response>
 	/// <response code="400">Invalid or expired code.</response>
 	[HttpPost("oauth/exchange")]
@@ -409,8 +443,12 @@ public class AuthController(
 	/// <summary>
 	/// Gets the current authenticated user's profile.
 	/// </summary>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>User profile information.</returns>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// User profile information.
+	/// </returns>
 	/// <response code="200">Returns user profile.</response>
 	/// <response code="401">Not authenticated.</response>
 	/// <response code="404">User not found.</response>
@@ -443,9 +481,15 @@ public class AuthController(
 	/// <summary>
 	/// Changes the current user's password.
 	/// </summary>
-	/// <param name="request">Password change request.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>No content on success.</returns>
+	/// <param name="request">
+	/// Password change request.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// No content on success.
+	/// </returns>
 	/// <response code="204">Password changed successfully.</response>
 	/// <response code="400">Invalid current password or validation error.</response>
 	/// <response code="401">Not authenticated.</response>
@@ -498,9 +542,15 @@ public class AuthController(
 	/// Always returns 200 OK to prevent email enumeration attacks.
 	/// Email is only sent if the user exists and is active.
 	/// </remarks>
-	/// <param name="request">Forgot password request with email.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>200 OK regardless of whether email exists.</returns>
+	/// <param name="request">
+	/// Forgot password request with email.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// 200 OK regardless of whether email exists.
+	/// </returns>
 	/// <response code="200">Request processed (email sent if user exists).</response>
 	/// <response code="400">Invalid email format.</response>
 	/// <response code="429">Too many requests.</response>
@@ -539,9 +589,15 @@ public class AuthController(
 	///
 	/// On success, returns auth tokens for immediate login.
 	/// </remarks>
-	/// <param name="request">Set password request with token and new password.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Access token and sets refresh token cookie.</returns>
+	/// <param name="request">
+	/// Set password request with token and new password.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Access token and sets refresh token cookie.
+	/// </returns>
 	/// <response code="200">Password set successfully, includes auth tokens.</response>
 	/// <response code="400">Invalid token, expired token, or validation error.</response>
 	[HttpPost("set-password")]
@@ -599,9 +655,15 @@ public class AuthController(
 	/// The token expires after a configured time period.
 	/// Always returns OK to prevent email enumeration attacks.
 	/// </remarks>
-	/// <param name="request">Registration initiation request with email.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>200 OK regardless of whether email is available.</returns>
+	/// <param name="request">
+	/// Registration initiation request with email.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// 200 OK regardless of whether email is available.
+	/// </returns>
 	/// <response code="200">Request processed (email sent if valid).</response>
 	/// <response code="400">Invalid email format.</response>
 	/// <response code="429">Too many requests.</response>
@@ -637,9 +699,15 @@ public class AuthController(
 	/// Validates the token, creates the user account, and returns auth tokens.
 	/// The user can immediately start using the application after registration.
 	/// </remarks>
-	/// <param name="request">Registration completion request with token, username, and password.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Auth tokens on success.</returns>
+	/// <param name="request">
+	/// Registration completion request with token, username, and password.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Auth tokens on success.
+	/// </returns>
 	/// <response code="201">Registration completed successfully, includes auth tokens.</response>
 	/// <response code="400">Invalid token, expired token, or validation error.</response>
 	[HttpPost("register/complete")]

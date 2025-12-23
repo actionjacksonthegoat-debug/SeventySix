@@ -7,5 +7,7 @@ namespace SeventySix.Identity;
 /// <summary>
 /// Query to get all roles for a user.
 /// </summary>
-/// <param name="UserId">The user ID.</param>
+/// <param name="UserId">
+/// The user ID.
+/// </param>
 public record GetUserRolesQuery(int UserId);

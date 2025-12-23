@@ -27,7 +27,9 @@ public class LogConfiguration : IEntityTypeConfiguration<Log>
 	/// <summary>
 	/// Configures the entity mapping for Log.
 	/// </summary>
-	/// <param name="builder">The builder to be used to configure the entity type.</param>
+	/// <param name="builder">
+	/// The builder to be used to configure the entity type.
+	/// </param>
 	public void Configure(EntityTypeBuilder<Log> builder)
 	{
 		ArgumentNullException.ThrowIfNull(builder);

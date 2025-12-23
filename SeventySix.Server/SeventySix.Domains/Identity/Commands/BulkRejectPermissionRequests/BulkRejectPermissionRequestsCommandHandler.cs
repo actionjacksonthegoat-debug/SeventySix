@@ -12,10 +12,18 @@ public static class BulkRejectPermissionRequestsCommandHandler
 	/// <summary>
 	/// Handles the bulk rejection of permission requests.
 	/// </summary>
-	/// <param name="command">The bulk reject command.</param>
-	/// <param name="repository">The permission request repository.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Count of rejected requests.</returns>
+	/// <param name="command">
+	/// The bulk reject command.
+	/// </param>
+	/// <param name="repository">
+	/// The permission request repository.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Count of rejected requests.
+	/// </returns>
 	public static async Task<int> HandleAsync(
 		BulkRejectPermissionRequestsCommand command,
 		IPermissionRequestRepository repository,

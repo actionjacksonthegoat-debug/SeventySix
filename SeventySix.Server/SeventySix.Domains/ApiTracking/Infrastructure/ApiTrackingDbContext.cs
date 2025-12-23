@@ -30,7 +30,9 @@ public class ApiTrackingDbContext : BaseDbContext<ApiTrackingDbContext>
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ApiTrackingDbContext"/> class.
 	/// </summary>
-	/// <param name="options">The options for this context.</param>
+	/// <param name="options">
+	/// The options for this context.
+	/// </param>
 	public ApiTrackingDbContext(DbContextOptions<ApiTrackingDbContext> options)
 		: base(options) { }
 
@@ -43,6 +45,8 @@ public class ApiTrackingDbContext : BaseDbContext<ApiTrackingDbContext>
 	/// <summary>
 	/// Gets the schema name for ApiTracking bounded context.
 	/// </summary>
-	/// <returns>"ApiTracking".</returns>
+	/// <returns>
+	/// "ApiTracking".
+	/// </returns>
 	protected override string GetSchemaName() => SchemaConstants.ApiTracking;
 }

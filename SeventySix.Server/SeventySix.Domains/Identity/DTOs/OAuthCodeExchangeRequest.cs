@@ -7,5 +7,7 @@ namespace SeventySix.Identity;
 /// <summary>
 /// Request to exchange an OAuth authorization code for tokens.
 /// </summary>
-/// <param name="Code">The one-time authorization code from OAuth callback.</param>
+/// <param name="Code">
+/// The one-time authorization code from OAuth callback.
+/// </param>
 public record OAuthCodeExchangeRequest(string Code);

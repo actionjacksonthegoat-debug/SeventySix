@@ -7,6 +7,10 @@ namespace SeventySix.Identity;
 /// <summary>
 /// Command to remove a role from a user.
 /// </summary>
-/// <param name="UserId">The user ID.</param>
-/// <param name="Role">The role name to remove.</param>
+/// <param name="UserId">
+/// The user ID.
+/// </param>
+/// <param name="Role">
+/// The role name to remove.
+/// </param>
 public record RemoveUserRoleCommand(int UserId, string Role);

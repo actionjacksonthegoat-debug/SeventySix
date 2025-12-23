@@ -16,9 +16,15 @@ public interface IEmailVerificationTokenRepository
 	/// <summary>
 	/// Gets a verification token by its hash.
 	/// </summary>
-	/// <param name="tokenHash">The SHA256 hash of the token.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>The token if found; otherwise, null.</returns>
+	/// <param name="tokenHash">
+	/// The SHA256 hash of the token.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The token if found; otherwise, null.
+	/// </returns>
 	public Task<EmailVerificationToken?> GetByHashAsync(
 		string tokenHash,
 		CancellationToken cancellationToken = default);
@@ -26,8 +32,12 @@ public interface IEmailVerificationTokenRepository
 	/// <summary>
 	/// Creates a new email verification token.
 	/// </summary>
-	/// <param name="token">The token entity.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <param name="token">
+	/// The token entity.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
 	public Task CreateAsync(
 		EmailVerificationToken token,
 		CancellationToken cancellationToken = default);
@@ -35,9 +45,15 @@ public interface IEmailVerificationTokenRepository
 	/// <summary>
 	/// Invalidates all unused tokens for an email address.
 	/// </summary>
-	/// <param name="email">The email address.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Number of tokens invalidated.</returns>
+	/// <param name="email">
+	/// The email address.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// Number of tokens invalidated.
+	/// </returns>
 	public Task<int> InvalidateTokensForEmailAsync(
 		string email,
 		CancellationToken cancellationToken = default);
@@ -45,8 +61,12 @@ public interface IEmailVerificationTokenRepository
 	/// <summary>
 	/// Saves changes to a tracked token entity.
 	/// </summary>
-	/// <param name="token">The tracked token entity.</param>
-	/// <param name="cancellationToken">Cancellation token.</param>
+	/// <param name="token">
+	/// The tracked token entity.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
 	public Task SaveChangesAsync(
 		EmailVerificationToken token,
 		CancellationToken cancellationToken = default);

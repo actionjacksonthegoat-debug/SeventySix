@@ -27,8 +27,12 @@ public class EntityNotFoundException : DomainException
 	/// Initializes a new instance of the <see cref="EntityNotFoundException"/> class
 	/// with specific entity information.
 	/// </summary>
-	/// <param name="entityName">The name of the entity type that wasn't found.</param>
-	/// <param name="entityId">The identifier value that was used in the failed lookup.</param>
+	/// <param name="entityName">
+	/// The name of the entity type that wasn't found.
+	/// </param>
+	/// <param name="entityId">
+	/// The identifier value that was used in the failed lookup.
+	/// </param>
 	public EntityNotFoundException(string entityName, object entityId)
 		: base($"{entityName} with id '{entityId}' was not found.")
 	{
@@ -39,7 +43,9 @@ public class EntityNotFoundException : DomainException
 	/// <summary>
 	/// Initializes a new instance of the <see cref="EntityNotFoundException"/> class with a custom message.
 	/// </summary>
-	/// <param name="message">A custom error message describing what wasn't found.</param>
+	/// <param name="message">
+	/// A custom error message describing what wasn't found.
+	/// </param>
 	public EntityNotFoundException(string message)
 		: base(message) { }
 

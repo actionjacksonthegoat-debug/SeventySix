@@ -27,8 +27,12 @@ public class IpAnonymizationService(
 	/// <summary>
 	/// Executes the background anonymization job on a periodic timer.
 	/// </summary>
-	/// <param name="stoppingToken">Cancellation token for graceful shutdown.</param>
-	/// <returns>A task that represents the asynchronous operation.</returns>
+	/// <param name="stoppingToken">
+	/// Cancellation token for graceful shutdown.
+	/// </param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// </returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		TimeSpan interval =
@@ -48,7 +52,9 @@ public class IpAnonymizationService(
 	/// <summary>
 	/// Public method for testing purposes - delegates to internal anonymization with default cancellation.
 	/// </summary>
-	/// <returns>A task that represents the asynchronous operation.</returns>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// </returns>
 	public async Task AnonymizeIpAddressesAsync()
 	{
 		await this.AnonymizeIpAddressesInternalAsync(CancellationToken.None);

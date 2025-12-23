@@ -12,10 +12,18 @@ public static class GetAllApiRequestsQueryHandler
 	/// <summary>
 	/// Handles the query to retrieve all third-party API request tracking records.
 	/// </summary>
-	/// <param name="query">The query containing no parameters.</param>
-	/// <param name="repository">The repository for accessing API request data.</param>
-	/// <param name="cancellationToken">Cancellation token for async operation.</param>
-	/// <returns>Collection of API request response DTOs.</returns>
+	/// <param name="query">
+	/// The query containing no parameters.
+	/// </param>
+	/// <param name="repository">
+	/// The repository for accessing API request data.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// Collection of API request response DTOs.
+	/// </returns>
 	public static async Task<
 		IEnumerable<ThirdPartyApiRequestResponse>
 	> HandleAsync(

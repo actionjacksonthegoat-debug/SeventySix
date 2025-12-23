@@ -39,14 +39,18 @@ public abstract class BaseDbContext<TContext> : DbContext
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BaseDbContext{TContext}"/> class.
 	/// </summary>
-	/// <param name="options">The options for this context.</param>
+	/// <param name="options">
+	/// The options for this context.
+	/// </param>
 	protected BaseDbContext(DbContextOptions<TContext> options)
 		: base(options) { }
 
 	/// <summary>
 	/// Gets the schema name for this bounded context.
 	/// </summary>
-	/// <returns>The schema name (e.g., "Identity", "Logging", "ApiTracking").</returns>
+	/// <returns>
+	/// The schema name (e.g., "Identity", "Logging", "ApiTracking").
+	/// </returns>
 	/// <remarks>
 	/// Derived classes must implement this to provide their schema name.
 	/// This is the primary extension point in the Template Method pattern.
@@ -56,7 +60,9 @@ public abstract class BaseDbContext<TContext> : DbContext
 	/// <summary>
 	/// Gets the namespace prefix for configuration filtering.
 	/// </summary>
-	/// <returns>The namespace prefix (e.g., "SeventySix.Identity").</returns>
+	/// <returns>
+	/// The namespace prefix (e.g., "SeventySix.Identity").
+	/// </returns>
 	/// <remarks>
 	/// Defaults to "SeventySix." + schema name for convention-based filtering.
 	/// Override if namespace doesn't match schema name convention.
@@ -70,7 +76,9 @@ public abstract class BaseDbContext<TContext> : DbContext
 	/// Configures the model that was discovered by convention from the entity types.
 	/// Template Method that applies schema and configuration filtering.
 	/// </summary>
-	/// <param name="modelBuilder">The builder being used to construct the model for this context.</param>
+	/// <param name="modelBuilder">
+	/// The builder being used to construct the model for this context.
+	/// </param>
 	/// <remarks>
 	/// This method:
 	/// 1. Sets the default schema for bounded context isolation
@@ -106,7 +114,9 @@ public abstract class BaseDbContext<TContext> : DbContext
 	/// <summary>
 	/// Configures entity-specific settings like global query filters.
 	/// </summary>
-	/// <param name="modelBuilder">The model builder.</param>
+	/// <param name="modelBuilder">
+	/// The model builder.
+	/// </param>
 	/// <remarks>
 	/// Override this method to add domain-specific entity configurations such as:
 	/// - Global query filters (soft delete, multi-tenancy)
