@@ -39,6 +39,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			Substitute.For<ILogger<LogRepository>>());
 	}
 
+	/// <summary>
+	/// Verifies that CreateAsync persists a Log and returns it with an identifier.
+	/// </summary>
 	[Fact]
 	public async Task CreateAsync_CreatesLog_SuccessfullyAsync()
 	{
@@ -63,6 +66,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.Equal("Test error message", result.Message);
 	}
 
+	/// <summary>
+	/// Verifies CreateAsync throws when a null entity is provided.
+	/// </summary>
 	[Fact]
 	public async Task CreateAsync_ThrowsArgumentNullException_WhenEntityIsNullAsync()
 	{
@@ -71,6 +77,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			await Repository.CreateAsync(null!));
 	}
 
+	/// <summary>
+	/// Verifies GetPagedAsync returns logs when no filters are applied.
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_ReturnsAllLogs_WhenNoFiltersAsync()
 	{
@@ -89,6 +98,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.True(logs.Count() >= 3);
 	}
 
+	/// <summary>
+	/// Verifies filtering by LogLevel returns only matching logs.
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_FiltersByLogLevel_SuccessfullyAsync()
 	{
@@ -107,6 +119,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.All(logs, log => Assert.Equal("Error", log.LogLevel));
 	}
 
+	/// <summary>
+	/// Verifies date range filtering returns logs within the specified window.
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_FiltersByDateRange_SuccessfullyAsync()
 	{
@@ -139,6 +154,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			});
 	}
 
+	/// <summary>
+	/// Verifies search term filtering matches SourceContext values.
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_FiltersBySourceContext_SuccessfullyAsync()
 	{
@@ -162,6 +180,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 					log.SourceContext ?? string.Empty));
 	}
 
+	/// <summary>
+	/// Verifies search term filtering matches RequestPath values.
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_FiltersByRequestPath_SuccessfullyAsync()
 	{
@@ -183,6 +204,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 				Assert.Contains("/api/users", log.RequestPath ?? string.Empty));
 	}
 
+	/// <summary>
+	/// Verifies the search term filters across multiple fields (Message, SourceContext, RequestPath, ExceptionMessage).
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_WithSearchTerm_FiltersMultipleFields_SuccessfullyAsync()
 	{
@@ -242,6 +266,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.Single(exceptionLogs); // Only one with NullRef_{testId}
 	}
 
+	/// <summary>
+	/// Verifies GetPagedAsync supports pagination and returns distinct pages.
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_SupportsPagination_SuccessfullyAsync()
 	{
@@ -268,6 +295,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.NotEqual(page1Logs.First().Id, page2Logs.First().Id);
 	}
 
+	/// <summary>
+	/// Verifies default ordering is newest (Id descending).
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_OrdersByIdDescending_ByDefaultAsync()
 	{
@@ -290,6 +320,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		}
 	}
 
+	/// <summary>
+	/// Verifies page size is capped at the configured maximum.
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_LimitsTo1000Records_MaximumAsync()
 	{
@@ -319,6 +352,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.True(logs.Count() <= 100); // PageSize is capped at 100
 	}
 
+	/// <summary>
+	/// Verifies GetPagedAsync returns the correct total count when no filters are applied.
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_ReturnsCorrectCount_WhenNoFiltersAsync()
 	{
@@ -336,6 +372,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.True(count >= 3);
 	}
 
+	/// <summary>
+	/// Verifies combined filter criteria produce expected results.
+	/// </summary>
 	[Fact]
 	public async Task GetPagedAsync_FiltersCorrectly_WithMultipleCriteriaAsync()
 	{
@@ -360,6 +399,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.True(count >= 1); // At least one Error log exists
 	}
 
+	/// <summary>
+	/// Verifies DeleteOlderThanAsync removes logs older than the cutoff date.
+	/// </summary>
 	[Fact]
 	public async Task DeleteOlderThanAsync_DeletesOldLogs_SuccessfullyAsync()
 	{
@@ -403,6 +445,12 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			log => Assert.True(log.CreateDate >= cutoffDate));
 	}
 
+	/// <summary>
+	/// Seeds the database with several test logs for queries.
+	/// </summary>
+	/// <param name="timeProvider">
+	/// The time provider used to set CreateDate values.
+	/// </param>
 	private async Task SeedTestLogsAsync(FakeTimeProvider timeProvider)
 	{
 		Log[] logs =
@@ -452,6 +500,15 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		}
 	}
 
+	/// <summary>
+	/// Seeds logs containing unique markers used by search tests.
+	/// </summary>
+	/// <param name="testId">
+	/// Unique identifier appended to seeded values.
+	/// </param>
+	/// <param name="timeProvider">
+	/// The time provider used to set CreateDate values.
+	/// </param>
 	private async Task SeedTestLogsForSearchAsync(
 		string testId,
 		FakeTimeProvider timeProvider)
@@ -508,6 +565,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 
 	#region Parameter Validation Tests
 
+	/// <summary>
+	/// Verifies DeleteByIdAsync throws when id is zero.
+	/// </summary>
 	[Fact]
 	public async Task DeleteByIdAsync_ThrowsArgumentOutOfRangeException_WhenIdIsZeroAsync()
 	{
@@ -518,6 +578,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.Equal("id", exception.ParamName);
 	}
 
+	/// <summary>
+	/// Verifies DeleteByIdAsync throws when id is negative.
+	/// </summary>
 	[Fact]
 	public async Task DeleteByIdAsync_ThrowsArgumentOutOfRangeException_WhenIdIsNegativeAsync()
 	{
@@ -528,6 +591,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.Equal("id", exception.ParamName);
 	}
 
+	/// <summary>
+	/// Verifies DeleteBatchAsync throws when ids is null.
+	/// </summary>
 	[Fact]
 	public async Task DeleteBatchAsync_ThrowsArgumentNullException_WhenIdsIsNullAsync()
 	{
@@ -538,6 +604,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.Equal("ids", exception.ParamName);
 	}
 
+	/// <summary>
+	/// Verifies DeleteBatchAsync throws when ids array is empty.
+	/// </summary>
 	[Fact]
 	public async Task DeleteBatchAsync_ThrowsArgumentOutOfRangeException_WhenIdsIsEmptyAsync()
 	{

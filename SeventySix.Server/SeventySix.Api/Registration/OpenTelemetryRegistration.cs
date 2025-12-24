@@ -12,6 +12,13 @@ namespace SeventySix.Api.Registration;
 public static class OpenTelemetryExtensions
 {
 	/// <summary>Adds OpenTelemetry with Jaeger tracing and Prometheus metrics.</summary>
+	/// <remarks>
+	/// Reads configuration keys:
+	/// - "OpenTelemetry:Enabled"
+	/// - "OpenTelemetry:ServiceName"
+	/// - "OpenTelemetry:ServiceVersion"
+	/// - "OpenTelemetry:OtlpEndpoint"
+	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
 	/// </param>

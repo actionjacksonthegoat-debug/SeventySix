@@ -9,6 +9,8 @@ namespace SeventySix.ApiTracking;
 /// </summary>
 public static class ExternalApiConstants
 {
-	/// <summary>Brevo (formerly Sendinblue) email service.</summary>
+	/// <summary>
+	/// Brevo (formerly Sendinblue) email service.
+	/// </summary>
 	public const string BrevoEmail = "BrevoEmail";
 }

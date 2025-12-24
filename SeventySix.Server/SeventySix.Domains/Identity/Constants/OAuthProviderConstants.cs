@@ -9,10 +9,14 @@ namespace SeventySix.Identity;
 /// </summary>
 public static class OAuthProviderConstants
 {
-	/// <summary>GitHub OAuth provider name.</summary>
+	/// <summary>
+	/// GitHub OAuth provider name.
+	/// </summary>
 	public const string GitHub = "GitHub";
 
-	/// <summary>Google OAuth provider name.</summary>
+	/// <summary>
+	/// Google OAuth provider name.
+	/// </summary>
 	public const string Google = "Google";
 
 	/// <summary>
@@ -20,10 +24,14 @@ public static class OAuthProviderConstants
 	/// </summary>
 	public static class Endpoints
 	{
-		/// <summary>GitHub user API endpoint URL.</summary>
+		/// <summary>
+		/// GitHub user API endpoint URL.
+		/// </summary>
 		public const string GitHubUserApi = "https://api.github.com/user";
 
-		/// <summary>Google user info endpoint URL.</summary>
+		/// <summary>
+		/// Google user info endpoint URL.
+		/// </summary>
 		public const string GoogleUserInfo =
 			"https://www.googleapis.com/oauth2/v2/userinfo";
 	}
@@ -33,19 +41,27 @@ public static class OAuthProviderConstants
 	/// </summary>
 	public static class ErrorMessages
 	{
-		/// <summary>GitHub OAuth provider not configured error message.</summary>
+		/// <summary>
+		/// GitHub OAuth provider not configured error message.
+		/// </summary>
 		public const string GitHubNotConfigured =
 			"GitHub OAuth provider is not configured.";
 
-		/// <summary>GitHub OAuth disabled error message.</summary>
+		/// <summary>
+		/// GitHub OAuth disabled error message.
+		/// </summary>
 		public const string GitHubOAuthDisabled =
 			"GitHub OAuth is not configured.";
 
-		/// <summary>GitHub authentication failed error message.</summary>
+		/// <summary>
+		/// GitHub authentication failed error message.
+		/// </summary>
 		public const string GitHubAuthenticationFailed =
 			"GitHub authentication failed.";
 
-		/// <summary>GitHub OAuth callback failed log message.</summary>
+		/// <summary>
+		/// GitHub OAuth callback failed log message.
+		/// </summary>
 		public const string GitHubCallbackFailed =
 			"GitHub OAuth callback failed.";
 	}
@@ -55,10 +71,14 @@ public static class OAuthProviderConstants
 	/// </summary>
 	public static class AuditValues
 	{
-		/// <summary>GitHub OAuth created by value.</summary>
+		/// <summary>
+		/// GitHub OAuth created by value.
+		/// </summary>
 		public const string GitHubOAuthCreatedBy = "GitHub OAuth";
 
-		/// <summary>Placeholder email domain for GitHub users without public email.</summary>
+		/// <summary>
+		/// Placeholder email domain for GitHub users without public email.
+		/// </summary>
 		public const string GitHubPlaceholderEmailDomain =
 			"@github.placeholder";
 	}

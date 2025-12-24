@@ -19,6 +19,33 @@ public static class InitiatePasswordResetCommandHandler
 	/// <summary>
 	/// Handles the initiate password reset command.
 	/// </summary>
+	/// <param name="command">
+	/// The initiate password reset command containing user id and flags.
+	/// </param>
+	/// <param name="passwordResetTokenRepository">
+	/// Repository to create and manage password reset tokens.
+	/// </param>
+	/// <param name="messageBus">
+	/// Message bus for querying user details.
+	/// </param>
+	/// <param name="emailService">
+	/// Service to send password reset or welcome emails.
+	/// </param>
+	/// <param name="jwtSettings">
+	/// JWT-related settings used to compute expiration.
+	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider for current time values.
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task that represents the asynchronous operation.
+	/// </returns>
 	/// <exception cref="InvalidOperationException">Thrown when user not found or inactive.</exception>
 	public static async Task HandleAsync(
 		InitiatePasswordResetCommand command,

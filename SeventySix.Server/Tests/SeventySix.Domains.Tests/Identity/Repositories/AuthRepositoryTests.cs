@@ -23,6 +23,9 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 	public AuthRepositoryTests(TestcontainersPostgreSqlFixture fixture)
 		: base(fixture) { }
 
+	/// <summary>
+	/// Verifies GetUserByUsernameOrEmailForUpdateAsync returns user when found by username.
+	/// </summary>
 	[Fact]
 	public async Task GetUserByUsernameOrEmailForUpdateAsync_ReturnsUser_WhenFoundByUsernameAsync()
 	{
@@ -55,6 +58,9 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		result.Username.ShouldBe(user.Username);
 	}
 
+	/// <summary>
+	/// Verifies GetUserByUsernameOrEmailForUpdateAsync returns user when found by email.
+	/// </summary>
 	[Fact]
 	public async Task GetUserByUsernameOrEmailForUpdateAsync_ReturnsUser_WhenFoundByEmailAsync()
 	{
@@ -86,6 +92,9 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		result.Id.ShouldBe(user.Id);
 	}
 
+	/// <summary>
+	/// Verifies GetUserByUsernameOrEmailForUpdateAsync returns null when not found.
+	/// </summary>
 	[Fact]
 	public async Task GetUserByUsernameOrEmailForUpdateAsync_ReturnsNull_WhenNotFoundAsync()
 	{
@@ -104,6 +113,9 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		result.ShouldBeNull();
 	}
 
+	/// <summary>
+	/// Verifies UpdateLastLoginAsync updates last login timestamp and IP address.
+	/// </summary>
 	[Fact]
 	public async Task UpdateLastLoginAsync_UpdatesTimestampAndIpAsync()
 	{
@@ -148,6 +160,9 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		updatedUser.LastLoginIp.ShouldBe(clientIp);
 	}
 
+	/// <summary>
+	/// Verifies GetExternalLoginAsync returns an external login when it exists.
+	/// </summary>
 	[Fact]
 	public async Task GetExternalLoginAsync_ReturnsLogin_WhenExistsAsync()
 	{
@@ -194,6 +209,9 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		result.UserId.ShouldBe(user.Id);
 	}
 
+	/// <summary>
+	/// Verifies GetRoleIdByNameAsync returns an existing role id.
+	/// </summary>
 	[Fact]
 	public async Task GetRoleIdByNameAsync_ReturnsRoleId_WhenExistsAsync()
 	{
@@ -214,6 +232,9 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		roleId.Value.ShouldBeGreaterThan(0);
 	}
 
+	/// <summary>
+	/// Verifies GetRoleIdByNameAsync returns null for unknown role name.
+	/// </summary>
 	[Fact]
 	public async Task GetRoleIdByNameAsync_ReturnsNull_WhenNotFoundAsync()
 	{

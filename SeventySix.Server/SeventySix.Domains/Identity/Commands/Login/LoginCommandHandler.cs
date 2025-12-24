@@ -17,6 +17,36 @@ public static class LoginCommandHandler
 	/// <summary>
 	/// Handles login command.
 	/// </summary>
+	/// <param name="command">
+	/// The login command containing credentials and options.
+	/// </param>
+	/// <param name="authRepository">
+	/// Repository for user authentication queries.
+	/// </param>
+	/// <param name="credentialRepository">
+	/// Repository for user credentials.
+	/// </param>
+	/// <param name="passwordHasher">
+	/// Service for password verification.
+	/// </param>
+	/// <param name="authenticationService">
+	/// Service to generate auth tokens on success.
+	/// </param>
+	/// <param name="authSettings">
+	/// Authentication-related configuration settings.
+	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider used for lockout and expiration checks.
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// An <see cref="AuthResult"/> indicating authentication result.
+	/// </returns>
 	public static async Task<AuthResult> HandleAsync(
 		LoginCommand command,
 		IAuthRepository authRepository,

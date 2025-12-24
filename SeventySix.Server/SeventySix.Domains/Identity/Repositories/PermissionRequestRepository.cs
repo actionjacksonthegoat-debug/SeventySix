@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SeventySix.Identity;
 
-/// <summary>Repository for permission request data access.</summary>
+/// <summary>
+/// Repository for permission request data access.
+/// </summary>
 internal class PermissionRequestRepository(IdentityDbContext dbContext)
 	: IPermissionRequestRepository
 {

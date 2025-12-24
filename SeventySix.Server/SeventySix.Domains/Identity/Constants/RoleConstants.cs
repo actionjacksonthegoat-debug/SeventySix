@@ -10,16 +10,24 @@ namespace SeventySix.Identity.Constants;
 /// </summary>
 public static class RoleConstants
 {
-	/// <summary>Developer role name.</summary>
+	/// <summary>
+	/// Developer role name.
+	/// </summary>
 	public const string Developer = "Developer";
 
-	/// <summary>Admin role name.</summary>
+	/// <summary>
+	/// Admin role name.
+	/// </summary>
 	public const string Admin = "Admin";
 
-	/// <summary>User role name (default role).</summary>
+	/// <summary>
+	/// User role name (default role).
+	/// </summary>
 	public const string User = "User";
 
-	/// <summary>All requestable roles in the system with descriptions.</summary>
+	/// <summary>
+	/// All requestable roles in the system with descriptions.
+	/// </summary>
 	/// <remarks>
 	/// KISS: Hardcoded list is simpler than database/config management.
 	/// Easy to extend when new roles are added to the system.
@@ -30,7 +38,9 @@ public static class RoleConstants
 		new AvailableRoleDto(Admin, "Full administrative access"),
 	];
 
-	/// <summary>Valid role names for admin assignment and validation.</summary>
+	/// <summary>
+	/// Valid role names for admin assignment and validation.
+	/// </summary>
 	public static readonly HashSet<string> ValidRoleNames =
 		AllRequestableRoles
 			.Select(role => role.Name)

@@ -26,6 +26,9 @@ namespace SeventySix.Domains.Tests.Identity.Entities;
 /// </remarks>
 public class UserTests
 {
+	/// <summary>
+	/// Verifies default property values upon construction.
+	/// </summary>
 	[Fact]
 	public void User_ShouldInitializeWithDefaultValues()
 	{
@@ -42,6 +45,9 @@ public class UserTests
 		Assert.Equal(default(DateTime), user.CreateDate);
 	}
 
+	/// <summary>
+	/// Verifies property getters and setters operate correctly.
+	/// </summary>
 	[Fact]
 	public void User_ShouldSetAndGetProperties()
 	{
@@ -69,6 +75,9 @@ public class UserTests
 		Assert.False(user.IsActive);
 	}
 
+	/// <summary>
+	/// Verifies a null FullName is allowed.
+	/// </summary>
 	[Fact]
 	public void User_ShouldAllowNullFullName()
 	{
@@ -85,6 +94,9 @@ public class UserTests
 		Assert.Null(user.FullName);
 	}
 
+	/// <summary>
+	/// Verifies an empty FullName is allowed.
+	/// </summary>
 	[Fact]
 	public void User_ShouldAllowEmptyFullName()
 	{
@@ -101,6 +113,9 @@ public class UserTests
 		Assert.Equal(string.Empty, user.FullName);
 	}
 
+	/// <summary>
+	/// Verifies IsActive defaults to true when constructed.
+	/// </summary>
 	[Fact]
 	public void User_ShouldSetIsActiveToTrue_ByDefault()
 	{
@@ -111,6 +126,9 @@ public class UserTests
 		Assert.True(user.IsActive);
 	}
 
+	/// <summary>
+	/// Verifies IsActive can be set to false.
+	/// </summary>
 	[Fact]
 	public void User_ShouldAllowSettingIsActiveToFalse()
 	{
@@ -122,6 +140,9 @@ public class UserTests
 		Assert.False(user.IsActive);
 	}
 
+	/// <summary>
+	/// Verifies CreateDate defaults to min value until interceptor sets it.
+	/// </summary>
 	[Fact]
 	public void User_CreateDate_ShouldDefaultToMinValue_UntilInterceptorSetsIt()
 	{
@@ -132,6 +153,9 @@ public class UserTests
 		Assert.Equal(default(DateTime), user.CreateDate);
 	}
 
+	/// <summary>
+	/// Verifies CreateDate can be explicitly set when needed.
+	/// </summary>
 	[Fact]
 	public void User_ShouldAllowOverridingCreatedAt()
 	{
@@ -147,6 +171,9 @@ public class UserTests
 		Assert.Equal(specificDate, user.CreateDate);
 	}
 
+	/// <summary>
+	/// Verifies various username formats are accepted by the entity.
+	/// </summary>
 	[Theory]
 	[InlineData("")]
 	[InlineData("a")]
@@ -163,6 +190,9 @@ public class UserTests
 		Assert.Equal(username, user.Username);
 	}
 
+	/// <summary>
+	/// Verifies various email formats are accepted by the entity (format validation is external).
+	/// </summary>
 	[Theory]
 	[InlineData("")]
 	[InlineData("test@example.com")]
@@ -179,6 +209,9 @@ public class UserTests
 		Assert.Equal(email, user.Email);
 	}
 
+	/// <summary>
+	/// Verifies properties can be updated after construction.
+	/// </summary>
 	[Fact]
 	public void User_ShouldSupportPropertyUpdates()
 	{
@@ -202,6 +235,9 @@ public class UserTests
 		Assert.False(user.IsActive);
 	}
 
+	/// <summary>
+	/// Verifies audit fields initialize to defaults before interceptor runs.
+	/// </summary>
 	[Fact]
 	public void User_ShouldInitializeAuditFields_WithDefaults()
 	{
@@ -215,6 +251,9 @@ public class UserTests
 		Assert.Equal(string.Empty, user.ModifiedBy); // Non-nullable, defaults to empty string
 	}
 
+	/// <summary>
+	/// Verifies audit-related properties can be set and retrieved.
+	/// </summary>
 	[Fact]
 	public void User_ShouldSetAndGetAuditFields()
 	{
@@ -239,6 +278,9 @@ public class UserTests
 		Assert.Equal(TestAuditConstants.SystemUser, user.ModifiedBy);
 	}
 
+	/// <summary>
+	/// Verifies soft-delete fields initialize to defaults before deletion.
+	/// </summary>
 	[Fact]
 	public void User_ShouldInitializeSoftDeleteFields_WithDefaults()
 	{
@@ -251,6 +293,9 @@ public class UserTests
 		Assert.Null(user.DeletedBy);
 	}
 
+	/// <summary>
+	/// Verifies soft-delete fields can be set and retrieved.
+	/// </summary>
 	[Fact]
 	public void User_ShouldSetAndGetSoftDeleteFields()
 	{
@@ -272,6 +317,9 @@ public class UserTests
 		Assert.Equal("admin", user.DeletedBy);
 	}
 
+	/// <summary>
+	/// Verifies RowVersion is null by default before persistence.
+	/// </summary>
 	[Fact]
 	public void User_ShouldInitializeRowVersion_WithNull()
 	{
@@ -282,6 +330,9 @@ public class UserTests
 		Assert.Null(user.RowVersion);
 	}
 
+	/// <summary>
+	/// Verifies RowVersion can be set and retrieved.
+	/// </summary>
 	[Fact]
 	public void User_ShouldSetAndGetRowVersion()
 	{
@@ -294,6 +345,9 @@ public class UserTests
 		Assert.Equal(rowVersion, user.RowVersion);
 	}
 
+	/// <summary>
+	/// Verifies Preferences defaults to null when not set.
+	/// </summary>
 	[Fact]
 	public void User_ShouldInitializePreferences_WithNull()
 	{
@@ -304,6 +358,9 @@ public class UserTests
 		Assert.Null(user.Preferences);
 	}
 
+	/// <summary>
+	/// Verifies Preferences JSON can be stored and retrieved as string.
+	/// </summary>
 	[Fact]
 	public void User_ShouldSetAndGetPreferences()
 	{
@@ -316,6 +373,9 @@ public class UserTests
 		Assert.Equal(preferences, user.Preferences);
 	}
 
+	/// <summary>
+	/// Verifies last login fields are null by default.
+	/// </summary>
 	[Fact]
 	public void User_ShouldInitializeLastLoginFields_WithNull()
 	{
@@ -327,6 +387,9 @@ public class UserTests
 		Assert.Null(user.LastLoginIp);
 	}
 
+	/// <summary>
+	/// Verifies last login timestamp and IP can be set and retrieved.
+	/// </summary>
 	[Fact]
 	public void User_ShouldSetAndGetLastLoginFields()
 	{
@@ -349,6 +412,9 @@ public class UserTests
 		Assert.Equal(lastLoginIp, user.LastLoginIp);
 	}
 
+	/// <summary>
+	/// Verifies IPv6 addresses can be stored in LastLoginIp.
+	/// </summary>
 	[Fact]
 	public void User_ShouldSupportIpv6Address()
 	{
@@ -361,6 +427,9 @@ public class UserTests
 		Assert.Equal(ipv6Address, user.LastLoginIp);
 	}
 
+	/// <summary>
+	/// Verifies all enhanced audit and soft-delete fields can be updated together.
+	/// </summary>
 	[Fact]
 	public void User_ShouldAllowUpdatingAllEnhancedFields()
 	{

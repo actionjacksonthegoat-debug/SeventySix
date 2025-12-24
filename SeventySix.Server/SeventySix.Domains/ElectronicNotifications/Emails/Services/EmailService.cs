@@ -36,7 +36,24 @@ public class EmailService(
 	private const string BREVO_API_NAME = "BrevoEmail";
 	private const string BREVO_BASE_URL = "smtp-relay.brevo.com";
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Sends a welcome email with a password setup link to the specified user.
+	/// </summary>
+	/// <param name="email">
+	/// The recipient's email address.
+	/// </param>
+	/// <param name="username">
+	/// The recipient's username used in the email body.
+	/// </param>
+	/// <param name="resetToken">
+	/// The password reset token to build the setup link.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
 	public async Task SendWelcomeEmailAsync(
 		string email,
 		string username,
@@ -58,7 +75,24 @@ public class EmailService(
 		await SendEmailAsync(email, subject, body, cancellationToken);
 	}
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Sends a password reset email containing a reset link for the user.
+	/// </summary>
+	/// <param name="email">
+	/// The recipient's email address.
+	/// </param>
+	/// <param name="username">
+	/// The recipient's username used in the email body.
+	/// </param>
+	/// <param name="resetToken">
+	/// The password reset token to build the reset link.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
 	public async Task SendPasswordResetEmailAsync(
 		string email,
 		string username,
@@ -80,7 +114,21 @@ public class EmailService(
 		await SendEmailAsync(email, subject, body, cancellationToken);
 	}
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Sends an email with a verification link for self-registration.
+	/// </summary>
+	/// <param name="email">
+	/// The recipient's email address.
+	/// </param>
+	/// <param name="verificationToken">
+	/// The verification token used to build the verification URL.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
 	public async Task SendVerificationEmailAsync(
 		string email,
 		string verificationToken,
@@ -165,6 +213,15 @@ public class EmailService(
 		logger.LogWarning("Email sent to {To}: {Subject}", to, subject);
 	}
 
+	/// <summary>
+	/// Ensures the daily email rate limit has not been exceeded.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <exception cref="EmailRateLimitException">
+	/// Thrown when the configured daily quota has been reached.
+	/// </exception>
 	private async Task EnsureRateLimitNotExceededAsync(
 		CancellationToken cancellationToken)
 	{
@@ -191,6 +248,21 @@ public class EmailService(
 		throw new EmailRateLimitException(resetTime, remaining);
 	}
 
+	/// <summary>
+	/// Builds a <see cref="MimeMessage"/> with the configured sender, recipient, subject and HTML body.
+	/// </summary>
+	/// <param name="to">
+	/// Recipient email address.
+	/// </param>
+	/// <param name="subject">
+	/// Email subject.
+	/// </param>
+	/// <param name="htmlBody">
+	/// HTML body content for the email.
+	/// </param>
+	/// <returns>
+	/// A populated <see cref="MimeMessage"/> ready for sending.
+	/// </returns>
 	private MimeMessage BuildMimeMessage(
 		string to,
 		string subject,
@@ -208,6 +280,18 @@ public class EmailService(
 		return message;
 	}
 
+	/// <summary>
+	/// Sends the provided <see cref="MimeMessage"/> via SMTP using the configured <see cref="EmailSettings"/>.
+	/// </summary>
+	/// <param name="message">
+	/// The message to send.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <exception cref="Exception">
+	/// Thrown when SMTP connection, authentication or send operations fail.
+	/// </exception>
 	private async Task SendViaSMtpAsync(
 		MimeMessage message,
 		CancellationToken cancellationToken)
@@ -236,6 +320,12 @@ public class EmailService(
 		await client.DisconnectAsync(quit: true, cancellationToken);
 	}
 
+	/// <summary>
+	/// Attempts to increment the external API rate limit counter and logs a warning if it fails.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
 	private async Task TrackRateLimitAsync(CancellationToken cancellationToken)
 	{
 		bool success =
@@ -254,6 +344,15 @@ public class EmailService(
 	/// <summary>
 	/// Builds HTML body for welcome email.
 	/// </summary>
+	/// <param name="username">
+	/// The recipient's username to personalize the message.
+	/// </param>
+	/// <param name="resetUrl">
+	/// The password reset URL included in the email.
+	/// </param>
+	/// <returns>
+	/// The HTML string for the welcome email body.
+	/// </returns>
 	private static string BuildWelcomeEmailBody(
 		string username,
 		string resetUrl) =>
@@ -282,6 +381,15 @@ public class EmailService(
 	/// <summary>
 	/// Builds HTML body for password reset email.
 	/// </summary>
+	/// <param name="username">
+	/// The recipient's username to personalize the message.
+	/// </param>
+	/// <param name="resetUrl">
+	/// The password reset URL included in the email.
+	/// </param>
+	/// <returns>
+	/// The HTML string for the password reset email body.
+	/// </returns>
 	private static string BuildPasswordResetEmailBody(
 		string username,
 		string resetUrl) =>
@@ -310,6 +418,12 @@ public class EmailService(
 	/// <summary>
 	/// Builds HTML body for email verification email.
 	/// </summary>
+	/// <param name="verificationUrl">
+	/// The email verification URL included in the message.
+	/// </param>
+	/// <returns>
+	/// The HTML string for the verification email body.
+	/// </returns>
 	private static string BuildVerificationEmailBody(string verificationUrl) =>
 		$$"""
 			<!DOCTYPE html>

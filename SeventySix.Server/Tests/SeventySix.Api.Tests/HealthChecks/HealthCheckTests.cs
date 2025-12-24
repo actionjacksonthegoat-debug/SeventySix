@@ -16,6 +16,9 @@ public class HealthCheckTests(TestcontainersPostgreSqlFixture fixture)
 	: ApiPostgreSqlTestBase<Program>(fixture),
 		IAsyncLifetime
 {
+	/// <summary>
+	/// Verifies the /health endpoint returns 200 OK and includes "Healthy" when DB is connected.
+	/// </summary>
 	[Fact]
 	public async Task HealthEndpoint_ReturnsHealthy_WhenDatabaseConnectedAsync()
 	{

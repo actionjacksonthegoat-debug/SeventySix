@@ -25,6 +25,12 @@ public static class AuthenticationExtensions
 	/// <summary>
 	/// Adds JWT Bearer authentication services.
 	/// </summary>
+	/// <remarks>
+	/// Binds configuration sections:
+	/// - "Jwt" (JwtSettings)
+	/// - "Auth" (AuthSettings)
+	/// - Admin seeder and whitelisted permissions sections (AdminSeederSettings, WhitelistedPermissionSettings)
+	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
 	/// </param>

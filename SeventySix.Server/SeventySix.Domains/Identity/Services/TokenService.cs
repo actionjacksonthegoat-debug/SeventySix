@@ -193,6 +193,27 @@ public class TokenService(
 	/// <summary>
 	/// Internal method to generate a refresh token with specified family.
 	/// </summary>
+	/// <param name="userId">
+	/// The user id the token belongs to.
+	/// </param>
+	/// <param name="clientIp">
+	/// Optional client IP address for auditing.
+	/// </param>
+	/// <param name="rememberMe">
+	/// Whether token should use long-lived expiration.
+	/// </param>
+	/// <param name="familyId">
+	/// Token family GUID used to group related tokens.
+	/// </param>
+	/// <param name="sessionStartedAt">
+	/// Optional session start timestamp for absolute timeouts.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The generated plaintext refresh token.
+	/// </returns>
 	private async Task<string> GenerateRefreshTokenInternalAsync(
 		int userId,
 		string? clientIp,
@@ -242,6 +263,15 @@ public class TokenService(
 	/// <summary>
 	/// Revokes oldest token if user has reached max active sessions.
 	/// </summary>
+	/// <param name="userId">
+	/// The user ID to enforce limits for.
+	/// </param>
+	/// <param name="now">
+	/// Current timestamp used for comparisons.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
 	private async Task EnforceSessionLimitAsync(
 		int userId,
 		DateTime now,

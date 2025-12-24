@@ -16,6 +16,11 @@ public static class ApplicationServicesRegistration
 	/// Adds application-specific services to the service collection.
 	/// Includes configuration options, validators, and memory cache.
 	/// </summary>
+	/// <remarks>
+	/// Reads configuration sections:
+	/// - "Polly" (via PollyOptions.SECTION_NAME)
+	/// - "OutputCache" (via OutputCacheOptions.SECTION_NAME)
+	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
 	/// </param>

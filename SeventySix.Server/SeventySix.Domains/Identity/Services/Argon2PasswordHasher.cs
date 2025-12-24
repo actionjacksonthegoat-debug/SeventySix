@@ -127,6 +127,9 @@ public class Argon2PasswordHasher(IOptions<AuthSettings> authSettings)
 			computedHash);
 	}
 
+	/// <summary>
+	/// Computes Argon2id hash for the provided password and parameters.
+	/// </summary>
 	private static byte[] ComputeHash(
 		string password,
 		byte[] salt,
@@ -147,6 +150,9 @@ public class Argon2PasswordHasher(IOptions<AuthSettings> authSettings)
 		return argon2.GetBytes(hashSize);
 	}
 
+	/// <summary>
+	/// Parses the Argon2 parameter string (e.g., "m=65536,t=3,p=4").
+	/// </summary>
 	private static (
 		int memory,
 		int iterations,
@@ -177,6 +183,9 @@ public class Argon2PasswordHasher(IOptions<AuthSettings> authSettings)
 		return (memory.Value, iterations.Value, parallelism.Value);
 	}
 
+	/// <summary>
+	/// Parses a single parameter value from a "key=value" part.
+	/// </summary>
 	private static int? ParseParameter(string part, string prefix)
 	{
 		if (!part.StartsWith(prefix, StringComparison.Ordinal))

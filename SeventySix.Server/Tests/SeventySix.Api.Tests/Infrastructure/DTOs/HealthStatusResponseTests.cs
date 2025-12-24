@@ -13,6 +13,9 @@ namespace SeventySix.Api.Tests.Infrastructure.DTOs;
 /// </summary>
 public class HealthStatusResponseTests
 {
+	/// <summary>
+	/// Ensures HealthStatusResponse constructor initializes default values.
+	/// </summary>
 	[Fact]
 	public void HealthStatusResponse_Constructor_ShouldInitializeWithDefaults()
 	{
@@ -28,6 +31,9 @@ public class HealthStatusResponseTests
 		Assert.NotNull(response.System);
 	}
 
+	/// <summary>
+	/// Verifies HealthStatusResponse properties can be set and retrieved correctly.
+	/// </summary>
 	[Fact]
 	public void HealthStatusResponse_Properties_ShouldSetAndGetCorrectly()
 	{
@@ -54,6 +60,9 @@ public class HealthStatusResponseTests
 		Assert.True(response.Database.IsConnected);
 	}
 
+	/// <summary>
+	/// Ensures DatabaseHealthResponse defaults are set by the constructor.
+	/// </summary>
 	[Fact]
 	public void DatabaseHealthResponse_Constructor_ShouldInitializeWithDefaults()
 	{
@@ -66,6 +75,9 @@ public class HealthStatusResponseTests
 		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
 	}
 
+	/// <summary>
+	/// Verifies DatabaseHealthResponse properties set and get correctly.
+	/// </summary>
 	[Fact]
 	public void DatabaseHealthResponse_Properties_ShouldSetAndGetCorrectly()
 	{
@@ -85,6 +97,9 @@ public class HealthStatusResponseTests
 		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
 	}
 
+	/// <summary>
+	/// Ensures ExternalApiHealthResponse initializes the APIs dictionary as empty.
+	/// </summary>
 	[Fact]
 	public void ExternalApiHealthResponse_Constructor_ShouldInitializeWithEmptyDictionary()
 	{
@@ -96,6 +111,9 @@ public class HealthStatusResponseTests
 		Assert.Empty(response.Apis);
 	}
 
+	/// <summary>
+	/// Verifies ExternalApiHealthResponse can contain multiple API statuses.
+	/// </summary>
 	[Fact]
 	public void ExternalApiHealthResponse_Apis_ShouldStoreMultipleApis()
 	{
@@ -141,6 +159,9 @@ public class HealthStatusResponseTests
 		Assert.Null(response.Apis["GoogleMaps"].LastChecked);
 	}
 
+	/// <summary>
+	/// Ensures ApiHealthStatus constructor initializes default values.
+	/// </summary>
 	[Fact]
 	public void ApiHealthStatus_Constructor_ShouldInitializeWithDefaults()
 	{
@@ -154,6 +175,9 @@ public class HealthStatusResponseTests
 		Assert.Null(status.LastChecked);
 	}
 
+	/// <summary>
+	/// Ensures QueueHealthResponse defaults are set by the constructor.
+	/// </summary>
 	[Fact]
 	public void QueueHealthResponse_Constructor_ShouldInitializeWithDefaults()
 	{
@@ -167,6 +191,9 @@ public class HealthStatusResponseTests
 		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
 	}
 
+	/// <summary>
+	/// Verifies QueueHealthResponse properties set and get correctly.
+	/// </summary>
 	[Fact]
 	public void QueueHealthResponse_Properties_ShouldSetAndGetCorrectly()
 	{
@@ -188,6 +215,9 @@ public class HealthStatusResponseTests
 		Assert.Equal(HealthStatusConstants.Degraded, response.Status);
 	}
 
+	/// <summary>
+	/// Ensures SystemResourcesResponse constructor initializes default values.
+	/// </summary>
 	[Fact]
 	public void SystemResourcesResponse_Constructor_ShouldInitializeWithDefaults()
 	{
@@ -201,6 +231,9 @@ public class HealthStatusResponseTests
 		Assert.Equal(0, response.DiskUsagePercent);
 	}
 
+	/// <summary>
+	/// Verifies SystemResourcesResponse properties set and get correctly.
+	/// </summary>
 	[Fact]
 	public void SystemResourcesResponse_Properties_ShouldSetAndGetCorrectly()
 	{

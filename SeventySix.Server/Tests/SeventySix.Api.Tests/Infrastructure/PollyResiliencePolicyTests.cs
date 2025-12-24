@@ -20,6 +20,9 @@ namespace SeventySix.Api.Tests.Infrastructure;
 /// </summary>
 public class PollyResiliencePolicyTests
 {
+	/// <summary>
+	/// Verifies retry policy retries failed transient requests up to configured attempts.
+	/// </summary>
 	[Fact]
 	public async Task RetryPolicy_TransientFailure_RetriesThreeTimesAsync()
 	{
@@ -103,6 +106,9 @@ public class PollyResiliencePolicyTests
 		callCount.ShouldBe(3, "Should retry twice (3 attempts total)");
 	}
 
+	/// <summary>
+	/// Verifies circuit breaker opens after exceeding configured failure threshold.
+	/// </summary>
 	[Fact]
 	public async Task CircuitBreaker_ExceedsThreshold_OpensCircuitAsync()
 	{
@@ -187,6 +193,9 @@ public class PollyResiliencePolicyTests
 				cancellationToken: CancellationToken.None));
 	}
 
+	/// <summary>
+	/// Verifies timeout policy cancels long-running requests.
+	/// </summary>
 	[Fact]
 	public async Task TimeoutPolicy_SlowResponse_CancelsRequestAsync()
 	{

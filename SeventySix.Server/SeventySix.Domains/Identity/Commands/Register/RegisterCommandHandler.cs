@@ -18,6 +18,21 @@ public static class RegisterCommandHandler
 	/// <summary>
 	/// Handles the RegisterCommand request.
 	/// </summary>
+	/// <param name="command">
+	/// The registration request and client IP.
+	/// </param>
+	/// <param name="registrationService">
+	/// Service that creates users and returns auth results.
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance used for warnings and errors.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// An <see cref="AuthResult"/> containing access and refresh tokens.
+	/// </returns>
 	/// <remarks>
 	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
 	/// Database unique constraints on Username and Email provide atomicity - no manual duplicate checks needed.

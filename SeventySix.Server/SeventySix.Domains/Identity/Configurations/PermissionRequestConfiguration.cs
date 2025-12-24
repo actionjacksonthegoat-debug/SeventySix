@@ -7,7 +7,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SeventySix.Identity;
 
-/// <summary>EF Core configuration for <see cref="PermissionRequest"/> entity.</summary>
+/// <summary>
+/// EF Core configuration for <see cref="PermissionRequest"/> entity.
+/// </summary>
 /// <remarks>
 /// Design Principles:
 /// - RequestedRoleId FK to SecurityRoles with RESTRICT delete
@@ -48,10 +50,10 @@ public class PermissionRequestConfiguration
 		// Composite unique: one pending request per user per role
 		builder
 			.HasIndex(request => new
-				{
-					request.UserId,
-					request.RequestedRoleId,
-				})
+			{
+				request.UserId,
+				request.RequestedRoleId,
+			})
 			.IsUnique()
 			.HasDatabaseName("IX_PermissionRequests_UserId_RoleId");
 

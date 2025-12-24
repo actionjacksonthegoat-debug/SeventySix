@@ -32,6 +32,18 @@ public class EmailServiceTests
 	private readonly IRateLimitingService RateLimitingService =
 		Substitute.For<IRateLimitingService>();
 
+	/// <summary>
+	/// Creates configured <see cref="IOptions{EmailSettings}"/> for tests.
+	/// </summary>
+	/// <param name="enabled">
+	/// Whether email sending is enabled.
+	/// </param>
+	/// <param name="clientBaseUrl">
+	/// The client base URL used to build links.
+	/// </param>
+	/// <returns>
+	/// A configured <see cref="IOptions{EmailSettings}"/>.
+	/// </returns>
 	private static IOptions<EmailSettings> CreateOptions(
 		bool enabled = false,
 		string clientBaseUrl = "https://test.example.com")
@@ -51,6 +63,9 @@ public class EmailServiceTests
 
 	#region SendWelcomeEmailAsync Tests
 
+	/// <summary>
+	/// Verifies that SendWelcomeEmailAsync logs the email instead of sending when disabled.
+	/// </summary>
 	[Fact]
 	public async Task SendWelcomeEmailAsync_LogsEmail_WhenDisabledAsync()
 	{
@@ -71,6 +86,9 @@ public class EmailServiceTests
 		Logger.ReceivedWithAnyArgs(1).LogWarning(default!);
 	}
 
+	/// <summary>
+	/// Verifies that SendWelcomeEmailAsync throws when the email is empty.
+	/// </summary>
 	[Fact]
 	public async Task SendWelcomeEmailAsync_ThrowsArgumentException_WhenEmailEmptyAsync()
 	{
@@ -88,6 +106,9 @@ public class EmailServiceTests
 				CancellationToken.None));
 	}
 
+	/// <summary>
+	/// Verifies that SendWelcomeEmailAsync throws when the username is empty.
+	/// </summary>
 	[Fact]
 	public async Task SendWelcomeEmailAsync_ThrowsArgumentException_WhenUsernameEmptyAsync()
 	{
@@ -105,6 +126,9 @@ public class EmailServiceTests
 				CancellationToken.None));
 	}
 
+	/// <summary>
+	/// Verifies that SendWelcomeEmailAsync throws when the token is empty.
+	/// </summary>
 	[Fact]
 	public async Task SendWelcomeEmailAsync_ThrowsArgumentException_WhenTokenEmptyAsync()
 	{
@@ -126,6 +150,9 @@ public class EmailServiceTests
 
 	#region SendPasswordResetEmailAsync Tests
 
+	/// <summary>
+	/// Verifies that SendPasswordResetEmailAsync logs rather than sending when disabled.
+	/// </summary>
 	[Fact]
 	public async Task SendPasswordResetEmailAsync_LogsEmail_WhenDisabledAsync()
 	{
@@ -146,6 +173,9 @@ public class EmailServiceTests
 		Logger.ReceivedWithAnyArgs(1).LogWarning(default!);
 	}
 
+	/// <summary>
+	/// Verifies that SendPasswordResetEmailAsync throws when the email is empty.
+	/// </summary>
 	[Fact]
 	public async Task SendPasswordResetEmailAsync_ThrowsArgumentException_WhenEmailEmptyAsync()
 	{
@@ -163,6 +193,9 @@ public class EmailServiceTests
 				CancellationToken.None));
 	}
 
+	/// <summary>
+	/// Verifies that SendPasswordResetEmailAsync throws when the username is empty.
+	/// </summary>
 	[Fact]
 	public async Task SendPasswordResetEmailAsync_ThrowsArgumentException_WhenUsernameEmptyAsync()
 	{
@@ -180,6 +213,9 @@ public class EmailServiceTests
 				CancellationToken.None));
 	}
 
+	/// <summary>
+	/// Verifies that SendPasswordResetEmailAsync throws when the token is empty.
+	/// </summary>
 	[Fact]
 	public async Task SendPasswordResetEmailAsync_ThrowsArgumentException_WhenTokenEmptyAsync()
 	{
@@ -201,6 +237,9 @@ public class EmailServiceTests
 
 	#region Rate Limiting Tests
 
+	/// <summary>
+	/// Verifies that SendWelcomeEmailAsync throws <see cref="EmailRateLimitException"/> when the rate limit is exceeded.
+	/// </summary>
 	[Fact]
 	public async Task SendWelcomeEmailAsync_ThrowsException_WhenRateLimitExceededAsync()
 	{

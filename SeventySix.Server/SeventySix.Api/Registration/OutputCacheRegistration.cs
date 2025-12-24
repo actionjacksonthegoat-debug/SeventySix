@@ -15,6 +15,9 @@ public static class OutputCacheRegistration
 	/// Adds output caching with dynamic policy registration from configuration.
 	/// Automatically discovers and registers all policies defined in appsettings.json.
 	/// </summary>
+	/// <remarks>
+	/// Reads configuration section: OutputCacheOptions.SECTION_NAME (policies and defaults).
+	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
 	/// </param>

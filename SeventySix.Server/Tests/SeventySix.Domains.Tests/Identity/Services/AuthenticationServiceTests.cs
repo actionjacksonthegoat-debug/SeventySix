@@ -56,6 +56,9 @@ public class AuthenticationServiceTests
 			TimeProvider);
 	}
 
+	/// <summary>
+	/// Verifies authentication returns tokens and updates last login when user is valid.
+	/// </summary>
 	[Fact]
 	public async Task GenerateAuthResultAsync_WithValidUser_ReturnsSuccessWithTokensAsync()
 	{
@@ -125,6 +128,9 @@ public class AuthenticationServiceTests
 				Arg.Any<CancellationToken>());
 	}
 
+	/// <summary>
+	/// Verifies remember-me flag is forwarded to the token service when set.
+	/// </summary>
 	[Fact]
 	public async Task GenerateAuthResultAsync_WithRememberMe_PassesToTokenServiceAsync()
 	{
@@ -176,6 +182,9 @@ public class AuthenticationServiceTests
 				Arg.Any<CancellationToken>());
 	}
 
+	/// <summary>
+	/// Verifies RequiresPasswordChange flag is set in result when requested.
+	/// </summary>
 	[Fact]
 	public async Task GenerateAuthResultAsync_WithRequiresPasswordChange_SetsFlagAsync()
 	{
@@ -222,6 +231,9 @@ public class AuthenticationServiceTests
 		Assert.True(result.RequiresPasswordChange);
 	}
 
+	/// <summary>
+	/// Verifies multiple roles are aggregated and passed to token generation.
+	/// </summary>
 	[Fact]
 	public async Task GenerateAuthResultAsync_WithMultipleRoles_IncludesAllRolesAsync()
 	{

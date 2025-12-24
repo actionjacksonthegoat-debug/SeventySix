@@ -12,11 +12,8 @@ namespace SeventySix.ApiTracking;
 /// Follows SRP by handling only third-party API request business logic.
 /// Follows DIP by depending on IThirdPartyApiRequestRepository abstraction.
 /// </remarks>
-/// <remarks>
-/// Initializes a new instance of the <see cref="ThirdPartyApiRequestService"/> class.
-/// </remarks>
 /// <param name="repository">
-/// The third-party API request repository.
+/// The <see cref="IThirdPartyApiRequestRepository"/> used to access third-party API request data.
 /// </param>
 public class ThirdPartyApiRequestService(
 	IThirdPartyApiRequestRepository repository) : IThirdPartyApiRequestService

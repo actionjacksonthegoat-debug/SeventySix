@@ -14,6 +14,9 @@ namespace SeventySix.Api.Registration;
 public static class HealthCheckExtensions
 {
 	/// <summary>Adds comprehensive health checks for all bounded contexts.</summary>
+	/// <remarks>
+	/// Reads configuration key: "HealthChecks:Enabled" to optionally disable health checks in test environments.
+	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
 	/// </param>

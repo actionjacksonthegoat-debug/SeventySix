@@ -10,7 +10,9 @@ namespace SeventySix.Logging;
 /// </summary>
 public record LogCleanupSettings
 {
-	/// <summary>Configuration section name in appsettings.json.</summary>
+	/// <summary>
+	/// Configuration section name in appsettings.json.
+	/// </summary>
 	public const string SectionName = "Logging:Cleanup";
 
 	/// <summary>

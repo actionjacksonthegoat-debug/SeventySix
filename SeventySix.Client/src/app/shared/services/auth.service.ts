@@ -84,7 +84,8 @@ export class AuthService
 	/**
 	 * Initializes the service: handles OAuth callback and restores session.
 	 * Call this from APP_INITIALIZER. Only runs once per app lifecycle.
-	 * @returns Observable that completes when initialization is done.
+	 * @returns {Observable<AuthResponse|null>}
+	 * Observable that completes when initialization is done.
 	 */
 	initialize(): Observable<AuthResponse | null>
 	{
@@ -116,6 +117,10 @@ export class AuthService
 
 	/**
 	 * Local username/password login.
+	 * @param {LoginRequest} credentials
+	 * The login request payload.
+	 * @returns {Observable<AuthResponse>}
+	 * Observable that emits AuthResponse on success.
 	 */
 	login(credentials: LoginRequest): Observable<AuthResponse>
 	{
@@ -143,6 +148,11 @@ export class AuthService
 	/**
 	 * Initiates OAuth flow with provider.
 	 * Server will redirect back with token in URL fragment.
+	 * @param {OAuthProvider} provider
+	 * The OAuth provider to use.
+	 * @param {string} returnUrl
+	 * Return URL after successful OAuth (default: '/').
+	 * @returns {void}
 	 */
 	loginWithProvider(provider: OAuthProvider, returnUrl: string = "/"): void
 	{
@@ -154,6 +164,8 @@ export class AuthService
 
 	/**
 	 * Refreshes the access token using refresh token cookie.
+	 * @returns {Observable<AuthResponse|null>}
+	 * Observable that emits AuthResponse on success or null on failure.
 	 */
 	refreshToken(): Observable<AuthResponse | null>
 	{
@@ -214,8 +226,12 @@ export class AuthService
 	/**
 	 * Sets a new password using a reset token.
 	 * Used for password reset flow initiated by admin.
-	 * @param token - The password reset token from the email link
-	 * @param newPassword - The new password to set
+	 * @param {string} token
+	 * The password reset token from the email link.
+	 * @param {string} newPassword
+	 * The new password to set.
+	 * @returns {Observable<void>}
+	 * Observable that completes when the password has been set.
 	 */
 	setPassword(token: string, newPassword: string): Observable<void>
 	{
@@ -229,7 +245,10 @@ export class AuthService
 	/**
 	 * Requests a password reset email for the given email address.
 	 * Always succeeds from the client's perspective (prevents email enumeration).
-	 * @param email - The email address to send the reset link to.
+	 * @param {string} email
+	 * The email address to send the reset link to.
+	 * @returns {Observable<void>}
+	 * Observable that completes when the request is accepted.
 	 */
 	requestPasswordReset(email: string): Observable<void>
 	{
@@ -242,7 +261,10 @@ export class AuthService
 	/**
 	 * Initiates self-registration by sending verification email.
 	 * Always shows success to prevent email enumeration.
-	 * @param email - The email address to register.
+	 * @param {string} email
+	 * The email address to register.
+	 * @returns {Observable<void>}
+	 * Observable that completes when the request is accepted.
 	 */
 	initiateRegistration(email: string): Observable<void>
 	{
@@ -254,9 +276,14 @@ export class AuthService
 
 	/**
 	 * Completes self-registration after email verification.
-	 * @param token - The verification token from the email link.
-	 * @param username - The desired username.
-	 * @param password - The desired password.
+	 * @param {string} token
+	 * The verification token from the email link.
+	 * @param {string} username
+	 * The desired username.
+	 * @param {string} password
+	 * The desired password.
+	 * @returns {Observable<AuthResponse>}
+	 * Observable that resolves to authentication response on success.
 	 */
 	completeRegistration(
 		token: string,
@@ -284,6 +311,8 @@ export class AuthService
 
 	/**
 	 * Gets the current access token.
+	 * @returns {string|null}
+	 * The current access token or null.
 	 */
 	getAccessToken(): string | null
 	{
@@ -292,6 +321,8 @@ export class AuthService
 
 	/**
 	 * Checks if token is expired or about to expire.
+	 * @returns {boolean}
+	 * True when token is expired or within refresh buffer.
 	 */
 	isTokenExpired(): boolean
 	{
@@ -308,6 +339,10 @@ export class AuthService
 
 	/**
 	 * Checks if current user has specified role.
+	 * @param {string} role
+	 * The role to check for.
+	 * @returns {boolean}
+	 * True when the current user has the specified role.
 	 */
 	hasRole(role: string): boolean
 	{
@@ -318,6 +353,10 @@ export class AuthService
 
 	/**
 	 * Checks if current user has any of the specified roles.
+	 * @param {string[]} roles
+	 * The roles to check for.
+	 * @returns {boolean}
+	 * True when the current user has any of the provided roles.
 	 */
 	hasAnyRole(...roles: string[]): boolean
 	{
@@ -327,7 +366,8 @@ export class AuthService
 
 	/**
 	 * Handles OAuth callback - token in URL fragment.
-	 * @returns true if OAuth callback was handled, false otherwise.
+	 * @returns
+	 * True if OAuth callback was handled, false otherwise.
 	 * @remarks The server may also provide email and fullName in the hash params.
 	 */
 	private handleOAuthCallback(): boolean
@@ -379,10 +419,15 @@ export class AuthService
 	/**
 	 * Sets the access token and user info from response.
 	 * Email and fullName are now in the response body, not JWT claims.
-	 * @param token - The JWT access token
-	 * @param expiresAt - Token expiration time
-	 * @param email - User's email from response (required)
-	 * @param fullName - User's full name from response (optional)
+	 * @param {string} token
+	 * The JWT access token.
+	 * @param {string} expiresAt
+	 * Token expiration time.
+	 * @param {string} email
+	 * User's email from response (required).
+	 * @param {string|null} fullName
+	 * User's full name from response (optional).
+	 * @returns {void}
 	 */
 	private setAccessToken(
 		token: string,
@@ -449,6 +494,10 @@ export class AuthService
 
 	/**
 	 * Parses JWT token to extract claims.
+	 * @param {string} token
+	 * The JWT token string to parse.
+	 * @returns {JwtClaims|null}
+	 * The decoded JWT claims or null when parsing fails or token is invalid.
 	 */
 	private parseJwt(token: string): JwtClaims | null
 	{

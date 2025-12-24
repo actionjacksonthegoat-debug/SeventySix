@@ -16,6 +16,21 @@ namespace SeventySix.Identity;
 /// Extracted from LoginCommandHandler and RefreshTokensCommandHandler
 /// to reduce parameter coupling and eliminate code duplication.
 /// </remarks>
+/// <param name="authRepository">
+/// Repository for authentication persistence and token updates.
+/// </param>
+/// <param name="userRepository">
+/// Repository for user queries and role lookups.
+/// </param>
+/// <param name="tokenService">
+/// Token service responsible for access/refresh token generation.
+/// </param>
+/// <param name="jwtSettings">
+/// JWT configuration values (expiration minutes, keys).
+/// </param>
+/// <param name="timeProvider">
+/// Time provider for obtaining current UTC times.
+/// </param>
 public sealed class AuthenticationService(
 	IAuthRepository authRepository,
 	IUserQueryRepository userRepository,
@@ -26,6 +41,25 @@ public sealed class AuthenticationService(
 	/// <summary>
 	/// Generates authentication result with access and refresh tokens.
 	/// </summary>
+	/// <param name="user">
+	/// The user instance for whom tokens are issued.
+	/// </param>
+	/// <param name="clientIp">
+	/// The client's IP address (optional).
+	/// </param>
+	/// <param name="requiresPasswordChange">
+	/// Whether the user must change their password after login.
+	/// </param>
+	/// <param name="rememberMe">
+	/// Whether to issue a long-lived refresh token.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// An AuthResult containing access and refresh tokens with expiration information,
+	/// or a failure result explaining why authentication failed.
+	/// </returns>
 	/// <remarks>
 	/// Handles role loading, token generation, expiration calculation,
 	/// and last login tracking in a single cohesive operation.

@@ -62,6 +62,18 @@ internal class LogRepository(
 		return (logs, totalCount);
 	}
 
+	/// <summary>
+	/// Applies filtering criteria from <see cref="LogQueryRequest"/> to the query.
+	/// </summary>
+	/// <param name="query">
+	/// The base query for <see cref="Log"/> entities.
+	/// </param>
+	/// <param name="request">
+	/// The filter and pagination request.
+	/// </param>
+	/// <returns>
+	/// A filtered <see cref="IQueryable{Log}"/>.
+	/// </returns>
 	private static IQueryable<Log> ApplyFilters(
 		IQueryable<Log> query,
 		LogQueryRequest request)
@@ -109,6 +121,18 @@ internal class LogRepository(
 		return query;
 	}
 
+	/// <summary>
+	/// Applies sorting and paging to the query based on request parameters.
+	/// </summary>
+	/// <param name="query">
+	/// The query to sort and page.
+	/// </param>
+	/// <param name="request">
+	/// The request containing sorting and paging options.
+	/// </param>
+	/// <returns>
+	/// A sorted and paged <see cref="IQueryable{Log}"/>.
+	/// </returns>
 	private static IQueryable<Log> ApplySortingAndPaging(
 		IQueryable<Log> query,
 		LogQueryRequest request)

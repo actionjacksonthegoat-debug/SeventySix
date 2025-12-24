@@ -60,6 +60,12 @@ public class IpAnonymizationService(
 		await this.AnonymizeIpAddressesInternalAsync(CancellationToken.None);
 	}
 
+	/// <summary>
+	/// Performs the IP anonymization operation for users older than retention cutoff.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token for the operation.
+	/// </param>
 	private async Task AnonymizeIpAddressesInternalAsync(
 		CancellationToken cancellationToken)
 	{

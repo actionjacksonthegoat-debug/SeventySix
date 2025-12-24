@@ -10,6 +10,8 @@ namespace SeventySix.Identity.Constants;
 /// </summary>
 public static class AuditConstants
 {
-	/// <summary>System user for automated operations and migrations.</summary>
+	/// <summary>
+	/// System user for automated operations and migrations.
+	/// </summary>
 	public const string SystemUser = "System";
 }

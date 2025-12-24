@@ -6,7 +6,9 @@ using FluentValidation;
 
 namespace SeventySix.Identity.Commands.CreatePermissionRequest;
 
-/// <summary>Validator for <see cref="CreatePermissionRequestCommand"/>.</summary>
+/// <summary>
+/// Validator for <see cref="CreatePermissionRequestCommand"/>.
+/// </summary>
 internal class CreatePermissionRequestValidator
 	: AbstractValidator<CreatePermissionRequestCommand>
 {

@@ -15,6 +15,27 @@ public static class RefreshTokensCommandHandler
 	/// <summary>
 	/// Handles refresh tokens command.
 	/// </summary>
+	/// <param name="command">
+	/// The refresh tokens command containing the refresh token and client IP.
+	/// </param>
+	/// <param name="tokenService">
+	/// Service for validating and rotating refresh tokens.
+	/// </param>
+	/// <param name="repository">
+	/// Repository to load user data.
+	/// </param>
+	/// <param name="credentialRepository">
+	/// Repository for user credentials used to determine password change requirement.
+	/// </param>
+	/// <param name="authenticationService">
+	/// Service to generate new authentication results.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// An <see cref="AuthResult"/> with rotated refresh token and access token on success.
+	/// </returns>
 	public static async Task<AuthResult> HandleAsync(
 		RefreshTokensCommand command,
 		ITokenService tokenService,

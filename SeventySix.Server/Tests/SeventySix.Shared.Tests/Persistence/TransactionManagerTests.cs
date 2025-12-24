@@ -19,6 +19,9 @@ public class TransactionManagerTests : IDisposable
 	private readonly ApiTrackingDbContext DbContext;
 	private readonly TransactionManager TransactionManager;
 
+	/// <summary>
+	/// Sets up an in-memory SQLite DbContext and TransactionManager for tests.
+	/// </summary>
 	public TransactionManagerTests()
 	{
 		// Use in-memory SQLite database for fast unit tests
@@ -42,6 +45,9 @@ public class TransactionManagerTests : IDisposable
 		DbContext.Dispose();
 	}
 
+	/// <summary>
+	/// Verifies that a successful operation commits the transaction.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteInTransactionAsync_WithSuccessfulOperation_CommitsTransactionAsync()
 	{
@@ -79,6 +85,9 @@ public class TransactionManagerTests : IDisposable
 		savedEntity!.ApiName.ShouldBe("TestApi");
 	}
 
+	/// <summary>
+	/// Verifies that when an operation throws an exception the transaction is rolled back.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteInTransactionAsync_WithException_RollsBackTransactionAsync()
 	{
@@ -119,6 +128,9 @@ public class TransactionManagerTests : IDisposable
 		allEntities.ShouldBeEmpty(); // Transaction was rolled back
 	}
 
+	/// <summary>
+	/// Verifies that passing a null operation throws an ArgumentNullException.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteInTransactionAsync_WithNullOperation_ThrowsArgumentNullExceptionAsync()
 	{
@@ -131,6 +143,9 @@ public class TransactionManagerTests : IDisposable
 		await Should.ThrowAsync<ArgumentNullException>(act);
 	}
 
+	/// <summary>
+	/// Verifies the void overload executes successfully and commits transaction.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteInTransactionAsync_VoidOverload_ExecutesSuccessfullyAsync()
 	{
@@ -165,6 +180,9 @@ public class TransactionManagerTests : IDisposable
 		allEntities[0].ApiName.ShouldBe("TestApi");
 	}
 
+	/// <summary>
+	/// Verifies that a concurrency conflict triggers retries and eventually succeeds.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteInTransactionAsync_WithConcurrencyException_RetriesOperationAsync()
 	{
@@ -222,6 +240,9 @@ public class TransactionManagerTests : IDisposable
 		attemptCount.ShouldBe(2); // First attempt failed, second succeeded
 	}
 
+	/// <summary>
+	/// Verifies that exceeding max retry attempts throws InvalidOperationException.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteInTransactionAsync_WithMaxRetriesExceeded_ThrowsInvalidOperationExceptionAsync()
 	{
@@ -249,6 +270,9 @@ public class TransactionManagerTests : IDisposable
 		attemptCount.ShouldBe(3); // Initial attempt + 2 retries
 	}
 
+	/// <summary>
+	/// Verifies non-retryable exceptions do not trigger retries.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteInTransactionAsync_WithNonRetryableException_DoesNotRetryAsync()
 	{
@@ -274,6 +298,9 @@ public class TransactionManagerTests : IDisposable
 		attemptCount.ShouldBe(1); // No retries for non-retryable exceptions
 	}
 
+	/// <summary>
+	/// Verifies operation cancellation propagates OperationCanceledException.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteInTransactionAsync_WithCancellation_ThrowsOperationCanceledExceptionAsync()
 	{
@@ -297,6 +324,9 @@ public class TransactionManagerTests : IDisposable
 		await Should.ThrowAsync<OperationCanceledException>(act);
 	}
 
+	/// <summary>
+	/// Verifies multiple operations isolate their transactions from each other.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteInTransactionAsync_MultipleOperations_IsolatesTransactionsAsync()
 	{
@@ -357,6 +387,9 @@ public class TransactionManagerTests : IDisposable
 		allEntities.ShouldContain(e => e.ApiName == "Api2");
 	}
 
+	/// <summary>
+	/// Documents that primary constructor usage behaves as expected (sanity check for DI behavior).
+	/// </summary>
 	[Fact]
 	public void Constructor_WithNullContext_DoesNotThrowBecauseOfPrimaryConstructor()
 	{
@@ -366,6 +399,9 @@ public class TransactionManagerTests : IDisposable
 		Assert.True(true);
 	}
 
+	/// <summary>
+	/// Verifies retry behavior succeeds after an initial concurrency failure.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteInTransactionAsync_WithRetries_SucceedsAfterRetryAsync()
 	{

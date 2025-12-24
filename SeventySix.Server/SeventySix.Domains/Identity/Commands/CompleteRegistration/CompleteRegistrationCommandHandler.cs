@@ -18,6 +18,27 @@ public static class CompleteRegistrationCommandHandler
 	/// <summary>
 	/// Handles the CompleteRegistrationCommand request.
 	/// </summary>
+	/// <param name="command">
+	/// The complete registration command containing token and client IP.
+	/// </param>
+	/// <param name="registrationService">
+	/// Service that creates users and returns auth results.
+	/// </param>
+	/// <param name="emailVerificationTokenRepository">
+	/// Repository for email verification tokens.
+	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider for expiration checks.
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// An <see cref="AuthResult"/> containing access and refresh tokens on success.
+	/// </returns>
 	/// <remarks>
 	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
 	/// Database unique constraints on Username and Email provide atomicity - no manual duplicate checks needed.

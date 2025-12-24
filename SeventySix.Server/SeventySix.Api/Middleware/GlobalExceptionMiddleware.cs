@@ -51,6 +51,9 @@ public class GlobalExceptionMiddleware(
 	IHostEnvironment environment)
 {
 	// At the top of the class, add a static readonly field for the options:
+	/// <summary>
+	/// Serializer options used when writing ProblemDetails responses (camelCase, indented).
+	/// </summary>
 	private static readonly JsonSerializerOptions ProblemDetailsJsonOptions =
 		new()
 		{
@@ -122,6 +125,18 @@ public class GlobalExceptionMiddleware(
 			JsonSerializer.Serialize(problemDetails, ProblemDetailsJsonOptions));
 	}
 
+	/// <summary>
+	/// Maps an exception to a <see cref="ProblemDetails"/> instance.
+	/// </summary>
+	/// <param name="context">
+	/// The HTTP context for the request.
+	/// </param>
+	/// <param name="exception">
+	/// The exception to map.
+	/// </param>
+	/// <returns>
+	/// A <see cref="ProblemDetails"/> with appropriate Status, Title, Detail, and Type.
+	/// </returns>
 	private ProblemDetails MapExceptionToProblemDetails(
 		HttpContext context,
 		Exception exception) =>
@@ -173,6 +188,18 @@ public class GlobalExceptionMiddleware(
 			_ => CreateDefaultProblemDetails(context, exception),
 		};
 
+	/// <summary>
+	/// Creates a generic Internal Server Error <see cref="ProblemDetails"/> response.
+	/// </summary>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	/// <param name="exception">
+	/// The original exception; message is included in Development environment.
+	/// </param>
+	/// <returns>
+	/// A <see cref="ProblemDetails"/> for an internal server error.
+	/// </returns>
 	private ProblemDetails CreateDefaultProblemDetails(
 		HttpContext context,
 		Exception exception) =>

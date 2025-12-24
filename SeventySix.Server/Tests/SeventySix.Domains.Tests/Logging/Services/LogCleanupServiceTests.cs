@@ -41,6 +41,9 @@ public class LogCleanupServiceTests
 		ScopeFactory.CreateScope().Returns(Scope);
 	}
 
+	/// <summary>
+	/// Ensures the cleanup job does not run when the feature is disabled.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteAsync_WhenDisabled_DoesNotRunCleanupAsync()
 	{
@@ -74,6 +77,9 @@ public class LogCleanupServiceTests
 				Arg.Any<CancellationToken>());
 	}
 
+	/// <summary>
+	/// Verifies the cleanup service calls the repository to delete old logs when enabled.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteAsync_WhenEnabled_CallsDeleteOlderThanAsync()
 	{
@@ -119,6 +125,9 @@ public class LogCleanupServiceTests
 				Arg.Any<CancellationToken>());
 	}
 
+	/// <summary>
+	/// Verifies cutoff date calculation uses retention days to determine records to delete.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteAsync_CalculatesCorrectCutoffDateAsync()
 	{
@@ -173,6 +182,9 @@ public class LogCleanupServiceTests
 			expectedCutoff.AddSeconds(5));
 	}
 
+	/// <summary>
+	/// Ensures the service continues running even if a cleanup invocation throws an exception.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteAsync_ContinuesAfterExceptionAsync()
 	{

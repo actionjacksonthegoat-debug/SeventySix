@@ -47,6 +47,12 @@ public class AdminSeederService(
 		}
 	}
 
+	/// <summary>
+	/// Seeds the initial admin user if not present and if enabled in settings.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
 	private async Task SeedAdminUserAsync(CancellationToken cancellationToken)
 	{
 		using IServiceScope scope = scopeFactory.CreateScope();

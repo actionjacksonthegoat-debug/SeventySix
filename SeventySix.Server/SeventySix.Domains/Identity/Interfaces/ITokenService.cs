@@ -119,7 +119,6 @@ public interface ITokenService
 	/// <summary>
 	/// Revokes all refresh tokens for a user.
 	/// </summary>
-	/// </summary>
 	/// <param name="userId">
 	/// The user's ID.
 	/// </param>

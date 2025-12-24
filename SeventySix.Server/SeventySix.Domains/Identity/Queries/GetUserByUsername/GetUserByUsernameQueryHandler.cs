@@ -5,6 +5,9 @@ namespace SeventySix.Identity;
 /// </summary>
 public static class GetUserByUsernameQueryHandler
 {
+	/// <summary>
+	/// Finds a user by username and returns a <see cref="UserDto"/> when found.
+	/// </summary>
 	public static async Task<UserDto?> HandleAsync(
 		GetUserByUsernameQuery query,
 		IUserQueryRepository repository,

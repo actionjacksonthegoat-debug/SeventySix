@@ -15,6 +15,18 @@ namespace SeventySix.Identity;
 /// Background service that processes pending welcome emails for users.
 /// Runs daily at 00:05 UTC (5 minutes after rate limit reset).
 /// </summary>
+/// <param name="scopeFactory">
+/// Factory used to create DI scopes.
+/// </param>
+/// <param name="emailSettings">
+/// Settings for email delivery and limits.
+/// </param>
+/// <param name="timeProvider">
+/// Provides current time for scheduling.
+/// </param>
+/// <param name="logger">
+/// Logger for diagnostic messages.
+/// </param>
 public class PendingEmailBackgroundService(
 	IServiceScopeFactory scopeFactory,
 	IOptions<EmailSettings> emailSettings,
@@ -55,6 +67,9 @@ public class PendingEmailBackgroundService(
 		}
 	}
 
+	/// <summary>
+	/// Calculates the delay until the next scheduled run time.
+	/// </summary>
 	private TimeSpan CalculateDelayUntilNextRun()
 	{
 		DateTime now =
@@ -67,6 +82,12 @@ public class PendingEmailBackgroundService(
 		return nextRun - now;
 	}
 
+	/// <summary>
+	/// Processes users who need welcome emails and enqueues/sends them.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token for the operation.
+	/// </param>
 	private async Task ProcessPendingEmailsAsync(
 		CancellationToken cancellationToken)
 	{

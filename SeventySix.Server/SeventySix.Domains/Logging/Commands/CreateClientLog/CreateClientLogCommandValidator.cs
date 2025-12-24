@@ -6,11 +6,15 @@ using FluentValidation;
 
 namespace SeventySix.Logging.Commands.CreateClientLog;
 
-/// <summary>FluentValidation validator for CreateLogRequest.</summary>
+/// <summary>
+/// FluentValidation validator for CreateLogRequest.
+/// </summary>
 public class CreateClientLogCommandValidator
 	: AbstractValidator<CreateLogRequest>
 {
-	/// <summary>Initializes a new instance of the <see cref="CreateClientLogCommandValidator"/> class.</summary>
+	/// <summary>
+	/// Initializes a new instance of the <see cref="CreateClientLogCommandValidator"/> class.
+	/// </summary>
 	public CreateClientLogCommandValidator()
 	{
 		RuleFor(request => request.LogLevel)

@@ -7,9 +7,32 @@ using SeventySix.Identity.Constants;
 
 namespace SeventySix.Identity.Commands.CreatePermissionRequest;
 
-/// <summary>Handler for creating permission requests.</summary>
+/// <summary>
+/// Handler for creating permission requests.
+/// </summary>
 public static class CreatePermissionRequestCommandHandler
 {
+	/// <summary>
+	/// Processes a create permission request command, auto-approving whitelisted emails.
+	/// </summary>
+	/// <param name="command">
+	/// The permission request command containing user, requested roles and message.
+	/// </param>
+	/// <param name="repository">
+	/// Repository for permission requests and role lookups.
+	/// </param>
+	/// <param name="userCommandRepository">
+	/// Repository for user commands such as adding roles.
+	/// </param>
+	/// <param name="whitelistedOptions">
+	/// Options configuring whitelisted emails for auto-approval.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
 	public static async Task HandleAsync(
 		CreatePermissionRequestCommand command,
 		IPermissionRequestRepository repository,

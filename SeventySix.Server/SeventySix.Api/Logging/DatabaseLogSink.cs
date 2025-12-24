@@ -19,21 +19,21 @@ namespace SeventySix.Api.Logging;
 /// - Exception.Message + BaseException.Message (if different) + StackTrace
 /// - Filters stack trace to only show our code (SeventySix namespace)
 ///
-/// Design Patterns:
-/// - Sink: Custom log event processor
-/// - Repository: Uses ILogRepository for data access
-/// - Producer-Consumer: Batches log events to prevent connection pool exhaustion
-///
-/// SOLID Principles:
-/// - SRP: Only responsible for formatting and persisting log events
-/// - DIP: Depends on ILogRepository abstraction
-///
 /// Performance Considerations:
 /// - Batched writes to database (every 5 seconds or 50 events)
 /// - Single background task with dedicated connection
 /// - Only logs Warning level and above to reduce database I/O
 /// - Prevents connection pool exhaustion during high load
 /// </remarks>
+/// <param name="serviceProvider">
+/// Service provider for creating scopes and resolving dependencies.
+/// </param>
+/// <param name="environment">
+/// Optional environment name (e.g., "Production").
+/// </param>
+/// <param name="machineName">
+/// Optional machine or container name.
+/// </param>
 public class DatabaseLogSink(
 	IServiceProvider serviceProvider,
 	string? environment = null,

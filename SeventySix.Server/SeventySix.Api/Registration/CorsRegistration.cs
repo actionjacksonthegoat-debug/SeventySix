@@ -12,6 +12,10 @@ public static class CorsRegistration
 	/// <summary>
 	/// Adds CORS policies from configuration.
 	/// </summary>
+	/// <remarks>
+	/// Reads configuration key: "Cors:AllowedOrigins".
+	/// Defaults to "http://localhost:4200" when not configured.
+	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
 	/// </param>

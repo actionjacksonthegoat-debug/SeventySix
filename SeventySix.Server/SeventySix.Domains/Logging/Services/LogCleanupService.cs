@@ -13,6 +13,18 @@ namespace SeventySix.Logging;
 /// Background service that periodically cleans up old logs from database and file system.
 /// Follows TokenCleanupService pattern from Identity bounded context.
 /// </summary>
+/// <param name="scopeFactory">
+/// Factory used to create DI scopes.
+/// </param>
+/// <param name="settings">
+/// Options for <see cref="LogCleanupSettings"/> binding.
+/// </param>
+/// <param name="timeProvider">
+/// Provides current time for scheduling and cutoff calculations.
+/// </param>
+/// <param name="logger">
+/// Logger for diagnostic messages.
+/// </param>
 public class LogCleanupService(
 	IServiceScopeFactory scopeFactory,
 	IOptions<LogCleanupSettings> settings,
@@ -59,6 +71,15 @@ public class LogCleanupService(
 		}
 	}
 
+	/// <summary>
+	/// Deletes database logs older than the retention cutoff configured in settings.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous cleanup operation.
+	/// </returns>
 	private async Task CleanupDatabaseLogsAsync(
 		CancellationToken cancellationToken)
 	{
@@ -87,6 +108,12 @@ public class LogCleanupService(
 		}
 	}
 
+	/// <summary>
+	/// Deletes log files from disk older than the configured retention period.
+	/// </summary>
+	/// <remarks>
+	/// Uses <see cref="LogCleanupSettings.LogDirectory"/> and <see cref="LogCleanupSettings.LogFilePattern"/>.
+	/// </remarks>
 	private void CleanupFileLogs()
 	{
 		LogCleanupSettings config = settings.Value;

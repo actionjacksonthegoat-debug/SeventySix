@@ -36,6 +36,9 @@ public class OAuthCodeExchangeServiceTests
 
 	#region StoreTokens Tests
 
+	/// <summary>
+	/// Verifies StoreTokens returns a non-empty code for valid input.
+	/// </summary>
 	[Fact]
 	public void StoreTokens_ValidInput_ReturnsNonEmptyCode()
 	{
@@ -56,6 +59,9 @@ public class OAuthCodeExchangeServiceTests
 		Assert.NotEmpty(code);
 	}
 
+	/// <summary>
+	/// Verifies multiple StoreTokens invocations produce different codes.
+	/// </summary>
 	[Fact]
 	public void StoreTokens_MultipleInvocations_ReturnsDifferentCodes()
 	{
@@ -83,6 +89,9 @@ public class OAuthCodeExchangeServiceTests
 		Assert.NotEqual(code1, code2);
 	}
 
+	/// <summary>
+	/// Verifies generated code is base64url-safe (url friendly characters only).
+	/// </summary>
 	[Fact]
 	public void StoreTokens_GeneratesBase64UrlSafeCode()
 	{
@@ -106,6 +115,9 @@ public class OAuthCodeExchangeServiceTests
 
 	#region ExchangeCode Tests
 
+	/// <summary>
+	/// Verifies ExchangeCode returns stored tokens and metadata for a valid code.
+	/// </summary>
 	[Fact]
 	public void ExchangeCode_ValidCode_ReturnsTokens()
 	{
@@ -136,6 +148,9 @@ public class OAuthCodeExchangeServiceTests
 		Assert.Equal(TestFullName, result.FullName);
 	}
 
+	/// <summary>
+	/// Verifies ExchangeCode returns null for an invalid code.
+	/// </summary>
 	[Fact]
 	public void ExchangeCode_InvalidCode_ReturnsNull()
 	{
@@ -150,6 +165,9 @@ public class OAuthCodeExchangeServiceTests
 		Assert.Null(result);
 	}
 
+	/// <summary>
+	/// Verifies exchanging the same code twice only returns tokens on the first call.
+	/// </summary>
 	[Fact]
 	public void ExchangeCode_SameCodeTwice_SecondCallReturnsNull()
 	{
@@ -176,6 +194,9 @@ public class OAuthCodeExchangeServiceTests
 		Assert.Null(secondResult);
 	}
 
+	/// <summary>
+	/// Verifies ExchangeCode returns null when an empty code is provided.
+	/// </summary>
 	[Fact]
 	public void ExchangeCode_EmptyCode_ReturnsNull()
 	{
@@ -194,6 +215,9 @@ public class OAuthCodeExchangeServiceTests
 
 	#region Code Expiration Tests
 
+	/// <summary>
+	/// Verifies ExchangeCode returns null for an expired code (expiration behavior).
+	/// </summary>
 	[Fact]
 	public async Task ExchangeCode_ExpiredCode_ReturnsNullAsync()
 	{
@@ -234,6 +258,9 @@ public class OAuthCodeExchangeServiceTests
 
 	#region Security Tests
 
+	/// <summary>
+	/// Verifies generated code length meets expected base64url size.
+	/// </summary>
 	[Fact]
 	public void StoreTokens_CodeLengthIsSecure()
 	{
@@ -253,6 +280,9 @@ public class OAuthCodeExchangeServiceTests
 		Assert.Equal(43, code.Length);
 	}
 
+	/// <summary>
+	/// Verifies different tokens produce unique codes over many invocations.
+	/// </summary>
 	[Fact]
 	public void StoreTokens_DifferentTokens_ProduceDistinctCodes()
 	{

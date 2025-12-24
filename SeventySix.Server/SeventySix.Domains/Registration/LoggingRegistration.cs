@@ -15,10 +15,14 @@ using SeventySix.Shared.Persistence;
 
 namespace SeventySix.Registration;
 
-/// <summary>DI extension methods for the Logging bounded context.</summary>
+/// <summary>
+/// DI extension methods for the Logging bounded context.
+/// </summary>
 public static class LoggingRegistration
 {
-	/// <summary>Registers Logging bounded context services with the DI container.</summary>
+	/// <summary>
+	/// Registers Logging bounded context services with the DI container.
+	/// </summary>
 	/// <param name="services">
 	/// The service collection to register services with.
 	/// </param>

@@ -29,6 +29,9 @@ namespace SeventySix.Api.Infrastructure;
 /// - Timeout Policy: Prevents hanging requests
 /// - Rate Limiting: Enforces API call quotas (APPLICATION-WIDE, database-backed)
 /// - Caching: Reduces unnecessary API calls
+///
+/// Reads resilience settings from the "Polly" configuration section (PollyOptions).
+/// Caching default duration: 5 minutes (unless cacheDuration is specified). Stale fallback stored for 24 hours.
 /// </remarks>
 public class PollyIntegrationClient(
 	HttpClient httpClient,

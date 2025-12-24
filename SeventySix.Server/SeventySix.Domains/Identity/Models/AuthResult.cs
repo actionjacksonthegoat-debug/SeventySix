@@ -115,36 +115,58 @@ public record AuthResult(
 /// </summary>
 public static class AuthErrorCodes
 {
-	/// <summary>Invalid credentials.</summary>
+	/// <summary>
+	/// Invalid credentials.
+	/// </summary>
 	public const string InvalidCredentials = "INVALID_CREDENTIALS";
 
-	/// <summary>Account is locked.</summary>
+	/// <summary>
+	/// Account is locked.
+	/// </summary>
 	public const string AccountLocked = "ACCOUNT_LOCKED";
 
-	/// <summary>Account is inactive.</summary>
+	/// <summary>
+	/// Account is inactive.
+	/// </summary>
 	public const string AccountInactive = "ACCOUNT_INACTIVE";
 
-	/// <summary>Username already exists.</summary>
+	/// <summary>
+	/// Username already exists.
+	/// </summary>
 	public const string UsernameExists = "USERNAME_EXISTS";
 
-	/// <summary>Email already exists.</summary>
+	/// <summary>
+	/// Email already exists.
+	/// </summary>
 	public const string EmailExists = "EMAIL_EXISTS";
 
-	/// <summary>Invalid or expired refresh token.</summary>
+	/// <summary>
+	/// Invalid or expired refresh token.
+	/// </summary>
 	public const string InvalidToken = "INVALID_TOKEN";
 
-	/// <summary>Refresh token reuse detected (potential attack).</summary>
+	/// <summary>
+	/// Refresh token reuse detected (potential attack).
+	/// </summary>
 	public const string TokenReuse = "TOKEN_REUSE";
 
-	/// <summary>OAuth error occurred.</summary>
+	/// <summary>
+	/// OAuth error occurred.
+	/// </summary>
 	public const string OAuthError = "OAUTH_ERROR";
 
-	/// <summary>Password does not meet requirements.</summary>
+	/// <summary>
+	/// Password does not meet requirements.
+	/// </summary>
 	public const string WeakPassword = "WEAK_PASSWORD";
 
-	/// <summary>Token has expired.</summary>
+	/// <summary>
+	/// Token has expired.
+	/// </summary>
 	public const string TokenExpired = "TOKEN_EXPIRED";
 
-	/// <summary>User not found.</summary>
+	/// <summary>
+	/// User not found.
+	/// </summary>
 	public const string UserNotFound = "USER_NOT_FOUND";
 }

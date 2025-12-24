@@ -17,6 +17,39 @@ public static class SetPasswordCommandHandler
 	/// <summary>
 	/// Handles the set password command.
 	/// </summary>
+	/// <param name="command">
+	/// The set password command containing token and new password.
+	/// </param>
+	/// <param name="passwordResetTokenRepository">
+	/// Repository for password reset tokens.
+	/// </param>
+	/// <param name="credentialRepository">
+	/// Repository managing user credentials.
+	/// </param>
+	/// <param name="messageBus">
+	/// Message bus for invoking queries/commands.
+	/// </param>
+	/// <param name="tokenRepository">
+	/// Repository for refresh tokens.
+	/// </param>
+	/// <param name="passwordHasher">
+	/// Service to hash and verify passwords.
+	/// </param>
+	/// <param name="registrationService">
+	/// Service to generate authentication results.
+	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider for current time values.
+	/// </param>
+	/// <param name="logger">
+	/// Logger instance for audit and errors.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// An <see cref="AuthResult"/> indicating success or failure.
+	/// </returns>
 	/// <exception cref="ArgumentException">Thrown when validation fails.</exception>
 	/// <exception cref="InvalidOperationException">Thrown when user not found or inactive.</exception>
 	public static async Task<AuthResult> HandleAsync(

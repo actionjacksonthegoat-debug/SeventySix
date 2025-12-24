@@ -10,6 +10,8 @@ namespace SeventySix.Identity.Constants;
 /// </summary>
 public static class PolicyConstants
 {
-	/// <summary>Policy requiring Admin or Developer role.</summary>
+	/// <summary>
+	/// Policy requiring Admin or Developer role.
+	/// </summary>
 	public const string AdminOnly = "AdminOnly";
 }

@@ -8,7 +8,9 @@ using SeventySix.Shared.Persistence;
 
 namespace SeventySix.Identity;
 
-/// <summary>EF Core implementation for User data access.</summary>
+/// <summary>
+/// EF Core implementation for User data access.
+/// </summary>
 internal class UserRepository(
 	IdentityDbContext context,
 	ILogger<UserRepository> repositoryLogger,
@@ -222,65 +224,6 @@ internal class UserRepository(
 				.ToListAsync(cancellationToken);
 
 		return (users, totalCount);
-	}
-
-	private static IQueryable<User> ApplyFilters(
-		IQueryable<User> query,
-		UserQueryRequest request)
-	{
-		if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-		{
-			query =
-				query.Where(user =>
-					user.Username.Contains(request.SearchTerm)
-					|| user.Email.Contains(request.SearchTerm)
-					|| (
-						user.FullName != null
-						&& user.FullName.Contains(request.SearchTerm)));
-		}
-
-		if (request.IsActive.HasValue)
-		{
-			query =
-				query.Where(user =>
-					user.IsActive == request.IsActive.Value);
-		}
-
-		if (request.StartDate.HasValue)
-		{
-			query =
-				query.Where(user =>
-					user.LastLoginAt >= request.StartDate.Value);
-		}
-
-		if (request.EndDate.HasValue)
-		{
-			query =
-				query.Where(user =>
-					user.LastLoginAt <= request.EndDate.Value);
-		}
-
-		return query;
-	}
-
-	private static IQueryable<User> ApplySortingAndPaging(
-		IQueryable<User> query,
-		UserQueryRequest request)
-	{
-		string sortProperty =
-			string.IsNullOrWhiteSpace(request.SortBy)
-			? "Id"
-			: request.SortBy;
-
-		query =
-			request.SortDescending
-			? query.OrderByDescending(user =>
-				EF.Property<object>(user, sortProperty))
-			: query.OrderBy(user => EF.Property<object>(user, sortProperty));
-
-		return query
-			.Skip(request.GetSkip())
-			.Take(request.GetValidatedPageSize());
 	}
 
 	/// <inheritdoc/>
@@ -574,5 +517,88 @@ internal class UserRepository(
 			.Where(user => user.NeedsPendingEmail)
 			.Select(UserExtensions.ToDtoProjection)
 			.ToListAsync(cancellationToken);
+	}
+
+	/// <summary>
+	/// Applies filtering to a user query based on the <see cref="UserQueryRequest"/>.
+	/// </summary>
+	/// <param name="query">
+	/// The base query to apply filters to.
+	/// </param>
+	/// <param name="request">
+	/// The request containing filter criteria.
+	/// </param>
+	/// <returns>
+	/// A filtered <see cref="IQueryable{User}"/> instance.
+	/// </returns>
+	private static IQueryable<User> ApplyFilters(
+		IQueryable<User> query,
+		UserQueryRequest request)
+	{
+		if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+		{
+			query =
+				query.Where(user =>
+					user.Username.Contains(request.SearchTerm)
+					|| user.Email.Contains(request.SearchTerm)
+					|| (
+						user.FullName != null
+						&& user.FullName.Contains(request.SearchTerm)));
+		}
+
+		if (request.IsActive.HasValue)
+		{
+			query =
+				query.Where(user =>
+					user.IsActive == request.IsActive.Value);
+		}
+
+		if (request.StartDate.HasValue)
+		{
+			query =
+				query.Where(user =>
+					user.LastLoginAt >= request.StartDate.Value);
+		}
+
+		if (request.EndDate.HasValue)
+		{
+			query =
+				query.Where(user =>
+					user.LastLoginAt <= request.EndDate.Value);
+		}
+
+		return query;
+	}
+
+	/// <summary>
+	/// Applies sorting and paging to a user query based on the request.
+	/// </summary>
+	/// <param name="query">
+	/// The query to sort and page.
+	/// </param>
+	/// <param name="request">
+	/// Pagination and sorting parameters.
+	/// </param>
+	/// <returns>
+	/// A sorted and paged <see cref="IQueryable{User}"/>.
+	/// </returns>
+	private static IQueryable<User> ApplySortingAndPaging(
+		IQueryable<User> query,
+		UserQueryRequest request)
+	{
+		string sortProperty =
+			string.IsNullOrWhiteSpace(request.SortBy)
+			? "Id"
+			: request.SortBy;
+
+		query =
+			request.SortDescending
+			? query.OrderByDescending(user =>
+				EF.Property<object>(user, sortProperty))
+			: query.OrderBy(user => EF.Property<object>(user, sortProperty));
+
+		return query
+			.Skip(request.GetSkip())
+			.Take(request.GetValidatedPageSize());
 	}
 }

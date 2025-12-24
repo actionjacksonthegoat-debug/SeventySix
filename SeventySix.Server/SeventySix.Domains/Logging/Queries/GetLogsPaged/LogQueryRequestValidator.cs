@@ -8,7 +8,9 @@ using SeventySix.Shared.Validators;
 
 namespace SeventySix.Logging.Queries.GetLogsPaged;
 
-/// <summary>FluentValidation validator for LogQueryRequest.</summary>
+/// <summary>
+/// FluentValidation validator for LogQueryRequest.
+/// </summary>
 /// <remarks>
 /// Inherits common validation from BaseQueryValidator.
 /// ONLY validates domain-specific LogLevel property.
@@ -16,7 +18,9 @@ namespace SeventySix.Logging.Queries.GetLogsPaged;
 /// </remarks>
 public class LogQueryRequestValidator : BaseQueryValidator<LogQueryRequest, Log>
 {
-	/// <summary>Initializes a new instance of the <see cref="LogQueryRequestValidator"/> class.</summary>
+	/// <summary>
+	/// Initializes a new instance of the <see cref="LogQueryRequestValidator"/> class.
+	/// </summary>
 	public LogQueryRequestValidator()
 		: base()
 	{

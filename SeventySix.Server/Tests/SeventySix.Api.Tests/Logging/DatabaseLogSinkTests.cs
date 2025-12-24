@@ -43,6 +43,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		Fixture = fixture;
 	}
 
+	/// <summary>
+	/// Initializes test resources including DbContext and service provider.
+	/// </summary>
 	public async Task InitializeAsync()
 	{
 		// Configure DbContext with shared PostgreSQL container
@@ -76,6 +79,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			ServiceProvider.GetRequiredService<ILogRepository>();
 	}
 
+	/// <summary>
+	/// Verifies that a Warning level log is queued for batched database write.
+	/// </summary>
 	[Fact]
 	public async Task Emit_WarningLevel_WritesToDatabaseAsync()
 	{
@@ -102,6 +108,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		// Note: Explicit DisposeAsync happens at end of scope
 	}
 
+	/// <summary>
+	/// Verifies that a Warning level log is persisted to the database after flush.
+	/// </summary>
 	[Fact]
 	public async Task Emit_WarningLevel_WritesToDatabase_VerifiedAsync()
 	{
@@ -141,6 +150,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		Assert.Equal("TestMachine", log.MachineName);
 	}
 
+	/// <summary>
+	/// Verifies that an Error level log is persisted to the database after flush.
+	/// </summary>
 	[Fact]
 	public async Task Emit_ErrorLevel_WritesToDatabaseAsync()
 	{
@@ -177,6 +189,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		Assert.Equal("Test error message", log.Message);
 	}
 
+	/// <summary>
+	/// Verifies that Information level logs are not persisted to the database.
+	/// </summary>
 	[Fact]
 	public async Task Emit_InformationLevel_DoesNotWriteToDatabaseAsync()
 	{
@@ -210,6 +225,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		Assert.Empty(logs); // Information level should not be persisted
 	}
 
+	/// <summary>
+	/// Verifies that exceptions are formatted and stored correctly in the log record.
+	/// </summary>
 	[Fact]
 	public async Task Emit_WithException_FormatsExceptionProperlyAsync()
 	{
@@ -256,6 +274,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		Assert.NotNull(log.StackTrace); // Should have stack trace
 	}
 
+	/// <summary>
+	/// Verifies that nested exceptions capture and persist base exception messages.
+	/// </summary>
 	[Fact]
 	public async Task Emit_WithNestedException_CapturesBaseExceptionAsync()
 	{
@@ -313,6 +334,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		Assert.Equal("Inner exception", log.BaseExceptionMessage);
 	}
 
+	/// <summary>
+	/// Disposes test resources such as ServiceProvider and DbContext.
+	/// </summary>
 	public async Task DisposeAsync()
 	{
 		if (ServiceProvider != null)

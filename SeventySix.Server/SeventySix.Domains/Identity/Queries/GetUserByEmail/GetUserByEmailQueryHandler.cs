@@ -5,6 +5,9 @@ namespace SeventySix.Identity;
 /// </summary>
 public static class GetUserByEmailQueryHandler
 {
+	/// <summary>
+	/// Retrieves a user by email address and returns a <see cref="UserDto"/> if found.
+	/// </summary>
 	public static async Task<UserDto?> HandleAsync(
 		GetUserByEmailQuery query,
 		IUserQueryRepository repository,

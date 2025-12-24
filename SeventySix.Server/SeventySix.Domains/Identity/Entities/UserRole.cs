@@ -19,27 +19,43 @@ namespace SeventySix.Identity;
 /// </remarks>
 public class UserRole : IAuditableEntity
 {
-	/// <summary>Gets or sets the unique identifier.</summary>
+	/// <summary>
+	/// Gets or sets the unique identifier.
+	/// </summary>
 	public int Id { get; set; }
 
-	/// <summary>Gets or sets the user ID (FK to identity.users).</summary>
+	/// <summary>
+	/// Gets or sets the user ID (FK to identity.users).
+	/// </summary>
 	public int UserId { get; set; }
 
-	/// <summary>Gets or sets the role ID (FK to SecurityRoles).</summary>
+	/// <summary>
+	/// Gets or sets the role ID (FK to SecurityRoles).
+	/// </summary>
 	public int RoleId { get; set; }
 
-	/// <summary>Gets or sets the security role (navigation property).</summary>
+	/// <summary>
+	/// Gets or sets the security role (navigation property).
+	/// </summary>
 	public SecurityRole? Role { get; set; }
 
-	/// <summary>Gets or sets when this role was created (null for whitelisted).</summary>
+	/// <summary>
+	/// Gets or sets when this role was created (null for whitelisted).
+	/// </summary>
 	public DateTime CreateDate { get; set; }
 
-	/// <summary>Gets or sets when this role was last modified.</summary>
+	/// <summary>
+	/// Gets or sets when this role was last modified.
+	/// </summary>
 	public DateTime? ModifyDate { get; set; }
 
-	/// <summary>Gets or sets who created this role (empty for whitelisted auto-approval).</summary>
+	/// <summary>
+	/// Gets or sets who created this role (empty for whitelisted auto-approval).
+	/// </summary>
 	public string CreatedBy { get; set; } = string.Empty;
 
-	/// <summary>Gets or sets who last modified this role.</summary>
+	/// <summary>
+	/// Gets or sets who last modified this role.
+	/// </summary>
 	public string ModifiedBy { get; set; } = string.Empty;
 }

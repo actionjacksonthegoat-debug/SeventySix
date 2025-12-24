@@ -21,6 +21,10 @@ namespace SeventySix.Api.Extensions;
 public static class WebApplicationExtensions
 {
 	/// <summary>Applies pending database migrations for all bounded contexts.</summary>
+	/// <remarks>
+	/// Reads configuration key: "SkipMigrationCheck" (bool) — when true, migration checks are skipped (useful in CI or short-lived containers).
+	/// Applies migrations for contexts: Identity, Logging, ApiTracking.
+	/// </remarks>
 	/// <param name="app">
 	/// The web application.
 	/// </param>
@@ -83,6 +87,10 @@ public static class WebApplicationExtensions
 	}
 
 	/// <summary>Configures forwarded headers for reverse proxy scenarios.</summary>
+	/// <remarks>
+	/// Reads configuration section: ForwardedHeadersSettings.SectionName (known proxies, known networks, forward limit).
+	/// Ensures proper IP and proto forwarding when the app is behind a reverse proxy/load balancer.
+	/// </remarks>
 	/// <param name="app">
 	/// The web application.
 	/// </param>
@@ -180,6 +188,24 @@ public static class WebApplicationExtensions
 		return app;
 	}
 
+	/// <summary>
+	/// Applies pending EF Core migrations for the specified <typeparamref name="TContext"/> if any exist.
+	/// </summary>
+	/// <typeparam name="TContext">
+	/// The type of <see cref="DbContext"/> to apply migrations for.
+	/// </typeparam>
+	/// <param name="services">
+	/// The service provider used to resolve the context instance.
+	/// </param>
+	/// <param name="logger">
+	/// Logger used to record migration activities.
+	/// </param>
+	/// <param name="contextName">
+	/// A friendly name for logging (e.g., "Identity").
+	/// </param>
+	/// <returns>
+	/// A task that completes after migrations are applied (or none are pending).
+	/// </returns>
 	private static async Task ApplyContextMigrationsAsync<TContext>(
 		IServiceProvider services,
 		ILogger logger,
@@ -201,6 +227,18 @@ public static class WebApplicationExtensions
 		}
 	}
 
+	/// <summary>
+	/// Writes a minimal liveness JSON response for the liveness probe.
+	/// </summary>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	/// <param name="_">
+	/// The health report (ignored for liveness endpoint).
+	/// </param>
+	/// <returns>
+	/// A task that completes when the response is written.
+	/// </returns>
 	private static async Task WriteLivenessResponseAsync(
 		HttpContext context,
 		HealthReport _)
@@ -218,6 +256,18 @@ public static class WebApplicationExtensions
 			});
 	}
 
+	/// <summary>
+	/// Writes a detailed health JSON response including entries, durations, and metadata.
+	/// </summary>
+	/// <param name="context">
+	/// The HTTP context.
+	/// </param>
+	/// <param name="report">
+	/// The aggregated health report returned by the health checks subsystem.
+	/// </param>
+	/// <returns>
+	/// A task that completes when the response is written.
+	/// </returns>
 	private static async Task WriteHealthCheckResponseAsync(
 		HttpContext context,
 		HealthReport report)
@@ -234,14 +284,14 @@ public static class WebApplicationExtensions
 				timestamp = timeProvider.GetUtcNow().UtcDateTime,
 				duration = report.TotalDuration,
 				checks = report.Entries.Select(entry => new
-					{
-						name = entry.Key,
-						status = entry.Value.Status.ToString(),
-						description = entry.Value.Description,
-						duration = entry.Value.Duration,
-						exception = entry.Value.Exception?.Message,
-						data = entry.Value.Data,
-					}),
+				{
+					name = entry.Key,
+					status = entry.Value.Status.ToString(),
+					description = entry.Value.Description,
+					duration = entry.Value.Duration,
+					exception = entry.Value.Exception?.Message,
+					data = entry.Value.Data,
+				}),
 			};
 
 		string result =

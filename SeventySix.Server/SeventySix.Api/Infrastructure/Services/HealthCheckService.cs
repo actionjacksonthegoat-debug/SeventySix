@@ -180,6 +180,18 @@ public class HealthCheckService(
 		};
 	}
 
+	/// <summary>
+	/// Samples process CPU usage over a short interval and returns the CPU usage percent (0-100).
+	/// </summary>
+	/// <param name="process">
+	/// The process to measure.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// CPU usage percentage rounded to 2 decimals.
+	/// </returns>
 	private static async Task<double> GetCpuUsageAsync(
 		Process process,
 		CancellationToken cancellationToken)

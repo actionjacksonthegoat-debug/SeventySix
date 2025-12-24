@@ -27,6 +27,11 @@ public static class RateLimitingRegistration
 	/// Configures a fixed window rate limiter partitioned by client IP.
 	/// Includes global limits and auth-specific stricter policies.
 	/// </summary>
+	/// <remarks>
+	/// Reads configuration sections:
+	/// - "RateLimiting" (global settings)
+	/// - "Auth:RateLimit" (auth-specific settings)
+	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
 	/// </param>

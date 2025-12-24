@@ -69,6 +69,9 @@ public class TokenServiceUnitTests
 
 	#region GenerateAccessToken Tests
 
+	/// <summary>
+	/// Verifies a valid JWT is returned for valid input.
+	/// </summary>
 	[Fact]
 	public void GenerateAccessToken_ValidInput_ReturnsValidJwtAsync()
 	{
@@ -89,6 +92,9 @@ public class TokenServiceUnitTests
 		Assert.Contains(JwtOptions.Value.Audience, jwt.Audiences);
 	}
 
+	/// <summary>
+	/// Verifies the token contains the expected subject (user id) claim.
+	/// </summary>
 	[Fact]
 	public void GenerateAccessToken_ContainsUserIdClaimAsync()
 	{
@@ -111,6 +117,9 @@ public class TokenServiceUnitTests
 		Assert.Equal("42", subClaim.Value);
 	}
 
+	/// <summary>
+	/// Verifies role claims are included in the token.
+	/// </summary>
 	[Fact]
 	public void GenerateAccessToken_ContainsRoleClaimsAsync()
 	{
@@ -134,6 +143,9 @@ public class TokenServiceUnitTests
 		Assert.Contains(TestRoleConstants.Admin, roleClaims);
 	}
 
+	/// <summary>
+	/// Verifies the token expires at the configured expiry time.
+	/// </summary>
 	[Fact]
 	public void GenerateAccessToken_ExpiresInConfiguredTimeAsync()
 	{
@@ -162,6 +174,18 @@ public class TokenServiceUnitTests
 	/// <summary>
 	/// Helper to generate access token for tests.
 	/// </summary>
+	/// <param name="userId">
+	/// The user id to include in the token.
+	/// </param>
+	/// <param name="username">
+	/// The username to include in the token.
+	/// </param>
+	/// <param name="roles">
+	/// Roles to include as claims in the token.
+	/// </param>
+	/// <returns>
+	/// The generated JWT access token string.
+	/// </returns>
 	private string GenerateTestAccessToken(
 		int userId = 1,
 		string username = "testuser",

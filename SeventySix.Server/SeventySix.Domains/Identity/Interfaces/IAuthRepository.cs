@@ -26,7 +26,9 @@ public interface IAuthRepository
 	/// <returns>
 	/// The user if found; otherwise, null.
 	/// </returns>
-	/// <remarks>Tracked query - needed for lockout updates.</remarks>
+	/// <remarks>
+	/// Tracked query - needed for lockout updates.
+	/// </remarks>
 	public Task<User?> GetUserByUsernameOrEmailForUpdateAsync(
 		string usernameOrEmail,
 		CancellationToken cancellationToken = default);

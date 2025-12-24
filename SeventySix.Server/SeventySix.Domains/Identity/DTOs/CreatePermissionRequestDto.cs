@@ -4,7 +4,9 @@
 
 namespace SeventySix.Identity;
 
-/// <summary>Request DTO for creating permission requests.</summary>
+/// <summary>
+/// Request DTO for creating permission requests.
+/// </summary>
 public record CreatePermissionRequestDto(
 	IReadOnlyList<string> RequestedRoles,
 	string? RequestMessage = null);

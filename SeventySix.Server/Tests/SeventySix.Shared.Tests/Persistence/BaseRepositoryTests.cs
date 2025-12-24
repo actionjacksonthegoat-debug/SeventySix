@@ -35,6 +35,9 @@ public class BaseRepositoryTests
 			new TestRepository(Context, Logger);
 	}
 
+	/// <summary>
+	/// Verifies ExecuteWithErrorHandlingAsync returns the operation result for a successful operation.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteWithErrorHandlingAsync_SuccessfulOperation_ReturnsResultAsync()
 	{
@@ -60,6 +63,9 @@ public class BaseRepositoryTests
 				Arg.Any<Func<object, Exception?, string>>());
 	}
 
+	/// <summary>
+	/// Verifies DbUpdateException is logged and rethrown by ExecuteWithErrorHandlingAsync.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteWithErrorHandlingAsync_DbUpdateException_LogsAndRethrowsAsync()
 	{
@@ -87,6 +93,9 @@ public class BaseRepositoryTests
 				Arg.Any<Func<object, Exception?, string>>());
 	}
 
+	/// <summary>
+	/// Verifies DbUpdateConcurrencyException is logged and rethrown by ExecuteWithErrorHandlingAsync.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteWithErrorHandlingAsync_DbUpdateConcurrencyException_LogsAndRethrowsAsync()
 	{
@@ -114,6 +123,9 @@ public class BaseRepositoryTests
 				Arg.Any<Func<object, Exception?, string>>());
 	}
 
+	/// <summary>
+	/// Verifies a generic exception is logged and rethrown by ExecuteWithErrorHandlingAsync.
+	/// </summary>
 	[Fact]
 	public async Task ExecuteWithErrorHandlingAsync_GenericException_LogsAndRethrowsAsync()
 	{
@@ -140,6 +152,9 @@ public class BaseRepositoryTests
 				Arg.Any<Func<object, Exception?, string>>());
 	}
 
+	/// <summary>
+	/// Verifies that creating a valid entity saves it to the context and returns the entity.
+	/// </summary>
 	[Fact]
 	public async Task CreateAsync_ValidEntity_AddsToContextAndSavesAsync()
 	{

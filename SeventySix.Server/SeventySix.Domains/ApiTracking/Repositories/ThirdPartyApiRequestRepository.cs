@@ -8,7 +8,17 @@ using SeventySix.Shared.Persistence;
 
 namespace SeventySix.ApiTracking;
 
-/// <summary>EF Core implementation for ThirdPartyApiRequest data access.</summary>
+/// <summary>
+/// EF Core implementation for ThirdPartyApiRequest data access.
+/// Encapsulates DbContext operations for third-party API request tracking.
+/// Internal visibility enforces repository facade pattern.
+/// </summary>
+/// <param name="context">
+/// The <see cref="ApiTrackingDbContext"/> used for database operations.
+/// </param>
+/// <param name="logger">
+/// The <see cref="ILogger{ThirdPartyApiRequestRepository}"/> used for logging diagnostics.
+/// </param>
 internal class ThirdPartyApiRequestRepository(
 	ApiTrackingDbContext context,
 	ILogger<ThirdPartyApiRequestRepository> logger)

@@ -159,6 +159,21 @@ public class OAuthService(
 	/// <summary>
 	/// Exchanges authorization code for access token.
 	/// </summary>
+	/// <param name="provider">
+	/// OAuth provider settings to use for the exchange.
+	/// </param>
+	/// <param name="code">
+	/// The authorization code received from provider.
+	/// </param>
+	/// <param name="codeVerifier">
+	/// The PKCE code verifier to validate the code challenge.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The provider access token string.
+	/// </returns>
 	private async Task<string> ExchangeCodeForTokenAsync(
 		OAuthProviderSettings provider,
 		string code,
@@ -207,6 +222,15 @@ public class OAuthService(
 	/// <summary>
 	/// Gets user info from GitHub API.
 	/// </summary>
+	/// <param name="accessToken">
+	/// OAuth access token to call GitHub API.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// A <see cref="GitHubUserInfo"/> parsed from the API response.
+	/// </returns>
 	private async Task<GitHubUserInfo> GetGitHubUserInfoAsync(
 		string accessToken,
 		CancellationToken cancellationToken)
@@ -250,6 +274,15 @@ public class OAuthService(
 	/// <summary>
 	/// Finds existing user by GitHub ID or creates new one.
 	/// </summary>
+	/// <param name="userInfo">
+	/// The parsed GitHub user information.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The existing or newly created <see cref="User"/>.
+	/// </returns>
 	private async Task<User> FindOrCreateGitHubUserAsync(
 		GitHubUserInfo userInfo,
 		CancellationToken cancellationToken)

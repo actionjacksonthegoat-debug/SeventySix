@@ -15,6 +15,10 @@ public static class ResponseCompressionRegistration
 	/// <summary>
 	/// Adds response compression with optimized settings.
 	/// </summary>
+	/// <remarks>
+	/// Reads configuration key: "ResponseCompression:Enabled" to
+	/// optionally disable compression in Test environments.
+	/// </remarks>
 	/// <param name="services">
 	/// The service collection.
 	/// </param>

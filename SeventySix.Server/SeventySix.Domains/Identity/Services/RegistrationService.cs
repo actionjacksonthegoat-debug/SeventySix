@@ -29,6 +29,15 @@ public class RegistrationService(
 	/// <summary>
 	/// Gets the role ID by name.
 	/// </summary>
+	/// <param name="roleName">
+	/// The role name to look up.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The role ID when found.
+	/// </returns>
 	/// <exception cref="InvalidOperationException">Thrown if role not found.</exception>
 	public async Task<int> GetRoleIdByNameAsync(
 		string roleName,
@@ -54,7 +63,36 @@ public class RegistrationService(
 	/// <summary>
 	/// Creates a user with credential and role assignment.
 	/// </summary>
-	/// <remarks>Must be called within a transaction.</remarks>
+	/// <remarks>
+	/// Must be called within a transaction.
+	/// </remarks>
+	/// <param name="username">
+	/// The desired username for the new user.
+	/// </param>
+	/// <param name="email">
+	/// The user's email address.
+	/// </param>
+	/// <param name="fullName">
+	/// Optional full name.
+	/// </param>
+	/// <param name="password">
+	/// The initial plaintext password to hash and store.
+	/// </param>
+	/// <param name="createdBy">
+	/// Audit user who created this account.
+	/// </param>
+	/// <param name="roleId">
+	/// Role ID to assign to the new user.
+	/// </param>
+	/// <param name="requiresPasswordChange">
+	/// When true, password change will be required at first login.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// The created <see cref="User"/> with ID populated.
+	/// </returns>
 	public async Task<User> CreateUserWithCredentialAsync(
 		string username,
 		string email,
@@ -106,6 +144,24 @@ public class RegistrationService(
 	/// <summary>
 	/// Generates authentication result with access and refresh tokens.
 	/// </summary>
+	/// <param name="user">
+	/// The authenticated user for whom to generate tokens.
+	/// </param>
+	/// <param name="clientIp">
+	/// The client IP address for audit and token generation.
+	/// </param>
+	/// <param name="requiresPasswordChange">
+	/// Whether the user must change their password on next login.
+	/// </param>
+	/// <param name="rememberMe">
+	/// Whether refresh token should use 'remember me' longer expiration.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token.
+	/// </param>
+	/// <returns>
+	/// An <see cref="AuthResult"/> containing tokens and metadata.
+	/// </returns>
 	public virtual async Task<AuthResult> GenerateAuthResultAsync(
 		User user,
 		string? clientIp,

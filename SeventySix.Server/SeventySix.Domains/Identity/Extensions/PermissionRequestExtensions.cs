@@ -4,10 +4,14 @@
 
 namespace SeventySix.Identity;
 
-/// <summary>Extension methods for <see cref="PermissionRequest"/>.</summary>
+/// <summary>
+/// Extension methods for <see cref="PermissionRequest"/>.
+/// </summary>
 public static class PermissionRequestExtensions
 {
-	/// <summary>Maps entity to DTO.</summary>
+	/// <summary>
+	/// Maps entity to DTO.
+	/// </summary>
 	/// <param name="request">
 	/// The permission request entity.
 	/// </param>

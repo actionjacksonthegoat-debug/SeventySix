@@ -4,7 +4,9 @@
 
 namespace SeventySix.Identity.Commands.CreatePermissionRequest;
 
-/// <summary>Command to create permission requests for a user.</summary>
+/// <summary>
+/// Command to create permission requests for a user.
+/// </summary>
 /// <param name="UserId">
 /// User requesting permissions.
 /// </param>

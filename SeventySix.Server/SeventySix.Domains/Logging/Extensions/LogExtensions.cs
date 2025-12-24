@@ -6,10 +6,14 @@ using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Logging;
 
-/// <summary>Extension methods for Log entity mapping.</summary>
+/// <summary>
+/// Extension methods for Log entity mapping.
+/// </summary>
 public static class LogExtensions
 {
-	/// <summary>Converts a Log domain entity to a DTO.</summary>
+	/// <summary>
+	/// Converts a Log domain entity to a DTO.
+	/// </summary>
 	/// <param name="entity">
 	/// The domain entity to convert.
 	/// </param>
@@ -41,7 +45,9 @@ public static class LogExtensions
 			entity.ParentSpanId);
 	}
 
-	/// <summary>Converts a collection of Log entities to a collection of DTOs.</summary>
+	/// <summary>
+	/// Converts a collection of Log entities to a collection of DTOs.
+	/// </summary>
 	/// <param name="entities">
 	/// The domain entities to convert.
 	/// </param>

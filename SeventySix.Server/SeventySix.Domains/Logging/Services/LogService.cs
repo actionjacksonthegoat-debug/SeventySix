@@ -7,7 +7,9 @@ using SeventySix.Shared.DTOs;
 
 namespace SeventySix.Logging;
 
-/// <summary>Log service implementation.</summary>
+/// <summary>
+/// Log service implementation.
+/// </summary>
 /// <param name="repository">
 /// The repository for data access operations.
 /// </param>

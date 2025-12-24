@@ -29,6 +29,10 @@ public static class SerilogExtensions
 	/// Use before app.Build() when database sink is not yet available.
 	/// In Test environment, configures silent logging (Error+ only, no sinks).
 	/// </summary>
+	/// <remarks>
+	/// Reads Serilog configuration via configuration (ReadFrom.Configuration(configuration)).
+	/// Use the "Serilog" section in appsettings.json to control minimum levels and sinks.
+	/// </remarks>
 	/// <param name="config">
 	/// The logger configuration.
 	/// </param>
@@ -80,6 +84,11 @@ public static class SerilogExtensions
 	/// Reconfigures Serilog with database sink after app.Build().
 	/// This allows resolving scoped services (DbContext) for logging.
 	/// </summary>
+	/// <remarks>
+	/// Adds the `DatabaseLogSink` to Serilog (writes Warning+ to DB).
+	/// This method is intentionally called after `app.Build()` so scoped services (DbContext) can be resolved.
+	/// In Test environment (environment == "Test") the database sink is not added.
+	/// </remarks>
 	/// <param name="configuration">
 	/// The application configuration.
 	/// </param>
@@ -120,6 +129,15 @@ public static class SerilogExtensions
 				.CreateLogger();
 	}
 
+	/// <summary>
+	/// Adds standard enrichers to the logger configuration (MachineName, ThreadId, ExceptionDetails).
+	/// </summary>
+	/// <param name="config">
+	/// The logger configuration to enrich.
+	/// </param>
+	/// <returns>
+	/// The enriched logger configuration.
+	/// </returns>
 	private static LoggerConfiguration ConfigureEnrichers(
 		this LoggerConfiguration config)
 	{
@@ -134,12 +152,30 @@ public static class SerilogExtensions
 			.WithExceptionDetails();
 	}
 
+	/// <summary>
+	/// Configures the console sink for Serilog with the standard output template.
+	/// </summary>
+	/// <param name="config">
+	/// The logger configuration to modify.
+	/// </param>
+	/// <returns>
+	/// The logger configuration with console sink configured.
+	/// </returns>
 	private static LoggerConfiguration ConfigureConsoleSink(
 		this LoggerConfiguration config)
 	{
 		return config.WriteTo.Console(outputTemplate: ConsoleOutputTemplate);
 	}
 
+	/// <summary>
+	/// Configures the file sink for Serilog with rolling files and retention.
+	/// </summary>
+	/// <param name="config">
+	/// The logger configuration to modify.
+	/// </param>
+	/// <returns>
+	/// The logger configuration with file sink configured.
+	/// </returns>
 	private static LoggerConfiguration ConfigureFileSink(
 		this LoggerConfiguration config)
 	{
@@ -150,6 +186,15 @@ public static class SerilogExtensions
 			outputTemplate: FileOutputTemplate);
 	}
 
+	/// <summary>
+	/// Configures minimum level overrides for noisy framework namespaces.
+	/// </summary>
+	/// <param name="config">
+	/// The logger configuration to modify.
+	/// </param>
+	/// <returns>
+	/// The logger configuration with minimum level overrides applied.
+	/// </returns>
 	private static LoggerConfiguration ConfigureMinimumLevels(
 		this LoggerConfiguration config)
 	{
