@@ -4,7 +4,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { ConfirmDialogComponent } from "@shared/components";
 import { ConfirmDialogData, ConfirmOptions } from "@shared/models";
 import { firstValueFrom, of } from "rxjs";
-import { vi, Mock } from "vitest";
+import { Mock, vi } from "vitest";
 import { DialogService } from "./dialog.service";
 
 interface MockMatDialogRef
@@ -29,12 +29,13 @@ describe("DialogService",
 			{
 				dialogRefSpy =
 					{
-						afterClosed: vi.fn(),
+						afterClosed: vi.fn()
 					};
 				dialogSpy =
 					{
-						open: vi.fn()
-							.mockReturnValue(dialogRefSpy),
+						open: vi
+							.fn()
+							.mockReturnValue(dialogRefSpy)
 					};
 
 				TestBed.configureTestingModule(

@@ -50,7 +50,8 @@ describe("PermissionRequestListPage",
 
 		const mockService: Partial<PermissionRequestService> =
 			{
-				getAllRequests: vi.fn()
+				getAllRequests: vi
+					.fn()
 					.mockReturnValue(
 						{
 							data: () => mockPermissionRequests,
@@ -59,13 +60,17 @@ describe("PermissionRequestListPage",
 							isSuccess: () => true,
 							refetch: vi.fn()
 						}),
-				approveRequest: vi.fn()
+				approveRequest: vi
+					.fn()
 					.mockReturnValue(mockApproveMutation),
-				rejectRequest: vi.fn()
+				rejectRequest: vi
+					.fn()
 					.mockReturnValue(mockRejectMutation),
-				bulkApproveRequests: vi.fn()
+				bulkApproveRequests: vi
+					.fn()
 					.mockReturnValue(mockBulkApproveMutation),
-				bulkRejectRequests: vi.fn()
+				bulkRejectRequests: vi
+					.fn()
 					.mockReturnValue(mockBulkRejectMutation)
 			};
 

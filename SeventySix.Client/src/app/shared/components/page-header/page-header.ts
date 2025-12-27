@@ -14,7 +14,7 @@ import { MatIconModule } from "@angular/material/icon";
 		templateUrl: "./page-header.html",
 		styleUrl: "./page-header.scss"
 	})
-
+	
 /**
  * Reusable page header component.
  *

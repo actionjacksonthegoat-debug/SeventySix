@@ -20,7 +20,7 @@ import {
 } from "@shared/testing";
 import { firstValueFrom } from "rxjs";
 import { throwError } from "rxjs";
-import { vi, type Mock } from "vitest";
+import { type Mock, vi } from "vitest";
 import { errorInterceptor } from "./error.interceptor";
 
 interface MockAuthService

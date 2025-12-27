@@ -15,11 +15,13 @@ import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { SetPasswordComponent } from "./set-password";
 
-interface MockAuthService {
+interface MockAuthService
+{
 	setPassword: ReturnType<typeof vi.fn>;
 }
 
-interface MockNotificationService {
+interface MockNotificationService
+{
 	success: ReturnType<typeof vi.fn>;
 	error: ReturnType<typeof vi.fn>;
 	info: ReturnType<typeof vi.fn>;

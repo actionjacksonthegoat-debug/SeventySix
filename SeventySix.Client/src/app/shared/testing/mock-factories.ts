@@ -4,9 +4,8 @@
  * Eliminates duplication across 40+ spec files
  */
 
-
-import { of, Observable } from "rxjs";
-import { vi, type Mock } from "vitest";
+import { Observable, of } from "rxjs";
+import { type Mock, vi } from "vitest";
 
 /** Mock LoggerService interface for testing. */
 export interface MockLoggerService
@@ -42,7 +41,7 @@ export function createMockLogger(): MockLoggerService
 		forceInfo: vi.fn(),
 		forceWarning: vi.fn(),
 		forceError: vi.fn(),
-		forceCritical: vi.fn(),
+		forceCritical: vi.fn()
 	};
 }
 
@@ -76,7 +75,7 @@ export function createMockNotificationService(): MockNotificationService
 		error: vi.fn(),
 		errorWithDetails: vi.fn(),
 		dismiss: vi.fn(),
-		clearAll: vi.fn(),
+		clearAll: vi.fn()
 	};
 }
 
@@ -98,7 +97,7 @@ export function createMockRouter(): MockRouter
 {
 	return {
 		navigate: vi.fn(),
-		navigateByUrl: vi.fn(),
+		navigateByUrl: vi.fn()
 	};
 }
 
@@ -158,7 +157,7 @@ export function createMockDialog(): MockDialog
 {
 	return {
 		open: vi.fn(),
-		closeAll: vi.fn(),
+		closeAll: vi.fn()
 	};
 }
 
@@ -181,7 +180,7 @@ export function createMockDialogRef<T>(): MockDialogRef<T>
 {
 	return {
 		close: vi.fn(),
-		afterClosed: vi.fn(),
+		afterClosed: vi.fn()
 	};
 }
 
@@ -205,7 +204,7 @@ export function createMockErrorQueueService(): MockErrorQueueService
 	return {
 		enqueue: vi.fn(),
 		getQueueSize: vi.fn(),
-		clearQueue: vi.fn(),
+		clearQueue: vi.fn()
 	};
 }
 
@@ -237,7 +236,7 @@ export function createMockUserRepository(): MockUserRepository
 		create: vi.fn(),
 		update: vi.fn(),
 		delete: vi.fn(),
-		getPaged: vi.fn(),
+		getPaged: vi.fn()
 	};
 }
 
@@ -263,7 +262,7 @@ export function createMockLogRepository(): MockLogRepository
 		getAllPaged: vi.fn(),
 		getById: vi.fn(),
 		delete: vi.fn(),
-		deleteBatch: vi.fn(),
+		deleteBatch: vi.fn()
 	};
 }
 
@@ -291,7 +290,7 @@ export function createMockApiService(): MockApiService
 		get: vi.fn(),
 		post: vi.fn(),
 		put: vi.fn(),
-		delete: vi.fn(),
+		delete: vi.fn()
 	};
 }
 
@@ -322,9 +321,11 @@ export function createMockLayoutService(): MockLayoutService
 		toggleSidebar: vi.fn(),
 		openSidebar: vi.fn(),
 		closeSidebar: vi.fn(),
-		sidebarMode: vi.fn()
+		sidebarMode: vi
+		.fn()
 		.mockReturnValue("side"),
-		sidebarExpanded: vi.fn()
-		.mockReturnValue(true),
+		sidebarExpanded: vi
+		.fn()
+		.mockReturnValue(true)
 	};
 }

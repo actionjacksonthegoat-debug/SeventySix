@@ -15,13 +15,15 @@ import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { LoginComponent } from "./login";
 
-interface MockAuthService {
+interface MockAuthService
+{
 	login: ReturnType<typeof vi.fn>;
 	loginWithProvider: ReturnType<typeof vi.fn>;
 	isAuthenticated: ReturnType<typeof signal<boolean>>;
 }
 
-interface MockNotificationService {
+interface MockNotificationService
+{
 	success: ReturnType<typeof vi.fn>;
 	error: ReturnType<typeof vi.fn>;
 	info: ReturnType<typeof vi.fn>;

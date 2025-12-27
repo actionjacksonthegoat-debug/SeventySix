@@ -521,7 +521,8 @@ describe("NotificationService",
 					{
 						// Mock navigator.clipboard
 						clipboardSpy =
-							vi.fn()
+							vi
+								.fn()
 								.mockResolvedValue(undefined);
 						Object.defineProperty(navigator, "clipboard",
 							{
@@ -535,7 +536,8 @@ describe("NotificationService",
 				it("should copy notification data to clipboard",
 					async () =>
 					{
-						vi.spyOn(console, "info")
+						vi
+							.spyOn(console, "info")
 							.mockImplementation(
 								() =>
 								{});
@@ -572,7 +574,8 @@ describe("NotificationService",
 					async () =>
 					{
 						const consoleErrorSpy: ReturnType<typeof vi.spyOn> =
-							vi.spyOn(console, "error")
+							vi
+								.spyOn(console, "error")
 								.mockImplementation(
 									() =>
 									{});
@@ -594,7 +597,8 @@ describe("NotificationService",
 				it("should copy successfully and return true",
 					async () =>
 					{
-						vi.spyOn(console, "info")
+						vi
+							.spyOn(console, "info")
 							.mockImplementation(
 								() =>
 								{});
@@ -613,7 +617,8 @@ describe("NotificationService",
 					async () =>
 					{
 						const consoleInfoSpy: ReturnType<typeof vi.spyOn> =
-							vi.spyOn(console, "info")
+							vi
+								.spyOn(console, "info")
 								.mockImplementation(
 									() =>
 									{});

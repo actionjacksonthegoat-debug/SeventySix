@@ -1,5 +1,5 @@
-import { describe, it } from "vitest";
 import { environment } from "@environments/environment";
+import { describe, it } from "vitest";
 
 /** Type for test implementation callback compatible with Vitest */
 type TestCallback = () => void | Promise<void>;

@@ -23,7 +23,8 @@ describe("AdminDashboardPage",
 		let mockNotificationService: ReturnType<typeof createMockNotificationService>;
 		let mockLoggerService: ReturnType<typeof createMockLogger>;
 
-		interface MockThirdPartyApiService {
+		interface MockThirdPartyApiService
+		{
 			getAllThirdPartyApis: ReturnType<typeof vi.fn>;
 		}
 

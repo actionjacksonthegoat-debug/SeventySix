@@ -127,27 +127,27 @@ public class HealthStatusResponseTests
 				Apis =
 					new Dictionary<string, ApiHealthStatus>
 					{
-						{
-							"ExternalAPI",
-							new ApiHealthStatus
-							{
-								ApiName = "ExternalAPI",
-								IsAvailable = true,
-								ResponseTimeMs = 150.5,
-								LastChecked = now,
-							}
-						},
-						{
-							"GoogleMaps",
-							new ApiHealthStatus
-							{
-								ApiName = "GoogleMaps",
-								IsAvailable = false,
-								ResponseTimeMs = 0,
-								LastChecked = null,
-							}
-						},
-					},
+				{
+					"ExternalAPI",
+					new ApiHealthStatus
+					{
+						ApiName = "ExternalAPI",
+						IsAvailable = true,
+						ResponseTimeMs = 150.5,
+						LastChecked = now,
+					}
+				},
+				{
+					"GoogleMaps",
+					new ApiHealthStatus
+					{
+						ApiName = "GoogleMaps",
+						IsAvailable = false,
+						ResponseTimeMs = 0,
+						LastChecked = null,
+					}
+				},
+			},
 			};
 
 		// Assert

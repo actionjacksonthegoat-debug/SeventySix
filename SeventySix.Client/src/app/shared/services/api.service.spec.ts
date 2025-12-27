@@ -23,7 +23,8 @@ describe("ApiService",
 			() =>
 			{
 				// Suppress expected console.error output from error handling tests
-				vi.spyOn(console, "error")
+				vi
+					.spyOn(console, "error")
 					.mockImplementation(
 						() =>
 						{});

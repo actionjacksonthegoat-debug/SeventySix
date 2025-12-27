@@ -39,8 +39,8 @@ public class InitiateRegistrationCommandHandlerTests(
 				TokenHash = expectedHash,
 				ExpiresAt =
 					TestTimeProviderBuilder
-						.DefaultTime.AddHours(24)
-						.UtcDateTime,
+				.DefaultTime.AddHours(24)
+				.UtcDateTime,
 				IsUsed = false,
 			};
 
@@ -75,8 +75,8 @@ public class InitiateRegistrationCommandHandlerTests(
 				TokenHash = hashedToken,
 				ExpiresAt =
 					TestTimeProviderBuilder
-						.DefaultTime.AddHours(24)
-						.UtcDateTime,
+				.DefaultTime.AddHours(24)
+				.UtcDateTime,
 				IsUsed = false,
 			};
 
@@ -87,8 +87,8 @@ public class InitiateRegistrationCommandHandlerTests(
 				TokenHash = hashedToken, // Same hash
 				ExpiresAt =
 					TestTimeProviderBuilder
-						.DefaultTime.AddHours(24)
-						.UtcDateTime,
+				.DefaultTime.AddHours(24)
+				.UtcDateTime,
 				IsUsed = false,
 			};
 

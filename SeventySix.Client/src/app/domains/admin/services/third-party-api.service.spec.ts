@@ -29,8 +29,9 @@ describe("ThirdPartyApiService",
 		beforeEach(
 			() =>
 			{
-				// Suppress expected console.error output from error handling tests
-				vi.spyOn(console, "error")
+			// Suppress expected console.error output from error handling tests
+				vi
+					.spyOn(console, "error")
 					.mockImplementation(
 						() =>
 						{});

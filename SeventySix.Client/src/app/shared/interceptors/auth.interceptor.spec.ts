@@ -5,7 +5,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { AuthService } from "@shared/services/auth.service";
 import { of } from "rxjs";
-import { vi, type Mock } from "vitest";
+import { type Mock, vi } from "vitest";
 import { authInterceptor } from "./auth.interceptor";
 
 interface MockAuthService

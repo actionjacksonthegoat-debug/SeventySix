@@ -12,7 +12,6 @@ import { DateService } from "@shared/services";
 		styleUrl: "./footer.component.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
 	})
-
 /**
  * Application footer component.
  *

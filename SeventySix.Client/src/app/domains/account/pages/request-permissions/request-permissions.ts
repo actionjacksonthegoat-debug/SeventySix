@@ -89,14 +89,18 @@ export class RequestPermissionsPage
 	 * @type {ReturnType<typeof this.accountService.getAvailableRoles>}
 	 */
 	readonly rolesQuery: ReturnType<typeof this.accountService.getAvailableRoles> =
-		this.accountService.getAvailableRoles();
+		this
+		.accountService
+		.getAvailableRoles();
 
 	/**
 	 * Mutation used to submit permission requests.
 	 * @type {ReturnType<typeof this.accountService.createPermissionRequest>}
 	 */
 	readonly requestMutation: ReturnType<typeof this.accountService.createPermissionRequest> =
-		this.accountService.createPermissionRequest();
+		this
+		.accountService
+		.createPermissionRequest();
 
 	/**
 	 * Available roles returned by the server for selection.
@@ -127,14 +131,12 @@ export class RequestPermissionsPage
 	 * Skeleton theme used for checkboxes.
 	 * @type {SkeletonTheme}
 	 */
-	readonly skeletonCheckbox: SkeletonTheme =
-		SKELETON_CHECKBOX;
+	readonly skeletonCheckbox: SkeletonTheme = SKELETON_CHECKBOX;
 	/**
 	 * Short skeleton text theme.
 	 * @type {SkeletonTheme}
 	 */
-	readonly skeletonTextShort: SkeletonTheme =
-		SKELETON_TEXT_SHORT;
+	readonly skeletonTextShort: SkeletonTheme = SKELETON_TEXT_SHORT;
 	/**
 	 * Medium-length skeleton text theme.
 	 * @type {SkeletonTheme}

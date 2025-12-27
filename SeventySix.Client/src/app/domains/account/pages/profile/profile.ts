@@ -105,27 +105,26 @@ export class ProfilePage
 	 * @type {ReturnType<typeof this.accountService.getAvailableRoles>}
 	 */
 	readonly availableRolesQuery: ReturnType<typeof this.accountService.getAvailableRoles> =
-		this.accountService.getAvailableRoles();
+		this
+		.accountService
+		.getAvailableRoles();
 
 	// Skeleton theme constants
 	/**
 	 * Skeleton theme used for input placeholders.
 	 * @type {SkeletonTheme}
 	 */
-	readonly skeletonInput: SkeletonTheme =
-		SKELETON_INPUT;
+	readonly skeletonInput: SkeletonTheme = SKELETON_INPUT;
 	/**
 	 * Skeleton theme used for buttons.
 	 * @type {SkeletonTheme}
 	 */
-	readonly skeletonButton: SkeletonTheme =
-		SKELETON_BUTTON;
+	readonly skeletonButton: SkeletonTheme = SKELETON_BUTTON;
 	/**
 	 * Short skeleton text theme.
 	 * @type {SkeletonTheme}
 	 */
-	readonly skeletonTextShort: SkeletonTheme =
-		SKELETON_TEXT_SHORT;
+	readonly skeletonTextShort: SkeletonTheme = SKELETON_TEXT_SHORT;
 	/**
 	 * Medium-length skeleton text theme.
 	 * @type {SkeletonTheme}

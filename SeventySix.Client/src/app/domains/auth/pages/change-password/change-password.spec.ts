@@ -22,13 +22,15 @@ import { createMockNotificationService } from "@shared/testing";
 import { vi } from "vitest";
 import { ChangePasswordComponent } from "./change-password";
 
-interface MockAuthService {
+interface MockAuthService
+{
 	clearPasswordChangeRequirement: ReturnType<typeof vi.fn>;
 	isAuthenticated: ReturnType<typeof signal<boolean>>;
 	requiresPasswordChange: ReturnType<typeof signal<boolean>>;
 }
 
-interface MockNotificationService {
+interface MockNotificationService
+{
 	success: ReturnType<typeof vi.fn>;
 	error: ReturnType<typeof vi.fn>;
 	info: ReturnType<typeof vi.fn>;

@@ -32,17 +32,20 @@ describe("LoggerService",
 					TestBed.inject(HttpTestingController);
 
 				consoleLogSpy =
-					vi.spyOn(console, "log")
+					vi
+						.spyOn(console, "log")
 						.mockImplementation(
 							() =>
 							{});
 				consoleWarnSpy =
-					vi.spyOn(console, "warn")
+					vi
+						.spyOn(console, "warn")
 						.mockImplementation(
 							() =>
 							{});
 				consoleErrorSpy =
-					vi.spyOn(console, "error")
+					vi
+						.spyOn(console, "error")
 						.mockImplementation(
 							() =>
 							{});

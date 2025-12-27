@@ -1,6 +1,6 @@
 import { computed, Signal, signal, WritableSignal } from "@angular/core";
 import { UserProfileDto } from "@shared/models";
-import { vi, type Mock } from "vitest";
+import { type Mock, vi } from "vitest";
 
 /**
  * Mock AuthService for testing.

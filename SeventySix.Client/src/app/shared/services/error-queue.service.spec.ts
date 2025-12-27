@@ -32,17 +32,19 @@ describe("ErrorQueueService (Zoneless)",
 
 				// Suppress console.error output during tests while still allowing verification
 				consoleSpy =
-					vi.spyOn(console, "error")
+					vi
+						.spyOn(console, "error")
 						.mockImplementation(
 							() =>
 							{});
 
 				// Mock environment configuration for faster tests
-				vi.spyOn(
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					(window as any).navigator,
-					"userAgent",
-					"get")
+				vi
+					.spyOn(
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						(window as any).navigator,
+						"userAgent",
+						"get")
 					.mockReturnValue("TestBrowser/1.0");
 
 				TestBed.configureTestingModule(

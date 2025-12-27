@@ -139,7 +139,8 @@ describe("DataTableUtilities",
 							DataTableUtilities.calculateDateRange("1h", referenceTime);
 
 						expect(result)
-							.not.toBeNull();
+							.not
+							.toBeNull();
 						expect(result!.endDate)
 							.toEqual(referenceTime);
 						expect(result!.startDate!.getTime())
@@ -155,7 +156,8 @@ describe("DataTableUtilities",
 							DataTableUtilities.calculateDateRange("24h", referenceTime);
 
 						expect(result)
-							.not.toBeNull();
+							.not
+							.toBeNull();
 						expect(result!.endDate)
 							.toEqual(referenceTime);
 						expect(result!.startDate!.getTime())
@@ -171,7 +173,8 @@ describe("DataTableUtilities",
 							DataTableUtilities.calculateDateRange("7d", referenceTime);
 
 						expect(result)
-							.not.toBeNull();
+							.not
+							.toBeNull();
 						expect(result!.endDate)
 							.toEqual(referenceTime);
 						expect(result!.startDate!.getTime())
@@ -187,7 +190,8 @@ describe("DataTableUtilities",
 							DataTableUtilities.calculateDateRange("30d", referenceTime);
 
 						expect(result)
-							.not.toBeNull();
+							.not
+							.toBeNull();
 						expect(result!.endDate)
 							.toEqual(referenceTime);
 						expect(result!.startDate!.getTime())
@@ -211,7 +215,8 @@ describe("DataTableUtilities",
 							DataTableUtilities.parseColumnPreferences(json);
 
 						expect(result)
-							.not.toBeNull();
+							.not
+							.toBeNull();
 						expect(result!.get("name"))
 							.toBe(true);
 						expect(result!.get("email"))
@@ -248,7 +253,8 @@ describe("DataTableUtilities",
 							DataTableUtilities.parseColumnPreferences(json);
 
 						expect(result)
-							.not.toBeNull();
+							.not
+							.toBeNull();
 						expect(result!.size)
 							.toBe(2);
 						expect(result!.get("name"))
@@ -268,7 +274,8 @@ describe("DataTableUtilities",
 							DataTableUtilities.parseColumnPreferences("{}");
 
 						expect(result)
-							.not.toBeNull();
+							.not
+							.toBeNull();
 						expect(result!.size)
 							.toBe(0);
 					});
@@ -331,7 +338,8 @@ describe("DataTableUtilities",
 							DataTableUtilities.parseColumnPreferences(serialized);
 
 						expect(roundTrip)
-							.not.toBeNull();
+							.not
+							.toBeNull();
 						expect(roundTrip!.size)
 							.toBe(original.size);
 
@@ -355,7 +363,10 @@ describe("DataTableUtilities",
 								["filter1"]);
 
 						const result: { active: boolean; filters: Set<string>; } =
-							DataTableUtilities.updateFilters(currentFilters, "filter2", false);
+							DataTableUtilities.updateFilters(
+								currentFilters,
+								"filter2",
+								false);
 
 						expect(result.active)
 							.toBe(true);
@@ -375,7 +386,10 @@ describe("DataTableUtilities",
 								["filter1", "filter2"]);
 
 						const result: { active: boolean; filters: Set<string>; } =
-							DataTableUtilities.updateFilters(currentFilters, "filter2", false);
+							DataTableUtilities.updateFilters(
+								currentFilters,
+								"filter2",
+								false);
 
 						expect(result.active)
 							.toBe(false);
@@ -395,7 +409,10 @@ describe("DataTableUtilities",
 								["filter1", "filter2"]);
 
 						const result: { active: boolean; filters: Set<string>; } =
-							DataTableUtilities.updateFilters(currentFilters, "filter3", true);
+							DataTableUtilities.updateFilters(
+								currentFilters,
+								"filter3",
+								true);
 
 						expect(result.active)
 							.toBe(true);
@@ -434,7 +451,10 @@ describe("DataTableUtilities",
 								["filter1"]);
 
 						const result: { active: boolean; filters: Set<string>; } =
-							DataTableUtilities.updateFilters(currentFilters, "filter1", true);
+							DataTableUtilities.updateFilters(
+								currentFilters,
+								"filter1",
+								true);
 
 						expect(result.active)
 							.toBe(false);

@@ -69,8 +69,7 @@ export class ApiStatisticsTableComponent
 	 * Skeleton theme for table cells.
 	 * @type {SkeletonTheme}
 	 */
-	readonly skeletonTableCell: SkeletonTheme =
-		SKELETON_TABLE_CELL;
+	readonly skeletonTableCell: SkeletonTheme = SKELETON_TABLE_CELL;
 
 	/**
 	 * TanStack Query for API data (contains data/isLoading/error flags).

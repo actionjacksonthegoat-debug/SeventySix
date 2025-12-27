@@ -23,11 +23,13 @@ describe("LogDetailDialogComponent",
 		let component: LogDetailDialogComponent;
 		let fixture: ComponentFixture<LogDetailDialogComponent>;
 
-		interface MockDialogRef {
+		interface MockDialogRef
+		{
 			close: ReturnType<typeof vi.fn>;
 		}
 
-		interface MockClipboard {
+		interface MockClipboard
+		{
 			copy: ReturnType<typeof vi.fn>;
 		}
 
@@ -290,7 +292,7 @@ describe("LogDetailDialogComponent",
 
 				await flushMicrotasks();
 
-				expect(emittedId)
+				expect(emittedId);
 			});
 
 		it("should close dialog when close is called",

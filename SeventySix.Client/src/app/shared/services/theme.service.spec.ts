@@ -11,7 +11,8 @@ describe("ThemeService",
 			() =>
 			{
 			// Mock localStorage
-				vi.spyOn(localStorage, "getItem")
+				vi
+					.spyOn(localStorage, "getItem")
 					.mockReturnValue(null);
 				vi.spyOn(localStorage, "setItem");
 

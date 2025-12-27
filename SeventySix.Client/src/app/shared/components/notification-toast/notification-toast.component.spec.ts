@@ -246,9 +246,10 @@ describe("NotificationToastComponent",
 					async () =>
 					{
 						const copySpy: ReturnType<typeof vi.spyOn> =
-							vi.spyOn(
-								notificationService,
-								"copyToClipboard")
+							vi
+								.spyOn(
+									notificationService,
+									"copyToClipboard")
 								.mockReturnValue(Promise.resolve(true));
 						notificationService.errorWithDetails(
 							"Error",

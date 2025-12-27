@@ -115,7 +115,7 @@ public static class WebApplicationExtensions
 			{
 				ForwardedHeaders =
 					ForwardedHeaders.XForwardedFor
-				| ForwardedHeaders.XForwardedProto,
+					| ForwardedHeaders.XForwardedProto,
 				ForwardLimit = settings.ForwardLimit,
 			};
 
@@ -283,17 +283,16 @@ public static class WebApplicationExtensions
 				status = report.Status.ToString(),
 				timestamp = timeProvider.GetUtcNow().UtcDateTime,
 				duration = report.TotalDuration,
-				checks = report.Entries.Select(
-					entry =>
-						new
-						{
-							name = entry.Key,
-							status = entry.Value.Status.ToString(),
-							description = entry.Value.Description,
-							duration = entry.Value.Duration,
-							exception = entry.Value.Exception?.Message,
-							data = entry.Value.Data,
-						}),
+				checks = report.Entries.Select(entry =>
+					new
+					{
+						name = entry.Key,
+						status = entry.Value.Status.ToString(),
+						description = entry.Value.Description,
+						duration = entry.Value.Duration,
+						exception = entry.Value.Exception?.Message,
+						data = entry.Value.Data,
+					}),
 			};
 
 		string result =

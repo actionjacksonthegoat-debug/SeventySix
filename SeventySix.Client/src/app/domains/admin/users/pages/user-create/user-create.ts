@@ -125,8 +125,7 @@ export class UserCreatePage
 	 * Available roles that can be requested for a new user.
 	 * @type {readonly string[]}
 	 */
-	readonly availableRoles: readonly string[] =
-		REQUESTABLE_ROLES;
+	readonly availableRoles: readonly string[] = REQUESTABLE_ROLES;
 
 	/**
 	 * Writable signal that tracks selected roles in the UI.
@@ -303,7 +302,7 @@ export class UserCreatePage
 			{
 				onSuccess: (createdUser) =>
 				{
-					// Assign selected roles to the newly created user
+				// Assign selected roles to the newly created user
 					this.assignRoles(createdUser.id);
 
 					const message: string =

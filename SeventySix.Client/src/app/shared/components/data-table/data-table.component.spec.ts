@@ -304,23 +304,22 @@ describe("DataTableComponent",
 							});
 					});
 
-				it("should emit filterChange event when filter toggled",
-					() =>
-						new Promise<void>(
-							(resolve) =>
-							{
-								component.filterChange.subscribe(
-									(event: FilterChangeEvent) =>
-									{
-										expect(event.filterKey)
-											.toBe("active");
-										expect(event.active)
-											.toBe(true);
-										resolve();
-									});
+				it("should emit filterChange event when filter toggled", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							component.filterChange.subscribe(
+								(event: FilterChangeEvent) =>
+								{
+									expect(event.filterKey)
+										.toBe("active");
+									expect(event.active)
+										.toBe(true);
+									resolve();
+								});
 
-								component.onFilterToggle("active");
-							}));
+							component.onFilterToggle("active");
+						}));
 
 				it("should track active filters",
 					() =>
@@ -370,39 +369,37 @@ describe("DataTableComponent",
 							});
 					});
 
-				it("should emit rowAction event when action triggered",
-					() =>
-						new Promise<void>(
-							(resolve) =>
-							{
-								component.rowAction.subscribe(
-									(event: RowActionEvent<TestEntity>) =>
-									{
-										expect(event.action)
-											.toBe("edit");
-										expect(event.row)
-											.toBe(mockData[0]);
-										resolve();
-									});
+				it("should emit rowAction event when action triggered", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							component.rowAction.subscribe(
+								(event: RowActionEvent<TestEntity>) =>
+								{
+									expect(event.action)
+										.toBe("edit");
+									expect(event.row)
+										.toBe(mockData[0]);
+									resolve();
+								});
 
-								component.onRowAction("edit", mockData[0]);
-							}));
+							component.onRowAction("edit", mockData[0]);
+						}));
 
-				it("should emit rowClick event when row clicked",
-					() =>
-						new Promise<void>(
-							(resolve) =>
-							{
-								component.rowClick.subscribe(
-									(row: TestEntity) =>
-									{
-										expect(row)
-											.toBe(mockData[0]);
-										resolve();
-									});
+				it("should emit rowClick event when row clicked", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							component.rowClick.subscribe(
+								(row: TestEntity) =>
+								{
+									expect(row)
+										.toBe(mockData[0]);
+									resolve();
+								});
 
-								component.onRowClick(mockData[0]);
-							}));
+							component.onRowClick(mockData[0]);
+						}));
 			});
 
 		describe("Bulk Actions",
@@ -430,29 +427,28 @@ describe("DataTableComponent",
 							});
 					});
 
-				it("should emit bulkAction event when action triggered",
-					() =>
-						new Promise<void>(
-							(resolve) =>
-							{
-								component.selectionManager.selection.select(mockData[0]);
-								component.selectionManager.selection.select(mockData[1]);
+				it("should emit bulkAction event when action triggered", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							component.selectionManager.selection.select(mockData[0]);
+							component.selectionManager.selection.select(mockData[1]);
 
-								component.bulkAction.subscribe(
-									(event: BulkActionEvent<TestEntity>) =>
-									{
-										expect(event.action)
-											.toBe("delete-all");
-										expect(event.selectedRows.length)
-											.toBe(2);
-										expect(event.selectedIds)
-											.toEqual(
-												[1, 2]);
-										resolve();
-									});
+							component.bulkAction.subscribe(
+								(event: BulkActionEvent<TestEntity>) =>
+								{
+									expect(event.action)
+										.toBe("delete-all");
+									expect(event.selectedRows.length)
+										.toBe(2);
+									expect(event.selectedIds)
+										.toEqual(
+											[1, 2]);
+									resolve();
+								});
 
-								component.onBulkAction("delete-all");
-							}));
+							component.onBulkAction("delete-all");
+						}));
 
 				it("should compute selection state correctly",
 					() =>
@@ -491,39 +487,37 @@ describe("DataTableComponent",
 							{ ...defaultInputs, totalCount: 100 });
 					});
 
-				it("should emit pageChange event when page changed",
-					() =>
-						new Promise<void>(
-							(resolve) =>
-							{
-								component.pageChange.subscribe(
-									(pageIndex: number) =>
-									{
-										expect(pageIndex)
-											.toBe(1);
-										resolve();
-									});
+				it("should emit pageChange event when page changed", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							component.pageChange.subscribe(
+								(pageIndex: number) =>
+								{
+									expect(pageIndex)
+										.toBe(1);
+									resolve();
+								});
 
-								component.onPageChange(
-									{ pageIndex: 1, pageSize: 25, length: 100 });
-							}));
+							component.onPageChange(
+								{ pageIndex: 1, pageSize: 25, length: 100 });
+						}));
 
-				it("should emit pageSizeChange event when page size changed",
-					() =>
-						new Promise<void>(
-							(resolve) =>
-							{
-								component.pageSizeChange.subscribe(
-									(pageSize: number) =>
-									{
-										expect(pageSize)
-											.toBe(50);
-										resolve();
-									});
+				it("should emit pageSizeChange event when page size changed", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							component.pageSizeChange.subscribe(
+								(pageSize: number) =>
+								{
+									expect(pageSize)
+										.toBe(50);
+									resolve();
+								});
 
-								component.onPageChange(
-									{ pageIndex: 0, pageSize: 50, length: 100 });
-							}));
+							component.onPageChange(
+								{ pageIndex: 0, pageSize: 50, length: 100 });
+						}));
 			});
 
 		describe("Column Visibility",
@@ -590,21 +584,20 @@ describe("DataTableComponent",
 							});
 					});
 
-				it("should emit refreshClick event when refresh button clicked",
-					() =>
-						new Promise<void>(
-							(resolve) =>
-							{
-								component.refreshClick.subscribe(
-									() =>
-									{
-										expect(true)
-											.toBe(true);
-										resolve();
-									});
+				it("should emit refreshClick event when refresh button clicked", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							component.refreshClick.subscribe(
+								() =>
+								{
+									expect(true)
+										.toBe(true);
+									resolve();
+								});
 
-								component.onRefresh();
-							}));
+							component.onRefresh();
+						}));
 			});
 
 		describe("Create Button",
@@ -617,21 +610,20 @@ describe("DataTableComponent",
 							{ ...defaultInputs, showCreate: true });
 					});
 
-				it("should emit createClick event when create button clicked",
-					() =>
-						new Promise<void>(
-							(resolve) =>
-							{
-								component.createClick.subscribe(
-									() =>
-									{
-										expect(true)
-											.toBe(true);
-										resolve();
-									});
+				it("should emit createClick event when create button clicked", () =>
+					new Promise<void>(
+						(resolve) =>
+						{
+							component.createClick.subscribe(
+								() =>
+								{
+									expect(true)
+										.toBe(true);
+									resolve();
+								});
 
-								component.onCreate();
-							}));
+							component.onCreate();
+						}));
 			});
 
 		describe("CLS Prevention",
@@ -714,7 +706,8 @@ describe("DataTableComponent",
 
 						// Header should always be visible
 						expect(headerRow)
-							.not.toBeNull();
+							.not
+							.toBeNull();
 
 						// Should have skeleton loaders (1 row x columns)
 						expect(skeletonLoaders.length)

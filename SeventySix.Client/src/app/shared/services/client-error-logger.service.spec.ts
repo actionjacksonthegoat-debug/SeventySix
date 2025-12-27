@@ -3,10 +3,10 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { LogLevel } from "@shared/constants";
 import { CreateLogRequest } from "@shared/models";
-import { createMockErrorQueueService } from "@shared/testing";
-import { vi } from "vitest";
 import { ClientErrorLoggerService } from "@shared/services/client-error-logger.service";
 import { ErrorQueueService } from "@shared/services/error-queue.service";
+import { createMockErrorQueueService } from "@shared/testing";
+import { vi } from "vitest";
 
 interface MockErrorQueueService
 {
@@ -23,9 +23,10 @@ describe("ClientErrorLoggerService",
 		beforeEach(
 			() =>
 			{
-			// Suppress console.error output during tests while still allowing verification
+				// Suppress console.error output during tests while still allowing verification
 				consoleSpy =
-					vi.spyOn(console, "error")
+					vi
+						.spyOn(console, "error")
 						.mockImplementation(
 							() =>
 							{});

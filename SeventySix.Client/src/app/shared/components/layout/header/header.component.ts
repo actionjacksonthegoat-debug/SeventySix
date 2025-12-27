@@ -36,7 +36,6 @@ import {
 		styleUrl: "./header.component.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
 	})
-
 /**
  * Application header component.
  *

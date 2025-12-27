@@ -15,8 +15,7 @@ import {
  * Allows initial page render to complete before prefetching.
  * @type {number}
  */
-const PRELOAD_DELAY_MS: number =
-	2000;
+const PRELOAD_DELAY_MS: number = 2000;
 
 /**
  * Custom Angular PreloadingStrategy for selective route preloading.
@@ -59,7 +58,7 @@ export class SelectivePreloadingStrategy implements PreloadingStrategy
 	{
 		// Check if route is explicitly marked for preloading
 		const shouldPreload: boolean =
-			route.data?.['preload'] === true;
+			route.data?.["preload"] === true;
 
 		if (!shouldPreload)
 		{
@@ -70,7 +69,6 @@ export class SelectivePreloadingStrategy implements PreloadingStrategy
 		return timer(PRELOAD_DELAY_MS)
 		.pipe(
 			mergeMap(
-				() =>
-					load()));
+				() => load()));
 	}
 }

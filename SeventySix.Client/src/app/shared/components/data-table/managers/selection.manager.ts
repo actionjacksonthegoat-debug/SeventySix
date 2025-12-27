@@ -1,5 +1,5 @@
 import { SelectionModel } from "@angular/cdk/collections";
-import { computed, signal, Signal, WritableSignal } from "@angular/core";
+import { computed, Signal, signal, WritableSignal } from "@angular/core";
 
 /**
  * Manages row selection state for DataTableComponent.

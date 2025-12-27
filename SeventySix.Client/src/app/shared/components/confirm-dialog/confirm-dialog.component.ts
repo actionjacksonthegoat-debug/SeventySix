@@ -59,7 +59,6 @@ import { ConfirmDialogData } from "@shared/models";
 		`
 		]
 	})
-
 /**
  * Confirmation dialog component.
  *

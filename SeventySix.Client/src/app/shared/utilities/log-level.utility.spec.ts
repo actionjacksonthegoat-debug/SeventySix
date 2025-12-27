@@ -1,11 +1,10 @@
-import { LogLevel, LOG_LEVEL_STRINGS, VALID_LOG_LEVELS } from "@shared/constants";
+import { LOG_LEVEL_STRINGS, LogLevel, VALID_LOG_LEVELS } from "@shared/constants";
 import { NotificationLevel } from "@shared/constants";
 import {
-	logLevelToString,
 	logLevelToNotificationLevel,
+	logLevelToString,
 	parseLogLevel
 } from "./log-level.utility";
-
 
 describe("log-level.utility",
 	() =>
@@ -35,7 +34,7 @@ describe("log-level.utility",
 							];
 
 						allLogLevels.forEach(
-							level =>
+							(level) =>
 							{
 								const result: string =
 									logLevelToString(level);

@@ -156,30 +156,26 @@ export class UserDetailPage
 		this.userService.removeRole();
 
 	// Available roles constant (matches backend ValidRoleNames)
-	readonly availableRoles: readonly string[] =
-		REQUESTABLE_ROLES;
+	readonly availableRoles: readonly string[] = REQUESTABLE_ROLES;
 
 	// Skeleton theme constants
 	/**
 	 * Skeleton theme for input placeholders.
 	 * @type {SkeletonTheme}
 	 */
-	readonly skeletonInput: SkeletonTheme =
-		SKELETON_INPUT;
+	readonly skeletonInput: SkeletonTheme = SKELETON_INPUT;
 
 	/**
 	 * Skeleton theme for checkbox placeholders.
 	 * @type {SkeletonTheme}
 	 */
-	readonly skeletonCheckbox: SkeletonTheme =
-		SKELETON_CHECKBOX;
+	readonly skeletonCheckbox: SkeletonTheme = SKELETON_CHECKBOX;
 
 	/**
 	 * Skeleton theme for short text placeholders.
 	 * @type {SkeletonTheme}
 	 */
-	readonly skeletonTextShort: SkeletonTheme =
-		SKELETON_TEXT_SHORT;
+	readonly skeletonTextShort: SkeletonTheme = SKELETON_TEXT_SHORT;
 
 	// Computed signals for derived state
 	/**

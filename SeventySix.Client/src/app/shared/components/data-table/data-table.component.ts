@@ -20,6 +20,10 @@ import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { environment } from "@environments/environment";
 import { slideDown } from "@shared/animations/animations";
+import {
+	DataTableColumnManager,
+	DataTableSelectionManager
+} from "@shared/components/data-table/managers";
 import { SKELETON_CHECKBOX, SKELETON_ICON_BUTTON, SKELETON_TABLE_CELL, SkeletonTheme } from "@shared/constants";
 import { TableHeightDirective } from "@shared/directives";
 import { TABLE_MATERIAL_MODULES } from "@shared/material-bundles";
@@ -37,10 +41,6 @@ import {
 import { DateService } from "@shared/services";
 import { DataTableUtilities } from "@shared/utilities";
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
-import {
-	DataTableColumnManager,
-	DataTableSelectionManager
-} from "@shared/components/data-table/managers";
 
 /**
  * Generic data table component

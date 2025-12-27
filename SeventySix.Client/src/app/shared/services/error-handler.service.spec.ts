@@ -56,7 +56,8 @@ describe("ErrorHandlerService",
 			() =>
 			{
 				consoleErrorSpy =
-					vi.spyOn(console, "error")
+					vi
+						.spyOn(console, "error")
 						.mockImplementation(
 							() =>
 							{});

@@ -8,7 +8,7 @@ import {
 } from "@angular/router";
 import { CanActivateFn } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
-import { vi, type Mock } from "vitest";
+import { type Mock, vi } from "vitest";
 import { roleGuard } from "./role.guard";
 
 interface MockAuthService

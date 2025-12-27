@@ -75,8 +75,6 @@ export class ErrorQueueService
 	 */
 	private queue: CreateLogRequest[] = [];
 
-
-
 	/**
 	 * Number of items to send per batch.
 	 * @type {number}

@@ -32,5 +32,5 @@ if (typeof window !== "undefined")
 
 setupTestBed(
 	{
-		zoneless: true,
+		zoneless: true
 	});

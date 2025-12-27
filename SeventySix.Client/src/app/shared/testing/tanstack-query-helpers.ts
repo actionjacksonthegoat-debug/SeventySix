@@ -3,7 +3,7 @@ import type {
 	CreateMutationResult,
 	CreateQueryResult
 } from "@tanstack/angular-query-experimental";
-import { vi, type Mock } from "vitest";
+import { type Mock, vi } from "vitest";
 
 /**
  * Creates a mock query result for testing.

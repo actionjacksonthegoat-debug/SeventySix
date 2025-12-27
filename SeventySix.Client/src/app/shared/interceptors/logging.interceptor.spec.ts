@@ -2,7 +2,7 @@ import { HttpRequest, HttpResponse } from "@angular/common/http";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { firstValueFrom, of } from "rxjs";
-import { vi, type Mock } from "vitest";
+import { type Mock, vi } from "vitest";
 import { loggingInterceptor } from "./logging.interceptor";
 
 interface MockHttpHandler
@@ -32,7 +32,8 @@ describe("loggingInterceptor",
 						providers: [provideZonelessChangeDetection()]
 					});
 
-				vi.spyOn(console, "log")
+				vi
+					.spyOn(console, "log")
 					.mockImplementation(
 						() =>
 						{});

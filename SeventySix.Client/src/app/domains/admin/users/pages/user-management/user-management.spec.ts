@@ -12,7 +12,8 @@ describe("UserManagementPage",
 
 		const mockUserService: Partial<UserService> =
 			{
-				getPagedUsers: vi.fn()
+				getPagedUsers: vi
+					.fn()
 					.mockReturnValue(
 						{
 							data: () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 }),
@@ -20,26 +21,30 @@ describe("UserManagementPage",
 							error: () => null,
 							isSuccess: () => true
 						}),
-				updateUser: vi.fn()
+				updateUser: vi
+					.fn()
 					.mockReturnValue(
 						{
 							mutate: vi.fn(),
 							isPending: () => false
 						}),
-				resetPassword: vi.fn()
+				resetPassword: vi
+					.fn()
 					.mockReturnValue(
 						{
 							mutate: vi.fn(),
 							isPending: () => false
 						}),
-				restoreUser: vi.fn()
+				restoreUser: vi
+					.fn()
 					.mockReturnValue(
 						{
 							mutate: vi.fn(),
 							isPending: () => false
 						}),
 				updateFilter: vi.fn(),
-				getCurrentFilter: vi.fn()
+				getCurrentFilter: vi
+					.fn()
 					.mockReturnValue(
 						{
 							page: 1,

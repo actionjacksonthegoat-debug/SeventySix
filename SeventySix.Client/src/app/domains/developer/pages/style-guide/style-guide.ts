@@ -127,32 +127,28 @@ export class StyleGuideComponent
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly skeletonInput: SkeletonTheme =
-		SKELETON_INPUT;
+	protected readonly skeletonInput: SkeletonTheme = SKELETON_INPUT;
 	/**
 	 * Skeleton checkbox theme constant for demos.
 	 * @type {SkeletonTheme}
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly skeletonCheckbox: SkeletonTheme =
-		SKELETON_CHECKBOX;
+	protected readonly skeletonCheckbox: SkeletonTheme = SKELETON_CHECKBOX;
 	/**
 	 * Skeleton button theme constant for demos.
 	 * @type {SkeletonTheme}
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly skeletonButton: SkeletonTheme =
-		SKELETON_BUTTON;
+	protected readonly skeletonButton: SkeletonTheme = SKELETON_BUTTON;
 	/**
 	 * Short skeleton text theme.
 	 * @type {SkeletonTheme}
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly skeletonTextShort: SkeletonTheme =
-		SKELETON_TEXT_SHORT;
+	protected readonly skeletonTextShort: SkeletonTheme = SKELETON_TEXT_SHORT;
 	/**
 	 * Medium skeleton text theme.
 	 * @type {SkeletonTheme}
@@ -167,48 +163,42 @@ export class StyleGuideComponent
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly skeletonTextLong: SkeletonTheme =
-		SKELETON_TEXT_LONG;
+	protected readonly skeletonTextLong: SkeletonTheme = SKELETON_TEXT_LONG;
 	/**
 	 * Skeleton avatar theme.
 	 * @type {SkeletonTheme}
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly skeletonAvatar: SkeletonTheme =
-		SKELETON_AVATAR;
+	protected readonly skeletonAvatar: SkeletonTheme = SKELETON_AVATAR;
 	/**
 	 * Skeleton table cell theme.
 	 * @type {SkeletonTheme}
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly skeletonTableCell: SkeletonTheme =
-		SKELETON_TABLE_CELL;
+	protected readonly skeletonTableCell: SkeletonTheme = SKELETON_TABLE_CELL;
 	/**
 	 * Skeleton card theme.
 	 * @type {SkeletonTheme}
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly skeletonCard: SkeletonTheme =
-		SKELETON_CARD;
+	protected readonly skeletonCard: SkeletonTheme = SKELETON_CARD;
 	/**
 	 * Skeleton title theme.
 	 * @type {SkeletonTheme}
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly skeletonTitle: SkeletonTheme =
-		SKELETON_TITLE;
+	protected readonly skeletonTitle: SkeletonTheme = SKELETON_TITLE;
 	/**
 	 * Skeleton textarea theme.
 	 * @type {SkeletonTheme}
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly skeletonTextarea: SkeletonTheme =
-		SKELETON_TEXTAREA;
+	protected readonly skeletonTextarea: SkeletonTheme = SKELETON_TEXTAREA;
 
 	/**
 	 * Show a demo snackbar message using the NotificationService.

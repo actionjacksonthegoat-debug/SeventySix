@@ -85,7 +85,6 @@ import { filter, map, startWith } from "rxjs/operators";
 	`,
 		changeDetection: ChangeDetectionStrategy.OnPush
 	})
-
 /**
  * Breadcrumb navigation component.
  *

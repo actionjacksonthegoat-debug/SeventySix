@@ -25,7 +25,8 @@ describe("UserCreatePage",
 		let component: UserCreatePage;
 		let fixture: ComponentFixture<UserCreatePage>;
 
-		interface MockUserService {
+		interface MockUserService
+		{
 			createUser: ReturnType<typeof vi.fn>;
 			checkUsernameAvailability: ReturnType<typeof vi.fn>;
 			addRole: ReturnType<typeof vi.fn>;

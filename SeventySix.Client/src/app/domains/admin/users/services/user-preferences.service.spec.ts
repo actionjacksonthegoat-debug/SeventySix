@@ -10,7 +10,8 @@ describe("UserPreferencesService",
 	{
 		let service: UserPreferencesService;
 
-		interface MockStorageService {
+		interface MockStorageService
+		{
 			getItem: ReturnType<typeof vi.fn>;
 			setItem: ReturnType<typeof vi.fn>;
 			removeItem: ReturnType<typeof vi.fn>;

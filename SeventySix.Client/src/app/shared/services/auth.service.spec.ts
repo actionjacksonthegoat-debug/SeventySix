@@ -17,8 +17,8 @@ import {
 	TEST_ROLE_DEVELOPER
 } from "@testing/constants";
 import { AuthService } from "./auth.service";
-import { DOTNET_ROLE_CLAIM } from "./auth.types";
 import { createMockAuthResponse } from "./auth.service.test-helpers";
+import { DOTNET_ROLE_CLAIM } from "./auth.types";
 
 /** AuthService Tests - focuses on authentication logic */
 describe("AuthService",

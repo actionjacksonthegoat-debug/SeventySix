@@ -10,7 +10,8 @@ describe("UserExportService",
 	{
 		let service: UserExportService;
 
-		interface MockDateService {
+		interface MockDateService
+		{
 			now: ReturnType<typeof vi.fn>;
 		}
 
@@ -77,22 +78,28 @@ describe("UserExportService",
 						const setAttributeSpy: ReturnType<typeof vi.spyOn> =
 							vi.spyOn(mockLink, "setAttribute");
 						const clickSpy: ReturnType<typeof vi.spyOn> =
-							vi.spyOn(mockLink, "click")
+							vi
+								.spyOn(mockLink, "click")
 								.mockImplementation(
 									() =>
 									{});
 
-						vi.spyOn(document, "createElement")
+						vi
+							.spyOn(document, "createElement")
 							.mockReturnValue(mockLink);
-						vi.spyOn(document.body, "appendChild")
+						vi
+							.spyOn(document.body, "appendChild")
 							.mockImplementation(
 								(node: Node) => node);
-						vi.spyOn(document.body, "removeChild")
+						vi
+							.spyOn(document.body, "removeChild")
 							.mockImplementation(
 								(node: Node) => node);
-						vi.spyOn(URL, "createObjectURL")
+						vi
+							.spyOn(URL, "createObjectURL")
 							.mockReturnValue("blob:test");
-						vi.spyOn(URL, "revokeObjectURL")
+						vi
+							.spyOn(URL, "revokeObjectURL")
 							.mockImplementation(
 								() =>
 								{});
@@ -122,22 +129,28 @@ describe("UserExportService",
 							document.createElement("a");
 						const setAttributeSpy: ReturnType<typeof vi.spyOn> =
 							vi.spyOn(mockLink, "setAttribute");
-						vi.spyOn(mockLink, "click")
+						vi
+							.spyOn(mockLink, "click")
 							.mockImplementation(
 								() =>
 								{});
 
-						vi.spyOn(document, "createElement")
+						vi
+							.spyOn(document, "createElement")
 							.mockReturnValue(mockLink);
-						vi.spyOn(document.body, "appendChild")
+						vi
+							.spyOn(document.body, "appendChild")
 							.mockImplementation(
 								(node: Node) => node);
-						vi.spyOn(document.body, "removeChild")
+						vi
+							.spyOn(document.body, "removeChild")
 							.mockImplementation(
 								(node: Node) => node);
-						vi.spyOn(URL, "createObjectURL")
+						vi
+							.spyOn(URL, "createObjectURL")
 							.mockReturnValue("blob:test");
-						vi.spyOn(URL, "revokeObjectURL")
+						vi
+							.spyOn(URL, "revokeObjectURL")
 							.mockImplementation(
 								() =>
 								{});

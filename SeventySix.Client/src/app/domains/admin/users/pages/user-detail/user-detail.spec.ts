@@ -34,7 +34,8 @@ describe("UserDetailPage",
 		let component: UserDetailPage;
 		let fixture: ComponentFixture<UserDetailPage>;
 
-		interface MockUserService {
+		interface MockUserService
+		{
 			getUserById: ReturnType<typeof vi.fn>;
 			updateUser: ReturnType<typeof vi.fn>;
 			getUserRoles: ReturnType<typeof vi.fn>;

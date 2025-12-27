@@ -19,7 +19,7 @@ import {
 	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
-import { vi, type Mock } from "vitest";
+import { type Mock, vi } from "vitest";
 
 /**
  * Fluent builder for component test configuration
@@ -49,8 +49,7 @@ export class ComponentTestBed<T>
 	 */
 	withMockService<S>(token: Type<S>, methods: string[]): this
 	{
-		const mock: Record<string, Mock> =
-			{};
+		const mock: Record<string, Mock> = {};
 		for (const methodName of methods)
 		{
 			mock[methodName] =

@@ -23,8 +23,7 @@ export type UserDto =
  * Payload used to create a new user.
  * Mirrors the generated `CreateUserRequest` schema.
  */
-export type CreateUserRequest =
-	components["schemas"]["CreateUserRequest"];
+export type CreateUserRequest = components["schemas"]["CreateUserRequest"];
 
 /**
  * Payload used to update an existing user. Ensures numeric `id`.

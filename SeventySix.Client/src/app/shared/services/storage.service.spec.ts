@@ -15,7 +15,9 @@ import { StorageService } from "./storage.service";
  * @returns {Storage}
  * A mock Storage object
  */
-function createMockStorage(throwOnMethod?: "getItem" | "setItem" | "removeItem" | "clear", errorToThrow?: Error): Storage
+function createMockStorage(
+	throwOnMethod?: "getItem" | "setItem" | "removeItem" | "clear",
+	errorToThrow?: Error): Storage
 {
 	const store: Map<string, string> =
 		new Map();
@@ -80,7 +82,8 @@ describe("StorageService",
 					setupSimpleServiceTest(StorageService);
 				localStorage.clear();
 				consoleErrorSpy =
-					vi.spyOn(console, "error")
+					vi
+						.spyOn(console, "error")
 						.mockImplementation(
 							() =>
 							{});
@@ -89,7 +92,7 @@ describe("StorageService",
 		afterEach(
 			() =>
 			{
-				// Restore original localStorage
+			// Restore original localStorage
 				Object.defineProperty(
 					window,
 					"localStorage",

@@ -14,7 +14,8 @@ describe("ApiStatisticsTableComponent",
 		let component: ApiStatisticsTableComponent;
 		let fixture: ComponentFixture<ApiStatisticsTableComponent>;
 
-		interface MockThirdPartyApiService {
+		interface MockThirdPartyApiService
+		{
 			getAllThirdPartyApis: ReturnType<typeof vi.fn>;
 		}
 

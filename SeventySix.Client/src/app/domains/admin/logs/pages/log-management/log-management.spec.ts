@@ -15,7 +15,8 @@ describe("LogManagementPage",
 			{
 				selectedIds: signal(new Set<number>()),
 				selectedCount: signal(0),
-				getLogs: vi.fn()
+				getLogs: vi
+					.fn()
 					.mockReturnValue(
 						{
 							data: () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 }),
@@ -23,20 +24,23 @@ describe("LogManagementPage",
 							error: () => null,
 							isSuccess: () => true
 						}),
-				deleteLog: vi.fn()
+				deleteLog: vi
+					.fn()
 					.mockReturnValue(
 						{
 							mutate: vi.fn(),
 							isPending: () => false
 						}),
-				deleteLogs: vi.fn()
+				deleteLogs: vi
+					.fn()
 					.mockReturnValue(
 						{
 							mutate: vi.fn(),
 							isPending: () => false
 						}),
 				updateFilter: vi.fn(),
-				getCurrentFilter: vi.fn()
+				getCurrentFilter: vi
+					.fn()
 					.mockReturnValue(
 						{
 							page: 1,

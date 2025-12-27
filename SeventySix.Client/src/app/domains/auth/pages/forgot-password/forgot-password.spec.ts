@@ -11,11 +11,13 @@ import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { ForgotPasswordComponent } from "./forgot-password";
 
-interface MockAuthService {
+interface MockAuthService
+{
 	requestPasswordReset: ReturnType<typeof vi.fn>;
 }
 
-interface MockNotificationService {
+interface MockNotificationService
+{
 	success: ReturnType<typeof vi.fn>;
 	error: ReturnType<typeof vi.fn>;
 }

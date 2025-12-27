@@ -49,11 +49,12 @@ public class PermissionRequestConfiguration
 
 		// Composite unique: one pending request per user per role
 		builder
-			.HasIndex(request => new
-			{
-				request.UserId,
-				request.RequestedRoleId,
-			})
+			.HasIndex(request =>
+				new
+				{
+					request.UserId,
+					request.RequestedRoleId,
+				})
 			.IsUnique()
 			.HasDatabaseName("IX_PermissionRequests_UserId_RoleId");
 

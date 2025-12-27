@@ -371,11 +371,11 @@ public class RateLimitingServiceTests
 				Limits =
 					new Dictionary<string, ThirdPartyApiLimit>
 					{
-						{
-							ExternalApiConstants.BrevoEmail,
-							new ThirdPartyApiLimit { DailyLimit = 250, Enabled = true }
-						},
-					},
+				{
+					ExternalApiConstants.BrevoEmail,
+					new ThirdPartyApiLimit { DailyLimit = 250, Enabled = true }
+				},
+			},
 			};
 
 		RateLimitingService sut =

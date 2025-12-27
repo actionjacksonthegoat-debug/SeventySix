@@ -10,7 +10,7 @@ import {
 	createMockNotificationService,
 	type MockNotificationService
 } from "@shared/testing";
-import { vi, type Mock } from "vitest";
+import { type Mock, vi } from "vitest";
 import { unsavedChangesGuard } from "./unsaved-changes.guard";
 
 describe("unsavedChangesGuard",
@@ -36,7 +36,8 @@ describe("unsavedChangesGuard",
 					});
 
 				// Mock window.confirm
-				vi.spyOn(window, "confirm")
+				vi
+					.spyOn(window, "confirm")
 					.mockImplementation(mockConfirm);
 			});
 

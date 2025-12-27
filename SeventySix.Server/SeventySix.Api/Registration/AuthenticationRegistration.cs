@@ -98,16 +98,16 @@ public static class AuthenticationExtensions
 					{
 						OnAuthenticationFailed =
 							context =>
-					{
-						if (context.Exception is SecurityTokenExpiredException)
-						{
-							context.Response.Headers.Append(
-								"X-Token-Expired",
-								"true");
-						}
+							{
+								if (context.Exception is SecurityTokenExpiredException)
+								{
+									context.Response.Headers.Append(
+										"X-Token-Expired",
+										"true");
+								}
 
-						return Task.CompletedTask;
-					},
+								return Task.CompletedTask;
+							}
 					};
 			});
 

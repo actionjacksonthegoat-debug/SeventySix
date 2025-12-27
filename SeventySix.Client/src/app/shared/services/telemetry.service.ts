@@ -2,17 +2,16 @@ import {
 	inject,
 	Injectable
 } from "@angular/core";
-import { timer } from "rxjs";
 import { environment } from "@environments/environment";
 import { LoggerService } from "@shared/services/logger.service";
+import { timer } from "rxjs";
 
 /**
  * Delay before initializing telemetry (milliseconds).
  * Allows initial render to complete first.
  * @type {number}
  */
-const TELEMETRY_INIT_DELAY_MS: number =
-	1000;
+const TELEMETRY_INIT_DELAY_MS: number = 1000;
 
 /**
  * Aggregated OpenTelemetry module exports from dynamic imports.
@@ -70,8 +69,7 @@ export class TelemetryService
 	 * @type {boolean}
 	 * @private
 	 */
-	private initialized: boolean =
-		false;
+	private initialized: boolean = false;
 
 	/**
 	 * Initializes OpenTelemetry tracing with automatic instrumentation.
@@ -182,8 +180,9 @@ export class TelemetryService
 	 */
 	private createTracerProvider(modules: TelemetryModules): WebTracerProviderInstance
 	{
-		const ResourceConstructor: new (attributes: unknown) => unknown =
-			modules.Resource as new (attributes: unknown) => unknown;
+		const ResourceConstructor: new(attributes: unknown) => unknown =
+			modules.Resource as new(
+				attributes: unknown) => unknown;
 		const resource: unknown =
 			new ResourceConstructor(
 				{
@@ -191,8 +190,9 @@ export class TelemetryService
 					[modules.ATTR_SERVICE_VERSION]: environment.telemetry.serviceVersion
 				});
 
-		const ExporterConstructor: new (config: unknown) => unknown =
-			modules.OTLPTraceExporter as new (config: unknown) => unknown;
+		const ExporterConstructor: new(config: unknown) => unknown =
+			modules.OTLPTraceExporter as new(
+				config: unknown) => unknown;
 		const exporter: unknown =
 			new ExporterConstructor(
 				{
@@ -201,12 +201,13 @@ export class TelemetryService
 
 		const sampler: unknown =
 			this.createSampler(
-				modules.AlwaysOffSampler as new () => unknown,
-				modules.AlwaysOnSampler as new () => unknown,
-				modules.TraceIdRatioBasedSampler as new (ratio: number) => unknown);
+				modules.AlwaysOffSampler as new() => unknown,
+				modules.AlwaysOnSampler as new() => unknown,
+				modules.TraceIdRatioBasedSampler as new(ratio: number) => unknown);
 
-		const ProviderConstructor: new (config: unknown) => WebTracerProviderInstance =
-			modules.WebTracerProvider as new (config: unknown) => WebTracerProviderInstance;
+		const ProviderConstructor: new(config: unknown) => WebTracerProviderInstance =
+			modules.WebTracerProvider as new(
+				config: unknown) => WebTracerProviderInstance;
 		const provider: WebTracerProviderInstance =
 			new ProviderConstructor(
 				{
@@ -214,8 +215,9 @@ export class TelemetryService
 					sampler
 				});
 
-		const ProcessorConstructor: new (exporter: unknown) => unknown =
-			modules.BatchSpanProcessor as new (exporter: unknown) => unknown;
+		const ProcessorConstructor: new(exporter: unknown) => unknown =
+			modules.BatchSpanProcessor as new(
+				exporter: unknown) => unknown;
 		provider.addSpanProcessor(new ProcessorConstructor(exporter));
 
 		return provider;
@@ -230,11 +232,13 @@ export class TelemetryService
 	private registerInstrumentations(modules: TelemetryModules): void
 	{
 		const registerFunction: (config: unknown) => void =
-			modules.registerInstrumentations as (config: unknown) => void;
-		const DocLoadConstructor: new () => unknown =
-			modules.DocumentLoadInstrumentation as new () => unknown;
-		const FetchConstructor: new (config: unknown) => unknown =
-			modules.FetchInstrumentation as new (config: unknown) => unknown;
+			modules.registerInstrumentations as (
+				config: unknown) => void;
+		const DocLoadConstructor: new() => unknown =
+			modules.DocumentLoadInstrumentation as new() => unknown;
+		const FetchConstructor: new(config: unknown) => unknown =
+			modules.FetchInstrumentation as new(
+				config: unknown) => unknown;
 
 		registerFunction(
 			{
@@ -263,9 +267,9 @@ export class TelemetryService
 	 * A configured sampler instance appropriate for the current sample rate.
 	 */
 	private createSampler(
-		AlwaysOffSampler: new () => unknown,
-		AlwaysOnSampler: new () => unknown,
-		TraceIdRatioBasedSampler: new (ratio: number) => unknown): unknown
+		AlwaysOffSampler: new() => unknown,
+		AlwaysOnSampler: new() => unknown,
+		TraceIdRatioBasedSampler: new(ratio: number) => unknown): unknown
 	{
 		const sampleRate: number =
 			environment.telemetry.sampleRate;

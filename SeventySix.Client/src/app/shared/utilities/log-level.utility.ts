@@ -1,4 +1,4 @@
-import { LogLevel, LOG_LEVEL_STRINGS } from "@shared/constants";
+import { LOG_LEVEL_STRINGS, LogLevel } from "@shared/constants";
 import { NotificationLevel } from "@shared/constants";
 
 /**

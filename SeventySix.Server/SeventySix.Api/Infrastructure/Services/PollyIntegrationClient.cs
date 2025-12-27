@@ -361,14 +361,14 @@ public class PollyIntegrationClient(
 				LoggerFactory = loggerFactory,
 				SeverityProvider =
 					args =>
-				args.Event.Severity switch
-				{
-					ResilienceEventSeverity.Debug =>
-						ResilienceEventSeverity.None,
-					ResilienceEventSeverity.Information =>
-						ResilienceEventSeverity.None,
-					_ => args.Event.Severity,
-				},
+					args.Event.Severity switch
+					{
+						ResilienceEventSeverity.Debug =>
+							ResilienceEventSeverity.None,
+						ResilienceEventSeverity.Information =>
+							ResilienceEventSeverity.None,
+						_ => args.Event.Severity,
+					},
 			};
 
 		return new ResiliencePipelineBuilder<HttpResponseMessage>()
