@@ -7,6 +7,11 @@ import closingAngleSameLine from "./eslint-rules/closing-angle-same-line.js";
 import closingParenSameLine from "./eslint-rules/closing-paren-same-line.js";
 import operatorContinuationIndent from "./eslint-rules/operator-continuation-indent.js";
 import callArgumentObjectNewline from "./eslint-rules/call-argument-object-newline.js";
+import playwrightPlugin from "eslint-plugin-playwright";
+
+// Playwright recommended config (flat config does not support `extends`)
+const playwrightRecommended =
+	playwrightPlugin?.configs?.recommended ?? {};
 
 // Shared rules for all TypeScript files
 const sharedRules = {
@@ -111,6 +116,36 @@ export default [
 			"@stylistic/indent": ["error", "tab", { "SwitchCase": 1, "MemberExpression": 1 }]
 		}
 	},
+	// E2E / Playwright tests
+	{
+		files: ["e2e/**/*.ts"],
+		languageOptions: {
+			parser: parser,
+			parserOptions: {
+				project: "./tsconfig.e2e.json",
+				tsconfigRootDir: import.meta.dirname
+			},
+			globals: {
+				test: "readonly",
+				expect: "readonly",
+				describe: "readonly",
+				beforeEach: "readonly",
+				afterEach: "readonly"
+			}
+		},
+		plugins: {
+			...sharedPlugins,
+			// Playwright rules plugin
+			playwright: playwrightPlugin
+		},
+		rules: {
+			// Playwright recommended rules (merged because flat config has no `extends`)
+			...(playwrightRecommended.rules ?? {}),
+			// Allow some test-specific flexibility
+			"no-restricted-syntax": "off"
+		}
+	},
+
 	{
 		files: ["src/**/*.component.ts"],
 		rules: {
@@ -168,6 +203,6 @@ export default [
 		}
 	},
 	{
-		ignores: ["dist/**", "node_modules/**", "coverage/**", ".angular/**"]
+		ignores: ["dist/**", "node_modules/**", "coverage/**", ".angular/**", "vite.config.ts"]
 	}
 ];

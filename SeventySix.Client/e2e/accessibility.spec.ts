@@ -37,8 +37,7 @@ test.describe("WCAG Accessibility Compliance", () =>
 			await page.goto(pageInfo.path);
 
 			// Wait for page to be fully loaded
-			await page.waitForLoadState("networkidle");
-
+				await page.waitForLoadState("load");
 			const axeResults = await new AxeBuilder({ page })
 				.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
 				.analyze();
@@ -52,20 +51,17 @@ test.describe("WCAG Accessibility Compliance", () =>
 
 			// Log violations for debugging (only if there are failures)
 			if (criticalViolations.length > 0)
-			{
-				console.log(
-					`Accessibility violations on ${pageInfo.name}:`,
-					JSON.stringify(
-						criticalViolations.map((v: Result) => ({
-							id: v.id,
-							impact: v.impact,
-							description: v.description,
-							nodes: v.nodes.map((n) => n.html).slice(0, 3)
-						})),
-						null,
-						2
-					)
-				);
+			{			console.log(
+				`Accessibility violations on ${pageInfo.name}:`,
+				JSON.stringify(
+					criticalViolations.map((v: Result) => ({
+						id: v.id,
+						impact: v.impact,
+						description: v.description,
+						nodes: v.nodes.map((n) => n.html).slice(0, 3)
+					})),
+					null,
+					2));
 			}
 
 			expect(
@@ -84,7 +80,7 @@ test.describe("WCAG Accessibility Compliance", () =>
 		}) =>
 		{
 			await page.goto("/");
-			await page.waitForLoadState("networkidle");
+			await page.waitForLoadState("load");
 
 			const axeResults = await new AxeBuilder({ page })
 				.withTags(["wcag2aa"])
@@ -107,7 +103,7 @@ test.describe("WCAG Accessibility Compliance", () =>
 		}) =>
 		{
 			await page.goto("/auth/login");
-			await page.waitForLoadState("networkidle");
+			await page.waitForLoadState("load");
 
 			const axeResults = await new AxeBuilder({ page })
 				.withTags(["wcag2aa"])
@@ -133,7 +129,7 @@ test.describe("WCAG Accessibility Compliance", () =>
 		}) =>
 		{
 			await page.goto("/");
-			await page.waitForLoadState("networkidle");
+			await page.waitForLoadState("load");
 
 			const axeResults = await new AxeBuilder({ page })
 				.withTags(["wcag2a"])
@@ -181,7 +177,7 @@ test.describe("WCAG Accessibility Compliance", () =>
 		}) =>
 		{
 			await page.goto("/");
-			await page.waitForLoadState("networkidle");
+			await page.waitForLoadState("load");
 
 			// Verify banner landmark (header)
 			const banner = page.locator("[role='banner']");
@@ -199,7 +195,7 @@ test.describe("WCAG Accessibility Compliance", () =>
 		test("images have alt text", async ({ page }: { page: Page }) =>
 		{
 			await page.goto("/");
-			await page.waitForLoadState("networkidle");
+			await page.waitForLoadState("load");
 
 			const axeResults = await new AxeBuilder({ page })
 				.withTags(["wcag2a"])

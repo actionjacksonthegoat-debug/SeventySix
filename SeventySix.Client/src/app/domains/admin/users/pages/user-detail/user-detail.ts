@@ -290,6 +290,7 @@ export class UserDetailPage
 						Validators.maxLength(USERNAME_VALIDATION.MAX_LENGTH)
 					]
 				],
+				email: ["", [Validators.required, Validators.email]],
 				fullName: ["", [Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)]],
 				isActive: [true]
 			});

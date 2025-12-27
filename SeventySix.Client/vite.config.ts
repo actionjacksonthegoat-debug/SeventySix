@@ -12,9 +12,15 @@ export default defineConfig(({ mode }) => {
 		mode === "test" ? "environments/environment.test.ts" : "environments/environment.ts";
 	console.log("Environment file:", path.join(srcRoot, envFile));
 
+	// Resolve tsconfig explicitly for the Angular plugin to avoid resolver warnings
+	const tsconfigPath: string =
+		mode === "test"
+			? path.resolve(__dirname, "tsconfig.spec.json")
+			: path.resolve(__dirname, "tsconfig.json");
+
 	return {
 	plugins: [
-		angular(),
+		angular({ tsconfig: tsconfigPath }),
 	],
 	resolve: {
 		alias: [

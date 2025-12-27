@@ -9,7 +9,8 @@
     "test": "node scripts/architecture-tests.mjs && vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "format": "eslint . --fix && dprint fmt && eslint . --fix"
+    "lint:e2e": "eslint e2e --ext .ts --fix",
+    "format": "npm run lint:e2e && eslint . --fix && dprint fmt && eslint . --fix"
   },
   "private": true,
   "dependencies": {
@@ -53,6 +54,7 @@
     "@typescript-eslint/parser": "^8.0.0",
     "@vitest/coverage-v8": "^4.0.16",
     "eslint": "^9.0.0",
+    "eslint-plugin-playwright": "^2.4.0",
     "happy-dom": "^18.0.1",
     "jsdom": "^25.0.0",
     "openapi-typescript": "^7.10.1",
