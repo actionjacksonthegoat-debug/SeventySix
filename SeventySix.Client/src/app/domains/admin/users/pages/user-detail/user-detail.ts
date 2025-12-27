@@ -28,7 +28,6 @@ import {
 	SkeletonTheme
 } from "@shared/constants";
 import {
-	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants/validation.constants";
@@ -61,36 +60,98 @@ import { map } from "rxjs";
 	})
 export class UserDetailPage
 {
+	/**
+	 * Service that provides user-related queries and mutations.
+	 * @type {UserService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly userService: UserService =
 		inject(UserService);
+
+	/**
+	 * Logger for diagnostic messages.
+	 * @type {LoggerService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly logger: LoggerService =
 		inject(LoggerService);
+
+	/**
+	 * Activated route used to obtain route parameters such as user ID.
+	 * @type {ActivatedRoute}
+	 * @private
+	 * @readonly
+	 */
 	private readonly route: ActivatedRoute =
 		inject(ActivatedRoute);
+
+	/**
+	 * Angular router used for navigation (cancel/back actions).
+	 * @type {Router}
+	 * @private
+	 * @readonly
+	 */
 	private readonly router: Router =
 		inject(Router);
+
+	/**
+	 * Form builder used to construct the reactive user form.
+	 * @type {FormBuilder}
+	 * @private
+	 * @readonly
+	 */
 	private readonly formBuilder: FormBuilder =
 		inject(FormBuilder);
+
+	/**
+	 * Notification service for user-facing messages.
+	 * @type {NotificationService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
 
-	// Get user ID from route
+	/**
+	 * User ID extracted from the route parameters.
+	 * @type {string}
+	 * @private
+	 */
 	private readonly userId: string =
 		this.route.snapshot.paramMap.get("id") || "";
 
-	// TanStack Query for loading user data
+	/**
+	 * TanStack Query used to load the user by ID.
+	 * @type {ReturnType<typeof this.userService.getUserById>}
+	 */
 	readonly userQuery: ReturnType<typeof this.userService.getUserById> =
 		this.userService.getUserById(this.userId);
 
-	// TanStack Query mutation for updating user
+	/**
+	 * Mutation used to persist user updates.
+	 * @type {ReturnType<typeof this.userService.updateUser>}
+	 */
 	readonly updateMutation: ReturnType<typeof this.userService.updateUser> =
 		this.userService.updateUser();
 
-	// Role management queries and mutations
+	/**
+	 * Role management queries and mutations for the current user.
+	 * @type {ReturnType<typeof this.userService.getUserRoles>}
+	 */
 	readonly rolesQuery: ReturnType<typeof this.userService.getUserRoles> =
 		this.userService.getUserRoles(this.userId);
+	/**
+	 * Mutation for adding a role to the user.
+	 * @type {ReturnType<typeof this.userService.addRole>}
+	 */
 	readonly addRoleMutation: ReturnType<typeof this.userService.addRole> =
 		this.userService.addRole();
+	/**
+	 * Mutation for removing a role from the user.
+	 * @type {ReturnType<typeof this.userService.removeRole>}
+	 */
 	readonly removeRoleMutation: ReturnType<typeof this.userService.removeRole> =
 		this.userService.removeRole();
 
@@ -99,27 +160,65 @@ export class UserDetailPage
 		REQUESTABLE_ROLES;
 
 	// Skeleton theme constants
+	/**
+	 * Skeleton theme for input placeholders.
+	 * @type {SkeletonTheme}
+	 */
 	readonly skeletonInput: SkeletonTheme =
 		SKELETON_INPUT;
+
+	/**
+	 * Skeleton theme for checkbox placeholders.
+	 * @type {SkeletonTheme}
+	 */
 	readonly skeletonCheckbox: SkeletonTheme =
 		SKELETON_CHECKBOX;
+
+	/**
+	 * Skeleton theme for short text placeholders.
+	 * @type {SkeletonTheme}
+	 */
 	readonly skeletonTextShort: SkeletonTheme =
 		SKELETON_TEXT_SHORT;
 
 	// Computed signals for derived state
+	/**
+	 * Currently loaded user or null when not available.
+	 * @type {Signal<UserDto | null>}
+	 */
 	readonly user: Signal<UserDto | null> =
 		computed(
 			() => this.userQuery.data() ?? null);
+
+	/**
+	 * Loading indicator for the user query.
+	 * @type {Signal<boolean>}
+	 */
 	readonly isLoading: Signal<boolean> =
 		computed(
 			() => this.userQuery.isLoading());
+
+	/**
+	 * Saving indicator for update mutations.
+	 * @type {Signal<boolean>}
+	 */
 	readonly isSaving: Signal<boolean> =
 		computed(
 			() => this.updateMutation.isPending());
+
+	/**
+	 * Error message when loading the user fails.
+	 * @type {Signal<string | null>}
+	 */
 	readonly error: Signal<string | null> =
 		computed(
 			() =>
 				this.userQuery.error() ? "Failed to load user. Please try again." : null);
+
+	/**
+	 * Error message when saving the user fails.
+	 * @type {Signal<string | null>}
+	 */
 	readonly saveError: Signal<string | null> =
 		computed(
 			() =>
@@ -128,9 +227,18 @@ export class UserDetailPage
 					: null);
 
 	// Role computed signals
+	/**
+	 * Roles currently assigned to the user.
+	 * @type {Signal<string[]>}
+	 */
 	readonly userRoles: Signal<string[]> =
 		computed(
 			() => this.rolesQuery.data() ?? []);
+
+	/**
+	 * Roles that can be added to the user (not currently assigned).
+	 * @type {Signal<string[]>}
+	 */
 	readonly availableRolesToAdd: Signal<string[]> =
 		computed(
 			() =>
@@ -141,6 +249,11 @@ export class UserDetailPage
 					(role: string) =>
 						!currentRoles.includes(role));
 			});
+
+	/**
+	 * True when a role add/remove operation is in progress.
+	 * @type {Signal<boolean>}
+	 */
 	readonly isRoleMutating: Signal<boolean> =
 		computed(
 			() =>
@@ -148,6 +261,10 @@ export class UserDetailPage
 					|| this.removeRoleMutation.isPending());
 
 	// Computed signals
+	/**
+	 * Page title derived from the loaded user.
+	 * @type {Signal<string>}
+	 */
 	readonly pageTitle: Signal<string> =
 		computed(
 			() =>
@@ -158,6 +275,10 @@ export class UserDetailPage
 			});
 
 	// Reactive form
+	/**
+	 * Reactive form group for editing a user.
+	 * @type {FormGroup}
+	 */
 	readonly userForm: FormGroup =
 		this.formBuilder.group(
 			{
@@ -169,18 +290,14 @@ export class UserDetailPage
 						Validators.maxLength(USERNAME_VALIDATION.MAX_LENGTH)
 					]
 				],
-				email: [
-					"",
-					[
-						Validators.required,
-						Validators.email,
-						Validators.maxLength(EMAIL_VALIDATION.MAX_LENGTH)
-					]
-				],
 				fullName: ["", [Validators.maxLength(FULL_NAME_VALIDATION.MAX_LENGTH)]],
 				isActive: [true]
 			});
 
+	/**
+	 * True when the form has unsaved changes (dirty state).
+	 * @type {Signal<boolean>}
+	 */
 	readonly hasUnsavedChanges: Signal<boolean> =
 		toSignal(
 			this.userForm.statusChanges.pipe(
@@ -189,16 +306,28 @@ export class UserDetailPage
 			{ initialValue: false });
 
 	// Validation error signals
+	/**
+	 * Username validation error (for display next to field).
+	 * @type {Signal<string | null>}
+	 */
 	readonly usernameError: Signal<string | null> =
 		computed(
 			() =>
 				getValidationError(this.userForm.get("username"), "Username"));
 
+	/**
+	 * Email validation error (for display next to field).
+	 * @type {Signal<string | null>}
+	 */
 	readonly emailError: Signal<string | null> =
 		computed(
 			() =>
 				getValidationError(this.userForm.get("email"), "Email"));
 
+	/**
+	 * Full name validation error (for display next to field).
+	 * @type {Signal<string | null>}
+	 */
 	readonly fullNameError: Signal<string | null> =
 		computed(
 			() =>
@@ -232,8 +361,10 @@ export class UserDetailPage
 	}
 
 	/**
-	 * Populates the form with user data.
-	 * @param user The user data to populate
+	 * Populate the reactive form from the given user DTO and mark it pristine.
+	 * @param {UserDto} user
+	 * The user data to populate.
+	 * @returns {void}
 	 */
 	private populateForm(user: UserDto): void
 	{
@@ -250,8 +381,8 @@ export class UserDetailPage
 	}
 
 	/**
-	 * Handles form submission.
-	 * Validates and saves user changes.
+	 * Handles form submission. Validates and saves user changes.
+	 * @returns {Promise<void>}
 	 */
 	async onSubmit(): Promise<void>
 	{
@@ -266,7 +397,8 @@ export class UserDetailPage
 
 	/**
 	 * Validates form and marks fields as touched if invalid.
-	 * @returns true if form is valid, false otherwise
+	 * @returns {boolean}
+	 * True if form is valid, false otherwise.
 	 */
 	private validateFormAndMarkTouched(): boolean
 	{
@@ -280,7 +412,8 @@ export class UserDetailPage
 
 	/**
 	 * Builds the update request from form data and validates prerequisites.
-	 * @returns UpdateUserRequest if valid, null if validation fails
+	 * @returns {UpdateUserRequest | null}
+	 * UpdateUserRequest if valid, otherwise null.
 	 */
 	private buildUpdateRequest(): UpdateUserRequest | null
 	{
@@ -335,7 +468,9 @@ export class UserDetailPage
 
 	/**
 	 * Handles user update errors with appropriate messaging.
-	 * @param error The error from the mutation
+	 * @param {unknown} error
+	 * The error from the mutation.
+	 * @returns {void}
 	 */
 	private handleMutationError(error: unknown): void
 	{
@@ -378,7 +513,9 @@ export class UserDetailPage
 
 	/**
 	 * Adds a role to the user.
-	 * @param role The role to add
+	 * @param {string} role
+	 * The role to add.
+	 * @returns {void}
 	 */
 	onAddRole(role: string): void
 	{
@@ -401,7 +538,9 @@ export class UserDetailPage
 
 	/**
 	 * Removes a role from the user.
-	 * @param role The role to remove
+	 * @param {string} role
+	 * The role to remove.
+	 * @returns {void}
 	 */
 	onRemoveRole(role: string): void
 	{

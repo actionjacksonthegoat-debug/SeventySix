@@ -30,9 +30,27 @@ import { lastValueFrom, Observable } from "rxjs";
 @Injectable()
 export class UserService extends BaseQueryService<UserQueryRequest>
 {
+	/**
+	 * Query key prefix used by TanStack Query for namespacing user queries.
+	 * @type {string}
+	 */
 	protected readonly queryKeyPrefix: string = "users";
+
+	/**
+	 * API service used to communicate with the backend for user operations.
+	 * @type {ApiService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly apiService: ApiService =
 		inject(ApiService);
+
+	/**
+	 * REST endpoint base path for user-related API routes.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly endpoint: string = "users";
 
 	constructor()
@@ -49,9 +67,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Query for paginated users with current filter
-	 * Automatically cached with TanStack Query
-	 * @returns Query object with data, isLoading, error, etc.
+	 * Query for paginated users with current filter.
+	 * Automatically cached with TanStack Query.
+	 * @returns {ReturnType<typeof injectQuery>}
+	 * Query object with data, isLoading, error, etc.
 	 */
 	getPagedUsers()
 	{
@@ -68,9 +87,11 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Query for User by ID
-	 * @param userId The User identifier
-	 * @returns Query object with data, isLoading, error, etc.
+	 * Query for User by ID.
+	 * @param {number | string} userId
+	 * The User identifier.
+	 * @returns {ReturnType<typeof injectQuery>}
+	 * Query object with data, isLoading, error, etc.
 	 */
 	getUserById(userId: number | string)
 	{
@@ -84,9 +105,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for creating User
-	 * Automatically invalidates related queries on success
-	 * @returns Mutation object with mutate, isPending, error, etc.
+	 * Mutation for creating User.
+	 * Automatically invalidates related queries on success.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object with mutate, isPending, error, etc.
 	 */
 	createUser()
 	{
@@ -96,8 +118,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for updating User
-	 * @returns Mutation object with mutate, isPending, error, etc.
+	 * Mutation for updating User.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object with mutate, isPending, error, etc.
 	 */
 	updateUser()
 	{
@@ -117,8 +140,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for deleting User
-	 * @returns Mutation object with mutate, isPending, error, etc.
+	 * Mutation for deleting User.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object with mutate, isPending, error, etc.
 	 */
 	deleteUser()
 	{
@@ -128,8 +152,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Clear all filters and reset to defaults
-	 * Overrides base class method
+	 * Clear all active filters and reset to the service defaults.
+	 * Overrides the base class implementation to reset local filter state.
+	 * @returns {void}
 	 */
 	override clearFilters(): void
 	{
@@ -137,9 +162,11 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Query for User by username
-	 * @param username The username to search
-	 * @returns Query object with User data
+	 * Query for User by username.
+	 * @param {string} username
+	 * The username to search.
+	 * @returns {ReturnType<typeof injectQuery>}
+	 * Query object with User data.
 	 */
 	getUserByUsername(username: string)
 	{
@@ -153,10 +180,13 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Check username availability (not cached for real-time validation)
-	 * @param username The username to check
-	 * @param excludeUserId Optional User ID to exclude
-	 * @returns Promise of boolean
+	 * Check username availability (not cached for real-time validation).
+	 * @param {string} username
+	 * The username to check.
+	 * @param {number | undefined} [excludeUserId]
+	 * Optional User ID to exclude.
+	 * @returns {Promise<boolean>}
+	 * Promise that resolves to true when username is available, false otherwise.
 	 */
 	checkUsernameAvailability(
 		username: string,
@@ -173,8 +203,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for restoring deleted User
-	 * @returns Mutation object
+	 * Mutation for restoring deleted User.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object.
 	 */
 	restoreUser()
 	{
@@ -186,8 +217,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for bulk activating users
-	 * @returns Mutation object
+	 * Mutation for bulk activating users.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object.
 	 */
 	bulkActivateUsers()
 	{
@@ -197,8 +229,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for bulk deactivating users
-	 * @returns Mutation object
+	 * Mutation for bulk deactivating users.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object.
 	 */
 	bulkDeactivateUsers()
 	{
@@ -208,9 +241,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for initiating password reset
-	 * Sends password reset email to User
-	 * @returns Mutation object with mutate, isPending, error, etc.
+	 * Mutation for initiating password reset.
+	 * Sends password reset email to User.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object with mutate, isPending, error, etc.
 	 */
 	resetPassword()
 	{
@@ -226,9 +260,11 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Query for User roles
-	 * @param userId The User ID
-	 * @returns Query object with roles data
+	 * Query for User roles.
+	 * @param {number | string} userId
+	 * The User ID.
+	 * @returns {ReturnType<typeof injectQuery>}
+	 * Query object with roles data.
 	 */
 	getUserRoles(userId: number | string)
 	{
@@ -242,8 +278,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for adding a role to a User
-	 * @returns Mutation object
+	 * Mutation for adding a role to a User.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object.
 	 */
 	addRole()
 	{
@@ -267,8 +304,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
-	 * Mutation for removing a role from a User
-	 * @returns Mutation object
+	 * Mutation for removing a role from a User.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object.
 	 */
 	removeRole()
 	{
@@ -289,7 +327,15 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 			});
 	}
 
-	/** Gets paged users with the given filter. */
+	/**
+	 * Gets paged users with the given filter.
+	 * @param {UserQueryRequest} request
+	 * Filter/request parameters.
+	 * @param {HttpContext | undefined} [context]
+	 * Optional HTTP context for the request.
+	 * @returns {Observable<PagedResultOfUserDto>}
+	 * Observable that resolves to paged user results.
+	 */
 	private getPaged(
 		request: UserQueryRequest,
 		context?: HttpContext): Observable<PagedResultOfUserDto>

@@ -35,21 +35,51 @@ import { lastValueFrom, Observable } from "rxjs";
 @Injectable()
 export class LogManagementService extends BaseQueryService<LogQueryRequest>
 {
+	/**
+	 * Query key prefix used by TanStack Query for namespacing log queries.
+	 * @type {string}
+	 */
 	protected readonly queryKeyPrefix: string = "logs";
+
+	/**
+	 * API service used to communicate with the backend for log operations.
+	 * @type {ApiService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly apiService: ApiService =
 		inject(ApiService);
+
+	/**
+	 * Endpoint path for log-related API requests.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly endpoint: string = "logs";
 
-	// Selected log IDs using signals
+	/**
+	 * Selected log IDs using a writable signal.
+	 * @type {WritableSignal<Set<number>>}
+	 */
 	readonly selectedIds: WritableSignal<Set<number>> =
 		signal<Set<number>>(
 			new Set());
 
-	// Computed selected count
+	/**
+	 * Number of selected logs, computed from `selectedIds`.
+	 * @type {Signal<number>}
+	 */
 	readonly selectedCount: Signal<number> =
 		computed(
 			() => this.selectedIds().size);
 
+	/**
+	 * Date helper service used for parsing and relative time calculations.
+	 * @type {DateService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dateService: DateService =
 		inject(DateService);
 
@@ -74,9 +104,10 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	}
 
 	/**
-	 * Query for logs based on current filter
-	 * Automatically cached with TanStack Query
-	 * @returns Query object with data, isLoading, error, etc.
+	 * Query logs using the current filter state.
+	 * Uses TanStack Query to cache and manage server requests for paged log results.
+	 * @returns {ReturnType<typeof injectQuery>}
+	 * Query object with `data`, `isLoading`, `error`, and related flags.
 	 */
 	getLogs()
 	{
@@ -92,7 +123,12 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 			}));
 	}
 
-	/** Mutation for deleting a single log. Automatically invalidates related queries on success. */
+	/**
+	 * Create a mutation for deleting a single log by ID.
+	 * On success, related queries are invalidated by the mutation lifecycle.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object with `mutate`, `isPending`, and `error` properties.
+	 */
 	deleteLog()
 	{
 		return this.createMutation<number, void>(
@@ -101,9 +137,10 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	}
 
 	/**
-	 * Mutation for batch deleting logs
-	 * Automatically invalidates related queries on success
-	 * @returns Mutation object with mutate, isPending, error, etc.
+	 * Create a mutation to delete multiple logs in a batch.
+	 * Invalidates query caches and clears selection on success.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation object providing `mutate` for performing the batch delete.
 	 */
 	deleteLogs()
 	{
@@ -118,9 +155,11 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	}
 
 	/**
-	 * Delete selected logs
+	 * Delete selected logs.
+	 * @returns {void}
+	 * Initiates batch delete mutation for currently selected IDs.
 	 */
-	deleteSelected()
+	deleteSelected(): void
 	{
 		const mutation: ReturnType<typeof this.deleteLogs> =
 			this.deleteLogs();
@@ -130,8 +169,9 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	}
 
 	/**
-	 * Clear all filters and reset to defaults
-	 * Overrides base class method to also clear selection
+	 * Clear all filters and reset to defaults.
+	 * Overrides base class method to also clear selection.
+	 * @returns {void}
 	 */
 	override clearFilters(): void
 	{
@@ -140,8 +180,10 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	}
 
 	/**
-	 * Toggle log ID selection
-	 * @param id - Log ID to toggle
+	 * Toggle log ID selection.
+	 * @param {number} id
+	 * Log ID to toggle.
+	 * @returns {void}
 	 */
 	toggleSelection(id: number): void
 	{
@@ -163,8 +205,10 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	}
 
 	/**
-	 * Select all visible logs
-	 * @param logIds - Array of log IDs to select
+	 * Select all visible logs.
+	 * @param {number[]} logIds
+	 * Array of log IDs to select.
+	 * @returns {void}
 	 */
 	selectAll(logIds: number[]): void
 	{
@@ -172,7 +216,8 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	}
 
 	/**
-	 * Clear all selections
+	 * Clear all selections.
+	 * @returns {void}
 	 */
 	clearSelection(): void
 	{
@@ -180,14 +225,24 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	}
 
 	/**
-	 * Get current selected IDs
+	 * Get current selected IDs.
+	 * @returns {Set<number>}
+	 * Current set of selected log IDs.
 	 */
 	getSelectedIds(): Set<number>
 	{
 		return this.selectedIds();
 	}
 
-	/** Gets paged logs with the given filter. */
+	/**
+	 * Gets paged logs with the given filter.
+	 * @param {LogQueryRequest | undefined} filter
+	 * Optional filter object to apply to the query.
+	 * @param {HttpContext | undefined} context
+	 * Optional HTTP context to control request behaviour.
+	 * @returns {Observable<PagedResultOfLogDto>}
+	 * Observable that resolves to paged log results.
+	 */
 	private getPaged(
 		filter?: LogQueryRequest,
 		context?: HttpContext): Observable<PagedResultOfLogDto>

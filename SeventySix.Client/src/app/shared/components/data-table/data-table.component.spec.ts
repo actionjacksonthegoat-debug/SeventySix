@@ -435,8 +435,8 @@ describe("DataTableComponent",
 						new Promise<void>(
 							(resolve) =>
 							{
-								component.selection.select(mockData[0]);
-								component.selection.select(mockData[1]);
+								component.selectionManager.selection.select(mockData[0]);
+								component.selectionManager.selection.select(mockData[1]);
 
 								component.bulkAction.subscribe(
 									(event: BulkActionEvent<TestEntity>) =>
@@ -460,7 +460,7 @@ describe("DataTableComponent",
 						expect(component.hasSelection())
 							.toBe(false);
 
-						component.selection.select(mockData[0]);
+						component.selectionManager.selection.select(mockData[0]);
 						fixture.detectChanges();
 						expect(component.hasSelection())
 							.toBe(true);
@@ -471,12 +471,12 @@ describe("DataTableComponent",
 					{
 						component.toggleAllRows();
 						fixture.detectChanges();
-						expect(component.selection.selected.length)
+						expect(component.selectionManager.selection.selected.length)
 							.toBe(3);
 
 						component.toggleAllRows();
 						fixture.detectChanges();
-						expect(component.selection.selected.length)
+						expect(component.selectionManager.selection.selected.length)
 							.toBe(0);
 					});
 			});

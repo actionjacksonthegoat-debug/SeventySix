@@ -13,14 +13,31 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 	})
 export class StorageService
 {
+	/**
+	 * Angular platform identifier token used for SSR-safe checks.
+	 * @type {object}
+	 * @private
+	 * @readonly
+	 */
 	private readonly platformId: object =
 		inject(PLATFORM_ID);
+
+	/**
+	 * Whether code is running in a browser environment.
+	 * @type {boolean}
+	 * @private
+	 * @readonly
+	 */
 	private readonly isBrowser: boolean =
 		isPlatformBrowser(this.platformId);
 
 	/**
 	 * Get item from localStorage (SSR-safe).
 	 * Returns null if not in browser or item doesn't exist.
+	 * @param {string} key
+	 * The storage key to retrieve.
+	 * @returns {T | null}
+	 * The parsed stored value as type T, or null if not present.
 	 */
 	getItem<T = string>(key: string): T | null
 	{
@@ -58,6 +75,12 @@ export class StorageService
 	/**
 	 * Set item in localStorage (SSR-safe).
 	 * Returns true on success, false on failure.
+	 * @param {string} key
+	 * The storage key to set.
+	 * @param {T} value
+	 * The value to store (will be stringified if not a string).
+	 * @returns {boolean}
+	 * True when the item was successfully written to storage.
 	 */
 	setItem<T>(key: string, value: T): boolean
 	{
@@ -89,6 +112,9 @@ export class StorageService
 
 	/**
 	 * Remove item from localStorage (SSR-safe).
+	 * @param {string} key
+	 * The storage key to remove.
+	 * @returns {void}
 	 */
 	removeItem(key: string): void
 	{
@@ -108,6 +134,8 @@ export class StorageService
 
 	/**
 	 * Clear all items from localStorage (SSR-safe).
+	 * @returns {void}
+	 * Clears storage when running in the browser.
 	 */
 	clear(): void
 	{

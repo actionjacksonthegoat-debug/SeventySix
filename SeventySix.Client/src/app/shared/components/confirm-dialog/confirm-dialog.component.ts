@@ -8,10 +8,6 @@ import {
 import { MatIconModule } from "@angular/material/icon";
 import { ConfirmDialogData } from "@shared/models";
 
-/**
- * Reusable confirmation dialog component
- * Used for critical actions like deletions
- */
 @Component(
 	{
 		selector: "app-confirm-dialog",
@@ -63,24 +59,64 @@ import { ConfirmDialogData } from "@shared/models";
 		`
 		]
 	})
+
+/**
+ * Confirmation dialog component.
+ *
+ * Displays a title, message and confirm/cancel actions for critical operations
+ * such as delete or overwrite. Supports optional icon and color customization.
+ *
+ * Usage Example:
+ * const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+ *   data: { title, message, confirmText }
+ * });
+ *
+ * @remarks
+ * The dialog closes with boolean `true` to confirm and `false` to cancel.
+ */
 export class ConfirmDialogComponent
 {
+	/**
+	 * Reference to the dialog instance for programmatic close.
+	 * @type {MatDialogRef<ConfirmDialogComponent>}
+	 * @private
+	 * @readonly
+	 */
 	private dialogRef: MatDialogRef<ConfirmDialogComponent> =
 		inject(
 		MatDialogRef<ConfirmDialogComponent>);
+
+	/**
+	 * Dialog input data (title, message, buttons, colors).
+	 * @type {ConfirmDialogData}
+	 * @protected
+	 * @readonly
+	 */
 	protected data: ConfirmDialogData =
 		inject<ConfirmDialogData>(MAT_DIALOG_DATA);
 
+	/**
+	 * Confirm action handler — closes the dialog with a true result.
+	 * @returns {void}
+	 */
 	onConfirm(): void
 	{
 		this.dialogRef.close(true);
 	}
 
+	/**
+	 * Cancel action handler — closes the dialog with a false result.
+	 * @returns {void}
+	 */
 	onCancel(): void
 	{
 		this.dialogRef.close(false);
 	}
 
+	/**
+	 * Maps the confirm button color to a CSS variable used for the icon.
+	 * @returns {string}
+	 */
 	getIconColor(): string
 	{
 		switch (this.data.confirmColor)

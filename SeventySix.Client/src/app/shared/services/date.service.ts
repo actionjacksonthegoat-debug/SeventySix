@@ -36,6 +36,12 @@ import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 	})
 export class DateService
 {
+	/**
+	 * Time zone identifier used for UTC conversions.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly UTC_ZONE: string = "UTC";
 
 	// ========================================
@@ -46,7 +52,8 @@ export class DateService
 	 * Get current time as UTC ISO string.
 	 * Use for API requests that need current timestamp.
 	 *
-	 * @returns ISO 8601 string in UTC (e.g., "2024-04-29T19:45:12.123Z")
+	 * @returns {string}
+	 * ISO 8601 string in UTC (e.g., "2024-04-29T19:45:12.123Z").
 	 *
 	 * @example
 	 * const payload = { clientTimestamp: this.dateService.now() };
@@ -61,7 +68,8 @@ export class DateService
 	 * Get current timestamp as milliseconds since epoch.
 	 * Use for internal timing (circuit breakers, rate limiting, performance tracking).
 	 *
-	 * @returns Milliseconds since Unix epoch
+	 * @returns {number}
+	 * Milliseconds since Unix epoch.
 	 *
 	 * @example
 	 * this.circuitBreakerOpenTime = this.dateService.nowTimestamp();
@@ -75,8 +83,10 @@ export class DateService
 	 * Convert Date object to UTC ISO string.
 	 * Use when sending dates to API.
 	 *
-	 * @param date - Date object to convert
-	 * @returns ISO 8601 string in UTC
+	 * @param {Date} date
+	 * Date object to convert.
+	 * @returns {string}
+	 * ISO 8601 string in UTC.
 	 *
 	 * @example
 	 * const isoString = this.dateService.toUTC(myDate);
@@ -94,8 +104,10 @@ export class DateService
 	 * Parse ISO string to Date object (treats as UTC).
 	 * Use when receiving dates from API.
 	 *
-	 * @param isoString - ISO 8601 string
-	 * @returns Date object (interpreted as UTC)
+	 * @param {string} isoString
+	 * ISO 8601 formatted string.
+	 * @returns {Date}
+	 * Date object (interpreted as UTC).
 	 *
 	 * @example
 	 * const log = response.data;
@@ -113,9 +125,12 @@ export class DateService
 	/**
 	 * Format date in user's local timezone.
 	 *
-	 * @param date - Date to format
-	 * @param formatString - date-fns format string (default: 'PPpp')
-	 * @returns Formatted string in local timezone
+	 * @param {Date|string} date
+	 * Date or ISO string to format.
+	 * @param {string} formatString
+	 * date-fns format string (default: 'PPpp').
+	 * @returns {string}
+	 * Formatted string in local timezone.
 	 *
 	 * Common formats:
 	 * - 'PPpp': Apr 29, 2024, 3:45:12 PM
@@ -138,8 +153,10 @@ export class DateService
 	 * Format date as relative time ("5 mins ago", "2 days ago").
 	 * Use for "Last Called" columns, activity timestamps.
 	 *
-	 * @param date - Date to format
-	 * @returns Relative time string
+	 * @param {Date|string} date
+	 * Date or ISO string to format.
+	 * @returns {string}
+	 * Relative time string.
 	 *
 	 * @example
 	 * const relative = this.dateService.formatRelative(apiStat.lastCalled);
@@ -156,8 +173,10 @@ export class DateService
 	/**
 	 * Convert UTC date to user's local timezone.
 	 *
-	 * @param utcDate - Date in UTC
-	 * @returns Date object in local timezone
+	 * @param {Date|string} utcDate
+	 * Date in UTC (Date object or ISO string).
+	 * @returns {Date}
+	 * Date object in the user's local timezone.
 	 */
 	toLocal(utcDate: Date | string): Date
 	{
@@ -178,8 +197,10 @@ export class DateService
 	/**
 	 * Check if date is valid.
 	 *
-	 * @param date - Date to validate
-	 * @returns True if valid date
+	 * @param {Date|string|null|undefined} date
+	 * The date to validate.
+	 * @returns {boolean}
+	 * True when the date is valid.
 	 */
 	isValid(date: Date | string | null | undefined): boolean
 	{
@@ -192,9 +213,12 @@ export class DateService
 	/**
 	 * Check if date A is before date B (UTC comparison).
 	 *
-	 * @param dateA - First date
-	 * @param dateB - Second date
-	 * @returns True if dateA < dateB
+	 * @param {Date|string} dateA
+	 * First date to compare.
+	 * @param {Date|string} dateB
+	 * Second date to compare.
+	 * @returns {boolean}
+	 * True when dateA is strictly before dateB.
 	 */
 	isBefore(dateA: Date | string, dateB: Date | string): boolean
 	{
@@ -208,9 +232,12 @@ export class DateService
 	/**
 	 * Check if date A is after date B (UTC comparison).
 	 *
-	 * @param dateA - First date
-	 * @param dateB - Second date
-	 * @returns True if dateA > dateB
+	 * @param {Date|string} dateA
+	 * First date to compare.
+	 * @param {Date|string} dateB
+	 * Second date to compare.
+	 * @returns {boolean}
+	 * True when dateA is strictly after dateB.
 	 */
 	isAfter(dateA: Date | string, dateB: Date | string): boolean
 	{
@@ -224,9 +251,12 @@ export class DateService
 	/**
 	 * Check if two dates are the same calendar day (UTC).
 	 *
-	 * @param dateA - First date
-	 * @param dateB - Second date
-	 * @returns True if same day in UTC
+	 * @param {Date|string} dateA
+	 * First date to compare.
+	 * @param {Date|string} dateB
+	 * Second date to compare.
+	 * @returns {boolean}
+	 * True when both dates fall on the same UTC calendar day.
 	 */
 	isSameDay(dateA: Date | string, dateB: Date | string): boolean
 	{
@@ -240,8 +270,10 @@ export class DateService
 	/**
 	 * Check if date is in the past (compared to now in UTC).
 	 *
-	 * @param date - Date to check
-	 * @returns True if date is before now
+	 * @param {Date|string} date
+	 * The date to check.
+	 * @returns {boolean}
+	 * True when the date is strictly before the current time.
 	 */
 	isPast(date: Date | string): boolean
 	{
@@ -251,8 +283,10 @@ export class DateService
 	/**
 	 * Check if date is in the future (compared to now in UTC).
 	 *
-	 * @param date - Date to check
-	 * @returns True if date is after now
+	 * @param {Date|string} date
+	 * The date to check.
+	 * @returns {boolean}
+	 * True when the date is strictly after the current time.
 	 */
 	isFuture(date: Date | string): boolean
 	{
@@ -266,9 +300,12 @@ export class DateService
 	/**
 	 * Add days to a date (immutable).
 	 *
-	 * @param date - Starting date
-	 * @param count - Number of days to add (negative to subtract)
-	 * @returns New Date object
+	 * @param {Date|string} date
+	 * Starting date (Date or ISO string).
+	 * @param {number} count
+	 * Number of days to add (negative to subtract).
+	 * @returns {Date}
+	 * New Date object with the added days.
 	 *
 	 * @example
 	 * const nextWeek = this.dateService.addDays(new Date(), 7);
@@ -283,9 +320,12 @@ export class DateService
 	/**
 	 * Add hours to a date (immutable).
 	 *
-	 * @param date - Starting date
-	 * @param count - Number of hours to add (negative to subtract)
-	 * @returns New Date object
+	 * @param {Date|string} date
+	 * Starting date (Date or ISO string).
+	 * @param {number} count
+	 * Number of hours to add (negative to subtract).
+	 * @returns {Date}
+	 * New Date object with the added hours.
 	 */
 	addHours(date: Date | string, count: number): Date
 	{
@@ -297,9 +337,12 @@ export class DateService
 	/**
 	 * Calculate difference between two dates in days (UTC).
 	 *
-	 * @param dateA - End date
-	 * @param dateB - Start date
-	 * @returns Number of days between dates
+	 * @param {Date|string} dateA
+	 * End date.
+	 * @param {Date|string} dateB
+	 * Start date.
+	 * @returns {number}
+	 * Number of days between the two dates.
 	 *
 	 * @example
 	 * const daysSince = this.dateService.differenceInDays(new Date(), lastLogin);
@@ -316,8 +359,10 @@ export class DateService
 	/**
 	 * Get start of day (00:00:00.000) in UTC.
 	 *
-	 * @param date - Date to get start of day
-	 * @returns Date at 00:00:00.000 UTC
+	 * @param {Date|string} date
+	 * Date to get start of day for.
+	 * @returns {Date}
+	 * Date at 00:00:00.000 in UTC.
 	 */
 	startOfDay(date: Date | string): Date
 	{
@@ -341,8 +386,10 @@ export class DateService
 	/**
 	 * Get end of day (23:59:59.999) in UTC.
 	 *
-	 * @param date - Date to get end of day
-	 * @returns Date at 23:59:59.999 UTC
+	 * @param {Date|string} date
+	 * Date to get end of day for.
+	 * @returns {Date}
+	 * Date at 23:59:59.999 in UTC.
 	 */
 	endOfDay(date: Date | string): Date
 	{
@@ -371,8 +418,10 @@ export class DateService
 	 * Calculate hours since a timestamp.
 	 * Useful for API status checks.
 	 *
-	 * @param timestamp - Past timestamp
-	 * @returns Number of hours since timestamp
+	 * @param {Date|string} timestamp
+	 * Past timestamp to measure from.
+	 * @returns {number}
+	 * Number of whole hours since the timestamp.
 	 *
 	 * @example
 	 * const hoursSince = this.dateService.hoursSince(apiStat.lastCalled);
@@ -393,8 +442,10 @@ export class DateService
 	/**
 	 * Calculate minutes since a timestamp.
 	 *
-	 * @param timestamp - Past timestamp
-	 * @returns Number of minutes since timestamp
+	 * @param {Date|string} timestamp
+	 * Past timestamp to measure from.
+	 * @returns {number}
+	 * Number of whole minutes since the timestamp.
 	 */
 	minutesSince(timestamp: Date | string): number
 	{

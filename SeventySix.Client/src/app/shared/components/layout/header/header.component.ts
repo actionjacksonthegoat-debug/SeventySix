@@ -20,10 +20,6 @@ import {
 	ThemeService
 } from "@shared/services";
 
-/**
- * Application header component
- * Displays logo, navigation, search, user menu, and theme toggles
- */
 @Component(
 	{
 		selector: "app-header",
@@ -40,18 +36,60 @@ import {
 		styleUrl: "./header.component.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
 	})
+
+/**
+ * Application header component.
+ *
+ * Displays logo, breadcrumb/navigation, and user controls including
+ * theme toggles and account actions. Shows the current user's display name.
+ *
+ * @remarks
+ * Place `<app-header>` in the application shell to provide consistent
+ * top-level navigation and user actions.
+ */
 export class HeaderComponent
 {
+	/**
+	 * Theme service to toggle brightness and color schemes.
+	 * @type {ThemeService}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly themeService: ThemeService =
 		inject(ThemeService);
+
+	/**
+	 * Layout service for sidebar state and responsive helpers.
+	 * @type {LayoutService}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly layoutService: LayoutService =
 		inject(LayoutService);
+
+	/**
+	 * Authentication service for user state and logout.
+	 * @type {AuthService}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly authService: AuthService =
 		inject(AuthService);
+
+	/**
+	 * Angular Router for navigation actions.
+	 * @type {Router}
+	 * @private
+	 * @readonly
+	 */
 	private readonly router: Router =
 		inject(Router);
 
-	/** Display name: fullName if available, otherwise username. */
+	/**
+	 * Display name: fullName if available, otherwise username.
+	 * @type {Signal<string>}
+	 * @protected
+	 */
 	protected readonly displayName: Signal<string> =
 		computed(
 			() =>
@@ -65,39 +103,67 @@ export class HeaderComponent
 				return user.fullName || user.username;
 			});
 
+	/**
+	 * Toggle the sidebar expanded state.
+	 * @returns {void}
+	 */
 	toggleSidebar(): void
 	{
 		this.layoutService.toggleSidebar();
 	}
 
+	/**
+	 * Toggle between light and dark brightness modes.
+	 * @returns {void}
+	 */
 	toggleBrightness(): void
 	{
 		this.themeService.toggleBrightness();
 	}
 
+	/**
+	 * Toggle between available color schemes.
+	 * @returns {void}
+	 */
 	toggleColorScheme(): void
 	{
 		this.themeService.toggleColorScheme();
 	}
 
+	/**
+	 * Navigate to the login page.
+	 * @returns {void}
+	 */
 	navigateToLogin(): void
 	{
 		this.router.navigate(
 			["/auth/login"]);
 	}
 
+	/**
+	 * Navigate to the registration page.
+	 * @returns {void}
+	 */
 	navigateToRegister(): void
 	{
 		this.router.navigate(
 			["/auth/register"]);
 	}
 
+	/**
+	 * Navigate to the account page for the current user.
+	 * @returns {void}
+	 */
 	navigateToAccount(): void
 	{
 		this.router.navigate(
 			["/account"]);
 	}
 
+	/**
+	 * Log the current user out.
+	 * @returns {void}
+	 */
 	logout(): void
 	{
 		this.authService.logout();

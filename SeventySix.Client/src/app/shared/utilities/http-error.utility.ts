@@ -18,6 +18,10 @@ import { isNonNullObject, isPresent } from "@shared/utilities/null-check.utility
 /**
  * Extracts validation errors from ASP.NET Core error response.
  * Returns array of field-level error messages.
+ * @param {HttpErrorResponse} error
+ * The HTTP error response potentially containing validation errors.
+ * @returns {string[]}
+ * An array of field-level error messages ("field: message").
  */
 export function extractValidationErrors(
 	error: HttpErrorResponse): string[]
@@ -44,6 +48,10 @@ export function extractValidationErrors(
 
 /**
  * Extracts HTTP status details for error messages.
+ * @param {HttpErrorResponse} error
+ * The HTTP error response to extract status details from.
+ * @returns {string | null}
+ * A human-readable status string (e.g., "Status: 500 Internal Server Error") or null if unavailable.
  */
 export function extractHttpStatus(
 	error: HttpErrorResponse): string | null
@@ -55,6 +63,12 @@ export function extractHttpStatus(
 
 /**
  * Extracts error title if different from user message.
+ * @param {HttpErrorResponse} error
+ * The HTTP error response that may contain a title.
+ * @param {string} userMessage
+ * The user-facing message to compare against.
+ * @returns {string | null}
+ * The distinct error title when present and different from user message, otherwise null.
  */
 export function extractErrorTitle(
 	error: HttpErrorResponse,
@@ -68,6 +82,10 @@ export function extractErrorTitle(
 /**
  * Extracts request URL from error object.
  * Falls back to window.location.href if not available.
+ * @param {Error | HttpErrorResponse | undefined} error
+ * The error object which may contain request metadata.
+ * @returns {string}
+ * The request URL associated with the error or the current page URL as a fallback.
  */
 export function extractRequestUrl(error?: Error | HttpErrorResponse): string
 {
@@ -90,6 +108,10 @@ export function extractRequestUrl(error?: Error | HttpErrorResponse): string
 /**
  * Extracts HTTP request method from error object.
  * Returns undefined if method cannot be determined.
+ * @param {Error | HttpErrorResponse | undefined} error
+ * The error object which may include the HTTP method.
+ * @returns {string | undefined}
+ * The HTTP method (e.g., 'GET', 'POST') or undefined when unknown.
  */
 export function extractRequestMethod(
 	error?: Error | HttpErrorResponse): string | undefined
@@ -107,6 +129,10 @@ export function extractRequestMethod(
 /**
  * Extracts HTTP status code from error object.
  * Returns undefined if status code cannot be determined.
+ * @param {Error | HttpErrorResponse | undefined} error
+ * The error object which may include an HTTP status code.
+ * @returns {number | undefined}
+ * The HTTP status code (e.g., 404) or undefined when unavailable.
  */
 export function extractStatusCode(
 	error?: Error | HttpErrorResponse): number | undefined
@@ -129,6 +155,14 @@ export function extractStatusCode(
 /**
  * Converts HttpErrorResponse to application-specific error.
  * Follows error type hierarchy based on HTTP status codes.
+ * @param {HttpErrorResponse} error
+ * The original HTTP error response from HttpClient.
+ * @param {string} url
+ * The request URL associated with the error.
+ * @param {string} method
+ * The HTTP method used for the request.
+ * @returns {Error}
+ * A domain-specific Error instance (ValidationError, NotFoundError, UnauthorizedError, NetworkError, or HttpError).
  */
 export function convertToAppError(
 	error: HttpErrorResponse,

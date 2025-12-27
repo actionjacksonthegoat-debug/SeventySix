@@ -21,9 +21,27 @@ import { lastValueFrom } from "rxjs";
 @Injectable()
 export class PermissionRequestService extends BaseMutationService
 {
+	/**
+	 * Query key prefix used by TanStack Query to namespace permission request queries.
+	 * @type {string}
+	 */
 	protected readonly queryKeyPrefix: string = "permissionRequests";
+
+	/**
+	 * API service used to communicate with backend endpoints for permission requests.
+	 * @type {ApiService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly apiService: ApiService =
 		inject(ApiService);
+
+	/**
+	 * Endpoint base path for permission request API routes.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly endpoint: string = "users";
 
 	/** Query for all permission requests (admin). */

@@ -20,27 +20,58 @@ import { AuthService } from "@shared/services/auth.service";
 
 interface NavItem
 {
+	/**
+	 * @type {string}
+	 * Display label for the navigation item.
+	 */
 	label: string;
+
+	/**
+	 * @type {string}
+	 * Material icon name to display next to the item.
+	 */
 	icon: string;
+
+	/**
+	 * @type {string}
+	 * Route path for the navigation target.
+	 */
 	route: string;
+
+	/**
+	 * @type {boolean | undefined}
+	 * When true the item is displayed disabled in the UI.
+	 */
 	disabled?: boolean;
-	/** Roles required to see this item. Inherits from section if not specified. */
+
+	/**
+	 * Roles required to see this item. Inherits from section if not specified.
+	 * @type {string[] | undefined}
+	 */
 	requiredRoles?: string[];
 }
 
 interface NavSection
 {
+	/**
+	 * @type {string}
+	 * Section title displayed above the list of items.
+	 */
 	title: string;
+
+	/**
+	 * @type {NavItem[]}
+	 * Array of navigation items belonging to the section.
+	 */
 	items: NavItem[];
-	/** Roles required to see this section. Empty array means visible to all (including guests). */
+
+	/**
+	 * Roles required to see this section. Empty array means visible to all (including guests).
+	 * @type {string[] | undefined}
+	 */
 	requiredRoles?: string[];
 }
 
-/**
- * Application sidebar component
- * Displays navigation menu with Material Design
- * Filters visible sections based on user roles
- */
 @Component(
 	{
 		selector: "app-sidebar",
@@ -57,14 +88,38 @@ interface NavSection
 		styleUrl: "./sidebar.component.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
 	})
+
+/**
+ * Application sidebar component.
+ *
+ * Renders the navigation menu and filters visible sections based on the
+ * current user's roles. Sections and items may declare role requirements.
+ */
 export class SidebarComponent
 {
+	/**
+	 * Layout service for controlling sidebar state.
+	 * @type {LayoutService}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly layoutService: LayoutService =
 		inject(LayoutService);
+
+	/**
+	 * Authentication service for role checks and user state.
+	 * @type {AuthService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly authService: AuthService =
 		inject(AuthService);
 
-	/** All navigation sections with role requirements. */
+	/**
+	 * All navigation sections with role requirements.
+	 * @type {ReadonlyArray<NavSection>}
+	 * @private
+	 */
 	private readonly navSections: NavSection[] =
 		[
 			{
@@ -127,7 +182,11 @@ export class SidebarComponent
 			}
 		];
 
-	/** Computed signal that filters sections and items based on current user's roles. */
+	/**
+	 * Computed signal that filters sections and items based on current user's roles.
+	 * @type {Signal<NavSection[]>}
+	 * @protected
+	 */
 	protected readonly visibleNavSections: Signal<NavSection[]> =
 		computed(
 			() =>
@@ -148,8 +207,10 @@ export class SidebarComponent
 
 	/**
 	 * Check if current user has access to a section.
-	 * @param requiredRoles Roles required to access the section.
-	 * @returns True if user has access (no roles required or user has any required role).
+	 * @param {string[] | undefined} requiredRoles
+	 * Roles required to access the section.
+	 * @returns {boolean}
+	 * True if user has access (no roles required or user has any required role).
 	 */
 	private hasAccess(requiredRoles?: string[]): boolean
 	{
@@ -163,7 +224,8 @@ export class SidebarComponent
 	}
 
 	/**
-	 * Close sidebar (called from close button)
+	 * Close the sidebar (invoked by the close button).
+	 * @returns {void}
 	 */
 	closeSidebar(): void
 	{
@@ -171,7 +233,9 @@ export class SidebarComponent
 	}
 
 	/**
-	 * Close sidebar on mobile when navigation item is clicked
+	 * Close the sidebar on mobile when a navigation item is clicked.
+	 * If the sidebar is rendered in 'over' mode this will toggle it closed.
+	 * @returns {void}
 	 */
 	closeSidebarOnMobile(): void
 	{

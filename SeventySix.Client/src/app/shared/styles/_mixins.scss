@@ -17,7 +17,8 @@
 
 /**
  * Theme-aware elevation shadow
- * @param {String} $level - Elevation level (none, sm, base, md, lg, xl, 2xl)
+ * @param {String} $level
+ * Elevation level (none, sm, base, md, lg, xl, 2xl)
  */
 @mixin elevation($level: base) {
 	@if $level == none {
@@ -47,8 +48,10 @@
 
 /**
  * Interactive elevation with hover transition
- * @param {String} $base-level - Base elevation level (default: base)
- * @param {String} $hover-level - Hover elevation level (default: lg)
+ * @param {String} $base-level
+ * Base elevation level (default: base)
+ * @param {String} $hover-level
+ * Hover elevation level (default: lg)
  */
 @mixin elevation-interactive($base-level: base, $hover-level: lg) {
 	@include elevation($base-level);
@@ -66,7 +69,8 @@
 /**
  * Icon size mixin
  * Sets font-size, width, and height for mat-icon elements
- * @param {Size} $size - Icon size (default: $icon-size-base / 24px)
+ * @param {Size} $size
+ * Icon size (default: $icon-size-base / 24px)
  */
 @mixin icon-size($size: vars.$icon-size-base) {
 	font-size: $size;
@@ -93,8 +97,10 @@
 /**
  * Feature placeholder card styles
  * Card styling for placeholder pages
- * @param {Color} $bg - Card background color
- * @param {Color} $text - Card text color
+ * @param {Color} $bg
+ * Card background color
+ * @param {Color} $text
+ * Card text color
  */
 @mixin feature-placeholder-card-style(
 	$bg: var(--mat-sys-primary-container),
@@ -109,7 +115,8 @@
 /**
  * Feature placeholder icon styles
  * Icon styling for placeholder pages
- * @param {Color} $color - Icon color
+ * @param {Color} $color
+ * Icon color
  */
 @mixin feature-placeholder-icon($color: var(--mat-sys-primary)) {
 	@include icon-size(vars.$icon-size-xl);
@@ -124,9 +131,12 @@
 /**
  * Responsive dialog section padding
  * Automatically adjusts padding based on breakpoints
- * @param {Size} $desktop - Desktop padding (default: $spacing-xl)
- * @param {Size} $tablet - Tablet padding (default: $spacing-lg)
- * @param {Size} $mobile - Mobile padding (default: $spacing-md)
+ * @param {Size} $desktop
+ * Desktop padding (default: $spacing-xl)
+ * @param {Size} $tablet
+ * Tablet padding (default: $spacing-lg)
+ * @param {Size} $mobile
+ * Mobile padding (default: $spacing-md)
  */
 @mixin dialog-section-responsive(
 	$desktop: vars.$spacing-xl,
@@ -147,7 +157,8 @@
 /**
  * Responsive dialog header
  * Adjusts layout and sizing for mobile devices
- * @param {Size} $icon-size - Icon size (default: $icon-size-sm)
+ * @param {Size} $icon-size
+ * Icon size (default: $icon-size-sm)
  */
 @mixin dialog-header-responsive($icon-size: vars.$icon-size-sm) {
 	@media #{vars.$breakpoint-tablet} {
@@ -174,10 +185,14 @@
 /**
  * Code/pre block with scrollbar
  * Common pattern for stack traces, JSON, etc.
- * @param {Size} $max-height - Maximum height before scrolling (default: 18.75rem)
- * @param {Size} $padding - Internal padding (default: $spacing-lg)
- * @param {Size} $border-radius - Border radius (default: $border-radius-sm)
- * @param {Size} $font-size - Font size (default: $font-size-xs)
+ * @param {Size} $max-height
+ * Maximum height before scrolling (default: 18.75rem)
+ * @param {Size} $padding
+ * Internal padding (default: $spacing-lg)
+ * @param {Size} $border-radius
+ * Border radius (default: $border-radius-sm)
+ * @param {Size} $font-size
+ * Font size (default: $font-size-xs)
  */
 @mixin code-block-scrollable(
 	$max-height: 18.75rem,
@@ -224,8 +239,10 @@
 /**
  * Info grid layout (key-value pairs)
  * Responsive grid for displaying metadata
- * @param {Size} $gap - Gap between grid items (default: $spacing-lg)
- * @param {Size} $min-width - Minimum column width (default: 12.5rem)
+ * @param {Size} $gap
+ * Gap between grid items (default: $spacing-lg)
+ * @param {Size} $min-width
+ * Minimum column width (default: 12.5rem)
  */
 @mixin info-grid-responsive($gap: vars.$spacing-lg, $min-width: 12.5rem) {
 	display: grid;
@@ -413,8 +430,10 @@
 /**
  * Loading state container
  * Centered flex layout for loading spinners and messages
- * @param {Size} $padding - Container padding (default: $spacing-xl)
- * @param {Size} $gap - Gap between elements (default: $spacing-lg)
+ * @param {Size} $padding
+ * Container padding (default: $spacing-xl)
+ * @param {Size} $gap
+ * Gap between elements (default: $spacing-lg)
  */
 @mixin loading-state($padding: vars.$spacing-xl, $gap: vars.$spacing-lg) {
 	display: flex;
@@ -432,8 +451,10 @@
 /**
  * Error state container
  * Centered layout for error messages with optional max-width
- * @param {Size} $padding - Container padding (default: $spacing-2xl)
- * @param {Size} $max-width - Max width of error card (default: $toast-max-width)
+ * @param {Size} $padding
+ * Container padding (default: $spacing-2xl)
+ * @param {Size} $max-width
+ * Max width of error card (default: $toast-max-width)
  */
 @mixin error-state(
 	$padding: vars.$spacing-2xl,
@@ -471,7 +492,8 @@
  * CLS-safe loading overlay pattern
  * Positions loading spinner as absolute overlay without removing content from DOM
  * Prevents layout shift by keeping container dimensions stable during load
- * @param {Number} $z-index - Overlay z-index (default: 10)
+ * @param {Number} $z-index
+ * Overlay z-index (default: 10)
  * @example
  *   .container {
  *     @include cls-loading-overlay();
@@ -495,7 +517,8 @@
 /**
  * Alert card pattern
  * Used for displaying inline alerts/warnings
- * @param {Size} $margin-bottom - Bottom margin (default: $spacing-xl)
+ * @param {Size} $margin-bottom
+ * Bottom margin (default: $spacing-xl)
  */
 @mixin alert-card($margin-bottom: vars.$spacing-xl) {
 	margin-bottom: $margin-bottom;
@@ -533,8 +556,10 @@
 /**
  * Info/Review grid layout
  * Used for displaying key-value pairs in a responsive grid
- * @param {Size} $min-column-width - Minimum column width (default: 12.5rem / 200px)
- * @param {Size} $gap - Gap between items (default: $spacing-xl)
+ * @param {Size} $min-column-width
+ * Minimum column width (default: 12.5rem / 200px)
+ * @param {Size} $gap
+ * Gap between items (default: $spacing-xl)
  */
 @mixin info-review-grid($min-column-width: 12.5rem, $gap: vars.$spacing-xl) {
 	display: grid;
@@ -581,8 +606,10 @@
  * Error page layout
  * Full-page centered error layout with card
  * Used by not-found, server-error, and other error pages
- * @param {Size} $max-width - Max width of error container (default: $container-width-sm)
- * @param {Size} $content-gap - Gap between content elements (default: $spacing-xl)
+ * @param {Size} $max-width
+ * Max width of error container (default: $container-width-sm)
+ * @param {Size} $content-gap
+ * Gap between content elements (default: $spacing-xl)
  */
 @mixin error-page-layout(
 	$max-width: vars.$container-width-sm,

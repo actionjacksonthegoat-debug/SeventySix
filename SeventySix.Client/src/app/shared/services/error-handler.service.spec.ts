@@ -39,6 +39,10 @@ interface MockClientErrorLoggerService
 	logWarning: ReturnType<typeof vi.fn>;
 }
 
+/**
+ * Unit tests for `ErrorHandlerService`.
+ * Covers error mapping, logging, notification, and HTTP error handling behavior.
+ */
 describe("ErrorHandlerService",
 	() =>
 	{
@@ -86,6 +90,7 @@ describe("ErrorHandlerService",
 					TestBed.inject(ErrorHandlerService);
 			});
 
+		/** Verifies the service is instantiated successfully. */
 		it("should be created",
 			() =>
 			{
@@ -96,6 +101,7 @@ describe("ErrorHandlerService",
 		describe("handleError",
 			() =>
 			{
+				/** Verifies logging and user notification for generic Error instances. */
 				it("should log and notify for generic errors",
 					() =>
 					{
@@ -114,6 +120,7 @@ describe("ErrorHandlerService",
 							.toHaveBeenCalled();
 					});
 
+				/** Verifies handling of HTTP 404 Not Found responses. */
 				it("should handle HTTP 404 errors",
 					() =>
 					{
@@ -140,6 +147,7 @@ describe("ErrorHandlerService",
 								expect.any(String));
 					});
 
+				/** Verifies handling of HTTP 401 Unauthorized responses. */
 				it("should handle HTTP 401 errors",
 					() =>
 					{
@@ -166,6 +174,7 @@ describe("ErrorHandlerService",
 								expect.any(String));
 					});
 
+				/** Verifies handling of HTTP 500 Server Error responses. */
 				it("should handle HTTP 500 errors",
 					() =>
 					{

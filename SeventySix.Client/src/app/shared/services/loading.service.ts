@@ -20,15 +20,27 @@ import { filter } from "rxjs/operators";
 	})
 export class LoadingService
 {
+	/**
+	 * Angular Router for subscribing to navigation events.
+	 * @type {Router}
+	 * @private
+	 * @readonly
+	 */
 	private readonly router: Router =
 		inject(Router);
 
 	/**
-	 * Global loading state signal
+	 * Global loading state signal.
+	 * @type {ReturnType<typeof signal<boolean>>}
+	 * @readonly
 	 */
 	readonly isLoading: ReturnType<typeof signal<boolean>> =
 		signal<boolean>(false);
 
+	/**
+	 * Initialize LoadingService and wire up router event subscriptions.
+	 * @returns {void}
+	 */
 	constructor()
 	{
 		// Subscribe to router events with automatic cleanup
@@ -61,7 +73,8 @@ export class LoadingService
 	}
 
 	/**
-	 * Show loading indicator
+	 * Show loading indicator.
+	 * @returns {void}
 	 */
 	show(): void
 	{
@@ -69,7 +82,8 @@ export class LoadingService
 	}
 
 	/**
-	 * Hide loading indicator
+	 * Hide loading indicator.
+	 * @returns {void}
 	 */
 	hide(): void
 	{

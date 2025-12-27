@@ -12,26 +12,63 @@ import {
 } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 
+/**
+ * Service to query third-party API requests and statistics.
+ * Used by admin views to examine external API usage.
+ */
 @Injectable()
 export class ThirdPartyApiService
 {
+	/**
+	 * API service used to fetch third-party API data.
+	 * @type {ApiService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly apiService: ApiService =
 		inject(ApiService);
+
+	/**
+	 * Default query configuration for third-party API queries.
+	 * @type {ReturnType<typeof getQueryConfig>}
+	 * @private
+	 * @readonly
+	 */
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
 		getQueryConfig("thirdpartyrequests");
+
+	/**
+	 * REST endpoint path for third-party API requests.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly endpoint: string = "thirdpartyrequests";
 
+	/**
+	 * Retrieves a list of third-party API requests.
+	 * @returns {CreateQueryResult<ThirdPartyApiRequestResponse[], Error>}
+	 * CreateQueryResult with list of third-party API requests.
+	 */
 	getAllThirdPartyApis(): CreateQueryResult<ThirdPartyApiRequestResponse[], Error>
 	{
 		return injectQuery(
 			() => ({
 				queryKey: QueryKeys.thirdPartyApi.list,
 				queryFn: () =>
-					lastValueFrom(this.apiService.get<ThirdPartyApiRequestResponse[]>(this.endpoint)),
+					lastValueFrom(this.apiService.get<ThirdPartyApiRequestResponse[]>(
+						this.endpoint)),
 				...this.queryConfig
 			}));
 	}
 
+	/**
+	 * Retrieves requests filtered by API name.
+	 * @param {string} apiName
+	 * The name of the third-party API to filter by.
+	 * @returns {CreateQueryResult<ThirdPartyApiRequestResponse[], Error>}
+	 * CreateQueryResult with filtered list of requests.
+	 */
 	getByApiName(
 		apiName: string): CreateQueryResult<ThirdPartyApiRequestResponse[], Error>
 	{
@@ -43,12 +80,18 @@ export class ThirdPartyApiService
 					const encodedName: string =
 						encodeURIComponent(apiName);
 					return lastValueFrom(
-						this.apiService.get<ThirdPartyApiRequestResponse[]>(`${this.endpoint}/${encodedName}`));
+						this.apiService.get<ThirdPartyApiRequestResponse[]>(
+							`${this.endpoint}/${encodedName}`));
 				},
 				...this.queryConfig
 			}));
 	}
 
+	/**
+	 * Retrieves aggregated statistics for third-party API usage.
+	 * @returns {CreateQueryResult<ThirdPartyApiStatisticsResponse, Error>}
+	 * CreateQueryResult with aggregated statistics.
+	 */
 	getStatistics(): CreateQueryResult<ThirdPartyApiStatisticsResponse, Error>
 	{
 		return injectQuery(
@@ -56,7 +99,8 @@ export class ThirdPartyApiService
 				queryKey: QueryKeys.thirdPartyApi.statistics,
 				queryFn: () =>
 					lastValueFrom(
-						this.apiService.get<ThirdPartyApiStatisticsResponse>(`${this.endpoint}/statistics`)),
+						this.apiService.get<ThirdPartyApiStatisticsResponse>(
+							`${this.endpoint}/statistics`)),
 				...this.queryConfig
 			}));
 	}

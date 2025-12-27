@@ -14,13 +14,22 @@ import { DateService } from "@shared/services";
 @Injectable()
 export class UserExportService
 {
+	/**
+	 * Date service used to generate timestamps for filenames.
+	 * @type {DateService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dateService: DateService =
 		inject(DateService);
 
 	/**
 	 * Export users to CSV format
-	 * @param users - Array of users to export
-	 * @param filename - Optional filename (defaults to timestamp)
+	 * @param {UserDto[]} users
+	 * Array of users to export
+	 * @param {string | undefined} filename
+	 * Optional filename (defaults to timestamp)
+	 * @returns {void}
 	 */
 	exportToCsv(users: UserDto[], filename?: string): void
 	{
@@ -39,8 +48,10 @@ export class UserExportService
 
 	/**
 	 * Generate CSV content from user array
-	 * @param users - Array of users
-	 * @returns CSV string
+	 * @param {UserDto[]} users
+	 * Array of users
+	 * @returns {string}
+	 * CSV string
 	 */
 	private generateCsvContent(users: UserDto[]): string
 	{
@@ -87,8 +98,10 @@ export class UserExportService
 	/**
 	 * Escape CSV value for proper formatting
 	 * Handles quotes and commas
-	 * @param value - Value to escape
-	 * @returns Escaped value
+	 * @param {string} value
+	 * Value to escape
+	 * @returns {string}
+	 * Escaped value
 	 */
 	private escapeCsvValue(value: string): string
 	{
@@ -104,8 +117,11 @@ export class UserExportService
 
 	/**
 	 * Trigger browser download of CSV file
-	 * @param content - CSV content
-	 * @param filename - Filename for download
+	 * @param {string} content
+	 * CSV content
+	 * @param {string} filename
+	 * Filename for download
+	 * @returns {void}
 	 */
 	private downloadCsv(content: string, filename: string): void
 	{

@@ -53,62 +53,156 @@ import { DateService } from "@shared/services";
 	})
 export class LogDetailDialogComponent
 {
+	/**
+	 * Reference to the active material dialog instance used to close the dialog.
+	 * @type {MatDialogRef<LogDetailDialogComponent>}
+	 */
 	private readonly dialogRef: MatDialogRef<LogDetailDialogComponent> =
 		inject(
-		MatDialogRef<LogDetailDialogComponent>);
+	MatDialogRef<LogDetailDialogComponent>);
+
+	/**
+	 * Clipboard utility used to copy log payloads to the clipboard.
+	 * @type {Clipboard}
+	 * @private
+	 * @readonly
+	 */
 	private readonly clipboard: Clipboard =
 		inject(Clipboard);
+
+	/**
+	 * Date service used to format and compute relative times for display.
+	 * @type {DateService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dateService: DateService =
 		inject(DateService);
 
+	/**
+	 * The log entry provided to the dialog via `MAT_DIALOG_DATA`.
+	 * @type {WritableSignal<LogDto>}
+	 */
 	readonly log: WritableSignal<LogDto> =
 		signal<LogDto>(
 			inject<LogDto>(MAT_DIALOG_DATA));
+
+	/**
+	 * Controls whether the stack trace is collapsed in the UI.
+	 * @type {WritableSignal<boolean>}
+	 */
 	readonly stackTraceCollapsed: WritableSignal<boolean> =
 		signal<boolean>(false);
+
+	/**
+	 * Controls whether properties are collapsed in the UI.
+	 * @type {WritableSignal<boolean>}
+	 */
 	readonly propertiesCollapsed: WritableSignal<boolean> =
 		signal<boolean>(true);
+
+	/**
+	 * Controls whether the exception panel is collapsed.
+	 * @type {WritableSignal<boolean>}
+	 */
 	readonly exceptionCollapsed: WritableSignal<boolean> =
 		signal<boolean>(false);
 
+	/**
+	 * Event emitter that emits when the user requests deletion of this log.
+	 * @type {OutputEmitterRef<number>}
+	 */
+	/**
+	 * Event emitted when the user requests deletion of this log.
+	 * Emitted value is the numeric ID of the log to delete.
+	 * @type {OutputEmitterRef<number>}
+	 */
 	readonly deleteLog: OutputEmitterRef<number> =
 		output<number>();
 
 	// Pre-computed values for template performance (memoized computed signals)
+	/**
+	 * CSS class name for the log level (used for styling badges).
+	 * @type {Signal<string>}
+	 */
+	/**
+	 * CSS class name for the log level (used for styling badges).
+	 * @type {Signal<string>}
+	 */
 	readonly levelClass: Signal<string> =
 		computed(
 			(): string =>
 				getLogLevelClassName(this.log().logLevel));
+
+	/**
+	 * Human-friendly level name (e.g., 'Error', 'Warning').
+	 * @type {Signal<string>}
+	 */
 	readonly levelName: Signal<string> =
 		computed(
 			(): string =>
 				getLogLevelName(this.log().logLevel));
+
+	/**
+	 * Icon name used for the log level (material icon key).
+	 * @type {Signal<string>}
+	 */
 	readonly levelIcon: Signal<string> =
 		computed(
 			(): string =>
 				getLogLevelIconName(this.log().logLevel));
+
+	/**
+	 * Relative time string for when the log was created (e.g., '5 minutes ago').
+	 * @type {Signal<string>}
+	 */
 	readonly relativeTime: Signal<string> =
 		computed(
 			(): string =>
 				getRelativeTime(
 					this.log().createDate,
 					this.dateService));
+
+	/**
+	 * Formatted JSON properties string for display.
+	 * @type {Signal<string>}
+	 */
 	readonly formattedProperties: Signal<string> =
 		computed(
 			(): string =>
 				formatJsonProperties(this.log().properties));
+
+	/**
+	 * Number of stack frames in the log's stack trace.
+	 * @type {Signal<number>}
+	 */
 	readonly stackFrameCount: Signal<number> =
 		computed(
 			(): number =>
 				countStackFrames(this.log().stackTrace));
+
+	/**
+	 * True if the log's span is the root span for a trace.
+	 * @type {Signal<boolean>}
+	 */
 	readonly isRootSpan: Signal<boolean> =
 		computed(
 			(): boolean =>
 				isRootSpanId(this.log().parentSpanId));
+
+	/**
+	 * True when a correlation/trace ID is present on the log entry.
+	 * @type {Signal<boolean>}
+	 */
 	readonly hasCorrelationId: Signal<boolean> =
 		computed(
 			(): boolean =>
 				!!this.log().correlationId);
+
+	/**
+	 * True when the log level is Error or Fatal.
+	 * @type {Signal<boolean>}
+	 */
 	readonly isError: Signal<boolean> =
 		computed(
 			(): boolean =>
@@ -118,21 +212,37 @@ export class LogDetailDialogComponent
 				return level === LogLevel.Error || level === LogLevel.Fatal;
 			});
 
+	/**
+	 * Toggle the stack trace section collapsed state.
+	 * @returns {void}
+	 */
 	toggleStackTrace(): void
 	{
 		this.stackTraceCollapsed.set(!this.stackTraceCollapsed());
 	}
 
+	/**
+	 * Toggle the properties section collapsed state.
+	 * @returns {void}
+	 */
 	toggleProperties(): void
 	{
 		this.propertiesCollapsed.set(!this.propertiesCollapsed());
 	}
 
+	/**
+	 * Toggle the exception details section collapsed state.
+	 * @returns {void}
+	 */
 	toggleException(): void
 	{
 		this.exceptionCollapsed.set(!this.exceptionCollapsed());
 	}
 
+	/**
+	 * Copy the current log payload to clipboard as formatted JSON.
+	 * @returns {void}
+	 */
 	copyToClipboard(): void
 	{
 		const logData: string =
@@ -140,25 +250,39 @@ export class LogDetailDialogComponent
 		this.clipboard.copy(logData);
 	}
 
+	/**
+	 * Handler for Escape key - closes the dialog.
+	 * @returns {void}
+	 */
 	handleEscape(): void
 	{
 		this.onClose();
 	}
 
+	/**
+	 * Emit delete event and close the dialog.
+	 * @returns {void}
+	 */
 	onDelete(): void
 	{
 		this.deleteLog.emit(this.log().id);
 		this.dialogRef.close();
 	}
 
+	/**
+	 * Close the dialog without taking action.
+	 * @returns {void}
+	 */
 	onClose(): void
 	{
 		this.dialogRef.close();
 	}
 
 	/**
-	 * Opens Jaeger UI to view the specific trace for this error
-	 * Shows alert if no correlation ID is available
+	 * Opens Jaeger UI to view the specific trace for this log entry.
+	 * Shows an alert if no correlation ID is available and provides guidance
+	 * to enable distributed tracing in the backend.
+	 * @returns {void}
 	 */
 	openInJaeger(): void
 	{

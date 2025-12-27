@@ -7,13 +7,12 @@ import {
 	createMockLayoutService,
 	MockLayoutService
 } from "@shared/testing";
-import { of } from "rxjs";
-import { vi } from "vitest";
+import { Observable, of } from "rxjs";
 import { App } from "./app";
 
 interface MockActivatedRouteWithRoot
 {
-	params: ReturnType<typeof of>;
+	params: Observable<Record<string, unknown>>;
 	root: {
 		firstChild: null;
 		snapshot: { data: Record<string, unknown>; };
@@ -31,13 +30,13 @@ describe("App",
 			async () =>
 			{
 				mockActivatedRoute =
-				{
-					params: of({}),
-					root: {
-						firstChild: null,
-						snapshot: { data: {} }
-					}
-				};
+					{
+						params: of({}),
+						root: {
+							firstChild: null,
+							snapshot: { data: {} }
+						}
+					};
 				mockLayoutService =
 					createMockLayoutService();
 				mockLayoutService.sidebarMode.mockReturnValue("over");

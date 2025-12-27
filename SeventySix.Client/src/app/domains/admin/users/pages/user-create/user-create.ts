@@ -62,41 +62,107 @@ import {
 	})
 export class UserCreatePage
 {
+	/**
+	 * Service handling user-related queries and mutations.
+	 * @type {UserService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly userService: UserService =
 		inject(UserService);
+
+	/**
+	 * Logger for diagnostic messages.
+	 * @type {LoggerService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly logger: LoggerService =
 		inject(LoggerService);
+
+	/**
+	 * Router used to navigate after create/cancel actions.
+	 * @type {Router}
+	 * @private
+	 * @readonly
+	 */
 	private readonly router: Router =
 		inject(Router);
+
+	/**
+	 * Form builder used to construct reactive form groups.
+	 * @type {FormBuilder}
+	 * @private
+	 * @readonly
+	 */
 	private readonly formBuilder: FormBuilder =
 		inject(FormBuilder);
+
+	/**
+	 * Notification service for user-facing messages.
+	 * @type {NotificationService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
 
+	/**
+	 * Reference to the stepper component used by the multi-step form.
+	 * @type {Signal<MatStepper | undefined>}
+	 */
 	readonly stepper: Signal<MatStepper | undefined> =
 		viewChild<MatStepper>("stepper");
 
-	// TanStack Query mutation for creating users
+	/**
+	 * Mutation for creating a new user record.
+	 * @type {ReturnType<typeof this.userService.createUser>}
+	 */
 	readonly createMutation: ReturnType<typeof this.userService.createUser> =
 		this.userService.createUser();
 
-	// Role selection state
+	/**
+	 * Available roles that can be requested for a new user.
+	 * @type {readonly string[]}
+	 */
 	readonly availableRoles: readonly string[] =
 		REQUESTABLE_ROLES;
 
+	/**
+	 * Writable signal that tracks selected roles in the UI.
+	 * @type {WritableSignal<string[]>}
+	 * @private
+	 */
 	private readonly selectedRolesSignal: WritableSignal<string[]> =
 		signal<string[]>([]);
 
+	/**
+	 * Readonly view of selected roles for template binding.
+	 * @type {Signal<string[]>}
+	 */
 	readonly selectedRoles: Signal<string[]> =
 		this.selectedRolesSignal.asReadonly();
 
+	/**
+	 * Mutation for adding a role to a user.
+	 * @type {ReturnType<typeof this.userService.addRole>}
+	 */
 	readonly addRoleMutation: ReturnType<typeof this.userService.addRole> =
 		this.userService.addRole();
 
 	// State signals
+	/**
+	 * Indicates whether the create mutation is pending.
+	 * @type {Signal<boolean>}
+	 */
 	readonly isSaving: Signal<boolean> =
 		computed(
 			() => this.createMutation.isPending());
+
+	/**
+	 * Error message when create operation fails.
+	 * @type {Signal<string | null>}
+	 */
 	readonly saveError: Signal<string | null> =
 		computed(
 			() =>
@@ -105,7 +171,8 @@ export class UserCreatePage
 					: null);
 
 	/**
-	 * Async validator for username availability
+	 * Async validator for username availability.
+	 * @returns {AsyncValidatorFn}
 	 */
 	private usernameAvailabilityValidator(): AsyncValidatorFn
 	{
@@ -133,6 +200,10 @@ export class UserCreatePage
 	}
 
 	// Form groups for each step
+	/**
+	 * Basic information form group (username, email) with validators.
+	 * @type {FormGroup}
+	 */
 	readonly basicInfoForm: FormGroup =
 		this.formBuilder.group(
 			{
@@ -155,6 +226,10 @@ export class UserCreatePage
 				]
 			});
 
+	/**
+	 * Account details form (full name, isActive).
+	 * @type {FormGroup}
+	 */
 	readonly accountDetailsForm: FormGroup =
 		this.formBuilder.group(
 			{
@@ -168,7 +243,10 @@ export class UserCreatePage
 				isActive: [true]
 			});
 
-	// Computed signal for complete form data
+	/**
+	 * Computed signal returning the merged form data for submission.
+	 * @type {Signal<Partial<UserDto>>}
+	 */
 	readonly formData: Signal<Partial<UserDto>> =
 		computed(
 			() => ({
@@ -177,23 +255,37 @@ export class UserCreatePage
 			}));
 
 	// Validation error signals
+	/**
+	 * Username validation error (for display next to field).
+	 * @type {Signal<string | null>}
+	 */
 	readonly usernameError: Signal<string | null> =
 		computed(
 			() =>
 				getValidationError(this.basicInfoForm.get("username"), "Username"));
 
+	/**
+	 * Email validation error (for display next to field).
+	 * @type {Signal<string | null>}
+	 */
 	readonly emailError: Signal<string | null> =
 		computed(
 			() =>
 				getValidationError(this.basicInfoForm.get("email"), "Email"));
 
+	/**
+	 * Full name validation error (for display next to field).
+	 * @type {Signal<string | null>}
+	 */
 	readonly fullNameError: Signal<string | null> =
 		computed(
 			() =>
 				getValidationError(this.accountDetailsForm.get("fullName"), "Full name"));
 
 	/**
-	 * Submit the complete form
+	 * Submit the complete user creation form and persist to the server.
+	 * Validates all steps, performs the create mutation and assigns roles on success.
+	 * @returns {Promise<void>}
 	 */
 	async onSubmit(): Promise<void>
 	{
@@ -233,8 +325,10 @@ export class UserCreatePage
 	}
 
 	/**
-	 * Assign selected roles to the user
-	 * @param userId - The ID of the newly created user
+	 * Assign selected roles to the user.
+	 * @param {number} userId
+	 * The ID of the newly created user.
+	 * @returns {void}
 	 */
 	private assignRoles(userId: number): void
 	{
@@ -255,7 +349,8 @@ export class UserCreatePage
 	}
 
 	/**
-	 * Cancel and return to users list
+	 * Cancel creation and navigate back to the users list.
+	 * @returns {void}
 	 */
 	onCancel(): void
 	{
@@ -264,8 +359,10 @@ export class UserCreatePage
 	}
 
 	/**
-	 * Toggles role selection on/off
-	 * @param roleName - The role to toggle
+	 * Toggle selection state for the given role name.
+	 * @param {string} roleName
+	 * The role to toggle.
+	 * @returns {void}
 	 */
 	toggleRole(roleName: string): void
 	{

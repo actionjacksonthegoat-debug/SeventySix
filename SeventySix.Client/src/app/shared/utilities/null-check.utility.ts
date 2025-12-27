@@ -2,8 +2,11 @@
  * Type guard to check if a value is null or undefined.
  * Use instead of truthy checks (!value) which incorrectly catch empty strings, zero, and false.
  *
- * @param value - The value to check
- * @returns True if the value is null or undefined, false otherwise
+ * @param {unknown} value
+ * The value to check.
+ *
+ * @returns {value is null | undefined}
+ * True if the value is null or undefined, false otherwise.
  *
  * @example
  * ```typescript
@@ -27,8 +30,11 @@ export function isNullOrUndefined(
  * Type guard to check if a value is present (not null or undefined).
  * Opposite of isNullOrUndefined. Allows empty strings, zero, and false.
  *
- * @param value - The value to check
- * @returns True if the value is not null or undefined, false otherwise
+ * @param {T | null | undefined} value
+ * The value to check.
+ *
+ * @returns {value is T}
+ * True if the value is not null or undefined, false otherwise.
  *
  * @example
  * ```typescript
@@ -50,8 +56,11 @@ export function isPresent<T>(
  * Checks if a string is null, undefined, or empty.
  * Does NOT trim whitespace - use explicit .trim() if needed.
  *
- * @param value - The string value to check
- * @returns True if the value is null, undefined, or empty string
+ * @param {string | null | undefined} value
+ * The string value to check.
+ *
+ * @returns {value is null | undefined | ""}
+ * True if the value is null, undefined, or an empty string.
  *
  * @example
  * ```typescript
@@ -73,8 +82,11 @@ export function isNullOrEmpty(
  * Checks if a string is null, undefined, empty, or contains only whitespace.
  * Trims the string before checking - perfect for form validation where " " should be invalid.
  *
- * @param value - The string value to check
- * @returns True if the value is null, undefined, empty, or whitespace-only
+ * @param {string | null | undefined} value
+ * The string value to check.
+ *
+ * @returns {value is null | undefined | ""}
+ * True if the value is null, undefined, empty, or whitespace-only.
  *
  * @example
  * ```typescript
@@ -96,8 +108,11 @@ export function isNullOrWhitespace(
  * Type guard to check if a value is a non-null, non-array object.
  * Filters out null, undefined, primitives, and arrays.
  *
- * @param value - The value to check
- * @returns True if the value is a non-null object (not array), false otherwise
+ * @param {unknown} value
+ * The value to check.
+ *
+ * @returns {value is Record<string, unknown>}
+ * True if the value is a non-null object (not an array), false otherwise.
  *
  * @example
  * ```typescript

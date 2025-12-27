@@ -40,9 +40,12 @@ export class ComponentTestBed<T>
 	 * Add a mocked service to the test configuration
 	 * Automatically creates Vitest mock functions
 	 *
-	 * @param token - Service class or injection token
-	 * @param methods - Array of method names to spy on
-	 * @returns this for chaining
+	 * @param {Type<S>} token
+	 * Service class or injection token
+	 * @param {string[]} methods
+	 * Array of method names to spy on
+	 * @returns {this}
+	 * this for chaining
 	 */
 	withMockService<S>(token: Type<S>, methods: string[]): this
 	{
@@ -61,8 +64,10 @@ export class ComponentTestBed<T>
 	/**
 	 * Add a real service instance to the test configuration
 	 *
-	 * @param token - Service class
-	 * @returns this for chaining
+	 * @param {Type<S>} token
+	 * Service class
+	 * @returns {this}
+	 * this for chaining
 	 */
 	withRealService<S>(token: Type<S>): this
 	{
@@ -74,8 +79,10 @@ export class ComponentTestBed<T>
 	 * Add a custom provider to the test configuration
 	 * Supports both Provider and EnvironmentProviders (e.g., provideRouter)
 	 *
-	 * @param provider - Angular provider object
-	 * @returns this for chaining
+	 * @param {Provider | EnvironmentProviders} provider
+	 * Angular provider object
+	 * @returns {this}
+	 * this for chaining
 	 */
 	withProvider(provider: Provider | EnvironmentProviders): this
 	{
@@ -87,9 +94,11 @@ export class ComponentTestBed<T>
 	 * Configure component inputs after build
 	 * Reduces repetitive fixture.componentRef.setInput calls
 	 *
-	 * @param inputs - Object with input names as keys and values
-	 * @param fixture - Component fixture to apply inputs to
-	 * @returns void
+	 * @param {Record<string, unknown>} inputs
+	 * Object with input names as keys and values
+	 * @param {ComponentFixture<T>} fixture
+	 * Component fixture to apply inputs to
+	 * @returns {void}
 	 *
 	 * @example
 	 * const builder = new ComponentTestBed<DataTableComponent>();
@@ -111,9 +120,12 @@ export class ComponentTestBed<T>
 	 * Add a spy for a component output event
 	 * Simplifies testing component outputs
 	 *
-	 * @param fixture - Component fixture
-	 * @param outputName - Name of the output property
-	 * @returns Vitest mock that can be used for assertions
+	 * @param {ComponentFixture<T>} fixture
+	 * Component fixture
+	 * @param {string} outputName
+	 * Name of the output property
+	 * @returns {Mock}
+	 * Vitest mock that can be used for assertions
 	 *
 	 * @example
 	 * const fixture = await builder.build(DataTableComponent);
@@ -145,7 +157,8 @@ export class ComponentTestBed<T>
 	 * Automatically includes HTTP client, TanStack Query, and router
 	 * Reduces test setup from 20+ lines to 1 line for admin components
 	 *
-	 * @returns this for chaining
+	 * @returns {this}
+	 * this for chaining
 	 *
 	 * @example
 	 * const fixture = await new ComponentTestBed<UserList>()
@@ -169,8 +182,10 @@ export class ComponentTestBed<T>
 	/**
 	 * Add an import (module or standalone component) to the test configuration
 	 *
-	 * @param importItem - Module or standalone component
-	 * @returns this for chaining
+	 * @param {Type<object>} importItem
+	 * Module or standalone component
+	 * @returns {this}
+	 * this for chaining
 	 */
 	withImport(importItem: Type<object>): this
 	{
@@ -183,8 +198,10 @@ export class ComponentTestBed<T>
 	 * Automatically includes provideZonelessChangeDetection and provideNoopAnimations
 	 * for faster test execution without animation overhead
 	 *
-	 * @param component - Component class to test
-	 * @returns Promise resolving to ComponentFixture
+	 * @param {Type<T>} component
+	 * Component class to test
+	 * @returns {Promise<ComponentFixture<T>>}
+	 * Promise resolving to ComponentFixture
 	 */
 	async build(component: Type<T>): Promise<ComponentFixture<T>>
 	{
@@ -207,8 +224,10 @@ export class ComponentTestBed<T>
 	 * Get a service instance from the TestBed
 	 * Useful for accessing mocked services after build
 	 *
-	 * @param token - Service class or injection token
-	 * @returns Service instance
+	 * @param {Type<S>} token
+	 * Service class or injection token
+	 * @returns {S}
+	 * Service instance
 	 */
 	getService<S>(token: Type<S>): S
 	{
@@ -217,11 +236,12 @@ export class ComponentTestBed<T>
 }
 
 /**
- * Creates a test QueryClient with retry disabled for faster tests
- * Eliminates duplication of QueryClient configuration across 40+ test files
- * Follows DRY principle
+ * Creates a test QueryClient with retry disabled for faster tests.
+ * Eliminates duplication of QueryClient configuration across 40+ test files.
+ * Follows DRY principle.
  *
- * @returns QueryClient configured for testing
+ * @returns {QueryClient}
+ * QueryClient configured for testing.
  *
  * @example
  * const queryClient = createTestQueryClient();
@@ -246,9 +266,12 @@ export function createTestQueryClient(): QueryClient
  * Automatically includes zoneless change detection and TanStack Query
  * Follows DRY and KISS principles
  *
- * @param service - Service class to test
- * @param providers - Additional providers (e.g., mocked dependencies)
- * @returns Object containing service instance and QueryClient
+ * @param {Type<T>} service
+ * Service class to test
+ * @param {Provider[]} providers
+ * Additional providers (e.g., mocked dependencies)
+ * @returns {{ service: T; queryClient: QueryClient; }}
+ * Object containing service instance and QueryClient
  *
  * @example
  * describe("UserService", () => {
@@ -293,9 +316,12 @@ export function setupServiceTest<T>(
  * Automatically includes zoneless change detection and HTTP testing
  * Follows DRY and KISS principles
  *
- * @param repository - Repository class to test
- * @param providers - Additional providers (e.g., mocked ApiService)
- * @returns Repository instance
+ * @param {Type<T>} repository
+ * Repository class to test
+ * @param {(Provider | EnvironmentProviders)[]} providers
+ * Additional providers (e.g., mocked ApiService)
+ * @returns {T}
+ * Repository instance
  *
  * @example
  * describe("UserRepository", () => {
@@ -328,10 +354,14 @@ export function setupRepositoryTest<T>(
  * Automatically includes zoneless change detection
  * Follows DRY and KISS principles
  *
- * @param service - Service class to test
- * @param providers - Additional providers (e.g., mocked dependencies)
- * @param imports - Optional imports (e.g., HttpClientTestingModule)
- * @returns Service instance
+ * @param {Type<T>} service
+ * Service class to test
+ * @param {(Provider | EnvironmentProviders)[]} providers
+ * Additional providers (e.g., mocked dependencies)
+ * @param {Type<object>[]} imports
+ * Optional imports (e.g., HttpClientTestingModule)
+ * @returns {T}
+ * Service instance
  *
  * @example
  * describe("LoggerService", () => {
@@ -361,8 +391,10 @@ export function setupSimpleServiceTest<T>(
  * Uses globalThis.setTimeout for compatibility with zoneless Angular tests.
  * Prefer this over raw setTimeout with done() callback pattern.
  *
- * @param ms - Milliseconds to delay
- * @returns Promise that resolves after the delay
+ * @param {number} ms
+ * Milliseconds to delay
+ * @returns {Promise<void>}
+ * Promise that resolves after the delay
  *
  * @example
  * it("should debounce resize events", async () => {
@@ -383,7 +415,8 @@ export function delay(ms: number): Promise<void>
  * Uses setTimeout(0) to push to macrotask queue, allowing TanStack Query
  * to complete HTTP request initiation in zoneless Angular.
  *
- * @returns Promise that resolves after microtasks and pending work are flushed
+ * @returns {Promise<void>}
+ * Promise that resolves after microtasks and pending work are flushed
  *
  * @example
  * it("should fetch data", async () => {

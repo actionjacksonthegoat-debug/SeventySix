@@ -23,6 +23,11 @@ export class AccountService extends BaseMutationService
 		inject(ApiService);
 	private readonly endpoint: string = "users/me";
 
+	/**
+	 * Query that loads the current user's profile.
+	 * @returns {ReturnType<typeof injectQuery>}
+	 * Query object with data, isLoading, and error.
+	 */
 	getProfile()
 	{
 		return injectQuery(
@@ -34,6 +39,11 @@ export class AccountService extends BaseMutationService
 			}));
 	}
 
+	/**
+	 * Mutation used to update the current user's profile.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation with mutate, isPending and error.
+	 */
 	updateProfile()
 	{
 		return this.createMutation<UpdateProfileRequest, UserProfileDto>(
@@ -41,6 +51,11 @@ export class AccountService extends BaseMutationService
 				this.apiService.put<UserProfileDto>(this.endpoint, request));
 	}
 
+	/**
+	 * Query that retrieves roles available to the current user.
+	 * @returns {ReturnType<typeof injectQuery>}
+	 * Query object with roles data and loading state.
+	 */
 	getAvailableRoles()
 	{
 		return injectQuery(
@@ -52,6 +67,12 @@ export class AccountService extends BaseMutationService
 			}));
 	}
 
+	/**
+	 * Mutation to submit permission requests for the current user.
+	 * Invalidates available roles on success.
+	 * @returns {ReturnType<typeof this.createMutation>}
+	 * Mutation used to submit permission requests.
+	 */
 	createPermissionRequest()
 	{
 		return this.createMutation<CreatePermissionRequestDto, void>(

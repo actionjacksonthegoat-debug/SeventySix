@@ -24,29 +24,60 @@ import { StorageService } from "@shared/services/storage.service";
 	})
 export class ThemeService
 {
+	/**
+	 * Angular platform identifier for SSR checks.
+	 * @type {Object}
+	 * @private
+	 */
 	private platformId: Object =
 		inject(PLATFORM_ID);
+
+	/**
+	 * Storage service for persisting theme preferences.
+	 * @type {StorageService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly storage: StorageService =
 		inject(StorageService);
+
+	/**
+	 * Storage key for theme brightness.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly BRIGHTNESS_STORAGE_KEY: string = "seventysix-theme-brightness";
+
+	/**
+	 * Storage key for color scheme.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly SCHEME_STORAGE_KEY: string = "seventysix-color-scheme";
 
 	/**
-	 * Current theme brightness (light/dark)
+	 * Current theme brightness (light/dark).
+	 * @type {WritableSignal<ThemeBrightness>}
+	 * @readonly
 	 */
 	brightness: WritableSignal<ThemeBrightness> =
 		signal<ThemeBrightness>(
 			this.getInitialBrightness());
 
 	/**
-	 * Current color scheme (blue/cyan-orange)
+	 * Current color scheme (blue/cyan-orange).
+	 * @type {WritableSignal<ColorScheme>}
 	 */
 	colorScheme: WritableSignal<ColorScheme> =
 		signal<ColorScheme>(
 			this.getInitialColorScheme());
 
 	/**
-	 * Computed full theme name for display
+	 * Computed full theme name for display.
+	 * @type {Signal<string>}
+	 * @readonly
 	 */
 	themeName: Signal<string> =
 		computed(
@@ -70,7 +101,8 @@ export class ThemeService
 	}
 
 	/**
-	 * Toggle between light and dark brightness
+	 * Toggle between light and dark brightness.
+	 * @returns {void}
 	 */
 	toggleBrightness(): void
 	{
@@ -80,7 +112,8 @@ export class ThemeService
 	}
 
 	/**
-	 * Toggle between color schemes
+	 * Toggle between color schemes.
+	 * @returns {void}
 	 */
 	toggleColorScheme(): void
 	{
@@ -90,7 +123,10 @@ export class ThemeService
 	}
 
 	/**
-	 * Set specific brightness
+	 * Set specific brightness.
+	 * @param {ThemeBrightness} brightness
+	 * The brightness value to set ('light' or 'dark').
+	 * @returns {void}
 	 */
 	setBrightness(brightness: ThemeBrightness): void
 	{
@@ -98,7 +134,10 @@ export class ThemeService
 	}
 
 	/**
-	 * Set specific color scheme
+	 * Set specific color scheme.
+	 * @param {ColorScheme} scheme
+	 * The color scheme to set (e.g., 'blue' or 'cyan-orange').
+	 * @returns {void}
 	 */
 	setColorScheme(scheme: ColorScheme): void
 	{
@@ -106,7 +145,9 @@ export class ThemeService
 	}
 
 	/**
-	 * Get initial brightness from localStorage or default to light
+	 * Get initial brightness from localStorage or default to light.
+	 * @returns {ThemeBrightness}
+	 * The initial brightness value ('light' or 'dark').
 	 */
 	private getInitialBrightness(): ThemeBrightness
 	{
@@ -117,7 +158,9 @@ export class ThemeService
 	}
 
 	/**
-	 * Get initial color scheme from localStorage or default to blue
+	 * Get initial color scheme from localStorage or default to blue.
+	 * @returns {ColorScheme}
+	 * The initial color scheme value (e.g., 'blue' or 'cyan-orange').
 	 */
 	private getInitialColorScheme(): ColorScheme
 	{
@@ -128,7 +171,12 @@ export class ThemeService
 	}
 
 	/**
-	 * Apply theme to document and save to localStorage
+	 * Apply theme to document and save to localStorage.
+	 * @param {ThemeBrightness} brightness
+	 * The brightness to apply.
+	 * @param {ColorScheme} scheme
+	 * The color scheme to apply.
+	 * @returns {void}
 	 */
 	private applyTheme(brightness: ThemeBrightness, scheme: ColorScheme): void
 	{
@@ -157,7 +205,9 @@ export class ThemeService
 	}
 
 	/**
-	 * Check if current brightness is dark
+	 * Check if current brightness is dark.
+	 * @returns {boolean}
+	 * True when the current brightness is dark.
 	 */
 	isDark(): boolean
 	{
@@ -165,7 +215,9 @@ export class ThemeService
 	}
 
 	/**
-	 * Check if current brightness is light
+	 * Check if current brightness is light.
+	 * @returns {boolean}
+	 * True when the current brightness is light.
 	 */
 	isLight(): boolean
 	{
@@ -173,7 +225,9 @@ export class ThemeService
 	}
 
 	/**
-	 * Check if current scheme is blue
+	 * Check if current scheme is blue.
+	 * @returns {boolean}
+	 * True when the color scheme is 'blue'.
 	 */
 	isBlue(): boolean
 	{
@@ -181,7 +235,9 @@ export class ThemeService
 	}
 
 	/**
-	 * Check if current scheme is cyan-orange
+	 * Check if current scheme is cyan-orange.
+	 * @returns {boolean}
+	 * True when the color scheme is 'cyan-orange'.
 	 */
 	isCyanOrange(): boolean
 	{

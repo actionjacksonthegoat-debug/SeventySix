@@ -4,10 +4,6 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { environment } from "@environments/environment";
 import { DateService } from "@shared/services";
 
-/**
- * Application footer component
- * Displays copyright, version info, and footer links
- */
 @Component(
 	{
 		selector: "app-footer",
@@ -16,15 +12,42 @@ import { DateService } from "@shared/services";
 		styleUrl: "./footer.component.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
 	})
+
+/**
+ * Application footer component.
+ *
+ * Shows copyright year and application version.
+ *
+ * @remarks
+ * Uses `DateService` to compute the current year and reads `environment.version`.
+ */
 export class FooterComponent
 {
+	/**
+	 * Date service for generating the current year timestamp.
+	 * @type {DateService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dateService: DateService =
 		inject(DateService);
+
+	/**
+	 * Current year for copyright display.
+	 * @type {number}
+	 * @protected
+	 */
 	protected readonly currentYear: number =
 		this
 		.dateService
 		.parseUTC(this.dateService.now())
 		.getFullYear();
+
+	/**
+	 * Application version string from build environment.
+	 * @type {string}
+	 * @protected
+	 */
 	protected readonly version: string =
 		environment.version;
 }

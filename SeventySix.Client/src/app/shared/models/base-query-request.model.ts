@@ -1,27 +1,48 @@
 /**
- * Base query request interface for paginated queries
- * Matches server BaseQueryRequest property names
+ * Base query request interface for paginated queries.
+ * Matches server BaseQueryRequest property names.
  */
 export interface BaseQueryRequest
 {
-	/** Page number (1-based) - matches server 'Page' */
+	/**
+	 * Page number (1-based) used for pagination.
+	 * @type {number | undefined}
+	 */
 	page?: number;
 
-	/** Number of items per page */
+	/**
+	 * Number of items per page.
+	 * @type {number | undefined}
+	 */
 	pageSize?: number;
 
-	/** Search term for filtering */
+	/**
+	 * Search term used for filtering results.
+	 * @type {string | null | undefined}
+	 */
 	searchTerm?: string | null;
 
-	/** Start date for date range filtering */
+	/**
+	 * Start date for date range filtering.
+	 * @type {Date | null | undefined}
+	 */
 	startDate?: Date | null;
 
-	/** End date for date range filtering */
+	/**
+	 * End date for date range filtering.
+	 * @type {Date | null | undefined}
+	 */
 	endDate?: Date | null;
 
-	/** Field to sort by */
+	/**
+	 * Field name used to sort results.
+	 * @type {string | null | undefined}
+	 */
 	sortBy?: string | null;
 
-	/** Sort in descending order */
+	/**
+	 * True when sorting should be in descending order.
+	 * @type {boolean | undefined}
+	 */
 	sortDescending?: boolean;
 }

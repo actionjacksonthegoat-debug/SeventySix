@@ -15,10 +15,18 @@
  * canActivate: [roleGuard("Developer", "Admin")]
  */
 
+
 import { inject } from "@angular/core";
 import { CanActivateFn, Router } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
 
+/**
+ * Creates an Angular CanActivate guard that enforces authentication and optional role requirements.
+ * @param {string[]} requiredRoles
+ * Roles required for access. If empty, only authentication is required.
+ * @returns {CanActivateFn}
+ * A function suitable for use in route `canActivate` that returns `true` to allow, or a `UrlTree` to redirect.
+ */
 export function roleGuard(...requiredRoles: string[]): CanActivateFn
 {
 	return (route, state) =>

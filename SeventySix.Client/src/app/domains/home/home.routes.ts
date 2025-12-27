@@ -4,6 +4,10 @@
  */
 import { Routes } from "@angular/router";
 
+/**
+ * Home feature routes (landing page and public home routes).
+ * Lazy-loaded as the application root.
+ */
 export const HOME_ROUTES: Routes =
 	[
 		{

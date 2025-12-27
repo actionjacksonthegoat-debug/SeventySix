@@ -33,8 +33,19 @@ interface PerformanceWithMemory extends Performance
 	})
 export class PerformanceMonitorService
 {
+	/**
+	 * Whether monitoring is currently active.
+	 * @type {WritableSignal<boolean>}
+	 * @private
+	 */
 	private readonly _isMonitoring: WritableSignal<boolean> =
 		signal<boolean>(false);
+
+	/**
+	 * Current performance metrics signal.
+	 * @type {WritableSignal<PerformanceMetrics>}
+	 * @private
+	 */
 	private readonly _metrics: WritableSignal<PerformanceMetrics> =
 		signal<PerformanceMetrics>(
 			{
@@ -44,20 +55,57 @@ export class PerformanceMonitorService
 				memoryTotal: 0
 			});
 
+	/**
+	 * Read-only metrics signal for consumers.
+	 * @type {Signal<PerformanceMetrics>}
+	 * @readonly
+	 */
 	readonly currentMetrics: Signal<PerformanceMetrics> =
 		this._metrics.asReadonly();
+
+	/**
+	 * Health indicator based on FPS threshold.
+	 * @type {Signal<boolean>}
+	 * @readonly
+	 */
 	readonly isHealthy: Signal<boolean> =
 		computed(
 			() => this._metrics().fps >= 50);
 
+	/**
+	 * Animation frame counter used for FPS calculation.
+	 * @type {number}
+	 * @private
+	 */
 	private frameCount: number = 0;
+
+	/**
+	 * Last timestamp used for delta calculation.
+	 * @type {number}
+	 * @private
+	 */
 	private lastTime: number =
 		performance.now();
+
+	/**
+	 * ID returned from requestAnimationFrame.
+	 * @type {number | null}
+	 * @private
+	 */
 	private animationFrameId: number | null = null;
+
+	/**
+	 * Megabyte constant used for memory calculation.
+	 * @type {number}
+	 * @private
+	 * @readonly
+	 */
 	private readonly MB: number = 1048576;
 
 	/**
 	 * Returns whether monitoring is active.
+	 * @returns {boolean}
+	 * True when performance monitoring is currently active.
 	 */
 	isMonitoring(): boolean
 	{
@@ -67,6 +115,7 @@ export class PerformanceMonitorService
 	/**
 	 * Starts performance monitoring.
 	 * Uses requestAnimationFrame for accurate FPS tracking.
+	 * @returns {void}
 	 */
 	startMonitoring(): void
 	{
@@ -84,6 +133,7 @@ export class PerformanceMonitorService
 
 	/**
 	 * Stops performance monitoring and cleans up animation frame.
+	 * @returns {void}
 	 */
 	stopMonitoring(): void
 	{
@@ -99,6 +149,7 @@ export class PerformanceMonitorService
 	/**
 	 * Monitors each frame for performance metrics.
 	 * Updates metrics every second.
+	 * @returns {void}
 	 */
 	private monitorFrame: () => void =
 		(): void =>

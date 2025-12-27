@@ -27,18 +27,55 @@ import { catchError, Observable, throwError } from "rxjs";
 	})
 export class ApiService
 {
+	/**
+	 * Base API URL used to build request endpoints.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly baseUrl: string =
 		environment.apiUrl;
+
+	/**
+	 * HTTP client for performing API requests.
+	 * @type {HttpClient}
+	 * @private
+	 * @readonly
+	 */
 	private readonly http: HttpClient =
 		inject(HttpClient);
+
+	/**
+	 * Logger service for diagnostic messages related to API calls.
+	 * @type {LoggerService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly logger: LoggerService =
 		inject(LoggerService);
+
+	/**
+	 * Default HTTP headers applied to all requests from this service.
+	 * @type {HttpHeaders}
+	 * @private
+	 */
 	private defaultHeaders: HttpHeaders =
 		new HttpHeaders(
 			{
 				[HTTP_HEADER_CONTENT_TYPE]: MEDIA_TYPE_JSON
 			});
 
+	/**
+	 * Sends an HTTP GET request to the API.
+	 * @param {string} endpoint
+	 * The endpoint path relative to the API base URL (no leading '/').
+	 * @param {HttpParams} params
+	 * Optional query parameters for the request.
+	 * @param {HttpContext} context
+	 * Optional HTTP context for request-scoped metadata.
+	 * @returns {Observable<T>}
+	 * Observable that resolves to the typed response body.
+	 */
 	get<T>(
 		endpoint: string,
 		params?: HttpParams,
@@ -55,6 +92,15 @@ export class ApiService
 		.pipe(catchError(this.handleError));
 	}
 
+	/**
+	 * Sends an HTTP POST request to the API.
+	 * @param {string} endpoint
+	 * The endpoint path relative to the API base URL (no leading '/').
+	 * @param {U} body
+	 * The request payload to send to the server.
+	 * @returns {Observable<T>}
+	 * Observable that resolves to the typed response body.
+	 */
 	post<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
@@ -66,6 +112,15 @@ export class ApiService
 		.pipe(catchError(this.handleError));
 	}
 
+	/**
+	 * Sends an HTTP PUT request to the API.
+	 * @param {string} endpoint
+	 * The endpoint path relative to the API base URL (no leading '/').
+	 * @param {U} body
+	 * The request payload to send to the server.
+	 * @returns {Observable<T>}
+	 * Observable that resolves to the typed response body.
+	 */
 	put<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
@@ -77,6 +132,15 @@ export class ApiService
 		.pipe(catchError(this.handleError));
 	}
 
+	/**
+	 * Sends an HTTP PATCH request to the API.
+	 * @param {string} endpoint
+	 * The endpoint path relative to the API base URL (no leading '/').
+	 * @param {U} body
+	 * The request payload to send to the server.
+	 * @returns {Observable<T>}
+	 * Observable that resolves to the typed response body.
+	 */
 	patch<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
@@ -88,6 +152,15 @@ export class ApiService
 		.pipe(catchError(this.handleError));
 	}
 
+	/**
+	 * Sends an HTTP DELETE request to the API with an optional body.
+	 * @param {string} endpoint
+	 * The endpoint path relative to the API base URL (no leading '/').
+	 * @param {U} body
+	 * Optional request body for delete operations.
+	 * @returns {Observable<T>}
+	 * Observable that resolves to the typed response body.
+	 */
 	delete<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
 		return this
@@ -100,6 +173,12 @@ export class ApiService
 		.pipe(catchError(this.handleError));
 	}
 
+	/**
+	 * Adds or updates default headers used for subsequent requests.
+	 * @param {Record<string, string>} headers
+	 * A dictionary of header keys and values to merge into default headers.
+	 * @returns {void}
+	 */
 	addHeaders(headers: Record<string, string>): void
 	{
 		Object
@@ -112,6 +191,13 @@ export class ApiService
 			});
 	}
 
+	/**
+	 * Centralized HTTP error handler used with RxJS catchError.
+	 * @param {HttpErrorResponse} error
+	 * The HTTP error response thrown by HttpClient.
+	 * @returns {Observable<never>}
+	 * Observable that errors with a normalized Error instance.
+	 */
 	private handleError: (error: HttpErrorResponse) => Observable<never> =
 		(
 			error: HttpErrorResponse): Observable<never> =>

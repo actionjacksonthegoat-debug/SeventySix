@@ -32,51 +32,120 @@ import {
 } from "@shared/services/auth.types";
 import { catchError, Observable, of, tap } from "rxjs";
 
+/**
+ * Provides authentication flows (local and OAuth), session restoration, and in-memory token management.
+ * Handles access token lifecycle and integrates with the auth interceptor for transparent refresh behavior.
+ */
 @Injectable(
 	{
 		providedIn: "root"
 	})
 export class AuthService
 {
+	/**
+	 * HTTP client for API calls.
+	 * @type {HttpClient}
+	 * @private
+	 * @readonly
+	 */
 	private readonly httpClient: HttpClient =
 		inject(HttpClient);
+
+	/**
+	 * Angular Router for navigation.
+	 * @type {Router}
+	 * @private
+	 * @readonly
+	 */
 	private readonly router: Router =
 		inject(Router);
+
+	/**
+	 * Date service for timestamp/formatting utilities.
+	 * @type {DateService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dateService: DateService =
 		inject(DateService);
 
+	/**
+	 * Base auth API URL.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly authUrl: string =
 		`${environment.apiUrl}/auth`;
 
-	/** Key for tracking if user has logged in before (for session restoration). */
+	/**
+	 * Key for tracking if user has logged in before (for session restoration).
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private static readonly HAS_SESSION_KEY: string = "auth_has_session";
 
-	/** Access token in memory only (XSS protection). */
+	/**
+	 * Access token stored in memory only for XSS protection.
+	 * @type {string | null}
+	 * @private
+	 */
 	private accessToken: string | null = null;
 
-	/** Token expiration timestamp. */
+	/**
+	 * Token expiration timestamp (epoch millis).
+	 * @type {number}
+	 * @private
+	 */
 	private tokenExpiresAt: number = 0;
 
-	/** Tracks if initialization has already been attempted. */
+	/**
+	 * Tracks if initialization has already been attempted.
+	 * @type {boolean}
+	 * @private
+	 */
 	private initialized: boolean = false;
 
-	/** Current authenticated user signal. */
+	/**
+	 * Current authenticated user signal.
+	 * @type {WritableSignal<UserProfileDto | null>}
+	 * @private
+	 * @readonly
+	 */
 	private readonly userSignal: WritableSignal<UserProfileDto | null> =
 		signal<UserProfileDto | null>(null);
 
-	/** Whether user must change password before using the app. */
+	/**
+	 * Whether user must change password before using the app.
+	 * @type {WritableSignal<boolean>}
+	 * @private
+	 * @readonly
+	 */
 	private readonly requiresPasswordChangeSignal: WritableSignal<boolean> =
 		signal<boolean>(false);
 
-	/** Read-only user state. */
+	/**
+	 * Read-only user state.
+	 * @type {Signal<UserProfileDto | null>}
+	 * @readonly
+	 */
 	readonly user: Signal<UserProfileDto | null> =
 		this.userSignal.asReadonly();
 
-	/** Read-only password change requirement state. */
+	/**
+	 * Read-only password change requirement state.
+	 * @type {Signal<boolean>}
+	 * @readonly
+	 */
 	readonly requiresPasswordChange: Signal<boolean> =
 		this.requiresPasswordChangeSignal.asReadonly();
 
-	/** Computed authentication state. */
+	/**
+	 * Computed authentication state.
+	 * @type {Signal<boolean>}
+	 * @readonly
+	 */
 	readonly isAuthenticated: Signal<boolean> =
 		computed(
 			() => this.userSignal() !== null);
@@ -198,6 +267,7 @@ export class AuthService
 
 	/**
 	 * Logs out the current user.
+	 * @returns {void}
 	 */
 	logout(): void
 	{
@@ -366,7 +436,7 @@ export class AuthService
 
 	/**
 	 * Handles OAuth callback - token in URL fragment.
-	 * @returns
+	 * @returns {boolean}
 	 * True if OAuth callback was handled, false otherwise.
 	 * @remarks The server may also provide email and fullName in the hash params.
 	 */
@@ -474,6 +544,7 @@ export class AuthService
 
 	/**
 	 * Clears authentication state.
+	 * @returns {void}
 	 */
 	private clearAuth(): void
 	{
@@ -486,6 +557,7 @@ export class AuthService
 
 	/**
 	 * Clears the password change requirement (call after successful password change).
+	 * @returns {void}
 	 */
 	clearPasswordChangeRequirement(): void
 	{
@@ -541,6 +613,8 @@ export class AuthService
 	/**
 	 * Checks if user has an existing session marker (has logged in before).
 	 * Used to avoid unnecessary refresh token attempts for users who never logged in.
+	 * @returns {boolean}
+	 * True when user has a session marker in localStorage.
 	 */
 	private hasExistingSession(): boolean
 	{
@@ -550,6 +624,7 @@ export class AuthService
 	/**
 	 * Marks that user has an active session.
 	 * Called on successful login or token refresh.
+	 * @returns {void}
 	 */
 	private markHasSession(): void
 	{
@@ -559,6 +634,7 @@ export class AuthService
 	/**
 	 * Clears the session marker.
 	 * Called on logout or when refresh token fails.
+	 * @returns {void}
 	 */
 	private clearHasSession(): void
 	{

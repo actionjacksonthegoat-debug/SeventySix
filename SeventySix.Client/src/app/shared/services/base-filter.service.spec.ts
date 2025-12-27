@@ -4,7 +4,9 @@ import { FORCE_REFRESH } from "@shared/interceptors/cache-bypass.interceptor";
 import { BaseQueryRequest } from "@shared/models";
 import { BaseFilterService } from "./base-filter.service";
 
-/** Test implementation of BaseFilterService for testing purposes */
+/**
+ * Test implementation of BaseFilterService used by unit tests.
+ */
 class TestFilterService extends BaseFilterService<BaseQueryRequest>
 {
 	constructor(initialFilter: BaseQueryRequest)

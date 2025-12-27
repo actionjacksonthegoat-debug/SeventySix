@@ -1,8 +1,11 @@
 import { Injectable } from "@angular/core";
 
 /**
- * Utility service for window operations
- * Wraps window methods to make them testable
+ * Utility service that provides thin wrappers around global `window`
+ * functionality to make usage easier to stub in tests.
+ *
+ * Provided in the root injector so it can be injected wherever window
+ * operations are required.
  */
 @Injectable(
 	{
@@ -11,7 +14,9 @@ import { Injectable } from "@angular/core";
 export class WindowUtilities
 {
 	/**
-	 * Reloads the current page
+	 * Reloads the current page using `window.location.reload()`.
+	 * @returns {void}
+	 * Triggers a page reload.
 	 */
 	reload(): void
 	{

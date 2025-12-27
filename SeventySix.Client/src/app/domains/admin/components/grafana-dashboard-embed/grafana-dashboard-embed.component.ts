@@ -28,12 +28,23 @@ import { environment } from "@environments/environment";
 	})
 export class GrafanaDashboardEmbedComponent
 {
+	/**
+	 * DOM sanitizer used to create a SafeResourceUrl for iframe embedding.
+	 * @type {DomSanitizer}
+	 */
+	/**
+	 * DOM sanitizer used to create a SafeResourceUrl for iframe embedding.
+	 * @type {DomSanitizer}
+	 * @private
+	 * @readonly
+	 */
 	private readonly sanitizer: DomSanitizer =
 		inject(DomSanitizer);
 
 	/**
 	 * Dashboard UID (e.g., 'seventysix-system-overview').
 	 * Required input for identifying which Grafana dashboard to embed.
+	 * @type {InputSignal<string>}
 	 */
 	readonly dashboardUid: InputSignal<string> =
 		input.required<string>();
@@ -42,6 +53,7 @@ export class GrafanaDashboardEmbedComponent
 	 * Refresh interval using Grafana syntax.
 	 * Examples: '5s', '30s', '1m', '5m'
 	 * @default '30s'
+	 * @type {InputSignal<string>}
 	 */
 	readonly refreshInterval: InputSignal<string> =
 		input<string>("30s");
@@ -49,6 +61,7 @@ export class GrafanaDashboardEmbedComponent
 	/**
 	 * Grafana theme to apply to embedded dashboard.
 	 * @default 'dark'
+	 * @type {InputSignal<string>}
 	 */
 	readonly theme: InputSignal<string> =
 		input<string>("dark");
@@ -56,6 +69,7 @@ export class GrafanaDashboardEmbedComponent
 	/**
 	 * Dashboard title displayed in card header.
 	 * @default 'Dashboard'
+	 * @type {InputSignal<string>}
 	 */
 	readonly title: InputSignal<string> =
 		input<string>("Dashboard");
@@ -63,6 +77,7 @@ export class GrafanaDashboardEmbedComponent
 	/**
 	 * Height of iframe as CSS value.
 	 * @default '600px'
+	 * @type {InputSignal<string>}
 	 */
 	readonly height: InputSignal<string> =
 		input<string>("600px");
@@ -72,7 +87,7 @@ export class GrafanaDashboardEmbedComponent
 	 * Constructs Grafana URL with kiosk mode (hides UI chrome).
 	 * Format: {baseUrl}/d/{uid}/{slug}?orgId=1&refresh={interval}&theme={theme}&kiosk
 	 * Note: Including the slug prevents Grafana's "not correct url correcting" messages.
-	 * @returns Sanitized resource URL safe for iframe embedding
+	 * @type {Signal<SafeResourceUrl>}
 	 */
 	readonly sanitizedUrl: Signal<SafeResourceUrl> =
 		computed(
@@ -98,6 +113,7 @@ export class GrafanaDashboardEmbedComponent
 	/**
 	 * Computed accessible title for the iframe.
 	 * Appends 'dashboard' suffix for screen reader context.
+	 * @type {Signal<string>}
 	 */
 	readonly iframeTitle: Signal<string> =
 		computed(

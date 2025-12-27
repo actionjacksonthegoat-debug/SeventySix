@@ -1,5 +1,9 @@
 import { Routes } from "@angular/router";
 
+/**
+ * Authentication feature routes (login, registration, password flows).
+ * Mounted lazily under the `/auth` path.
+ */
 export const AUTH_ROUTES: Routes =
 	[
 		{

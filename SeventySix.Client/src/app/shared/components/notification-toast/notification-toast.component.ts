@@ -86,11 +86,22 @@ import { NotificationService } from "@shared/services";
 	})
 export class NotificationToastComponent
 {
+	/**
+	 * NotificationService instance for reading and acting on notifications.
+	 * @type {NotificationService}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly notificationService: NotificationService =
 		inject(NotificationService);
 
 	/**
-	 * Get the appropriate icon for the notification level.
+	 * Get the appropriate icon name for the specified notification level.
+	 *
+	 * @param {NotificationLevel} level
+	 * The notification severity level.
+	 * @returns {string}
+	 * Material icon name to render for the given level.
 	 */
 	getIcon(level: NotificationLevel): string
 	{
@@ -111,6 +122,10 @@ export class NotificationToastComponent
 
 	/**
 	 * Dismiss a notification by ID.
+	 *
+	 * @param {string} id
+	 * The notification id to dismiss.
+	 * @returns {void}
 	 */
 	dismiss(id: string): void
 	{
@@ -118,7 +133,11 @@ export class NotificationToastComponent
 	}
 
 	/**
-	 * Execute the notification action and dismiss.
+	 * Execute the notification action and dismiss the notification.
+	 *
+	 * @param {Notification} notification
+	 * The notification containing the action to execute.
+	 * @returns {void}
 	 */
 	executeAction(notification: Notification): void
 	{
@@ -130,7 +149,11 @@ export class NotificationToastComponent
 	}
 
 	/**
-	 * Copy notification data to clipboard.
+	 * Copy notification data to the clipboard using the service helper.
+	 *
+	 * @param {Notification} notification
+	 * The notification whose `copyData` will be copied.
+	 * @returns {Promise<void>}
 	 */
 	async copyToClipboard(notification: Notification): Promise<void>
 	{

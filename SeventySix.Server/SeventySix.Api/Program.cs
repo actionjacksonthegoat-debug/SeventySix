@@ -1,30 +1,25 @@
-// <copyright file="Program.cs" company="SeventySix">
-// Copyright (c) SeventySix. All rights reserved.
-// </copyright>
-
-// <summary>
-// Application entry point and service configuration.
-// Configures the ASP.NET Core web application with all required services,
-// middleware, and endpoints following Clean Architecture principles.
-// </summary>
-//
-// <remarks>
-// This file configures:
-// - Logging with Serilog (console and file outputs)
-// - Response compression (Brotli and Gzip)
-// - Response caching
-// - FluentValidation
-// - Repository pattern implementations
-// - Application services
-// - CORS policies
-// - Security headers middleware
-// - Global exception handling
-// - Rate limiting
-// - OpenAPI/Scalar documentation (development only)
-//
-// Architecture: Implements Dependency Inversion Principle (DIP) by registering
-// interfaces with their concrete implementations.
-// </remarks>
+/// <summary>
+/// Application entry point and service configuration.
+/// Configures the ASP.NET Core web application with all required services,
+/// middleware, and endpoints following Clean Architecture principles.
+/// </summary>
+/// <remarks>
+/// This file configures:
+/// - Logging with Serilog (console and file outputs)
+/// - Response compression (Brotli and Gzip)
+/// - Response caching
+/// - FluentValidation
+/// - Repository pattern implementations
+/// - Application services
+/// - CORS policies
+/// - Security headers middleware
+/// - Global exception handling
+/// - Rate limiting
+/// - OpenAPI/Scalar documentation (development only)
+///
+/// Architecture: Implements Dependency Inversion Principle (DIP) by registering
+/// interfaces with their concrete implementations.
+/// </remarks>
 
 using Scalar.AspNetCore;
 using Serilog;

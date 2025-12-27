@@ -34,33 +34,96 @@ interface ChangePasswordRequest
 		templateUrl: "./change-password.html",
 		styleUrl: "./change-password.scss"
 	})
+/**
+ * Page for changing a user's password (required or voluntary flows).
+ * Validates passwords and submits change requests to the API.
+ */
 export class ChangePasswordComponent implements OnInit
 {
+	/**
+	 * HTTP client used to call the change-password API endpoint.
+	 * @type {HttpClient}
+	 */
 	private readonly http: HttpClient =
 		inject(HttpClient);
+
+	/**
+	 * Auth service for clearing requirement and session-related checks.
+	 * @type {AuthService}
+	 */
 	private readonly authService: AuthService =
 		inject(AuthService);
+
+	/**
+	 * Router used to navigate after a successful password change.
+	 * @type {Router}
+	 */
 	private readonly router: Router =
 		inject(Router);
+
+	/**
+	 * Activated route used to read query parameters (required flag/returnUrl).
+	 * @type {ActivatedRoute}
+	 */
 	private readonly route: ActivatedRoute =
 		inject(ActivatedRoute);
+
+	/**
+	 * Notification service for showing success/error messages to the user.
+	 * @type {NotificationService}
+	 */
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
+	/**
+	 * Minimum password length enforced by validation rules.
+	 * @type {number}
+	 */
 	protected readonly PASSWORD_MIN_LENGTH: number =
 		PASSWORD_VALIDATION.MIN_LENGTH;
 
+	/**
+	 * Current (existing) password entered by the user when required.
+	 * @type {string}
+	 */
 	protected currentPassword: string = "";
+
+	/**
+	 * New password to set for the account.
+	 * @type {string}
+	 */
 	protected newPassword: string = "";
+
+	/**
+	 * Confirmation of the new password (must match `newPassword`).
+	 * @type {string}
+	 */
 	protected confirmPassword: string = "";
 
+	/**
+	 * Loading state while the change password request is in-flight.
+	 * @type {WritableSignal<boolean>}
+	 */
 	protected readonly isLoading: WritableSignal<boolean> =
 		signal<boolean>(false);
+	/**
+	 * Whether the password change is required for the user (first-login flow).
+	 * @type {WritableSignal<boolean>}
+	 */
 	protected readonly isRequired: WritableSignal<boolean> =
 		signal<boolean>(false);
 
+	/**
+	 * Redirect URL after successful password change.
+	 * @type {string}
+	 */
 	private returnUrl: string = "/";
 
+	/**
+	 * Component initialization - determine whether a password change is required
+	 * and validate the reset token presence.
+	 * @returns {void}
+	 */
 	ngOnInit(): void
 	{
 		// Check if password change is required (from query param or auth state)
@@ -80,6 +143,11 @@ export class ChangePasswordComponent implements OnInit
 		}
 	}
 
+	/**
+	 * Submit the change password request after validating inputs.
+	 * Shows notifications and redirects on success.
+	 * @returns {void}
+	 */
 	protected onSubmit(): void
 	{
 		if (this.newPassword !== this.confirmPassword)
@@ -132,5 +200,29 @@ export class ChangePasswordComponent implements OnInit
 					this.isLoading.set(false);
 				}
 			});
+	}
+
+	/**
+	 * Extracts a user-facing error message from the password change response.
+	 * @param {HttpErrorResponse} error
+	 * Error object returned by the backend.
+	 * @returns {string}
+	 * A human-readable message suitable for display.
+	 */
+	private getErrorMessage(error: HttpErrorResponse): string
+	{
+		switch (error.status)
+		{
+			case 400:
+				return (
+					error.error?.detail
+						?? "Invalid request. Please check your password requirements.");
+			case 404:
+				return "Password reset link has expired or is invalid. Please request a new one.";
+			case 0:
+				return "Unable to connect to server. Check your internet connection.";
+			default:
+				return error.error?.detail ?? "An unexpected error occurred.";
+		}
 	}
 }

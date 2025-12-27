@@ -44,9 +44,19 @@ interface LargestContentfulPaintEntry extends PerformanceEntry
 	})
 export class WebVitalsService
 {
+	/**
+	 * Logger service for diagnostic messages.
+	 * @type {LoggerService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly logger: LoggerService =
 		inject(LoggerService);
 
+	/**
+	 * Initialize WebVitalsService and start monitoring when enabled.
+	 * @returns {void}
+	 */
 	constructor()
 	{
 		if (!environment.ui.performance.enableMonitoring)
@@ -60,6 +70,7 @@ export class WebVitalsService
 	/**
 	 * Initializes Core Web Vitals monitoring.
 	 * Automatically called on service construction.
+	 * @returns {void}
 	 */
 	private initializeWebVitals(): void
 	{
@@ -111,6 +122,11 @@ export class WebVitalsService
 	/**
 	 * Logs a web vitals metric with context.
 	 * Only logs warning for poor metrics - good/needs-improvement are silent.
+	 * @param {string} name
+	 * The metric name (e.g., 'LCP', 'CLS').
+	 * @param {Metric} metric
+	 * The web-vitals metric data.
+	 * @returns {void}
 	 */
 	private logMetric(name: string, metric: Metric): void
 	{
@@ -144,6 +160,10 @@ export class WebVitalsService
 
 	/**
 	 * Extracts diagnostic details from an LCP performance entry.
+	 * @param {PerformanceEntry} entry
+	 * The performance entry to extract details from.
+	 * @returns {LcpEntryDetails}
+	 * Diagnostic details useful for debugging LCP issues.
 	 */
 	private extractLcpEntryDetails(entry: PerformanceEntry): LcpEntryDetails
 	{
@@ -160,6 +180,10 @@ export class WebVitalsService
 
 	/**
 	 * Gets the threshold for a metric (for reference).
+	 * @param {string} name
+	 * The metric name to lookup.
+	 * @returns {string}
+	 * Human-readable threshold information for the metric.
 	 */
 	private getThreshold(name: string): string
 	{

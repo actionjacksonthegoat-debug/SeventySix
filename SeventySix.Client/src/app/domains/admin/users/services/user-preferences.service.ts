@@ -33,12 +33,19 @@ const STORAGE_KEY: string = "user-list-preferences";
 @Injectable()
 export class UserPreferencesService
 {
+	/**
+	 * Storage service used to persist user preferences locally.
+	 * @type {StorageService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly storageService: StorageService =
 		inject(StorageService);
 
 	/**
 	 * Load user preferences from storage
-	 * @returns UserListPreferences or defaults if none found
+	 * @returns {UserListPreferences}
+	 * UserListPreferences or defaults if none found
 	 */
 	loadPreferences(): UserListPreferences
 	{
@@ -49,7 +56,9 @@ export class UserPreferencesService
 
 	/**
 	 * Save user preferences to storage
-	 * @param preferences - Preferences to save
+	 * @param {UserListPreferences} preferences
+	 * Preferences to save
+	 * @returns {void}
 	 */
 	savePreferences(preferences: UserListPreferences): void
 	{
@@ -57,16 +66,9 @@ export class UserPreferencesService
 	}
 
 	/**
-	 * Reset preferences to defaults
-	 */
-	resetPreferences(): void
-	{
-		this.storageService.removeItem(STORAGE_KEY);
-	}
-
-	/**
 	 * Get default preferences
-	 * @returns Default UserListPreferences
+	 * @returns {UserListPreferences}
+	 * Default UserListPreferences
 	 */
 	getDefaultPreferences(): UserListPreferences
 	{
@@ -74,9 +76,21 @@ export class UserPreferencesService
 	}
 
 	/**
+	 * Reset preferences to defaults
+	 * @returns {void}
+	 */
+	resetPreferences(): void
+	{
+		this.storageService.removeItem(STORAGE_KEY);
+	}
+
+	/**
 	 * Update specific preference
-	 * @param key - Preference key to update
-	 * @param value - New value
+	 * @param {K} key
+	 * Preference key to update
+	 * @param {UserListPreferences[K]} value
+	 * New value
+	 * @returns {void}
 	 */
 	updatePreference<K extends keyof UserListPreferences>(
 		key: K,

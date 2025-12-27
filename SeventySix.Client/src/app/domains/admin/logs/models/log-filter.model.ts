@@ -12,7 +12,15 @@ export interface LogQueryRequest extends BaseQueryRequest
 	sourceContext?: string | null;
 }
 
-/** Helper to get date range from preset. */
+/**
+ * Helper to get date range from a preset.
+ * @param {DateRangePreset} preset
+ * The preset selecting the desired date range (e.g., Last24Hours, Last7Days).
+ * @param {DateService} dateService
+ * Service used to compute and normalize dates in UTC.
+ * @returns {{ startDate: Date | null; endDate: Date | null }}
+ * Start and end dates for the selected preset. `null` for custom or unspecified ranges.
+ */
 export function getDateRangeFromPreset(
 	preset: DateRangePreset,
 	dateService: DateService): {
@@ -33,19 +41,19 @@ export function getDateRangeFromPreset(
 			break;
 		case DateRangePreset.Last6Hours:
 			startDate =
-				new Date(now.getTime() - 6 * 60 * 60 * 1000);
+				dateService.addHours(now, -6);
 			break;
 		case DateRangePreset.Last24Hours:
 			startDate =
-				new Date(now.getTime() - 24 * 60 * 60 * 1000);
+				dateService.addHours(now, -24);
 			break;
 		case DateRangePreset.Last7Days:
 			startDate =
-				new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+				dateService.addDays(now, -7);
 			break;
 		case DateRangePreset.Last30Days:
 			startDate =
-				new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+				dateService.addDays(now, -30);
 			break;
 		case DateRangePreset.Custom:
 			return { startDate: null, endDate: null };
@@ -56,7 +64,13 @@ export function getDateRangeFromPreset(
 	return { startDate, endDate };
 }
 
-/** Helper to get display label for date range preset. */
+/**
+ * Helper to get display label for a date range preset.
+ * @param {DateRangePreset} preset
+ * The date range preset to get a human-readable label for.
+ * @returns {string}
+ * Readable label for the supplied preset (e.g., 'Last 24 Hours').
+ */
 export function getDateRangePresetLabel(preset: DateRangePreset): string
 {
 	switch (preset)

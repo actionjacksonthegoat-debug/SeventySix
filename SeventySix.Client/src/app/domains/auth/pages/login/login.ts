@@ -27,6 +27,10 @@ import { NotificationService } from "@shared/services/notification.service";
 		templateUrl: "./login.html",
 		styleUrl: "./login.scss"
 	})
+/**
+ * Component that handles user login via local credentials or OAuth providers.
+ * Manages redirects on success and presents user-friendly error messages.
+ */
 export class LoginComponent implements OnInit
 {
 	private readonly authService: AuthService =
@@ -38,14 +42,41 @@ export class LoginComponent implements OnInit
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
+	/**
+	 * Username or email entered by the user in the login form.
+	 * @type {string}
+	 */
 	protected usernameOrEmail: string = "";
+
+	/**
+	 * Password entered by the user.
+	 * @type {string}
+	 */
 	protected password: string = "";
+
+	/**
+	 * When true, persist session using "remember me" semantics.
+	 * @type {boolean}
+	 */
 	protected rememberMe: boolean = false;
+
+	/**
+	 * Loading state used while an authentication request is in-flight.
+	 * @type {WritableSignal<boolean>}
+	 */
 	protected readonly isLoading: WritableSignal<boolean> =
 		signal<boolean>(false);
 
+	/**
+	 * URL to navigate to after successful login. Defaults to application root.
+	 * @type {string}
+	 */
 	private returnUrl: string = "/";
 
+	/**
+	 * Initialize component: determine post-login redirect and redirect if already authenticated.
+	 * @returns {void}
+	 */
 	ngOnInit(): void
 	{
 		this.returnUrl =
@@ -58,6 +89,11 @@ export class LoginComponent implements OnInit
 		}
 	}
 
+	/**
+	 * Perform local credential login. Validates form, invokes AuthService, and
+	 * handles success and error flows with notifications and redirects.
+	 * @returns {void}
+	 */
 	protected onLocalLogin(): void
 	{
 		if (!this.usernameOrEmail || !this.password)
@@ -111,6 +147,10 @@ export class LoginComponent implements OnInit
 			});
 	}
 
+	/**
+	 * Start OAuth login flow with GitHub provider.
+	 * @returns {void}
+	 */
 	protected onGitHubLogin(): void
 	{
 		this.isLoading.set(true);
@@ -119,6 +159,10 @@ export class LoginComponent implements OnInit
 
 	/**
 	 * Extracts user-friendly error details from login failure.
+	 * @param {HttpErrorResponse} error
+	 * Error response received from the login request.
+	 * @returns {string[]}
+	 * Array of human-readable error messages for display in a detail panel.
 	 */
 	private getLoginErrorDetails(error: HttpErrorResponse): string[]
 	{

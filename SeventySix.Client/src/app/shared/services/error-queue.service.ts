@@ -23,37 +23,140 @@ type CircuitState = "closed" | "open";
 	})
 export class ErrorQueueService
 {
+	/**
+	 * Storage abstraction for persisting queued errors (SSR-safe).
+	 * @type {StorageService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly storage: StorageService =
 		inject(StorageService);
+
+	/**
+	 * HTTP client used to send error batches to the server.
+	 * @type {HttpClient}
+	 * @private
+	 * @readonly
+	 */
 	private readonly http: HttpClient =
 		inject(HttpClient);
+
+	/**
+	 * Date service for timestamps and timing.
+	 * @type {DateService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dateService: DateService =
 		inject(DateService);
+
+	/**
+	 * Endpoint used to POST error batches.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly logEndpoint: string =
 		`${environment.apiUrl}/logs/client/batch`;
+
+	/**
+	 * Local storage key for the queued errors.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly localStorageKey: string = "error-queue";
 
 	// Queue management
+	/**
+	 * In-memory error queue pending sending.
+	 * @type {CreateLogRequest[]}
+	 * @private
+	 */
 	private queue: CreateLogRequest[] = [];
+
+
+
+	/**
+	 * Number of items to send per batch.
+	 * @type {number}
+	 * @private
+	 * @readonly
+	 */
 	private readonly batchSize: number =
 		environment.logging.batchSize;
+
+	/**
+	 * Interval between batch sends in milliseconds.
+	 * @type {number}
+	 * @private
+	 * @readonly
+	 */
 	private readonly batchInterval: number =
 		environment.logging.batchInterval;
 
 	// Circuit breaker
+	/**
+	 * Current circuit breaker state ('closed' or 'open').
+	 * @type {CircuitState}
+	 * @private
+	 */
 	private circuitBreakerState: CircuitState = "closed";
+
+	/**
+	 * Number of consecutive failures observed sending batches.
+	 * @type {number}
+	 * @private
+	 */
 	private consecutiveFailures: number = 0;
+
+	/**
+	 * Failure threshold after which circuit opens.
+	 * @type {number}
+	 * @private
+	 * @readonly
+	 */
 	private readonly maxFailures: number =
 		environment.logging.circuitBreakerThreshold;
+
+	/**
+	 * Duration the circuit stays open in milliseconds.
+	 * @type {number}
+	 * @private
+	 * @readonly
+	 */
 	private readonly circuitOpenDuration: number =
 		environment.logging.circuitBreakerTimeout;
+
+	/**
+	 * Timestamp when the circuit was opened.
+	 * @type {number}
+	 * @private
+	 */
 	private circuitBreakerOpenTime: number = 0;
 
 	// Error deduplication
+	/**
+	 * Recent error signatures to prevent duplicate logs.
+	 * @type {Map<string, number>}
+	 * @private
+	 */
 	private recentErrors: Map<string, number> =
 		new Map<string, number>(); // signature -> timestamp
+
+	/**
+	 * Deduplication window in milliseconds.
+	 * @type {number}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dedupeWindowMs: number = 5000; // 5 seconds
 
+	/**
+	 * Initialize ErrorQueueService and resume sending queued errors.
+	 * Starts the periodic batch sender with automatic cleanup on destroy.
+	 * @returns {void}
+	 */
 	constructor()
 	{
 		this.loadQueueFromStorage();
@@ -72,6 +175,9 @@ export class ErrorQueueService
 	 * Enqueues an error for batch sending.
 	 * Always logs to console for successfully enqueued errors (1:1 with DB).
 	 * Never drops errors - relies on deduplication and circuit breaker for protection.
+	 * @param {CreateLogRequest} error
+	 * The error payload to enqueue for batch sending.
+	 * @returns {void}
 	 */
 	enqueue(error: CreateLogRequest): void
 	{
@@ -93,7 +199,8 @@ export class ErrorQueueService
 	}
 
 	/**
-	 * Processes a batch of errors.
+	 * Processes a batch of errors and sends to the server.
+	 * @returns {void}
 	 */
 	private processBatch(): void
 	{
@@ -141,7 +248,10 @@ export class ErrorQueueService
 	}
 
 	/**
-	 * Handles batch send failure.
+	 * Handles batch send failure and updates the circuit breaker state.
+	 * @param {unknown} error
+	 * The error returned from the HTTP request.
+	 * @returns {void}
 	 */
 	private handleBatchFailure(error: unknown): void
 	{
@@ -156,7 +266,8 @@ export class ErrorQueueService
 	}
 
 	/**
-	 * Opens the circuit breaker.
+	 * Opens the circuit breaker and records the open time.
+	 * @returns {void}
 	 */
 	private openCircuitBreaker(): void
 	{
@@ -168,7 +279,8 @@ export class ErrorQueueService
 	}
 
 	/**
-	 * Resets the circuit breaker.
+	 * Resets the circuit breaker to the closed state.
+	 * @returns {void}
 	 */
 	private resetCircuitBreaker(): void
 	{
@@ -177,7 +289,9 @@ export class ErrorQueueService
 	}
 
 	/**
-	 * Checks if circuit breaker is open.
+	 * Checks whether the circuit breaker is currently open and closes it if the timeout elapsed.
+	 * @returns {boolean}
+	 * True when the circuit is open and preventing sends.
 	 */
 	private isCircuitOpen(): boolean
 	{
@@ -200,7 +314,8 @@ export class ErrorQueueService
 	}
 
 	/**
-	 * Loads queue from localStorage.
+	 * Loads the queued errors from localStorage into memory.
+	 * @returns {void}
 	 */
 	private loadQueueFromStorage(): void
 	{
@@ -218,7 +333,8 @@ export class ErrorQueueService
 	}
 
 	/**
-	 * Saves queue to localStorage.
+	 * Persists the in-memory queue to localStorage.
+	 * @returns {void}
 	 */
 	private saveQueueToStorage(): void
 	{
@@ -227,6 +343,10 @@ export class ErrorQueueService
 
 	/**
 	 * Generates a unique signature for an error for deduplication.
+	 * @param {CreateLogRequest} error
+	 * The error payload to generate a signature from.
+	 * @returns {string}
+	 * A deterministic signature string used for deduplication.
 	 */
 	private generateErrorSignature(error: CreateLogRequest): string
 	{
@@ -245,7 +365,11 @@ export class ErrorQueueService
 	}
 
 	/**
-	 * Checks if an error is a duplicate within the deduplication window.
+	 * Checks if an error is a duplicate within the deduplication window and updates tracking.
+	 * @param {CreateLogRequest} error
+	 * The error payload to check.
+	 * @returns {boolean}
+	 * True when the error is considered a duplicate within the dedupe window.
 	 */
 	private isDuplicate(error: CreateLogRequest): boolean
 	{
@@ -272,6 +396,9 @@ export class ErrorQueueService
 
 	/**
 	 * Removes old error signatures from tracking to prevent memory leaks.
+	 * @param {number} now
+	 * Current timestamp used to evaluate staleness.
+	 * @returns {void}
 	 */
 	private cleanupRecentErrors(now: number): void
 	{

@@ -24,6 +24,10 @@ import { NotificationService } from "@shared/services/notification.service";
 		templateUrl: "./forgot-password.html",
 		styleUrl: "./forgot-password.scss"
 	})
+/**
+ * Initiates email-based password reset and always shows a confirmation message
+ * to avoid disclosing whether an email address exists.
+ */
 export class ForgotPasswordComponent
 {
 	private readonly authService: AuthService =
@@ -31,15 +35,30 @@ export class ForgotPasswordComponent
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
+	/**
+	 * Email address entered by the user to request a password reset.
+	 * @type {string}
+	 */
 	protected email: string = "";
 
+	/**
+	 * Loading state while the password reset request is in-flight.
+	 * @type {WritableSignal<boolean>}
+	 */
 	protected readonly isLoading: WritableSignal<boolean> =
 		signal<boolean>(false);
+
+	/**
+	 * Whether the reset request has been submitted (controls confirmation UI).
+	 * @type {WritableSignal<boolean>}
+	 */
 	protected readonly submitted: WritableSignal<boolean> =
 		signal<boolean>(false);
 
 	/**
 	 * Validates email format using simple regex.
+	 * @returns {boolean}
+	 * True when `email` is a valid-looking address.
 	 */
 	protected isValidEmail(): boolean
 	{
@@ -49,7 +68,9 @@ export class ForgotPasswordComponent
 	}
 
 	/**
-	 * Submits the forgot password request.
+	 * Submits the forgot password request. Shows a confirmation message regardless
+	 * of outcome to avoid disclosing whether the email exists.
+	 * @returns {void}
 	 */
 	protected onSubmit(): void
 	{

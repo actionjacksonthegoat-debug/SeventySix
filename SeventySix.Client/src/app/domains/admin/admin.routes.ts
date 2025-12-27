@@ -16,6 +16,10 @@ import {
 } from "@admin/users/services";
 import { Routes } from "@angular/router";
 
+/**
+ * Admin feature routes including logs, users, and dashboard.
+ * Services are provided at route level to scope DI lifetimes per-feature.
+ */
 export const ADMIN_ROUTES: Routes =
 	[
 		{

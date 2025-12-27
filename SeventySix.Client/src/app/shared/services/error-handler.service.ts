@@ -18,32 +18,97 @@ import {
 	extractValidationErrors
 } from "@shared/utilities/http-error.utility";
 
+/**
+ * Structured error details produced by the global error handler.
+ */
 interface ErrorDetails
 {
+	/**
+	 * Human-readable message to display to users.
+	 * @type {string}
+	 */
 	message: string;
+
+	/**
+	 * Optional technical detail lines for diagnostics or copy-to-clipboard.
+	 * @type {string[] | undefined}
+	 */
 	details?: string[];
+
+	/**
+	 * Optional original Error instance when available.
+	 * @type {Error | undefined}
+	 */
 	error?: Error;
+
+	/**
+	 * Optional HTTP error response when the error originated from an HTTP call.
+	 * @type {HttpErrorResponse | undefined}
+	 */
 	httpError?: HttpErrorResponse;
 }
 
+/**
+ * Global error handler service.
+ * Catches unhandled errors, logs them, and notifies the user.
+ */
 @Injectable(
 	{
 		providedIn: "root"
 	})
 export class ErrorHandlerService implements ErrorHandler
 {
+	/**
+	 * Logger service for recording diagnostic messages and internal errors.
+	 * @type {LoggerService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly logger: LoggerService =
 		inject(LoggerService);
+
+	/**
+	 * Notification service used to show user-facing error messages.
+	 * @type {NotificationService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly notification: NotificationService =
 		inject(NotificationService);
+
+	/**
+	 * Client-side error logger that queues errors for server ingestion.
+	 * @type {ClientErrorLoggerService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly clientLogger: ClientErrorLoggerService =
 		inject(
 			ClientErrorLoggerService);
+
+	/**
+	 * Date service for timestamps and human-friendly time formatting.
+	 * @type {DateService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dateService: DateService =
 		inject(DateService);
 
+	/**
+	 * Re-entrancy guard to prevent recursive error handling.
+	 * @type {boolean}
+	 * @private
+	 */
 	private isHandlingError: boolean = false;
 
+	/**
+	 * Global error handler for the application.
+	 * This method is registered with Angular's ErrorHandler infrastructure.
+	 * @param {Error|HttpErrorResponse} error
+	 * The error to handle (can be a client Error or an HttpErrorResponse).
+	 * @returns {void}
+	 */
 	handleError(error: Error | HttpErrorResponse): void
 	{
 		if (this.isHandlingError)
@@ -78,6 +143,12 @@ export class ErrorHandlerService implements ErrorHandler
 		}
 	}
 
+	/**
+	 * Sends error details to the client-side logging queue for server ingestion.
+	 * @param {ErrorDetails} errorDetails
+	 * The structured error information collected by this handler.
+	 * @returns {void}
+	 */
 	private logToServer(errorDetails: ErrorDetails): void
 	{
 		if (errorDetails.httpError)
@@ -98,6 +169,14 @@ export class ErrorHandlerService implements ErrorHandler
 		}
 	}
 
+	/**
+	 * Notifies the user with a human-friendly message and optional technical details.
+	 * @param {Error|HttpErrorResponse} error
+	 * The original error instance.
+	 * @param {ErrorDetails} errorDetails
+	 * The structured error details to present to the user.
+	 * @returns {void}
+	 */
 	private notifyUser(
 		error: Error | HttpErrorResponse,
 		errorDetails: ErrorDetails): void
@@ -110,6 +189,13 @@ export class ErrorHandlerService implements ErrorHandler
 			copyData);
 	}
 
+	/**
+	 * Extracts structured error details from an Error or HttpErrorResponse.
+	 * @param {Error|HttpErrorResponse} error
+	 * The error to extract details from.
+	 * @returns {ErrorDetails}
+	 * Structured error details including user message and optional HTTP info.
+	 */
 	private extractErrorDetails(
 		error: Error | HttpErrorResponse): ErrorDetails
 	{
@@ -140,6 +226,16 @@ export class ErrorHandlerService implements ErrorHandler
 		};
 	}
 
+	/**
+	 * Appends HTTP-specific detail lines to the details array.
+	 * @param {HttpErrorResponse} error
+	 * The HTTP error response to inspect.
+	 * @param {string[]} details
+	 * Array to append extracted detail lines to.
+	 * @param {string} userMessage
+	 * The user-friendly message derived from status.
+	 * @returns {void}
+	 */
 	private extractHttpErrorDetails(
 		error: HttpErrorResponse,
 		details: string[],
@@ -167,6 +263,13 @@ export class ErrorHandlerService implements ErrorHandler
 		}
 	}
 
+	/**
+	 * Maps domain error types to user-friendly messages.
+	 * @param {Error} error
+	 * The error to map.
+	 * @returns {string}
+	 * The user-facing message appropriate for the error type.
+	 */
 	private getUserMessage(error: Error): string
 	{
 		if (error instanceof ValidationError)
@@ -210,6 +313,13 @@ export class ErrorHandlerService implements ErrorHandler
 			: error.message;
 	}
 
+	/**
+	 * Produces a user-friendly message for HTTP errors based on status code.
+	 * @param {HttpErrorResponse} error
+	 * The HTTP error response.
+	 * @returns {string}
+	 * The message suitable for display.
+	 */
 	private getHttpMessage(error: HttpErrorResponse): string
 	{
 		const statusMessages: Record<number, string> =
@@ -236,6 +346,15 @@ export class ErrorHandlerService implements ErrorHandler
 					: `HTTP ${error.status}: ${error.message}`));
 	}
 
+	/**
+	 * Builds a JSON string suitable for copy-to-clipboard diagnostic data.
+	 * @param {Error|HttpErrorResponse} error
+	 * The original error.
+	 * @param {ErrorDetails} errorDetails
+	 * Structured details previously extracted.
+	 * @returns {string}
+	 * JSON string with diagnostic information.
+	 */
 	private buildCopyData(
 		error: Error | HttpErrorResponse,
 		errorDetails: ErrorDetails): string

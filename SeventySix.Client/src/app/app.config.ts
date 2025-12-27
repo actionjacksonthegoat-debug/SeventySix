@@ -92,6 +92,10 @@ function initializeAuth(authService: AuthService)
 	};
 }
 
+/**
+ * Global application configuration for Angular `ApplicationConfig`.
+ * Registers providers: TanStack Query, HTTP interceptors, router, APP_INITIALIZER hooks, and debug/production services.
+ */
 export const appConfig: ApplicationConfig =
 	{
 		providers: [

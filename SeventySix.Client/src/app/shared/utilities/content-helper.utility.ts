@@ -9,7 +9,9 @@
  */
 
 /**
- * Layout dimension constants
+ * Layout dimension constants.
+ * @type {Readonly<{ HEADER_HEIGHT: number; BREADCRUMB_HEIGHT: number; FOOTER_HEIGHT: number; TOTAL_FIXED_HEIGHT: number; }>}
+ * Internal fixed dimensions used for layout calculations.
  */
 const LAYOUT_DIMENSIONS: {
 	readonly HEADER_HEIGHT: number;
@@ -18,29 +20,29 @@ const LAYOUT_DIMENSIONS: {
 	readonly TOTAL_FIXED_HEIGHT: number;
 } =
 	{
-	/**
-	 * Header height (mat-toolbar primary)
-	 * Desktop: 64px, Mobile: 56px
-	 * Using desktop value as default
-	 */
+		/**
+		 * Header height (mat-toolbar primary)
+		 * Desktop: 64px, Mobile: 56px
+		 * Using desktop value as default
+		 */
 		HEADER_HEIGHT: 64,
 
 		/**
-	 * Breadcrumb navigation height
-	 * Includes vertical padding (0.5rem * 2 = 16px) + content (~36px)
-	 * Total: ~52px
-	 */
+		 * Breadcrumb navigation height
+		 * Includes vertical padding (0.5rem * 2 = 16px) + content (~36px)
+		 * Total: ~52px
+		 */
 		BREADCRUMB_HEIGHT: 52,
 
 		/**
-	 * Footer height (mat-toolbar)
-	 * Min-height: 48px (can be taller on mobile with wrapped content)
-	 */
+		 * Footer height (mat-toolbar)
+		 * Min-height: 48px (can be taller on mobile with wrapped content)
+		 */
 		FOOTER_HEIGHT: 48,
 
 		/**
-	 * Total fixed layout height (header + breadcrumb + footer)
-	 */
+		 * Total fixed layout height (header + breadcrumb + footer)
+		 */
 		get TOTAL_FIXED_HEIGHT(): number
 		{
 			return this.HEADER_HEIGHT + this.BREADCRUMB_HEIGHT + this.FOOTER_HEIGHT;
@@ -49,9 +51,10 @@ const LAYOUT_DIMENSIONS: {
 
 /**
  * Calculates the available content height for scrollable content areas.
- *
- * @param offset - Additional offset to subtract (e.g., paginator height, padding)
- * @returns Available height in pixels for content area
+ * @param {number} offset
+ * Additional offset to subtract (e.g., paginator height, padding).
+ * @returns {number}
+ * Available height in pixels for content area (minimum 0).
  *
  * @example
  * ```typescript
@@ -76,8 +79,22 @@ export function getAvailableContentHeight(offset: number = 0): number
 }
 
 /**
- * Gets individual layout dimension values
- * Useful for component-specific calculations
+ * Gets individual layout dimension values.
+ * Useful for component-specific calculations.
+ *
+ * @type {{ headerHeight: number; breadcrumbHeight: number; footerHeight: number; totalFixedHeight: number; }}
+ *
+ * @property {number} headerHeight
+ * Header height in pixels (desktop default: 64px).
+ *
+ * @property {number} breadcrumbHeight
+ * Breadcrumb / navigation height in pixels (approx. 52px).
+ *
+ * @property {number} footerHeight
+ * Footer height in pixels (approx. 48px).
+ *
+ * @property {number} totalFixedHeight
+ * Total of header, breadcrumb and footer heights in pixels.
  */
 export const LayoutDimensions: {
 	readonly headerHeight: number;

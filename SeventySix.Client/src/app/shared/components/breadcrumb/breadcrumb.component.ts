@@ -13,11 +13,6 @@ import { RouterLink } from "@angular/router";
 import { BreadcrumbItem } from "@shared/models";
 import { filter, map, startWith } from "rxjs/operators";
 
-/**
- * Breadcrumb navigation component.
- * Automatically generates breadcrumbs from route hierarchy.
- * Uses Material buttons and icons for visual presentation.
- */
 @Component(
 	{
 		selector: "app-breadcrumb",
@@ -90,17 +85,44 @@ import { filter, map, startWith } from "rxjs/operators";
 	`,
 		changeDetection: ChangeDetectionStrategy.OnPush
 	})
+
+/**
+ * Breadcrumb navigation component.
+ *
+ * Automatically generates breadcrumbs from the active route hierarchy and
+ * exposes a `breadcrumbs` signal for template consumption.
+ *
+ * @remarks
+ * Uses `Router` events and a feature map to produce consistent labels and URLs.
+ */
 export class BreadcrumbComponent
 {
+	/**
+	 * Angular Router for navigation and current URL.
+	 * @type {Router}
+	 * @private
+	 * @readonly
+	 */
 	private readonly router: Router =
 		inject(Router);
+
+	/**
+	 * Activated route for inspecting route data when needed.
+	 * @type {ActivatedRoute}
+	 * @private
+	 * @readonly
+	 */
 	private readonly activatedRoute: ActivatedRoute =
 		inject(ActivatedRoute);
 
 	/**
-	 * Feature mapping configuration for breadcrumbs
+	 * Feature mapping configuration for breadcrumbs.
+	 * Maps top-level route segments to a display label and base URL.
+	 *
+	 * @type {Readonly<Record<string, { label: string; url: string; }>>}
+	 * @private
 	 */
-	private readonly featureMap: Record<string, { label: string; url: string; }> =
+	private readonly featureMap: Readonly<Record<string, { label: string; url: string; }>> =
 		{
 			game: { label: "Game", url: "/game" },
 			developer: { label: "Developer", url: "/developer" },
@@ -108,7 +130,10 @@ export class BreadcrumbComponent
 		};
 
 	/**
-	 * Signal tracking navigation events
+	 * Signal tracking navigation events and producing breadcrumb lists on navigation end.
+	 *
+	 * @type {Signal<BreadcrumbItem[]>}
+	 * @private
 	 */
 	private readonly navigationEnd$: Signal<BreadcrumbItem[]> =
 		toSignal(
@@ -122,14 +147,21 @@ export class BreadcrumbComponent
 			{ initialValue: [] });
 
 	/**
-	 * Computed breadcrumb items
+	 * Computed breadcrumb items exposed for template consumption.
+	 *
+	 * @type {Signal<BreadcrumbItem[]>}
+	 * @readonly
 	 */
 	readonly breadcrumbs: Signal<BreadcrumbItem[]> =
 		computed(
 			() => this.navigationEnd$());
 
 	/**
-	 * Builds breadcrumb items from current route hierarchy
+	 * Builds breadcrumb items from current route hierarchy.
+	 *
+	 * @returns {BreadcrumbItem[]}
+	 * Array of breadcrumb items starting with the Home item.
+	 * @private
 	 */
 	private buildBreadcrumbs(): BreadcrumbItem[]
 	{
@@ -151,7 +183,10 @@ export class BreadcrumbComponent
 
 	/**
 	 * Creates the home breadcrumb item.
-	 * @returns Home breadcrumb item
+	 *
+	 * @returns {BreadcrumbItem}
+	 * Home breadcrumb item used as the first breadcrumb in the list.
+	 * @private
 	 */
 	private createHomeBreadcrumb(): BreadcrumbItem
 	{
@@ -164,7 +199,10 @@ export class BreadcrumbComponent
 
 	/**
 	 * Gets URL segments from current route, filtered and cleaned.
-	 * @returns Array of URL segments
+	 *
+	 * @returns {string[]}
+	 * Array of URL segments (excluding empty segments).
+	 * @private
 	 */
 	private getUrlSegments(): string[]
 	{
@@ -178,8 +216,15 @@ export class BreadcrumbComponent
 
 	/**
 	 * Adds feature breadcrumb if the first segment matches a known feature.
-	 * @param breadcrumbs Breadcrumb array to modify
-	 * @param firstSegment First URL segment
+	 *
+	 * @param {BreadcrumbItem[]} breadcrumbs
+	 * Breadcrumb array to modify (will be appended to when a feature match is found).
+	 *
+	 * @param {string} firstSegment
+	 * First URL segment to test against the feature map.
+	 *
+	 * @returns {void}
+	 * @private
 	 */
 	private addFeatureBreadcrumb(
 		breadcrumbs: BreadcrumbItem[],
@@ -200,8 +245,15 @@ export class BreadcrumbComponent
 
 	/**
 	 * Adds sub-page breadcrumbs for remaining URL segments.
-	 * @param breadcrumbs Breadcrumb array to modify
-	 * @param urlSegments All URL segments
+	 *
+	 * @param {BreadcrumbItem[]} breadcrumbs
+	 * Breadcrumb array to modify.
+	 *
+	 * @param {string[]} urlSegments
+	 * All URL segments extracted from the current path.
+	 *
+	 * @returns {void}
+	 * @private
 	 */
 	private addSubPageBreadcrumbs(
 		breadcrumbs: BreadcrumbItem[],
@@ -254,6 +306,22 @@ export class BreadcrumbComponent
 
 	/**
 	 * Gets the label for a URL segment
+	 *
+	 * @param {string} url
+	 * The full accumulated URL up to this segment (e.g., '/admin/users').
+	 *
+	 * @param {string} segment
+	 * The segment text from the path (e.g., 'users' or '123').
+	 *
+	 * @param {string[]} _allSegments
+	 * All URL segments (unused but available for future rules).
+	 *
+	 * @param {number} _index
+	 * Index of this segment within the full segments array.
+	 *
+	 * @returns {string}
+	 * Display label for the segment (custom mapping, 'Details' for numeric ids, or formatted text).
+	 * @private
 	 */
 	private getSegmentLabel(
 		url: string,
@@ -289,7 +357,14 @@ export class BreadcrumbComponent
 	}
 
 	/**
-	 * Formats path segment into readable label
+	 * Formats path segment into readable label.
+	 *
+	 * @param {string} segment
+	 * The raw path segment to format (may contain route parameter tokens).
+	 *
+	 * @returns {string}
+	 * Readable label for display in breadcrumbs (Title Case, 'Details' fallback).
+	 * @private
 	 */
 	private formatPathSegment(segment: string): string
 	{

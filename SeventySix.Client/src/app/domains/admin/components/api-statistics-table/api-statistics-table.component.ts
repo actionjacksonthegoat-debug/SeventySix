@@ -47,31 +47,50 @@ interface ThirdPartyApiRequestDisplay extends ThirdPartyApiRequestResponse
 	})
 export class ApiStatisticsTableComponent
 {
+	/**
+	 * Service for retrieving third-party API statistics and performing related operations.
+	 * @type {ThirdPartyApiService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly thirdPartyApiService: ThirdPartyApiService =
 		inject(ThirdPartyApiService);
+
+	/**
+	 * Date service used to compute relative times and format timestamps for display.
+	 * @type {DateService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dateService: DateService =
 		inject(DateService);
 
-	/** Skeleton theme for table cells. */
+	/**
+	 * Skeleton theme for table cells.
+	 * @type {SkeletonTheme}
+	 */
 	readonly skeletonTableCell: SkeletonTheme =
 		SKELETON_TABLE_CELL;
 
 	/**
-	 * TanStack Query for API data
+	 * TanStack Query for API data (contains data/isLoading/error flags).
+	 * @type {ReturnType<ThirdPartyApiService["getAllThirdPartyApis"]>}
 	 */
 	readonly apiDataQuery: ReturnType<
 		ThirdPartyApiService["getAllThirdPartyApis"]> =
 		this.thirdPartyApiService.getAllThirdPartyApis();
 
 	/**
-	 * Loading state from query
+	 * Loading state derived from the query.
+	 * @type {Signal<boolean>}
 	 */
 	readonly isLoading: Signal<boolean> =
 		computed(
 			() => this.apiDataQuery.isLoading());
 
 	/**
-	 * Error state from query
+	 * Human-friendly error message for display when the query fails.
+	 * @type {Signal<string | null>}
 	 */
 	readonly error: Signal<string | null> =
 		computed(
@@ -83,7 +102,8 @@ export class ApiStatisticsTableComponent
 			});
 
 	/**
-	 * Data source with computed display properties
+	 * Data source with computed display properties (formatted dates and status).
+	 * @type {Signal<MatTableDataSource<ThirdPartyApiRequestDisplay>>}
 	 */
 	readonly dataSource: Signal<
 		MatTableDataSource<ThirdPartyApiRequestDisplay>> =
@@ -104,6 +124,7 @@ export class ApiStatisticsTableComponent
 
 	/**
 	 * Displayed columns
+	 * @type {WritableSignal<string[]>}
 	 */
 	readonly displayedColumns: WritableSignal<string[]> =
 		signal<string[]>(
@@ -114,7 +135,8 @@ export class ApiStatisticsTableComponent
 			]);
 
 	/**
-	 * Handle refresh button click
+	 * Refresh the API data query.
+	 * @returns {void}
 	 */
 	onRefresh(): void
 	{
@@ -122,7 +144,11 @@ export class ApiStatisticsTableComponent
 	}
 
 	/**
-	 * Get status based on last called timestamp
+	 * Determine a status value (ok|warning|error) based on hours since last call.
+	 * @param {string | null | undefined} timestamp
+	 * ISO timestamp when API was last called.
+	 * @returns {string}
+	 * Status string used for UI badges ('ok'|'warning'|'error').
 	 */
 	getStatus(timestamp: string | null | undefined): string
 	{
@@ -137,7 +163,11 @@ export class ApiStatisticsTableComponent
 	}
 
 	/**
-	 * Format last called timestamp
+	 * Format the last called timestamp as a human-readable relative string.
+	 * @param {string | null | undefined} timestamp
+	 * ISO timestamp or null.
+	 * @returns {string}
+	 * Human-friendly relative time or 'Never'.
 	 */
 	formatLastCalled(timestamp: string | null | undefined): string
 	{

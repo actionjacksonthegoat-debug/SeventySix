@@ -23,27 +23,50 @@ import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 	})
 export class LayoutService
 {
+	/**
+	 * Platform identifier token from Angular DI (used to detect server vs browser).
+	 * @type {Object}
+	 * @private
+	 * @readonly
+	 */
 	private platformId: Object =
 		inject(PLATFORM_ID);
+
+	/**
+	 * Breakpoint observer for responsive breakpoint detection.
+	 * @type {BreakpointObserver}
+	 * @private
+	 * @readonly
+	 */
 	private breakpointObserver: BreakpointObserver =
 		inject(BreakpointObserver);
+
+	/**
+	 * Session storage key for persisting sidebar expanded state within a browser session.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly SIDEBAR_SESSION_KEY: string = "seventysix-sidebar-session";
 
 	/**
-	 * Sidebar expanded state
-	 * Always starts open on fresh page load/refresh
-	 * Only persists closed state within the same session
+	 * Sidebar expanded state.
+	 * Always starts open on fresh page load/refresh.
+	 * Only persists closed state within the same session.
+	 * @type {ReturnType<typeof signal<boolean>>}
 	 */
 	sidebarExpanded: ReturnType<typeof signal<boolean>> =
 		signal<boolean>(
 			this.getSessionSidebarState());
 
 	/**
-	 * Observe responsive breakpoints
+	 * Observe responsive breakpoints.
 	 * Using Angular CDK Breakpoints constants:
 	 * - XSmall: (max-width: 599.98px) - Mobile phones
 	 * - Small: (min-width: 600px) and (max-width: 959.98px) - Tablets
 	 * - Medium and above: (min-width: 960px) - Laptop and desktop
+	 * @type {ReturnType<typeof this.breakpointObserver.observe>}
+	 * @private
 	 */
 	private breakpoints$: ReturnType<typeof this.breakpointObserver.observe> =
 		this.breakpointObserver.observe(
@@ -55,6 +78,10 @@ export class LayoutService
 				Breakpoints.XLarge // (min-width: 1920px)
 			]);
 
+	/**
+	 * Signal representing the current breakpoint state.
+	 * @type {ReturnType<typeof toSignal<BreakpointState>>}
+	 */
 	breakpoints: ReturnType<typeof toSignal<BreakpointState>> =
 		toSignal(
 			this.breakpoints$,
@@ -63,7 +90,9 @@ export class LayoutService
 			});
 
 	/**
-	 * Computed values for responsive behavior
+	 * Computed values for responsive behavior.
+	 * @type {ReturnType<typeof computed<boolean>>}
+	 * @readonly
 	 */
 	isMobile: ReturnType<typeof computed<boolean>> =
 		computed(
@@ -76,6 +105,11 @@ export class LayoutService
 				return !!bp[Breakpoints.XSmall];
 			});
 
+	/**
+	 * Computed values for responsive behavior.
+	 * @type {ReturnType<typeof computed<boolean>>}
+	 * @readonly
+	 */
 	isTablet: ReturnType<typeof computed<boolean>> =
 		computed(
 			() =>
@@ -87,6 +121,11 @@ export class LayoutService
 				return !!bp[Breakpoints.Small];
 			});
 
+	/**
+	 * Computed values for responsive behavior.
+	 * @type {ReturnType<typeof computed<boolean>>}
+	 * @readonly
+	 */
 	isLaptop: ReturnType<typeof computed<boolean>> =
 		computed(
 			() =>
@@ -98,6 +137,11 @@ export class LayoutService
 				return !!bp[Breakpoints.Medium];
 			});
 
+	/**
+	 * Computed values for responsive behavior.
+	 * @type {ReturnType<typeof computed<boolean>>}
+	 * @readonly
+	 */
 	isDesktop: ReturnType<typeof computed<boolean>> =
 		computed(
 			() =>
@@ -109,6 +153,11 @@ export class LayoutService
 				return !!bp[Breakpoints.Large] || !!bp[Breakpoints.XLarge];
 			});
 
+	/**
+	 * Computed values for responsive behavior.
+	 * @type {ReturnType<typeof computed<boolean>>}
+	 * @readonly
+	 */
 	isXLarge: ReturnType<typeof computed<boolean>> =
 		computed(
 			() =>
@@ -121,7 +170,9 @@ export class LayoutService
 			});
 
 	/**
-	 * Helper: Is screen size 600px or larger (tablet and above)
+	 * Helper: Is screen size 600px or larger (tablet and above).
+	 * @type {ReturnType<typeof computed<boolean>>}
+	 * @readonly
 	 */
 	isTabletOrLarger: ReturnType<typeof computed<boolean>> =
 		computed(
@@ -131,7 +182,9 @@ export class LayoutService
 			});
 
 	/**
-	 * Helper: Is screen size below 960px (mobile and tablet)
+	 * Helper: Is screen size below 960px (mobile and tablet).
+	 * @type {ReturnType<typeof computed<boolean>>}
+	 * @readonly
 	 */
 	isBelowLaptop: ReturnType<typeof computed<boolean>> =
 		computed(
@@ -141,7 +194,9 @@ export class LayoutService
 			});
 
 	/**
-	 * Helper: Is screen size 960px or larger (laptop and desktop)
+	 * Helper: Is screen size 960px or larger (laptop and desktop).
+	 * @type {ReturnType<typeof computed<boolean>>}
+	 * @readonly
 	 */
 	isLaptopOrLarger: ReturnType<typeof computed<boolean>> =
 		computed(
@@ -154,6 +209,8 @@ export class LayoutService
 	 * Sidebar mode based on screen size
 	 * - Below 960px: 'over' (overlay, full-width content)
 	 * - 960px and above: 'side' (push content)
+	 * @type {ReturnType<typeof computed<"over" | "side">>}
+	 * @readonly
 	 */
 	sidebarMode: ReturnType<typeof computed<"over" | "side">> =
 		computed(
@@ -167,9 +224,11 @@ export class LayoutService
 			});
 
 	/**
-	 * Whether sidebar should be opened
-	 * On mobile/tablet: closed by default, managed by gestures/backdrop
-	 * On desktop: always starts open, only toggled via header
+	 * Whether sidebar should be opened.
+	 * On mobile/tablet: closed by default, managed by gestures/backdrop.
+	 * On desktop: always starts open, only toggled via header.
+	 * @type {ReturnType<typeof computed<boolean>>}
+	 * @readonly
 	 */
 	sidebarOpened: ReturnType<typeof computed<boolean>> =
 		computed(
@@ -179,7 +238,8 @@ export class LayoutService
 			});
 
 	/**
-	 * Toggle sidebar expanded state
+	 * Toggle sidebar expanded state.
+	 * @returns {void}
 	 */
 	toggleSidebar(): void
 	{
@@ -189,7 +249,10 @@ export class LayoutService
 	}
 
 	/**
-	 * Set sidebar expanded state
+	 * Set sidebar expanded state.
+	 * @param {boolean} expanded
+	 * Whether the sidebar should be expanded (true) or collapsed (false).
+	 * @returns {void}
 	 */
 	setSidebarExpanded(expanded: boolean): void
 	{
@@ -198,7 +261,8 @@ export class LayoutService
 	}
 
 	/**
-	 * Close sidebar (useful for mobile after navigation)
+	 * Close sidebar (useful for mobile after navigation).
+	 * @returns {void}
 	 */
 	closeSidebar(): void
 	{
@@ -207,7 +271,8 @@ export class LayoutService
 	}
 
 	/**
-	 * Open sidebar
+	 * Open sidebar.
+	 * @returns {void}
 	 */
 	openSidebar(): void
 	{
@@ -216,9 +281,11 @@ export class LayoutService
 	}
 
 	/**
-	 * Get sidebar state for current session
-	 * Always returns true (open) on fresh page load/refresh
-	 * Uses sessionStorage to track user's explicit close action within session
+	 * Get sidebar state for current session.
+	 * Always returns true (open) on fresh page load/refresh.
+	 * Uses sessionStorage to track the user's explicit close action within the session.
+	 * @returns {boolean}
+	 * True when sidebar is considered open for the current session.
 	 */
 	private getSessionSidebarState(): boolean
 	{
@@ -245,8 +312,11 @@ export class LayoutService
 	}
 
 	/**
-	 * Save sidebar state to sessionStorage
-	 * Only tracks within current browser session
+	 * Save sidebar state to sessionStorage.
+	 * Only tracks within the current browser session.
+	 * @param {boolean} expanded
+	 * Whether the sidebar is expanded.
+	 * @returns {void}
 	 */
 	private saveSessionSidebarState(expanded: boolean): void
 	{

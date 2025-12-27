@@ -43,30 +43,82 @@ import { NotificationService } from "@shared/services/notification.service";
 	})
 export class LogList
 {
+	/**
+	 * Service that provides log-related data and mutations.
+	 * @type {LogManagementService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly logService: LogManagementService =
 		inject(LogManagementService);
+
+	/**
+	 * Angular DatePipe used for formatting dates in the table.
+	 * @type {DatePipe}
+	 * @private
+	 * @readonly
+	 */
 	private readonly datePipe: DatePipe =
 		inject(DatePipe);
+
+	/**
+	 * Material dialog service used to open detail dialogs for logs.
+	 * @type {MatDialog}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dialog: MatDialog =
 		inject(MatDialog);
+
+	/**
+	 * Dialog utility service for confirmations and prompts.
+	 * @type {DialogService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dialogService: DialogService =
 		inject(DialogService);
+
+	/**
+	 * Notification service used to display success/error toasts.
+	 * @type {NotificationService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
 
-	// TanStack Query
+	/**
+	 * TanStack Query object for fetching paged logs.
+	 * Contains `data`, `isLoading`, and `error` flags.
+	 * @type {ReturnType<typeof this.logService.getLogs>}
+	 */
 	readonly logsQuery: ReturnType<typeof this.logService.getLogs> =
 		this.logService.getLogs();
 
-	// Mutations
+	/**
+	 * Mutation for deleting a single log entry.
+	 * @type {ReturnType<typeof this.logService.deleteLog>}
+	 * @private
+	 */
 	private readonly deleteLogMutation: ReturnType<
 		typeof this.logService.deleteLog> =
 		this.logService.deleteLog();
+
+	/**
+	 * Mutation for deleting multiple logs in a batch.
+	 * @type {ReturnType<typeof this.logService.deleteLogs>}
+	 * @private
+	 */
 	private readonly deleteLogsMutation: ReturnType<
 		typeof this.logService.deleteLogs> =
 		this.logService.deleteLogs();
 
 	// Table column definitions
+	/**
+	 * Columns configuration for the logs data table.
+	 * @type {TableColumn<LogDto>[]}
+	 */
 	readonly columns: TableColumn<LogDto>[] =
 		[
 			{
@@ -138,6 +190,10 @@ export class LogList
 		];
 
 	// Quick filters
+	/**
+	 * Predefined quick filters for log levels (All/Warnings/Errors).
+	 * @type {QuickFilter<LogDto>[]}
+	 */
 	readonly quickFilters: QuickFilter<LogDto>[] =
 		[
 			{
@@ -173,6 +229,10 @@ export class LogList
 		];
 
 	// Row actions (view handled by rowClick)
+	/**
+	 * Row-level actions available for each log row (view/delete).
+	 * @type {RowAction<LogDto>[]}
+	 */
 	readonly rowActions: RowAction<LogDto>[] =
 		[
 			{
@@ -184,6 +244,10 @@ export class LogList
 		];
 
 	// Bulk actions
+	/**
+	 * Bulk actions for selected rows (e.g., delete selected).
+	 * @type {BulkAction[]}
+	 */
 	readonly bulkActions: BulkAction[] =
 		[
 			{
@@ -196,43 +260,88 @@ export class LogList
 		];
 
 	// Computed signals
+	/**
+	 * Computed array of currently visible logs for the table.
+	 * @type {Signal<LogDto[]>}
+	 */
 	readonly data: Signal<LogDto[]> =
 		computed(
 			(): LogDto[] =>
 				(this.logsQuery.data()?.items as LogDto[]) ?? []);
+
+	/**
+	 * Total number of logs for pagination and header display.
+	 * @type {Signal<number>}
+	 */
 	readonly totalCount: Signal<number> =
 		computed(
 			(): number =>
 				this.logsQuery.data()?.totalCount ?? 0);
+
+	/**
+	 * Current paginator zero-based page index.
+	 * @type {Signal<number>}
+	 */
 	readonly pageIndex: Signal<number> =
 		computed(
 			(): number =>
 				(this.logsQuery.data()?.page ?? 1) - 1);
+
+	/**
+	 * Current page size for pagination.
+	 * @type {Signal<number>}
+	 */
 	readonly pageSize: Signal<number> =
 		computed(
 			(): number =>
 				this.logsQuery.data()?.pageSize ?? 25);
+
+	/**
+	 * Loading state for the logs query used to show spinners.
+	 * @type {Signal<boolean>}
+	 */
 	readonly isLoading: Signal<boolean> =
 		computed(
 			(): boolean =>
 				this.logsQuery.isLoading());
+
+	/**
+	 * Error message to display if the logs query fails.
+	 * @type {Signal<string | null>}
+	 */
 	readonly error: Signal<string | null> =
 		computed(
 			(): string | null =>
 				this.logsQuery.error() ? "Failed to load logs" : null);
 
 	// Event handlers
+	/**
+	 * Apply a text search filter to the logs list.
+	 * @param {string} searchText
+	 * Text to search for in log messages and properties.
+	 * @returns {void}
+	 */
 	onSearch(searchText: string): void
 	{
 		this.logService.updateFilter(
 			{ searchTerm: searchText || undefined });
 	}
 
+	/**
+	 * Forces a refresh of the log query (bypassing cache).
+	 * @returns {void}
+	 */
 	onRefresh(): void
 	{
 		void this.logService.forceRefresh();
 	}
 
+	/**
+	 * Change the active quick filter (all, warnings, errors).
+	 * @param {FilterChangeEvent} event
+	 * Details about the clicked filter.
+	 * @returns {void}
+	 */
 	onFilterChange(event: FilterChangeEvent): void
 	{
 		// Always apply the filter that was clicked (single selection mode)
@@ -261,6 +370,12 @@ export class LogList
 			{ logLevel });
 	}
 
+	/**
+	 * Update the log date range filter.
+	 * @param {DateRangeEvent} event
+	 * Contains selected start and end dates.
+	 * @returns {void}
+	 */
 	onDateRangeChange(event: DateRangeEvent): void
 	{
 		// Update filter with date range
@@ -271,6 +386,12 @@ export class LogList
 			});
 	}
 
+	/**
+	 * Update sorting parameters for the log query.
+	 * @param {SortChangeEvent} event
+	 * Sort field and direction.
+	 * @returns {void}
+	 */
 	onSortChange(event: SortChangeEvent): void
 	{
 		this.logService.updateFilter(
@@ -280,6 +401,12 @@ export class LogList
 			});
 	}
 
+	/**
+	 * Handle row actions like view and delete.
+	 * @param {RowActionEvent<LogDto>} event
+	 * The row action event payload.
+	 * @returns {void}
+	 */
 	onRowAction(event: RowActionEvent<LogDto>): void
 	{
 		switch (event.action)
@@ -293,6 +420,12 @@ export class LogList
 		}
 	}
 
+	/**
+	 * Handle bulk actions on selected rows (e.g., delete selected).
+	 * @param {BulkActionEvent<LogDto>} event
+	 * The bulk action event payload.
+	 * @returns {void}
+	 */
 	onBulkAction(event: BulkActionEvent<LogDto>): void
 	{
 		switch (event.action)
@@ -303,19 +436,33 @@ export class LogList
 		}
 	}
 
+	/**
+	 * Change page index for pagination.
+	 * @param {number} pageIndex
+	 * Zero-based page index selected by the paginator.
+	 * @returns {void}
+	 */
 	onPageChange(pageIndex: number): void
 	{
 		this.logService.setPage(pageIndex + 1);
 	}
 
+	/**
+	 * Change page size for pagination.
+	 * @param {number} pageSize
+	 * New page size selected by the user.
+	 * @returns {void}
+	 */
 	onPageSizeChange(pageSize: number): void
 	{
 		this.logService.setPageSize(pageSize);
 	}
 
 	/**
-	 * Handles row click to open log details dialog
-	 * @param log - The clicked log row
+	 * Handles row click to open log details dialog.
+	 * @param {LogDto} log
+	 * The clicked log row.
+	 * @returns {void}
 	 */
 	onRowClick(log: LogDto): void
 	{
@@ -323,8 +470,10 @@ export class LogList
 	}
 
 	/**
-	 * Opens the log detail dialog to view full log information
-	 * @param log - The log entry to display
+	 * Opens the log detail dialog to view full log information.
+	 * @param {LogDto} log
+	 * The log entry to display.
+	 * @returns {void}
 	 */
 	private viewLogDetails(log: LogDto): void
 	{
@@ -360,9 +509,11 @@ export class LogList
 	}
 
 	/**
-	 * Deletes a single log entry
-	 * Shows confirmation and handles success/error states
-	 * @param id - The log ID to delete
+	 * Deletes a single log entry after user confirmation.
+	 * Shows confirmation dialog and notifies on success or error.
+	 * @param {number} id
+	 * The log ID to delete.
+	 * @returns {void}
 	 */
 	private deleteLog(id: number): void
 	{
@@ -394,9 +545,10 @@ export class LogList
 	}
 
 	/**
-	 * Deletes multiple log entries in batch
-	 * Shows confirmation and handles success/error states
-	 * @param ids - Array of log IDs to delete
+	 * Deletes multiple log entries in batch after confirmation.
+	 * @param {number[]} ids
+	 * Array of log IDs to delete.
+	 * @returns {void}
 	 */
 	private deleteLogs(ids: number[]): void
 	{

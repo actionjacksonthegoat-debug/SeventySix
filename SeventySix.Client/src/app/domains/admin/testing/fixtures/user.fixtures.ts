@@ -15,6 +15,8 @@ export class UserFixtures
 	/**
 	 * Standard test user - John Doe
 	 * Active user with admin privileges
+	 *
+	 * @type {UserDto}
 	 */
 	static readonly JOHN_DOE: UserDto =
 		{
@@ -37,6 +39,8 @@ export class UserFixtures
 	/**
 	 * Standard test user - Jane Smith
 	 * Inactive user for testing filter states
+	 *
+	 * @type {UserDto}
 	 */
 	static readonly JANE_SMITH: UserDto =
 		{
@@ -60,8 +64,10 @@ export class UserFixtures
 	 * Create a custom user with optional overrides
 	 * Uses JOHN_DOE as base template
 	 *
-	 * @param overrides - Partial user properties to override
-	 * @returns User object with merged properties
+	 * @param {Partial<UserDto>} overrides
+	 * Partial user properties to override
+	 * @returns {UserDto}
+	 * User object with merged properties
 	 *
 	 * @example
 	 * const inactiveUser = UserFixtures.createUser({ isActive: false });
@@ -76,8 +82,10 @@ export class UserFixtures
 	 * Create multiple users with incremental IDs
 	 * Useful for testing pagination and lists
 	 *
-	 * @param count - Number of users to create
-	 * @returns Array of user objects
+	 * @param {number} count
+	 * Number of users to create
+	 * @returns {UserDto[]}
+	 * Array of user objects
 	 *
 	 * @example
 	 * const users = UserFixtures.createUsers(50); // For pagination tests
@@ -100,7 +108,8 @@ export class UserFixtures
 	 * Get array of predefined test users
 	 * Includes both active and inactive users
 	 *
-	 * @returns Array containing JOHN_DOE and JANE_SMITH
+	 * @returns {UserDto[]}
+	 * Array containing JOHN_DOE and JANE_SMITH
 	 */
 	static getAll(): UserDto[]
 	{

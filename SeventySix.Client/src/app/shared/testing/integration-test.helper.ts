@@ -25,8 +25,10 @@ type TestCallback = () => void | Promise<void>;
  *   });
  * });
  *
- * @param description - Test suite description
- * @param specDefinitions - Test suite implementation
+ * @param {string} description
+ * Test suite description
+ * @param {() => void} specDefinitions
+ * Test suite implementation
  */
 export function describeIntegration(
 	description: string,
@@ -46,9 +48,12 @@ export function describeIntegration(
 /**
  * Helper function to conditionally run individual integration tests
  *
- * @param expectation - Test expectation description
- * @param assertion - Test implementation
- * @param timeout - Optional timeout in milliseconds
+ * @param {string} expectation
+ * Test expectation description
+ * @param {TestCallback | undefined} assertion
+ * Test implementation
+ * @param {number | undefined} timeout
+ * Optional timeout in milliseconds
  */
 export function itIntegration(
 	expectation: string,
@@ -69,8 +74,10 @@ export function itIntegration(
 /**
  * Helper function to conditionally focus on integration test suite
  *
- * @param description - Test suite description
- * @param specDefinitions - Test suite implementation
+ * @param {string} description
+ * Test suite description
+ * @param {() => void} specDefinitions
+ * Test suite implementation
  */
 export function fdescribeIntegration(
 	description: string,
@@ -89,9 +96,12 @@ export function fdescribeIntegration(
 /**
  * Helper function to conditionally focus on individual integration test
  *
- * @param expectation - Test expectation description
- * @param assertion - Test implementation
- * @param timeout - Optional timeout in milliseconds
+ * @param {string} expectation
+ * Test expectation description
+ * @param {TestCallback | undefined} assertion
+ * Test implementation
+ * @param {number | undefined} timeout
+ * Optional timeout in milliseconds
  */
 export function fitIntegration(
 	expectation: string,
@@ -112,7 +122,8 @@ export function fitIntegration(
  * Check if integration tests should run
  * Useful for conditional test setup
  *
- * @returns true if integration tests are enabled
+ * @returns {boolean}
+ * True if integration tests are enabled
  */
 export function shouldRunIntegrationTests(): boolean
 {

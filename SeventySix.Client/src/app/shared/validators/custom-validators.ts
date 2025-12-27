@@ -4,7 +4,13 @@ import { isNullOrUndefined, isNullOrWhitespace } from "@shared/utilities/null-ch
 
 /**
  * Validator for date ranges.
- * Ensures date is within min/max range.
+ * Ensures a control's value falls within the provided min/max bounds.
+ * @param {Date | undefined} min
+ * Minimum allowed date (inclusive). When omitted, no lower bound is applied.
+ * @param {Date | undefined} max
+ * Maximum allowed date (inclusive). When omitted, no upper bound is applied.
+ * @returns {ValidatorFn}
+ * Angular `ValidatorFn` that returns `ValidationErrors` when validation fails or `null` when valid.
  */
 export function dateRangeValidator(min?: Date, max?: Date): ValidatorFn
 {
@@ -44,6 +50,13 @@ export function dateRangeValidator(min?: Date, max?: Date): ValidatorFn
 
 /**
  * Validator for string length constraints.
+ * Ensures a control's string length is within the optional min/max bounds.
+ * @param {number | undefined} min
+ * Minimum allowed length (inclusive). When omitted, no minimum is enforced.
+ * @param {number | undefined} max
+ * Maximum allowed length (inclusive). When omitted, no maximum is enforced.
+ * @returns {ValidatorFn}
+ * Angular `ValidatorFn` that returns `ValidationErrors` when validation fails or `null` when valid.
  */
 export function stringLengthValidator(min?: number, max?: number): ValidatorFn
 {
@@ -73,7 +86,11 @@ export function stringLengthValidator(min?: number, max?: number): ValidatorFn
 
 /**
  * Validator for future dates.
- * Ensures date is in the future.
+ * Ensures a control's date value is today or in the future.
+ * @param {DateService} dateService
+ * DateService instance used to normalize and compare dates in UTC.
+ * @returns {ValidatorFn}
+ * Angular `ValidatorFn` that returns `ValidationErrors` when the date is before today or `null` when valid.
  */
 export function futureDateValidator(dateService: DateService): ValidatorFn
 {
@@ -105,7 +122,11 @@ export function futureDateValidator(dateService: DateService): ValidatorFn
 }
 
 /**
- * Validator for required if another field has value.
+ * Validator that enforces a field to be required when another field has a value.
+ * @param {string} dependentFieldName
+ * The name of the dependent form control to inspect in the same parent FormGroup.
+ * @returns {ValidatorFn}
+ * Angular `ValidatorFn` that returns `ValidationErrors` when the target field is empty while the dependent field has a value, or `null` when valid.
  */
 export function requiredIfValidator(dependentFieldName: string): ValidatorFn
 {
@@ -133,7 +154,11 @@ export function requiredIfValidator(dependentFieldName: string): ValidatorFn
 }
 
 /**
- * Validator for matching fields (e.g., password confirmation).
+ * Validator that requires a control's value to match another control's value (e.g., password confirmation).
+ * @param {string} matchFieldName
+ * The name of the control to match against within the same parent FormGroup.
+ * @returns {ValidatorFn}
+ * Angular `ValidatorFn` that returns `ValidationErrors` when values differ or `null` when they match.
  */
 export function matchFieldValidator(matchFieldName: string): ValidatorFn
 {

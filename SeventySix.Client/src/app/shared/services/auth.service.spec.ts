@@ -744,8 +744,10 @@ describe("AuthService",
 
 /**
  * Creates a mock JWT token for testing.
- * @param payload - JWT payload with claims
- * @returns Base64-encoded JWT string
+ * @param {Record<string, string | string[] | number>} payload
+ * JWT payload with claims
+ * @returns {string}
+ * Base64-encoded JWT string
  */
 function createMockJwt(payload: Record<string, string | string[] | number>): string
 {
@@ -777,9 +779,12 @@ const DEFAULT_JWT_PAYLOAD: Record<string, string | string[]> =
 
 /**
  * Creates a standard mock auth response for testing.
- * @param jwtOverrides - Optional JWT payload overrides
- * @param responseOverrides - Optional response field overrides
- * @returns AuthResponse with default test values
+ * @param {Record<string, string | string[]>} jwtOverrides
+ * Optional JWT payload overrides
+ * @param {Partial<Omit<AuthResponse, "accessToken">>} responseOverrides
+ * Optional response field overrides
+ * @returns {AuthResponse}
+ * AuthResponse with default test values
  */
 function createMockAuthResponse(
 	jwtOverrides: Record<string, string | string[]> = {},

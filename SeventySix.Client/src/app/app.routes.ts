@@ -6,14 +6,9 @@ import {
 import { roleGuard } from "@shared/guards/role.guard";
 
 /**
- * Application routes with lazy loading.
- * All feature modules are lazy-loaded as bounded contexts.
- * Each feature has its own routes file for easy enable/disable.
- *
- * Access Levels:
- * - Public: No guard (guest access)
- * - Authenticated: roleGuard() - any logged-in user
- * - Role-based: roleGuard("Admin") or roleGuard("Developer", "Admin")
+ * Application route configuration.
+ * Defines public, authenticated, admin, and developer routes and their lazy-loading behavior.
+ * Use `roleGuard()` to secure routes where necessary.
  */
 export const routes: Routes =
 	[
@@ -81,8 +76,6 @@ export const routes: Routes =
 			canActivate: [roleGuard(ROLE_DEVELOPER)],
 			data: { breadcrumb: "Developer" }
 		},
-
-		// Error pages route removed - handled by wildcard fallback
 
 		// Fallback
 		{

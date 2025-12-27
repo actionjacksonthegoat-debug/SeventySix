@@ -12,6 +12,9 @@ import { Notification } from "@shared/models";
 /**
  * Notification system configuration.
  * Private to NotificationService - implementation detail.
+ *
+ * @type {Readonly<{ maxVisible: number; }>}
+ * @property {number} maxVisible - Maximum number of concurrently visible notifications.
  */
 const NOTIFICATION_CONFIG: Readonly<{
 	maxVisible: number;
@@ -23,6 +26,8 @@ const NOTIFICATION_CONFIG: Readonly<{
 /**
  * Notification duration constants (milliseconds).
  * Private to NotificationService - external code should not need to know about timing.
+ *
+ * @type {Readonly<{ success: number; error: number; warning: number; info: number; concurrencyError: number; }>}
  */
 const NOTIFICATION_DURATION: Readonly<{
 	success: number;
@@ -50,16 +55,43 @@ const NOTIFICATION_DURATION: Readonly<{
 	})
 export class NotificationService
 {
+	/**
+	 * Angular destroy reference for cleanup on service destroy.
+	 * @type {DestroyRef}
+	 * @private
+	 * @readonly
+	 */
 	private readonly destroyRef: DestroyRef =
 		inject(DestroyRef);
 
+	/**
+	 * Current notifications list signal.
+	 * @type {WritableSignal<Notification[]>}
+	 * @private
+	 */
 	private readonly notifications: WritableSignal<Notification[]> =
 		signal<
 			Notification[]>([]);
+
+	/**
+	 * Timers for auto-dismissal keyed by notification id.
+	 * @type {Map<string, ReturnType<typeof globalThis.setTimeout>>}
+	 * @private
+	 */
 	private readonly dismissTimers: Map<string, ReturnType<typeof globalThis.setTimeout>> =
 		new Map();
+
+	/**
+	 * Incremental id counter for notifications.
+	 * @type {number}
+	 * @private
+	 */
 	private idCounter: number = 0;
 
+	/**
+	 * Initialize NotificationService and cleanup on destroy.
+	 * @returns {void}
+	 */
 	constructor()
 	{
 		this.destroyRef.onDestroy(
@@ -73,12 +105,18 @@ export class NotificationService
 
 	/**
 	 * Read-only signal of current notifications.
+	 * @type {Signal<Notification[]>}
 	 */
 	readonly readonlyNotifications: Signal<Notification[]> =
 		this.notifications.asReadonly();
 
 	/**
 	 * Shows a success notification.
+	 * @param {string} message
+	 * The message to display to the user.
+	 * @param {number} duration
+	 * Display duration in milliseconds. Defaults to success duration.
+	 * @returns {void}
 	 */
 	success(message: string, duration: number = NOTIFICATION_DURATION.success): void
 	{
@@ -91,7 +129,16 @@ export class NotificationService
 	}
 
 	/**
-	 * Shows a success notification with details.
+	 * Shows a success notification with additional details and optional copy data.
+	 * @param {string} message
+	 * The main message to display.
+	 * @param {string[]} details
+	 * Optional lines of detail shown to the user.
+	 * @param {string} copyData
+	 * Optional diagnostic data available for copy-to-clipboard.
+	 * @param {number} duration
+	 * Display duration in milliseconds.
+	 * @returns {void}
 	 */
 	successWithDetails(
 		message: string,
@@ -108,7 +155,12 @@ export class NotificationService
 	}
 
 	/**
-	 * Shows an info notification.
+	 * Shows an informational notification.
+	 * @param {string} message
+	 * The message to display.
+	 * @param {number} duration
+	 * Display duration in milliseconds.
+	 * @returns {void}
 	 */
 	info(message: string, duration: number = NOTIFICATION_DURATION.info): void
 	{
@@ -121,7 +173,16 @@ export class NotificationService
 	}
 
 	/**
-	 * Shows an info notification with details.
+	 * Shows an informational notification with additional details and optional copy data.
+	 * @param {string} message
+	 * The main message to display.
+	 * @param {string[]} details
+	 * Optional lines of detail shown to the user.
+	 * @param {string} copyData
+	 * Optional diagnostic data available for copy-to-clipboard.
+	 * @param {number} duration
+	 * Display duration in milliseconds.
+	 * @returns {void}
 	 */
 	infoWithDetails(
 		message: string,
@@ -139,6 +200,11 @@ export class NotificationService
 
 	/**
 	 * Shows a warning notification.
+	 * @param {string} message
+	 * The message to display.
+	 * @param {number} duration
+	 * Display duration in milliseconds.
+	 * @returns {void}
 	 */
 	warning(message: string, duration: number = NOTIFICATION_DURATION.warning): void
 	{
@@ -151,7 +217,16 @@ export class NotificationService
 	}
 
 	/**
-	 * Shows a warning notification with details.
+	 * Shows a warning notification with additional details and optional copy data.
+	 * @param {string} message
+	 * The main message to display.
+	 * @param {string[]} details
+	 * Optional lines of detail shown to the user.
+	 * @param {string} copyData
+	 * Optional diagnostic data available for copy-to-clipboard.
+	 * @param {number} duration
+	 * Display duration in milliseconds.
+	 * @returns {void}
 	 */
 	warningWithDetails(
 		message: string,
@@ -168,8 +243,16 @@ export class NotificationService
 	}
 
 	/**
-	 * Shows a warning notification with an action button.
-	 * Used for scenarios like concurrency errors that require user action.
+	 * Shows a warning notification with an action button (e.g., retry or resolve).
+	 * @param {string} message
+	 * The message to display.
+	 * @param {string} actionLabel
+	 * Label for the action button.
+	 * @param {() => void} onAction
+	 * Callback invoked when the user clicks the action.
+	 * @param {number} duration
+	 * Display duration in milliseconds.
+	 * @returns {void}
 	 */
 	warningWithAction(
 		message: string,
@@ -187,6 +270,11 @@ export class NotificationService
 
 	/**
 	 * Shows an error notification.
+	 * @param {string} message
+	 * The message to display.
+	 * @param {number} duration
+	 * Display duration in milliseconds.
+	 * @returns {void}
 	 */
 	error(message: string, duration: number = NOTIFICATION_DURATION.error): void
 	{
@@ -200,6 +288,9 @@ export class NotificationService
 
 	/**
 	 * Removes a notification by ID.
+	 * @param {string} id
+	 * The ID of the notification to remove.
+	 * @returns {void}
 	 */
 	dismiss(id: string): void
 	{
@@ -217,7 +308,8 @@ export class NotificationService
 	}
 
 	/**
-	 * Clears all notifications.
+	 * Clears all notifications and cancels any pending dismiss timers.
+	 * @returns {void}
 	 */
 	clearAll(): void
 	{
@@ -229,6 +321,15 @@ export class NotificationService
 
 	/**
 	 * Shows an error notification with optional details and copy data.
+	 * @param {string} message
+	 * The main message to display.
+	 * @param {string[]} details
+	 * Optional lines of detail shown to the user.
+	 * @param {string} copyData
+	 * Optional diagnostic data available for copy-to-clipboard.
+	 * @param {number} duration
+	 * Display duration in milliseconds.
+	 * @returns {void}
 	 */
 	errorWithDetails(
 		message: string,
@@ -246,6 +347,10 @@ export class NotificationService
 
 	/**
 	 * Copies notification data to the clipboard and logs to console.
+	 * @param {Notification} notification
+	 * The notification object containing data to copy.
+	 * @returns {Promise<boolean>}
+	 * Promise resolving to true if copy succeeded, false otherwise.
 	 */
 	async copyToClipboard(notification: Notification): Promise<boolean>
 	{
@@ -273,7 +378,18 @@ export class NotificationService
 	}
 
 	/**
-	 * Core notification display logic with details and copy data.
+	 * Core notification display logic with details and optional copy data.
+	 * @param {NotificationLevel} level
+	 * The notification severity level.
+	 * @param {string} message
+	 * The message to display.
+	 * @param {string[]} details
+	 * Optional lines of detail shown to the user.
+	 * @param {string} copyData
+	 * Optional diagnostic data available for copy-to-clipboard.
+	 * @param {number} duration
+	 * Optional display duration in milliseconds.
+	 * @returns {void}
 	 */
 	private showWithDetails(
 		level: NotificationLevel,
@@ -321,6 +437,17 @@ export class NotificationService
 
 	/**
 	 * Core notification display logic with action callback.
+	 * @param {NotificationLevel} level
+	 * The notification severity level.
+	 * @param {string} message
+	 * The message to display.
+	 * @param {string} actionLabel
+	 * Label for the action button.
+	 * @param {() => void} onAction
+	 * Callback invoked when the action is selected.
+	 * @param {number} duration
+	 * Optional display duration in milliseconds.
+	 * @returns {void}
 	 */
 	private showWithAction(
 		level: NotificationLevel,

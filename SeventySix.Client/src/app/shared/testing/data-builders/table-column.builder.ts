@@ -130,7 +130,15 @@ export class TableColumnBuilder<T>
 }
 
 /**
- * Create a basic text column
+ * Create a basic text column.
+ * @param {keyof T & string} key
+ * The property key on the row type to display in the column.
+ * @param {string} label
+ * The display label for the column header.
+ * @param {boolean} isSortable
+ * Whether the column should be sortable (default: false).
+ * @returns {TableColumn<T>}
+ * A configured `TableColumn` instance for text values.
  */
 export function createTextColumn<T>(
 	key: keyof T & string,
@@ -152,7 +160,15 @@ export function createTextColumn<T>(
 }
 
 /**
- * Create a date column
+ * Create a date column.
+ * @param {keyof T & string} key
+ * The property key on the row type that contains the date value.
+ * @param {string} label
+ * The display label for the column header.
+ * @param {boolean} sortable
+ * Whether the column should be sortable (default: true).
+ * @returns {TableColumn<T>}
+ * A configured `TableColumn` instance for date values.
  */
 export function createDateColumn<T>(
 	key: keyof T & string,
@@ -174,7 +190,15 @@ export function createDateColumn<T>(
 }
 
 /**
- * Create a badge column
+ * Create a badge column.
+ * @param {keyof T & string} key
+ * The property key on the row type that provides the badge value.
+ * @param {string} label
+ * The display label for the column header.
+ * @param {(value: CellValue) => "primary" | "accent" | "warn"} badgeColor
+ * Function that selects the badge color based on the cell value.
+ * @returns {TableColumn<T>}
+ * A configured `TableColumn` instance for badge rendering.
  */
 export function createBadgeColumn<T>(
 	key: keyof T & string,

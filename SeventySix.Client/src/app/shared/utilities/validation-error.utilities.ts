@@ -7,11 +7,16 @@ import { isNonNullObject } from "@shared/utilities/null-check.utility";
 
 /**
  * Gets the first validation error message for a form control.
- * Returns null if control is valid or has no errors.
+ * Returns `null` when the control has no errors or is not provided.
  *
- * @param control - The form control to check for errors
- * @param fieldLabel - The human-readable label for the field (e.g., "Email", "Username")
- * @returns The error message string, or null if no errors
+ * @param {AbstractControl | null | undefined} control
+ * The form control to check for errors.
+ *
+ * @param {string} fieldLabel
+ * The human-readable label for the field (for example, "Email" or "Username").
+ *
+ * @returns {string | null}
+ * The error message string for the first validation error, or `null` when there are no errors.
  *
  * @example
  * ```typescript

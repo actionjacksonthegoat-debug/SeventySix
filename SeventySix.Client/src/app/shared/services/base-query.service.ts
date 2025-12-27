@@ -13,20 +13,37 @@ import { lastValueFrom, Observable } from "rxjs";
  */
 export abstract class BaseQueryService<TFilter extends BaseQueryRequest> extends BaseFilterService<TFilter>
 {
-	/** Query client for cache invalidation (DI) */
+	/**
+	 * Query client for cache invalidation (DI).
+	 * @type {QueryClient}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly queryClient: QueryClient =
 		inject(QueryClient);
 
-	/** Query key prefix for cache operations (must be overridden by subclasses) */
+	/**
+	 * Query key prefix for cache operations (must be overridden by subclasses).
+	 * @type {string}
+	 * @protected
+	 * @abstract
+	 */
 	protected abstract readonly queryKeyPrefix: string;
 
-	/** Query configuration (staleTime, gcTime, etc.) */
+	/**
+	 * Query configuration (staleTime, gcTime, etc.).
+	 * @type {ReturnType<typeof getQueryConfig>}
+	 * @protected
+	 */
 	protected get queryConfig(): ReturnType<typeof getQueryConfig>
 	{
 		return getQueryConfig(this.queryKeyPrefix);
 	}
 
-	/** Invalidate all queries for this entity type */
+	/**
+	 * Invalidate all queries for this entity type.
+	 * @returns {void}
+	 */
 	protected invalidateAll(): void
 	{
 		this.queryClient.invalidateQueries(
@@ -35,7 +52,12 @@ export abstract class BaseQueryService<TFilter extends BaseQueryRequest> extends
 			});
 	}
 
-	/** Invalidate a specific entity query by ID */
+	/**
+	 * Invalidate a specific entity query by ID.
+	 * @param {number | string} entityId
+	 * The entity identifier used in the query key.
+	 * @returns {void}
+	 */
 	protected invalidateSingle(entityId: number | string): void
 	{
 		this.queryClient.invalidateQueries(
@@ -44,7 +66,12 @@ export abstract class BaseQueryService<TFilter extends BaseQueryRequest> extends
 			});
 	}
 
-	/** Invalidate all queries and a specific entity */
+	/**
+	 * Invalidate all queries and a specific entity.
+	 * @param {number | string} entityId
+	 * The entity identifier to invalidate.
+	 * @returns {void}
+	 */
 	protected invalidateAllAndSingle(entityId: number | string): void
 	{
 		this.invalidateAll();
@@ -56,9 +83,12 @@ export abstract class BaseQueryService<TFilter extends BaseQueryRequest> extends
 	 * Reduces boilerplate by handling Observable → Promise conversion and cache invalidation.
 	 * @template TInput - Input type for mutation function
 	 * @template TResult - Result type returned from API
-	 * @param mutationFunction - Observable-returning function to execute
-	 * @param onSuccessCallback - Optional callback for custom invalidation logic (receives result and variables)
-	 * @returns TanStack Query mutation result
+	 * @param {(input: TInput) => Observable<TResult>} mutationFunction
+	 * Observable-returning function to execute.
+	 * @param {(result: TResult, variables: TInput) => void | undefined} onSuccessCallback
+	 * Optional callback for custom invalidation logic (receives result and variables).
+	 * @returns {CreateMutationResult<TResult, Error, TInput>}
+	 * TanStack Query mutation result
 	 */
 	protected createMutation<TInput, TResult>(
 		mutationFunction: (input: TInput) => Observable<TResult>,

@@ -66,14 +66,38 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 	})
 export class StyleGuideComponent
 {
+	/**
+	 * Theme service used to change theme and inspect current selection for demos.
+	 * @type {ThemeService}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly themeService: ThemeService =
 		inject(ThemeService);
+
+	/**
+	 * Notification service for showing demonstration toasts.
+	 * @type {NotificationService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
+
+	/**
+	 * MatDialog for showing example dialogs in the style guide demo.
+	 * @type {MatDialog}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dialog: MatDialog =
 		inject(MatDialog);
 
-	// Example table data
+	/**
+	 * Example data used to render a demo table in the style guide.
+	 * @type {{ id: number; name: string; weight: number; symbol: string; }[]}
+	 * @readonly
+	 */
 	readonly tableData: Array<{
 		id: number;
 		name: string;
@@ -88,38 +112,121 @@ export class StyleGuideComponent
 			{ id: 5, name: "Boron", weight: 10.811, symbol: "B" }
 		];
 
+	/**
+	 * Columns displayed by the example table.
+	 * @type {string[]}
+	 * @readonly
+	 */
 	readonly displayedColumns: string[] =
 		["id", "name", "weight", "symbol"];
 
 	// Skeleton theme constants for demo
+	/**
+	 * Skeleton input theme constant for demos.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonInput: SkeletonTheme =
 		SKELETON_INPUT;
+	/**
+	 * Skeleton checkbox theme constant for demos.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonCheckbox: SkeletonTheme =
 		SKELETON_CHECKBOX;
+	/**
+	 * Skeleton button theme constant for demos.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonButton: SkeletonTheme =
 		SKELETON_BUTTON;
+	/**
+	 * Short skeleton text theme.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonTextShort: SkeletonTheme =
 		SKELETON_TEXT_SHORT;
+	/**
+	 * Medium skeleton text theme.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonTextMedium: SkeletonTheme =
 		SKELETON_TEXT_MEDIUM;
+	/**
+	 * Long skeleton text theme.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonTextLong: SkeletonTheme =
 		SKELETON_TEXT_LONG;
+	/**
+	 * Skeleton avatar theme.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonAvatar: SkeletonTheme =
 		SKELETON_AVATAR;
+	/**
+	 * Skeleton table cell theme.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonTableCell: SkeletonTheme =
 		SKELETON_TABLE_CELL;
+	/**
+	 * Skeleton card theme.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonCard: SkeletonTheme =
 		SKELETON_CARD;
+	/**
+	 * Skeleton title theme.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonTitle: SkeletonTheme =
 		SKELETON_TITLE;
+	/**
+	 * Skeleton textarea theme.
+	 * @type {SkeletonTheme}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly skeletonTextarea: SkeletonTheme =
 		SKELETON_TEXTAREA;
 
+	/**
+	 * Show a demo snackbar message using the NotificationService.
+	 * @param {string} message
+	 * Message to display in the snackbar.
+	 * @returns {void}
+	 */
 	showSnackbar(message: string): void
 	{
 		this.notificationService.success(message);
 	}
 
+	/**
+	 * Opens the example confirmation dialog used by the style guide demo.
+	 * @remarks
+	 * Uses `ConfirmDialogComponent` with an example payload for demonstration.
+	 * @returns {void}
+	 */
 	showDialog(): void
 	{
 		this.dialog.open(ConfirmDialogComponent,

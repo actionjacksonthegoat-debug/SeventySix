@@ -22,13 +22,31 @@ import { logLevelToString } from "@shared/utilities/log-level.utility";
 	})
 export class ClientErrorLoggerService
 {
+	/**
+	 * ErrorQueueService for enqueuing client-side logs to be sent to the server.
+	 * @type {ErrorQueueService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly errorQueue: ErrorQueueService =
 		inject(ErrorQueueService);
+
+	/**
+	 * DateService for consistent client timestamps.
+	 * @type {DateService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dateService: DateService =
 		inject(DateService);
 
 	/**
 	 * Logs a generic error.
+	 * @param {ErrorDetails} errorDetails
+	 * The error details and optional HTTP error information.
+	 * @param {LogLevel} logLevel
+	 * The severity level for the log entry (defaults to Error).
+	 * @returns {void}
 	 */
 	logError(
 		errorDetails: ErrorDetails,
@@ -71,7 +89,10 @@ export class ClientErrorLoggerService
 	}
 
 	/**
-	 * Logs an HTTP error.
+	 * Logs an HTTP error with request and response context.
+	 * @param {ErrorDetails & { httpError: HttpErrorResponse }} errorDetails
+	 * The error details including the `HttpErrorResponse`.
+	 * @returns {void}
 	 */
 	logHttpError(
 		errorDetails: ErrorDetails & { httpError: HttpErrorResponse; }): void
@@ -109,8 +130,13 @@ export class ClientErrorLoggerService
 				err);
 			console.error("Original error:", errorDetails);
 		}
-	} /**
-	 * Logs a client-side error (not HTTP related).
+	}
+
+	/**
+	 * Logs a client-side (non-HTTP) error with contextual information.
+	 * @param {ErrorDetails} errorDetails
+	 * The error details including any Error instance and context.
+	 * @returns {void}
 	 */
 
 	logClientError(errorDetails: ErrorDetails): void
@@ -147,6 +173,11 @@ export class ClientErrorLoggerService
 
 	/**
 	 * Logs a warning message.
+	 * @param {string} message
+	 * The human-readable warning message.
+	 * @param {Record<string, unknown>} context
+	 * Optional contextual data to include with the warning.
+	 * @returns {void}
 	 */
 	logWarning(message: string, context?: Record<string, unknown>): void
 	{
@@ -177,7 +208,12 @@ export class ClientErrorLoggerService
 	}
 
 	/**
-	 * Logs an info message.
+	 * Logs an informational message.
+	 * @param {string} message
+	 * The informational message to log.
+	 * @param {Record<string, unknown>} context
+	 * Optional contextual data to include with the info log.
+	 * @returns {void}
 	 */
 	logInfo(message: string, context?: Record<string, unknown>): void
 	{
@@ -208,9 +244,11 @@ export class ClientErrorLoggerService
 	}
 
 	/**
-	 * Extracts source context from error stack trace.
-	 * Looks for component or service names.
-	 * Falls back to "Client" if no specific source is found.
+	 * Extracts source context from an error's stack trace.
+	 * @param {Error|unknown} error
+	 * The error instance whose stack will be inspected.
+	 * @returns {string}
+	 * The best-effort source context (e.g., Component.method) or "Client" when none found.
 	 */
 	private extractSourceContext(error?: Error | unknown): string
 	{

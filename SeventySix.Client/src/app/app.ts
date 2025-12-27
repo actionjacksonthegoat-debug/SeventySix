@@ -36,17 +36,52 @@ import {
 	})
 export class App
 {
+	/**
+	 * Theme service used to toggle brightness and color schemes.
+	 * @type {ThemeService}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly themeService: ThemeService =
 		inject(ThemeService);
+	/**
+	 * Layout service for sidebar state and responsive helpers.
+	 * @type {LayoutService}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly layoutService: LayoutService =
 		inject(LayoutService);
+	/**
+	 * Loading service controlling the global progress indicator state.
+	 * @type {LoadingService}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly loadingService: LoadingService =
 		inject(LoadingService);
+	/**
+	 * Renderer used for DOM class manipulations (adds/removes body classes).
+	 * @type {Renderer2}
+	 * @private
+	 * @readonly
+	 */
 	private readonly renderer: Renderer2 =
 		inject(Renderer2);
+	/**
+	 * Document reference for direct DOM access where necessary.
+	 * @type {Document}
+	 * @private
+	 * @readonly
+	 */
 	private readonly document: Document =
 		inject(DOCUMENT);
 
+	/**
+	 * Initialize the application component and synchronize sidebar state to the document body
+	 * for styling (adds/removes `sidebar-expanded` as needed).
+	 * @returns {void}
+	 */
 	constructor()
 	{
 		// Sync sidebar state to body class for CSS targeting (dialogs, overlays)
@@ -73,6 +108,7 @@ export class App
 
 	/**
 	 * Handle swipe left gesture (close sidebar on mobile)
+	 * @returns {void}
 	 */
 	onSwipeLeft(): void
 	{
@@ -87,6 +123,7 @@ export class App
 
 	/**
 	 * Handle swipe right gesture (open sidebar on mobile)
+	 * @returns {void}
 	 */
 	onSwipeRight(): void
 	{
@@ -101,6 +138,7 @@ export class App
 
 	/**
 	 * Handle backdrop click (close sidebar)
+	 * @returns {void}
 	 */
 	onBackdropClick(): void
 	{

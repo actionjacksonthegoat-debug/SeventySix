@@ -2,8 +2,14 @@ using SeventySix.Shared.Persistence;
 
 namespace SeventySix.Shared.Tests.Persistence;
 
+/// <summary>
+/// Unit tests for <see cref="SeventySix.Shared.Persistence.QueryBuilder"/>.
+/// </summary>
 public sealed class QueryBuilderTests
 {
+	/// <summary>
+	/// Verifies Where with a single condition applies the filter.
+	/// </summary>
 	[Fact]
 	public void Where_SingleCondition_AppliesFilter()
 	{
@@ -44,6 +50,9 @@ public sealed class QueryBuilderTests
 		Assert.Contains(result, entity => entity.Name == "Charlie");
 	}
 
+	/// <summary>
+	/// Verifies that multiple Where conditions are applied.
+	/// </summary>
 	[Fact]
 	public void Where_MultipleConditions_AppliesAllFilters()
 	{
@@ -96,6 +105,9 @@ public sealed class QueryBuilderTests
 		Assert.Contains(result, entity => entity.Name == "Charlie");
 	}
 
+	/// <summary>
+	/// Verifies OrderBy sorts results in ascending order.
+	/// </summary>
 	[Fact]
 	public void OrderBy_AscendingOrder_SortsCorrectly()
 	{
@@ -137,6 +149,9 @@ public sealed class QueryBuilderTests
 		Assert.Equal("Charlie", result[2].Name);
 	}
 
+	/// <summary>
+	/// Verifies OrderByDescending sorts results in descending order.
+	/// </summary>
 	[Fact]
 	public void OrderByDescending_DescendingOrder_SortsCorrectly()
 	{
@@ -178,6 +193,9 @@ public sealed class QueryBuilderTests
 		Assert.Equal(25, result[2].Age);
 	}
 
+	/// <summary>
+	/// Verifies ThenBy applies a secondary sort as a tiebreaker.
+	/// </summary>
 	[Fact]
 	public void ThenBy_SecondarySort_AppliesTieBreaker()
 	{
@@ -221,6 +239,9 @@ public sealed class QueryBuilderTests
 		Assert.Equal("Charlie", result[2].Name);
 	}
 
+	/// <summary>
+	/// Verifies Skip skips the specified number of items.
+	/// </summary>
 	[Fact]
 	public void Skip_ValidCount_SkipsItems()
 	{
@@ -266,6 +287,9 @@ public sealed class QueryBuilderTests
 		Assert.Contains(result, entity => entity.Name == "Diana");
 	}
 
+	/// <summary>
+	/// Verifies Take limits the results to the specified count.
+	/// </summary>
 	[Fact]
 	public void Take_ValidCount_LimitsResults()
 	{
@@ -309,6 +333,9 @@ public sealed class QueryBuilderTests
 		Assert.Equal(2, result.Count);
 	}
 
+	/// <summary>
+	/// Verifies pagination returns correct page and size.
+	/// </summary>
 	[Fact]
 	public void Paginate_ValidPageAndSize_ReturnsPaginatedResults()
 	{
@@ -360,6 +387,9 @@ public sealed class QueryBuilderTests
 		Assert.Contains(result, entity => entity.Name == "Diana");
 	}
 
+	/// <summary>
+	/// Verifies fluent chaining applies filters, sorts, and pagination.
+	/// </summary>
 	[Fact]
 	public void FluentChaining_ComplexQuery_AppliesAllOperations()
 	{
@@ -430,6 +460,9 @@ public sealed class QueryBuilderTests
 		Assert.Equal("Alice", result[1].Name);
 	}
 
+	/// <summary>
+	/// Verifies that an empty builder returns all items.
+	/// </summary>
 	[Fact]
 	public void EmptyBuilder_NoOperations_ReturnsAllItems()
 	{

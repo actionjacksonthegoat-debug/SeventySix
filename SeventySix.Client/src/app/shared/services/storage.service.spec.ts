@@ -8,9 +8,12 @@ import { StorageService } from "./storage.service";
  * jsdom's Storage implementation doesn't allow vi.spyOn to intercept calls,
  * so we need to replace the entire Storage object.
  *
- * @param throwOnMethod - The method that should throw an error
- * @param errorToThrow - Optional custom error to throw
- * @returns A mock Storage object
+ * @param {"getItem" | "setItem" | "removeItem" | "clear" | undefined} throwOnMethod
+ * The method that should throw an error
+ * @param {Error | undefined} errorToThrow
+ * Optional custom error to throw
+ * @returns {Storage}
+ * A mock Storage object
  */
 function createMockStorage(throwOnMethod?: "getItem" | "setItem" | "removeItem" | "clear", errorToThrow?: Error): Storage
 {

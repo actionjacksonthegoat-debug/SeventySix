@@ -1,7 +1,3 @@
-// <copyright file="table.utility.ts" company="SeventySix">
-// Copyright (c) SeventySix. All rights reserved.
-// </copyright>
-
 import { DateRangeEvent } from "@shared/models";
 
 /**
@@ -10,15 +6,25 @@ import { DateRangeEvent } from "@shared/models";
  */
 export interface DateRangeConfig
 {
+	/**
+	 * @type {string}
+	 * Icon name used for the date range (Material icon name).
+	 */
 	icon: string;
+
+	/**
+	 * @type {string}
+	 * Human-readable label for the date range.
+	 */
 	label: string;
 }
 
 /**
  * Date range key type for type-safe access.
+ *
+ * @type {"1h" | "24h" | "7d" | "30d"}
  */
 export type DateRangeKey = "1h" | "24h" | "7d" | "30d";
-
 /**
  * Static utility functions for DataTableComponent.
  * Stateless helpers that simplify component logic and improve readability.
@@ -28,6 +34,8 @@ export class DataTableUtilities
 {
 	/**
 	 * Date range display configuration (DRY - single source of truth).
+	 * @type {Readonly<Record<DateRangeKey, DateRangeConfig>>}
+	 * @readonly
 	 */
 	static readonly DATE_RANGE_CONFIG: Readonly<Record<DateRangeKey, DateRangeConfig>> =
 		Object.freeze(
@@ -40,6 +48,9 @@ export class DataTableUtilities
 
 	/**
 	 * Date range duration in milliseconds.
+	 * @type {Readonly<Record<DateRangeKey, number>>}
+	 * @private
+	 * @readonly
 	 */
 	private static readonly DATE_RANGE_MS: Readonly<Record<DateRangeKey, number>> =
 		Object.freeze(
@@ -52,6 +63,9 @@ export class DataTableUtilities
 
 	/**
 	 * Preset mapping for date range events.
+	 * @type {Readonly<Record<DateRangeKey, "24h" | "7d" | "30d">>}
+	 * @private
+	 * @readonly
 	 */
 	private static readonly PRESET_MAP: Readonly<Record<DateRangeKey, "24h" | "7d" | "30d">> =
 		Object.freeze(
@@ -64,8 +78,10 @@ export class DataTableUtilities
 
 	/**
 	 * Gets the icon for a date range key.
-	 * @param range - Date range key
-	 * @returns Icon name or default "today"
+	 * @param {string} range
+	 * The date range key to look up.
+	 * @returns {string}
+	 * Icon name for the given date range, or 'today' when unknown.
 	 */
 	static getDateRangeIcon(range: string): string
 	{
@@ -76,8 +92,10 @@ export class DataTableUtilities
 
 	/**
 	 * Gets the label for a date range key.
-	 * @param range - Date range key
-	 * @returns Label text or default "24 Hours"
+	 * @param {string} range
+	 * The date range key to look up.
+	 * @returns {string}
+	 * Label text for the given date range, or '24 Hours' when unknown.
 	 */
 	static getDateRangeLabel(range: string): string
 	{
@@ -88,9 +106,12 @@ export class DataTableUtilities
 
 	/**
 	 * Calculates date range event from range key and current time.
-	 * @param range - Date range key
-	 * @param now - Current date/time
-	 * @returns DateRangeEvent or null if range is invalid
+	 * @param {string} range
+	 * The date range key to calculate.
+	 * @param {Date} now
+	 * The current date/time used as the end date.
+	 * @returns {DateRangeEvent | null}
+	 * The calculated DateRangeEvent or null if the range key is invalid.
 	 */
 	static calculateDateRange(range: string, now: Date): DateRangeEvent | null
 	{
@@ -111,8 +132,10 @@ export class DataTableUtilities
 
 	/**
 	 * Parses column visibility preferences from JSON string.
-	 * @param json - JSON string from localStorage
-	 * @returns Map of column key to visibility, or null if invalid
+	 * @param {string} json
+	 * JSON string retrieved from localStorage representing column visibility.
+	 * @returns {Map<string, boolean> | null}
+	 * A Map of column key to visibility or null if parsing failed.
 	 */
 	static parseColumnPreferences(json: string): Map<string, boolean> | null
 	{
@@ -144,8 +167,10 @@ export class DataTableUtilities
 
 	/**
 	 * Serializes column visibility map to JSON for localStorage.
-	 * @param visibility - Column visibility map
-	 * @returns JSON string
+	 * @param {Map<string, boolean>} visibility
+	 * The column visibility map to serialize.
+	 * @returns {string}
+	 * A JSON string representing the visibility preferences.
 	 */
 	static serializeColumnPreferences(visibility: Map<string, boolean>): string
 	{
@@ -160,10 +185,14 @@ export class DataTableUtilities
 
 	/**
 	 * Updates filter set based on toggle action and selection mode.
-	 * @param currentFilters - Current active filters
-	 * @param filterKey - Key being toggled
-	 * @param singleSelection - Whether single selection mode is enabled
-	 * @returns New filter set and whether the filter became active
+	 * @param {Set<string>} currentFilters
+	 * The current set of active filters.
+	 * @param {string} filterKey
+	 * The filter key being toggled.
+	 * @param {boolean} singleSelection
+	 * When true, only a single filter may be active.
+	 * @returns {{ filters: Set<string>; active: boolean; }}
+	 * New filter set and a boolean indicating whether the filter became active.
 	 */
 	static updateFilters(
 		currentFilters: Set<string>,

@@ -3,8 +3,10 @@ import { NotificationLevel } from "@shared/constants";
 
 /**
  * Converts LogLevel enum to API-compatible string.
- * @param level - The LogLevel enum value
- * @returns String matching server LogLevelConstants
+ * @param {LogLevel} level
+ * The LogLevel enum value to convert.
+ * @returns {string}
+ * String matching server LogLevelConstants.
  */
 export function logLevelToString(level: LogLevel): string
 {
@@ -24,8 +26,10 @@ export function logLevelToString(level: LogLevel): string
 /**
  * Converts LogLevel to NotificationLevel for UI display.
  * Rule: Error, Fatal, Critical → NotificationLevel.Error
- * @param level - The LogLevel to convert
- * @returns Appropriate NotificationLevel for UI display
+ * @param {LogLevel} level
+ * The LogLevel enum value to convert.
+ * @returns {NotificationLevel}
+ * Appropriate NotificationLevel for UI display.
  */
 export function logLevelToNotificationLevel(level: LogLevel): NotificationLevel
 {
@@ -43,8 +47,10 @@ export function logLevelToNotificationLevel(level: LogLevel): NotificationLevel
 /**
  * Parses string log level from API to LogLevel enum.
  * Handles case-insensitive matching.
- * @param logLevel - String from API response
- * @returns Parsed LogLevel enum value
+ * @param {string} logLevel
+ * The string log level value received from API.
+ * @returns {LogLevel}
+ * The corresponding LogLevel enum value.
  */
 export function parseLogLevel(logLevel: string): LogLevel
 {

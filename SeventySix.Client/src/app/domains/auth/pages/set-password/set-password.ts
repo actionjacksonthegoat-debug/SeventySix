@@ -27,30 +27,83 @@ import { NotificationService } from "@shared/services/notification.service";
 		templateUrl: "./set-password.html",
 		styleUrl: "./set-password.scss"
 	})
+/**
+ * Token-based password reset page. Validates the reset token and enforces
+ * password complexity rules when setting a new password.
+ */
 export class SetPasswordComponent implements OnInit
 {
+	/**
+	 * Auth service used to validate tokens and set the new password.
+	 * @type {AuthService}
+	 */
 	private readonly authService: AuthService =
 		inject(AuthService);
+
+	/**
+	 * Router used to navigate after successful password set.
+	 * @type {Router}
+	 */
 	private readonly router: Router =
 		inject(Router);
+
+	/**
+	 * Activated route used to obtain the password reset token.
+	 * @type {ActivatedRoute}
+	 */
 	private readonly route: ActivatedRoute =
 		inject(ActivatedRoute);
+
+	/**
+	 * Notification service for user-facing messages.
+	 * @type {NotificationService}
+	 */
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
+	/**
+	 * Minimum password length enforced by validation rules.
+	 * @type {number}
+	 */
 	protected readonly PASSWORD_MIN_LENGTH: number =
 		PASSWORD_VALIDATION.MIN_LENGTH;
 
+	/**
+	 * New password entered by the user.
+	 * @type {string}
+	 */
 	protected newPassword: string = "";
+
+	/**
+	 * Confirmation of the new password.
+	 * @type {string}
+	 */
 	protected confirmPassword: string = "";
 
+	/**
+	 * Loading state while the set-password request is being processed.
+	 * @type {WritableSignal<boolean>}
+	 */
 	protected readonly isLoading: WritableSignal<boolean> =
 		signal<boolean>(false);
+
+	/**
+	 * True when the provided password reset token is invalid/expired.
+	 * @type {WritableSignal<boolean>}
+	 */
 	protected readonly tokenValid: WritableSignal<boolean> =
 		signal<boolean>(true);
 
+	/**
+	 * Token extracted from the password reset link.
+	 * @type {string}
+	 */
 	private token: string = "";
 
+	/**
+	 * Component initialization - validate token presence and inform the user if invalid.
+	 * @returns {void}
+	 */
 	ngOnInit(): void
 	{
 		this.token =
@@ -64,6 +117,10 @@ export class SetPasswordComponent implements OnInit
 		}
 	}
 
+	/**
+	 * Submit the new password after validating the token and inputs.
+	 * @returns {void}
+	 */
 	protected onSubmit(): void
 	{
 		if (!this.token)
@@ -110,6 +167,10 @@ export class SetPasswordComponent implements OnInit
 
 	/**
 	 * Extracts user-friendly error message from set password failure.
+	 * @param {HttpErrorResponse} error
+	 * Error response returned from the backend.
+	 * @returns {string}
+	 * A human-readable message suitable for display.
 	 */
 	private getErrorMessage(error: HttpErrorResponse): string
 	{

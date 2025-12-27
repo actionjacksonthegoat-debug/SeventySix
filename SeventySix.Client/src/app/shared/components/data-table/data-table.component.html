@@ -281,8 +281,8 @@
 									/>
 									} @else {
 									<mat-checkbox
-										[checked]="selection.isSelected(row)"
-										(change)="selection.toggle(row)"
+										[checked]="selectionManager.selection.isSelected(row)"
+										(change)="selectionManager.selection.toggle(row)"
 										[aria-label]="'Select row ' + row.id"
 									>
 									</mat-checkbox>

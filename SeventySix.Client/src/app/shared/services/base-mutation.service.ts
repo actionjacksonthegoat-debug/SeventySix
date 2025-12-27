@@ -17,20 +17,37 @@ import {
  */
 export abstract class BaseMutationService
 {
-	/** Query client for cache invalidation (DI) */
+	/**
+	 * Query client for cache invalidation (DI).
+	 * @type {QueryClient}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly queryClient: QueryClient =
 		inject(QueryClient);
 
-	/** Query key prefix for cache operations (must be overridden by subclasses) */
+	/**
+	 * Query key prefix for cache operations (must be overridden by subclasses).
+	 * @type {string}
+	 * @protected
+	 * @abstract
+	 */
 	protected abstract readonly queryKeyPrefix: string;
 
-	/** Query configuration (staleTime, gcTime, etc.) */
+	/**
+	 * Query configuration (staleTime, gcTime, etc.).
+	 * @type {ReturnType<typeof getQueryConfig>}
+	 * @protected
+	 */
 	protected get queryConfig(): ReturnType<typeof getQueryConfig>
 	{
 		return getQueryConfig(this.queryKeyPrefix);
 	}
 
-	/** Invalidate all queries for this entity type */
+	/**
+	 * Invalidate all queries for this entity type.
+	 * @returns {void}
+	 */
 	protected invalidateAll(): void
 	{
 		this.queryClient.invalidateQueries(
@@ -42,11 +59,16 @@ export abstract class BaseMutationService
 	/**
 	 * Creates a mutation with automatic query invalidation (DRY factory pattern).
 	 * Reduces boilerplate by handling Observable → Promise conversion and cache invalidation.
-	 * @template TInput - Input type for mutation function
-	 * @template TResult - Result type returned from API
-	 * @param mutationFunction - Observable-returning function to execute
-	 * @param onSuccessCallback - Optional callback for custom invalidation logic (receives result and variables)
-	 * @returns TanStack Query mutation result
+	 * @template TInput
+	 * Input type for mutation function.
+	 * @template TResult
+	 * Result type returned from API.
+	 * @param {(input: TInput) => Observable<TResult>} mutationFunction
+	 * Observable-returning function to execute for the mutation.
+	 * @param {(result: TResult, variables: TInput) => void | undefined} [onSuccessCallback]
+	 * Optional callback for custom invalidation logic (receives result and variables).
+	 * @returns {CreateMutationResult<TResult, Error, TInput>}
+	 * TanStack Query mutation result.
 	 */
 	protected createMutation<TInput, TResult>(
 		mutationFunction: (input: TInput) => Observable<TResult>,

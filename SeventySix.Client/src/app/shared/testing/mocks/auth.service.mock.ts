@@ -34,8 +34,10 @@ export class MockAuthService
 
 	/**
 	 * Checks if the current user has a specific role.
-	 * @param role The role to check.
-	 * @returns True if the user has the role, false otherwise.
+	 * @param {string} role
+	 * The role to check.
+	 * @returns {boolean}
+	 * True if the user has the role, false otherwise.
 	 */
 	hasRole(role: string): boolean
 	{
@@ -46,8 +48,10 @@ export class MockAuthService
 
 	/**
 	 * Checks if the current user has any of the specified roles.
-	 * @param roles The roles to check.
-	 * @returns True if the user has any of the roles, false otherwise.
+	 * @param {string[]} roles
+	 * The roles to check.
+	 * @returns {boolean}
+	 * True if the user has any of the roles, false otherwise.
 	 */
 	hasAnyRole(...roles: string[]): boolean
 	{
@@ -60,7 +64,9 @@ export class MockAuthService
 
 	/**
 	 * Sets the authenticated user for testing.
-	 * @param user The user to set, or null for unauthenticated state.
+	 * @param {UserProfileDto | null} user
+	 * The user to set, or null for unauthenticated state.
+	 * @returns {void}
 	 */
 	setUser(user: UserProfileDto | null): void
 	{
@@ -71,6 +77,9 @@ export class MockAuthService
 /**
  * Factory function to create a new MockAuthService instance.
  * Use this in your test's beforeEach.
+ *
+ * @returns {MockAuthService}
+ * A fresh MockAuthService instance for tests.
  */
 export function createMockAuthService(): MockAuthService
 {

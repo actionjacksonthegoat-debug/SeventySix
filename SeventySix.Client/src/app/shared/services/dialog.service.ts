@@ -14,13 +14,21 @@ import { map, Observable } from "rxjs";
 	})
 export class DialogService
 {
+	/**
+	 * MatDialog service for opening modal dialogs.
+	 * @type {MatDialog}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dialog: MatDialog =
 		inject(MatDialog);
 
 	/**
 	 * Shows a generic confirmation dialog.
-	 * @param options - Dialog configuration
-	 * @returns Observable emitting true if confirmed, false if cancelled
+	 * @param {ConfirmOptions} options
+	 * The dialog configuration options used to build the confirm dialog.
+	 * @returns {Observable<boolean>}
+	 * Observable that emits true when confirmed, false when cancelled.
 	 */
 	confirm(options: ConfirmOptions): Observable<boolean>
 	{
@@ -46,9 +54,12 @@ export class DialogService
 
 	/**
 	 * Shows a delete confirmation dialog with warn styling.
-	 * @param itemName - Name of the item being deleted (e.g., "log", "user")
-	 * @param itemCount - Number of items being deleted (defaults to 1)
-	 * @returns Observable emitting true if confirmed, false if cancelled
+	 * @param {string} itemName
+	 * The name of the item being deleted (e.g., "log", "user").
+	 * @param {number} itemCount
+	 * Number of items being deleted (defaults to 1).
+	 * @returns {Observable<boolean>}
+	 * Observable that emits true when the user confirms the deletion.
 	 */
 	confirmDelete(
 		itemName: string,
@@ -84,8 +95,10 @@ export class DialogService
 
 	/**
 	 * Shows a deactivation confirmation dialog with warn styling.
-	 * @param itemName - Name of the item being deactivated (e.g., "user")
-	 * @returns Observable emitting true if confirmed, false if cancelled
+	 * @param {string} itemName
+	 * The name of the item being deactivated.
+	 * @returns {Observable<boolean>}
+	 * Observable that emits true when the user confirms deactivation.
 	 */
 	confirmDeactivate(itemName: string): Observable<boolean>
 	{

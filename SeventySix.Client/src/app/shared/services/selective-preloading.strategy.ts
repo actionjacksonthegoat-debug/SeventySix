@@ -13,6 +13,7 @@ import {
 /**
  * Delay in milliseconds before preloading routes (2 seconds).
  * Allows initial page render to complete before prefetching.
+ * @type {number}
  */
 const PRELOAD_DELAY_MS: number =
 	2000;
@@ -45,9 +46,12 @@ export class SelectivePreloadingStrategy implements PreloadingStrategy
 	 * Preloads a route if marked with `data: { preload: true }`.
 	 * Otherwise defers loading to on-demand navigation.
 	 *
-	 * @param route The route being evaluated
-	 * @param load Function to trigger the route loading
-	 * @returns Observable that emits the loaded module or empty
+	 * @param {Route} route
+	 * The route being evaluated.
+	 * @param {() => Observable<unknown>} load
+	 * Function to trigger the route loading.
+	 * @returns {Observable<unknown>}
+	 * Observable that emits the loaded module or empty.
 	 */
 	public preload(
 		route: Route,

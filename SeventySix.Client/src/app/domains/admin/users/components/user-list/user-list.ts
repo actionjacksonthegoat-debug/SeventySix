@@ -37,56 +37,143 @@ import { NotificationService } from "@shared/services/notification.service";
 	})
 export class UserList
 {
+	/**
+	 * User service providing queries and mutations for user management.
+	 * @type {UserService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly userService: UserService =
 		inject(UserService);
+
+	/**
+	 * Date pipe used to format displayed dates.
+	 * @type {DatePipe}
+	 * @private
+	 * @readonly
+	 */
 	private readonly datePipe: DatePipe =
 		inject(DatePipe);
+
+	/**
+	 * Angular Router used for navigating to user pages (view/edit).
+	 * @type {Router}
+	 * @private
+	 * @readonly
+	 */
 	private readonly router: Router =
 		inject(Router);
+
+	/**
+	 * Dialog service for confirmations and prompts.
+	 * @type {DialogService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dialogService: DialogService =
 		inject(DialogService);
+
+	/**
+	 * Notification service for user-facing messages.
+	 * @type {NotificationService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
 
+	/**
+	 * Query object for paged users with data/isLoading/error flags.
+	 * @type {ReturnType<typeof this.userService.getPagedUsers>}
+	 */
 	readonly usersQuery: ReturnType<typeof this.userService.getPagedUsers> =
 		this.userService.getPagedUsers();
 
-	// Mutations
+	/**
+	 * Mutation for updating user records.
+	 * @type {ReturnType<typeof this.userService.updateUser>}
+	 * @private
+	 */
 	private readonly updateUserMutation: ReturnType<typeof this.userService.updateUser> =
 		this.userService.updateUser();
+
+	/**
+	 * Mutation for resetting a user's password.
+	 * @type {ReturnType<typeof this.userService.resetPassword>}
+	 * @private
+	 */
 	private readonly resetPasswordMutation: ReturnType<
 		typeof this.userService.resetPassword> =
 		this.userService.resetPassword();
+
+	/**
+	 * Mutation for restoring a soft-deleted user.
+	 * @type {ReturnType<typeof this.userService.restoreUser>}
+	 * @private
+	 */
 	private readonly restoreUserMutation: ReturnType<
 		typeof this.userService.restoreUser> =
 		this.userService.restoreUser();
 
+	/**
+	 * Computed array of users for the table (current page).
+	 * @type {Signal<UserDto[]>}
+	 */
 	readonly data: Signal<UserDto[]> =
 		computed(
 			() =>
 				(this.usersQuery.data()?.items as UserDto[]) ?? []);
+
+	/**
+	 * Loading indicator for users query.
+	 * @type {Signal<boolean>}
+	 */
 	readonly isLoading: Signal<boolean> =
 		computed(
 			() => this.usersQuery.isLoading());
+
+	/**
+	 * Error message signal when loading users fails.
+	 * @type {Signal<string | null>}
+	 */
 	readonly error: Signal<string | null> =
 		computed(
 			() =>
 				this.usersQuery.error()
 					? "Failed to load users. Please try again."
 					: null);
+
+	/**
+	 * Total number of users across pages.
+	 * @type {Signal<number>}
+	 */
 	readonly totalCount: Signal<number> =
 		computed(
 			() =>
 				this.usersQuery.data()?.totalCount ?? 0);
+
+	/**
+	 * Current paginator zero-based page index.
+	 * @type {Signal<number>}
+	 */
 	readonly pageIndex: Signal<number> =
 		computed(
 			() =>
 				(this.userService.getCurrentFilter().page ?? 1) - 1);
+
+	/**
+	 * Current page size for the user list.
+	 * @type {Signal<number>}
+	 */
 	readonly pageSize: Signal<number> =
 		computed(
 			() =>
 				this.userService.getCurrentFilter().pageSize ?? 50);
 
+	/**
+	 * Column definitions for the user table.
+	 * @type {TableColumn<UserDto>[]}
+	 */
 	readonly columns: TableColumn<UserDto>[] =
 		[
 			{
@@ -164,6 +251,10 @@ export class UserList
 			}
 		];
 
+	/**
+	 * Predefined quick filters for the user list (e.g., active/inactive).
+	 * @type {QuickFilter<UserDto>[]}
+	 */
 	readonly quickFilters: QuickFilter<UserDto>[] =
 		[
 			{
@@ -188,6 +279,10 @@ export class UserList
 			}
 		];
 
+	/**
+	 * Actions available per user row (view, edit, reset password, restore, deactivate).
+	 * @type {RowAction<UserDto>[]}
+	 */
 	readonly rowActions: RowAction<UserDto>[] =
 		[
 			{
@@ -228,17 +323,43 @@ export class UserList
 			}
 		];
 
+	/**
+	 * Apply a search filter to the user list.
+	 * @param {string} searchTerm
+	 * Text to search for in username or email.
+	 * @returns {void}
+	 */
 	onSearch(searchTerm: string): void
 	{
 		this.userService.updateFilter(
 			{ searchTerm: searchTerm || undefined });
 	}
 
+	/**
+	 * Handle click on the create user button and navigate to the create page.
+	 * @returns {void}
+	 */
+	public onCreateClick(): void
+	{
+		void this.router.navigate(
+			["/admin/users/create"]);
+	}
+
+	/**
+	 * Forces a refresh of the users query (bypassing cache).
+	 * @returns {void}
+	 */
 	onRefresh(): void
 	{
 		void this.userService.forceRefresh();
 	}
 
+	/**
+	 * Handle quick filter selection for the user list (active/inactive/deleted).
+	 * @param {{ filterKey: string; }} event
+	 * Contains the selected filter key.
+	 * @returns {void}
+	 */
 	onFilterChange(event: { filterKey: string; }): void
 	{
 		const filterKey: string =
@@ -282,8 +403,10 @@ export class UserList
 	}
 
 	/**
-	 * Handles sort change from data table
-	 * @param event - Sort change event with column and direction
+	 * Handle sort change from the data table.
+	 * @param {SortChangeEvent} event
+	 * Sort field and direction.
+	 * @returns {void}
 	 */
 	onSortChange(event: SortChangeEvent): void
 	{
@@ -294,6 +417,12 @@ export class UserList
 			});
 	}
 
+	/**
+	 * Handle row-level actions (view/edit/reset/restore/deactivate).
+	 * @param {RowActionEvent<UserDto>} event
+	 * The row action event payload.
+	 * @returns {void}
+	 */
 	onRowAction(event: RowActionEvent<UserDto>): void
 	{
 		switch (event.action)
@@ -316,19 +445,33 @@ export class UserList
 		}
 	}
 
+	/**
+	 * Update paginator page index.
+	 * @param {number} pageIndex
+	 * Zero-based page index selected by the paginator.
+	 * @returns {void}
+	 */
 	onPageChange(pageIndex: number): void
 	{
 		this.userService.setPage(pageIndex + 1);
 	}
 
+	/**
+	 * Update page size for the user list.
+	 * @param {number} pageSize
+	 * New page size selected by the user.
+	 * @returns {void}
+	 */
 	onPageSizeChange(pageSize: number): void
 	{
 		this.userService.setPageSize(pageSize);
 	}
 
 	/**
-	 * Handles row click to navigate to user details
-	 * @param user - The clicked user row
+	 * Handles row click to navigate to the user details.
+	 * @param {UserDto} user
+	 * The clicked user row.
+	 * @returns {void}
 	 */
 	onRowClick(user: UserDto): void
 	{
@@ -336,8 +479,10 @@ export class UserList
 	}
 
 	/**
-	 * Navigates to the user details view page
-	 * @param userId - The user ID to view
+	 * Navigates to the user details view page.
+	 * @param {number} userId
+	 * The user ID to view.
+	 * @returns {void}
 	 */
 	private viewUser(userId: number): void
 	{
@@ -346,8 +491,10 @@ export class UserList
 	}
 
 	/**
-	 * Navigates to the user edit page
-	 * @param userId - The user ID to edit
+	 * Navigates to the user edit page.
+	 * @param {number} userId
+	 * The user ID to edit.
+	 * @returns {void}
 	 */
 	private editUser(userId: number): void
 	{
@@ -356,8 +503,10 @@ export class UserList
 	}
 
 	/**
-	 * Initiates password reset for a user
-	 * @param user - The user to reset password for
+	 * Initiates password reset for a user.
+	 * @param {UserDto} user
+	 * The user to reset password for.
+	 * @returns {void}
 	 */
 	private resetUserPassword(user: UserDto): void
 	{
@@ -395,8 +544,10 @@ export class UserList
 	}
 
 	/**
-	 * Deactivates a single user (soft delete)
-	 * @param user - The user to deactivate
+	 * Deactivates a single user (soft delete).
+	 * @param {UserDto} user
+	 * The user to deactivate.
+	 * @returns {void}
 	 */
 	private deactivateUser(user: UserDto): void
 	{
@@ -438,8 +589,10 @@ export class UserList
 	}
 
 	/**
-	 * Restores a soft-deleted user
-	 * @param user - The user to restore
+	 * Restores a soft-deleted user.
+	 * @param {UserDto} user
+	 * The user to restore.
+	 * @returns {void}
 	 */
 	private handleRestoreUser(user: UserDto): void
 	{

@@ -9,6 +9,7 @@ import { LoggerService } from "@shared/services/logger.service";
 /**
  * Delay before initializing telemetry (milliseconds).
  * Allows initial render to complete first.
+ * @type {number}
  */
 const TELEMETRY_INIT_DELAY_MS: number =
 	1000;
@@ -55,8 +56,20 @@ interface WebTracerProviderInstance
 	})
 export class TelemetryService
 {
+	/**
+	 * Logger service for telemetry diagnostics.
+	 * @type {LoggerService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly logger: LoggerService =
 		inject(LoggerService);
+
+	/**
+	 * Tracks whether telemetry has already been initialized to avoid duplicate setup.
+	 * @type {boolean}
+	 * @private
+	 */
 	private initialized: boolean =
 		false;
 
@@ -64,6 +77,7 @@ export class TelemetryService
 	 * Initializes OpenTelemetry tracing with automatic instrumentation.
 	 * Called by APP_INITIALIZER during application bootstrap.
 	 * Defers actual initialization to not block initial render.
+	 * @returns {void}
 	 */
 	public initialize(): void
 	{
@@ -90,6 +104,7 @@ export class TelemetryService
 	/**
 	 * Performs async telemetry initialization with dynamic imports.
 	 * This moves OpenTelemetry packages out of the initial bundle.
+	 * @returns {Promise<void>}
 	 */
 	private async initializeTelemetryAsync(): Promise<void>
 	{
@@ -117,6 +132,8 @@ export class TelemetryService
 
 	/**
 	 * Loads all OpenTelemetry modules via dynamic imports.
+	 * @returns {Promise<TelemetryModules>}
+	 * Resolves to the aggregated telemetry module exports.
 	 */
 	private async loadTelemetryModules(): Promise<TelemetryModules>
 	{
@@ -158,6 +175,10 @@ export class TelemetryService
 
 	/**
 	 * Creates the WebTracerProvider with resource and sampler.
+	 * @param {TelemetryModules} modules
+	 * The loaded telemetry modules to construct provider and exporter.
+	 * @returns {WebTracerProviderInstance}
+	 * Configured tracer provider instance.
 	 */
 	private createTracerProvider(modules: TelemetryModules): WebTracerProviderInstance
 	{
@@ -202,6 +223,9 @@ export class TelemetryService
 
 	/**
 	 * Registers automatic instrumentations for document load and fetch.
+	 * @param {TelemetryModules} modules
+	 * The telemetry modules containing instrumentation constructors.
+	 * @returns {void}
 	 */
 	private registerInstrumentations(modules: TelemetryModules): void
 	{
@@ -229,6 +253,14 @@ export class TelemetryService
 
 	/**
 	 * Creates the appropriate sampler based on environment configuration.
+	 * @param {new () => unknown} AlwaysOffSampler
+	 * Constructor for an AlwaysOff sampler.
+	 * @param {new () => unknown} AlwaysOnSampler
+	 * Constructor for an AlwaysOn sampler.
+	 * @param {new (ratio: number) => unknown} TraceIdRatioBasedSampler
+	 * Constructor for a TraceIdRatioBased sampler.
+	 * @returns {unknown}
+	 * A configured sampler instance appropriate for the current sample rate.
 	 */
 	private createSampler(
 		AlwaysOffSampler: new () => unknown,

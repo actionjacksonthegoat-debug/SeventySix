@@ -5,10 +5,34 @@ import { RouterLink } from "@angular/router";
 
 interface QuickAction
 {
+	/**
+	 * Action title displayed in the card header.
+	 * @type {string}
+	 */
 	title: string;
+
+	/**
+	 * Short description for the action.
+	 * @type {string}
+	 */
 	description: string;
+
+	/**
+	 * Material icon name for visual identification.
+	 * @type {string}
+	 */
 	icon: string;
+
+	/**
+	 * Route to navigate when action is triggered.
+	 * @type {string}
+	 */
 	route: string;
+
+	/**
+	 * CSS theme class to apply to the card.
+	 * @type {string}
+	 */
 	themeClass: string;
 }
 
@@ -26,6 +50,12 @@ interface QuickAction
 	})
 export class HomeComponent
 {
+	/**
+	 * Quick actions displayed on the home page.
+	 * @type {QuickAction[]}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly quickActions: QuickAction[] =
 		[
 			{

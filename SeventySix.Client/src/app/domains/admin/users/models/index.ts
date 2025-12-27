@@ -6,6 +6,10 @@ import { components } from "@shared/generated-open-api/generated-open-api";
 import { BaseQueryRequest } from "@shared/models";
 
 // User DTOs with type corrections for numeric IDs
+/**
+ * Data transfer object representing a user with numeric ID and optional status code.
+ * Based on the generated `UserDto` schema with local numeric ID adjustments.
+ */
 export type UserDto =
 	& Omit<
 		components["schemas"]["UserDto"],
@@ -14,8 +18,18 @@ export type UserDto =
 		id: number;
 		statusCode?: number | null;
 	};
+
+/**
+ * Payload used to create a new user.
+ * Mirrors the generated `CreateUserRequest` schema.
+ */
 export type CreateUserRequest =
 	components["schemas"]["CreateUserRequest"];
+
+/**
+ * Payload used to update an existing user. Ensures numeric `id`.
+ * Mirrors the generated `UpdateUserRequest` schema.
+ */
 export type UpdateUserRequest =
 	& Omit<
 		components["schemas"]["UpdateUserRequest"],
@@ -23,6 +37,11 @@ export type UpdateUserRequest =
 	& {
 		id: number;
 	};
+
+/**
+ * Paged result containing UserDto items and pagination metadata.
+ * Mirrors the generated `PagedResultOfUserDto` schema with numeric page fields.
+ */
 export type PagedResultOfUserDto =
 	& Omit<
 		components["schemas"]["PagedResultOfUserDto"],

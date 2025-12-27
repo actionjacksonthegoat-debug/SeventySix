@@ -48,46 +48,112 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 		styleUrl: "./request-permissions.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
 	})
+/**
+ * Page for requesting additional account roles.
+ *
+ * Allows the user to select roles, provide an optional message and submit a
+ * permission request via `AccountService.createPermissionRequest`.
+ */
 export class RequestPermissionsPage
 {
+	/**
+	 * Account service for account-related operations.
+	 * @type {AccountService}
+	 */
 	private readonly accountService: AccountService =
 		inject(AccountService);
+
+	/**
+	 * Form builder for constructing reactive forms.
+	 * @type {FormBuilder}
+	 */
 	private readonly formBuilder: FormBuilder =
 		inject(FormBuilder);
+
+	/**
+	 * Router used for navigation after successful actions.
+	 * @type {Router}
+	 */
 	private readonly router: Router =
 		inject(Router);
+
+	/**
+	 * Notification service for user-facing messages.
+	 * @type {NotificationService}
+	 */
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
 
+	/**
+	 * Query for fetching available roles for the current user.
+	 * @type {ReturnType<typeof this.accountService.getAvailableRoles>}
+	 */
 	readonly rolesQuery: ReturnType<typeof this.accountService.getAvailableRoles> =
 		this.accountService.getAvailableRoles();
-	readonly requestMutation: ReturnType<
-		typeof this.accountService.createPermissionRequest> =
+
+	/**
+	 * Mutation used to submit permission requests.
+	 * @type {ReturnType<typeof this.accountService.createPermissionRequest>}
+	 */
+	readonly requestMutation: ReturnType<typeof this.accountService.createPermissionRequest> =
 		this.accountService.createPermissionRequest();
 
+	/**
+	 * Available roles returned by the server for selection.
+	 * @type {Signal<AvailableRoleDto[]>}
+	 */
 	readonly availableRoles: Signal<AvailableRoleDto[]> =
 		computed(
 			() => this.rolesQuery.data() ?? []);
+
+	/**
+	 * Loading state for the roles query.
+	 * @type {Signal<boolean>}
+	 */
 	readonly isLoading: Signal<boolean> =
 		computed(
 			() => this.rolesQuery.isLoading());
+
+	/**
+	 * Submission pending state for the request mutation.
+	 * @type {Signal<boolean>}
+	 */
 	readonly isSubmitting: Signal<boolean> =
 		computed(
 			() => this.requestMutation.isPending());
 
 	// Skeleton theme constants
+	/**
+	 * Skeleton theme used for checkboxes.
+	 * @type {SkeletonTheme}
+	 */
 	readonly skeletonCheckbox: SkeletonTheme =
 		SKELETON_CHECKBOX;
+	/**
+	 * Short skeleton text theme.
+	 * @type {SkeletonTheme}
+	 */
 	readonly skeletonTextShort: SkeletonTheme =
 		SKELETON_TEXT_SHORT;
+	/**
+	 * Medium-length skeleton text theme.
+	 * @type {SkeletonTheme}
+	 */
 	readonly skeletonTextMedium: SkeletonTheme =
 		SKELETON_TEXT_MEDIUM;
 
+	/**
+	 * Mutable set of selected role names.
+	 * @type {WritableSignal<Set<string>>}
+	 */
 	readonly selectedRoles: WritableSignal<Set<string>> =
 		signal(
 			new Set<string>());
 
-	/** Pre-computed role selection map for template. */
+	/**
+	 * Pre-computed role selection map for template.
+	 * @type {Signal<Map<string, boolean>>}
+	 */
 	readonly roleSelectionMap: Signal<Map<string, boolean>> =
 		computed(
 			() =>
@@ -106,12 +172,25 @@ export class RequestPermissionsPage
 				return map;
 			});
 
+	/**
+	 * Reactive form for permission requests.
+	 * @type {FormGroup}
+	 */
 	readonly requestForm: FormGroup =
 		this.formBuilder.group(
 			{
 				requestMessage: ["", [Validators.maxLength(500)]]
 			});
 
+	/**
+	 * Toggle selection state for the given role name.
+	 *
+	 * Adds the role to the selection set if not present, otherwise removes it.
+	 *
+	 * @param {string} roleName
+	 * The name of the role to toggle.
+	 * @returns {void}
+	 */
 	toggleRole(roleName: string): void
 	{
 		const current: Set<string> =
@@ -131,6 +210,15 @@ export class RequestPermissionsPage
 		this.selectedRoles.set(updated);
 	}
 
+	/**
+	 * Submit a permission request for the currently selected roles.
+	 *
+	 * Validates that at least one role is selected, builds a
+	 * {@link CreatePermissionRequestDto}, and invokes the `requestMutation`.
+	 * On success navigates back to the account page and shows a success
+	 * notification.
+	 * @returns {Promise<void>}
+	 */
 	async onSubmit(): Promise<void>
 	{
 		const roles: string[] =

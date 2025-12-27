@@ -25,6 +25,9 @@ namespace SeventySix.Shared.Persistence;
 /// - Performance: Single database round-trip for all updates
 /// - Type Safety: Generic constraints ensure compile-time checking
 /// </remarks>
+/// <param name="context">
+/// The DbContext used to load and persist entities for bulk operations.
+/// </param>
 public class BulkOperationExecutor<TEntity>(DbContext context)
 	where TEntity : class
 {

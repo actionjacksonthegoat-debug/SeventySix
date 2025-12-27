@@ -1,5 +1,7 @@
 /**
- * Mock ApiService for testing
+ * Mock ApiService for unit tests.
+ * Provides an in-memory mapping of endpoint to mock responses used by unit and integration tests.
+ * Use `setMockResponse` to register responses and the HTTP methods will return the registered value or a default/error.
  */
 
 import { HttpParams } from "@angular/common/http";
@@ -12,7 +14,12 @@ export class MockApiService
 		new Map<string, unknown>();
 
 	/**
-	 * Set mock response for an endpoint
+	 * Register a mock response for a specific endpoint.
+	 * @param {string} endpoint
+	 * The endpoint key to associate with the mock response.
+	 * @param {T} data
+	 * The mock response payload returned by the mock HTTP methods.
+	 * @returns {void}
 	 */
 	setMockResponse<T>(endpoint: string, data: T): void
 	{
@@ -21,6 +28,12 @@ export class MockApiService
 
 	/**
 	 * Mock GET request
+	 * @param {string} endpoint
+	 * The endpoint key to request.
+	 * @param {HttpParams} _params
+	 * Optional query parameters (ignored by the mock implementation).
+	 * @returns {Observable<T>}
+	 * Observable that resolves to the registered mock value or errors when missing.
 	 */
 	get<T>(endpoint: string, _params?: HttpParams): Observable<T>
 	{
@@ -37,8 +50,15 @@ export class MockApiService
 
 	/**
 	 * Mock POST request
+	 *
+	 * @param {string} endpoint
+	 * The endpoint key to request.
+	 * @param {U} body
+	 * The request payload to send.
+	 * @returns {Observable<T>}
+	 * Observable that resolves to the registered mock value or echoes the provided body.
 	 */
-	post<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
+	post<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
 		const data: unknown | undefined =
 			this.mockData.get(endpoint);
@@ -51,8 +71,15 @@ export class MockApiService
 
 	/**
 	 * Mock PUT request
+	 *
+	 * @param {string} endpoint
+	 * The endpoint key to request.
+	 * @param {U} body
+	 * The request payload to send.
+	 * @returns {Observable<T>}
+	 * Observable that resolves to the registered mock value or echoes the provided body.
 	 */
-	put<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
+	put<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
 		const data: unknown | undefined =
 			this.mockData.get(endpoint);
@@ -65,8 +92,15 @@ export class MockApiService
 
 	/**
 	 * Mock PATCH request
+	 *
+	 * @param {string} endpoint
+	 * The endpoint key to request.
+	 * @param {U} body
+	 * The patch payload to send.
+	 * @returns {Observable<T>}
+	 * Observable that resolves to the registered mock value or echoes the provided body.
 	 */
-	patch<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
+	patch<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
 		const data: unknown | undefined =
 			this.mockData.get(endpoint);
@@ -79,6 +113,11 @@ export class MockApiService
 
 	/**
 	 * Mock DELETE request
+	 *
+	 * @param {string} endpoint
+	 * The endpoint key to request.
+	 * @returns {Observable<T>}
+	 * Observable that resolves to the registered mock value or an empty object when not found.
 	 */
 	delete<T>(endpoint: string): Observable<T>
 	{
@@ -93,6 +132,10 @@ export class MockApiService
 
 	/**
 	 * Mock addHeaders
+	 *
+	 * @param {Record<string, string>} _headers
+	 * Headers to add (ignored by the mock implementation).
+	 * @returns {void}
 	 */
 	addHeaders(_headers: Record<string, string>): void
 	{
@@ -101,6 +144,9 @@ export class MockApiService
 
 	/**
 	 * Clear all mock data
+	 *
+	 * @returns {void}
+	 * Clears the internal mock data map.
 	 */
 	clearMocks(): void
 	{

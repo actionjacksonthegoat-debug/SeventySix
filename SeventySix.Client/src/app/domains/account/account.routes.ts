@@ -1,6 +1,12 @@
 import { AccountService } from "@account/services";
 import { Routes } from "@angular/router";
 
+/**
+ * Routes for the Account domain.
+ *
+ * Provides routes for viewing and editing the current user's profile and
+ * requesting additional permissions.
+ */
 export const ACCOUNT_ROUTES: Routes =
 	[
 		{

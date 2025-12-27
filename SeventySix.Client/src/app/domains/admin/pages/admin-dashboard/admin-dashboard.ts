@@ -34,19 +34,36 @@ import { NotificationService } from "@shared/services/notification.service";
 	})
 export class AdminDashboardPage
 {
+	/**
+	 * Notification service used to display user-facing messages.
+	 * @type {NotificationService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly notificationService: NotificationService =
 		inject(NotificationService);
+
+	/**
+	 * Logger service for diagnostic and error messages.
+	 * @type {LoggerService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly loggerService: LoggerService =
 		inject(LoggerService);
 
 	/**
 	 * System overview dashboard UID from environment configuration.
+	 * @type {string}
+	 * @readonly
 	 */
 	readonly systemOverviewDashboard: string =
 		environment.observability.dashboards.systemOverview;
 
 	/**
 	 * API endpoints dashboard UID from environment configuration.
+	 * @type {string}
+	 * @readonly
 	 */
 	readonly apiEndpointsDashboard: string =
 		environment.observability.dashboards.apiEndpoints;
@@ -56,6 +73,7 @@ export class AdminDashboardPage
 	 * Opens to the search page pre-filtered for SeventySix.Api service.
 	 * @remarks
 	 * Pre-filtered to show traces for the SeventySix.Api service.
+	 * @returns {void}
 	 */
 	openJaeger(): void
 	{
@@ -70,6 +88,7 @@ export class AdminDashboardPage
 	 * Navigates to targets view showing all scrape endpoints and their health.
 	 * @remarks
 	 * Provides visibility into which metric endpoints are up/down.
+	 * @returns {void}
 	 */
 	openPrometheus(): void
 	{
@@ -84,6 +103,7 @@ export class AdminDashboardPage
 	 * Navigates to dashboards list for quick access to all available dashboards.
 	 * @remarks
 	 * Shows all configured dashboards in the organization.
+	 * @returns {void}
 	 */
 	openGrafana(): void
 	{
@@ -96,6 +116,7 @@ export class AdminDashboardPage
 	/**
 	 * Sends a test Info log and shows notification.
 	 * Uses forceInfo to bypass environment log level filtering.
+	 * @returns {void}
 	 */
 	sendInfoLog(): void
 	{
@@ -106,6 +127,7 @@ export class AdminDashboardPage
 	/**
 	 * Sends a test Warning log and shows notification.
 	 * Uses forceWarning to bypass environment log level filtering.
+	 * @returns {void}
 	 */
 	sendWarnLog(): void
 	{
@@ -118,6 +140,7 @@ export class AdminDashboardPage
 	 * Sends a test Error log by intentionally dividing by zero.
 	 * Shows notification and throws error for error handling validation.
 	 * Uses forceError to bypass environment log level filtering.
+	 * @returns {void}
 	 */
 	sendErrorLog(): void
 	{

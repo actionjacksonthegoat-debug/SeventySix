@@ -72,6 +72,9 @@ export class MockThemeService
 /**
  * Factory function to create a new MockThemeService instance
  * Use this in your test's beforeEach
+ *
+ * @returns {MockThemeService}
+ * A fresh MockThemeService instance for tests.
  */
 export function createMockThemeService(): MockThemeService
 {

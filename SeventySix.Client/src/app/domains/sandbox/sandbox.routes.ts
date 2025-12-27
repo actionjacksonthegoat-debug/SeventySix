@@ -4,6 +4,10 @@
  */
 import { Routes } from "@angular/router";
 
+/**
+ * Sandbox feature routes used for experimentation and testing of components.
+ * Lazy-loaded under `/sandbox` for isolation from production flows.
+ */
 export const SANDBOX_ROUTES: Routes =
 	[
 		{

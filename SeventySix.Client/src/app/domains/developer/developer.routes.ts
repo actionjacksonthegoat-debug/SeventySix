@@ -5,6 +5,10 @@
  */
 import { Routes } from "@angular/router";
 
+/**
+ * Developer feature routes (style guide, architecture docs).
+ * Intended for developer role usage and lazy-loaded under `/developer`.
+ */
 export const DEVELOPER_ROUTES: Routes =
 	[
 		{

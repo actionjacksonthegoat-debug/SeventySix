@@ -11,17 +11,37 @@ import { BaseQueryRequest } from "@shared/models";
  */
 export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 {
-	/** Filter state signal. Protected to allow subclass access while maintaining encapsulation. */
+	/**
+	 * Filter state signal. Protected to allow subclass access while maintaining encapsulation.
+	 * @type {WritableSignal<TFilter>}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly filter: WritableSignal<TFilter>;
 
-	/** Initial filter state for reset functionality (DRY principle) */
+	/**
+	 * Initial filter state for reset functionality (DRY principle).
+	 * @type {TFilter}
+	 * @private
+	 * @readonly
+	 */
 	private readonly initialFilter: TFilter;
 
-	/** Force refresh trigger - toggle to bypass cache on next query */
+	/**
+	 * Force refresh trigger - toggle to bypass cache on next query.
+	 * @type {WritableSignal<boolean>}
+	 * @protected
+	 * @readonly
+	 */
 	protected readonly forceRefreshTrigger: WritableSignal<boolean> =
 		signal<boolean>(false);
 
-	/** Initialize filter with default values and store for reset. */
+	/**
+	 * Initialize filter with default values and store for reset.
+	 * @param {TFilter} initialFilter
+	 * Initial filter values used to seed the filter state.
+	 * @returns {void}
+	 */
 	protected constructor(initialFilter: TFilter)
 	{
 		this.initialFilter =
@@ -30,13 +50,22 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 			signal<TFilter>(initialFilter);
 	}
 
-	/** Get current filter value. */
+	/**
+	 * Get current filter value.
+	 * @returns {TFilter}
+	 * The current filter state.
+	 */
 	getCurrentFilter(): TFilter
 	{
 		return this.filter();
 	}
 
-	/** Update filter and reset to page 1. Merges partial filter updates with current state. */
+	/**
+	 * Update filter and reset to page 1. Merges partial filter updates with current state.
+	 * @param {Partial<TFilter>} filter
+	 * Partial filter values to merge into the current state.
+	 * @returns {void}
+	 */
 	updateFilter(filter: Partial<TFilter>): void
 	{
 		this.filter.update(
@@ -48,7 +77,12 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 				}) as TFilter);
 	}
 
-	/** Set page number without resetting other filters. Use this for pagination navigation. */
+	/**
+	 * Set page number without resetting other filters. Use this for pagination navigation.
+	 * @param {number} page
+	 * The page number to select.
+	 * @returns {void}
+	 */
 	setPage(page: number): void
 	{
 		this.filter.update(
@@ -59,7 +93,13 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 				}) as TFilter);
 	}
 
-	/** Set page size and reset to page 1. Resetting to page 1 prevents showing empty page if current page exceeds new total. */
+	/**
+	 * Set page size and reset to page 1. Resetting to page 1 prevents
+	 * showing empty page if current page exceeds new total.
+	 * @param {number} pageSize
+	 * The number of items per page.
+	 * @returns {void}
+	 */
 	setPageSize(pageSize: number): void
 	{
 		this.filter.update(
@@ -75,6 +115,8 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 	 * Get HTTP context for force refresh if triggered.
 	 * Returns context with FORCE_REFRESH flag when cache bypass is needed.
 	 * Used in TanStack Query queryFn to bypass cache on demand.
+	 * @returns {HttpContext | undefined}
+	 * The HTTP context with FORCE_REFRESH when a force refresh is active, otherwise undefined.
 	 */
 	protected getForceRefreshContext(): HttpContext | undefined
 	{
@@ -87,6 +129,7 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 	/**
 	 * Trigger cache bypass for next query.
 	 * Toggles the force refresh signal to invalidate TanStack Query cache.
+	 * @returns {void}
 	 */
 	forceRefresh(): void
 	{
@@ -97,6 +140,7 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 	/**
 	 * Reset filter to initial state.
 	 * Subclasses should call this from clearFilters() then add feature-specific cleanup.
+	 * @returns {void}
 	 */
 	protected resetFilter(): void
 	{
@@ -104,6 +148,10 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 			{ ...this.initialFilter });
 	}
 
-	/** Clear all filters and reset to defaults. Subclasses must override to provide feature-specific cleanup. */
+	/**
+	 * Clear all filters and reset to defaults. Subclasses must
+	 * override to provide feature-specific cleanup.
+	 * @returns {void}
+	 */
 	abstract clearFilters(): void;
 }

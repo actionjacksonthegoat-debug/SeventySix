@@ -24,10 +24,11 @@ export interface MockLoggerService
 }
 
 /**
- * Create a mocked LoggerService
- * Used in 15+ test files
+ * Create a mocked LoggerService.
+ * Used in 15+ test files.
  *
- * @returns Vitest mock object for LoggerService
+ * @returns {MockLoggerService}
+ * Vitest mock object implementing the LoggerService shape for tests.
  */
 export function createMockLogger(): MockLoggerService
 {
@@ -59,10 +60,11 @@ export interface MockNotificationService
 }
 
 /**
- * Create a mocked NotificationService
- * Used in 10+ test files
+ * Create a mocked NotificationService.
+ * Used in 10+ test files.
  *
- * @returns Vitest mock object for NotificationService
+ * @returns {MockNotificationService}
+ * Vitest mock object implementing the NotificationService shape for tests.
  */
 export function createMockNotificationService(): MockNotificationService
 {
@@ -86,10 +88,11 @@ export interface MockRouter
 }
 
 /**
- * Create a mocked Router
- * Used in 8+ test files
+ * Create a mocked Router.
+ * Used in 8+ test files.
  *
- * @returns Vitest mock object for Router
+ * @returns {MockRouter}
+ * Vitest mock object implementing the Router methods used in tests.
  */
 export function createMockRouter(): MockRouter
 {
@@ -112,11 +115,13 @@ export interface MockActivatedRoute
 }
 
 /**
- * Create a mocked ActivatedRoute
- * Used in 5+ test files
+ * Create a mocked ActivatedRoute.
+ * Used in 5+ test files.
  *
- * @param params - Optional route params
- * @returns Mock object for ActivatedRoute
+ * @param {Record<string, unknown>} params
+ * Optional route params to expose via `params` observable and snapshot.
+ * @returns {MockActivatedRoute}
+ * Mock object representing an Angular ActivatedRoute for tests.
  */
 export function createMockActivatedRoute(
 	params: Record<string, unknown> = {}): MockActivatedRoute
@@ -143,10 +148,11 @@ export interface MockDialog
 }
 
 /**
- * Create a mocked MatDialog
- * Used in 4+ test files
+ * Create a mocked MatDialog.
+ * Used in 4+ test files.
  *
- * @returns Vitest mock object for MatDialog
+ * @returns {MockDialog}
+ * Vitest mock object implementing MatDialog methods for tests.
  */
 export function createMockDialog(): MockDialog
 {
@@ -165,10 +171,11 @@ export interface MockDialogRef<T>
 }
 
 /**
- * Create a mocked MatDialogRef
- * Used in dialog component tests
+ * Create a mocked MatDialogRef.
+ * Used in dialog component tests.
  *
- * @returns Vitest mock object for MatDialogRef
+ * @returns {MockDialogRef<T>}
+ * Vitest mock object implementing MatDialogRef for tests.
  */
 export function createMockDialogRef<T>(): MockDialogRef<T>
 {
@@ -187,10 +194,11 @@ export interface MockErrorQueueService
 }
 
 /**
- * Create a mocked ErrorQueueService
- * Used in error handling tests
+ * Create a mocked ErrorQueueService.
+ * Used in error handling tests.
  *
- * @returns Vitest mock object for ErrorQueueService
+ * @returns {MockErrorQueueService}
+ * Vitest mock object implementing ErrorQueueService methods for tests.
  */
 export function createMockErrorQueueService(): MockErrorQueueService
 {
@@ -215,10 +223,11 @@ export interface MockUserRepository
 }
 
 /**
- * Create a mocked UserRepository
- * Used in user feature tests
+ * Create a mocked UserRepository.
+ * Used in user feature tests.
  *
- * @returns Vitest mock object for UserRepository
+ * @returns {MockUserRepository}
+ * Vitest mock object implementing repository methods used in tests.
  */
 export function createMockUserRepository(): MockUserRepository
 {
@@ -241,7 +250,13 @@ export interface MockLogRepository
 	deleteBatch: Mock;
 }
 
-/** Create a mocked LogRepository. Used in log management feature tests. */
+/**
+ * Create a mocked LogRepository.
+ * Used in log management feature tests.
+ *
+ * @returns {MockLogRepository}
+ * Vitest mock object implementing LogRepository methods.
+ */
 export function createMockLogRepository(): MockLogRepository
 {
 	return {
@@ -267,7 +282,8 @@ export interface MockApiService
  * Create a mocked ApiService
  * Used in repository tests
  *
- * @returns Vitest mock object for ApiService
+ * @returns {MockApiService}
+ * Vitest mock object for ApiService
  */
 export function createMockApiService(): MockApiService
 {
@@ -296,8 +312,8 @@ export interface MockLayoutService
 /**
  * Create a mocked LayoutService
  * Used in App, Header, and Sidebar component tests
- *
- * @returns Mock object for LayoutService with signal-like properties
+ * @returns {MockLayoutService}
+ * Mock object for LayoutService with signal-like properties
  */
 export function createMockLayoutService(): MockLayoutService
 {

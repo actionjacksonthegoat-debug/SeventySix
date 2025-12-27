@@ -1,21 +1,54 @@
 import { environment } from "@environments/environment";
 
 /**
- * Query options interface for TanStack Query configuration.
+ * Query options for TanStack Query configuration.
+ *
+ * Describes caching and retry behaviour for a query resource.
+ *
+ * @property {number | undefined} staleTime
+ * Time in milliseconds before a query becomes stale.
+ *
+ * @property {number | undefined} gcTime
+ * Time in milliseconds before unused query data is garbage collected.
+ *
+ * @property {number | undefined} retry
+ * Number of automatic retry attempts for failed queries.
  */
 export interface QueryOptions
 {
+	/**
+	 * @type {number | undefined}
+	 * Time in milliseconds before a query becomes stale.
+	 */
 	staleTime?: number;
+
+	/**
+	 * @type {number | undefined}
+	 * Time in milliseconds before unused query data is garbage collected.
+	 */
 	gcTime?: number;
+
+	/**
+	 * @type {number | undefined}
+	 * Number of automatic retry attempts for failed queries.
+	 */
 	retry?: number;
 }
 
 /**
- * Get TanStack Query configuration for a specific resource.
- * Falls back to default configuration if resource-specific config not found.
+ * Get the TanStack Query configuration for a specific resource.
  *
- * @param resource - The resource name (e.g., 'users', 'logs', 'health')
- * @returns Query options with staleTime, gcTime, and retry settings
+ * Resolves a resource-specific cache configuration from the application
+ * environment. When a resource-specific configuration is not defined the
+ * function falls back to the configured defaults.
+ *
+ * @param {string} resource
+ * The resource name for which to resolve query configuration (for example
+ * 'users', 'logs' or 'health').
+ *
+ * @returns {QueryOptions}
+ * The resolved query options containing `staleTime`, `gcTime` and `retry`
+ * settings.
  *
  * @example
  * const userConfig = getQueryConfig('users');

@@ -24,25 +24,74 @@ type ConsoleLogLevel = "debug" | "info" | "warn" | "error" | "none";
 	})
 export class LoggerService
 {
+	/**
+	 * HTTP client for sending remote logs.
+	 * @type {HttpClient}
+	 * @private
+	 * @readonly
+	 */
 	private readonly http: HttpClient =
 		inject(HttpClient);
+
+	/**
+	 * Router for retrieving the current route URL.
+	 * @type {Router}
+	 * @private
+	 * @readonly
+	 */
 	private readonly router: Router =
 		inject(Router);
+
+	/**
+	 * DateService for consistent timestamp formatting.
+	 * @type {DateService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly dateService: DateService =
 		inject(DateService);
+
+	/**
+	 * Whether the app is running in dev mode.
+	 * @type {boolean}
+	 * @private
+	 * @readonly
+	 */
 	private readonly isDevMode: boolean =
 		isDevMode();
+
+	/**
+	 * Remote logging endpoint URL.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
 	private readonly logEndpoint: string =
 		`${environment.apiUrl}/logs/client`;
+
+	/**
+	 * Console log level from configuration.
+	 * @type {ConsoleLogLevel}
+	 * @private
+	 * @readonly
+	 */
 	private readonly consoleLogLevel: ConsoleLogLevel =
 		environment.logging.consoleLogLevel;
 
 	/**
 	 * Maps console log level config to minimum LogLevel enum.
+	 * @type {LogLevel}
+	 * @private
+	 * @readonly
 	 */
 	private readonly minLogLevel: LogLevel =
 		this.getMinLogLevel();
 
+	/**
+	 * Determines the minimum LogLevel based on configured console log level.
+	 * @returns {LogLevel}
+	 * The minimum LogLevel value to allow console logging.
+	 */
 	private getMinLogLevel(): LogLevel
 	{
 		switch (this.consoleLogLevel)
@@ -63,7 +112,12 @@ export class LoggerService
 	}
 
 	/**
-	 * Logs debug message (dev only).
+	 * Logs a debug message (development only).
+	 * @param {string} message
+	 * The message to log.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @returns {void}
 	 */
 	debug(message: string, context?: Record<string, unknown>): void
 	{
@@ -71,7 +125,12 @@ export class LoggerService
 	}
 
 	/**
-	 * Logs informational message.
+	 * Logs an informational message.
+	 * @param {string} message
+	 * The message to log.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @returns {void}
 	 */
 	info(message: string, context?: Record<string, unknown>): void
 	{
@@ -79,7 +138,12 @@ export class LoggerService
 	}
 
 	/**
-	 * Logs warning message.
+	 * Logs a warning message.
+	 * @param {string} message
+	 * The message to log.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @returns {void}
 	 */
 	warning(message: string, context?: Record<string, unknown>): void
 	{
@@ -87,7 +151,14 @@ export class LoggerService
 	}
 
 	/**
-	 * Logs error message.
+	 * Logs an error message with optional Error object.
+	 * @param {string} message
+	 * The message to log.
+	 * @param {Error} error
+	 * Optional Error instance to include stack/exception details.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @returns {void}
 	 */
 	error(
 		message: string,
@@ -98,7 +169,14 @@ export class LoggerService
 	}
 
 	/**
-	 * Logs critical error message.
+	 * Logs a critical error message with optional Error instance.
+	 * @param {string} message
+	 * The message to log.
+	 * @param {Error} error
+	 * Optional Error instance to include stack/exception details.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @returns {void}
 	 */
 	critical(
 		message: string,
@@ -109,8 +187,13 @@ export class LoggerService
 	}
 
 	/**
-	 * Force logs debug message, bypassing level filtering.
+	 * Force logs a debug message, bypassing level filtering.
 	 * Always logs to console and sends to remote.
+	 * @param {string} message
+	 * The message to log.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @returns {void}
 	 */
 	forceDebug(message: string, context?: Record<string, unknown>): void
 	{
@@ -120,6 +203,11 @@ export class LoggerService
 	/**
 	 * Force logs info message, bypassing level filtering.
 	 * Always logs to console and sends to remote.
+	 * @param {string} message
+	 * The message to log.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @returns {void}
 	 */
 	forceInfo(message: string, context?: Record<string, unknown>): void
 	{
@@ -129,6 +217,11 @@ export class LoggerService
 	/**
 	 * Force logs warning message, bypassing level filtering.
 	 * Always logs to console and sends to remote.
+	 * @param {string} message
+	 * The message to log.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @returns {void}
 	 */
 	forceWarning(message: string, context?: Record<string, unknown>): void
 	{
@@ -138,6 +231,13 @@ export class LoggerService
 	/**
 	 * Force logs error message, bypassing level filtering.
 	 * Always logs to console and sends to remote.
+	 * @param {string} message
+	 * The message to log.
+	 * @param {Error} error
+	 * Optional Error instance to include stack/exception details.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @returns {void}
 	 */
 	forceError(
 		message: string,
@@ -150,6 +250,13 @@ export class LoggerService
 	/**
 	 * Force logs critical message, bypassing level filtering.
 	 * Always logs to console and sends to remote.
+	 * @param {string} message
+	 * The message to log.
+	 * @param {Error} error
+	 * Optional Error instance to include stack/exception details.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @returns {void}
 	 */
 	forceCritical(
 		message: string,
@@ -160,8 +267,18 @@ export class LoggerService
 	}
 
 	/**
-	 * Core logging implementation.
-	 * @param force - When true, bypasses all level filtering (console and remote).
+	 * Core logging implementation responsible for console and remote logging based on level.
+	 * @param {LogLevel} level
+	 * The log level for this entry.
+	 * @param {string} message
+	 * The message to be logged.
+	 * @param {Record<string, unknown>} context
+	 * Optional structured context to include with the log entry.
+	 * @param {Error} error
+	 * Optional Error instance to include stack/exception details.
+	 * @param {boolean} force
+	 * When true, bypasses all level filtering (console and remote).
+	 * @returns {void}
 	 */
 	private log(
 		level: LogLevel,
@@ -194,6 +311,9 @@ export class LoggerService
 
 	/**
 	 * Logs to browser console.
+	 * @param {LogEntry} entry
+	 * The log entry payload to write to the console.
+	 * @returns {void}
 	 */
 	private logToConsole(entry: LogEntry): void
 	{
@@ -232,7 +352,10 @@ export class LoggerService
 	}
 
 	/**
-	 * Sends log entry to remote logging endpoint.
+	 * Sends a log entry to the remote logging endpoint.
+	 * @param {LogEntry} entry
+	 * The log entry payload to send to the server.
+	 * @returns {void}
 	 */
 	private logToRemote(entry: LogEntry): void
 	{

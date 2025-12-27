@@ -25,22 +25,50 @@ import { NotificationService } from "@shared/services/notification.service";
 		templateUrl: "./register-email.html",
 		styleUrl: "./register-email.scss"
 	})
+/**
+ * First step of the self-registration flow - collects an email address and
+ * initiates the registration process without revealing whether the email exists.
+ */
 export class RegisterEmailComponent
 {
+	/**
+	 * Auth service used to initiate the registration flow.
+	 * @type {AuthService}
+	 */
 	private readonly authService: AuthService =
 		inject(AuthService);
+
+	/**
+	 * Notification service used to show success or error messages.
+	 * @type {NotificationService}
+	 */
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 
+	/**
+	 * Email address entered by the user for registration initiation.
+	 * @type {string}
+	 */
 	protected email: string = "";
 
+	/**
+	 * Loading state while the initiation request is in-flight.
+	 * @type {WritableSignal<boolean>}
+	 */
 	protected readonly isLoading: WritableSignal<boolean> =
 		signal<boolean>(false);
+
+	/**
+	 * True when the initiation request has been submitted (controls UI state).
+	 * @type {WritableSignal<boolean>}
+	 */
 	protected readonly submitted: WritableSignal<boolean> =
 		signal<boolean>(false);
 
 	/**
 	 * Validates email format using simple regex.
+	 * @returns {boolean}
+	 * True when `email` appears to be a valid address.
 	 */
 	protected isValidEmail(): boolean
 	{
@@ -51,6 +79,7 @@ export class RegisterEmailComponent
 
 	/**
 	 * Submits the registration initiation request.
+	 * @returns {void}
 	 */
 	protected onSubmit(): void
 	{

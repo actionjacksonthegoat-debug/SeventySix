@@ -8,6 +8,14 @@ import { UserProfileDto } from "@shared/models";
 /**
  * Creates a mock UserProfileDto with sensible defaults.
  * Override any fields as needed in your tests.
+ *
+ * @example
+ * const profile = createMockUserProfile({ username: "jane" });
+ *
+ * @param {Partial<UserProfileDto> | undefined} overrides
+ * Fields to override on the default mock.
+ * @returns {UserProfileDto}
+ * The mock user profile object.
  */
 export function createMockUserProfile(
 	overrides?: Partial<UserProfileDto>): UserProfileDto

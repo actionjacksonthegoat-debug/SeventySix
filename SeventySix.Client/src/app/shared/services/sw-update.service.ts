@@ -20,13 +20,37 @@ import { concat, filter, first, interval } from "rxjs";
 	})
 export class SwUpdateService
 {
+	/**
+	 * Service Worker update API.
+	 * @type {SwUpdate}
+	 * @private
+	 * @readonly
+	 */
 	private readonly swUpdate: SwUpdate =
 		inject(SwUpdate);
+
+	/**
+	 * ApplicationRef used to detect app stabilization.
+	 * @type {ApplicationRef}
+	 * @private
+	 * @readonly
+	 */
 	private readonly appRef: ApplicationRef =
 		inject(ApplicationRef);
+
+	/**
+	 * Logger service for update-related diagnostics.
+	 * @type {LoggerService}
+	 * @private
+	 * @readonly
+	 */
 	private readonly logger: LoggerService =
 		inject(LoggerService);
 
+	/**
+	 * Initialize SwUpdateService and register update handlers when enabled.
+	 * @returns {void}
+	 */
 	constructor()
 	{
 		// Set up subscriptions in constructor (injection context) if SW is enabled
@@ -41,6 +65,7 @@ export class SwUpdateService
 	/**
 	 * Checks for updates periodically.
 	 * Checks every 6 hours when the app is stable.
+	 * @returns {void}
 	 */
 	private checkForUpdates(): void
 	{
@@ -77,6 +102,7 @@ export class SwUpdateService
 	/**
 	 * Handles version updates.
 	 * Prompts user to reload when a new version is available.
+	 * @returns {void}
 	 */
 	private handleVersionUpdates(): void
 	{
@@ -101,6 +127,7 @@ export class SwUpdateService
 	/**
 	 * Handles unrecoverable state.
 	 * Reloads the page if the Service Worker enters an unrecoverable state.
+	 * @returns {void}
 	 */
 	private handleUnrecoverableState(): void
 	{
@@ -128,6 +155,8 @@ export class SwUpdateService
 	/**
 	 * Prompts user to confirm update.
 	 * Can be customized to show a custom dialog.
+	 * @returns {boolean}
+	 * True if user confirms the update.
 	 */
 	private confirmUpdate(): boolean
 	{
@@ -137,6 +166,9 @@ export class SwUpdateService
 
 	/**
 	 * Notifies user of unrecoverable state.
+	 * @param {string} message
+	 * The message to show to the user.
+	 * @returns {void}
 	 */
 	private notifyUnrecoverableState(message: string): void
 	{
@@ -145,6 +177,7 @@ export class SwUpdateService
 
 	/**
 	 * Activates the update and reloads the page.
+	 * @returns {Promise<void>}
 	 */
 	private async activateUpdate(): Promise<void>
 	{
@@ -164,6 +197,8 @@ export class SwUpdateService
 	/**
 	 * Manually checks for updates.
 	 * Can be triggered by user action.
+	 * @returns {Promise<boolean>}
+	 * True when an update was found.
 	 */
 	async checkForUpdate(): Promise<boolean>
 	{
@@ -198,6 +233,7 @@ export class SwUpdateService
 	/**
 	 * Forces an immediate update.
 	 * Useful for critical security updates.
+	 * @returns {Promise<void>}
 	 */
 	async forceUpdate(): Promise<void>
 	{
