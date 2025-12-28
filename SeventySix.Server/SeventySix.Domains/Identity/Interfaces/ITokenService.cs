@@ -33,7 +33,7 @@ public interface ITokenService
 	/// This data is returned in the AuthResponse body instead.
 	/// </remarks>
 	public string GenerateAccessToken(
-		int userId,
+		long userId,
 		string username,
 		IEnumerable<string> roles);
 
@@ -56,7 +56,7 @@ public interface ITokenService
 	/// The plaintext refresh token (hash stored in database).
 	/// </returns>
 	public Task<string> GenerateRefreshTokenAsync(
-		int userId,
+		long userId,
 		string? clientIp,
 		bool rememberMe = false,
 		CancellationToken cancellationToken = default);
@@ -73,7 +73,7 @@ public interface ITokenService
 	/// <returns>
 	/// The user ID if valid, null otherwise.
 	/// </returns>
-	public Task<int?> ValidateRefreshTokenAsync(
+	public Task<long?> ValidateRefreshTokenAsync(
 		string refreshToken,
 		CancellationToken cancellationToken = default);
 
@@ -129,6 +129,6 @@ public interface ITokenService
 	/// Number of tokens revoked.
 	/// </returns>
 	public Task<int> RevokeAllUserTokensAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default);
 }

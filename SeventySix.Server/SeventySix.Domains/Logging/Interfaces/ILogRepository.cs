@@ -70,7 +70,7 @@ public interface ILogRepository
 	/// True if deletion succeeded, otherwise false.
 	/// </returns>
 	public Task<bool> DeleteByIdAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -86,6 +86,6 @@ public interface ILogRepository
 	/// The number of logs deleted.
 	/// </returns>
 	public Task<int> DeleteBatchAsync(
-		int[] ids,
+		long[] ids,
 		CancellationToken cancellationToken = default);
 }

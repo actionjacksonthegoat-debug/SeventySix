@@ -94,6 +94,7 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 			// Skip if it's not a persisted entity (no DbSet reference expected)
 			bool isPersistedEntity =
 				content.Contains("public int Id")
+				|| content.Contains("public long Id")
 				|| content.Contains("public string Id");
 
 			if (!isPersistedEntity)

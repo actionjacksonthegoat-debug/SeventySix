@@ -26,7 +26,7 @@ public interface ICredentialRepository
 	/// The credential if found; otherwise, null.
 	/// </returns>
 	public Task<UserCredential?> GetByUserIdAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -42,7 +42,7 @@ public interface ICredentialRepository
 	/// The credential if found; otherwise, null.
 	/// </returns>
 	public Task<UserCredential?> GetByUserIdForUpdateAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

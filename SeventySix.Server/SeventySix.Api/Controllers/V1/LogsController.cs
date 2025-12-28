@@ -71,7 +71,7 @@ public class LogsController(
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public async Task<IActionResult> DeleteLogAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default)
 	{
 		bool deleted =
@@ -105,7 +105,7 @@ public class LogsController(
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<int>> DeleteLogBatchAsync(
-		[FromBody] int[] ids,
+		[FromBody] long[] ids,
 		CancellationToken cancellationToken = default)
 	{
 		if (ids == null || ids.Length == 0)

@@ -25,7 +25,7 @@ public static class DeleteLogsBatchCommandHandler
 	/// The number of logs deleted.
 	/// </returns>
 	public static async Task<int> HandleAsync(
-		int[] logIds,
+		long[] logIds,
 		ILogRepository repository,
 		CancellationToken cancellationToken)
 	{

@@ -44,7 +44,7 @@ internal class PasswordResetTokenRepository(IdentityDbContext context)
 
 	/// <inheritdoc/>
 	public async Task<int> InvalidateAllUserTokensAsync(
-		int userId,
+		long userId,
 		DateTime invalidatedAt,
 		CancellationToken cancellationToken = default) =>
 		await context

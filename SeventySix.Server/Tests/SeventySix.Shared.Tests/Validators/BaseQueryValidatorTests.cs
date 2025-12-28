@@ -6,6 +6,7 @@ using FluentValidation.TestHelper;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Shared.DTOs;
 using SeventySix.Shared.Validators;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Shared.Tests.Validators;
 
@@ -31,7 +32,7 @@ public class BaseQueryValidatorTests
 				Page = 1,
 				PageSize = 20,
 				SearchTerm = "test",
-				SortBy = "Id",
+				SortBy = PropertyConstants.Id,
 			};
 
 		// Act

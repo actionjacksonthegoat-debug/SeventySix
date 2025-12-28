@@ -9,4 +9,4 @@ namespace SeventySix.Identity;
 /// <param name="ExcludeUserId">
 /// Optional user ID to exclude from the check (useful for updates).
 /// </param>
-public record CheckUsernameExistsQuery(string Username, int? ExcludeUserId);
+public record CheckUsernameExistsQuery(string Username, long? ExcludeUserId);

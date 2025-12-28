@@ -143,7 +143,7 @@ public static class SetPasswordCommandHandler
 
 	private static async Task<UserDto> GetActiveUserAsync(
 		IMessageBus messageBus,
-		int userId,
+		long userId,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
@@ -167,7 +167,7 @@ public static class SetPasswordCommandHandler
 	private static async Task UpdateCredentialAsync(
 		ICredentialRepository credentialRepository,
 		IPasswordHasher passwordHasher,
-		int userId,
+		long userId,
 		string newPassword,
 		DateTime now,
 		CancellationToken cancellationToken)

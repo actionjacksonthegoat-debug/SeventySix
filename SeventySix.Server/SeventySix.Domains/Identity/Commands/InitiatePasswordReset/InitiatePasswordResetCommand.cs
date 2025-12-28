@@ -13,4 +13,4 @@ namespace SeventySix.Identity;
 /// <param name="IsNewUser">
 /// Whether this is a new user (sends welcome email vs reset email).
 /// </param>
-public record InitiatePasswordResetCommand(int UserId, bool IsNewUser);
+public record InitiatePasswordResetCommand(long UserId, bool IsNewUser);

@@ -497,7 +497,7 @@ public sealed class QueryBuilderTests
 
 public sealed class TestEntity
 {
-	public int Id { get; set; }
+	public long Id { get; set; }
 	public string Name { get; set; } = string.Empty;
 	public int Age { get; set; }
 	public bool IsActive { get; set; }

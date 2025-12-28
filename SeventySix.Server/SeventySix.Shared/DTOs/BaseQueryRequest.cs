@@ -35,9 +35,9 @@ public record BaseQueryRequest
 	public DateTime? EndDate { get; init; }
 
 	/// <summary>
-	/// Field name to sort by (defaults to "Id").
+	/// Field name to sort by (defaults to PropertyConstants.Id).
 	/// </summary>
-	public string? SortBy { get; init; } = "Id";
+	public string? SortBy { get; init; } = PropertyConstants.Id;
 
 	/// <summary>
 	/// When true, sorts descending; otherwise ascending.

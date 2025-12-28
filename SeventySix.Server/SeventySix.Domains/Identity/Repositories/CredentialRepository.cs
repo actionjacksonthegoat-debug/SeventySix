@@ -18,7 +18,7 @@ internal class CredentialRepository(IdentityDbContext context)
 {
 	/// <inheritdoc/>
 	public async Task<UserCredential?> GetByUserIdAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default) =>
 		await context
 			.UserCredentials
@@ -29,7 +29,7 @@ internal class CredentialRepository(IdentityDbContext context)
 
 	/// <inheritdoc/>
 	public async Task<UserCredential?> GetByUserIdForUpdateAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default) =>
 		await context.UserCredentials.FirstOrDefaultAsync(
 			credential => credential.UserId == userId,

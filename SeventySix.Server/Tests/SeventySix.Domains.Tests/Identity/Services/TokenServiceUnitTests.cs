@@ -187,7 +187,7 @@ public class TokenServiceUnitTests
 	/// The generated JWT access token string.
 	/// </returns>
 	private string GenerateTestAccessToken(
-		int userId = 1,
+		long userId = 1L,
 		string username = "testuser",
 		List<string>? roles = null) =>
 		Service.GenerateAccessToken(

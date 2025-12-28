@@ -10,4 +10,4 @@ namespace SeventySix.Identity.Queries.GetAvailableRoles;
 /// <param name="UserId">
 /// The ID of the user.
 /// </param>
-public sealed record GetAvailableRolesQuery(int UserId);
+public sealed record GetAvailableRolesQuery(long UserId);

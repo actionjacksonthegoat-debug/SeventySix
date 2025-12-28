@@ -22,17 +22,17 @@ public class UserRole : IAuditableEntity
 	/// <summary>
 	/// Gets or sets the unique identifier.
 	/// </summary>
-	public int Id { get; set; }
+	public long Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the user ID (FK to identity.users).
 	/// </summary>
-	public int UserId { get; set; }
+	public long UserId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the role ID (FK to SecurityRoles).
 	/// </summary>
-	public int RoleId { get; set; }
+	public long RoleId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the security role (navigation property).

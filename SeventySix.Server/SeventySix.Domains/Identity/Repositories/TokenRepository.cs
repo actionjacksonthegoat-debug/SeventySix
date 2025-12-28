@@ -25,7 +25,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 
 	/// <inheritdoc/>
 	public async Task<int> GetActiveSessionCountAsync(
-		int userId,
+		long userId,
 		DateTime currentTime,
 		CancellationToken cancellationToken = default) =>
 		await context
@@ -57,7 +57,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 
 	/// <inheritdoc/>
 	public async Task<int> RevokeAllUserTokensAsync(
-		int userId,
+		long userId,
 		DateTime revokedAt,
 		CancellationToken cancellationToken = default) =>
 		await context
@@ -89,7 +89,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 
 	/// <inheritdoc/>
 	public async Task RevokeOldestActiveTokenAsync(
-		int userId,
+		long userId,
 		DateTime currentTime,
 		DateTime revokedAt,
 		CancellationToken cancellationToken = default) =>
@@ -108,7 +108,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 				cancellationToken);
 
 	/// <inheritdoc/>
-	public async Task<int?> ValidateTokenAsync(
+	public async Task<long?> ValidateTokenAsync(
 		string tokenHash,
 		DateTime currentTime,
 		CancellationToken cancellationToken = default)

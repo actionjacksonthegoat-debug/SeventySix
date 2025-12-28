@@ -13,4 +13,4 @@ namespace SeventySix.Identity;
 /// <param name="Request">
 /// The change password request.
 /// </param>
-public record ChangePasswordCommand(int UserId, ChangePasswordRequest Request);
+public record ChangePasswordCommand(long UserId, ChangePasswordRequest Request);

@@ -96,7 +96,7 @@ public static class ApiEndpoints
 		/// <returns>
 		/// Endpoint URL.
 		/// </returns>
-		public static string ById(int id) => $"{Base}/{id}";
+		public static string ById(long id) => $"{Base}/{id}";
 
 		/// <summary>
 		/// Gets user roles endpoint.
@@ -107,7 +107,7 @@ public static class ApiEndpoints
 		/// <returns>
 		/// Endpoint URL.
 		/// </returns>
-		public static string Roles(int id) => $"{Base}/{id}/roles";
+		public static string Roles(long id) => $"{Base}/{id}/roles";
 
 		/// <summary>
 		/// Gets approve permission request endpoint.
@@ -118,7 +118,7 @@ public static class ApiEndpoints
 		/// <returns>
 		/// Endpoint URL.
 		/// </returns>
-		public static string ApprovePermission(int requestId) =>
+		public static string ApprovePermission(long requestId) =>
 			$"{PermissionRequests}/{requestId}/approve";
 
 		/// <summary>
@@ -130,7 +130,7 @@ public static class ApiEndpoints
 		/// <returns>
 		/// Endpoint URL.
 		/// </returns>
-		public static string DenyPermission(int requestId) =>
+		public static string DenyPermission(long requestId) =>
 			$"{PermissionRequests}/{requestId}/deny";
 	}
 
@@ -161,7 +161,7 @@ public static class ApiEndpoints
 		/// <returns>
 		/// Endpoint URL.
 		/// </returns>
-		public static string ById(int id) => $"{Base}/{id}";
+		public static string ById(long id) => $"{Base}/{id}";
 
 		/// <summary>
 		/// Gets cleanup endpoint with cutoff date.

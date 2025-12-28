@@ -21,13 +21,15 @@ public static class ClaimsPrincipalExtensions
 	/// <returns>
 	/// The user ID if present and valid; otherwise, null.
 	/// </returns>
-	public static int? GetUserId(this ClaimsPrincipal principal)
+	public static long? GetUserId(this ClaimsPrincipal principal)
 	{
 		string? userIdClaim =
 			principal.FindFirstValue(
 				JwtRegisteredClaimNames.Sub);
 
-		return int.TryParse(userIdClaim, out int userId) ? userId : null;
+		return long.TryParse(userIdClaim, out long userId)
+			? userId
+			: null;
 	}
 
 	/// <summary>
@@ -40,7 +42,7 @@ public static class ClaimsPrincipalExtensions
 	/// The user ID.
 	/// </returns>
 	/// <exception cref="UnauthorizedAccessException">If user ID claim is missing or invalid.</exception>
-	public static int GetRequiredUserId(this ClaimsPrincipal principal)
+	public static long GetRequiredUserId(this ClaimsPrincipal principal)
 	{
 		return principal.GetUserId()
 			?? throw new UnauthorizedAccessException(

@@ -41,7 +41,7 @@ public interface ILogService : IDatabaseHealthCheck
 	/// True if the log was deleted, false if not found.
 	/// </returns>
 	public Task<bool> DeleteLogByIdAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -57,7 +57,7 @@ public interface ILogService : IDatabaseHealthCheck
 	/// The number of logs deleted.
 	/// </returns>
 	public Task<int> DeleteLogsBatchAsync(
-		int[] ids,
+		long[] ids,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

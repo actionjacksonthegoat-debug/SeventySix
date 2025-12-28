@@ -22,7 +22,7 @@ public class RefreshToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the unique identifier.
 	/// </summary>
-	public int Id { get; set; }
+	public long Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the hashed token value (SHA256).
@@ -40,7 +40,7 @@ public class RefreshToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the user ID (FK to identity.users).
 	/// </summary>
-	public int UserId { get; set; }
+	public long UserId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the expiration date.

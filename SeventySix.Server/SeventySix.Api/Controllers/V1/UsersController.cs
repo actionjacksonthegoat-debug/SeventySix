@@ -77,7 +77,7 @@ public class UsersController(
 		[FromBody] UpdateProfileRequest request,
 		CancellationToken cancellationToken)
 	{
-		if (User.GetUserId() is not int userId)
+		if (User.GetUserId() is not long userId)
 		{
 			return Unauthorized();
 		}
@@ -160,7 +160,7 @@ public class UsersController(
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<UserDto>> GetByIdAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken)
 	{
 		UserDto? user =
@@ -323,7 +323,7 @@ public class UsersController(
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IActionResult> DeleteAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken)
 	{
 		bool result =
@@ -355,7 +355,7 @@ public class UsersController(
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IActionResult> RestoreAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken)
 	{
 		bool result =
@@ -464,7 +464,7 @@ public class UsersController(
 	[OutputCache(PolicyName = CachePolicyConstants.Users)]
 	public async Task<ActionResult<bool>> CheckUsernameAsync(
 		string username,
-		[FromQuery] int? excludeId,
+		[FromQuery] long? excludeId,
 		CancellationToken cancellationToken)
 	{
 		bool exists =
@@ -495,7 +495,7 @@ public class UsersController(
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<int>> BulkActivateAsync(
-		[FromBody] IEnumerable<int> ids,
+		[FromBody] IEnumerable<long> ids,
 		CancellationToken cancellationToken)
 	{
 		int count =
@@ -530,7 +530,7 @@ public class UsersController(
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<int>> BulkDeactivateAsync(
-		[FromBody] IEnumerable<int> ids,
+		[FromBody] IEnumerable<long> ids,
 		CancellationToken cancellationToken)
 	{
 		int count =
@@ -569,7 +569,7 @@ public class UsersController(
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IActionResult> ResetPasswordAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken)
 	{
 		// Verify user exists

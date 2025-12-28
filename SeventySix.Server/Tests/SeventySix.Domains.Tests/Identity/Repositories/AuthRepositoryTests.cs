@@ -222,7 +222,7 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 
 		// SecurityRoles should be seeded - check for User role
 		// Act
-		int? roleId =
+		long? roleId =
 			await repository.GetRoleIdByNameAsync(
 			"User",
 			CancellationToken.None);
@@ -244,7 +244,7 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 			new(context);
 
 		// Act
-		int? roleId =
+		long? roleId =
 			await repository.GetRoleIdByNameAsync(
 			"NonExistentRole",
 			CancellationToken.None);

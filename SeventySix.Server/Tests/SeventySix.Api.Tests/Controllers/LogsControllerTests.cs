@@ -235,7 +235,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Arrange - Create a log to delete
 		FakeTimeProvider timeProvider = new();
-		int logId;
+		long logId;
 		{
 			using IServiceScope scope =
 				SharedFactory.Services.CreateScope();
@@ -318,7 +318,7 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 				Environment = "Test",
 			});
 
-		int[] idsToDelete =
+		long[] idsToDelete =
 			[log1.Id, log2.Id];
 
 		// Act

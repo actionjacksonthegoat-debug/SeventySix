@@ -14,7 +14,7 @@ namespace SeventySix.TestUtilities.Builders;
 public class UserDtoBuilder
 {
 	private readonly TimeProvider TimeProvider;
-	private int Id = 1;
+	private long Id = 1L;
 	private string Username = "testuser";
 	private string Email = "test@example.com";
 	private string? FullName = null;
@@ -46,7 +46,7 @@ public class UserDtoBuilder
 	/// <summary>
 	/// Sets the user ID.
 	/// </summary>
-	public UserDtoBuilder WithId(int value)
+	public UserDtoBuilder WithId(long value)
 	{
 		Id = value;
 		return this;

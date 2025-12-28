@@ -19,21 +19,21 @@ public interface IPermissionRequestRepository
 	/// Gets a permission request by ID.
 	/// </summary>
 	public Task<PermissionRequest?> GetByIdAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Gets multiple permission requests by IDs.
 	/// </summary>
 	public Task<IEnumerable<PermissionRequest>> GetByIdsAsync(
-		IEnumerable<int> ids,
+		IEnumerable<long> ids,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Gets permission requests for a specific user.
 	/// </summary>
 	public Task<IEnumerable<PermissionRequest>> GetByUserIdAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -43,14 +43,14 @@ public interface IPermissionRequestRepository
 	/// Used to hide roles user already has from available roles list.
 	/// </remarks>
 	public Task<IEnumerable<string>> GetUserExistingRolesAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Gets user email by ID (for whitelist check).
 	/// </summary>
 	public Task<string?> GetUserEmailAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -64,21 +64,21 @@ public interface IPermissionRequestRepository
 	/// Deletes a permission request (handled).
 	/// </summary>
 	public Task DeleteAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Deletes multiple permission requests (bulk handled).
 	/// </summary>
 	public Task DeleteRangeAsync(
-		IEnumerable<int> ids,
+		IEnumerable<long> ids,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Deletes requests matching user and role (cleanup on direct role add).
 	/// </summary>
 	public Task DeleteByUserAndRoleAsync(
-		int userId,
+		long userId,
 		string role,
 		CancellationToken cancellationToken = default);
 
@@ -94,7 +94,7 @@ public interface IPermissionRequestRepository
 	/// <returns>
 	/// The role ID, or null if not found.
 	/// </returns>
-	public Task<int?> GetRoleIdByNameAsync(
+	public Task<long?> GetRoleIdByNameAsync(
 		string roleName,
 		CancellationToken cancellationToken = default);
 }

@@ -107,7 +107,7 @@ public static class CreatePermissionRequestCommandHandler
 			}
 
 			// Look up role ID from SecurityRoles
-			int? roleId =
+			long? roleId =
 				await repository.GetRoleIdByNameAsync(
 					role,
 					cancellationToken);

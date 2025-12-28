@@ -61,7 +61,7 @@ public class UserNotFoundException : EntityNotFoundException
 	/// Preferred constructor for most cases as it provides specific, actionable error information.
 	/// Example message: "User with id '123' was not found."
 	/// </remarks>
-	public UserNotFoundException(int userId)
+	public UserNotFoundException(long userId)
 		: base("User", userId) { }
 
 	/// <summary>

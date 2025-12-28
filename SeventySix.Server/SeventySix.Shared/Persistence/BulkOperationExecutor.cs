@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Shared.Persistence;
 
@@ -56,15 +57,15 @@ public class BulkOperationExecutor<TEntity>(DbContext context)
 	/// Performance: Uses a single database query and a single SaveChangesAsync call,
 	/// making it efficient for batch operations.
 	/// </remarks>
-	public async Task<int> ExecuteBulkUpdateAsync(
-		IEnumerable<int> ids,
+	public async Task<long> ExecuteBulkUpdateAsync(
+		IEnumerable<long> ids,
 		Action<TEntity> updateAction,
 		CancellationToken cancellationToken = default)
 	{
 		List<TEntity> entities =
 			await context
 				.Set<TEntity>()
-				.Where(entity => ids.Contains(EF.Property<int>(entity, "Id")))
+				.Where(entity => ids.Contains(EF.Property<long>(entity, PropertyConstants.Id)))
 				.ToListAsync(cancellationToken);
 
 		if (entities.Count == 0)

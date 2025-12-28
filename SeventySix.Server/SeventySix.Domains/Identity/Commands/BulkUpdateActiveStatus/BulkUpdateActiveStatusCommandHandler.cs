@@ -28,12 +28,12 @@ public static class BulkUpdateActiveStatusCommandHandler
 	/// Repository call is already atomic via EF Core's SaveChangesAsync.
 	/// No explicit transaction needed for single operation.
 	/// </remarks>
-	public static async Task<int> HandleAsync(
+	public static async Task<long> HandleAsync(
 		BulkUpdateActiveStatusCommand command,
 		IUserCommandRepository repository,
 		CancellationToken cancellationToken)
 	{
-		int count =
+		long count =
 			await repository.BulkUpdateActiveStatusAsync(
 				command.UserIds,
 				command.IsActive,

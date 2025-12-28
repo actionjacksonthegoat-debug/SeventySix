@@ -234,11 +234,15 @@ public class UsersControllerTests
 		CreatedAtRouteResult createdResult =
 			Assert.IsType<CreatedAtRouteResult>(result.Result);
 		Assert.Equal("GetUserById", createdResult.RouteName);
-		Assert.Equal(456, createdResult.RouteValues!["id"]);
+		Assert.Equal(
+			456L,
+			long.TryParse(createdResult.RouteValues!["id"]?.ToString(), out long id)
+				? id
+				: 0L);
 
 		UserDto returnedUser =
 			Assert.IsType<UserDto>(createdResult.Value);
-		Assert.Equal(456, returnedUser.Id);
+		Assert.Equal(456L, returnedUser.Id);
 		Assert.Equal("new_user", returnedUser.Username);
 	}
 
@@ -653,7 +657,7 @@ public class UsersControllerTests
 	public async Task BulkActivateAsync_ValidRequest_ReturnsOkWithCountAsync()
 	{
 		// Arrange
-		List<int> ids =
+		List<long> ids =
 			[1, 2, 3];
 		int expectedCount = 3;
 
@@ -679,7 +683,7 @@ public class UsersControllerTests
 	public async Task BulkDeactivateAsync_ValidRequest_ReturnsOkWithCountAsync()
 	{
 		// Arrange
-		List<int> ids =
+		List<long> ids =
 			[1, 2, 3];
 		int expectedCount = 3;
 

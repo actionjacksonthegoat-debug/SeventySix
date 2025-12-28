@@ -144,19 +144,19 @@ public class AuthenticationServiceTests
 			};
 
 		UserQueryRepository
-			.GetUserRolesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+			.GetUserRolesAsync(Arg.Any<long>(), Arg.Any<CancellationToken>())
 			.Returns(Array.Empty<string>());
 
 		TokenService
 			.GenerateAccessToken(
-				Arg.Any<int>(),
+				Arg.Any<long>(),
 				Arg.Any<string>(),
 				Arg.Any<List<string>>())
 			.Returns("token");
 
 		TokenService
 			.GenerateRefreshTokenAsync(
-				Arg.Any<int>(),
+				Arg.Any<long>(),
 				Arg.Any<string?>(),
 				true, // rememberMe
 				Arg.Any<CancellationToken>())
@@ -192,25 +192,25 @@ public class AuthenticationServiceTests
 		User user =
 			new()
 			{
-				Id = 3,
+				Id = 3L,
 				Username = "newuser",
 				Email = "new@example.com",
 			};
 
 		UserQueryRepository
-			.GetUserRolesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+			.GetUserRolesAsync(Arg.Any<long>(), Arg.Any<CancellationToken>())
 			.Returns(Array.Empty<string>());
 
 		TokenService
 			.GenerateAccessToken(
-				Arg.Any<int>(),
+				Arg.Any<long>(),
 				Arg.Any<string>(),
 				Arg.Any<List<string>>())
 			.Returns("token");
 
 		TokenService
 			.GenerateRefreshTokenAsync(
-				Arg.Any<int>(),
+				Arg.Any<long>(),
 				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())
@@ -260,14 +260,14 @@ public class AuthenticationServiceTests
 		List<string>? capturedRoles = null;
 		TokenService
 			.GenerateAccessToken(
-				Arg.Any<int>(),
+				Arg.Any<long>(),
 				Arg.Any<string>(),
 				Arg.Do<List<string>>(roleList => capturedRoles = roleList))
 			.Returns("token");
 
 		TokenService
 			.GenerateRefreshTokenAsync(
-				Arg.Any<int>(),
+				Arg.Any<long>(),
 				Arg.Any<string?>(),
 				Arg.Any<bool>(),
 				Arg.Any<CancellationToken>())

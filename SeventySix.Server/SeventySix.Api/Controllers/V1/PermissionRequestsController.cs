@@ -89,7 +89,7 @@ public class PermissionRequestsController(IMessageBus messageBus)
 		ActionResult<IEnumerable<AvailableRoleDto>>
 	> GetAvailableRolesAsync(CancellationToken cancellationToken)
 	{
-		int userId = User.GetRequiredUserId();
+		long userId = User.GetRequiredUserId();
 
 		IEnumerable<AvailableRoleDto> roles =
 			await messageBus.InvokeAsync<
@@ -129,7 +129,7 @@ public class PermissionRequestsController(IMessageBus messageBus)
 		[FromBody] CreatePermissionRequestDto request,
 		CancellationToken cancellationToken)
 	{
-		int userId = User.GetRequiredUserId();
+		long userId = User.GetRequiredUserId();
 
 		string username = User.GetRequiredUsername();
 
@@ -237,7 +237,7 @@ public class PermissionRequestsController(IMessageBus messageBus)
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<int>> BulkApprovePermissionRequestsAsync(
-		[FromBody] IEnumerable<int> ids,
+		[FromBody] IEnumerable<long> ids,
 		CancellationToken cancellationToken)
 	{
 		int count =
@@ -268,7 +268,7 @@ public class PermissionRequestsController(IMessageBus messageBus)
 	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<int>> BulkRejectPermissionRequestsAsync(
-		[FromBody] IEnumerable<int> ids,
+		[FromBody] IEnumerable<long> ids,
 		CancellationToken cancellationToken)
 	{
 		int count =

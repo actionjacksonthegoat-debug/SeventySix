@@ -18,5 +18,5 @@ public interface IEntity
 	/// <summary>
 	/// Gets or sets the unique identifier for this entity.
 	/// </summary>
-	public int Id { get; set; }
+	public long Id { get; set; }
 }

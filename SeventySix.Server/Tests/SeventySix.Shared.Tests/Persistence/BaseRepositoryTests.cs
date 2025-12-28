@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.Shared.Entities;
 using SeventySix.Shared.Persistence;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Shared.Tests.Persistence;
 
@@ -197,7 +198,7 @@ public class BaseRepositoryTests
 
 		protected override string GetEntityIdentifier(TestEntity entity)
 		{
-			return $"Id={entity.Id}, Name={entity.Name}";
+			return $"{PropertyConstants.Id}={entity.Id}, Name={entity.Name}";
 		}
 	}
 
@@ -206,7 +207,7 @@ public class BaseRepositoryTests
 	/// </summary>
 	public class TestEntity : IEntity
 	{
-		public int Id { get; set; }
+		public long Id { get; set; }
 		public string Name { get; set; } = string.Empty;
 	}
 

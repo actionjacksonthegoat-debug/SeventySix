@@ -23,7 +23,7 @@ public class SecurityRole : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the unique identifier.
 	/// </summary>
-	public int Id { get; set; }
+	public long Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the role name (e.g., "Admin", "Developer", "User").

@@ -29,8 +29,8 @@ namespace SeventySix.Identity;
 /// Date and time when the request was created (UTC).
 /// </param>
 public record PermissionRequestDto(
-	int Id,
-	int UserId,
+	long Id,
+	long UserId,
 	string Username,
 	string RequestedRole,
 	string? RequestMessage,

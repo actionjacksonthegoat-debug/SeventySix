@@ -10,4 +10,4 @@ namespace SeventySix.Identity;
 /// <param name="UserId">
 /// The user ID.
 /// </param>
-public record GetUserProfileQuery(int UserId);
+public record GetUserProfileQuery(long UserId);

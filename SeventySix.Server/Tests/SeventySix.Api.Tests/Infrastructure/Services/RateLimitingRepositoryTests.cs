@@ -389,22 +389,15 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 		string? Error
 	)> ExecuteConcurrentIncrementAsync(int index, string apiName)
 	{
-		try
+		(RateLimitingService service, ApiTrackingDbContext context) =
+			CreateRateLimitingService();
+		await using (context)
 		{
-			(RateLimitingService service, ApiTrackingDbContext context) =
-				CreateRateLimitingService();
-			await using (context)
-			{
-				bool result =
-					await service.TryIncrementRequestCountAsync(
+			bool result =
+				await service.TryIncrementRequestCountAsync(
 					apiName,
 					"https://api.test.com");
-				return (true, result, index, null);
-			}
-		}
-		catch (Exception ex)
-		{
-			return (false, false, index, ex.Message);
+			return (true, result, index, null);
 		}
 	}
 

@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Persistence;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.ApiTracking;
 
@@ -31,7 +32,7 @@ internal class ThirdPartyApiRequestRepository(
 	/// <inheritdoc/>
 	protected override string GetEntityIdentifier(ThirdPartyApiRequest entity)
 	{
-		return $"Id={entity.Id}, ApiName={entity.ApiName}, ResetDate={entity.ResetDate}";
+		return $"{PropertyConstants.Id}={entity.Id}, ApiName={entity.ApiName}, ResetDate={entity.ResetDate}";
 	}
 
 	/// <inheritdoc/>
@@ -42,28 +43,16 @@ internal class ThirdPartyApiRequestRepository(
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		try
-		{
-			// Uses composite index on (ApiName, ResetDate) for O(log n) lookup
-			ThirdPartyApiRequest? request =
-				await GetQueryable()
-					.FirstOrDefaultAsync(
-						request =>
-							request.ApiName == apiName
-							&& request.ResetDate == resetDate,
-						cancellationToken);
+		// Uses composite index on (ApiName, ResetDate) for O(log n) lookup
+		ThirdPartyApiRequest? request =
+			await GetQueryable()
+				.FirstOrDefaultAsync(
+					request =>
+						request.ApiName == apiName
+						&& request.ResetDate == resetDate,
+					cancellationToken);
 
-			return request;
-		}
-		catch (Exception ex)
-		{
-			base.logger.LogError(
-				ex,
-				"Error retrieving ThirdPartyApiRequest for {ApiName} on {ResetDate}",
-				apiName,
-				resetDate);
-			throw;
-		}
+		return request;
 	}
 
 	/// <inheritdoc/>
@@ -84,57 +73,36 @@ internal class ThirdPartyApiRequestRepository(
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(apiName);
 
-		try
-		{
-			// Use QueryBuilder for read-only query with ordering
-			QueryBuilder<ThirdPartyApiRequest> queryBuilder =
-				new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
-			queryBuilder
-				.Where(request => request.ApiName == apiName)
-				.OrderByDescending(request => request.ResetDate);
+		// Use QueryBuilder for read-only query with ordering
+		QueryBuilder<ThirdPartyApiRequest> queryBuilder =
+			new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
+		queryBuilder
+			.Where(request => request.ApiName == apiName)
+			.OrderByDescending(request => request.ResetDate);
 
-			List<ThirdPartyApiRequest> requests =
-				await queryBuilder
-					.Build()
-					.ToListAsync(cancellationToken);
+		List<ThirdPartyApiRequest> requests =
+			await queryBuilder
+				.Build()
+				.ToListAsync(cancellationToken);
 
-			return requests;
-		}
-		catch (Exception ex)
-		{
-			base.logger.LogError(
-				ex,
-				"Error retrieving ThirdPartyApiRequest records for {ApiName}",
-				apiName);
-			throw;
-		}
+		return requests;
 	}
 
 	/// <inheritdoc/>
 	public async Task<IEnumerable<ThirdPartyApiRequest>> GetAllAsync(
 		CancellationToken cancellationToken = default)
 	{
-		try
-		{
-			// Use QueryBuilder for read-only query with ordering
-			QueryBuilder<ThirdPartyApiRequest> queryBuilder =
-				new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
-			queryBuilder.OrderBy(request => request.ApiName);
+		// Use QueryBuilder for read-only query with ordering
+		QueryBuilder<ThirdPartyApiRequest> queryBuilder =
+			new QueryBuilder<ThirdPartyApiRequest>(GetQueryable());
+		queryBuilder.OrderBy(request => request.ApiName);
 
-			List<ThirdPartyApiRequest> requests =
-				await queryBuilder
-					.Build()
-					.ToListAsync(cancellationToken);
+		List<ThirdPartyApiRequest> requests =
+			await queryBuilder
+				.Build()
+				.ToListAsync(cancellationToken);
 
-			return requests;
-		}
-		catch (Exception ex)
-		{
-			base.logger.LogError(
-				ex,
-				"Error retrieving all ThirdPartyApiRequest records");
-			throw;
-		}
+		return requests;
 	}
 
 	/// <inheritdoc/>
@@ -142,25 +110,14 @@ internal class ThirdPartyApiRequestRepository(
 		DateOnly cutoffDate,
 		CancellationToken cancellationToken = default)
 	{
-		try
-		{
-			// Batch delete operation
-			int deletedCount =
-				await context
-					.ThirdPartyApiRequests
-					.Where(request =>
-						request.ResetDate < cutoffDate)
-					.ExecuteDeleteAsync(cancellationToken);
+		// Batch delete operation
+		int deletedCount =
+			await context
+				.ThirdPartyApiRequests
+				.Where(request =>
+					request.ResetDate < cutoffDate)
+				.ExecuteDeleteAsync(cancellationToken);
 
-			return deletedCount;
-		}
-		catch (Exception ex)
-		{
-			base.logger.LogError(
-				ex,
-				"Error deleting ThirdPartyApiRequest records older than {CutoffDate}",
-				cutoffDate);
-			throw;
-		}
+		return deletedCount;
 	}
 }

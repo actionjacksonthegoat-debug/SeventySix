@@ -13,4 +13,4 @@ namespace SeventySix.Identity;
 /// <param name="Role">
 /// The role name to add.
 /// </param>
-public record AddUserRoleCommand(int UserId, string Role);
+public record AddUserRoleCommand(long UserId, string Role);

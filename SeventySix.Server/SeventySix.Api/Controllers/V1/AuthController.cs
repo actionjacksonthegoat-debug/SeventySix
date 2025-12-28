@@ -460,7 +460,7 @@ public class AuthController(
 	public async Task<ActionResult<UserProfileDto>> GetCurrentUserAsync(
 		CancellationToken cancellationToken)
 	{
-		if (User.GetUserId() is not int userId)
+		if (User.GetUserId() is not long userId)
 		{
 			return Unauthorized();
 		}
@@ -505,7 +505,7 @@ public class AuthController(
 		[FromBody] ChangePasswordRequest request,
 		CancellationToken cancellationToken)
 	{
-		if (User.GetUserId() is not int userId)
+		if (User.GetUserId() is not long userId)
 		{
 			return Unauthorized();
 		}

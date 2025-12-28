@@ -456,7 +456,7 @@ public class AuditInterceptorTests : IDisposable
 
 	private class TestAuditableEntity : IAuditableEntity
 	{
-		public int Id { get; set; }
+		public long Id { get; set; }
 		public string Name { get; set; } = string.Empty;
 		public DateTime CreateDate { get; set; }
 		public DateTime? ModifyDate { get; set; }
@@ -466,7 +466,7 @@ public class AuditInterceptorTests : IDisposable
 
 	private class TestModifiableEntity : IModifiableEntity
 	{
-		public int Id { get; set; }
+		public long Id { get; set; }
 		public string Name { get; set; } = string.Empty;
 		public DateTime CreateDate { get; set; }
 		public DateTime? ModifyDate { get; set; }
@@ -474,7 +474,7 @@ public class AuditInterceptorTests : IDisposable
 
 	private class TestCreatableEntity : ICreatableEntity
 	{
-		public int Id { get; set; }
+		public long Id { get; set; }
 		public string Name { get; set; } = string.Empty;
 		public DateTime CreateDate { get; set; }
 	}

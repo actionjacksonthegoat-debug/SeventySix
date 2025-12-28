@@ -33,7 +33,7 @@ internal class AuthRepository(IdentityDbContext context) : IAuthRepository
 
 	/// <inheritdoc/>
 	public async Task UpdateLastLoginAsync(
-		int userId,
+		long userId,
 		DateTime loginTime,
 		string? clientIp,
 		CancellationToken cancellationToken = default) =>
@@ -85,7 +85,7 @@ internal class AuthRepository(IdentityDbContext context) : IAuthRepository
 	/// <inheritdoc/>
 	public async Task<User> CreateUserWithRoleAsync(
 		User user,
-		int roleId,
+		long roleId,
 		CancellationToken cancellationToken = default)
 	{
 		context.Users.Add(user);
@@ -101,12 +101,12 @@ internal class AuthRepository(IdentityDbContext context) : IAuthRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<int?> GetRoleIdByNameAsync(
+	public async Task<long?> GetRoleIdByNameAsync(
 		string roleName,
 		CancellationToken cancellationToken = default) =>
 		await context
 			.SecurityRoles
 			.Where(role => role.Name == roleName)
-			.Select(role => (int?)role.Id)
+			.Select(role => (long?)role.Id)
 			.FirstOrDefaultAsync(cancellationToken);
 }

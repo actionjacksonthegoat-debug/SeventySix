@@ -44,7 +44,7 @@ public static class RefreshTokensCommandHandler
 		AuthenticationService authenticationService,
 		CancellationToken cancellationToken)
 	{
-		int? userId =
+		long? userId =
 			await tokenService.ValidateRefreshTokenAsync(
 				command.RefreshToken,
 				cancellationToken);

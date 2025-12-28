@@ -50,18 +50,20 @@ test.describe("WCAG Accessibility Compliance", () =>
 			);
 
 			// Log violations for debugging (only if there are failures)
+			// eslint-disable-next-line playwright/no-conditional-in-test
 			if (criticalViolations.length > 0)
-			{			console.log(
-				`Accessibility violations on ${pageInfo.name}:`,
-				JSON.stringify(
-					criticalViolations.map((v: Result) => ({
-						id: v.id,
-						impact: v.impact,
-						description: v.description,
-						nodes: v.nodes.map((n) => n.html).slice(0, 3)
-					})),
-					null,
-					2));
+			{
+				console.log(
+					`Accessibility violations on ${pageInfo.name}:`,
+					JSON.stringify(
+						criticalViolations.map((v: Result) => ({
+							id: v.id,
+							impact: v.impact,
+							description: v.description,
+							nodes: v.nodes.map((n) => n.html).slice(0, 3)
+						})),
+						null,
+						2));
 			}
 
 			expect(

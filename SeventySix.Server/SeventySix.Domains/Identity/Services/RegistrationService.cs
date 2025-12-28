@@ -39,11 +39,11 @@ public class RegistrationService(
 	/// The role ID when found.
 	/// </returns>
 	/// <exception cref="InvalidOperationException">Thrown if role not found.</exception>
-	public async Task<int> GetRoleIdByNameAsync(
+	public async Task<long> GetRoleIdByNameAsync(
 		string roleName,
 		CancellationToken cancellationToken)
 	{
-		int? roleId =
+		long? roleId =
 			await authRepository.GetRoleIdByNameAsync(
 				roleName,
 				cancellationToken);
@@ -99,7 +99,7 @@ public class RegistrationService(
 		string? fullName,
 		string password,
 		string createdBy,
-		int roleId,
+		long roleId,
 		bool requiresPasswordChange,
 		CancellationToken cancellationToken)
 	{

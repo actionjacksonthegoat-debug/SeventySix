@@ -50,7 +50,7 @@ public class PasswordResetTokenConfigurationTests : DataPostgreSqlTestBase
 		await context.PasswordResetTokens.AddAsync(token);
 		await context.SaveChangesAsync();
 
-		int tokenId = token.Id;
+		long tokenId = token.Id;
 
 		// Verify token exists
 		PasswordResetToken? existingToken =
@@ -118,8 +118,8 @@ public class PasswordResetTokenConfigurationTests : DataPostgreSqlTestBase
 		await context.PasswordResetTokens.AddRangeAsync(token1, token2);
 		await context.SaveChangesAsync();
 
-		int token1Id = token1.Id;
-		int token2Id = token2.Id;
+		long token1Id = token1.Id;
+		long token2Id = token2.Id;
 
 		// Act - Delete user
 		context.Users.Remove(user);

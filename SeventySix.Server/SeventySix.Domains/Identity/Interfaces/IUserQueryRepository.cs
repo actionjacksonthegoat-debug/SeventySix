@@ -26,7 +26,7 @@ public interface IUserQueryRepository
 	/// Gets a user by ID.
 	/// </summary>
 	public Task<User?> GetByIdAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -47,7 +47,7 @@ public interface IUserQueryRepository
 	/// Gets users by IDs.
 	/// </summary>
 	public Task<IEnumerable<User>> GetByIdsAsync(
-		IEnumerable<int> ids,
+		IEnumerable<long> ids,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -80,7 +80,7 @@ public interface IUserQueryRepository
 	/// </summary>
 	public Task<bool> UsernameExistsAsync(
 		string username,
-		int? excludeId = null,
+		long? excludeId = null,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -88,21 +88,21 @@ public interface IUserQueryRepository
 	/// </summary>
 	public Task<bool> EmailExistsAsync(
 		string email,
-		int? excludeId = null,
+		long? excludeId = null,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Gets all roles for a user.
 	/// </summary>
 	public Task<IEnumerable<string>> GetUserRolesAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Checks if a user has a specific role.
 	/// </summary>
 	public Task<bool> HasRoleAsync(
-		int userId,
+		long userId,
 		string role,
 		CancellationToken cancellationToken = default);
 
@@ -110,7 +110,7 @@ public interface IUserQueryRepository
 	/// Gets a user's complete profile with roles and authentication details.
 	/// </summary>
 	public Task<UserProfileDto?> GetUserProfileAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>

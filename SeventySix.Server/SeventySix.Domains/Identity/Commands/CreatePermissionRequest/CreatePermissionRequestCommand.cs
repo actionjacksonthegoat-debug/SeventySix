@@ -17,6 +17,6 @@ namespace SeventySix.Identity.Commands.CreatePermissionRequest;
 /// Permission request details.
 /// </param>
 public record CreatePermissionRequestCommand(
-	int UserId,
+	long UserId,
 	string Username,
 	CreatePermissionRequestDto Request);

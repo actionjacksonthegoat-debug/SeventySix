@@ -52,7 +52,7 @@ public static class JwtTestHelper
 	/// A JWT string signed with the wrong key.
 	/// </returns>
 	public static string GenerateTokenWithWrongKey(
-		int userId,
+		long userId,
 		string username,
 		string email,
 		TimeProvider timeProvider)
@@ -103,7 +103,7 @@ public static class JwtTestHelper
 	/// but this approach ensures the token structure is valid.
 	/// </remarks>
 	public static string GenerateExpiredToken(
-		int userId,
+		long userId,
 		string username,
 		string email,
 		TimeProvider timeProvider)

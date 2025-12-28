@@ -22,12 +22,12 @@ public class PasswordResetToken : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the unique identifier.
 	/// </summary>
-	public int Id { get; set; }
+	public long Id { get; set; }
 
 	/// <summary>
-	/// Gets or sets the user this token belongs to.
+	/// Gets or sets the user id.
 	/// </summary>
-	public int UserId { get; set; }
+	public long UserId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the SHA256 hash of the cryptographically random token.

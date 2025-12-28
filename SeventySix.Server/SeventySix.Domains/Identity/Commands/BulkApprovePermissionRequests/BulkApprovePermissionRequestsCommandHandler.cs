@@ -33,7 +33,7 @@ public static class BulkApprovePermissionRequestsCommandHandler
 		IUserCommandRepository userCommandRepository,
 		CancellationToken cancellationToken)
 	{
-		List<int> idList = command.RequestIds.ToList();
+		List<long> idList = command.RequestIds.ToList();
 
 		IEnumerable<PermissionRequest> requests =
 			await repository.GetByIdsAsync(idList, cancellationToken);

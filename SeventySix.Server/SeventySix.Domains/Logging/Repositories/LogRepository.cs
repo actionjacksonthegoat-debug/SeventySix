@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Persistence;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Logging;
 
@@ -24,7 +25,7 @@ internal class LogRepository(
 	/// <inheritdoc/>
 	protected override string GetEntityIdentifier(Log entity)
 	{
-		return $"Id={entity.Id}, LogLevel={entity.LogLevel}, CreateDate={entity.CreateDate}";
+		return $"{PropertyConstants.Id}={entity.Id}, LogLevel={entity.LogLevel}, CreateDate={entity.CreateDate}";
 	}
 
 	/// <inheritdoc/>
@@ -170,7 +171,7 @@ internal class LogRepository(
 
 	/// <inheritdoc/>
 	public async Task<bool> DeleteByIdAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
@@ -191,13 +192,13 @@ internal class LogRepository(
 
 	/// <inheritdoc/>
 	public async Task<int> DeleteBatchAsync(
-		int[] ids,
+		long[] ids,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(ids);
 		ArgumentOutOfRangeException.ThrowIfZero(ids.Length);
 
-		List<int> idList =
+		List<long> idList =
 			[.. ids];
 
 		List<Log> logsToDelete =

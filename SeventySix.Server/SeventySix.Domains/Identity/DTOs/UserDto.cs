@@ -70,7 +70,7 @@ namespace SeventySix.Identity;
 /// The username of the user who deleted this user.
 /// </param>
 public record UserDto(
-	int Id,
+	long Id,
 	string Username,
 	string Email,
 	string? FullName,

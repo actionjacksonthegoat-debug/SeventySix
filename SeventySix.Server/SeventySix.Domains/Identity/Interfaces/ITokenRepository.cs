@@ -45,7 +45,7 @@ public interface ITokenRepository
 	/// Count of active sessions.
 	/// </returns>
 	public Task<int> GetActiveSessionCountAsync(
-		int userId,
+		long userId,
 		DateTime currentTime,
 		CancellationToken cancellationToken = default);
 
@@ -95,7 +95,7 @@ public interface ITokenRepository
 	/// Number of tokens revoked.
 	/// </returns>
 	public Task<int> RevokeAllUserTokensAsync(
-		int userId,
+		long userId,
 		DateTime revokedAt,
 		CancellationToken cancellationToken = default);
 
@@ -132,7 +132,7 @@ public interface ITokenRepository
 	/// Cancellation token.
 	/// </param>
 	public Task RevokeOldestActiveTokenAsync(
-		int userId,
+		long userId,
 		DateTime currentTime,
 		DateTime revokedAt,
 		CancellationToken cancellationToken = default);
@@ -152,7 +152,7 @@ public interface ITokenRepository
 	/// <returns>
 	/// User ID if token is valid; otherwise, null.
 	/// </returns>
-	public Task<int?> ValidateTokenAsync(
+	public Task<long?> ValidateTokenAsync(
 		string tokenHash,
 		DateTime currentTime,
 		CancellationToken cancellationToken = default);

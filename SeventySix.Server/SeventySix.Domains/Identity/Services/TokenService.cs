@@ -33,7 +33,7 @@ public class TokenService(
 {
 	/// <inheritdoc/>
 	public string GenerateAccessToken(
-		int userId,
+		long userId,
 		string username,
 		IEnumerable<string> roles)
 	{
@@ -82,7 +82,7 @@ public class TokenService(
 
 	/// <inheritdoc/>
 	public async Task<string> GenerateRefreshTokenAsync(
-		int userId,
+		long userId,
 		string? clientIp,
 		bool rememberMe = false,
 		CancellationToken cancellationToken = default)
@@ -215,7 +215,7 @@ public class TokenService(
 	/// The generated plaintext refresh token.
 	/// </returns>
 	private async Task<string> GenerateRefreshTokenInternalAsync(
-		int userId,
+		long userId,
 		string? clientIp,
 		bool rememberMe,
 		Guid familyId,
@@ -273,7 +273,7 @@ public class TokenService(
 	/// Cancellation token.
 	/// </param>
 	private async Task EnforceSessionLimitAsync(
-		int userId,
+		long userId,
 		DateTime now,
 		CancellationToken cancellationToken)
 	{
@@ -300,7 +300,7 @@ public class TokenService(
 	}
 
 	/// <inheritdoc/>
-	public async Task<int?> ValidateRefreshTokenAsync(
+	public async Task<long?> ValidateRefreshTokenAsync(
 		string refreshToken,
 		CancellationToken cancellationToken = default)
 	{
@@ -335,7 +335,7 @@ public class TokenService(
 
 	/// <inheritdoc/>
 	public async Task<int> RevokeAllUserTokensAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default)
 	{
 		DateTime now =

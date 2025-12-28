@@ -10,4 +10,4 @@ namespace SeventySix.Identity.Commands.RejectPermissionRequest;
 /// <param name="RequestId">
 /// The ID of the permission request to reject.
 /// </param>
-public sealed record RejectPermissionRequestCommand(int RequestId);
+public sealed record RejectPermissionRequestCommand(long RequestId);

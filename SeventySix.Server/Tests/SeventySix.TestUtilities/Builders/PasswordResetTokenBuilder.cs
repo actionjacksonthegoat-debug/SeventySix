@@ -29,7 +29,7 @@ namespace SeventySix.TestUtilities.Builders;
 public class PasswordResetTokenBuilder
 {
 	private readonly TimeProvider TimeProvider;
-	private int UserId;
+	private long UserId;
 	private string TokenHash =
 		CryptoExtensions.ComputeSha256Hash(
 		Convert.ToBase64String(Guid.NewGuid().ToByteArray()));
@@ -61,7 +61,7 @@ public class PasswordResetTokenBuilder
 	/// <returns>
 	/// The builder instance for method chaining.
 	/// </returns>
-	public PasswordResetTokenBuilder WithUserId(int userId)
+	public PasswordResetTokenBuilder WithUserId(long userId)
 	{
 		UserId = userId;
 		return this;

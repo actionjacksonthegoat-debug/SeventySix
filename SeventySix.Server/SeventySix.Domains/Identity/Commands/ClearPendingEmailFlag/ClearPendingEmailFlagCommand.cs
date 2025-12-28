@@ -10,4 +10,4 @@ namespace SeventySix.Identity;
 /// <param name="UserId">
 /// The ID of the user to clear the flag for.
 /// </param>
-public record ClearPendingEmailFlagCommand(int UserId);
+public record ClearPendingEmailFlagCommand(long UserId);

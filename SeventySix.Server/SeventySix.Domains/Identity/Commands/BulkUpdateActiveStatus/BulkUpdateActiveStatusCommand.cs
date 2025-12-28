@@ -17,6 +17,6 @@ namespace SeventySix.Identity;
 /// Username of the person modifying the users.
 /// </param>
 public record BulkUpdateActiveStatusCommand(
-	IEnumerable<int> UserIds,
+	IEnumerable<long> UserIds,
 	bool IsActive,
 	string ModifiedBy);

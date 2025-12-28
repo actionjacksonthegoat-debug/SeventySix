@@ -180,7 +180,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 		}
 
 		// Act
-		int? actualUserId =
+		long? actualUserId =
 			await service.ValidateRefreshTokenAsync(
 			tokenValue,
 			CancellationToken.None);
@@ -211,7 +211,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 		TokenService service =
 			CreateService(context);
 		string tokenToRevoke;
-		int? userId = null;
+		long? userId = null;
 
 		if (isValidToken)
 		{
@@ -264,7 +264,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 		await using IdentityDbContext context = CreateIdentityDbContext();
 		TokenService service =
 			CreateService(context);
-		int userId;
+		long userId;
 
 		if (tokensToCreate > 0)
 		{
@@ -353,25 +353,25 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 		// Act - Create tokens up to and beyond limit
 		string firstToken =
 			await service.GenerateRefreshTokenAsync(
-			user.Id,
-			"192.168.1.1",
-			rememberMe: false,
-			CancellationToken.None);
+				user.Id,
+				"192.168.1.1",
+				rememberMe: false,
+				CancellationToken.None);
 
 		string secondToken =
 			await service.GenerateRefreshTokenAsync(
-			user.Id,
-			"192.168.1.2",
-			rememberMe: false,
-			CancellationToken.None);
+				user.Id,
+				"192.168.1.2",
+				rememberMe: false,
+				CancellationToken.None);
 
 		// This should trigger revocation of the oldest (first) token
 		string thirdToken =
 			await service.GenerateRefreshTokenAsync(
-			user.Id,
-			"192.168.1.3",
-			rememberMe: false,
-			CancellationToken.None);
+				user.Id,
+				"192.168.1.3",
+				rememberMe: false,
+				CancellationToken.None);
 
 		// Assert - First token should be revoked
 		List<RefreshToken> tokens =
@@ -468,10 +468,10 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 			CancellationToken.None);
 
 		// Assert - Original token should be revoked
-		int? userId =
+		long? userId =
 			await service.ValidateRefreshTokenAsync(
-			originalToken,
-			CancellationToken.None);
+				originalToken,
+				CancellationToken.None);
 
 		Assert.Null(userId);
 	}
@@ -491,10 +491,10 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 			CancellationToken.None);
 
 		// Act - Attacker tries to use the revoked original token
-		int? userId =
+		long? userId =
 			await service.ValidateRefreshTokenAsync(
-			originalToken,
-			CancellationToken.None);
+				originalToken,
+				CancellationToken.None);
 
 		// Assert
 		Assert.Null(userId);
@@ -537,10 +537,10 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 		Assert.All(familyTokens, t => Assert.True(t.IsRevoked));
 
 		// Verify legitimate user's new token no longer works
-		int? userId =
+		long? userId =
 			await service.ValidateRefreshTokenAsync(
-			legitimateNewToken,
-			CancellationToken.None);
+				legitimateNewToken,
+				CancellationToken.None);
 
 		Assert.Null(userId);
 	}
@@ -618,7 +618,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 	/// </summary>
 	private static async Task<Guid> GetTokenFamilyIdAsync(
 		IdentityDbContext context,
-		int userId)
+		long userId)
 	{
 		RefreshToken? token =
 			await context

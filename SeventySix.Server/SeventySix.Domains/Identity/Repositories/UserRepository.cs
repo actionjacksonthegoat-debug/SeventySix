@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Persistence;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Identity;
 
@@ -23,7 +24,7 @@ internal class UserRepository(
 	/// <inheritdoc/>
 	protected override string GetEntityIdentifier(User entity)
 	{
-		return $"Id={entity.Id}, Username={entity.Username}";
+		return $"{PropertyConstants.Id}={entity.Id}, Username={entity.Username}";
 	}
 
 	/// <inheritdoc/>
@@ -47,13 +48,13 @@ internal class UserRepository(
 
 	/// <inheritdoc/>
 	public async Task<User?> GetByIdAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default)
 	{
-		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
-
-		return await GetQueryable()
-			.FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
+		return id <= 0
+			? throw new ArgumentOutOfRangeException(nameof(id))
+			: await GetQueryable()
+				.FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
 	}
 
 	/// <inheritdoc/>
@@ -79,10 +80,13 @@ internal class UserRepository(
 
 	/// <inheritdoc/>
 	public async Task<bool> DeleteAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default)
 	{
-		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
+		if (id <= 0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(id));
+		}
 
 		return await ExecuteWithErrorHandlingAsync(
 			async () =>
@@ -101,7 +105,7 @@ internal class UserRepository(
 				return true;
 			},
 			nameof(DeleteAsync),
-			$"Id={id}");
+			$"{PropertyConstants.Id}={id}");
 	}
 
 	/// <inheritdoc/>
@@ -133,7 +137,7 @@ internal class UserRepository(
 	/// <inheritdoc/>
 	public async Task<bool> UsernameExistsAsync(
 		string username,
-		int? excludeId = null,
+		long? excludeId = null,
 		CancellationToken cancellationToken = default)
 	{
 		if (excludeId.HasValue)
@@ -151,7 +155,7 @@ internal class UserRepository(
 	/// <inheritdoc/>
 	public async Task<bool> EmailExistsAsync(
 		string email,
-		int? excludeId = null,
+		long? excludeId = null,
 		CancellationToken cancellationToken = default)
 	{
 		string lowerEmail = email.ToLower();
@@ -228,7 +232,7 @@ internal class UserRepository(
 
 	/// <inheritdoc/>
 	public async Task<IEnumerable<User>> GetByIdsAsync(
-		IEnumerable<int> ids,
+		IEnumerable<long> ids,
 		CancellationToken cancellationToken = default)
 	{
 		return await GetQueryable()
@@ -237,8 +241,8 @@ internal class UserRepository(
 	}
 
 	/// <inheritdoc/>
-	public async Task<int> BulkUpdateActiveStatusAsync(
-		IEnumerable<int> ids,
+	public async Task<long> BulkUpdateActiveStatusAsync(
+		IEnumerable<long> ids,
 		bool isActive,
 		CancellationToken cancellationToken = default)
 	{
@@ -252,7 +256,7 @@ internal class UserRepository(
 
 	/// <inheritdoc/>
 	public async Task<bool> SoftDeleteAsync(
-		int id,
+		long id,
 		string deletedBy,
 		CancellationToken cancellationToken = default)
 	{
@@ -281,12 +285,12 @@ internal class UserRepository(
 				return true;
 			},
 			nameof(SoftDeleteAsync),
-			$"Id={id}");
+			$"{PropertyConstants.Id}={id}");
 	}
 
 	/// <inheritdoc/>
 	public async Task<bool> RestoreAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default)
 	{
 		return await ExecuteWithErrorHandlingAsync(
@@ -313,7 +317,7 @@ internal class UserRepository(
 				return true;
 			},
 			nameof(RestoreAsync),
-			$"Id={id}");
+			$"{PropertyConstants.Id}={id}");
 	}
 
 	/// <inheritdoc/>
@@ -342,7 +346,7 @@ internal class UserRepository(
 
 	/// <inheritdoc/>
 	public async Task<IEnumerable<string>> GetUserRolesAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default)
 	{
 		return await context
@@ -359,7 +363,7 @@ internal class UserRepository(
 
 	/// <inheritdoc/>
 	public async Task<bool> HasRoleAsync(
-		int userId,
+		long userId,
 		string role,
 		CancellationToken cancellationToken = default)
 	{
@@ -379,16 +383,16 @@ internal class UserRepository(
 
 	/// <inheritdoc/>
 	public async Task AddRoleAsync(
-		int userId,
+		long userId,
 		string role,
 		CancellationToken cancellationToken = default)
 	{
 		// Look up role ID from SecurityRoles
-		int? roleId =
+		long? roleId =
 			await context
 				.SecurityRoles
 				.Where(securityRole => securityRole.Name == role)
-				.Select(securityRole => (int?)securityRole.Id)
+				.Select(securityRole => (long?)securityRole.Id)
 				.FirstOrDefaultAsync(cancellationToken);
 
 		if (roleId is null)
@@ -407,16 +411,16 @@ internal class UserRepository(
 
 	/// <inheritdoc/>
 	public async Task AddRoleWithoutAuditAsync(
-		int userId,
+		long userId,
 		string role,
 		CancellationToken cancellationToken = default)
 	{
 		// Look up role ID from SecurityRoles
-		int? roleId =
+		long? roleId =
 			await context
 				.SecurityRoles
 				.Where(securityRole => securityRole.Name == role)
-				.Select(securityRole => (int?)securityRole.Id)
+				.Select(securityRole => (long?)securityRole.Id)
 				.FirstOrDefaultAsync(cancellationToken);
 
 		if (roleId is null)
@@ -442,7 +446,7 @@ internal class UserRepository(
 
 	/// <inheritdoc/>
 	public async Task<bool> RemoveRoleAsync(
-		int userId,
+		long userId,
 		string role,
 		CancellationToken cancellationToken = default)
 	{
@@ -459,7 +463,7 @@ internal class UserRepository(
 
 	/// <inheritdoc/>
 	public async Task<UserProfileDto?> GetUserProfileAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default)
 	{
 		User? user =
@@ -588,7 +592,7 @@ internal class UserRepository(
 	{
 		string sortProperty =
 			string.IsNullOrWhiteSpace(request.SortBy)
-			? "Id"
+			? PropertyConstants.Id
 			: request.SortBy;
 
 		query =

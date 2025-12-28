@@ -122,7 +122,7 @@ public static class CreateUserCommandHandler
 	/// Marks a user as needing a pending password reset email.
 	/// </summary>
 	private static async Task MarkUserNeedsPendingEmailAsync(
-		int userId,
+		long userId,
 		IUserQueryRepository userQueryRepository,
 		IUserCommandRepository userCommandRepository,
 		CancellationToken cancellationToken)

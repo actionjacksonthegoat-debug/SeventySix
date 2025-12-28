@@ -22,9 +22,9 @@ public class BulkOperationExecutorTests
 				.Options;
 
 		TestDbContext context =
-			new TestDbContext(options);
+			new(options);
 		BulkOperationExecutor<TestEntity> executor =
-			new BulkOperationExecutor<TestEntity>(context);
+			new(context);
 
 		context.TestEntities.AddRange(
 			new TestEntity
@@ -47,11 +47,11 @@ public class BulkOperationExecutorTests
 			});
 		await context.SaveChangesAsync();
 
-		List<int> idsToUpdate =
-			[1, 3];
+		List<long> idsToUpdate =
+			[1L, 3L];
 
 		// Act
-		int updatedCount =
+		long updatedCount =
 			await executor.ExecuteBulkUpdateAsync(
 			idsToUpdate,
 			entity => entity.IsActive = true);
@@ -76,9 +76,9 @@ public class BulkOperationExecutorTests
 				.Options;
 
 		TestDbContext context =
-			new TestDbContext(options);
+			new(options);
 		BulkOperationExecutor<TestEntity> executor =
-			new BulkOperationExecutor<TestEntity>(context);
+			new(context);
 
 		context.TestEntities.Add(
 			new TestEntity
@@ -89,11 +89,11 @@ public class BulkOperationExecutorTests
 			});
 		await context.SaveChangesAsync();
 
-		List<int> idsToUpdate =
-			[99, 100];
+		List<long> idsToUpdate =
+			[99L, 100L];
 
 		// Act
-		int updatedCount =
+		long updatedCount =
 			await executor.ExecuteBulkUpdateAsync(
 			idsToUpdate,
 			entity => entity.IsActive = true);
@@ -112,14 +112,14 @@ public class BulkOperationExecutorTests
 				.Options;
 
 		TestDbContext context =
-			new TestDbContext(options);
+			new(options);
 		BulkOperationExecutor<TestEntity> executor =
-			new BulkOperationExecutor<TestEntity>(context);
+			new(context);
 
-		List<int> idsToUpdate = [];
+		List<long> idsToUpdate = [];
 
 		// Act
-		int updatedCount =
+		long updatedCount =
 			await executor.ExecuteBulkUpdateAsync(
 			idsToUpdate,
 			entity => entity.IsActive = true);
@@ -138,9 +138,9 @@ public class BulkOperationExecutorTests
 				.Options;
 
 		TestDbContext context =
-			new TestDbContext(options);
+			new(options);
 		BulkOperationExecutor<TestEntity> executor =
-			new BulkOperationExecutor<TestEntity>(context);
+			new(context);
 
 		context.TestEntities.AddRange(
 			new TestEntity
@@ -157,32 +157,38 @@ public class BulkOperationExecutorTests
 			});
 		await context.SaveChangesAsync();
 
-		List<int> idsToUpdate =
-			[1, 2];
+		List<long> idsToUpdate =
+			[1L, 2L];
 
 		// Act
-		int updatedCount =
+		long updatedCount =
 			await executor.ExecuteBulkUpdateAsync(
-			idsToUpdate,
-			entity =>
-			{
-				entity.IsActive = true;
-				entity.Name = entity.Name.ToUpper();
-			});
+				idsToUpdate,
+				entity =>
+				{
+					entity.IsActive = true;
+					entity.Name = entity.Name.ToUpper();
+				});
 
 		// Assert
 		Assert.Equal(2, updatedCount);
 
 		List<TestEntity> allEntities =
 			await context.TestEntities.ToListAsync();
-		Assert.All(allEntities, e => Assert.True(e.IsActive));
-		Assert.Equal("FIRST", allEntities.First(e => e.Id == 1).Name);
-		Assert.Equal("SECOND", allEntities.First(e => e.Id == 2).Name);
+		Assert.All(
+			allEntities,
+			entity => Assert.True(entity.IsActive));
+		Assert.Equal(
+			"FIRST",
+			allEntities.First(entity => entity.Id == 1L).Name);
+		Assert.Equal(
+			"SECOND",
+			allEntities.First(entity => entity.Id == 2L).Name);
 	}
 
 	public class TestEntity
 	{
-		public int Id { get; set; }
+		public long Id { get; set; }
 		public string Name { get; set; } = string.Empty;
 		public bool IsActive { get; set; }
 	}

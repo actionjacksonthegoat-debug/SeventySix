@@ -62,7 +62,7 @@ public interface IAuthRepository
 	/// Cancellation token.
 	/// </param>
 	public Task UpdateLastLoginAsync(
-		int userId,
+		long userId,
 		DateTime loginTime,
 		string? clientIp,
 		CancellationToken cancellationToken = default);
@@ -146,7 +146,7 @@ public interface IAuthRepository
 	/// </returns>
 	public Task<User> CreateUserWithRoleAsync(
 		User user,
-		int roleId,
+		long roleId,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -161,7 +161,7 @@ public interface IAuthRepository
 	/// <returns>
 	/// The role ID if found; otherwise, null.
 	/// </returns>
-	public Task<int?> GetRoleIdByNameAsync(
+	public Task<long?> GetRoleIdByNameAsync(
 		string roleName,
 		CancellationToken cancellationToken = default);
 }

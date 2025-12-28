@@ -607,10 +607,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 			await Repository.CreateAsync(user2);
 
 		// Act
-		int count =
+		long count =
 			await Repository.BulkUpdateActiveStatusAsync(
-			[created1.Id, created2.Id],
-			false);
+				[created1.Id, created2.Id],
+				false);
 
 		// Assert
 		count.ShouldBe(2);
@@ -893,8 +893,7 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 		IdentityDbContext corruptContext = CreateIdentityDbContext();
 		ILogger<UserRepository> mockLogger =
 			Substitute.For<
-			ILogger<UserRepository>
-		>();
+			ILogger<UserRepository>>();
 		UserRepository corruptRepo =
 			new(
 			corruptContext,
@@ -929,10 +928,10 @@ public class UserRepositoryTests : DataPostgreSqlTestBase
 
 		// For now, just verify the method works
 		// Act
-		int result =
+		long result =
 			await Repository.BulkUpdateActiveStatusAsync(
-			[created.Id],
-			false);
+				[created.Id],
+				false);
 
 		// Assert
 		result.ShouldBe(1);

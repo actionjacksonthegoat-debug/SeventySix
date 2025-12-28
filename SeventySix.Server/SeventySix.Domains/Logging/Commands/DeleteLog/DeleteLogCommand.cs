@@ -10,4 +10,4 @@ namespace SeventySix.Logging;
 /// <param name="LogId">
 /// The ID of the log entry to delete.
 /// </param>
-public record DeleteLogCommand(int LogId);
+public record DeleteLogCommand(long LogId);

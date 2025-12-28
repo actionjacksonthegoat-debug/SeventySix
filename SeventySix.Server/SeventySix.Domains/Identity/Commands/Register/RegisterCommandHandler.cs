@@ -44,7 +44,7 @@ public static class RegisterCommandHandler
 		CancellationToken cancellationToken)
 	{
 		// Get role ID (read-only query)
-		int userRoleId =
+		long userRoleId =
 			await registrationService.GetRoleIdByNameAsync(
 				RoleConstants.User,
 				cancellationToken);

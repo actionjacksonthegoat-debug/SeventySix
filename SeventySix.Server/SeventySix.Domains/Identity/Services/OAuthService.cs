@@ -138,11 +138,11 @@ public class OAuthService(
 	/// The role ID.
 	/// </returns>
 	/// <exception cref="InvalidOperationException">Thrown if role not found.</exception>
-	private async Task<int> GetRoleIdByNameAsync(
+	private async Task<long> GetRoleIdByNameAsync(
 		string roleName,
 		CancellationToken cancellationToken)
 	{
-		int? roleId =
+		long? roleId =
 			await authRepository.GetRoleIdByNameAsync(
 				roleName,
 				cancellationToken);
@@ -318,7 +318,7 @@ public class OAuthService(
 			timeProvider.GetUtcNow().UtcDateTime;
 
 		// Get role ID before creating entities (read-only query)
-		int userRoleId =
+		long userRoleId =
 			await GetRoleIdByNameAsync(
 				RoleConstants.User,
 				cancellationToken);

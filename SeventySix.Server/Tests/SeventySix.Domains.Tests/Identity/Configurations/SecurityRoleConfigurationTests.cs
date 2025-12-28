@@ -9,6 +9,7 @@ using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Domains.Tests.Identity.Configurations;
 
@@ -102,7 +103,7 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		// Use raw SQL to bypass EF Core's in-memory tracking and test actual FK constraint
 		await Should.ThrowAsync<Npgsql.PostgresException>(async () =>
 			await context.Database.ExecuteSqlRawAsync(
-				"""DELETE FROM "Identity"."SecurityRoles" WHERE "Id" = {0}""",
+					"DELETE FROM \"Identity\".\"SecurityRoles\" WHERE \"" + PropertyConstants.Id + "\" = {0}",
 				developerRole.Id));
 	}
 
@@ -144,7 +145,7 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		// Use raw SQL to bypass EF Core's in-memory tracking and test actual FK constraint
 		await Should.ThrowAsync<Npgsql.PostgresException>(async () =>
 			await context.Database.ExecuteSqlRawAsync(
-				"""DELETE FROM "Identity"."SecurityRoles" WHERE "Id" = {0}""",
+					"DELETE FROM \"Identity\".\"SecurityRoles\" WHERE \"" + PropertyConstants.Id + "\" = {0}",
 				adminRole.Id));
 	}
 
@@ -164,7 +165,7 @@ public class SecurityRoleConfigurationTests : DataPostgreSqlTestBase
 		await context.SecurityRoles.AddAsync(testRole);
 		await context.SaveChangesAsync();
 
-		int roleId = testRole.Id;
+		long roleId = testRole.Id;
 
 		// Act - Delete should succeed (no FK references)
 		context.SecurityRoles.Remove(testRole);

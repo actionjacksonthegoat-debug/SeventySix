@@ -10,4 +10,4 @@ namespace SeventySix.Identity.Commands.ApprovePermissionRequest;
 /// <param name="RequestId">
 /// The ID of the permission request to approve.
 /// </param>
-public sealed record ApprovePermissionRequestCommand(int RequestId);
+public sealed record ApprovePermissionRequestCommand(long RequestId);

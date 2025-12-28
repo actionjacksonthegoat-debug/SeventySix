@@ -44,7 +44,7 @@ public class LogService(
 
 	/// <inheritdoc/>
 	public async Task<bool> DeleteLogByIdAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default)
 	{
 		return await repository.DeleteByIdAsync(id, cancellationToken);
@@ -52,7 +52,7 @@ public class LogService(
 
 	/// <inheritdoc/>
 	public async Task<int> DeleteLogsBatchAsync(
-		int[] ids,
+		long[] ids,
 		CancellationToken cancellationToken = default)
 	{
 		return await repository.DeleteBatchAsync(ids, cancellationToken);

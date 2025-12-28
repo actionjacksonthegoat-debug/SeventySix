@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SeventySix.Logging;
@@ -11,9 +12,11 @@ using SeventySix.Logging;
 namespace SeventySix.Domains.Logging.Migrations
 {
 	[DbContext(typeof(LoggingDbContext))]
-	partial class LoggingDbContextModelSnapshot : ModelSnapshot
+	[Migration("20251228064935_PendingModelChanges_Logging")]
+	partial class PendingModelChanges_Logging
 	{
-		protected override void BuildModel(ModelBuilder modelBuilder)
+		/// <inheritdoc />
+		protected override void BuildTargetModel(ModelBuilder modelBuilder)
 		{
 #pragma warning disable 612, 618
 			modelBuilder

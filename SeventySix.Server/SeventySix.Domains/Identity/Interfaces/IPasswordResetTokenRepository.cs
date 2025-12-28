@@ -71,7 +71,7 @@ public interface IPasswordResetTokenRepository
 	/// Number of tokens invalidated.
 	/// </returns>
 	public Task<int> InvalidateAllUserTokensAsync(
-		int userId,
+		long userId,
 		DateTime invalidatedAt,
 		CancellationToken cancellationToken = default);
 }

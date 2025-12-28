@@ -19,12 +19,12 @@ public class PermissionRequest : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the unique identifier.
 	/// </summary>
-	public int Id { get; set; }
+	public long Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the requesting user's ID.
 	/// </summary>
-	public int UserId { get; set; }
+	public long UserId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the requesting user.
@@ -34,7 +34,7 @@ public class PermissionRequest : ICreatableEntity
 	/// <summary>
 	/// Gets or sets the requested role ID (FK to SecurityRoles).
 	/// </summary>
-	public int RequestedRoleId { get; set; }
+	public long RequestedRoleId { get; set; }
 
 	/// <summary>
 	/// Gets or sets the requested role (navigation property).

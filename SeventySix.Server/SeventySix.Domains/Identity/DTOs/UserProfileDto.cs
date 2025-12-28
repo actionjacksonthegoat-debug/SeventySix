@@ -32,7 +32,7 @@ namespace SeventySix.Identity;
 /// Last login timestamp.
 /// </param>
 public record UserProfileDto(
-	int Id,
+	long Id,
 	string Username,
 	string Email,
 	string? FullName,

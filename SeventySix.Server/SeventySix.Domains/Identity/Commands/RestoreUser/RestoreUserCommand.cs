@@ -10,4 +10,4 @@ namespace SeventySix.Identity;
 /// <param name="UserId">
 /// The ID of the user to restore.
 /// </param>
-public record RestoreUserCommand(int UserId);
+public record RestoreUserCommand(long UserId);

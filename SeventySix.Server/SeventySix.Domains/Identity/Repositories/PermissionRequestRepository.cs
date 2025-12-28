@@ -36,7 +36,7 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 
 	/// <inheritdoc/>
 	public async Task<PermissionRequest?> GetByIdAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default)
 	{
 		return await dbContext
@@ -51,10 +51,10 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 
 	/// <inheritdoc/>
 	public async Task<IEnumerable<PermissionRequest>> GetByIdsAsync(
-		IEnumerable<int> ids,
+		IEnumerable<long> ids,
 		CancellationToken cancellationToken = default)
 	{
-		List<int> idList = ids.ToList();
+		List<long> idList = ids.ToList();
 
 		return await dbContext
 			.PermissionRequests
@@ -67,7 +67,7 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 
 	/// <inheritdoc/>
 	public async Task<IEnumerable<PermissionRequest>> GetByUserIdAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default)
 	{
 		return await dbContext
@@ -80,7 +80,7 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 
 	/// <inheritdoc/>
 	public async Task<IEnumerable<string>> GetUserExistingRolesAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default)
 	{
 		return await dbContext
@@ -94,7 +94,7 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 
 	/// <inheritdoc/>
 	public async Task<string?> GetUserEmailAsync(
-		int userId,
+		long userId,
 		CancellationToken cancellationToken = default)
 	{
 		return await dbContext
@@ -116,7 +116,7 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 
 	/// <inheritdoc/>
 	public async Task DeleteAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default)
 	{
 		await dbContext
@@ -128,10 +128,10 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 
 	/// <inheritdoc/>
 	public async Task DeleteRangeAsync(
-		IEnumerable<int> ids,
+		IEnumerable<long> ids,
 		CancellationToken cancellationToken = default)
 	{
-		List<int> idList = ids.ToList();
+		List<long> idList = ids.ToList();
 
 		await dbContext
 			.PermissionRequests
@@ -142,7 +142,7 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 
 	/// <inheritdoc/>
 	public async Task DeleteByUserAndRoleAsync(
-		int userId,
+		long userId,
 		string role,
 		CancellationToken cancellationToken = default)
 	{
@@ -157,7 +157,7 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 	}
 
 	/// <inheritdoc/>
-	public async Task<int?> GetRoleIdByNameAsync(
+	public async Task<long?> GetRoleIdByNameAsync(
 		string roleName,
 		CancellationToken cancellationToken = default)
 	{
@@ -165,7 +165,7 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 			.SecurityRoles
 			.AsNoTracking()
 			.Where(securityRole => securityRole.Name == roleName)
-			.Select(securityRole => (int?)securityRole.Id)
+			.Select(securityRole => (long?)securityRole.Id)
 			.FirstOrDefaultAsync(cancellationToken);
 	}
 }

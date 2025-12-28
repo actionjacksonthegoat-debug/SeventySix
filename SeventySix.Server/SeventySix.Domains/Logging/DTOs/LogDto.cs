@@ -63,7 +63,7 @@ namespace SeventySix.Logging;
 /// The parent span ID if this is a child span.
 /// </param>
 public record LogDto(
-	int Id,
+	long Id,
 	string LogLevel,
 	string Message,
 	string? ExceptionMessage,

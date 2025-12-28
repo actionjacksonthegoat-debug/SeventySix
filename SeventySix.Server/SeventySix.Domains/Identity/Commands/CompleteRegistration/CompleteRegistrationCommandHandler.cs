@@ -74,7 +74,7 @@ public static class CompleteRegistrationCommandHandler
 			return tokenError;
 		}
 
-		int userRoleId =
+		long userRoleId =
 			await registrationService.GetRoleIdByNameAsync(
 				RoleConstants.User,
 				cancellationToken);
@@ -112,7 +112,7 @@ public static class CompleteRegistrationCommandHandler
 	private static async Task<User> CreateUserAndMarkTokenUsedAsync(
 		CompleteRegistrationCommand command,
 		EmailVerificationToken verificationToken,
-		int userRoleId,
+		long userRoleId,
 		RegistrationService registrationService,
 		IEmailVerificationTokenRepository emailVerificationTokenRepository,
 		DateTime now,

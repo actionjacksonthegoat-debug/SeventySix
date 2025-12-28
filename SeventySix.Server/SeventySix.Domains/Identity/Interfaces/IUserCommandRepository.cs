@@ -28,14 +28,14 @@ public interface IUserCommandRepository
 	/// Hard deletes a user.
 	/// </summary>
 	public Task<bool> DeleteAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Soft deletes a user.
 	/// </summary>
 	public Task<bool> SoftDeleteAsync(
-		int id,
+		long id,
 		string deletedBy,
 		CancellationToken cancellationToken = default);
 
@@ -43,14 +43,14 @@ public interface IUserCommandRepository
 	/// Restores a soft-deleted user.
 	/// </summary>
 	public Task<bool> RestoreAsync(
-		int id,
+		long id,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Bulk updates active status for multiple users.
 	/// </summary>
-	public Task<int> BulkUpdateActiveStatusAsync(
-		IEnumerable<int> ids,
+	public Task<long> BulkUpdateActiveStatusAsync(
+		IEnumerable<long> ids,
 		bool isActive,
 		CancellationToken cancellationToken = default);
 
@@ -58,7 +58,7 @@ public interface IUserCommandRepository
 	/// Adds a role to a user.
 	/// </summary>
 	public Task AddRoleAsync(
-		int userId,
+		long userId,
 		string role,
 		CancellationToken cancellationToken = default);
 
@@ -66,7 +66,7 @@ public interface IUserCommandRepository
 	/// Adds a role without audit tracking.
 	/// </summary>
 	public Task AddRoleWithoutAuditAsync(
-		int userId,
+		long userId,
 		string role,
 		CancellationToken cancellationToken = default);
 
@@ -74,7 +74,7 @@ public interface IUserCommandRepository
 	/// Removes a role from a user.
 	/// </summary>
 	public Task<bool> RemoveRoleAsync(
-		int userId,
+		long userId,
 		string role,
 		CancellationToken cancellationToken = default);
 }

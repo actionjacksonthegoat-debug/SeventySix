@@ -68,7 +68,7 @@ public class TransactionManagerTests : IDisposable
 			};
 
 		// Act
-		int result =
+		long result =
 			await TransactionManager.ExecuteInTransactionAsync(
 			async cancellationToken =>
 			{
@@ -334,7 +334,7 @@ public class TransactionManagerTests : IDisposable
 		FakeTimeProvider timeProvider = new();
 
 		// Act
-		int result1 =
+		long result1 =
 			await TransactionManager.ExecuteInTransactionAsync(
 			async cancellationToken =>
 			{
@@ -356,7 +356,7 @@ public class TransactionManagerTests : IDisposable
 				return entity.Id;
 			});
 
-		int result2 =
+		long result2 =
 			await TransactionManager.ExecuteInTransactionAsync(
 			async cancellationToken =>
 			{
