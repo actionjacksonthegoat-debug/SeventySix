@@ -112,7 +112,7 @@ export function getRelativeTime(
 	dateService: DateService): string
 {
 	const dateObj: Date =
-		typeof date === "string" ? new Date(date) : date;
+		typeof date === "string" ? dateService.parseUTC(date) : date;
 	const diff: number =
 		dateService.nowTimestamp() - dateObj.getTime();
 

@@ -11,7 +11,10 @@ import {
 import { BaseMutationService } from "@shared/services";
 import { ApiService } from "@shared/services/api.service";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
-import { injectQuery } from "@tanstack/angular-query-experimental";
+import {
+	CreateMutationResult,
+	injectQuery
+} from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 
 /** Service for current user's account operations. Provided at route level. */
@@ -41,10 +44,10 @@ export class AccountService extends BaseMutationService
 
 	/**
 	 * Mutation used to update the current user's profile.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<UserProfileDto, Error, UpdateProfileRequest>}
 	 * Mutation with mutate, isPending and error.
 	 */
-	updateProfile()
+	updateProfile(): CreateMutationResult<UserProfileDto, Error, UpdateProfileRequest>
 	{
 		return this.createMutation<UpdateProfileRequest, UserProfileDto>(
 			(request) =>
@@ -70,10 +73,10 @@ export class AccountService extends BaseMutationService
 	/**
 	 * Mutation to submit permission requests for the current user.
 	 * Invalidates available roles on success.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<void, Error, CreatePermissionRequestDto>}
 	 * Mutation used to submit permission requests.
 	 */
-	createPermissionRequest()
+	createPermissionRequest(): CreateMutationResult<void, Error, CreatePermissionRequestDto>
 	{
 		return this.createMutation<CreatePermissionRequestDto, void>(
 			(request) =>

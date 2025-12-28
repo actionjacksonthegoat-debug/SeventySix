@@ -1,5 +1,6 @@
 import { HttpParams } from "@angular/common/http";
 import { buildHttpParams } from "./http-params.utility";
+import { DateService } from "@shared/services";
 
 describe("buildHttpParams",
 	() =>
@@ -58,7 +59,8 @@ describe("buildHttpParams",
 			() =>
 			{
 				const date: Date =
-					new Date("2024-01-15T10:30:00.000Z");
+					new DateService()
+						.parseUTC("2024-01-15T10:30:00.000Z");
 				const result: HttpParams =
 					buildHttpParams(
 						{ createdAt: date });
@@ -103,7 +105,8 @@ describe("buildHttpParams",
 			() =>
 			{
 				const date: Date =
-					new Date("2024-06-01T00:00:00.000Z");
+					new DateService()
+						.parseUTC("2024-06-01T00:00:00.000Z");
 				const result: HttpParams =
 					buildHttpParams(
 						{

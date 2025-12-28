@@ -302,4 +302,30 @@ describe("DateService",
 							.toBe(true);
 					});
 			});
+
+		describe("Regression Guards",
+			() =>
+			{
+				it("parseUTC() should throw for non-string inputs",
+					() =>
+					{
+						expect(() =>
+							// @ts-expect-error - intentionally passing wrong type for regression test
+							(service as unknown).parseUTC(12345))
+							.toThrow(TypeError);
+					});
+
+				it("fromMillis() and parseUTC() should be consistent",
+					() =>
+					{
+						const nowMs: number =
+							service.nowTimestamp();
+						const fromMsDate: Date =
+							service.fromMillis(nowMs);
+						const parsedDate: Date =
+							service.parseUTC(service.toUTC(fromMsDate));
+						expect(parsedDate.getTime())
+							.toBe(fromMsDate.getTime());
+					});
+			});
 	});

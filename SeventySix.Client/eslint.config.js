@@ -97,7 +97,20 @@ export default [
 			}
 		},
 		plugins: sharedPlugins,
-		rules: sharedRules
+		rules: {
+			...sharedRules,
+			"no-restricted-syntax": [
+				"error",
+				{
+					"selector": "NewExpression[callee.name='Date']",
+					"message": "Use DateService or approved test helpers instead of new Date()"
+				},
+				{
+					"selector": "MemberExpression[object.name='Date'][property.name='now']",
+					"message": "Use dateService.nowTimestamp() or approved test helpers instead of Date.now()"
+				}
+			]
+		}
 	},
 	// Spec/test files
 	{
@@ -112,8 +125,26 @@ export default [
 		plugins: sharedPlugins,
 		rules: {
 			...sharedRules,
+			"no-restricted-syntax": [
+				"error",
+				{
+					"selector": "NewExpression[callee.name='Date']",
+					"message": "Use DateService or approved test helpers instead of new Date()"
+				},
+				{
+					"selector": "MemberExpression[object.name='Date'][property.name='now']",
+					"message": "Use dateService.nowTimestamp() or approved test helpers instead of Date.now()"
+				}
+			],
 			// Override indent for spec files to properly indent expect() chains
 			"@stylistic/indent": ["error", "tab", { "SwitchCase": 1, "MemberExpression": 1 }]
+		}
+	},
+	{
+		// Allow native Date usage inside the canonical DateService implementation itself.
+		files: ["src/app/shared/services/date.service.ts", "src/app/shared/services/date.service.spec.ts"],
+		rules: {
+			"no-restricted-syntax": "off"
 		}
 	},
 	// E2E / Playwright tests

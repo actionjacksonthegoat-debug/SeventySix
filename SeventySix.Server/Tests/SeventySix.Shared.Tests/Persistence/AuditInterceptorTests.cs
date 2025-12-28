@@ -213,14 +213,14 @@ public class AuditInterceptorTests : IDisposable
 	{
 		// Arrange
 		DateTime presetDate =
-			new DateTime(
-			2020,
-			1,
-			1,
-			12,
-			0,
-			0,
-			DateTimeKind.Utc);
+			new DateTimeOffset(
+				2020,
+				1,
+				1,
+				12,
+				0,
+				0,
+				TimeSpan.Zero).UtcDateTime;
 		TestAuditableEntity entity =
 			new()
 			{
@@ -338,14 +338,14 @@ public class AuditInterceptorTests : IDisposable
 	{
 		// Arrange
 		DateTime presetDate =
-			new DateTime(
-			2020,
-			6,
-			15,
-			10,
-			30,
-			0,
-			DateTimeKind.Utc);
+			new DateTimeOffset(
+				2020,
+				6,
+				15,
+				10,
+				30,
+				0,
+				TimeSpan.Zero).UtcDateTime;
 		TestModifiableEntity entity =
 			new()
 			{
@@ -385,14 +385,14 @@ public class AuditInterceptorTests : IDisposable
 	{
 		// Arrange
 		DateTime presetDate =
-			new DateTime(
-			2021,
-			3,
-			10,
-			14,
-			0,
-			0,
-			DateTimeKind.Utc);
+			new DateTimeOffset(
+				2021,
+				3,
+				10,
+				14,
+				0,
+				0,
+				TimeSpan.Zero).UtcDateTime;
 		TestCreatableEntity entity =
 			new()
 			{

@@ -1,5 +1,7 @@
 import { HttpInterceptorFn, HttpResponse } from "@angular/common/http";
 import { map } from "rxjs/operators";
+import { inject } from "@angular/core";
+import { DateService } from "@shared/services";
 
 /**
  * ISO 8601 date regex (matches API date format)
@@ -10,7 +12,7 @@ const ISO_DATE_REGEX: RegExp =
 /**
  * Recursively parse ISO date strings in response to Date objects.
  */
-function parseDates(body: unknown): unknown
+function parseDates(body: unknown, dateService: DateService): unknown
 {
 	if (body === null || body === undefined)
 	{
@@ -19,12 +21,12 @@ function parseDates(body: unknown): unknown
 
 	if (typeof body === "string" && ISO_DATE_REGEX.test(body))
 	{
-		return new Date(body);
+		return dateService.parseUTC(body);
 	}
 
 	if (Array.isArray(body))
 	{
-		return body.map(parseDates);
+		return body.map((item) => parseDates(item, dateService));
 	}
 
 	if (typeof body === "object")
@@ -33,7 +35,7 @@ function parseDates(body: unknown): unknown
 		for (const [key, value] of Object.entries(body))
 		{
 			parsed[key] =
-				parseDates(value);
+				parseDates(value, dateService);
 		}
 		return parsed;
 	}
@@ -54,6 +56,9 @@ function parseDates(body: unknown): unknown
 export const dateParserInterceptor: HttpInterceptorFn =
 	(req, next) =>
 	{
+		const dateService: DateService =
+			inject(DateService);
+
 		return next(req)
 		.pipe(
 			map(
@@ -62,8 +67,9 @@ export const dateParserInterceptor: HttpInterceptorFn =
 					if (event instanceof HttpResponse && event.body)
 					{
 						return event.clone(
-							{ body: parseDates(event.body) });
+							{ body: parseDates(event.body, dateService) });
 					}
+
 					return event;
 				}));
 	};

@@ -5,6 +5,10 @@
  */
 
 import { LogDto } from "@admin/logs/models";
+import { DateService } from "@shared/services";
+
+const dateService: DateService =
+	new DateService();
 
 /** Log fixture factory for consistent test data across log-related tests. */
 export class LogFixtures
@@ -93,8 +97,11 @@ export class LogFixtures
 				LogFixtures.createLog(
 					{
 						id: i + 1,
-						createDate: new Date(Date.now() - i * 60000)
-						.toISOString(),
+						createDate:
+							dateService
+							.fromMillis(
+								dateService.nowTimestamp() - i * 60000)
+							.toISOString(),
 						logLevel: logLevel || "Information",
 						message: `Test log message ${i + 1}`
 					}));

@@ -24,18 +24,13 @@ describe("Log Filter Model",
 					() =>
 					{
 						const before: number =
-							Date.now();
+							dateService.nowTimestamp();
 						const result: { startDate: Date | null; endDate: Date | null; } =
 							getDateRangeFromPreset(
 								DateRangePreset.Last1Hour,
 								dateService);
 						const after: number =
-							Date.now();
-
-						expect(result.endDate)
-							.toBeDefined();
-						expect(result.startDate)
-							.toBeDefined();
+							dateService.nowTimestamp();
 
 						if (result.startDate && result.endDate)
 						{

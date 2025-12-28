@@ -33,7 +33,7 @@ public class IpAnonymizationServiceTests : IDisposable
 		// Arrange DbContext - SQLite required for ExecuteUpdateAsync support
 		this.TimeProvider = new FakeTimeProvider();
 		this.TimeProvider.SetUtcNow(
-			new DateTime(2025, 12, 17, 12, 0, 0, DateTimeKind.Utc));
+			new DateTimeOffset(2025, 12, 17, 12, 0, 0, TimeSpan.Zero));
 
 		DbContextOptions<IdentityDbContext> options =
 			new DbContextOptionsBuilder<IdentityDbContext>()

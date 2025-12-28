@@ -118,6 +118,22 @@ export class DateService
 		return parseISO(isoString);
 	}
 
+	/**
+	 * Construct a Date from milliseconds since epoch.
+	 */
+	fromMillis(ms: number): Date
+	{
+		return new Date(ms);
+	}
+
+	/**
+	 * Get the current time as a Date object (UTC-aware via parse of now()).
+	 */
+	nowDate(): Date
+	{
+		return this.parseUTC(this.now());
+	}
+
 	// ========================================
 	// LOCAL OPERATIONS (User Display)
 	// ========================================

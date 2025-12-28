@@ -78,7 +78,7 @@ public class AuthenticationServiceTests
 		string expectedRefreshToken = "refresh_token_456";
 		string clientIp = "192.168.1.1";
 		DateTime utcNow =
-			new(2025, 12, 9, 10, 0, 0, DateTimeKind.Utc);
+			new DateTimeOffset(2025, 12, 9, 10, 0, 0, TimeSpan.Zero).UtcDateTime;
 
 		UserQueryRepository
 			.GetUserRolesAsync(user.Id, Arg.Any<CancellationToken>())

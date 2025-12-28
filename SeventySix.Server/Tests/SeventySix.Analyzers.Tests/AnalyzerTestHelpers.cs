@@ -40,6 +40,14 @@ public static class AnalyzerTestHelpers
 			DiagnosticSeverity.Warning).WithLocation(line, column);
 
 	/// <summary>
+	/// Creates a diagnostic result for SS004 at the specified location.
+	/// </summary>
+	public static DiagnosticResult ExpectSS004(int line, int column) =>
+		new DiagnosticResult(
+			DateTimeUsageAnalyzer.DiagnosticId,
+			DiagnosticSeverity.Warning).WithLocation(line, column);
+
+	/// <summary>
 	/// Verifies that the analyzer produces expected diagnostics for the given code.
 	/// </summary>
 	public static async Task VerifyAnalyzerAsync<TAnalyzer>(

@@ -18,12 +18,12 @@ describe("Custom Validators",
 		beforeEach(
 			() =>
 			{
-				dateService =
-					new DateService();
 				TestBed.configureTestingModule(
 					{
 						providers: [provideZonelessChangeDetection()]
 					});
+				dateService =
+					TestBed.inject(DateService);
 			});
 
 		describe("dateRangeValidator",
@@ -33,13 +33,13 @@ describe("Custom Validators",
 					() =>
 					{
 						const min: Date =
-							new Date("2024-01-01");
+							dateService.parseUTC("2024-01-01");
 						const max: Date =
-							new Date("2024-12-31");
+							dateService.parseUTC("2024-12-31");
 						const validator: ValidatorFn =
-							dateRangeValidator(min, max);
+							TestBed.runInInjectionContext(() => dateRangeValidator(min, max));
 						const control: FormControl =
-							new FormControl(new Date("2024-06-15"));
+							new FormControl(dateService.parseUTC("2024-06-15"));
 
 						expect(validator(control))
 							.toBeNull();
@@ -49,12 +49,11 @@ describe("Custom Validators",
 					() =>
 					{
 						const min: Date =
-							new Date("2024-01-01");
+							dateService.parseUTC("2024-01-01");
 						const validator: ValidatorFn =
-							dateRangeValidator(min);
+							TestBed.runInInjectionContext(() => dateRangeValidator(min));
 						const control: FormControl =
-							new FormControl(new Date("2023-12-31"));
-
+							new FormControl(dateService.parseUTC("2023-12-31"));
 						expect(validator(control)).not.toBeNull();
 					});
 
@@ -62,7 +61,7 @@ describe("Custom Validators",
 					() =>
 					{
 						const validator: ValidatorFn =
-							dateRangeValidator();
+							TestBed.runInInjectionContext(() => dateRangeValidator());
 						const control: FormControl =
 							new FormControl(null);
 
@@ -128,9 +127,9 @@ describe("Custom Validators",
 					() =>
 					{
 						const validator: ValidatorFn =
-							futureDateValidator(dateService);
+							TestBed.runInInjectionContext(() => futureDateValidator());
 						const futureDate: Date =
-							new Date();
+							dateService.nowDate();
 						futureDate.setDate(futureDate.getDate() + 1);
 						const control: FormControl =
 							new FormControl(futureDate);
@@ -143,9 +142,9 @@ describe("Custom Validators",
 					() =>
 					{
 						const validator: ValidatorFn =
-							futureDateValidator(dateService);
+							TestBed.runInInjectionContext(() => futureDateValidator());
 						const pastDate: Date =
-							new Date("2020-01-01");
+							dateService.parseUTC("2020-01-01");
 						const control: FormControl =
 							new FormControl(pastDate);
 
@@ -156,7 +155,7 @@ describe("Custom Validators",
 					() =>
 					{
 						const validator: ValidatorFn =
-							futureDateValidator(dateService);
+							TestBed.runInInjectionContext(() => futureDateValidator());
 						const control: FormControl =
 							new FormControl(null);
 

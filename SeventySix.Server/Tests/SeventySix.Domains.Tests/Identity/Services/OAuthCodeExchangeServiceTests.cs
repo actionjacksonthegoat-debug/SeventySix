@@ -14,14 +14,7 @@ namespace SeventySix.Domains.Tests.Identity.Services;
 public class OAuthCodeExchangeServiceTests
 {
 	private readonly DateTime FixedExpiresAt =
-		new(
-		2025,
-		11,
-		28,
-		12,
-		15,
-		0,
-		DateTimeKind.Utc);
+		new DateTimeOffset(2025, 11, 28, 12, 15, 0, TimeSpan.Zero).UtcDateTime;
 
 	private const string TestEmail = "test@example.com";
 	private const string? TestFullName = null;

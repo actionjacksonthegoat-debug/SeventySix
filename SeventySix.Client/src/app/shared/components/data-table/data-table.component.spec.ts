@@ -15,6 +15,7 @@ import {
 	createDateColumn,
 	createTextColumn
 } from "@shared/testing";
+import { DateService } from "@shared/services";
 import { DataTableComponent } from "./data-table.component";
 
 interface TestEntity
@@ -50,19 +51,25 @@ describe("DataTableComponent",
 					id: 1,
 					name: "Test User 1",
 					status: "active",
-					createdAt: new Date("2024-01-01")
+					createdAt:
+						new DateService()
+							.parseUTC("2024-01-01")
 				},
 				{
 					id: 2,
 					name: "Test User 2",
 					status: "inactive",
-					createdAt: new Date("2024-01-02")
+					createdAt:
+						new DateService()
+							.parseUTC("2024-01-02")
 				},
 				{
 					id: 3,
 					name: "Test User 3",
 					status: "active",
-					createdAt: new Date("2024-01-03")
+					createdAt:
+						new DateService()
+							.parseUTC("2024-01-03")
 				}
 			];
 

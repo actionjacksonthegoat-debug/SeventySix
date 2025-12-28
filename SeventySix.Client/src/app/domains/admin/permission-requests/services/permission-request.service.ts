@@ -10,7 +10,10 @@ import {
 import { BaseMutationService } from "@shared/services";
 import { ApiService } from "@shared/services/api.service";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
-import { injectQuery } from "@tanstack/angular-query-experimental";
+import {
+	CreateMutationResult,
+	injectQuery
+} from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 
 /**
@@ -71,7 +74,7 @@ export class PermissionRequestService extends BaseMutationService
 	}
 
 	/** Mutation for creating permission requests. */
-	createRequest()
+	createRequest(): CreateMutationResult<void, Error, CreatePermissionRequestDto>
 	{
 		return this.createMutation<CreatePermissionRequestDto, void>(
 			(request) =>
@@ -81,7 +84,7 @@ export class PermissionRequestService extends BaseMutationService
 	}
 
 	/** Mutation for approving a single request. */
-	approveRequest()
+	approveRequest(): CreateMutationResult<void, Error, number>
 	{
 		return this.createMutation<number, void>(
 			(requestId) =>
@@ -91,7 +94,7 @@ export class PermissionRequestService extends BaseMutationService
 	}
 
 	/** Mutation for rejecting a single request. */
-	rejectRequest()
+	rejectRequest(): CreateMutationResult<void, Error, number>
 	{
 		return this.createMutation<number, void>(
 			(requestId) =>
@@ -101,7 +104,7 @@ export class PermissionRequestService extends BaseMutationService
 	}
 
 	/** Mutation for bulk approving requests. */
-	bulkApproveRequests()
+	bulkApproveRequests(): CreateMutationResult<number, Error, number[]>
 	{
 		return this.createMutation<number[], number>(
 			(requestIds) =>
@@ -111,7 +114,7 @@ export class PermissionRequestService extends BaseMutationService
 	}
 
 	/** Mutation for bulk rejecting requests. */
-	bulkRejectRequests()
+	bulkRejectRequests(): CreateMutationResult<number, Error, number[]>
 	{
 		return this.createMutation<number[], number>(
 			(requestIds) =>

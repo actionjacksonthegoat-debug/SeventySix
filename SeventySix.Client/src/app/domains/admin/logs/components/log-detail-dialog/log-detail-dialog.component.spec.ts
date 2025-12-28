@@ -150,15 +150,13 @@ describe("LogDetailDialogComponent",
 			() =>
 			{
 				const now: Date =
-					new Date();
+					dateService.nowDate();
 				const twoMinutesAgo: Date =
-					new Date(now.getTime() - 2 * 60 * 1000);
+					dateService.fromMillis(now.getTime() - 2 * 60 * 1000);
 				const twoHoursAgo: Date =
-					new Date(now.getTime() - 2 * 60 * 60 * 1000);
+					dateService.addHours(now, -2);
 				const twoDaysAgo: Date =
-					new Date(
-						now.getTime() - 2 * 24 * 60 * 60 * 1000);
-
+					dateService.addDays(now, -2);
 				expect(getRelativeTime(twoMinutesAgo, dateService))
 					.toBe("2 minutes ago");
 				expect(getRelativeTime(twoHoursAgo, dateService))
@@ -171,7 +169,7 @@ describe("LogDetailDialogComponent",
 			() =>
 			{
 				const now: Date =
-					new Date();
+					dateService.nowDate();
 				expect(getRelativeTime(now, dateService))
 					.toBe("just now");
 			});
@@ -471,9 +469,9 @@ describe("LogDetailDialogComponent",
 					() =>
 					{
 						const now: Date =
-							new Date();
+							dateService.nowDate();
 						const threeDaysAgo: Date =
-							new Date(
+							dateService.fromMillis(
 								now.getTime() - 3 * 24 * 60 * 60 * 1000);
 						expect(getRelativeTime(threeDaysAgo, dateService))
 							.toBe("3 days ago");
@@ -483,9 +481,9 @@ describe("LogDetailDialogComponent",
 					() =>
 					{
 						const now: Date =
-							new Date();
+							dateService.nowDate();
 						const oneDayAgo: Date =
-							new Date(
+							dateService.fromMillis(
 								now.getTime() - 1 * 24 * 60 * 60 * 1000);
 						expect(getRelativeTime(oneDayAgo, dateService))
 							.toBe("1 day ago");
@@ -495,10 +493,9 @@ describe("LogDetailDialogComponent",
 					() =>
 					{
 						const now: Date =
-							new Date();
+							dateService.nowDate();
 						const threeHoursAgo: Date =
-							new Date(
-								now.getTime() - 3 * 60 * 60 * 1000);
+							dateService.addHours(now, -3);
 						expect(getRelativeTime(threeHoursAgo, dateService))
 							.toBe("3 hours ago");
 					});
@@ -507,10 +504,9 @@ describe("LogDetailDialogComponent",
 					() =>
 					{
 						const now: Date =
-							new Date();
+							dateService.nowDate();
 						const oneHourAgo: Date =
-							new Date(
-								now.getTime() - 1 * 60 * 60 * 1000);
+							dateService.addHours(now, -1);
 						expect(getRelativeTime(oneHourAgo, dateService))
 							.toBe("1 hour ago");
 					});
@@ -519,9 +515,9 @@ describe("LogDetailDialogComponent",
 					() =>
 					{
 						const now: Date =
-							new Date();
+							dateService.nowDate();
 						const fiveMinutesAgo: Date =
-							new Date(
+							dateService.fromMillis(
 								now.getTime() - 5 * 60 * 1000);
 						expect(getRelativeTime(fiveMinutesAgo, dateService))
 							.toBe("5 minutes ago");
@@ -531,9 +527,9 @@ describe("LogDetailDialogComponent",
 					() =>
 					{
 						const now: Date =
-							new Date();
+							dateService.nowDate();
 						const oneMinuteAgo: Date =
-							new Date(now.getTime() - 1 * 60 * 1000);
+							dateService.fromMillis(now.getTime() - 1 * 60 * 1000);
 						expect(getRelativeTime(oneMinuteAgo, dateService))
 							.toBe("1 minute ago");
 					});

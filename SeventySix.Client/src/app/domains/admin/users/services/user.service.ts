@@ -18,7 +18,10 @@ import { ApiService } from "@shared/services/api.service";
 import { BaseQueryService } from "@shared/services/base-query.service";
 import { buildHttpParams } from "@shared/utilities/http-params.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
-import { injectQuery } from "@tanstack/angular-query-experimental";
+import {
+	CreateMutationResult,
+	injectQuery
+} from "@tanstack/angular-query-experimental";
 import { lastValueFrom, Observable } from "rxjs";
 
 /**
@@ -107,10 +110,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	/**
 	 * Mutation for creating User.
 	 * Automatically invalidates related queries on success.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<UserDto, Error, Partial<UserDto>>}
 	 * Mutation object with mutate, isPending, error, etc.
 	 */
-	createUser()
+	createUser(): CreateMutationResult<UserDto, Error, Partial<UserDto>>
 	{
 		return this.createMutation<Partial<UserDto>, UserDto>(
 			(user) =>
@@ -119,10 +122,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 
 	/**
 	 * Mutation for updating User.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<UserDto, Error, { userId: number | string; user: UpdateUserRequest }>}
 	 * Mutation object with mutate, isPending, error, etc.
 	 */
-	updateUser()
+	updateUser(): CreateMutationResult<UserDto, Error, { userId: number | string; user: UpdateUserRequest }>
 	{
 		return this.createMutation<
 			{
@@ -141,10 +144,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 
 	/**
 	 * Mutation for deleting User.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<void, Error, number | string>}
 	 * Mutation object with mutate, isPending, error, etc.
 	 */
-	deleteUser()
+	deleteUser(): CreateMutationResult<void, Error, number | string>
 	{
 		return this.createMutation<number | string, void>(
 			(userId) =>
@@ -204,10 +207,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 
 	/**
 	 * Mutation for restoring deleted User.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<void, Error, number | string>}
 	 * Mutation object.
 	 */
-	restoreUser()
+	restoreUser(): CreateMutationResult<void, Error, number | string>
 	{
 		return this.createMutation<number | string, void>(
 			(userId) =>
@@ -218,10 +221,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 
 	/**
 	 * Mutation for bulk activating users.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<number, Error, number[]>}
 	 * Mutation object.
 	 */
-	bulkActivateUsers()
+	bulkActivateUsers(): CreateMutationResult<number, Error, number[]>
 	{
 		return this.createMutation<number[], number>(
 			(userIds) =>
@@ -230,10 +233,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 
 	/**
 	 * Mutation for bulk deactivating users.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<number, Error, number[]>}
 	 * Mutation object.
 	 */
-	bulkDeactivateUsers()
+	bulkDeactivateUsers(): CreateMutationResult<number, Error, number[]>
 	{
 		return this.createMutation<number[], number>(
 			(userIds) =>
@@ -243,10 +246,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	/**
 	 * Mutation for initiating password reset.
 	 * Sends password reset email to User.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<void, Error, number | string>}
 	 * Mutation object with mutate, isPending, error, etc.
 	 */
-	resetPassword()
+	resetPassword(): CreateMutationResult<void, Error, number | string>
 	{
 		return this.createMutation<number | string, void>(
 			(userId) =>
@@ -279,10 +282,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 
 	/**
 	 * Mutation for adding a role to a User.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<void, Error, { userId: number; roleName: string }>}
 	 * Mutation object.
 	 */
-	addRole()
+	addRole(): CreateMutationResult<void, Error, { userId: number; roleName: string }>
 	{
 		return this.createMutation<
 			{
@@ -305,10 +308,10 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 
 	/**
 	 * Mutation for removing a role from a User.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<void, Error, { userId: number; roleName: string }>}
 	 * Mutation object.
 	 */
-	removeRole()
+	removeRole(): CreateMutationResult<void, Error, { userId: number; roleName: string }>
 	{
 		return this.createMutation<
 			{

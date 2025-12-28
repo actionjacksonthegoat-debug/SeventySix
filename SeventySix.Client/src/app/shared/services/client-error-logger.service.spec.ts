@@ -6,6 +6,7 @@ import { CreateLogRequest } from "@shared/models";
 import { ClientErrorLoggerService } from "@shared/services/client-error-logger.service";
 import { ErrorQueueService } from "@shared/services/error-queue.service";
 import { createMockErrorQueueService } from "@shared/testing";
+import { DateService } from "@shared/services";
 import { vi } from "vitest";
 
 interface MockErrorQueueService
@@ -138,25 +139,28 @@ describe("ClientErrorLoggerService",
 				it("should include current timestamp",
 					() =>
 					{
-						const beforeTime: Date =
-							new Date();
+						const dateService: DateService =
+							new DateService();
+						const beforeTimeMs: number =
+							dateService.nowTimestamp();
 
 						service.logError(
 							{ message: "Test error" });
 
-						const afterTime: Date =
-							new Date();
+						const afterTimeMs: number =
+							dateService.nowTimestamp();
 						const lastCall: unknown[] | undefined =
 							errorQueueService.enqueue.mock.lastCall;
-						const timestamp: Date =
-							new Date((lastCall?.[0] as CreateLogRequest).clientTimestamp!);
-
-						expect(timestamp.getTime())
+						const timestampMs: number =
+							dateService.parseUTC(
+								(lastCall?.[0] as CreateLogRequest).clientTimestamp!)
+								.getTime();
+						expect(timestampMs)
 							.toBeGreaterThanOrEqual(
-								beforeTime.getTime());
-						expect(timestamp.getTime())
+								beforeTimeMs);
+						expect(timestampMs)
 							.toBeLessThanOrEqual(
-								afterTime.getTime());
+								afterTimeMs);
 					});
 			});
 

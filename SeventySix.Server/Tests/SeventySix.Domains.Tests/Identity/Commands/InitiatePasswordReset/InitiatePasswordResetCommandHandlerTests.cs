@@ -40,7 +40,7 @@ public class InitiatePasswordResetCommandHandlerTests : DataPostgreSqlTestBase
 			Substitute.For<IEmailService>();
 		TimeProvider = new FakeTimeProvider();
 		TimeProvider.SetUtcNow(
-			new DateTime(2025, 12, 15, 0, 0, 0, DateTimeKind.Utc));
+			new DateTimeOffset(2025, 12, 15, 0, 0, 0, TimeSpan.Zero));
 
 		JwtSettings =
 			Options.Create(

@@ -161,7 +161,7 @@ public class UserTests
 	{
 		// Arrange
 		DateTime specificDate =
-			new(2024, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+			new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero).UtcDateTime;
 
 		// Act
 		User user =

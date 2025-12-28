@@ -3,6 +3,7 @@ import { Signal } from "@angular/core";
 import { FORCE_REFRESH } from "@shared/interceptors/cache-bypass.interceptor";
 import { BaseQueryRequest } from "@shared/models";
 import { BaseFilterService } from "./base-filter.service";
+import { DateService } from "@shared/services";
 
 /**
  * Test implementation of BaseFilterService used by unit tests.
@@ -134,10 +135,12 @@ describe("BaseFilterService",
 				it("should handle date range updates",
 					() =>
 					{
+						const dateService: DateService =
+							new DateService();
 						const startDate: Date =
-							new Date("2025-01-01");
+							dateService.parseUTC("2025-01-01");
 						const endDate: Date =
-							new Date("2025-12-31");
+							dateService.parseUTC("2025-12-31");
 
 						service.updateFilter(
 							{ startDate, endDate });

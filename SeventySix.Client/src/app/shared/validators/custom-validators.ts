@@ -1,5 +1,6 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
 import { DateService } from "@shared/services";
+import { inject } from "@angular/core";
 import { isNullOrUndefined, isNullOrWhitespace } from "@shared/utilities/null-check.utility";
 
 /**
@@ -14,6 +15,10 @@ import { isNullOrUndefined, isNullOrWhitespace } from "@shared/utilities/null-ch
  */
 export function dateRangeValidator(min?: Date, max?: Date): ValidatorFn
 {
+	// Inject DateService at factory creation time (prevents calling inject() inside the per-call validator)
+	const dateService: DateService =
+		inject(DateService);
+
 	return (control: AbstractControl): ValidationErrors | null =>
 	{
 		if (isNullOrUndefined(control.value))
@@ -22,7 +27,9 @@ export function dateRangeValidator(min?: Date, max?: Date): ValidatorFn
 		}
 
 		const value: Date =
-			new Date(control.value);
+			typeof control.value === "string"
+				? dateService.parseUTC(control.value)
+				: (control.value as Date);
 
 		if (min && value < min)
 		{
@@ -87,13 +94,15 @@ export function stringLengthValidator(min?: number, max?: number): ValidatorFn
 /**
  * Validator for future dates.
  * Ensures a control's date value is today or in the future.
- * @param {DateService} dateService
- * DateService instance used to normalize and compare dates in UTC.
  * @returns {ValidatorFn}
  * Angular `ValidatorFn` that returns `ValidationErrors` when the date is before today or `null` when valid.
  */
-export function futureDateValidator(dateService: DateService): ValidatorFn
+export function futureDateValidator(): ValidatorFn
 {
+	// Inject DateService at factory creation time (prevents calling inject() inside the per-call validator)
+	const dateService: DateService =
+		inject(DateService);
+
 	return (control: AbstractControl): ValidationErrors | null =>
 	{
 		if (isNullOrUndefined(control.value))
@@ -102,9 +111,9 @@ export function futureDateValidator(dateService: DateService): ValidatorFn
 		}
 
 		const value: Date =
-			new Date(control.value);
+			typeof control.value === "string" ? dateService.parseUTC(control.value) : (control.value as Date);
 		const today: Date =
-			dateService.parseUTC(dateService.now());
+			dateService.nowDate();
 		today.setHours(0, 0, 0, 0);
 
 		if (value < today)

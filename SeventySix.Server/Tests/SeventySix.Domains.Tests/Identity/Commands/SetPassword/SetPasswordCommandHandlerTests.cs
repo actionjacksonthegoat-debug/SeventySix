@@ -55,7 +55,7 @@ public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
 			NullLogger<RegistrationService>.Instance);
 		TimeProvider = new FakeTimeProvider();
 		TimeProvider.SetUtcNow(
-			new DateTime(2025, 12, 15, 0, 0, 0, DateTimeKind.Utc));
+			new DateTimeOffset(2025, 12, 15, 0, 0, 0, TimeSpan.Zero));
 	}
 
 	[Fact]

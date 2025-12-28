@@ -1,4 +1,5 @@
 import { DateRangeEvent } from "@shared/models";
+import { DateService } from "@shared/services";
 
 /**
  * Date range configuration for table filters.
@@ -110,10 +111,15 @@ export class DataTableUtilities
 	 * The date range key to calculate.
 	 * @param {Date} now
 	 * The current date/time used as the end date.
+	 * @param {DateService} dateService
+	 * Optional DateService instance for date calculations.
 	 * @returns {DateRangeEvent | null}
 	 * The calculated DateRangeEvent or null if the range key is invalid.
 	 */
-	static calculateDateRange(range: string, now: Date): DateRangeEvent | null
+	static calculateDateRange(
+		range: string,
+		now: Date,
+		dateService: DateService = new DateService()): DateRangeEvent | null
 	{
 		const rangeMs: number | undefined =
 			DataTableUtilities.DATE_RANGE_MS[range as DateRangeKey];
@@ -123,8 +129,33 @@ export class DataTableUtilities
 			return null;
 		}
 
+		let startDate: Date;
+		// Prefer DateService helpers to create dates for consistency and testability
+		switch (range as DateRangeKey)
+		{
+			case "1h":
+				startDate =
+					dateService.addHours(now, -1);
+				break;
+			case "24h":
+				startDate =
+					dateService.addHours(now, -24);
+				break;
+			case "7d":
+				startDate =
+					dateService.addDays(now, -7);
+				break;
+			case "30d":
+				startDate =
+					dateService.addDays(now, -30);
+				break;
+			default:
+				startDate =
+					dateService.fromMillis(now.getTime() - rangeMs);
+		}
+
 		return {
-			startDate: new Date(now.getTime() - rangeMs),
+			startDate,
 			endDate: now,
 			preset: DataTableUtilities.PRESET_MAP[range as DateRangeKey]
 		};

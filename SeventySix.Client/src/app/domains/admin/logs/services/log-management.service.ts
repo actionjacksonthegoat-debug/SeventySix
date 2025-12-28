@@ -23,7 +23,10 @@ import { ApiService } from "@shared/services/api.service";
 import { BaseQueryService } from "@shared/services/base-query.service";
 import { buildHttpParams } from "@shared/utilities/http-params.utility";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
-import { injectQuery } from "@tanstack/angular-query-experimental";
+import {
+	CreateMutationResult,
+	injectQuery
+} from "@tanstack/angular-query-experimental";
 import { lastValueFrom, Observable } from "rxjs";
 
 /**
@@ -126,10 +129,10 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	/**
 	 * Create a mutation for deleting a single log by ID.
 	 * On success, related queries are invalidated by the mutation lifecycle.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<void, Error, number>}
 	 * Mutation object with `mutate`, `isPending`, and `error` properties.
 	 */
-	deleteLog()
+	deleteLog(): CreateMutationResult<void, Error, number>
 	{
 		return this.createMutation<number, void>(
 			(logId) =>
@@ -139,10 +142,10 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	/**
 	 * Create a mutation to delete multiple logs in a batch.
 	 * Invalidates query caches and clears selection on success.
-	 * @returns {ReturnType<typeof this.createMutation>}
+	 * @returns {CreateMutationResult<number, Error, number[]>}
 	 * Mutation object providing `mutate` for performing the batch delete.
 	 */
-	deleteLogs()
+	deleteLogs(): CreateMutationResult<number, Error, number[]>
 	{
 		return this.createMutation<number[], number>(
 			(logIds) =>
@@ -161,7 +164,7 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 	 */
 	deleteSelected(): void
 	{
-		const mutation: ReturnType<typeof this.deleteLogs> =
+		const mutation: CreateMutationResult<number, Error, number[]> =
 			this.deleteLogs();
 		const ids: number[] =
 			Array.from(this.selectedIds());

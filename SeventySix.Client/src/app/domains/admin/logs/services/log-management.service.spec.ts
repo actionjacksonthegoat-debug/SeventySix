@@ -6,6 +6,7 @@ import {
 import { WritableSignal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { ApiService } from "@shared/services/api.service";
+import { DateService } from "@shared/services";
 
 import { createMockApiService, MockApiService, setupServiceTest } from "@shared/testing";
 import { of } from "rxjs";
@@ -154,7 +155,9 @@ describe("LogManagementService",
 						service.updateFilter(
 							{
 								logLevel: LogLevel.Error.toString(),
-								startDate: new Date()
+								startDate:
+									new DateService()
+										.nowDate()
 							});
 						service.toggleSelection(1);
 

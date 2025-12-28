@@ -629,7 +629,11 @@ export class DataTableComponent<T extends { id: number; }>
 		const now: Date =
 			this.dateService.parseUTC(this.dateService.now());
 		const event: DateRangeEvent | null =
-			DataTableUtilities.calculateDateRange(range, now);
+			DataTableUtilities.calculateDateRange(
+				range,
+				now,
+				this.dateService);
+
 		if (event)
 		{
 			this.dateRangeChange.emit(event);

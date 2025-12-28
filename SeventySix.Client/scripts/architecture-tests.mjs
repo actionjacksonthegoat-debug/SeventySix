@@ -531,56 +531,53 @@ console.log('\n🔍 Template Performance Tests');
 test('templates should not call component methods in interpolation', async () => {
 	const violations = await checkTemplatesForMethodCalls(
 		/\{\{\s*[^}]*\([^)]+\)[^}]*\}\}/g,
-		'Templates calling methods with arguments in interpolation (use computed() signals instead)'
-	);
+		'Templates calling methods with arguments in interpolation (use computed() signals instead)');
 	assertEmpty(violations, 'Templates calling methods with arguments in interpolation (use computed() signals instead)');
 });
 
 test('templates should not call methods in property bindings', async () => {
 	const violations = await checkTemplatesForMethodCalls(
 		/\[(?:class|style|attr|disabled|hidden|readonly)\.[^\]]*\]\s*=\s*"[^"]*\([^)]+\)"/g,
-		'Templates calling methods with arguments in property bindings (use computed() signals instead)'
-	);
+		'Templates calling methods with arguments in property bindings (use computed() signals instead)');
 	assertEmpty(violations, 'Templates calling methods with arguments in property bindings (use computed() signals instead)');
 });
 
 console.log('\n🔍 Date Handling Standards Tests');
 
-test('production code should use DateService not native Date constructors', async () => {
+test('code (including tests/specs) should use DateService and approved test helpers', async () => {
 	const sourceFiles = await getFiles(SRC_DIR, '.ts');
 	const violations = [];
 
-	// Patterns that indicate direct Date usage
-	const nativeDatePattern = /new Date\(\)|Date\.now\(\)/g;
+	// Broader patterns that indicate direct Date usage
+	const nativeDatePattern = /new\s+Date\s*\(|Date\.now\s*\(|Date\.parse\s*\(|Date\.UTC\s*\(/g;
 
-	// Allowed exceptions with justification
-	const allowedExceptions = [
-		'date.service.ts', // DateService itself must use Date internally
-	];
+	// Allowed exceptions with justification - these files implement the Date abstraction or approved test helpers
+	const allowedExceptions =
+		[
+			'date.service.ts', // DateService itself must use Date internally
+			'date.service.spec.ts', // Tests that target DateService itself may use native Date
+		];
 
 	for (const file of sourceFiles) {
 		const fileName = path.basename(file);
-		if (allowedExceptions.includes(fileName)) {
-			continue;
-		}
-
-		// Skip test files and test utilities - tests may create Date objects for assertions
 		const relativePath = path.relative(SRC_DIR, file);
-		if (fileName.endsWith('.spec.ts') || relativePath.includes('testing')) {
+
+		// Skip allowed exception files
+		if (allowedExceptions.includes(fileName)) {
 			continue;
 		}
 
 		const content = await fs.readFile(file, 'utf-8');
 		const matches = content.match(nativeDatePattern);
 
-		if (matches && matches.length > 0) {
+		if (matches && matches.length > 0)
+		{
 			violations.push(
-				`${path.relative(SRC_DIR, file)}: ${matches.length} native Date usage(s) (use DateService instead)`,
-			);
+				`${relativePath}: ${matches.length} direct Date usage(s) - use DateService instead`);
 		}
 	}
 
-	assertEmpty(violations, 'Production code using native Date (inject DateService for testability)');
+	assertEmpty(violations, 'Direct native Date usage found (production code and tests must use DateService)');
 });
 
 // ============================================================================

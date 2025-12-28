@@ -507,7 +507,7 @@ export class AuthService
 	{
 		this.accessToken = token;
 		this.tokenExpiresAt =
-			new Date(expiresAt)
+			this.dateService.parseUTC(expiresAt)
 			.getTime();
 
 		const claims: JwtClaims | null =
