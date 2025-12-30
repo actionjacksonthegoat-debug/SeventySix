@@ -364,6 +364,29 @@ describe("UserDetailPage",
 					.toBe("Edit User: john_doe");
 			});
 
+		it("should center save icon inside page-actions",
+			async () =>
+			{
+				await fixture.whenStable();
+				fixture.detectChanges();
+
+				const icon: HTMLElement | null =
+					fixture.nativeElement.querySelector(
+						".page-actions button mat-icon");
+
+				expect(icon)
+					.toBeTruthy();
+				if (!icon) return;
+
+				const style: CSSStyleDeclaration =
+					window.getComputedStyle(icon);
+
+				expect(style.display === "inline-flex" || style.display === "inline-block")
+					.toBe(true);
+				expect(style.alignItems === "center" || style.verticalAlign === "middle")
+					.toBe(true);
+			});
+
 		it("should mark form as pristine after successful save",
 			async () =>
 			{

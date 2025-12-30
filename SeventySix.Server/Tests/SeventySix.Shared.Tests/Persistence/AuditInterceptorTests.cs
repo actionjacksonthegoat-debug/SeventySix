@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using NSubstitute;
 using SeventySix.Shared.Entities;
 using SeventySix.Shared.Interfaces;

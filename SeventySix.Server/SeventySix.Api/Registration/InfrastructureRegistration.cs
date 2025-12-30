@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Api.Infrastructure;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;

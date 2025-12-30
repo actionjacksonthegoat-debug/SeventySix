@@ -165,6 +165,9 @@ app.UseSerilogRequestLogging(
 // Middleware pipeline
 app.UseConfiguredForwardedHeaders(builder.Configuration);
 
+// CORS - Must be early so preflight (OPTIONS) requests are handled
+app.UseCors("AllowedOrigins");
+
 // Security headers middleware - Attribute-aware implementation
 // Reads [SecurityHeaders] attributes from controllers/actions for customization
 app.UseMiddleware<AttributeBasedSecurityHeadersMiddleware>();
@@ -200,9 +203,6 @@ if (app.Environment.IsDevelopment())
 	// Scalar API reference UI - Modern alternative to Swagger UI
 	_ = app.MapScalarApiReference();
 }
-
-// CORS - Must be called after UseRouting and before UseAuthorization
-app.UseCors("AllowedOrigins");
 
 // Smart HTTPS redirection - Centralized enforcement with configurable exemptions
 // Controlled by Security section in appsettings.json (single source of truth)

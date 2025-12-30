@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Shared.DTOs;
 using SeventySix.Shared.Validators;
 
 namespace SeventySix.Identity.Queries.GetPagedUsers;

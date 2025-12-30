@@ -4,12 +4,13 @@ import {
 	withXsrfConfiguration
 } from "@angular/common/http";
 import {
-	APP_INITIALIZER,
 	ApplicationConfig,
 	ErrorHandler,
 	isDevMode,
 	provideBrowserGlobalErrorListeners,
-	provideZonelessChangeDetection
+	provideZonelessChangeDetection,
+	inject,
+	provideAppInitializer
 } from "@angular/core";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import {
@@ -45,57 +46,59 @@ import { routes } from "./app.routes";
  * Initialize theme service on app startup
  * This ensures the theme is applied before the app renders
  */
-function initializeTheme(_themeService: ThemeService)
+function initializeTheme()
 {
-	return () =>
-	{
-		// Theme service constructor handles initialization
-		return Promise.resolve();
-	};
+	inject(ThemeService);
+	// Theme service constructor handles initialization
+	return Promise.resolve();
 }
 
 /**
  * Initialize OpenTelemetry on app startup
  * This ensures tracing is active before any HTTP requests
  */
-function initializeTelemetry(telemetryService: TelemetryService)
+function initializeTelemetry()
 {
-	return () =>
-	{
-		telemetryService.initialize();
-		return Promise.resolve();
-	};
+	const telemetryService: TelemetryService =
+		inject(TelemetryService);
+	telemetryService.initialize();
+	return Promise.resolve();
 }
 
 /**
  * Initialize Web Vitals monitoring on app startup
  * The WebVitalsService constructor handles initialization automatically
  */
-function initializeWebVitals(_webVitalsService: WebVitalsService)
+function initializeWebVitals()
 {
-	return () =>
-	{
-		// Web vitals service constructor handles initialization
-		return Promise.resolve();
-	};
+	inject(WebVitalsService);
+	// Web vitals service constructor handles initialization
+	return Promise.resolve();
 }
 
 /**
  * Initialize auth service on app startup
  * Handles OAuth callback processing and restores auth state
  */
-function initializeAuth(authService: AuthService)
+function initializeAuth()
 {
-	return () =>
-	{
-		return authService.initialize();
-	};
+	const authService: AuthService =
+		inject(AuthService);
+	return authService.initialize();
 }
 
 /**
  * Global application configuration for Angular `ApplicationConfig`.
  * Registers providers: TanStack Query, HTTP interceptors, router, APP_INITIALIZER hooks, and debug/production services.
  */
+const appInitializers: ReturnType<typeof provideAppInitializer>[] =
+	[
+		provideAppInitializer(initializeTheme),
+		provideAppInitializer(initializeTelemetry),
+		provideAppInitializer(initializeWebVitals),
+		provideAppInitializer(initializeAuth)
+	];
+
 export const appConfig: ApplicationConfig =
 	{
 		providers: [
@@ -135,37 +138,11 @@ export const appConfig: ApplicationConfig =
 			provideBrowserGlobalErrorListeners(),
 			provideZonelessChangeDetection(),
 			provideRouter(routes, withPreloading(SelectivePreloadingStrategy)),
-			provideAnimations(),
+			provideAnimations(), // Fix in Angular V22
 			// Global error handler
 			{ provide: ErrorHandler, useClass: ErrorHandlerService },
-			// Initialize theme service on app startup
-			{
-				provide: APP_INITIALIZER,
-				useFactory: initializeTheme,
-				deps: [ThemeService],
-				multi: true
-			},
-			// Initialize OpenTelemetry on app startup
-			{
-				provide: APP_INITIALIZER,
-				useFactory: initializeTelemetry,
-				deps: [TelemetryService],
-				multi: true
-			},
-			// Initialize Web Vitals monitoring on app startup
-			{
-				provide: APP_INITIALIZER,
-				useFactory: initializeWebVitals,
-				deps: [WebVitalsService],
-				multi: true
-			},
-			// Initialize auth service on app startup (handles OAuth callbacks)
-			{
-				provide: APP_INITIALIZER,
-				useFactory: initializeAuth,
-				deps: [AuthService],
-				multi: true
-			},
+			// Application initializers consolidated
+			...appInitializers,
 			// Service Worker for PWA support and asset caching only
 			provideServiceWorker("ngsw-worker.js",
 				{

@@ -2,7 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.ApiTracking;
 using SeventySix.Shared.Interfaces;

@@ -4,8 +4,6 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SeventySix.Identity.Constants;
-using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Identity;
 
