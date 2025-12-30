@@ -2,9 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Options;
-using SeventySix.Identity.Constants;
-
 namespace SeventySix.Identity;
 
 /// <summary>

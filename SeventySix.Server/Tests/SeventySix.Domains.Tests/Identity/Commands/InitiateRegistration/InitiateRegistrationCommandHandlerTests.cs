@@ -8,7 +8,6 @@ using SeventySix.Shared.Extensions;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Domains.Tests.Identity.Commands.InitiateRegistration;
 

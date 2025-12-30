@@ -3,7 +3,6 @@
 // </copyright>
 
 using FluentValidation;
-using SeventySix.Shared.DTOs;
 using SeventySix.Shared.Validators;
 
 namespace SeventySix.Logging.Queries.GetLogsPaged;

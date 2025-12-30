@@ -34,6 +34,15 @@ namespace SeventySix.Api.Middleware;
 /// Security: Stack traces are only included in development environments.
 /// </remarks>
 /// <remarks>
+/// Defense-in-depth: when this middleware writes an error response it will add
+/// <c>Access-Control-Allow-Origin</c> (and <c>Access-Control-Allow-Credentials</c> when applicable)
+/// when the request's <c>Origin</c> header matches one of the configured
+/// <c>Cors:AllowedOrigins</c>. This behaviour is a fallback to ensure cross-origin
+/// clients receive the necessary CORS headers on error responses and does not
+/// replace proper CORS policy configuration via <c>services.AddCors</c> and
+/// <c>app.UseCors</c>.
+/// </remarks>
+/// <remarks>
 /// Initializes a new instance of the <see cref="GlobalExceptionMiddleware"/> class.
 /// </remarks>
 /// <param name="next">
@@ -45,12 +54,29 @@ namespace SeventySix.Api.Middleware;
 /// <param name="environment">
 /// Host environment.
 /// </param>
-public class GlobalExceptionMiddleware(
-	RequestDelegate next,
-	ILogger<GlobalExceptionMiddleware> logger,
-	IHostEnvironment environment)
+public class GlobalExceptionMiddleware
 {
-	// At the top of the class, add a static readonly field for the options:
+	/// <summary>
+	/// The next middleware delegate in the pipeline.
+	/// </summary>
+	private readonly RequestDelegate Next;
+
+	/// <summary>
+	/// Logger used for warnings and error reporting within the middleware.
+	/// </summary>
+	private readonly ILogger<GlobalExceptionMiddleware> Logger;
+
+	/// <summary>
+	/// Host environment; used to determine whether to reveal stack traces in error responses.
+	/// </summary>
+	private readonly IHostEnvironment Environment;
+
+	/// <summary>
+	/// Set of allowed CORS origins (case-insensitive) read from configuration. Used to decide
+	/// whether to add CORS headers to error responses.
+	/// </summary>
+	private readonly HashSet<string> AllowedOrigins;
+
 	/// <summary>
 	/// Serializer options used when writing ProblemDetails responses (camelCase, indented).
 	/// </summary>
@@ -61,6 +87,45 @@ public class GlobalExceptionMiddleware(
 				JsonNamingPolicy.CamelCase,
 			WriteIndented = true,
 		};
+
+	/// <summary>
+	/// Constructs the middleware and captures required services.
+	/// Reads allowed origins from configuration key <c>Cors:AllowedOrigins</c> and stores them
+	/// in a case-insensitive set for header preservation on error responses.
+	/// If no configuration is present a conservative default of <c>http://localhost:4200</c> is used.
+	/// </summary>
+	/// <param name="next">
+	/// The next middleware delegate in the pipeline.
+	/// </param>
+	/// <param name="logger">
+	/// The logger instance.
+	/// </param>
+	/// <param name="environment">
+	/// Host environment (used to determine whether to include stack traces).
+	/// </param>
+	/// <param name="configuration">
+	/// Application configuration to read CORS allowed origins.
+	/// </param>
+	public GlobalExceptionMiddleware(
+		RequestDelegate next,
+		ILogger<GlobalExceptionMiddleware> logger,
+		IHostEnvironment environment,
+		IConfiguration configuration)
+	{
+		Next =
+			next ?? throw new ArgumentNullException(nameof(next));
+		Logger =
+			logger ?? throw new ArgumentNullException(nameof(logger));
+		Environment =
+			environment ?? throw new ArgumentNullException(nameof(environment));
+
+		string[] allowedOrigins =
+			configuration?.GetSection("Cors:AllowedOrigins")
+				.Get<string[]>() ?? ["http://localhost:4200"];
+
+		AllowedOrigins =
+			new HashSet<string>(allowedOrigins, StringComparer.OrdinalIgnoreCase);
+	}
 
 	/// <summary>
 	/// Invokes the middleware to process the HTTP request.
@@ -76,17 +141,17 @@ public class GlobalExceptionMiddleware(
 	{
 		try
 		{
-			await next(context);
+			await Next(context);
 		}
 		catch (Exception ex)
 		{
 			if (ex is FluentValidation.ValidationException)
 			{
-				logger.LogWarning("Validation failed: {Message}", ex.Message);
+				Logger.LogWarning("Validation failed: {Message}", ex.Message);
 			}
 			else
 			{
-				logger.LogError(
+				Logger.LogError(
 					ex,
 					"Unhandled exception occurred: {Message}",
 					ex.Message);
@@ -108,21 +173,51 @@ public class GlobalExceptionMiddleware(
 	/// <returns>
 	/// A task that represents the asynchronous operation.
 	/// </returns>
+	/// <summary>
+	/// Handles exceptions and writes a <see cref="ProblemDetails"/> response.
+	/// This method will also attempt to add CORS response headers for allowed origins
+	/// before serializing the error response to ensure cross-origin clients receive
+	/// the necessary headers even on failures.
+	/// </summary>
+	/// <param name="context">
+	/// The current HTTP context.
+	/// </param>
+	/// <param name="exception">
+	/// The exception that was caught.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
 	private async Task HandleExceptionAsync(
 		HttpContext context,
 		Exception exception)
 	{
+		// Ensure CORS headers are present on error responses for allowed origins
+		CorsHeaderHelper.AddCorsHeadersIfAllowed(context, AllowedOrigins);
+
 		context.Response.ContentType = "application/problem+json";
 
 		ProblemDetails problemDetails =
-			MapExceptionToProblemDetails(
-				context,
-				exception);
+			MapExceptionToProblemDetails(context, exception);
+
 		context.Response.StatusCode =
 			problemDetails.Status ?? (int)HttpStatusCode.InternalServerError;
 
 		await context.Response.WriteAsync(
-			JsonSerializer.Serialize(problemDetails, ProblemDetailsJsonOptions));
+			JsonSerializer.Serialize(
+				problemDetails,
+				ProblemDetailsJsonOptions));
+	}
+
+	/// <summary>
+	/// Adds CORS response headers when the Origin header is present and allowed.
+	/// </summary>
+	/// <param name="context">The http context for the current request.</param>
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+	private void AddCorsHeadersIfNeeded(HttpContext context)
+	{
+		// Keep for backward compatibility with existing tests that may call this method
+		CorsHeaderHelper.AddCorsHeadersIfAllowed(context, AllowedOrigins);
 	}
 
 	/// <summary>
@@ -207,7 +302,7 @@ public class GlobalExceptionMiddleware(
 			context,
 			HttpStatusCode.InternalServerError,
 			"Internal Server Error",
-			environment.IsDevelopment()
+			Environment.IsDevelopment()
 				? exception.Message
 				: "An error occurred processing your request.");
 

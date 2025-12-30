@@ -2,13 +2,11 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.EntityFrameworkCore;
 using SeventySix.Identity;
 using SeventySix.Shared.Extensions;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;
-using Xunit;
 
 namespace SeventySix.Domains.Tests.Identity.Commands.CompleteRegistration;
 

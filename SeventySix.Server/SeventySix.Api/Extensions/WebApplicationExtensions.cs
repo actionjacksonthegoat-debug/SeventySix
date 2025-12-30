@@ -12,7 +12,6 @@ using SeventySix.Api.Configuration;
 using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
-using SeventySix.Shared;
 using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.Extensions;

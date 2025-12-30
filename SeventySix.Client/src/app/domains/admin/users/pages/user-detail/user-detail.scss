@@ -21,6 +21,17 @@
 			display: flex;
 			gap: vars.$spacing-md;
 			align-items: center;
+
+			button {
+				mat-icon,
+				mat-spinner {
+					display: inline-flex;
+					align-items: center;
+					vertical-align: middle;
+					height: 20px;
+					line-height: 20px;
+				}
+			}
 		}
 	}
 

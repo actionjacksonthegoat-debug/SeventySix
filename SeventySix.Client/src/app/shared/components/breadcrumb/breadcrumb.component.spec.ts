@@ -208,4 +208,35 @@ describe("BreadcrumbComponent",
 				expect(breadcrumbs.length)
 					.toBeGreaterThanOrEqual(2);
 			});
+
+		it("should show Login breadcrumb when route contains returnUrl query",
+			async () =>
+			{
+				// Ensure login route exists in router config
+				await router.navigateByUrl(
+					"/login?returnUrl=%2Fdeveloper%2Farchitecture");
+				fixture.detectChanges();
+
+				const breadcrumbs: BreadcrumbItem[] =
+					component.breadcrumbs();
+				expect(breadcrumbs.map(crumb => crumb.label))
+					.toEqual(
+						["Home", "Login"]);
+				expect(breadcrumbs[1].isActive)
+					.toBe(true);
+			});
+
+		it("should compute developer architecture breadcrumb",
+			async () =>
+			{
+				await router.navigate(
+					["/developer/architecture"]);
+				fixture.detectChanges();
+
+				const breadcrumbs: BreadcrumbItem[] =
+					component.breadcrumbs();
+				expect(breadcrumbs.map(crumb => crumb.label))
+					.toEqual(
+						["Home", "Developer", "Architecture Guide"]);
+			});
 	});

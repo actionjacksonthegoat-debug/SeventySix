@@ -2,9 +2,6 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Threading.Tasks;
-using Xunit;
-
 namespace SeventySix.Analyzers.Tests;
 
 public class DateTimeUsageAnalyzerTests

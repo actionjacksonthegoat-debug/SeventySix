@@ -8,7 +8,7 @@ import {
 import { toSignal } from "@angular/core/rxjs-interop";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
-import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
+import { ActivatedRoute, NavigationEnd, Router, UrlTree, UrlSegmentGroup, UrlSegment } from "@angular/router";
 import { RouterLink } from "@angular/router";
 import { BreadcrumbItem } from "@shared/models";
 import { filter, map, startWith } from "rxjs/operators";
@@ -174,6 +174,20 @@ export class BreadcrumbComponent
 			return breadcrumbs;
 		}
 
+		// Special-case: if the first segment is 'login' (may include returnUrl query),
+		// display a single Login breadcrumb and avoid parsing returnUrl into crumbs.
+		if (urlSegments[0].toLowerCase() === "login")
+		{
+			breadcrumbs.push(
+				{
+					label: "Login",
+					url: "/login",
+					isActive: this.router.url.startsWith("/login")
+				});
+
+			return breadcrumbs;
+		}
+
 		this.addFeatureBreadcrumb(breadcrumbs, urlSegments[0]);
 		this.addSubPageBreadcrumbs(breadcrumbs, urlSegments);
 
@@ -205,12 +219,25 @@ export class BreadcrumbComponent
 	 */
 	private getUrlSegments(): string[]
 	{
-		return this
-		.router
-		.url
-		.split("/")
-		.filter(
-			(segment) => segment);
+		const currentUrl: string =
+			this.router.url ?? "";
+		const urlTree: UrlTree =
+			this.router.parseUrl(currentUrl);
+
+		const primaryOutlet: UrlSegmentGroup | undefined =
+			urlTree.root.children["primary"] as UrlSegmentGroup | undefined;
+
+		const primarySegments: UrlSegment[] =
+			primaryOutlet?.segments ?? [];
+
+		var segments: string[] =
+			primarySegments
+			.map(
+				(segment) => segment.path)
+			.filter(
+				(segment) => segment.length > 0);
+
+		return segments;
 	}
 
 	/**
@@ -331,9 +358,8 @@ export class BreadcrumbComponent
 		// Custom labels for specific routes
 		const routeLabels: Record<string, string> =
 			{
-				"/game": "World Map",
 				"/developer/style-guide": "Style Guide",
-				"/admin": "Dashboard",
+				"/developer/architecture": "Architecture Guide",
 				"/admin/dashboard": "Dashboard",
 				"/admin/logs": "Logs",
 				"/admin/users": "Users",

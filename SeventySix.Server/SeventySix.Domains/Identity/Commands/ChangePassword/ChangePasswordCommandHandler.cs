@@ -3,7 +3,6 @@
 // </copyright>
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Wolverine;
 
 namespace SeventySix.Identity;

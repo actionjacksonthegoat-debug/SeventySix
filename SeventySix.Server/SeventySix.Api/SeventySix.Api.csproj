@@ -85,4 +85,8 @@
 	<ItemGroup>
 		<ProjectReference Include="..\SeventySix.Domains\SeventySix.Domains.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="SeventySix.Api.Tests" />
+	</ItemGroup>
 </Project>

@@ -6,7 +6,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using SeventySix.Api.Configuration;
 using SeventySix.Identity;
-using SeventySix.Shared.Settings;
+using SeventySix.Api.Middleware;
 
 namespace SeventySix.Api.Registration;
 
@@ -60,7 +60,7 @@ public static class RateLimitingRegistration
 			return AddDisabledRateLimiting(services);
 		}
 
-		return AddEnabledRateLimiting(services, globalSettings, authSettings);
+		return AddEnabledRateLimiting(services, globalSettings, authSettings, configuration);
 	}
 
 	private static IServiceCollection AddDisabledRateLimiting(
@@ -91,15 +91,34 @@ public static class RateLimitingRegistration
 	private static IServiceCollection AddEnabledRateLimiting(
 		IServiceCollection services,
 		RateLimitingSettings globalSettings,
-		AuthRateLimitSettings authSettings)
+		AuthRateLimitSettings authSettings,
+		IConfiguration configuration)
 	{
+		string[] allowedOrigins =
+			configuration?.GetSection("Cors:AllowedOrigins").Get<string[]>()
+			?? new[] { "http://localhost:4200" };
+
+		ISet<string> allowedOriginsSet =
+			new HashSet<string>(
+				allowedOrigins,
+				StringComparer.OrdinalIgnoreCase);
+
 		services.AddRateLimiter(options =>
 		{
 			options.GlobalLimiter =
 				CreateGlobalLimiter(globalSettings);
 			AddAuthPolicies(options, authSettings);
-			options.OnRejected =
+
+			Func<OnRejectedContext, CancellationToken, ValueTask> originalOnRejected =
 				CreateRejectedHandler(globalSettings);
+			options.OnRejected =
+				async (context, cancellationToken) =>
+				{
+					// Preserve CORS headers on rate limiter rejections
+					CorsHeaderHelper.AddCorsHeadersIfAllowed(context.HttpContext, allowedOriginsSet);
+
+					await originalOnRejected(context, cancellationToken);
+				};
 		});
 
 		return services;
@@ -108,9 +127,15 @@ public static class RateLimitingRegistration
 	private static PartitionedRateLimiter<HttpContext> CreateGlobalLimiter(
 		RateLimitingSettings settings) =>
 		PartitionedRateLimiter.Create<HttpContext, string>(context =>
-			RateLimitPartition.GetFixedWindowLimiter(
-				partitionKey: context.Connection.RemoteIpAddress?.ToString()
-					?? "anonymous",
+		{
+			// Bypass rate limiting for CORS preflight (OPTIONS) requests
+			if (HttpMethods.IsOptions(context.Request.Method))
+			{
+				return RateLimitPartition.GetNoLimiter<string>("__preflight__");
+			}
+
+			return RateLimitPartition.GetFixedWindowLimiter(
+				partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
 				factory: _ => new FixedWindowRateLimiterOptions
 				{
 					PermitLimit = settings.PermitLimit,
@@ -119,7 +144,8 @@ public static class RateLimitingRegistration
 					QueueProcessingOrder =
 						QueueProcessingOrder.OldestFirst,
 					QueueLimit = 0,
-				}));
+				});
+		});
 
 	private static void AddAuthPolicies(
 		RateLimiterOptions options,
