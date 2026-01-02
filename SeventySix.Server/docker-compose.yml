@@ -78,7 +78,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: unless-stopped
+    restart: "no"
     networks:
       - seventysix-network
 
