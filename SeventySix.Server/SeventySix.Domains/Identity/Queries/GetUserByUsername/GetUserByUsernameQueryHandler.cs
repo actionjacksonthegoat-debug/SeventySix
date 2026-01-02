@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -10,13 +12,11 @@ public static class GetUserByUsernameQueryHandler
 	/// </summary>
 	public static async Task<UserDto?> HandleAsync(
 		GetUserByUsernameQuery query,
-		IUserQueryRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		User? user =
-			await repository.GetByUsernameAsync(
-				query.Username,
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByNameAsync(query.Username);
 
 		return user?.ToDto();
 	}

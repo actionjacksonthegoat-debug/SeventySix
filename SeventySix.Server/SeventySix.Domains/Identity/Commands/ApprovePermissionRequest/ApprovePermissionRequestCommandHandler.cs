@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity.Commands.ApprovePermissionRequest;
 
 /// <summary>
@@ -18,8 +20,8 @@ public static class ApprovePermissionRequestCommandHandler
 	/// <param name="repository">
 	/// The permission request repository.
 	/// </param>
-	/// <param name="userCommandRepository">
-	/// The user command repository.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for role operations.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -30,7 +32,7 @@ public static class ApprovePermissionRequestCommandHandler
 	public static async Task<bool> HandleAsync(
 		ApprovePermissionRequestCommand command,
 		IPermissionRequestRepository repository,
-		IUserCommandRepository userCommandRepository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
 		PermissionRequest? request =
@@ -43,10 +45,23 @@ public static class ApprovePermissionRequestCommandHandler
 			return false;
 		}
 
-		await userCommandRepository.AddRoleAsync(
-			request.UserId,
-			request.RequestedRole!.Name,
-			cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(request.UserId.ToString());
+
+		if (user is null)
+		{
+			return false;
+		}
+
+		IdentityResult result =
+			await userManager.AddToRoleAsync(
+				user,
+				request.RequestedRole!.Name!);
+
+		if (!result.Succeeded)
+		{
+			return false;
+		}
 
 		await repository.DeleteAsync(command.RequestId, cancellationToken);
 

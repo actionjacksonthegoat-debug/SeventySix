@@ -2,6 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -15,8 +18,8 @@ public static class CheckIdentityHealthQueryHandler
 	/// <param name="query">
 	/// The health check query.
 	/// </param>
-	/// <param name="repository">
-	/// The user repository for data access.
+	/// <param name="userManager">
+	/// The user manager for data access.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -26,22 +29,16 @@ public static class CheckIdentityHealthQueryHandler
 	/// </returns>
 	public static async Task<bool> HandleAsync(
 		CheckIdentityHealthQuery query,
-		IUserQueryRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
 		try
 		{
-			UserQueryRequest healthCheckRequest =
-				new()
-				{
-					Page = 1,
-					PageSize = 1,
-				};
-
 			_ =
-				await repository.GetPagedAsync(
-					healthCheckRequest,
-					cancellationToken);
+				await userManager.Users
+					.AsNoTracking()
+					.Take(1)
+					.ToListAsync(cancellationToken);
 
 			return true;
 		}

@@ -15,6 +15,7 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+import { MatButtonModule } from "@angular/material/button";
 import { AUTH_ERROR_CODE } from "@auth/constants";
 import {
 	HTTP_STATUS,
@@ -28,7 +29,7 @@ import { NotificationService } from "@shared/services/notification.service";
 	{
 		selector: "app-register-complete",
 		standalone: true,
-		imports: [FormsModule, RouterLink],
+		imports: [FormsModule, RouterLink, MatButtonModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./register-complete.html",
 		styleUrl: "./register-complete.scss"

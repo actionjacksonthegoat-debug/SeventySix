@@ -8,7 +8,7 @@ namespace SeventySix.Identity;
 /// Request to complete registration after email verification.
 /// </summary>
 /// <param name="Token">
-/// The email verification token from the link.
+/// The email verification token or combined token from the link.
 /// </param>
 /// <param name="Username">
 /// The desired username.

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using SeventySix.Identity.Constants;
 
@@ -21,8 +22,8 @@ public static class CreatePermissionRequestCommandHandler
 	/// <param name="repository">
 	/// Repository for permission requests and role lookups.
 	/// </param>
-	/// <param name="userCommandRepository">
-	/// Repository for user commands such as adding roles.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for role operations.
 	/// </param>
 	/// <param name="whitelistedOptions">
 	/// Options configuring whitelisted emails for auto-approval.
@@ -36,7 +37,7 @@ public static class CreatePermissionRequestCommandHandler
 	public static async Task HandleAsync(
 		CreatePermissionRequestCommand command,
 		IPermissionRequestRepository repository,
-		IUserCommandRepository userCommandRepository,
+		UserManager<ApplicationUser> userManager,
 		IOptions<WhitelistedPermissionSettings> whitelistedOptions,
 		CancellationToken cancellationToken)
 	{
@@ -53,11 +54,17 @@ public static class CreatePermissionRequestCommandHandler
 				nameof(command));
 		}
 
-		// Get existing roles and pending requests to skip duplicates (idempotent)
-		IEnumerable<string> existingRoles =
-			await repository.GetUserExistingRolesAsync(
-				command.UserId,
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(command.UserId.ToString());
+
+		if (user is null)
+		{
+			throw new UserNotFoundException(command.UserId);
+		}
+
+		// Get existing roles using UserManager
+		IList<string> existingRoles =
+			await userManager.GetRolesAsync(user);
 
 		IEnumerable<PermissionRequest> pendingRequests =
 			await repository.GetByUserIdAsync(
@@ -68,14 +75,8 @@ public static class CreatePermissionRequestCommandHandler
 			existingRoles
 				.Concat(
 					pendingRequests.Select(pendingRequest =>
-						pendingRequest.RequestedRole!.Name))
+						pendingRequest.RequestedRole!.Name!))
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-		// Get user email once for whitelist checking
-		string? userEmail =
-			await repository.GetUserEmailAsync(
-				command.UserId,
-				cancellationToken);
 
 		foreach (string role in command.Request.RequestedRoles)
 		{
@@ -94,25 +95,21 @@ public static class CreatePermissionRequestCommandHandler
 
 			// Check whitelist for auto-approval
 			if (
-				userEmail != null
-				&& whitelistedSettings.IsWhitelisted(userEmail, role))
+				user.Email != null
+				&& whitelistedSettings.IsWhitelisted(user.Email, role))
 			{
-				// Auto-approve: add role directly, skip creating request
-				// Uses AddRoleWithoutAuditAsync - CreatedBy remains empty for whitelisted
-				await userCommandRepository.AddRoleWithoutAuditAsync(
-					command.UserId,
-					role,
-					cancellationToken);
+				// Auto-approve: add role directly using UserManager
+				await userManager.AddToRoleAsync(user, role);
 				continue;
 			}
 
-			// Look up role ID from SecurityRoles
-			long? roleId =
-				await repository.GetRoleIdByNameAsync(
+			// Look up role from SecurityRoles
+			ApplicationRole? applicationRole =
+				await repository.GetRoleByNameAsync(
 					role,
 					cancellationToken);
 
-			if (roleId is null)
+			if (applicationRole is null)
 			{
 				throw new InvalidOperationException(
 					$"Role '{role}' not found in SecurityRoles");
@@ -123,13 +120,15 @@ public static class CreatePermissionRequestCommandHandler
 				new()
 				{
 					UserId = command.UserId,
-					RequestedRoleId = roleId.Value,
+					RequestedRoleId = applicationRole.Id,
 					RequestMessage =
 						command.Request.RequestMessage,
 					CreatedBy = command.Username,
 				};
 
-			await repository.CreateAsync(entity, cancellationToken);
+			await repository.CreateAsync(
+				entity,
+				cancellationToken);
 		}
 	}
 }

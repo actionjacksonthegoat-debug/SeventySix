@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Extensions;
 
 namespace SeventySix.ElectronicNotifications.Emails;
 
@@ -138,7 +139,7 @@ public class EmailService(
 		ArgumentException.ThrowIfNullOrWhiteSpace(verificationToken);
 
 		string verificationUrl =
-			BuildEmailVerificationUrl(verificationToken);
+			BuildEmailVerificationUrl(email, verificationToken);
 
 		string subject = "SeventySix - Verify Your Email";
 
@@ -161,16 +162,29 @@ public class EmailService(
 		$"{settings.Value.ClientBaseUrl}/auth/set-password?token={Uri.EscapeDataString(resetToken)}";
 
 	/// <summary>
-	/// Builds the email verification URL with encoded token.
+	/// Builds the email verification URL with a combined token that encodes the email
+	/// and the verification token into a URL-safe string.
 	/// </summary>
+	/// <param name="email">
+	/// The recipient email address.
+	/// </param>
 	/// <param name="verificationToken">
 	/// The verification token.
 	/// </param>
 	/// <returns>
 	/// Full URL for email verification.
 	/// </returns>
-	private string BuildEmailVerificationUrl(string verificationToken) =>
-		$"{settings.Value.ClientBaseUrl}/auth/register/complete?token={Uri.EscapeDataString(verificationToken)}";
+	private string BuildEmailVerificationUrl(
+		string email,
+		string verificationToken)
+	{
+		string combinedToken =
+			RegistrationTokenService.Encode(
+				email,
+				verificationToken);
+
+		return $"{settings.Value.ClientBaseUrl}/auth/register/complete?token={Uri.EscapeDataString(combinedToken)}";
+	}
 
 	/// <summary>
 	/// Sends an email with the specified parameters.
@@ -365,8 +379,7 @@ public class EmailService(
 				<p>Your account has been created. Please set your password to complete registration:</p>
 				<p style="margin: 24px 0;">
 					<a href="{{resetUrl}}"
-					   style="background: #4CAF50; color: white; padding: 12px 24px;
-					          text-decoration: none; border-radius: 4px;">
+				   style="display: inline-block; background: #2196F3; color: white; padding: 12px 24px; border: 1px solid #2196F3; font-weight: 600; text-decoration: none; border-radius: 4px;">
 						Set Your Password
 					</a>
 				</p>
@@ -402,8 +415,7 @@ public class EmailService(
 				<p>We received a request to reset your password. Click the button below to set a new password:</p>
 				<p style="margin: 24px 0;">
 					<a href="{{resetUrl}}"
-					   style="background: #2196F3; color: white; padding: 12px 24px;
-					          text-decoration: none; border-radius: 4px;">
+				   style="display: inline-block; background: #2196F3; color: white; padding: 12px 24px; border: 1px solid #2196F3; font-weight: 600; text-decoration: none; border-radius: 4px;">
 						Reset Password
 					</a>
 				</p>
@@ -434,8 +446,7 @@ public class EmailService(
 				<p>Please click the button below to verify your email address and complete your registration:</p>
 				<p style="margin: 24px 0;">
 					<a href="{{verificationUrl}}"
-					   style="background: #9C27B0; color: white; padding: 12px 24px;
-					          text-decoration: none; border-radius: 4px;">
+				   style="display: inline-block; background: #2196F3; color: white; padding: 12px 24px; border: 1px solid #2196F3; font-weight: 600; text-decoration: none; border-radius: 4px;">
 						Verify Email
 					</a>
 				</p>

@@ -35,7 +35,7 @@ public class UserExtensionsTests
 		FakeTimeProvider timeProvider = new();
 		DateTime createDate =
 			timeProvider.GetUtcNow().UtcDateTime.AddDays(-5);
-		User user =
+		ApplicationUser user =
 			new UserBuilder(timeProvider)
 			.WithUsername("john_doe")
 			.WithEmail("john@example.com")
@@ -44,6 +44,7 @@ public class UserExtensionsTests
 			.WithIsActive(true)
 			.Build();
 		user.Id = 123;
+		user.NeedsPendingEmail = true;
 
 		// Act
 		UserDto dto = user.ToDto();
@@ -56,6 +57,7 @@ public class UserExtensionsTests
 		Assert.Equal("John Doe", dto.FullName);
 		Assert.Equal(createDate, dto.CreateDate);
 		Assert.True(dto.IsActive);
+		Assert.True(dto.NeedsPendingEmail);
 	}
 
 	[Fact]
@@ -63,7 +65,7 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		User user =
+		ApplicationUser user =
 			new UserBuilder(timeProvider)
 			.WithUsername("test_user")
 			.WithEmail("test@example.com")
@@ -85,7 +87,7 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		User user =
+		ApplicationUser user =
 			UserBuilder
 			.CreateInactive(timeProvider)
 			.WithUsername("inactive_user")
@@ -105,7 +107,7 @@ public class UserExtensionsTests
 	public void ToDto_SingleEntity_ShouldThrowArgumentNullException_WhenEntityIsNull()
 	{
 		// Arrange
-		User? user = null;
+		ApplicationUser? user = null;
 
 		// Act & Assert
 		Assert.Throws<ArgumentNullException>(() => user!.ToDto());
@@ -116,28 +118,28 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		User user1 =
+		ApplicationUser user1 =
 			UserBuilder
 			.CreateActive(timeProvider)
 			.WithUsername("user1")
 			.WithEmail("user1@example.com")
 			.Build();
 		user1.Id = 1;
-		User user2 =
+		ApplicationUser user2 =
 			UserBuilder
 			.CreateInactive(timeProvider)
 			.WithUsername("user2")
 			.WithEmail("user2@example.com")
 			.Build();
 		user2.Id = 2;
-		User user3 =
+		ApplicationUser user3 =
 			UserBuilder
 			.CreateActive(timeProvider)
 			.WithUsername("user3")
 			.WithEmail("user3@example.com")
 			.Build();
 		user3.Id = 3;
-		List<User> users =
+		List<ApplicationUser> users =
 			[user1, user2, user3];
 
 		// Act
@@ -156,7 +158,7 @@ public class UserExtensionsTests
 	public void ToDto_Collection_ShouldReturnEmptyCollection_WhenInputIsEmpty()
 	{
 		// Arrange
-		List<User> users = [];
+		List<ApplicationUser> users = [];
 
 		// Act
 		List<UserDto> dtos =
@@ -171,7 +173,7 @@ public class UserExtensionsTests
 	public void ToDto_Collection_ShouldThrowArgumentNullException_WhenCollectionIsNull()
 	{
 		// Arrange
-		IEnumerable<User>? users = null;
+		IEnumerable<ApplicationUser>? users = null;
 
 		// Act & Assert
 		Assert.Throws<ArgumentNullException>(() => users!.ToDto());
@@ -191,12 +193,12 @@ public class UserExtensionsTests
 			};
 
 		// Act
-		User entity = request.ToEntity();
+		ApplicationUser entity = request.ToEntity();
 
 		// Assert
 		Assert.NotNull(entity);
 		Assert.Equal(0, entity.Id); // Id should not be set (auto-generated)
-		Assert.Equal("new_user", entity.Username);
+		Assert.Equal("new_user", entity.UserName);
 		Assert.Equal("new@example.com", entity.Email);
 		Assert.Equal("New User", entity.FullName);
 		Assert.True(entity.IsActive);
@@ -218,7 +220,7 @@ public class UserExtensionsTests
 			};
 
 		// Act
-		User entity = request.ToEntity();
+		ApplicationUser entity = request.ToEntity();
 
 		// Assert
 		Assert.NotNull(entity);
@@ -239,7 +241,7 @@ public class UserExtensionsTests
 			};
 
 		// Act
-		User entity = request.ToEntity();
+		ApplicationUser entity = request.ToEntity();
 
 		// Assert
 		Assert.NotNull(entity);
@@ -259,7 +261,7 @@ public class UserExtensionsTests
 			};
 
 		// Act
-		User entity = request.ToEntity();
+		ApplicationUser entity = request.ToEntity();
 
 		// Assert - CreateDate defaults to MinValue, interceptor sets it on SaveChanges
 		Assert.Equal(default(DateTime), entity.CreateDate);
@@ -288,7 +290,7 @@ public class UserExtensionsTests
 			};
 
 		// Act
-		User entity = request.ToEntity();
+		ApplicationUser entity = request.ToEntity();
 
 		// Assert
 		// Id should remain 0 (default) as it will be set by the database
@@ -313,10 +315,10 @@ public class UserExtensionsTests
 			};
 
 		// Act
-		User entity = request.ToEntity();
+		ApplicationUser entity = request.ToEntity();
 
 		// Assert
-		Assert.Equal(username, entity.Username);
+		Assert.Equal(username, entity.UserName);
 		Assert.Equal(email, entity.Email);
 	}
 
@@ -327,7 +329,7 @@ public class UserExtensionsTests
 		FakeTimeProvider timeProvider = new();
 		DateTime deletedAt =
 			timeProvider.GetUtcNow().UtcDateTime.AddHours(-2);
-		User user =
+		ApplicationUser user =
 			new UserBuilder(timeProvider)
 			.WithUsername("deleted_user")
 			.WithEmail("deleted@example.com")
@@ -354,7 +356,7 @@ public class UserExtensionsTests
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		User user =
+		ApplicationUser user =
 			new UserBuilder(timeProvider)
 			.WithUsername("active_user")
 			.WithEmail("active@example.com")

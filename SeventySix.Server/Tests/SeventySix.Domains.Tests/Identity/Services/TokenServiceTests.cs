@@ -72,7 +72,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		User user =
+		ApplicationUser user =
 			await CreateTestUserAsync(context);
 		TokenService service =
 			CreateService(context);
@@ -121,7 +121,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		User user =
+		ApplicationUser user =
 			await CreateTestUserAsync(context);
 		TokenService service =
 			CreateService(context);
@@ -215,7 +215,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 
 		if (isValidToken)
 		{
-			User user =
+			ApplicationUser user =
 				await CreateTestUserAsync(context);
 			userId = user.Id;
 			tokenToRevoke =
@@ -268,7 +268,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 
 		if (tokensToCreate > 0)
 		{
-			User user =
+			ApplicationUser user =
 				await CreateTestUserAsync(context);
 			userId = user.Id;
 
@@ -322,7 +322,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 			});
 
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		User user =
+		ApplicationUser user =
 			await CreateTestUserAsync(context);
 
 		// Use advancing time to ensure tokens have different CreatedAt values
@@ -399,7 +399,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		(TokenService service, User user) =
+		(TokenService service, ApplicationUser user) =
 			await CreateServiceWithUserAsync(
 			context);
 
@@ -425,7 +425,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		(TokenService service, User user, string originalToken) =
+		(TokenService service, ApplicationUser user, string originalToken) =
 			await CreateServiceWithUserAndTokenAsync(context);
 
 		Guid originalFamilyId =
@@ -505,7 +505,7 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
-		(TokenService service, User user, string originalToken) =
+		(TokenService service, ApplicationUser user, string originalToken) =
 			await CreateServiceWithUserAndTokenAsync(context);
 
 		// Legitimate rotation - attacker doesn't know about this
@@ -578,10 +578,10 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 	/// </summary>
 	private async Task<(
 		TokenService Service,
-		User User
+		ApplicationUser User
 	)> CreateServiceWithUserAsync(IdentityDbContext context)
 	{
-		User user =
+		ApplicationUser user =
 			await CreateTestUserAsync(context);
 		TokenService service =
 			CreateService(context);
@@ -594,11 +594,11 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 	/// </summary>
 	private async Task<(
 		TokenService Service,
-		User User,
+		ApplicationUser User,
 		string Token
 	)> CreateServiceWithUserAndTokenAsync(IdentityDbContext context)
 	{
-		User user =
+		ApplicationUser user =
 			await CreateTestUserAsync(context);
 		TokenService service =
 			CreateService(context);
@@ -628,12 +628,12 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 		return token?.FamilyId ?? Guid.Empty;
 	}
 
-	private async Task<User> CreateTestUserAsync(IdentityDbContext context)
+	private async Task<ApplicationUser> CreateTestUserAsync(IdentityDbContext context)
 	{
-		User user =
+		ApplicationUser user =
 			new()
 			{
-				Username =
+				UserName =
 					$"testuser_{Guid.NewGuid():N}",
 				Email =
 					$"test_{Guid.NewGuid():N}@example.com",

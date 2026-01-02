@@ -197,7 +197,7 @@ public class CancellationTokenTests
 	private static Type[] GetAllServiceInterfaces()
 	{
 		Assembly domainAssembly =
-			typeof(SeventySix.Identity.User).Assembly;
+			typeof(SeventySix.Identity.ApplicationUser).Assembly;
 
 		Type[] serviceInterfaces =
 			domainAssembly
@@ -217,7 +217,7 @@ public class CancellationTokenTests
 	private static Type[] GetAllRepositoryInterfaces()
 	{
 		Assembly domainAssembly =
-			typeof(SeventySix.Identity.User).Assembly;
+			typeof(SeventySix.Identity.ApplicationUser).Assembly;
 
 		Type[] repositoryInterfaces =
 			domainAssembly

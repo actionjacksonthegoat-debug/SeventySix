@@ -44,17 +44,17 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	/// </summary>
 	private static readonly HashSet<string> AllowedLineExceptions =
 		[
-		// Architecture test self-detection issue - method parser incorrectly counts helper methods
-		"Tests\\SeventySix.ArchitectureTests\\GodMethodTests.cs::FindOpeningBrace",
-		// Registration method - DI registration is inherently long, split would reduce readability
-		"SeventySix.Domains\\Registration\\IdentityRegistration.cs::AddIdentityDomain",
-		// Roslyn analyzers - complex AST traversal is inherently long, split would reduce readability
-		"SeventySix.Analyzers\\AssignmentContinuationIndentAnalyzer.cs::AnalyzeObjectCreationInitializerBrace",
-		"SeventySix.Analyzers\\AssignmentContinuationIndentCodeFixProvider.cs::CalculateExpectedIndent",
-		// Analyzer tests - test methods with large code strings are unavoidably long
-		"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::ExtensionsInitializer_WrongIndent_FixesToCorrectIndentAsync",
-		"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::NestedDictionary_OuterBraceWrong_InnerNotFlaggedAsync",
-	];
+			// Architecture test self-detection issue - method parser incorrectly counts helper methods
+			"Tests\\SeventySix.ArchitectureTests\\GodMethodTests.cs::FindOpeningBrace",
+			// Registration method - DI registration is inherently long, split would reduce readability
+			"SeventySix.Domains\\Registration\\IdentityRegistration.cs::AddIdentityDomain",
+			// Roslyn analyzers - complex AST traversal is inherently long, split would reduce readability
+			"SeventySix.Analyzers\\AssignmentContinuationIndentAnalyzer.cs::AnalyzeObjectCreationInitializerBrace",
+			"SeventySix.Analyzers\\AssignmentContinuationIndentCodeFixProvider.cs::CalculateExpectedIndent",
+			// Analyzer tests - test methods with large code strings are unavoidably long
+			"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::ExtensionsInitializer_WrongIndent_FixesToCorrectIndentAsync",
+			"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::NestedDictionary_OuterBraceWrong_InnerNotFlaggedAsync",
+		];
 
 	/// <summary>
 	/// Methods that are explicitly allowed to exceed the parameter limit.
@@ -63,22 +63,10 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	/// </summary>
 	private static readonly HashSet<string> AllowedParameterExceptions =
 		[
-		// RegistrationService - encapsulates registration workflows
-		"SeventySix.Domains\\Identity\\Services\\RegistrationService.cs::CreateUserWithCredentialAsync",
-		// Authentication handlers - Wolverine Injected dependencies
-		"SeventySix.Domains\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
-		"SeventySix.Domains\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::HandleAsync",
-		"SeventySix.Domains\\Identity\\Commands\\CompleteRegistration\\CompleteRegistrationCommandHandler.cs::CreateUserAndMarkTokenUsedAsync",
-		"SeventySix.Domains\\Identity\\Commands\\CreateUser\\CreateUserCommandHandler.cs::HandleAsync",
-		"SeventySix.Domains\\Identity\\Commands\\InitiatePasswordReset\\InitiatePasswordResetCommandHandler.cs::HandleAsync",
-		"SeventySix.Domains\\Identity\\Commands\\InitiateRegistration\\InitiateRegistrationCommandHandler.cs::HandleAsync",
-		"SeventySix.Domains\\Identity\\Commands\\Login\\LoginCommandHandler.cs::HandleAsync", // 7 params (reduced from 10 via AuthenticationService)
-		"SeventySix.Domains\\Identity\\Commands\\Login\\LoginCommandHandler.cs::ValidateCredentialAsync",
-		"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
-		"SeventySix.Domains\\Identity\\Commands\\UpdateUser\\UpdateUserCommandHandler.cs::HandleAsync",
-		// Test utilities - requires multiple optional parameters for flexibility
-		"Tests\\SeventySix.TestUtilities\\TestHelpers\\TestUserHelper.cs::CreateUserWithRolesAsync",
-	];
+			// // Authentication handlers - Wolverine Injected dependencies
+			"SeventySix.Domains\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
+		];
 
 	[Fact]
 	public void All_Methods_Should_Be_Under_80_Lines()

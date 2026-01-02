@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -15,8 +17,11 @@ public static class DeleteUserCommandHandler
 	/// <param name="command">
 	/// The delete user command.
 	/// </param>
-	/// <param name="repository">
-	/// User repository.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for user operations.
+	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider for current time values.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -26,15 +31,28 @@ public static class DeleteUserCommandHandler
 	/// </returns>
 	public static async Task<bool> HandleAsync(
 		DeleteUserCommand command,
-		IUserCommandRepository repository,
+		UserManager<ApplicationUser> userManager,
+		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
-		bool result =
-			await repository.SoftDeleteAsync(
-				command.UserId,
-				command.DeletedBy,
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(command.UserId.ToString());
 
-		return result;
+		if (user == null || user.IsDeleted)
+		{
+			return false;
+		}
+
+		// Soft delete - set flags instead of hard delete
+		user.IsDeleted = true;
+		user.DeletedAt =
+			timeProvider.GetUtcNow().UtcDateTime;
+		user.DeletedBy = command.DeletedBy;
+		user.IsActive = false;
+
+		IdentityResult result =
+			await userManager.UpdateAsync(user);
+
+		return result.Succeeded;
 	}
 }

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using SeventySix.Identity.Constants;
 
 namespace SeventySix.Identity;
@@ -20,8 +21,7 @@ public static class AddUserRoleCommandHandler
 	/// <exception cref="ArgumentException">Thrown when role is invalid.</exception>
 	public static async Task<bool> HandleAsync(
 		AddUserRoleCommand command,
-		IUserQueryRepository userQueryRepository,
-		IUserCommandRepository userCommandRepository,
+		UserManager<ApplicationUser> userManager,
 		IPermissionRequestRepository permissionRequestRepository,
 		CancellationToken cancellationToken)
 	{
@@ -32,20 +32,31 @@ public static class AddUserRoleCommandHandler
 				nameof(command));
 		}
 
-		if (
-			await userQueryRepository.HasRoleAsync(
-				command.UserId,
-				command.Role,
-				cancellationToken))
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(command.UserId.ToString());
+
+		if (user is null)
+		{
+			throw new UserNotFoundException(command.UserId);
+		}
+
+		IList<string> existingRoles =
+			await userManager.GetRolesAsync(user);
+
+		if (existingRoles.Contains(command.Role))
 		{
 			return false;
 		}
 
-		// Audit fields (CreatedBy, CreateDate) set by AuditInterceptor
-		await userCommandRepository.AddRoleAsync(
-			command.UserId,
-			command.Role,
-			cancellationToken);
+		// Add role using Identity's UserManager
+		IdentityResult result =
+			await userManager.AddToRoleAsync(user, command.Role);
+
+		if (!result.Succeeded)
+		{
+			throw new InvalidOperationException(
+				$"Failed to add role: {string.Join(", ", result.Errors.Select(error => error.Description))}");
+		}
 
 		// Cleanup pending permission request for this role
 		await permissionRequestRepository.DeleteByUserAndRoleAsync(

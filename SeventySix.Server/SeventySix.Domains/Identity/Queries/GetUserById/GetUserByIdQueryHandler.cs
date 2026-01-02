@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -10,11 +12,11 @@ public static class GetUserByIdQueryHandler
 	/// </summary>
 	public static async Task<UserDto?> HandleAsync(
 		GetUserByIdQuery query,
-		IUserQueryRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		User? user =
-			await repository.GetByIdAsync(query.Id, cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(query.Id.ToString());
 
 		return user?.ToDto();
 	}

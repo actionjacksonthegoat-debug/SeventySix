@@ -89,9 +89,9 @@ html.dark-theme.cyan-orange-scheme {
 	color: var(--mat-sys-on-surface);
 }
 
-// Default to light blue theme if no classes are applied yet
+// Default to light cyan-orange theme if no classes are applied yet
 html:not(.light-theme):not(.dark-theme) {
-	@include theme.apply-light-blue-theme;
+	@include theme.apply-light-cyan-orange-theme;
 	background-color: var(--mat-sys-surface);
 	color: var(--mat-sys-on-surface);
 }

@@ -34,11 +34,11 @@ describe("ThemeService",
 					.toBe("light");
 			});
 
-		it("should initialize with blue scheme",
+		it("should initialize with cyan-orange scheme",
 			() =>
 			{
 				expect(service.colorScheme())
-					.toBe("blue");
+					.toBe("cyan-orange");
 			});
 
 		describe("toggleBrightness",

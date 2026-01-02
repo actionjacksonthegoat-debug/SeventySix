@@ -3,6 +3,7 @@
 // </copyright>
 
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
@@ -91,35 +92,49 @@ public static class IdentityRegistration
 				options.AddInterceptors(auditInterceptor);
 			});
 
+		// Register ASP.NET Core Identity
+		services
+			.AddIdentityCore<ApplicationUser>(options =>
+			{
+				// Password settings (validation only - Argon2 handles hashing)
+				options.Password.RequiredLength = 8;
+				options.Password.RequireDigit = true;
+				options.Password.RequireLowercase = true;
+				options.Password.RequireUppercase = true;
+				options.Password.RequireNonAlphanumeric = true;
+
+				// Lockout settings
+				options.Lockout.DefaultLockoutTimeSpan =
+					TimeSpan.FromMinutes(15);
+				options.Lockout.MaxFailedAccessAttempts = 5;
+				options.Lockout.AllowedForNewUsers = true;
+
+				// User settings
+				options.User.RequireUniqueEmail = true;
+			})
+			.AddRoles<ApplicationRole>()
+			.AddEntityFrameworkStores<IdentityDbContext>()
+			.AddSignInManager()
+			.AddDefaultTokenProviders();
+
+		// Replace default password hasher with Argon2
+		services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
+		services.AddScoped<IPasswordHasher<ApplicationUser>, IdentityArgon2PasswordHasher>();
+
 		// Register transaction manager for Identity context
 		services.AddScoped<ITransactionManager>(
 			serviceProvider => new TransactionManager(
 				serviceProvider.GetRequiredService<IdentityDbContext>()));
 
-		// Register repositories (CQRS pattern - Query + Command)
-		services.AddScoped<UserRepository>();
-		services.AddScoped<IUserQueryRepository>(serviceProvider =>
-			serviceProvider.GetRequiredService<UserRepository>());
-		services.AddScoped<IUserCommandRepository>(serviceProvider =>
-			serviceProvider.GetRequiredService<UserRepository>());
+		// Register custom repositories (for entities not managed by Identity)
 		services.AddScoped<
 			IPermissionRequestRepository,
 			PermissionRequestRepository
 		>();
 		services.AddScoped<ITokenRepository, TokenRepository>();
-		services.AddScoped<ICredentialRepository, CredentialRepository>();
-		services.AddScoped<
-			IPasswordResetTokenRepository,
-			PasswordResetTokenRepository
-		>();
 		services.AddScoped<IAuthRepository, AuthRepository>();
-		services.AddScoped<
-			IEmailVerificationTokenRepository,
-			EmailVerificationTokenRepository
-		>();
 
 		// Register services - focused interfaces only (no composite IUserService)
-		services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
 		services.AddScoped<ITokenService, TokenService>();
 		services.AddScoped<AuthenticationService>();
 		services.AddScoped<OAuthService>();

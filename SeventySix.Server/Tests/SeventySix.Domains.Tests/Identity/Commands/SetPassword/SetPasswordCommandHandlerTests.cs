@@ -2,16 +2,13 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
-using SeventySix.Shared.Extensions;
-using SeventySix.TestUtilities.TestBases;
-using SeventySix.TestUtilities.TestHelpers;
+using SeventySix.TestUtilities.Mocks;
 using Shouldly;
-using Wolverine;
 
 namespace SeventySix.Domains.Tests.Identity.Commands.SetPassword;
 
@@ -19,264 +16,277 @@ namespace SeventySix.Domains.Tests.Identity.Commands.SetPassword;
 /// Tests for <see cref="SetPasswordCommandHandler"/>.
 /// </summary>
 /// <remarks>
-/// Focuses on token hash validation - security-critical path.
-/// Tests must verify handler only accepts hashed tokens.
+/// Focuses on token validation and password reset flow.
+/// Uses ASP.NET Core Identity's token-based password reset.
 /// </remarks>
-[Collection("DatabaseTests")]
-public class SetPasswordCommandHandlerTests : DataPostgreSqlTestBase
+public class SetPasswordCommandHandlerTests
 {
-	private readonly IMessageBus MessageBus;
-	private readonly ICredentialRepository CredentialRepository;
+	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly ITokenRepository TokenRepository;
-	private readonly IPasswordHasher PasswordHasher;
-	private readonly RegistrationService RegistrationService;
+	private readonly AuthenticationService AuthenticationService;
 	private readonly FakeTimeProvider TimeProvider;
+	private readonly ILogger<SetPasswordCommand> Logger;
 
-	public SetPasswordCommandHandlerTests(
-		TestcontainersPostgreSqlFixture fixture)
-		: base(fixture)
+	public SetPasswordCommandHandlerTests()
 	{
-		MessageBus = Substitute.For<IMessageBus>();
-		CredentialRepository =
-			Substitute.For<ICredentialRepository>();
+		UserManager =
+			IdentityMockFactory.CreateUserManager();
 		TokenRepository =
 			Substitute.For<ITokenRepository>();
-		PasswordHasher =
-			Substitute.For<IPasswordHasher>();
-		RegistrationService =
-			Substitute.ForPartsOf<RegistrationService>(
-			Substitute.For<IAuthRepository>(),
-			Substitute.For<ICredentialRepository>(),
-			Substitute.For<IUserQueryRepository>(),
-			Substitute.For<ITokenService>(),
-			PasswordHasher,
-			Options.Create(new JwtSettings()),
-			new FakeTimeProvider(),
-			NullLogger<RegistrationService>.Instance);
-		TimeProvider = new FakeTimeProvider();
+		AuthenticationService =
+			IdentityMockFactory.CreateAuthenticationService();
+		Logger =
+			Substitute.For<ILogger<SetPasswordCommand>>();
+		TimeProvider =
+			new FakeTimeProvider();
 		TimeProvider.SetUtcNow(
 			new DateTimeOffset(2025, 12, 15, 0, 0, 0, TimeSpan.Zero));
 	}
 
 	[Fact]
-	public async Task HandleAsync_ShouldAcceptValidHashedToken_AndCompletePasswordResetAsync()
+	public async Task HandleAsync_WithInvalidTokenFormat_ThrowsArgumentExceptionAsync()
 	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		PasswordResetTokenRepository repository =
-			new(context);
-
-		// Create user first to satisfy FK constraint
-		User testUser =
-			await TestUserHelper.CreateUserWithPasswordAsync(
-				context,
-				"testuser",
-				"test@example.com",
-				TimeProvider);
-
-		string rawToken = "base64-encoded-random-token-12345";
-		string hashedToken =
-			CryptoExtensions.ComputeSha256Hash(rawToken);
-
-		PasswordResetToken resetToken =
-			new()
-			{
-				UserId = testUser.Id,
-				TokenHash = hashedToken,
-				ExpiresAt =
-					TimeProvider.GetUtcNow().UtcDateTime.AddHours(24),
-				IsUsed = false,
-				CreateDate =
-					TimeProvider.GetUtcNow().UtcDateTime,
-			};
-
-		context.PasswordResetTokens.Add(resetToken);
-		await context.SaveChangesAsync();
-
-		UserDto userDto =
-			CreateTestUserDto(testUser);
-
-		MessageBus
-			.InvokeAsync<UserDto?>(
-				Arg.Any<GetUserByIdQuery>(),
-				Arg.Any<CancellationToken>())
-			.Returns(userDto);
-
-		RegistrationService
-			.GenerateAuthResultAsync(
-				Arg.Any<User>(),
-				Arg.Any<string?>(),
-				Arg.Any<bool>(),
-				Arg.Any<bool>(),
-				Arg.Any<CancellationToken>())
-			.Returns(
-				AuthResult.Succeeded(
-					"token",
-					"refresh",
-					TimeProvider.GetUtcNow().UtcDateTime,
-					"test@example.com",
-					null,
-					false));
-
-		SetPasswordRequest passwordRequest =
-			new(rawToken, "NewPassword123!");
+		// Arrange - Token without colon separator
+		SetPasswordRequest request =
+			new("invalid-token-without-colon", "NewPassword123!");
 
 		SetPasswordCommand command =
-			new(passwordRequest, "127.0.0.1");
+			new(request, "127.0.0.1");
+
+		// Act & Assert
+		ArgumentException exception =
+			await Should.ThrowAsync<ArgumentException>(async () =>
+				await SetPasswordCommandHandler.HandleAsync(
+					command,
+					UserManager,
+					TokenRepository,
+					AuthenticationService,
+					TimeProvider,
+					Logger,
+					CancellationToken.None));
+
+		exception.ParamName.ShouldBe("Token");
+		exception.Message.ShouldContain("Invalid or expired");
+	}
+
+	[Fact]
+	public async Task HandleAsync_WithInvalidUserId_ThrowsArgumentExceptionAsync()
+	{
+		// Arrange - Token with non-numeric user ID
+		SetPasswordRequest request =
+			new("notanumber:sometoken", "NewPassword123!");
+
+		SetPasswordCommand command =
+			new(request, "127.0.0.1");
+
+		// Act & Assert
+		ArgumentException exception =
+			await Should.ThrowAsync<ArgumentException>(async () =>
+				await SetPasswordCommandHandler.HandleAsync(
+					command,
+					UserManager,
+					TokenRepository,
+					AuthenticationService,
+					TimeProvider,
+					Logger,
+					CancellationToken.None));
+
+		exception.ParamName.ShouldBe("Token");
+	}
+
+	[Fact]
+	public async Task HandleAsync_WithUserNotFound_ThrowsInvalidOperationExceptionAsync()
+	{
+		// Arrange
+		SetPasswordRequest request =
+			new("123:validtoken", "NewPassword123!");
+
+		SetPasswordCommand command =
+			new(request, "127.0.0.1");
+
+		UserManager
+			.FindByIdAsync("123")
+			.Returns((ApplicationUser?)null);
+
+		// Act & Assert
+		InvalidOperationException exception =
+			await Should.ThrowAsync<InvalidOperationException>(async () =>
+				await SetPasswordCommandHandler.HandleAsync(
+					command,
+					UserManager,
+					TokenRepository,
+					AuthenticationService,
+					TimeProvider,
+					Logger,
+					CancellationToken.None));
+
+		exception.Message.ShouldContain("not found or inactive");
+	}
+
+	[Fact]
+	public async Task HandleAsync_WithInactiveUser_ThrowsInvalidOperationExceptionAsync()
+	{
+		// Arrange
+		ApplicationUser inactiveUser =
+			new()
+			{
+				Id = 123,
+				UserName = "inactive",
+				Email = "inactive@example.com",
+				IsActive = false,
+			};
+
+		SetPasswordRequest request =
+			new("123:validtoken", "NewPassword123!");
+
+		SetPasswordCommand command =
+			new(request, "127.0.0.1");
+
+		UserManager
+			.FindByIdAsync("123")
+			.Returns(inactiveUser);
+
+		// Act & Assert
+		InvalidOperationException exception =
+			await Should.ThrowAsync<InvalidOperationException>(async () =>
+				await SetPasswordCommandHandler.HandleAsync(
+					command,
+					UserManager,
+					TokenRepository,
+					AuthenticationService,
+					TimeProvider,
+					Logger,
+					CancellationToken.None));
+
+		exception.Message.ShouldContain("not found or inactive");
+	}
+
+	[Fact]
+	public async Task HandleAsync_WithValidToken_ResetsPasswordAndReturnsAuthResultAsync()
+	{
+		// Arrange
+		ApplicationUser user =
+			new()
+			{
+				Id = 456,
+				UserName = "testuser",
+				Email = "test@example.com",
+				IsActive = true,
+				RequiresPasswordChange = true,
+			};
+
+		SetPasswordRequest request =
+			new("456:valid-reset-token", "NewSecurePassword123!");
+
+		SetPasswordCommand command =
+			new(request, "192.168.1.1");
+
+		DateTime now =
+			TimeProvider.GetUtcNow().UtcDateTime;
+
+		UserManager
+			.FindByIdAsync("456")
+			.Returns(user);
+
+		UserManager
+			.ResetPasswordAsync(
+				user,
+				"valid-reset-token",
+				"NewSecurePassword123!")
+			.Returns(IdentityResult.Success);
+
+		AuthResult expectedResult =
+			AuthResult.Succeeded(
+				"access-token",
+				"refresh-token",
+				now.AddMinutes(15),
+				"test@example.com",
+				null,
+				false);
+
+		AuthenticationService
+			.GenerateAuthResultAsync(
+				user,
+				"192.168.1.1",
+				false,
+				false,
+				Arg.Any<CancellationToken>())
+			.Returns(expectedResult);
 
 		// Act
-		AuthResult passwordResult =
+		AuthResult result =
 			await SetPasswordCommandHandler.HandleAsync(
-			command,
-			repository,
-			CredentialRepository,
-			MessageBus,
-			TokenRepository,
-			PasswordHasher,
-			RegistrationService,
-			TimeProvider,
-			NullLogger<SetPasswordCommand>.Instance,
-			CancellationToken.None);
+				command,
+				UserManager,
+				TokenRepository,
+				AuthenticationService,
+				TimeProvider,
+				Logger,
+				CancellationToken.None);
 
 		// Assert
-		passwordResult.Success.ShouldBeTrue();
+		result.Success.ShouldBeTrue();
+		result.AccessToken.ShouldBe("access-token");
+		result.RefreshToken.ShouldBe("refresh-token");
 
-		PasswordResetToken? usedToken =
-			await context.PasswordResetTokens.FindAsync(resetToken.Id);
+		await TokenRepository
+			.Received(1)
+			.RevokeAllUserTokensAsync(
+				user.Id,
+				now,
+				Arg.Any<CancellationToken>());
 
-		usedToken.ShouldNotBeNull();
-		usedToken.IsUsed.ShouldBeTrue();
+		await UserManager
+			.Received(1)
+			.UpdateAsync(Arg.Is<ApplicationUser>(u => u.RequiresPasswordChange == false));
 	}
 
 	[Fact]
-	public async Task HandleAsync_ShouldRejectExpiredToken_AndThrowExceptionAsync()
+	public async Task HandleAsync_WithExpiredToken_ThrowsArgumentExceptionAsync()
 	{
 		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		PasswordResetTokenRepository repository =
-			new(context);
-
-		// Create user first to satisfy FK constraint
-		User testUser =
-			await TestUserHelper.CreateUserWithPasswordAsync(
-				context,
-				"expiredtokenuser",
-				"expired@example.com",
-				TimeProvider);
-
-		string rawToken = "expired-token-12345";
-		string hashedToken =
-			CryptoExtensions.ComputeSha256Hash(rawToken);
-
-		PasswordResetToken expiredToken =
+		ApplicationUser user =
 			new()
 			{
-				UserId = testUser.Id,
-				TokenHash = hashedToken,
-				ExpiresAt =
-					TimeProvider.GetUtcNow().UtcDateTime.AddHours(-1), // Expired 1 hour ago
-				IsUsed = false,
-				CreateDate =
-					TimeProvider.GetUtcNow().UtcDateTime.AddDays(-1),
+				Id = 789,
+				UserName = "expireduser",
+				Email = "expired@example.com",
+				IsActive = true,
 			};
 
-		context.PasswordResetTokens.Add(expiredToken);
-		await context.SaveChangesAsync();
-
-		SetPasswordRequest passwordRequest =
-			new(rawToken, "NewPassword123!");
+		SetPasswordRequest request =
+			new("789:expired-token", "NewPassword123!");
 
 		SetPasswordCommand command =
-			new(passwordRequest, "127.0.0.1");
+			new(request, "127.0.0.1");
+
+		UserManager
+			.FindByIdAsync("789")
+			.Returns(user);
+
+		IdentityError invalidTokenError =
+			new() { Code = "InvalidToken", Description = "Invalid token." };
+
+		UserManager
+			.ResetPasswordAsync(
+				user,
+				"expired-token",
+				"NewPassword123!")
+			.Returns(IdentityResult.Failed(invalidTokenError));
 
 		// Act & Assert
-		await Should.ThrowAsync<ArgumentException>(async () =>
-			await SetPasswordCommandHandler.HandleAsync(
-				command,
-				repository,
-				CredentialRepository,
-				MessageBus,
-				TokenRepository,
-				PasswordHasher,
-				RegistrationService,
-				TimeProvider,
-				NullLogger<SetPasswordCommand>.Instance,
-				CancellationToken.None));
+		ArgumentException exception =
+			await Should.ThrowAsync<ArgumentException>(async () =>
+				await SetPasswordCommandHandler.HandleAsync(
+					command,
+					UserManager,
+					TokenRepository,
+					AuthenticationService,
+					TimeProvider,
+					Logger,
+					CancellationToken.None));
+
+		exception.ParamName.ShouldBe("Token");
+		exception.Message.ShouldContain("Invalid or expired");
 	}
-
-	[Fact]
-	public async Task HandleAsync_ShouldRejectUsedToken_AndThrowExceptionAsync()
-	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		PasswordResetTokenRepository repository =
-			new(context);
-
-		// Create user first to satisfy FK constraint
-		User testUser =
-			await TestUserHelper.CreateUserWithPasswordAsync(
-				context,
-				"usedtokenuser",
-				"used@example.com",
-				TimeProvider);
-
-		string rawToken = "used-token-12345";
-		string hashedToken =
-			CryptoExtensions.ComputeSha256Hash(rawToken);
-
-		PasswordResetToken usedToken =
-			new()
-			{
-				UserId = testUser.Id,
-				TokenHash = hashedToken,
-				ExpiresAt =
-					TimeProvider.GetUtcNow().UtcDateTime.AddHours(24),
-				IsUsed = true, // Already used
-				CreateDate =
-					TimeProvider.GetUtcNow().UtcDateTime,
-			};
-
-		context.PasswordResetTokens.Add(usedToken);
-		await context.SaveChangesAsync();
-
-		SetPasswordRequest passwordRequest =
-			new(rawToken, "NewPassword123!");
-
-		SetPasswordCommand command =
-			new(passwordRequest, "127.0.0.1");
-
-		// Act & Assert
-		await Should.ThrowAsync<ArgumentException>(async () =>
-			await SetPasswordCommandHandler.HandleAsync(
-				command,
-				repository,
-				CredentialRepository,
-				MessageBus,
-				TokenRepository,
-				PasswordHasher,
-				RegistrationService,
-				TimeProvider,
-				NullLogger<SetPasswordCommand>.Instance,
-				CancellationToken.None));
-	}
-
-	#region Helper Methods
-
-	private UserDto CreateTestUserDto(User user) =>
-		new(
-			Id: user.Id,
-			Username: user.Username,
-			Email: user.Email,
-			FullName: user.FullName,
-			CreateDate: user.CreateDate,
-			IsActive: user.IsActive,
-			CreatedBy: user.CreatedBy,
-			ModifyDate: user.ModifyDate,
-			ModifiedBy: user.ModifiedBy,
-			LastLoginAt: user.LastLoginAt,
-			IsDeleted: user.IsDeleted,
-			DeletedAt: user.DeletedAt,
-			DeletedBy: user.DeletedBy);
-
-	#endregion
 }

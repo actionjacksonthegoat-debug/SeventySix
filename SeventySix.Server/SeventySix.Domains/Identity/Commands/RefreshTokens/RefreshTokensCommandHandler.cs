@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -18,11 +20,8 @@ public static class RefreshTokensCommandHandler
 	/// <param name="tokenService">
 	/// Service for validating and rotating refresh tokens.
 	/// </param>
-	/// <param name="repository">
-	/// Repository to load user data.
-	/// </param>
-	/// <param name="credentialRepository">
-	/// Repository for user credentials used to determine password change requirement.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for user lookups.
 	/// </param>
 	/// <param name="authenticationService">
 	/// Service to generate new authentication results.
@@ -36,8 +35,7 @@ public static class RefreshTokensCommandHandler
 	public static async Task<AuthResult> HandleAsync(
 		RefreshTokensCommand command,
 		ITokenService tokenService,
-		IUserQueryRepository repository,
-		ICredentialRepository credentialRepository,
+		UserManager<ApplicationUser> userManager,
 		AuthenticationService authenticationService,
 		CancellationToken cancellationToken)
 	{
@@ -53,10 +51,8 @@ public static class RefreshTokensCommandHandler
 				AuthErrorCodes.InvalidToken);
 		}
 
-		User? user =
-			await repository.GetByIdAsync(
-				userId.Value,
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(userId.Value.ToString());
 
 		if (user == null || !user.IsActive)
 		{
@@ -78,13 +74,9 @@ public static class RefreshTokensCommandHandler
 				AuthErrorCodes.TokenReuse);
 		}
 
-		UserCredential? credential =
-			await credentialRepository.GetByUserIdAsync(
-				user.Id,
-				cancellationToken);
-
+		// Use the database flag as the single source of truth
 		bool requiresPasswordChange =
-			credential?.PasswordChangedAt == null;
+			user.RequiresPasswordChange;
 
 		// Generate new tokens using authentication service
 		// Note: We replace the refresh token with the rotated one

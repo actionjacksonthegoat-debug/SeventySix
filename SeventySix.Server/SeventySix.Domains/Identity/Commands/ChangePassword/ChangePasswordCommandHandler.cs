@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Wolverine;
 
@@ -18,11 +19,9 @@ public static class ChangePasswordCommandHandler
 	/// <exception cref="ArgumentException">Thrown when validation fails.</exception>
 	public static async Task<AuthResult> HandleAsync(
 		ChangePasswordCommand command,
-		ICredentialRepository credentialRepository,
-		IMessageBus messageBus,
+		UserManager<ApplicationUser> userManager,
 		ITokenRepository tokenRepository,
-		IPasswordHasher passwordHasher,
-		RegistrationService registrationService,
+		AuthenticationService authenticationService,
 		TimeProvider timeProvider,
 		ILogger<ChangePasswordCommand> logger,
 		CancellationToken cancellationToken)
@@ -30,21 +29,23 @@ public static class ChangePasswordCommandHandler
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		UserCredential? credential =
-			await credentialRepository.GetByUserIdForUpdateAsync(
-				command.UserId,
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(command.UserId.ToString());
 
-		if (credential is null)
+		if (user is null)
 		{
-			credential =
-				new UserCredential
-				{
-					UserId = command.UserId,
-					CreateDate = now,
-				};
+			logger.LogError(
+				"User with ID {UserId} not found for password change",
+				command.UserId);
+			throw new InvalidOperationException(
+				$"User with ID {command.UserId} not found");
 		}
-		else
+
+		// Check if user has a password set
+		bool hasPassword =
+			await userManager.HasPasswordAsync(user);
+
+		if (hasPassword)
 		{
 			if (command.Request.CurrentPassword is null)
 			{
@@ -53,60 +54,69 @@ public static class ChangePasswordCommandHandler
 					nameof(command.Request.CurrentPassword));
 			}
 
-			bool isCurrentPasswordValid =
-				passwordHasher.VerifyPassword(
+			// Change password using Identity's built-in method
+			IdentityResult changeResult =
+				await userManager.ChangePasswordAsync(
+					user,
 					command.Request.CurrentPassword,
-					credential.PasswordHash);
+					command.Request.NewPassword);
 
-			if (!isCurrentPasswordValid)
+			if (!changeResult.Succeeded)
 			{
-				throw new ArgumentException(
-					"Current password is incorrect",
-					nameof(command.Request.CurrentPassword));
+				if (changeResult.Errors.Any(error =>
+					error.Code == "PasswordMismatch"))
+				{
+					throw new ArgumentException(
+						"Current password is incorrect",
+						nameof(command.Request.CurrentPassword));
+				}
+
+				throw new InvalidOperationException(
+					string.Join(", ", changeResult.Errors.Select(error => error.Description)));
 			}
-		}
-
-		credential.PasswordHash =
-			passwordHasher.HashPassword(
-				command.Request.NewPassword);
-		credential.PasswordChangedAt = now;
-
-		if (
-			credential.UserId == command.UserId
-			&& credential.PasswordHash != string.Empty)
-		{
-			await credentialRepository.UpdateAsync(
-				credential,
-				cancellationToken);
 		}
 		else
 		{
-			await credentialRepository.CreateAsync(
-				credential,
-				cancellationToken);
+			// User doesn't have a password yet - add one
+			IdentityResult addResult =
+				await userManager.AddPasswordAsync(
+					user,
+					command.Request.NewPassword);
+
+			if (!addResult.Succeeded)
+			{
+				throw new InvalidOperationException(
+					string.Join(", ", addResult.Errors.Select(error => error.Description)));
+			}
 		}
 
+		// Clear the requires-password-change flag and persist the change
+		if (user.RequiresPasswordChange)
+		{
+			user.RequiresPasswordChange = false;
+			IdentityResult updateResult =
+				await userManager.UpdateAsync(user);
+
+			if (!updateResult.Succeeded)
+			{
+				string errors = updateResult.ToErrorString();
+				logger.LogError(
+					"Failed to clear RequiresPasswordChange flag for user {UserId}: {Errors}",
+					user.Id,
+					errors);
+				throw new InvalidOperationException(
+					"Failed to update user password change status");
+			}
+		}
+
+		// Revoke all existing refresh tokens
 		await tokenRepository.RevokeAllUserTokensAsync(
 			command.UserId,
 			now,
 			cancellationToken);
 
-		UserDto? user =
-			await messageBus.InvokeAsync<UserDto?>(
-				new GetUserByIdQuery(command.UserId),
-				cancellationToken);
-
-		if (user is null)
-		{
-			logger.LogError(
-				"User with ID {UserId} not found after password change",
-				command.UserId);
-			throw new InvalidOperationException(
-				$"User with ID {command.UserId} not found");
-		}
-
-		return await registrationService.GenerateAuthResultAsync(
-			user.ToEntity(),
+		return await authenticationService.GenerateAuthResultAsync(
+			user,
 			clientIp: null,
 			requiresPasswordChange: false,
 			rememberMe: false,

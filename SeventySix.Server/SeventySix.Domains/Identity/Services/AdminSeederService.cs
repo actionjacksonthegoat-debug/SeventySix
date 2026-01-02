@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,13 +20,12 @@ namespace SeventySix.Identity;
 /// Design Principles:
 /// - Runs once at startup (not periodic)
 /// - Idempotent: Safe to run multiple times
-/// - Creates admin with PasswordChangedAt = null to force password change on first login
+/// - Creates admin with password requiring change on first login
 /// - Only creates if configured and no admin user exists
 /// </remarks>
 public class AdminSeederService(
 	IServiceScopeFactory scopeFactory,
 	IOptions<AdminSeederSettings> settings,
-	IPasswordHasher passwordHasher,
 	TimeProvider timeProvider,
 	ILogger<AdminSeederService> logger) : BackgroundService
 {
@@ -53,49 +53,71 @@ public class AdminSeederService(
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
-	private async Task SeedAdminUserAsync(CancellationToken cancellationToken)
+	internal async Task SeedAdminUserAsync(CancellationToken cancellationToken)
 	{
-		using IServiceScope scope = scopeFactory.CreateScope();
+		using IServiceScope scope =
+			scopeFactory.CreateScope();
 
-		IdentityDbContext context =
-			scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+		UserManager<ApplicationUser> userManager =
+			scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+		RoleManager<ApplicationRole> roleManager =
+			scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
 
 		// Check if admin user already exists
-		bool adminExists =
-			await context
-				.Users
-				.IgnoreQueryFilters()
-				.AnyAsync(
-					u => u.Username == settings.Value.Username,
-					cancellationToken);
+		ApplicationUser? existingAdmin =
+			await userManager.FindByNameAsync(settings.Value.Username);
 
-		if (adminExists)
+		if (existingAdmin is not null)
+		{
+			// Admin already exists - do not modify their password change status
+			// The requires-password-change flag is managed by the change-password flow
+			return;
+		}
+
+		// Check if any user has admin role
+		IList<ApplicationUser> usersInAdminRole =
+			await userManager.GetUsersInRoleAsync(RoleConstants.Admin);
+
+		if (usersInAdminRole.Count > 0)
 		{
 			return;
 		}
 
-		// Check if any admin role exists (may have been created through other means)
-		bool anyAdminRoleExists =
-			await context
-				.UserRoles
-				.Include(userRole => userRole.Role)
-				.AnyAsync(
-					userRole => userRole.Role!.Name == RoleConstants.Admin,
-					cancellationToken);
+		// Ensure Admin role exists
+		ApplicationRole? adminRole =
+			await roleManager.FindByNameAsync(RoleConstants.Admin);
 
-		if (anyAdminRoleExists)
+		if (adminRole is null)
 		{
+			logger.LogError(
+				"Admin role not found in Roles - cannot assign role to seeded admin user");
 			return;
 		}
 
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		// Create admin user
-		User adminUser =
+		await CreateAdminUserAsync(
+			userManager);
+	}
+
+	/// <summary>
+	/// Creates the admin user with configured settings.
+	/// </summary>
+	/// <param name="userManager">
+	/// User manager for user operations.
+	/// </param>
+	private async Task<bool> CreateAdminUserAsync(
+		UserManager<ApplicationUser> userManager)
+	{
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		ApplicationUser adminUser =
 			new()
 			{
-				Username = settings.Value.Username,
+				UserName = settings.Value.Username,
 				Email = settings.Value.Email,
 				FullName =
 					settings.Value.FullName ?? "System Administrator",
@@ -103,57 +125,43 @@ public class AdminSeederService(
 				CreateDate = now,
 				CreatedBy =
 					AuditConstants.SystemUser,
+				RequiresPasswordChange = true,
 			};
 
-		context.Users.Add(adminUser);
-		await context.SaveChangesAsync(cancellationToken);
-
-		// Create credential with temporary password
-		// PasswordChangedAt = null forces password change on first login
-		string passwordHash =
-			passwordHasher.HashPassword(
+		IdentityResult createResult =
+			await userManager.CreateAsync(
+				adminUser,
 				settings.Value.InitialPassword);
 
-		UserCredential credential =
-			new()
-			{
-				UserId = adminUser.Id,
-				PasswordHash = passwordHash,
-				PasswordChangedAt = null, // Forces password change on first login
-				CreateDate = now,
-			};
-
-		context.UserCredentials.Add(credential);
-
-		// Look up Admin role ID from SecurityRoles
-		int? adminRoleId =
-			await context
-				.SecurityRoles
-				.Where(securityRole =>
-					securityRole.Name == RoleConstants.Admin)
-				.Select(securityRole => (int?)securityRole.Id)
-				.FirstOrDefaultAsync(cancellationToken);
-
-		if (adminRoleId is null)
+		if (!createResult.Succeeded)
 		{
+			string errors = createResult.ToErrorString();
 			logger.LogError(
-				"Admin role not found in SecurityRoles - cannot assign role to seeded admin user");
-			return;
+				"Failed to create admin user: {Errors}",
+				errors);
+
+			return false;
+		}
+		IdentityResult roleResult =
+			await userManager.AddToRoleAsync(
+				adminUser,
+				RoleConstants.Admin);
+
+		if (!roleResult.Succeeded)
+		{
+			string errors = roleResult.ToErrorString();
+			logger.LogError(
+				"Failed to assign admin role: {Errors}",
+				errors);
+
+			return false;
 		}
 
-		// Assign Admin role - CreateDate/CreatedBy set by AuditInterceptor
-		UserRole adminRole =
-			new()
-			{
-				UserId = adminUser.Id,
-				RoleId = adminRoleId.Value,
-			};
-
-		context.UserRoles.Add(adminRole);
-		await context.SaveChangesAsync(cancellationToken);
-
 		logger.LogWarning(
-			"Initial admin user '{Username}' created with temporary password. Password change required on first login.",
+			"Initial admin user '{Username}' created with temporary password. "
+				+ "Password change required on first login.",
 			settings.Value.Username);
+
+		return true;
 	}
 }

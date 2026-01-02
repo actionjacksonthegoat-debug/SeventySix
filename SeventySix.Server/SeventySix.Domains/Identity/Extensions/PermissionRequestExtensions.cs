@@ -29,7 +29,7 @@ public static class PermissionRequestExtensions
 			request.Id,
 			request.UserId,
 			username,
-			request.RequestedRole!.Name,
+			request.RequestedRole!.Name!,
 			request.RequestMessage,
 			request.CreatedBy,
 			request.CreateDate);

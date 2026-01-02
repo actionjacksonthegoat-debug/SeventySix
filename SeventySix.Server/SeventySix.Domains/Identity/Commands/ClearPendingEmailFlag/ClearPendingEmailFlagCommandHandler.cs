@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -15,11 +17,8 @@ public static class ClearPendingEmailFlagCommandHandler
 	/// <param name="command">
 	/// The clear pending email flag command.
 	/// </param>
-	/// <param name="userQueryRepository">
-	/// User query repository.
-	/// </param>
-	/// <param name="userCommandRepository">
-	/// User command repository.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -29,20 +28,17 @@ public static class ClearPendingEmailFlagCommandHandler
 	/// </returns>
 	public static async Task HandleAsync(
 		ClearPendingEmailFlagCommand command,
-		IUserQueryRepository userQueryRepository,
-		IUserCommandRepository userCommandRepository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		User? user =
-			await userQueryRepository.GetByIdAsync(
-				command.UserId,
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(command.UserId.ToString());
 
 		if (user?.NeedsPendingEmail == true)
 		{
 			user.NeedsPendingEmail = false;
 
-			await userCommandRepository.UpdateAsync(user, cancellationToken);
+			await userManager.UpdateAsync(user);
 		}
 	}
 }

@@ -76,13 +76,84 @@ public static class WebApplicationExtensions
 			logger.LogInformation(
 				"Database initialization completed successfully");
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			logger.LogError(
-				ex,
-				"An error occurred while initializing the database");
-			throw;
+			logger.LogCritical(
+				exception,
+				"DATABASE MIGRATION FAILED - Application cannot start");
+
+			// Write to console directly for visibility in Docker logs
+			// Using ASCII characters for Windows console compatibility
+			Console.Error.WriteLine();
+			Console.Error.WriteLine(
+				"====================================================================");
+			Console.Error.WriteLine(
+				"                   DATABASE MIGRATION FAILED                        ");
+			Console.Error.WriteLine(
+				"====================================================================");
+			Console.Error.WriteLine(
+				$"  Error: {TruncateForDisplay(exception.Message, 57)}");
+
+			if (exception.InnerException != null)
+			{
+				Console.Error.WriteLine(
+					$"  Inner: {TruncateForDisplay(exception.InnerException.Message, 57)}");
+			}
+
+			Console.Error.WriteLine(
+				"--------------------------------------------------------------------");
+			Console.Error.WriteLine(
+				"  Common causes:");
+			Console.Error.WriteLine(
+				"    - Table already exists (schema conflict)");
+			Console.Error.WriteLine(
+				"    - Database not empty but migrations expect clean state");
+			Console.Error.WriteLine(
+				"    - Migration history out of sync with actual schema");
+			Console.Error.WriteLine(
+				"--------------------------------------------------------------------");
+			Console.Error.WriteLine(
+				"  Suggested fixes:");
+			Console.Error.WriteLine(
+				"    1. Run: npm run stop");
+			Console.Error.WriteLine(
+				"    2. Run: docker volume rm seventysix_postgres_data");
+			Console.Error.WriteLine(
+				"    3. Run: npm run start");
+			Console.Error.WriteLine(
+				"====================================================================");
+			Console.Error.WriteLine();
+
+			// Exit with error code to signal container failure
+			Environment.Exit(1);
 		}
+	}
+
+	/// <summary>
+	/// Truncates a string to fit within display constraints, adding ellipsis if needed.
+	/// </summary>
+	/// <param name="value">The string to truncate.</param>
+	/// <param name="maxLength">Maximum allowed length.</param>
+	/// <returns>Truncated string with ellipsis if original exceeded maxLength.</returns>
+	private static string TruncateForDisplay(
+		string value,
+		int maxLength)
+	{
+		if (string.IsNullOrEmpty(value))
+		{
+			return string.Empty;
+		}
+
+		// Replace newlines with spaces for single-line display
+		string singleLine =
+			value.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+
+		if (singleLine.Length <= maxLength)
+		{
+			return singleLine;
+		}
+
+		return string.Concat(singleLine.AsSpan(0, maxLength - 3), "...");
 	}
 
 	/// <summary>Configures forwarded headers for reverse proxy scenarios.</summary>

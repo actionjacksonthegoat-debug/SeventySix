@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
 
@@ -11,8 +11,8 @@ namespace SeventySix.TestUtilities.TestHelpers;
 /// <summary>
 /// Options for creating test users.
 /// </summary>
-/// <param name="PasswordHash">
-/// Optional custom password hash. Defaults to <see cref="TestUserHelper.TestPasswordHash"/>.
+/// <param name="Password">
+/// Optional custom password. Defaults to <see cref="TestUserHelper.TestPassword"/>.
 /// </param>
 /// <param name="IsActive">
 /// Whether the user should be active. Defaults to true.
@@ -21,44 +21,19 @@ namespace SeventySix.TestUtilities.TestHelpers;
 /// Optional full name for the user.
 /// </param>
 public record CreateUserOptions(
-	string? PasswordHash = null,
+	string? Password = null,
 	bool IsActive = true,
 	string? FullName = null);
 
 /// <summary>
-/// Helper methods for creating test users with pre-computed password hashes.
-/// Eliminates runtime Argon2id computation overhead in tests.
+/// Helper methods for creating test users using ASP.NET Core Identity.
 /// </summary>
 public static class TestUserHelper
 {
 	/// <summary>
-	/// Lazily-initialized password hasher for generating test hashes.
-	/// </summary>
-	private static readonly Lazy<TestPasswordHasher> PasswordHasher =
-		new(() =>
-		new TestPasswordHasher());
-
-	/// <summary>
 	/// The standard test password used across API integration tests.
 	/// </summary>
 	public const string TestPassword = "TestPassword123!";
-
-	/// <summary>
-	/// Lazily-initialized Argon2id hash for <see cref="TestPassword"/>.
-	/// Generated once per test run to ensure correctness.
-	/// </summary>
-	/// <remarks>
-	/// Parameters: m=4096 (4MB), t=2, p=1 (optimized for fast tests).
-	/// Production uses m=65536 (64MB), t=3, p=4.
-	/// </remarks>
-	private static readonly Lazy<string> LazyTestPasswordHash =
-		new(() =>
-		PasswordHasher.Value.HashPassword(TestPassword));
-
-	/// <summary>
-	/// Gets the Argon2id hash for <see cref="TestPassword"/>.
-	/// </summary>
-	public static string TestPasswordHash => LazyTestPasswordHash.Value;
 
 	/// <summary>
 	/// The standard test password used across unit tests.
@@ -66,23 +41,10 @@ public static class TestUserHelper
 	public const string SimplePassword = "Password123";
 
 	/// <summary>
-	/// Lazily-initialized Argon2id hash for <see cref="SimplePassword"/>.
-	/// Generated once per test run to ensure correctness.
-	/// </summary>
-	private static readonly Lazy<string> LazySimplePasswordHash =
-		new(() =>
-		PasswordHasher.Value.HashPassword(SimplePassword));
-
-	/// <summary>
-	/// Gets the Argon2id hash for <see cref="SimplePassword"/>.
-	/// </summary>
-	public static string SimplePasswordHash => LazySimplePasswordHash.Value;
-
-	/// <summary>
-	/// Creates a test user with credentials using the pre-computed password hash.
+	/// Creates a test user with credentials using Identity's UserManager.
 	/// </summary>
 	/// <param name="services">
-	/// The service provider to resolve the DbContext.
+	/// The service provider to resolve the UserManager.
 	/// </param>
 	/// <param name="username">
 	/// The username for the new user.
@@ -99,85 +61,52 @@ public static class TestUserHelper
 	/// <returns>
 	/// The created user.
 	/// </returns>
-	public static async Task<User> CreateUserWithPasswordAsync(
+	public static async Task<ApplicationUser> CreateUserWithPasswordAsync(
 		IServiceProvider services,
 		string username,
 		string email,
 		TimeProvider timeProvider,
 		CreateUserOptions? options = null)
 	{
-		using IServiceScope scope = services.CreateScope();
+		using IServiceScope scope =
+			services.CreateScope();
 
-		IdentityDbContext context =
-			scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+		UserManager<ApplicationUser> userManager =
+			scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-		return await CreateUserWithPasswordAsync(
-			context,
-			username,
-			email,
-			timeProvider,
-			options);
-	}
-
-	/// <summary>
-	/// Creates a test user with credentials using the pre-computed password hash.
-	/// </summary>
-	/// <param name="context">
-	/// The identity database context.
-	/// </param>
-	/// <param name="username">
-	/// The username for the new user.
-	/// </param>
-	/// <param name="email">
-	/// The email for the new user.
-	/// </param>
-	/// <param name="timeProvider">
-	/// The time provider for setting CreateDate.
-	/// </param>
-	/// <param name="options">
-	/// Optional configuration for the user.
-	/// </param>
-	/// <returns>
-	/// The created user.
-	/// </returns>
-	public static async Task<User> CreateUserWithPasswordAsync(
-		IdentityDbContext context,
-		string username,
-		string email,
-		TimeProvider timeProvider,
-		CreateUserOptions? options = null)
-	{
 		CreateUserOptions opts =
 			options ?? new CreateUserOptions();
 
-		User user =
+		ApplicationUser user =
 			new()
 			{
-				Username = username,
+				UserName = username,
 				Email = email,
 				FullName = opts.FullName,
 				IsActive = opts.IsActive,
+				EmailConfirmed = true,
 				CreateDate =
 					timeProvider.GetUtcNow().UtcDateTime,
 				CreatedBy = "Test",
 				ModifiedBy = "Test",
 			};
 
-		context.Users.Add(user);
-		await context.SaveChangesAsync();
+		string password =
+			opts.Password ?? TestPassword;
 
-		UserCredential credential =
-			new()
-			{
-				UserId = user.Id,
-				PasswordHash =
-					opts.PasswordHash ?? TestPasswordHash,
-				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
-			};
+		IdentityResult result =
+			await userManager.CreateAsync(
+				user,
+				password);
 
-		context.UserCredentials.Add(credential);
-		await context.SaveChangesAsync();
+		if (!result.Succeeded)
+		{
+			string errors =
+				string.Join(", ", result.Errors.Select(error => error.Description));
+
+			throw new InvalidOperationException(
+				$"Failed to create test user: {errors}");
+		}
 
 		return user;
 	}
@@ -186,7 +115,7 @@ public static class TestUserHelper
 	/// Creates a test user with credentials and optional roles.
 	/// </summary>
 	/// <param name="services">
-	/// The service provider to resolve the DbContext.
+	/// The service provider to resolve the UserManager.
 	/// </param>
 	/// <param name="username">
 	/// The username for the new user.
@@ -206,7 +135,7 @@ public static class TestUserHelper
 	/// <returns>
 	/// The created user.
 	/// </returns>
-	public static async Task<User> CreateUserWithRolesAsync(
+	public static async Task<ApplicationUser> CreateUserWithRolesAsync(
 		IServiceProvider services,
 		string username,
 		string email,
@@ -214,45 +143,60 @@ public static class TestUserHelper
 		TimeProvider timeProvider,
 		CreateUserOptions? options = null)
 	{
-		using IServiceScope scope = services.CreateScope();
+		using IServiceScope scope =
+			services.CreateScope();
 
-		IdentityDbContext context =
-			scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+		UserManager<ApplicationUser> userManager =
+			scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-		User user =
-			await CreateUserWithPasswordAsync(
-			context,
-			username,
-			email,
-			timeProvider,
-			options);
+		CreateUserOptions opts =
+			options ?? new CreateUserOptions();
 
+		ApplicationUser user =
+			new()
+			{
+				UserName = username,
+				Email = email,
+				FullName = opts.FullName,
+				IsActive = opts.IsActive,
+				EmailConfirmed = true,
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				CreatedBy = "Test",
+				ModifiedBy = "Test",
+			};
+
+		string password =
+			opts.Password ?? TestPassword;
+
+		IdentityResult createResult =
+			await userManager.CreateAsync(
+				user,
+				password);
+
+		if (!createResult.Succeeded)
+		{
+			string errors = createResult.ToErrorString();
+
+			throw new InvalidOperationException(
+				$"Failed to create test user: {errors}");
+		}
 		foreach (string role in roles)
 		{
-			int? roleId =
-				await context
-				.SecurityRoles.Where(securityRole => securityRole.Name == role)
-				.Select(securityRole => (int?)securityRole.Id)
-				.FirstOrDefaultAsync();
+			IdentityResult roleResult =
+				await userManager.AddToRoleAsync(
+					user,
+					role);
 
-			if (roleId is null)
+			if (!roleResult.Succeeded)
 			{
-				throw new InvalidOperationException(
-					$"Role '{role}' not found in SecurityRoles");
-			}
+				string errors = roleResult.ToErrorString();
 
-			context.UserRoles.Add(
-				new UserRole
-				{
-					UserId = user.Id,
-					RoleId = roleId.Value,
-					CreateDate =
-						timeProvider.GetUtcNow().UtcDateTime,
-					CreatedBy = "test",
-				});
+				throw new InvalidOperationException(
+					$"Failed to add role '{role}': {errors}");
+			}
 		}
 
-		await context.SaveChangesAsync();
 		return user;
 	}
 }

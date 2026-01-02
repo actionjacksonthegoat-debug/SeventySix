@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -11,8 +14,8 @@ public static class CheckEmailExistsQueryHandler
 	/// <param name="query">
 	/// The query containing the email and optional exclusion user id.
 	/// </param>
-	/// <param name="repository">
-	/// Repository used to check email existence.
+	/// <param name="userManager">
+	/// User manager used to check email existence.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -22,12 +25,22 @@ public static class CheckEmailExistsQueryHandler
 	/// </returns>
 	public static async Task<bool> HandleAsync(
 		CheckEmailExistsQuery query,
-		IUserQueryRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		return await repository.EmailExistsAsync(
-			query.Email,
-			query.ExcludeUserId,
-			cancellationToken);
+		IQueryable<ApplicationUser> usersQuery =
+			userManager.Users
+				.AsNoTracking()
+				.Where(user =>
+					user.Email != null
+					&& user.Email.ToLower() == query.Email.ToLower());
+
+		if (query.ExcludeUserId.HasValue)
+		{
+			usersQuery =
+				usersQuery.Where(user => user.Id != query.ExcludeUserId.Value);
+		}
+
+		return await usersQuery.AnyAsync(cancellationToken);
 	}
 }

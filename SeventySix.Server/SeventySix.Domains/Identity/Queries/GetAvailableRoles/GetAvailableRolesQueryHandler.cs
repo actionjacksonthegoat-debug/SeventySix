@@ -42,13 +42,14 @@ public static class GetAvailableRolesQueryHandler
 		HashSet<string> excludedRoles =
 			existingRoles
 				.Concat(
-					pendingRequests.Select(request => request.RequestedRole!.Name))
+					pendingRequests
+						.Select(request => request.RequestedRole?.Name)
+						.Where(name => name != null)!
+						.Cast<string>())
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-		return RoleConstants
+		return [.. RoleConstants
 			.AllRequestableRoles
-			.Where(role =>
-				!excludedRoles.Contains(role.Name))
-			.ToList();
+			.Where(role => !excludedRoles.Contains(role.Name))];
 	}
 }

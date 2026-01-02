@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -13,57 +14,39 @@ namespace SeventySix.Identity;
 /// <remarks>
 /// Encapsulates complex registration workflows including user creation,
 /// credential setup, role assignment, and token generation.
-/// Extracted from static RegistrationHelpers to reduce parameter coupling.
+/// Uses ASP.NET Core Identity UserManager for user operations.
 /// </remarks>
+/// <param name="userManager">
+/// The UserManager for ApplicationUser.
+/// </param>
+/// <param name="tokenService">
+/// The token service for generating auth tokens.
+/// </param>
+/// <param name="authRepository">
+/// The authentication repository for user data operations.
+/// </param>
+/// <param name="jwtSettings">
+/// The JWT settings options.
+/// </param>
+/// <param name="timeProvider">
+/// The time provider for current time.
+/// </param>
+/// <param name="logger">
+/// The logger instance.
+/// </param>
 public class RegistrationService(
-	IAuthRepository authRepository,
-	ICredentialRepository credentialRepository,
-	IUserQueryRepository userQueryRepository,
+	UserManager<ApplicationUser> userManager,
 	ITokenService tokenService,
-	IPasswordHasher passwordHasher,
+	IAuthRepository authRepository,
 	IOptions<JwtSettings> jwtSettings,
 	TimeProvider timeProvider,
 	ILogger<RegistrationService> logger)
 {
 	/// <summary>
-	/// Gets the role ID by name.
-	/// </summary>
-	/// <param name="roleName">
-	/// The role name to look up.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
-	/// </param>
-	/// <returns>
-	/// The role ID when found.
-	/// </returns>
-	/// <exception cref="InvalidOperationException">Thrown if role not found.</exception>
-	public async Task<long> GetRoleIdByNameAsync(
-		string roleName,
-		CancellationToken cancellationToken)
-	{
-		long? roleId =
-			await authRepository.GetRoleIdByNameAsync(
-				roleName,
-				cancellationToken);
-
-		if (roleId is null)
-		{
-			logger.LogError(
-				"Role '{RoleName}' not found in SecurityRoles",
-				roleName);
-			throw new InvalidOperationException(
-				$"Role '{roleName}' not found in SecurityRoles");
-		}
-
-		return roleId.Value;
-	}
-
-	/// <summary>
-	/// Creates a user with credential and role assignment.
+	/// Creates a user with password and role assignment.
 	/// </summary>
 	/// <remarks>
-	/// Must be called within a transaction.
+	/// Uses ASP.NET Core Identity UserManager for user creation.
 	/// </remarks>
 	/// <param name="username">
 	/// The desired username for the new user.
@@ -80,35 +63,27 @@ public class RegistrationService(
 	/// <param name="createdBy">
 	/// Audit user who created this account.
 	/// </param>
-	/// <param name="roleId">
-	/// Role ID to assign to the new user.
-	/// </param>
-	/// <param name="requiresPasswordChange">
-	/// When true, password change will be required at first login.
-	/// </param>
-	/// <param name="cancellationToken">
-	/// Cancellation token.
+	/// <param name="roleName">
+	/// Role name to assign to the new user.
 	/// </param>
 	/// <returns>
-	/// The created <see cref="User"/> with ID populated.
+	/// The created <see cref="ApplicationUser"/> with ID populated.
 	/// </returns>
-	public async Task<User> CreateUserWithCredentialAsync(
+	public async Task<ApplicationUser> CreateUserWithCredentialAsync(
 		string username,
 		string email,
 		string? fullName,
 		string password,
 		string createdBy,
-		long roleId,
-		bool requiresPasswordChange,
-		CancellationToken cancellationToken)
+		string roleName)
 	{
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		User newUser =
+		ApplicationUser newUser =
 			new()
 			{
-				Username = username,
+				UserName = username,
 				Email = email,
 				FullName = fullName,
 				IsActive = true,
@@ -116,28 +91,34 @@ public class RegistrationService(
 				CreatedBy = createdBy,
 			};
 
-		User createdUser =
-			await authRepository.CreateUserWithRoleAsync(
-				newUser,
-				roleId,
-				cancellationToken);
+		IdentityResult createResult =
+			await userManager.CreateAsync(newUser, password);
 
-		string passwordHash =
-			passwordHasher.HashPassword(password);
+		if (!createResult.Succeeded)
+		{
+			string errors = createResult.ToErrorString();
+			logger.LogError(
+				"Failed to create user '{Username}': {Errors}",
+				username,
+				errors);
+			throw new InvalidOperationException($"Failed to create user: {errors}");
+		}
 
-		UserCredential credential =
-			new()
-			{
-				UserId = createdUser.Id,
-				PasswordHash = passwordHash,
-				CreateDate = now,
-				PasswordChangedAt =
-					requiresPasswordChange ? null : now,
-			};
+		IdentityResult roleResult =
+			await userManager.AddToRoleAsync(newUser, roleName);
 
-		await credentialRepository.CreateAsync(credential, cancellationToken);
+		if (!roleResult.Succeeded)
+		{
+			string errors = roleResult.ToErrorString();
+			logger.LogError(
+				"Failed to assign role '{RoleName}' to user '{Username}': {Errors}",
+				roleName,
+				username,
+				errors);
+			throw new InvalidOperationException($"Failed to assign role: {errors}");
+		}
 
-		return createdUser;
+		return newUser;
 	}
 
 	/// <summary>
@@ -162,23 +143,21 @@ public class RegistrationService(
 	/// An <see cref="AuthResult"/> containing tokens and metadata.
 	/// </returns>
 	public virtual async Task<AuthResult> GenerateAuthResultAsync(
-		User user,
+		ApplicationUser user,
 		string? clientIp,
 		bool requiresPasswordChange,
 		bool rememberMe,
 		CancellationToken cancellationToken)
 	{
 		// Get user roles
-		IEnumerable<string> roles =
-			await userQueryRepository.GetUserRolesAsync(
-				user.Id,
-				cancellationToken);
+		IList<string> roles =
+			await userManager.GetRolesAsync(user);
 
 		string accessToken =
 			tokenService.GenerateAccessToken(
 				user.Id,
-				user.Username,
-				roles.ToList());
+				user.UserName ?? string.Empty,
+				[.. roles]);
 
 		string refreshToken =
 			await tokenService.GenerateRefreshTokenAsync(
@@ -187,6 +166,12 @@ public class RegistrationService(
 				rememberMe,
 				cancellationToken);
 
+		await authRepository.UpdateLastLoginAsync(
+			user.Id,
+			timeProvider.GetUtcNow().UtcDateTime,
+			clientIp,
+			cancellationToken);
+
 		return AuthResult.Succeeded(
 			accessToken,
 			refreshToken,
@@ -194,7 +179,7 @@ public class RegistrationService(
 				.GetUtcNow()
 				.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes)
 				.UtcDateTime,
-			user.Email,
+			user.Email ?? string.Empty,
 			user.FullName,
 			requiresPasswordChange);
 	}

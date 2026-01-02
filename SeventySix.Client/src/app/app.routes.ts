@@ -66,14 +66,14 @@ export const routes: Routes =
 		},
 
 		// ══════════════════════════════════════════════════════════════
-		// DEVELOPER ROUTES (Developer Role Required)
+		// DEVELOPER ROUTES (Developer OR Admin)
 		// ══════════════════════════════════════════════════════════════
 		{
 			path: "developer",
 			loadChildren: () =>
 				import("./domains/developer/developer.routes").then(
 					(module) => module.DEVELOPER_ROUTES),
-			canActivate: [roleGuard(ROLE_DEVELOPER)],
+			canActivate: [roleGuard(ROLE_DEVELOPER, ROLE_ADMIN)],
 			data: { breadcrumb: "Developer" }
 		},
 

@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -15,8 +17,8 @@ public static class RestoreUserCommandHandler
 	/// <param name="command">
 	/// The restore user command.
 	/// </param>
-	/// <param name="repository">
-	/// User command repository.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -26,14 +28,26 @@ public static class RestoreUserCommandHandler
 	/// </returns>
 	public static async Task<bool> HandleAsync(
 		RestoreUserCommand command,
-		IUserCommandRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		bool result =
-			await repository.RestoreAsync(
-				command.UserId,
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(command.UserId.ToString());
 
-		return result;
+		if (user == null || !user.IsDeleted)
+		{
+			return false;
+		}
+
+		// Restore user - clear soft delete flags
+		user.IsDeleted = false;
+		user.DeletedAt = null;
+		user.DeletedBy = null;
+		user.IsActive = true;
+
+		IdentityResult result =
+			await userManager.UpdateAsync(user);
+
+		return result.Succeeded;
 	}
 }

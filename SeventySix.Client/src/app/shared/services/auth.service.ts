@@ -565,6 +565,17 @@ export class AuthService
 	}
 
 	/**
+	 * Forces a local logout by clearing all client-side authentication state.
+	 * Use this when the server has already invalidated refresh tokens (e.g., password change).
+	 * This does NOT call the server logout endpoint.
+	 * @returns {void}
+	 */
+	forceLogoutLocally(): void
+	{
+		this.clearAuth();
+	}
+
+	/**
 	 * Parses JWT token to extract claims.
 	 * @param {string} token
 	 * The JWT token string to parse.

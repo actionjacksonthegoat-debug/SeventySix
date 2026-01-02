@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -15,8 +17,8 @@ public static class BulkUpdateActiveStatusCommandHandler
 	/// <param name="command">
 	/// The bulk update command.
 	/// </param>
-	/// <param name="repository">
-	/// User repository.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -24,21 +26,34 @@ public static class BulkUpdateActiveStatusCommandHandler
 	/// <returns>
 	/// The number of users updated.
 	/// </returns>
-	/// <remarks>
-	/// Repository call is already atomic via EF Core's SaveChangesAsync.
-	/// No explicit transaction needed for single operation.
-	/// </remarks>
 	public static async Task<long> HandleAsync(
 		BulkUpdateActiveStatusCommand command,
-		IUserCommandRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		long count =
-			await repository.BulkUpdateActiveStatusAsync(
-				command.UserIds,
-				command.IsActive,
-				cancellationToken);
+		long updatedCount = 0;
 
-		return count;
+		foreach (long userId in command.UserIds)
+		{
+			ApplicationUser? user =
+				await userManager.FindByIdAsync(userId.ToString());
+
+			if (user is null)
+			{
+				continue;
+			}
+
+			user.IsActive = command.IsActive;
+
+			IdentityResult result =
+				await userManager.UpdateAsync(user);
+
+			if (result.Succeeded)
+			{
+				updatedCount++;
+			}
+		}
+
+		return updatedCount;
 	}
 }

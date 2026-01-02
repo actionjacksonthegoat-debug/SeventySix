@@ -13,6 +13,7 @@ import {
 	WritableSignal
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
 import { environment } from "@environments/environment";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
@@ -29,7 +30,7 @@ interface ChangePasswordRequest
 	{
 		selector: "app-change-password",
 		standalone: true,
-		imports: [FormsModule],
+		imports: [FormsModule, MatButtonModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./change-password.html",
 		styleUrl: "./change-password.scss"
@@ -182,8 +183,8 @@ export class ChangePasswordComponent implements OnInit
 				{
 					this.notification.success(
 						"Password changed successfully. Please log in again.");
-					// Clear auth state and redirect to login
-					this.authService.clearPasswordChangeRequirement();
+					// Clear auth state locally (server already revoked tokens) and redirect to login
+					this.authService.forceLogoutLocally();
 					// The API clears the refresh token, so user needs to log in again
 					this.router.navigate(
 						["/auth/login"],

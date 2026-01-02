@@ -6,7 +6,8 @@
 		<div class="oauth-buttons">
 			<button
 				type="button"
-				class="btn-oauth btn-github"
+			class="oauth-button github-button"
+			mat-flat-button
 				[disabled]="isLoading()"
 				(click)="onGitHubLogin()"
 				aria-label="Continue with GitHub">
@@ -92,8 +93,10 @@
 			</div>
 
 			<button
+				mat-flat-button
+				color="primary"
 				type="submit"
-				class="btn-primary"
+				class="submit-button"
 				[disabled]="isLoading()"
 				[attr.aria-busy]="isLoading()">
 				@if (isLoading()) { Signing in... } @else { Sign In }

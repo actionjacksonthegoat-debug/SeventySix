@@ -8,15 +8,15 @@ using SeventySix.TestUtilities.Constants;
 namespace SeventySix.TestUtilities.Builders;
 
 /// <summary>
-/// Fluent builder for creating User entities in tests.
+/// Fluent builder for creating ApplicationUser entities in tests.
 /// </summary>
 /// <remarks>
-/// Provides a convenient way to create User entities with default test values.
+/// Provides a convenient way to create ApplicationUser entities with default test values.
 /// Reduces boilerplate code in test setup.
 ///
 /// Usage:
 /// <code>
-/// User user = new UserBuilder()
+/// ApplicationUser user = new UserBuilder()
 ///     .WithUsername("testuser")
 ///     .WithEmail("test@example.com")
 ///     .Build();
@@ -48,6 +48,7 @@ public class UserBuilder
 	private string? Preferences = null;
 	private DateTime? LastLoginAt = null;
 	private string? LastLoginIp = null;
+	private bool NeedsPendingEmail = false;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserBuilder"/> class.
@@ -242,16 +243,25 @@ public class UserBuilder
 	}
 
 	/// <summary>
-	/// Builds the User entity with the configured values.
+	/// Marks the user as needing a pending email.
+	/// </summary>
+	public UserBuilder WithNeedsPendingEmail(bool value)
+	{
+		NeedsPendingEmail = value;
+		return this;
+	}
+
+	/// <summary>
+	/// Builds the ApplicationUser entity with the configured values.
 	/// </summary>
 	/// <returns>
-	/// A new User instance.
+	/// A new ApplicationUser instance.
 	/// </returns>
-	public User Build()
+	public ApplicationUser Build()
 	{
-		return new User
+		return new ApplicationUser
 		{
-			Username = Username,
+			UserName = Username,
 			Email = Email,
 			FullName = FullName,
 			CreateDate = CreateDate,
@@ -268,6 +278,7 @@ public class UserBuilder
 			Preferences = Preferences,
 			LastLoginAt = LastLoginAt,
 			LastLoginIp = LastLoginIp,
+			NeedsPendingEmail = NeedsPendingEmail,
 		};
 	}
 

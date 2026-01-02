@@ -2,26 +2,34 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SeventySix.Identity.Constants;
-using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
 
 /// <summary>
 /// Handler for RegisterCommand.
 /// </summary>
+/// <remarks>
+/// Creates an Identity user and assigns the `User` role. Role seeding must be executed during migration/startup.
+/// </remarks>
 public static class RegisterCommandHandler
 {
 	/// <summary>
-	/// Handles the RegisterCommand request.
+	/// Handles the RegisterCommand request by creating a new Identity user and returning tokens.
 	/// </summary>
 	/// <param name="command">
 	/// The registration request and client IP.
 	/// </param>
-	/// <param name="registrationService">
-	/// Service that creates users and returns auth results.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for creating users and roles.
+	/// </param>
+	/// <param name="authenticationService">
+	/// Service to generate authentication tokens.
+	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider for obtaining current UTC times.
 	/// </param>
 	/// <param name="logger">
 	/// Logger instance used for warnings and errors.
@@ -32,51 +40,48 @@ public static class RegisterCommandHandler
 	/// <returns>
 	/// An <see cref="AuthResult"/> containing access and refresh tokens.
 	/// </returns>
-	/// <remarks>
-	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
-	/// Database unique constraints on Username and Email provide atomicity - no manual duplicate checks needed.
-	/// </remarks>
 	public static async Task<AuthResult> HandleAsync(
 		RegisterCommand command,
-		RegistrationService registrationService,
+		UserManager<ApplicationUser> userManager,
+		AuthenticationService authenticationService,
+		TimeProvider timeProvider,
 		ILogger<RegisterCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		// Get role ID (read-only query)
-		long userRoleId =
-			await registrationService.GetRoleIdByNameAsync(
-				RoleConstants.User,
-				cancellationToken);
+		ApplicationUser newUser =
+			new()
+			{
+				UserName = command.Request.Username,
+				Email = command.Request.Email,
+				FullName = command.Request.FullName,
+				IsActive = true,
+				CreateDate =
+					timeProvider.GetUtcNow().UtcDateTime,
+				CreatedBy = "Registration",
+			};
 
-		try
-		{
-			// Create user with credential and role
-			User user =
-				await registrationService.CreateUserWithCredentialAsync(
-					command.Request.Username,
-					command.Request.Email,
-					command.Request.FullName,
-					command.Request.Password,
-					"Registration",
-					userRoleId,
-					requiresPasswordChange: true,
-					cancellationToken);
+		IdentityResult result =
+			await userManager.CreateAsync(newUser, command.Request.Password);
 
-			return await registrationService.GenerateAuthResultAsync(
-				user,
-				command.ClientIp,
-				requiresPasswordChange: false,
-				rememberMe: false,
-				cancellationToken);
-		}
-		catch (DbUpdateException exception)
-			when (exception.IsDuplicateKeyViolation())
+		if (!result.Succeeded)
 		{
-			return DuplicateKeyViolationHandler.HandleAsAuthResult(
-				exception,
-				command.Request.Username,
-				command.Request.Email,
-				logger);
+			string errors =
+				string.Join(", ", result.Errors.Select(error => error.Description));
+
+			return AuthResult.Failed(
+				errors,
+				"REGISTRATION_FAILED");
 		}
+
+		await userManager.AddToRoleAsync(
+			newUser,
+			RoleConstants.User);
+
+		return await authenticationService.GenerateAuthResultAsync(
+			newUser,
+			command.ClientIp,
+			requiresPasswordChange: false,
+			rememberMe: false,
+			cancellationToken);
 	}
 }

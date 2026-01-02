@@ -164,10 +164,11 @@ export class ThemeService
 	 */
 	private getInitialColorScheme(): ColorScheme
 	{
-		const saved: string | null =
+		const savedScheme: string | null =
 			this.storage.getItem<string>(
 				this.SCHEME_STORAGE_KEY);
-		return saved === "cyan-orange" ? "cyan-orange" : "blue";
+		// Default to cyan-orange unless user explicitly chose blue
+		return savedScheme === "blue" ? "blue" : "cyan-orange";
 	}
 
 	/**

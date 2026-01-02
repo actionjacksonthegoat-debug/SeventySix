@@ -14,6 +14,7 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
+import { MatButtonModule } from "@angular/material/button";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
@@ -22,7 +23,7 @@ import { NotificationService } from "@shared/services/notification.service";
 	{
 		selector: "app-set-password",
 		standalone: true,
-		imports: [FormsModule],
+		imports: [FormsModule, MatButtonModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./set-password.html",
 		styleUrl: "./set-password.scss"

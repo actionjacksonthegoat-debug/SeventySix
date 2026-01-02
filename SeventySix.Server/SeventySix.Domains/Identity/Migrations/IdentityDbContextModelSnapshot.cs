@@ -8,7 +8,7 @@ using SeventySix.Identity;
 
 #nullable disable
 
-namespace SeventySix.Domains.Identity.Migrations
+namespace SeventySix.Domains.Migrations
 {
 	[DbContext(typeof(IdentityDbContext))]
 	partial class IdentityDbContextModelSnapshot : ModelSnapshot
@@ -23,89 +23,110 @@ namespace SeventySix.Domains.Identity.Migrations
 
 			NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-			modelBuilder.Entity("SeventySix.Identity.EmailVerificationToken", b =>
+			modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
 				{
-					b.Property<long>("Id")
+					b.Property<int>("Id")
 						.ValueGeneratedOnAdd()
+						.HasColumnType("integer");
+
+					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+					b.Property<string>("ClaimType")
+						.HasColumnType("text");
+
+					b.Property<string>("ClaimValue")
+						.HasColumnType("text");
+
+					b.Property<long>("RoleId")
 						.HasColumnType("bigint");
-
-					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-					b.Property<DateTime>("CreateDate")
-						.HasColumnType("timestamp with time zone");
-
-					b.Property<string>("Email")
-						.IsRequired()
-						.HasMaxLength(255)
-						.HasColumnType("character varying(255)");
-
-					b.Property<DateTime>("ExpiresAt")
-						.HasColumnType("timestamp with time zone");
-
-					b.Property<bool>("IsUsed")
-						.HasColumnType("boolean");
-
-					b.Property<string>("TokenHash")
-						.IsRequired()
-						.HasMaxLength(64)
-						.HasColumnType("character varying(64)");
 
 					b.HasKey("Id");
 
-					b.HasIndex("Email");
+					b.HasIndex("RoleId");
 
-					b.HasIndex("TokenHash")
-						.IsUnique();
-
-					b.ToTable("EmailVerificationTokens", "Identity");
+					b.ToTable("RoleClaims", "Identity");
 				});
 
-			modelBuilder.Entity("SeventySix.Identity.ExternalLogin", b =>
+			modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<long>", b =>
 				{
-					b.Property<long>("Id")
+					b.Property<int>("Id")
 						.ValueGeneratedOnAdd()
-						.HasColumnType("bigint");
+						.HasColumnType("integer");
 
-					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-					b.Property<DateTime>("CreateDate")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("timestamp with time zone")
-						.HasDefaultValueSql("NOW()");
+					b.Property<string>("ClaimType")
+						.HasColumnType("text");
 
-					b.Property<DateTime?>("LastUsedAt")
-						.HasColumnType("timestamp with time zone");
-
-					b.Property<string>("Provider")
-						.IsRequired()
-						.HasMaxLength(50)
-						.HasColumnType("character varying(50)");
-
-					b.Property<string>("ProviderEmail")
-						.HasMaxLength(255)
-						.HasColumnType("character varying(255)");
-
-					b.Property<string>("ProviderUserId")
-						.IsRequired()
-						.HasMaxLength(255)
-						.HasColumnType("character varying(255)");
+					b.Property<string>("ClaimValue")
+						.HasColumnType("text");
 
 					b.Property<long>("UserId")
 						.HasColumnType("bigint");
 
 					b.HasKey("Id");
 
-					b.HasIndex("UserId")
-						.HasDatabaseName("IX_ExternalLogins_UserId");
+					b.HasIndex("UserId");
 
-					b.HasIndex("Provider", "ProviderUserId")
-						.IsUnique()
-						.HasDatabaseName("IX_ExternalLogins_Provider_ProviderUserId");
+					b.ToTable("UserClaims", "Identity");
+				});
+
+			modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<long>", b =>
+				{
+					b.Property<string>("LoginProvider")
+						.HasColumnType("text");
+
+					b.Property<string>("ProviderKey")
+						.HasColumnType("text");
+
+					b.Property<string>("ProviderDisplayName")
+						.HasColumnType("text");
+
+					b.Property<long>("UserId")
+						.HasColumnType("bigint");
+
+					b.HasKey("LoginProvider", "ProviderKey");
+
+					b.HasIndex("UserId");
 
 					b.ToTable("ExternalLogins", "Identity");
 				});
 
-			modelBuilder.Entity("SeventySix.Identity.PasswordResetToken", b =>
+			modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<long>", b =>
+				{
+					b.Property<long>("UserId")
+						.HasColumnType("bigint");
+
+					b.Property<long>("RoleId")
+						.HasColumnType("bigint");
+
+					b.HasKey("UserId", "RoleId");
+
+					b.HasIndex("RoleId");
+
+					b.ToTable("UserRoles", "Identity");
+				});
+
+			modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<long>", b =>
+				{
+					b.Property<long>("UserId")
+						.HasColumnType("bigint");
+
+					b.Property<string>("LoginProvider")
+						.HasColumnType("text");
+
+					b.Property<string>("Name")
+						.HasColumnType("text");
+
+					b.Property<string>("Value")
+						.HasColumnType("text");
+
+					b.HasKey("UserId", "LoginProvider", "Name");
+
+					b.ToTable("UserTokens", "Identity");
+				});
+
+			modelBuilder.Entity("SeventySix.Identity.ApplicationRole", b =>
 				{
 					b.Property<long>("Id")
 						.ValueGeneratedOnAdd()
@@ -113,33 +134,195 @@ namespace SeventySix.Domains.Identity.Migrations
 
 					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+					b.Property<string>("ConcurrencyStamp")
+						.IsConcurrencyToken()
+						.HasColumnType("text");
+
 					b.Property<DateTime>("CreateDate")
 						.HasColumnType("timestamp with time zone");
 
-					b.Property<DateTime>("ExpiresAt")
-						.HasColumnType("timestamp with time zone");
+					b.Property<string>("Description")
+						.HasColumnType("text");
 
-					b.Property<bool>("IsUsed")
+					b.Property<bool>("IsActive")
 						.HasColumnType("boolean");
 
-					b.Property<string>("TokenHash")
-						.IsRequired()
-						.HasMaxLength(64)
-						.HasColumnType("character varying(64)");
+					b.Property<string>("Name")
+						.HasMaxLength(256)
+						.HasColumnType("character varying(256)");
 
-					b.Property<long>("UserId")
-						.HasColumnType("bigint");
+					b.Property<string>("NormalizedName")
+						.HasMaxLength(256)
+						.HasColumnType("character varying(256)");
 
 					b.HasKey("Id");
 
-					b.HasIndex("TokenHash")
+					b.HasIndex("NormalizedName")
 						.IsUnique()
-						.HasDatabaseName("IX_PasswordResetTokens_TokenHash");
+						.HasDatabaseName("RoleNameIndex");
 
-					b.HasIndex("UserId")
-						.HasDatabaseName("IX_PasswordResetTokens_UserId");
+					b.ToTable("Roles", "Identity");
 
-					b.ToTable("PasswordResetTokens", "Identity");
+					b.HasData(
+						new
+						{
+							Id = 1L,
+							ConcurrencyStamp = "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+							CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+							Description = "Standard user access",
+							IsActive = true,
+							Name = "User",
+							NormalizedName = "USER"
+						},
+						new
+						{
+							Id = 2L,
+							ConcurrencyStamp = "b2c3d4e5-f678-9012-bcde-f12345678901",
+							CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+							Description = "Access to developer tools and APIs",
+							IsActive = true,
+							Name = "Developer",
+							NormalizedName = "DEVELOPER"
+						},
+						new
+						{
+							Id = 3L,
+							ConcurrencyStamp = "c3d4e5f6-7890-1234-cdef-123456789012",
+							CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+							Description = "Full administrative access",
+							IsActive = true,
+							Name = "Admin",
+							NormalizedName = "ADMIN"
+						});
+				});
+
+			modelBuilder.Entity("SeventySix.Identity.ApplicationUser", b =>
+				{
+					b.Property<long>("Id")
+						.ValueGeneratedOnAdd()
+						.HasColumnType("bigint");
+
+					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+					b.Property<int>("AccessFailedCount")
+						.HasColumnType("integer");
+
+					b.Property<string>("ConcurrencyStamp")
+						.IsConcurrencyToken()
+						.HasColumnType("text");
+
+					b.Property<DateTime>("CreateDate")
+						.HasColumnType("timestamp with time zone");
+
+					b.Property<string>("CreatedBy")
+						.IsRequired()
+						.HasMaxLength(100)
+						.HasColumnType("character varying(100)");
+
+					b.Property<DateTime?>("DeletedAt")
+						.HasColumnType("timestamp with time zone");
+
+					b.Property<string>("DeletedBy")
+						.HasMaxLength(100)
+						.HasColumnType("character varying(100)");
+
+					b.Property<string>("Email")
+						.HasMaxLength(256)
+						.HasColumnType("character varying(256)");
+
+					b.Property<bool>("EmailConfirmed")
+						.HasColumnType("boolean");
+
+					b.Property<string>("FullName")
+						.HasMaxLength(100)
+						.HasColumnType("character varying(100)");
+
+					b.Property<bool>("IsActive")
+						.HasColumnType("boolean");
+
+					b.Property<bool>("IsDeleted")
+						.HasColumnType("boolean");
+
+					b.Property<DateTime?>("LastLoginAt")
+						.HasColumnType("timestamp with time zone");
+
+					b.Property<string>("LastLoginIp")
+						.HasMaxLength(45)
+						.HasColumnType("character varying(45)");
+
+					b.Property<bool>("LockoutEnabled")
+						.HasColumnType("boolean");
+
+					b.Property<DateTimeOffset?>("LockoutEnd")
+						.HasColumnType("timestamp with time zone");
+
+					b.Property<string>("ModifiedBy")
+						.IsRequired()
+						.HasMaxLength(100)
+						.HasColumnType("character varying(100)");
+
+					b.Property<DateTime?>("ModifyDate")
+						.HasColumnType("timestamp with time zone");
+
+					b.Property<bool>("NeedsPendingEmail")
+						.HasColumnType("boolean");
+
+					b.Property<string>("NormalizedEmail")
+						.HasMaxLength(256)
+						.HasColumnType("character varying(256)");
+
+					b.Property<string>("NormalizedUserName")
+						.HasMaxLength(256)
+						.HasColumnType("character varying(256)");
+
+					b.Property<string>("PasswordHash")
+						.HasColumnType("text");
+
+					b.Property<string>("PhoneNumber")
+						.HasColumnType("text");
+
+					b.Property<bool>("PhoneNumberConfirmed")
+						.HasColumnType("boolean");
+
+					b.Property<string>("Preferences")
+						.HasColumnType("text");
+
+					b.Property<bool>("RequiresPasswordChange")
+						.ValueGeneratedOnAdd()
+						.HasColumnType("boolean")
+						.HasDefaultValue(false);
+
+					b.Property<uint?>("RowVersion")
+						.IsConcurrencyToken()
+						.ValueGeneratedOnAddOrUpdate()
+						.HasColumnType("xid")
+						.HasColumnName("xmin");
+
+					b.Property<string>("SecurityStamp")
+						.HasColumnType("text");
+
+					b.Property<bool>("TwoFactorEnabled")
+						.HasColumnType("boolean");
+
+					b.Property<string>("UserName")
+						.HasMaxLength(256)
+						.HasColumnType("character varying(256)");
+
+					b.HasKey("Id");
+
+					b.HasIndex("Email")
+						.IsUnique();
+
+					b.HasIndex("IsDeleted");
+
+					b.HasIndex("NormalizedEmail")
+						.HasDatabaseName("EmailIndex");
+
+					b.HasIndex("NormalizedUserName")
+						.IsUnique()
+						.HasDatabaseName("UserNameIndex");
+
+					b.ToTable("Users", "Identity");
 				});
 
 			modelBuilder.Entity("SeventySix.Identity.PermissionRequest", b =>
@@ -236,259 +419,51 @@ namespace SeventySix.Domains.Identity.Migrations
 					b.ToTable("RefreshTokens", "Identity");
 				});
 
-			modelBuilder.Entity("SeventySix.Identity.SecurityRole", b =>
+			modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
 				{
-					b.Property<long>("Id")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("bigint");
-
-					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-					b.Property<DateTime>("CreateDate")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("timestamp with time zone")
-						.HasDefaultValueSql("NOW()");
-
-					b.Property<string>("Description")
-						.HasMaxLength(256)
-						.HasColumnType("character varying(256)");
-
-					b.Property<bool>("IsActive")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("boolean")
-						.HasDefaultValue(true);
-
-					b.Property<string>("Name")
-						.IsRequired()
-						.HasMaxLength(50)
-						.HasColumnType("character varying(50)");
-
-					b.HasKey("Id");
-
-					b.HasIndex("Name")
-						.IsUnique()
-						.HasDatabaseName("IX_SecurityRoles_Name");
-
-					b.ToTable("SecurityRoles", "Identity");
-
-					b.HasData(
-						new
-						{
-							Id = 1L,
-							CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-							Description = "Standard user access",
-							IsActive = true,
-							Name = "User"
-						},
-						new
-						{
-							Id = 2L,
-							CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-							Description = "Access to developer tools and APIs",
-							IsActive = true,
-							Name = "Developer"
-						},
-						new
-						{
-							Id = 3L,
-							CreateDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-							Description = "Full administrative access",
-							IsActive = true,
-							Name = "Admin"
-						});
+					b.HasOne("SeventySix.Identity.ApplicationRole", null)
+						.WithMany()
+						.HasForeignKey("RoleId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired();
 				});
 
-			modelBuilder.Entity("SeventySix.Identity.User", b =>
+			modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<long>", b =>
 				{
-					b.Property<long>("Id")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("bigint");
-
-					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-					b.Property<DateTime>("CreateDate")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("timestamp with time zone")
-						.HasColumnName("CreatedAt")
-						.HasDefaultValueSql("NOW()");
-
-					b.Property<string>("CreatedBy")
-						.IsRequired()
-						.ValueGeneratedOnAdd()
-						.HasMaxLength(100)
-						.HasColumnType("character varying(100)")
-						.HasDefaultValue("System");
-
-					b.Property<DateTime?>("DeletedAt")
-						.HasColumnType("timestamp with time zone");
-
-					b.Property<string>("DeletedBy")
-						.HasMaxLength(100)
-						.HasColumnType("character varying(100)");
-
-					b.Property<string>("Email")
-						.IsRequired()
-						.HasMaxLength(255)
-						.HasColumnType("character varying(255)");
-
-					b.Property<int>("FailedLoginCount")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("integer")
-						.HasDefaultValue(0);
-
-					b.Property<string>("FullName")
-						.HasMaxLength(100)
-						.HasColumnType("character varying(100)");
-
-					b.Property<bool>("IsActive")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("boolean")
-						.HasDefaultValue(true);
-
-					b.Property<bool>("IsDeleted")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("boolean")
-						.HasDefaultValue(false);
-
-					b.Property<DateTime?>("LastLoginAt")
-						.HasColumnType("timestamp with time zone");
-
-					b.Property<string>("LastLoginIp")
-						.HasMaxLength(45)
-						.HasColumnType("character varying(45)");
-
-					b.Property<DateTime?>("LockoutEndUtc")
-						.HasColumnType("timestamp with time zone");
-
-					b.Property<string>("ModifiedBy")
-						.IsRequired()
-						.ValueGeneratedOnAdd()
-						.HasMaxLength(100)
-						.HasColumnType("character varying(100)")
-						.HasDefaultValue("System");
-
-					b.Property<DateTime?>("ModifyDate")
-						.HasColumnType("timestamp with time zone")
-						.HasColumnName("ModifiedAt");
-
-					b.Property<bool>("NeedsPendingEmail")
-						.HasColumnType("boolean");
-
-					b.Property<string>("Preferences")
-						.HasColumnType("jsonb");
-
-					b.Property<uint?>("RowVersion")
-						.IsConcurrencyToken()
-						.ValueGeneratedOnAddOrUpdate()
-						.HasColumnType("xid")
-						.HasColumnName("xmin");
-
-					b.Property<string>("Username")
-						.IsRequired()
-						.HasMaxLength(50)
-						.HasColumnType("character varying(50)");
-
-					b.HasKey("Id");
-
-					b.HasIndex("CreateDate")
-						.HasDatabaseName("IX_Users_CreateDate");
-
-					b.HasIndex("Email")
-						.IsUnique()
-						.HasDatabaseName("IX_Users_Email")
-						.HasFilter("\"IsDeleted\" = false");
-
-					b.HasIndex("IsDeleted")
-						.HasDatabaseName("IX_Users_IsDeleted");
-
-					b.HasIndex("Username")
-						.IsUnique()
-						.HasDatabaseName("IX_Users_Username")
-						.HasFilter("\"IsDeleted\" = false");
-
-					b.HasIndex("IsActive", "CreateDate")
-						.HasDatabaseName("IX_Users_IsActive_CreateDate");
-
-					b.ToTable("Users", "Identity");
-				});
-
-			modelBuilder.Entity("SeventySix.Identity.UserCredential", b =>
-				{
-					b.Property<long>("UserId")
-						.HasColumnType("bigint");
-
-					b.Property<DateTime>("CreateDate")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("timestamp with time zone")
-						.HasDefaultValueSql("NOW()");
-
-					b.Property<DateTime?>("PasswordChangedAt")
-						.HasColumnType("timestamp with time zone");
-
-					b.Property<string>("PasswordHash")
-						.IsRequired()
-						.HasMaxLength(150)
-						.HasColumnType("character varying(150)");
-
-					b.HasKey("UserId");
-
-					b.ToTable("UserCredentials", "Identity");
-				});
-
-			modelBuilder.Entity("SeventySix.Identity.UserRole", b =>
-				{
-					b.Property<long>("Id")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("bigint");
-
-					NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-					b.Property<DateTime>("CreateDate")
-						.ValueGeneratedOnAdd()
-						.HasColumnType("timestamp with time zone")
-						.HasDefaultValueSql("NOW()");
-
-					b.Property<string>("CreatedBy")
-						.HasMaxLength(256)
-						.HasColumnType("character varying(256)");
-
-					b.Property<string>("ModifiedBy")
-						.HasMaxLength(256)
-						.HasColumnType("character varying(256)");
-
-					b.Property<DateTime?>("ModifyDate")
-						.HasColumnType("timestamp with time zone");
-
-					b.Property<long>("RoleId")
-						.HasColumnType("bigint");
-
-					b.Property<long>("UserId")
-						.HasColumnType("bigint");
-
-					b.HasKey("Id");
-
-					b.HasIndex("RoleId")
-						.HasDatabaseName("IX_UserRoles_RoleId");
-
-					b.HasIndex("UserId", "RoleId")
-						.IsUnique()
-						.HasDatabaseName("IX_UserRoles_UserId_RoleId");
-
-					b.ToTable("UserRoles", "Identity");
-				});
-
-			modelBuilder.Entity("SeventySix.Identity.ExternalLogin", b =>
-				{
-					b.HasOne("SeventySix.Identity.User", null)
+					b.HasOne("SeventySix.Identity.ApplicationUser", null)
 						.WithMany()
 						.HasForeignKey("UserId")
 						.OnDelete(DeleteBehavior.Cascade)
 						.IsRequired();
 				});
 
-			modelBuilder.Entity("SeventySix.Identity.PasswordResetToken", b =>
+			modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<long>", b =>
 				{
-					b.HasOne("SeventySix.Identity.User", null)
+					b.HasOne("SeventySix.Identity.ApplicationUser", null)
+						.WithMany()
+						.HasForeignKey("UserId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired();
+				});
+
+			modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<long>", b =>
+				{
+					b.HasOne("SeventySix.Identity.ApplicationRole", null)
+						.WithMany()
+						.HasForeignKey("RoleId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired();
+
+					b.HasOne("SeventySix.Identity.ApplicationUser", null)
+						.WithMany()
+						.HasForeignKey("UserId")
+						.OnDelete(DeleteBehavior.Cascade)
+						.IsRequired();
+				});
+
+			modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<long>", b =>
+				{
+					b.HasOne("SeventySix.Identity.ApplicationUser", null)
 						.WithMany()
 						.HasForeignKey("UserId")
 						.OnDelete(DeleteBehavior.Cascade)
@@ -497,13 +472,13 @@ namespace SeventySix.Domains.Identity.Migrations
 
 			modelBuilder.Entity("SeventySix.Identity.PermissionRequest", b =>
 				{
-					b.HasOne("SeventySix.Identity.SecurityRole", "RequestedRole")
+					b.HasOne("SeventySix.Identity.ApplicationRole", "RequestedRole")
 						.WithMany()
 						.HasForeignKey("RequestedRoleId")
 						.OnDelete(DeleteBehavior.Restrict)
 						.IsRequired();
 
-					b.HasOne("SeventySix.Identity.User", "User")
+					b.HasOne("SeventySix.Identity.ApplicationUser", "User")
 						.WithMany()
 						.HasForeignKey("UserId")
 						.OnDelete(DeleteBehavior.Cascade)
@@ -516,37 +491,11 @@ namespace SeventySix.Domains.Identity.Migrations
 
 			modelBuilder.Entity("SeventySix.Identity.RefreshToken", b =>
 				{
-					b.HasOne("SeventySix.Identity.User", null)
+					b.HasOne("SeventySix.Identity.ApplicationUser", null)
 						.WithMany()
 						.HasForeignKey("UserId")
 						.OnDelete(DeleteBehavior.Cascade)
 						.IsRequired();
-				});
-
-			modelBuilder.Entity("SeventySix.Identity.UserCredential", b =>
-				{
-					b.HasOne("SeventySix.Identity.User", null)
-						.WithOne()
-						.HasForeignKey("SeventySix.Identity.UserCredential", "UserId")
-						.OnDelete(DeleteBehavior.Cascade)
-						.IsRequired();
-				});
-
-			modelBuilder.Entity("SeventySix.Identity.UserRole", b =>
-				{
-					b.HasOne("SeventySix.Identity.SecurityRole", "Role")
-						.WithMany()
-						.HasForeignKey("RoleId")
-						.OnDelete(DeleteBehavior.Restrict)
-						.IsRequired();
-
-					b.HasOne("SeventySix.Identity.User", null)
-						.WithMany()
-						.HasForeignKey("UserId")
-						.OnDelete(DeleteBehavior.Cascade)
-						.IsRequired();
-
-					b.Navigation("Role");
 				});
 #pragma warning restore 612, 618
 		}

@@ -65,14 +65,17 @@
 	}
 }
 
-.btn-github {
-	background: #24292f;
-	border-color: #24292f;
+.github-button {
+	--github-bg: #24292f;
+	--github-bg-hover: #32383f;
+
+	background: var(--github-bg);
+	border-color: var(--github-bg);
 	color: #fff;
 
 	&:hover:not(:disabled) {
-		background: #32383f;
-		border-color: #32383f;
+		background: var(--github-bg-hover);
+		border-color: var(--github-bg-hover);
 	}
 }
 
@@ -180,25 +183,6 @@
 	}
 }
 
-.btn-primary {
+.submit-button {
 	width: 100%;
-	padding: vars.$spacing-md vars.$spacing-lg;
-	border: none;
-	border-radius: 0.5rem;
-	background: var(--mat-sys-primary);
-	color: var(--mat-sys-on-primary);
-	font-size: 0.875rem;
-	font-weight: 500;
-	cursor: pointer;
-	transition: background-color 0.2s;
-
-	&:hover:not(:disabled) {
-		background: var(--mat-sys-primary-container);
-		color: var(--mat-sys-on-primary-container);
-	}
-
-	&:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
 }

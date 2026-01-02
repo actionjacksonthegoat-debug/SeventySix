@@ -86,7 +86,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 
 		// FK relationship to User - cascade delete tokens when user is deleted
 		builder
-			.HasOne<User>()
+			.HasOne<ApplicationUser>()
 			.WithMany()
 			.HasForeignKey(refreshToken => refreshToken.UserId)
 			.OnDelete(DeleteBehavior.Cascade);

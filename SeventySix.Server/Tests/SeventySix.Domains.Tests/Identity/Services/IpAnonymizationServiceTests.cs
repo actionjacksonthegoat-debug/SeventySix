@@ -85,10 +85,10 @@ public class IpAnonymizationServiceTests : IDisposable
 			this.TimeProvider.GetUtcNow().UtcDateTime;
 
 		// User with login 100 days ago (should be anonymized - older than 90 days)
-		User oldLoginUser =
+		ApplicationUser oldLoginUser =
 			new()
 			{
-				Username = "olduser",
+				UserName = "olduser",
 				Email = "old@example.com",
 				LastLoginAt =
 					now.AddDays(-100),
@@ -99,10 +99,10 @@ public class IpAnonymizationServiceTests : IDisposable
 			};
 
 		// User with login 60 days ago (should NOT be anonymized - within 90 days)
-		User recentLoginUser =
+		ApplicationUser recentLoginUser =
 			new()
 			{
-				Username = "recentuser",
+				UserName = "recentuser",
 				Email = "recent@example.com",
 				LastLoginAt =
 					now.AddDays(-60),
@@ -113,10 +113,10 @@ public class IpAnonymizationServiceTests : IDisposable
 			};
 
 		// User with login today (should NOT be anonymized)
-		User activeUser =
+		ApplicationUser activeUser =
 			new()
 			{
-				Username = "activeuser",
+				UserName = "activeuser",
 				Email = "active@example.com",
 				LastLoginAt = now,
 				LastLoginIp = "192.168.1.300",
@@ -126,10 +126,10 @@ public class IpAnonymizationServiceTests : IDisposable
 			};
 
 		// User with null IP (should be ignored)
-		User noIpUser =
+		ApplicationUser noIpUser =
 			new()
 			{
-				Username = "noipuser",
+				UserName = "noipuser",
 				Email = "noip@example.com",
 				LastLoginAt =
 					now.AddDays(-100),
@@ -151,7 +151,7 @@ public class IpAnonymizationServiceTests : IDisposable
 
 		// Assert - old user IP should be anonymized (set to null)
 		// Note: Must use AsNoTracking() because ExecuteUpdateAsync updates DB directly without updating tracked entities
-		User? oldUserAfter =
+		ApplicationUser? oldUserAfter =
 			await this.DbContext
 				.Users
 				.AsNoTracking()
@@ -160,7 +160,7 @@ public class IpAnonymizationServiceTests : IDisposable
 		oldUserAfter.LastLoginIp.ShouldBeNull();
 
 		// Assert - recent user IP should remain
-		User? recentUserAfter =
+		ApplicationUser? recentUserAfter =
 			await this.DbContext
 				.Users
 				.AsNoTracking()
@@ -169,7 +169,7 @@ public class IpAnonymizationServiceTests : IDisposable
 		recentUserAfter.LastLoginIp.ShouldBe("192.168.1.200");
 
 		// Assert - active user IP should remain
-		User? activeUserAfter =
+		ApplicationUser? activeUserAfter =
 			await this.DbContext
 				.Users
 				.AsNoTracking()
@@ -185,10 +185,10 @@ public class IpAnonymizationServiceTests : IDisposable
 		DateTime now =
 			this.TimeProvider.GetUtcNow().UtcDateTime;
 
-		User boundaryUser =
+		ApplicationUser boundaryUser =
 			new()
 			{
-				Username = "boundaryuser",
+				UserName = "boundaryuser",
 				Email = "boundary@example.com",
 				LastLoginAt =
 					now.AddDays(-90),
@@ -205,7 +205,7 @@ public class IpAnonymizationServiceTests : IDisposable
 		await this.AnonymizationService.AnonymizeIpAddressesAsync();
 
 		// Assert - exactly at cutoff should be anonymized (<= cutoff)
-		User? userAfter =
+		ApplicationUser? userAfter =
 			await this.DbContext
 				.Users
 				.AsNoTracking()
@@ -221,10 +221,10 @@ public class IpAnonymizationServiceTests : IDisposable
 		DateTime now =
 			this.TimeProvider.GetUtcNow().UtcDateTime;
 
-		User safeUser =
+		ApplicationUser safeUser =
 			new()
 			{
-				Username = "safeuser",
+				UserName = "safeuser",
 				Email = "safe@example.com",
 				LastLoginAt =
 					now.AddDays(-89),
@@ -241,7 +241,7 @@ public class IpAnonymizationServiceTests : IDisposable
 		await this.AnonymizationService.AnonymizeIpAddressesAsync();
 
 		// Assert - should NOT be anonymized (within retention)
-		User? userAfter =
+		ApplicationUser? userAfter =
 			await this.DbContext
 				.Users
 				.AsNoTracking()
@@ -257,10 +257,10 @@ public class IpAnonymizationServiceTests : IDisposable
 		DateTime now =
 			this.TimeProvider.GetUtcNow().UtcDateTime;
 
-		User oldUser =
+		ApplicationUser oldUser =
 			new()
 			{
-				Username = "loguser",
+				UserName = "loguser",
 				Email = "log@example.com",
 				LastLoginAt =
 					now.AddDays(-100),
@@ -292,10 +292,10 @@ public class IpAnonymizationServiceTests : IDisposable
 		DateTime now =
 			this.TimeProvider.GetUtcNow().UtcDateTime;
 
-		User recentUser =
+		ApplicationUser recentUser =
 			new()
 			{
-				Username = "nologuser",
+				UserName = "nologuser",
 				Email = "nolog@example.com",
 				LastLoginAt =
 					now.AddDays(-30),

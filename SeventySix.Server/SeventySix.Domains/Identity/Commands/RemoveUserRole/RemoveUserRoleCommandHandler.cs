@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -17,12 +19,28 @@ public static class RemoveUserRoleCommandHandler
 	/// </returns>
 	public static async Task<bool> HandleAsync(
 		RemoveUserRoleCommand command,
-		IUserCommandRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		return await repository.RemoveRoleAsync(
-			command.UserId,
-			command.Role,
-			cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(command.UserId.ToString());
+
+		if (user is null)
+		{
+			return false;
+		}
+
+		IList<string> existingRoles =
+			await userManager.GetRolesAsync(user);
+
+		if (!existingRoles.Contains(command.Role))
+		{
+			return false;
+		}
+
+		IdentityResult result =
+			await userManager.RemoveFromRoleAsync(user, command.Role);
+
+		return result.Succeeded;
 	}
 }

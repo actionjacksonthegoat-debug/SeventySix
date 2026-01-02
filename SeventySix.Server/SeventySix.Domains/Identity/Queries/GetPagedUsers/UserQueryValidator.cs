@@ -15,11 +15,11 @@ namespace SeventySix.Identity.Queries.GetPagedUsers;
 /// - Page/PageSize validation
 /// - SearchTerm validation (min/max length)
 /// - Date range validation (StartDate &lt;= EndDate, max 90 days)
-/// - SortBy validation (validates against User entity properties via reflection)
+/// - SortBy validation (validates against ApplicationUser entity properties via reflection)
 ///
-/// No additional User-specific validation needed - IsActive and IncludeDeleted are type-safe booleans.
+/// No additional ApplicationUser-specific validation needed - IsActive and IncludeDeleted are type-safe booleans.
 /// </remarks>
-public class UserQueryValidator : BaseQueryValidator<UserQueryRequest, User>
+public class UserQueryValidator : BaseQueryValidator<UserQueryRequest, ApplicationUser>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserQueryValidator"/> class.
