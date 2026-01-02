@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -11,8 +14,8 @@ public static class CheckUsernameExistsQueryHandler
 	/// <param name="query">
 	/// The query containing the username and optional exclusion user id.
 	/// </param>
-	/// <param name="repository">
-	/// Repository used to check username existence.
+	/// <param name="userManager">
+	/// User manager used to check username existence.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -22,12 +25,22 @@ public static class CheckUsernameExistsQueryHandler
 	/// </returns>
 	public static async Task<bool> HandleAsync(
 		CheckUsernameExistsQuery query,
-		IUserQueryRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		return await repository.UsernameExistsAsync(
-			query.Username,
-			query.ExcludeUserId,
-			cancellationToken);
+		IQueryable<ApplicationUser> usersQuery =
+			userManager.Users
+				.AsNoTracking()
+				.Where(user =>
+					user.UserName != null
+					&& user.UserName.ToLower() == query.Username.ToLower());
+
+		if (query.ExcludeUserId.HasValue)
+		{
+			usersQuery =
+				usersQuery.Where(user => user.Id != query.ExcludeUserId.Value);
+		}
+
+		return await usersQuery.AnyAsync(cancellationToken);
 	}
 }

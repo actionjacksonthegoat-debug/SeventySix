@@ -4,11 +4,18 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using SeventySix.ApiTracking;
 using SeventySix.Identity;
 using SeventySix.Logging;
 using Xunit;
+using IdentityDbContext = SeventySix.Identity.IdentityDbContext;
+using Microsoft.Extensions.Logging;
 
 namespace SeventySix.TestUtilities.TestBases;
 
@@ -88,6 +95,93 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 		ServiceProvider serviceProvider =
 			services.BuildServiceProvider();
 		return serviceProvider.CreateScope();
+	}
+
+	/// <summary>
+	/// Creates a configured <see cref="UserManager{ApplicationUser}"/> for tests.
+	/// Registers Identity with EF stores and default token providers so token generation
+	/// and email confirmation work the same as in production.
+	/// </summary>
+	/// <param name="context">
+	/// An <see cref="IdentityDbContext"/> instance.
+	/// </param>
+	/// <returns>
+	/// A configured <see cref="UserManager{ApplicationUser}"/>.
+	/// </returns>
+	protected UserManager<ApplicationUser> CreateUserManager(IdentityDbContext context)
+	{
+		if (context == null)
+		{
+			throw new ArgumentNullException(nameof(context));
+		}
+
+		// Build a minimal service provider used by UserManager for token providers and data protection
+		ServiceCollection services = new();
+		services.AddLogging();
+
+		// Use simple DataProtection provider for token generation
+		services.AddSingleton<IDataProtectionProvider>(_ => DataProtectionProvider.Create("SeventySix.Tests"));
+		services.AddOptions();
+		services.Configure<DataProtectionTokenProviderOptions>(opts => { });
+
+		// Register the data protector token provider so tokens can be generated/validated
+		services.AddTransient<DataProtectorTokenProvider<ApplicationUser>>();
+		services.AddTransient<IUserTwoFactorTokenProvider<ApplicationUser>>(
+			serviceProvider =>
+				serviceProvider.GetRequiredService<DataProtectorTokenProvider<ApplicationUser>>());
+
+		ServiceProvider serviceProvider =
+			services.BuildServiceProvider();
+
+		IUserStore<ApplicationUser> store =
+			new UserStore<ApplicationUser, ApplicationRole, IdentityDbContext, long>(context);
+
+		IOptions<IdentityOptions> options =
+			Options.Create(new IdentityOptions
+			{
+				User =
+					{
+						RequireUniqueEmail = true
+					}
+			});
+
+		// Ensure the default token provider is mapped so UserManager can resolve it by name
+		options.Value.Tokens.ProviderMap[TokenOptions.DefaultProvider] =
+			new TokenProviderDescriptor(typeof(DataProtectorTokenProvider<ApplicationUser>));
+		options.Value.Tokens.EmailConfirmationTokenProvider =
+			TokenOptions.DefaultProvider;
+
+		IPasswordHasher<ApplicationUser> passwordHasher =
+			new PasswordHasher<ApplicationUser>();
+
+		IList<IUserValidator<ApplicationUser>> userValidators =
+			[
+				new UserValidator<ApplicationUser>()
+			];
+
+		IList<IPasswordValidator<ApplicationUser>> passwordValidators =
+			new List<IPasswordValidator<ApplicationUser>>
+			{
+				new PasswordValidator<ApplicationUser>()
+			};
+
+		ILookupNormalizer keyNormalizer =
+			new UpperInvariantLookupNormalizer();
+
+		IdentityErrorDescriber errors = new();
+		ILogger<UserManager<ApplicationUser>> logger =
+			NullLogger<UserManager<ApplicationUser>>.Instance;
+
+		return new UserManager<ApplicationUser>(
+			store,
+			options,
+			passwordHasher,
+			userValidators,
+			passwordValidators,
+			keyNormalizer,
+			errors,
+			serviceProvider,
+			logger);
 	}
 
 	/// <summary>

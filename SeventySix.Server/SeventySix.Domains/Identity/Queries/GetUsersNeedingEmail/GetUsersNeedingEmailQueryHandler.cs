@@ -2,6 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -15,8 +18,8 @@ public static class GetUsersNeedingEmailQueryHandler
 	/// <param name="query">
 	/// The query.
 	/// </param>
-	/// <param name="repository">
-	/// User repository.
+	/// <param name="userManager">
+	/// User manager.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -26,9 +29,15 @@ public static class GetUsersNeedingEmailQueryHandler
 	/// </returns>
 	public static async Task<IEnumerable<UserDto>> HandleAsync(
 		GetUsersNeedingEmailQuery query,
-		IUserQueryRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		return await repository.GetUsersNeedingEmailAsync(cancellationToken);
+		List<ApplicationUser> users =
+			await userManager.Users
+				.AsNoTracking()
+				.Where(user => user.NeedsPendingEmail)
+				.ToListAsync(cancellationToken);
+
+		return users.ToDto();
 	}
 }

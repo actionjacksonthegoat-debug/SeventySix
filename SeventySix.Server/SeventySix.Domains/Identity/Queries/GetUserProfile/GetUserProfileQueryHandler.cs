@@ -2,6 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -15,8 +18,8 @@ public static class GetUserProfileQueryHandler
 	/// <param name="query">
 	/// The query.
 	/// </param>
-	/// <param name="repository">
-	/// User repository.
+	/// <param name="userManager">
+	/// User manager.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -26,11 +29,34 @@ public static class GetUserProfileQueryHandler
 	/// </returns>
 	public static async Task<UserProfileDto?> HandleAsync(
 		GetUserProfileQuery query,
-		IUserQueryRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		return await repository.GetUserProfileAsync(
-			query.UserId,
-			cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(query.UserId.ToString());
+
+		if (user is null)
+		{
+			return null;
+		}
+
+		IList<string> roles =
+			await userManager.GetRolesAsync(user);
+
+		IList<UserLoginInfo> logins =
+			await userManager.GetLoginsAsync(user);
+
+		bool hasPassword =
+			await userManager.HasPasswordAsync(user);
+
+		return new UserProfileDto(
+			user.Id,
+			user.UserName ?? string.Empty,
+			user.Email ?? string.Empty,
+			user.FullName,
+			roles.ToList(),
+			hasPassword,
+			logins.Select(login => login.LoginProvider).ToList(),
+			user.LastLoginAt);
 	}
 }

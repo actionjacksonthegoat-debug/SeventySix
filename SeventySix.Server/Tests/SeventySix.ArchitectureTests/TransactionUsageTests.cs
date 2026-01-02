@@ -16,7 +16,7 @@ namespace SeventySix.ArchitectureTests;
 public class TransactionUsageTests
 {
 	private readonly Assembly Assembly =
-		typeof(SeventySix.Identity.User).Assembly;
+		typeof(SeventySix.Identity.ApplicationUser).Assembly;
 
 	[Fact]
 	public void Services_Should_Not_Wrap_Single_Repository_Calls_In_Transactions()

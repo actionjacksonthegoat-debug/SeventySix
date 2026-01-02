@@ -2,15 +2,19 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Security.Cryptography;
+using Microsoft.AspNetCore.Identity;
 using SeventySix.ElectronicNotifications.Emails;
-using SeventySix.Shared.Extensions;
+using SeventySix.Identity.Constants;
 
 namespace SeventySix.Identity;
 
 /// <summary>
 /// Handler for initiating user registration.
 /// </summary>
+/// <remarks>
+/// Uses ASP.NET Core Identity's token providers for email verification.
+/// Creates a temporary unconfirmed user and sends email confirmation token.
+/// </remarks>
 public static class InitiateRegistrationCommandHandler
 {
 	/// <summary>
@@ -19,11 +23,8 @@ public static class InitiateRegistrationCommandHandler
 	/// <param name="request">
 	/// The initiate registration request.
 	/// </param>
-	/// <param name="userQueryRepository">
-	/// User query repository.
-	/// </param>
-	/// <param name="emailVerificationTokenRepository">
-	/// Email verification token repository.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
 	/// <param name="emailService">
 	/// Email service.
@@ -39,60 +40,56 @@ public static class InitiateRegistrationCommandHandler
 	/// </returns>
 	/// <remarks>
 	/// Always succeeds to prevent email enumeration.
+	/// If email exists, silently returns without action.
 	/// </remarks>
 	public static async Task HandleAsync(
 		InitiateRegistrationRequest request,
-		IUserQueryRepository repository,
-		IEmailVerificationTokenRepository emailVerificationTokenRepository,
+		UserManager<ApplicationUser> userManager,
 		IEmailService emailService,
 		TimeProvider timeProvider,
 		CancellationToken cancellationToken)
 	{
-		string email = request.Email;
+		string email =
+			request.Email;
 
 		// Check if email is already registered
-		bool emailExists =
-			await repository.EmailExistsAsync(
-				email,
-				excludeId: null,
-				cancellationToken);
+		ApplicationUser? existingUser =
+			await userManager.FindByEmailAsync(email);
 
-		if (emailExists)
+		if (existingUser is not null)
 		{
 			return; // Silent success to prevent enumeration
 		}
 
-		// Invalidate any existing verification tokens for this email
-		await emailVerificationTokenRepository.InvalidateTokensForEmailAsync(
-			email,
-			cancellationToken);
-
-		// Generate new verification token
-		byte[] tokenBytes =
-			RandomNumberGenerator.GetBytes(64);
-		string token =
-			Convert.ToBase64String(tokenBytes);
-
-		string tokenHash =
-			CryptoExtensions.ComputeSha256Hash(token);
-
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		EmailVerificationToken verificationToken =
+		// Create temporary user with unconfirmed email
+		// User will complete registration with password after clicking link
+		ApplicationUser temporaryUser =
 			new()
 			{
+				UserName = email, // Temporary username, will be set properly in CompleteRegistration
 				Email = email,
-				TokenHash = tokenHash,
-				ExpiresAt =
-					now.AddHours(24),
+				IsActive = false, // Inactive until registration completes
+				EmailConfirmed = false,
 				CreateDate = now,
-				IsUsed = false,
+				CreatedBy =
+					AuditConstants.SystemUser,
 			};
 
-		await emailVerificationTokenRepository.CreateAsync(
-			verificationToken,
-			cancellationToken);
+		IdentityResult createResult =
+			await userManager.CreateAsync(temporaryUser);
+
+		if (!createResult.Succeeded)
+		{
+			// Could be a race condition or validation error - silently return
+			return;
+		}
+
+		// Generate email confirmation token using Identity's built-in token provider
+		string token =
+			await userManager.GenerateEmailConfirmationTokenAsync(temporaryUser);
 
 		// Send verification email
 		await emailService.SendVerificationEmailAsync(

@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Identity;
@@ -21,22 +22,31 @@ namespace SeventySix.Domains.Tests.Identity.Services;
 public class AuthenticationServiceTests
 {
 	private readonly IAuthRepository AuthRepository;
-	private readonly IUserQueryRepository UserQueryRepository;
 	private readonly ITokenService TokenService;
 	private readonly IOptions<JwtSettings> JwtSettings;
 	private readonly TimeProvider TimeProvider;
+	private readonly UserManager<ApplicationUser> UserManager;
 	private readonly AuthenticationService ServiceUnderTest;
 
 	public AuthenticationServiceTests()
 	{
 		AuthRepository =
 			Substitute.For<IAuthRepository>();
-		UserQueryRepository =
-			Substitute.For<IUserQueryRepository>();
 		TokenService =
 			Substitute.For<ITokenService>();
 		TimeProvider =
 			Substitute.For<TimeProvider>();
+		UserManager =
+			Substitute.For<UserManager<ApplicationUser>>(
+				Substitute.For<IUserStore<ApplicationUser>>(),
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null);
 
 		JwtSettings =
 			Options.Create(
@@ -48,11 +58,11 @@ public class AuthenticationServiceTests
 
 		ServiceUnderTest =
 			new AuthenticationService(
-			AuthRepository,
-			UserQueryRepository,
-			TokenService,
-			JwtSettings,
-			TimeProvider);
+				AuthRepository,
+				TokenService,
+				JwtSettings,
+				TimeProvider,
+				UserManager);
 	}
 
 	/// <summary>
@@ -62,16 +72,16 @@ public class AuthenticationServiceTests
 	public async Task GenerateAuthResultAsync_WithValidUser_ReturnsSuccessWithTokensAsync()
 	{
 		// Arrange
-		User user =
+		ApplicationUser user =
 			new()
 			{
 				Id = 1,
-				Username = "testuser",
+				UserName = "testuser",
 				Email = "test@example.com",
 				FullName = "Test User",
 			};
 
-		string[] roles =
+		IList<string> roles =
 			[RoleConstants.User];
 		string expectedAccessToken = "access_token_123";
 		string expectedRefreshToken = "refresh_token_456";
@@ -79,15 +89,15 @@ public class AuthenticationServiceTests
 		DateTime utcNow =
 			new DateTimeOffset(2025, 12, 9, 10, 0, 0, TimeSpan.Zero).UtcDateTime;
 
-		UserQueryRepository
-			.GetUserRolesAsync(user.Id, Arg.Any<CancellationToken>())
+		UserManager
+			.GetRolesAsync(user)
 			.Returns(roles);
 
 		TokenService
 			.GenerateAccessToken(
 				user.Id,
-				user.Username,
-				Arg.Any<List<string>>())
+				user.UserName!,
+				Arg.Any<IEnumerable<string>>())
 			.Returns(expectedAccessToken);
 
 		TokenService
@@ -134,23 +144,23 @@ public class AuthenticationServiceTests
 	public async Task GenerateAuthResultAsync_WithRememberMe_PassesToTokenServiceAsync()
 	{
 		// Arrange
-		User user =
+		ApplicationUser user =
 			new()
 			{
 				Id = 2,
-				Username = "rememberuser",
+				UserName = "rememberuser",
 				Email = "remember@example.com",
 			};
 
-		UserQueryRepository
-			.GetUserRolesAsync(Arg.Any<long>(), Arg.Any<CancellationToken>())
+		UserManager
+			.GetRolesAsync(Arg.Any<ApplicationUser>())
 			.Returns(Array.Empty<string>());
 
 		TokenService
 			.GenerateAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<List<string>>())
+				Arg.Any<IEnumerable<string>>())
 			.Returns("token");
 
 		TokenService
@@ -188,23 +198,23 @@ public class AuthenticationServiceTests
 	public async Task GenerateAuthResultAsync_WithRequiresPasswordChange_SetsFlagAsync()
 	{
 		// Arrange
-		User user =
+		ApplicationUser user =
 			new()
 			{
 				Id = 3L,
-				Username = "newuser",
+				UserName = "newuser",
 				Email = "new@example.com",
 			};
 
-		UserQueryRepository
-			.GetUserRolesAsync(Arg.Any<long>(), Arg.Any<CancellationToken>())
+		UserManager
+			.GetRolesAsync(Arg.Any<ApplicationUser>())
 			.Returns(Array.Empty<string>());
 
 		TokenService
 			.GenerateAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Any<List<string>>())
+				Arg.Any<IEnumerable<string>>())
 			.Returns("token");
 
 		TokenService
@@ -237,31 +247,31 @@ public class AuthenticationServiceTests
 	public async Task GenerateAuthResultAsync_WithMultipleRoles_IncludesAllRolesAsync()
 	{
 		// Arrange
-		User user =
+		ApplicationUser user =
 			new()
 			{
 				Id = 4,
-				Username = "admin",
+				UserName = "admin",
 				Email = "admin@example.com",
 			};
 
-		string[] roles =
+		IList<string> roles =
 			[
 			RoleConstants.User,
 			RoleConstants.Admin,
 			RoleConstants.Developer,
 		];
 
-		UserQueryRepository
-			.GetUserRolesAsync(user.Id, Arg.Any<CancellationToken>())
+		UserManager
+			.GetRolesAsync(user)
 			.Returns(roles);
 
-		List<string>? capturedRoles = null;
+		IEnumerable<string>? capturedRoles = null;
 		TokenService
 			.GenerateAccessToken(
 				Arg.Any<long>(),
 				Arg.Any<string>(),
-				Arg.Do<List<string>>(roleList => capturedRoles = roleList))
+				Arg.Do<IEnumerable<string>>(roleList => capturedRoles = roleList))
 			.Returns("token");
 
 		TokenService
@@ -284,9 +294,11 @@ public class AuthenticationServiceTests
 
 		// Assert
 		Assert.NotNull(capturedRoles);
-		Assert.Equal(3, capturedRoles.Count);
-		Assert.Contains(RoleConstants.User, capturedRoles);
-		Assert.Contains(RoleConstants.Admin, capturedRoles);
-		Assert.Contains(RoleConstants.Developer, capturedRoles);
+		List<string> roleList =
+			capturedRoles.ToList();
+		Assert.Equal(3, roleList.Count);
+		Assert.Contains(RoleConstants.User, roleList);
+		Assert.Contains(RoleConstants.Admin, roleList);
+		Assert.Contains(RoleConstants.Developer, roleList);
 	}
 }

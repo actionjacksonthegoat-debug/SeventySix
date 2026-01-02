@@ -81,4 +81,16 @@ public record CreateUserRequest
 	/// Allows creating inactive accounts if needed.
 	/// </remarks>
 	public bool IsActive { get; init; } = true;
+
+	/// <summary>
+	/// Gets the identifier of the user creating this account.
+	/// </summary>
+	/// <value>
+	/// A string representing the creating user's identifier, or null for system-created accounts.
+	/// </value>
+	/// <remarks>
+	/// Optional field for audit purposes.
+	/// Set by admin when creating users through the admin panel.
+	/// </remarks>
+	public string? CreatedBy { get; init; }
 }

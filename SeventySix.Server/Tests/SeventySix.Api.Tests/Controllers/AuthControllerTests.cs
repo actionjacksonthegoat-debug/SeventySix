@@ -5,6 +5,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -836,6 +837,7 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		CompleteRegistrationRequest request =
 			new(
 			Token: "invalid-token",
+			Email: "nonexistent@example.com",
 			Username: "newuser",
 			Password: "SecurePass123!");
 
@@ -858,50 +860,62 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 	/// <summary>
 	/// Tests that POST /auth/register/complete creates user with valid token.
 	/// </summary>
+	/// <remarks>
+	/// With ASP.NET Core Identity, we use the full flow:
+	/// 1. InitiateRegistration creates temporary user with email confirmation token
+	/// 2. CompleteRegistration confirms email and activates user
+	/// For this test, we skip the email verification and create user directly.
+	/// </remarks>
 	[Fact]
 	public async Task CompleteRegistrationAsync_ValidToken_ReturnsCreatedAsync()
 	{
-		// Arrange - Create verification token directly
+		// Arrange - Create user with email confirmation token using UserManager
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 		string email =
 			$"newuser_{testId}@example.com";
-		string token =
-			Convert.ToBase64String(
-			RandomNumberGenerator.GetBytes(64));
+		string username =
+			$"newuser_{testId}";
+		string token;
 
 		using (IServiceScope scope =
 			SharedFactory.Services.CreateScope())
 		{
-			IdentityDbContext context =
-				scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+			UserManager<ApplicationUser> userManager =
+				scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 			TimeProvider timeProvider =
 				scope.ServiceProvider.GetRequiredService<TimeProvider>();
 			DateTime now =
 				timeProvider.GetUtcNow().UtcDateTime;
 
-			string tokenHash =
-				SeventySix.Shared.Extensions.CryptoExtensions.ComputeSha256Hash(
-					token);
-
-			context.EmailVerificationTokens.Add(
-				new EmailVerificationToken
+			// Create temporary unconfirmed user (like InitiateRegistration does)
+			ApplicationUser tempUser =
+				new()
 				{
+					UserName =
+						$"temp_{testId}",
 					Email = email,
-					TokenHash = tokenHash,
-					ExpiresAt =
-						now.AddHours(24),
+					EmailConfirmed = false,
+					IsActive = false,
 					CreateDate = now,
-					IsUsed = false,
-				});
+					CreatedBy = "Registration",
+				};
 
-			await context.SaveChangesAsync();
+			IdentityResult createResult =
+				await userManager.CreateAsync(tempUser);
+
+			Assert.True(createResult.Succeeded);
+
+			// Generate email confirmation token
+			token =
+				await userManager.GenerateEmailConfirmationTokenAsync(tempUser);
 		}
 
 		CompleteRegistrationRequest request =
 			new(
 			Token: token,
-			Username: $"newuser_{testId}",
+			Email: email,
+			Username: username,
 			Password: "SecurePass123!");
 
 		// Act

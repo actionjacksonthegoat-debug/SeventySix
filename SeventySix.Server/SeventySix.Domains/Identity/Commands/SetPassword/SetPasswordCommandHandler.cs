@@ -2,8 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using SeventySix.Shared.Extensions;
 using Wolverine;
 
 namespace SeventySix.Identity;
@@ -14,27 +14,18 @@ namespace SeventySix.Identity;
 public static class SetPasswordCommandHandler
 {
 	/// <summary>
-	/// Handles the set password command.
+	/// Handles the set password command using Identity's token-based password reset.
 	/// </summary>
 	/// <param name="command">
 	/// The set password command containing token and new password.
 	/// </param>
-	/// <param name="passwordResetTokenRepository">
-	/// Repository for password reset tokens.
-	/// </param>
-	/// <param name="credentialRepository">
-	/// Repository managing user credentials.
-	/// </param>
-	/// <param name="messageBus">
-	/// Message bus for invoking queries/commands.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for password operations.
 	/// </param>
 	/// <param name="tokenRepository">
 	/// Repository for refresh tokens.
 	/// </param>
-	/// <param name="passwordHasher">
-	/// Service to hash and verify passwords.
-	/// </param>
-	/// <param name="registrationService">
+	/// <param name="authenticationService">
 	/// Service to generate authentication results.
 	/// </param>
 	/// <param name="timeProvider">
@@ -53,12 +44,9 @@ public static class SetPasswordCommandHandler
 	/// <exception cref="InvalidOperationException">Thrown when user not found or inactive.</exception>
 	public static async Task<AuthResult> HandleAsync(
 		SetPasswordCommand command,
-		IPasswordResetTokenRepository passwordResetTokenRepository,
-		ICredentialRepository credentialRepository,
-		IMessageBus messageBus,
+		UserManager<ApplicationUser> userManager,
 		ITokenRepository tokenRepository,
-		IPasswordHasher passwordHasher,
-		RegistrationService registrationService,
+		AuthenticationService authenticationService,
 		TimeProvider timeProvider,
 		ILogger<SetPasswordCommand> logger,
 		CancellationToken cancellationToken)
@@ -66,137 +54,79 @@ public static class SetPasswordCommandHandler
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		string tokenHash =
-			CryptoExtensions.ComputeSha256Hash(
-				command.Request.Token);
+		// Parse the token to extract user ID and actual token
+		// Token format: {userId}:{resetToken}
+		string[] tokenParts =
+			command.Request.Token.Split(':', 2);
 
-		PasswordResetToken? resetToken =
-			await passwordResetTokenRepository.GetByHashAsync(
-				tokenHash,
-				cancellationToken);
-		ValidateResetToken(resetToken, now, logger);
-
-		UserDto user =
-			await GetActiveUserAsync(
-				messageBus,
-				resetToken!.UserId,
-				logger,
-				cancellationToken);
-		await passwordResetTokenRepository.MarkAsUsedAsync(
-			resetToken,
-			cancellationToken);
-
-		await UpdateCredentialAsync(
-			credentialRepository,
-			passwordHasher,
-			user.Id,
-			command.Request.NewPassword,
-			now,
-			cancellationToken);
-		await tokenRepository.RevokeAllUserTokensAsync(
-			user.Id,
-			now,
-			cancellationToken);
-
-		return await registrationService.GenerateAuthResultAsync(
-			user.ToEntity(),
-			command.ClientIp,
-			requiresPasswordChange: false,
-			rememberMe: false,
-			cancellationToken);
-	}
-
-	private static void ValidateResetToken(
-		PasswordResetToken? token,
-		DateTime now,
-		ILogger logger)
-	{
-		if (token is null)
+		if (tokenParts.Length != 2)
 		{
-			logger.LogWarning("Password reset token not found");
+			logger.LogWarning("Invalid password reset token format");
 			throw new ArgumentException(
 				"Invalid or expired password reset token",
 				"Token");
 		}
 
-		if (token.IsUsed)
+		string userIdString =
+			tokenParts[0];
+		string resetToken =
+			tokenParts[1];
+
+		if (!long.TryParse(userIdString, out long userId))
 		{
-			logger.LogWarning(
-				"Password reset token already used for user {UserId}",
-				token.UserId);
+			logger.LogWarning("Invalid user ID in password reset token");
 			throw new ArgumentException(
 				"Invalid or expired password reset token",
 				"Token");
 		}
 
-		if (token.ExpiresAt < now)
-		{
-			logger.LogWarning(
-				"Password reset token expired for user {UserId}",
-				token.UserId);
-			throw new ArgumentException(
-				"Invalid or expired password reset token",
-				"Token");
-		}
-	}
-
-	private static async Task<UserDto> GetActiveUserAsync(
-		IMessageBus messageBus,
-		long userId,
-		ILogger logger,
-		CancellationToken cancellationToken)
-	{
-		UserDto? user =
-			await messageBus.InvokeAsync<UserDto?>(
-				new GetUserByIdQuery(userId),
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(userId.ToString());
 
 		if (user is null || !user.IsActive)
 		{
-			logger.LogError(
-				"User with ID {UserId} not found or inactive",
+			logger.LogWarning(
+				"User with ID {UserId} not found or inactive for password reset",
 				userId);
 			throw new InvalidOperationException(
 				$"User with ID {userId} not found or inactive");
 		}
 
-		return user;
-	}
+		// Use Identity's ResetPasswordAsync with the token
+		IdentityResult result =
+			await userManager.ResetPasswordAsync(
+				user,
+				resetToken,
+				command.Request.NewPassword);
 
-	private static async Task UpdateCredentialAsync(
-		ICredentialRepository credentialRepository,
-		IPasswordHasher passwordHasher,
-		long userId,
-		string newPassword,
-		DateTime now,
-		CancellationToken cancellationToken)
-	{
-		UserCredential? credential =
-			await credentialRepository.GetByUserIdForUpdateAsync(
-				userId,
-				cancellationToken);
-		string passwordHash =
-			passwordHasher.HashPassword(newPassword);
+		if (!result.Succeeded)
+		{
+			if (result.Errors.Any(error =>
+				error.Code == "InvalidToken"))
+			{
+				logger.LogWarning(
+					"Invalid or expired password reset token for user {UserId}",
+					userId);
+				throw new ArgumentException(
+					"Invalid or expired password reset token",
+					"Token");
+			}
 
-		if (credential is null)
-		{
-			await credentialRepository.CreateAsync(
-				new UserCredential
-				{
-					UserId = userId,
-					PasswordHash = passwordHash,
-					CreateDate = now,
-					PasswordChangedAt = now,
-				},
-				cancellationToken);
+			throw new InvalidOperationException(
+				string.Join(", ", result.Errors.Select(error => error.Description)));
 		}
-		else
-		{
-			credential.PasswordHash = passwordHash;
-			credential.PasswordChangedAt = now;
-			await credentialRepository.UpdateAsync(
-				credential,
-				cancellationToken);
-		}
+
+		// Revoke all existing refresh tokens
+		await tokenRepository.RevokeAllUserTokensAsync(
+			user.Id,
+			now,
+			cancellationToken);
+
+		return await authenticationService.GenerateAuthResultAsync(
+			user,
+			command.ClientIp,
+			requiresPasswordChange: false,
+			rememberMe: false,
+			cancellationToken);
 	}
 }

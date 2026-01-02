@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.ElectronicNotifications.Emails;
@@ -24,11 +25,11 @@ public static class CreateUserCommandHandler
 	/// <param name="messageBus">
 	/// Message bus for querying users.
 	/// </param>
-	/// <param name="userQueryRepository">
-	/// User query repository.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
-	/// <param name="userCommandRepository">
-	/// User command repository.
+	/// <param name="timeProvider">
+	/// Time provider for current time values.
 	/// </param>
 	/// <param name="logger">
 	/// Logger instance.
@@ -41,29 +42,56 @@ public static class CreateUserCommandHandler
 	/// </returns>
 	/// <remarks>
 	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
-	/// Database unique constraints on Username and Email provide atomicity - no manual transaction management needed.
+	/// Database unique constraints on UserName and Email provide atomicity - no manual transaction management needed.
 	/// </remarks>
 	public static async Task<UserDto> HandleAsync(
 		CreateUserRequest request,
 		IMessageBus messageBus,
-		IUserQueryRepository userQueryRepository,
-		IUserCommandRepository userCommandRepository,
+		UserManager<ApplicationUser> userManager,
+		TimeProvider timeProvider,
 		ILogger logger,
 		CancellationToken cancellationToken)
 	{
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
 		// Create user entity
-		User entity = request.ToEntity();
+		ApplicationUser newUser =
+			new()
+			{
+				UserName = request.Username,
+				Email = request.Email,
+				FullName = request.FullName,
+				IsActive = request.IsActive,
+				CreateDate = now,
+				CreatedBy =
+					request.CreatedBy ?? string.Empty,
+			};
 
 		UserDto createdUser;
 
 		try
 		{
-			User created =
-				await userCommandRepository.CreateAsync(
-					entity,
-					cancellationToken);
+			// Create user without password - they'll set it via password reset flow
+			IdentityResult result =
+				await userManager.CreateAsync(newUser);
 
-			createdUser = created.ToDto();
+			if (!result.Succeeded)
+			{
+				string errors =
+					string.Join(", ", result.Errors.Select(error => error.Description));
+
+				// Check for duplicate errors
+				if (result.Errors.Any(error =>
+					error.Code is "DuplicateUserName" or "DuplicateEmail"))
+				{
+					throw new DuplicateUserException(errors);
+				}
+
+				throw new InvalidOperationException(errors);
+			}
+
+			createdUser = newUser.ToDto();
 		}
 		catch (DbUpdateException exception)
 			when (exception.IsDuplicateKeyViolation())
@@ -92,9 +120,7 @@ public static class CreateUserCommandHandler
 			// Email rate limited - mark user for pending email
 			await MarkUserNeedsPendingEmailAsync(
 				createdUser.Id,
-				userQueryRepository,
-				userCommandRepository,
-				cancellationToken);
+				userManager);
 
 			logger.LogWarning(
 				"Email rate limited for user {Email} (ID: {UserId}). Resets in: {TimeUntilReset}",
@@ -123,14 +149,10 @@ public static class CreateUserCommandHandler
 	/// </summary>
 	private static async Task MarkUserNeedsPendingEmailAsync(
 		long userId,
-		IUserQueryRepository userQueryRepository,
-		IUserCommandRepository userCommandRepository,
-		CancellationToken cancellationToken)
+		UserManager<ApplicationUser> userManager)
 	{
-		User? user =
-			await userQueryRepository.GetByIdAsync(
-				userId,
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(userId.ToString());
 
 		if (user == null)
 		{
@@ -139,6 +161,6 @@ public static class CreateUserCommandHandler
 
 		user.NeedsPendingEmail = true;
 
-		await userCommandRepository.UpdateAsync(user, cancellationToken);
+		await userManager.UpdateAsync(user);
 	}
 }

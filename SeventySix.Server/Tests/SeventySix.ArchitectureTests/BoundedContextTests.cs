@@ -39,7 +39,7 @@ public class BoundedContextTests
 	public void Bounded_Contexts_Should_Not_Reference_Each_Other()
 	{
 		Assembly domainAssembly =
-			typeof(SeventySix.Identity.User).Assembly;
+			typeof(SeventySix.Identity.ApplicationUser).Assembly;
 		string[] boundedContextNames =
 			domainAssembly
 			.GetTypes()
@@ -98,7 +98,7 @@ public class BoundedContextTests
 	public void Each_Bounded_Context_Should_Have_DbContext()
 	{
 		Assembly domainAssembly =
-			typeof(SeventySix.Identity.User).Assembly;
+			typeof(SeventySix.Identity.ApplicationUser).Assembly;
 		string[] boundedContextNames =
 			domainAssembly
 			.GetTypes()

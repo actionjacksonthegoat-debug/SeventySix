@@ -83,7 +83,7 @@ public interface IPermissionRequestRepository
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
-	/// Gets the role ID for a given role name.
+	/// Gets the role for a given role name.
 	/// </summary>
 	/// <param name="roleName">
 	/// The role name to look up.
@@ -92,9 +92,9 @@ public interface IPermissionRequestRepository
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// The role ID, or null if not found.
+	/// The role, or null if not found.
 	/// </returns>
-	public Task<long?> GetRoleIdByNameAsync(
+	public Task<ApplicationRole?> GetRoleByNameAsync(
 		string roleName,
 		CancellationToken cancellationToken = default);
 }

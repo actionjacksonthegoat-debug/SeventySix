@@ -3,6 +3,7 @@
 // </copyright>
 
 using FluentValidation;
+using SeventySix.Identity.Constants;
 
 namespace SeventySix.Identity.Commands.CreatePermissionRequest;
 
@@ -24,5 +25,10 @@ internal class CreatePermissionRequestValidator
 		RuleFor(command => command.Request.RequestMessage)
 			.MaximumLength(500)
 			.WithMessage("Request message cannot exceed 500 characters.");
+
+		// Validate each requested role is a known, valid role name
+		RuleForEach(command => command.Request.RequestedRoles)
+			.Must(role => RoleConstants.ValidRoleNames.Contains(role))
+			.WithMessage("Invalid role: {PropertyValue}");
 	}
 }

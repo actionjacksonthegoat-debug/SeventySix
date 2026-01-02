@@ -26,8 +26,8 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 			.Select(permissionRequest => new PermissionRequestDto(
 				permissionRequest.Id,
 				permissionRequest.UserId,
-				permissionRequest.User!.Username,
-				permissionRequest.RequestedRole!.Name,
+				permissionRequest.User!.UserName!,
+				permissionRequest.RequestedRole!.Name!,
 				permissionRequest.RequestMessage,
 				permissionRequest.CreatedBy,
 				permissionRequest.CreateDate))
@@ -87,8 +87,11 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 			.UserRoles
 			.AsNoTracking()
 			.Where(userRole => userRole.UserId == userId)
-			.Include(userRole => userRole.Role)
-			.Select(userRole => userRole.Role!.Name)
+			.Join(
+				dbContext.Roles,
+				userRole => userRole.RoleId,
+				role => role.Id,
+				(userRole, role) => role.Name!)
 			.ToListAsync(cancellationToken);
 	}
 
@@ -157,15 +160,14 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 	}
 
 	/// <inheritdoc/>
-	public async Task<long?> GetRoleIdByNameAsync(
+	public async Task<ApplicationRole?> GetRoleByNameAsync(
 		string roleName,
 		CancellationToken cancellationToken = default)
 	{
 		return await dbContext
-			.SecurityRoles
+			.Roles
 			.AsNoTracking()
-			.Where(securityRole => securityRole.Name == roleName)
-			.Select(securityRole => (long?)securityRole.Id)
+			.Where(role => role.Name == roleName)
 			.FirstOrDefaultAsync(cancellationToken);
 	}
 }

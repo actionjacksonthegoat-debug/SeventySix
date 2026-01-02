@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Identity.Constants;
@@ -12,6 +13,11 @@ namespace SeventySix.Identity;
 /// <summary>
 /// Handler for CompleteRegistrationCommand.
 /// </summary>
+/// <remarks>
+/// Uses ASP.NET Core Identity's email confirmation token system.
+/// The temporary user created in InitiateRegistration is updated with
+/// the username and password, then activated.
+/// </remarks>
 public static class CompleteRegistrationCommandHandler
 {
 	/// <summary>
@@ -20,14 +26,14 @@ public static class CompleteRegistrationCommandHandler
 	/// <param name="command">
 	/// The complete registration command containing token and client IP.
 	/// </param>
-	/// <param name="registrationService">
-	/// Service that creates users and returns auth results.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for creating users and roles.
 	/// </param>
-	/// <param name="emailVerificationTokenRepository">
-	/// Repository for email verification tokens.
+	/// <param name="authenticationService">
+	/// Service to generate auth tokens on success.
 	/// </param>
 	/// <param name="timeProvider">
-	/// Time provider for expiration checks.
+	/// Time provider for timestamps.
 	/// </param>
 	/// <param name="logger">
 	/// Logger instance.
@@ -44,58 +50,68 @@ public static class CompleteRegistrationCommandHandler
 	/// </remarks>
 	public static async Task<AuthResult> HandleAsync(
 		CompleteRegistrationCommand command,
-		RegistrationService registrationService,
-		IEmailVerificationTokenRepository emailVerificationTokenRepository,
+		UserManager<ApplicationUser> userManager,
+		AuthenticationService authenticationService,
 		TimeProvider timeProvider,
 		ILogger<CompleteRegistrationCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		string tokenHash =
-			CryptoExtensions.ComputeSha256Hash(
-				command.Request.Token);
+		// Find the user by email from the request
+		// The temporary user was created in InitiateRegistration
+		ApplicationUser? existingUser =
+			await userManager.FindByEmailAsync(command.Request.Email);
 
-		EmailVerificationToken? verificationToken =
-			await emailVerificationTokenRepository.GetByHashAsync(
-				tokenHash,
-				cancellationToken);
-
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
-
-		AuthResult? tokenError =
-			ValidateVerificationToken(
-				verificationToken,
-				now,
-				logger);
-
-		if (tokenError != null)
+		if (existingUser is null)
 		{
-			return tokenError;
+			logger.LogWarning(
+				"Attempted to complete registration for non-existent email: {Email}",
+				command.Request.Email);
+
+			return AuthResult.Failed(
+				"Invalid or expired verification link.",
+				AuthErrorCodes.InvalidToken);
 		}
 
-		long userRoleId =
-			await registrationService.GetRoleIdByNameAsync(
-				RoleConstants.User,
-				cancellationToken);
+		// Verify the email confirmation token using Identity's token provider
+		IdentityResult confirmResult =
+			await userManager.ConfirmEmailAsync(existingUser, command.Request.Token);
+
+		if (!confirmResult.Succeeded)
+		{
+			string errors =
+				string.Join(", ", confirmResult.Errors.Select(error => error.Description));
+			logger.LogWarning(
+				"Email confirmation failed for {Email}: {Errors}",
+				command.Request.Email,
+				errors);
+
+			return AuthResult.Failed(
+				"Invalid or expired verification link.",
+				AuthErrorCodes.InvalidToken);
+		}
 
 		try
 		{
-			User user =
-				await CreateUserAndMarkTokenUsedAsync(
+			ApplicationUser completedUser =
+				await CompleteUserRegistrationAsync(
 					command,
-					verificationToken!,
-					userRoleId,
-					registrationService,
-					emailVerificationTokenRepository,
-					now,
-					cancellationToken);
+					existingUser,
+					userManager,
+					timeProvider);
 
-			return await registrationService.GenerateAuthResultAsync(
-				user,
+			return await authenticationService.GenerateAuthResultAsync(
+				completedUser,
 				command.ClientIp,
 				requiresPasswordChange: false,
 				rememberMe: false,
 				cancellationToken);
+		}
+		catch (InvalidOperationException exception)
+		{
+			// Identity update failed due to validation (e.g., username already taken)
+			return AuthResult.Failed(
+				exception.Message,
+				"REGISTRATION_FAILED");
 		}
 		catch (DbUpdateException exception)
 			when (exception.IsDuplicateKeyViolation())
@@ -103,76 +119,79 @@ public static class CompleteRegistrationCommandHandler
 			return DuplicateKeyViolationHandler.HandleAsAuthResult(
 				exception,
 				command.Request.Username,
-				verificationToken!.Email,
+				command.Request.Email,
 				logger);
 		}
 	}
 
-	private static async Task<User> CreateUserAndMarkTokenUsedAsync(
+	/// <summary>
+	/// Completes the user registration by setting username, password, and activating the account.
+	/// </summary>
+	/// <param name="command">
+	/// Complete registration command containing username and password.
+	/// </param>
+	/// <param name="existingUser">
+	/// The temporary user created during InitiateRegistration.
+	/// </param>
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> used to update the user.
+	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider for timestamps.
+	/// </param>
+	/// <returns>
+	/// The completed <see cref="ApplicationUser"/>.
+	/// </returns>
+	private static async Task<ApplicationUser> CompleteUserRegistrationAsync(
 		CompleteRegistrationCommand command,
-		EmailVerificationToken verificationToken,
-		long userRoleId,
-		RegistrationService registrationService,
-		IEmailVerificationTokenRepository emailVerificationTokenRepository,
-		DateTime now,
-		CancellationToken cancellationToken)
+		ApplicationUser existingUser,
+		UserManager<ApplicationUser> userManager,
+		TimeProvider timeProvider)
 	{
-		User user =
-			await registrationService.CreateUserWithCredentialAsync(
-				command.Request.Username,
-				verificationToken.Email,
-				fullName: null,
-				command.Request.Password,
-				"Self-Registration",
-				userRoleId,
-				requiresPasswordChange: false,
-				cancellationToken);
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
 
-		verificationToken.IsUsed = true;
-		await emailVerificationTokenRepository.SaveChangesAsync(
-			verificationToken,
-			cancellationToken);
+		// Update the temporary user with registration details
+		existingUser.UserName = command.Request.Username;
+		existingUser.IsActive = true;
+		existingUser.ModifyDate = now;
+		existingUser.ModifiedBy = "Self-Registration";
 
-		return user;
-	}
+		IdentityResult updateResult =
+			await userManager.UpdateAsync(existingUser);
 
-	private static AuthResult? ValidateVerificationToken(
-		EmailVerificationToken? token,
-		DateTime now,
-		ILogger logger)
-	{
-		if (token == null)
+		if (!updateResult.Succeeded)
 		{
-			logger.LogWarning("Invalid email verification token attempted.");
-
-			return AuthResult.Failed(
-				"Invalid or expired verification link.",
-				AuthErrorCodes.InvalidToken);
+			throw new InvalidOperationException(
+				string.Join(
+					", ",
+					updateResult.Errors.Select(error => error.Description)));
 		}
 
-		if (token.IsUsed)
-		{
-			logger.LogWarning(
-				"Attempted to use already-used verification token. Email: {Email}",
-				token.Email);
+		// Add password (temporary user was created without one)
+		IdentityResult passwordResult =
+			await userManager.AddPasswordAsync(existingUser, command.Request.Password);
 
-			return AuthResult.Failed(
-				"This verification link has already been used.",
-				AuthErrorCodes.TokenExpired);
+		if (!passwordResult.Succeeded)
+		{
+			throw new InvalidOperationException(
+				string.Join(
+					", ",
+					passwordResult.Errors.Select(error => error.Description)));
 		}
 
-		if (token.ExpiresAt < now)
-		{
-			logger.LogWarning(
-				"Attempted to use expired verification token. Email: {Email}, ExpiredAt: {ExpiredAt}",
-				token.Email,
-				token.ExpiresAt);
+		// Assign User role
+		IdentityResult roleResult =
+			await userManager.AddToRoleAsync(existingUser, RoleConstants.User);
 
-			return AuthResult.Failed(
-				"This verification link has expired. Please request a new one.",
-				AuthErrorCodes.TokenExpired);
+		if (!roleResult.Succeeded)
+		{
+			throw new InvalidOperationException(
+				string.Join(
+					", ",
+					roleResult.Errors.Select(error => error.Description)));
 		}
 
-		return null;
+		return existingUser;
 	}
 }

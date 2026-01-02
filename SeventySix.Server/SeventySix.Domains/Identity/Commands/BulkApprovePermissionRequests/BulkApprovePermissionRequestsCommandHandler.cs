@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity.Commands.BulkApprovePermissionRequests;
 
 /// <summary>
@@ -18,8 +20,8 @@ public static class BulkApprovePermissionRequestsCommandHandler
 	/// <param name="repository">
 	/// The permission request repository.
 	/// </param>
-	/// <param name="userCommandRepository">
-	/// The user command repository.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for role operations.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -30,7 +32,7 @@ public static class BulkApprovePermissionRequestsCommandHandler
 	public static async Task<int> HandleAsync(
 		BulkApprovePermissionRequestsCommand command,
 		IPermissionRequestRepository repository,
-		IUserCommandRepository userCommandRepository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
 		List<long> idList = command.RequestIds.ToList();
@@ -42,11 +44,23 @@ public static class BulkApprovePermissionRequestsCommandHandler
 
 		foreach (PermissionRequest request in requests)
 		{
-			await userCommandRepository.AddRoleAsync(
-				request.UserId,
-				request.RequestedRole!.Name,
-				cancellationToken);
-			approvedCount++;
+			ApplicationUser? user =
+				await userManager.FindByIdAsync(request.UserId.ToString());
+
+			if (user is null)
+			{
+				continue;
+			}
+
+			IdentityResult result =
+				await userManager.AddToRoleAsync(
+					user,
+					request.RequestedRole!.Name!);
+
+			if (result.Succeeded)
+			{
+				approvedCount++;
+			}
 		}
 
 		await repository.DeleteRangeAsync(idList, cancellationToken);

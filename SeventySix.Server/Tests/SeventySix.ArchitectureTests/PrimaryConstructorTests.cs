@@ -41,7 +41,7 @@ public class PrimaryConstructorTests
 	{
 		// Scan both domain and API assemblies
 		Assembly domainAssembly =
-			typeof(SeventySix.Identity.User).Assembly;
+			typeof(SeventySix.Identity.ApplicationUser).Assembly;
 		Assembly apiAssembly =
 			typeof(SeventySix.Api.Controllers.UsersController).Assembly;
 
@@ -188,6 +188,12 @@ public class PrimaryConstructorTests
 
 		// Exclude context classes (EF DbContext has specific pattern)
 		if (type.Name.EndsWith("DbContext") || type.Name.EndsWith("Context"))
+		{
+			return true;
+		}
+
+		// Exclude middleware classes (ASP.NET Core middleware pattern requires specific constructor logic)
+		if (type.Name.EndsWith("Middleware"))
 		{
 			return true;
 		}

@@ -53,7 +53,7 @@ public class GodClassTests
 	public void Service_Interfaces_Should_Have_Less_Than_Twelve_Methods()
 	{
 		Assembly domainAssembly =
-			typeof(SeventySix.Identity.User).Assembly;
+			typeof(SeventySix.Identity.ApplicationUser).Assembly;
 
 		Type[] serviceInterfaces =
 			domainAssembly
@@ -113,7 +113,7 @@ public class GodClassTests
 	public void Repository_Interfaces_Should_Have_Less_Than_Twelve_Methods()
 	{
 		Assembly domainAssembly =
-			typeof(SeventySix.Identity.User).Assembly;
+			typeof(SeventySix.Identity.ApplicationUser).Assembly;
 
 		Type[] repositoryInterfaces =
 			domainAssembly
@@ -172,7 +172,7 @@ public class GodClassTests
 	public void Service_Implementations_Should_Have_Less_Than_Twelve_Public_Methods()
 	{
 		Assembly domainAssembly =
-			typeof(SeventySix.Identity.User).Assembly;
+			typeof(SeventySix.Identity.ApplicationUser).Assembly;
 
 		Type[] serviceImplementations =
 			domainAssembly

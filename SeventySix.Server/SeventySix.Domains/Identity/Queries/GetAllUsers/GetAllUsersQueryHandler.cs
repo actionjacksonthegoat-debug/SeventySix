@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -7,9 +10,14 @@ public static class GetAllUsersQueryHandler
 {
 	public static async Task<IEnumerable<UserDto>> HandleAsync(
 		GetAllUsersQuery query,
-		IUserQueryRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		return await repository.GetAllProjectedAsync(cancellationToken);
+		List<ApplicationUser> users =
+			await userManager.Users
+				.AsNoTracking()
+				.ToListAsync(cancellationToken);
+
+		return users.ToDto();
 	}
 }

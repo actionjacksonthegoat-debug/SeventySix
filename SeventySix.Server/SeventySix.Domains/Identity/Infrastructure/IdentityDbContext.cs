@@ -2,21 +2,30 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.Persistence;
 
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Entity Framework Core DbContext for Identity bounded context.
-/// Manages User entities and their database operations.
+/// Identity DbContext using ASP.NET Core Identity with custom user/role types.
 /// </summary>
 /// <remarks>
-/// Inherits common configuration from BaseDbContext.
-/// Provides "Identity" schema name and soft delete query filter for User entities.
+/// Extends IdentityDbContext to leverage ASP.NET Core Identity features while
+/// maintaining custom entities (RefreshToken, PermissionRequest) for app-specific functionality.
 /// </remarks>
-public class IdentityDbContext : BaseDbContext<IdentityDbContext>
+public class IdentityDbContext
+	: IdentityDbContext<
+		ApplicationUser,
+		ApplicationRole,
+		long,
+		IdentityUserClaim<long>,
+		IdentityUserRole<long>,
+		IdentityUserLogin<long>,
+		IdentityRoleClaim<long>,
+		IdentityUserToken<long>>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="IdentityDbContext"/> class.
@@ -28,73 +37,54 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 		: base(options) { }
 
 	/// <summary>
-	/// Gets or sets the Users DbSet.
-	/// </summary>
-	public DbSet<User> Users => Set<User>();
-
-	/// <summary>
-	/// Gets or sets the UserCredentials DbSet.
-	/// </summary>
-	public DbSet<UserCredential> UserCredentials => Set<UserCredential>();
-
-	/// <summary>
 	/// Gets or sets the RefreshTokens DbSet.
 	/// </summary>
 	public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
 	/// <summary>
-	/// Gets or sets the ExternalLogins DbSet.
-	/// </summary>
-	public DbSet<ExternalLogin> ExternalLogins => Set<ExternalLogin>();
-
-	/// <summary>
-	/// Gets or sets the UserRoles DbSet.
-	/// </summary>
-	public DbSet<UserRole> UserRoles => Set<UserRole>();
-
-	/// <summary>
-	/// Gets or sets the PasswordResetTokens DbSet.
-	/// </summary>
-	public DbSet<PasswordResetToken> PasswordResetTokens =>
-		Set<PasswordResetToken>();
-
-	/// <summary>
-	/// Gets or sets the EmailVerificationTokens DbSet.
-	/// </summary>
-	public DbSet<EmailVerificationToken> EmailVerificationTokens =>
-		Set<EmailVerificationToken>();
-
-	/// <summary>
 	/// Gets or sets the PermissionRequests DbSet.
 	/// </summary>
-	public DbSet<PermissionRequest> PermissionRequests =>
-		Set<PermissionRequest>();
+	public DbSet<PermissionRequest> PermissionRequests => Set<PermissionRequest>();
 
-	/// <summary>
-	/// Gets or sets the SecurityRoles DbSet.
-	/// </summary>
-	public DbSet<SecurityRole> SecurityRoles => Set<SecurityRole>();
-
-	/// <summary>
-	/// Gets the schema name for Identity bounded context.
-	/// </summary>
-	/// <returns>
-	/// "Identity".
-	/// </returns>
-	protected override string GetSchemaName() => SchemaConstants.Identity;
-
-	/// <summary>
-	/// Configures entity-specific settings for Identity domain.
-	/// </summary>
-	/// <param name="modelBuilder">
-	/// The model builder.
-	/// </param>
-	/// <remarks>
-	/// Applies global query filter for soft delete on User entities.
-	/// </remarks>
-	protected override void ConfigureEntities(ModelBuilder modelBuilder)
+	/// <inheritdoc/>
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
+		base.OnModelCreating(modelBuilder);
+
+		// Set schema for all Identity tables
+		modelBuilder.HasDefaultSchema(SchemaConstants.Identity);
+
+		// Rename Identity tables to match existing conventions
+		modelBuilder.Entity<ApplicationUser>()
+			.ToTable("Users");
+
+		modelBuilder.Entity<ApplicationRole>()
+			.ToTable("Roles");
+
+		modelBuilder.Entity<IdentityUserRole<long>>()
+			.ToTable("UserRoles");
+
+		modelBuilder.Entity<IdentityUserClaim<long>>()
+			.ToTable("UserClaims");
+
+		modelBuilder.Entity<IdentityUserLogin<long>>()
+			.ToTable("ExternalLogins");
+
+		modelBuilder.Entity<IdentityRoleClaim<long>>()
+			.ToTable("RoleClaims");
+
+		modelBuilder.Entity<IdentityUserToken<long>>()
+			.ToTable("UserTokens");
+
+		// Apply custom configurations from this assembly
+		modelBuilder.ApplyConfigurationsFromAssembly(
+			typeof(IdentityDbContext).Assembly,
+			type => type.Namespace?.StartsWith(
+				"SeventySix.Identity",
+				StringComparison.Ordinal) == true);
+
 		// Global query filter for soft delete
-		modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);
+		modelBuilder.Entity<ApplicationUser>()
+			.HasQueryFilter(user => !user.IsDeleted);
 	}
 }

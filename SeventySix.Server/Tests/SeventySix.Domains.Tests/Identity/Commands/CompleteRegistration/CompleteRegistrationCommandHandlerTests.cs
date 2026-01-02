@@ -2,140 +2,119 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using NSubstitute;
 using SeventySix.Identity;
-using SeventySix.Shared.Extensions;
+using SeventySix.Identity.Commands.CompleteRegistration;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
+using SeventySix.TestUtilities.TestHelpers;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Commands.CompleteRegistration;
 
 /// <summary>
-/// Tests for EmailVerificationTokenRepository with focus on hashed token validation.
+/// Tests for CompleteRegistrationCommandHandler using Identity's email confirmation token system.
 /// </summary>
 [Collection("DatabaseTests")]
 public class CompleteRegistrationCommandHandlerTests(
 	TestcontainersPostgreSqlFixture fixture) : DataPostgreSqlTestBase(fixture)
 {
 	[Fact]
-	public async Task GetByHashAsync_ShouldFindValidHashedTokenAsync()
+	public async Task HandleAsync_ShouldConfirmEmail_WhenTokenIsValidAsync()
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
+		UserManager<ApplicationUser> userManager =
+			CreateUserManager(context);
 
-		EmailVerificationTokenRepository repository =
-			new(context);
+		ApplicationUser user =
+			new UserBuilder(TestTimeProviderBuilder.CreateDefault())
+				.WithUsername("tempuser")
+				.WithEmail("test@example.com")
+				.Build();
+		user.EmailConfirmed = false;
+		// Ensure unique email and security stamp for token generation
+		user.Email =
+			$"test+{Guid.NewGuid():N}@example.com";
+		user.SecurityStamp = Guid.NewGuid().ToString();
 
-		string rawToken =
-			Convert.ToBase64String(
-			System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
-
-		string hashedToken =
-			CryptoExtensions.ComputeSha256Hash(rawToken);
-
-		string testEmail = "test@example.com";
-
-		EmailVerificationToken verificationToken =
-			new()
-			{
-				Email = testEmail,
-				TokenHash = hashedToken,
-				ExpiresAt =
-					TestTimeProviderBuilder
-				.DefaultTime.AddHours(24)
-				.UtcDateTime,
-				IsUsed = false,
-			};
-
-		context.EmailVerificationTokens.Add(verificationToken);
+		// Persist user directly to the context for test setup
+		await context.Users.AddAsync(user);
 		await context.SaveChangesAsync();
 
-		// Act
-		EmailVerificationToken? foundToken =
-			await repository.GetByHashAsync(
-			hashedToken);
+		// Generate token via DI-backed UserManager and confirm via UserManager so tests mirror production flow
+		string emailToken =
+			await userManager.GenerateEmailConfirmationTokenAsync(user);
 
-		// Assert
-		foundToken.ShouldNotBeNull();
-		foundToken.TokenHash.ShouldBe(hashedToken);
-		foundToken.Email.ShouldBe(testEmail);
-		foundToken.IsUsed.ShouldBeFalse();
+		IdentityResult confirmResult =
+			await userManager.ConfirmEmailAsync(user, emailToken);
+
+		confirmResult.Succeeded.ShouldBeTrue();
+
+		// Reload user from context to assert persisted change
+		ApplicationUser? updated =
+			await context.Users.FindAsync(user.Id);
+		updated.ShouldNotBeNull();
+		updated!.EmailConfirmed.ShouldBeTrue();
 	}
 
 	[Fact]
-	public async Task GetByHashAsync_ShouldReturnNullForInvalidHashAsync()
+	public async Task HandleAsync_ShouldFail_WhenTokenIsInvalidAsync()
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
+		UserManager<ApplicationUser> userManager =
+			CreateUserManager(context);
 
-		EmailVerificationTokenRepository repository =
-			new(context);
+		ApplicationUser user =
+			new UserBuilder(TestTimeProviderBuilder.CreateDefault())
+				.WithUsername("tempuser")
+				.WithEmail("test@example.com")
+				.Build();
+		user.EmailConfirmed = false;
+		// Ensure unique email and security stamp for token generation
+		user.Email =
+			$"test+{Guid.NewGuid():N}@example.com";
+		user.SecurityStamp = Guid.NewGuid().ToString();
 
-		string validHash =
-			CryptoExtensions.ComputeSha256Hash("valid-token");
-
-		string invalidHash =
-			CryptoExtensions.ComputeSha256Hash(
-			"different-token");
-
-		EmailVerificationToken verificationToken =
-			new()
-			{
-				Email = "test@example.com",
-				TokenHash = validHash,
-				ExpiresAt =
-					TestTimeProviderBuilder
-				.DefaultTime.AddHours(24)
-				.UtcDateTime,
-				IsUsed = false,
-			};
-
-		context.EmailVerificationTokens.Add(verificationToken);
+		// Persist user directly to the context for test setup
+		await context.Users.AddAsync(user);
 		await context.SaveChangesAsync();
 
-		// Act
-		EmailVerificationToken? foundToken =
-			await repository.GetByHashAsync(
-			invalidHash);
+		string invalidToken = "invalid-token-value";
 
-		// Assert
-		foundToken.ShouldBeNull();
+		// Act - attempt confirmation with invalid token via UserManager
+		IdentityResult confirmResult =
+			await userManager.ConfirmEmailAsync(user, invalidToken);
+
+		// Assert - invalid token should not succeed and email should remain unconfirmed
+		confirmResult.Succeeded.ShouldBeFalse();
+
+		ApplicationUser? updated =
+			await context.Users.FindAsync(user.Id);
+		updated.ShouldNotBeNull();
+		updated!.EmailConfirmed.ShouldBeFalse();
 	}
 
 	[Fact]
-	public async Task GetByHashAsync_ShouldNotFindUsedTokenAsync()
+	public async Task HandleAsync_ShouldFail_WhenUserNotFoundAsync()
 	{
 		// Arrange
 		await using IdentityDbContext context = CreateIdentityDbContext();
+		UserManager<ApplicationUser> userManager =
+			CreateUserManager(context);
 
-		EmailVerificationTokenRepository repository =
-			new(context);
+		string testEmail = "nonexistent@example.com";
 
-		string hashedToken =
-			CryptoExtensions.ComputeSha256Hash("used-token");
+		// Act
+		ApplicationUser? user =
+			await userManager.FindByEmailAsync(testEmail);
 
-		EmailVerificationToken usedToken =
-			new()
-			{
-				Email = "test@example.com",
-				TokenHash = hashedToken,
-				ExpiresAt =
-					TestTimeProviderBuilder
-				.DefaultTime.AddHours(24)
-				.UtcDateTime,
-				IsUsed = true, // Already used
-			};
-
-		context.EmailVerificationTokens.Add(usedToken);
-		await context.SaveChangesAsync();
-
-		// Act - Repository doesn't filter by IsUsed, but handler should
-		EmailVerificationToken? foundToken =
-			await repository.GetByHashAsync(
-			hashedToken);
-
-		// Assert - Repository returns the token, handler validates IsUsed
-		foundToken.ShouldNotBeNull();
-		foundToken.IsUsed.ShouldBeTrue();
+		// Assert
+		user.ShouldBeNull();
 	}
 }

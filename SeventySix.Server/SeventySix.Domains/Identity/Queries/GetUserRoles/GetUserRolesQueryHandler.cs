@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -17,11 +19,17 @@ public static class GetUserRolesQueryHandler
 	/// </summary>
 	public static async Task<IEnumerable<string>> HandleAsync(
 		GetUserRolesQuery query,
-		IUserQueryRepository repository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		return await repository.GetUserRolesAsync(
-			query.UserId,
-			cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(query.UserId.ToString());
+
+		if (user is null)
+		{
+			return [];
+		}
+
+		return await userManager.GetRolesAsync(user);
 	}
 }

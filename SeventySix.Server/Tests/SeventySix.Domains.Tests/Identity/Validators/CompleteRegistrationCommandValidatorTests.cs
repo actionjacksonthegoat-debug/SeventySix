@@ -22,6 +22,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token-123",
 			Username: "testuser",
 			Password: "SecurePass123!");
@@ -43,6 +44,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: token!,
 			Username: "testuser",
 			Password: "SecurePass123!");
@@ -65,6 +67,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: username!,
 			Password: "SecurePass123!");
@@ -87,6 +90,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: username,
 			Password: "SecurePass123!");
@@ -109,6 +113,7 @@ public class CompleteRegistrationCommandValidatorTests
 
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: longUsername,
 			Password: "SecurePass123!");
@@ -133,6 +138,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: username,
 			Password: "SecurePass123!");
@@ -157,6 +163,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: username,
 			Password: "SecurePass123!");
@@ -178,6 +185,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: "testuser",
 			Password: password!);
@@ -200,6 +208,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: "testuser",
 			Password: password);
@@ -219,6 +228,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: "testuser",
 			Password: "securepass123!");
@@ -238,6 +248,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: "testuser",
 			Password: "SECUREPASS123!");
@@ -257,6 +268,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: "testuser",
 			Password: "SecurePassword!");
@@ -281,6 +293,7 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
+			Email: "test@example.com",
 			Token: "valid-token",
 			Username: "testuser",
 			Password: password);

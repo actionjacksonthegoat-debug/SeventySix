@@ -2,6 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SeventySix.Shared.Extensions;
 using Wolverine;
@@ -22,11 +23,8 @@ public static class UpdateProfileCommandHandler
 	/// <param name="messageBus">
 	/// Message bus for querying updated profile.
 	/// </param>
-	/// <param name="validator">
-	/// Request validator.
-	/// </param>
-	/// <param name="repository">
-	/// User repository.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for user operations.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token.
@@ -41,14 +39,11 @@ public static class UpdateProfileCommandHandler
 	public static async Task<UserProfileDto?> HandleAsync(
 		UpdateProfileCommand command,
 		IMessageBus messageBus,
-		IUserQueryRepository userQueryRepository,
-		IUserCommandRepository userCommandRepository,
+		UserManager<ApplicationUser> userManager,
 		CancellationToken cancellationToken)
 	{
-		User? user =
-			await userQueryRepository.GetByIdAsync(
-				command.UserId,
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(command.UserId.ToString());
 
 		if (user == null)
 		{
@@ -60,7 +55,21 @@ public static class UpdateProfileCommandHandler
 
 		try
 		{
-			await userCommandRepository.UpdateAsync(user, cancellationToken);
+			IdentityResult result =
+				await userManager.UpdateAsync(user);
+
+			if (!result.Succeeded)
+			{
+				if (result.Errors.Any(error =>
+					error.Code == "DuplicateEmail"))
+				{
+					throw new DuplicateUserException(
+						$"Email '{command.Request.Email}' is already registered");
+				}
+
+				throw new InvalidOperationException(
+					string.Join(", ", result.Errors.Select(error => error.Description)));
+			}
 
 			// Query full profile after successful update
 			return await messageBus.InvokeAsync<UserProfileDto?>(

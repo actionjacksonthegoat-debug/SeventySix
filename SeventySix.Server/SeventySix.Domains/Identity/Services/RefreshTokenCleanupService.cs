@@ -105,42 +105,12 @@ public class RefreshTokenCleanupService(
 					refreshToken.ExpiresAt < expiredTokenCutoff)
 				.ExecuteDeleteAsync(cancellationToken);
 
-		// Delete used password reset tokens older than retention period
-		DateTime usedTokenCutoff =
-			now.AddHours(
-				-settings.Value.UsedTokenRetentionHours);
-
-		int deletedResetTokens =
-			await dbContext
-				.PasswordResetTokens
-				.Where(passwordResetToken =>
-					passwordResetToken.IsUsed)
-				.Where(passwordResetToken =>
-					passwordResetToken.CreateDate < usedTokenCutoff)
-				.ExecuteDeleteAsync(cancellationToken);
-
-		// Delete used email verification tokens older than retention period
-		int deletedVerificationTokens =
-			await dbContext
-				.EmailVerificationTokens
-				.Where(emailVerificationToken =>
-					emailVerificationToken.IsUsed)
-				.Where(emailVerificationToken =>
-					emailVerificationToken.CreateDate < usedTokenCutoff)
-				.ExecuteDeleteAsync(cancellationToken);
-
 		// Log summary (Information level - background job completion)
-		if (
-			deletedRefreshTokens > 0
-			|| deletedResetTokens > 0
-			|| deletedVerificationTokens > 0)
+		if (deletedRefreshTokens > 0)
 		{
 			logger.LogInformation(
-				"Token cleanup completed. Deleted: {RefreshTokens} refresh, "
-					+ "{ResetTokens} password reset, {VerificationTokens} email verification",
-				deletedRefreshTokens,
-				deletedResetTokens,
-				deletedVerificationTokens);
+				"Token cleanup completed. Deleted: {RefreshTokens} refresh tokens",
+				deletedRefreshTokens);
 		}
 	}
 }

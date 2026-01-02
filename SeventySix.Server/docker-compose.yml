@@ -34,6 +34,24 @@ services:
       - seventysix-network
     restart: unless-stopped
 
+  # pgAdmin - PostgreSQL web UI
+  pgadmin:
+    image: dpage/pgadmin4:9.11
+    container_name: seventysix-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-pgadmin}
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - seventysix-network
+    restart: unless-stopped
+
   # .NET API - Containerized for testing full stack
   seventysix-api:
     build:
@@ -101,8 +119,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_DEFAULT_THEME=dark
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
@@ -131,6 +149,9 @@ volumes:
   grafana_data:
     driver: local
     name: seventysix_grafana_data
+  pgadmin_data:
+    driver: local
+    name: seventysix_pgadmin_data
   dataprotection_keys:
     driver: local
     name: seventysix_dataprotection_keys

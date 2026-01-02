@@ -2,40 +2,28 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using System.Security.Cryptography;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using SeventySix.ElectronicNotifications.Emails;
-using SeventySix.Shared.Extensions;
-using Wolverine;
 
 namespace SeventySix.Identity;
 
 /// <summary>
-/// Handler for initiating a password reset.
+/// Handler for initiating a password reset using Identity's token providers.
 /// </summary>
 public static class InitiatePasswordResetCommandHandler
 {
 	/// <summary>
-	/// Handles the initiate password reset command.
+	/// Handles the initiate password reset command using Identity's GeneratePasswordResetTokenAsync.
 	/// </summary>
 	/// <param name="command">
 	/// The initiate password reset command containing user id and flags.
 	/// </param>
-	/// <param name="passwordResetTokenRepository">
-	/// Repository to create and manage password reset tokens.
-	/// </param>
-	/// <param name="messageBus">
-	/// Message bus for querying user details.
+	/// <param name="userManager">
+	/// Identity <see cref="UserManager{TUser}"/> for token generation.
 	/// </param>
 	/// <param name="emailService">
 	/// Service to send password reset or welcome emails.
-	/// </param>
-	/// <param name="jwtSettings">
-	/// JWT-related settings used to compute expiration.
-	/// </param>
-	/// <param name="timeProvider">
-	/// Time provider for current time values.
 	/// </param>
 	/// <param name="logger">
 	/// Logger instance.
@@ -49,21 +37,13 @@ public static class InitiatePasswordResetCommandHandler
 	/// <exception cref="InvalidOperationException">Thrown when user not found or inactive.</exception>
 	public static async Task HandleAsync(
 		InitiatePasswordResetCommand command,
-		IPasswordResetTokenRepository passwordResetTokenRepository,
-		IMessageBus messageBus,
+		UserManager<ApplicationUser> userManager,
 		IEmailService emailService,
-		IOptions<JwtSettings> jwtSettings,
-		TimeProvider timeProvider,
 		ILogger<InitiatePasswordResetCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		DateTime now =
-			timeProvider.GetUtcNow().UtcDateTime;
-
-		UserDto? user =
-			await messageBus.InvokeAsync<UserDto?>(
-				new GetUserByIdQuery(command.UserId),
-				cancellationToken);
+		ApplicationUser? user =
+			await userManager.FindByIdAsync(command.UserId.ToString());
 
 		if (user is null || !user.IsActive)
 		{
@@ -74,49 +54,29 @@ public static class InitiatePasswordResetCommandHandler
 				$"User with ID {command.UserId} not found or inactive");
 		}
 
-		await passwordResetTokenRepository.InvalidateAllUserTokensAsync(
-			command.UserId,
-			now,
-			cancellationToken);
+		// Generate password reset token using Identity's built-in token provider
+		string resetToken =
+			await userManager.GeneratePasswordResetTokenAsync(user);
 
-		byte[] tokenBytes =
-			RandomNumberGenerator.GetBytes(64);
-		string rawToken =
-			Convert.ToBase64String(tokenBytes);
-
-		string tokenHash =
-			CryptoExtensions.ComputeSha256Hash(rawToken);
-
-		PasswordResetToken resetToken =
-			new()
-			{
-				UserId = command.UserId,
-				TokenHash = tokenHash,
-				ExpiresAt =
-					now.AddMinutes(
-						jwtSettings.Value.RefreshTokenExpirationDays * 24 * 60),
-				IsUsed = false,
-				CreateDate = now,
-			};
-
-		await passwordResetTokenRepository.CreateAsync(
-			resetToken,
-			cancellationToken);
+		// Create combined token with user ID for the email link
+		// Format: {userId}:{resetToken}
+		string combinedToken =
+			$"{user.Id}:{resetToken}";
 
 		if (command.IsNewUser)
 		{
 			await emailService.SendWelcomeEmailAsync(
-				user.Email,
-				user.Username,
-				rawToken,
+				user.Email!,
+				user.UserName!,
+				combinedToken,
 				cancellationToken);
 		}
 		else
 		{
 			await emailService.SendPasswordResetEmailAsync(
-				user.Email,
-				user.Username,
-				rawToken,
+				user.Email!,
+				user.UserName!,
+				combinedToken,
 				cancellationToken);
 		}
 	}

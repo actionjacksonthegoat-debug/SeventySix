@@ -14,8 +14,8 @@ namespace SeventySix.Domains.Tests.Identity.Repositories;
 /// Integration tests for <see cref="AuthRepository"/>.
 /// </summary>
 /// <remarks>
-/// Follows 80/20 rule - tests critical authentication paths only.
-/// Uses Testcontainers with PostgreSQL for realistic integration testing.
+/// AuthRepository is now simplified to only handle UpdateLastLoginAsync.
+/// User lookup, external logins, and roles are handled by UserManager.
 /// </remarks>
 [Collection("DatabaseTests")]
 public class AuthRepositoryTests : DataPostgreSqlTestBase
@@ -24,110 +24,22 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 		: base(fixture) { }
 
 	/// <summary>
-	/// Verifies GetUserByUsernameOrEmailForUpdateAsync returns user when found by username.
-	/// </summary>
-	[Fact]
-	public async Task GetUserByUsernameOrEmailForUpdateAsync_ReturnsUser_WhenFoundByUsernameAsync()
-	{
-		// Arrange
-		FakeTimeProvider timeProvider = new();
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository =
-			new(context);
-		string testId =
-			Guid.NewGuid().ToString("N")[..8];
-
-		User user =
-			new UserBuilder(timeProvider)
-			.WithUsername($"authtest_{testId}")
-			.WithEmail($"authtest_{testId}@example.com")
-			.Build();
-
-		context.Users.Add(user);
-		await context.SaveChangesAsync();
-
-		// Act
-		User? result =
-			await repository.GetUserByUsernameOrEmailForUpdateAsync(
-			user.Username,
-			CancellationToken.None);
-
-		// Assert
-		result.ShouldNotBeNull();
-		result.Id.ShouldBe(user.Id);
-		result.Username.ShouldBe(user.Username);
-	}
-
-	/// <summary>
-	/// Verifies GetUserByUsernameOrEmailForUpdateAsync returns user when found by email.
-	/// </summary>
-	[Fact]
-	public async Task GetUserByUsernameOrEmailForUpdateAsync_ReturnsUser_WhenFoundByEmailAsync()
-	{
-		// Arrange
-		FakeTimeProvider timeProvider = new();
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository =
-			new(context);
-		string testId =
-			Guid.NewGuid().ToString("N")[..8];
-
-		User user =
-			new UserBuilder(timeProvider)
-			.WithUsername($"emailtest_{testId}")
-			.WithEmail($"emailtest_{testId}@example.com")
-			.Build();
-
-		context.Users.Add(user);
-		await context.SaveChangesAsync();
-
-		// Act
-		User? result =
-			await repository.GetUserByUsernameOrEmailForUpdateAsync(
-			user.Email,
-			CancellationToken.None);
-
-		// Assert
-		result.ShouldNotBeNull();
-		result.Id.ShouldBe(user.Id);
-	}
-
-	/// <summary>
-	/// Verifies GetUserByUsernameOrEmailForUpdateAsync returns null when not found.
-	/// </summary>
-	[Fact]
-	public async Task GetUserByUsernameOrEmailForUpdateAsync_ReturnsNull_WhenNotFoundAsync()
-	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository =
-			new(context);
-
-		// Act
-		User? result =
-			await repository.GetUserByUsernameOrEmailForUpdateAsync(
-			"nonexistent_user",
-			CancellationToken.None);
-
-		// Assert
-		result.ShouldBeNull();
-	}
-
-	/// <summary>
 	/// Verifies UpdateLastLoginAsync updates last login timestamp and IP address.
 	/// </summary>
 	[Fact]
 	public async Task UpdateLastLoginAsync_UpdatesTimestampAndIpAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
-		await using IdentityDbContext context = CreateIdentityDbContext();
+		FakeTimeProvider timeProvider =
+			new();
+		await using IdentityDbContext context =
+			CreateIdentityDbContext();
 		AuthRepository repository =
 			new(context);
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 
-		User user =
+		ApplicationUser user =
 			new UserBuilder(timeProvider)
 			.WithUsername($"logintest_{testId}")
 			.WithEmail($"logintest_{testId}@example.com")
@@ -148,8 +60,9 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 			CancellationToken.None);
 
 		// Assert - use fresh context to verify
-		await using IdentityDbContext verifyContext = CreateIdentityDbContext();
-		User? updatedUser =
+		await using IdentityDbContext verifyContext =
+			CreateIdentityDbContext();
+		ApplicationUser? updatedUser =
 			await verifyContext.Users.FindAsync(user.Id);
 
 		updatedUser.ShouldNotBeNull();
@@ -161,95 +74,51 @@ public class AuthRepositoryTests : DataPostgreSqlTestBase
 	}
 
 	/// <summary>
-	/// Verifies GetExternalLoginAsync returns an external login when it exists.
+	/// Verifies UpdateLastLoginAsync handles null IP address.
 	/// </summary>
 	[Fact]
-	public async Task GetExternalLoginAsync_ReturnsLogin_WhenExistsAsync()
+	public async Task UpdateLastLoginAsync_WithNullIp_UpdatesOnlyTimestampAsync()
 	{
 		// Arrange
-		FakeTimeProvider timeProvider = new();
-		await using IdentityDbContext context = CreateIdentityDbContext();
+		FakeTimeProvider timeProvider =
+			new();
+		await using IdentityDbContext context =
+			CreateIdentityDbContext();
 		AuthRepository repository =
 			new(context);
 		string testId =
 			Guid.NewGuid().ToString("N")[..8];
 
-		User user =
+		ApplicationUser user =
 			new UserBuilder(timeProvider)
-			.WithUsername($"oauth_{testId}")
-			.WithEmail($"oauth_{testId}@example.com")
+			.WithUsername($"nulliptest_{testId}")
+			.WithEmail($"nulliptest_{testId}@example.com")
 			.Build();
 
 		context.Users.Add(user);
 		await context.SaveChangesAsync();
 
-		ExternalLogin externalLogin =
-			new()
-			{
-				UserId = user.Id,
-				Provider = "GitHub",
-				ProviderUserId =
-					$"github_{testId}",
-				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime,
-			};
-
-		context.ExternalLogins.Add(externalLogin);
-		await context.SaveChangesAsync();
+		DateTime loginTime =
+			timeProvider.GetUtcNow().UtcDateTime;
 
 		// Act
-		ExternalLogin? result =
-			await repository.GetExternalLoginAsync(
-			"GitHub",
-			$"github_{testId}",
+		await repository.UpdateLastLoginAsync(
+			user.Id,
+			loginTime,
+			null,
 			CancellationToken.None);
 
-		// Assert
-		result.ShouldNotBeNull();
-		result.UserId.ShouldBe(user.Id);
-	}
+		// Assert - use fresh context to verify
+		await using IdentityDbContext verifyContext =
+			CreateIdentityDbContext();
+		ApplicationUser? updatedUser =
+			await verifyContext.Users.FindAsync(user.Id);
 
-	/// <summary>
-	/// Verifies GetRoleIdByNameAsync returns an existing role id.
-	/// </summary>
-	[Fact]
-	public async Task GetRoleIdByNameAsync_ReturnsRoleId_WhenExistsAsync()
-	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository =
-			new(context);
-
-		// SecurityRoles should be seeded - check for User role
-		// Act
-		long? roleId =
-			await repository.GetRoleIdByNameAsync(
-			"User",
-			CancellationToken.None);
-
-		// Assert
-		roleId.ShouldNotBeNull();
-		roleId.Value.ShouldBeGreaterThan(0);
-	}
-
-	/// <summary>
-	/// Verifies GetRoleIdByNameAsync returns null for unknown role name.
-	/// </summary>
-	[Fact]
-	public async Task GetRoleIdByNameAsync_ReturnsNull_WhenNotFoundAsync()
-	{
-		// Arrange
-		await using IdentityDbContext context = CreateIdentityDbContext();
-		AuthRepository repository =
-			new(context);
-
-		// Act
-		long? roleId =
-			await repository.GetRoleIdByNameAsync(
-			"NonExistentRole",
-			CancellationToken.None);
-
-		// Assert
-		roleId.ShouldBeNull();
+		updatedUser.ShouldNotBeNull();
+		updatedUser.LastLoginAt.ShouldNotBeNull();
+		updatedUser.LastLoginAt.Value.ShouldBe(
+			loginTime,
+			TimeSpan.FromSeconds(1));
+		updatedUser.LastLoginIp.ShouldBeNull();
 	}
 }

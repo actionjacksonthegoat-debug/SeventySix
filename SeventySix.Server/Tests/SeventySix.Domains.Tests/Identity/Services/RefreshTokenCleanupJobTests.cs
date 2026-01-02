@@ -10,7 +10,6 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
-using SeventySix.TestUtilities.Builders;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
@@ -28,7 +27,7 @@ public class RefreshTokenCleanupJobTests : IDisposable
 	private readonly ILogger<RefreshTokenCleanupService> Logger;
 	private readonly TimeProvider TimeProvider;
 	private readonly RefreshTokenCleanupService CleanupJob;
-	private readonly User TestUser;
+	private readonly ApplicationUser TestUser;
 
 	public RefreshTokenCleanupJobTests()
 	{
@@ -46,9 +45,9 @@ public class RefreshTokenCleanupJobTests : IDisposable
 
 		// Create test user for FK constraints
 		this.TestUser =
-			new User
+			new ApplicationUser
 			{
-				Username = "testuser",
+				UserName = "testuser",
 				Email = "test@example.com",
 				CreateDate =
 					timeProvider.GetUtcNow().UtcDateTime,
@@ -298,122 +297,6 @@ public class RefreshTokenCleanupJobTests : IDisposable
 		int count =
 			await this.DbContext.RefreshTokens.CountAsync();
 		count.ShouldBe(0);
-	}
-
-	[Fact]
-	public async Task CleanupExpiredTokensAsync_DeletesUsedPasswordResetTokensOlderThan24HoursAsync()
-	{
-		// Arrange
-		DateTime now =
-			this.TimeProvider.GetUtcNow().UtcDateTime;
-
-		PasswordResetToken usedOldToken =
-			new PasswordResetTokenBuilder(
-				this.TimeProvider)
-				.WithUserId(this.TestUser.Id)
-				.AsUsed()
-				.WithCreateDate(now.AddHours(-48))
-				.Build();
-
-		PasswordResetToken usedRecentToken =
-			new PasswordResetTokenBuilder(
-				this.TimeProvider)
-				.WithUserId(this.TestUser.Id)
-				.AsUsed()
-				.WithCreateDate(now.AddHours(-12))
-				.Build();
-
-		PasswordResetToken unusedOldToken =
-			new PasswordResetTokenBuilder(
-				this.TimeProvider)
-				.WithUserId(this.TestUser.Id)
-				.WithIsUsed(false)
-				.WithCreateDate(now.AddHours(-48))
-				.Build();
-
-		this.DbContext.PasswordResetTokens.AddRange(
-			usedOldToken,
-			usedRecentToken,
-			unusedOldToken);
-		await this.DbContext.SaveChangesAsync();
-
-		// Act
-		await this.CleanupJob.CleanupExpiredTokensAsync();
-
-		// Assert
-		List<PasswordResetToken> remainingTokens =
-			await this.DbContext.PasswordResetTokens.ToListAsync();
-
-		remainingTokens.Count.ShouldBe(2); // Recent used + unused old
-		remainingTokens.ShouldNotContain(passwordResetToken =>
-			passwordResetToken.Id == usedOldToken.Id);
-	}
-
-	[Fact]
-	public async Task CleanupExpiredTokensAsync_DeletesUsedEmailVerificationTokensOlderThan24HoursAsync()
-	{
-		// Arrange
-		DateTime now =
-			this.TimeProvider.GetUtcNow().UtcDateTime;
-
-		EmailVerificationToken usedOldToken =
-			new EmailVerificationTokenBuilder(
-				this.TimeProvider)
-				.WithEmail("old@test.com")
-				.AsUsed()
-				.WithCreateDate(now.AddHours(-48))
-				.Build();
-
-		EmailVerificationToken usedRecentToken =
-			new EmailVerificationTokenBuilder(this.TimeProvider)
-				.WithEmail("recent@test.com")
-				.AsUsed()
-				.WithCreateDate(now.AddHours(-12))
-				.Build();
-
-		this.DbContext.EmailVerificationTokens.AddRange(
-			usedOldToken,
-			usedRecentToken);
-		await this.DbContext.SaveChangesAsync();
-
-		// Act
-		await this.CleanupJob.CleanupExpiredTokensAsync();
-
-		// Assert
-		List<EmailVerificationToken> remainingTokens =
-			await this.DbContext.EmailVerificationTokens.ToListAsync();
-
-		remainingTokens.Count.ShouldBe(1);
-		remainingTokens.Single().Email.ShouldBe("recent@test.com");
-	}
-
-	[Fact]
-	public async Task CleanupExpiredTokensAsync_DoesNotDeleteUnusedPasswordResetTokensAsync()
-	{
-		// Arrange
-		DateTime now =
-			this.TimeProvider.GetUtcNow().UtcDateTime;
-
-		PasswordResetToken unusedOldToken =
-			new PasswordResetTokenBuilder(
-				this.TimeProvider)
-				.WithUserId(this.TestUser.Id)
-				.WithIsUsed(false)
-				.WithCreateDate(now.AddHours(-72))
-				.Build();
-
-		this.DbContext.PasswordResetTokens.Add(unusedOldToken);
-		await this.DbContext.SaveChangesAsync();
-
-		// Act
-		await this.CleanupJob.CleanupExpiredTokensAsync();
-
-		// Assert
-		bool tokenExists =
-			await this.DbContext.PasswordResetTokens.AnyAsync(
-			passwordResetToken => passwordResetToken.Id == unusedOldToken.Id);
-
-		tokenExists.ShouldBeTrue(); // Unused tokens preserved
 	}
 
 	public void Dispose()
