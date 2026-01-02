@@ -310,8 +310,7 @@ public class OAuthService(
 
 		if (!loginResult.Succeeded)
 		{
-			string errors =
-				string.Join(", ", loginResult.Errors.Select(error => error.Description));
+			string errors = loginResult.ToErrorString();
 			throw new InvalidOperationException($"Failed to add external login: {errors}");
 		}
 
@@ -321,8 +320,7 @@ public class OAuthService(
 
 		if (!roleResult.Succeeded)
 		{
-			string errors =
-				string.Join(", ", roleResult.Errors.Select(error => error.Description));
+			string errors = roleResult.ToErrorString();
 			throw new InvalidOperationException($"Failed to assign role: {errors}");
 		}
 

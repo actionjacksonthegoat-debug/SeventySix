@@ -96,8 +96,7 @@ public class RegistrationService(
 
 		if (!createResult.Succeeded)
 		{
-			string errors =
-				string.Join(", ", createResult.Errors.Select(error => error.Description));
+			string errors = createResult.ToErrorString();
 			logger.LogError(
 				"Failed to create user '{Username}': {Errors}",
 				username,
@@ -110,8 +109,7 @@ public class RegistrationService(
 
 		if (!roleResult.Succeeded)
 		{
-			string errors =
-				string.Join(", ", roleResult.Errors.Select(error => error.Description));
+			string errors = roleResult.ToErrorString();
 			logger.LogError(
 				"Failed to assign role '{RoleName}' to user '{Username}': {Errors}",
 				roleName,

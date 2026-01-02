@@ -78,8 +78,7 @@ public static class CompleteRegistrationCommandHandler
 
 		if (!confirmResult.Succeeded)
 		{
-			string errors =
-				string.Join(", ", confirmResult.Errors.Select(error => error.Description));
+			string errors = confirmResult.ToErrorString();
 			logger.LogWarning(
 				"Email confirmation failed for {Email}: {Errors}",
 				command.Request.Email,
@@ -162,10 +161,7 @@ public static class CompleteRegistrationCommandHandler
 
 		if (!updateResult.Succeeded)
 		{
-			throw new InvalidOperationException(
-				string.Join(
-					", ",
-					updateResult.Errors.Select(error => error.Description)));
+			throw new InvalidOperationException(updateResult.ToErrorString());
 		}
 
 		// Add password (temporary user was created without one)
@@ -174,10 +170,7 @@ public static class CompleteRegistrationCommandHandler
 
 		if (!passwordResult.Succeeded)
 		{
-			throw new InvalidOperationException(
-				string.Join(
-					", ",
-					passwordResult.Errors.Select(error => error.Description)));
+			throw new InvalidOperationException(passwordResult.ToErrorString());
 		}
 
 		// Assign User role
@@ -186,10 +179,7 @@ public static class CompleteRegistrationCommandHandler
 
 		if (!roleResult.Succeeded)
 		{
-			throw new InvalidOperationException(
-				string.Join(
-					", ",
-					roleResult.Errors.Select(error => error.Description)));
+			throw new InvalidOperationException(roleResult.ToErrorString());
 		}
 
 		return existingUser;

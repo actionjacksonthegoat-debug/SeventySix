@@ -129,8 +129,6 @@ public static class SetPasswordCommandHandler
 			await userManager.UpdateAsync(user);
 		}
 
-
-
 		return await authenticationService.GenerateAuthResultAsync(
 			user,
 			command.ClientIp,

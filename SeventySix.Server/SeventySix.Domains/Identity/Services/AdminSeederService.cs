@@ -53,7 +53,7 @@ public class AdminSeederService(
 	/// <param name="cancellationToken">
 	/// Cancellation token.
 	/// </param>
-	private async Task SeedAdminUserAsync(CancellationToken cancellationToken)
+	internal async Task SeedAdminUserAsync(CancellationToken cancellationToken)
 	{
 		using IServiceScope scope =
 			scopeFactory.CreateScope();
@@ -71,15 +71,18 @@ public class AdminSeederService(
 		if (existingAdmin is not null)
 		{
 			// Ensure existing admin has the requires-password-change flag set in DB
-
 			if (!existingAdmin.RequiresPasswordChange)
 			{
 				existingAdmin.RequiresPasswordChange = true;
-				IdentityResult updateResult = await userManager.UpdateAsync(existingAdmin);
+				IdentityResult updateResult =
+					await userManager.UpdateAsync(existingAdmin);
+
 				if (!updateResult.Succeeded)
 				{
-					string errors = string.Join(", ", updateResult.Errors.Select(error => error.Description));
-					logger.LogError("Failed to update existing admin user: {Errors}", errors);
+					string errors = updateResult.ToErrorString();
+					logger.LogError(
+						"Failed to update existing admin user: {Errors}",
+						errors);
 				}
 
 				logger.LogWarning(
@@ -113,64 +116,72 @@ public class AdminSeederService(
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		if (!await CreateAdminUserAsync(userManager, roleManager))
+		if (!await CreateAdminUserAsync(
+			userManager))
 		{
 			return;
 		}
-
-		// Create admin user
-
-
-		// Creation handled by CreateAdminUserAsync
-
-		// Assign Admin role
-
-
-		// Role assignment handled by CreateAdminUserAsync
-
-
-
-	}
-	private async Task<bool> CreateAdminUserAsync(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
-	{
-		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
-
-		ApplicationUser adminUser = new()
-		{
-			UserName = settings.Value.Username,
-			Email = settings.Value.Email,
-			FullName = settings.Value.FullName ?? "System Administrator",
-			IsActive = true,
-			CreateDate = now,
-			CreatedBy = AuditConstants.SystemUser,
-			RequiresPasswordChange = true,
-		};
-
-		IdentityResult createResult = await userManager.CreateAsync(adminUser, settings.Value.InitialPassword);
-
-		if (!createResult.Succeeded)
-		{
-			string errors = string.Join(", ", createResult.Errors.Select(error => error.Description));
-			logger.LogError("Failed to create admin user: {Errors}", errors);
-			return false;
-		}
-
-
-		IdentityResult roleResult = await userManager.AddToRoleAsync(adminUser, RoleConstants.Admin);
-
-		if (!roleResult.Succeeded)
-		{
-			string errors = string.Join(", ", roleResult.Errors.Select(error => error.Description));
-			logger.LogError("Failed to assign admin role: {Errors}", errors);
-			return false;
-		}
-
-		logger.LogWarning("Initial admin user '{Username}' created with temporary password. Password change required on first login.", settings.Value.Username);
-		return true;
 	}
 
 	/// <summary>
-	/// Test helper to invoke seeding directly in unit tests.
+	/// Creates the admin user with configured settings.
 	/// </summary>
-	public Task SeedAdminUserForTestsAsync(CancellationToken ct) => SeedAdminUserAsync(ct);
+	/// <param name="userManager">
+	/// User manager for user operations.
+	/// </param>
+	private async Task<bool> CreateAdminUserAsync(
+		UserManager<ApplicationUser> userManager)
+	{
+		DateTime now =
+			timeProvider.GetUtcNow().UtcDateTime;
+
+		ApplicationUser adminUser =
+			new()
+			{
+				UserName = settings.Value.Username,
+				Email = settings.Value.Email,
+				FullName =
+					settings.Value.FullName ?? "System Administrator",
+				IsActive = true,
+				CreateDate = now,
+				CreatedBy =
+					AuditConstants.SystemUser,
+				RequiresPasswordChange = true,
+			};
+
+		IdentityResult createResult =
+			await userManager.CreateAsync(
+				adminUser,
+				settings.Value.InitialPassword);
+
+		if (!createResult.Succeeded)
+		{
+			string errors = createResult.ToErrorString();
+			logger.LogError(
+				"Failed to create admin user: {Errors}",
+				errors);
+
+			return false;
+		}
+		IdentityResult roleResult =
+			await userManager.AddToRoleAsync(
+				adminUser,
+				RoleConstants.Admin);
+
+		if (!roleResult.Succeeded)
+		{
+			string errors = roleResult.ToErrorString();
+			logger.LogError(
+				"Failed to assign admin role: {Errors}",
+				errors);
+
+			return false;
+		}
+
+		logger.LogWarning(
+			"Initial admin user '{Username}' created with temporary password. Password change required on first login.",
+			settings.Value.Username);
+
+		return true;
+	}
 }

@@ -176,13 +176,11 @@ public static class TestUserHelper
 
 		if (!createResult.Succeeded)
 		{
-			string errors =
-				string.Join(", ", createResult.Errors.Select(error => error.Description));
+			string errors = createResult.ToErrorString();
 
 			throw new InvalidOperationException(
 				$"Failed to create test user: {errors}");
 		}
-
 		foreach (string role in roles)
 		{
 			IdentityResult roleResult =
@@ -192,8 +190,7 @@ public static class TestUserHelper
 
 			if (!roleResult.Succeeded)
 			{
-				string errors =
-					string.Join(", ", roleResult.Errors.Select(error => error.Description));
+				string errors = roleResult.ToErrorString();
 
 				throw new InvalidOperationException(
 					$"Failed to add role '{role}': {errors}");

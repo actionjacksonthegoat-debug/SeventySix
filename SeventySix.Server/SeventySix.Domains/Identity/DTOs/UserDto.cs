@@ -76,6 +76,7 @@ public record UserDto(
 	string? FullName,
 	DateTime CreateDate,
 	bool IsActive,
+	bool NeedsPendingEmail,
 	string CreatedBy,
 	DateTime? ModifyDate,
 	string ModifiedBy,

@@ -75,8 +75,8 @@ public static class LoginCommandHandler
 		}
 
 		// Determine if the user must change password on first login by checking DB flag
-		bool requiresPasswordChange = user.RequiresPasswordChange;
-
+		bool requiresPasswordChange =
+			user.RequiresPasswordChange;
 
 		return await authenticationService.GenerateAuthResultAsync(
 			user,

@@ -185,7 +185,6 @@ public class SetPasswordCommandHandlerTests
 				UserName = "testuser",
 				Email = "test@example.com",
 				IsActive = true,
-				// Simulate that the user is required to change password prior to reset
 				RequiresPasswordChange = true,
 			};
 

@@ -40,7 +40,7 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 		builder
 			.Property(user => user.LastLoginIp)
 			.HasMaxLength(45);
-		// Flag to require password change on next login (default false)
+
 		builder
 			.Property(user => user.RequiresPasswordChange)
 			.HasColumnType("boolean")
