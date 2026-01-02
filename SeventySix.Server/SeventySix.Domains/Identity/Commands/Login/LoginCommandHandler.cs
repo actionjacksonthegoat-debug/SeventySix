@@ -74,8 +74,9 @@ public static class LoginCommandHandler
 				"INVALID_CREDENTIALS");
 		}
 
-		// Password changed tracking may be done via claims or a flag on user; fall back to false
-		bool requiresPasswordChange = false;
+		// Determine if the user must change password on first login by checking DB flag
+		bool requiresPasswordChange = user.RequiresPasswordChange;
+
 
 		return await authenticationService.GenerateAuthResultAsync(
 			user,

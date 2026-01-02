@@ -70,6 +70,23 @@ public class AdminSeederService(
 
 		if (existingAdmin is not null)
 		{
+			// Ensure existing admin has the requires-password-change flag set in DB
+
+			if (!existingAdmin.RequiresPasswordChange)
+			{
+				existingAdmin.RequiresPasswordChange = true;
+				IdentityResult updateResult = await userManager.UpdateAsync(existingAdmin);
+				if (!updateResult.Succeeded)
+				{
+					string errors = string.Join(", ", updateResult.Errors.Select(error => error.Description));
+					logger.LogError("Failed to update existing admin user: {Errors}", errors);
+				}
+
+				logger.LogWarning(
+					"Existing admin user '{Username}' updated to require password change on first login.",
+					settings.Value.Username);
+			}
+
 			return;
 		}
 
@@ -96,51 +113,64 @@ public class AdminSeederService(
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		// Create admin user
-		ApplicationUser adminUser =
-			new()
-			{
-				UserName = settings.Value.Username,
-				Email = settings.Value.Email,
-				FullName =
-					settings.Value.FullName ?? "System Administrator",
-				IsActive = true,
-				CreateDate = now,
-				CreatedBy =
-					AuditConstants.SystemUser,
-			};
+		if (!await CreateAdminUserAsync(userManager, roleManager))
+		{
+			return;
+		}
 
-		IdentityResult createResult =
-			await userManager.CreateAsync(
-				adminUser,
-				settings.Value.InitialPassword);
+		// Create admin user
+
+
+		// Creation handled by CreateAdminUserAsync
+
+		// Assign Admin role
+
+
+		// Role assignment handled by CreateAdminUserAsync
+
+
+
+	}
+	private async Task<bool> CreateAdminUserAsync(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
+	{
+		DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+
+		ApplicationUser adminUser = new()
+		{
+			UserName = settings.Value.Username,
+			Email = settings.Value.Email,
+			FullName = settings.Value.FullName ?? "System Administrator",
+			IsActive = true,
+			CreateDate = now,
+			CreatedBy = AuditConstants.SystemUser,
+			RequiresPasswordChange = true,
+		};
+
+		IdentityResult createResult = await userManager.CreateAsync(adminUser, settings.Value.InitialPassword);
 
 		if (!createResult.Succeeded)
 		{
-			string errors =
-				string.Join(", ", createResult.Errors.Select(error => error.Description));
-			logger.LogError(
-				"Failed to create admin user: {Errors}",
-				errors);
-			return;
+			string errors = string.Join(", ", createResult.Errors.Select(error => error.Description));
+			logger.LogError("Failed to create admin user: {Errors}", errors);
+			return false;
 		}
 
-		// Assign Admin role
-		IdentityResult roleResult =
-			await userManager.AddToRoleAsync(adminUser, RoleConstants.Admin);
+
+		IdentityResult roleResult = await userManager.AddToRoleAsync(adminUser, RoleConstants.Admin);
 
 		if (!roleResult.Succeeded)
 		{
-			string errors =
-				string.Join(", ", roleResult.Errors.Select(error => error.Description));
-			logger.LogError(
-				"Failed to assign admin role: {Errors}",
-				errors);
-			return;
+			string errors = string.Join(", ", roleResult.Errors.Select(error => error.Description));
+			logger.LogError("Failed to assign admin role: {Errors}", errors);
+			return false;
 		}
 
-		logger.LogWarning(
-			"Initial admin user '{Username}' created with temporary password. Password change required on first login.",
-			settings.Value.Username);
+		logger.LogWarning("Initial admin user '{Username}' created with temporary password. Password change required on first login.", settings.Value.Username);
+		return true;
 	}
+
+	/// <summary>
+	/// Test helper to invoke seeding directly in unit tests.
+	/// </summary>
+	public Task SeedAdminUserForTestsAsync(CancellationToken ct) => SeedAdminUserAsync(ct);
 }

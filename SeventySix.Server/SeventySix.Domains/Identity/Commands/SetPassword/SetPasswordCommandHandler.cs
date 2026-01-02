@@ -122,6 +122,15 @@ public static class SetPasswordCommandHandler
 			now,
 			cancellationToken);
 
+		// Clear the requires-password-change flag and persist the update
+		if (user.RequiresPasswordChange)
+		{
+			user.RequiresPasswordChange = false;
+			await userManager.UpdateAsync(user);
+		}
+
+
+
 		return await authenticationService.GenerateAuthResultAsync(
 			user,
 			command.ClientIp,

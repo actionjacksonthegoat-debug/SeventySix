@@ -185,6 +185,8 @@ public class SetPasswordCommandHandlerTests
 				UserName = "testuser",
 				Email = "test@example.com",
 				IsActive = true,
+				// Simulate that the user is required to change password prior to reset
+				RequiresPasswordChange = true,
 			};
 
 		SetPasswordRequest request =
@@ -247,6 +249,10 @@ public class SetPasswordCommandHandlerTests
 				user.Id,
 				now,
 				Arg.Any<CancellationToken>());
+
+		await UserManager
+			.Received(1)
+			.UpdateAsync(Arg.Is<ApplicationUser>(u => u.RequiresPasswordChange == false));
 	}
 
 	[Fact]

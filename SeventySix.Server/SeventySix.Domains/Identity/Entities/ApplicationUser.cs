@@ -73,6 +73,12 @@ public class ApplicationUser : IdentityUser<long>, IAuditableEntity
 	public string? LastLoginIp { get; set; }
 
 	/// <summary>
+	/// Gets or sets whether the user must change their password on next login.
+	/// Stored in the DB as a non-nullable boolean with default false.
+	/// </summary>
+	public bool RequiresPasswordChange { get; set; } = false;
+
+	/// <summary>
 	/// Gets or sets whether pending email notification is needed.
 	/// </summary>
 	public bool NeedsPendingEmail { get; set; }
