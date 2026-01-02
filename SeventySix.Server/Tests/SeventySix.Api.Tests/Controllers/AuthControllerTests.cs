@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
+using SeventySix.Shared.Extensions;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;
@@ -836,10 +837,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Token: "invalid-token",
-			Email: "nonexistent@example.com",
-			Username: "newuser",
-			Password: "SecurePass123!");
+				Token: "invalid-token",
+				Username: "newuser",
+				Password: "SecurePass123!");
 
 		// Act
 		HttpResponseMessage response =
@@ -911,12 +911,14 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 				await userManager.GenerateEmailConfirmationTokenAsync(tempUser);
 		}
 
+		string combinedToken =
+			RegistrationTokenService.Encode(email, token);
+
 		CompleteRegistrationRequest request =
 			new(
-			Token: token,
-			Email: email,
-			Username: username,
-			Password: "SecurePass123!");
+				Token: combinedToken,
+				Username: username,
+				Password: "SecurePass123!");
 
 		// Act
 		HttpResponseMessage response =

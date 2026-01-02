@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SeventySix.Identity.Constants;
+using SeventySix.Shared;
 using SeventySix.Shared.Extensions;
 
 namespace SeventySix.Identity;
@@ -56,16 +57,32 @@ public static class CompleteRegistrationCommandHandler
 		ILogger<CompleteRegistrationCommand> logger,
 		CancellationToken cancellationToken)
 	{
-		// Find the user by email from the request
-		// The temporary user was created in InitiateRegistration
+		// Decode combined token (contains email + verification token)
+		CombinedRegistrationToken? decodedToken =
+			RegistrationTokenService.Decode(command.Request.Token);
+
+		if (decodedToken is null)
+		{
+			logger.LogWarning(
+				"Invalid combined registration token format");
+
+			return AuthResult.Failed(
+				"Invalid or expired verification link.",
+				AuthErrorCodes.InvalidToken);
+		}
+
+		string decodedEmail =
+			decodedToken.Email;
+
+		// Find the user by the decoded email (temporary user created during InitiateRegistration)
 		ApplicationUser? existingUser =
-			await userManager.FindByEmailAsync(command.Request.Email);
+			await userManager.FindByEmailAsync(decodedEmail);
 
 		if (existingUser is null)
 		{
 			logger.LogWarning(
 				"Attempted to complete registration for non-existent email: {Email}",
-				command.Request.Email);
+				decodedEmail);
 
 			return AuthResult.Failed(
 				"Invalid or expired verification link.",
@@ -74,14 +91,15 @@ public static class CompleteRegistrationCommandHandler
 
 		// Verify the email confirmation token using Identity's token provider
 		IdentityResult confirmResult =
-			await userManager.ConfirmEmailAsync(existingUser, command.Request.Token);
-
+			await userManager.ConfirmEmailAsync(
+				existingUser,
+				decodedToken.Token);
 		if (!confirmResult.Succeeded)
 		{
 			string errors = confirmResult.ToErrorString();
 			logger.LogWarning(
 				"Email confirmation failed for {Email}: {Errors}",
-				command.Request.Email,
+				decodedEmail,
 				errors);
 
 			return AuthResult.Failed(
@@ -118,7 +136,7 @@ public static class CompleteRegistrationCommandHandler
 			return DuplicateKeyViolationHandler.HandleAsAuthResult(
 				exception,
 				command.Request.Username,
-				command.Request.Email,
+				decodedEmail,
 				logger);
 		}
 	}

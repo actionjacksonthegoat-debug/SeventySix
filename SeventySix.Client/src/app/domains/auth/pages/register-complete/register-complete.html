@@ -10,7 +10,9 @@
 			</p>
 			<a
 				routerLink="/auth/register"
-				class="btn-primary">
+				mat-flat-button
+				color="primary"
+				class="submit-button">
 				Request New Link
 			</a>
 		</div>
@@ -96,8 +98,10 @@
 			</div>
 
 			<button
+				mat-flat-button
+				color="primary"
 				type="submit"
-				class="btn-primary"
+				class="submit-button"
 				[disabled]="
 						isLoading() ||
 						!username.trim() ||

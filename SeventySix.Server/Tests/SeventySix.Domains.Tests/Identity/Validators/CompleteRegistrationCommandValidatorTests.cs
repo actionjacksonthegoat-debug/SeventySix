@@ -22,10 +22,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token-123",
-			Username: "testuser",
-			Password: "SecurePass123!");
+				Token: "valid-token-123",
+				Username: "testuser",
+				Password: "SecurePass123!");
 
 		// Act
 		ValidationResult result =
@@ -44,10 +43,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: token!,
-			Username: "testuser",
-			Password: "SecurePass123!");
+				Token: token!,
+				Username: "testuser",
+				Password: "SecurePass123!");
 
 		// Act
 		ValidationResult result =
@@ -67,10 +65,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: username!,
-			Password: "SecurePass123!");
+				Token: "valid-token",
+				Username: username!,
+				Password: "SecurePass123!");
 
 		// Act
 		ValidationResult result =
@@ -90,10 +87,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: username,
-			Password: "SecurePass123!");
+				Token: "valid-token",
+				Username: username,
+				Password: "SecurePass123!");
 
 		// Act
 		ValidationResult result =
@@ -113,10 +109,9 @@ public class CompleteRegistrationCommandValidatorTests
 
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: longUsername,
-			Password: "SecurePass123!");
+				Token: "valid-token",
+				Username: longUsername,
+				Password: "SecurePass123!");
 
 		// Act
 		ValidationResult result =
@@ -138,10 +133,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: username,
-			Password: "SecurePass123!");
+				Token: "valid-token",
+				Username: username,
+				Password: "SecurePass123!");
 
 		// Act
 		ValidationResult result =
@@ -163,10 +157,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: username,
-			Password: "SecurePass123!");
+				Token: "valid-token",
+				Username: username,
+				Password: "SecurePass123!");
 
 		// Act
 		ValidationResult result =
@@ -185,10 +178,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: "testuser",
-			Password: password!);
+				Token: "valid-token",
+				Username: "testuser",
+				Password: password!);
 
 		// Act
 		ValidationResult result =
@@ -208,10 +200,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: "testuser",
-			Password: password);
+				Token: "valid-token",
+				Username: "testuser",
+				Password: password);
 
 		// Act
 		ValidationResult result =
@@ -228,10 +219,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: "testuser",
-			Password: "securepass123!");
+				Token: "valid-token",
+				Username: "testuser",
+				Password: "securepass123!");
 
 		// Act
 		ValidationResult result =
@@ -248,10 +238,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: "testuser",
-			Password: "SECUREPASS123!");
+				Token: "valid-token",
+				Username: "testuser",
+				Password: "SECUREPASS123!");
 
 		// Act
 		ValidationResult result =
@@ -268,10 +257,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: "testuser",
-			Password: "SecurePassword!");
+				Token: "valid-token",
+				Username: "testuser",
+				Password: "SecurePassword!");
 
 		// Act
 		ValidationResult result =
@@ -293,10 +281,9 @@ public class CompleteRegistrationCommandValidatorTests
 		// Arrange
 		CompleteRegistrationRequest request =
 			new(
-			Email: "test@example.com",
-			Token: "valid-token",
-			Username: "testuser",
-			Password: password);
+				Token: "valid-token",
+				Username: "testuser",
+				Password: password);
 
 		// Act
 		ValidationResult result =

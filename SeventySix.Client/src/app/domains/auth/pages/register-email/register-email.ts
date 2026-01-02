@@ -13,6 +13,7 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
+import { MatButtonModule } from "@angular/material/button";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 
@@ -20,7 +21,7 @@ import { NotificationService } from "@shared/services/notification.service";
 	{
 		selector: "app-register-email",
 		standalone: true,
-		imports: [FormsModule, RouterLink],
+		imports: [FormsModule, RouterLink, MatButtonModule],
 		changeDetection: ChangeDetectionStrategy.OnPush,
 		templateUrl: "./register-email.html",
 		styleUrl: "./register-email.scss"

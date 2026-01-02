@@ -505,7 +505,7 @@ describe("LoginComponent",
 
 						// Assert
 						const githubButton: HTMLButtonElement | null =
-							fixture.nativeElement.querySelector(".btn-github");
+							fixture.nativeElement.querySelector(".github-button");
 						expect(githubButton)
 							.toBeTruthy();
 					});
