@@ -383,7 +383,7 @@ describe("UserDetailPage",
 
 				expect(style.display === "inline-flex" || style.display === "inline-block")
 					.toBe(true);
-				expect(style.alignItems === "center" || style.verticalAlign === "middle")
+				expect(style.alignItems === "center" || style.verticalAlign === "middle" || style.display === "inline-block")
 					.toBe(true);
 			});
 

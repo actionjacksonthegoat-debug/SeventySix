@@ -160,8 +160,7 @@ public class AdminSeederServiceUnitTests
 		await service.SeedAdminUserAsync(CancellationToken.None);
 
 		// Assert
-		await userManager.Received(1).UpdateAsync(
-			Arg.Is<ApplicationUser>(
-				user => user.RequiresPasswordChange == true));
+		// Seeder should not update an existing admin's RequiresPasswordChange flag
+		await userManager.DidNotReceive().UpdateAsync(Arg.Any<ApplicationUser>());
 	}
 }

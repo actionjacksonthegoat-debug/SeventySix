@@ -88,6 +88,7 @@ body {
 
 .page-content {
 	flex: 1;
+	min-height: calc(100vh - #{vars.$header-height} - #{vars.$footer-height});
 	padding: vars.$spacing-lg;
 	width: 100%;
 	box-sizing: border-box;

@@ -54,10 +54,24 @@ describe("BreadcrumbComponent",
 									{
 										path: "log-management",
 										component: TestComponent
+									},
+									{
+										path: "login",
+										component: TestComponent
+									},
+									{
+										path: "developer",
+										component: TestComponent,
+										children: [
+											{
+												path: "architecture",
+												component: TestComponent,
+												data: { breadcrumb: "Architecture Guide" }
+											}
+										]
 									}
 								]))
 						.build(BreadcrumbComponent);
-
 				component =
 					fixture.componentInstance;
 				router =

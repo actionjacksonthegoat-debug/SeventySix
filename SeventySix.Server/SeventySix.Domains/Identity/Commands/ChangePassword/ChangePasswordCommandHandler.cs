@@ -90,6 +90,25 @@ public static class ChangePasswordCommandHandler
 			}
 		}
 
+		// Clear the requires-password-change flag and persist the change
+		if (user.RequiresPasswordChange)
+		{
+			user.RequiresPasswordChange = false;
+			IdentityResult updateResult =
+				await userManager.UpdateAsync(user);
+
+			if (!updateResult.Succeeded)
+			{
+				string errors = updateResult.ToErrorString();
+				logger.LogError(
+					"Failed to clear RequiresPasswordChange flag for user {UserId}: {Errors}",
+					user.Id,
+					errors);
+				throw new InvalidOperationException(
+					"Failed to update user password change status");
+			}
+		}
+
 		// Revoke all existing refresh tokens
 		await tokenRepository.RevokeAllUserTokensAsync(
 			command.UserId,

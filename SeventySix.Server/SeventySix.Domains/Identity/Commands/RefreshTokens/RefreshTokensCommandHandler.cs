@@ -74,11 +74,9 @@ public static class RefreshTokensCommandHandler
 				AuthErrorCodes.TokenReuse);
 		}
 
-		// Check if user has a password set to determine if password change is required
-		bool hasPassword =
-			await userManager.HasPasswordAsync(user);
-
-		bool requiresPasswordChange = !hasPassword;
+		// Use the database flag as the single source of truth
+		bool requiresPasswordChange =
+			user.RequiresPasswordChange;
 
 		// Generate new tokens using authentication service
 		// Note: We replace the refresh token with the rotated one

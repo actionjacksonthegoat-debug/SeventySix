@@ -239,6 +239,47 @@ describe("AuthService",
 					});
 			});
 
+		describe("forceLogoutLocally",
+			() =>
+			{
+				it("should clear all local authentication state",
+					() =>
+					{
+						// Arrange - set authenticated state via login
+						const mockResponse: AuthResponse =
+							createMockAuthResponse();
+
+						service
+							.login(
+								{
+									usernameOrEmail: "testuser",
+									password: "Password123",
+									rememberMe: false
+								})
+							.subscribe();
+
+						const req: TestRequest =
+							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+						req.flush(mockResponse);
+
+						expect(service.isAuthenticated())
+							.toBe(true);
+						expect(localStorage.getItem(SESSION_KEY))
+							.toBe("true");
+
+						// Act
+						service.forceLogoutLocally();
+
+						// Assert
+						expect(service.isAuthenticated())
+							.toBe(false);
+						expect(service.user())
+							.toBeNull();
+						expect(localStorage.getItem(SESSION_KEY))
+							.toBeNull();
+					});
+			});
+
 		describe("hasRole",
 			() =>
 			{

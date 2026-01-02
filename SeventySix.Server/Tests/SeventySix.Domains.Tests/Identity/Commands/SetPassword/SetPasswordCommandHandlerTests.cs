@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.TestUtilities.Mocks;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Commands.SetPassword;
@@ -29,25 +30,11 @@ public class SetPasswordCommandHandlerTests
 	public SetPasswordCommandHandlerTests()
 	{
 		UserManager =
-			Substitute.For<UserManager<ApplicationUser>>(
-				Substitute.For<IUserStore<ApplicationUser>>(),
-				null,
-				null,
-				null,
-				null,
-				null,
-				null,
-				null,
-				null);
+			IdentityMockFactory.CreateUserManager();
 		TokenRepository =
 			Substitute.For<ITokenRepository>();
 		AuthenticationService =
-			Substitute.For<AuthenticationService>(
-				Substitute.For<IAuthRepository>(),
-				Substitute.For<ITokenService>(),
-				null!,
-				null!,
-				null!);
+			IdentityMockFactory.CreateAuthenticationService();
 		Logger =
 			Substitute.For<ILogger<SetPasswordCommand>>();
 		TimeProvider =

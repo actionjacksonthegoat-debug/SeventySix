@@ -70,26 +70,8 @@ public class AdminSeederService(
 
 		if (existingAdmin is not null)
 		{
-			// Ensure existing admin has the requires-password-change flag set in DB
-			if (!existingAdmin.RequiresPasswordChange)
-			{
-				existingAdmin.RequiresPasswordChange = true;
-				IdentityResult updateResult =
-					await userManager.UpdateAsync(existingAdmin);
-
-				if (!updateResult.Succeeded)
-				{
-					string errors = updateResult.ToErrorString();
-					logger.LogError(
-						"Failed to update existing admin user: {Errors}",
-						errors);
-				}
-
-				logger.LogWarning(
-					"Existing admin user '{Username}' updated to require password change on first login.",
-					settings.Value.Username);
-			}
-
+			// Admin already exists - do not modify their password change status
+			// The requires-password-change flag is managed by the change-password flow
 			return;
 		}
 
@@ -116,11 +98,8 @@ public class AdminSeederService(
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
-		if (!await CreateAdminUserAsync(
-			userManager))
-		{
-			return;
-		}
+		await CreateAdminUserAsync(
+			userManager);
 	}
 
 	/// <summary>
@@ -179,7 +158,8 @@ public class AdminSeederService(
 		}
 
 		logger.LogWarning(
-			"Initial admin user '{Username}' created with temporary password. Password change required on first login.",
+			"Initial admin user '{Username}' created with temporary password. "
+				+ "Password change required on first login.",
 			settings.Value.Username);
 
 		return true;

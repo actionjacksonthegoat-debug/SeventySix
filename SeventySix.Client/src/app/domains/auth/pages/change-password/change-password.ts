@@ -182,8 +182,8 @@ export class ChangePasswordComponent implements OnInit
 				{
 					this.notification.success(
 						"Password changed successfully. Please log in again.");
-					// Clear auth state and redirect to login
-					this.authService.clearPasswordChangeRequirement();
+					// Clear auth state locally (server already revoked tokens) and redirect to login
+					this.authService.forceLogoutLocally();
 					// The API clears the refresh token, so user needs to log in again
 					this.router.navigate(
 						["/auth/login"],

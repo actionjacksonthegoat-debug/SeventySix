@@ -25,6 +25,7 @@ import { ChangePasswordComponent } from "./change-password";
 interface MockAuthService
 {
 	clearPasswordChangeRequirement: ReturnType<typeof vi.fn>;
+	forceLogoutLocally: ReturnType<typeof vi.fn>;
 	isAuthenticated: ReturnType<typeof signal<boolean>>;
 	requiresPasswordChange: ReturnType<typeof signal<boolean>>;
 }
@@ -54,6 +55,7 @@ describe("ChangePasswordComponent",
 				mockAuthService =
 					{
 						clearPasswordChangeRequirement: vi.fn(),
+						forceLogoutLocally: vi.fn(),
 						isAuthenticated: signal<boolean>(true),
 						requiresPasswordChange: signal<boolean>(false)
 					};
@@ -206,7 +208,7 @@ describe("ChangePasswordComponent",
 							.toHaveBeenCalledWith(
 								"Password changed successfully. Please log in again.");
 						expect(
-							mockAuthService.clearPasswordChangeRequirement)
+							mockAuthService.forceLogoutLocally)
 							.toHaveBeenCalled();
 						expect(router.navigate)
 							.toHaveBeenCalledWith(
