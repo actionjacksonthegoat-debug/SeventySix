@@ -264,9 +264,6 @@ namespace SeventySix.Domains.Migrations
 					b.Property<DateTime?>("ModifyDate")
 						.HasColumnType("timestamp with time zone");
 
-					b.Property<bool>("NeedsPendingEmail")
-						.HasColumnType("boolean");
-
 					b.Property<string>("NormalizedEmail")
 						.HasMaxLength(256)
 						.HasColumnType("character varying(256)");

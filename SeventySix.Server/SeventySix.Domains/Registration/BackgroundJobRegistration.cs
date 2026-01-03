@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
 using SeventySix.Logging;
@@ -24,7 +25,7 @@ namespace SeventySix.Registration;
 ///   <item><see cref="RefreshTokenCleanupService"/> - Periodic cleanup of expired refresh tokens (Identity)</item>
 ///   <item><see cref="IpAnonymizationService"/> - Periodic anonymization of old IP addresses for GDPR compliance (Identity)</item>
 ///   <item><see cref="AdminSeederService"/> - One-time admin user seeding at startup (Identity)</item>
-///   <item><see cref="PendingEmailBackgroundService"/> - Daily processing of pending welcome emails (Identity)</item>
+///   <item><see cref="EmailQueueProcessorService"/> - Periodic processing of email queue (ElectronicNotifications)</item>
 ///   <item><see cref="LogCleanupService"/> - Periodic cleanup of old log files and database entries (Logging)</item>
 /// </list>
 ///
@@ -77,9 +78,9 @@ public static class BackgroundJobRegistration
 			configuration.GetSection(AdminSeederSettings.SectionName));
 		services.AddHostedService<AdminSeederService>();
 
-		// PendingEmailBackgroundService - Daily processing of pending welcome emails
-		// Settings: Email section in appsettings.json (reuses EmailSettings)
-		services.AddHostedService<PendingEmailBackgroundService>();
+		// EmailQueueProcessorService - Periodic processing of email queue
+		// Settings: Email:Queue section in appsettings.json
+		services.AddHostedService<EmailQueueProcessorService>();
 
 		// LogCleanupService - Periodic cleanup of old log files and database entries
 		// Settings: Logging:Cleanup section in appsettings.json

@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SeventySix.ElectronicNotifications.Emails;
+using Wolverine;
 
 namespace SeventySix.Identity;
 
@@ -15,6 +16,7 @@ public static class InitiatePasswordResetCommandHandler
 {
 	/// <summary>
 	/// Handles the initiate password reset command using Identity's GeneratePasswordResetTokenAsync.
+	/// Enqueues the email for async delivery via the email queue.
 	/// </summary>
 	/// <param name="command">
 	/// The initiate password reset command containing user id and flags.
@@ -22,8 +24,8 @@ public static class InitiatePasswordResetCommandHandler
 	/// <param name="userManager">
 	/// Identity <see cref="UserManager{TUser}"/> for token generation.
 	/// </param>
-	/// <param name="emailService">
-	/// Service to send password reset or welcome emails.
+	/// <param name="messageBus">
+	/// Message bus for enqueuing emails.
 	/// </param>
 	/// <param name="logger">
 	/// Logger instance.
@@ -38,7 +40,7 @@ public static class InitiatePasswordResetCommandHandler
 	public static async Task HandleAsync(
 		InitiatePasswordResetCommand command,
 		UserManager<ApplicationUser> userManager,
-		IEmailService emailService,
+		IMessageBus messageBus,
 		ILogger<InitiatePasswordResetCommand> logger,
 		CancellationToken cancellationToken)
 	{
@@ -63,21 +65,26 @@ public static class InitiatePasswordResetCommandHandler
 		string combinedToken =
 			$"{user.Id}:{resetToken}";
 
-		if (command.IsNewUser)
-		{
-			await emailService.SendWelcomeEmailAsync(
+		// Determine email type based on whether this is a new user or password reset
+		string emailType =
+			command.IsNewUser ? EmailType.Welcome : EmailType.PasswordReset;
+
+		// Enqueue the email for async delivery
+		string usernameValue =
+			user.UserName!;
+		Dictionary<string, string> templateData =
+			new()
+			{
+				["username"] = usernameValue,
+				["resetToken"] = combinedToken
+			};
+
+		await messageBus.InvokeAsync(
+			new EnqueueEmailCommand(
+				emailType,
 				user.Email!,
-				user.UserName!,
-				combinedToken,
-				cancellationToken);
-		}
-		else
-		{
-			await emailService.SendPasswordResetEmailAsync(
-				user.Email!,
-				user.UserName!,
-				combinedToken,
-				cancellationToken);
-		}
+				user.Id,
+				templateData),
+			cancellationToken);
 	}
 }

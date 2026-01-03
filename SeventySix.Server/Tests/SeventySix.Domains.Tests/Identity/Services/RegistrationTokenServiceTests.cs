@@ -1,9 +1,9 @@
-namespace SeventySix.Domains.Tests.Identity.Services;
-
 using Shouldly;
 using Xunit;
 using SeventySix.Shared;
 using SeventySix.Shared.Extensions;
+
+namespace SeventySix.Domains.Tests.Identity.Services;
 
 public class RegistrationTokenServiceTests
 {
@@ -33,7 +33,8 @@ public class RegistrationTokenServiceTests
 		// Arrange
 		string testEmail = "test@example.com";
 		string verificationToken = "verification-token-123";
-		string encodedToken = RegistrationTokenService.Encode(testEmail, verificationToken);
+		string encodedToken =
+			RegistrationTokenService.Encode(testEmail, verificationToken);
 
 		// Act
 		CombinedRegistrationToken? decodedToken =

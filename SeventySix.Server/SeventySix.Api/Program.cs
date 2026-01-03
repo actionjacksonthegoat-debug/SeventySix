@@ -101,7 +101,7 @@ builder.Services.AddInfrastructure();
 builder.Services.AddIdentityDomain(connectionString);
 builder.Services.AddLoggingDomain(connectionString, builder.Configuration);
 builder.Services.AddApiTrackingDomain(connectionString, builder.Configuration);
-builder.Services.AddElectronicNotificationsDomain(builder.Configuration);
+builder.Services.AddElectronicNotificationsDomain(connectionString, builder.Configuration);
 
 // Register all background jobs (single registration point)
 builder.Services.AddBackgroundJobs(builder.Configuration);

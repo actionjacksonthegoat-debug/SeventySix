@@ -17,7 +17,7 @@ namespace SeventySix.Identity;
 public static class CreateUserCommandHandler
 {
 	/// <summary>
-	/// Handles user creation with duplicate checks and welcome email.
+	/// Handles user creation with duplicate checks and enqueues welcome email.
 	/// </summary>
 	/// <param name="request">
 	/// The create user request.
@@ -43,6 +43,7 @@ public static class CreateUserCommandHandler
 	/// <remarks>
 	/// Wolverine's UseEntityFrameworkCoreTransactions middleware automatically wraps this handler in a transaction.
 	/// Database unique constraints on UserName and Email provide atomicity - no manual transaction management needed.
+	/// Welcome emails are enqueued for async delivery via the email queue.
 	/// </remarks>
 	public static async Task<UserDto> HandleAsync(
 		CreateUserRequest request,
@@ -106,61 +107,38 @@ public static class CreateUserCommandHandler
 			throw;
 		}
 
-		// Send welcome email OUTSIDE transaction to avoid rollback on email failure
+		// Generate password reset token and enqueue welcome email
 		try
 		{
+			string resetToken =
+				await userManager.GeneratePasswordResetTokenAsync(newUser);
+
+			// Format: {userId}:{resetToken}
+			string combinedToken =
+				$"{newUser.Id}:{resetToken}";
+
 			await messageBus.InvokeAsync(
-				new InitiatePasswordResetCommand(
+				new EnqueueEmailCommand(
+					EmailType.Welcome,
+					createdUser.Email,
 					createdUser.Id,
-					IsNewUser: true),
+					new Dictionary<string, string>
+					{
+						["username"] = createdUser.Username,
+						["resetToken"] = combinedToken
+					}),
 				cancellationToken);
-		}
-		catch (EmailRateLimitException ex)
-		{
-			// Email rate limited - mark user for pending email
-			await MarkUserNeedsPendingEmailAsync(
-				createdUser.Id,
-				userManager);
-
-			logger.LogWarning(
-				"Email rate limited for user {Email} (ID: {UserId}). Resets in: {TimeUntilReset}",
-				createdUser.Email,
-				createdUser.Id,
-				ex.TimeUntilReset);
-
-			// Re-throw to let controller return appropriate response
-			throw;
 		}
 		catch (Exception ex)
 		{
+			// Log but don't fail - user was created, email can be resent manually
 			logger.LogWarning(
 				ex,
-				"Failed to send welcome email to user {Email} (ID: {UserId}). User was created successfully but will need manual password reset. Error: {ErrorMessage}",
+				"Failed to enqueue welcome email for user {Email} (ID: {UserId}). User was created successfully.",
 				createdUser.Email,
-				createdUser.Id,
-				ex.Message);
+				createdUser.Id);
 		}
 
 		return createdUser;
-	}
-
-	/// <summary>
-	/// Marks a user as needing a pending password reset email.
-	/// </summary>
-	private static async Task MarkUserNeedsPendingEmailAsync(
-		long userId,
-		UserManager<ApplicationUser> userManager)
-	{
-		ApplicationUser? user =
-			await userManager.FindByIdAsync(userId.ToString());
-
-		if (user == null)
-		{
-			return;
-		}
-
-		user.NeedsPendingEmail = true;
-
-		await userManager.UpdateAsync(user);
 	}
 }

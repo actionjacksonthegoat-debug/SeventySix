@@ -48,7 +48,6 @@ public class UserBuilder
 	private string? Preferences = null;
 	private DateTime? LastLoginAt = null;
 	private string? LastLoginIp = null;
-	private bool NeedsPendingEmail = false;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserBuilder"/> class.
@@ -243,15 +242,6 @@ public class UserBuilder
 	}
 
 	/// <summary>
-	/// Marks the user as needing a pending email.
-	/// </summary>
-	public UserBuilder WithNeedsPendingEmail(bool value)
-	{
-		NeedsPendingEmail = value;
-		return this;
-	}
-
-	/// <summary>
 	/// Builds the ApplicationUser entity with the configured values.
 	/// </summary>
 	/// <returns>
@@ -278,7 +268,6 @@ public class UserBuilder
 			Preferences = Preferences,
 			LastLoginAt = LastLoginAt,
 			LastLoginIp = LastLoginIp,
-			NeedsPendingEmail = NeedsPendingEmail,
 		};
 	}
 

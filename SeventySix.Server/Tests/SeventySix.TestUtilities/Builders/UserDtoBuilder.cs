@@ -29,7 +29,6 @@ public class UserDtoBuilder
 	private bool IsDeleted = false;
 	private DateTime? DeletedAt = null;
 	private string? DeletedBy = null;
-	private bool NeedsPendingEmail = false;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserDtoBuilder"/> class.
@@ -162,15 +161,6 @@ public class UserDtoBuilder
 	}
 
 	/// <summary>
-	/// Sets whether the user requires a pending email.
-	/// </summary>
-	public UserDtoBuilder WithNeedsPendingEmail(bool value)
-	{
-		NeedsPendingEmail = value;
-		return this;
-	}
-
-	/// <summary>
 	/// Builds the UserDto instance.
 	/// </summary>
 	public UserDto Build() =>
@@ -181,7 +171,6 @@ public class UserDtoBuilder
 			FullName,
 			CreateDate,
 			IsActive,
-			NeedsPendingEmail,
 			CreatedBy,
 			ModifyDate,
 			ModifiedBy,

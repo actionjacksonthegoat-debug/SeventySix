@@ -44,7 +44,6 @@ public class UserExtensionsTests
 			.WithIsActive(true)
 			.Build();
 		user.Id = 123;
-		user.NeedsPendingEmail = true;
 
 		// Act
 		UserDto dto = user.ToDto();
@@ -57,7 +56,6 @@ public class UserExtensionsTests
 		Assert.Equal("John Doe", dto.FullName);
 		Assert.Equal(createDate, dto.CreateDate);
 		Assert.True(dto.IsActive);
-		Assert.True(dto.NeedsPendingEmail);
 	}
 
 	[Fact]

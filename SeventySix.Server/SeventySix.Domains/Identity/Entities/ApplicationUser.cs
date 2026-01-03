@@ -79,11 +79,6 @@ public class ApplicationUser : IdentityUser<long>, IAuditableEntity
 	public bool RequiresPasswordChange { get; set; } = false;
 
 	/// <summary>
-	/// Gets or sets whether pending email notification is needed.
-	/// </summary>
-	public bool NeedsPendingEmail { get; set; }
-
-	/// <summary>
 	/// Gets or sets user preferences as JSON.
 	/// </summary>
 	public string? Preferences { get; set; }

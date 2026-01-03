@@ -18,7 +18,6 @@ export function createMockUserDto(overrides: Partial<UserDto> = {}): UserDto
 		isActive: true,
 		createdBy: "system",
 		modifiedBy: "system",
-		needsPendingEmail: false,
 		modifyDate: null,
 		lastLoginAt: null,
 		isDeleted: false,
