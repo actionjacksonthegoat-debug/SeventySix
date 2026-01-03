@@ -2,16 +2,11 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Logging;
-using SeventySix.Logging.Commands.CreateClientLog;
-using SeventySix.Logging.Queries.GetLogsPaged;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.Interfaces;
-using SeventySix.Shared.Persistence;
+using SeventySix.Shared.Registration;
 
 namespace SeventySix.Registration;
 
@@ -40,39 +35,21 @@ public static class LoggingRegistration
 		string connectionString,
 		IConfiguration configuration)
 	{
-		services.AddDbContext<LoggingDbContext>(
-			(serviceProvider, options) =>
-			{
-				AuditInterceptor auditInterceptor =
-					serviceProvider.GetRequiredService<AuditInterceptor>();
-
-				options.UseNpgsql(
-					connectionString,
-					npgsqlOptions =>
-						npgsqlOptions.MigrationsHistoryTable(
-							DatabaseConstants.MigrationsHistoryTableName,
-							SchemaConstants.Logging));
-				options.AddInterceptors(auditInterceptor);
-			});
+		// Register DbContext via shared helper
+		services.AddDomainDbContext<LoggingDbContext>(
+			connectionString,
+			SchemaConstants.Logging);
 
 		services.AddScoped<ILogRepository, LogRepository>();
 
-		// Register health check for multi-db health monitoring
-		services.AddScoped<IDatabaseHealthCheck, LoggingHealthCheck>();
+		// Register transaction manager for logging context
+		services.AddTransactionManagerFor<LoggingDbContext>();
 
-		// Validators - Singleton (stateless, thread-safe)
-		services.AddSingleton<
-			IValidator<LogQueryRequest>,
-			LogQueryRequestValidator
-		>();
-		services.AddSingleton<
-			IValidator<CreateLogRequest>,
-			CreateClientLogCommandValidator
-		>();
-		services.AddSingleton<
-			IValidator<GetLogsPagedQuery>,
-			GetLogsPagedQueryValidator
-		>();
+		// Register health check for multi-db health monitoring using generic Wolverine wrapper
+		services.AddWolverineHealthCheck<CheckLoggingHealthQuery>(SchemaConstants.Logging);
+
+		// Register validators via assembly scanning + command adapter helper
+		services.AddDomainValidatorsFromAssemblyContaining<LoggingDbContext>();
 
 		return services;
 	}

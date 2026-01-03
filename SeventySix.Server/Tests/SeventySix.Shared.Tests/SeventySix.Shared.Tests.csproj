@@ -31,6 +31,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\SeventySix.Shared\SeventySix.Shared.csproj" />
 		<ProjectReference Include="..\..\SeventySix.Domains\SeventySix.Domains.csproj" />
+		<ProjectReference Include="..\..\SeventySix.Api\SeventySix.Api.csproj" />
 		<ProjectReference Include="..\SeventySix.TestUtilities\SeventySix.TestUtilities.csproj" />
 	</ItemGroup>
 

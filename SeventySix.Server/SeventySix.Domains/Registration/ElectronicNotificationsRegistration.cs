@@ -2,13 +2,12 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.Persistence;
+using SeventySix.Shared.Registration;
 
 namespace SeventySix.Registration;
 
@@ -60,21 +59,10 @@ public static class ElectronicNotificationsRegistration
 		string connectionString,
 		IConfiguration configuration)
 	{
-		// Register DbContext with PostgreSQL
-		services.AddDbContext<ElectronicNotificationsDbContext>(
-			(serviceProvider, options) =>
-			{
-				AuditInterceptor auditInterceptor =
-					serviceProvider.GetRequiredService<AuditInterceptor>();
-
-				options.UseNpgsql(
-					connectionString,
-					npgsqlOptions =>
-						npgsqlOptions.MigrationsHistoryTable(
-							DatabaseConstants.MigrationsHistoryTableName,
-							SchemaConstants.ElectronicNotifications));
-				options.AddInterceptors(auditInterceptor);
-			});
+		// Register ElectronicNotificationsDbContext via shared helper
+		services.AddDomainDbContext<ElectronicNotificationsDbContext>(
+			connectionString,
+			SchemaConstants.ElectronicNotifications);
 
 		// Bind email settings from configuration
 		services.Configure<EmailSettings>(configuration.GetSection("Email"));
@@ -82,6 +70,9 @@ public static class ElectronicNotificationsRegistration
 		// Bind email queue settings
 		services.Configure<EmailQueueSettings>(
 			configuration.GetSection(EmailQueueSettings.SectionName));
+
+		// Register transaction manager for notifications context
+		services.AddTransactionManagerFor<ElectronicNotificationsDbContext>();
 
 		// Register email service
 		services.AddScoped<IEmailService, EmailService>();

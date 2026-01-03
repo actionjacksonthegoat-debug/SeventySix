@@ -119,7 +119,7 @@ builder.Services.AddConfiguredRateLimiting(builder.Configuration);
 builder.Services.AddConfiguredCors(builder.Configuration);
 
 // Add Data Protection for key management
-builder.Services.AddConfiguredDataProtection(builder.Environment);
+builder.Services.AddConfiguredDataProtection(builder.Configuration, builder.Environment);
 
 // Add JWT authentication
 builder.Services.AddAuthenticationServices(builder.Configuration);
