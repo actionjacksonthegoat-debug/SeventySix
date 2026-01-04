@@ -35,12 +35,31 @@ import { NotificationService } from "@shared/services/notification.service";
  */
 export class LoginComponent implements OnInit
 {
+	/**
+	 * Auth service for performing login operations.
+	 * @type {AuthService}
+	 */
 	private readonly authService: AuthService =
 		inject(AuthService);
+
+	/**
+	 * Router for navigation after successful login.
+	 * @type {Router}
+	 */
 	private readonly router: Router =
 		inject(Router);
+
+	/**
+	 * Activated route for reading returnUrl query parameter.
+	 * @type {ActivatedRoute}
+	 */
 	private readonly route: ActivatedRoute =
 		inject(ActivatedRoute);
+
+	/**
+	 * Notification service for showing messages to the user.
+	 * @type {NotificationService}
+	 */
 	private readonly notification: NotificationService =
 		inject(NotificationService);
 

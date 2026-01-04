@@ -15,10 +15,13 @@ import {
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
+import { mapAuthError } from "@auth/utilities";
 import { environment } from "@environments/environment";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
+import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { ValidationResult } from "@auth/models";
 
 interface ChangePasswordRequest
 {
@@ -151,15 +154,19 @@ export class ChangePasswordComponent implements OnInit
 	 */
 	protected onSubmit(): void
 	{
-		if (this.newPassword !== this.confirmPassword)
+		const passwordsMatch: ValidationResult =
+			validatePasswordsMatch(this.newPassword, this.confirmPassword);
+		if (!passwordsMatch.valid)
 		{
-			this.notification.error("Passwords do not match.");
+			this.notification.error(passwordsMatch.errorMessage!);
 			return;
 		}
 
-		if (this.newPassword.length < 8)
+		const passwordResult: ValidationResult
+			= validatePassword(this.newPassword);
+		if (!passwordResult.valid)
 		{
-			this.notification.error("Password must be at least 8 characters.");
+			this.notification.error(passwordResult.errorMessage!);
 			return;
 		}
 
@@ -194,36 +201,11 @@ export class ChangePasswordComponent implements OnInit
 				},
 				error: (error: HttpErrorResponse) =>
 				{
-					const message: string =
-						error.error?.detail
-							?? "Failed to change password. Please try again.";
-					this.notification.error(message);
+					const errorResult =
+						mapAuthError(error);
+					this.notification.error(errorResult.message);
 					this.isLoading.set(false);
 				}
 			});
-	}
-
-	/**
-	 * Extracts a user-facing error message from the password change response.
-	 * @param {HttpErrorResponse} error
-	 * Error object returned by the backend.
-	 * @returns {string}
-	 * A human-readable message suitable for display.
-	 */
-	private getErrorMessage(error: HttpErrorResponse): string
-	{
-		switch (error.status)
-		{
-			case 400:
-				return (
-					error.error?.detail
-						?? "Invalid request. Please check your password requirements.");
-			case 404:
-				return "Password reset link has expired or is invalid. Please request a new one.";
-			case 0:
-				return "Unable to connect to server. Check your internet connection.";
-			default:
-				return error.error?.detail ?? "An unexpected error occurred.";
-		}
 	}
 }

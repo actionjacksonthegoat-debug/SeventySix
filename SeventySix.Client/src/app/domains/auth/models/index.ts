@@ -15,3 +15,6 @@ export type ForgotPasswordRequest = components["schemas"]["ForgotPasswordRequest
 export type InitiateRegistrationRequest = components["schemas"]["InitiateRegistrationRequest"];
 export type CompleteRegistrationRequest = components["schemas"]["CompleteRegistrationRequest"];
 export type SetPasswordRequest = components["schemas"]["SetPasswordRequest"];
+
+// Validation models
+export type { ValidationResult } from "./validation-result.model";

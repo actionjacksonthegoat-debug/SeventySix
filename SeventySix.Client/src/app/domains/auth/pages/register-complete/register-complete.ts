@@ -16,14 +16,15 @@ import {
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { MatButtonModule } from "@angular/material/button";
-import { AUTH_ERROR_CODE } from "@auth/constants";
+import { mapAuthError } from "@auth/utilities";
 import {
-	HTTP_STATUS,
 	PASSWORD_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants";
+import { validateRegistrationForm } from "@auth/utilities";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { ValidationResult } from "@auth/models";
 
 @Component(
 	{
@@ -178,9 +179,15 @@ export class RegisterCompleteComponent implements OnInit
 				},
 				error: (error: HttpErrorResponse) =>
 				{
-					const message: string =
-						this.getErrorMessage(error);
-					this.notification.error(message);
+					const errorResult =
+						mapAuthError(error);
+
+					if (errorResult.invalidateToken)
+					{
+						this.tokenValid.set(false);
+					}
+
+					this.notification.error(errorResult.message);
 					this.isLoading.set(false);
 				}
 			});
@@ -193,69 +200,17 @@ export class RegisterCompleteComponent implements OnInit
 	 */
 	private validateForm(): boolean
 	{
-		if (
-			!this.username
-				|| this.username.length < USERNAME_VALIDATION.MIN_LENGTH)
+		const result: ValidationResult =
+			validateRegistrationForm(
+				this.username,
+				this.password,
+				this.confirmPassword);
+		if (!result.valid)
 		{
-			this.notification.error(
-				`Username must be at least ${USERNAME_VALIDATION.MIN_LENGTH} characters.`);
-			return false;
-		}
-
-		if (!USERNAME_VALIDATION.PATTERN.test(this.username))
-		{
-			this.notification.error(
-				"Username can only contain letters, numbers, and underscores.");
-			return false;
-		}
-
-		if (
-			!this.password
-				|| this.password.length < PASSWORD_VALIDATION.MIN_LENGTH)
-		{
-			this.notification.error(
-				`Password must be at least ${PASSWORD_VALIDATION.MIN_LENGTH} characters.`);
-			return false;
-		}
-
-		if (this.password !== this.confirmPassword)
-		{
-			this.notification.error("Passwords do not match.");
+			this.notification.error(result.errorMessage!);
 			return false;
 		}
 
 		return true;
-	}
-
-	/**
-	 * Extracts a user-friendly error message for registration completion failures.
-	 * @param {HttpErrorResponse} error
-	 * HTTP error response from the API.
-	 * @returns {string}
-	 * Localized message appropriate for display to the user.
-	 */
-	private getErrorMessage(error: HttpErrorResponse): string
-	{
-		if (error.status === HTTP_STATUS.BAD_REQUEST)
-		{
-			const errorCode: string =
-				error.error?.extensions?.errorCode;
-
-			switch (errorCode)
-			{
-				case AUTH_ERROR_CODE.INVALID_TOKEN:
-				case AUTH_ERROR_CODE.TOKEN_EXPIRED:
-					this.tokenValid.set(false);
-					return "This link has expired. Please request a new one.";
-				case AUTH_ERROR_CODE.USERNAME_EXISTS:
-					return "This username is already taken. Please choose another.";
-				default:
-					return (
-						error.error?.detail
-							?? "Invalid request. Please check your input.");
-			}
-		}
-
-		return "An unexpected error occurred. Please try again.";
 	}
 }
