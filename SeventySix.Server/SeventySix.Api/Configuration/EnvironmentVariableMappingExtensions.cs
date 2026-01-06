@@ -24,44 +24,48 @@ public static class EnvironmentVariableMappingExtensions
 	private static readonly Dictionary<
 		string,
 		string
-	> EnvironmentVariableMappings = new(StringComparer.OrdinalIgnoreCase)
-	{
-		// Database
-		["DB_NAME"] = "Database:Name",
-		["DB_USER"] = "Database:User",
-		["DB_PASSWORD"] = "Database:Password",
+	> EnvironmentVariableMappings =
+		new(StringComparer.OrdinalIgnoreCase)
+		{
+			// Database
+			["DB_HOST"] = "Database:Host",
+			["DB_PORT"] = "Database:Port",
+			["DB_NAME"] = "Database:Name",
+			["DB_USER"] = "Database:User",
+			["DB_PASSWORD"] = "Database:Password",
 
-		// JWT Authentication
-		["JWT_SECRET_KEY"] = "Jwt:SecretKey",
+			// JWT Authentication
+			["JWT_SECRET_KEY"] = "Jwt:SecretKey",
 
-		// GitHub OAuth
-		["GITHUB_CLIENT_ID"] = "Auth:OAuth:Providers:0:ClientId",
-		["GITHUB_CLIENT_SECRET"] = "Auth:OAuth:Providers:0:ClientSecret",
+			// GitHub OAuth
+			["GITHUB_CLIENT_ID"] = "Auth:OAuth:Providers:0:ClientId",
+			["GITHUB_CLIENT_SECRET"] = "Auth:OAuth:Providers:0:ClientSecret",
 
-		// Email (Brevo)
-		["EMAIL_SMTP_USERNAME"] = "Email:SmtpUsername",
-		["EMAIL_SMTP_PASSWORD"] = "Email:SmtpPassword",
-		["EMAIL_FROM_ADDRESS"] = "Email:FromAddress",
+			// Email (Brevo)
+			["EMAIL_SMTP_USERNAME"] = "Email:SmtpUsername",
+			["EMAIL_SMTP_PASSWORD"] = "Email:SmtpPassword",
+			["EMAIL_FROM_ADDRESS"] = "Email:FromAddress",
 
-		// Admin Seeding
-		["ADMIN_EMAIL"] = "AdminSeeder:Email",
-		["ADMIN_PASSWORD"] = "AdminSeeder:InitialPassword",
+			// Admin Seeding
+			["ADMIN_EMAIL"] = "AdminSeeder:Email",
+			["ADMIN_PASSWORD"] = "AdminSeeder:InitialPassword",
 
-		// Data Protection
-		["DATA_PROTECTION_USE_CERTIFICATE"] = "DataProtection:UseCertificate",
-		["DATA_PROTECTION_CERTIFICATE_PATH"] = "DataProtection:CertificatePath",
-		["DATA_PROTECTION_CERTIFICATE_PASSWORD"] = "DataProtection:CertificatePassword",
-		["DATA_PROTECTION_KEYS_DIRECTORY"] = "DataProtection:KeysDirectory",
-		["DATA_PROTECTION_ALLOW_UNPROTECTED_DEV"] = "DataProtection:AllowUnprotectedKeysInDevelopment",
-	};
+			// Data Protection
+			["DATA_PROTECTION_USE_CERTIFICATE"] = "DataProtection:UseCertificate",
+			["DATA_PROTECTION_CERTIFICATE_PATH"] = "DataProtection:CertificatePath",
+			["DATA_PROTECTION_CERTIFICATE_PASSWORD"] = "DataProtection:CertificatePassword",
+			["DATA_PROTECTION_KEYS_DIRECTORY"] = "DataProtection:KeysDirectory",
+			["DATA_PROTECTION_ALLOW_UNPROTECTED_DEV"] = "DataProtection:AllowUnprotectedKeysInDevelopment",
+		};
 
 	/// <summary>
 	/// Adds environment variable mapping to the configuration builder.
 	/// </summary>
 	/// <remarks>
 	/// Reads flat environment variables and maps them to hierarchical configuration.
-	/// This should be called after WebApplication.CreateBuilder to ensure environment
-	/// variables override appsettings.json values.
+	/// Only maps values if the target configuration key is not already set.
+	/// This allows Docker environment variables (Database__Host) to take precedence
+	/// over .env file values (DB_HOST).
 	/// </remarks>
 	/// <param name="configuration">
 	/// The configuration manager to add mappings to.
@@ -70,18 +74,23 @@ public static class EnvironmentVariableMappingExtensions
 	/// The configuration manager for method chaining.
 	/// </returns>
 	public static ConfigurationManager AddEnvironmentVariableMapping(
-		this ConfigurationManager configuration
-	)
+		this ConfigurationManager configuration)
 	{
 		Dictionary<string, string?> mappedValues = [];
 
 		foreach (
-			KeyValuePair<string, string> mapping in EnvironmentVariableMappings
-		)
+			KeyValuePair<string, string> mapping in EnvironmentVariableMappings)
 		{
-			string? environmentValue = Environment.GetEnvironmentVariable(
-				mapping.Key
-			);
+			// Skip if target configuration key already has a value
+			// This allows Docker environment variables (e.g., Database__Host) to take precedence
+			if (!string.IsNullOrEmpty(configuration[mapping.Value]))
+			{
+				continue;
+			}
+
+			string? environmentValue =
+				Environment.GetEnvironmentVariable(
+					mapping.Key);
 
 			if (!string.IsNullOrEmpty(environmentValue))
 			{

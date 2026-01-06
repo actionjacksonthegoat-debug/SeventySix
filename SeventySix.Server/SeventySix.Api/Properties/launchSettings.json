@@ -31,7 +31,7 @@
 				"ASPNETCORE_ENVIRONMENT": "Development",
 				"ASPNETCORE_HTTP_PORTS": "8080",
 				"Database__Host": "host.docker.internal",
-				"Database__Port": "5432",
+				"Database__Port": "5433",
 				"OpenTelemetry__OtlpEndpoint": "http://host.docker.internal:4317"
 			},
 			"dockerfileRunArguments": "--env-file ../.env --add-host=host.docker.internal:host-gateway",

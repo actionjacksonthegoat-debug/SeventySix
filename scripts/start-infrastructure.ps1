@@ -35,7 +35,7 @@ $dockerReady = $false
 while (-not $dockerReady -and $waitedSeconds -lt $maxWaitSeconds) {
 	try {
 		$dockerVersion =
-			docker version --format "{{.Server.Version}}" 2>$null
+		docker version --format "{{.Server.Version}}" 2>$null
 		if ($dockerVersion) {
 			$dockerReady = $true
 			Write-Host "  Docker daemon ready (v$dockerVersion)" -ForegroundColor Green
@@ -95,18 +95,42 @@ try {
 		Write-Host "Infrastructure services started!" -ForegroundColor Green
 		Write-Host ""
 		Write-Host "Services available at:" -ForegroundColor Cyan
-		Write-Host "  PostgreSQL:  localhost:5432" -ForegroundColor White
+		Write-Host "  PostgreSQL:  localhost:5433" -ForegroundColor White
 		Write-Host "  pgAdmin:     http://localhost:5050" -ForegroundColor White
 		Write-Host "  Jaeger UI:   http://localhost:16686" -ForegroundColor White
 		Write-Host "  Prometheus:  http://localhost:9090" -ForegroundColor White
 		Write-Host "  Grafana:     http://localhost:3000" -ForegroundColor White
+		Write-Host ""
+
+		# Start client in new PowerShell window if not already running
+		$clientPort = 4200
+		$clientRunning = $false
+		try {
+			$tcpConnection =
+			Get-NetTCPConnection -LocalPort $clientPort -ErrorAction SilentlyContinue
+			if ($tcpConnection) {
+				$clientRunning = $true
+				Write-Host "Angular client already running on port $clientPort" -ForegroundColor Green
+			}
+		}
+		catch {
+			# Port not in use
+		}
+
+		if (-not $clientRunning) {
+			Write-Host "Starting Angular client in new window..." -ForegroundColor Cyan
+			$clientPath =
+			Join-Path $PSScriptRoot "..\SeventySix.Client"
+			Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$clientPath'; npm start"
+		}
+
 		Write-Host ""
 		Write-Host "========================================" -ForegroundColor Yellow
 		Write-Host "  Next Steps:" -ForegroundColor Yellow
 		Write-Host "========================================" -ForegroundColor Yellow
 		Write-Host ""
 		Write-Host "  1. Open SeventySix.Server.slnx in Visual Studio 2026" -ForegroundColor White
-		Write-Host "  2. Select 'Container (Dockerfile)' launch profile" -ForegroundColor White
+		Write-Host "  2. Select 'https' launch profile" -ForegroundColor White
 		Write-Host "  3. Press F5 to start debugging" -ForegroundColor White
 		Write-Host ""
 		Write-Host "To stop infrastructure:" -ForegroundColor Cyan

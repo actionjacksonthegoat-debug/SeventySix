@@ -99,8 +99,8 @@ builder.Services.AddControllers();
 // This includes: repositories, business logic services, validators, HTTP clients, and configuration
 builder.Services.AddApplicationServices(builder.Configuration);
 
-// Build connection string from configuration (supports .env via environment variable mapping)
-// Priority: explicit ConnectionStrings:DefaultConnection > Database:* components
+// Build connection string from Database:* configuration values
+// These are mapped from DB_* environment variables loaded from .env file
 string connectionString =
 			ConnectionStringBuilder.BuildPostgresConnectionString(
 				builder.Configuration);

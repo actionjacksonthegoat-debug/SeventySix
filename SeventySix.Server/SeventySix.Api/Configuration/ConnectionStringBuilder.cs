@@ -5,28 +5,21 @@
 namespace SeventySix.Api.Configuration;
 
 /// <summary>
-/// Builds database connection strings from configuration or environment variables.
+/// Builds database connection strings from configuration.
 /// </summary>
 /// <remarks>
 /// Provides a single source of truth for connection string construction.
-/// Supports both explicit connection strings and component-based building from
-/// individual Database:* configuration values or DB_* environment variables.
+/// Builds from Database:* configuration values which are mapped from
+/// DB_* environment variables via <see cref="EnvironmentVariableMappingExtensions"/>.
 /// </remarks>
 public static class ConnectionStringBuilder
 {
 	/// <summary>
-	/// Placeholder text indicating a value should come from secrets.
-	/// </summary>
-	private const string PlaceholderMarker = "PLACEHOLDER";
-
-	/// <summary>
 	/// Builds a PostgreSQL connection string from configuration.
 	/// </summary>
 	/// <remarks>
-	/// Priority order:
-	/// 1. Explicit ConnectionStrings:DefaultConnection (if not a placeholder)
-	/// 2. Built from Database:Host, Database:Port, Database:Name, Database:User, Database:Password
-	/// 3. Falls back to localhost defaults with required password from environment.
+	/// Builds from Database:Host, Database:Port, Database:Name, Database:User, Database:Password.
+	/// These values are mapped from DB_* environment variables loaded from the .env file.
 	/// </remarks>
 	/// <param name="configuration">
 	/// The application configuration.
@@ -41,23 +34,6 @@ public static class ConnectionStringBuilder
 		IConfiguration configuration
 	)
 	{
-		// First, check for explicit connection string that's not a placeholder
-		string? explicitConnectionString =
-			configuration.GetConnectionString(
-				"DefaultConnection");
-
-		if (
-			!string.IsNullOrEmpty(explicitConnectionString)
-			&& !explicitConnectionString.Contains(
-				PlaceholderMarker,
-				StringComparison.OrdinalIgnoreCase
-			)
-		)
-		{
-			return explicitConnectionString;
-		}
-
-		// Build from individual components
 		string host = configuration["Database:Host"] ?? "localhost";
 
 		string port = configuration["Database:Port"] ?? "5432";
@@ -69,9 +45,9 @@ public static class ConnectionStringBuilder
 		string password =
 			configuration["Database:Password"]
 			?? throw new InvalidOperationException(
-				"Database password must be set via DB_PASSWORD environment variable "
-					+ "or Database:Password configuration. "
-					+ "For local development, ensure .env file exists with DB_PASSWORD set."
+				"Database password must be set via DB_PASSWORD environment variable. "
+					+ "For local development, ensure .env file exists at repository root "
+					+ "with DB_PASSWORD set."
 			);
 
 		return $"Host={host};Port={port};Database={database};Username={username};"

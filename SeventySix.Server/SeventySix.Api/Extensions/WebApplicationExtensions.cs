@@ -258,15 +258,19 @@ public static class WebApplicationExtensions
 		ILogger logger =
 			app.Services.GetRequiredService<ILogger<WebApplication>>();
 
-		string? connectionString =
-			configuration.GetConnectionString("DefaultConnection");
-
-		if (string.IsNullOrWhiteSpace(connectionString))
+		string connectionString;
+		try
+		{
+			connectionString =
+				ConnectionStringBuilder.BuildPostgresConnectionString(configuration);
+		}
+		catch (InvalidOperationException exception)
 		{
 			throw new StartupFailedException(
 				StartupFailedReason.Configuration,
-				"Connection string 'DefaultConnection' is missing. "
-					+ "Ensure appsettings.Development.json or user secrets are configured.");
+				$"Database connection string could not be built: {exception.Message} "
+					+ "Ensure .env file exists at repository root with DB_PASSWORD set, "
+					+ "or configure Database:Password in user secrets.");
 		}
 
 		PostgresConnectionInfo connectionInfo =

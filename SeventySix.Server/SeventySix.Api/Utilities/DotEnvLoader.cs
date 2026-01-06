@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace SeventySix.Api.Utilities;
 
@@ -10,26 +11,66 @@ public static class DotEnvLoader
 {
 	/// <summary>
 	/// Locates and loads the .env file into environment variables.
-	/// Searches hierarchically up from the current directory.
+	/// Searches hierarchically up from the current directory, then from the assembly location.
 	/// </summary>
 	public static void Load()
 	{
-		string currentDirectory =
-			Directory.GetCurrentDirectory();
+		// Strategy 1: Search from current working directory (npm run scenarios)
+		string? envPath =
+			FindEnvFileFromDirectory(Directory.GetCurrentDirectory());
 
-		// Look for .env file by traversing up the directory tree
+		// Strategy 2: Search from assembly location (Visual Studio F5 scenarios)
+		if (envPath == null)
+		{
+			string? assemblyLocation =
+				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+			if (!string.IsNullOrEmpty(assemblyLocation))
+			{
+				envPath =
+					FindEnvFileFromDirectory(assemblyLocation);
+			}
+		}
+
+		// Strategy 3: Search from base directory (fallback for other scenarios)
+		if (envPath == null)
+		{
+			envPath =
+				FindEnvFileFromDirectory(AppDomain.CurrentDomain.BaseDirectory);
+		}
+
+		if (envPath != null)
+		{
+			LoadFile(envPath);
+		}
+	}
+
+	/// <summary>
+	/// Searches for a .env file starting from the specified directory and traversing up.
+	/// </summary>
+	/// <param name="startDirectory">
+	/// The directory to start searching from.
+	/// </param>
+	/// <returns>
+	/// The full path to the .env file if found; otherwise null.
+	/// </returns>
+	private static string? FindEnvFileFromDirectory(string startDirectory)
+	{
+		string? currentDirectory = startDirectory;
+
 		while (!string.IsNullOrEmpty(currentDirectory))
 		{
 			string envPath =
 				Path.Combine(currentDirectory, ".env");
+
 			if (File.Exists(envPath))
 			{
-				LoadFile(envPath);
-				return;
+				return envPath;
 			}
 
 			DirectoryInfo? parent =
 				Directory.GetParent(currentDirectory);
+
 			if (parent == null)
 			{
 				break;
@@ -37,6 +78,8 @@ public static class DotEnvLoader
 
 			currentDirectory = parent.FullName;
 		}
+
+		return null;
 	}
 
 	/// <summary>

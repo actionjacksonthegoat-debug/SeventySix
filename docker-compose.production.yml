@@ -25,7 +25,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -59,8 +59,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      # PostgreSQL Connection
-      - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=${DB_NAME:-seventysix};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:?DB_PASSWORD must be set in .env};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
+      # PostgreSQL Connection (uses Database:* configuration mapped from DB_* env vars)
+      - Database__Host=database
+      - Database__Port=5432
+      - Database__Name=${DB_NAME:-seventysix}
+      - Database__User=${DB_USER:-postgres}
+      - Database__Password=${DB_PASSWORD:?DB_PASSWORD must be set in .env}
       # JWT Authentication
       - Jwt__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set in .env}
       # GitHub OAuth

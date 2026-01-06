@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Utilities;
 
 namespace SeventySix.Identity;
 
@@ -15,9 +16,7 @@ namespace SeventySix.Identity;
 /// <remarks>
 /// This factory is ONLY used for EF Core tooling (dotnet ef commands).
 /// Runtime context instances are created via dependency injection in Program.cs.
-///
-/// The connection string here is a placeholder - migrations are schema-only.
-/// Actual database connection is configured in appsettings.json.
+/// Connection string is loaded from the .env file at repository root.
 /// </remarks>
 public class IdentityDbContextFactory
 	: IDesignTimeDbContextFactory<IdentityDbContext>
@@ -35,10 +34,12 @@ public class IdentityDbContextFactory
 	{
 		DbContextOptionsBuilder<IdentityDbContext> optionsBuilder = new();
 
-		// Use placeholder connection string for migrations (schema generation only)
-		// Actual connection string comes from appsettings.json at runtime
+		// Load connection string from .env file (single source of truth)
+		string connectionString =
+			DesignTimeConnectionStringProvider.GetConnectionString();
+
 		optionsBuilder.UseNpgsql(
-			DatabaseConstants.DesignTimeConnectionString,
+			connectionString,
 			options =>
 				options.MigrationsHistoryTable(
 					DatabaseConstants.MigrationsHistoryTableName,

@@ -22,7 +22,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-TestPassword}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -70,6 +70,7 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
       # Database connection via component variables (secrets from .env)
+      # Note: API container connects to postgres:5432 via Docker internal network
       - Database__Host=postgres
       - Database__Port=5432
       # OpenTelemetry - using container network DNS name
