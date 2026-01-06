@@ -182,12 +182,14 @@ public class AdminSeederServiceUnitTests
 				new IdentityErrorDescriber(),
 				Substitute.For<ILogger<RoleManager<ApplicationRole>>>());
 
-		ServiceCollection services =
-			new Microsoft.Extensions.DependencyInjection.ServiceCollection();
-		services.AddSingleton(userManager);
-		services.AddSingleton(roleManager);
 		IServiceProvider serviceProvider =
-			services.BuildServiceProvider();
+			Substitute.For<IServiceProvider>();
+		serviceProvider
+			.GetService(typeof(UserManager<ApplicationUser>))
+			.Returns(userManager);
+		serviceProvider
+			.GetService(typeof(RoleManager<ApplicationRole>))
+			.Returns(roleManager);
 
 		scopeFactory.CreateScope().Returns(scope);
 		scope.ServiceProvider.Returns(serviceProvider);

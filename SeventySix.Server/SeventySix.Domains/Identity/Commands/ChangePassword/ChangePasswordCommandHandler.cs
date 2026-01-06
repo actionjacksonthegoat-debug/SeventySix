@@ -16,6 +16,30 @@ public static class ChangePasswordCommandHandler
 	/// <summary>
 	/// Handles the change password command.
 	/// </summary>
+	/// <param name="command">
+	/// The change password command.
+	/// </param>
+	/// <param name="userManager">
+	/// The user manager for identity operations.
+	/// </param>
+	/// <param name="tokenRepository">
+	/// Repository for managing refresh tokens.
+	/// </param>
+	/// <param name="authenticationService">
+	/// Service used to generate authentication results.
+	/// </param>
+	/// <param name="timeProvider">
+	/// Time provider for current UTC time.
+	/// </param>
+	/// <param name="logger">
+	/// Logger for recording errors and information.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// The cancellation token for async operations.
+	/// </param>
+	/// <returns>
+	/// The generated authentication result for the user.
+	/// </returns>
 	/// <exception cref="ArgumentException">Thrown when validation fails.</exception>
 	public static async Task<AuthResult> HandleAsync(
 		ChangePasswordCommand command,
@@ -62,6 +86,18 @@ public static class ChangePasswordCommandHandler
 	/// <summary>
 	/// Retrieve a user by ID or throw an <see cref="InvalidOperationException"/> if not found.
 	/// </summary>
+	/// <param name="userId">
+	/// The user ID.
+	/// </param>
+	/// <param name="userManager">
+	/// User manager for identity operations.
+	/// </param>
+	/// <param name="logger">
+	/// Logger for logging errors.
+	/// </param>
+	/// <returns>
+	/// The retrieved user.
+	/// </returns>
 	private static async Task<ApplicationUser> GetUserOrThrowAsync(
 		long userId,
 		UserManager<ApplicationUser> userManager,
