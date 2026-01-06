@@ -32,6 +32,7 @@
 		<Using Include="Xunit" />
 		<Using Include="Microsoft.CodeAnalysis" />
 		<Using Include="Microsoft.CodeAnalysis.Testing" />
+		<Using Include="SeventySix.Analyzers.CodeFixes" />
 	</ItemGroup>
 
 	<ItemGroup>
