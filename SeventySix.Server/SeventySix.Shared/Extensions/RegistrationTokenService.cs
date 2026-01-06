@@ -64,7 +64,8 @@ public static class RegistrationTokenService
 			string jsonPayload =
 				Encoding.UTF8.GetString(decodedBytes);
 
-			return JsonSerializer.Deserialize<CombinedRegistrationToken>(jsonPayload);
+			return JsonSerializer.Deserialize<CombinedRegistrationToken>(
+				jsonPayload);
 		}
 		catch
 		{

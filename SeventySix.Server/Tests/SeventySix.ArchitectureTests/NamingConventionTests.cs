@@ -5,8 +5,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Xunit;
 using SeventySix.Shared.Constants;
+using Xunit;
 
 namespace SeventySix.ArchitectureTests;
 
@@ -55,7 +55,8 @@ public class NamingConventionTests : SourceCodeArchitectureTest
 				string propertyName = match.Groups[1].Value;
 
 				// Skip if it's Id property itself or already ends with Id
-				if (propertyName == PropertyConstants.Id || propertyName.EndsWith("Id"))
+				if (propertyName == PropertyConstants.Id
+					|| propertyName.EndsWith("Id"))
 				{
 					continue;
 				}

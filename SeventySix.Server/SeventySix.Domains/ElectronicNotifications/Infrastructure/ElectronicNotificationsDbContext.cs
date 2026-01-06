@@ -26,7 +26,8 @@ namespace SeventySix.ElectronicNotifications;
 /// - SRP: Only responsible for ElectronicNotifications domain data access
 /// - OCP: Can be extended with new entity configurations (SMS, push, etc.)
 /// </remarks>
-public class ElectronicNotificationsDbContext : BaseDbContext<ElectronicNotificationsDbContext>
+public class ElectronicNotificationsDbContext
+	: BaseDbContext<ElectronicNotificationsDbContext>
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ElectronicNotificationsDbContext"/> class.
@@ -34,7 +35,8 @@ public class ElectronicNotificationsDbContext : BaseDbContext<ElectronicNotifica
 	/// <param name="options">
 	/// The options for this context.
 	/// </param>
-	public ElectronicNotificationsDbContext(DbContextOptions<ElectronicNotificationsDbContext> options)
+	public ElectronicNotificationsDbContext(
+		DbContextOptions<ElectronicNotificationsDbContext> options)
 		: base(options) { }
 
 	/// <summary>
@@ -48,5 +50,6 @@ public class ElectronicNotificationsDbContext : BaseDbContext<ElectronicNotifica
 	/// <returns>
 	/// "ElectronicNotifications".
 	/// </returns>
-	protected override string GetSchemaName() => SchemaConstants.ElectronicNotifications;
+	protected override string GetSchemaName() =>
+		SchemaConstants.ElectronicNotifications;
 }

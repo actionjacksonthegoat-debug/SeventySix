@@ -80,11 +80,14 @@ public static class CreateUserCommandHandler
 			if (!result.Succeeded)
 			{
 				string errors =
-					string.Join(", ", result.Errors.Select(error => error.Description));
+					string.Join(
+						", ",
+						result.Errors.Select(error => error.Description));
 
 				// Check for duplicate errors
-				if (result.Errors.Any(error =>
-					error.Code is "DuplicateUserName" or "DuplicateEmail"))
+				if (result.Errors.Any(
+					error =>
+						error.Code is "DuplicateUserName" or "DuplicateEmail"))
 				{
 					throw new DuplicateUserException(errors);
 				}

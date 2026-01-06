@@ -5,9 +5,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Entities;
 using SeventySix.Shared.Persistence;
-using SeventySix.Shared.Constants;
 
 namespace SeventySix.Shared.Tests.Persistence;
 

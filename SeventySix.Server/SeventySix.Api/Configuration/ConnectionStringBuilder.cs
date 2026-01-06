@@ -31,24 +31,26 @@ public static class ConnectionStringBuilder
 	/// Thrown when database password is not configured.
 	/// </exception>
 	public static string BuildPostgresConnectionString(
-		IConfiguration configuration
-	)
+		IConfiguration configuration)
 	{
-		string host = configuration["Database:Host"] ?? "localhost";
+		string host =
+			configuration["Database:Host"] ?? "localhost";
 
-		string port = configuration["Database:Port"] ?? "5432";
+		string port =
+			configuration["Database:Port"] ?? "5432";
 
-		string database = configuration["Database:Name"] ?? "seventysix";
+		string database =
+			configuration["Database:Name"] ?? "seventysix";
 
-		string username = configuration["Database:User"] ?? "postgres";
+		string username =
+			configuration["Database:User"] ?? "postgres";
 
 		string password =
 			configuration["Database:Password"]
 			?? throw new InvalidOperationException(
 				"Database password must be set via DB_PASSWORD environment variable. "
 					+ "For local development, ensure .env file exists at repository root "
-					+ "with DB_PASSWORD set."
-			);
+					+ "with DB_PASSWORD set.");
 
 		return $"Host={host};Port={port};Database={database};Username={username};"
 			+ $"Password={password};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100;"

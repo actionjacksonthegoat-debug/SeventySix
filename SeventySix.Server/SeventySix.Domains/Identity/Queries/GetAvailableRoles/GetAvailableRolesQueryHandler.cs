@@ -48,8 +48,13 @@ public static class GetAvailableRolesQueryHandler
 						.Cast<string>())
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-		return [.. RoleConstants
-			.AllRequestableRoles
-			.Where(role => !excludedRoles.Contains(role.Name))];
+		return
+			[
+				.. RoleConstants
+					.AllRequestableRoles
+					.Where(
+						role =>
+							!excludedRoles.Contains(role.Name)),
+			];
 	}
 }

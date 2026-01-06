@@ -61,12 +61,16 @@ public static class RegisterCommandHandler
 			};
 
 		IdentityResult result =
-			await userManager.CreateAsync(newUser, command.Request.Password);
+			await userManager.CreateAsync(
+				newUser,
+				command.Request.Password);
 
 		if (!result.Succeeded)
 		{
 			string errors =
-				string.Join(", ", result.Errors.Select(error => error.Description));
+				string.Join(
+					", ",
+					result.Errors.Select(error => error.Description));
 
 			return AuthResult.Failed(
 				errors,

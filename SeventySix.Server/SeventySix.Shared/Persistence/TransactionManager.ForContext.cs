@@ -11,7 +11,8 @@ namespace SeventySix.Shared.Persistence;
 /// The <see cref="DbContext"/> instance used by the transaction manager.
 /// </param>
 public class TransactionManagerForContext<TContext>(TContext context)
-	: ITransactionManager where TContext : DbContext
+	: ITransactionManager
+		where TContext : DbContext
 {
 	/// <summary>
 	/// Executes the provided operation within a database transaction with retry semantics and returns a result.

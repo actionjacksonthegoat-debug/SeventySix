@@ -1,7 +1,7 @@
-using Shouldly;
-using Xunit;
 using SeventySix.Shared;
 using SeventySix.Shared.Extensions;
+using Shouldly;
+using Xunit;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
 

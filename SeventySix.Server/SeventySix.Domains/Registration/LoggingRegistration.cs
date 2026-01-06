@@ -46,7 +46,8 @@ public static class LoggingRegistration
 		services.AddTransactionManagerFor<LoggingDbContext>();
 
 		// Register health check for multi-db health monitoring using generic Wolverine wrapper
-		services.AddWolverineHealthCheck<CheckLoggingHealthQuery>(SchemaConstants.Logging);
+		services.AddWolverineHealthCheck<CheckLoggingHealthQuery>(
+			SchemaConstants.Logging);
 
 		// Register validators via assembly scanning + command adapter helper
 		services.AddDomainValidatorsFromAssemblyContaining<LoggingDbContext>();

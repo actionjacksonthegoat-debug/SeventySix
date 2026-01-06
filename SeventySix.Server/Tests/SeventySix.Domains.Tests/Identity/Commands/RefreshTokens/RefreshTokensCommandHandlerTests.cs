@@ -1,11 +1,11 @@
 using System;
 using System.Threading;
-using Xunit;
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Mocks;
 using Shouldly;
+using Xunit;
 
 namespace SeventySix.Domains.Tests.Identity.Commands.RefreshTokens;
 
@@ -38,7 +38,9 @@ public class RefreshTokensCommandHandlerTests
 			};
 
 		tokenService
-			.ValidateRefreshTokenAsync(refreshToken, Arg.Any<CancellationToken>())
+			.ValidateRefreshTokenAsync(
+				refreshToken,
+				Arg.Any<CancellationToken>())
 			.Returns(user.Id);
 
 		userManager
@@ -46,7 +48,10 @@ public class RefreshTokensCommandHandlerTests
 			.Returns(user);
 
 		tokenService
-			.RotateRefreshTokenAsync(refreshToken, clientIpAddress, Arg.Any<CancellationToken>())
+			.RotateRefreshTokenAsync(
+				refreshToken,
+				clientIpAddress,
+				Arg.Any<CancellationToken>())
 			.Returns("new-token");
 
 		TimeProvider timeProvider =
@@ -64,7 +69,12 @@ public class RefreshTokensCommandHandlerTests
 				false);
 
 		authenticationService
-			.GenerateAuthResultAsync(user, clientIpAddress, user.RequiresPasswordChange, false, Arg.Any<CancellationToken>())
+			.GenerateAuthResultAsync(
+				user,
+				clientIpAddress,
+				user.RequiresPasswordChange,
+				false,
+				Arg.Any<CancellationToken>())
 			.Returns(Task.FromResult(expectedAuthResult));
 
 		RefreshTokensCommand command =
@@ -106,11 +116,13 @@ public class RefreshTokensCommandHandlerTests
 				UserName = "legacyuser",
 				Email = "legacy@example.com",
 				IsActive = true,
-				RequiresPasswordChange = true
+				RequiresPasswordChange = true,
 			};
 
 		tokenService
-			.ValidateRefreshTokenAsync(refreshToken, Arg.Any<CancellationToken>())
+			.ValidateRefreshTokenAsync(
+				refreshToken,
+				Arg.Any<CancellationToken>())
 			.Returns(user.Id);
 
 		userManager
@@ -118,7 +130,10 @@ public class RefreshTokensCommandHandlerTests
 			.Returns(user);
 
 		tokenService
-			.RotateRefreshTokenAsync(refreshToken, clientIpAddress, Arg.Any<CancellationToken>())
+			.RotateRefreshTokenAsync(
+				refreshToken,
+				clientIpAddress,
+				Arg.Any<CancellationToken>())
 			.Returns("new-token");
 
 		TimeProvider timeProvider =
@@ -136,7 +151,12 @@ public class RefreshTokensCommandHandlerTests
 				true);
 
 		authenticationService
-			.GenerateAuthResultAsync(user, clientIpAddress, user.RequiresPasswordChange, false, Arg.Any<CancellationToken>())
+			.GenerateAuthResultAsync(
+				user,
+				clientIpAddress,
+				user.RequiresPasswordChange,
+				false,
+				Arg.Any<CancellationToken>())
 			.Returns(Task.FromResult(expectedAuthResult));
 
 		RefreshTokensCommand command =

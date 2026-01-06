@@ -45,7 +45,8 @@ public static class BulkApprovePermissionRequestsCommandHandler
 		foreach (PermissionRequest request in requests)
 		{
 			ApplicationUser? user =
-				await userManager.FindByIdAsync(request.UserId.ToString());
+				await userManager.FindByIdAsync(
+					request.UserId.ToString());
 
 			if (user is null)
 			{

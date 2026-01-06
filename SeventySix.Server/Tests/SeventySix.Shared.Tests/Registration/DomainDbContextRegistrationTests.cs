@@ -9,21 +9,22 @@ using Xunit;
 
 namespace SeventySix.Shared.Tests.Registration;
 
-public class FakeDbContext(DbContextOptions<FakeDbContext> options) : DbContext(options);
+public class FakeDbContext(DbContextOptions<FakeDbContext> options)
+	: DbContext(options);
 
 public class DomainDbContextRegistrationTests
 {
 	[Fact]
 	public void AddDomainDbContext_RegistersDbContextAndInterceptor()
 	{
-		ServiceCollection services =
-			new();
+		ServiceCollection services = new();
 
 		// Add a fake AuditInterceptor so registration can resolve it
 		IUserContextAccessor mockUserContext =
 			Substitute.For<IUserContextAccessor>();
 
-		services.AddSingleton(new AuditInterceptor(mockUserContext, TimeProvider.System));
+		services.AddSingleton(
+			new AuditInterceptor(mockUserContext, TimeProvider.System));
 
 		services.AddDomainDbContext<FakeDbContext>(
 			"Host=localhost;Database=test;Username=user;Password=pass",
@@ -34,7 +35,8 @@ public class DomainDbContextRegistrationTests
 
 		// Resolve DbContextOptions and ensure options are configured
 		DbContextOptions<FakeDbContext> options =
-			provider.GetRequiredService<DbContextOptions<FakeDbContext>>();
+			provider.GetRequiredService<
+			DbContextOptions<FakeDbContext>>();
 
 		options.ShouldNotBeNull();
 

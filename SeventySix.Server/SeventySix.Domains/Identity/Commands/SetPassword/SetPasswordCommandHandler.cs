@@ -81,7 +81,8 @@ public static class SetPasswordCommandHandler
 		}
 
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(userId.ToString());
+			await userManager.FindByIdAsync(
+				userId.ToString());
 
 		if (user is null || !user.IsActive)
 		{
@@ -113,7 +114,9 @@ public static class SetPasswordCommandHandler
 			}
 
 			throw new InvalidOperationException(
-				string.Join(", ", result.Errors.Select(error => error.Description)));
+				string.Join(
+					", ",
+					result.Errors.Select(error => error.Description)));
 		}
 
 		// Revoke all existing refresh tokens

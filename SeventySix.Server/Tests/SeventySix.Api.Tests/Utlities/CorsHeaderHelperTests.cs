@@ -22,9 +22,14 @@ public class CorsHeaderHelperTests
 
 		CorsHeaderHelper.AddCorsHeadersIfAllowed(context, allowed);
 
-		Assert.True(context.Response.Headers.ContainsKey("Access-Control-Allow-Origin"));
-		Assert.Equal("http://localhost:4200", context.Response.Headers.AccessControlAllowOrigin.ToString());
-		Assert.Equal("true", context.Response.Headers.AccessControlAllowCredentials.ToString());
+		Assert.True(
+			context.Response.Headers.ContainsKey("Access-Control-Allow-Origin"));
+		Assert.Equal(
+			"http://localhost:4200",
+			context.Response.Headers.AccessControlAllowOrigin.ToString());
+		Assert.Equal(
+			"true",
+			context.Response.Headers.AccessControlAllowCredentials.ToString());
 	}
 
 	[Fact]
@@ -40,6 +45,7 @@ public class CorsHeaderHelperTests
 
 		CorsHeaderHelper.AddCorsHeadersIfAllowed(context, allowed);
 
-		Assert.False(context.Response.Headers.ContainsKey("Access-Control-Allow-Origin"));
+		Assert.False(
+			context.Response.Headers.ContainsKey("Access-Control-Allow-Origin"));
 	}
 }

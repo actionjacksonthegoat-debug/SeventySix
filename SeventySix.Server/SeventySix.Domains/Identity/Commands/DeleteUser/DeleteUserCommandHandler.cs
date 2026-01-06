@@ -36,7 +36,8 @@ public static class DeleteUserCommandHandler
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(command.UserId.ToString());
+			await userManager.FindByIdAsync(
+				command.UserId.ToString());
 
 		if (user == null || user.IsDeleted)
 		{

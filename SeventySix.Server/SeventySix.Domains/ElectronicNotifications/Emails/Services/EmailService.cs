@@ -7,8 +7,8 @@ using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Extensions;
+using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.ElectronicNotifications.Emails;
 
@@ -139,7 +139,9 @@ public class EmailService(
 		ArgumentException.ThrowIfNullOrWhiteSpace(verificationToken);
 
 		string verificationUrl =
-			BuildEmailVerificationUrl(email, verificationToken);
+			BuildEmailVerificationUrl(
+				email,
+				verificationToken);
 
 		string subject = "SeventySix - Verify Your Email";
 

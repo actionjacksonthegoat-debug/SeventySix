@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Identity;
+using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.TestUtilities.Builders;
@@ -37,7 +38,7 @@ public class UserBuilder
 		TestUserConstants.DefaultFullName;
 	private DateTime CreateDate;
 	private string? CreatedBy =
-		TestAuditConstants.SystemUser;
+		AuditConstants.SystemUser;
 	private DateTime? ModifyDate = null;
 	private string? ModifiedBy = null;
 	private bool IsActive = true;
@@ -121,7 +122,7 @@ public class UserBuilder
 	/// </returns>
 	public UserBuilder WithCreatedInfo(
 		DateTime createDate,
-		string? createdBy = TestAuditConstants.SystemUser)
+		string? createdBy = AuditConstants.SystemUser)
 	{
 		CreateDate = createDate;
 		CreatedBy = createdBy;
@@ -142,7 +143,7 @@ public class UserBuilder
 	/// </returns>
 	public UserBuilder WithModifiedInfo(
 		DateTime modifyDate,
-		string? modifiedBy = TestAuditConstants.SystemUser)
+		string? modifiedBy = AuditConstants.SystemUser)
 	{
 		ModifyDate = modifyDate;
 		ModifiedBy = modifiedBy;
@@ -313,6 +314,6 @@ public class UserBuilder
 		return new UserBuilder(timeProvider).WithDeletedInfo(
 			true,
 			timeProvider.GetUtcNow().UtcDateTime,
-			TestAuditConstants.SystemUser);
+			AuditConstants.SystemUser);
 	}
 }

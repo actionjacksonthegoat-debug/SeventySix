@@ -5,8 +5,8 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using SeventySix.Api.Configuration;
-using SeventySix.Identity;
 using SeventySix.Api.Middleware;
+using SeventySix.Identity;
 
 namespace SeventySix.Api.Registration;
 
@@ -60,7 +60,11 @@ public static class RateLimitingRegistration
 			return AddDisabledRateLimiting(services);
 		}
 
-		return AddEnabledRateLimiting(services, globalSettings, authSettings, configuration);
+		return AddEnabledRateLimiting(
+			services,
+			globalSettings,
+			authSettings,
+			configuration);
 	}
 
 	private static IServiceCollection AddDisabledRateLimiting(
@@ -109,13 +113,18 @@ public static class RateLimitingRegistration
 				CreateGlobalLimiter(globalSettings);
 			AddAuthPolicies(options, authSettings);
 
-			Func<OnRejectedContext, CancellationToken, ValueTask> originalOnRejected =
+			Func<
+				OnRejectedContext,
+				CancellationToken,
+				ValueTask> originalOnRejected =
 				CreateRejectedHandler(globalSettings);
 			options.OnRejected =
 				async (context, cancellationToken) =>
 				{
 					// Preserve CORS headers on rate limiter rejections
-					CorsHeaderHelper.AddCorsHeadersIfAllowed(context.HttpContext, allowedOriginsSet);
+					CorsHeaderHelper.AddCorsHeadersIfAllowed(
+						context.HttpContext,
+						allowedOriginsSet);
 
 					await originalOnRejected(context, cancellationToken);
 				};
@@ -135,7 +144,8 @@ public static class RateLimitingRegistration
 			}
 
 			return RateLimitPartition.GetFixedWindowLimiter(
-				partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+				partitionKey: context.Connection.RemoteIpAddress?.ToString()
+					?? "anonymous",
 				factory: _ => new FixedWindowRateLimiterOptions
 				{
 					PermitLimit = settings.PermitLimit,

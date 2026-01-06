@@ -12,11 +12,12 @@ public class WolverineHealthCheckTests
 	[Fact]
 	public async Task CheckHealthAsync_InvokesMessageBusAndReturnsResultAsync()
 	{
-		IMessageBus messageBus =
-			Substitute.For<IMessageBus>();
+		IMessageBus messageBus = Substitute.For<IMessageBus>();
 
 		messageBus
-			.InvokeAsync<bool>(Arg.Any<DummyQuery>(), Arg.Any<CancellationToken>())
+			.InvokeAsync<bool>(
+				Arg.Any<DummyQuery>(),
+				Arg.Any<CancellationToken>())
 			.Returns(true);
 
 		WolverineHealthCheck<DummyQuery> healthCheck =

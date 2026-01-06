@@ -61,12 +61,14 @@ public static class DesignTimeConnectionStringProvider
 	private static void LoadEnvFile()
 	{
 		string? envPath =
-			FindEnvFileFromDirectory(Directory.GetCurrentDirectory());
+			FindEnvFileFromDirectory(
+				Directory.GetCurrentDirectory());
 
 		if (envPath == null)
 		{
 			string? assemblyLocation =
-				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+				Path.GetDirectoryName(
+					Assembly.GetExecutingAssembly().Location);
 
 			if (!string.IsNullOrEmpty(assemblyLocation))
 			{
@@ -78,7 +80,8 @@ public static class DesignTimeConnectionStringProvider
 		if (envPath == null)
 		{
 			envPath =
-				FindEnvFileFromDirectory(AppDomain.CurrentDomain.BaseDirectory);
+				FindEnvFileFromDirectory(
+					AppDomain.CurrentDomain.BaseDirectory);
 		}
 
 		if (envPath != null)
@@ -134,7 +137,8 @@ public static class DesignTimeConnectionStringProvider
 	{
 		foreach (string line in File.ReadAllLines(filePath))
 		{
-			if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith('#'))
+			if (string.IsNullOrWhiteSpace(line)
+				|| line.TrimStart().StartsWith('#'))
 			{
 				continue;
 			}
@@ -150,8 +154,7 @@ public static class DesignTimeConnectionStringProvider
 			string key = parts[0].Trim();
 			string value = parts[1].Trim();
 
-			if (
-				value.Length >= 2
+			if (value.Length >= 2
 				&& ((value.StartsWith('"') && value.EndsWith('"'))
 					|| (value.StartsWith('\'') && value.EndsWith('\''))))
 			{

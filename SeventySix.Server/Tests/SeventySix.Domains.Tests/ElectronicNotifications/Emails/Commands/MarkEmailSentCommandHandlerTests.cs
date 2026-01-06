@@ -81,11 +81,13 @@ public class MarkEmailSentCommandHandlerTests
 		result.ShouldBeTrue();
 
 		EmailQueueEntry? updatedEntry =
-			await dbContext.EmailQueue.FindAsync(entry.Id);
+			await dbContext.EmailQueue.FindAsync(
+				entry.Id);
 		updatedEntry.ShouldNotBeNull();
 		updatedEntry.Status.ShouldBe(EmailQueueStatus.Sent);
 		updatedEntry.SentAt.ShouldNotBeNull();
-		updatedEntry.SentAt.Value.ShouldBe(TimeProvider.GetUtcNow().UtcDateTime);
+		updatedEntry.SentAt.Value.ShouldBe(
+			TimeProvider.GetUtcNow().UtcDateTime);
 	}
 
 	[Fact]

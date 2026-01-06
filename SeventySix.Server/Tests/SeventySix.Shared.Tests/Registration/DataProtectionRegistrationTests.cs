@@ -59,12 +59,14 @@ public class DataProtectionRegistrationTests
 			Should.Throw<OptionsValidationException>(() =>
 			{
 				IOptions<AppDataProtectionOptions> dataProtectionOptions =
-					provider.GetRequiredService<IOptions<AppDataProtectionOptions>>();
-
-				_ = dataProtectionOptions.Value;
+					provider.GetRequiredService<
+						IOptions<AppDataProtectionOptions>>();
+				_ =
+					dataProtectionOptions.Value;
 			});
 
-		validationException.Message.ShouldContain("Invalid DataProtection configuration");
+		validationException.Message.ShouldContain(
+			"Invalid DataProtection configuration");
 	}
 
 	[Fact]
@@ -189,8 +191,8 @@ public class DataProtectionRegistrationTests
 		Should.Throw<OptionsValidationException>(() =>
 		{
 			IOptions<AppDataProtectionOptions> dataProtectionOptions =
-				provider.GetRequiredService<IOptions<AppDataProtectionOptions>>();
-
+				provider.GetRequiredService<
+					IOptions<AppDataProtectionOptions>>();
 			_ =
 				dataProtectionOptions.Value;
 		});

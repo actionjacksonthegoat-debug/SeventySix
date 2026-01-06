@@ -18,34 +18,44 @@ namespace SeventySix.Identity;
 /// <param name="passwordHasher">
 /// The project-level Argon2 password hasher.
 /// </param>
-public class IdentityArgon2PasswordHasher(
-	IPasswordHasher passwordHasher) : IPasswordHasher<ApplicationUser>
+public class IdentityArgon2PasswordHasher(IPasswordHasher passwordHasher)
+	: IPasswordHasher<ApplicationUser>
 {
 	/// <inheritdoc/>
 	/// <param name="user">
 	/// The user for which the hash is created. May be null.
 	/// </param>
-	/// <para/>
+	/// <param name="password">
+	/// The plaintext password to hash.
+	/// </param>
 	/// <returns>
 	/// The hashed password string including Argon2 parameters and salt.
 	/// </returns>
-	public string HashPassword(ApplicationUser user, string password)
+	public string HashPassword(
+		ApplicationUser user,
+		string password)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(password);
 		return passwordHasher.HashPassword(password);
 	}
 
-
-
 	/// <inheritdoc/>
 	/// <param name="user">
 	/// The user the password belongs to. May be null.
 	/// </param>
-	/// <para/>
+	/// <param name="hashedPassword">
+	/// The hashed password to verify.
+	/// </param>
+	/// <param name="providedPassword">
+	/// The plaintext password to verify.
+	/// </param>
 	/// <returns>
 	/// A <see cref="PasswordVerificationResult"/> indicating success or failure.
 	/// </returns>
-	public PasswordVerificationResult VerifyHashedPassword(ApplicationUser user, string hashedPassword, string providedPassword)
+	public PasswordVerificationResult VerifyHashedPassword(
+		ApplicationUser user,
+		string hashedPassword,
+		string providedPassword)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(hashedPassword);
 		ArgumentException.ThrowIfNullOrWhiteSpace(providedPassword);

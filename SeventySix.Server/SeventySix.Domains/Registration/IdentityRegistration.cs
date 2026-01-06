@@ -80,7 +80,8 @@ public static class IdentityRegistration
 
 				// Lockout settings
 				options.Lockout.DefaultLockoutTimeSpan =
-					TimeSpan.FromMinutes(15);
+					TimeSpan.FromMinutes(
+						15);
 				options.Lockout.MaxFailedAccessAttempts = 5;
 				options.Lockout.AllowedForNewUsers = true;
 
@@ -94,7 +95,9 @@ public static class IdentityRegistration
 
 		// Replace default password hasher with Argon2
 		services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
-		services.AddScoped<IPasswordHasher<ApplicationUser>, IdentityArgon2PasswordHasher>();
+		services.AddScoped<
+			IPasswordHasher<ApplicationUser>,
+			IdentityArgon2PasswordHasher>();
 
 		// Register transaction manager for Identity context
 		services.AddTransactionManagerFor<IdentityDbContext>();
@@ -120,7 +123,8 @@ public static class IdentityRegistration
 		services.AddScoped<RegistrationService>();
 
 		// Register health check for multi-db health monitoring using generic Wolverine wrapper
-		services.AddWolverineHealthCheck<CheckIdentityHealthQuery>(SchemaConstants.Identity);
+		services.AddWolverineHealthCheck<CheckIdentityHealthQuery>(
+			SchemaConstants.Identity);
 
 		// Register validators via scanning and command adapter
 		services.AddDomainValidatorsFromAssemblyContaining<IdentityDbContext>();

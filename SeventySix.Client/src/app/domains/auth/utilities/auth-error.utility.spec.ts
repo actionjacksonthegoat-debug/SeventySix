@@ -34,8 +34,10 @@ describe("mapAuthError",
 						const result: AuthErrorResult =
 							mapAuthError(error);
 
-						expect(result.message).toBe("This link has expired. Please request a new one.");
-						expect(result.invalidateToken).toBe(true);
+						expect(result.message)
+							.toBe("This link has expired. Please request a new one.");
+						expect(result.invalidateToken)
+							.toBe(true);
 					});
 			});
 
@@ -59,8 +61,10 @@ describe("mapAuthError",
 						const result: AuthErrorResult =
 							mapAuthError(error);
 
-						expect(result.message).toBe("This link has expired. Please request a new one.");
-						expect(result.invalidateToken).toBe(true);
+						expect(result.message)
+							.toBe("This link has expired. Please request a new one.");
+						expect(result.invalidateToken)
+							.toBe(true);
 					});
 			});
 
@@ -84,8 +88,10 @@ describe("mapAuthError",
 						const result: AuthErrorResult =
 							mapAuthError(error);
 
-						expect(result.message).toBe("This username is already taken. Please choose another.");
-						expect(result.invalidateToken).toBe(false);
+						expect(result.message)
+							.toBe("This username is already taken. Please choose another.");
+						expect(result.invalidateToken)
+							.toBe(false);
 					});
 			});
 
@@ -110,8 +116,10 @@ describe("mapAuthError",
 						const result: AuthErrorResult =
 							mapAuthError(error);
 
-						expect(result.message).toBe("Custom error message");
-						expect(result.invalidateToken).toBe(false);
+						expect(result.message)
+							.toBe("Custom error message");
+						expect(result.invalidateToken)
+							.toBe(false);
 					});
 
 				it("should return default message if detail not available",
@@ -131,8 +139,10 @@ describe("mapAuthError",
 						const result: AuthErrorResult =
 							mapAuthError(error);
 
-						expect(result.message).toBe("Invalid request. Please check your input.");
-						expect(result.invalidateToken).toBe(false);
+						expect(result.message)
+							.toBe("Invalid request. Please check your input.");
+						expect(result.invalidateToken)
+							.toBe(false);
 					});
 			});
 
@@ -152,8 +162,10 @@ describe("mapAuthError",
 						const result: AuthErrorResult =
 							mapAuthError(error);
 
-						expect(result.message).toBe("An unexpected error occurred. Please try again.");
-						expect(result.invalidateToken).toBe(false);
+						expect(result.message)
+							.toBe("An unexpected error occurred. Please try again.");
+						expect(result.invalidateToken)
+							.toBe(false);
 					});
 
 				it("should return generic error message for network errors",
@@ -169,8 +181,10 @@ describe("mapAuthError",
 						const result: AuthErrorResult =
 							mapAuthError(error);
 
-						expect(result.message).toBe("An unexpected error occurred. Please try again.");
-						expect(result.invalidateToken).toBe(false);
+						expect(result.message)
+							.toBe("An unexpected error occurred. Please try again.");
+						expect(result.invalidateToken)
+							.toBe(false);
 					});
 			});
 	});

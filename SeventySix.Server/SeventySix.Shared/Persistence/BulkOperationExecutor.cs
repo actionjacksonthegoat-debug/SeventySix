@@ -65,7 +65,8 @@ public class BulkOperationExecutor<TEntity>(DbContext context)
 		List<TEntity> entities =
 			await context
 				.Set<TEntity>()
-				.Where(entity => ids.Contains(EF.Property<long>(entity, PropertyConstants.Id)))
+				.Where(entity =>
+					ids.Contains(EF.Property<long>(entity, PropertyConstants.Id)))
 				.ToListAsync(cancellationToken);
 
 		if (entities.Count == 0)

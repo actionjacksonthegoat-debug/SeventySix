@@ -154,9 +154,9 @@ public static class SharedContainerManager
 				.Options;
 		await using (ElectronicNotificationsDbContext context =
 			new(electronicNotificationsOptions))
-		{
-			await context.Database.MigrateAsync();
-		}
+			{
+				await context.Database.MigrateAsync();
+			}
 	}
 
 	/// <summary>

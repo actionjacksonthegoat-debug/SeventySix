@@ -47,7 +47,8 @@ public class EmailQueueProcessorService(
 		}
 
 		TimeSpan interval =
-			TimeSpan.FromSeconds(queueSettings.Value.ProcessingIntervalSeconds);
+			TimeSpan.FromSeconds(
+				queueSettings.Value.ProcessingIntervalSeconds);
 
 		using PeriodicTimer timer =
 			new(interval);
@@ -158,7 +159,9 @@ public class EmailQueueProcessorService(
 				entry.Id);
 
 			await messageBus.InvokeAsync(
-				new MarkEmailFailedCommand(entry.Id, "Rate limited - will retry"),
+				new MarkEmailFailedCommand(
+					entry.Id,
+					"Rate limited - will retry"),
 				cancellationToken);
 
 			return false;

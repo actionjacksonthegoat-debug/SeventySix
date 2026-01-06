@@ -14,124 +14,179 @@ import {
 } from "@shared/constants";
 import { ValidationResult } from "@auth/models/validation-result.model";
 
-describe("validateUsername", () => {
-	it("should return invalid when username is undefined", () => {
-		const result: ValidationResult =
-			validateUsername(undefined);
+describe("validateUsername",
+	() =>
+	{
+		it("should return invalid when username is undefined",
+			() =>
+			{
+				const result: ValidationResult =
+					validateUsername(undefined);
 
-		expect(result.valid).toBe(false);
-		expect(result.errorMessage)
-			.toBe(
-				`Username must be at least ${USERNAME_VALIDATION.MIN_LENGTH} characters.`);
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe(
+						`Username must be at least ${USERNAME_VALIDATION.MIN_LENGTH} characters.`);
+			});
+
+		it("should return invalid when username is too short",
+			() =>
+			{
+				const result: ValidationResult =
+					validateUsername("ab");
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe(
+						`Username must be at least ${USERNAME_VALIDATION.MIN_LENGTH} characters.`);
+			});
+
+		it("should return invalid when username has invalid characters",
+			() =>
+			{
+				const result: ValidationResult =
+					validateUsername("user@name");
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe(
+						"Username can only contain letters, numbers, and underscores.");
+			});
+
+		it("should return valid for a valid username",
+			() =>
+			{
+				const result: ValidationResult =
+					validateUsername("valid_username_123");
+
+				expect(result.valid)
+					.toBe(true);
+				expect(result.errorMessage)
+					.toBeUndefined();
+			});
 	});
 
-	it("should return invalid when username is too short", () => {
-		const result: ValidationResult =
-			validateUsername("ab");
+describe("validatePassword",
+	() =>
+	{
+		it("should return invalid when password is undefined",
+			() =>
+			{
+				const result: ValidationResult =
+					validatePassword(undefined);
 
-		expect(result.valid).toBe(false);
-		expect(result.errorMessage)
-			.toBe(
-				`Username must be at least ${USERNAME_VALIDATION.MIN_LENGTH} characters.`);
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe(
+						`Password must be at least ${PASSWORD_VALIDATION.MIN_LENGTH} characters.`);
+			});
+
+		it("should return invalid when password is too short",
+			() =>
+			{
+				const result: ValidationResult =
+					validatePassword("short");
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe(
+						`Password must be at least ${PASSWORD_VALIDATION.MIN_LENGTH} characters.`);
+			});
+
+		it("should return valid for a valid password",
+			() =>
+			{
+				const result: ValidationResult =
+					validatePassword("validPassword123");
+
+				expect(result.valid)
+					.toBe(true);
+				expect(result.errorMessage)
+					.toBeUndefined();
+			});
 	});
 
-	it("should return invalid when username has invalid characters", () => {
-		const result: ValidationResult =
-			validateUsername("user@name");
+describe("validatePasswordsMatch",
+	() =>
+	{
+		it("should return invalid when passwords do not match",
+			() =>
+			{
+				const result: ValidationResult =
+					validatePasswordsMatch("password123", "password456");
 
-		expect(result.valid).toBe(false);
-		expect(result.errorMessage)
-			.toBe(
-				"Username can only contain letters, numbers, and underscores.");
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe("Passwords do not match.");
+			});
+
+		it("should return valid when passwords match",
+			() =>
+			{
+				const result: ValidationResult =
+					validatePasswordsMatch("password123", "password123");
+
+				expect(result.valid)
+					.toBe(true);
+				expect(result.errorMessage)
+					.toBeUndefined();
+			});
 	});
 
-	it("should return valid for a valid username", () => {
-		const result: ValidationResult =
-			validateUsername("valid_username_123");
+describe("validateRegistrationForm",
+	() =>
+	{
+		it("should return username error when username is invalid",
+			() =>
+			{
+				const result: ValidationResult =
+					validateRegistrationForm("ab", "validPassword123", "validPassword123");
 
-		expect(result.valid).toBe(true);
-		expect(result.errorMessage).toBeUndefined();
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toContain("Username");
+			});
+
+		it("should return password error when password is invalid",
+			() =>
+			{
+				const result: ValidationResult =
+					validateRegistrationForm("validUsername", "short", "short");
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toContain("Password must be at least");
+			});
+
+		it("should return mismatch error when passwords don't match",
+			() =>
+			{
+				const result: ValidationResult =
+					validateRegistrationForm("validUsername", "validPassword123", "differentPassword");
+
+				expect(result.valid)
+					.toBe(false);
+				expect(result.errorMessage)
+					.toBe("Passwords do not match.");
+			});
+
+		it("should return valid for a valid registration form",
+			() =>
+			{
+				const result: ValidationResult =
+					validateRegistrationForm("validUsername", "validPassword123", "validPassword123");
+
+				expect(result.valid)
+					.toBe(true);
+				expect(result.errorMessage)
+					.toBeUndefined();
+			});
 	});
-});
-
-describe("validatePassword", () => {
-	it("should return invalid when password is undefined", () => {
-		const result: ValidationResult =
-			validatePassword(undefined);
-
-		expect(result.valid).toBe(false);
-		expect(result.errorMessage)
-			.toBe(
-				`Password must be at least ${PASSWORD_VALIDATION.MIN_LENGTH} characters.`);
-	});
-
-	it("should return invalid when password is too short", () => {
-		const result: ValidationResult =
-			validatePassword("short");
-
-		expect(result.valid).toBe(false);
-		expect(result.errorMessage)
-			.toBe(
-				`Password must be at least ${PASSWORD_VALIDATION.MIN_LENGTH} characters.`);
-	});
-
-	it("should return valid for a valid password", () => {
-		const result: ValidationResult =
-			validatePassword("validPassword123");
-
-		expect(result.valid).toBe(true);
-		expect(result.errorMessage).toBeUndefined();
-	});
-});
-
-describe("validatePasswordsMatch", () => {
-	it("should return invalid when passwords do not match", () => {
-		const result: ValidationResult =
-			validatePasswordsMatch("password123", "password456");
-
-		expect(result.valid).toBe(false);
-		expect(result.errorMessage).toBe("Passwords do not match.");
-	});
-
-	it("should return valid when passwords match", () => {
-		const result: ValidationResult =
-			validatePasswordsMatch("password123", "password123");
-
-		expect(result.valid).toBe(true);
-		expect(result.errorMessage).toBeUndefined();
-	});
-});
-
-describe("validateRegistrationForm", () => {
-	it("should return username error when username is invalid", () => {
-		const result: ValidationResult =
-			validateRegistrationForm("ab", "validPassword123", "validPassword123");
-
-		expect(result.valid).toBe(false);
-		expect(result.errorMessage).toContain("Username");
-	});
-
-	it("should return password error when password is invalid", () => {
-		const result: ValidationResult =
-			validateRegistrationForm("validUsername", "short", "short");
-
-		expect(result.valid).toBe(false);
-		expect(result.errorMessage).toContain("Password must be at least");
-	});
-
-	it("should return mismatch error when passwords don't match", () => {
-		const result: ValidationResult =
-			validateRegistrationForm("validUsername", "validPassword123", "differentPassword");
-
-		expect(result.valid).toBe(false);
-		expect(result.errorMessage).toBe("Passwords do not match.");
-	});
-
-	it("should return valid for a valid registration form", () => {
-		const result: ValidationResult =
-			validateRegistrationForm("validUsername", "validPassword123", "validPassword123");
-
-		expect(result.valid).toBe(true);
-		expect(result.errorMessage).toBeUndefined();
-	});
-});

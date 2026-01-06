@@ -45,7 +45,8 @@ public class OAuthService(
 
 		// Generate PKCE code challenge
 		string codeChallenge =
-			CryptoExtensions.ComputePkceCodeChallenge(codeVerifier);
+			CryptoExtensions.ComputePkceCodeChallenge(
+				codeVerifier);
 
 		string url =
 			$"{github.AuthorizationEndpoint}"
@@ -170,13 +171,15 @@ public class OAuthService(
 		response.EnsureSuccessStatusCode();
 
 		string json =
-			await response.Content.ReadAsStringAsync(cancellationToken);
+			await response.Content.ReadAsStringAsync(
+				cancellationToken);
 
 		using JsonDocument doc =
 			JsonDocument.Parse(json);
 
 		return doc.RootElement.GetProperty("access_token").GetString()
-			?? throw new InvalidOperationException("No access_token in response");
+			?? throw new InvalidOperationException(
+				"No access_token in response");
 	}
 
 	/// <summary>
@@ -212,7 +215,8 @@ public class OAuthService(
 		response.EnsureSuccessStatusCode();
 
 		string json =
-			await response.Content.ReadAsStringAsync(cancellationToken);
+			await response.Content.ReadAsStringAsync(
+				cancellationToken);
 
 		using JsonDocument doc =
 			JsonDocument.Parse(json);
@@ -279,7 +283,7 @@ public class OAuthService(
 				UserName = username,
 				Email =
 					userInfo.Email
-					?? $"{userInfo.Login}{OAuthProviderConstants.AuditValues.GitHubPlaceholderEmailDomain}",
+						?? $"{userInfo.Login}{OAuthProviderConstants.AuditValues.GitHubPlaceholderEmailDomain}",
 				FullName = userInfo.Name,
 				IsActive = true,
 				CreateDate = now,
@@ -294,8 +298,11 @@ public class OAuthService(
 		if (!createResult.Succeeded)
 		{
 			string errors =
-				string.Join(", ", createResult.Errors.Select(error => error.Description));
-			throw new InvalidOperationException($"Failed to create OAuth user: {errors}");
+				string.Join(
+					", ",
+					createResult.Errors.Select(error => error.Description));
+			throw new InvalidOperationException(
+				$"Failed to create OAuth user: {errors}");
 		}
 
 		// Add external login
@@ -306,22 +313,28 @@ public class OAuthService(
 				OAuthProviderConstants.GitHub);
 
 		IdentityResult loginResult =
-			await userManager.AddLoginAsync(newUser, loginInfo);
+			await userManager.AddLoginAsync(
+				newUser,
+				loginInfo);
 
 		if (!loginResult.Succeeded)
 		{
 			string errors = loginResult.ToErrorString();
-			throw new InvalidOperationException($"Failed to add external login: {errors}");
+			throw new InvalidOperationException(
+				$"Failed to add external login: {errors}");
 		}
 
 		// Assign User role
 		IdentityResult roleResult =
-			await userManager.AddToRoleAsync(newUser, RoleConstants.User);
+			await userManager.AddToRoleAsync(
+				newUser,
+				RoleConstants.User);
 
 		if (!roleResult.Succeeded)
 		{
 			string errors = roleResult.ToErrorString();
-			throw new InvalidOperationException($"Failed to assign role: {errors}");
+			throw new InvalidOperationException(
+				$"Failed to assign role: {errors}");
 		}
 
 		return newUser;

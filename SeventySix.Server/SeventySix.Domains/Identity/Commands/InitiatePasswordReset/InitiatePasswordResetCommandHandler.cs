@@ -45,7 +45,8 @@ public static class InitiatePasswordResetCommandHandler
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(command.UserId.ToString());
+			await userManager.FindByIdAsync(
+				command.UserId.ToString());
 
 		if (user is null || !user.IsActive)
 		{
@@ -58,7 +59,8 @@ public static class InitiatePasswordResetCommandHandler
 
 		// Generate password reset token using Identity's built-in token provider
 		string resetToken =
-			await userManager.GeneratePasswordResetTokenAsync(user);
+			await userManager.GeneratePasswordResetTokenAsync(
+				user);
 
 		// Create combined token with user ID for the email link
 		// Format: {userId}:{resetToken}
@@ -67,7 +69,9 @@ public static class InitiatePasswordResetCommandHandler
 
 		// Determine email type based on whether this is a new user or password reset
 		string emailType =
-			command.IsNewUser ? EmailType.Welcome : EmailType.PasswordReset;
+			command.IsNewUser
+				? EmailType.Welcome
+				: EmailType.PasswordReset;
 
 		// Enqueue the email for async delivery
 		string usernameValue =

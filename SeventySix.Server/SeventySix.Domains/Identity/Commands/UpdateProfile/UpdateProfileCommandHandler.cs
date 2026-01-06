@@ -43,7 +43,8 @@ public static class UpdateProfileCommandHandler
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(command.UserId.ToString());
+			await userManager.FindByIdAsync(
+				command.UserId.ToString());
 
 		if (user == null)
 		{
@@ -68,7 +69,9 @@ public static class UpdateProfileCommandHandler
 				}
 
 				throw new InvalidOperationException(
-					string.Join(", ", result.Errors.Select(error => error.Description)));
+					string.Join(
+						", ",
+						result.Errors.Select(error => error.Description)));
 			}
 
 			// Query full profile after successful update

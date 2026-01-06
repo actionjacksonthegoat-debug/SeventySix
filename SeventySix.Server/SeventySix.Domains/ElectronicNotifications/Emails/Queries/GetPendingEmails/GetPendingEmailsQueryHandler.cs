@@ -33,7 +33,8 @@ public static class GetPendingEmailsQueryHandler
 		ElectronicNotificationsDbContext dbContext,
 		CancellationToken cancellationToken)
 	{
-		return await dbContext.EmailQueue
+		return await dbContext
+			.EmailQueue
 			.Where(entry =>
 				entry.Status == EmailQueueStatus.Pending
 				|| entry.Status == EmailQueueStatus.Failed)

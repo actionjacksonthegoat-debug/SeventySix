@@ -1,7 +1,7 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using SeventySix.Shared.Persistence;
+using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Persistence;
 
 namespace SeventySix.Shared.Registration;
 
@@ -26,10 +26,14 @@ public static class TransactionManagerRegistration
 	/// <returns>
 	/// The supplied <see cref="IServiceCollection"/> for chaining.
 	/// </returns>
-	public static IServiceCollection AddTransactionManagerFor<TContext>(this IServiceCollection services)
+	public static IServiceCollection AddTransactionManagerFor<TContext>(
+		this IServiceCollection services)
 		where TContext : DbContext
 	{
-		services.AddScoped<ITransactionManager, TransactionManagerForContext<TContext>>();
+		services.AddScoped<
+			ITransactionManager,
+			TransactionManagerForContext<TContext>>();
+
 		return services;
 	}
 }

@@ -30,7 +30,8 @@ public static class ChangePasswordCommandHandler
 			timeProvider.GetUtcNow().UtcDateTime;
 
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(command.UserId.ToString());
+			await userManager.FindByIdAsync(
+				command.UserId.ToString());
 
 		if (user is null)
 		{
@@ -63,8 +64,9 @@ public static class ChangePasswordCommandHandler
 
 			if (!changeResult.Succeeded)
 			{
-				if (changeResult.Errors.Any(error =>
-					error.Code == "PasswordMismatch"))
+				if (changeResult.Errors.Any(
+					error =>
+						error.Code == "PasswordMismatch"))
 				{
 					throw new ArgumentException(
 						"Current password is incorrect",
@@ -72,7 +74,9 @@ public static class ChangePasswordCommandHandler
 				}
 
 				throw new InvalidOperationException(
-					string.Join(", ", changeResult.Errors.Select(error => error.Description)));
+					string.Join(
+						", ",
+						changeResult.Errors.Select(error => error.Description)));
 			}
 		}
 		else
@@ -86,7 +90,9 @@ public static class ChangePasswordCommandHandler
 			if (!addResult.Succeeded)
 			{
 				throw new InvalidOperationException(
-					string.Join(", ", addResult.Errors.Select(error => error.Description)));
+					string.Join(
+						", ",
+						addResult.Errors.Select(error => error.Description)));
 			}
 		}
 

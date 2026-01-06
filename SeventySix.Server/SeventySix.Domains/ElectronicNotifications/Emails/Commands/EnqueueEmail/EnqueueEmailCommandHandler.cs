@@ -46,9 +46,11 @@ public static class EnqueueEmailCommandHandler
 
 		// Check for duplicate (idempotency)
 		EmailQueueEntry? existingEntry =
-			await dbContext.EmailQueue
+			await dbContext
+				.EmailQueue
 				.FirstOrDefaultAsync(
-					entry => entry.IdempotencyKey == idempotencyKey,
+					entry =>
+						entry.IdempotencyKey == idempotencyKey,
 					cancellationToken);
 
 		if (existingEntry is not null)
@@ -57,7 +59,8 @@ public static class EnqueueEmailCommandHandler
 		}
 
 		string templateDataJson =
-			JsonSerializer.Serialize(command.TemplateData);
+			JsonSerializer.Serialize(
+				command.TemplateData);
 
 		int maxAttempts =
 			settings.Value.MaxAttempts;

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
@@ -9,7 +9,6 @@
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<DevelopmentDependency>true</DevelopmentDependency>
 		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-		<!-- Disable release tracking warning - not needed for internal analyzers -->
 		<NoWarn>$(NoWarn);RS2008</NoWarn>
 	</PropertyGroup>
 
@@ -19,24 +18,18 @@
 			Version="5.0.0"
 			PrivateAssets="all"
 		/>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None
-			Include="$(OutputPath)\$(AssemblyName).dll"
-			Pack="true"
-			PackagePath="analyzers/dotnet/cs"
-			Visible="false"
+		<PackageReference
+			Include="Microsoft.CodeAnalysis.CSharp.Workspaces"
+			Version="5.0.0"
+			PrivateAssets="all"
 		/>
 	</ItemGroup>
 
-	<!-- Include CodeFixes assembly output so pack/format tools can discover code fixes -->
+	<!-- CodeFix provider sources live in this project directory now (default SDK includes .cs files) -->
 	<ItemGroup>
-		<None
-			Include="..\SeventySix.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\SeventySix.Analyzers.CodeFixes.dll"
-			Pack="true"
-			PackagePath="analyzers/dotnet/cs"
-			Visible="false"
+		<ProjectReference
+			Include="..\SeventySix.Analyzers\SeventySix.Analyzers.csproj"
+			ReferenceOutputAssembly="true"
 		/>
 	</ItemGroup>
 </Project>

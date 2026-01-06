@@ -70,7 +70,9 @@ public class MarkEmailFailedCommandHandlerTests
 		await dbContext.SaveChangesAsync();
 
 		MarkEmailFailedCommand command =
-			new(entry.Id, "SMTP connection failed");
+			new(
+				entry.Id,
+				"SMTP connection failed");
 
 		// Act
 		bool result =
@@ -84,7 +86,8 @@ public class MarkEmailFailedCommandHandlerTests
 		result.ShouldBeTrue();
 
 		EmailQueueEntry? updatedEntry =
-			await dbContext.EmailQueue.FindAsync(entry.Id);
+			await dbContext.EmailQueue.FindAsync(
+				entry.Id);
 		updatedEntry.ShouldNotBeNull();
 		updatedEntry.Attempts.ShouldBe(1);
 		updatedEntry.Status.ShouldBe(EmailQueueStatus.Failed);
@@ -134,7 +137,8 @@ public class MarkEmailFailedCommandHandlerTests
 		result.ShouldBeTrue();
 
 		EmailQueueEntry? updatedEntry =
-			await dbContext.EmailQueue.FindAsync(entry.Id);
+			await dbContext.EmailQueue.FindAsync(
+				entry.Id);
 		updatedEntry.ShouldNotBeNull();
 		updatedEntry.Attempts.ShouldBe(3);
 		updatedEntry.Status.ShouldBe(EmailQueueStatus.DeadLetter);
@@ -185,7 +189,8 @@ public class MarkEmailFailedCommandHandlerTests
 		result.ShouldBeTrue();
 
 		EmailQueueEntry? updatedEntry =
-			await dbContext.EmailQueue.FindAsync(entry.Id);
+			await dbContext.EmailQueue.FindAsync(
+				entry.Id);
 		updatedEntry.ShouldNotBeNull();
 		updatedEntry.ErrorMessage.ShouldNotBeNull();
 		updatedEntry.ErrorMessage.Length.ShouldBeLessThanOrEqualTo(1000);

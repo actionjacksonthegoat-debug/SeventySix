@@ -16,7 +16,8 @@ namespace SeventySix.ElectronicNotifications.Emails;
 /// - Unique index on IdempotencyKey for duplicate prevention
 /// - Index on RecipientUserId for user email history queries.
 /// </remarks>
-public class EmailQueueEntryConfiguration : IEntityTypeConfiguration<EmailQueueEntry>
+public class EmailQueueEntryConfiguration
+	: IEntityTypeConfiguration<EmailQueueEntry>
 {
 	/// <summary>
 	/// Configures the entity mapping for EmailQueueEntry.

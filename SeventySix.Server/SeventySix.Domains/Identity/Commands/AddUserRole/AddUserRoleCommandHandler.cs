@@ -33,7 +33,8 @@ public static class AddUserRoleCommandHandler
 		}
 
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(command.UserId.ToString());
+			await userManager.FindByIdAsync(
+				command.UserId.ToString());
 
 		if (user is null)
 		{
@@ -50,7 +51,9 @@ public static class AddUserRoleCommandHandler
 
 		// Add role using Identity's UserManager
 		IdentityResult result =
-			await userManager.AddToRoleAsync(user, command.Role);
+			await userManager.AddToRoleAsync(
+				user,
+				command.Role);
 
 		if (!result.Succeeded)
 		{

@@ -46,7 +46,8 @@ public static class ApprovePermissionRequestCommandHandler
 		}
 
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(request.UserId.ToString());
+			await userManager.FindByIdAsync(
+				request.UserId.ToString());
 
 		if (user is null)
 		{

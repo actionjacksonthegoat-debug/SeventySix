@@ -50,7 +50,7 @@ public class GodMethodTests : SourceCodeArchitectureTest
 			"SeventySix.Domains\\Registration\\IdentityRegistration.cs::AddIdentityDomain",
 			// Roslyn analyzers - complex AST traversal is inherently long, split would reduce readability
 			"SeventySix.Analyzers\\AssignmentContinuationIndentAnalyzer.cs::AnalyzeObjectCreationInitializerBrace",
-			"SeventySix.Analyzers\\AssignmentContinuationIndentCodeFixProvider.cs::CalculateExpectedIndent",
+			"SeventySix.Analyzers.CodeFixes\\AssignmentContinuationIndentCodeFixProvider.cs::CalculateExpectedIndent",
 			// Analyzer tests - test methods with large code strings are unavoidably long
 			"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::ExtensionsInitializer_WrongIndent_FixesToCorrectIndentAsync",
 			"Tests\\SeventySix.Analyzers.Tests\\AssignmentContinuationIndentCodeFixTests.cs::NestedDictionary_OuterBraceWrong_InnerNotFlaggedAsync",

@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.TestUtilities.Mocks;
@@ -35,7 +35,9 @@ public class ChangePasswordCommandHandlerTests
 		// Arrange
 		long userId = 123;
 		ApplicationUser user =
-			CreateTestUser(userId, requiresPasswordChange: true);
+			CreateTestUser(
+				userId,
+				requiresPasswordChange: true);
 
 		SetupUserManagerMocks(user);
 		SetupAuthResultMock(user);
@@ -56,15 +58,22 @@ public class ChangePasswordCommandHandlerTests
 
 		// Assert
 		result.Success.ShouldBeTrue();
-		await TokenRepository.Received(1).RevokeAllUserTokensAsync(
-			userId,
-			Arg.Any<DateTime>(),
-			Arg.Any<CancellationToken>());
-		await UserManager.Received(1).UpdateAsync(
-			Arg.Is<ApplicationUser>(updatedUser => !updatedUser.RequiresPasswordChange));
+		await TokenRepository
+			.Received(1)
+			.RevokeAllUserTokensAsync(
+				userId,
+				Arg.Any<DateTime>(),
+				Arg.Any<CancellationToken>());
+		await UserManager
+			.Received(1)
+			.UpdateAsync(
+				Arg.Is<ApplicationUser>(updatedUser =>
+					!updatedUser.RequiresPasswordChange));
 	}
 
-	private static ApplicationUser CreateTestUser(long userId, bool requiresPasswordChange)
+	private static ApplicationUser CreateTestUser(
+		long userId,
+		bool requiresPasswordChange)
 	{
 		return new()
 		{
@@ -73,7 +82,7 @@ public class ChangePasswordCommandHandlerTests
 			Email = "test@example.com",
 			IsActive = true,
 			RequiresPasswordChange =
-				requiresPasswordChange
+				requiresPasswordChange,
 		};
 	}
 
@@ -81,9 +90,12 @@ public class ChangePasswordCommandHandlerTests
 	{
 		UserManager.FindByIdAsync(user.Id.ToString()).Returns(user);
 		UserManager.HasPasswordAsync(user).Returns(true);
-		UserManager.ChangePasswordAsync(user, Arg.Any<string>(), Arg.Any<string>())
+		UserManager
+			.ChangePasswordAsync(user, Arg.Any<string>(), Arg.Any<string>())
 			.Returns(IdentityResult.Success);
-		UserManager.UpdateAsync(Arg.Any<ApplicationUser>()).Returns(IdentityResult.Success);
+		UserManager
+			.UpdateAsync(Arg.Any<ApplicationUser>())
+			.Returns(IdentityResult.Success);
 	}
 
 	private void SetupAuthResultMock(ApplicationUser user)
@@ -92,21 +104,21 @@ public class ChangePasswordCommandHandlerTests
 			TimeProvider.GetUtcNow().UtcDateTime;
 		AuthResult expectedResult =
 			AuthResult.Succeeded(
-				"access-token",
-				"refresh-token",
-				now.AddMinutes(15),
-				user.Email!,
-				null,
-				false);
+			"access-token",
+			"refresh-token",
+			now.AddMinutes(15),
+			user.Email!,
+			null,
+			false);
 
-		AuthenticationService.GenerateAuthResultAsync(
-			user,
-			Arg.Any<string?>(),
-			false,
-			false,
-			Arg.Any<CancellationToken>())
-			.Returns(
-				Task.FromResult(expectedResult));
+		AuthenticationService
+			.GenerateAuthResultAsync(
+				user,
+				Arg.Any<string?>(),
+				false,
+				false,
+				Arg.Any<CancellationToken>())
+			.Returns(Task.FromResult(expectedResult));
 	}
 
 	private static ChangePasswordCommand CreateCommand(long userId)

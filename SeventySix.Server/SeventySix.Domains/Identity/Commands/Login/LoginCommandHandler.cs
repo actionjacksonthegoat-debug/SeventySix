@@ -45,7 +45,8 @@ public static class LoginCommandHandler
 	{
 		ApplicationUser? user =
 			await userManager.FindByNameAsync(command.Request.UsernameOrEmail)
-				?? await userManager.FindByEmailAsync(command.Request.UsernameOrEmail);
+				?? await userManager.FindByEmailAsync(
+					command.Request.UsernameOrEmail);
 
 		if (user is null || !user.IsActive)
 		{
@@ -85,5 +86,4 @@ public static class LoginCommandHandler
 			command.Request.RememberMe,
 			cancellationToken);
 	}
-
 }

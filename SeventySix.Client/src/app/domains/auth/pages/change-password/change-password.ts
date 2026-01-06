@@ -162,8 +162,8 @@ export class ChangePasswordComponent implements OnInit
 			return;
 		}
 
-		const passwordResult: ValidationResult
-			= validatePassword(this.newPassword);
+		const passwordResult: ValidationResult =
+			validatePassword(this.newPassword);
 		if (!passwordResult.valid)
 		{
 			this.notification.error(passwordResult.errorMessage!);

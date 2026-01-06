@@ -4,7 +4,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using SeventySix.ElectronicNotifications.Emails;
-using SeventySix.Identity.Constants;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Identity;
 
@@ -54,7 +54,8 @@ public static class InitiateRegistrationCommandHandler
 
 		// Check if email is already registered
 		ApplicationUser? existingUser =
-			await userManager.FindByEmailAsync(email);
+			await userManager.FindByEmailAsync(
+				email);
 
 		if (existingUser is not null)
 		{
@@ -79,7 +80,8 @@ public static class InitiateRegistrationCommandHandler
 			};
 
 		IdentityResult createResult =
-			await userManager.CreateAsync(temporaryUser);
+			await userManager.CreateAsync(
+				temporaryUser);
 
 		if (!createResult.Succeeded)
 		{
@@ -89,7 +91,8 @@ public static class InitiateRegistrationCommandHandler
 
 		// Generate email confirmation token using Identity's built-in token provider
 		string token =
-			await userManager.GenerateEmailConfirmationTokenAsync(temporaryUser);
+			await userManager.GenerateEmailConfirmationTokenAsync(
+				temporaryUser);
 
 		// Send verification email
 		await emailService.SendVerificationEmailAsync(

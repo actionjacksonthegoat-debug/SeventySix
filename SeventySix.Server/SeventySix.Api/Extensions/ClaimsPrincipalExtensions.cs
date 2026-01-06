@@ -27,7 +27,9 @@ public static class ClaimsPrincipalExtensions
 			principal.FindFirstValue(
 				JwtRegisteredClaimNames.Sub);
 
-		return long.TryParse(userIdClaim, out long userId)
+		return long.TryParse(
+			userIdClaim,
+			out long userId)
 			? userId
 			: null;
 	}

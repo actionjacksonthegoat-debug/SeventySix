@@ -20,23 +20,23 @@ public sealed class ConnectionStringBuilderTests
 	public void BuildPostgresConnectionString_WithAllComponents_BuildsConnectionString()
 	{
 		// Arrange
-		IConfiguration configuration = new ConfigurationBuilder()
-			.AddInMemoryCollection(
-				new Dictionary<string, string?>
-				{
-					["Database:Host"] = "myhost",
-					["Database:Port"] = "5432",
-					["Database:Name"] = "mydb",
-					["Database:User"] = "myuser",
-					["Database:Password"] = "mypassword",
-				}
-			)
-			.Build();
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["Database:Host"] = "myhost",
+						["Database:Port"] = "5432",
+						["Database:Name"] = "mydb",
+						["Database:User"] = "myuser",
+						["Database:Password"] = "mypassword",
+					})
+				.Build();
 
 		// Act
-		string result = ConnectionStringBuilder.BuildPostgresConnectionString(
-			configuration
-		);
+		string result =
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				configuration);
 
 		// Assert
 		result.ShouldContain("Host=myhost");
@@ -51,23 +51,23 @@ public sealed class ConnectionStringBuilderTests
 	public void BuildPostgresConnectionString_WithCustomPort_UsesCustomPort()
 	{
 		// Arrange
-		IConfiguration configuration = new ConfigurationBuilder()
-			.AddInMemoryCollection(
-				new Dictionary<string, string?>
-				{
-					["Database:Host"] = "testhost",
-					["Database:Port"] = "5433",
-					["Database:Name"] = "testdb",
-					["Database:User"] = "testuser",
-					["Database:Password"] = "testpass",
-				}
-			)
-			.Build();
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["Database:Host"] = "testhost",
+						["Database:Port"] = "5433",
+						["Database:Name"] = "testdb",
+						["Database:User"] = "testuser",
+						["Database:Password"] = "testpass",
+					})
+				.Build();
 
 		// Act
-		string result = ConnectionStringBuilder.BuildPostgresConnectionString(
-			configuration
-		);
+		string result =
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				configuration);
 
 		// Assert
 		result.ShouldContain("Host=testhost");
@@ -81,19 +81,19 @@ public sealed class ConnectionStringBuilderTests
 	public void BuildPostgresConnectionString_WithDefaults_UsesDefaultHostAndPort()
 	{
 		// Arrange
-		IConfiguration configuration = new ConfigurationBuilder()
-			.AddInMemoryCollection(
-				new Dictionary<string, string?>
-				{
-					["Database:Password"] = "requiredpassword",
-				}
-			)
-			.Build();
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?>
+					{
+						["Database:Password"] = "requiredpassword",
+					})
+				.Build();
 
 		// Act
-		string result = ConnectionStringBuilder.BuildPostgresConnectionString(
-			configuration
-		);
+		string result =
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				configuration);
 
 		// Assert
 		result.ShouldContain("Host=localhost");
@@ -106,19 +106,17 @@ public sealed class ConnectionStringBuilderTests
 	public void BuildPostgresConnectionString_WithoutPassword_ThrowsInvalidOperationException()
 	{
 		// Arrange
-		IConfiguration configuration = new ConfigurationBuilder()
-			.AddInMemoryCollection(
-				new Dictionary<string, string?> { ["Database:Host"] = "myhost" }
-			)
-			.Build();
+		IConfiguration configuration =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+					new Dictionary<string, string?> { ["Database:Host"] = "myhost" })
+				.Build();
 
 		// Act & Assert
 		InvalidOperationException exception =
 			Should.Throw<InvalidOperationException>(() =>
 				ConnectionStringBuilder.BuildPostgresConnectionString(
-					configuration
-				)
-			);
+					configuration));
 
 		exception.Message.ShouldContain("DB_PASSWORD");
 	}

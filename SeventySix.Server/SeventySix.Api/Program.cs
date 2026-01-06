@@ -20,7 +20,6 @@
 /// Architecture: Implements Dependency Inversion Principle (DIP) by registering
 /// interfaces with their concrete implementations.
 /// </remarks>
-
 using Scalar.AspNetCore;
 using Serilog;
 using SeventySix.Api.Configuration;
@@ -36,7 +35,6 @@ DotEnvLoader.Load();
 
 WebApplicationBuilder builder =
 			WebApplication.CreateBuilder(args);
-
 
 // Map flat .env variables to hierarchical configuration
 // This allows .env file to use simple names while ASP.NET gets proper hierarchy
@@ -107,10 +105,17 @@ string connectionString =
 
 // Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
 builder.Services.AddInfrastructure();
-builder.Services.AddIdentityDomain(connectionString);
-builder.Services.AddLoggingDomain(connectionString, builder.Configuration);
-builder.Services.AddApiTrackingDomain(connectionString, builder.Configuration);
-builder.Services.AddElectronicNotificationsDomain(connectionString, builder.Configuration);
+builder.Services.AddIdentityDomain(
+	connectionString);
+builder.Services.AddLoggingDomain(
+	connectionString,
+	builder.Configuration);
+builder.Services.AddApiTrackingDomain(
+	connectionString,
+	builder.Configuration);
+builder.Services.AddElectronicNotificationsDomain(
+	connectionString,
+	builder.Configuration);
 
 // Register all background jobs (single registration point)
 builder.Services.AddBackgroundJobs(builder.Configuration);
@@ -128,7 +133,9 @@ builder.Services.AddConfiguredRateLimiting(builder.Configuration);
 builder.Services.AddConfiguredCors(builder.Configuration);
 
 // Add Data Protection for key management
-builder.Services.AddConfiguredDataProtection(builder.Configuration, builder.Environment);
+builder.Services.AddConfiguredDataProtection(
+	builder.Configuration,
+	builder.Environment);
 
 // Add JWT authentication
 builder.Services.AddAuthenticationServices(builder.Configuration);

@@ -29,7 +29,8 @@ public static class CheckUsernameExistsQueryHandler
 		CancellationToken cancellationToken)
 	{
 		IQueryable<ApplicationUser> usersQuery =
-			userManager.Users
+			userManager
+				.Users
 				.AsNoTracking()
 				.Where(user =>
 					user.UserName != null
@@ -38,7 +39,8 @@ public static class CheckUsernameExistsQueryHandler
 		if (query.ExcludeUserId.HasValue)
 		{
 			usersQuery =
-				usersQuery.Where(user => user.Id != query.ExcludeUserId.Value);
+				usersQuery.Where(user =>
+					user.Id != query.ExcludeUserId.Value);
 		}
 
 		return await usersQuery.AnyAsync(cancellationToken);

@@ -17,27 +17,34 @@ public static class UserExtensions
 	/// EF Core-compatible projection expression for database-level DTO selection.
 	/// Use with .Select() for server-side projection (avoids loading full entities).
 	/// </summary>
-	public static Expression<Func<ApplicationUser, UserDto>> ToDtoProjection { get; } =
-		user => new UserDto(
-			user.Id,
-			user.UserName ?? string.Empty,
-			user.Email ?? string.Empty,
-			user.FullName,
-			user.CreateDate,
-			user.IsActive,
-			user.CreatedBy,
-			user.ModifyDate,
-			user.ModifiedBy,
-			user.LastLoginAt,
-			user.IsDeleted,
-			user.DeletedAt,
-			user.DeletedBy);
+	public static Expression<
+		Func<ApplicationUser, UserDto>>	ToDtoProjection
+		{
+			get;
+		} =
+			user =>
+				new UserDto(
+					user.Id,
+					user.UserName ?? string.Empty,
+					user.Email ?? string.Empty,
+					user.FullName,
+					user.CreateDate,
+					user.IsActive,
+					user.CreatedBy,
+					user.ModifyDate,
+					user.ModifiedBy,
+					user.LastLoginAt,
+					user.IsDeleted,
+					user.DeletedAt,
+					user.DeletedBy);
 
 	/// <summary>
 	/// Compiled delegate for in-memory mapping.
 	/// Cached for performance - compiled once, reused for all in-memory mappings.
 	/// </summary>
-	private static readonly Func<ApplicationUser, UserDto> CompiledToDtoFunction =
+	private static readonly Func<
+		ApplicationUser,
+		UserDto> CompiledToDtoFunction =
 		ToDtoProjection.Compile();
 
 	/// <summary>
@@ -90,8 +97,9 @@ public static class UserExtensions
 	/// <remarks>
 	/// Uses generic MapToDto utility for efficient transformation with deferred execution.
 	/// </remarks>
-	public static IEnumerable<UserDto> ToDto(this IEnumerable<ApplicationUser> entities) =>
-		entities.MapToDto(entity => entity.ToDto());
+	public static IEnumerable<UserDto> ToDto(
+		this IEnumerable<ApplicationUser> entities) =>
+			entities.MapToDto(entity => entity.ToDto());
 
 	/// <summary>
 	/// Converts a CreateUserRequest to a domain entity.

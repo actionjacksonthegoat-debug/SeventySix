@@ -3,13 +3,13 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Identity;
 
@@ -59,14 +59,17 @@ public class AdminSeederService(
 			scopeFactory.CreateScope();
 
 		UserManager<ApplicationUser> userManager =
-			scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+			scope.ServiceProvider.GetRequiredService<
+				UserManager<ApplicationUser>>();
 
 		RoleManager<ApplicationRole> roleManager =
-			scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+			scope.ServiceProvider.GetRequiredService<
+				RoleManager<ApplicationRole>>();
 
 		// Check if admin user already exists
 		ApplicationUser? existingAdmin =
-			await userManager.FindByNameAsync(settings.Value.Username);
+			await userManager.FindByNameAsync(
+				settings.Value.Username);
 
 		if (existingAdmin is not null)
 		{
@@ -86,7 +89,8 @@ public class AdminSeederService(
 
 		// Ensure Admin role exists
 		ApplicationRole? adminRole =
-			await roleManager.FindByNameAsync(RoleConstants.Admin);
+			await roleManager.FindByNameAsync(
+				RoleConstants.Admin);
 
 		if (adminRole is null)
 		{

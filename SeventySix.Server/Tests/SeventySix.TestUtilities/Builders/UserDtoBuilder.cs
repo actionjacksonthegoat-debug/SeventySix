@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Identity;
+using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.TestUtilities.Builders;
@@ -21,10 +22,10 @@ public class UserDtoBuilder
 	private DateTime CreateDate;
 	private bool IsActive = true;
 	private string CreatedBy =
-		TestAuditConstants.SystemUser;
+		AuditConstants.SystemUser;
 	private DateTime? ModifyDate = null;
 	private string ModifiedBy =
-		TestAuditConstants.SystemUser;
+		AuditConstants.SystemUser;
 	private DateTime? LastLoginAt = null;
 	private bool IsDeleted = false;
 	private DateTime? DeletedAt = null;

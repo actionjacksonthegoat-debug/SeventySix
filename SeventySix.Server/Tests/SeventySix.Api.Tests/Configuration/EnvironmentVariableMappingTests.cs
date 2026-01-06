@@ -136,10 +136,18 @@ public sealed class EnvironmentVariableMappingTests : IDisposable
 	{
 		// Arrange
 		SetEnvironmentVariable("DATA_PROTECTION_USE_CERTIFICATE", "true");
-		SetEnvironmentVariable("DATA_PROTECTION_CERTIFICATE_PATH", "/app/keys/cert.pfx");
-		SetEnvironmentVariable("DATA_PROTECTION_CERTIFICATE_PASSWORD", "secret123");
-		SetEnvironmentVariable("DATA_PROTECTION_KEYS_DIRECTORY", "/custom/keys");
-		SetEnvironmentVariable("DATA_PROTECTION_ALLOW_UNPROTECTED_DEV", "false");
+		SetEnvironmentVariable(
+			"DATA_PROTECTION_CERTIFICATE_PATH",
+			"/app/keys/cert.pfx");
+		SetEnvironmentVariable(
+			"DATA_PROTECTION_CERTIFICATE_PASSWORD",
+			"secret123");
+		SetEnvironmentVariable(
+			"DATA_PROTECTION_KEYS_DIRECTORY",
+			"/custom/keys");
+		SetEnvironmentVariable(
+			"DATA_PROTECTION_ALLOW_UNPROTECTED_DEV",
+			"false");
 
 		ConfigurationManager configuration = new();
 
@@ -148,10 +156,13 @@ public sealed class EnvironmentVariableMappingTests : IDisposable
 
 		// Assert
 		configuration["DataProtection:UseCertificate"].ShouldBe("true");
-		configuration["DataProtection:CertificatePath"].ShouldBe("/app/keys/cert.pfx");
-		configuration["DataProtection:CertificatePassword"].ShouldBe("secret123");
+		configuration["DataProtection:CertificatePath"]
+			.ShouldBe("/app/keys/cert.pfx");
+		configuration["DataProtection:CertificatePassword"]
+			.ShouldBe("secret123");
 		configuration["DataProtection:KeysDirectory"].ShouldBe("/custom/keys");
-		configuration["DataProtection:AllowUnprotectedKeysInDevelopment"].ShouldBe("false");
+		configuration["DataProtection:AllowUnprotectedKeysInDevelopment"]
+			.ShouldBe("false");
 	}
 
 	/// <summary>

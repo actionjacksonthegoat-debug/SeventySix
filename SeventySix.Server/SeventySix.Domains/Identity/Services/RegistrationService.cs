@@ -92,7 +92,9 @@ public class RegistrationService(
 			};
 
 		IdentityResult createResult =
-			await userManager.CreateAsync(newUser, password);
+			await userManager.CreateAsync(
+				newUser,
+				password);
 
 		if (!createResult.Succeeded)
 		{
@@ -101,11 +103,14 @@ public class RegistrationService(
 				"Failed to create user '{Username}': {Errors}",
 				username,
 				errors);
-			throw new InvalidOperationException($"Failed to create user: {errors}");
+			throw new InvalidOperationException(
+				$"Failed to create user: {errors}");
 		}
 
 		IdentityResult roleResult =
-			await userManager.AddToRoleAsync(newUser, roleName);
+			await userManager.AddToRoleAsync(
+				newUser,
+				roleName);
 
 		if (!roleResult.Succeeded)
 		{
@@ -115,7 +120,8 @@ public class RegistrationService(
 				roleName,
 				username,
 				errors);
-			throw new InvalidOperationException($"Failed to assign role: {errors}");
+			throw new InvalidOperationException(
+				$"Failed to assign role: {errors}");
 		}
 
 		return newUser;

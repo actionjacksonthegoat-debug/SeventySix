@@ -36,7 +36,8 @@ public static class UpdateUserCommandHandler
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? existing =
-			await userManager.FindByIdAsync(request.Id.ToString());
+			await userManager.FindByIdAsync(
+				request.Id.ToString());
 
 		if (existing == null)
 		{
@@ -114,7 +115,9 @@ public static class UpdateUserCommandHandler
 		}
 
 		string errors =
-			string.Join(", ", result.Errors.Select(error => error.Description));
+			string.Join(
+				", ",
+				result.Errors.Select(error => error.Description));
 
 		throw new InvalidOperationException(errors);
 	}
@@ -143,12 +146,20 @@ public static class UpdateUserCommandHandler
 			exception.InnerException?.Message ?? exception.Message;
 
 		bool isUsernameDuplicate =
-			message.Contains("IX_Users_Username", StringComparison.OrdinalIgnoreCase)
-			|| message.Contains("UserNameIndex", StringComparison.OrdinalIgnoreCase);
+			message.Contains(
+				"IX_Users_Username",
+				StringComparison.OrdinalIgnoreCase)
+				|| message.Contains(
+					"UserNameIndex",
+					StringComparison.OrdinalIgnoreCase);
 
 		bool isEmailDuplicate =
-			message.Contains("IX_Users_Email", StringComparison.OrdinalIgnoreCase)
-			|| message.Contains("EmailIndex", StringComparison.OrdinalIgnoreCase);
+			message.Contains(
+				"IX_Users_Email",
+				StringComparison.OrdinalIgnoreCase)
+				|| message.Contains(
+					"EmailIndex",
+					StringComparison.OrdinalIgnoreCase);
 
 		if (isUsernameDuplicate)
 		{

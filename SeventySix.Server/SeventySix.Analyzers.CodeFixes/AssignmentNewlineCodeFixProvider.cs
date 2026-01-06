@@ -3,7 +3,10 @@
 // </copyright>
 
 using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Composition;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -11,7 +14,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace SeventySix.Analyzers;
+namespace SeventySix.Analyzers.CodeFixes;
 
 /// <summary>
 /// Code fix provider that adds a newline after the = operator.
@@ -34,8 +37,7 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 
 	/// <inheritdoc/>
 	public sealed override async Task RegisterCodeFixesAsync(
-		CodeFixContext context
-	)
+		CodeFixContext context)
 	{
 		SyntaxNode? root = await context
 			.Document.GetSyntaxRootAsync(context.CancellationToken)
@@ -53,23 +55,19 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 		context.RegisterCodeFix(
 			CodeAction.Create(
 				title: "Add newline after '='",
-				createChangedDocument: ct =>
-					AddNewlineAfterEqualsAsync(
-						context.Document,
-						equalsToken,
-						ct
-					),
+				createChangedDocument: ct => AddNewlineAfterEqualsAsync(
+					context.Document,
+					equalsToken,
+					ct),
 				equivalenceKey: nameof(AssignmentNewlineCodeFixProvider)
 			),
-			diagnostic
-		);
+			diagnostic);
 	}
 
 	private static async Task<Document> AddNewlineAfterEqualsAsync(
 		Document document,
 		SyntaxToken equalsToken,
-		CancellationToken cancellationToken
-	)
+		CancellationToken cancellationToken)
 	{
 		SyntaxNode? root = await document
 			.GetSyntaxRootAsync(cancellationToken)
@@ -87,26 +85,22 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 		// Create new trailing trivia for equals token: newline + indentation
 		SyntaxTriviaList newEqualsTrailingTrivia = SyntaxFactory.TriviaList(
 			SyntaxFactory.EndOfLine("\r\n"),
-			SyntaxFactory.Whitespace(newIndent)
-		);
+			SyntaxFactory.Whitespace(newIndent));
 
 		SyntaxToken newEqualsToken = equalsToken.WithTrailingTrivia(
-			newEqualsTrailingTrivia
-		);
+			newEqualsTrailingTrivia);
 
 		// Get and clean next token's leading trivia
 		SyntaxToken nextToken = equalsToken.GetNextToken();
 		SyntaxTriviaList cleanedLeading = RemoveWhitespaceTrivia(
-			nextToken.LeadingTrivia
-		);
+			nextToken.LeadingTrivia);
 		SyntaxToken newNextToken = nextToken.WithLeadingTrivia(cleanedLeading);
 
 		// Replace both tokens efficiently
 		SyntaxNode newRoot = root.ReplaceTokens(
 			new[] { equalsToken, nextToken },
 			(original, _) =>
-				original == equalsToken ? newEqualsToken : newNextToken
-		);
+				original == equalsToken ? newEqualsToken : newNextToken);
 
 		return document.WithSyntaxRoot(newRoot);
 	}
@@ -118,8 +112,7 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 		// For property assignments in object initializers, use the property's indent
 		if (
 			node is AssignmentExpressionSyntax assignment
-			&& assignment.Parent is InitializerExpressionSyntax
-		)
+			&& assignment.Parent is InitializerExpressionSyntax)
 		{
 			// Get the indentation of the property name (left side of assignment)
 			SyntaxToken leftToken = assignment.Left.GetFirstToken();
@@ -138,8 +131,7 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 			node
 				is not null
 					and not StatementSyntax
-					and not MemberDeclarationSyntax
-		)
+					and not MemberDeclarationSyntax)
 		{
 			node = node.Parent;
 		}
@@ -164,8 +156,7 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 	}
 
 	private static SyntaxTriviaList RemoveWhitespaceTrivia(
-		SyntaxTriviaList trivia
-	)
+		SyntaxTriviaList trivia)
 	{
 		List<SyntaxTrivia>? kept = null;
 
@@ -174,14 +165,13 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 			int kind = t.RawKind;
 
 			if (
-				kind
-				is not ((int)SyntaxKind.WhitespaceTrivia)
-					and not ((int)SyntaxKind.EndOfLineTrivia)
-			)
+				kind is not ((int)SyntaxKind.WhitespaceTrivia)
+					and not ((int)SyntaxKind.EndOfLineTrivia))
 			{
-				kept ??= new List<SyntaxTrivia>();
-				kept.Add(t);
+				kept ??=
+					new List<SyntaxTrivia>();
 			}
+			kept.Add(t);
 		}
 
 		return kept is null

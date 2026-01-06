@@ -56,13 +56,13 @@ public static class ValidationRegistrationExtensions
 				typeof(IValidator<>);
 
 			Type validatorForRequest =
-				validatorInterface.MakeGenericType(requestType);
+				validatorInterface.MakeGenericType(
+					requestType);
 
 			// Find the validator implementation type in assembly
 			Type? validatorImpl =
-				assemblyTypes
-					.FirstOrDefault(type =>
-						validatorForRequest.IsAssignableFrom(type)
+				assemblyTypes.FirstOrDefault(type =>
+					validatorForRequest.IsAssignableFrom(type)
 						&& !type.IsAbstract
 						&& type.IsClass);
 
@@ -73,7 +73,8 @@ public static class ValidationRegistrationExtensions
 
 			// Register IValidator<Command> using CommandValidatorFactory with resolved IValidator<Request>
 			Type validatorForCommand =
-				typeof(IValidator<>).MakeGenericType(candidate);
+				typeof(IValidator<>).MakeGenericType(
+					candidate);
 
 			services.AddSingleton(
 				validatorForCommand,
@@ -84,19 +85,28 @@ public static class ValidationRegistrationExtensions
 
 					// Build expression: (TCommand cmd) => (TRequest)cmd.Request
 					ParameterExpression commandParam =
-						Expression.Parameter(candidate, "command");
+						Expression.Parameter(
+							candidate,
+							"command");
 
 					MemberExpression requestAccess =
-						Expression.Property(commandParam, requestProp);
+						Expression.Property(
+							commandParam,
+							requestProp);
 
 					Type funcType =
 						typeof(Func<,>);
 
 					Type lambdaType =
-						funcType.MakeGenericType(candidate, requestType);
+						funcType.MakeGenericType(
+							candidate,
+							requestType);
 
 					LambdaExpression lambda =
-						Expression.Lambda(lambdaType, requestAccess, commandParam);
+						Expression.Lambda(
+							lambdaType,
+							requestAccess,
+							commandParam);
 
 					// Call CommandValidatorFactory.CreateFor<TCommand, TRequest>(...)
 					Type factoryType =
@@ -106,7 +116,9 @@ public static class ValidationRegistrationExtensions
 						factoryType.GetMethod("CreateFor");
 
 					MethodInfo createMethod =
-						methodInfo!.MakeGenericMethod(candidate, requestType);
+						methodInfo!.MakeGenericMethod(
+							candidate,
+							requestType);
 
 					object[] arguments =
 						[requestValidator, lambda];

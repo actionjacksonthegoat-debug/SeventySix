@@ -160,7 +160,7 @@ describe("SetPasswordComponent",
 
 				expect(mockNotificationService.error)
 					.toHaveBeenCalledWith(
-					"An unexpected error occurred. Please try again.");
+						"An unexpected error occurred. Please try again.");
 				expect((component as unknown as { isLoading(): boolean; }).isLoading())
 					.toBe(false);
 			});

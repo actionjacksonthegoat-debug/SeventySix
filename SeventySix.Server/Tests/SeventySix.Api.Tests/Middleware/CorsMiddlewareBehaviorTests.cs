@@ -24,20 +24,23 @@ public class CorsMiddlewareBehaviorTests : IDisposable
 	{
 		Factory =
 			new SharedWebApplicationFactory<Program>(
-				connectionString: "InMemory",
-				configureAdditional: builder =>
-				{
-					builder.ConfigureAppConfiguration((context, conf) =>
+			connectionString: "InMemory",
+			configureAdditional: builder =>
+			{
+				builder.ConfigureAppConfiguration(
+					(context, conf) =>
 					{
-						conf.AddInMemoryCollection(new Dictionary<string, string?>
-						{
-							["Cors:AllowedOrigins:0"] = "http://localhost:4200",
-							["RateLimiting:Enabled"] = "true",
-							["RateLimiting:PermitLimit"] = "1",
-							["RateLimiting:WindowSeconds"] = "60",
-						});
+						conf.AddInMemoryCollection(
+							new Dictionary<string, string?>
+							{
+								["Cors:AllowedOrigins:0"] =
+									"http://localhost:4200",
+								["RateLimiting:Enabled"] = "true",
+								["RateLimiting:PermitLimit"] = "1",
+								["RateLimiting:WindowSeconds"] = "60",
+							});
 					});
-				});
+			});
 	}
 
 	[Fact]
@@ -52,19 +55,25 @@ public class CorsMiddlewareBehaviorTests : IDisposable
 		preflight.Headers.Add("Access-Control-Request-Method", "GET");
 
 		HttpResponseMessage preflightResponse =
-			await client.SendAsync(preflight);
+			await client.SendAsync(
+				preflight);
 		Assert.Equal(HttpStatusCode.NoContent, preflightResponse.StatusCode);
-		Assert.True(preflightResponse.Headers.Contains("Access-Control-Allow-Origin"));
+		Assert.True(
+			preflightResponse.Headers.Contains("Access-Control-Allow-Origin"));
 
 		// 2) Error response includes CORS headers
 		HttpRequestMessage errorRequest =
-			new(HttpMethod.Get, "/api/v1/nonexistent");
+			new(
+				HttpMethod.Get,
+				"/api/v1/nonexistent");
 		errorRequest.Headers.Add("Origin", "http://localhost:4200");
 
 		HttpResponseMessage errorResponse =
-			await client.SendAsync(errorRequest);
+			await client.SendAsync(
+				errorRequest);
 		Assert.Equal(HttpStatusCode.NotFound, errorResponse.StatusCode);
-		Assert.True(errorResponse.Headers.Contains("Access-Control-Allow-Origin"));
+		Assert.True(
+			errorResponse.Headers.Contains("Access-Control-Allow-Origin"));
 	}
 
 	public void Dispose() => Factory.Dispose();

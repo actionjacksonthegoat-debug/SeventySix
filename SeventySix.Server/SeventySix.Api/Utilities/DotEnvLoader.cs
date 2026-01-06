@@ -17,13 +17,15 @@ public static class DotEnvLoader
 	{
 		// Strategy 1: Search from current working directory (npm run scenarios)
 		string? envPath =
-			FindEnvFileFromDirectory(Directory.GetCurrentDirectory());
+			FindEnvFileFromDirectory(
+				Directory.GetCurrentDirectory());
 
 		// Strategy 2: Search from assembly location (Visual Studio F5 scenarios)
 		if (envPath == null)
 		{
 			string? assemblyLocation =
-				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+				Path.GetDirectoryName(
+					Assembly.GetExecutingAssembly().Location);
 
 			if (!string.IsNullOrEmpty(assemblyLocation))
 			{
@@ -36,7 +38,8 @@ public static class DotEnvLoader
 		if (envPath == null)
 		{
 			envPath =
-				FindEnvFileFromDirectory(AppDomain.CurrentDomain.BaseDirectory);
+				FindEnvFileFromDirectory(
+					AppDomain.CurrentDomain.BaseDirectory);
 		}
 
 		if (envPath != null)
@@ -92,7 +95,8 @@ public static class DotEnvLoader
 	{
 		foreach (string line in File.ReadAllLines(filePath))
 		{
-			if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith('#'))
+			if (string.IsNullOrWhiteSpace(line)
+				|| line.TrimStart().StartsWith('#'))
 			{
 				continue;
 			}
@@ -109,9 +113,9 @@ public static class DotEnvLoader
 			string value = parts[1].Trim();
 
 			// Remove quotes if present
-			if (value.Length >= 2 &&
-				((value.StartsWith('"') && value.EndsWith('"')) ||
-				 (value.StartsWith('\'') && value.EndsWith('\''))))
+			if (value.Length >= 2
+				&& ((value.StartsWith('"') && value.EndsWith('"'))
+					|| (value.StartsWith('\'') && value.EndsWith('\''))))
 			{
 				value =
 					value.Substring(1, value.Length - 2);

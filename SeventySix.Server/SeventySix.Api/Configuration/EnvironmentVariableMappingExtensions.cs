@@ -53,9 +53,11 @@ public static class EnvironmentVariableMappingExtensions
 			// Data Protection
 			["DATA_PROTECTION_USE_CERTIFICATE"] = "DataProtection:UseCertificate",
 			["DATA_PROTECTION_CERTIFICATE_PATH"] = "DataProtection:CertificatePath",
-			["DATA_PROTECTION_CERTIFICATE_PASSWORD"] = "DataProtection:CertificatePassword",
+			["DATA_PROTECTION_CERTIFICATE_PASSWORD"] =
+				"DataProtection:CertificatePassword",
 			["DATA_PROTECTION_KEYS_DIRECTORY"] = "DataProtection:KeysDirectory",
-			["DATA_PROTECTION_ALLOW_UNPROTECTED_DEV"] = "DataProtection:AllowUnprotectedKeysInDevelopment",
+			["DATA_PROTECTION_ALLOW_UNPROTECTED_DEV"] =
+				"DataProtection:AllowUnprotectedKeysInDevelopment",
 		};
 
 	/// <summary>

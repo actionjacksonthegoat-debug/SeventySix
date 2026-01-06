@@ -41,24 +41,32 @@ describe("RegisterCompleteComponent",
 					]
 				});
 
-			fixture = TestBed.createComponent(RegisterCompleteComponent);
-			component = fixture.componentInstance;
-			router = TestBed.inject(Router);
+			fixture =
+				TestBed.createComponent(RegisterCompleteComponent);
+			component =
+				fixture.componentInstance;
+			router =
+				TestBed.inject(Router);
 			vi.spyOn(router, "navigate");
 			fixture.detectChanges();
 		}
 
-		beforeEach(() =>
-		{
-			mockAuthService = { completeRegistration: vi.fn() };
-			mockNotificationService = createMockNotificationService();
-		});
+		beforeEach(
+			() =>
+			{
+				mockAuthService =
+					{ completeRegistration: vi.fn() };
+				mockNotificationService =
+					createMockNotificationService();
+			});
 
 		it("should create",
 			() =>
 			{
-				setupTestBed({ token: "valid-token" });
-				expect(component).toBeTruthy();
+				setupTestBed(
+					{ token: "valid-token" });
+				expect(component)
+					.toBeTruthy();
 			});
 
 		it("should show error when token missing",
@@ -66,15 +74,18 @@ describe("RegisterCompleteComponent",
 			{
 				setupTestBed({});
 
-				expect(mockNotificationService.error).toHaveBeenCalledWith(
-					"Invalid registration link. Please request a new one.");
-				expect((component as unknown as { tokenValid(): boolean }).tokenValid()).toBe(false);
+				expect(mockNotificationService.error)
+					.toHaveBeenCalledWith(
+						"Invalid registration link. Please request a new one.");
+				expect((component as unknown as { tokenValid(): boolean }).tokenValid())
+					.toBe(false);
 			});
 
 		it("should show validation errors and not call service",
 			() =>
 			{
-				setupTestBed({ token: "valid-token" });
+				setupTestBed(
+					{ token: "valid-token" });
 
 				(component as unknown as { username: string }).username = "ab"; // too short
 				(component as unknown as { password: string }).password = "short";
@@ -82,14 +93,16 @@ describe("RegisterCompleteComponent",
 
 				(component as unknown as { onSubmit(): void }).onSubmit();
 
-				expect(mockNotificationService.error).toHaveBeenCalled();
+				expect(mockNotificationService.error)
+					.toHaveBeenCalled();
 				expect(mockAuthService.completeRegistration).not.toHaveBeenCalled();
 			});
 
 		it("should navigate to root on successful registration",
 			() =>
 			{
-				setupTestBed({ token: "valid-token" });
+				setupTestBed(
+					{ token: "valid-token" });
 				mockAuthService.completeRegistration.mockReturnValue(of(undefined));
 
 				(component as unknown as { username: string }).username = "valid_user";
@@ -98,20 +111,26 @@ describe("RegisterCompleteComponent",
 
 				(component as unknown as { onSubmit(): void }).onSubmit();
 
-				expect(mockAuthService.completeRegistration).toHaveBeenCalledWith(
-					"valid-token",
-					"valid_user",
-					"ValidPassword123!");
-				expect(mockNotificationService.success).toHaveBeenCalledWith("Account created successfully!");
-				expect(router.navigate).toHaveBeenCalledWith(["/"]);
+				expect(mockAuthService.completeRegistration)
+					.toHaveBeenCalledWith(
+						"valid-token",
+						"valid_user",
+						"ValidPassword123!");
+				expect(mockNotificationService.success)
+					.toHaveBeenCalledWith("Account created successfully!");
+				expect(router.navigate)
+					.toHaveBeenCalledWith(
+						["/"]);
 			});
 
 		it("should show error message from API on failure",
 			() =>
 			{
-				setupTestBed({ token: "valid-token" });
+				setupTestBed(
+					{ token: "valid-token" });
 				const errorResponse: HttpErrorResponse =
-					new HttpErrorResponse({ status: 400, statusText: "Bad Request", error: { detail: "Username already exists." } });
+					new HttpErrorResponse(
+						{ status: 400, statusText: "Bad Request", error: { detail: "Username already exists." } });
 				mockAuthService.completeRegistration.mockReturnValue(throwError(() => errorResponse));
 
 				(component as unknown as { username: string }).username = "valid_user";
@@ -120,6 +139,7 @@ describe("RegisterCompleteComponent",
 
 				(component as unknown as { onSubmit(): void }).onSubmit();
 
-				expect(mockNotificationService.error).toHaveBeenCalledWith("Username already exists.");
+				expect(mockNotificationService.error)
+					.toHaveBeenCalledWith("Username already exists.");
 			});
 	});

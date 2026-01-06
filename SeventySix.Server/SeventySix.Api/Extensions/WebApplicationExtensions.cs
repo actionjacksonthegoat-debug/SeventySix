@@ -132,7 +132,10 @@ public static class WebApplicationExtensions
 
 		// Replace newlines with spaces for single-line display
 		string singleLine =
-			value.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+			value
+				.Replace("\r\n", " ")
+				.Replace("\n", " ")
+				.Replace("\r", " ");
 
 		if (singleLine.Length <= maxLength)
 		{
@@ -161,18 +164,22 @@ public static class WebApplicationExtensions
 
 		if (exception.InnerException != null)
 		{
-			messageBuilder.AppendLine($"Inner: {exception.InnerException.Message}");
+			messageBuilder.AppendLine(
+				$"Inner: {exception.InnerException.Message}");
 		}
 
 		messageBuilder.AppendLine();
 		messageBuilder.AppendLine("Common causes:");
 		messageBuilder.AppendLine("  - Table already exists (schema conflict)");
-		messageBuilder.AppendLine("  - Database not empty but migrations expect clean state");
-		messageBuilder.AppendLine("  - Migration history out of sync with actual schema");
+		messageBuilder.AppendLine(
+			"  - Database not empty but migrations expect clean state");
+		messageBuilder.AppendLine(
+			"  - Migration history out of sync with actual schema");
 		messageBuilder.AppendLine();
 		messageBuilder.AppendLine("Suggested fixes:");
 		messageBuilder.AppendLine("  1. Run: npm run stop");
-		messageBuilder.AppendLine("  2. Run: docker volume rm seventysix_postgres_data");
+		messageBuilder.AppendLine(
+			"  2. Run: docker volume rm seventysix_postgres_data");
 		messageBuilder.AppendLine("  3. Run: npm run start");
 
 		return messageBuilder.ToString();
@@ -189,46 +196,63 @@ public static class WebApplicationExtensions
 	{
 		// Standard console output for npm/Docker
 		Console.Error.WriteLine();
-		Console.Error.WriteLine("====================================================================");
-		Console.Error.WriteLine("                   DATABASE MIGRATION FAILED                        ");
-		Console.Error.WriteLine("====================================================================");
-		Console.Error.WriteLine($"  Error: {TruncateForDisplay(exception.Message, 57)}");
+		Console.Error.WriteLine(
+			"====================================================================");
+		Console.Error.WriteLine(
+			"                   DATABASE MIGRATION FAILED                        ");
+		Console.Error.WriteLine(
+			"====================================================================");
+		Console.Error.WriteLine(
+			$"  Error: {TruncateForDisplay(exception.Message, 57)}");
 
 		if (exception.InnerException != null)
 		{
-			Console.Error.WriteLine($"  Inner: {TruncateForDisplay(exception.InnerException.Message, 57)}");
+			Console.Error.WriteLine(
+				$"  Inner: {TruncateForDisplay(exception.InnerException.Message, 57)}");
 		}
 
-		Console.Error.WriteLine("--------------------------------------------------------------------");
+		Console.Error.WriteLine(
+			"--------------------------------------------------------------------");
 		Console.Error.WriteLine("  Common causes:");
 		Console.Error.WriteLine("    - Table already exists (schema conflict)");
-		Console.Error.WriteLine("    - Database not empty but migrations expect clean state");
-		Console.Error.WriteLine("    - Migration history out of sync with actual schema");
-		Console.Error.WriteLine("--------------------------------------------------------------------");
+		Console.Error.WriteLine(
+			"    - Database not empty but migrations expect clean state");
+		Console.Error.WriteLine(
+			"    - Migration history out of sync with actual schema");
+		Console.Error.WriteLine(
+			"--------------------------------------------------------------------");
 		Console.Error.WriteLine("  Suggested fixes:");
 		Console.Error.WriteLine("    1. Run: npm run stop");
-		Console.Error.WriteLine("    2. Run: docker volume rm seventysix_postgres_data");
+		Console.Error.WriteLine(
+			"    2. Run: docker volume rm seventysix_postgres_data");
 		Console.Error.WriteLine("    3. Run: npm run start");
-		Console.Error.WriteLine("====================================================================");
+		Console.Error.WriteLine(
+			"====================================================================");
 		Console.Error.WriteLine();
 
 		// Additionally write to Debug output for VS Output window visibility
 		if (System.Diagnostics.Debugger.IsAttached)
 		{
 			System.Diagnostics.Debug.WriteLine("");
-			System.Diagnostics.Debug.WriteLine("====================================================================");
-			System.Diagnostics.Debug.WriteLine("                   DATABASE MIGRATION FAILED                        ");
-			System.Diagnostics.Debug.WriteLine("====================================================================");
+			System.Diagnostics.Debug.WriteLine(
+				"====================================================================");
+			System.Diagnostics.Debug.WriteLine(
+				"                   DATABASE MIGRATION FAILED                        ");
+			System.Diagnostics.Debug.WriteLine(
+				"====================================================================");
 			System.Diagnostics.Debug.WriteLine($"  Error: {exception.Message}");
 
 			if (exception.InnerException != null)
 			{
-				System.Diagnostics.Debug.WriteLine($"  Inner: {exception.InnerException.Message}");
+				System.Diagnostics.Debug.WriteLine(
+					$"  Inner: {exception.InnerException.Message}");
 			}
 
 			System.Diagnostics.Debug.WriteLine("");
-			System.Diagnostics.Debug.WriteLine("  Full stack trace available in Exception Helper");
-			System.Diagnostics.Debug.WriteLine("====================================================================");
+			System.Diagnostics.Debug.WriteLine(
+				"  Full stack trace available in Exception Helper");
+			System.Diagnostics.Debug.WriteLine(
+				"====================================================================");
 		}
 	}
 
@@ -256,13 +280,15 @@ public static class WebApplicationExtensions
 		}
 
 		ILogger logger =
-			app.Services.GetRequiredService<ILogger<WebApplication>>();
+			app.Services.GetRequiredService<
+				ILogger<WebApplication>>();
 
 		string connectionString;
 		try
 		{
 			connectionString =
-				ConnectionStringBuilder.BuildPostgresConnectionString(configuration);
+				ConnectionStringBuilder.BuildPostgresConnectionString(
+					configuration);
 		}
 		catch (InvalidOperationException exception)
 		{
@@ -274,7 +300,8 @@ public static class WebApplicationExtensions
 		}
 
 		PostgresConnectionInfo connectionInfo =
-			ParsePostgresConnectionString(connectionString);
+			ParsePostgresConnectionString(
+				connectionString);
 
 		bool isAvailable =
 			await CheckTcpConnectivityAsync(
@@ -285,13 +312,13 @@ public static class WebApplicationExtensions
 		if (!isAvailable)
 		{
 			string message =
-				$"PostgreSQL is not available at {connectionInfo.Host}:{connectionInfo.Port}\n\n" +
-				"Before running from Visual Studio, ensure dependencies are started:\n"
+				$"PostgreSQL is not available at {connectionInfo.Host}:{connectionInfo.Port}\n\n"
+					+ "Before running from Visual Studio, ensure dependencies are started:\n"
 					+ "  1. Open a terminal at the repository root\n"
 					+ "  2. Run: npm run start:dependencies\n"
 					+ "  3. Wait for 'Dependencies ready' message\n"
-					+ "  4. Then start debugging in Visual Studio\n\n" +
-				"Alternatively, run: cd SeventySix.Server && docker compose up -d postgres";
+					+ "  4. Then start debugging in Visual Studio\n\n"
+					+ "Alternatively, run: cd SeventySix.Server && docker compose up -d postgres";
 
 			logger.LogCritical(message);
 
@@ -346,7 +373,6 @@ public static class WebApplicationExtensions
 		}
 	}
 
-
 	/// <summary>
 	/// Parses a Postgres connection string of the format "Host=...;Port=...;..." and extracts host and port.
 	/// </summary>
@@ -356,7 +382,8 @@ public static class WebApplicationExtensions
 	/// <returns>
 	/// A <see cref="PostgresConnectionInfo"/> containing the host and port. Defaults to localhost:5432 when missing.
 	/// </returns>
-	internal static PostgresConnectionInfo ParsePostgresConnectionString(string connectionString)
+	internal static PostgresConnectionInfo ParsePostgresConnectionString(
+		string connectionString)
 	{
 		Dictionary<string, string> parts =
 			connectionString
@@ -372,9 +399,11 @@ public static class WebApplicationExtensions
 			parts.GetValueOrDefault("Host", "localhost");
 
 		int port =
-			int.TryParse(parts.GetValueOrDefault("Port", "5432"), out int parsedPort)
-				? parsedPort
-				: 5432;
+			int.TryParse(
+				parts.GetValueOrDefault("Port", "5432"),
+				out int parsedPort)
+			? parsedPort
+			: 5432;
 
 		return new PostgresConnectionInfo(host, port);
 	}
@@ -408,7 +437,7 @@ public static class WebApplicationExtensions
 			{
 				ForwardedHeaders =
 					ForwardedHeaders.XForwardedFor
-					| ForwardedHeaders.XForwardedProto,
+						| ForwardedHeaders.XForwardedProto,
 				ForwardLimit = settings.ForwardLimit,
 			};
 

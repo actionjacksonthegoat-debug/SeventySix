@@ -19,7 +19,9 @@ internal static class CorsHeaderHelper
 	/// <param name="allowedOrigins">
 	/// A set of allowed origins (case-insensitive).
 	/// </param>
-	public static void AddCorsHeadersIfAllowed(HttpContext context, ISet<string> allowedOrigins)
+	public static void AddCorsHeadersIfAllowed(
+		HttpContext context,
+		ISet<string> allowedOrigins)
 	{
 		string? origin =
 			context.Request.Headers.Origin.ToString();

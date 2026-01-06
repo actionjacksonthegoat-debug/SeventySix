@@ -113,9 +113,8 @@ public static class DataProtectionExtensions
 			.AddOptions<AppDataProtectionOptions>()
 			.Bind(configuration.GetSection(DataProtectionSection))
 			.Validate(
-				dataProtectionOptions => ValidateOptions(
-					dataProtectionOptions,
-					environment),
+				dataProtectionOptions =>
+					ValidateOptions(dataProtectionOptions, environment),
 				"Invalid DataProtection configuration: Certificate path missing or file not found")
 			.ValidateOnStart();
 
@@ -238,9 +237,9 @@ public static class DataProtectionExtensions
 		if (!environment.IsDevelopment())
 		{
 			Serilog.Log.Warning(
-				"Data Protection keys are NOT encrypted at rest. " +
-				"Configure DataProtection:UseCertificate and DataProtection:CertificatePath " +
-				"for production security");
+				"Data Protection keys are NOT encrypted at rest. "
+					+ "Configure DataProtection:UseCertificate and DataProtection:CertificatePath "
+					+ "for production security");
 		}
 	}
 

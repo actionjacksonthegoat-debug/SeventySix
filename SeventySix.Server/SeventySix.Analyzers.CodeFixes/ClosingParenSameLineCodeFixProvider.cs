@@ -3,14 +3,18 @@
 // </copyright>
 
 using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Composition;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace SeventySix.Analyzers;
+namespace SeventySix.Analyzers.CodeFixes;
 
 /// <summary>
 /// Code fix provider that moves closing parenthesis to the same line as the previous content.
@@ -34,8 +38,7 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 
 	/// <inheritdoc/>
 	public sealed override async Task RegisterCodeFixesAsync(
-		CodeFixContext context
-	)
+		CodeFixContext context)
 	{
 		SyntaxNode? root = await context
 			.Document.GetSyntaxRootAsync(context.CancellationToken)
@@ -53,23 +56,18 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 		context.RegisterCodeFix(
 			CodeAction.Create(
 				title: "Move ')' to previous line",
-				createChangedDocument: cancellationToken =>
-					MoveCloseParenToSameLineAsync(
-						context.Document,
-						closeParenToken,
-						cancellationToken
-					),
-				equivalenceKey: nameof(ClosingParenSameLineCodeFixProvider)
-			),
-			diagnostic
-		);
+				createChangedDocument: cancellationToken => MoveCloseParenToSameLineAsync(
+					context.Document,
+					closeParenToken,
+					cancellationToken),
+				equivalenceKey: nameof(ClosingParenSameLineCodeFixProvider)),
+			diagnostic);
 	}
 
 	private static async Task<Document> MoveCloseParenToSameLineAsync(
 		Document document,
 		SyntaxToken closeParenToken,
-		CancellationToken cancellationToken
-	)
+		CancellationToken cancellationToken)
 	{
 		SyntaxNode? root = await document
 			.GetSyntaxRootAsync(cancellationToken)
@@ -90,21 +88,17 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 
 		// Remove trailing newline/whitespace from previous token
 		SyntaxTriviaList cleanedPreviousTrailing = RemoveTrailingNewlines(
-			previousToken.TrailingTrivia
-		);
+			previousToken.TrailingTrivia);
 
 		// Remove leading newline/whitespace from close paren, but keep comments
 		SyntaxTriviaList cleanedCloseParenLeading = RemoveLeadingNewlines(
-			closeParenToken.LeadingTrivia
-		);
+			closeParenToken.LeadingTrivia);
 
 		// Create new tokens
 		SyntaxToken newPreviousToken = previousToken.WithTrailingTrivia(
-			cleanedPreviousTrailing
-		);
+			cleanedPreviousTrailing);
 		SyntaxToken newCloseParenToken = closeParenToken.WithLeadingTrivia(
-			cleanedCloseParenLeading
-		);
+			cleanedCloseParenLeading);
 
 		// Replace both tokens
 		SyntaxNode newRoot = root.ReplaceTokens(
@@ -112,8 +106,7 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 			(original, _) =>
 				original == previousToken
 					? newPreviousToken
-					: newCloseParenToken
-		);
+					: newCloseParenToken);
 
 		return document.WithSyntaxRoot(newRoot);
 	}
@@ -122,8 +115,7 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 	/// Removes trailing newlines and whitespace, keeping comments.
 	/// </summary>
 	private static SyntaxTriviaList RemoveTrailingNewlines(
-		SyntaxTriviaList trivia
-	)
+		SyntaxTriviaList trivia)
 	{
 		List<SyntaxTrivia>? kept = null;
 
@@ -135,8 +127,7 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 			if (
 				kind
 				is not ((int)SyntaxKind.WhitespaceTrivia)
-					and not ((int)SyntaxKind.EndOfLineTrivia)
-			)
+					and not ((int)SyntaxKind.EndOfLineTrivia))
 			{
 				kept ??= new List<SyntaxTrivia>();
 				kept.Add(triviaElement);
@@ -152,8 +143,7 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 	/// Removes leading newlines and whitespace, keeping comments.
 	/// </summary>
 	private static SyntaxTriviaList RemoveLeadingNewlines(
-		SyntaxTriviaList trivia
-	)
+		SyntaxTriviaList trivia)
 	{
 		List<SyntaxTrivia>? kept = null;
 
@@ -165,8 +155,7 @@ public sealed class ClosingParenSameLineCodeFixProvider : CodeFixProvider
 			if (
 				kind
 				is not ((int)SyntaxKind.WhitespaceTrivia)
-					and not ((int)SyntaxKind.EndOfLineTrivia)
-			)
+					and not ((int)SyntaxKind.EndOfLineTrivia))
 			{
 				kept ??= new List<SyntaxTrivia>();
 				kept.Add(syntaxTrivia);

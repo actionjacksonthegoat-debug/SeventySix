@@ -1,5 +1,5 @@
-using Shouldly;
 using SeventySix.Api.Extensions;
+using Shouldly;
 using static SeventySix.Api.Extensions.WebApplicationExtensions;
 
 namespace SeventySix.Api.Tests.Extensions;
@@ -15,7 +15,8 @@ public class WebApplicationExtensionsTests
 
 		// Act
 		PostgresConnectionInfo result =
-			ParsePostgresConnectionString(connectionString);
+			ParsePostgresConnectionString(
+				connectionString);
 
 		// Assert
 		result.Host.ShouldBe("localhost");
@@ -30,7 +31,8 @@ public class WebApplicationExtensionsTests
 
 		// Act
 		PostgresConnectionInfo result =
-			ParsePostgresConnectionString(connectionString);
+			ParsePostgresConnectionString(
+				connectionString);
 
 		// Assert
 		result.Host.ShouldBe("localhost");
