@@ -16,192 +16,87 @@ public class AdminSeederServiceUnitTests
 	[Fact]
 	public async Task SeedAdminUserForTestsAsync_WhenNoAdmin_CreatesAdminWithRequiresPasswordChangeAsync()
 	{
-		// Arrange
-		IServiceScopeFactory scopeFactory =
-			Substitute.For<IServiceScopeFactory>();
-		IServiceScope scope =
-			Substitute.For<IServiceScope>();
-		IServiceProvider serviceProvider =
-			Substitute.For<IServiceProvider>();
-		scopeFactory.CreateScope().Returns(scope);
-		scope.ServiceProvider.Returns(serviceProvider);
+		// Arrange - use helpers to keep test short and focused
+		var (scopeFactory, serviceProvider, userManager, roleManager) = CreateScopeWithManagers();
 
-		UserManager<ApplicationUser> userManager =
-			Substitute.For<
-				UserManager<ApplicationUser>>(
-					Substitute.For<IUserStore<ApplicationUser>>(),
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null,
-					null);
+		AdminSeederSettings settings = CreateDefaultSettings();
+		IOptions<AdminSeederSettings> options = Options.Create(settings);
+		TimeProvider timeProvider = Substitute.For<TimeProvider>();
+		ILogger<AdminSeederService> logger = Substitute.For<ILogger<AdminSeederService>>();
 
-		RoleManager<ApplicationRole> roleManager =
-			new(
-				Substitute.For<IRoleStore<ApplicationRole>>(),
-				Enumerable.Empty<IRoleValidator<ApplicationRole>>(),
-				Substitute.For<ILookupNormalizer>(),
-				new IdentityErrorDescriber(),
-				Substitute.For<ILogger<RoleManager<ApplicationRole>>>());
+		serviceProvider.GetService(typeof(UserManager<ApplicationUser>)).Returns(userManager);
+		serviceProvider.GetService(typeof(RoleManager<ApplicationRole>)).Returns(roleManager);
 
-		serviceProvider
-			.GetService(typeof(UserManager<ApplicationUser>))
-			.Returns(userManager);
-		serviceProvider
-			.GetService(typeof(RoleManager<ApplicationRole>))
-			.Returns(roleManager);
+		userManager.FindByNameAsync(settings.Username).Returns((ApplicationUser?)null);
+		userManager.GetUsersInRoleAsync(RoleConstants.Admin).Returns([]);
+		roleManager.FindByNameAsync(RoleConstants.Admin).Returns(new ApplicationRole { Name = RoleConstants.Admin });
 
-		AdminSeederSettings settings =
-			new()
-			{
-				Enabled = true,
-				Username = "admin",
-				Email = "admin@example.com",
-				InitialPassword = "TempPass123!",
-			};
+		userManager.CreateAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>()).Returns(IdentityResult.Success);
+		userManager.AddToRoleAsync(Arg.Any<ApplicationUser>(), RoleConstants.Admin).Returns(IdentityResult.Success);
 
-		IOptions<AdminSeederSettings> options =
-			Options.Create(settings);
-
-		TimeProvider timeProvider =
-			Substitute.For<TimeProvider>();
-		ILogger<AdminSeederService> logger =
-			Substitute.For<
-			ILogger<AdminSeederService>>();
-
-		userManager
-			.FindByNameAsync(settings.Username)
-			.Returns((ApplicationUser?)null);
-		userManager
-			.GetUsersInRoleAsync(RoleConstants.Admin)
-			.Returns([]);
-		roleManager
-			.FindByNameAsync(RoleConstants.Admin)
-			.Returns(new ApplicationRole { Name = RoleConstants.Admin });
-
-		userManager
-			.CreateAsync(
-				Arg.Any<ApplicationUser>(),
-				Arg.Any<string>())
-			.Returns(IdentityResult.Success);
-		userManager
-			.AddToRoleAsync(
-				Arg.Any<ApplicationUser>(),
-				RoleConstants.Admin)
-			.Returns(IdentityResult.Success);
-
-		AdminSeederService service =
-			new(
-			scopeFactory,
-			options,
-			timeProvider,
-			logger);
+		AdminSeederService service = new(scopeFactory, options, timeProvider, logger);
 
 		// Act
 		await service.SeedAdminUserAsync(CancellationToken.None);
 
 		// Assert
-		await userManager
-			.Received(1)
-			.CreateAsync(
-				Arg.Is<ApplicationUser>(user =>
-					user.RequiresPasswordChange == true),
-				settings.InitialPassword);
-		await userManager
-			.Received(1)
-			.AddToRoleAsync(Arg.Any<ApplicationUser>(), RoleConstants.Admin);
+		await userManager.Received(1).CreateAsync(Arg.Is<ApplicationUser>(user => user.RequiresPasswordChange == true), settings.InitialPassword);
+		await userManager.Received(1).AddToRoleAsync(Arg.Any<ApplicationUser>(), RoleConstants.Admin);
 	}
 
 	[Fact]
 	public async Task SeedAdminUserForTestsAsync_WhenExistingAdminWithoutFlag_UpdatesExistingAdminAsync()
 	{
 		// Arrange
-		IServiceScopeFactory scopeFactory =
-			Substitute.For<IServiceScopeFactory>();
-		IServiceScope scope =
-			Substitute.For<IServiceScope>();
-		IServiceProvider serviceProvider =
-			Substitute.For<IServiceProvider>();
-		scopeFactory.CreateScope().Returns(scope);
-		scope.ServiceProvider.Returns(serviceProvider);
+		var (scopeFactory, serviceProvider, userManager, roleManager) = CreateScopeWithManagers();
 
-		UserManager<ApplicationUser> userManager =
-			Substitute.For<
-			UserManager<ApplicationUser>>(
-				Substitute.For<IUserStore<ApplicationUser>>(),
-				null,
-				null,
-				null,
-				null,
-				null,
-				null,
-				null,
-				null);
+		AdminSeederSettings settings = CreateDefaultSettings();
+		IOptions<AdminSeederSettings> options = Options.Create(settings);
+		TimeProvider timeProvider = Substitute.For<TimeProvider>();
+		ILogger<AdminSeederService> logger = Substitute.For<ILogger<AdminSeederService>>();
 
-		RoleManager<ApplicationRole> roleManager =
-			new RoleManager<ApplicationRole>(
-				Substitute.For<IRoleStore<ApplicationRole>>(),
-				Enumerable.Empty<IRoleValidator<ApplicationRole>>(),
-				Substitute.For<ILookupNormalizer>(),
-				new IdentityErrorDescriber(),
-				Substitute.For<ILogger<RoleManager<ApplicationRole>>>());
+		ApplicationUser existing = new() { UserName = settings.Username, RequiresPasswordChange = false };
+		userManager.FindByNameAsync(settings.Username).Returns(existing);
+		userManager.UpdateAsync(Arg.Any<ApplicationUser>()).Returns(IdentityResult.Success);
 
-		serviceProvider
-			.GetService(typeof(UserManager<ApplicationUser>))
-			.Returns(userManager);
-		serviceProvider
-			.GetService(typeof(RoleManager<ApplicationRole>))
-			.Returns(roleManager);
-
-		AdminSeederSettings settings =
-			new()
-			{
-				Enabled = true,
-				Username = "admin",
-				Email = "admin@example.com",
-				InitialPassword = "TempPass123!",
-			};
-
-		IOptions<AdminSeederSettings> options =
-			Options.Create(settings);
-
-		TimeProvider timeProvider =
-			Substitute.For<TimeProvider>();
-		ILogger<AdminSeederService> logger =
-			Substitute.For<
-			ILogger<AdminSeederService>>();
-
-		ApplicationUser existing =
-			new()
-			{
-				UserName = settings.Username,
-				RequiresPasswordChange = false
-			};
-		userManager
-			.FindByNameAsync(settings.Username)
-			.Returns(existing);
-		userManager
-			.UpdateAsync(Arg.Any<ApplicationUser>())
-			.Returns(IdentityResult.Success);
-
-		AdminSeederService service =
-			new(
-				scopeFactory,
-				options,
-				timeProvider,
-				logger);
+		AdminSeederService service = new(scopeFactory, options, timeProvider, logger);
 
 		// Act
 		await service.SeedAdminUserAsync(CancellationToken.None);
 
 		// Assert
 		// Seeder should not update an existing admin's RequiresPasswordChange flag
-		await userManager
-			.DidNotReceive()
-			.UpdateAsync(
-				Arg.Any<ApplicationUser>());
+		await userManager.DidNotReceive().UpdateAsync(Arg.Any<ApplicationUser>());
+	}
+
+	/// <summary>
+	/// Create a scope factory and mocked user/role managers used across tests.
+	/// </summary>
+	private static (IServiceScopeFactory scopeFactory, IServiceProvider serviceProvider, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager) CreateScopeWithManagers()
+	{
+		IServiceScopeFactory scopeFactory = Substitute.For<IServiceScopeFactory>();
+		IServiceScope scope = Substitute.For<IServiceScope>();
+		IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
+		scopeFactory.CreateScope().Returns(scope);
+		scope.ServiceProvider.Returns(serviceProvider);
+
+		UserManager<ApplicationUser> userManager = Substitute.For<UserManager<ApplicationUser>>(
+			Substitute.For<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
+
+		RoleManager<ApplicationRole> roleManager = new RoleManager<ApplicationRole>(
+			Substitute.For<IRoleStore<ApplicationRole>>(), Enumerable.Empty<IRoleValidator<ApplicationRole>>(), Substitute.For<ILookupNormalizer>(), new IdentityErrorDescriber(), Substitute.For<ILogger<RoleManager<ApplicationRole>>>());
+
+		return (scopeFactory, serviceProvider, userManager, roleManager);
+	}
+
+	private static AdminSeederSettings CreateDefaultSettings()
+	{
+		return new AdminSeederSettings
+		{
+			Enabled = true,
+			Username = "admin",
+			Email = "admin@example.com",
+			InitialPassword = "TempPass123!",
+		};
 	}
 }
