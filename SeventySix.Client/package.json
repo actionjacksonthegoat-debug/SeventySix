@@ -55,7 +55,7 @@
     "@vitest/coverage-v8": "^4.0.16",
     "eslint": "^9.0.0",
     "eslint-plugin-playwright": "^2.4.0",
-    "happy-dom": "^18.0.1",
+    "happy-dom": "20.0.11",
     "jsdom": "^25.0.0",
     "openapi-typescript": "^7.10.1",
     "typescript": "~5.9.2",
