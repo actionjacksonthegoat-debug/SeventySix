@@ -29,20 +29,59 @@ public static class ChangePasswordCommandHandler
 		DateTime now =
 			timeProvider.GetUtcNow().UtcDateTime;
 
+		ApplicationUser user =
+			await GetUserOrThrowAsync(command.UserId, userManager, logger);
+
+		await EnsurePasswordChangedAsync(command, user, userManager);
+
+		await ClearRequiresPasswordChangeIfNeededAsync(user, userManager, logger);
+
+		// Revoke all existing refresh tokens
+		await tokenRepository.RevokeAllUserTokensAsync(
+			command.UserId,
+			now,
+			cancellationToken);
+
+		return await authenticationService.GenerateAuthResultAsync(
+			user,
+			clientIp: null,
+			requiresPasswordChange: false,
+			rememberMe: false,
+			cancellationToken);
+	}
+
+	/// <summary>
+	/// Retrieve a user by ID or throw an <see cref="InvalidOperationException"/> if not found.
+	/// </summary>
+	private static async Task<ApplicationUser> GetUserOrThrowAsync(
+		long userId,
+		UserManager<ApplicationUser> userManager,
+		ILogger logger)
+	{
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(
-				command.UserId.ToString());
+			await userManager.FindByIdAsync(userId.ToString());
 
 		if (user is null)
 		{
 			logger.LogError(
 				"User with ID {UserId} not found for password change",
-				command.UserId);
+				userId);
 			throw new InvalidOperationException(
-				$"User with ID {command.UserId} not found");
+				$"User with ID {userId} not found");
 		}
 
-		// Check if user has a password set
+		return user;
+	}
+
+	/// <summary>
+	/// Change the existing password or add a new password for users without one.
+	/// Throws on validation or identity failures.
+	/// </summary>
+	private static async Task EnsurePasswordChangedAsync(
+		ChangePasswordCommand command,
+		ApplicationUser user,
+		UserManager<ApplicationUser> userManager)
+	{
 		bool hasPassword =
 			await userManager.HasPasswordAsync(user);
 
@@ -95,8 +134,16 @@ public static class ChangePasswordCommandHandler
 						addResult.Errors.Select(error => error.Description)));
 			}
 		}
+	}
 
-		// Clear the requires-password-change flag and persist the change
+	/// <summary>
+	/// Clears the <c>RequiresPasswordChange</c> flag when present and persists the change.
+	/// </summary>
+	private static async Task ClearRequiresPasswordChangeIfNeededAsync(
+		ApplicationUser user,
+		UserManager<ApplicationUser> userManager,
+		ILogger logger)
+	{
 		if (user.RequiresPasswordChange)
 		{
 			user.RequiresPasswordChange = false;
@@ -114,18 +161,5 @@ public static class ChangePasswordCommandHandler
 					"Failed to update user password change status");
 			}
 		}
-
-		// Revoke all existing refresh tokens
-		await tokenRepository.RevokeAllUserTokensAsync(
-			command.UserId,
-			now,
-			cancellationToken);
-
-		return await authenticationService.GenerateAuthResultAsync(
-			user,
-			clientIp: null,
-			requiresPasswordChange: false,
-			rememberMe: false,
-			cancellationToken);
 	}
 }
