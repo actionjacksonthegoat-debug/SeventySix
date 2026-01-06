@@ -12,8 +12,8 @@ using SeventySix.ApiTracking;
 namespace SeventySix.Domains.ApiTracking.Migrations
 {
 	[DbContext(typeof(ApiTrackingDbContext))]
-	[Migration("20251228065009_PendingModelChanges_ApiTracking")]
-	partial class PendingModelChanges_ApiTracking
+	[Migration("20260106011314_V1InitialCreate")]
+	partial class V1InitialCreate
 	{
 		/// <inheritdoc />
 		protected override void BuildTargetModel(ModelBuilder modelBuilder)

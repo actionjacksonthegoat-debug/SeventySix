@@ -6,10 +6,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace SeventySix.Domains.Migrations
+namespace SeventySix.Domains.Identity.Migrations
 {
 	/// <inheritdoc />
-	public partial class InitialCreate : Migration
+	public partial class V1InitialCreate : Migration
 	{
 		/// <inheritdoc />
 		protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,7 +55,6 @@ namespace SeventySix.Domains.Migrations
 					LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
 					LastLoginIp = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
 					RequiresPasswordChange = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-					NeedsPendingEmail = table.Column<bool>(type: "boolean", nullable: false),
 					Preferences = table.Column<string>(type: "text", nullable: true),
 					xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: true),
 					UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),

@@ -3,8 +3,10 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using SeventySix.ElectronicNotifications;
+using SeventySix.ElectronicNotifications.Emails;
 
-namespace SeventySix.ElectronicNotifications.Emails;
+namespace SeventySix.Domains.ElectronicNotifications.Emails.Queries.GetPendingEmails;
 
 /// <summary>
 /// Handler for <see cref="GetPendingEmailsQuery"/>.

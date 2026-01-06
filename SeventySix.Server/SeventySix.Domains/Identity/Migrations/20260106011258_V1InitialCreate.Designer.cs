@@ -9,11 +9,11 @@ using SeventySix.Identity;
 
 #nullable disable
 
-namespace SeventySix.Domains.Migrations
+namespace SeventySix.Domains.Identity.Migrations
 {
 	[DbContext(typeof(IdentityDbContext))]
-	[Migration("20260102013408_InitialCreate")]
-	partial class InitialCreate
+	[Migration("20260106011258_V1InitialCreate")]
+	partial class V1InitialCreate
 	{
 		/// <inheritdoc />
 		protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -266,9 +266,6 @@ namespace SeventySix.Domains.Migrations
 
 					b.Property<DateTime?>("ModifyDate")
 						.HasColumnType("timestamp with time zone");
-
-					b.Property<bool>("NeedsPendingEmail")
-						.HasColumnType("boolean");
 
 					b.Property<string>("NormalizedEmail")
 						.HasMaxLength(256)

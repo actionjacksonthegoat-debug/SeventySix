@@ -288,6 +288,18 @@ snackBar.open(message, "Close", { duration: SNACKBAR_DURATION.error });
 
 ## Documentation
 
--   Inline JSDoc/XML comments only
 -   Never create .md files unless asked
--   Self-documenting code preferred
+-   **CRITICAL: XML and JSDoc documentation** - All public classes, methods, properties, and parameters must have XML documentation comments.
+-   **CRITICAL: XML and JSDoc documentation style** — All `<param>` and `<returns>` tags must be placed on their own lines, and the description text must be on the line between the opening and closing tags (example below). This is enforced as a critical docstyle rule for Raptor.
+
+Example:
+
+```xml
+/// <param name="userId">
+/// A unique identifier for the user.
+/// </param>
+
+/// <returns>
+/// The user DTO when found; otherwise null.
+/// </returns>
+```

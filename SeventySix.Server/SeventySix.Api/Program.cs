@@ -27,12 +27,21 @@ using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
+using SeventySix.Api.Utilities;
 using SeventySix.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;
 
+DotEnvLoader.Load();
+
 WebApplicationBuilder builder =
 			WebApplication.CreateBuilder(args);
+
+
+// Map flat .env variables to hierarchical configuration
+// This allows .env file to use simple names while ASP.NET gets proper hierarchy
+// Must be called early to ensure environment variables override appsettings.json
+builder.Configuration.AddEnvironmentVariableMapping();
 
 // Bind centralized security settings (single source of truth for HTTPS enforcement)
 builder.Services.Configure<SecuritySettings>(
@@ -56,7 +65,7 @@ if (builder.Environment.IsDevelopment())
 // Outputs: Console + Rolling file (daily rotation) + Database (Warning+ levels)
 // Note: Database sink is added after building the app to access IServiceProvider
 // In Test environment, configures silent logging (no sinks) for performance
-Serilog.Log.Logger =
+Log.Logger =
 			new LoggerConfiguration()
 				.ConfigureBaseSerilog(
 					builder.Configuration,
@@ -90,11 +99,11 @@ builder.Services.AddControllers();
 // This includes: repositories, business logic services, validators, HTTP clients, and configuration
 builder.Services.AddApplicationServices(builder.Configuration);
 
-// Add bounded context domains
+// Build connection string from configuration (supports .env via environment variable mapping)
+// Priority: explicit ConnectionStrings:DefaultConnection > Database:* components
 string connectionString =
-			builder.Configuration.GetConnectionString("DefaultConnection")
-	?? throw new InvalidOperationException(
-		"Connection string 'DefaultConnection' not found.");
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				builder.Configuration);
 
 // Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
 builder.Services.AddInfrastructure();
@@ -128,6 +137,9 @@ builder.Services.AddAuthenticationServices(builder.Configuration);
 builder.Services.AddOpenApi();
 
 WebApplication app = builder.Build();
+
+// Validate dependencies (in debug scenarios this provides actionable errors for VS)
+await app.ValidateDependenciesAsync(builder.Configuration);
 
 // Database migrations
 await app.ApplyMigrationsAsync(builder.Configuration);

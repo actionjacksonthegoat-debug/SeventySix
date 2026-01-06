@@ -12,8 +12,8 @@ using SeventySix.ElectronicNotifications;
 namespace SeventySix.Domains.ElectronicNotifications.Migrations
 {
     [DbContext(typeof(ElectronicNotificationsDbContext))]
-    [Migration("20260103174519_AddEmailQueue")]
-    partial class AddEmailQueue
+    [Migration("20260106011322_V1InitialCreate")]
+    partial class V1InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

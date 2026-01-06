@@ -26,13 +26,15 @@
 		},
 		"Container (Dockerfile)": {
 			"commandName": "Docker",
-			"launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+			"launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/scalar/v1",
 			"environmentVariables": {
 				"ASPNETCORE_ENVIRONMENT": "Development",
 				"ASPNETCORE_HTTP_PORTS": "8080",
-				"ConnectionStrings__DefaultConnection": "Host=host.docker.internal;Port=5432;Database=seventysix;Username=postgres;Password=TestPassword;Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100;Connection Lifetime=0;",
+				"Database__Host": "host.docker.internal",
+				"Database__Port": "5432",
 				"OpenTelemetry__OtlpEndpoint": "http://host.docker.internal:4317"
 			},
+			"dockerfileRunArguments": "--env-file ../.env --add-host=host.docker.internal:host-gateway",
 			"publishAllPorts": false,
 			"httpPort": 5085,
 			"useSSL": false

@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using SeventySix.ApiTracking;
+using SeventySix.ElectronicNotifications;
 using SeventySix.Identity;
 using SeventySix.Logging;
 using Testcontainers.PostgreSql;
@@ -143,6 +144,16 @@ public static class SharedContainerManager
 				.Options;
 		await using (ApiTrackingDbContext context =
 			new(apiTrackingOptions))
+		{
+			await context.Database.MigrateAsync();
+		}
+
+		DbContextOptions<ElectronicNotificationsDbContext> electronicNotificationsOptions =
+			new DbContextOptionsBuilder<ElectronicNotificationsDbContext>()
+				.UseNpgsql(connectionString)
+				.Options;
+		await using (ElectronicNotificationsDbContext context =
+			new(electronicNotificationsOptions))
 		{
 			await context.Database.MigrateAsync();
 		}

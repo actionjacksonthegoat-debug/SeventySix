@@ -12,8 +12,8 @@ using SeventySix.Logging;
 namespace SeventySix.Domains.Logging.Migrations
 {
 	[DbContext(typeof(LoggingDbContext))]
-	[Migration("20251228064935_PendingModelChanges_Logging")]
-	partial class PendingModelChanges_Logging
+	[Migration("20260106011307_V1InitialCreate")]
+	partial class V1InitialCreate
 	{
 		/// <inheritdoc />
 		protected override void BuildTargetModel(ModelBuilder modelBuilder)
