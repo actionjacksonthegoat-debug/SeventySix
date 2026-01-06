@@ -22,6 +22,7 @@ import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { ValidationResult } from "@auth/models";
+import { AuthErrorResult } from "@shared/models";
 
 interface ChangePasswordRequest
 {
@@ -201,7 +202,7 @@ export class ChangePasswordComponent implements OnInit
 				},
 				error: (error: HttpErrorResponse) =>
 				{
-					const errorResult =
+					const errorResult: AuthErrorResult =
 						mapAuthError(error);
 					this.notification.error(errorResult.message);
 					this.isLoading.set(false);

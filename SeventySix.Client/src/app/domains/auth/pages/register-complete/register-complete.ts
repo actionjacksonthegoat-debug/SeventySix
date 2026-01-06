@@ -25,6 +25,7 @@ import { validateRegistrationForm } from "@auth/utilities";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { ValidationResult } from "@auth/models";
+import { AuthErrorResult } from "@shared/models";
 
 @Component(
 	{
@@ -179,7 +180,7 @@ export class RegisterCompleteComponent implements OnInit
 				},
 				error: (error: HttpErrorResponse) =>
 				{
-					const errorResult =
+					const errorResult: AuthErrorResult =
 						mapAuthError(error);
 
 					if (errorResult.invalidateToken)

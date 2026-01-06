@@ -30,11 +30,20 @@ public static class ChangePasswordCommandHandler
 			timeProvider.GetUtcNow().UtcDateTime;
 
 		ApplicationUser user =
-			await GetUserOrThrowAsync(command.UserId, userManager, logger);
+			await GetUserOrThrowAsync(
+				command.UserId,
+				userManager,
+				logger);
 
-		await EnsurePasswordChangedAsync(command, user, userManager);
+		await EnsurePasswordChangedAsync(
+			command,
+			user,
+			userManager);
 
-		await ClearRequiresPasswordChangeIfNeededAsync(user, userManager, logger);
+		await ClearRequiresPasswordChangeIfNeededAsync(
+			user,
+			userManager,
+			logger);
 
 		// Revoke all existing refresh tokens
 		await tokenRepository.RevokeAllUserTokensAsync(
@@ -77,6 +86,18 @@ public static class ChangePasswordCommandHandler
 	/// Change the existing password or add a new password for users without one.
 	/// Throws on validation or identity failures.
 	/// </summary>
+	/// <param name="command">
+	/// The change password command.
+	/// </param>
+	/// <param name="user">
+	/// The user whose password is being changed.
+	/// </param>
+	/// <param name="userManager">
+	/// User manager for identity operations.
+	/// </param>
+	/// <returns>
+	/// A task representing the async operation.
+	/// </returns>
 	private static async Task EnsurePasswordChangedAsync(
 		ChangePasswordCommand command,
 		ApplicationUser user,
@@ -139,6 +160,15 @@ public static class ChangePasswordCommandHandler
 	/// <summary>
 	/// Clears the <c>RequiresPasswordChange</c> flag when present and persists the change.
 	/// </summary>
+	/// <param name="user">
+	/// The user to update.
+	/// </param>
+	/// <param name="userManager">
+	/// User manager for identity operations.
+	/// </param>
+	/// <param name="logger">
+	/// Logger for logging errors.
+	/// </param>
 	private static async Task ClearRequiresPasswordChangeIfNeededAsync(
 		ApplicationUser user,
 		UserManager<ApplicationUser> userManager,
