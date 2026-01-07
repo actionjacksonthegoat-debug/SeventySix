@@ -1672,7 +1672,6 @@ export type components = {
 			/** Format: date-time */
 			createDate: string;
 			isActive: boolean;
-			needsPendingEmail: boolean;
 			createdBy: string;
 			/** Format: date-time */
 			modifyDate: null | string;

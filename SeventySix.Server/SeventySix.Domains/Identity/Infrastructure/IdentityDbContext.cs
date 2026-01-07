@@ -44,7 +44,8 @@ public class IdentityDbContext
 	/// <summary>
 	/// Gets or sets the PermissionRequests DbSet.
 	/// </summary>
-	public DbSet<PermissionRequest> PermissionRequests => Set<PermissionRequest>();
+	public DbSet<PermissionRequest> PermissionRequests =>
+		Set<PermissionRequest>();
 
 	/// <inheritdoc/>
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -52,39 +53,49 @@ public class IdentityDbContext
 		base.OnModelCreating(modelBuilder);
 
 		// Set schema for all Identity tables
-		modelBuilder.HasDefaultSchema(SchemaConstants.Identity);
+		modelBuilder.HasDefaultSchema(
+			SchemaConstants.Identity);
 
 		// Rename Identity tables to match existing conventions
-		modelBuilder.Entity<ApplicationUser>()
+		modelBuilder
+			.Entity<ApplicationUser>()
 			.ToTable("Users");
 
-		modelBuilder.Entity<ApplicationRole>()
+		modelBuilder
+			.Entity<ApplicationRole>()
 			.ToTable("Roles");
 
-		modelBuilder.Entity<IdentityUserRole<long>>()
+		modelBuilder
+			.Entity<IdentityUserRole<long>>()
 			.ToTable("UserRoles");
 
-		modelBuilder.Entity<IdentityUserClaim<long>>()
+		modelBuilder
+			.Entity<IdentityUserClaim<long>>()
 			.ToTable("UserClaims");
 
-		modelBuilder.Entity<IdentityUserLogin<long>>()
+		modelBuilder
+			.Entity<IdentityUserLogin<long>>()
 			.ToTable("ExternalLogins");
 
-		modelBuilder.Entity<IdentityRoleClaim<long>>()
+		modelBuilder
+			.Entity<IdentityRoleClaim<long>>()
 			.ToTable("RoleClaims");
 
-		modelBuilder.Entity<IdentityUserToken<long>>()
+		modelBuilder
+			.Entity<IdentityUserToken<long>>()
 			.ToTable("UserTokens");
 
 		// Apply custom configurations from this assembly
 		modelBuilder.ApplyConfigurationsFromAssembly(
 			typeof(IdentityDbContext).Assembly,
-			type => type.Namespace?.StartsWith(
-				"SeventySix.Identity",
-				StringComparison.Ordinal) == true);
+			type =>
+				type.Namespace?.StartsWith(
+					"SeventySix.Identity",
+					StringComparison.Ordinal) == true);
 
 		// Global query filter for soft delete
-		modelBuilder.Entity<ApplicationUser>()
+		modelBuilder
+			.Entity<ApplicationUser>()
 			.HasQueryFilter(user => !user.IsDeleted);
 	}
 }

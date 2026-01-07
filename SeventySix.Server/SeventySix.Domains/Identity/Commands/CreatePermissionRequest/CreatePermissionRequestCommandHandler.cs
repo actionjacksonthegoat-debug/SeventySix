@@ -55,7 +55,8 @@ public static class CreatePermissionRequestCommandHandler
 		}
 
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(command.UserId.ToString());
+			await userManager.FindByIdAsync(
+				command.UserId.ToString());
 
 		if (user is null)
 		{

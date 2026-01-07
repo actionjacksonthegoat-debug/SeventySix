@@ -8,9 +8,12 @@
 
 	<ItemGroup>
 		<PackageReference Include="coverlet.collector" Version="6.0.4" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 		<PackageReference Include="xunit" Version="2.9.3" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference
 			Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing"
 			Version="1.1.2"
@@ -21,7 +24,7 @@
 		/>
 		<PackageReference
 			Include="Microsoft.CodeAnalysis.CSharp.Workspaces"
-			Version="4.12.0"
+			Version="5.0.0"
 		/>
 	</ItemGroup>
 
@@ -29,12 +32,17 @@
 		<Using Include="Xunit" />
 		<Using Include="Microsoft.CodeAnalysis" />
 		<Using Include="Microsoft.CodeAnalysis.Testing" />
+		<Using Include="SeventySix.Analyzers.CodeFixes" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference
 			Include="..\..\SeventySix.Analyzers\SeventySix.Analyzers.csproj"
 			OutputItemType="Analyzer"
+			ReferenceOutputAssembly="true"
+		/>
+		<ProjectReference
+			Include="..\..\SeventySix.Analyzers.CodeFixes\SeventySix.Analyzers.CodeFixes.csproj"
 			ReferenceOutputAssembly="true"
 		/>
 	</ItemGroup>

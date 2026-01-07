@@ -2,13 +2,11 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ApiTracking;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.Interfaces;
-using SeventySix.Shared.Persistence;
+using SeventySix.Shared.Registration;
 
 namespace SeventySix.Registration;
 
@@ -65,29 +63,22 @@ public static class ApiTrackingRegistration
 		services.Configure<ThirdPartyApiLimitSettings>(
 			configuration.GetSection(ThirdPartyApiLimitSettings.SECTION_NAME));
 
-		// Register ApiTrackingDbContext with PostgreSQL and AuditInterceptor
-		services.AddDbContext<ApiTrackingDbContext>(
-			(serviceProvider, options) =>
-			{
-				AuditInterceptor auditInterceptor =
-					serviceProvider.GetRequiredService<AuditInterceptor>();
+		// Register ApiTrackingDbContext via shared helper
+		services.AddDomainDbContext<ApiTrackingDbContext>(
+			connectionString,
+			SchemaConstants.ApiTracking);
 
-				options.UseNpgsql(
-					connectionString,
-					npgsqlOptions =>
-						npgsqlOptions.MigrationsHistoryTable(
-							DatabaseConstants.MigrationsHistoryTableName,
-							SchemaConstants.ApiTracking));
-				options.AddInterceptors(auditInterceptor);
-			});
 		// Register repositories
 		services.AddScoped<
 			IThirdPartyApiRequestRepository,
-			ThirdPartyApiRequestRepository
-		>();
+			ThirdPartyApiRequestRepository>();
 
-		// Register health check for multi-db health monitoring
-		services.AddScoped<IDatabaseHealthCheck, ApiTrackingHealthCheck>();
+		// Register transaction manager for ApiTracking context
+		services.AddTransactionManagerFor<ApiTrackingDbContext>();
+
+		// Register health check for multi-db health monitoring using generic Wolverine wrapper
+		services.AddWolverineHealthCheck<CheckApiTrackingHealthQuery>(
+			SchemaConstants.ApiTracking);
 
 		return services;
 	}

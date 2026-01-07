@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Identity;
+using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.TestUtilities.Builders;
@@ -21,15 +22,14 @@ public class UserDtoBuilder
 	private DateTime CreateDate;
 	private bool IsActive = true;
 	private string CreatedBy =
-		TestAuditConstants.SystemUser;
+		AuditConstants.SystemUser;
 	private DateTime? ModifyDate = null;
 	private string ModifiedBy =
-		TestAuditConstants.SystemUser;
+		AuditConstants.SystemUser;
 	private DateTime? LastLoginAt = null;
 	private bool IsDeleted = false;
 	private DateTime? DeletedAt = null;
 	private string? DeletedBy = null;
-	private bool NeedsPendingEmail = false;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserDtoBuilder"/> class.
@@ -162,15 +162,6 @@ public class UserDtoBuilder
 	}
 
 	/// <summary>
-	/// Sets whether the user requires a pending email.
-	/// </summary>
-	public UserDtoBuilder WithNeedsPendingEmail(bool value)
-	{
-		NeedsPendingEmail = value;
-		return this;
-	}
-
-	/// <summary>
 	/// Builds the UserDto instance.
 	/// </summary>
 	public UserDto Build() =>
@@ -181,7 +172,6 @@ public class UserDtoBuilder
 			FullName,
 			CreateDate,
 			IsActive,
-			NeedsPendingEmail,
 			CreatedBy,
 			ModifyDate,
 			ModifiedBy,

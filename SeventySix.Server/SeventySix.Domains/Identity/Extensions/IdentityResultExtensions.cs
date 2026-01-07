@@ -17,7 +17,8 @@ public static class IdentityResultExtensions
 	/// <returns>
 	/// A comma-separated string of error descriptions.
 	/// </returns>
-	public static string ToErrorString(this IEnumerable<IdentityError>? errors) =>
+	public static string ToErrorString(
+		this IEnumerable<IdentityError>? errors) =>
 		errors is null
 			? string.Empty
 			: string.Join(", ", errors.Select(error => error.Description));

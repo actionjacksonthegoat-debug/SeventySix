@@ -16,7 +16,7 @@ public class IdTypeTests : SourceCodeArchitectureTest
 	{
 		// Arrange
 		IEnumerable<string> entityFiles =
-			GetSourceFiles("*.cs")
+			[..GetSourceFiles("*.cs")
 				.Where(file =>
 					(file.Contains("\\Models\\")
 						|| file.Contains("\\Entities\\"))
@@ -25,8 +25,7 @@ public class IdTypeTests : SourceCodeArchitectureTest
 						&& !file.Contains("Response")
 						&& !file.Contains("Result")
 						&& !file.Contains("OAuth")
-						&& !file.EndsWith("Settings.cs"))
-				.ToList();
+						&& !file.EndsWith("Settings.cs"))];
 		List<string> violations = new();
 
 		// Act
@@ -35,12 +34,14 @@ public class IdTypeTests : SourceCodeArchitectureTest
 			string content =
 				ReadFileContent(file);
 
-			if (content.Contains("public int Id") || content.Contains("public Int32 Id"))
+			if (content.Contains("public int Id")
+				|| content.Contains("public Int32 Id"))
 			{
 				string relativePath =
 					GetRelativePath(file);
 
-				violations.Add($"{relativePath}: Primary key declared as int rather than long");
+				violations.Add(
+					$"{relativePath}: Primary key declared as int rather than long");
 			}
 		}
 
@@ -53,17 +54,16 @@ public class IdTypeTests : SourceCodeArchitectureTest
 	{
 		// Arrange
 		IEnumerable<string> entityFiles =
-			GetSourceFiles("*.cs")
+			[..GetSourceFiles("*.cs")
 				.Where(file =>
 					(file.Contains("\\Models\\")
 						|| file.Contains("\\Entities\\"))
-						&& !file.Contains("Dto")
-						&& !file.Contains("Request")
-						&& !file.Contains("Response")
-						&& !file.Contains("Result")
-						&& !file.Contains("OAuth")
-						&& !file.EndsWith("Settings.cs"))
-				.ToList();
+					&& !file.Contains("Dto")
+					&& !file.Contains("Request")
+					&& !file.Contains("Response")
+					&& !file.Contains("Result")
+					&& !file.Contains("OAuth")
+					&& !file.EndsWith("Settings.cs"))];
 		List<string> violations = new();
 
 		// Act
@@ -83,7 +83,8 @@ public class IdTypeTests : SourceCodeArchitectureTest
 				string relativePath =
 					GetRelativePath(file);
 
-				violations.Add($"{relativePath}: Foreign key uses int - '{match.Value.Trim()}'");
+				violations.Add(
+					$"{relativePath}: Foreign key uses int - '{match.Value.Trim()}'");
 			}
 		}
 

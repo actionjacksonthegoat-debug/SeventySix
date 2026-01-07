@@ -20,8 +20,6 @@ namespace SeventySix.Analyzers;
 ///           "Test",
 ///           StringComparison.OrdinalIgnoreCase)  &lt;-- inner ) is OK
 ///   )  &lt;-- THIS ) should be on previous line: OrdinalIgnoreCase))
-/// PERFORMANCE OPTIMIZED: Uses SyntaxKind checks and avoids allocations.
-/// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ClosingParenSameLineAnalyzer : DiagnosticAnalyzer
 {

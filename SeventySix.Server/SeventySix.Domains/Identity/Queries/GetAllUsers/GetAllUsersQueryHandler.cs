@@ -14,7 +14,8 @@ public static class GetAllUsersQueryHandler
 		CancellationToken cancellationToken)
 	{
 		List<ApplicationUser> users =
-			await userManager.Users
+			await userManager
+				.Users
 				.AsNoTracking()
 				.ToListAsync(cancellationToken);
 

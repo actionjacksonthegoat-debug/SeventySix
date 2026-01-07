@@ -2,28 +2,13 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using FluentValidation;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.Identity;
-using SeventySix.Identity.Commands.ChangePassword;
-using SeventySix.Identity.Commands.CompleteRegistration;
-using SeventySix.Identity.Commands.CreatePermissionRequest;
-using SeventySix.Identity.Commands.CreateUser;
-using SeventySix.Identity.Commands.InitiatePasswordResetByEmail;
-using SeventySix.Identity.Commands.InitiateRegistration;
-using SeventySix.Identity.Commands.Login;
-using SeventySix.Identity.Commands.Register;
-using SeventySix.Identity.Commands.SetPassword;
-using SeventySix.Identity.Commands.UpdateProfile;
-using SeventySix.Identity.Commands.UpdateUser;
 using SeventySix.Identity.Infrastructure;
-using SeventySix.Identity.Queries.GetPagedUsers;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
-using SeventySix.Shared.Persistence;
-using SeventySix.Shared.Validators;
+using SeventySix.Shared.Registration;
 
 namespace SeventySix.Registration;
 
@@ -77,20 +62,10 @@ public static class IdentityRegistration
 		// Register user context accessor (Identity owns authentication/user concerns)
 		services.AddScoped<IUserContextAccessor, UserContextAccessor>();
 
-		// Register IdentityDbContext with PostgreSQL and AuditInterceptor
-		services.AddDbContext<IdentityDbContext>(
-			(serviceProvider, options) =>
-			{
-				AuditInterceptor auditInterceptor =
-					serviceProvider.GetRequiredService<AuditInterceptor>();
-				options.UseNpgsql(
-					connectionString,
-					npgsqlOptions =>
-						npgsqlOptions.MigrationsHistoryTable(
-							DatabaseConstants.MigrationsHistoryTableName,
-							SchemaConstants.Identity));
-				options.AddInterceptors(auditInterceptor);
-			});
+		// Register IdentityDbContext via shared helper
+		services.AddDomainDbContext<IdentityDbContext>(
+			connectionString,
+			SchemaConstants.Identity);
 
 		// Register ASP.NET Core Identity
 		services
@@ -105,7 +80,8 @@ public static class IdentityRegistration
 
 				// Lockout settings
 				options.Lockout.DefaultLockoutTimeSpan =
-					TimeSpan.FromMinutes(15);
+					TimeSpan.FromMinutes(
+						15);
 				options.Lockout.MaxFailedAccessAttempts = 5;
 				options.Lockout.AllowedForNewUsers = true;
 
@@ -119,12 +95,12 @@ public static class IdentityRegistration
 
 		// Replace default password hasher with Argon2
 		services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
-		services.AddScoped<IPasswordHasher<ApplicationUser>, IdentityArgon2PasswordHasher>();
+		services.AddScoped<
+			IPasswordHasher<ApplicationUser>,
+			IdentityArgon2PasswordHasher>();
 
 		// Register transaction manager for Identity context
-		services.AddScoped<ITransactionManager>(
-			serviceProvider => new TransactionManager(
-				serviceProvider.GetRequiredService<IdentityDbContext>()));
+		services.AddTransactionManagerFor<IdentityDbContext>();
 
 		// Register custom repositories (for entities not managed by Identity)
 		services.AddScoped<
@@ -146,97 +122,12 @@ public static class IdentityRegistration
 		>();
 		services.AddScoped<RegistrationService>();
 
-		// Register health check
-		services.AddScoped<IDatabaseHealthCheck, IdentityHealthCheck>();
+		// Register health check for multi-db health monitoring using generic Wolverine wrapper
+		services.AddWolverineHealthCheck<CheckIdentityHealthQuery>(
+			SchemaConstants.Identity);
 
-		// Register validators
-		services.AddSingleton<
-			IValidator<CreateUserRequest>,
-			CreateUserCommandValidator
-		>();
-		services.AddSingleton<
-			IValidator<CreatePermissionRequestCommand>,
-			CreatePermissionRequestValidator
-		>();
-		services.AddSingleton<
-			IValidator<UpdateUserRequest>,
-			UpdateUserCommandValidator
-		>();
-		services.AddSingleton<
-			IValidator<UpdateProfileRequest>,
-			UpdateProfileCommandValidator
-		>();
-		services.AddSingleton<IValidator<UpdateProfileCommand>>(
-			serviceProvider =>
-				CommandValidatorFactory.CreateFor<
-					UpdateProfileCommand,
-					UpdateProfileRequest
-				>(
-					serviceProvider.GetRequiredService<
-						IValidator<UpdateProfileRequest>
-					>(),
-					command => command.Request));
-		services.AddSingleton<
-			IValidator<UserQueryRequest>,
-			UserQueryValidator
-		>();
-		services.AddSingleton<
-			IValidator<LoginRequest>,
-			LoginCommandValidator
-		>();
-		services.AddSingleton<
-			IValidator<RegisterRequest>,
-			RegisterCommandValidator
-		>();
-		services.AddSingleton<
-			IValidator<ChangePasswordRequest>,
-			ChangePasswordCommandValidator
-		>();
-		services.AddSingleton<IValidator<ChangePasswordCommand>>(
-			serviceProvider =>
-				CommandValidatorFactory.CreateFor<
-					ChangePasswordCommand,
-					ChangePasswordRequest
-				>(
-					serviceProvider.GetRequiredService<
-						IValidator<ChangePasswordRequest>
-					>(),
-					command => command.Request));
-		services.AddSingleton<
-			IValidator<SetPasswordRequest>,
-			SetPasswordCommandValidator
-		>();
-		services.AddSingleton<IValidator<SetPasswordCommand>>(serviceProvider =>
-			CommandValidatorFactory.CreateFor<
-				SetPasswordCommand,
-				SetPasswordRequest
-			>(
-				serviceProvider.GetRequiredService<
-					IValidator<SetPasswordRequest>
-				>(),
-				command => command.Request));
-		services.AddSingleton<
-			IValidator<ForgotPasswordRequest>,
-			InitiatePasswordResetByEmailCommandValidator
-		>();
-		services.AddSingleton<
-			IValidator<InitiateRegistrationRequest>,
-			InitiateRegistrationCommandValidator
-		>();
-		services.AddSingleton<
-			IValidator<CompleteRegistrationRequest>,
-			CompleteRegistrationCommandValidator
-		>();
-		services.AddSingleton<IValidator<CompleteRegistrationCommand>>(
-			serviceProvider =>
-				CommandValidatorFactory.CreateFor<
-					CompleteRegistrationCommand,
-					CompleteRegistrationRequest
-				>(
-					serviceProvider.GetRequiredService<
-						IValidator<CompleteRegistrationRequest>
-					>(),
-					command => command.Request));
+		// Register validators via scanning and command adapter
+		services.AddDomainValidatorsFromAssemblyContaining<IdentityDbContext>();
 
 		return services;
 	}

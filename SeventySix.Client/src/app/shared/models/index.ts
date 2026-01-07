@@ -14,3 +14,4 @@ export * from "./notification.model";
 export * from "./performance-metrics.model";
 export * from "./table.model";
 export * from "./theme.model";
+export * from "./auth-error-result.model";

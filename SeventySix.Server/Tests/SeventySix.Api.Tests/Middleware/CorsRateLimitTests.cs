@@ -26,7 +26,10 @@ public class CorsRateLimitTests
 		context.Response.StatusCode =
 			StatusCodes.Status429TooManyRequests;
 
-		Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
-		Assert.True(context.Response.Headers.ContainsKey("Access-Control-Allow-Origin"));
+		Assert.Equal(
+			StatusCodes.Status429TooManyRequests,
+			context.Response.StatusCode);
+		Assert.True(
+			context.Response.Headers.ContainsKey("Access-Control-Allow-Origin"));
 	}
 }

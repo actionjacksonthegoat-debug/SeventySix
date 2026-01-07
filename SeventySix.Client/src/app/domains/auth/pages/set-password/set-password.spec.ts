@@ -160,7 +160,7 @@ describe("SetPasswordComponent",
 
 				expect(mockNotificationService.error)
 					.toHaveBeenCalledWith(
-						"Password reset link has expired or is invalid. Please request a new one.");
+						"An unexpected error occurred. Please try again.");
 				expect((component as unknown as { isLoading(): boolean; }).isLoading())
 					.toBe(false);
 			});

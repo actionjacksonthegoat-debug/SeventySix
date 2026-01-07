@@ -10,6 +10,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
+using SeventySix.Shared.Constants;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
@@ -51,7 +52,8 @@ public class RefreshTokenCleanupJobTests : IDisposable
 				Email = "test@example.com",
 				CreateDate =
 					timeProvider.GetUtcNow().UtcDateTime,
-				CreatedBy = "system",
+				CreatedBy =
+					AuditConstants.SystemUser
 			};
 		this.DbContext.Users.Add(this.TestUser);
 		this.DbContext.SaveChanges();

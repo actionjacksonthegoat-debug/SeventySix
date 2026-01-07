@@ -23,7 +23,8 @@ public static class RemoveUserRoleCommandHandler
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(command.UserId.ToString());
+			await userManager.FindByIdAsync(
+				command.UserId.ToString());
 
 		if (user is null)
 		{
@@ -39,7 +40,9 @@ public static class RemoveUserRoleCommandHandler
 		}
 
 		IdentityResult result =
-			await userManager.RemoveFromRoleAsync(user, command.Role);
+			await userManager.RemoveFromRoleAsync(
+				user,
+				command.Role);
 
 		return result.Succeeded;
 	}

@@ -264,7 +264,7 @@ describe("ChangePasswordComponent",
 						// Assert
 						expect(mockNotificationService.error)
 							.toHaveBeenCalledWith(
-								"Failed to change password. Please try again.");
+								"An unexpected error occurred. Please try again.");
 					});
 
 				it("should set isLoading to true during submission",

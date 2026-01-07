@@ -16,7 +16,8 @@ public static class GetUserByUsernameQueryHandler
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
-			await userManager.FindByNameAsync(query.Username);
+			await userManager.FindByNameAsync(
+				query.Username);
 
 		return user?.ToDto();
 	}

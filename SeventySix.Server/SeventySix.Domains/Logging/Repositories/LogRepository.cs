@@ -4,8 +4,8 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SeventySix.Shared.Persistence;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Persistence;
 
 namespace SeventySix.Logging;
 

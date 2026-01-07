@@ -36,7 +36,8 @@ public static class BulkUpdateActiveStatusCommandHandler
 		foreach (long userId in command.UserIds)
 		{
 			ApplicationUser? user =
-				await userManager.FindByIdAsync(userId.ToString());
+				await userManager.FindByIdAsync(
+					userId.ToString());
 
 			if (user is null)
 			{

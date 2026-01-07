@@ -76,7 +76,8 @@ public static class CompleteRegistrationCommandHandler
 
 		// Find the user by the decoded email (temporary user created during InitiateRegistration)
 		ApplicationUser? existingUser =
-			await userManager.FindByEmailAsync(decodedEmail);
+			await userManager.FindByEmailAsync(
+				decodedEmail);
 
 		if (existingUser is null)
 		{
@@ -175,7 +176,8 @@ public static class CompleteRegistrationCommandHandler
 		existingUser.ModifiedBy = "Self-Registration";
 
 		IdentityResult updateResult =
-			await userManager.UpdateAsync(existingUser);
+			await userManager.UpdateAsync(
+				existingUser);
 
 		if (!updateResult.Succeeded)
 		{
@@ -184,7 +186,9 @@ public static class CompleteRegistrationCommandHandler
 
 		// Add password (temporary user was created without one)
 		IdentityResult passwordResult =
-			await userManager.AddPasswordAsync(existingUser, command.Request.Password);
+			await userManager.AddPasswordAsync(
+				existingUser,
+				command.Request.Password);
 
 		if (!passwordResult.Succeeded)
 		{
@@ -193,7 +197,9 @@ public static class CompleteRegistrationCommandHandler
 
 		// Assign User role
 		IdentityResult roleResult =
-			await userManager.AddToRoleAsync(existingUser, RoleConstants.User);
+			await userManager.AddToRoleAsync(
+				existingUser,
+				RoleConstants.User);
 
 		if (!roleResult.Succeeded)
 		{

@@ -3,7 +3,6 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<UserSecretsId>c3664f2b-526e-436f-88d6-e83220c1ddca</UserSecretsId>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 
 		<!-- Enable EditorConfig support -->
@@ -20,19 +19,19 @@
 		/>
 		<PackageReference
 			Include="Microsoft.AspNetCore.Authentication.JwtBearer"
-			Version="10.0.0"
+			Version="10.0.1"
 		/>
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
 		<PackageReference
 			Include="Microsoft.EntityFrameworkCore.Tools"
-			Version="10.0.0"
+			Version="10.0.1"
 		>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference
 			Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore"
-			Version="10.0.0"
+			Version="10.0.1"
 		/>
 		<PackageReference
 			Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets"
@@ -40,7 +39,7 @@
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Exporter.OpenTelemetryProtocol"
-			Version="1.11.1"
+			Version="1.14.0"
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Exporter.Prometheus.AspNetCore"
@@ -48,15 +47,15 @@
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Extensions.Hosting"
-			Version="1.11.1"
+			Version="1.14.0"
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Instrumentation.AspNetCore"
-			Version="1.11.1"
+			Version="1.14.0"
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Instrumentation.Http"
-			Version="1.11.1"
+			Version="1.14.0"
 		/>
 		<PackageReference
 			Include="OpenTelemetry.Instrumentation.Runtime"
@@ -69,8 +68,8 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="Scalar.AspNetCore" Version="2.10.3" />
-		<PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.11.10" />
+		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
 		<PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
@@ -84,6 +83,12 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SeventySix.Domains\SeventySix.Domains.csproj" />
+		<!-- Add codefixes assembly as analyzer so format/dotnet-format can discover code fixes -->
+		<ProjectReference
+			Include="..\SeventySix.Analyzers.CodeFixes\SeventySix.Analyzers.CodeFixes.csproj"
+			OutputItemType="Analyzer"
+			ReferenceOutputAssembly="false"
+		/>
 	</ItemGroup>
 
 	<ItemGroup>

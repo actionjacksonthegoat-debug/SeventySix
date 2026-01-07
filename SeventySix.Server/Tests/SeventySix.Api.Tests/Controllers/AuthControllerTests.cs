@@ -882,7 +882,8 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			SharedFactory.Services.CreateScope())
 		{
 			UserManager<ApplicationUser> userManager =
-				scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+				scope.ServiceProvider.GetRequiredService<
+					UserManager<ApplicationUser>>();
 			TimeProvider timeProvider =
 				scope.ServiceProvider.GetRequiredService<TimeProvider>();
 			DateTime now =
@@ -902,13 +903,15 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 				};
 
 			IdentityResult createResult =
-				await userManager.CreateAsync(tempUser);
+				await userManager.CreateAsync(
+					tempUser);
 
 			Assert.True(createResult.Succeeded);
 
 			// Generate email confirmation token
 			token =
-				await userManager.GenerateEmailConfirmationTokenAsync(tempUser);
+				await userManager.GenerateEmailConfirmationTokenAsync(
+					tempUser);
 		}
 
 		string combinedToken =

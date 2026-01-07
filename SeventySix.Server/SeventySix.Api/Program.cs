@@ -20,19 +20,26 @@
 /// Architecture: Implements Dependency Inversion Principle (DIP) by registering
 /// interfaces with their concrete implementations.
 /// </remarks>
-
 using Scalar.AspNetCore;
 using Serilog;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
 using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
+using SeventySix.Api.Utilities;
 using SeventySix.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;
 
+DotEnvLoader.Load();
+
 WebApplicationBuilder builder =
 			WebApplication.CreateBuilder(args);
+
+// Map flat .env variables to hierarchical configuration
+// This allows .env file to use simple names while ASP.NET gets proper hierarchy
+// Must be called early to ensure environment variables override appsettings.json
+builder.Configuration.AddEnvironmentVariableMapping();
 
 // Bind centralized security settings (single source of truth for HTTPS enforcement)
 builder.Services.Configure<SecuritySettings>(
@@ -56,7 +63,7 @@ if (builder.Environment.IsDevelopment())
 // Outputs: Console + Rolling file (daily rotation) + Database (Warning+ levels)
 // Note: Database sink is added after building the app to access IServiceProvider
 // In Test environment, configures silent logging (no sinks) for performance
-Serilog.Log.Logger =
+Log.Logger =
 			new LoggerConfiguration()
 				.ConfigureBaseSerilog(
 					builder.Configuration,
@@ -90,18 +97,25 @@ builder.Services.AddControllers();
 // This includes: repositories, business logic services, validators, HTTP clients, and configuration
 builder.Services.AddApplicationServices(builder.Configuration);
 
-// Add bounded context domains
+// Build connection string from Database:* configuration values
+// These are mapped from DB_* environment variables loaded from .env file
 string connectionString =
-			builder.Configuration.GetConnectionString("DefaultConnection")
-	?? throw new InvalidOperationException(
-		"Connection string 'DefaultConnection' not found.");
+			ConnectionStringBuilder.BuildPostgresConnectionString(
+				builder.Configuration);
 
 // Infrastructure must be registered first (provides AuditInterceptor for DbContexts)
 builder.Services.AddInfrastructure();
-builder.Services.AddIdentityDomain(connectionString);
-builder.Services.AddLoggingDomain(connectionString, builder.Configuration);
-builder.Services.AddApiTrackingDomain(connectionString, builder.Configuration);
-builder.Services.AddElectronicNotificationsDomain(builder.Configuration);
+builder.Services.AddIdentityDomain(
+	connectionString);
+builder.Services.AddLoggingDomain(
+	connectionString,
+	builder.Configuration);
+builder.Services.AddApiTrackingDomain(
+	connectionString,
+	builder.Configuration);
+builder.Services.AddElectronicNotificationsDomain(
+	connectionString,
+	builder.Configuration);
 
 // Register all background jobs (single registration point)
 builder.Services.AddBackgroundJobs(builder.Configuration);
@@ -119,7 +133,9 @@ builder.Services.AddConfiguredRateLimiting(builder.Configuration);
 builder.Services.AddConfiguredCors(builder.Configuration);
 
 // Add Data Protection for key management
-builder.Services.AddConfiguredDataProtection(builder.Environment);
+builder.Services.AddConfiguredDataProtection(
+	builder.Configuration,
+	builder.Environment);
 
 // Add JWT authentication
 builder.Services.AddAuthenticationServices(builder.Configuration);
@@ -128,6 +144,9 @@ builder.Services.AddAuthenticationServices(builder.Configuration);
 builder.Services.AddOpenApi();
 
 WebApplication app = builder.Build();
+
+// Validate dependencies (in debug scenarios this provides actionable errors for VS)
+await app.ValidateDependenciesAsync(builder.Configuration);
 
 // Database migrations
 await app.ApplyMigrationsAsync(builder.Configuration);

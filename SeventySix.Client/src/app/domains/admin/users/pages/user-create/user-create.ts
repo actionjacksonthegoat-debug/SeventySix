@@ -306,9 +306,7 @@ export class UserCreatePage
 					this.assignRoles(createdUser.id);
 
 					const message: string =
-						createdUser.needsPendingEmail
-							? `User "${createdUser.username}" created. Email will be sent to ${createdUser.email} within 24 hours.`
-							: `User "${createdUser.username}" created. Welcome email sent to ${createdUser.email}.`;
+						`User "${createdUser.username}" created. Welcome email queued for ${createdUser.email}.`;
 
 					this.notificationService.success(message);
 

@@ -35,7 +35,8 @@ public static class CheckIdentityHealthQueryHandler
 		try
 		{
 			_ =
-				await userManager.Users
+				await userManager
+					.Users
 					.AsNoTracking()
 					.Take(1)
 					.ToListAsync(cancellationToken);

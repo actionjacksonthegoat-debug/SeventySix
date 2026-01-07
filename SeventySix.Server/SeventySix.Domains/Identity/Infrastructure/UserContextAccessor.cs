@@ -4,6 +4,7 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Http;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Identity.Infrastructure;
@@ -15,8 +16,6 @@ namespace SeventySix.Identity.Infrastructure;
 public class UserContextAccessor(IHttpContextAccessor httpContextAccessor)
 	: IUserContextAccessor
 {
-	private const string SystemUser = "System";
-
 	/// <summary>
 	/// Gets the current user's username from JWT claims.
 	/// </summary>
@@ -32,6 +31,6 @@ public class UserContextAccessor(IHttpContextAccessor httpContextAccessor)
 				.FindFirst(JwtRegisteredClaimNames.UniqueName)
 				?.Value;
 
-		return username ?? SystemUser;
+		return username ?? AuditConstants.SystemUser;
 	}
 }

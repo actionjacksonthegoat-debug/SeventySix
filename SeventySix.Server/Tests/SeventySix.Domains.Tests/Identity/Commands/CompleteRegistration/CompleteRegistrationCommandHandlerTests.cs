@@ -4,11 +4,11 @@
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using Microsoft.EntityFrameworkCore;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.CompleteRegistration;
 using SeventySix.Identity.Constants;
@@ -62,7 +62,9 @@ public class CompleteRegistrationCommandHandlerTests(
 		string emailToken =
 			await userManager.GenerateEmailConfirmationTokenAsync(user);
 		IdentityResult confirmResult =
-			await userManager.ConfirmEmailAsync(user, emailToken);
+			await userManager.ConfirmEmailAsync(
+				user,
+				emailToken);
 		confirmResult.Succeeded.ShouldBeTrue();
 	}
 
@@ -91,16 +93,22 @@ public class CompleteRegistrationCommandHandlerTests(
 				user.Email!,
 				emailToken);
 
-
 		IAuthRepository authRepository =
 			Substitute.For<IAuthRepository>();
 		ITokenService tokenService =
 			Substitute.For<ITokenService>();
 		tokenService
-			.GenerateAccessToken(Arg.Any<long>(), Arg.Any<string>(), Arg.Any<IList<string>>())
+			.GenerateAccessToken(
+				Arg.Any<long>(),
+				Arg.Any<string>(),
+				Arg.Any<IList<string>>())
 			.Returns("access-token");
 		tokenService
-			.GenerateRefreshTokenAsync(Arg.Any<long>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+			.GenerateRefreshTokenAsync(
+				Arg.Any<long>(),
+				Arg.Any<string?>(),
+				Arg.Any<bool>(),
+				Arg.Any<CancellationToken>())
 			.Returns(Task.FromResult("refresh-token"));
 
 		JwtSettings jwtSettings =
@@ -119,7 +127,10 @@ public class CompleteRegistrationCommandHandlerTests(
 			NullLogger<CompleteRegistrationCommand>.Instance;
 
 		CompleteRegistrationRequest request =
-			new(combinedToken, "newusername", "P@ssword123!");
+			new(
+				combinedToken,
+				"newusername",
+				"P@ssword123!");
 		CompleteRegistrationCommand command =
 			new(
 				request,
@@ -148,10 +159,14 @@ public class CompleteRegistrationCommandHandlerTests(
 			TestTimeProviderBuilder.CreateDefault();
 
 		ApplicationUser user =
-			await CreateTemporaryUserAsync(context, timeProvider);
+			await CreateTemporaryUserAsync(
+				context,
+				timeProvider);
 		string invalidToken = "invalid-token-value";
 		IdentityResult confirmResult =
-			await userManager.ConfirmEmailAsync(user, invalidToken);
+			await userManager.ConfirmEmailAsync(
+				user,
+				invalidToken);
 		confirmResult.Succeeded.ShouldBeFalse();
 	}
 
@@ -228,13 +243,14 @@ public class CompleteRegistrationCommandHandlerTests(
 	{
 		if (!await context.Roles.AnyAsync(role => role.Name == roleName))
 		{
-			await context.Roles.AddAsync(new ApplicationRole
-			{
-				Name = roleName,
-				NormalizedName = roleName.ToUpperInvariant(),
-				CreateDate =
-					timeProvider.GetUtcNow().UtcDateTime
-			});
+			await context.Roles.AddAsync(
+				new ApplicationRole
+				{
+					Name = roleName,
+					NormalizedName = roleName.ToUpperInvariant(),
+					CreateDate =
+						timeProvider.GetUtcNow().UtcDateTime,
+				});
 			await context.SaveChangesAsync();
 		}
 	}

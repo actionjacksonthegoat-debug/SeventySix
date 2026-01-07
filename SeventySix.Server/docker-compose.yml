@@ -14,7 +14,7 @@
 services:
   # PostgreSQL Database - Persistent storage for development
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: seventysix-postgres-dev
     environment:
       POSTGRES_DB: ${DB_NAME:-seventysix}
@@ -22,7 +22,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-TestPassword}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -69,9 +69,12 @@ services:
       - ASPNETCORE_HTTPS_PORTS=8081
       - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
-      # PostgreSQL Connection
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${DB_NAME:-seventysix};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-TestPassword};Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100
+      # Database connection via component variables (secrets from .env)
+      # Note: API container connects to postgres:5432 via Docker internal network
+      - Database__Host=postgres
+      - Database__Port=5432
       # OpenTelemetry - using container network DNS name
+      - OpenTelemetry__OtlpEndpoint=http://jaeger:4317
     volumes:
       - ~/.aspnet/https:/https:ro
       - dataprotection_keys:/app/keys
@@ -133,7 +136,6 @@ services:
       - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
       - prometheus
-      - seventysix-api
     networks:
       - seventysix-network
     restart: unless-stopped

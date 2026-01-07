@@ -236,7 +236,9 @@ public class UsersControllerTests
 		Assert.Equal("GetUserById", createdResult.RouteName);
 		Assert.Equal(
 			456L,
-			long.TryParse(createdResult.RouteValues!["id"]?.ToString(), out long id)
+			long.TryParse(
+				createdResult.RouteValues!["id"]?.ToString(),
+				out long id)
 				? id
 				: 0L);
 

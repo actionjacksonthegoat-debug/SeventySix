@@ -33,7 +33,8 @@ public static class GetUserProfileQueryHandler
 		CancellationToken cancellationToken)
 	{
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(query.UserId.ToString());
+			await userManager.FindByIdAsync(
+				query.UserId.ToString());
 
 		if (user is null)
 		{

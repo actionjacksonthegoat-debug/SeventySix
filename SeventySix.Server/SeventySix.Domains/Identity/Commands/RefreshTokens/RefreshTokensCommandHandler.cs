@@ -52,7 +52,8 @@ public static class RefreshTokensCommandHandler
 		}
 
 		ApplicationUser? user =
-			await userManager.FindByIdAsync(userId.Value.ToString());
+			await userManager.FindByIdAsync(
+				userId.Value.ToString());
 
 		if (user == null || !user.IsActive)
 		{

@@ -120,11 +120,13 @@ public class GlobalExceptionMiddleware
 			environment ?? throw new ArgumentNullException(nameof(environment));
 
 		string[] allowedOrigins =
-			configuration?.GetSection("Cors:AllowedOrigins")
-				.Get<string[]>() ?? ["http://localhost:4200"];
+			configuration?.GetSection("Cors:AllowedOrigins").Get<string[]>()
+				?? ["http://localhost:4200"];
 
 		AllowedOrigins =
-			new HashSet<string>(allowedOrigins, StringComparer.OrdinalIgnoreCase);
+			new HashSet<string>(
+				allowedOrigins,
+				StringComparer.OrdinalIgnoreCase);
 	}
 
 	/// <summary>
@@ -198,7 +200,9 @@ public class GlobalExceptionMiddleware
 		context.Response.ContentType = "application/problem+json";
 
 		ProblemDetails problemDetails =
-			MapExceptionToProblemDetails(context, exception);
+			MapExceptionToProblemDetails(
+				context,
+				exception);
 
 		context.Response.StatusCode =
 			problemDetails.Status ?? (int)HttpStatusCode.InternalServerError;

@@ -8,7 +8,7 @@ using SeventySix.Identity;
 
 #nullable disable
 
-namespace SeventySix.Domains.Migrations
+namespace SeventySix.Domains.Identity.Migrations
 {
 	[DbContext(typeof(IdentityDbContext))]
 	partial class IdentityDbContextModelSnapshot : ModelSnapshot
@@ -263,9 +263,6 @@ namespace SeventySix.Domains.Migrations
 
 					b.Property<DateTime?>("ModifyDate")
 						.HasColumnType("timestamp with time zone");
-
-					b.Property<bool>("NeedsPendingEmail")
-						.HasColumnType("boolean");
 
 					b.Property<string>("NormalizedEmail")
 						.HasMaxLength(256)

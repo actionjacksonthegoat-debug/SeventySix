@@ -1,6 +1,6 @@
 <Project>
-	<!-- Reference custom analyzers (SS001, SS002) for all projects -->
-	<ItemGroup Condition="'$(MSBuildProjectName)' != 'SeventySix.Analyzers'">
+	<!-- Reference custom analyzers (SS001, SS002) and codefixes for all projects -->
+	<ItemGroup Condition="'$(MSBuildProjectName)' != 'SeventySix.Analyzers' And '$(MSBuildProjectName)' != 'SeventySix.Analyzers.CodeFixes'">
 		<ProjectReference
 			Include="$(MSBuildThisFileDirectory)SeventySix.Analyzers\SeventySix.Analyzers.csproj"
 			OutputItemType="Analyzer"

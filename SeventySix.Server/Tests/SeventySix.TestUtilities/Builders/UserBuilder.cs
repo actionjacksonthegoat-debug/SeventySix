@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Identity;
+using SeventySix.Shared.Constants;
 using SeventySix.TestUtilities.Constants;
 
 namespace SeventySix.TestUtilities.Builders;
@@ -37,7 +38,7 @@ public class UserBuilder
 		TestUserConstants.DefaultFullName;
 	private DateTime CreateDate;
 	private string? CreatedBy =
-		TestAuditConstants.SystemUser;
+		AuditConstants.SystemUser;
 	private DateTime? ModifyDate = null;
 	private string? ModifiedBy = null;
 	private bool IsActive = true;
@@ -48,7 +49,6 @@ public class UserBuilder
 	private string? Preferences = null;
 	private DateTime? LastLoginAt = null;
 	private string? LastLoginIp = null;
-	private bool NeedsPendingEmail = false;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UserBuilder"/> class.
@@ -122,7 +122,7 @@ public class UserBuilder
 	/// </returns>
 	public UserBuilder WithCreatedInfo(
 		DateTime createDate,
-		string? createdBy = TestAuditConstants.SystemUser)
+		string? createdBy = AuditConstants.SystemUser)
 	{
 		CreateDate = createDate;
 		CreatedBy = createdBy;
@@ -143,7 +143,7 @@ public class UserBuilder
 	/// </returns>
 	public UserBuilder WithModifiedInfo(
 		DateTime modifyDate,
-		string? modifiedBy = TestAuditConstants.SystemUser)
+		string? modifiedBy = AuditConstants.SystemUser)
 	{
 		ModifyDate = modifyDate;
 		ModifiedBy = modifiedBy;
@@ -243,15 +243,6 @@ public class UserBuilder
 	}
 
 	/// <summary>
-	/// Marks the user as needing a pending email.
-	/// </summary>
-	public UserBuilder WithNeedsPendingEmail(bool value)
-	{
-		NeedsPendingEmail = value;
-		return this;
-	}
-
-	/// <summary>
 	/// Builds the ApplicationUser entity with the configured values.
 	/// </summary>
 	/// <returns>
@@ -278,7 +269,6 @@ public class UserBuilder
 			Preferences = Preferences,
 			LastLoginAt = LastLoginAt,
 			LastLoginIp = LastLoginIp,
-			NeedsPendingEmail = NeedsPendingEmail,
 		};
 	}
 
@@ -324,6 +314,6 @@ public class UserBuilder
 		return new UserBuilder(timeProvider).WithDeletedInfo(
 			true,
 			timeProvider.GetUtcNow().UtcDateTime,
-			TestAuditConstants.SystemUser);
+			AuditConstants.SystemUser);
 	}
 }

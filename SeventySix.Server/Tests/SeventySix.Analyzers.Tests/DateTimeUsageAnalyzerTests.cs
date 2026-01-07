@@ -9,7 +9,8 @@ public class DateTimeUsageAnalyzerTests
 	[Fact]
 	public Task Flags_DateTime_UtcNow_MemberAccess()
 	{
-		string source = @"using System;
+		string source =
+			@"using System;
 namespace N
 {
 	public class C
@@ -30,7 +31,8 @@ namespace N
 	[Fact]
 	public Task Flags_New_DateTime_ObjectCreation()
 	{
-		string source = @"using System;
+		string source =
+			@"using System;
 namespace N
 {
 	public class C
@@ -50,7 +52,8 @@ namespace N
 	[Fact]
 	public Task Flags_System_DateTime_QualifiedName()
 	{
-		string source = @"namespace N
+		string source =
+			@"namespace N
 {
 	public class C
 	{
@@ -67,7 +70,8 @@ namespace N
 	[Fact]
 	public Task DoesNotFlag_DateTimeOffset()
 	{
-		string source = @"using System;
+		string source =
+			@"using System;
 namespace N
 {
 	public class C
@@ -79,6 +83,7 @@ namespace N
 	}
 }";
 
-		return AnalyzerTestHelpers.VerifyNoDiagnosticsAsync<DateTimeUsageAnalyzer>(source);
+		return AnalyzerTestHelpers.VerifyNoDiagnosticsAsync<DateTimeUsageAnalyzer>(
+			source);
 	}
 }

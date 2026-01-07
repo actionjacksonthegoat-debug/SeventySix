@@ -4,7 +4,10 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Shared.Constants;
+using SeventySix.Shared.Registration;
 
 namespace SeventySix.Registration;
 
@@ -18,11 +21,13 @@ namespace SeventySix.Registration;
 ///
 /// Usage in Program.cs:
 /// <code>
-/// builder.Services.AddElectronicNotificationsDomain(builder.Configuration);
+/// builder.Services.AddElectronicNotificationsDomain(connectionString, builder.Configuration);
 /// </code>
 ///
 /// Registered Components:
+/// - ElectronicNotificationsDbContext: Database context for email queue
 /// - EmailSettings: Email configuration from appsettings.json
+/// - EmailQueueSettings: Queue processor configuration
 /// - IEmailService → EmailService: Email notification service using MailKit.
 /// </remarks>
 public static class ElectronicNotificationsRegistration
@@ -33,6 +38,9 @@ public static class ElectronicNotificationsRegistration
 	/// <param name="services">
 	/// The service collection to register services with.
 	/// </param>
+	/// <param name="connectionString">
+	/// The database connection string for ElectronicNotificationsDbContext.
+	/// </param>
 	/// <param name="configuration">
 	/// The application configuration.
 	/// </param>
@@ -42,14 +50,29 @@ public static class ElectronicNotificationsRegistration
 	/// <remarks>
 	/// Service Lifetimes:
 	/// - EmailSettings: Singleton (bound from configuration)
+	/// - EmailQueueSettings: Singleton (bound from configuration)
+	/// - ElectronicNotificationsDbContext: Scoped (EF Core convention)
 	/// - EmailService: Scoped (creates new SMTP connection per request).
 	/// </remarks>
 	public static IServiceCollection AddElectronicNotificationsDomain(
 		this IServiceCollection services,
+		string connectionString,
 		IConfiguration configuration)
 	{
+		// Register ElectronicNotificationsDbContext via shared helper
+		services.AddDomainDbContext<ElectronicNotificationsDbContext>(
+			connectionString,
+			SchemaConstants.ElectronicNotifications);
+
 		// Bind email settings from configuration
 		services.Configure<EmailSettings>(configuration.GetSection("Email"));
+
+		// Bind email queue settings
+		services.Configure<EmailQueueSettings>(
+			configuration.GetSection(EmailQueueSettings.SectionName));
+
+		// Register transaction manager for notifications context
+		services.AddTransactionManagerFor<ElectronicNotificationsDbContext>();
 
 		// Register email service
 		services.AddScoped<IEmailService, EmailService>();

@@ -2,11 +2,12 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Npgsql;
@@ -15,7 +16,6 @@ using SeventySix.Identity;
 using SeventySix.Logging;
 using Xunit;
 using IdentityDbContext = SeventySix.Identity.IdentityDbContext;
-using Microsoft.Extensions.Logging;
 
 namespace SeventySix.TestUtilities.TestBases;
 
@@ -108,7 +108,8 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 	/// <returns>
 	/// A configured <see cref="UserManager{ApplicationUser}"/>.
 	/// </returns>
-	protected UserManager<ApplicationUser> CreateUserManager(IdentityDbContext context)
+	protected UserManager<ApplicationUser> CreateUserManager(
+		IdentityDbContext context)
 	{
 		if (context == null)
 		{
@@ -120,7 +121,8 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 		services.AddLogging();
 
 		// Use simple DataProtection provider for token generation
-		services.AddSingleton<IDataProtectionProvider>(_ => DataProtectionProvider.Create("SeventySix.Tests"));
+		services.AddSingleton<IDataProtectionProvider>(_ =>
+			DataProtectionProvider.Create("SeventySix.Tests"));
 		services.AddOptions();
 		services.Configure<DataProtectionTokenProviderOptions>(opts => { });
 
@@ -128,26 +130,33 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 		services.AddTransient<DataProtectorTokenProvider<ApplicationUser>>();
 		services.AddTransient<IUserTwoFactorTokenProvider<ApplicationUser>>(
 			serviceProvider =>
-				serviceProvider.GetRequiredService<DataProtectorTokenProvider<ApplicationUser>>());
+				serviceProvider.GetRequiredService<
+					DataProtectorTokenProvider<ApplicationUser>
+				>());
 
 		ServiceProvider serviceProvider =
 			services.BuildServiceProvider();
 
 		IUserStore<ApplicationUser> store =
-			new UserStore<ApplicationUser, ApplicationRole, IdentityDbContext, long>(context);
+			new UserStore<
+			ApplicationUser,
+			ApplicationRole,
+			IdentityDbContext,
+			long
+		>(context);
 
 		IOptions<IdentityOptions> options =
-			Options.Create(new IdentityOptions
+			Options.Create(
+			new IdentityOptions
 			{
 				User =
-					{
-						RequireUniqueEmail = true
-					}
+					{ RequireUniqueEmail = true }
 			});
 
 		// Ensure the default token provider is mapped so UserManager can resolve it by name
 		options.Value.Tokens.ProviderMap[TokenOptions.DefaultProvider] =
-			new TokenProviderDescriptor(typeof(DataProtectorTokenProvider<ApplicationUser>));
+			new TokenProviderDescriptor(
+				typeof(DataProtectorTokenProvider<ApplicationUser>));
 		options.Value.Tokens.EmailConfirmationTokenProvider =
 			TokenOptions.DefaultProvider;
 
@@ -165,12 +174,13 @@ public abstract class BasePostgreSqlTestBase : IAsyncLifetime
 				new PasswordValidator<ApplicationUser>()
 			};
 
-		ILookupNormalizer keyNormalizer =
-			new UpperInvariantLookupNormalizer();
+		ILookupNormalizer keyNormalizer = new UpperInvariantLookupNormalizer();
 
 		IdentityErrorDescriber errors = new();
 		ILogger<UserManager<ApplicationUser>> logger =
-			NullLogger<UserManager<ApplicationUser>>.Instance;
+			NullLogger<
+				UserManager<ApplicationUser>
+			>.Instance;
 
 		return new UserManager<ApplicationUser>(
 			store,

@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Entities;
 using SeventySix.Shared.Interfaces;
 using SeventySix.Shared.Persistence;
@@ -18,7 +19,8 @@ namespace SeventySix.Shared.Tests.Persistence;
 public class AuditInterceptorTests : IDisposable
 {
 	private const string TestUser = "TestUser";
-	private const string SystemUser = "System";
+	private const string SystemUser =
+		AuditConstants.SystemUser;
 	private const string ModifyingUser = "ModifyingUser";
 
 	private readonly IUserContextAccessor MockUserContextAccessor;

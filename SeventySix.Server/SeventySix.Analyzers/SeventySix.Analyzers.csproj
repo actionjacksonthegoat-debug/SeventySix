@@ -16,12 +16,7 @@
 	<ItemGroup>
 		<PackageReference
 			Include="Microsoft.CodeAnalysis.CSharp"
-			Version="4.12.0"
-			PrivateAssets="all"
-		/>
-		<PackageReference
-			Include="Microsoft.CodeAnalysis.CSharp.Workspaces"
-			Version="4.12.0"
+			Version="5.0.0"
 			PrivateAssets="all"
 		/>
 	</ItemGroup>
@@ -29,6 +24,16 @@
 	<ItemGroup>
 		<None
 			Include="$(OutputPath)\$(AssemblyName).dll"
+			Pack="true"
+			PackagePath="analyzers/dotnet/cs"
+			Visible="false"
+		/>
+	</ItemGroup>
+
+	<!-- Include CodeFixes assembly output so pack/format tools can discover code fixes -->
+	<ItemGroup>
+		<None
+			Include="..\SeventySix.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\SeventySix.Analyzers.CodeFixes.dll"
 			Pack="true"
 			PackagePath="analyzers/dotnet/cs"
 			Visible="false"

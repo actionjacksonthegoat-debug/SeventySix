@@ -28,4 +28,9 @@ public static class SchemaConstants
 	/// Schema for API Tracking bounded context (third-party API usage).
 	/// </summary>
 	public const string ApiTracking = "ApiTracking";
+
+	/// <summary>
+	/// Schema for Electronic Notifications bounded context (email queue, etc.).
+	/// </summary>
+	public const string ElectronicNotifications = "ElectronicNotifications";
 }

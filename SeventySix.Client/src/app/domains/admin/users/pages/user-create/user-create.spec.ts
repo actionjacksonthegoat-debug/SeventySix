@@ -366,7 +366,6 @@ describe("UserCreatePage",
 								isActive: true,
 								createdBy: "system",
 								modifiedBy: "system",
-								needsPendingEmail: false,
 								modifyDate: null,
 								lastLoginAt: null,
 								isDeleted: false,
@@ -396,7 +395,7 @@ describe("UserCreatePage",
 
 						expect(mockNotification.success)
 							.toHaveBeenCalledWith(
-								`User "testuser" created. Welcome email sent to test@example.com.`);
+								`User "testuser" created. Welcome email queued for test@example.com.`);
 						expect(mockRouter.navigate)
 							.toHaveBeenCalledWith(
 								["/admin/users"]);
