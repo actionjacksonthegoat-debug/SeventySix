@@ -51,13 +51,12 @@ public static class SharedContainerManager
 			}
 
 			Container =
-				new PostgreSqlBuilder()
-				.WithImage("postgres:16-alpine")
-				.WithDatabase("postgres")
-				.WithUsername("postgres")
-				.WithPassword("test_password")
-				.WithCleanUp(true)
-				.Build();
+					new PostgreSqlBuilder("postgres:16-alpine")
+						.WithDatabase("postgres")
+						.WithUsername("postgres")
+						.WithPassword("test_password")
+						.WithCleanUp(true)
+						.Build();
 
 			await Container.StartAsync();
 			MasterConnectionString =
@@ -154,9 +153,9 @@ public static class SharedContainerManager
 				.Options;
 		await using (ElectronicNotificationsDbContext context =
 			new(electronicNotificationsOptions))
-			{
-				await context.Database.MigrateAsync();
-			}
+		{
+			await context.Database.MigrateAsync();
+		}
 	}
 
 	/// <summary>

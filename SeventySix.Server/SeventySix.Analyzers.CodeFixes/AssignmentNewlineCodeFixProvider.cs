@@ -164,14 +164,13 @@ public sealed class AssignmentNewlineCodeFixProvider : CodeFixProvider
 		{
 			int kind = t.RawKind;
 
-			if (
-				kind is not ((int)SyntaxKind.WhitespaceTrivia)
-					and not ((int)SyntaxKind.EndOfLineTrivia))
+			if (kind is not ((int)SyntaxKind.WhitespaceTrivia)
+				and not ((int)SyntaxKind.EndOfLineTrivia))
 			{
-				kept ??=
-					new List<SyntaxTrivia>();
+				kept ??= [];
+
+				kept.Add(t);
 			}
-			kept.Add(t);
 		}
 
 		return kept is null
