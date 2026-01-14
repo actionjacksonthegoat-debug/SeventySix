@@ -53,8 +53,8 @@ $clientPortInUse =
 
 # Also check for an existing process running the client (npm start in SeventySix.Client)
 $existingClientProcess =
-	Get-CimInstance Win32_Process -ErrorAction SilentlyContinue
-	| Where-Object {
+	Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+	Where-Object {
 		($_.Name -match 'powershell|pwsh|node') -and (
 			($_.CommandLine -match 'npm start') -or ($_.CommandLine -match 'SeventySix.Client')
 		)

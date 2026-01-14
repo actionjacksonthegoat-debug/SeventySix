@@ -1,7 +1,8 @@
 import {
 	DatabaseHealthResponse,
 	ExternalApiHealthResponse,
-	HealthStatusResponse
+	HealthStatusResponse,
+	RecurringJobStatusResponse
 } from "@admin/models";
 import { inject, Injectable } from "@angular/core";
 import { ApiService } from "@shared/services/api.service";
@@ -95,6 +96,23 @@ export class HealthApiService
 				queryFn: () =>
 					lastValueFrom(this.apiService.get<ExternalApiHealthResponse>(
 						`${this.endpoint}/external-apis`)),
+				...this.queryConfig
+			}));
+	}
+
+	/**
+	 * Retrieves scheduled background job statuses.
+	 * @returns {CreateQueryResult<RecurringJobStatusResponse[], Error>}
+	 * CreateQueryResult for scheduled job status responses.
+	 */
+	getScheduledJobs(): CreateQueryResult<RecurringJobStatusResponse[], Error>
+	{
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.health.scheduledJobs,
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<RecurringJobStatusResponse[]>(
+						`${this.endpoint}/scheduled-jobs`)),
 				...this.queryConfig
 			}));
 	}

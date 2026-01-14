@@ -42,6 +42,12 @@ export type QueueHealthResponse = components["schemas"]["QueueHealthResponse"];
  */
 export type SystemResourcesResponse = components["schemas"]["SystemResourcesResponse"];
 
+/**
+ * Response containing status information for a recurring background job.
+ * Mirrors the generated `RecurringJobStatusResponse` schema.
+ */
+export type RecurringJobStatusResponse = components["schemas"]["RecurringJobStatusResponse"];
+
 // Third-party API types
 /**
  * Response describing a third-party API request entry.

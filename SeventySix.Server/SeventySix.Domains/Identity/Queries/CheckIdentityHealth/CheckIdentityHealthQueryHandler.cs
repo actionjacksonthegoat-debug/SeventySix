@@ -34,12 +34,13 @@ public static class CheckIdentityHealthQueryHandler
 	{
 		try
 		{
+			// Use AnyAsync for health checks - more efficient than Take(1)
+			// and avoids EF Core warning about Skip/Take without OrderBy
 			_ =
 				await userManager
 					.Users
 					.AsNoTracking()
-					.Take(1)
-					.ToListAsync(cancellationToken);
+					.AnyAsync(cancellationToken);
 
 			return true;
 		}

@@ -107,6 +107,12 @@ interface HealthQueryKeys
 	 * Key representing external API health checks.
 	 */
 	readonly externalApis: readonly ["health", "externalApis"];
+
+	/**
+	 * @type {readonly ["health", "scheduledJobs"]}
+	 * Key representing scheduled background job health checks.
+	 */
+	readonly scheduledJobs: readonly ["health", "scheduledJobs"];
 }
 
 /**
@@ -244,7 +250,8 @@ export const QueryKeys: QueryKeysType =
 			all: ["health"] as const,
 			status: ["health", "status"] as const,
 			database: ["health", "database"] as const,
-			externalApis: ["health", "externalApis"] as const
+			externalApis: ["health", "externalApis"] as const,
+			scheduledJobs: ["health", "scheduledJobs"] as const
 		},
 
 		thirdPartyApi: {

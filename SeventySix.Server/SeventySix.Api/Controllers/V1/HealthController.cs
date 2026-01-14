@@ -51,4 +51,31 @@ public class HealthController(IHealthCheckService service) : ControllerBase
 				cancellationToken);
 		return Ok(status);
 	}
+
+	/// <summary>
+	/// Retrieves status information for all scheduled background jobs.
+	/// </summary>
+	/// <param name="scheduledJobService">
+	/// The service for retrieving scheduled job statuses.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// Cancellation token for the async operation.
+	/// </param>
+	/// <returns>
+	/// A list of scheduled job statuses with health indicators.
+	/// </returns>
+	/// <response code="200">Returns the list of scheduled job statuses.</response>
+	[HttpGet("scheduled-jobs")]
+	[ProducesResponseType(
+		typeof(IReadOnlyList<RecurringJobStatusResponse>),
+		StatusCodes.Status200OK)]
+	public async Task<ActionResult<IReadOnlyList<RecurringJobStatusResponse>>> GetScheduledJobsAsync(
+		[FromServices] IScheduledJobService scheduledJobService,
+		CancellationToken cancellationToken)
+	{
+		IReadOnlyList<RecurringJobStatusResponse> jobStatuses =
+			await scheduledJobService.GetAllJobStatusesAsync(cancellationToken);
+
+		return Ok(jobStatuses);
+	}
 }

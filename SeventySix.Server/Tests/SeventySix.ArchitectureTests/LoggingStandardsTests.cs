@@ -73,7 +73,9 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 		{
 			// Allow in background services and startup/configuration
 			bool isBackgroundService =
-				file.EndsWith("Service.cs") || file.EndsWith("Job.cs");
+				file.EndsWith("Service.cs")
+				|| file.EndsWith("Job.cs")
+				|| file.EndsWith("JobHandler.cs");
 
 			bool isStartupConfig =
 				file.Contains("\\Extensions\\WebApplicationExtensions.cs")
