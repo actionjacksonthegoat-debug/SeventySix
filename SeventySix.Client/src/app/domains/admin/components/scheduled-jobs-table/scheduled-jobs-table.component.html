@@ -1,0 +1,169 @@
+<div
+	class="scheduled-jobs-table"
+	role="region"
+	aria-label="Scheduled background job statuses">
+	@if (isLoading()) {
+	<mat-card>
+		<mat-card-header>
+			<mat-card-title>
+				<mat-icon aria-hidden="true">schedule</mat-icon>
+				Scheduled Jobs
+			</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div class="skeleton-table">
+				@for (row of [1, 2, 3, 4]; track row) {
+				<div class="skeleton-table-row">
+					<ngx-skeleton-loader [theme]="skeletonTableCell" />
+					<ngx-skeleton-loader [theme]="skeletonTableCell" />
+					<ngx-skeleton-loader [theme]="skeletonTableCell" />
+					<ngx-skeleton-loader [theme]="skeletonTableCell" />
+					<ngx-skeleton-loader [theme]="skeletonTableCell" />
+				</div>
+				}
+			</div>
+		</mat-card-content>
+	</mat-card>
+	} @else if (error()) {
+		<div
+			class="error-container"
+			role="alert"
+			aria-live="assertive">
+			<mat-icon
+				color="warn"
+				aria-hidden="true">error</mat-icon>
+			<p>{{ error() }}</p>
+			<button
+				mat-raised-button
+				color="primary"
+				(click)="onRefresh()"
+				aria-label="Retry loading scheduled jobs">
+				<mat-icon aria-hidden="true">refresh</mat-icon>
+				Retry
+			</button>
+		</div>
+	} @else {
+		<mat-card>
+			<mat-card-header>
+				<mat-card-title>
+					<mat-icon aria-hidden="true">schedule</mat-icon>
+					Scheduled Jobs
+				</mat-card-title>
+				<button
+					mat-icon-button
+					(click)="onRefresh()"
+					aria-label="Refresh scheduled jobs">
+					<mat-icon aria-hidden="true">refresh</mat-icon>
+				</button>
+			</mat-card-header>
+			<mat-card-content>
+				@if (dataSource().data.length === 0) {
+					<div
+						class="no-data"
+						role="status">
+						<mat-icon aria-hidden="true">schedule</mat-icon>
+						<p>No scheduled jobs found</p>
+					</div>
+				} @else {
+					<div class="table-container">
+						<table
+							mat-table
+							[dataSource]="dataSource()"
+							class="jobs-table"
+							aria-label="Scheduled jobs status table">
+							<!-- Display Name Column -->
+							<ng-container matColumnDef="displayName">
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
+									Job Name
+								</th>
+								<td
+									mat-cell
+									*matCellDef="let element">
+									<div class="job-name-cell">
+										<mat-icon aria-hidden="true">work_outline</mat-icon>
+										<span>{{ element.displayName }}</span>
+									</div>
+								</td>
+							</ng-container>
+
+							<!-- Status Column -->
+							<ng-container matColumnDef="status">
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
+									Status
+								</th>
+								<td
+									mat-cell
+									*matCellDef="let element">
+									<div
+										class="status-cell"
+										[class]="element.statusClass">
+										<mat-icon aria-hidden="true">{{ element.statusIcon }}</mat-icon>
+										<span>{{ element.status }}</span>
+									</div>
+								</td>
+							</ng-container>
+
+							<!-- Last Executed Column -->
+							<ng-container matColumnDef="lastExecutedAt">
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
+									Last Executed
+								</th>
+								<td
+									mat-cell
+									*matCellDef="let element">
+									{{ element.formattedLastExecuted }}
+								</td>
+							</ng-container>
+
+							<!-- Next Scheduled Column -->
+							<ng-container matColumnDef="nextScheduledAt">
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
+									Next Scheduled
+								</th>
+								<td
+									mat-cell
+									*matCellDef="let element">
+									{{ element.formattedNextScheduled }}
+								</td>
+							</ng-container>
+
+							<!-- Interval Column -->
+							<ng-container matColumnDef="interval">
+								<th
+									mat-header-cell
+									*matHeaderCellDef>
+									Interval
+								</th>
+								<td
+									mat-cell
+									*matCellDef="let element">
+									{{ element.interval }}
+								</td>
+							</ng-container>
+
+							<tr
+								mat-header-row
+								*matHeaderRowDef="displayedColumns()">
+							</tr>
+							<tr
+								mat-row
+								*matRowDef="
+									let row;
+									columns: displayedColumns()
+								">
+							</tr>
+						</table>
+					</div>
+				}
+			</mat-card-content>
+		</mat-card>
+	}
+</div>

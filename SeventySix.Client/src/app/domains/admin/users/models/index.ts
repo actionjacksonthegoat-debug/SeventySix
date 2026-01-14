@@ -9,14 +9,16 @@ import { BaseQueryRequest } from "@shared/models";
 /**
  * Data transfer object representing a user with numeric ID and optional status code.
  * Based on the generated `UserDto` schema with local numeric ID adjustments.
+ * Note: createdBy is extended to allow null to match CreateUserRequest compatibility.
  */
 export type UserDto =
 	& Omit<
 		components["schemas"]["UserDto"],
-		"id" | "statusCode">
+		"id" | "statusCode" | "createdBy">
 	& {
 		id: number;
 		statusCode?: number | null;
+		createdBy?: string | null;
 	};
 
 /**

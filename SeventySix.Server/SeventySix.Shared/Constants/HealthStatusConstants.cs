@@ -26,4 +26,9 @@ public static class HealthStatusConstants
 	/// Indicates system is not operational.
 	/// </summary>
 	public const string Unhealthy = "Unhealthy";
+
+	/// <summary>
+	/// Indicates status cannot be determined (never executed).
+	/// </summary>
+	public const string Unknown = "Unknown";
 }

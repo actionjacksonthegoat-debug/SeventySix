@@ -32,6 +32,7 @@ public static class InfrastructureRegistration
 	/// - IMetricsService as singleton (maintains static metrics state)
 	/// - IHealthCheckService as scoped (per-request health checks)
 	/// - IRateLimitingService as scoped (per-request rate limit tracking)
+	/// - IScheduledJobService as scoped (per-request scheduled job status retrieval)
 	/// - AuditInterceptor as scoped (per-request audit tracking).
 	/// </remarks>
 	public static IServiceCollection AddInfrastructure(
@@ -44,6 +45,7 @@ public static class InfrastructureRegistration
 		services.AddSingleton<IMetricsService, MetricsService>();
 		services.AddScoped<IHealthCheckService, HealthCheckService>();
 		services.AddScoped<IRateLimitingService, RateLimitingService>();
+		services.AddScoped<IScheduledJobService, ScheduledJobService>();
 
 		// Register audit infrastructure (scoped for per-request user context)
 		services.AddScoped<AuditInterceptor>();

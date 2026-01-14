@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore;
+using SeventySix.Shared.BackgroundJobs;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Persistence;
 
@@ -40,6 +41,11 @@ public class LoggingDbContext : BaseDbContext<LoggingDbContext>
 	/// Gets or sets the Logs DbSet.
 	/// </summary>
 	public DbSet<Log> Logs => Set<Log>();
+
+	/// <summary>
+	/// Gets the RecurringJobExecutions DbSet.
+	/// </summary>
+	public DbSet<RecurringJobExecution> RecurringJobExecutions => Set<RecurringJobExecution>();
 
 	/// <summary>
 	/// Gets the schema name for Logging bounded context.

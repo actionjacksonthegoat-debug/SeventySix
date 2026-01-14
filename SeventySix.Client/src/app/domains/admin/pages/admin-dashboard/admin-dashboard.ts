@@ -1,5 +1,6 @@
 import { ApiStatisticsTableComponent } from "@admin/components/api-statistics-table/api-statistics-table.component";
 import { GrafanaDashboardEmbedComponent } from "@admin/components/grafana-dashboard-embed/grafana-dashboard-embed.component";
+import { ScheduledJobsTableComponent } from "@admin/components/scheduled-jobs-table/scheduled-jobs-table.component";
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatToolbarModule } from "@angular/material/toolbar";
@@ -25,6 +26,7 @@ import { NotificationService } from "@shared/services/notification.service";
 			MatTabsModule,
 			GrafanaDashboardEmbedComponent,
 			ApiStatisticsTableComponent,
+			ScheduledJobsTableComponent,
 			PageHeaderComponent,
 			...CARD_MATERIAL_MODULES
 		],

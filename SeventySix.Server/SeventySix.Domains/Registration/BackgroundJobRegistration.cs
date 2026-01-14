@@ -8,6 +8,7 @@ using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
 using SeventySix.Logging;
+using SeventySix.Shared.BackgroundJobs;
 
 namespace SeventySix.Registration;
 
@@ -22,11 +23,11 @@ namespace SeventySix.Registration;
 ///
 /// <para><strong>Background Jobs Inventory:</strong></para>
 /// <list type="bullet">
-///   <item><see cref="RefreshTokenCleanupService"/> - Periodic cleanup of expired refresh tokens (Identity)</item>
-///   <item><see cref="IpAnonymizationService"/> - Periodic anonymization of old IP addresses for GDPR compliance (Identity)</item>
+///   <item><see cref="Identity.Jobs.RefreshTokenCleanupJob"/> - Periodic cleanup of expired refresh tokens (Identity)</item>
+///   <item><see cref="Identity.Jobs.IpAnonymizationJob"/> - Periodic anonymization of old IP addresses for GDPR compliance (Identity)</item>
 ///   <item><see cref="AdminSeederService"/> - One-time admin user seeding at startup (Identity)</item>
-///   <item><see cref="EmailQueueProcessorService"/> - Periodic processing of email queue (ElectronicNotifications)</item>
-///   <item><see cref="LogCleanupService"/> - Periodic cleanup of old log files and database entries (Logging)</item>
+///   <item><see cref="ElectronicNotifications.Emails.Jobs.EmailQueueProcessJob"/> - Periodic processing of email queue (ElectronicNotifications)</item>
+///   <item><see cref="Logging.Jobs.LogCleanupJob"/> - Periodic cleanup of old log files and database entries (Logging)</item>
 /// </list>
 ///
 /// <para><strong>Usage in Program.cs:</strong></para>
@@ -60,33 +61,28 @@ public static class BackgroundJobRegistration
 			return services;
 		}
 
-		// RefreshTokenCleanupJob - Periodic cleanup of expired refresh tokens
-		// Settings: RefreshTokenCleanup section in appsettings.json
+		// Core recurring job infrastructure
+		services.AddScoped<IMessageScheduler, WolverineMessageScheduler>();
+		services.AddScoped<IRecurringJobRepository, RecurringJobRepository>();
+		services.AddScoped<IRecurringJobService, RecurringJobService>();
+
+		// Settings for recurring jobs
 		services.Configure<RefreshTokenCleanupSettings>(
 			configuration.GetSection(RefreshTokenCleanupSettings.SectionName));
-		services.AddHostedService<RefreshTokenCleanupService>();
-
-		// IpAnonymizationService - Periodic anonymization of old IP addresses for GDPR compliance
-		// Settings: IpAnonymization section in appsettings.json
 		services.Configure<IpAnonymizationSettings>(
 			configuration.GetSection(IpAnonymizationSettings.SectionName));
-		services.AddHostedService<IpAnonymizationService>();
+		services.Configure<LogCleanupSettings>(
+			configuration.GetSection(LogCleanupSettings.SectionName));
+		services.Configure<EmailQueueSettings>(
+			configuration.GetSection(EmailQueueSettings.SectionName));
 
-		// AdminSeederService - One-time admin user seeding at startup
-		// Settings: AdminSeeder section in appsettings.json
+		// AdminSeederService - One-time admin user seeding at startup (remains as IHostedService)
 		services.Configure<AdminSeederSettings>(
 			configuration.GetSection(AdminSeederSettings.SectionName));
 		services.AddHostedService<AdminSeederService>();
 
-		// EmailQueueProcessorService - Periodic processing of email queue
-		// Settings: Email:Queue section in appsettings.json
-		services.AddHostedService<EmailQueueProcessorService>();
-
-		// LogCleanupService - Periodic cleanup of old log files and database entries
-		// Settings: Logging:Cleanup section in appsettings.json
-		services.Configure<LogCleanupSettings>(
-			configuration.GetSection(LogCleanupSettings.SectionName));
-		services.AddHostedService<LogCleanupService>();
+		// Recurring job scheduler - schedules all jobs on startup
+		services.AddHostedService<RecurringJobSchedulerService>();
 
 		return services;
 	}

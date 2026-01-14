@@ -1,7 +1,8 @@
 import { ApiStatisticsTableComponent } from "@admin/components/api-statistics-table/api-statistics-table.component";
 import { GrafanaDashboardEmbedComponent } from "@admin/components/grafana-dashboard-embed/grafana-dashboard-embed.component";
-import { ThirdPartyApiRequestResponse } from "@admin/models";
-import { ThirdPartyApiService } from "@admin/services";
+import { ScheduledJobsTableComponent } from "@admin/components/scheduled-jobs-table/scheduled-jobs-table.component";
+import { RecurringJobStatusResponse, ThirdPartyApiRequestResponse } from "@admin/models";
+import { HealthApiService, ThirdPartyApiService } from "@admin/services";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
@@ -28,15 +29,26 @@ describe("AdminDashboardPage",
 			getAllThirdPartyApis: ReturnType<typeof vi.fn>;
 		}
 
+		interface MockHealthApiService
+		{
+			getScheduledJobs: ReturnType<typeof vi.fn>;
+		}
+
 		beforeEach(
 			async () =>
 			{
 				const thirdPartyApiServiceSpy: MockThirdPartyApiService =
 					{ getAllThirdPartyApis: vi.fn() };
 
+				const healthApiServiceSpy: MockHealthApiService =
+					{ getScheduledJobs: vi.fn() };
+
 				// Set up TanStack Query mocks for child components
 				thirdPartyApiServiceSpy.getAllThirdPartyApis.mockReturnValue(
 					createMockQueryResult<ThirdPartyApiRequestResponse[]>([]));
+
+				healthApiServiceSpy.getScheduledJobs.mockReturnValue(
+					createMockQueryResult<RecurringJobStatusResponse[]>([]));
 
 				mockNotificationService =
 					createMockNotificationService();
@@ -49,7 +61,8 @@ describe("AdminDashboardPage",
 							imports: [
 								AdminDashboardPage,
 								GrafanaDashboardEmbedComponent,
-								ApiStatisticsTableComponent
+								ApiStatisticsTableComponent,
+								ScheduledJobsTableComponent
 							],
 							providers: [
 								provideZonelessChangeDetection(),
@@ -58,6 +71,10 @@ describe("AdminDashboardPage",
 								{
 									provide: ThirdPartyApiService,
 									useValue: thirdPartyApiServiceSpy
+								},
+								{
+									provide: HealthApiService,
+									useValue: healthApiServiceSpy
 								},
 								{
 									provide: NotificationService,
