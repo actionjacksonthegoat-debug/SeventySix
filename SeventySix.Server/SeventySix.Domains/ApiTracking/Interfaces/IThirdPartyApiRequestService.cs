@@ -18,9 +18,9 @@ public interface IThirdPartyApiRequestService : IDatabaseHealthCheck
 	/// Cancellation token for async operation.
 	/// </param>
 	/// <returns>
-	/// Collection of <see cref="ThirdPartyApiRequestResponse"/> records.
+	/// Collection of <see cref="ThirdPartyApiRequestDto"/> records.
 	/// </returns>
-	public Task<IEnumerable<ThirdPartyApiRequestResponse>> GetAllAsync(
+	public Task<IEnumerable<ThirdPartyApiRequestDto>> GetAllAsync(
 		CancellationToken cancellationToken);
 
 	/// <summary>
@@ -30,8 +30,8 @@ public interface IThirdPartyApiRequestService : IDatabaseHealthCheck
 	/// Cancellation token for async operation.
 	/// </param>
 	/// <returns>
-	/// A <see cref="ThirdPartyApiStatisticsResponse"/> containing aggregated metrics.
+	/// A <see cref="ThirdPartyApiStatisticsDto"/> containing aggregated metrics.
 	/// </returns>
-	public Task<ThirdPartyApiStatisticsResponse> GetStatisticsAsync(
+	public Task<ThirdPartyApiStatisticsDto> GetStatisticsAsync(
 		CancellationToken cancellationToken);
 }

@@ -22,7 +22,8 @@ export const environment: Environment =
 			grafanaUrl: "http://localhost:3000", // Grafana for metrics visualization
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
-				apiEndpoints: "seventysix-api-endpoints"
+				apiEndpoints: "seventysix-api-endpoints",
+				valkeyCache: "seventysix-valkey"
 			}
 		},
 		cache: {

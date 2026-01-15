@@ -38,13 +38,13 @@ public class ThirdPartyApiRequestService(
 	}
 
 	/// <inheritdoc/>
-	public async Task<IEnumerable<ThirdPartyApiRequestResponse>> GetAllAsync(
+	public async Task<IEnumerable<ThirdPartyApiRequestDto>> GetAllAsync(
 		CancellationToken cancellationToken)
 	{
 		IEnumerable<ThirdPartyApiRequest> requests =
 			await repository.GetAllAsync(cancellationToken);
 
-		return requests.Select(request => new ThirdPartyApiRequestResponse
+		return requests.Select(request => new ThirdPartyApiRequestDto
 		{
 			Id = request.Id,
 			ApiName = request.ApiName,
@@ -56,7 +56,7 @@ public class ThirdPartyApiRequestService(
 	}
 
 	/// <inheritdoc/>
-	public async Task<ThirdPartyApiStatisticsResponse> GetStatisticsAsync(
+	public async Task<ThirdPartyApiStatisticsDto> GetStatisticsAsync(
 		CancellationToken cancellationToken)
 	{
 		IEnumerable<ThirdPartyApiRequest> requests =
@@ -64,7 +64,7 @@ public class ThirdPartyApiRequestService(
 		List<ThirdPartyApiRequest> requestList =
 			[.. requests];
 
-		return new ThirdPartyApiStatisticsResponse
+		return new ThirdPartyApiStatisticsDto
 		{
 			TotalCallsToday =
 				requestList.Sum(request => request.CallCount),

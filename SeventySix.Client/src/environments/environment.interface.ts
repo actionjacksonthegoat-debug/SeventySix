@@ -52,6 +52,7 @@ export interface ObservabilityConfig
 	dashboards: {
 		systemOverview: string;
 		apiEndpoints: string;
+		valkeyCache: string;
 	};
 }
 

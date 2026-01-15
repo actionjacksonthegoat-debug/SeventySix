@@ -5,6 +5,7 @@
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using ZiggyCreatures.Caching.Fusion.OpenTelemetry;
 
 namespace SeventySix.Api.Registration;
 
@@ -75,6 +76,7 @@ public static class OpenTelemetryExtensions
 						options.RecordException = true;
 					})
 					.AddHttpClientInstrumentation()
+					.AddFusionCacheInstrumentation()
 					.AddOtlpExporter(options =>
 					{
 						options.Endpoint =
@@ -85,6 +87,7 @@ public static class OpenTelemetryExtensions
 					.AddAspNetCoreInstrumentation()
 					.AddHttpClientInstrumentation()
 					.AddRuntimeInstrumentation()
+					.AddFusionCacheInstrumentation()
 					.AddPrometheusExporter());
 
 		return services;

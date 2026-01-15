@@ -2,6 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using MemoryPack;
+using SeventySix.Shared.Interfaces;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -31,7 +34,8 @@ namespace SeventySix.Identity;
 /// <param name="LastLoginAt">
 /// Last login timestamp.
 /// </param>
-public record UserProfileDto(
+[MemoryPackable]
+public partial record UserProfileDto(
 	long Id,
 	string Username,
 	string Email,
@@ -39,4 +43,4 @@ public record UserProfileDto(
 	IReadOnlyList<string> Roles,
 	bool HasPassword,
 	IReadOnlyList<string> LinkedProviders,
-	DateTime? LastLoginAt);
+	DateTime? LastLoginAt) : ICacheable;

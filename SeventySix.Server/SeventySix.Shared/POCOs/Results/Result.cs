@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Shared.DTOs;
+namespace SeventySix.Shared.POCOs;
 
 /// <summary>
 /// Result pattern for service operations.

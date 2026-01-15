@@ -1,23 +1,22 @@
-// <copyright file="ThirdPartyApiStatisticsResponse.cs" company="SeventySix">
+// <copyright file="ThirdPartyApiStatisticsDto.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
+
+using MemoryPack;
+using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.ApiTracking;
 
 /// <summary>
-/// Response DTO for aggregated third-party API statistics.
+/// DTO for aggregated third-party API statistics.
 /// </summary>
 /// <remarks>
 /// Provides summary statistics for all tracked third-party APIs.
 /// Used for dashboard display of API usage metrics.
-///
-/// Design Patterns:
-/// - DTO: Data Transfer Object for API response
-///
-/// SOLID Principles:
-/// - SRP: Only responsible for aggregated API statistics data transfer
+/// Cached in distributed cache for dashboard queries.
 /// </remarks>
-public class ThirdPartyApiStatisticsResponse
+[MemoryPackable]
+public partial class ThirdPartyApiStatisticsDto : ICacheable
 {
 	/// <summary>
 	/// Gets or sets the total number of API calls made today across all APIs.

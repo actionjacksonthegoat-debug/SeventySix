@@ -71,6 +71,14 @@ export class AdminDashboardPage
 		environment.observability.dashboards.apiEndpoints;
 
 	/**
+	 * Valkey cache dashboard UID from environment configuration.
+	 * @type {string}
+	 * @readonly
+	 */
+	readonly valkeyCacheDashboard: string =
+		environment.observability.dashboards.valkeyCache;
+
+	/**
 	 * Opens Jaeger distributed tracing UI in a new browser tab.
 	 * Opens to the search page pre-filtered for SeventySix.Api service.
 	 * @remarks

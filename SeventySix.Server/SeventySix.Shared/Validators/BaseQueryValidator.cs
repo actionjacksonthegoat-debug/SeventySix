@@ -5,7 +5,7 @@
 using System.Reflection;
 using FluentValidation;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.DTOs;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Shared.Validators;
 

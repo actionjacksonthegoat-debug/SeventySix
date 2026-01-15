@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using SeventySix.Shared.DTOs;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
 

@@ -28,6 +28,7 @@ using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
 using SeventySix.Api.Utilities;
 using SeventySix.Registration;
+using SeventySix.Shared.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;
 
@@ -73,6 +74,7 @@ Log.Logger =
 builder.Host.UseSerilog();
 
 // Configure Wolverine for CQRS handlers
+// ExtensionDiscovery.ManualOnly disables automatic assembly scanning messages
 builder.Host.UseWolverine(
 	options =>
 	{
@@ -81,12 +83,19 @@ builder.Host.UseWolverine(
 
 		// Use FluentValidation for command validation
 		options.UseFluentValidation();
-	});
+	},
+	Wolverine.ExtensionDiscovery.ManualOnly);
 
 // Services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplicationHealthChecks(builder.Configuration);
 builder.Services.AddConfiguredOpenTelemetry(
+	builder.Configuration,
+	builder.Environment.EnvironmentName);
+
+// Add FusionCache with Valkey backend and MemoryPack serialization
+// In Test environment, uses memory-only cache to avoid Valkey connection timeouts
+builder.Services.AddFusionCacheWithValkey(
 	builder.Configuration,
 	builder.Environment.EnvironmentName);
 
@@ -124,7 +133,10 @@ builder.Services.AddBackgroundJobs(builder.Configuration);
 builder.Services.AddOptimizedResponseCompression(builder.Configuration);
 
 // Add output caching with auto-discovery from configuration
-builder.Services.AddConfiguredOutputCache(builder.Configuration);
+// In Test environment, uses in-memory cache (no Valkey dependency)
+builder.Services.AddConfiguredOutputCache(
+	builder.Configuration,
+	builder.Environment.EnvironmentName);
 
 // Add rate limiting (replaces custom middleware)
 builder.Services.AddConfiguredRateLimiting(builder.Configuration);

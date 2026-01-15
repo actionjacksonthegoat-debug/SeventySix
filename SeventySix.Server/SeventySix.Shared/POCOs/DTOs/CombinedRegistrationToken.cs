@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Shared;
+namespace SeventySix.Shared.POCOs;
 
 /// <summary>
 /// Combined token containing email and verification token for secure registration.

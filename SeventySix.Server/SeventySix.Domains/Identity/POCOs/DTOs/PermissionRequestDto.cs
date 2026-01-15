@@ -2,6 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using MemoryPack;
+using SeventySix.Shared.Interfaces;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -28,11 +31,12 @@ namespace SeventySix.Identity;
 /// <param name="CreateDate">
 /// Date and time when the request was created (UTC).
 /// </param>
-public record PermissionRequestDto(
+[MemoryPackable]
+public partial record PermissionRequestDto(
 	long Id,
 	long UserId,
 	string Username,
 	string RequestedRole,
 	string? RequestMessage,
 	string CreatedBy,
-	DateTime CreateDate);
+	DateTime CreateDate) : ICacheable;

@@ -3,7 +3,7 @@
 // </copyright>
 
 using FluentValidation;
-using SeventySix.Shared.DTOs;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Logging;
 

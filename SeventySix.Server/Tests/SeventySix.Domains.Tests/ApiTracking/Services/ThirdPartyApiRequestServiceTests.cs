@@ -64,12 +64,12 @@ public class ThirdPartyApiRequestServiceTests
 		Repository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(entities);
 
 		// Act
-		IEnumerable<ThirdPartyApiRequestResponse> result =
+		IEnumerable<ThirdPartyApiRequestDto> result =
 			await Service.GetAllAsync(CancellationToken.None);
 
 		// Assert
 		Assert.NotNull(result);
-		List<ThirdPartyApiRequestResponse> resultList =
+		List<ThirdPartyApiRequestDto> resultList =
 			[.. result];
 		Assert.Equal(2, resultList.Count);
 		Assert.Equal("ExternalAPI", resultList[0].ApiName);
@@ -85,7 +85,7 @@ public class ThirdPartyApiRequestServiceTests
 		Repository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([]);
 
 		// Act
-		IEnumerable<ThirdPartyApiRequestResponse> result =
+		IEnumerable<ThirdPartyApiRequestDto> result =
 			await Service.GetAllAsync(CancellationToken.None);
 
 		// Assert
@@ -129,7 +129,7 @@ public class ThirdPartyApiRequestServiceTests
 		Repository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(entities);
 
 		// Act
-		ThirdPartyApiStatisticsResponse result =
+		ThirdPartyApiStatisticsDto result =
 			await Service.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
@@ -151,7 +151,7 @@ public class ThirdPartyApiRequestServiceTests
 		Repository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([]);
 
 		// Act
-		ThirdPartyApiStatisticsResponse result =
+		ThirdPartyApiStatisticsDto result =
 			await Service.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert
@@ -185,7 +185,7 @@ public class ThirdPartyApiRequestServiceTests
 		Repository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(entities);
 
 		// Act
-		ThirdPartyApiStatisticsResponse result =
+		ThirdPartyApiStatisticsDto result =
 			await Service.GetStatisticsAsync(CancellationToken.None);
 
 		// Assert

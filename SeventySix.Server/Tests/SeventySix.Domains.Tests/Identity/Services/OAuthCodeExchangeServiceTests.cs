@@ -2,8 +2,11 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using SeventySix.Identity;
+using SeventySix.Shared.Constants;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace SeventySix.Domains.Tests.Identity.Services;
 
@@ -19,12 +22,25 @@ public class OAuthCodeExchangeServiceTests
 	private const string TestEmail = "test@example.com";
 	private const string? TestFullName = null;
 
-	private OAuthCodeExchangeService CreateService()
+	/// <summary>
+	/// Creates an OAuthCodeExchangeService with a memory-only FusionCache.
+	/// </summary>
+	/// <returns>
+	/// A configured OAuthCodeExchangeService instance.
+	/// </returns>
+	private static OAuthCodeExchangeService CreateService()
 	{
-		MemoryCache cache =
-			new(new MemoryCacheOptions());
+		// Build a memory-only FusionCache using DI for testing
+		ServiceCollection services = new();
+		services.AddFusionCache(CacheNames.Identity);
 
-		return new OAuthCodeExchangeService(cache);
+		ServiceProvider provider =
+			services.BuildServiceProvider();
+
+		IFusionCacheProvider cacheProvider =
+			provider.GetRequiredService<IFusionCacheProvider>();
+
+		return new OAuthCodeExchangeService(cacheProvider);
 	}
 
 	#region StoreTokens Tests
@@ -215,13 +231,8 @@ public class OAuthCodeExchangeServiceTests
 	public async Task ExchangeCode_ExpiredCode_ReturnsNullAsync()
 	{
 		// Arrange
-		MemoryCacheOptions cacheOptions = new();
-
-		MemoryCache cache =
-			new(cacheOptions);
-
 		OAuthCodeExchangeService service =
-			new(cache);
+			CreateService();
 
 		string code =
 			service.StoreTokens(
@@ -231,13 +242,8 @@ public class OAuthCodeExchangeServiceTests
 			TestEmail,
 			TestFullName);
 
-		// Wait for cache expiration (codes expire after 60 seconds)
-		// Use a longer delay to ensure expiration
+		// Wait briefly to verify immediate exchange works
 		await Task.Delay(TimeSpan.FromMilliseconds(100));
-
-		// Force cache cleanup by accessing after absolute expiration
-		// Note: In real tests, you'd use a time provider abstraction
-		// This test verifies the pattern, actual expiration tested with time manipulation
 
 		// For this test, we verify immediate exchange works
 		OAuthCodeExchangeResult? result =

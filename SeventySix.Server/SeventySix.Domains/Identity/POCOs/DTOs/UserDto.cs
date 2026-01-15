@@ -2,6 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using MemoryPack;
+using SeventySix.Shared.Interfaces;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -69,7 +72,8 @@ namespace SeventySix.Identity;
 /// <param name="DeletedBy">
 /// The username of the user who deleted this user.
 /// </param>
-public record UserDto(
+[MemoryPackable]
+public partial record UserDto(
 	long Id,
 	string Username,
 	string Email,
@@ -82,4 +86,4 @@ public record UserDto(
 	DateTime? LastLoginAt,
 	bool IsDeleted,
 	DateTime? DeletedAt,
-	string? DeletedBy);
+	string? DeletedBy) : ICacheable;

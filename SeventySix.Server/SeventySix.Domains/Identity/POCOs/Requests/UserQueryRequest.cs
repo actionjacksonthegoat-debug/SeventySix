@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Shared.DTOs;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
 

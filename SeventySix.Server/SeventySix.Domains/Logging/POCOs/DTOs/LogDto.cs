@@ -8,6 +8,10 @@ namespace SeventySix.Logging;
 /// Log entry data transfer object.
 /// Represents a read-only snapshot of log data for API responses.
 /// </summary>
+/// <remarks>
+/// Not cached per Microsoft best practices: logs are write-heavy
+/// and rarely re-read (low cache hit ratio).
+/// </remarks>
 /// <param name="Id">
 /// The unique identifier.
 /// </param>

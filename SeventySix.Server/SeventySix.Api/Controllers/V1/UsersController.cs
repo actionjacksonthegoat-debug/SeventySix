@@ -11,7 +11,7 @@ using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared.Constants;
-using SeventySix.Shared.DTOs;
+using SeventySix.Shared.POCOs;
 using Wolverine;
 
 namespace SeventySix.Api.Controllers;

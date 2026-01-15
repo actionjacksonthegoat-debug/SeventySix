@@ -1225,9 +1225,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ThirdPartyApiRequestResponse"][];
-                        "application/json": components["schemas"]["ThirdPartyApiRequestResponse"][];
-                        "text/json": components["schemas"]["ThirdPartyApiRequestResponse"][];
+                        "text/plain": components["schemas"]["ThirdPartyApiRequestDto"][];
+                        "application/json": components["schemas"]["ThirdPartyApiRequestDto"][];
+                        "text/json": components["schemas"]["ThirdPartyApiRequestDto"][];
                     };
                 };
             };
@@ -1262,9 +1262,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ThirdPartyApiStatisticsResponse"];
-                        "application/json": components["schemas"]["ThirdPartyApiStatisticsResponse"];
-                        "text/json": components["schemas"]["ThirdPartyApiStatisticsResponse"];
+                        "text/plain": components["schemas"]["ThirdPartyApiStatisticsDto"];
+                        "application/json": components["schemas"]["ThirdPartyApiStatisticsDto"];
+                        "text/json": components["schemas"]["ThirdPartyApiStatisticsDto"];
                     };
                 };
             };
@@ -1676,7 +1676,7 @@ export interface components {
             /** Format: double */
             diskUsagePercent?: number | string;
         };
-        ThirdPartyApiRequestResponse: {
+        ThirdPartyApiRequestDto: {
             /** Format: int64 */
             id?: number | string;
             apiName?: string;
@@ -1688,7 +1688,7 @@ export interface components {
             /** Format: date */
             resetDate?: string;
         };
-        ThirdPartyApiStatisticsResponse: {
+        ThirdPartyApiStatisticsDto: {
             /** Format: int32 */
             totalCallsToday?: number | string;
             /** Format: int32 */

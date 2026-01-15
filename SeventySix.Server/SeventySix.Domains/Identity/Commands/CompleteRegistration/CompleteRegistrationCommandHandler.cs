@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using SeventySix.Identity.Constants;
 using SeventySix.Shared;
 using SeventySix.Shared.Extensions;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
 

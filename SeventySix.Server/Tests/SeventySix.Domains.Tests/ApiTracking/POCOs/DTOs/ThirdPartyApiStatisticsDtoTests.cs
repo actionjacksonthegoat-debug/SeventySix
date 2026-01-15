@@ -1,30 +1,30 @@
-// <copyright file="ThirdPartyApiStatisticsResponseTests.cs" company="SeventySix">
+// <copyright file="ThirdPartyApiStatisticsDtoTests.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.ApiTracking;
 
-namespace SeventySix.Domains.Tests.ApiTracking.DTOs;
+namespace SeventySix.Domains.Tests.ApiTracking.POCOs.DTOs;
 
 /// <summary>
-/// Unit tests for <see cref="ThirdPartyApiStatisticsResponse"/>.
+/// Unit tests for <see cref="ThirdPartyApiStatisticsDto"/>.
 /// </summary>
-public class ThirdPartyApiStatisticsResponseTests
+public class ThirdPartyApiStatisticsDtoTests
 {
 	[Fact]
 	public void Constructor_ShouldInitializeWithDefaultValues()
 	{
 		// Arrange & Act
-		ThirdPartyApiStatisticsResponse response = new();
+		ThirdPartyApiStatisticsDto dto = new();
 
 		// Assert
-		Assert.Equal(0, response.TotalCallsToday);
-		Assert.Equal(0, response.TotalApisTracked);
-		Assert.NotNull(response.CallsByApi);
-		Assert.Empty(response.CallsByApi);
-		Assert.NotNull(response.LastCalledByApi);
-		Assert.Empty(response.LastCalledByApi);
+		Assert.Equal(0, dto.TotalCallsToday);
+		Assert.Equal(0, dto.TotalApisTracked);
+		Assert.NotNull(dto.CallsByApi);
+		Assert.Empty(dto.CallsByApi);
+		Assert.NotNull(dto.LastCalledByApi);
+		Assert.Empty(dto.LastCalledByApi);
 	}
 
 	[Fact]
@@ -47,7 +47,7 @@ public class ThirdPartyApiStatisticsResponseTests
 			{ "GoogleMaps", now.AddMinutes(-30) },
 		};
 
-		ThirdPartyApiStatisticsResponse response =
+		ThirdPartyApiStatisticsDto dto =
 			new()
 			{
 				TotalCallsToday = 225,
@@ -57,16 +57,16 @@ public class ThirdPartyApiStatisticsResponseTests
 			};
 
 		// Assert
-		Assert.Equal(225, response.TotalCallsToday);
-		Assert.Equal(2, response.TotalApisTracked);
-		Assert.Equal(2, response.CallsByApi.Count);
-		Assert.Equal(150, response.CallsByApi["ExternalAPI"]);
-		Assert.Equal(75, response.CallsByApi["GoogleMaps"]);
-		Assert.Equal(2, response.LastCalledByApi.Count);
-		Assert.Equal(now, response.LastCalledByApi["ExternalAPI"]);
+		Assert.Equal(225, dto.TotalCallsToday);
+		Assert.Equal(2, dto.TotalApisTracked);
+		Assert.Equal(2, dto.CallsByApi.Count);
+		Assert.Equal(150, dto.CallsByApi["ExternalAPI"]);
+		Assert.Equal(75, dto.CallsByApi["GoogleMaps"]);
+		Assert.Equal(2, dto.LastCalledByApi.Count);
+		Assert.Equal(now, dto.LastCalledByApi["ExternalAPI"]);
 		Assert.Equal(
 			now.AddMinutes(-30),
-			response.LastCalledByApi["GoogleMaps"]);
+			dto.LastCalledByApi["GoogleMaps"]);
 	}
 
 	[Fact]
@@ -81,14 +81,14 @@ public class ThirdPartyApiStatisticsResponseTests
 			{ "Api2", null },
 		};
 
-		ThirdPartyApiStatisticsResponse response =
+		ThirdPartyApiStatisticsDto dto =
 			new()
 			{
 				LastCalledByApi = lastCalledByApi,
 			};
 
 		// Assert
-		Assert.NotNull(response.LastCalledByApi["Api1"]);
-		Assert.Null(response.LastCalledByApi["Api2"]);
+		Assert.NotNull(dto.LastCalledByApi["Api1"]);
+		Assert.Null(dto.LastCalledByApi["Api2"]);
 	}
 }

@@ -4,6 +4,7 @@
 
 using System.Text;
 using System.Text.Json;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Shared.Extensions;
 

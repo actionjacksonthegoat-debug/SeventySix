@@ -1,23 +1,22 @@
-// <copyright file="ThirdPartyApiRequestResponse.cs" company="SeventySix">
+// <copyright file="ThirdPartyApiRequestDto.cs" company="SeventySix">
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
+
+using MemoryPack;
+using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.ApiTracking;
 
 /// <summary>
-/// Response DTO for third-party API request tracking record.
+/// DTO for third-party API request tracking record.
 /// </summary>
 /// <remarks>
 /// Represents a single API usage tracking record for a specific API on a specific date.
 /// Used for displaying API call statistics in the admin dashboard.
-///
-/// Design Patterns:
-/// - DTO: Data Transfer Object for API response
-///
-/// SOLID Principles:
-/// - SRP: Only responsible for API request data transfer
+/// Cached in distributed cache for dashboard queries.
 /// </remarks>
-public class ThirdPartyApiRequestResponse
+[MemoryPackable]
+public partial class ThirdPartyApiRequestDto : ICacheable
 {
 	/// <summary>
 	/// Gets or sets the unique identifier.

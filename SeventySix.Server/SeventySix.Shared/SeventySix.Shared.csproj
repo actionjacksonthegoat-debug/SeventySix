@@ -38,4 +38,29 @@
 			ReferenceOutputAssembly="false"
 		/>
 	</ItemGroup>
+
+	<!-- FusionCache with Valkey Backend and MemoryPack Serialization -->
+	<ItemGroup>
+		<PackageReference
+			Include="ZiggyCreatures.FusionCache"
+			Version="2.5.0"
+		/>
+		<PackageReference
+			Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis"
+			Version="2.5.0"
+		/>
+		<PackageReference
+			Include="ZiggyCreatures.FusionCache.OpenTelemetry"
+			Version="2.5.0"
+		/>
+		<PackageReference
+			Include="Microsoft.Extensions.Caching.StackExchangeRedis"
+			Version="10.0.1"
+		/>
+		<PackageReference Include="MemoryPack" Version="1.21.4" />
+		<PackageReference
+			Include="ZiggyCreatures.FusionCache.Serialization.CysharpMemoryPack"
+			Version="2.5.0"
+		/>
+	</ItemGroup>
 </Project>

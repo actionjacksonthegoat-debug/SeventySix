@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Shared.DTOs;
+namespace SeventySix.Shared.POCOs;
 
 /// <summary>
 /// Paged result for queries.

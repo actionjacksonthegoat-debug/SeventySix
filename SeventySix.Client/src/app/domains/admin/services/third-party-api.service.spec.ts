@@ -1,6 +1,6 @@
 import {
-	ThirdPartyApiRequestResponse,
-	ThirdPartyApiStatisticsResponse
+	ThirdPartyApiRequestDto,
+	ThirdPartyApiStatisticsDto
 } from "@admin/models";
 import { provideHttpClient } from "@angular/common/http";
 import {
@@ -76,7 +76,7 @@ describe("ThirdPartyApiService",
 				it("should return all third-party API requests",
 					async () =>
 					{
-						const mockData: ThirdPartyApiRequestResponse[] =
+						const mockData: ThirdPartyApiRequestDto[] =
 							[
 								{
 									id: 1,
@@ -110,7 +110,7 @@ describe("ThirdPartyApiService",
 						// Wait for query to complete
 						await flushMicrotasks();
 
-						const data: ThirdPartyApiRequestResponse[] | undefined =
+						const data: ThirdPartyApiRequestDto[] | undefined =
 							query.data();
 						expect(data)
 							.toEqual(mockData);
@@ -135,7 +135,7 @@ describe("ThirdPartyApiService",
 
 						await flushMicrotasks();
 
-						const data: ThirdPartyApiRequestResponse[] | undefined =
+						const data: ThirdPartyApiRequestDto[] | undefined =
 							query.data();
 						expect(data)
 							.toEqual([]);
@@ -175,7 +175,7 @@ describe("ThirdPartyApiService",
 					async () =>
 					{
 						const apiName: string = "ExternalAPI";
-						const mockData: ThirdPartyApiRequestResponse[] =
+						const mockData: ThirdPartyApiRequestDto[] =
 							[
 								{
 									id: 1,
@@ -200,7 +200,7 @@ describe("ThirdPartyApiService",
 						req.flush(mockData);
 						await flushMicrotasks();
 
-						const data: ThirdPartyApiRequestResponse[] | undefined =
+						const data: ThirdPartyApiRequestDto[] | undefined =
 							query.data();
 						expect(data)
 							.toEqual(mockData);
@@ -266,7 +266,7 @@ describe("ThirdPartyApiService",
 				it("should return third-party API statistics",
 					async () =>
 					{
-						const mockStats: ThirdPartyApiStatisticsResponse =
+						const mockStats: ThirdPartyApiStatisticsDto =
 							{
 								totalCallsToday: 1801,
 								totalApisTracked: 2,
@@ -294,7 +294,7 @@ describe("ThirdPartyApiService",
 
 						await flushMicrotasks();
 
-						const stats: ThirdPartyApiStatisticsResponse | undefined =
+						const stats: ThirdPartyApiStatisticsDto | undefined =
 							query.data();
 						expect(stats?.totalCallsToday)
 							.toBe(mockStats.totalCallsToday);
@@ -308,7 +308,7 @@ describe("ThirdPartyApiService",
 				it("should handle empty statistics",
 					async () =>
 					{
-						const mockStats: ThirdPartyApiStatisticsResponse =
+						const mockStats: ThirdPartyApiStatisticsDto =
 							{
 								totalCallsToday: 0,
 								totalApisTracked: 0,
@@ -327,7 +327,7 @@ describe("ThirdPartyApiService",
 
 						await flushMicrotasks();
 
-						const stats: ThirdPartyApiStatisticsResponse | undefined =
+						const stats: ThirdPartyApiStatisticsDto | undefined =
 							query.data();
 						expect(stats?.totalCallsToday)
 							.toBe(0);

@@ -31,6 +31,18 @@
 				</ng-template>
 			</mat-tab>
 
+			<!-- Cache Metrics Tab -->
+			<mat-tab label="Cache Metrics">
+				<ng-template matTabContent>
+					<div class="tab-content full-height">
+						<!-- Valkey Cache Metrics (Grafana) -->
+						<app-grafana-dashboard-embed
+							[dashboardUid]="valkeyCacheDashboard"
+							title="Valkey Cache Metrics"></app-grafana-dashboard-embed>
+					</div>
+				</ng-template>
+			</mat-tab>
+
 			<!-- External Systems Tab -->
 			<mat-tab label="External Systems">
 				<div class="tab-content">

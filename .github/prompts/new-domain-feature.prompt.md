@@ -28,8 +28,15 @@ SeventySix.Domains/
     │   └── Get{{Name}}ById/
     │       ├── Get{{Name}}ByIdQuery.cs
     │       └── Get{{Name}}ByIdQueryHandler.cs
-    ├── DTOs/
-    │   └── {{Name}}Dto.cs
+    ├── POCOs/
+    │   ├── DTOs/
+    │   │   └── {{Name}}Dto.cs
+    │   ├── Requests/
+    │   │   └── Create{{Name}}Request.cs
+    │   ├── Responses/
+    │   │   └── {{Name}}Response.cs (if API contract output needed)
+    │   └── Results/
+    │       └── {{Name}}Result.cs (if internal operation outcome needed)
     ├── Entities/
     │   └── {{Name}}.cs
     ├── Infrastructure/

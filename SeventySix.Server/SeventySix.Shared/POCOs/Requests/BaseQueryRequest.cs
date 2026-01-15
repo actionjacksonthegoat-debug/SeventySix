@@ -4,7 +4,7 @@
 
 using SeventySix.Shared.Constants;
 
-namespace SeventySix.Shared.DTOs;
+namespace SeventySix.Shared.POCOs;
 
 /// <summary>Base request for paginated queries with common filtering.</summary>
 public record BaseQueryRequest

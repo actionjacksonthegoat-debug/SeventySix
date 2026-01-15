@@ -13,12 +13,15 @@ Ask user which domain: Identity, Logging, ApiTracking, ElectronicNotifications
 
 ## File Locations
 
-| Type       | Path                                        | Namespace             |
-| ---------- | ------------------------------------------- | --------------------- |
-| Service    | `SeventySix.Domains/{Domain}/Services/`     | `SeventySix.{Domain}` |
-| Repository | `SeventySix.Domains/{Domain}/Repositories/` | `SeventySix.{Domain}` |
-| Entity     | `SeventySix.Domains/{Domain}/Entities/`     | `SeventySix.{Domain}` |
-| DTO        | `SeventySix.Domains/{Domain}/DTOs/`         | `SeventySix.{Domain}` |
+| Type       | Path                                           | Namespace             |
+| ---------- | ---------------------------------------------- | --------------------- |
+| Service    | `SeventySix.Domains/{Domain}/Services/`        | `SeventySix.{Domain}` |
+| Repository | `SeventySix.Domains/{Domain}/Repositories/`    | `SeventySix.{Domain}` |
+| Entity     | `SeventySix.Domains/{Domain}/Entities/`        | `SeventySix.{Domain}` |
+| DTO        | `SeventySix.Domains/{Domain}/POCOs/DTOs/`      | `SeventySix.{Domain}` |
+| Request    | `SeventySix.Domains/{Domain}/POCOs/Requests/`  | `SeventySix.{Domain}` |
+| Response   | `SeventySix.Domains/{Domain}/POCOs/Responses/` | `SeventySix.{Domain}` |
+| Result     | `SeventySix.Domains/{Domain}/POCOs/Results/`   | `SeventySix.{Domain}` |
 
 ## Required Patterns
 

@@ -2,6 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using MemoryPack;
+using SeventySix.Shared.Interfaces;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -13,4 +16,5 @@ namespace SeventySix.Identity;
 /// <param name="Description">
 /// The role description shown to admins and users.
 /// </param>
-public record AvailableRoleDto(string Name, string Description);
+[MemoryPackable]
+public partial record AvailableRoleDto(string Name, string Description) : ICacheable;

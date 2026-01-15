@@ -103,17 +103,36 @@ domains/    → @admin/*, @sandbox/*, @developer/*
 
 ### Server File Locations
 
-| Type         | Location in Domain         | Namespace                     |
-| ------------ | -------------------------- | ----------------------------- |
-| Commands     | `{Domain}/Commands/`       | `SeventySix.{Domain}`         |
-| Queries      | `{Domain}/Queries/`        | `SeventySix.{Domain}`         |
-| DTOs         | `{Domain}/DTOs/`           | `SeventySix.{Domain}`         |
-| Entities     | `{Domain}/Entities/`       | `SeventySix.{Domain}`         |
-| DbContext    | `{Domain}/Infrastructure/` | `SeventySix.{Domain}`         |
-| Repositories | `{Domain}/Repositories/`   | `SeventySix.{Domain}`         |
-| Services     | `{Domain}/Services/`       | `SeventySix.{Domain}`         |
-| Settings     | `{Domain}/Settings/`       | `SeventySix.{Domain}`         |
-| Registration | `Api/Registration/`        | `SeventySix.Api.Registration` |
+| Type         | Location in Domain          | Namespace                     |
+| ------------ | --------------------------- | ----------------------------- |
+| Commands     | `{Domain}/Commands/`        | `SeventySix.{Domain}`         |
+| Queries      | `{Domain}/Queries/`         | `SeventySix.{Domain}`         |
+| DTOs         | `{Domain}/POCOs/DTOs/`      | `SeventySix.{Domain}`         |
+| Requests     | `{Domain}/POCOs/Requests/`  | `SeventySix.{Domain}`         |
+| Responses    | `{Domain}/POCOs/Responses/` | `SeventySix.{Domain}`         |
+| Results      | `{Domain}/POCOs/Results/`   | `SeventySix.{Domain}`         |
+| Entities     | `{Domain}/Entities/`        | `SeventySix.{Domain}`         |
+| DbContext    | `{Domain}/Infrastructure/`  | `SeventySix.{Domain}`         |
+| Repositories | `{Domain}/Repositories/`    | `SeventySix.{Domain}`         |
+| Services     | `{Domain}/Services/`        | `SeventySix.{Domain}`         |
+| Settings     | `{Domain}/Settings/`        | `SeventySix.{Domain}`         |
+| Registration | `Api/Registration/`         | `SeventySix.Api.Registration` |
+
+### POCO Naming Conventions (Folder = Suffix)
+
+| Type     | Folder             | Suffix      | Example                            |
+| -------- | ------------------ | ----------- | ---------------------------------- |
+| DTO      | `POCOs/DTOs/`      | `*Dto`      | `UserDto`, `LogDto`                |
+| Request  | `POCOs/Requests/`  | `*Request`  | `LoginRequest`, `UserQueryRequest` |
+| Response | `POCOs/Responses/` | `*Response` | `AuthResponse`                     |
+| Result   | `POCOs/Results/`   | `*Result`   | `AuthResult`, `Result<T>`          |
+
+**Key Distinctions:**
+
+-   **Commands/Queries**: CQRS objects stay colocated with handlers (NOT in POCOs)
+-   **Entities**: Domain entities stay in `Entities/` folder (NOT POCOs)
+-   **Request vs Response**: `*Request` = input (body/query), `*Response` = API contract output
+-   **Response vs Result**: `*Response` = external API contract, `*Result` = internal outcome
 
 ### Logging
 

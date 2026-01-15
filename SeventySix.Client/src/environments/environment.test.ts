@@ -27,7 +27,8 @@ export const environment: Environment =
 			enabled: false, // Disabled in tests
 			dashboards: {
 				systemOverview: "seventysix-system-overview",
-				apiEndpoints: "seventysix-api-endpoints"
+				apiEndpoints: "seventysix-api-endpoints",
+				valkeyCache: "seventysix-valkey"
 			}
 		},
 		cache: {

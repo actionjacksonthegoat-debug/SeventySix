@@ -25,7 +25,7 @@ public static class GetAllApiRequestsQueryHandler
 	/// Collection of API request response DTOs.
 	/// </returns>
 	public static async Task<
-		IEnumerable<ThirdPartyApiRequestResponse>
+		IEnumerable<ThirdPartyApiRequestDto>
 	> HandleAsync(
 		GetAllApiRequestsQuery query,
 		IThirdPartyApiRequestRepository repository,
@@ -34,7 +34,7 @@ public static class GetAllApiRequestsQueryHandler
 		IEnumerable<ThirdPartyApiRequest> requests =
 			await repository.GetAllAsync(cancellationToken);
 
-		return requests.Select(request => new ThirdPartyApiRequestResponse
+		return requests.Select(request => new ThirdPartyApiRequestDto
 		{
 			Id = request.Id,
 			ApiName = request.ApiName,

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using SeventySix.Api.Controllers;
 using SeventySix.Identity;
-using SeventySix.Shared.DTOs;
+using SeventySix.Shared.POCOs;
 using SeventySix.TestUtilities.Builders;
 using Wolverine;
 
