@@ -8,7 +8,7 @@
  * - Token refresh handled transparently by auth interceptor
  */
 
-=import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import {
 	computed,
 	inject,
