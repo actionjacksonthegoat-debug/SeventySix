@@ -37,6 +37,23 @@ public class AdminSeederService(
 			return;
 		}
 
+		// Security: Validate password is provided and not a weak default
+		if (string.IsNullOrWhiteSpace(settings.Value.InitialPassword))
+		{
+			logger.LogError(
+				"Admin seeder enabled but InitialPassword not configured. "
+					+ "Set ADMIN_PASSWORD environment variable.");
+			return;
+		}
+
+		if (IsWeakDefaultPassword(settings.Value.InitialPassword))
+		{
+			logger.LogError(
+				"Admin seeder detected weak/default password. "
+					+ "Set a strong password via ADMIN_PASSWORD environment variable.");
+			return;
+		}
+
 		try
 		{
 			await SeedAdminUserAsync(stoppingToken);
@@ -45,6 +62,35 @@ public class AdminSeederService(
 		{
 			logger.LogError(ex, "Failed to seed admin user");
 		}
+	}
+
+	/// <summary>
+	/// Checks if the password matches known weak/default patterns.
+	/// </summary>
+	/// <param name="password">
+	/// Password to validate.
+	/// </param>
+	/// <returns>
+	/// True if password is weak/default; otherwise false.
+	/// </returns>
+	private static bool IsWeakDefaultPassword(string password)
+	{
+		// List of common weak defaults that should never be used
+		string[] weakPatterns =
+			[
+				"Admin123!",
+				"Password123!",
+				"admin",
+				"password",
+				"changeme",
+				"P@ssw0rd",
+			];
+
+		return weakPatterns.Any(
+			weak => string.Equals(
+				password,
+				weak,
+				StringComparison.OrdinalIgnoreCase));
 	}
 
 	/// <summary>
@@ -135,7 +181,7 @@ public class AdminSeederService(
 		IdentityResult createResult =
 			await userManager.CreateAsync(
 				adminUser,
-				settings.Value.InitialPassword);
+				settings.Value.InitialPassword!);
 
 		if (!createResult.Succeeded)
 		{

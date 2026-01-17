@@ -60,4 +60,35 @@ public record ValkeySettings
 	/// </remarks>
 	public int SyncTimeoutMs { get; init; } =
 		1000;
+
+	/// <summary>
+	/// Number of connection retry attempts.
+	/// </summary>
+	/// <remarks>
+	/// How many times to retry connection before giving up.
+	/// Default: 3 for development, consider 5 for production.
+	/// </remarks>
+	public int ConnectRetry { get; init; } =
+		3;
+
+	/// <summary>
+	/// Keep-alive interval in seconds.
+	/// </summary>
+	/// <remarks>
+	/// Sends periodic PING commands to maintain connection and detect failures early.
+	/// Default: 60 seconds.
+	/// </remarks>
+	public int KeepAliveSeconds { get; init; } =
+		60;
+
+	/// <summary>
+	/// Base delay for exponential retry policy in milliseconds.
+	/// </summary>
+	/// <remarks>
+	/// Used with ExponentialRetry policy for connection failures.
+	/// Actual delay increases exponentially: baseMs * 2^attempt.
+	/// Default: 5000ms (5 seconds).
+	/// </remarks>
+	public int RetryBaseMs { get; init; } =
+		5000;
 }

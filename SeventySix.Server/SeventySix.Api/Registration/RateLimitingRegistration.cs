@@ -15,10 +15,15 @@ namespace SeventySix.Api.Registration;
 /// </summary>
 /// <remarks>
 /// Rate limiting policies:
-/// - Global: Default limit for all endpoints (250/hour per IP)
-/// - auth-login: Stricter limit for login attempts (5/minute per IP)
+/// - Global: Default limit for all endpoints (500/hour per IP)
+/// - auth-login: Stricter limit for login attempts (15/minute per IP)
 /// - auth-register: Stricter limit for registration (3/hour per IP)
-/// - auth-refresh: Moderate limit for token refresh (10/minute per IP)
+/// - auth-refresh: Moderate limit for token refresh (60/minute per IP)
+///
+/// Bypass policies (no rate limit):
+/// - OPTIONS requests (CORS preflight)
+/// - /health endpoints (container orchestrator health checks)
+/// - /metrics endpoints (Prometheus scraping)
 /// </remarks>
 public static class RateLimitingRegistration
 {
@@ -141,6 +146,14 @@ public static class RateLimitingRegistration
 			if (HttpMethods.IsOptions(context.Request.Method))
 			{
 				return RateLimitPartition.GetNoLimiter<string>("__preflight__");
+			}
+
+			// Bypass rate limiting for health checks and metrics endpoints
+			// Container orchestrators hit these frequently
+			if (context.Request.Path.StartsWithSegments("/health")
+				|| context.Request.Path.StartsWithSegments("/metrics"))
+			{
+				return RateLimitPartition.GetNoLimiter<string>("__internal__");
 			}
 
 			return RateLimitPartition.GetFixedWindowLimiter(

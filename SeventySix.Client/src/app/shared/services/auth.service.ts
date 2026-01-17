@@ -8,7 +8,7 @@
  * - Token refresh handled transparently by auth interceptor
  */
 
-import { HttpClient } from "@angular/common/http";
+=import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import {
 	computed,
 	inject,
@@ -30,7 +30,14 @@ import {
 	JwtClaims,
 	OAuthProvider
 } from "@shared/services/auth.types";
-import { catchError, Observable, of, tap } from "rxjs";
+import {
+	catchError,
+	finalize,
+	Observable,
+	of,
+	shareReplay,
+	tap
+} from "rxjs";
 
 /**
  * Provides authentication flows (local and OAuth), session restoration, and in-memory token management.
@@ -106,6 +113,14 @@ export class AuthService
 	 * @private
 	 */
 	private initialized: boolean = false;
+
+	/**
+	 * In-flight refresh request observable for single-flight pattern.
+	 * Prevents concurrent refresh requests from exhausting rate limits.
+	 * @type {Observable<AuthResponse | null> | null}
+	 * @private
+	 */
+	private refreshInProgress: Observable<AuthResponse | null> | null = null;
 
 	/**
 	 * Current authenticated user signal.
@@ -233,36 +248,61 @@ export class AuthService
 
 	/**
 	 * Refreshes the access token using refresh token cookie.
+	 * Implements single-flight pattern: concurrent calls share one HTTP request.
+	 * Only clears auth on 401 (invalid token), NOT on 429 (rate limited).
 	 * @returns {Observable<AuthResponse|null>}
 	 * Observable that emits AuthResponse on success or null on failure.
 	 */
 	refreshToken(): Observable<AuthResponse | null>
 	{
-		return this
-		.httpClient
-		.post<AuthResponse>(
-			`${this.authUrl}/refresh`,
-			{},
-			{ withCredentials: true })
-		.pipe(
-			tap(
-				(response: AuthResponse) =>
-				{
-					this.setAccessToken(
-						response.accessToken,
-						response.expiresAt,
-						response.email,
-						response.fullName);
-					this.requiresPasswordChangeSignal.set(
-						response.requiresPasswordChange);
-					this.markHasSession();
-				}),
-			catchError(
-				() =>
-				{
-					this.clearAuth();
-					return of(null);
-				}));
+		// If refresh already in progress, return the same observable
+		// This prevents concurrent requests from exhausting rate limits
+		if (this.refreshInProgress)
+		{
+			return this.refreshInProgress;
+		}
+
+		this.refreshInProgress =
+			this
+			.httpClient
+			.post<AuthResponse>(
+				`${this.authUrl}/refresh`,
+				{},
+				{ withCredentials: true })
+			.pipe(
+				tap(
+					(response: AuthResponse) =>
+					{
+						this.setAccessToken(
+							response.accessToken,
+							response.expiresAt,
+							response.email,
+							response.fullName);
+						this.requiresPasswordChangeSignal.set(
+							response.requiresPasswordChange);
+						this.markHasSession();
+					}),
+				catchError(
+					(error: HttpErrorResponse) =>
+					{
+						// Only clear auth on 401 (invalid/expired refresh token)
+						// Do NOT clear on 429 (rate limited) - try again later
+						if (error.status === 401)
+						{
+							this.clearAuth();
+						}
+						return of(null);
+					}),
+				finalize(
+					() =>
+					{
+						// Clear the in-progress marker after completion
+						this.refreshInProgress = null;
+					}),
+				// Share the same observable among all concurrent subscribers
+				shareReplay(1));
+
+		return this.refreshInProgress;
 	}
 
 	/**

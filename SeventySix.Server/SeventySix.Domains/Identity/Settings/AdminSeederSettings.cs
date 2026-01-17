@@ -8,8 +8,14 @@ namespace SeventySix.Identity.Settings;
 /// Configuration settings for admin user seeding.
 /// </summary>
 /// <remarks>
-/// WARNING: The InitialPassword should be changed immediately after first login.
-/// In production, use environment variables or secrets management.
+/// <para>
+/// Security: InitialPassword must be provided via environment variable or secrets,
+/// and will be validated against weak password patterns.
+/// </para>
+/// <para>
+/// The seeded admin user is marked with RequiresPasswordChange=true, forcing
+/// a password change on first login regardless of initial password strength.
+/// </para>
 /// </remarks>
 public record AdminSeederSettings
 {
@@ -39,12 +45,11 @@ public record AdminSeederSettings
 	public string? FullName { get; set; } = "System Administrator";
 
 	/// <summary>
-	/// Gets or sets the initial password.
-	/// Must be changed on first login.
+	/// Gets or sets the initial password. Required when Enabled is true.
 	/// </summary>
 	/// <remarks>
-	/// Use environment variables or secrets in production:
-	/// AdminSeeder__InitialPassword=YourSecurePassword
+	/// Security: Must be provided via environment variable or secrets in production.
+	/// Set via ADMIN_PASSWORD or AdminSeeder__InitialPassword environment variable.
 	/// </remarks>
-	public string InitialPassword { get; set; } = "Admin123!";
+	public string? InitialPassword { get; set; }
 }

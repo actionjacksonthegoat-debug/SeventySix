@@ -79,7 +79,7 @@ public class AdminSeederServiceUnitTests
 			.CreateAsync(
 				Arg.Is<ApplicationUser>(user =>
 					user.RequiresPasswordChange == true),
-				settings.InitialPassword);
+				settings.InitialPassword!);
 		await userManager
 			.Received(1)
 			.AddToRoleAsync(Arg.Any<ApplicationUser>(), RoleConstants.Admin);
@@ -206,5 +206,105 @@ public class AdminSeederServiceUnitTests
 			Email = "admin@example.com",
 			InitialPassword = "TempPass123!",
 		};
+	}
+
+	[Fact]
+	/// <summary>
+	/// When InitialPassword is null or empty, the seeder should log error and not create user.
+	/// </summary>
+	public async Task ExecuteAsync_WhenNoPassword_LogsErrorAndSkipsAsync()
+	{
+		// Arrange
+		(
+			IServiceScopeFactory scopeFactory,
+			IServiceProvider serviceProvider,
+			UserManager<ApplicationUser> userManager,
+			RoleManager<ApplicationRole> roleManager
+		) = CreateScopeWithManagers();
+
+		AdminSeederSettings settings =
+			new()
+			{
+				Enabled = true,
+				Username = "admin",
+				Email = "admin@example.com",
+				InitialPassword = null,
+			};
+		IOptions<AdminSeederSettings> options =
+			Options.Create(settings);
+		TimeProvider timeProvider =
+			Substitute.For<TimeProvider>();
+		ILogger<AdminSeederService> logger =
+			Substitute.For<ILogger<AdminSeederService>>();
+
+		AdminSeederService service =
+			new(
+				scopeFactory,
+				options,
+				timeProvider,
+				logger);
+
+		// Act
+		await service.StartAsync(CancellationToken.None);
+		await service.StopAsync(CancellationToken.None);
+
+		// Assert - should not attempt to create user
+		await userManager
+			.DidNotReceive()
+			.CreateAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>());
+	}
+
+	[Theory]
+	[InlineData("Admin123!")]
+	[InlineData("Password123!")]
+	[InlineData("admin")]
+	[InlineData("changeme")]
+	/// <summary>
+	/// When a weak/default password is configured, the seeder should log error and not create user.
+	/// </summary>
+	public async Task ExecuteAsync_WhenWeakPassword_LogsErrorAndSkipsAsync(string weakPassword)
+	{
+		// Arrange
+		(
+			IServiceScopeFactory scopeFactory,
+			IServiceProvider serviceProvider,
+			UserManager<ApplicationUser> userManager,
+			RoleManager<ApplicationRole> roleManager
+		) = CreateScopeWithManagers();
+
+		AdminSeederSettings settings =
+			new()
+			{
+				Enabled = true,
+				Username = "admin",
+				Email = "admin@example.com",
+				InitialPassword = weakPassword,
+			};
+		IOptions<AdminSeederSettings> options =
+			Options.Create(settings);
+		TimeProvider timeProvider =
+			Substitute.For<TimeProvider>();
+		ILogger<AdminSeederService> logger =
+			Substitute.For<ILogger<AdminSeederService>>();
+
+		AdminSeederService service =
+			new(
+				scopeFactory,
+				options,
+				timeProvider,
+				logger);
+
+		// Act
+		await service.StartAsync(CancellationToken.None);
+		await service.StopAsync(CancellationToken.None);
+
+		// Assert - should not attempt to create user
+		await userManager
+			.DidNotReceive()
+			.CreateAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>());
 	}
 }

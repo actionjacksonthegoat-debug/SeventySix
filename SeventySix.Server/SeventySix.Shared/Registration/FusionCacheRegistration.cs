@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Settings;
 using StackExchange.Redis;
@@ -60,17 +61,57 @@ public static class FusionCacheRegistration
 			return services.AddFusionCacheMemoryOnly(cacheSettings);
 		}
 
-		// Register shared Redis connection (best practice: single multiplexer)
+		// Register shared Redis connection with production resilience
+		// Best practice: single multiplexer for all caches
 		services.AddSingleton<IConnectionMultiplexer>(
 			serviceProvider =>
 			{
-				string connectionWithTimeouts =
-					$"{cacheSettings.Valkey.ConnectionString}," +
-					$"connectTimeout={cacheSettings.Valkey.ConnectTimeoutMs}," +
-					$"syncTimeout={cacheSettings.Valkey.SyncTimeoutMs}," +
-					"abortConnect=false";
+				ILogger<IConnectionMultiplexer> logger =
+					serviceProvider.GetRequiredService<
+						ILogger<IConnectionMultiplexer>>();
 
-				return ConnectionMultiplexer.Connect(connectionWithTimeouts);
+				ConfigurationOptions options =
+					new()
+					{
+						AbortOnConnectFail = false,
+						ConnectTimeout =
+							cacheSettings.Valkey.ConnectTimeoutMs,
+						SyncTimeout =
+							cacheSettings.Valkey.SyncTimeoutMs,
+						ConnectRetry =
+							cacheSettings.Valkey.ConnectRetry,
+						KeepAlive =
+							cacheSettings.Valkey.KeepAliveSeconds,
+						ReconnectRetryPolicy =
+							new ExponentialRetry(cacheSettings.Valkey.RetryBaseMs),
+						AllowAdmin = false,
+					};
+
+				// Parse connection string (host:port or host:port,password=xxx)
+				options.EndPoints.Add(cacheSettings.Valkey.ConnectionString);
+
+				IConnectionMultiplexer multiplexer =
+					ConnectionMultiplexer.Connect(options);
+
+				// Log connection events for observability
+				multiplexer.ConnectionFailed +=
+					(sender, connectionFailedArgs) =>
+					{
+						logger.LogWarning(
+							"Redis connection failed: {FailureType} - {Exception}",
+							connectionFailedArgs.FailureType,
+							connectionFailedArgs.Exception?.Message);
+					};
+
+				multiplexer.ConnectionRestored +=
+					(sender, connectionRestoredArgs) =>
+					{
+						logger.LogInformation(
+							"Redis connection restored: {Endpoint}",
+							connectionRestoredArgs.EndPoint);
+					};
+
+				return multiplexer;
 			});
 
 		return RegisterDistributedCaches(services, cacheSettings);
@@ -367,6 +408,13 @@ public static class FusionCacheRegistration
 			// Allow background refresh for better performance
 			options.AllowBackgroundDistributedCacheOperations =
 				true;
+			// Eager refresh: proactively refresh when 80% of duration elapsed
+			// Prevents cache misses during high traffic
+			options.EagerRefreshThreshold =
+				0.8f;
+			// Add jitter (±10%) to prevent thundering herd on cache expiration
+			options.JitterMaxDuration =
+				TimeSpan.FromMilliseconds(settings.DefaultDuration.TotalMilliseconds * 0.1);
 		};
 	}
 
@@ -397,6 +445,13 @@ public static class FusionCacheRegistration
 			// Allow background refresh for better performance
 			options.AllowBackgroundDistributedCacheOperations =
 				true;
+			// Eager refresh: proactively refresh when 80% of duration elapsed
+			// Prevents cache misses during high traffic
+			options.EagerRefreshThreshold =
+				0.8f;
+			// Add jitter (±10%) to prevent thundering herd on cache expiration
+			options.JitterMaxDuration =
+				TimeSpan.FromMilliseconds(settings.Duration.TotalMilliseconds * 0.1);
 		};
 	}
 }
