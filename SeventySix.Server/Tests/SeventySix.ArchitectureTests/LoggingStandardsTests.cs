@@ -63,8 +63,8 @@ public class LoggingStandardsTests : SourceCodeArchitectureTest
 
 		Regex logInformationPattern =
 			new Regex(
-			@"\.LogInformation\(",
-			RegexOptions.Compiled);
+				@"\.LogInformation\(",
+				RegexOptions.Compiled);
 
 		List<string> violations = [];
 

@@ -109,7 +109,7 @@ public static class FusionCacheRegistration
 				multiplexer.ConnectionRestored +=
 					(sender, connectionRestoredArgs) =>
 					{
-						logger.LogInformation(
+						logger.LogWarning(
 							"Redis connection restored: {Endpoint}",
 							connectionRestoredArgs.EndPoint);
 					};
