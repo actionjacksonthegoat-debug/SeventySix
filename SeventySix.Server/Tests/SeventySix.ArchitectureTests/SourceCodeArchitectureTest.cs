@@ -20,7 +20,13 @@ public abstract class SourceCodeArchitectureTest
 	/// </summary>
 	protected static readonly string SolutionRoot =
 		Path.GetFullPath(
-		Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
+		Path.Combine(
+			AppContext.BaseDirectory,
+			"..",
+			"..",
+			"..",
+			"..",
+			".."));
 
 	/// <summary>
 	/// Gets source files matching the specified pattern.

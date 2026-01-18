@@ -85,7 +85,9 @@ public class UsersControllerMeEndpointTests(
 			await response.Content.ReadFromJsonAsync<UserProfileDto>();
 
 		Assert.NotNull(profile);
-		Assert.Equal($"updated_{testId}@example.com", profile.Email);
+		Assert.Equal(
+			$"updated_{testId}@example.com",
+			profile.Email);
 		Assert.Equal("Updated Full Name", profile.FullName);
 		Assert.Equal(username, profile.Username); // Username unchanged
 	}
@@ -129,7 +131,9 @@ public class UsersControllerMeEndpointTests(
 			updateRequest);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.BadRequest,
+			response.StatusCode);
 	}
 
 	/// <summary>

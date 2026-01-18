@@ -216,7 +216,9 @@ public class HealthCheckService(
 			double cpuUsagePercent =
 				(cpuUsedMs / (Environment.ProcessorCount * totalMs)) * 100.0;
 
-			return Math.Round(Math.Min(cpuUsagePercent, 100.0), 2);
+			return Math.Round(
+				Math.Min(cpuUsagePercent, 100.0),
+				2);
 		}
 		catch
 		{

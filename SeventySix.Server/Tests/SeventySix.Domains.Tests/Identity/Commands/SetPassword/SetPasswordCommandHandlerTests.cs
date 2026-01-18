@@ -48,7 +48,9 @@ public class SetPasswordCommandHandlerTests
 	{
 		// Arrange - Token without colon separator
 		SetPasswordRequest request =
-			new("invalid-token-without-colon", "NewPassword123!");
+			new(
+				"invalid-token-without-colon",
+				"NewPassword123!");
 
 		SetPasswordCommand command =
 			new(request, "127.0.0.1");
@@ -74,7 +76,9 @@ public class SetPasswordCommandHandlerTests
 	{
 		// Arrange - Token with non-numeric user ID
 		SetPasswordRequest request =
-			new("notanumber:sometoken", "NewPassword123!");
+			new(
+				"notanumber:sometoken",
+				"NewPassword123!");
 
 		SetPasswordCommand command =
 			new(request, "127.0.0.1");
@@ -176,7 +180,9 @@ public class SetPasswordCommandHandlerTests
 			};
 
 		SetPasswordRequest request =
-			new("456:valid-reset-token", "NewSecurePassword123!");
+			new(
+				"456:valid-reset-token",
+				"NewSecurePassword123!");
 
 		SetPasswordCommand command =
 			new(request, "192.168.1.1");

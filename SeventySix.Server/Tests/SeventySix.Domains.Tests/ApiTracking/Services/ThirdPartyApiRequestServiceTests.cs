@@ -72,9 +72,15 @@ public class ThirdPartyApiRequestServiceTests
 		List<ThirdPartyApiRequestDto> resultList =
 			[.. result];
 		Assert.Equal(2, resultList.Count);
-		Assert.Equal("ExternalAPI", resultList[0].ApiName);
-		Assert.Equal(150, resultList[0].CallCount);
-		Assert.Equal("GoogleMaps", resultList[1].ApiName);
+		Assert.Equal(
+			"ExternalAPI",
+			resultList[0].ApiName);
+		Assert.Equal(
+			150,
+			resultList[0].CallCount);
+		Assert.Equal(
+			"GoogleMaps",
+			resultList[1].ApiName);
 		await Repository.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
 	}
 
@@ -137,8 +143,12 @@ public class ThirdPartyApiRequestServiceTests
 		Assert.Equal(225, result.TotalCallsToday);
 		Assert.Equal(2, result.TotalApisTracked);
 		Assert.Equal(2, result.CallsByApi.Count);
-		Assert.Equal(150, result.CallsByApi["ExternalAPI"]);
-		Assert.Equal(75, result.CallsByApi["GoogleMaps"]);
+		Assert.Equal(
+			150,
+			result.CallsByApi["ExternalAPI"]);
+		Assert.Equal(
+			75,
+			result.CallsByApi["GoogleMaps"]);
 		Assert.Equal(2, result.LastCalledByApi.Count);
 		Assert.NotNull(result.LastCalledByApi["ExternalAPI"]);
 		Assert.NotNull(result.LastCalledByApi["GoogleMaps"]);

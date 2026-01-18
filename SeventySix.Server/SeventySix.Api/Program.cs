@@ -50,14 +50,16 @@ builder.Services.Configure<SecuritySettings>(
 // This allows the app to run without certificate errors in Docker containers
 if (builder.Environment.IsDevelopment())
 {
-	builder.WebHost.ConfigureKestrel(serverOptions =>
-	{
-		serverOptions.ConfigureHttpsDefaults(httpsOptions =>
+	builder.WebHost.ConfigureKestrel(
+		serverOptions =>
 		{
-			// Accept any client certificate without validation
-			httpsOptions.AllowAnyClientCertificate();
+			serverOptions.ConfigureHttpsDefaults(
+				httpsOptions =>
+				{
+					// Accept any client certificate without validation
+					httpsOptions.AllowAnyClientCertificate();
+				});
 		});
-	});
 }
 
 // Configure Serilog for structured logging
@@ -183,7 +185,9 @@ app.UseSerilogRequestLogging(
 			diagnosticContext.Set(
 				"RequestHost",
 				httpContext.Request.Host.Value ?? "unknown");
-			diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+			diagnosticContext.Set(
+				"RequestScheme",
+				httpContext.Request.Scheme);
 			diagnosticContext.Set(
 				"RemoteIpAddress",
 				httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");

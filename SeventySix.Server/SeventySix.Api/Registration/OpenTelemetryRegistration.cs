@@ -71,17 +71,19 @@ public static class OpenTelemetryExtensions
 						}))
 			.WithTracing(tracing =>
 				tracing
-					.AddAspNetCoreInstrumentation(options =>
-					{
-						options.RecordException = true;
-					})
+					.AddAspNetCoreInstrumentation(
+						options =>
+						{
+							options.RecordException = true;
+						})
 					.AddHttpClientInstrumentation()
 					.AddFusionCacheInstrumentation()
-					.AddOtlpExporter(options =>
-					{
-						options.Endpoint =
-							new Uri(otlpEndpoint);
-					}))
+					.AddOtlpExporter(
+						options =>
+						{
+							options.Endpoint =
+								new Uri(otlpEndpoint);
+						}))
 			.WithMetrics(metrics =>
 				metrics
 					.AddAspNetCoreInstrumentation()

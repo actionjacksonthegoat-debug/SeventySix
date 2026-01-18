@@ -69,25 +69,26 @@ public static class IdentityRegistration
 
 		// Register ASP.NET Core Identity
 		services
-			.AddIdentityCore<ApplicationUser>(options =>
-			{
-				// Password settings (validation only - Argon2 handles hashing)
-				options.Password.RequiredLength = 8;
-				options.Password.RequireDigit = true;
-				options.Password.RequireLowercase = true;
-				options.Password.RequireUppercase = true;
-				options.Password.RequireNonAlphanumeric = true;
+			.AddIdentityCore<ApplicationUser>(
+				options =>
+				{
+					// Password settings (validation only - Argon2 handles hashing)
+					options.Password.RequiredLength = 8;
+					options.Password.RequireDigit = true;
+					options.Password.RequireLowercase = true;
+					options.Password.RequireUppercase = true;
+					options.Password.RequireNonAlphanumeric = true;
 
-				// Lockout settings
-				options.Lockout.DefaultLockoutTimeSpan =
-					TimeSpan.FromMinutes(
-						15);
-				options.Lockout.MaxFailedAccessAttempts = 5;
-				options.Lockout.AllowedForNewUsers = true;
+					// Lockout settings
+					options.Lockout.DefaultLockoutTimeSpan =
+						TimeSpan.FromMinutes(
+							15);
+					options.Lockout.MaxFailedAccessAttempts = 5;
+					options.Lockout.AllowedForNewUsers = true;
 
-				// User settings
-				options.User.RequireUniqueEmail = true;
-			})
+					// User settings
+					options.User.RequireUniqueEmail = true;
+				})
 			.AddRoles<ApplicationRole>()
 			.AddEntityFrameworkStores<IdentityDbContext>()
 			.AddSignInManager()

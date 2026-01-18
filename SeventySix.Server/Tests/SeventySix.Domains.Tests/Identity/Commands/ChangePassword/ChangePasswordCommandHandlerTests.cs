@@ -91,7 +91,10 @@ public class ChangePasswordCommandHandlerTests
 		UserManager.FindByIdAsync(user.Id.ToString()).Returns(user);
 		UserManager.HasPasswordAsync(user).Returns(true);
 		UserManager
-			.ChangePasswordAsync(user, Arg.Any<string>(), Arg.Any<string>())
+			.ChangePasswordAsync(
+				user,
+				Arg.Any<string>(),
+				Arg.Any<string>())
 			.Returns(IdentityResult.Success);
 		UserManager
 			.UpdateAsync(Arg.Any<ApplicationUser>())

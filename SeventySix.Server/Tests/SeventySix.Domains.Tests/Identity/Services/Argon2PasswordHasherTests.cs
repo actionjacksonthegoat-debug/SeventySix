@@ -158,6 +158,8 @@ public class Argon2PasswordHasherTests
 	{
 		// Act & Assert
 		Should.Throw<ArgumentException>(() =>
-			Hasher.VerifyPassword(password!, hash!));
+			Hasher.VerifyPassword(
+				password!,
+				hash!));
 	}
 }

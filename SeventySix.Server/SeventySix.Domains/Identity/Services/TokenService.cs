@@ -38,14 +38,20 @@ public class TokenService(
 	{
 		List<Claim> claims =
 			[
-			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-			new Claim(JwtRegisteredClaimNames.UniqueName, username),
-			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-			new Claim(
-				JwtRegisteredClaimNames.Iat,
-				timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(),
-				ClaimValueTypes.Integer64),
-		];
+				new Claim(
+					JwtRegisteredClaimNames.Sub,
+					userId.ToString()),
+				new Claim(
+					JwtRegisteredClaimNames.UniqueName,
+					username),
+				new Claim(
+					JwtRegisteredClaimNames.Jti,
+					Guid.NewGuid().ToString()),
+				new Claim(
+					JwtRegisteredClaimNames.Iat,
+					timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(),
+					ClaimValueTypes.Integer64),
+			];
 
 		// Add role claims
 		foreach (string role in roles)

@@ -38,36 +38,38 @@ public class RateLimitingServiceTests
 				Arg.Any<Func<CancellationToken, Task<bool>>>(),
 				Arg.Any<int>(),
 				Arg.Any<CancellationToken>())
-			.Returns(async callInfo =>
-			{
-				Func<CancellationToken, Task<bool>> operation =
-					callInfo.ArgAt<
-					Func<CancellationToken, Task<bool>>
-				>(0);
+			.Returns(
+				async callInfo =>
+				{
+					Func<CancellationToken, Task<bool>> operation =
+						callInfo.ArgAt<
+						Func<CancellationToken, Task<bool>>
+					>(0);
 
-				CancellationToken ct =
-					callInfo.ArgAt<CancellationToken>(2);
+					CancellationToken ct =
+						callInfo.ArgAt<CancellationToken>(2);
 
-				return await operation(ct);
-			});
+					return await operation(ct);
+				});
 
 		TransactionManager
 			.ExecuteInTransactionAsync(
 				Arg.Any<Func<CancellationToken, Task>>(),
 				Arg.Any<int>(),
 				Arg.Any<CancellationToken>())
-			.Returns(async callInfo =>
-			{
-				Func<CancellationToken, Task> operation =
-					callInfo.ArgAt<
-					Func<CancellationToken, Task>
-				>(0);
+			.Returns(
+				async callInfo =>
+				{
+					Func<CancellationToken, Task> operation =
+						callInfo.ArgAt<
+						Func<CancellationToken, Task>
+					>(0);
 
-				CancellationToken ct =
-					callInfo.ArgAt<CancellationToken>(2);
+					CancellationToken ct =
+						callInfo.ArgAt<CancellationToken>(2);
 
-				await operation(ct);
-			});
+					await operation(ct);
+				});
 	}
 
 	private RateLimitingService CreateSut(
@@ -265,7 +267,9 @@ public class RateLimitingServiceTests
 		Assert.Equal(6, request.CallCount);
 		await Repository
 			.Received(1)
-			.UpdateAsync(request, Arg.Any<CancellationToken>());
+			.UpdateAsync(
+				request,
+				Arg.Any<CancellationToken>());
 	}
 
 	[Fact]

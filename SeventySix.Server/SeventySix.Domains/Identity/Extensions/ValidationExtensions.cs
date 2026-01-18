@@ -31,5 +31,7 @@ public static class ValidationExtensions
 	/// </code>
 	/// </example>
 	public static string ToErrorMessage(this ValidationResult result) =>
-		string.Join(" ", result.Errors.Select(error => error.ErrorMessage));
+		string.Join(
+			" ",
+			result.Errors.Select(error => error.ErrorMessage));
 }

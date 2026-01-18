@@ -23,8 +23,12 @@ public class HealthStatusResponseTests
 		HealthStatusResponse response = new();
 
 		// Assert
-		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
-		Assert.Equal(default(DateTime), response.CheckedAt);
+		Assert.Equal(
+			HealthStatusConstants.Healthy,
+			response.Status);
+		Assert.Equal(
+			default(DateTime),
+			response.CheckedAt);
 		Assert.NotNull(response.Database);
 		Assert.NotNull(response.ExternalApis);
 		Assert.NotNull(response.ErrorQueue);
@@ -55,7 +59,9 @@ public class HealthStatusResponseTests
 			};
 
 		// Assert
-		Assert.Equal(HealthStatusConstants.Degraded, response.Status);
+		Assert.Equal(
+			HealthStatusConstants.Degraded,
+			response.Status);
 		Assert.Equal(now, response.CheckedAt);
 		Assert.True(response.Database.IsConnected);
 	}
@@ -72,7 +78,9 @@ public class HealthStatusResponseTests
 		// Assert
 		Assert.False(response.IsConnected);
 		Assert.Equal(0, response.ResponseTimeMs);
-		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
+		Assert.Equal(
+			HealthStatusConstants.Healthy,
+			response.Status);
 	}
 
 	/// <summary>
@@ -94,7 +102,9 @@ public class HealthStatusResponseTests
 		// Assert
 		Assert.True(response.IsConnected);
 		Assert.Equal(25.5, response.ResponseTimeMs);
-		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
+		Assert.Equal(
+			HealthStatusConstants.Healthy,
+			response.Status);
 	}
 
 	/// <summary>
@@ -154,8 +164,12 @@ public class HealthStatusResponseTests
 		Assert.Equal(2, response.Apis.Count);
 		Assert.True(response.Apis["ExternalAPI"].IsAvailable);
 		Assert.False(response.Apis["GoogleMaps"].IsAvailable);
-		Assert.Equal(150.5, response.Apis["ExternalAPI"].ResponseTimeMs);
-		Assert.Equal(now, response.Apis["ExternalAPI"].LastChecked);
+		Assert.Equal(
+			150.5,
+			response.Apis["ExternalAPI"].ResponseTimeMs);
+		Assert.Equal(
+			now,
+			response.Apis["ExternalAPI"].LastChecked);
 		Assert.Null(response.Apis["GoogleMaps"].LastChecked);
 	}
 
@@ -169,7 +183,9 @@ public class HealthStatusResponseTests
 		ApiHealthStatus status = new();
 
 		// Assert
-		Assert.Equal(string.Empty, status.ApiName);
+		Assert.Equal(
+			string.Empty,
+			status.ApiName);
 		Assert.False(status.IsAvailable);
 		Assert.Equal(0, status.ResponseTimeMs);
 		Assert.Null(status.LastChecked);
@@ -188,7 +204,9 @@ public class HealthStatusResponseTests
 		Assert.Equal(0, response.QueuedItems);
 		Assert.Equal(0, response.FailedItems);
 		Assert.False(response.CircuitBreakerOpen);
-		Assert.Equal(HealthStatusConstants.Healthy, response.Status);
+		Assert.Equal(
+			HealthStatusConstants.Healthy,
+			response.Status);
 	}
 
 	/// <summary>
@@ -212,7 +230,9 @@ public class HealthStatusResponseTests
 		Assert.Equal(5, response.QueuedItems);
 		Assert.Equal(2, response.FailedItems);
 		Assert.True(response.CircuitBreakerOpen);
-		Assert.Equal(HealthStatusConstants.Degraded, response.Status);
+		Assert.Equal(
+			HealthStatusConstants.Degraded,
+			response.Status);
 	}
 
 	/// <summary>

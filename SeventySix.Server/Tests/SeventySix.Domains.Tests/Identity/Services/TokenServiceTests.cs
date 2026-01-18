@@ -303,7 +303,9 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 				.Where(t => t.UserId == userId)
 				.ToListAsync();
 
-			Assert.All(tokens, t => Assert.True(t.IsRevoked));
+			Assert.All(
+				tokens,
+				t => Assert.True(t.IsRevoked));
 		}
 	}
 	#endregion
@@ -331,13 +333,14 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 			Substitute.For<TimeProvider>();
 		timeProvider
 			.GetUtcNow()
-			.Returns(_ =>
-			{
-				DateTimeOffset result = currentTime;
-				currentTime =
-					currentTime.AddMinutes(1);
-				return result;
-			});
+			.Returns(
+				_ =>
+				{
+					DateTimeOffset result = currentTime;
+					currentTime =
+						currentTime.AddMinutes(1);
+					return result;
+				});
 
 		ITokenRepository tokenRepository =
 			new TokenRepository(context);
@@ -450,7 +453,9 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 			.FirstOrDefaultAsync();
 
 		Assert.NotNull(newStoredToken);
-		Assert.Equal(originalFamilyId, newStoredToken.FamilyId);
+		Assert.Equal(
+			originalFamilyId,
+			newStoredToken.FamilyId);
 	}
 
 	[Fact]
@@ -534,7 +539,9 @@ public class TokenServiceTests(TestcontainersPostgreSqlFixture fixture)
 			.Where(t => t.UserId == user.Id)
 			.ToListAsync();
 
-		Assert.All(familyTokens, t => Assert.True(t.IsRevoked));
+		Assert.All(
+			familyTokens,
+			t => Assert.True(t.IsRevoked));
 
 		// Verify legitimate user's new token no longer works
 		long? userId =

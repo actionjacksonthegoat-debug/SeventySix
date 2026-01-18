@@ -60,10 +60,16 @@ public class ThirdPartyApiStatisticsDtoTests
 		Assert.Equal(225, dto.TotalCallsToday);
 		Assert.Equal(2, dto.TotalApisTracked);
 		Assert.Equal(2, dto.CallsByApi.Count);
-		Assert.Equal(150, dto.CallsByApi["ExternalAPI"]);
-		Assert.Equal(75, dto.CallsByApi["GoogleMaps"]);
+		Assert.Equal(
+			150,
+			dto.CallsByApi["ExternalAPI"]);
+		Assert.Equal(
+			75,
+			dto.CallsByApi["GoogleMaps"]);
 		Assert.Equal(2, dto.LastCalledByApi.Count);
-		Assert.Equal(now, dto.LastCalledByApi["ExternalAPI"]);
+		Assert.Equal(
+			now,
+			dto.LastCalledByApi["ExternalAPI"]);
 		Assert.Equal(
 			now.AddMinutes(-30),
 			dto.LastCalledByApi["GoogleMaps"]);

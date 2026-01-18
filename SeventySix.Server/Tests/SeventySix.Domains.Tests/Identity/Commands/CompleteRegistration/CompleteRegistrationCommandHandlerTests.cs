@@ -204,7 +204,9 @@ public class CompleteRegistrationCommandHandlerTests(
 			await userManager.CreateAsync(user);
 
 		createResult.Succeeded.ShouldBeTrue(
-			$"Failed to create user: {string.Join(", ", createResult.Errors.Select(error => error.Description))}");
+			$"Failed to create user: {string.Join(
+				", ",
+				createResult.Errors.Select(error => error.Description))}");
 
 		return user;
 	}

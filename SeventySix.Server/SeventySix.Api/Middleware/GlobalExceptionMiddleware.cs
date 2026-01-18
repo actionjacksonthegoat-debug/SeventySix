@@ -149,7 +149,9 @@ public class GlobalExceptionMiddleware
 		{
 			if (ex is FluentValidation.ValidationException)
 			{
-				Logger.LogWarning("Validation failed: {Message}", ex.Message);
+				Logger.LogWarning(
+					"Validation failed: {Message}",
+					ex.Message);
 			}
 			else
 			{

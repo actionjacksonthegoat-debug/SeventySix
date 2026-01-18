@@ -338,7 +338,9 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 			await service2.GetRemainingQuotaAsync(apiName);
 
 		// Assert
-		count.ShouldBe(2, "state should persist across service instances");
+		count.ShouldBe(
+			2,
+			"state should persist across service instances");
 		remaining.ShouldBe(
 			998,
 			"remaining quota should be calculated from persisted state");

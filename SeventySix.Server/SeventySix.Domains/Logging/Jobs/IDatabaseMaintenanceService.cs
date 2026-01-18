@@ -20,5 +20,5 @@ public interface IDatabaseMaintenanceService
 	/// <returns>
 	/// A task representing the asynchronous operation.
 	/// </returns>
-	Task ExecuteVacuumAnalyzeAsync(CancellationToken cancellationToken);
+	public Task ExecuteVacuumAnalyzeAsync(CancellationToken cancellationToken);
 }

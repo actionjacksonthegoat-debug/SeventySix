@@ -35,7 +35,9 @@ public record WhitelistedPermissionSettings
 	public bool IsWhitelisted(string email, string role)
 	{
 		return Grants.Any(grant =>
-			grant.Email.Equals(email, StringComparison.OrdinalIgnoreCase)
+			grant.Email.Equals(
+				email,
+				StringComparison.OrdinalIgnoreCase)
 			&& grant.Roles.Contains(role, StringComparer.OrdinalIgnoreCase));
 	}
 }

@@ -154,8 +154,9 @@ public class UsersController(
 	{
 		IEnumerable<UserDto> users =
 			await messageBus.InvokeAsync<
-				IEnumerable<UserDto>
-		>(new GetAllUsersQuery(), cancellationToken);
+				IEnumerable<UserDto>>(
+					new GetAllUsersQuery(),
+					cancellationToken);
 
 		return Ok(users);
 	}
@@ -257,7 +258,10 @@ public class UsersController(
 					request,
 					cancellationToken);
 
-			return CreatedAtRoute("GetUserById", new { id = user.Id }, user);
+			return CreatedAtRoute(
+				"GetUserById",
+				new { id = user.Id },
+				user);
 		}
 		catch (EmailRateLimitException)
 		{
@@ -282,7 +286,10 @@ public class UsersController(
 				"User {UserId} created but email rate limited",
 				user.Id);
 
-			return AcceptedAtRoute("GetUserById", new { id = user.Id }, user);
+			return AcceptedAtRoute(
+				"GetUserById",
+				new { id = user.Id },
+				user);
 		}
 	}
 
@@ -425,8 +432,9 @@ public class UsersController(
 	{
 		PagedResult<UserDto> result =
 			await messageBus.InvokeAsync<
-				PagedResult<UserDto>
-		>(new GetPagedUsersQuery(request), cancellationToken);
+				PagedResult<UserDto>>(
+					new GetPagedUsersQuery(request),
+					cancellationToken);
 
 		return Ok(result);
 	}

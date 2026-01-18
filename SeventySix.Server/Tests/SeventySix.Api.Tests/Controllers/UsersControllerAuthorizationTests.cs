@@ -46,7 +46,9 @@ public class UsersControllerAuthorizationTests(
 	/// </summary>
 	[Fact]
 	public Task GetByIdAsync_WithoutAuth_ReturnsUnauthorizedAsync() =>
-		AuthHelper.AssertUnauthorizedAsync(HttpMethod.Get, $"{Endpoint}/1");
+		AuthHelper.AssertUnauthorizedAsync(
+			HttpMethod.Get,
+			$"{Endpoint}/1");
 
 	/// <summary>
 	/// Tests that POST /api/v1/users returns 401 without authentication.
@@ -80,7 +82,9 @@ public class UsersControllerAuthorizationTests(
 	/// </summary>
 	[Fact]
 	public Task DeleteAsync_WithoutAuth_ReturnsUnauthorizedAsync() =>
-		AuthHelper.AssertUnauthorizedAsync(HttpMethod.Delete, $"{Endpoint}/1");
+		AuthHelper.AssertUnauthorizedAsync(
+			HttpMethod.Delete,
+			$"{Endpoint}/1");
 
 	#endregion
 

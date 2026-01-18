@@ -67,8 +67,12 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 			.ExecuteUpdateAsync(
 				setters =>
 					setters
-						.SetProperty(token => token.IsRevoked, true)
-						.SetProperty(token => token.RevokedAt, revokedAt),
+						.SetProperty(
+							token => token.IsRevoked,
+							true)
+						.SetProperty(
+							token => token.RevokedAt,
+							revokedAt),
 				cancellationToken);
 
 	/// <inheritdoc/>
@@ -83,8 +87,12 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 			.ExecuteUpdateAsync(
 				setters =>
 					setters
-						.SetProperty(token => token.IsRevoked, true)
-						.SetProperty(token => token.RevokedAt, revokedAt),
+						.SetProperty(
+							token => token.IsRevoked,
+							true)
+						.SetProperty(
+							token => token.RevokedAt,
+							revokedAt),
 				cancellationToken);
 
 	/// <inheritdoc/>
@@ -103,8 +111,12 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 			.ExecuteUpdateAsync(
 				setters =>
 					setters
-						.SetProperty(token => token.IsRevoked, true)
-						.SetProperty(token => token.RevokedAt, revokedAt),
+						.SetProperty(
+							token => token.IsRevoked,
+							true)
+						.SetProperty(
+							token => token.RevokedAt,
+							revokedAt),
 				cancellationToken);
 
 	/// <inheritdoc/>
@@ -139,8 +151,12 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 				.ExecuteUpdateAsync(
 					setters =>
 						setters
-							.SetProperty(token => token.IsRevoked, true)
-							.SetProperty(token => token.RevokedAt, revokedAt),
+							.SetProperty(
+								token => token.IsRevoked,
+								true)
+							.SetProperty(
+								token => token.RevokedAt,
+								revokedAt),
 					cancellationToken);
 
 		return rowsAffected > 0;

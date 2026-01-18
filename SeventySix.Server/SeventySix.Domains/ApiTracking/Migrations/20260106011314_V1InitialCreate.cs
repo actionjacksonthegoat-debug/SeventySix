@@ -57,7 +57,9 @@ namespace SeventySix.Domains.ApiTracking.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_ThirdPartyApiRequests", x => x.Id);
+					table.PrimaryKey(
+						"PK_ThirdPartyApiRequests",
+						x => x.Id);
 					table.CheckConstraint(
 						"CK_ThirdPartyApiRequests_CallCount",
 						"\"CallCount\" >= 0");

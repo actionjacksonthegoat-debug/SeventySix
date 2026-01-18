@@ -58,7 +58,9 @@ public static class AddUserRoleCommandHandler
 		if (!result.Succeeded)
 		{
 			throw new InvalidOperationException(
-				$"Failed to add role: {string.Join(", ", result.Errors.Select(error => error.Description))}");
+				$"Failed to add role: {string.Join(
+					", ",
+					result.Errors.Select(error => error.Description))}");
 		}
 
 		// Cleanup pending permission request for this role

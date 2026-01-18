@@ -56,14 +56,15 @@ public class DataProtectionRegistrationTests
 
 		// Assert
 		OptionsValidationException validationException =
-			Should.Throw<OptionsValidationException>(() =>
-			{
-				IOptions<AppDataProtectionOptions> dataProtectionOptions =
-					provider.GetRequiredService<
-						IOptions<AppDataProtectionOptions>>();
-				_ =
-					dataProtectionOptions.Value;
-			});
+			Should.Throw<OptionsValidationException>(
+				() =>
+				{
+					IOptions<AppDataProtectionOptions> dataProtectionOptions =
+						provider.GetRequiredService<
+							IOptions<AppDataProtectionOptions>>();
+					_ =
+						dataProtectionOptions.Value;
+				});
 
 		validationException.Message.ShouldContain(
 			"Invalid DataProtection configuration");
@@ -188,13 +189,14 @@ public class DataProtectionRegistrationTests
 			services.BuildServiceProvider();
 
 		// Assert - Should throw even in development when fallback is disabled
-		Should.Throw<OptionsValidationException>(() =>
-		{
-			IOptions<AppDataProtectionOptions> dataProtectionOptions =
-				provider.GetRequiredService<
-					IOptions<AppDataProtectionOptions>>();
-			_ =
-				dataProtectionOptions.Value;
-		});
+		Should.Throw<OptionsValidationException>(
+			() =>
+			{
+				IOptions<AppDataProtectionOptions> dataProtectionOptions =
+					provider.GetRequiredService<
+						IOptions<AppDataProtectionOptions>>();
+				_ =
+					dataProtectionOptions.Value;
+			});
 	}
 }

@@ -33,10 +33,18 @@ public class MappingExtensionsTests
 		// Assert
 		List<TestDto> resultList = result.ToList();
 		Assert.Equal(3, resultList.Count);
-		Assert.Equal(1, resultList[0].Id);
-		Assert.Equal("FIRST", resultList[0].DisplayName);
-		Assert.Equal(2, resultList[1].Id);
-		Assert.Equal("SECOND", resultList[1].DisplayName);
+		Assert.Equal(
+			1,
+			resultList[0].Id);
+		Assert.Equal(
+			"FIRST",
+			resultList[0].DisplayName);
+		Assert.Equal(
+			2,
+			resultList[1].Id);
+		Assert.Equal(
+			"SECOND",
+			resultList[1].DisplayName);
 	}
 
 	[Fact]
@@ -94,7 +102,8 @@ public class MappingExtensionsTests
 
 		// Act - just calling MapToDto shouldn't execute mapper
 		IEnumerable<TestDto> result =
-			entities.MapToDto(e =>
+			entities.MapToDto(
+	e =>
 		{
 			mapperCallCount++;
 			return new TestDto { Id = e.Id, DisplayName = e.Name };

@@ -25,5 +25,8 @@ public sealed class WolverineHealthCheck<TQuery>(
 
 	/// <inheritdoc />
 	public async Task<bool> CheckHealthAsync(
-		CancellationToken cancellationToken = default) => await messageBus.InvokeAsync<bool>(new TQuery(), cancellationToken);
+		CancellationToken cancellationToken = default) =>
+		await messageBus.InvokeAsync<bool>(
+			new TQuery(),
+			cancellationToken);
 }

@@ -86,7 +86,9 @@ public class BoundedContextTests
 				if (!architectureTestResult.IsSuccessful)
 				{
 					circularDependencyViolations.Add(
-						$"{sourceContextName} should not depend on {targetContextName}. Violating types: {string.Join(", ", architectureTestResult.FailingTypeNames ?? [])}");
+						$"{sourceContextName} should not depend on {targetContextName}. Violating types: {string.Join(
+							", ",
+							architectureTestResult.FailingTypeNames ?? [])}");
 				}
 			}
 		}

@@ -33,20 +33,21 @@ public static class CorsRegistration
 			configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
 			?? ["http://localhost:4200"];
 
-		services.AddCors(options =>
-		{
-			options.AddPolicy(
-				name: "AllowedOrigins",
-				policy =>
-				{
-					_ =
-						policy
-							.WithOrigins(allowedOrigins)
-							.AllowAnyHeader()
-							.AllowAnyMethod()
-							.AllowCredentials();
-				});
-		});
+		services.AddCors(
+			options =>
+			{
+				options.AddPolicy(
+					name: "AllowedOrigins",
+					policy =>
+					{
+						_ =
+							policy
+								.WithOrigins(allowedOrigins)
+								.AllowAnyHeader()
+								.AllowAnyMethod()
+								.AllowCredentials();
+					});
+			});
 
 		return services;
 	}

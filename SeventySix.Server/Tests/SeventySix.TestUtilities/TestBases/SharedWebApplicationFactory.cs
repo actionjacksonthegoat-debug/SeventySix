@@ -65,26 +65,28 @@ public sealed class SharedWebApplicationFactory<TProgram>
 			});
 
 		// Suppress Microsoft.Extensions.Logging providers (fallback logging)
-		builder.ConfigureLogging(logging =>
-		{
-			logging.ClearProviders();
-			logging.SetMinimumLevel(LogLevel.Error);
-		});
+		builder.ConfigureLogging(
+			logging =>
+			{
+				logging.ClearProviders();
+				logging.SetMinimumLevel(LogLevel.Error);
+			});
 
-		builder.ConfigureServices(services =>
-		{
-			// Replace DbContexts with test database connection string
-			services.RemoveAll<DbContextOptions<IdentityDbContext>>();
-			services.RemoveAll<DbContextOptions<LoggingDbContext>>();
-			services.RemoveAll<DbContextOptions<ApiTrackingDbContext>>();
+		builder.ConfigureServices(
+			services =>
+			{
+				// Replace DbContexts with test database connection string
+				services.RemoveAll<DbContextOptions<IdentityDbContext>>();
+				services.RemoveAll<DbContextOptions<LoggingDbContext>>();
+				services.RemoveAll<DbContextOptions<ApiTrackingDbContext>>();
 
-			services.AddDbContext<IdentityDbContext>(options =>
-				options.UseNpgsql(ConnectionString));
-			services.AddDbContext<LoggingDbContext>(options =>
-				options.UseNpgsql(ConnectionString));
-			services.AddDbContext<ApiTrackingDbContext>(options =>
-				options.UseNpgsql(ConnectionString));
-		});
+				services.AddDbContext<IdentityDbContext>(options =>
+					options.UseNpgsql(ConnectionString));
+				services.AddDbContext<LoggingDbContext>(options =>
+					options.UseNpgsql(ConnectionString));
+				services.AddDbContext<ApiTrackingDbContext>(options =>
+					options.UseNpgsql(ConnectionString));
+			});
 
 		// Apply any additional configuration LAST (e.g., for rate limiting tests)
 		// Configuration from AddInMemoryCollection calls here will override appsettings.Test.json

@@ -51,7 +51,9 @@ internal class LogRepository(
 		ArgumentNullException.ThrowIfNull(request);
 
 		IQueryable<Log> filteredQuery =
-			ApplyFilters(GetQueryable(), request);
+			ApplyFilters(
+				GetQueryable(),
+				request);
 
 		int totalCount =
 			await filteredQuery.CountAsync(cancellationToken);
@@ -177,7 +179,9 @@ internal class LogRepository(
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
 
 		Log? log =
-			await context.Logs.FindAsync([id], cancellationToken);
+			await context.Logs.FindAsync(
+				[id],
+				cancellationToken);
 
 		if (log == null)
 		{

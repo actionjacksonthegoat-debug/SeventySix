@@ -147,9 +147,15 @@ public class UserExtensionsTests
 		// Assert
 		Assert.NotNull(dtos);
 		Assert.Equal(3, dtos.Count);
-		Assert.Equal("user1", dtos[0].Username);
-		Assert.Equal("user2", dtos[1].Username);
-		Assert.Equal("user3", dtos[2].Username);
+		Assert.Equal(
+			"user1",
+			dtos[0].Username);
+		Assert.Equal(
+			"user2",
+			dtos[1].Username);
+		Assert.Equal(
+			"user3",
+			dtos[2].Username);
 	}
 
 	[Fact]
@@ -201,7 +207,9 @@ public class UserExtensionsTests
 		Assert.Equal("New User", entity.FullName);
 		Assert.True(entity.IsActive);
 		// Note: CreateDate is set by AuditInterceptor on SaveChanges, not during mapping
-		Assert.Equal(default(DateTime), entity.CreateDate);
+		Assert.Equal(
+			default(DateTime),
+			entity.CreateDate);
 	}
 
 	[Fact]
@@ -222,7 +230,9 @@ public class UserExtensionsTests
 
 		// Assert
 		Assert.NotNull(entity);
-		Assert.Equal(string.Empty, entity.FullName);
+		Assert.Equal(
+			string.Empty,
+			entity.FullName);
 	}
 
 	[Fact]
@@ -262,7 +272,9 @@ public class UserExtensionsTests
 		ApplicationUser entity = request.ToEntity();
 
 		// Assert - CreateDate defaults to MinValue, interceptor sets it on SaveChanges
-		Assert.Equal(default(DateTime), entity.CreateDate);
+		Assert.Equal(
+			default(DateTime),
+			entity.CreateDate);
 	}
 
 	[Fact]

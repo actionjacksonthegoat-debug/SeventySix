@@ -49,7 +49,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_Roles", x => x.Id);
+					table.PrimaryKey(
+						"PK_Roles",
+						x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -160,7 +162,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_Users", x => x.Id);
+					table.PrimaryKey(
+						"PK_Users",
+						x => x.Id);
 				});
 
 			migrationBuilder.CreateTable(
@@ -185,7 +189,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_RoleClaims", x => x.Id);
+					table.PrimaryKey(
+						"PK_RoleClaims",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_RoleClaims_Roles_RoleId",
 						column: x => x.RoleId,
@@ -257,7 +263,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_PermissionRequests", x => x.Id);
+					table.PrimaryKey(
+						"PK_PermissionRequests",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_PermissionRequests_Roles_RequestedRoleId",
 						column: x => x.RequestedRoleId,
@@ -318,7 +326,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+					table.PrimaryKey(
+						"PK_RefreshTokens",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_RefreshTokens_Users_UserId",
 						column: x => x.UserId,
@@ -350,7 +360,9 @@ namespace SeventySix.Domains.Identity.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_UserClaims", x => x.Id);
+					table.PrimaryKey(
+						"PK_UserClaims",
+						x => x.Id);
 					table.ForeignKey(
 						name: "FK_UserClaims_Users_UserId",
 						column: x => x.UserId,

@@ -80,7 +80,9 @@ public class ThirdPartyApiRequestsControllerTests
 		IEnumerable<ThirdPartyApiRequestDto> returnedRequests =
 			Assert.IsAssignableFrom<IEnumerable<ThirdPartyApiRequestDto>>(
 				okResult.Value);
-		Assert.Equal(2, returnedRequests.Count());
+		Assert.Equal(
+			2,
+			returnedRequests.Count());
 
 		await MessageBus
 			.Received(1)

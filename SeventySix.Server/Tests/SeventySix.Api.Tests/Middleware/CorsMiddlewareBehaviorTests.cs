@@ -57,7 +57,9 @@ public class CorsMiddlewareBehaviorTests : IDisposable
 		HttpResponseMessage preflightResponse =
 			await client.SendAsync(
 				preflight);
-		Assert.Equal(HttpStatusCode.NoContent, preflightResponse.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.NoContent,
+			preflightResponse.StatusCode);
 		Assert.True(
 			preflightResponse.Headers.Contains("Access-Control-Allow-Origin"));
 
@@ -71,7 +73,9 @@ public class CorsMiddlewareBehaviorTests : IDisposable
 		HttpResponseMessage errorResponse =
 			await client.SendAsync(
 				errorRequest);
-		Assert.Equal(HttpStatusCode.NotFound, errorResponse.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.NotFound,
+			errorResponse.StatusCode);
 		Assert.True(
 			errorResponse.Headers.Contains("Access-Control-Allow-Origin"));
 	}

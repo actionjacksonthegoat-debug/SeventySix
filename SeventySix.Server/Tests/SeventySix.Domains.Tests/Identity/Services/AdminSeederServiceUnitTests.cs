@@ -57,10 +57,14 @@ public class AdminSeederServiceUnitTests
 			.Returns(new ApplicationRole { Name = RoleConstants.Admin });
 
 		userManager
-			.CreateAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>())
+			.CreateAsync(
+				Arg.Any<ApplicationUser>(),
+				Arg.Any<string>())
 			.Returns(IdentityResult.Success);
 		userManager
-			.AddToRoleAsync(Arg.Any<ApplicationUser>(), RoleConstants.Admin)
+			.AddToRoleAsync(
+				Arg.Any<ApplicationUser>(),
+				RoleConstants.Admin)
 			.Returns(IdentityResult.Success);
 
 		AdminSeederService service =
@@ -82,7 +86,9 @@ public class AdminSeederServiceUnitTests
 				settings.InitialPassword!);
 		await userManager
 			.Received(1)
-			.AddToRoleAsync(Arg.Any<ApplicationUser>(), RoleConstants.Admin);
+			.AddToRoleAsync(
+				Arg.Any<ApplicationUser>(),
+				RoleConstants.Admin);
 	}
 
 	[Fact]

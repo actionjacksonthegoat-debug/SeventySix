@@ -226,7 +226,10 @@ public class EmailService(
 		await SendViaSMtpAsync(message, cancellationToken);
 		await TrackRateLimitAsync(cancellationToken);
 
-		logger.LogWarning("Email sent to {To}: {Subject}", to, subject);
+		logger.LogWarning(
+			"Email sent to {To}: {Subject}",
+			to,
+			subject);
 	}
 
 	/// <summary>

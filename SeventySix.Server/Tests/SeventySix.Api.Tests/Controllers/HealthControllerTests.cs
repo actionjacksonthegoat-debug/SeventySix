@@ -149,8 +149,12 @@ public class HealthControllerTests
 		HealthStatusResponse returnedStatus =
 			Assert.IsType<HealthStatusResponse>(okResult.Value);
 		Assert.Equal("Degraded", returnedStatus.Status);
-		Assert.Equal("Degraded", returnedStatus.Database.Status);
-		Assert.Equal(100, returnedStatus.ErrorQueue.QueuedItems);
+		Assert.Equal(
+			"Degraded",
+			returnedStatus.Database.Status);
+		Assert.Equal(
+			100,
+			returnedStatus.ErrorQueue.QueuedItems);
 	}
 
 	[Fact]

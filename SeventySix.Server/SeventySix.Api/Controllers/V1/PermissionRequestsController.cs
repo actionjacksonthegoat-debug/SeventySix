@@ -93,8 +93,9 @@ public class PermissionRequestsController(IMessageBus messageBus)
 
 		IEnumerable<AvailableRoleDto> roles =
 			await messageBus.InvokeAsync<
-				IEnumerable<AvailableRoleDto>
-		>(new GetAvailableRolesQuery(userId), cancellationToken);
+				IEnumerable<AvailableRoleDto>>(
+					new GetAvailableRolesQuery(userId),
+					cancellationToken);
 
 		return Ok(roles);
 	}

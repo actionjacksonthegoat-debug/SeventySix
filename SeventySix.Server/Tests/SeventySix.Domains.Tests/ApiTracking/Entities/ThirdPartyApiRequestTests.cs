@@ -122,7 +122,9 @@ public class ThirdPartyApiRequestTests
 
 		// Assert
 		Assert.Equal("ExternalAPI", request.ApiName);
-		Assert.Equal("https://api.ExternalAPImap.org", request.BaseUrl);
+		Assert.Equal(
+			"https://api.ExternalAPImap.org",
+			request.BaseUrl);
 		Assert.Equal(10, request.CallCount);
 		Assert.Equal(
 			DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),

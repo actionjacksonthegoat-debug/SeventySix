@@ -72,7 +72,9 @@ public static class SetPasswordCommandHandler
 		string resetToken =
 			tokenParts[1];
 
-		if (!long.TryParse(userIdString, out long userId))
+		if (!long.TryParse(
+			userIdString,
+			out long userId))
 		{
 			logger.LogWarning("Invalid user ID in password reset token");
 			throw new ArgumentException(

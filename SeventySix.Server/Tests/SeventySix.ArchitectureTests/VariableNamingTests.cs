@@ -133,13 +133,21 @@ public class VariableNamingTests : SourceCodeArchitectureTest
 	{
 		int contextLength = 50;
 		int startIndex =
-			Math.Max(0, matchIndex - contextLength);
+			Math.Max(
+				0,
+				matchIndex - contextLength);
 		int endIndex =
-			Math.Min(content.Length, matchIndex + contextLength);
+			Math.Min(
+				content.Length,
+				matchIndex + contextLength);
 
 		return content
-			.Substring(startIndex, endIndex - startIndex)
-			.Replace("\r", string.Empty)
+			.Substring(
+				startIndex,
+				endIndex - startIndex)
+			.Replace(
+				"\r",
+				string.Empty)
 			.Replace("\n", " ")
 			.Trim();
 	}

@@ -38,12 +38,19 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 		// Each test gets a fresh factory with its own rate limiter state
 		// UseSetting provides configuration at the host level, overriding appsettings
 		IsolatedFactory =
-			CreateIsolatedFactory(builder =>
-		{
-			builder.UseSetting("Auth:RateLimit:LoginAttemptsPerMinute", "5");
-			builder.UseSetting("Auth:RateLimit:RegisterAttemptsPerHour", "3");
-			builder.UseSetting("Auth:RateLimit:TokenRefreshPerMinute", "10");
-		});
+			CreateIsolatedFactory(
+				builder =>
+				{
+					builder.UseSetting(
+						"Auth:RateLimit:LoginAttemptsPerMinute",
+						"5");
+					builder.UseSetting(
+						"Auth:RateLimit:RegisterAttemptsPerHour",
+						"3");
+					builder.UseSetting(
+						"Auth:RateLimit:TokenRefreshPerMinute",
+						"10");
+				});
 		Client =
 			IsolatedFactory.CreateClient();
 	}

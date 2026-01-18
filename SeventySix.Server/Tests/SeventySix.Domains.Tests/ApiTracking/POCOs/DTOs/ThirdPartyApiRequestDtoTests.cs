@@ -20,11 +20,17 @@ public class ThirdPartyApiRequestDtoTests
 
 		// Assert
 		Assert.Equal(0, dto.Id);
-		Assert.Equal(string.Empty, dto.ApiName);
-		Assert.Equal(string.Empty, dto.BaseUrl);
+		Assert.Equal(
+			string.Empty,
+			dto.ApiName);
+		Assert.Equal(
+			string.Empty,
+			dto.BaseUrl);
 		Assert.Equal(0, dto.CallCount);
 		Assert.Null(dto.LastCalledAt);
-		Assert.Equal(default(DateOnly), dto.ResetDate);
+		Assert.Equal(
+			default(DateOnly),
+			dto.ResetDate);
 	}
 
 	[Fact]
@@ -50,7 +56,9 @@ public class ThirdPartyApiRequestDtoTests
 		// Assert
 		Assert.Equal(42, dto.Id);
 		Assert.Equal("ExternalAPI", dto.ApiName);
-		Assert.Equal("https://api.ExternalAPImap.org", dto.BaseUrl);
+		Assert.Equal(
+			"https://api.ExternalAPImap.org",
+			dto.BaseUrl);
 		Assert.Equal(150, dto.CallCount);
 		Assert.Equal(now, dto.LastCalledAt);
 		Assert.Equal(resetDate, dto.ResetDate);

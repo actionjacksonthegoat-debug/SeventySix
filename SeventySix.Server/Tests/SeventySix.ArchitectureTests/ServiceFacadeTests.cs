@@ -49,7 +49,9 @@ public class ServiceFacadeTests
 
 			Assert.True(
 				architectureTestResult.IsSuccessful,
-				$"Controllers must not depend on {repositoryNamespace} directly. Found violations: {string.Join(", ", architectureTestResult.FailingTypeNames ?? [])}");
+				$"Controllers must not depend on {repositoryNamespace} directly. Found violations: {string.Join(
+					", ",
+					architectureTestResult.FailingTypeNames ?? [])}");
 		}
 	}
 

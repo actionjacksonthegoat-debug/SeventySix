@@ -95,7 +95,9 @@ public class UsersControllerTests
 			Assert.IsAssignableFrom<
 			IEnumerable<UserDto>
 		>(okResult.Value);
-		Assert.Equal(2, returnedUsers.Count());
+		Assert.Equal(
+			2,
+			returnedUsers.Count());
 
 		await MessageBus
 			.Received(1)
@@ -528,7 +530,9 @@ public class UsersControllerTests
 			Assert.IsType<
 			PagedResult<UserDto>
 		>(okResult.Value);
-		Assert.Equal(2, returnedResult.Items.Count());
+		Assert.Equal(
+			2,
+			returnedResult.Items.Count());
 		Assert.Equal(1, returnedResult.Page);
 		Assert.Equal(10, returnedResult.PageSize);
 		Assert.Equal(2, returnedResult.TotalCount);

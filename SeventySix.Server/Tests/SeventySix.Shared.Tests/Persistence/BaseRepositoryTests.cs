@@ -170,7 +170,9 @@ public class BaseRepositoryTests
 		// Assert
 		Assert.Equal(entity, result);
 		Assert.Single(Context.TestEntities);
-		Assert.Equal("Test", Context.TestEntities.First().Name);
+		Assert.Equal(
+			"Test",
+			Context.TestEntities.First().Name);
 	}
 
 	/// <summary>

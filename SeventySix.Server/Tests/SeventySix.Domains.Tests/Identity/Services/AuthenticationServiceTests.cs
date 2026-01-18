@@ -122,8 +122,12 @@ public class AuthenticationServiceTests
 		// Assert
 		Assert.True(result.Success);
 		Assert.Equal(expectedAccessToken, result.AccessToken);
-		Assert.Equal(expectedRefreshToken, result.RefreshToken);
-		Assert.Equal(utcNow.AddMinutes(15), result.ExpiresAt);
+		Assert.Equal(
+			expectedRefreshToken,
+			result.RefreshToken);
+		Assert.Equal(
+			utcNow.AddMinutes(15),
+			result.ExpiresAt);
 		Assert.Equal(user.Email, result.Email);
 		Assert.Equal(user.FullName, result.FullName);
 		Assert.False(result.RequiresPasswordChange);

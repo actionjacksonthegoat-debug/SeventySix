@@ -56,7 +56,10 @@ public static class FusionCacheRegistration
 			configuration.GetSection(CacheSettings.SECTION_NAME));
 
 		// Skip Valkey in Test environment - use memory-only cache for fast tests
-		if (string.Equals(environmentName, "Test", StringComparison.OrdinalIgnoreCase))
+		if (string.Equals(
+			environmentName,
+			"Test",
+			StringComparison.OrdinalIgnoreCase))
 		{
 			return services.AddFusionCacheMemoryOnly(cacheSettings);
 		}

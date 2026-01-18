@@ -76,13 +76,17 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			request);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.Unauthorized,
+			response.StatusCode);
 
 		ProblemDetails? problemDetails =
 			await response.Content.ReadFromJsonAsync<ProblemDetails>();
 
 		Assert.NotNull(problemDetails);
-		Assert.Equal("Authentication Failed", problemDetails.Title);
+		Assert.Equal(
+			"Authentication Failed",
+			problemDetails.Title);
 	}
 
 	/// <summary>
@@ -206,7 +210,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			request);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.Created,
+			response.StatusCode);
 
 		AuthResponse? authResponse =
 			await response.Content.ReadFromJsonAsync<AuthResponse>();
@@ -257,7 +263,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			request);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.BadRequest,
+			response.StatusCode);
 	}
 	#endregion
 	#region Refresh Tests
@@ -275,7 +283,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			null);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.Unauthorized,
+			response.StatusCode);
 	}
 	#endregion
 	#region Cookie Security Tests
@@ -329,7 +339,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			refreshTokenCookie.ToLowerInvariant());
 
 		// Verify HttpOnly is set (critical for XSS protection)
-		Assert.Contains("httponly", refreshTokenCookie.ToLowerInvariant());
+		Assert.Contains(
+			"httponly",
+			refreshTokenCookie.ToLowerInvariant());
 	}
 	#endregion
 	#region Logout Tests
@@ -347,7 +359,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			null);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.NoContent,
+			response.StatusCode);
 	}
 	#endregion
 	#region OAuth Tests
@@ -364,7 +378,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			"/api/v1/auth/github");
 
 		// Assert
-		Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.Redirect,
+			response.StatusCode);
 		Assert.NotNull(response.Headers.Location);
 		Assert.StartsWith(
 			"https://github.com/login/oauth/authorize",
@@ -389,8 +405,12 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			response.Headers.GetValues("Set-Cookie");
 
 		// Verify state and code_verifier cookies are set
-		Assert.Contains(cookies, c => c.Contains("X-OAuth-State="));
-		Assert.Contains(cookies, c => c.Contains("X-OAuth-CodeVerifier="));
+		Assert.Contains(
+			cookies,
+			c => c.Contains("X-OAuth-State="));
+		Assert.Contains(
+			cookies,
+			c => c.Contains("X-OAuth-CodeVerifier="));
 	}
 
 	/// <summary>
@@ -432,7 +452,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			new(
 			HttpMethod.Get,
 			$"/api/v1/auth/github/callback?code=test&state={queryState}");
-		request.Headers.Add("Cookie", $"X-OAuth-State={validState}");
+		request.Headers.Add(
+			"Cookie",
+			$"X-OAuth-State={validState}");
 
 		// Act
 		HttpResponseMessage response =
@@ -490,7 +512,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			await response.Content.ReadFromJsonAsync<AuthResponse>();
 
 		Assert.NotNull(authResponse);
-		Assert.Equal("test-access-token", authResponse.AccessToken);
+		Assert.Equal(
+			"test-access-token",
+			authResponse.AccessToken);
 		Assert.Equal("oauth@example.com", authResponse.Email);
 	}
 
@@ -507,7 +531,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			new OAuthCodeExchangeRequest("invalid-code"));
 
 		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.BadRequest,
+			response.StatusCode);
 
 		ProblemDetails? problem =
 			await response.Content.ReadFromJsonAsync<ProblemDetails>();
@@ -551,8 +577,12 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			new OAuthCodeExchangeRequest(code));
 
 		// Assert
-		Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
-		Assert.Equal(HttpStatusCode.BadRequest, secondResponse.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.OK,
+			firstResponse.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.BadRequest,
+			secondResponse.StatusCode);
 	}
 
 	/// <summary>
@@ -604,7 +634,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			"/api/v1/auth/me");
 
 		// Assert
-		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.Unauthorized,
+			response.StatusCode);
 	}
 
 	/// <summary>
@@ -627,7 +659,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 		HttpResponseMessage loginResponse =
 			await Client!.PostAsJsonAsync(
 			"/api/v1/auth/login",
-			new LoginRequest($"testuser_{testId}", TestUserHelper.TestPassword));
+			new LoginRequest(
+			$"testuser_{testId}",
+			TestUserHelper.TestPassword));
 
 		AuthResponse? authResponse =
 			await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
@@ -648,8 +682,12 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			await response.Content.ReadFromJsonAsync<UserProfileDto>();
 
 		Assert.NotNull(profile);
-		Assert.Equal($"testuser_{testId}", profile.Username);
-		Assert.Equal($"test_{testId}@example.com", profile.Email);
+		Assert.Equal(
+			$"testuser_{testId}",
+			profile.Username);
+		Assert.Equal(
+			$"test_{testId}@example.com",
+			profile.Email);
 	}
 	#endregion
 	#region Change Password Tests
@@ -673,7 +711,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			request);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.Unauthorized,
+			response.StatusCode);
 	}
 
 	/// <summary>
@@ -721,13 +761,17 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			request);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.BadRequest,
+			response.StatusCode);
 
 		string content =
 			await response.Content.ReadAsStringAsync();
 
 		// Verify validation error response contains password-related message
-		Assert.Contains("password", content.ToLowerInvariant());
+		Assert.Contains(
+			"password",
+			content.ToLowerInvariant());
 	}
 	#endregion
 	#region JWT Security Tests
@@ -766,7 +810,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			await Client.GetAsync("/api/v1/auth/me");
 
 		// Assert
-		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.Unauthorized,
+			response.StatusCode);
 	}
 	#endregion
 	#region Self-Registration Tests
@@ -848,13 +894,17 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			request);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.BadRequest,
+			response.StatusCode);
 
 		ProblemDetails? problemDetails =
 			await response.Content.ReadFromJsonAsync<ProblemDetails>();
 
 		Assert.NotNull(problemDetails);
-		Assert.Equal("Registration Failed", problemDetails.Title);
+		Assert.Equal(
+			"Registration Failed",
+			problemDetails.Title);
 	}
 
 	/// <summary>
@@ -930,7 +980,9 @@ public class AuthControllerTests(TestcontainersPostgreSqlFixture fixture)
 			request);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.Created,
+			response.StatusCode);
 
 		AuthResponse? authResponse =
 			await response.Content.ReadFromJsonAsync<AuthResponse>();

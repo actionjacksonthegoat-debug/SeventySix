@@ -2,8 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-using SeventySix.Shared.POCOs;
 using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Logging;
 

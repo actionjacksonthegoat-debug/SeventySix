@@ -59,11 +59,19 @@ public static class JwtTestHelper
 	{
 		List<Claim> claims =
 			[
-			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-			new Claim(JwtRegisteredClaimNames.UniqueName, username),
-			new Claim(JwtRegisteredClaimNames.Email, email),
-			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-		];
+				new Claim(
+					JwtRegisteredClaimNames.Sub,
+					userId.ToString()),
+				new Claim(
+					JwtRegisteredClaimNames.UniqueName,
+					username),
+				new Claim(
+					JwtRegisteredClaimNames.Email,
+					email),
+				new Claim(
+					JwtRegisteredClaimNames.Jti,
+					Guid.NewGuid().ToString()),
+			];
 
 		SymmetricSecurityKey key =
 			new(Encoding.UTF8.GetBytes(WrongSecretKey));
@@ -110,10 +118,16 @@ public static class JwtTestHelper
 	{
 		List<Claim> claims =
 			[
-			new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-			new Claim(JwtRegisteredClaimNames.UniqueName, username),
+			new Claim(
+			JwtRegisteredClaimNames.Sub,
+			userId.ToString()),
+			new Claim(
+			JwtRegisteredClaimNames.UniqueName,
+			username),
 			new Claim(JwtRegisteredClaimNames.Email, email),
-			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+			new Claim(
+			JwtRegisteredClaimNames.Jti,
+			Guid.NewGuid().ToString()),
 		];
 
 		SymmetricSecurityKey key =

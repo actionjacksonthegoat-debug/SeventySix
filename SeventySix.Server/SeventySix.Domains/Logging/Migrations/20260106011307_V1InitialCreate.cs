@@ -86,7 +86,9 @@ namespace SeventySix.Domains.Logging.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_Logs", x => x.Id);
+					table.PrimaryKey(
+						"PK_Logs",
+						x => x.Id);
 				});
 
 			migrationBuilder.CreateIndex(

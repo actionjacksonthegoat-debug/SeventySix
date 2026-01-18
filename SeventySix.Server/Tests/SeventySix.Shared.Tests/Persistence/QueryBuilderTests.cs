@@ -46,8 +46,12 @@ public sealed class QueryBuilderTests
 
 		// Assert
 		Assert.Equal(2, result.Count);
-		Assert.Contains(result, entity => entity.Name == "Alice");
-		Assert.Contains(result, entity => entity.Name == "Charlie");
+		Assert.Contains(
+			result,
+			entity => entity.Name == "Alice");
+		Assert.Contains(
+			result,
+			entity => entity.Name == "Charlie");
 	}
 
 	/// <summary>
@@ -101,8 +105,12 @@ public sealed class QueryBuilderTests
 
 		// Assert
 		Assert.Equal(2, result.Count);
-		Assert.Contains(result, entity => entity.Name == "Alice");
-		Assert.Contains(result, entity => entity.Name == "Charlie");
+		Assert.Contains(
+			result,
+			entity => entity.Name == "Alice");
+		Assert.Contains(
+			result,
+			entity => entity.Name == "Charlie");
 	}
 
 	/// <summary>
@@ -144,9 +152,15 @@ public sealed class QueryBuilderTests
 
 		// Assert
 		Assert.Equal(3, result.Count);
-		Assert.Equal("Alice", result[0].Name);
-		Assert.Equal("Bob", result[1].Name);
-		Assert.Equal("Charlie", result[2].Name);
+		Assert.Equal(
+			"Alice",
+			result[0].Name);
+		Assert.Equal(
+			"Bob",
+			result[1].Name);
+		Assert.Equal(
+			"Charlie",
+			result[2].Name);
 	}
 
 	/// <summary>
@@ -188,9 +202,15 @@ public sealed class QueryBuilderTests
 
 		// Assert
 		Assert.Equal(3, result.Count);
-		Assert.Equal(35, result[0].Age);
-		Assert.Equal(30, result[1].Age);
-		Assert.Equal(25, result[2].Age);
+		Assert.Equal(
+			35,
+			result[0].Age);
+		Assert.Equal(
+			30,
+			result[1].Age);
+		Assert.Equal(
+			25,
+			result[2].Age);
 	}
 
 	/// <summary>
@@ -234,9 +254,15 @@ public sealed class QueryBuilderTests
 
 		// Assert
 		Assert.Equal(3, result.Count);
-		Assert.Equal("Alice", result[0].Name);
-		Assert.Equal("Bob", result[1].Name);
-		Assert.Equal("Charlie", result[2].Name);
+		Assert.Equal(
+			"Alice",
+			result[0].Name);
+		Assert.Equal(
+			"Bob",
+			result[1].Name);
+		Assert.Equal(
+			"Charlie",
+			result[2].Name);
 	}
 
 	/// <summary>
@@ -283,8 +309,12 @@ public sealed class QueryBuilderTests
 
 		// Assert
 		Assert.Equal(2, result.Count);
-		Assert.Contains(result, entity => entity.Name == "Charlie");
-		Assert.Contains(result, entity => entity.Name == "Diana");
+		Assert.Contains(
+			result,
+			entity => entity.Name == "Charlie");
+		Assert.Contains(
+			result,
+			entity => entity.Name == "Diana");
 	}
 
 	/// <summary>
@@ -383,8 +413,12 @@ public sealed class QueryBuilderTests
 
 		// Assert
 		Assert.Equal(2, result.Count);
-		Assert.Contains(result, entity => entity.Name == "Charlie");
-		Assert.Contains(result, entity => entity.Name == "Diana");
+		Assert.Contains(
+			result,
+			entity => entity.Name == "Charlie");
+		Assert.Contains(
+			result,
+			entity => entity.Name == "Diana");
 	}
 
 	/// <summary>
@@ -456,8 +490,12 @@ public sealed class QueryBuilderTests
 
 		// Assert
 		Assert.Equal(2, result.Count);
-		Assert.Equal("Eve", result[0].Name);
-		Assert.Equal("Alice", result[1].Name);
+		Assert.Equal(
+			"Eve",
+			result[0].Name);
+		Assert.Equal(
+			"Alice",
+			result[1].Name);
 	}
 
 	/// <summary>

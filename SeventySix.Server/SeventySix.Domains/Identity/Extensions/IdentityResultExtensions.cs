@@ -21,7 +21,9 @@ public static class IdentityResultExtensions
 		this IEnumerable<IdentityError>? errors) =>
 		errors is null
 			? string.Empty
-			: string.Join(", ", errors.Select(error => error.Description));
+			: string.Join(
+				", ",
+				errors.Select(error => error.Description));
 
 	/// <summary>
 	/// Converts an IdentityResult's errors into a single comma-separated string.

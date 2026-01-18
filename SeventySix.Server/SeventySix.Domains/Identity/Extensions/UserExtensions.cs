@@ -18,10 +18,10 @@ public static class UserExtensions
 	/// Use with .Select() for server-side projection (avoids loading full entities).
 	/// </summary>
 	public static Expression<
-		Func<ApplicationUser, UserDto>>	ToDtoProjection
-		{
-			get;
-		} =
+		Func<ApplicationUser, UserDto>> ToDtoProjection
+	{
+		get;
+	} =
 			user =>
 				new UserDto(
 					user.Id,

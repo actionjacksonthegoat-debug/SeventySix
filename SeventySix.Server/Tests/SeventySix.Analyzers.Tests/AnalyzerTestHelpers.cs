@@ -47,6 +47,40 @@ public static class AnalyzerTestHelpers
 			DiagnosticSeverity.Warning).WithLocation(line, column);
 
 	/// <summary>
+	/// Creates a diagnostic result for SS005 at the specified location.
+	/// </summary>
+	/// <param name="line">
+	/// The 1-based line number where the diagnostic is expected.
+	/// </param>
+	/// <param name="column">
+	/// The 1-based column number where the diagnostic is expected.
+	/// </param>
+	/// <returns>
+	/// A configured DiagnosticResult for SS005.
+	/// </returns>
+	public static DiagnosticResult ExpectSS005(int line, int column) =>
+		new DiagnosticResult(
+			LambdaArgumentNewlineAnalyzer.DiagnosticId,
+			DiagnosticSeverity.Warning).WithLocation(line, column);
+
+	/// <summary>
+	/// Creates a diagnostic result for SS006 at the specified location.
+	/// </summary>
+	/// <param name="line">
+	/// The 1-based line number where the diagnostic is expected.
+	/// </param>
+	/// <param name="column">
+	/// The 1-based column number where the diagnostic is expected.
+	/// </param>
+	/// <returns>
+	/// A configured DiagnosticResult for SS006.
+	/// </returns>
+	public static DiagnosticResult ExpectSS006(int line, int column) =>
+		new DiagnosticResult(
+			MultiArgumentNewlineAnalyzer.DiagnosticId,
+			DiagnosticSeverity.Warning).WithLocation(line, column);
+
+	/// <summary>
 	/// Verifies that the analyzer produces expected diagnostics for the given code.
 	/// </summary>
 	public static async Task VerifyAnalyzerAsync<TAnalyzer>(

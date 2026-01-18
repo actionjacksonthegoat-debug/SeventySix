@@ -108,14 +108,15 @@ public abstract class BaseQueryValidator<TRequest, TEntity>
 			{
 				RuleFor(request => request.SortBy)
 					.Must(BeValidEntityProperty)
-					.WithMessage(request =>
-					{
-						string validFields =
-							string.Join(
-								", ",
-								GetEntityPropertyNames());
-						return $"SortBy must be one of the following fields: {validFields}";
-					});
+					.WithMessage(
+						request =>
+						{
+							string validFields =
+								string.Join(
+									", ",
+									GetEntityPropertyNames());
+							return $"SortBy must be one of the following fields: {validFields}";
+						});
 			});
 	}
 
@@ -144,7 +145,9 @@ public abstract class BaseQueryValidator<TRequest, TEntity>
 			typeof(TEntity).GetProperties(
 				BindingFlags.Public | BindingFlags.Instance);
 		return properties.Any(property =>
-			property.Name.Equals(sortBy, StringComparison.OrdinalIgnoreCase));
+			property.Name.Equals(
+				sortBy,
+				StringComparison.OrdinalIgnoreCase));
 	}
 
 	/// <summary>

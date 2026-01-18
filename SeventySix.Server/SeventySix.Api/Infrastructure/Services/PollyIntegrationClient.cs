@@ -71,7 +71,9 @@ public class PollyIntegrationClient(
 		// Check cache first
 		if (
 			!string.IsNullOrWhiteSpace(cacheKey)
-			&& cache.TryGetValue(cacheKey, out T? cachedValue))
+			&& cache.TryGetValue(
+				cacheKey,
+				out T? cachedValue))
 		{
 			return cachedValue;
 		}
@@ -93,7 +95,9 @@ public class PollyIntegrationClient(
 			// Try to return cached value even if expired
 			if (
 				!string.IsNullOrWhiteSpace(cacheKey)
-				&& cache.TryGetValue($"{cacheKey}_stale", out T? staleValue))
+				&& cache.TryGetValue(
+					$"{cacheKey}_stale",
+					out T? staleValue))
 			{
 				Logger.LogWarning(
 					"Returning stale cached data due to rate limit for {ApiName}",
@@ -145,7 +149,10 @@ public class PollyIntegrationClient(
 				TimeSpan duration =
 					cacheDuration ?? TimeSpan.FromMinutes(5);
 				cache.Set(cacheKey, result, duration);
-				cache.Set($"{cacheKey}_stale", result, TimeSpan.FromHours(24)); // Keep stale copy for fallback
+				cache.Set(
+					$"{cacheKey}_stale",
+					result,
+					TimeSpan.FromHours(24)); // Keep stale copy for fallback
 			}
 
 			return result;
@@ -160,7 +167,9 @@ public class PollyIntegrationClient(
 			// Try to return stale cached data
 			if (
 				!string.IsNullOrWhiteSpace(cacheKey)
-				&& cache.TryGetValue($"{cacheKey}_stale", out T? staleValue))
+				&& cache.TryGetValue(
+					$"{cacheKey}_stale",
+					out T? staleValue))
 			{
 				Logger.LogWarning(
 					"Returning stale cached data due to circuit breaker for {ApiName}",
@@ -209,7 +218,9 @@ public class PollyIntegrationClient(
 				apiName,
 				cancellationToken))
 		{
-			Logger.LogWarning("Rate limit exceeded for {ApiName}", apiName);
+			Logger.LogWarning(
+				"Rate limit exceeded for {ApiName}",
+				apiName);
 			throw new InvalidOperationException(
 				$"API rate limit exceeded for {apiName}");
 		}
@@ -331,7 +342,10 @@ public class PollyIntegrationClient(
 	private string GetBaseUrl(string fullUrl)
 	{
 		// If it's a relative URL, use the HttpClient's BaseAddress
-		if (!Uri.TryCreate(fullUrl, UriKind.Absolute, out Uri? uri))
+		if (!Uri.TryCreate(
+			fullUrl,
+			UriKind.Absolute,
+			out Uri? uri))
 		{
 			if (httpClient.BaseAddress != null)
 			{

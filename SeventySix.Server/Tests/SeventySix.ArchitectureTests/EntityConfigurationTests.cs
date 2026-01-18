@@ -107,8 +107,12 @@ public class EntityConfigurationTests : SourceCodeArchitectureTest
 
 			string expectedConfigFile =
 				entityFile
-				.Replace("\\Models\\", "\\Data\\Configurations\\")
-				.Replace($"{entityName}.cs", $"{entityName}Configuration.cs");
+				.Replace(
+					"\\Models\\",
+					"\\Data\\Configurations\\")
+				.Replace(
+					$"{entityName}.cs",
+					$"{entityName}Configuration.cs");
 
 			if (!File.Exists(expectedConfigFile))
 			{

@@ -291,7 +291,9 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	private static int CountLineIfNotBlank(string content, int start, int end)
 	{
 		string line =
-			content.Substring(start, end - start).Trim();
+			content.Substring(
+				start,
+				end - start).Trim();
 		return !string.IsNullOrWhiteSpace(line) && !line.StartsWith("//")
 			? 1
 			: 0;
@@ -317,7 +319,9 @@ public class GodMethodTests : SourceCodeArchitectureTest
 
 		string parameterList =
 			fileContent
-			.Substring(openParenIndex + 1, closeParenIndex - openParenIndex - 1)
+			.Substring(
+				openParenIndex + 1,
+				closeParenIndex - openParenIndex - 1)
 			.Trim();
 
 		if (string.IsNullOrWhiteSpace(parameterList))

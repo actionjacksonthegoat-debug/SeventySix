@@ -82,8 +82,12 @@ public class CommandValidatorFactoryTests
 		// Assert
 		Assert.False(result.IsValid);
 		Assert.Single(result.Errors);
-		Assert.Equal("Value is required", result.Errors[0].ErrorMessage);
-		Assert.Equal("Request.Value", result.Errors[0].PropertyName);
+		Assert.Equal(
+			"Value is required",
+			result.Errors[0].ErrorMessage);
+		Assert.Equal(
+			"Request.Value",
+			result.Errors[0].PropertyName);
 	}
 
 	[Fact]
@@ -107,6 +111,8 @@ public class CommandValidatorFactoryTests
 
 		// Assert
 		// Property path should be "Request.Value" not just "Value"
-		Assert.Equal("Request.Value", result.Errors[0].PropertyName);
+		Assert.Equal(
+			"Request.Value",
+			result.Errors[0].PropertyName);
 	}
 }

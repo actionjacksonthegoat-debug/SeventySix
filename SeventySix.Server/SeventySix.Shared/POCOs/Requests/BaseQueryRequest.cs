@@ -59,5 +59,7 @@ public record BaseQueryRequest
 	/// The validated page size (not greater than <see cref="PaginationConstants.MaxPageSize"/>).
 	/// </returns>
 	public int GetValidatedPageSize() =>
-		Math.Min(PageSize, PaginationConstants.MaxPageSize);
+		Math.Min(
+			PageSize,
+			PaginationConstants.MaxPageSize);
 }

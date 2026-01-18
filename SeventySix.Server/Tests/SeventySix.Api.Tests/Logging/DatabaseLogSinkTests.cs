@@ -270,7 +270,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 			request);
 		Assert.Single(logs);
 		Log log = logs.First();
-		Assert.Equal("Test exception message", log.ExceptionMessage);
+		Assert.Equal(
+			"Test exception message",
+			log.ExceptionMessage);
 		Assert.NotNull(log.StackTrace); // Should have stack trace
 	}
 
@@ -331,7 +333,9 @@ public class DatabaseLogSinkTests : IAsyncLifetime
 		Assert.Single(logs);
 		Log log = logs.First();
 		Assert.Equal("Outer exception", log.ExceptionMessage);
-		Assert.Equal("Inner exception", log.BaseExceptionMessage);
+		Assert.Equal(
+			"Inner exception",
+			log.BaseExceptionMessage);
 	}
 
 	/// <summary>

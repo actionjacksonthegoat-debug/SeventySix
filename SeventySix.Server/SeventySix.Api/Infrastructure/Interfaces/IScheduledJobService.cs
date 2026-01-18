@@ -18,6 +18,6 @@ public interface IScheduledJobService
 	/// <returns>
 	/// List of job status responses with computed health status.
 	/// </returns>
-	Task<IReadOnlyList<RecurringJobStatusResponse>> GetAllJobStatusesAsync(
+	public Task<IReadOnlyList<RecurringJobStatusResponse>> GetAllJobStatusesAsync(
 		CancellationToken cancellationToken);
 }

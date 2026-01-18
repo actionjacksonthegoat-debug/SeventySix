@@ -74,7 +74,9 @@ public sealed class EnvironmentVariableMappingTests : IDisposable
 	{
 		// Arrange
 		SetEnvironmentVariable("GITHUB_CLIENT_ID", "test-client-id");
-		SetEnvironmentVariable("GITHUB_CLIENT_SECRET", "test-client-secret");
+		SetEnvironmentVariable(
+			"GITHUB_CLIENT_SECRET",
+			"test-client-secret");
 
 		ConfigurationManager configuration = new();
 
@@ -135,7 +137,9 @@ public sealed class EnvironmentVariableMappingTests : IDisposable
 	public void AddEnvironmentVariableMapping_WithDataProtectionVariables_MapsCorrectly()
 	{
 		// Arrange
-		SetEnvironmentVariable("DATA_PROTECTION_USE_CERTIFICATE", "true");
+		SetEnvironmentVariable(
+			"DATA_PROTECTION_USE_CERTIFICATE",
+			"true");
 		SetEnvironmentVariable(
 			"DATA_PROTECTION_CERTIFICATE_PATH",
 			"/app/keys/cert.pfx");

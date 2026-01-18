@@ -133,7 +133,11 @@ public class JwtSettingsValidatorTests
 	{
 		// Arrange - Pad to 32 chars if needed
 		string paddedKey =
-			weakKey.Length < 32 ? weakKey.PadRight(32, weakKey[0]) : weakKey;
+			weakKey.Length < 32
+			? weakKey.PadRight(
+				32,
+				weakKey[0])
+			: weakKey;
 
 		JwtSettings settings =
 			CreateValidSettings(secretKey: paddedKey);

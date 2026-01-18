@@ -127,7 +127,9 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 			$"{ApiEndpoints.Logs.Base}?pageSize=200");
 
 		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.BadRequest,
+			response.StatusCode);
 	}
 
 	/// <summary>
@@ -168,7 +170,9 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 			ApiEndpoints.Logs.Cleanup);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.BadRequest,
+			response.StatusCode);
 	}
 
 	/// <summary>
@@ -193,7 +197,9 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 			request);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.NoContent,
+			response.StatusCode);
 	}
 
 	/// <summary>
@@ -224,7 +230,9 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 			requests);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.NoContent,
+			response.StatusCode);
 	}
 
 	/// <summary>
@@ -263,7 +271,9 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 			$"/api/v1/logs/{logId}");
 
 		// Assert
-		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.NoContent,
+			response.StatusCode);
 	}
 
 	/// <summary>
@@ -278,7 +288,9 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 			"/api/v1/logs/999999999");
 
 		// Assert
-		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.NotFound,
+			response.StatusCode);
 	}
 
 	/// <summary>
@@ -363,7 +375,9 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 			await Client!.SendAsync(deleteRequest);
 
 		// Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.BadRequest,
+			response.StatusCode);
 	}
 
 	private async Task AuthenticateAsAdminAsync()
@@ -392,6 +406,8 @@ public class LogsControllerTests(TestcontainersPostgreSqlFixture fixture)
 			await response.Content.ReadFromJsonAsync<AuthResponse>();
 
 		Client!.DefaultRequestHeaders.Authorization =
-			new AuthenticationHeaderValue("Bearer", authResponse!.AccessToken);
+			new AuthenticationHeaderValue(
+			"Bearer",
+			authResponse!.AccessToken);
 	}
 }

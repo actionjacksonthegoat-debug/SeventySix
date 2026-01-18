@@ -116,7 +116,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			request);
 
 		// Assert
-		Assert.All(logs, log => Assert.Equal("Error", log.LogLevel));
+		Assert.All(
+			logs,
+			log => Assert.Equal("Error", log.LogLevel));
 	}
 
 	/// <summary>
@@ -201,7 +203,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 		Assert.All(
 			logs,
 			log =>
-				Assert.Contains("/api/users", log.RequestPath ?? string.Empty));
+				Assert.Contains(
+			"/api/users",
+			log.RequestPath ?? string.Empty));
 	}
 
 	/// <summary>
@@ -261,8 +265,12 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 
 		// Assert - Verify search works across all fields
 		Assert.Single(messageLogs); // Only one log with "Authentication_{testId}" message
-		Assert.Equal(2, sourceLogs.Count()); // Two logs from UserService_{testId}
-		Assert.Equal(2, pathLogs.Count()); // Two logs with users_{testId} path
+		Assert.Equal(
+			2,
+			sourceLogs.Count()); // Two logs from UserService_{testId}
+		Assert.Equal(
+			2,
+			pathLogs.Count()); // Two logs with users_{testId} path
 		Assert.Single(exceptionLogs); // Only one with NullRef_{testId}
 	}
 
@@ -290,9 +298,13 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			page2Request);
 
 		// Assert
-		Assert.Equal(2, page1Logs.Count());
+		Assert.Equal(
+			2,
+			page1Logs.Count());
 		Assert.NotEmpty(page2Logs);
-		Assert.NotEqual(page1Logs.First().Id, page2Logs.First().Id);
+		Assert.NotEqual(
+			page1Logs.First().Id,
+			page2Logs.First().Id);
 	}
 
 	/// <summary>

@@ -69,48 +69,48 @@ public static class OutputCacheRegistration
 				});
 		}
 
-		services.AddOutputCache(options =>
-		{
-			OutputCacheOptions? cacheConfig =
-				configuration
-					.GetSection(OutputCacheOptions.SECTION_NAME)
-					.Get<OutputCacheOptions>();
-
-			if (cacheConfig?.Policies == null)
+		services.AddOutputCache(
+			options =>
 			{
-				return;
-			}
+				OutputCacheOptions? cacheConfig =
+					configuration
+						.GetSection(OutputCacheOptions.SECTION_NAME)
+						.Get<OutputCacheOptions>();
 
-			foreach (
-				(
-					string? name,
-					CachePolicyConfig? config
-				) in cacheConfig.Policies
-			)
-			{
-				if (!config.Enabled)
+				if (cacheConfig?.Policies == null)
 				{
-					continue;
+					return;
 				}
 
-				string policyName = name.ToLowerInvariant();
-
-				options.AddPolicy(
-					policyName,
-					policyBuilder =>
+				foreach (
+					(
+						string? name,
+						CachePolicyConfig? config
+					) in cacheConfig.Policies)
+				{
+					if (!config.Enabled)
 					{
-						policyBuilder
-							.Expire(
-								TimeSpan.FromSeconds(config.DurationSeconds))
-							.Tag(config.Tag);
+						continue;
+					}
 
-						if (config.VaryByQuery.Length > 0)
+					string policyName = name.ToLowerInvariant();
+
+					options.AddPolicy(
+						policyName,
+						policyBuilder =>
 						{
-							policyBuilder.SetVaryByQuery(config.VaryByQuery);
-						}
-					});
-			}
-		});
+							policyBuilder
+								.Expire(
+									TimeSpan.FromSeconds(config.DurationSeconds))
+								.Tag(config.Tag);
+
+							if (config.VaryByQuery.Length > 0)
+							{
+								policyBuilder.SetVaryByQuery(config.VaryByQuery);
+							}
+						});
+				}
+			});
 
 		services.AddResponseCaching();
 

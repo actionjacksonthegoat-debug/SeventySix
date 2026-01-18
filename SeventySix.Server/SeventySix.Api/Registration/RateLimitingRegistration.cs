@@ -75,24 +75,26 @@ public static class RateLimitingRegistration
 	private static IServiceCollection AddDisabledRateLimiting(
 		IServiceCollection services)
 	{
-		services.AddRateLimiter(options =>
-		{
-			options.GlobalLimiter =
-				PartitionedRateLimiter.Create<
-					HttpContext,
-					string
-			>(_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+		services.AddRateLimiter(
+			options =>
+			{
+				options.GlobalLimiter =
+					PartitionedRateLimiter.Create<
+						HttpContext,
+						string>(
+							_ =>
+								RateLimitPartition.GetNoLimiter<string>(string.Empty));
 
-			options.AddPolicy(
-				RateLimitPolicyConstants.AuthLogin,
-				_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-			options.AddPolicy(
-				RateLimitPolicyConstants.AuthRegister,
-				_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-			options.AddPolicy(
-				RateLimitPolicyConstants.AuthRefresh,
-				_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
-		});
+				options.AddPolicy(
+					RateLimitPolicyConstants.AuthLogin,
+					_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.AuthRegister,
+					_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+				options.AddPolicy(
+					RateLimitPolicyConstants.AuthRefresh,
+					_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+			});
 
 		return services;
 	}
@@ -112,63 +114,66 @@ public static class RateLimitingRegistration
 				allowedOrigins,
 				StringComparer.OrdinalIgnoreCase);
 
-		services.AddRateLimiter(options =>
-		{
-			options.GlobalLimiter =
-				CreateGlobalLimiter(globalSettings);
-			AddAuthPolicies(options, authSettings);
+		services.AddRateLimiter(
+			options =>
+			{
+				options.GlobalLimiter =
+					CreateGlobalLimiter(globalSettings);
+				AddAuthPolicies(options, authSettings);
 
-			Func<
-				OnRejectedContext,
-				CancellationToken,
-				ValueTask> originalOnRejected =
-				CreateRejectedHandler(globalSettings);
-			options.OnRejected =
-				async (context, cancellationToken) =>
-				{
-					// Preserve CORS headers on rate limiter rejections
-					CorsHeaderHelper.AddCorsHeadersIfAllowed(
-						context.HttpContext,
-						allowedOriginsSet);
+				Func<
+					OnRejectedContext,
+					CancellationToken,
+					ValueTask> originalOnRejected =
+					CreateRejectedHandler(globalSettings);
+				options.OnRejected =
+					async (context, cancellationToken) =>
+					{
+						// Preserve CORS headers on rate limiter rejections
+						CorsHeaderHelper.AddCorsHeadersIfAllowed(
+							context.HttpContext,
+							allowedOriginsSet);
 
-					await originalOnRejected(context, cancellationToken);
-				};
-		});
+						await originalOnRejected(context, cancellationToken);
+					};
+			});
 
 		return services;
 	}
 
 	private static PartitionedRateLimiter<HttpContext> CreateGlobalLimiter(
 		RateLimitingSettings settings) =>
-		PartitionedRateLimiter.Create<HttpContext, string>(context =>
-		{
-			// Bypass rate limiting for CORS preflight (OPTIONS) requests
-			if (HttpMethods.IsOptions(context.Request.Method))
+		PartitionedRateLimiter.Create<HttpContext, string>(
+			context =>
 			{
-				return RateLimitPartition.GetNoLimiter<string>("__preflight__");
-			}
-
-			// Bypass rate limiting for health checks and metrics endpoints
-			// Container orchestrators hit these frequently
-			if (context.Request.Path.StartsWithSegments("/health")
-				|| context.Request.Path.StartsWithSegments("/metrics"))
-			{
-				return RateLimitPartition.GetNoLimiter<string>("__internal__");
-			}
-
-			return RateLimitPartition.GetFixedWindowLimiter(
-				partitionKey: context.Connection.RemoteIpAddress?.ToString()
-					?? "anonymous",
-				factory: _ => new FixedWindowRateLimiterOptions
+				// Bypass rate limiting for CORS preflight (OPTIONS) requests
+				if (HttpMethods.IsOptions(context.Request.Method))
 				{
-					PermitLimit = settings.PermitLimit,
-					Window =
-						TimeSpan.FromSeconds(settings.WindowSeconds),
-					QueueProcessingOrder =
-						QueueProcessingOrder.OldestFirst,
-					QueueLimit = 0,
-				});
-		});
+					return RateLimitPartition.GetNoLimiter<string>("__preflight__");
+				}
+
+				// Bypass rate limiting for health checks and metrics endpoints
+				// Container orchestrators hit these frequently
+				if (context.Request.Path.StartsWithSegments("/health")
+					|| context.Request.Path.StartsWithSegments("/metrics"))
+				{
+					return RateLimitPartition.GetNoLimiter<string>("__internal__");
+				}
+
+				return RateLimitPartition.GetFixedWindowLimiter(
+					partitionKey: context.Connection.RemoteIpAddress?.ToString()
+						?? "anonymous",
+					factory: _ =>
+						new FixedWindowRateLimiterOptions
+						{
+							PermitLimit = settings.PermitLimit,
+							Window =
+								TimeSpan.FromSeconds(settings.WindowSeconds),
+							QueueProcessingOrder =
+								QueueProcessingOrder.OldestFirst,
+							QueueLimit = 0,
+						});
+			});
 
 	private static void AddAuthPolicies(
 		RateLimiterOptions options,

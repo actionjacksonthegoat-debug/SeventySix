@@ -56,8 +56,9 @@ public class UserRolesController(IMessageBus messageBus) : ControllerBase
 
 		IEnumerable<string> roles =
 			await messageBus.InvokeAsync<
-				IEnumerable<string>
-		>(new GetUserRolesQuery(id), cancellationToken);
+				IEnumerable<string>>(
+					new GetUserRolesQuery(id),
+					cancellationToken);
 
 		return Ok(roles);
 	}

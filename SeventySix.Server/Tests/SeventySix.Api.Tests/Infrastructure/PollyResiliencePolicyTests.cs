@@ -103,7 +103,9 @@ public class PollyResiliencePolicyTests
 			cancellationToken: CancellationToken.None);
 
 		// Assert
-		callCount.ShouldBe(3, "Should retry twice (3 attempts total)");
+		callCount.ShouldBe(
+			3,
+			"Should retry twice (3 attempts total)");
 	}
 
 	/// <summary>
@@ -204,7 +206,9 @@ public class PollyResiliencePolicyTests
 			new(
 			async (_, cancellationToken) =>
 			{
-				await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
+				await Task.Delay(
+					TimeSpan.FromSeconds(15),
+					cancellationToken);
 				return new HttpResponseMessage(HttpStatusCode.OK);
 			});
 

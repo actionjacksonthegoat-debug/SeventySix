@@ -49,8 +49,9 @@ public class LogsController(
 	{
 		PagedResult<LogDto> result =
 			await messageBus.InvokeAsync<
-				PagedResult<LogDto>
-		>(new GetLogsPagedQuery(request), cancellationToken);
+				PagedResult<LogDto>>(
+					new GetLogsPagedQuery(request),
+					cancellationToken);
 
 		return Ok(result);
 	}

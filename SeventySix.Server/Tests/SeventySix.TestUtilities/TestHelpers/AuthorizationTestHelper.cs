@@ -62,7 +62,9 @@ public class AuthorizationTestHelper
 			endpoint,
 			content);
 
-		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.Unauthorized,
+			response.StatusCode);
 	}
 
 	/// <summary>
@@ -94,7 +96,9 @@ public class AuthorizationTestHelper
 			endpoint,
 			content);
 
-		Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+		Assert.Equal(
+			HttpStatusCode.Forbidden,
+			response.StatusCode);
 	}
 
 	/// <summary>

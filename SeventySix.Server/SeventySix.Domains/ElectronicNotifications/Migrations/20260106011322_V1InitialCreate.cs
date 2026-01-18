@@ -71,7 +71,9 @@ namespace SeventySix.Domains.ElectronicNotifications.Migrations
 				},
 				constraints: table =>
 				{
-					table.PrimaryKey("PK_EmailQueue", x => x.Id);
+					table.PrimaryKey(
+						"PK_EmailQueue",
+						x => x.Id);
 				});
 
 			migrationBuilder.CreateIndex(

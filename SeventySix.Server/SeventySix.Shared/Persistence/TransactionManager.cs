@@ -179,11 +179,15 @@ public class TransactionManager(DbContext context) : ITransactionManager
 	{
 		// Base delay: 50ms, 100ms, 200ms, 400ms, etc.
 		double baseDelay =
-			50 * Math.Pow(2, retryCount - 1);
+			50 * Math.Pow(
+				2,
+				retryCount - 1);
 
 		// Add jitter (±25%) to prevent thundering herd
 		double jitter =
-			Random.Shared.Next(-25, 26) / 100.0;
+			Random.Shared.Next(
+				-25,
+				26) / 100.0;
 		int delayMs =
 			(int)(baseDelay * (1 + jitter));
 

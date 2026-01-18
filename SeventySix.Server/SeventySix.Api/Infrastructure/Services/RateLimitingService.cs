@@ -196,7 +196,9 @@ public class RateLimitingService(
 
 		int currentCount =
 			request?.CallCount ?? 0;
-		return Math.Max(0, dailyLimit - currentCount);
+		return Math.Max(
+			0,
+			dailyLimit - currentCount);
 	}
 
 	/// <inheritdoc/>

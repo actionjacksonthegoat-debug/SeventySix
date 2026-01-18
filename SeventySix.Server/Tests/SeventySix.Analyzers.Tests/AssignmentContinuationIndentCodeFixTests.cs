@@ -42,8 +42,10 @@ public class AssignmentContinuationIndentCodeFixTests
 
 		await VerifyCodeFixAsync<
 			AssignmentContinuationIndentAnalyzer,
-			AssignmentContinuationIndentCodeFixProvider
-		>(testCode, fixedCode, ExpectSS003(line: 6, column: 1));
+			AssignmentContinuationIndentCodeFixProvider>(
+			testCode,
+			fixedCode,
+			ExpectSS003(line: 6, column: 1));
 	}
 
 	/// <summary>
@@ -94,8 +96,10 @@ public class AssignmentContinuationIndentCodeFixTests
 
 		await VerifyCodeFixAsync<
 			AssignmentContinuationIndentAnalyzer,
-			AssignmentContinuationIndentCodeFixProvider
-		>(testCode, fixedCode, ExpectSS003(line: 9, column: 1));
+			AssignmentContinuationIndentCodeFixProvider>(
+			testCode,
+			fixedCode,
+			ExpectSS003(line: 9, column: 1));
 	}
 
 	/// <summary>
@@ -152,8 +156,10 @@ public class AssignmentContinuationIndentCodeFixTests
 
 		await VerifyCodeFixAsync<
 			AssignmentContinuationIndentAnalyzer,
-			AssignmentContinuationIndentCodeFixProvider
-		>(testCode, fixedCode, ExpectSS003(line: 11, column: 4));
+			AssignmentContinuationIndentCodeFixProvider>(
+			testCode,
+			fixedCode,
+			ExpectSS003(line: 11, column: 4));
 	}
 
 	/// <summary>
