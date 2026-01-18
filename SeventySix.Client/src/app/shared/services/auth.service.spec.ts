@@ -12,13 +12,13 @@ import { TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { environment } from "@environments/environment";
 import { AuthResponse } from "@shared/models";
+import { DateService } from "@shared/services";
 import {
 	TEST_ROLE_ADMIN,
 	TEST_ROLE_DEVELOPER
 } from "@testing/constants";
 import { AuthService } from "./auth.service";
 import { createMockAuthResponse } from "./auth.service.test-helpers";
-import { DateService } from "@shared/services";
 import { DOTNET_ROLE_CLAIM } from "./auth.types";
 
 /** AuthService Tests - focuses on authentication logic */
@@ -531,13 +531,14 @@ describe("AuthService",
 				it("should return false for valid token",
 					() =>
 					{
-						const dateService: DateService  =
+						const dateService: DateService =
 							new DateService();
 						const mockResponse: AuthResponse =
 							createMockAuthResponse(
 								{ exp: String(Math.floor(dateService.nowTimestamp() / 1000) + 3600) },
 								{
-									expiresAt: dateService.fromMillis(dateService.nowTimestamp() + 3600000)
+									expiresAt: dateService
+										.fromMillis(dateService.nowTimestamp() + 3600000)
 										.toISOString()
 								});
 

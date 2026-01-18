@@ -18,10 +18,12 @@ import {
 } from "@angular/forms";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatExpansionModule } from "@angular/material/expansion";
+import { MatTooltipModule } from "@angular/material/tooltip";
 import { ActivatedRoute, Router } from "@angular/router";
 import {
 	HTTP_STATUS,
 	REQUESTABLE_ROLES,
+	ROLE_ADMIN,
 	SKELETON_CHECKBOX,
 	SKELETON_INPUT,
 	SKELETON_TEXT_SHORT,
@@ -51,6 +53,7 @@ import { map } from "rxjs";
 			DatePipe,
 			MatExpansionModule,
 			MatChipsModule,
+			MatTooltipModule,
 			NgxSkeletonLoaderModule,
 			...FORM_MATERIAL_MODULES
 		],
@@ -155,8 +158,22 @@ export class UserDetailPage
 	readonly removeRoleMutation: ReturnType<typeof this.userService.removeRole> =
 		this.userService.removeRole();
 
+	/**
+	 * Query for the count of users with Admin role.
+	 * Used to prevent removal of Admin role from the last admin.
+	 * @type {ReturnType<typeof this.userService.getAdminCount>}
+	 */
+	readonly adminCountQuery: ReturnType<typeof this.userService.getAdminCount> =
+		this.userService.getAdminCount();
+
 	// Available roles constant (matches backend ValidRoleNames)
 	readonly availableRoles: readonly string[] = REQUESTABLE_ROLES;
+
+	/**
+	 * Admin role constant exposed for template access.
+	 * @type {string}
+	 */
+	readonly ROLE_ADMIN: string = ROLE_ADMIN;
 
 	// Skeleton theme constants
 	/**
@@ -255,6 +272,27 @@ export class UserDetailPage
 			() =>
 				this.addRoleMutation.isPending()
 					|| this.removeRoleMutation.isPending());
+
+	/**
+	 * Determines if the Admin role can be removed from this user.
+	 * Returns false if this user is the only admin in the system.
+	 * @type {Signal<boolean>}
+	 */
+	readonly canRemoveAdminRole: Signal<boolean> =
+		computed(
+			() =>
+			{
+				const adminCount: number =
+					this.adminCountQuery.data() ?? 0;
+				const currentRoles: string[] =
+					this.userRoles();
+				const userHasAdminRole: boolean =
+					currentRoles.includes(ROLE_ADMIN);
+				const isOnlyAdmin: boolean =
+					userHasAdminRole && adminCount <= 1;
+
+				return !isOnlyAdmin;
+			});
 
 	// Computed signals
 	/**

@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.Registration;
 
@@ -102,12 +103,12 @@ public static class AuthenticationExtensions
 								if (context.Exception is SecurityTokenExpiredException)
 								{
 									context.Response.Headers.Append(
-										"X-Token-Expired",
+										HttpHeaderConstants.TokenExpired,
 										"true");
 								}
 
 								return Task.CompletedTask;
-							}
+							},
 					};
 			});
 
@@ -118,14 +119,14 @@ public static class AuthenticationExtensions
 				policy => policy.RequireRole(RoleConstants.Admin));
 
 			options.AddPolicy(
-				"DeveloperOrAdmin",
+				PolicyConstants.DeveloperOrAdmin,
 				policy =>
 					policy.RequireRole(
 						RoleConstants.Developer,
 						RoleConstants.Admin));
 
 			options.AddPolicy(
-				"Authenticated",
+				PolicyConstants.Authenticated,
 				policy => policy.RequireAuthenticatedUser());
 		});
 

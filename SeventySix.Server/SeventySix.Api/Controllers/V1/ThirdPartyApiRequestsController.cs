@@ -53,9 +53,9 @@ public class ThirdPartyApiRequestsController(IMessageBus messageBus)
 	> GetAllAsync(CancellationToken cancellationToken)
 	{
 		IEnumerable<ThirdPartyApiRequestDto> requests =
-			await messageBus.InvokeAsync<
-				IEnumerable<ThirdPartyApiRequestDto>
-			>(new GetAllApiRequestsQuery(), cancellationToken);
+			await messageBus.InvokeAsync<IEnumerable<ThirdPartyApiRequestDto>>(
+				new GetAllApiRequestsQuery(),
+				cancellationToken);
 
 		return Ok(requests);
 	}

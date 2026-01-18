@@ -59,7 +59,7 @@ export class LogDetailDialogComponent
 	 */
 	private readonly dialogRef: MatDialogRef<LogDetailDialogComponent> =
 		inject(
-			MatDialogRef<LogDetailDialogComponent>);
+		MatDialogRef<LogDetailDialogComponent>);
 
 	/**
 	 * Clipboard utility used to copy log payloads to the clipboard.

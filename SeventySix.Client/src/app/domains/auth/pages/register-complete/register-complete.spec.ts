@@ -77,7 +77,7 @@ describe("RegisterCompleteComponent",
 				expect(mockNotificationService.error)
 					.toHaveBeenCalledWith(
 						"Invalid registration link. Please request a new one.");
-				expect((component as unknown as { tokenValid(): boolean }).tokenValid())
+				expect((component as unknown as { tokenValid(): boolean; }).tokenValid())
 					.toBe(false);
 			});
 
@@ -87,11 +87,11 @@ describe("RegisterCompleteComponent",
 				setupTestBed(
 					{ token: "valid-token" });
 
-				(component as unknown as { username: string }).username = "ab"; // too short
-				(component as unknown as { password: string }).password = "short";
-				(component as unknown as { confirmPassword: string }).confirmPassword = "short";
+				(component as unknown as { username: string; }).username = "ab"; // too short
+				(component as unknown as { password: string; }).password = "short";
+				(component as unknown as { confirmPassword: string; }).confirmPassword = "short";
 
-				(component as unknown as { onSubmit(): void }).onSubmit();
+				(component as unknown as { onSubmit(): void; }).onSubmit();
 
 				expect(mockNotificationService.error)
 					.toHaveBeenCalled();
@@ -105,11 +105,11 @@ describe("RegisterCompleteComponent",
 					{ token: "valid-token" });
 				mockAuthService.completeRegistration.mockReturnValue(of(undefined));
 
-				(component as unknown as { username: string }).username = "valid_user";
-				(component as unknown as { password: string }).password = "ValidPassword123!";
-				(component as unknown as { confirmPassword: string }).confirmPassword = "ValidPassword123!";
+				(component as unknown as { username: string; }).username = "valid_user";
+				(component as unknown as { password: string; }).password = "ValidPassword123!";
+				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
 
-				(component as unknown as { onSubmit(): void }).onSubmit();
+				(component as unknown as { onSubmit(): void; }).onSubmit();
 
 				expect(mockAuthService.completeRegistration)
 					.toHaveBeenCalledWith(
@@ -133,11 +133,11 @@ describe("RegisterCompleteComponent",
 						{ status: 400, statusText: "Bad Request", error: { detail: "Username already exists." } });
 				mockAuthService.completeRegistration.mockReturnValue(throwError(() => errorResponse));
 
-				(component as unknown as { username: string }).username = "valid_user";
-				(component as unknown as { password: string }).password = "ValidPassword123!";
-				(component as unknown as { confirmPassword: string }).confirmPassword = "ValidPassword123!";
+				(component as unknown as { username: string; }).username = "valid_user";
+				(component as unknown as { password: string; }).password = "ValidPassword123!";
+				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
 
-				(component as unknown as { onSubmit(): void }).onSubmit();
+				(component as unknown as { onSubmit(): void; }).onSubmit();
 
 				expect(mockNotificationService.error)
 					.toHaveBeenCalledWith("Username already exists.");

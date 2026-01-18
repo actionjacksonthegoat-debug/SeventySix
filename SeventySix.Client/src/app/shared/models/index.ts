@@ -2,6 +2,7 @@
  * Barrel export for shared models
  */
 export * from "./app-error.model";
+export * from "./auth-error-result.model";
 export * from "./base-query-request.model";
 export * from "./breadcrumb-item.model";
 export * from "./color-scheme.model";
@@ -14,4 +15,3 @@ export * from "./notification.model";
 export * from "./performance-metrics.model";
 export * from "./table.model";
 export * from "./theme.model";
-export * from "./auth-error-result.model";

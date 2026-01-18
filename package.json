@@ -13,6 +13,8 @@
 		"start:client": "cd SeventySix.Client && npm start",
 		"start:api-debug": "powershell -ExecutionPolicy Bypass -File scripts/start-infrastructure.ps1",
 		"stop": "powershell -ExecutionPolicy Bypass -File scripts/stop-all.ps1",
-		"stop:api": "powershell -ExecutionPolicy Bypass -File scripts/stop-api.ps1"
+		"stop:api": "powershell -ExecutionPolicy Bypass -File scripts/stop-api.ps1",
+		"clean:docker": "powershell -ExecutionPolicy Bypass -File scripts/cleanup-docker.ps1",
+		"clean:docker:full": "powershell -ExecutionPolicy Bypass -File scripts/cleanup-docker.ps1 -IncludeVolumes"
 	}
 }

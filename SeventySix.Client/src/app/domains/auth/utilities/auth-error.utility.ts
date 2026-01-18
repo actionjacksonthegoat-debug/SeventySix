@@ -41,9 +41,8 @@ export function mapAuthError(error: HttpErrorResponse): AuthErrorResult
 
 			default:
 				return {
-					message:
-						error.error?.detail
-							?? "Invalid request. Please check your input.",
+					message: error.error?.detail
+						?? "Invalid request. Please check your input.",
 					invalidateToken: false
 				};
 		}

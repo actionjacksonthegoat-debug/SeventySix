@@ -225,9 +225,10 @@ public static class DataProtectionExtensions
 		AppDataProtectionOptions dataProtectionOptions,
 		IWebHostEnvironment environment)
 	{
-		if (TryProtectWithCertificate(
-			dataProtectionBuilder,
-			dataProtectionOptions))
+		if (
+			TryProtectWithCertificate(
+				dataProtectionBuilder,
+				dataProtectionOptions))
 		{
 			return;
 		}

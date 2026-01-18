@@ -79,6 +79,120 @@
 }
 
 // ============================================================================
+// ICON ALIGNMENT
+// ============================================================================
+
+/**
+ * Icon alignment mixin
+ * Ensures mat-icon elements are vertically centered in any context.
+ * Use on mat-icon elements or containers with icons.
+ *
+ * @example
+ *   mat-icon {
+ *     @include icon-aligned();
+ *   }
+ */
+@mixin icon-aligned() {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	vertical-align: middle;
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+/**
+ * Icon with text alignment mixin
+ * For buttons and containers with icon + text.
+ * Apply to the container element (button, span, div).
+ *
+ * @param {Size} $gap
+ * Gap between icon and text (default: $spacing-sm / 8px)
+ *
+ * @example
+ *   .button-with-icon {
+ *     @include icon-with-text();
+ *   }
+ */
+@mixin icon-with-text($gap: vars.$spacing-sm) {
+	display: inline-flex;
+	align-items: center;
+	gap: $gap;
+
+	mat-icon {
+		@include icon-aligned();
+	}
+}
+
+/**
+ * Sized and aligned icon mixin
+ * Combines sizing and alignment in one mixin for convenience.
+ *
+ * @param {Size} $size
+ * Icon size (default: $icon-size-base / 24px)
+ *
+ * @example
+ *   .large-icon {
+ *     @include icon-sized-aligned(vars.$icon-size-lg);
+ *   }
+ */
+@mixin icon-sized-aligned($size: vars.$icon-size-base) {
+	@include icon-size($size);
+	@include icon-aligned();
+}
+
+// ============================================================================
+// FULL-HEIGHT PAGE LAYOUT
+// ============================================================================
+
+/**
+ * Full-height page layout mixin
+ * Use on :host of page components that should fill available viewport height.
+ * Works with the app layout's flexbox structure.
+ *
+ * @example
+ *   :host {
+ *     @include full-height-page();
+ *   }
+ */
+@mixin full-height-page() {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+
+	> .page-content,
+	> .content,
+	> main {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-y: auto;
+	}
+}
+
+/**
+ * Scrollable content container mixin
+ * For containers within pages that need their own scroll context.
+ *
+ * @param {Size} $max-height
+ * Optional max-height constraint (default: none)
+ *
+ * @example
+ *   .scrollable-panel {
+ *     @include scrollable-content();
+ *   }
+ */
+@mixin scrollable-content($max-height: none) {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+
+	@if $max-height != none {
+		max-height: $max-height;
+	}
+}
+
+// ============================================================================
 // FEATURE PLACEHOLDER CARD
 // ============================================================================
 

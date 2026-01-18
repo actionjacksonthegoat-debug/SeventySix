@@ -88,7 +88,6 @@ interface NavSection
 		styleUrl: "./sidebar.component.scss",
 		changeDetection: ChangeDetectionStrategy.OnPush
 	})
-
 /**
  * Application sidebar component.
  *
@@ -190,7 +189,8 @@ export class SidebarComponent
 	protected readonly visibleNavSections: Signal<NavSection[]> =
 		computed(
 			() =>
-				this.navSections
+				this
+				.navSections
 				.filter(
 					(section: NavSection) =>
 						this.hasAccess(section.requiredRoles))

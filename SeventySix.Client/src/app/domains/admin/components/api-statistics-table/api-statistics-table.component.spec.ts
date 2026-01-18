@@ -173,7 +173,8 @@ describe("ApiStatisticsTableComponent",
 			() =>
 			{
 				const mockQuery: ReturnType<typeof createMockQueryResult<ThirdPartyApiRequestDto[]>> =
-					createMockQueryResult(mockApiData);
+					createMockQueryResult(
+						mockApiData);
 				thirdPartyApiService.getAllThirdPartyApis.mockReturnValue(mockQuery);
 
 				createComponent();

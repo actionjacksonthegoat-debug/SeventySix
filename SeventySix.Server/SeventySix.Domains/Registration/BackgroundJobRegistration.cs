@@ -8,6 +8,7 @@ using SeventySix.ElectronicNotifications.Emails;
 using SeventySix.Identity;
 using SeventySix.Identity.Settings;
 using SeventySix.Logging;
+using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
 
 namespace SeventySix.Registration;
@@ -28,6 +29,7 @@ namespace SeventySix.Registration;
 ///   <item><see cref="AdminSeederService"/> - One-time admin user seeding at startup (Identity)</item>
 ///   <item><see cref="ElectronicNotifications.Emails.Jobs.EmailQueueProcessJob"/> - Periodic processing of email queue (ElectronicNotifications)</item>
 ///   <item><see cref="Logging.Jobs.LogCleanupJob"/> - Periodic cleanup of old log files and database entries (Logging)</item>
+///   <item><see cref="Logging.Jobs.DatabaseMaintenanceJob"/> - Nightly PostgreSQL VACUUM ANALYZE for all schemas (Logging)</item>
 /// </list>
 ///
 /// <para><strong>Usage in Program.cs:</strong></para>
@@ -66,6 +68,9 @@ public static class BackgroundJobRegistration
 		services.AddScoped<IRecurringJobRepository, RecurringJobRepository>();
 		services.AddScoped<IRecurringJobService, RecurringJobService>();
 
+		// Database maintenance service
+		services.AddScoped<IDatabaseMaintenanceService, DatabaseMaintenanceService>();
+
 		// Settings for recurring jobs
 		services.Configure<RefreshTokenCleanupSettings>(
 			configuration.GetSection(RefreshTokenCleanupSettings.SectionName));
@@ -73,6 +78,8 @@ public static class BackgroundJobRegistration
 			configuration.GetSection(IpAnonymizationSettings.SectionName));
 		services.Configure<LogCleanupSettings>(
 			configuration.GetSection(LogCleanupSettings.SectionName));
+		services.Configure<DatabaseMaintenanceSettings>(
+			configuration.GetSection(DatabaseMaintenanceSettings.SectionName));
 		services.Configure<EmailQueueSettings>(
 			configuration.GetSection(EmailQueueSettings.SectionName));
 

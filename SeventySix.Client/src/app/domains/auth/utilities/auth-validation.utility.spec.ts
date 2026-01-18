@@ -1,3 +1,8 @@
+import { ValidationResult } from "@auth/models/validation-result.model";
+import {
+	PASSWORD_VALIDATION,
+	USERNAME_VALIDATION
+} from "@shared/constants";
 import {
 	describe,
 	expect,
@@ -7,12 +12,8 @@ import {
 	validatePassword,
 	validatePasswordsMatch,
 	validateRegistrationForm,
-	validateUsername } from "./auth-validation.utility";
-import {
-	PASSWORD_VALIDATION,
-	USERNAME_VALIDATION
-} from "@shared/constants";
-import { ValidationResult } from "@auth/models/validation-result.model";
+	validateUsername
+} from "./auth-validation.utility";
 
 describe("validateUsername",
 	() =>
@@ -170,7 +171,10 @@ describe("validateRegistrationForm",
 			() =>
 			{
 				const result: ValidationResult =
-					validateRegistrationForm("validUsername", "validPassword123", "differentPassword");
+					validateRegistrationForm(
+						"validUsername",
+						"validPassword123",
+						"differentPassword");
 
 				expect(result.valid)
 					.toBe(false);
@@ -182,7 +186,10 @@ describe("validateRegistrationForm",
 			() =>
 			{
 				const result: ValidationResult =
-					validateRegistrationForm("validUsername", "validPassword123", "validPassword123");
+					validateRegistrationForm(
+						"validUsername",
+						"validPassword123",
+						"validPassword123");
 
 				expect(result.valid)
 					.toBe(true);

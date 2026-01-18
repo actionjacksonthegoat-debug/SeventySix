@@ -13,9 +13,9 @@ import {
 	WritableSignal
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
+import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthResponse, LoginRequest } from "@auth/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";

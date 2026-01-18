@@ -24,7 +24,7 @@ if (-not $dockerProcess) {
 # Build and start API container
 Write-Host "Building and starting API container..." -ForegroundColor Yellow
 Push-Location "$PSScriptRoot\..\SeventySix.Server"
-docker compose build seventysix-api --no-cache
+docker compose build seventysix-api
 docker compose --env-file ../.env up -d --force-recreate
 Pop-Location
 
@@ -51,30 +51,34 @@ catch {
 $clientPortInUse =
 	Get-NetTCPConnection -LocalPort 4200 -State Listen -ErrorAction SilentlyContinue
 
-# Also check for an existing process running the client (npm start in SeventySix.Client)
-$existingClientProcess =
-	Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
-	Where-Object {
-		($_.Name -match 'powershell|pwsh|node') -and (
-			($_.CommandLine -match 'npm start') -or ($_.CommandLine -match 'SeventySix.Client')
-		)
+# Verify the port is actually responding (extra safety check)
+$clientResponding = $false
+if ($clientPortInUse) {
+	try {
+		$response =
+			Invoke-WebRequest -Uri "http://localhost:4200" -TimeoutSec 2 -UseBasicParsing -ErrorAction SilentlyContinue
+		$clientResponding = ($response.StatusCode -eq 200)
 	}
+	catch {
+		$clientResponding = $false
+	}
+}
 
-if ($clientPortInUse -or $existingClientProcess) {
+$clientPath =
+	"$PSScriptRoot\..\SeventySix.Client"
+
+if ($clientPortInUse -and $clientResponding) {
 	Write-Host ""
 	Write-Host "========================================" -ForegroundColor Yellow
 	Write-Host "  Client Already Running" -ForegroundColor Yellow
 	Write-Host "========================================" -ForegroundColor Yellow
-	Write-Host "  Detected existing client process or port 4200 in use." -ForegroundColor Yellow
-	Write-Host "  Skipping client launch - already active." -ForegroundColor Yellow
+	Write-Host "  Port 4200 is responding - client is active." -ForegroundColor Yellow
 	Write-Host "  API:    http://localhost:5085" -ForegroundColor Cyan
 	Write-Host "  Client: http://localhost:4200" -ForegroundColor Cyan
 	Write-Host "========================================" -ForegroundColor Yellow
 }
 else {
-	# Launch Angular client in NEW PowerShell window
-	$clientPath =
-		"$PSScriptRoot\..\SeventySix.Client"
+	# Launch Angular client in NEW PowerShell window BEFORE streaming logs
 	Write-Host "Launching Angular client in new window..." -ForegroundColor Yellow
 
 	Start-Process powershell -ArgumentList @(
@@ -82,12 +86,18 @@ else {
 		"-Command",
 		"Set-Location '$clientPath'; npm start"
 	) -WindowStyle Normal
-
-	Write-Host ""
-	Write-Host "========================================" -ForegroundColor Green
-	Write-Host "  API Ready - Client in New Window" -ForegroundColor Green
-	Write-Host "========================================" -ForegroundColor Green
-	Write-Host "  API:    http://localhost:5085" -ForegroundColor Cyan
-	Write-Host "  Client: http://localhost:4200" -ForegroundColor Cyan
-	Write-Host "========================================" -ForegroundColor Green
 }
+
+# Stream API logs in the current console
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Green
+Write-Host "  Streaming API Logs (Ctrl+C to stop)" -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Green
+Write-Host "  API:    http://localhost:5085" -ForegroundColor Cyan
+Write-Host "  Client: http://localhost:4200" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Green
+Write-Host ""
+
+Push-Location "$PSScriptRoot\..\SeventySix.Server"
+docker compose logs -f seventysix-api
+Pop-Location

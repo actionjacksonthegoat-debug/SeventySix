@@ -27,7 +27,7 @@ describe("ErrorQueueService (Zoneless)",
 		beforeEach(
 			() =>
 			{
-				// Clear localStorage before each test
+			// Clear localStorage before each test
 				localStorage.clear();
 
 				// Suppress console.error output during tests while still allowing verification
@@ -70,7 +70,7 @@ describe("ErrorQueueService (Zoneless)",
 		afterEach(
 			() =>
 			{
-				// Verify no outstanding HTTP requests
+			// Verify no outstanding HTTP requests
 				httpMock.verify();
 
 				// Cleanup service

@@ -1,8 +1,8 @@
+import { ValidationResult } from "@auth/models";
 import {
 	PASSWORD_VALIDATION,
 	USERNAME_VALIDATION
 } from "@shared/constants";
-import { ValidationResult } from "@auth/models";
 import { isNullOrUndefined } from "@shared/utilities/null-check.utility";
 
 /**

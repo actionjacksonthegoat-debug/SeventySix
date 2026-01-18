@@ -56,8 +56,8 @@ public static class HealthCheckExtensions
 				failureStatus: HealthStatus.Unhealthy,
 				tags: ["ready", "db"])
 			.AddRedis(
-				connectionMultiplexerFactory:
-					serviceProvider => serviceProvider.GetRequiredService<IConnectionMultiplexer>(),
+				connectionMultiplexerFactory: serviceProvider =>
+					serviceProvider.GetRequiredService<IConnectionMultiplexer>(),
 				name: "valkey-cache",
 				failureStatus: HealthStatus.Degraded,
 				tags: ["ready", "cache"])

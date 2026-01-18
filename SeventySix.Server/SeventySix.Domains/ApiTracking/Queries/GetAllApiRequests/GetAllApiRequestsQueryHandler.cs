@@ -24,9 +24,7 @@ public static class GetAllApiRequestsQueryHandler
 	/// <returns>
 	/// Collection of API request response DTOs.
 	/// </returns>
-	public static async Task<
-		IEnumerable<ThirdPartyApiRequestDto>
-	> HandleAsync(
+	public static async Task<IEnumerable<ThirdPartyApiRequestDto>> HandleAsync(
 		GetAllApiRequestsQuery query,
 		IThirdPartyApiRequestRepository repository,
 		CancellationToken cancellationToken)

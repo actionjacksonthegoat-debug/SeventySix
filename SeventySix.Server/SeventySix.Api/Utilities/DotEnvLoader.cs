@@ -26,9 +26,13 @@ public static class DotEnvLoader
 	{
 		// Security: Never load .env in Production - use proper secrets management
 		string environment =
-			Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+			Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+				?? "Production";
 
-		if (string.Equals(environment, "Production", StringComparison.OrdinalIgnoreCase))
+		if (string.Equals(
+			environment,
+			"Production",
+			StringComparison.OrdinalIgnoreCase))
 		{
 			return;
 		}
@@ -136,7 +140,7 @@ public static class DotEnvLoader
 					|| (value.StartsWith('\'') && value.EndsWith('\''))))
 			{
 				value =
-					value.Substring(1, value.Length - 2);
+					value[1..^1];
 			}
 
 			// Don't overwrite existing environment variables

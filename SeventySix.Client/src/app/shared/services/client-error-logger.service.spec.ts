@@ -3,10 +3,10 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { LogLevel } from "@shared/constants";
 import { CreateLogRequest } from "@shared/models";
+import { DateService } from "@shared/services";
 import { ClientErrorLoggerService } from "@shared/services/client-error-logger.service";
 import { ErrorQueueService } from "@shared/services/error-queue.service";
 import { createMockErrorQueueService } from "@shared/testing";
-import { DateService } from "@shared/services";
 import { vi } from "vitest";
 
 interface MockErrorQueueService
@@ -24,7 +24,7 @@ describe("ClientErrorLoggerService",
 		beforeEach(
 			() =>
 			{
-				// Suppress console.error output during tests while still allowing verification
+			// Suppress console.error output during tests while still allowing verification
 				consoleSpy =
 					vi
 						.spyOn(console, "error")
@@ -152,8 +152,9 @@ describe("ClientErrorLoggerService",
 						const lastCall: unknown[] | undefined =
 							errorQueueService.enqueue.mock.lastCall;
 						const timestampMs: number =
-							dateService.parseUTC(
-								(lastCall?.[0] as CreateLogRequest).clientTimestamp!)
+							dateService
+								.parseUTC(
+									(lastCall?.[0] as CreateLogRequest).clientTimestamp!)
 								.getTime();
 						expect(timestampMs)
 							.toBeGreaterThanOrEqual(

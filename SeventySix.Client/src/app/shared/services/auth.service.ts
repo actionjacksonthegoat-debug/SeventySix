@@ -94,6 +94,14 @@ export class AuthService
 	private static readonly HAS_SESSION_KEY: string = "auth_has_session";
 
 	/**
+	 * Key for storing return URL in session storage.
+	 * @type {string}
+	 * @private
+	 * @readonly
+	 */
+	private static readonly RETURN_URL_KEY: string = "auth_return_url";
+
+	/**
 	 * Access token stored in memory only for XSS protection.
 	 * @type {string | null}
 	 * @private
@@ -241,7 +249,7 @@ export class AuthService
 	loginWithProvider(provider: OAuthProvider, returnUrl: string = "/"): void
 	{
 		// Store return URL for after OAuth callback
-		sessionStorage.setItem("auth_return_url", returnUrl);
+		sessionStorage.setItem(AuthService.RETURN_URL_KEY, returnUrl);
 		window.location.href =
 			`${this.authUrl}/${provider}`;
 	}
@@ -285,8 +293,8 @@ export class AuthService
 				catchError(
 					(error: HttpErrorResponse) =>
 					{
-						// Only clear auth on 401 (invalid/expired refresh token)
-						// Do NOT clear on 429 (rate limited) - try again later
+					// Only clear auth on 401 (invalid/expired refresh token)
+					// Do NOT clear on 429 (rate limited) - try again later
 						if (error.status === 401)
 						{
 							this.clearAuth();
@@ -296,7 +304,7 @@ export class AuthService
 				finalize(
 					() =>
 					{
-						// Clear the in-progress marker after completion
+					// Clear the in-progress marker after completion
 						this.refreshInProgress = null;
 					}),
 				// Share the same observable among all concurrent subscribers
@@ -518,8 +526,8 @@ export class AuthService
 
 			// Navigate to stored return URL
 			const returnUrl: string =
-				sessionStorage.getItem("auth_return_url") ?? "/";
-			sessionStorage.removeItem("auth_return_url");
+				sessionStorage.getItem(AuthService.RETURN_URL_KEY) ?? "/";
+			sessionStorage.removeItem(AuthService.RETURN_URL_KEY);
 			this.router.navigateByUrl(returnUrl);
 		}
 
@@ -547,7 +555,9 @@ export class AuthService
 	{
 		this.accessToken = token;
 		this.tokenExpiresAt =
-			this.dateService.parseUTC(expiresAt)
+			this
+			.dateService
+			.parseUTC(expiresAt)
 			.getTime();
 
 		const claims: JwtClaims | null =

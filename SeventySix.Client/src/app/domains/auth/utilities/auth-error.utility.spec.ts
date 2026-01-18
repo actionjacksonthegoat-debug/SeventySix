@@ -5,10 +5,10 @@
  */
 
 import { HttpErrorResponse } from "@angular/common/http";
-import { describe, expect, it } from "vitest";
 import { AUTH_ERROR_CODE } from "@auth/constants";
 import { HTTP_STATUS } from "@shared/constants";
 import { AuthErrorResult } from "@shared/models";
+import { describe, expect, it } from "vitest";
 import { mapAuthError } from "./auth-error.utility";
 
 describe("mapAuthError",

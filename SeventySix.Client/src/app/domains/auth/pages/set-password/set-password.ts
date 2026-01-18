@@ -13,15 +13,15 @@ import {
 	WritableSignal
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { ActivatedRoute, Router } from "@angular/router";
 import { MatButtonModule } from "@angular/material/button";
+import { ActivatedRoute, Router } from "@angular/router";
+import { ValidationResult } from "@auth/models";
 import { mapAuthError } from "@auth/utilities";
-import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
+import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
+import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
-import { ValidationResult } from "@auth/models";
-import { AuthErrorResult } from "@shared/models";
 
 @Component(
 	{
@@ -144,7 +144,7 @@ export class SetPasswordComponent implements OnInit
 			return;
 		}
 
-		const passwordResult: ValidationResult	=
+		const passwordResult: ValidationResult =
 			validatePassword(this.newPassword);
 		if (!passwordResult.valid)
 		{

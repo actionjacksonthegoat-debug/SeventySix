@@ -41,6 +41,7 @@ describe("UserDetailPage",
 			getUserRoles: ReturnType<typeof vi.fn>;
 			addRole: ReturnType<typeof vi.fn>;
 			removeRole: ReturnType<typeof vi.fn>;
+			getAdminCount: ReturnType<typeof vi.fn>;
 		}
 
 		let mockUserService: MockUserService;
@@ -75,7 +76,8 @@ describe("UserDetailPage",
 						updateUser: vi.fn(),
 						getUserRoles: vi.fn(),
 						addRole: vi.fn(),
-						removeRole: vi.fn()
+						removeRole: vi.fn(),
+						getAdminCount: vi.fn()
 					};
 				mockLogger =
 					createMockLogger();
@@ -95,6 +97,8 @@ describe("UserDetailPage",
 						["Developer"]));
 				mockUserService.addRole.mockReturnValue(createMockMutationResult());
 				mockUserService.removeRole.mockReturnValue(createMockMutationResult());
+				mockUserService.getAdminCount.mockReturnValue(
+					createMockQueryResult(2));
 
 				await TestBed
 					.configureTestingModule(

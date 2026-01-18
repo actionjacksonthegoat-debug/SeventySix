@@ -96,6 +96,34 @@ public class UsersController(
 	#region Admin User Management Endpoints
 
 	/// <summary>
+	/// Gets the count of users with the Admin role.
+	/// Used by clients to determine if Admin role removal should be disabled.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// Cancellation token for async operation.
+	/// </param>
+	/// <returns>
+	/// The count of admin users.
+	/// </returns>
+	/// <response code="200">Returns the admin count.</response>
+	/// <response code="500">If an unexpected error occurs.</response>
+	[HttpGet("admin-count", Name = "GetAdminCount")]
+	[Authorize(Policy = PolicyConstants.AdminOnly)]
+	[ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	[OutputCache(PolicyName = CachePolicyConstants.Users)]
+	public async Task<ActionResult<int>> GetAdminCountAsync(
+		CancellationToken cancellationToken)
+	{
+		int adminCount =
+			await messageBus.InvokeAsync<int>(
+				new GetAdminCountQuery(),
+				cancellationToken);
+
+		return Ok(adminCount);
+	}
+
+	/// <summary>
 	/// Gets all users.
 	/// </summary>
 	/// <param name="cancellationToken">

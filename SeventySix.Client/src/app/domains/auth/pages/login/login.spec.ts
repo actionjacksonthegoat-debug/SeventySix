@@ -8,12 +8,12 @@ import { provideZonelessChangeDetection, signal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter, Router } from "@angular/router";
 import { AuthResponse } from "@auth/models";
+import { DateService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { createMockNotificationService } from "@shared/testing";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
-import { DateService } from "@shared/services";
 import { LoginComponent } from "./login";
 
 interface MockAuthService
@@ -46,7 +46,8 @@ describe("LoginComponent",
 		const mockAuthResponse: AuthResponse =
 			{
 				accessToken: "test-token",
-				expiresAt: dateService.fromMillis(dateService.nowTimestamp() + 3600000)
+				expiresAt: dateService
+					.fromMillis(dateService.nowTimestamp() + 3600000)
 					.toISOString(),
 				email: "test@example.com",
 				fullName: "Test User",

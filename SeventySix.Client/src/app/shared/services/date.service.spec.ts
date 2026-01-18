@@ -310,7 +310,7 @@ describe("DateService",
 					() =>
 					{
 						expect(() =>
-							// @ts-expect-error - intentionally passing wrong type for regression test
+						// @ts-expect-error - intentionally passing wrong type for regression test
 							(service as unknown).parseUTC(12345))
 							.toThrow(TypeError);
 					});

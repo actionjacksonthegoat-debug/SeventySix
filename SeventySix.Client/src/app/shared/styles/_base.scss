@@ -294,6 +294,81 @@ pre {
 }
 
 // =============================================================================
+// ICON ALIGNMENT (Global)
+// =============================================================================
+// Ensures all mat-icon elements are properly vertically aligned.
+// This is a global fix for the Material icon baseline issue.
+// Applied once here to avoid repetition across component styles (DRY).
+
+mat-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	vertical-align: middle;
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+// Buttons with icons - ensure icon aligns with button text
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-unelevated-button,
+.mat-mdc-icon-button,
+.mat-mdc-fab,
+.mat-mdc-mini-fab {
+	mat-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		vertical-align: middle;
+	}
+}
+
+// Menu items with icons
+.mat-mdc-menu-item {
+	mat-icon {
+		display: inline-flex;
+		align-items: center;
+		margin-right: vars.$spacing-md;
+	}
+}
+
+// Chips with icons
+.mat-mdc-chip {
+	mat-icon {
+		display: inline-flex;
+		align-items: center;
+	}
+}
+
+// Card headers with icons - common pattern in admin dashboard
+.mat-mdc-card-header,
+.mat-mdc-card-title {
+	display: flex;
+	align-items: center;
+	gap: vars.$spacing-sm;
+
+	mat-icon {
+		display: inline-flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
+}
+
+// Form field prefix/suffix icons
+.mat-mdc-form-field {
+	mat-icon[matPrefix],
+	mat-icon[matSuffix],
+	mat-icon[matIconPrefix],
+	mat-icon[matIconSuffix] {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+}
+
+// =============================================================================
 // FORM ACCESSIBILITY ENHANCEMENTS
 // =============================================================================
 

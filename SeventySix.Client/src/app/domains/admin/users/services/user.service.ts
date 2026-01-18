@@ -125,7 +125,7 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	 * @returns {CreateMutationResult<UserDto, Error, { userId: number | string; user: UpdateUserRequest }>}
 	 * Mutation object with mutate, isPending, error, etc.
 	 */
-	updateUser(): CreateMutationResult<UserDto, Error, { userId: number | string; user: UpdateUserRequest }>
+	updateUser(): CreateMutationResult<UserDto, Error, { userId: number | string; user: UpdateUserRequest; }>
 	{
 		return this.createMutation<
 			{
@@ -281,11 +281,29 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 	}
 
 	/**
+	 * Query for the count of users with Admin role.
+	 * Used to determine if Admin role removal should be disabled.
+	 * @returns {ReturnType<typeof injectQuery>}
+	 * Query object with admin count data.
+	 */
+	getAdminCount()
+	{
+		return injectQuery(
+			() => ({
+				queryKey: QueryKeys.users.adminCount,
+				queryFn: () =>
+					lastValueFrom(this.apiService.get<number>(`${this.endpoint}/admin-count`)),
+				staleTime: 30000 // 30 seconds - admin count rarely changes
+			}));
+	}
+
+	/**
 	 * Mutation for adding a role to a User.
+	 * Invalidates both role and admin count queries on success.
 	 * @returns {CreateMutationResult<void, Error, { userId: number; roleName: string }>}
 	 * Mutation object.
 	 */
-	addRole(): CreateMutationResult<void, Error, { userId: number; roleName: string }>
+	addRole(): CreateMutationResult<void, Error, { userId: number; roleName: string; }>
 	{
 		return this.createMutation<
 			{
@@ -297,21 +315,26 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 				this.apiService.post<void, Record<string, never>>(
 					`${this.endpoint}/${variables.userId}/roles/${variables.roleName}`,
 					{}),
-			(result, variables) =>
+			(_result, variables) =>
 			{
 				this.queryClient.invalidateQueries(
 					{
 						queryKey: QueryKeys.users.roles(variables.userId)
+					});
+				this.queryClient.invalidateQueries(
+					{
+						queryKey: QueryKeys.users.adminCount
 					});
 			});
 	}
 
 	/**
 	 * Mutation for removing a role from a User.
+	 * Invalidates both role and admin count queries on success.
 	 * @returns {CreateMutationResult<void, Error, { userId: number; roleName: string }>}
 	 * Mutation object.
 	 */
-	removeRole(): CreateMutationResult<void, Error, { userId: number; roleName: string }>
+	removeRole(): CreateMutationResult<void, Error, { userId: number; roleName: string; }>
 	{
 		return this.createMutation<
 			{
@@ -320,12 +343,17 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 			},
 			void>(
 			(variables) =>
-				this.apiService.delete<void>(`${this.endpoint}/${variables.userId}/roles/${variables.roleName}`),
-			(result, variables) =>
+				this.apiService.delete<void>(
+					`${this.endpoint}/${variables.userId}/roles/${variables.roleName}`),
+			(_result, variables) =>
 			{
 				this.queryClient.invalidateQueries(
 					{
 						queryKey: QueryKeys.users.roles(variables.userId)
+					});
+				this.queryClient.invalidateQueries(
+					{
+						queryKey: QueryKeys.users.adminCount
 					});
 			});
 	}

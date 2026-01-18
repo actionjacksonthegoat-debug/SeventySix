@@ -77,6 +77,13 @@ interface UserQueryKeys
 	 * @returns {QueryKeyElement[]}
 	 */
 	readonly roles: (userId: number | string) => QueryKeyElement[];
+
+	/**
+	 * @type {readonly ["users", "admin-count"]}
+	 * Key representing the count of admin users.
+	 * Used to determine if Admin role removal should be disabled.
+	 */
+	readonly adminCount: readonly ["users", "admin-count"];
 }
 
 /**
@@ -243,7 +250,8 @@ export const QueryKeys: QueryKeysType =
 			byUsername: (username: string): QueryKeyElement[] =>
 				["users", "username", username],
 			roles: (userId: number | string): QueryKeyElement[] =>
-				["users", userId, "roles"]
+				["users", userId, "roles"],
+			adminCount: ["users", "admin-count"] as const
 		},
 
 		health: {

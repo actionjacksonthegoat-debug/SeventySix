@@ -1,6 +1,6 @@
 import { HttpParams } from "@angular/common/http";
-import { buildHttpParams } from "./http-params.utility";
 import { DateService } from "@shared/services";
+import { buildHttpParams } from "./http-params.utility";
 
 describe("buildHttpParams",
 	() =>

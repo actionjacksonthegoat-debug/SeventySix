@@ -79,7 +79,12 @@ public class RecurringJobSchedulerService(
 			recurringJobService,
 			cancellationToken);
 
-		logger.LogInformation("Recurring job scheduler completed startup scheduling");
+		await ScheduleDatabaseMaintenanceJobAsync(
+			recurringJobService,
+			cancellationToken);
+
+		logger.LogInformation(
+			"Recurring job scheduler completed startup scheduling");
 	}
 
 	/// <inheritdoc />
@@ -105,7 +110,8 @@ public class RecurringJobSchedulerService(
 		RefreshTokenCleanupSettings settings =
 			configuration
 				.GetSection(RefreshTokenCleanupSettings.SectionName)
-				.Get<RefreshTokenCleanupSettings>() ?? new();
+				.Get<RefreshTokenCleanupSettings>()
+			?? new();
 
 		TimeSpan interval =
 			TimeSpan.FromHours(settings.IntervalHours);
@@ -140,7 +146,8 @@ public class RecurringJobSchedulerService(
 		IpAnonymizationSettings settings =
 			configuration
 				.GetSection(IpAnonymizationSettings.SectionName)
-				.Get<IpAnonymizationSettings>() ?? new();
+				.Get<IpAnonymizationSettings>()
+			?? new();
 
 		TimeSpan interval =
 			TimeSpan.FromDays(settings.IntervalDays);
@@ -173,14 +180,13 @@ public class RecurringJobSchedulerService(
 		CancellationToken cancellationToken)
 	{
 		EmailSettings emailSettings =
-			configuration
-				.GetSection("Email")
-				.Get<EmailSettings>() ?? new();
+			configuration.GetSection("Email").Get<EmailSettings>() ?? new();
 
 		EmailQueueSettings queueSettings =
 			configuration
 				.GetSection(EmailQueueSettings.SectionName)
-				.Get<EmailQueueSettings>() ?? new();
+				.Get<EmailQueueSettings>()
+			?? new();
 
 		if (!emailSettings.Enabled || !queueSettings.Enabled)
 		{
@@ -191,7 +197,8 @@ public class RecurringJobSchedulerService(
 		}
 
 		TimeSpan interval =
-			TimeSpan.FromSeconds(queueSettings.ProcessingIntervalSeconds);
+			TimeSpan.FromSeconds(
+				queueSettings.ProcessingIntervalSeconds);
 
 		await recurringJobService.EnsureScheduledAsync<EmailQueueProcessJob>(
 			nameof(EmailQueueProcessJob),
@@ -223,7 +230,8 @@ public class RecurringJobSchedulerService(
 		LogCleanupSettings settings =
 			configuration
 				.GetSection(LogCleanupSettings.SectionName)
-				.Get<LogCleanupSettings>() ?? new();
+				.Get<LogCleanupSettings>()
+			?? new();
 
 		if (!settings.Enabled)
 		{
@@ -244,6 +252,50 @@ public class RecurringJobSchedulerService(
 		logger.LogInformation(
 			"Scheduled {JobName} with interval {Interval}",
 			nameof(LogCleanupJob),
+			interval);
+	}
+
+	/// <summary>
+	/// Schedules the database maintenance job for PostgreSQL VACUUM ANALYZE.
+	/// </summary>
+	/// <param name="recurringJobService">
+	/// The recurring job service for scheduling.
+	/// </param>
+	/// <param name="cancellationToken">
+	/// The cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	private async Task ScheduleDatabaseMaintenanceJobAsync(
+		IRecurringJobService recurringJobService,
+		CancellationToken cancellationToken)
+	{
+		DatabaseMaintenanceSettings settings =
+			configuration
+				.GetSection(DatabaseMaintenanceSettings.SectionName)
+				.Get<DatabaseMaintenanceSettings>()
+			?? new();
+
+		if (!settings.Enabled)
+		{
+			logger.LogInformation(
+				"Skipping {JobName} - database maintenance disabled",
+				nameof(DatabaseMaintenanceJob));
+			return;
+		}
+
+		TimeSpan interval =
+			TimeSpan.FromHours(settings.IntervalHours);
+
+		await recurringJobService.EnsureScheduledAsync<DatabaseMaintenanceJob>(
+			nameof(DatabaseMaintenanceJob),
+			interval,
+			cancellationToken);
+
+		logger.LogInformation(
+			"Scheduled {JobName} with interval {Interval}",
+			nameof(DatabaseMaintenanceJob),
 			interval);
 	}
 }
