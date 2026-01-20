@@ -58,6 +58,10 @@ public static class EnvironmentVariableMappingExtensions
 			["DATA_PROTECTION_KEYS_DIRECTORY"] = "DataProtection:KeysDirectory",
 			["DATA_PROTECTION_ALLOW_UNPROTECTED_DEV"] =
 				"DataProtection:AllowUnprotectedKeysInDevelopment",
+
+			// Google reCAPTCHA v3
+			["RECAPTCHA_SITE_KEY"] = "Recaptcha:SiteKey",
+			["RECAPTCHA_SECRET_KEY"] = "Recaptcha:SecretKey",
 		};
 
 	/// <summary>

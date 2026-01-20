@@ -24,6 +24,7 @@ export * from "./loading.service";
 export * from "./logger.service";
 export * from "./notification.service";
 export * from "./performance-monitor.service";
+export * from "./recaptcha.service";
 export * from "./sanitization.service";
 export * from "./storage.service";
 export * from "./sw-update.service";

@@ -365,14 +365,19 @@ export class AuthService
 	 * Always succeeds from the client's perspective (prevents email enumeration).
 	 * @param {string} email
 	 * The email address to send the reset link to.
+	 * @param {string | null} recaptchaToken
+	 * reCAPTCHA v3 token for bot protection (null if disabled).
 	 * @returns {Observable<void>}
 	 * Observable that completes when the request is accepted.
 	 */
-	requestPasswordReset(email: string): Observable<void>
+	requestPasswordReset(
+		email: string,
+		recaptchaToken: string | null = null): Observable<void>
 	{
 		return this.httpClient.post<void>(`${this.authUrl}/forgot-password`,
 			{
-				email
+				email,
+				recaptchaToken
 			});
 	}
 
@@ -400,19 +405,22 @@ export class AuthService
 	 * The desired username.
 	 * @param {string} password
 	 * The desired password.
+	 * @param {string | null} recaptchaToken
+	 * The reCAPTCHA token for bot protection (null when disabled).
 	 * @returns {Observable<AuthResponse>}
 	 * Observable that resolves to authentication response on success.
 	 */
 	completeRegistration(
 		token: string,
 		username: string,
-		password: string): Observable<AuthResponse>
+		password: string,
+		recaptchaToken: string | null): Observable<AuthResponse>
 	{
 		return this
 		.httpClient
 		.post<AuthResponse>(
 			`${this.authUrl}/register/complete`,
-			{ token, username, password },
+			{ token, username, password, recaptchaToken },
 			{ withCredentials: true })
 		.pipe(
 			tap(

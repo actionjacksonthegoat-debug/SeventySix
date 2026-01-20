@@ -13,6 +13,7 @@ namespace SeventySix.Identity;
 /// </summary>
 /// <remarks>
 /// Creates an Identity user and assigns the `User` role. Role seeding must be executed during migration/startup.
+/// Includes reCAPTCHA v3 validation when enabled.
 /// </remarks>
 public static class RegisterCommandHandler
 {
@@ -27,6 +28,9 @@ public static class RegisterCommandHandler
 	/// </param>
 	/// <param name="authenticationService">
 	/// Service to generate authentication tokens.
+	/// </param>
+	/// <param name="recaptchaService">
+	/// Service for reCAPTCHA v3 token validation.
 	/// </param>
 	/// <param name="timeProvider">
 	/// Time provider for obtaining current UTC times.
@@ -44,10 +48,29 @@ public static class RegisterCommandHandler
 		RegisterCommand command,
 		UserManager<ApplicationUser> userManager,
 		AuthenticationService authenticationService,
+		IRecaptchaService recaptchaService,
 		TimeProvider timeProvider,
 		ILogger<RegisterCommand> logger,
 		CancellationToken cancellationToken)
 	{
+		// Validate reCAPTCHA if enabled
+		if (recaptchaService.IsEnabled)
+		{
+			RecaptchaValidationResult recaptchaResult =
+				await recaptchaService.ValidateAsync(
+					command.Request.RecaptchaToken ?? string.Empty,
+					RecaptchaActionConstants.Register,
+					cancellationToken);
+
+			if (!recaptchaResult.Success)
+			{
+				// Return generic error to avoid revealing validation details to bots
+				return AuthResult.Failed(
+					"Registration failed",
+					"REGISTRATION_FAILED");
+			}
+		}
+
 		ApplicationUser newUser =
 			new()
 			{

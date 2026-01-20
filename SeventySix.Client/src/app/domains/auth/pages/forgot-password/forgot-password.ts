@@ -15,6 +15,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { RouterLink } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { RecaptchaService } from "@shared/services/recaptcha.service";
 
 @Component(
 	{
@@ -35,6 +36,8 @@ export class ForgotPasswordComponent
 		inject(AuthService);
 	private readonly notification: NotificationService =
 		inject(NotificationService);
+	private readonly recaptchaService: RecaptchaService =
+		inject(RecaptchaService);
 
 	/**
 	 * Email address entered by the user to request a password reset.
@@ -71,9 +74,9 @@ export class ForgotPasswordComponent
 	/**
 	 * Submits the forgot password request. Shows a confirmation message regardless
 	 * of outcome to avoid disclosing whether the email exists.
-	 * @returns {void}
+	 * @returns {Promise<void>}
 	 */
-	protected onSubmit(): void
+	protected async onSubmitAsync(): Promise<void>
 	{
 		if (!this.email.trim())
 		{
@@ -89,24 +92,38 @@ export class ForgotPasswordComponent
 
 		this.isLoading.set(true);
 
-		this
-		.authService
-		.requestPasswordReset(this.email)
-		.subscribe(
-			{
-				next: () =>
+		try
+		{
+			// Get reCAPTCHA token (null if disabled)
+			const recaptchaToken: string | null =
+				await this.recaptchaService.executeAsync("password_reset");
+
+			this
+			.authService
+			.requestPasswordReset(
+				this.email,
+				recaptchaToken)
+			.subscribe(
 				{
-					this.submitted.set(true);
-					this.isLoading.set(false);
-					this.notification.success(
-						"If an account exists with this email, a reset link has been sent.");
-				},
-				error: () =>
-				{
-					this.isLoading.set(false);
-					this.notification.error(
-						"Unable to process request. Please try again later.");
-				}
-			});
+					next: () =>
+					{
+						this.submitted.set(true);
+						this.isLoading.set(false);
+						this.notification.success(
+							"If an account exists with this email, a reset link has been sent.");
+					},
+					error: () =>
+					{
+						this.isLoading.set(false);
+						this.notification.error(
+							"Unable to process request. Please try again later.");
+					}
+				});
+		}
+		catch
+		{
+			this.notification.error("Failed to verify request. Please try again.");
+			this.isLoading.set(false);
+		}
 	}
 }

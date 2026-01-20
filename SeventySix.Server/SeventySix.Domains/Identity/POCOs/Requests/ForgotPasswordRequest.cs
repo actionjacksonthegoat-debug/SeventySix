@@ -15,4 +15,10 @@ namespace SeventySix.Identity;
 /// <param name="Email">
 /// The email address to send the password reset link to.
 /// </param>
-public record ForgotPasswordRequest(string Email);
+/// <param name="RecaptchaToken">
+/// reCAPTCHA v3 token for bot protection.
+/// Required when reCAPTCHA is enabled in configuration.
+/// </param>
+public record ForgotPasswordRequest(
+	string Email,
+	string? RecaptchaToken = null);

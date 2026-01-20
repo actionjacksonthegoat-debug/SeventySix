@@ -569,7 +569,9 @@ public class AuthController(
 		[FromBody] ForgotPasswordRequest request,
 		CancellationToken cancellationToken)
 	{
-		await messageBus.InvokeAsync(request.Email, cancellationToken);
+		await messageBus.InvokeAsync(
+			new InitiatePasswordResetByEmailCommand(request),
+			cancellationToken);
 
 		// Always return OK to prevent email enumeration
 		return Ok(

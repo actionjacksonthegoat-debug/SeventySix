@@ -78,5 +78,9 @@ export const environment: Environment =
 		auth: {
 			loginUrl: "/auth/login",
 			tokenRefreshBufferSeconds: 60 // Refresh 60 seconds before expiry
+		},
+		recaptcha: {
+			enabled: false, // Disabled in development
+			siteKey: ""
 		}
 	};

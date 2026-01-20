@@ -63,9 +63,10 @@ public class GodMethodTests : SourceCodeArchitectureTest
 	/// </summary>
 	private static readonly HashSet<string> AllowedParameterExceptions =
 		[
-			// // Authentication handlers - Wolverine Injected dependencies
+			// Authentication handlers - Wolverine Injected dependencies
 			"SeventySix.Domains\\Identity\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs::HandleAsync",
 			"SeventySix.Domains\\Identity\\Commands\\SetPassword\\SetPasswordCommandHandler.cs::HandleAsync",
+			"SeventySix.Domains\\Identity\\Commands\\Register\\RegisterCommandHandler.cs::HandleAsync",
 		];
 
 	[Fact]

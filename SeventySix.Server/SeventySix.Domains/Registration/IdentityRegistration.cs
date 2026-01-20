@@ -123,6 +123,9 @@ public static class IdentityRegistration
 		>();
 		services.AddScoped<RegistrationService>();
 
+		// Register reCAPTCHA service with typed HttpClient
+		services.AddHttpClient<IRecaptchaService, RecaptchaService>();
+
 		// Register health check for multi-db health monitoring using generic Wolverine wrapper
 		services.AddWolverineHealthCheck<CheckIdentityHealthQuery>(
 			SchemaConstants.Identity);

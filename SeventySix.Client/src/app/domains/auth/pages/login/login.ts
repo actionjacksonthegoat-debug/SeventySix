@@ -19,6 +19,7 @@ import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthResponse, LoginRequest } from "@auth/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { RecaptchaService } from "@shared/services/recaptcha.service";
 
 @Component(
 	{
@@ -62,6 +63,13 @@ export class LoginComponent implements OnInit
 	 */
 	private readonly notification: NotificationService =
 		inject(NotificationService);
+
+	/**
+	 * reCAPTCHA service for bot protection.
+	 * @type {RecaptchaService}
+	 */
+	private readonly recaptchaService: RecaptchaService =
+		inject(RecaptchaService);
 
 	/**
 	 * Username or email entered by the user in the login form.
@@ -113,9 +121,9 @@ export class LoginComponent implements OnInit
 	/**
 	 * Perform local credential login. Validates form, invokes AuthService, and
 	 * handles success and error flows with notifications and redirects.
-	 * @returns {void}
+	 * @returns {Promise<void>}
 	 */
-	protected onLocalLogin(): void
+	protected async onLocalLoginAsync(): Promise<void>
 	{
 		if (!this.usernameOrEmail || !this.password)
 		{
@@ -125,47 +133,79 @@ export class LoginComponent implements OnInit
 
 		this.isLoading.set(true);
 
-		const credentials: LoginRequest =
-			{
-				usernameOrEmail: this.usernameOrEmail,
-				password: this.password,
-				rememberMe: this.rememberMe
-			};
+		try
+		{
+			// Get reCAPTCHA token (null if disabled)
+			const recaptchaToken: string | null =
+				await this.recaptchaService.executeAsync("login");
 
-		this
-		.authService
-		.login(credentials)
-		.subscribe(
-			{
-				next: (response: AuthResponse) =>
+			const credentials: LoginRequest =
 				{
-					if (response.requiresPasswordChange)
-					{
-						// Redirect to password change page
-						this.notification.info(
-							"You must change your password before continuing.");
-						this.router.navigate(
-							["/auth/change-password"],
-							{
-								queryParams: {
-									required: "true",
-									returnUrl: this.returnUrl
-								}
-							});
-					}
-					else
-					{
-						this.router.navigateByUrl(this.returnUrl);
-					}
-				},
-				error: (error: HttpErrorResponse) =>
+					usernameOrEmail: this.usernameOrEmail,
+					password: this.password,
+					rememberMe: this.rememberMe,
+					recaptchaToken
+				};
+
+			this
+			.authService
+			.login(credentials)
+			.subscribe(
 				{
-					const details: string[] =
-						this.getLoginErrorDetails(error);
-					this.notification.errorWithDetails("Login Failed", details);
-					this.isLoading.set(false);
-				}
-			});
+					next: (response: AuthResponse) =>
+						this.handleLoginSuccess(response),
+					error: (error: HttpErrorResponse) =>
+						this.handleLoginError(error)
+				});
+		}
+		catch
+		{
+			this.notification.error("Failed to verify request. Please try again.");
+			this.isLoading.set(false);
+		}
+	}
+
+	/**
+	 * Handle successful login response. Redirects to password change if required,
+	 * otherwise navigates to the return URL.
+	 * @param response
+	 * The authentication response from the server.
+	 * @returns {void}
+	 */
+	private handleLoginSuccess(response: AuthResponse): void
+	{
+		if (response.requiresPasswordChange)
+		{
+			this.notification.info(
+				"You must change your password before continuing.");
+			this.router.navigate(
+				["/auth/change-password"],
+				{
+					queryParams: {
+						required: "true",
+						returnUrl: this.returnUrl
+					}
+				});
+		}
+		else
+		{
+			this.router.navigateByUrl(this.returnUrl);
+		}
+	}
+
+	/**
+	 * Handle login error response. Displays error notification with details
+	 * and resets loading state.
+	 * @param error
+	 * The HTTP error response from the server.
+	 * @returns {void}
+	 */
+	private handleLoginError(error: HttpErrorResponse): void
+	{
+		const details: string[] =
+			this.getLoginErrorDetails(error);
+		this.notification.errorWithDetails("Login Failed", details);
+		this.isLoading.set(false);
 	}
 
 	/**

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using SeventySix.Api.Infrastructure;
 using SeventySix.ApiTracking;
+using SeventySix.Shared;
 using SeventySix.Shared.Persistence;
 using SeventySix.TestUtilities.TestBases;
 using Shouldly;

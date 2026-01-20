@@ -1504,6 +1504,7 @@ export interface components
 			token: string;
 			username: string;
 			password: string;
+			recaptchaToken?: null | string;
 		};
 		CreateLogRequest: {
 			logLevel: string;
@@ -1589,6 +1590,7 @@ export interface components
 			password: string;
 			/** @default false */
 			rememberMe: boolean;
+			recaptchaToken?: null | string;
 		};
 		OAuthCodeExchangeRequest: {
 			code: string;
@@ -1663,6 +1665,7 @@ export interface components
 			email: string;
 			password: string;
 			fullName?: null | string;
+			recaptchaToken?: null | string;
 		};
 		SetPasswordRequest: {
 			token: string;

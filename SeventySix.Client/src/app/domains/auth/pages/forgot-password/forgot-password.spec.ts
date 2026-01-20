@@ -7,6 +7,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { RecaptchaService } from "@shared/services/recaptcha.service";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { ForgotPasswordComponent } from "./forgot-password";
@@ -22,6 +23,11 @@ interface MockNotificationService
 	error: ReturnType<typeof vi.fn>;
 }
 
+interface MockRecaptchaService
+{
+	executeAsync: ReturnType<typeof vi.fn>;
+}
+
 describe("ForgotPasswordComponent",
 	() =>
 	{
@@ -29,6 +35,7 @@ describe("ForgotPasswordComponent",
 		let component: ForgotPasswordComponent;
 		let authServiceSpy: MockAuthService;
 		let notificationSpy: MockNotificationService;
+		let recaptchaSpy: MockRecaptchaService;
 
 		beforeEach(
 			async () =>
@@ -40,6 +47,9 @@ describe("ForgotPasswordComponent",
 						success: vi.fn(),
 						error: vi.fn()
 					};
+				recaptchaSpy =
+					{ executeAsync: vi.fn()
+						.mockResolvedValue("mock-token") };
 
 				await TestBed
 					.configureTestingModule(
@@ -58,6 +68,10 @@ describe("ForgotPasswordComponent",
 								{
 									provide: NotificationService,
 									useValue: notificationSpy
+								},
+								{
+									provide: RecaptchaService,
+									useValue: recaptchaSpy
 								}
 							]
 						})
@@ -84,7 +98,7 @@ describe("ForgotPasswordComponent",
 				component["email"] = "test@example.com";
 
 				// Act
-				component["onSubmit"]();
+				await component["onSubmitAsync"]();
 				await fixture.whenStable();
 				fixture.detectChanges();
 
@@ -133,20 +147,23 @@ describe("ForgotPasswordComponent",
 					.toBe(false);
 			});
 
-		it("should call requestPasswordReset with email",
-			() =>
+		it("should call requestPasswordReset with email and reCAPTCHA token",
+			async () =>
 			{
 				// Arrange
 				authServiceSpy.requestPasswordReset.mockReturnValue(of(undefined));
 				component["email"] = "user@example.com";
 
 				// Act
-				component["onSubmit"]();
+				await component["onSubmitAsync"]();
 
 				// Assert
+				expect(recaptchaSpy.executeAsync)
+					.toHaveBeenCalledWith("password_reset");
 				expect(authServiceSpy.requestPasswordReset)
 					.toHaveBeenCalledWith(
-						"user@example.com");
+						"user@example.com",
+						"mock-token");
 			});
 
 		it("should show error notification on API failure",
@@ -159,7 +176,7 @@ describe("ForgotPasswordComponent",
 				component["email"] = "test@example.com";
 
 				// Act
-				component["onSubmit"]();
+				await component["onSubmitAsync"]();
 				await fixture.whenStable();
 				fixture.detectChanges();
 
@@ -171,14 +188,14 @@ describe("ForgotPasswordComponent",
 			});
 
 		it("should not submit when email format is invalid",
-			() =>
+			async () =>
 			{
 				// Arrange
 				component["email"] = "invalid-email";
 				fixture.detectChanges();
 
 				// Act
-				component["onSubmit"]();
+				await component["onSubmitAsync"]();
 
 				// Assert
 				expect(authServiceSpy.requestPasswordReset).not.toHaveBeenCalled();

@@ -97,11 +97,10 @@ export class LogFixtures
 				LogFixtures.createLog(
 					{
 						id: i + 1,
-						createDate:
-							dateService
-							.fromMillis(
-								dateService.nowTimestamp() - i * 60000)
-							.toISOString(),
+						createDate: dateService
+						.fromMillis(
+							dateService.nowTimestamp() - i * 60000)
+						.toISOString(),
 						logLevel: logLevel || "Information",
 						message: `Test log message ${i + 1}`
 					}));

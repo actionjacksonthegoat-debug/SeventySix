@@ -155,9 +155,8 @@ describe("LogManagementService",
 						service.updateFilter(
 							{
 								logLevel: LogLevel.Error.toString(),
-								startDate:
-									new DateService()
-										.nowDate()
+								startDate: new DateService()
+									.nowDate()
 							});
 						service.toggleSelection(1);
 

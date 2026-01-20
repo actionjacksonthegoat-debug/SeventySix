@@ -83,5 +83,9 @@ export const environment: Environment =
 		auth: {
 			loginUrl: "/auth/login",
 			tokenRefreshBufferSeconds: 60
+		},
+		recaptcha: {
+			enabled: false, // Disabled in tests
+			siteKey: ""
 		}
 	};

@@ -139,6 +139,17 @@ export interface AuthConfig
 }
 
 /**
+ * reCAPTCHA v3 configuration.
+ */
+export interface RecaptchaConfig
+{
+	/** Whether reCAPTCHA validation is enabled. */
+	enabled: boolean;
+	/** Public site key from Google reCAPTCHA admin console. */
+	siteKey: string;
+}
+
+/**
  * Complete environment configuration interface.
  * Shared across all environment files (production, development, test).
  */
@@ -156,4 +167,5 @@ export interface Environment
 	testing: TestingConfig;
 	telemetry: TelemetryConfig;
 	auth: AuthConfig;
+	recaptcha: RecaptchaConfig;
 }

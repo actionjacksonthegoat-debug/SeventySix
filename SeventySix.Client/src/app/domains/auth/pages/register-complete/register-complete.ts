@@ -26,6 +26,7 @@ import {
 import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { RecaptchaService } from "@shared/services/recaptcha.service";
 
 @Component(
 	{
@@ -69,6 +70,13 @@ export class RegisterCompleteComponent implements OnInit
 	 */
 	private readonly notification: NotificationService =
 		inject(NotificationService);
+
+	/**
+	 * reCAPTCHA service for bot protection.
+	 * @type {RecaptchaService}
+	 */
+	private readonly recaptchaService: RecaptchaService =
+		inject(RecaptchaService);
 
 	// Expose validation constants to template
 	/**
@@ -156,9 +164,9 @@ export class RegisterCompleteComponent implements OnInit
 
 	/**
 	 * Submits the registration completion request.
-	 * @returns {void}
+	 * @returns {Promise<void>}
 	 */
-	protected onSubmit(): void
+	protected async onSubmitAsync(): Promise<void>
 	{
 		if (!this.validateForm())
 		{
@@ -167,31 +175,47 @@ export class RegisterCompleteComponent implements OnInit
 
 		this.isLoading.set(true);
 
-		this
-		.authService
-		.completeRegistration(this.token, this.username, this.password)
-		.subscribe(
-			{
-				next: () =>
-				{
-					this.notification.success("Account created successfully!");
-					this.router.navigate(
-						["/"]);
-				},
-				error: (error: HttpErrorResponse) =>
-				{
-					const errorResult: AuthErrorResult =
-						mapAuthError(error);
+		try
+		{
+			// Get reCAPTCHA token (null if disabled)
+			const recaptchaToken: string | null =
+				await this.recaptchaService.executeAsync("register");
 
-					if (errorResult.invalidateToken)
+			this
+			.authService
+			.completeRegistration(
+				this.token,
+				this.username,
+				this.password,
+				recaptchaToken)
+			.subscribe(
+				{
+					next: () =>
 					{
-						this.tokenValid.set(false);
-					}
+						this.notification.success("Account created successfully!");
+						this.router.navigate(
+							["/"]);
+					},
+					error: (error: HttpErrorResponse) =>
+					{
+						const errorResult: AuthErrorResult =
+							mapAuthError(error);
 
-					this.notification.error(errorResult.message);
-					this.isLoading.set(false);
-				}
-			});
+						if (errorResult.invalidateToken)
+						{
+							this.tokenValid.set(false);
+						}
+
+						this.notification.error(errorResult.message);
+						this.isLoading.set(false);
+					}
+				});
+		}
+		catch
+		{
+			this.notification.error("Failed to verify request. Please try again.");
+			this.isLoading.set(false);
+		}
 	}
 
 	/**

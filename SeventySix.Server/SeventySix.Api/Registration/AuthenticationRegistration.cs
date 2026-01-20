@@ -4,6 +4,7 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SeventySix.Identity;
 using SeventySix.Identity.Constants;
@@ -48,6 +49,8 @@ public static class AuthenticationExtensions
 		// Bind configuration sections
 		services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
 		services.Configure<AuthSettings>(configuration.GetSection("Auth"));
+		services.Configure<RecaptchaSettings>(
+			configuration.GetSection(RecaptchaSettings.SECTION_NAME));
 		services.Configure<AdminSeederSettings>(
 			configuration.GetSection(AdminSeederSettings.SectionName));
 		services.Configure<WhitelistedPermissionSettings>(
@@ -114,28 +117,36 @@ public static class AuthenticationExtensions
 						};
 				});
 
-		services.AddAuthorization(
-			options =>
-			{
-				options.AddPolicy(
-					PolicyConstants.AdminOnly,
-					policy => policy.RequireRole(RoleConstants.Admin));
-
-				options.AddPolicy(
-					PolicyConstants.DeveloperOrAdmin,
-					policy =>
-						policy.RequireRole(
-							RoleConstants.Developer,
-							RoleConstants.Admin));
-
-				options.AddPolicy(
-					PolicyConstants.Authenticated,
-					policy => policy.RequireAuthenticatedUser());
-			});
+		services.AddAuthorization(ConfigureAuthorizationPolicies);
 
 		// Add HttpClientFactory for OAuth
 		services.AddHttpClient();
 
 		return services;
+	}
+
+	/// <summary>
+	/// Configures authorization policies for the application.
+	/// </summary>
+	/// <param name="options">
+	/// The authorization options to configure.
+	/// </param>
+	private static void ConfigureAuthorizationPolicies(
+		AuthorizationOptions options)
+	{
+		options.AddPolicy(
+			PolicyConstants.AdminOnly,
+			policy => policy.RequireRole(RoleConstants.Admin));
+
+		options.AddPolicy(
+			PolicyConstants.DeveloperOrAdmin,
+			policy =>
+				policy.RequireRole(
+					RoleConstants.Developer,
+					RoleConstants.Admin));
+
+		options.AddPolicy(
+			PolicyConstants.Authenticated,
+			policy => policy.RequireAuthenticatedUser());
 	}
 }

@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeventySix.ApiTracking;
+using SeventySix.Shared;
 using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 

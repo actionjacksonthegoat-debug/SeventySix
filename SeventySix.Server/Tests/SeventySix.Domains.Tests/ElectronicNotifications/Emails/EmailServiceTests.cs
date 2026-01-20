@@ -5,8 +5,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using SeventySix.ApiTracking;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Interfaces;
 using Shouldly;
 

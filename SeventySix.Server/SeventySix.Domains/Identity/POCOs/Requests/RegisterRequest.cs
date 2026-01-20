@@ -19,8 +19,13 @@ namespace SeventySix.Identity;
 /// <param name="FullName">
 /// Optional full name.
 /// </param>
+/// <param name="RecaptchaToken">
+/// reCAPTCHA v3 token for bot protection.
+/// Required when reCAPTCHA is enabled in configuration.
+/// </param>
 public record RegisterRequest(
 	string Username,
 	string Email,
 	string Password,
-	string? FullName = null);
+	string? FullName = null,
+	string? RecaptchaToken = null);

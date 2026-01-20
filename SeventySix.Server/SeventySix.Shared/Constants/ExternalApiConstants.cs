@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.ApiTracking;
+namespace SeventySix.Shared.Constants;
 
 /// <summary>
 /// Constants for external API names tracked by the system.
@@ -13,4 +13,9 @@ public static class ExternalApiConstants
 	/// Brevo (formerly Sendinblue) email service.
 	/// </summary>
 	public const string BrevoEmail = "BrevoEmail";
+
+	/// <summary>
+	/// Google reCAPTCHA v3 verification service.
+	/// </summary>
+	public const string GoogleRecaptcha = "GoogleRecaptcha";
 }

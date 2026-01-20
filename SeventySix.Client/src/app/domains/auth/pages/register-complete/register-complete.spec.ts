@@ -5,6 +5,7 @@ import { provideRouter, Router } from "@angular/router";
 import { ActivatedRoute } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
+import { RecaptchaService } from "@shared/services/recaptcha.service";
 import { createMockNotificationService } from "@shared/testing";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
@@ -15,6 +16,11 @@ interface MockAuthService
 	completeRegistration: ReturnType<typeof vi.fn>;
 }
 
+interface MockRecaptchaService
+{
+	executeAsync: ReturnType<typeof vi.fn>;
+}
+
 describe("RegisterCompleteComponent",
 	() =>
 	{
@@ -22,6 +28,7 @@ describe("RegisterCompleteComponent",
 		let fixture: ComponentFixture<RegisterCompleteComponent>;
 		let mockAuthService: MockAuthService;
 		let mockNotificationService: ReturnType<typeof createMockNotificationService>;
+		let mockRecaptchaService: MockRecaptchaService;
 		let router: Router;
 
 		function setupTestBed(queryParams: Record<string, string> = {})
@@ -36,6 +43,10 @@ describe("RegisterCompleteComponent",
 						{
 							provide: NotificationService,
 							useValue: mockNotificationService
+						},
+						{
+							provide: RecaptchaService,
+							useValue: mockRecaptchaService
 						},
 						{ provide: ActivatedRoute, useValue: { snapshot: { queryParams } } }
 					]
@@ -58,6 +69,12 @@ describe("RegisterCompleteComponent",
 					{ completeRegistration: vi.fn() };
 				mockNotificationService =
 					createMockNotificationService();
+				mockRecaptchaService =
+					{
+						executeAsync: vi
+							.fn()
+							.mockResolvedValue(null)
+					};
 			});
 
 		it("should create",
@@ -82,7 +99,7 @@ describe("RegisterCompleteComponent",
 			});
 
 		it("should show validation errors and not call service",
-			() =>
+			async () =>
 			{
 				setupTestBed(
 					{ token: "valid-token" });
@@ -91,7 +108,7 @@ describe("RegisterCompleteComponent",
 				(component as unknown as { password: string; }).password = "short";
 				(component as unknown as { confirmPassword: string; }).confirmPassword = "short";
 
-				(component as unknown as { onSubmit(): void; }).onSubmit();
+				await (component as unknown as { onSubmitAsync(): Promise<void>; }).onSubmitAsync();
 
 				expect(mockNotificationService.error)
 					.toHaveBeenCalled();
@@ -99,7 +116,7 @@ describe("RegisterCompleteComponent",
 			});
 
 		it("should navigate to root on successful registration",
-			() =>
+			async () =>
 			{
 				setupTestBed(
 					{ token: "valid-token" });
@@ -109,13 +126,14 @@ describe("RegisterCompleteComponent",
 				(component as unknown as { password: string; }).password = "ValidPassword123!";
 				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
 
-				(component as unknown as { onSubmit(): void; }).onSubmit();
+				await (component as unknown as { onSubmitAsync(): Promise<void>; }).onSubmitAsync();
 
 				expect(mockAuthService.completeRegistration)
 					.toHaveBeenCalledWith(
 						"valid-token",
 						"valid_user",
-						"ValidPassword123!");
+						"ValidPassword123!",
+						null);
 				expect(mockNotificationService.success)
 					.toHaveBeenCalledWith("Account created successfully!");
 				expect(router.navigate)
@@ -124,7 +142,7 @@ describe("RegisterCompleteComponent",
 			});
 
 		it("should show error message from API on failure",
-			() =>
+			async () =>
 			{
 				setupTestBed(
 					{ token: "valid-token" });
@@ -137,7 +155,7 @@ describe("RegisterCompleteComponent",
 				(component as unknown as { password: string; }).password = "ValidPassword123!";
 				(component as unknown as { confirmPassword: string; }).confirmPassword = "ValidPassword123!";
 
-				(component as unknown as { onSubmit(): void; }).onSubmit();
+				await (component as unknown as { onSubmitAsync(): Promise<void>; }).onSubmitAsync();
 
 				expect(mockNotificationService.error)
 					.toHaveBeenCalledWith("Username already exists.");

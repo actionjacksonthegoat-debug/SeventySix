@@ -169,6 +169,29 @@ public sealed class EnvironmentVariableMappingTests : IDisposable
 			.ShouldBe("false");
 	}
 
+	[Fact]
+	public void AddEnvironmentVariableMapping_WithRecaptchaVariables_MapsCorrectly()
+	{
+		// Arrange
+		SetEnvironmentVariable(
+			"RECAPTCHA_SITE_KEY",
+			"test-site-key");
+		SetEnvironmentVariable(
+			"RECAPTCHA_SECRET_KEY",
+			"test-secret-key");
+
+		ConfigurationManager configuration = new();
+
+		// Act
+		configuration.AddEnvironmentVariableMapping();
+
+		// Assert
+		configuration["Recaptcha:SiteKey"]
+			.ShouldBe("test-site-key");
+		configuration["Recaptcha:SecretKey"]
+			.ShouldBe("test-secret-key");
+	}
+
 	/// <summary>
 	/// Sets an environment variable and tracks it for cleanup.
 	/// </summary>
