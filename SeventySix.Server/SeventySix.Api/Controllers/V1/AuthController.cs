@@ -5,11 +5,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Options;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Extensions;
+using SeventySix.Api.Infrastructure;
 using SeventySix.Identity;
 using SeventySix.Shared.Extensions;
+using SeventySix.Shared.POCOs;
 using Wolverine;
 
 namespace SeventySix.Api.Controllers;
@@ -25,14 +26,28 @@ namespace SeventySix.Api.Controllers;
 /// - PKCE flow for OAuth (code verifier in session/cookie)
 /// - OAuth uses code exchange pattern to avoid token exposure in postMessage
 /// </remarks>
+/// <param name="messageBus">
+/// The Wolverine message bus for CQRS operations.
+/// </param>
+/// <param name="oAuthService">
+/// Service for OAuth provider integrations.
+/// </param>
+/// <param name="oauthCodeExchange">
+/// Service for OAuth code exchange flow.
+/// </param>
+/// <param name="cookieService">
+/// Service for authentication cookie management.
+/// </param>
+/// <param name="logger">
+/// Logger for authentication operations.
+/// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/auth")]
 public class AuthController(
 	IMessageBus messageBus,
 	IOAuthService oAuthService,
 	IOAuthCodeExchangeService oauthCodeExchange,
-	IOptions<AuthSettings> authSettings,
-	IOptions<JwtSettings> jwtSettings,
+	IAuthCookieService cookieService,
 	ILogger<AuthController> logger) : ControllerBase
 {
 	/// <summary>
@@ -96,15 +111,18 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken!);
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
+
+		cookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
 
 		return Ok(
 			new AuthResponse(
-				AccessToken: result.AccessToken!,
-				ExpiresAt: result.ExpiresAt!.Value,
-				Email: result.Email!,
-				FullName: result.FullName,
-				RequiresPasswordChange: result.RequiresPasswordChange));
+				AccessToken: validatedResult.AccessToken,
+				ExpiresAt: validatedResult.ExpiresAt,
+				Email: validatedResult.Email,
+				FullName: validatedResult.FullName,
+				RequiresPasswordChange: validatedResult.RequiresPasswordChange));
 	}
 
 	/// <summary>
@@ -163,16 +181,19 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken!);
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
+
+		cookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
 
 		return StatusCode(
 			StatusCodes.Status201Created,
 			new AuthResponse(
-				AccessToken: result.AccessToken!,
-				ExpiresAt: result.ExpiresAt!.Value,
-				Email: result.Email!,
-				FullName: result.FullName,
-				RequiresPasswordChange: result.RequiresPasswordChange));
+				AccessToken: validatedResult.AccessToken,
+				ExpiresAt: validatedResult.ExpiresAt,
+				Email: validatedResult.Email,
+				FullName: validatedResult.FullName,
+				RequiresPasswordChange: validatedResult.RequiresPasswordChange));
 	}
 
 	/// <summary>
@@ -202,9 +223,7 @@ public class AuthController(
 		CancellationToken cancellationToken)
 	{
 		string? refreshToken =
-			Request.Cookies[
-				authSettings.Value.Cookie.RefreshTokenCookieName
-		];
+			cookieService.GetRefreshToken();
 
 		if (string.IsNullOrEmpty(refreshToken))
 		{
@@ -227,7 +246,7 @@ public class AuthController(
 
 		if (!result.Success)
 		{
-			ClearRefreshTokenCookie();
+			cookieService.ClearRefreshTokenCookie();
 
 			return Unauthorized(
 				new ProblemDetails
@@ -241,15 +260,18 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken!);
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
+
+		cookieService.SetRefreshTokenCookie(validatedResult.RefreshToken);
 
 		return Ok(
 			new AuthResponse(
-				AccessToken: result.AccessToken!,
-				ExpiresAt: result.ExpiresAt!.Value,
-				Email: result.Email!,
-				FullName: result.FullName,
-				RequiresPasswordChange: result.RequiresPasswordChange));
+				AccessToken: validatedResult.AccessToken,
+				ExpiresAt: validatedResult.ExpiresAt,
+				Email: validatedResult.Email,
+				FullName: validatedResult.FullName,
+				RequiresPasswordChange: validatedResult.RequiresPasswordChange));
 	}
 
 	/// <summary>
@@ -268,17 +290,18 @@ public class AuthController(
 		CancellationToken cancellationToken)
 	{
 		string? refreshToken =
-			Request.Cookies[
-				authSettings.Value.Cookie.RefreshTokenCookieName
-		];
+			cookieService.GetRefreshToken();
 
 		if (!string.IsNullOrEmpty(refreshToken))
 		{
-			await messageBus.InvokeAsync<bool>(refreshToken, cancellationToken);
+			LogoutCommand command =
+				new(refreshToken);
+
+			await messageBus.InvokeAsync<Result>(command, cancellationToken);
 		}
 
-		ClearRefreshTokenCookie();
-		ClearOAuthCookies();
+		cookieService.ClearRefreshTokenCookie();
+		cookieService.ClearOAuthCookies();
 
 		return NoContent();
 	}
@@ -301,8 +324,8 @@ public class AuthController(
 			CryptoExtensions.GeneratePkceCodeVerifier();
 
 		// Store state and code verifier in cookies for callback validation
-		SetOAuthStateCookie(state);
-		SetOAuthCodeVerifierCookie(codeVerifier);
+		cookieService.SetOAuthStateCookie(state);
+		cookieService.SetOAuthCodeVerifierCookie(codeVerifier);
 
 		string authorizationUrl =
 			oAuthService.BuildGitHubAuthorizationUrl(
@@ -337,9 +360,7 @@ public class AuthController(
 	{
 		// Validate state
 		string? storedState =
-			Request.Cookies[
-				authSettings.Value.Cookie.OAuthStateCookieName
-		];
+			cookieService.GetOAuthState();
 
 		if (string.IsNullOrEmpty(storedState) || storedState != state)
 		{
@@ -349,9 +370,7 @@ public class AuthController(
 
 		// Get code verifier
 		string? codeVerifier =
-			Request.Cookies[
-				authSettings.Value.Cookie.OAuthCodeVerifierCookieName
-		];
+			cookieService.GetOAuthCodeVerifier();
 
 		if (string.IsNullOrEmpty(codeVerifier))
 		{
@@ -368,24 +387,34 @@ public class AuthController(
 				clientIp,
 				cancellationToken);
 
-		ClearOAuthCookies();
+		cookieService.ClearOAuthCookies();
 
 		if (!result.Success)
 		{
 			logger.LogWarning(
 				"GitHub OAuth failed. Error: {Error}",
 				result.Error);
-			return CreateOAuthErrorResponse(result.Error!);
+
+			if (result.Error is null)
+			{
+				throw new InvalidOperationException(
+					"Failed AuthResult must contain an Error message.");
+			}
+
+			return CreateOAuthErrorResponse(result.Error);
 		}
+
+		ValidatedAuthResult validatedResult =
+			ValidateSuccessfulAuthResult(result);
 
 		// Don't set refresh token cookie here - it will be set during code exchange
 		// This ensures the cookie is set on the main domain, not the popup
 		return CreateOAuthSuccessResponse(
-			result.AccessToken!,
-			result.RefreshToken!,
-			result.ExpiresAt!.Value,
-			result.Email!,
-			result.FullName);
+			validatedResult.AccessToken,
+			validatedResult.RefreshToken,
+			validatedResult.ExpiresAt,
+			validatedResult.Email,
+			validatedResult.FullName);
 	}
 
 	/// <summary>
@@ -429,7 +458,7 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken);
+		cookieService.SetRefreshTokenCookie(result.RefreshToken);
 
 		return Ok(
 			new AuthResponse(
@@ -530,7 +559,7 @@ public class AuthController(
 		}
 
 		// Clear refresh token after password change
-		ClearRefreshTokenCookie();
+		cookieService.ClearRefreshTokenCookie();
 
 		return NoContent();
 	}
@@ -575,10 +604,8 @@ public class AuthController(
 
 		// Always return OK to prevent email enumeration
 		return Ok(
-			new
-			{
-				message = "If an account exists with this email, a reset link has been sent.",
-			});
+			new MessageResponse(
+				"If an account exists with this email, a reset link has been sent."));
 	}
 
 	/// <summary>
@@ -638,7 +665,7 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken!);
+		cookieService.SetRefreshTokenCookie(result.RefreshToken!);
 
 		return Ok(
 			new AuthResponse(
@@ -688,10 +715,8 @@ public class AuthController(
 
 		// Always return OK to prevent email enumeration
 		return Ok(
-			new
-			{
-				message = "If this email is available, a verification link has been sent.",
-			});
+			new MessageResponse(
+				"If this email is available, a verification link has been sent."));
 	}
 
 	/// <summary>
@@ -749,7 +774,7 @@ public class AuthController(
 				});
 		}
 
-		SetRefreshTokenCookie(result.RefreshToken!);
+		cookieService.SetRefreshTokenCookie(result.RefreshToken!);
 
 		return StatusCode(
 			StatusCodes.Status201Created,
@@ -769,89 +794,6 @@ public class AuthController(
 		HttpContext.Connection.RemoteIpAddress?.ToString();
 
 	/// <summary>
-	/// Sets an HTTP-only secure cookie.
-	/// </summary>
-	private void SetSecureCookie(
-		string name,
-		string value,
-		TimeSpan expiration,
-		SameSiteMode sameSite = SameSiteMode.Strict)
-	{
-		CookieOptions options =
-			new()
-			{
-				HttpOnly = true,
-				Secure =
-					authSettings.Value.Cookie.SecureCookie,
-				SameSite = sameSite,
-				Expires =
-					DateTimeOffset.UtcNow.Add(expiration),
-			};
-
-		Response.Cookies.Append(name, value, options);
-	}
-
-	/// <summary>
-	/// Deletes a cookie by name.
-	/// </summary>
-	private void DeleteCookie(string name) => Response.Cookies.Delete(name);
-
-	/// <summary>
-	/// Sets the refresh token cookie.
-	/// </summary>
-	private void SetRefreshTokenCookie(string refreshToken) =>
-		SetSecureCookie(
-			authSettings.Value.Cookie.RefreshTokenCookieName,
-			refreshToken,
-			TimeSpan.FromDays(jwtSettings.Value.RefreshTokenExpirationDays));
-
-	/// <summary>
-	/// Clears the refresh token cookie.
-	/// </summary>
-	private void ClearRefreshTokenCookie() =>
-		DeleteCookie(authSettings.Value.Cookie.RefreshTokenCookieName);
-
-	/// <summary>
-	/// Sets OAuth state cookie for CSRF protection.
-	/// </summary>
-	private void SetOAuthStateCookie(string state) =>
-		SetSecureCookie(
-			authSettings.Value.Cookie.OAuthStateCookieName,
-			state,
-			TimeSpan.FromMinutes(5),
-			SameSiteMode.Lax);
-
-	/// <summary>
-	/// Sets OAuth code verifier cookie for PKCE.
-	/// </summary>
-	private void SetOAuthCodeVerifierCookie(string codeVerifier) =>
-		SetSecureCookie(
-			authSettings.Value.Cookie.OAuthCodeVerifierCookieName,
-			codeVerifier,
-			TimeSpan.FromMinutes(5),
-			SameSiteMode.Lax);
-
-	/// <summary>
-	/// Clears OAuth cookies.
-	/// </summary>
-	private void ClearOAuthCookies()
-	{
-		DeleteCookie(authSettings.Value.Cookie.OAuthStateCookieName);
-		DeleteCookie(authSettings.Value.Cookie.OAuthCodeVerifierCookieName);
-	}
-
-	/// <summary>
-	/// Gets the allowed origin from OAuth callback URL.
-	/// </summary>
-	private string GetAllowedOrigin()
-	{
-		Uri callbackUri =
-			new(authSettings.Value.OAuth.ClientCallbackUrl);
-
-		return $"{callbackUri.Scheme}://{callbackUri.Authority}";
-	}
-
-	/// <summary>
 	/// Creates HTML response that posts OAuth authorization code to parent window.
 	/// Tokens are stored server-side; client exchanges code for tokens via API.
 	/// </summary>
@@ -862,7 +804,8 @@ public class AuthController(
 		string email,
 		string? fullName)
 	{
-		string origin = GetAllowedOrigin();
+		string origin =
+			cookieService.GetAllowedOrigin();
 
 		// Store tokens and get one-time code (60 second TTL)
 		string code =
@@ -901,7 +844,8 @@ public class AuthController(
 	/// </summary>
 	private ContentResult CreateOAuthErrorResponse(string error)
 	{
-		string origin = GetAllowedOrigin();
+		string origin =
+			cookieService.GetAllowedOrigin();
 
 		string escapedError =
 			Uri.EscapeDataString(error);
@@ -927,5 +871,66 @@ public class AuthController(
 			""";
 
 		return Content(html, "text/html");
+	}
+
+	/// <summary>
+	/// Validated authentication result with non-nullable token fields.
+	/// </summary>
+	/// <param name="AccessToken">
+	/// The JWT access token.
+	/// </param>
+	/// <param name="RefreshToken">
+	/// The refresh token.
+	/// </param>
+	/// <param name="ExpiresAt">
+	/// Token expiration time.
+	/// </param>
+	/// <param name="Email">
+	/// User's email address.
+	/// </param>
+	/// <param name="FullName">
+	/// User's full name (optional).
+	/// </param>
+	/// <param name="RequiresPasswordChange">
+	/// Whether user must change password.
+	/// </param>
+	private readonly record struct ValidatedAuthResult(
+		string AccessToken,
+		string RefreshToken,
+		DateTime ExpiresAt,
+		string Email,
+		string? FullName,
+		bool RequiresPasswordChange);
+
+	/// <summary>
+	/// Validates that a successful AuthResult contains all required token fields.
+	/// </summary>
+	/// <param name="result">
+	/// The authentication result to validate.
+	/// </param>
+	/// <returns>
+	/// A validated result with non-nullable token fields.
+	/// </returns>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when a successful result is missing required fields.
+	/// </exception>
+	private static ValidatedAuthResult ValidateSuccessfulAuthResult(AuthResult result)
+	{
+		if (result.AccessToken is null
+			|| result.RefreshToken is null
+			|| result.ExpiresAt is null
+			|| result.Email is null)
+		{
+			throw new InvalidOperationException(
+				"Successful AuthResult must contain AccessToken, RefreshToken, ExpiresAt, and Email.");
+		}
+
+		return new ValidatedAuthResult(
+			result.AccessToken,
+			result.RefreshToken,
+			result.ExpiresAt.Value,
+			result.Email,
+			result.FullName,
+			result.RequiresPasswordChange);
 	}
 }

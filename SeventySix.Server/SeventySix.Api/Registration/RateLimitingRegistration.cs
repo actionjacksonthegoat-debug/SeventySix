@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using SeventySix.Api.Configuration;
 using SeventySix.Api.Middleware;
 using SeventySix.Identity;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Api.Registration;
 
@@ -51,12 +52,12 @@ public static class RateLimitingRegistration
 		IConfiguration configuration)
 	{
 		RateLimitingSettings globalSettings =
-			configuration.GetSection("RateLimiting").Get<RateLimitingSettings>()
+			configuration.GetSection(ConfigurationSectionConstants.RateLimiting).Get<RateLimitingSettings>()
 			?? new RateLimitingSettings();
 
 		AuthRateLimitSettings authSettings =
 			configuration
-				.GetSection("Auth:RateLimit")
+				.GetSection(ConfigurationSectionConstants.AuthNested.RateLimit)
 				.Get<AuthRateLimitSettings>()
 			?? new AuthRateLimitSettings();
 
@@ -106,8 +107,8 @@ public static class RateLimitingRegistration
 		IConfiguration configuration)
 	{
 		string[] allowedOrigins =
-			configuration?.GetSection("Cors:AllowedOrigins").Get<string[]>()
-			?? new[] { "http://localhost:4200" };
+			configuration?.GetSection(ConfigurationSectionConstants.Cors.AllowedOrigins).Get<string[]>()
+			?? ["http://localhost:4200"];
 
 		ISet<string> allowedOriginsSet =
 			new HashSet<string>(

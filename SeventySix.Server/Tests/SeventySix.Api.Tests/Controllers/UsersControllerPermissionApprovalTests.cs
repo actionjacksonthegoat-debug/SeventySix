@@ -112,7 +112,7 @@ public class UsersControllerPermissionApprovalTests(
 			TestRoleConstants.Admin,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/bulk/approve",
-			JsonContent.Create(Array.Empty<int>()));
+			JsonContent.Create(new[] { 1L, 2L }));
 
 	#endregion
 
@@ -139,7 +139,7 @@ public class UsersControllerPermissionApprovalTests(
 			TestRoleConstants.Admin,
 			HttpMethod.Post,
 			$"{BaseEndpoint}/permission-requests/bulk/reject",
-			JsonContent.Create(Array.Empty<int>()));
+			JsonContent.Create(new[] { 1L, 2L }));
 
 	#endregion
 }

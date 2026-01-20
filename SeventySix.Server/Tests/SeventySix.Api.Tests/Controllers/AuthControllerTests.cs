@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.Identity;
-using SeventySix.Shared.Extensions;
+using SeventySix.Shared.Utilities;
 using SeventySix.TestUtilities.Constants;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;

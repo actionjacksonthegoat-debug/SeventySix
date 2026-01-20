@@ -205,20 +205,12 @@ internal class LogRepository(
 		List<long> idList =
 			[.. ids];
 
-		List<Log> logsToDelete =
+		int deletedCount =
 			await context
 				.Logs
 				.Where(logEntry => idList.Contains(logEntry.Id))
-				.ToListAsync(cancellationToken);
+				.ExecuteDeleteAsync(cancellationToken);
 
-		if (logsToDelete.Count == 0)
-		{
-			return 0;
-		}
-
-		context.Logs.RemoveRange(logsToDelete);
-		await context.SaveChangesAsync(cancellationToken);
-
-		return logsToDelete.Count;
+		return deletedCount;
 	}
 }

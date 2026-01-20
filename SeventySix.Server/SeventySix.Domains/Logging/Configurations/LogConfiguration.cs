@@ -38,50 +38,50 @@ public class LogConfiguration : IEntityTypeConfiguration<Log>
 		builder.ToTable("Logs");
 
 		// Primary key
-		builder.HasKey(e => e.Id);
+		builder.HasKey(logEntry => logEntry.Id);
 		builder
-			.Property(e => e.Id)
+			.Property(logEntry => logEntry.Id)
 			.UseIdentityColumn() // PostgreSQL SERIAL
 			.IsRequired();
 
 		// LogLevel - Required, max length 20
-		builder.Property(e => e.LogLevel).IsRequired().HasMaxLength(20);
+		builder.Property(logEntry => logEntry.LogLevel).IsRequired().HasMaxLength(20);
 
 		// Message - Required, max length 4000
-		builder.Property(e => e.Message).IsRequired().HasMaxLength(4000);
+		builder.Property(logEntry => logEntry.Message).IsRequired().HasMaxLength(4000);
 
 		// ExceptionMessage - Optional, max length 2000
-		builder.Property(e => e.ExceptionMessage).HasMaxLength(2000);
+		builder.Property(logEntry => logEntry.ExceptionMessage).HasMaxLength(2000);
 
 		// BaseExceptionMessage - Optional, max length 2000
-		builder.Property(e => e.BaseExceptionMessage).HasMaxLength(2000);
+		builder.Property(logEntry => logEntry.BaseExceptionMessage).HasMaxLength(2000);
 
 		// StackTrace - Optional, unlimited text
-		builder.Property(e => e.StackTrace).HasColumnType("text");
+		builder.Property(logEntry => logEntry.StackTrace).HasColumnType("text");
 
 		// SourceContext - Optional, max length 500
-		builder.Property(e => e.SourceContext).HasMaxLength(500);
+		builder.Property(logEntry => logEntry.SourceContext).HasMaxLength(500);
 
 		// RequestMethod - Optional, max length 10
-		builder.Property(e => e.RequestMethod).HasMaxLength(10);
+		builder.Property(logEntry => logEntry.RequestMethod).HasMaxLength(10);
 
 		// RequestPath - Optional, max length 2000
-		builder.Property(e => e.RequestPath).HasMaxLength(2000);
+		builder.Property(logEntry => logEntry.RequestPath).HasMaxLength(2000);
 
 		// StatusCode - Optional
-		builder.Property(e => e.StatusCode);
+		builder.Property(logEntry => logEntry.StatusCode);
 
 		// DurationMs - Optional
-		builder.Property(e => e.DurationMs);
+		builder.Property(logEntry => logEntry.DurationMs);
 
 		// Properties - Optional, JSON text
-		builder.Property(e => e.Properties).HasColumnType("text");
+		builder.Property(logEntry => logEntry.Properties).HasColumnType("text");
 
 		// CreateDate - Required, default NOW()
 		// Maps to CreateDate column in database
 		// ValueGeneratedOnAdd allows explicit values to override the database default
 		builder
-			.Property(e => e.CreateDate)
+			.Property(logEntry => logEntry.CreateDate)
 			.IsRequired()
 			.HasColumnName("CreateDate")
 			.ValueGeneratedOnAdd()
@@ -89,28 +89,41 @@ public class LogConfiguration : IEntityTypeConfiguration<Log>
 			.HasColumnType("timestamp with time zone");
 
 		// MachineName - Optional, max length 100
-		builder.Property(e => e.MachineName).HasMaxLength(100);
+		builder.Property(logEntry => logEntry.MachineName).HasMaxLength(100);
 
 		// Environment - Optional, max length 50
-		builder.Property(e => e.Environment).HasMaxLength(50);
+		builder.Property(logEntry => logEntry.Environment).HasMaxLength(50);
+
+		// Tracing fields - OpenTelemetry standard lengths
+		// TraceId: 32 hex chars, SpanId: 16 hex chars
+		builder.Property(logEntry => logEntry.CorrelationId).HasMaxLength(32);
+		builder.Property(logEntry => logEntry.SpanId).HasMaxLength(16);
+		builder.Property(logEntry => logEntry.ParentSpanId).HasMaxLength(16);
 
 		// Indexes for common queries
 		builder
-			.HasIndex(e => e.CreateDate)
-			.HasDatabaseName("IX_Logs_CreatedAt");
-
-		builder.HasIndex(e => e.LogLevel).HasDatabaseName("IX_Logs_LogLevel");
+			.HasIndex(logEntry => logEntry.CreateDate)
+			.HasDatabaseName("IX_Logs_CreateDate");
 
 		builder
-			.HasIndex(e => e.SourceContext)
+			.HasIndex(logEntry => logEntry.LogLevel)
+			.HasDatabaseName("IX_Logs_LogLevel");
+
+		builder
+			.HasIndex(logEntry => logEntry.SourceContext)
 			.HasDatabaseName("IX_Logs_SourceContext");
 
 		builder
-			.HasIndex(e => new { e.LogLevel, e.CreateDate })
-			.HasDatabaseName("IX_Logs_LogLevel_CreatedAt");
+			.HasIndex(logEntry => new { logEntry.LogLevel, logEntry.CreateDate })
+			.HasDatabaseName("IX_Logs_LogLevel_CreateDate");
 
 		builder
-			.HasIndex(e => e.RequestPath)
+			.HasIndex(logEntry => logEntry.RequestPath)
 			.HasDatabaseName("IX_Logs_RequestPath");
+
+		// Index for distributed tracing queries
+		builder
+			.HasIndex(logEntry => logEntry.CorrelationId)
+			.HasDatabaseName("IX_Logs_CorrelationId");
 	}
 }

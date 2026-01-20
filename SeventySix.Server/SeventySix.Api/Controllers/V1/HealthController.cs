@@ -17,15 +17,17 @@ namespace SeventySix.Api.Controllers;
 /// including database, external APIs, error queue, and system resources.
 /// Follows SRP by handling only health check operations.
 /// </remarks>
-/// <remarks>
-/// Initializes a new instance of the <see cref="HealthController"/> class.
-/// </remarks>
-/// <param name="service">
+/// <param name="healthService">
 /// The health check service.
+/// </param>
+/// <param name="scheduledJobService">
+/// The scheduled job service.
 /// </param>
 [ApiController]
 [Route(ApiVersionConfig.VersionedRoutePrefix + "/health")]
-public class HealthController(IHealthCheckService service) : ControllerBase
+public class HealthController(
+	IHealthCheckService healthService,
+	IScheduledJobService scheduledJobService) : ControllerBase
 {
 	/// <summary>
 	/// Retrieves comprehensive system health status.
@@ -47,7 +49,7 @@ public class HealthController(IHealthCheckService service) : ControllerBase
 		CancellationToken cancellationToken)
 	{
 		HealthStatusResponse status =
-			await service.GetHealthStatusAsync(
+			await healthService.GetHealthStatusAsync(
 				cancellationToken);
 		return Ok(status);
 	}
@@ -55,9 +57,6 @@ public class HealthController(IHealthCheckService service) : ControllerBase
 	/// <summary>
 	/// Retrieves status information for all scheduled background jobs.
 	/// </summary>
-	/// <param name="scheduledJobService">
-	/// The service for retrieving scheduled job statuses.
-	/// </param>
 	/// <param name="cancellationToken">
 	/// Cancellation token for the async operation.
 	/// </param>
@@ -70,7 +69,6 @@ public class HealthController(IHealthCheckService service) : ControllerBase
 		typeof(IReadOnlyList<RecurringJobStatusResponse>),
 		StatusCodes.Status200OK)]
 	public async Task<ActionResult<IReadOnlyList<RecurringJobStatusResponse>>> GetScheduledJobsAsync(
-		[FromServices] IScheduledJobService scheduledJobService,
 		CancellationToken cancellationToken)
 	{
 		IReadOnlyList<RecurringJobStatusResponse> jobStatuses =

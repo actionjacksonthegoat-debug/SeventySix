@@ -61,8 +61,8 @@ public static class LoginCommandHandler
 			{
 				// Return generic error to avoid revealing validation details to bots
 				return AuthResult.Failed(
-					"Invalid credentials",
-					"INVALID_CREDENTIALS");
+					AuthErrorMessages.InvalidCredentials,
+					AuthErrorCodes.InvalidCredentials);
 			}
 		}
 
@@ -74,8 +74,8 @@ public static class LoginCommandHandler
 		if (user is null || !user.IsActive)
 		{
 			return AuthResult.Failed(
-				"Invalid credentials",
-				"INVALID_CREDENTIALS");
+				AuthErrorMessages.InvalidCredentials,
+				AuthErrorCodes.InvalidCredentials);
 		}
 
 		SignInResult result =
@@ -87,15 +87,15 @@ public static class LoginCommandHandler
 		if (result.IsLockedOut)
 		{
 			return AuthResult.Failed(
-				"Account locked",
-				"ACCOUNT_LOCKED");
+				AuthErrorMessages.AccountLocked,
+				AuthErrorCodes.AccountLocked);
 		}
 
 		if (!result.Succeeded)
 		{
 			return AuthResult.Failed(
-				"Invalid credentials",
-				"INVALID_CREDENTIALS");
+				AuthErrorMessages.InvalidCredentials,
+				AuthErrorCodes.InvalidCredentials);
 		}
 
 		// Determine if the user must change password on first login by checking DB flag

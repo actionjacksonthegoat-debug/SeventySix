@@ -170,3 +170,29 @@ public static class AuthErrorCodes
 	/// </summary>
 	public const string UserNotFound = "USER_NOT_FOUND";
 }
+
+/// <summary>
+/// User-facing authentication error messages.
+/// </summary>
+public static class AuthErrorMessages
+{
+	/// <summary>
+	/// Invalid credentials message.
+	/// </summary>
+	public const string InvalidCredentials = "Invalid credentials";
+
+	/// <summary>
+	/// Account locked message.
+	/// </summary>
+	public const string AccountLocked = "Account locked";
+
+	/// <summary>
+	/// Account inactive message.
+	/// </summary>
+	public const string AccountInactive = "Account is inactive";
+
+	/// <summary>
+	/// Invalid or expired token message.
+	/// </summary>
+	public const string InvalidToken = "Invalid or expired token";
+}

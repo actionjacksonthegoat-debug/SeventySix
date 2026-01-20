@@ -48,8 +48,11 @@ describe("ForgotPasswordComponent",
 						error: vi.fn()
 					};
 				recaptchaSpy =
-					{ executeAsync: vi.fn()
-						.mockResolvedValue("mock-token") };
+					{
+						executeAsync: vi
+							.fn()
+							.mockResolvedValue("mock-token")
+					};
 
 				await TestBed
 					.configureTestingModule(

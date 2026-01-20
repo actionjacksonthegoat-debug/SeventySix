@@ -15,15 +15,20 @@ namespace SeventySix.Api.Tests.Controllers;
 /// </summary>
 public class HealthControllerTests
 {
-	private readonly IHealthCheckService Service;
+	private readonly IHealthCheckService HealthService;
+	private readonly IScheduledJobService ScheduledJobService;
 	private readonly HealthController Controller;
 
 	public HealthControllerTests()
 	{
-		Service =
+		HealthService =
 			Substitute.For<IHealthCheckService>();
+		ScheduledJobService =
+			Substitute.For<IScheduledJobService>();
 		Controller =
-			new HealthController(Service);
+			new HealthController(
+				HealthService,
+				ScheduledJobService);
 	}
 
 	[Fact]
@@ -83,7 +88,7 @@ public class HealthControllerTests
 					},
 			};
 
-		Service
+		HealthService
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
 			.Returns(expectedStatus);
 
@@ -99,7 +104,7 @@ public class HealthControllerTests
 		Assert.Equal("Healthy", returnedStatus.Status);
 		Assert.True(returnedStatus.Database.IsConnected);
 		Assert.Equal(5, returnedStatus.ErrorQueue.QueuedItems);
-		await Service
+		await HealthService
 			.Received(1)
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>());
 	}
@@ -135,7 +140,7 @@ public class HealthControllerTests
 				System = new SystemResourcesResponse(),
 			};
 
-		Service
+		HealthService
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
 			.Returns(expectedStatus);
 
@@ -188,7 +193,7 @@ public class HealthControllerTests
 				System = new SystemResourcesResponse(),
 			};
 
-		Service
+		HealthService
 			.GetHealthStatusAsync(Arg.Any<CancellationToken>())
 			.Returns(expectedStatus);
 

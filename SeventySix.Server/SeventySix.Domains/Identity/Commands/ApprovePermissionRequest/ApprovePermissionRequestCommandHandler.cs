@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity.Commands.ApprovePermissionRequest;
 
@@ -27,9 +28,9 @@ public static class ApprovePermissionRequestCommandHandler
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// True if approved successfully; false if request not found.
+	/// A Result indicating success or failure with error details.
 	/// </returns>
-	public static async Task<bool> HandleAsync(
+	public static async Task<Result> HandleAsync(
 		ApprovePermissionRequestCommand command,
 		IPermissionRequestRepository repository,
 		UserManager<ApplicationUser> userManager,
@@ -40,9 +41,10 @@ public static class ApprovePermissionRequestCommandHandler
 				command.RequestId,
 				cancellationToken);
 
-		if (request == null)
+		if (request is null)
 		{
-			return false;
+			return Result.Failure(
+				$"Permission request {command.RequestId} not found");
 		}
 
 		ApplicationUser? user =
@@ -51,21 +53,28 @@ public static class ApprovePermissionRequestCommandHandler
 
 		if (user is null)
 		{
-			return false;
+			return Result.Failure(
+				$"User {request.UserId} not found");
 		}
 
-		IdentityResult result =
+		IdentityResult identityResult =
 			await userManager.AddToRoleAsync(
 				user,
 				request.RequestedRole!.Name!);
 
-		if (!result.Succeeded)
+		if (!identityResult.Succeeded)
 		{
-			return false;
+			return Result.Failure(
+				$"Failed to add role: {string.Join(
+					", ",
+					identityResult.Errors.Select(
+						error => error.Description))}");
 		}
 
-		await repository.DeleteAsync(command.RequestId, cancellationToken);
+		await repository.DeleteAsync(
+			command.RequestId,
+			cancellationToken);
 
-		return true;
+		return Result.Success();
 	}
 }

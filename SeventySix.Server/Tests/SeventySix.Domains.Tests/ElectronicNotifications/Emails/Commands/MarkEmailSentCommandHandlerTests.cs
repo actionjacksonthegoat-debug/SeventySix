@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Shared.POCOs;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands;
@@ -70,7 +71,7 @@ public class MarkEmailSentCommandHandlerTests
 			new(entry.Id);
 
 		// Act
-		bool result =
+		Result result =
 			await MarkEmailSentCommandHandler.HandleAsync(
 				command,
 				dbContext,
@@ -78,7 +79,7 @@ public class MarkEmailSentCommandHandlerTests
 				CancellationToken.None);
 
 		// Assert
-		result.ShouldBeTrue();
+		result.IsSuccess.ShouldBeTrue();
 
 		EmailQueueEntry? updatedEntry =
 			await dbContext.EmailQueue.FindAsync(
@@ -91,7 +92,7 @@ public class MarkEmailSentCommandHandlerTests
 	}
 
 	[Fact]
-	public async Task HandleAsync_ReturnsFalse_WhenEntryNotFoundAsync()
+	public async Task HandleAsync_ReturnsFailure_WhenEntryNotFoundAsync()
 	{
 		// Arrange
 		await using ElectronicNotificationsDbContext dbContext =
@@ -101,7 +102,7 @@ public class MarkEmailSentCommandHandlerTests
 			new(999);
 
 		// Act
-		bool result =
+		Result result =
 			await MarkEmailSentCommandHandler.HandleAsync(
 				command,
 				dbContext,
@@ -109,6 +110,8 @@ public class MarkEmailSentCommandHandlerTests
 				CancellationToken.None);
 
 		// Assert
-		result.ShouldBeFalse();
+		result.IsSuccess.ShouldBeFalse();
+		result.Error.ShouldNotBeNull();
+		result.Error.ShouldContain("not found");
 	}
 }

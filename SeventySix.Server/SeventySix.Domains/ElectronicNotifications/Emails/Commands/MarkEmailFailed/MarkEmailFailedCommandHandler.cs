@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.POCOs;
+
 namespace SeventySix.ElectronicNotifications.Emails;
 
 /// <summary>
@@ -25,9 +27,9 @@ public static class MarkEmailFailedCommandHandler
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// True if the entry was updated; otherwise false.
+	/// A Result indicating success or failure with error details.
 	/// </returns>
-	public static async Task<bool> HandleAsync(
+	public static async Task<Result> HandleAsync(
 		MarkEmailFailedCommand command,
 		ElectronicNotificationsDbContext dbContext,
 		TimeProvider timeProvider,
@@ -40,7 +42,8 @@ public static class MarkEmailFailedCommandHandler
 
 		if (entry is null)
 		{
-			return false;
+			return Result.Failure(
+				$"Email queue entry {command.EmailQueueId} not found");
 		}
 
 		DateTime now =
@@ -53,7 +56,6 @@ public static class MarkEmailFailedCommandHandler
 			TruncateErrorMessage(command.ErrorMessage);
 		entry.ErrorMessage = errorMessage;
 
-		// Mark as dead letter if max attempts reached
 		entry.Status =
 			entry.Attempts >= entry.MaxAttempts
 				? EmailQueueStatus.DeadLetter
@@ -61,12 +63,18 @@ public static class MarkEmailFailedCommandHandler
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		return true;
+		return Result.Success();
 	}
 
 	/// <summary>
 	/// Truncates error message to fit database column size.
 	/// </summary>
+	/// <param name="errorMessage">
+	/// The error message to truncate.
+	/// </param>
+	/// <returns>
+	/// The truncated error message.
+	/// </returns>
 	private static string TruncateErrorMessage(string errorMessage)
 	{
 		const int maxLength = 1000;

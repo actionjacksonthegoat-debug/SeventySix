@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Api.Middleware;
@@ -120,7 +121,7 @@ public class GlobalExceptionMiddleware
 			environment ?? throw new ArgumentNullException(nameof(environment));
 
 		string[] allowedOrigins =
-			configuration?.GetSection("Cors:AllowedOrigins").Get<string[]>()
+			configuration?.GetSection(ConfigurationSectionConstants.Cors.AllowedOrigins).Get<string[]>()
 				?? ["http://localhost:4200"];
 
 		AllowedOrigins =
@@ -145,23 +146,23 @@ public class GlobalExceptionMiddleware
 		{
 			await Next(context);
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			if (ex is FluentValidation.ValidationException)
+			if (exception is FluentValidation.ValidationException)
 			{
 				Logger.LogWarning(
 					"Validation failed: {Message}",
-					ex.Message);
+					exception.Message);
 			}
 			else
 			{
 				Logger.LogError(
-					ex,
+					exception,
 					"Unhandled exception occurred: {Message}",
-					ex.Message);
+					exception.Message);
 			}
 
-			await HandleExceptionAsync(context, ex);
+			await HandleExceptionAsync(context, exception);
 		}
 	}
 
@@ -246,26 +247,26 @@ public class GlobalExceptionMiddleware
 			ValidationException validationEx => CreateValidationProblemDetails(
 				context,
 				validationEx),
-			EntityNotFoundException ex => CreateProblemDetails(
+			EntityNotFoundException entityException => CreateProblemDetails(
 				context,
 				HttpStatusCode.NotFound,
 				"Resource Not Found",
-				ex.Message),
-			BusinessRuleViolationException ex => CreateProblemDetails(
+				entityException.Message),
+			BusinessRuleViolationException businessException => CreateProblemDetails(
 				context,
 				HttpStatusCode.UnprocessableEntity,
 				"Business Rule Violation",
-				ex.Message),
-			ExternalServiceException ex => CreateProblemDetails(
+				businessException.Message),
+			ExternalServiceException serviceException => CreateProblemDetails(
 				context,
 				HttpStatusCode.ServiceUnavailable,
 				"External Service Error",
-				ex.Message),
-			DomainException ex => CreateProblemDetails(
+				serviceException.Message),
+			DomainException domainException => CreateProblemDetails(
 				context,
 				HttpStatusCode.BadRequest,
 				"Domain Error",
-				ex.Message),
+				domainException.Message),
 			ArgumentNullException => CreateProblemDetails(
 				context,
 				HttpStatusCode.BadRequest,

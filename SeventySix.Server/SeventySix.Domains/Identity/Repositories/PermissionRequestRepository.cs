@@ -41,6 +41,7 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 	{
 		return await dbContext
 			.PermissionRequests
+			.AsNoTracking()
 			.Include(permissionRequest =>
 				permissionRequest.User)
 			.Include(permissionRequest => permissionRequest.RequestedRole)
@@ -58,6 +59,7 @@ internal class PermissionRequestRepository(IdentityDbContext dbContext)
 
 		return await dbContext
 			.PermissionRequests
+			.AsNoTracking()
 			.Include(permissionRequest =>
 				permissionRequest.User)
 			.Include(permissionRequest => permissionRequest.RequestedRole)

@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using SeventySix.Shared.POCOs;
 
-namespace SeventySix.Shared.Extensions;
+namespace SeventySix.Shared.Utilities;
 
 /// <summary>
 /// Service for encoding and decoding combined registration tokens.

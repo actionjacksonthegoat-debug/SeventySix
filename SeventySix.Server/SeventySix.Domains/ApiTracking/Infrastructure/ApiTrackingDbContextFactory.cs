@@ -32,7 +32,8 @@ public class ApiTrackingDbContextFactory
 	/// </returns>
 	public ApiTrackingDbContext CreateDbContext(string[] args)
 	{
-		DbContextOptionsBuilder<ApiTrackingDbContext> optionsBuilder = new();
+		DbContextOptionsBuilder<ApiTrackingDbContext> optionsBuilder =
+			new();
 
 		// Load connection string from .env file (single source of truth)
 		string connectionString =
@@ -40,8 +41,8 @@ public class ApiTrackingDbContextFactory
 
 		optionsBuilder.UseNpgsql(
 			connectionString,
-			options =>
-				options.MigrationsHistoryTable(
+			npgsqlOptions =>
+				npgsqlOptions.MigrationsHistoryTable(
 					DatabaseConstants.MigrationsHistoryTableName,
 					SchemaConstants.ApiTracking));
 

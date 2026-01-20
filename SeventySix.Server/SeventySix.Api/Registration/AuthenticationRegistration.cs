@@ -47,8 +47,8 @@ public static class AuthenticationExtensions
 		IConfiguration configuration)
 	{
 		// Bind configuration sections
-		services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
-		services.Configure<AuthSettings>(configuration.GetSection("Auth"));
+		services.Configure<JwtSettings>(configuration.GetSection(ConfigurationSectionConstants.Jwt));
+		services.Configure<AuthSettings>(configuration.GetSection(ConfigurationSectionConstants.Auth));
 		services.Configure<RecaptchaSettings>(
 			configuration.GetSection(RecaptchaSettings.SECTION_NAME));
 		services.Configure<AdminSeederSettings>(
@@ -57,14 +57,14 @@ public static class AuthenticationExtensions
 			configuration.GetSection(WhitelistedPermissionSettings.SectionName));
 
 		JwtSettings jwtSettings =
-			configuration.GetSection("Jwt").Get<JwtSettings>()
+			configuration.GetSection(ConfigurationSectionConstants.Jwt).Get<JwtSettings>()
 			?? throw new InvalidOperationException(
-				"JWT configuration section 'Jwt' is missing.");
+				$"JWT configuration section '{ConfigurationSectionConstants.Jwt}' is missing.");
 
 		AuthSettings authSettings =
-			configuration.GetSection("Auth").Get<AuthSettings>()
+			configuration.GetSection(ConfigurationSectionConstants.Auth).Get<AuthSettings>()
 			?? throw new InvalidOperationException(
-				"Auth configuration section 'Auth' is missing.");
+				$"Auth configuration section '{ConfigurationSectionConstants.Auth}' is missing.");
 
 		services
 			.AddAuthentication(

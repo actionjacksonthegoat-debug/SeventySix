@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.POCOs;
+
 namespace SeventySix.Identity.Commands.RejectPermissionRequest;
 
 /// <summary>
@@ -22,9 +24,9 @@ public static class RejectPermissionRequestCommandHandler
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// True if rejected successfully; false if request not found.
+	/// A Result indicating success or failure with error details.
 	/// </returns>
-	public static async Task<bool> HandleAsync(
+	public static async Task<Result> HandleAsync(
 		RejectPermissionRequestCommand command,
 		IPermissionRequestRepository repository,
 		CancellationToken cancellationToken)
@@ -34,13 +36,16 @@ public static class RejectPermissionRequestCommandHandler
 				command.RequestId,
 				cancellationToken);
 
-		if (request == null)
+		if (request is null)
 		{
-			return false;
+			return Result.Failure(
+				$"Permission request {command.RequestId} not found");
 		}
 
-		await repository.DeleteAsync(command.RequestId, cancellationToken);
+		await repository.DeleteAsync(
+			command.RequestId,
+			cancellationToken);
 
-		return true;
+		return Result.Success();
 	}
 }

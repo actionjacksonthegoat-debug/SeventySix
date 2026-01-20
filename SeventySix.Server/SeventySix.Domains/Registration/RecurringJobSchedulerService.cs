@@ -13,6 +13,7 @@ using SeventySix.Identity.Settings;
 using SeventySix.Logging;
 using SeventySix.Logging.Jobs;
 using SeventySix.Shared.BackgroundJobs;
+using SeventySix.Shared.Constants;
 
 namespace SeventySix.Registration;
 
@@ -180,7 +181,7 @@ public class RecurringJobSchedulerService(
 		CancellationToken cancellationToken)
 	{
 		EmailSettings emailSettings =
-			configuration.GetSection("Email").Get<EmailSettings>() ?? new();
+			configuration.GetSection(ConfigurationSectionConstants.Email).Get<EmailSettings>() ?? new();
 
 		EmailQueueSettings queueSettings =
 			configuration

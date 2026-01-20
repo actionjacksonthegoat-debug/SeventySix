@@ -3,6 +3,7 @@
 // </copyright>
 
 using SeventySix.Shared;
+using SeventySix.Shared.Enums;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.ApiTracking.Settings;

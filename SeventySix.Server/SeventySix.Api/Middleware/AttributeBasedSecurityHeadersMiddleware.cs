@@ -49,7 +49,7 @@ public class AttributeBasedSecurityHeadersMiddleware(
 	// - script-src 'self': No inline scripts or eval needed for Angular AOT builds
 	// - style-src 'unsafe-inline': Required for Angular style bindings ([style.x])
 	// - frame-src: Allows Grafana dashboard embeds
-	private const string PRODUCTION_CSP =
+	private const string ProductionCsp =
 		"default-src 'self'; "
 		+ "script-src 'self'; "
 		+ "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
@@ -62,7 +62,7 @@ public class AttributeBasedSecurityHeadersMiddleware(
 		+ "form-action 'self'";
 
 	// Development CSP: Relaxed for debugging, hot reload, etc.
-	private const string DEVELOPMENT_CSP =
+	private const string DevelopmentCsp =
 		"default-src 'self'; "
 		+ "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
 		+ "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
@@ -101,8 +101,8 @@ public class AttributeBasedSecurityHeadersMiddleware(
 		// Content Security Policy - use environment-appropriate default
 		string defaultCsp =
 			environment.IsDevelopment()
-			? DEVELOPMENT_CSP
-			: PRODUCTION_CSP;
+			? DevelopmentCsp
+			: ProductionCsp;
 		string csp =
 			config.ContentSecurityPolicy ?? defaultCsp;
 		context.Response.Headers.ContentSecurityPolicy = csp;

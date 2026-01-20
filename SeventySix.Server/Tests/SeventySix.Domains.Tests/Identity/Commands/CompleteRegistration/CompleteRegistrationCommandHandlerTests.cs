@@ -12,7 +12,7 @@ using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Identity.Commands.CompleteRegistration;
 using SeventySix.Identity.Constants;
-using SeventySix.Shared.Extensions;
+using SeventySix.Shared.Utilities;
 using SeventySix.TestUtilities.Builders;
 using SeventySix.TestUtilities.TestBases;
 using SeventySix.TestUtilities.TestHelpers;

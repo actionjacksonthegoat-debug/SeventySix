@@ -10,6 +10,7 @@ using NSubstitute;
 using SeventySix.Identity;
 using SeventySix.Shared;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Enums;
 using SeventySix.Shared.Interfaces;
 using Shouldly;
 

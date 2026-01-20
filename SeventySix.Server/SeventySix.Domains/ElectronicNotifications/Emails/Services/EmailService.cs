@@ -7,8 +7,8 @@ using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using SeventySix.Shared.Extensions;
 using SeventySix.Shared.Interfaces;
+using SeventySix.Shared.Utilities;
 
 namespace SeventySix.ElectronicNotifications.Emails;
 

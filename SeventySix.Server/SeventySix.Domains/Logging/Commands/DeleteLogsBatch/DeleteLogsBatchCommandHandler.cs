@@ -12,8 +12,8 @@ public static class DeleteLogsBatchCommandHandler
 	/// <summary>
 	/// Handles the request to delete multiple log entries by their IDs.
 	/// </summary>
-	/// <param name="logIds">
-	/// The array of log IDs to delete.
+	/// <param name="command">
+	/// The command containing the log IDs to delete.
 	/// </param>
 	/// <param name="repository">
 	/// The log repository for data access.
@@ -25,10 +25,12 @@ public static class DeleteLogsBatchCommandHandler
 	/// The number of logs deleted.
 	/// </returns>
 	public static async Task<int> HandleAsync(
-		long[] logIds,
+		DeleteLogsBatchCommand command,
 		ILogRepository repository,
 		CancellationToken cancellationToken)
 	{
-		return await repository.DeleteBatchAsync(logIds, cancellationToken);
+		return await repository.DeleteBatchAsync(
+			command.LogIds,
+			cancellationToken);
 	}
 }

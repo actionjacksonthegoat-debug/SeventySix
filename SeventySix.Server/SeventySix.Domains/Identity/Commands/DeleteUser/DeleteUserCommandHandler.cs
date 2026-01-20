@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.AspNetCore.Identity;
+using SeventySix.Shared.POCOs;
 
 namespace SeventySix.Identity;
 
@@ -27,9 +28,9 @@ public static class DeleteUserCommandHandler
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// True if the user was deleted; otherwise false.
+	/// A Result indicating success or failure with error details.
 	/// </returns>
-	public static async Task<bool> HandleAsync(
+	public static async Task<Result> HandleAsync(
 		DeleteUserCommand command,
 		UserManager<ApplicationUser> userManager,
 		TimeProvider timeProvider,
@@ -39,21 +40,31 @@ public static class DeleteUserCommandHandler
 			await userManager.FindByIdAsync(
 				command.UserId.ToString());
 
-		if (user == null || user.IsDeleted)
+		if (user is null)
 		{
-			return false;
+			return Result.Failure($"User {command.UserId} not found");
 		}
 
-		// Soft delete - set flags instead of hard delete
+		if (user.IsDeleted)
+		{
+			return Result.Failure($"User {command.UserId} is already deleted");
+		}
+
 		user.IsDeleted = true;
 		user.DeletedAt =
 			timeProvider.GetUtcNow().UtcDateTime;
 		user.DeletedBy = command.DeletedBy;
 		user.IsActive = false;
 
-		IdentityResult result =
+		IdentityResult identityResult =
 			await userManager.UpdateAsync(user);
 
-		return result.Succeeded;
+		return identityResult.Succeeded
+			? Result.Success()
+			: Result.Failure(
+				string.Join(
+					", ",
+					identityResult.Errors.Select(
+						error => error.Description)));
 	}
 }

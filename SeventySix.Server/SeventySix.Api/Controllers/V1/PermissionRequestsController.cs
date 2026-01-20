@@ -15,6 +15,7 @@ using SeventySix.Identity.Commands.RejectPermissionRequest;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Queries.GetAllPermissionRequests;
 using SeventySix.Identity.Queries.GetAvailableRoles;
+using SeventySix.Shared.POCOs;
 using Wolverine;
 
 namespace SeventySix.Api.Controllers;
@@ -167,12 +168,12 @@ public class PermissionRequestsController(IMessageBus messageBus)
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool result =
-			await messageBus.InvokeAsync<bool>(
+		Result result =
+			await messageBus.InvokeAsync<Result>(
 				new ApprovePermissionRequestCommand(id),
 				cancellationToken);
 
-		if (!result)
+		if (!result.IsSuccess)
 		{
 			return NotFound();
 		}
@@ -205,12 +206,12 @@ public class PermissionRequestsController(IMessageBus messageBus)
 		int id,
 		CancellationToken cancellationToken)
 	{
-		bool result =
-			await messageBus.InvokeAsync<bool>(
+		Result result =
+			await messageBus.InvokeAsync<Result>(
 				new RejectPermissionRequestCommand(id),
 				cancellationToken);
 
-		if (!result)
+		if (!result.IsSuccess)
 		{
 			return NotFound();
 		}

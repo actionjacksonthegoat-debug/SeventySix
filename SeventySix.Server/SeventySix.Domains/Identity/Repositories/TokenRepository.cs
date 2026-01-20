@@ -19,9 +19,11 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 	public async Task<RefreshToken?> GetByTokenHashAsync(
 		string tokenHash,
 		CancellationToken cancellationToken = default) =>
-		await context.RefreshTokens.FirstOrDefaultAsync(
-			token => token.TokenHash == tokenHash,
-			cancellationToken);
+		await context.RefreshTokens
+			.AsNoTracking()
+			.FirstOrDefaultAsync(
+				token => token.TokenHash == tokenHash,
+				cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task<int> GetActiveSessionCountAsync(
@@ -30,6 +32,7 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 		CancellationToken cancellationToken = default) =>
 		await context
 			.RefreshTokens
+			.AsNoTracking()
 			.Where(token => token.UserId == userId)
 			.Where(token => !token.IsRevoked)
 			.Where(token => token.ExpiresAt > currentTime)
@@ -48,12 +51,20 @@ internal class TokenRepository(IdentityDbContext context) : ITokenRepository
 	public async Task RevokeAsync(
 		RefreshToken token,
 		DateTime revokedAt,
-		CancellationToken cancellationToken = default)
-	{
-		token.IsRevoked = true;
-		token.RevokedAt = revokedAt;
-		await context.SaveChangesAsync(cancellationToken);
-	}
+		CancellationToken cancellationToken = default) =>
+		await context
+			.RefreshTokens
+			.Where(refreshToken => refreshToken.Id == token.Id)
+			.ExecuteUpdateAsync(
+				setters =>
+					setters
+						.SetProperty(
+							refreshToken => refreshToken.IsRevoked,
+							true)
+						.SetProperty(
+							refreshToken => refreshToken.RevokedAt,
+							revokedAt),
+				cancellationToken);
 
 	/// <inheritdoc/>
 	public async Task<int> RevokeAllUserTokensAsync(

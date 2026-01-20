@@ -20,6 +20,7 @@
 /// Architecture: Implements Dependency Inversion Principle (DIP) by registering
 /// interfaces with their concrete implementations.
 /// </remarks>
+
 using Scalar.AspNetCore;
 using Serilog;
 using SeventySix.Api.Configuration;
@@ -28,6 +29,7 @@ using SeventySix.Api.Middleware;
 using SeventySix.Api.Registration;
 using SeventySix.Api.Utilities;
 using SeventySix.Registration;
+using SeventySix.Shared.Constants;
 using SeventySix.Shared.Registration;
 using Wolverine;
 using Wolverine.FluentValidation;
@@ -44,7 +46,7 @@ builder.Configuration.AddEnvironmentVariableMapping();
 
 // Bind centralized security settings (single source of truth for HTTPS enforcement)
 builder.Services.Configure<SecuritySettings>(
-	builder.Configuration.GetSection("Security"));
+	builder.Configuration.GetSection(ConfigurationSectionConstants.Security));
 
 // Disable HTTPS certificate requirements in development mode
 // This allows the app to run without certificate errors in Docker containers
@@ -67,11 +69,11 @@ if (builder.Environment.IsDevelopment())
 // Note: Database sink is added after building the app to access IServiceProvider
 // In Test environment, configures silent logging (no sinks) for performance
 Log.Logger =
-			new LoggerConfiguration()
-				.ConfigureBaseSerilog(
-					builder.Configuration,
-					builder.Environment.EnvironmentName)
-				.CreateLogger();
+	new LoggerConfiguration()
+		.ConfigureBaseSerilog(
+			builder.Configuration,
+			builder.Environment.EnvironmentName)
+		.CreateLogger();
 
 builder.Host.UseSerilog();
 
@@ -86,7 +88,7 @@ builder.Host.UseWolverine(
 		// Use FluentValidation for command validation
 		options.UseFluentValidation();
 	},
-	Wolverine.ExtensionDiscovery.ManualOnly);
+	ExtensionDiscovery.ManualOnly);
 
 // Services
 builder.Services.AddHttpContextAccessor();
@@ -203,13 +205,14 @@ app.UseConfiguredForwardedHeaders(builder.Configuration);
 // CORS - Must be early so preflight (OPTIONS) requests are handled
 app.UseCors("AllowedOrigins");
 
+// Global exception handling - Catches all unhandled exceptions
+// Returns consistent ProblemDetails responses (RFC 7807)
+// Must be early to catch exceptions from all subsequent middleware
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 // Security headers middleware - Attribute-aware implementation
 // Reads [SecurityHeaders] attributes from controllers/actions for customization
 app.UseMiddleware<AttributeBasedSecurityHeadersMiddleware>();
-
-// Global exception handling - Catches all unhandled exceptions
-// Returns consistent ProblemDetails responses (RFC 7807)
-app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Rate limiting - Uses ASP.NET Core's built-in rate limiter
 app.UseRateLimiter();
@@ -217,7 +220,7 @@ app.UseRateLimiter();
 // Enable response compression
 bool responseCompressionEnabled =
 			builder.Configuration.GetValue<bool?>("ResponseCompression:Enabled")
-	?? true;
+				?? true;
 
 if (responseCompressionEnabled)
 {

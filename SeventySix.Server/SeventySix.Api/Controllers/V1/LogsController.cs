@@ -75,12 +75,12 @@ public class LogsController(
 		long id,
 		CancellationToken cancellationToken = default)
 	{
-		bool deleted =
-			await messageBus.InvokeAsync<bool>(
+		Result deleted =
+			await messageBus.InvokeAsync<Result>(
 				new DeleteLogCommand(id),
 				cancellationToken);
 
-		if (!deleted)
+		if (!deleted.IsSuccess)
 		{
 			return NotFound();
 		}
@@ -111,12 +111,18 @@ public class LogsController(
 	{
 		if (ids == null || ids.Length == 0)
 		{
-			return BadRequest("No log IDs provided");
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Invalid Request",
+					Detail = "No log IDs provided",
+					Status = StatusCodes.Status400BadRequest,
+				});
 		}
 
 		int deletedCount =
 			await messageBus.InvokeAsync<int>(
-				ids,
+				new DeleteLogsBatchCommand(ids),
 				cancellationToken);
 
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);
@@ -145,12 +151,18 @@ public class LogsController(
 	{
 		if (!cutoffDate.HasValue)
 		{
-			return BadRequest("Cutoff date is required");
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Invalid Request",
+					Detail = "Cutoff date is required",
+					Status = StatusCodes.Status400BadRequest,
+				});
 		}
 
 		int deletedCount =
 			await messageBus.InvokeAsync<int>(
-				cutoffDate.Value,
+				new DeleteLogsOlderThanCommand(cutoffDate.Value),
 				cancellationToken);
 
 		await outputCacheStore.EvictByTagAsync("logs", cancellationToken);

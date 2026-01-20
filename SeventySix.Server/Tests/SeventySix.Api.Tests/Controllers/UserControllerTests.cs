@@ -2,6 +2,9 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
@@ -368,9 +371,11 @@ public class UsersControllerTests
 		// Assert
 		BadRequestObjectResult badRequestResult =
 			Assert.IsType<BadRequestObjectResult>(result.Result);
+		ProblemDetails problemDetails =
+			Assert.IsType<ProblemDetails>(badRequestResult.Value);
 		Assert.Equal(
 			"ID in URL does not match ID in request body",
-			badRequestResult.Value);
+			problemDetails.Detail);
 
 		await MessageBus
 			.DidNotReceive()
@@ -387,11 +392,14 @@ public class UsersControllerTests
 	public async Task DeleteAsync_UserExists_ReturnsNoContentAsync()
 	{
 		// Arrange
+		Controller.ControllerContext =
+			CreateControllerContextWithUser("testadmin");
+
 		MessageBus
-			.InvokeAsync<bool>(
+			.InvokeAsync<Result>(
 				Arg.Any<DeleteUserCommand>(),
 				Arg.Any<CancellationToken>())
-			.Returns(true);
+			.Returns(Result.Success());
 
 		// Act
 		IActionResult result =
@@ -407,11 +415,14 @@ public class UsersControllerTests
 	public async Task DeleteAsync_UserNotFound_ReturnsNotFoundAsync()
 	{
 		// Arrange
+		Controller.ControllerContext =
+			CreateControllerContextWithUser("testadmin");
+
 		MessageBus
-			.InvokeAsync<bool>(
+			.InvokeAsync<Result>(
 				Arg.Any<DeleteUserCommand>(),
 				Arg.Any<CancellationToken>())
-			.Returns(false);
+			.Returns(Result.Failure("User not found"));
 
 		// Act
 		IActionResult result =
@@ -431,11 +442,14 @@ public class UsersControllerTests
 	public async Task RestoreAsync_UserExists_ReturnsNoContentAsync()
 	{
 		// Arrange
+		Controller.ControllerContext =
+			CreateControllerContextWithUser("testadmin");
+
 		MessageBus
-			.InvokeAsync<bool>(
+			.InvokeAsync<Result>(
 				Arg.Any<RestoreUserCommand>(),
 				Arg.Any<CancellationToken>())
-			.Returns(true);
+			.Returns(Result.Success());
 
 		// Act
 		IActionResult result =
@@ -451,11 +465,14 @@ public class UsersControllerTests
 	public async Task RestoreAsync_UserNotFound_ReturnsNotFoundAsync()
 	{
 		// Arrange
+		Controller.ControllerContext =
+			CreateControllerContextWithUser("testadmin");
+
 		MessageBus
-			.InvokeAsync<bool>(
+			.InvokeAsync<Result>(
 				Arg.Any<RestoreUserCommand>(),
 				Arg.Any<CancellationToken>())
-			.Returns(false);
+			.Returns(Result.Failure("User not found"));
 
 		// Act
 		IActionResult result =
@@ -663,6 +680,9 @@ public class UsersControllerTests
 	public async Task BulkActivateAsync_ValidRequest_ReturnsOkWithCountAsync()
 	{
 		// Arrange
+		Controller.ControllerContext =
+			CreateControllerContextWithUser("testadmin");
+
 		List<long> ids =
 			[1, 2, 3];
 		int expectedCount = 3;
@@ -671,7 +691,9 @@ public class UsersControllerTests
 			.InvokeAsync<int>(
 				Arg.Any<BulkUpdateActiveStatusCommand>(),
 				Arg.Any<CancellationToken>())
-			.Returns(expectedCount); // Act
+			.Returns(expectedCount);
+
+		// Act
 		ActionResult<int> result =
 			await Controller.BulkActivateAsync(
 			ids,
@@ -689,6 +711,9 @@ public class UsersControllerTests
 	public async Task BulkDeactivateAsync_ValidRequest_ReturnsOkWithCountAsync()
 	{
 		// Arrange
+		Controller.ControllerContext =
+			CreateControllerContextWithUser("testadmin");
+
 		List<long> ids =
 			[1, 2, 3];
 		int expectedCount = 3;
@@ -697,7 +722,9 @@ public class UsersControllerTests
 			.InvokeAsync<int>(
 				Arg.Any<BulkUpdateActiveStatusCommand>(),
 				Arg.Any<CancellationToken>())
-			.Returns(expectedCount); // Act
+			.Returns(expectedCount);
+
+		// Act
 		ActionResult<int> result =
 			await Controller.BulkDeactivateAsync(
 			ids,
@@ -709,6 +736,46 @@ public class UsersControllerTests
 		int count =
 			Assert.IsType<int>(okResult.Value);
 		Assert.Equal(3, count);
+	}
+
+	#endregion
+
+	#region Helper Methods
+
+	/// <summary>
+	/// Creates a ControllerContext with a mocked User containing the specified username.
+	/// </summary>
+	/// <param name="username">
+	/// The username to include in the claims.
+	/// </param>
+	/// <returns>
+	/// A configured ControllerContext with User claims.
+	/// </returns>
+	private static ControllerContext CreateControllerContextWithUser(string username)
+	{
+		List<Claim> claims =
+			[
+				new Claim(
+					JwtRegisteredClaimNames.UniqueName,
+					username),
+			];
+
+		ClaimsIdentity identity =
+			new(
+				claims,
+				"TestAuthentication");
+
+		ClaimsPrincipal principal =
+			new(identity);
+
+		return new ControllerContext
+		{
+			HttpContext =
+				new DefaultHttpContext
+				{
+					User = principal,
+				},
+		};
 	}
 
 	#endregion

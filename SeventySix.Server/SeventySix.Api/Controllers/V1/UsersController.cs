@@ -327,7 +327,13 @@ public class UsersController(
 	{
 		if (id != request.Id)
 		{
-			return BadRequest("ID in URL does not match ID in request body");
+			return BadRequest(
+				new ProblemDetails
+				{
+					Title = "Invalid Request",
+					Detail = "ID in URL does not match ID in request body",
+					Status = StatusCodes.Status400BadRequest,
+				});
 		}
 
 		UserDto user =
@@ -362,12 +368,17 @@ public class UsersController(
 		long id,
 		CancellationToken cancellationToken)
 	{
-		bool result =
-			await messageBus.InvokeAsync<bool>(
-				new DeleteUserCommand(id, AuditConstants.SystemUser),
+		string username =
+			User.GetRequiredUsername();
+
+		Result result =
+			await messageBus.InvokeAsync<Result>(
+				new DeleteUserCommand(
+					id,
+					username),
 				cancellationToken);
 
-		return result ? NoContent() : NotFound();
+		return result.IsSuccess ? NoContent() : NotFound();
 	}
 
 	/// <summary>
@@ -394,12 +405,12 @@ public class UsersController(
 		long id,
 		CancellationToken cancellationToken)
 	{
-		bool result =
-			await messageBus.InvokeAsync<bool>(
+		Result result =
+			await messageBus.InvokeAsync<Result>(
 				new RestoreUserCommand(id),
 				cancellationToken);
 
-		return result ? NoContent() : NotFound();
+		return result.IsSuccess ? NoContent() : NotFound();
 	}
 
 	/// <summary>
@@ -535,12 +546,15 @@ public class UsersController(
 		[FromBody] IEnumerable<long> ids,
 		CancellationToken cancellationToken)
 	{
+		string username =
+			User.GetRequiredUsername();
+
 		int count =
 			await messageBus.InvokeAsync<int>(
 				new BulkUpdateActiveStatusCommand(
 					ids,
 					true,
-					AuditConstants.SystemUser),
+					username),
 				cancellationToken);
 
 		return Ok(count);
@@ -570,12 +584,15 @@ public class UsersController(
 		[FromBody] IEnumerable<long> ids,
 		CancellationToken cancellationToken)
 	{
+		string username =
+			User.GetRequiredUsername();
+
 		int count =
 			await messageBus.InvokeAsync<int>(
 				new BulkUpdateActiveStatusCommand(
 					ids,
 					false,
-					AuditConstants.SystemUser),
+					username),
 				cancellationToken);
 
 		return Ok(count);

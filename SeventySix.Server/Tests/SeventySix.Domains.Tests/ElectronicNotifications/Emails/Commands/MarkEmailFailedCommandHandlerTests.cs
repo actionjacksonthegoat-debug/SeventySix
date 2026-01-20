@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using SeventySix.ElectronicNotifications;
 using SeventySix.ElectronicNotifications.Emails;
+using SeventySix.Shared.POCOs;
 using Shouldly;
 
 namespace SeventySix.Domains.Tests.ElectronicNotifications.Emails.Commands;
@@ -75,7 +76,7 @@ public class MarkEmailFailedCommandHandlerTests
 				"SMTP connection failed");
 
 		// Act
-		bool result =
+		Result result =
 			await MarkEmailFailedCommandHandler.HandleAsync(
 				command,
 				dbContext,
@@ -83,7 +84,7 @@ public class MarkEmailFailedCommandHandlerTests
 				CancellationToken.None);
 
 		// Assert
-		result.ShouldBeTrue();
+		result.IsSuccess.ShouldBeTrue();
 
 		EmailQueueEntry? updatedEntry =
 			await dbContext.EmailQueue.FindAsync(
@@ -126,7 +127,7 @@ public class MarkEmailFailedCommandHandlerTests
 			new(entry.Id, "Final failure");
 
 		// Act
-		bool result =
+		Result result =
 			await MarkEmailFailedCommandHandler.HandleAsync(
 				command,
 				dbContext,
@@ -134,7 +135,7 @@ public class MarkEmailFailedCommandHandlerTests
 				CancellationToken.None);
 
 		// Assert
-		result.ShouldBeTrue();
+		result.IsSuccess.ShouldBeTrue();
 
 		EmailQueueEntry? updatedEntry =
 			await dbContext.EmailQueue.FindAsync(
@@ -178,7 +179,7 @@ public class MarkEmailFailedCommandHandlerTests
 			new(entry.Id, longErrorMessage);
 
 		// Act
-		bool result =
+		Result result =
 			await MarkEmailFailedCommandHandler.HandleAsync(
 				command,
 				dbContext,
@@ -186,7 +187,7 @@ public class MarkEmailFailedCommandHandlerTests
 				CancellationToken.None);
 
 		// Assert
-		result.ShouldBeTrue();
+		result.IsSuccess.ShouldBeTrue();
 
 		EmailQueueEntry? updatedEntry =
 			await dbContext.EmailQueue.FindAsync(
@@ -197,7 +198,7 @@ public class MarkEmailFailedCommandHandlerTests
 	}
 
 	[Fact]
-	public async Task HandleAsync_ReturnsFalse_WhenEntryNotFoundAsync()
+	public async Task HandleAsync_ReturnsFailure_WhenEntryNotFoundAsync()
 	{
 		// Arrange
 		await using ElectronicNotificationsDbContext dbContext =
@@ -207,7 +208,7 @@ public class MarkEmailFailedCommandHandlerTests
 			new(999, "Error");
 
 		// Act
-		bool result =
+		Result result =
 			await MarkEmailFailedCommandHandler.HandleAsync(
 				command,
 				dbContext,
@@ -215,6 +216,8 @@ public class MarkEmailFailedCommandHandlerTests
 				CancellationToken.None);
 
 		// Assert
-		result.ShouldBeFalse();
+		result.IsSuccess.ShouldBeFalse();
+		result.Error.ShouldNotBeNull();
+		result.Error.ShouldContain("not found");
 	}
 }

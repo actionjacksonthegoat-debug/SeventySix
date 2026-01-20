@@ -32,7 +32,8 @@ public class LoggingDbContextFactory
 	/// </returns>
 	public LoggingDbContext CreateDbContext(string[] args)
 	{
-		DbContextOptionsBuilder<LoggingDbContext> optionsBuilder = new();
+		DbContextOptionsBuilder<LoggingDbContext> optionsBuilder =
+			new();
 
 		// Load connection string from .env file (single source of truth)
 		string connectionString =
@@ -40,8 +41,8 @@ public class LoggingDbContextFactory
 
 		optionsBuilder.UseNpgsql(
 			connectionString,
-			options =>
-				options.MigrationsHistoryTable(
+			npgsqlOptions =>
+				npgsqlOptions.MigrationsHistoryTable(
 					DatabaseConstants.MigrationsHistoryTableName,
 					SchemaConstants.Logging));
 

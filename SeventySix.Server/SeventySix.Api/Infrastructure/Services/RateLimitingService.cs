@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Options;
 using SeventySix.ApiTracking;
 using SeventySix.Shared;
+using SeventySix.Shared.Enums;
 using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Api.Infrastructure;

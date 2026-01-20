@@ -2,7 +2,7 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
-namespace SeventySix.Shared;
+namespace SeventySix.Shared.Enums;
 
 /// <summary>
 /// Defines the interval for rate limit tracking.

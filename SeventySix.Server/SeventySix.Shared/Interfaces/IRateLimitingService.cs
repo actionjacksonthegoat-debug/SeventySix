@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.Enums;
+
 namespace SeventySix.Shared.Interfaces;
 
 /// <summary>

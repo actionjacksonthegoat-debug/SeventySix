@@ -9,6 +9,7 @@ using SeventySix.Identity.Constants;
 using SeventySix.Shared;
 using SeventySix.Shared.Extensions;
 using SeventySix.Shared.POCOs;
+using SeventySix.Shared.Utilities;
 
 namespace SeventySix.Identity;
 

@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.POCOs;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -12,8 +14,8 @@ public static class LogoutCommandHandler
 	/// <summary>
 	/// Handles logout by revoking the refresh token.
 	/// </summary>
-	/// <param name="refreshToken">
-	/// The refresh token to revoke.
+	/// <param name="command">
+	/// The logout command containing the refresh token.
 	/// </param>
 	/// <param name="tokenService">
 	/// Token service.
@@ -22,15 +24,20 @@ public static class LogoutCommandHandler
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// True if the token was revoked; otherwise false.
+	/// A Result indicating success or failure with error details.
 	/// </returns>
-	public static async Task<bool> HandleAsync(
-		string refreshToken,
+	public static async Task<Result> HandleAsync(
+		LogoutCommand command,
 		ITokenService tokenService,
 		CancellationToken cancellationToken)
 	{
-		return await tokenService.RevokeRefreshTokenAsync(
-			refreshToken,
-			cancellationToken);
+		bool revoked =
+			await tokenService.RevokeRefreshTokenAsync(
+				command.RefreshToken,
+				cancellationToken);
+
+		return revoked
+			? Result.Success()
+			: Result.Failure("Token not found or already revoked");
 	}
 }

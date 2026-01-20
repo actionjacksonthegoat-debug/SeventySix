@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Shared.POCOs;
+
 namespace SeventySix.ElectronicNotifications.Emails;
 
 /// <summary>
@@ -25,9 +27,9 @@ public static class MarkEmailSentCommandHandler
 	/// Cancellation token.
 	/// </param>
 	/// <returns>
-	/// True if the entry was updated; otherwise false.
+	/// A Result indicating success or failure with error details.
 	/// </returns>
-	public static async Task<bool> HandleAsync(
+	public static async Task<Result> HandleAsync(
 		MarkEmailSentCommand command,
 		ElectronicNotificationsDbContext dbContext,
 		TimeProvider timeProvider,
@@ -40,7 +42,8 @@ public static class MarkEmailSentCommandHandler
 
 		if (entry is null)
 		{
-			return false;
+			return Result.Failure(
+				$"Email queue entry {command.EmailQueueId} not found");
 		}
 
 		DateTime now =
@@ -54,6 +57,6 @@ public static class MarkEmailSentCommandHandler
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 
-		return true;
+		return Result.Success();
 	}
 }
