@@ -11,6 +11,7 @@ export * from "./confirm-options.model";
 export * from "./error-details.model";
 export * from "./generated-open-api.model";
 export * from "./log-entry.model";
+export * from "./navigation.model";
 export * from "./notification.model";
 export * from "./performance-metrics.model";
 export * from "./table.model";

@@ -56,11 +56,11 @@ test.describe("WCAG Accessibility Compliance", () =>
 				console.log(
 					`Accessibility violations on ${pageInfo.name}:`,
 					JSON.stringify(
-						criticalViolations.map((v: Result) => ({
-							id: v.id,
-							impact: v.impact,
-							description: v.description,
-							nodes: v.nodes.map((n) => n.html).slice(0, 3)
+						criticalViolations.map((violation: Result) => ({
+							id: violation.id,
+							impact: violation.impact,
+							description: violation.description,
+							nodes: violation.nodes.map((node) => node.html).slice(0, 3)
 						})),
 						null,
 						2));

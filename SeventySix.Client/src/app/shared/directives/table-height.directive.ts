@@ -6,38 +6,16 @@ import {
 	inject,
 	input,
 	InputSignal,
-	Renderer2
+	Renderer2,
+	untracked
 } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import {
+	DEBOUNCE_TIME,
+	getStandardTableOffset
+} from "@shared/constants";
 import { fromEvent } from "rxjs";
 import { debounceTime } from "rxjs/operators";
-
-/**
- * Hardcoded table component heights (in pixels)
- * These values account for Material Design density scale -1 (compact mode)
- * Measurements are based on actual rendered heights in the application
- */
-const TABLE_COMPONENT_HEIGHTS: {
-	readonly SEARCH_TOOLBAR: number;
-	readonly FILTER_CHIPS_TOOLBAR: number;
-	readonly STANDARD_TABLE_OFFSET: number;
-} =
-	{
-	/** Search toolbar height: mat-form-field at density -1 (48px) + padding (12px top/bottom) = 72px */
-		SEARCH_TOOLBAR: 72,
-
-		/** Filter chips toolbar height: chips at density -1 (24px) + padding (12px top/bottom) = 48px */
-		FILTER_CHIPS_TOOLBAR: 48,
-
-		/**
-	 * Calculate total offset for standard table with search and filters
-	 * Search (72) + Filters (48) = 120px
-	 */
-		get STANDARD_TABLE_OFFSET(): number
-		{
-			return this.SEARCH_TOOLBAR + this.FILTER_CHIPS_TOOLBAR;
-		}
-	} as const;
 
 /**
  * Directive to automatically calculate and apply table height based on available viewport space
@@ -110,9 +88,9 @@ export class TableHeightDirective
 			});
 
 		// Listen to window resize events (zoneless compatible)
-		// Debounced at 500ms to handle scenarios with hundreds of directives on same page
+		// Debounced to handle scenarios with hundreds of directives on same page
 		fromEvent(window, "resize")
-		.pipe(debounceTime(500), takeUntilDestroyed())
+		.pipe(debounceTime(DEBOUNCE_TIME.RESIZE_EVENT), takeUntilDestroyed())
 		.subscribe(
 			() =>
 			{
@@ -121,11 +99,14 @@ export class TableHeightDirective
 
 		// Update height when inputs change
 		// Effect runs immediately on change (no debounce needed for input changes)
+		// Uses untracked() to prevent signal tracking on the updateHeight call
 		effect(
 			() =>
 			{
-				this.appTableHeight();
-				this.updateHeight();
+				const minHeight: number =
+					this.appTableHeight();
+				untracked(
+					() => this.updateHeight(minHeight));
 			});
 	}
 
@@ -162,8 +143,11 @@ export class TableHeightDirective
 	 * Performance Note:
 	 * With 500ms debounce, even with hundreds of tables on the page,
 	 * calculations happen only once every half second during resize.
+	 * @param {number} minHeightOverride
+	 * Optional minimum height override from input signal.
+	 * @returns {void}
 	 */
-	private updateHeight(): void
+	private updateHeight(minHeightOverride?: number): void
 	{
 		const element: HTMLElement =
 			this.elementRef.nativeElement;
@@ -172,16 +156,16 @@ export class TableHeightDirective
 		const elementTopPosition: number =
 			rect.top;
 
-		// Always use standard table offset (120px)
+		// Use shared constant for standard table offset (120px)
 		const offset: number =
-			TABLE_COMPONENT_HEIGHTS.STANDARD_TABLE_OFFSET;
+			getStandardTableOffset();
 
 		// Calculate available height: viewport - element top - offset for table components
 		const adjustedHeight: number =
 			window.innerHeight - elementTopPosition - offset;
 
 		const minHeight: number =
-			this.appTableHeight();
+			minHeightOverride ?? this.appTableHeight();
 		const finalHeight: number =
 			Math.max(minHeight, adjustedHeight);
 

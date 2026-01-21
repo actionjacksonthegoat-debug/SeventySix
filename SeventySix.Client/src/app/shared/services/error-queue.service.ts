@@ -2,6 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { environment } from "@environments/environment";
+import { STORAGE_KEYS } from "@shared/constants";
 import { CreateLogRequest } from "@shared/models";
 import { DateService } from "@shared/services/date.service";
 import { StorageService } from "@shared/services/storage.service";
@@ -61,11 +62,12 @@ export class ErrorQueueService
 
 	/**
 	 * Local storage key for the queued errors.
-	 * @type {string}
+	 * @type {typeof STORAGE_KEYS.ERROR_QUEUE}
 	 * @private
 	 * @readonly
 	 */
-	private readonly localStorageKey: string = "error-queue";
+	private readonly localStorageKey: typeof STORAGE_KEYS.ERROR_QUEUE =
+		STORAGE_KEYS.ERROR_QUEUE;
 
 	// Queue management
 	/**

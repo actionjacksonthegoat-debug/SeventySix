@@ -18,6 +18,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { ValidationResult } from "@auth/models";
 import { mapAuthError } from "@auth/utilities";
 import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
+import { APP_ROUTES } from "@shared/constants";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
@@ -164,7 +165,7 @@ export class SetPasswordComponent implements OnInit
 					this.notification.success(
 						"Password set successfully. You can now sign in.");
 					this.router.navigate(
-						["/auth/login"]);
+						[APP_ROUTES.AUTH.LOGIN]);
 				},
 				error: (error: HttpErrorResponse) =>
 				{

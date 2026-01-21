@@ -38,7 +38,9 @@ export const environment: Environment =
 				users: { staleTime: 0, gcTime: 60000, retry: 1 },
 				logs: { staleTime: 0, gcTime: 60000, retry: 1 },
 				health: { staleTime: 0, gcTime: 60000, retry: 1 },
-				thirdpartyrequests: { staleTime: 0, gcTime: 60000, retry: 1 }
+				thirdpartyrequests: { staleTime: 0, gcTime: 60000, retry: 1 },
+				account: { staleTime: 0, gcTime: 60000, retry: 1 },
+				permissionrequests: { staleTime: 0, gcTime: 60000, retry: 1 }
 			}
 		},
 		dashboard: {
@@ -57,6 +59,10 @@ export const environment: Environment =
 				enableMonitoring: true,
 				fpsWarningThreshold: 30
 			}
+		},
+		http: {
+			defaultTimeout: 30000, // 30 seconds
+			uploadTimeout: 120000 // 2 minutes for file uploads
 		},
 		dateTime: {
 			defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",

@@ -17,6 +17,7 @@
 
 import { inject } from "@angular/core";
 import { CanActivateFn, Router } from "@angular/router";
+import { APP_ROUTES } from "@shared/constants";
 import { AuthService } from "@shared/services/auth.service";
 
 /**
@@ -39,7 +40,7 @@ export function roleGuard(...requiredRoles: string[]): CanActivateFn
 		if (!authService.isAuthenticated())
 		{
 			return router.createUrlTree(
-				["/auth/login"],
+				[APP_ROUTES.AUTH.LOGIN],
 				{
 					queryParams: { returnUrl: state.url }
 				});

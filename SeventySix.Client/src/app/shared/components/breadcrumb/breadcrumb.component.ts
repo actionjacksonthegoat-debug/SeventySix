@@ -232,7 +232,7 @@ export class BreadcrumbComponent
 		const primarySegments: UrlSegment[] =
 			primaryOutlet?.segments ?? [];
 
-		var segments: string[] =
+		const segments: string[] =
 			primarySegments
 			.map(
 				(segment) => segment.path)

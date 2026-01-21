@@ -16,3 +16,4 @@ export {
 export * from "./mocks/user-profile.mock";
 export * from "./tanstack-query-helpers";
 export * from "./test-bed-builders";
+export * from "./test-spy.utilities";

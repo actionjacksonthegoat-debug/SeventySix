@@ -6,23 +6,29 @@ import { Routes } from "@angular/router";
  *
  * Provides routes for viewing and editing the current user's profile and
  * requesting additional permissions.
+ * Uses children pattern to ensure single AccountService instance per feature navigation.
  */
 export const ACCOUNT_ROUTES: Routes =
 	[
 		{
 			path: "",
 			providers: [AccountService],
-			loadComponent: () =>
-				import("./pages/profile/profile").then(
-					(m) => m.ProfilePage),
-			title: "My Profile - SeventySix"
-		},
-		{
-			path: "permissions",
-			providers: [AccountService],
-			loadComponent: () =>
-				import("./pages/request-permissions/request-permissions").then(
-					(m) => m.RequestPermissionsPage),
-			title: "Request Permissions - SeventySix"
+			children: [
+				{
+					path: "",
+					loadComponent: () =>
+						import("./pages/profile/profile").then(
+							(module) => module.ProfilePage),
+					title: "My Profile - SeventySix"
+				},
+				{
+					path: "permissions",
+					loadComponent: () =>
+						import("./pages/request-permissions/request-permissions").then(
+							(module) =>
+								module.RequestPermissionsPage),
+					title: "Request Permissions - SeventySix"
+				}
+			]
 		}
 	];

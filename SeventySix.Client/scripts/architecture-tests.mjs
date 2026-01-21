@@ -1154,10 +1154,12 @@ test('Files should have single primary export (with approved exceptions)', async
 			/animations\.ts$/,
 			/material-bundles\.ts$/,
 			/table\.model\.ts$/,
+			/navigation\.model\.ts$/,
 			/log-filter\.model\.ts$/,
 			/testing[/\\]/,
 			/custom-validators\.ts$/,
-			/cache-bypass\.interceptor\.ts$/
+			/cache-bypass\.interceptor\.ts$/,
+			/managers[/\\].*\.manager\.ts$/
 		];
 
 	for (const file of tsFiles)

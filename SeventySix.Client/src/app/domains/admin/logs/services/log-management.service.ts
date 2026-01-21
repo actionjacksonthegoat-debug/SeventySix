@@ -5,6 +5,7 @@
  * Extends BaseFilterService for filter state management
  */
 
+import { ADMIN_API_ENDPOINTS } from "@admin/constants";
 import {
 	LogQueryRequest,
 	PagedResultOfLogDto
@@ -55,11 +56,12 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 
 	/**
 	 * Endpoint path for log-related API requests.
-	 * @type {string}
+	 * @type {typeof ADMIN_API_ENDPOINTS.LOGS}
 	 * @private
 	 * @readonly
 	 */
-	private readonly endpoint: string = "logs";
+	private readonly endpoint: typeof ADMIN_API_ENDPOINTS.LOGS =
+		ADMIN_API_ENDPOINTS.LOGS;
 
 	/**
 	 * Selected log IDs using a writable signal.

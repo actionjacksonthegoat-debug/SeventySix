@@ -67,6 +67,8 @@ export interface CacheConfig
 		logs: CacheQueryConfig;
 		health: CacheQueryConfig;
 		thirdpartyrequests: CacheQueryConfig;
+		account: CacheQueryConfig;
+		permissionrequests: CacheQueryConfig;
 	};
 }
 
@@ -95,6 +97,17 @@ export interface UiConfig
 		enableMonitoring: boolean;
 		fpsWarningThreshold: number;
 	};
+}
+
+/**
+ * HTTP configuration for request handling.
+ */
+export interface HttpConfig
+{
+	/** Default request timeout in milliseconds. */
+	defaultTimeout: number;
+	/** Extended timeout for file upload operations in milliseconds. */
+	uploadTimeout: number;
 }
 
 /**
@@ -163,6 +176,7 @@ export interface Environment
 	cache: CacheConfig;
 	dashboard: DashboardConfig;
 	ui: UiConfig;
+	http: HttpConfig;
 	dateTime: DateTimeConfig;
 	testing: TestingConfig;
 	telemetry: TelemetryConfig;

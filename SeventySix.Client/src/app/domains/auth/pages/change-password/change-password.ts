@@ -19,6 +19,7 @@ import { ValidationResult } from "@auth/models";
 import { mapAuthError } from "@auth/utilities";
 import { validatePassword, validatePasswordsMatch } from "@auth/utilities";
 import { environment } from "@environments/environment";
+import { APP_ROUTES } from "@shared/constants";
 import { PASSWORD_VALIDATION } from "@shared/constants/validation.constants";
 import { AuthErrorResult } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
@@ -144,7 +145,7 @@ export class ChangePasswordComponent implements OnInit
 		if (!this.authService.isAuthenticated())
 		{
 			this.router.navigate(
-				["/auth/login"]);
+				[APP_ROUTES.AUTH.LOGIN]);
 		}
 	}
 
@@ -195,7 +196,7 @@ export class ChangePasswordComponent implements OnInit
 					this.authService.forceLogoutLocally();
 					// The API clears the refresh token, so user needs to log in again
 					this.router.navigate(
-						["/auth/login"],
+						[APP_ROUTES.AUTH.LOGIN],
 						{
 							queryParams: { returnUrl: this.returnUrl }
 						});

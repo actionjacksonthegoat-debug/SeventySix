@@ -1,3 +1,4 @@
+import { ADMIN_ROUTES } from "@admin/constants";
 import { UserDto } from "@admin/users/models";
 import { UserService } from "@admin/users/services";
 import { DatePipe } from "@angular/common";
@@ -342,7 +343,7 @@ export class UserList
 	public onCreateClick(): void
 	{
 		void this.router.navigate(
-			["/admin/users/create"]);
+			[ADMIN_ROUTES.USERS.CREATE]);
 	}
 
 	/**
@@ -487,7 +488,7 @@ export class UserList
 	private viewUser(userId: number): void
 	{
 		void this.router.navigate(
-			["/admin/users", userId]);
+			[ADMIN_ROUTES.USERS.DETAIL(userId)]);
 	}
 
 	/**
@@ -499,7 +500,7 @@ export class UserList
 	private editUser(userId: number): void
 	{
 		void this.router.navigate(
-			["/admin/users", userId, "edit"]);
+			[ADMIN_ROUTES.USERS.EDIT(userId)]);
 	}
 
 	/**

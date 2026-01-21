@@ -7,7 +7,7 @@ import {
 	provideHttpClientTesting,
 	TestRequest
 } from "@angular/common/http/testing";
-import { provideZonelessChangeDetection } from "@angular/core";
+import { PLATFORM_ID, provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { environment } from "@environments/environment";
@@ -21,15 +21,47 @@ import { AuthService } from "./auth.service";
 import { createMockAuthResponse } from "./auth.service.test-helpers";
 import { DOTNET_ROLE_CLAIM } from "./auth.types";
 
+/** Session marker key used by AuthService */
+const SESSION_KEY: string = "auth_has_session";
+
+/** Default login credentials for test cases */
+const TEST_LOGIN: { usernameOrEmail: string; password: string; rememberMe: boolean; } =
+	{
+		usernameOrEmail: "testuser",
+		password: "Password123",
+		rememberMe: false
+	};
+
+/**
+ * Creates a fresh TestBed with AuthService for session marker tests.
+ * Call AFTER setting localStorage to test initialize() behavior.
+ */
+function createFreshTestBed(): { authService: AuthService; httpMock: HttpTestingController; }
+{
+	TestBed.resetTestingModule();
+	TestBed.configureTestingModule(
+		{
+			providers: [
+				provideZonelessChangeDetection(),
+				provideHttpClient(withInterceptorsFromDi()),
+				provideHttpClientTesting(),
+				provideRouter([]),
+				{ provide: PLATFORM_ID, useValue: "browser" },
+				AuthService
+			]
+		});
+	return {
+		authService: TestBed.inject(AuthService),
+		httpMock: TestBed.inject(HttpTestingController)
+	};
+}
+
 /** AuthService Tests - focuses on authentication logic */
 describe("AuthService",
 	() =>
 	{
 		let service: AuthService;
 		let httpMock: HttpTestingController;
-
-		/** Session marker key used by AuthService */
-		const SESSION_KEY: string = "auth_has_session";
 
 		beforeEach(
 			() =>
@@ -44,6 +76,7 @@ describe("AuthService",
 							provideHttpClient(withInterceptorsFromDi()),
 							provideHttpClientTesting(),
 							provideRouter([]),
+							{ provide: PLATFORM_ID, useValue: "browser" },
 							AuthService
 						]
 					});
@@ -80,12 +113,7 @@ describe("AuthService",
 
 						let result: AuthResponse | undefined;
 						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
+							.login(TEST_LOGIN)
 							.subscribe(
 								(response: AuthResponse) =>
 								{
@@ -97,12 +125,7 @@ describe("AuthService",
 						expect(req.request.method)
 							.toBe("POST");
 						expect(req.request.body)
-							.toEqual(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								});
+							.toEqual(TEST_LOGIN);
 						req.flush(mockResponse);
 
 						expect(result)
@@ -175,23 +198,13 @@ describe("AuthService",
 							createMockAuthResponse();
 
 						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
+							.login(TEST_LOGIN)
 							.subscribe();
 
 						const req: TestRequest =
 							httpMock.expectOne(`${environment.apiUrl}/auth/login`);
 						expect(req.request.body)
-							.toEqual(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								});
+							.toEqual(TEST_LOGIN);
 						req.flush(mockResponse);
 					});
 			});
@@ -207,12 +220,7 @@ describe("AuthService",
 							createMockAuthResponse();
 
 						service
-							.login(
-								{
-									usernameOrEmail: "testuser",
-									password: "Password123",
-									rememberMe: false
-								})
+							.login(TEST_LOGIN)
 							.subscribe();
 
 						const loginReq: TestRequest =
@@ -635,23 +643,21 @@ describe("AuthService",
 							.toBe(true);
 					});
 
-				it("should attempt refresh when session marker exists",
-					() =>
+				it("should attempt refresh when session marker exists Async",
+					async () =>
 					{
 						localStorage.setItem(SESSION_KEY, "true");
+						const { authService, httpMock } =
+							createFreshTestBed();
 
-						// Need fresh service instance to test initialize
-						service =
-							TestBed.inject(AuthService);
 						let completed: boolean = false;
-						service
+						authService
 							.initialize()
 							.subscribe(
 								() => (completed = true));
 
 						const req: TestRequest =
-							httpMock.expectOne(
-								`${environment.apiUrl}/auth/refresh`);
+							httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
 						expect(req.request.method)
 							.toBe("POST");
 						req.flush(
@@ -659,35 +665,38 @@ describe("AuthService",
 							{ status: 401, statusText: "Unauthorized" });
 						expect(completed)
 							.toBe(true);
+
+						httpMock.verify();
 					});
 
-				it("should only run once per service instance",
-					() =>
+				it("should only run once per service instance Async",
+					async () =>
 					{
 						localStorage.setItem(SESSION_KEY, "true");
-						service =
-							TestBed.inject(AuthService);
+						const { authService, httpMock } =
+							createFreshTestBed();
 
 						// First call - should attempt refresh
-						service
+						authService
 							.initialize()
 							.subscribe();
 						const req: TestRequest =
-							httpMock.expectOne(
-								`${environment.apiUrl}/auth/refresh`);
+							httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
 						req.flush(
 							{ error: "No token" },
 							{ status: 401, statusText: "Unauthorized" });
 
 						// Second call - should not make another request
 						let secondCompleted: boolean = false;
-						service
+						authService
 							.initialize()
 							.subscribe(
 								() => (secondCompleted = true));
 						httpMock.expectNone(`${environment.apiUrl}/auth/refresh`);
 						expect(secondCompleted)
 							.toBe(true);
+
+						httpMock.verify();
 					});
 			});
 

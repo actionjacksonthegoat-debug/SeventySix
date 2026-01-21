@@ -5,6 +5,7 @@
  * Extends BaseFilterService for filter state management
  */
 
+import { ADMIN_API_ENDPOINTS } from "@admin/constants";
 import {
 	CreateUserRequest,
 	PagedResultOfUserDto,
@@ -50,11 +51,12 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 
 	/**
 	 * REST endpoint base path for user-related API routes.
-	 * @type {string}
+	 * @type {typeof ADMIN_API_ENDPOINTS.USERS}
 	 * @private
 	 * @readonly
 	 */
-	private readonly endpoint: string = "users";
+	private readonly endpoint: typeof ADMIN_API_ENDPOINTS.USERS =
+		ADMIN_API_ENDPOINTS.USERS;
 
 	constructor()
 	{

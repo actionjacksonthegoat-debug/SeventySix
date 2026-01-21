@@ -1,7 +1,11 @@
 import { Component, signal, WritableSignal } from "@angular/core";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { delay } from "@shared/testing";
+import {
+	delay,
+	spyOnPrivateMethod
+} from "@shared/testing";
+import { Mock } from "vitest";
 import { TableHeightDirective } from "./table-height.directive";
 
 @Component(
@@ -86,39 +90,29 @@ describe("TableHeightDirective",
 		it("should debounce window resize events",
 			async () =>
 			{
-				let updateCount: number = 0;
 				const directive: TableHeightDirective =
 					fixture.debugElement.children[0].injector.get(TableHeightDirective);
 
-				// Spy on private updateHeight method
-				const originalUpdateHeight: () => void =
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					(directive as any)[
-						"updateHeight"
-					];
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(directive as any)["updateHeight"] =
-					() =>
-					{
-						updateCount++;
-						originalUpdateHeight.call(directive);
-					};
+				// Use type-safe spy helper instead of 'as any' cast
+				const updateHeightSpy: Mock =
+					spyOnPrivateMethod(directive, "updateHeight");
 
 				// Trigger multiple resize events rapidly
-				for (let i: number = 0; i < 10; i++)
+				for (let eventIndex: number = 0; eventIndex < 10; eventIndex++)
 				{
 					window.dispatchEvent(new Event("resize"));
 				}
 
 				// Immediately after, should not have called yet (still debouncing)
-				expect(updateCount)
-					.toBe(0);
+				expect(updateHeightSpy)
+					.not
+					.toHaveBeenCalled();
 
 				// After 500ms debounce + buffer, should only have called once
 				await delay(600);
 
-				expect(updateCount)
-					.toBe(1);
+				expect(updateHeightSpy)
+					.toHaveBeenCalledTimes(1);
 			});
 
 		it("should always apply standard table offset (120px at density -1)",

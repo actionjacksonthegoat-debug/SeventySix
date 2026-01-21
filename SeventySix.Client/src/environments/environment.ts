@@ -56,6 +56,16 @@ export const environment: Environment =
 					staleTime: 60000, // 1min
 					gcTime: 300000, // 5min
 					retry: 2
+				},
+				account: {
+					staleTime: 120000, // 2min - User profile changes infrequently
+					gcTime: 600000, // 10min
+					retry: 2
+				},
+				permissionrequests: {
+					staleTime: 60000, // 1min
+					gcTime: 300000, // 5min
+					retry: 2
 				}
 			}
 		},
@@ -75,6 +85,10 @@ export const environment: Environment =
 				enableMonitoring: true,
 				fpsWarningThreshold: 30
 			}
+		},
+		http: {
+			defaultTimeout: 30000, // 30 seconds
+			uploadTimeout: 120000 // 2 minutes for file uploads
 		},
 		dateTime: {
 			defaultDisplayFormat: "yyyy-MM-dd HH:mm:ss",

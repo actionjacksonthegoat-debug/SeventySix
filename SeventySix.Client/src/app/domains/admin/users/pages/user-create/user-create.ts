@@ -23,6 +23,7 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatStepper } from "@angular/material/stepper";
 import { Router } from "@angular/router";
 import { REQUESTABLE_ROLES } from "@shared/constants/role.constants";
+import { DEBOUNCE_TIME } from "@shared/constants/timing.constants";
 import {
 	EMAIL_VALIDATION,
 	FULL_NAME_VALIDATION,
@@ -185,7 +186,7 @@ export class UserCreatePage
 
 			return of(control.value)
 			.pipe(
-				debounceTime(500),
+				debounceTime(DEBOUNCE_TIME.INPUT_VALIDATION),
 				distinctUntilChanged(),
 				switchMap(
 					(username: string) =>

@@ -19,12 +19,13 @@ import {
 } from "@angular/core";
 import { Router } from "@angular/router";
 import { environment } from "@environments/environment";
+import { APP_ROUTES, STORAGE_KEYS } from "@shared/constants";
 import {
 	AuthResponse,
 	LoginRequest,
 	UserProfileDto
 } from "@shared/models";
-import { DateService } from "@shared/services";
+import { DateService, StorageService } from "@shared/services";
 import {
 	DOTNET_ROLE_CLAIM,
 	JwtClaims,
@@ -77,6 +78,15 @@ export class AuthService
 		inject(DateService);
 
 	/**
+	 * Storage service for SSR-safe localStorage access.
+	 * @type {StorageService}
+	 * @private
+	 * @readonly
+	 */
+	private readonly storageService: StorageService =
+		inject(StorageService);
+
+	/**
 	 * Base auth API URL.
 	 * @type {string}
 	 * @private
@@ -84,22 +94,6 @@ export class AuthService
 	 */
 	private readonly authUrl: string =
 		`${environment.apiUrl}/auth`;
-
-	/**
-	 * Key for tracking if user has logged in before (for session restoration).
-	 * @type {string}
-	 * @private
-	 * @readonly
-	 */
-	private static readonly HAS_SESSION_KEY: string = "auth_has_session";
-
-	/**
-	 * Key for storing return URL in session storage.
-	 * @type {string}
-	 * @private
-	 * @readonly
-	 */
-	private static readonly RETURN_URL_KEY: string = "auth_return_url";
 
 	/**
 	 * Access token stored in memory only for XSS protection.
@@ -249,7 +243,7 @@ export class AuthService
 	loginWithProvider(provider: OAuthProvider, returnUrl: string = "/"): void
 	{
 		// Store return URL for after OAuth callback
-		sessionStorage.setItem(AuthService.RETURN_URL_KEY, returnUrl);
+		sessionStorage.setItem(STORAGE_KEYS.AUTH_RETURN_URL, returnUrl);
 		window.location.href =
 			`${this.authUrl}/${provider}`;
 	}
@@ -329,14 +323,14 @@ export class AuthService
 				{
 					this.clearAuth();
 					this.router.navigate(
-						["/"]);
+						[APP_ROUTES.HOME]);
 				},
 				error: () =>
 				{
 					// Clear local state even if server call fails
 					this.clearAuth();
 					this.router.navigate(
-						["/"]);
+						[APP_ROUTES.HOME]);
 				}
 			});
 	}
@@ -534,8 +528,8 @@ export class AuthService
 
 			// Navigate to stored return URL
 			const returnUrl: string =
-				sessionStorage.getItem(AuthService.RETURN_URL_KEY) ?? "/";
-			sessionStorage.removeItem(AuthService.RETURN_URL_KEY);
+				sessionStorage.getItem(STORAGE_KEYS.AUTH_RETURN_URL) ?? "/";
+			sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_URL);
 			this.router.navigateByUrl(returnUrl);
 		}
 
@@ -687,7 +681,11 @@ export class AuthService
 	 */
 	private hasExistingSession(): boolean
 	{
-		return localStorage.getItem(AuthService.HAS_SESSION_KEY) === "true";
+		const marker: boolean | string | null =
+			this.storageService.getItem<boolean | string>(
+				STORAGE_KEYS.AUTH_HAS_SESSION);
+		// Handle both boolean (from JSON.parse) and string (legacy) formats
+		return marker === true || marker === "true";
 	}
 
 	/**
@@ -697,7 +695,7 @@ export class AuthService
 	 */
 	private markHasSession(): void
 	{
-		localStorage.setItem(AuthService.HAS_SESSION_KEY, "true");
+		this.storageService.setItem(STORAGE_KEYS.AUTH_HAS_SESSION, "true");
 	}
 
 	/**
@@ -707,6 +705,6 @@ export class AuthService
 	 */
 	private clearHasSession(): void
 	{
-		localStorage.removeItem(AuthService.HAS_SESSION_KEY);
+		this.storageService.removeItem(STORAGE_KEYS.AUTH_HAS_SESSION);
 	}
 }

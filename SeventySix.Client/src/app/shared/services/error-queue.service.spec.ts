@@ -7,7 +7,10 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
 import { CreateLogRequest } from "@shared/models";
-import { delay } from "@shared/testing";
+import {
+	delay,
+	mockNavigatorProperty
+} from "@shared/testing";
 import { vi } from "vitest";
 import { DateService } from "./date.service";
 import { ErrorQueueService } from "./error-queue.service";
@@ -38,14 +41,8 @@ describe("ErrorQueueService (Zoneless)",
 							() =>
 							{});
 
-				// Mock environment configuration for faster tests
-				vi
-					.spyOn(
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-						(window as any).navigator,
-						"userAgent",
-						"get")
-					.mockReturnValue("TestBrowser/1.0");
+				// Use type-safe mock helper instead of 'as any' cast
+				mockNavigatorProperty("userAgent", "TestBrowser/1.0");
 
 				TestBed.configureTestingModule(
 					{

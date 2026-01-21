@@ -11,66 +11,10 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatListModule } from "@angular/material/list";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { RouterLink, RouterLinkActive } from "@angular/router";
-import {
-	ROLE_ADMIN,
-	ROLE_DEVELOPER
-} from "@shared/constants/role.constants";
+import { NAV_SECTIONS } from "@shared/constants";
+import { NavItem, NavSection } from "@shared/models";
 import { LayoutService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
-
-interface NavItem
-{
-	/**
-	 * @type {string}
-	 * Display label for the navigation item.
-	 */
-	label: string;
-
-	/**
-	 * @type {string}
-	 * Material icon name to display next to the item.
-	 */
-	icon: string;
-
-	/**
-	 * @type {string}
-	 * Route path for the navigation target.
-	 */
-	route: string;
-
-	/**
-	 * @type {boolean | undefined}
-	 * When true the item is displayed disabled in the UI.
-	 */
-	disabled?: boolean;
-
-	/**
-	 * Roles required to see this item. Inherits from section if not specified.
-	 * @type {string[] | undefined}
-	 */
-	requiredRoles?: string[];
-}
-
-interface NavSection
-{
-	/**
-	 * @type {string}
-	 * Section title displayed above the list of items.
-	 */
-	title: string;
-
-	/**
-	 * @type {NavItem[]}
-	 * Array of navigation items belonging to the section.
-	 */
-	items: NavItem[];
-
-	/**
-	 * Roles required to see this section. Empty array means visible to all (including guests).
-	 * @type {string[] | undefined}
-	 */
-	requiredRoles?: string[];
-}
 
 @Component(
 	{
@@ -115,73 +59,6 @@ export class SidebarComponent
 		inject(AuthService);
 
 	/**
-	 * All navigation sections with role requirements.
-	 * @type {ReadonlyArray<NavSection>}
-	 * @private
-	 */
-	private readonly navSections: NavSection[] =
-		[
-			{
-				title: "Main",
-				items: [
-					{
-						label: "Dashboard",
-						icon: "dashboard",
-						route: "/"
-					},
-					{
-						label: "Sandbox",
-						icon: "science",
-						route: "/sandbox"
-					}
-				],
-				requiredRoles: [] // Visible to all including guests
-			},
-			{
-				title: "Developer",
-				items: [
-					{
-						label: "Style Guide",
-						icon: "palette",
-						route: "/developer/style-guide"
-					},
-					{
-						label: "Architecture Guide",
-						icon: "architecture",
-						route: "/developer/architecture-guide"
-					}
-				],
-				requiredRoles: [ROLE_DEVELOPER, ROLE_ADMIN]
-			},
-			{
-				title: "Management",
-				items: [
-					{
-						label: "Admin Dashboard",
-						icon: "admin_panel_settings",
-						route: "/admin"
-					},
-					{
-						label: "Users",
-						icon: "people",
-						route: "/admin/users"
-					},
-					{
-						label: "Permission Requests",
-						icon: "lock_open",
-						route: "/admin/permission-requests"
-					},
-					{
-						label: "Logs",
-						icon: "article",
-						route: "/admin/logs"
-					}
-				],
-				requiredRoles: [ROLE_ADMIN]
-			}
-		];
-
-	/**
 	 * Computed signal that filters sections and items based on current user's roles.
 	 * @type {Signal<NavSection[]>}
 	 * @protected
@@ -189,8 +66,7 @@ export class SidebarComponent
 	protected readonly visibleNavSections: Signal<NavSection[]> =
 		computed(
 			() =>
-				this
-				.navSections
+				NAV_SECTIONS
 				.filter(
 					(section: NavSection) =>
 						this.hasAccess(section.requiredRoles))

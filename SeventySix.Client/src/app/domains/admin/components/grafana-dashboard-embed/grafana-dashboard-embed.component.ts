@@ -31,10 +31,6 @@ export class GrafanaDashboardEmbedComponent
 	/**
 	 * DOM sanitizer used to create a SafeResourceUrl for iframe embedding.
 	 * @type {DomSanitizer}
-	 */
-	/**
-	 * DOM sanitizer used to create a SafeResourceUrl for iframe embedding.
-	 * @type {DomSanitizer}
 	 * @private
 	 * @readonly
 	 */

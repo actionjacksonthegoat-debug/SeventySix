@@ -1,3 +1,4 @@
+import { ADMIN_API_ENDPOINTS } from "@admin/constants";
 import {
 	ThirdPartyApiRequestDto,
 	ThirdPartyApiStatisticsDto
@@ -35,7 +36,8 @@ export class ThirdPartyApiService
 	 * @readonly
 	 */
 	private readonly queryConfig: ReturnType<typeof getQueryConfig> =
-		getQueryConfig("thirdpartyrequests");
+		getQueryConfig(
+			ADMIN_API_ENDPOINTS.THIRD_PARTY_REQUESTS);
 
 	/**
 	 * REST endpoint path for third-party API requests.
@@ -43,7 +45,8 @@ export class ThirdPartyApiService
 	 * @private
 	 * @readonly
 	 */
-	private readonly endpoint: string = "thirdpartyrequests";
+	private readonly endpoint: string =
+		ADMIN_API_ENDPOINTS.THIRD_PARTY_REQUESTS;
 
 	/**
 	 * Retrieves a list of third-party API requests.

@@ -12,7 +12,7 @@ import {
 	MEDIA_TYPE_JSON
 } from "@shared/constants";
 import { LoggerService } from "@shared/services/logger.service";
-import { catchError, Observable, throwError } from "rxjs";
+import { catchError, Observable, throwError, timeout } from "rxjs";
 
 /**
  * Low-level HTTP wrapper for API communication.
@@ -55,6 +55,15 @@ export class ApiService
 		inject(LoggerService);
 
 	/**
+	 * Default request timeout in milliseconds from environment config.
+	 * @type {number}
+	 * @private
+	 * @readonly
+	 */
+	private readonly defaultTimeout: number =
+		environment.http.defaultTimeout;
+
+	/**
 	 * Default HTTP headers applied to all requests from this service.
 	 * @type {HttpHeaders}
 	 * @private
@@ -74,7 +83,7 @@ export class ApiService
 	 * @param {HttpContext} context
 	 * Optional HTTP context for request-scoped metadata.
 	 * @returns {Observable<T>}
-	 * Observable that resolves to the typed response body.
+	 * Observable that resolves to the typed response body or errors on timeout.
 	 */
 	get<T>(
 		endpoint: string,
@@ -89,7 +98,9 @@ export class ApiService
 				params,
 				context
 			})
-		.pipe(catchError(this.handleError));
+		.pipe(
+			timeout(this.defaultTimeout),
+			catchError(this.handleError));
 	}
 
 	/**
@@ -99,7 +110,7 @@ export class ApiService
 	 * @param {U} body
 	 * The request payload to send to the server.
 	 * @returns {Observable<T>}
-	 * Observable that resolves to the typed response body.
+	 * Observable that resolves to the typed response body or errors on timeout.
 	 */
 	post<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
@@ -109,7 +120,9 @@ export class ApiService
 			{
 				headers: this.defaultHeaders
 			})
-		.pipe(catchError(this.handleError));
+		.pipe(
+			timeout(this.defaultTimeout),
+			catchError(this.handleError));
 	}
 
 	/**
@@ -119,7 +132,7 @@ export class ApiService
 	 * @param {U} body
 	 * The request payload to send to the server.
 	 * @returns {Observable<T>}
-	 * Observable that resolves to the typed response body.
+	 * Observable that resolves to the typed response body or errors on timeout.
 	 */
 	put<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
@@ -129,7 +142,9 @@ export class ApiService
 			{
 				headers: this.defaultHeaders
 			})
-		.pipe(catchError(this.handleError));
+		.pipe(
+			timeout(this.defaultTimeout),
+			catchError(this.handleError));
 	}
 
 	/**
@@ -139,7 +154,7 @@ export class ApiService
 	 * @param {U} body
 	 * The request payload to send to the server.
 	 * @returns {Observable<T>}
-	 * Observable that resolves to the typed response body.
+	 * Observable that resolves to the typed response body or errors on timeout.
 	 */
 	patch<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
@@ -149,7 +164,9 @@ export class ApiService
 			{
 				headers: this.defaultHeaders
 			})
-		.pipe(catchError(this.handleError));
+		.pipe(
+			timeout(this.defaultTimeout),
+			catchError(this.handleError));
 	}
 
 	/**
@@ -159,7 +176,7 @@ export class ApiService
 	 * @param {U} body
 	 * Optional request body for delete operations.
 	 * @returns {Observable<T>}
-	 * Observable that resolves to the typed response body.
+	 * Observable that resolves to the typed response body or errors on timeout.
 	 */
 	delete<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
@@ -170,7 +187,9 @@ export class ApiService
 				headers: this.defaultHeaders,
 				body
 			})
-		.pipe(catchError(this.handleError));
+		.pipe(
+			timeout(this.defaultTimeout),
+			catchError(this.handleError));
 	}
 
 	/**
