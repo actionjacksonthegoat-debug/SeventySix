@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+using SeventySix.Identity.Constants;
+
 namespace SeventySix.Identity;
 
 /// <summary>
@@ -28,20 +30,24 @@ public record JwtSettings
 	/// <summary>
 	/// Gets access token expiration in minutes. Default: 15.
 	/// </summary>
-	public int AccessTokenExpirationMinutes { get; init; } = 15;
+	public int AccessTokenExpirationMinutes { get; init; } =
+		JwtConstants.DefaultAccessTokenExpirationMinutes;
 
 	/// <summary>
 	/// Gets refresh token expiration when "Remember Me" is NOT checked. Default: 1 day.
 	/// </summary>
-	public int RefreshTokenExpirationDays { get; init; } = 1;
+	public int RefreshTokenExpirationDays { get; init; } =
+		JwtConstants.DefaultRefreshTokenExpirationDays;
 
 	/// <summary>
 	/// Gets refresh token expiration when "Remember Me" IS checked. Default: 14 days.
 	/// </summary>
-	public int RefreshTokenRememberMeExpirationDays { get; init; } = 14;
+	public int RefreshTokenRememberMeExpirationDays { get; init; } =
+		JwtConstants.DefaultRefreshTokenRememberMeExpirationDays;
 
 	/// <summary>
 	/// Gets absolute session timeout regardless of activity. Default: 30 days.
 	/// </summary>
-	public int AbsoluteSessionTimeoutDays { get; init; } = 30;
+	public int AbsoluteSessionTimeoutDays { get; init; } =
+		JwtConstants.DefaultAbsoluteSessionTimeoutDays;
 }

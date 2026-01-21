@@ -188,7 +188,7 @@ public class RateLimitingRepositoryTests : DataPostgreSqlTestBase
 			TimeProvider.System);
 
 		// Consume all quota
-		for (int i = 0; i < 1000; i++)
+		for (int requestNumber = 0; requestNumber < 1000; requestNumber++)
 		{
 			await sut.TryIncrementRequestCountAsync(
 				apiName,

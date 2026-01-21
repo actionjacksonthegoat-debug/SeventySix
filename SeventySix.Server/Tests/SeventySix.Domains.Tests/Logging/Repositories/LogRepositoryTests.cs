@@ -326,9 +326,9 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 			[.. logs];
 
 		// Assert - Default is now Id descending (newest first)
-		for (int i = 0; i < result.Count - 1; i++)
+		for (int logIndex = 0; logIndex < result.Count - 1; logIndex++)
 		{
-			Assert.True(result[i].Id > result[i + 1].Id);
+			Assert.True(result[logIndex].Id > result[logIndex + 1].Id);
 		}
 	}
 
@@ -340,14 +340,14 @@ public class LogRepositoryTests : DataPostgreSqlTestBase
 	{
 		// Arrange
 		FakeTimeProvider timeProvider = new();
-		for (int i = 0; i < 150; i++)
+		for (int logNumber = 0; logNumber < 150; logNumber++)
 		{
 			await Repository.CreateAsync(
 				new Log
 				{
 					LogLevel = "Info",
 					Message =
-						$"Log {i}",
+						$"Log {logNumber}",
 					CreateDate =
 						timeProvider.GetUtcNow().UtcDateTime,
 				});

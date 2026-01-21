@@ -1,6 +1,8 @@
-using System;
+// <copyright file="StartupFailedException.cs" company="SeventySix">
+// Copyright (c) SeventySix. All rights reserved.
+// </copyright>
 
-namespace SeventySix.Api.Infrastructure;
+namespace SeventySix.Shared.Exceptions;
 
 /// <summary>
 /// Represents a fatal startup failure that prevents the application from completing initialization.
@@ -55,5 +57,10 @@ public enum StartupFailedReason
 	/// <summary>
 	/// Failure because a required dependency (e.g., PostgreSQL) was unavailable.
 	/// </summary>
-	DependencyUnavailable
+	DependencyUnavailable,
+
+	/// <summary>
+	/// Failure due to security configuration issues (e.g., weak admin password).
+	/// </summary>
+	SecurityConfiguration,
 }

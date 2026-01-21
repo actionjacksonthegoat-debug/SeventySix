@@ -84,17 +84,17 @@ public static class RateLimitingRegistration
 						HttpContext,
 						string>(
 							_ =>
-								RateLimitPartition.GetNoLimiter<string>(string.Empty));
+								RateLimitPartition.GetNoLimiter(string.Empty));
 
 				options.AddPolicy(
 					RateLimitPolicyConstants.AuthLogin,
-					_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
 				options.AddPolicy(
 					RateLimitPolicyConstants.AuthRegister,
-					_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
 				options.AddPolicy(
 					RateLimitPolicyConstants.AuthRefresh,
-					_ => RateLimitPartition.GetNoLimiter<string>(string.Empty));
+					_ => RateLimitPartition.GetNoLimiter(string.Empty));
 			});
 
 		return services;
@@ -150,7 +150,8 @@ public static class RateLimitingRegistration
 				// Bypass rate limiting for CORS preflight (OPTIONS) requests
 				if (HttpMethods.IsOptions(context.Request.Method))
 				{
-					return RateLimitPartition.GetNoLimiter<string>("__preflight__");
+					return RateLimitPartition.GetNoLimiter(
+						RateLimitPartitionKeys.Preflight);
 				}
 
 				// Bypass rate limiting for health checks and metrics endpoints
@@ -158,12 +159,13 @@ public static class RateLimitingRegistration
 				if (context.Request.Path.StartsWithSegments("/health")
 					|| context.Request.Path.StartsWithSegments("/metrics"))
 				{
-					return RateLimitPartition.GetNoLimiter<string>("__internal__");
+					return RateLimitPartition.GetNoLimiter(
+						RateLimitPartitionKeys.Internal);
 				}
 
 				return RateLimitPartition.GetFixedWindowLimiter(
 					partitionKey: context.Connection.RemoteIpAddress?.ToString()
-						?? "anonymous",
+						?? RateLimitPartitionKeys.Anonymous,
 					factory: _ =>
 						new FixedWindowRateLimiterOptions
 						{
@@ -209,7 +211,7 @@ public static class RateLimitingRegistration
 		TimeSpan window) =>
 		RateLimitPartition.GetFixedWindowLimiter(
 			partitionKey: context.Connection.RemoteIpAddress?.ToString()
-				?? "anonymous",
+				?? RateLimitPartitionKeys.Anonymous,
 			factory: _ => new FixedWindowRateLimiterOptions
 			{
 				PermitLimit = permitLimit,
@@ -231,13 +233,21 @@ public static class RateLimitingRegistration
 			context.HttpContext.Response.Headers.RetryAfter =
 				settings.RetryAfterSeconds.ToString();
 
-			await context.HttpContext.Response.WriteAsJsonAsync(
-				new
+			Microsoft.AspNetCore.Mvc.ProblemDetails problemDetails =
+				new()
 				{
-					error = "Too Many Requests",
-					message = "Rate limit exceeded. Please try again later.",
-					retryAfter = settings.RetryAfterSeconds,
-				},
+					Type = ProblemDetailConstants.Types.RateLimit,
+					Title = ProblemDetailConstants.Titles.TooManyRequests,
+					Status = StatusCodes.Status429TooManyRequests,
+					Detail = ProblemDetailConstants.Details.RateLimitExceeded,
+					Instance = context.HttpContext.Request.Path,
+				};
+
+			problemDetails.Extensions["retryAfter"] =
+				settings.RetryAfterSeconds;
+
+			await context.HttpContext.Response.WriteAsJsonAsync(
+				problemDetails,
 				cancellationToken);
 		};
 }

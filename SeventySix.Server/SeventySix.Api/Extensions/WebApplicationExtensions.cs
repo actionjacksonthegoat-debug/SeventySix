@@ -17,6 +17,7 @@ using SeventySix.ElectronicNotifications;
 using SeventySix.Identity;
 using SeventySix.Logging;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Api.Extensions;
 

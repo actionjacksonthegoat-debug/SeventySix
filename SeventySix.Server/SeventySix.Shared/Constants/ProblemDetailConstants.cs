@@ -121,5 +121,10 @@ public static class ProblemDetailConstants
 		/// Detail for insufficient permissions.
 		/// </summary>
 		public const string InsufficientPermissions = "You do not have permission to perform this action.";
+
+		/// <summary>
+		/// Detail for rate limit exceeded.
+		/// </summary>
+		public const string RateLimitExceeded = "Rate limit exceeded. Please try again later.";
 	}
 }

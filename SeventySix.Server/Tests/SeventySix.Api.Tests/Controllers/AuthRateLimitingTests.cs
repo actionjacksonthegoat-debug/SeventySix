@@ -77,7 +77,7 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 
 		// Act - Make 6 requests (limit is 5)
 		List<HttpResponseMessage> responses = [];
-		for (int i = 0; i < 6; i++)
+		for (int attemptIndex = 0; attemptIndex < 6; attemptIndex++)
 		{
 			HttpResponseMessage response =
 				await Client!.PostAsJsonAsync(
@@ -104,14 +104,14 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 		// Arrange - Rate limit is 3 per hour
 		// Act - Make 4 requests (limit is 3)
 		List<HttpResponseMessage> responses = [];
-		for (int i = 0; i < 4; i++)
+		for (int attemptIndex = 0; attemptIndex < 4; attemptIndex++)
 		{
 			RegisterRequest request =
 				new(
-				Username: $"testuser{i}",
-				Email: $"test{i}@example.com",
+				Username: $"testuser{attemptIndex}",
+				Email: $"test{attemptIndex}@example.com",
 				Password: "Password123!",
-				FullName: $"Test User {i}");
+				FullName: $"Test User {attemptIndex}");
 
 			HttpResponseMessage response =
 				await Client!.PostAsJsonAsync(
@@ -143,7 +143,7 @@ public class AuthRateLimitingTests(TestcontainersPostgreSqlFixture fixture)
 
 		// Act - Exceed limit
 		HttpResponseMessage? rateLimitedResponse = null;
-		for (int i = 0; i < 6; i++)
+		for (int attemptIndex = 0; attemptIndex < 6; attemptIndex++)
 		{
 			HttpResponseMessage response =
 				await Client!.PostAsJsonAsync(

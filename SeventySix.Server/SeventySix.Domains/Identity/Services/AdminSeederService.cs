@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using SeventySix.Identity.Constants;
 using SeventySix.Identity.Settings;
 using SeventySix.Shared.Constants;
+using SeventySix.Shared.Exceptions;
 
 namespace SeventySix.Identity;
 
@@ -40,27 +41,34 @@ public class AdminSeederService(
 		// Security: Validate password is provided and not a weak default
 		if (string.IsNullOrWhiteSpace(settings.Value.InitialPassword))
 		{
-			logger.LogError(
+			throw new StartupFailedException(
+				StartupFailedReason.SecurityConfiguration,
 				"Admin seeder enabled but InitialPassword not configured. "
 					+ "Set ADMIN_PASSWORD environment variable.");
-			return;
 		}
 
 		if (IsWeakDefaultPassword(settings.Value.InitialPassword))
 		{
-			logger.LogError(
-				"Admin seeder detected weak/default password. "
+			throw new StartupFailedException(
+				StartupFailedReason.SecurityConfiguration,
+				$"Admin seeder detected weak/default password ({SecurityErrorCodes.WeakAdminPassword}). "
 					+ "Set a strong password via ADMIN_PASSWORD environment variable.");
-			return;
 		}
 
 		try
 		{
 			await SeedAdminUserAsync(stoppingToken);
 		}
-		catch (Exception ex)
+		catch (StartupFailedException)
 		{
-			logger.LogError(ex, "Failed to seed admin user");
+			// Re-throw startup failures without wrapping
+			throw;
+		}
+		catch (Exception exception)
+		{
+			logger.LogError(
+				exception,
+				"Failed to seed admin user");
 		}
 	}
 

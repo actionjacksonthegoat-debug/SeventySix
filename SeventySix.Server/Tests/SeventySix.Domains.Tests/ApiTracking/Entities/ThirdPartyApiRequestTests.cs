@@ -185,7 +185,7 @@ public class ThirdPartyApiRequestTests
 			};
 
 		// Act
-		for (int i = 0; i < 100; i++)
+		for (int incrementCount = 0; incrementCount < 100; incrementCount++)
 		{
 			request.IncrementCallCount(timeProvider.GetUtcNow().UtcDateTime);
 		}

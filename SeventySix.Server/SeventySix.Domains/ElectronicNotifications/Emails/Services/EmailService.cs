@@ -68,7 +68,8 @@ public class EmailService(
 		string resetUrl =
 			BuildPasswordResetUrl(resetToken);
 
-		string subject = "Welcome to SeventySix - Set Your Password";
+		string subject =
+			EmailSubjectConstants.Welcome;
 
 		string body =
 			BuildWelcomeEmailBody(username, resetUrl);
@@ -107,7 +108,8 @@ public class EmailService(
 		string resetUrl =
 			BuildPasswordResetUrl(resetToken);
 
-		string subject = "SeventySix - Password Reset Request";
+		string subject =
+			EmailSubjectConstants.PasswordReset;
 
 		string body =
 			BuildPasswordResetEmailBody(username, resetUrl);
@@ -143,7 +145,8 @@ public class EmailService(
 				email,
 				verificationToken);
 
-		string subject = "SeventySix - Verify Your Email";
+		string subject =
+			EmailSubjectConstants.EmailVerification;
 
 		string body =
 			BuildVerificationEmailBody(verificationUrl);

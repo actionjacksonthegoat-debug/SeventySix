@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Diagnostics;
+using SeventySix.Api.Configuration;
 using SeventySix.Shared.Interfaces;
 
 namespace SeventySix.Api.Infrastructure;
@@ -128,11 +129,11 @@ public class HealthCheckService(
 			metricsService.GetQueueStats();
 
 		string status = "Healthy";
-		if (failedItems > 10)
+		if (failedItems > HealthCheckThresholds.UnhealthyFailedItemCount)
 		{
 			status = "Unhealthy";
 		}
-		else if (queuedItems > 50)
+		else if (queuedItems > HealthCheckThresholds.DegradedQueuedItemCount)
 		{
 			status = "Degraded";
 		}
@@ -143,7 +144,7 @@ public class HealthCheckService(
 				QueuedItems = queuedItems,
 				FailedItems = failedItems,
 				CircuitBreakerOpen =
-					failedItems > 10,
+					failedItems > HealthCheckThresholds.UnhealthyFailedItemCount,
 				Status = status,
 			};
 

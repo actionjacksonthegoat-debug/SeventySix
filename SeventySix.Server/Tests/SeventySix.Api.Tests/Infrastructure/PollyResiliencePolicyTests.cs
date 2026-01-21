@@ -172,7 +172,7 @@ public class PollyResiliencePolicyTests
 			options);
 
 		// Act - Trigger circuit breaker
-		for (int i = 0; i < 5; i++)
+		for (int failureAttempt = 0; failureAttempt < 5; failureAttempt++)
 		{
 			try
 			{

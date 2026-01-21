@@ -61,7 +61,7 @@ public class AuthCookieService(
 		SetSecureCookie(
 			authSettings.Value.Cookie.OAuthStateCookieName,
 			state,
-			TimeSpan.FromMinutes(5),
+			TimeSpan.FromMinutes(OAuthConstants.StateCookieExpirationMinutes),
 			SameSiteMode.Lax);
 
 	/// <inheritdoc/>
@@ -74,7 +74,7 @@ public class AuthCookieService(
 		SetSecureCookie(
 			authSettings.Value.Cookie.OAuthCodeVerifierCookieName,
 			codeVerifier,
-			TimeSpan.FromMinutes(5),
+			TimeSpan.FromMinutes(OAuthConstants.CodeVerifierCookieExpirationMinutes),
 			SameSiteMode.Lax);
 
 	/// <inheritdoc/>
