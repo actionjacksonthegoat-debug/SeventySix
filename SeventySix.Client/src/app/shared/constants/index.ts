@@ -5,6 +5,7 @@
 /**
  * Shared constants barrel export.
  */
+export * from "./error-messages.constants";
 export * from "./health.constants";
 export * from "./http-status.constant";
 export * from "./http.constants";

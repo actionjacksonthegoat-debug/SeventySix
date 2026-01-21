@@ -2,6 +2,8 @@
 // Copyright (c) SeventySix. All rights reserved.
 // </copyright>
 
+import { HttpContextToken } from "@angular/common/http";
+
 /**
  * HTTP header and media type constants.
  */
@@ -23,6 +25,15 @@ export const MEDIA_TYPE_JSON: string = "application/json";
 
 /** Form URL encoded media type. */
 export const MEDIA_TYPE_FORM: string = "application/x-www-form-urlencoded";
+
+/**
+ * HTTP Context token for cache versioning.
+ * Use with HttpContext to pass cache version for stale-while-revalidate patterns.
+ * @type {HttpContextToken<string>}
+ */
+export const CACHE_VERSION: HttpContextToken<string> =
+	new HttpContextToken<string>(
+		() => "");
 
 /**
  * Retry configuration for rate-limited (429) requests.

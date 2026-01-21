@@ -351,23 +351,23 @@ describe("UserService",
 						mockApiService.get.mockReturnValue(of(mockPagedResponse));
 
 						// Access the private signal via bracket notation for testing
-						const getSignalValue: () => boolean =
+						const getSignalValue: () => number =
 							() =>
-								(service as unknown as { [key: string]: () => boolean; })["forceRefreshTrigger"]();
+								(service as unknown as { [key: string]: () => number; })["forceRefreshTrigger"]();
 
-						const initialValue: boolean =
+						const initialValue: number =
 							getSignalValue();
 
 						// Force refresh
 						await TestBed.runInInjectionContext(
 							() => service.forceRefresh());
 
-						const newValue: boolean =
+						const newValue: number =
 							getSignalValue();
 
-						// Signal should have toggled
+						// Counter should have incremented
 						expect(newValue)
-							.toBe(!initialValue);
+							.toBe(initialValue + 1);
 					});
 			});
 	});

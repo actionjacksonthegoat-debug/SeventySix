@@ -4,6 +4,7 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	DestroyRef,
 	effect,
 	inject,
 	input,
@@ -409,7 +410,7 @@ export class DataTableComponent<T extends { id: number; }>
 	 * @readonly
 	 */
 	readonly selectionManager: DataTableSelectionManager<T> =
-		new DataTableSelectionManager<T>();
+		new DataTableSelectionManager<T>(inject(DestroyRef));
 
 	// ========================================
 	// Computed Signals (delegated to managers)

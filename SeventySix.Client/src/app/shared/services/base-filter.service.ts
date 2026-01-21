@@ -28,13 +28,14 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 	private readonly initialFilter: TFilter;
 
 	/**
-	 * Force refresh trigger - toggle to bypass cache on next query.
-	 * @type {WritableSignal<boolean>}
+	 * Force refresh trigger counter - increment to bypass cache on next query.
+	 * Uses counter instead of boolean toggle to handle rapid successive calls.
+	 * @type {WritableSignal<number>}
 	 * @protected
 	 * @readonly
 	 */
-	protected readonly forceRefreshTrigger: WritableSignal<boolean> =
-		signal<boolean>(false);
+	protected readonly forceRefreshTrigger: WritableSignal<number> =
+		signal<number>(0);
 
 	/**
 	 * Initialize filter with default values and store for reset.
@@ -120,7 +121,8 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 	 */
 	protected getForceRefreshContext(): HttpContext | undefined
 	{
-		return this.forceRefreshTrigger()
+		// Any non-zero value indicates a force refresh was triggered
+		return this.forceRefreshTrigger() > 0
 			? new HttpContext()
 			.set(FORCE_REFRESH, true)
 			: undefined;
@@ -128,13 +130,15 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 
 	/**
 	 * Trigger cache bypass for next query.
-	 * Toggles the force refresh signal to invalidate TanStack Query cache.
+	 * Increments the force refresh counter to invalidate TanStack Query cache.
+	 * Uses counter instead of toggle to handle rapid successive calls correctly.
 	 * @returns {void}
 	 */
 	forceRefresh(): void
 	{
 		this.forceRefreshTrigger.update(
-			(value: boolean) => !value);
+			(currentCount: number) =>
+				currentCount + 1);
 	}
 
 	/**

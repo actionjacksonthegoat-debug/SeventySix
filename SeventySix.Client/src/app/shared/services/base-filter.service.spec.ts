@@ -277,39 +277,39 @@ describe("BaseFilterService",
 		describe("forceRefresh",
 			() =>
 			{
-				it("should toggle forceRefreshTrigger signal",
+				it("should increment forceRefreshTrigger counter",
 					async () =>
 					{
-						const initialValue: boolean =
+						const initialValue: number =
 							service["forceRefreshTrigger"]();
 
 						await service.forceRefresh();
 
 						expect(service["forceRefreshTrigger"]())
-							.toBe(!initialValue);
+							.toBe(initialValue + 1);
 					});
 
-				it("should toggle back on second call",
+				it("should continue incrementing on subsequent calls",
 					async () =>
 					{
-						const initialValue: boolean =
+						const initialValue: number =
 							service["forceRefreshTrigger"]();
 
 						await service.forceRefresh();
 						await service.forceRefresh();
 
 						expect(service["forceRefreshTrigger"]())
-							.toBe(initialValue);
+							.toBe(initialValue + 2);
 					});
 			});
 
 		describe("getForceRefreshContext",
 			() =>
 			{
-				it("should return undefined when forceRefreshTrigger is false",
+				it("should return undefined when forceRefreshTrigger is zero",
 					() =>
 					{
-						service["forceRefreshTrigger"].set(false);
+						service["forceRefreshTrigger"].set(0);
 
 						const context: HttpContext | undefined =
 							service.getForceRefreshContext();
@@ -318,10 +318,10 @@ describe("BaseFilterService",
 							.toBeUndefined();
 					});
 
-				it("should return HttpContext with FORCE_REFRESH when trigger is true",
+				it("should return HttpContext with FORCE_REFRESH when trigger is non-zero",
 					() =>
 					{
-						service["forceRefreshTrigger"].set(true);
+						service["forceRefreshTrigger"].set(1);
 
 						const context: HttpContext | undefined =
 							service.getForceRefreshContext();

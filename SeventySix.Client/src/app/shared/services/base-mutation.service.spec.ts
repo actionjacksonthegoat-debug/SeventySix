@@ -166,9 +166,11 @@ describe("BaseMutationService",
 								.mockReturnValue(
 									{ previousValue: "old" });
 						const onErrorSpy: ReturnType<typeof vi.fn<(context: { previousValue: string; }) => void>> =
-							vi.fn<(context: { previousValue: string; }) => void>();
+							vi.fn<
+								(context: { previousValue: string; }) => void>();
 						const onSuccessSpy: ReturnType<typeof vi.fn<(result: string, variables: string) => void>> =
-							vi.fn<(result: string, variables: string) => void>();
+							vi.fn<
+								(result: string, variables: string) => void>();
 
 						const config: OptimisticMutationConfig<string, string, { previousValue: string; }> =
 							{

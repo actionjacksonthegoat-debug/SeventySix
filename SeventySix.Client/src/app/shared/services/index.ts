@@ -14,6 +14,7 @@ export * from "./auth.service";
 export * from "./base-filter.service";
 export * from "./base-mutation.service";
 export * from "./base-query.service";
+export * from "./base-readonly.service";
 export * from "./client-error-logger.service";
 export * from "./date.service";
 export * from "./dialog.service";

@@ -42,12 +42,14 @@ export type UpdateUserRequest =
 /**
  * Paged result containing UserDto items and pagination metadata.
  * Mirrors the generated `PagedResultOfUserDto` schema with numeric page fields.
+ * Items use local UserDto type for consistent createdBy handling.
  */
 export type PagedResultOfUserDto =
 	& Omit<
 		components["schemas"]["PagedResultOfUserDto"],
-		"page" | "pageSize" | "totalCount" | "totalPages">
+		"items" | "page" | "pageSize" | "totalCount" | "totalPages">
 	& {
+		items: UserDto[];
 		page: number;
 		pageSize: number;
 		totalCount: number;
