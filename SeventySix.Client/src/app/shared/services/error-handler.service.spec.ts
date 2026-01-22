@@ -91,6 +91,12 @@ describe("ErrorHandlerService",
 					TestBed.inject(ErrorHandlerService);
 			});
 
+		afterEach(
+			() =>
+			{
+				vi.restoreAllMocks();
+			});
+
 		/** Verifies the service is instantiated successfully. */
 		it("should be created",
 			() =>

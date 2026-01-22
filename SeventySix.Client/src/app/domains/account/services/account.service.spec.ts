@@ -4,7 +4,7 @@ import { ApiService } from "@shared/services/api.service";
 import { createMockApiService, MockApiService } from "@shared/testing";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
-	provideAngularQuery,
+	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { of } from "rxjs";
@@ -33,7 +33,7 @@ describe("AccountService",
 					{
 						providers: [
 							provideZonelessChangeDetection(),
-							provideAngularQuery(queryClient),
+							provideTanStackQuery(queryClient),
 							AccountService,
 							{ provide: ApiService, useValue: mockApiService }
 						]

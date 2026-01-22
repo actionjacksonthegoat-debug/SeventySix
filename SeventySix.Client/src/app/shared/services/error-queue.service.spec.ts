@@ -7,10 +7,7 @@ import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
 import { CreateLogRequest } from "@shared/models";
-import {
-	delay,
-	mockNavigatorProperty
-} from "@shared/testing";
+import { mockNavigatorProperty } from "@shared/testing";
 import { vi } from "vitest";
 import { DateService } from "./date.service";
 import { ErrorQueueService } from "./error-queue.service";
@@ -30,7 +27,10 @@ describe("ErrorQueueService (Zoneless)",
 		beforeEach(
 			() =>
 			{
-			// Clear localStorage before each test
+				// Enable fake timers for faster tests (no real delays)
+				vi.useFakeTimers();
+
+				// Clear localStorage before each test
 				localStorage.clear();
 
 				// Suppress console.error output during tests while still allowing verification
@@ -67,7 +67,10 @@ describe("ErrorQueueService (Zoneless)",
 		afterEach(
 			() =>
 			{
-			// Verify no outstanding HTTP requests
+				// Restore real timers
+				vi.useRealTimers();
+
+				// Verify no outstanding HTTP requests
 				httpMock.verify();
 
 				// Cleanup service
@@ -162,8 +165,8 @@ describe("ErrorQueueService (Zoneless)",
 
 						// Service will use environment.logging.batchInterval (250ms in tests)
 
-						// Wait for batch processor to attempt sending
-						await delay(BATCH_INTERVAL + 50);
+						// Advance fake timer to trigger batch processor
+						await vi.advanceTimersByTimeAsync(BATCH_INTERVAL + 1);
 
 						const req: ReturnType<typeof newHttpMock.expectOne> =
 							newHttpMock.expectOne(API_BATCH_URL);
@@ -191,8 +194,8 @@ describe("ErrorQueueService (Zoneless)",
 
 						service.enqueue(error);
 
-						// Wait for batch interval
-						await delay(BATCH_INTERVAL + 50);
+						// Advance fake timer to trigger batch interval
+						await vi.advanceTimersByTimeAsync(BATCH_INTERVAL + 1);
 
 						const req: ReturnType<typeof httpMock.expectOne> =
 							httpMock.expectOne(API_BATCH_URL);
@@ -209,8 +212,8 @@ describe("ErrorQueueService (Zoneless)",
 				it("should not send empty batches",
 					async () =>
 					{
-						// Don't enqueue anything, just wait
-						await delay(BATCH_INTERVAL + 50);
+						// Don't enqueue anything, just advance timer
+						await vi.advanceTimersByTimeAsync(BATCH_INTERVAL + 1);
 
 						// Verify no HTTP requests were made
 						httpMock.expectNone(API_BATCH_URL);
@@ -235,7 +238,7 @@ describe("ErrorQueueService (Zoneless)",
 						}
 
 						// First batch should have 10 items
-						await delay(BATCH_INTERVAL + 50);
+						await vi.advanceTimersByTimeAsync(BATCH_INTERVAL + 1);
 
 						const req: ReturnType<typeof httpMock.expectOne> =
 							httpMock.expectOne(API_BATCH_URL);
@@ -244,7 +247,7 @@ describe("ErrorQueueService (Zoneless)",
 						req.flush({});
 
 						// Second batch should have 5 items
-						await delay(BATCH_INTERVAL + 50);
+						await vi.advanceTimersByTimeAsync(BATCH_INTERVAL + 1);
 
 						const req2: ReturnType<typeof httpMock.expectOne> =
 							httpMock.expectOne(API_BATCH_URL);
@@ -270,7 +273,7 @@ describe("ErrorQueueService (Zoneless)",
 								clientTimestamp: dateService.now()
 							});
 
-						await delay(BATCH_INTERVAL + 50);
+						await vi.advanceTimersByTimeAsync(BATCH_INTERVAL + 1);
 
 						const req: ReturnType<typeof httpMock.expectOne> =
 							httpMock.expectOne(API_BATCH_URL);
@@ -280,8 +283,8 @@ describe("ErrorQueueService (Zoneless)",
 						// Successful response
 						req.flush({});
 
-						// Verify localStorage is cleared
-						await delay(50);
+						// Advance timer to allow localStorage to be cleared
+						await vi.advanceTimersByTimeAsync(1);
 
 						const stored: string | null =
 							localStorage.getItem("error-queue");
@@ -311,7 +314,7 @@ describe("ErrorQueueService (Zoneless)",
 
 						service.enqueue(error);
 
-						await delay(BATCH_INTERVAL + 50);
+						await vi.advanceTimersByTimeAsync(BATCH_INTERVAL + 1);
 
 						const req: ReturnType<typeof httpMock.expectOne> =
 							httpMock.expectOne(API_BATCH_URL);

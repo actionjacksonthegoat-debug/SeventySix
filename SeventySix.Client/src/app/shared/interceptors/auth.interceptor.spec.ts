@@ -1,10 +1,15 @@
-import { HttpEvent, HttpRequest } from "@angular/common/http";
+import {
+	HttpErrorResponse,
+	HttpEvent,
+	HttpRequest
+} from "@angular/common/http";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { AuthResponse } from "@shared/models";
 import { AuthService } from "@shared/services/auth.service";
-import { of } from "rxjs";
+import { of, throwError } from "rxjs";
 import { type Mock, vi } from "vitest";
 import { authInterceptor } from "./auth.interceptor";
 
@@ -147,5 +152,132 @@ describe("authInterceptor",
 						.at(-1)![0] as HttpRequest<unknown>;
 				expect(callArgs.headers.get("Authorization"))
 					.toBeNull();
+			});
+
+		describe("Token Refresh",
+			() =>
+			{
+				it("should refresh token when expired before making request",
+					() =>
+					{
+						const mockRefreshResponse: Partial<AuthResponse> =
+							{ accessToken: "new-token" };
+
+						mockAuthService.getAccessToken.mockReturnValue("expired-token");
+						mockAuthService.isTokenExpired.mockReturnValue(true);
+						mockAuthService.refreshToken.mockReturnValue(of(mockRefreshResponse));
+
+						// After refresh, return the new token
+						mockAuthService.getAccessToken.mockReturnValueOnce("expired-token");
+						mockAuthService.getAccessToken.mockReturnValueOnce("new-token");
+
+						const req: HttpRequest<unknown> =
+							new HttpRequest("GET", "/api/data");
+
+						TestBed.runInInjectionContext(
+							() =>
+							{
+								authInterceptor(req, mockHandler.handle.bind(mockHandler))
+									.subscribe();
+							});
+
+						expect(mockAuthService.refreshToken)
+							.toHaveBeenCalled();
+					});
+
+				it("should use new token after successful refresh",
+					() =>
+					{
+						const mockRefreshResponse: Partial<AuthResponse> =
+							{ accessToken: "refreshed-token" };
+
+						mockAuthService
+							.getAccessToken
+							.mockReturnValueOnce("expired-token")
+							.mockReturnValueOnce("refreshed-token");
+						mockAuthService.isTokenExpired.mockReturnValue(true);
+						mockAuthService.refreshToken.mockReturnValue(of(mockRefreshResponse));
+
+						const req: HttpRequest<unknown> =
+							new HttpRequest("GET", "/api/data");
+
+						TestBed.runInInjectionContext(
+							() =>
+							{
+								authInterceptor(req, mockHandler.handle.bind(mockHandler))
+									.subscribe();
+							});
+
+						const callArgs: HttpRequest<unknown> =
+							mockHandler
+								.handle
+								.mock
+								.calls
+								.at(-1)![0] as HttpRequest<unknown>;
+						expect(callArgs.headers.get("Authorization"))
+							.toBe("Bearer refreshed-token");
+					});
+
+				it("should proceed without token when refresh returns null",
+					() =>
+					{
+						mockAuthService.getAccessToken.mockReturnValue("expired-token");
+						mockAuthService.isTokenExpired.mockReturnValue(true);
+						mockAuthService.refreshToken.mockReturnValue(of(null));
+
+						const req: HttpRequest<unknown> =
+							new HttpRequest("GET", "/api/data");
+
+						TestBed.runInInjectionContext(
+							() =>
+							{
+								authInterceptor(req, mockHandler.handle.bind(mockHandler))
+									.subscribe();
+							});
+
+						const callArgs: HttpRequest<unknown> =
+							mockHandler
+								.handle
+								.mock
+								.calls
+								.at(-1)![0] as HttpRequest<unknown>;
+						expect(callArgs.headers.get("Authorization"))
+							.toBeNull();
+					});
+
+				it("should propagate error when refresh fails",
+					() =>
+					{
+						const refreshError: HttpErrorResponse =
+							new HttpErrorResponse(
+								{ status: 401, statusText: "Unauthorized" });
+
+						mockAuthService.getAccessToken.mockReturnValue("expired-token");
+						mockAuthService.isTokenExpired.mockReturnValue(true);
+						mockAuthService.refreshToken.mockReturnValue(throwError(
+							() => refreshError));
+
+						const req: HttpRequest<unknown> =
+							new HttpRequest("GET", "/api/data");
+
+						let caughtError: HttpErrorResponse | undefined;
+						TestBed.runInInjectionContext(
+							() =>
+							{
+								authInterceptor(req, mockHandler.handle.bind(mockHandler))
+									.subscribe(
+										{
+											error: (error: HttpErrorResponse) =>
+											{
+												caughtError = error;
+											}
+										});
+							});
+
+						expect(caughtError)
+							.toBeDefined();
+						expect(caughtError?.status)
+							.toBe(401);
+					});
 			});
 	});

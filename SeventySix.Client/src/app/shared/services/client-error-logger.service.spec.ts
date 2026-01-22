@@ -48,6 +48,12 @@ describe("ClientErrorLoggerService",
 					TestBed.inject(ClientErrorLoggerService);
 			});
 
+		afterEach(
+			() =>
+			{
+				vi.restoreAllMocks();
+			});
+
 		describe("logError",
 			() =>
 			{

@@ -69,6 +69,12 @@ describe("errorInterceptor",
 					});
 			});
 
+		afterEach(
+			() =>
+			{
+				vi.restoreAllMocks();
+			});
+
 		it("should convert network errors (status 0)",
 			async () =>
 			{

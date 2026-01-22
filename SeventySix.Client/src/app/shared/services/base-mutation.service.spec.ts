@@ -79,6 +79,12 @@ describe("BaseMutationService",
 					TestBed.inject(QueryClient);
 			});
 
+		afterEach(
+			() =>
+			{
+				queryClient.clear();
+			});
+
 		describe("initialization",
 			() =>
 			{

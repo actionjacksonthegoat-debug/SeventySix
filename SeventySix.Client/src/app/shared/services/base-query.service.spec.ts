@@ -74,6 +74,12 @@ describe("BaseQueryService",
 					TestBed.inject(QueryClient);
 			});
 
+		afterEach(
+			() =>
+			{
+				queryClient.clear();
+			});
+
 		describe("initialization",
 			() =>
 			{

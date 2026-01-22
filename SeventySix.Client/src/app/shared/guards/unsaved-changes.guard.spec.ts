@@ -41,6 +41,12 @@ describe("unsavedChangesGuard",
 					.mockImplementation(mockConfirm);
 			});
 
+		afterEach(
+			() =>
+			{
+				vi.restoreAllMocks();
+			});
+
 		it("should allow navigation when canDeactivate returns true",
 			() =>
 			{

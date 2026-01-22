@@ -5,7 +5,7 @@ import { provideRouter, Routes } from "@angular/router";
 import { ApiService } from "@shared/services/api.service";
 import { createMockApiService, MockApiService } from "@shared/testing";
 import {
-	provideAngularQuery,
+	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
 import { of } from "rxjs";
@@ -49,7 +49,7 @@ describe("RequestPermissionsPage",
 							providers: [
 								provideZonelessChangeDetection(),
 								provideRouter(testRoutes),
-								provideAngularQuery(queryClient),
+								provideTanStackQuery(queryClient),
 								AccountService,
 								{ provide: ApiService, useValue: mockApiService }
 							]

@@ -1,11 +1,8 @@
 import { Component, signal, WritableSignal } from "@angular/core";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import {
-	delay,
-	spyOnPrivateMethod
-} from "@shared/testing";
-import { Mock } from "vitest";
+import { spyOnPrivateMethod } from "@shared/testing";
+import { Mock, vi } from "vitest";
 import { TableHeightDirective } from "./table-height.directive";
 
 @Component(
@@ -29,6 +26,8 @@ describe("TableHeightDirective",
 		beforeEach(
 			() =>
 			{
+				vi.useFakeTimers();
+
 				TestBed.configureTestingModule(
 					{
 						imports: [TestComponent, TableHeightDirective],
@@ -42,6 +41,12 @@ describe("TableHeightDirective",
 				directiveElement =
 					fixture.nativeElement.querySelector("div");
 				fixture.detectChanges();
+			});
+
+		afterEach(
+			() =>
+			{
+				vi.useRealTimers();
 			});
 
 		it("should create directive instance",
@@ -108,8 +113,8 @@ describe("TableHeightDirective",
 					.not
 					.toHaveBeenCalled();
 
-				// After 500ms debounce + buffer, should only have called once
-				await delay(600);
+				// Advance past 500ms debounce + buffer for callback to fire
+				await vi.advanceTimersByTimeAsync(600);
 
 				expect(updateHeightSpy)
 					.toHaveBeenCalledTimes(1);
