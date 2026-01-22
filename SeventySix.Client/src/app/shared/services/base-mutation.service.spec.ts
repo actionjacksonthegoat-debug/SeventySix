@@ -4,12 +4,14 @@ import {
 	BaseMutationService,
 	OptimisticMutationConfig
 } from "@shared/services/base-mutation.service";
+import { createTestQueryClient } from "@shared/testing";
 import { QueryOptions } from "@shared/utilities/query-config.utility";
 import {
 	CreateMutationResult,
+	provideTanStackQuery,
 	QueryClient
 } from "@tanstack/angular-query-experimental";
-import { Observable, of } from "rxjs";
+import { Observable, of, throwError } from "rxjs";
 import { vi } from "vitest";
 
 /**
@@ -64,19 +66,20 @@ describe("BaseMutationService",
 		beforeEach(
 			() =>
 			{
+				queryClient =
+					createTestQueryClient();
+
 				TestBed.configureTestingModule(
 					{
 						providers: [
 							provideZonelessChangeDetection(),
-							TestMutationService,
-							QueryClient
+							provideTanStackQuery(queryClient),
+							TestMutationService
 						]
 					});
 
 				service =
 					TestBed.inject(TestMutationService);
-				queryClient =
-					TestBed.inject(QueryClient);
 			});
 
 		afterEach(
@@ -197,6 +200,92 @@ describe("BaseMutationService",
 							.toBeDefined();
 						expect(mutation.mutate)
 							.toBeDefined();
+					});
+			});
+
+		describe("mutation execution",
+			() =>
+			{
+				it("should execute mutation and resolve with API result on successAsync",
+					async () =>
+					{
+						const config: OptimisticMutationConfig<string, string, void> =
+							{
+								onMutate: vi.fn(),
+								onError: vi.fn(),
+								onSuccess: vi.fn()
+							};
+
+						const mutation: CreateMutationResult<string, Error, string, void> =
+							TestBed.runInInjectionContext(
+								() =>
+									service.testCreateOptimisticMutation(
+										() => of("success-result"),
+										config));
+
+						const result: string =
+							await mutation.mutateAsync("test-input");
+
+						expect(result)
+							.toBe("success-result");
+					});
+
+				it("should reject with error when mutation failsAsync",
+					async () =>
+					{
+						const config: OptimisticMutationConfig<string, string, void> =
+							{
+								onMutate: vi.fn(),
+								onError: vi.fn(),
+								onSuccess: vi.fn()
+							};
+
+						const mutation: CreateMutationResult<string, Error, string, void> =
+							TestBed.runInInjectionContext(
+								() =>
+									service.testCreateOptimisticMutation(
+										() =>
+											throwError(() => new Error("API failed")),
+										config));
+
+						await expect(mutation.mutateAsync("test-input"))
+							.rejects
+							.toThrow("API failed");
+					});
+
+				it("should support multiple sequential mutations on same instanceAsync",
+					async () =>
+					{
+						let callCount: number = 0;
+						const config: OptimisticMutationConfig<string, string, void> =
+							{
+								onMutate: vi.fn(),
+								onError: vi.fn(),
+								onSuccess: vi.fn()
+							};
+
+						const mutation: CreateMutationResult<string, Error, string, void> =
+							TestBed.runInInjectionContext(
+								() =>
+									service.testCreateOptimisticMutation(
+										() =>
+										{
+											callCount++;
+											return of(`result-${callCount}`);
+										},
+										config));
+
+						const firstResult: string =
+							await mutation.mutateAsync("first");
+						const secondResult: string =
+							await mutation.mutateAsync("second");
+
+						expect(firstResult)
+							.toBe("result-1");
+						expect(secondResult)
+							.toBe("result-2");
+						expect(callCount)
+							.toBe(2);
 					});
 			});
 	});

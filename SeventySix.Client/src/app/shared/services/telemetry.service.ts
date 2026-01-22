@@ -92,11 +92,11 @@ export class TelemetryService
 
 		// Defer telemetry setup to not block initial render
 		timer(TELEMETRY_INIT_DELAY_MS)
-		.subscribe(
-			() =>
-			{
-				this.initializeTelemetryAsync();
-			});
+			.subscribe(
+				() =>
+				{
+					this.initializeTelemetryAsync();
+				});
 	}
 
 	/**

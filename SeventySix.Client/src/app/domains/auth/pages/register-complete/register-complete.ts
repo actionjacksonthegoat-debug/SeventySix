@@ -182,34 +182,34 @@ export class RegisterCompleteComponent implements OnInit
 				await this.recaptchaService.executeAsync("register");
 
 			this
-			.authService
-			.completeRegistration(
-				this.token,
-				this.username,
-				this.password,
-				recaptchaToken)
-			.subscribe(
-				{
-					next: () =>
+				.authService
+				.completeRegistration(
+					this.token,
+					this.username,
+					this.password,
+					recaptchaToken)
+				.subscribe(
 					{
-						this.notification.success("Account created successfully!");
-						this.router.navigate(
-							["/"]);
-					},
-					error: (error: HttpErrorResponse) =>
-					{
-						const errorResult: AuthErrorResult =
-							mapAuthError(error);
-
-						if (errorResult.invalidateToken)
+						next: () =>
 						{
-							this.tokenValid.set(false);
-						}
+							this.notification.success("Account created successfully!");
+							this.router.navigate(
+								["/"]);
+						},
+						error: (error: HttpErrorResponse) =>
+						{
+							const errorResult: AuthErrorResult =
+								mapAuthError(error);
 
-						this.notification.error(errorResult.message);
-						this.isLoading.set(false);
-					}
-				});
+							if (errorResult.invalidateToken)
+							{
+								this.tokenValid.set(false);
+							}
+
+							this.notification.error(errorResult.message);
+							this.isLoading.set(false);
+						}
+					});
 		}
 		catch
 		{

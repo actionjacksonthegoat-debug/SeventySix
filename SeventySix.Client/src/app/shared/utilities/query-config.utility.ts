@@ -60,7 +60,7 @@ export function getQueryConfig(resource: string): QueryOptions
 		environment.cache.query;
 	const resourceConfig: QueryOptions | undefined =
 		config[
-		resource as keyof typeof config
+			resource as keyof typeof config
 		] as QueryOptions | undefined;
 
 	if (resourceConfig && typeof resourceConfig === "object")

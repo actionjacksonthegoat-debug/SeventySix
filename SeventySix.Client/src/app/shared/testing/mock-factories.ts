@@ -322,10 +322,37 @@ export function createMockLayoutService(): MockLayoutService
 		openSidebar: vi.fn(),
 		closeSidebar: vi.fn(),
 		sidebarMode: vi
-		.fn()
-		.mockReturnValue("side"),
+			.fn()
+			.mockReturnValue("side"),
 		sidebarExpanded: vi
-		.fn()
-		.mockReturnValue(true)
+			.fn()
+			.mockReturnValue(true)
+	};
+}
+
+/** Mock RecaptchaService interface for testing. */
+export interface MockRecaptchaService
+{
+	executeAsync: Mock;
+	reset: Mock;
+}
+
+/**
+ * Create a mocked RecaptchaService.
+ * Used in auth component tests (login, register, forgot-password).
+ *
+ * @param {string | null} resolvedToken
+ * Optional token value that executeAsync should resolve with.
+ * @returns {MockRecaptchaService}
+ * Vitest mock object implementing RecaptchaService methods for tests.
+ */
+export function createMockRecaptchaService(
+	resolvedToken: string | null = null): MockRecaptchaService
+{
+	return {
+		executeAsync: vi
+			.fn()
+			.mockResolvedValue(resolvedToken),
+		reset: vi.fn()
 	};
 }

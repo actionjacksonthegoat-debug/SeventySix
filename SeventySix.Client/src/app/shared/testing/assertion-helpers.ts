@@ -28,11 +28,11 @@ export function expectQueryLoading<TData>(
 	query: CreateQueryResult<TData>): void
 {
 	expect(query.isLoading())
-	.toBe(true);
+		.toBe(true);
 	expect(query.isSuccess())
-	.toBe(false);
+		.toBe(false);
 	expect(query.isError())
-	.toBe(false);
+		.toBe(false);
 }
 
 /**
@@ -57,13 +57,13 @@ export function expectQuerySuccess<TData>(
 	expectedData: TData): void
 {
 	expect(query.isSuccess())
-	.toBe(true);
+		.toBe(true);
 	expect(query.isLoading())
-	.toBe(false);
+		.toBe(false);
 	expect(query.isError())
-	.toBe(false);
+		.toBe(false);
 	expect(query.data())
-	.toEqual(expectedData);
+		.toEqual(expectedData);
 }
 
 /**
@@ -87,11 +87,11 @@ export function expectQueryError<TData, TError = Error>(
 	query: CreateQueryResult<TData, TError>): void
 {
 	expect(query.isError())
-	.toBe(true);
+		.toBe(true);
 	expect(query.isSuccess())
-	.toBe(false);
+		.toBe(false);
 	expect(query.error())
-	.toBeTruthy();
+		.toBeTruthy();
 }
 
 /**
@@ -117,7 +117,7 @@ export function expectQueryErrorWith<TData, TError = Error>(
 {
 	expectQueryError(query);
 	expect(query.error())
-	.toEqual(expectedError);
+		.toEqual(expectedError);
 }
 
 /**
@@ -143,11 +143,11 @@ export function expectMutationPending<TData, TError = Error, TVariables = unknow
 	mutation: CreateMutationResult<TData, TError, TVariables>): void
 {
 	expect(mutation.isPending())
-	.toBe(true);
+		.toBe(true);
 	expect(mutation.isSuccess())
-	.toBe(false);
+		.toBe(false);
 	expect(mutation.isError())
-	.toBe(false);
+		.toBe(false);
 }
 
 /**
@@ -174,11 +174,11 @@ export function expectMutationSuccess<TData, TError = Error, TVariables = unknow
 	mutation: CreateMutationResult<TData, TError, TVariables>): void
 {
 	expect(mutation.isSuccess())
-	.toBe(true);
+		.toBe(true);
 	expect(mutation.isPending())
-	.toBe(false);
+		.toBe(false);
 	expect(mutation.isError())
-	.toBe(false);
+		.toBe(false);
 }
 
 /**
@@ -206,7 +206,7 @@ export function expectMutationSuccessWith<TData, TError = Error, TVariables = un
 {
 	expectMutationSuccess(mutation);
 	expect(mutation.data())
-	.toEqual(expectedData);
+		.toEqual(expectedData);
 }
 
 /**
@@ -233,11 +233,11 @@ export function expectMutationError<TData, TError = Error, TVariables = unknown>
 	mutation: CreateMutationResult<TData, TError, TVariables>): void
 {
 	expect(mutation.isError())
-	.toBe(true);
+		.toBe(true);
 	expect(mutation.isSuccess())
-	.toBe(false);
+		.toBe(false);
 	expect(mutation.error())
-	.toBeTruthy();
+		.toBeTruthy();
 }
 
 /**
@@ -263,11 +263,11 @@ export function expectMutationIdle<TData, TError = Error, TVariables = unknown>(
 	mutation: CreateMutationResult<TData, TError, TVariables>): void
 {
 	expect(mutation.isIdle())
-	.toBe(true);
+		.toBe(true);
 	expect(mutation.isPending())
-	.toBe(false);
+		.toBe(false);
 	expect(mutation.isSuccess())
-	.toBe(false);
+		.toBe(false);
 	expect(mutation.isError())
-	.toBe(false);
+		.toBe(false);
 }

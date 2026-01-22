@@ -113,10 +113,10 @@ export const appConfig: ApplicationConfig =
 								gcTime: environment.cache.query.default.gcTime,
 								retry: environment.cache.query.default.retry,
 								refetchOnWindowFocus: environment
-								.cache
-								.query
-								.default
-								.refetchOnWindowFocus,
+									.cache
+									.query
+									.default
+									.refetchOnWindowFocus,
 								refetchOnReconnect: environment.cache.query.default.refetchOnReconnect
 							}
 						}

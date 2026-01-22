@@ -147,9 +147,9 @@ export function createTextColumn<T>(
 {
 	const builder: TableColumnBuilder<T> =
 		new TableColumnBuilder<T>()
-		.withKey(key)
-		.withLabel(label)
-		.asText();
+			.withKey(key)
+			.withLabel(label)
+			.asText();
 
 	if (isSortable)
 	{
@@ -177,9 +177,9 @@ export function createDateColumn<T>(
 {
 	const builder: TableColumnBuilder<T> =
 		new TableColumnBuilder<T>()
-		.withKey(key)
-		.withLabel(label)
-		.asDate();
+			.withKey(key)
+			.withLabel(label)
+			.asDate();
 
 	if (sortable)
 	{
@@ -206,8 +206,8 @@ export function createBadgeColumn<T>(
 	badgeColor: (value: CellValue) => "primary" | "accent" | "warn"): TableColumn<T>
 {
 	return new TableColumnBuilder<T>()
-	.withKey(key)
-	.withLabel(label)
-	.asBadge(badgeColor)
-	.build();
+		.withKey(key)
+		.withLabel(label)
+		.asBadge(badgeColor)
+		.build();
 }

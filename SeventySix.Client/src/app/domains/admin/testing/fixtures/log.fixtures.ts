@@ -98,9 +98,9 @@ export class LogFixtures
 					{
 						id: i + 1,
 						createDate: dateService
-						.fromMillis(
-							dateService.nowTimestamp() - i * 60000)
-						.toISOString(),
+							.fromMillis(
+								dateService.nowTimestamp() - i * 60000)
+							.toISOString(),
 						logLevel: logLevel || "Information",
 						message: `Test log message ${i + 1}`
 					}));

@@ -102,8 +102,8 @@ export class LayoutService
 			{
 				const bp: { [key: string]: boolean; } =
 					this
-					.breakpoints()
-					.breakpoints as { [key: string]: boolean; };
+						.breakpoints()
+						.breakpoints as { [key: string]: boolean; };
 				return !!bp[Breakpoints.XSmall];
 			});
 
@@ -118,8 +118,8 @@ export class LayoutService
 			{
 				const bp: { [key: string]: boolean; } =
 					this
-					.breakpoints()
-					.breakpoints as { [key: string]: boolean; };
+						.breakpoints()
+						.breakpoints as { [key: string]: boolean; };
 				return !!bp[Breakpoints.Small];
 			});
 
@@ -134,8 +134,8 @@ export class LayoutService
 			{
 				const bp: { [key: string]: boolean; } =
 					this
-					.breakpoints()
-					.breakpoints as { [key: string]: boolean; };
+						.breakpoints()
+						.breakpoints as { [key: string]: boolean; };
 				return !!bp[Breakpoints.Medium];
 			});
 
@@ -150,8 +150,8 @@ export class LayoutService
 			{
 				const bp: { [key: string]: boolean; } =
 					this
-					.breakpoints()
-					.breakpoints as { [key: string]: boolean; };
+						.breakpoints()
+						.breakpoints as { [key: string]: boolean; };
 				return !!bp[Breakpoints.Large] || !!bp[Breakpoints.XLarge];
 			});
 
@@ -166,8 +166,8 @@ export class LayoutService
 			{
 				const bp: { [key: string]: boolean; } =
 					this
-					.breakpoints()
-					.breakpoints as { [key: string]: boolean; };
+						.breakpoints()
+						.breakpoints as { [key: string]: boolean; };
 				return !!bp[Breakpoints.XLarge];
 			});
 

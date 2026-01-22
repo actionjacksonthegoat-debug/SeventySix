@@ -39,8 +39,8 @@ export class AuthFixtures
 		return {
 			accessToken: "test-access-token-12345",
 			expiresAt: dateService
-			.fromMillis(dateService.nowTimestamp() + 3600000)
-			.toISOString(),
+				.fromMillis(dateService.nowTimestamp() + 3600000)
+				.toISOString(),
 			email: "test@example.com",
 			fullName: "Test User",
 			requiresPasswordChange: false
@@ -59,8 +59,8 @@ export class AuthFixtures
 		return {
 			accessToken: "test-access-token-needs-change",
 			expiresAt: dateService
-			.fromMillis(dateService.nowTimestamp() + 3600000)
-			.toISOString(),
+				.fromMillis(dateService.nowTimestamp() + 3600000)
+				.toISOString(),
 			email: "expired@example.com",
 			fullName: "Expired Password User",
 			requiresPasswordChange: true

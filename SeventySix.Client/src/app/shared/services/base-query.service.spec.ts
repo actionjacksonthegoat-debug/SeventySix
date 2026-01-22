@@ -1,8 +1,12 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { BaseQueryRequest } from "@shared/models";
+import { createTestQueryClient } from "@shared/testing";
 import { QueryOptions } from "@shared/utilities/query-config.utility";
-import { QueryClient } from "@tanstack/angular-query-experimental";
+import {
+	provideTanStackQuery,
+	QueryClient
+} from "@tanstack/angular-query-experimental";
 import { vi } from "vitest";
 import { BaseQueryService } from "./base-query.service";
 
@@ -59,19 +63,20 @@ describe("BaseQueryService",
 		beforeEach(
 			() =>
 			{
+				queryClient =
+					createTestQueryClient();
+
 				TestBed.configureTestingModule(
 					{
 						providers: [
 							provideZonelessChangeDetection(),
-							TestQueryService,
-							QueryClient
+							provideTanStackQuery(queryClient),
+							TestQueryService
 						]
 					});
 
 				service =
 					TestBed.inject(TestQueryService);
-				queryClient =
-					TestBed.inject(QueryClient);
 			});
 
 		afterEach(

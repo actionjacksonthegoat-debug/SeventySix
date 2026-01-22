@@ -12,7 +12,12 @@ import { DateService } from "@shared/services";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { RecaptchaService } from "@shared/services/recaptcha.service";
-import { createMockNotificationService } from "@shared/testing";
+import {
+	createMockNotificationService,
+	createMockRecaptchaService,
+	MockNotificationService,
+	MockRecaptchaService
+} from "@shared/testing";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { LoginComponent } from "./login";
@@ -22,20 +27,6 @@ interface MockAuthService
 	login: ReturnType<typeof vi.fn>;
 	loginWithProvider: ReturnType<typeof vi.fn>;
 	isAuthenticated: ReturnType<typeof signal<boolean>>;
-}
-
-interface MockNotificationService
-{
-	success: ReturnType<typeof vi.fn>;
-	error: ReturnType<typeof vi.fn>;
-	info: ReturnType<typeof vi.fn>;
-	warning: ReturnType<typeof vi.fn>;
-	errorWithDetails: ReturnType<typeof vi.fn>;
-}
-
-interface MockRecaptchaService
-{
-	executeAsync: ReturnType<typeof vi.fn>;
 }
 
 describe("LoginComponent",
@@ -73,11 +64,7 @@ describe("LoginComponent",
 				mockNotificationService =
 					createMockNotificationService();
 				mockRecaptchaService =
-					{
-						executeAsync: vi
-							.fn()
-							.mockResolvedValue(null)
-					};
+					createMockRecaptchaService();
 
 				await TestBed
 					.configureTestingModule(

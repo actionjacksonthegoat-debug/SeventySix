@@ -99,21 +99,21 @@ export class RegisterEmailComponent
 		this.isLoading.set(true);
 
 		this
-		.authService
-		.initiateRegistration(this.email)
-		.subscribe(
-			{
-				next: () =>
+			.authService
+			.initiateRegistration(this.email)
+			.subscribe(
 				{
-					this.submitted.set(true);
-					this.isLoading.set(false);
-				},
-				error: () =>
-				{
-					// Still show success to prevent email enumeration
-					this.submitted.set(true);
-					this.isLoading.set(false);
-				}
-			});
+					next: () =>
+					{
+						this.submitted.set(true);
+						this.isLoading.set(false);
+					},
+					error: () =>
+					{
+						// Still show success to prevent email enumeration
+						this.submitted.set(true);
+						this.isLoading.set(false);
+					}
+				});
 	}
 }

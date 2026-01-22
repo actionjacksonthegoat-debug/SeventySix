@@ -93,11 +93,11 @@ export class RecaptchaService
 					() =>
 					{
 						grecaptcha
-						.execute(
-							this.siteKey,
-							{ action })
-						.then(resolve)
-						.catch(reject);
+							.execute(
+								this.siteKey,
+								{ action })
+							.then(resolve)
+							.catch(reject);
 					});
 			});
 	}

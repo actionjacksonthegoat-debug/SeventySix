@@ -82,9 +82,9 @@ export class UserService extends BaseQueryService<UserQueryRequest>
 		return injectQuery(
 			() => ({
 				queryKey: QueryKeys
-				.users
-				.paged(this.getCurrentFilter())
-				.concat(this.forceRefreshTrigger()),
+					.users
+					.paged(this.getCurrentFilter())
+					.concat(this.forceRefreshTrigger()),
 				queryFn: () =>
 					lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
 				...this.queryConfig

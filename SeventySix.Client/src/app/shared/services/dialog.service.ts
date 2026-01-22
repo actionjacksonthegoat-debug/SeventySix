@@ -42,14 +42,14 @@ export class DialogService
 			};
 
 		return this
-		.dialog
-		.open(ConfirmDialogComponent,
-			{ data: dialogData })
-		.afterClosed()
-		.pipe(
-			map(
-				(result: boolean | undefined): boolean =>
-					result === true));
+			.dialog
+			.open(ConfirmDialogComponent,
+				{ data: dialogData })
+			.afterClosed()
+			.pipe(
+				map(
+					(result: boolean | undefined): boolean =>
+						result === true));
 	}
 
 	/**
@@ -83,14 +83,14 @@ export class DialogService
 			};
 
 		return this
-		.dialog
-		.open(ConfirmDialogComponent,
-			{ data: dialogData })
-		.afterClosed()
-		.pipe(
-			map(
-				(result: boolean | undefined): boolean =>
-					result === true));
+			.dialog
+			.open(ConfirmDialogComponent,
+				{ data: dialogData })
+			.afterClosed()
+			.pipe(
+				map(
+					(result: boolean | undefined): boolean =>
+						result === true));
 	}
 
 	/**
@@ -114,13 +114,13 @@ export class DialogService
 			};
 
 		return this
-		.dialog
-		.open(ConfirmDialogComponent,
-			{ data: dialogData })
-		.afterClosed()
-		.pipe(
-			map(
-				(result: boolean | undefined): boolean =>
-					result === true));
+			.dialog
+			.open(ConfirmDialogComponent,
+				{ data: dialogData })
+			.afterClosed()
+			.pipe(
+				map(
+					(result: boolean | undefined): boolean =>
+						result === true));
 	}
 }

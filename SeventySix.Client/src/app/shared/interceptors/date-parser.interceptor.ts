@@ -60,16 +60,16 @@ export const dateParserInterceptor: HttpInterceptorFn =
 			inject(DateService);
 
 		return next(req)
-		.pipe(
-			map(
-				(event) =>
-				{
-					if (event instanceof HttpResponse && event.body)
+			.pipe(
+				map(
+					(event) =>
 					{
-						return event.clone(
-							{ body: parseDates(event.body, dateService) });
-					}
+						if (event instanceof HttpResponse && event.body)
+						{
+							return event.clone(
+								{ body: parseDates(event.body, dateService) });
+						}
 
-					return event;
-				}));
+						return event;
+					}));
 	};

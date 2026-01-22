@@ -44,7 +44,7 @@ describe("Token Storage Security",
 		beforeEach(
 			() =>
 			{
-				// Clear all storage before each test
+			// Clear all storage before each test
 				localStorage.clear();
 				sessionStorage.clear();
 

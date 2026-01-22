@@ -97,6 +97,26 @@ describe("ErrorHandlerService",
 				vi.restoreAllMocks();
 			});
 
+		/**
+	 * Helper to call handleError and ignore the expected re-throw in dev mode.
+	 * Assertions on side effects (notifications, logging) should be made after calling this.
+	 * @param error
+	 * The error to pass to handleError.
+	 */
+		function callHandleErrorIgnoringRethrow(
+			error: Error | HttpErrorResponse): void
+		{
+			try
+			{
+				service.handleError(error);
+			}
+			catch
+			{
+			// Expected: In non-production mode, errors are re-thrown after handling.
+			// Side effects (notifications, logging) occur before the re-throw.
+			}
+		}
+
 		/** Verifies the service is instantiated successfully. */
 		it("should be created",
 			() =>
@@ -112,14 +132,7 @@ describe("ErrorHandlerService",
 				it("should log and notify for generic errors",
 					() =>
 					{
-						try
-						{
-							service.handleError(new Error("Test error"));
-						}
-						catch
-						{
-							// Expected in development mode
-						}
+						callHandleErrorIgnoringRethrow(new Error("Test error"));
 
 						expect(mockClientLogger.logError)
 							.toHaveBeenCalled();
@@ -131,21 +144,14 @@ describe("ErrorHandlerService",
 				it("should handle HTTP 404 errors",
 					() =>
 					{
-						const error: HttpErrorResponse =
+						const httpError: HttpErrorResponse =
 							new HttpErrorResponse(
 								{
 									status: 404,
 									statusText: "Not Found"
 								});
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(httpError);
 
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
@@ -158,21 +164,14 @@ describe("ErrorHandlerService",
 				it("should handle HTTP 401 errors",
 					() =>
 					{
-						const error: HttpErrorResponse =
+						const httpError: HttpErrorResponse =
 							new HttpErrorResponse(
 								{
 									status: 401,
 									statusText: "Unauthorized"
 								});
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(httpError);
 
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
@@ -185,21 +184,14 @@ describe("ErrorHandlerService",
 				it("should handle HTTP 500 errors",
 					() =>
 					{
-						const error: HttpErrorResponse =
+						const httpError: HttpErrorResponse =
 							new HttpErrorResponse(
 								{
 									status: 500,
 									statusText: "Internal Server Error"
 								});
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(httpError);
 
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
@@ -211,19 +203,12 @@ describe("ErrorHandlerService",
 				it("should handle ValidationError",
 					() =>
 					{
-						const error: ValidationError =
+						const validationError: ValidationError =
 							new ValidationError(
 								"Validation failed",
 								{ field1: ["Error 1"] });
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(validationError);
 
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
@@ -235,18 +220,11 @@ describe("ErrorHandlerService",
 				it("should handle NotFoundError",
 					() =>
 					{
-						const error: NotFoundError =
+						const notFoundError: NotFoundError =
 							new NotFoundError(
 								"Resource not found");
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(notFoundError);
 
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
@@ -258,18 +236,11 @@ describe("ErrorHandlerService",
 				it("should handle UnauthorizedError",
 					() =>
 					{
-						const error: UnauthorizedError =
+						const unauthorizedError: UnauthorizedError =
 							new UnauthorizedError(
 								"Not authorized");
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(unauthorizedError);
 
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
@@ -281,17 +252,10 @@ describe("ErrorHandlerService",
 				it("should handle NetworkError",
 					() =>
 					{
-						const error: NetworkError =
+						const networkError: NetworkError =
 							new NetworkError();
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(networkError);
 
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
@@ -306,17 +270,10 @@ describe("ErrorHandlerService",
 				it("should handle HttpError",
 					() =>
 					{
-						const error: HttpError =
+						const httpError: HttpError =
 							new HttpError("Custom HTTP error", 418);
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(httpError);
 
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
@@ -332,14 +289,7 @@ describe("ErrorHandlerService",
 				it("should log errors to ClientErrorLoggerService",
 					() =>
 					{
-						try
-						{
-							service.handleError(new Error("Test error"));
-						}
-						catch
-						{
-							// Expected in development mode
-						}
+						callHandleErrorIgnoringRethrow(new Error("Test error"));
 
 						expect(mockClientLogger.logError)
 							.toHaveBeenCalled();
@@ -348,7 +298,7 @@ describe("ErrorHandlerService",
 				it("should log HTTP errors to ClientErrorLoggerService",
 					() =>
 					{
-						const error: HttpErrorResponse =
+						const httpError: HttpErrorResponse =
 							new HttpErrorResponse(
 								{
 									status: 500,
@@ -356,21 +306,14 @@ describe("ErrorHandlerService",
 									url: "https://api.example.com/data"
 								});
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(httpError);
 
 						expect(mockClientLogger.logHttpError)
 							.toHaveBeenCalledWith(
 								expect.objectContaining(
 									{
 										message: expect.any(String),
-										httpError: error
+										httpError: httpError
 									}));
 					});
 			});
@@ -381,14 +324,7 @@ describe("ErrorHandlerService",
 				it("should include timestamp in copy data",
 					() =>
 					{
-						try
-						{
-							service.handleError(new Error("Test error"));
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(new Error("Test error"));
 
 						const lastCall: unknown[] | undefined =
 							mockNotification.errorWithDetails.mock.lastCall;
@@ -401,18 +337,11 @@ describe("ErrorHandlerService",
 				it("should include stack trace in copy data",
 					() =>
 					{
-						const error: Error =
+						const testError: Error =
 							new Error("Test error");
-						error.stack = "Error: Test error\n    at Object.<anonymous>";
+						testError.stack = "Error: Test error\n    at Object.<anonymous>";
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(testError);
 
 						const lastCall: unknown[] | undefined =
 							mockNotification.errorWithDetails.mock.lastCall;
@@ -425,7 +354,7 @@ describe("ErrorHandlerService",
 				it("should include request details in copy data for HTTP errors",
 					() =>
 					{
-						const error: HttpErrorResponse =
+						const httpError: HttpErrorResponse =
 							new HttpErrorResponse(
 								{
 									status: 404,
@@ -433,14 +362,7 @@ describe("ErrorHandlerService",
 									url: "https://api.example.com/users/123"
 								});
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(httpError);
 
 						const lastCall: unknown[] | undefined =
 							mockNotification.errorWithDetails.mock.lastCall;
@@ -455,7 +377,7 @@ describe("ErrorHandlerService",
 				it("should include details in copy data",
 					() =>
 					{
-						const error: HttpErrorResponse =
+						const httpError: HttpErrorResponse =
 							new HttpErrorResponse(
 								{
 									status: 400,
@@ -464,14 +386,7 @@ describe("ErrorHandlerService",
 									error: { errors: { email: ["Email is required"] } }
 								});
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(httpError);
 
 						const lastCall: unknown[] | undefined =
 							mockNotification.errorWithDetails.mock.lastCall;
@@ -488,7 +403,7 @@ describe("ErrorHandlerService",
 				it("should show error with details for HTTP validation errors",
 					() =>
 					{
-						const error: HttpErrorResponse =
+						const httpError: HttpErrorResponse =
 							new HttpErrorResponse(
 								{
 									status: 400,
@@ -503,14 +418,7 @@ describe("ErrorHandlerService",
 									}
 								});
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(httpError);
 
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
@@ -523,7 +431,7 @@ describe("ErrorHandlerService",
 				it("should include status and URL in details for HTTP errors",
 					() =>
 					{
-						const error: HttpErrorResponse =
+						const httpError: HttpErrorResponse =
 							new HttpErrorResponse(
 								{
 									status: 500,
@@ -531,14 +439,7 @@ describe("ErrorHandlerService",
 									url: "https://api.example.com/data"
 								});
 
-						try
-						{
-							service.handleError(error);
-						}
-						catch
-						{
-							// Expected
-						}
+						callHandleErrorIgnoringRethrow(httpError);
 
 						expect(mockNotification.errorWithDetails)
 							.toHaveBeenCalledWith(
@@ -602,23 +503,8 @@ describe("ErrorHandlerService",
 				it("should reset guard flag after handling error",
 					() =>
 					{
-						try
-						{
-							service.handleError(new Error("First error"));
-						}
-						catch
-						{
-							// Expected in dev mode
-						}
-
-						try
-						{
-							service.handleError(new Error("Second error"));
-						}
-						catch
-						{
-							// Expected in dev mode
-						}
+						callHandleErrorIgnoringRethrow(new Error("First error"));
+						callHandleErrorIgnoringRethrow(new Error("Second error"));
 
 						expect(mockClientLogger.logError)
 							.toHaveBeenCalledTimes(2);

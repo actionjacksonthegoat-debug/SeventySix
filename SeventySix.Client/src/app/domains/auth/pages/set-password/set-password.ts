@@ -156,28 +156,28 @@ export class SetPasswordComponent implements OnInit
 		this.isLoading.set(true);
 
 		this
-		.authService
-		.setPassword(this.token, this.newPassword)
-		.subscribe(
-			{
-				next: () =>
+			.authService
+			.setPassword(this.token, this.newPassword)
+			.subscribe(
 				{
-					this.notification.success(
-						"Password set successfully. You can now sign in.");
-					this.router.navigate(
-						[APP_ROUTES.AUTH.LOGIN]);
-				},
-				error: (error: HttpErrorResponse) =>
-				{
-					const errorResult: AuthErrorResult =
-						mapAuthError(error);
-					if (errorResult.invalidateToken)
+					next: () =>
 					{
-						this.tokenValid.set(false);
+						this.notification.success(
+							"Password set successfully. You can now sign in.");
+						this.router.navigate(
+							[APP_ROUTES.AUTH.LOGIN]);
+					},
+					error: (error: HttpErrorResponse) =>
+					{
+						const errorResult: AuthErrorResult =
+							mapAuthError(error);
+						if (errorResult.invalidateToken)
+						{
+							this.tokenValid.set(false);
+						}
+						this.notification.error(errorResult.message);
+						this.isLoading.set(false);
 					}
-					this.notification.error(errorResult.message);
-					this.isLoading.set(false);
-				}
-			});
+				});
 	}
 }

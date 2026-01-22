@@ -119,9 +119,9 @@ export class LogManagementService extends BaseQueryService<LogQueryRequest>
 		return injectQuery(
 			() => ({
 				queryKey: QueryKeys
-				.logs
-				.paged(this.getCurrentFilter())
-				.concat(this.forceRefreshTrigger()),
+					.logs
+					.paged(this.getCurrentFilter())
+					.concat(this.forceRefreshTrigger()),
 				queryFn: () =>
 					lastValueFrom(this.getPaged(this.getCurrentFilter(), this.getForceRefreshContext())),
 				...this.queryConfig

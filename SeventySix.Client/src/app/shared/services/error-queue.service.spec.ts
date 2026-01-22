@@ -27,7 +27,7 @@ describe("ErrorQueueService (Zoneless)",
 		beforeEach(
 			() =>
 			{
-				// Enable fake timers for faster tests (no real delays)
+			// Enable fake timers for faster tests (no real delays)
 				vi.useFakeTimers();
 
 				// Clear localStorage before each test
@@ -67,7 +67,7 @@ describe("ErrorQueueService (Zoneless)",
 		afterEach(
 			() =>
 			{
-				// Restore real timers
+			// Restore real timers
 				vi.useRealTimers();
 
 				// Verify no outstanding HTTP requests

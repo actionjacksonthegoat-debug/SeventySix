@@ -46,29 +46,29 @@ export const authInterceptor: HttpInterceptorFn =
 		if (authService.isTokenExpired())
 		{
 			return authService
-			.refreshToken()
-			.pipe(
-				take(1),
-				switchMap(
-					(response) =>
-					{
-					// If refresh failed (returned null), let the request proceed without token
-					// The server will return 401 which triggers login redirect
-						if (!response)
+				.refreshToken()
+				.pipe(
+					take(1),
+					switchMap(
+						(response) =>
 						{
-							return next(req);
-						}
-						const newToken: string | null =
-							authService.getAccessToken();
-						return next(addAuthHeader(req, newToken));
-					}),
-				catchError(
-					(error: HttpErrorResponse) =>
-					{
-					// On refresh error, clear auth and let original request fail
-						return throwError(
-							() => error);
-					}));
+						// If refresh failed (returned null), let the request proceed without token
+						// The server will return 401 which triggers login redirect
+							if (!response)
+							{
+								return next(req);
+							}
+							const newToken: string | null =
+								authService.getAccessToken();
+							return next(addAuthHeader(req, newToken));
+						}),
+					catchError(
+						(error: HttpErrorResponse) =>
+						{
+						// On refresh error, clear auth and let original request fail
+							return throwError(
+								() => error);
+						}));
 		}
 
 		return next(addAuthHeader(req, token));

@@ -226,8 +226,8 @@ export class DataTableFilterManager<T>
 	isFilterActive(filterKey: string): boolean
 	{
 		return this
-		.activeFiltersState()
-		.has(filterKey);
+			.activeFiltersState()
+			.has(filterKey);
 	}
 
 	/**

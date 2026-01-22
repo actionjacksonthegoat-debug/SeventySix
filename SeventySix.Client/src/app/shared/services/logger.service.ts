@@ -382,18 +382,18 @@ export class LoggerService
 			};
 
 		this
-		.http
-		.post(this.logEndpoint, payload)
-		.pipe(
-			catchError(
-				(err) =>
-				{
-					// Fallback: log to console if remote logging fails
-					console.error(
-						"Failed to send log to remote endpoint:",
-						err);
-					return of(null);
-				}))
-		.subscribe();
+			.http
+			.post(this.logEndpoint, payload)
+			.pipe(
+				catchError(
+					(err) =>
+					{
+						// Fallback: log to console if remote logging fails
+						console.error(
+							"Failed to send log to remote endpoint:",
+							err);
+						return of(null);
+					}))
+			.subscribe();
 	}
 }

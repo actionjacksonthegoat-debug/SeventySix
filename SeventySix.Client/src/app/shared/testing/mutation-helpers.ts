@@ -146,9 +146,9 @@ export function createMockMutationWithCallbacks<
 					{
 					// Store resolve/reject for manual completion
 						(mutateSpy as Mock & { _resolve?: (value: TData) => void; _reject?: (error: TError) => void; })
-						._resolve = resolve;
+							._resolve = resolve;
 						(mutateSpy as Mock & { _resolve?: (value: TData) => void; _reject?: (error: TError) => void; })
-						._reject = reject;
+							._reject = reject;
 					});
 			});
 
@@ -241,8 +241,8 @@ export function createSucceedingMutation<TData, TVariables = unknown>(
 	return {
 		mutate: vi.fn(),
 		mutateAsync: vi
-		.fn()
-		.mockResolvedValue(successData),
+			.fn()
+			.mockResolvedValue(successData),
 		reset: vi.fn(),
 		isPending: isPendingSignal,
 		isSuccess: isSuccessSignal,
@@ -289,8 +289,8 @@ export function createFailingMutation<TData, TVariables = unknown>(
 	return {
 		mutate: vi.fn(),
 		mutateAsync: vi
-		.fn()
-		.mockRejectedValue(error),
+			.fn()
+			.mockRejectedValue(error),
 		reset: vi.fn(),
 		isPending: isPendingSignal,
 		isSuccess: isSuccessSignal,

@@ -211,24 +211,24 @@ export class AuthService
 	login(credentials: LoginRequest): Observable<AuthResponse>
 	{
 		return this
-		.httpClient
-		.post<AuthResponse>(`${this.authUrl}/login`, credentials,
-			{
-				withCredentials: true
-			})
-		.pipe(
-			tap(
-				(response: AuthResponse) =>
+			.httpClient
+			.post<AuthResponse>(`${this.authUrl}/login`, credentials,
 				{
-					this.setAccessToken(
-						response.accessToken,
-						response.expiresAt,
-						response.email,
-						response.fullName);
-					this.requiresPasswordChangeSignal.set(
-						response.requiresPasswordChange);
-					this.markHasSession();
-				}));
+					withCredentials: true
+				})
+			.pipe(
+				tap(
+					(response: AuthResponse) =>
+					{
+						this.setAccessToken(
+							response.accessToken,
+							response.expiresAt,
+							response.email,
+							response.fullName);
+						this.requiresPasswordChangeSignal.set(
+							response.requiresPasswordChange);
+						this.markHasSession();
+					}));
 	}
 
 	/**
@@ -294,43 +294,43 @@ export class AuthService
 
 		this.refreshInProgress =
 			this
-			.httpClient
-			.post<AuthResponse>(
-				`${this.authUrl}/refresh`,
-				{},
-				{ withCredentials: true })
-			.pipe(
-				tap(
-					(response: AuthResponse) =>
-					{
-						this.setAccessToken(
-							response.accessToken,
-							response.expiresAt,
-							response.email,
-							response.fullName);
-						this.requiresPasswordChangeSignal.set(
-							response.requiresPasswordChange);
-						this.markHasSession();
-					}),
-				catchError(
-					(error: HttpErrorResponse) =>
-					{
-					// Only clear auth on 401 (invalid/expired refresh token)
-					// Do NOT clear on 429 (rate limited) - try again later
-						if (error.status === 401)
+				.httpClient
+				.post<AuthResponse>(
+					`${this.authUrl}/refresh`,
+					{},
+					{ withCredentials: true })
+				.pipe(
+					tap(
+						(response: AuthResponse) =>
 						{
-							this.clearAuth();
-						}
-						return of(null);
-					}),
-				finalize(
-					() =>
-					{
-					// Clear the in-progress marker after completion
-						this.refreshInProgress = null;
-					}),
-				// Share the same observable among all concurrent subscribers
-				shareReplay(1));
+							this.setAccessToken(
+								response.accessToken,
+								response.expiresAt,
+								response.email,
+								response.fullName);
+							this.requiresPasswordChangeSignal.set(
+								response.requiresPasswordChange);
+							this.markHasSession();
+						}),
+					catchError(
+						(error: HttpErrorResponse) =>
+						{
+						// Only clear auth on 401 (invalid/expired refresh token)
+						// Do NOT clear on 429 (rate limited) - try again later
+							if (error.status === 401)
+							{
+								this.clearAuth();
+							}
+							return of(null);
+						}),
+					finalize(
+						() =>
+						{
+						// Clear the in-progress marker after completion
+							this.refreshInProgress = null;
+						}),
+					// Share the same observable among all concurrent subscribers
+					shareReplay(1));
 
 		return this.refreshInProgress;
 	}
@@ -342,25 +342,25 @@ export class AuthService
 	logout(): void
 	{
 		this
-		.httpClient
-		.post<void>(`${this.authUrl}/logout`, {},
-			{ withCredentials: true })
-		.subscribe(
-			{
-				complete: () =>
+			.httpClient
+			.post<void>(`${this.authUrl}/logout`, {},
+				{ withCredentials: true })
+			.subscribe(
 				{
-					this.clearAuth();
-					this.router.navigate(
-						[APP_ROUTES.HOME]);
-				},
-				error: () =>
-				{
-					// Clear local state even if server call fails
-					this.clearAuth();
-					this.router.navigate(
-						[APP_ROUTES.HOME]);
-				}
-			});
+					complete: () =>
+					{
+						this.clearAuth();
+						this.router.navigate(
+							[APP_ROUTES.HOME]);
+					},
+					error: () =>
+					{
+						// Clear local state even if server call fails
+						this.clearAuth();
+						this.router.navigate(
+							[APP_ROUTES.HOME]);
+					}
+				});
 	}
 
 	/**
@@ -439,22 +439,22 @@ export class AuthService
 		recaptchaToken: string | null): Observable<AuthResponse>
 	{
 		return this
-		.httpClient
-		.post<AuthResponse>(
-			`${this.authUrl}/register/complete`,
-			{ token, username, password, recaptchaToken },
-			{ withCredentials: true })
-		.pipe(
-			tap(
-				(response: AuthResponse) =>
-				{
-					this.setAccessToken(
-						response.accessToken,
-						response.expiresAt,
-						response.email,
-						response.fullName);
-					this.markHasSession();
-				}));
+			.httpClient
+			.post<AuthResponse>(
+				`${this.authUrl}/register/complete`,
+				{ token, username, password, recaptchaToken },
+				{ withCredentials: true })
+			.pipe(
+				tap(
+					(response: AuthResponse) =>
+					{
+						this.setAccessToken(
+							response.accessToken,
+							response.expiresAt,
+							response.email,
+							response.fullName);
+						this.markHasSession();
+					}));
 	}
 
 	/**
@@ -586,9 +586,9 @@ export class AuthService
 		this.accessToken = token;
 		this.tokenExpiresAt =
 			this
-			.dateService
-			.parseUTC(expiresAt)
-			.getTime();
+				.dateService
+				.parseUTC(expiresAt)
+				.getTime();
 
 		const claims: JwtClaims | null =
 			this.parseJwt(token);
@@ -598,7 +598,7 @@ export class AuthService
 			// Handle role claim - .NET uses full ClaimTypes URI, can be string or array
 			const roleClaim: string | string[] | undefined =
 				claims[
-				DOTNET_ROLE_CLAIM
+					DOTNET_ROLE_CLAIM
 				] as string | string[] | undefined;
 			const roles: string[] =
 				Array.isArray(roleClaim)
@@ -678,20 +678,20 @@ export class AuthService
 				parts[1];
 			const base64: string =
 				base64Url
-				.replace(/-/g, "+")
-				.replace(/_/g, "/");
+					.replace(/-/g, "+")
+					.replace(/_/g, "/");
 			const json: string =
 				decodeURIComponent(
 					atob(base64)
-					.split("")
-					.map(
-						(c: string) =>
-							"%"
-								+ ("00" + c
-								.charCodeAt(0)
-								.toString(16))
-								.slice(-2))
-					.join(""));
+						.split("")
+						.map(
+							(c: string) =>
+								"%"
+									+ ("00" + c
+										.charCodeAt(0)
+										.toString(16))
+										.slice(-2))
+						.join(""));
 
 			return JSON.parse(json);
 		}

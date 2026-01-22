@@ -38,9 +38,9 @@ export class FooterComponent
 	 */
 	protected readonly currentYear: number =
 		this
-		.dateService
-		.parseUTC(this.dateService.now())
-		.getFullYear();
+			.dateService
+			.parseUTC(this.dateService.now())
+			.getFullYear();
 
 	/**
 	 * Application version string from build environment.

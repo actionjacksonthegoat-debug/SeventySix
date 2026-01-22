@@ -181,33 +181,33 @@ export class ChangePasswordComponent implements OnInit
 			};
 
 		this
-		.http
-		.post<void>(`${environment.apiUrl}/auth/change-password`, request,
-			{
-				withCredentials: true
-			})
-		.subscribe(
-			{
-				next: () =>
+			.http
+			.post<void>(`${environment.apiUrl}/auth/change-password`, request,
 				{
-					this.notification.success(
-						"Password changed successfully. Please log in again.");
-					// Clear auth state locally (server already revoked tokens) and redirect to login
-					this.authService.forceLogoutLocally();
-					// The API clears the refresh token, so user needs to log in again
-					this.router.navigate(
-						[APP_ROUTES.AUTH.LOGIN],
-						{
-							queryParams: { returnUrl: this.returnUrl }
-						});
-				},
-				error: (error: HttpErrorResponse) =>
+					withCredentials: true
+				})
+			.subscribe(
 				{
-					const errorResult: AuthErrorResult =
-						mapAuthError(error);
-					this.notification.error(errorResult.message);
-					this.isLoading.set(false);
-				}
-			});
+					next: () =>
+					{
+						this.notification.success(
+							"Password changed successfully. Please log in again.");
+						// Clear auth state locally (server already revoked tokens) and redirect to login
+						this.authService.forceLogoutLocally();
+						// The API clears the refresh token, so user needs to log in again
+						this.router.navigate(
+							[APP_ROUTES.AUTH.LOGIN],
+							{
+								queryParams: { returnUrl: this.returnUrl }
+							});
+					},
+					error: (error: HttpErrorResponse) =>
+					{
+						const errorResult: AuthErrorResult =
+							mapAuthError(error);
+						this.notification.error(errorResult.message);
+						this.isLoading.set(false);
+					}
+				});
 	}
 }

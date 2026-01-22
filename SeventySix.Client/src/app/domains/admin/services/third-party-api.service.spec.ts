@@ -10,7 +10,11 @@ import {
 } from "@angular/common/http/testing";
 import { TestBed } from "@angular/core/testing";
 import { environment } from "@environments/environment";
-import { flushMicrotasks, setupSimpleServiceTest } from "@shared/testing";
+import {
+	createTestQueryClient,
+	flushMicrotasks,
+	setupSimpleServiceTest
+} from "@shared/testing";
 import {
 	provideTanStackQuery,
 	QueryClient
@@ -37,13 +41,7 @@ describe("ThirdPartyApiService",
 						{});
 
 				queryClient =
-					new QueryClient(
-						{
-							defaultOptions: {
-								queries: { retry: false },
-								mutations: { retry: false }
-							}
-						});
+					createTestQueryClient();
 
 				service =
 					setupSimpleServiceTest(ThirdPartyApiService,

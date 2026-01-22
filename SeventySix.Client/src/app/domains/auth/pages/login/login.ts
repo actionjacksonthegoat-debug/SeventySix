@@ -148,15 +148,15 @@ export class LoginComponent implements OnInit
 				};
 
 			this
-			.authService
-			.login(credentials)
-			.subscribe(
-				{
-					next: (response: AuthResponse) =>
-						this.handleLoginSuccess(response),
-					error: (error: HttpErrorResponse) =>
-						this.handleLoginError(error)
-				});
+				.authService
+				.login(credentials)
+				.subscribe(
+					{
+						next: (response: AuthResponse) =>
+							this.handleLoginSuccess(response),
+						error: (error: HttpErrorResponse) =>
+							this.handleLoginError(error)
+					});
 		}
 		catch
 		{

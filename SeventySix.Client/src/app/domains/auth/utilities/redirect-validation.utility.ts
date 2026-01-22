@@ -73,7 +73,7 @@ export function isValidRedirectUrl(url: string | null | undefined): boolean
 	{
 		const decodedUrl: string =
 			decodeURIComponent(trimmedUrl)
-			.toLowerCase();
+				.toLowerCase();
 
 		for (const protocol of DANGEROUS_PROTOCOLS)
 		{

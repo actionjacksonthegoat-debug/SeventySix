@@ -240,4 +240,132 @@ test.describe("Login Page",
 							.not.toHaveURL(/\/auth\/login/);
 					});
 			});
+
+		test.describe("Security: Return URL Validation",
+			() =>
+			{
+				/**
+				 * P0 CRITICAL: Prevents open redirect vulnerability.
+				 * Attackers could use returnUrl to redirect users to malicious sites.
+				 */
+				test("should reject external URL in returnUrl and redirect to home",
+					async ({ page, authPage }) =>
+					{
+						const testUser =
+							getTestUserByRole("User");
+
+						// Attempt to use an external URL as returnUrl
+						await page.goto(`${ROUTES.auth.login}?returnUrl=https://evil.com/steal-session`);
+
+						await authPage.login(testUser.email, testUser.password);
+
+						// Should redirect to home (/) NOT to the malicious external site
+						await page.waitForURL(
+							ROUTES.home,
+							{ timeout: TIMEOUTS.navigation });
+
+						await expect(page)
+							.toHaveURL(ROUTES.home);
+					});
+
+				test("should reject protocol-relative URL in returnUrl",
+					async ({ page, authPage }) =>
+					{
+						const testUser =
+							getTestUserByRole("User");
+
+						// Protocol-relative URLs can also lead to open redirects
+						await page.goto(`${ROUTES.auth.login}?returnUrl=//evil.com/phishing`);
+
+						await authPage.login(testUser.email, testUser.password);
+
+						// Should redirect to home (/) NOT to the protocol-relative URL
+						await page.waitForURL(
+							ROUTES.home,
+							{ timeout: TIMEOUTS.navigation });
+
+						await expect(page)
+							.toHaveURL(ROUTES.home);
+					});
+
+				test("should reject javascript: protocol in returnUrl",
+					async ({ page, authPage }) =>
+					{
+						const testUser =
+							getTestUserByRole("User");
+
+						// XSS attack vector via javascript: protocol
+						await page.goto(`${ROUTES.auth.login}?returnUrl=javascript:alert(document.cookie)`);
+
+						await authPage.login(testUser.email, testUser.password);
+
+						// Should redirect to home (/) and NOT execute JavaScript
+						await page.waitForURL(
+							ROUTES.home,
+							{ timeout: TIMEOUTS.navigation });
+
+						await expect(page)
+							.toHaveURL(ROUTES.home);
+					});
+
+				test("should reject javascript: protocol with URL encoding",
+					async ({ page, authPage }) =>
+					{
+						const testUser =
+							getTestUserByRole("User");
+
+						// URL-encoded javascript: attack vector
+						await page.goto(`${ROUTES.auth.login}?returnUrl=javascript%3Aalert(1)`);
+
+						await authPage.login(testUser.email, testUser.password);
+
+						// Should redirect to home (/) and NOT execute JavaScript
+						await page.waitForURL(
+							ROUTES.home,
+							{ timeout: TIMEOUTS.navigation });
+
+						await expect(page)
+							.toHaveURL(ROUTES.home);
+					});
+
+				test("should reject data: protocol in returnUrl",
+					async ({ page, authPage }) =>
+					{
+						const testUser =
+							getTestUserByRole("User");
+
+						// data: protocol can be used for XSS
+						await page.goto(`${ROUTES.auth.login}?returnUrl=data:text/html,<script>alert(1)</script>`);
+
+						await authPage.login(testUser.email, testUser.password);
+
+						// Should redirect to home (/) NOT execute data URI
+						await page.waitForURL(
+							ROUTES.home,
+							{ timeout: TIMEOUTS.navigation });
+
+						await expect(page)
+							.toHaveURL(ROUTES.home);
+					});
+
+				test("should accept valid internal path in returnUrl",
+					async ({ page, authPage }) =>
+					{
+						const testUser =
+							getTestUserByRole("User");
+
+						// Valid internal path should work
+						await page.goto(`${ROUTES.auth.login}?returnUrl=${ROUTES.account.root}`);
+
+						await authPage.login(testUser.email, testUser.password);
+
+						// Should redirect to the valid internal returnUrl
+						await page.waitForURL(
+							`${ROUTES.account.root}**`,
+							{ timeout: TIMEOUTS.navigation });
+
+						await expect(page)
+							.toHaveURL(/\/account/);
+					});
+			});
 	});

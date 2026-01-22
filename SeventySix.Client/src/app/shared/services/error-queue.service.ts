@@ -163,12 +163,12 @@ export class ErrorQueueService
 
 		// Start batch processing interval with automatic cleanup
 		interval(this.batchInterval)
-		.pipe(takeUntilDestroyed())
-		.subscribe(
-			() =>
-			{
-				this.processBatch();
-			});
+			.pipe(takeUntilDestroyed())
+			.subscribe(
+				() =>
+				{
+					this.processBatch();
+				});
 	}
 
 	/**
@@ -222,29 +222,29 @@ export class ErrorQueueService
 
 		// Send to server
 		this
-		.http
-		.post(this.logEndpoint, batch,
-			{ observe: "response" })
-		.pipe(
-			catchError(
-				(err) =>
+			.http
+			.post(this.logEndpoint, batch,
+				{ observe: "response" })
+			.pipe(
+				catchError(
+					(err) =>
+					{
+						// Handle failure
+						this.handleBatchFailure(err);
+						return of(null);
+					}))
+			.subscribe(
+				(response) =>
 				{
-					// Handle failure
-					this.handleBatchFailure(err);
-					return of(null);
-				}))
-		.subscribe(
-			(response) =>
-			{
-				// Success if we got any response (including 204 No Content)
-				if (response !== null)
-				{
-					// Success - remove sent items from queue
-					this.queue.splice(0, batch.length);
-					this.saveQueueToStorage();
-					this.resetCircuitBreaker();
-				}
-			});
+					// Success if we got any response (including 204 No Content)
+					if (response !== null)
+					{
+						// Success - remove sent items from queue
+						this.queue.splice(0, batch.length);
+						this.saveQueueToStorage();
+						this.resetCircuitBreaker();
+					}
+				});
 	}
 
 	/**

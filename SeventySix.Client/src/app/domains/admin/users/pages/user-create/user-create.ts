@@ -185,17 +185,17 @@ export class UserCreatePage
 			}
 
 			return of(control.value)
-			.pipe(
-				debounceTime(DEBOUNCE_TIME.INPUT_VALIDATION),
-				distinctUntilChanged(),
-				switchMap(
-					(username: string) =>
-						from(this.userService.checkUsernameAvailability(username))),
-				map(
-					(exists: boolean) =>
-						exists ? { usernameTaken: true } : null),
-				catchError(
-					() => of(null)));
+				.pipe(
+					debounceTime(DEBOUNCE_TIME.INPUT_VALIDATION),
+					distinctUntilChanged(),
+					switchMap(
+						(username: string) =>
+							from(this.userService.checkUsernameAvailability(username))),
+					map(
+						(exists: boolean) =>
+							exists ? { usernameTaken: true } : null),
+					catchError(
+						() => of(null)));
 		};
 	}
 

@@ -234,10 +234,10 @@ export class BreadcrumbComponent
 
 		const segments: string[] =
 			primarySegments
-			.map(
-				(segment) => segment.path)
-			.filter(
-				(segment) => segment.length > 0);
+				.map(
+					(segment) => segment.path)
+				.filter(
+					(segment) => segment.length > 0);
 
 		return segments;
 	}
@@ -404,12 +404,12 @@ export class BreadcrumbComponent
 
 		// Convert kebab-case to Title Case
 		return cleaned
-		.split("-")
-		.map(
-			(word) =>
-				word
-				.charAt(0)
-				.toUpperCase() + word.slice(1))
-		.join(" ");
+			.split("-")
+			.map(
+				(word) =>
+					word
+						.charAt(0)
+						.toUpperCase() + word.slice(1))
+			.join(" ");
 	}
 }

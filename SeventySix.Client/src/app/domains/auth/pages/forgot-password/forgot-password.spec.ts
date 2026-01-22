@@ -8,6 +8,12 @@ import { provideRouter } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { RecaptchaService } from "@shared/services/recaptcha.service";
+import {
+	createMockNotificationService,
+	createMockRecaptchaService,
+	MockNotificationService,
+	MockRecaptchaService
+} from "@shared/testing";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { ForgotPasswordComponent } from "./forgot-password";
@@ -15,17 +21,6 @@ import { ForgotPasswordComponent } from "./forgot-password";
 interface MockAuthService
 {
 	requestPasswordReset: ReturnType<typeof vi.fn>;
-}
-
-interface MockNotificationService
-{
-	success: ReturnType<typeof vi.fn>;
-	error: ReturnType<typeof vi.fn>;
-}
-
-interface MockRecaptchaService
-{
-	executeAsync: ReturnType<typeof vi.fn>;
 }
 
 describe("ForgotPasswordComponent",
@@ -43,16 +38,9 @@ describe("ForgotPasswordComponent",
 				authServiceSpy =
 					{ requestPasswordReset: vi.fn() };
 				notificationSpy =
-					{
-						success: vi.fn(),
-						error: vi.fn()
-					};
+					createMockNotificationService();
 				recaptchaSpy =
-					{
-						executeAsync: vi
-							.fn()
-							.mockResolvedValue("mock-token")
-					};
+					createMockRecaptchaService("mock-token");
 
 				await TestBed
 					.configureTestingModule(

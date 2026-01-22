@@ -51,15 +51,15 @@ export class DataTableSelectionManager<TRow extends { id: number; }>
 
 		// Subscribe with automatic cleanup on component destroy
 		this
-		.selection
-		.changed
-		.pipe(takeUntilDestroyed(destroyRef))
-		.subscribe(
-			() =>
-			{
-				this.selectionState.set(
-					this.selection.selected as readonly TRow[]);
-			});
+			.selection
+			.changed
+			.pipe(takeUntilDestroyed(destroyRef))
+			.subscribe(
+				() =>
+				{
+					this.selectionState.set(
+						this.selection.selected as readonly TRow[]);
+				});
 	}
 
 	/**

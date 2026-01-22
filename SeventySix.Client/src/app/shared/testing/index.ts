@@ -14,6 +14,10 @@ export {
 	createMockAuthService,
 	MockAuthService
 } from "./mocks/auth.service.mock";
+export {
+	createMockThemeService,
+	MockThemeService
+} from "./mocks/theme.service.mock";
 export * from "./mocks/user-profile.mock";
 export * from "./mutation-helpers";
 export * from "./provider-helpers";

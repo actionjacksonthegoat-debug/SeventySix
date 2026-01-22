@@ -99,26 +99,26 @@ export class ForgotPasswordComponent
 				await this.recaptchaService.executeAsync("password_reset");
 
 			this
-			.authService
-			.requestPasswordReset(
-				this.email,
-				recaptchaToken)
-			.subscribe(
-				{
-					next: () =>
+				.authService
+				.requestPasswordReset(
+					this.email,
+					recaptchaToken)
+				.subscribe(
 					{
-						this.submitted.set(true);
-						this.isLoading.set(false);
-						this.notification.success(
-							"If an account exists with this email, a reset link has been sent.");
-					},
-					error: () =>
-					{
-						this.isLoading.set(false);
-						this.notification.error(
-							"Unable to process request. Please try again later.");
-					}
-				});
+						next: () =>
+						{
+							this.submitted.set(true);
+							this.isLoading.set(false);
+							this.notification.success(
+								"If an account exists with this email, a reset link has been sent.");
+						},
+						error: () =>
+						{
+							this.isLoading.set(false);
+							this.notification.error(
+								"Unable to process request. Please try again later.");
+						}
+					});
 		}
 		catch
 		{

@@ -158,11 +158,11 @@ export function mockNavigatorProperty(
 	value: unknown): ReturnType<typeof vi.spyOn>
 {
 	return vi
-	.spyOn(
-		window.navigator as unknown as Record<string, unknown>,
-		property as keyof typeof window.navigator,
-		"get")
-	.mockReturnValue(value);
+		.spyOn(
+			window.navigator as unknown as Record<string, unknown>,
+			property as keyof typeof window.navigator,
+			"get")
+		.mockReturnValue(value);
 }
 
 /**

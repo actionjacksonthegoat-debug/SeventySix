@@ -83,8 +83,8 @@ export const ADMIN_ROUTES: Routes =
 			loadComponent: () =>
 				import(
 					"./permission-requests/pages/permission-request-list/permission-request-list")
-				.then(
-					(m) => m.PermissionRequestListPage),
+					.then(
+						(m) => m.PermissionRequestListPage),
 			title: "Permission Requests - SeventySix"
 		},
 		{

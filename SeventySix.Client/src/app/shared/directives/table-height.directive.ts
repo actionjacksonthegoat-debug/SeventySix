@@ -90,12 +90,12 @@ export class TableHeightDirective
 		// Listen to window resize events (zoneless compatible)
 		// Debounced to handle scenarios with hundreds of directives on same page
 		fromEvent(window, "resize")
-		.pipe(debounceTime(DEBOUNCE_TIME.RESIZE_EVENT), takeUntilDestroyed())
-		.subscribe(
-			() =>
-			{
-				this.updateHeight();
-			});
+			.pipe(debounceTime(DEBOUNCE_TIME.RESIZE_EVENT), takeUntilDestroyed())
+			.subscribe(
+				() =>
+				{
+					this.updateHeight();
+				});
 
 		// Update height when inputs change
 		// Effect runs immediately on change (no debounce needed for input changes)

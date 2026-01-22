@@ -30,43 +30,43 @@ export const errorInterceptor: HttpInterceptorFn =
 			inject(Router);
 
 		return next(req)
-		.pipe(
-			catchError(
-				(error: HttpErrorResponse) =>
-				{
-				// Handle 401 on protected routes - redirect to login
-				// Don't check isAuthenticated() because auth may have been cleared
-				// by failed token refresh before we get here
-					if (error.status === HTTP_STATUS.UNAUTHORIZED && !req.url.includes("/auth/"))
+			.pipe(
+				catchError(
+					(error: HttpErrorResponse) =>
 					{
-						logger.warning("Unauthorized access, redirecting to login");
-						// Clear any remaining auth state
-						if (authService.isAuthenticated())
+					// Handle 401 on protected routes - redirect to login
+					// Don't check isAuthenticated() because auth may have been cleared
+					// by failed token refresh before we get here
+						if (error.status === HTTP_STATUS.UNAUTHORIZED && !req.url.includes("/auth/"))
 						{
-							authService.logout();
-						}
-						router.navigate(
-							[environment.auth.loginUrl],
+							logger.warning("Unauthorized access, redirecting to login");
+							// Clear any remaining auth state
+							if (authService.isAuthenticated())
 							{
-								queryParams: { returnUrl: router.url }
+								authService.logout();
+							}
+							router.navigate(
+								[environment.auth.loginUrl],
+								{
+									queryParams: { returnUrl: router.url }
+								});
+						}
+
+						logger.warning("HTTP request failed",
+							{
+								url: error.url,
+								status: error.status,
+								method: req.method
 							});
-					}
 
-					logger.warning("HTTP request failed",
-						{
-							url: error.url,
-							status: error.status,
-							method: req.method
-						});
+						// Convert to application-specific error using centralized utility
+						const appError: Error =
+							convertToAppError(
+								error,
+								req.url,
+								req.method);
 
-					// Convert to application-specific error using centralized utility
-					const appError: Error =
-						convertToAppError(
-							error,
-							req.url,
-							req.method);
-
-					return throwError(
-						() => appError);
-				}));
+						return throwError(
+							() => appError);
+					}));
 	};

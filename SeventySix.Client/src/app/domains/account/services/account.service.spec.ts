@@ -1,7 +1,11 @@
 import { provideZonelessChangeDetection } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { ApiService } from "@shared/services/api.service";
-import { createMockApiService, MockApiService } from "@shared/testing";
+import {
+	createMockApiService,
+	createTestQueryClient,
+	MockApiService
+} from "@shared/testing";
 import { QueryKeys } from "@shared/utilities/query-keys.utility";
 import {
 	provideTanStackQuery,
@@ -24,10 +28,7 @@ describe("AccountService",
 				mockApiService =
 					createMockApiService();
 				queryClient =
-					new QueryClient(
-						{
-							defaultOptions: { queries: { retry: false } }
-						});
+					createTestQueryClient();
 
 				TestBed.configureTestingModule(
 					{

@@ -6,7 +6,11 @@ import { ActivatedRoute } from "@angular/router";
 import { AuthService } from "@shared/services/auth.service";
 import { NotificationService } from "@shared/services/notification.service";
 import { RecaptchaService } from "@shared/services/recaptcha.service";
-import { createMockNotificationService } from "@shared/testing";
+import {
+	createMockNotificationService,
+	createMockRecaptchaService,
+	MockRecaptchaService
+} from "@shared/testing";
 import { of, throwError } from "rxjs";
 import { vi } from "vitest";
 import { RegisterCompleteComponent } from "./register-complete";
@@ -14,11 +18,6 @@ import { RegisterCompleteComponent } from "./register-complete";
 interface MockAuthService
 {
 	completeRegistration: ReturnType<typeof vi.fn>;
-}
-
-interface MockRecaptchaService
-{
-	executeAsync: ReturnType<typeof vi.fn>;
 }
 
 describe("RegisterCompleteComponent",
@@ -70,11 +69,7 @@ describe("RegisterCompleteComponent",
 				mockNotificationService =
 					createMockNotificationService();
 				mockRecaptchaService =
-					{
-						executeAsync: vi
-							.fn()
-							.mockResolvedValue(null)
-					};
+					createMockRecaptchaService();
 			});
 
 		it("should create",

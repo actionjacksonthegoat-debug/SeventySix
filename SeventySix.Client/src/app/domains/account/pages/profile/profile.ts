@@ -106,8 +106,8 @@ export class ProfilePage
 	 */
 	readonly availableRolesQuery: ReturnType<typeof this.accountService.getAvailableRoles> =
 		this
-		.accountService
-		.getAvailableRoles();
+			.accountService
+			.getAvailableRoles();
 
 	// Skeleton theme constants
 	/**

@@ -124,7 +124,7 @@ export abstract class BaseFilterService<TFilter extends BaseQueryRequest>
 		// Any non-zero value indicates a force refresh was triggered
 		return this.forceRefreshTrigger() > 0
 			? new HttpContext()
-			.set(FORCE_REFRESH, true)
+				.set(FORCE_REFRESH, true)
 			: undefined;
 	}
 

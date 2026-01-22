@@ -67,19 +67,19 @@ export class SidebarComponent
 		computed(
 			() =>
 				NAV_SECTIONS
-				.filter(
-					(section: NavSection) =>
-						this.hasAccess(section.requiredRoles))
-				.map(
-					(section: NavSection) => ({
-						...section,
-						items: section.items.filter(
-							(navItem: NavItem) =>
-								this.hasAccess(navItem.requiredRoles ?? section.requiredRoles))
-					}))
-				.filter(
-					(section: NavSection) =>
-						section.items.length > 0));
+					.filter(
+						(section: NavSection) =>
+							this.hasAccess(section.requiredRoles))
+					.map(
+						(section: NavSection) => ({
+							...section,
+							items: section.items.filter(
+								(navItem: NavItem) =>
+									this.hasAccess(navItem.requiredRoles ?? section.requiredRoles))
+						}))
+					.filter(
+						(section: NavSection) =>
+							section.items.length > 0));
 
 	/**
 	 * Check if current user has access to a section.

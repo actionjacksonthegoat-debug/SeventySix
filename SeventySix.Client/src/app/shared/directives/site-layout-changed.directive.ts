@@ -49,13 +49,13 @@ export class SiteLayoutChangedDirective implements OnInit
 
 		// Listen to window resize events with debounce
 		fromEvent(window, "resize")
-		.pipe(
-			debounceTime(DEBOUNCE_TIME.RESIZE_EVENT),
-			takeUntilDestroyed(this.destroyRef))
-		.subscribe(
-			() =>
-			{
-				this.layoutChanged.emit();
-			});
+			.pipe(
+				debounceTime(DEBOUNCE_TIME.RESIZE_EVENT),
+				takeUntilDestroyed(this.destroyRef))
+			.subscribe(
+				() =>
+				{
+					this.layoutChanged.emit();
+				});
 	}
 }

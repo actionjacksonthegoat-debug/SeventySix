@@ -91,16 +91,16 @@ export class ApiService
 		context?: HttpContext): Observable<T>
 	{
 		return this
-		.http
-		.get<T>(`${this.baseUrl}/${endpoint}`,
-			{
-				headers: this.defaultHeaders,
-				params,
-				context
-			})
-		.pipe(
-			timeout(this.defaultTimeout),
-			catchError(this.handleError));
+			.http
+			.get<T>(`${this.baseUrl}/${endpoint}`,
+				{
+					headers: this.defaultHeaders,
+					params,
+					context
+				})
+			.pipe(
+				timeout(this.defaultTimeout),
+				catchError(this.handleError));
 	}
 
 	/**
@@ -115,14 +115,14 @@ export class ApiService
 	post<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
-		.http
-		.post<T>(`${this.baseUrl}/${endpoint}`, body,
-			{
-				headers: this.defaultHeaders
-			})
-		.pipe(
-			timeout(this.defaultTimeout),
-			catchError(this.handleError));
+			.http
+			.post<T>(`${this.baseUrl}/${endpoint}`, body,
+				{
+					headers: this.defaultHeaders
+				})
+			.pipe(
+				timeout(this.defaultTimeout),
+				catchError(this.handleError));
 	}
 
 	/**
@@ -137,14 +137,14 @@ export class ApiService
 	put<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
-		.http
-		.put<T>(`${this.baseUrl}/${endpoint}`, body,
-			{
-				headers: this.defaultHeaders
-			})
-		.pipe(
-			timeout(this.defaultTimeout),
-			catchError(this.handleError));
+			.http
+			.put<T>(`${this.baseUrl}/${endpoint}`, body,
+				{
+					headers: this.defaultHeaders
+				})
+			.pipe(
+				timeout(this.defaultTimeout),
+				catchError(this.handleError));
 	}
 
 	/**
@@ -159,14 +159,14 @@ export class ApiService
 	patch<T, U = Partial<T>>(endpoint: string, body: U): Observable<T>
 	{
 		return this
-		.http
-		.patch<T>(`${this.baseUrl}/${endpoint}`, body,
-			{
-				headers: this.defaultHeaders
-			})
-		.pipe(
-			timeout(this.defaultTimeout),
-			catchError(this.handleError));
+			.http
+			.patch<T>(`${this.baseUrl}/${endpoint}`, body,
+				{
+					headers: this.defaultHeaders
+				})
+			.pipe(
+				timeout(this.defaultTimeout),
+				catchError(this.handleError));
 	}
 
 	/**
@@ -181,15 +181,15 @@ export class ApiService
 	delete<T, U = unknown>(endpoint: string, body?: U): Observable<T>
 	{
 		return this
-		.http
-		.request<T>("DELETE", `${this.baseUrl}/${endpoint}`,
-			{
-				headers: this.defaultHeaders,
-				body
-			})
-		.pipe(
-			timeout(this.defaultTimeout),
-			catchError(this.handleError));
+			.http
+			.request<T>("DELETE", `${this.baseUrl}/${endpoint}`,
+				{
+					headers: this.defaultHeaders,
+					body
+				})
+			.pipe(
+				timeout(this.defaultTimeout),
+				catchError(this.handleError));
 	}
 
 	/**
@@ -201,13 +201,13 @@ export class ApiService
 	addHeaders(headers: Record<string, string>): void
 	{
 		Object
-		.entries(headers)
-		.forEach(
-			([key, value]) =>
-			{
-				this.defaultHeaders =
-					this.defaultHeaders.set(key, value);
-			});
+			.entries(headers)
+			.forEach(
+				([key, value]) =>
+				{
+					this.defaultHeaders =
+						this.defaultHeaders.set(key, value);
+				});
 	}
 
 	/**

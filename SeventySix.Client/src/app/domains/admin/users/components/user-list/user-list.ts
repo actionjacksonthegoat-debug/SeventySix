@@ -512,36 +512,36 @@ export class UserList
 	private resetUserPassword(user: UserDto): void
 	{
 		this
-		.dialogService
-		.confirm(
-			{
-				title: "Reset Password",
-				message:
-						`Are you sure you want to reset the password for "${user.username}"? They will receive an email with instructions to set a new password.`,
-				confirmText: "Reset Password"
-			})
-		.subscribe(
-			(confirmed: boolean) =>
-			{
-				if (!confirmed)
+			.dialogService
+			.confirm(
 				{
-					return;
-				}
-
-				this.resetPasswordMutation.mutate(user.id,
+					title: "Reset Password",
+					message:
+						`Are you sure you want to reset the password for "${user.username}"? They will receive an email with instructions to set a new password.`,
+					confirmText: "Reset Password"
+				})
+			.subscribe(
+				(confirmed: boolean) =>
+				{
+					if (!confirmed)
 					{
-						onSuccess: () =>
+						return;
+					}
+
+					this.resetPasswordMutation.mutate(user.id,
 						{
-							this.notificationService.success(
-								`Password reset email sent to ${user.email}`);
-						},
-						onError: (error: Error) =>
-						{
-							this.notificationService.error(
-								`Failed to reset password: ${error.message}`);
-						}
-					});
-			});
+							onSuccess: () =>
+							{
+								this.notificationService.success(
+									`Password reset email sent to ${user.email}`);
+							},
+							onError: (error: Error) =>
+							{
+								this.notificationService.error(
+									`Failed to reset password: ${error.message}`);
+							}
+						});
+				});
 	}
 
 	/**
@@ -553,40 +553,40 @@ export class UserList
 	private deactivateUser(user: UserDto): void
 	{
 		this
-		.dialogService
-		.confirmDeactivate("user")
-		.subscribe(
-			(confirmed: boolean) =>
-			{
-				if (!confirmed)
+			.dialogService
+			.confirmDeactivate("user")
+			.subscribe(
+				(confirmed: boolean) =>
 				{
-					return;
-				}
+					if (!confirmed)
+					{
+						return;
+					}
 
-				this.updateUserMutation.mutate(
-					{
-						userId: user.id,
-						user: {
-							id: user.id,
-							username: user.username,
-							email: user.email,
-							fullName: user.fullName,
-							isActive: false
-						}
-					},
-					{
-						onSuccess: () =>
+					this.updateUserMutation.mutate(
 						{
-							this.notificationService.success(
-								`User "${user.username}" deactivated successfully`);
+							userId: user.id,
+							user: {
+								id: user.id,
+								username: user.username,
+								email: user.email,
+								fullName: user.fullName,
+								isActive: false
+							}
 						},
-						onError: (error: Error) =>
 						{
-							this.notificationService.error(
-								`Failed to deactivate user: ${error.message}`);
-						}
-					});
-			});
+							onSuccess: () =>
+							{
+								this.notificationService.success(
+									`User "${user.username}" deactivated successfully`);
+							},
+							onError: (error: Error) =>
+							{
+								this.notificationService.error(
+									`Failed to deactivate user: ${error.message}`);
+							}
+						});
+				});
 	}
 
 	/**
@@ -598,35 +598,35 @@ export class UserList
 	private handleRestoreUser(user: UserDto): void
 	{
 		this
-		.dialogService
-		.confirm(
-			{
-				title: "Restore User",
-				message: `Are you sure you want to restore user "${user.username}"?`,
-				confirmText: "Restore",
-				cancelText: "Cancel"
-			})
-		.subscribe(
-			(confirmed: boolean) =>
-			{
-				if (!confirmed)
+			.dialogService
+			.confirm(
 				{
-					return;
-				}
-
-				this.restoreUserMutation.mutate(user.id,
+					title: "Restore User",
+					message: `Are you sure you want to restore user "${user.username}"?`,
+					confirmText: "Restore",
+					cancelText: "Cancel"
+				})
+			.subscribe(
+				(confirmed: boolean) =>
+				{
+					if (!confirmed)
 					{
-						onSuccess: () =>
+						return;
+					}
+
+					this.restoreUserMutation.mutate(user.id,
 						{
-							this.notificationService.success(
-								`User "${user.username}" restored successfully`);
-						},
-						onError: (error: Error) =>
-						{
-							this.notificationService.error(
-								`Failed to restore user: ${error.message}`);
-						}
-					});
-			});
+							onSuccess: () =>
+							{
+								this.notificationService.success(
+									`User "${user.username}" restored successfully`);
+							},
+							onError: (error: Error) =>
+							{
+								this.notificationService.error(
+									`Failed to restore user: ${error.message}`);
+							}
+						});
+				});
 	}
 }
