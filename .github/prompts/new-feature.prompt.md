@@ -11,8 +11,8 @@ Create a complete feature spanning Angular client and .NET server.
 
 Ask user which domain this feature belongs to:
 
--   **Server**: Identity, Logging, ApiTracking, ElectronicNotifications
--   **Client**: admin, game, commerce
+- **Server**: Identity, Logging, ApiTracking, ElectronicNotifications
+- **Client**: admin, game, commerce
 
 ## Server Structure
 
@@ -214,22 +214,34 @@ export const {{FEATURE}}_ROUTES: Routes =
 
 ### Import Boundaries (CRITICAL)
 
--   **Server**: `Shared ← Domains ← Api` (never reverse)
--   **Client**: Domain imports ONLY `@shared/*` + itself, NEVER another domain
+- **Server**: `Shared ← Domains ← Api` (never reverse)
+- **Client**: Domain imports ONLY `@shared/*` + itself, NEVER another domain
 
 ### Service Scoping (CRITICAL)
 
--   Domain services in `services/` → Route `providers` array, NEVER `providedIn: 'root'`
--   Persistent state in `core/` → `providedIn: 'root'` OK
--   Shared services → `@shared/services/` with `providedIn: 'root'`
+- Domain services in `services/` → Route `providers` array, NEVER `providedIn: 'root'`
+- Persistent state in `core/` → `providedIn: 'root'` OK
+- Shared services → `@shared/services/` with `providedIn: 'root'`
 
 ### Path Aliases
 
--   `@shared/*` - Cross-cutting utilities
--   `@admin/*`, `@game/*`, `@commerce/*` - Domain-specific
+- `@shared/*` - Cross-cutting utilities
+- `@admin/*`, `@game/*`, `@commerce/*` - Domain-specific
 
 ### Other Rules
 
--   Validators colocate with handlers
--   New line after every `=`, before every `.`
--   Server namespace: `SeventySix.{Domain}` (NOT `SeventySix.Domains.{Domain}`)
+- Validators colocate with handlers
+- New line after every `=`, before every `.`
+- Server namespace: `SeventySix.{Domain}` (NOT `SeventySix.Domains.{Domain}`)
+
+### ⚠️ Work Completion Requirements (CRITICAL)
+
+**ALL THREE** test suites must pass for work to be considered complete:
+
+| Suite  | Command            | Location                   |
+| ------ | ------------------ | -------------------------- |
+| Server | `dotnet test`      | `SeventySix.Server/Tests/` |
+| Client | `npm test`         | `SeventySix.Client/`       |
+| E2E    | `npm run test:e2e` | `SeventySix.Client/e2e/`   |
+
+**Never** mark work complete with failing tests in any suite.

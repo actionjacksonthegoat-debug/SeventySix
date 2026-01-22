@@ -129,10 +129,10 @@ domains/    → @admin/*, @sandbox/*, @developer/*
 
 **Key Distinctions:**
 
--   **Commands/Queries**: CQRS objects stay colocated with handlers (NOT in POCOs)
--   **Entities**: Domain entities stay in `Entities/` folder (NOT POCOs)
--   **Request vs Response**: `*Request` = input (body/query), `*Response` = API contract output
--   **Response vs Result**: `*Response` = external API contract, `*Result` = internal outcome
+- **Commands/Queries**: CQRS objects stay colocated with handlers (NOT in POCOs)
+- **Entities**: Domain entities stay in `Entities/` folder (NOT POCOs)
+- **Request vs Response**: `*Request` = input (body/query), `*Response` = API contract output
+- **Response vs Result**: `*Response` = external API contract, `*Result` = internal outcome
 
 ### Logging
 
@@ -145,9 +145,9 @@ domains/    → @admin/*, @sandbox/*, @developer/*
 
 ### Transactions
 
--   Single write: Direct `SaveChangesAsync`
--   Multiple entities: Consolidated `SaveChangesAsync`
--   Read-then-write: `TransactionManager`
+- Single write: Direct `SaveChangesAsync`
+- Multiple entities: Consolidated `SaveChangesAsync`
+- Read-then-write: `TransactionManager`
 
 ---
 
@@ -228,16 +228,16 @@ domains/    → @admin/*, @sandbox/*, @developer/*
 
 **Exceptions** (approved patterns):
 
--   `index.ts` barrel exports
--   Type re-exports from generated code (`generated-open-api.model.ts`)
--   Error class hierarchies (`app-error.model.ts`)
--   Environment config interfaces (`environment.interface.ts`)
--   Animation constants (`*.animations.ts`)
--   Cohesive type sets (`table.model.ts`)
--   Utility function collections (`*.utility.ts`)
--   Test data builders with factories (`*.builder.ts`)
--   Cohesive constant sets (`http.constants.ts`, `role.constants.ts`)
--   All `testing/` folder files
+- `index.ts` barrel exports
+- Type re-exports from generated code (`generated-open-api.model.ts`)
+- Error class hierarchies (`app-error.model.ts`)
+- Environment config interfaces (`environment.interface.ts`)
+- Animation constants (`*.animations.ts`)
+- Cohesive type sets (`table.model.ts`)
+- Utility function collections (`*.utility.ts`)
+- Test data builders with factories (`*.builder.ts`)
+- Cohesive constant sets (`http.constants.ts`, `role.constants.ts`)
+- All `testing/` folder files
 
 **File Naming**: `{name}.model.ts` (interface/type), `{name}.constant.ts` (enum/const), `{name}.service.ts` (class)
 
@@ -266,8 +266,106 @@ domains/    → @admin/*, @sandbox/*, @developer/*
 | Angular       | `npm test` (headless)              |
 | Angular setup | `provideZonelessChangeDetection()` |
 | .NET          | `dotnet test`                      |
+| E2E           | `npm run test:e2e` (Playwright)    |
 | Libraries     | xUnit, NSubstitute, Shouldly       |
 | Forbidden     | Moq, FluentAssertions              |
+
+### ⚠️ Work Completion Requirements (CRITICAL)
+
+**ALL THREE** test suites must pass for work to be considered complete:
+
+| Suite  | Command            | Location                   |
+| ------ | ------------------ | -------------------------- |
+| Server | `dotnet test`      | `SeventySix.Server/Tests/` |
+| Client | `npm test`         | `SeventySix.Client/`       |
+| E2E    | `npm run test:e2e` | `SeventySix.Client/e2e/`   |
+
+**Never** mark work complete with failing tests in any suite.
+
+---
+
+## E2E Testing (Playwright)
+
+### Structure
+
+```
+SeventySix.Client/e2e/
+├── global-setup.ts              # Creates auth states
+├── fixtures/
+│   ├── index.ts                 # Barrel export - ALWAYS import from here
+│   ├── auth.fixture.ts          # Role-based page fixtures
+│   ├── page-helpers.fixture.ts  # Page Object Model fixtures
+│   ├── pages/                   # Page Object classes
+│   ├── selectors.constant.ts    # CSS selectors
+│   ├── routes.constant.ts       # App routes
+│   ├── page-text.constant.ts    # UI text
+│   ├── timeouts.constant.ts     # Timeout values
+│   └── test-users.constant.ts   # Test credentials
+└── specs/
+    ├── public/                  # No auth
+    ├── authenticated/           # User role
+    ├── admin/                   # Admin role
+    └── developer/               # Developer role
+```
+
+### Import Rule (CRITICAL)
+
+```typescript
+// ✅ ALWAYS import from barrel
+import { test, expect, ROUTES, PAGE_TEXT, SELECTORS } from "../../fixtures";
+
+// ❌ NEVER import from individual files
+import { test } from "../../fixtures/auth.fixture";
+```
+
+### Test Categories
+
+| Category      | Auth State | Use Case                |
+| ------------- | ---------- | ----------------------- |
+| public        | None       | Login, register, public |
+| authenticated | User       | General user features   |
+| admin         | Admin      | Admin-only features     |
+| developer     | Developer  | Developer tools         |
+
+### Spec File Pattern
+
+```typescript
+test.describe("{{Feature}}",
+    () =>
+    {
+        test.beforeEach(
+            async ({ page }) =>
+            {
+                await page.goto(ROUTES.{{route}});
+            });
+
+        test("should {{behavior}} when {{condition}}",
+            async ({ page }) =>
+            {
+                await expect(page.locator(SELECTORS.{{selector}}))
+                    .toBeVisible();
+            });
+    });
+```
+
+### Page Helpers
+
+Use injected page helpers instead of raw page:
+
+```typescript
+test("should submit form", async ({ authPage }) => {
+	await authPage.login("user", "pass");
+	await expect(authPage.snackbar).toBeVisible();
+});
+```
+
+### Adding New Fixtures
+
+When adding selectors, routes, or text:
+
+1. Add to appropriate constant file in `fixtures/`
+2. Export via `fixtures/index.ts` if new file
+3. Use `data-testid` attributes for selector stability
 
 ---
 
@@ -307,9 +405,9 @@ snackBar.open(message, "Close", { duration: SNACKBAR_DURATION.error });
 
 ## Documentation
 
--   Never create .md files unless asked
--   **CRITICAL: XML and JSDoc documentation** - All public classes, methods, properties, and parameters must have XML documentation comments.
--   **CRITICAL: XML and JSDoc documentation style** — All `<param>` and `<returns>` tags must be placed on their own lines, and the description text must be on the line between the opening and closing tags (example below). This is enforced as a critical docstyle rule for Raptor.
+- Never create .md files unless asked
+- **CRITICAL: XML and JSDoc documentation** - All public classes, methods, properties, and parameters must have XML documentation comments.
+- **CRITICAL: XML and JSDoc documentation style** — All `<param>` and `<returns>` tags must be placed on their own lines, and the description text must be on the line between the opening and closing tags (example below). This is enforced as a critical docstyle rule for Raptor.
 
 Example:
 
