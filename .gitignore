@@ -421,6 +421,7 @@ __screenshots__/
 /test-results/
 SeventySix.Client/playwright-report/
 SeventySix.Client/test-results/
+SeventySix.Client/e2e/.auth/
 
 # Sass
 .sass-cache/

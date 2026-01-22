@@ -154,7 +154,8 @@ public class TokenService(
 		}
 
 		// REUSE ATTACK DETECTED: Token already revoked but attacker trying to use it
-		if (existingToken.IsRevoked)
+		// When DisableRotation is enabled (E2E testing), skip this check since tokens aren't revoked
+		if (existingToken.IsRevoked && !authSettings.Value.Token.DisableRotation)
 		{
 			logger.LogWarning(
 				"Token reuse attack detected for user {UserId}, revoking family {FamilyId}",
@@ -179,11 +180,14 @@ public class TokenService(
 		bool rememberMe =
 			tokenLifetimeDays > jwtSettings.Value.RefreshTokenExpirationDays;
 
-		// Valid rotation - revoke current token
-		await tokenRepository.RevokeAsync(
-			existingToken,
-			now,
-			cancellationToken);
+		// Valid rotation - revoke current token (unless disabled for E2E testing)
+		if (!authSettings.Value.Token.DisableRotation)
+		{
+			await tokenRepository.RevokeAsync(
+				existingToken,
+				now,
+				cancellationToken);
+		}
 
 		// Generate new token inheriting the family and session start
 		return await GenerateRefreshTokenInternalAsync(
@@ -282,6 +286,13 @@ public class TokenService(
 		DateTime now,
 		CancellationToken cancellationToken)
 	{
+		// Skip session limit enforcement when rotation is disabled (E2E testing)
+		// to allow parallel workers to share auth state without token revocation
+		if (authSettings.Value.Token.DisableRotation)
+		{
+			return;
+		}
+
 		int maxSessions =
 			authSettings.Value.Token.MaxActiveSessionsPerUser;
 

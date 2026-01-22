@@ -19,8 +19,25 @@ namespace SeventySix.Registration;
 
 /// <summary>
 /// Schedules all recurring jobs on application startup.
-/// Checks last execution times to resume scheduling after container restart.
+/// Includes resilient startup with bounded retry for Docker environments.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This service uses a BOUNDED retry strategy to handle transient database
+/// connectivity issues during container startup. It will NEVER loop forever:
+/// </para>
+/// <list type="bullet">
+/// <item><description>Initial delay: 3 seconds (allows DB to stabilize)</description></item>
+/// <item><description>Max retry attempts: 3 (hardcoded constant)</description></item>
+/// <item><description>Retry delays: 2s, 4s (exponential backoff)</description></item>
+/// <item><description>Total max wait: 9 seconds before giving up</description></item>
+/// </list>
+/// <para>
+/// If all retries fail, the service logs an error but allows the application
+/// to continue running (graceful degradation - background jobs won't run
+/// but API endpoints remain functional).
+/// </para>
+/// </remarks>
 /// <param name="serviceScopeFactory">
 /// Factory for creating service scopes.
 /// </param>
@@ -36,7 +53,18 @@ public class RecurringJobSchedulerService(
 	ILogger<RecurringJobSchedulerService> logger) : IHostedService
 {
 	/// <summary>
-	/// Schedules all recurring jobs on startup.
+	/// Delay before attempting job scheduling to allow database to stabilize.
+	/// </summary>
+	private const int StartupDelaySeconds = 3;
+
+	/// <summary>
+	/// Maximum number of retry attempts for job scheduling.
+	/// This ensures we NEVER loop forever - after this many attempts, we give up.
+	/// </summary>
+	private const int MaxRetryAttempts = 3;
+
+	/// <summary>
+	/// Schedules all recurring jobs on startup with resilient retry logic.
 	/// </summary>
 	/// <param name="cancellationToken">
 	/// The cancellation token.
@@ -55,6 +83,83 @@ public class RecurringJobSchedulerService(
 			return;
 		}
 
+		// Allow database connections to stabilize after container startup
+		logger.LogInformation(
+			"Waiting {DelaySeconds}s for database to stabilize",
+			StartupDelaySeconds);
+
+		try
+		{
+			await Task.Delay(
+				TimeSpan.FromSeconds(StartupDelaySeconds),
+				cancellationToken);
+		}
+		catch (OperationCanceledException)
+		{
+			// Startup cancelled during initial delay - exit cleanly
+			logger.LogInformation("Job scheduler startup cancelled during initial delay");
+			return;
+		}
+
+		// BOUNDED retry with exponential backoff - will exit after MaxRetryAttempts
+		for (int attemptNumber = 1; attemptNumber <= MaxRetryAttempts; attemptNumber++)
+		{
+			try
+			{
+				await ScheduleAllJobsAsync(cancellationToken);
+
+				logger.LogInformation(
+					"Recurring job scheduler completed startup scheduling");
+				return; // SUCCESS - exit method
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+			{
+				// Graceful shutdown requested - exit cleanly
+				logger.LogInformation("Job scheduler startup cancelled");
+				return; // CANCELLED - exit method
+			}
+			catch (Exception exception) when (attemptNumber < MaxRetryAttempts)
+			{
+				int retryDelaySeconds =
+					attemptNumber * 2; // 2s, 4s
+
+				logger.LogWarning(
+					exception,
+					"Job scheduling attempt {AttemptNumber}/{MaxAttempts} failed, retrying in {RetryDelaySeconds}s",
+					attemptNumber,
+					MaxRetryAttempts,
+					retryDelaySeconds);
+
+				await Task.Delay(
+					TimeSpan.FromSeconds(retryDelaySeconds),
+					cancellationToken);
+			}
+		}
+
+		// FAILURE after all retries - log error but DON'T crash the app
+		// API will still function, just without background job processing
+		logger.LogError(
+			"Failed to schedule recurring jobs after {MaxAttempts} attempts. " +
+			"Background jobs will not run but API remains functional.",
+			MaxRetryAttempts);
+		// Method exits here - no infinite loop
+	}
+
+	/// <inheritdoc />
+	public Task StopAsync(CancellationToken cancellationToken) =>
+		Task.CompletedTask;
+
+	/// <summary>
+	/// Schedules all domain recurring jobs.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// The cancellation token.
+	/// </param>
+	/// <returns>
+	/// A task representing the asynchronous operation.
+	/// </returns>
+	private async Task ScheduleAllJobsAsync(CancellationToken cancellationToken)
+	{
 		await using AsyncServiceScope scope =
 			serviceScopeFactory.CreateAsyncScope();
 
@@ -83,14 +188,7 @@ public class RecurringJobSchedulerService(
 		await ScheduleDatabaseMaintenanceJobAsync(
 			recurringJobService,
 			cancellationToken);
-
-		logger.LogInformation(
-			"Recurring job scheduler completed startup scheduling");
 	}
-
-	/// <inheritdoc />
-	public Task StopAsync(CancellationToken cancellationToken) =>
-		Task.CompletedTask;
 
 	/// <summary>
 	/// Schedules the refresh token cleanup job.

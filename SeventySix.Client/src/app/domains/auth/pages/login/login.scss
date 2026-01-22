@@ -32,7 +32,7 @@
 	gap: vars.$spacing-md;
 }
 
-.btn-oauth {
+.oauth-button {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -72,6 +72,11 @@
 	background: var(--github-bg);
 	border-color: var(--github-bg);
 	color: #fff;
+
+	// Ensure Material button label inherits color for accessibility
+	.mdc-button__label {
+		color: inherit;
+	}
 
 	&:hover:not(:disabled) {
 		background: var(--github-bg-hover);

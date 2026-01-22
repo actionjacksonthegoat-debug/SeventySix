@@ -133,6 +133,9 @@ builder.Services.AddElectronicNotificationsDomain(
 // Register all background jobs (single registration point)
 builder.Services.AddBackgroundJobs(builder.Configuration);
 
+// E2E test seeder (only runs when E2ESeeder:Enabled is true)
+builder.Services.AddE2ESeeder(builder.Configuration);
+
 // Add response compression (Brotli + Gzip)
 builder.Services.AddOptimizedResponseCompression(builder.Configuration);
 

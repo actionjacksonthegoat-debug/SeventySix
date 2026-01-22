@@ -41,11 +41,19 @@ public class AuthCookieService(
 				"HttpContext is not available.");
 
 	/// <inheritdoc/>
-	public void SetRefreshTokenCookie(string refreshToken) =>
+	public void SetRefreshTokenCookie(string refreshToken)
+	{
+		SameSiteMode sameSite =
+			authSettings.Value.Cookie.SameSiteLax
+				? SameSiteMode.Lax
+				: SameSiteMode.Strict;
+
 		SetSecureCookie(
 			authSettings.Value.Cookie.RefreshTokenCookieName,
 			refreshToken,
-			TimeSpan.FromDays(jwtSettings.Value.RefreshTokenExpirationDays));
+			TimeSpan.FromDays(jwtSettings.Value.RefreshTokenExpirationDays),
+			sameSite);
+	}
 
 	/// <inheritdoc/>
 	public string? GetRefreshToken() =>

@@ -170,6 +170,13 @@ public record AuthCookieSettings
 	/// Gets a value indicating whether to use secure cookies.
 	/// </summary>
 	public bool SecureCookie { get; init; } = true;
+
+	/// <summary>
+	/// Gets a value indicating whether to use SameSite=Lax for cookies.
+	/// Set to true for E2E testing where client and API are on different ports.
+	/// Default is false (uses Strict for production security).
+	/// </summary>
+	public bool SameSiteLax { get; init; } = false;
 }
 
 /// <summary>
@@ -264,4 +271,11 @@ public record TokenSettings
 	/// When exceeded, oldest token is automatically revoked.
 	/// </summary>
 	public int MaxActiveSessionsPerUser { get; init; } = 5;
+
+	/// <summary>
+	/// Gets a value indicating whether to disable token rotation on refresh.
+	/// Default: false. When true, the old refresh token is NOT revoked during rotation.
+	/// WARNING: Only enable for E2E testing where the same token must work across contexts.
+	/// </summary>
+	public bool DisableRotation { get; init; } = false;
 }

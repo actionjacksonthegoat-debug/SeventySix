@@ -29,9 +29,14 @@ RUN dotnet publish "./SeventySix.Api.csproj" -c $BUILD_CONFIGURATION -o /app/pub
 FROM base AS final
 WORKDIR /app
 
+# Install required packages:
+# - libgssapi-krb5-2: GSS-API Kerberos library for Npgsql authentication
+# - curl: For healthcheck endpoint verification
+USER root
+RUN apt-get update && apt-get install -y libgssapi-krb5-2 curl && rm -rf /var/lib/apt/lists/*
+
 # Create data protection keys directory with proper ownership
 # This directory should be mounted as a Docker volume for key persistence
-USER root
 RUN mkdir -p /app/keys && chown $APP_UID:$APP_UID /app/keys
 USER $APP_UID
 

@@ -1,31 +1,114 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, Project } from "@playwright/test";
 
 /**
- * See https://playwright.dev/docs/test-configuration.
+ * Shared device configuration for all projects.
+ */
+const DESKTOP_CHROME =
+	devices["Desktop Chrome"];
+
+/**
+ * Auth state path pattern - DRY helper.
+ * @param role
+ * The role name (lowercase).
+ * @returns
+ * Path to the auth state file.
+ */
+function getAuthStatePath(role: string): string
+{
+	return `e2e/.auth/${role}.json`;
+}
+
+/**
+ * Creates an authenticated project configuration.
+ * Reduces duplication across role-based projects.
+ * @param role
+ * The role name for the project.
+ * @returns
+ * Project configuration for the role.
+ */
+function createAuthenticatedProject(role: string): Project
+{
+	return {
+		name: role,
+		testDir: `./e2e/specs/${role}`,
+		dependencies: ["setup"],
+		use: {
+			...DESKTOP_CHROME,
+			storageState: getAuthStatePath(role)
+		}
+	};
+}
+
+/**
+ * Playwright configuration for E2E tests.
+ * Supports authenticated and unauthenticated test scenarios.
+ *
+ * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
 	testDir: "./e2e",
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
-	workers: process.env.CI ? 1 : undefined,
-	reporter: "html",
-	use: {
-		baseURL: "http://localhost:4200",
-		trace: "on-first-retry"
+	workers: process.env.CI ? 2 : undefined,
+	reporter: [
+		["html", { outputFolder: "playwright-report", open: "never" }],
+		["dot"]
+	],
+	timeout: 30000,
+	expect: {
+		timeout: 10000
 	},
 
+	use: {
+		baseURL: "http://localhost:4200",
+		trace: "on-first-retry",
+		screenshot: "only-on-failure",
+		video: "retain-on-failure"
+	},
+
+	// Global setup for authentication
+	globalSetup: "./e2e/global-setup.ts",
+
 	projects: [
+		// Setup project - creates auth states
 		{
-			name: "chromium",
-			use: { ...devices["Desktop Chrome"] }
-		}
+			name: "setup",
+			testMatch: /global-setup\.ts/
+		},
+
+		// Public tests - no authentication
+		{
+			name: "public",
+			testDir: "./e2e/specs/public",
+			use: { ...DESKTOP_CHROME }
+		},
+
+		// Authenticated tests - uses User role auth state
+		{
+			name: "authenticated",
+			testDir: "./e2e/specs/authenticated",
+			dependencies: ["setup"],
+			use: {
+				...DESKTOP_CHROME,
+				storageState: getAuthStatePath("user")
+			}
+		},
+
+		// Admin tests - uses Admin role auth state
+		createAuthenticatedProject("admin"),
+
+		// Developer tests - uses Developer role auth state
+		createAuthenticatedProject("developer")
 	],
 
-	/* Run dev server before starting the tests */
-	webServer: {
-		command: "npm run start",
-		url: "http://localhost:4200",
-		reuseExistingServer: !process.env.CI
-	}
+	// Web server to start - reuseExistingServer detects if containers are running
+	webServer: [
+		{
+			command: "npm run start -- --configuration e2e",
+			url: "http://localhost:4200",
+			reuseExistingServer: true,
+			timeout: 120000
+		}
+	]
 });

@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using SeventySix.ApiTracking;
+using SeventySix.ElectronicNotifications;
 using SeventySix.Identity;
 using SeventySix.Logging;
 
@@ -79,13 +80,16 @@ public sealed class SharedWebApplicationFactory<TProgram>
 				services.RemoveAll<DbContextOptions<IdentityDbContext>>();
 				services.RemoveAll<DbContextOptions<LoggingDbContext>>();
 				services.RemoveAll<DbContextOptions<ApiTrackingDbContext>>();
+				services.RemoveAll<DbContextOptions<ElectronicNotificationsDbContext>>();
 
-				services.AddDbContext<IdentityDbContext>(options =>
-					options.UseNpgsql(ConnectionString));
-				services.AddDbContext<LoggingDbContext>(options =>
-					options.UseNpgsql(ConnectionString));
-				services.AddDbContext<ApiTrackingDbContext>(options =>
-					options.UseNpgsql(ConnectionString));
+				services.AddDbContext<IdentityDbContext>(
+					options => options.UseNpgsql(ConnectionString));
+				services.AddDbContext<LoggingDbContext>(
+					options => options.UseNpgsql(ConnectionString));
+				services.AddDbContext<ApiTrackingDbContext>(
+					options => options.UseNpgsql(ConnectionString));
+				services.AddDbContext<ElectronicNotificationsDbContext>(
+					options => options.UseNpgsql(ConnectionString));
 			});
 
 		// Apply any additional configuration LAST (e.g., for rate limiting tests)

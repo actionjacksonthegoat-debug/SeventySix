@@ -1,0 +1,147 @@
+# docker-compose.e2e.yml
+# E2E Test Environment for SeventySix
+# Usage: docker compose -f docker-compose.e2e.yml up -d
+
+services:
+    # PostgreSQL - Test Database
+    postgres-e2e:
+        image: postgres:18-alpine
+        container_name: seventysix-postgres-e2e
+        environment:
+            POSTGRES_DB: seventysix_e2e
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: E2E_Test_Password_123
+        ports:
+            - "5434:5432"
+        volumes:
+            - postgres_e2e_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        networks:
+            - e2e-network
+
+    # Valkey - Test Cache
+    valkey-e2e:
+        image: valkey/valkey:9.0-alpine
+        container_name: seventysix-valkey-e2e
+        ports:
+            - "6380:6379"
+        healthcheck:
+            test: ["CMD", "valkey-cli", "ping"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        networks:
+            - e2e-network
+
+    # MailDev - Email Capture
+    maildev:
+        image: maildev/maildev:latest
+        container_name: seventysix-maildev-e2e
+        ports:
+            - "1080:1080" # Web UI
+            - "1025:1025" # SMTP
+        environment:
+            - MAILDEV_SMTP_PORT=1025
+            - MAILDEV_WEB_PORT=1080
+        networks:
+            - e2e-network
+
+    # .NET API - Test Environment
+    api-e2e:
+        build:
+            context: ./SeventySix.Server
+            dockerfile: SeventySix.Api/Dockerfile
+        container_name: seventysix-api-e2e
+        ports:
+            - "5086:8080"
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Test
+            - ASPNETCORE_HTTP_PORTS=8080
+            # Database
+            - Database__Host=postgres-e2e
+            - Database__Port=5432
+            - Database__Name=seventysix_e2e
+            - Database__User=postgres
+            - Database__Password=E2E_Test_Password_123
+            # Cache
+            - Cache__Valkey__ConnectionString=valkey-e2e:6379
+            # Email (MailDev)
+            - Email__Enabled=true
+            - Email__UseSsl=false
+            - Email__SmtpHost=maildev
+            - Email__SmtpPort=1025
+            - Email__SmtpUsername=
+            - Email__SmtpPassword=
+            - Email__FromAddress=noreply@test.local
+            - Email__ClientBaseUrl=http://localhost:4200
+            # Email Queue - fast processing for E2E tests
+            - Email__Queue__ProcessingIntervalSeconds=5
+            - Email__Queue__BatchSize=10
+            # JWT (test secret - minimum 64 chars for security)
+            - Jwt__SecretKey=E2E_Test_JWT_Secret_Key_That_Is_At_Least_64_Characters_Long_For_Security
+            # Auth - disable secure cookies for http E2E testing
+            - Auth__Cookie__SecureCookie=false
+            # Auth - use SameSite=Lax for cross-port cookie sharing in E2E
+            - Auth__Cookie__SameSiteLax=true
+            # Seeders
+            - AdminSeeder__Enabled=true
+            - AdminSeeder__InitialPassword=SecureE2ETestPassword123!
+            - E2ESeeder__Enabled=true
+            # Background Jobs - enable for E2E email queue processing
+            - BackgroundJobs__Enabled=true
+            # Disable production features
+            - OpenTelemetry__Enabled=false
+            - HealthChecks__Enabled=true
+            # Disable reCAPTCHA for E2E testing
+            - Recaptcha__Enabled=false
+            # Disable rate limiting for E2E testing
+            - RateLimiting__Enabled=false
+            # Disable token rotation for E2E testing (allows same token across test contexts)
+            - Auth__Token__DisableRotation=true
+        depends_on:
+            postgres-e2e:
+                condition: service_healthy
+            valkey-e2e:
+                condition: service_healthy
+            maildev:
+                condition: service_started
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 30s
+        networks:
+            - e2e-network
+
+    # Angular Client - E2E Build (uses e2e configuration with correct API URL)
+    client-e2e:
+        build:
+            context: ./SeventySix.Client
+            dockerfile: Dockerfile.e2e
+        container_name: seventysix-client-e2e
+        ports:
+            - "4200:8080"
+        depends_on:
+            api-e2e:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+        networks:
+            - e2e-network
+
+networks:
+    e2e-network:
+        name: seventysix-e2e-network
+
+volumes:
+    postgres_e2e_data:
+        name: seventysix_postgres_e2e_data

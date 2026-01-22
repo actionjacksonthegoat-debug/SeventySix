@@ -124,7 +124,7 @@ jobs:
 
             - name: Deploy to staging
               run: |
-                  echo "🚀 Deploying to staging environment..."
+                  echo "Deploying to staging environment..."
                   echo "This would deploy to your staging server"
                   echo "Client files: $(ls -lh client | wc -l) files"
                   echo "Server files: $(ls -lh server | wc -l) files"
@@ -153,7 +153,7 @@ jobs:
 
             - name: Deploy to production
               run: |
-                  echo "🚀 Deploying to production environment..."
+                  echo "Deploying to production environment..."
                   echo "This requires manual approval via GitHub environments"
                   echo "Client files: $(ls -lh client | wc -l) files"
                   echo "Server files: $(ls -lh server | wc -l) files"
